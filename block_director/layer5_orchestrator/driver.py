@@ -32,6 +32,12 @@ from ..layer6_audit.audit_logger import AuditLogger
 from ..utils.logger import get_logger
 from ..utils.threading_guard import assert_main_thread
 from .planner import EMIT_PLAN_TOOL_PARAMETERS, PLAN_TOOL_NAME, build_plan_payload
+from .control_tools import (
+    ABORT,
+    FINISH_SHOT,
+    REQUEST_SELF_REVIEW,
+    register_control_tools,
+)
 from .repair import build_repair_payload
 from .budget import Budget, BudgetLimits
 from .loop_detector import LoopDetector
@@ -66,7 +72,7 @@ class DriverEvent:
 
 
 def default_registry() -> ToolRegistry:
-    """Phase 0 的最小工具集：只有阶段 A 的 emit_plan。"""
+    """默认工具集：阶段 A 的 emit_plan + 三个控制工具（§7.4）。"""
     registry = ToolRegistry()
     registry.add(
         name=PLAN_TOOL_NAME,
@@ -74,6 +80,7 @@ def default_registry() -> ToolRegistry:
         parameters=EMIT_PLAN_TOOL_PARAMETERS,
         handler=lambda **kwargs: f"计划已接收：{len(kwargs.get('shots', []))} 个镜头",
     )
+    register_control_tools(registry)
     return registry
 
 
@@ -128,6 +135,10 @@ class PrevisDriver:
         self.gate_history: List[Dict[str, Any]] = []
         self._reviewed_shots: set = set()
         self._pending_review: Optional[str] = None
+        self._pending_finish: bool = False
+        self.finish_history: List[Dict[str, Any]] = []
+        self.review_requests: List[Dict[str, Any]] = []
+        self.abort_reason: str = ""
         self.review_history: List[Dict[str, Any]] = []
         self.clock = clock
         self.thread_factory = thread_factory
@@ -198,6 +209,9 @@ class PrevisDriver:
             "knowledge": (self.knowledge.describe()
                           if self.knowledge is not None else None),
             "degraded_reason": self.degraded_reason,
+            "abort_reason": self.abort_reason,
+            "finished_shots": len(self.finish_history),
+            "review_requests": len(self.review_requests),
             "error": self.error,
         }
 
@@ -220,6 +234,13 @@ class PrevisDriver:
         if self._cancel.is_set() and self.state is not DriverState.CANCELLED:
             self._transition(DriverState.CANCELLED)
             self.audit.log("run_cancelled", "运行已取消", level="warning")
+            return False
+        if self.abort_reason:
+            # §7.4 的 abort：LLM 主动放弃。场景保留，运行以 CANCELLED 结束，
+            # 不当作成功——这正是它与"降级收尾"的区别。
+            self.audit.log("run_aborted",
+                           f"模型请求放弃：{self.abort_reason}", level="warning")
+            self._transition(DriverState.CANCELLED)
             return False
 
         handler = getattr(self, f"_step_{self.state.value.lower()}")
@@ -448,6 +469,19 @@ class PrevisDriver:
                    f"{shot_id} {'通过' if result.passed else '未通过'}",
                    shot=shot_id, passed=result.passed)
 
+        if self._pending_finish:
+            # 模型已用 finish_shot 声明该镜完成：不再进修复循环，直接前进。
+            # 审核结论仍然落盘——"谁说的"和"测出来的"分开记。
+            self._pending_finish = False
+            if not result.passed:
+                self.audit.log(
+                    "shot_finished_with_errors",
+                    f"{shot_id} 由模型声明完成，但审核未通过", level="warning",
+                    shot=shot_id, errors=len(result.errors))
+                self._emit("shot_finished_with_errors",
+                           f"{shot_id} 带问题完成", shot=shot_id)
+            self._advance_shot()
+            return
         if result.passed:
             if self._should_self_review(shot_id):
                 self._pending_review = shot_id
@@ -677,6 +711,34 @@ class PrevisDriver:
                     plan_seen = True
                 except Exception as exc:  # noqa: BLE001
                     errors.append(f"计划解析失败: {exc}")
+            elif result.ok and call.function.name == ABORT:
+                self.abort_reason = str(args.get("reason") or "（未说明原因）")
+                self.audit.log("abort_requested", self.abort_reason,
+                               level="warning")
+                self._emit("abort_requested", self.abort_reason)
+            elif result.ok and call.function.name == FINISH_SHOT:
+                if self._current_shot_id:
+                    self._pending_finish = True
+                    self.finish_history.append(
+                        {"shot_id": self._current_shot_id,
+                         "summary": str(args.get("summary") or "")})
+                    self.audit.log("shot_finished",
+                                   f"{self._current_shot_id} 由模型声明完成",
+                                   shot=self._current_shot_id,
+                                   summary=str(args.get("summary") or ""))
+                else:
+                    errors.append("finish_shot：当前没有正在处理的镜头")
+            elif result.ok and call.function.name == REQUEST_SELF_REVIEW:
+                shot_id = str(args.get("shot_id") or self._current_shot_id or "")
+                if shot_id:
+                    self._pending_review = shot_id
+                    self.review_requests.append(
+                        {"shot_id": shot_id,
+                         "intent": str(args.get("shot_intent") or "")})
+                    self.audit.log("self_review_requested",
+                                   f"{shot_id} 已登记自我审核", shot=shot_id)
+                else:
+                    errors.append("request_self_review：当前没有正在处理的镜头")
 
         loop = self.loop_detector.detect()
         if loop is not None:

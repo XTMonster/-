@@ -950,6 +950,14 @@ def format_scene_state(state) -> str:
 | `finish_shot` | summary | 完成当前镜头，返回最终状态供下一镜头 |
 | `abort` | reason | 放弃场景 |
 
+> **实现（Phase 7）**：三个控制工具在 `layer5_orchestrator/control_tools.py`（bpy-free），由 `default_registry()` 一并注册，因此模型在**修复阶段**的工具单里能看到它们（`build_repair_payload` 用 `registry.openai_schemas()`）。真正的状态迁移在驱动器里，因为只有它知道运行到哪一步：
+>
+> - `request_self_review` → 写 `_pending_review`，交给既有的 `REVIEWING` 流程执行（§7.10 的"只登记、由驱动发起"）。**不额外发起 LLM 调用**，这是它的定义性约束。
+> - `finish_shot` → 写 `_pending_finish`；`_step_checking` 见到它就**跳过修复循环直接前进**，但审核结论照旧落盘，并额外记一条 `shot_finished_with_errors`（"谁说的"和"测出来的"分开记）。没有正在处理的镜头时明确报错，而不是静默成功。
+> - `abort` → 写 `abort_reason`，`step()` 在任何阶段都优先检查它，直接转 `CANCELLED`。**它与"降级收尾"的区别是：降级仍然产出交付物并按成功计，abort 不是成功。**
+>
+> 至此 §7.4 的 17 个工具全部注册。`tools/blender_tests/test_tools_extended.py` 里有一条断言直接比对"模型看到的工具表"（`default_registry()` + `register_all_scene_tools()`）与规范清单，缺一个就红。
+
 ### 7.5 工具参数校验
 
 所有工具执行前经过 `ToolValidator`：类型检查、范围钳位（坐标 ±50）、必填字段、枚举值。校验失败**不抛异常**，返回错误文本给 LLM 自行修正。校验器必须与 §16.1 的数据类保持一致（同一份 schema 定义生成两处，避免漂移）。
@@ -2404,7 +2412,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **504 项**，全部通过；`tools/run_tests.ps1` 跑 **21 步**（规格与
+`tests/` 共 **515 项**，全部通过；`tools/run_tests.ps1` 跑 **21 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2586,14 +2594,14 @@ def supports_media_type() -> bool:
 | **路径平滑与简化（§17.1/§17.2）** | `motion/path.py` | ✅ Catmull-Rom（每段 10 采样点、过首尾点）+ RDP（epsilon 0.05），纯计算 |
 | **深度序列（§15.6）** | `delivery/depth.py`、`layer8_delivery/depth_pass.py` | ✅ 16 位灰度 PNG 逐帧；固定 0.1–50 米归一化并写进 README；用材质覆盖实现（5.x 合成器只能写 EXR） |
 | **全片拼接（§15.7）** | `layer8_delivery/concat.py` | ✅ 内置 VSE 把各镜接成 `blockout_full.mp4`，帧数等于各镜之和，无需外部 ffmpeg |
-| **工具层补齐（§7.4）** | `layer3_engine/tool_bindings.py`、`cinema/camera_motion.py`、`layer5_orchestrator/timing_tool.py` | ✅ 17 个工具全部注册：新增 `move_character` / `look_at` / `interact_with` / `move_camera` / `reframe` / `estimate_shot_duration` |
+| **工具层补齐（§7.4）** | `layer3_engine/tool_bindings.py`、`cinema/camera_motion.py`、`layer5_orchestrator/timing_tool.py`、`layer5_orchestrator/control_tools.py` | ✅ **17 个工具全部注册**：新增 6 个场景工具 + 3 个控制工具，并有一条断言直接比对模型看到的工具表 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 504 项全部通过 |
+| 测试套件 | `tests/` | ✅ 515 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 504 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 515 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2689,7 +2697,9 @@ def supports_media_type() -> bool:
 
 **工具层补齐验收（第 21 步）**：13 个场景侧工具在同一个注册表里在线；`move_character` 从角色**当前**位置走到目标（实测 root 从 -0.75 走到 1.25 以上），且在"无内置动作"的场景里关键帧恰好落在 10–46（含 §9.7 的 6 帧混合窗口）；`look_at` 支持目标为角色 ID 并拒绝"既没 ID 也没坐标"的调用；`interact_with` 让道具对象带上 `bd_state` 并把交互记进连贯性台账，道具不存在时明确报错；`move_camera` 只给该镜的相机插关键帧（另一镜的相机位置一字不动）；`reframe` **复用同一台相机对象**（对象计数不变、焦距按新景别变化、`context.shot_types` 同步）。纯测试另覆盖运镜采样（推/拉/移/升降的位移量与方向、摇/俯仰保持半径与改变对准点、未知运镜与非法帧段被拒）与时长估算（含语速方向性）。
 
-**当前仍未实现**：§7.4 里的三个**控制类**工具 `request_self_review` / `finish_shot` / `abort` 尚未注册——它们要动驱动器的状态机（`_pending_review` / 镜头队列 / 终止路径），单列一步做，避免与现有修复循环打架。`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。§13.1 主面板里的角色管理（列表 / 颜色 / 增删）与模型选择仍是占位。
+**控制工具验收**：11 条纯测试全绿。`abort` 让运行以 **CANCELLED** 结束、`abort_reason` 落到快照、且放弃后**不再请求模型**（实测 `transport.calls == 1`）；`finish_shot` 在"审核每次都不过"的构造场景里让两镜照常前进（每镜审两次：初次 + 声明完成后的复核），并留下 `shot_finished_with_errors` 与两条 `finish_history`；没有当前镜头时 `finish_shot` / `request_self_review` 明确报错而不是静默成功；`request_self_review` 只登记不额外调用（`_pending_review` + `review_requests` 落盘）；三个工具的 schema 都做参数校验（`abort` 缺 `reason`、`finish_shot` 传未知字段都判失败）。
+
+**当前仍未实现**：`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。§13.1 主面板里的角色管理（列表 / 颜色 / 增删）与模型选择仍是占位。
 
 至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 

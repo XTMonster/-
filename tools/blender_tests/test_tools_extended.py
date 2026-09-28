@@ -27,6 +27,10 @@ from block_director.layer3_engine.scene_context import get_context  # noqa: E402
 from block_director.layer3_engine.scene_executor import build_environment  # noqa: E402
 from block_director.layer3_engine.shot_builder import build_scene  # noqa: E402
 from block_director.layer3_engine.tool_bindings import register_all_scene_tools  # noqa: E402
+from block_director.layer5_orchestrator.control_tools import (  # noqa: E402
+    CONTROL_TOOL_NAMES,
+)
+from block_director.layer5_orchestrator.driver import default_registry  # noqa: E402
 from block_director.layer5_orchestrator.tool_registry import ToolRegistry  # noqa: E402
 from block_director.utils.blender_compat import action_fcurves  # noqa: E402
 from block_director.utils.threading_guard import capture_main_thread  # noqa: E402
@@ -85,6 +89,25 @@ def t_extended_tools_are_registered():
     return {"ok": set(EXTRA_TOOLS) <= names,
             "missing": sorted(set(EXTRA_TOOLS) - names),
             "tools": sorted(names)}
+
+
+# --------------------------------------------------------------------------- #
+# 1b. 模型真正看到的工具表 = 驱动器默认集 + 场景工具集（§7.4 全覆盖）
+# --------------------------------------------------------------------------- #
+def t_the_llm_facing_registry_is_complete():
+    fresh_scene()
+    registry = default_registry()          # emit_plan + 三个控制工具
+    register_all_scene_tools(registry)
+    names = set(registry.names())
+    spec_tools = {
+        "place_character", "move_character", "character_action", "look_at",
+        "interact_with", "setup_camera", "move_camera", "reframe",
+        "get_scene_state", "check_composition", "check_axis",
+        "check_visibility", "estimate_shot_duration", "search_knowledge",
+        "request_self_review", "finish_shot", "abort"}
+    return {"ok": spec_tools <= names and set(CONTROL_TOOL_NAMES) <= names,
+            "missing": sorted(spec_tools - names),
+            "total": len(names), "tools": sorted(names)}
 
 
 # --------------------------------------------------------------------------- #
@@ -201,6 +224,8 @@ def t_reframe_reuses_the_camera():
 def main() -> int:
     capture_main_thread()
     check("extended_tools_are_registered", t_extended_tools_are_registered)
+    check("the_llm_facing_registry_is_complete",
+          t_the_llm_facing_registry_is_complete)
     check("move_character_walks", t_move_character_walks)
     check("look_at_tracks_another_character", t_look_at_tracks_another_character)
     check("interact_with_updates_the_prop_ledger",

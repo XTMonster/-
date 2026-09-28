@@ -108,7 +108,11 @@ Phases 0-4 and 6 are done:
   object; `move_character` defaults the walk's `from` to the character's
   current position; `estimate_shot_duration` is pure and unit-tested.
   The three control tools (`request_self_review`, `finish_shot`, `abort`) are
-  still missing because they touch the driver state machine.
+  registered from `layer5_orchestrator/control_tools.py` and handled by the
+  driver: `request_self_review` only sets `_pending_review` (no extra LLM
+  call), `finish_shot` sets `_pending_finish` so CHECKING skips the repair loop
+  for that shot while still recording the audit, and `abort` sets
+  `abort_reason`, which `step()` turns into CANCELLED (not a success).
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
