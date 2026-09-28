@@ -2701,6 +2701,30 @@ blender --background --factory-startup --python tools/run_headless.py -- \
 
 `run_headless.py` 为此新增 `--llm-timeout` 与 `--max-llm-calls`：本地模型单次调用要 30–90 秒、返工也多，默认的 120 秒/8 次对它们偏紧。
 
+### 21.11 一条命令产出真实模型的参考视频（2026-09）
+
+§15 的核心验收原文是"**从样例剧本出发，一条命令产出完整 export 目录**"。此前这是两步（`run_headless --build` 再 `rebuild_project --export`），而且真实模型那次运行退出后场景就没了。`run_headless` 现在多了 `--export`：**场景还在内存里就直接导出**，不必先落盘再重建。
+
+真实模型（本地 Ollama / qwen3-vl:30b，经 sidecar）的一次完整运行结果：
+
+```
+BLOCKDIRECTOR_SAVED  {"problems": 0, "scenes": 1, "shots": 3}
+BLOCKDIRECTOR_EXPORT {"ok": true, "aborted": false, "files": 9}
+
+export/
+├── blockout_shot_001.mp4   131 KB   (1–64)   MCU
+├── blockout_shot_002.mp4    59 KB   (65–99)  MS
+├── blockout_shot_003.mp4   130 KB   (100–158) MCU
+├── first_frames/shot_00{1,2,3}.png
+├── shots.json              （帧范围/机位/焦距与构建结果逐项一致）
+├── prompts.md
+└── README.md
+```
+
+规格：1280×720 @ 24fps、共 158 帧；三段 mp4 都是标准 `ftyp` 容器；`shots.json` 里的帧范围与运行摘要逐项吻合；**渲染审计通过（`aborted: false`）**，即参考视频里没有任何标签/辅助图形。这一次运行的账：**9 次 LLM 调用**（计划 1 + 草案 3 + 审核 3 + 2 次无效修复回合）、5 次审核、0 次审核失败、无降级。
+
+和上一节那次（同样配置、同样脚本，最终项目仍有 3 条校验错误）相比，差别只在**这次模型恰好产出满足约束的结构化输出**——`problems: 0` 说明 §5.2 的七条它全过了。这再次说明：管线是稳的，波动来自模型输出。
+
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
 **Phase 1 验收（§20 DoD）**：`tools/run_tests.ps1` 五步全绿，其中第 5 步在真实 Blender 内构建场景并断言：角色总高 1.45、Pivot 世界坐标逐点命中、网格全部落在 Content、标签落在 Guides 且 `hide_render=True`、导出审计返回空、**渲染正对照**（有角色 0.4597 vs 无角色 0.4149）证明白模确实入画、泄漏检测能抓出放开的标签、事务回滚后对象与 mesh 计数归零。

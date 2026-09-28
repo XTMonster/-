@@ -171,6 +171,10 @@ Phases 0-4 and 6 are done:
   "no tool call", the step guard counted polling ticks (a slow model looked
   like an infinite loop), `emit_plan` could rewrite the plan after stage A, and
   no tool could retime a dialogue so R011 failures were unrepairable.
+- **One-command delivery** (`run_headless --export`): the scene is exported
+  while it is still in memory, so 15's "one command -> complete export dir"
+  holds for real-model runs too, not just the offline path. The chain's step 4
+  now runs with `--export` and asserts the export marker.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2

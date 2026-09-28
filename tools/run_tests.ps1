@@ -76,13 +76,17 @@ if (-not $smokeLine) {
 }
 Write-Host ('  ' + $smokeLine.Line) -ForegroundColor Green
 
-Write-Host '[4/23] Run the add-on headless (plan -> scene, full chain)' -ForegroundColor Cyan
+Write-Host '[4/23] Run the add-on headless (plan -> scene -> delivery, one command)' -ForegroundColor Cyan
 $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
-$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--build', '--out', $out)
+$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--build', '--out', $out, '--export')
 $marker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_RESULT' 'headless'
 if ($marker -notmatch '"success": true') { Fail ('  FAILED: ' + $marker) }
 if ($marker -notmatch '"built": true') { Fail '  FAILED: the run did not build a scene' }
 Write-Host ('  ' + ($marker -replace 'BLOCKDIRECTOR_RESULT ', '')) -ForegroundColor Green
+$exportMarker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_EXPORT' 'delivery'
+if ($exportMarker -notmatch '"ok": true') { Fail ('  FAILED: ' + $exportMarker) }
+if ($exportMarker -notmatch '"aborted": false') { Fail '  FAILED: export aborted (render audit)' }
+Write-Host ('  ' + ($exportMarker -replace 'BLOCKDIRECTOR_EXPORT ', '')) -ForegroundColor Green
 
 Write-Host '[5/23] Phase 1 scene build inside Blender' -ForegroundColor Cyan
 $p1Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase1_scene.py') $null

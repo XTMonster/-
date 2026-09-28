@@ -34,6 +34,10 @@ def parse_args(argv):
                         help="把分镜计划落成真实场景（角色/相机/关键帧/剪切标记）")
     parser.add_argument("--save", default="",
                         help="运行成功后把项目（SDL）保存到该目录")
+    parser.add_argument("--export", action="store_true",
+                        help="运行成功后直接导出交付包（§15 的一条命令验收）")
+    parser.add_argument("--export-dir", default="",
+                        help="交付包目录；留空则用 <out>/export")
     parser.add_argument("--llm-timeout", type=float, default=120.0,
                         help="单次 LLM 调用超时（秒）。本地大模型常需放大到 600+")
     parser.add_argument("--max-llm-calls", type=int, default=8,
@@ -120,8 +124,33 @@ def main() -> int:
              "scenes": len(sdl.scenes), "shots": len(sdl.shots)},
             ensure_ascii=False))
 
+    export_failed = False
+    if args.export and summary.get("success") and summary.get("plan"):
+        # §15 的核心验收：**一条命令**从剧本产出干净的分镜参考视频。
+        # 这里直接导出，场景还活在内存里——不必先落盘再重建。
+        from pathlib import Path as _Path
+
+        from block_director.contracts.plan import Plan
+        from block_director.layer8_delivery import export_project
+        from block_director.settings import get_config
+
+        out_dir = _Path(args.export_dir) if args.export_dir else (
+            _Path(args.out) if args.out else _Path.cwd())
+        plan_obj = Plan.from_dict(summary["plan"])
+        report = export_project(plan_obj, build_summary=summary.get("build"),
+                                out_dir=out_dir,
+                                config=get_config().delivery,
+                                project=plan_obj.scene_heading or "BlockDirector")
+        payload = report.to_dict()
+        print("BLOCKDIRECTOR_EXPORT " + json.dumps(
+            {"ok": report.ok, "aborted": report.aborted,
+             "out_dir": report.out_dir, "files": len(report.files),
+             "warnings": report.warnings, "reason": report.reason},
+            ensure_ascii=False))
+        export_failed = not report.ok
+
     print("BLOCKDIRECTOR_RESULT " + json.dumps(summary, ensure_ascii=False))
-    return 0 if summary.get("success") else 1
+    return 0 if summary.get("success") and not export_failed else 1
 
 
 if __name__ == "__main__":
