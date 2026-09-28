@@ -220,6 +220,68 @@ def t_environment():
             "scene_camera": scene.camera.name if scene.camera else None}
 
 
+# --------------------------------------------------------------------------- #
+# 6. 尺寸必须与请求一致（曾把地面缩成一半，导致地面远边缘入画）
+# --------------------------------------------------------------------------- #
+def t_environment_sizes():
+    fresh_scene()
+    environment = build_environment(
+        ground_size=(30.0, 24.0),
+        walls=[{"position": (0.0, -6.0, 1.5), "size": (12.0, 2.0, 3.0)}],
+        props=[{"id": "table_01", "position": (0.0, 0.0, 0.4),
+                "size": (2.0, 1.0, 0.8)}],
+        lighting="clay_studio",
+    )
+    bpy.context.view_layer.update()
+
+    def dimensions(obj):
+        return tuple(round(v, 3) for v in obj.dimensions)
+
+    ground = dimensions(environment.ground)
+    wall = dimensions(environment.walls[0])
+    prop = dimensions(environment.props[0])
+    ok = (ground[0] == 30.0 and ground[1] == 24.0
+          and wall == (12.0, 2.0, 3.0)
+          and prop == (2.0, 1.0, 0.8))
+    return {"ok": ok, "ground": ground, "wall": wall, "prop": prop}
+
+
+# --------------------------------------------------------------------------- #
+# 7. 非本插件对象必须被审计抓出来（Phase 6 被默认 Cube 坑过）
+# --------------------------------------------------------------------------- #
+def t_foreign_object_is_flagged():
+    fresh_scene()
+    bpy.ops.mesh.primitive_cube_add(size=2.0, location=(0.0, 0.0, 0.0))
+    cube = bpy.context.object          # 默认名字 "Cube"，不是 BD_ 前缀
+    leaks = audit_renderable_objects()
+    cube.hide_render = True
+    clean_after_hiding = audit_renderable_objects()
+    return {"ok": cube.name in leaks and clean_after_hiding == [],
+            "cube": cube.name, "leaks": leaks,
+            "after_hiding": clean_after_hiding}
+
+
+def t_clear_scene_removes_default_cube():
+    """复现 Phase 6 的缺陷：启动场景自带的 Cube 会被渲进参考视频。"""
+    from block_director.layer3_engine.shot_builder import build_scene
+    from block_director.contracts.plan import Plan
+
+    bpy.ops.wm.read_factory_settings(use_empty=False)   # 带默认 Cube/Camera/Light
+    ensure_collections(bpy.context.scene)
+    had_cube = bpy.data.objects.get("Cube") is not None
+
+    plan = Plan.from_dict({"shots": [{
+        "shot_id": "shot_001", "order": 1, "intent": "x", "shot_type": "MS",
+        "duration_frames": 24, "characters": ["char_001"]}]})
+    build_scene(plan, clear_scene=True)
+
+    cube_gone = bpy.data.objects.get("Cube") is None
+    leaks = audit_renderable_objects()
+    return {"ok": had_cube and cube_gone and leaks == [],
+            "had_default_cube": had_cube, "cube_removed": cube_gone,
+            "leaks": leaks}
+
+
 def main() -> int:
     capture_main_thread()
     check("character_geometry", t_character_geometry)
@@ -227,6 +289,9 @@ def main() -> int:
     check("render_clean_and_visible", t_render_clean_and_visible)
     check("transaction_rollback", t_transaction_rollback)
     check("environment", t_environment)
+    check("environment_sizes", t_environment_sizes)
+    check("foreign_object_is_flagged", t_foreign_object_is_flagged)
+    check("clear_scene_removes_default_cube", t_clear_scene_removes_default_cube)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

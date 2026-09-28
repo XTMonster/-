@@ -46,7 +46,7 @@ def main() -> int:
     builder = None
     if args.build:
         from block_director.layer3_engine.shot_builder import BpySceneBuilder
-        builder = BpySceneBuilder()
+        builder = BpySceneBuilder(clear_scene=True)
 
     script = ""
     if args.script:

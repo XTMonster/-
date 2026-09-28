@@ -60,7 +60,8 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     summary = run_headless(script, offline=args.offline, project_dir=out_dir,
-                           max_wall_s=args.wall, builder=BpySceneBuilder())
+                           max_wall_s=args.wall,
+                           builder=BpySceneBuilder(clear_scene=True))
     if not summary.get("success") or not summary.get("built"):
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(
             {"ok": False, "reason": "运行或构建失败", "summary": summary},

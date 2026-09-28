@@ -24,6 +24,7 @@ from .character_system import MotionBlender, create_character, create_label
 from .cinema_engine import place_camera_for_shot
 from .collection_router import (
     clear_blockdirector_objects,
+    clear_scene_objects,
     ensure_collections,
     purge_orphan_data,
 )
@@ -53,7 +54,9 @@ class SceneSpec:
 
     heading: str = ""
     cast: List[CastMember] = field(default_factory=list)
-    ground_size: Tuple[float, float] = (20.0, 20.0)
+    # 默认给一大块地面：地面远边缘一旦进入画面，就会在参考视频里留下一条
+    # 横贯中景的硬边，视频模型会把它当内容学走。室内场景请显式传小地面/room。
+    ground_size: Tuple[float, float] = (120.0, 120.0)
     walls: List[Dict[str, Any]] = field(default_factory=list)
     props: List[Dict[str, Any]] = field(default_factory=list)
     lighting: str = "clay_studio"
@@ -178,13 +181,19 @@ def _action_requests(shot: ShotPlan, shot_start: int,
 
 
 @main_thread_only("build_scene")
-def build_scene(plan: Plan, spec: Optional[SceneSpec] = None) -> BuildSummary:
-    """按计划重建整个白模场景。"""
+def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
+                clear_scene: bool = False) -> BuildSummary:
+    """按计划重建整个白模场景。
+
+    ``clear_scene=True`` 时连非本插件对象（Blender 启动场景自带的 Cube 等）
+    一起清掉——批处理入口必须开这个，否则默认方块会挡在角色前面。
+    """
     spec = spec or SceneSpec.from_plan(plan)
     scene = bpy.context.scene
     summary = BuildSummary()
 
-    removed = clear_blockdirector_objects()
+    removed = (clear_scene_objects() if clear_scene
+               else clear_blockdirector_objects())
     if removed:
         log.info("清理旧对象 %d 个", removed)
     ensure_collections(scene)
@@ -270,8 +279,11 @@ def _conflict_warnings(requests: Sequence[ActionRequest],
 class BpySceneBuilder:
     """驱动器用的构建器实现（满足 ``SceneBuilder`` 协议）。"""
 
-    def __init__(self, spec: Optional[SceneSpec] = None) -> None:
+    def __init__(self, spec: Optional[SceneSpec] = None,
+                 clear_scene: bool = False) -> None:
         self.spec = spec
+        self.clear_scene = clear_scene
 
     def build(self, plan: Plan) -> Dict[str, Any]:
-        return build_scene(plan, self.spec).to_dict()
+        return build_scene(plan, self.spec,
+                           clear_scene=self.clear_scene).to_dict()

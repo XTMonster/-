@@ -82,12 +82,22 @@ def audit_renderable_objects() -> List[str]:
     """返回**不该出现在渲染里却会入画**的对象名（§15.2 导出前检查）。
 
     空列表表示可以安全导出参考视频。
+
+    检查三类：
+    1. 落在 Guides 集合里却没关渲染的辅助物；
+    2. 内容区里的文字/曲线/曲面等"通常是辅助物"的类型；
+    3. **非本插件管理**（不叫 ``BD_``）的可渲染几何体——比如 Blender 启动
+       场景自带的 Cube。Phase 6 首次端到端导出就是被这个默认方块坑了：
+       它会作为一块灰板挡在角色前面，而旧版审计完全没报。
     """
     bad: List[str] = []
     for obj in bpy.data.objects:
         if obj.type in {"EMPTY", "CAMERA", "LIGHT", "ARMATURE"}:
             continue
         if obj.hide_render:
+            continue
+        if not obj.name.startswith("BD_"):
+            bad.append(obj.name)
             continue
         # 落到 Guides 集合里却没设 hide_render 的，也要报出来
         if any(c.name == GUIDES_COLLECTION for c in obj.users_collection):
@@ -100,6 +110,26 @@ def audit_renderable_objects() -> List[str]:
     if guides is not None and not guides.hide_render:
         bad.append(GUIDES_COLLECTION)
     return bad
+
+
+@main_thread_only("clear_scene_objects")
+def clear_scene_objects(keep: Iterable[str] = ()) -> int:
+    """清空场景里**所有**对象（含非本插件对象），用于从干净状态重建。
+
+    与 :func:`clear_blockdirector_objects` 的区别：后者只删 ``BD_`` 对象，
+    适合用户在已有场景里重生成；本函数是"这个进程归我调度"时用的，
+    会把 Blender 启动场景自带的 Cube/Camera/Light 一并清掉。
+    """
+    keep_set = set(keep)
+    removed = 0
+    for obj in list(bpy.data.objects):
+        if obj.name in keep_set:
+            continue
+        bpy.data.objects.remove(obj, do_unlink=True)
+        removed += 1
+    if removed:
+        purge_orphan_data()
+    return removed
 
 
 @main_thread_only("objects_in_collection")

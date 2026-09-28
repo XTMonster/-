@@ -78,7 +78,9 @@ def create_ground(size: Tuple[float, float] = (20.0, 20.0),
     bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0, 0, 0))
     ground = bpy.context.object
     ground.name = "BD_Ground"
-    ground.scale = (size[0] / 2.0, size[1] / 2.0, 1.0)
+    # primitive_plane_add(size=1.0) 造的就是 1×1 单位面片，缩放到 size 即得目标
+    # 边长。除以 2 会让地面只有请求尺寸的一半（Phase 6 渲染时暴露）。
+    ground.scale = (float(size[0]), float(size[1]), 1.0)
     ground.data.materials.append(_ensure_material("BD_Mat_Ground", color))
     return route_to_content(ground)
 
@@ -91,7 +93,7 @@ def create_wall(index: int, position: Sequence[float],
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=tuple(position))
     wall = bpy.context.object
     wall.name = f"BD_Wall_{index:02d}"
-    wall.scale = (size[0] / 2.0, size[1] / 2.0, size[2] / 2.0)
+    wall.scale = (float(size[0]), float(size[1]), float(size[2]))
     wall.rotation_euler = tuple(rotation)
     wall.data.materials.append(_ensure_material("BD_Mat_Wall", color))
     return route_to_content(wall)
@@ -104,7 +106,7 @@ def create_prop(prop_id: str, position: Sequence[float],
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=tuple(position))
     prop = bpy.context.object
     prop.name = f"BD_Prop_{prop_id}"
-    prop.scale = (size[0] / 2.0, size[1] / 2.0, size[2] / 2.0)
+    prop.scale = (float(size[0]), float(size[1]), float(size[2]))
     prop["bd_element_type"] = "prop"
     prop["bd_sdl_id"] = prop_id
     prop.data.materials.append(_ensure_material(f"BD_Mat_Prop_{prop_id}", color))

@@ -1,0 +1,3 @@
+{"ts": 1790610244.575, "run_id": "44c855563703", "purpose": "plan", "request_id": "0ad203fb6f74408c9ba4d2ae5750110a", "duration_s": 0.022, "tool_calls": ["emit_plan"], "usage": null, "error": ""}
+{"ts": 1790610304.539, "run_id": "dd56d1dc40f0", "purpose": "plan", "request_id": "0e69618046be470d9d04c8ca7fd807b5", "duration_s": 0.022, "tool_calls": ["emit_plan"], "usage": null, "error": ""}
+{"ts": 1790610409.717, "run_id": "285948a3a8b0", "purpose": "plan", "request_id": "fb02fe8b3e59445cb14dd01dd3828708", "duration_s": 0.021, "tool_calls": ["emit_plan"], "usage": null, "error": ""}

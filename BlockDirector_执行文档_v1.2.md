@@ -2452,6 +2452,12 @@ def supports_media_type() -> bool:
 > 实现中发现并修掉一个会在落场景时才暴露的缺陷：动作合成的"冻结基线"从零开始，导致 sit/jump/fall_down 这类只改高度的动作会把角色的 X/Y 摆位**清零**（角色瞬移到原点）。修法是让合成器接受角色的当前姿态作为基线（`compose(requests, base_pose=...)`，由 `character_base_pose()` 读取）。
 
 **Phase 6 验收（交付）**：第 10 步在真实 Blender 内断言：一条命令产出 7 个文件（2 段 mp4 + 2 张首帧 + `shots.json` + `prompts.md` + `README.md`），216 帧用时 **5.48 s**；两段 mp4 均为标准 ISO MP4（`ftyp/isom`，118850 / 100785 字节）；`shots.json` 的分辨率、帧率、帧范围、机位名与焦距与构建结果**逐项一致**；开启相机轨迹后逐帧数 96 + 120 与镜头时长吻合，内参 `fx=1244.444 / cx=640 / cy=360` 正确；**把中文标签的 `hide_render` 关掉后导出立即中止、并写出 0 个视频**——"画面干净"是硬门槛而不是建议。
+>
+> **首次端到端导出暴露了两个必须修的缺陷**（都属于"纸面测试测不出、渲到画面上才看见"的类型）：
+> 1. 地面/墙/道具的缩放写成了 `size/2`，而 `primitive_*_add(size=1.0)` 造的本就是 1×1 单位几何体，导致**所有环境物体只有请求尺寸的一半**，地面远边缘直接进画，在参考视频里留下一条横贯中景的硬边；
+> 2. `audit_renderable_objects()` 只检查 Guides 与文字/曲线，**漏掉了非本插件管理的几何体**——Blender 启动场景自带的 `Cube` 不是 `BD_` 前缀，既没被清理也没被审计拦下，直接作为一块灰板挡在角色前面渲进了"参考视频"。
+>
+> 修复：环境尺寸改为 `scale = size`；审计新增"非 `BD_` 前缀的可渲染几何体即为泄漏"；`build_scene(clear_scene=True)` 让批处理入口从干净场景开始。两条都有回归测试（`environment_sizes`、`foreign_object_is_flagged`、`clear_scene_removes_default_cube`）。
 
 **下一步**：Phase 5（审核与防御：`rule_checker` R001–R011、检查点回滚、`request_self_review` 异步流程、预算限流）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。前者让自动化产出可控可审，后者决定"完成剧本语义与设计"的精度。
 
