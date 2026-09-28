@@ -26,6 +26,7 @@ class BLOCKDIRECTOR_PT_main(Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
+        _sync_overlay(scene)
 
         box = layout.box()
         box.label(text="输入", icon='FILE_TEXT')
@@ -39,6 +40,10 @@ class BLOCKDIRECTOR_PT_main(Panel):
         row.scale_y = 1.4
         row.operator("blockdirector.run_previs", icon='PLAY')
         row.operator("blockdirector.cancel_previs", icon='CANCEL')
+        tools = layout.box()
+        tools.label(text="工具", icon='TOOL_SETTINGS')
+        tools.operator("blockdirector.draw_path", icon='CURVE_DATA')
+        tools.prop(scene, "bd_show_overlay", text="视口叠加")
 
         driver = get_active()
         status = layout.box()
@@ -66,6 +71,22 @@ class BLOCKDIRECTOR_PT_main(Panel):
 
 CLASSES = (BLOCKDIRECTOR_PT_main,)
 
+
+def _sync_overlay(scene) -> None:
+    """让 draw_handler 与场景开关保持一致（§13.4）。
+
+    用"每次绘制时同步"而不是属性 ``update`` 回调：属性可能来自 .blend 文件的
+    旧值，回调不一定被触发，而这里每次都能对齐。
+    """
+    from . import draw_overlay
+
+    wanted = bool(getattr(scene, "bd_show_overlay", True))
+    if wanted and not draw_overlay.is_enabled():
+        draw_overlay.register()
+    elif not wanted and draw_overlay.is_enabled():
+        draw_overlay.unregister()
+
+
 _scene_props = {
     "bd_script_path": StringProperty(
         name="剧本路径", subtype='FILE_PATH',
@@ -73,6 +94,9 @@ _scene_props = {
     "bd_offline": BoolProperty(
         name="离线自检", default=True,
         description="不联网，用内置确定性计划验证链路"),
+    "bd_show_overlay": BoolProperty(
+        name="视口叠加", default=True,
+        description="显示轴线 / 三分法网格 / 安全框（§13.4）"),
 }
 
 
