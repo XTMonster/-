@@ -11,6 +11,10 @@ __pycache__/
 *.blend@
 export/
 
+# Per-run output (regenerated on every headless/export run)
+runs/
+exports/
+
 # Probe / audit output.
 # The JSON reports are committed (they are evidence referenced by the docs);
 # the regenerable media is not.
