@@ -148,6 +148,11 @@ Phases 0-4 and 6 are done:
   `driver.pause()/resume()` stop the state machine advancing without losing the
   built scene; `orchestration.mode = react_only` is refused (CFG_013) rather
   than silently ignored.
+- **Real-protocol end to end** (`tests/test_protocol_end_to_end.py`): a stdlib
+  HTTP server speaks both the sidecar wire protocol and the OpenAI-compatible
+  one, and the whole chain (plan -> repair -> per-shot review) runs over each.
+  Both modes produce an identical plan and the same call count - that is the
+  evidence behind 2.4's "both modes are first class".
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2

@@ -367,6 +367,15 @@ v1.1 曾把"进程内 vs sidecar"留给读者决定。v1.2 **取消这个悬置*
 >
 > **事实依据（实测）**：`context.window` 在 `--background` 下为 `None`，Modal Operator 无法 invoke；且 `bpy.ops.render.opengl` 在 `--background` 直接抛 `Cannot use OpenGL render in background mode (no opengl context)`。v1.0 把状态机写进 Modal Operator，导致"headless 集成测试"与"自动化预演"两条目标实际不可达。
 
+> **"两种模式都是一等公民"的实测（Phase 7）**：`tests/test_protocol_end_to_end.py` 用本地假服务端（标准库 `http.server`，不联网、不需要 Key）**同时说两套协议**——`/health` + `/v1/chat` 走 sidecar 线协议，`/v1/chat/completions` 走 OpenAI 兼容协议——然后把整条链（计划 → 修复 → 每镜自我审核）在两种模式上各跑一遍：
+>
+> - 两种模式都跑到 `DONE`，且**产出同一份计划**（`plan.to_dict()` 逐字段相等），审核数、修复数与 4 次调用（计划 1 + 修复 1 + 审核 2）也完全一致——Phase 4 的"≤8 次调用"目标在真实协议上同样成立；
+> - sidecar 的 `Authorization: Bearer` 按配置发送，错误令牌得到 `401`；
+> - `make_transport()` 的选择策略在真实 HTTP 上验证：sidecar 活着 → 走 sidecar（且确实探了 `/health`），端口不可达 → 回落直连；
+> - 4xx → `E_LLM_002`、5xx → `E_LLM_001`（§2.5 的映射，`tests/test_transport.py` 另有参数化覆盖）。
+>
+> **这个测试当场抓到一个真缺陷**：驱动器把"非修复"的调用一律按 `plan` 记进 trace，于是**自我审核与 B5 精修在审计里都被写成了 plan**——而 §11.3 明确要求区分 plan/editor/repair/react/review。现已改为按真实阶段记录，`purpose` 依次为 `["plan","repair","review","review"]`。
+
 ### 2.5 传输层契约（LLM / RAG）
 
 定义 `LLMTransport` 抽象，两种实现，**上层只依赖抽象**：
@@ -2450,7 +2459,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **571 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
+`tests/` 共 **578 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2642,13 +2651,14 @@ def supports_media_type() -> bool:
 | **阶段 B5 受限 ReAct（§7.1）** | `layer5_orchestrator/react.py`、`driver.py` | ✅ 三个触发条件 + 有界循环（`auto` 工具选择、每镜一次、步数上限）；跨镜头记忆随提示注入 |
 | **上下文治理（§3.5）** | `layer5_orchestrator/context_budget.py` | ✅ 窗口裁剪保留 system 与最新一条，裁剪记 `context_trimmed` 警告 |
 | **暂停/继续（§13.1）** | `driver.pause/resume`、`modal_operator.py` | ✅ 暂停不推进状态、保留已建成场景，面板有按钮 |
+| **真实协议端到端（§2.4/§2.5）** | `tests/test_protocol_end_to_end.py` | ✅ 本地假服务端同时说两套协议；两种模式跑完整链并产出同一份计划 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 571 项全部通过 |
+| 测试套件 | `tests/` | ✅ 578 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 571 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 578 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 

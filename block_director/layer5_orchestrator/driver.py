@@ -333,7 +333,13 @@ class PrevisDriver:
             return                                  # 仍在等待，下一 tick 再看
         duration = self.clock() - self._call_started
         repairing = self._call_purpose == "repair"
-        purpose = str(Purpose.REPAIR if repairing else Purpose.PLAN)
+        # trace 里的 purpose 必须是**真实阶段**：以前这里把"非修复"一律写成
+        # plan，于是自我审核与 B5 精修在审计里都被记成了 plan（§11.3 要求
+        # 区分 plan/editor/repair/react/review）。
+        try:
+            purpose = str(Purpose(self._call_purpose))
+        except ValueError:
+            purpose = str(Purpose.PLAN)
 
         if kind == "err":
             self.budget.record_llm(None)
