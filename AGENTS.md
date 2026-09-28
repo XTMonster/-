@@ -24,8 +24,13 @@ previs and exports it as a reference video for AI video generation.
 
 ## Status
 
-Phase 0 (plugin skeleton + state machine) is done. `tools/run_tests.ps1` runs all four checks:
-spec drift, pytest, in-Blender contract smoke test, and a headless run of the add-on.
+Phase 0 (plugin skeleton + state machine) and Phase 1 (character geometry, scene
+executor, collection routing, transactions, camera) are done.
+`tools/run_tests.ps1` runs all five checks: spec drift, pytest, in-Blender contract
+smoke test, a headless run of the add-on, and the Phase 1 scene build.
+
+Blender-side integration tests live in `tools/blender_tests/` and print a
+`BD_TEST_RESULT {json}` marker.
 
 ## Agent skills
 

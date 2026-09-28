@@ -2398,18 +2398,25 @@ def supports_media_type() -> bool:
 | **工具层** | `tool_registry.py`、`tool_schema.py` | ✅ 零依赖 JSON Schema 子集校验；工具永不抛异常（§16.2） |
 | **审计与 Trace** | `layer6_audit/audit_logger.py` | ✅ 逐行 flush 的 JSONL（§11.3），replay 的数据源 |
 | **UI 与 headless 双路径** | `layer7_ui/panel_main.py`、`modal_operator.py`、`headless_runner.py` | ✅ headless 实测通过；GUI 面板已注册（交互需人工确认） |
-| 测试套件 | `tests/` | ✅ 110 项全部通过 |
+| **角色几何（Phase 1）** | `layer3_engine/character_system/` | ✅ 实测总高 **1.45**、Pivot 世界坐标 0.00/0.40/1.10/1.75 精确命中（§9.1） |
+| **集合路由与渲染隔离（Phase 1）** | `layer3_engine/collection_router.py` | ✅ Content/Guides 分流；导出前审计可检出标签泄漏（§8.4/§15.2） |
+| **场景执行器（Phase 1）** | `layer3_engine/scene_executor.py` | ✅ 地面/墙体/道具/灯光；`clay_studio` 默认预设（§8.2） |
+| **事务式执行（Phase 1）** | `layer3_engine/transaction.py` | ✅ 异常自动回滚 + 自动识别本批新建对象 + 孤儿 datablock 回收（§8.1） |
+| **相机创建（Phase 1）** | `layer3_engine/cinema_engine/camera_manager.py` | ✅ Track To 约束对准（§10.1）；取景解算属 Phase 3 |
+| 测试套件 | `tests/` | ✅ 121 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
-| Layer 1–4（解析 / SDL / 场景执行 / 角色 / 摄影 / RAG） | — | ⏳ Phase 1–4 实施中 |
+| Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 110 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 121 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
-**Phase 0 验收（§20 DoD）**：`tools/run_tests.ps1` 四步全绿——规格一致性、`pytest` 110 项、Blender 内契约冒烟、**headless 空转状态机**（实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘）。插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
+**Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
+
+**Phase 1 验收（§20 DoD）**：`tools/run_tests.ps1` 五步全绿，其中第 5 步在真实 Blender 内构建场景并断言：角色总高 1.45、Pivot 世界坐标逐点命中、网格全部落在 Content、标签落在 Guides 且 `hide_render=True`、导出审计返回空、**渲染正对照**（有角色 0.4597 vs 无角色 0.4149）证明白模确实入画、泄漏检测能抓出放开的标签、事务回滚后对象与 mesh 计数归零。
 
 **架构审核结论**：架构的 11 项关键假设中 10 项实证成立；唯一的 WARN（Blender 无跨线程护栏）已通过新增 `threading_guard` 强制化解除。**当前架构不存在阻塞性可行性问题。**
 
-**下一步**：Phase 1 —— 角色几何（§9.1 Pivot 世界坐标表）+ 基础场景 + `Content`/`Guides` 集合路由 + SDL 数据类与校验，把"计划里的镜头"变成"场景里真实存在的白模"。
+**下一步**：Phase 2 —— 动作库（走/跑/倾斜/摔倒/点头/代理坐姿）与动作混合器，按 §9.6/§9.7 把"静止白模"变成"能动起来的预演"；随后把驱动器从"只产出计划"推进到"逐镜头执行落库"。
 
 ---
 
