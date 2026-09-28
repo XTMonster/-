@@ -21,7 +21,7 @@ from ..motion.model import ActionRequest
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .character_system import MotionBlender, create_character, create_label
-from .cinema_engine import place_camera_for_shot
+from .cinema_engine import establish_axis_from_speakers, place_camera_for_shot
 from .collection_router import (
     clear_blockdirector_objects,
     clear_scene_objects,
@@ -29,6 +29,7 @@ from .collection_router import (
     purge_orphan_data,
 )
 from .scene_executor import build_environment
+from .scene_context import SceneContext, set_context
 
 log = get_logger("shot-builder")
 
@@ -214,6 +215,11 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         characters[member.id] = character
     summary.characters = len(characters)
 
+    context = SceneContext(plan=plan, characters=characters)
+    context.shot_types = {shot.shot_id: str(shot.shot_type)
+                          for shot in plan.shots}
+    context.current_shot_id = plan.shots[0].shot_id if plan.shots else ""
+
     cursor = 1
     motion_requests: Dict[str, List[ActionRequest]] = {}
     for shot in plan.shots:
@@ -226,6 +232,15 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             side="front", room=spec.room)
         marker = scene.timeline_markers.new(f"BD_Cut_{shot.shot_id}", frame=start)
         marker.camera = bundle.camera
+        context.cameras[shot.shot_id] = bundle.camera
+
+        # §10.3：轴线由**第一个**含两名角色的镜头确立，后续镜头继承
+        if context.axis is None and len(shot.characters) >= 2:
+            speakers = [characters[cid] for cid in shot.characters[:2]
+                        if cid in characters]
+            if len(speakers) == 2:
+                context.axis = establish_axis_from_speakers(speakers,
+                                                           bundle.camera)
 
         shot_warnings = list(solution.warnings)
         requests = _action_requests(shot, start, cast_map, shot_warnings)
@@ -262,6 +277,7 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     scene.frame_start = 1
     scene.frame_end = max(cursor - 1, 1)
     scene.frame_set(1)
+    set_context(context)
     summary.shots = len(plan.shots)
     summary.total_frames = scene.frame_end
     log.info("场景构建完成：%d 镜 / %d 角色 / %d 相机 / %d 关键帧 / 共 %d 帧",

@@ -79,7 +79,12 @@ class ToolRegistry:
 
     # ------------------------------------------------------------- 执行
     def execute(self, name: str, args: Any, *, wrap: bool = True) -> ToolResult:
-        """执行工具；任何失败都转成可回灌的观察文本，不抛异常。"""
+        """执行工具；任何失败都转成可回灌的观察文本，不抛异常。
+
+        handler 可以返回字符串（视为成功），也可以返回 :class:`ToolResult`
+        来主动标记"这次调用失败了"——后者让驱动器的修复循环能区分
+        "成功但内容里提到了问题"和"这次调用确实失败"。
+        """
         def wrap_text(text: str) -> str:
             return f"{OBSERVATION_OPEN}{text}{OBSERVATION_CLOSE}" if wrap else text
 
@@ -107,5 +112,8 @@ class ToolRegistry:
                 f"执行失败: {type(exc).__name__}: {exc}。建议检查参数或简化该步操作。"),
                 error="handler_error")
 
+        if isinstance(output, ToolResult):
+            return ToolResult(output.ok, wrap_text(output.content),
+                              error=output.error, data=output.data)
         text = output if isinstance(output, str) else str(output)
         return ToolResult(True, wrap_text(text), data={"tool": name})

@@ -67,7 +67,15 @@ from .config import (
     UIConfig,
     default_config_path,
 )
-from .transport import DirectTransport, LLMTransport, SidecarTransport, select_transport
+from .transport import (
+    DirectTransport,
+    LLMTransport,
+    OpenAICompatibleTransport,
+    SidecarTransport,
+    build_chat_body,
+    parse_chat_response,
+    select_transport,
+)
 
 __all__ = [
     "Appearance", "AuditLevel", "Capability", "DeliveryPreset", "Engine",
@@ -86,4 +94,5 @@ __all__ = [
     "CharacterConfig", "DeliveryConfig", "DialogueConfig", "Issue", "LLMConfig",
     "OrchestrationConfig", "RagConfig", "UIConfig", "default_config_path",
     "LLMTransport", "DirectTransport", "SidecarTransport", "select_transport",
+    "OpenAICompatibleTransport", "build_chat_body", "parse_chat_response",
 ]

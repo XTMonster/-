@@ -48,6 +48,12 @@ def main() -> int:
         from block_director.layer3_engine.shot_builder import BpySceneBuilder
         builder = BpySceneBuilder(clear_scene=True)
 
+    from block_director.layer3_engine.tool_bindings import register_scene_tools
+    from block_director.layer5_orchestrator.driver import default_registry
+
+    registry = default_registry()
+    register_scene_tools(registry)
+
     script = ""
     if args.script:
         path = Path(args.script)
@@ -62,6 +68,7 @@ def main() -> int:
         project_dir=Path(args.out) if args.out else None,
         max_wall_s=args.wall,
         builder=builder,
+        registry=registry,
     )
     print("BLOCKDIRECTOR_RESULT " + json.dumps(summary, ensure_ascii=False))
     return 0 if summary.get("success") else 1

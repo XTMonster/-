@@ -31,6 +31,7 @@ def run_headless(
     limits: Optional[DriverLimits] = None,
     audit: Optional[AuditLogger] = None,
     builder=None,
+    registry=None,
 ) -> Dict[str, Any]:
     """把状态机跑到终止，返回结果摘要（含审计日志路径）。"""
     config = config or get_config()
@@ -40,7 +41,8 @@ def run_headless(
         root = Path(project_dir) if project_dir else default_project_root()
         audit = AuditLogger(directory=ensure_dir(root / "runs"))
     driver = PrevisDriver(transport=transport, audit=audit, script=script,
-                          config=config, limits=limits, builder=builder)
+                          config=config, limits=limits, builder=builder,
+                          registry=registry)
 
     log.info("headless 运行开始（模式=%s，run_id=%s）", mode, audit.run_id)
     state = driver.run_to_completion(poll_interval=poll_interval,

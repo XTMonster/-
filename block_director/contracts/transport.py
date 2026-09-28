@@ -18,7 +18,7 @@ from .enums import Capability, ErrorCode, TransportMode
 from .errors import TransportError, error_for_http_status
 from .health import HealthStatus
 from .knowledge import Card
-from .messages import ChatPayload, ChatReply
+from .messages import ChatPayload, ChatReply, FunctionCall, MessageRole, ToolCall, Usage
 from .operations import (
     CancelRequest,
     EmbedRequest,
@@ -195,6 +195,129 @@ class DirectTransport:
 # --------------------------------------------------------------------------- #
 # §2.5 选择策略
 # --------------------------------------------------------------------------- #
+def build_chat_body(payload: ChatPayload, model: str) -> Dict[str, Any]:
+    """把 ChatPayload 转成 OpenAI 兼容的 /chat/completions 请求体。"""
+    messages: List[Dict[str, Any]] = []
+    for message in payload.messages:
+        item = message.to_dict()
+        # 带 tool_calls 的 assistant 消息必须显式带 content（null）：
+        # 省掉该字段在部分兼容实现上会被当作协议错误。
+        if message.role is MessageRole.ASSISTANT and message.tool_calls:
+            item.setdefault("content", None)
+        messages.append(item)
+
+    body: Dict[str, Any] = {
+        "model": model,
+        "messages": messages,
+        "temperature": payload.temperature,
+        "tool_choice": str(payload.tool_choice),
+    }
+    if payload.tools:
+        body["tools"] = payload.tools
+    if payload.max_tokens is not None:
+        body["max_tokens"] = payload.max_tokens
+    return body
+
+
+def parse_chat_response(data: Dict[str, Any]) -> ChatReply:
+    """解析 OpenAI 兼容的 /chat/completions 响应。"""
+    choices = data.get("choices") or []
+    if not choices:
+        raise TransportError(ErrorCode.LLM_002, "响应缺少 choices")
+    choice = choices[0]
+    if not isinstance(choice, dict):
+        raise TransportError(ErrorCode.LLM_002, "choices[0] 不是对象")
+    message = choice.get("message")
+    if not isinstance(message, dict):
+        raise TransportError(ErrorCode.LLM_002, "choices[0].message 缺失")
+    tool_calls: List[ToolCall] = []
+    for raw in message.get("tool_calls") or []:
+        function = raw.get("function") or {}
+        tool_calls.append(ToolCall(
+            id=str(raw.get("id", "")),
+            type=str(raw.get("type", "function")),
+            function=FunctionCall(name=str(function.get("name", "")),
+                                  arguments=str(function.get("arguments", "{}"))),
+        ))
+    usage = data.get("usage")
+    return ChatReply(
+        content=message.get("content"),
+        tool_calls=tool_calls,
+        usage=Usage.from_dict(usage) if usage else None,
+        model=data.get("model"),
+        finish_reason=choice.get("finish_reason"),
+    )
+
+
+@dataclass
+class OpenAICompatibleTransport:
+    """直连模式：任何 OpenAI 兼容端点（OpenAI / DeepSeek / Ollama / vLLM）。
+
+    刻意只用标准库：Blender 自带 Python 没有 openai SDK，而 OpenAI 兼容接口
+    已是事实标准——用 urllib 实现即可零安装可用，并且能用本地假服务端做完整
+    测试（无需 API Key）。
+    """
+
+    base_url: str = "https://api.openai.com/v1"
+    api_key: str = ""
+    model: str = "gpt-4o"
+    timeout: float = 120.0
+    opener: Opener = _urllib_opener
+
+    def _headers(self) -> Dict[str, str]:
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+        return headers
+
+    def _post(self, path: str, body: Dict[str, Any],
+              timeout: Optional[float] = None) -> Dict[str, Any]:
+        url = self.base_url.rstrip("/") + path
+        raw = json.dumps(body, ensure_ascii=False).encode("utf-8")
+        status, text = self.opener("POST", url, self._headers(), raw,
+                                   timeout if timeout is not None else self.timeout)
+        if not (200 <= status < 300):
+            raise TransportError(error_for_http_status(status),
+                                 f"模型端点返回 {status}",
+                                 http_status=status, body=text[:2000])
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise TransportError(ErrorCode.LLM_002,
+                                 f"模型响应不是合法 JSON: {exc}", status,
+                                 text[:2000]) from exc
+        if not isinstance(data, dict):
+            raise TransportError(ErrorCode.LLM_002, "模型响应不是 JSON 对象",
+                                 status, text[:2000])
+        return data
+
+    # -- 契约 --------------------------------------------------------------- #
+    def chat(self, payload: ChatPayload, timeout: Optional[float] = None) -> ChatReply:
+        data = self._post("/chat/completions",
+                          build_chat_body(payload, self.model), timeout)
+        return parse_chat_response(data)
+
+    def embed(self, texts: List[str], timeout: float = 30.0) -> List[List[float]]:
+        data = self._post("/embeddings", {"model": self.model,
+                                          "input": list(texts)}, timeout)
+        return [list(map(float, item.get("embedding", [])))
+                for item in data.get("data", [])]
+
+    def retrieve(self, query: str, domain: Optional[str] = None,
+                 top_k: int = 5, timeout: float = 30.0) -> List[Card]:
+        raise TransportError(
+            ErrorCode.LLM_002,
+            "直连大模型端点不提供知识检索；请改用 sidecar 或本地 bm25")
+
+    def health(self, timeout: float = 2.0) -> HealthStatus:
+        return HealthStatus(status="ok", version="",
+                            capabilities=[Capability.LLM],
+                            detail=f"openai-compatible: {self.base_url}")
+
+    def cancel(self, request_id: str) -> None:
+        return None      # HTTP 直连无法中途取消，交给超时兜底
+
+
 @dataclass
 class TransportSelection:
     transport: LLMTransport

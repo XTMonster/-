@@ -2422,12 +2422,15 @@ def supports_media_type() -> bool:
 | **构图分析（Phase 3）** | `block_director/cinema/composition.py`、`cinema_engine/composition_guide.py` | ✅ 六项加权评分（权重见 §10.4）+ 射线遮挡检测 |
 | **计划→场景构建（Phase 4）** | `layer3_engine/shot_builder.py`、`layer5_orchestrator/builder.py` | ✅ 环境/角色/机位/关键帧/剪切标记一次落库；驱动器经协议解耦 |
 | **交付导出（Phase 6）** | `layer8_delivery/`、`delivery/` | ✅ 分镜 mp4 + 首帧 + shots.json + prompts.md + 相机轨迹 + README；导出前画面审计硬门槛 |
-| 测试套件 | `tests/` | ✅ 207 项全部通过 |
+| **场景观察（Phase 4）** | `observation/`、`layer3_engine/scene_state.py` | ✅ 轻量摘要 / 完整投影两档采集；摘要文本可单测 |
+| **查询工具（Phase 4）** | `layer3_engine/tool_bindings.py` | ✅ `get_scene_state` / `check_visibility` / `check_composition` / `check_axis` 已接入工具注册表 |
+| **直连传输（Phase 4）** | `contracts/transport.py::OpenAICompatibleTransport` | ✅ 零依赖 OpenAI 兼容客户端，覆盖 OpenAI/DeepSeek/Ollama/vLLM |
+| 测试套件 | `tests/` | ✅ 254 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 207 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 254 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2458,6 +2461,10 @@ def supports_media_type() -> bool:
 > 2. `audit_renderable_objects()` 只检查 Guides 与文字/曲线，**漏掉了非本插件管理的几何体**——Blender 启动场景自带的 `Cube` 不是 `BD_` 前缀，既没被清理也没被审计拦下，直接作为一块灰板挡在角色前面渲进了"参考视频"。
 >
 > 修复：环境尺寸改为 `scale = size`；审计新增"非 `BD_` 前缀的可渲染几何体即为泄漏"；`build_scene(clear_scene=True)` 让批处理入口从干净场景开始。两条都有回归测试（`environment_sizes`、`foreign_object_is_flagged`、`clear_scene_removes_default_cube`）。
+
+**Phase 4 验收（眼睛与手）**：第 10 步在真实 Blender 内断言：构建后上下文含 2 角色 / 2 相机 / 景别表 / 由首镜确立的轴线；`get_scene_state` 的轻量摘要**不含**屏幕投影，`detailed=True` 才给出屏幕坐标（0.683, 0.543）与高度占比 0.658；`check_visibility` 如实报告角色被移出画面后的"**不在画**"；`check_composition` 返回 85.2 分与逐项建议；`check_axis` 在合规时通过、换成轴线另一侧的机位时**判为失败调用**并给出 §21.3 原文提示；参数错误（未知角色/未知相机/类型不符）全部转成 `<tool_observation>` 观察文本，无一抛异常。
+>
+> 直连传输用 **标准库 urllib** 实现 OpenAI 兼容协议，而不是依赖 `openai` SDK：Blender 自带 Python 里没有该包（实测），而 OpenAI 兼容接口已是事实标准（OpenAI/DeepSeek/Ollama/vLLM 通用）。这样零安装可用，且能用本地假服务端做完整往返测试（真实 HTTP、错误码映射、tool_calls 解析），不需要 API Key。
 
 **下一步**：Phase 5（审核与防御：`rule_checker` R001–R011、检查点回滚、`request_self_review` 异步流程、预算限流）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。前者让自动化产出可控可审，后者决定"完成剧本语义与设计"的精度。
 

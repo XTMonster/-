@@ -181,6 +181,30 @@ def _is_descendant(obj: Object, root: Object) -> bool:
     return False
 
 
+@main_thread_only("get_facing")
+def get_facing(character) -> Tuple[float, float, float]:
+    """按 §9.3 由眼睛位置算面朝方向：``眼睛中点 − 头心``。
+
+    读取 ``matrix_world`` 前必须让 depsgraph 求值（§7.3 规则 1）。
+    """
+    bpy.context.view_layer.update()
+    head_pivot = getattr(character, "head_pivot", None)
+    if head_pivot is None:
+        return (0.0, 1.0, 0.0)
+    parts = getattr(character, "parts", {})
+    head = parts.get("head")
+    eye_l = parts.get("eye_l")
+    eye_r = parts.get("eye_r")
+    if head is None or eye_l is None or eye_r is None:
+        return (0.0, 1.0, 0.0)
+    center = (eye_l.matrix_world.translation + eye_r.matrix_world.translation) / 2.0
+    direction = center - head.matrix_world.translation
+    if direction.length < 1e-9:
+        return (0.0, 1.0, 0.0)
+    direction.normalize()
+    return (round(direction.x, 4), round(direction.y, 4), round(direction.z, 4))
+
+
 @main_thread_only("measure_height")
 def measure_height(root: Object) -> float:
     """用世界包围盒量出角色实际总高（验收 §9.1 的几何规格）。"""
