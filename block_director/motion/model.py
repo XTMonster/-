@@ -65,6 +65,9 @@ LAYER_OF: Dict[str, str] = {
     "shake_head": LAYER_HEAD,
 }
 
+#: 全部合法动作类型（单一真源：工具 schema 与校验都从这里取）
+ACTION_TYPES: Tuple[str, ...] = tuple(LAYER_OF)
+
 # §9.7 冲突仲裁表：语义矛盾的动作组合一律拒绝，而不是算出怪动作
 FORBIDDEN_PAIRS = frozenset({
     frozenset({"walk_to", "fall_down"}),

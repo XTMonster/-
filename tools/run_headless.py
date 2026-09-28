@@ -48,11 +48,14 @@ def main() -> int:
         from block_director.layer3_engine.shot_builder import BpySceneBuilder
         builder = BpySceneBuilder(clear_scene=True)
 
-    from block_director.layer3_engine.tool_bindings import register_scene_tools
+    from block_director.layer3_engine.shot_auditor import BpyShotAuditor
+    from block_director.layer3_engine.scene_state import collect_scene_state
+    from block_director.layer3_engine.tool_bindings import register_all_scene_tools
     from block_director.layer5_orchestrator.driver import default_registry
+    from block_director.observation.state import format_scene_state
 
     registry = default_registry()
-    register_scene_tools(registry)
+    register_all_scene_tools(registry)
 
     script = ""
     if args.script:
@@ -69,6 +72,9 @@ def main() -> int:
         max_wall_s=args.wall,
         builder=builder,
         registry=registry,
+        auditor=BpyShotAuditor() if builder is not None else None,
+        scene_state_provider=lambda: format_scene_state(
+            collect_scene_state(detailed=False)),
     )
     print("BLOCKDIRECTOR_RESULT " + json.dumps(summary, ensure_ascii=False))
     return 0 if summary.get("success") else 1

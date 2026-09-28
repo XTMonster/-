@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
 from ..contracts.enums import Purpose
+from ..contracts.audit import AuditResult
 from ..contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -30,6 +31,7 @@ from ..layer6_audit.audit_logger import AuditLogger
 from ..utils.logger import get_logger
 from ..utils.threading_guard import assert_main_thread
 from .planner import EMIT_PLAN_TOOL_PARAMETERS, PLAN_TOOL_NAME, build_plan_payload
+from .repair import build_repair_payload
 from .states import TERMINAL_STATES, DriverState
 from .tool_registry import ToolRegistry
 
@@ -45,6 +47,7 @@ class DriverLimits:
     llm_timeout_s: float = 120.0
     plan_attempts: int = 2
     max_tool_calls: int = 200
+    max_repairs_per_shot: int = 2      # §7.1 B4：每镜定向修复次数上限
 
 
 @dataclass
@@ -87,6 +90,8 @@ class PrevisDriver:
         limits: Optional[DriverLimits] = None,
         registry: Optional[ToolRegistry] = None,
         builder: Optional[Any] = None,
+        auditor: Optional[Any] = None,
+        scene_state_provider: Optional[Callable[[], str]] = None,
         observers: Optional[List[Callable[[DriverEvent], None]]] = None,
         clock: Callable[[], float] = time.monotonic,
         thread_factory: Callable[..., Any] = _default_thread_factory,
@@ -98,12 +103,15 @@ class PrevisDriver:
         self.limits = limits or DriverLimits()
         self.registry = registry or default_registry()
         self.builder = builder
+        self.auditor = auditor
+        self.scene_state_provider = scene_state_provider
         self.clock = clock
         self.thread_factory = thread_factory
 
         self.state = DriverState.IDLE
         self.plan: Optional[Plan] = None
         self.build_summary: Dict[str, Any] = {}
+        self.audit_results: List[AuditResult] = []
         self.error: str = ""
         self.messages: List[Message] = []
 
@@ -117,6 +125,13 @@ class PrevisDriver:
         self._call_started = 0.0
         self._pending_request_id = ""
         self._plan_problem = ""
+        self._call_purpose = "plan"
+        self._shot_queue: List[str] = []
+        self._current_shot_id = ""
+        self._repair_attempts = 0
+        self._repairs_total = 0
+        self._pending_audit: Optional[AuditResult] = None
+        self.repair_messages: List[Message] = []
 
     # ------------------------------------------------------------ 对外接口
     def add_observer(self, observer: Callable[[DriverEvent], None]) -> None:
@@ -147,6 +162,11 @@ class PrevisDriver:
             "total_frames": self.plan.total_frames if self.plan else 0,
             "built": bool(self.build_summary),
             "build": dict(self.build_summary),
+            "current_shot": self._current_shot_id,
+            "shots_remaining": len(self._shot_queue),
+            "audits": len(self.audit_results),
+            "repairs": self._repairs_total,
+            "shot_repairs": self._repair_attempts,
             "error": self.error,
         }
 
@@ -207,20 +227,32 @@ class PrevisDriver:
         except queue.Empty:
             return                                  # 仍在等待，下一 tick 再看
         duration = self.clock() - self._call_started
+        repairing = self._call_purpose == "repair"
+        purpose = str(Purpose.REPAIR if repairing else Purpose.PLAN)
 
         if kind == "err":
             self.audit.log("llm_error", str(payload), level="error",
                            request_id=self._pending_request_id)
-            self.audit.log_llm(str(Purpose.PLAN), None, duration,
+            self.audit.log_llm(purpose, None, duration,
                                self._pending_request_id, error=str(payload))
-            self._transition(DriverState.PLANNING)   # 由 _step_planning 决定是否再试
+            # 计划失败由 _step_planning 决定是否再试；修复失败则回到复核
+            self._transition(DriverState.CHECKING if repairing
+                             else DriverState.PLANNING)
             return
 
         reply: ChatReply = payload
-        self.audit.log_llm(str(Purpose.PLAN), reply, duration,
-                           self._pending_request_id)
+        self.audit.log_llm(purpose, reply, duration, self._pending_request_id)
 
-        problem = self._dispatch_tool_calls(reply)
+        if repairing:
+            problem = self._dispatch_tool_calls(reply, self.repair_messages)
+            if problem:
+                self.audit.log("repair_invalid", problem, level="warning")
+            self._repair_attempts += 1
+            self._repairs_total += 1
+            self._transition(DriverState.CHECKING)   # 复核一次，看改没改对
+            return
+
+        problem = self._dispatch_tool_calls(reply, self.messages)
         if problem:
             self._plan_problem = problem
             self.audit.log("plan_invalid", problem, level="error")
@@ -253,7 +285,91 @@ class PrevisDriver:
         self._emit("scene_built", "场景已构建",
                    **{k: v for k, v in self.build_summary.items()
                       if isinstance(v, (int, float, str))})
-        self._transition(DriverState.FINISHING)
+        self._transition(self._after_build_state())
+
+    def _after_build_state(self) -> DriverState:
+        """建完场景后：有审核器就先逐镜校验（§7.1 B3），否则直接收尾。"""
+        if self.auditor is not None:
+            shots = [str(s) for s in self.auditor.shot_ids()]
+            if shots:
+                self._shot_queue = shots
+                self._current_shot_id = shots[0]
+                self._repair_attempts = 0
+                return DriverState.CHECKING
+        return DriverState.FINISHING
+
+    def _step_checking(self) -> None:
+        """§7.1 B3：逐镜头校验；不通过就进入定向修复。"""
+        if self.auditor is None or not self._shot_queue:
+            self._transition(DriverState.FINISHING)
+            return
+        shot_id = self._shot_queue[0]
+        self._current_shot_id = shot_id
+        try:
+            result = self.auditor.audit(shot_id)
+        except Exception as exc:  # noqa: BLE001 - 审核器自身出错不该拖垮整场
+            self.audit.log("audit_failed",
+                           f"{shot_id} 审核器异常：{type(exc).__name__}: {exc}",
+                           level="error", shot=shot_id)
+            self._emit("audit_failed", f"{shot_id} 审核异常", shot=shot_id)
+            self._advance_shot()
+            return
+        self.audit_results.append(result)
+        self.audit.log("shot_audit", f"{shot_id}: {result.format_for_llm().splitlines()[0]}",
+                       level="info" if result.passed else "warning",
+                       shot=shot_id, passed=result.passed,
+                       errors=len(result.errors), warnings=len(result.warnings))
+        self._emit("shot_audit",
+                   f"{shot_id} {'通过' if result.passed else '未通过'}",
+                   shot=shot_id, passed=result.passed)
+
+        if result.passed:
+            self._advance_shot()
+            return
+        if self._repair_attempts >= self.limits.max_repairs_per_shot:
+            self.audit.log("shot_degraded",
+                           f"{shot_id} 达到修复上限（{self._repair_attempts}），"
+                           f"按降级处理并继续", level="warning", shot=shot_id)
+            self._emit("shot_degraded", f"{shot_id} 降级", shot=shot_id)
+            self._advance_shot()
+            return
+        self._pending_audit = result
+        self._transition(DriverState.REPAIRING)
+
+    def _advance_shot(self) -> None:
+        if self._shot_queue:
+            self._shot_queue.pop(0)
+        self._repair_attempts = 0
+        self.repair_messages = []
+        if self._shot_queue:
+            self._current_shot_id = self._shot_queue[0]
+        self._transition(DriverState.CHECKING)
+
+    def _step_repairing(self) -> None:
+        """§7.1 B4：把结构化违规项回灌给模型，让它调用工具修正。"""
+        audit = self._pending_audit
+        if audit is None:
+            self._transition(DriverState.CHECKING)
+            return
+        self._pending_audit = None
+        temperature = 0.2
+        if self.config is not None:
+            temperature = float(self.config.llm.temperature_repair)
+        payload = build_repair_payload(
+            audit, self.registry,
+            scene_state=self._scene_state_text(),
+            temperature=temperature)
+        self._start_llm_call("repair", payload,
+                             note=f"请求修复 {self._current_shot_id}"
+                                  f"（第 {self._repair_attempts + 1} 次）")
+
+    def _scene_state_text(self) -> str:
+        if self.scene_state_provider is None:
+            return ""
+        try:
+            return str(self.scene_state_provider())
+        except Exception as exc:  # noqa: BLE001 - 采集失败不该拖垮运行
+            return f"（场景状态采集失败：{type(exc).__name__}: {exc}）"
 
     def _step_finishing(self) -> None:
         plan = self.plan or Plan()
@@ -272,19 +388,29 @@ class PrevisDriver:
         self.audit.log("run_finished", "预演生成结束",
                        shots=len(plan.shots), llm_calls=self._llm_calls,
                        tool_calls=self._tool_calls, steps=self._steps,
-                       built=bool(self.build_summary))
+                       built=bool(self.build_summary),
+                       audits=len(self.audit_results),
+                       failed_audits=sum(1 for r in self.audit_results
+                                         if not r.passed))
         self._emit("run_finished", f"完成，共 {len(plan.shots)} 个镜头")
 
     # ------------------------------------------------------------ 内部
     def _start_plan_call(self) -> None:
         request_id = new_request_id()
-        self._pending_request_id = request_id
         payload: ChatPayload = build_plan_payload(self.script, self.config,
                                                   request_id=request_id)
+        self._start_llm_call("plan", payload,
+                             note=f"请求分镜计划（第 {self._plan_attempts} 次尝试）")
+
+    def _start_llm_call(self, purpose: str, payload: ChatPayload,
+                        note: str = "") -> None:
+        """发起一次 LLM 调用。网络在后台线程，主线程只负责发起与轮询。"""
+        self._call_purpose = purpose
+        self._pending_request_id = payload.request_id
         self._llm_calls += 1
         self._call_started = self.clock()
-        self.audit.log("llm_request", f"请求分镜计划（第 {self._plan_attempts} 次尝试）",
-                       purpose=str(Purpose.PLAN), request_id=request_id,
+        self.audit.log("llm_request", note or f"请求 {purpose}",
+                       purpose=purpose, request_id=payload.request_id,
                        tools=[tool["function"]["name"] for tool in payload.tools])
         self._transition(DriverState.CALLING_LLM)
 
@@ -298,11 +424,13 @@ class PrevisDriver:
 
         self.thread_factory(target=worker, name="bd-llm").start()
 
-    def _dispatch_tool_calls(self, reply: ChatReply) -> str:
+    def _dispatch_tool_calls(self, reply: ChatReply,
+                             messages: Optional[List[Message]] = None) -> str:
         """执行回复里的工具调用；返回非空字符串表示本轮失败原因。"""
-        self.messages.append(assistant_message(reply))
+        conversation = self.messages if messages is None else messages
+        conversation.append(assistant_message(reply))
         if not reply.tool_calls:
-            return f"回复中没有工具调用（期望 {PLAN_TOOL_NAME}）"
+            return "回复中没有工具调用"
 
         errors: List[str] = []
         plan_seen = False
@@ -322,7 +450,7 @@ class PrevisDriver:
             self.audit.log("tool_call",
                            f"{call.function.name} -> {'ok' if result.ok else result.error}",
                            tool=call.function.name, ok=result.ok, args=args)
-            self.messages.append(tool_message(call, result.content))
+            conversation.append(tool_message(call, result.content))
             self._emit("tool_call", f"{call.function.name}",
                        tool=call.function.name, ok=result.ok)
 

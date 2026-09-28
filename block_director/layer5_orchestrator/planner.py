@@ -17,6 +17,7 @@ from ..contracts.messages import (
     new_request_id,
 )
 from ..contracts.plan import Plan
+from ..motion.model import ACTION_TYPES
 
 PLAN_TOOL_NAME = "emit_plan"
 
@@ -54,13 +55,8 @@ EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = {
                             "required": ["character_id", "action_type"],
                             "properties": {
                                 "character_id": {"type": "string"},
-                                "action_type": {
-                                    "type": "string",
-                                    "enum": ["walk_to", "run_to", "turn_body",
-                                             "turn_head", "look_at", "body_tilt",
-                                             "fall_down", "sit", "stand", "nod",
-                                             "shake_head", "jump"],
-                                },
+                                "action_type": {"type": "string",
+                                                "enum": list(ACTION_TYPES)},
                                 "start_frame": {"type": "integer", "minimum": 1},
                                 "end_frame": {"type": "integer", "minimum": 1},
                                 "params": {"type": "object"},

@@ -36,6 +36,16 @@ class SceneContext:
                 return camera
         return None
 
+    def shot(self, shot_id: str = ""):
+        """取镜头计划（默认当前镜头）。"""
+        if self.plan is None:
+            return None
+        key = shot_id or self.current_shot_id
+        for shot in self.plan.shots:
+            if shot.shot_id == key:
+                return shot
+        return None
+
     @property
     def character_list(self) -> List[Any]:
         return list(self.characters.values())

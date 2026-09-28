@@ -33,6 +33,7 @@ from .errors import TransportError, error_for_http_status, user_message
 from .health import HealthStatus
 from .knowledge import Card
 from .plan import Plan, ShotPlan
+from .audit import AuditError, AuditResult
 from .messages import (
     ChatPayload,
     ChatReply,
@@ -86,6 +87,7 @@ __all__ = [
     "TransportError", "error_for_http_status", "user_message",
     "HealthStatus", "Card",
     "Plan", "ShotPlan",
+    "AuditError", "AuditResult",
     "ChatPayload", "ChatReply", "FunctionCall", "Message", "ToolCall", "Usage",
     "assistant_message", "tool_message", "validate_conversation",
     "CancelRequest", "CancelResponse", "EmbedRequest", "EmbedResponse",

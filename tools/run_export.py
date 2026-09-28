@@ -59,16 +59,22 @@ def main() -> int:
     out_dir = Path(args.out) if args.out else default_project_root() / "exports"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    from block_director.layer3_engine.tool_bindings import register_scene_tools
+    from block_director.layer3_engine.scene_state import collect_scene_state
+    from block_director.layer3_engine.shot_auditor import BpyShotAuditor
+    from block_director.layer3_engine.tool_bindings import register_all_scene_tools
     from block_director.layer5_orchestrator.driver import default_registry
+    from block_director.observation.state import format_scene_state
 
     registry = default_registry()
-    register_scene_tools(registry)
+    register_all_scene_tools(registry)
 
     summary = run_headless(script, offline=args.offline, project_dir=out_dir,
                            max_wall_s=args.wall,
                            builder=BpySceneBuilder(clear_scene=True),
-                           registry=registry)
+                           registry=registry,
+                           auditor=BpyShotAuditor(),
+                           scene_state_provider=lambda: format_scene_state(
+                               collect_scene_state(detailed=False)))
     if not summary.get("success") or not summary.get("built"):
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(
             {"ok": False, "reason": "运行或构建失败", "summary": summary},

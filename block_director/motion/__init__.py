@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 from .model import (
+    ACTION_TYPES,
     BLEND_FRAMES,
     CHANNEL_OWNER,
     FPS,
@@ -25,4 +26,5 @@ from .model import (
 __all__ = [
     "ActionRequest", "MotionSpec", "expand", "compose", "check_conflicts",
     "LAYER_OF", "CHANNEL_OWNER", "BLEND_FRAMES", "FPS",
+    "ACTION_TYPES",
 ]
