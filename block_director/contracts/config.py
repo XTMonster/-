@@ -81,6 +81,9 @@ class OrchestrationConfig:
     max_repair_attempts: int = 2
     react_max_steps: int = 6
     context_window_tokens: int = 32000
+    #: Level 2 自我审核（§11.1）：每镜通过规则校验后再让模型反思一次。
+    #: 它每镜多一次 LLM 调用，长片请按预算（§12.6）自行取舍。
+    self_review: bool = True
 
 
 @dataclass

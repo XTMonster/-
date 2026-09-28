@@ -52,6 +52,7 @@ def main() -> int:
     from block_director.layer3_engine.scene_state import collect_scene_state
     from block_director.layer3_engine.tool_bindings import register_all_scene_tools
     from block_director.layer5_orchestrator.driver import default_registry
+    from block_director.layer5_orchestrator.human_gate import AutoGate
     from block_director.observation.state import format_scene_state
 
     registry = default_registry()
@@ -73,6 +74,7 @@ def main() -> int:
         builder=builder,
         registry=registry,
         auditor=BpyShotAuditor() if builder is not None else None,
+        human_gate=AutoGate(),      # headless 无界面：逐条记为 skipped 以便审计
         scene_state_provider=lambda: format_scene_state(
             collect_scene_state(detailed=False)),
     )

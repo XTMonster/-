@@ -71,8 +71,9 @@ class AuditLogger:
         return self.directory / "llm_trace.jsonl" if self.directory else None
 
     # ------------------------------------------------------------------ 写入
-    def log(self, kind: str, message: str, level: str = "info",
+    def log(self, kind: str, message: str, /, level: str = "info",
             **data: Any) -> AuditEvent:
+        """``kind`` 声明为位置专用，这样调用方可以安全地传 ``kind=`` 作为数据键。"""
         if level not in VALID_LEVELS:
             level = "info"
         event = AuditEvent(kind=kind, message=message, level=level,

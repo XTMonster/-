@@ -25,6 +25,7 @@ orchestration:
   max_repair_attempts: 2
   react_max_steps: 6
   context_window_tokens: 32000
+  self_review: true
 audit:
   level: standard
   human_gate_on_plan: true

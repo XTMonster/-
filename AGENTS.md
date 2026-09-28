@@ -44,9 +44,9 @@ Phases 0-4 and 6 are done:
   Export refuses to run when the render audit finds a helper that would leak
   into the reference video.
 
-Phases 0-4 and 6 are done; Phase 5 is mostly done (rule checker R001-R010 plus
-the composition gate, loop detection, budget limits, and checkpoint/rollback;
-self-review, the human gate and a dedicated debug panel are still pending).
+Phases 0-4 and 6 are done; Phase 5 is nearly done (rule checker R001-R010 plus
+the composition gate, loop detection, budget limits, checkpoint/rollback, the
+human gate and Level 2 self-review; only a dedicated debug panel is pending).
 Layer 1 (script parsing) is not started, and R011 needs its dialogue timing.
 
 `depth` and `full_concat` are declared in the config but produce a warning

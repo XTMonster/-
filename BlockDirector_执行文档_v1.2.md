@@ -2429,12 +2429,14 @@ def supports_media_type() -> bool:
 | **修复闭环（Phase 4 B3/B4）** | `layer5_orchestrator/auditor.py`、`repair.py`、驱动器的 CHECKING/REPAIRING | ✅ 逐镜校验 → 结构化违规项回灌 → 工具修正 → 复核 |
 | **循环检测与预算（Phase 5）** | `layer5_orchestrator/loop_detector.py`、`budget.py` | ✅ 重复调用/只查不做/振荡三种病态 + token/费用/时间四类上限 |
 | **检查点与回滚（Phase 5）** | `layer3_engine/checkpoint_manager.py` | ✅ 变换 / 关键帧 / 时间轴标记 / 帧范围整体快照与回退 |
-| 测试套件 | `tests/` | ✅ 297 项全部通过 |
+| **人工审批门（Phase 5）** | `layer5_orchestrator/human_gate.py` | ✅ 非阻塞协议（PENDING + 轮询），headless 用 `AutoGate` 逐条留痕 |
+| **Level 2 自我审核（Phase 5）** | `layer5_orchestrator/review.py`、驱动器的 `REVIEWING` | ✅ 独立 LLM 回合复核"是否表达意图"，可转 B4 修复 |
+| 测试套件 | `tests/` | ✅ 316 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 297 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 316 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2479,6 +2481,10 @@ def supports_media_type() -> bool:
 **Phase 5 验收（检查点，第 12 步）**：在真实 Blender 内断言：拍快照 → 把角色移到 x=20 → 回滚后回到 0.75；拍快照 → 加一段动作使关键帧从 **102 涨到 169** → 回滚后精确回到 **102**；改动帧范围与剪切标记后回滚，帧范围与两个标记（含相机绑定）都恢复；未知检查点抛 `KeyError` 而非静默成功；超出上限时最旧的检查点被淘汰。
 >
 > 快照覆盖 33 个对象 / 7 条曲线 / 2 个标记。关键帧的读写跨越 4.x 与 5.x 两套 Action 结构，统一走 `blender_compat.action_fcurves`。
+
+**Phase 5 验收（审批门与自我审核）**：headless 全链路实测 **3 次 LLM 调用**（计划 1 + 每镜自我审核 1）、`audits: 2`、`built: true`、状态 DONE。纯测试另覆盖：计划审批通过/被拒（被拒则该成果不产出并转 CANCELLED）；门返回 `PENDING` 时驱动器进入 `AWAIT_HUMAN` **只轮询不阻塞**，用户点通过后继续；越轴在自动修复耗尽时才请人裁决，放行则收下该镜并前进；非越轴失败**不**打扰用户；自我审核给出 `needs_fix` 时转 B4 修复、每镜只复核一次（避免绕圈）、回复不合规只记警告不阻断。
+>
+> 两个 API 陷阱也在这一轮被根除：`AuditLogger.log()` 与 `driver._emit()` 的 `kind` 参数改为**位置专用**——此前调用方一旦传 `kind=` 作为数据键就会 `TypeError`；以及审批请求 ID 原先用毫秒时间戳，同一毫秒内的两个请求会撞号，改用 uuid。
 
 **下一步**：Phase 5 余下（检查点回滚、`request_self_review` 异步流程、人工审批门、调试面板）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。Layer 1 到位后 R011 即可补上。
 

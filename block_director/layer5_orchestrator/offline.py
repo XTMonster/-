@@ -10,11 +10,12 @@ from __future__ import annotations
 import json
 from typing import List, Optional
 
-from ..contracts.enums import Capability
+from ..contracts.enums import Capability, Purpose
 from ..contracts.health import HealthStatus
 from ..contracts.knowledge import Card
 from ..contracts.messages import ChatPayload, ChatReply, FunctionCall, ToolCall
 from .planner import PLAN_TOOL_NAME
+from .review import REVIEW_TOOL_NAME
 
 
 def demo_plan_dict(script: str) -> dict:
@@ -81,6 +82,18 @@ class OfflineTransport:
         self.last_payload = payload
         if self.chat_calls <= self.fail_times:
             raise RuntimeError("离线自检：模拟一次调用失败")
+
+        if payload.purpose is Purpose.REVIEW:
+            call = ToolCall(id=f"review_{self.chat_calls}",
+                            function=FunctionCall(
+                                name=REVIEW_TOOL_NAME,
+                                arguments=json.dumps(
+                                    {"verdict": "ok",
+                                     "notes": "离线自检：默认通过"},
+                                    ensure_ascii=False)))
+            return ChatReply(content=None, tool_calls=[call],
+                             request_id=payload.request_id, model="offline",
+                             finish_reason="tool_calls")
 
         script = ""
         for message in payload.messages:

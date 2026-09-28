@@ -35,6 +35,8 @@ from .planner import EMIT_PLAN_TOOL_PARAMETERS, PLAN_TOOL_NAME, build_plan_paylo
 from .repair import build_repair_payload
 from .budget import Budget, BudgetLimits
 from .loop_detector import LoopDetector
+from .human_gate import GateDecision, GateRequest, HumanGate
+from .review import ReviewVerdict, build_review_payload, parse_review
 from .states import TERMINAL_STATES, DriverState
 from .tool_registry import ToolRegistry
 
@@ -97,6 +99,7 @@ class PrevisDriver:
         scene_state_provider: Optional[Callable[[], str]] = None,
         loop_detector: Optional[LoopDetector] = None,
         budget: Optional[Budget] = None,
+        human_gate: Optional[HumanGate] = None,
         observers: Optional[List[Callable[[DriverEvent], None]]] = None,
         clock: Callable[[], float] = time.monotonic,
         thread_factory: Callable[..., Any] = _default_thread_factory,
@@ -114,6 +117,14 @@ class PrevisDriver:
         self.budget = budget or Budget(
             BudgetLimits(max_llm_calls=self.limits.max_llm_calls))
         self.degraded_reason = ""
+        self.human_gate = human_gate
+        self._gate_request: Optional[GateRequest] = None
+        self._gate_decision: Optional[GateDecision] = None
+        self._gate_resume: DriverState = DriverState.FINISHING
+        self.gate_history: List[Dict[str, Any]] = []
+        self._reviewed_shots: set = set()
+        self._pending_review: Optional[str] = None
+        self.review_history: List[Dict[str, Any]] = []
         self.clock = clock
         self.thread_factory = thread_factory
 
@@ -272,6 +283,10 @@ class PrevisDriver:
             self._transition(DriverState.CHECKING)   # 复核一次，看改没改对
             return
 
+        if self._call_purpose == "review":
+            self._finish_review(reply)
+            return
+
         problem = self._dispatch_tool_calls(reply, self.messages)
         if problem:
             self._plan_problem = problem
@@ -279,8 +294,90 @@ class PrevisDriver:
             self._transition(DriverState.PLANNING)
             return
         # 有场景构建器就把计划落成场景（§7.1 阶段 B2），否则只产出计划
-        self._transition(DriverState.BUILDING if self.builder is not None
-                         else DriverState.FINISHING)
+        target = (DriverState.BUILDING if self.builder is not None
+                  else DriverState.FINISHING)
+        if self._gate_enabled("human_gate_on_plan"):
+            self._request_gate(
+                GateRequest(kind="plan", title="确认分镜计划",
+                            detail=self._plan_gate_detail(),
+                            payload={"shots": len(self.plan.shots)
+                                     if self.plan else 0}),
+                resume=target)
+            return
+        self._transition(target)
+
+    def _plan_gate_detail(self) -> str:
+        if self.plan is None:
+            return "（没有计划）"
+        lines = [f"共 {len(self.plan.shots)} 个镜头，"
+                 f"{self.plan.total_frames} 帧"
+                 f"（约 {self.plan.total_frames / 24:.1f} 秒）"]
+        for shot in self.plan.shots:
+            lines.append(f"- {shot.shot_id} {shot.shot_type} "
+                         f"{shot.duration_frames} 帧：{shot.intent}")
+        return "\n".join(lines)
+
+    def _gate_enabled(self, setting: str) -> bool:
+        if self.human_gate is None or self.config is None:
+            return False
+        return bool(getattr(self.config.audit, setting, False))
+
+    def _request_gate(self, request: GateRequest, resume: DriverState) -> None:
+        """发起审批。返回 PENDING 时切到 AWAIT_HUMAN，期间不阻塞。"""
+        self._gate_request = request
+        self._gate_resume = resume
+        try:
+            decision = self.human_gate.request(request)
+        except Exception as exc:  # noqa: BLE001 - 门坏了不该拖垮整场
+            self.audit.log("gate_failed", f"{type(exc).__name__}: {exc}",
+                           level="warning", kind=request.kind)
+            decision = GateDecision.SKIPPED
+        self.audit.log("gate_requested", request.title, kind=request.kind,
+                       request_id=request.request_id)
+        if decision is GateDecision.PENDING:
+            self._gate_decision = None
+            self._transition(DriverState.AWAIT_HUMAN)
+            return
+        self._apply_gate(decision)
+
+    def _apply_gate(self, decision: GateDecision) -> None:
+        request = self._gate_request
+        kind = request.kind if request else ""
+        title = request.title if request else ""
+        self.gate_history.append({"kind": kind, "title": title,
+                                  "decision": str(decision)})
+        self.audit.log("gate_decided", f"{title} → {decision}", kind=kind)
+        self._emit("gate_decided", f"{title} → {decision}", kind=kind,
+                   decision=str(decision))
+        self._gate_request = None
+        self._gate_decision = decision
+        if decision is GateDecision.REJECTED:
+            self.degraded_reason = f"人工审批未通过：{title}"
+            self.audit.log("gate_rejected", self.degraded_reason,
+                           level="warning", kind=kind)
+            self._transition(DriverState.CANCELLED)
+            return
+        if kind == "axis_violation":
+            # 人工已过目并放行该镜头：收下现状，继续下一镜
+            self._advance_shot()
+            return
+        self._transition(self._gate_resume)
+
+    def _step_await_human(self) -> None:
+        """等待用户点击；期间只轮询，不阻塞事件循环。"""
+        request = self._gate_request
+        if request is None:
+            self._transition(self._gate_resume)
+            return
+        try:
+            decision = self.human_gate.poll(request.request_id)
+        except Exception as exc:  # noqa: BLE001
+            self.audit.log("gate_poll_failed", f"{type(exc).__name__}: {exc}",
+                           level="warning")
+            decision = None
+        if decision is None or decision is GateDecision.PENDING:
+            return                      # 继续等
+        self._apply_gate(decision)
 
     def _step_building(self) -> None:
         """把分镜计划交给场景构建器（bpy 实现在 layer3_engine/shot_builder.py）。"""
@@ -344,6 +441,10 @@ class PrevisDriver:
                    shot=shot_id, passed=result.passed)
 
         if result.passed:
+            if self._should_self_review(shot_id):
+                self._pending_review = shot_id
+                self._transition(DriverState.REVIEWING)
+                return
             self._advance_shot()
             return
         if self._repair_attempts >= self.limits.max_repairs_per_shot:
@@ -351,6 +452,16 @@ class PrevisDriver:
                            f"{shot_id} 达到修复上限（{self._repair_attempts}），"
                            f"按降级处理并继续", level="warning", shot=shot_id)
             self._emit("shot_degraded", f"{shot_id} 降级", shot=shot_id)
+            axis_violation = any(item.rule == "R001" for item in result.errors)
+            if axis_violation and self._gate_enabled(
+                    "human_gate_on_axis_violation"):
+                self._request_gate(
+                    GateRequest(kind="axis_violation",
+                                title=f"{shot_id} 越轴且自动修复未成功",
+                                detail=result.format_for_llm(),
+                                payload={"shot_id": shot_id}),
+                    resume=DriverState.CHECKING)
+                return
             self._advance_shot()
             return
         self._pending_audit = result
@@ -364,6 +475,70 @@ class PrevisDriver:
         if self._shot_queue:
             self._current_shot_id = self._shot_queue[0]
         self._transition(DriverState.CHECKING)
+
+    # -------------------------------------------------- Level 2 自我审核（§11.1）
+    def _should_self_review(self, shot_id: str) -> bool:
+        if self.config is None:
+            return False
+        if not getattr(self.config.orchestration, "self_review", False):
+            return False
+        if shot_id in self._reviewed_shots or self.plan is None:
+            return False
+        return any(shot.shot_id == shot_id for shot in self.plan.shots)
+
+    def _shot_plan(self, shot_id: str):
+        if self.plan is None:
+            return None
+        for shot in self.plan.shots:
+            if shot.shot_id == shot_id:
+                return shot
+        return None
+
+    def _step_reviewing(self) -> None:
+        """§7.10：把自我审核做成独立回合，而不是工具内部的同步调用。"""
+        shot_id = self._pending_review or self._current_shot_id
+        self._pending_review = None
+        shot = self._shot_plan(shot_id)
+        if shot is None:
+            self._advance_shot()
+            return
+        temperature = 0.2
+        if self.config is not None:
+            temperature = float(self.config.llm.temperature_repair)
+        payload = build_review_payload(
+            intent=shot.intent, shot_type=str(shot.shot_type),
+            duration_frames=shot.duration_frames,
+            audit=self.audit_results[-1] if self.audit_results else None,
+            scene_state=self._scene_state_text(), temperature=temperature)
+        self._start_llm_call("review", payload, note=f"自我审核 {shot_id}")
+
+    def _finish_review(self, reply: ChatReply) -> None:
+        shot_id = self._current_shot_id
+        self._reviewed_shots.add(shot_id)
+        try:
+            verdict = parse_review(reply)
+        except ValueError as exc:
+            # 结论不合规不阻断流程：规则层已经放行，这里只是少了一层复核
+            self.audit.log("self_review_invalid", str(exc), level="warning",
+                           shot=shot_id)
+            self._advance_shot()
+            return
+
+        self.review_history.append({"shot_id": shot_id,
+                                    "verdict": verdict.verdict,
+                                    "notes": verdict.notes})
+        if verdict.needs_fix:
+            self.audit.log("self_review",
+                           f"{shot_id} 复核认为未表达意图：{verdict.notes}",
+                           level="warning", shot=shot_id,
+                           issues=verdict.issues)
+            self._emit("self_review", f"{shot_id} 需要调整", shot=shot_id)
+            self._pending_audit = verdict.to_audit(shot_id)
+            self._transition(DriverState.REPAIRING)
+            return
+        self.audit.log("self_review", f"{shot_id} 复核通过", shot=shot_id)
+        self._emit("self_review", f"{shot_id} 复核通过", shot=shot_id)
+        self._advance_shot()
 
     def _step_repairing(self) -> None:
         """§7.1 B4：把结构化违规项回灌给模型，让它调用工具修正。"""
@@ -526,7 +701,8 @@ class PrevisDriver:
         self._emit("budget_exhausted", reason)
         self._transition(DriverState.FINISHING)
 
-    def _emit(self, kind: str, message: str, **data: Any) -> None:
+    def _emit(self, kind: str, message: str, /, **data: Any) -> None:
+        """``kind`` 位置专用：事件数据里可以放心带 ``kind=`` 键。"""
         if not self._observers:
             return
         event = DriverEvent(kind=kind, message=message, state=self.state,

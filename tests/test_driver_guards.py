@@ -44,7 +44,8 @@ def test_budget_allows_the_normal_run_and_reports_usage():
     driver = _driver(transport, auditor=auditor)
     assert driver.run_to_completion() is DriverState.DONE
     summary = driver.snapshot()["budget"]
-    assert summary["llm_calls"] == 1
+    # 计划 + 自我审核（§11.1 Level 2 默认开启）
+    assert summary["llm_calls"] == 2
     assert summary["exhausted"] is None
 
 
@@ -90,7 +91,8 @@ def test_token_usage_is_accounted_from_replies():
         AuditResult(passed=True, target="shot_001")])
     driver = _driver(transport, auditor=auditor)
     driver.run_to_completion()
-    assert driver.snapshot()["budget"]["total_tokens"] == 300   # 两次调用
+    # 计划 + 修复 + 自我审核
+    assert driver.snapshot()["budget"]["total_tokens"] == 450
 
 
 # --------------------------------------------------------------------------- #

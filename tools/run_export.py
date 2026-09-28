@@ -63,6 +63,7 @@ def main() -> int:
     from block_director.layer3_engine.shot_auditor import BpyShotAuditor
     from block_director.layer3_engine.tool_bindings import register_all_scene_tools
     from block_director.layer5_orchestrator.driver import default_registry
+    from block_director.layer5_orchestrator.human_gate import AutoGate
     from block_director.observation.state import format_scene_state
 
     registry = default_registry()
@@ -73,6 +74,7 @@ def main() -> int:
                            builder=BpySceneBuilder(clear_scene=True),
                            registry=registry,
                            auditor=BpyShotAuditor(),
+                           human_gate=AutoGate(),
                            scene_state_provider=lambda: format_scene_state(
                                collect_scene_state(detailed=False)))
     if not summary.get("success") or not summary.get("built"):
