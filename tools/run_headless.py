@@ -30,6 +30,8 @@ def parse_args(argv):
                       help="使用 sidecar 而不是离线自检")
     parser.add_argument("--out", default="", help="运行输出目录")
     parser.add_argument("--wall", type=float, default=180.0, help="墙上时间上限（秒）")
+    parser.add_argument("--build", action="store_true",
+                        help="把分镜计划落成真实场景（角色/相机/关键帧/剪切标记）")
     return parser.parse_args(rest)
 
 
@@ -40,6 +42,11 @@ def main() -> int:
     block_director.register()          # 走真实注册路径（含主线程登记与配置加载）
 
     from block_director.layer5_orchestrator.headless_runner import run_headless
+
+    builder = None
+    if args.build:
+        from block_director.layer3_engine.shot_builder import BpySceneBuilder
+        builder = BpySceneBuilder()
 
     script = ""
     if args.script:
@@ -54,6 +61,7 @@ def main() -> int:
         offline=args.offline,
         project_dir=Path(args.out) if args.out else None,
         max_wall_s=args.wall,
+        builder=builder,
     )
     print("BLOCKDIRECTOR_RESULT " + json.dumps(summary, ensure_ascii=False))
     return 0 if summary.get("success") else 1

@@ -45,6 +45,28 @@ EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = {
                                         "maximum": 3600},
                     "characters": {"type": "array", "items": {"type": "string"}},
                     "dialogue_ids": {"type": "array", "items": {"type": "string"}},
+                    "actions": {
+                        "type": "array",
+                        "maxItems": 12,
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": ["character_id", "action_type"],
+                            "properties": {
+                                "character_id": {"type": "string"},
+                                "action_type": {
+                                    "type": "string",
+                                    "enum": ["walk_to", "run_to", "turn_body",
+                                             "turn_head", "look_at", "body_tilt",
+                                             "fall_down", "sit", "stand", "nod",
+                                             "shake_head", "jump"],
+                                },
+                                "start_frame": {"type": "integer", "minimum": 1},
+                                "end_frame": {"type": "integer", "minimum": 1},
+                                "params": {"type": "object"},
+                            },
+                        },
+                    },
                     "axis_note": {"type": "string"},
                     "continuity_in": {"type": "string"},
                 },

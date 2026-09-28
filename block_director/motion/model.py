@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Iterable, List, Sequence, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 FPS = 24
 BLEND_FRAMES = 6
@@ -450,12 +450,17 @@ def _weight_at(spec: MotionSpec, frame: int) -> float:
     return 0.0
 
 
-def compose(requests: Iterable[ActionRequest]) -> Dict[int, Dict[str, object]]:
+def compose(requests: Iterable[ActionRequest],
+            base_pose: Optional[Dict[str, object]] = None
+            ) -> Dict[int, Dict[str, object]]:
     """把一组动作合成为逐帧姿态：``{frame: {channel: value}}``。
 
     核心语义是**接管冻结**：当一个动作在某层生效时，它记住该层此前的姿态
     作为基线，其后输出 ``基线 + (当前姿态 - 起手姿态)``。这样多个动作叠在
     同一层上会自然累积（转身 90° 再转身 90° = 180°），而不是各自从 0 重来。
+
+    ``base_pose`` 是该角色**当前的真实姿态**（比如摆位、既有朝向）。
+    不传就从零开始；传了才能保证"坐下"不会把角色从 (0.75,0,0) 拽回原点。
     """
     specs: List[MotionSpec] = []
     for request in requests:
@@ -480,6 +485,11 @@ def compose(requests: Iterable[ActionRequest]) -> Dict[int, Dict[str, object]]:
 
     trace: Dict[int, Dict[str, object]] = {}
     layer_state: Dict[str, Dict[str, object]] = {layer: {} for layer in by_layer}
+    if base_pose:
+        for channel, value in base_pose.items():
+            owner = CHANNEL_OWNER.get(channel)
+            if owner in layer_state:
+                layer_state[owner][channel] = value
     frozen_base: Dict[str, Dict[str, object]] = {}
 
     for frame in range(start, end + 1):

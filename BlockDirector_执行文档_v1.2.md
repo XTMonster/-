@@ -2418,12 +2418,13 @@ def supports_media_type() -> bool:
 | **取景解算（Phase 3）** | `block_director/cinema/framing.py`、`cinema_engine/framing_solver.py` | ✅ 景别+焦距→距离/机位，相对被摄者朝向，含房间夹取 |
 | **轴线控制器（Phase 3）** | `block_director/cinema/axis.py`、`cinema_engine/axis_controller.py` | ✅ 180° 轴线 + R010 30° 规则；可视化落在 Guides |
 | **构图分析（Phase 3）** | `block_director/cinema/composition.py`、`cinema_engine/composition_guide.py` | ✅ 六项加权评分（权重见 §10.4）+ 射线遮挡检测 |
-| 测试套件 | `tests/` | ✅ 187 项全部通过 |
+| **计划→场景构建（Phase 4）** | `layer3_engine/shot_builder.py`、`layer5_orchestrator/builder.py` | ✅ 环境/角色/机位/关键帧/剪切标记一次落库；驱动器经协议解耦 |
+| 测试套件 | `tests/` | ✅ 195 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 187 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 195 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2443,7 +2444,11 @@ def supports_media_type() -> bool:
 >
 > 实现中发现并修掉两处设计冲突：（a）单主体放在三分线交点会被"重心偏离中心"误扣分——给 balance 按主体数量加死区；（b）正对镜头的角色会被透视误判成"朝画面外"——改为在**相机空间**判断朝向，正对/背对镜头视为无水平朝向。
 
-**下一步**：Phase 4 —— 把驱动器从"只产出计划"接到"逐镜头执行落库"（`plan → shot builder → 动作/相机落库`），让"剧本 → 可看的白模动画"这条链真正闭合；之后 Phase 6 接交付导出。
+**Phase 4 验收（闭环）**：`--build` 的 headless 运行实测 `{"state":"DONE","built":true,"shots":2,"characters":2,"cameras":2,"keyframes":366,"total_frames":216}`；第 9 步进一步断言：2 个剪切标记各自绑定到本镜相机、帧范围 1–216；两镜渲染结果不同（0.40545 vs 0.39862）；点头角色头部有动画数据；**坐下角色从 (0.75,0,0) 到 (0.75,0,−0.2)——摆位未被清零**；无动作的计划保持静止（0 关键帧），即不替 LLM 编造动作。
+>
+> 实现中发现并修掉一个会在落场景时才暴露的缺陷：动作合成的"冻结基线"从零开始，导致 sit/jump/fall_down 这类只改高度的动作会把角色的 X/Y 摆位**清零**（角色瞬移到原点）。修法是让合成器接受角色的当前姿态作为基线（`compose(requests, base_pose=...)`，由 `character_base_pose()` 读取）。
+
+**下一步**：Phase 5（审核与防御：`rule_checker` R001–R011、检查点回滚、`request_self_review` 异步流程、预算限流）与 Phase 6（交付导出：分段渲染 + `shots.json` + `prompts.md`）。两者完成后即可端到端产出"参考视频 + 配套清单"。
 
 ---
 

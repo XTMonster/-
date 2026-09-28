@@ -135,6 +135,14 @@ def test_sit_then_stand_returns_to_ground():
     assert trace[48][CH_ROOT_LOC][2] == pytest.approx(0.0, abs=1e-4)
 
 
+def test_base_pose_preserves_placement():
+    """坐下不得把角色从摆位拽回原点——Phase 4 落场景时发现的缺陷。"""
+    trace = compose([ActionRequest("sit", 1, 24, {"drop": 0.2})],
+                    base_pose={CH_ROOT_LOC: (0.75, 0.0, 0.0)})
+    assert trace[1][CH_ROOT_LOC] == pytest.approx((0.75, 0.0, 0.0))
+    assert trace[24][CH_ROOT_LOC] == pytest.approx((0.75, 0.0, -0.2))
+
+
 def test_jump_is_a_parabola():
     trace = compose([ActionRequest("jump", 1, 24, {"height": 0.3})])
     heights = [trace[f][CH_ROOT_LOC][2] for f in range(1, 25)]

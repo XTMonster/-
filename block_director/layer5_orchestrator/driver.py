@@ -86,6 +86,7 @@ class PrevisDriver:
         config=None,
         limits: Optional[DriverLimits] = None,
         registry: Optional[ToolRegistry] = None,
+        builder: Optional[Any] = None,
         observers: Optional[List[Callable[[DriverEvent], None]]] = None,
         clock: Callable[[], float] = time.monotonic,
         thread_factory: Callable[..., Any] = _default_thread_factory,
@@ -96,11 +97,13 @@ class PrevisDriver:
         self.config = config
         self.limits = limits or DriverLimits()
         self.registry = registry or default_registry()
+        self.builder = builder
         self.clock = clock
         self.thread_factory = thread_factory
 
         self.state = DriverState.IDLE
         self.plan: Optional[Plan] = None
+        self.build_summary: Dict[str, Any] = {}
         self.error: str = ""
         self.messages: List[Message] = []
 
@@ -142,6 +145,8 @@ class PrevisDriver:
             "tool_calls": self._tool_calls,
             "shots": len(self.plan.shots) if self.plan else 0,
             "total_frames": self.plan.total_frames if self.plan else 0,
+            "built": bool(self.build_summary),
+            "build": dict(self.build_summary),
             "error": self.error,
         }
 
@@ -221,6 +226,33 @@ class PrevisDriver:
             self.audit.log("plan_invalid", problem, level="error")
             self._transition(DriverState.PLANNING)
             return
+        # 有场景构建器就把计划落成场景（§7.1 阶段 B2），否则只产出计划
+        self._transition(DriverState.BUILDING if self.builder is not None
+                         else DriverState.FINISHING)
+
+    def _step_building(self) -> None:
+        """把分镜计划交给场景构建器（bpy 实现在 layer3_engine/shot_builder.py）。"""
+        plan = self.plan or Plan()
+        if self.builder is None:
+            self._transition(DriverState.FINISHING)
+            return
+        started = self.clock()
+        try:
+            summary = self.builder.build(plan) or {}
+        except Exception as exc:  # noqa: BLE001 - 构建失败要如实上报并降级
+            self.audit.log("build_failed", f"{type(exc).__name__}: {exc}",
+                           level="error")
+            self._fail(f"场景构建失败：{type(exc).__name__}: {exc}")
+            return
+        self.build_summary = dict(summary)
+        duration = self.clock() - started
+        self.audit.log("scene_built", "场景已构建",
+                       duration_s=round(duration, 3),
+                       **{k: v for k, v in self.build_summary.items()
+                          if isinstance(v, (int, float, str))})
+        self._emit("scene_built", "场景已构建",
+                   **{k: v for k, v in self.build_summary.items()
+                      if isinstance(v, (int, float, str))})
         self._transition(DriverState.FINISHING)
 
     def _step_finishing(self) -> None:
@@ -239,7 +271,8 @@ class PrevisDriver:
                        total_frames=plan.total_frames)
         self.audit.log("run_finished", "预演生成结束",
                        shots=len(plan.shots), llm_calls=self._llm_calls,
-                       tool_calls=self._tool_calls, steps=self._steps)
+                       tool_calls=self._tool_calls, steps=self._steps,
+                       built=bool(self.build_summary))
         self._emit("run_finished", f"完成，共 {len(plan.shots)} 个镜头")
 
     # ------------------------------------------------------------ 内部

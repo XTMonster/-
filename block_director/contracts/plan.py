@@ -25,6 +25,7 @@ class ShotPlan:
     order: int = 0
     characters: List[str] = field(default_factory=list)
     dialogue_ids: List[str] = field(default_factory=list)
+    actions: List[Dict[str, Any]] = field(default_factory=list)
     axis_note: str = ""
     continuity_in: str = ""
 
@@ -41,6 +42,7 @@ class ShotPlan:
             "duration_frames": self.duration_frames,
             "characters": list(self.characters),
             "dialogue_ids": list(self.dialogue_ids),
+            "actions": [dict(a) for a in self.actions],
             "axis_note": self.axis_note,
             "continuity_in": self.continuity_in,
         }
@@ -57,6 +59,7 @@ class ShotPlan:
             order=int(data.get("order", 0)),
             characters=list(data.get("characters", []) or []),
             dialogue_ids=list(data.get("dialogue_ids", []) or []),
+            actions=[dict(a) for a in (data.get("actions") or [])],
             axis_note=str(data.get("axis_note", "")),
             continuity_in=str(data.get("continuity_in", "")),
         )

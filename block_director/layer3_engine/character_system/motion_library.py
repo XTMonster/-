@@ -134,17 +134,42 @@ def set_interpolation(character, interpolation: str = "BEZIER") -> int:
 @main_thread_only("apply_motions")
 def apply_motions(character, requests: List[ActionRequest], *,
                   clear: bool = True,
-                  interpolation: str = "BEZIER") -> BakeResult:
+                  interpolation: str = "BEZIER",
+                  base_pose: Optional[Dict[str, object]] = None) -> BakeResult:
     """校验冲突 → 合成姿态 → 烘焙关键帧。冲突会抛 ValueError。"""
     problems = check_conflicts(requests)
     if problems:
         raise ValueError("动作冲突：\n" + "\n".join(problems))
     if clear:
         clear_animation(character)
-    trace = compose(requests)
+    if base_pose is None:
+        base_pose = character_base_pose(character)
+    trace = compose(requests, base_pose=base_pose)
     result = bake_trace(character, trace)
     set_interpolation(character, interpolation)
     log.info("动作烘焙完成：%d 帧 / %d 个关键帧（%d-%d）",
              result.frames, result.keyframes,
              result.start_frame, result.end_frame)
     return result
+
+
+@main_thread_only("character_base_pose")
+def character_base_pose(character) -> Dict[str, object]:
+    """读取角色当前姿态，作为动作合成的初始基线。
+
+    没有它，"坐下""跳跃""摔倒"这类只改高度的动作会把角色的 X/Y 摆位清零。
+    """
+    pose: Dict[str, object] = {}
+    if character.root is not None:
+        pose[CH_ROOT_LOC] = tuple(character.root.location)
+        pose[CH_ROOT_ROT_Z] = float(character.root.rotation_euler[2])
+    if character.body_pivot is not None:
+        pose[CH_BODY_ROT_X] = float(character.body_pivot.rotation_euler[0])
+        pose[CH_BODY_ROT_Y] = float(character.body_pivot.rotation_euler[1])
+    if character.head_pivot is not None:
+        pose[CH_HEAD_ROT_X] = float(character.head_pivot.rotation_euler[0])
+        pose[CH_HEAD_ROT_Z] = float(character.head_pivot.rotation_euler[2])
+    if len(character.leg_pivots) >= 2:
+        pose[CH_LEG_L] = float(character.leg_pivots[0].rotation_euler[0])
+        pose[CH_LEG_R] = float(character.leg_pivots[1].rotation_euler[0])
+    return pose

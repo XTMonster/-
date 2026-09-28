@@ -24,7 +24,7 @@ previs and exports it as a reference video for AI video generation.
 
 ## Status
 
-Phases 0-3 are done:
+Phases 0-4 are done:
 
 - **Phase 0** plugin skeleton, state machine, audit logging
 - **Phase 1** character geometry, scene executor, collection routing, transactions, camera
@@ -32,11 +32,21 @@ Phases 0-3 are done:
 - **Phase 3** framing solver (shot type + lens -> distance and placement,
   relative to subject facing, with room clamping), axis controller (180-degree
   rule plus R010), and composition scoring with ray-cast occlusion
+- **Phase 4** plan-to-scene: the driver hands the parsed plan to a scene builder
+  that creates environment, characters, per-shot cameras, keyframes and cut
+  markers in one pass. The builder is behind a protocol so the driver stays
+  bpy-free.
 
-`tools/run_tests.ps1` runs all eight checks: spec drift, pytest, in-Blender
-contract smoke test, a headless run of the add-on, the Phase 1 scene build,
-Phase 2 motion baking, the Phase 3 framing solver, and the Phase 3 axis /
-composition audit.
+`tools/run_tests.ps1` runs all nine checks: spec drift, pytest, in-Blender
+contract smoke test, a headless run of the full chain (plan -> scene), the
+Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
+Phase 3 axis / composition audit, and the Phase 4 plan-to-scene build.
+
+The end-to-end command is:
+
+```
+blender --background --factory-startup --python tools/run_headless.py -- --offline --build
+```
 
 Motion math lives in `block_director/motion/` (no `bpy`, unit-tested). The bpy side
 (`layer3_engine/character_system/motion_library.py`) only maps channels onto object
