@@ -116,7 +116,8 @@ def t_query_tools_are_callable():
     axis = registry.execute("check_axis", {})
 
     ok = (set(registry.names()) == {"get_scene_state", "check_visibility",
-                                    "check_composition", "check_axis"}
+                                    "check_composition", "check_axis",
+                                    "estimate_shot_duration"}
           and state.ok and "shot_001" in state.content
           and visibility.ok and "在画" in visibility.content
           and composition.ok and "构图评分" in composition.content
@@ -203,8 +204,12 @@ def t_knowledge_tool_is_callable():
                                                 "domain": "nope"})
     ok = (set(registry.names()) == {"get_scene_state", "check_visibility",
                                     "check_composition", "check_axis",
-                                    "place_character", "character_action",
-                                    "setup_camera", "search_knowledge"}
+                                    "estimate_shot_duration",
+                                    "place_character", "move_character",
+                                    "character_action", "look_at",
+                                    "interact_with", "setup_camera",
+                                    "move_camera", "reframe",
+                                    "search_knowledge"}
           and hit.ok and "axis_cross" in hit.content
           and estimate_tokens(hit.content) <= TOKEN_LIMIT_TOOL + 10
           and scoped.ok and "[comp_thirds]" in scoped.content

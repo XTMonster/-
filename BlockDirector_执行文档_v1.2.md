@@ -920,6 +920,12 @@ def format_scene_state(state) -> str:
 
 > 相对 v1.0 的变化：`subject` 支持**主体对**，否则 OTS/过肩/双人镜无法表达；新增 `height`（机位高度）参数，因为机位高度是景别之外最影响观感的变量。
 
+> **实现（Phase 7）**：上表 17 个工具已全部注册。逐条对照见 §21.9 的工具行；实现上分三处：
+>
+> - **相机类**：`setup_camera`（解算并重建）与 `reframe`（**复用同一台相机**，只改位置与焦距，因此剪切标记与 `scene.camera` 绑定不会失效）；`move_camera` 把推/拉/摇/移/升降展开成"相机位置 + 对准点"的采样（§10.2），摇与俯仰不是旋转相机对象、而是**移动 Track To 的对准 Empty** 沿弧线走——那样朝向永远正确，也不会出现欧拉角插值翻滚。纯计算在 `cinema/camera_motion.py`（14 条测试），落关键帧在 `layer3_engine/cinema_engine/camera_motion.py`。
+> - **角色类**：`move_character` / `look_at` / `interact_with` 是"词汇层"——它们把意图翻译成既有的动作层（`walk_to` / `run_to` / `look_at` / `sit` / `body_tilt`），并不另造一套动画系统。`move_character` 会把 `from` 补成角色**当前**位置（动作模型里 `from` 默认是原点，不补这一条角色会从世界原点走过来——实现时真踩到了）；`look_at` 的 `target` 可以是角色 ID（自动取对方位置）或直接给坐标；`interact_with` 按 §9.8 的代理模式写完动作后把状态写进道具对象与连贯性台账。
+> - **查询类**：`estimate_shot_duration` 不碰 bpy，实现与注册都在 `layer5_orchestrator/timing_tool.py`，pytest 直接调 handler（11 条测试，含"生气比悲伤短"的方向性断言）。
+
 #### 查询工具
 
 | 工具 | 参数 | 说明 |
@@ -2398,7 +2404,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **479 项**，全部通过；`tools/run_tests.ps1` 跑 **20 步**（规格与
+`tests/` 共 **504 项**，全部通过；`tools/run_tests.ps1` 跑 **21 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2580,13 +2586,14 @@ def supports_media_type() -> bool:
 | **路径平滑与简化（§17.1/§17.2）** | `motion/path.py` | ✅ Catmull-Rom（每段 10 采样点、过首尾点）+ RDP（epsilon 0.05），纯计算 |
 | **深度序列（§15.6）** | `delivery/depth.py`、`layer8_delivery/depth_pass.py` | ✅ 16 位灰度 PNG 逐帧；固定 0.1–50 米归一化并写进 README；用材质覆盖实现（5.x 合成器只能写 EXR） |
 | **全片拼接（§15.7）** | `layer8_delivery/concat.py` | ✅ 内置 VSE 把各镜接成 `blockout_full.mp4`，帧数等于各镜之和，无需外部 ffmpeg |
+| **工具层补齐（§7.4）** | `layer3_engine/tool_bindings.py`、`cinema/camera_motion.py`、`layer5_orchestrator/timing_tool.py` | ✅ 17 个工具全部注册：新增 `move_character` / `look_at` / `interact_with` / `move_camera` / `reframe` / `estimate_shot_duration` |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 479 项全部通过 |
+| 测试套件 | `tests/` | ✅ 504 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 479 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 504 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2680,7 +2687,9 @@ def supports_media_type() -> bool:
 
 **深度与拼接验收（第 20 步）**：一次真实交付跑通五条断言：两条各 6 帧的镜头各产出 6 张深度图（`frame_0001.png…`，范围 0.1–50 米）；深度文件头是**16 位、灰度**、1280×720，像素值跨度 0.95（确有层次）；`blockout_full.mp4` 产出且帧数**正好等于各镜之和 12**；README 与 `shots.json` 记录了归一化范围与全片文件；关掉这两项时**不产出**深度目录与全片（回到原来的行为，不是静默跳过）。
 
-**当前仍未实现**：`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。§13.1 主面板里的角色管理（列表 / 颜色 / 增删）与模型选择仍是占位，UI 目前只提供剧本路径、离线开关、生成控制、工具与三个子面板。
+**工具层补齐验收（第 21 步）**：13 个场景侧工具在同一个注册表里在线；`move_character` 从角色**当前**位置走到目标（实测 root 从 -0.75 走到 1.25 以上），且在"无内置动作"的场景里关键帧恰好落在 10–46（含 §9.7 的 6 帧混合窗口）；`look_at` 支持目标为角色 ID 并拒绝"既没 ID 也没坐标"的调用；`interact_with` 让道具对象带上 `bd_state` 并把交互记进连贯性台账，道具不存在时明确报错；`move_camera` 只给该镜的相机插关键帧（另一镜的相机位置一字不动）；`reframe` **复用同一台相机对象**（对象计数不变、焦距按新景别变化、`context.shot_types` 同步）。纯测试另覆盖运镜采样（推/拉/移/升降的位移量与方向、摇/俯仰保持半径与改变对准点、未知运镜与非法帧段被拒）与时长估算（含语速方向性）。
+
+**当前仍未实现**：§7.4 里的三个**控制类**工具 `request_self_review` / `finish_shot` / `abort` 尚未注册——它们要动驱动器的状态机（`_pending_review` / 镜头队列 / 终止路径），单列一步做，避免与现有修复循环打架。`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。§13.1 主面板里的角色管理（列表 / 颜色 / 增删）与模型选择仍是占位。
 
 至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 
