@@ -1525,6 +1525,8 @@ def replay(project_dir, tools):
 
 > 本节是 v1.1 相对 v1.0 最重要的新增内容。v1.0 的非目标是"不做渲染输出（仅视口预览）"，但项目的最终目标是"产出用于 AI 视频生成的参考视频"。没有交付层，整个项目在目标上不成立。交付层消费 Layer 2（SDL）与 Layer 3（场景），与 Layer 5/6 解耦。
 
+> **实现状态（Phase 6）**：已落地 `block_director/layer8_delivery/`（渲染、相机轨迹、导出编排）与 `block_director/delivery/`（`shots.json`、`prompts.md` 的纯拼装）。一条命令 `blender --background --python tools/run_export.py -- --offline --out <目录>` 即可产出完整交付包。**尚未实现**：depth 序列（§15.6）与全片拼接（§15.3 的可选产物）——两者都会在导出告警里明确列出，不会静默跳过。
+
 ### 15.1 交付物清单
 
 | 文件 | 必需 | 说明 |
@@ -2419,12 +2421,13 @@ def supports_media_type() -> bool:
 | **轴线控制器（Phase 3）** | `block_director/cinema/axis.py`、`cinema_engine/axis_controller.py` | ✅ 180° 轴线 + R010 30° 规则；可视化落在 Guides |
 | **构图分析（Phase 3）** | `block_director/cinema/composition.py`、`cinema_engine/composition_guide.py` | ✅ 六项加权评分（权重见 §10.4）+ 射线遮挡检测 |
 | **计划→场景构建（Phase 4）** | `layer3_engine/shot_builder.py`、`layer5_orchestrator/builder.py` | ✅ 环境/角色/机位/关键帧/剪切标记一次落库；驱动器经协议解耦 |
-| 测试套件 | `tests/` | ✅ 195 项全部通过 |
+| **交付导出（Phase 6）** | `layer8_delivery/`、`delivery/` | ✅ 分镜 mp4 + 首帧 + shots.json + prompts.md + 相机轨迹 + README；导出前画面审计硬门槛 |
+| 测试套件 | `tests/` | ✅ 207 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 195 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 207 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2448,7 +2451,9 @@ def supports_media_type() -> bool:
 >
 > 实现中发现并修掉一个会在落场景时才暴露的缺陷：动作合成的"冻结基线"从零开始，导致 sit/jump/fall_down 这类只改高度的动作会把角色的 X/Y 摆位**清零**（角色瞬移到原点）。修法是让合成器接受角色的当前姿态作为基线（`compose(requests, base_pose=...)`，由 `character_base_pose()` 读取）。
 
-**下一步**：Phase 5（审核与防御：`rule_checker` R001–R011、检查点回滚、`request_self_review` 异步流程、预算限流）与 Phase 6（交付导出：分段渲染 + `shots.json` + `prompts.md`）。两者完成后即可端到端产出"参考视频 + 配套清单"。
+**Phase 6 验收（交付）**：第 10 步在真实 Blender 内断言：一条命令产出 7 个文件（2 段 mp4 + 2 张首帧 + `shots.json` + `prompts.md` + `README.md`），216 帧用时 **5.48 s**；两段 mp4 均为标准 ISO MP4（`ftyp/isom`，118850 / 100785 字节）；`shots.json` 的分辨率、帧率、帧范围、机位名与焦距与构建结果**逐项一致**；开启相机轨迹后逐帧数 96 + 120 与镜头时长吻合，内参 `fx=1244.444 / cx=640 / cy=360` 正确；**把中文标签的 `hide_render` 关掉后导出立即中止、并写出 0 个视频**——"画面干净"是硬门槛而不是建议。
+
+**下一步**：Phase 5（审核与防御：`rule_checker` R001–R011、检查点回滚、`request_self_review` 异步流程、预算限流）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。前者让自动化产出可控可审，后者决定"完成剧本语义与设计"的精度。
 
 ---
 

@@ -69,6 +69,7 @@ EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = {
                     },
                     "axis_note": {"type": "string"},
                     "continuity_in": {"type": "string"},
+                    "prompt": {"type": "string"},
                 },
             },
         },

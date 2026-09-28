@@ -89,6 +89,7 @@ class ShotBuildResult:
     end_frame: int
     camera: str
     camera_position: Tuple[float, float, float]
+    lens: float = 50.0
     characters: List[str] = field(default_factory=list)
     motions: int = 0
     warnings: List[str] = field(default_factory=list)
@@ -99,6 +100,7 @@ class ShotBuildResult:
             "start_frame": self.start_frame, "end_frame": self.end_frame,
             "camera": self.camera,
             "camera_position": [round(v, 3) for v in self.camera_position],
+            "lens": round(self.lens, 2),
             "characters": list(self.characters), "motions": self.motions,
             "warnings": list(self.warnings),
         }
@@ -227,6 +229,7 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None) -> BuildSummary:
             shot_id=shot.shot_id, shot_type=str(shot.shot_type),
             start_frame=start, end_frame=end, camera=bundle.camera.name,
             camera_position=tuple(bundle.camera.location),
+            lens=float(bundle.lens),
             characters=list(shot.characters), motions=len(requests),
             warnings=shot_warnings))
         summary.cameras += 1

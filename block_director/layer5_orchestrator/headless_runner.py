@@ -50,5 +50,7 @@ def run_headless(
     summary["success"] = state is DriverState.DONE
     summary["audit_log"] = str(audit.audit_path) if audit.audit_path else None
     summary["llm_trace"] = str(audit.trace_path) if audit.trace_path else None
+    # 分镜计划是值得持久化的产物，直接带回完整结构（交付层要用）
+    summary["plan"] = driver.plan.to_dict() if driver.plan else None
     log.info("headless 运行结束：%s（镜头 %s 个）", state.value, summary["shots"])
     return summary

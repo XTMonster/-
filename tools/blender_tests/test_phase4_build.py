@@ -26,6 +26,9 @@ from block_director.layer3_engine.shot_builder import (  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.utils.threading_guard import capture_main_thread  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _fixtures import two_shot_plan  # noqa: E402
+
 RESULTS: dict = {}
 OUTDIR = ROOT / "tools" / "_probe_out"
 
@@ -52,23 +55,7 @@ def fresh_scene():
 
 
 def demo_plan(actions: bool = True) -> Plan:
-    first = ShotPlan.from_dict({
-        "shot_id": "shot_001", "order": 1, "intent": "建立两人关系",
-        "shot_type": "MLS", "duration_frames": 96,
-        "characters": ["char_001", "char_002"],
-        "actions": ([{"character_id": "char_001", "action_type": "nod",
-                      "start_frame": 1, "end_frame": 96, "params": {"cycles": 2}}]
-                    if actions else []),
-    })
-    second = ShotPlan.from_dict({
-        "shot_id": "shot_002", "order": 2, "intent": "坐下",
-        "shot_type": "MCU", "duration_frames": 120,
-        "characters": ["char_002"],
-        "actions": ([{"character_id": "char_002", "action_type": "sit",
-                      "start_frame": 1, "end_frame": 60, "params": {"drop": 0.2}}]
-                    if actions else []),
-    })
-    return Plan(shots=[first, second], scene_heading="INT. 咖啡馆 - 日")
+    return two_shot_plan(with_actions=actions)
 
 
 def render_luma(name: str, frame: int) -> float:
