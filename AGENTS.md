@@ -74,6 +74,15 @@ Phases 0-4 and 6 are done:
   camera and keyframes, and leaves `bd_user_animated` characters untouched. The
   frame schedule lives in `cinema/schedule.py` (pure, shared by the builder,
   the regenerator and the SDL round trip).
+- **UI panels** (`layer7_ui/panel_shots.py`, `panel_debug.py`): the 13.2 shot
+  list (thumbnail / status / intent / size / actions) with a per-row regenerate
+  button, and the 13.3 debug panel (LLM calls, tokens, cost, elapsed, audit
+  pass/fail, repairs, budget left) plus actions to open the LLM trace, export
+  the SDL (validated first) and export the scene state. Per-shot status is
+  derived by the pure `layer5_orchestrator/shot_status.py`.
+  Note: `ImagePreview.icon_id` is always 0 under `--background` (icons are
+  allocated by the UI layer), so the headless test asserts the pixel data
+  loaded instead.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
@@ -83,7 +92,7 @@ dialogue timing and coreference) is done.
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all seventeen checks: spec + golden drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all eighteen checks: spec + golden drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
@@ -91,7 +100,7 @@ scene state / query tools, the Phase 4 rule check / repair loop, the Phase 5
 checkpoint and rollback, the Phase 6 delivery export, the Layer 2/9
 save/load/migrate/rebuild round trip, the replay round trip, and the Golden
 Test against the expected SDL, and the scene-sync / single-shot regeneration
-round trip.
+round trip, and the shot list / debug panel checks.
 
 The end-to-end commands are:
 

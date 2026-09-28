@@ -189,6 +189,8 @@ class PrevisDriver:
             "current_shot": self._current_shot_id,
             "shots_remaining": len(self._shot_queue),
             "audits": len(self.audit_results),
+            "failed_audits": sum(1 for result in self.audit_results
+                                 if not result.passed),
             "repairs": self._repairs_total,
             "shot_repairs": self._repair_attempts,
             "budget": self.budget.summary,

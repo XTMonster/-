@@ -1494,11 +1494,26 @@ def required_distance(subject_height, shot_type, lens,
 
 支持一键"重生成此镜"——这是"AI 视频生成不理想 → 回头调整某一镜预演"迭代闭环的入口。没有这个界面，用户只能整场重跑，成本不可接受。
 
-> **实现（Phase 7）**：`layer7_ui/panel_shots.py` 提供 `BlockDirector > 分镜列表`（默认折叠）：每行是 `镜号 / 景别 / 时长`，行尾一个"重生成此镜"按钮（`blockdirector.regenerate_shot`），并在检测到手动改动时提示"检测到手动改动：…"。表格的其余列（缩略图、状态、意图摘要）与"查看审核结果"仍未做——它们依赖首帧缩略图与审核结果的可视化，留到 Phase 7 收尾。**"重生成此镜"的行为本身已完整实现并测试**（只动这一镜 + 保留用户改动，见 §8.3）。
+> **实现（Phase 7）**：`layer7_ui/panel_shots.py` 提供 `BlockDirector > 分镜列表`（默认折叠），表里六列全部落地：
+>
+> | 列 | 实现 |
+> |----|------|
+> | 缩略图 | `blockdirector.render_shot_thumbnail` 渲染该镜首帧到 `thumbs/<镜号>.png`（160×90），读进预览集合后由面板 `template_icon` 画出 |
+> | 镜号 | 计划里的 `shot_id` |
+> | 状态 | 由 `layer5_orchestrator/shot_status.py`（纯计算）按审核历史推导：待生成 / 已生成 / 已修复 / 失败 / 降级 |
+> | 意图 | 计划里的 `intent`（表格里截断到 24 字） |
+> | 景别 / 时长 | `shot_type` 与 `duration_frames / 24` 秒 |
+> | 操作 | 重生成此镜（`regenerate_shot`）、渲染缩略图、查看审核结果（`show_audit_result` 把结论与建议写进文本数据块） |
+>
+> 面板顶部还给一行汇总（`共 N 镜：已修复 1 / 已生成 2`），并在同步器检测到手动改动时提示"检测到手动改动：…"。状态推导有 9 条纯测试（`tests/test_shot_status.py`），包括"失败优先于降级"这条容易被写反的优先级。
+>
+> **实测环境限制**：`--background` 下 `ImagePreview.icon_id` **恒为 0**——图标纹理由 UI 层分配，没有窗口就没有 GPU 上下文。像素数据本身是可读回的（测试断言 `icon_size` 与 160×90×4 个像素确实进了集合），因此有界面时缩略图能正常显示；后台测试只断言到"数据已装载"这一层。
 
 ### 13.3 调试面板（默认折叠）
 
 LLM 调用次数、总 Token、预估费用、总耗时、审核通过/失败数、自纠错次数、预算余量。按钮：查看 LLM Trace、导出 SDL、导出场景状态。
+
+> **实现（Phase 7）**：`layer7_ui/panel_debug.py`（默认折叠）。数据全部来自 `driver.snapshot()` 与 `budget.summary`——为此在预算摘要里补了 `limits`（没有上限就算不出"预算余量"），并在快照里补了 `failed_audits`（原先只有总数）。三个动作都是算子：`blockdirector.open_llm_trace`（把 `llm_trace.jsonl` 读进文本编辑器；没有 trace 时如实说明原因而不是静默失败）、`blockdirector.export_sdl`（**先过 §5.2 校验，有错就不落盘**）、`blockdirector.export_scene_state`（`collect_scene_state(detailed=True)` 的完整投影写 JSON）。输出目录用面板上的 `bd_project_dir`，留空则落到临时目录。
 
 ### 13.4 视口叠加
 
@@ -2343,7 +2358,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **433 项**，全部通过；`tools/run_tests.ps1` 跑 **17 步**（规格与
+`tests/` 共 **442 项**，全部通过；`tools/run_tests.ps1` 跑 **18 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2518,13 +2533,15 @@ def supports_media_type() -> bool:
 | **双向同步（§8.3）** | `layer3_engine/scene_sync.py` | ✅ 基线比较判 dirty + `depsgraph_update_post` 加速 + `suppress_sync` 写抑制 + `bd_user_animated` 保护 |
 | **单镜重生成（§13.2）** | `layer3_engine/shot_regenerator.py`、`layer7_ui/panel_shots.py` | ✅ 只换这一镜的相机与动作、其余镜头一个不差；回读用户摆位后再重建 |
 | **排片器单一真源（§10.2）** | `cinema/schedule.py` | ✅ 构建 / 单镜重生成 / SDL 回填共用一套帧号推导，纯函数可单测 |
+| **分镜列表（§13.2）** | `layer7_ui/panel_shots.py`、`layer5_orchestrator/shot_status.py` | ✅ 六列齐全：缩略图 / 镜号 / 状态 / 意图 / 景别时长 / 操作（重生成、缩略图、审核结果） |
+| **调试面板（§13.3）** | `layer7_ui/panel_debug.py` | ✅ 七项指标 + 三个动作：查看 LLM Trace、导出 SDL（先校验）、导出场景状态 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 433 项全部通过 |
+| 测试套件 | `tests/` | ✅ 442 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 433 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 442 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2612,7 +2629,9 @@ def supports_media_type() -> bool:
 7. 单例路径（UI/算子用的那个同步器）在 `build_scene()` 之后基线已记录，改动可被检出；
 8. 分镜列表模块能被干净地注册/注销（算子、面板、场景属性全部摘除，`depsgraph_update_post` 回调同步卸载）。
 
-**当前仍未实现**：Phase 5 的调试面板（§13.3）；分镜列表尚缺缩略图 / 状态 / 意图三列（"重生成此镜"本身已完整可用，见上）；§15.6/§15.7 的可选深度序列与全片拼接（后者目前显式告警）。`llm_trace.jsonl` 目前只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可在 Phase 7 用配置开关补上。
+**分镜列表与调试面板验收（第 18 步）**：在真实 Blender 内七项断言全绿：状态列把 `shot_001` 判为"已修复"（先失败后通过）、`shot_002` 判为"已生成"，降级运行把未经审核的镜头标为"降级"；调试面板七项指标与"预算余量 5/8 次调用"取值正确；导出 SDL 真的写出 `project.bdproj`（`version 1.2`、2 镜）且导出场景状态写出含角色的 JSON；缩略图算子渲染出真实 PNG（12.9 KB）并把 160×90×4 像素装进预览集合；"查看审核结果"把结论与建议写进文本数据块；两个面板模块注册/注销干净（含预览集合）。
+
+**当前仍未实现**：§15.6/§15.7 的可选深度序列与全片拼接（后者目前显式告警）；§13.4 视口叠加（`draw_handler_add` 的轴线/三分法网格/安全框绘制）与 §13.5 画线工具的交互部分。`llm_trace.jsonl` 目前只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可在 Phase 7 用配置开关补上。
 
 至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 

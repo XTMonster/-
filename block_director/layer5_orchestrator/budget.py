@@ -98,4 +98,10 @@ class Budget:
     @property
     def summary(self) -> Dict[str, object]:
         self.refresh()
-        return {**self.state.to_dict(), "exhausted": self.exhausted_reason()}
+        # limits 一并给出：调试面板要显示"预算余量"，没有上限就无从计算（§13.3）
+        return {**self.state.to_dict(),
+                "limits": {"max_llm_calls": self.limits.max_llm_calls,
+                           "max_tokens": self.limits.max_tokens,
+                           "max_cost_usd": self.limits.max_cost_usd,
+                           "max_wall_seconds": self.limits.max_wall_seconds},
+                "exhausted": self.exhausted_reason()}

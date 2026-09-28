@@ -17,6 +17,7 @@ log = get_logger("registration")
 MODULES: Tuple[str, ...] = (
     "block_director.layer7_ui.panel_main",
     "block_director.layer7_ui.panel_shots",
+    "block_director.layer7_ui.panel_debug",
     "block_director.layer5_orchestrator.modal_operator",
 )
 
