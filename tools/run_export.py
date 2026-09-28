@@ -49,10 +49,16 @@ def main() -> int:
     from block_director.utils.paths import default_project_root
 
     script = ""
+    parsed = None
     if args.script:
         path = Path(args.script)
         if path.exists():
             script = path.read_text(encoding="utf-8", errors="replace")
+            try:
+                from block_director.layer1_input import parse_script
+                parsed = parse_script(path)
+            except Exception as exc:  # noqa: BLE001
+                print(f"BLOCKDIRECTOR_WARN 剧本解析失败，将退回原文：{exc}")
         else:
             print(f"BLOCKDIRECTOR_WARN 剧本不存在: {path}")
 
@@ -76,7 +82,8 @@ def main() -> int:
                            auditor=BpyShotAuditor(),
                            human_gate=AutoGate(),
                            scene_state_provider=lambda: format_scene_state(
-                               collect_scene_state(detailed=False)))
+                               collect_scene_state(detailed=False)),
+                           parsed_script=parsed)
     if not summary.get("success") or not summary.get("built"):
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(
             {"ok": False, "reason": "运行或构建失败", "summary": summary},

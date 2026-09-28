@@ -26,6 +26,8 @@ class ShotPlan:
     characters: List[str] = field(default_factory=list)
     dialogue_ids: List[str] = field(default_factory=list)
     actions: List[Dict[str, Any]] = field(default_factory=list)
+    #: 对白时间轴（镜头内局部帧）：{character_id, text, start_frame, end_frame}
+    dialogues: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""                 # 交付用：喂视频模型的镜头描述（§15.5）
     axis_note: str = ""
     continuity_in: str = ""
@@ -44,6 +46,7 @@ class ShotPlan:
             "characters": list(self.characters),
             "dialogue_ids": list(self.dialogue_ids),
             "actions": [dict(a) for a in self.actions],
+            "dialogues": [dict(d) for d in self.dialogues],
             "prompt": self.prompt,
             "axis_note": self.axis_note,
             "continuity_in": self.continuity_in,
@@ -62,6 +65,7 @@ class ShotPlan:
             characters=list(data.get("characters", []) or []),
             dialogue_ids=list(data.get("dialogue_ids", []) or []),
             actions=[dict(a) for a in (data.get("actions") or [])],
+            dialogues=[dict(d) for d in (data.get("dialogues") or [])],
             prompt=str(data.get("prompt", "")),
             axis_note=str(data.get("axis_note", "")),
             continuity_in=str(data.get("continuity_in", "")),

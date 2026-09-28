@@ -91,6 +91,7 @@ class PrevisDriver:
         transport,
         audit: AuditLogger,
         script: str = "",
+        parsed_script=None,
         config=None,
         limits: Optional[DriverLimits] = None,
         registry: Optional[ToolRegistry] = None,
@@ -107,6 +108,7 @@ class PrevisDriver:
         self.transport = transport
         self.audit = audit
         self.script = script
+        self.parsed_script = parsed_script
         self.config = config
         self.limits = limits or DriverLimits()
         self.registry = registry or default_registry()
@@ -595,7 +597,8 @@ class PrevisDriver:
     def _start_plan_call(self) -> None:
         request_id = new_request_id()
         payload: ChatPayload = build_plan_payload(self.script, self.config,
-                                                  request_id=request_id)
+                                                  request_id=request_id,
+                                                  parsed=self.parsed_script)
         self._start_llm_call("plan", payload,
                              note=f"请求分镜计划（第 {self._plan_attempts} 次尝试）")
 

@@ -18,6 +18,7 @@ from ..contracts.messages import (
 )
 from ..contracts.plan import Plan
 from ..motion.model import ACTION_TYPES
+from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES, render_timing_table
 
 PLAN_TOOL_NAME = "emit_plan"
 
@@ -66,6 +67,22 @@ EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = {
                     "axis_note": {"type": "string"},
                     "continuity_in": {"type": "string"},
                     "prompt": {"type": "string"},
+                    "dialogues": {
+                        "type": "array",
+                        "maxItems": 12,
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": ["character_id", "text",
+                                         "start_frame", "end_frame"],
+                            "properties": {
+                                "character_id": {"type": "string"},
+                                "text": {"type": "string"},
+                                "start_frame": {"type": "integer", "minimum": 1},
+                                "end_frame": {"type": "integer", "minimum": 1},
+                            },
+                        },
+                    },
                 },
             },
         },
@@ -93,12 +110,26 @@ PLAN_SYSTEM_PROMPT = """\
 
 
 def build_plan_payload(script: str, config=None,
-                       request_id: Optional[str] = None) -> ChatPayload:
-    """构造阶段 A 的请求。README：脚本用不可信数据标签包裹（§7.7）。"""
+                       request_id: Optional[str] = None,
+                       parsed=None) -> ChatPayload:
+    """构造阶段 A 的请求。
+
+    给了 ``parsed``（Layer 1 的解析结果）时，提示里放**结构化摘要 + 对白时长表**
+    而不是原文：模型能看到场次/角色/对白的骨架，也能据此给足镜头时长（R011）。
+    没给就退回原始文本路径。
+    """
     temperature = 0.7
     if config is not None:
         temperature = float(config.llm.temperature_plan)
-    system_text = PLAN_SYSTEM_PROMPT.replace("{script}", script or "（空剧本）")
+    if parsed is not None and getattr(parsed, "scenes", None):
+        body = (f"{parsed.digest(max_scenes=20)}\n\n"
+                f"{render_timing_table(parsed)}\n\n"
+                f"注意：每个镜头的时长必须装得下它内部的全部对白，并在末尾留出"
+                f"{DIALOGUE_TAIL_FRAMES} 帧收尾余量（规则 R011）；"
+                f"对白请写进 shots[].dialogues，帧号用**镜头内局部帧**。")
+    else:
+        body = script or "（空剧本）"
+    system_text = PLAN_SYSTEM_PROMPT.replace("{script}", body)
     return ChatPayload(
         messages=[
             Message(role=MessageRole.SYSTEM, content=system_text),

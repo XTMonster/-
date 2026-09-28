@@ -226,6 +226,31 @@ def t_rule_r003_action_overlap():
                        if f.rule == "R003"]}
 
 
+# --------------------------------------------------------------------------- #
+# 10. R011 对白容纳
+# --------------------------------------------------------------------------- #
+def t_rule_r011_dialogue_overflow():
+    _summary, context, _registry, auditor = _built_with_tools()
+    shot = context.shot("shot_001")            # 时长 96 帧
+    clean = auditor.audit("shot_001")
+
+    # 先给一句排得下的对白：应当仍然通过
+    shot.dialogues.append({"character_id": "char_001", "text": "你好。",
+                           "start_frame": 1, "end_frame": 40})
+    fitting = auditor.audit("shot_001")
+
+    # 再把它推到超过时长（40 + 12 = 52 ≤ 96；改成 90 → 102 > 96）
+    shot.dialogues[0]["end_frame"] = 90
+    overflow = auditor.audit("shot_001")
+    rules = {f.rule for f in overflow.errors}
+
+    return {"ok": clean.passed and fitting.passed
+            and not overflow.passed and "R011" in rules,
+            "clean_passed": clean.passed, "fitting_passed": fitting.passed,
+            "overflow_passed": overflow.passed,
+            "errors": [f.to_dict() for f in overflow.errors if f.rule == "R011"]}
+
+
 def main() -> int:
     capture_main_thread()
     check("auditor_reports_axis_violation", t_auditor_reports_axis_violation)
@@ -237,6 +262,7 @@ def main() -> int:
     check("tool_errors_are_observations", t_tool_errors_are_observations)
     check("rule_r002_collision", t_rule_r002_collision)
     check("rule_r003_action_overlap", t_rule_r003_action_overlap)
+    check("rule_r011_dialogue_overflow", t_rule_r011_dialogue_overflow)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

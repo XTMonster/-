@@ -59,10 +59,23 @@ def main() -> int:
     register_all_scene_tools(registry)
 
     script = ""
+    parsed = None
     if args.script:
         path = Path(args.script)
         if path.exists():
             script = path.read_text(encoding="utf-8", errors="replace")
+            try:
+                from block_director.layer1_input import parse_script
+                parsed = parse_script(path)
+                print("BLOCKDIRECTOR_PARSE " + json.dumps(
+                    {"format": parsed.source_format, "title": parsed.title,
+                     "scenes": len(parsed.scenes),
+                     "dialogues": parsed.dialogue_count,
+                     "characters": parsed.character_names,
+                     "needs_llm_structure": parsed.needs_llm_structure},
+                    ensure_ascii=False))
+            except Exception as exc:  # noqa: BLE001 - 解析失败要让人看见
+                print(f"BLOCKDIRECTOR_WARN 剧本解析失败，将退回原文：{exc}")
         else:
             print(f"BLOCKDIRECTOR_WARN 剧本不存在: {path}")
 
@@ -77,6 +90,7 @@ def main() -> int:
         human_gate=AutoGate(),      # headless 无界面：逐条记为 skipped 以便审计
         scene_state_provider=lambda: format_scene_state(
             collect_scene_state(detailed=False)),
+        parsed_script=parsed,
     )
     print("BLOCKDIRECTOR_RESULT " + json.dumps(summary, ensure_ascii=False))
     return 0 if summary.get("success") else 1

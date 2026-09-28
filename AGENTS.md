@@ -44,10 +44,10 @@ Phases 0-4 and 6 are done:
   Export refuses to run when the render audit finds a helper that would leak
   into the reference video.
 
-Phases 0-4 and 6 are done; Phase 5 is nearly done (rule checker R001-R010 plus
-the composition gate, loop detection, budget limits, checkpoint/rollback, the
-human gate and Level 2 self-review; only a dedicated debug panel is pending).
-Layer 1 (script parsing) is not started, and R011 needs its dialogue timing.
+Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
+loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
+self-review; only a dedicated debug panel is pending). Layer 1 (script parsing,
+dialogue timing and coreference) is done.
 
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
@@ -72,6 +72,10 @@ properties and writes keyframes.
 
 Framing math lives in `block_director/cinema/` (same rule: no `bpy`, unit-tested);
 `layer3_engine/cinema_engine/framing_solver.py` applies it to a camera.
+
+Script parsing lives in `block_director/layer1_input/` (also no `bpy`). Those
+modules must not import `layer5_orchestrator`; LLM-backed steps (coreference) take
+an injected callable instead.
 
 Blender-side integration tests live in `tools/blender_tests/` and print a
 `BD_TEST_RESULT {json}` marker.

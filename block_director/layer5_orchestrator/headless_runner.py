@@ -35,6 +35,7 @@ def run_headless(
     auditor=None,
     scene_state_provider=None,
     human_gate=None,
+    parsed_script=None,
 ) -> Dict[str, Any]:
     """把状态机跑到终止，返回结果摘要（含审计日志路径）。"""
     config = config or get_config()
@@ -44,6 +45,7 @@ def run_headless(
         root = Path(project_dir) if project_dir else default_project_root()
         audit = AuditLogger(directory=ensure_dir(root / "runs"))
     driver = PrevisDriver(transport=transport, audit=audit, script=script,
+                          parsed_script=parsed_script,
                           config=config, limits=limits, builder=builder,
                           registry=registry, auditor=auditor,
                           scene_state_provider=scene_state_provider,

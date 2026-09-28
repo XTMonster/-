@@ -2431,12 +2431,17 @@ def supports_media_type() -> bool:
 | **检查点与回滚（Phase 5）** | `layer3_engine/checkpoint_manager.py` | ✅ 变换 / 关键帧 / 时间轴标记 / 帧范围整体快照与回退 |
 | **人工审批门（Phase 5）** | `layer5_orchestrator/human_gate.py` | ✅ 非阻塞协议（PENDING + 轮询），headless 用 `AutoGate` 逐条留痕 |
 | **Level 2 自我审核（Phase 5）** | `layer5_orchestrator/review.py`、驱动器的 `REVIEWING` | ✅ 独立 LLM 回合复核"是否表达意图"，可转 B4 修复 |
-| 测试套件 | `tests/` | ✅ 316 项全部通过 |
+| **Layer 1 剧本解析** | `layer1_input/`（Fountain / FDX / TXT / PDF） | ✅ 场景·角色·对白·动作结构化；纯文本无标题时标记需 LLM 补全 |
+| **对白计时（§4.4）** | `layer1_input/dialogue_timing.py` | ✅ 语速倍率方向已修正并锁死（生气更短、悲伤更长） |
+| **共指消解（§4.3）** | `layer1_input/coreference.py` | ✅ 确定性合并 + 可注入的 LLM 消解（layer1 不反向依赖 layer5） |
+| **R011 对白容纳** | `layer3_engine/rule_checker.py` | ✅ **R001–R011 十一条规则至此全部实现** |
+| **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
+| 测试套件 | `tests/` | ✅ 343 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 316 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 343 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2485,6 +2490,11 @@ def supports_media_type() -> bool:
 **Phase 5 验收（审批门与自我审核）**：headless 全链路实测 **3 次 LLM 调用**（计划 1 + 每镜自我审核 1）、`audits: 2`、`built: true`、状态 DONE。纯测试另覆盖：计划审批通过/被拒（被拒则该成果不产出并转 CANCELLED）；门返回 `PENDING` 时驱动器进入 `AWAIT_HUMAN` **只轮询不阻塞**，用户点通过后继续；越轴在自动修复耗尽时才请人裁决，放行则收下该镜并前进；非越轴失败**不**打扰用户；自我审核给出 `needs_fix` 时转 B4 修复、每镜只复核一次（避免绕圈）、回复不合规只记警告不阻断。
 >
 > 两个 API 陷阱也在这一轮被根除：`AuditLogger.log()` 与 `driver._emit()` 的 `kind` 参数改为**位置专用**——此前调用方一旦传 `kind=` 作为数据键就会 `TypeError`；以及审批请求 ID 原先用毫秒时间戳，同一毫秒内的两个请求会撞号，改用 uuid。
+
+**Layer 1 验收（第 13 轮）**：用夹具剧本跑真实端到端，实测输出
+`{"format":"fountain","title":"咖啡馆的下午","scenes":2,"dialogues":2,"characters":["小明","小红"],"needs_llm_structure":false}`，随后正常建场景并导出。纯测试覆盖：Fountain 场景标题/角色名/括注/转场与页码过滤；拉丁全大写角色名；中文"第N场"；FDX 按段落 Type 解析；无标题纯文本标记需 LLM 结构化；PDF 缺 `pdfplumber` 时**给出安装指引**而不是静默降级；以及对白计时的方向性断言（生气 < 正常 < 悲伤，直接锁死 v1.0 的缺陷）。
+>
+> 规划提示现在拿到的是**结构化摘要 + 对白时长表**（而非原文），模型据此给足镜头时长，R011 才有据可依。
 
 **下一步**：Phase 5 余下（检查点回滚、`request_self_review` 异步流程、人工审批门、调试面板）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。Layer 1 到位后 R011 即可补上。
 

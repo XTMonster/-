@@ -21,6 +21,7 @@ from mathutils import Vector
 
 from ..cinema.axis import thirty_degree_violation
 from ..cinema.framing import SHOT_FRAME, required_distance
+from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
 from ..contracts.audit import AuditError, AuditResult
 from ..contracts.enums import Severity
 from ..utils.aabb import AABB, union
@@ -232,6 +233,21 @@ def check_shot(shot_id: str, *, context=None,
                 f"角色 {character_id} 的动作时间重叠：{label_a} 与 {label_b}",
                 target=character_id,
                 suggestion="同一个角色的动作必须串行，请错开起止帧"))
+
+    # R011 对白容纳：镜头时长必须装得下最晚的一句对白 + 收尾余量 -----------
+    if shot is not None and shot.dialogues:
+        latest = 0
+        for item in shot.dialogues:
+            if not isinstance(item, dict):
+                continue
+            latest = max(latest, int(item.get("end_frame") or 0))
+        if latest and latest + DIALOGUE_TAIL_FRAMES > shot.duration_frames:
+            findings.append(_error(
+                "R011", "E_SDL_001",
+                f"对白排到第 {latest} 帧，加上 {DIALOGUE_TAIL_FRAMES} 帧收尾余量"
+                f"超出镜头时长 {shot.duration_frames} 帧",
+                target=shot_id,
+                suggestion="加长该镜头，或把对白前移/删减"))
 
     # R009 镜头距离与景别匹配 ----------------------------------------------
     frame = SHOT_FRAME.get(str(shot_type).upper())
