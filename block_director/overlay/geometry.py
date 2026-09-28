@@ -26,6 +26,25 @@ THIRDS = (1.0 / 3.0, 2.0 / 3.0)
 TITLE_SAFE = 0.90
 ACTION_SAFE = 0.93
 
+#: 违规元素的红色闪烁参数（§13.4）
+FLASH_PERIOD = 0.6
+FLASH_LOW = 0.35
+FLASH_HIGH = 0.95
+
+
+def flash_alpha(elapsed: float, *, period: float = FLASH_PERIOD,
+                low: float = FLASH_LOW, high: float = FLASH_HIGH) -> float:
+    """闪烁相位：0→1→0 的三角波，映射到 ``[low, high]`` 的透明度。
+
+    纯函数（输入是"已经过去多少秒"），因此"闪得对不对"可以在 pytest 里断言，
+    而不是靠肉眼盯着视口看。负时间与零周期都做兜底。
+    """
+    if period <= 0:
+        return high
+    phase = (float(elapsed) % period) / period          # 0..1
+    triangle = 2.0 * phase if phase <= 0.5 else 2.0 * (1.0 - phase)
+    return low + (high - low) * triangle
+
 
 @dataclass
 class OverlayGeometry:

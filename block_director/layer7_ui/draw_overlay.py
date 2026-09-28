@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import bpy
@@ -20,7 +21,12 @@ from bpy_extras.view3d_utils import location_3d_to_region_2d
 from mathutils import Vector
 
 from ..layer3_engine.scene_context import get_context
-from ..overlay.geometry import OverlayGeometry, build_overlay
+from ..overlay.geometry import (
+    FLASH_PERIOD,
+    OverlayGeometry,
+    build_overlay,
+    flash_alpha,
+)
 from ..settings import get_config
 from ..utils.logger import get_logger
 
@@ -36,6 +42,9 @@ FRUSTUM_COLOR: RGBA = (0.65, 0.75, 1.0, 0.35)
 VIOLATION_COLOR: RGBA = (1.0, 0.20, 0.20, 0.90)
 
 _handle: Optional[object] = None
+_flash_started = time.monotonic()
+
+FLASH_TICK = 0.1          # 重绘节拍（秒）
 
 
 def is_enabled() -> bool:
@@ -141,9 +150,31 @@ def _collect_screen_points(geometry: OverlayGeometry, width: int, height: int
         for index in range(len(rect)):
             add(rect[index], rect[(index + 1) % len(rect)], SAFE_COLOR)
     for box in geometry.violations:
+        color = _flashing_violation_color()
         for index in range(len(box)):
-            add(box[index], box[(index + 1) % len(box)], VIOLATION_COLOR)
+            add(box[index], box[(index + 1) % len(box)], color)
     return grouped
+
+
+def _flashing_violation_color() -> RGBA:
+    """违规红框按 §13.4 闪烁：透明度随时间在 0.35–0.95 之间往返。"""
+    alpha = flash_alpha(time.monotonic() - _flash_started, period=FLASH_PERIOD)
+    return (VIOLATION_COLOR[0], VIOLATION_COLOR[1], VIOLATION_COLOR[2], alpha)
+
+
+def _flash_tick():                            # pragma: no cover - 需 GUI
+    """定时器：只要还有违规元素就请求重绘，让红框真的闪起来。"""
+    if _handle is None:
+        return None
+    context = bpy.context
+    area = getattr(context, "area", None)
+    if area is not None:
+        try:
+            if collect_geometry(context).violations:
+                area.tag_redraw()
+        except Exception:                      # 绘制路径不该被异常打断
+            return None
+    return FLASH_TICK
 
 
 def _draw():                                  # pragma: no cover - 需 GUI
@@ -189,6 +220,8 @@ def register() -> None:
         return
     _handle = bpy.types.SpaceView3D.draw_handler_add(
         _draw, (), 'WINDOW', 'POST_PIXEL')
+    if not bpy.app.timers.is_registered(_flash_tick):
+        bpy.app.timers.register(_flash_tick, first_interval=FLASH_TICK)
     log.info("视口叠加已启用")
 
 
@@ -197,4 +230,6 @@ def unregister() -> None:
     if _handle is not None:
         bpy.types.SpaceView3D.draw_handler_remove(_handle, 'WINDOW')
         _handle = None
+        if bpy.app.timers.is_registered(_flash_tick):
+            bpy.app.timers.unregister(_flash_tick)
         log.info("视口叠加已关闭")

@@ -125,9 +125,13 @@ def t_overlay_handler_lifecycle():
     draw_overlay.register()
     draw_overlay.register()                   # 幂等
     enabled = draw_overlay.is_enabled()
+    timer_on = bpy.app.timers.is_registered(draw_overlay._flash_tick)
     draw_overlay.unregister()
     after = draw_overlay.is_enabled()
-    return {"ok": enabled and not after, "enabled": enabled, "after": after}
+    timer_off = not bpy.app.timers.is_registered(draw_overlay._flash_tick)
+    return {"ok": enabled and not after and timer_on and timer_off,
+            "enabled": enabled, "after": after,
+            "flash_timer": [timer_on, timer_off]}
 
 
 # --------------------------------------------------------------------------- #

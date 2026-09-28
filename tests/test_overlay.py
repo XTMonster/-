@@ -7,8 +7,12 @@ import math
 import pytest
 
 from block_director.overlay import (
+    FLASH_HIGH,
+    FLASH_LOW,
+    FLASH_PERIOD,
     build_overlay,
     dashed_segments,
+    flash_alpha,
     frustum_lines,
     safe_area_rects,
     screen_rect,
@@ -134,3 +138,33 @@ def test_thirds_geometry_uses_normalised_screen_space():
     for (x0, y0), (x1, y1) in thirds_grid():
         assert all(0.0 <= value <= 1.0 for value in (x0, y0, x1, y1))
         assert math.isclose(max(x1 - x0, y1 - y0), 0.0, abs_tol=1e-9) or True
+
+
+# --------------------------------------------------------------------------- #
+# 违规元素闪烁（§13.4）
+# --------------------------------------------------------------------------- #
+def test_flash_alpha_stays_within_the_band():
+    for step in range(0, 200):
+        alpha = flash_alpha(step * 0.01)
+        assert FLASH_LOW <= alpha <= FLASH_HIGH
+
+
+def test_flash_alpha_traces_a_triangle_wave():
+    """半周期处最亮、整周期回到起点——确实是"闪"而不是渐变。"""
+    assert flash_alpha(0.0) == pytest.approx(FLASH_LOW)
+    assert flash_alpha(FLASH_PERIOD / 2) == pytest.approx(FLASH_HIGH)
+    assert flash_alpha(FLASH_PERIOD) == pytest.approx(FLASH_LOW)
+    assert flash_alpha(FLASH_PERIOD * 3 + FLASH_PERIOD / 2) == pytest.approx(
+        FLASH_HIGH)
+
+
+def test_flash_alpha_handles_degenerate_parameters():
+    assert flash_alpha(1.23, period=0) == FLASH_HIGH
+    assert FLASH_LOW <= flash_alpha(-0.4) <= FLASH_HIGH
+
+
+def test_flash_colour_is_applied_to_violation_boxes_only():
+    """闪烁是给违规框的；把违规几何单独喂进去时也能算出颜色。"""
+    geometry = build_overlay(show_thirds=False, show_safe_area=False,
+                             violations=[[(0.1, 0.1), (0.2, 0.1), (0.2, 0.2)]])
+    assert geometry.violations and not geometry.thirds
