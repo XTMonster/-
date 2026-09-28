@@ -40,8 +40,8 @@
     {
       "shot_id": "shot_003",
       "order": 3,
-      "intent": "周野给出回答并抛出离开的决定，用全景交代他站在窗前的孤立感",
-      "shot_type": "LS",
+      "intent": "周野给出回答并抛出离开的决定",
+      "shot_type": "CU",
       "duration_frames": 120,
       "characters": ["char_002"],
       "dialogues": [
@@ -53,7 +53,7 @@
       "actions": [],
       "axis_note": "反打，仍留在轴线同侧",
       "continuity_in": "承接 shot_002 的视线方向",
-      "prompt": "全景，周野站在窗前背对屋内，雨幕在玻璃上流动，固定机位"
+      "prompt": "特写，周野停顿后开口，背景虚化，情绪克制"
     }
   ]
 }

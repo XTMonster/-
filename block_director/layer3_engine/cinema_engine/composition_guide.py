@@ -19,7 +19,7 @@ from ...cinema.composition import (
     SubjectBox,
     evaluate_composition,
 )
-from ...cinema.framing import SHOT_FRAME, SUBJECT_HEIGHT
+from ...cinema.framing import ASPECT_16_9, SHOT_FRAME, SUBJECT_HEIGHT
 from ...utils.logger import get_logger
 from ...utils.threading_guard import main_thread_only
 from ..collection_router import GUIDES_COLLECTION
@@ -61,11 +61,38 @@ def _world_bounds(character, depsgraph) -> Optional[Tuple[Vector, Vector]]:
     return Vector(low), Vector(high)
 
 
-def _screen_box(character, depsgraph, scene, camera) -> Optional[SubjectBox]:
-    bounds = _world_bounds(character, depsgraph)
-    if bounds is None:
+def intended_window(shot_type: str) -> Optional[Tuple[float, float]]:
+    """这个景别**打算**看到的高度范围（世界单位）：``target_z ± frame_height/2``。
+
+    §10.5 的取景表描述的是"该看到哪一段"，而不是"整身都在画里"。构图的
+    headroom / framing 只有在这个窗口内评估才说得通——否则 CU 会被按整身判
+    "主体出画、头顶被切"，把正常裁切当成错误。
+    """
+    frame = SHOT_FRAME.get(str(shot_type).upper())
+    if frame is None:
         return None
-    low, high = bounds
+    half = frame.frame_height / 2.0
+    return (frame.target_z - half, frame.target_z + half)
+
+
+def _clip_to_window(low: Vector, high: Vector,
+                    window: Optional[Tuple[float, float]]
+                    ) -> Tuple[Vector, Vector, bool]:
+    """把包围盒按高度窗口裁一刀；完全落在窗口外就退回整身。"""
+    if window is None:
+        return low, high, False
+    win_low, win_high = window
+    sliced_low = max(low.z, win_low)
+    sliced_high = min(high.z, win_high)
+    if sliced_high <= sliced_low:
+        return low, high, False
+    return (Vector((low.x, low.y, sliced_low)),
+            Vector((high.x, high.y, sliced_high)),
+            high.z > win_high)
+
+
+def _project_bounds(low: Vector, high: Vector, character, scene,
+                    camera) -> SubjectBox:
     xs: List[float] = []
     ys: List[float] = []
     for ix in (low.x, high.x):
@@ -78,6 +105,25 @@ def _screen_box(character, depsgraph, scene, camera) -> Optional[SubjectBox]:
                       left=min(xs), right=max(xs),
                       top=max(ys), bottom=min(ys),
                       facing=_screen_facing(character, scene, camera))
+
+
+def _screen_box(character, depsgraph, scene, camera,
+                shot_type: str = ""
+                ) -> Optional[SubjectBox]:
+    bounds = _world_bounds(character, depsgraph)
+    if bounds is None:
+        return None
+    frame = SHOT_FRAME.get(str(shot_type).upper())
+    clipped_sides = False
+    window = intended_window(shot_type)
+    low, high, clipped_top = _clip_to_window(bounds[0], bounds[1], window)
+    if frame is not None:
+        # 主体比这个景别的画面还宽 → 左右本来就是该出画的（ECU 的"局部占满"）
+        clipped_sides = (high.x - low.x) > frame.frame_height * ASPECT_16_9
+    box = _project_bounds(low, high, character, scene, camera)
+    box.clipped_top = clipped_top
+    box.clipped_sides = clipped_sides
+    return box
 
 
 def _screen_facing(character, scene, camera) -> float:
@@ -144,9 +190,10 @@ def evaluate_camera_composition(camera: Object,
     boxes: List[SubjectBox] = []
     occluded: Dict[str, bool] = {}
     camera_pos = camera.matrix_world.translation.copy()
-
+    frame = SHOT_FRAME.get(str(shot_type).upper())
     for character in characters:
-        box = _screen_box(character, depsgraph, scene, camera)
+        # 构图分项只看"这个景别该看到的那一段"；遮挡仍看整身。
+        box = _screen_box(character, depsgraph, scene, camera, shot_type)
         if box is None:
             continue
         boxes.append(box)
@@ -158,14 +205,19 @@ def evaluate_camera_composition(camera: Object,
                                            center, character)
                 occluded[box.name] = blocker is not None
 
-    frame = SHOT_FRAME.get(str(shot_type).upper())
     expected_height = None
+    headroom_applies = False
     if frame is not None:
-        # 角色在画面里应有的高度占比 = 角色高 / 画面高
-        expected_height = max(0.05, min(1.5, SUBJECT_HEIGHT / frame.frame_height))
+        # 窗口内那一段在画面里应有的高度占比。景别紧到装不下整身时，
+        # 该看到的就是整幅画面（比例 1.0），而不是 >1 的"整身/画面"。
+        visible = min(SUBJECT_HEIGHT, frame.frame_height)
+        expected_height = max(0.05, visible / frame.frame_height)
+        # 头顶留白只对"比全身更紧"的景别有意义
+        headroom_applies = frame.frame_height <= SUBJECT_HEIGHT
 
     report = evaluate_composition(boxes, occluded=occluded or None,
-                                  expected_height=expected_height)
+                                  expected_height=expected_height,
+                                  headroom_applies=headroom_applies)
     log.info("构图评分：%.1f（%s）", report.score,
              "通过" if report.passed else "需调整")
     return report

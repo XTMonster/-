@@ -80,7 +80,8 @@ def test_expected_sdl_has_three_contiguous_shots():
     assert [shot["id"] for shot in shots] == ["shot_001", "shot_002", "shot_003"]
     assert [(shot["start_frame"], shot["end_frame"]) for shot in shots] == \
         [(1, 72), (73, 168), (169, 288)]
-    assert [shot["shot_type"] for shot in shots] == ["MLS", "MCU", "LS"]
+    # CU 曾因为"取景太紧 + 按整身评分"被判构图失败；它留在 Golden 里当回归。
+    assert [shot["shot_type"] for shot in shots] == ["MLS", "MCU", "CU"]
     # 相邻镜头景别各不相同，§10.5 的 R010 因此不会误报
     assert len({shot["shot_type"] for shot in shots}) == 3
 

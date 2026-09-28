@@ -75,10 +75,14 @@ def test_no_field_was_split_into_single_characters():
 def test_corpus_matches_the_engine():
     """知识库里的数字必须与引擎实现一致，否则就是在教模型做错事。"""
     sizes = next(card for card in CARDS if card.id == "cine_shot_size")
+    heights = next(card for card in CARDS if card.id == "cine_height")
     for shot, frame in SHOT_FRAME.items():
         if shot in ("OTS", "POV"):       # 复用邻近景别，不在九宫格里
             continue
         assert sizes.parameters["frame_height"][shot] == frame.frame_height
+        # 对准高度也要对拍：CU 的"头顶被切"正是 target_z 与 frame_height
+        # 一起决定的，只盯住一个数字会漏掉另一半。
+        assert heights.parameters["target_z"][shot] == frame.target_z
 
     lenses = next(card for card in CARDS if card.id == "cine_lens")
     for shot, frame in SHOT_FRAME.items():

@@ -124,6 +124,49 @@ def test_expected_height_mismatch_is_flagged():
     assert report.items["framing"].suggestion
 
 
+def test_headroom_is_skipped_for_shots_that_frame_the_whole_body():
+    """宽景里头顶上方本来就有大片空间，不该按"留白过多"扣分（§10.4 注记）。"""
+    wide = good_box(top=0.62, bottom=0.30)          # 全身都在画里、主体偏下
+    with_rule = evaluate_composition([wide])
+    without = evaluate_composition([wide], headroom_applies=False)
+    assert with_rule.items["headroom"].score < 1.0
+    assert without.items["headroom"].score == 1.0
+    assert not without.items["headroom"].suggestion
+    assert without.score > with_rule.score
+
+
+def test_headroom_is_skipped_when_the_frame_cuts_into_the_body():
+    """ECU 这类"局部占满"：画面顶边落在身体内部，头顶留白这个概念不适用。"""
+    close = good_box(top=1.0, bottom=0.0, clipped_top=True)
+    report = evaluate_composition([close])
+    assert report.items["headroom"].score == 1.0
+    assert not report.items["headroom"].suggestion
+
+
+def test_intentional_side_clipping_is_not_reported_as_out_of_frame():
+    """主体比画面还宽是 ECU 的设计，不该被建议"收紧景别"。"""
+    tight = SubjectBox(name="小明", left=-0.12, right=1.12, top=0.95,
+                       bottom=0.05, facing=1.0, clipped_sides=True)
+    report = evaluate_composition([tight])
+    assert report.items["framing"].score == 1.0
+    assert "出画" not in report.items["framing"].suggestion
+
+
+def test_accidental_clipping_still_penalised():
+    """没有"故意裁切"标记的半出画主体，仍然要被扣分。"""
+    half_out = SubjectBox(name="小明", left=-0.30, right=0.40, top=0.95,
+                          bottom=0.40, facing=1.0)
+    report = evaluate_composition([half_out])
+    assert report.items["framing"].score < 0.9
+    assert "出画" in report.items["framing"].suggestion
+
+
+def test_box_clipping_flags_default_to_off():
+    """默认值必须表示"没有故意裁切"，否则外部调用者会被静默改变语义。"""
+    box = good_box()
+    assert box.clipped_top is False and box.clipped_sides is False
+
+
 def test_report_serialises():
     data = evaluate_composition([good_box()]).to_dict()
     assert set(data) == {"score", "passed", "items", "suggestions"}

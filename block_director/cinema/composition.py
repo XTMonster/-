@@ -26,6 +26,10 @@ PASS_SCORE = 70.0
 # 头部留白的理想区间（占画面高度的比例）
 HEADROOM_IDEAL = (0.03, 0.12)
 
+# 头部留白只在"比全身更紧"的景别里才有意义：整身都在画里时，头顶上方的
+# 空间是宽景的固有属性，不是构图缺陷（见 §10.4 的实现注记）。
+SUBJECT_HEIGHT_FOR_HEADROOM = 1.45
+
 # 三分线交点
 THIRDS = (1.0 / 3.0, 2.0 / 3.0)
 
@@ -40,6 +44,8 @@ class SubjectBox:
     top: float
     bottom: float
     facing: float = 0.0          # 屏幕空间朝向：-1 向左，+1 向右，0 无方向
+    clipped_top: bool = False    # 包围盒被"该景别看到的窗口"从上方截断
+    clipped_sides: bool = False  # 主体比这个景别的画面还宽，左右本就该出画
 
     @property
     def center_x(self) -> float:
@@ -98,7 +104,11 @@ def _clamp01(value: float) -> float:
     return max(0.0, min(1.0, value))
 
 
-def _headroom(box: SubjectBox) -> CompositionItem:
+def _headroom(box: SubjectBox, applies: bool = True) -> CompositionItem:
+    if not applies or box.clipped_top:
+        # 画面顶边落在身体内部（ECU 这种"局部占满"）或整身都在画里（宽景）：
+        # 头顶留白这个概念不适用，不该扣分也不该给建议。
+        return CompositionItem("headroom", 1.0, WEIGHTS["headroom"])
     top_margin = 1.0 - box.top
     low, high = HEADROOM_IDEAL
     if low <= top_margin <= high:
@@ -170,9 +180,16 @@ def _occlusion(boxes: Sequence[SubjectBox],
 
 def _framing(box: SubjectBox,
              expected_height: Optional[float]) -> CompositionItem:
-    inside = box.inside_ratio()
+    # 这个景别本来就只拍局部（ECU 的"局部占满"）时，"整身是否在画内"没有意义：
+    # 只要主体没有整个跑到画外，就不该按出画扣分，也不该建议"收紧景别"。
+    if box.clipped_top or box.clipped_sides:
+        inside = 1.0 if box.inside_ratio() > 0.0 else 0.0
+    else:
+        inside = box.inside_ratio()
     score = inside
-    suggestion = "" if inside >= 0.98 else "主体部分出画；建议收紧景别或重新构图"
+    # 0.90 而不是 0.98：透视会让贴着画框的包围盒角点略微越界，把阈值卡在
+    # 98% 会让"本来就贴边"的正常景别每次都被建议"收紧景别"。
+    suggestion = "" if inside >= 0.90 else "主体部分出画；建议收紧景别或重新构图"
     if expected_height and expected_height > 0:
         ratio = box.height / expected_height
         deviation = abs(ratio - 1.0)
@@ -185,7 +202,8 @@ def _framing(box: SubjectBox,
 
 def evaluate_composition(boxes: Iterable[SubjectBox],
                          occluded: Optional[Dict[str, bool]] = None,
-                         expected_height: Optional[float] = None
+                         expected_height: Optional[float] = None,
+                         headroom_applies: bool = True
                          ) -> CompositionReport:
     """按 §10.4 的六项加权评分，返回百分制结果与建议。"""
     subjects: List[SubjectBox] = list(boxes)
@@ -194,7 +212,7 @@ def evaluate_composition(boxes: Iterable[SubjectBox],
 
     primary = max(subjects, key=lambda b: b.height)
     items = {
-        "headroom": _headroom(primary),
+        "headroom": _headroom(primary, headroom_applies),
         "lead_room": _lead_room(primary),
         "rule_of_thirds": _thirds(primary),
         "balance": _balance(subjects),

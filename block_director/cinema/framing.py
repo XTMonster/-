@@ -43,8 +43,8 @@ class ShotFrame:
 
 # 单调递增：越靠后越"远"
 SHOT_FRAME: Dict[str, ShotFrame] = {
-    "ECU": ShotFrame(0.35, 1.28, EYE_Z, 85.0, "大特写：眼睛/局部占满"),
-    "CU": ShotFrame(0.75, 1.12, EYE_Z, 85.0, "特写：头部≈80%"),
+    "ECU": ShotFrame(0.35, EYE_Z, EYE_Z, 85.0, "大特写：眼睛/局部占满"),
+    "CU": ShotFrame(0.90, EYE_Z, EYE_Z, 85.0, "特写：头部≈80%"),
     "MCU": ShotFrame(1.00, 1.12, 1.05, 50.0, "中近景：胸部以上≈60%"),
     "MS": ShotFrame(1.60, 1.00, 1.05, 50.0, "中景：腰部以上≈45%"),
     "MLS": ShotFrame(2.30, 0.80, CHEST_Z, 35.0, "中远景：膝盖以上≈30%"),

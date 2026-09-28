@@ -31,8 +31,10 @@ from block_director.contracts.plan import Plan  # noqa: E402
 from block_director.layer2_sdl import build_sdl  # noqa: E402
 from block_director.cinema.framing import SHOT_FRAME  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
+from block_director.layer3_engine.character_system import create_character  # noqa: E402
 from block_director.layer3_engine.cinema_engine import (  # noqa: E402
     evaluate_camera_composition,
+    place_camera_for_shot,
 )
 from block_director.layer3_engine.scene_context import get_context  # noqa: E402
 from block_director.layer3_engine.scene_state import collect_scene_state  # noqa: E402
@@ -142,7 +144,7 @@ def t_lenses_come_from_the_shot_table():
               for item in summary["results"]}
     expected = {"shot_001": SHOT_FRAME["MLS"].lens,
                 "shot_002": SHOT_FRAME["MCU"].lens,
-                "shot_003": SHOT_FRAME["LS"].lens}
+                "shot_003": SHOT_FRAME["CU"].lens}
     return {"ok": lenses == expected, "actual": lenses, "expected": expected}
 
 
@@ -170,6 +172,33 @@ def t_golden_scene_passes_the_audit():
             "composition_threshold": auditor.composition_threshold,
             "reports": reports, "composition": detail,
             "boxes": _boxes_per_shot()}
+
+
+# --------------------------------------------------------------------------- #
+# 5. 九种景别逐一自检：单主体按景别解算后必须通过构图门
+# --------------------------------------------------------------------------- #
+NATURAL_SHOTS = ("ECU", "CU", "MCU", "MS", "MLS", "LS", "ELS")
+
+
+def t_every_shot_type_is_framed_well():
+    results = {}
+    ok = True
+    for shot_type in NATURAL_SHOTS:
+        fresh_scene()
+        character = create_character("char_001", "小明", "#FF6B6B")
+        bundle, _solution = place_camera_for_shot(
+            "s", (0.0, 0.0, 0.0), shot_type=shot_type, side="front")
+        report = evaluate_camera_composition(bundle.camera, [character],
+                                             shot_type)
+        results[shot_type] = {
+            "score": report.score, "passed": report.passed,
+            "headroom": round(report.items["headroom"].score, 3),
+            "framing": round(report.items["framing"].score, 3),
+            "thirds": round(report.items["rule_of_thirds"].score, 3),
+            "window_height": SHOT_FRAME[shot_type].frame_height,
+            "suggestions": report.suggestions}
+        ok = ok and report.passed
+    return {"ok": ok, "shots": results}
 
 
 def _boxes_per_shot():
@@ -200,6 +229,7 @@ def main() -> int:
           t_built_scene_matches_the_expected_sdl)
     check("lenses_come_from_the_shot_table", t_lenses_come_from_the_shot_table)
     check("golden_scene_passes_the_audit", t_golden_scene_passes_the_audit)
+    check("every_shot_type_is_framed_well", t_every_shot_type_is_framed_well)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
