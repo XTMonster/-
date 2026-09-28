@@ -89,6 +89,53 @@ def action_fcurves(action: Optional[Any]) -> List[Any]:
     return collected
 
 
+def compositor_tree(scene, name: str = "BD_Compositor", create: bool = True):
+    """取场景的合成节点树。
+
+    实测：4.x 是 ``scene.node_tree``；5.x 起该属性被移除，改为
+    ``scene.compositing_node_group`` + ``bpy.data.node_groups`` 里的
+    ``CompositorNodeTree`` 节点组（``Scene.use_nodes`` 同时被标为 6.0 弃用）。
+    两个版本都支持，调用方不必关心。
+    """
+    modern = getattr(scene, "compositing_node_group", None)
+    if modern is not None:
+        return modern
+    legacy = getattr(scene, "node_tree", None)
+    if legacy is not None:
+        return legacy
+    if not create or not hasattr(bpy.data, "node_groups"):
+        return None
+    tree = bpy.data.node_groups.new(name, "CompositorNodeTree")
+    if hasattr(scene, "compositing_node_group"):
+        scene.compositing_node_group = tree
+    elif hasattr(scene, "node_tree"):
+        scene.node_tree = tree
+    return tree
+
+
+def map_range_node(node_tree):
+    """造一个"映射范围"节点。
+
+    实测：5.x 的合成器里 ``CompositorNodeMapRange`` 已不存在，改用共享的
+    ``ShaderNodeMapRange``；4.x 两者都有。优先用共享版，回退到合成器版。
+    """
+    for identifier in ("ShaderNodeMapRange", "CompositorNodeMapRange"):
+        if hasattr(bpy.types, identifier):
+            return node_tree.nodes.new(identifier)
+    raise RuntimeError("当前 Blender 没有可用的 Map Range 节点")
+
+
+def sequence_strips(editor):
+    """取序列编辑器里的片段集合。
+
+    实测：4.x 是 ``editor.sequences``；5.x 改名 ``editor.strips``（旧名已移除）。
+    """
+    strips = getattr(editor, "strips", None)
+    if strips is not None:
+        return strips
+    return editor.sequences
+
+
 def set_keyframe_interpolation(action: Optional[Any],
                                interpolation: str = "BEZIER",
                                easing: str = "AUTO") -> int:

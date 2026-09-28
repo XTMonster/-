@@ -1776,6 +1776,17 @@ def configure_video_output(scene, filepath: str, codec="H264", crf="MEDIUM"):
 - 输出：`depth_shot_{id}/frame_0001.png`，16 位灰度，与视频逐帧一一对应。
 - 归一化范围固定（如 0.1–50 米）并写入 README，保证跨镜头可比。
 
+> **实现（Phase 7）**：`delivery/depth.py`（纯计算的约定：固定范围 0.1–50 米、目录与文件名模板、README 文案、shots.json 条目）+ `layer8_delivery/depth_pass.py`（渲染）。
+>
+> **实现方式与上面两处差异，都是实测逼出来的**：
+>
+> 1. **方式 B 走不通**：Workbench 的 `shading.color_type` 枚举里**没有** depth 着色（只有 MATERIAL/OBJECT/RANDOM/VERTEX/TEXTURE/SINGLE），拿不到"深度着色"。
+> 2. **方式 A 在 5.x 也变了**：合成器的 File Output 节点被重写——`format.file_format` 的枚举**只剩 `OPEN_EXR_MULTILAYER`**，写不出 16 位灰度 PNG；节点属性也从 `base_path`/`file_slots` 改成了 `directory`/`file_output_items`（`file_output_items.new(socket_type, name)`）。
+>
+> 于是改用等价的第三条路：**相机数据（View Z Depth）+ `view_layer.material_override`**。逐像素的相机空间 Z 距离经固定的 0.1–50 米映射成 0–1 灰色自发光，整个场景换上这一份材质就得到逐像素深度图；背景用 `world_override` 置纯白（= 超出远端的 1.0），符合 ControlNet-depth 的读法。好处是归一化完全由我们掌控、输出天然是 16 位灰度 PNG，而且只用到稳定 API（`material_override` / `world_override` / `ShaderNodeCameraData`）。
+>
+> 第 20 步实测：两条各 6 帧的镜头各产出 6 张 `frame_0001.png…`；文件头是 **16 位、颜色类型 0（灰度）**、尺寸 1280×720、像素值跨度 0.95（说明深度确实有层次，不是一张平色）。注意 `image.depth` 读的是内存里的浮点缓冲（恒为 32），**不能**用来判断落盘位深——必须读 PNG 的 IHDR。
+
 ### 15.7 可选的相机轨迹
 
 导出逐帧相机内外参，供相机可控视频生成使用：
@@ -1798,6 +1809,19 @@ def configure_video_output(scene, filepath: str, codec="H264", crf="MEDIUM"):
 ```
 
 数据来源：逐帧 `camera.matrix_world`（**必须先求值 depsgraph**，见 §7.3）。
+
+### 15.7.1 全片拼接 `full_concat`（v1.2 补充）
+
+`full_concat = true` 时，把各镜 mp4 按顺序接成一条 `blockout_full.mp4`。实现走
+**Blender 内置的序列编辑器**（VSE）：既不重渲染（拼接而不是再渲一遍），也不需要
+外部 ffmpeg——`external_ffmpeg_path` 因此只是可选的加速/替代路径。
+
+> **实现（Phase 7）**：`layer8_delivery/concat.py`。两处实测细节写在这里，免得后人再踩：
+>
+> 1. **5.x 把 `sequence_editor.sequences` 改名成 `strips`**（旧名已移除），差异收在 `utils/blender_compat.sequence_strips()`。
+> 2. **`frame_final_end` 是开区间右端**：`frame_start=1`、时长 6 的片段，`frame_final_end = 7`。第一版写成 `cursor = frame_final_end + 1`，结果每段多出一帧空白，全片比各镜之和长出 2 帧。另外 VSE 从容器元数据推算的时长可能多算一帧，因此拼接时用**分段渲染已知的确切帧数**（`clip_frames`）把每段长度钉死。
+>
+> 第 20 步实测：两段各 6 帧 → `blockout_full.mp4` 帧数正好 12，文件头 `ftyp` 为 `isom` 系容器，与两条分镜片子一起产出。
 
 ### 15.8 分辨率与交付预设
 
@@ -2374,7 +2398,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **476 项**，全部通过；`tools/run_tests.ps1` 跑 **19 步**（规格与
+`tests/` 共 **479 项**，全部通过；`tools/run_tests.ps1` 跑 **20 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2554,13 +2578,15 @@ def supports_media_type() -> bool:
 | **视口叠加（§13.4）** | `overlay/geometry.py`、`layer7_ui/draw_overlay.py` | ✅ 轴线虚线 / 三分法网格 / title+action 安全框 / 走位路径 / 相机视锥 / 违规红框；几何纯计算可单测 |
 | **画线工具（§9.5/§13.5）** | `layer7_ui/operator_path_draw.py` | ✅ 模态采集点 + 可测的落地函数；路径曲线入 Guides 且不渲染 |
 | **路径平滑与简化（§17.1/§17.2）** | `motion/path.py` | ✅ Catmull-Rom（每段 10 采样点、过首尾点）+ RDP（epsilon 0.05），纯计算 |
+| **深度序列（§15.6）** | `delivery/depth.py`、`layer8_delivery/depth_pass.py` | ✅ 16 位灰度 PNG 逐帧；固定 0.1–50 米归一化并写进 README；用材质覆盖实现（5.x 合成器只能写 EXR） |
+| **全片拼接（§15.7）** | `layer8_delivery/concat.py` | ✅ 内置 VSE 把各镜接成 `blockout_full.mp4`，帧数等于各镜之和，无需外部 ffmpeg |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 476 项全部通过 |
+| 测试套件 | `tests/` | ✅ 479 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 476 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 479 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2652,7 +2678,9 @@ def supports_media_type() -> bool:
 
 **视口叠加与画线验收（第 19 步）**：在真实 Blender 内七项断言全绿：叠加几何从场景取到 4 条三分线 / 2 个安全框 / 轴线虚线 / 2 个相机视锥（每个 16 个点）；配置开关能真的关掉三者；`draw_handler` 挂得上、摘得掉、重复调用安全；画线落成后 Guides 里出现 `BD_Path_*` 曲线（`hide_render=True`）且角色根节点拿到 location 与 rotation 两类关键帧，帧数 = `end_frame - start_frame`；导出前的画面审计**看不到**这条曲线；点数不足或角色不存在时给出可执行的报错；画线算子随插件注册/注销。
 
-**当前仍未实现**：§15.6/§15.7 的可选深度序列与全片拼接（后者目前显式告警）。`llm_trace.jsonl` 目前只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可在 Phase 7 用配置开关补上。
+**深度与拼接验收（第 20 步）**：一次真实交付跑通五条断言：两条各 6 帧的镜头各产出 6 张深度图（`frame_0001.png…`，范围 0.1–50 米）；深度文件头是**16 位、灰度**、1280×720，像素值跨度 0.95（确有层次）；`blockout_full.mp4` 产出且帧数**正好等于各镜之和 12**；README 与 `shots.json` 记录了归一化范围与全片文件；关掉这两项时**不产出**深度目录与全片（回到原来的行为，不是静默跳过）。
+
+**当前仍未实现**：`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。§13.1 主面板里的角色管理（列表 / 颜色 / 增删）与模型选择仍是占位，UI 目前只提供剧本路径、离线开关、生成控制、工具与三个子面板。
 
 至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 

@@ -92,6 +92,15 @@ Phases 0-4 and 6 are done:
   `commit_drawn_path()` is split out of the modal operator so the
   "RDP -> Catmull-Rom -> keyframes" pipeline is testable headlessly, and the
   `BD_Path_*` curve goes into Guides with `hide_render=True`.
+- **Depth sequence and full concatenation** (`delivery/depth.py`,
+  `layer8_delivery/depth_pass.py`, `layer8_delivery/concat.py`):
+  `export_depth` renders 16-bit grey depth PNGs per shot using the camera's
+  View Z Depth through `view_layer.material_override` (Blender 5.x's compositor
+  File Output can only write multi-layer EXR, and Workbench has no depth
+  shading), normalised to a fixed 0.1-50 m range that is written into the
+  README. `full_concat` joins the per-shot clips inside Blender's own sequencer
+  (no external ffmpeg) and pins each strip to the frame count known from the
+  per-shot render, because VSE's `frame_final_end` is exclusive.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
@@ -101,7 +110,7 @@ dialogue timing and coreference) is done.
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all nineteen checks: spec + golden drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all twenty checks: spec + golden drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
@@ -110,7 +119,8 @@ checkpoint and rollback, the Phase 6 delivery export, the Layer 2/9
 save/load/migrate/rebuild round trip, the replay round trip, and the Golden
 Test against the expected SDL, and the scene-sync / single-shot regeneration
 round trip, and the shot list / debug panel checks.
-It also covers the viewport overlay and the path-drawing tool.
+It also covers the viewport overlay and the path-drawing tool, and the depth
+sequence plus full concatenation.
 
 The end-to-end commands are:
 

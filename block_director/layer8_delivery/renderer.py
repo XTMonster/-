@@ -70,10 +70,11 @@ def apply_delivery_settings(scene, config) -> List[str]:
         shading.background_type = "VIEWPORT"
         shading.background_color = (0.10, 0.11, 0.14)
 
-    if config.export_depth:
-        warnings.append("depth 导出尚未实现（需要 Z Pass 通路），已跳过")
-    if config.full_concat:
-        warnings.append("全片拼接尚未实现（VSE/外部 ffmpeg 通路），已跳过")
+    # depth 与 full_concat 的实际产出在 export_director 里编排（它们都依赖
+    # 分段渲染的结果）。配置层面的前提条件在这里校验：
+    if config.export_depth and backend is not RenderBackend.EEVEE:
+        warnings.append("depth 导出需要 EEVEE 的 Z Pass，已跳过（当前后端 "
+                        f"{backend}）")
     return warnings
 
 

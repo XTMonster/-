@@ -18,12 +18,15 @@ import bpy
 
 from ..contracts.enums import resolution_for
 from ..contracts.plan import Plan
+from ..delivery.depth import depth_range_note
 from ..delivery.manifest import build_manifest
 from ..delivery.prompts import DEFAULT_STYLE, render_prompt_sheet
 from ..layer3_engine.collection_router import audit_renderable_objects
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .camera_trajectory import camera_trajectory
+from .concat import ConcatUnavailable, concat_shot_clips, full_output_path
+from .depth_pass import DepthUnavailable, render_depth_sequence
 from .renderer import apply_delivery_settings, render_first_frame, render_shot_video
 
 log = get_logger("delivery")
@@ -40,6 +43,9 @@ class DeliveryReport:
     total_frames: int = 0
     duration_s: float = 0.0
     audit_leaks: List[str] = field(default_factory=list)
+    depth_shots: List[Dict[str, Any]] = field(default_factory=list)
+    full_video: str = ""
+    total_frames_concat: int = 0
 
     @property
     def ok(self) -> bool:
@@ -53,6 +59,9 @@ class DeliveryReport:
             "total_frames": self.total_frames,
             "duration_s": round(self.duration_s, 2),
             "audit_leaks": list(self.audit_leaks),
+            "depth_shots": list(self.depth_shots),
+            "full_video": self.full_video,
+            "total_frames_concat": self.total_frames_concat,
         }
 
 
@@ -94,6 +103,17 @@ def _readme(manifest: Dict[str, Any], report: DeliveryReport) -> str:
     if os.path.exists(os.path.join(report.out_dir, "camera_traj.json")):
         lines.insert(-1, "4. `camera_traj.json` 提供逐帧相机内外参，"
                          "可喂给相机可控的视频生成模型。")
+        lines.append("")
+    if os.path.exists(os.path.join(report.out_dir, "blockout_full.mp4")):
+        lines.insert(-1, "5. `blockout_full.mp4` 是各镜按顺序接成的全片，"
+                         "适合一次性喂给视频模型。")
+        lines.append("")
+    if any(name.startswith("depth_shot_") for name in
+           os.listdir(report.out_dir) if os.path.isdir(
+               os.path.join(report.out_dir, name))):
+        lines.append("## 深度序列")
+        lines.append("")
+        lines.append(depth_range_note())
         lines.append("")
     if report.warnings:
         lines.append("## 告警")
@@ -138,6 +158,7 @@ def export_project(plan: Plan, *,
     for shot in ranges:
         shot_id = shot["shot_id"]
         video_base = str(export_dir / f"blockout_{shot_id}.mp4")
+        shot_frames = int(shot["end_frame"]) - int(shot["start_frame"]) + 1
         if config.per_shot_clips:
             path, frames = render_shot_video(
                 scene, shot["start_frame"], shot["end_frame"], video_base,
@@ -159,8 +180,46 @@ def export_project(plan: Plan, *,
                              "end_frame": shot["end_frame"],
                              "video": f"blockout_{shot_id}.mp4"
                                       if config.per_shot_clips else None})
+        if config.export_depth:
+            try:
+                depth = render_depth_sequence(scene, shot["start_frame"],
+                                              shot["end_frame"],
+                                              str(export_dir), shot_id)
+                report.files.extend(depth["files"][:1])   # 清单里留一个代表
+                report.shots[-1]["depth"] = depth_range_note()
+                report.shots[-1]["depth_frames"] = depth["frames"]
+                report.depth_shots.append({"shot_id": shot_id,
+                                           "dir": str(Path(depth["dir"]).relative_to(export_dir)),
+                                           "frames": depth["frames"],
+                                           "range_m": depth["range_m"]})
+            except DepthUnavailable as exc:
+                report.warnings.append(f"{shot_id}: depth 导出跳过（{exc}）")
         log.info("已导出镜头 %s（%d-%d）", shot_id,
                  shot["start_frame"], shot["end_frame"])
+
+    if config.full_concat and config.per_shot_clips:
+        clips = [str(export_dir / f"blockout_{shot['shot_id']}.mp4")
+                 for shot in ranges]
+        clip_frames = [int(shot["end_frame"]) - int(shot["start_frame"]) + 1
+                       for shot in ranges]
+        try:
+            concat = concat_shot_clips(
+                scene, clips, full_output_path(export_dir),
+                clip_frames=clip_frames,
+                preset=str(config.preset), fps=24,
+                codec=str(config.video_codec), crf=str(config.crf))
+            if concat["ok"]:
+                report.files.append(concat["path"])
+                report.full_video = concat["path"]
+                report.total_frames_concat = concat["frames"]
+            else:
+                report.warnings.append(f"全片拼接未产出文件（{concat['path']}）")
+            if concat["skipped"]:
+                report.warnings.append(
+                    "以下分镜视频不存在，未参与拼接："
+                    + "、".join(concat["skipped"]))
+        except ConcatUnavailable as exc:
+            report.warnings.append(f"全片拼接跳过（{exc}）")
 
     manifest = build_manifest(plan, build_summary=build_summary,
                               resolution=(width, height), style=style,

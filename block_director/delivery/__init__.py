@@ -8,6 +8,16 @@ from __future__ import annotations
 
 from .manifest import build_manifest
 from .prompts import SHOT_TYPE_LABELS, compose_prompt, render_prompt_sheet
+from .depth import (
+    DEPTH_DIR_TEMPLATE,
+    DEPTH_FRAME_PREFIX,
+    DEPTH_RANGE,
+    depth_dir_name,
+    depth_manifest_entry,
+    depth_range_note,
+)
 
 __all__ = ["build_manifest", "render_prompt_sheet", "compose_prompt",
-           "SHOT_TYPE_LABELS"]
+           "SHOT_TYPE_LABELS", "DEPTH_RANGE", "DEPTH_DIR_TEMPLATE",
+           "DEPTH_FRAME_PREFIX", "depth_dir_name", "depth_range_note",
+           "depth_manifest_entry"]
