@@ -18,11 +18,27 @@ function Fail([string]$message) {
     exit 1
 }
 
-Write-Host '[1/5] Check spec/code consistency (specs/config.default.yaml)' -ForegroundColor Cyan
+function Invoke-BlenderScript([string]$blender, [string]$script, [string[]]$extra) {
+    $blenderArgs = @('--background', '--factory-startup', '--python', $script)
+    if ($extra) { $blenderArgs += '--'; $blenderArgs += $extra }
+    return & $blender @blenderArgs 2>&1
+}
+
+function Assert-Marker([object]$output, [string]$pattern, [string]$label) {
+    $line = $output | Select-String -Pattern $pattern | Select-Object -First 1
+    if (-not $line) {
+        Write-Host "  FAILED: no $pattern marker ($label)" -ForegroundColor Red
+        $output | Select-Object -Last 20
+        exit 1
+    }
+    return $line.Line
+}
+
+Write-Host '[1/6] Check spec/code consistency (specs/config.default.yaml)' -ForegroundColor Cyan
 python tools/gen_specs.py --check
 if ($LASTEXITCODE -ne 0) { Fail '  FAILED: spec/code drift' }
 
-Write-Host '[2/5] Run pytest suite' -ForegroundColor Cyan
+Write-Host '[2/6] Run pytest suite' -ForegroundColor Cyan
 python -m pytest
 if ($LASTEXITCODE -ne 0) { Fail '  FAILED: pytest' }
 
@@ -35,16 +51,18 @@ if (-not $blender) {
     $blender = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 }
 if (-not $blender) {
-    Write-Host '[3/5] .. [5/5] skipped: blender.exe not found (set BLENDER_EXE)' -ForegroundColor Yellow
+    Write-Host '[3/6] .. [6/6] skipped: blender.exe not found (set BLENDER_EXE)' -ForegroundColor Yellow
     exit 0
 }
 
-Write-Host '[3/5] Smoke test contracts inside Blender Python' -ForegroundColor Cyan
+Write-Host '[3/6] Smoke test contracts inside Blender Python' -ForegroundColor Cyan
 $smoke = @(
     'import sys',
     "sys.path.insert(0, r'$root')",
     'import block_director',
     'from block_director.contracts import AppConfig',
+    'from block_director.utils.blender_compat import startup_report',
+    'startup_report()',
     "print('SMOKE_OK', block_director.__version__, sys.version.split()[0], len(AppConfig().errors()))"
 ) -join '; '
 $smokeOut = & $blender --background --factory-startup --python-expr $smoke 2>&1
@@ -56,32 +74,23 @@ if (-not $smokeLine) {
 }
 Write-Host ('  ' + $smokeLine.Line) -ForegroundColor Green
 
-Write-Host '[4/5] Run the add-on headless (Phase 0 state machine)' -ForegroundColor Cyan
+Write-Host '[4/6] Run the add-on headless (Phase 0 state machine)' -ForegroundColor Cyan
 $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
-$headless = Join-Path $root 'tools\run_headless.py'
-$output = & $blender --background --factory-startup --python $headless -- --offline --out $out 2>&1
-$marker = $output | Select-String -Pattern 'BLOCKDIRECTOR_RESULT' | Select-Object -First 1
-if (-not $marker) {
-    Write-Host '  FAILED: no BLOCKDIRECTOR_RESULT marker' -ForegroundColor Red
-    $output | Select-Object -Last 15
-    exit 1
-}
-if ($marker.Line -notmatch '"success": true') {
-    Fail ('  FAILED: ' + $marker.Line)
-}
-Write-Host ('  ' + ($marker.Line -replace 'BLOCKDIRECTOR_RESULT ', '')) -ForegroundColor Green
+$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--out', $out)
+$marker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_RESULT' 'headless'
+if ($marker -notmatch '"success": true') { Fail ('  FAILED: ' + $marker) }
+Write-Host ('  ' + ($marker -replace 'BLOCKDIRECTOR_RESULT ', '')) -ForegroundColor Green
 
-Write-Host '[5/5] Phase 1 scene build inside Blender' -ForegroundColor Cyan
-$phase1 = Join-Path $root 'tools\blender_tests\test_phase1_scene.py'
-$p1Out = & $blender --background --factory-startup --python $phase1 2>&1
-$p1Line = $p1Out | Select-String -Pattern 'BD_TEST_RESULT' | Select-Object -First 1
-if (-not $p1Line) {
-    Write-Host '  FAILED: no BD_TEST_RESULT marker' -ForegroundColor Red
-    $p1Out | Select-Object -Last 20
-    exit 1
-}
-if ($p1Line.Line -notmatch '"failed": \[\]') {
-    Fail ('  FAILED: ' + $p1Line.Line)
-}
+Write-Host '[5/6] Phase 1 scene build inside Blender' -ForegroundColor Cyan
+$p1Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase1_scene.py') $null
+$p1Line = Assert-Marker $p1Out 'BD_TEST_RESULT' 'phase1'
+if ($p1Line -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p1Line) }
 Write-Host '  OK: all Phase 1 scene checks passed' -ForegroundColor Green
+
+Write-Host '[6/6] Phase 2 motion baking inside Blender' -ForegroundColor Cyan
+$p2Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase2_motion.py') $null
+$p2Line = Assert-Marker $p2Out 'BD_TEST_RESULT' 'phase2'
+if ($p2Line -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p2Line) }
+Write-Host '  OK: all Phase 2 motion checks passed' -ForegroundColor Green
+
 Write-Host 'All checks passed.' -ForegroundColor Green

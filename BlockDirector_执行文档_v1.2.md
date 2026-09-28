@@ -2403,20 +2403,26 @@ def supports_media_type() -> bool:
 | **场景执行器（Phase 1）** | `layer3_engine/scene_executor.py` | ✅ 地面/墙体/道具/灯光；`clay_studio` 默认预设（§8.2） |
 | **事务式执行（Phase 1）** | `layer3_engine/transaction.py` | ✅ 异常自动回滚 + 自动识别本批新建对象 + 孤儿 datablock 回收（§8.1） |
 | **相机创建（Phase 1）** | `layer3_engine/cinema_engine/camera_manager.py` | ✅ Track To 约束对准（§10.1）；取景解算属 Phase 3 |
-| 测试套件 | `tests/` | ✅ 121 项全部通过 |
+| **动作库与动作混合（Phase 2）** | `block_director/motion/`、`character_system/motion_library.py`、`motion_blender.py` | ✅ 12 种动作、四层合成、§9.7 冲突仲裁；实测 270 个关键帧、渲染逐帧变化 |
+| **版本兼容层（实测驱动）** | `utils/blender_compat.py` | ✅ 覆盖 5.x 移除 `Action.fcurves`、引擎标识映射、`media_type` 前置步骤 |
+| 测试套件 | `tests/` | ✅ 144 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 121 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 144 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
 **Phase 1 验收（§20 DoD）**：`tools/run_tests.ps1` 五步全绿，其中第 5 步在真实 Blender 内构建场景并断言：角色总高 1.45、Pivot 世界坐标逐点命中、网格全部落在 Content、标签落在 Guides 且 `hide_render=True`、导出审计返回空、**渲染正对照**（有角色 0.4597 vs 无角色 0.4149）证明白模确实入画、泄漏检测能抓出放开的标签、事务回滚后对象与 mesh 计数归零。
 
+**Phase 2 验收（§20 DoD）**：第 6 步在真实 Blender 内烘焙动作并断言：`walk_to` + `nod` 产生 **270 个关键帧**（54 帧 / 5 条通道），根节点位置 0 → 0.9787 → 2.0，**渲染三帧亮度互不相同**（0.26777 / 0.26721 / 0.26255，证明画面真的在动），`walk_to`+`fall_down` 被冲突表拒绝并抛错，先 `sit` 后 `stand` 使身体精确回到 0.40（0.4 → 0.2 → 0.4），头部动作不污染根节点。
+
+> **实现注记（对 §2.3 目录的一处刻意调整）**：§2.3 把动作库放在 `layer3_engine/character_system/`，但那里紧邻 bpy。实现时把**纯计算**部分（姿态函数、分层合成、§9.7 冲突仲裁）抽到独立的 `block_director/motion/`，bpy 侧只保留"通道 → 对象属性"的映射与关键帧写入。这样混合与冲突逻辑才能被 pytest 覆盖（新增 23 项），否则只能靠人工在 Blender 里点。
+
 **架构审核结论**：架构的 11 项关键假设中 10 项实证成立；唯一的 WARN（Blender 无跨线程护栏）已通过新增 `threading_guard` 强制化解除。**当前架构不存在阻塞性可行性问题。**
 
-**下一步**：Phase 2 —— 动作库（走/跑/倾斜/摔倒/点头/代理坐姿）与动作混合器，按 §9.6/§9.7 把"静止白模"变成"能动起来的预演"；随后把驱动器从"只产出计划"推进到"逐镜头执行落库"。
+**下一步**：Phase 3 —— 摄影解算（景别/焦距 → 距离/机位，含房间约束，§10.1/§10.6）+ 轴线控制器（§10.3）+ 构图分析（§10.4），把"能动"推进到"机位正确、可审"；随后 Phase 4 把驱动器从"只产出计划"接到"逐镜头执行落库"。
 
 ---
 

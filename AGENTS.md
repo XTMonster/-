@@ -24,10 +24,19 @@ previs and exports it as a reference video for AI video generation.
 
 ## Status
 
-Phase 0 (plugin skeleton + state machine) and Phase 1 (character geometry, scene
-executor, collection routing, transactions, camera) are done.
-`tools/run_tests.ps1` runs all five checks: spec drift, pytest, in-Blender contract
-smoke test, a headless run of the add-on, and the Phase 1 scene build.
+Phases 0-2 are done:
+
+- **Phase 0** plugin skeleton, state machine, audit logging
+- **Phase 1** character geometry, scene executor, collection routing, transactions, camera
+- **Phase 2** motion library, layered blending, §9.7 conflict arbitration
+
+`tools/run_tests.ps1` runs all six checks: spec drift, pytest, in-Blender contract
+smoke test, a headless run of the add-on, the Phase 1 scene build, and Phase 2
+motion baking.
+
+Motion math lives in `block_director/motion/` (no `bpy`, unit-tested). The bpy side
+(`layer3_engine/character_system/motion_library.py`) only maps channels onto object
+properties and writes keyframes.
 
 Blender-side integration tests live in `tools/blender_tests/` and print a
 `BD_TEST_RESULT {json}` marker.
