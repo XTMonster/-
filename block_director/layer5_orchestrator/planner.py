@@ -88,7 +88,8 @@ NO_KNOWLEDGE = "（本次未启用知识库）"
 
 def build_plan_payload(script: str, config=None,
                        request_id: Optional[str] = None,
-                       parsed=None, retriever=None) -> ChatPayload:
+                       parsed=None, retriever=None,
+                       max_tokens: Optional[int] = None) -> ChatPayload:
     """构造阶段 A 的请求。
 
     给了 ``parsed``（Layer 1 的解析结果）时，提示里放**结构化摘要 + 对白时长表**
@@ -126,6 +127,8 @@ def build_plan_payload(script: str, config=None,
                              "parameters": EMIT_PLAN_TOOL_PARAMETERS}}],
         tool_choice=ToolChoice.REQUIRED,
         temperature=temperature,
+        max_tokens=max_tokens or (config.llm.max_tokens or None
+                                  if config is not None else None),
         purpose=Purpose.PLAN,
         request_id=request_id or new_request_id(),
     )

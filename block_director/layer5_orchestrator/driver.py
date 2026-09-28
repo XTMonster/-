@@ -44,6 +44,7 @@ from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
 from .context_budget import budget_report, trim_messages
 from .editor import build_editor_payload, extract_draft, merge_draft
+from .editor import EDITOR_TOOL_NAME, EMIT_SHOT_DRAFT_PARAMETERS
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
 from .loop_detector import LoopDetector
 from .human_gate import GateDecision, GateRequest, HumanGate
@@ -84,6 +85,16 @@ def default_registry() -> ToolRegistry:
         description="提交白模预演的分镜计划（阶段 A 的唯一合法产出）",
         parameters=EMIT_PLAN_TOOL_PARAMETERS,
         handler=lambda **kwargs: f"计划已接收：{len(kwargs.get('shots', []))} 个镜头",
+    )
+    # 单镜草案也注册进默认表：修复/精修阶段需要它来**改对白时序**——
+    # 实测（真实模型）：镜头时长装不下对白（R011/S6）是最常见的违规，
+    # 而 §7.4 的工具里没有"改时长/挪对白"的入口，只有重新提交这份草案。
+    registry.add(
+        name=EDITOR_TOOL_NAME,
+        description="重新提交这一镜的完整草案（修复对白时序、动作与取景）",
+        parameters=EMIT_SHOT_DRAFT_PARAMETERS,
+        handler=lambda **kwargs: (
+            f"草案已接收：{kwargs.get('shot_id', '?')}"),
     )
     register_control_tools(registry)
     return registry
@@ -169,6 +180,8 @@ class PrevisDriver:
         self.draft_history: List[Dict[str, Any]] = []
         self.drafts_failed: List[Dict[str, Any]] = []
         self._finished_shots: List[str] = []
+        self._needs_rebuild = False
+        self._rebuild_in_place = False
         self.review_history: List[Dict[str, Any]] = []
         self.clock = clock
         self.thread_factory = thread_factory
@@ -274,10 +287,16 @@ class PrevisDriver:
         if self._paused:
             return True                      # 暂停：一步都不推进，状态原样保留
 
-        self._steps += 1
-        if self._steps > self.limits.max_steps:
-            self._fail("超出最大步数（疑似死循环）")
-            return False
+        # 只在"真的做了一件事"时计数。等一次 LLM 调用返回要反复进 step()，
+        # 本地模型一次调用 60–90 秒、轮询 20ms 就是数千次空转——按 tick 计数会
+        # 把"模型慢"误判成"疑似死循环"（实测就是这样撞上 4000 上限的）。
+        waiting = (self.state is DriverState.CALLING_LLM
+                   and self._reply_q.empty())
+        if not waiting:
+            self._steps += 1
+            if self._steps > self.limits.max_steps:
+                self._fail("超出最大步数（疑似死循环）")
+                return False
         exhausted = self.budget.exhausted_reason()
         if exhausted and self.state is DriverState.PLANNING:
             # 还没产出计划就触顶：降级收尾（构建与审核不花预算，不该被砍）
@@ -371,6 +390,13 @@ class PrevisDriver:
                 self.audit.log("repair_invalid", problem, level="warning")
             self._repair_attempts += 1
             self._repairs_total += 1
+            # 修复只改了计划（重提草案）时必须先重建场景再复核：审核器看的是
+            # 场景，否则"改好了"根本不会被看见，只会在同一处反复修。
+            if self._needs_rebuild and self.builder is not None:
+                self._needs_rebuild = False
+                self._rebuild_in_place = True
+                self._transition(DriverState.BUILDING)
+                return
             self._transition(DriverState.CHECKING)   # 复核一次，看改没改对
             return
 
@@ -584,6 +610,11 @@ class PrevisDriver:
 
     def _after_build_state(self) -> DriverState:
         """建完场景后：有审核器就先逐镜校验（§7.1 B3），否则直接收尾。"""
+        if self._rebuild_in_place:
+            # 修复阶段改了计划（重提草案）后重建：审核队列与修复计数保持原样，
+            # 否则会从第一镜重新审一遍，甚至在已通过的镜头上再触发修复。
+            self._rebuild_in_place = False
+            return DriverState.CHECKING
         if self.auditor is not None:
             shots = [str(s) for s in self.auditor.shot_ids()]
             if shots:
@@ -956,12 +987,22 @@ class PrevisDriver:
                 errors.append(f"{call.function.name}: {result.content}")
                 continue
             if call.function.name == PLAN_TOOL_NAME:
-                try:
-                    self.plan = Plan.from_dict(args)
-                    plan_seen = True
-                    self._apply_scene_budget(len(self.plan.shots))
-                except Exception as exc:  # noqa: BLE001
-                    errors.append(f"计划解析失败: {exc}")
+                if self._call_purpose != "plan":
+                    # 计划的唯一入口是阶段 A（§7.1）。真实模型会在修复回合里
+                    # 再提交一份"更满意"的计划——如果照单全收，已经建好的场景
+                    # 与计划就此分叉（实测：项目文件里时长 37、帧范围 1–64）。
+                    self.audit.log(
+                        "plan_ignored",
+                        f"{self._call_purpose} 阶段提交的 emit_plan 已忽略",
+                        level="warning", stage=self._call_purpose)
+                    errors.append("emit_plan 只在阶段 A 被接受")
+                else:
+                    try:
+                        self.plan = Plan.from_dict(args)
+                        plan_seen = True
+                        self._apply_scene_budget(len(self.plan.shots))
+                    except Exception as exc:  # noqa: BLE001
+                        errors.append(f"计划解析失败: {exc}")
             elif result.ok and call.function.name == ABORT:
                 self.abort_reason = str(args.get("reason") or "（未说明原因）")
                 self.audit.log("abort_requested", self.abort_reason,
@@ -990,6 +1031,27 @@ class PrevisDriver:
                                    f"{shot_id} 已登记自我审核", shot=shot_id)
                 else:
                     errors.append("request_self_review：当前没有正在处理的镜头")
+            elif result.ok and call.function.name == EDITOR_TOOL_NAME:
+                # 修复/精修阶段重新提交草案：允许改对白时序与动作。
+                # 计划阶段不接受它（那时还没有逐镜草案这一说）。
+                if self._call_purpose == "plan" or self.plan is None:
+                    errors.append("emit_shot_draft 只在单镜阶段被接受")
+                else:
+                    shot_id = str(args.get("shot_id") or self._current_shot_id)
+                    try:
+                        draft = extract_draft(
+                            ChatReply(tool_calls=[call]), shot_id)
+                    except ValueError as exc:
+                        errors.append(str(exc))
+                    else:
+                        self.plan = merge_draft(self.plan, draft)
+                        self.draft_history.append(draft.to_dict())
+                        self._needs_rebuild = True
+                        self.audit.log(
+                            "draft_received",
+                            f"{shot_id}: 重提草案（{len(draft.actions)} 动作 / "
+                            f"{len(draft.dialogues)} 对白）",
+                            shot=shot_id, stage=self._call_purpose)
 
         loop = self.loop_detector.detect()
         if loop is not None:

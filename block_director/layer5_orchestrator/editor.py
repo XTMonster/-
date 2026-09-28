@@ -151,6 +151,7 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                          continuity: str = "", characters: Sequence[str] = (),
                          props: Sequence[str] = (), scene_text: str = "",
                          retriever=None, temperature: float = 0.7,
+                         max_tokens: Optional[int] = None,
                          request_id: Optional[str] = None) -> ChatPayload:
     """构造阶段 B1 的请求（§18.2）。"""
     knowledge = ""
@@ -183,6 +184,7 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                              "parameters": EMIT_SHOT_DRAFT_PARAMETERS}}],
         tool_choice=ToolChoice.REQUIRED,
         temperature=temperature,
+        max_tokens=max_tokens,
         purpose=Purpose.EDITOR,
         request_id=request_id or new_request_id(),
     )

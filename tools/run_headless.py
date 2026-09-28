@@ -34,6 +34,11 @@ def parse_args(argv):
                         help="把分镜计划落成真实场景（角色/相机/关键帧/剪切标记）")
     parser.add_argument("--save", default="",
                         help="运行成功后把项目（SDL）保存到该目录")
+    parser.add_argument("--llm-timeout", type=float, default=120.0,
+                        help="单次 LLM 调用超时（秒）。本地大模型常需放大到 600+")
+    parser.add_argument("--max-llm-calls", type=int, default=8,
+                        help="本次运行的 LLM 调用硬上限（§12.6）。本地模型"
+                             "返工多，常需放大；0 表示不限")
     return parser.parse_args(rest)
 
 
@@ -44,6 +49,7 @@ def main() -> int:
     block_director.register()          # 走真实注册路径（含主线程登记与配置加载）
 
     from block_director.layer5_orchestrator.headless_runner import run_headless
+    from block_director.layer5_orchestrator.driver import DriverLimits
 
     builder = None
     if args.build:
@@ -93,6 +99,8 @@ def main() -> int:
         scene_state_provider=lambda: format_scene_state(
             collect_scene_state(detailed=False)),
         parsed_script=parsed,
+        limits=DriverLimits(llm_timeout_s=args.llm_timeout,
+                            max_llm_calls=args.max_llm_calls),
     )
 
     if args.save and summary.get("success") and summary.get("plan"):

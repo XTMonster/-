@@ -161,6 +161,16 @@ Phases 0-4 and 6 are done:
   answers per stage too, so `--offline --build` still produces the identical
   scene while the call count went 3 -> 5 (a 3-shot sample is 7, still within
   Phase 4's "<= 8").
+- **Real-model integration** (`tools/sidecar_server.py`,
+  `tools/probe_local_model.py`, `fixtures/local_*.config.yaml`): the sidecar
+  reference server (2.5) exists now - stdlib only, loopback only, and it owns
+  the provider specifics the plugin should not: Ollama's OpenAI-compatible layer
+  ignores `num_ctx`/`think`, and its default `num_ctx=4096` truncates a thinking
+  model mid-reasoning. The first real run (qwen3-vl:30b) is written up in the
+  spec's 21.10; it exposed four defects: truncated replies were reported as
+  "no tool call", the step guard counted polling ticks (a slow model looked
+  like an infinite loop), `emit_plan` could rewrite the plan after stage A, and
+  no tool could retime a dialogue so R011 failures were unrepairable.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2

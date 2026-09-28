@@ -212,6 +212,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ToolCall"
+        reasoning:
+          type: [string, "null"]
+          description: |
+            思维链（qwen3 这类模型的 message.reasoning）。不是协议必需项，
+            但排查"预算全花在思考上、没来得及调工具"时必须看得到。
         usage:
           oneOf:
             - $ref: "#/components/schemas/Usage"

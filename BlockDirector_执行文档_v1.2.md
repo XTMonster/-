@@ -2471,7 +2471,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **597 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
+`tests/` 共 **604 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2666,12 +2666,40 @@ def supports_media_type() -> bool:
 | **真实协议端到端（§2.4/§2.5）** | `tests/test_protocol_end_to_end.py` | ✅ 本地假服务端同时说两套协议；两种模式跑完整链并产出同一份计划 |
 | **阶段 B1 结构化生成（§7.1）** | `layer5_orchestrator/editor.py`、`driver.py` 的 `EDITING` | ✅ 计划收窄为拍摄清单，逐镜出严格 schema 草案再合并；失败不影响整场 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 597 项全部通过 |
+| 测试套件 | `tests/` | ✅ 604 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 597 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 604 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+
+### 21.10 真实模型联调（2026-09，本地 Ollama / qwen3-vl:30b）
+
+这是本项目第一次**用真实模型**跑完整链路（此前所有端到端都走离线确定性传输）。三件产物同时落地：`tools/sidecar_server.py`（§2.5 的参考实现）、`tools/probe_local_model.py`（单次调用探针）、`fixtures/local_model.config.yaml` 与 `fixtures/local_sidecar.config.yaml`（直连/ sidecar 两套本地配置样例）。
+
+**结论**：链路通。`--sidecar --build` 的真实运行产出 3 镜计划、逐镜草案、建成场景、4 次审核、自动修复，并以 `DONE` 收尾；最省的一次是 **8 次 LLM 调用**（计划 1 + 草案 3 + 审核 3 + 修复 1），正好落在 Phase 4 的"≤8"上。
+
+**过程中查出并修掉的四个真缺陷**（都是"只有真实模型才会暴露"的类型）：
+
+1. **截断被误报成"没有工具调用"**。Ollama 的 OpenAI 兼容层不接受 `num_ctx`/`think`，默认 `num_ctx=4096`；qwen3 是思维模型，**思维链会把预算全部吃掉**，返回 `finish_reason=length`、`content` 为空、也没有 `tool_calls`。旧实现把它当成"模型不听话"，调用方只会拿同样的预算反复重试。现在：`parse_chat_response` 检测到 `length` 且无工具调用就抛 `E_LLM_002` 并给出"提高 `llm.max_tokens`"的指引；`ChatReply` 增加 `reasoning` 字段并写入 trace；新增配置 `llm.max_tokens`。
+2. **"步数"把等待也算了进去**。LLM 调用在后台线程，主线程轮询期间每次 `step()` 都计数——本地模型一次调用 60–90 秒、20ms 轮询就是数千次空转，直接撞上 `max_steps=4000` 并被判"疑似死循环"。现在只在**真的做了一件事**时计数。
+3. **计划在阶段 A 之后还能被改写**。真实模型在修复/精修回合里又提交了一份 `emit_plan`（把 3 镜改成 1 镜），驱动器照单全收——已经建好的场景与计划就此分叉（项目文件里时长 37、帧范围却是 1–64）。现在 `emit_plan` **只在阶段 A 被接受**，其余阶段记 `plan_ignored` 警告；修复与精修阶段的工具表也用 `schemas_except("emit_plan")` 不再提供它。
+4. **修复阶段没有任何工具能改对白时序**。实测最常见的违规是 R011/S6（镜头装不下对白），而 §7.4 的 17 个工具里没有"改时长/挪对白"的入口，模型无从下手。现在 `emit_shot_draft` 也进默认工具表，修复/精修阶段可以**重提草案**来改对白与动作；并且**改完计划会先重建场景再复核**（`_rebuild_in_place`）——审核器看的是场景，不重建就等于改了个看不见的东西，只会在同一处反复修。
+
+**模型的短板也是真实数据**：最长的一次运行里 4 个镜头都被降级（`shot_degraded: 4`），循环检测触发 7 次，修复回合有 8 次产出无法使用（`repair_invalid: 8`）；最终项目文件里仍有 3 条校验错误（同一个动作被排了两遍的 S3、对白整段落在镜头外的 S6）。**这些不是架构问题**：校验器如实抓到了它们，防线（循环检测、修复上限、单镜降级）也都按设计动作，没有无限循环也没有静默通过。要提升的是"模型能不能产出满足约束的结构化输出"，方向是提示词、知识注入（`cine_duration` 已备）与模型选择。
+
+**复现方式**（本地，不需要任何外部 API Key）：
+
+```
+python tools/sidecar_server.py --port 8899 --upstream http://127.0.0.1:11434 \
+    --model qwen3-vl:30b --num-ctx 32768 --max-tokens 8192
+$env:BLOCKDIRECTOR_CONFIG="<repo>\fixtures\local_sidecar.config.yaml"
+blender --background --factory-startup --python tools/run_headless.py -- \
+    --sidecar --build --script fixtures\script_simple.fountain \
+    --wall 5400 --llm-timeout 900 --max-llm-calls 24 --out <dir> --save <dir>
+```
+
+`run_headless.py` 为此新增 `--llm-timeout` 与 `--max-llm-calls`：本地模型单次调用要 30–90 秒、返工也多，默认的 120 秒/8 次对它们偏紧。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 

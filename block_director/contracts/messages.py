@@ -165,6 +165,9 @@ class ChatReply:
 
     content: Optional[str] = None
     tool_calls: List[ToolCall] = field(default_factory=list)
+    #: 思维链（qwen3 这类模型的 ``message.reasoning``）。协议里不是必须的，
+    #: 但排查"模型把预算全花在思考上、没来得及调工具"时必须看得到。
+    reasoning: Optional[str] = None
     usage: Optional[Usage] = None
     request_id: Optional[str] = None
     model: Optional[str] = None
@@ -175,6 +178,8 @@ class ChatReply:
             "content": self.content,
             "tool_calls": [tc.to_dict() for tc in self.tool_calls],
         }
+        if self.reasoning is not None:
+            out["reasoning"] = self.reasoning
         if self.usage is not None:
             out["usage"] = self.usage.to_dict()
         if self.request_id is not None:
@@ -191,6 +196,7 @@ class ChatReply:
         return cls(
             content=data.get("content"),
             tool_calls=[ToolCall.from_dict(c) for c in data.get("tool_calls", []) or []],
+            reasoning=data.get("reasoning"),
             usage=Usage.from_dict(usage) if usage else None,
             request_id=data.get("request_id"),
             model=data.get("model"),

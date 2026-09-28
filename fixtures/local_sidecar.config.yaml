@@ -1,0 +1,37 @@
+# 走 sidecar 的真实模型配置样例（§2.4 的形态 ②）。
+#
+# 先用 tools/sidecar_server.py 起服务，再让插件按 sidecar 模式调用：
+#   python tools/sidecar_server.py --port 8899 --upstream http://127.0.0.1:11434 \
+#       --model qwen3-vl:30b --num-ctx 32768 --max-tokens 8192
+#   $env:BLOCKDIRECTOR_CONFIG="<repo>\fixtures\local_sidecar.config.yaml"
+#   blender --background --factory-startup --python tools/run_headless.py -- \
+#       --sidecar --build --script fixtures\script_simple.fountain --wall 3600 \
+#       --llm-timeout 900 --out <dir>
+#
+# 为什么要 sidecar：Ollama 的 OpenAI 兼容层**不接受** num_ctx/think，实测默认
+# num_ctx=4096 会把思维链连同工具调用一起截断（finish_reason=length）。这些
+# 供应商差异由 sidecar 承担，插件只依赖 §2.5 的线协议。
+llm:
+  transport: sidecar
+  sidecar_url: "http://127.0.0.1:8899"
+  sidecar_token: ""
+  sidecar_timeout_s: 900
+  provider: local
+  model: "qwen3-vl:30b"
+  base_url: ""
+  api_key: ""
+  max_tokens: 8192
+
+rag:
+  enabled: true
+  backend: bm25
+
+budget:
+  max_llm_calls_per_scene_formula: "shots * 6"
+  max_cost_usd: 5.0
+  max_wall_minutes: 60
+
+delivery:
+  preset: hd16x9
+  appearance: clay
+  render_backend: workbench

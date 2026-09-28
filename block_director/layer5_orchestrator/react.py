@@ -71,7 +71,9 @@ def build_react_payload(shot: ShotPlan, audit: AuditResult, *,
         audit=audit.format_for_llm() if audit is not None else "（未知）",
         scene_state=scene_state or "（尚未采集）",
         max_steps=int(max_steps))
-    tools = registry.openai_schemas() if registry is not None else []
+    # 精修阶段同样不给 emit_plan：它只该改这一镜，不该重写整份计划
+    tools = (registry.schemas_except("emit_plan")
+             if registry is not None else [])
     return ChatPayload(
         messages=[
             Message(role=MessageRole.SYSTEM, content=system_text),

@@ -54,11 +54,13 @@ def render_reply(reply: Any) -> Dict[str, Any]:
     if reply is None:
         return {}
     content = getattr(reply, "content", None)
+    reasoning = getattr(reply, "reasoning", None)
     calls = [{"name": call.function.name,
               "arguments": getattr(call.function, "arguments", "")}
              for call in getattr(reply, "tool_calls", []) or []]
     return {"content": content if isinstance(content, str)
             else json.dumps(content, ensure_ascii=False) if content else "",
+            "reasoning": reasoning if isinstance(reasoning, str) else "",
             "tool_calls": calls}
 
 
@@ -173,6 +175,9 @@ class AuditLogger:
                 truncated = truncated or cut
             answer["content"], cut = truncate_text(answer.get("content", ""),
                                                    limit)
+            truncated = truncated or cut
+            answer["reasoning"], cut = truncate_text(answer.get("reasoning", ""),
+                                                     limit)
             truncated = truncated or cut
             record["prompt"] = messages
             record["response"] = answer

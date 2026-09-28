@@ -74,6 +74,18 @@ class ToolRegistry:
     def openai_schemas(self) -> List[Dict[str, Any]]:
         return [self._tools[name].openai_schema() for name in self.names()]
 
+    def schemas_except(self, *names: str) -> List[Dict[str, Any]]:
+        """按名字排除若干工具后的 schema 列表。
+
+        阶段 A 的 ``emit_plan`` 是**计划阶段的唯一入口**：把它留给后续阶段，模型
+        完全可能在中途再写一份"更满意"的计划——实测就发生过（修复回合重新提交
+        了一份 1 镜计划，把已经建好的 3 镜场景的计划覆盖掉，导致项目文件里
+        时长与帧范围对不上）。
+        """
+        excluded = {str(name) for name in names}
+        return [self._tools[name].openai_schema() for name in self.names()
+                if name not in excluded]
+
     def __contains__(self, name: object) -> bool:
         return name in self._tools
 

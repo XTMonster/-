@@ -240,13 +240,28 @@ def parse_chat_response(data: Dict[str, Any]) -> ChatReply:
                                   arguments=str(function.get("arguments", "{}"))),
         ))
     usage = data.get("usage")
-    return ChatReply(
+    reasoning = message.get("reasoning")
+    tool_calls_done = bool(tool_calls)
+    reply = ChatReply(
         content=message.get("content"),
         tool_calls=tool_calls,
+        reasoning=reasoning if isinstance(reasoning, str) else None,
         usage=Usage.from_dict(usage) if usage else None,
         model=data.get("model"),
         finish_reason=choice.get("finish_reason"),
     )
+    # 被 max_tokens 截断时必须报出来。实测（qwen3-vl:30b / Ollama）：思维模型会
+    # 把预算全花在 reasoning 上，content 为空、也没有 tool_calls，而
+    # finish_reason 是 "length"——如果把它当成"回复里没有工具调用"，调用方会
+    # 拿着同一个预算反复重试，看到的只是"模型不听话"。真实原因是预算不够。
+    if reply.finish_reason == "length" and not tool_calls_done:
+        detail = "（思维链已占用全部预算）" if reasoning else ""
+        raise TransportError(
+            ErrorCode.LLM_002,
+            f"响应被截断{detail}：finish_reason=length。请提高 max_tokens"
+            f"（llm.max_tokens），或改用非思维模型",
+            body=json.dumps(data, ensure_ascii=False)[:2000])
+    return reply
 
 
 @dataclass

@@ -38,6 +38,20 @@ def _purposes(transport):
 # --------------------------------------------------------------------------- #
 # 预算
 # --------------------------------------------------------------------------- #
+def test_waiting_for_a_slow_llm_does_not_trip_the_step_guard():
+    """本地模型一次调用要几十秒，期间反复进 step()——那不是"死循环"。"""
+    import queue as queue_module
+
+    transport = RepairingTransport()
+    driver = _driver(transport)
+    driver._transition(DriverState.CALLING_LLM)
+    before = driver.snapshot()["steps"]
+    for _ in range(driver.limits.max_steps + 50):      # 远超上限的空转
+        assert driver.step() is True
+    assert driver.snapshot()["steps"] == before
+    assert driver.error == ""
+
+
 def test_budget_allows_the_normal_run_and_reports_usage():
     transport = RepairingTransport()
     auditor = FakeAuditor([AuditResult(passed=True, target="shot_001")])

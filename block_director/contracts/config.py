@@ -64,6 +64,7 @@ class LLMConfig:
     model: str = "gpt-4o"
     api_key: str = ""                 # 见 §14.3，不写入 .blend
     base_url: str = ""
+    max_tokens: int = 0               # 0 = 不发送；思维模型需放大（实测 qwen3 需 8k+）
     temperature_plan: float = 0.7
     temperature_repair: float = 0.2
     trace_prompts: bool = True        # §11.3：trace 记录完整 prompt/response
@@ -206,6 +207,9 @@ class AppConfig:
             err("CFG_012", "llm.trace_max_chars",
                 f"trace 字段上限不能为负（当前 {self.llm.trace_max_chars}）；"
                 f"0 表示不截断")
+        if self.llm.max_tokens < 0:
+            err("CFG_014", "llm.max_tokens",
+                f"max_tokens 不能为负（当前 {self.llm.max_tokens}）；0 表示不限制")
         if self.rag.top_k <= 0:
             err("CFG_007", "rag.top_k", "检索条数必须为正整数")
         if self.orchestration.max_repair_attempts < 0:

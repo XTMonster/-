@@ -128,7 +128,8 @@ def test_failed_calls_still_record_their_prompt(tmp_path):
     record = read_trace(tmp_path)[0]
     assert record["error"] == "TimeoutError"
     assert record["prompt"][1]["content"] == "修一下"
-    assert record["response"] == {"content": "", "tool_calls": []}
+    assert record["response"] == {"content": "", "reasoning": "",
+                                  "tool_calls": []}
 
 
 def test_default_limit_is_documented():

@@ -1,0 +1,32 @@
+# 用本地 OpenAI 兼容端点（Ollama）跑真实模型的配置样例。
+# 用法：
+#   $env:BLOCKDIRECTOR_CONFIG="<repo>\fixtures\local_model.config.yaml"
+#   blender --background --factory-startup --python tools/run_headless.py -- ^
+#       --sidecar --build --script fixtures\coffee.fountain --wall 1800 --out <dir>
+#
+# 实测（2026-09，qwen3-vl:30b / Ollama）：plan 一次约 90 秒（2110 输出 token），
+# 单镜草案约 29 秒。因此 sidecar_timeout_s 必须放大——默认 120 秒会被这张计划
+# 撞到（不是失败，是"刚好卡在边界"）。
+llm:
+  transport: direct
+  provider: local
+  model: "qwen3-vl:30b"
+  base_url: "http://127.0.0.1:11434/v1"
+  api_key: ""
+  sidecar_timeout_s: 600
+  max_tokens: 8192        # 思维模型（qwen3）会把预算花在 reasoning 上；4096 实测会被截断
+  temperature_plan: 0.7
+
+rag:
+  enabled: true
+  backend: bm25
+
+budget:
+  max_llm_calls_per_scene_formula: "shots * 6"
+  max_cost_usd: 5.0
+  max_wall_minutes: 30
+
+delivery:
+  preset: hd16x9
+  appearance: clay
+  render_backend: workbench

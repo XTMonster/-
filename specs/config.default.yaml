@@ -12,6 +12,7 @@ llm:
   model: gpt-4o
   api_key: ''
   base_url: ''
+  max_tokens: 0
   temperature_plan: 0.7
   temperature_repair: 0.2
   trace_prompts: true
