@@ -1311,6 +1311,16 @@ def composition_score(cam, characters, frame) -> CompositionReport:
 | OTS | 过肩 | 前景肩部 + 对手头部 | 50 | 眼睛高度 | 正反打 |
 | POV | 主观 | 角色视线所见 | 35 | 眼睛高度 | 主观视角 |
 
+> **实现修正（Phase 3）**：上表的"取景比例"数字互相矛盾——按它换算，MCU 的有效画面会比 CU 更窄、MLS 会比 LS 更宽，等于把景别顺序搞反了。实现改用一张**单调**的"画面高度"表（越小越紧），并把"取景比例"的含义固定为 `frame_height = 被摄范围高度 / 取景比例`：
+>
+> | 景别 | ECU | CU | MCU | MS | MLS | LS | ELS |
+> |------|-----|----|-----|----|-----|----|-----|
+> | 画面高度（单位） | 0.35 | 0.75 | 1.00 | 1.60 | 2.30 | 3.00 | 6.50 |
+> | 对准高度 | 1.28 | 1.12 | 1.12 | 1.00 | 0.80 | 0.72 | 0.72 |
+> | 机位高度 | 1.10 | 1.10 | 1.05 | 1.05 | 0.95 | 0.95 | 0.95 |
+>
+> 权威定义见 `block_director/cinema/framing.py` 的 `SHOT_FRAME`；`tests/test_framing.py::test_shot_frame_table_is_monotonic` 会拦住任何破坏单调性的改动。
+
 ### 10.6 景别 → 距离反推（v1.0 缺失）
 
 v1.0 用 `offsets = {"close": 1.0, "medium": 3.0, "far": 8.0}` 三个硬编码距离，与"9 种景别"完全脱节，且与实际取景无关。改为按**主体高度 + 想要的取景比例 + 焦距**反推：
@@ -2405,12 +2415,13 @@ def supports_media_type() -> bool:
 | **相机创建（Phase 1）** | `layer3_engine/cinema_engine/camera_manager.py` | ✅ Track To 约束对准（§10.1）；取景解算属 Phase 3 |
 | **动作库与动作混合（Phase 2）** | `block_director/motion/`、`character_system/motion_library.py`、`motion_blender.py` | ✅ 12 种动作、四层合成、§9.7 冲突仲裁；实测 270 个关键帧、渲染逐帧变化 |
 | **版本兼容层（实测驱动）** | `utils/blender_compat.py` | ✅ 覆盖 5.x 移除 `Action.fcurves`、引擎标识映射、`media_type` 前置步骤 |
-| 测试套件 | `tests/` | ✅ 144 项全部通过 |
+| **取景解算（Phase 3）** | `block_director/cinema/framing.py`、`cinema_engine/framing_solver.py` | ✅ 景别+焦距→距离/机位，相对被摄者朝向，含房间夹取 |
+| 测试套件 | `tests/` | ✅ 160 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 144 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 160 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2420,9 +2431,13 @@ def supports_media_type() -> bool:
 
 > **实现注记（对 §2.3 目录的一处刻意调整）**：§2.3 把动作库放在 `layer3_engine/character_system/`，但那里紧邻 bpy。实现时把**纯计算**部分（姿态函数、分层合成、§9.7 冲突仲裁）抽到独立的 `block_director/motion/`，bpy 侧只保留"通道 → 对象属性"的映射与关键帧写入。这样混合与冲突逻辑才能被 pytest 覆盖（新增 23 项），否则只能靠人工在 Blender 里点。
 
+**Phase 3 验收（取景部分）**：第 7 步在真实 Blender 内解算机位并断言：MS 只框住头部（脚出画）、LS 同时框住头与脚；特写的头部画面占比 0.9334 vs 中景 0.4377（差 2 倍以上）；机位方向随角色朝向旋转（正面机位在 +Y、左侧机位在 -X）；室内 ELS 机位从 7.704 被夹回 5.5 并给出告警；解算后渲染亮度 0.30096 vs 移出角色 0.2364（证明解算出的机位确实拍到了白模）。
+
+> **同类调整**：取景解算的纯计算同样抽到 `block_director/cinema/`，与 `motion/` 保持一致的"可测核心 / bpy 外壳"分界。
+
 **架构审核结论**：架构的 11 项关键假设中 10 项实证成立；唯一的 WARN（Blender 无跨线程护栏）已通过新增 `threading_guard` 强制化解除。**当前架构不存在阻塞性可行性问题。**
 
-**下一步**：Phase 3 —— 摄影解算（景别/焦距 → 距离/机位，含房间约束，§10.1/§10.6）+ 轴线控制器（§10.3）+ 构图分析（§10.4），把"能动"推进到"机位正确、可审"；随后 Phase 4 把驱动器从"只产出计划"接到"逐镜头执行落库"。
+**下一步**：Phase 3 剩余部分 —— 轴线控制器（§10.3）与构图分析（§10.4），把"机位正确"推进到"可审核"；随后 Phase 4 把驱动器从"只产出计划"接到"逐镜头执行落库"。
 
 ---
 

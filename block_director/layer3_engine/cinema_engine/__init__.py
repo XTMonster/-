@@ -8,5 +8,7 @@ from .camera_manager import (
     CameraBundle,
     create_camera,
 )
+from .framing_solver import place_camera_for_shot
 
-__all__ = ["create_camera", "CameraBundle", "DEFAULT_LENS", "DEFAULT_SENSOR_WIDTH"]
+__all__ = ["create_camera", "place_camera_for_shot", "CameraBundle",
+           "DEFAULT_LENS", "DEFAULT_SENSOR_WIDTH"]
