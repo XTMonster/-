@@ -60,6 +60,12 @@ Phases 0-4 and 6 are done:
   from the `plan_received` event, build the scene, then re-apply the recorded
   tool calls in order. Logs are found both at the project root and under
   `runs/`.
+- **Golden Test** (`fixtures/`, `tools/gen_golden.py`, `tests/test_golden.py`,
+  `tools/blender_tests/test_golden.py`): a hand-written mock plan
+  (`fixtures/mock_llm_responses/plan_simple.json`) plus derived artefacts
+  (`expected_sdl_simple.json`, `tool_transcript_simple.jsonl`). Regenerate the
+  derived ones with `python tools/gen_golden.py` after editing the plan; the
+  test chain runs `--check` so drift fails fast.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
@@ -69,13 +75,14 @@ dialogue timing and coreference) is done.
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all fifteen checks: spec drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all sixteen checks: spec + golden drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
 scene state / query tools, the Phase 4 rule check / repair loop, the Phase 5
 checkpoint and rollback, the Phase 6 delivery export, the Layer 2/9
-save/load/migrate/rebuild round trip, and the replay round trip.
+save/load/migrate/rebuild round trip, the replay round trip, and the Golden
+Test against the expected SDL.
 
 The end-to-end commands are:
 

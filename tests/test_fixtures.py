@@ -15,8 +15,9 @@ FIXTURES = sorted((ROOT / "fixtures").glob("*.fountain"))
 
 def test_fixtures_exist():
     names = {path.name for path in FIXTURES}
-    assert {"coffee.fountain", "ensemble.fountain",
-            "dialogue_heavy.fountain"} <= names
+    # §20 的夹具表按名字点名了这三个；coffee.fountain 是额外的多场景夹具。
+    assert {"script_simple.fountain", "script_dialogue.fountain",
+            "script_ensemble.fountain", "coffee.fountain"} <= names
 
 
 @pytest.mark.parametrize("path", FIXTURES, ids=lambda p: p.name)
@@ -33,16 +34,24 @@ def test_every_fixture_parses(path):
 
 
 def test_ensemble_fixture_finds_four_characters():
-    script = parse_script(ROOT / "fixtures" / "ensemble.fountain")
+    script = parse_script(ROOT / "fixtures" / "script_ensemble.fountain")
     assert len(script.character_names) == 4
     assert script.dialogue_count == 7
 
 
-def test_dialogue_heavy_fixture_schedules_within_reasonable_time():
-    script = parse_script(ROOT / "fixtures" / "dialogue_heavy.fountain")
+def test_dialogue_fixture_schedules_within_reasonable_time():
+    script = parse_script(ROOT / "fixtures" / "script_dialogue.fountain")
     scene = script.scenes[0]
     spans = schedule_dialogues(scene.dialogues, start_frame=1)
     assert len(spans) == len(scene.dialogues)
     total = spans[-1][1]
     # 5 句对白，实拍也不过十几秒；这里给一个宽松上界，防止语速算错量级
     assert 100 < total < 600
+
+
+def test_coffee_fixture_covers_multiple_scenes():
+    """保留一个多场景夹具：场景切换是 Layer 1 必须覆盖的路径。"""
+    script = parse_script(ROOT / "fixtures" / "coffee.fountain")
+    assert len(script.scenes) == 2
+    assert script.scenes[0].heading.startswith("INT.")
+    assert script.scenes[1].heading.startswith("EXT.")

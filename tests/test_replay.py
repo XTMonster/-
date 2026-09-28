@@ -73,6 +73,15 @@ def test_audit_log_is_also_found_under_runs(tmp_path):
     assert records and records[0]["kind"] == "plan_received"
 
 
+def test_a_jsonl_file_can_be_replayed_directly(tmp_path):
+    """§21.4 的回归夹具是一个 .jsonl 文件，不是项目目录。"""
+    transcript = tmp_path / "tool_transcript_simple.jsonl"
+    transcript.write_text(json.dumps(tool_record("place_character")) + "\n",
+                          encoding="utf-8")
+    records = read_audit_log(transcript)
+    assert records and records[0]["data"]["tool"] == "place_character"
+
+
 def test_broken_lines_are_skipped_not_fatal(tmp_path):
     path = audit_path(tmp_path)
     path.write_text('{"kind": "x"}\nnot json\n\n{"kind": "y"}\n',

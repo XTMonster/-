@@ -32,7 +32,9 @@ def main(argv: list[str]) -> int:
         return 0
 
     TARGET.parent.mkdir(parents=True, exist_ok=True)
-    TARGET.write_text(expected, encoding="utf-8")
+    # newline="\n"：.gitattributes 规定文本文件在仓库里用 LF；不写死的话
+    # Windows 上 write_text 会把 \n 翻成 CRLF，工作区与规格的换行不一致。
+    TARGET.write_text(expected, encoding="utf-8", newline="\n")
     print(f"[OK] 已生成 {TARGET}（{len(expected)} 字符）")
     return 0
 

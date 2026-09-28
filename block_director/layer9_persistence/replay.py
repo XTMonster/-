@@ -80,8 +80,12 @@ def audit_candidates(directory: Union[str, Path]) -> List[Path]:
 
     §14.1 的目录树把它放在项目根；而 headless 运行把所有日志收在 ``runs/`` 下，
     便于整目录忽略与清理。两处都认，避免"文件明明在、工具却说找不到"。
+    直接传一个 JSONL 文件路径时就用它——§21.4 的回归夹具
+    ``fixtures/tool_transcript_simple.jsonl`` 就是这么被喂进来的。
     """
     root = Path(directory)
+    if root.is_file():
+        return [root]
     return [root / AUDIT_FILENAME, root / "runs" / AUDIT_FILENAME]
 
 

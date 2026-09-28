@@ -2293,15 +2293,37 @@ files = "读写项目目录、配置目录与导出目录"
 | 手动测试 | GUI 端到端 | ReAct 精修路径、人工门、分镜列表、单镜重生成 |
 | 交付验收 | 端到端 | 参考视频不含辅助图形；shots.json/prompts.md 齐备 |
 
-> **已实现的测试**（`tests/`，共 79 项，全部通过）：
-> - `test_messages.py`：会话协议与 §3.4 不变量（含 v1.0 缺陷的回归用例）。
-> - `test_openapi_matches_contracts.py`：OpenAPI 规格 ⇄ Python 契约的双向一致性 + jsonschema 真实校验。
-> - `test_config.py`：§21.5 默认值、校验规则（含"向量必须走 sidecar""depth 必须用 EEVEE"两条决策）、序列化与规格文件一致性。
-> - `test_transport.py`：线协议编解码、HTTP 错误码映射、§2.5 传输选择策略。
-> - `test_enums.py` / `test_package_surface.py`：§21.7 引擎标识映射、包导出面、无 bpy 依赖。
-> - `test_threading_guard.py`：§3.1 主线程守卫（后台线程访问 bpy 必须被拦截）。
->
-> 运行方式：`python -m pytest`（或 `tools/run_tests.ps1`）。规格与代码一致性检查：`python tools/gen_specs.py --check`。
+### 21.4.1 Golden Test 的实现（v1.2 定稿）
+
+夹具分**人工维护**与**派生**两层，避免"期望值"和"实际值"被同一次改动一起改掉：
+
+| 文件 | 归属 | 内容 |
+|------|------|------|
+| `fixtures/script_simple.fountain` | 人工 | 1 场景 / 2 角色 / 3 句对白的基准剧本 |
+| `fixtures/mock_llm_responses/plan_simple.json` | 人工 | 阶段 A 的**期望计划**：3 镜（MLS/MCU/LS）、对白均含收尾余量 |
+| `fixtures/mock_llm_responses/review_ok.json` | 人工 | 阶段 B3 的自审响应 |
+| `fixtures/expected_sdl_simple.json` | 派生 | 计划 → SDL → §5.2 校验（含帧号回填）后的完整 SDL |
+| `fixtures/tool_transcript_simple.jsonl` | 派生 | 一次运行会留下的审计记录（`plan_received` + 一条 `place_character`），供 replay 回归 |
+
+派生夹具由 `python tools/gen_golden.py` 生成，`--check` 只校验漂移；测试与
+`tools/run_tests.ps1` 第 1 步都用 `--check` 把关。
+
+**断言覆盖**（`tests/test_golden.py` + `tools/blender_tests/test_golden.py`）：
+
+- 剧本解析出 1 场 / 2 角色 / 3 句对白；
+- 计划 → SDL 与 `expected_sdl_simple.json` **逐字段一致**，且三镜帧范围连续（1–72 / 73–168 / 169–288）；
+- 同一计划重复组装结果一致（确定性）；
+- mock 计划真的能驱动 `PrevisorDriver` 跑到 DONE，且 `total_frames = 288`；
+- `tool_transcript_simple.jsonl` 能被 replay 消费（`place_character` 落到 `(1.2, 0, 0)`）；
+- 真实 Blender 里连建两次结果逐项一致；真实构建出的 SDL 与期望夹具的镜头 id / 景别 / 帧范围 / 相机名逐项相同；焦距来自 §10.5 的景别表；这份计划通过全部规则与构图门。
+
+### 21.4.2 现有测试规模
+
+`tests/` 共 **423 项**，全部通过；`tools/run_tests.ps1` 跑 **16 步**（规格与
+Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
+回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
+Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
+--check` 与 `python tools/gen_golden.py --check`。
 
 ### 21.5 配置文件
 
@@ -2468,13 +2490,14 @@ def supports_media_type() -> bool:
 | **知识检索器（§6.1/§6.5）** | `knowledge/retriever.py` | ✅ bm25 / vector(RRF) / digest 三档；800 与 2000 token 上限；vector 能力未确认则降级并告警 |
 | **知识工具（§7.4）** | `knowledge/tool.py`、`layer3_engine/tool_bindings.py` | ✅ `search_knowledge(query, domain, top_k)` 与场景工具同一注册表 |
 | **replay 模式（§14.4）** | `layer9_persistence/replay.py`、`tools/replay_project.py` | ✅ 不调 LLM：读审计日志 → 按计划建场景 → 顺序重放工具调用；`--export` 顺带重出交付包 |
+| **Golden Test（§21.4）** | `fixtures/*`、`tools/gen_golden.py`、`tests/test_golden.py`、`tools/blender_tests/test_golden.py` | ✅ 人工计划 + 派生 SDL/工具记录；纯 Python 与 Blender 两侧逐项比对，`--check` 防漂移 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 412 项全部通过 |
+| 测试套件 | `tests/` | ✅ 423 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 412 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 423 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2553,6 +2576,16 @@ def supports_media_type() -> bool:
 纯测试另覆盖 16 项：缺日志/坏行的容错、完整计划与"只有 shots"的旧日志、后写的计划获胜、步骤顺序与参数、§14.4 伪代码日志形状兼容、控制工具与未知工具跳过、工具失败上报、`runs/` 与项目根两种日志位置。
 
 **当前仍未实现**：Phase 5 的调试面板（§13.3）、Phase 7 的分镜列表 + 单镜重生成（§13.2）、双向同步与手动修改保护、Golden Test 夹具、§15.6/§15.7 的可选深度序列与全片拼接（后者目前显式告警）。`llm_trace.jsonl` 目前只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可在 Phase 7 用配置开关补上。
+
+**Golden Test 暴露出的三处取景/评分缺陷（下一步要修，附实测数据）**
+
+写 Golden Test 时用一版 `shot_003 = CU / 85mm` 的计划跑真实构建，构图门直接判失败，顺着查下去发现三个问题（都已用真实投影量出来，不是推测）：
+
+1. **CU 的取景太紧，头顶正好贴到画面上边缘**。`SHOT_FRAME["CU"] = (frame_height 0.75, target_z 1.12)`：画面纵向只覆盖 0.75，而头顶在 1.45（比对准点高 0.33）。实测角色包围盒投影后的 `top ≈ 1.00`，即头顶**恰好压在画幅上沿**——`_headroom` 判"头顶被切"，分项 0.627，总分 68.2 < 阈值 70。这不是评分的锅，是取景数字的锅：参考视频里特写会真的蹭到头顶。§10.5 写 CU 是"头部≈80%"，按 0.70 的头部直径反推，frame_height 应是 0.875 左右而不是 0.75。
+2. **`_framing` 用整身包围盒的 `inside_ratio()`，于是惩罚了"本该出画"的body**。§10.5 定义 CU/MCU/MS 就是只拍一部分身体（Phase 3 的验收原文："MS 只框住头部、脚出画"），但 `_framing` 要求整个身体方框都在画内，导致 MCU 实测 0.523、CU 实测 0.381，提示语却是"主体部分出画"——把正常裁切当成错误。
+3. **`rule_of_thirds` 对自动机位恒为 0**。取景解算把机位对准主体中心，主体于是落在画面正中，而三分项要求贴近交点：实测 MCU 0.0、LS 0.054、MLS 0.561。权重 0.15 等于每个自动机位都白送 15 分出去，阈值 70 因此变成了"能不能靠其它五项凑出来"。
+
+三者的共同根源是同一个：**构图评分以"整个身体方框"为前提，而 §10.5 的取景模型以"这个景别该看到的那一段"为前提**。修法（下一步）：把景别的"意图窗口"（`target_z ± frame_height/2`）传给构图层，`headroom` / `framing` 只在该窗口内评估、`_framing` 的 inside 判据改为窗口内覆盖率；同时把 CU 的取景数字按 §10.5 的"头部≈80%"重新标定，并让三分项对"主体居中但景别很紧"的情形给出合理分而不是 0。这几条都会改动 §10.4/§10.5 的既有数值与 Phase 3 的部分验收断言，属于**评分语义变更**，因此单列一步做，不在本轮顺手改。
 
 ---
 
