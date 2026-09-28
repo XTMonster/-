@@ -582,8 +582,11 @@ class PrevisDriver:
             self.audit.log("conversation_ok",
                            f"{len(self.messages)} 条消息结构合法（§3.4）")
         self._transition(DriverState.DONE)
+        # replay（§14.4）要能只靠这份日志重建场景，因此整份计划必须落盘：
+        # 只记 shots 会丢掉 scene_heading 与 continuity_notes。
         self.audit.log("plan_received",
                        f"分镜计划完成：{len(plan.shots)} 个镜头",
+                       plan=plan.to_dict(),
                        shots=[shot.to_dict() for shot in plan.shots],
                        total_frames=plan.total_frames)
         self.audit.log("run_finished", "预演生成结束",

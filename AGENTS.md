@@ -55,6 +55,11 @@ Phases 0-4 and 6 are done:
   `rank_bm25` preference when present, and a retriever with bm25 / vector (RRF)
   / digest modes plus the 800- and 2000-token injection caps. Exposed to the
   LLM as the `search_knowledge` tool and injected into the plan prompt.
+- **Replay** (`layer9_persistence/replay.py`, `tools/replay_project.py`):
+  rebuild a run from `audit_log.jsonl` with no LLM call - read the full plan
+  from the `plan_received` event, build the scene, then re-apply the recorded
+  tool calls in order. Logs are found both at the project root and under
+  `runs/`.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
@@ -64,13 +69,13 @@ dialogue timing and coreference) is done.
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all fourteen checks: spec drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all fifteen checks: spec drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
 scene state / query tools, the Phase 4 rule check / repair loop, the Phase 5
-checkpoint and rollback, the Phase 6 delivery export, and the Layer 2/9
-save/load/migrate/rebuild round trip.
+checkpoint and rollback, the Phase 6 delivery export, the Layer 2/9
+save/load/migrate/rebuild round trip, and the replay round trip.
 
 The end-to-end commands are:
 

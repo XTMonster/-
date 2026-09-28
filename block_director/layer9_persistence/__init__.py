@@ -10,6 +10,22 @@ from .project_io import (
     project_file,
     save_project,
 )
+from .replay import (
+    AUDIT_FILENAME,
+    CONTROL_TOOLS,
+    ReplayError,
+    ReplayReport,
+    ReplayStep,
+    audit_candidates,
+    audit_path,
+    extract_plan,
+    iter_tool_calls,
+    read_audit_log,
+    replay,
+)
 
 __all__ = ["PROJECT_FILENAME", "LoadedProject", "save_project",
-           "load_project", "project_file", "project_exists"]
+           "load_project", "project_file", "project_exists",
+           "AUDIT_FILENAME", "CONTROL_TOOLS", "ReplayError", "ReplayReport",
+           "ReplayStep", "audit_candidates", "audit_path", "extract_plan",
+           "iter_tool_calls", "read_audit_log", "replay"]

@@ -1536,6 +1536,13 @@ def replay(project_dir, tools):
 - **重渲**：不花一分钱 token，走一遍工具调用即可重建完整场景，然后重新导出参考视频。
 - **Golden Test**：同一份工具调用记录必须产出逐帧一致的场景（除浮点容差外）。
 
+> **实现（v1.2）**：`layer9_persistence/replay.py` + `tools/replay_project.py`。两点必须记录在案：
+>
+> 1. **重放顺序是"先建后放"**。伪代码只重放工具调用，但在本项目的架构里，场景是构建器按**计划**一次建成的，工具调用只是其后的修正。因此真实顺序是：读 `plan_received` 事件里的完整计划 → 建场景 → 按记录顺序重放 `tool_call`。`driver` 的 `plan_received` 事件因此改为**记录整份计划**（原先只记 `shots`，会丢掉 `scene_heading` 与 `continuity_notes`，重放不出同一场戏）。
+> 2. **日志格式以 §11.3 的实现为准**：`{"kind":"tool_call","data":{"tool":…,"args":…}}`。§14.4 伪代码里的 `{"type","name","args"}` 形状也被兼容，便于对接外部日志。
+>
+> 控制类工具（`emit_plan` / `request_self_review` / `abort`）与注册表里不存在的工具记为 `skipped` 而非失败——它们不改场景，重放时不该报错。审计日志的位置两处都认：项目根（§14.1 的画法）与 `runs/`（headless 的实际布局）。
+
 ---
 
 ## 15. 交付与导出层
@@ -2460,13 +2467,14 @@ def supports_media_type() -> bool:
 | **BM25 检索内核（§6.4）** | `knowledge/bm25.py` | ✅ 自带 Okapi BM25（与 `rank_bm25` 同算法同参数）；装了 `rank_bm25` 则优先用 |
 | **知识检索器（§6.1/§6.5）** | `knowledge/retriever.py` | ✅ bm25 / vector(RRF) / digest 三档；800 与 2000 token 上限；vector 能力未确认则降级并告警 |
 | **知识工具（§7.4）** | `knowledge/tool.py`、`layer3_engine/tool_bindings.py` | ✅ `search_knowledge(query, domain, top_k)` 与场景工具同一注册表 |
+| **replay 模式（§14.4）** | `layer9_persistence/replay.py`、`tools/replay_project.py` | ✅ 不调 LLM：读审计日志 → 按计划建场景 → 顺序重放工具调用；`--export` 顺带重出交付包 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 396 项全部通过 |
+| 测试套件 | `tests/` | ✅ 412 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 396 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 412 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2535,6 +2543,16 @@ def supports_media_type() -> bool:
 > 过程中修掉一个**数据缺陷**：语料里写 `examples=("只有一个例子")`（漏了尾逗号）得到的是字符串，`list()` 会把它拆成一串单字（"角；色；起；身…"）。现在 `corpus._as_list()` 统一收敛，并有一条回归断言禁止整句字段出现单字元素。
 
 **下一步**：Phase 5 余下（调试面板 §13.3）与 Phase 7（replay §14.4、分镜列表 §13.2 + 单镜重生成、双向同步与手动修改保护、`E_*` 错误信息打磨、Golden Test 夹具）；§15 的可选深度序列与全片拼接目前会显式告警而非静默空转。Layer 2 / Layer 9 到位后"改一镜、重出一镜"已经可用；Light RAG 到位后 Planner 有了可检索的电影知识底座。Phase 4 的剩余项只剩 B1 单镜结构化生成尚未独立成一次 LLM 调用——当前由计划内嵌的镜头草案承担同一职责，是否拆分待 Phase 7 联调时按真实模型表现决定。
+
+**replay 验收（第 15 步）**：在真实 Blender 内跑通"运行 → 重放"闭合回路，四项断言全绿：
+1. 重放出的场景与原始运行**逐项一致**——镜头 2、总时长 216、角色 2、相机 2、关键帧 366、两镜帧范围（1–96 / 97–216）与机位坐标（`[0,3.975,0.95]` / `[0.75,2.469,1.05]`）全部命中；
+2. 重放**不调用 LLM**（`replay()` 的入参里根本没有 transport，这是"零成本重渲"的强形式）；
+3. 连跑两次结果一致（幂等）；
+4. 日志里记录了动作工具调用时，重放会把它们重新落到场景上（`place_character` → `BD_char_001` 的 root 精确停在 x=4.0）。
+
+纯测试另覆盖 16 项：缺日志/坏行的容错、完整计划与"只有 shots"的旧日志、后写的计划获胜、步骤顺序与参数、§14.4 伪代码日志形状兼容、控制工具与未知工具跳过、工具失败上报、`runs/` 与项目根两种日志位置。
+
+**当前仍未实现**：Phase 5 的调试面板（§13.3）、Phase 7 的分镜列表 + 单镜重生成（§13.2）、双向同步与手动修改保护、Golden Test 夹具、§15.6/§15.7 的可选深度序列与全片拼接（后者目前显式告警）。`llm_trace.jsonl` 目前只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可在 Phase 7 用配置开关补上。
 
 ---
 
