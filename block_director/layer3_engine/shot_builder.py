@@ -169,7 +169,7 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         characters[member.id] = character
     summary.characters = len(characters)
 
-    context = SceneContext(plan=plan, characters=characters)
+    context = SceneContext(plan=plan, characters=characters, spec=spec)
     context.shot_types = {shot.shot_id: str(shot.shot_type)
                           for shot in plan.shots}
     context.current_shot_id = plan.shots[0].shot_id if plan.shots else ""

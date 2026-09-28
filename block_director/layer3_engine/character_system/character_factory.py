@@ -172,6 +172,30 @@ def create_character(character_id: str, name: str, color: str = "#FFFFFF",
     return character
 
 
+@main_thread_only("set_character_color")
+def set_character_color(character, color: str) -> str:
+    """改角色颜色（§13.1 的角色管理）。
+
+    材质是按 ``BD_Mat_{id}`` **就地更新**的，所以已挂在网格上的引用不需要重挂；
+    Workbench 与 EEVEE 两条通路都在 ``_character_material`` 里覆盖到了。
+    """
+    material = _character_material(color, character.id)
+    character.color = color
+    log.info("角色 %s 颜色 → %s", character.id, color)
+    return material.name
+
+
+@main_thread_only("delete_character")
+def delete_character(character) -> int:
+    """删除角色的全部对象，返回删掉的对象数（材质留在库里，可能还被别处引用）。"""
+    removed = 0
+    for obj in list(character.all_objects()):
+        if obj.name in bpy.data.objects:
+            bpy.data.objects.remove(obj, do_unlink=True)
+            removed += 1
+    return removed
+
+
 def _is_descendant(obj: Object, root: Object) -> bool:
     node: Optional[Object] = obj
     while node is not None:

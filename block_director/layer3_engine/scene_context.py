@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from ..cinema.axis import Axis
+from ..contracts.cast import SceneSpec
 from ..contracts.plan import Plan
 
 
@@ -20,6 +21,7 @@ class SceneContext:
     shot_types: Dict[str, str] = field(default_factory=dict)     # shot_id → 景别
     schedule: Dict[str, Tuple[int, int]] = field(default_factory=dict)  # shot_id → (起, 止)
     plan: Optional[Plan] = None
+    spec: Optional[SceneSpec] = None      # §13.1 的角色管理要写回这里
     current_shot_id: str = ""
     axis: Optional[Axis] = None
     notes: List[str] = field(default_factory=list)

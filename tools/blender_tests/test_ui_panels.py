@@ -232,6 +232,7 @@ def t_audit_result_opens_in_a_text_block():
 # --------------------------------------------------------------------------- #
 def t_panels_register_and_unregister_cleanly():
     import block_director
+    from block_director import registration
 
     block_director.register()
     try:
@@ -240,16 +241,21 @@ def t_panels_register_and_unregister_cleanly():
                          and hasattr(bpy.types, "BLOCKDIRECTOR_OT_render_shot_thumbnail")
                          and hasattr(bpy.types.Scene, "bd_project_dir")
                          and panel_shots._previews is not None)
-        modules = list(block_director.registration._registered)
+        modules = list(registration._registered)
     finally:
         block_director.unregister()
     ok_unregistered = (not hasattr(bpy.types, "BLOCKDIRECTOR_PT_debug")
                        and not hasattr(bpy.types.Scene, "bd_project_dir")
                        and panel_shots._previews is None)
+    # register_all 会**逐个吞掉**注册失败的模块，只记一条日志；因此这里要求
+    # "声明的模块集合"与"实际注册成功的集合"完全一致——否则某个面板会静默消失
+    # （panel_cast 的 PropertyGroup 顺序问题就是这样被发现的）。
+    all_modules = set(registration.MODULES)
     return {"ok": ok_registered and ok_unregistered
-            and "block_director.layer7_ui.panel_debug" in modules,
+            and all_modules == set(modules),
             "registered": ok_registered, "unregistered": ok_unregistered,
-            "modules": modules}
+            "modules": modules, "declared": sorted(all_modules),
+            "missing": sorted(all_modules - set(modules))}
 
 
 def main() -> int:

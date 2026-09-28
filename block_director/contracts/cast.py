@@ -16,6 +16,26 @@ DEFAULT_COLORS = ("#FF6B6B", "#6BC5FF", "#FFD166", "#9B8CFF",
 DEFAULT_SPACING = 1.5
 DEFAULT_GROUND = (120.0, 120.0)
 
+ID_PREFIX = "char_"
+ID_DIGITS = 3
+
+
+def next_character_id(existing) -> str:
+    """分配下一个空闲角色 id（``char_001``…）。
+
+    纯函数、可单测。放在契约层是因为"角色 id 长什么样"是 §5.1 的约定，
+    UI 的"添加角色"与 SDL 校验都依赖它。
+    """
+    used = set()
+    for item in existing or ():
+        text = str(item or "")
+        if text.startswith(ID_PREFIX) and text[len(ID_PREFIX):].isdigit():
+            used.add(int(text[len(ID_PREFIX):]))
+    index = 1
+    while index in used:
+        index += 1
+    return f"{ID_PREFIX}{index:0{ID_DIGITS}d}"
+
 
 @dataclass
 class CastMember:

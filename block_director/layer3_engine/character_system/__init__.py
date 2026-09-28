@@ -12,8 +12,10 @@ from .character_factory import (
     PIVOT_Z,
     Character,
     create_character,
+    delete_character,
     get_facing,
     measure_height,
+    set_character_color,
 )
 from .character_label import (
     CJK_FONT_CANDIDATES,
@@ -32,6 +34,7 @@ from .motion_library import (
 
 __all__ = [
     "Character", "create_character", "measure_height", "get_facing",
+    "set_character_color", "delete_character",
     "create_label", "find_cjk_font", "has_cjk", "CJK_FONT_CANDIDATES",
     "MotionBlender", "apply_motions", "bake_trace", "clear_animation",
     "BakeResult", "CHANNEL_TARGETS",

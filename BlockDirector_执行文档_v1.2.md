@@ -1497,6 +1497,16 @@ def required_distance(subject_height, shot_type, lens,
 - 审核日志（最近操作列表）
 - 交付（输出目录、分辨率预设、导出按钮，见 §15）
 
+> **实现（Phase 7）**：角色管理落在 `layer7_ui/panel_cast.py`（UIList + 四个算子）+ `layer3_engine/cast_editor.py`（真正的改动）。三件事必须一起做，否则界面上的改动只是"看起来改了"：
+>
+> 1. **改 Blender 对象**：颜色走 `set_character_color()`（按 ``BD_Mat_{id}`` **就地更新**材质，Workbench 与 EEVEE 两条通路都覆盖；已挂在网格上的引用不需要重挂）；增删走 `create_character` / `delete_character`。
+> 2. **改场景设定** ``SceneContext.spec``：SDL 与项目文件是从它导出的。为此给 `SceneContext` 加了 `spec` 字段（`build_scene` 建场景时写进去）。只改对象不改 spec 的话，重出一镜时颜色会回去。
+> 3. **守住引用完整性**：删一个还被镜头引用的角色会让那些镜头直接 R007 失败，所以这种删除被**拒绝**并说明是哪几个镜头在引用它。id 分配 `next_character_id()` 放在契约层（bpy-free），因此可以在 pytest 里单测。
+>
+> 面板每次绘制时按数量对齐列表，省得用户先想起来点"刷新"。
+>
+> **实现时踩到的坑**：`CollectionProperty(type=BDCastMember)` 引用的是 `PropertyGroup`，必须**先注册类再赋值属性**；顺序反了会抛异常，而 `register_all()` 会把它吞成一条日志，表现为"面板静默缺失"。因此现在有一条断言直接比对 `registration.MODULES` 与"实际注册成功的模块集合"——任何模块悄悄注册失败都会让测试链红。
+
 ### 13.2 分镜列表（v1.0 缺失，迭代工作流的核心界面）
 
 一个表格视图，每行一个镜头：
@@ -2412,7 +2422,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **515 项**，全部通过；`tools/run_tests.ps1` 跑 **21 步**（规格与
+`tests/` 共 **519 项**，全部通过；`tools/run_tests.ps1` 跑 **22 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2595,13 +2605,14 @@ def supports_media_type() -> bool:
 | **深度序列（§15.6）** | `delivery/depth.py`、`layer8_delivery/depth_pass.py` | ✅ 16 位灰度 PNG 逐帧；固定 0.1–50 米归一化并写进 README；用材质覆盖实现（5.x 合成器只能写 EXR） |
 | **全片拼接（§15.7）** | `layer8_delivery/concat.py` | ✅ 内置 VSE 把各镜接成 `blockout_full.mp4`，帧数等于各镜之和，无需外部 ffmpeg |
 | **工具层补齐（§7.4）** | `layer3_engine/tool_bindings.py`、`cinema/camera_motion.py`、`layer5_orchestrator/timing_tool.py`、`layer5_orchestrator/control_tools.py` | ✅ **17 个工具全部注册**：新增 6 个场景工具 + 3 个控制工具，并有一条断言直接比对模型看到的工具表 |
+| **角色管理（§13.1）** | `layer7_ui/panel_cast.py`、`layer3_engine/cast_editor.py` | ✅ 列表 / 颜色 / 添加 / 删除；改动同时落到材质与场景设定，删除被镜头引用的角色会被拒绝 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 515 项全部通过 |
+| 测试套件 | `tests/` | ✅ 519 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 515 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 519 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2699,7 +2710,9 @@ def supports_media_type() -> bool:
 
 **控制工具验收**：11 条纯测试全绿。`abort` 让运行以 **CANCELLED** 结束、`abort_reason` 落到快照、且放弃后**不再请求模型**（实测 `transport.calls == 1`）；`finish_shot` 在"审核每次都不过"的构造场景里让两镜照常前进（每镜审两次：初次 + 声明完成后的复核），并留下 `shot_finished_with_errors` 与两条 `finish_history`；没有当前镜头时 `finish_shot` / `request_self_review` 明确报错而不是静默成功；`request_self_review` 只登记不额外调用（`_pending_review` + `review_requests` 落盘）；三个工具的 schema 都做参数校验（`abort` 缺 `reason`、`finish_shot` 传未知字段都判失败）。
 
-**当前仍未实现**：`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。§13.1 主面板里的角色管理（列表 / 颜色 / 增删）与模型选择仍是占位。
+**角色管理验收（第 22 步）**：五项断言全绿——列表与 `SceneContext.spec` 一致且标记"是否已建对象"；改颜色后材质 diffuse 与 SDL 里的 `color` 同步变化（`#123456`），且 SDL 仍通过 §5.2 校验；添加角色真的建出 `BD_Char_老陈_Root` 并拿到 `char_003`；删除无引用角色会真的移除对象，而删除被 `shot_001` 引用的角色被**拒绝**并说明原因；面板模块注册/注销干净。另有一条断言比对 `registration.MODULES` 与实际注册集合，防止模块静默注册失败。
+
+**当前仍未实现**：§13.1 主面板里还剩**模型选择 / 审核级别 / 预算上限 / 分辨率预设 / 导出按钮**这一组运行设置（目前它们只能通过配置文件给），以及 §13.4 视口叠加的三个独立开关（现在是一个"视口叠加"总开关，对应配置里的 `ui.*`）。`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。
 
 至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 

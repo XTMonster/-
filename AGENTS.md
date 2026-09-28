@@ -113,6 +113,14 @@ Phases 0-4 and 6 are done:
   call), `finish_shot` sets `_pending_finish` so CHECKING skips the repair loop
   for that shot while still recording the audit, and `abort` sets
   `abort_reason`, which `step()` turns into CANCELLED (not a success).
+- **Cast management** (`layer7_ui/panel_cast.py`, `layer3_engine/cast_editor.py`):
+  list / colour / add / remove. Each edit touches three places - the Blender
+  objects, `SceneContext.spec` (which the SDL and the project file are exported
+  from) and the reference check that refuses to delete a character a shot still
+  uses. `next_character_id` lives in `contracts/cast.py` so it is unit-testable
+  outside Blender. Registration order matters for a `CollectionProperty` of a
+  `PropertyGroup`, and `register_all` swallows per-module failures, so a test
+  compares `registration.MODULES` against what actually registered.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
@@ -133,7 +141,7 @@ Test against the expected SDL, and the scene-sync / single-shot regeneration
 round trip, and the shot list / debug panel checks.
 It also covers the viewport overlay and the path-drawing tool, and the depth
 sequence plus full concatenation.
-Plus the extended tool layer.
+Plus the extended tool layer and cast management.
 
 The end-to-end commands are:
 
