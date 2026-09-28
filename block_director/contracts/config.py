@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import os
 import sys
-from dataclasses import dataclass, field, fields, is_dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -28,6 +28,8 @@ from .enums import (
     CRF,
     resolution_for,
 )
+from .serde import from_plain as _from_plain
+from .serde import to_plain as _to_plain
 
 CONFIG_VERSION = "1.2.0"
 CONFIG_ENV_VAR = "BLOCKDIRECTOR_CONFIG"
@@ -283,64 +285,7 @@ class AppConfig:
         return target
 
 
-# --------------------------------------------------------------------------- #
-# 序列化工具（把嵌套 dataclass 与枚举转成纯 JSON 类型）
-# --------------------------------------------------------------------------- #
-def _to_plain(value: Any) -> Any:
-    # StrEnum 继承自 str 且重写了 __str__，统一走 str() 即可
-    if isinstance(value, str):
-        return str(value)
-    if is_dataclass(value) and not isinstance(value, type):
-        return {f.name: _to_plain(getattr(value, f.name)) for f in fields(value)}
-    if isinstance(value, dict):
-        return {str(k): _to_plain(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_to_plain(v) for v in value]
-    return value
-
-
-def _coerce(annotation: Any, value: Any) -> Any:
-    """把标量/字典递归还原为目标类型（支持嵌套 dataclass 与 StrEnum）。"""
-    if is_dataclass(annotation) and isinstance(value, dict):
-        return _from_plain(annotation, value)
-    if isinstance(annotation, type) and issubclass(annotation, str) \
-            and hasattr(annotation, "__members__"):     # StrEnum 子类
-        return annotation(value)
-    if annotation is bool:
-        return bool(value)
-    if annotation is int:
-        return int(value)
-    if annotation is float:
-        return float(value)
-    if annotation is str:
-        return str(value)
-    return value
-
-
-def _from_plain(cls: Any, data: Dict[str, Any]) -> Any:
-    import typing
-
-    hints = typing.get_type_hints(cls)
-    kwargs: Dict[str, Any] = {}
-    for f in fields(cls):
-        if f.name not in data:
-            continue
-        raw = data[f.name]
-        hint = hints.get(f.name, Any)
-        origin = typing.get_origin(hint)
-        if origin is dict or origin is Dict:
-            kwargs[f.name] = dict(raw)
-        elif origin in (list, tuple) or origin in (List, Tuple):
-            args = typing.get_args(hint)
-            item_type = args[0] if args else Any
-            kwargs[f.name] = [_coerce(item_type, v) for v in raw]
-        elif isinstance(raw, dict) and is_dataclass(hint):
-            kwargs[f.name] = _from_plain(hint, raw)
-        else:
-            kwargs[f.name] = _coerce(hint, raw)
-    return cls(**kwargs)
-
-
+# 序列化工具（to_plain / from_plain）已抽到 contracts/serde.py，供 SDL 等复用。
 # --------------------------------------------------------------------------- #
 # 路径与文本解析（§1.4 / §14.3 跨平台）
 # --------------------------------------------------------------------------- #

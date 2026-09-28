@@ -43,6 +43,12 @@ Phases 0-4 and 6 are done:
   stills, `shots.json`, `prompts.md`, optional `camera_traj.json` and a README.
   Export refuses to run when the render audit finds a helper that would leak
   into the reference video.
+- **Layer 2 / Layer 9** the SDL scene-description layer (`contracts/sdl.py`,
+  `layer2_sdl/`) and persistence (`layer9_persistence/project_io.py`).
+  Build a plan into an `SDLProject`, validate it (rules S1-S7), save it to
+  `project.bdproj`, load it back (migrate -> deserialise -> validate), and
+  rebuild the scene from it without any LLM call. Character fields serialise
+  as `initial_location` / `initial_facing` to match the spec.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
@@ -52,18 +58,20 @@ dialogue timing and coreference) is done.
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all thirteen checks: spec drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all fourteen checks: spec drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
 scene state / query tools, the Phase 4 rule check / repair loop, the Phase 5
-checkpoint and rollback, and the Phase 6 delivery export.
+checkpoint and rollback, the Phase 6 delivery export, and the Layer 2/9
+save/load/migrate/rebuild round trip.
 
 The end-to-end commands are:
 
 ```
 blender --background --factory-startup --python tools/run_headless.py -- --offline --build
 blender --background --factory-startup --python tools/run_export.py -- --offline --out <dir>
+blender --background --factory-startup --python tools/rebuild_project.py -- --project <dir> [--export]
 ```
 
 Motion math lives in `block_director/motion/` (no `bpy`, unit-tested). The bpy side

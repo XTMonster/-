@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 import bpy
 
 from ..contracts.plan import Plan, ShotPlan
+from ..contracts.cast import CastMember, SceneSpec
 from ..motion.model import ActionRequest
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
@@ -33,58 +34,6 @@ from .scene_context import SceneContext, set_context
 
 log = get_logger("shot-builder")
 
-DEFAULT_COLORS = ("#FF6B6B", "#6BC5FF", "#FFD166", "#9B8CFF",
-                  "#6BE3A2", "#FF9F6B")
-DEFAULT_SPACING = 1.5
-
-
-@dataclass
-class CastMember:
-    """一名角色的设定。"""
-
-    id: str
-    name: str
-    color: str = "#FFFFFF"
-    position: Tuple[float, float, float] = (0.0, 0.0, 0.0)
-    facing: Tuple[float, float, float] = (0.0, 1.0, 0.0)
-
-
-@dataclass
-class SceneSpec:
-    """场景设定：谁在场、环境长什么样。"""
-
-    heading: str = ""
-    cast: List[CastMember] = field(default_factory=list)
-    # 默认给一大块地面：地面远边缘一旦进入画面，就会在参考视频里留下一条
-    # 横贯中景的硬边，视频模型会把它当内容学走。室内场景请显式传小地面/room。
-    ground_size: Tuple[float, float] = (120.0, 120.0)
-    walls: List[Dict[str, Any]] = field(default_factory=list)
-    props: List[Dict[str, Any]] = field(default_factory=list)
-    lighting: str = "clay_studio"
-    room: Optional[Tuple[float, float, float, float]] = None
-    with_labels: bool = True
-
-    @classmethod
-    def from_plan(cls, plan: Plan, **overrides) -> "SceneSpec":
-        """按计划里出现的角色自动生成一份确定性剧组设定。"""
-        character_ids: List[str] = []
-        for shot in plan.shots:
-            for character_id in shot.characters:
-                if character_id not in character_ids:
-                    character_ids.append(character_id)
-        cast: List[CastMember] = []
-        count = len(character_ids)
-        for index, character_id in enumerate(character_ids):
-            offset = (index - (count - 1) / 2.0) * DEFAULT_SPACING
-            cast.append(CastMember(
-                id=character_id,
-                name=character_id,
-                color=DEFAULT_COLORS[index % len(DEFAULT_COLORS)],
-                position=(round(offset, 3), 0.0, 0.0),
-            ))
-        return cls(heading=plan.scene_heading, cast=cast, **overrides)
-
-
 @dataclass
 class ShotBuildResult:
     shot_id: str
@@ -93,6 +42,7 @@ class ShotBuildResult:
     end_frame: int
     camera: str
     camera_position: Tuple[float, float, float]
+    camera_target: Tuple[float, float, float] = (0.0, 0.0, 1.0)
     lens: float = 50.0
     characters: List[str] = field(default_factory=list)
     motions: int = 0
@@ -104,6 +54,7 @@ class ShotBuildResult:
             "start_frame": self.start_frame, "end_frame": self.end_frame,
             "camera": self.camera,
             "camera_position": [round(v, 3) for v in self.camera_position],
+            "camera_target": [round(v, 3) for v in self.camera_target],
             "lens": round(self.lens, 2),
             "characters": list(self.characters), "motions": self.motions,
             "warnings": list(self.warnings),
@@ -134,12 +85,14 @@ class BuildSummary:
 def _subject_anchor(shot: ShotPlan, cast: Dict[str, CastMember]
                     ) -> Tuple[Tuple[float, float, float], Tuple[float, float, float]]:
     """取镜头内角色的平均位置与首个角色的朝向。"""
-    positions = [cast[cid].position for cid in shot.characters if cid in cast]
+    positions = [cast[cid].initial_location for cid in shot.characters
+                 if cid in cast]
     if not positions:
         return (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)
     x = sum(p[0] for p in positions) / len(positions)
     y = sum(p[1] for p in positions) / len(positions)
-    facing = cast[shot.characters[0]].facing if shot.characters[0] in cast \
+    facing = cast[shot.characters[0]].initial_facing \
+        if shot.characters[0] in cast \
         else (0.0, 1.0, 0.0)
     return (x, y, 0.0), facing
 
@@ -173,7 +126,7 @@ def _action_requests(shot: ShotPlan, shot_start: int,
                     f"{shot.shot_id}: {action_type} 缺少 target_position，已跳过"
                     "（不替 LLM 猜目的地）")
                 continue
-            params.setdefault("from", cast[character_id].position)
+            params.setdefault("from", cast[character_id].initial_location)
         requests.append(ActionRequest(action_type=action_type,
                                       start_frame=start, end_frame=end,
                                       params=params, character_id=character_id,
@@ -207,8 +160,8 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     characters: Dict[str, Any] = {}
     for member in spec.cast:
         character = create_character(member.id, member.name, member.color,
-                                     location=member.position,
-                                     facing=member.facing)
+                                     location=member.initial_location,
+                                     facing=member.initial_facing)
         if spec.with_labels:
             create_label(character, member.name)
         cast_map[member.id] = member
@@ -254,6 +207,7 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             shot_id=shot.shot_id, shot_type=str(shot.shot_type),
             start_frame=start, end_frame=end, camera=bundle.camera.name,
             camera_position=tuple(bundle.camera.location),
+            camera_target=tuple(solution.target),
             lens=float(bundle.lens),
             characters=list(shot.characters), motions=len(requests),
             warnings=shot_warnings))

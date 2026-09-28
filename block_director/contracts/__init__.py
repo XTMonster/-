@@ -34,6 +34,15 @@ from .health import HealthStatus
 from .knowledge import Card
 from .plan import Plan, ShotPlan
 from .audit import AuditError, AuditResult
+from .cast import CastMember, SceneSpec
+from .sdl import (
+    SDL_VERSION,
+    SDLCamera,
+    SDLEnvironment,
+    SDLProject,
+    SDLScene,
+    SDLShot,
+)
 from .messages import (
     ChatPayload,
     ChatReply,
@@ -88,6 +97,9 @@ __all__ = [
     "HealthStatus", "Card",
     "Plan", "ShotPlan",
     "AuditError", "AuditResult",
+    "CastMember", "SceneSpec",
+    "SDLProject", "SDLScene", "SDLShot", "SDLCamera", "SDLEnvironment",
+    "SDL_VERSION",
     "ChatPayload", "ChatReply", "FunctionCall", "Message", "ToolCall", "Usage",
     "assistant_message", "tool_message", "validate_conversation",
     "CancelRequest", "CancelResponse", "EmbedRequest", "EmbedResponse",

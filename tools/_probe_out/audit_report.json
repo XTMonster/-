@@ -71,16 +71,16 @@
   },
   "scale_performance": {
     "status": "PASS",
-    "note": "单帧 Workbench 渲染 16 ms；5 秒镜头(120 帧)约 1.9 s",
+    "note": "单帧 Workbench 渲染 15 ms；5 秒镜头(120 帧)约 1.8 s",
     "objects": 20,
-    "frame_set_ms": 0.11,
-    "render_per_frame_s": 0.016,
-    "est_shot_5s_s": 1.92
+    "frame_set_ms": 0.09,
+    "render_per_frame_s": 0.0154,
+    "est_shot_5s_s": 1.85
   },
   "sidecar_end_to_end": {
     "status": "PASS",
     "note": "契约层可经真实 HTTP 与 sidecar 通信，且会话结构合法",
-    "port": 64685,
+    "port": 64427,
     "health_version": "1.2.0",
     "capabilities": [
       "llm",

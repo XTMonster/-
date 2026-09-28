@@ -740,7 +740,13 @@ SDL 是执行过程的结构化记录，同时是项目保存/加载格式。LLM
 
 ### 5.3 版本迁移
 
-`sdl_migrate.py` 负责 `1.0 → 1.1`：把旧版的 shot `start_frame/end_frame` 折算为 `duration_frames`，补 `intent`/`prompt` 空值，补 `project.fps`。加载旧项目时自动迁移并写日志。**禁止**在迁移中改变镜头顺序或时长，保证可复现。
+`sdl_migrate.py` 负责把 `1.0` / `1.1` 升到 `1.2`，分三步：
+
+1. **折算时长**：旧版 shot 的 `start_frame/end_frame` 折算为 `duration_frames`。源里若没有帧号就保留 `0`，交给排片器（§10.2）统一回填——**不编造帧号**，否则会产出"start=0 但 end=48"这种自相矛盾的半成品。
+2. **补结构**：补 `intent` / `prompt` / `characters` / `actions` / `dialogues` / `transition_in` / `transition_out` / `camera` 的空值，补 `project.fps`。
+3. **补角色表**：镜头、动作、对白、`active_speakers`、`continuity.character_pose` 引用到、却不在 `characters` 名单里的角色，按引用顺序补进名单（颜色与站位沿用 §5.1 的确定性排位规则）。这样旧项目能被加载，而不是被校验规则 S2 判成坏数据。**已是 `1.2` 的项目不做此补救**：当前版本里引用缺失就是真错误，照常报 S2。
+
+加载旧项目时自动迁移，并把每一步（含"补齐角色表：…"）写进 `LoadedProject.notes`，最后一条始终是版本说明，便于回归测试断言。**禁止**在迁移中改变镜头顺序或时长，保证可复现。
 
 ---
 
@@ -2435,13 +2441,17 @@ def supports_media_type() -> bool:
 | **对白计时（§4.4）** | `layer1_input/dialogue_timing.py` | ✅ 语速倍率方向已修正并锁死（生气更短、悲伤更长） |
 | **共指消解（§4.3）** | `layer1_input/coreference.py` | ✅ 确定性合并 + 可注入的 LLM 消解（layer1 不反向依赖 layer5） |
 | **R011 对白容纳** | `layer3_engine/rule_checker.py` | ✅ **R001–R011 十一条规则至此全部实现** |
+| **Layer 2 SDL 场景描述** | `contracts/sdl.py`、`contracts/cast.py`、`contracts/serde.py`、`layer2_sdl/` | ✅ 组装 → §5.2 七条校验（S1–S7）→ 保存/还原；角色字段与 §5.1/§16.1 同名（`initial_location`/`initial_facing`） |
+| **Layer 2 版本迁移** | `layer2_sdl/sdl_migrate.py` | ✅ 1.0/1.1 → 1.2：折时长、补结构、补角色表（§5.3） |
+| **Layer 9 持久化** | `layer9_persistence/project_io.py` | ✅ `project.bdproj`（JSON）保存/加载，顺序为迁移 → 反序列化 → 校验 |
+| **项目重建 CLI** | `tools/rebuild_project.py` | ✅ 改一镜、重出一镜：加载 SDL → 重建场景（`--export` 顺带重出交付包），全程不调 LLM |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 343 项全部通过 |
+| 测试套件 | `tests/` | ✅ 366 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
-| Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
+| RAG 知识库、调试面板、replay | — | ⏳ 待办（RAG 后端与检索时机已在 §6 定稿） |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 343 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 366 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2496,7 +2506,15 @@ def supports_media_type() -> bool:
 >
 > 规划提示现在拿到的是**结构化摘要 + 对白时长表**（而非原文），模型据此给足镜头时长，R011 才有据可依。
 
-**下一步**：Phase 5 余下（检查点回滚、`request_self_review` 异步流程、人工审批门、调试面板）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。Layer 1 到位后 R011 即可补上。
+**Layer 2 / Layer 9 验收（第 14 步）**：在真实 Blender 内跑通"保存 → 加载 → 重建"闭合回路，四项断言全绿：
+1. 建场景 → 存 `project.bdproj` → 重新加载 → 重建，两镜帧范围（1–96 / 97–216）与总时长 216、机位名与焦距**逐项一致**；
+2. SDL 落盘再读回**逐字段一致**，且键名与 §5.1/§16.1 一致（`initial_location`/`initial_facing`，`continuity.character_pose` 仍用 `position`/`facing`）；
+3. 旧版（无 `version`、无角色表）项目能迁移、能补齐角色表、并能重建（`notes = ["补齐角色表：char_001", "已从 1.0 迁移到 1.2"]`）；
+4. 坏项目（引用未定义角色 `ghost`）被 **S2 拒绝**，不产出半成品。
+
+> 实现中修掉一处真漂移：`CastMember` 原先用 `position`/`facing`，与 §5.1/§16.1 的 `initial_location`/`initial_facing` 不一致；同时 `serde` 会把 `Tuple[...]` 注解还原成 `list`，让"落盘再读回"的类型悄悄改变。两处都已在契约层修正，并用回归测试锁死。命令出入口同时验证：`run_headless --save <dir>` 落盘（`problems: 0`），`rebuild_project --project <dir>` 重建（`shots: 2`）。
+
+**下一步**：Phase 5 余下（调试面板 §13.3）与 Phase 7（replay §14.4、分镜列表 §13.2、Golden Test 夹具、`E_*` 错误信息打磨）；§15 的可选深度序列与全片拼接目前会显式告警而非静默空转。Layer 2 / Layer 9 到位后，"改一镜、重出一镜"已经可用。
 
 ---
 

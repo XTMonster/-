@@ -32,6 +32,8 @@ def parse_args(argv):
     parser.add_argument("--wall", type=float, default=180.0, help="墙上时间上限（秒）")
     parser.add_argument("--build", action="store_true",
                         help="把分镜计划落成真实场景（角色/相机/关键帧/剪切标记）")
+    parser.add_argument("--save", default="",
+                        help="运行成功后把项目（SDL）保存到该目录")
     return parser.parse_args(rest)
 
 
@@ -92,6 +94,24 @@ def main() -> int:
             collect_scene_state(detailed=False)),
         parsed_script=parsed,
     )
+
+    if args.save and summary.get("success") and summary.get("plan"):
+        from block_director.contracts.plan import Plan
+        from block_director.layer2_sdl import build_sdl, validate_sdl
+        from block_director.layer9_persistence import save_project
+
+        plan_obj = Plan.from_dict(summary["plan"])
+        spec = builder.spec if builder is not None else None
+        sdl = build_sdl(plan_obj, build_summary=summary.get("build"),
+                        spec=spec, project_name=plan_obj.scene_heading
+                        or "BlockDirector")
+        findings = validate_sdl(sdl)
+        path = save_project(Path(args.save), sdl)
+        print("BLOCKDIRECTOR_SAVED " + json.dumps(
+            {"path": str(path), "problems": len(findings),
+             "scenes": len(sdl.scenes), "shots": len(sdl.shots)},
+            ensure_ascii=False))
+
     print("BLOCKDIRECTOR_RESULT " + json.dumps(summary, ensure_ascii=False))
     return 0 if summary.get("success") else 1
 
