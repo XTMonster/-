@@ -44,19 +44,20 @@ Phases 0-4 and 6 are done:
   Export refuses to run when the render audit finds a helper that would leak
   into the reference video.
 
-Phases 0-4 and 6 are done; Phase 5 is partly done (rule checker R001-R010 plus
-the composition gate, loop detection and budget limits; checkpoints, self-review,
-the human gate and the debug panel are still pending). Layer 1 (script parsing)
-is not started, and R011 needs its dialogue timing.
+Phases 0-4 and 6 are done; Phase 5 is mostly done (rule checker R001-R010 plus
+the composition gate, loop detection, budget limits, and checkpoint/rollback;
+self-review, the human gate and a dedicated debug panel are still pending).
+Layer 1 (script parsing) is not started, and R011 needs its dialogue timing.
 
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all eleven checks: spec drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all thirteen checks: spec drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
-scene state / query tools, and the Phase 6 delivery export.
+scene state / query tools, the Phase 4 rule check / repair loop, the Phase 5
+checkpoint and rollback, and the Phase 6 delivery export.
 
 The end-to-end commands are:
 

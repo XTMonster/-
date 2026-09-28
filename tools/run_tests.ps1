@@ -34,11 +34,11 @@ function Assert-Marker([object]$output, [string]$pattern, [string]$label) {
     return $line.Line
 }
 
-Write-Host '[1/12] Check spec/code consistency (specs/config.default.yaml)' -ForegroundColor Cyan
+Write-Host '[1/13] Check spec/code consistency (specs/config.default.yaml)' -ForegroundColor Cyan
 python tools/gen_specs.py --check
 if ($LASTEXITCODE -ne 0) { Fail '  FAILED: spec/code drift' }
 
-Write-Host '[2/12] Run pytest suite' -ForegroundColor Cyan
+Write-Host '[2/13] Run pytest suite' -ForegroundColor Cyan
 python -m pytest
 if ($LASTEXITCODE -ne 0) { Fail '  FAILED: pytest' }
 
@@ -51,11 +51,11 @@ if (-not $blender) {
     $blender = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 }
 if (-not $blender) {
-    Write-Host '[3/12] .. [12/12] skipped: blender.exe not found (set BLENDER_EXE)' -ForegroundColor Yellow
+    Write-Host '[3/13] .. [13/13] skipped: blender.exe not found (set BLENDER_EXE)' -ForegroundColor Yellow
     exit 0
 }
 
-Write-Host '[3/12] Smoke test contracts inside Blender Python' -ForegroundColor Cyan
+Write-Host '[3/13] Smoke test contracts inside Blender Python' -ForegroundColor Cyan
 $smoke = @(
     'import sys',
     "sys.path.insert(0, r'$root')",
@@ -74,7 +74,7 @@ if (-not $smokeLine) {
 }
 Write-Host ('  ' + $smokeLine.Line) -ForegroundColor Green
 
-Write-Host '[4/12] Run the add-on headless (plan -> scene, full chain)' -ForegroundColor Cyan
+Write-Host '[4/13] Run the add-on headless (plan -> scene, full chain)' -ForegroundColor Cyan
 $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
 $headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--build', '--out', $out)
 $marker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_RESULT' 'headless'
@@ -82,49 +82,55 @@ if ($marker -notmatch '"success": true') { Fail ('  FAILED: ' + $marker) }
 if ($marker -notmatch '"built": true') { Fail '  FAILED: the run did not build a scene' }
 Write-Host ('  ' + ($marker -replace 'BLOCKDIRECTOR_RESULT ', '')) -ForegroundColor Green
 
-Write-Host '[5/12] Phase 1 scene build inside Blender' -ForegroundColor Cyan
+Write-Host '[5/13] Phase 1 scene build inside Blender' -ForegroundColor Cyan
 $p1Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase1_scene.py') $null
 $p1Line = Assert-Marker $p1Out 'BD_TEST_RESULT' 'phase1'
 if ($p1Line -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p1Line) }
 Write-Host '  OK: all Phase 1 scene checks passed' -ForegroundColor Green
 
-Write-Host '[6/12] Phase 2 motion baking inside Blender' -ForegroundColor Cyan
+Write-Host '[6/13] Phase 2 motion baking inside Blender' -ForegroundColor Cyan
 $p2Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase2_motion.py') $null
 $p2Line = Assert-Marker $p2Out 'BD_TEST_RESULT' 'phase2'
 if ($p2Line -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p2Line) }
 Write-Host '  OK: all Phase 2 motion checks passed' -ForegroundColor Green
 
-Write-Host '[7/12] Phase 3 framing solver inside Blender' -ForegroundColor Cyan
+Write-Host '[7/13] Phase 3 framing solver inside Blender' -ForegroundColor Cyan
 $p3Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase3_framing.py') $null
 $p3Line = Assert-Marker $p3Out 'BD_TEST_RESULT' 'phase3'
 if ($p3Line -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p3Line) }
 Write-Host '  OK: all Phase 3 framing checks passed' -ForegroundColor Green
 
-Write-Host '[8/12] Phase 3 axis and composition audit inside Blender' -ForegroundColor Cyan
+Write-Host '[8/13] Phase 3 axis and composition audit inside Blender' -ForegroundColor Cyan
 $p3bOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase3_audit.py') $null
 $p3bLine = Assert-Marker $p3bOut 'BD_TEST_RESULT' 'phase3-audit'
 if ($p3bLine -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p3bLine) }
 Write-Host '  OK: all Phase 3 audit checks passed' -ForegroundColor Green
 
-Write-Host '[9/12] Phase 4 plan-to-scene build inside Blender' -ForegroundColor Cyan
+Write-Host '[9/13] Phase 4 plan-to-scene build inside Blender' -ForegroundColor Cyan
 $p4Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase4_build.py') $null
 $p4Line = Assert-Marker $p4Out 'BD_TEST_RESULT' 'phase4'
 if ($p4Line -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p4Line) }
 Write-Host '  OK: all Phase 4 build checks passed' -ForegroundColor Green
 
-Write-Host '[10/12] Phase 4 scene state and query tools inside Blender' -ForegroundColor Cyan
+Write-Host '[10/13] Phase 4 scene state and query tools inside Blender' -ForegroundColor Cyan
 $p4tOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase4_tools.py') $null
 $p4tLine = Assert-Marker $p4tOut 'BD_TEST_RESULT' 'phase4-tools'
 if ($p4tLine -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p4tLine) }
 Write-Host '  OK: all Phase 4 tools / scene-state checks passed' -ForegroundColor Green
 
-Write-Host '[11/12] Phase 4 rule check and repair loop inside Blender' -ForegroundColor Cyan
+Write-Host '[11/13] Phase 4 rule check and repair loop inside Blender' -ForegroundColor Cyan
 $p4rOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase4_repair.py') $null
 $p4rLine = Assert-Marker $p4rOut 'BD_TEST_RESULT' 'phase4-repair'
 if ($p4rLine -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p4rLine) }
 Write-Host '  OK: all Phase 4 repair checks passed' -ForegroundColor Green
 
-Write-Host '[12/12] Phase 6 delivery export inside Blender' -ForegroundColor Cyan
+Write-Host '[12/13] Phase 5 checkpoint and rollback inside Blender' -ForegroundColor Cyan
+$p5Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase5_checkpoint.py') $null
+$p5Line = Assert-Marker $p5Out 'BD_TEST_RESULT' 'phase5-checkpoint'
+if ($p5Line -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p5Line) }
+Write-Host '  OK: all Phase 5 checkpoint checks passed' -ForegroundColor Green
+
+Write-Host '[13/13] Phase 6 delivery export inside Blender' -ForegroundColor Cyan
 $p6Out = Invoke-BlenderScript $blender (Join-Path $root 'tools\blender_tests\test_phase6_delivery.py') $null
 $p6Line = Assert-Marker $p6Out 'BD_TEST_RESULT' 'phase6'
 if ($p6Line -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $p6Line) }

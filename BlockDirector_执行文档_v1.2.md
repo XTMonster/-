@@ -2428,6 +2428,7 @@ def supports_media_type() -> bool:
 | **规则校验器（Phase 5）** | `layer3_engine/rule_checker.py`、`contracts/audit.py` | ✅ **R001–R010 全部实现** + 构图质量门；R011 待 Layer 1 的对白计时 |
 | **修复闭环（Phase 4 B3/B4）** | `layer5_orchestrator/auditor.py`、`repair.py`、驱动器的 CHECKING/REPAIRING | ✅ 逐镜校验 → 结构化违规项回灌 → 工具修正 → 复核 |
 | **循环检测与预算（Phase 5）** | `layer5_orchestrator/loop_detector.py`、`budget.py` | ✅ 重复调用/只查不做/振荡三种病态 + token/费用/时间四类上限 |
+| **检查点与回滚（Phase 5）** | `layer3_engine/checkpoint_manager.py` | ✅ 变换 / 关键帧 / 时间轴标记 / 帧范围整体快照与回退 |
 | 测试套件 | `tests/` | ✅ 297 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
@@ -2474,6 +2475,10 @@ def supports_media_type() -> bool:
 > 纯测试另覆盖：预算触顶时**保留已建成的场景**并降级收尾（不是硬失败）、token/费用/时间四类上限、循环检测的三种病态（重复调用、只查不做、来回振荡）以及"警告必须真的注入到下一轮对话"。
 >
 > 测试过程中修掉两个真缺陷：（a）规则判定原先用**全场角色**，导致特写镜头因为"另一个角色不在画里"被判失败——改为按镜头角色判定；（b）预算检查原先在 BUILDING 之前收尾，会把已建成的场景丢掉——改为只在需要 LLM 调用时拦截。
+
+**Phase 5 验收（检查点，第 12 步）**：在真实 Blender 内断言：拍快照 → 把角色移到 x=20 → 回滚后回到 0.75；拍快照 → 加一段动作使关键帧从 **102 涨到 169** → 回滚后精确回到 **102**；改动帧范围与剪切标记后回滚，帧范围与两个标记（含相机绑定）都恢复；未知检查点抛 `KeyError` 而非静默成功；超出上限时最旧的检查点被淘汰。
+>
+> 快照覆盖 33 个对象 / 7 条曲线 / 2 个标记。关键帧的读写跨越 4.x 与 5.x 两套 Action 结构，统一走 `blender_compat.action_fcurves`。
 
 **下一步**：Phase 5 余下（检查点回滚、`request_self_review` 异步流程、人工审批门、调试面板）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。Layer 1 到位后 R011 即可补上。
 
