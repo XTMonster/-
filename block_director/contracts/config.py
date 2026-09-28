@@ -203,7 +203,7 @@ class AppConfig:
             if not 0.0 <= value <= 2.0:
                 err("CFG_006", f"llm.{name}", f"温度必须在 [0, 2] 内（当前 {value}）")
         if self.llm.trace_max_chars < 0:
-            err("CFG_008", "llm.trace_max_chars",
+            err("CFG_012", "llm.trace_max_chars",
                 f"trace 字段上限不能为负（当前 {self.llm.trace_max_chars}）；"
                 f"0 表示不截断")
         if self.rag.top_k <= 0:
@@ -212,6 +212,12 @@ class AppConfig:
             err("CFG_008", "orchestration.max_repair_attempts", "修复次数不能为负")
         if self.orchestration.react_max_steps < 0:
             err("CFG_009", "orchestration.react_max_steps", "ReAct 步数不能为负")
+        # --- 决策 3（§7.1）：v1.2 的编排范式是四段式；react_only 是 v1.0 的
+        # 旧范式，驱动器并未实现它。与其静默忽略这个配置项，不如明确报错。
+        if self.orchestration.mode is OrchestrationMode.REACT_ONLY:
+            err("CFG_013", "orchestration.mode",
+                "v1.2 使用四段式编排（plan_structured）；react_only 是 v1.0 的"
+                "旧范式，本版本未实现，请改为 plan_structured")
         if self.budget.max_cost_usd <= 0:
             err("CFG_010", "budget.max_cost_usd", "费用上限必须为正数")
         if self.budget.max_wall_minutes <= 0:

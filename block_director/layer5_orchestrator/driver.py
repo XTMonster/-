@@ -15,7 +15,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from ..contracts.enums import Purpose
+from ..contracts.enums import Purpose, ToolChoice
 from ..contracts.audit import AuditResult
 from ..contracts.messages import (
     ChatPayload,
@@ -42,6 +42,8 @@ from .repair import build_repair_payload
 from .budget import Budget, BudgetLimits
 from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
+from .context_budget import budget_report, trim_messages
+from .react import build_react_payload, render_shot_memory, should_react, shot_memory
 from .loop_detector import LoopDetector
 from .human_gate import GateDecision, GateRequest, HumanGate
 from .review import ReviewVerdict, build_review_payload, parse_review
@@ -156,6 +158,12 @@ class PrevisDriver:
         self.finish_history: List[Dict[str, Any]] = []
         self.review_requests: List[Dict[str, Any]] = []
         self.abort_reason: str = ""
+        self._react_steps: int = 0
+        self._react_shot: str = ""
+        self._react_messages: List[Message] = []
+        self._react_done: set = set()
+        self.react_history: List[Dict[str, Any]] = []
+        self._finished_shots: List[str] = []
         self.review_history: List[Dict[str, Any]] = []
         self.clock = clock
         self.thread_factory = thread_factory
@@ -174,6 +182,7 @@ class PrevisDriver:
         self._plan_attempts = 0
         self._reply_q: "queue.Queue[tuple]" = queue.Queue()
         self._cancel = threading.Event()
+        self._paused = False
         self._call_started = 0.0
         self._pending_request_id = ""
         self._pending_payload: Any = None      # §11.3：trace 要落完整 prompt
@@ -198,6 +207,20 @@ class PrevisDriver:
                 self.transport.cancel(self._pending_request_id)
             except Exception as exc:  # noqa: BLE001 - 取消失败不阻断
                 log.debug("取消请求失败: %s", exc)
+
+    # ------------------------------------------------------------ 暂停（§13.1）
+    @property
+    def paused(self) -> bool:
+        return self._paused
+
+    def pause(self) -> None:
+        """暂停推进：状态机不再前进，但**保留**当前状态与已建成的场景。"""
+        self._paused = True
+        self.audit.log("run_paused", "已暂停", level="warning")
+
+    def resume(self) -> None:
+        self._paused = False
+        self.audit.log("run_resumed", "已继续")
 
     @property
     def finished(self) -> bool:
@@ -228,8 +251,10 @@ class PrevisDriver:
                           if self.knowledge is not None else None),
             "degraded_reason": self.degraded_reason,
             "abort_reason": self.abort_reason,
+            "paused": self._paused,
             "finished_shots": len(self.finish_history),
             "review_requests": len(self.review_requests),
+            "react_rounds": len(self.react_history),
             "error": self.error,
         }
 
@@ -239,6 +264,8 @@ class PrevisDriver:
         assert_main_thread("PrevisDriver.step")
         if self.state in TERMINAL_STATES:
             return False
+        if self._paused:
+            return True                      # 暂停：一步都不推进，状态原样保留
 
         self._steps += 1
         if self._steps > self.limits.max_steps:
@@ -273,7 +300,9 @@ class PrevisDriver:
             if max_wall_s is not None and self.clock() - started > max_wall_s:
                 self._fail(f"超出墙上时间上限 {max_wall_s}s")
                 break
-            if poll_interval and self.state is DriverState.CALLING_LLM:
+            if self._paused:
+                time.sleep(poll_interval or 0.05)
+            elif poll_interval and self.state is DriverState.CALLING_LLM:
                 time.sleep(poll_interval)
         return self.state
 
@@ -330,6 +359,21 @@ class PrevisDriver:
             self._repair_attempts += 1
             self._repairs_total += 1
             self._transition(DriverState.CHECKING)   # 复核一次，看改没改对
+            return
+
+        if self._call_purpose == "react":
+            self._react_steps += 1
+            called = bool(reply.tool_calls)
+            problem = self._dispatch_tool_calls(reply, self._react_messages)
+            if problem:
+                self.audit.log("react_invalid", problem, level="warning")
+            if not called:
+                self._finish_react("模型停止调用工具")
+                return
+            if self._react_steps >= self._react_max_steps():
+                self._finish_react("达到步数上限")
+                return
+            self._start_react_turn()
             return
 
         if self._call_purpose == "review":
@@ -524,6 +568,9 @@ class PrevisDriver:
                                 payload={"shot_id": shot_id}),
                     resume=DriverState.CHECKING)
                 return
+            if self._should_start_react(shot_id, result):
+                self._start_react(shot_id, result)
+                return
             self._advance_shot()
             return
         self._pending_audit = result
@@ -531,12 +578,84 @@ class PrevisDriver:
 
     def _advance_shot(self) -> None:
         if self._shot_queue:
-            self._shot_queue.pop(0)
+            self._finished_shots.append(self._shot_queue.pop(0))
         self._repair_attempts = 0
         self.repair_messages = []
         if self._shot_queue:
             self._current_shot_id = self._shot_queue[0]
         self._transition(DriverState.CHECKING)
+
+    # -------------------------------------------------- Level 2 自我审核（§11.1）
+    # -------------------------------------------------- 阶段 B5（§7.1 受限 ReAct）
+    def _should_start_react(self, shot_id: str, result: AuditResult) -> bool:
+        if shot_id in self._react_done:
+            return False
+        shot = next((item for item in (self.plan.shots if self.plan else [])
+                     if item.shot_id == shot_id), None)
+        max_steps = 6
+        if self.config is not None:
+            max_steps = int(getattr(self.config.orchestration,
+                                    "react_max_steps", 6))
+        return should_react(shot, result, repairs_exhausted=True,
+                            max_steps=max_steps)
+
+    def _start_react(self, shot_id: str, result: AuditResult) -> None:
+        """进入 B5：开一段有上限的工具对话，让模型自己边看边调。"""
+        self._react_done.add(shot_id)          # 每个镜头只给一次 B5
+        self._react_shot = shot_id
+        self._react_steps = 0
+        shot = next((item for item in (self.plan.shots if self.plan else [])
+                     if item.shot_id == shot_id), None)
+        memory = render_shot_memory(
+            shot_memory(self.plan, done=self._finished_shots))
+        payload = build_react_payload(
+            shot, result, scene_state=self._scene_state_text(),
+            registry=self.registry, max_steps=self._react_max_steps())
+        if memory:
+            payload.messages[0].content += "\n\n" + memory
+        self._react_messages = list(payload.messages)
+        self.audit.log("react_started", f"{shot_id} 进入受限 ReAct",
+                       shot=shot_id, max_steps=self._react_max_steps())
+        self._emit("react_started", f"{shot_id} 精修", shot=shot_id)
+        self._start_react_turn()
+
+    def _react_max_steps(self) -> int:
+        if self.config is None:
+            return 6
+        return int(getattr(self.config.orchestration, "react_max_steps", 6))
+
+    def _start_react_turn(self) -> None:
+        """把当前 ReAct 对话裁到上下文上限内，再发起下一轮。"""
+        limit = 32000
+        if self.config is not None:
+            limit = int(getattr(self.config.orchestration,
+                                "context_window_tokens", 32000))
+        kept, dropped = trim_messages(self._react_messages, limit)
+        if dropped:
+            self.audit.log("context_trimmed",
+                           f"裁剪 {len(dropped)} 条旧观察",
+                           level="warning", **budget_report(kept, limit))
+            self._react_messages = kept
+        payload = ChatPayload(messages=list(self._react_messages),
+                              tools=self.registry.openai_schemas(),
+                              tool_choice=ToolChoice.AUTO,
+                              temperature=0.3, purpose=Purpose.REACT,
+                              request_id=new_request_id())
+        self._start_llm_call("react", payload,
+                             note=f"精修 {self._react_shot}"
+                                  f"（第 {self._react_steps + 1} 步）")
+
+    def _finish_react(self, reason: str) -> None:
+        self.react_history.append({"shot_id": self._react_shot,
+                                   "steps": self._react_steps,
+                                   "reason": reason})
+        self.audit.log("react_finished",
+                       f"{self._react_shot} 精修结束（{reason}）",
+                       shot=self._react_shot, steps=self._react_steps)
+        self._emit("react_finished", f"{self._react_shot} 精修结束",
+                   shot=self._react_shot, steps=self._react_steps)
+        self._react_messages = []
+        self._transition(DriverState.CHECKING)   # 复核一次，看改没改好
 
     # -------------------------------------------------- Level 2 自我审核（§11.1）
     def _should_self_review(self, shot_id: str) -> bool:

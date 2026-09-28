@@ -550,6 +550,8 @@ v1.0 把所有观察结果一路 append 到 `self.messages`，长剧本会无界
 - **单镜 token 上限**：默认 32k，超限时先裁剪最旧的观察，再触发摘要压缩。
 - **运行级预算**：`RunBudget` 限制 LLM 调用次数、总 token、预估费用、墙上时间；任一触顶即按 §12.5 降级收尾，并在 UI 与审计日志中标注"因预算降级"。
 
+> **实现（Phase 7）**：`layer5_orchestrator/context_budget.py`（纯计算）。**镜头窗口**天然成立——plan / repair / react 三处都是每次重新构造 payload，不累积历史；**B5 例外**（它本身是多轮对话），因此在每一轮之前调用 `trim_messages()` 把对话裁到 `orchestration.context_window_tokens` 以内：system 永远保留，其余从最旧的观察开始淘汰，**最新一条即使超限也保留**（那是模型马上要回答的内容）。裁剪会记一条 `context_trimmed` 警告并附上用量账（`budget_report`），不静默丢上下文。
+
 ---
 
 ## 4. 剧本解析层
@@ -844,6 +846,13 @@ v1.0 让 LLM 用 ReAct **从头"边走边搭"每一个镜头**：单镜最多 20
 | B5 | 受限 ReAct（精修） | ≤6 步 / 镜头，默认不进入 | 需要试错式构图调整时使用 |
 
 **触发 B5 的条件**（满足任一）：构图分 < 阈值且 B4 未能改善；镜头涉及 3 人以上复杂调度；用户显式要求"精修此镜头"。
+
+> **实现（Phase 7）**：`layer5_orchestrator/react.py`（触发规则与请求构造，纯计算）+ 驱动器里的有界循环。
+>
+> - **触发比循环更重要**：`should_react()` 把三个条件写成显式规则——构图分低于阈值、构图门失败（即使没给分数）、镜头有 3 个以上角色、或用户显式要求；`react_max_steps = 0` 直接关掉 B5。**每个镜头只给一次 B5**（`_react_done`），否则"修不好 → 精修 → 还是不好"会绕圈。
+> - **与 B4 的关键区别是 `tool_choice`**：B4 用 `required`（必须动手），B5 用 `auto`（可以自己判断"已经够好了"停下来）。
+> - **收到工具调用才继续**：模型停止调用工具、或达到 `react_max_steps`，就回到 CHECKING 复核一次；复核仍不过才走原来的降级路径。
+> - **跨镜头记忆**（§3.5）：B5 的系统提示里附上**已完成镜头的压缩摘要**（镜号/景别/时长/意图/角色），不注入历史原文。
 
 **为什么这样更好**：绝大多数镜头（静态对话、走位、正反打）用 B1+B4 就能一次过，成本从 20 次调用降到 2–3 次；只有真正需要"边看边调"的复杂镜头才付出 ReAct 的代价。同时，结构化输出对本地模型的兼容性远好于多轮工具调用。
 
@@ -2441,7 +2450,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **543 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
+`tests/` 共 **571 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2472,9 +2481,9 @@ rag:
   max_tokens_per_call: 800
 
 orchestration:
-  mode: "plan_structured"   # plan_structured（默认）/ react_only（兼容 v1.0 行为）
+  mode: "plan_structured"   # 仅 plan_structured；react_only 是 v1.0 旧范式（CFG_013 拒绝）
   max_repair_attempts: 2
-  react_max_steps: 6
+  react_max_steps: 6        # 0 表示关闭 B5
   context_window_tokens: 32000
 
 audit:
@@ -2630,13 +2639,16 @@ def supports_media_type() -> bool:
 | **运行设置与交付（§13.1）** | `layer7_ui/panel_main.py`、`layer7_ui/run_settings.py` | ✅ 供应商/模型/审核级别/预算 + 输出目录/预设/外观/后端/导出按钮；设置覆盖到配置副本并先行校验 |
 | **预算配置生效（§12.6）** | `layer5_orchestrator/budget_formula.py`、`driver.py` | ✅ `max_cost_usd` / `max_wall_minutes` 真正进账本；`shots * N` 额度公式与硬顶取更严者 |
 | **LLM Trace 完整性（§11.3）** | `layer6_audit/audit_logger.py`、`driver.py` | ✅ 逐条记录完整 prompt / response；`llm.trace_max_chars` 截断、`llm.trace_prompts` 可关 |
+| **阶段 B5 受限 ReAct（§7.1）** | `layer5_orchestrator/react.py`、`driver.py` | ✅ 三个触发条件 + 有界循环（`auto` 工具选择、每镜一次、步数上限）；跨镜头记忆随提示注入 |
+| **上下文治理（§3.5）** | `layer5_orchestrator/context_budget.py` | ✅ 窗口裁剪保留 system 与最新一条，裁剪记 `context_trimmed` 警告 |
+| **暂停/继续（§13.1）** | `driver.pause/resume`、`modal_operator.py` | ✅ 暂停不推进状态、保留已建成场景，面板有按钮 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 543 项全部通过 |
+| 测试套件 | `tests/` | ✅ 571 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 543 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 571 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2742,7 +2754,9 @@ def supports_media_type() -> bool:
 
 至此 §11.3 的"记录完整 prompt / response"已如实满足，此前那条"元数据版"的降级不再存在。
 
-**仍存在的有意差异**（都在正文写明，不是遗漏）：§13.4 的"违规元素红色闪烁"目前是静态红框（闪烁需要逐帧重绘，收益低）；§9.4 的角色标签是真实对象（因此必须 `hide_render`），与 GPU 叠加层是两套机制。
+**阶段 B5 / 上下文治理 / 暂停验收**：22 条纯测试全绿。B5：三个触发条件（构图分低、构图门失败无分数、≥3 角色）各自可单独触发，`react_max_steps=0` 关闭后回到原有降级路径，每个镜头最多一次 B5；闭环实测——构造"审核每次都不过"的场景，模型在 B5 里调了两次工具后主动停下，`react_history` 记录 `{"steps": 2, "reason": "模型停止调用工具"}`，随后复核通过、两镜都前进、运行以 DONE 收尾；请求侧断言 `tool_choice` 是 `auto`（与 B4 的 `required` 相对）且携带工具表。上下文治理：`trim_messages` 只裁最旧的观察、system 与最新一条永在、窗口为 0 表示不限制；把小窗口（600 token）接进真实 ReAct 循环后确实产生 `context_trimmed` 事件，且每一轮请求都在窗口内。暂停：暂停期间 `step()` 不推进任何状态、`steps` 不增长、快照 `paused` 为真，继续后照常跑到 DONE，暂停/继续都留审计事件。
+
+**仍存在的有意差异**（都在正文写明，不是遗漏）：§13.4 的"违规元素红色闪烁"目前是静态红框（闪烁需要逐帧重绘，收益低）；§9.4 的角色标签是真实对象（因此必须 `hide_render`），与 GPU 叠加层是两套机制；§7.1 的 B1（单镜结构化生成）没有独立成一次 LLM 调用——计划里已经内嵌了每镜的景别/动作/对白，B1 的职责由计划承担，是否拆分待真实模型联调时再定。
 
 至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 

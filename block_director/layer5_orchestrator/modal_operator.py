@@ -150,7 +150,27 @@ class BLOCKDIRECTOR_OT_cancel_previs(Operator):
         return {'FINISHED'}
 
 
-CLASSES = (BLOCKDIRECTOR_OT_run_previs, BLOCKDIRECTOR_OT_cancel_previs)
+class BLOCKDIRECTOR_OT_pause_previs(Operator):
+    bl_idname = "blockdirector.pause_previs"
+    bl_label = "暂停/继续"
+    bl_description = "暂停推进（保留当前状态与已建成的场景），再按一次继续"
+
+    def execute(self, context):
+        driver = get_active()
+        if driver is None:
+            self.report({'INFO'}, "当前没有运行")
+            return {'CANCELLED'}
+        if driver.paused:
+            driver.resume()
+            self.report({'INFO'}, "已继续")
+        else:
+            driver.pause()
+            self.report({'INFO'}, "已暂停")
+        return {'FINISHED'}
+
+
+CLASSES = (BLOCKDIRECTOR_OT_run_previs, BLOCKDIRECTOR_OT_cancel_previs,
+           BLOCKDIRECTOR_OT_pause_previs)
 
 
 def register() -> None:

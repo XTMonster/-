@@ -138,6 +138,16 @@ Phases 0-4 and 6 are done:
   (marking `truncated: true`, 0 = no cap) and `llm.trace_prompts=false` falls
   back to metadata only - the trace carries script text, so that switch is the
   escape hatch.
+- **Stage B5 and context governance** (`layer5_orchestrator/react.py`,
+  `context_budget.py`): `should_react()` encodes the three trigger conditions
+  from the spec and the driver runs a bounded tool loop (tool_choice auto, once
+  per shot, `react_max_steps`, 0 = off), re-auditing afterwards. The loop trims
+  its own conversation to `context_window_tokens` each turn, keeping the system
+  message and the newest turn. Completed shots are summarised into the prompt
+  instead of replaying history.
+  `driver.pause()/resume()` stop the state machine advancing without losing the
+  built scene; `orchestration.mode = react_only` is refused (CFG_013) rather
+  than silently ignored.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2

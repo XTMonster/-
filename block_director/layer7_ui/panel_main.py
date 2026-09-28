@@ -111,6 +111,7 @@ class BLOCKDIRECTOR_PT_main(Panel):
         row = layout.row(align=True)
         row.scale_y = 1.4
         row.operator("blockdirector.run_previs", icon='PLAY')
+        row.operator("blockdirector.pause_previs", icon='PAUSE')
         row.operator("blockdirector.cancel_previs", icon='CANCEL')
 
         tools = layout.box()
