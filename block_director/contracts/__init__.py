@@ -22,6 +22,8 @@ from .enums import (
     RagBackend,
     RenderBackend,
     Severity,
+    ShotType,
+    SHOT_TYPES,
     ToolChoice,
     TransportMode,
     VideoCodec,
@@ -30,6 +32,7 @@ from .enums import (
 from .errors import TransportError, error_for_http_status, user_message
 from .health import HealthStatus
 from .knowledge import Card
+from .plan import Plan, ShotPlan
 from .messages import (
     ChatPayload,
     ChatReply,
@@ -70,9 +73,11 @@ __all__ = [
     "Appearance", "AuditLevel", "Capability", "DeliveryPreset", "Engine",
     "ErrorCode", "MessageRole", "OrchestrationMode", "Purpose", "RagBackend",
     "RenderBackend", "Severity", "ToolChoice", "TransportMode", "VideoCodec",
+    "ShotType", "SHOT_TYPES",
     "resolve_engine_identifier",
     "TransportError", "error_for_http_status", "user_message",
     "HealthStatus", "Card",
+    "Plan", "ShotPlan",
     "ChatPayload", "ChatReply", "FunctionCall", "Message", "ToolCall", "Usage",
     "assistant_message", "tool_message", "validate_conversation",
     "CancelRequest", "CancelResponse", "EmbedRequest", "EmbedResponse",

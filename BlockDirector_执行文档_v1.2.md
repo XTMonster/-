@@ -2392,16 +2392,24 @@ def supports_media_type() -> bool:
 | sidecar 线协议规格 | `specs/openapi.yaml` | ✅ OpenAPI 3.1，5 端点 / 14 schema |
 | 配置规格（单一真源） | `specs/config.default.yaml` | ✅ 由代码生成，测试保证不漂移 |
 | 主线程守卫 | `block_director/utils/threading_guard.py` | ✅ 已实现并测试（§3.1） |
-| 测试套件 | `tests/` | ✅ 79 项全部通过 |
+| **Phase 0 插件骨架** | `blender_manifest.toml`、`block_director/__init__.py`、`registration.py` | ✅ 可作为 addon 安装/启用/卸载（实测干净） |
+| **编排状态机** | `block_director/layer5_orchestrator/driver.py` | ✅ IDLE→PLANNING→CALLING_LLM→FINISHING→DONE 全链路跑通 |
+| **传输与离线自检** | `transport_factory.py`、`offline.py` | ✅ 无 API Key 也能验收（确定性 mock，兼作 Golden Test 替身） |
+| **工具层** | `tool_registry.py`、`tool_schema.py` | ✅ 零依赖 JSON Schema 子集校验；工具永不抛异常（§16.2） |
+| **审计与 Trace** | `layer6_audit/audit_logger.py` | ✅ 逐行 flush 的 JSONL（§11.3），replay 的数据源 |
+| **UI 与 headless 双路径** | `layer7_ui/panel_main.py`、`modal_operator.py`、`headless_runner.py` | ✅ headless 实测通过；GUI 面板已注册（交互需人工确认） |
+| 测试套件 | `tests/` | ✅ 110 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
-| Blender 侧模块（layer1–layer9） | — | ⏳ 按 §20 路线图实施 |
+| Layer 1–4（解析 / SDL / 场景执行 / 角色 / 摄影 / RAG） | — | ⏳ Phase 1–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 79 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 110 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+
+**Phase 0 验收（§20 DoD）**：`tools/run_tests.ps1` 四步全绿——规格一致性、`pytest` 110 项、Blender 内契约冒烟、**headless 空转状态机**（实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘）。插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
 **架构审核结论**：架构的 11 项关键假设中 10 项实证成立；唯一的 WARN（Blender 无跨线程护栏）已通过新增 `threading_guard` 强制化解除。**当前架构不存在阻塞性可行性问题。**
 
-**下一步**：按 §20 从 Phase 0 开始——工程骨架（`blender_manifest.toml`、`register()`、`driver` 状态机、`modal_operator`/`headless_runner` 薄包装、审计日志落盘）。
+**下一步**：Phase 1 —— 角色几何（§9.1 Pivot 世界坐标表）+ 基础场景 + `Content`/`Guides` 集合路由 + SDL 数据类与校验，把"计划里的镜头"变成"场景里真实存在的白模"。
 
 ---
 

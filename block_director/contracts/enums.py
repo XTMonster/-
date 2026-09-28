@@ -118,6 +118,23 @@ class Severity(StrEnum):
     WARNING = "warning"
 
 
+class ShotType(StrEnum):
+    """九种景别（执行文档 v1.2 §10.5）。"""
+
+    ECU = "ECU"    # 大特写
+    CU = "CU"      # 特写
+    MCU = "MCU"    # 中近景
+    MS = "MS"      # 中景
+    MLS = "MLS"    # 中远景
+    LS = "LS"      # 全景
+    ELS = "ELS"    # 大远景
+    OTS = "OTS"    # 过肩
+    POV = "POV"    # 主观
+
+
+SHOT_TYPES = tuple(t.value for t in ShotType)
+
+
 # --------------------------------------------------------------------------- #
 # §21.2 错误码
 # --------------------------------------------------------------------------- #

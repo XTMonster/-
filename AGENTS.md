@@ -18,7 +18,14 @@ previs and exports it as a reference video for AI video generation.
 - `block_director/contracts/` and `block_director/utils/` must never import `bpy`.
 - Anything touching `bpy` must go through `block_director/utils/threading_guard.py` (`@main_thread_only`).
 - Keep `.ps1` scripts ASCII-only: Windows PowerShell 5.1 parses BOM-less UTF-8 as ANSI.
+- Keep `$ErrorActionPreference = 'Continue'` in `.ps1` files that call Blender: it writes logs to
+  stderr, which `'Stop'` turns into a terminating error. Check `$LASTEXITCODE` explicitly instead.
 - After changing config defaults, run `python tools/gen_specs.py` so `specs/config.default.yaml` stays identical.
+
+## Status
+
+Phase 0 (plugin skeleton + state machine) is done. `tools/run_tests.ps1` runs all four checks:
+spec drift, pytest, in-Blender contract smoke test, and a headless run of the add-on.
 
 ## Agent skills
 

@@ -1,0 +1,16 @@
+# Blender 4.2+ extension manifest (execution doc v1.2 §19.4).
+# The add-on also keeps a legacy bl_info in block_director/__init__.py so it can
+# be dropped into <config>/scripts/addons/ during development.
+schema_version = "1.0.0"
+id = "block_director"
+version = "1.2.0"
+name = "BlockDirector"
+tagline = "剧本 → 白模预演 → AI 视频参考"
+maintainer = "BlockDirector"
+type = "add-on"
+blender_version_min = "4.2.0"
+license = ["SPDX:MIT"]
+
+[permissions]
+network = "访问 LLM API 与本机 sidecar（127.0.0.1）"
+files = "读写项目目录、配置目录与导出目录"

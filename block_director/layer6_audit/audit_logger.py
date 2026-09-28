@@ -1,0 +1,129 @@
+"""JSONL 审计日志与 LLM Trace（执行文档 v1.2 §11.3）。
+
+- ``audit_log.jsonl``：发生了什么（状态迁移、工具调用、错误、计划）
+- ``llm_trace.jsonl``：每次 LLM 调用的用途/token/耗时
+
+两条日志同时是 replay（§14.4）与 Golden Test（§21.4）的数据源，因此
+写入必须是**逐行 flush** 的：崩溃前已发生的事实不能丢。
+"""
+
+from __future__ import annotations
+
+import json
+import time
+import uuid
+from collections import deque
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Deque, Dict, List, Optional
+
+from ..utils.logger import get_logger
+
+log = get_logger("audit")
+
+VALID_LEVELS = ("debug", "info", "warning", "error")
+
+
+@dataclass
+class AuditEvent:
+    kind: str
+    message: str
+    ts: float = field(default_factory=time.time)
+    level: str = "info"
+    run_id: str = ""
+    data: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "ts": round(self.ts, 3),
+            "run_id": self.run_id,
+            "level": self.level,
+            "kind": self.kind,
+            "message": self.message,
+            "data": self.data,
+        }
+
+
+class AuditLogger:
+    """把运行过程写成 JSONL；同时保留最近 N 条供 UI 展示。
+
+    ``directory`` 为 None 时只在内存中记录（单元测试用）。
+    """
+
+    def __init__(self, directory: Optional[Path] = None, run_id: Optional[str] = None,
+                 keep: int = 200, echo: bool = False) -> None:
+        self.run_id = run_id or uuid.uuid4().hex[:12]
+        self.directory = Path(directory) if directory else None
+        self.echo = echo
+        self._recent: Deque[AuditEvent] = deque(maxlen=keep)
+        self._llm_calls = 0
+        self._tool_calls = 0
+        if self.directory is not None:
+            self.directory.mkdir(parents=True, exist_ok=True)
+
+    # ------------------------------------------------------------------ 路径
+    @property
+    def audit_path(self) -> Optional[Path]:
+        return self.directory / "audit_log.jsonl" if self.directory else None
+
+    @property
+    def trace_path(self) -> Optional[Path]:
+        return self.directory / "llm_trace.jsonl" if self.directory else None
+
+    # ------------------------------------------------------------------ 写入
+    def log(self, kind: str, message: str, level: str = "info",
+            **data: Any) -> AuditEvent:
+        if level not in VALID_LEVELS:
+            level = "info"
+        event = AuditEvent(kind=kind, message=message, level=level,
+                           run_id=self.run_id, data=dict(data))
+        self._recent.append(event)
+        if self.directory is not None:
+            self._append(self.audit_path, event.to_dict())
+        if self.echo or level == "error":
+            (log.error if level == "error" else log.info)("%s: %s", kind, message)
+        return event
+
+    def log_llm(self, purpose: str, reply: Any, duration_s: float = 0.0,
+                request_id: str = "", error: str = "") -> AuditEvent:
+        """记录一次 LLM 调用；``reply`` 允许是 ChatReply 或原始 dict。"""
+        self._llm_calls += 1
+        usage = getattr(reply, "usage", None)
+        tool_names = [tc.function.name for tc in getattr(reply, "tool_calls", []) or []]
+        record = {
+            "ts": round(time.time(), 3),
+            "run_id": self.run_id,
+            "purpose": purpose,
+            "request_id": request_id,
+            "duration_s": round(duration_s, 3),
+            "tool_calls": tool_names,
+            "usage": usage.to_dict() if usage is not None else None,
+            "error": error,
+        }
+        if self.directory is not None:
+            self._append(self.trace_path, record)
+        event = AuditEvent(kind="llm_call", message=f"{purpose} 调用完成",
+                           run_id=self.run_id, data=record)
+        self._recent.append(event)
+        return event
+
+    def count_tool_call(self) -> int:
+        self._tool_calls += 1
+        return self._tool_calls
+
+    @staticmethod
+    def _append(path: Optional[Path], record: Dict[str, Any]) -> None:
+        if path is None:
+            return
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+            handle.flush()
+
+    # ------------------------------------------------------------------ 读取
+    def recent(self, limit: Optional[int] = None) -> List[AuditEvent]:
+        events = list(self._recent)
+        return events[-limit:] if limit else events
+
+    @property
+    def counters(self) -> Dict[str, int]:
+        return {"llm_calls": self._llm_calls, "tool_calls": self._tool_calls}
