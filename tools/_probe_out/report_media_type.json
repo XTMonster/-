@@ -1,0 +1,78 @@
+{
+  "has_media_type": {
+    "has_media_type": true,
+    "props_sample": [
+      "rna_type",
+      "media_type",
+      "file_format",
+      "color_mode",
+      "color_depth",
+      "quality",
+      "compression",
+      "use_preview",
+      "exr_codec",
+      "use_exr_interleave",
+      "use_jpeg2k_ycc",
+      "use_jpeg2k_cinema_preset",
+      "use_jpeg2k_cinema_48",
+      "jpeg2k_codec"
+    ]
+  },
+  "media_type_values": {
+    "current": "IMAGE",
+    "items": [
+      "IMAGE",
+      "MULTI_LAYER_IMAGE",
+      "VIDEO"
+    ]
+  },
+  "switch_to_video": {
+    "image_enum": [
+      "AVIF",
+      "JPEG",
+      "OPEN_EXR",
+      "PNG",
+      "WEBP",
+      "BMP",
+      "CINEON",
+      "DPX",
+      "IRIS",
+      "JPEG2000",
+      "HDR",
+      "TARGA",
+      "TARGA_RAW",
+      "TIFF",
+      "OPEN_EXR_MULTILAYER",
+      "FFMPEG"
+    ],
+    "video_enum": [
+      "AVIF",
+      "JPEG",
+      "OPEN_EXR",
+      "PNG",
+      "WEBP",
+      "BMP",
+      "CINEON",
+      "DPX",
+      "IRIS",
+      "JPEG2000",
+      "HDR",
+      "TARGA",
+      "TARGA_RAW",
+      "TIFF",
+      "OPEN_EXR_MULTILAYER",
+      "FFMPEG"
+    ],
+    "now_media_type": "VIDEO",
+    "now_file_format": "FFMPEG"
+  },
+  "render_mp4": {
+    "ok": true,
+    "path": "E:\\白模预演codex\\tools\\_probe_out\\video_media_type.mp4",
+    "size": 2020
+  },
+  "still_after_video": {
+    "ok": true,
+    "size": 9028
+  }
+}

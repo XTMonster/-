@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.egg-info/
+
+# Blender / BlockDirector runtime artifacts
+*.blend1
+*.blend2
+*.blend@
+export/
+
+# Probe / audit output.
+# The JSON reports are committed (they are evidence referenced by the docs);
+# the regenerable media is not.
+tools/_probe_out/**/*.png
+tools/_probe_out/**/*.jpg
+tools/_probe_out/**/*.mp4
+tools/_probe_out/seq/
+
+# OS
+Thumbs.db
+.DS_Store

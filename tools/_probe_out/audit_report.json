@@ -1,0 +1,98 @@
+{
+  "threading_model": {
+    "status": "WARN",
+    "note": "bpy 未提供跨线程护栏（datablock 创建、ops、求值均未报错）→ 架构必须靠纪律保证，建议加断言 main_thread_only()",
+    "created_from_thread": true,
+    "error": null,
+    "ops_from_thread": "ok",
+    "depsgraph_update_from_thread": "ok",
+    "pure_compute_ok": true
+  },
+  "marker_camera_binding": {
+    "status": "PASS",
+    "note": "marker 绑定可驱动渲染机位",
+    "control_luma": [
+      0.4347710545304532,
+      0.00033700982385198586
+    ],
+    "luma_at_5": 0.4347710545304532,
+    "luma_at_15": 0.00033700982385198586,
+    "scene_camera_at_5": "BD_Cam_A",
+    "scene_camera_at_15": "BD_Cam_B"
+  },
+  "frame_change_handler_camera": {
+    "status": "PASS",
+    "note": "frame_change_post 可可靠切换机位（兜底方案成立）",
+    "at_5": "BD_Cam_A",
+    "at_15": "BD_Cam_B"
+  },
+  "transaction_rollback_purge": {
+    "status": "PASS",
+    "note": "删除对象不会自动删除 mesh datablock，必须调用 orphans_purge",
+    "objects": [
+      0,
+      5,
+      0
+    ],
+    "orphan_meshes_after_remove": 5,
+    "orphan_meshes_after_purge": 0,
+    "purged_ids": 5
+  },
+  "guides_render_isolation": {
+    "status": "PASS",
+    "note": "对象 hide_render 与集合 hide_render 均可排除渲染",
+    "baseline": 0.00033700982385198586,
+    "by_object": 0.00033700982385198586,
+    "by_collection": 0.00033700982385198586,
+    "visible_control": 0.7709026240950657,
+    "object_hide_render_works": true,
+    "collection_hide_render_works": true
+  },
+  "depsgraph_staleness": {
+    "status": "PASS",
+    "note": "Track To 生效；未求值时读到的是陈旧朝向 → 证实 §7.3 规则 1（先求值再读数）是必需的",
+    "track_to_works": true,
+    "rotated_by_target_move_deg": 1.0122,
+    "stale_vs_updated_deg": 1.0122,
+    "confirm_required": true
+  },
+  "ray_cast_occlusion": {
+    "status": "PASS",
+    "note": "scene.ray_cast 命中最近物体：有遮挡时命中挡块，移除后命中目标",
+    "blocked_hit": "BLOCKER",
+    "after_removal_hit": "TARGET"
+  },
+  "cjk_label_render": {
+    "status": "PASS",
+    "note": "中文 Text 对象能渲染出字形（fps 对比有差异）",
+    "with_label": 0.067907479460532,
+    "without_label": 0.00032679740494738024,
+    "delta": 0.06758068205558461
+  },
+  "scale_performance": {
+    "status": "PASS",
+    "note": "单帧 Workbench 渲染 16 ms；5 秒镜头(120 帧)约 1.9 s",
+    "objects": 20,
+    "frame_set_ms": 0.11,
+    "render_per_frame_s": 0.016,
+    "est_shot_5s_s": 1.92
+  },
+  "sidecar_end_to_end": {
+    "status": "PASS",
+    "note": "契约层可经真实 HTTP 与 sidecar 通信，且会话结构合法",
+    "port": 64685,
+    "health_version": "1.2.0",
+    "capabilities": [
+      "llm",
+      "bm25"
+    ],
+    "tool_name": "place_character",
+    "cards": 1
+  },
+  "video_output_path": {
+    "status": "PASS",
+    "note": "Blender 内置 FFmpeg 直出 mp4（无需外部 ffmpeg）",
+    "path": "E:\\白模预演codex\\tools\\_probe_out\\audit_video.mp4",
+    "size": 1826
+  }
+}

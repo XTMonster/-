@@ -1,0 +1,9 @@
+[project]
+name = "blockdirector"
+version = "1.2.0"
+description = "BlockDirector — 剧本 → Blender 白模预演 → AI 视频参考"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

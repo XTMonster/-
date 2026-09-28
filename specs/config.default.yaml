@@ -1,0 +1,75 @@
+# BlockDirector 默认配置（执行文档 v1.2 §21.5）
+# 本文件由 block_director.contracts.config.dump_default_yaml() 生成，请勿手工漂移；
+# 修改默认值请改 block_director/contracts/config.py 后重新生成。
+
+config_version: 1.2.0
+llm:
+  transport: auto
+  sidecar_url: http://127.0.0.1:8765
+  sidecar_token: ''
+  sidecar_timeout_s: 120.0
+  provider: openai
+  model: gpt-4o
+  api_key: ''
+  base_url: ''
+  temperature_plan: 0.7
+  temperature_repair: 0.2
+rag:
+  enabled: true
+  backend: bm25
+  embedder: bge-small-zh-v1.5
+  top_k: 5
+  max_tokens_per_call: 800
+orchestration:
+  mode: plan_structured
+  max_repair_attempts: 2
+  react_max_steps: 6
+  context_window_tokens: 32000
+audit:
+  level: standard
+  human_gate_on_plan: true
+  human_gate_on_axis_violation: true
+budget:
+  max_llm_calls_per_scene_formula: shots * 6
+  max_cost_usd: 5.0
+  max_wall_minutes: 30.0
+character:
+  head_radius: 0.35
+  body_radius: 0.25
+  body_height: 0.7
+  leg_height: 0.4
+  eye_radius: 0.06
+  label_size: 0.15
+  label_font_path: ''
+animation:
+  fps: 24
+  walk_speed: 0.05
+  run_speed: 0.1
+  blend_frames: 6
+dialogue:
+  chinese_cps: 3.0
+  english_wps: 2.5
+  speech_rate:
+    normal: 1.0
+    angry: 1.15
+    excited: 1.15
+    urgent: 1.2
+    sad: 0.8
+    thinking: 0.85
+    whisper: 0.9
+delivery:
+  preset: hd16x9
+  appearance: clay
+  render_backend: workbench
+  video_codec: H264
+  crf: MEDIUM
+  export_depth: false
+  export_camera_traj: false
+  per_shot_clips: true
+  full_concat: false
+  external_ffmpeg_path: ''
+ui:
+  show_axis: true
+  show_composition: true
+  show_safe_area: true
+  show_labels: true

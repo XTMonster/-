@@ -1,0 +1,113 @@
+{
+  "enum_instance": {
+    "instance_enum": [
+      "AVIF",
+      "JPEG",
+      "OPEN_EXR",
+      "PNG",
+      "WEBP",
+      "BMP",
+      "CINEON",
+      "DPX",
+      "IRIS",
+      "JPEG2000",
+      "HDR",
+      "TARGA",
+      "TARGA_RAW",
+      "TIFF",
+      "OPEN_EXR_MULTILAYER",
+      "FFMPEG"
+    ],
+    "rna_type_enum": [
+      "AVIF",
+      "JPEG",
+      "OPEN_EXR",
+      "PNG",
+      "WEBP",
+      "BMP",
+      "CINEON",
+      "DPX",
+      "IRIS",
+      "JPEG2000",
+      "HDR",
+      "TARGA",
+      "TARGA_RAW",
+      "TIFF",
+      "OPEN_EXR_MULTILAYER",
+      "FFMPEG"
+    ],
+    "current": "PNG",
+    "is_movie_format": false
+  },
+  "set_ffmpeg": {
+    "error": "TypeError: bpy_struct: item.attr = val: enum \"FFMPEG\" not found in ('AVIF', 'JPEG', 'OPEN_EXR', 'PNG', 'WEBP', 'BMP', 'CINEON', 'DPX', 'IRIS', 'JPEG2000', 'HDR', 'TARGA', 'TARGA_RAW', 'TIFF')",
+    "trace": "Traceback (most recent call last):\n  File \"E:\\白模预演codex\\tools\\probe_video.py\", line 28, in rec\n    REPORT[name] = fn()\n                   ~~^^\n  File \"E:\\白模预演codex\\tools\\probe_video.py\", line 62, in p_set_ffmpeg\n    scene.render.image_settings.file_format = \"FFMPEG\"\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: bpy_struct: item.attr = val: enum \"FFMPEG\" not found in ('AVIF', 'JPEG', 'OPEN_EXR', 'PNG', 'WEBP', 'BMP', 'CINEON', 'DPX', 'IRIS', 'JPEG2000', 'HDR', 'TARGA', 'TARGA_RAW', 'TIFF')\n"
+  },
+  "render_settings_keys": {
+    "interesting_keys": [
+      "ffmpeg",
+      "use_file_extension",
+      "file_extension",
+      "is_movie_format",
+      "filepath",
+      "use_stamp_filename",
+      "views_format"
+    ],
+    "total_props": 102
+  },
+  "ffmpeg_settings": {
+    "format": "MPEG1",
+    "codec": "NONE",
+    "video_bitrate": "0",
+    "minrate": "0",
+    "maxrate": "0",
+    "muxrate": "0",
+    "gopsize": "0",
+    "max_b_frames": "0",
+    "use_max_b_frames": "False",
+    "buffersize": "0",
+    "packetsize": "0",
+    "constant_rate_factor": "NONE",
+    "custom_constant_rate_factor": "23",
+    "ffmpeg_preset": "GOOD",
+    "ffmpeg_prores_profile": "422_PROXY",
+    "use_autosplit": "False",
+    "use_lossless_output": "False",
+    "audio_codec": "NONE",
+    "audio_bitrate": "192",
+    "audio_volume": "1.0",
+    "audio_mixrate": "48000",
+    "audio_channels": "STEREO"
+  },
+  "render_mp4": {
+    "error": "TypeError: bpy_struct: item.attr = val: enum \"FFMPEG\" not found in ('AVIF', 'JPEG', 'OPEN_EXR', 'PNG', 'WEBP', 'BMP', 'CINEON', 'DPX', 'IRIS', 'JPEG2000', 'HDR', 'TARGA', 'TARGA_RAW', 'TIFF')",
+    "trace": "Traceback (most recent call last):\n  File \"E:\\白模预演codex\\tools\\probe_video.py\", line 28, in rec\n    REPORT[name] = fn()\n                   ~~^^\n  File \"E:\\白模预演codex\\tools\\probe_video.py\", line 70, in p_render_mp4\n    scene.render.image_settings.file_format = \"FFMPEG\"\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: bpy_struct: item.attr = val: enum \"FFMPEG\" not found in ('AVIF', 'JPEG', 'OPEN_EXR', 'PNG', 'WEBP', 'BMP', 'CINEON', 'DPX', 'IRIS', 'JPEG2000', 'HDR', 'TARGA', 'TARGA_RAW', 'TIFF')\n"
+  },
+  "png_sequence": {
+    "count": 6,
+    "sample": [
+      "f_0001.png",
+      "f_0002.png",
+      "f_0003.png",
+      "f_0004.png"
+    ],
+    "dir": "E:\\白模预演codex\\tools\\_probe_out\\seq"
+  },
+  "imageio_ffmpeg": {
+    "has_imageio_ffmpeg": false
+  },
+  "handlers_api": {
+    "frame_change_post": true,
+    "depsgraph_update_post": true,
+    "load_post": true,
+    "counts": {
+      "frame_change_post": 0,
+      "depsgraph_update_post": 0
+    }
+  },
+  "collections_hide_render": {
+    "collection_hide_render": true,
+    "object_hide_render_default": false,
+    "has_view_layer_exclude": false
+  }
+}

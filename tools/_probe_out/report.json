@@ -1,0 +1,201 @@
+{
+  "env": {
+    "python": "3.13.13",
+    "blender": "5.2.0 LTS",
+    "blender_tuple": [
+      5,
+      2,
+      0
+    ],
+    "background": true,
+    "config_dir": "C:\\Users\\小皮\\AppData\\Roaming\\Blender Foundation\\Blender\\5.2\\config",
+    "scripts_dir": "C:\\Users\\小皮\\AppData\\Roaming\\Blender Foundation\\Blender\\5.2\\scripts",
+    "python_exe": "D:\\Blender 5.2\\5.2\\python\\bin\\python.exe",
+    "temp_dir": "C:\\Users\\小皮\\AppData\\Local\\Temp"
+  },
+  "render_engines": {
+    "BLENDER_EEVEE": "ok",
+    "BLENDER_EEVEE_NEXT": "TypeError: bpy_struct: item.attr = val: enum \"BLENDER_EEVEE_NEXT\" not found in ('BLENDER_EEVEE', 'BLENDER_WORKBENCH', 'CYCLES')",
+    "BLENDER_WORKBENCH": "ok",
+    "CYCLES": "ok"
+  },
+  "video_encoding": {
+    "file_formats": [
+      "AVIF",
+      "JPEG",
+      "OPEN_EXR",
+      "PNG",
+      "WEBP",
+      "BMP",
+      "CINEON",
+      "DPX",
+      "IRIS",
+      "JPEG2000",
+      "HDR",
+      "TARGA",
+      "TARGA_RAW",
+      "TIFF",
+      "OPEN_EXR_MULTILAYER",
+      "FFMPEG"
+    ],
+    "ffmpeg_formats": [
+      "MPEG4",
+      "MKV",
+      "WEBM",
+      "AVI",
+      "DV",
+      "FLASH",
+      "MPEG1",
+      "MPEG2",
+      "OGG",
+      "QUICKTIME"
+    ],
+    "codecs": [
+      "NONE",
+      "AV1",
+      "H264",
+      "H265",
+      "WEBM",
+      "DNXHD",
+      "DV",
+      "FFV1",
+      "FLASH",
+      "HUFFYUV",
+      "MPEG1",
+      "MPEG2",
+      "MPEG4",
+      "PNG",
+      "PRORES",
+      "QTRLE",
+      "THEORA"
+    ],
+    "external_ffmpeg_on_path": null
+  },
+  "api_surface": {
+    "world_to_camera_view": true,
+    "data_orphans_purge": true,
+    "data_fonts_load": true,
+    "scene_ray_cast": true,
+    "timeline_markers": true,
+    "marker_has_camera": true,
+    "ops_render_opengl": true,
+    "ops_render_render": true,
+    "ops_extensions": true,
+    "ops_preferences_addon_install": true,
+    "scene_use_nodes": true,
+    "view_layer_update": true
+  },
+  "docstrings": {
+    "orphans_purge": ".. method:: orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=False)\n\n   Remove (delete) all IDs with no user.\n\n   :param do_local_ids: Include unused local IDs in the deletion, defaults to True\n   :type do_local_ids: bool\n   :param do_linked_ids: Include unused linked IDs in the deletion, defaults to True\n   :type do_linked_ids: bool\n   :param do_recursive: Recursively check for unused IDs, ensuring no orphaned one remain after a single run of that function, defaults to False\n   :type do_recursive: bool\n   :return: The number of deleted IDs.\n   :rtype: int\n",
+    "ray_cast": "Scene.ray_cast(depsgraph, origin, direction, distance=1.70141e+38)\nCast a ray onto evaluated geometry in world-space"
+  },
+  "projection_range": {
+    "samples": {
+      "center": [
+        0.5,
+        0.5,
+        5.0
+      ],
+      "left_edge": [
+        -0.1111,
+        0.5,
+        5.0
+      ],
+      "right_edge": [
+        1.1111,
+        0.5,
+        5.0
+      ],
+      "above_center": [
+        0.5,
+        0.9938,
+        5.0
+      ]
+    },
+    "sensor_width": 36.0,
+    "lens": 50.0,
+    "resolution": [
+      1280,
+      720
+    ]
+  },
+  "cjk_font": {
+    "candidates_present": [
+      "C:\\Windows\\Fonts\\msyh.ttc",
+      "C:\\Windows\\Fonts\\msyhbd.ttc",
+      "C:\\Windows\\Fonts\\simhei.ttf",
+      "C:\\Windows\\Fonts\\simsun.ttc",
+      "C:\\Windows\\Fonts\\Deng.ttf"
+    ],
+    "loaded_font": "Microsoft YaHei Regular",
+    "text_body_ok": "小明：你好"
+  },
+  "render_still_eevee": {
+    "ok": true,
+    "size": 9031
+  },
+  "render_still_workbench": {
+    "ok": true,
+    "size": 13871
+  },
+  "render_animation_to_mp4": {
+    "error": "TypeError: bpy_struct: item.attr = val: enum \"FFMPEG\" not found in ('AVIF', 'JPEG', 'OPEN_EXR', 'PNG', 'WEBP', 'BMP', 'CINEON', 'DPX', 'IRIS', 'JPEG2000', 'HDR', 'TARGA', 'TARGA_RAW', 'TIFF')",
+    "trace": "Traceback (most recent call last):\n  File \"E:\\白模预演codex\\tools\\probe_blender.py\", line 326, in main\n    REPORT[name] = fn()\n                   ~~^^\n  File \"E:\\白模预演codex\\tools\\probe_blender.py\", line 233, in _render_mp4\n    scene.render.image_settings.file_format = \"FFMPEG\"\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: bpy_struct: item.attr = val: enum \"FFMPEG\" not found in ('AVIF', 'JPEG', 'OPEN_EXR', 'PNG', 'WEBP', 'BMP', 'CINEON', 'DPX', 'IRIS', 'JPEG2000', 'HDR', 'TARGA', 'TARGA_RAW', 'TIFF')\n"
+  },
+  "render_opengl_animation": {
+    "error": "RuntimeError: Error: Cannot use OpenGL render in background mode (no opengl context)\n"
+  },
+  "python_env": {
+    "has_numpy": true,
+    "has_pip": true,
+    "has_ensurepip": true,
+    "has_ssl": true,
+    "has_ctypes": true,
+    "has_requests": true,
+    "numpy_version": "2.3.4",
+    "has_openai": false,
+    "has_httpx": false,
+    "has_pydantic": false,
+    "has_rank_bm25": false,
+    "has_faiss": false,
+    "has_pdfplumber": false
+  },
+  "pip_in_blender_python": {
+    "exe": "D:\\Blender 5.2\\5.2\\python\\bin\\python.exe",
+    "rc": 0,
+    "stdout": "pip 26.2.1 from D:\\Blender 5.2\\5.2\\python\\Lib\\site-packages\\pip (python 3.13)",
+    "stderr": ""
+  },
+  "extension_system": {
+    "addon_utils_count": 28,
+    "addon_utils_sample": [
+      "auto_rig_pro",
+      "auto_rig_pro_quick_rig",
+      "io_anim_bvh",
+      "blender_ai_mcp",
+      "bl_pkg",
+      "blender_mcp_addon",
+      "BlenderAgent",
+      "BlenderMalt"
+    ],
+    "repos": [
+      {
+        "name": "extensions.blender.org",
+        "enabled": true,
+        "directory": "C:\\Users\\小皮\\AppData\\Roaming\\Blender Foundation\\Blender\\5.2\\extensions\\blender_org"
+      },
+      {
+        "name": "User Default",
+        "enabled": true,
+        "directory": "C:\\Users\\小皮\\AppData\\Roaming\\Blender Foundation\\Blender\\5.2\\extensions\\user_default"
+      },
+      {
+        "name": "System",
+        "enabled": true,
+        "directory": "D:\\Blender 5.2\\5.2\\extensions\\system"
+      }
+    ],
+    "has_addon_install": true,
+    "has_extensions_ops": true
+  }
+}

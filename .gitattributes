@@ -1,0 +1,24 @@
+# Normalise text on commit; mark binary assets so git never touches them.
+* text=auto
+
+# Store LF in the repo for source and docs, so diffs are clean on every platform.
+*.py    text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.jsonl text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.toml  text eol=lf
+*.cfg   text eol=lf
+
+# Windows shell scripts keep CRLF in the working tree (PowerShell-native).
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+
+# Binary assets.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.mp4 binary
+*.blend binary
+*.blend1 binary

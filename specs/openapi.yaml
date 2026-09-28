@@ -1,0 +1,318 @@
+# BlockDirector sidecar 线协议（执行文档 v1.2 §2.5）
+#
+# 本文件是 sidecar 与插件之间的**唯一接口真源**。
+# 其中的 schema 必须与 block_director/contracts/*.py 的数据类保持一致，
+# 由 tests/test_openapi_matches_contracts.py 强制校验（§16.5 单一真源）。
+openapi: 3.1.0
+info:
+  title: BlockDirector Sidecar API
+  version: 1.2.0
+  description: |
+    LLM 与 RAG 的本地服务接口。仅监听 127.0.0.1。
+    上层（driver）只依赖 LLMTransport 抽象，本协议是 sidecar 模式的实现细节。
+servers:
+  - url: http://127.0.0.1:8765
+    description: 本机 sidecar（默认端口）
+
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: 健康检查与能力协商
+      description: 插件启动时以 2s 超时探测；根据返回的 capabilities 决定 RAG 后端。
+      responses:
+        "200":
+          description: 服务可用
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: 服务存在但依赖未就绪
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /v1/chat:
+    post:
+      operationId: chat
+      summary: 对话/工具调用（OpenAI 兼容子集）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+      responses:
+        "200":
+          description: 模型回复
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+        "400":
+          description: 请求结构错误（映射为 E_LLM_002）
+        "500":
+          description: 上游模型错误（映射为 E_LLM_001）
+        "504":
+          description: 上游超时（映射为 E_LLM_001）
+
+  /v1/embed:
+    post:
+      operationId: embed
+      summary: 文本向量化（仅当 capabilities 含 vector 时可用）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmbedRequest"
+      responses:
+        "200":
+          description: 向量结果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmbedResponse"
+
+  /v1/retrieve:
+    post:
+      operationId: retrieve
+      summary: 知识检索（BM25 或向量）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RetrieveRequest"
+      responses:
+        "200":
+          description: 知识卡列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrieveResponse"
+
+  /v1/cancel:
+    post:
+      operationId: cancel
+      summary: 协作式取消（用户按 ESC 时调用）
+      description: 与 driver 的 cancel_flag 对齐；服务端尽力中断在途请求。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelRequest"
+      responses:
+        "200":
+          description: 已受理取消
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancelResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 当配置 sidecar_token 时启用
+
+  schemas:
+    # ---------------------------------------------------------------- 会话
+    FunctionCall:
+      type: object
+      required: [name, arguments]
+      properties:
+        name:
+          type: string
+          description: 工具名
+        arguments:
+          type: string
+          description: JSON 字符串形式的参数（与 OpenAI 一致）
+
+    ToolCall:
+      type: object
+      required: [id, type, function]
+      properties:
+        id:
+          type: string
+          description: assistant 消息与 tool 消息之间的唯一纽带（§3.4）
+        type:
+          type: string
+          const: function
+        function:
+          $ref: "#/components/schemas/FunctionCall"
+
+    Message:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [system, user, assistant, tool]
+        content:
+          type: [string, "null"]
+        tool_calls:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/ToolCall"
+        tool_call_id:
+          type: [string, "null"]
+          description: role=tool 时必填，必须匹配此前 assistant.tool_calls 的 id
+        name:
+          type: [string, "null"]
+
+    Usage:
+      type: object
+      properties:
+        prompt_tokens: { type: integer, minimum: 0 }
+        completion_tokens: { type: integer, minimum: 0 }
+        total_tokens: { type: integer, minimum: 0 }
+
+    ChatRequest:
+      type: object
+      required: [request_id, messages]
+      properties:
+        request_id:
+          type: string
+          description: 用于 /v1/cancel 定位
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        tools:
+          type: array
+          items:
+            type: object
+          description: JSON Schema 形式的工具定义
+        tool_choice:
+          type: string
+          enum: [auto, required, none]
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+        purpose:
+          type: string
+          enum: [plan, editor, repair, react, review]
+          description: 调用用途，用于预算核算与审计
+        max_tokens:
+          type: [integer, "null"]
+          minimum: 1
+
+    ChatResponse:
+      type: object
+      properties:
+        content:
+          type: [string, "null"]
+        tool_calls:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolCall"
+        usage:
+          oneOf:
+            - $ref: "#/components/schemas/Usage"
+            - type: "null"
+        request_id:
+          type: [string, "null"]
+        model:
+          type: [string, "null"]
+        finish_reason:
+          type: [string, "null"]
+
+    # ---------------------------------------------------------------- 检索
+    Card:
+      type: object
+      required: [id, domain, title, content]
+      properties:
+        id: { type: string }
+        domain: { type: string }
+        title: { type: string }
+        content: { type: string }
+        keywords:
+          type: array
+          items: { type: string }
+        rules:
+          type: array
+          items: { type: string }
+        parameters:
+          type: object
+        examples:
+          type: array
+          items: { type: string }
+        related:
+          type: array
+          items: { type: string }
+
+    EmbedRequest:
+      type: object
+      required: [request_id, texts]
+      properties:
+        request_id: { type: string }
+        texts:
+          type: array
+          items: { type: string }
+
+    EmbedResponse:
+      type: object
+      required: [vectors, dim]
+      properties:
+        vectors:
+          type: array
+          items:
+            type: array
+            items: { type: number }
+        dim: { type: integer, minimum: 1 }
+
+    RetrieveRequest:
+      type: object
+      required: [request_id, query]
+      properties:
+        request_id: { type: string }
+        query: { type: string }
+        domain:
+          type: [string, "null"]
+          description: 限定知识域；null 表示全库检索
+        top_k: { type: integer, minimum: 1 }
+
+    RetrieveResponse:
+      type: object
+      required: [cards]
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: "#/components/schemas/Card"
+
+    # ---------------------------------------------------------------- 控制
+    CancelRequest:
+      type: object
+      required: [request_id]
+      properties:
+        request_id: { type: string }
+
+    CancelResponse:
+      type: object
+      required: [cancelled]
+      properties:
+        cancelled: { type: boolean }
+
+    HealthResponse:
+      type: object
+      required: [status, version, capabilities]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded, error]
+        version: { type: string }
+        capabilities:
+          type: array
+          items:
+            type: string
+            enum: [llm, bm25, vector, pdf]
+          description: 能力协商依据（§2.5）
+        detail:
+          type: string
