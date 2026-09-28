@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from ..cinema.axis import Axis
 from ..contracts.plan import Plan
@@ -18,6 +18,7 @@ class SceneContext:
     characters: Dict[str, Any] = field(default_factory=dict)     # id → Character
     cameras: Dict[str, Any] = field(default_factory=dict)        # shot_id → camera 对象
     shot_types: Dict[str, str] = field(default_factory=dict)     # shot_id → 景别
+    schedule: Dict[str, Tuple[int, int]] = field(default_factory=dict)  # shot_id → (起, 止)
     plan: Optional[Plan] = None
     current_shot_id: str = ""
     axis: Optional[Axis] = None

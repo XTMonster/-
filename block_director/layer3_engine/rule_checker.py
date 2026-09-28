@@ -3,17 +3,17 @@
 零延迟、不可跳过，返回结构化 :class:`AuditError` 供定向修复回灌（§18.3）。
 
 已实现：R001 轴线、R004 视锥、R005 在画、R006 帧范围、R007 引用、
-R008 地面、R009 景别距离、R010 30° 规则，以及构图质量门（§7.1 B3 明确把
-"构图"列为通过条件，因此低于阈值按 ERROR 处理，而不是只给警告）。
+R002 空间碰撞、R003 动作时间轴、R008 地面、R009 景别距离、R010 30° 规则，
+以及构图质量门（§7.1 B3 明确把"构图"列为通过条件，因此低于阈值按 ERROR
+处理，而不是只给警告）。
 
-**待补（Phase 5）**：R002 空间碰撞（需要墙/道具 AABB 与角色包围盒求交）、
-R003 动作时间轴（需要逐角色动作时间轴模型）、R011 对白容纳（需要对白计时，
-来自 Layer 1）。
+**待补（依赖 Layer 1）**：R011 对白容纳——它需要对白计时（§4.4），而计划里
+目前只带 dialogue_ids、不带对白的时间轴。
 """
 
 from __future__ import annotations
 
-from typing import List
+from typing import Dict, List, Tuple
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
@@ -23,6 +23,7 @@ from ..cinema.axis import thirty_degree_violation
 from ..cinema.framing import SHOT_FRAME, required_distance
 from ..contracts.audit import AuditError, AuditResult
 from ..contracts.enums import Severity
+from ..utils.aabb import AABB, union
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 
@@ -31,6 +32,8 @@ log = get_logger("rules")
 GROUND_EPS = 0.02
 DISTANCE_TOLERANCE = 0.25
 FRAME_MARGIN = 0.05
+COLLISION_MARGIN = 0.2
+OBSTACLE_PREFIXES = ("BD_Wall_", "BD_Prop_")
 
 
 def _finding(severity: Severity, rule: str, code: str, message: str,
@@ -63,6 +66,60 @@ def _character_positions(characters):
     return positions
 
 
+def _world_aabb(obj) -> AABB:
+    corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
+    return AABB(minimum=(min(c.x for c in corners), min(c.y for c in corners),
+                         min(c.z for c in corners)),
+                maximum=(max(c.x for c in corners), max(c.y for c in corners),
+                         max(c.z for c in corners)))
+
+
+def _character_aabb(character):
+    boxes = [_world_aabb(obj) for obj in getattr(character, "meshes", [])
+             if obj.type == "MESH"]
+    return union(boxes) if boxes else None
+
+
+def _obstacles() -> Dict[str, AABB]:
+    """墙体与道具的包围盒（按 §21.1 命名约定识别）。"""
+    found: Dict[str, AABB] = {}
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or obj.hide_render:
+            continue
+        if obj.name.startswith(OBSTACLE_PREFIXES):
+            found[obj.name] = _world_aabb(obj)
+    return found
+
+
+def _action_ranges(context) -> Dict[str, List[Tuple[int, int, str]]]:
+    """逐角色的全局动作区间：``{character_id: [(start, end, label)]}``。"""
+    ranges: Dict[str, List[Tuple[int, int, str]]] = {}
+    if context is None or context.plan is None:
+        return ranges
+    for shot in context.plan.shots:
+        start, end = context.schedule.get(shot.shot_id, (1, shot.duration_frames))
+        for index, raw in enumerate(shot.actions or [], start=1):
+            if not isinstance(raw, dict):
+                continue
+            character_id = str(raw.get("character_id") or "")
+            if not character_id:
+                continue
+            local_start = int(raw.get("start_frame") or 1)
+            local_end = int(raw.get("end_frame") or shot.duration_frames)
+            label = f"{shot.shot_id}#{index} {raw.get('action_type')}"
+            ranges.setdefault(character_id, []).append(
+                (start + local_start - 1, start + local_end - 1, label))
+    return ranges
+
+
+def _overlapping_pairs(items: List[Tuple[int, int, str]]):
+    ordered = sorted(items)
+    for index, (start_a, end_a, label_a) in enumerate(ordered):
+        for start_b, end_b, label_b in ordered[index + 1:]:
+            if start_b < end_a and start_b <= end_b:
+                yield label_a, label_b
+
+
 @main_thread_only("check_shot")
 def check_shot(shot_id: str, *, context=None,
                composition_threshold: float = 70.0) -> AuditResult:
@@ -77,8 +134,16 @@ def check_shot(shot_id: str, *, context=None,
 
     shot = context.shot(shot_id) if context else None
     camera = context.camera_for(shot_id) if context else None
-    characters = context.character_list if context else []
     shot_type = context.shot_types.get(shot_id, "MS") if context else "MS"
+
+    # 判定必须基于**本镜头的角色**：特写镜头不该因为"另一个角色不在画里"
+    # 而被判失败（Phase 5 首次跑 R003 的回归测试时就踩到了这个）。
+    characters = []
+    if shot is not None and context is not None:
+        characters = [c for c in (context.character(cid)
+                                  for cid in shot.characters) if c is not None]
+    if not characters and context is not None:
+        characters = context.character_list
 
     # R007 引用完整 ---------------------------------------------------------
     for character_id in (shot.characters if shot else []):
@@ -141,6 +206,32 @@ def check_shot(shot_id: str, *, context=None,
             findings.append(_warning(
                 "R004", "E_CAM_001", "镜头对准点落在相机视锥之外",
                 target=shot_id, suggestion="重新对准被摄主体"))
+
+    # R002 空间碰撞（角色 vs 墙体/道具，AABB 膨胀 0.2） --------------------
+    obstacles = _obstacles()
+    for character in characters:
+        box = _character_aabb(character)
+        if box is None:
+            continue
+        for name, obstacle_box in obstacles.items():
+            if box.overlaps(obstacle_box, margin=COLLISION_MARGIN):
+                findings.append(_error(
+                    "R002", "E_SPACE_001",
+                    f"角色 {character.id} 与 {name} 发生穿模",
+                    target=character.id,
+                    suggestion=f"把 {character.id} 移开，或缩小 {name} / 调整摆位"))
+
+    # R003 动作时间轴（同一角色的动作不得重叠） ----------------------------
+    for character_id, items in _action_ranges(context).items():
+        if shot is not None and shot.characters \
+                and character_id not in shot.characters:
+            continue
+        for label_a, label_b in _overlapping_pairs(items):
+            findings.append(_error(
+                "R003", "E_SDL_001",
+                f"角色 {character_id} 的动作时间重叠：{label_a} 与 {label_b}",
+                target=character_id,
+                suggestion="同一个角色的动作必须串行，请错开起止帧"))
 
     # R009 镜头距离与景别匹配 ----------------------------------------------
     frame = SHOT_FRAME.get(str(shot_type).upper())

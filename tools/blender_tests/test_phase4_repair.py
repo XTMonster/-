@@ -22,6 +22,7 @@ from _fixtures import two_shot_plan  # noqa: E402
 from block_director.layer3_engine.cinema_engine import create_camera  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.layer3_engine.scene_context import get_context  # noqa: E402
+from block_director.layer3_engine.scene_executor import create_prop  # noqa: E402
 from block_director.layer3_engine.shot_auditor import BpyShotAuditor  # noqa: E402
 from block_director.layer3_engine.shot_builder import build_scene  # noqa: E402
 from block_director.layer3_engine.tool_bindings import register_all_scene_tools  # noqa: E402
@@ -190,6 +191,41 @@ def t_tool_errors_are_observations():
             "bad_action": bad_action.content}
 
 
+# --------------------------------------------------------------------------- #
+# 8. R002 空间碰撞
+# --------------------------------------------------------------------------- #
+def t_rule_r002_collision():
+    _summary, context, _registry, auditor = _built_with_tools()
+    clean = auditor.audit("shot_001")
+    # 在 char_002 所在位置塞一张桌子：角色应被判为穿模
+    create_prop("table_01", (0.75, 0.0, 0.4), size=(1.5, 1.5, 0.8))
+    bpy.context.view_layer.update()
+    collided = auditor.audit("shot_001")
+    rules = {f.rule for f in collided.errors}
+    return {"ok": clean.passed and not collided.passed and "R002" in rules,
+            "clean_passed": clean.passed,
+            "errors": [f.to_dict() for f in collided.errors
+                       if f.rule == "R002"]}
+
+
+# --------------------------------------------------------------------------- #
+# 9. R003 动作时间重叠
+# --------------------------------------------------------------------------- #
+def t_rule_r003_action_overlap():
+    _summary, context, _registry, auditor = _built_with_tools()
+    clean = auditor.audit("shot_002")
+    shot = context.shot("shot_002")
+    shot.actions.append({"character_id": "char_002", "action_type": "nod",
+                         "start_frame": 10, "end_frame": 40,
+                         "params": {"cycles": 2}})
+    overlapped = auditor.audit("shot_002")
+    rules = {f.rule for f in overlapped.errors}
+    return {"ok": clean.passed and not overlapped.passed and "R003" in rules,
+            "clean_passed": clean.passed,
+            "errors": [f.to_dict() for f in overlapped.errors
+                       if f.rule == "R003"]}
+
+
 def main() -> int:
     capture_main_thread()
     check("auditor_reports_axis_violation", t_auditor_reports_axis_violation)
@@ -199,6 +235,8 @@ def main() -> int:
     check("rule_r007_missing_character", t_rule_r007_missing_character)
     check("rule_r008_below_ground", t_rule_r008_below_ground)
     check("tool_errors_are_observations", t_tool_errors_are_observations)
+    check("rule_r002_collision", t_rule_r002_collision)
+    check("rule_r003_action_overlap", t_rule_r003_action_overlap)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

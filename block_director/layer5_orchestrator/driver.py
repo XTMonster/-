@@ -21,6 +21,7 @@ from ..contracts.messages import (
     ChatPayload,
     ChatReply,
     Message,
+    MessageRole,
     assistant_message,
     new_request_id,
     tool_message,
@@ -32,6 +33,8 @@ from ..utils.logger import get_logger
 from ..utils.threading_guard import assert_main_thread
 from .planner import EMIT_PLAN_TOOL_PARAMETERS, PLAN_TOOL_NAME, build_plan_payload
 from .repair import build_repair_payload
+from .budget import Budget, BudgetLimits
+from .loop_detector import LoopDetector
 from .states import TERMINAL_STATES, DriverState
 from .tool_registry import ToolRegistry
 
@@ -92,6 +95,8 @@ class PrevisDriver:
         builder: Optional[Any] = None,
         auditor: Optional[Any] = None,
         scene_state_provider: Optional[Callable[[], str]] = None,
+        loop_detector: Optional[LoopDetector] = None,
+        budget: Optional[Budget] = None,
         observers: Optional[List[Callable[[DriverEvent], None]]] = None,
         clock: Callable[[], float] = time.monotonic,
         thread_factory: Callable[..., Any] = _default_thread_factory,
@@ -105,6 +110,10 @@ class PrevisDriver:
         self.builder = builder
         self.auditor = auditor
         self.scene_state_provider = scene_state_provider
+        self.loop_detector = loop_detector or LoopDetector()
+        self.budget = budget or Budget(
+            BudgetLimits(max_llm_calls=self.limits.max_llm_calls))
+        self.degraded_reason = ""
         self.clock = clock
         self.thread_factory = thread_factory
 
@@ -167,6 +176,9 @@ class PrevisDriver:
             "audits": len(self.audit_results),
             "repairs": self._repairs_total,
             "shot_repairs": self._repair_attempts,
+            "budget": self.budget.summary,
+            "loops": self.loop_detector.stats,
+            "degraded_reason": self.degraded_reason,
             "error": self.error,
         }
 
@@ -181,6 +193,11 @@ class PrevisDriver:
         if self._steps > self.limits.max_steps:
             self._fail("超出最大步数（疑似死循环）")
             return False
+        exhausted = self.budget.exhausted_reason()
+        if exhausted and self.state is DriverState.PLANNING:
+            # 还没产出计划就触顶：降级收尾（构建与审核不花预算，不该被砍）
+            self._degrade_to_finish(exhausted)
+            return True
         if self._cancel.is_set() and self.state is not DriverState.CANCELLED:
             self._transition(DriverState.CANCELLED)
             self.audit.log("run_cancelled", "运行已取消", level="warning")
@@ -211,8 +228,9 @@ class PrevisDriver:
         self._transition(DriverState.PLANNING)
 
     def _step_planning(self) -> None:
-        if self._llm_calls >= self.limits.max_llm_calls:
-            self._fail("LLM 调用预算耗尽")
+        if not self.budget.allow_llm_call("plan"):
+            self._degrade_to_finish(self.budget.exhausted_reason()
+                                    or "LLM 调用预算耗尽")
             return
         if self._plan_attempts >= self.limits.plan_attempts:
             detail = f"：{self._plan_problem}" if self._plan_problem else ""
@@ -231,6 +249,7 @@ class PrevisDriver:
         purpose = str(Purpose.REPAIR if repairing else Purpose.PLAN)
 
         if kind == "err":
+            self.budget.record_llm(None)
             self.audit.log("llm_error", str(payload), level="error",
                            request_id=self._pending_request_id)
             self.audit.log_llm(purpose, None, duration,
@@ -241,6 +260,7 @@ class PrevisDriver:
             return
 
         reply: ChatReply = payload
+        self.budget.record_llm(reply.usage)
         self.audit.log_llm(purpose, reply, duration, self._pending_request_id)
 
         if repairing:
@@ -391,7 +411,9 @@ class PrevisDriver:
                        built=bool(self.build_summary),
                        audits=len(self.audit_results),
                        failed_audits=sum(1 for r in self.audit_results
-                                         if not r.passed))
+                                         if not r.passed),
+                       degraded=self.degraded_reason or None,
+                       budget=self.budget.summary)
         self._emit("run_finished", f"完成，共 {len(plan.shots)} 个镜头")
 
     # ------------------------------------------------------------ 内部
@@ -405,6 +427,9 @@ class PrevisDriver:
     def _start_llm_call(self, purpose: str, payload: ChatPayload,
                         note: str = "") -> None:
         """发起一次 LLM 调用。网络在后台线程，主线程只负责发起与轮询。"""
+        if not self.budget.allow_llm_call(purpose):
+            self._degrade_to_finish(self.budget.exhausted_reason() or "预算耗尽")
+            return
         self._call_purpose = purpose
         self._pending_request_id = payload.request_id
         self._llm_calls += 1
@@ -447,6 +472,7 @@ class PrevisDriver:
             result = self.registry.execute(call.function.name, args)
             self._tool_calls += 1
             self.audit.count_tool_call()
+            self.loop_detector.record(call.function.name, args)
             self.audit.log("tool_call",
                            f"{call.function.name} -> {'ok' if result.ok else result.error}",
                            tool=call.function.name, ok=result.ok, args=args)
@@ -463,6 +489,14 @@ class PrevisDriver:
                     plan_seen = True
                 except Exception as exc:  # noqa: BLE001
                     errors.append(f"计划解析失败: {exc}")
+
+        loop = self.loop_detector.detect()
+        if loop is not None:
+            self.audit.log("loop_warning", loop.message, level="warning",
+                           loop_kind=loop.kind)
+            self._emit("loop_warning", loop.message, loop_kind=loop.kind)
+            conversation.append(Message(role=MessageRole.SYSTEM,
+                                        content=loop.message))
 
         if errors:
             return "；".join(errors)
@@ -484,6 +518,13 @@ class PrevisDriver:
                        llm_calls=self._llm_calls, tool_calls=self._tool_calls)
         self._emit("run_failed", message)
         self._transition(DriverState.ERROR)
+
+    def _degrade_to_finish(self, reason: str) -> None:
+        """§12.6：预算触顶按降级收尾并如实标注，已建成的成果不丢。"""
+        self.degraded_reason = reason
+        self.audit.log("budget_exhausted", reason, level="warning")
+        self._emit("budget_exhausted", reason)
+        self._transition(DriverState.FINISHING)
 
     def _emit(self, kind: str, message: str, **data: Any) -> None:
         if not self._observers:

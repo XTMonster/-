@@ -2425,12 +2425,15 @@ def supports_media_type() -> bool:
 | **场景观察（Phase 4）** | `observation/`、`layer3_engine/scene_state.py` | ✅ 轻量摘要 / 完整投影两档采集；摘要文本可单测 |
 | **查询工具（Phase 4）** | `layer3_engine/tool_bindings.py` | ✅ `get_scene_state` / `check_visibility` / `check_composition` / `check_axis` 已接入工具注册表 |
 | **直连传输（Phase 4）** | `contracts/transport.py::OpenAICompatibleTransport` | ✅ 零依赖 OpenAI 兼容客户端，覆盖 OpenAI/DeepSeek/Ollama/vLLM |
-| 测试套件 | `tests/` | ✅ 254 项全部通过 |
+| **规则校验器（Phase 5）** | `layer3_engine/rule_checker.py`、`contracts/audit.py` | ✅ **R001–R010 全部实现** + 构图质量门；R011 待 Layer 1 的对白计时 |
+| **修复闭环（Phase 4 B3/B4）** | `layer5_orchestrator/auditor.py`、`repair.py`、驱动器的 CHECKING/REPAIRING | ✅ 逐镜校验 → 结构化违规项回灌 → 工具修正 → 复核 |
+| **循环检测与预算（Phase 5）** | `layer5_orchestrator/loop_detector.py`、`budget.py` | ✅ 重复调用/只查不做/振荡三种病态 + token/费用/时间四类上限 |
+| 测试套件 | `tests/` | ✅ 297 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 254 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 297 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2466,7 +2469,13 @@ def supports_media_type() -> bool:
 >
 > 直连传输用 **标准库 urllib** 实现 OpenAI 兼容协议，而不是依赖 `openai` SDK：Blender 自带 Python 里没有该包（实测），而 OpenAI 兼容接口已是事实标准（OpenAI/DeepSeek/Ollama/vLLM 通用）。这样零安装可用，且能用本地假服务端做完整往返测试（真实 HTTP、错误码映射、tool_calls 解析），不需要 API Key。
 
-**下一步**：Phase 5（审核与防御：`rule_checker` R001–R011、检查点回滚、`request_self_review` 异步流程、预算限流）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。前者让自动化产出可控可审，后者决定"完成剧本语义与设计"的精度。
+**Phase 5 验收（审核与防御，进行中）**：第 11 步在真实 Blender 内断言：干净镜头构图 85.2 通过；换成轴线另一侧的机位 → **R001** 判错；调用 `setup_camera` 修复后重新通过（85.2）。另有：`place_character` 把角色移出画面后 `check_visibility` 报"不在画"；`character_action` 写入 47 个关键帧；**R002** 抓出角色与道具穿模；**R003** 抓出同角色动作时间重叠；**R007** 抓出角色引用缺失；**R008** 抓出角色在地面以下；所有参数错误都是观察文本。
+>
+> 纯测试另覆盖：预算触顶时**保留已建成的场景**并降级收尾（不是硬失败）、token/费用/时间四类上限、循环检测的三种病态（重复调用、只查不做、来回振荡）以及"警告必须真的注入到下一轮对话"。
+>
+> 测试过程中修掉两个真缺陷：（a）规则判定原先用**全场角色**，导致特写镜头因为"另一个角色不在画里"被判失败——改为按镜头角色判定；（b）预算检查原先在 BUILDING 之前收尾，会把已建成的场景丢掉——改为只在需要 LLM 调用时拦截。
+
+**下一步**：Phase 5 余下（检查点回滚、`request_self_review` 异步流程、人工审批门、调试面板）与 Layer 1 剧本解析（Fountain/TXT/FDX/PDF、对白计时 §4.4、共指消解 §4.3）。Layer 1 到位后 R011 即可补上。
 
 ---
 

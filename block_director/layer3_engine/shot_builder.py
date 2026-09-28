@@ -233,6 +233,7 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         marker = scene.timeline_markers.new(f"BD_Cut_{shot.shot_id}", frame=start)
         marker.camera = bundle.camera
         context.cameras[shot.shot_id] = bundle.camera
+        context.schedule[shot.shot_id] = (start, end)
 
         # §10.3：轴线由**第一个**含两名角色的镜头确立，后续镜头继承
         if context.axis is None and len(shot.characters) >= 2:
