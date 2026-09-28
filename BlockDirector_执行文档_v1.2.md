@@ -2416,12 +2416,14 @@ def supports_media_type() -> bool:
 | **动作库与动作混合（Phase 2）** | `block_director/motion/`、`character_system/motion_library.py`、`motion_blender.py` | ✅ 12 种动作、四层合成、§9.7 冲突仲裁；实测 270 个关键帧、渲染逐帧变化 |
 | **版本兼容层（实测驱动）** | `utils/blender_compat.py` | ✅ 覆盖 5.x 移除 `Action.fcurves`、引擎标识映射、`media_type` 前置步骤 |
 | **取景解算（Phase 3）** | `block_director/cinema/framing.py`、`cinema_engine/framing_solver.py` | ✅ 景别+焦距→距离/机位，相对被摄者朝向，含房间夹取 |
-| 测试套件 | `tests/` | ✅ 160 项全部通过 |
+| **轴线控制器（Phase 3）** | `block_director/cinema/axis.py`、`cinema_engine/axis_controller.py` | ✅ 180° 轴线 + R010 30° 规则；可视化落在 Guides |
+| **构图分析（Phase 3）** | `block_director/cinema/composition.py`、`cinema_engine/composition_guide.py` | ✅ 六项加权评分（权重见 §10.4）+ 射线遮挡检测 |
+| 测试套件 | `tests/` | ✅ 187 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | Layer 1–2、RAG、动作库、摄影解算 | — | ⏳ Phase 2–4 实施中 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 160 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 187 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2437,7 +2439,11 @@ def supports_media_type() -> bool:
 
 **架构审核结论**：架构的 11 项关键假设中 10 项实证成立；唯一的 WARN（Blender 无跨线程护栏）已通过新增 `threading_guard` 强制化解除。**当前架构不存在阻塞性可行性问题。**
 
-**下一步**：Phase 3 剩余部分 —— 轴线控制器（§10.3）与构图分析（§10.4），把"机位正确"推进到"可审核"；随后 Phase 4 把驱动器从"只产出计划"接到"逐镜头执行落库"。
+**Phase 3 验收（审核部分）**：第 8 步在真实 Blender 内断言：以首镜机位确立轴线基准侧（+1，标签"小明→小红"），另一侧机位被拦下并给出 §21.3 的原文提示；轴线可视化对象落在 Guides 且 `hide_render=True`；构图评分好机位 **88.0** vs 角色被推出画面 **51.9**；插入挡板后遮挡分项归零、总分从 88.0 掉到 **63.0**；R010 对"角差 0° + 同景别"报警，换景别或换角度则不报。
+>
+> 实现中发现并修掉两处设计冲突：（a）单主体放在三分线交点会被"重心偏离中心"误扣分——给 balance 按主体数量加死区；（b）正对镜头的角色会被透视误判成"朝画面外"——改为在**相机空间**判断朝向，正对/背对镜头视为无水平朝向。
+
+**下一步**：Phase 4 —— 把驱动器从"只产出计划"接到"逐镜头执行落库"（`plan → shot builder → 动作/相机落库`），让"剧本 → 可看的白模动画"这条链真正闭合；之后 Phase 6 接交付导出。
 
 ---
 

@@ -16,8 +16,36 @@ from .framing import (
     solve_framing,
     vertical_fov,
 )
+from .axis import (
+    MIN_ANGLE_DEG,
+    SIDE_NEGATIVE,
+    SIDE_POSITIVE,
+    Axis,
+    axis_for_speakers,
+    axis_from_points,
+    axis_violation,
+    camera_angle_deg,
+    establish_axis,
+    shot_size_changed,
+    shot_size_index,
+    thirty_degree_violation,
+)
+from .composition import (
+    PASS_SCORE,
+    WEIGHTS,
+    CompositionItem,
+    CompositionReport,
+    SubjectBox,
+    evaluate_composition,
+)
 
 __all__ = [
     "solve_framing", "required_distance", "side_vector", "vertical_fov",
     "FramingResult", "SHOT_FRAME", "SENSOR_WIDTH", "ASPECT_16_9",
+    "Axis", "axis_from_points", "axis_for_speakers", "establish_axis",
+    "axis_violation", "camera_angle_deg", "shot_size_index",
+    "shot_size_changed", "thirty_degree_violation",
+    "MIN_ANGLE_DEG", "SIDE_POSITIVE", "SIDE_NEGATIVE",
+    "evaluate_composition", "CompositionReport", "CompositionItem",
+    "SubjectBox", "WEIGHTS", "PASS_SCORE",
 ]

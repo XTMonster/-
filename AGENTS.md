@@ -24,18 +24,19 @@ previs and exports it as a reference video for AI video generation.
 
 ## Status
 
-Phases 0-3 (framing) are done:
+Phases 0-3 are done:
 
 - **Phase 0** plugin skeleton, state machine, audit logging
 - **Phase 1** character geometry, scene executor, collection routing, transactions, camera
 - **Phase 2** motion library, layered blending, §9.7 conflict arbitration
-- **Phase 3 (partly)** framing solver: shot type + lens -> distance and camera
-  placement, relative to subject facing, with room clamping. Axis control and
-  composition analysis are still pending.
+- **Phase 3** framing solver (shot type + lens -> distance and placement,
+  relative to subject facing, with room clamping), axis controller (180-degree
+  rule plus R010), and composition scoring with ray-cast occlusion
 
-`tools/run_tests.ps1` runs all seven checks: spec drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all eight checks: spec drift, pytest, in-Blender
 contract smoke test, a headless run of the add-on, the Phase 1 scene build,
-Phase 2 motion baking, and the Phase 3 framing solver.
+Phase 2 motion baking, the Phase 3 framing solver, and the Phase 3 axis /
+composition audit.
 
 Motion math lives in `block_director/motion/` (no `bpy`, unit-tested). The bpy side
 (`layer3_engine/character_system/motion_library.py`) only maps channels onto object
