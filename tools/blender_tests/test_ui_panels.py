@@ -228,7 +228,82 @@ def t_audit_result_opens_in_a_text_block():
 
 
 # --------------------------------------------------------------------------- #
-# 6. 两个面板模块注册/注销干净（含预览集合）
+# 6. 运行设置与交付：面板字段 → 配置
+# --------------------------------------------------------------------------- #
+def t_run_settings_feed_the_config():
+    from block_director.layer7_ui.run_settings import (
+        apply_scene_settings,
+        collect_settings,
+    )
+    from block_director.contracts.config import AppConfig
+
+    scene = bpy.context.scene
+    scene.bd_provider = "deepseek"
+    scene.bd_model = "deepseek-chat"
+    scene.bd_audit_level = "strict"
+    scene.bd_preset = "square"
+    scene.bd_max_llm_calls = 12
+    scene.bd_max_cost_usd = 2.5
+
+    config, problems = apply_scene_settings(AppConfig(),
+                                            collect_settings(scene))
+    return {"ok": (problems == [] and config.llm.provider == "deepseek"
+                   and config.llm.model == "deepseek-chat"
+                   and str(config.audit.level) == "strict"
+                   and str(config.delivery.preset) == "square"
+                   and config.budget.max_llm_calls_per_scene_formula == "12"
+                   and config.budget.max_cost_usd == 2.5),
+            "problems": problems,
+            "config": {"provider": config.llm.provider,
+                       "model": config.llm.model,
+                       "audit": str(config.audit.level),
+                       "preset": str(config.delivery.preset),
+                       "formula": config.budget.max_llm_calls_per_scene_formula}}
+
+
+def t_overlay_sub_toggles_override_the_config():
+    from block_director.layer7_ui import draw_overlay
+
+    scene = bpy.context.scene
+    scene.bd_show_axis = False
+    scene.bd_show_composition = False
+    scene.bd_show_safe_area = True
+    geometry = draw_overlay.collect_geometry(bpy.context)
+    scene.bd_show_axis = True
+    scene.bd_show_composition = True
+    restored = draw_overlay.collect_geometry(bpy.context)
+    return {"ok": (geometry.axis_lines == [] and geometry.thirds == []
+                   and restored.axis_lines and restored.thirds),
+            "off": {"axis": len(geometry.axis_lines),
+                    "thirds": len(geometry.thirds),
+                    "safe": len(geometry.safe_areas)},
+            "on": {"axis": len(restored.axis_lines),
+                   "thirds": len(restored.thirds)}}
+
+
+def t_export_operator_is_registered_and_guards_empty_runs():
+    from block_director.layer3_engine.scene_context import clear_context
+    from block_director.layer5_orchestrator.runtime import set_active
+
+    set_active(None)
+    clear_context()                     # 真的没有计划，才测得到"拒绝"这条分支
+    # bpy.ops 会把 ERROR 级别的 report 直接抛成 RuntimeError，所以"拒绝"
+    # 既可能是返回值 CANCELLED，也可能是一条异常消息——两种都要认。
+    try:
+        result = bpy.ops.blockdirector.export_delivery()
+        outcome = list(result)
+        message = ""
+    except RuntimeError as exc:
+        outcome = []
+        message = str(exc)
+    return {"ok": (hasattr(bpy.types, "BLOCKDIRECTOR_OT_export_delivery")
+                   and (message.strip().endswith("先运行一次生成")
+                        or outcome == ['CANCELLED'])),
+            "result": outcome, "message": message.strip()}
+
+
+# --------------------------------------------------------------------------- #
+# 7. 两个面板模块注册/注销干净（含预览集合）
 # --------------------------------------------------------------------------- #
 def t_panels_register_and_unregister_cleanly():
     import block_director
@@ -275,6 +350,11 @@ def main() -> int:
               t_thumbnail_render_produces_an_icon)
         check("audit_result_opens_in_a_text_block",
               t_audit_result_opens_in_a_text_block)
+        check("run_settings_feed_the_config", t_run_settings_feed_the_config)
+        check("overlay_sub_toggles_override_the_config",
+              t_overlay_sub_toggles_override_the_config)
+        check("export_operator_is_registered_and_guards_empty_runs",
+              t_export_operator_is_registered_and_guards_empty_runs)
     finally:
         block_director.unregister()
     check("panels_register_and_unregister_cleanly",

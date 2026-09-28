@@ -1497,6 +1497,14 @@ def required_distance(subject_height, shot_type, lens,
 - 审核日志（最近操作列表）
 - 交付（输出目录、分辨率预设、导出按钮，见 §15）
 
+> **实现（Phase 7）**：六块内容对应上面六条——输入 / 生成控制 / 运行 / 工具 / 交付 / 状态与日志。
+>
+> - **生成控制**：供应商、模型、审核级别、调用上限、费用与时间上限。面板**不直接改配置文件**：运行与导出前用 `run_settings.apply_scene_settings()` 覆盖到一个 `deepcopy` 出来的配置上——配置文件始终是唯一持久真源，反复运行也不会让上一次的临时选择沉淀进进程级配置。覆盖完再跑一次 `config.errors()`，有错就在开跑前报出来（例如"panel 选了 workbench 又开着 depth"会撞上 CFG_102），而不是带着坏配置运行。
+> - **工具**：画线工具 + 视口叠加总开关 + §13.4 的三个独立复选框（轴线 / 构图辅助线 / 安全框）。叠加层读场景开关、缺字段时退到 `ui.*` 配置默认值。
+> - **交付**：输出目录、分辨率预设、外观、渲染后端与"导出交付包"按钮（复用 §15 的 `export_project`，导出前照样过画面审计；没有计划时明确拒绝）。`bd_project_dir` 的所有权统一收在主面板（调试/分镜/缩略图都读它）。
+>
+> **顺带修掉一处死配置**：`config.budget` 此前**从未被读过**——驱动器只用 `DriverLimits.max_llm_calls`，用户设的 `max_cost_usd` / `max_wall_minutes` 没人执行。现在驱动器按配置构造账本上限；`max_llm_calls_per_scene_formula`（默认 `"shots * 6"`）在拿到计划后应用，且与 `DriverLimits` 的硬顶**取更严的那个**——既不悄悄突破 Phase 4 的"≤8 次调用"架构目标，又让"镜头多就多给一点额度"成立。公式只支持 `<整数>` 与 `shots * <整数>` 两种写法（`budget_formula.py`，纯函数，6 条测试）：配置是人手写的，语法越窄越不容易写出"看起来对但算错"的东西；无法识别只记警告并沿用静态上限。
+
 > **实现（Phase 7）**：角色管理落在 `layer7_ui/panel_cast.py`（UIList + 四个算子）+ `layer3_engine/cast_editor.py`（真正的改动）。三件事必须一起做，否则界面上的改动只是"看起来改了"：
 >
 > 1. **改 Blender 对象**：颜色走 `set_character_color()`（按 ``BD_Mat_{id}`` **就地更新**材质，Workbench 与 EEVEE 两条通路都覆盖；已挂在网格上的引用不需要重挂）；增删走 `create_character` / `delete_character`。
@@ -2422,7 +2430,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **519 项**，全部通过；`tools/run_tests.ps1` 跑 **22 步**（规格与
+`tests/` 共 **533 项**，全部通过；`tools/run_tests.ps1` 跑 **22 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2606,13 +2614,15 @@ def supports_media_type() -> bool:
 | **全片拼接（§15.7）** | `layer8_delivery/concat.py` | ✅ 内置 VSE 把各镜接成 `blockout_full.mp4`，帧数等于各镜之和，无需外部 ffmpeg |
 | **工具层补齐（§7.4）** | `layer3_engine/tool_bindings.py`、`cinema/camera_motion.py`、`layer5_orchestrator/timing_tool.py`、`layer5_orchestrator/control_tools.py` | ✅ **17 个工具全部注册**：新增 6 个场景工具 + 3 个控制工具，并有一条断言直接比对模型看到的工具表 |
 | **角色管理（§13.1）** | `layer7_ui/panel_cast.py`、`layer3_engine/cast_editor.py` | ✅ 列表 / 颜色 / 添加 / 删除；改动同时落到材质与场景设定，删除被镜头引用的角色会被拒绝 |
+| **运行设置与交付（§13.1）** | `layer7_ui/panel_main.py`、`layer7_ui/run_settings.py` | ✅ 供应商/模型/审核级别/预算 + 输出目录/预设/外观/后端/导出按钮；设置覆盖到配置副本并先行校验 |
+| **预算配置生效（§12.6）** | `layer5_orchestrator/budget_formula.py`、`driver.py` | ✅ `max_cost_usd` / `max_wall_minutes` 真正进账本；`shots * N` 额度公式与硬顶取更严者 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 519 项全部通过 |
+| 测试套件 | `tests/` | ✅ 533 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 519 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 533 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2712,7 +2722,9 @@ def supports_media_type() -> bool:
 
 **角色管理验收（第 22 步）**：五项断言全绿——列表与 `SceneContext.spec` 一致且标记"是否已建对象"；改颜色后材质 diffuse 与 SDL 里的 `color` 同步变化（`#123456`），且 SDL 仍通过 §5.2 校验；添加角色真的建出 `BD_Char_老陈_Root` 并拿到 `char_003`；删除无引用角色会真的移除对象，而删除被 `shot_001` 引用的角色被**拒绝**并说明原因；面板模块注册/注销干净。另有一条断言比对 `registration.MODULES` 与实际注册集合，防止模块静默注册失败。
 
-**当前仍未实现**：§13.1 主面板里还剩**模型选择 / 审核级别 / 预算上限 / 分辨率预设 / 导出按钮**这一组运行设置（目前它们只能通过配置文件给），以及 §13.4 视口叠加的三个独立开关（现在是一个"视口叠加"总开关，对应配置里的 `ui.*`）。`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。
+**运行设置与交付验收**：`apply_scene_settings()` 八条纯测试覆盖"面板选什么 → 配置变成什么"：空设置不动任何字段；供应商/模型/审核级别/预设/外观/后端/费用/时间/调用额度全部正确落地；未提供控件值的字段沿用配置文件（例如本地自定义的 `llm.model` 不被清掉）；非法枚举与非法数字**只报错不改配置**；覆盖后若撞上配置校验（depth 需要 EEVEE）也会在开跑前报出来。Blender 侧另有三条：面板字段真的进配置、三个叠加开关能覆盖配置默认值、导出算子在没有计划时明确拒绝。
+
+**当前仍未实现**：`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。另有两处**有意的差异**已在正文写明：§13.4 的"违规元素红色闪烁"目前是静态红框（闪烁需要逐帧重绘，收益低），§9.4 的角色标签是真实对象（因此必须 `hide_render`），与 GPU 叠加层是两套机制。
 
 至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 

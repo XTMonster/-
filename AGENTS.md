@@ -121,6 +121,16 @@ Phases 0-4 and 6 are done:
   outside Blender. Registration order matters for a `CollectionProperty` of a
   `PropertyGroup`, and `register_all` swallows per-module failures, so a test
   compares `registration.MODULES` against what actually registered.
+- **Run settings and delivery** (`layer7_ui/panel_main.py`,
+  `layer7_ui/run_settings.py`): provider / model / audit level / budget /
+  preset / appearance / backend plus an export button. The panel never edits
+  the config file - it deep-copies the loaded config, applies the panel values
+  and runs `config.errors()` before starting, so a bad combination (depth with
+  workbench) is reported instead of run.
+  `config.budget` used to be dead: the driver now builds its budget limits from
+  it, and `max_llm_calls_per_scene_formula` (`"shots * 6"`) is applied once the
+  plan is known - taking the stricter of the formula and the static ceiling, so
+  the Phase 4 "<= 8 calls" target cannot be silently exceeded.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2

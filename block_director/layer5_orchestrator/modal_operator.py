@@ -7,12 +7,14 @@
 from __future__ import annotations
 
 import os
+import copy
 
 import bpy
 from bpy.types import Operator
 
 from ..layer6_audit import AuditLogger
 from ..settings import get_config
+from ..layer7_ui.run_settings import apply_scene_settings, collect_settings
 from ..utils.logger import get_logger
 from ..utils.paths import default_project_root, ensure_dir
 from .driver import PrevisDriver
@@ -63,7 +65,14 @@ class BLOCKDIRECTOR_OT_run_previs(Operator):
             self.report({'WARNING'}, "已有运行在进行中，请先取消")
             return {'CANCELLED'}
 
-        config = get_config()
+        # 面板设置覆盖到**副本**上：配置文件仍是唯一持久真源，反复运行也不会
+        # 让上一次的临时选择沉淀进进程级配置。
+        config = copy.deepcopy(get_config())
+        config, problems = apply_scene_settings(config,
+                                                collect_settings(context.scene))
+        if problems:
+            self.report({'ERROR'}, "；".join(problems))
+            return {'CANCELLED'}
         offline = bool(getattr(context.scene, "bd_offline", True))
         try:
             transport, mode = make_transport(config, offline=offline)

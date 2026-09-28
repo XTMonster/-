@@ -40,6 +40,8 @@ from .control_tools import (
 )
 from .repair import build_repair_payload
 from .budget import Budget, BudgetLimits
+from .budget_formula import describe as describe_budget_formula
+from .budget_formula import evaluate as evaluate_llm_call_budget
 from .loop_detector import LoopDetector
 from .human_gate import GateDecision, GateRequest, HumanGate
 from .review import ReviewVerdict, build_review_payload, parse_review
@@ -89,6 +91,22 @@ def _default_thread_factory(target: Callable[[], None],
     return threading.Thread(target=target, daemon=True, name=name)
 
 
+def _limits_from(config, limits: "DriverLimits") -> BudgetLimits:
+    """把 §21.5 的预算配置翻译成账本上限。
+
+    此前 ``config.budget`` 是**死配置**：驱动器只用 ``DriverLimits`` 里的
+    调用次数上限，用户设的 ``max_cost_usd`` / ``max_wall_minutes`` 没人执行。
+    """
+    if config is None or getattr(config, "budget", None) is None:
+        return BudgetLimits(max_llm_calls=limits.max_llm_calls)
+    budget = config.budget
+    return BudgetLimits(
+        max_llm_calls=limits.max_llm_calls,
+        max_cost_usd=float(getattr(budget, "max_cost_usd", 0.0) or 0.0),
+        max_wall_seconds=float(getattr(budget, "max_wall_minutes", 0.0) or 0.0)
+        * 60.0)
+
+
 class PrevisDriver:
     """一次预演生成运行的状态机。"""
 
@@ -124,8 +142,7 @@ class PrevisDriver:
         self.auditor = auditor
         self.scene_state_provider = scene_state_provider
         self.loop_detector = loop_detector or LoopDetector()
-        self.budget = budget or Budget(
-            BudgetLimits(max_llm_calls=self.limits.max_llm_calls))
+        self.budget = budget or Budget(_limits_from(config, self.limits))
         self.degraded_reason = ""
         self.human_gate = human_gate
         self.knowledge = knowledge
@@ -637,6 +654,31 @@ class PrevisDriver:
         self._emit("run_finished", f"完成，共 {len(plan.shots)} 个镜头")
 
     # ------------------------------------------------------------ 内部
+    def _apply_scene_budget(self, shots: int) -> None:
+        """按 §21.5 的公式收紧"这次场景允许多少次调用"。
+
+        公式给的是**额度**，``DriverLimits.max_llm_calls`` 是**硬顶**：两者取
+        更严的那个，既不悄悄突破架构目标（Phase 4 的 ≤8 次），又让"镜头多就
+        多给一点额度"成立。无法识别的公式只记一条警告，继续用静态上限。
+        """
+        budget_config = getattr(self.config, "budget", None)
+        if budget_config is None:
+            return
+        formula = getattr(budget_config, "max_llm_calls_per_scene_formula", "")
+        value = evaluate_llm_call_budget(formula, shots)
+        if value is None:
+            self.audit.log("budget_formula_ignored",
+                           describe_budget_formula(formula, shots),
+                           level="warning")
+            return
+        previous = int(self.budget.limits.max_llm_calls)
+        effective = min(value, previous) if previous else value
+        self.budget.limits.max_llm_calls = effective
+        self.audit.log(
+            "budget_scoped", describe_budget_formula(formula, shots),
+            shots=shots, formula_value=value, ceiling=previous,
+            effective=effective)
+
     def _start_plan_call(self) -> None:
         request_id = new_request_id()
         payload: ChatPayload = build_plan_payload(self.script, self.config,
@@ -709,6 +751,7 @@ class PrevisDriver:
                 try:
                     self.plan = Plan.from_dict(args)
                     plan_seen = True
+                    self._apply_scene_budget(len(self.plan.shots))
                 except Exception as exc:  # noqa: BLE001
                     errors.append(f"计划解析失败: {exc}")
             elif result.ok and call.function.name == ABORT:

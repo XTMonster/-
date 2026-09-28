@@ -182,16 +182,11 @@ CLASSES = (
     BLOCKDIRECTOR_PT_debug,
 )
 
-_scene_props = {
-    "bd_project_dir": StringProperty(
-        name="输出目录", subtype='DIR_PATH', default="",
-        description="导出 SDL / 场景状态 / 缩略图的落盘目录（§13.3）"),
-}
+#: ``bd_project_dir`` 由 panel_main 注册（§13.1 的"交付"块），本面板只读它。
+_scene_props: Dict[str, object] = {}
 
 
 def register() -> None:
-    for name, prop in _scene_props.items():
-        setattr(bpy.types.Scene, name, prop)
     for cls in CLASSES:
         bpy.utils.register_class(cls)
 

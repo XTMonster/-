@@ -76,17 +76,26 @@ def collect_geometry(context=None) -> OverlayGeometry:
     """按配置与当前场景组装叠加几何（不碰 GPU，可单独调用与断言）。"""
     ui = get_config().ui
     scene_context = get_context()
+    scene = getattr(context, "scene", None)
+
+    def flag(name: str, fallback: bool) -> bool:
+        """场景开关优先（§13.4 的三个独立复选框），否则退到配置默认值。"""
+        value = getattr(scene, name, None) if scene is not None else None
+        return fallback if value is None else bool(value)
 
     axis = None
-    if getattr(ui, "show_axis", True) and scene_context is not None:
+    if flag("bd_show_axis", getattr(ui, "show_axis", True)) \
+            and scene_context is not None:
         line = scene_context.axis
         if line is not None:
             axis = [(line.start[0], line.start[1], 0.02),
                     (line.end[0], line.end[1], 0.02)]
 
     return build_overlay(
-        show_thirds=getattr(ui, "show_composition", True),
-        show_safe_area=getattr(ui, "show_safe_area", True),
+        show_thirds=flag("bd_show_composition",
+                         getattr(ui, "show_composition", True)),
+        show_safe_area=flag("bd_show_safe_area",
+                            getattr(ui, "show_safe_area", True)),
         axis=axis,
         paths=_path_points(),
         frustums=_frustums())
