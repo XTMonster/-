@@ -43,6 +43,7 @@ from .budget import Budget, BudgetLimits
 from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
 from .context_budget import budget_report, trim_messages
+from .editor import build_editor_payload, extract_draft, merge_draft
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
 from .loop_detector import LoopDetector
 from .human_gate import GateDecision, GateRequest, HumanGate
@@ -163,6 +164,10 @@ class PrevisDriver:
         self._react_messages: List[Message] = []
         self._react_done: set = set()
         self.react_history: List[Dict[str, Any]] = []
+        self._editing_queue: List[str] = []
+        self._editing_index = 0
+        self.draft_history: List[Dict[str, Any]] = []
+        self.drafts_failed: List[Dict[str, Any]] = []
         self._finished_shots: List[str] = []
         self.review_history: List[Dict[str, Any]] = []
         self.clock = clock
@@ -255,6 +260,8 @@ class PrevisDriver:
             "finished_shots": len(self.finish_history),
             "review_requests": len(self.review_requests),
             "react_rounds": len(self.react_history),
+            "drafts": len(self.draft_history),
+            "drafts_failed": len(self.drafts_failed),
             "error": self.error,
         }
 
@@ -382,6 +389,10 @@ class PrevisDriver:
             self._start_react_turn()
             return
 
+        if self._call_purpose == "editor":
+            self._finish_editor_turn(reply)
+            return
+
         if self._call_purpose == "review":
             self._finish_review(reply)
             return
@@ -392,8 +403,9 @@ class PrevisDriver:
             self.audit.log("plan_invalid", problem, level="error")
             self._transition(DriverState.PLANNING)
             return
-        # 有场景构建器就把计划落成场景（§7.1 阶段 B2），否则只产出计划
-        target = (DriverState.BUILDING if self.builder is not None
+        # 计划通过后先进阶段 B1（逐镜结构化生成），再落成场景（§7.1）。
+        # 没有构建器时也不需要逐镜草案——那是给执行引擎吃的。
+        target = (DriverState.EDITING if self.builder is not None
                   else DriverState.FINISHING)
         if self._gate_enabled("human_gate_on_plan"):
             self._request_gate(
@@ -477,6 +489,73 @@ class PrevisDriver:
         if decision is None or decision is GateDecision.PENDING:
             return                      # 继续等
         self._apply_gate(decision)
+
+    # -------------------------------------------------- 阶段 B1（§7.1 逐镜草案）
+    def _step_editing(self) -> None:
+        """逐镜请求结构化草案；全部完成后再落场景。"""
+        if self.plan is None or not self.plan.shots:
+            self._transition(DriverState.BUILDING)
+            return
+        if not self._editing_queue:
+            self._editing_queue = [shot.shot_id for shot in self.plan.shots]
+            self._editing_index = 0
+        if self._editing_index >= len(self._editing_queue):
+            self._editing_queue = []
+            self._transition(DriverState.BUILDING)
+            return
+        shot_id = self._editing_queue[self._editing_index]
+        if not self.budget.allow_llm_call("editor"):
+            self.audit.log("editor_skipped",
+                           f"预算不足以逐镜生成，{shot_id} 起沿用计划内容",
+                           level="warning")
+            self._editing_queue = []
+            self._transition(DriverState.BUILDING)
+            return
+        self._start_editor_call(shot_id)
+
+    def _start_editor_call(self, shot_id: str) -> None:
+        shot = next((item for item in (self.plan.shots if self.plan else [])
+                     if item.shot_id == shot_id), None)
+        if shot is None:
+            self._editing_index += 1
+            return
+        characters = list(shot.characters)
+        props: List[str] = []
+        payload = build_editor_payload(
+            shot, self.plan, shot_order=self._editing_index + 1,
+            scene_state=self._scene_state_text(),
+            continuity=render_shot_memory(
+                shot_memory(self.plan, done=self._finished_shots)),
+            characters=characters, props=props, retriever=self.knowledge,
+            temperature=(float(self.config.llm.temperature_plan)
+                         if self.config is not None else 0.7))
+        self._start_llm_call("editor", payload,
+                             note=f"单镜结构化生成 {shot_id}"
+                                  f"（{self._editing_index + 1}/"
+                                  f"{len(self._editing_queue)}）")
+
+    def _finish_editor_turn(self, reply: ChatReply) -> None:
+        shot_id = self._editing_queue[self._editing_index]
+        try:
+            draft = extract_draft(reply, shot_id)
+        except ValueError as exc:
+            # 单镜草案失败不拖垮整场：记进 history 与警告，这一镜沿用计划内容，
+            # 后面还有 B3/B4 兜住真正的执行问题。
+            self.drafts_failed.append({"shot_id": shot_id, "error": str(exc)})
+            self.audit.log("draft_invalid", f"{shot_id}: {exc}", level="warning",
+                           shot=shot_id)
+            self._emit("draft_invalid", f"{shot_id} 草案无效", shot=shot_id)
+        else:
+            self.plan = merge_draft(self.plan, draft)
+            self.draft_history.append(draft.to_dict())
+            self.audit.log("draft_received",
+                           f"{shot_id}: {len(draft.actions)} 个动作 / "
+                           f"{len(draft.dialogues)} 句对白",
+                           shot=shot_id, actions=len(draft.actions),
+                           dialogues=len(draft.dialogues))
+            self._emit("draft_received", f"{shot_id} 草案已合并", shot=shot_id)
+        self._editing_index += 1
+        self._transition(DriverState.EDITING)
 
     def _step_building(self) -> None:
         """把分镜计划交给场景构建器（bpy 实现在 layer3_engine/shot_builder.py）。"""

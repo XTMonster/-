@@ -39,8 +39,12 @@ class ScriptedTransport:
         if isinstance(item, Exception):
             raise item
         if isinstance(item, dict):
+            # 单镜草案走 emit_shot_draft，计划走 emit_plan：脚本项本身不关心
+            # 阶段名，按请求的 purpose 决定工具名。
+            name = ("emit_shot_draft" if str(payload.purpose) == "editor"
+                    else PLAN_TOOL_NAME)
             call = ToolCall(id=f"c{self.calls}",
-                            function=FunctionCall(name=PLAN_TOOL_NAME,
+                            function=FunctionCall(name=name,
                                                   arguments=json.dumps(item)))
             return ChatReply(tool_calls=[call])
         return item

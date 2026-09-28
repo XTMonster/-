@@ -1,0 +1,39 @@
+{
+  "drafts": [
+    {
+      "shot_id": "shot_001",
+      "shot_type": "MLS",
+      "characters": ["char_001", "char_002"],
+      "actions": [
+        {"character_id": "char_001", "action_type": "nod",
+         "start_frame": 1, "end_frame": 72, "params": {"cycles": 2}}
+      ],
+      "dialogues": [],
+      "camera": {"side": "front"}
+    },
+    {
+      "shot_id": "shot_002",
+      "shot_type": "MCU",
+      "characters": ["char_001"],
+      "actions": [],
+      "dialogues": [
+        {"character_id": "char_001", "text": "你还在听吗。",
+         "start_frame": 10, "end_frame": 58}
+      ],
+      "camera": {"side": "front"}
+    },
+    {
+      "shot_id": "shot_003",
+      "shot_type": "CU",
+      "characters": ["char_002"],
+      "actions": [],
+      "dialogues": [
+        {"character_id": "char_002", "text": "我在。",
+         "start_frame": 10, "end_frame": 34},
+        {"character_id": "char_002", "text": "我明天就走。",
+         "start_frame": 48, "end_frame": 96}
+      ],
+      "camera": {"side": "front"}
+    }
+  ]
+}

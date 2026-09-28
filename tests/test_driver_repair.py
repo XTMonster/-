@@ -11,7 +11,11 @@ from block_director.contracts.enums import Purpose, Severity
 from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall
 from block_director.layer5_orchestrator.auditor import NullAuditor, ShotAuditor
 from block_director.layer5_orchestrator.driver import DriverLimits, PrevisDriver
-from block_director.layer5_orchestrator.offline import OfflineTransport, demo_plan_dict
+from block_director.layer5_orchestrator.offline import (
+    OfflineTransport,
+    demo_draft_dict,
+    demo_plan_dict,
+)
 from block_director.layer5_orchestrator.planner import EMIT_PLAN_TOOL_PARAMETERS
 from block_director.layer5_orchestrator.states import DriverState
 from block_director.layer5_orchestrator.tool_registry import ToolRegistry
@@ -46,12 +50,13 @@ class FakeAuditor:
 
 
 class RepairingTransport:
-    """第一次调用给计划，之后每次给一个修复用的工具调用。"""
+    """按阶段回放：计划 → 单镜草案（B1）→ 修复工具调用。"""
 
     def __init__(self, tool_name="fix_camera"):
         self.tool_name = tool_name
         self.payloads = []
         self.chat_calls = 0
+        self._editor_index = 0
 
     def chat(self, payload, timeout=120.0):
         self.chat_calls += 1
@@ -61,6 +66,14 @@ class RepairingTransport:
                             function=FunctionCall(
                                 name="emit_plan",
                                 arguments=json.dumps(demo_plan_dict(SCRIPT))))
+            return ChatReply(tool_calls=[call])
+        if payload.purpose is Purpose.EDITOR:
+            draft = demo_draft_dict(self._editor_index)
+            self._editor_index += 1
+            call = ToolCall(id=f"draft_{self.chat_calls}",
+                            function=FunctionCall(
+                                name="emit_shot_draft",
+                                arguments=json.dumps(draft, ensure_ascii=False)))
             return ChatReply(tool_calls=[call])
         call = ToolCall(id=f"fix_{self.chat_calls}",
                         function=FunctionCall(name=self.tool_name,
@@ -118,7 +131,9 @@ def test_clean_audit_finishes_without_any_repair():
     driver = _driver(transport, FakeAuditor([AuditResult(passed=True,
                                                          target="shot_001")]))
     assert driver.run_to_completion() is DriverState.DONE
-    assert transport.chat_calls == 1          # 只有计划那一次
+    # 计划 + 每镜一次单镜草案（B1），没有修复调用
+    assert transport.chat_calls == 1 + len(demo_plan_dict(SCRIPT)["shots"])
+    assert Purpose.REPAIR not in [p.purpose for p in transport.payloads]
     assert len(driver.audit_results) == 1
 
 
@@ -132,7 +147,9 @@ def test_failure_triggers_repair_then_passes():
     assert driver.run_to_completion() is DriverState.DONE
 
     purposes = [p.purpose for p in transport.payloads]
-    assert purposes == [Purpose.PLAN, Purpose.REPAIR]
+    # 计划 → 两镜草案 → 修复（§7.1 的 A → B1 → B4）
+    assert purposes == [Purpose.PLAN, Purpose.EDITOR, Purpose.EDITOR,
+                        Purpose.REPAIR]
     assert len(auditor.calls) == 2
     assert driver.audit_results[0].passed is False
     assert driver.audit_results[-1].passed is True

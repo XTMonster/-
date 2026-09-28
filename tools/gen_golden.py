@@ -1,7 +1,8 @@
 """生成派生 Golden 夹具（执行文档 v1.2 §21.4）。
 
-人工维护的是 `fixtures/mock_llm_responses/plan_simple.json`（"期望输出"的那
-一侧）；本脚本把它展开成两份派生夹具：
+人工维护的是 `fixtures/mock_llm_responses/` 里的两份"期望输出"：
+`plan_simple.json`（阶段 A 的拍摄清单）与 `drafts_simple.json`（阶段 B1 的
+逐镜草案）。本脚本把它们合并后展开成两份派生夹具：
 
 - `fixtures/expected_sdl_simple.json` —— 计划经 SDL 组装 + §5.2 校验（含帧号
   回填）后的完整 SDL；
@@ -31,6 +32,7 @@ from block_director.layer2_sdl import build_sdl, validate_sdl  # noqa: E402
 
 FIXTURES = ROOT / "fixtures"
 PLAN_FILE = FIXTURES / "mock_llm_responses" / "plan_simple.json"
+DRAFTS_FILE = FIXTURES / "mock_llm_responses" / "drafts_simple.json"
 SDL_FILE = FIXTURES / "expected_sdl_simple.json"
 TRANSCRIPT_FILE = FIXTURES / "tool_transcript_simple.jsonl"
 
@@ -41,6 +43,21 @@ USER_EDIT = {"character_id": "char_001", "position": [1.2, 0.0, 0.0]}
 
 def load_plan() -> Plan:
     return Plan.from_dict(json.loads(PLAN_FILE.read_text(encoding="utf-8")))
+
+
+def load_drafts() -> list:
+    payload = json.loads(DRAFTS_FILE.read_text(encoding="utf-8"))
+    return list(payload.get("drafts", []))
+
+
+def merged_plan() -> Plan:
+    """计划 + 逐镜草案 = 执行引擎真正吃到的计划（§7.1 的 A → B1）。"""
+    from block_director.layer5_orchestrator.editor import ShotDraft, merge_draft
+
+    plan = load_plan()
+    for draft in load_drafts():
+        plan = merge_draft(plan, ShotDraft.from_dict(draft))
+    return plan
 
 
 def expected_sdl(plan: Plan) -> dict:
@@ -69,10 +86,10 @@ def expected_transcript(plan: Plan) -> str:
 
 
 def render() -> dict:
-    plan = load_plan()
+    plan = merged_plan()
     return {
         SDL_FILE: json.dumps(expected_sdl(plan), ensure_ascii=False, indent=2) + "\n",
-        TRANSCRIPT_FILE: expected_transcript(plan),
+        TRANSCRIPT_FILE: expected_transcript(merged_plan()),
     }
 
 

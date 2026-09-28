@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import re
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict, Tuple
@@ -69,13 +70,24 @@ class FakeModel:
         self.chat_calls = 0
 
     @staticmethod
-    def reply_for(purpose: str, request_id: str = "") -> Tuple[ChatReply, int, int]:
+    def reply_for(purpose: str, request_id: str = "",
+                  text: str = "") -> Tuple[ChatReply, int, int]:
         usage = Usage(prompt_tokens=120, completion_tokens=30)
         if purpose == "plan":
             call = ToolCall(id="call_plan", function=FunctionCall(
                 name=PLAN_TOOL_NAME, arguments=json.dumps(PLAN, ensure_ascii=False)))
             return ChatReply(tool_calls=[call], usage=usage, model="fake",
                              request_id=request_id, finish_reason="tool_calls"), 1, 0
+        if purpose == "editor":
+            # 阶段 B1：逐镜草案。给个空草案即可——这里验证的是协议与链路，
+            # 场景质量由场景侧的测试负责。
+            match = re.search(r"shot_\d+", text)
+            shot_id = match.group(0) if match else PLAN["shots"][0]["shot_id"]
+            call = ToolCall(id="call_editor", function=FunctionCall(
+                name="emit_shot_draft",
+                arguments=json.dumps({"shot_id": shot_id})))
+            return ChatReply(tool_calls=[call], usage=usage, model="fake",
+                             request_id=request_id, finish_reason="tool_calls"), 0, 0
         if purpose == "repair":
             call = ToolCall(id="call_repair", function=FunctionCall(
                 name="setup_camera",
@@ -145,13 +157,15 @@ class FakeServer:
                     return
                 if self.path == "/v1/chat":              # sidecar 线协议
                     reply, _r, _d = outer.model.reply_for(
-                        str(body.get("purpose", "")), body.get("request_id", ""))
+                        str(body.get("purpose", "")), body.get("request_id", ""),
+                        text=json.dumps(body, ensure_ascii=False))
                     outer.model.chat_calls += 1
                     self._send(200, reply.to_dict())
                     return
                 if self.path == "/v1/chat/completions":  # OpenAI 兼容协议
                     reply, _r, _d = outer.model.reply_for(
-                        outer._purpose(body), "")
+                        outer._purpose(body),
+                        text=json.dumps(body, ensure_ascii=False))
                     outer.model.chat_calls += 1
                     self._send(200, outer._openai_body(reply))
                     return
@@ -165,11 +179,19 @@ class FakeServer:
     @staticmethod
     def _purpose(body: Dict[str, Any]) -> str:
         text = json.dumps(body.get("messages", []), ensure_ascii=False)
+        tool_names = [item.get("function", {}).get("name", "")
+                      for item in body.get("tools", []) or []]
+        if "emit_shot_draft" in tool_names:
+            return "editor"
+        if "emit_plan" in tool_names:
+            return "plan"
         if "分镜计划" in text:
             return "plan"
+        if "执行导演" in text:
+            return "editor"
         if "未通过校验" in text:
             return "repair"
-        if "自我审核" in text or "审核" in text and "verdict" in text:
+        if "审核" in text:
             return "review"
         return "other"
 
@@ -264,15 +286,15 @@ def test_sidecar_mode_runs_the_whole_chain(tmp_path):
     assert state is DriverState.DONE
     assert len(driver.plan.shots) == 2
     assert "shot_audit" in kinds and "llm_call" in kinds
-    # Phase 4 的预算目标（≤8 次）在真实协议上同样成立：2 镜 4 次调用
-    assert driver.snapshot()["llm_calls"] == 4
-    # 计划 → 修复 → 每镜一次自我审核：四次都走了真实 HTTP
-    assert paths.count("/v1/chat") == 4
+    # Phase 4 的预算目标（≤8 次）在真实协议上同样成立：
+    # 计划 1 + 单镜草案 2 + 修复 1 + 自我审核 2 = 6 次
+    assert driver.snapshot()["llm_calls"] == 6
+    assert paths.count("/v1/chat") == 6
     assert all(item["headers"].get("Authorization") == "Bearer secret-token"
                for item in server.requests if item["path"].startswith("/v1/"))
-    assert len(trace) == 4 and all(item["prompt"] for item in trace)
-    assert [item["purpose"] for item in trace] == ["plan", "repair",
-                                                   "review", "review"]
+    assert len(trace) == 6 and all(item["prompt"] for item in trace)
+    assert [item["purpose"] for item in trace] == [
+        "plan", "editor", "editor", "repair", "review", "review"]
     assert driver.budget.state.total_tokens > 0      # usage 在协议里传回来了
 
 
@@ -284,7 +306,7 @@ def test_direct_mode_runs_the_whole_chain(tmp_path):
         paths = server.paths()
 
     assert state is DriverState.DONE
-    assert paths.count("/v1/chat/completions") == 4
+    assert paths.count("/v1/chat/completions") == 6
     assert "/v1/chat" not in paths
     assert driver.budget.state.total_tokens > 0
 

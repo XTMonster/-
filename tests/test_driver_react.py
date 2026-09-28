@@ -29,17 +29,34 @@ class InlineThread:
 
 
 class ScriptedTransport:
-    """按脚本回放；脚本项是 ``(tool_name, args)``，``None`` 表示"模型不再调用工具"。"""
+    """按脚本回放；脚本项是 ``(tool_name, args)``，``None`` 表示"模型不再调用工具"。
+
+    单镜草案（阶段 B1）不占用脚本：它按计划里的镜头顺序自动回放，
+    这样脚本只描述"修复/精修"那几步，测试意图仍然清晰。
+    """
 
     def __init__(self, replies):
         self._replies = list(replies)
         self.calls = 0
         self.payloads = []
+        self._editor_index = 0
+        self._script_index = 0
 
     def chat(self, payload, timeout=120.0):
         self.calls += 1
         self.payloads.append(payload)
-        item = self._replies[min(self.calls - 1, len(self._replies) - 1)]
+        if str(payload.purpose) == "editor":
+            from block_director.layer5_orchestrator.offline import demo_draft_dict
+
+            draft = demo_draft_dict(self._editor_index)
+            self._editor_index += 1
+            call = ToolCall(id=f"draft_{self.calls}",
+                            function=FunctionCall(
+                                name="emit_shot_draft",
+                                arguments=json.dumps(draft, ensure_ascii=False)))
+            return ChatReply(tool_calls=[call], request_id=payload.request_id)
+        item = self._replies[min(self._script_index, len(self._replies) - 1)]
+        self._script_index += 1
         if item is None:
             return ChatReply(content="已经足够好", tool_calls=[],
                              request_id=payload.request_id)

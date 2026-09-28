@@ -12,14 +12,10 @@
       "shot_type": "MLS",
       "duration_frames": 72,
       "characters": ["char_001", "char_002"],
-      "dialogues": [],
-      "actions": [
-        {"character_id": "char_001", "action_type": "nod",
-         "start_frame": 1, "end_frame": 72, "params": {"cycles": 2}}
-      ],
+      "dialogue_ids": [],
+      "prompt": "雨夜的客厅，中远景，两人隔着茶几，窗外雨丝，冷调，固定机位",
       "axis_note": "以两人连线建立轴线",
-      "continuity_in": "开场",
-      "prompt": "雨夜的客厅，中远景，两人隔着茶几，窗外雨丝，冷调，固定机位"
+      "continuity_in": "开场"
     },
     {
       "shot_id": "shot_002",
@@ -28,14 +24,10 @@
       "shot_type": "MCU",
       "duration_frames": 96,
       "characters": ["char_001"],
-      "dialogues": [
-        {"character_id": "char_001", "text": "你还在听吗。",
-         "start_frame": 10, "end_frame": 58}
-      ],
-      "actions": [],
+      "dialogue_ids": [],
+      "prompt": "中近景，林可低声说话，手机贴着耳朵，浅景深",
       "axis_note": "保持轴线同侧",
-      "continuity_in": "承接 shot_001 的站位",
-      "prompt": "中近景，林可低声说话，手机贴着耳朵，浅景深"
+      "continuity_in": "承接 shot_001 的站位"
     },
     {
       "shot_id": "shot_003",
@@ -44,16 +36,10 @@
       "shot_type": "CU",
       "duration_frames": 120,
       "characters": ["char_002"],
-      "dialogues": [
-        {"character_id": "char_002", "text": "我在。",
-         "start_frame": 10, "end_frame": 34},
-        {"character_id": "char_002", "text": "我明天就走。",
-         "start_frame": 48, "end_frame": 96}
-      ],
-      "actions": [],
+      "dialogue_ids": [],
+      "prompt": "特写，周野停顿后开口，背景虚化，情绪克制",
       "axis_note": "反打，仍留在轴线同侧",
-      "continuity_in": "承接 shot_002 的视线方向",
-      "prompt": "特写，周野停顿后开口，背景虚化，情绪克制"
+      "continuity_in": "承接 shot_002 的视线方向"
     }
   ]
 }

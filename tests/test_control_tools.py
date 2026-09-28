@@ -159,7 +159,8 @@ def test_finish_shot_skips_the_repair_loop():
                                "shot_002", "shot_002"]
     assert len(driver.finish_history) == 2
     assert "shot_finished_with_errors" in kinds
-    assert transport.calls == 3          # 计划 1 次 + 两镜各一次往返
+    # 计划 1 + 单镜草案 1（计划里只有 shot_001）+ 两镜各一次"声明完成"往返
+    assert transport.calls == 4
 
 
 def test_finish_shot_without_a_current_shot_is_refused():

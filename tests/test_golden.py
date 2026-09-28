@@ -23,6 +23,7 @@ from block_director.layer5_orchestrator.tool_registry import ToolRegistry
 from block_director.layer6_audit.audit_logger import AuditLogger
 from block_director.layer9_persistence import iter_tool_calls, replay
 from tools.gen_golden import render
+from tools.gen_golden import load_drafts, load_plan, merged_plan
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "fixtures"
@@ -40,8 +41,20 @@ class InlineThread:
         self._target()
 
 
+class StubBuilder:
+    """满足构建器协议：B1 的草案是给执行引擎吃的，所以链路里要有构建器。"""
+
+    def __init__(self):
+        self.built = []
+
+    def build(self, plan):
+        self.built.append(plan)
+        return {"shots": len(plan.shots), "total_frames": plan.total_frames}
+
+
 def golden_plan() -> Plan:
-    return Plan.from_dict(json.loads(PLAN_FILE.read_text(encoding="utf-8")))
+    """执行引擎真正吃到的计划：阶段 A 的清单 + 阶段 B1 的逐镜草案。"""
+    return merged_plan()
 
 
 def golden_sdl(plan: Plan) -> dict:
@@ -74,6 +87,18 @@ def test_plan_builds_the_expected_sdl():
     assert golden_sdl(golden_plan()) == expected
 
 
+def test_the_plan_alone_is_a_shot_list():
+    """§7.2：阶段 A 只出拍摄清单；动作与对白来自阶段 B1 的草案。"""
+    raw = load_plan()
+    for shot in raw.shots:
+        assert shot.actions == [] and shot.dialogues == []
+    merged = merged_plan()
+    assert merged.shots[0].actions            # 草案补上了动作
+    assert merged.shots[2].dialogues          # 与对白
+    assert [shot.duration_frames for shot in raw.shots] == \
+        [shot.duration_frames for shot in merged.shots]   # 时长仍以计划为准
+
+
 def test_expected_sdl_has_three_contiguous_shots():
     sdl = golden_sdl(golden_plan())
     shots = sdl["scenes"][0]["shots"]
@@ -96,9 +121,10 @@ def test_golden_is_deterministic():
 # --------------------------------------------------------------------------- #
 def test_offline_transport_runs_the_golden_plan():
     transport = OfflineTransport(plan=json.loads(
-        PLAN_FILE.read_text(encoding="utf-8")))
+        PLAN_FILE.read_text(encoding="utf-8")), drafts=load_drafts())
     driver = PrevisDriver(transport=transport, audit=AuditLogger(),
                           script=SCRIPT_FILE.read_text(encoding="utf-8"),
+                          builder=StubBuilder(),
                           thread_factory=InlineThread)
     state = driver.run_to_completion()
     assert state.value == "DONE"

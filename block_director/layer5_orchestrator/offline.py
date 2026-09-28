@@ -15,20 +15,27 @@ from ..contracts.health import HealthStatus
 from ..contracts.knowledge import Card
 from ..contracts.messages import ChatPayload, ChatReply, FunctionCall, ToolCall
 from .planner import PLAN_TOOL_NAME
+from .editor import EDITOR_TOOL_NAME
 from .review import REVIEW_TOOL_NAME
 
 
-def demo_plan_dict(script: str) -> dict:
-    """由剧本粗略生成一份确定性计划（2 镜），用于自检与回归。"""
+def _heading_of(script: str) -> str:
     first_line = ""
     for raw in (script or "").splitlines():
         text = raw.strip()
         if text:
             first_line = text[:40]
             break
-    heading = first_line or "未命名场景"
+    return first_line or "未命名场景"
+
+
+def demo_plan_dict(script: str) -> dict:
+    """阶段 A 的确定性产物：**拍摄清单**（2 镜），不含动作与对白。
+
+    与 §7.2 的 schema 一致——每镜的细节由阶段 B1（`demo_draft_dict`）逐镜补齐。
+    """
     return {
-        "scene_heading": heading,
+        "scene_heading": _heading_of(script),
         "continuity_notes": ["离线自检模式生成，仅供链路验证"],
         "shots": [
             {
@@ -39,11 +46,7 @@ def demo_plan_dict(script: str) -> dict:
                 "duration_frames": 96,
                 "characters": ["char_001", "char_002"],
                 "dialogue_ids": [],
-                "actions": [
-                    {"character_id": "char_001", "action_type": "nod",
-                     "start_frame": 1, "end_frame": 96,
-                     "params": {"cycles": 2}},
-                ],
+                "prompt": "",
                 "axis_note": "以两人连线建立轴线",
                 "continuity_in": "开场",
             },
@@ -55,10 +58,7 @@ def demo_plan_dict(script: str) -> dict:
                 "duration_frames": 120,
                 "characters": ["char_002"],
                 "dialogue_ids": [],
-                "actions": [
-                    {"character_id": "char_002", "action_type": "sit",
-                     "start_frame": 1, "end_frame": 60, "params": {"drop": 0.2}},
-                ],
+                "prompt": "",
                 "axis_note": "保持轴线同侧",
                 "continuity_in": "承接 shot_001 的站位",
             },
@@ -66,13 +66,41 @@ def demo_plan_dict(script: str) -> dict:
     }
 
 
+#: 阶段 B1 的确定性草案（索引 = 第几个镜头）
+DEMO_DRAFTS = (
+    {"shot_id": "shot_001", "shot_type": "MLS",
+     "actions": [{"character_id": "char_001", "action_type": "nod",
+                  "start_frame": 1, "end_frame": 96, "params": {"cycles": 2}}]},
+    {"shot_id": "shot_002", "shot_type": "MCU",
+     "actions": [{"character_id": "char_002", "action_type": "sit",
+                  "start_frame": 1, "end_frame": 60, "params": {"drop": 0.2}}]},
+)
+
+
+def demo_draft_dict(index: int) -> dict:
+    """阶段 B1 的确定性草案：让离线链路的场景与拆分前**完全一致**。"""
+    if not DEMO_DRAFTS or index >= len(DEMO_DRAFTS):
+        # 计划比内置夹具长时给空草案：宁可"这一镜没有动作"，也不要重复上一个
+        # 镜头的动作——那会在场景里造出与计划不符的表演。
+        return {"shot_id": f"shot_{index + 1:03d}"}
+    draft = dict(DEMO_DRAFTS[index])
+    draft.setdefault("characters", [])
+    draft.setdefault("dialogues", [])
+    draft.setdefault("camera", {})
+    draft.setdefault("prompt", "")
+    return draft
+
+
 class OfflineTransport:
     """实现 LLMTransport 协议的离线替身。"""
 
-    def __init__(self, plan: Optional[dict] = None, fail_times: int = 0) -> None:
+    def __init__(self, plan: Optional[dict] = None, drafts: Optional[list] = None,
+                 fail_times: int = 0) -> None:
         self._plan = plan
+        self._drafts = list(drafts) if drafts is not None else None
         self.fail_times = fail_times
         self.chat_calls = 0
+        self._editor_calls = 0
         self.cancelled: List[str] = []
         self.last_payload: Optional[ChatPayload] = None
 
@@ -95,6 +123,19 @@ class OfflineTransport:
                              request_id=payload.request_id, model="offline",
                              finish_reason="tool_calls")
 
+        if payload.purpose is Purpose.EDITOR:
+            # 阶段 B1：把这一镜已有的细节（demo 计划里带着）作为确定性草案回给
+            # 驱动器。顺序与计划一致，因此离线链路完全可复现。
+            draft = self._draft_for(self._editor_calls)
+            self._editor_calls += 1
+            call = ToolCall(id=f"draft_{self._editor_calls}",
+                            function=FunctionCall(
+                                name=EDITOR_TOOL_NAME,
+                                arguments=json.dumps(draft, ensure_ascii=False)))
+            return ChatReply(content=None, tool_calls=[call],
+                             request_id=payload.request_id, model="offline",
+                             finish_reason="tool_calls")
+
         script = ""
         for message in payload.messages:
             if message.content and "<untrusted_script_content>" in message.content:
@@ -109,6 +150,23 @@ class OfflineTransport:
         )
         return ChatReply(content=None, tool_calls=[call], request_id=payload.request_id,
                          model="offline", finish_reason="tool_calls")
+
+    def _draft_for(self, index: int) -> dict:
+        """第 index 个镜头的草案。给了自定义计划就沿用它的镜号。"""
+        if self._drafts is not None and self._drafts:
+            draft = dict(self._drafts[min(index, len(self._drafts) - 1)])
+            draft.setdefault("characters", [])
+            draft.setdefault("dialogues", [])
+            draft.setdefault("camera", {})
+            draft.setdefault("prompt", "")
+            return draft
+        draft = demo_draft_dict(index)
+        shots = (self._plan or {}).get("shots", [])
+        if shots:
+            shot = shots[min(index, len(shots) - 1)]
+            draft["shot_id"] = shot.get("shot_id", draft["shot_id"])
+            draft.setdefault("shot_type", str(shot.get("shot_type", "MS")))
+        return draft
 
     def health(self, timeout: float = 2.0) -> HealthStatus:
         return HealthStatus(status="ok", version="1.2.0",

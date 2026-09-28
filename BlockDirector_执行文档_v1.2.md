@@ -865,6 +865,16 @@ v1.0 让 LLM 用 ReAct **从头"边走边搭"每一个镜头**：单镜最多 20
 
 **为什么这样更好**：绝大多数镜头（静态对话、走位、正反打）用 B1+B4 就能一次过，成本从 20 次调用降到 2–3 次；只有真正需要"边看边调"的复杂镜头才付出 ReAct 的代价。同时，结构化输出对本地模型的兼容性远好于多轮工具调用。
 
+> **实现（Phase 7）**：`layer5_orchestrator/editor.py`（纯计算）+ 驱动器里的 `EDITING` 状态。
+>
+> - **计划被收窄成"拍摄清单"**：`EMIT_PLAN_TOOL_PARAMETERS` 里去掉了 `actions` 与 `dialogues`（§7.2 的 schema 本就没有它们），只留镜号/顺序/意图/景别/时长/出场角色/轴线备注/连贯性，外加 §18.1 要求的那一句"画面描述"。20 镜的计划因此不必再塞进 20 镜的全部表演细节——这正是拆出 B1 的理由。
+> - **B1 一镜一呼**（`emit_shot_draft`，严格 schema：只允许这一镜该关心的事），产物合并回计划：`merge_draft()` 只改这一镜的动作/对白/景别/提示词，**镜号、顺序、时长仍以计划为唯一真源**（§10.2 的排片依赖它）。草案里没写的字段不会抹掉计划里的内容。
+> - **相机用相对描述**：草案里的 `camera` 只接受 `side` 与 `lens`——两者都真的被取景解算器消费（`shot_builder` 会用它）；`distance`/`height` 由 §10.6/§10.5 推导，因此**不进 schema**，避免"字段填了却不生效"。
+> - **失败不拖垮整场**：单镜草案解析失败只记 `draft_invalid` 并让这一镜沿用计划内容（后面的 B3/B4 仍会兜住执行问题），`snapshot()` 里能看到 `drafts` / `drafts_failed`。
+> - **不需要执行引擎时不做 B1**：没有构建器的运行（只出计划供检查）直接收尾，不为用不到的草案花调用。
+>
+> **离线链路与真实链路一致**：`OfflineTransport` 也按阶段回答（计划 → 每镜草案），因此 `--offline --build` 的产物与拆分前**逐项相同**（2 镜 / 216 帧 / 366 关键帧 / 机位坐标不变），而调用次数从 3 变成 5（计划 1 + 草案 2 + 审核 2）。三镜样例是 1 + 3 + 3 = 7 次，**Phase 4 的"≤8 次"仍然成立**。Golden 夹具相应拆成 `plan_simple.json`（清单）与 `drafts_simple.json`（逐镜草案），`tools/gen_golden.py` 合并后再生成本文 §21.4 那两份派生夹具。
+
 ### 7.2 分镜计划 Schema（阶段 A）
 
 ```json
@@ -2461,7 +2471,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **582 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
+`tests/` 共 **597 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2654,13 +2664,14 @@ def supports_media_type() -> bool:
 | **上下文治理（§3.5）** | `layer5_orchestrator/context_budget.py` | ✅ 窗口裁剪保留 system 与最新一条，裁剪记 `context_trimmed` 警告 |
 | **暂停/继续（§13.1）** | `driver.pause/resume`、`modal_operator.py` | ✅ 暂停不推进状态、保留已建成场景，面板有按钮 |
 | **真实协议端到端（§2.4/§2.5）** | `tests/test_protocol_end_to_end.py` | ✅ 本地假服务端同时说两套协议；两种模式跑完整链并产出同一份计划 |
+| **阶段 B1 结构化生成（§7.1）** | `layer5_orchestrator/editor.py`、`driver.py` 的 `EDITING` | ✅ 计划收窄为拍摄清单，逐镜出严格 schema 草案再合并；失败不影响整场 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 582 项全部通过 |
+| 测试套件 | `tests/` | ✅ 597 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 582 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 597 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 

@@ -29,6 +29,9 @@ class ShotPlan:
     #: 对白时间轴（镜头内局部帧）：{character_id, text, start_frame, end_frame}
     dialogues: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""                 # 交付用：喂视频模型的镜头描述（§15.5）
+    #: 相对取景请求（阶段 B1 产出）：{"side": ..., "lens": ...}。
+    #: 距离与高度由 §10.6/§10.5 推导，不在这里覆盖。
+    camera: Dict[str, Any] = field(default_factory=dict)
     axis_note: str = ""
     continuity_in: str = ""
 
@@ -48,6 +51,7 @@ class ShotPlan:
             "actions": [dict(a) for a in self.actions],
             "dialogues": [dict(d) for d in self.dialogues],
             "prompt": self.prompt,
+            "camera": dict(self.camera),
             "axis_note": self.axis_note,
             "continuity_in": self.continuity_in,
         }
@@ -67,6 +71,7 @@ class ShotPlan:
             actions=[dict(a) for a in (data.get("actions") or [])],
             dialogues=[dict(d) for d in (data.get("dialogues") or [])],
             prompt=str(data.get("prompt", "")),
+            camera=dict(data.get("camera") or {}),
             axis_note=str(data.get("axis_note", "")),
             continuity_in=str(data.get("continuity_in", "")),
         )

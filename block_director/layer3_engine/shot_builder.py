@@ -180,9 +180,13 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         start, end = ranges[shot.shot_id]
         anchor, facing = subject_anchor(shot, cast_map)
 
+        # 阶段 B1 可以给这一镜一个"相对取景请求"（§16.1 的 CameraRequest）：
+        # side 与 lens 由取景解算器消费；距离/高度仍按 §10.6/§10.5 推导。
+        request = dict(getattr(shot, "camera", None) or {})
         bundle, solution = place_camera_for_shot(
             shot.shot_id, anchor, facing=facing, shot_type=str(shot.shot_type),
-            side="front", room=spec.room)
+            side=str(request.get("side") or "front"),
+            lens=request.get("lens"), room=spec.room)
         marker = scene.timeline_markers.new(f"BD_Cut_{shot.shot_id}", frame=start)
         marker.camera = bundle.camera
         context.cameras[shot.shot_id] = bundle.camera

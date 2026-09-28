@@ -98,19 +98,33 @@ def test_builder_receives_the_parsed_plan_not_raw_json():
     assert shot.duration_frames == 96
 
 
-def test_plan_can_carry_actions():
+def test_plan_schema_is_a_shot_list():
+    """§7.2：计划是拍摄清单——动作与对白由阶段 B1 逐镜补齐。"""
+    from block_director.layer5_orchestrator.planner import EMIT_PLAN_TOOL_PARAMETERS
+
+    shot_schema = EMIT_PLAN_TOOL_PARAMETERS["properties"]["shots"]["items"]
+    assert "actions" not in shot_schema["properties"]
+    assert "dialogues" not in shot_schema["properties"]
+    assert {"shot_id", "intent", "shot_type",
+            "duration_frames"} <= set(shot_schema["required"])
+
+
+def test_draft_can_carry_actions():
+    """动作仍然进得到构建器，只是来源换成了 B1 的单镜草案。"""
     payload = {
         "shots": [{
             "shot_id": "shot_001", "order": 1, "intent": "走进画面",
             "shot_type": "MS", "duration_frames": 48,
             "characters": ["char_001"],
-            "actions": [{"character_id": "char_001", "action_type": "walk_to",
-                         "start_frame": 1, "end_frame": 40,
-                         "params": {"target_position": [2.0, 0.0, 0.0]}}],
         }]
     }
+    draft = {"shot_id": "shot_001",
+             "actions": [{"character_id": "char_001",
+                          "action_type": "walk_to",
+                          "start_frame": 1, "end_frame": 40,
+                          "params": {"target_position": [2.0, 0.0, 0.0]}}]}
     builder = RecordingBuilder()
-    driver = PrevisDriver(transport=ScriptedTransport([payload]),
+    driver = PrevisDriver(transport=ScriptedTransport([payload, draft]),
                           audit=AuditLogger(), script=SCRIPT, builder=builder,
                           thread_factory=InlineThread,
                           limits=DriverLimits(plan_attempts=1))

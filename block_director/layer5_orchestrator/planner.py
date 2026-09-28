@@ -47,42 +47,9 @@ EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = {
                                         "maximum": 3600},
                     "characters": {"type": "array", "items": {"type": "string"}},
                     "dialogue_ids": {"type": "array", "items": {"type": "string"}},
-                    "actions": {
-                        "type": "array",
-                        "maxItems": 12,
-                        "items": {
-                            "type": "object",
-                            "additionalProperties": False,
-                            "required": ["character_id", "action_type"],
-                            "properties": {
-                                "character_id": {"type": "string"},
-                                "action_type": {"type": "string",
-                                                "enum": list(ACTION_TYPES)},
-                                "start_frame": {"type": "integer", "minimum": 1},
-                                "end_frame": {"type": "integer", "minimum": 1},
-                                "params": {"type": "object"},
-                            },
-                        },
-                    },
                     "axis_note": {"type": "string"},
                     "continuity_in": {"type": "string"},
                     "prompt": {"type": "string"},
-                    "dialogues": {
-                        "type": "array",
-                        "maxItems": 12,
-                        "items": {
-                            "type": "object",
-                            "additionalProperties": False,
-                            "required": ["character_id", "text",
-                                         "start_frame", "end_frame"],
-                            "properties": {
-                                "character_id": {"type": "string"},
-                                "text": {"type": "string"},
-                                "start_frame": {"type": "integer", "minimum": 1},
-                                "end_frame": {"type": "integer", "minimum": 1},
-                            },
-                        },
-                    },
                 },
             },
         },
@@ -95,7 +62,10 @@ PLAN_SYSTEM_PROMPT = """\
 任务：把剧本拆解为镜头清单，并调用 emit_plan 工具提交。不要输出任何其他内容。
 
 要求：
-- 每个镜头必须写明意图（这个镜头要表达什么）、景别、时长预算、出场角色与对白归属
+- 这是**拍摄清单**：每个镜头给出镜号、顺序、意图、景别、时长预算与出场角色
+- **不要在计划里写动作与对白细节**——那是下一阶段（单镜结构化生成）逐镜完成的，
+  这里写进去只会让计划过长且互相打架；对白归属用 dialogue_ids 标注即可
+- prompt 写一句"画面描述"，供后续生成参考视频的提示词使用
 - 遵守 180° 轴线规则与 30° 规则：相邻镜头要么机位角度变化 > 30°，要么景别至少变化一档
 - 时长必须容纳该镜内的全部对白（中文约 3 字/秒），并留出收尾余量
 - 保持银幕方向与角色位置的连续性
@@ -136,7 +106,7 @@ def build_plan_payload(script: str, config=None,
                 f"{render_timing_table(parsed)}\n\n"
                 f"注意：每个镜头的时长必须装得下它内部的全部对白，并在末尾留出"
                 f"{DIALOGUE_TAIL_FRAMES} 帧收尾余量（规则 R011）；"
-                f"对白请写进 shots[].dialogues，帧号用**镜头内局部帧**。")
+                f"对白细节留给下一阶段，计划里只标 dialogue_ids。")
     else:
         body = script or "（空剧本）"
     knowledge = NO_KNOWLEDGE

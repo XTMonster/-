@@ -153,6 +153,14 @@ Phases 0-4 and 6 are done:
   one, and the whole chain (plan -> repair -> per-shot review) runs over each.
   Both modes produce an identical plan and the same call count - that is the
   evidence behind 2.4's "both modes are first class".
+- **Stage B1, the editor** (`layer5_orchestrator/editor.py`): the plan schema is
+  now a shot list (7.2), and each shot gets one strict-schema draft call whose
+  result is merged back - id/order/duration stay owned by the plan, and an
+  invalid draft only marks that shot instead of failing the run. B1 runs only
+  when a builder exists (nothing to execute otherwise). The offline transport
+  answers per stage too, so `--offline --build` still produces the identical
+  scene while the call count went 3 -> 5 (a 3-shot sample is 7, still within
+  Phase 4's "<= 8").
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
