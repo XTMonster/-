@@ -25,6 +25,10 @@ from block_director.layer3_engine.scene_context import get_context  # noqa: E402
 from block_director.layer3_engine.scene_state import collect_scene_state  # noqa: E402
 from block_director.layer3_engine.shot_builder import build_scene  # noqa: E402
 from block_director.layer3_engine.tool_bindings import register_scene_tools  # noqa: E402
+from block_director.layer3_engine.tool_bindings import (  # noqa: E402
+    register_all_scene_tools,
+)
+from block_director.knowledge import TOKEN_LIMIT_TOOL, estimate_tokens  # noqa: E402
 from block_director.layer5_orchestrator.tool_registry import ToolRegistry  # noqa: E402
 from block_director.utils.threading_guard import capture_main_thread  # noqa: E402
 
@@ -183,6 +187,32 @@ def t_errors_are_observations():
             "bad_type": bad_type.content}
 
 
+# --------------------------------------------------------------------------- #
+# 7. Light RAG 的 search_knowledge 也在同一个注册表里（§6.5 / §7.4）
+# --------------------------------------------------------------------------- #
+def t_knowledge_tool_is_callable():
+    _built()
+    registry = ToolRegistry()
+    register_all_scene_tools(registry)
+
+    hit = registry.execute("search_knowledge", {"query": "越轴 怎么换到另一侧"})
+    scoped = registry.execute("search_knowledge",
+                              {"query": "三分法 构图", "domain": "composition",
+                               "top_k": 2})
+    bad = registry.execute("search_knowledge", {"query": "构图",
+                                                "domain": "nope"})
+    ok = (set(registry.names()) == {"get_scene_state", "check_visibility",
+                                    "check_composition", "check_axis",
+                                    "place_character", "character_action",
+                                    "setup_camera", "search_knowledge"}
+          and hit.ok and "axis_cross" in hit.content
+          and estimate_tokens(hit.content) <= TOKEN_LIMIT_TOOL + 10
+          and scoped.ok and "[comp_thirds]" in scoped.content
+          and not bad.ok and "参数校验失败" in bad.content)
+    return {"ok": ok, "tools": registry.names(), "hit": hit.content,
+            "scoped": scoped.content, "bad": bad.content}
+
+
 def main() -> int:
     capture_main_thread()
     check("scene_state_light_vs_detailed", t_scene_state_light_vs_detailed)
@@ -191,6 +221,7 @@ def main() -> int:
     check("visibility_reports_out_of_frame", t_visibility_reports_out_of_frame)
     check("axis_violation_detected", t_axis_violation_detected)
     check("errors_are_observations", t_errors_are_observations)
+    check("knowledge_tool_is_callable", t_knowledge_tool_is_callable)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

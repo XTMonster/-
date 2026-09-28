@@ -13,6 +13,7 @@ from mathutils import Vector
 
 from ..motion.model import ACTION_TYPES
 from ..contracts.enums import SHOT_TYPES
+from ..knowledge.tool import SEARCH_KNOWLEDGE, register_knowledge_tools
 from ..observation.state import format_scene_state
 from ..layer5_orchestrator.tool_registry import ToolResult
 from ..utils.logger import get_logger
@@ -31,6 +32,7 @@ log = get_logger("tool-bindings")
 QUERY_TOOLS = ("get_scene_state", "check_visibility", "check_composition",
                "check_axis")
 ACTION_TOOLS = ("place_character", "character_action", "setup_camera")
+KNOWLEDGE_TOOLS = (SEARCH_KNOWLEDGE,)
 
 
 def _fail(text: str) -> ToolResult:
@@ -319,6 +321,12 @@ def register_action_tools(registry) -> None:
 
 @main_thread_only("register_all_scene_tools")
 def register_all_scene_tools(registry) -> None:
-    """一次注册全部场景工具（查询 + 动作）。"""
+    """一次注册全部工具（查询 + 动作 + 知识）。
+
+    知识工具不碰 bpy（语料是纯数据），但和其它工具共享同一个入口，LLM 看到的
+    工具列表因此只有一份真源。
+    """
     register_scene_tools(registry)
     register_action_tools(registry)
+    register_knowledge_tools(registry)
+    log.info("已注册知识工具：%s", ", ".join(KNOWLEDGE_TOOLS))

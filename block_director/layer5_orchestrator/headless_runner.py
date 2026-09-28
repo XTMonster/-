@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from ..layer6_audit.audit_logger import AuditLogger
+from ..knowledge import default_retriever
+from ..contracts.enums import RagBackend
 from ..settings import get_config
 from ..utils.logger import get_logger
 from ..utils.paths import default_project_root, ensure_dir
@@ -49,7 +51,8 @@ def run_headless(
                           config=config, limits=limits, builder=builder,
                           registry=registry, auditor=auditor,
                           scene_state_provider=scene_state_provider,
-                          human_gate=human_gate)
+                          human_gate=human_gate,
+                          knowledge=_make_knowledge(config))
 
     log.info("headless 运行开始（模式=%s，run_id=%s）", mode, audit.run_id)
     state = driver.run_to_completion(poll_interval=poll_interval,
@@ -63,3 +66,14 @@ def run_headless(
     summary["plan"] = driver.plan.to_dict() if driver.plan else None
     log.info("headless 运行结束：%s（镜头 %s 个）", state.value, summary["shots"])
     return summary
+
+
+def _make_knowledge(config):
+    """按 §6.1 的确定性选择逻辑装配 Light RAG 检索器。"""
+    rag = getattr(config, "rag", None)
+    if rag is None:
+        return default_retriever()
+    backend = RagBackend.DIGEST if not rag.enabled else RagBackend(str(rag.backend))
+    retriever = default_retriever(backend=backend, top_k=int(rag.top_k or 5))
+    log.info("Light RAG：%s", retriever.describe())
+    return retriever

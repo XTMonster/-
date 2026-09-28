@@ -101,6 +101,7 @@ class PrevisDriver:
         loop_detector: Optional[LoopDetector] = None,
         budget: Optional[Budget] = None,
         human_gate: Optional[HumanGate] = None,
+        knowledge: Optional[Any] = None,
         observers: Optional[List[Callable[[DriverEvent], None]]] = None,
         clock: Callable[[], float] = time.monotonic,
         thread_factory: Callable[..., Any] = _default_thread_factory,
@@ -120,6 +121,7 @@ class PrevisDriver:
             BudgetLimits(max_llm_calls=self.limits.max_llm_calls))
         self.degraded_reason = ""
         self.human_gate = human_gate
+        self.knowledge = knowledge
         self._gate_request: Optional[GateRequest] = None
         self._gate_decision: Optional[GateDecision] = None
         self._gate_resume: DriverState = DriverState.FINISHING
@@ -191,6 +193,8 @@ class PrevisDriver:
             "shot_repairs": self._repair_attempts,
             "budget": self.budget.summary,
             "loops": self.loop_detector.stats,
+            "knowledge": (self.knowledge.describe()
+                          if self.knowledge is not None else None),
             "degraded_reason": self.degraded_reason,
             "error": self.error,
         }
@@ -598,7 +602,8 @@ class PrevisDriver:
         request_id = new_request_id()
         payload: ChatPayload = build_plan_payload(self.script, self.config,
                                                   request_id=request_id,
-                                                  parsed=self.parsed_script)
+                                                  parsed=self.parsed_script,
+                                                  retriever=self.knowledge)
         self._start_llm_call("plan", payload,
                              note=f"请求分镜计划（第 {self._plan_attempts} 次尝试）")
 

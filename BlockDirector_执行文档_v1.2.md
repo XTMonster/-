@@ -782,6 +782,8 @@ SDL 是执行过程的结构化记录，同时是项目保存/加载格式。LLM
 | blocking | 站位模式、运动调度、角色距离与心理关系、群戏调度 |
 | performance | Q 版情绪表达、动作节奏、对白微动作 |
 
+> **实现（v1.2）**：语料落在 `block_director/knowledge/corpus.py`，五个域共 37 条结构化条目（`Card`，字段见 §6.3）。条目里的数字**一律以引擎实现为准**——景别画面高度/焦距取自 `cinema/framing.py` 的 `SHOT_FRAME`，构图权重取自 `cinema/composition.py` 的 `WEIGHTS`，移动速度取自 §21.5 的配置默认值；`tests/test_knowledge.py::test_corpus_matches_the_engine` 会逐项对拍，防止"知识库教模型用一套数、引擎按另一套算"。
+
 ### 6.3 知识条目结构
 
 ```json
@@ -806,6 +808,13 @@ class KnowledgeRetriever:
         return kw[:top_k]
 ```
 
+> **实现（v1.2）**：`block_director/knowledge/retriever.py`。两点与本文的差异需要记录在案：
+>
+> 1. **BM25 用自带实现**。§6.1 把依赖写成 `rank_bm25`，但实测 Blender 5.2 自带 Python **没有**该包（`tools/_probe_out/report.json` 的 `python_env.has_rank_bm25 = false`），而往 Blender 的 Python 里装第三方包正是 §6.1 想避免的风险。因此 `bm25.py` 自带一份**与 `rank_bm25.BM25Okapi` 同算法同参数**（k1=1.5、b=0.75、负 IDF 用 `epsilon*average_idf`）的实现；环境里若有 `rank_bm25`，`make_bm25()` 优先用它。两条路径算的是同一个公式，实际用哪个由 `KnowledgeRetriever.describe()["engine"]` 如实报告（调试面板与 `/health` 都能看到）。
+> 2. **token 上限用确定性估算**。环境里没有 tokenizer，`estimate_tokens()` 按"CJK 字符 1 token、拉丁文 4 字符 1 token"估算，只用于裁剪注入长度（§6.5 的 800 / 2000），不参与计费。
+>
+> 切词对中文同时产出**单字与相邻双字**（"三分法" → 三/分/法/三分/分法），否则"轴线""越轴""三分法"这类强术语会被高频单字淹没。
+
 ### 6.5 检索时机（v1.0 缺失）
 
 | 时机 | 检索内容 | 注入位置 |
@@ -815,6 +824,8 @@ class KnowledgeRetriever:
 | 运行中按需 | LLM 主动调用 `search_knowledge(query, domain)` | 工具观察结果 |
 
 `search_knowledge` 作为**普通工具**暴露给 LLM（见 §7.4），而非固定注入，使知识调用变成 agentic 行为。单次返回内容上限 800 token，超限截断并提示。
+
+> **实现（v1.2）**：三个时机都已落地——阶段 A 由 `planner.build_plan_payload(retriever=...)` 注入 `{knowledge}`（2000 token 上限）；阶段 B1 走 `KnowledgeRetriever.block_for_shot(shot_type, intent, action_types)`（800）；运行中按需由工具 `search_knowledge(query, domain, top_k)` 完成，注册点与场景工具同一个入口（`layer3_engine/tool_bindings.register_all_scene_tools`）。`rag.enabled = false` 或后端为 `digest` 时，三条路径都退化为五域摘要卡；**配置要求 vector 但传输层未确认该能力时会降级为 bm25 并写告警**，不静默失败。
 
 ---
 
@@ -2445,13 +2456,17 @@ def supports_media_type() -> bool:
 | **Layer 2 版本迁移** | `layer2_sdl/sdl_migrate.py` | ✅ 1.0/1.1 → 1.2：折时长、补结构、补角色表（§5.3） |
 | **Layer 9 持久化** | `layer9_persistence/project_io.py` | ✅ `project.bdproj`（JSON）保存/加载，顺序为迁移 → 反序列化 → 校验 |
 | **项目重建 CLI** | `tools/rebuild_project.py` | ✅ 改一镜、重出一镜：加载 SDL → 重建场景（`--export` 顺带重出交付包），全程不调 LLM |
+| **Light RAG 语料（§6.2）** | `knowledge/corpus.py` | ✅ 五域 37 条结构化 `Card`；数值与引擎逐项对拍，杜绝"教一套、做一套" |
+| **BM25 检索内核（§6.4）** | `knowledge/bm25.py` | ✅ 自带 Okapi BM25（与 `rank_bm25` 同算法同参数）；装了 `rank_bm25` 则优先用 |
+| **知识检索器（§6.1/§6.5）** | `knowledge/retriever.py` | ✅ bm25 / vector(RRF) / digest 三档；800 与 2000 token 上限；vector 能力未确认则降级并告警 |
+| **知识工具（§7.4）** | `knowledge/tool.py`、`layer3_engine/tool_bindings.py` | ✅ `search_knowledge(query, domain, top_k)` 与场景工具同一注册表 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 366 项全部通过 |
+| 测试套件 | `tests/` | ✅ 396 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
-| RAG 知识库、调试面板、replay | — | ⏳ 待办（RAG 后端与检索时机已在 §6 定稿） |
+| 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 366 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 396 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2514,7 +2529,12 @@ def supports_media_type() -> bool:
 
 > 实现中修掉一处真漂移：`CastMember` 原先用 `position`/`facing`，与 §5.1/§16.1 的 `initial_location`/`initial_facing` 不一致；同时 `serde` 会把 `Tuple[...]` 注解还原成 `list`，让"落盘再读回"的类型悄悄改变。两处都已在契约层修正，并用回归测试锁死。命令出入口同时验证：`run_headless --save <dir>` 落盘（`problems: 0`），`rebuild_project --project <dir>` 重建（`shots: 2`）。
 
-**下一步**：Phase 5 余下（调试面板 §13.3）与 Phase 7（replay §14.4、分镜列表 §13.2、Golden Test 夹具、`E_*` 错误信息打磨）；§15 的可选深度序列与全片拼接目前会显式告警而非静默空转。Layer 2 / Layer 9 到位后，"改一镜、重出一镜"已经可用。
+**Light RAG 验收**：`--offline --build` 的真实运行在快照里给出
+`{"backend":"bm25","engine":"builtin.BM25Okapi","cards":37,"top_k":5,"token_limit":800,"warnings":[]}`，计划请求的系统提示里出现 `参考资料` 与命中的条目（如 `[comp_thirds]`）。第 10 步在真实 Blender 内额外断言 `search_knowledge` 可调用、按域收敛（`三分法 构图` + `domain=composition` → `[comp_thirds]`）、按域取值非法时是参数校验失败而非异常、且单次返回不超过 800 token。纯测试另覆盖：语料完整性（id 唯一、`related` 可解析、五域非空）、语料数值与引擎对拍、切词（中文双字）、BM25 打分方向、域过滤、未知域告警、空查询、token 截断、RRF 融合、digest 兜底、vector 能力未确认时的降级告警、默认检索器不缓存错配置、以及"驱动器真的把检索器交给 Planner"的端到端断言。
+>
+> 过程中修掉一个**数据缺陷**：语料里写 `examples=("只有一个例子")`（漏了尾逗号）得到的是字符串，`list()` 会把它拆成一串单字（"角；色；起；身…"）。现在 `corpus._as_list()` 统一收敛，并有一条回归断言禁止整句字段出现单字元素。
+
+**下一步**：Phase 5 余下（调试面板 §13.3）与 Phase 7（replay §14.4、分镜列表 §13.2 + 单镜重生成、双向同步与手动修改保护、`E_*` 错误信息打磨、Golden Test 夹具）；§15 的可选深度序列与全片拼接目前会显式告警而非静默空转。Layer 2 / Layer 9 到位后"改一镜、重出一镜"已经可用；Light RAG 到位后 Planner 有了可检索的电影知识底座。Phase 4 的剩余项只剩 B1 单镜结构化生成尚未独立成一次 LLM 调用——当前由计划内嵌的镜头草案承担同一职责，是否拆分待 Phase 7 联调时按真实模型表现决定。
 
 ---
 

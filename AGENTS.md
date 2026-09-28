@@ -49,6 +49,12 @@ Phases 0-4 and 6 are done:
   `project.bdproj`, load it back (migrate -> deserialise -> validate), and
   rebuild the scene from it without any LLM call. Character fields serialise
   as `initial_location` / `initial_facing` to match the spec.
+- **Light RAG** (`block_director/knowledge/`, no `bpy`): a 37-card corpus
+  across the five spec domains, a built-in Okapi BM25 (same algorithm and
+  parameters as `rank_bm25`, which Blender's Python does not ship) with a
+  `rank_bm25` preference when present, and a retriever with bm25 / vector (RRF)
+  / digest modes plus the 800- and 2000-token injection caps. Exposed to the
+  LLM as the `search_knowledge` tool and injected into the plan prompt.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2

@@ -120,7 +120,11 @@ class OfflineTransport:
 
     def retrieve(self, query: str, domain: Optional[str] = None,
                  top_k: int = 5, timeout: float = 30.0) -> List[Card]:
-        return []
+        # 离线模式没有 sidecar，但 /health 已声明 bm25 能力，因此这里用本地
+        # 检索器兑现该承诺（§6.1 的确定性选择逻辑：bm25 不依赖 sidecar）。
+        from ..knowledge import default_retriever
+
+        return default_retriever().retrieve(query, domain, top_k)
 
     def cancel(self, request_id: str) -> None:
         self.cancelled.append(request_id)
