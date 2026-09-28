@@ -176,6 +176,7 @@ class PrevisDriver:
         self._cancel = threading.Event()
         self._call_started = 0.0
         self._pending_request_id = ""
+        self._pending_payload: Any = None      # §11.3：trace 要落完整 prompt
         self._plan_problem = ""
         self._call_purpose = "plan"
         self._shot_queue: List[str] = []
@@ -310,7 +311,8 @@ class PrevisDriver:
             self.audit.log("llm_error", str(payload), level="error",
                            request_id=self._pending_request_id)
             self.audit.log_llm(purpose, None, duration,
-                               self._pending_request_id, error=str(payload))
+                               self._pending_request_id, error=str(payload),
+                               payload=self._pending_payload)
             # 计划失败由 _step_planning 决定是否再试；修复失败则回到复核
             self._transition(DriverState.CHECKING if repairing
                              else DriverState.PLANNING)
@@ -318,7 +320,8 @@ class PrevisDriver:
 
         reply: ChatReply = payload
         self.budget.record_llm(reply.usage)
-        self.audit.log_llm(purpose, reply, duration, self._pending_request_id)
+        self.audit.log_llm(purpose, reply, duration, self._pending_request_id,
+                           payload=self._pending_payload)
 
         if repairing:
             problem = self._dispatch_tool_calls(reply, self.repair_messages)
@@ -696,6 +699,7 @@ class PrevisDriver:
             return
         self._call_purpose = purpose
         self._pending_request_id = payload.request_id
+        self._pending_payload = payload
         self._llm_calls += 1
         self._call_started = self.clock()
         self.audit.log("llm_request", note or f"请求 {purpose}",

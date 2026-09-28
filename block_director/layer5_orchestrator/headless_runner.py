@@ -22,6 +22,15 @@ from .transport_factory import make_transport
 log = get_logger("headless")
 
 
+def trace_options(config) -> Dict[str, Any]:
+    """§11.3 的 trace 内容与上限（配置里的 ``llm.trace_*``）。"""
+    llm = getattr(config, "llm", None)
+    if llm is None:
+        return {}
+    return {"trace_prompts": bool(getattr(llm, "trace_prompts", True)),
+            "trace_max_chars": int(getattr(llm, "trace_max_chars", 8000))}
+
+
 def run_headless(
     script: str = "",
     *,
@@ -45,7 +54,8 @@ def run_headless(
 
     if audit is None:
         root = Path(project_dir) if project_dir else default_project_root()
-        audit = AuditLogger(directory=ensure_dir(root / "runs"))
+        audit = AuditLogger(directory=ensure_dir(root / "runs"),
+                            **trace_options(config))
     driver = PrevisDriver(transport=transport, audit=audit, script=script,
                           parsed_script=parsed_script,
                           config=config, limits=limits, builder=builder,
@@ -77,3 +87,4 @@ def _make_knowledge(config):
     retriever = default_retriever(backend=backend, top_k=int(rag.top_k or 5))
     log.info("Light RAG：%s", retriever.describe())
     return retriever
+

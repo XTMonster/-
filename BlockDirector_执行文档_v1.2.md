@@ -1443,6 +1443,17 @@ def required_distance(subject_height, shot_type, lens,
 
 > 双日志同时也是 **replay 的数据源**（§14.4）与 **Golden Test 的夹具**（§21.4）。
 
+> **实现（Phase 7）**：`llm_trace.jsonl` 现在记的是**完整 prompt / response**：
+>
+> - `prompt` 是请求侧的消息列表（role + content，含 assistant 的 tool_calls）；`response` 是 `{content, tool_calls}`，形状固定——失败调用没有回复时也给空字段，读者不必做 None 判断。
+> - 元数据（`purpose` / `request_id` / `duration_s` / `tool_calls` / `usage` / `error`）原样保留，旧读者不受影响。
+> - **上限**：`llm.trace_max_chars`（默认 8000）逐字段截断并补 `…[truncated]`，同时在记录里写 `truncated: true`；0 表示不截断。**开关**：`llm.trace_prompts`（默认 `true`，与本节要求一致）设为 `false` 时退回"只记元数据"，不写 prompt/response。
+> - 驱动器发起调用时把 `ChatPayload` 一并交给日志（`payload=`），因此失败路径也留得下当时的请求。
+>
+> 实测（第 23 步）：离线跑一次，plan 的 trace 里能看到完整系统提示——**剧本原文与 Light RAG 的"参考资料"块都在**——以及 `emit_plan` 的完整参数；关掉开关后 prompt/response 键消失而元数据仍在；把上限压到 50 字符时 `truncated` 为真且内容以 `[truncated]` 结尾。
+>
+> **关于内容外泄**：trace 会包含剧本原文与模型输出，这正是本节要求的（它同时是 §14.4 replay 与 §21.4 Golden Test 的数据源）。不愿落原文时把 `llm.trace_prompts` 设为 `false` 即可，代价是这两条依赖 trace 的调试路径会退化。
+
 ---
 
 ## 12. 防御机制
@@ -2430,7 +2441,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **533 项**，全部通过；`tools/run_tests.ps1` 跑 **22 步**（规格与
+`tests/` 共 **543 项**，全部通过；`tools/run_tests.ps1` 跑 **23 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2450,6 +2461,8 @@ llm:
   base_url: ""
   temperature_plan: 0.7
   temperature_repair: 0.2
+  trace_prompts: true     # §11.3：trace 记录完整 prompt / response
+  trace_max_chars: 8000   # 单条记录每个字段的字符上限；0 表示不截断
 
 rag:
   enabled: true
@@ -2616,13 +2629,14 @@ def supports_media_type() -> bool:
 | **角色管理（§13.1）** | `layer7_ui/panel_cast.py`、`layer3_engine/cast_editor.py` | ✅ 列表 / 颜色 / 添加 / 删除；改动同时落到材质与场景设定，删除被镜头引用的角色会被拒绝 |
 | **运行设置与交付（§13.1）** | `layer7_ui/panel_main.py`、`layer7_ui/run_settings.py` | ✅ 供应商/模型/审核级别/预算 + 输出目录/预设/外观/后端/导出按钮；设置覆盖到配置副本并先行校验 |
 | **预算配置生效（§12.6）** | `layer5_orchestrator/budget_formula.py`、`driver.py` | ✅ `max_cost_usd` / `max_wall_minutes` 真正进账本；`shots * N` 额度公式与硬顶取更严者 |
+| **LLM Trace 完整性（§11.3）** | `layer6_audit/audit_logger.py`、`driver.py` | ✅ 逐条记录完整 prompt / response；`llm.trace_max_chars` 截断、`llm.trace_prompts` 可关 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 533 项全部通过 |
+| 测试套件 | `tests/` | ✅ 543 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 533 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 543 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2724,7 +2738,11 @@ def supports_media_type() -> bool:
 
 **运行设置与交付验收**：`apply_scene_settings()` 八条纯测试覆盖"面板选什么 → 配置变成什么"：空设置不动任何字段；供应商/模型/审核级别/预设/外观/后端/费用/时间/调用额度全部正确落地；未提供控件值的字段沿用配置文件（例如本地自定义的 `llm.model` 不被清掉）；非法枚举与非法数字**只报错不改配置**；覆盖后若撞上配置校验（depth 需要 EEVEE）也会在开跑前报出来。Blender 侧另有三条：面板字段真的进配置、三个叠加开关能覆盖配置默认值、导出算子在没有计划时明确拒绝。
 
-**当前仍未实现**：`llm_trace.jsonl` 只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可用配置开关补上。另有两处**有意的差异**已在正文写明：§13.4 的"违规元素红色闪烁"目前是静态红框（闪烁需要逐帧重绘，收益低），§9.4 的角色标签是真实对象（因此必须 `hide_render`），与 GPU 叠加层是两套机制。
+**LLM Trace 完整性验收（第 23 步）**：四项断言全绿——plan 的 trace 里同时有完整系统提示（**剧本原文与 Light RAG 的"参考资料"块**）与 `emit_plan` 的完整参数，且 `truncated` 为假；元数据（`tool_calls` / `usage` / `duration_s` / `error` / `run_id`）一条不少；`trace_prompts=False` 时 prompt/response 键消失而元数据仍在；`trace_max_chars=50` 时 `truncated` 为真且字段以 `[truncated]` 结尾。另有 10 条纯测试覆盖消息/回复的转换、形状固定（失败调用给空字段）、上限为 0 表示不截断等。
+
+至此 §11.3 的"记录完整 prompt / response"已如实满足，此前那条"元数据版"的降级不再存在。
+
+**仍存在的有意差异**（都在正文写明，不是遗漏）：§13.4 的"违规元素红色闪烁"目前是静态红框（闪烁需要逐帧重绘，收益低）；§9.4 的角色标签是真实对象（因此必须 `hide_render`），与 GPU 叠加层是两套机制。
 
 至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 

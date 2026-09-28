@@ -18,6 +18,7 @@ from ..layer7_ui.run_settings import apply_scene_settings, collect_settings
 from ..utils.logger import get_logger
 from ..utils.paths import default_project_root, ensure_dir
 from .driver import PrevisDriver
+from .headless_runner import trace_options
 from .runtime import clear_active, get_active, set_active
 from .states import DriverState
 from .transport_factory import TransportUnavailable, make_transport
@@ -81,7 +82,8 @@ class BLOCKDIRECTOR_OT_run_previs(Operator):
             return {'CANCELLED'}
 
         run_dir = ensure_dir(default_project_root() / "runs")
-        audit = AuditLogger(directory=run_dir, echo=True)
+        audit = AuditLogger(directory=run_dir, echo=True,
+                            **trace_options(config))
         driver = PrevisDriver(
             transport=transport,
             audit=audit,

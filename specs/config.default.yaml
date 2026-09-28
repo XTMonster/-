@@ -14,6 +14,8 @@ llm:
   base_url: ''
   temperature_plan: 0.7
   temperature_repair: 0.2
+  trace_prompts: true
+  trace_max_chars: 8000
 rag:
   enabled: true
   backend: bm25

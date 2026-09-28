@@ -15,13 +15,58 @@ import uuid
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Deque, Dict, List, Optional
+from typing import Any, Deque, Dict, List, Optional, Tuple
 
 from ..utils.logger import get_logger
 
 log = get_logger("audit")
 
 VALID_LEVELS = ("debug", "info", "warning", "error")
+
+#: trace 里单条记录每个字段的默认字符上限（§11.3 / §14.1）
+DEFAULT_TRACE_MAX_CHARS = 8000
+TRUNCATION_MARK = "…[truncated]"
+
+
+def render_messages(payload: Any) -> List[Dict[str, str]]:
+    """把请求侧的消息列表压成可落盘的 ``[{role, content}]``。"""
+    if payload is None:
+        return []
+    rendered: List[Dict[str, str]] = []
+    for message in getattr(payload, "messages", []) or []:
+        role = str(getattr(message, "role", "") or "")
+        content = getattr(message, "content", None)
+        item: Dict[str, str] = {"role": role,
+                                "content": content if isinstance(content, str)
+                                else json.dumps(content, ensure_ascii=False)}
+        tool_calls = getattr(message, "tool_calls", None)
+        if tool_calls:
+            item["tool_calls"] = json.dumps(
+                [{"name": call.function.name,
+                  "arguments": call.function.arguments}
+                 for call in tool_calls], ensure_ascii=False)
+        rendered.append(item)
+    return rendered
+
+
+def render_reply(reply: Any) -> Dict[str, Any]:
+    """把回复压成可落盘的 ``{content, tool_calls}``。"""
+    if reply is None:
+        return {}
+    content = getattr(reply, "content", None)
+    calls = [{"name": call.function.name,
+              "arguments": getattr(call.function, "arguments", "")}
+             for call in getattr(reply, "tool_calls", []) or []]
+    return {"content": content if isinstance(content, str)
+            else json.dumps(content, ensure_ascii=False) if content else "",
+            "tool_calls": calls}
+
+
+def truncate_text(text: str, limit: int) -> Tuple[str, bool]:
+    """按字符数截断，返回 ``(文本, 是否截断过)``；``limit<=0`` 表示不截断。"""
+    if limit <= 0 or len(text) <= limit:
+        return text, False
+    return text[:limit] + TRUNCATION_MARK, True
 
 
 @dataclass
@@ -51,10 +96,14 @@ class AuditLogger:
     """
 
     def __init__(self, directory: Optional[Path] = None, run_id: Optional[str] = None,
-                 keep: int = 200, echo: bool = False) -> None:
+                 keep: int = 200, echo: bool = False,
+                 trace_prompts: bool = True,
+                 trace_max_chars: int = DEFAULT_TRACE_MAX_CHARS) -> None:
         self.run_id = run_id or uuid.uuid4().hex[:12]
         self.directory = Path(directory) if directory else None
         self.echo = echo
+        self.trace_prompts = bool(trace_prompts)
+        self.trace_max_chars = int(trace_max_chars)
         self._recent: Deque[AuditEvent] = deque(maxlen=keep)
         self._llm_calls = 0
         self._tool_calls = 0
@@ -86,8 +135,14 @@ class AuditLogger:
         return event
 
     def log_llm(self, purpose: str, reply: Any, duration_s: float = 0.0,
-                request_id: str = "", error: str = "") -> AuditEvent:
-        """记录一次 LLM 调用；``reply`` 允许是 ChatReply 或原始 dict。"""
+                request_id: str = "", error: str = "",
+                payload: Any = None) -> AuditEvent:
+        """记录一次 LLM 调用；``reply`` 允许是 ChatReply 或原始 dict。
+
+        §11.3：trace 记的是**完整 prompt / response**。``payload`` 是请求侧
+        （``ChatPayload``），内容按 ``trace_max_chars`` 截断并在记录里标出
+        ``truncated``；``trace_prompts=False`` 时退回只记元数据。
+        """
         self._llm_calls += 1
         usage = getattr(reply, "usage", None)
         tool_names = [tc.function.name for tc in getattr(reply, "tool_calls", []) or []]
@@ -101,6 +156,27 @@ class AuditLogger:
             "usage": usage.to_dict() if usage is not None else None,
             "error": error,
         }
+        if self.trace_prompts:
+            messages = render_messages(payload)
+            answer = render_reply(reply)
+            # 形状固定：失败调用没有回复时也给空字段，读者不必做 None 判断
+            answer.setdefault("content", "")
+            answer.setdefault("tool_calls", [])
+            limit = self.trace_max_chars
+            truncated = False
+            for item in messages:
+                item["content"], cut = truncate_text(item["content"], limit)
+                truncated = truncated or cut
+            for item in answer.get("tool_calls", []):
+                item["arguments"], cut = truncate_text(item.get("arguments", ""),
+                                                       limit)
+                truncated = truncated or cut
+            answer["content"], cut = truncate_text(answer.get("content", ""),
+                                                   limit)
+            truncated = truncated or cut
+            record["prompt"] = messages
+            record["response"] = answer
+            record["truncated"] = truncated
         if self.directory is not None:
             self._append(self.trace_path, record)
         event = AuditEvent(kind="llm_call", message=f"{purpose} 调用完成",

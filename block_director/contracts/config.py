@@ -66,6 +66,8 @@ class LLMConfig:
     base_url: str = ""
     temperature_plan: float = 0.7
     temperature_repair: float = 0.2
+    trace_prompts: bool = True        # §11.3：trace 记录完整 prompt/response
+    trace_max_chars: int = 8000       # 单条记录的字段上限（§14.1 的"可配置上限"）
 
 
 @dataclass
@@ -200,6 +202,10 @@ class AppConfig:
                             ("temperature_repair", self.llm.temperature_repair)):
             if not 0.0 <= value <= 2.0:
                 err("CFG_006", f"llm.{name}", f"温度必须在 [0, 2] 内（当前 {value}）")
+        if self.llm.trace_max_chars < 0:
+            err("CFG_008", "llm.trace_max_chars",
+                f"trace 字段上限不能为负（当前 {self.llm.trace_max_chars}）；"
+                f"0 表示不截断")
         if self.rag.top_k <= 0:
             err("CFG_007", "rag.top_k", "检索条数必须为正整数")
         if self.orchestration.max_repair_attempts < 0:

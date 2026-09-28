@@ -131,6 +131,13 @@ Phases 0-4 and 6 are done:
   it, and `max_llm_calls_per_scene_formula` (`"shots * 6"`) is applied once the
   plan is known - taking the stricter of the formula and the static ceiling, so
   the Phase 4 "<= 8 calls" target cannot be silently exceeded.
+- **LLM trace** (`layer6_audit/audit_logger.py`): records the full prompt and
+  response per call, as 11.3 requires - `prompt` is the rendered message list
+  and `response` is `{content, tool_calls}` with a fixed shape even for failed
+  calls. Metadata stays as it was. `llm.trace_max_chars` truncates each field
+  (marking `truncated: true`, 0 = no cap) and `llm.trace_prompts=false` falls
+  back to metadata only - the trace carries script text, so that switch is the
+  escape hatch.
 
 Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
 loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
@@ -140,7 +147,7 @@ dialogue timing and coreference) is done.
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all twenty-one checks: spec + golden drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all twenty-three checks: spec + golden drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
@@ -151,7 +158,7 @@ Test against the expected SDL, and the scene-sync / single-shot regeneration
 round trip, and the shot list / debug panel checks.
 It also covers the viewport overlay and the path-drawing tool, and the depth
 sequence plus full concatenation.
-Plus the extended tool layer and cast management.
+Plus the extended tool layer, cast management, and the LLM trace contents.
 
 The end-to-end commands are:
 
