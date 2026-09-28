@@ -14,6 +14,30 @@ from .shot_builder import (
     ShotBuildResult,
     build_scene,
 )
+from .scene_sync import (
+    SYNC_ID_KEY,
+    USER_ANIMATED_KEY,
+    SceneSynchronizer,
+    SyncRecord,
+    get_synchronizer,
+    is_user_animated,
+    mark_user_animated,
+    note_build,
+    reset_synchronizer,
+    suppress_sync,
+)
+from .shot_regenerator import (
+    ShotRegenError,
+    clear_keyframes_in_range,
+    regenerate_shot,
+    shot_ranges,
+)
 
 __all__ = ["build_scene", "BpySceneBuilder", "SceneSpec", "CastMember",
-           "BuildSummary", "ShotBuildResult"]
+           "BuildSummary", "ShotBuildResult",
+           "SceneSynchronizer", "SyncRecord", "suppress_sync",
+           "SYNC_ID_KEY", "USER_ANIMATED_KEY", "mark_user_animated",
+           "is_user_animated", "get_synchronizer", "reset_synchronizer",
+           "note_build",
+           "regenerate_shot", "shot_ranges", "clear_keyframes_in_range",
+           "ShotRegenError"]

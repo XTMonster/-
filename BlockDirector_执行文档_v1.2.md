@@ -1055,6 +1055,14 @@ def suppress_sync(synchronizer):
 
 任何由插件发起的场景写入都包在 `with suppress_sync(sync):` 中。
 
+> **实现（Phase 7）**：`layer3_engine/scene_sync.py` + `layer3_engine/shot_regenerator.py` + `layer7_ui/panel_shots.py`。三处必须记录在案：
+>
+> 1. **判据是"基线比较"，回调只是加速器**。只靠 `_applying` 标志不够——Blender 会合帧，回调可能被推迟甚至吞掉。因此插件每次写完场景都把当时各对象的变换记为**基线**（`note_build()`，构建结束时自动调用），用户改动由"当前变换 ≠ 基线"判定；`depsgraph_update_post` 只用来尽早发现谁被碰过（`touched_ids()`）。
+> 2. **基线按"对象名"存，不按 `bd_sdl_id` 存**。`bd_sdl_id` 是**逻辑 id**：一个角色身上有多个对象共享它（角色根 + 标签），按 id 存会互相覆盖，把干净场景误判成 dirty（这是实现时真实踩到的坑——第一版 `dirty_ids()` 在没动任何东西时就返回了两个角色）。同理，回读用户摆位必须以**角色根**为准，读标签会拿到跟着头走的偏移坐标。
+> 3. **`bd_user_animated` 的保护粒度是"角色"**。只要该角色任一部件被标记，这一镜就整段跳过动作重烘焙，并在返回结果与 UI 里说明原因；比按通道跳过保守，但"宁可少改、不可误改"符合 §8.3 的意图。
+>
+> 单镜重生成（§13.2 的"重生成此镜"）只做三件事：先 `sync_from_blender()` 回读用户改动 → 换掉**这一镜**的相机与剪切标记 → 只在该镜帧范围内重烘动作（`clear_keyframes_in_range`，别的镜头的关键帧一个不差）。完成后由用户手动触发的改动会自动进入下一次回读。
+
 ### 8.4 集合与渲染隔离
 
 - `BlockDirector/Content`：参与渲染的白模内容。
@@ -1276,6 +1284,8 @@ def schedule_cuts(scene):
 
 > **实测确认（架构审核）**：`marker.camera` 绑定在 Blender 5.2 上确实生效——`frame_set()` 会把 `scene.camera` 切到该帧对应的 marker 相机，渲染结果随之改变。对照实测：A 机位平均亮度 0.435、B 机位 0.0003；依靠 marker 绑定渲染帧 5 得 0.435（A）、帧 15 得 0.0003（B），且 `scene.camera` 同步切换为对应相机。因此 CutManager 的机制成立；`frame_change_post` 显式切机位作为兜底，两套实测均可用。
 
+> **实现（Phase 7）**：排片规则抽到不依赖 bpy 的 `block_director/cinema/schedule.py`（`shot_ranges()` / `total_frames()`），构建器、单镜重生成、SDL 回填都读它。抽出来的直接原因是单镜重生成也要算"这一镜是第几帧到第几帧"，而当时那段 `cursor` 逻辑写在 `shot_builder` 里、只有 Blender 内才能跑；现在它是纯函数，`tests/test_schedule.py` 覆盖连续区间、零/负时长（按 1 帧兜底）、空计划与"按计划顺序而非 id 顺序"。
+
 ### 10.3 轴线控制器
 
 ```python
@@ -1483,6 +1493,8 @@ def required_distance(subject_height, shot_type, lens,
 | 操作 | 定位、重生成此镜、查看审核结果 |
 
 支持一键"重生成此镜"——这是"AI 视频生成不理想 → 回头调整某一镜预演"迭代闭环的入口。没有这个界面，用户只能整场重跑，成本不可接受。
+
+> **实现（Phase 7）**：`layer7_ui/panel_shots.py` 提供 `BlockDirector > 分镜列表`（默认折叠）：每行是 `镜号 / 景别 / 时长`，行尾一个"重生成此镜"按钮（`blockdirector.regenerate_shot`），并在检测到手动改动时提示"检测到手动改动：…"。表格的其余列（缩略图、状态、意图摘要）与"查看审核结果"仍未做——它们依赖首帧缩略图与审核结果的可视化，留到 Phase 7 收尾。**"重生成此镜"的行为本身已完整实现并测试**（只动这一镜 + 保留用户改动，见 §8.3）。
 
 ### 13.3 调试面板（默认折叠）
 
@@ -2331,7 +2343,7 @@ files = "读写项目目录、配置目录与导出目录"
 
 ### 21.4.2 现有测试规模
 
-`tests/` 共 **428 项**，全部通过；`tools/run_tests.ps1` 跑 **16 步**（规格与
+`tests/` 共 **433 项**，全部通过；`tools/run_tests.ps1` 跑 **17 步**（规格与
 Golden 夹具漂移、pytest、Blender 内契约冒烟，以及 13 个真实 Blender 集成/
 回归检查）。运行方式：`python -m pytest` 或 `powershell -ExecutionPolicy
 Bypass -File tools/run_tests.ps1`；一致性检查：`python tools/gen_specs.py
@@ -2503,13 +2515,16 @@ def supports_media_type() -> bool:
 | **知识工具（§7.4）** | `knowledge/tool.py`、`layer3_engine/tool_bindings.py` | ✅ `search_knowledge(query, domain, top_k)` 与场景工具同一注册表 |
 | **replay 模式（§14.4）** | `layer9_persistence/replay.py`、`tools/replay_project.py` | ✅ 不调 LLM：读审计日志 → 按计划建场景 → 顺序重放工具调用；`--export` 顺带重出交付包 |
 | **Golden Test（§21.4）** | `fixtures/*`、`tools/gen_golden.py`、`tests/test_golden.py`、`tools/blender_tests/test_golden.py` | ✅ 人工计划 + 派生 SDL/工具记录；纯 Python 与 Blender 两侧逐项比对，`--check` 防漂移 |
+| **双向同步（§8.3）** | `layer3_engine/scene_sync.py` | ✅ 基线比较判 dirty + `depsgraph_update_post` 加速 + `suppress_sync` 写抑制 + `bd_user_animated` 保护 |
+| **单镜重生成（§13.2）** | `layer3_engine/shot_regenerator.py`、`layer7_ui/panel_shots.py` | ✅ 只换这一镜的相机与动作、其余镜头一个不差；回读用户摆位后再重建 |
+| **排片器单一真源（§10.2）** | `cinema/schedule.py` | ✅ 构建 / 单镜重生成 / SDL 回填共用一套帧号推导，纯函数可单测 |
 | **夹具** | `fixtures/*.fountain` | ✅ 咖啡馆（2 场/2 人）、天台四人、审讯室（对白密集） |
-| 测试套件 | `tests/` | ✅ 428 项全部通过 |
+| 测试套件 | `tests/` | ✅ 433 项全部通过 |
 | 环境探针与实测报告 | `tools/probe_*.py`、`tools/_probe_out/*.json` | ✅ 已在真实 Blender 上执行 |
 | 架构可行性审核 | `tools/audit_architecture.py`、`tools/_probe_out/audit_report.json` | ✅ 11 项检查：10 PASS / 1 WARN / 0 FAIL |
 | 调试面板、replay、分镜列表 UI、单镜重生成、Golden Test | — | ⏳ Phase 7 待办 |
 
-**已验证的运行环境**：系统 Python 3.10.11（`pytest` 428 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
+**已验证的运行环境**：系统 Python 3.10.11（`pytest` 433 项全绿）与 Blender 5.2.0 LTS 自带 Python 3.13.13（契约层导入、配置校验、序列化、引擎标识映射、中文错误信息、主线程守卫均正常）。
 
 **Phase 0 验收（§20 DoD）**：headless 空转状态机实测 `{"state": "DONE", "shots": 2, "total_frames": 216}`，审计日志与 LLM Trace 正常落盘；插件作为 addon 的启用/卸载经实测无残留（面板、算子、场景属性均被正确注销）。
 
@@ -2587,7 +2602,19 @@ def supports_media_type() -> bool:
 
 纯测试另覆盖 16 项：缺日志/坏行的容错、完整计划与"只有 shots"的旧日志、后写的计划获胜、步骤顺序与参数、§14.4 伪代码日志形状兼容、控制工具与未知工具跳过、工具失败上报、`runs/` 与项目根两种日志位置。
 
-**当前仍未实现**：Phase 5 的调试面板（§13.3）、Phase 7 的分镜列表 + 单镜重生成（§13.2）、双向同步与手动修改保护（§8.3）、§15.6/§15.7 的可选深度序列与全片拼接（后者目前显式告警）。`llm_trace.jsonl` 目前只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可在 Phase 7 用配置开关补上。
+**双向同步与单镜重生成验收（第 17 步）**：在真实 Blender 内八项断言全绿：
+1. 干净场景 `dirty_ids() == []`，用户把角色挪动 1.5 单位后立刻变成 `["char_001"]`；
+2. 插件自己的写入不算用户改动（写抑制生效，`applying` 窗口外恢复 `False`）；
+3. `sync_from_blender()` 把新摆位与偏航回读进 `SceneSpec`（`(2.5, -0.5, 0)` 与朝向 `+X`），未改动的角色一字不变；
+4. 重生成 `shot_002` 之后，**用户挪过的 `char_002` 仍在 `(3.0, 0.5, 0)`**、`shot_001` 的相机没动、`char_001` 的关键帧集合**一个不差**、重生成报告的帧范围与排片一致（97–216）；
+5. 打过 `bd_user_animated` 的角色整段保护：重生成前后关键帧数完全相同，结果里标出 `protected: ["char_001"]` 并附原因；
+6. 未知镜头抛 `ShotRegenError`，消息里同时给出错的镜号与可用镜号；
+7. 单例路径（UI/算子用的那个同步器）在 `build_scene()` 之后基线已记录，改动可被检出；
+8. 分镜列表模块能被干净地注册/注销（算子、面板、场景属性全部摘除，`depsgraph_update_post` 回调同步卸载）。
+
+**当前仍未实现**：Phase 5 的调试面板（§13.3）；分镜列表尚缺缩略图 / 状态 / 意图三列（"重生成此镜"本身已完整可用，见上）；§15.6/§15.7 的可选深度序列与全片拼接（后者目前显式告警）。`llm_trace.jsonl` 目前只记用途/token/耗时，**未记完整 prompt/response**（§11.3 的原话是"完整 prompt / response"）——这是为实现时避免日志体积与脚本内容外泄所做的取舍，需要时可在 Phase 7 用配置开关补上。
+
+至此 Phase 7 的 DoD 三条全部兑现：**GUI 改角色位置后重生成单镜、手动修改被保留**（第 17 步 4–5 项）、**replay 后场景与原始一致**（第 15 步）、**Golden Test 全绿**（第 16 步）。
 
 **Golden Test 暴露并已修掉的取景/评分缺陷**
 

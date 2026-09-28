@@ -18,6 +18,7 @@ import bpy
 
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
+from ..cinema.schedule import shot_ranges, total_frames
 from ..motion.model import ActionRequest
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
@@ -82,7 +83,7 @@ class BuildSummary:
         }
 
 
-def _subject_anchor(shot: ShotPlan, cast: Dict[str, CastMember]
+def subject_anchor(shot: ShotPlan, cast: Dict[str, CastMember]
                     ) -> Tuple[Tuple[float, float, float], Tuple[float, float, float]]:
     """取镜头内角色的平均位置与首个角色的朝向。"""
     positions = [cast[cid].initial_location for cid in shot.characters
@@ -97,7 +98,7 @@ def _subject_anchor(shot: ShotPlan, cast: Dict[str, CastMember]
     return (x, y, 0.0), facing
 
 
-def _action_requests(shot: ShotPlan, shot_start: int,
+def action_requests(shot: ShotPlan, shot_start: int,
                      cast: Dict[str, CastMember],
                      warnings: List[str]) -> List[ActionRequest]:
     """把计划里的动作转成全局帧号的动作请求。"""
@@ -173,12 +174,11 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                           for shot in plan.shots}
     context.current_shot_id = plan.shots[0].shot_id if plan.shots else ""
 
-    cursor = 1
+    ranges = shot_ranges(plan)
     motion_requests: Dict[str, List[ActionRequest]] = {}
     for shot in plan.shots:
-        start = cursor
-        end = cursor + max(shot.duration_frames, 1) - 1
-        anchor, facing = _subject_anchor(shot, cast_map)
+        start, end = ranges[shot.shot_id]
+        anchor, facing = subject_anchor(shot, cast_map)
 
         bundle, solution = place_camera_for_shot(
             shot.shot_id, anchor, facing=facing, shot_type=str(shot.shot_type),
@@ -197,9 +197,9 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                                                            bundle.camera)
 
         shot_warnings = list(solution.warnings)
-        requests = _action_requests(shot, start, cast_map, shot_warnings)
+        requests = action_requests(shot, start, cast_map, shot_warnings)
         shot_warnings.extend(
-            thirty for thirty in _conflict_warnings(requests, shot.shot_id))
+            thirty for thirty in conflict_warnings(requests, shot.shot_id))
         for request in requests:
             motion_requests.setdefault(request.character_id, []).append(request)
 
@@ -213,7 +213,6 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             warnings=shot_warnings))
         summary.cameras += 1
         summary.warnings.extend(shot_warnings)
-        cursor = end + 1
 
     for character_id, requests in motion_requests.items():
         character = characters.get(character_id)
@@ -230,9 +229,12 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         summary.keyframes += result.keyframes
 
     scene.frame_start = 1
-    scene.frame_end = max(cursor - 1, 1)
+    scene.frame_end = max(total_frames(plan), 1)
     scene.frame_set(1)
     set_context(context)
+    # §8.3：把这次插件写入记为基线，之后才分得清"哪些是用户改的"。
+    from .scene_sync import note_build
+    note_build()
     summary.shots = len(plan.shots)
     summary.total_frames = scene.frame_end
     log.info("场景构建完成：%d 镜 / %d 角色 / %d 相机 / %d 关键帧 / 共 %d 帧",
@@ -241,7 +243,7 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     return summary
 
 
-def _conflict_warnings(requests: Sequence[ActionRequest],
+def conflict_warnings(requests: Sequence[ActionRequest],
                        shot_id: str) -> List[str]:
     from ..motion.model import check_conflicts
     return [f"{shot_id}: {problem}" for problem in check_conflicts(requests)]
