@@ -36,42 +36,50 @@ if str(ROOT) not in sys.path:
 
 
 #: rk_id -> (expected, sample_ref). "expected" is the acceptance line from the
-#: spec; sample_ref names where it is measured (probe / test) or "P<n> pending".
+#: spec; sample_ref 必须**点名**度量它的探针/用例（§B.2 L5），并且这些路径
+#: 必须真的存在——`tests/test_rks_sample_refs.py` 会把它们逐条对拍文件系统，
+#: 免得它在实现换文件之后退化成一句"曾经有过的计划"。
 RK_TABLE = [
     ("RK-1", "每个启用标签的角色恰好 1 对 BD_Label_*，ink >= 200 px",
-     "P12 tools/blender_tests/test_label_layout.py (pending)"),
+     "tools/blender_tests/test_label_layout.py [rk1_one_pair_per_character, "
+     "rk1_ink_stroke_and_components]"),
     ("RK-2", "标签配对交叠率 <= 5%",
-     "P12 tools/blender_tests/test_label_layout.py (pending)"),
+     "tools/blender_tests/test_label_layout.py [rk2_overlap_and_offsets]"),
     ("RK-3", "对视夹角 <= 35 度，过肩遮挡 >= 5%",
-     "P11 tools/blender_tests/test_scene_contract.py (pending)"),
+     "tools/blender_tests/test_scene_contract.py [rk3_two_characters_face_each_other, "
+     "rk3_over_the_shoulder_occludes_the_background]"),
     ("RK-4", "eye_protrusion in [0.012, 0.020]，左右眼各 >= 1 簇 >= 9 px",
-     "P10 probe (pending)"),
+     "tools/blender_tests/test_character_geometry.py [rk4_eyes_render_as_two_clusters, "
+     "rk4_input_contract]"),
     ("RK-5", "相邻采样帧标签高度变化率 <= 5%",
-     "P12 tools/blender_tests/test_label_layout.py (pending)"),
+     "tools/blender_tests/test_label_layout.py [rk5_label_size_is_continuous]"),
     ("RK-6", "站立 min_z in [-0.02, +0.02]，行走 >= -0.02",
-     "P12 tools/blender_tests/test_phase2_motion.py (pending)"),
+     "tools/blender_tests/test_phase2_motion.py [rk6_no_floating_no_sinking, "
+     "rk6_missing_mesh_is_a_failure]"),
     ("RK-7", "声明 / pin 前原始响应 / pin 后计划三方一致",
-     "P11 tests (pending)"),
+     "tests/test_dialogue_three_way.py [RK-7]"),
     ("RK-8", "躯干主惯性轴与 +Z 夹角 = 目标倾角 +-3 度",
-     "P12 probe (pending)"),
+     "tools/blender_tests/test_phase2_motion.py [rk8_body_tilt_matches_the_registered_angle]"),
     ("RK-9", "operator 路径注入 builder，产物与 CLI 一致",
-     "P9.5 tools/blender_tests/test_operator_end_to_end.py (pending)"),
+     "tools/blender_tests/test_operator_end_to_end.py [rk9_operator_path_builds_and_exports]"),
     ("RK-10", "构图门通过率 >= 70%（分母 = 非空且非 ELS/LS）",
-     "P16 (pending)"),
+     "tools/blender_tests/test_composition_gate.py "
+     "[rk10_gate_passes_and_threshold_has_one_source, "
+     "rk10_breaking_the_framing_drops_the_rate]"),
     ("RK-11", "声明 N 镜 -> 产出 N 镜；总帧数 == sum(frames_from_seconds)",
-     "P13 tests/test_shotlist_render.py (pending)"),
+     "tests/test_shotlist_render.py [RK-11]"),
     ("RK-12", "重放产物与入库基线逐字段一致，零 LLM 调用",
-     "P9.4 tools/blender_tests/test_replay.py"),
+     "tools/blender_tests/test_replay.py [RK-12]"),
     ("RK-13", "K1-K4 + Q0-Q7 + E1-E3",
-     "P14 (pending)"),
+     "tools/holdout_score.py [Q0-Q7 由 fixtures 的 held-out 判分；人审 10-15% 未完成]"),
     ("RK-14", "头球可见比例 >= 99%；neck_gap = 0 +- 0.005",
-     "P10 probe (pending)"),
+     "tools/blender_tests/test_character_geometry.py [rk14_head_is_not_occluded]"),
     ("RK-15", "含头部景别上边距 >= 8% 画面高",
-     "P10 probe (pending)"),
+     "tools/blender_tests/test_character_geometry.py [rk15_headroom_is_at_least_eight_percent]"),
     ("RK-16", "群众/特效可见性：掩膜内 median|delta| >= 0.05，外侧 < 1/255",
-     "P12 tools/blender_tests/test_crowd_vfx.py (pending)"),
+     "tools/blender_tests/test_crowd_vfx.py [rk16_crowd_visibility]"),
     ("RK-17", "同参数两次运镜逐帧差 <= 1e-6",
-     "P12 tools/blender_tests/test_camera_motion.py (pending)"),
+     "tools/blender_tests/test_camera_motion.py [rk17_camera_determinism]"),
     ("RK-18", "llm_calls <= max(ceiling, formula)；retrieval_calls <= (2+N)*lanes",
      "P9.4 tests/test_budget_gate.py + audit_log.jsonl 逐次计数"),
     ("RK-19", "相邻两镜同角色银幕方向翻转（两镜都显式声明）必须报 R019",
