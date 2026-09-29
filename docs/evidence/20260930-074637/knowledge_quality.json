@@ -1,0 +1,55 @@
+{
+  "run_id": "20260930-074637",
+  "overall": "not_measured",
+  "holdout_entries": 0,
+  "index_edges": 143,
+  "metrics": [
+    {
+      "id": "Q0",
+      "status": "pass",
+      "note": "rejects/raw <= 5% 且 processed == total",
+      "source": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
+      "raw_edges": 574,
+      "valid_unique": 143,
+      "duplicates": 431,
+      "rejects": 0,
+      "rejects_file_lines": 0,
+      "processed_chunks": 122,
+      "total_chunks": 122,
+      "reject_ratio": 0.0
+    },
+    {
+      "id": "Q1-Q7",
+      "status": "not_measured",
+      "note": "held-out 为空：Q1–Q7 无法判定（不得判通过）"
+    },
+    {
+      "id": "E3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 0,
+      "value": 0,
+      "line": 0,
+      "note": "经验边（source_kind=experience）单独产生的 forbid 条数必须为 0"
+    },
+    {
+      "id": "E3_cases",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 733,
+      "line": 0,
+      "note": "L3 案例永不产出约束"
+    },
+    {
+      "id": "E1",
+      "status": "not_measured",
+      "note": "需要人工对返回的 cases 按 >=4/5 打分（§2.3b）；没有 --e1-reviews 就不判——不得由 agent 代判"
+    },
+    {
+      "id": "E2",
+      "status": "not_measured",
+      "note": "没有 --shots：采纳率无法测量（诊断量，不设门）"
+    }
+  ],
+  "q_summary": {}
+}
