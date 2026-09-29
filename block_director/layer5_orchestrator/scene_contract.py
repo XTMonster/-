@@ -25,6 +25,72 @@ from typing import Any, Dict, List, Optional
 STATUS_RESOLVED = "resolved"
 STATUS_UNRESOLVED = "unresolved"
 
+#: §2.3b 的检索路由：把契约串投给超图那一条通道。键集与
+#: `block_director/knowledge/hypergraph.py::QUERY_KEYS` 同源（那边是消费者）。
+QUERY_KEYS: Dict[str, str] = {
+    "情绪": "emotion", "动作": "action", "运镜": "movement", "景别": "shot_size",
+    "镜头": "lens", "节奏": "pacing", "特效": "vfx", "音效": "sfx",
+    "机位": "camera_angle", "光线": "lighting", "构图": "composition_rule",
+    "轴线": "axis_topic", "题材": "genre", "桥段": "beat_type", "对白": "scene_type",
+}
+
+
+def _first_value(item: Any, *keys: str) -> str:
+    """从映射里取第一个非空值（`movements[]` 的键在历史上换过名字）。"""
+    if not isinstance(item, dict):
+        return ""
+    for key in keys:
+        value = item.get(key)
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    return ""
+
+
+def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
+    """把**一镜的计划字段**变成 §2.3b 的查询串：``键=值；键=值``。
+
+    为什么需要它：超图的入口 ``hypergraph.parse_query`` **只认契约串**
+    （``景别=MS；运镜=dolly_in``）。在此之前生产侧没有任何地方产出这种串，
+    于是 `block_for_shot` 拿到的中文自由文本一个种子都命中不了，超图那一栏
+    （含 ``forbid`` 禁忌）在真实运行里**从来没有被注入过**——三栏里只剩两栏。
+
+    纪律：
+
+    * **只写有值的键**：计划里没有"情绪"这个字段就不写 ``情绪=``，空值会造出
+      永不命中的种子，把 `seed_miss` 伪装成"知识库里没有"；
+    * **确定性**：同一镜两次调用得到同一个串（取值按出现顺序去重）；
+    * **每个 kind 最多 `per_kind` 个取值**：查询串越长越容易被无关种子稀释。
+
+    入参可以是 ``ShotPlan`` 也可以是 :class:`ShotContract`（同名属性）。
+    """
+    pairs: List[tuple] = []
+    used: Dict[str, set] = {}
+
+    def add(key: str, values) -> None:
+        seen = used.setdefault(key, set())
+        for value in values:
+            text = str(value or "").strip()
+            if not text or text in seen:
+                continue
+            seen.add(text)
+            pairs.append((key, text))
+            if len(seen) >= per_kind:
+                break
+
+    add("景别", [getattr(shot, "shot_type", "")])
+    camera = getattr(shot, "camera", None) or {}
+    if isinstance(camera, dict):
+        add("镜头", [camera.get("lens")])
+        add("运镜", [_first_value(item, "type", "kind")
+                     for item in (camera.get("movements") or [])])
+    add("动作", [_first_value(item, "action_type", "type")
+                 for item in (getattr(shot, "actions", None) or [])])
+    add("特效", [_first_value(item, "type", "kind")
+                 for item in (getattr(shot, "vfx", None) or [])])
+    if getattr(shot, "dialogues", None):
+        pairs.append(("对白", "有"))
+    return "；".join(f"{key}={value}" for key, value in pairs)
+
 
 def _pairs(entries) -> List[Dict[str, str]]:
     """把 ``{from,to}`` 形状的注视关系规范化成 ``[{source,target}]``。"""
@@ -53,6 +119,10 @@ class ShotContract:
     dialogues: List[Dict[str, Any]] = field(default_factory=list)
     vfx: List[Dict[str, Any]] = field(default_factory=list)
     unresolved: List[str] = field(default_factory=list)
+
+    def constraint_query(self) -> str:
+        """这一镜的检索契约串（§2.3b 的 ``constraint_query``）。"""
+        return shot_constraint_query(self)
 
     def to_dict(self) -> Dict[str, Any]:
         return {

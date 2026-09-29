@@ -68,12 +68,17 @@ def test_editor_payload_carries_everything_the_prompt_needs():
 
 def test_editor_payload_uses_the_retriever_when_given():
     class FakeRetriever:
-        def block_for_shot(self, shot_type, intent, action_types=(), limit=800):
+        # 与真实接口同形：`intent`/`action_types` 都有缺省值——脚本检索走
+        # **契约串**（§2.3b：超图那条通道只认 `键=值`），契约串为空时才退回
+        # "景别 ＋ 意图 ＋ 动作"的自由文本。
+        def block_for_shot(self, shot_type, intent="", action_types=(), limit=800):
             return f"知识：{shot_type}/{intent}"
 
     payload = build_editor_payload(plan().shots[1], plan(),
                                    retriever=FakeRetriever())
-    assert "知识：MCU/反应" in payload.messages[0].content
+    # shot_002 的景别是 MCU → 契约串是 `景别=MCU`（意图文字不再拼进查询串：
+    # 拼进去会让 `parse_query` 把 `景别=` 的值取成 `MCU 反应`，种子必然落空）。
+    assert "知识：景别=MCU/" in payload.messages[0].content
 
 
 def test_editor_payload_says_when_knowledge_is_off():

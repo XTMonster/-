@@ -9,6 +9,16 @@ from .client import (
     retrieval_call_bound,
     to_internal_edges,
 )
+from .cases import (
+    BEAT_TYPES,
+    CASE_BACKENDS,
+    CASE_TYPES,
+    CONSTRAINT_KEYS,
+    CaseIndex,
+    carries_constraint,
+    load_index as load_case_index,
+    render_cases,
+)
 from .corpus import (
     CARDS,
     DOMAIN_DIGESTS,
@@ -40,6 +50,8 @@ __all__ = [
     "BM25", "K1", "B", "make_bm25", "ranked", "tokenize",
     "KnowledgeClient", "retrieval_call_bound",
     "to_internal_edges", "render_edge_block",
+    "CaseIndex", "load_case_index", "render_cases", "carries_constraint",
+    "CASE_BACKENDS", "CASE_TYPES", "BEAT_TYPES", "CONSTRAINT_KEYS",
     "CARDS", "DOMAINS", "DOMAIN_LABELS", "DOMAIN_DIGESTS",
     "cards_by_domain", "digest_cards", "cards_in_domain_order",
     "KnowledgeRetriever", "RetrievalHit", "default_retriever",

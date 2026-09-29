@@ -49,7 +49,13 @@ from block_director.contracts.messages import (  # noqa: E402
 )
 from block_director.contracts.operations import RetrieveResponse  # noqa: E402
 from block_director.knowledge import default_retriever  # noqa: E402
-from block_director.knowledge.bm25 import make_bm25, ranked, tokenize  # noqa: E402
+#: L3 案例层的**单一真源**在包里（§3.1 的落点 `block_director/knowledge/cases.py`）；
+#: sidecar 只做装配与 wire 转换，不再维护一份自己的 CaseLane（两份实现必然漂）。
+from block_director.knowledge.cases import (  # noqa: E402
+    CASE_BACKENDS,
+    CaseIndex,
+    load_index as load_case_index,
+)
 from block_director.knowledge.hypergraph import (  # noqa: E402
     HyperEdge,
     Hypergraph,
@@ -59,7 +65,8 @@ from block_director.knowledge.hypergraph import (  # noqa: E402
 CONTRACT_VERSION = "1.3.0"
 LOOPBACK = "127.0.0.1"
 DEFAULT_KNOWLEDGE_DIR = ROOT / "knowledge"
-CASE_LANES = ("lightrag", "hybrid", "off")
+#: CLI 的 choices 引用包里的取值表，避免 sidecar 与 `cases.py` 各写一份。
+CASE_LANES = CASE_BACKENDS
 
 
 class SidecarConfig:
@@ -128,84 +135,6 @@ def load_provenance(knowledge_dir: Path) -> Dict[str, Any]:
         "extractor_model_id": str(extractor.get("model_id", "")),
         "schema_version": str(manifest.get("schema_version", "")),
     }
-
-
-class CaseLane:
-    """L3 参考案例通道（§2.3b）。
-
-    取值语义写死：
-
-    * ``off`` —— 用户显式关闭：``cases[]`` 恒空，**不算降级**，也不报错；
-    * ``hybrid`` —— BM25 ＋ 标签过滤（sidecar 自带，永远可用）；
-    * ``lightrag`` —— 需要 LightRAG 依赖与索引。两者都不在仓库里，所以实际
-      走的是 §2.3b 写明的**降级路径**：退到 ``hybrid`` 并记
-      ``cases_degraded=true`` ＋ 具名原因。
-
-    L3 **永不产出约束**：``Case`` 契约里没有 ``forbid`` 字段，这里也不会造一个。
-    """
-
-    def __init__(self, cases: Sequence[Case], backend: str,
-                 reason: str = "") -> None:
-        self.requested = backend
-        self.effective = backend
-        self.degraded = False
-        self.reason = reason
-        self.cases: List[Case] = list(cases)
-        self._engine = None
-        if backend == "off":
-            return
-        if reason:                       # 索引缺失/读不出来：明确降级
-            self.degraded = True
-            self.effective = "off"
-            return
-        if backend == "lightrag":
-            self.degraded = True
-            self.effective = "hybrid"
-            self.reason = "lightrag_adapter_unavailable"
-        if self.cases:
-            documents = [tokenize(self._text(case)) for case in self.cases]
-            self._engine, _name = make_bm25(documents)
-
-    @staticmethod
-    def _text(case: Case) -> str:
-        return "\n".join([case.case_id, case.title, case.excerpt,
-                          " ".join(case.beat_sequence),
-                          str(case.source_ref.get("tags", ""))])
-
-    @property
-    def enabled(self) -> bool:
-        return self.requested != "off" and self.effective != "off"
-
-    def retrieve(self, query: str, top_k: int = 3) -> List[Case]:
-        if not self.enabled or self._engine is None or not self.cases:
-            return []
-        tokens = tokenize(query)
-        if not tokens:
-            return []
-        scored = ranked(self._engine, tokens, 0)
-        hits = [(index, score) for index, score in scored if score > 0]
-        hits.sort(key=lambda item: (-item[1], self.cases[item[0]].case_id))
-        out: List[Case] = []
-        for index, score in hits[:max(1, int(top_k))]:
-            case = self.cases[index]
-            case = Case.from_dict({**case.to_dict(), "score": round(float(score), 4)})
-            out.append(case)
-        return out
-
-
-def load_case_lane(knowledge_dir: Path, backend: str) -> CaseLane:
-    if backend == "off":
-        return CaseLane([], "off")
-    path = knowledge_dir / "cases.jsonl"
-    if not path.is_file():
-        return CaseLane([], backend, reason="cases_index_missing")
-    try:
-        cases = [Case.from_dict(row) for row in read_jsonl(path)]
-    except (OSError, ValueError, KeyError) as exc:
-        return CaseLane([], backend, reason=f"cases_index_unreadable:{type(exc).__name__}")
-    if not cases:
-        return CaseLane([], backend, reason="cases_index_empty")
-    return CaseLane(cases, backend)
 
 
 # --------------------------------------------------------------------------- #
@@ -338,7 +267,8 @@ def make_handler(config: "SidecarConfig"):
     hypergraph = load_hypergraph_index(config.knowledge_dir)
     if hypergraph is not None and Capability.HYPERGRAPH not in config.capabilities:
         config.capabilities.append(Capability.HYPERGRAPH)
-    case_lane = load_case_lane(config.knowledge_dir, config.cases_backend)
+    case_lane: CaseIndex = load_case_index(config.knowledge_dir,
+                                           config.cases_backend)
     provenance = load_provenance(config.knowledge_dir)
     cancelled: set = set()
     lock = threading.Lock()
@@ -449,11 +379,14 @@ def make_handler(config: "SidecarConfig"):
         cases = case_lane.retrieve(query, top_k=int(body.get("cases_top_k", 3) or 3))
         trace.update({
             "backend": backend,
-            "lanes": 2 if case_lane.enabled else 1,
+            "lanes": case_lane.lanes,
             "cases_backend": case_lane.effective,
             "cases_requested_backend": case_lane.requested,
             "cases_degraded": bool(case_lane.degraded),
             "cases_degraded_reason": case_lane.reason,
+            #: §2.3b：trace 必记 L3 的索引指纹（与超图的六元指纹分开落盘）。
+            "lightrag_index_fingerprint": case_lane.lightrag_index_fingerprint,
+            "cases_index_fingerprint": case_lane.fingerprint,
             "provenance": dict(provenance),
         })
         return RetrieveResponse(cards=cards, edges=edges, cases=cases, trace=trace)

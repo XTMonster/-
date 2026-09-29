@@ -18,46 +18,23 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 from ..contracts.enums import RagBackend
-from ..contracts.knowledge import Card
+from ..contracts.knowledge import Card, Case
 from .bm25 import make_bm25, ranked, tokenize
+from .cases import CASE_COLUMN_TITLE, CaseIndex, render_cases
 from .corpus import CARDS, DOMAIN_LABELS, DOMAINS, cards_by_domain, digest_cards
 from .generated import ID_PREFIX as GENERATED_ID_PREFIX
+#: v1.4 §2.3d T5：token 估算的**单一真源**在 `tokens.py`——案例通道（`cases.py`）
+#: 用的是同一个函数对象，两条通道不可能各算一套。这里的再导出保持既有 API。
+from .tokens import (
+    LATIN_CHARS_PER_TOKEN,
+    TRUNCATION_NOTE,
+    estimate_tokens,
+    truncate_to_tokens,
+)
 
 TOKEN_LIMIT_TOOL = 800      # §6.5：search_knowledge 单次返回上限
 TOKEN_LIMIT_PLAN = 2000     # §6.5：阶段 A 预取上限
-LATIN_CHARS_PER_TOKEN = 4.0
 RRF_K = 60                  # 倒数排名融合常数（§6.4 的 rrf_merge）
-TRUNCATION_NOTE = "\n…（已按 token 上限截断）"
-
-
-def estimate_tokens(text: str) -> int:
-    """确定性 token 估算：CJK 字符 1 token，拉丁文 4 字符 1 token。"""
-    cjk = 0
-    other = 0
-    for char in text or "":
-        if "\u3400" <= char <= "\u4dbf" or "\u4e00" <= char <= "\u9fff":
-            cjk += 1
-        else:
-            other += 1
-    return int(cjk + other / LATIN_CHARS_PER_TOKEN + 0.999)
-
-
-def truncate_to_tokens(text: str, limit: int) -> str:
-    """按估算 token 截断文本；超限时补一句说明，便于模型知道内容不完整。"""
-    if limit <= 0 or estimate_tokens(text) <= limit:
-        return text
-    budget = max(limit - estimate_tokens(TRUNCATION_NOTE), 1)
-    kept: List[str] = []
-    used = 0
-    for line in text.splitlines():
-        cost = estimate_tokens(line) + 1
-        if used + cost > budget:
-            break
-        kept.append(line)
-        used += cost
-    if not kept:                        # 单行就超限：按字符硬截
-        kept = [text[: max(budget * 2, 40)]]
-    return "\n".join(kept) + TRUNCATION_NOTE
 
 
 def rrf_merge(vector_hits: Sequence[int], keyword_hits: Sequence[int],
@@ -116,6 +93,9 @@ class KnowledgeRetriever:
     #: v1.4 §2.3：sidecar 知识客户端。**有它就不需要在进程里装索引**——
     #: 三条通道（cards/edges/cases）由 ``/v1/retrieve`` 一次带回。
     client: Optional[Any] = None
+    #: v1.4 §2.3b：L3 案例索引（进程内备选）。装了 client 时案例由
+    #: ``/v1/retrieve`` 带回；没有 client 时才用它。
+    cases_index: Optional[Any] = None
     #: v1.4 §2.4：检索调用与 ``llm_calls`` **分列**记账。
     retrieval_calls: int = 0
     warnings: List[str] = field(default_factory=list)
@@ -125,6 +105,15 @@ class KnowledgeRetriever:
     degraded_reason: str = ""
     #: v1.4 §2.3：最近一次检索的 trace（查询串、种子、命中边、打分、注入集合）。
     last_trace: Dict[str, Any] = field(default_factory=dict)
+    #: v1.4 §2.3b：最近一次检索带回来的**参考案例**（第三栏的数据源）。
+    #: 记下它是为了让"硬约束"与"参考案例"共用**同一次** ``/v1/retrieve``，
+    #: 而不是各发一次（那会把 §2.4 的 ``retrieval_calls`` 账算成两倍）。
+    last_cases: List[Any] = field(default_factory=list)
+    #: 上一段案例属于哪条查询（查询变了就必须重取，绝不把 A 的案例贴到 B 上）。
+    #: 初值 ``None`` 表示"这一次查询还没取过 bundle"——用空串当哨兵会与
+    #: 真正的空查询混淆。取过之后就记下查询串，**空结果也算取过**
+    #: （否则同一条查询会被反复重取，§2.4 的 ``retrieval_calls`` 直接翻倍）。
+    last_cases_query: Optional[str] = None
     _index_cards: List[Card] = field(default_factory=list, init=False, repr=False)
     _engine_name: str = field(default="builtin.BM25Okapi", init=False, repr=False)
     _cache: Dict[str, Any] = field(default_factory=dict, init=False, repr=False)
@@ -193,6 +182,7 @@ class KnowledgeRetriever:
                 "retrieval_calls": int(self.retrieval_calls),
                 "degraded": bool(self.degraded),
                 "degraded_reason": self.degraded_reason,
+                **self.cases_info(),
                 "warnings": list(self.warnings)}
 
     def trace_payload(self) -> Dict[str, Any]:
@@ -214,6 +204,7 @@ class KnowledgeRetriever:
             #: §2.4：检索调用与 llm_calls 分列，别混进同一个计数器。
             "retrieval_calls": int(self.retrieval_calls),
             "warnings": list(self.warnings),
+            **self.cases_info(),
         }
         payload.update(self.last_trace or {})
         payload.setdefault("shot_scope", {})
@@ -327,31 +318,191 @@ class KnowledgeRetriever:
                 "sidecar 检索不可达，本次退回卡片检索并在 knowledge_trace 记 degraded")
             return []
         self.last_trace = dict(response.trace or {})
+        #: §2.3b 的第三栏与硬约束**共用这一次调用**（再发一次会让 §2.4 的
+        #: `retrieval_calls` 账翻倍）。案例在这里缓存，`case_block()` 直接取。
+        self.last_cases = list(response.cases or [])
+        self.last_cases_query = query
         return to_internal_edges(response.edges)
+
+    # ------------------------------------------------- v1.4 §2.3b L3 案例（第三栏）
+    def cases_for(self, query: str, *, top_k: int = 3) -> List[Any]:
+        """取这条查询的参考案例（L3）。
+
+        优先级与超图一致：**sidecar 带回的**（已经在上一次 ``/v1/retrieve``
+        里拿到就直接用）→ 进程内的 :attr:`cases_index` → 空。
+        """
+        limit = max(1, int(top_k))
+        if self.last_cases_query is not None and self.last_cases_query == query:
+            return list(self.last_cases)[:limit]
+        if self.client is not None and self.backend is RagBackend.HYPERGRAPH:
+            response = self.client.retrieve_or_none(query, top_k=self.top_k,
+                                                    cases_top_k=limit)
+            self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
+            if response is None:
+                self.degraded = True
+                self.degraded_reason = (getattr(self.client, "degraded_reason", "")
+                                        or "sidecar_unavailable")
+                return []
+            self.last_trace = dict(response.trace or {})
+            self.last_cases = list(response.cases or [])
+            self.last_cases_query = query
+            return list(self.last_cases)[:limit]
+        if isinstance(self.cases_index, CaseIndex):
+            hits = self.cases_index.retrieve(query, top_k=limit)
+            self.last_cases = list(hits)
+            self.last_cases_query = query
+            return list(hits)[:limit]
+        return []
+
+    @property
+    def cases_enabled(self) -> bool:
+        """L3 这条通道这次是否真的开着（决定 §2.4 的 ``lanes``）。"""
+        if isinstance(self.cases_index, CaseIndex):
+            return bool(self.cases_index.enabled)
+        trace = self.last_trace or {}
+        if self.client is not None and trace:
+            return int(trace.get("lanes", 1) or 1) >= 2
+        return bool(self.last_cases)
+
+    def cases_info(self) -> Dict[str, Any]:
+        """``knowledge_trace.json`` 里的 L3 分节（§2.3b：每次运行必记）。"""
+        trace = dict(self.last_trace or {})
+        index = self.cases_index if isinstance(self.cases_index, CaseIndex) else None
+        if not trace and index is not None:
+            trace = index.describe()
+        return {
+            "cases": len(self.last_cases),
+            "lanes": 2 if self.cases_enabled else 1,
+            "cases_backend": str(trace.get(
+                "cases_backend", index.effective if index else "off")),
+            "cases_requested_backend": str(trace.get(
+                "cases_requested_backend", index.requested if index else "off")),
+            "cases_degraded": bool(trace.get(
+                "cases_degraded", index.degraded if index else False)),
+            "cases_degraded_reason": str(trace.get(
+                "cases_degraded_reason", index.reason if index else "")),
+            "lightrag_index_fingerprint": str(
+                trace.get("lightrag_index_fingerprint", "")),
+            "cases_index_fingerprint": str(
+                trace.get("cases_index_fingerprint",
+                          index.fingerprint if index else "")),
+        }
+
+    def case_block(self, query: str, *, top_k: int = 3,
+                   token_limit: Optional[int] = None,
+                   title: str = CASE_COLUMN_TITLE,
+                   scope: str = "shot",
+                   budgets: Optional[Dict[str, int]] = None) -> str:
+        """§2.3b 的第三栏「参考案例（仅参考）」。
+
+        **原子注入**：一条案例装不下就整条丢弃并写 ``dropped_case_ids``，
+        绝不截断——截断会把"出处"切掉，模型就分不清"某人的经验"与"规则"。
+        """
+        cases = self.cases_for(query, top_k=top_k)
+        self._record_budget(scope, budgets)
+        if not cases:
+            return ""
+        limit = int(budgets["remaining"] if budgets
+                    else (token_limit or self.token_limit))
+        text, dropped = render_cases(cases, max(limit, 0), title=title)
+        section = self.last_trace.setdefault(f"{scope}_scope", {})
+        section["dropped_case_ids"] = list(dropped)
+        section.setdefault("columns", {})
+        section["columns"]["cases"] = len(cases) - len(dropped)
+        section["columns"]["case_tokens"] = estimate_tokens(text)
+        #: 预算的**扣减**由调用方（`_hypergraph_block` 的 `_take`）负责：
+        #: 在这里扣一次、调用方再扣一次＝双重记账，三栏的实际体积会比预算小
+        #: 得多（而且和 trace 里的数字对不上）。
+        return text
+
+    def _record_budget(self, scope: str, budgets: Optional[Dict[str, int]]) -> None:
+        if budgets is None:
+            return
+        section = self.last_trace.setdefault(f"{scope}_scope", {})
+        section.setdefault("columns", {})["budget"] = int(
+            budgets.get("limit", budgets.get("remaining", 0)))
+
+    @staticmethod
+    def _fits(budgets: Dict[str, int], text: str, columns: Sequence[str]) -> bool:
+        """这一栏（**含**与前一栏之间的空行）还装得下吗？"""
+        if not text:
+            return False
+        cost = estimate_tokens(text) + (2 if columns else 0)
+        return cost <= budgets["remaining"]
+
+    def _take(self, budgets: Dict[str, int], text: str,
+              columns: Sequence[str]) -> str:
+        """把这一栏（含空行）记进共享预算；装不下就整栏不注入。"""
+        if not self._fits(budgets, text, columns):
+            return ""
+        budgets["remaining"] = max(
+            0, budgets["remaining"] - estimate_tokens(text)
+            - (2 if columns else 0))
+        return text
 
     def edge_block(self, query: str, *, top_k: Optional[int] = None,
                    token_limit: Optional[int] = None,
-                   title: str = "硬约束（禁/许）") -> str:
+                   title: str = "硬约束（禁/许）",
+                   scope: str = "shot",
+                   budgets: Optional[Dict[str, int]] = None) -> str:
         """按 §2.3 的**原子注入**渲染超边：装不下就整条丢弃，绝不截断。
 
         ``render_edges`` 返回 ``(text, dropped_edge_ids, quality_fail)``；
         后两者按 ``shot_scope`` / ``plan_scope`` 分列记进 trace（T5）。
         """
+        hard, _soft = self.edge_columns(query, top_k=top_k,
+                                        token_limit=token_limit, scope=scope,
+                                        budgets=budgets, hard_title=title)
+        return hard
+
+    def edge_columns(self, query: str, *, top_k: Optional[int] = None,
+                     token_limit: Optional[int] = None, scope: str = "shot",
+                     budgets: Optional[Dict[str, int]] = None,
+                     hard_title: str = "硬约束（禁/许）",
+                     soft_title: str = "经验建议（软）") -> tuple:
+        """按 §2.3b 的**关键纪律 2** 把超边分成两栏：硬约束 ／ 经验建议（软）。
+
+        软边（``hardness == "soft"``，例如 ``source_kind = experience``）**不得**
+        与硬约束同栏呈现——同一栏会让模型把"某人经验"当成"必须遵守"。
+        返回 ``(硬栏目文本, 软栏目文本)``（**不含**栏目标题）。
+        """
         from .hypergraph import render_edges
 
-        edges = self.hypergraph_edges(query, top_k=top_k,
-                                      token_limit=token_limit)
-        if not edges:
-            return ""
+        self._record_budget(scope, budgets)
+        budget = int((budgets["remaining"] if budgets
+                      else token_limit) or self.token_limit)
+        edges = self.hypergraph_edges(query, top_k=top_k, token_limit=budget)
         nodes = getattr(self.hypergraph, "nodes", None) or {}
-        text, dropped, quality_fail = render_edges(
-            edges, nodes, token_limit=int(token_limit or self.token_limit))
-        scope = "shot_scope" if token_limit == self.token_limit else "plan_scope"
-        self.last_trace.setdefault(scope, {})["dropped_edge_ids"] = list(dropped)
-        self.last_trace.setdefault(scope, {})["quality_fail"] = bool(quality_fail)
+        hard = [edge for edge in edges
+                if str(getattr(edge, "hardness", "hard")) != "soft"]
+        soft = [edge for edge in edges
+                if str(getattr(edge, "hardness", "hard")) == "soft"]
+        hard_text, dropped_hard, fail_hard = render_edges(hard, nodes, budget)
+        # 栏目标题也算注入体积——不把它计进预算，"≤800 token"会悄悄超发。
+        hard_column = f"【{hard_title}】\n{hard_text}" if hard_text else ""
+        if budgets is not None and hard_column:
+            if not self._fits(budgets, hard_column, ()):
+                hard_column = ""                       # 标题都装不下就整栏不要
+            else:
+                self._take(budgets, hard_column, ())
+        remaining = max(0, budget - estimate_tokens(hard_column))
+        soft_raw, dropped_soft, fail_soft = render_edges(soft, nodes, remaining)
+        soft_column = ""
+        if soft_raw:
+            candidate = f"【{soft_title}】\n{soft_raw}"
+            soft_column = (candidate if budgets is None
+                           else self._take(budgets, candidate, (hard_column,)))
+        section = self.last_trace.setdefault(f"{scope}_scope", {})
+        section["dropped_edge_ids"] = list(dropped_hard) + list(dropped_soft)
+        section["quality_fail"] = bool(fail_hard or fail_soft)
+        section.setdefault("columns", {})
+        section["columns"].update({"hard_edges": len(hard),
+                                   "soft_edges": len(soft),
+                                   "hard_tokens": estimate_tokens(hard_column),
+                                   "soft_tokens": estimate_tokens(soft_column)})
         self.last_trace["degraded"] = bool(self.degraded)
         self.last_trace["degraded_reason"] = self.degraded_reason
-        return f"【{title}】\n{text}" if text else ""
+        return hard_column, soft_column
 
     def _vector_order(self, query: str,
                       limit: int) -> List[int]:  # pragma: no cover - 需 sidecar
@@ -416,13 +567,9 @@ class KnowledgeRetriever:
         if self.backend is RagBackend.DIGEST:
             return self.digest_block(limit)
         if self.backend is RagBackend.HYPERGRAPH:
-            edges = self.edge_block(script_digest, top_k=max(self.top_k, 8),
-                                    token_limit=limit)
-            # 超边之外再补一点卡片正文（§2.3：超边优先、卡片补充）。
-            cards = self.block(script_digest, top_k=4, token_limit=limit)
-            if edges and cards:
-                return edges + "\n\n【卡片正文补充】\n" + cards
-            return edges or cards
+            return self._hypergraph_block(script_digest, limit=limit,
+                                          top_k=max(self.top_k, 8),
+                                          cards_top_k=4, scope="plan")
         if not self.cards:
             return ""
         return self.block(script_digest, top_k=max(self.top_k, 8),
@@ -440,12 +587,8 @@ class KnowledgeRetriever:
                               " ".join(action_types or ())]).strip()
             if not query:
                 return self.digest_block(limit)
-            edges = self.edge_block(query, top_k=self.top_k,
-                                    token_limit=limit)
-            cards = self.block(query, top_k=self.top_k, token_limit=limit)
-            if edges and cards:
-                return edges + "\n\n【卡片正文补充】\n" + cards
-            return edges or cards
+            return self._hypergraph_block(query, limit=limit, top_k=self.top_k,
+                                          cards_top_k=self.top_k, scope="shot")
         if not self.cards:
             return ""
         query = " ".join([shot_type or "", intent or "",
@@ -453,6 +596,34 @@ class KnowledgeRetriever:
         if not query.strip():
             return self.digest_block(limit)
         return self.block(query, top_k=self.top_k, token_limit=limit)
+
+    def _hypergraph_block(self, query: str, *, limit: int, top_k: int,
+                          cards_top_k: int, scope: str) -> str:
+        """§2.3b 的**三栏注入**：硬约束 → 经验建议（软）→ 参考案例 → 卡片补充。
+
+        R44/Q6b 的硬约束：**三栏共用一个上限**（每镜 ``rag.max_tokens_per_call``、
+        整场 ``rag.plan_prefetch_tokens``）。以前硬约束用满上限、卡片再用满一次，
+        单块可以到 2×上限——那会让"注入 token ≤ 800"的判定看似通过而实为超发。
+        """
+        budgets = {"limit": int(limit), "remaining": int(limit)}
+        hard, soft = self.edge_columns(query, top_k=top_k, token_limit=limit,
+                                       scope=scope, budgets=budgets)
+        columns: List[str] = []
+        if hard:
+            columns.append(hard)
+        if soft:
+            columns.append(soft)
+        cases_text = self.case_block(query, top_k=3, scope=scope, budgets=budgets)
+        if cases_text and self._take(budgets, cases_text, columns):
+            columns.append(cases_text)
+        if budgets["remaining"] > 0:
+            remaining = max(0, budgets["remaining"] - (2 if columns else 0))
+            cards = self.block(query, top_k=cards_top_k, token_limit=remaining)
+            if cards:
+                cards = self._take(budgets, "【卡片正文补充】\n" + cards, columns)
+                if cards:
+                    columns.append(cards)
+        return "\n\n".join(columns)
 
 
 _DEFAULT: Optional[KnowledgeRetriever] = None
@@ -464,7 +635,8 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
                       token_limit: int = TOKEN_LIMIT_TOOL,
                       plan_token_limit: int = TOKEN_LIMIT_PLAN,
                       hypergraph: Optional[Any] = None,
-                      client: Optional[Any] = None) -> KnowledgeRetriever:
+                      client: Optional[Any] = None,
+                      cases_index: Optional[Any] = None) -> KnowledgeRetriever:
     """进程级默认检索器（语料是静态的，默认参数下构建一次即可）。
 
     带了非默认参数时**不缓存**：否则第二次用不同配置调用会拿到上一份配置的
@@ -474,7 +646,7 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
     if (backend is RagBackend.BM25 and not capabilities and top_k == 5
             and token_limit == TOKEN_LIMIT_TOOL
             and plan_token_limit == TOKEN_LIMIT_PLAN and hypergraph is None
-            and client is None):
+            and client is None and cases_index is None):
         if _DEFAULT is None:
             _DEFAULT = KnowledgeRetriever(cards=cards_in_domain_order())
         return _DEFAULT
@@ -482,7 +654,7 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
         cards=cards_in_domain_order(), backend=backend,
         capabilities=capabilities, top_k=top_k, token_limit=token_limit,
         plan_token_limit=plan_token_limit, hypergraph=hypergraph,
-        client=client)
+        client=client, cases_index=cases_index)
 
 
 def reset_default_retriever() -> None:

@@ -10,12 +10,20 @@
 from __future__ import annotations
 
 from block_director.contracts.brief import SceneBrief
-from block_director.contracts.plan import Plan
+from block_director.contracts.plan import Plan, ShotPlan
+from block_director.knowledge.hypergraph import (
+    HyperEdge,
+    Hypergraph,
+    Member,
+    Node,
+    parse_query,
+)
 from block_director.layer5_orchestrator.scene_contract import (
     STATUS_RESOLVED,
     STATUS_UNRESOLVED,
     SceneContract,
     resolve_speaker,
+    shot_constraint_query,
 )
 
 
@@ -91,3 +99,51 @@ def test_clean_contract_has_no_unresolved():
          "dialogues": [{"character_id": "char_001", "text": "好。"}]}]})
     contract = SceneContract.from_plan(plan)
     assert contract.ok and contract.unresolved == []
+
+
+# --------------------------------------------------------------------------- #
+# v1.4 §2.3b 的检索路由：契约串的生产者
+#
+# 在它出现之前，`block_for_shot`/`block_for_plan` 拿到的是中文自由文本，而超图的
+# 入口 `parse_query` **只认 `键=值`**——于是含 `forbid` 的那一栏在真实运行里
+# 一个种子都命中不了，三栏里只剩两栏。这里把"生产 → 解析 → 命中"整条链钉住。
+# --------------------------------------------------------------------------- #
+
+def _query_shot() -> ShotPlan:
+    return ShotPlan(shot_id="shot_007", intent="逼近", shot_type="MS",
+                    duration_frames=48, order=7,
+                    actions=[{"action_type": "跺脚"}],
+                    dialogues=[{"character_id": "char_001", "text": "让开。"}],
+                    vfx=[{"type": "flame"}],
+                    camera={"lens": "85mm",
+                            "movements": [{"type": "dolly_in"}]})
+
+
+def test_the_constraint_query_uses_the_frozen_keys_and_skips_empty_values():
+    query = shot_constraint_query(_query_shot())
+    assert query == "景别=MS；镜头=85mm；运镜=dolly_in；动作=跺脚；特效=flame；对白=有"
+    # 空字段**不写**：`情绪=` 这种空值会造出永不命中的种子，把 `seed_miss`
+    # 伪装成"知识库里没有"。
+    bare = ShotPlan(shot_id="s", intent="x", shot_type="", duration_frames=24)
+    assert shot_constraint_query(bare) == ""
+    # 确定性：同一镜两次调用逐字符相同。
+    assert shot_constraint_query(_query_shot()) == query
+
+
+def test_the_contract_query_actually_seeds_the_hypergraph():
+    nodes = [Node(node_id="shot_size:MS", type="shot_size", name="MS",
+                  value="MS"),
+             Node(node_id="intensity:high", type="intensity", name="high",
+                  value="high"),
+             Node(node_id="movement:固定机位", type="movement", name="固定机位",
+                  aliases=("固定",))]
+    edge = HyperEdge(type="SHOT_PATTERN", source_kind="theory", hardness="hard",
+                     members=(Member("allow", "shot_size", "shot_size:MS"),
+                              Member("qualifier", "intensity", "intensity:high"),
+                              Member("forbid", "movement", "movement:固定机位")))
+    graph = Hypergraph(nodes, [edge])
+    query = shot_constraint_query(_query_shot())
+    assert parse_query(query)["shot_size"] == ["MS"]
+    selected, text, trace = graph.retrieve(query)
+    assert trace.seed_miss is False and trace.seeds == ["shot_size:MS"]
+    assert selected and "禁={" in text and "固定机位" in text

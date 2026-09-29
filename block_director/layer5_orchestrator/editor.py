@@ -26,6 +26,7 @@ from ..contracts.plan import Plan, ShotPlan
 from ..contracts.tools import SHOT_DRAFT_TOOL
 from ..motion.model import ACTION_TYPES
 from .react import render_shot_memory, shot_memory
+from .scene_contract import shot_constraint_query
 
 EDITOR_TOOL_NAME = SHOT_DRAFT_TOOL
 
@@ -228,9 +229,16 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
     if retriever is not None:
         action_types = [str(item.get("action_type", ""))
                         for item in getattr(shot, "actions", []) or []]
-        knowledge = retriever.block_for_shot(str(shot.shot_type),
-                                             shot.intent or "",
-                                             action_types)
+        # §2.3b 的检索路由：**优先**用契约串（超图那一条通道只认 `键=值`），
+        # 契约串为空时才退回"景别 ＋ 意图 ＋ 动作"的自由文本（卡片/案例两栏
+        # 本来就是 BM25，自由文本照样能命中）。
+        query = shot_constraint_query(shot)
+        if query:
+            knowledge = retriever.block_for_shot(query)
+        else:
+            knowledge = retriever.block_for_shot(str(shot.shot_type),
+                                                 shot.intent or "",
+                                                 action_types)
     memory = render_shot_memory(shot_memory(plan))
     continuity_text = continuity or memory or "（第一镜，无历史）"
     system_text = (EDITOR_SYSTEM_PROMPT

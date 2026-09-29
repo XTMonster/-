@@ -1,0 +1,73 @@
+{
+  "schema_version": "cases/v1",
+  "template_version": "case-template/v1",
+  "chunker_version": "para-2400/v1",
+  "decode": "deterministic;no-model",
+  "generator": {
+    "model_id": "deterministic",
+    "family": "deterministic",
+    "model_version": "n/a"
+  },
+  "corpus_fingerprint": "142d2df845cc2bf5a2d61f962c6c98681744f8e874ae5e1d20aec51af203b047",
+  "fingerprint": "e022cec24d363b8968f32cdb8ebe7c6e138363e72ca306cace9b79a7d2d836f7",
+  "segments_total": 7727,
+  "raw_segments": 833,
+  "cases": 726,
+  "quota_truncated": 100,
+  "duplicates": 5,
+  "rejects": 2,
+  "reject_ratio": 0.002401,
+  "per_type": {
+    "narrative": 653,
+    "sequence_pattern": 2,
+    "lesson": 71
+  },
+  "per_domain": {
+    "anime": 43,
+    "axis_theory": 14,
+    "blocking": 44,
+    "cinematography": 213,
+    "composition": 160,
+    "editing": 45,
+    "performance": 40,
+    "production": 43,
+    "storyboard": 124
+  },
+  "per_source": {
+    "anime_language_md": 3,
+    "axis_continuity_md": 14,
+    "blocking_and_performance_md": 4,
+    "camera_angle_and_lens_md": 5,
+    "camera_angle_in_practice_md": 5,
+    "editing_rhythm_md": 5,
+    "lighting_and_color_md": 3,
+    "pg15383_txt": 40,
+    "pg17903_txt": 40,
+    "pg20165_txt": 40,
+    "pg24637_txt": 40,
+    "pg26638_txt": 40,
+    "pg32681_txt": 40,
+    "pg39973_txt": 40,
+    "pg45231_txt": 40,
+    "pg45714_txt": 40,
+    "pg55346_txt": 40,
+    "pg57335_txt": 40,
+    "pg57611_txt": 40,
+    "pg70417_txt": 40,
+    "pg70937_txt": 40,
+    "pg73455_txt": 40,
+    "pg76829_txt": 40,
+    "pg78373_txt": 40,
+    "production_pipeline_md": 3,
+    "storyboard_practice_md": 4
+  },
+  "min_cases": 300,
+  "size_gate": {
+    "sizes": {
+      "cases.jsonl": 439556,
+      "cases.manifest.json": 1631
+    },
+    "oversize": {},
+    "passed": true
+  }
+}
