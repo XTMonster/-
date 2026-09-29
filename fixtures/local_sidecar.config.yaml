@@ -27,9 +27,15 @@ rag:
   backend: bm25
 
 budget:
-  max_llm_calls_per_scene_formula: "shots * 6"
+  max_llm_calls_per_scene_formula: "shots * 8"
   max_cost_usd: 5.0
   max_wall_minutes: 60
+
+# v1.3 §3.6：剧本里写了"约 30 名路人"这类声明时才需要打开群众代理。
+# 默认是关的（对象数与关键帧数都会明显上升）。
+crowd:
+  enabled: true
+  max_instances: 40
 
 delivery:
   preset: hd16x9

@@ -74,6 +74,14 @@ def check_gaze(plan: Optional[Plan], brief, *,
         expected = set(_gaze_pairs(brief.gazes_in(shot_id, index)))
         if not expected:
             continue
+        # 只有**两个人都在这一镜里**，才谈得上"他们互相看着对方"。
+        # 单人特写里强行要求搭档的视线，等于要求引擎拍一个不在场的人。
+        present = {str(name) for name in (getattr(shot, "characters", None) or [])}
+        if present:
+            expected = {(source, target) for source, target in expected
+                        if source in present and target in present}
+        if not expected:
+            continue
         actual = set(_gaze_pairs(getattr(shot, "gaze", None)))
         missing = sorted(expected - actual)
         if not missing:

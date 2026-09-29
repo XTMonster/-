@@ -243,6 +243,19 @@ def test_r013_warns_when_the_gaze_is_not_implemented():
     assert "乙→甲" in findings[0].message
 
 
+def test_r013_ignores_a_gaze_between_people_who_are_not_both_in_the_shot():
+    """单人特写里要求搭档的视线，等于要求引擎拍一个不在场的人。"""
+    from block_director.contracts.brief import SceneBrief
+
+    brief = SceneBrief.from_dict({"gaze": [
+        {"from": "甲", "to": "乙", "scope": ["all"]},
+        {"from": "乙", "to": "甲", "scope": ["all"]}]})
+    # shot_002 只有乙：那一镜里谁的视线都无处落实（甲不在画面里）→ 不判
+    findings = check_compliance(_gaze_plan([("甲", "乙")]), None, brief=brief)
+    assert [item.target for item in findings] == ["shot_001"]
+    assert "乙→甲" in findings[0].message
+
+
 def test_r013_is_silent_when_every_gaze_is_implemented():
     from block_director.contracts.brief import SceneBrief
 
@@ -269,9 +282,9 @@ def test_r013_is_independent_of_a_shot_list():
     brief = SceneBrief.from_dict({"gaze": [
         {"from": "甲", "to": "乙", "scope": ["all"]}]})
     findings = check_compliance(_gaze_plan([]), None, brief=brief)
-    # scope=all 覆盖两个镜头，两镜都没落实 → 两条
-    assert [item.rule for item in findings] == ["R013", "R013"]
-    assert {item.target for item in findings} == {"shot_001", "shot_002"}
+    # scope=all 覆盖两个镜头，但只有 shot_001 两人都在场 → 只判它
+    assert [item.rule for item in findings] == ["R013"]
+    assert {item.target for item in findings} == {"shot_001"}
 
 
 def test_report_records_the_brief_source():

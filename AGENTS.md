@@ -171,6 +171,41 @@ Phases 0-4 and 6 are done:
   "no tool call", the step guard counted polling ticks (a slow model looked
   like an infinite loop), `emit_plan` could rewrite the plan after stage A, and
   no tool could retime a dialogue so R011 failures were unrepairable.
+- **Stage S, the script read** (`contracts/brief.py`, `layer5_orchestrator/understand.py`,
+  `DriverState.UNDERSTANDING`): before planning, one structured call produces a
+  `SceneBrief` (speakers / gaze / beats / space / arc / props / notes). It is
+  injected into the plan prompt as system text (so `trim_messages` cannot drop
+  it), it drives the station via `SceneSpec.from_plan(..., brief=...)`, and R013
+  compares its `gaze[]` against the plan's `shot.gaze[]`. Two failures fall back
+  to `deterministic_brief()` (shot-list declarations and dialogue adjacency
+  only - never a guessed pronoun) and record `E_BRIEF_001`. The brief travels
+  into `project.bdproj`. `brief.enabled=false` restores the v1.2 path.
+- **Contracts 1.3 and SDL 1.3** (`contracts/sdl.py`, `layer2_sdl/sdl_migrate.py`):
+  the movement vocabulary, `EngineSupport`, `VfxType`, `CrowdMode` and
+  `Purpose.UNDERSTAND` live in `contracts/enums.py`; `cinema/camera_motion.py`
+  imports `MOVEMENT_TYPES` from there and refuses to load if its grouping tables
+  drift. SDL 1.3 adds `camera.movements`, `shot.gaze`, `shot.vfx`,
+  `environment.crowd` and `brief`. `KNOWN_VERSIONS` spells out `"1.2"`, and the
+  roster repair only runs for files older than 1.2 (a v1.2 file always carries a
+  complete roster, so a dangling reference there is real corruption).
+- **All 24 movements, end to end** (`cinema/camera_motion.py`,
+  `layer3_engine/cinema_engine/camera_motion.py`): the pure solver emits
+  position + look-at + lens; the bpy side writes location keyframes on the
+  camera, `data.lens` keyframes on the camera *data* (a bare `lens` does not
+  exist and `data.lens` from the object raises "path spans ID blocks"), and
+  samples the subject's own path for follow/lead/steadicam after the motion bake.
+  `camera.movements` in the plan drives `build_scene` directly, and the shot
+  list's "camera instruction" column is pinned onto the plan when B1 did not
+  supply one. `check_shot` now evaluates at the shot's first frame, restores it
+  afterwards, and takes the composition minimum over first/middle/last.
+- **Crowd, VFX and prop shapes** (`contracts/cast.py`, `layer3_engine/scene_executor.py`):
+  `crowd_from_script` reads what the director actually wrote ("about 30
+  extras"), returns at most one group (the maximum, not the sum) capped by
+  `crowd.max_instances`, and the builder makes shared-mesh instances that live in
+  `context.crowd` - never in `characters`, so the cast panel, scene state,
+  composition score and labels do not see them. `create_vfx` builds renderable
+  `BD_VFX_<id>` proxies with a keyframed visibility window; Workbench has no
+  alpha and the warning says so. `create_prop` honours `shape`.
 - **One-command delivery** (`run_headless --export`): the scene is exported
   while it is still in memory, so 15's "one command -> complete export dir"
   holds for real-model runs too, not just the offline path. The chain's step 4
@@ -184,7 +219,7 @@ dialogue timing and coreference) is done.
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all twenty-three checks: spec + golden drift, pytest, in-Blender
+`tools/run_tests.ps1` runs all twenty-five checks: spec + golden drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
@@ -195,7 +230,10 @@ Test against the expected SDL, and the scene-sync / single-shot regeneration
 round trip, and the shot list / debug panel checks.
 It also covers the viewport overlay and the path-drawing tool, and the depth
 sequence plus full concatenation.
-Plus the extended tool layer, cast management, and the LLM trace contents.
+Plus the extended tool layer, cast management, the LLM trace contents, the
+declarative camera movements (`test_camera_motion.py`, with the RK-3 smoothness
+probe), and the crowd / VFX / prop-shape checks (`test_crowd_vfx.py`, with the
+RK-2 visibility probe).
 
 The end-to-end commands are:
 

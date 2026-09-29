@@ -32,6 +32,7 @@ from stage_helpers import understand_reply
 SHOTLIST = """\
 节点1：码头（总时长：12秒）
 镜号：1
+拍摄手法：快速推镜
 拍摄距离：近景
 角色：米迦尔、伊恩
 预估时长：4秒
@@ -56,6 +57,13 @@ class InlineThread:
 
     def start(self):
         self._target()
+
+
+class _StubBuilder:
+    """B1 只在有构建器时才会跑（没东西可执行时不该花调用去逐镜生成）。"""
+
+    def build(self, plan, brief=None):
+        return {"shots": len(plan.shots), "total_frames": plan.total_frames}
 
 
 class GarbageTransport:
@@ -284,3 +292,53 @@ def test_understand_reply_helper_is_a_valid_brief():
     """测试替身本身也要合法，否则别的测试会在别处莫名其妙地红。"""
     brief = extract_brief(understand_reply("r1"))
     assert brief.validate([]) == []
+
+
+class _CameraDraftTransport:
+    """B1 只给 side/lens（草案里的 movements 是空列表）。"""
+
+    def __init__(self):
+        self.purposes = []
+
+    def chat(self, payload, timeout=120.0):
+        purpose = str(payload.purpose)
+        self.purposes.append(purpose)
+        if purpose == "understand":
+            return understand_reply(payload.request_id)
+        if purpose == "plan":
+            args = {"shots": [{"shot_id": "shot_001", "order": 1,
+                               "intent": "推镜", "shot_type": "MCU",
+                               "duration_frames": 96,
+                               "characters": ["米迦尔", "伊恩"]}]}
+            name = "emit_plan"
+        elif purpose == "editor":
+            name = "emit_shot_draft"
+            args = {"shot_id": "shot_001",
+                    "camera": {"side": "front", "lens": 50, "movements": []}}
+        else:
+            return ChatReply(content="停")
+        return ChatReply(tool_calls=[ToolCall(
+            id=f"c{len(self.purposes)}",
+            function=FunctionCall(name=name,
+                                  arguments=json.dumps(args,
+                                                       ensure_ascii=False)))])
+
+    def cancel(self, request_id):
+        return None
+
+
+def test_the_shot_list_camera_instruction_survives_stage_b1():
+    """分镜表写着"快速推镜"，B1 的草案只提 side/lens——运镜不能被它冲掉。
+
+    真实运行里踩到过：草案的 ``camera`` 整份替换了钉住的声明，
+    于是剧本写的推镜落到场景里变成 0 个运镜，镜头是死的。
+    """
+    transport = _CameraDraftTransport()
+    driver = _driver(transport, builder=_StubBuilder())
+    assert driver.run_to_completion() is DriverState.DONE
+    camera = driver.plan.shots[0].camera
+    assert camera["movements"] == [{"type": "dolly_in"}]
+    assert camera["side"] == "front"          # 草案真正声明的字段仍然生效
+    assert camera["lens"] == 50
+    kinds = [event.kind for event in driver.audit.recent(160)]
+    assert "plan_declared_camera_pinned" in kinds

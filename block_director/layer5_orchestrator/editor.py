@@ -328,7 +328,16 @@ def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
         if draft.prompt:
             shot["prompt"] = draft.prompt
         if draft.camera:
-            shot["camera"] = dict(draft.camera)
+            # 草案的取景请求是**局部**的：它只说 side/lens，几乎不会提运镜。
+            # 直接整份替换会把"分镜表拍摄手法"钉上去的 movements 冲掉
+            # （实测：剧本写"快速推镜"，落到场景里 movement=0，镜头是死的）。
+            # 因此只覆盖它真正声明了的字段。
+            merged_camera = dict(shot.get("camera") or {})
+            for key, value in dict(draft.camera).items():
+                if key == "movements" and not value:
+                    continue
+                merged_camera[key] = value
+            shot["camera"] = merged_camera
         if draft.gaze:
             # 注视关系由 B1 落实。阶段 S 的理解只在 B1 没给的时候兜底
             # （见 driver._pin_brief_gaze）：先记下 B1 自己说的，
