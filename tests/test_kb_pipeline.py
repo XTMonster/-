@@ -5,8 +5,10 @@
 
 from __future__ import annotations
 
+import http.server
 import json
 import pathlib
+import threading
 
 import pytest
 
@@ -329,3 +331,230 @@ def test_shipped_corpus_meets_the_k_gates():
         assert count >= 60, f"{domain} 只有 {count} 张（< 60）"
         assert count / total >= 0.05, f"{domain} 占比 {count / total:.3f}（< 5%）"
     assert corpus.CARD_ID_COLLISIONS == ()
+
+
+# --------------------------------------------------------------------------- 抓取纪律（§2.3c 的"绝不抓取"）
+
+
+class _DisciplineServer:
+    """极小 HTTP 服务器：``/start`` 302 到 ``robots.txt`` 明令禁止的路径。
+
+    只用标准库，和 `tests/test_protocol_end_to_end.py` 的做法一致。``hits``
+    记录每一条被真正请求到的路径，用来断言"被禁的路径根本没被取过"——不能
+    只看最终有没有抛错，否则"取到了再报错"也会假绿。
+    """
+
+    SECRET = "SECRET-BODY-THAT-ROBOTS-FORBIDS\n"
+
+    def __init__(self) -> None:
+        outer = self
+        self.hits: list = []
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *args):        # 静音
+                return
+
+            def _send(self, code, body=b"", headers=()):
+                self.send_response(code)
+                for key, value in headers:
+                    self.send_header(key, value)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                if body:
+                    self.wfile.write(body)
+
+            def do_GET(self):
+                outer.hits.append(self.path)
+                if self.path == "/robots.txt":
+                    return self._send(200, b"User-agent: *\nDisallow: /private/\n")
+                if self.path == "/start":
+                    return self._send(302, headers=[("Location", "/private/secret.txt")])
+                if self.path == "/tofile":
+                    return self._send(302, headers=[("Location", "file:///C:/Windows/win.ini")])
+                if self.path == "/toftp":
+                    return self._send(302, headers=[("Location", "ftp://127.0.0.1:1/leak.txt")])
+                if self.path == "/ok":
+                    return self._send(200, (outer.SECRET * 400).encode())
+                if self.path.startswith("/private/"):
+                    return self._send(200, (outer.SECRET * 400).encode())
+                return self._send(404)
+
+        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.port = self.server.server_address[1]
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+
+    @property
+    def base(self) -> str:
+        return f"http://127.0.0.1:{self.port}"
+
+    def __enter__(self):
+        self.thread.start()
+        return self
+
+    def __exit__(self, *exc):                    # noqa: D105
+        self.server.shutdown()
+        self.server.server_close()
+
+
+def _http_source(url: str) -> dict:
+    return {"url": url, "title": "t", "author": "a", "license": "PublicDomain",
+            "domain": "cinematography", "mode": "http"}
+
+
+def test_redirect_hop_must_pass_robots_again():
+    """负例：`Disallow: /private/` 不能靠一条 302 绕过去。
+
+    默认的 `urlopen` 会自己跟随重定向，而 `robots_allows` 只在**发起时**问过
+    一次——于是 `/start` 可以把抓取带到被禁路径上。抓取纪律要求每一跳都重问。
+    """
+    with _DisciplineServer() as server:
+        # 基准：直接抓被禁路径必须被拒（否则下面的断言会假绿）
+        with pytest.raises(fetch.FetchError) as direct:
+            fetch.fetch_source(_http_source(f"{server.base}/private/secret.txt"),
+                               timeout=5.0, rate_seconds=0.0)
+        assert "robots_disallow" in str(direct.value)
+
+        with pytest.raises(fetch.FetchError) as redirected:
+            fetch.fetch_source(_http_source(f"{server.base}/start"),
+                               timeout=5.0, rate_seconds=0.0)
+        assert "robots_disallow" in str(redirected.value), str(redirected.value)
+        assert not [path for path in server.hits if path.startswith("/private/")], \
+            f"被禁路径仍被请求过：{server.hits}"
+
+
+def test_allowed_http_source_is_still_fetched():
+    """反向：robots 允许的路径必须照常抓到——否则上面几条可能只是"全都拒收"。"""
+    with _DisciplineServer() as server:
+        record = fetch.fetch_source(_http_source(f"{server.base}/ok"),
+                                    timeout=5.0, rate_seconds=0.0)
+        assert _DisciplineServer.SECRET in record["text"]
+        assert record["source_ref"]["sha256"]
+        assert record["chars"] == len(record["text"])
+
+
+def test_redirect_to_a_non_http_scheme_is_refused():
+    """重定向目标也要过 scheme 白名单。
+
+    标准库自己已经挡住 `file:`（"Redirection to url ... is not allowed"），
+    但它的白名单是 `http/https/ftp`——`ftp:` 会被跟随。抓取纪律只认 http(s)，
+    所以这一跳必须由我们的门而不是标准库来挡。
+    """
+    import urllib.error
+
+    with _DisciplineServer() as server:
+        with pytest.raises(fetch.FetchError) as ftp:
+            fetch.fetch_source(_http_source(f"{server.base}/toftp"),
+                               timeout=5.0, rate_seconds=0.0)
+        assert "scheme_not_allowed" in str(ftp.value), str(ftp.value)
+
+        with pytest.raises((fetch.FetchError, urllib.error.HTTPError)) as local:
+            fetch.fetch_source(_http_source(f"{server.base}/tofile"),
+                               timeout=5.0, rate_seconds=0.0)
+        assert "not allowed" in str(local.value), str(local.value)
+
+
+@pytest.mark.parametrize("url", ["file:///C:/Windows/win.ini", "ftp://example.com/x",
+                                 "data:text/plain,hi"])
+def test_http_source_scheme_allowlist_blocks_local_files(url):
+    """`sources.yaml` 是输入；`mode: http` 只允许 http/https 两种 scheme。"""
+    with pytest.raises(fetch.FetchError) as info:
+        fetch.fetch_source(_http_source(url), timeout=5.0, rate_seconds=0.0)
+    assert str(info.value).startswith("scheme_not_allowed:"), str(info.value)
+
+
+def test_robots_cache_name_cannot_escape_its_directory(tmp_path):
+    """netloc 来自外部输入，它含反斜杠/点；文件名不得因此越出 `work/robots/`。"""
+    cache_dir = tmp_path / "robots"
+    for netloc in ("..\\..\\evil.example", "../../evil.example", "..", ""):
+        path = fetch._robots_cache_file(cache_dir, netloc)
+        assert path.parent == cache_dir, f"netloc={netloc!r} -> {path}"
+        assert path.name not in ("", ".txt"), f"netloc={netloc!r} -> {path.name!r}"
+
+
+def test_robots_cache_dir_is_resolved_at_call_time(tmp_path, monkeypatch):
+    """测试用的 `ROBOTS_DIR` 必须是**真的**隔离。
+
+    写成默认参数（`cache_dir=ROBOTS_DIR`）会把对象绑死在导入那一刻，
+    `monkeypatch.setattr(fetch, "ROBOTS_DIR", ...)` 静默失效——单元测试于是
+    写到仓库真实的 `work/robots/`（把缓存污染成测试内容）。
+    """
+    pinned = tmp_path / "robots"
+    monkeypatch.setattr(fetch, "ROBOTS_DIR", pinned)
+    monkeypatch.setattr(fetch, "_http_get", lambda *a, **k: b"User-agent: *\n")
+    allowed, reason = fetch.robots_allows("http://example.invalid/a", 5.0)
+    assert allowed and not reason
+    written = sorted(path.name for path in pinned.glob("*.txt"))
+    assert written == ["example.invalid.txt"], written
+
+
+# --------------------------------------------------------------------------- 路径围栏
+
+
+def test_manual_source_cannot_escape_the_repo_root(tmp_path, monkeypatch):
+    """`repo://` 来源不得借"同前缀的兄弟目录"越出仓库。
+
+    旧实现用 `str(path).startswith(str(ROOT))`：`../白模预演codex_evil/x.md`
+    解析成 `E:\\白模预演codex_evil\\x.md`，恰好以 `E:\\白模预演codex` 开头，
+    于是任意相邻目录里的文件都会被当成 OwnWork 语料读进来。
+    """
+    repo = tmp_path / "repo"
+    (repo / "knowledge").mkdir(parents=True)
+    (repo / "knowledge" / "ok.md").write_text("正文" * 400, encoding="utf-8")
+    outside = tmp_path / "repo_outside"
+    outside.mkdir()
+    (outside / "secret.md").write_text("不该被读到的正文" * 200, encoding="utf-8")
+    monkeypatch.setattr(common, "ROOT", repo)
+
+    for url in ("repo://../repo_outside/secret.md",
+                "repo://knowledge/../../repo_outside/secret.md"):
+        source = {"url": url, "title": "t", "author": "a", "license": "OwnWork",
+                  "domain": "cinematography", "mode": "manual"}
+        with pytest.raises(fetch.FetchError) as info:
+            fetch.fetch_source(source, timeout=5.0, rate_seconds=0.0)
+        assert "越出仓库" in str(info.value), str(info.value)
+
+    # 反向：仓库内的笔记照常可读（否则上面的断言可能只是"全都拒收"）
+    inside = {"url": "repo://knowledge/ok.md", "title": "t", "author": "a",
+              "license": "OwnWork", "domain": "cinematography", "mode": "manual"}
+    record = fetch.fetch_source(inside, timeout=5.0, rate_seconds=0.0)
+    assert record["text"].startswith("正文")
+
+
+# --------------------------------------------------------------------------- 入库体积门（§2.3c）
+
+
+def test_inrepo_size_gate_fails_the_build(tmp_path):
+    """超限即构建失败（不是警告）：单文件 513 KB，或总量越过 20 MB。"""
+    cards = tmp_path / "cards"
+    cards.mkdir()
+    (cards / "cinematography.yaml").write_bytes(b"x" * (common.MAX_CARD_FILE_BYTES + 1))
+    gate = common.check_size_gate(cards)
+    assert gate["passed"] is False and gate["oversize"]
+
+    report = import_cards.build_report([], 0, 0, 0, {}, size_gate=gate)
+    passed, problems = import_cards.evaluate(report)
+    assert passed is False
+    assert any("体积门" in problem for problem in problems), problems
+
+
+def test_inrepo_size_gate_fails_when_the_total_is_over(tmp_path):
+    """每一份都在单文件线内，但总量越过 20 MB —— 同样判失败。"""
+    cards = tmp_path / "cards"
+    cards.mkdir()
+    chunk_bytes = 300 * 1024                   # < 单文件线（512 KB）
+    files = common.MAX_CARDS_TOTAL_BYTES // chunk_bytes + 1
+    for index in range(files):
+        (cards / f"d{index:02d}.jsonl").write_bytes(b"x" * chunk_bytes)
+    gate = common.check_size_gate(cards)
+    assert not gate["oversize"], "单文件不该超限"
+    assert gate["passed"] is False
+    assert gate["total_bytes"] > common.MAX_CARDS_TOTAL_BYTES
+
+
+def test_shipped_cards_are_within_the_inrepo_size_gate():
+    """随仓库入库的生成卡必须过体积门（读的是真产物，不是本次运行的中间结果）。"""
+    cards_dir = pathlib.Path(common.ROOT) / "knowledge" / "cards_generated"
+    gate = common.check_size_gate(cards_dir)
+    assert gate["file_count"] >= 9, gate
+    assert gate["passed"] is True, gate["oversize"]
+    assert gate["total_bytes"] <= common.MAX_CARDS_TOTAL_BYTES

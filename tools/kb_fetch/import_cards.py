@@ -215,7 +215,8 @@ def _write_domain_files(entries: Sequence[Dict]) -> Dict[str, int]:
 
 
 def build_report(entries: Sequence[Dict], candidates: int, deduped: int,
-                 rejected: int, docs: Dict[str, int]) -> Dict:
+                 rejected: int, docs: Dict[str, int],
+                 size_gate: Optional[Dict] = None) -> Dict:
     kept = len(entries)
     per_domain: Dict[str, int] = {d: 0 for d in common.DOMAINS}
     for entry in entries:
@@ -233,6 +234,9 @@ def build_report(entries: Sequence[Dict], candidates: int, deduped: int,
         common.source_ref_problems(e["source_ref"]) for e in entries) else 0.0
     # K1/K2 的分母是 cards_candidates（含被拒项），所以必须在门里逐条统计。
     return {
+        # §2.3c 的入库体积门（单文件 ≤512 KB、总量 ≤20 MB）；超限即构建失败。
+        "size_gate": size_gate if size_gate is not None
+        else common.check_size_gate(common.CARDS_DIR),
         "counts": {
             "cards_candidates": candidates,
             "cards_kept": kept,
@@ -252,6 +256,15 @@ def build_report(entries: Sequence[Dict], candidates: int, deduped: int,
 def evaluate(report: Dict) -> Tuple[bool, List[str]]:
     problems: List[str] = []
     counts = report["counts"]
+    size_gate = report.get("size_gate") or {}
+    if not size_gate.get("passed", True):
+        for name, size in sorted((size_gate.get("oversize") or {}).items()):
+            problems.append(f"体积门: {name} 单文件 {size} B > "
+                            f"{common.MAX_CARD_FILE_BYTES} B（改用摘要＋出处）")
+        total = int(size_gate.get("total_bytes") or 0)
+        if total > common.MAX_CARDS_TOTAL_BYTES:
+            problems.append(f"体积门: 生成卡总量 {total} B > "
+                            f"{common.MAX_CARDS_TOTAL_BYTES} B")
     if report["K1_source_ref_complete"] < 1.0:
         problems.append("K1: source_ref 六字段未全非空")
     if counts.get("K2_license_ratio", 1.0) < 1.0:
@@ -310,7 +323,8 @@ def run(annotated: Sequence[Dict], docs: Optional[Dict[str, int]] = None) -> Dic
 
     entries = _finalise(licensed)
     per_domain = _write_domain_files(entries)
-    report = build_report(entries, candidates, len(dropped), rejected, docs or {})
+    report = build_report(entries, candidates, len(dropped), rejected, docs or {},
+                          size_gate=common.check_size_gate(common.CARDS_DIR))
     report["counts"]["K2_license_ratio"] = (license_ok / candidates) if candidates else 0.0
     report["K1_source_ref_complete"] = (source_ok / candidates) if candidates else 0.0
     report["per_domain"] = per_domain

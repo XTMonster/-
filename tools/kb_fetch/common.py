@@ -45,6 +45,13 @@ TOPIC_QUOTAS: Tuple[str, ...] = (
     "lighting", "color", "camera_angle", "editing", "anime", "storyboard",
 )
 
+#: §2.3c「入库体积门」：生成卡片只入 `.yaml`/`.jsonl` 的正文，单文件 ≤ 512 KB、
+#: 总量 ≤ 20 MB；**超限即构建失败**（提示改用"摘要＋出处"而不是整篇转载）。
+MAX_CARD_FILE_BYTES = 512 * 1024
+MAX_CARDS_TOTAL_BYTES = 20 * 1024 * 1024
+#: 计入体积门的扩展名（`import_report.json` 是计数产物，不算正文）。
+CARD_ARTIFACT_SUFFIXES: Tuple[str, ...] = (".jsonl", ".yaml")
+
 CHUNKER_VERSION = "para-2400/v1"
 SCHEMA_VERSION = "p14-1/v1"
 ANNOTATE_PROMPT_VERSION = "annotate/v4"
@@ -213,6 +220,39 @@ def is_near_duplicate(a: str, b: str) -> bool:
 def ensure_work_dirs() -> None:
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     CARDS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def check_size_gate(cards_dir: pathlib.Path | None = None) -> Dict:
+    """§2.3c 的入库体积门：单文件 ≤ 512 KB、总量 ≤ 20 MB。
+
+    返回 ``{passed, total_bytes, max_total_bytes, files, oversize}``，其中
+    ``oversize`` 是超限的 ``{name: bytes}``。调用方（`import_cards.evaluate`）
+    据此把构建判失败——"超限即构建失败"是文档写死的口径，不是警告。
+    只统计 ``.jsonl``/``.yaml`` 的正文；`import_report.json` 之类的计数产物
+    不计入（否则报告自己的体积会把门推高）。
+    """
+    directory = pathlib.Path(cards_dir or CARDS_DIR)
+    files: Dict[str, int] = {}
+    total = 0
+    oversize: Dict[str, int] = {}
+    if directory.is_dir():
+        for path in sorted(directory.iterdir()):
+            if path.suffix not in CARD_ARTIFACT_SUFFIXES or not path.is_file():
+                continue
+            size = path.stat().st_size
+            files[path.name] = size
+            total += size
+            if size > MAX_CARD_FILE_BYTES:
+                oversize[path.name] = size
+    return {
+        "passed": not oversize and total <= MAX_CARDS_TOTAL_BYTES,
+        "files": files,
+        "file_count": len(files),
+        "total_bytes": total,
+        "max_file_bytes": MAX_CARD_FILE_BYTES,
+        "max_total_bytes": MAX_CARDS_TOTAL_BYTES,
+        "oversize": oversize,
+    }
 
 
 def read_jsonl(path: pathlib.Path) -> List[Dict]:
