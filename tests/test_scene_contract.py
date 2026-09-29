@@ -22,6 +22,7 @@ from block_director.layer5_orchestrator.scene_contract import (
     STATUS_RESOLVED,
     STATUS_UNRESOLVED,
     SceneContract,
+    declared_constraint_query,
     resolve_speaker,
     shot_constraint_query,
 )
@@ -162,3 +163,20 @@ def test_the_two_query_producers_agree_without_drifting():
     contract = SceneContract.from_plan(plan)
     assert (contract.shot("shot_007").constraint_query()
             == shot_constraint_query(plan.shots[0]))
+
+
+def test_the_plan_scope_query_comes_from_the_declared_shot_list():
+    """计划阶段没有计划，但剧本里有**声明**（镜别/手法）——那也能拼契约串。"""
+    from block_director.layer1_input.model import ParsedShotDeclaration
+
+    declared = [
+        ParsedShotDeclaration(shot_number=1, shot_type="MS", camera_move="dolly_in"),
+        ParsedShotDeclaration(shot_number=2, shot_type="CU", camera_move="固定"),
+        ParsedShotDeclaration(shot_number=3),          # 什么都没声明：不猜
+    ]
+    query = declared_constraint_query(declared, per_kind=1)
+    assert query == "景别=MS；运镜=dolly_in"
+    assert declared_constraint_query([]) == ""
+    # 摘要（自由文本）拼在后面时，`parse_query` 仍然只认 `键=值` 的片段。
+    combined = f"{query}；两人在厨房争吵"
+    assert parse_query(combined)["shot_size"] == ["MS"]

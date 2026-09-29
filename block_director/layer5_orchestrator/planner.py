@@ -21,6 +21,7 @@ from ..contracts.tools import PLAN_TOOL
 from ..motion.model import ACTION_TYPES
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES, render_timing_table
 from ..layer1_input.shotlist import render_declared_shots
+from .scene_contract import declared_constraint_query
 
 PLAN_TOOL_NAME = PLAN_TOOL
 
@@ -168,6 +169,13 @@ def build_plan_payload(script: str, config=None,
         query = (parsed.digest(max_scenes=20)
                  if parsed is not None and getattr(parsed, "scenes", None)
                  else body)
+        # §2.3b：超图那一条通道只认 `键=值`，而剧本里的**声明**（镜别/手法）
+        # 本来就能拼成契约串。把它拼在摘要前面：`parse_query` 会跳过没有 `=`
+        # 的片段，所以卡片/案例两栏仍然拿得到摘要的关键词，两边都不吃亏。
+        declared_query = declared_constraint_query(
+            getattr(parsed, "declared_shots", None)) if parsed is not None else ""
+        if declared_query:
+            query = f"{declared_query}；{query}"
         knowledge = retriever.block_for_plan(query) or NO_KNOWLEDGE
     system_text = (PLAN_SYSTEM_PROMPT.replace("{script}", body)
                    .replace("{knowledge}", knowledge)

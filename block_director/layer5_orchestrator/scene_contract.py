@@ -92,6 +92,33 @@ def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
     return "；".join(f"{key}={value}" for key, value in pairs)
 
 
+def declared_constraint_query(shots, *, per_kind: int = 3) -> str:
+    """从**分镜表的声明**拼出计划阶段的检索契约串（§2.3b 的 ``constraint_query``）。
+
+    计划阶段还没有计划，但剧本里**已经写了**镜别与拍摄手法（``declared_shots[]``
+    的 ``shot_type`` / ``camera_move``）。不把它们变成契约串，`block_for_plan`
+    就只能拿中文摘要去查超图——而 ``parse_query`` 只认 ``键=值``，于是一整场
+    预取里含 ``forbid`` 的那一栏永远空着。
+
+    声明缺失时返回空串（调用方据此退回自由文本），**不猜**。
+    """
+    pairs: List[tuple] = []
+    seen: Dict[str, set] = {}
+
+    def add(key: str, value) -> None:
+        text = str(value or "").strip()
+        bucket = seen.setdefault(key, set())
+        if not text or text in bucket or len(bucket) >= per_kind:
+            return
+        bucket.add(text)
+        pairs.append((key, text))
+
+    for shot in shots or []:
+        add("景别", getattr(shot, "shot_type", ""))
+        add("运镜", getattr(shot, "camera_move", ""))
+    return "；".join(f"{key}={value}" for key, value in pairs)
+
+
 def _pairs(entries) -> List[Dict[str, str]]:
     """把 ``{from,to}`` 形状的注视关系规范化成 ``[{source,target}]``。"""
     out: List[Dict[str, str]] = []
