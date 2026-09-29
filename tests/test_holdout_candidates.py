@@ -42,6 +42,13 @@ def test_prompt_mentions_the_card_and_the_rules():
     assert "JSON" in prompt
 
 
+def test_prompt_teaches_the_forbid_syntax():
+    """提示词不提 forbid_ 语法，门⑤ 就永远过不了（这是审查员抓到的一条）。"""
+    prompt = hc.prompt_for(CARDS[0])
+    assert "forbid_" in prompt
+    assert "禁忌" in prompt
+
+
 def test_parse_draft_tolerates_code_fence_and_prose():
     raw = '好的，这是结果：\n```json\n{"q": "情绪=狂喜", "must": ["TROPE:genre=film,emotion=狂喜"], ' \
           '"top1": ["TROPE:genre=film,emotion=狂喜"], "never": []}\n```\n以上。'
@@ -81,6 +88,15 @@ def test_disagreements_detects_must_differences():
     assert hc.disagreements(a, b) == ["c1"]
 
 
+def test_disagreements_also_look_at_q_and_never():
+    """q 是 Q5 的 join 键、never 是 Q3 的输入，只看 must 会漏掉它们的分歧。"""
+    a = [{"from_card": "c1", "must": ["M"], "q": "情绪=荒诞", "top1": ["M"], "never": []}]
+    b = [{"from_card": "c1", "must": ["M"], "q": "情绪=滑稽", "top1": ["M"], "never": []}]
+    assert hc.disagreements(a, b) == ["c1"]
+    c = [{"from_card": "c1", "must": ["M"], "q": "情绪=荒诞", "top1": ["M"], "never": ["N"]}]
+    assert hc.disagreements(a, c) == ["c1"]
+
+
 def test_two_stub_families_really_disagree():
     """两个族的 stub 必须真的产生分歧，否则分歧通道等于没测。"""
     a = hc.draft_all(CARDS, hc.offline_transport)
@@ -112,15 +128,29 @@ def test_render_sheet_only_lists_disagreements():
 def test_cli_writes_three_artifacts(tmp_path):
     cards = tmp_path / "cards.json"
     cards.write_text(json.dumps(CARDS, ensure_ascii=False), encoding="utf-8")
-    rc = hc.main(["--cards", str(cards), "--out-dir", str(tmp_path)])
+    rc = hc.main(["--cards", str(cards), "--out-dir", str(tmp_path),
+                  "--family", "qwen", "--extractor-family", "deepseek",
+                  "--model-id", "qwen3-vl:30b", "--model-version", "30b"])
     assert rc == 0
     for name in ("candidates.jsonl", "disagreements.json", "candidates.md"):
         assert (tmp_path / name).is_file(), name
     first = json.loads((tmp_path / "candidates.jsonl").read_text(encoding="utf-8").splitlines()[0])
     assert first["from_card"] == "cine_shot_size"
     assert first["id"] == "hq_0001"
-    assert first["annotator"]["family"] == "offline"
+    assert first["annotator"]["family"] == "qwen"
+    assert first["annotator"]["model_id"] == "qwen3-vl:30b"
+    assert first["annotator"]["model_version"] == "30b"
+    assert first["annotator"]["prompt_sha256"]          # 证据链不得为空
     assert first["independence"] == "strong"
+
+
+def test_independence_is_weak_without_a_different_extractor_family(tmp_path):
+    """协议 §5.1：与抽取族同族 → weak；不给抽取族 → 只能保守记 weak。"""
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(CARDS, ensure_ascii=False), encoding="utf-8")
+    assert hc.main(["--cards", str(cards), "--out-dir", str(tmp_path)]) == 0
+    first = json.loads((tmp_path / "candidates.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    assert first["independence"] == "weak"
 
 
 def test_cli_output_is_accepted_by_check_holdout(tmp_path):
@@ -130,7 +160,8 @@ def test_cli_output_is_accepted_by_check_holdout(tmp_path):
 
     cards = tmp_path / "cards.json"
     cards.write_text(json.dumps(CARDS, ensure_ascii=False), encoding="utf-8")
-    assert hc.main(["--cards", str(cards), "--out-dir", str(tmp_path)]) == 0
+    assert hc.main(["--cards", str(cards), "--out-dir", str(tmp_path),
+                    "--model-id", "offline", "--model-version", "stub"]) == 0
     rc = check_holdout.main([str(tmp_path / "candidates.jsonl"), "--pilot", "--json"])
     # 格式门必须过；其余门在 2 条草稿上按试点门限判定
     assert rc in (0, 1, 2)
@@ -210,3 +241,43 @@ def test_cli_merge_writes_the_final_jsonl(tmp_path):
     final = (tmp_path / "knowledge_holdout.jsonl").read_text(encoding="utf-8").splitlines()
     assert len(final) == 1
     assert json.loads(final[0])["review"]["verdict"] == "accepted"
+
+
+def test_sheet_round_trips_back_into_decisions(tmp_path):
+    """人打勾的 md 必须能机械读回——否则"最后一公里"还是人工转写。"""
+    drafts = [{"id": "hq_0001", "from_card": "c1", "q": "情绪=狂喜",
+               "must": ["TROPE:genre=film,emotion=狂喜"], "expect_movements": []},
+              {"id": "hq_0002", "from_card": "c2", "q": "景别=中景",
+               "must": ["SHOT_PATTERN:shot_size=中景,lens=50mm,headroom_policy=board"],
+               "expect_movements": []}]
+    sheet = hc.render_sheet(drafts, ["c1", "c2"])
+    assert "hq_0001" in sheet
+    ticked = sheet.replace("| [ ] |", "| [x] |", 1)          # 人只勾了第一条
+    decisions = hc.sheet_to_decisions(ticked)
+    assert decisions == {"hq_0001": "accepted"}
+
+    path = tmp_path / "candidates.jsonl"
+    path.write_text("\n".join(json.dumps(d, ensure_ascii=False) for d in
+                              [dict(d, never=[], annotator={"model_id": "m", "family": "f",
+                                                            "model_version": "1",
+                                                            "prompt_sha256": "x"},
+                                    independence="weak") for d in drafts]) + "\n",
+                    encoding="utf-8")
+    sheet_path = tmp_path / "candidates.md"
+    sheet_path.write_text(ticked, encoding="utf-8")
+    assert hc.main(["--merge-sheet", str(sheet_path), "--merge-into", str(path),
+                    "--out-dir", str(tmp_path)]) == 0
+    final = [json.loads(l) for l in
+             (tmp_path / "knowledge_holdout.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert len(final) == 2                      # 没勾的保留（两族一致即可直接入库）
+    assert final[0]["review"]["verdict"] == "accepted"
+
+
+def test_cli_keeps_both_families_drafts_for_audit(tmp_path):
+    """两族的草稿都要留痕（`drafts` 字段），否则分歧无法回溯。"""
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(CARDS, ensure_ascii=False), encoding="utf-8")
+    assert hc.main(["--cards", str(cards), "--out-dir", str(tmp_path),
+                    "--family", "qwen", "--extractor-family", "deepseek"]) == 0
+    first = json.loads((tmp_path / "candidates.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    assert set(first["drafts"]) == {"qwen", "qwen-b"}

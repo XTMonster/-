@@ -16,17 +16,24 @@ sys.path.insert(0, str(ROOT))
 
 from tools import check_holdout  # noqa: E402
 
-#: kind -> allowed values; every value below is used under the matching q key
+#: kind -> allowed values; all 14 kinds must be present or the gate is not_measured
 VOCAB = {"emotion": ["气急败坏"], "action": ["跺脚"], "movement": ["固定"],
-         "shot_size": ["中景"], "lens": ["50mm"], "axis_topic": ["过肩"],
-         "genre": ["film"], "pacing": ["短镜硬切"], "lighting": ["逆光"]}
+         "shot_size": ["中景"], "lens": ["50mm"], "pacing": ["短镜硬切"],
+         "vfx": ["石化"], "sfx": ["浪声"], "camera_angle": ["平视"], "lighting": ["逆光"],
+         "composition_rule": ["三分法"], "axis_topic": ["过肩"], "genre": ["film"],
+         "beat_type": ["反转"]}
+
+#: one query string that exercises every kind above (keeps gate ③ satisfiable)
+Q_ALL = ("情绪=气急败坏；动作=跺脚；运镜=固定；景别=中景；镜头=50mm；节奏=短镜硬切；"
+         "特效=石化；音效=浪声；机位=平视；光线=逆光；构图=三分法；轴线=过肩；"
+         "题材=film；桥段=反转")
 
 
 def entry(idx: int = 1, **over: object) -> dict:
     base = {
         "id": f"hq_{idx:04d}",
         "from_card": f"card_{idx}",
-        "q": "情绪=气急败坏；动作=跺脚；运镜=固定",
+        "q": Q_ALL,
         "must": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定"],
         "top1": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定"],
         "never": [],
@@ -71,7 +78,7 @@ def q7_entry(idx: int = 1, **over: object) -> dict:
     return entry(idx,
                  must=["EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_shot_size=中景"],
                  top1=["EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_shot_size=中景"],
-                 q="情绪=气急败坏；景别=中景；运镜=固定", **over)
+                 q=Q_ALL, **over)
 
 
 def valid_records() -> list:
@@ -81,17 +88,17 @@ def valid_records() -> list:
     Q7 conflict (gate ⑤) — i.e. what a real pilot batch has to look like.
     """
     specs = [
-        ("EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定",
-         "情绪=气急败坏；运镜=固定"),
-        ("SHOT_PATTERN:shot_size=中景,lens=50mm,headroom_policy=board",
-         "景别=中景；镜头=50mm；动作=跺脚"),
-        ("AXIS_RULE:pair=any_two,axis_side=right", "轴线=过肩"),
-        ("TROPE:genre=film,emotion=气急败坏", "题材=film"),
-        ("EDIT_RHYTHM:pacing=短镜硬切,avg_shot_len=2.0", "节奏=短镜硬切"),
-        ("LIGHT_PACK:lighting=逆光,intensity=mid", "光线=逆光"),
+        ("EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定", Q_ALL),
+        ("SHOT_PATTERN:shot_size=中景,lens=50mm,headroom_policy=board", Q_ALL),
+        ("AXIS_RULE:pair=any_two,axis_side=right", Q_ALL),
+        ("TROPE:genre=film,emotion=气急败坏", Q_ALL),
+        ("EDIT_RHYTHM:pacing=短镜硬切,avg_shot_len=2.0", Q_ALL),
+        ("LIGHT_PACK:lighting=逆光,intensity=mid", Q_ALL),
     ]
-    out = [entry(i, must=[spec], top1=[spec], q=q) for i, (spec, q) in enumerate(specs, 1)]
-    out.append(q7_entry(7))
+    review = {"reviewed_by": "human", "verdict": "accepted"}
+    out = [entry(i, must=[spec], top1=[spec], q=q, review=review)
+           for i, (spec, q) in enumerate(specs, 1)]
+    out.append(q7_entry(7, review=review))
     return out
 
 
@@ -173,6 +180,36 @@ def test_q7_is_zero_when_the_forbidden_value_is_absent_from_q(tmp_path):
     data = report(write(tmp_path, [rec]))
     assert data["gate_5_forbid"]["q7_conflicts"] == 0
     assert data["gate_5_forbid"]["status"] == "fail"
+
+
+def test_forbid_member_coverage_is_its_own_gate(tmp_path):
+    """门⑤b：每个 forbid 成员都得有 ≥1 条冲突用例（否则"从不召回某个禁忌"永远测不到）。"""
+    data = report(write(tmp_path, [q7_entry()]))
+    assert data["gate_5b_forbid_members"]["status"] == "pass"
+    assert data["gate_5b_forbid_members"]["members"] == 1
+
+
+def test_q7_kind_must_match_not_only_the_value(tmp_path):
+    """只比值会让 `景别=中景` 撞上 `forbid_movement=中景`——必须同类同值。"""
+    rec = entry(must=["EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_movement=中景"],
+                top1=["EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_movement=中景"],
+                q="情绪=气急败坏；景别=中景")
+    data = report(write(tmp_path, [rec]))
+    assert data["gate_5_forbid"]["q7_conflicts"] == 0
+
+
+def test_human_review_gate_flags_unreviewed_q5_q7_entries(tmp_path):
+    data = report(write(tmp_path, [q7_entry()]))  # 有 expect_movements 且是 Q7，却没人裁
+    assert data["gate_7_human_review"]["status"] == "fail"
+    assert data["gate_7_human_review"]["human_reviewed"] == 0
+
+
+def test_pilot_entries_do_not_count_towards_the_1200(tmp_path):
+    rec = q7_entry(review={"reviewed_by": "human", "verdict": "accepted"}, pilot=True)
+    data = report(write(tmp_path, [rec]), pilot=False)
+    assert data["gate_1_total"]["entries"] == 0
+    assert data["gate_1_total"]["entries_pilot"] == 1
+    assert data["gate_1_total"]["status"] == "fail"
 
 
 # ---------------------------------------------------------------- 门④ 边类覆盖

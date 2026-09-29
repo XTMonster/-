@@ -43,6 +43,7 @@ REQUIRED_SLOTS = {
 
 KNOWN_TYPES = frozenset(EDGE_TYPES)
 PASS, FAIL, NA = "pass", "fail", "not_measured"
+ID_RE = re.compile(r"^hq_\d{4,}$")
 
 #: protocol §2.1 — the frozen Chinese query keys, mapped to their kind
 Q_KEY_TO_KIND = {
@@ -110,6 +111,19 @@ def parse_spec(spec: str) -> Tuple[str, Dict[str, str], Dict[str, str]]:
     return etype, plain, forbid
 
 
+def spec_key(spec: str) -> Tuple[str, frozenset]:
+    """Normalised identity of one edge spec — used for set comparisons.
+
+    Comparing raw strings (the old behaviour) both misses "same edge written with
+    different slot order" and can report "no overlap" for two spellings of the very
+    same edge.
+    """
+    etype, plain, forbid = parse_spec(spec)
+    items = frozenset([("allow", k, v) for k, v in plain.items()] +
+                      [("forbid", k, v) for k, v in forbid.items()])
+    return etype, items
+
+
 def load_entries(path: pathlib.Path) -> List[dict]:
     entries: List[dict] = []
     for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
@@ -132,13 +146,16 @@ def validate_entry(record: dict) -> Tuple[Dict[str, Dict[str, str]], int]:
     for field in ("id", "from_card", "q", "must", "top1", "never", "annotator", "independence"):
         if field not in record:
             raise EntryError(f"缺字段 {field!r}")
-    if not str(record["id"]).strip():
-        raise EntryError("id 为空")
+    if not ID_RE.match(str(record["id"]).strip()):
+        raise EntryError("id 必须形如 hq_0001")
     if not str(record["from_card"]).strip():
         raise EntryError("from_card 为空")
     ann = record["annotator"]
-    if not isinstance(ann, dict) or not ann.get("model_id") or not ann.get("family"):
-        raise EntryError("annotator 必须含 model_id 与 family")
+    if not isinstance(ann, dict):
+        raise EntryError("annotator 必须是对象")
+    for field in ("model_id", "family", "model_version"):
+        if not str(ann.get(field) or "").strip():
+            raise EntryError(f"annotator.{field} 不得为空（换族的证据链，见协议 §5.1）")
     if record["independence"] not in ("strong", "weak"):
         raise EntryError("independence 只能是 strong/weak")
     review = record.get("review")
@@ -151,12 +168,14 @@ def validate_entry(record: dict) -> Tuple[Dict[str, Dict[str, str]], int]:
     if not isinstance(must, list) or not 1 <= len(must) <= 3:
         raise EntryError("must 必须是 1–3 条")
     top1 = record["top1"]
-    if not isinstance(top1, list) or not set(top1) <= set(must):
+    if not isinstance(top1, list):
+        raise EntryError("top1 必须是数组")
+    if not {spec_key(s) for s in top1} <= {spec_key(s) for s in must}:
         raise EntryError("top1 必须 ⊆ must")
     never = record["never"]
     if not isinstance(never, list):
         raise EntryError("never 必须是数组")
-    if set(never) & set(must):
+    if {spec_key(s) for s in never} & {spec_key(s) for s in must}:
         raise EntryError("must 与 never 不得相交")
     for spec in list(must) + list(never):
         if not isinstance(spec, str):
@@ -169,7 +188,9 @@ def validate_entry(record: dict) -> Tuple[Dict[str, Dict[str, str]], int]:
         _etype, _plain, forbid = parse_spec(spec)
         for kind, value in forbid.items():
             for zh, qvalue in q.items():
-                if qvalue == value:
+                # 「同类同值」：kind 必须对上（协议 §3.3 / 文档 §4.1b），
+                # 只比值会让 `景别=中景` 撞上 `forbid_movement=中景`。
+                if Q_KEY_TO_KIND.get(zh) == kind and qvalue == value:
                     hits += 1
     return q, hits
 
@@ -178,6 +199,9 @@ def gate_entries(entries: Sequence[dict], min_entries: int) -> Tuple[str, dict]:
     problems: List[str] = []
     seen: Dict[str, int] = {}
     q7 = 0
+    q7_members: Dict[str, int] = {}
+    needs_human = 0
+    human_reviewed = 0
     type_counts: Dict[str, int] = {t: 0 for t in EDGE_TYPES}
     parsed_q: List[Dict[str, str]] = []
     for record in entries:
@@ -193,16 +217,30 @@ def gate_entries(entries: Sequence[dict], min_entries: int) -> Tuple[str, dict]:
         q7 += 1 if hits else 0
         parsed_q.append(q)
         for spec in record["must"]:
-            type_counts[parse_spec(spec)[0]] += 1
+            etype, _plain, forbid = parse_spec(spec)
+            type_counts[etype] += 1
+            for kind, value in forbid.items():
+                q7_members[f"{kind}={value}"] = q7_members.get(f"{kind}={value}", 0) + 1
+        # Q5 / Q7 的最终裁定必须由人做（协议 §5.5）
+        if hits or (record.get("expect_movements") or []):
+            needs_human += 1
+            if str(((record.get("review") or {}).get("reviewed_by") or "")).lower() == "human":
+                human_reviewed += 1
     detail = {"entries": len(entries), "valid": len(parsed_q), "problems": problems[:20],
               "problem_count": len(problems), "q7_conflicts": q7, "must_per_type": type_counts,
+              "q7_forbid_members": q7_members, "needs_human": needs_human,
+              "human_reviewed": human_reviewed, "q7_member_count": len(q7_members),
               "_parsed_q": parsed_q}
     return (FAIL if problems else PASS), detail
 
 
 def gate_total(entries: Sequence[dict], min_entries: int) -> Tuple[str, dict]:
-    n = len(entries)
-    return (PASS if n >= min_entries else FAIL), {"entries": n, "min_entries": min_entries}
+    """Only non-pilot entries count towards the 1200 (protocol §2)."""
+    pilot = [e for e in entries if e.get("pilot") is True]
+    formal = [e for e in entries if e.get("pilot") is not True]
+    n = len(formal)
+    return (PASS if n >= min_entries else FAIL), {
+        "entries": n, "entries_pilot": len(pilot), "min_entries": min_entries}
 
 
 def gate_edge_types(type_counts: Dict[str, int], per_type: int) -> Tuple[str, dict]:
@@ -220,7 +258,15 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
     Unused vocabulary value  -> the seed space has a blind spot.
     Used value outside the vocabulary -> the label is not expressed in the index's
     namespace, which silently sends Q4 to zero (the trap the protocol warns about).
+    A missing kind is worse than a missing value: whatever kind the vocabulary omits
+    is simply never checked, so the vocabulary must cover all 14 kinds or we measure
+    nothing.
     """
+    missing_kinds = sorted(set(Q_KEY_TO_KIND.values()) - set(vocab))
+    if missing_kinds:
+        return NA, {"reason": f"词表缺 kind：{missing_kinds}（缺哪个 kind，哪个 kind 就免检）",
+                    "missing_kinds": missing_kinds}
+
     # (kind, value) pairs the annotation actually used, keyed through the frozen q keys
     used: Dict[str, set] = {}
     for q in parsed_q:
@@ -250,10 +296,29 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
 
 
 def gate_sources(entries: Sequence[dict], cards: Sequence[str]) -> Tuple[str, dict]:
+    """Both directions: every card has ≥1 entry, and no entry cites a ghost card."""
     used = {str(e.get("from_card", "")) for e in entries}
     gap = [c for c in cards if c not in used]
-    return (PASS if not gap else FAIL), {"cards": len(cards), "missing_cards": gap[:20],
-                                         "missing_count": len(gap)},
+    ghost = sorted(used - set(cards))
+    return (PASS if not gap and not ghost else FAIL), {
+        "cards": len(cards), "missing_cards": gap[:20], "missing_count": len(gap),
+        "ghost_cards": ghost[:20], "ghost_count": len(ghost)}
+
+
+def gate_forbid_members(members: Dict[str, int], minimum: int = 1) -> Tuple[str, dict]:
+    """Every `forbid` member must appear in ≥1 Q7 conflict case (§4.1b 门⑤)."""
+    short = {k: v for k, v in members.items() if v < minimum}
+    if not members:
+        return FAIL, {"members": 0, "under_covered": {}}
+    return (PASS if not short else FAIL), {"members": len(members), "under_covered": short}
+
+
+def gate_human_review(needs: int, reviewed: int, minimum: int) -> Tuple[str, dict]:
+    """Q5/Q7 entries must carry a human verdict (protocol §5.5)."""
+    detail = {"needs_human": needs, "human_reviewed": reviewed, "min_human_review": minimum}
+    if needs == 0:
+        return NA, detail
+    return (PASS if reviewed >= min(needs, minimum) else FAIL), detail
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -266,6 +331,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--cards", default="", help="JSON: 卡片 id 数组（来源覆盖门）")
     parser.add_argument("--pilot", action="store_true",
                         help="试点模式：门限放宽到 1/1/1，便于在语料落地前跑通管道")
+    parser.add_argument("--min-human-review", type=int, default=120,
+                        help="Q5/Q7 条目里必须带人裁决的条数（协议 §5.5；pilot 时为 1）")
     parser.add_argument("--json", action="store_true", help="只打印 JSON 报告")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -277,6 +344,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     min_entries = 1 if args.pilot else args.min_entries
     per_type = 1 if args.pilot else args.min_per_type
     min_forbid = 1 if args.pilot else args.min_forbid
+    min_review = 1 if args.pilot else args.min_human_review
 
     try:
         entries = load_entries(path)
@@ -304,11 +372,25 @@ def main(argv: Sequence[str] | None = None) -> int:
     statuses.append(gstatus)
     report["gate_5_forbid"] = {"status": gstatus, **gdetail}
 
+    mstatus, mdetail = gate_forbid_members(fdetail["q7_forbid_members"], 1)
+    statuses.append(mstatus)
+    report["gate_5b_forbid_members"] = {"status": mstatus, **mdetail}
+
+    rstatus, rdetail = gate_human_review(fdetail["needs_human"], fdetail["human_reviewed"],
+                                         min_review)
+    statuses.append(rstatus)
+    report["gate_7_human_review"] = {"status": rstatus, **rdetail}
+
     if args.vocab:
         try:
             vocab = json.loads(pathlib.Path(args.vocab).read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             print(json.dumps({"error": f"读不到 --vocab {args.vocab}: {exc}"},
+                             ensure_ascii=False))
+            return 1
+        if not isinstance(vocab, dict) or not all(
+                isinstance(k, str) and isinstance(v, list) for k, v in vocab.items()):
+            print(json.dumps({"error": "--vocab 必须是 {kind: [value, ...]}"},
                              ensure_ascii=False))
             return 1
         sstatus, sdetail = gate_seed_coverage(fdetail["_parsed_q"], vocab)
@@ -322,6 +404,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             cards = json.loads(pathlib.Path(args.cards).read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             print(json.dumps({"error": f"读不到 --cards {args.cards}: {exc}"},
+                             ensure_ascii=False))
+            return 1
+        if not isinstance(cards, list) or not cards or not all(
+                isinstance(c, str) for c in cards):
+            print(json.dumps({"error": "--cards 必须是非空的卡片 id 字符串数组"},
                              ensure_ascii=False))
             return 1
         cstatus, cdetail = gate_sources(entries, cards)

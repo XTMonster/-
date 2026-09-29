@@ -41,7 +41,17 @@ def prompt_for(card: dict) -> str:
         "你在为一个白模预演插件的知识库做标注。给定一张知识卡，产出 1 条检索期望条目。\n"
         "只输出 JSON：{\"q\": \"键=值；键=值\", \"must\": [\"TYPE:槽位=取值,...\"], "
         "\"top1\": [...], \"never\": [...], \"expect_movements\": [...]}\n"
-        "规则：must 1–3 条；top1 ⊆ must；never 与 must 不相交；q 的键只用协议 §2.1 的词表。\n"
+        "规则：\n"
+        "1. must 1–3 条；top1 ⊆ must；never 与 must 不相交。\n"
+        "2. q 的键只用协议 §2.1 的冻结键集（情绪/动作/运镜/景别/镜头/节奏/特效/音效/"
+        "机位/光线/构图/轴线/题材/桥段），取值只用冻结词表里的规范名。\n"
+        "3. **禁忌必须写出来**：若这张卡说明某个取值应当被禁止，写成 "
+        "`forbid_<kind>=取值`（例：`EMOTION_PACK:emotion=荒诞,intensity=high,forbid_shot_size=特写`）。\n"
+        "4. 若某个关键词应当**被禁止**（而不是被要求），把它同时写进 `q` 与 `forbid_<kind>`——"
+        "这正是 Q7 要测的「禁忌拦截」，**至少 1/20 的条目必须带这种冲突**。\n"
+        "5. 每条边的必填槽位：EMOTION_PACK(emotion,intensity)／SHOT_PATTERN(shot_size,lens,headroom_policy)／"
+        "AXIS_RULE(pair,axis_side)／TROPE(genre,emotion)／EDIT_RHYTHM(pacing,avg_shot_len)／"
+        "LIGHT_PACK(lighting,intensity)。\n"
         f"卡 id：{card.get('id')}\n域：{card.get('domain')}\n标题：{card.get('title')}\n"
         f"关键词：{','.join(str(k) for k in (card.get('keywords') or []))}\n"
         f"正文：{card.get('content')}\n"
@@ -158,35 +168,44 @@ def draft_all(cards: Iterable[dict], transport: Transport) -> List[dict]:
 
 
 def disagreements(a: Sequence[dict], b: Sequence[dict]) -> List[str]:
-    """Card ids whose two drafts differ on `must`."""
+    """Card ids whose two drafts differ on anything that feeds an oracle.
+
+    `q` is Q5's join key, `never` is Q3's input, `top1` is Q1's — comparing only
+    `must` (the old behaviour) would let those disagreements reach the file unadjudicated.
+    """
     by_b = {d.get("from_card"): d for d in b}
+    keys = ("q", "must", "top1", "never")
     out = []
     for draft in a:
         other = by_b.get(draft.get("from_card"))
         if other is None or draft.get("error") or other.get("error"):
             out.append(str(draft.get("from_card")))
             continue
-        if sorted(draft.get("must") or []) != sorted(other.get("must") or []):
+        if any(sorted(draft.get(k) or []) != sorted(other.get(k) or []) for k in keys):
             out.append(str(draft.get("from_card")))
     return out
 
 
-def finalise(draft: dict, idx: int, *, family: str, independence: str,
-             transport: str) -> dict:
+def finalise(draft: dict, idx: int, *, family: str, model_id: str, model_version: str,
+             independence: str) -> dict:
     """Turn a raw draft into an entry `check_holdout.py` can validate.
 
     Only `review` is left for the human — everything mechanical (id, annotator,
     independence) is filled here so the pipeline is closed end to end.
+
+    The `annotator` block is the **evidence chain for the family switch** (R49), so it
+    must carry the real model id/version and the prompt hash — putting the transport
+    name there (the old behaviour) made the chain silently empty.
     """
     if draft.get("error"):
         return draft
     out = dict(draft)
-    out.pop("_prompt_sha256", None)
     out["id"] = f"hq_{idx:04d}"
     out.setdefault("never", [])
     out.setdefault("expect_movements", [])
-    out["annotator"] = {"model_id": transport, "family": family,
-                        "model_version": "", "prompt_sha256": ""}
+    out["annotator"] = {"model_id": model_id, "family": family,
+                        "model_version": model_version,
+                        "prompt_sha256": draft.get("_prompt_sha256", "")}
     out["independence"] = independence
     return out
 
@@ -194,23 +213,45 @@ def finalise(draft: dict, idx: int, *, family: str, independence: str,
 def render_sheet(drafts: Sequence[dict], diff_ids: Sequence[str]) -> str:
     """The Markdown 选择题 a human actually reads (only the disagreements)."""
     lines = ["# held-out 裁决表（只列两个族分歧的条目）", "",
-             "对的打勾；都不对就写一句期望。", ""]
+             "打勾 = 采纳（写入 accepted）；都不对就在该节末尾写 `rejected: 原因`。",
+             "填完用 `--merge-from decisions.json` 合并，本表的 `id` 就是键。", ""]
     want = set(diff_ids)
     for draft in drafts:
         if draft.get("from_card") not in want:
             continue
-        lines.append(f"## {draft.get('from_card')}")
+        lines.append(f"## {draft.get('id', '')} · {draft.get('from_card')}")
         lines.append("")
         lines.append(f"查询：`{draft.get('q', '')}`")
         lines.append("")
-        lines.append("| 候选「必须边」 | 采纳？ |")
-        lines.append("|---|---|")
+        lines.append("| id | 候选「必须边」 | 采纳 |")
+        lines.append("|---|---|---|")
         for spec in draft.get("must") or []:
-            lines.append(f"| `{spec}` | [ ] |")
+            lines.append(f"| `{draft.get('id', '')}` | `{spec}` | [ ] |")
         lines.append("")
         lines.append(f"期望运镜：`{', '.join(draft.get('expect_movements') or []) or '（未给）'}`")
         lines.append("")
     return "\n".join(lines) + "\n"
+
+
+def sheet_to_decisions(sheet_text: str) -> Dict[str, str]:
+    """Read a ticked `candidates.md` back into `{id: verdict}`.
+
+    Without this the human's ticks had to be hand-transcribed into JSON — the missing
+    half of the last mile.
+    """
+    decisions: Dict[str, str] = {}
+    current: str | None = None
+    for raw in sheet_text.splitlines():
+        line = raw.strip()
+        if line.startswith("## "):
+            current = line[3:].split("·")[0].strip()
+            continue
+        if current and line.lower().startswith("rejected:"):
+            decisions[current] = "rejected"
+            continue
+        if current and "|" in line and re.search(r"\[\s*x\s*\]", line, re.I):
+            decisions[current] = "accepted"
+    return decisions
 
 
 def merge_decisions(entries: Sequence[dict], decisions: Dict[str, object]) -> List[dict]:
@@ -281,6 +322,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="第二个族；写 none 则跳过分歧检测")
     parser.add_argument("--family", default="offline", help="写进 annotator.family（第一个族）")
     parser.add_argument("--family-b", default="", help="第二个族的 family（默认 = --family + '-b'）")
+    parser.add_argument("--extractor-family", default="",
+                        help="抽取器的 family；independence 由「标注族 vs 抽取族」派生（协议 §5.1）")
+    parser.add_argument("--model-id", default="", help="标注模型 id（写进 annotator）")
+    parser.add_argument("--model-version", default="", help="标注模型版本")
     parser.add_argument("--out-dir", default=".")
     parser.add_argument("--merge-from", default="",
                         help="裁决文件（{id: accepted|rejected|amended}）；给了它就只做合并")
@@ -288,13 +333,19 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="要合并的 candidates.jsonl（默认 <out-dir>/candidates.jsonl）")
     parser.add_argument("--final", default="",
                         help="合并后的产物路径（默认 <out-dir>/knowledge_holdout.jsonl）")
+    parser.add_argument("--merge-sheet", default="",
+                        help="也可以直接给人打勾的 candidates.md（会先转成 decisions）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     out_dir = pathlib.Path(args.out_dir)
-    if args.merge_from:
+    if args.merge_from or args.merge_sheet:
         src = pathlib.Path(args.merge_into or (out_dir / "candidates.jsonl"))
         entries = [json.loads(l) for l in src.read_text(encoding="utf-8").splitlines() if l.strip()]
-        decisions = json.loads(pathlib.Path(args.merge_from).read_text(encoding="utf-8"))
+        if args.merge_sheet:
+            decisions = sheet_to_decisions(
+                pathlib.Path(args.merge_sheet).read_text(encoding="utf-8"))
+        else:
+            decisions = json.loads(pathlib.Path(args.merge_from).read_text(encoding="utf-8"))
         final = merge_decisions(entries, decisions)
         dest = pathlib.Path(args.final or (out_dir / "knowledge_holdout.jsonl"))
         dest.write_text("\n".join(json.dumps(e, ensure_ascii=False) for e in final) + "\n",
@@ -320,10 +371,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         diff_ids = disagreements(raw_drafts, drafts_b)
         (out_dir / "disagreements.json").write_text(
             json.dumps(diff_ids, ensure_ascii=False, indent=2), encoding="utf-8")
-    independence = "strong" if family_b != args.family else "weak"
-    drafts = [finalise(d, i, family=args.family, independence=independence,
-                       transport=args.transport_a)
+    # 协议 §5.1：strong/weak 由「标注族 vs **抽取族**」派生，与「两个标注族之间」
+    # 是否相同无关。没给 --extractor-family 时只能记 weak（保守，不得冒充 strong）。
+    independence = "strong" if (args.extractor_family
+                                and args.extractor_family != args.family) else "weak"
+    model_id = args.model_id or args.transport_a
+    drafts = [finalise(d, i, family=args.family, model_id=model_id,
+                       model_version=args.model_version, independence=independence)
               for i, d in enumerate(raw_drafts, 1)]
+    if args.transport_b != "none":
+        drafts = link_stub_chain(drafts, raw_drafts, drafts_b,
+                                 family_a=args.family, family_b=family_b)
     (out_dir / "candidates.jsonl").write_text(
         "\n".join(json.dumps(d, ensure_ascii=False) for d in drafts) + "\n", encoding="utf-8")
 
@@ -333,7 +391,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     ok = sum(1 for d in drafts if not d.get("error"))
     print(json.dumps({"cards": len(cards), "drafted": ok,
                       "errors": len(drafts) - ok, "disagreements": len(diff_ids),
-                      "out_dir": str(out_dir)}, ensure_ascii=False))
+                      "independence": independence, "out_dir": str(out_dir)},
+                     ensure_ascii=False))
     return 0
 
 
