@@ -229,6 +229,18 @@ and coreference) is done.
 | **P13** | 长剧本不被截断（提示侧无"其余 N 个镜号略"；显式上限超限报 `E_SCRIPT_002`）、连续成片默认产出 |
 | **P15** | `shots.json` 补齐 §3.3 全字段；同层动作自动错开并留痕（US-17）；`prompts.md` 逐字段可对拍且不含引擎内部键 |
 | **P16** | 构图门 ≥70% + 反向突变（ADR-0012）；无 bpy 的空断言静态检查 `tools/check_assertions.py`；探针清单双向断言与 `docs/evidence/<run-id>/{rks.json,config.fingerprint.json}` 收尾钩子；`CONTEXT.md` + `docs/adr/0007…0012` |
+| **P14** | 知识栈三层：语料 1075 卡 / 九域（`knowledge/cards_generated/`）、超图索引（`knowledge/hypergraph.{nodes,edges}.jsonl`，143 边含 **19 个 `forbid` 成员**、最大 arity 4）、L3 案例层（`knowledge/cases.*`）；`/v1/retrieve` 三通道 `cards[]/edges[]/cases[]` ＋ `trace{}`（`contracts/knowledge.py` 的 `HyperEdge`/`Case` DTO，`specs/openapi.yaml` 同批）；`Capability.HYPERGRAPH` 由**索引是否加载成功**决定；插件侧 `knowledge/client.py` 每次检索写一条 `retrieval_call` 审计事件，`knowledge_trace.json` 每次运行必写；`tools/holdout_score.py` 判 Q1–Q7、`tools/knowledge/quality.py` 判 Q0 ＋ E1–E3 并落 `docs/evidence/<run-id>/knowledge_quality.json`；`tools/ab_triple_baseline.py` 出三元组对照；`tools/knowledge/sample_edges.py` 出 30 条人工抽查样本（`verdict` 留空，不预填） |
+
+**P14 未完成（不得当作通过）**：`fixtures/knowledge_holdout.jsonl` 仍是**空文件**，
+所以 **RK-13 = `not_measured`**（`docs/evidence/20260930-063042/rks.json` 里 19 条 RK 中唯一未度量的一条），
+`tools/holdout_score.py` 与 `ab_triple_baseline.py` 会打印 `INCOMPLETE` 并非零退出。
+根因是本机标注通道：`qwen3-vl:30b` 是思考模型，官方三条关思考开关全无效
+（`docs/evidence/20260930-070000/knowledge_annotator_blocker.json`）；给 `/api/chat`
+加 **assistant 预填**可把它从"context 打满仍无正文"变成 4.7 s/次（`tools/kb_fetch/llm.py`
+的 `OLLAMA_ASSISTANT_PREFILL`，默认关闭），之后 1200 条的本地生成才成为可能，但需要数小时墙钟。
+**人审 ≥120 条**（协议门⑦）与 **Q5/Q7/E3 的最终裁定**必须由人做，agent 不可代替。
+另有两条账目/口径未收口：`knowledge/hypergraph.manifest.json` 的 `rejects` 与
+`hypergraph.rejects.jsonl` 的行数对不上（Q0 会直接判 fail），以及 L3 案例层 ≥300 篇尚未落地。
 
 安全审计（并行角色）另修了两条：`shot_id` 不再能越过导出目录
 （`contracts/plan.py::validate_shot_id` + SDL 的 S11），GUI 的"清空场景后构建"
