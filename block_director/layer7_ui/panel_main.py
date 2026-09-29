@@ -26,6 +26,7 @@ from .run_settings import (
     BACKENDS,
     PRESETS,
     PROVIDERS,
+    SUFFIX_HELP,
     apply_scene_settings,
     collect_settings,
 )
@@ -178,7 +179,9 @@ def _sync_overlay(scene) -> None:
 _scene_props = {
     "bd_script_path": StringProperty(
         name="剧本路径", subtype='FILE_PATH',
-        description="导入的剧本文件（.fountain/.txt/.fdx/.pdf）"),
+        # v1.4 US-1③：说明串与 script_parser.SUFFIX_FORMATS 同源
+        # （由 run_settings.SUFFIX_HELP 承载，纯层单测守护）。
+        description=SUFFIX_HELP),
     "bd_offline": BoolProperty(
         name="离线自检", default=True,
         description="不联网，用内置确定性计划验证链路"),
@@ -196,7 +199,7 @@ _scene_props = {
     "bd_max_cost_usd": FloatProperty(
         name="费用上限", default=5.0, min=0.0, max=1000.0),
     "bd_max_wall_minutes": FloatProperty(
-        name="时间上限", default=30.0, min=0.0, max=1440.0),
+        name="时间上限", default=120.0, min=0.0, max=1440.0),
     "bd_preset": EnumProperty(name="分辨率", items=_enum_items(PRESETS),
                               default=PRESETS[0]),
     "bd_appearance": EnumProperty(name="外观", items=_enum_items(APPEARANCES),

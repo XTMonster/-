@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import os
 import copy
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 import bpy
 from bpy.types import Operator
@@ -17,7 +20,7 @@ from ..settings import get_config
 from ..layer7_ui.run_settings import apply_scene_settings, collect_settings
 from ..utils.logger import get_logger
 from ..utils.paths import default_project_root, ensure_dir
-from .driver import PrevisDriver
+from .driver import DriverLimits, PrevisDriver, default_registry
 from .headless_runner import trace_options
 from .runtime import clear_active, get_active, set_active
 from .states import DriverState
@@ -27,6 +30,10 @@ log = get_logger("modal")
 
 TIMER_INTERVAL = 0.1
 SCRIPT_TEXT_BLOCK = "BlockDirector Script"
+
+#: ``build_run_context(builder=...)`` 的默认值：不传就按 GUI 的正常路径建一个
+#: ``BpySceneBuilder``；显式传 ``None`` 表示"不注入构建器"，那是**错误**。
+_DEFAULT_BUILDER = object()
 DEMO_SCRIPT = """\
 INT. 咖啡馆 - 日
 
@@ -54,44 +61,161 @@ def resolve_script(context) -> str:
     return DEMO_SCRIPT
 
 
+def resolve_parsed_script(context):
+    """剧本路径存在时顺带解析一份：R015/R016 与离线镜数都靠它。"""
+    scene = context.scene
+    path = getattr(scene, "bd_script_path", "") or ""
+    if not path or not os.path.isfile(path):
+        return None
+    try:
+        from ..layer1_input import apply_deterministic_coreferences, parse_script
+
+        parsed = parse_script(path)
+        apply_deterministic_coreferences(parsed)
+        return parsed
+    except Exception as exc:  # noqa: BLE001 - 解析失败退回纯文本路径
+        log.warning("剧本解析失败，将退回原文：%s", exc)
+        return None
+
+
+@dataclass
+class RunContext:
+    """一次 GUI 运行的装配结果（v1.4 P9.5）。"""
+
+    driver: Optional[PrevisDriver] = None
+    config: Any = None
+    mode: str = ""
+    builder: Any = None
+    problems: List[str] = field(default_factory=list)
+
+    @property
+    def ok(self) -> bool:
+        return self.driver is not None and not self.problems
+
+
+def build_run_context(context, *, builder=_DEFAULT_BUILDER, auditor=None,
+                      transport=None, config=None, limits=None,
+                      parsed_script=None) -> RunContext:
+    """装配一次 GUI 运行需要的全部依赖。
+
+    v1.4 P9.5 / X1 / S1：``invoke()`` 里的 ``event_timer_add`` /
+    ``modal_handler_add`` 依赖 ``context.window``，``--background`` 下根本跑不了
+    模态——所以"建运行"这一步必须抽成**不碰窗口**的函数，探针才能按字面驱动它。
+    这里注入 ``builder`` / ``auditor`` / ``parsed_script`` / ``limits`` 四件套，
+    缺任何一件都不会再"悄悄只拿到一份计划"。
+    """
+    from ..layer3_engine.shot_auditor import BpyShotAuditor
+    from ..layer3_engine.shot_builder import BpySceneBuilder
+
+    problems: List[str] = []
+    run_config = (copy.deepcopy(config) if config is not None
+                  else copy.deepcopy(get_config()))
+    run_config, settings_problems = apply_scene_settings(
+        run_config, collect_settings(context.scene))
+    problems.extend(settings_problems)
+    if problems:
+        return RunContext(config=run_config, problems=problems)
+
+    if builder is _DEFAULT_BUILDER:
+        builder = BpySceneBuilder(clear_scene=True)
+    if builder is None:
+        # 负对照（RK-9）：operator 路径没有构建器时必须失败，而不是
+        # 像 headless 的"仅规划"模式那样以 DONE 收尾。
+        problems.append("GUI 路径必须注入场景构建器（builder）；"
+                        "否则面板只会拿回一份计划，既没有场景也没有视频")
+        return RunContext(config=run_config, builder=None, problems=problems)
+
+    offline = bool(getattr(context.scene, "bd_offline", True))
+    if transport is None:
+        try:
+            transport, mode = make_transport(run_config, offline=offline)
+        except TransportUnavailable as exc:
+            problems.append(str(exc))
+            return RunContext(config=run_config, builder=builder,
+                              problems=problems)
+    else:
+        mode = "offline" if offline else "sidecar"
+
+    if parsed_script is None:
+        parsed_script = resolve_parsed_script(context)
+
+    run_dir = ensure_dir(default_project_root() / "runs")
+    audit = AuditLogger(directory=run_dir, echo=True,
+                        **trace_options(run_config))
+    driver = PrevisDriver(
+        transport=transport,
+        audit=audit,
+        script=resolve_script(context),
+        parsed_script=parsed_script,
+        config=run_config,
+        limits=limits or DriverLimits(),
+        registry=default_registry(
+            max_shots=int(run_config.orchestration.max_shots)),
+        builder=builder,
+        auditor=auditor or BpyShotAuditor(
+            audit_level=run_config.audit.level),
+    )
+    return RunContext(driver=driver, config=run_config, mode=mode,
+                      builder=builder)
+
+
+def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
+    """跑完就地导出交付包，并写 ``export_started``（v1.4 P9.5 / RK-9）。
+
+    场景此刻还在内存里——先导出再拆 timer，用户点一次"运行"就能拿到
+    分镜 mp4、首帧、``shots.json`` 与 ``prompts.md``。
+    """
+    driver = run.driver
+    if driver is None or driver.plan is None or not driver.build_summary:
+        return None
+    from ..layer8_delivery import export_project
+
+    out_dir = Path(default_project_root()) / "exports" / driver.audit.run_id
+    spec = getattr(run.builder, "spec", None)
+    crowd = list(getattr(spec, "crowd", None) or [])
+    driver.audit.log("export_started", f"开始导出交付包：{out_dir}",
+                     out_dir=str(out_dir), shots=len(driver.plan.shots),
+                     frames=driver.plan.total_frames)
+    report = export_project(driver.plan, build_summary=driver.build_summary,
+                            out_dir=out_dir, config=run.config.delivery,
+                            compliance=driver.snapshot().get("compliance"),
+                            llm_calls=int(driver.snapshot().get("llm_calls") or 0),
+                            crowd=crowd,
+                            project=driver.plan.scene_heading or "BlockDirector")
+    payload = report.to_dict()
+    driver.audit.log("export_finished",
+                     f"交付包导出结束：{'ok' if report.ok else '失败'}",
+                     level="info" if report.ok else "warning",
+                     **{key: payload.get(key)
+                        for key in ("ok", "aborted", "out_dir", "reason")})
+    log.info("GUI 导出结束：%s", report.out_dir)
+    return payload
+
+
 class BLOCKDIRECTOR_OT_run_previs(Operator):
     bl_idname = "blockdirector.run_previs"
     bl_label = "生成白模预演"
     bl_description = "驱动 LLM 导演状态机，生成白模预演分镜计划"
 
     _timer = None
+    _run = None
 
     def invoke(self, context, event):
         if get_active() is not None:
             self.report({'WARNING'}, "已有运行在进行中，请先取消")
             return {'CANCELLED'}
 
-        # 面板设置覆盖到**副本**上：配置文件仍是唯一持久真源，反复运行也不会
-        # 让上一次的临时选择沉淀进进程级配置。
-        config = copy.deepcopy(get_config())
-        config, problems = apply_scene_settings(config,
-                                                collect_settings(context.scene))
-        if problems:
-            self.report({'ERROR'}, "；".join(problems))
+        # v1.4 P9.5：装配（含面板覆盖、传输、builder/auditor/parsed_script/
+        # limits 四件套）全部搬进可测的 ``build_run_context``——那里不碰
+        # ``context.window``，因此 ``--background`` 下也能被探针按字面驱动。
+        run = build_run_context(context)
+        if not run.ok:
+            self.report({'ERROR'}, "；".join(run.problems))
             return {'CANCELLED'}
-        offline = bool(getattr(context.scene, "bd_offline", True))
-        try:
-            transport, mode = make_transport(config, offline=offline)
-        except TransportUnavailable as exc:
-            self.report({'ERROR'}, str(exc))
-            return {'CANCELLED'}
-
-        run_dir = ensure_dir(default_project_root() / "runs")
-        audit = AuditLogger(directory=run_dir, echo=True,
-                            **trace_options(config))
-        driver = PrevisDriver(
-            transport=transport,
-            audit=audit,
-            script=resolve_script(context),
-            config=config,
-        )
-        set_active(driver)
-        log.info("GUI 运行开始（传输=%s，run_id=%s）", mode, audit.run_id)
+        self._run = run
+        set_active(run.driver)
+        log.info("GUI 运行开始（传输=%s，run_id=%s）", run.mode,
+                 run.driver.audit.run_id)
 
         self._timer = context.window_manager.event_timer_add(
             TIMER_INTERVAL, window=context.window)
@@ -115,9 +239,22 @@ class BLOCKDIRECTOR_OT_run_previs(Operator):
             return {'RUNNING_MODAL'}
 
         state = driver.state
+        # DONE 时**先导出再拆 timer**：场景还活在内存里，点一次"运行"就该
+        # 拿到分片、首帧、shots.json 与 prompts.md（v1.4 P9.5 / RK-9）。
+        export_payload = None
+        if state is DriverState.DONE and self._run is not None:
+            try:
+                export_payload = export_finished_run(self._run)
+            except Exception as exc:  # noqa: BLE001 - 导出失败不该吞掉运行结果
+                log.warning("GUI 收尾导出失败：%s", exc)
+                driver.audit.log("export_failed",
+                                 f"{type(exc).__name__}: {exc}", level="warning")
         self._teardown(context)
         if state is DriverState.DONE:
-            self.report({'INFO'}, f"完成：{driver.snapshot()['shots']} 个镜头")
+            detail = f"完成：{driver.snapshot()['shots']} 个镜头"
+            if export_payload is not None:
+                detail += f"，交付包：{export_payload.get('out_dir')}"
+            self.report({'INFO'}, detail)
             return {'FINISHED'}
         if state is DriverState.CANCELLED:
             self.report({'WARNING'}, "已取消")
@@ -132,7 +269,11 @@ class BLOCKDIRECTOR_OT_run_previs(Operator):
             except Exception as exc:  # noqa: BLE001
                 log.debug("移除 timer 失败: %s", exc)
             self._timer = None
+        # ``clear_active`` 只清**驱动器**这一个注册项；场景上下文
+        # （``layer3_engine.scene_context``）必须留着，否则分镜列表、
+        # 角色面板与逐镜重跑在运行结束后就全空了。
         clear_active()
+        self._run = None
 
 
 class BLOCKDIRECTOR_OT_cancel_previs(Operator):

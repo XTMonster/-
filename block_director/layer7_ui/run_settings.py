@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Mapping, Tuple
 
 from ..contracts.config import AppConfig
 from ..contracts.enums import AuditLevel, DeliveryPreset, RenderBackend
+from ..layer1_input.script_parser import SUFFIX_FORMATS
 
 #: 面板提供选择的取值（顺序即界面顺序）
 PROVIDERS = ("openai", "deepseek", "anthropic", "local")
@@ -21,6 +22,22 @@ AUDIT_LEVELS = tuple(item.value for item in AuditLevel)
 PRESETS = tuple(item.value for item in DeliveryPreset)
 APPEARANCES = ("clay", "flat", "color_coded")
 BACKENDS = tuple(item.value for item in RenderBackend)
+
+
+def suffix_help(mapping: Mapping[str, str]) -> str:
+    """把 ``SUFFIX_FORMATS`` 渲染成给人看的一句话（v1.4 US-1③）。
+
+    刻意**派生**而不是手写：手写的串一定会漂移（实测 ``panel_main`` 那句就
+    漏了 ``.md``/``.text``）。负例见 ``tests/test_run_settings_suffix_formats``。
+    """
+    suffixes = "、".join(sorted(str(key) for key in mapping))
+    return f"支持的剧本格式：{suffixes}（.md/.txt 走纯文本解析，可直接黏贴中文分镜表）"
+
+
+#: v1.4 US-1③：面板的"剧本格式"说明串必须与 ``script_parser.SUFFIX_FORMATS``
+#: **同源**。它落在本模块（**无 bpy**）而不是 ``panel_main.py``——后者的顶层
+#: ``import bpy`` 会让纯层单测进不去，同源断言就无从写起。
+SUFFIX_HELP = suffix_help(SUFFIX_FORMATS)
 
 
 def apply_scene_settings(config: AppConfig,

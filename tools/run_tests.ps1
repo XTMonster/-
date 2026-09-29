@@ -45,6 +45,7 @@ function Assert-Marker([object]$output, [string]$pattern, [string]$label) {
 # Every tools/blender_tests/test_*.py MUST appear here (asserted below).
 # --------------------------------------------------------------------------- #
 $checks = @(
+    @{ Script = 'tools\blender_tests\test_operator_end_to_end.py'; Marker = 'BD_TEST_RESULT'; Label = 'operator-e2e' },
     @{ Script = 'tools\blender_tests\test_phase1_scene.py';      Marker = 'BD_TEST_RESULT'; Label = 'phase1' },
     @{ Script = 'tools\blender_tests\test_phase2_motion.py';     Marker = 'BD_TEST_RESULT'; Label = 'phase2' },
     @{ Script = 'tools\blender_tests\test_phase3_framing.py';    Marker = 'BD_TEST_RESULT'; Label = 'phase3' },

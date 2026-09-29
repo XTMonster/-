@@ -36,4 +36,7 @@ P9.4 → P9.5 → P10 → P11 → P12 → P13 → P14(-1..5) → P15 → P16
 - P9.4：**完成**（a–n 全部落地；`python -m pytest` 850 passed；
   `tools/run_tests.ps1` 25 项全绿；§4.4 步骤 1 / 步骤 3 按字面跑通，
   证据在 `docs/evidence/offline_run1`）。
-- P9.5：进行中
+- P9.5：**完成**（`build_run_context` / `export_finished_run`，四件套注入、
+  `export_started`、`SUFFIX_HELP`；新探针 `test_operator_end_to_end.py` 已登记，
+  `run_tests.ps1` 25 → 26 项全绿）。
+- P10：进行中
