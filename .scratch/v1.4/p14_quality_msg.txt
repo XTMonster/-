@@ -1,0 +1,31 @@
+feat(P14-5): close the quality loop with Q0 and the experience-layer E1-E3
+
+tools/holdout_score.py already scored Q1-Q7; what was missing from SS4.1's
+RK-13 is the rest of the closed loop. tools/knowledge/quality.py adds it and
+writes docs/evidence/<run-id>/knowledge_quality.json (exit 0/1/2, where 2 means
+"some evidence is missing" -- never a pass, per SS4.1b hard rule 1).
+
+* Q0 build gate: rejects/raw <= 5% AND processed == total AND -- the part that
+  was missing -- the manifest's `rejects` counter must equal the number of lines
+  in knowledge/hypergraph.rejects.jsonl. A ledger that does not add up is a
+  failure, not a warning.
+* E3 experience-override rate, checked on the index itself: an edge whose
+  source_kind is `experience` may not carry a forbid member (SS2.3b discipline 1
+  -- only an explicit `lesson` may). Plus the L3 side: a case row carrying any
+  constraint field is an override.
+* E1 relevance is scored by a human (>=4/5) and is reported not_measured when no
+  human scoring file is supplied -- an agent must not stand in for that.
+* E2 adoption is counted from a real run's shots.json (movements[].source in
+  {experience, lesson, case}) and stays a diagnostic: no pass line.
+
+The Q-side is not re-implemented: quality.py imports holdout_score and only
+aggregates, so the two cannot drift.
+
+Running it against the shipped index right now reports Q0 as a FAILURE with the
+exact reason: the manifest says rejects=17 while rejects.jsonl holds 21 records
+(all `too_many_edges_for_card`). That is a real P14-2 ledger defect, reported to
+the lane that owns tools/kb_fetch/build_hypergraph.py.
+
+Tests: tests/test_knowledge_quality.py -- 13 cases covering Q0's three failure
+modes, E3's pass/fail/lesson boundary, the L3 constraint check, E1's human-only
+rule and E2's diagnostic status.

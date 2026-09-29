@@ -1,0 +1,181 @@
+"""`tools/knowledge/quality.py`：Q0 构建门与 E1–E3 的判定纪律（离线）。"""
+
+from __future__ import annotations
+
+import json
+import pathlib
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from block_director.knowledge.hypergraph import HyperEdge, Member, Node  # noqa: E402
+from tools.knowledge import quality  # noqa: E402
+
+
+def _graph(edges):
+    nodes = {n.node_id: n for n in (
+        Node("emotion:荒诞", "emotion", "荒诞"),
+        Node("intensity:high", "intensity", "high"),
+        Node("movement:固定", "movement", "固定"),
+    )}
+    from block_director.knowledge.hypergraph import Hypergraph
+
+    return Hypergraph(list(nodes.values()), list(edges))
+
+
+def _edge(source_kind="theory", forbid=False):
+    members = [Member("allow", "emotion", "emotion:荒诞"),
+               Member("qualifier", "intensity", "intensity:high")]
+    if forbid:
+        members.append(Member("forbid", "movement", "movement:固定"))
+    return HyperEdge(type="EMOTION_PACK", members=tuple(members),
+                     source_kind=source_kind,
+                     hardness="hard" if source_kind == "theory" else "soft")
+
+
+# --------------------------------------------------------------------------- Q0
+
+
+def test_q0_passes_on_a_consistent_manifest(tmp_path):
+    manifest = tmp_path / "manifest.json"
+    rejects = tmp_path / "rejects.jsonl"
+    manifest.write_text(json.dumps({
+        "raw_edges": 100, "valid_unique": 90, "duplicates": 5, "rejects": 5,
+        "batches": [{"status": "done"}, {"status": "rejected"}]}), encoding="utf-8")
+    rejects.write_text("\n".join(["{}"] * 5), encoding="utf-8")
+    out = quality.q0_build_gate(manifest, rejects)
+    assert out["status"] == "pass"
+    assert out["processed_chunks"] == 2 and out["total_chunks"] == 2
+
+
+def test_q0_fails_when_the_rejects_ledger_does_not_match(tmp_path):
+    manifest = tmp_path / "manifest.json"
+    rejects = tmp_path / "rejects.jsonl"
+    manifest.write_text(json.dumps({"raw_edges": 100, "valid_unique": 90,
+                                    "duplicates": 5, "rejects": 5}), encoding="utf-8")
+    rejects.write_text("\n".join(["{}"] * 3), encoding="utf-8")
+    out = quality.q0_build_gate(manifest, rejects)
+    assert out["status"] == "fail" and "账不对" in out["note"]
+
+
+def test_q0_fails_over_the_five_percent_line(tmp_path):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"raw_edges": 100, "valid_unique": 80,
+                                    "duplicates": 6, "rejects": 14,
+                                    "batches": [{"status": "done"}]}), encoding="utf-8")
+    out = quality.q0_build_gate(manifest, tmp_path / "missing.jsonl")
+    assert out["status"] == "fail"
+
+
+def test_q0_is_not_measured_without_a_manifest(tmp_path):
+    out = quality.q0_build_gate(tmp_path / "nope.json", tmp_path / "nope.jsonl")
+    assert out["status"] == "not_measured"
+
+
+# --------------------------------------------------------------------------- E3
+
+
+def test_e3_is_zero_for_a_theory_only_index():
+    out = quality.e3_experience_override(_graph([_edge("theory", forbid=True)]))
+    assert out["status"] == "pass" and out["denominator"] == 0
+
+
+def test_e3_counts_an_experience_edge_that_forbids():
+    graph = _graph([_edge("experience", forbid=True), _edge("experience")])
+    out = quality.e3_experience_override(graph)
+    assert out["status"] == "fail"
+    assert out["numerator"] == 1 and out["denominator"] == 2
+
+
+def test_e3_lesson_may_forbid_but_experience_may_not():
+    """只有显式 lesson 允许带 forbid（§2.3b 关键纪律 1）。"""
+    lesson = _edge("lesson", forbid=True)
+    assert quality.e3_experience_override(_graph([lesson]))["status"] == "pass"
+
+
+def test_e3_cases_flag_a_constraint_field(tmp_path):
+    cases = tmp_path / "cases.jsonl"
+    cases.write_text("\n".join([
+        json.dumps({"case_id": "c1", "case_type": "narrative"}),
+        json.dumps({"case_id": "c2", "forbid": ["movement=固定"]}, ensure_ascii=False),
+    ]), encoding="utf-8")
+    out = quality.e3_cases(cases)
+    assert out["status"] == "fail" and out["numerator"] == 1
+    assert quality.e3_cases(None)["status"] == "not_measured"
+
+
+# --------------------------------------------------------------------------- E1 / E2
+
+
+def test_e1_needs_human_scores_and_never_guesses():
+    assert quality.e1_relevance(None)["status"] == "not_measured"
+
+
+def test_e1_uses_the_human_scores_when_present(tmp_path):
+    reviews = tmp_path / "e1.jsonl"
+    reviews.write_text("\n".join(json.dumps({"score": s}) for s in (5, 4, 3, 5)),
+                       encoding="utf-8")
+    out = quality.e1_relevance(reviews)
+    assert out["status"] == "pass" and out["value"] == 0.75
+
+    reviews.write_text("\n".join(json.dumps({"score": s}) for s in (5, 3, 2)),
+                       encoding="utf-8")
+    assert quality.e1_relevance(reviews)["status"] == "fail"
+
+
+def test_e2_counts_adopted_movements_and_is_never_a_gate(tmp_path):
+    shots = tmp_path / "shots.json"
+    shots.write_text(json.dumps({"shots": [
+        {"movements": [{"source": "experience"}]},
+        {"movements": [{"source": "declared"}]},
+    ]}), encoding="utf-8")
+    out = quality.e2_adoption(shots)
+    assert out["numerator"] == 1 and out["denominator"] == 2
+    assert out["status"] == "not_measured" and out["diagnostic"] is True
+
+
+# --------------------------------------------------------------------------- 总判
+
+
+def test_overall_is_not_measured_when_evidence_is_missing(tmp_path):
+    """缺证据时退出码必须是 2，绝不当成通过（§4.1b 硬规则 1）。"""
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({
+        "raw_edges": 100, "valid_unique": 95, "duplicates": 2, "rejects": 3,
+        "batches": [{"status": "done"}, {"status": "done"}]}), encoding="utf-8")
+    rejects = tmp_path / "rejects.jsonl"
+    rejects.write_text("\n".join(["{}"] * 3), encoding="utf-8")
+    code = quality.main([
+        "--run-id", "ut", "--holdout", "fixtures/knowledge_holdout.jsonl",
+        "--nodes", "knowledge/hypergraph.nodes.jsonl",
+        "--edges", "knowledge/hypergraph.edges.jsonl",
+        "--manifest", str(manifest), "--rejects", str(rejects),
+        "--cases", "", "--out", str(tmp_path / "q.json"),
+    ])
+    assert code == 2
+    report = json.loads((tmp_path / "q.json").read_text(encoding="utf-8"))
+    ids = {m["id"]: m["status"] for m in report["metrics"]}
+    assert ids["Q0"] == "pass"
+    assert ids["Q1-Q7"] == "not_measured"
+    assert ids["E1"] == "not_measured"
+    assert report["overall"] == "not_measured"
+
+
+def test_shipped_index_ledger_is_never_silently_passed():
+    """索引落盘后，manifest 的 `rejects` 必须与 rejects 明细行数相等。
+
+    对不上就是账错——**必须判 fail，不能沉默通过**。这条断言两种状态都成立：
+    账对得上时 `status == "pass"`；对不上时 `status == "fail"` 且注记里点名"账不对"。
+    """
+    manifest_path = ROOT / "knowledge" / "hypergraph.manifest.json"
+    rejects_path = ROOT / "knowledge" / "hypergraph.rejects.jsonl"
+    if not manifest_path.is_file():
+        return  # 索引未落盘时由 Q0 记 not_measured，这里不重复报
+    out = quality.q0_build_gate(manifest_path, rejects_path)
+    if out.get("rejects_file_lines") == out.get("rejects"):
+        assert out["status"] == "pass", out
+    else:
+        assert out["status"] == "fail", f"账对不上却判成了 {out['status']}：{out}"
+        assert "账不对" in out["note"], out
