@@ -75,9 +75,9 @@ def build_sdl(plan: Plan, *,
               project_name: str = "BlockDirector",
               fps: int = 24,
               scene_id: str = "scene_001",
-              brief=None) -> SDLProject:
+              brief=None, crowd=None) -> SDLProject:
     """把分镜计划与构建结果组装成一份 SDL。"""
-    spec = spec or SceneSpec.from_plan(plan, brief=brief)
+    spec = spec or SceneSpec.from_plan(plan, brief=brief, crowd=crowd)
     results = {item.get("shot_id"): item
                for item in (build_summary or {}).get("results", [])}
 

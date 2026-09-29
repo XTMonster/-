@@ -115,6 +115,7 @@ def main() -> int:
             print(f"BLOCKDIRECTOR_WARN 剧本不存在: {path}")
 
     builder = None
+    crowd: list = []
     if args.build:
         from block_director.layer3_engine.shot_builder import BpySceneBuilder
         from block_director.settings import get_config as _config
@@ -154,7 +155,10 @@ def main() -> int:
         sdl = build_sdl(plan_obj, build_summary=summary.get("build"),
                         spec=spec, project_name=plan_obj.scene_heading
                         or "BlockDirector",
-                        brief=_brief_from_summary(summary))
+                        brief=_brief_from_summary(summary),
+                        # 群众不在计划里（它是场景级设定），落盘时要单独带上，
+                        # 否则"存了再打开"会丢掉那 30 个路人。
+                        crowd=crowd)
         findings = validate_sdl(sdl)
         path = save_project(Path(args.save), sdl)
         print("BLOCKDIRECTOR_SAVED " + json.dumps(
