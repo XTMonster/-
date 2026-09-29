@@ -179,6 +179,8 @@ class PrevisDriver:
         self._editing_index = 0
         self.draft_history: List[Dict[str, Any]] = []
         self.drafts_failed: List[Dict[str, Any]] = []
+        #: 剧本落实审核的结果（v1.3 R015/R016）；没有分镜表声明时为 None
+        self._compliance: Optional[Dict[str, Any]] = None
         self._finished_shots: List[str] = []
         self._needs_rebuild = False
         self._rebuild_in_place = False
@@ -275,6 +277,7 @@ class PrevisDriver:
             "react_rounds": len(self.react_history),
             "drafts": len(self.draft_history),
             "drafts_failed": len(self.drafts_failed),
+            "compliance": self._compliance,
             "error": self.error,
         }
 
@@ -507,6 +510,42 @@ class PrevisDriver:
                        f"{shot_id}: 复核未完成（{problem}）",
                        level="warning", shot=shot_id)
         self._transition(DriverState.CHECKING)
+
+    def _log_script_compliance(self, plan) -> None:
+        """收尾时核对"导演写下的东西有没有做出来"（v1.3 R015/R016）。
+
+        没有分镜表声明时什么都不做——本规则只在剧本明确写下约束时生效。
+        """
+        if self.parsed_script is None:
+            return
+        if not getattr(self.parsed_script, "declared_shots", None):
+            return
+        from .compliance import compliance_report
+
+        report = compliance_report(plan, self.parsed_script)
+        self._compliance = report
+        errors = [item for item in report["findings"]
+                  if str(item.get("severity")) == "error"]
+        warnings = [item for item in report["findings"]
+                    if str(item.get("severity")) != "error"]
+        if errors:
+            message = (f"剧本落实审核：{len(errors)} 项偏差、"
+                       f"{len(warnings)} 项提示")
+        else:
+            message = (f"剧本落实审核：逐条对上"
+                       f"（{report['plan_shot_count']} 镜 / "
+                       f"{report['plan_total_seconds']:g} 秒）")
+        self.audit.log("script_compliance", message,
+                       level="warning" if errors else "info",
+                       declared_total_seconds=report["declared_total_seconds"],
+                       plan_total_seconds=report["plan_total_seconds"],
+                       declared_shot_count=report["declared_shot_count"],
+                       plan_shot_count=report["plan_shot_count"],
+                       findings=report["findings"])
+        for item in errors[:5]:
+            self.audit.log("script_compliance_finding", str(item.get("message")),
+                           level="warning", rule=item.get("rule"),
+                           target=item.get("target"))
 
     def _plan_gate_detail(self) -> str:
         if self.plan is None:
@@ -975,6 +1014,7 @@ class PrevisDriver:
         else:
             self.audit.log("conversation_ok",
                            f"{len(self.messages)} 条消息结构合法（§3.4）")
+        self._log_script_compliance(plan)
         self._transition(DriverState.DONE)
         # replay（§14.4）要能只靠这份日志重建场景，因此整份计划必须落盘：
         # 只记 shots 会丢掉 scene_heading 与 continuity_notes。

@@ -153,6 +153,32 @@ def t_relative_out_dir_lands_in_the_asked_directory():
             "missing": len(report.missing_clips)}
 
 
+def t_compliance_report_is_shipped():
+    """v1.3：交付包里要有剧本落实对照表，偏差要进告警。"""
+    tmp = tempfile.mkdtemp(prefix="bd_p6_comp_")
+    fresh_scene()
+    summary = build_scene(demo_plan()).to_dict()
+    compliance = {
+        "ok": False, "declared_shot_count": 6, "plan_shot_count": 2,
+        "declared_total_seconds": 33.0, "plan_total_seconds": 9.0, "fps": 24,
+        "rows": [],
+        "findings": [{"code": "E_SCRIPT_001", "rule": "R015",
+                      "severity": "error", "target": "plan",
+                      "message": "分镜表声明了 6 个镜号，计划里只有 2 个镜头",
+                      "suggestion": "补齐缺失的镜号"}]}
+    report = export_project(demo_plan(), build_summary=summary,
+                            out_dir=Path(tmp), config=fresh_config(),
+                            project="BlockDirector", compliance=compliance)
+    path = Path(tmp) / "export" / "script_compliance.json"
+    written = (path.exists()
+               and json.loads(path.read_text(encoding="utf-8"))
+               ["declared_shot_count"] == 6)
+    warned = any("剧本落实审核" in item for item in report.warnings)
+    return {"ok": bool(written and warned and str(path) in report.files),
+            "written": written, "warned": warned,
+            "warnings": list(report.warnings)}
+
+
 # --------------------------------------------------------------------------- #
 # 2. mp4 是真正的视频（容器魔数）
 # --------------------------------------------------------------------------- #
@@ -256,6 +282,7 @@ def main() -> int:
           t_missing_clip_is_reported_as_failure)
     check("relative_out_dir_lands_in_the_asked_directory",
           t_relative_out_dir_lands_in_the_asked_directory)
+    check("compliance_report_is_shipped", t_compliance_report_is_shipped)
     check("videos_are_real_mp4", t_videos_are_real_mp4)
     check("manifest_matches_build", t_manifest_matches_build)
     check("export_aborts_on_leak", t_export_aborts_on_leak)

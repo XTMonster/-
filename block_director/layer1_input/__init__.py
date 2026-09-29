@@ -18,10 +18,22 @@ from .dialogue_timing import (
     schedule_dialogues,
     render_timing_table,
 )
-from .model import ParsedAction, ParsedDialogue, ParsedScene, ParsedScript
+from .model import (
+    ParsedAction,
+    ParsedDialogue,
+    ParsedNodeDeclaration,
+    ParsedScene,
+    ParsedScript,
+    ParsedShotDeclaration,
+)
 from .fdx import parse_fdx
 from .fountain import parse_fountain
 from .script_parser import ScriptParseError, detect_format, parse_script, parse_text
+from .shotlist import (
+    ShotList,
+    looks_like_shot_list,
+    parse_shot_list,
+)
 from .coreference import (
     apply_deterministic_coreferences,
     apply_mapping,
@@ -34,8 +46,10 @@ from .coreference import (
 
 __all__ = [
     "ParsedScript", "ParsedScene", "ParsedAction", "ParsedDialogue",
+    "ParsedNodeDeclaration", "ParsedShotDeclaration",
     "parse_script", "parse_text", "detect_format", "ScriptParseError",
     "parse_fountain", "parse_fdx",
+    "parse_shot_list", "looks_like_shot_list", "ShotList",
     "resolve_coreferences", "apply_mapping", "collect_names", "exact_groups",
     "normalize_name", "is_pronoun", "apply_deterministic_coreferences",
     "estimate_dialogue_frames", "estimate_dialogue_seconds",

@@ -7,6 +7,72 @@ from typing import Any, Dict, List, Optional
 
 
 @dataclass
+class ParsedShotDeclaration:
+    """分镜表里一个镜号的**声明**（v1.3）。
+
+    它记录"导演写下来的东西"——镜号、时长、景别、拍摄手法、角色、画面内容
+    与台词。计划（阶段 A）与场景（阶段 B）是它的**落实**，R015/R016 负责
+    比较两侧。
+    """
+
+    shot_number: int
+    declared_seconds: Optional[float] = None
+    fields: Dict[str, str] = field(default_factory=dict)
+    timecodes: List[Any] = field(default_factory=list)   # [(起, 止), ...]
+    characters: List[str] = field(default_factory=list)
+    shot_type: str = ""              # 由"拍摄距离"映射出的景别提示
+    camera_move: str = ""            # 由"拍摄手法"映射出的运镜提示
+    declared_dialogue_seconds: Optional[float] = None
+    node_number: int = 0
+    node_title: str = ""
+    #: 本镜的台词（与 :class:`ParsedScene.dialogues` 是同一批对象）
+    dialogues: List["ParsedDialogue"] = field(default_factory=list)
+
+    @property
+    def dialogue_count(self) -> int:
+        return len(self.dialogues)
+
+    def field(self, key: str, default: str = "") -> str:
+        return str(self.fields.get(key, default) or default)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"shot_number": self.shot_number,
+                "declared_seconds": self.declared_seconds,
+                "fields": dict(self.fields),
+                "timecodes": [list(item) for item in self.timecodes],
+                "characters": list(self.characters),
+                "shot_type": self.shot_type,
+                "camera_move": self.camera_move,
+                "dialogue_count": self.dialogue_count,
+                "declared_dialogue_seconds": self.declared_dialogue_seconds,
+                "dialogues": [item.to_dict() for item in self.dialogues],
+                "node_number": self.node_number,
+                "node_title": self.node_title}
+
+
+@dataclass
+class ParsedNodeDeclaration:
+    """分镜表里的一个节点（若干镜号）及其声明总时长。"""
+
+    node_number: int
+    title: str = ""
+    declared_seconds: Optional[float] = None
+    shots: List[ParsedShotDeclaration] = field(default_factory=list)
+
+    @property
+    def declared_shot_seconds(self) -> Optional[float]:
+        values = [shot.declared_seconds for shot in self.shots
+                  if shot.declared_seconds is not None]
+        return round(sum(values), 3) if values else None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"node_number": self.node_number, "title": self.title,
+                "declared_seconds": self.declared_seconds,
+                "declared_shot_seconds": self.declared_shot_seconds,
+                "shots": [shot.to_dict() for shot in self.shots]}
+
+
+@dataclass
 class ParsedDialogue:
     character: str
     text: str
@@ -91,6 +157,20 @@ class ParsedScript:
     #: 纯文本没有场景标题时置位：结构需要 LLM 补全（§4.1）
     needs_llm_structure: bool = False
     warnings: List[str] = field(default_factory=list)
+    #: 分镜表里**逐镜声明**的内容（v1.3）。非分镜表输入时为空列表。
+    #: 它是"剧本落实审核"（R015/R016）的声明侧来源。
+    declared_nodes: List["ParsedNodeDeclaration"] = field(default_factory=list)
+
+    @property
+    def declared_shots(self) -> List["ParsedShotDeclaration"]:
+        return [shot for node in self.declared_nodes for shot in node.shots]
+
+    @property
+    def declared_total_seconds(self) -> Optional[float]:
+        """分镜表声明的总时长（各镜声明之和）；没有声明时返回 None。"""
+        declared = [shot.declared_seconds for shot in self.declared_shots
+                    if shot.declared_seconds is not None]
+        return round(sum(declared), 3) if declared else None
 
     @property
     def character_names(self) -> List[str]:
@@ -110,6 +190,8 @@ class ParsedScript:
                 "needs_llm_structure": self.needs_llm_structure,
                 "characters": self.character_names,
                 "warnings": list(self.warnings),
+                "declared_nodes": [node.to_dict()
+                                   for node in self.declared_nodes],
                 "scenes": [s.to_dict() for s in self.scenes]}
 
     def digest(self, *, max_scenes: int = 6) -> str:

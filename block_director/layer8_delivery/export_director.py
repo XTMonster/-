@@ -136,6 +136,7 @@ def export_project(plan: Plan, *,
                    out_dir: Path,
                    config,
                    style: str = DEFAULT_STYLE,
+                   compliance: Optional[Dict[str, Any]] = None,
                    project: str = "BlockDirector") -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -255,6 +256,20 @@ def export_project(plan: Plan, *,
         trajectory_path.write_text(
             json.dumps(trajectory, ensure_ascii=False, indent=2), encoding="utf-8")
         report.files.append(str(trajectory_path))
+
+    if compliance is not None:
+        # 剧本落实对照表（v1.3 R015/R016）：声明 → 落实 → 偏差。
+        # 它让"AI 有没有照剧本做"成为可核对的事实，而不是只能靠人看片。
+        compliance_path = export_dir / "script_compliance.json"
+        compliance_path.write_text(
+            json.dumps(compliance, ensure_ascii=False, indent=2),
+            encoding="utf-8")
+        report.files.append(str(compliance_path))
+        if not compliance.get("ok", True):
+            errors = [item for item in compliance.get("findings", [])
+                      if str(item.get("severity")) == "error"]
+            report.warnings.append(
+                f"剧本落实审核发现 {len(errors)} 项偏差，详见 script_compliance.json")
 
     scene.frame_start, scene.frame_end = original_range
     report.duration_s = time.perf_counter() - started

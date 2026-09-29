@@ -147,6 +147,7 @@ def main() -> int:
         report = export_project(plan_obj, build_summary=summary.get("build"),
                                 out_dir=out_dir,
                                 config=get_config().delivery,
+                                compliance=summary.get("compliance"),
                                 project=plan_obj.scene_heading or "BlockDirector")
         payload = report.to_dict()
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(

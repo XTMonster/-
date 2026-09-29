@@ -20,6 +20,7 @@ from ..contracts.plan import Plan
 from ..contracts.tools import PLAN_TOOL
 from ..motion.model import ACTION_TYPES
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES, render_timing_table
+from ..layer1_input.shotlist import render_declared_shots
 
 PLAN_TOOL_NAME = PLAN_TOOL
 
@@ -113,6 +114,9 @@ def build_plan_payload(script: str, config=None,
                 f"{DIALOGUE_TAIL_FRAMES} 帧收尾余量（规则 R011）；"
                 f"对白细节留给下一阶段，计划里只标 dialogue_ids。"
                 f"标注为「剧本声明」的时长是**硬约束**，不得自行改短。")
+        declared = render_declared_shots(parsed)
+        if declared:
+            body = f"{body}\n\n{declared}"
     else:
         body = script or "（空剧本）"
     knowledge = NO_KNOWLEDGE

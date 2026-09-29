@@ -8,6 +8,7 @@ from typing import Optional, Union
 from .fdx import parse_fdx
 from .fountain import CHINESE_SCENE_RE, SCENE_HEADING_RE, parse_fountain
 from .model import ParsedScript
+from .shotlist import looks_like_shot_list, parse_shot_list
 
 
 class ScriptParseError(RuntimeError):
@@ -51,7 +52,22 @@ def parse_pdf(path: Union[str, Path], *, title: str = "") -> ParsedScript:
 
 
 def parse_text(text: str, *, title: str = "") -> ParsedScript:
-    """纯文本：先按场景标题切分；切不出就整篇当一场并标记需 LLM 结构化。"""
+    """纯文本：先认分镜表，再按场景标题切分，最后整篇当一场。
+
+    v1.3 起优先识别**分镜表**（`节点/镜号/拍摄手法/预估时长` 那套格式）：
+    它带着导演写死的镜号、景别、时长与台词，是"剧本落实审核"的声明侧来源。
+    识别失败或解析异常时一律降级回旧路径，绝不因此拒绝一份剧本。
+    """
+    fallback_note = ""
+    if looks_like_shot_list(text):
+        try:
+            script, _shot_list = parse_shot_list(text, title=title)
+            if script.scenes:
+                return script
+            fallback_note = "分镜表里没有解析出任何节点或镜号，已退回纯文本"
+        except Exception as exc:  # noqa: BLE001 - 降级而不是拒绝
+            fallback_note = f"分镜表解析失败，已退回纯文本：{exc}"
+
     lines = (text or "").split("\n")
     has_headings = any(SCENE_HEADING_RE.match(line.strip())
                        or CHINESE_SCENE_RE.match(line.strip())
@@ -59,10 +75,14 @@ def parse_text(text: str, *, title: str = "") -> ParsedScript:
     if has_headings:
         script = parse_fountain(text, title=title)
         script.source_format = "text"
+        if fallback_note:
+            script.warnings.append(fallback_note)
         return script
 
     script = ParsedScript(title=title, source_format="text",
                           needs_llm_structure=True)
+    if fallback_note:
+        script.warnings.append(fallback_note)
     from .model import ParsedAction, ParsedScene
 
     scene = ParsedScene(scene_number=1, heading="（未标注场景）")
