@@ -187,3 +187,68 @@ def test_a_degraded_case_lane_says_so_in_the_trace():
     payload = retriever.trace_payload()
     assert payload["cases_degraded"] is True
     assert payload["lanes"] == 2
+
+
+# --------------------------------------------------------------------------- #
+# §3.2 的两个配置键（`rag.cases_backend` / `rag.cases_top_k`）必须有生产者。
+# 在此之前两个键都没有任何读取点：`off` 关不掉第三栏，条数永远是写死的 3。
+# --------------------------------------------------------------------------- #
+class _RecordingTransport:
+    def __init__(self):
+        self.cases_top_k_seen = []
+
+    def retrieve_response(self, query, domain, top_k, timeout, cases_top_k):
+        self.cases_top_k_seen.append(cases_top_k)
+        return RetrieveResponse(cards=[], edges=[], cases=_cases(),
+                                trace={"backend": "hypergraph", "lanes": 2,
+                                       "query": query, "cases_backend": "hybrid",
+                                       "cases_degraded": False})
+
+
+def test_the_case_lane_sends_the_configured_top_k_not_a_hardcoded_three():
+    transport = _RecordingTransport()
+    retriever = KnowledgeRetriever(
+        cards=[], backend=RagBackend.HYPERGRAPH, capabilities=("hypergraph",),
+        client=KnowledgeClient(transport), cases_top_k=1)
+    block = retriever.block_for_shot("情绪=荒诞")
+    assert transport.cases_top_k_seen == [1]     # 发出去的就是配置值
+    assert "【参考案例（仅参考）】" in block
+    assert len(retriever.last_cases) == 1        # 注入的条数也跟着配置
+
+
+def test_cases_backend_off_does_not_even_ask_the_sidecar():
+    """`off` ＝ 显式关闭：恒空、**不索要**、不算降级（§2.3b 的取值表）。"""
+    transport = _RecordingTransport()
+    retriever = KnowledgeRetriever(
+        cards=[], backend=RagBackend.HYPERGRAPH, capabilities=("hypergraph",),
+        client=KnowledgeClient(transport), cases_backend="off")
+    block = retriever.block_for_shot("情绪=荒诞")
+    assert "参考案例" not in block
+    assert transport.cases_top_k_seen == [0]     # 关掉就不发这个请求
+    info = retriever.cases_info()
+    assert info == {"cases": 0, "lanes": 1, "cases_backend": "off",
+                    "cases_requested_backend": "off", "cases_degraded": False,
+                    "cases_degraded_reason": "",
+                    "lightrag_index_fingerprint": "",
+                    "cases_index_fingerprint": ""}
+    payload = retriever.trace_payload()
+    assert payload["cases_backend"] == "off" and payload["lanes"] == 1
+
+
+def test_make_knowledge_reads_both_case_keys_from_the_config():
+    """接线落点：`headless_runner._make_knowledge()`——配置改了必须传下去。"""
+    import copy
+
+    from block_director.layer5_orchestrator.headless_runner import _make_knowledge
+    from block_director.settings import get_config
+
+    config = copy.deepcopy(get_config())
+    config.rag.cases_backend = "off"
+    config.rag.cases_top_k = 2
+    retriever = _make_knowledge(config, transport=_RecordingTransport())
+    assert retriever.cases_backend == "off"
+    assert retriever.cases_top_k == 2
+
+    defaults = _make_knowledge(copy.deepcopy(get_config()))
+    assert defaults.cases_backend == "lightrag"   # 默认值不许被上面那次改掉
+    assert defaults.cases_top_k == 3

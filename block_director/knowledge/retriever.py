@@ -96,6 +96,13 @@ class KnowledgeRetriever:
     #: v1.4 §2.3b：L3 案例索引（进程内备选）。装了 client 时案例由
     #: ``/v1/retrieve`` 带回；没有 client 时才用它。
     cases_index: Optional[Any] = None
+    #: v1.4 §2.3b／§3.2：L3 的开与关**只由 ``rag.cases_backend`` 表达**。
+    #: ``off`` ＝ 用户显式关闭：第三栏恒空、**不向 sidecar 索要案例**、
+    #: 也不算降级（与 :class:`~block_director.knowledge.cases.CaseIndex`
+    #: 的 off 语义逐字一致）。在此之前这个配置键没有任何消费者。
+    cases_backend: str = "lightrag"
+    #: v1.4 §3.2：``rag.cases_top_k`` —— 注入到「仅参考」栏的案例条数。
+    cases_top_k: int = 3
     #: v1.4 §2.4：检索调用与 ``llm_calls`` **分列**记账。
     retrieval_calls: int = 0
     warnings: List[str] = field(default_factory=list)
@@ -204,9 +211,12 @@ class KnowledgeRetriever:
             #: §2.4：检索调用与 llm_calls 分列，别混进同一个计数器。
             "retrieval_calls": int(self.retrieval_calls),
             "warnings": list(self.warnings),
-            **self.cases_info(),
         }
         payload.update(self.last_trace or {})
+        #: L3 分节**最后写**：`cases_backend=off` 是本地决定，必须压得住
+        #: sidecar 响应里的 `cases_backend`（否则"用户关了"会被上游的
+        #: "hybrid" 覆盖，trace 与实跑对不上）。
+        payload.update(self.cases_info())
         payload.setdefault("shot_scope", {})
         payload.setdefault("plan_scope", {})
         return payload
@@ -308,7 +318,8 @@ class KnowledgeRetriever:
         """经 sidecar 取超边；不可达时**降级留痕**，不拖垮整场。"""
         from .client import to_internal_edges
 
-        response = self.client.retrieve_or_none(query, top_k=limit)
+        response = self.client.retrieve_or_none(query, top_k=limit,
+                                                cases_top_k=self._cases_request())
         self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
         if response is None:
             self.degraded = True
@@ -320,18 +331,33 @@ class KnowledgeRetriever:
         self.last_trace = dict(response.trace or {})
         #: §2.3b 的第三栏与硬约束**共用这一次调用**（再发一次会让 §2.4 的
         #: `retrieval_calls` 账翻倍）。案例在这里缓存，`case_block()` 直接取。
-        self.last_cases = list(response.cases or [])
+        #: 只留**真要注入**的条数（`rag.cases_top_k`）；`off` 时是空——
+        #: `cases_info()["cases"]` 报的就是"这一次实际拿到的参考案例条数"。
+        requested = self._cases_request()
+        self.last_cases = list(response.cases or [])[:requested] if requested else []
         self.last_cases_query = query
         return to_internal_edges(response.edges)
 
     # ------------------------------------------------- v1.4 §2.3b L3 案例（第三栏）
-    def cases_for(self, query: str, *, top_k: int = 3) -> List[Any]:
+    def _cases_request(self) -> int:
+        """向 sidecar 索要的案例条数（``cases_backend=off`` 时是 **0**）。
+
+        关掉时**根本不发这个请求**——不是"要回来再丢掉"：后者会让 §2.4 的
+        ``retrieval_calls`` 与 sidecar 的实际工作量与配置不符。
+        """
+        if str(self.cases_backend) == "off":
+            return 0
+        return max(1, int(self.cases_top_k or 1))
+
+    def cases_for(self, query: str, *, top_k: Optional[int] = None) -> List[Any]:
         """取这条查询的参考案例（L3）。
 
         优先级与超图一致：**sidecar 带回的**（已经在上一次 ``/v1/retrieve``
         里拿到就直接用）→ 进程内的 :attr:`cases_index` → 空。
         """
-        limit = max(1, int(top_k))
+        if str(self.cases_backend) == "off":
+            return []                     # §2.3b：显式关闭 → 恒空，且不算降级
+        limit = max(1, int(top_k or self.cases_top_k or 1))
         if self.last_cases_query is not None and self.last_cases_query == query:
             return list(self.last_cases)[:limit]
         if self.client is not None and self.backend is RagBackend.HYPERGRAPH:
@@ -344,7 +370,7 @@ class KnowledgeRetriever:
                                         or "sidecar_unavailable")
                 return []
             self.last_trace = dict(response.trace or {})
-            self.last_cases = list(response.cases or [])
+            self.last_cases = list(response.cases or [])[:limit]
             self.last_cases_query = query
             return list(self.last_cases)[:limit]
         if isinstance(self.cases_index, CaseIndex):
@@ -357,6 +383,8 @@ class KnowledgeRetriever:
     @property
     def cases_enabled(self) -> bool:
         """L3 这条通道这次是否真的开着（决定 §2.4 的 ``lanes``）。"""
+        if str(self.cases_backend) == "off":
+            return False
         if isinstance(self.cases_index, CaseIndex):
             return bool(self.cases_index.enabled)
         trace = self.last_trace or {}
@@ -366,6 +394,19 @@ class KnowledgeRetriever:
 
     def cases_info(self) -> Dict[str, Any]:
         """``knowledge_trace.json`` 里的 L3 分节（§2.3b：每次运行必记）。"""
+        if str(self.cases_backend) == "off":
+            # 用户显式关闭：如实记 off + 单通道 + **不是降级**（E1/E3 记
+            # not_measured 是判据侧的事，这里只描述"这次跑的是什么"）。
+            return {
+                "cases": 0,
+                "lanes": 1,
+                "cases_backend": "off",
+                "cases_requested_backend": "off",
+                "cases_degraded": False,
+                "cases_degraded_reason": "",
+                "lightrag_index_fingerprint": "",
+                "cases_index_fingerprint": "",
+            }
         trace = dict(self.last_trace or {})
         index = self.cases_index if isinstance(self.cases_index, CaseIndex) else None
         if not trace and index is not None:
@@ -388,7 +429,7 @@ class KnowledgeRetriever:
                           index.fingerprint if index else "")),
         }
 
-    def case_block(self, query: str, *, top_k: int = 3,
+    def case_block(self, query: str, *, top_k: Optional[int] = None,
                    token_limit: Optional[int] = None,
                    title: str = CASE_COLUMN_TITLE,
                    scope: str = "shot",
@@ -397,7 +438,12 @@ class KnowledgeRetriever:
 
         **原子注入**：一条案例装不下就整条丢弃并写 ``dropped_case_ids``，
         绝不截断——截断会把"出处"切掉，模型就分不清"某人的经验"与"规则"。
+        ``top_k`` 缺省时取 :attr:`cases_top_k`（``rag.cases_top_k`` 的接线点）；
+        :attr:`cases_backend` 为 ``off`` 时**整栏不产出**。
         """
+        if str(self.cases_backend) == "off":
+            return ""
+        top_k = int(top_k or self.cases_top_k or 3)
         cases = self.cases_for(query, top_k=top_k)
         self._record_budget(scope, budgets)
         if not cases:
@@ -621,7 +667,8 @@ class KnowledgeRetriever:
             columns.append(hard)
         if soft:
             columns.append(soft)
-        cases_text = self.case_block(query, top_k=3, scope=scope, budgets=budgets)
+        #: 条数来自 `rag.cases_top_k`（§3.2）；这里**不许**再写死 3。
+        cases_text = self.case_block(query, scope=scope, budgets=budgets)
         if cases_text and self._take(budgets, cases_text, columns):
             columns.append(cases_text)
         if budgets["remaining"] > 0:
@@ -644,7 +691,9 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
                       plan_token_limit: int = TOKEN_LIMIT_PLAN,
                       hypergraph: Optional[Any] = None,
                       client: Optional[Any] = None,
-                      cases_index: Optional[Any] = None) -> KnowledgeRetriever:
+                      cases_index: Optional[Any] = None,
+                      cases_backend: str = "lightrag",
+                      cases_top_k: int = 3) -> KnowledgeRetriever:
     """进程级默认检索器（语料是静态的，默认参数下构建一次即可）。
 
     带了非默认参数时**不缓存**：否则第二次用不同配置调用会拿到上一份配置的
@@ -654,7 +703,8 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
     if (backend is RagBackend.BM25 and not capabilities and top_k == 5
             and token_limit == TOKEN_LIMIT_TOOL
             and plan_token_limit == TOKEN_LIMIT_PLAN and hypergraph is None
-            and client is None and cases_index is None):
+            and client is None and cases_index is None
+            and cases_backend == "lightrag" and cases_top_k == 3):
         if _DEFAULT is None:
             _DEFAULT = KnowledgeRetriever(cards=cards_in_domain_order())
         return _DEFAULT
@@ -662,7 +712,8 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
         cards=cards_in_domain_order(), backend=backend,
         capabilities=capabilities, top_k=top_k, token_limit=token_limit,
         plan_token_limit=plan_token_limit, hypergraph=hypergraph,
-        client=client, cases_index=cases_index)
+        client=client, cases_index=cases_index,
+        cases_backend=str(cases_backend), cases_top_k=int(cases_top_k))
 
 
 def reset_default_retriever() -> None:

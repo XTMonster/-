@@ -135,7 +135,9 @@ def _make_knowledge(config, transport=None, audit=None):
     """按 §6.1 / v1.4 §2.3 的确定性选择逻辑装配知识检索器。
 
     三个上限都从配置读：``rag.max_tokens_per_call``（每镜 800）、
-    ``rag.plan_prefetch_tokens``（整场预取 2000）、``rag.top_k``。
+    ``rag.plan_prefetch_tokens``（整场预取 2000）、``rag.top_k``；
+    L3 的开关与条数同样从配置读：``rag.cases_backend``（``off`` ＝ 显式关闭，
+    第三栏恒空且**不向 sidecar 索要案例**）与 ``rag.cases_top_k``。
     后端默认是超图；**装了 sidecar 客户端就走 ``/v1/retrieve``**（§2.3：超图
     索引与检索跑在 sidecar，插件进程里不需要索引）。没有 sidecar 时检索器
     **自己**降级为 BM25 并置 ``degraded``，由 trace 如实记录。
@@ -151,7 +153,9 @@ def _make_knowledge(config, transport=None, audit=None):
         backend=backend, top_k=int(rag.top_k or 5),
         token_limit=int(getattr(rag, "max_tokens_per_call", 800) or 800),
         plan_token_limit=int(getattr(rag, "plan_prefetch_tokens", 2000) or 2000),
-        client=client)
+        client=client,
+        cases_backend=str(getattr(rag, "cases_backend", "lightrag") or "lightrag"),
+        cases_top_k=int(getattr(rag, "cases_top_k", 3) or 3))
     log.info("Light RAG：%s", retriever.describe())
     return retriever
 
