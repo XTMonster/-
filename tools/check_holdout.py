@@ -285,7 +285,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         for key, value in report.items():
             if isinstance(value, dict) and "status" in value:
-                print(f"[{value['status']:>13}] {key.replace('gate_', '门')}")
+                print(f"[{value['status']:>13}] {key}")
         print(json.dumps({k: v for k, v in report.items() if not isinstance(v, dict)},
                          ensure_ascii=False))
         print(f"overall: {report['overall']}")

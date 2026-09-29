@@ -16,7 +16,9 @@ sys.path.insert(0, str(ROOT))
 
 from tools import check_holdout  # noqa: E402
 
-VOCAB = {"emotion": ["气急败坏"], "movement": ["跺脚"]}
+VOCAB = {"emotion": ["气急败坏"], "movement": ["跺脚"], "shot_size": ["中景"],
+         "lens": ["50mm"], "axis_topic": ["过肩"], "genre": ["film"],
+         "pacing": ["短镜硬切"], "lighting": ["逆光"]}
 
 
 def entry(idx: int = 1, **over: object) -> dict:
@@ -71,10 +73,29 @@ def q7_entry(idx: int = 1) -> dict:
                  q="情绪=气急败坏；景别=中景")
 
 
+def valid_records() -> list:
+    """A minimal set that satisfies all six gates under `--pilot`.
+
+    It covers all six edge types (gate ④), every vocabulary value (gate ③) and one
+    Q7 conflict (gate ⑤) — i.e. what a real pilot batch has to look like.
+    """
+    specs = [
+        ("EMOTION_PACK:emotion=气急败坏,intensity=high,movement=跺脚", "情绪=气急败坏；动作=跺脚"),
+        ("SHOT_PATTERN:shot_size=中景,lens=50mm,headroom_policy=board", "景别=中景；镜头=50mm"),
+        ("AXIS_RULE:pair=any_two,axis_side=right", "轴线=过肩"),
+        ("TROPE:genre=film,emotion=气急败坏", "题材=film"),
+        ("EDIT_RHYTHM:pacing=短镜硬切,avg_shot_len=2.0", "节奏=短镜硬切"),
+        ("LIGHT_PACK:lighting=逆光,intensity=mid", "光线=逆光"),
+    ]
+    out = [entry(i, must=[spec], top1=[spec], q=q) for i, (spec, q) in enumerate(specs, 1)]
+    out.append(q7_entry(7))
+    return out
+
+
 # ---------------------------------------------------------------- 门② 逐条格式
 
 def test_valid_pilot_set_passes_every_gate(tmp_path):
-    assert full_run(tmp_path, [q7_entry(1), q7_entry(2)]) == 0
+    assert full_run(tmp_path, valid_records()) == 0
 
 
 def test_empty_must_fails(tmp_path):
@@ -150,16 +171,16 @@ def test_edge_type_coverage_gate_flags_short_types(tmp_path):
 # ---------------------------------------------------------------- 门③ 种子覆盖
 
 def test_seed_coverage_not_measured_without_vocab(tmp_path):
-    data = report(write(tmp_path, [q7_entry()]))
+    data = report(write(tmp_path, valid_records()))
     assert data["gate_3_seed_coverage"]["status"] == "not_measured"
     assert data["overall"] == "not_measured"
 
 
 def test_seed_coverage_detects_missing_value(tmp_path):
     vocab = tmp_path / "vocab.json"
-    vocab.write_text(json.dumps({"emotion": ["气急败坏", "狂喜"]}, ensure_ascii=False),
-                     encoding="utf-8")
-    data = report(write(tmp_path, [q7_entry()]), "--vocab", str(vocab))
+    widened = dict(VOCAB, emotion=["气急败坏", "狂喜"])
+    vocab.write_text(json.dumps(widened, ensure_ascii=False), encoding="utf-8")
+    data = report(write(tmp_path, valid_records()), "--vocab", str(vocab))
     assert data["gate_3_seed_coverage"]["status"] == "fail"
     assert data["gate_3_seed_coverage"]["missing_values"]["emotion"] == ["狂喜"]
 
@@ -195,7 +216,7 @@ def test_broken_json_line_is_reported(tmp_path):
 def test_human_readable_output_lists_gate_status(tmp_path):
     buf = io.StringIO()
     with redirect_stdout(buf):
-        check_holdout.main([str(write(tmp_path, [q7_entry()])), "--pilot"])
+        check_holdout.main([str(write(tmp_path, valid_records())), "--pilot"])
     text = buf.getvalue()
     assert "gate_1_total" in text
     assert "overall" in text

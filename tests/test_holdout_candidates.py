@@ -20,11 +20,19 @@ CARDS = [
 
 
 def test_offline_transport_is_deterministic():
-    a = hc.offline_transport(CARDS[0])
-    b = hc.offline_transport(CARDS[0])
+    prompt = hc.prompt_for(CARDS[0])
+    a = hc.offline_transport(prompt)
+    b = hc.offline_transport(prompt)
     assert a == b
     payload = json.loads(a)
     assert payload["must"], "必须给出至少一条边"
+
+
+def test_prompt_carries_every_field_the_stub_needs():
+    card = hc.card_from_prompt(hc.prompt_for(CARDS[1]))
+    assert card["id"] == "axis_180"
+    assert card["domain"] == "axis_theory"
+    assert card["title"] == "一百八十度规则"
 
 
 def test_prompt_mentions_the_card_and_the_rules():
@@ -73,6 +81,13 @@ def test_disagreements_detects_must_differences():
     assert hc.disagreements(a, b) == ["c1"]
 
 
+def test_two_stub_families_really_disagree():
+    """两个族的 stub 必须真的产生分歧，否则分歧通道等于没测。"""
+    a = hc.draft_all(CARDS, hc.offline_transport)
+    b = hc.draft_all(CARDS, hc.offline_transport_b)
+    assert hc.disagreements(a, b) == ["cine_shot_size", "axis_180"]
+
+
 def test_disagreements_empty_when_identical():
     a = [{"from_card": "c1", "must": ["X:emotion=a,intensity=mid"]}]
     assert hc.disagreements(a, list(a)) == []
@@ -103,6 +118,34 @@ def test_cli_writes_three_artifacts(tmp_path):
         assert (tmp_path / name).is_file(), name
     first = json.loads((tmp_path / "candidates.jsonl").read_text(encoding="utf-8").splitlines()[0])
     assert first["from_card"] == "cine_shot_size"
+    assert first["id"] == "hq_0001"
+    assert first["annotator"]["family"] == "offline"
+    assert first["independence"] == "strong"
+
+
+def test_cli_output_is_accepted_by_check_holdout(tmp_path):
+    """草稿必须能直接喂给校验器（管道闭合）。"""
+    sys.path.insert(0, str(ROOT))
+    from tools import check_holdout
+
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(CARDS, ensure_ascii=False), encoding="utf-8")
+    assert hc.main(["--cards", str(cards), "--out-dir", str(tmp_path)]) == 0
+    rc = check_holdout.main([str(tmp_path / "candidates.jsonl"), "--pilot", "--json"])
+    # 格式门必须过；其余门在 2 条草稿上按试点门限判定
+    assert rc in (0, 1, 2)
+    report = json.loads(_capture(lambda: check_holdout.main(
+        [str(tmp_path / "candidates.jsonl"), "--pilot", "--json"])))
+    assert report["gate_2_format"]["status"] == "pass"
+
+
+def _capture(fn):
+    import io
+    from contextlib import redirect_stdout
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        fn()
+    return buf.getvalue()
 
 
 def test_cli_skips_second_family_when_disabled(tmp_path):

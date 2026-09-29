@@ -171,6 +171,26 @@ def disagreements(a: Sequence[dict], b: Sequence[dict]) -> List[str]:
     return out
 
 
+def finalise(draft: dict, idx: int, *, family: str, independence: str,
+             transport: str) -> dict:
+    """Turn a raw draft into an entry `check_holdout.py` can validate.
+
+    Only `review` is left for the human — everything mechanical (id, annotator,
+    independence) is filled here so the pipeline is closed end to end.
+    """
+    if draft.get("error"):
+        return draft
+    out = dict(draft)
+    out.pop("_prompt_sha256", None)
+    out["id"] = f"hq_{idx:04d}"
+    out.setdefault("never", [])
+    out.setdefault("expect_movements", [])
+    out["annotator"] = {"model_id": transport, "family": family,
+                        "model_version": "", "prompt_sha256": ""}
+    out["independence"] = independence
+    return out
+
+
 def render_sheet(drafts: Sequence[dict], diff_ids: Sequence[str]) -> str:
     """The Markdown 选择题 a human actually reads (only the disagreements)."""
     lines = ["# held-out 裁决表（只列两个族分歧的条目）", "",
@@ -216,7 +236,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--transport-a", default="offline")
     parser.add_argument("--transport-b", default="offline-b",
                         help="第二个族；写 none 则跳过分歧检测")
-    parser.add_argument("--family", default="offline", help="写进 annotator.family")
+    parser.add_argument("--family", default="offline", help="写进 annotator.family（第一个族）")
+    parser.add_argument("--family-b", default="", help="第二个族的 family（默认 = --family + '-b'）")
     parser.add_argument("--out-dir", default=".")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -224,20 +245,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.n:
         cards = cards[: args.n]
     transport_a = build_transport(args.transport_a)
-    drafts = draft_all(cards, transport_a)
+    raw_drafts = draft_all(cards, transport_a)
 
     out_dir = pathlib.Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "candidates.jsonl").write_text(
-        "\n".join(json.dumps(d, ensure_ascii=False) for d in drafts) + "\n", encoding="utf-8")
 
     diff_ids: List[str] = []
+    family_b = args.family_b or f"{args.family}-b"
     if args.transport_b != "none":
         transport_b = build_transport(args.transport_b)
         drafts_b = draft_all(cards, transport_b)
-        diff_ids = disagreements(drafts, drafts_b)
+        diff_ids = disagreements(raw_drafts, drafts_b)
         (out_dir / "disagreements.json").write_text(
             json.dumps(diff_ids, ensure_ascii=False, indent=2), encoding="utf-8")
+    independence = "strong" if family_b != args.family else "weak"
+    drafts = [finalise(d, i, family=args.family, independence=independence,
+                       transport=args.transport_a)
+              for i, d in enumerate(raw_drafts, 1)]
+    (out_dir / "candidates.jsonl").write_text(
+        "\n".join(json.dumps(d, ensure_ascii=False) for d in drafts) + "\n", encoding="utf-8")
+
     sheet = render_sheet(drafts, diff_ids or [str(d.get("from_card")) for d in drafts])
     (out_dir / "candidates.md").write_text(sheet, encoding="utf-8")
 
