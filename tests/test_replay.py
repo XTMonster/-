@@ -210,7 +210,7 @@ def test_replay_builds_the_scene_before_tool_calls(tmp_path):
     registry, _seen = recording_registry()
     order = []
 
-    def builder(plan, spec):
+    def builder(plan, spec, brief=None):
         order.append(("build", plan.scene_heading))
         return {"shots": len(plan.shots), "total_frames": 48}
 

@@ -23,6 +23,7 @@ from _fixtures import two_shot_plan  # noqa: E402
 from block_director.contracts.audit import AuditError, AuditResult  # noqa: E402
 from block_director.contracts.cast import SceneSpec  # noqa: E402
 from block_director.contracts.enums import Severity  # noqa: E402
+from block_director.contracts.sdl import SDL_VERSION  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.layer3_engine.scene_context import get_context  # noqa: E402
 from block_director.layer3_engine.shot_builder import build_scene  # noqa: E402
@@ -172,7 +173,7 @@ def t_export_actions_write_real_files():
             if state_file.exists() else {}
         return {"ok": (sdl_result == {'FINISHED'} and state_result == {'FINISHED'}
                        and project.exists() and state_file.exists()
-                       and payload.get("version") == "1.3"
+                       and payload.get("version") == SDL_VERSION
                        and len(payload.get("scenes", [{}])[0].get("shots", [])) == 2
                        and bool(state.get("characters"))),
                 "sdl": list(sdl_result), "scene_state": list(state_result),

@@ -5,7 +5,7 @@ from __future__ import annotations
 from block_director.contracts.cast import CastMember, SceneSpec
 from block_director.contracts.enums import Severity
 from block_director.contracts.plan import Plan, ShotPlan
-from block_director.contracts.sdl import SDLProject
+from block_director.contracts.sdl import SDL_VERSION, SDLProject
 from block_director.layer2_sdl import build_sdl, migrate_sdl, sdl_to_plan, sdl_to_spec, validate_sdl
 
 
@@ -228,7 +228,7 @@ def test_migrate_v10_folds_frames_into_duration():
              "end_frame": 48}]}],
     }
     payload, notes = migrate_sdl(legacy)
-    assert payload["version"] == "1.3"
+    assert payload["version"] == SDL_VERSION
     assert payload["fps"] == 24
     shot = payload["scenes"][0]["shots"][0]
     assert shot["duration_frames"] == 48
@@ -239,7 +239,7 @@ def test_migrate_v10_folds_frames_into_duration():
 def test_migrate_is_idempotent_for_current_version():
     sdl = build_sdl(demo_plan(), build_summary=BUILD)
     payload, notes = migrate_sdl(sdl.to_dict())
-    assert payload["version"] == "1.3" and notes == []
+    assert payload["version"] == SDL_VERSION and notes == []
     assert SDLProject.from_dict(payload).to_dict() == sdl.to_dict()
 
 

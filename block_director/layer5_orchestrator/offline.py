@@ -30,40 +30,85 @@ def _heading_of(script: str) -> str:
     return first_line or "未命名场景"
 
 
-def demo_plan_dict(script: str) -> dict:
-    """阶段 A 的确定性产物：**拍摄清单**（2 镜），不含动作与对白。
+def _default_two_shots() -> list:
+    """历史默认：不绑剧本时的 2 镜计划。
+
+    ``tools/run_tests.ps1`` 的 ``[4/25]`` 链路（``--offline --build``，不传
+    ``--script``）与 ``tests/test_driver.py`` 的短剧本都建立在这 2 镜之上，
+    因此"没有脚本 / 脚本没有镜号"时必须原样保留（v1.4 §3.1 的硬约束）。
+    """
+    return {
+        "shot_id": "shot_001",
+        "order": 1,
+        "intent": "建立场景与人物关系",
+        "shot_type": "MLS",
+        "duration_frames": 96,
+        "characters": ["char_001", "char_002"],
+        "dialogue_ids": [],
+        "prompt": "",
+        "axis_note": "以两人连线建立轴线",
+        "continuity_in": "开场",
+    }, {
+        "shot_id": "shot_002",
+        "order": 2,
+        "intent": "推进对话，给出反应",
+        "shot_type": "MCU",
+        "duration_frames": 120,
+        "characters": ["char_002"],
+        "dialogue_ids": [],
+        "prompt": "",
+        "axis_note": "保持轴线同侧",
+        "continuity_in": "承接 shot_001 的站位",
+    }
+
+
+def shots_from_declarations(declarations, *, fps: int = 24) -> list:
+    """按分镜表的**声明镜数**造出对应的 mock 镜头（v1.4 §3.1 / R46）。
+
+    每镜的 ``duration_frames = frames_from_seconds(声明秒, fps)``：只对齐镜数
+    不对齐时长会让 RK-11 的帧数等式（``total_frames == Σ frames_from_seconds``）
+    在离线通路上必破。声明缺失才退回引擎估算（这里用一个保守的 96 帧）。
+    角色名映射成 ``char_NNN``（按首次出现顺序）以保持剧组 id 规范。
+    """
+    from ..layer1_input.timing import frames_from_seconds
+
+    mapping = {}
+    shots = []
+    for index, declared in enumerate(declarations or [], start=1):
+        names = [str(name) for name in (getattr(declared, "characters", []) or [])]
+        for name in names:
+            if name not in mapping:
+                mapping[name] = f"char_{len(mapping) + 1:03d}"
+        seconds = getattr(declared, "declared_seconds", None)
+        frames = (frames_from_seconds(seconds, fps) if seconds
+                  else 96)
+        shots.append({
+            "shot_id": f"shot_{index:03d}",
+            "order": index,
+            "intent": (f"镜号{getattr(declared, 'shot_number', index)}："
+                       f"{getattr(declared, 'field', lambda *_: '')('作用') or '推进叙事'}"),
+            "shot_type": str(getattr(declared, "shot_type", "") or "MS"),
+            "duration_frames": int(frames),
+            "characters": [mapping[name] for name in names],
+            "dialogue_ids": [],
+            "prompt": "",
+            "axis_note": "",
+            "continuity_in": "",
+        })
+    return shots
+
+
+def demo_plan_dict(script: str, declarations=None) -> dict:
+    """阶段 A 的确定性产物：**拍摄清单**，不含动作与对白。
 
     与 §7.2 的 schema 一致——每镜的细节由阶段 B1（`demo_draft_dict`）逐镜补齐。
+    ``declarations``（分镜表声明）非空时按声明出对应镜数的计划；否则保持 2 镜。
     """
+    shots = shots_from_declarations(declarations) or list(_default_two_shots())
     return {
         "scene_heading": _heading_of(script),
         "continuity_notes": ["离线自检模式生成，仅供链路验证"],
-        "shots": [
-            {
-                "shot_id": "shot_001",
-                "order": 1,
-                "intent": "建立场景与人物关系",
-                "shot_type": "MLS",
-                "duration_frames": 96,
-                "characters": ["char_001", "char_002"],
-                "dialogue_ids": [],
-                "prompt": "",
-                "axis_note": "以两人连线建立轴线",
-                "continuity_in": "开场",
-            },
-            {
-                "shot_id": "shot_002",
-                "order": 2,
-                "intent": "推进对话，给出反应",
-                "shot_type": "MCU",
-                "duration_frames": 120,
-                "characters": ["char_002"],
-                "dialogue_ids": [],
-                "prompt": "",
-                "axis_note": "保持轴线同侧",
-                "continuity_in": "承接 shot_001 的站位",
-            },
-        ],
+        "shots": shots,
     }
 
 
@@ -111,10 +156,14 @@ class OfflineTransport:
 
     def __init__(self, plan: Optional[dict] = None, drafts: Optional[list] = None,
                  fail_times: int = 0,
-                 brief: Optional[dict] = None) -> None:
+                 brief: Optional[dict] = None,
+                 declarations: Optional[list] = None,
+                 fps: int = 24) -> None:
         self._plan = plan
         self._drafts = list(drafts) if drafts is not None else None
         self._brief = dict(brief) if brief is not None else dict(DEMO_BRIEF)
+        self._declarations = list(declarations) if declarations else None
+        self._fps = int(fps or 24)
         self.fail_times = fail_times
         self.chat_calls = 0
         self._editor_calls = 0
@@ -171,7 +220,8 @@ class OfflineTransport:
                 script = message.content.split("<untrusted_script_content>", 1)[1]
                 script = script.split("</untrusted_script_content>", 1)[0]
                 break
-        plan = self._plan or demo_plan_dict(script)
+        plan = self._plan or demo_plan_dict(script,
+                                            declarations=self._declarations)
         call = ToolCall(
             id=f"call_{self.chat_calls}",
             function=FunctionCall(name=PLAN_TOOL_NAME,
@@ -201,6 +251,11 @@ class OfflineTransport:
         return HealthStatus(status="ok", version="1.3.0",
                             capabilities=[Capability.LLM, Capability.BM25],
                             detail="offline transport")
+
+    def set_declarations(self, declarations, *, fps: int = 24) -> None:
+        """绑定分镜表声明：离线计划的镜数与时长据此生成（v1.4 BW-3）。"""
+        self._declarations = list(declarations) if declarations else None
+        self._fps = int(fps or 24)
 
     def embed(self, texts: List[str], timeout: float = 30.0) -> List[List[float]]:
         raise NotImplementedError("离线自检不提供向量检索")

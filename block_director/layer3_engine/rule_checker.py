@@ -19,7 +19,11 @@ import bpy
 from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
-from ..cinema.axis import thirty_degree_violation
+from ..cinema.axis import (
+    flipped_screen_directions,
+    shared_characters,
+    thirty_degree_violation,
+)
 from ..cinema.framing import SHOT_FRAME, required_distance
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
 from ..contracts.audit import AuditError, AuditResult
@@ -142,9 +146,47 @@ def audit_frames(shot_id: str, context=None) -> List[int]:
     return sorted({int(start), int(middle), int(end)})
 
 
+def screen_facing_for(shot, *, context=None, camera=None):
+    """本镜**显式声明**的每个角色在屏幕上的朝向（相机右轴的投影点积）。
+
+    v1.4 §3.4：R012（同框正反打）与新增的 R019（银幕方向连续性）**共用**这一
+    份计算，不再各自算一遍局部变量。返回值是 ``{character_id: dot}``：
+    ``dot > 0`` 表示角色朝向画面右侧，``< 0`` 朝左，``≈ 0`` 中性。
+
+    只统计 ``shot.characters`` 里**显式声明**、且真的在场景里的角色——
+    v1.3 的 R012 走 ``SceneContext.subjects_for``，后者在镜头没写角色时
+    回退成整个剧组（X9），于是"没声明角色"的空镜也会被拉进正反打判定。
+    """
+    from .character_system import get_facing
+
+    if shot is None or context is None:
+        return {}
+    camera = camera or context.camera_for(getattr(shot, "shot_id", ""))
+    if camera is None:
+        return {}
+    right = camera.matrix_world.to_quaternion() @ Vector((1.0, 0.0, 0.0))
+    flat_right = Vector((right.x, right.y, 0.0))
+    if flat_right.length <= 1e-6:
+        return {}
+    flat_right.normalize()
+    result: Dict[str, float] = {}
+    for character_id in (getattr(shot, "characters", None) or []):
+        character = context.character(character_id)
+        if character is None:
+            continue
+        facing = get_facing(character)
+        flat = Vector((float(facing[0]), float(facing[1]), 0.0))
+        if flat.length <= 1e-6:
+            continue
+        flat.normalize()
+        result[str(character_id)] = flat.dot(flat_right)
+    return result
+
+
 @main_thread_only("check_shot")
 def check_shot(shot_id: str, *, context=None,
-               composition_threshold: float = 70.0) -> AuditResult:
+               composition_threshold: float = 70.0,
+               strict: bool = False) -> AuditResult:
     """对单个镜头跑全部已实现的 Level 1 规则。"""
     from .cinema_engine import (
         check_camera_axis,
@@ -258,35 +300,67 @@ def check_shot(shot_id: str, *, context=None,
                 target=shot_id, suggestion="重新对准被摄主体"))
 
     # R012 视线匹配（v1.3）：两人同框时必须形成正反打 ------------------------
-    if len(characters) == 2:
-        from .character_system import get_facing
-
-        right = camera.matrix_world.to_quaternion() @ Vector((1.0, 0.0, 0.0))
-        flat_right = Vector((right.x, right.y, 0.0))
-        screen_facing: List[float] = []
-        heights: List[float] = []
-        for character in characters:
-            facing = get_facing(character)
-            flat = Vector((float(facing[0]), float(facing[1]), 0.0))
-            if flat.length > 1e-6 and flat_right.length > 1e-6:
-                flat.normalize()
-                screen_facing.append(flat.dot(flat_right.normalized()))
-            head = getattr(character, "head_pivot", None)
-            if head is not None:
-                heights.append(head.matrix_world.translation.z)
-        if len(screen_facing) == 2 and screen_facing[0] * screen_facing[1] > 0:
+    # v1.4 X9：只算**本镜显式声明**的角色（不再回退全剧组）。
+    declared = [str(item) for item in (shot.characters if shot else [])]
+    facing_map = screen_facing_for(shot, context=context, camera=camera)
+    if len(declared) == 2 and len(facing_map) == 2:
+        values = [facing_map[cid] for cid in declared]
+        if values[0] * values[1] > 0:
             findings.append(_warning(
                 "R012", "E_CAM_001",
-                f"两人同框但屏幕朝向同号（{screen_facing[0]:+.2f} / "
-                f"{screen_facing[1]:+.2f}），没有形成正反打",
+                f"两人同框但屏幕朝向同号（{values[0]:+.2f} / "
+                f"{values[1]:+.2f}），没有形成正反打",
                 target=shot_id,
                 suggestion="让两人相对而立（face_character），或改用单人镜"))
+        heights = []
+        for character_id in declared:
+            head = getattr(context.character(character_id), "head_pivot", None) \
+                if context is not None else None
+            if head is not None:
+                heights.append(head.matrix_world.translation.z)
         if len(heights) == 2 and abs(heights[0] - heights[1]) > 0.15:
             findings.append(_warning(
                 "R012", "E_CAM_001",
                 f"两人眼高差 {abs(heights[0] - heights[1]):.2f} m 超过 0.15 m，"
                 f"正反打会看出高低差",
                 target=shot_id, suggestion="把两人放在同一地面高度上"))
+
+    # R019 银幕方向连续性（v1.4 §3.4，替代死字段 screen_direction） -----------
+    # 相邻两镜、**同一角色**、且**两镜都显式声明了该角色**：屏幕朝向符号翻转
+    # 且中间没有中性机位 → 观众会看到角色突然换边（越轴）。只在一镜里声明的
+    # 角色**不参与**判定（负例见 RK-19）。
+    if shot is not None and context is not None and context.plan is not None:
+        order = [s.shot_id for s in context.plan.shots]
+        if shot_id in order and order.index(shot_id) > 0:
+            previous = context.plan.shots[order.index(shot_id) - 1]
+            shared = shared_characters(previous.characters or [],
+                                       shot.characters or [])
+            previous_camera = context.camera_for(previous.shot_id)
+            if shared and previous_camera is not None:
+                previous_start, _ = shot_frame_span(previous.shot_id, context)
+                scene.frame_set(previous_start)
+                bpy.context.view_layer.update()
+                previous_facing = screen_facing_for(previous, context=context,
+                                                    camera=previous_camera)
+                previous_neutral = (context.axis is not None
+                                    and check_camera_neutral(context.axis,
+                                                             previous_camera))
+                scene.frame_set(frame_start)
+                bpy.context.view_layer.update()
+                if not (previous_neutral or neutral_here):
+                    for character_id in flipped_screen_directions(
+                            previous_facing, facing_map, shared):
+                        before = previous_facing[character_id]
+                        now = facing_map[character_id]
+                        findings.append((_error if strict else _warning)(
+                            "R019", "E_AXIS_001",
+                            f"{character_id} 的银幕方向在第 "
+                            f"{previous.shot_id} 与 {shot_id} 之间翻转"
+                            f"（{before:+.2f} → {now:+.2f}），且中间没有"
+                            f"中性机位过渡",
+                            target=shot_id,
+                            suggestion="让该角色保持同一侧，或插入一个"
+                                       "中性（骑轴）机位再换边"))
 
     # R002 空间碰撞（角色 vs 墙体/道具，AABB 膨胀 0.2） --------------------
     obstacles = _obstacles()

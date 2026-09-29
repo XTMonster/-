@@ -193,3 +193,40 @@ def thirty_degree_violation(previous_camera: Sequence[float],
 
 def shot_types() -> Tuple[str, ...]:
     return SHOT_TYPES
+
+
+# --------------------------------------------------------------------------- #
+# R019：银幕方向连续性（v1.4 §3.4，替代死字段 screen_direction）
+# --------------------------------------------------------------------------- #
+#: 判定"符号翻转"时的中性死区：|dot| 小于它视为中性（画面里看不出朝向）。
+SCREEN_DIRECTION_EPS = 1e-3
+
+
+def shared_characters(previous: Sequence[str],
+                      current: Sequence[str]) -> list:
+    """相邻两镜**都显式声明**的角色 id（保持前一镜的顺序）。"""
+    current_set = {str(item) for item in (current or [])}
+    return [str(item) for item in (previous or []) if str(item) in current_set]
+
+
+def flipped_screen_directions(previous_facing: Dict[str, float],
+                              current_facing: Dict[str, float],
+                              character_ids: Sequence[str],
+                              *, eps: float = SCREEN_DIRECTION_EPS) -> list:
+    """返回在相邻两镜之间**银幕方向符号翻转**的角色 id。
+
+    只对 ``character_ids``（＝两镜都显式声明、且两镜都算得出朝向）里的角色
+    判定；任一镜的 ``|dot| < eps``（中性）都不算翻转——"翻转"必须有左右两侧。
+    """
+    flipped: list = []
+    for character_id in character_ids:
+        key = str(character_id)
+        before = previous_facing.get(key)
+        now = current_facing.get(key)
+        if before is None or now is None:
+            continue
+        if abs(before) < eps or abs(now) < eps:
+            continue
+        if before * now < 0:
+            flipped.append(key)
+    return flipped

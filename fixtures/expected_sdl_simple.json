@@ -1,6 +1,6 @@
 {
   "name": "INT. 公寓客厅 - 夜",
-  "version": "1.3",
+  "version": "1.4",
   "fps": 24,
   "characters": [
     {
@@ -245,5 +245,6 @@
     }
   },
   "warnings": [],
-  "brief": {}
+  "brief": {},
+  "with_labels": true
 }

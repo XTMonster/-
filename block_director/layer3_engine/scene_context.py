@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from ..cinema.axis import Axis
+from ..cinema.subjects import resolve_subjects
 from ..contracts.cast import SceneSpec
 from ..contracts.plan import Plan
 
@@ -54,20 +55,21 @@ class SceneContext:
         return None
 
     def subjects_for(self, shot_id: str = "") -> List[Any]:
-        """本镜的**被摄主体**：镜头自己声明的角色；为空时退回全部角色。
+        """本镜的**被摄主体**：镜头自己声明的角色。
 
         构图评分与规则判定必须共用同一份主体集合。v1.2 的
         ``check_composition`` 工具直接拿 ``character_list``（全剧组）去评分，
         于是画面里的第三个人会被当成主体——实测两人相对而立时，单人镜的
         搭档离机位更近、显得更大，评分从 71 掉到 40，修复循环被完全带偏。
+
+        v1.4 X9：**有镜头计划时不再回退整个剧组**——镜头没显式声明角色就该有
+        "没有主体"的结论，而不是把全剧组拉进来（那会让空镜/无声明镜头混进
+        R012 的正反打判定）。只有**完全没有计划**（计划外的临时调用）时才
+        保留"全剧组"这一历史行为。
         """
         shot = self.shot(shot_id)
-        if shot is not None:
-            subjects = [self.character(cid) for cid in shot.characters]
-            subjects = [item for item in subjects if item is not None]
-            if subjects:
-                return subjects
-        return self.character_list
+        return resolve_subjects(shot, self.character_list,
+                                has_plan=self.plan is not None)
 
     @property
     def character_list(self) -> List[Any]:

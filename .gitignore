@@ -9,11 +9,27 @@ __pycache__/
 *.blend1
 *.blend2
 *.blend@
-export/
+# NOTE: leading slashes are required. A bare ``export/`` matches at ANY depth
+# and silently swallows ``docs/evidence/<run-id>/export/`` (v1.4 S13/§4.4).
+/export/
 
 # Per-run output (regenerated on every headless/export run)
-runs/
-exports/
+# Per-run output (regenerated on every headless/export run). Leading slashes
+# again: ``runs/`` would ignore ``<out>/runs/audit_log.jsonl`` used as evidence.
+/runs/
+/exports/
+
+# Acceptance evidence must be committable (v1.4 S13). Place this AFTER the
+# ignores above so it re-includes nested directories such as
+# docs/evidence/<run-id>/runs/audit_log.jsonl.
+!docs/evidence/**
+!docs/evidence/**/
+
+# ...but the *regenerable media* inside an evidence run stays out of git (same
+# policy as tools/_probe_out above): a 64-shot acceptance run is >10 MB of mp4
+# plus 64 PNGs, and re-running the command reproduces them byte-for-byte.
+docs/evidence/**/*.mp4
+docs/evidence/**/first_frames/
 
 # Probe / audit output.
 # The JSON reports are committed (they are evidence referenced by the docs);

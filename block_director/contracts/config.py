@@ -87,6 +87,14 @@ class RagConfig:
     embedder: str = "bge-small-zh-v1.5"
     top_k: int = 5
     max_tokens_per_call: int = 800
+    #: v1.4 §2.3：整场预取（``block_for_plan``）的 token 上限。此前是
+    #: ``knowledge/retriever.py`` 里的硬编码常量，现在有真正的消费者。
+    plan_prefetch_tokens: int = 2000
+    #: v1.4 §2.3b：L3 案例层的载体。``lightrag``（默认）／``hybrid``（仅
+    #: LightRAG 不可用时降级，须记 ``cases_degraded``）／``off``（显式关闭）。
+    cases_backend: str = "lightrag"
+    #: L3 返回的参考案例条数（注入到"仅参考"栏）
+    cases_top_k: int = 3
 
 
 @dataclass
@@ -95,6 +103,9 @@ class OrchestrationConfig:
     max_repair_attempts: int = 2
     react_max_steps: int = 6
     context_window_tokens: int = 32000
+    #: v1.4 §2.4：单次运行的镜数上限。``0`` = 不限（**省略 ``maxItems`` 键**，
+    #: 不是写 0——``tool_schema.py`` 会真的执行 ``maxItems``）。
+    max_shots: int = 0
     #: Level 2 自我审核（§11.1）：每镜通过规则校验后再让模型反思一次。
     #: 它每镜多一次 LLM 调用，长片请按预算（§12.6）自行取舍。
     self_review: bool = True
@@ -110,10 +121,13 @@ class AuditConfig:
 @dataclass
 class BudgetConfig:
     #: 每个镜头允许多少次 LLM 调用。v1.3 多了阶段 S 与运镜/知识检索，
-    #: 额度从 v1.2 的 ``shots * 6`` 提到 ``shots * 8``（§6.1）。
-    max_llm_calls_per_scene_formula: str = "shots * 8"
+    #: 额度从 v1.2 的 ``shots * 6`` 提到 ``shots * 8 + 40``（§6.1 / v1.4 §2.4）。
+    max_llm_calls_per_scene_formula: str = "shots * 8 + 40"
+    #: v1.4 §2.4：单场静态额度**下限保障**（不是上限）。真正的硬顶只由
+    #: CLI ``--max-llm-calls`` 提供（``0`` = 不限）。
+    max_llm_calls_ceiling: int = 200
     max_cost_usd: float = 5.0
-    max_wall_minutes: float = 30.0
+    max_wall_minutes: float = 120.0
 
 
 @dataclass
@@ -131,11 +145,12 @@ class BriefConfig:
 class CrowdConfig:
     """群众代理（v1.3 §3.6）。
 
-    默认**关闭**：群众会显著增加对象数与关键帧数，而多数镜头根本不需要它。
-    分镜表里写了"约 30 名路人"这类声明时，run_headless 会按声明开启它。
+    v1.4 X17：``enabled`` 是**三态**——``None``（默认）＝按剧本声明，
+    ``True`` ＝强制开启，``False`` ＝显式关闭（优先级最高）。
+    优先级：**显式 false > 剧本声明 > 默认关**。
     """
 
-    enabled: bool = False
+    enabled: Optional[bool] = None
     max_instances: int = 40
     seed: int = 0
     #: ``static`` 或 ``walk``（walk 是"漂移 + 微起伏"的近似，不是骨骼走姿）
@@ -153,11 +168,19 @@ class VfxConfig:
 
 @dataclass
 class CharacterConfig:
-    head_radius: float = 0.35
-    body_radius: float = 0.25
-    body_height: float = 0.7
-    leg_height: float = 0.4
-    eye_radius: float = 0.06
+    #: v1.4 §2.1 冻结几何（纯比例，由 ``cinema/anchor.py`` 推导绝对高度）。
+    #: 旧的 ``head_radius``/``body_radius``/``body_height``/``leg_height``/
+    #: ``eye_radius`` 五个字段全仓零消费者，已删除；``CFG_301`` 防止复活。
+    total_height: float = 1.70
+    head_ratio: float = 0.37
+    torso_ratio: float = 0.44
+    leg_ratio: float = 0.19
+    eye_r: float = 0.035
+    eye_dx: float = 0.11
+    #: 眼球相对头球的突出量（米）：``d = head_r - eye_r + eye_protrusion``
+    eye_protrusion: float = 0.015
+    #: 头球与躯干顶的间隙（0 ＝ 相切，容差 ±0.005）
+    neck_gap: float = 0.0
     #: 眼睛单独用一份深色材质。v1.2 给眼睛挂的是**与身体同一个材质**，
     #: 于是眼睛和身体同色、看上去像没有五官。
     eye_color: str = "#101010"
@@ -209,7 +232,8 @@ class DeliveryConfig:
     export_depth: bool = False                                # 需 eevee
     export_camera_traj: bool = False
     per_shot_clips: bool = True
-    full_concat: bool = False
+    #: v1.4 §2.4 D4：连续成片**默认产出**并保留分段（原默认 false）。
+    full_concat: bool = True
     external_ffmpeg_path: str = ""       # 可选；仅拼接/转码
 
     @property
@@ -223,6 +247,14 @@ class UIConfig:
     show_composition: bool = True
     show_safe_area: bool = True
     show_labels: bool = True
+
+
+@dataclass
+class FramingConfig:
+    """构图/取景策略（v1.4 §2.2）。"""
+
+    #: ``board``（默认，头顶不切、上边距 ≥ 画面高 8%）／``cinematic``
+    headroom_policy: str = "board"
 
 
 @dataclass
@@ -241,6 +273,7 @@ class AppConfig:
     dialogue: DialogueConfig = field(default_factory=DialogueConfig)
     delivery: DeliveryConfig = field(default_factory=DeliveryConfig)
     ui: UIConfig = field(default_factory=UIConfig)
+    framing: FramingConfig = field(default_factory=FramingConfig)
 
     # ----------------------------------------------------------------- 校验
     def validate(self) -> List[Issue]:
@@ -292,6 +325,23 @@ class AppConfig:
             err("CFG_010", "budget.max_cost_usd", "费用上限必须为正数")
         if self.budget.max_wall_minutes <= 0:
             err("CFG_011", "budget.max_wall_minutes", "时间上限必须为正数")
+        if int(self.budget.max_llm_calls_ceiling) < 8:
+            err("CFG_015", "budget.max_llm_calls_ceiling",
+                f"单场静态额度下限不得小于 8（当前 "
+                f"{self.budget.max_llm_calls_ceiling}）；0 = 不限的语义由 "
+                f"CLI --max-llm-calls 表达，不要在这里写 0")
+        if int(self.orchestration.max_shots) < 0:
+            err("CFG_016", "orchestration.max_shots",
+                f"镜数上限不能为负（当前 {self.orchestration.max_shots}）；"
+                f"0 表示不限")
+        if int(self.rag.plan_prefetch_tokens) <= 0:
+            err("CFG_017", "rag.plan_prefetch_tokens",
+                f"整场预取预算必须为正数（当前 "
+                f"{self.rag.plan_prefetch_tokens}）")
+        if str(self.rag.cases_backend) not in ("lightrag", "hybrid", "off"):
+            err("CFG_018", "rag.cases_backend",
+                f"只能是 lightrag / hybrid / off（当前 "
+                f"{self.rag.cases_backend!r}）")
 
         # --- 决策 1（§6.1）：向量检索只能由 sidecar 提供 ---
         if self.rag.enabled and self.rag.backend is RagBackend.VECTOR \
@@ -361,6 +411,29 @@ class AppConfig:
         if str(self.crowd.mode) not in CROWD_MODES:
             err("CFG_213", "crowd.mode",
                 f"只能是 {'/'.join(CROWD_MODES)}（当前 {self.crowd.mode!r}）")
+        # --- v1.4 §2.1/§2.2：角色比例与头顶留白策略 ---
+        ratio_sum = (float(self.character.head_ratio)
+                     + float(self.character.torso_ratio)
+                     + float(self.character.leg_ratio))
+        if abs(ratio_sum - 1.0) > 1e-6:
+            err("CFG_303", "character.head_ratio",
+                f"头/躯干/腿三段比例之和必须为 1.0（当前 {ratio_sum:.6f}）")
+        for name, value in (("head_ratio", self.character.head_ratio),
+                            ("torso_ratio", self.character.torso_ratio),
+                            ("leg_ratio", self.character.leg_ratio)):
+            if float(value) <= 0:
+                err("CFG_304", f"character.{name}",
+                    f"比例必须为正数（当前 {value}）")
+        if float(self.character.total_height) <= 0:
+            err("CFG_305", "character.total_height",
+                f"总身高必须为正数（当前 {self.character.total_height}）")
+        if float(self.character.eye_dx) <= 0:
+            err("CFG_306", "character.eye_dx",
+                f"眼睛水平偏移必须为正数（当前 {self.character.eye_dx}）")
+        if str(self.framing.headroom_policy) not in ("board", "cinematic"):
+            err("CFG_302", "framing.headroom_policy",
+                f"只能是 board / cinematic（当前 "
+                f"{self.framing.headroom_policy!r}）")
         return issues
 
     def errors(self) -> List[Issue]:

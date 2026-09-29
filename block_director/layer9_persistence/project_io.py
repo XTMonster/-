@@ -82,8 +82,10 @@ def load_project(directory: Union[str, Path], *,
                            f"或检查 --project 目录是否正确")
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        raise ProjectError(f"项目文件不是合法 JSON：{exc}") from exc
+    except (json.JSONDecodeError, ValueError, UnicodeDecodeError, OSError) as exc:
+        # v1.4 X2：坏数据（非法 JSON、错误编码、读不了）都必须变成可读的
+        # ProjectError，而不是把底层异常原样抛给调用方。
+        raise ProjectError(f"项目文件无法读取或不是合法 JSON：{exc}") from exc
 
     payload, notes = migrate_sdl(raw)
     sdl = SDLProject.from_dict(payload)

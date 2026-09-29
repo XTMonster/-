@@ -7,6 +7,7 @@ import json
 import pytest
 
 from block_director.layer2_sdl import build_sdl
+from block_director.contracts.sdl import SDL_VERSION
 from block_director.layer9_persistence import (
     PROJECT_FILENAME,
     load_project,
@@ -34,7 +35,7 @@ def test_save_then_load_round_trips(tmp_path):
 def test_saved_file_is_readable_json_with_metadata(tmp_path):
     save_project(tmp_path, build_sdl(demo_plan(), build_summary=BUILD))
     raw = json.loads(project_file(tmp_path).read_text(encoding="utf-8"))
-    assert raw["version"] == "1.3"
+    assert raw["version"] == SDL_VERSION
     assert "saved_at" in raw
     assert raw["fps"] == 24
 
@@ -61,7 +62,7 @@ def test_loading_an_old_project_migrates_it(tmp_path):
     }
     project_file(tmp_path).write_text(json.dumps(legacy), encoding="utf-8")
     loaded = load_project(tmp_path)
-    assert loaded.sdl.version == "1.3"
+    assert loaded.sdl.version == SDL_VERSION
     assert loaded.notes and "迁移" in loaded.notes[-1]
     assert loaded.sdl.shots[0].duration_frames == 48
     assert loaded.sdl.shots[0].start_frame == 1

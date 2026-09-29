@@ -64,6 +64,10 @@ USER_MESSAGES: Dict[ErrorCode, str] = {
     ErrorCode.BRIEF_001: ("剧本理解（阶段 S）失败：模型两次都没有返回合法的"
                           "SceneBrief。已退回确定性抽取（不猜代词），"
                           "说话对象与注视关系可能缺失。"),
+    ErrorCode.SCRIPT_002: ("分镜表声明的镜数超过了 orchestration.max_shots 的上限。"
+                           "把该值设为 0（不限）或提高到不小于声明镜数后重跑。"),
+    ErrorCode.MOTION_001: ("动作姿态参数里有未登记的键（已拒绝执行，不会静默取默认值）。"
+                           "请改用登记别名，如 angle_deg/angle/degrees 与 axis/toward。"),
 }
 
 

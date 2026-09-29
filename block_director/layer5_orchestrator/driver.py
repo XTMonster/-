@@ -33,7 +33,12 @@ from ..contracts.enums import ErrorCode
 from ..layer6_audit.audit_logger import AuditLogger
 from ..utils.logger import get_logger
 from ..utils.threading_guard import assert_main_thread
-from .planner import EMIT_PLAN_TOOL_PARAMETERS, PLAN_TOOL_NAME, build_plan_payload
+from .planner import (
+    EMIT_PLAN_TOOL_PARAMETERS,
+    PLAN_TOOL_NAME,
+    build_plan_payload,
+    plan_parameters,
+)
 from .control_tools import (
     ABORT,
     FINISH_SHOT,
@@ -68,7 +73,10 @@ class DriverLimits:
     """运行护栏（§12.6）。"""
 
     max_steps: int = 4000
-    max_llm_calls: int = 8
+    #: v1.4 §2.4：**硬顶**（CLI ``--max-llm-calls`` 的入口）。``0`` = 不限，
+    #: 此时初值由 ``budget.max_llm_calls_ceiling`` 注入（见 ``_limits_from``）。
+    #: 真正的门禁 = ``max(ceiling, formula)``，再与这里的硬顶取小。
+    max_llm_calls: int = 0
     llm_timeout_s: float = 120.0
     plan_attempts: int = 2
     brief_attempts: int = 2      # §3.2：两次不理解就降级为确定性抽取
@@ -86,13 +94,17 @@ class DriverEvent:
     data: Dict[str, Any] = field(default_factory=dict)
 
 
-def default_registry() -> ToolRegistry:
-    """默认工具集：阶段 A 的 emit_plan + 三个控制工具（§7.4）。"""
+def default_registry(max_shots: int = 0) -> ToolRegistry:
+    """默认工具集：阶段 A 的 emit_plan + 三个控制工具（§7.4）。
+
+    ``max_shots`` 透传给 emit_plan 的 schema（v1.4 §3.2）；``0`` = 不限，
+    此时 schema 里**没有** ``maxItems`` 键。
+    """
     registry = ToolRegistry()
     registry.add(
         name=PLAN_TOOL_NAME,
         description="提交白模预演的分镜计划（阶段 A 的唯一合法产出）",
-        parameters=EMIT_PLAN_TOOL_PARAMETERS,
+        parameters=plan_parameters(max_shots),
         handler=lambda **kwargs: f"计划已接收：{len(kwargs.get('shots', []))} 个镜头",
     )
     # 单镜草案也注册进默认表：修复/精修阶段需要它来**改对白时序**——
@@ -119,12 +131,18 @@ def _limits_from(config, limits: "DriverLimits") -> BudgetLimits:
 
     此前 ``config.budget`` 是**死配置**：驱动器只用 ``DriverLimits`` 里的
     调用次数上限，用户设的 ``max_cost_usd`` / ``max_wall_minutes`` 没人执行。
+
+    v1.4 §2.4：``DriverLimits.max_llm_calls`` 初值 = ``budget.max_llm_calls_ceiling``
+    （0 表示"未指定"，由配置注入）；CLI 显式给出的正数覆盖它。
     """
     if config is None or getattr(config, "budget", None) is None:
         return BudgetLimits(max_llm_calls=limits.max_llm_calls)
     budget = config.budget
+    ceiling = int(getattr(budget, "max_llm_calls_ceiling", 0) or 0)
+    initial = (int(limits.max_llm_calls) if int(limits.max_llm_calls) > 0
+               else ceiling)
     return BudgetLimits(
-        max_llm_calls=limits.max_llm_calls,
+        max_llm_calls=initial,
         max_cost_usd=float(getattr(budget, "max_cost_usd", 0.0) or 0.0),
         max_wall_seconds=float(getattr(budget, "max_wall_minutes", 0.0) or 0.0)
         * 60.0)
@@ -166,6 +184,11 @@ class PrevisDriver:
         self.scene_state_provider = scene_state_provider
         self.loop_detector = loop_detector or LoopDetector()
         self.budget = budget or Budget(_limits_from(config, self.limits))
+        #: 调用方**直接**塞进来的预算账本（测试/嵌入用法）里的硬顶。
+        #: §2.4 的硬顶入口是 ``limits.max_llm_calls``；但显式传入的预算对象
+        #: 同样必须被尊重，否则 ``_apply_scene_budget`` 会把它顶掉。
+        self._caller_budget_cap = (int(budget.limits.max_llm_calls)
+                                   if budget is not None else 0)
         self.degraded_reason = ""
         self.human_gate = human_gate
         self.knowledge = knowledge
@@ -227,6 +250,14 @@ class PrevisDriver:
         self._repair_attempts = 0
         self._repairs_total = 0
         self._pending_audit: Optional[AuditResult] = None
+        #: v1.4 §3.3：定向修复的留痕（生产者 = 本驱动器；消费者 = US-12②）。
+        #: ``repair_applied`` 每个**失败镜**只写一条，所以用集合去重。
+        self._pending_repair: Dict[str, Dict[str, Any]] = {}
+        self._repaired_shots: set = set()
+        self.repair_events: List[Dict[str, Any]] = []
+        self._repair_rule: str = ""
+        self._repair_before_score: Optional[float] = None
+        self._repair_tools_ok: int = 0
         self.repair_messages: List[Message] = []
 
     # ------------------------------------------------------------ 对外接口
@@ -501,6 +532,8 @@ class PrevisDriver:
                 self.audit.log("repair_invalid", problem, level="warning")
             self._repair_attempts += 1
             self._repairs_total += 1
+            self._mark_repair_applied(
+                applied=bool(self._repair_tools_ok) or self._needs_rebuild)
             # 修复只改了计划（重提草案）时必须先重建场景再复核：审核器看的是
             # 场景，否则"改好了"根本不会被看见，只会在同一处反复修。
             if self._needs_rebuild and self.builder is not None:
@@ -708,17 +741,16 @@ class PrevisDriver:
     def _log_script_compliance(self, plan) -> None:
         """收尾时核对"导演写下的东西有没有做出来"（v1.3 R015/R016）。
 
-        没有分镜表声明时什么都不做——本规则只在剧本明确写下约束时生效。
+        v1.4 X7：**R014/R017 与剧本有没有分镜表无关**，必须始终执行——
+        v1.3 的守卫把叙事剧本整段跳过了，于是"声明了运动却没说动机"
+        与"空镜没说用途"这两条对叙事剧本永不生效。R015/R016 仍只在
+        分镜表声明存在时判定（在 ``check_compliance`` 内部自我收敛）。
         """
-        declared = getattr(self.parsed_script, "declared_shots", None)
-        if not (declared or (self.brief is not None and self.brief.gaze)):
-            # 没有分镜表声明、也没有需要落实的注视关系时，本规则不适用。
-            # R013 只依赖 SceneBrief 与计划，所以**叙事剧本同样要审**
-            # （它没有 declared_shots，但理解阶段照样读出了"谁看谁"）。
-            return
         from .compliance import compliance_report
 
         level = getattr(getattr(self.config, "audit", None), "level", None)
+        # R013/R014/R017 只看计划本身与 SceneBrief，与分镜表无关 → 永远执行；
+        # R015/R016 由 check_compliance 在"没有声明"时自行跳过。
         report = compliance_report(plan, self.parsed_script, brief=self.brief,
                                    audit_level=level)
         self._compliance = report
@@ -972,13 +1004,19 @@ class PrevisDriver:
             self._advance_shot()
             return
         self.audit_results.append(result)
+        # v1.4 §3.3（R45）：shot_audit 增写构图分与阈值——两者是同一次审核里
+        # 已经算好的量（``AuditResult.score`` 与审核器的门限），阈值只有一个来源。
+        threshold = getattr(self.auditor, "composition_threshold", None)
         self.audit.log("shot_audit", f"{shot_id}: {result.format_for_llm().splitlines()[0]}",
                        level="info" if result.passed else "warning",
                        shot=shot_id, passed=result.passed,
-                       errors=len(result.errors), warnings=len(result.warnings))
+                       errors=len(result.errors), warnings=len(result.warnings),
+                       composition_score=result.score,
+                       composition_threshold=threshold)
         self._emit("shot_audit",
                    f"{shot_id} {'通过' if result.passed else '未通过'}",
                    shot=shot_id, passed=result.passed)
+        self._record_repair_verification(shot_id, result)
 
         if self._pending_finish:
             # 模型已用 finish_shot 声明该镜完成：不再进修复循环，直接前进。
@@ -1031,6 +1069,55 @@ class PrevisDriver:
         if self._shot_queue:
             self._current_shot_id = self._shot_queue[0]
         self._transition(DriverState.CHECKING)
+
+    # -------------------------------------------------- v1.4 §3.3 修复留痕
+    def _mark_repair_applied(self, *, applied: bool) -> None:
+        """标记"这一镜实施过一次定向修复"，等复核后再落 ``repair_applied``。
+
+        每个**失败镜**只留一条（``_repaired_shots`` 去重），因为 US-12② 判定
+        的是"条数 == 失败镜数"——一次镜头修两轮不该写两条。
+        """
+        if not applied:
+            return
+        shot_id = self._current_shot_id
+        if not shot_id or shot_id in self._repaired_shots:
+            return
+        self._pending_repair.setdefault(shot_id, {
+            "rule": self._repair_rule or "COMPOSITION",
+            "attempt": int(self._repair_attempts),
+            "before_score": self._repair_before_score,
+        })
+
+    def _record_repair_verification(self, shot_id: str,
+                                    result: AuditResult) -> None:
+        """复核回来后补上 ``after_score`` 并写出 ``repair_applied`` 事件。"""
+        pending = self._pending_repair.pop(shot_id, None)
+        if pending is None:
+            return
+        self._repaired_shots.add(shot_id)
+        self._emit_repair_applied(shot_id, pending,
+                                  getattr(result, "score", None))
+
+    def _flush_pending_repairs(self) -> None:
+        """收尾时把还没等到复核的留痕补写出去（``after_score=None``）。"""
+        for shot_id, pending in list(self._pending_repair.items()):
+            self._repaired_shots.add(shot_id)
+            self._emit_repair_applied(shot_id, pending, None)
+        self._pending_repair.clear()
+
+    def _emit_repair_applied(self, shot_id: str, pending: Dict[str, Any],
+                             after_score: Optional[float]) -> None:
+        event = {"shot_id": shot_id, "rule": pending.get("rule", ""),
+                 "attempt": int(pending.get("attempt") or 0),
+                 "before_score": pending.get("before_score"),
+                 "after_score": after_score}
+        self.repair_events.append(event)
+        self.audit.log(
+            "repair_applied",
+            f"{shot_id} 已实施定向修复（{event['rule']}）",
+            shot=shot_id, rule=event["rule"], attempt=event["attempt"],
+            before_score=event["before_score"], after_score=after_score)
+        self._emit("repair_applied", f"{shot_id} 已修复", shot=shot_id)
 
     # -------------------------------------------------- Level 2 自我审核（§11.1）
     # -------------------------------------------------- 阶段 B5（§7.1 受限 ReAct）
@@ -1186,6 +1273,11 @@ class PrevisDriver:
             self._transition(DriverState.CHECKING)
             return
         self._pending_audit = None
+        # v1.4 §3.3：记下这条留痕的"规则 + 修前分"，等复核后再补 after_score。
+        rules = sorted({str(item.rule) for item in audit.errors}) or ["COMPOSITION"]
+        self._repair_rule = "/".join(rules)
+        self._repair_before_score = getattr(audit, "score", None)
+        self._repair_tools_ok = 0
         temperature = 0.2
         if self.config is not None:
             temperature = float(self.config.llm.temperature_repair)
@@ -1215,6 +1307,8 @@ class PrevisDriver:
             self.audit.log("conversation_ok",
                            f"{len(self.messages)} 条消息结构合法（§3.4）")
         self._log_script_compliance(plan)
+        # 还没等到复核的修复留痕也要落盘（否则"条数 == 失败镜数"会少一条）。
+        self._flush_pending_repairs()
         self._transition(DriverState.DONE)
         # replay（§14.4）要能只靠这份日志重建场景，因此整份计划必须落盘：
         # 只记 shots 会丢掉 scene_heading 与 continuity_notes。
@@ -1236,37 +1330,50 @@ class PrevisDriver:
 
     # ------------------------------------------------------------ 内部
     def _apply_scene_budget(self, shots: int) -> None:
-        """按 §21.5 的公式收紧"这次场景允许多少次调用"。
+        """按 v1.4 §2.4 的**唯一口径**算出这次场景允许的调用上限。
 
-        公式给的是**额度**，``DriverLimits.max_llm_calls`` 是**硬顶**：两者取
-        更严的那个，既不悄悄突破架构目标（Phase 4 的 ≤8 次），又让"镜头多就
-        多给一点额度"成立。无法识别的公式只记一条警告，继续用静态上限。
+        ``ceiling_effective = max(budget.max_llm_calls_ceiling, formula(N))``：
+        ``ceiling`` 是**额度下限保障**（不是上限），所以 61 镜不会被 200 卡死。
+        真正的硬顶只来自 CLI ``--max-llm-calls``（``0`` = 不限，该因子不参与）。
+        无法识别的公式只记一条警告，退回静态 ceiling。
         """
         budget_config = getattr(self.config, "budget", None)
         if budget_config is None:
             return
         formula = getattr(budget_config, "max_llm_calls_per_scene_formula", "")
         value = evaluate_llm_call_budget(formula, shots)
+        ceiling = int(getattr(budget_config, "max_llm_calls_ceiling", 0) or 0)
         if value is None:
             self.audit.log("budget_formula_ignored",
                            describe_budget_formula(formula, shots),
                            level="warning")
-            return
-        previous = int(self.budget.limits.max_llm_calls)
-        effective = min(value, previous) if previous else value
+            ceiling_effective = ceiling
+        else:
+            ceiling_effective = max(ceiling, value)
+        hard = int(self.limits.max_llm_calls)       # 0 = 不限
+        if hard <= 0:
+            hard = int(self._caller_budget_cap)
+        effective = min(ceiling_effective, hard) if hard > 0 else ceiling_effective
         self.budget.limits.max_llm_calls = effective
         self.audit.log(
             "budget_scoped", describe_budget_formula(formula, shots),
-            shots=shots, formula_value=value, ceiling=previous,
+            shots=shots, formula_value=value, ceiling=ceiling,
+            ceiling_effective=ceiling_effective, hard_cap=hard,
             effective=effective)
 
     def _start_plan_call(self) -> None:
         request_id = new_request_id()
-        payload: ChatPayload = build_plan_payload(self.script, self.config,
-                                                  request_id=request_id,
-                                                  parsed=self.parsed_script,
-                                                  retriever=self.knowledge,
-                                                  brief=self.brief)
+        try:
+            payload: ChatPayload = build_plan_payload(
+                self.script, self.config, request_id=request_id,
+                parsed=self.parsed_script, retriever=self.knowledge,
+                brief=self.brief)
+        except ValueError as exc:
+            # v1.4 BW-3/E_SCRIPT_002：声明镜数超过 max_shots 时明确失败，
+            # 而不是退回"其余 N 个镜号略"的静默截断。
+            self.audit.log("plan_payload_failed", str(exc), level="error")
+            self._fail(str(exc))
+            return
         self._start_llm_call("plan", payload,
                              note=f"请求分镜计划（第 {self._plan_attempts} 次尝试）")
 
@@ -1323,6 +1430,12 @@ class PrevisDriver:
             self.audit.log("tool_call",
                            f"{call.function.name} -> {'ok' if result.ok else result.error}",
                            tool=call.function.name, ok=result.ok, args=args)
+            if result.ok and call.function.name != PLAN_TOOL_NAME:
+                # v1.4 §3.3：修复回合里**真的执行成功**的场景工具 = 这一镜被
+                # 实际修过。不能用"本轮没有 problem"当判据——修复回合只调
+                # 场景工具（不重提计划）时，`_dispatch_tool_calls` 会因为
+                # "没有收到 emit_plan" 而返回 problem。
+                self._repair_tools_ok += 1
             conversation.append(tool_message(call, result.content))
             self._emit("tool_call", f"{call.function.name}",
                        tool=call.function.name, ok=result.ok)

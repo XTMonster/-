@@ -19,22 +19,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-def _brief_from_summary(summary):
-    """把运行摘要里的 SceneBrief（普通字典）还原成契约对象。"""
-    payload = (summary or {}).get("brief")
-    if not payload:
-        return None
-    from block_director.contracts.brief import SceneBrief
-    return SceneBrief.from_dict(payload)
-
-
 def _crowd_from_script(parsed, crowd_config):
     """分镜表里写了群众才生成群众代理（v1.3 §3.6）。"""
     if parsed is None or crowd_config is None:
         return []
     from block_director.contracts.cast import crowd_from_script
 
-    return crowd_from_script(parsed, enabled=bool(crowd_config.enabled),
+    # v1.4 X17：``crowd.enabled`` 三态直接透传（None = 按剧本声明）。
+    return crowd_from_script(parsed, enabled=crowd_config.enabled,
                              max_instances=int(crowd_config.max_instances),
                              mode=str(crowd_config.mode),
                              seed=int(crowd_config.seed))
@@ -61,9 +53,12 @@ def parse_args(argv):
                         help="交付包目录；留空则用 <out>/export")
     parser.add_argument("--llm-timeout", type=float, default=120.0,
                         help="单次 LLM 调用超时（秒）。本地大模型常需放大到 600+")
-    parser.add_argument("--max-llm-calls", type=int, default=8,
+    parser.add_argument("--max-llm-calls", type=int, default=0,
                         help="本次运行的 LLM 调用硬上限（§12.6）。本地模型"
                              "返工多，常需放大；0 表示不限")
+    parser.add_argument("--preset", default="",
+                        help="交付分辨率预设（hd16x9/fhd16x9/square/vertical）；"
+                             "v1.4 §4.4 步骤 1 需要它来对齐像素阈值")
     return parser.parse_args(rest)
 
 
@@ -82,9 +77,6 @@ def main() -> int:
     from block_director.layer5_orchestrator.driver import default_registry
     from block_director.layer5_orchestrator.human_gate import AutoGate
     from block_director.observation.state import format_scene_state
-
-    registry = default_registry()
-    register_all_scene_tools(registry)
 
     script = ""
     parsed = None
@@ -116,11 +108,22 @@ def main() -> int:
 
     builder = None
     crowd: list = []
+    from block_director.settings import get_config
+    from block_director.contracts.enums import DeliveryPreset
+
+    config = get_config()
+    if args.preset:
+        # v1.4 §4.4 步骤 1：只有写进配置，--preset 才真的改变本次导出分辨率
+        # （与 tools/run_export.py:98-99 同款）。写错取值就明确报错。
+        config.delivery.preset = DeliveryPreset(args.preset)
+
+    registry = default_registry(max_shots=int(config.orchestration.max_shots))
+    register_all_scene_tools(registry)
+
     if args.build:
         from block_director.layer3_engine.shot_builder import BpySceneBuilder
-        from block_director.settings import get_config as _config
 
-        crowd_config = _config().crowd
+        crowd_config = config.crowd
         crowd = _crowd_from_script(parsed, crowd_config)
         if crowd:
             print("BLOCKDIRECTOR_CROWD " + json.dumps(
@@ -133,10 +136,12 @@ def main() -> int:
         script,
         offline=args.offline,
         project_dir=Path(args.out) if args.out else None,
+        config=config,
         max_wall_s=args.wall,
         builder=builder,
         registry=registry,
-        auditor=BpyShotAuditor() if builder is not None else None,
+        auditor=(BpyShotAuditor(audit_level=config.audit.level)
+                 if builder is not None else None),
         human_gate=AutoGate(),      # headless 无界面：逐条记为 skipped 以便审计
         scene_state_provider=lambda: format_scene_state(
             collect_scene_state(detailed=False)),
@@ -146,24 +151,15 @@ def main() -> int:
     )
 
     if args.save and summary.get("success") and summary.get("plan"):
-        from block_director.contracts.plan import Plan
-        from block_director.layer2_sdl import build_sdl, validate_sdl
-        from block_director.layer9_persistence import save_project
+        from block_director.layer5_orchestrator.headless_runner import (
+            save_run_project,
+        )
 
-        plan_obj = Plan.from_dict(summary["plan"])
         spec = builder.spec if builder is not None else None
-        sdl = build_sdl(plan_obj, build_summary=summary.get("build"),
-                        spec=spec, project_name=plan_obj.scene_heading
-                        or "BlockDirector",
-                        brief=_brief_from_summary(summary),
-                        # 群众不在计划里（它是场景级设定），落盘时要单独带上，
-                        # 否则"存了再打开"会丢掉那 30 个路人。
-                        crowd=crowd)
-        findings = validate_sdl(sdl)
-        path = save_project(Path(args.save), sdl)
+        path = save_run_project(summary, out_dir=Path(args.save), spec=spec,
+                                crowd=crowd)
         print("BLOCKDIRECTOR_SAVED " + json.dumps(
-            {"path": str(path), "problems": len(findings),
-             "scenes": len(sdl.scenes), "shots": len(sdl.shots)},
+            {"path": str(path)},
             ensure_ascii=False))
 
     export_failed = False
@@ -174,15 +170,16 @@ def main() -> int:
 
         from block_director.contracts.plan import Plan
         from block_director.layer8_delivery import export_project
-        from block_director.settings import get_config
 
         out_dir = _Path(args.export_dir) if args.export_dir else (
             _Path(args.out) if args.out else _Path.cwd())
         plan_obj = Plan.from_dict(summary["plan"])
         report = export_project(plan_obj, build_summary=summary.get("build"),
                                 out_dir=out_dir,
-                                config=get_config().delivery,
+                                config=config.delivery,
                                 compliance=summary.get("compliance"),
+                                llm_calls=int(summary.get("llm_calls") or 0),
+                                crowd=crowd,
                                 project=plan_obj.scene_heading or "BlockDirector")
         payload = report.to_dict()
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(

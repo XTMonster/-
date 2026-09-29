@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import List
 
 from ..contracts.audit import AuditResult
+from ..contracts.enums import AuditLevel
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .rule_checker import check_shot
@@ -19,8 +20,11 @@ log = get_logger("shot-auditor")
 class BpyShotAuditor:
     """按当前场景上下文逐镜头审核。"""
 
-    def __init__(self, composition_threshold: float = 70.0) -> None:
+    def __init__(self, composition_threshold: float = 70.0,
+                 audit_level=None) -> None:
         self.composition_threshold = composition_threshold
+        #: v1.4 §3.4：strict 档把 R019（银幕方向翻转）从 WARNING 升为 ERROR。
+        self.audit_level = audit_level
 
     def shot_ids(self) -> List[str]:
         context = get_context()
@@ -33,4 +37,7 @@ class BpyShotAuditor:
 
     @main_thread_only("BpyShotAuditor.audit")
     def audit(self, shot_id: str) -> AuditResult:
-        return check_shot(shot_id, composition_threshold=self.composition_threshold)
+        strict = str(self.audit_level or "") == str(AuditLevel.STRICT)
+        return check_shot(shot_id,
+                          composition_threshold=self.composition_threshold,
+                          strict=strict)

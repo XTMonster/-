@@ -138,7 +138,7 @@ _CROWD_HINTS = ("路人", "人群", "群众", "行人", "商贩", "顾客", "围
 _CROWD_COUNT_RE = re.compile(r"(?:约|大约|近|共)?\s*(\d{1,3})\s*(?:名|个|位|人)")
 
 
-def crowd_from_script(script, *, enabled: bool = True,
+def crowd_from_script(script, *, enabled: Optional[bool] = None,
                       max_instances: int = 40, mode: str = "walk",
                       seed: int = 0) -> List[Dict[str, Any]]:
     """从分镜表的声明里读出群众（v1.3 §3.6）。
@@ -151,8 +151,12 @@ def crowd_from_script(script, *, enabled: bool = True,
     同一场戏里好几个镜头都会提到路人，但那通常是**同一批人**（在码头市场
     走来走去的还是那群人）。所以取声明的最大值而不是把它们相加——
     相加会让一个 30 人的市场变成 40 个互不相干的代理。
+
+    v1.4 X17：``enabled`` 三态 — ``False`` = 显式关闭（最高优先级）；
+    ``True`` = 强制按声明生成；``None``（默认）= 按剧本声明。
+    优先级：**显式 false > 剧本声明 > 默认关**。
     """
-    if not enabled:
+    if enabled is False:
         return []
     limit = max(int(max_instances), 0)
     if limit == 0:

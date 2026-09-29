@@ -51,6 +51,7 @@ def run_headless(
     """把状态机跑到终止，返回结果摘要（含审计日志路径）。"""
     config = config or get_config()
     transport, mode = make_transport(config, offline=offline)
+    _apply_declarations(transport, parsed_script, config)
 
     if audit is None:
         root = Path(project_dir) if project_dir else default_project_root()
@@ -78,6 +79,17 @@ def run_headless(
     return summary
 
 
+def _apply_declarations(transport, parsed_script, config) -> None:
+    """把分镜表声明交给离线替身，让它按声明镜数出计划（v1.4 BW-3）。"""
+    if parsed_script is None or transport is None:
+        return
+    setter = getattr(transport, "set_declarations", None)
+    if setter is None:
+        return
+    fps = int(getattr(getattr(config, "animation", None), "fps", 24) or 24)
+    setter(getattr(parsed_script, "declared_shots", []) or [], fps=fps)
+
+
 def _make_knowledge(config):
     """按 §6.1 的确定性选择逻辑装配 Light RAG 检索器。"""
     rag = getattr(config, "rag", None)
@@ -88,3 +100,45 @@ def _make_knowledge(config):
     log.info("Light RAG：%s", retriever.describe())
     return retriever
 
+
+def brief_from_summary(summary) -> Optional[Any]:
+    """把运行摘要里的 SceneBrief（普通字典）还原成契约对象（§3.2）。"""
+    payload = (summary or {}).get("brief")
+    if not payload:
+        return None
+    from ..contracts.brief import SceneBrief
+
+    return SceneBrief.from_dict(payload)
+
+
+def save_run_project(
+    summary: Dict[str, Any],
+    *,
+    out_dir,
+    spec=None,
+    crowd=None,
+    project_name: str = "",
+) -> Path:
+    """把一次成功运行的分镜计划落成 ``project.bdproj``（§14）。
+
+    v1.4 §4.4 步骤 1/3：``run_headless.py --save`` 与 ``run_export.py --save``
+    共用这一段（此前它只内联在 ``tools/run_headless.py`` 里，步骤 3 无从复用）。
+    落盘复用既有的 ``layer9_persistence.project_io.save_project``，**不重定义**。
+    """
+    from ..contracts.plan import Plan
+    from ..layer2_sdl import build_sdl, validate_sdl
+    from ..layer9_persistence import save_project
+
+    plan = Plan.from_dict(summary["plan"])
+    sdl = build_sdl(
+        plan,
+        build_summary=summary.get("build"),
+        spec=spec,
+        project_name=(project_name or plan.scene_heading or "BlockDirector"),
+        brief=brief_from_summary(summary),
+        # 群众不在计划里（它是场景级设定），落盘时要单独带上，
+        # 否则"存了再打开"会丢掉那 30 个路人。
+        crowd=crowd,
+    )
+    validate_sdl(sdl)
+    return save_project(Path(out_dir), sdl)

@@ -48,8 +48,8 @@ def main() -> int:
     register_all_scene_tools(registry)
     project_dir = Path(args.project)
 
-    def build(plan, spec):
-        return build_scene(plan, spec or SceneSpec.from_plan(plan),
+    def build(plan, spec, brief=None):
+        return build_scene(plan, spec or SceneSpec.from_plan(plan, brief=brief),
                            clear_scene=True).to_dict()
 
     try:

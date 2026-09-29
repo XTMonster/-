@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from block_director.contracts.audit import AuditResult
 from block_director.contracts.enums import Purpose
 from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall, Usage
@@ -167,3 +169,65 @@ def test_loop_warning_is_injected_into_the_conversation():
     injected = [m for snapshot in snapshots for m in snapshot
                 if m.role.value == "system" and "重复调用" in (m.content or "")]
     assert injected, "警告必须真的进到修复对话里"
+
+
+# --------------------------------------------------------------------------- #
+# v1.4 X7：叙事剧本下 R014 / R017 仍必须执行
+# --------------------------------------------------------------------------- #
+class EmptyShotTransport(RepairingTransport):
+    """计划里放一个"无角色 + 有运镜 + 意图没写用途"的空镜。"""
+
+    def chat(self, payload, timeout=120.0):
+        reply = super().chat(payload, timeout)
+        if payload.purpose is Purpose.PLAN:
+            for call in reply.tool_calls or []:
+                args = json.loads(call.function.arguments)
+                args["shots"][0]["characters"] = []
+                args["shots"][0]["intent"] = "x"
+                call.function.arguments = json.dumps(args, ensure_ascii=False)
+        return reply
+
+
+def test_r014_and_r017_run_for_narrative_scripts():
+    """没有分镜表声明的叙事剧本，R014/R017 也必须被判定（v1.4 X7）。"""
+    driver = _driver(EmptyShotTransport())
+    driver.run_to_completion()
+    report = driver.snapshot()["compliance"]
+    assert report is not None, "叙事剧本也要产出落实审核报告"
+    rules = {item["rule"] for item in report["findings"]}
+    assert "R017" in rules, "空镜没有说明用途时必须报 R017"
+    assert "R014" not in rules, "X6 已删除 R014 的空镜分支，不得重复告警"
+
+
+# --------------------------------------------------------------------------- #
+# v1.4 §3.3：repair_applied 的条数 == 失败镜数
+# --------------------------------------------------------------------------- #
+def test_repair_applied_count_matches_failed_shots():
+    """US-12②：每个失败镜各留一条 repair_applied，多或少都判失败。"""
+    transport = RepairingTransport()
+    # 第一镜先失败、修复后再审即通过；第二镜一次通过。
+    auditor = FakeAuditor([
+        AuditResult(passed=False, target="shot_001", level="rule"),
+        AuditResult(passed=True, target="shot_001"),
+        AuditResult(passed=True, target="shot_002"),
+    ], shots=("shot_001", "shot_002"))
+    driver = _driver(transport, auditor=auditor)
+    driver.run_to_completion()
+
+    events = [event for event in driver.audit.recent()
+              if event.kind == "repair_applied"]
+    failed = {result.target for result in driver.audit_results
+              if not result.passed}
+    assert len(events) == len(failed) == 1
+    assert events[0].data.get("shot") == "shot_001"
+    assert events[0].data.get("before_score") is None
+
+
+def test_repair_applied_is_not_written_when_nothing_failed():
+    """负例：从不失败的运行必须一条都不写（防止"空集通过"被写反）。"""
+    transport = RepairingTransport()
+    auditor = FakeAuditor([AuditResult(passed=True, target="shot_001")])
+    driver = _driver(transport, auditor=auditor)
+    driver.run_to_completion()
+    kinds = [event.kind for event in driver.audit.recent()]
+    assert "repair_applied" not in kinds

@@ -27,6 +27,9 @@ from ..contracts.tools import REPLAY_SKIPPED_TOOLS
 AUDIT_FILENAME = "audit_log.jsonl"
 PLAN_EVENT = "plan_received"
 TOOL_EVENT = "tool_call"
+#: v1.4 X5：阶段 S 的理解也必须被重放消费——站位由 ``brief.space`` 决定，
+#: 不读它就会用默认站位重建，"零 LLM 重渲"出来的画面与原始运行不一样。
+BRIEF_EVENT = "brief_received"
 
 #: 只影响控制器、不改场景的工具：重放时登记为跳过，而不是当成失败。
 #: 名单来自 contracts 的单一真源——v1.2 在这里和 control_tools.py 各存一份，
@@ -59,6 +62,9 @@ class ReplayReport:
     failures: List[Dict[str, Any]] = field(default_factory=list)
     built: bool = False
     summary: Dict[str, Any] = field(default_factory=dict)
+    #: v1.4 X5：重放时读到的 SceneBrief（站位由它决定）。
+    brief: Optional[Any] = None
+    brief_source: str = ""
 
     @property
     def ok(self) -> bool:
@@ -71,6 +77,7 @@ class ReplayReport:
                 "executed": list(self.executed),
                 "skipped": list(self.skipped),
                 "failures": list(self.failures),
+                "brief_source": self.brief_source,
                 "summary": dict(self.summary)}
 
 
@@ -128,6 +135,29 @@ def extract_plan(records: Sequence[Dict[str, Any]]) -> Optional[Plan]:
     return plan
 
 
+def extract_brief(records: Sequence[Dict[str, Any]]):
+    """取最后一个 ``brief_received`` 事件里的 SceneBrief（v1.4 X5）。
+
+    返回契约对象 :class:`~block_director.contracts.brief.SceneBrief`；
+    日志里没有该事件时返回 ``None``（v1.3 的旧日志，退回默认站位）。
+    """
+    from ..contracts.brief import SceneBrief
+
+    brief = None
+    for record in records:
+        if record.get("kind") != BRIEF_EVENT:
+            continue
+        data = record.get("data") or {}
+        payload = data.get("brief") if isinstance(data.get("brief"), dict) \
+            else data
+        if isinstance(payload, dict) and payload:
+            try:
+                brief = SceneBrief.from_dict(payload)
+            except Exception:  # noqa: BLE001 - 坏事件不阻断重放
+                continue
+    return brief
+
+
 def iter_tool_calls(records: Iterable[Dict[str, Any]]) -> List[ReplayStep]:
     """把日志里的工具调用按记录顺序抽成重放步骤。"""
     steps: List[ReplayStep] = []
@@ -157,9 +187,18 @@ def replay(directory: Union[str, Path], registry, *, builder=None,
             f"审计日志里没有 {PLAN_EVENT} 事件，无法重建：{audit_path(directory)}")
 
     report = ReplayReport(plan=plan, steps=iter_tool_calls(records))
+    brief = extract_brief(records)
+    report.brief = brief
+    report.brief_source = (getattr(brief, "source", "") if brief is not None
+                           else "")
 
     if build and builder is not None:
-        summary = builder(plan, spec)
+        if spec is None:
+            # 站位真源：``SceneSpec.from_plan(brief=...)``（v1.4 X5/RK-12）。
+            from ..contracts.cast import SceneSpec
+
+            spec = SceneSpec.from_plan(plan, brief=brief)
+        summary = builder(plan, spec, brief)
         if hasattr(summary, "to_dict"):
             summary = summary.to_dict()
         report.summary = dict(summary or {})

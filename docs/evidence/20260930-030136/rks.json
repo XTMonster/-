@@ -1,0 +1,164 @@
+{
+  "run_id": "20260930-030136",
+  "generated_at": "2026-09-30T03:01:36+08:00",
+  "note": "pass=null 表示本轮套件未度量该 RK（不得据此判通过，见 v1.4 SS 4.1b 硬规则 1）。",
+  "checks": [
+    "RK-12",
+    "RK-18",
+    "RK-19"
+  ],
+  "rks": [
+    {
+      "rk_id": "RK-1",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "每个启用标签的角色恰好 1 对 BD_Label_*，ink >= 200 px",
+      "sample_ref": "P12 tools/blender_tests/test_label_layout.py (pending)"
+    },
+    {
+      "rk_id": "RK-2",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "标签配对交叠率 <= 5%",
+      "sample_ref": "P12 tools/blender_tests/test_label_layout.py (pending)"
+    },
+    {
+      "rk_id": "RK-3",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "对视夹角 <= 35 度，过肩遮挡 >= 5%",
+      "sample_ref": "P11 tools/blender_tests/test_scene_contract.py (pending)"
+    },
+    {
+      "rk_id": "RK-4",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "eye_protrusion in [0.012, 0.020]，左右眼各 >= 1 簇 >= 9 px",
+      "sample_ref": "P10 probe (pending)"
+    },
+    {
+      "rk_id": "RK-5",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "相邻采样帧标签高度变化率 <= 5%",
+      "sample_ref": "P12 tools/blender_tests/test_label_layout.py (pending)"
+    },
+    {
+      "rk_id": "RK-6",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "站立 min_z in [-0.02, +0.02]，行走 >= -0.02",
+      "sample_ref": "P12 tools/blender_tests/test_phase2_motion.py (pending)"
+    },
+    {
+      "rk_id": "RK-7",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "声明 / pin 前原始响应 / pin 后计划三方一致",
+      "sample_ref": "P11 tests (pending)"
+    },
+    {
+      "rk_id": "RK-8",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "躯干主惯性轴与 +Z 夹角 = 目标倾角 +-3 度",
+      "sample_ref": "P12 probe (pending)"
+    },
+    {
+      "rk_id": "RK-9",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "operator 路径注入 builder，产物与 CLI 一致",
+      "sample_ref": "P9.5 tools/blender_tests/test_operator_end_to_end.py (pending)"
+    },
+    {
+      "rk_id": "RK-10",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "构图门通过率 >= 70%（分母 = 非空且非 ELS/LS）",
+      "sample_ref": "P16 (pending)"
+    },
+    {
+      "rk_id": "RK-11",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "声明 N 镜 -> 产出 N 镜；总帧数 == sum(frames_from_seconds)",
+      "sample_ref": "P13 tests/test_shotlist_render.py (pending)"
+    },
+    {
+      "rk_id": "RK-12",
+      "pass": true,
+      "status": "measured",
+      "measured": true,
+      "expected": "重放产物与入库基线逐字段一致，零 LLM 调用",
+      "sample_ref": "P9.4 tools/blender_tests/test_replay.py"
+    },
+    {
+      "rk_id": "RK-13",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "K1-K4 + Q0-Q7 + E1-E3",
+      "sample_ref": "P14 (pending)"
+    },
+    {
+      "rk_id": "RK-14",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "头球可见比例 >= 99%；neck_gap = 0 +- 0.005",
+      "sample_ref": "P10 probe (pending)"
+    },
+    {
+      "rk_id": "RK-15",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "含头部景别上边距 >= 8% 画面高",
+      "sample_ref": "P10 probe (pending)"
+    },
+    {
+      "rk_id": "RK-16",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "群众/特效可见性：掩膜内 median|delta| >= 0.05，外侧 < 1/255",
+      "sample_ref": "P12 tools/blender_tests/test_crowd_vfx.py (pending)"
+    },
+    {
+      "rk_id": "RK-17",
+      "pass": null,
+      "status": "not_measured",
+      "measured": false,
+      "expected": "同参数两次运镜逐帧差 <= 1e-6",
+      "sample_ref": "P12 tools/blender_tests/test_camera_motion.py (pending)"
+    },
+    {
+      "rk_id": "RK-18",
+      "pass": true,
+      "status": "measured",
+      "measured": true,
+      "expected": "llm_calls <= max(ceiling, formula)；retrieval_calls <= (2+N)*lanes",
+      "sample_ref": "P9.4 tests/test_budget_gate.py + audit_log.jsonl 逐次计数"
+    },
+    {
+      "rk_id": "RK-19",
+      "pass": true,
+      "status": "measured",
+      "measured": true,
+      "expected": "相邻两镜同角色银幕方向翻转（两镜都显式声明）必须报 R019",
+      "sample_ref": "P9.4 tests/test_rule_checker_subjects.py"
+    }
+  ]
+}

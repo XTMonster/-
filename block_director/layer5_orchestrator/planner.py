@@ -25,38 +25,55 @@ from ..layer1_input.shotlist import render_declared_shots
 PLAN_TOOL_NAME = PLAN_TOOL
 
 # emit_plan 的参数 schema：与 §7.2 的分镜计划结构一致。
-EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = {
+_SHOT_ITEM_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["shot_id", "intent", "shot_type", "duration_frames"],
+    "properties": {
+        "shot_id": {"type": "string"},
+        "order": {"type": "integer", "minimum": 1},
+        "intent": {"type": "string"},
+        "shot_type": {"type": "string", "enum": list(SHOT_TYPES)},
+        "duration_frames": {"type": "integer", "minimum": 1,
+                            "maximum": 3600},
+        "characters": {"type": "array", "items": {"type": "string"}},
+        "dialogue_ids": {"type": "array", "items": {"type": "string"}},
+        "axis_note": {"type": "string"},
+        "continuity_in": {"type": "string"},
+        "prompt": {"type": "string"},
+    },
+}
+
+
+def plan_parameters(max_shots: int = 0) -> Dict[str, Any]:
+    """emit_plan 的参数 schema。
+
+    v1.4 §3.2：``orchestration.max_shots == 0``（不限）时**必须省略
+    ``maxItems`` 键**——``tool_schema.py`` 真的会执行 ``maxItems``，写成 0 会与
+    ``minItems: 1`` 直接矛盾，把所有计划判非法。``> 0`` 时才写进去。
+    """
+    shots: Dict[str, Any] = {
+        "type": "array",
+        "minItems": 1,
+        "items": _SHOT_ITEM_SCHEMA,
+    }
+    limit = int(max_shots or 0)
+    if limit > 0:
+        shots["maxItems"] = limit
+    return {
     "type": "object",
     "additionalProperties": False,
     "required": ["shots"],
     "properties": {
         "scene_heading": {"type": "string"},
         "continuity_notes": {"type": "array", "items": {"type": "string"}},
-        "shots": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 60,
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["shot_id", "intent", "shot_type", "duration_frames"],
-                "properties": {
-                    "shot_id": {"type": "string"},
-                    "order": {"type": "integer", "minimum": 1},
-                    "intent": {"type": "string"},
-                    "shot_type": {"type": "string", "enum": list(SHOT_TYPES)},
-                    "duration_frames": {"type": "integer", "minimum": 1,
-                                        "maximum": 3600},
-                    "characters": {"type": "array", "items": {"type": "string"}},
-                    "dialogue_ids": {"type": "array", "items": {"type": "string"}},
-                    "axis_note": {"type": "string"},
-                    "continuity_in": {"type": "string"},
-                    "prompt": {"type": "string"},
-                },
-            },
-        },
+        "shots": shots,
     },
 }
+
+
+#: 默认（``max_shots=0`` = 不限）的 schema。运行时按配置重建（见 ``plan_parameters``）。
+EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = plan_parameters(0)
 
 PLAN_SYSTEM_PROMPT = """\
 你是一位资深电影导演，正在为一部影片制作白模预演（Previs）分镜计划。
@@ -133,7 +150,11 @@ def build_plan_payload(script: str, config=None,
                 f"{DIALOGUE_TAIL_FRAMES} 帧收尾余量（规则 R011）；"
                 f"对白细节留给下一阶段，计划里只标 dialogue_ids。"
                 f"标注为「剧本声明」的时长是**硬约束**，不得自行改短。")
-        declared = render_declared_shots(parsed)
+        max_shots = 0
+        if config is not None:
+            max_shots = int(getattr(getattr(config, "orchestration", None),
+                                    "max_shots", 0) or 0)
+        declared = render_declared_shots(parsed, max_shots=max_shots)
         if declared:
             body = f"{body}\n\n{declared}"
     else:
@@ -151,6 +172,10 @@ def build_plan_payload(script: str, config=None,
     system_text = (PLAN_SYSTEM_PROMPT.replace("{script}", body)
                    .replace("{knowledge}", knowledge)
                    .replace("{brief}", _brief_block(brief, brief_limit)))
+    max_shots = 0
+    if config is not None:
+        max_shots = int(getattr(getattr(config, "orchestration", None),
+                                "max_shots", 0) or 0)
     return ChatPayload(
         messages=[
             Message(role=MessageRole.SYSTEM, content=system_text),
@@ -160,7 +185,7 @@ def build_plan_payload(script: str, config=None,
         tools=[{"type": "function",
                 "function": {"name": PLAN_TOOL_NAME,
                              "description": "提交白模预演的分镜计划",
-                             "parameters": EMIT_PLAN_TOOL_PARAMETERS}}],
+                             "parameters": plan_parameters(max_shots)}}],
         tool_choice=ToolChoice.REQUIRED,
         temperature=temperature,
         max_tokens=max_tokens or (config.llm.max_tokens or None

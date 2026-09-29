@@ -1,0 +1,1705 @@
+{
+  "project": "BlockDirector",
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "style": "",
+  "generated_at": "1970-01-01T00:00:00+00:00",
+  "scene_heading": "# 节点1：市场静场（总时长：24秒）",
+  "total_frames": 4584,
+  "llm_calls": 0,
+  "retrieval_calls": 0,
+  "crowd": {
+    "entries": [],
+    "total": 0
+  },
+  "shots": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "intent": "镜号1：建立场景，交代市场全貌",
+      "shot_type": "LS",
+      "start_frame": 1,
+      "end_frame": 72,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_001.mp4",
+      "first_frame": "first_frames/shot_001.png",
+      "camera": {
+        "name": "BD_Cam_shot_001",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "intent": "镜号2：交代两位主角的位置关系",
+      "shot_type": "MS",
+      "start_frame": 73,
+      "end_frame": 168,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_002.mp4",
+      "first_frame": "first_frames/shot_002.png",
+      "camera": {
+        "name": "BD_Cam_shot_002",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "intent": "镜号3：推进对话",
+      "shot_type": "MS",
+      "start_frame": 169,
+      "end_frame": 240,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_003.mp4",
+      "first_frame": "first_frames/shot_003.png",
+      "camera": {
+        "name": "BD_Cam_shot_003",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "intent": "镜号4：推进对话",
+      "shot_type": "MCU",
+      "start_frame": 241,
+      "end_frame": 312,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_004.mp4",
+      "first_frame": "first_frames/shot_004.png",
+      "camera": {
+        "name": "BD_Cam_shot_004",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_005",
+      "order": 5,
+      "intent": "镜号5：给出反应",
+      "shot_type": "MCU",
+      "start_frame": 313,
+      "end_frame": 408,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_005.mp4",
+      "first_frame": "first_frames/shot_005.png",
+      "camera": {
+        "name": "BD_Cam_shot_005",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_006",
+      "order": 6,
+      "intent": "镜号6：铺垫冲突",
+      "shot_type": "MS",
+      "start_frame": 409,
+      "end_frame": 480,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_006.mp4",
+      "first_frame": "first_frames/shot_006.png",
+      "camera": {
+        "name": "BD_Cam_shot_006",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_007",
+      "order": 7,
+      "intent": "镜号7：留白",
+      "shot_type": "CU",
+      "start_frame": 481,
+      "end_frame": 528,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_007.mp4",
+      "first_frame": "first_frames/shot_007.png",
+      "camera": {
+        "name": "BD_Cam_shot_007",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_008",
+      "order": 8,
+      "intent": "镜号8：段末收束",
+      "shot_type": "MS",
+      "start_frame": 529,
+      "end_frame": 576,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_008.mp4",
+      "first_frame": "first_frames/shot_008.png",
+      "camera": {
+        "name": "BD_Cam_shot_008",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_009",
+      "order": 9,
+      "intent": "镜号9：推进主线",
+      "shot_type": "MS",
+      "start_frame": 577,
+      "end_frame": 672,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_009.mp4",
+      "first_frame": "first_frames/shot_009.png",
+      "camera": {
+        "name": "BD_Cam_shot_009",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_010",
+      "order": 10,
+      "intent": "镜号10：推进主线",
+      "shot_type": "MCU",
+      "start_frame": 673,
+      "end_frame": 744,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_010.mp4",
+      "first_frame": "first_frames/shot_010.png",
+      "camera": {
+        "name": "BD_Cam_shot_010",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_011",
+      "order": 11,
+      "intent": "镜号11：推进主线",
+      "shot_type": "MCU",
+      "start_frame": 745,
+      "end_frame": 816,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_011.mp4",
+      "first_frame": "first_frames/shot_011.png",
+      "camera": {
+        "name": "BD_Cam_shot_011",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_012",
+      "order": 12,
+      "intent": "镜号12：转折",
+      "shot_type": "MCU",
+      "start_frame": 817,
+      "end_frame": 888,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_012.mp4",
+      "first_frame": "first_frames/shot_012.png",
+      "camera": {
+        "name": "BD_Cam_shot_012",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_013",
+      "order": 13,
+      "intent": "镜号13：转折",
+      "shot_type": "MS",
+      "start_frame": 889,
+      "end_frame": 960,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_013.mp4",
+      "first_frame": "first_frames/shot_013.png",
+      "camera": {
+        "name": "BD_Cam_shot_013",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_014",
+      "order": 14,
+      "intent": "镜号14：反应",
+      "shot_type": "CU",
+      "start_frame": 961,
+      "end_frame": 1008,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_014.mp4",
+      "first_frame": "first_frames/shot_014.png",
+      "camera": {
+        "name": "BD_Cam_shot_014",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_015",
+      "order": 15,
+      "intent": "镜号15：过渡",
+      "shot_type": "MS",
+      "start_frame": 1009,
+      "end_frame": 1080,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_015.mp4",
+      "first_frame": "first_frames/shot_015.png",
+      "camera": {
+        "name": "BD_Cam_shot_015",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_016",
+      "order": 16,
+      "intent": "镜号16：段末收束",
+      "shot_type": "MLS",
+      "start_frame": 1081,
+      "end_frame": 1152,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_016.mp4",
+      "first_frame": "first_frames/shot_016.png",
+      "camera": {
+        "name": "BD_Cam_shot_016",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_017",
+      "order": 17,
+      "intent": "镜号17：建立环境",
+      "shot_type": "LS",
+      "start_frame": 1153,
+      "end_frame": 1224,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_017.mp4",
+      "first_frame": "first_frames/shot_017.png",
+      "camera": {
+        "name": "BD_Cam_shot_017",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_018",
+      "order": 18,
+      "intent": "镜号18：推进主线",
+      "shot_type": "MS",
+      "start_frame": 1225,
+      "end_frame": 1320,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_018.mp4",
+      "first_frame": "first_frames/shot_018.png",
+      "camera": {
+        "name": "BD_Cam_shot_018",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_019",
+      "order": 19,
+      "intent": "镜号19：情绪铺垫",
+      "shot_type": "MCU",
+      "start_frame": 1321,
+      "end_frame": 1392,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_019.mp4",
+      "first_frame": "first_frames/shot_019.png",
+      "camera": {
+        "name": "BD_Cam_shot_019",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_020",
+      "order": 20,
+      "intent": "镜号20：推进主线",
+      "shot_type": "MCU",
+      "start_frame": 1393,
+      "end_frame": 1464,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_020.mp4",
+      "first_frame": "first_frames/shot_020.png",
+      "camera": {
+        "name": "BD_Cam_shot_020",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_021",
+      "order": 21,
+      "intent": "镜号21：冲突升级",
+      "shot_type": "MS",
+      "start_frame": 1465,
+      "end_frame": 1536,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_021.mp4",
+      "first_frame": "first_frames/shot_021.png",
+      "camera": {
+        "name": "BD_Cam_shot_021",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_022",
+      "order": 22,
+      "intent": "镜号22：冲突升级",
+      "shot_type": "CU",
+      "start_frame": 1537,
+      "end_frame": 1608,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_022.mp4",
+      "first_frame": "first_frames/shot_022.png",
+      "camera": {
+        "name": "BD_Cam_shot_022",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_023",
+      "order": 23,
+      "intent": "镜号23：留白",
+      "shot_type": "CU",
+      "start_frame": 1609,
+      "end_frame": 1656,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_023.mp4",
+      "first_frame": "first_frames/shot_023.png",
+      "camera": {
+        "name": "BD_Cam_shot_023",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_024",
+      "order": 24,
+      "intent": "镜号24：段末收束",
+      "shot_type": "MLS",
+      "start_frame": 1657,
+      "end_frame": 1728,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_024.mp4",
+      "first_frame": "first_frames/shot_024.png",
+      "camera": {
+        "name": "BD_Cam_shot_024",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_025",
+      "order": 25,
+      "intent": "镜号25：转场",
+      "shot_type": "LS",
+      "start_frame": 1729,
+      "end_frame": 1800,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_025.mp4",
+      "first_frame": "first_frames/shot_025.png",
+      "camera": {
+        "name": "BD_Cam_shot_025",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_026",
+      "order": 26,
+      "intent": "镜号26：推进主线",
+      "shot_type": "MS",
+      "start_frame": 1801,
+      "end_frame": 1896,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_026.mp4",
+      "first_frame": "first_frames/shot_026.png",
+      "camera": {
+        "name": "BD_Cam_shot_026",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_027",
+      "order": 27,
+      "intent": "镜号27：推进主线",
+      "shot_type": "MCU",
+      "start_frame": 1897,
+      "end_frame": 1968,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_027.mp4",
+      "first_frame": "first_frames/shot_027.png",
+      "camera": {
+        "name": "BD_Cam_shot_027",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_028",
+      "order": 28,
+      "intent": "镜号28：反应",
+      "shot_type": "MCU",
+      "start_frame": 1969,
+      "end_frame": 2040,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_028.mp4",
+      "first_frame": "first_frames/shot_028.png",
+      "camera": {
+        "name": "BD_Cam_shot_028",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_029",
+      "order": 29,
+      "intent": "镜号29：情绪顶点",
+      "shot_type": "MS",
+      "start_frame": 2041,
+      "end_frame": 2112,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_029.mp4",
+      "first_frame": "first_frames/shot_029.png",
+      "camera": {
+        "name": "BD_Cam_shot_029",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_030",
+      "order": 30,
+      "intent": "镜号30：情绪顶点",
+      "shot_type": "CU",
+      "start_frame": 2113,
+      "end_frame": 2184,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_030.mp4",
+      "first_frame": "first_frames/shot_030.png",
+      "camera": {
+        "name": "BD_Cam_shot_030",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_031",
+      "order": 31,
+      "intent": "镜号31：留白",
+      "shot_type": "CU",
+      "start_frame": 2185,
+      "end_frame": 2232,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_031.mp4",
+      "first_frame": "first_frames/shot_031.png",
+      "camera": {
+        "name": "BD_Cam_shot_031",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_032",
+      "order": 32,
+      "intent": "镜号32：段末收束",
+      "shot_type": "MLS",
+      "start_frame": 2233,
+      "end_frame": 2304,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_032.mp4",
+      "first_frame": "first_frames/shot_032.png",
+      "camera": {
+        "name": "BD_Cam_shot_032",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_033",
+      "order": 33,
+      "intent": "镜号33：建立环境",
+      "shot_type": "LS",
+      "start_frame": 2305,
+      "end_frame": 2376,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_033.mp4",
+      "first_frame": "first_frames/shot_033.png",
+      "camera": {
+        "name": "BD_Cam_shot_033",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_034",
+      "order": 34,
+      "intent": "镜号34：推进主线",
+      "shot_type": "MS",
+      "start_frame": 2377,
+      "end_frame": 2472,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_034.mp4",
+      "first_frame": "first_frames/shot_034.png",
+      "camera": {
+        "name": "BD_Cam_shot_034",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_035",
+      "order": 35,
+      "intent": "镜号35：推进主线",
+      "shot_type": "MCU",
+      "start_frame": 2473,
+      "end_frame": 2544,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_035.mp4",
+      "first_frame": "first_frames/shot_035.png",
+      "camera": {
+        "name": "BD_Cam_shot_035",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_036",
+      "order": 36,
+      "intent": "镜号36：推进主线",
+      "shot_type": "MCU",
+      "start_frame": 2545,
+      "end_frame": 2616,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_036.mp4",
+      "first_frame": "first_frames/shot_036.png",
+      "camera": {
+        "name": "BD_Cam_shot_036",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_037",
+      "order": 37,
+      "intent": "镜号37：冲突升级",
+      "shot_type": "MS",
+      "start_frame": 2617,
+      "end_frame": 2688,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_037.mp4",
+      "first_frame": "first_frames/shot_037.png",
+      "camera": {
+        "name": "BD_Cam_shot_037",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_038",
+      "order": 38,
+      "intent": "镜号38：冲突升级",
+      "shot_type": "CU",
+      "start_frame": 2689,
+      "end_frame": 2760,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_038.mp4",
+      "first_frame": "first_frames/shot_038.png",
+      "camera": {
+        "name": "BD_Cam_shot_038",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_039",
+      "order": 39,
+      "intent": "镜号39：反应",
+      "shot_type": "CU",
+      "start_frame": 2761,
+      "end_frame": 2808,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_039.mp4",
+      "first_frame": "first_frames/shot_039.png",
+      "camera": {
+        "name": "BD_Cam_shot_039",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_040",
+      "order": 40,
+      "intent": "镜号40：段末收束",
+      "shot_type": "MLS",
+      "start_frame": 2809,
+      "end_frame": 2880,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_040.mp4",
+      "first_frame": "first_frames/shot_040.png",
+      "camera": {
+        "name": "BD_Cam_shot_040",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_041",
+      "order": 41,
+      "intent": "镜号41：建立氛围",
+      "shot_type": "LS",
+      "start_frame": 2881,
+      "end_frame": 2952,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_041.mp4",
+      "first_frame": "first_frames/shot_041.png",
+      "camera": {
+        "name": "BD_Cam_shot_041",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_042",
+      "order": 42,
+      "intent": "镜号42：推进对话",
+      "shot_type": "MS",
+      "start_frame": 2953,
+      "end_frame": 3048,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_042.mp4",
+      "first_frame": "first_frames/shot_042.png",
+      "camera": {
+        "name": "BD_Cam_shot_042",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_043",
+      "order": 43,
+      "intent": "镜号43：推进对话",
+      "shot_type": "MCU",
+      "start_frame": 3049,
+      "end_frame": 3120,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_043.mp4",
+      "first_frame": "first_frames/shot_043.png",
+      "camera": {
+        "name": "BD_Cam_shot_043",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_044",
+      "order": 44,
+      "intent": "镜号44：反应",
+      "shot_type": "MCU",
+      "start_frame": 3121,
+      "end_frame": 3192,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_044.mp4",
+      "first_frame": "first_frames/shot_044.png",
+      "camera": {
+        "name": "BD_Cam_shot_044",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_045",
+      "order": 45,
+      "intent": "镜号45：留白",
+      "shot_type": "MS",
+      "start_frame": 3193,
+      "end_frame": 3264,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_045.mp4",
+      "first_frame": "first_frames/shot_045.png",
+      "camera": {
+        "name": "BD_Cam_shot_045",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_046",
+      "order": 46,
+      "intent": "镜号46：留白",
+      "shot_type": "CU",
+      "start_frame": 3265,
+      "end_frame": 3336,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_046.mp4",
+      "first_frame": "first_frames/shot_046.png",
+      "camera": {
+        "name": "BD_Cam_shot_046",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_047",
+      "order": 47,
+      "intent": "镜号47：反应",
+      "shot_type": "CU",
+      "start_frame": 3337,
+      "end_frame": 3384,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_047.mp4",
+      "first_frame": "first_frames/shot_047.png",
+      "camera": {
+        "name": "BD_Cam_shot_047",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_048",
+      "order": 48,
+      "intent": "镜号48：段末收束",
+      "shot_type": "MLS",
+      "start_frame": 3385,
+      "end_frame": 3456,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_048.mp4",
+      "first_frame": "first_frames/shot_048.png",
+      "camera": {
+        "name": "BD_Cam_shot_048",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_049",
+      "order": 49,
+      "intent": "镜号49：建立环境",
+      "shot_type": "LS",
+      "start_frame": 3457,
+      "end_frame": 3528,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_049.mp4",
+      "first_frame": "first_frames/shot_049.png",
+      "camera": {
+        "name": "BD_Cam_shot_049",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_050",
+      "order": 50,
+      "intent": "镜号50：推进主线",
+      "shot_type": "MS",
+      "start_frame": 3529,
+      "end_frame": 3624,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_050.mp4",
+      "first_frame": "first_frames/shot_050.png",
+      "camera": {
+        "name": "BD_Cam_shot_050",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_051",
+      "order": 51,
+      "intent": "镜号51：推进主线",
+      "shot_type": "MCU",
+      "start_frame": 3625,
+      "end_frame": 3696,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_051.mp4",
+      "first_frame": "first_frames/shot_051.png",
+      "camera": {
+        "name": "BD_Cam_shot_051",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_052",
+      "order": 52,
+      "intent": "镜号52：推进主线",
+      "shot_type": "MCU",
+      "start_frame": 3697,
+      "end_frame": 3768,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_052.mp4",
+      "first_frame": "first_frames/shot_052.png",
+      "camera": {
+        "name": "BD_Cam_shot_052",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_053",
+      "order": 53,
+      "intent": "镜号53：情绪顶点",
+      "shot_type": "MS",
+      "start_frame": 3769,
+      "end_frame": 3840,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_053.mp4",
+      "first_frame": "first_frames/shot_053.png",
+      "camera": {
+        "name": "BD_Cam_shot_053",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_054",
+      "order": 54,
+      "intent": "镜号54：告别",
+      "shot_type": "MS",
+      "start_frame": 3841,
+      "end_frame": 3912,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_054.mp4",
+      "first_frame": "first_frames/shot_054.png",
+      "camera": {
+        "name": "BD_Cam_shot_054",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_055",
+      "order": 55,
+      "intent": "镜号55：告别",
+      "shot_type": "CU",
+      "start_frame": 3913,
+      "end_frame": 3960,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_055.mp4",
+      "first_frame": "first_frames/shot_055.png",
+      "camera": {
+        "name": "BD_Cam_shot_055",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_056",
+      "order": 56,
+      "intent": "镜号56：段末收束",
+      "shot_type": "MLS",
+      "start_frame": 3961,
+      "end_frame": 4032,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_056.mp4",
+      "first_frame": "first_frames/shot_056.png",
+      "camera": {
+        "name": "BD_Cam_shot_056",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_057",
+      "order": 57,
+      "intent": "镜号57：收束",
+      "shot_type": "LS",
+      "start_frame": 4033,
+      "end_frame": 4104,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_057.mp4",
+      "first_frame": "first_frames/shot_057.png",
+      "camera": {
+        "name": "BD_Cam_shot_057",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_058",
+      "order": 58,
+      "intent": "镜号58：收束",
+      "shot_type": "MS",
+      "start_frame": 4105,
+      "end_frame": 4200,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_058.mp4",
+      "first_frame": "first_frames/shot_058.png",
+      "camera": {
+        "name": "BD_Cam_shot_058",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_059",
+      "order": 59,
+      "intent": "镜号59：收束",
+      "shot_type": "MCU",
+      "start_frame": 4201,
+      "end_frame": 4272,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_059.mp4",
+      "first_frame": "first_frames/shot_059.png",
+      "camera": {
+        "name": "BD_Cam_shot_059",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_060",
+      "order": 60,
+      "intent": "镜号60：收束",
+      "shot_type": "MCU",
+      "start_frame": 4273,
+      "end_frame": 4344,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_060.mp4",
+      "first_frame": "first_frames/shot_060.png",
+      "camera": {
+        "name": "BD_Cam_shot_060",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_061",
+      "order": 61,
+      "intent": "镜号61：收束",
+      "shot_type": "MS",
+      "start_frame": 4345,
+      "end_frame": 4416,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_061.mp4",
+      "first_frame": "first_frames/shot_061.png",
+      "camera": {
+        "name": "BD_Cam_shot_061",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_062",
+      "order": 62,
+      "intent": "镜号62：收束",
+      "shot_type": "CU",
+      "start_frame": 4417,
+      "end_frame": 4464,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_062.mp4",
+      "first_frame": "first_frames/shot_062.png",
+      "camera": {
+        "name": "BD_Cam_shot_062",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_063",
+      "order": 63,
+      "intent": "镜号63：收束",
+      "shot_type": "MLS",
+      "start_frame": 4465,
+      "end_frame": 4512,
+      "duration_frames": 48,
+      "duration_seconds": 2.0,
+      "video_file": "blockout_shot_063.mp4",
+      "first_frame": "first_frames/shot_063.png",
+      "camera": {
+        "name": "BD_Cam_shot_063",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_064",
+      "order": 64,
+      "intent": "镜号64：收束",
+      "shot_type": "LS",
+      "start_frame": 4513,
+      "end_frame": 4584,
+      "duration_frames": 72,
+      "duration_seconds": 3.0,
+      "video_file": "blockout_shot_064.mp4",
+      "first_frame": "first_frames/shot_064.png",
+      "camera": {
+        "name": "BD_Cam_shot_064",
+        "position": null,
+        "lens": null
+      },
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": []
+    }
+  ]
+}

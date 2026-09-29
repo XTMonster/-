@@ -31,6 +31,14 @@ def parse_args(argv):
     parser.add_argument("--sidecar", dest="offline", action="store_false")
     parser.add_argument("--camera-traj", dest="camera_traj", action="store_true")
     parser.add_argument("--wall", type=float, default=300.0)
+    # v1.4 §3.1/P9.4：与 tools/run_headless.py:62-65 对齐，否则 §4.4 步骤 2
+    # 会直接 unrecognized arguments。
+    parser.add_argument("--llm-timeout", type=float, default=120.0,
+                        help="单次 LLM 调用超时（秒）。本地大模型常需放大到 600+")
+    parser.add_argument("--max-llm-calls", type=int, default=0,
+                        help="本次运行的 LLM 调用硬上限；0 表示不限")
+    parser.add_argument("--save", default="",
+                        help="运行成功后把项目（SDL）保存到该目录")
     return parser.parse_args(rest)
 
 
@@ -75,30 +83,49 @@ def main() -> int:
     from block_director.layer3_engine.tool_bindings import register_all_scene_tools
     from block_director.layer5_orchestrator.driver import default_registry
     from block_director.layer5_orchestrator.human_gate import AutoGate
+    from block_director.layer5_orchestrator.driver import DriverLimits
     from block_director.observation.state import format_scene_state
 
-    registry = default_registry()
+    runtime_config = get_config()
+    registry = default_registry(
+        max_shots=int(runtime_config.orchestration.max_shots))
     register_all_scene_tools(registry)
 
+    builder = BpySceneBuilder(clear_scene=True)
     summary = run_headless(script, offline=args.offline, project_dir=out_dir,
+                           config=runtime_config,
                            max_wall_s=args.wall,
-                           builder=BpySceneBuilder(clear_scene=True),
+                           builder=builder,
                            registry=registry,
-                           auditor=BpyShotAuditor(),
+                           auditor=BpyShotAuditor(
+                               audit_level=runtime_config.audit.level),
                            human_gate=AutoGate(),
                            scene_state_provider=lambda: format_scene_state(
                                collect_scene_state(detailed=False)),
-                           parsed_script=parsed)
+                           parsed_script=parsed,
+                           limits=DriverLimits(
+                               llm_timeout_s=args.llm_timeout,
+                               max_llm_calls=args.max_llm_calls))
     if not summary.get("success") or not summary.get("built"):
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(
             {"ok": False, "reason": "运行或构建失败", "summary": summary},
             ensure_ascii=False))
         return 1
 
-    config = get_config()
+    config = runtime_config
     config.delivery.preset = DeliveryPreset(args.preset)
     config.delivery.appearance = Appearance(args.appearance)
     config.delivery.export_camera_traj = bool(args.camera_traj)
+
+    if args.save and summary.get("plan"):
+        from block_director.layer5_orchestrator.headless_runner import (
+            save_run_project,
+        )
+
+        spec = getattr(builder, "spec", None)
+        path = save_run_project(summary, out_dir=Path(args.save), spec=spec)
+        print("BLOCKDIRECTOR_SAVED " + json.dumps({"path": str(path)},
+                                                  ensure_ascii=False))
 
     from block_director.contracts.plan import Plan
     plan = Plan.from_dict(summary.get("plan") or {"shots": []})

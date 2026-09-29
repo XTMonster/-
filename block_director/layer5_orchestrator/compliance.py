@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from ..contracts.audit import AuditError
-from ..contracts.enums import AuditLevel, Severity
+from ..contracts.enums import AuditLevel, ErrorCode, Severity
 from ..contracts.plan import Plan
 from ..layer1_input.timing import frames_from_seconds
 
@@ -45,7 +45,9 @@ LOCOMOTION_ACTIONS = ("walk_to", "run_to")
 EMPTY_SHOT_INTENTS = ("建立", "交代", "环境", "空镜", "留白", "铺垫", "转场",
                       "氛围", "场景", "全景", "大远景")
 
-CODE_SCRIPT = "E_SCRIPT_001"
+#: v1.4 F5：单一真源 = ``contracts/enums.py`` 的 ``ErrorCode.SCRIPT_001``。
+#: 本模块此前又写了一份 ``"E_SCRIPT_001"`` 字面量，两份一旦漂移就没人发现。
+CODE_SCRIPT = str(ErrorCode.SCRIPT_001)
 
 
 def _finding(severity: Severity, rule: str, message: str,
@@ -117,15 +119,6 @@ def check_movement_motivation(plan: Optional[Plan], *,
                     f"没有走动（没有 walk_to / run_to），镜头跟不到任何动机",
                     target=shot_id,
                     suggestion=f"给 {subject} 加一个走位，或把运镜换成推/摇"))
-        if not characters and movements:
-            kinds = "、".join(str(item.get("type")) for item in movements
-                              if isinstance(item, dict))
-            findings.append(_finding(
-                severity, RULE_MOVEMENT,
-                f"{shot_id} 是空镜（无角色）却声明了运镜 {kinds}",
-                target=shot_id,
-                suggestion="空镜的运镜要写清动机（揭示空间 / 跟随人流），"
-                           "否则宁可用固定镜头"))
     return findings
 
 
@@ -281,7 +274,9 @@ def check_compliance(plan: Plan, script, *, fps: int = FPS,
         for text in sorted(actual_texts - declared_set):
             if text:
                 findings.append(_finding(
-                    Severity.WARNING, RULE_DIALOGUE,
+                    # v1.4 §3.4 档位表：新编台词默认 WARNING，strict 升 ERROR。
+                    Severity.ERROR if strict else Severity.WARNING,
+                    RULE_DIALOGUE,
                     f"镜号{item.shot_number} 出现了剧本没有的台词：「{text}」",
                     target=shot.shot_id,
                     suggestion="剧本没有的台词应删掉，除非确有必要"))

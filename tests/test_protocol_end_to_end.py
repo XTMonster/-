@@ -285,6 +285,15 @@ def read_trace(directory):
 # --------------------------------------------------------------------------- #
 # 1. sidecar 模式跑完整条链
 # --------------------------------------------------------------------------- #
+def expected_calls(shots: int, repairs: int = 1) -> int:
+    """一次运行的**预期调用数**（v1.4 勘误 1：不得写死 7）。
+
+    链路 = 剧本理解 1 + 计划 1 + 单镜草案 N + 修复 R + 自我审核 N。
+    夹具里恰好有一镜失败一次（R = 1），修复成功后再审一次。
+    """
+    return 1 + 1 + shots + repairs + shots
+
+
 def test_sidecar_mode_runs_the_whole_chain(tmp_path):
     with FakeServer(token="secret-token") as server:
         transport = SidecarTransport(base_url=server.base_url,
@@ -297,13 +306,12 @@ def test_sidecar_mode_runs_the_whole_chain(tmp_path):
     assert state is DriverState.DONE
     assert len(driver.plan.shots) == 2
     assert "shot_audit" in kinds and "llm_call" in kinds
-    # Phase 4 的预算目标（≤8 次）在真实协议上同样成立：
-    # 剧本理解 1 + 计划 1 + 单镜草案 2 + 修复 1 + 自我审核 2 = 7 次
-    assert driver.snapshot()["llm_calls"] == 7
-    assert paths.count("/v1/chat") == 7
+    calls = expected_calls(len(driver.plan.shots))
+    assert driver.snapshot()["llm_calls"] == calls
+    assert paths.count("/v1/chat") == calls
     assert all(item["headers"].get("Authorization") == "Bearer secret-token"
                for item in server.requests if item["path"].startswith("/v1/"))
-    assert len(trace) == 7 and all(item["prompt"] for item in trace)
+    assert len(trace) == calls and all(item["prompt"] for item in trace)
     assert [item["purpose"] for item in trace] == [
         "understand", "plan", "editor", "editor", "repair", "review", "review"]
     assert driver.budget.state.total_tokens > 0      # usage 在协议里传回来了
@@ -317,7 +325,7 @@ def test_direct_mode_runs_the_whole_chain(tmp_path):
         paths = server.paths()
 
     assert state is DriverState.DONE
-    assert paths.count("/v1/chat/completions") == 7
+    assert paths.count("/v1/chat/completions") == expected_calls(2)
     assert "/v1/chat" not in paths
     assert driver.budget.state.total_tokens > 0
 

@@ -5,10 +5,10 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from ..contracts.audit import AuditError
-from ..contracts.enums import Severity
+from ..contracts.enums import CROWD_MODES, VFX_TYPES, Severity
 from ..contracts.sdl import SDLProject
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
 from ..utils.aabb import AABB
@@ -17,12 +17,38 @@ WALL_MARGIN = 0.2
 CHARACTER_BOX = (0.5, 0.5, 1.45)
 CAMERA_BOX = (0.2, 0.2, 0.2)
 
-#: S8/S9：群众与特效的合法取值（v1.3 §3.5）
-CROWD_MODES = ("static", "walk")
-VFX_KINDS = ("flame", "glow", "spark", "smoke")
+#: S8/S9 的合法取值来自契约层枚举（v1.4 X8/S8 单一真源）：
+#: ``contracts/enums.py`` 的 ``CROWD_MODES`` / ``VFX_TYPES``。这里不再各写一份
+#: 字面量——两份枚举一旦漂移，校验器会拒收引擎真的支持的特效。
+VFX_KINDS = VFX_TYPES
+
+#: 群众实例的默认硬上限。**唯一真源** = ``crowd.max_instances``（校验器由
+#: ``validate_sdl(..., crowd_limit=)`` 注入；缺省时才回落到这个默认值）。
+DEFAULT_CROWD_LIMIT = 40
 
 
-def _check_v13_fields(sdl: SDLProject, findings: List[AuditError]) -> None:
+def _as_int(value, default: int = 0) -> Tuple[bool, int]:
+    """把可能来自坏数据的值转成整数；失败时返回 ``(False, default)``。
+
+    v1.4 X2：SDL 是**外部输入**（旧工程、手改文件、别的工具写的），
+    校验器必须报 finding 而不是抛异常——否则坏数据会让加载直接崩掉。
+    """
+    if value is None or value == "":
+        return True, default
+    if isinstance(value, bool):
+        return True, int(value)
+    if isinstance(value, int):
+        return True, value
+    if isinstance(value, float):
+        return True, int(value)
+    try:
+        return True, int(str(value).strip())
+    except (TypeError, ValueError):
+        return False, default
+
+
+def _check_v13_fields(sdl: SDLProject, findings: List[AuditError],
+                      crowd_limit: int) -> None:
     """S8 群众引用、S9 特效引用、S10 声明时长自洽（v1.3 新增）。"""
     characters = {member.id for member in sdl.characters}
     for scene in sdl.scenes:
@@ -35,7 +61,14 @@ def _check_v13_fields(sdl: SDLProject, findings: List[AuditError]) -> None:
                     f"场景 {scene.id} 的第 {index} 条群众声明不是对象",
                     target=scene.id, suggestion="写成 {count, mode, seed} 形式"))
                 continue
-            count = int(entry.get("count") or 0)
+            ok, count = _as_int(entry.get("count"), 0)
+            if not ok:
+                findings.append(_error(
+                    "S8", "E_SDL_001",
+                    f"场景 {scene.id} 的第 {index} 条群众数量不是整数："
+                    f"{entry.get('count')!r}",
+                    target=scene.id, suggestion="数量必须是正整数"))
+                continue
             if count <= 0:
                 findings.append(_error(
                     "S8", "E_SDL_001",
@@ -49,11 +82,11 @@ def _check_v13_fields(sdl: SDLProject, findings: List[AuditError]) -> None:
                     target=scene.id,
                     suggestion=f"只能是 {'/'.join(CROWD_MODES)}"))
             total += max(count, 0)
-        if total > CROWD_LIMIT:
+        if total > crowd_limit:
             findings.append(_error(
                 "S8", "E_SDL_001",
                 f"场景 {scene.id} 声明了 {total} 个群众实例，超过上限 "
-                f"{CROWD_LIMIT}",
+                f"{crowd_limit}",
                 target=scene.id,
                 suggestion="降低 crowd.max_instances 或减少声明的人数"))
 
@@ -83,7 +116,14 @@ def _check_v13_fields(sdl: SDLProject, findings: List[AuditError]) -> None:
                     or 1) - (shot.start_frame or 1) + 1
             for index, move in enumerate(
                     getattr(shot.camera, "movements", None) or [], start=1):
-                duration = int(move.get("end_frame") or span)
+                ok, duration = _as_int(move.get("end_frame"), span)
+                if not ok:
+                    findings.append(_error(
+                        "S10", "E_SDL_001",
+                        f"镜头 {shot.id} 的第 {index} 条运镜的 end_frame "
+                        f"不是整数：{move.get('end_frame')!r}",
+                        target=shot.id, suggestion="把起止帧写成整数"))
+                    continue
                 if duration > span:
                     findings.append(_error(
                         "S10", "E_SDL_001",
@@ -91,10 +131,6 @@ def _check_v13_fields(sdl: SDLProject, findings: List[AuditError]) -> None:
                         f"{duration} 帧，超出镜头时长 {span} 帧",
                         target=shot.id,
                         suggestion="把运镜的起止帧缩回镜头内"))
-
-
-#: 群众实例的硬上限（与 crowd.max_instances 的默认值一致）
-CROWD_LIMIT = 40
 
 
 def _error(rule: str, code: str, message: str, target: str = "",
@@ -158,7 +194,9 @@ def _check_shot_timing(shot, findings: List[AuditError]) -> None:
 
     latest = 0
     for dialogue in shot.dialogues:
-        latest = max(latest, int(dialogue.get("end_frame") or 0))
+        ok, value = _as_int(dialogue.get("end_frame"), 0)
+        if ok:
+            latest = max(latest, value)
     if latest and latest + DIALOGUE_TAIL_FRAMES > shot.duration_frames:
         findings.append(_error(
             "S6", "E_SDL_001",
@@ -169,8 +207,15 @@ def _check_shot_timing(shot, findings: List[AuditError]) -> None:
     ranges: Dict[str, List[Tuple[int, int]]] = {}
     for action in shot.actions:
         character_id = str(action.get("character_id") or "")
-        start = int(action.get("start_frame") or 1)
-        end = int(action.get("end_frame") or shot.duration_frames)
+        ok_start, start = _as_int(action.get("start_frame"), 1)
+        ok_end, end = _as_int(action.get("end_frame"), shot.duration_frames)
+        if not (ok_start and ok_end):
+            findings.append(_error(
+                "S3", "E_SDL_001",
+                f"镜头 {shot.id} 的动作帧号不是整数："
+                f"{action.get('start_frame')!r}-{action.get('end_frame')!r}",
+                target=shot.id, suggestion="把动作起止帧写成整数"))
+            continue
         for other_start, other_end in ranges.get(character_id, []):
             if start < other_end and other_start < end:
                 findings.append(_error(
@@ -181,15 +226,47 @@ def _check_shot_timing(shot, findings: List[AuditError]) -> None:
         ranges.setdefault(character_id, []).append((start, end))
 
 
+def _box_or_none(center, size):
+    """把可能损坏的 center/size 转成 AABB；失败返回 None（v1.4 X2 守卫）。"""
+    try:
+        values_c = [float(v) for v in center]
+        values_s = [float(v) for v in size]
+    except (TypeError, ValueError):
+        return None
+    if len(values_c) != 3 or len(values_s) != 3:
+        return None
+    return AABB.from_center_size(values_c, values_s)
+
+
 def _check_spatial(scene, sdl: SDLProject, findings: List[AuditError]) -> None:
     walls = scene.environment.walls or []
     if not walls:
         return
-    wall_boxes = [AABB.from_center_size(wall.get("position", (0, 0, 0)),
-                                        wall.get("size", (1, 1, 1)))
-                  for wall in walls]
+    wall_boxes = []
+    for index, wall in enumerate(walls, start=1):
+        if not isinstance(wall, dict):
+            findings.append(_error(
+                "S4", "E_SDL_001",
+                f"场景 {scene.id} 的第 {index} 面墙不是对象",
+                target=scene.id, suggestion="写成 {position, size} 形式"))
+            continue
+        box = _box_or_none(wall.get("position", (0, 0, 0)),
+                           wall.get("size", (1, 1, 1)))
+        if box is None:
+            findings.append(_error(
+                "S4", "E_SDL_001",
+                f"场景 {scene.id} 的第 {index} 面墙的 position/size 非法",
+                target=scene.id, suggestion="写成三个数值的数组"))
+            continue
+        wall_boxes.append(box)
     for member in sdl.characters:
-        box = AABB.from_center_size(member.initial_location, CHARACTER_BOX)
+        box = _box_or_none(member.initial_location, CHARACTER_BOX)
+        if box is None:
+            findings.append(_error(
+                "S4", "E_SPACE_001",
+                f"角色 {member.id} 的 initial_location 非法",
+                target=member.id, suggestion="写成三个数值的数组"))
+            continue
         for index, wall_box in enumerate(wall_boxes, start=1):
             if box.overlaps(wall_box, margin=WALL_MARGIN):
                 findings.append(_error(
@@ -199,7 +276,13 @@ def _check_spatial(scene, sdl: SDLProject, findings: List[AuditError]) -> None:
     for shot in scene.shots:
         if not shot.camera.position:
             continue
-        box = AABB.from_center_size(shot.camera.position, CAMERA_BOX)
+        box = _box_or_none(shot.camera.position, CAMERA_BOX)
+        if box is None:
+            findings.append(_error(
+                "S4", "E_SPACE_001",
+                f"镜头 {shot.id} 的相机位置非法",
+                target=shot.id, suggestion="写成三个数值的数组"))
+            continue
         for index, wall_box in enumerate(wall_boxes, start=1):
             if box.overlaps(wall_box, margin=WALL_MARGIN):
                 findings.append(_error(
@@ -227,9 +310,24 @@ def _check_scene_totals(scene, findings: List[AuditError]) -> int:
     return total
 
 
-def validate_sdl(sdl: SDLProject) -> List[AuditError]:
-    """返回全部问题；空列表表示 SDL 可用。"""
+def _default_crowd_limit() -> int:
+    """``crowd.max_instances`` 的当前配置值；缺配置时回落到 40（v1.4 X8）。"""
+    try:
+        from ..contracts.config import AppConfig
+        return int(AppConfig().crowd.max_instances)
+    except Exception:  # noqa: BLE001 - 取不到配置不该让校验器崩掉
+        return DEFAULT_CROWD_LIMIT
+
+
+def validate_sdl(sdl: SDLProject, *,
+                 crowd_limit: Optional[int] = None) -> List[AuditError]:
+    """返回全部问题；空列表表示 SDL 可用。
+
+    ``crowd_limit`` 缺省时取 ``crowd.max_instances``（v1.4 X8：上限是配置的
+    单一真源，不再硬编码 40）。
+    """
     findings: List[AuditError] = []
+    limit = DEFAULT_CROWD_LIMIT if crowd_limit is None else int(crowd_limit)
 
     if not sdl.scenes:
         findings.append(_error("S1", "E_SDL_001", "SDL 里没有任何场景",
@@ -242,7 +340,7 @@ def validate_sdl(sdl: SDLProject) -> List[AuditError]:
                                  suggestion="写入 version 字段以便将来迁移"))
 
     _check_references(sdl, findings)
-    _check_v13_fields(sdl, findings)
+    _check_v13_fields(sdl, findings, limit)
     for scene in sdl.scenes:
         for shot in scene.shots:
             _check_shot_timing(shot, findings)

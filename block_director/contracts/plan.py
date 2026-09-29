@@ -40,12 +40,17 @@ class ShotPlan:
     gaze: List[Dict[str, Any]] = field(default_factory=list)
     #: v1.3：特效代理（``{id, type, position, size, start_frame, end_frame}``）。
     vfx: List[Dict[str, Any]] = field(default_factory=list)
-    #: v1.3：银幕方向（``left_to_right`` / ``right_to_left`` / ``static``），
-    #: 供相邻镜头的方向连续性审核使用。
-    screen_direction: str = ""
     #: v1.3：剧本声明的时长（帧）。**只作证据**，永不参与排片（§3.4 单一真源）。
     #: 它与 ``duration_frames`` 的差值就是 R015 的"声明 vs 落实"证据。
     declared_duration_frames: int = 0
+    #: v1.4：分镜表声明的镜号（生产者 = P11 的 ``ParsedScript.declared_shots[]``，
+    #: 按顺序钉入；模型的 ``emit_plan`` schema 里**没有**这个键）。
+    #: 消费者 = R015/F4 的镜号/顺序/身份错位核对。
+    declared_shot_number: int = 0
+    #: v1.4：台词钉住的证据链（§3.3 的 ``dialogue_pins[]``）。元素形如
+    #: ``{shot_number, speaker_raw, speaker_status, declared_s, model_text,
+    #: applied_s}``。生产者 = driver，消费者 = RK-7 的三方对拍。
+    dialogue_pins: List[Dict[str, Any]] = field(default_factory=list)
 
     @property
     def duration_seconds(self) -> float:
@@ -68,8 +73,9 @@ class ShotPlan:
             "continuity_in": self.continuity_in,
             "gaze": [dict(item) for item in self.gaze],
             "vfx": [dict(item) for item in self.vfx],
-            "screen_direction": self.screen_direction,
             "declared_duration_frames": self.declared_duration_frames,
+            "declared_shot_number": self.declared_shot_number,
+            "dialogue_pins": [dict(item) for item in self.dialogue_pins],
         }
 
     @classmethod
@@ -94,9 +100,12 @@ class ShotPlan:
                   if isinstance(item, dict)],
             vfx=[dict(item) for item in (data.get("vfx") or [])
                  if isinstance(item, dict)],
-            screen_direction=str(data.get("screen_direction", "") or ""),
             declared_duration_frames=int(data.get("declared_duration_frames")
                                          or 0),
+            declared_shot_number=int(data.get("declared_shot_number") or 0),
+            dialogue_pins=[dict(item)
+                           for item in (data.get("dialogue_pins") or [])
+                           if isinstance(item, dict)],
         )
 
 

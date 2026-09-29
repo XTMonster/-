@@ -14,7 +14,9 @@ from typing import Any, Dict, List, Optional
 
 from .cast import CastMember
 
-SDL_VERSION = "1.3"
+#: v1.4 §0.1b：**SDL 文件格式版本单独升到 1.4**（软件包/协议版本仍是 1.3.0，
+#: 不在本次改动范围）。迁移器必须同时认识 "1.3"（见 sdl_migrate.KNOWN_VERSIONS）。
+SDL_VERSION = "1.4"
 
 
 @dataclass
@@ -92,6 +94,9 @@ class SDLProject:
     #: v1.3：阶段 S 的剧本理解（§3.2）。落进项目文件后可以人工编辑，
     #: 再重新生成——"理解"和"计划"一样是可见、可改、可复现的产物。
     brief: Dict[str, Any] = field(default_factory=dict)
+    #: v1.4 S9：标签是否进参考视频（对应 ``SceneSpec.with_labels``）。
+    #: v1.3 的 SDL 从来没有这个字段，于是"存了再打开"会把用户的关闭状态丢掉。
+    with_labels: bool = True
 
     @property
     def shots(self) -> List[SDLShot]:

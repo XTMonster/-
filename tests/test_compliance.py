@@ -204,7 +204,13 @@ def test_driver_reports_compliance_in_the_snapshot_and_the_audit_log(tmp_path):
     assert event["data"]["findings"]
 
 
-def test_driver_skips_compliance_for_narrative_scripts(tmp_path):
+def test_driver_still_audits_narrative_scripts(tmp_path):
+    """v1.4 X7：R014/R017 与分镜表无关，叙事剧本同样要审。
+
+    v1.3 的守卫（``if not (declared or brief.gaze): return``）把叙事剧本整段
+    跳过，于是"声明了运动却没说动机""空镜没说用途"两条对叙事剧本永不生效。
+    现在始终产出报告；R015/R016 仍只在有分镜表声明时判定（这里计数为 0）。
+    """
     from block_director.layer5_orchestrator.driver import PrevisDriver
     from block_director.layer5_orchestrator.offline import OfflineTransport
     from block_director.layer6_audit.audit_logger import AuditLogger
@@ -216,7 +222,12 @@ def test_driver_skips_compliance_for_narrative_scripts(tmp_path):
         parsed_script=parse_script(ROOT / "fixtures" / "script_simple.fountain"),
         builder=_StubBuilder(), thread_factory=_InlineThread)
     driver.run_to_completion()
-    assert driver.snapshot()["compliance"] is None
+    report = driver.snapshot()["compliance"]
+    assert report is not None
+    # 叙事剧本没有分镜表声明 → R015/R016 不着手，但报告本身必须存在。
+    assert report["declared_shot_count"] == 0
+    rules = {item["rule"] for item in report["findings"]}
+    assert not (rules & {"R015", "R016"})
 
 
 # --------------------------------------------------------------------------- #
@@ -327,13 +338,28 @@ def test_r014_is_silent_when_the_subject_actually_moves():
     assert check_movement_motivation(plan) == []
 
 
-def test_r014_flags_a_movement_in_an_empty_shot():
+def test_r014_no_longer_double_reports_empty_shots():
+    """v1.4 X6：删掉 R014 的空镜分支，空镜统一由 R017 负责。
+
+    旧行为：同一镜"无角色 + 有运镜"会同时报 R014 与 R017 两条。
+    """
     plan = _plan([
-        {"shot_id": "shot_001", "order": 1, "intent": "建立环境",
+        {"shot_id": "shot_001", "order": 1, "intent": "x",
          "shot_type": "LS", "duration_frames": 48, "characters": [],
          "camera": {"movements": [{"type": "dolly_in"}]}}])
-    findings = check_movement_motivation(plan)
-    assert findings and "空镜" in findings[0].message
+    assert check_movement_motivation(plan) == []
+    findings = check_empty_shot_intent(plan)
+    assert [item.rule for item in findings] == ["R017"]
+
+
+def test_empty_shot_with_stated_purpose_is_silent():
+    """意图已说明的空镜：一条都不报（R014 已删分支，R017 命中意图词）。"""
+    plan = _plan([
+        {"shot_id": "shot_001", "order": 1, "intent": "建立码头市场全貌",
+         "shot_type": "LS", "duration_frames": 48, "characters": [],
+         "camera": {"movements": [{"type": "dolly_in"}]}}])
+    assert check_movement_motivation(plan) == []
+    assert check_empty_shot_intent(plan) == []
 
 
 def test_r017_flags_an_empty_shot_without_a_stated_purpose():

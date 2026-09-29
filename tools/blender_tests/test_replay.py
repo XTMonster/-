@@ -93,8 +93,8 @@ def run_once(tmp_dir):
 def _rebuild_with_replay(tmp_dir, registry):
     fresh_scene()
 
-    def build(plan, spec):
-        return build_scene(plan, spec or SceneSpec.from_plan(plan),
+    def build(plan, spec, brief=None):
+        return build_scene(plan, spec or SceneSpec.from_plan(plan, brief=brief),
                            clear_scene=True).to_dict()
 
     return replay(tmp_dir, registry, builder=build)
@@ -191,6 +191,61 @@ def t_replay_reapplies_recorded_tool_calls():
             "x": round(root.location.x, 4) if root else None}
 
 
+# --------------------------------------------------------------------------- #
+# 5. v1.4 X5：站位必须来自 brief_received（否则重放与原始运行不是同一幅画）
+# --------------------------------------------------------------------------- #
+def _write_plan_log(tmp_dir, plan, *, brief=None):
+    runs = Path(tmp_dir) / "runs"
+    runs.mkdir(parents=True, exist_ok=True)
+    audit = AuditLogger(directory=runs)
+    if brief is not None:
+        audit.log("brief_received", "理解完成", brief=brief)
+    audit.log("plan_received", "计划", plan=plan.to_dict(),
+              shots=[shot.to_dict() for shot in plan.shots],
+              total_frames=plan.total_frames)
+    return runs
+
+
+def t_replay_staging_comes_from_the_brief():
+    plan = two_shot_plan()
+    brief = {
+        "source": "model",
+        "space": [
+            {"character": "char_002", "relative_to": "char_001",
+             "relation": "behind", "distance_class": "far"},
+        ],
+    }
+    tmp_dir = tempfile.mkdtemp(prefix="bd_replay_brief_")
+    _write_plan_log(tmp_dir, plan, brief=brief)
+
+    registry = make_registry()
+    report = _rebuild_with_replay(tmp_dir, registry)
+    context = get_context()
+    placed = context.characters.get("char_002") if context else None
+    root = getattr(placed, "root", None)
+    # ``relation=behind`` 把 char_002 摆到 char_001 的**后面**（-X 方向），
+    # 与默认站位（+X）明显不同。先取值：下一次重建会清场，旧的 Object 引用
+    # 会失效（StructRNA removed）。
+    with_brief_x = round(root.location.x, 4) if root else None
+    behind = with_brief_x is not None and with_brief_x < 0.0
+
+    # 负例：去掉 brief_received 事件后，站位必须**不再是**同一处。
+    other_dir = tempfile.mkdtemp(prefix="bd_replay_nobrief_")
+    _write_plan_log(other_dir, plan)
+    bare = _rebuild_with_replay(other_dir, make_registry())
+    bare_context = get_context()
+    bare_root = getattr(bare_context.characters.get("char_002"), "root", None)
+    bare_x = round(bare_root.location.x, 4) if bare_root else None
+    differs = (bare_x is None or with_brief_x is None
+               or abs(bare_x - with_brief_x) > 1e-3)
+
+    return {"ok": report.ok and report.brief_source == "model" and behind
+            and bare.ok and differs,
+            "brief_source": report.brief_source,
+            "x": with_brief_x,
+            "bare_x": bare_x}
+
+
 def main() -> int:
     capture_main_thread()
     check("replay_rebuilds_the_same_timeline", t_replay_rebuilds_the_same_timeline)
@@ -198,6 +253,8 @@ def main() -> int:
     check("replay_is_idempotent", t_replay_is_idempotent)
     check("replay_reapplies_recorded_tool_calls",
           t_replay_reapplies_recorded_tool_calls)
+    check("replay_staging_comes_from_the_brief",
+          t_replay_staging_comes_from_the_brief)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

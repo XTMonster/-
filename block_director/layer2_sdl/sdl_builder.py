@@ -128,7 +128,8 @@ def build_sdl(plan: Plan, *,
                       characters=list(spec.cast), scenes=[scene],
                       continuity=continuity,
                       warnings=list((build_summary or {}).get("warnings", [])),
-                      brief=(brief.to_dict() if brief is not None else {}))
+                      brief=(brief.to_dict() if brief is not None else {}),
+                      with_labels=bool(getattr(spec, "with_labels", True)))
 
 
 def sdl_to_plan(sdl: SDLProject) -> Plan:
@@ -173,4 +174,5 @@ def sdl_to_spec(sdl: SDLProject) -> SceneSpec:
         room=tuple(environment.room) if environment.room else None,
         crowd=[dict(item) for item in (getattr(environment, "crowd", None)
                                        or [])],
+        with_labels=bool(getattr(sdl, "with_labels", True)),
     )

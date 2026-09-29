@@ -277,21 +277,30 @@ def parse_shot_list(text: str, *, title: str = "",
 
 
 def render_declared_shots(script, *, fps: int = 24,
-                          max_shots: int = 60) -> str:
+                          max_shots: int = 0) -> str:
     """把分镜表的逐镜声明渲染成规划提示里的一段（**硬约束**）。
 
     这是 R015「声明一致性」在提示侧的对应物：先告诉模型约束是什么，
     再由审计核对它有没有照做。v1.2 没有任何一段提示承载这些声明，
     模型只能自己重新规划——实测把 6 个镜号压成 2 个、把 33 秒拉成 39.5 秒。
+
+    v1.4 BW-3：``max_shots = 0``（默认）表示**不限**，全部声明都进提示；
+    ``> 0`` 时超过上限直接报 ``E_SCRIPT_002``，不再印"（其余 N 个镜号略）"。
     """
     shots = list(getattr(script, "declared_shots", []) or [])
     if not shots:
         return ""
+    limit = int(max_shots or 0)
+    if limit > 0 and len(shots) > limit:
+        raise ValueError(
+            f"E_SCRIPT_002：分镜表声明了 {len(shots)} 个镜号，超过 "
+            f"orchestration.max_shots={limit} 的上限。把该值设为 0（不限）"
+            f"或提高到不小于声明镜数后重跑。")
     lines = [
         "分镜表声明（**硬约束**：镜号的数量与顺序、镜别、时长、出场角色、"
         "台词文本都不许改动；你只补它没写的东西）：",
     ]
-    for shot in shots[:max_shots]:
+    for shot in (shots[:limit] if limit > 0 else shots):
         parts = [f"镜号{shot.shot_number}"]
         if shot.shot_type:
             parts.append(shot.shot_type)
@@ -309,8 +318,6 @@ def render_declared_shots(script, *, fps: int = 24,
             seconds = (f"（约 {dialogue.declared_seconds:g} 秒）"
                        if dialogue.declared_seconds else "")
             lines.append(f"  台词 {dialogue.character}：“{dialogue.text}”{seconds}")
-    if len(shots) > max_shots:
-        lines.append(f"（其余 {len(shots) - max_shots} 个镜号略）")
     total = getattr(script, "declared_total_seconds", None)
     if total:
         lines.append(f"合计声明时长：{total:g} 秒"

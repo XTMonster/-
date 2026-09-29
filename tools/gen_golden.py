@@ -8,6 +8,9 @@
   回填）后的完整 SDL；
 - `fixtures/tool_transcript_simple.jsonl` —— 一次真实运行会留下的审计记录
   （`plan_received` + 一条 `place_character`），供 replay 回归使用。
+- `fixtures/expected_sdl_long.json` / `fixtures/expected_shots_long.json`
+  —— 长剧本（`fixtures/mock_llm_responses/plan_long.json`，≥61 镜）的派生
+  回归基线，供 RK-11（帧数等式）与 RK-12（重放对拍）使用。
 
 这样"期望"与"实际"永远由同一份计划推导，改计划只需重跑本脚本。
 
@@ -35,6 +38,11 @@ PLAN_FILE = FIXTURES / "mock_llm_responses" / "plan_simple.json"
 DRAFTS_FILE = FIXTURES / "mock_llm_responses" / "drafts_simple.json"
 SDL_FILE = FIXTURES / "expected_sdl_simple.json"
 TRANSCRIPT_FILE = FIXTURES / "tool_transcript_simple.jsonl"
+LONG_PLAN_FILE = FIXTURES / "mock_llm_responses" / "plan_long.json"
+LONG_SDL_FILE = FIXTURES / "expected_sdl_long.json"
+LONG_SHOTS_FILE = FIXTURES / "expected_shots_long.json"
+#: 逐字符可比的固定时间戳（真实运行会写 now，夹具必须写死）。
+FIXED_TIMESTAMP = "1970-01-01T00:00:00+00:00"
 
 #: 记录进夹具的那次"用户手动调整"：把林可往右挪一点。
 #: 数值是刻意选的——它跑在 build_scene 之后，用来证明重放会把工具调用重新落实。
@@ -43,6 +51,10 @@ USER_EDIT = {"character_id": "char_001", "position": [1.2, 0.0, 0.0]}
 
 def load_plan() -> Plan:
     return Plan.from_dict(json.loads(PLAN_FILE.read_text(encoding="utf-8")))
+
+
+def load_plan_from(path) -> Plan:
+    return Plan.from_dict(json.loads(Path(path).read_text(encoding="utf-8")))
 
 
 def load_drafts() -> list:
@@ -85,12 +97,27 @@ def expected_transcript(plan: Plan) -> str:
                      for record in records) + "\n"
 
 
+def expected_shots(plan: Plan) -> str:
+    """长基线的 ``shots.json``（帧数等式与字段断言的回归基线）。"""
+    from block_director.delivery.manifest import build_manifest
+
+    payload = build_manifest(plan, generated_at=FIXED_TIMESTAMP)
+    return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+
+
 def render() -> dict:
     plan = merged_plan()
-    return {
+    rendered = {
         SDL_FILE: json.dumps(expected_sdl(plan), ensure_ascii=False, indent=2) + "\n",
         TRANSCRIPT_FILE: expected_transcript(merged_plan()),
     }
+    if LONG_PLAN_FILE.exists():
+        long_plan = load_plan_from(LONG_PLAN_FILE)
+        rendered[LONG_SDL_FILE] = (
+            json.dumps(expected_sdl(long_plan), ensure_ascii=False, indent=2)
+            + "\n")
+        rendered[LONG_SHOTS_FILE] = expected_shots(long_plan)
+    return rendered
 
 
 def main() -> int:

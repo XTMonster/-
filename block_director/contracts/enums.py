@@ -53,7 +53,8 @@ class TransportMode(StrEnum):
 
 
 class RagBackend(StrEnum):
-    BM25 = "bm25"        # 默认
+    HYPERGRAPH = "hypergraph"  # 默认（v1.4 §2.3）：超图 RAG，跑在 sidecar
+    BM25 = "bm25"        # sidecar 不可用时的内置兜底（须在 trace 标 degraded）
     VECTOR = "vector"    # 需能力协商通过
     DIGEST = "digest"    # 兜底
 
@@ -112,6 +113,9 @@ class Capability(StrEnum):
     BM25 = "bm25"
     VECTOR = "vector"
     PDF = "pdf"
+    #: v1.4 §2.3：超图检索。只加这一个——L3（案例层）的开/关**只**由
+    #: ``rag.cases_backend`` 表达，不再新增 ``lightrag`` 能力位。
+    HYPERGRAPH = "hypergraph"
 
 
 class Severity(StrEnum):
@@ -237,6 +241,10 @@ class ErrorCode(StrEnum):
     CORR_001 = "E_CORR_001"
     SCRIPT_001 = "E_SCRIPT_001"
     BRIEF_001 = "E_BRIEF_001"
+    #: v1.4：分镜表声明的镜数超过 ``orchestration.max_shots`` 上限
+    SCRIPT_002 = "E_SCRIPT_002"
+    #: v1.4 BW-1：未知的姿态参数键（不许静默取默认）
+    MOTION_001 = "E_MOTION_001"
 
 
 # --------------------------------------------------------------------------- #

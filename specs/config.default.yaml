@@ -23,25 +23,30 @@ rag:
   embedder: bge-small-zh-v1.5
   top_k: 5
   max_tokens_per_call: 800
+  plan_prefetch_tokens: 2000
+  cases_backend: lightrag
+  cases_top_k: 3
 orchestration:
   mode: plan_structured
   max_repair_attempts: 2
   react_max_steps: 6
   context_window_tokens: 32000
+  max_shots: 0
   self_review: true
 audit:
   level: standard
   human_gate_on_plan: true
   human_gate_on_axis_violation: true
 budget:
-  max_llm_calls_per_scene_formula: shots * 8
+  max_llm_calls_per_scene_formula: shots * 8 + 40
+  max_llm_calls_ceiling: 200
   max_cost_usd: 5.0
-  max_wall_minutes: 30.0
+  max_wall_minutes: 120.0
 brief:
   enabled: true
   max_tokens: 1200
 crowd:
-  enabled: false
+  enabled: null
   max_instances: 40
   seed: 0
   mode: walk
@@ -50,11 +55,14 @@ crowd:
 vfx:
   enabled: true
 character:
-  head_radius: 0.35
-  body_radius: 0.25
-  body_height: 0.7
-  leg_height: 0.4
-  eye_radius: 0.06
+  total_height: 1.7
+  head_ratio: 0.37
+  torso_ratio: 0.44
+  leg_ratio: 0.19
+  eye_r: 0.035
+  eye_dx: 0.11
+  eye_protrusion: 0.015
+  neck_gap: 0.0
   eye_color: '#101010'
   label_size: 0.15
   label_font_path: ''
@@ -91,10 +99,12 @@ delivery:
   export_depth: false
   export_camera_traj: false
   per_shot_clips: true
-  full_concat: false
+  full_concat: true
   external_ffmpeg_path: ''
 ui:
   show_axis: true
   show_composition: true
   show_safe_area: true
   show_labels: true
+framing:
+  headroom_policy: board

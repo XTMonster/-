@@ -1,0 +1,925 @@
+{
+  "scene_heading": "# 节点1：市场静场（总时长：24秒）",
+  "continuity_notes": [
+    "离线自检模式生成，仅供链路验证"
+  ],
+  "shots": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "intent": "镜号1：建立场景，交代市场全貌",
+      "shot_type": "LS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "intent": "镜号2：交代两位主角的位置关系",
+      "shot_type": "MS",
+      "duration_frames": 96,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "intent": "镜号3：推进对话",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "intent": "镜号4：推进对话",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_005",
+      "order": 5,
+      "intent": "镜号5：给出反应",
+      "shot_type": "MCU",
+      "duration_frames": 96,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_006",
+      "order": 6,
+      "intent": "镜号6：铺垫冲突",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_007",
+      "order": 7,
+      "intent": "镜号7：留白",
+      "shot_type": "CU",
+      "duration_frames": 48,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_008",
+      "order": 8,
+      "intent": "镜号8：段末收束",
+      "shot_type": "MS",
+      "duration_frames": 48,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_009",
+      "order": 9,
+      "intent": "镜号9：推进主线",
+      "shot_type": "MS",
+      "duration_frames": 96,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_010",
+      "order": 10,
+      "intent": "镜号10：推进主线",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_011",
+      "order": 11,
+      "intent": "镜号11：推进主线",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_012",
+      "order": 12,
+      "intent": "镜号12：转折",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_013",
+      "order": 13,
+      "intent": "镜号13：转折",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_014",
+      "order": 14,
+      "intent": "镜号14：反应",
+      "shot_type": "CU",
+      "duration_frames": 48,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_015",
+      "order": 15,
+      "intent": "镜号15：过渡",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_016",
+      "order": 16,
+      "intent": "镜号16：段末收束",
+      "shot_type": "MLS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_017",
+      "order": 17,
+      "intent": "镜号17：建立环境",
+      "shot_type": "LS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_018",
+      "order": 18,
+      "intent": "镜号18：推进主线",
+      "shot_type": "MS",
+      "duration_frames": 96,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_019",
+      "order": 19,
+      "intent": "镜号19：情绪铺垫",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_020",
+      "order": 20,
+      "intent": "镜号20：推进主线",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_021",
+      "order": 21,
+      "intent": "镜号21：冲突升级",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_022",
+      "order": 22,
+      "intent": "镜号22：冲突升级",
+      "shot_type": "CU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_023",
+      "order": 23,
+      "intent": "镜号23：留白",
+      "shot_type": "CU",
+      "duration_frames": 48,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_024",
+      "order": 24,
+      "intent": "镜号24：段末收束",
+      "shot_type": "MLS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_025",
+      "order": 25,
+      "intent": "镜号25：转场",
+      "shot_type": "LS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_026",
+      "order": 26,
+      "intent": "镜号26：推进主线",
+      "shot_type": "MS",
+      "duration_frames": 96,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_027",
+      "order": 27,
+      "intent": "镜号27：推进主线",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_028",
+      "order": 28,
+      "intent": "镜号28：反应",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_029",
+      "order": 29,
+      "intent": "镜号29：情绪顶点",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_030",
+      "order": 30,
+      "intent": "镜号30：情绪顶点",
+      "shot_type": "CU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_031",
+      "order": 31,
+      "intent": "镜号31：留白",
+      "shot_type": "CU",
+      "duration_frames": 48,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_032",
+      "order": 32,
+      "intent": "镜号32：段末收束",
+      "shot_type": "MLS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_033",
+      "order": 33,
+      "intent": "镜号33：建立环境",
+      "shot_type": "LS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_034",
+      "order": 34,
+      "intent": "镜号34：推进主线",
+      "shot_type": "MS",
+      "duration_frames": 96,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_035",
+      "order": 35,
+      "intent": "镜号35：推进主线",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_036",
+      "order": 36,
+      "intent": "镜号36：推进主线",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_037",
+      "order": 37,
+      "intent": "镜号37：冲突升级",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_038",
+      "order": 38,
+      "intent": "镜号38：冲突升级",
+      "shot_type": "CU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_039",
+      "order": 39,
+      "intent": "镜号39：反应",
+      "shot_type": "CU",
+      "duration_frames": 48,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_040",
+      "order": 40,
+      "intent": "镜号40：段末收束",
+      "shot_type": "MLS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_041",
+      "order": 41,
+      "intent": "镜号41：建立氛围",
+      "shot_type": "LS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_042",
+      "order": 42,
+      "intent": "镜号42：推进对话",
+      "shot_type": "MS",
+      "duration_frames": 96,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_043",
+      "order": 43,
+      "intent": "镜号43：推进对话",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_044",
+      "order": 44,
+      "intent": "镜号44：反应",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_045",
+      "order": 45,
+      "intent": "镜号45：留白",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_046",
+      "order": 46,
+      "intent": "镜号46：留白",
+      "shot_type": "CU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_047",
+      "order": 47,
+      "intent": "镜号47：反应",
+      "shot_type": "CU",
+      "duration_frames": 48,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_048",
+      "order": 48,
+      "intent": "镜号48：段末收束",
+      "shot_type": "MLS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_049",
+      "order": 49,
+      "intent": "镜号49：建立环境",
+      "shot_type": "LS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_050",
+      "order": 50,
+      "intent": "镜号50：推进主线",
+      "shot_type": "MS",
+      "duration_frames": 96,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_051",
+      "order": 51,
+      "intent": "镜号51：推进主线",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_052",
+      "order": 52,
+      "intent": "镜号52：推进主线",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_053",
+      "order": 53,
+      "intent": "镜号53：情绪顶点",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_054",
+      "order": 54,
+      "intent": "镜号54：告别",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_055",
+      "order": 55,
+      "intent": "镜号55：告别",
+      "shot_type": "CU",
+      "duration_frames": 48,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_056",
+      "order": 56,
+      "intent": "镜号56：段末收束",
+      "shot_type": "MLS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_057",
+      "order": 57,
+      "intent": "镜号57：收束",
+      "shot_type": "LS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_058",
+      "order": 58,
+      "intent": "镜号58：收束",
+      "shot_type": "MS",
+      "duration_frames": 96,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_059",
+      "order": 59,
+      "intent": "镜号59：收束",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_060",
+      "order": 60,
+      "intent": "镜号60：收束",
+      "shot_type": "MCU",
+      "duration_frames": 72,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_061",
+      "order": 61,
+      "intent": "镜号61：收束",
+      "shot_type": "MS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_062",
+      "order": 62,
+      "intent": "镜号62：收束",
+      "shot_type": "CU",
+      "duration_frames": 48,
+      "characters": [
+        "char_001"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_063",
+      "order": 63,
+      "intent": "镜号63：收束",
+      "shot_type": "MLS",
+      "duration_frames": 48,
+      "characters": [
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    },
+    {
+      "shot_id": "shot_064",
+      "order": 64,
+      "intent": "镜号64：收束",
+      "shot_type": "LS",
+      "duration_frames": 72,
+      "characters": [
+        "char_001",
+        "char_002"
+      ],
+      "dialogue_ids": [],
+      "prompt": "",
+      "axis_note": "",
+      "continuity_in": ""
+    }
+  ]
+}
