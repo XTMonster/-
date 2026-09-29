@@ -375,6 +375,17 @@ def test_missing_file_returns_one(tmp_path):
     assert check_holdout.main([str(tmp_path / "nope.jsonl")]) == 1
 
 
+def test_empty_file_fails_every_per_entry_gate(tmp_path):
+    """空集不得判过：0 条时格式门/边类门必须红，不能因为"没有条目可违反"而变绿。"""
+    path = tmp_path / "empty.jsonl"
+    path.write_text("", encoding="utf-8")
+    data = report(path)
+    assert data["gate_1_total"]["status"] == "fail"
+    assert data["gate_2_format"]["status"] == "fail"
+    assert data["gate_4_edge_types"]["status"] == "fail"
+    assert data["overall"] == "fail"
+
+
 def test_broken_json_line_is_reported(tmp_path):
     path = tmp_path / "bad.jsonl"
     path.write_text('{"id": "x"\n', encoding="utf-8")

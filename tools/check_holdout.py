@@ -235,6 +235,15 @@ def validate_entry(record: dict) -> Tuple[Dict[str, str], int]:
 
 
 def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
+    if not entries:
+        # 硬规则 1：空集不得判"格式通过"——against a zero-entry file every
+        # per-entry check is vacuously true, which is exactly the trap the rule names.
+        return FAIL, {"entries": 0, "valid": 0, "problems": ["空集：没有任何条目可验"],
+                      "problem_count": 1, "q7_conflicts": 0,
+                      "must_pairs_per_type": {t: 0 for t in EDGE_TYPES},
+                      "must_cards_per_type": {t: 0 for t in EDGE_TYPES},
+                      "q7_forbid_members": {}, "needs_human": 0, "human_reviewed": 0,
+                      "q7_member_count": 0, "_parsed_q": []}
     problems: List[str] = []
     seen: Dict[str, int] = {}
     q7 = 0
