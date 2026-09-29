@@ -17,6 +17,10 @@ from ..contracts.plan import Plan
 @dataclass
 class SceneContext:
     characters: Dict[str, Any] = field(default_factory=dict)     # id → Character
+    #: v1.3 §3.6：群众代理对象。**刻意不进 characters**——角色面板、场景
+    #: 状态、构图评分与标签都按 characters 遍历，混进去这四处会一起失真。
+    crowd: List[Any] = field(default_factory=list)
+    vfx: Dict[str, Any] = field(default_factory=dict)            # vfx_id → 对象
     cameras: Dict[str, Any] = field(default_factory=dict)        # shot_id → camera 对象
     shot_types: Dict[str, str] = field(default_factory=dict)     # shot_id → 景别
     schedule: Dict[str, Tuple[int, int]] = field(default_factory=dict)  # shot_id → (起, 止)

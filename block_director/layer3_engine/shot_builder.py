@@ -37,7 +37,7 @@ from .collection_router import (
     ensure_collections,
     purge_orphan_data,
 )
-from .scene_executor import build_environment
+from .scene_executor import build_crowd, build_environment, create_vfx
 from .scene_context import SceneContext, set_context
 
 log = get_logger("shot-builder")
@@ -81,6 +81,9 @@ class BuildSummary:
     warnings: List[str] = field(default_factory=list)
     #: v1.3 P7：声明式运镜落地的条数（相机关键帧由它生成）
     movements: int = 0
+    #: v1.3 §3.6：群众实例数与特效代理数
+    crowd: int = 0
+    vfx: int = 0
     #: 渲染标签的烘焙摘要（v1.3 诉求 4）；没有标签时为空字典
     label_report: Dict[str, Any] = field(default_factory=dict)
 
@@ -91,6 +94,7 @@ class BuildSummary:
             "keyframes": self.keyframes, "total_frames": self.total_frames,
             "warnings": list(self.warnings),
             "movements": self.movements,
+            "crowd": self.crowd, "vfx": self.vfx,
             "label_report": dict(self.label_report),
             "results": [r.to_dict() for r in self.results],
         }
@@ -196,7 +200,8 @@ def action_requests(shot: ShotPlan, shot_start: int,
 
 @main_thread_only("build_scene")
 def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
-                clear_scene: bool = False, brief=None) -> BuildSummary:
+                clear_scene: bool = False, brief=None,
+                crowd=None) -> BuildSummary:
     """按计划重建整个白模场景。
 
     ``clear_scene=True`` 时连非本插件对象（Blender 启动场景自带的 Cube 等）
@@ -205,9 +210,12 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     ``brief`` 是阶段 S 的剧本理解（§3.2）：只用来决定站位（``space``）。
     给了显式 ``spec`` 时它不参与——用户改过的设定永远优先。
     """
-    spec = spec or SceneSpec.from_plan(plan, brief=brief)
+    spec = spec or SceneSpec.from_plan(plan, brief=brief, crowd=crowd)
     scene = bpy.context.scene
     summary = BuildSummary()
+    # 帧范围先定下来：群众的走位关键帧、标签的采样表都要用它。
+    scene.frame_start = 1
+    scene.frame_end = max(total_frames(plan), 1)
 
     removed = (clear_scene_objects() if clear_scene
                else clear_blockdirector_objects())
@@ -304,6 +312,34 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             movement_tasks.append((shot.shot_id, start, end, declared_moves,
                                    default_subject))
 
+        # §3.6 特效代理：只在声明的时间窗内可见（关键帧控制 hide_render），
+        # 否则火焰会一路烧到别的镜头里去。
+        for index, raw in enumerate(getattr(shot, "vfx", None) or [], start=1):
+            if not isinstance(raw, dict):
+                shot_warnings.append(f"{shot.shot_id}: 第 {index} 个特效不是对象，已跳过")
+                continue
+            vfx_id = str(raw.get("id") or f"{shot.shot_id}_vfx{index}")
+            kind = str(raw.get("type") or "glow")
+            position = raw.get("position") or _vfx_fallback_position(frame.anchor)
+            if not app_config.vfx.enabled:
+                shot_warnings.append(
+                    f"{shot.shot_id}: vfx.enabled=false，特效 {vfx_id} 已跳过")
+                continue
+            try:
+                object_ = create_vfx(vfx_id, kind, position,
+                                     raw.get("size") or (0.0, 0.0, 0.0))
+            except Exception as exc:  # noqa: BLE001 - 单个特效失败不该拖垮构建
+                shot_warnings.append(
+                    f"{shot.shot_id}: 特效 {vfx_id} 创建失败（{exc}）")
+                continue
+            local_start = int(raw.get("start_frame") or 1)
+            local_end = int(raw.get("end_frame") or (end - start + 1))
+            _window_visibility(object_, start + local_start - 1,
+                               start + max(local_end, local_start) - 1,
+                               scene_end=scene.frame_end)
+            context.vfx[vfx_id] = object_
+            summary.vfx += 1
+
         summary.results.append(ShotBuildResult(
             shot_id=shot.shot_id, shot_type=str(shot.shot_type),
             start_frame=start, end_frame=end, camera=bundle.camera.name,
@@ -337,30 +373,43 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             continue
         for raw in declared_moves:
             try:
-                spec = movement_spec(raw, shot_start=start, shot_end=end,
+                # 变量名不能叫 spec——那会盖住上面的 SceneSpec（函数后面还要用）
+                move = movement_spec(raw, shot_start=start, shot_end=end,
                                      default_subject=default_subject)
             except ValueError as exc:
                 summary.warnings.append(
                     f"{shot_id}: 运镜声明无效（{exc}），已跳过")
                 continue
-            subject = characters.get(str(spec["subject"]))
-            if spec["type"] in SUBJECT_TRACKING and subject is None:
+            subject = characters.get(str(move["subject"]))
+            if move["type"] in SUBJECT_TRACKING and subject is None:
                 summary.warnings.append(
-                    f"{shot_id}: {spec['type']} 找不到被摄主体"
-                    f"（{spec['subject'] or '未指定'}），已跳过")
+                    f"{shot_id}: {move['type']} 找不到被摄主体"
+                    f"（{move['subject'] or '未指定'}），已跳过")
                 continue
             try:
                 report = apply_camera_movement(
-                    camera, target, str(spec["type"]), float(spec["amount"]),
-                    int(spec["start_frame"]), int(spec["end_frame"]),
-                    subject=subject, seed=int(spec["seed"]))
+                    camera, target, str(move["type"]), float(move["amount"]),
+                    int(move["start_frame"]), int(move["end_frame"]),
+                    subject=subject, seed=int(move["seed"]))
             except ValueError as exc:
                 summary.warnings.append(f"{shot_id}: {exc}")
                 continue
             summary.movements += 1
             summary.keyframes += int(report["keyframes"])
-            log.info("%s: 运镜 %s（%s 帧）", shot_id, spec["type"],
-                     f"{spec['start_frame']}-{spec['end_frame']}")
+            log.info("%s: 运镜 %s（%s 帧）", shot_id, move["type"],
+                     f"{move['start_frame']}-{move['end_frame']}")
+
+    # §3.6 群众：声明式代理，独立于 cast（不进角色面板、构图与场景状态）。
+    if spec.crowd:
+        crowd_objects = build_crowd(spec.crowd,
+                                    height=float(app_config.crowd.height),
+                                    spacing=float(app_config.crowd.spacing),
+                                    walk_frames=(1, scene.frame_end))
+        context.crowd = list(crowd_objects)
+        summary.crowd = len(crowd_objects)
+        if app_config.delivery.render_backend.value == "workbench":
+            summary.warnings.append(
+                f"群众代理 {len(crowd_objects)} 个（Workbench 下为不透明实色）")
 
     if label_entries:
         # v1.3 诉求 4：标签的公告板与"屏幕恒定字号"在**构建期**烘焙，
@@ -379,8 +428,6 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                 f"{item['character_id']} 在第 {item['frame']} 帧的标签低于"
                 f"可读下限（{label_config.label_min_pixels:g}px）")
 
-    scene.frame_start = 1
-    scene.frame_end = max(total_frames(plan), 1)
     scene.frame_set(1)
     set_context(context)
     # §8.3：把这次插件写入记为基线，之后才分得清"哪些是用户改的"。
@@ -394,6 +441,37 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     return summary
 
 
+def _vfx_fallback_position(anchor) -> Tuple[float, float, float]:
+    """声明里没给坐标时的落点：主体正前方偏上一点。"""
+    return (float(anchor[0]) + 0.5, float(anchor[1]), float(anchor[2]) + 1.0)
+
+
+def _window_visibility(obj, start: int, end: int, *, scene_end: int) -> None:
+    """让对象**只在**这段时间窗里渲染（其余帧硬切掉，不做淡入淡出）。"""
+    start = max(int(start), 1)
+    end = max(int(end), start)
+    obj.hide_render = True
+    if start > 1:
+        obj.keyframe_insert(data_path="hide_render", frame=max(start - 1, 1))
+    obj.hide_render = False
+    obj.keyframe_insert(data_path="hide_render", frame=start)
+    obj.keyframe_insert(data_path="hide_render", frame=end)
+    if end < int(scene_end):
+        obj.hide_render = True
+        obj.keyframe_insert(data_path="hide_render", frame=end + 1)
+    for curve in _action_curves(obj):
+        for point in curve.keyframe_points:
+            if curve.data_path == "hide_render":
+                point.interpolation = 'CONSTANT'
+
+
+def _action_curves(obj) -> List[object]:
+    if obj.animation_data is None or obj.animation_data.action is None:
+        return []
+    from ..utils.blender_compat import action_fcurves
+    return list(action_fcurves(obj.animation_data.action))
+
+
 def conflict_warnings(requests: Sequence[ActionRequest],
                        shot_id: str) -> List[str]:
     from ..motion.model import check_conflicts
@@ -404,10 +482,11 @@ class BpySceneBuilder:
     """驱动器用的构建器实现（满足 ``SceneBuilder`` 协议）。"""
 
     def __init__(self, spec: Optional[SceneSpec] = None,
-                 clear_scene: bool = False) -> None:
+                 clear_scene: bool = False, crowd=None) -> None:
         self.spec = spec
         self.clear_scene = clear_scene
+        self.crowd = crowd
 
     def build(self, plan: Plan, brief=None) -> Dict[str, Any]:
         return build_scene(plan, self.spec, clear_scene=self.clear_scene,
-                           brief=brief).to_dict()
+                           brief=brief, crowd=self.crowd).to_dict()

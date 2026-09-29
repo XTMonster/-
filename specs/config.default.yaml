@@ -40,6 +40,15 @@ budget:
 brief:
   enabled: true
   max_tokens: 1200
+crowd:
+  enabled: false
+  max_instances: 40
+  seed: 0
+  mode: walk
+  height: 1.65
+  spacing: 1.6
+vfx:
+  enabled: true
 character:
   head_radius: 0.35
   body_radius: 0.25

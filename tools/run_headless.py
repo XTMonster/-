@@ -28,6 +28,18 @@ def _brief_from_summary(summary):
     return SceneBrief.from_dict(payload)
 
 
+def _crowd_from_script(parsed, crowd_config):
+    """分镜表里写了群众才生成群众代理（v1.3 §3.6）。"""
+    if parsed is None or crowd_config is None:
+        return []
+    from block_director.contracts.cast import crowd_from_script
+
+    return crowd_from_script(parsed, enabled=bool(crowd_config.enabled),
+                             max_instances=int(crowd_config.max_instances),
+                             mode=str(crowd_config.mode),
+                             seed=int(crowd_config.seed))
+
+
 def parse_args(argv):
     rest = argv[argv.index("--") + 1:] if "--" in argv else []
     parser = argparse.ArgumentParser(prog="run_headless")
@@ -63,11 +75,6 @@ def main() -> int:
 
     from block_director.layer5_orchestrator.headless_runner import run_headless
     from block_director.layer5_orchestrator.driver import DriverLimits
-
-    builder = None
-    if args.build:
-        from block_director.layer3_engine.shot_builder import BpySceneBuilder
-        builder = BpySceneBuilder(clear_scene=True)
 
     from block_director.layer3_engine.shot_auditor import BpyShotAuditor
     from block_director.layer3_engine.scene_state import collect_scene_state
@@ -106,6 +113,20 @@ def main() -> int:
                 print(f"BLOCKDIRECTOR_WARN 剧本解析失败，将退回原文：{exc}")
         else:
             print(f"BLOCKDIRECTOR_WARN 剧本不存在: {path}")
+
+    builder = None
+    if args.build:
+        from block_director.layer3_engine.shot_builder import BpySceneBuilder
+        from block_director.settings import get_config as _config
+
+        crowd_config = _config().crowd
+        crowd = _crowd_from_script(parsed, crowd_config)
+        if crowd:
+            print("BLOCKDIRECTOR_CROWD " + json.dumps(
+                {"entries": crowd,
+                 "total": sum(item["count"] for item in crowd)},
+                ensure_ascii=False))
+        builder = BpySceneBuilder(clear_scene=True, crowd=crowd)
 
     summary = run_headless(
         script,

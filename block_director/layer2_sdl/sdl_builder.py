@@ -65,6 +65,7 @@ def _environment(spec: SceneSpec) -> SDLEnvironment:
         props=[dict(prop) for prop in spec.props],
         lighting=spec.lighting,
         room=list(spec.room) if spec.room else None,
+        crowd=[dict(item) for item in (getattr(spec, "crowd", None) or [])],
     )
 
 
@@ -170,4 +171,6 @@ def sdl_to_spec(sdl: SDLProject) -> SceneSpec:
         props=[dict(prop) for prop in environment.props],
         lighting=environment.lighting,
         room=tuple(environment.room) if environment.room else None,
+        crowd=[dict(item) for item in (getattr(environment, "crowd", None)
+                                       or [])],
     )

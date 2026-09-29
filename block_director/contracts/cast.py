@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -131,6 +132,59 @@ def station_from_space(characters: List[str], space,
               round(facings[name][1], 6) or 0.0, 0.0))
             for name in characters]
 
+#: 从"角色 / 背景内容"字段里认出群众的字样 → 估算人数
+_CROWD_HINTS = ("路人", "人群", "群众", "行人", "商贩", "顾客", "围观",
+                "顾客群", "过客", "行人")
+_CROWD_COUNT_RE = re.compile(r"(?:约|大约|近|共)?\s*(\d{1,3})\s*(?:名|个|位|人)")
+
+
+def crowd_from_script(script, *, enabled: bool = True,
+                      max_instances: int = 40, mode: str = "walk",
+                      seed: int = 0) -> List[Dict[str, Any]]:
+    """从分镜表的声明里读出群众（v1.3 §3.6）。
+
+    这是**声明侧**的确定性抽取：只有剧本自己写了"约 30 名路人""背景有人群"
+    才生成群众代理。没有声明就不生成——不替剧本扩大解释。
+
+    返回 ``[{"count", "mode", "seed", "spread", "label"}]``（**至多一条**）。
+
+    同一场戏里好几个镜头都会提到路人，但那通常是**同一批人**（在码头市场
+    走来走去的还是那群人）。所以取声明的最大值而不是把它们相加——
+    相加会让一个 30 人的市场变成 40 个互不相干的代理。
+    """
+    if not enabled:
+        return []
+    limit = max(int(max_instances), 0)
+    if limit == 0:
+        return []
+    seen: set = set()
+    declared = list(getattr(script, "declared_shots", []) or [])
+    sources: List[str] = []
+    for shot in declared:
+        sources.append(str(shot.field("角色") or ""))
+        sources.append(str(shot.field("背景内容") or ""))
+        sources.append(str(shot.field("画面内容") or ""))
+    if not declared:
+        for scene in getattr(script, "scenes", None) or []:
+            for action in scene.actions:
+                sources.append(str(action.text or ""))
+    best_count = 0
+    best_label = ""
+    for text in sources:
+        if not text or not any(hint in text for hint in _CROWD_HINTS):
+            continue
+        if text in seen:
+            continue
+        seen.add(text)
+        match = _CROWD_COUNT_RE.search(text)
+        count = int(match.group(1)) if match else 6      # 只写了"人群"时的默认规模
+        if count > best_count:
+            best_count, best_label = count, text
+    if best_count <= 0:
+        return []
+    return [{"count": max(min(best_count, limit), 1), "mode": str(mode),
+             "seed": int(seed), "spread": 6.0, "label": best_label[:40]}]
+
 
 def next_character_id(existing) -> str:
     """分配下一个空闲角色 id（``char_001``…）。
@@ -185,9 +239,15 @@ class SceneSpec:
     lighting: str = "clay_studio"
     room: Optional[Tuple[float, float, float, float]] = None
     with_labels: bool = True
+    #: v1.3 §3.6：群众代理（**独立于 cast**）。
+    #: 元素形如 ``{count, mode, seed, spread, label}``。独立存放是因为
+    #: 角色面板、场景状态、构图评分与标签都按 ``cast`` 遍历——群众混进去
+    #: 会让这四处全部失真（`tests/test_cast_panel.py` 直接断言角色数）。
+    crowd: List[Dict[str, Any]] = field(default_factory=list)
 
     @classmethod
-    def from_plan(cls, plan: Plan, brief=None, **overrides) -> "SceneSpec":
+    def from_plan(cls, plan: Plan, brief=None, crowd=None,
+                  **overrides) -> "SceneSpec":
         """按计划里出现的角色自动生成一份确定性剧组设定。
 
         站位用 :func:`default_station`：两人时相对而立（v1.2 是并排朝前，
@@ -210,7 +270,9 @@ class SceneSpec:
                        initial_facing=facing)
             for index, (character_id, (location, facing))
             in enumerate(zip(character_ids, stations))]
-        return cls(heading=plan.scene_heading, cast=cast, **overrides)
+        return cls(heading=plan.scene_heading, cast=cast,
+                   crowd=[dict(item) for item in (crowd or [])],
+                   **overrides)
 
     def to_dict(self) -> Dict[str, Any]:
         from .serde import to_plain

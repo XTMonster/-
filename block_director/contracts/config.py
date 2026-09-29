@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from .enums import (
     Appearance,
     AuditLevel,
+    CROWD_MODES,
     DeliveryPreset,
     ErrorCode,
     OrchestrationMode,
@@ -127,6 +128,30 @@ class BriefConfig:
 
 
 @dataclass
+class CrowdConfig:
+    """群众代理（v1.3 §3.6）。
+
+    默认**关闭**：群众会显著增加对象数与关键帧数，而多数镜头根本不需要它。
+    分镜表里写了"约 30 名路人"这类声明时，run_headless 会按声明开启它。
+    """
+
+    enabled: bool = False
+    max_instances: int = 40
+    seed: int = 0
+    #: ``static`` 或 ``walk``（walk 是"漂移 + 微起伏"的近似，不是骨骼走姿）
+    mode: str = "walk"
+    height: float = 1.65
+    spacing: float = 1.6
+
+
+@dataclass
+class VfxConfig:
+    """特效代理（v1.3 §3.6）。Workbench 下没有半透明，代理是不透明实色。"""
+
+    enabled: bool = True
+
+
+@dataclass
 class CharacterConfig:
     head_radius: float = 0.35
     body_radius: float = 0.25
@@ -209,6 +234,8 @@ class AppConfig:
     audit: AuditConfig = field(default_factory=AuditConfig)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     brief: BriefConfig = field(default_factory=BriefConfig)
+    crowd: CrowdConfig = field(default_factory=CrowdConfig)
+    vfx: VfxConfig = field(default_factory=VfxConfig)
     character: CharacterConfig = field(default_factory=CharacterConfig)
     animation: AnimationConfig = field(default_factory=AnimationConfig)
     dialogue: DialogueConfig = field(default_factory=DialogueConfig)
@@ -325,6 +352,15 @@ class AppConfig:
             err("CFG_210", "brief.max_tokens",
                 f"SceneBrief 的注入上限必须为正数"
                 f"（当前 {self.brief.max_tokens}）")
+        if int(self.crowd.max_instances) < 0:
+            err("CFG_211", "crowd.max_instances",
+                f"群众实例上限不能为负（当前 {self.crowd.max_instances}）")
+        if self.crowd.height <= 0:
+            err("CFG_212", "crowd.height",
+                f"群众身高必须为正数（当前 {self.crowd.height}）")
+        if str(self.crowd.mode) not in CROWD_MODES:
+            err("CFG_213", "crowd.mode",
+                f"只能是 {'/'.join(CROWD_MODES)}（当前 {self.crowd.mode!r}）")
         return issues
 
     def errors(self) -> List[Issue]:

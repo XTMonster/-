@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
-from ..contracts.enums import MOVEMENT_TYPES, Purpose, ToolChoice
+from ..contracts.enums import MOVEMENT_TYPES, VFX_TYPES, Purpose, ToolChoice
 from ..contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -116,6 +116,27 @@ EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
                 },
             },
         },
+        #: v1.3 §3.6：特效代理（火焰 / 发光 / 火花 / 烟雾）。
+        #: 白模里它们是**不透明几何**；Workbench 没有半透明，如实标注在交付 README。
+        "vfx": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["id", "type"],
+                "properties": {
+                    "id": {"type": "string"},
+                    "type": {"type": "string", "enum": list(VFX_TYPES)},
+                    "position": {"type": "array", "minItems": 3,
+                                 "maxItems": 3, "items": {"type": "number"}},
+                    "size": {"type": "array", "minItems": 3, "maxItems": 3,
+                             "items": {"type": "number"}},
+                    "start_frame": {"type": "integer", "minimum": 1},
+                    "end_frame": {"type": "integer", "minimum": 1},
+                },
+            },
+        },
         "prompt": {"type": "string"},
     },
 }
@@ -165,6 +186,8 @@ class ShotDraft:
     camera: Dict[str, Any] = field(default_factory=dict)
     #: v1.3：这一镜里谁看着谁（R013 的落实侧）。
     gaze: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.3 §3.6：特效代理（火焰/发光/火花/烟雾）
+    vfx: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""
 
     @classmethod
@@ -178,6 +201,8 @@ class ShotDraft:
             camera=dict(data.get("camera", {}) or {}),
             gaze=[dict(item) for item in (data.get("gaze") or [])
                   if isinstance(item, dict)],
+            vfx=[dict(item) for item in (data.get("vfx") or [])
+                 if isinstance(item, dict)],
             prompt=str(data.get("prompt", "") or ""))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -187,6 +212,7 @@ class ShotDraft:
                 "dialogues": [dict(item) for item in self.dialogues],
                 "camera": dict(self.camera),
                 "gaze": [dict(item) for item in self.gaze],
+                "vfx": [dict(item) for item in self.vfx],
                 "prompt": self.prompt}
 
 
@@ -308,6 +334,8 @@ def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
             # （见 driver._pin_brief_gaze）：先记下 B1 自己说的，
             # R013 才能拿"理解"与"落实"对拍，而不是自己对自己打勾。
             shot["gaze"] = [dict(item) for item in draft.gaze]
+        if draft.vfx:
+            shot["vfx"] = [dict(item) for item in draft.vfx]
         break
     return Plan.from_dict(payload)
 
