@@ -1,5 +1,5 @@
 {
-  "why": "held-out >=1200 needs a capable local annotator; none of the installed ones can produce a single accepted entry",
+  "why": "held-out >=1200 needs a capable local annotator; 当时四个候选（qwen3-vl:30b / bd-annotator / bd-annotator:8k / qwen2.5:7b）都产不出一条被机器接受的条目",
   "rule": "exec doc v1.4 2.3c R49: annotator family must differ from the extractor (extractor = deepseek-chat / family deepseek)",
   "probes": [
     {
@@ -36,5 +36,21 @@
       "note": "non-thinking and fast enough, but cannot follow the frozen schema: it emitted the literal `TYPE:` placeholder and English q-keys; after the prompt fix it still drops required slots (intensity/emotion/avg_shot_len)"
     }
   ],
-  "consequence": "fixtures/knowledge_holdout.jsonl stays empty; tools/holdout_score.py and tools/ab_triple_baseline.py correctly report INCOMPLETE (never pass) per 4.1b hard rule 1"
+  "consequence_at_the_time": "fixtures/knowledge_holdout.jsonl stays empty; tools/holdout_score.py and tools/ab_triple_baseline.py correctly report INCOMPLETE (never pass) per 4.1b hard rule 1",
+  "resolution": {
+    "found_by": "/root",
+    "commit": "fbd2d9f",
+    "what": "本地思考模型的思考税无法用官方开关关掉，但可以用**assistant 预填**绕开：把 /api/chat 的 messages 末尾补一条 assistant（内容=答案开头，例如 `{\"entries\": [`），模型直接续写答案，thinking 归零。开关默认关闭，只有设了 OLLAMA_ASSISTANT_PREFILL 或显式传参才生效。",
+    "same_model_before_after": {
+      "before": {"num_predict": 6144, "eval_count": 6144, "content_len": 0, "thinking_len_chars": 16000, "done_reason": "length", "sec": 81.7},
+      "after": {"prefill": "{\"entries\": [", "eval_count": 355, "content_len": 962, "thinking_len": 0, "done_reason": "stop", "sec": 4.7}
+    },
+    "prefill_is_not_echoed": "Ollama 只回新生成的续写（head 是换行加 \"from_card\" 那一行、tail 是 `]}`），所以解析时先按原文试、失败再把预填贴回去；两次都失败才算调用失败。",
+    "end_to_end": {
+      "command": "OLLAMA_ASSISTANT_PREFILL='{\"entries\": [' python tools/holdout_fill.py --provider ollama --model qwen3-vl:30b --batch 6 --rounds 6",
+      "observed": "每批约 20-27 秒；batch 10 时已落盘 40 条条目（partial 24 KB），格式门/禁忌门均有真实产出",
+      "resume_guard": "改了 SYSTEM_PROMPT 而没改 PROMPT_VERSION 时，旧 partial 会被指纹自动作废（fbd2d9f 把 prompt 正文 sha256 与预填一并计入 run_fingerprint）：实测旧条目 prompt_sha256=f2807f43…，重启后 40 条全部是新 sha 18e52344…。"
+    },
+    "still_human_only": "门⑦（Q5/Q7/E3 的最终裁定）与 ≥120 条人审仍然只能由人做，agent 不得代填。"
+  }
 }
