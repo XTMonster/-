@@ -1,0 +1,140 @@
+"""`tools/holdout_fill.py` 的断点续跑与覆盖缺口（离线，不碰网络）。"""
+
+from __future__ import annotations
+
+import json
+import pathlib
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools import holdout_fill  # noqa: E402
+
+
+def _entry(card: str, q: str, must: list) -> dict:
+    return {"from_card": card, "q": q, "must": list(must),
+            "top1": list(must), "never": []}
+
+
+def test_partial_checkpoint_round_trips(tmp_path):
+    progress = tmp_path / "progress.json"
+    partial = tmp_path / "partial.jsonl"
+    entry = {"id": "hq_0001", **_entry("c1", "情绪=荒诞",
+                                       ["EMOTION_PACK:emotion=荒诞,intensity=high"]),
+             "annotator": {"model_id": "m", "family": "f", "model_version": "v"},
+             "independence": "strong", "pilot": False}
+    holdout_fill.save_partial([entry], [{"reason": "x"}], {"card:1:c1"},
+                              "fp-1", progress, partial)
+
+    entries, rejects, done = holdout_fill.load_partial("fp-1", progress, partial)
+    assert [e["id"] for e in entries] == ["hq_0001"]
+    assert rejects == [{"reason": "x"}]
+    assert done == {"card:1:c1"}
+
+    # 指纹变了（换了模型/卡片）→ 已完成的批作废，重新抽
+    entries2, _rejects, done2 = holdout_fill.load_partial("fp-2", progress, partial)
+    assert entries2 == [] and done2 == set()
+
+
+def test_absent_checkpoint_is_empty_not_an_error(tmp_path):
+    entries, rejects, done = holdout_fill.load_partial(
+        "fp", tmp_path / "nope.json", tmp_path / "nope.jsonl")
+    assert (entries, rejects, done) == ([], [], set())
+
+
+def test_corrupt_checkpoint_is_ignored(tmp_path):
+    progress = tmp_path / "progress.json"
+    partial = tmp_path / "partial.jsonl"
+    progress.write_text("{not json", encoding="utf-8")
+    partial.write_text("", encoding="utf-8")
+    assert holdout_fill.load_partial("fp", progress, partial) == ([], [], set())
+
+
+def test_absorb_dedupes_and_counts_rejects():
+    entries = []
+    rejects = []
+    good = _entry("c1", "情绪=荒诞", ["EMOTION_PACK:emotion=荒诞,intensity=high"])
+    bad = _entry("c1", "情绪=荒诞", ["NOT_A_TYPE:emotion=荒诞"])
+    counter = holdout_fill.absorb(entries, rejects, {"entries": [good, good, bad]},
+                                  {"c1"}, 0)
+    assert counter == 1
+    assert len(entries) == 1 and entries[0]["id"] == "hq_0001"
+    assert entries[0]["annotator"] == {} or isinstance(entries[0]["annotator"], dict)
+    assert len(rejects) == 1
+
+    # 第二轮再给同一条 → 不重复计入
+    counter = holdout_fill.absorb(entries, rejects, {"entries": [good]}, {"c1"}, counter)
+    assert counter == 1 and len(entries) == 1
+
+    holdout_fill.absorb(entries, rejects, {"nope": []}, {"c1"}, counter)
+    assert rejects[-1]["reason"] == "reply_not_a_list"
+
+
+def test_coverage_gaps_reports_every_missing_gate(tmp_path):
+    """空集不得到判"过"——每一道门都要以真实缺口的形式报出来。"""
+    vocab = {"emotion": ["荒诞", "平静"], "movement": ["推镜"]}
+    gaps = holdout_fill.coverage_gaps([], vocab)
+    assert gaps["entries"] == 0
+    assert gaps["format_ok"] is False
+    assert gaps["q7_deficit"] == holdout_fill.MIN_FORBID
+    assert gaps["forbid_under_covered"] == {}
+    assert holdout_fill.gaps_closed(gaps) is False
+
+
+def test_gap_prompt_names_the_shortfall_and_the_cards():
+    gaps = {"missing_values": {"emotion": ["荒诞"]}, "thin_values": {},
+            "short_pairs": {"EMOTION_PACK": 2}, "thin_cards": {},
+            "q7_deficit": 58, "forbid_under_covered": {"movement=固定": 0}}
+    cards = [{"id": "c1", "domain": "anime", "title": "t", "content": "x" * 20}]
+    prompt = holdout_fill.build_gap_prompt(gaps, cards, {"emotion": ["荒诞"]}, ["c1"])
+    assert "荒诞" in prompt and "c1" in prompt
+    assert "还差 58 条" in prompt
+    assert "EMOTION_PACK" in prompt
+
+
+def test_run_fingerprint_changes_with_the_model():
+    class _Client:
+        model_id = "qwen3-vl:30b"
+
+    cards = [{"id": "c1", "content": "x"}]
+    first = holdout_fill.run_fingerprint(cards, _Client(), "v1")
+
+    class _Other:
+        model_id = "qwen3-vl:8b"
+
+    assert holdout_fill.run_fingerprint(cards, _Other(), "v1") != first
+    assert holdout_fill.run_fingerprint(cards, _Client(), "v2") != first
+    assert holdout_fill.run_fingerprint(cards, _Client(), "v1") == first
+
+
+def test_fill_writes_covered_card_set_and_reports_gaps(tmp_path, monkeypatch):
+    """收尾产物：`.cards.json` 只列**真的产出过条目**的卡（门⑥ 双向相等）。"""
+    out = tmp_path / "holdout.jsonl"
+    vocab_path = tmp_path / "vocab.json"
+    vocab_path.write_text(json.dumps({"holdout_vocab": {"emotion": ["荒诞"]}}),
+                          encoding="utf-8")
+    cards = [{"id": "c1", "domain": "anime", "title": "t", "content": "x"},
+             {"id": "c2", "domain": "anime", "title": "t", "content": "y"}]
+    scripted = tmp_path / "scripted.json"
+    scripted.write_text(json.dumps({"responses": {"c1": {"entries": [
+        _entry("c1", "情绪=荒诞", ["EMOTION_PACK:emotion=荒诞,intensity=high"])]}}}),
+        encoding="utf-8")
+    cards_path = tmp_path / "cards.jsonl"
+    cards_path.write_text("\n".join(json.dumps(c, ensure_ascii=False) for c in cards),
+                          encoding="utf-8")
+    code = holdout_fill.main([
+        "--provider", "scripted", "--model", "fake", "--scripted", str(scripted),
+        "--cards", str(cards_path), "--batch", "2", "--rounds", "0",
+        "--vocab", str(vocab_path),
+        "--out", str(out),
+        "--progress", str(tmp_path / "progress.json"),
+        "--partial", str(tmp_path / "partial.jsonl"),
+        "--report", str(tmp_path / "report.json"),
+    ])
+    assert code == 1, "远不到 1200 条时必须以非零退出，不得假装完成"
+    assert json.loads(out.with_suffix(".cards.json").read_text(encoding="utf-8")) == ["c1"]
+    report = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
+    assert report["entries"] == 1 and report["cards_covered"] == 1
+    assert report["gaps"]["entries"] == 1

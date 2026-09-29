@@ -3,12 +3,26 @@
 支持三种后端：
 
 * `deepseek` —— OpenAI 兼容端点（`/chat/completions`，`response_format=json_object`）；
-* `ollama`   —— 本地 `qwen3-vl:30b`（`/api/chat`，`format=json`）；
+* `ollama`   —— 本地 `qwen3-vl:30b`，**只走 OpenAI 兼容端点 `/v1/chat/completions`**；
 * `scripted` —— 离线：从 JSON 文件里按 chunk_id 取预置回答，**测试专用**，
   跑测试时不碰网络。
 
 抽取与标注必须**换族**（§2.3c 第 1 条）：抽取用 deepseek、标注用 qwen，
 两边都记 `{model_id, model_version, family}`。
+
+**端点与上下文（执行文档 v1.4 §6 的"端点陷阱"，本机实测，证据见 `work/probe_*.py`）**：
+
+* `qwen3-vl:30b` 是**思考模型**：它先写 thinking 再写正文。答案要 >1000 completion
+  tokens 才出得来。
+* Ollama 的 OpenAI 兼容端点 `/v1/chat/completions` **不认 `num_ctx`**，用模型**上次
+  加载时**的上下文（默认 4096）。于是 prompt ＋ thinking 直接撑爆 4096 →
+  `finish_reason=length`、`content` 为空。
+* 原生 `/api/chat` 的 `options.num_ctx` 才真正设置上下文；`think:false` 在本机被忽略
+  （模型照样思考），但**只要上下文够大**，它思考完就会写出正文（实测 ctx=8192 时
+  42 s／次拿到内容；ctx=4096 时恒空）。
+
+所以本地客户端走 `/api/chat` ＋ 显式 `options.num_ctx`，并把「`content` 为空」判成
+**调用失败**（可重试）——绝不把空串喂给 `json.loads`，也绝不把空结果写成空边/空标注。
 """
 
 from __future__ import annotations
@@ -16,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import re
 import time
 import urllib.error
 import urllib.request
@@ -33,6 +48,33 @@ FAMILIES = {
 
 class LLMError(RuntimeError):
     pass
+
+
+_FENCE_RE = re.compile(r"^\s*```(?:json)?\s*(?P<body>.*?)\s*```\s*$", re.DOTALL)
+
+
+def parse_json_content(content: str) -> Dict:
+    """把模型返回的正文解析成 JSON 对象；空正文**立即判失败**。
+
+    空串（或只有空白／只有代码围栏）是"端点陷阱"的典型症状，必须当成调用失败
+    抛出，交给调用方的重试逻辑——而不是让 `json.loads("")` 抛一个语焉不详的
+    `JSONDecodeError`，更不是"返回 {} 当作成功"。
+    """
+    text = (content or "").strip()
+    if not text:
+        raise LLMError("模型返回的空正文（endpoint trap：内容可能全在 thinking 字段里）")
+    fenced = _FENCE_RE.match(text)
+    if fenced:
+        text = fenced.group("body").strip()
+        if not text:
+            raise LLMError("模型返回的代码围栏内为空")
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise LLMError(f"模型返回的不是合法 JSON：{exc.msg}（前 120 字：{text[:120]!r}）") from exc
+    if not isinstance(payload, dict):
+        raise LLMError(f"模型返回的 JSON 顶层不是对象：{type(payload).__name__}")
+    return payload
 
 
 def _post_json(url: str, payload: Dict, headers: Dict[str, str], timeout: float) -> Dict:
@@ -77,6 +119,7 @@ class DeepSeekClient:
         if not self.api_key:
             raise LLMError("缺少 DEEPSEEK_API_KEY")
         self._seen_model = ""
+        self.last_usage: Dict[str, int] = {}
 
     def chat_json(self, system: str, user: str, temperature: float, seed: int,
                   num_ctx: int, key: str = "", retries: int = 3) -> Dict:
@@ -97,8 +140,16 @@ class DeepSeekClient:
                                     "Authorization": f"Bearer {self.api_key}"}, 180.0)
                 self._seen_model = str(reply.get("model") or self.model_id)
                 self.model_version = self._seen_model
-                content = reply["choices"][0]["message"]["content"]
-                return json.loads(content)
+                usage = reply.get("usage") or {}
+                self.last_usage = {
+                    "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+                    "completion_tokens": int(usage.get("completion_tokens") or 0),
+                }
+                choices = reply.get("choices") or []
+                if not choices:
+                    raise LLMError("上游没有返回 choices")
+                message = choices[0].get("message") or {}
+                return parse_json_content(message.get("content") or "")
             except Exception as exc:  # noqa: BLE001
                 last = exc
                 time.sleep(1.5 * (attempt + 1))
@@ -106,32 +157,52 @@ class DeepSeekClient:
 
 
 class OllamaClient:
+    """本地标注器。走 `/api/chat` ＋ 显式 `num_ctx`（见模块 docstring 的实测结论）。"""
+
     family = "qwen"
 
-    def __init__(self, model_id: str = "qwen3-vl:30b"):
+    def __init__(self, model_id: str = "qwen3-vl:30b", num_ctx: int = 8192,
+                 num_predict: int = 6144):
         self.model_id = model_id
         self.model_version = model_id
+        #: 上下文必须**显式**给：OpenAI 兼容端点的默认 4096 会把思考模型截在半路。
+        self.num_ctx = int(num_ctx)
+        self.num_predict = int(num_predict)
+        self.last_usage: Dict[str, int] = {}
 
     def chat_json(self, system: str, user: str, temperature: float, seed: int,
                   num_ctx: int, key: str = "", retries: int = 2) -> Dict:
-        # 本地 30B 的"思考"会吃掉大量上下文（§21.10 的实测），这里显式关掉。
         payload = {
             "model": self.model_id,
             "stream": False,
-            "format": "json",
-            "think": False,
-            "options": {"temperature": temperature, "seed": seed, "num_ctx": num_ctx},
             "messages": [{"role": "system", "content": system},
                          {"role": "user", "content": user}],
+            "options": {
+                # 调用点传进来的 num_ctx 优先（它可以按任务调大），否则用构造时的值。
+                "num_ctx": max(int(num_ctx or 0), self.num_ctx),
+                "num_predict": self.num_predict,
+                "temperature": temperature,
+                "seed": seed,
+            },
         }
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:
                 reply = _post_json(f"{OLLAMA_BASE}/api/chat", payload,
                                    {"Content-Type": "application/json"}, 1800.0)
-                content = reply["message"]["content"]
+                message = reply.get("message") or {}
+                self.last_usage = {
+                    "prompt_tokens": int(reply.get("prompt_eval_count") or 0),
+                    "completion_tokens": int(reply.get("eval_count") or 0),
+                }
                 self.model_version = str(reply.get("model") or self.model_id)
-                return json.loads(content)
+                # 空 content 在这里就会抛 LLMError，被下面的 except 接住并重试。
+                content = message.get("content") or ""
+                if not content.strip() and (message.get("thinking") or ""):
+                    raise LLMError(
+                        "本地模型只产出 thinking 而没有正文（num_ctx 不足："
+                        f"{payload['options']['num_ctx']}）")
+                return parse_json_content(content)
             except Exception as exc:  # noqa: BLE001
                 last = exc
                 time.sleep(2.0 * (attempt + 1))
