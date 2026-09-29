@@ -38,6 +38,19 @@ def test_no_subject_scores_zero():
     assert report.suggestions
 
 
+def test_subject_entirely_out_of_frame_cannot_score_well():
+    """v1.4 P16 / RK-10：主体完全出画时，其余五项会**真空成立**。
+
+    实测把角色挪到 30 米外（完全出画），头部留白/遮挡/重心全都"看起来
+    没问题"，总分还能有 60——除非给一条硬闸。RK-10 的反向突变依赖它。
+    """
+    outside = good_box(name="小明", left=1.40, right=1.60, top=1.50,
+                       bottom=0.90)
+    report = evaluate_composition([outside])
+    assert outside.inside_ratio() <= 0.05
+    assert report.score <= 20.0, report.to_dict()
+
+
 def test_too_much_headroom_is_penalised():
     report = evaluate_composition([good_box(top=0.60)])
     assert report.items["headroom"].score < 1.0

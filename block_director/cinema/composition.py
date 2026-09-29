@@ -225,6 +225,12 @@ def evaluate_composition(boxes: Iterable[SubjectBox],
     }
     total_weight = sum(item.weight for item in items.values()) or 1.0
     score = sum(item.score * item.weight for item in items.values()) / total_weight * 100.0
+    # v1.4 P16 / RK-10：主体**几乎不在画里**时，其余五项再"干净"也没有意义
+    # ——头部留白、遮挡、重心这些判据在"画框里根本没有主体"时都会**真空成立**，
+    # 于是把角色挪到 30 米外，构图分还能有 60。这条硬闸把这种情况压到 20 分
+    # 以下，让"做坏镜 → 掉 ≥20 分"真的成立（也让阈值不被写死成 -1e9 蒙过）。
+    if primary.inside_ratio() <= 0.05:
+        score = min(score, 20.0)
     suggestions = [item.suggestion for item in items.values() if item.suggestion]
     return CompositionReport(score=round(score, 1), items=items,
                              suggestions=suggestions)

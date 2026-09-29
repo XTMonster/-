@@ -1,38 +1,30 @@
-feat(P15): fill in the delivery schema and let the system stagger clashing actions
+feat(P16): make the composition gate and the assertion hygiene provable
 
-W7 (SS5 P15).
+W10 (SS5 P16), first slice.
 
-- delivery/manifest.py gains the whole SS3.3 schema. Per shot: declared{}
-  (shot_number / camera_number / technique / transition / location / time /
-  lighting / sfx / declared_duration_s, all nullable and null when the script
-  declared nothing), labels{} (text / anchor_z / offset_px / offset_reason,
-  built from the bake summary) and movements[] (kind / start / end / source
-  restricted to R46's declared|planned|theory|experience|lesson|case). Across
-  shots: crowd{}, timing_overrides[], action_conflicts[], dialogue_pins[]
-  (collected from the plan) and audit_pass_rate{} (exempt_shots pinned to []).
-- motion/model.py gains stagger_conflicts(): same-layer overlaps are shifted
-  apart deterministically (the later action moves past the earlier one plus the
-  blend window) and every shift is recorded; semantic taboo pairs from SS9.7 are
-  deliberately *not* staggered, because "walk while falling over" is not a
-  timing problem and must still be reported by check_conflicts.
-- motion_library.apply_motions runs the stagger before validating and returns
-  the events on BakeResult; shot_builder carries them into the build summary
-  with the owning shot_id resolved from the schedule; export_project forwards
-  them, plus the driver's timing_overrides and audit_pass_rate, into the
-  manifest.
-- driver: timing_overrides are produced when a shot's planned duration differs
-  from the declared one by more than the dialogue tolerance, and
-  audit_pass_rate is computed with RK-10's numerator/denominator (non-empty
-  shots whose type is not ELS/LS; numerator = composition_score >= the
-  auditor's threshold).
-- delivery/prompts.py writes 景别 / 运镜 as their own splittable lines so
-  US-15 can compare field by field against SHOT_TYPE_LABELS and
-  movement_labels, and the sheet still never contains an engine-internal key.
-- New tests: test_manifest_fields (schema, null-when-undeclared, the source
-  vocabulary with a negative case), test_action_conflicts (overlap recomputed
-  independently from the keyframe spans, plus the forbidden-pair negative), and
-  test_prompts_fields (section count, per-field equality, the full internal-key
-  blacklist, and a lost-intent negative).
+- cinema/composition.py: a subject that is (almost) entirely out of frame can no
+  longer score well. Headroom, occlusion and balance all become vacuously
+  satisfied when the frame holds no subject at all, so moving a character 30 m
+  away still scored 60/100. The score is now capped at 20 whenever the primary
+  subject's inside ratio is <= 5%, which is what makes RK-10's reverse mutation
+  (break the framing -> the score must fall by >= 20) actually hold, and what
+  stops a threshold of -1e9 from staying green.
+- New Blender probe tools/blender_tests/test_composition_gate.py (RK-10):
+  * the pass rate is computed with RK-10's own numerator/denominator (non-empty
+    shots whose type is not ELS/LS; numerator = composition_score >=
+    composition_threshold), never from AuditResult.passed;
+  * the threshold is asserted to be the auditor's own 70.0 read independently;
+  * the reverse mutation breaks ceil(0.3 * denominator) + 1 shots (at least
+    two) and requires the rate to fall below 70% and every broken shot to lose
+    at least 20 points. Measured: rate 1.00 -> 0.00 with drops of 50.0 / 62.8 /
+    62.8.
+  Registered in run_tests.ps1 (30 -> 31).
+- New tools/check_assertions.py: a bpy-free static check for tautological
+  assertions (assert True, assert 1 == 1, assert not False). It scans 118
+  files and stays honest about what an empty assertion is: a bare
+  ``assert findings`` is meaningful and is not flagged. tests/test_assertion_
+  hygiene.py runs it over the repo and pins two negative/positive cases.
+- New pure unit case in test_composition.py for the out-of-frame cap.
 
-fixtures/expected_shots_long.json regenerated (the manifest schema changed);
-test_golden green. Blender probes phase6-delivery and delivery-extras green.
+python -m pytest tests/test_composition.py -> 21 passed; the composition-gate,
+phase3-audit and phase4-repair probes are green.
