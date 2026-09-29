@@ -1,25 +1,20 @@
-feat(P12-part1): make body tilt real, and stop the standing root from floating
+feat(P12-part2): give the two label switches their own effective domains
 
-BW-1 / BW-4a / R008 (SS5 P12, first slice).
+X11 (SS5 P12, second slice).
 
-- motion/model.py: body_tilt now goes through an explicit allowed-key table
-  (angle_deg / angle / degrees, axis / toward). Unknown keys raise
-  MotionParamError (E_MOTION_001) instead of silently taking a default -- the
-  old code read only "axis"/"angle_deg" while the only writer
-  (tool_bindings.INTERACTION_PARAMS) passed {"degrees": 12.0}, so take/open/
-  push tilted nothing at all and nobody noticed.
-- tool_bindings.INTERACTION_PARAMS moves to the registered alias in the same
-  change, otherwise those three interactions would go from "silently ignored"
-  to "hard error".
-- _root_drop(stand) now ends on the absolute ground (-drop -> 0) instead of the
-  relative 0 -> +drop, which left a lone stand hovering one drop above the
-  floor.
-- rule_checker R008 is bidirectional: the old check only looked at root.z < -eps
-  and could not see a floating character. It now also reports when the mesh's
-  lowest point is above the ground.
-- test_motion_model: alias parametrisation, the toward->axis derivation, the
-  unknown-key negative case, the stand-lands-on-the-ground case, and a static
-  contract check that INTERACTION_PARAMS only uses registered aliases (that
-  module imports bpy, so the pure layer reads it as source text).
+- character_label.create_label: the stale comment claimed ui.show_labels has no
+  consumers anywhere; it now states the effective domain -- Guides viewport
+  visibility only, while "does the label go into the reference video" is the
+  render path (create_render_label / character.label_render).
+- cast_editor.add_cast_member used create_label's default (visible), so the
+  panel switch had no effect on newly added characters. It now passes
+  ui.show_labels through.
+- New Blender probe tools/blender_tests/test_label_toggles.py pins all four
+  combinations: label_render=True ignores ui.show_labels and puts
+  BD_Label_<id>_Fill/_Stroke in BlockDirector/Labels with hide_render=False;
+  label_render=False puts BD_Char_<name>_Label in Guides with hide_render=True
+  and hide_viewport following ui.show_labels; with_labels=False creates nothing;
+  and a character added through the cast editor honours the toggle.
+  Registered in run_tests.ps1 (28 -> 29).
 
-python -m pytest -> 892 passed; tools/run_tests.ps1 -> 28/28 green.
+python -m pytest -> 892 passed; the new probe is green.

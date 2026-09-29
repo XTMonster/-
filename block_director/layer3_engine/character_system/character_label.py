@@ -103,7 +103,11 @@ def create_label(character, text: str = "", font_path: str = "",
     label["bd_sdl_id"] = character.id
     label = mark_as_guide(label)                      # 进 Guides + hide_render
     if not show_in_viewport:
-        # ui.show_labels 在 v1.2 里没有任何消费者。
+        # v1.4 X11 的**生效域**：``ui.show_labels`` 只管"Guides 视口标签是否
+        # 可见"，**不**管"标签是否进参考视频"——后者由
+        # ``character.label_render`` 走 ``create_render_label`` 那条路负责。
+        # 旧注释写着"没有任何消费者"，其实只有 ``label_render=False`` 的
+        # Guides 路径会读它。
         label.hide_viewport = True
     log.debug("标签已创建：%s（%s）", display, label.name)
     return label

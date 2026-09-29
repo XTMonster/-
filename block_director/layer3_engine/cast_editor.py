@@ -100,7 +100,20 @@ def add_cast_member(name: str, color: str = "#FFFFFF",
     character = create_character(character_id, clean_name, str(color),
                                  location=tuple(float(v) for v in position),
                                  facing=tuple(float(v) for v in facing))
-    create_label(character, clean_name)
+    # v1.4 X11：**生效域** = Guides 视口标签。``create_label`` 走的是
+    # ``mark_as_guide`` + ``hide_render`` 的参考对象路径，所以这里读的正是
+    # ``ui.show_labels``（"标签是否进参考视频"是 ``character.label_render``
+    # 那条渲染路径的事，由 ``create_render_label`` 负责）。
+    # 旧代码用默认值（True）建标签，面板上的"显示标签"开关对新增角色**完全
+    # 无效**——这就是 X11 说的"半接线"。
+    show_in_viewport = True
+    try:
+        from ..settings import get_config
+
+        show_in_viewport = bool(get_config().ui.show_labels)
+    except Exception as exc:  # noqa: BLE001 - 读不到配置就用默认值
+        log.debug("读取 ui.show_labels 失败，按 True 处理：%s", exc)
+    create_label(character, clean_name, show_in_viewport=show_in_viewport)
     context.characters[character_id] = character
     spec.cast.append(CastMember(id=character_id, name=clean_name,
                                 color=str(color),
