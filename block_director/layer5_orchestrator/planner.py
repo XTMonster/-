@@ -101,14 +101,18 @@ def build_plan_payload(script: str, config=None,
     ``{knowledge}``；预取结果按 §18.5 的 2000 token 上限裁剪。
     """
     temperature = 0.7
+    timing_source = "script_first"
     if config is not None:
         temperature = float(config.llm.temperature_plan)
+        timing_source = str(getattr(config.dialogue, "timing_source",
+                                    "script_first"))
     if parsed is not None and getattr(parsed, "scenes", None):
         body = (f"{parsed.digest(max_scenes=20)}\n\n"
-                f"{render_timing_table(parsed)}\n\n"
+                f"{render_timing_table(parsed, timing_source=timing_source)}\n\n"
                 f"注意：每个镜头的时长必须装得下它内部的全部对白，并在末尾留出"
                 f"{DIALOGUE_TAIL_FRAMES} 帧收尾余量（规则 R011）；"
-                f"对白细节留给下一阶段，计划里只标 dialogue_ids。")
+                f"对白细节留给下一阶段，计划里只标 dialogue_ids。"
+                f"标注为「剧本声明」的时长是**硬约束**，不得自行改短。")
     else:
         body = script or "（空剧本）"
     knowledge = NO_KNOWLEDGE

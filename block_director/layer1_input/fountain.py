@@ -20,6 +20,7 @@ import re
 from typing import List, Optional, Tuple
 
 from .model import ParsedAction, ParsedDialogue, ParsedScene, ParsedScript
+from .timing import extract_declared_seconds
 
 SCENE_HEADING_RE = re.compile(
     r"^\s*(INT\.?/EXT\.?|EXT\.?/INT\.?|I/E|INT\.?|EXT\.?|EST\.?)\s+(.*)$",
@@ -178,10 +179,16 @@ def parse_fountain(text: str, *, title: str = "") -> ParsedScript:
             if (current.dialogues and current.dialogues[-1].character == name
                     and not current.dialogues[-1].text
                     and current.dialogues[-1].parenthetical):
-                current.dialogues[-1].text = stripped
+                text, declared = extract_declared_seconds(stripped)
+                current.dialogues[-1].text = text
+                current.dialogues[-1].declared_seconds = declared
                 continue
+            # 末端的"（约3秒）"是剧本声明的时长，必须抽出来单独记，
+            # 不能留在台词文本里（§4.4 的优先级链以它为准）。
+            text, declared = extract_declared_seconds(stripped)
             current.dialogues.append(ParsedDialogue(
-                character=name, text=stripped, source_index=source_index))
+                character=name, text=text, source_index=source_index,
+                declared_seconds=declared))
             continue
 
         if _looks_like_cue(stripped, following):

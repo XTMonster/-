@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from typing import Dict, Iterable, List, Optional, Tuple
 
+from .timing import dialogue_timing
+
 FPS = 24
 CHINESE_CPS = 3.0            # 中文 3 字/秒（180 字/分钟，偏慢的叙事语速）
 ENGLISH_WPS = 2.5            # 英文 2.5 词/秒
@@ -102,7 +104,18 @@ def estimate_dialogue_frames(text: str, emotion: str = "normal", *,
                              fps: int = FPS, chinese_cps: float = CHINESE_CPS,
                              english_wps: float = ENGLISH_WPS,
                              speech_rate: Optional[Dict[str, float]] = None,
-                             minimum: int = 8) -> int:
+                             minimum: int = 8,
+                             declared_seconds: Optional[float] = None,
+                             timing_source: str = "script_first") -> int:
+    """这句话要多少帧。
+
+    v1.3：**剧本声明优先**。台词末尾写了"（约3秒）"时直接采信，
+    只有剧本没声明才回退到语速估算（§4.4）。``timing_source="engine"``
+    可以显式关掉这条优先级。
+    """
+    declared = dialogue_timing(declared_seconds, source=timing_source)
+    if declared is not None:
+        return declared
     seconds = estimate_dialogue_seconds(
         text, emotion, chinese_cps=chinese_cps, english_wps=english_wps,
         speech_rate=speech_rate)
@@ -113,7 +126,8 @@ def schedule_dialogues(dialogues: Iterable, start_frame: int = 1, *,
                        fps: int = FPS, gap_seconds: float = DIALOGUE_GAP,
                        chinese_cps: float = CHINESE_CPS,
                        english_wps: float = ENGLISH_WPS,
-                       speech_rate: Optional[Dict[str, float]] = None
+                       speech_rate: Optional[Dict[str, float]] = None,
+                       timing_source: str = "script_first",
                        ) -> List[Tuple[int, int]]:
     """把一场对白依次排到时间轴上，返回每句的 ``(start, end)``。
 
@@ -134,7 +148,9 @@ def schedule_dialogues(dialogues: Iterable, start_frame: int = 1, *,
         frames = estimate_dialogue_frames(
             getattr(dialogue, "text", ""), emotion, fps=fps,
             chinese_cps=chinese_cps, english_wps=english_wps,
-            speech_rate=speech_rate)
+            speech_rate=speech_rate,
+            declared_seconds=getattr(dialogue, "declared_seconds", None),
+            timing_source=timing_source)
         start, end = cursor, cursor + frames - 1
         try:
             dialogue.start_frame = start
@@ -150,29 +166,49 @@ def render_timing_table(script, *, fps: int = FPS,
                         chinese_cps: float = CHINESE_CPS,
                         english_wps: float = ENGLISH_WPS,
                         speech_rate: Optional[Dict[str, float]] = None,
+                        timing_source: str = "script_first",
                         max_lines: int = 40) -> str:
     """给规划提示用的对白时长表（§4.4）。
 
     模型据此决定每个镜头要给多少帧——这是 R011 能通过的前提。
+
+    v1.3：**逐句标注来源**。剧本写了时长的标"剧本声明"，其余标"引擎估算"，
+    这样模型（和人）一眼能看出哪些数字有剧本依据、哪些是猜的。
     """
     lines = [f"对白时长参考（中文 {chinese_cps:g} 字/秒，{fps}fps）："]
     count = 0
+    declared_count = 0
     for scene in getattr(script, "scenes", []):
         for dialogue in scene.dialogues:
             if count >= max_lines:
                 lines.append(f"（其余对白省略）")
-                return "\n".join(lines)
+                return _finish_timing_table(lines, declared_count)
             emotion = getattr(dialogue, "emotion", "normal") or "normal"
             if emotion == "normal":
                 emotion = detect_emotion(getattr(dialogue, "parenthetical", ""),
                                          dialogue.text)
+            declared_seconds = getattr(dialogue, "declared_seconds", None)
+            declared_frames = dialogue_timing(declared_seconds,
+                                              source=timing_source)
             frames = estimate_dialogue_frames(
                 dialogue.text, emotion, fps=fps, chinese_cps=chinese_cps,
-                english_wps=english_wps, speech_rate=speech_rate)
+                english_wps=english_wps, speech_rate=speech_rate,
+                declared_seconds=declared_seconds,
+                timing_source=timing_source)
+            source_note = "剧本声明" if declared_frames is not None else "引擎估算"
+            if declared_frames is not None:
+                declared_count += 1
             lines.append(f"- {scene.scene_id} {dialogue.character}"
                          f"（{emotion}）：“{dialogue.text}” → 约 {frames} 帧"
-                         f"（{frames / fps:.1f}s）")
+                         f"（{frames / fps:.1f}s，{source_note}）")
             count += 1
     if count == 0:
         lines.append("- （本剧本没有对白）")
+    return _finish_timing_table(lines, declared_count)
+
+
+def _finish_timing_table(lines: List[str], declared_count: int) -> str:
+    if declared_count:
+        lines.append(f"（其中 {declared_count} 句的时长由剧本声明，"
+                     f"其余为引擎估算；镜头时长必须装得下它内部的全部对白）")
     return "\n".join(lines)

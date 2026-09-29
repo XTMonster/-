@@ -15,6 +15,8 @@ class ParsedDialogue:
     start_frame: Optional[int] = None
     end_frame: Optional[int] = None
     emotion: str = "normal"
+    #: 剧本里写明的时长（"（约3秒）"）。v1.3 起它优先于引擎的 3 字/秒估算。
+    declared_seconds: Optional[float] = None
 
     @property
     def duration_frames(self) -> Optional[int]:
@@ -27,7 +29,8 @@ class ParsedDialogue:
                 "parenthetical": self.parenthetical,
                 "source_index": self.source_index,
                 "start_frame": self.start_frame, "end_frame": self.end_frame,
-                "emotion": self.emotion}
+                "emotion": self.emotion,
+                "declared_seconds": self.declared_seconds}
 
 
 @dataclass

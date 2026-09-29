@@ -34,6 +34,8 @@ ESTIMATE_DURATION_PARAMETERS: Dict[str, Any] = {
                     "text": {"type": "string"},
                     "parenthetical": {"type": "string"},
                     "emotion": {"type": "string"},
+                    #: v1.3：剧本写明的时长（秒）。给了就以它为准。
+                    "declared_seconds": {"type": "number", "minimum": 0},
                 },
             },
         },
@@ -55,34 +57,42 @@ ESTIMATE_DURATION_PARAMETERS: Dict[str, Any] = {
 }
 
 ESTIMATE_DURATION_DESCRIPTION = (
-    "按 §4.4 的语速公式估算这个镜头需要多少帧（含收尾余量）；"
+    "按 §4.4 的语速公式估算这个镜头需要多少帧（含收尾余量）。"
+    "剧本若写明了某句的时长，放进 dialogues[].declared_seconds，"
+    "该句就会以剧本声明为准而不是按语速推算。"
     "不确定时长时先问它，别凭感觉写。")
 
 
 class _DialogueLike:
     """把工具入参包装成 §4.4 需要的对象形状。"""
 
-    __slots__ = ("text", "parenthetical", "emotion", "start_frame", "end_frame")
+    __slots__ = ("text", "parenthetical", "emotion", "start_frame",
+                 "end_frame", "declared_seconds")
 
     def __init__(self, text: str = "", parenthetical: str = "",
-                 emotion: str = "") -> None:
+                 emotion: str = "",
+                 declared_seconds: Optional[float] = None) -> None:
         self.text = text
         self.parenthetical = parenthetical
         self.emotion = emotion or "normal"
         self.start_frame = 0
         self.end_frame = 0
+        self.declared_seconds = declared_seconds
 
 
 def estimate_shot_duration(dialogues: Sequence[Dict[str, Any]] = (),
                            actions: Sequence[Dict[str, Any]] = (),
-                           fps: int = FPS) -> Dict[str, Any]:
+                           fps: int = FPS,
+                           timing_source: str = "script_first") -> Dict[str, Any]:
     """返回建议时长与推导依据。"""
     items = [_DialogueLike(str(item.get("text", "")),
                            str(item.get("parenthetical", "")),
-                           str(item.get("emotion", "")))
+                           str(item.get("emotion", "")),
+                           item.get("declared_seconds"))
              for item in (dialogues or ())]
     spans: List[Tuple[int, int]] = schedule_dialogues(items, start_frame=1,
-                                                      fps=int(fps))
+                                                      fps=int(fps),
+                                                      timing_source=timing_source)
     dialogue_end = max((end for _start, end in spans), default=0)
     with_tail = dialogue_end + DIALOGUE_TAIL_FRAMES if dialogue_end else 0
 
@@ -118,9 +128,14 @@ def register_timing_tools(registry, fps: Optional[int] = None):
     """把 ``estimate_shot_duration`` 注册进工具表（重复调用安全）。"""
 
     def handler(**kwargs) -> str:
+        try:
+            from ..settings import get_config
+            source = str(get_config().dialogue.timing_source)
+        except Exception:  # noqa: BLE001 - 配置读不到时用默认值
+            source = "script_first"
         return render_estimate(estimate_shot_duration(
             kwargs.get("dialogues") or (), kwargs.get("actions") or (),
-            int(kwargs.get("fps") or fps or FPS)))
+            int(kwargs.get("fps") or fps or FPS), timing_source=source))
 
     registry.add(name=ESTIMATE_DURATION,
                  description=ESTIMATE_DURATION_DESCRIPTION,

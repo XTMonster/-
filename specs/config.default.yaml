@@ -54,6 +54,8 @@ animation:
 dialogue:
   chinese_cps: 3.0
   english_wps: 2.5
+  timing_source: script_first
+  declared_tolerance_s: 0.2
   speech_rate:
     normal: 1.0
     angry: 1.15

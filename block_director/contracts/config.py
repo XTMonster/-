@@ -141,6 +141,11 @@ class DialogueConfig:
 
     chinese_cps: float = 3.0
     english_wps: float = 2.5
+    #: v1.3：剧本声明优先。剧本写明了时长就用它，只有没声明才回退到语速估算。
+    #: 取值 ``script_first`` / ``engine``。
+    timing_source: str = "script_first"
+    #: 声明值与引擎下限之间的容差（秒）：用于 R015 的"声明自洽"判定。
+    declared_tolerance_s: float = 0.2
     speech_rate: Dict[str, float] = field(default_factory=lambda: {
         "normal": 1.00, "angry": 1.15, "excited": 1.15,
         "urgent": 1.20, "sad": 0.80, "thinking": 0.85, "whisper": 0.90,
@@ -275,6 +280,13 @@ class AppConfig:
             # 用户却看不到任何提示。宁可启动前就报错。
             err("CFG_204", "character.eye_color",
                 f"眼睛颜色必须是 #RRGGBB（当前 {self.character.eye_color!r}）")
+        if str(self.dialogue.timing_source) not in ("script_first", "engine"):
+            err("CFG_205", "dialogue.timing_source",
+                f"只能是 script_first 或 engine"
+                f"（当前 {self.dialogue.timing_source!r}）")
+        if self.dialogue.declared_tolerance_s < 0:
+            err("CFG_206", "dialogue.declared_tolerance_s",
+                "容差不能为负（单位：秒）")
         return issues
 
     def errors(self) -> List[Issue]:
