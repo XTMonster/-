@@ -49,8 +49,9 @@ Phases 0-4 and 6 are done:
   `project.bdproj`, load it back (migrate -> deserialise -> validate), and
   rebuild the scene from it without any LLM call. Character fields serialise
   as `initial_location` / `initial_facing` to match the spec.
-- **Light RAG** (`block_director/knowledge/`, no `bpy`): a 37-card corpus
-  across the five spec domains, a built-in Okapi BM25 (same algorithm and
+- **Light RAG** (`block_director/knowledge/`, no `bpy`): a hand-written card
+  corpus in `knowledge/corpus.py` (132 cards across the five v1.3 domains;
+  P14 expands it to nine domains), a built-in Okapi BM25 (same algorithm and
   parameters as `rank_bm25`, which Blender's Python does not ship) with a
   `rank_bm25` preference when present, and a retriever with bm25 / vector (RRF)
   / digest modes plus the 800- and 2000-token injection caps. Exposed to the
@@ -128,7 +129,7 @@ Phases 0-4 and 6 are done:
   and runs `config.errors()` before starting, so a bad combination (depth with
   workbench) is reported instead of run.
   `config.budget` used to be dead: the driver now builds its budget limits from
-  it, and `max_llm_calls_per_scene_formula` (`"shots * 6"`) is applied once the
+  it, and `max_llm_calls_per_scene_formula` (`"shots * 8 + 40"`) is applied once the
   plan is known - taking the stricter of the formula and the static ceiling, so
   the Phase 4 "<= 8 calls" target cannot be silently exceeded.
 - **LLM trace** (`layer6_audit/audit_logger.py`): records the full prompt and
@@ -211,15 +212,38 @@ Phases 0-4 and 6 are done:
   holds for real-model runs too, not just the offline path. The chain's step 4
   now runs with `--export` and asserts the export marker.
 
-Phases 0-4 and 6 are done; Phase 5 is nearly done (all eleven rules R001-R011,
-loop detection, budget limits, checkpoint/rollback, the human gate and Level 2
-self-review; only a dedicated debug panel is pending). Layer 1 (script parsing,
-dialogue timing and coreference) is done.
+Phases 0-4 and 6 are done; Phase 5 is done (all eleven rules R001-R011, loop
+detection, budget limits, checkpoint/rollback, the human gate, Level 2
+self-review and the 13.3 debug panel). Layer 1 (script parsing, dialogue timing
+and coreference) is done.
+
+### v1.4 (`改进执行文档v1.4.md`) — P9.4 … P16
+
+| 阶段 | 落地要点 |
+|---|---|
+| **P9.4** | 契约删死字段 `screen_direction`、加 `declared_shot_number`/`dialogue_pins`；配置删 5 个零消费者的几何字段、加 `budget.max_llm_calls_ceiling`(200)/`orchestration.max_shots`(0=不限)/`rag.plan_prefetch_tokens`/`rag.cases_backend`/`framing.headroom_policy`，公式改 `"shots * 8 + 40"`、墙钟 120 分钟、`full_concat=True`；SDL 升 1.4 并把 `with_labels` 真正落盘/读回/迁移；SDL 校验器坏数据只报 finding；R014 空镜分支删除（X6）、`CODE_SCRIPT` 字面量删除（F5）；R012 收窄 + 新增 R019（X9/X10）；预算单值化（X14，见 ADR-0008）；`shot_audit` 增 `composition_score/threshold`、`repair_applied` 一镜一条；离线通路按声明镜数出计划 |
+| **P9.5** | `build_run_context` 抽成可测函数并注入 builder/auditor/parsed_script/limits；收尾就地导出并写 `export_started`；`SUFFIX_HELP` 与 `SUFFIX_FORMATS` 同源 |
+| **P10** | 冻结几何 1.70 与"头球相切"（ADR-0007），所有消费者从 `cinema/anchor.py` 派生 |
+| **P11** | 行内台词（D-1）、中文数字与分句否定（D-2）、括注别名（D-3）、SemanticContract（ADR-0010）、R015 的镜号/身份错位 |
+| **P12** | `body_tilt` 允许键表（BW-1）、`stand` 末帧绝对落地 + R008 双向（BW-4a）、行走起伏非负（RK-6）、标签互斥避让与描边几何（ADR-0011）、运镜确定性 RK-17、群众/特效可见性按差分掩膜重写 RK-16 |
+| **P13** | 长剧本不被截断（提示侧无"其余 N 个镜号略"；显式上限超限报 `E_SCRIPT_002`）、连续成片默认产出 |
+| **P15** | `shots.json` 补齐 §3.3 全字段；同层动作自动错开并留痕（US-17）；`prompts.md` 逐字段可对拍且不含引擎内部键 |
+| **P16** | 构图门 ≥70% + 反向突变（ADR-0012）；无 bpy 的空断言静态检查 `tools/check_assertions.py`；探针清单双向断言与 `docs/evidence/<run-id>/{rks.json,config.fingerprint.json}` 收尾钩子；`CONTEXT.md` + `docs/adr/0007…0012` |
+
+安全审计（并行角色）另修了两条：`shot_id` 不再能越过导出目录
+（`contracts/plan.py::validate_shot_id` + SDL 的 S11），GUI 的"清空场景后构建"
+改成显式开关且清空前先拍检查点。
 
 `depth` and `full_concat` are declared in the config but produce a warning
 instead of silently doing nothing.
 
-`tools/run_tests.ps1` runs all twenty-five checks: spec + golden drift, pytest, in-Blender
+`tools/run_tests.ps1` drives a hard-coded manifest of Blender probes plus four
+non-probe steps (spec + golden drift, pytest, the in-Blender contract smoke
+test, and one headless end-to-end run). The probe list lives in `$checks` and
+the script asserts it **in both directions** (every listed file exists; every
+`tools/blender_tests/test_*.py` on disk is listed); `$total` derives from
+`$checks.Count` so the `[n/N]` counter follows automatically. The current
+checks are: spec + golden drift, pytest, in-Blender
 contract smoke test, a headless run of the full chain (plan -> scene), the
 Phase 1 scene build, Phase 2 motion baking, the Phase 3 framing solver, the
 Phase 3 axis / composition audit, the Phase 4 plan-to-scene build, the Phase 4
@@ -231,9 +255,12 @@ round trip, and the shot list / debug panel checks.
 It also covers the viewport overlay and the path-drawing tool, and the depth
 sequence plus full concatenation.
 Plus the extended tool layer, cast management, the LLM trace contents, the
-declarative camera movements (`test_camera_motion.py`, with the RK-3 smoothness
-probe), and the crowd / VFX / prop-shape checks (`test_crowd_vfx.py`, with the
-RK-2 visibility probe).
+declarative camera movements (`test_camera_motion.py`, with the smoothness probe
+and RK-17 determinism), the crowd / VFX / prop-shape checks
+(`test_crowd_vfx.py`, with RK-16), and the v1.4 probes:
+`test_operator_end_to_end.py` (RK-9), `test_character_geometry.py`
+(RK-4/14/15), `test_scene_contract.py` (RK-3), `test_label_toggles.py` (X11),
+`test_label_layout.py` (RK-1/2/5) and `test_composition_gate.py` (RK-10).
 
 The end-to-end commands are:
 
