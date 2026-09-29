@@ -109,6 +109,39 @@ def test_run_fingerprint_changes_with_the_model():
     assert holdout_fill.run_fingerprint(cards, _Client(), "v1") == first
 
 
+def test_run_fingerprint_covers_the_prompt_text_and_the_decode_prefill(monkeypatch):
+    """**改 prompt 正文必须让续跑指纹变**——只哈希版本号会把两套 prompt 混进一个文件。
+
+    原先的指纹只拼 `cards + model_id + PROMPT_VERSION`：编辑 `SYSTEM_PROMPT` 却忘了改
+    版本号时，`load_partial()` 会认为"还是同一次运行"，把旧的半成品与新 prompt 的
+    条目拼在同一个 `knowledge_holdout.jsonl` 里（每条 `prompt_sha256` 不同，文件看不出来）。
+    """
+    class _Client:
+        model_id = "qwen3-vl:30b"
+        model_version = "bd-annotator:8k"
+        prefill = ""
+
+    cards = [{"id": "c1", "content": "x"}]
+    baseline = holdout_fill.run_fingerprint(cards, _Client(), "v1")
+
+    # 1) 版本号不变，只改 prompt 正文 → 指纹必须变
+    monkeypatch.setattr(holdout_fill.holdout_gen, "SYSTEM_PROMPT",
+                        holdout_fill.holdout_gen.SYSTEM_PROMPT + "\n新增一行约束")
+    assert holdout_fill.run_fingerprint(cards, _Client(), "v1") != baseline
+
+    # 2) 打开 assistant 预填（改变解码条件）→ 指纹也必须变
+    class _Prefilled(_Client):
+        prefill = '{"entries": ['
+
+    assert holdout_fill.run_fingerprint(cards, _Prefilled(), "v1") != baseline
+
+    # 3) 模型版本变了（同一个 model_id 下换了变体）→ 指纹也要变
+    class _OtherVersion(_Client):
+        model_version = "qwen3-vl:30b"
+
+    assert holdout_fill.run_fingerprint(cards, _OtherVersion(), "v1") != baseline
+
+
 def test_fill_writes_covered_card_set_and_reports_gaps(tmp_path, monkeypatch):
     """收尾产物：`.cards.json` 只列**真的产出过条目**的卡（门⑥ 双向相等）。"""
     out = tmp_path / "holdout.jsonl"

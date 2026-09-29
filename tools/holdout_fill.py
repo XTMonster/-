@@ -84,8 +84,22 @@ GAP_PROMPT = (
 
 
 def run_fingerprint(cards: Sequence[Dict], client, prompt_version: str) -> str:
-    payload = "|".join([holdout_gen.cards_fingerprint(cards), str(client.model_id),
-                        str(prompt_version)])
+    """运行指纹：语料 ＋ 模型（id/版本）＋ **prompt 正文的 sha256** ＋ 版本号 ＋ 解码（预填）。
+
+    只哈希 `PROMPT_VERSION` 这个**字符串**是不够的（原先就是这样）：改了
+    `holdout_gen.SYSTEM_PROMPT` 而忘了改版本号时，续跑判定"还是同一次运行"，
+    于是两套 prompt 产出的条目会被混进同一个 `knowledge_holdout.jsonl`——每条的
+    `annotator.prompt_sha256` 不同，文件本身却看不出来。assistant 预填同理
+    （它改变解码条件），也必须进指纹。
+    """
+    payload = "|".join([
+        holdout_gen.cards_fingerprint(cards),
+        str(client.model_id),
+        str(getattr(client, "model_version", "")),
+        str(prompt_version),
+        hashlib.sha256(holdout_gen.SYSTEM_PROMPT.encode("utf-8")).hexdigest(),
+        str(getattr(client, "prefill", "")),
+    ])
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 

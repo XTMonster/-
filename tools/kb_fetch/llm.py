@@ -39,6 +39,17 @@ from typing import Dict, Optional
 DEEPSEEK_BASE = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 OLLAMA_BASE = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
 
+#: 本地思考模型的**思考税**实测（v1.4 §6 那条风险）没法用官方开关关掉：
+#: `/no_think`（写进 user 或 system）、`think: false`、精简词表都试过，`num_predict`
+#: 2048 时一律 `content_len=0 / thinking_len≈3400 / done_reason=length`；把预算加到
+#: 6144 也一样（thinking 16000 字符、content 仍为空）。
+#:
+#: 但给 `/api/chat` 补一个 **assistant 预填**（JSON 的开头）就能直接绕开：
+#: 实测同模型同 prompt → `4.7s / eval_count=355 / content_len=962 / thinking_len=0 /
+#: done_reason=stop`。因此这里留一个**默认关闭**的开关：只有显式设了
+#: `OLLAMA_ASSISTANT_PREFILL` 才追加这个 assistant 回合，既有调用行为不变。
+OLLAMA_PREFILL = os.environ.get("OLLAMA_ASSISTANT_PREFILL", "")
+
 FAMILIES = {
     "deepseek": "deepseek",
     "ollama": "qwen",
@@ -162,12 +173,14 @@ class OllamaClient:
     family = "qwen"
 
     def __init__(self, model_id: str = "qwen3-vl:30b", num_ctx: int = 8192,
-                 num_predict: int = 6144):
+                 num_predict: int = 6144, prefill: str = ""):
         self.model_id = model_id
         self.model_version = model_id
         #: 上下文必须**显式**给：OpenAI 兼容端点的默认 4096 会把思考模型截在半路。
         self.num_ctx = int(num_ctx)
         self.num_predict = int(num_predict)
+        #: assistant 预填（默认取 `OLLAMA_ASSISTANT_PREFILL`）；空串＝不预填。
+        self.prefill = str(prefill if prefill is not None else "") or OLLAMA_PREFILL
         self.last_usage: Dict[str, int] = {}
 
     def chat_json(self, system: str, user: str, temperature: float, seed: int,
@@ -185,6 +198,9 @@ class OllamaClient:
                 "seed": seed,
             },
         }
+        if self.prefill:
+            # 预填助手回合＝把答案的开头替模型写好，思考税直接归零（见模块顶部实测）。
+            payload["messages"].append({"role": "assistant", "content": self.prefill})
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:
@@ -202,6 +218,14 @@ class OllamaClient:
                     raise LLMError(
                         "本地模型只产出 thinking 而没有正文（num_ctx 不足："
                         f"{payload['options']['num_ctx']}）")
+                if self.prefill:
+                    # 预填**不会**被回显：Ollama 只回新生成的续写（实测 head 是
+                    # `\n  {\n "from_card": …`，tail 是 `]}`）。所以先按原文解析，
+                    # 失败就把预填贴回去再解析——两次都失败才算这次调用失败。
+                    try:
+                        return parse_json_content(content)
+                    except LLMError:
+                        return parse_json_content(self.prefill + content)
                 return parse_json_content(content)
             except Exception as exc:  # noqa: BLE001
                 last = exc
