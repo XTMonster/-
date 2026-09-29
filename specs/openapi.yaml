@@ -287,6 +287,10 @@ components:
           type: [string, "null"]
           description: 限定知识域；null 表示全库检索
         top_k: { type: integer, minimum: 1 }
+        cases_top_k:
+          type: integer
+          minimum: 1
+          description: L3 参考案例条数（v1.4 §2.3b，默认 3，取 2–5）
 
     RetrieveResponse:
       type: object

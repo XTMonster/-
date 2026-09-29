@@ -123,9 +123,20 @@ class SidecarTransport:
 
     def retrieve(self, query: str, domain: Optional[str] = None,
                  top_k: int = 5, timeout: float = 30.0) -> List[Card]:
-        request = RetrieveRequest(query=query, domain=domain, top_k=top_k)
+        return self.retrieve_response(query, domain, top_k, timeout).cards
+
+    def retrieve_response(self, query: str, domain: Optional[str] = None,
+                          top_k: int = 5, timeout: float = 30.0,
+                          cases_top_k: int = 3) -> RetrieveResponse:
+        """v1.4 §2.3 / §2.3b：**整条**响应的取法（三条通道 ＋ trace）。
+
+        ``retrieve()`` 仍只回卡片（既有调用点不变）；需要 ``edges[]`` /
+        ``cases[]`` / ``trace{}`` 的调用方走这里。
+        """
+        request = RetrieveRequest(query=query, domain=domain, top_k=top_k,
+                                 cases_top_k=cases_top_k)
         data = self._call("POST", "/v1/retrieve", request.to_dict(), timeout)
-        return RetrieveResponse.from_dict(data).cards
+        return RetrieveResponse.from_dict(data)
 
     def health(self, timeout: float = 2.0) -> HealthStatus:
         return HealthStatus.from_dict(self._call("GET", "/health", None, timeout))

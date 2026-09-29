@@ -24,6 +24,8 @@ from pathlib import Path
 import pytest
 
 from block_director.knowledge.hypergraph import Member, edge_id_for
+from block_director.contracts.transport import SidecarTransport
+from block_director.knowledge.client import KnowledgeClient
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -263,3 +265,20 @@ def test_repo_index_is_loadable_by_the_sidecar():
     provenance = sidecar.load_provenance(ROOT / "knowledge")
     assert provenance["corpus_fingerprint"]
     assert provenance["extractor_model_id"]
+
+
+def test_client_and_transport_drive_the_real_sidecar(knowledge_dir):
+    """整条链路：`KnowledgeClient` → `SidecarTransport` → 真 HTTP → 三条通道。"""
+    events = []
+    with _Sidecar(["--knowledge-dir", str(knowledge_dir),
+                   "--cases-backend", "hybrid"]) as server:
+        transport = SidecarTransport(base_url=server.base, timeout=10.0)
+        client = KnowledgeClient(transport, audit=events.append)
+        response = client.retrieve(QUERY, top_k=3)
+        trace = client.trace_payload()
+    assert client.retrieval_calls == 1
+    assert response.edges and response.edges[0].type == "EMOTION_PACK"
+    assert response.edges[0].forbid == [["forbid", "movement", "movement:固定机位"]]
+    assert response.cases and response.trace["backend"] == "hypergraph"
+    assert events[0]["forbid_members"] == 1
+    assert trace["lanes"] == 2 and trace["retrieval_calls"] == 1

@@ -47,17 +47,21 @@ class RetrieveRequest:
     query: str
     domain: Optional[str] = None
     top_k: int = 5
+    #: v1.4 §2.3b：L3 参考案例单独一条通道，条数由它控制（默认 3，取 2–5）。
+    cases_top_k: int = 3
     request_id: str = field(default_factory=new_request_id)
 
     def to_dict(self) -> Dict[str, Any]:
         return {"request_id": self.request_id, "query": self.query,
-                "domain": self.domain, "top_k": self.top_k}
+                "domain": self.domain, "top_k": self.top_k,
+                "cases_top_k": self.cases_top_k}
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "RetrieveRequest":
         return cls(query=data.get("query", ""),
                    domain=data.get("domain"),
                    top_k=int(data.get("top_k", 5)),
+                   cases_top_k=int(data.get("cases_top_k", 3)),
                    request_id=data.get("request_id", new_request_id()))
 
 
