@@ -251,6 +251,11 @@ components:
         related:
           type: array
           items: { type: string }
+        engine_support: { type: string }
+        emotion: { type: string }
+        tags:
+          type: array
+          items: { type: string }
 
     EmbedRequest:
       type: object

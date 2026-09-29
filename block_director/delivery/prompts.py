@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Dict, List, Sequence
 
 from ..contracts.plan import Plan
+from ..cinema.camera_motion import describe as describe_movement
 
 SHOT_TYPE_LABELS: Dict[str, str] = {
     "ECU": "大特写", "CU": "特写", "MCU": "中近景", "MS": "中景",
@@ -17,7 +18,35 @@ SHOT_TYPE_LABELS: Dict[str, str] = {
 
 DEFAULT_STYLE = "写实电影质感，35mm，柔和自然光"
 
-MOVEMENT_LABELS = {"static": "固定机位"}
+STATIC_LABEL = "固定机位"
+
+
+def movement_label(movement: str) -> str:
+    """单个运镜 id → 中文名；``static`` 与空值都读作固定机位。"""
+    text = str(movement or "")
+    if not text or text == "static":
+        return STATIC_LABEL
+    return describe_movement(text)
+
+
+def movement_labels(shot) -> str:
+    """这一镜的运镜中文名。
+
+    v1.2 把"固定机位"写死在标题与提示词里，于是只要计划里带了运镜，
+    ``prompts.md`` 就会**谎报**镜头运动。这里改为从计划读取，
+    没有声明运镜时才回落到固定机位。
+    """
+    camera = getattr(shot, "camera", None) or {}
+    raw = camera.get("movements") if isinstance(camera, dict) else None
+    labels = []
+    for item in raw or []:
+        movement = (str(item.get("type") or "") if isinstance(item, dict)
+                    else str(item))
+        if movement:
+            labels.append(movement_label(movement))
+    if not labels and isinstance(camera, dict) and camera.get("movement"):
+        labels.append(movement_label(str(camera["movement"])))
+    return "、".join(labels) if labels else STATIC_LABEL
 
 
 def compose_prompt(intent: str, shot_type: str, style: str,
@@ -29,7 +58,7 @@ def compose_prompt(intent: str, shot_type: str, style: str,
     label = SHOT_TYPE_LABELS.get(str(shot_type).upper())
     if label:
         parts.append(label)
-    parts.append(MOVEMENT_LABELS.get(movement, movement))
+    parts.append(movement_label(movement))
     if style:
         parts.append(style)
     return "，".join(part for part in parts if part)
@@ -56,7 +85,8 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
         end = cursor + shot.duration_frames - 1
         seconds = round(shot.duration_frames / fps, 1)
         label = SHOT_TYPE_LABELS.get(str(shot.shot_type).upper(), str(shot.shot_type))
-        lines.append(f"## {shot.shot_id}（{seconds}s / {label} / 固定机位）")
+        lines.append(f"## {shot.shot_id}（{seconds}s / {label} / "
+                     f"{movement_labels(shot)}）")
         lines.append("")
         lines.append(f"**帧范围**：{cursor}–{end}（共 {shot.duration_frames} 帧）")
         lines.append(f"**参考视频**：export/blockout_{shot.shot_id}.mp4")

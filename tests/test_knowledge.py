@@ -104,6 +104,46 @@ def test_corpus_matches_the_engine():
     assert duration.parameters["chinese_cps"] == config.dialogue.chinese_cps
 
 
+def test_movement_cards_declare_the_real_engine_capability():
+    """运镜卡的能力标注必须与引擎实际实现一致（v1.3 诉求 5）。
+
+    语料里写"支持环绕"而引擎做不到，模型就会照着写计划；计划落地时才发现
+    没有这个运镜，最后交付的视频里动都没动。所以这张表必须与
+    ``cinema/camera_motion.py`` 的 ``MOVEMENT_TYPES`` 对拍。
+    """
+    from block_director.cinema.camera_motion import MOVEMENT_TYPES
+    from block_director.knowledge.cards_cinematography import ENGINE_MOVEMENTS
+
+    assert set(ENGINE_MOVEMENTS) == set(MOVEMENT_TYPES)
+
+    movement_cards = [card for card in CARDS
+                      if card.id.startswith("cine_move_")
+                      and "运镜" in card.tags]
+    assert len(movement_cards) >= 24, "运镜卡数量不足，应覆盖封闭清单的 24 种"
+    for card in movement_cards:
+        if card.id == "cine_move_index":
+            assert set(card.parameters["implemented"]) == set(MOVEMENT_TYPES)
+            continue
+        move_id = card.id[len("cine_move_"):]
+        expected = ("implemented" if move_id in MOVEMENT_TYPES
+                    else "unsupported")
+        assert card.engine_support == expected, (
+            f"{card.id} 的能力标注是 {card.engine_support!r}，"
+            f"引擎实际是 {expected!r}")
+        assert card.emotion and card.emotion != "—", f"{card.id} 缺少情感语义"
+
+
+def test_every_movement_card_states_when_not_to_use_it():
+    """运镜卡必须写清禁忌——只讲"怎么用"的知识会让模型到处乱用。"""
+    movement_cards = [card for card in CARDS
+                      if card.id.startswith("cine_move_")
+                      and "运镜" in card.tags and card.id != "cine_move_index"]
+    missing = [card.id for card in movement_cards
+               if not any(mark in card.content
+                          for mark in ("禁忌", "禁止", "不宜", "不要"))]
+    assert missing == [], f"以下运镜卡没有写使用禁忌：{missing}"
+
+
 # --------------------------------------------------------------------------- #
 # 切词与 BM25 内核
 # --------------------------------------------------------------------------- #

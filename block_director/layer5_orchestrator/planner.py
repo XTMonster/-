@@ -121,7 +121,14 @@ def build_plan_payload(script: str, config=None,
         body = script or "（空剧本）"
     knowledge = NO_KNOWLEDGE
     if retriever is not None:
-        knowledge = retriever.block_for_plan(body) or NO_KNOWLEDGE
+        # 检索查询用**剧本摘要本身**，不要把提示词里的样板文字（时长表、
+        # "注意：每个镜头…"）也拼进去：那些词会稀释关键词权重，
+        # 把真正相关的卡片挤出 top-k（实测提示块里只剩下 cine_duration，
+        # 越轴/构图类知识全被挤掉）。
+        query = (parsed.digest(max_scenes=20)
+                 if parsed is not None and getattr(parsed, "scenes", None)
+                 else body)
+        knowledge = retriever.block_for_plan(query) or NO_KNOWLEDGE
     system_text = (PLAN_SYSTEM_PROMPT.replace("{script}", body)
                    .replace("{knowledge}", knowledge))
     return ChatPayload(

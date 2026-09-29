@@ -18,6 +18,13 @@ from __future__ import annotations
 from typing import Dict, List, Tuple
 
 from ..contracts.knowledge import Card
+from .card_factory import as_list as _as_list
+from .card_factory import make_card as _card
+from .cards_axis import CARDS as _AXIS_CARDS
+from .cards_blocking import CARDS as _BLOCKING_CARDS
+from .cards_cinematography import CARDS as _CINEMATOGRAPHY_CARDS
+from .cards_composition import CARDS as _COMPOSITION_CARDS
+from .cards_performance import CARDS as _PERFORMANCE_CARDS
 
 DOMAINS: Tuple[str, ...] = (
     "cinematography", "axis_theory", "composition", "blocking", "performance",
@@ -48,32 +55,6 @@ DOMAIN_DIGESTS: Dict[str, str] = {
                    "配微动作（点头/摇头/转头）。walk_to 与 fall_down 冲突，必须先"
                    "停下再摔。",
 }
-
-
-def _as_list(value) -> List[str]:
-    """把单个字符串收成单元素列表。
-
-    语料里写 ``examples=("只有一个例子")`` 时，Python 得到的是**字符串**而不是
-    元组（漏了尾逗号），直接 ``list()`` 会把它拆成一个个汉字——例如"
-    角色起身…"变成"角；色；起；身…"。这里统一收敛，让数据无论写成哪种形式
-    都得到同一份语义；``tests/test_knowledge.py`` 另有一条断言锁死单字元素。
-    """
-    if value is None:
-        return []
-    if isinstance(value, str):
-        return [value]
-    return list(value)
-
-
-def _card(card_id: str, domain: str, title: str, content: str,
-          keywords: List[str], rules: Tuple[str, ...] = (),
-          parameters: Dict[str, object] | None = None,
-          examples: Tuple[str, ...] = (),
-          related: Tuple[str, ...] = ()) -> Card:
-    return Card(id=card_id, domain=domain, title=title, content=content,
-                keywords=_as_list(keywords), rules=_as_list(rules),
-                parameters=dict(parameters or {}), examples=_as_list(examples),
-                related=_as_list(related))
 
 
 CARDS: Tuple[Card, ...] = (
@@ -459,6 +440,17 @@ CARDS: Tuple[Card, ...] = (
         examples=("要摔倒 → 先结束 walk_to，再 fall_down"),
         related=("block_movement", "perf_posture", "perf_tempo"),
     ),
+)
+
+
+#: v1.2 的基础语料 + v1.3 按域扩充的部分。
+#: 分模块是为了让每个域的内容能独立演进；``cards_by_domain`` 与检索都按
+#: ``DOMAINS`` 过滤，因此模块拼接顺序不影响检索结果。
+_BASE_CARDS: Tuple[Card, ...] = CARDS
+
+CARDS: Tuple[Card, ...] = (
+    _BASE_CARDS + _CINEMATOGRAPHY_CARDS + _AXIS_CARDS
+    + _COMPOSITION_CARDS + _BLOCKING_CARDS + _PERFORMANCE_CARDS
 )
 
 

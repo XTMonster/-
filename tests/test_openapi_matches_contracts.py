@@ -116,7 +116,8 @@ def _sample_payloads() -> Dict[str, Dict[str, Any]]:
         "Card": Card(id="axis_001", domain="axis_theory", title="180 度轴线",
                      content="...", keywords=["轴线"], rules=["..."],
                      parameters={"threshold": 180}, examples=["..."],
-                     related=["axis_002"]).to_dict(),
+                     related=["axis_002"], engine_support="implemented",
+                     emotion="对峙", tags=["轴线", "越轴"]).to_dict(),
         "HealthResponse": HealthStatus(
             status="ok", version="1.2.0",
             capabilities=[Capability.LLM, Capability.BM25]).to_dict(),

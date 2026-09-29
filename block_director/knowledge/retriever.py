@@ -244,12 +244,17 @@ class KnowledgeRetriever:
     # ------------------------------------------------------------ §6.5 时机
     def block_for_plan(self, script_digest: str,
                        limit: int = TOKEN_LIMIT_PLAN) -> str:
-        """阶段 A：按剧本摘要预取（轴线 / 构图 / 摄影最常相关）。"""
+        """阶段 A：按剧本摘要预取（轴线 / 构图 / 摄影最常相关）。
+
+        v1.3：top_k 从 6 提到 8。语料从 37 条扩到 130 余条之后，6 条常常
+        装不下"越轴 + 构图 + 运镜"这三类同时相关的内容；token 上限仍然是
+        2000，因此注入体积可控。
+        """
         if self.backend is RagBackend.DIGEST:
             return self.digest_block(limit)
         if not self.cards:
             return ""
-        return self.block(script_digest, top_k=max(self.top_k, 6),
+        return self.block(script_digest, top_k=max(self.top_k, 8),
                           token_limit=limit)
 
     def block_for_shot(self, shot_type: str, intent: str = "",
