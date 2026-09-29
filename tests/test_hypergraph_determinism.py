@@ -82,6 +82,7 @@ def _prepare(tmp_path, monkeypatch, cards) -> dict:
     paths = {name: tmp_path / name for name in
              ("hypergraph.edges.jsonl", "hypergraph.rejects.jsonl",
               "hypergraph.manifest.json", "report.json")}
+    monkeypatch.setattr(bh, "ATOMS", tmp_path / "hypergraph.atoms.jsonl")
     monkeypatch.setattr(bh, "VOCAB", vocab_path)
     monkeypatch.setattr(bh, "EDGES", paths["hypergraph.edges.jsonl"])
     monkeypatch.setattr(bh, "REJECTS", paths["hypergraph.rejects.jsonl"])
@@ -206,3 +207,74 @@ def test_committed_manifest_corpus_digest_matches_the_cards_on_disk():
         pytest.skip("仓库里没有生成卡")
     assert manifest["cache_key"]["corpus_sha256"] == bh.corpus_digest(cards)
     assert manifest["cards"] == len(cards)
+
+
+# --------------------------------------------------------------------------- 并发
+
+
+class _EchoClient:
+    """回显本批第一张卡的 id：批与批的回复不同，所以"顺序"是可观测的。"""
+
+    family = "deepseek"
+    model_id = "echo-model"
+    model_version = "v0"
+
+    def chat_json(self, system, user, temperature, seed, num_ctx, key="", retries=2):
+        import re
+
+        ids = re.findall(r"### (\S+?)（", user)
+        assert ids, "提示里没有卡片 id"
+        return {"edges": [{
+            "type": "SHOT_PATTERN", "source_card": ids[0], "source_kind": "theory",
+            "hardness": "hard", "confidence": 0.8,
+            "members": [["allow", "shot_size", "shot_size:MS"],
+                        ["allow", "lens", "lens:50mm"],
+                        ["qualifier", "headroom_policy", "headroom_policy:board"]],
+        }]}
+
+
+def _cards_in_one_domain(limit: int) -> list:
+    path = sorted((ROOT / "knowledge" / "cards_generated").glob("*.jsonl"))[0]
+    return [card for card in _read_jsonl(path) if card.get("source_span")][:limit]
+
+
+def test_parallel_stage_one_keeps_the_serial_order(tmp_path, monkeypatch):
+    """§2.3 / R51：第 1 段可并发，但**产物顺序必须与串行一致**（否则缓存指纹失效）。"""
+    cards = _cards_in_one_domain(16)
+    if len(cards) < 9:
+        pytest.skip("生成卡不足两个批次")
+    edge = _read_jsonl(EDGES_FILE)[0]
+    node_ids = {member[2] for member in edge["members"]} | {"shot_size:MS", "lens:50mm",
+                                                            "headroom_policy:board"}
+    nodes = [node for node in _read_jsonl(NODES_FILE) if node["node_id"] in node_ids]
+    vocab_path = tmp_path / "vocab.json"
+    vocab_path.write_text(json.dumps({"nodes": nodes, "vocab": {}}, ensure_ascii=False),
+                          encoding="utf-8")
+    monkeypatch.setattr(bh, "VOCAB", vocab_path)
+    for name in ("ATOMS", "EDGES", "REJECTS", "MANIFEST", "REPORT"):
+        monkeypatch.setattr(bh, name, tmp_path / f"{name.lower()}.json")
+
+    serial, _rejects, log1 = bh.extract(cards, {}, _EchoClient(), concurrency=1)
+    parallel, _rejects2, log2 = bh.extract(cards, {}, _EchoClient(), concurrency=6)
+
+    assert len(log1) >= 2, "至少要有两个批次，否则并发路径根本没被走到"
+    assert [item.edge_id for item in serial] == [item.edge_id for item in parallel]
+    assert [item.edge_id for item in serial] and \
+        [item.sources for item in serial] == [item.sources for item in parallel]
+    assert [entry["batch"] for entry in log1] == [entry["batch"] for entry in log2]
+
+
+def test_rematch_rebuilds_from_the_persisted_atoms_without_the_model(tmp_path, monkeypatch):
+    """第 2 段是纯函数：只换归并口径时不该重抽（`--rematch`）。"""
+    cards = _real_cards(2)
+    if not cards:
+        pytest.skip("仓库里没有带 source_span 的卡片")
+    setup = _prepare(tmp_path, monkeypatch, cards)
+    monkeypatch.setattr(bh, "ATOMS", tmp_path / "atoms.jsonl")
+
+    bh.run(cards, {}, _ScriptedClient(setup["raw"]))
+    first = (tmp_path / "hypergraph.edges.jsonl").read_bytes()
+    # 第二次不再经过任何模型调用：把 client 换成会抛异常的桩
+    summary = bh.rematch(cards, {})
+    assert summary["edges"] >= 1
+    assert (tmp_path / "hypergraph.edges.jsonl").read_bytes() == first

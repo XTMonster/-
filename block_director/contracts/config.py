@@ -98,6 +98,10 @@ class RagConfig:
     cases_backend: str = "lightrag"
     #: L3 返回的参考案例条数（注入到"仅参考"栏）
     cases_top_k: int = 3
+    #: v1.4 §2.3 / §3.2（R51）：超图抽取**第 1 段**（逐 chunk 抽原子边）的并发上限。
+    #: 第 2 段（跨卡归并）**强制串行**，不受该键影响——否则同一批数据两次运行
+    #: 会得到不同的边，六元指纹缓存与"重放一致"直接失效。
+    extract_concurrency: int = 16
 
 
 @dataclass
@@ -345,6 +349,10 @@ class AppConfig:
             err("CFG_018", "rag.cases_backend",
                 f"只能是 lightrag / hybrid / off（当前 "
                 f"{self.rag.cases_backend!r}）")
+        if int(self.rag.extract_concurrency) < 1:
+            err("CFG_019", "rag.extract_concurrency",
+                f"抽取并发必须 ≥ 1（当前 {self.rag.extract_concurrency}）；"
+                f"1 = 完全串行")
 
         # --- 决策 1（§6.1）：向量检索只能由 sidecar 提供 ---
         if self.rag.enabled and self.rag.backend is RagBackend.VECTOR \

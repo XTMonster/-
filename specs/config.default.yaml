@@ -26,6 +26,7 @@ rag:
   plan_prefetch_tokens: 2000
   cases_backend: lightrag
   cases_top_k: 3
+  extract_concurrency: 16
 orchestration:
   mode: plan_structured
   max_repair_attempts: 2
