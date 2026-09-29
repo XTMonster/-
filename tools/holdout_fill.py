@@ -153,6 +153,10 @@ def coverage_gaps(entries: Sequence[Dict], vocab: Dict[str, Sequence[str]]) -> D
                                           MIN_SEED_SUPPORT, support_from(entries))
     return {
         "entries": len(entries),
+        #: 门① 的缺口（总量 ≥1200）。**必须参与"缺口是否已闭合"的判定**：
+        #: 只管 ②③④⑤⑥ 的话，覆盖轮会在总量还差几百条时就判定"闭合"并收工，
+        #: 交出来的文件照样过不了门①。
+        "deficit": max(0, MIN_ENTRIES - len(entries)),
         "format_ok": fstatus == "pass",
         "format_problems": fdetail["problems"][:5],
         "missing_values": sdetail.get("missing_values", {}),
@@ -171,7 +175,7 @@ def coverage_gaps(entries: Sequence[Dict], vocab: Dict[str, Sequence[str]]) -> D
 
 
 def gaps_closed(gaps: Dict) -> bool:
-    return (gaps["format_ok"]
+    return (gaps["format_ok"] and int(gaps.get("deficit", 0)) == 0
             and not gaps["missing_values"] and not gaps["unknown_values"]
             and not gaps["thin_values"] and not gaps["short_pairs"]
             and not gaps["thin_cards"] and gaps["q7_deficit"] == 0
@@ -181,6 +185,9 @@ def gaps_closed(gaps: Dict) -> bool:
 def build_gap_prompt(gaps: Dict, cards: Sequence[Dict],
                      vocab: Dict[str, Sequence[str]], use_cards: Sequence[str]) -> str:
     lines = ["【缺口清单】"]
+    if gaps.get("deficit"):
+        lines.append("- **总条数还差 %d 条**（门① 要求 ≥%d 条；本轮请按卡片尽量多写，"
+                     "每张卡 2 条）" % (int(gaps["deficit"]), MIN_ENTRIES))
     for kind, values in sorted(gaps["missing_values"].items()):
         lines.append("- 取值从没出现过（%s）：%s" % (kind, "、".join(values[:12])))
     for kind, values in sorted(gaps["thin_values"].items()):

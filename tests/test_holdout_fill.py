@@ -131,10 +131,29 @@ def test_coverage_gaps_reports_every_missing_gate(tmp_path):
     vocab = {"emotion": ["荒诞", "平静"], "movement": ["推镜"]}
     gaps = holdout_fill.coverage_gaps([], vocab)
     assert gaps["entries"] == 0
+    assert gaps["deficit"] == holdout_fill.MIN_ENTRIES
     assert gaps["format_ok"] is False
     assert gaps["q7_deficit"] == holdout_fill.MIN_FORBID
     assert gaps["forbid_under_covered"] == {}
     assert holdout_fill.gaps_closed(gaps) is False
+
+
+def test_total_shortfall_keeps_the_coverage_rounds_running():
+    """门①（总量 ≥1200）必须进"缺口是否闭合"的判定。
+
+    实测过一次：覆盖轮只看 ②③④⑤⑥，总量还差几百条时 `gaps_closed()` 就返回 True，
+    循环直接收工，交出来的文件过不了门①——补跑机制等于自己把自己关掉了。
+    """
+    open_gaps = {"format_ok": True, "deficit": 300, "missing_values": {},
+                 "unknown_values": {}, "thin_values": {}, "short_pairs": {},
+                 "thin_cards": {}, "q7_deficit": 0, "forbid_under_covered": {}}
+    assert holdout_fill.gaps_closed(open_gaps) is False
+
+    closed = dict(open_gaps, deficit=0)
+    assert holdout_fill.gaps_closed(closed) is True
+
+    prompt = holdout_fill.build_gap_prompt(open_gaps, [], {}, [])
+    assert "300" in prompt and "1200" in prompt
 
 
 def test_gap_prompt_names_the_shortfall_and_the_cards():
