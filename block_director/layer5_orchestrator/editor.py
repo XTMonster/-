@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
-from ..contracts.enums import Purpose, ToolChoice
+from ..contracts.enums import MOVEMENT_TYPES, Purpose, ToolChoice
 from ..contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -79,6 +79,41 @@ EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
             "properties": {
                 "side": {"type": "string"},
                 "lens": {"type": "number", "minimum": 8, "maximum": 300},
+                #: v1.3 P7：声明式运镜——写了就在构建时自动生成相机关键帧，
+                #: 不再依赖模型另外调一次 move_camera。
+                "movements": {
+                    "type": "array",
+                    "maxItems": 4,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["type", "amount"],
+                        "properties": {
+                            "type": {"type": "string",
+                                     "enum": list(MOVEMENT_TYPES)},
+                            "amount": {"type": "number", "minimum": 0,
+                                       "maximum": 180},
+                            "start_frame": {"type": "integer", "minimum": 1},
+                            "end_frame": {"type": "integer", "minimum": 1},
+                            "seed": {"type": "integer", "minimum": 0},
+                            "subject": {"type": "string"},
+                        },
+                    },
+                },
+            },
+        },
+        #: v1.3：谁看谁（R013 的落实侧）。
+        "gaze": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["from", "to"],
+                "properties": {
+                    "from": {"type": "string"},
+                    "to": {"type": "string"},
+                },
             },
         },
         "prompt": {"type": "string"},
@@ -128,6 +163,8 @@ class ShotDraft:
     actions: List[Dict[str, Any]] = field(default_factory=list)
     dialogues: List[Dict[str, Any]] = field(default_factory=list)
     camera: Dict[str, Any] = field(default_factory=dict)
+    #: v1.3：这一镜里谁看着谁（R013 的落实侧）。
+    gaze: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""
 
     @classmethod
@@ -139,6 +176,8 @@ class ShotDraft:
             actions=[dict(item) for item in data.get("actions", []) or []],
             dialogues=[dict(item) for item in data.get("dialogues", []) or []],
             camera=dict(data.get("camera", {}) or {}),
+            gaze=[dict(item) for item in (data.get("gaze") or [])
+                  if isinstance(item, dict)],
             prompt=str(data.get("prompt", "") or ""))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -146,7 +185,9 @@ class ShotDraft:
                 "characters": list(self.characters),
                 "actions": [dict(item) for item in self.actions],
                 "dialogues": [dict(item) for item in self.dialogues],
-                "camera": dict(self.camera), "prompt": self.prompt}
+                "camera": dict(self.camera),
+                "gaze": [dict(item) for item in self.gaze],
+                "prompt": self.prompt}
 
 
 def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
@@ -262,6 +303,11 @@ def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
             shot["prompt"] = draft.prompt
         if draft.camera:
             shot["camera"] = dict(draft.camera)
+        if draft.gaze:
+            # 注视关系由 B1 落实。阶段 S 的理解只在 B1 没给的时候兜底
+            # （见 driver._pin_brief_gaze）：先记下 B1 自己说的，
+            # R013 才能拿"理解"与"落实"对拍，而不是自己对自己打勾。
+            shot["gaze"] = [dict(item) for item in draft.gaze]
         break
     return Plan.from_dict(payload)
 

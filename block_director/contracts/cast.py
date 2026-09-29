@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -16,6 +17,9 @@ DEFAULT_COLORS = ("#FF6B6B", "#6BC5FF", "#FFD166", "#9B8CFF",
 DEFAULT_SPACING = 1.5
 #: 两人相对而立时的间距（§9.7 的"社交距离"上限附近，镜头里读得出对峙感）
 OPPOSITE_SPACING = 1.8
+#: §9.7 的人际距离四档 → 白模里的实际间距（米）
+DISTANCE_CLASS_GAP = {"intimate": 0.6, "personal": 1.1, "social": 1.8,
+                      "public": 3.2}
 DEFAULT_GROUND = (120.0, 120.0)
 
 ID_PREFIX = "char_"
@@ -58,6 +62,74 @@ def default_station(count: int) -> List[Tuple[Tuple[float, float, float],
             facing = (0.0, 1.0)
         stations.append(((round(offset, 3), 0.0, 0.0), facing))
     return stations
+
+
+def _unit2(vector) -> Tuple[float, float]:
+    x, y = float(vector[0]), float(vector[1])
+    length = math.hypot(x, y)
+    return (x / length, y / length) if length > 1e-9 else (0.0, 1.0)
+
+
+def station_from_space(characters: List[str], space,
+                       *, default_spacing: float = OPPOSITE_SPACING
+                       ) -> List[Tuple[Tuple[float, float, float],
+                                       Tuple[float, float, float]]]:
+    """按 ``SceneBrief.space`` 把默认站位改写成**剧本声明的关系站位**。
+
+    ``space`` 描述的是"谁相对谁、什么关系、多远"（§3.2）。这里按声明顺序
+    逐条落实：先取默认站位作为基线，再把被点名的角色摆到参照角色旁边。
+    没有声明的角色保持默认位置——**不替剧本扩大解释**。
+
+    纯函数，可单测。
+    """
+    base = default_station(len(characters))
+    if not characters:
+        return []
+    locations = {name: list(base[index][0]) for index, name in enumerate(characters)}
+    facings = {name: list(base[index][1]) for index, name in enumerate(characters)}
+
+    for raw in space or []:
+        if not isinstance(raw, dict):
+            continue
+        name = str(raw.get("character") or "").strip()
+        other = str(raw.get("relative_to") or "").strip()
+        if name not in locations or other not in locations or name == other:
+            continue
+        relation = str(raw.get("relation") or "facing").strip().lower()
+        gap = DISTANCE_CLASS_GAP.get(
+            str(raw.get("distance_class") or "").strip().lower(), default_spacing)
+        forward = _unit2(facings[other])
+        right = (forward[1], -forward[0])
+        origin = locations[other]
+
+        def place(offset) -> None:
+            locations[name] = [round(origin[0] + offset[0], 3),
+                               round(origin[1] + offset[1], 3),
+                               origin[2]]
+
+        if relation == "side_by_side":
+            place((right[0] * gap, right[1] * gap))
+            facings[name] = list(forward)
+        elif relation == "behind":
+            place((-forward[0] * gap, -forward[1] * gap))
+            facings[name] = list(forward)
+        elif relation == "ahead":
+            place((forward[0] * gap, forward[1] * gap))
+            facings[name] = list(forward)
+        elif relation == "apart":
+            place((-forward[0] * gap, -forward[1] * gap))
+            facings[name] = [-forward[0], -forward[1]]
+        else:                                    # facing（默认）：相对而立
+            place((forward[0] * gap, forward[1] * gap))
+            facings[name] = [-forward[0], -forward[1]]
+            facings[other] = list(forward)
+
+    # ``round(x, 3) or 0.0``：把 -0.0 归一成 0.0，免得落盘的 JSON 里
+    # 出现 "−0.0" 这种"看起来像笔误"的数。
+    return [((locations[name][0], locations[name][1], locations[name][2]),
+             (round(facings[name][0], 6) or 0.0,
+              round(facings[name][1], 6) or 0.0, 0.0))
+            for name in characters]
 
 
 def next_character_id(existing) -> str:
@@ -115,18 +187,22 @@ class SceneSpec:
     with_labels: bool = True
 
     @classmethod
-    def from_plan(cls, plan: Plan, **overrides) -> "SceneSpec":
+    def from_plan(cls, plan: Plan, brief=None, **overrides) -> "SceneSpec":
         """按计划里出现的角色自动生成一份确定性剧组设定。
 
         站位用 :func:`default_station`：两人时相对而立（v1.2 是并排朝前，
         两个对话者谁也不看谁）。
-        """
+
+       """
         character_ids: List[str] = []
         for shot in plan.shots:
             for character_id in shot.characters:
                 if character_id not in character_ids:
                     character_ids.append(character_id)
         stations = default_station(len(character_ids))
+        if brief is not None and getattr(brief, "space", None):
+            # §3.2：真正的站位由 SceneBrief.space 决定；默认站位只是兜底。
+            stations = station_from_space(character_ids, brief.space)
         cast: List[CastMember] = [
             CastMember(id=character_id, name=character_id,
                        color=DEFAULT_COLORS[index % len(DEFAULT_COLORS)],

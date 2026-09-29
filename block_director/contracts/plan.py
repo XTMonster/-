@@ -29,11 +29,23 @@ class ShotPlan:
     #: 对白时间轴（镜头内局部帧）：{character_id, text, start_frame, end_frame}
     dialogues: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""                 # 交付用：喂视频模型的镜头描述（§15.5）
-    #: 相对取景请求（阶段 B1 产出）：{"side": ..., "lens": ...}。
-    #: 距离与高度由 §10.6/§10.5 推导，不在这里覆盖。
+    #: 相对取景请求（阶段 B1 产出）：{"side": ..., "lens": ...,
+    #: "movements": [{"type", "amount", "start_frame", "end_frame", "seed"}]}。
+    #: 距离与高度由 §10.6/§10.5 推导，不在这里覆盖；运镜由声明式消费落地（P7）。
     camera: Dict[str, Any] = field(default_factory=dict)
     axis_note: str = ""
     continuity_in: str = ""
+    #: v1.3：谁看谁（``{from, to}``）。来源是阶段 S 的 SceneBrief 或 B1 的草案，
+    #: R013 拿它与 SceneBrief 对拍。
+    gaze: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.3：特效代理（``{id, type, position, size, start_frame, end_frame}``）。
+    vfx: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.3：银幕方向（``left_to_right`` / ``right_to_left`` / ``static``），
+    #: 供相邻镜头的方向连续性审核使用。
+    screen_direction: str = ""
+    #: v1.3：剧本声明的时长（帧）。**只作证据**，永不参与排片（§3.4 单一真源）。
+    #: 它与 ``duration_frames`` 的差值就是 R015 的"声明 vs 落实"证据。
+    declared_duration_frames: int = 0
 
     @property
     def duration_seconds(self) -> float:
@@ -54,6 +66,10 @@ class ShotPlan:
             "camera": dict(self.camera),
             "axis_note": self.axis_note,
             "continuity_in": self.continuity_in,
+            "gaze": [dict(item) for item in self.gaze],
+            "vfx": [dict(item) for item in self.vfx],
+            "screen_direction": self.screen_direction,
+            "declared_duration_frames": self.declared_duration_frames,
         }
 
     @classmethod
@@ -74,6 +90,13 @@ class ShotPlan:
             camera=dict(data.get("camera") or {}),
             axis_note=str(data.get("axis_note", "")),
             continuity_in=str(data.get("continuity_in", "")),
+            gaze=[dict(item) for item in (data.get("gaze") or [])
+                  if isinstance(item, dict)],
+            vfx=[dict(item) for item in (data.get("vfx") or [])
+                 if isinstance(item, dict)],
+            screen_direction=str(data.get("screen_direction", "") or ""),
+            declared_duration_frames=int(data.get("declared_duration_frames")
+                                         or 0),
         )
 
 

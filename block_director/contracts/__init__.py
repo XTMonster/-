@@ -13,10 +13,14 @@ from .enums import (
     Appearance,
     AuditLevel,
     Capability,
+    CrowdMode,
     DeliveryPreset,
     Engine,
+    EngineSupport,
     ErrorCode,
     MessageRole,
+    Movement,
+    MOVEMENT_TYPES,
     OrchestrationMode,
     Purpose,
     RagBackend,
@@ -26,11 +30,13 @@ from .enums import (
     SHOT_TYPES,
     ToolChoice,
     TransportMode,
+    VfxType,
     VideoCodec,
     resolve_engine_identifier,
 )
 from .errors import TransportError, error_for_http_status, user_message
 from .health import HealthStatus
+from .brief import SceneBrief
 from .knowledge import Card
 from .plan import Plan, ShotPlan
 from .audit import AuditError, AuditResult
@@ -66,6 +72,7 @@ from .config import (
     AppConfig,
     AnimationConfig,
     AuditConfig,
+    BriefConfig,
     BudgetConfig,
     CharacterConfig,
     DeliveryConfig,
@@ -89,12 +96,14 @@ from .transport import (
 
 __all__ = [
     "Appearance", "AuditLevel", "Capability", "DeliveryPreset", "Engine",
-    "ErrorCode", "MessageRole", "OrchestrationMode", "Purpose", "RagBackend",
+    "CrowdMode", "EngineSupport", "ErrorCode", "MessageRole", "Movement",
+    "MOVEMENT_TYPES", "VfxType",
+    "OrchestrationMode", "Purpose", "RagBackend",
     "RenderBackend", "Severity", "ToolChoice", "TransportMode", "VideoCodec",
     "ShotType", "SHOT_TYPES",
     "resolve_engine_identifier",
     "TransportError", "error_for_http_status", "user_message",
-    "HealthStatus", "Card",
+    "HealthStatus", "SceneBrief", "Card",
     "Plan", "ShotPlan",
     "AuditError", "AuditResult",
     "CastMember", "SceneSpec",
@@ -104,7 +113,7 @@ __all__ = [
     "assistant_message", "tool_message", "validate_conversation",
     "CancelRequest", "CancelResponse", "EmbedRequest", "EmbedResponse",
     "RetrieveRequest", "RetrieveResponse",
-    "AppConfig", "AnimationConfig", "AuditConfig", "BudgetConfig",
+    "AppConfig", "AnimationConfig", "AuditConfig", "BriefConfig", "BudgetConfig",
     "CharacterConfig", "DeliveryConfig", "DialogueConfig", "Issue", "LLMConfig",
     "OrchestrationConfig", "RagConfig", "UIConfig", "default_config_path",
     "LLMTransport", "DirectTransport", "SidecarTransport", "select_transport",

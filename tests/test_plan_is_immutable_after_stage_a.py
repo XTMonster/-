@@ -90,7 +90,7 @@ class StubBuilder:
     def __init__(self):
         self.plans = []
 
-    def build(self, plan):
+    def build(self, plan, brief=None):
         self.plans.append(plan.to_dict())
         return {"shots": len(plan.shots), "total_frames": plan.total_frames}
 

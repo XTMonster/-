@@ -188,13 +188,16 @@ def action_requests(shot: ShotPlan, shot_start: int,
 
 @main_thread_only("build_scene")
 def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
-                clear_scene: bool = False) -> BuildSummary:
+                clear_scene: bool = False, brief=None) -> BuildSummary:
     """按计划重建整个白模场景。
 
     ``clear_scene=True`` 时连非本插件对象（Blender 启动场景自带的 Cube 等）
     一起清掉——批处理入口必须开这个，否则默认方块会挡在角色前面。
+
+    ``brief`` 是阶段 S 的剧本理解（§3.2）：只用来决定站位（``space``）。
+    给了显式 ``spec`` 时它不参与——用户改过的设定永远优先。
     """
-    spec = spec or SceneSpec.from_plan(plan)
+    spec = spec or SceneSpec.from_plan(plan, brief=brief)
     scene = bpy.context.scene
     summary = BuildSummary()
 
@@ -351,6 +354,6 @@ class BpySceneBuilder:
         self.spec = spec
         self.clear_scene = clear_scene
 
-    def build(self, plan: Plan) -> Dict[str, Any]:
-        return build_scene(plan, self.spec,
-                           clear_scene=self.clear_scene).to_dict()
+    def build(self, plan: Plan, brief=None) -> Dict[str, Any]:
+        return build_scene(plan, self.spec, clear_scene=self.clear_scene,
+                           brief=brief).to_dict()

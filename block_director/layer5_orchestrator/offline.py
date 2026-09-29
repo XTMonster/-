@@ -17,6 +17,7 @@ from ..contracts.messages import ChatPayload, ChatReply, FunctionCall, ToolCall
 from .planner import PLAN_TOOL_NAME
 from .editor import EDITOR_TOOL_NAME
 from .review import REVIEW_TOOL_NAME
+from .understand import BRIEF_TOOL_NAME
 
 
 def _heading_of(script: str) -> str:
@@ -91,13 +92,29 @@ def demo_draft_dict(index: int) -> dict:
     return draft
 
 
+#: 阶段 S 的确定性夹具。刻意**不含 gaze**：离线链路的角色 id（char_001）
+#: 与剧本里的角色名（周野/林可）不是一回事，硬写注视关系只会造出
+#: "引用了不在角色表里的角色"这种假告警。注视关系另有专门的单测覆盖。
+DEMO_BRIEF: dict = {
+    "beats": [
+        {"id": "beat_001", "summary": "建立场景与人物关系",
+         "participants": [], "emotion": "平静", "function": "建立"},
+        {"id": "beat_002", "summary": "推进对话，给出反应",
+         "participants": [], "emotion": "推进", "function": "推进"},
+    ],
+    "notes": ["离线自检：SceneBrief 为确定性夹具，不含注视关系"],
+}
+
+
 class OfflineTransport:
     """实现 LLMTransport 协议的离线替身。"""
 
     def __init__(self, plan: Optional[dict] = None, drafts: Optional[list] = None,
-                 fail_times: int = 0) -> None:
+                 fail_times: int = 0,
+                 brief: Optional[dict] = None) -> None:
         self._plan = plan
         self._drafts = list(drafts) if drafts is not None else None
+        self._brief = dict(brief) if brief is not None else dict(DEMO_BRIEF)
         self.fail_times = fail_times
         self.chat_calls = 0
         self._editor_calls = 0
@@ -119,6 +136,18 @@ class OfflineTransport:
                                     {"verdict": "ok",
                                      "notes": "离线自检：默认通过"},
                                     ensure_ascii=False)))
+            return ChatReply(content=None, tool_calls=[call],
+                             request_id=payload.request_id, model="offline",
+                             finish_reason="tool_calls")
+
+        if payload.purpose is Purpose.UNDERSTAND:
+            # 阶段 S：给一份确定性夹具。离线链路因此也能走到
+            # brief_received → 计划提示注入 → R013 这一整套接线。
+            call = ToolCall(id=f"brief_{self.chat_calls}",
+                            function=FunctionCall(
+                                name=BRIEF_TOOL_NAME,
+                                arguments=json.dumps(self._brief,
+                                                     ensure_ascii=False)))
             return ChatReply(content=None, tool_calls=[call],
                              request_id=payload.request_id, model="offline",
                              finish_reason="tool_calls")
@@ -169,7 +198,7 @@ class OfflineTransport:
         return draft
 
     def health(self, timeout: float = 2.0) -> HealthStatus:
-        return HealthStatus(status="ok", version="1.2.0",
+        return HealthStatus(status="ok", version="1.3.0",
                             capabilities=[Capability.LLM, Capability.BM25],
                             detail="offline transport")
 

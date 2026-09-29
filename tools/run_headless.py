@@ -19,6 +19,15 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
+def _brief_from_summary(summary):
+    """把运行摘要里的 SceneBrief（普通字典）还原成契约对象。"""
+    payload = (summary or {}).get("brief")
+    if not payload:
+        return None
+    from block_director.contracts.brief import SceneBrief
+    return SceneBrief.from_dict(payload)
+
+
 def parse_args(argv):
     rest = argv[argv.index("--") + 1:] if "--" in argv else []
     parser = argparse.ArgumentParser(prog="run_headless")
@@ -123,7 +132,8 @@ def main() -> int:
         spec = builder.spec if builder is not None else None
         sdl = build_sdl(plan_obj, build_summary=summary.get("build"),
                         spec=spec, project_name=plan_obj.scene_heading
-                        or "BlockDirector")
+                        or "BlockDirector",
+                        brief=_brief_from_summary(summary))
         findings = validate_sdl(sdl)
         path = save_project(Path(args.save), sdl)
         print("BLOCKDIRECTOR_SAVED " + json.dumps(

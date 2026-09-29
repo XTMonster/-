@@ -7,8 +7,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Protocol, runtime_checkable
+from typing import Any, Dict, Optional, Protocol, runtime_checkable
 
+from ..contracts.brief import SceneBrief
 from ..contracts.plan import Plan
 
 
@@ -16,5 +17,10 @@ from ..contracts.plan import Plan
 class SceneBuilder(Protocol):
     """把一份分镜计划落成场景。返回摘要字典供审计与 UI 展示。"""
 
-    def build(self, plan: Plan) -> Dict[str, Any]:
+    def build(self, plan: Plan,
+              brief: Optional[SceneBrief] = None) -> Dict[str, Any]:
+        """``brief`` 是阶段 S 的剧本理解（§3.2）。
+
+        用来决定站位与视线——没有它时退回"两人相对而立"的默认站位。
+        """
         ...

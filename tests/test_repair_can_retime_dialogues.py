@@ -88,7 +88,7 @@ class Builder:
         self.auditor = auditor
         self.plans = []
 
-    def build(self, plan):
+    def build(self, plan, brief=None):
         self.auditor.payloads.append(plan.shots[0].dialogues)
         self.plans.append(plan.to_dict())
         return {"shots": len(plan.shots), "total_frames": plan.total_frames}

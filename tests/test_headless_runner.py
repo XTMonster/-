@@ -26,8 +26,12 @@ def test_headless_offline_run_writes_logs(tmp_path):
     assert kinds[0] == "run_started"
     assert kinds[-1] == "run_finished"
 
-    trace = json.loads(trace_path.read_text(encoding="utf-8").strip())
-    assert trace["purpose"] == "plan"
+    traces = [json.loads(line)
+              for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    # v1.3：第一次调用是阶段 S 的剧本理解，第二次才是阶段 A 的计划
+    assert [item["purpose"] for item in traces] == ["understand", "plan"]
+    plan_trace = next(item for item in traces if item["purpose"] == "plan")
+    assert "emit_plan" in json.dumps(plan_trace["response"], ensure_ascii=False)
 
 
 def test_headless_records_plan_shots(tmp_path):

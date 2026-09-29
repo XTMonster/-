@@ -24,7 +24,7 @@ class RecordingBuilder:
                                     "total_frames": 216}
         self._error = error
 
-    def build(self, plan: Plan):
+    def build(self, plan: Plan, brief=None):
         self.built.append(plan)
         if self._error:
             raise self._error

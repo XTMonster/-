@@ -163,7 +163,7 @@ class _StubBuilder:
     def __init__(self):
         self.built = []
 
-    def build(self, plan):
+    def build(self, plan, brief=None):
         self.built.append(plan)
         return {"shots": len(plan.shots), "total_frames": plan.total_frames}
 
@@ -213,6 +213,146 @@ def test_driver_skips_compliance_for_narrative_scripts(tmp_path):
         builder=_StubBuilder(), thread_factory=_InlineThread)
     driver.run_to_completion()
     assert driver.snapshot()["compliance"] is None
+
+
+# --------------------------------------------------------------------------- #
+# R013：阶段 S 读出来的注视关系必须被落实（v1.3 §3.5）
+# --------------------------------------------------------------------------- #
+def _gaze_plan(pairs):
+    shots = [{"shot_id": "shot_001", "order": 1, "intent": "对峙",
+              "shot_type": "MS", "duration_frames": 48,
+              "characters": ["甲", "乙"]},
+             {"shot_id": "shot_002", "order": 2, "intent": "反应",
+              "shot_type": "MCU", "duration_frames": 48,
+              "characters": ["乙"]}]
+    if pairs is not None:
+        shots[0]["gaze"] = [{"from": source, "to": target}
+                            for source, target in pairs]
+    return _plan(shots)
+
+
+def test_r013_warns_when_the_gaze_is_not_implemented():
+    from block_director.contracts.brief import SceneBrief
+
+    brief = SceneBrief.from_dict({"gaze": [
+        {"from": "甲", "to": "乙", "scope": ["镜号1"]},
+        {"from": "乙", "to": "甲", "scope": ["镜号1"]}]})
+    findings = check_compliance(_gaze_plan([("甲", "乙")]), None, brief=brief)
+    assert [item.rule for item in findings] == ["R013"]
+    assert findings[0].severity.value == "warning"
+    assert "乙→甲" in findings[0].message
+
+
+def test_r013_is_silent_when_every_gaze_is_implemented():
+    from block_director.contracts.brief import SceneBrief
+
+    brief = SceneBrief.from_dict({"gaze": [
+        {"from": "甲", "to": "乙", "scope": ["镜号1"]}]})
+    assert check_compliance(_gaze_plan([("甲", "乙")]), None, brief=brief) == []
+
+
+def test_r013_becomes_an_error_under_strict_audit():
+    from block_director.contracts.brief import SceneBrief
+    from block_director.contracts.enums import AuditLevel
+
+    brief = SceneBrief.from_dict({"gaze": [
+        {"from": "甲", "to": "乙", "scope": ["镜号1"]}]})
+    findings = check_compliance(_gaze_plan([]), None, brief=brief,
+                                audit_level=AuditLevel.STRICT)
+    assert findings and findings[0].severity.value == "error"
+
+
+def test_r013_is_independent_of_a_shot_list():
+    """叙事剧本没有分镜表声明，但注视关系同样要审。"""
+    from block_director.contracts.brief import SceneBrief
+
+    brief = SceneBrief.from_dict({"gaze": [
+        {"from": "甲", "to": "乙", "scope": ["all"]}]})
+    findings = check_compliance(_gaze_plan([]), None, brief=brief)
+    # scope=all 覆盖两个镜头，两镜都没落实 → 两条
+    assert [item.rule for item in findings] == ["R013", "R013"]
+    assert {item.target for item in findings} == {"shot_001", "shot_002"}
+
+
+def test_report_records_the_brief_source():
+    from block_director.contracts.brief import SceneBrief
+
+    brief = SceneBrief.from_dict({"notes": ["x"]})
+    report = compliance_report(_gaze_plan([]), None, brief=brief)
+    assert report["brief_source"] == "llm"
+    assert report["ok"] is True
+
+
+class _GazeTransport:
+    """阶段 S 说"两人互相看"，B1 却只写了一头——R013 必须抓出来。"""
+
+    def __init__(self):
+        self.purposes = []
+
+    def chat(self, payload, timeout=120.0):
+        import json
+
+        from block_director.contracts.messages import (
+            ChatReply, FunctionCall, ToolCall)
+
+        purpose = str(payload.purpose)
+        self.purposes.append(purpose)
+        if purpose == "understand":
+            name = "emit_scene_brief"
+            args = {"gaze": [{"from": "甲", "to": "乙", "scope": ["镜号1"]},
+                             {"from": "乙", "to": "甲", "scope": ["镜号1"]}]}
+        elif purpose == "plan":
+            name = "emit_plan"
+            args = {"shots": [{"shot_id": "shot_001", "order": 1,
+                               "intent": "对峙", "shot_type": "MS",
+                               "duration_frames": 48,
+                               "characters": ["甲", "乙"]}]}
+        elif purpose == "editor":
+            name = "emit_shot_draft"
+            args = {"shot_id": "shot_001",
+                    "gaze": [{"from": "乙", "to": "甲"}]}
+        else:
+            name, args = "abort", {"reason": "测试到此为止"}
+        return ChatReply(tool_calls=[ToolCall(
+            id=f"c{len(self.purposes)}",
+            function=FunctionCall(name=name,
+                                  arguments=json.dumps(args,
+                                                       ensure_ascii=False)))])
+
+    def cancel(self, request_id):
+        return None
+
+
+def test_driver_reports_a_gaze_the_planning_stage_failed_to_implement(tmp_path):
+    """这是诉求 2/3 的核心：剧本说两人互看，落实侧只写了一头 → R013。
+
+    同时验证"B1 自己给的注视不会被理解覆盖"——否则这条规则就变成了
+    自己对自己打勾，永远发现不了问题。
+    """
+    import json
+
+    from block_director.layer5_orchestrator.driver import PrevisDriver
+    from block_director.layer6_audit.audit_logger import AuditLogger
+
+    transport = _GazeTransport()
+    audit = AuditLogger(directory=tmp_path)
+    driver = PrevisDriver(transport=transport, audit=audit,
+                          script="镜号1", builder=_StubBuilder(),
+                          thread_factory=_InlineThread)
+    driver.run_to_completion()
+
+    assert driver.plan.shots[0].gaze == [{"from": "乙", "to": "甲"}]
+    report = driver.snapshot()["compliance"]
+    rules = [item["rule"] for item in report["findings"]]
+    assert rules == ["R013"]
+    assert "甲→乙" in report["findings"][0]["message"]
+    assert report["ok"] is True                  # WARNING 不阻断交付
+
+    records = [json.loads(line) for line
+               in audit.audit_path.read_text(encoding="utf-8").splitlines()
+               if line.strip()]
+    assert any(record["kind"] == "brief_received" for record in records)
+    assert any(record["kind"] == "script_compliance" for record in records)
 
 
 # --------------------------------------------------------------------------- #

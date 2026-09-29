@@ -69,7 +69,7 @@ def test_bad_numbers_are_reported_not_applied():
     assert len(problems) == 3
     assert config.budget.max_cost_usd == 5.0
     assert config.budget.max_wall_minutes == 30.0
-    assert config.budget.max_llm_calls_per_scene_formula == "shots * 6"
+    assert config.budget.max_llm_calls_per_scene_formula == "shots * 8"
 
 
 def test_negative_budget_is_rejected():

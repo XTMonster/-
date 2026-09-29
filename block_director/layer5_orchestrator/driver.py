@@ -28,6 +28,8 @@ from ..contracts.messages import (
     validate_conversation,
 )
 from ..contracts.plan import Plan
+from ..contracts.brief import SOURCE_DETERMINISTIC, SceneBrief
+from ..contracts.enums import ErrorCode
 from ..layer6_audit.audit_logger import AuditLogger
 from ..utils.logger import get_logger
 from ..utils.threading_guard import assert_main_thread
@@ -51,6 +53,12 @@ from .human_gate import GateDecision, GateRequest, HumanGate
 from .review import ReviewVerdict, build_review_payload, parse_review
 from .states import TERMINAL_STATES, DriverState
 from .tool_registry import ToolRegistry
+from .understand import (
+    build_brief_payload,
+    deterministic_brief,
+    extract_brief,
+    merge_brief_gaze,
+)
 
 log = get_logger("driver")
 
@@ -63,6 +71,7 @@ class DriverLimits:
     max_llm_calls: int = 8
     llm_timeout_s: float = 120.0
     plan_attempts: int = 2
+    brief_attempts: int = 2      # §3.2：两次不理解就降级为确定性抽取
     max_tool_calls: int = 200
     max_repairs_per_shot: int = 2      # §7.1 B4：每镜定向修复次数上限
 
@@ -175,6 +184,11 @@ class PrevisDriver:
         self._react_messages: List[Message] = []
         self._react_done: set = set()
         self.react_history: List[Dict[str, Any]] = []
+        #: 阶段 S 的产物（§3.2）。没有它就等于退回 v1.2 的"直接规划"。
+        self.brief: Optional[SceneBrief] = None
+        self._brief_attempts = 0
+        self._brief_problem = ""
+        self._brief_messages: List[Message] = []
         self._editing_queue: List[str] = []
         self._editing_index = 0
         self.draft_history: List[Dict[str, Any]] = []
@@ -275,6 +289,10 @@ class PrevisDriver:
             "finished_shots": len(self.finish_history),
             "review_requests": len(self.review_requests),
             "react_rounds": len(self.react_history),
+            "brief": (self.brief.to_dict() if self.brief is not None
+                      else None),
+            "brief_source": (self.brief.source if self.brief is not None
+                             else ""),
             "drafts": len(self.draft_history),
             "drafts_failed": len(self.drafts_failed),
             "compliance": self._compliance,
@@ -301,7 +319,8 @@ class PrevisDriver:
                 self._fail("超出最大步数（疑似死循环）")
                 return False
         exhausted = self.budget.exhausted_reason()
-        if exhausted and self.state is DriverState.PLANNING:
+        if exhausted and self.state in (DriverState.UNDERSTANDING,
+                                        DriverState.PLANNING):
             # 还没产出计划就触顶：降级收尾（构建与审核不花预算，不该被砍）
             self._degrade_to_finish(exhausted)
             return True
@@ -341,7 +360,98 @@ class PrevisDriver:
                        transport=type(self.transport).__name__,
                        registry=self.registry.names())
         self._emit("run_started", "开始")
+        # §3.2：IDLE → UNDERSTANDING → PLANNING。理解阶段可以被配置关掉，
+        # 关掉就退回 v1.2 的 IDLE → PLANNING。
+        self._transition(DriverState.UNDERSTANDING if self._stage_s_enabled()
+                         else DriverState.PLANNING)
+
+    # -------------------------------------------------- 阶段 S（§3.2 剧本理解）
+    def _stage_s_enabled(self) -> bool:
+        if self.config is None:
+            return True
+        return bool(getattr(getattr(self.config, "brief", None),
+                            "enabled", True))
+
+    def _character_names(self) -> List[str]:
+        """给理解阶段看的角色表（从 Layer 1 解析结果取；没有就用计划里的）。"""
+        names: List[str] = []
+        parsed = self.parsed_script
+        if parsed is not None:
+            names = [str(name) for name in
+                     (getattr(parsed, "character_names", None) or []) if name]
+        if not names and self.plan is not None:
+            for shot in self.plan.shots:
+                for character_id in shot.characters:
+                    if character_id not in names:
+                        names.append(str(character_id))
+        return names
+
+    def _step_understanding(self) -> None:
+        """阶段 S：先把"谁对谁说、谁看谁"读出来，再让阶段 A 规划镜头。"""
+        if not self._stage_s_enabled() or self.brief is not None:
+            self._transition(DriverState.PLANNING)
+            return
+        if self._brief_attempts >= self.limits.brief_attempts:
+            self._fall_back_to_brief(self._brief_problem or "已达最大尝试次数")
+            return
+        if not self.budget.allow_llm_call("understand"):
+            self._fall_back_to_brief(
+                self.budget.exhausted_reason() or "预算不足以做剧本理解")
+            return
+        self._brief_attempts += 1
+        self._start_brief_call()
+
+    def _start_brief_call(self) -> None:
+        temperature = 0.2
+        max_tokens: Optional[int] = None
+        if self.config is not None:
+            temperature = float(self.config.llm.temperature_repair)
+            max_tokens = int(getattr(self.config.llm, "max_tokens", 0) or 0) or None
+        payload = build_brief_payload(
+            self.script, parsed=self.parsed_script,
+            characters=self._character_names(), temperature=temperature,
+            max_tokens=max_tokens)
+        # 理解阶段的会话**不进** self.messages：那条会话是阶段 A 的，
+        # 混进来会污染"计划会话必须合法"的既有约束（§3.4）。
+        self._brief_messages = list(payload.messages)
+        self._start_llm_call(
+            "understand", payload,
+            note=f"请求剧本理解（第 {self._brief_attempts} 次尝试）")
+
+    def _finish_brief(self, reply: ChatReply) -> None:
+        try:
+            brief = extract_brief(reply)
+        except ValueError as exc:
+            self._brief_problem = str(exc)
+            self.audit.log("brief_invalid", str(exc), level="warning")
+            self._emit("brief_invalid", "剧本理解未通过解析")
+            self._transition(DriverState.UNDERSTANDING)
+            return
+        self._accept_brief(brief)
+
+    def _accept_brief(self, brief: SceneBrief) -> None:
+        characters = self._character_names()
+        problems = brief.validate(characters)
+        self.brief = brief
+        self.audit.log("brief_received",
+                       f"剧本理解完成（来源：{brief.source}，"
+                       f"{len(brief.beats)} 个节拍 / {len(brief.gaze)} 条注视）",
+                       level="warning" if problems else "info",
+                       brief=brief.to_dict(), source=brief.source,
+                       problems=problems)
+        self._emit("brief_received", "剧本理解完成", source=brief.source)
+        for problem in problems[:5]:
+            self.audit.log("brief_problem", problem, level="warning")
         self._transition(DriverState.PLANNING)
+
+    def _fall_back_to_brief(self, reason: str) -> None:
+        """理解失败/预算不足：降级为确定性抽取，**永不致命**（§3.2）。"""
+        self.audit.log("brief_degraded",
+                       f"剧本理解降级为确定性抽取：{reason}",
+                       level="warning", error=ErrorCode.BRIEF_001.value)
+        self._emit("brief_degraded", "剧本理解降级", reason=reason)
+        self._accept_brief(deterministic_brief(self.parsed_script,
+                                               self._character_names()))
 
     def _step_planning(self) -> None:
         if not self.budget.allow_llm_call("plan"):
@@ -420,6 +530,10 @@ class PrevisDriver:
             self._finish_editor_turn(reply)
             return
 
+        if self._call_purpose == "understand":
+            self._finish_brief(reply)
+            return
+
         if self._call_purpose == "review":
             self._finish_review(reply)
             return
@@ -435,6 +549,9 @@ class PrevisDriver:
         self._pin_declared_dialogue()
         target = (DriverState.EDITING if self.builder is not None
                   else DriverState.FINISHING)
+        if target is DriverState.FINISHING:
+            # 没有构建器就不会走 B1，注视关系在这里一次补齐。
+            self._pin_brief_gaze()
         if self._gate_enabled("human_gate_on_plan"):
             self._request_gate(
                 GateRequest(kind="plan", title="确认分镜计划",
@@ -480,6 +597,19 @@ class PrevisDriver:
                            f"已钉住 {pinned} 句剧本声明的台词",
                            shots=len(self.plan.shots))
 
+    def _pin_brief_gaze(self) -> None:
+        """阶段 B1 结束后再补注视关系（§3.5 的"声明 vs 落实"）。
+
+        B1 自己给了 ``gaze`` 就以它为准——那才是**落实侧**，R013 要拿它与
+        阶段 S 的理解对拍。B1 没给（离线、草案失败、模型偷懒）时才用理解
+        兜底，否则这一镜的落实侧是空的，等于没有可比对的证据。
+        """
+        pinned = merge_brief_gaze(self.brief, self.plan)
+        if pinned:
+            self.audit.log("plan_gaze_pinned",
+                           f"已按剧本理解补齐 {pinned} 个镜头的注视关系",
+                           shots=len(self.plan.shots) if self.plan else 0)
+
     def _recover_from_llm_error(self, purpose: str, problem: str) -> None:
         """一次 LLM 调用失败之后的落点——**按阶段区分**。
 
@@ -498,6 +628,10 @@ class PrevisDriver:
         if purpose == "plan":
             # 计划失败由 _step_planning 决定是否再试（消耗 plan_attempts）
             self._transition(DriverState.PLANNING)
+            return
+        if purpose == "understand":
+            # 理解失败**不重试到死**：一次失败就退回确定性抽取并继续规划。
+            self._fall_back_to_brief(problem)
             return
         if purpose == "editor":
             self._skip_editor_turn(problem)
@@ -552,13 +686,17 @@ class PrevisDriver:
 
         没有分镜表声明时什么都不做——本规则只在剧本明确写下约束时生效。
         """
-        if self.parsed_script is None:
-            return
-        if not getattr(self.parsed_script, "declared_shots", None):
+        declared = getattr(self.parsed_script, "declared_shots", None)
+        if not (declared or (self.brief is not None and self.brief.gaze)):
+            # 没有分镜表声明、也没有需要落实的注视关系时，本规则不适用。
+            # R013 只依赖 SceneBrief 与计划，所以**叙事剧本同样要审**
+            # （它没有 declared_shots，但理解阶段照样读出了"谁看谁"）。
             return
         from .compliance import compliance_report
 
-        report = compliance_report(plan, self.parsed_script)
+        level = getattr(getattr(self.config, "audit", None), "level", None)
+        report = compliance_report(plan, self.parsed_script, brief=self.brief,
+                                   audit_level=level)
         self._compliance = report
         errors = [item for item in report["findings"]
                   if str(item.get("severity")) == "error"]
@@ -667,6 +805,7 @@ class PrevisDriver:
             self._editing_index = 0
         if self._editing_index >= len(self._editing_queue):
             self._editing_queue = []
+            self._pin_brief_gaze()
             self._transition(DriverState.BUILDING)
             return
         shot_id = self._editing_queue[self._editing_index]
@@ -675,6 +814,7 @@ class PrevisDriver:
                            f"预算不足以逐镜生成，{shot_id} 起沿用计划内容",
                            level="warning")
             self._editing_queue = []
+            self._pin_brief_gaze()
             self._transition(DriverState.BUILDING)
             return
         self._start_editor_call(shot_id)
@@ -758,7 +898,7 @@ class PrevisDriver:
             return
         started = self.clock()
         try:
-            summary = self.builder.build(plan) or {}
+            summary = self.builder.build(plan, self.brief) or {}
         except Exception as exc:  # noqa: BLE001 - 构建失败要如实上报并降级
             self.audit.log("build_failed", f"{type(exc).__name__}: {exc}",
                            level="error")
@@ -1101,7 +1241,8 @@ class PrevisDriver:
         payload: ChatPayload = build_plan_payload(self.script, self.config,
                                                   request_id=request_id,
                                                   parsed=self.parsed_script,
-                                                  retriever=self.knowledge)
+                                                  retriever=self.knowledge,
+                                                  brief=self.brief)
         self._start_llm_call("plan", payload,
                              note=f"请求分镜计划（第 {self._plan_attempts} 次尝试）")
 

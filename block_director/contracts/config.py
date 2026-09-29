@@ -32,7 +32,7 @@ from .enums import (
 from .serde import from_plain as _from_plain
 from .serde import to_plain as _to_plain
 
-CONFIG_VERSION = "1.2.0"
+CONFIG_VERSION = "1.3.0"
 CONFIG_ENV_VAR = "BLOCKDIRECTOR_CONFIG"
 
 #: ``#RRGGBB`` / ``#RGB``（契约层不 import utils，保持依赖单向）
@@ -108,9 +108,22 @@ class AuditConfig:
 
 @dataclass
 class BudgetConfig:
-    max_llm_calls_per_scene_formula: str = "shots * 6"
+    #: 每个镜头允许多少次 LLM 调用。v1.3 多了阶段 S 与运镜/知识检索，
+    #: 额度从 v1.2 的 ``shots * 6`` 提到 ``shots * 8``（§6.1）。
+    max_llm_calls_per_scene_formula: str = "shots * 8"
     max_cost_usd: float = 5.0
     max_wall_minutes: float = 30.0
+
+
+@dataclass
+class BriefConfig:
+    """阶段 S（剧本理解，§3.2）。"""
+
+    #: 是否先做一次结构化理解。关掉就退回 v1.2 的"直接规划"路径。
+    enabled: bool = True
+    #: SceneBrief 注入规划提示的 token 上限。没有上限的超长理解会把整次
+    #: 调用顶出模型上下文窗口（system 永远不进 trim 的裁剪范围）。
+    max_tokens: int = 1200
 
 
 @dataclass
@@ -195,6 +208,7 @@ class AppConfig:
     orchestration: OrchestrationConfig = field(default_factory=OrchestrationConfig)
     audit: AuditConfig = field(default_factory=AuditConfig)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
+    brief: BriefConfig = field(default_factory=BriefConfig)
     character: CharacterConfig = field(default_factory=CharacterConfig)
     animation: AnimationConfig = field(default_factory=AnimationConfig)
     dialogue: DialogueConfig = field(default_factory=DialogueConfig)
@@ -307,6 +321,10 @@ class AppConfig:
         if self.character.label_pixels < self.character.label_min_pixels:
             err("CFG_209", "character.label_pixels",
                 "目标字号不得小于可读下限")
+        if self.brief.max_tokens <= 0:
+            err("CFG_210", "brief.max_tokens",
+                f"SceneBrief 的注入上限必须为正数"
+                f"（当前 {self.brief.max_tokens}）")
         return issues
 
     def errors(self) -> List[Issue]:

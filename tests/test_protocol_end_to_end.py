@@ -73,6 +73,15 @@ class FakeModel:
     def reply_for(purpose: str, request_id: str = "",
                   text: str = "") -> Tuple[ChatReply, int, int]:
         usage = Usage(prompt_tokens=120, completion_tokens=30)
+        if purpose == "understand":
+            # 阶段 S：空理解（合法结构、不含推断）
+            call = ToolCall(id="call_brief", function=FunctionCall(
+                name="emit_scene_brief",
+                arguments=json.dumps({"notes": ["协议自检：空理解"]},
+                                     ensure_ascii=False)))
+            return ChatReply(tool_calls=[call], usage=usage, model="fake",
+                             request_id=request_id,
+                             finish_reason="tool_calls"), 0, 0
         if purpose == "plan":
             call = ToolCall(id="call_plan", function=FunctionCall(
                 name=PLAN_TOOL_NAME, arguments=json.dumps(PLAN, ensure_ascii=False)))
@@ -183,6 +192,8 @@ class FakeServer:
                       for item in body.get("tools", []) or []]
         if "emit_shot_draft" in tool_names:
             return "editor"
+        if "emit_scene_brief" in tool_names:
+            return "understand"
         if "emit_plan" in tool_names:
             return "plan"
         if "分镜计划" in text:
@@ -246,7 +257,7 @@ class FlakyAuditor:
 
 
 class StubBuilder:
-    def build(self, plan):
+    def build(self, plan, brief=None):
         return {"shots": len(plan.shots), "total_frames": plan.total_frames}
 
 
@@ -287,14 +298,14 @@ def test_sidecar_mode_runs_the_whole_chain(tmp_path):
     assert len(driver.plan.shots) == 2
     assert "shot_audit" in kinds and "llm_call" in kinds
     # Phase 4 的预算目标（≤8 次）在真实协议上同样成立：
-    # 计划 1 + 单镜草案 2 + 修复 1 + 自我审核 2 = 6 次
-    assert driver.snapshot()["llm_calls"] == 6
-    assert paths.count("/v1/chat") == 6
+    # 剧本理解 1 + 计划 1 + 单镜草案 2 + 修复 1 + 自我审核 2 = 7 次
+    assert driver.snapshot()["llm_calls"] == 7
+    assert paths.count("/v1/chat") == 7
     assert all(item["headers"].get("Authorization") == "Bearer secret-token"
                for item in server.requests if item["path"].startswith("/v1/"))
-    assert len(trace) == 6 and all(item["prompt"] for item in trace)
+    assert len(trace) == 7 and all(item["prompt"] for item in trace)
     assert [item["purpose"] for item in trace] == [
-        "plan", "editor", "editor", "repair", "review", "review"]
+        "understand", "plan", "editor", "editor", "repair", "review", "review"]
     assert driver.budget.state.total_tokens > 0      # usage 在协议里传回来了
 
 
@@ -306,7 +317,7 @@ def test_direct_mode_runs_the_whole_chain(tmp_path):
         paths = server.paths()
 
     assert state is DriverState.DONE
-    assert paths.count("/v1/chat/completions") == 6
+    assert paths.count("/v1/chat/completions") == 7
     assert "/v1/chat" not in paths
     assert driver.budget.state.total_tokens > 0
 

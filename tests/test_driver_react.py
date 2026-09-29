@@ -17,6 +17,8 @@ from block_director.layer5_orchestrator.planner import PLAN_TOOL_NAME
 from block_director.layer5_orchestrator.states import DriverState
 from block_director.layer6_audit.audit_logger import AuditLogger
 
+from stage_helpers import is_understand, understand_reply
+
 SCRIPT = "INT. 咖啡馆 - 日\n\n小明坐下。\n"
 
 
@@ -43,6 +45,9 @@ class ScriptedTransport:
         self._script_index = 0
 
     def chat(self, payload, timeout=120.0):
+        if is_understand(payload):
+            # 阶段 S 不占脚本项、也不计入 calls（见 stage_helpers）
+            return understand_reply(payload.request_id)
         self.calls += 1
         self.payloads.append(payload)
         if str(payload.purpose) == "editor":
@@ -92,7 +97,7 @@ class StubAuditor:
 
 
 class StubBuilder:
-    def build(self, plan):
+    def build(self, plan, brief=None):
         return {"shots": len(plan.shots)}
 
 

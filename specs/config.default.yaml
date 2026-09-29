@@ -2,7 +2,7 @@
 # 本文件由 block_director.contracts.config.dump_default_yaml() 生成，请勿手工漂移；
 # 修改默认值请改 block_director/contracts/config.py 后重新生成。
 
-config_version: 1.2.0
+config_version: 1.3.0
 llm:
   transport: auto
   sidecar_url: http://127.0.0.1:8765
@@ -34,9 +34,12 @@ audit:
   human_gate_on_plan: true
   human_gate_on_axis_violation: true
 budget:
-  max_llm_calls_per_scene_formula: shots * 6
+  max_llm_calls_per_scene_formula: shots * 8
   max_cost_usd: 5.0
   max_wall_minutes: 30.0
+brief:
+  enabled: true
+  max_tokens: 1200
 character:
   head_radius: 0.35
   body_radius: 0.25

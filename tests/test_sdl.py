@@ -58,6 +58,45 @@ def test_build_sdl_works_without_a_build_summary():
     assert validate_sdl(sdl) == []          # 没排片也能自洽
 
 
+def test_sdl_carries_the_brief_the_gaze_and_the_declared_movements():
+    """v1.3：阶段 S 的理解与声明式运镜都要跟着项目文件走。
+
+    丢了 brief 就没有可比对的"声明"，丢了 movements 重新打开项目后镜头
+    就变成静止——两者都是"存了再开就不一样"的静默失真。
+    """
+    from block_director.contracts.brief import SceneBrief
+
+    plan = Plan.from_dict({
+        "scene_heading": "INT. 码头 - 午后",
+        "shots": [{"shot_id": "shot_001", "order": 1, "intent": "对峙",
+                   "shot_type": "MLS", "duration_frames": 48,
+                   "characters": ["char_001", "char_002"],
+                   "gaze": [{"from": "char_001", "to": "char_002"}],
+                   "camera": {"side": "front_left",
+                              "movements": [{"type": "dolly_in",
+                                             "amount": 1.0,
+                                             "start_frame": 1,
+                                             "end_frame": 48,
+                                             "seed": 7}]}}]})
+    brief = SceneBrief.from_dict({"beats": [{"summary": "对峙"}]})
+    sdl = build_sdl(plan, brief=brief)
+
+    assert sdl.brief["beats"] == [{"summary": "对峙"}]
+    assert sdl.brief["source"] == "llm"
+    shot = sdl.shots[0]
+    assert shot.gaze == [{"from": "char_001", "to": "char_002"}]
+    assert shot.camera.movements[0]["type"] == "dolly_in"
+    assert shot.camera.movements[0]["seed"] == 7
+    assert shot.camera.movement == "dolly_in"
+    assert shot.camera.request["side"] == "front_left"
+
+    back = sdl_to_plan(SDLProject.from_dict(sdl.to_dict()))
+    assert back.shots[0].gaze == [{"from": "char_001", "to": "char_002"}]
+    assert back.shots[0].camera["movements"][0]["type"] == "dolly_in"
+    assert back.shots[0].camera["side"] == "front_left"
+    assert SDLProject.from_dict(sdl.to_dict()).brief == sdl.brief
+
+
 def test_sdl_round_trips_through_dict():
     sdl = build_sdl(demo_plan(), build_summary=BUILD)
     restored = SDLProject.from_dict(sdl.to_dict())

@@ -89,6 +89,9 @@ class SDLProject:
     scenes: List[SDLScene] = field(default_factory=list)
     continuity: Dict[str, Any] = field(default_factory=dict)
     warnings: List[str] = field(default_factory=list)
+    #: v1.3：阶段 S 的剧本理解（§3.2）。落进项目文件后可以人工编辑，
+    #: 再重新生成——"理解"和"计划"一样是可见、可改、可复现的产物。
+    brief: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def shots(self) -> List[SDLShot]:

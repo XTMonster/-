@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from block_director.contracts.audit import AuditResult
+from block_director.contracts.enums import Purpose
 from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall, Usage
 from block_director.layer5_orchestrator.budget import Budget, BudgetLimits
 from block_director.layer5_orchestrator.driver import DriverLimits, PrevisDriver
@@ -58,23 +59,24 @@ def test_budget_allows_the_normal_run_and_reports_usage():
     driver = _driver(transport, auditor=auditor)
     assert driver.run_to_completion() is DriverState.DONE
     summary = driver.snapshot()["budget"]
-    # 计划 1 + 单镜草案 2（§7.1 的 B1，逐镜一次）+ 自我审核 1
-    assert summary["llm_calls"] == 4
+    # 剧本理解 1（阶段 S）+ 计划 1 + 单镜草案 2（§7.1 的 B1，逐镜一次）
+    # + 自我审核 1
+    assert summary["llm_calls"] == 5
     assert summary["exhausted"] is None
 
 
 def test_budget_blocks_repair_but_keeps_the_built_scene():
-    """计划用掉唯一一次调用后，修复被拦下——但场景已经建好了。"""
+    """理解 + 计划用掉仅有的两次调用后，修复被拦下——但场景已经建好了。"""
     transport = RepairingTransport()
     auditor = FakeAuditor([AuditResult(passed=False, target="shot_001",
                                        level="rule")])
-    budget = Budget(BudgetLimits(max_llm_calls=1, max_tokens=0,
+    # 2 = 阶段 S 的理解 + 阶段 A 的计划；修复是第三次，必然被拦下
+    budget = Budget(BudgetLimits(max_llm_calls=2, max_tokens=0,
                                  max_cost_usd=0, max_wall_seconds=0))
     driver = _driver(transport, auditor=auditor, budget=budget)
 
     assert driver.run_to_completion() is DriverState.DONE
-    assert _purposes(transport) == [p for p in _purposes(transport)
-                                    if p.value == "plan"]
+    assert _purposes(transport) == [Purpose.UNDERSTAND, Purpose.PLAN]
     assert driver.degraded_reason and "调用次数" in driver.degraded_reason
     assert driver.snapshot()["built"] is True          # 场景没被丢掉
     kinds = [e.kind for e in driver.audit.recent()]
@@ -105,8 +107,8 @@ def test_token_usage_is_accounted_from_replies():
         AuditResult(passed=True, target="shot_001")])
     driver = _driver(transport, auditor=auditor)
     driver.run_to_completion()
-    # 计划 + 两镜草案 + 修复 + 自我审核，每次 150 token
-    assert driver.snapshot()["budget"]["total_tokens"] == 5 * 150
+    # 理解 + 计划 + 两镜草案 + 修复 + 自我审核，每次 150 token
+    assert driver.snapshot()["budget"]["total_tokens"] == 6 * 150
 
 
 # --------------------------------------------------------------------------- #

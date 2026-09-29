@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from ..contracts.audit import AuditError
-from ..contracts.enums import Severity
+from ..contracts.enums import AuditLevel, Severity
 from ..contracts.plan import Plan
 from ..layer1_input.timing import frames_from_seconds
 
@@ -29,6 +29,9 @@ RULE_COUNT = "R015"
 RULE_DURATION = "R015"
 RULE_SHOT_TYPE = "R015"
 RULE_DIALOGUE = "R016"
+
+#: v1.3：注视落实（SceneBrief.gaze 必须被 shot.gaze 落实，或显式豁免）
+RULE_GAZE = "R013"
 
 CODE_SCRIPT = "E_SCRIPT_001"
 
@@ -43,23 +46,68 @@ def _declared_shots(script) -> List[Any]:
     return list(getattr(script, "declared_shots", []) or [])
 
 
+def _gaze_pairs(entries) -> List[tuple]:
+    pairs: List[tuple] = []
+    for item in entries or []:
+        if not isinstance(item, dict):
+            continue
+        source = str(item.get("from") or "").strip()
+        target = str(item.get("to") or "").strip()
+        if source and target:
+            pairs.append((source, target))
+    return pairs
+
+
+def check_gaze(plan: Optional[Plan], brief, *,
+               strict: bool = False) -> List[AuditError]:
+    """R013：阶段 S 读出来的注视关系，计划有没有落实（§3.5）。
+
+    默认只是告警——理解可能有误，不该因为一条推断就把运行判为失败；
+    ``audit.level = strict`` 时升级为错误，供"零容忍"的场合使用。
+    """
+    if plan is None or brief is None or not getattr(brief, "gaze", None):
+        return []
+    severity = Severity.ERROR if strict else Severity.WARNING
+    findings: List[AuditError] = []
+    for index, shot in enumerate(plan.shots, start=1):
+        shot_id = str(getattr(shot, "shot_id", "") or "")
+        expected = set(_gaze_pairs(brief.gazes_in(shot_id, index)))
+        if not expected:
+            continue
+        actual = set(_gaze_pairs(getattr(shot, "gaze", None)))
+        missing = sorted(expected - actual)
+        if not missing:
+            continue
+        detail = "、".join(f"{source}→{target}" for source, target in missing)
+        findings.append(_finding(
+            severity, RULE_GAZE,
+            f"{shot_id} 没有落实剧本理解的注视关系：{detail}",
+            target=shot_id,
+            suggestion="让角色互相看向对方（face_character / look_at），"
+                       "或在 SceneBrief 里删掉这条注视"))
+    return findings
+
+
 def _shot_seconds(shot, fps: int) -> float:
     return round(int(shot.duration_frames) / float(fps), 3)
 
 
 def check_compliance(plan: Plan, script, *, fps: int = FPS,
-                     tolerance_seconds: float = TOLERANCE_SECONDS
+                     tolerance_seconds: float = TOLERANCE_SECONDS,
+                     brief=None, audit_level=None
                      ) -> List[AuditError]:
     """返回全部落实偏差；空列表表示逐条对上。
 
-    声明为空（叙事剧本、没有分镜表）时**不做任何判定**——本规则只在
-    "导演明确写下了约束"时生效，绝不凭空发明约束。
+    R015/R016 在声明为空（叙事剧本、没有分镜表）时**不做任何判定**——它们
+    只在"导演明确写下了约束"时生效，绝不凭空发明约束。R013（注视落实）不同：
+    它比较的是阶段 S 的理解与计划，与有没有分镜表无关。
     """
+    strict = str(audit_level or "") == str(AuditLevel.STRICT)
+    findings: List[AuditError] = check_gaze(plan, brief, strict=strict)
     declared = _declared_shots(script)
     if not declared or plan is None:
-        return []
+        return findings
 
-    findings: List[AuditError] = []
     margin = max(int(round(float(tolerance_seconds) * int(fps))), 1)
     planned = list(plan.shots)
 
@@ -138,12 +186,14 @@ def check_compliance(plan: Plan, script, *, fps: int = FPS,
 
 
 def compliance_report(plan: Plan, script, *, fps: int = FPS,
-                      tolerance_seconds: float = TOLERANCE_SECONDS
+                      tolerance_seconds: float = TOLERANCE_SECONDS,
+                      brief=None, audit_level=None
                       ) -> Dict[str, Any]:
     """``script_compliance.json`` 的内容：逐条列出声明 → 落实 → 偏差。"""
     declared = _declared_shots(script)
     findings = check_compliance(plan, script, fps=fps,
-                                tolerance_seconds=tolerance_seconds)
+                                tolerance_seconds=tolerance_seconds,
+                                brief=brief, audit_level=audit_level)
     planned = list(plan.shots) if plan is not None else []
 
     rows: List[Dict[str, Any]] = []
@@ -178,6 +228,8 @@ def compliance_report(plan: Plan, script, *, fps: int = FPS,
         "declared_total_seconds": declared_total,
         "plan_total_seconds": round(plan_total / float(fps), 3),
         "fps": int(fps),
+        "brief_source": (getattr(brief, "source", "") if brief is not None
+                         else ""),
         "rows": rows,
         "findings": [item.to_dict() for item in findings],
     }

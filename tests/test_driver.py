@@ -12,6 +12,8 @@ from block_director.layer5_orchestrator.planner import PLAN_TOOL_NAME
 from block_director.layer5_orchestrator.states import DriverState
 from block_director.layer6_audit.audit_logger import AuditLogger
 
+from stage_helpers import is_understand, understand_reply
+
 SCRIPT = "INT. 咖啡馆 - 日\n\n小明坐下。\n"
 
 
@@ -34,6 +36,11 @@ class ScriptedTransport:
         self.cancelled = []
 
     def chat(self, payload, timeout=120.0):
+        # 阶段 S 不消耗脚本项、也不计入 calls：这里的脚本与计数都是
+        # "计划/草案/修复"这条主线的，混进一次理解调用会让所有
+        # 位置对应的断言整体错位一格。
+        if is_understand(payload):
+            return understand_reply(payload.request_id)
         self.calls += 1
         item = self._replies[min(self.calls - 1, len(self._replies) - 1)]
         if isinstance(item, Exception):
@@ -93,7 +100,10 @@ def test_state_transitions_are_audited(tmp_path):
     assert kinds[-1] == "run_finished"
     # 状态迁移记录完整
     states = [e.message for e in audit.recent() if e.kind == "state"]
-    assert states[0] == "IDLE → PLANNING"
+    # v1.3 起 IDLE 先去阶段 S（剧本理解），再进阶段 A
+    assert states[0] == "IDLE → UNDERSTANDING"
+    assert states[1] == "UNDERSTANDING → CALLING_LLM"
+    assert "CALLING_LLM → PLANNING" in states
     assert states[-1].endswith("→ DONE")
     assert audit.trace_path.exists()
 

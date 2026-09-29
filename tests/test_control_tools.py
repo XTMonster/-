@@ -21,6 +21,8 @@ from block_director.layer5_orchestrator.tool_registry import ToolRegistry
 from block_director.layer6_audit.audit_logger import AuditLogger
 from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall
 
+from stage_helpers import is_understand, understand_reply
+
 SCRIPT = "INT. 咖啡馆 - 日\n\n小明坐下。\n"
 
 
@@ -40,6 +42,9 @@ class ScriptedTransport:
         self.calls = 0
 
     def chat(self, payload, timeout=120.0):
+        # 阶段 S 不消耗脚本项、也不计入 calls（见 stage_helpers 的说明）
+        if is_understand(payload):
+            return understand_reply(payload.request_id)
         self.calls += 1
         item = self._replies[min(self.calls - 1, len(self._replies) - 1)]
         call = ToolCall(id=f"c{self.calls}",
@@ -74,7 +79,7 @@ class StubBuilder:
     def __init__(self):
         self.built = 0
 
-    def build(self, plan):
+    def build(self, plan, brief=None):
         self.built += 1
         return {"shots": len(plan.shots)}
 

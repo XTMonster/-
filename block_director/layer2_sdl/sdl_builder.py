@@ -21,6 +21,43 @@ from ..contracts.sdl import (
 )
 
 
+def _movement_list(camera: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """计划里的 ``camera.movements`` → SDL 的 ``movements``。"""
+    raw = (camera or {}).get("movements")
+    return [dict(item) for item in raw or [] if isinstance(item, dict)]
+
+
+def _movement_name(camera: Dict[str, Any]) -> str:
+    """旧的单值 ``movement`` 字段：只有一次运镜时写它，多个时留 ``static``。"""
+    items = _movement_list(camera)
+    if len(items) == 1:
+        return str(items[0].get("type") or "static")
+    return "static"
+
+
+def _camera_side_request(camera: Dict[str, Any]) -> Dict[str, Any]:
+    """取景请求（side/lens）单独放 ``request``，运镜另有 ``movements``。"""
+    payload = {key: value for key, value in (camera or {}).items()
+               if key != "movements"}
+    return payload
+
+
+def _camera_request(camera: SDLCamera) -> Dict[str, Any]:
+    """把 SDL 的相机描述还原成计划的 ``ShotPlan.camera`` 形态。
+
+    v1.3 的运镜是**声明式**的：重建场景时 ``camera.movements`` 会被自动
+    消费成关键帧，所以它必须跟着项目文件一起回来，否则"存了再打开"就丢运动。
+    """
+    request = dict(camera.request or {})
+    if camera.lens:
+        request.setdefault("lens", float(camera.lens))
+    if camera.movements:
+        request["movements"] = [dict(item) for item in camera.movements]
+    elif camera.movement and camera.movement != "static":
+        request.setdefault("movements", [{"type": camera.movement}])
+    return request
+
+
 def _environment(spec: SceneSpec) -> SDLEnvironment:
     return SDLEnvironment(
         ground_size=[float(spec.ground_size[0]), float(spec.ground_size[1])],
@@ -36,9 +73,10 @@ def build_sdl(plan: Plan, *,
               spec: Optional[SceneSpec] = None,
               project_name: str = "BlockDirector",
               fps: int = 24,
-              scene_id: str = "scene_001") -> SDLProject:
+              scene_id: str = "scene_001",
+              brief=None) -> SDLProject:
     """把分镜计划与构建结果组装成一份 SDL。"""
-    spec = spec or SceneSpec.from_plan(plan)
+    spec = spec or SceneSpec.from_plan(plan, brief=brief)
     results = {item.get("shot_id"): item
                for item in (build_summary or {}).get("results", [])}
 
@@ -64,12 +102,16 @@ def build_sdl(plan: Plan, *,
             camera=SDLCamera(id=result.get("camera", f"BD_Cam_{planned.shot_id}"),
                              position=list(position), target=list(target),
                              lens=float(result.get("lens") or 50.0),
-                             movement="static", request={}),
+                             movement=str(_movement_name(planned.camera)),
+                             movements=_movement_list(planned.camera),
+                             request=_camera_side_request(planned.camera)),
             axis_line=None,
             active_speakers=list(planned.characters),
             characters=list(planned.characters),
             actions=[dict(action) for action in planned.actions],
             dialogues=[dict(item) for item in planned.dialogues],
+            gaze=[dict(item) for item in (getattr(planned, "gaze", []) or [])],
+            vfx=[dict(item) for item in (getattr(planned, "vfx", []) or [])],
             prompt=planned.prompt,
         ))
 
@@ -84,7 +126,8 @@ def build_sdl(plan: Plan, *,
     return SDLProject(name=project_name, version=SDL_VERSION, fps=fps,
                       characters=list(spec.cast), scenes=[scene],
                       continuity=continuity,
-                      warnings=list((build_summary or {}).get("warnings", [])))
+                      warnings=list((build_summary or {}).get("warnings", [])),
+                      brief=(brief.to_dict() if brief is not None else {}))
 
 
 def sdl_to_plan(sdl: SDLProject) -> Plan:
@@ -103,6 +146,9 @@ def sdl_to_plan(sdl: SDLProject) -> Plan:
                 "characters": list(shot.characters),
                 "actions": [dict(a) for a in shot.actions],
                 "dialogues": [dict(d) for d in shot.dialogues],
+                "camera": _camera_request(shot.camera),
+                "gaze": [dict(item) for item in shot.gaze],
+                "vfx": [dict(item) for item in shot.vfx],
                 "prompt": shot.prompt,
             }))
     heading = sdl.scenes[0].heading if sdl.scenes else ""

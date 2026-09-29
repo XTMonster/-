@@ -76,7 +76,9 @@
             "sensor_width": 36.0,
             "movement": "static",
             "movements": [],
-            "request": {}
+            "request": {
+              "side": "front"
+            }
           },
           "axis_line": null,
           "active_speakers": [
@@ -128,7 +130,9 @@
             "sensor_width": 36.0,
             "movement": "static",
             "movements": [],
-            "request": {}
+            "request": {
+              "side": "front"
+            }
           },
           "axis_line": null,
           "active_speakers": [
@@ -175,7 +179,9 @@
             "sensor_width": 36.0,
             "movement": "static",
             "movements": [],
-            "request": {}
+            "request": {
+              "side": "front"
+            }
           },
           "axis_line": null,
           "active_speakers": [
@@ -238,5 +244,6 @@
       }
     }
   },
-  "warnings": []
+  "warnings": [],
+  "brief": {}
 }

@@ -22,6 +22,7 @@ from block_director.layer5_orchestrator.tool_registry import ToolRegistry
 from block_director.layer6_audit.audit_logger import AuditLogger
 
 from test_driver import InlineThread
+from stage_helpers import is_understand, understand_reply
 
 SCRIPT = "INT. 咖啡馆 - 日\n\n小明坐下。\n"
 
@@ -61,6 +62,10 @@ class RepairingTransport:
     def chat(self, payload, timeout=120.0):
         self.chat_calls += 1
         self.payloads.append(payload)
+        if is_understand(payload):
+            # 阶段 S：不算进 chat_calls 的"主线计数"，见 stage_helpers
+            self.chat_calls -= 1
+            return understand_reply(payload.request_id)
         if payload.purpose is Purpose.PLAN:
             call = ToolCall(id=f"plan_{self.chat_calls}",
                             function=FunctionCall(
@@ -90,7 +95,7 @@ class TrivialBuilder:
     def __init__(self):
         self.built = []
 
-    def build(self, plan):
+    def build(self, plan, brief=None):
         self.built.append(plan)
         return {"shots": len(plan.shots), "characters": 2, "cameras": 2,
                 "motions": 0, "keyframes": 0,
@@ -147,9 +152,9 @@ def test_failure_triggers_repair_then_passes():
     assert driver.run_to_completion() is DriverState.DONE
 
     purposes = [p.purpose for p in transport.payloads]
-    # 计划 → 两镜草案 → 修复（§7.1 的 A → B1 → B4）
-    assert purposes == [Purpose.PLAN, Purpose.EDITOR, Purpose.EDITOR,
-                        Purpose.REPAIR]
+    # 剧本理解 → 计划 → 两镜草案 → 修复（§7.1 的 S → A → B1 → B4）
+    assert purposes == [Purpose.UNDERSTAND, Purpose.PLAN, Purpose.EDITOR,
+                        Purpose.EDITOR, Purpose.REPAIR]
     assert len(auditor.calls) == 2
     assert driver.audit_results[0].passed is False
     assert driver.audit_results[-1].passed is True
