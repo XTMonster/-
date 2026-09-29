@@ -86,6 +86,25 @@ P9.4 → P9.5 → P10 → P11 → P12 → P13 → P14(-1..5) → P15 → P16
       ＋**三栏共用一个 token 上限**（此前硬约束与卡片各自用满一次 = 2× 上限）。
 - [x] `scene_contract.py::shot_constraint_query()`：**契约串的生产者**——
       在此之前超图那一条通道在真实运行里一个种子都命中不了（`parse_query` 只认 `键=值`）。
+- [x] **顺带修掉的三条真实缺陷**（都是本轮回溯出来的，不是重命名）：
+      ① 分栏只看 `hardness` 会把"带 `forbid` 的软边"降级进「经验建议（软）」栏
+      （索引里实测有 1 条）——禁忌永远进硬约束栏；
+      ② `block_for_plan` 拿中文摘要去查超图，一整场预取的超图那栏恒空——
+      `declared_constraint_query()` 从分镜表的**声明**（镜别/手法）拼出契约串；
+      ③ **RK-6/RK-8 静默掉成 `not_measured`**（上一轮证据 18/19，本轮一度 16/19）：
+      **真因是 PowerShell 5.1 用 ANSI 代码页解码 Blender 的 UTF-8 stdout**——
+      探针标记里的中文（规则名、冲突文案）被解成乱码字节，`ConvertFrom-Json`
+      整行失败，该探针的 `passed` 名单丢失，挂在上面的 RK 就变成"未量"。
+      修法：`run_tests.ps1` 在任何子进程之前把控制台/管道编码设成 UTF-8 ＋
+      `PYTHONIOENCODING=utf-8`；并把标记负载改成**按大括号配对重拼**（抗流交错），
+      解析不到时把负载写进 `work/probe_parse_fail-<label>.txt`。
+      （顺带修的另一条：`test_phase2_motion.py` 曾上报 `"min_z": NaN`——那是
+      **非法 JSON**，本身也该修：`_min_z` 改为 `None`，
+      `tools/check_assertions.py` 新增"探针不得出现非有限浮点"的静态规则。
+      早先把它当成了 RK 掉线的**唯一**原因，实测不是。）
+      **仍未收口**：`cast-panel` 与 `llm-trace` 两个探针的负载仍解析不出来
+      （转义层级不一致／仍有乱码字节），它们**不承载任何 RK**，因此不影响验收；
+      证据留在 `work/probe_parse_fail-*.txt`。
 - [x] 测试：`tests/test_cases.py`(15)、`tests/test_cases_corpus.py`(10)、
       `tests/test_knowledge_cases_wiring.py`(7)、`test_scene_contract.py` 的
       "生产 → 解析 → 命中"整链；`python -m pytest` = **1250 passed**。

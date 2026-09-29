@@ -19,6 +19,28 @@ $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
+# --------------------------------------------------------------------------- #
+# UTF-8 everywhere BEFORE any native command runs.
+#
+# Windows PowerShell 5.1 decodes a native command's stdout with the console code
+# page (cp936 on this machine). Blender and Python both write UTF-8, so every
+# non-ASCII character in a probe's output was decoded wrongly - and the damage is
+# not just cosmetic: BD_TEST_RESULT carries Chinese inside its JSON (rule names,
+# conflict messages), and the mis-decoded bytes make the payload invalid JSON.
+# ConvertFrom-Json then throws, the probe's `passed` names are never collected,
+# and the RK rules hanging off that probe silently become not_measured
+# (measured: RK-6 and RK-8 both fell to not_measured for exactly this reason,
+# while the same markers parsed fine when the probe was run by hand).
+#
+# Setting the console + pipeline encodings fixes it at the single place that
+# spawns the children, so no probe has to know about it.
+# --------------------------------------------------------------------------- #
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+[Console]::OutputEncoding = $utf8
+[Console]::InputEncoding = $utf8
+$OutputEncoding = $utf8
+$env:PYTHONIOENCODING = 'utf-8'
+
 function Fail([string]$message) {
     Write-Host $message -ForegroundColor Red
     exit 1
@@ -38,6 +60,44 @@ function Assert-Marker([object]$output, [string]$pattern, [string]$label) {
         exit 1
     }
     return $line.Line
+}
+
+# Reassemble the BD_TEST_RESULT JSON payload from the WHOLE probe output.
+#
+# Why not ConvertFrom-Json on the single line Select-String matched: the marker is
+# a multi-KB one-liner, and Blender flushes stdout and stderr in separate chunks
+# (which get interlaced when the machine is busy with another long run). More than
+# one of those interlacings shows up as a line that does not parse, and then the
+# probe's `passed` names are lost - which quietly turns the RKs hanging off that
+# probe into not_measured (measured: RK-6 and RK-8 both fell from measured to
+# not_measured that way). Brace matching after the marker survives both splitting
+# and interleaving.
+function Get-MarkerPayload([object]$output, [string]$marker) {
+    $text = [string]::Join("`n", @($output | ForEach-Object { $_.ToString() }))
+    $index = $text.IndexOf($marker)
+    if ($index -lt 0) { return $null }
+    $rest = $text.Substring($index + $marker.Length)
+    $start = $rest.IndexOf('{')
+    if ($start -lt 0) { return $null }
+    $depth = 0
+    $inString = $false
+    $escape = $false
+    for ($i = $start; $i -lt $rest.Length; $i++) {
+        $ch = $rest[$i]
+        if ($inString) {
+            if ($escape) { $escape = $false }
+            elseif ($ch -eq '\') { $escape = $true }
+            elseif ($ch -eq '"') { $inString = $false }
+            continue
+        }
+        if ($ch -eq '"') { $inString = $true; continue }
+        if ($ch -eq '{') { $depth = $depth + 1 }
+        elseif ($ch -eq '}') {
+            $depth = $depth - 1
+            if ($depth -eq 0) { return $rest.Substring($start, $i - $start + 1) }
+        }
+    }
+    return $null
 }
 
 # --------------------------------------------------------------------------- #
@@ -167,15 +227,37 @@ foreach ($check in $checks) {
     Write-Host ("[{0}/{1}] Blender probe: {2}" -f $index, $total, $check.Label) -ForegroundColor Cyan
     $probeOut = Invoke-BlenderScript $blender (Join-Path $root $check.Script) $null
     $probeLine = Assert-Marker $probeOut $check.Marker $check.Label
-    if ($probeLine -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $probeLine) }
+    # Prefer the reassembled payload for the "any failures?" verdict (the single
+    # line can be cut by stream interleaving); fall back to the original line
+    # regex only when no payload can be recovered. The negative path still fires.
+    $payloadOk = $false
+    $markerPayload = Get-MarkerPayload $probeOut $check.Marker
+    if ($markerPayload) {
+        try {
+            $parsed = $markerPayload | ConvertFrom-Json
+            $payloadOk = $true
+        } catch {
+            $payloadOk = $false
+        }
+    }
+    if ($payloadOk) {
+        if (@($parsed.failed).Count -ne 0) {
+            Fail ('  FAILED: ' + ($parsed.failed -join ', '))
+        }
+    } elseif ($probeLine -notmatch '"failed": \[\]') {
+        Fail ('  FAILED: ' + $probeLine)
+    }
     Write-Host ('  OK: ' + $check.Label) -ForegroundColor Green
     # Collect the probe's self-reported "passed" names so the RK aggregator can
     # derive which RKs were actually measured.
-    try {
-        $payload = ($probeLine -replace ('^.*' + [regex]::Escape($check.Marker) + ' '), '') | ConvertFrom-Json
-        foreach ($name in $payload.passed) { $probePassed += $name }
-    } catch {
+    if ($payloadOk) {
+        foreach ($name in $parsed.passed) { $probePassed += $name }
+    } else {
         Write-Host '  WARN: could not parse the probe result for the RK aggregate' -ForegroundColor Yellow
+        # Leave evidence on disk: a WARN alone hides the fact that the RK derived
+        # from this probe is now not_measured.
+        $dumpPath = Join-Path $root ('work\probe_parse_fail-' + $check.Label + '.txt')
+        ($probeLine + "`n") | Out-File -Encoding utf8 $dumpPath
     }
     $index = $index + 1
 }
