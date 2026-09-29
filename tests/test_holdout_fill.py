@@ -198,6 +198,50 @@ def test_coverage_rounds_rotate_through_the_cards(tmp_path, monkeypatch):
     assert seen_picks[1] != seen_picks[2]
 
 
+def test_gap_round_entries_record_the_gap_prompt_sha(tmp_path, monkeypatch):
+    """补跑轮用的是 `GAP_PROMPT`，条目必须记**它**的 sha，而不是基础 prompt 的。
+
+    否则同一份文件里两种提示产出的条目会被记成同一个标注者——provenance 变成假账。
+    """
+    _with_annotator(monkeypatch)
+    base_sha = holdout_fill._ANNOTATOR["prompt_sha256"]
+    cards = [{"id": "c0", "domain": "anime", "title": "t", "content": "x" * 20}]
+
+    class _Client:
+        model_id = "m"
+        model_version = "v"
+        prefill = ""
+
+        def chat_json(self, system, user, temperature, seed, num_ctx, key="", retries=2):
+            assert system == holdout_fill.GAP_PROMPT
+            return {"entries": [_entry("c0", "情绪=荒诞",
+                                       ["EMOTION_PACK:emotion=荒诞,intensity=high"])]}
+
+    entries, rejects = [], []
+    holdout_fill.coverage_rounds(cards, {"emotion": ["荒诞"]}, _Client(), entries, rejects,
+                                 set(), "fp", rounds=1, counter=0, window=1,
+                                 progress_path=tmp_path / "progress.json",
+                                 partial_path=tmp_path / "partial.jsonl")
+    assert len(entries) == 1
+    assert entries[0]["annotator"]["prompt_sha256"] == holdout_fill.gap_prompt_sha()
+    assert entries[0]["annotator"]["prompt_sha256"] != base_sha
+
+
+def test_fingerprint_changes_when_the_gap_prompt_changes(monkeypatch):
+    """补跑提示改了也得作废旧半成品——它同样是"标注者身份"的一部分。"""
+    _with_annotator(monkeypatch)
+
+    class _Client:
+        model_id = "m"
+        model_version = "v"
+        prefill = ""
+
+    cards = [{"id": "c1", "content": "x"}]
+    baseline = holdout_fill.run_fingerprint(cards, _Client(), "v1")
+    monkeypatch.setattr(holdout_fill, "GAP_PROMPT", holdout_fill.GAP_PROMPT + "\n新增")
+    assert holdout_fill.run_fingerprint(cards, _Client(), "v1") != baseline
+
+
 def test_run_fingerprint_changes_with_the_model():
     class _Client:
         model_id = "qwen3-vl:30b"

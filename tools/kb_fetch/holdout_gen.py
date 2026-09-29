@@ -34,7 +34,7 @@ from block_director.knowledge import hypergraph as hg
 HOLDOUT = common.ROOT / "fixtures" / "knowledge_holdout.jsonl"
 CARDS_JSON = common.ROOT / "fixtures" / "knowledge_holdout.cards.json"
 MANIFEST = common.WORK / "holdout.manifest.json"
-PROMPT_VERSION = "holdout/v2"
+PROMPT_VERSION = "holdout/v3"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
@@ -58,6 +58,16 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    EMOTION_PACK: emotion＋intensity；SHOT_PATTERN: shot_size＋lens＋headroom_policy；
    AXIS_RULE: pair＋axis_side；TROPE: genre＋emotion；EDIT_RHYTHM: pacing＋avg_shot_len；
    LIGHT_PACK: lighting＋intensity。
+2b. **只有这六个类型名**。不要发明 `COMPOSITION`／`COMPOSITION_RULE`／`FRAMING` 之类的
+   新类型——机器会以 `bad_type` 整条拒收。
+2c. **构图/机位/特效/音效/动作类知识挂到最接近的那一类边上，作为额外槽位**
+   （必填槽位照旧写全）：
+   * 构图（均衡/三分/留白/引导空间/遮挡）→ `SHOT_PATTERN` ＋ `composition_rule=<词表取值>`；
+   * 机位（高低/荷兰角/过肩/骑轴）→ 就近那类 ＋ `camera_angle=<词表取值>`；
+   * 特效/音效 → 就近那类 ＋ `vfx=`／`sfx=<词表取值>`；
+   * 动作 → 就近那类 ＋ `action=<词表取值>`；
+   * 适用题材/景别 → `applies_to_genre=`／`applies_to_shot_size=<词表取值>`。
+   **卡片属于哪个 domain 与边类型无关**：`domain=composition` 的卡也要写成这六类之一。
 3. 槽位名 = kind；禁忌槽位写成 `forbid_<kind>=取值`。取值尽量用词表里的规范名。
 3b. 取值**必须**是词表里的那一个（闭集，逐字相同）：`q` 里和 `must` 里都一样。
     写了词表外的说法会被机器判成 `unknown_values`——那**整条作废**，不是警告。

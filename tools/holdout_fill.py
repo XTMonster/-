@@ -64,6 +64,7 @@ REPORT = common.WORK / "holdout_report.json"
 _ANNOTATOR: Dict[str, str] = {}
 
 # 缺口补写用的系统提示（不放进 holdout_gen，避免动它的冻结 prompt 版本）。
+GAP_PROMPT_VERSION = "holdout-gap/v1"
 GAP_PROMPT = (
     "你是分镜知识库的独立标注员。下面给出一份**缺口清单**与若干张知识卡。"
     "请**只**针对缺口写检索期望，输出 JSON：{\"entries\":[...]}，每条格式与之前一致："
@@ -79,6 +80,10 @@ GAP_PROMPT = (
     "5. 禁忌槽位 `forbid_<kind>=取值` **只允许出现在 EMOTION_PACK** 上，"
     "且该 kind 的同名取值必须同时出现在 `q` 里（这样才算一次禁忌冲突）。\n"
     "6. `from_card` 必须是下面列出的卡片 id 之一，且**优先用没被用过的卡**。\n"
+    "7. **只有六个类型名**（EMOTION_PACK／SHOT_PATTERN／AXIS_RULE／TROPE／EDIT_RHYTHM／"
+    "LIGHT_PACK），不要发明 COMPOSITION 之类的新类型；构图/机位/特效/音效/动作类知识"
+    "挂到最接近的那一类边上作为**额外槽位**（如构图 → `SHOT_PATTERN` ＋ "
+    "`composition_rule=rule_of_thirds`，必填槽位照旧写全）。卡片属于哪个 domain 与边类型无关。\n"
 )
 
 
@@ -100,9 +105,15 @@ def run_fingerprint(cards: Sequence[Dict], client, prompt_version: str) -> str:
         str(getattr(client, "model_version", "")),
         str(prompt_version),
         hashlib.sha256(holdout_gen.SYSTEM_PROMPT.encode("utf-8")).hexdigest(),
+        #: 补跑提示也是"标注者身份"的一部分：它变了，旧半成品同样不该续跑。
+        gap_prompt_sha(),
         str(getattr(client, "prefill", "")),
     ])
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def gap_prompt_sha() -> str:
+    return hashlib.sha256((GAP_PROMPT + GAP_PROMPT_VERSION).encode("utf-8")).hexdigest()
 
 
 def load_partial(fingerprint: str, progress_path: pathlib.Path = PROGRESS,
@@ -237,7 +248,7 @@ def _dedupe_key(entry: Dict) -> Tuple:
 
 
 def absorb(entries: List[Dict], rejects: List[Dict], raw_reply, card_ids: set,
-           counter: int) -> int:
+           counter: int, prompt_sha: str = "") -> int:
     """把一次回复里合格的条目并进 `entries`（去重），返回新的序号。"""
     seen = {_dedupe_key(entry) for entry in entries}
     raw_entries = raw_reply.get("entries") if isinstance(raw_reply, dict) else None
@@ -250,8 +261,13 @@ def absorb(entries: List[Dict], rejects: List[Dict], raw_reply, card_ids: set,
             if entry is None:
                 rejects.append({"reason": reason, "raw": str(raw)[:200]})
                 continue
+            annotator = dict(_ANNOTATOR)
+            if prompt_sha:
+                # 补跑轮用的是 GAP_PROMPT（另一份提示），provenance 必须记**它**的 sha，
+                # 否则同一份文件里两种提示产出的条目会被记成同一个标注者。
+                annotator["prompt_sha256"] = prompt_sha
             candidate = {"id": f"hq_{counter + 1:04d}", **entry,
-                         "annotator": dict(_ANNOTATOR), "independence": "strong",
+                         "annotator": annotator, "independence": "strong",
                          "pilot": False}
             # **与校验器同一套逐条判据**：门② 判红的结构（`q` 里重复键、`q` 与 `must`
             # 同 kind 取值不一致、`top1` 不在 `must` 里、同成员既要又要……）绝不许在
@@ -336,7 +352,8 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
             rejects.append({"batch": key, "reason": "%s: %s" % (type(exc).__name__, exc)})
             continue
         before = len(entries)
-        counter = absorb(entries, rejects, reply, card_ids, counter)
+        counter = absorb(entries, rejects, reply, card_ids, counter,
+                         prompt_sha=gap_prompt_sha())
         done.add(key)
         save_partial(entries, rejects, done, fingerprint, progress_path, partial_path)
         print(json.dumps({"phase": "gaps", "round": round_index,
