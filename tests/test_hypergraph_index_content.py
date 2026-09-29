@@ -24,6 +24,7 @@ if str(ROOT) not in sys.path:
 EDGES_FILE = ROOT / "knowledge" / "hypergraph.edges.jsonl"
 NODES_FILE = ROOT / "knowledge" / "hypergraph.nodes.jsonl"
 MANIFEST_FILE = ROOT / "knowledge" / "hypergraph.manifest.json"
+REJECTS_FILE = ROOT / "knowledge" / "hypergraph.rejects.jsonl"
 
 
 def _read_jsonl(path: pathlib.Path) -> list:
@@ -72,6 +73,22 @@ def test_manifest_merge_block_matches_the_edges_on_disk():
     assert isinstance(block, dict), "manifest 缺 `merge` 段（第 2 段归并的留痕）"
     assert block["forbid_members"] == sum(_forbid_count(edge) for edge in edges)
     assert block["max_arity"] == max(len(edge["members"]) for edge in edges)
+
+
+def test_the_reject_ledger_adds_up():
+    """manifest 的账必须与落盘文件逐条对得上，且恒等式 `raw = valid + dup + rejects` 成立。
+
+    这条是 P14-5 的 Q0 判据：只写个汇总数字、明细却放在别处（或反过来）时，
+    外部无法判断索引到底被门挡掉了多少东西。
+    """
+    edges = _read_jsonl(EDGES_FILE)
+    rejects = _read_jsonl(REJECTS_FILE)
+    manifest = json.loads(MANIFEST_FILE.read_text(encoding="utf-8"))
+    assert manifest["rejects"] == len(rejects), (
+        f"manifest 说 rejects={manifest['rejects']}，rejects 文件却有 {len(rejects)} 行")
+    assert len(edges) == manifest["valid_unique"]
+    assert manifest["raw_edges"] == (manifest["valid_unique"] + manifest["duplicates"]
+                                     + manifest["rejects"])
 
 
 def test_forbid_kinds_are_real_nodes():

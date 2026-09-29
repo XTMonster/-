@@ -509,8 +509,15 @@ def merge_duplicates(edges: Sequence[HyperEdge]) -> Tuple[List[HyperEdge], int]:
 
 
 def build_index(edges: Sequence[HyperEdge], nodes: Dict[str, Node],
-                processed_chunks: int, total_chunks: int) -> Tuple[List[HyperEdge], BuildReport]:
-    """过 9 条门 -> 去重合并 -> 构建门报告（`raw = valid_unique + duplicates + rejects`）。"""
+                processed_chunks: int, total_chunks: int,
+                reject_sink: Optional[List[Dict]] = None,
+                ) -> Tuple[List[HyperEdge], BuildReport]:
+    """过 9 条门 -> 去重合并 -> 构建门报告（`raw = valid_unique + duplicates + rejects`）。
+
+    `reject_sink` 给了就把**边级**拒收明细逐条追加进去。这条账必须能被外面的
+    `hypergraph.rejects.jsonl` 逐行对上：manifest 说 `rejects=N` 而文件有 M 行时
+    （N≠M），外人无法判断索引到底被门挡掉了多少东西——P14-5 的 Q0 就是这么判的。
+    """
     report = BuildReport(raw_edges=len(edges), processed_chunks=processed_chunks,
                          total_chunks=total_chunks)
     valid: List[HyperEdge] = []
@@ -521,6 +528,9 @@ def build_index(edges: Sequence[HyperEdge], nodes: Dict[str, Node],
             report.rejects += 1
             key = str(exc).split(":", 1)[0]
             report.reject_reasons[key] = report.reject_reasons.get(key, 0) + 1
+            if reject_sink is not None:
+                reject_sink.append({"phase": "gate", "edge_id": edge.edge_id,
+                                    "type": edge.type, "reason": str(exc)})
             continue
         valid.append(edge)
     unique, duplicates = merge_duplicates(valid)

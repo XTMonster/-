@@ -38,6 +38,10 @@ from block_director.knowledge import hypergraph as hg
 EDGES = common.KNOWLEDGE / "hypergraph.edges.jsonl"
 NODES = common.KNOWLEDGE / "hypergraph.nodes.jsonl"
 REJECTS = common.KNOWLEDGE / "hypergraph.rejects.jsonl"
+#: **第 1 段**的原子级拒收（缺必填槽位等）。它与"过门被拒的边"不是一件事，
+#: 因此**不写进** `hypergraph.rejects.jsonl`：那个文件的每一行都必须能被
+#: `manifest.rejects` 计数对上（P14-5 的 Q0 交叉校验）。
+ATOM_REJECTS = common.WORK / "hypergraph.atom_rejects.jsonl"
 MANIFEST = common.KNOWLEDGE / "hypergraph.manifest.json"
 REPORT = common.WORK / "hypergraph_report.json"
 VOCAB = common.KNOWLEDGE / "hypergraph.vocab.json"
@@ -648,8 +652,10 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
                  fingerprint: str, merged, merge_report: Dict) -> Dict:
     """第 1 段产物之后的公共收尾：归并 → 9 条门 → 落盘 → manifest。"""
     processed, total = chunk_counts(cards, batch_log)
+    gate_rejects: List[Dict] = []
     unique, report = hg.build_index(merged, nodes_from_vocab(),
-                                    processed_chunks=processed, total_chunks=total)
+                                    processed_chunks=processed, total_chunks=total,
+                                    reject_sink=gate_rejects)
     merge_rejects = [{"phase": "merge", "reason": item["reason"],
                       "edge_ids": item["edge_ids"]}
                      for item in merge_report["dropped_groups"]]
@@ -668,9 +674,12 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
     repairs = sum(int((edge.extractor or {}).get("dropped_members", 0) or 0) for edge in unique)
     merge_report["dangling_members_dropped"] = repairs
     common.write_jsonl(EDGES, [edge.to_dict() for edge in unique])
-    common.write_jsonl(REJECTS, list(rejects) + merge_rejects)
+    # 边级拒收 → 与 manifest.rejects 一一对应；原子级/归并级 → 另一个文件（工作区）。
+    common.write_jsonl(REJECTS, gate_rejects)
+    common.write_jsonl(ATOM_REJECTS, list(rejects) + merge_rejects)
     common.dump_json(REPORT, {**report.to_dict(), "merge": merge_report,
-                              "atoms": len(atoms), "merge_rejects": len(merge_rejects)})
+                              "atoms": len(atoms), "merge_rejects": len(merge_rejects),
+                              "atom_rejects": len(rejects)})
     common.dump_json(MANIFEST, {
         "fingerprint": fingerprint,
         "cache_key": cache_key,
@@ -683,7 +692,9 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
         "raw_edges": report.raw_edges,
         "valid_unique": report.valid_unique,
         "duplicates": report.duplicates,
-        "rejects": report.rejects + len(merge_rejects),
+        "rejects": report.rejects,
+        "atom_rejects": len(rejects),
+        "merge_rejects": len(merge_rejects),
         "atoms": len(atoms),
         "merge": merge_report,
         "batches": batch_log,
@@ -728,9 +739,12 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     components = fingerprint_components(cards, _ExtractorStub(extractor))
     merged, merge_report = merge_edges(atoms, {str(card["id"]): card for card in cards},
                                        nodes_from_vocab())
+    # 第 1 段的原子级拒收在上一次运行里已经落盘（重抽才会变），这里原样带回去；
+    # 归并级拒收是本次重算出来的，所以只要 `phase != merge` 的那些。
     rejects = [row for row in
                [json.loads(line) for line in
-                (REJECTS.read_text(encoding="utf-8").splitlines() if REJECTS.is_file() else [])
+                (ATOM_REJECTS.read_text(encoding="utf-8").splitlines()
+                 if ATOM_REJECTS.is_file() else [])
                 if line.strip()]
                if row.get("phase") != "merge"]
     return _write_index(cards, atoms, rejects, manifest.get("batches", []), merged=merged,
