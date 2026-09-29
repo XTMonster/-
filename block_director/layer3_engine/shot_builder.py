@@ -24,6 +24,7 @@ from ..motion.model import ActionRequest
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .character_system import MotionBlender, create_character, create_label
+from .character_system.character_label import create_render_label, hex_rgba
 from .cinema_engine import establish_axis_from_speakers, place_camera_for_shot
 from .collection_router import (
     clear_blockdirector_objects,
@@ -73,6 +74,8 @@ class BuildSummary:
     total_frames: int = 0
     results: List[ShotBuildResult] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
+    #: 渲染标签的烘焙摘要（v1.3 诉求 4）；没有标签时为空字典
+    label_report: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -80,6 +83,7 @@ class BuildSummary:
             "cameras": self.cameras, "motions": self.motions,
             "keyframes": self.keyframes, "total_frames": self.total_frames,
             "warnings": list(self.warnings),
+            "label_report": dict(self.label_report),
             "results": [r.to_dict() for r in self.results],
         }
 
@@ -210,17 +214,32 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     # v1.2 定义了 character.label_font_path 与 ui.show_labels 却从没接线，
     # 配置项是死的（启动时那句"未指定中文字体"的提示也就成了误导）。
     from ..settings import get_config
-    label_config = get_config().character
-    show_labels = bool(get_config().ui.show_labels)
+    app_config = get_config()
+    label_config = app_config.character
+    show_labels = bool(app_config.ui.show_labels)
+    render_labels = bool(getattr(label_config, "label_render", False))
+    label_entries: List[Dict[str, Any]] = []
     for member in spec.cast:
         character = create_character(member.id, member.name, member.color,
                                      location=member.initial_location,
                                      facing=member.initial_facing)
         if spec.with_labels:
-            create_label(character, member.name,
-                         font_path=label_config.label_font_path,
-                         size=float(label_config.label_size),
-                         show_in_viewport=show_labels)
+            if render_labels:
+                # v1.3 诉求 4：进参考视频的白字黑描边标签（构建期烘焙）。
+                fill, stroke = create_render_label(
+                    character, member.name,
+                    font_path=label_config.label_font_path,
+                    size=float(label_config.label_size),
+                    fill_color=hex_rgba(label_config.label_color),
+                    stroke_color=hex_rgba(label_config.label_stroke_color))
+                label_entries.append({"character_id": member.id,
+                                      "fill": fill, "stroke": stroke,
+                                      "anchor": character.label_anchor})
+            else:
+                create_label(character, member.name,
+                             font_path=label_config.label_font_path,
+                             size=float(label_config.label_size),
+                             show_in_viewport=show_labels)
         cast_map[member.id] = member
         characters[member.id] = character
     summary.characters = len(characters)
@@ -285,6 +304,23 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             continue
         summary.motions += len(requests)
         summary.keyframes += result.keyframes
+
+    if label_entries:
+        # v1.3 诉求 4：标签的公告板与"屏幕恒定字号"在**构建期**烘焙，
+        # 不依赖渲染期的 frame_change handler（headless 渲染下不可靠）。
+        from .label_baking import bake_labels
+
+        label_report = bake_labels(
+            scene, label_entries, context.schedule, context.cameras,
+            target_pixels=float(label_config.label_pixels),
+            min_pixels=float(label_config.label_min_pixels),
+            max_ratio=float(label_config.label_max_ratio),
+            resolution=app_config.delivery.resolution)
+        summary.label_report = label_report
+        for item in label_report.get("unreadable", [])[:5]:
+            summary.warnings.append(
+                f"{item['character_id']} 在第 {item['frame']} 帧的标签低于"
+                f"可读下限（{label_config.label_min_pixels:g}px）")
 
     scene.frame_start = 1
     scene.frame_end = max(total_frames(plan), 1)

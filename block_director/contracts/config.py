@@ -125,6 +125,15 @@ class CharacterConfig:
     eye_color: str = "#101010"
     label_size: float = 0.15
     label_font_path: str = ""      # 留空则自动探测 CJK 字体（§9.4）
+    #: v1.3 诉求 4：标签进参考视频（首帧 PNG 与 depth 序列仍然不带）。
+    label_render: bool = True
+    #: 屏幕恒定字号：720p 下的目标像素高度与可读下限
+    label_pixels: float = 30.0
+    label_min_pixels: float = 24.0
+    #: 上限：不超过画面高度的这个比例（避免大远景里标签大得离谱）
+    label_max_ratio: float = 0.06
+    label_color: str = "#FFFFFF"          # 白字
+    label_stroke_color: str = "#000000"   # 黑描边
 
 
 @dataclass
@@ -287,6 +296,17 @@ class AppConfig:
         if self.dialogue.declared_tolerance_s < 0:
             err("CFG_206", "dialogue.declared_tolerance_s",
                 "容差不能为负（单位：秒）")
+        for field_name, value in (("label_color", self.character.label_color),
+                                  ("label_stroke_color",
+                                   self.character.label_stroke_color)):
+            if not _is_hex_color(value):
+                err("CFG_207", f"character.{field_name}",
+                    f"必须是 #RRGGBB（当前 {value!r}）")
+        if self.character.label_min_pixels <= 0:
+            err("CFG_208", "character.label_min_pixels", "可读下限必须为正数")
+        if self.character.label_pixels < self.character.label_min_pixels:
+            err("CFG_209", "character.label_pixels",
+                "目标字号不得小于可读下限")
         return issues
 
     def errors(self) -> List[Issue]:

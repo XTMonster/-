@@ -21,7 +21,10 @@ from ..contracts.plan import Plan
 from ..delivery.depth import depth_range_note
 from ..delivery.manifest import build_manifest
 from ..delivery.prompts import DEFAULT_STYLE, render_prompt_sheet
-from ..layer3_engine.collection_router import audit_renderable_objects
+from ..layer3_engine.collection_router import (
+    audit_renderable_objects,
+    labels_collection,
+)
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .camera_trajectory import camera_trajectory
@@ -106,6 +109,10 @@ def _readme(manifest: Dict[str, Any], report: DeliveryReport) -> str:
         "2. 取 `first_frames/<shot>.png` 作为**输入图**（图生视频）；",
         "3. 取 `prompts.md` 里对应镜头的 Prompt 作为**提示词**。",
         "",
+        "> 参考视频里带白字黑描边的角色标签，便于审阅；"
+        "`first_frames/` 与 depth 序列**刻意不带标签**，"
+        "避免标签被下游视频模型当成画面内容学走。",
+        "",
     ]
     if os.path.exists(os.path.join(report.out_dir, "camera_traj.json")):
         lines.insert(-1, "4. `camera_traj.json` 提供逐帧相机内外参，"
@@ -171,6 +178,7 @@ def export_project(plan: Plan, *,
         video_base = str(export_dir / f"blockout_{shot_id}.mp4")
         shot_frames = int(shot["end_frame"]) - int(shot["start_frame"]) + 1
         if config.per_shot_clips:
+            # 参考视频**带**角色标签（v1.3 诉求 4）
             path, frames = render_shot_video(
                 scene, shot["start_frame"], shot["end_frame"], video_base,
                 codec=str(config.video_codec), crf=str(config.crf))
@@ -181,32 +189,42 @@ def export_project(plan: Plan, *,
                 report.missing_clips.append(path)
             report.total_frames += frames
 
-        frame_path = str(frames_dir / f"{shot_id}.png")
-        if render_first_frame(scene, shot["start_frame"], frame_path):
-            report.files.append(frame_path)
-        else:
-            report.warnings.append(f"{shot_id}: 首帧未生成")
-            report.missing_clips.append(frame_path)
+        # 首帧 PNG 与 depth 序列**不带**标签：它们是喂给下游视频模型的输入图，
+        # 把标签烫进去会被模型当成画面内容学走。
+        labels = labels_collection()
+        if labels is not None:
+            labels.hide_render = True
+        try:
+            frame_path = str(frames_dir / f"{shot_id}.png")
+            if render_first_frame(scene, shot["start_frame"], frame_path):
+                report.files.append(frame_path)
+            else:
+                report.warnings.append(f"{shot_id}: 首帧未生成")
+                report.missing_clips.append(frame_path)
 
-        report.shots.append({"shot_id": shot_id,
-                             "start_frame": shot["start_frame"],
-                             "end_frame": shot["end_frame"],
-                             "video": f"blockout_{shot_id}.mp4"
-                                      if config.per_shot_clips else None})
-        if config.export_depth:
-            try:
-                depth = render_depth_sequence(scene, shot["start_frame"],
-                                              shot["end_frame"],
-                                              str(export_dir), shot_id)
-                report.files.extend(depth["files"][:1])   # 清单里留一个代表
-                report.shots[-1]["depth"] = depth_range_note()
-                report.shots[-1]["depth_frames"] = depth["frames"]
-                report.depth_shots.append({"shot_id": shot_id,
-                                           "dir": str(Path(depth["dir"]).relative_to(export_dir)),
-                                           "frames": depth["frames"],
-                                           "range_m": depth["range_m"]})
-            except DepthUnavailable as exc:
-                report.warnings.append(f"{shot_id}: depth 导出跳过（{exc}）")
+            report.shots.append({"shot_id": shot_id,
+                                 "start_frame": shot["start_frame"],
+                                 "end_frame": shot["end_frame"],
+                                 "video": f"blockout_{shot_id}.mp4"
+                                          if config.per_shot_clips else None})
+            if config.export_depth:
+                try:
+                    depth = render_depth_sequence(scene, shot["start_frame"],
+                                                  shot["end_frame"],
+                                                  str(export_dir), shot_id)
+                    report.files.extend(depth["files"][:1])   # 清单里留一个代表
+                    report.shots[-1]["depth"] = depth_range_note()
+                    report.shots[-1]["depth_frames"] = depth["frames"]
+                    report.depth_shots.append(
+                        {"shot_id": shot_id,
+                         "dir": str(Path(depth["dir"]).relative_to(export_dir)),
+                         "frames": depth["frames"],
+                         "range_m": depth["range_m"]})
+                except DepthUnavailable as exc:
+                    report.warnings.append(f"{shot_id}: depth 导出跳过（{exc}）")
+        finally:
+            if labels is not None:
+                labels.hide_render = False
         log.info("已导出镜头 %s（%d-%d）", shot_id,
                  shot["start_frame"], shot["end_frame"])
 

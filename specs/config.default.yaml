@@ -46,6 +46,12 @@ character:
   eye_color: '#101010'
   label_size: 0.15
   label_font_path: ''
+  label_render: true
+  label_pixels: 30.0
+  label_min_pixels: 24.0
+  label_max_ratio: 0.06
+  label_color: '#FFFFFF'
+  label_stroke_color: '#000000'
 animation:
   fps: 24
   walk_speed: 0.05

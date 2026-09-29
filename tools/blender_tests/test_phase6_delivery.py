@@ -153,6 +153,95 @@ def t_relative_out_dir_lands_in_the_asked_directory():
             "missing": len(report.missing_clips)}
 
 
+def _pixels(path: Path):
+    image = bpy.data.images.load(str(path))
+    try:
+        return list(image.pixels)
+    finally:
+        bpy.data.images.remove(image)
+
+
+def _differing_pixels(first, second, threshold: float = 0.02) -> int:
+    """两张图里差异明显的像素数（比整幅平均亮度敏感得多）。"""
+    count = 0
+    for index in range(0, min(len(first), len(second)), 4):
+        if (abs(first[index] - second[index]) > threshold
+                or abs(first[index + 1] - second[index + 1]) > threshold
+                or abs(first[index + 2] - second[index + 2]) > threshold):
+            count += 1
+    return count
+
+
+def t_render_labels_are_visible_sized_and_excluded_from_stills():
+    """v1.3 诉求 4 的量化验收。
+
+    * 标签确实改变画面（否则等于没做）；
+    * 屏幕字号落在可读区间（否则"看得清"只是口头承诺）；
+    * 首帧 PNG 与"带标签"的渲染**不一样**（标签不进输入图）。
+    """
+    from mathutils import Vector
+    from bpy_extras.object_utils import world_to_camera_view
+    from block_director.layer3_engine.collection_router import labels_collection
+    from block_director.layer8_delivery.renderer import render_first_frame
+
+    tmp = tempfile.mkdtemp(prefix="bd_p6_label_")
+    _summary, report = _build_and_export(tmp)
+    export_dir = Path(tmp) / "export"
+    labels = labels_collection()
+
+    fills = [o for o in bpy.data.objects
+             if str(o.get("bd_label_role") or "") == "fill"]
+    strokes = [o for o in bpy.data.objects
+               if str(o.get("bd_label_role") or "") == "stroke"]
+    whitelisted = bool(fills) and all(
+        str(o.get("bd_element_type") or "") == "label_render"
+        for o in fills + strokes)
+
+    scene = bpy.context.scene
+    scene.frame_set(1)
+    bpy.context.view_layer.update()
+    camera = scene.camera
+    fill = fills[0]
+    # matrix_world 里**已经含**缩放，所以局部端点只写 glyph 尺寸的一半；
+    # 再乘一次 scale 会把高度按 scale 缩小（实测 30px 被量成 19px）。
+    half = float(fill.data.size) / 2.0
+    top = fill.matrix_world @ Vector((0.0, half, 0.0))
+    bottom = fill.matrix_world @ Vector((0.0, -half, 0.0))
+    pixels = abs(world_to_camera_view(scene, camera, top).y
+                 - world_to_camera_view(scene, camera, bottom).y) \
+        * scene.render.resolution_y
+
+    exported = _pixels(export_dir / "first_frames" / "shot_001.png")
+    with_labels = export_dir / "_probe_with_labels.png"
+    without_labels = export_dir / "_probe_without_labels.png"
+    labels.hide_render = False
+    render_first_frame(scene, 1, str(with_labels))
+    labels.hide_render = True
+    render_first_frame(scene, 1, str(without_labels))
+    labels.hide_render = False
+
+    pixels_with = _pixels(with_labels)
+    pixels_without = _pixels(without_labels)
+    labeled_pixels = _differing_pixels(pixels_with, pixels_without)
+    exported_vs_labeled = _differing_pixels(exported, pixels_with)
+    exported_vs_clean = _differing_pixels(exported, pixels_without)
+    changes_image = labeled_pixels > 200
+    still_is_clean = exported_vs_clean < 50 and exported_vs_labeled > 200
+
+    return {"ok": bool(report.ok and labels is not None
+                       and not labels.hide_render
+                       and len(fills) >= 2 and len(fills) == len(strokes)
+                       and whitelisted
+                       and 20.0 <= pixels <= 70.0
+                       and changes_image and still_is_clean),
+            "labels": len(fills), "pixel_height": round(pixels, 1),
+            "whitelisted": whitelisted,
+            "labeled_pixels": labeled_pixels,
+            "exported_vs_labeled": exported_vs_labeled,
+            "exported_vs_clean": exported_vs_clean,
+            "changes_image": changes_image, "still_is_clean": still_is_clean}
+
+
 def t_compliance_report_is_shipped():
     """v1.3：交付包里要有剧本落实对照表，偏差要进告警。"""
     tmp = tempfile.mkdtemp(prefix="bd_p6_comp_")
@@ -224,16 +313,30 @@ def t_manifest_matches_build():
 # 4. 辅助物泄漏时导出必须中止（画面干净的硬门槛）
 # --------------------------------------------------------------------------- #
 def t_export_aborts_on_leak():
+    """Guides 里的辅助物一旦可渲染，导出必须中止。
+
+    v1.3 起标签默认走 BlockDirector/Labels（**要**进参考视频），
+    所以这里显式关掉渲染标签，回到"Guides 标签被误设为可渲染"这条老路径——
+    这正是 §15.2 要防的事故。
+    """
+    from block_director.settings import get_config
+
+    app_config = get_config()
+    previous = app_config.character.label_render
     tmp = tempfile.mkdtemp(prefix="bd_p6leak_")
-    fresh_scene()
-    summary = build_scene(demo_plan()).to_dict()
+    try:
+        app_config.character.label_render = False
+        fresh_scene()
+        summary = build_scene(demo_plan()).to_dict()
 
-    label = bpy.data.objects.get("BD_Char_char_001_Label")
-    assert label is not None, "测试前置：应有中文标签对象"
-    label.hide_render = False          # 故意制造泄漏
+        label = bpy.data.objects.get("BD_Char_char_001_Label")
+        assert label is not None, "测试前置：关掉渲染标签后应有 Guides 标签"
+        label.hide_render = False          # 故意制造泄漏
 
-    report = export_project(demo_plan(), build_summary=summary,
-                            out_dir=Path(tmp), config=fresh_config())
+        report = export_project(demo_plan(), build_summary=summary,
+                                out_dir=Path(tmp), config=fresh_config())
+    finally:
+        app_config.character.label_render = previous
     export_dir = Path(tmp) / "export"
     videos = list(export_dir.glob("*.mp4"))
     return {"ok": report.aborted and report.audit_leaks and not videos,
@@ -283,6 +386,8 @@ def main() -> int:
     check("relative_out_dir_lands_in_the_asked_directory",
           t_relative_out_dir_lands_in_the_asked_directory)
     check("compliance_report_is_shipped", t_compliance_report_is_shipped)
+    check("render_labels_are_visible_sized_and_excluded_from_stills",
+          t_render_labels_are_visible_sized_and_excluded_from_stills)
     check("videos_are_real_mp4", t_videos_are_real_mp4)
     check("manifest_matches_build", t_manifest_matches_build)
     check("export_aborts_on_leak", t_export_aborts_on_leak)

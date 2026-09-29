@@ -325,9 +325,13 @@ def t_label_config_is_wired():
     config = get_config()
     original_font = config.character.label_font_path
     original_show = config.ui.show_labels
+    original_render = config.character.label_render
     try:
         config.character.label_font_path = font_path
         config.ui.show_labels = False
+        # v1.3 起标签默认走"渲染可见"（BlockDirector/Labels）。这一条测的是
+        # Guides 标签的字体/视口接线，所以显式关掉渲染标签这条新路径。
+        config.character.label_render = False
         fresh_scene()
         plan = two_shot_plan()
         build_scene(plan, SceneSpec.from_plan(plan), clear_scene=True)
@@ -347,6 +351,7 @@ def t_label_config_is_wired():
     finally:
         config.character.label_font_path = original_font
         config.ui.show_labels = original_show
+        config.character.label_render = original_render
 
 
 def t_foreign_object_is_flagged():

@@ -20,6 +20,9 @@ log = get_logger("collections")
 ROOT_COLLECTION = "BlockDirector"
 CONTENT_COLLECTION = "BlockDirector/Content"
 GUIDES_COLLECTION = "BlockDirector/Guides"
+#: 渲染可见的角色标签（v1.3 诉求 4）。与 Guides 刻意分开：Guides 是
+#: "绝不进画面"的辅助物，而这一集合是**要进参考视频**的。
+LABELS_COLLECTION = "BlockDirector/Labels"
 
 
 def _find_collection(name: str) -> Optional[Collection]:
@@ -30,7 +33,11 @@ def _find_collection(name: str) -> Optional[Collection]:
 
 @main_thread_only("ensure_collections")
 def ensure_collections(scene) -> Tuple[Collection, Collection]:
-    """创建（或复用）Content / Guides 两个集合，返回 ``(content, guides)``。"""
+    """创建（或复用）Content / Guides / Labels 三个集合。
+
+    返回 ``(content, guides)``（保持既有签名；Labels 由
+    :func:`labels_collection` 单独取）。
+    """
     content = _find_collection(CONTENT_COLLECTION)
     if content is None:
         content = bpy.data.collections.new(CONTENT_COLLECTION)
@@ -44,7 +51,24 @@ def ensure_collections(scene) -> Tuple[Collection, Collection]:
     # 集合级兜底：即使某个对象忘了设 hide_render，集合也拦住它
     guides.hide_render = True
     content.hide_render = False
+
+    labels = _find_collection(LABELS_COLLECTION)
+    if labels is None:
+        labels = bpy.data.collections.new(LABELS_COLLECTION)
+        scene.collection.children.link(labels)
+    labels.hide_render = False
     return content, guides
+
+
+@main_thread_only("labels_collection")
+def labels_collection() -> Optional[Collection]:
+    """取渲染可见标签的集合（不存在时返回 None）。"""
+    return _find_collection(LABELS_COLLECTION)
+
+
+@main_thread_only("route_to_labels")
+def route_to_labels(obj: Object) -> Object:
+    return route_object(obj, LABELS_COLLECTION)
 
 
 @main_thread_only("route_object")
@@ -95,6 +119,10 @@ def audit_renderable_objects() -> List[str]:
         if obj.type in {"EMPTY", "CAMERA", "LIGHT", "ARMATURE"}:
             continue
         if obj.hide_render:
+            continue
+        # v1.3 诉求 4：**要进参考视频**的角色标签走白名单。
+        # 它们刻意留在可渲染集合里，其余 FONT/CURVE 仍然一律判泄漏。
+        if str(obj.get("bd_element_type") or "") == "label_render":
             continue
         if not obj.name.startswith("BD_"):
             bad.append(obj.name)

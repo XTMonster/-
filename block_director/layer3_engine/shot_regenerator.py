@@ -149,6 +149,21 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
     if scene.camera is previous or scene.camera is None:
         scene.camera = bundle.camera
     bpy.context.view_layer.update()
+
+    # v1.3 诉求 4：标签的公告板与屏幕字号是按镜头烘焙的，换了机位必须重烘，
+    # 否则这一镜的标签会沿用旧机位的朝向与大小。
+    from ..settings import get_config
+    from .label_baking import bake_labels, collect_label_entries
+
+    entries = collect_label_entries(list(context.characters.values()))
+    if entries:
+        label_config = get_config().character
+        bake_labels(scene, entries, context.schedule, context.cameras,
+                    target_pixels=float(label_config.label_pixels),
+                    min_pixels=float(label_config.label_min_pixels),
+                    max_ratio=float(label_config.label_max_ratio),
+                    resolution=get_config().delivery.resolution)
+
     log.info("重生成单镜 %s：%d-%d，%d 个关键帧", shot_id, start, end, keyframes)
     return {"ok": True, "shot_id": shot_id, "start_frame": start,
             "end_frame": end, "camera": bundle.camera.name,
