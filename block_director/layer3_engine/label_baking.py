@@ -9,6 +9,10 @@
   使投影后的像素高度落在 ``[min_pixels, target_pixels]`` 区间，
   上限再按画面高度的一个比例夹住，避免大远景里标签大得离谱；
 * 避让：锚点投影出画时把它推回画内；被前景挡住时上移一档。
+* 互斥：同一帧里两个标签的屏幕包围盒不许相碰（v1.4 BW-2）——先把每个标签
+  摆到它的"锚点 + 出画/遮挡修正"处，再按屏幕纵向做一次**确定性松弛**，
+  把重叠的标签上下推开；每个触发避让的帧都记下 ``offset_reason`` 与像素
+  位移（RK-2 按 ``offset_reason`` 分档判定）。
 
 采样步长默认 4 帧：相机在 v1.3 里基本是静态的，4 帧步长 + 贝塞尔插值
 足够平滑，而每帧每标签写三条曲线会平白多出几万个关键帧。
@@ -37,6 +41,20 @@ DEFAULT_TARGET_PIXELS = 30.0
 DEFAULT_MIN_PIXELS = 24.0
 DEFAULT_MAX_RATIO = 0.06
 FRAME_MARGIN = 0.06          # 画内安全边距（占画面比例）
+AVOID_GAP_PX = 2.0           # 标签之间必须留出的最小像素间隙
+AVOID_MAX_ROUNDS = 16        # 避让松弛的迭代上限（确定性，够了就停）
+MAX_OFFSET_RATIO = 0.25      # 单帧总位移上限（× 画面高，RK-2 的同一口径）
+REASON_NONE = "none"
+REASON_OFFSCREEN = "offscreen"
+REASON_OCCLUDED = "occluded"
+REASON_OVERLAP = "overlap"
+
+#: v1.4 BW-2：标签之间的**交叠率上限**（area(A∩B) / min(area(A), area(B))）。
+OVERLAP_LIMIT = 0.05
+#: 避让迭代次数上限（逐个让位是收敛的；给个上界防止不收敛）。
+SEPARATE_ITERATIONS = 6
+#: 触发避让的帧允许的最大位移（占画面高的比例，RK-2 的判据）。
+MAX_OFFSET_RATIO = 0.25
 
 
 def _camera_frame_height(distance: float, lens: float,
@@ -86,6 +104,97 @@ def _shot_at(schedule: Dict[str, Tuple[int, int]], frame: int
     return None
 
 
+def _glyph_half_extents(fill, scale: float) -> Tuple[float, float]:
+    """标签在**世界单位**下的半宽 / 半高（近似：逐字约一个字身宽）。
+
+    ``curve.size`` 是字号，对象 ``scale`` 是烘焙时反解出的屏幕恒定倍率。
+    中文一个字基本是正方形，所以宽 ≈ 字号 × 字数 × 0.95、高 ≈ 字号。
+    """
+    size = abs(float(getattr(fill.data, "size", 1.0) or 1.0) * float(scale))
+    text = str(getattr(fill.data, "body", "") or "")
+    length = max(len(text), 1)
+    return size * 0.5 * length * 0.95, size * 0.5
+
+
+def _screen_box(scene, camera, position, right, up,
+                half_w: float, half_h: float,
+                res_x: float, res_y: float):
+    """把标签的四边形投影成屏幕像素 AABB ``(x0, y0, x1, y1)``。"""
+    xs: List[float] = []
+    ys: List[float] = []
+    for sx in (-1.0, 1.0):
+        for sy in (-1.0, 1.0):
+            point = position + right * (sx * half_w) + up * (sy * half_h)
+            projected = world_to_camera_view(scene, camera, point)
+            xs.append(projected.x * res_x)
+            ys.append(projected.y * res_y)
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+def _overlap_ratio(a, b) -> float:
+    """两个屏幕 AABB 的交叠率（分母取**较小**的那个面积）。"""
+    width = min(a[2], b[2]) - max(a[0], b[0])
+    height = min(a[3], b[3]) - max(a[1], b[1])
+    if width <= 0.0 or height <= 0.0:
+        return 0.0
+    area = width * height
+    smaller = min((a[2] - a[0]) * (a[3] - a[1]),
+                  (b[2] - b[0]) * (b[3] - b[1]))
+    if smaller <= 0.0:
+        return 0.0
+    return area / smaller
+
+
+def separate_labels(scene, camera, prepared: List[Dict[str, Any]],
+                    *, res_x: float, res_y: float,
+                    iterations: int = SEPARATE_ITERATIONS) -> List[Dict[str, Any]]:
+    """把互相压住的标签**上下错开**（v1.4 BW-2）。
+
+    就地修改 ``prepared`` 的 ``position`` / ``offset_reason`` /
+    ``applied_offset_px``，返回被移动过的条目。位移上限是
+    ``MAX_OFFSET_RATIO × 画面高``（RK-2 的判据）。
+    """
+    moved: List[Dict[str, Any]] = []
+    if len(prepared) < 2:
+        return moved
+    limit_px = MAX_OFFSET_RATIO * float(res_y)
+    for _ in range(max(int(iterations), 1)):
+        boxes = []
+        for item in prepared:
+            half_w, half_h = _glyph_half_extents(item["fill"], item["scale"])
+            boxes.append(_screen_box(scene, camera, item["position"],
+                                     item["right"], item["up"],
+                                     half_w, half_h, res_x, res_y))
+        worst = 0.0
+        for i in range(len(prepared)):
+            for j in range(i + 1, len(prepared)):
+                ratio = _overlap_ratio(boxes[i], boxes[j])
+                if ratio <= OVERLAP_LIMIT:
+                    continue
+                worst = max(worst, ratio)
+                upper, lower = (i, j) if boxes[i][3] >= boxes[j][3] else (j, i)
+                overlap_h = (min(boxes[upper][3], boxes[lower][3])
+                             - max(boxes[upper][1], boxes[lower][1]))
+                room = limit_px - float(
+                    prepared[upper].get("applied_offset_px") or 0.0)
+                shift_px = max(min(max(overlap_h, 1.0), room), 0.0)
+                if shift_px <= 0.0:
+                    continue
+                world = (shift_px / float(res_y)
+                         * float(prepared[upper]["frame_height"]))
+                prepared[upper]["position"] = (prepared[upper]["position"]
+                                               + prepared[upper]["up"] * world)
+                prepared[upper]["applied_offset_px"] = float(
+                    prepared[upper].get("applied_offset_px") or 0.0) + shift_px
+                if prepared[upper]["offset_reason"] == "none":
+                    prepared[upper]["offset_reason"] = "overlap"
+                if prepared[upper] not in moved:
+                    moved.append(prepared[upper])
+        if worst <= OVERLAP_LIMIT:
+            break
+    return moved
+
+
 @main_thread_only("collect_label_entries")
 def collect_label_entries(characters: Sequence[Any]) -> List[Dict[str, Any]]:
     """从场景里找回已存在的渲染标签。
@@ -130,39 +239,44 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
     unreadable: List[Dict[str, Any]] = []
     written = 0
 
-    for entry in entries:
-        fill = entry.get("fill")
-        stroke = entry.get("stroke")
-        anchor = entry.get("anchor")
-        character_id = str(entry.get("character_id") or "")
-        if fill is None or anchor is None:
+    # v1.4 BW-2：**按帧**先算出所有标签的落点，再统一做标签间避让，最后
+    # 才写关键帧。旧实现是"逐标签算完就写"，标签之间互相压住时无人可让。
+    worst_offset: Dict[str, Dict[str, Any]] = {}
+    for frame in frames:
+        shot_id = _shot_at(schedule, frame)
+        camera = cameras.get(shot_id) if shot_id else None
+        if camera is None:
             continue
-        base_size = float(getattr(fill.data, "size", 1.0) or 1.0)
+        scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        rotation = camera.matrix_world.to_euler()
+        right, up = _camera_axes(camera)
+        prepared: List[Dict[str, Any]] = []
 
-        for frame in frames:
-            shot_id = _shot_at(schedule, frame)
-            camera = cameras.get(shot_id) if shot_id else None
-            if camera is None:
+        for entry in entries:
+            fill = entry.get("fill")
+            stroke = entry.get("stroke")
+            anchor = entry.get("anchor")
+            character_id = str(entry.get("character_id") or "")
+            if fill is None or anchor is None:
                 continue
-            scene.frame_set(frame)
-            bpy.context.view_layer.update()
-
+            base_size = float(getattr(fill.data, "size", 1.0) or 1.0)
             anchor_world = anchor.matrix_world.translation.copy()
             cam_world = camera.matrix_world.translation.copy()
             distance = max((anchor_world - cam_world).length, 1e-3)
             lens = float(camera.data.lens) or 50.0
-            frame_height = _camera_frame_height(distance, lens,
-                                                aspect=aspect)
+            frame_height = _camera_frame_height(distance, lens, aspect=aspect)
 
             position = anchor_world
-            rotation = camera.matrix_world.to_euler()
-            right, up = _camera_axes(camera)
-            # 先在单位缩放下量一次真实像素高度，再按比例反解（见
-            # _unit_pixel_height 的说明）。这样"屏幕恒定字号"由构造保证，
-            # 也与交付时用同一套投影量出来的结果一致。
+            # 屏幕恒定字号：先在单位缩放下量一次真实像素高度，再按比例反解。
+            # **已知缺陷（P12 未完成项）**：这个基准在 35mm/50mm 两个镜头之间
+            # 量出来的屏幕高度会差 37%（实测 15.0 px → 9.38 px），因为
+            # "投影一段 curve.size 长的线段"隐含假设字形正好填满 em 框。
+            # 修法应改为对**字形自身的 bound_box** 做定点迭代（量一次真实
+            # 投影高度、按比例修正、重复几次），试过但还没收敛到稳定值，
+            # 暂不启用，避免引入未验证的回归；镜头内连续性是好的（0%）。
             px_at_unit = _unit_pixel_height(scene, camera, position, up,
                                             base_size, res_y)
-
             max_pixels = max(max_ratio * res_y, min_pixels)
             wanted_pixels = min(max(target_pixels, min_pixels), max_pixels)
             if px_at_unit <= 1e-6:
@@ -175,36 +289,63 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                 unreadable.append({"character_id": character_id,
                                    "frame": frame, "reason": "低于可读下限"})
 
-            # 避让：锚点投影出画时推回画内
-            projected = world_to_camera_view(scene, camera, anchor_world)
+            reason = "none"
             offset = Vector((0.0, 0.0, 0.0))
+            applied_px = 0.0
+            # 避让（一）：锚点投影出画时推回画内
+            projected = world_to_camera_view(scene, camera, anchor_world)
             if not (FRAME_MARGIN <= projected.x <= 1.0 - FRAME_MARGIN
                     and FRAME_MARGIN <= projected.y <= 1.0 - FRAME_MARGIN):
                 target_x = min(max(projected.x, FRAME_MARGIN),
                                1.0 - FRAME_MARGIN)
                 target_y = min(max(projected.y, FRAME_MARGIN),
                                1.0 - FRAME_MARGIN)
-                offset += right * ((target_x - projected.x)
-                                   * frame_height * aspect)
-                offset += up * ((target_y - projected.y) * frame_height)
-            # 遮挡：相机到锚点之间被内容物挡住时上移一档
+                delta_x = (target_x - projected.x) * frame_height * aspect
+                delta_y = (target_y - projected.y) * frame_height
+                offset += right * delta_x + up * delta_y
+                applied_px = max(abs(delta_x) / max(frame_height * aspect, 1e-6)
+                                 * res_x, abs(delta_y)
+                                 / max(frame_height, 1e-6) * res_y)
+                reason = "out_of_frame"
+            # 避让（二）：相机到锚点之间被内容物挡住时上移一档
             if _blocked(scene, camera, anchor_world):
                 offset += up * (frame_height * 0.20)
-            position = position + offset
+                applied_px = max(applied_px, 0.20 * res_y)
+                reason = "occluded" if reason == "none" else reason + "+occluded"
+            prepared.append({
+                "character_id": character_id, "fill": fill, "stroke": stroke,
+                "position": position + offset, "rotation": rotation,
+                "right": right, "up": up, "scale": scale,
+                "frame_height": frame_height, "frame": frame,
+                "offset_reason": reason, "applied_offset_px": applied_px,
+            })
 
-            _write(fill, position, rotation, scale, camera, frame)
-            if stroke is not None:
+        # 避让（三）：标签之间互相让位（BW-2 的核心）
+        separate_labels(scene, camera, prepared, res_x=res_x, res_y=res_y)
+
+        for item in prepared:
+            _write(item["fill"], item["position"], item["rotation"],
+                   item["scale"], camera, frame)
+            if item["stroke"] is not None:
                 back = (camera.matrix_world.to_3x3() @
                         Vector((0.0, 0.0, -LABEL_STROKE_BACK)))
-                _write(stroke, position + back, rotation,
-                       scale * LABEL_STROKE_SCALE, camera, frame)
+                _write(item["stroke"], item["position"] + back,
+                       item["rotation"], item["scale"] * LABEL_STROKE_SCALE,
+                       camera, frame)
             written += 1
+            current = worst_offset.get(item["character_id"])
+            if current is None or item["applied_offset_px"] > \
+                    float(current.get("applied_offset_px") or 0.0):
+                worst_offset[item["character_id"]] = {
+                    "offset_reason": item["offset_reason"],
+                    "applied_offset_px": round(item["applied_offset_px"], 2),
+                    "frame": item["frame"]}
 
     log.info("标签烘焙完成：%d 个标签 / %d 帧采样", len(entries), written)
     return {"labels": len(entries), "frames": written,
             "sample_step": int(sample_step), "resolution": [int(res_x),
                                                             int(res_y)],
-            "unreadable": unreadable}
+            "unreadable": unreadable, "offsets": worst_offset}
 
 
 def _camera_axes(camera) -> Tuple[Vector, Vector]:

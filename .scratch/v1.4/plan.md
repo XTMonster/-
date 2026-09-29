@@ -45,4 +45,12 @@ P9.4 → P9.5 → P10 → P11 → P12 → P13 → P14(-1..5) → P15 → P16
 - P11：**完成**（D-1 行内台词、D-2 中文数字/分句否定、D-3 括注别名、
   `scene_contract.py` 语义收敛层、F2 不伪造说话人、F4 的 R015 顺序/身份错位；
   新探针 `test_scene_contract.py`（RK-3）已登记，28 项全绿）。
-- P12：进行中
+- P12：**部分完成**（`7b5c893`）
+  - ✅ BW-1 姿态别名 + `INTERACTION_PARAMS` 同批；BW-4a `stand` 末帧绝对落地；
+    R008 双向（`06baeed`）
+  - ✅ X11 两个标签开关的生效域 + `test_label_toggles.py`（`7b5c893`）
+  - ⛔ 待办：BW-2 标签**标签间**避让（`label_baking.py` 目前只有"出画推回"与
+    "遮挡上移"，没有标签互相让位）；RK-1/RK-2/RK-5 的
+    `test_label_layout.py`；RK-6 的悬空双向探针；RK-16/RK-17 的探针重写
+    （S6/S7/X13）
+- P12 并行中：`p13_long_concat`（P13）、`p14_corpus`（P14-1）

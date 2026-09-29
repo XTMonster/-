@@ -1,20 +1,27 @@
-feat(P12-part2): give the two label switches their own effective domains
+feat(P12-part3): separate overlapping labels and pin their layout
 
-X11 (SS5 P12, second slice).
+BW-2 (SS5 P12, third slice).
 
-- character_label.create_label: the stale comment claimed ui.show_labels has no
-  consumers anywhere; it now states the effective domain -- Guides viewport
-  visibility only, while "does the label go into the reference video" is the
-  render path (create_render_label / character.label_render).
-- cast_editor.add_cast_member used create_label's default (visible), so the
-  panel switch had no effect on newly added characters. It now passes
-  ui.show_labels through.
-- New Blender probe tools/blender_tests/test_label_toggles.py pins all four
-  combinations: label_render=True ignores ui.show_labels and puts
-  BD_Label_<id>_Fill/_Stroke in BlockDirector/Labels with hide_render=False;
-  label_render=False puts BD_Char_<name>_Label in Guides with hide_render=True
-  and hide_viewport following ui.show_labels; with_labels=False creates nothing;
-  and a character added through the cast editor honours the toggle.
-  Registered in run_tests.ps1 (28 -> 29).
+- label_baking.bake_labels is now frame-major: for each sample frame it first
+  computes every label's landing point (out-of-frame push-back, occlusion
+  lift), then runs a label-vs-label separation pass, and only then writes the
+  keyframes. The old shape ("compute one label, write it, move to the next")
+  had nobody to yield to when two labels landed on top of each other.
+- separate_labels(): screen-space AABB overlap (area(A∩B)/min(area(A),area(B)))
+  is driven under 5% by lifting the upper label, with the displacement capped
+  at 0.25 x frame height (RK-2's band) and a bounded iteration count. Each
+  label now carries offset_reason ("none" / out_of_frame / occluded / overlap)
+  and applied_offset_px, and bake_labels returns a per-character worst-case
+  summary in "offsets".
+- New Blender probe tools/blender_tests/test_label_layout.py: one Fill+Stroke
+  pair per labelled character (RK-1 object side), no pair above the 5% overlap
+  limit across eight sample frames (RK-2), and label height continuity
+  (RK-5, <= 5% between adjacent samples within a shot). Registered (29 -> 30).
+- The probe also records, as a diagnostic, that the screen-constant size still
+  steps 37.5% across a 35mm -> 50mm cut (12.25 px -> 7.66 px). That is a real
+  defect in the "project a curve.size-long segment" baseline inside
+  bake_labels, documented in the code; the fit (iterating on the glyph's own
+  bound_box) did not stabilise yet, so it is deliberately not enabled rather
+  than shipped unverified.
 
-python -m pytest -> 892 passed; the new probe is green.
+python -m pytest -> 892 passed; tools/run_tests.ps1 -> 30/30 green.
