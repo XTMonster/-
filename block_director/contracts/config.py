@@ -83,7 +83,10 @@ class LLMConfig:
 @dataclass
 class RagConfig:
     enabled: bool = True
-    backend: RagBackend = RagBackend.BM25     # 默认；§6.1
+    #: v1.4 §2.3：默认后端 = **超图 RAG**（跑在 sidecar 上）。
+    #: sidecar 不可用时降级为内置 BM25，并在 `knowledge_trace.json` 里
+    #: 标 `degraded: true` —— 降级可以，静默不行。
+    backend: RagBackend = RagBackend.HYPERGRAPH
     embedder: str = "bge-small-zh-v1.5"
     top_k: int = 5
     max_tokens_per_call: int = 800

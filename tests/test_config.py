@@ -29,7 +29,9 @@ def test_defaults_match_document():
     cfg = AppConfig()
     assert cfg.animation.fps == 24
     assert cfg.llm.transport is TransportMode.AUTO
-    assert cfg.rag.backend is RagBackend.BM25
+    # v1.4 §2.3（§1.6 的 #26）：默认后端改为超图 RAG；sidecar 不可用时
+    # 降级为 bm25，并在 knowledge_trace.json 里标 degraded。
+    assert cfg.rag.backend is RagBackend.HYPERGRAPH
     assert cfg.delivery.render_backend is RenderBackend.WORKBENCH
     assert cfg.delivery.appearance is Appearance.CLAY
     assert cfg.delivery.preset is DeliveryPreset.HD16X9

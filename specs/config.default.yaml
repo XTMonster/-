@@ -19,7 +19,7 @@ llm:
   trace_max_chars: 8000
 rag:
   enabled: true
-  backend: bm25
+  backend: hypergraph
   embedder: bge-small-zh-v1.5
   top_k: 5
   max_tokens_per_call: 800

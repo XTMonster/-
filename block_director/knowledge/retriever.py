@@ -71,6 +71,15 @@ def rrf_merge(vector_hits: Sequence[int], keyword_hits: Sequence[int],
             sorted(scores.items(), key=lambda item: (-item[1], item[0]))]
 
 
+def _trace_to_dict(trace) -> Dict[str, Any]:
+    """把超图的 ``RetrievalTrace`` 转成可落盘的字典（没有则空字典）。"""
+    if trace is None:
+        return {}
+    if hasattr(trace, "to_dict"):
+        return dict(trace.to_dict())
+    return dict(trace) if isinstance(trace, dict) else {}
+
+
 @dataclass
 class RetrievalHit:
     card: Card
@@ -97,30 +106,70 @@ class KnowledgeRetriever:
     backend: RagBackend = RagBackend.BM25
     top_k: int = 5
     token_limit: int = TOKEN_LIMIT_TOOL
+    #: v1.4 §2.3：整场预取（``block_for_plan``）的独立预算。缺省沿用
+    #: 800——调用方（headless / 面板）应从 ``rag.plan_prefetch_tokens`` 传进来。
+    plan_token_limit: int = TOKEN_LIMIT_PLAN
     capabilities: Iterable[str] = ()
     vector_store: Optional[Any] = None
+    #: v1.4 §2.3：超图索引（由 sidecar 提供）。没有它就只能降级。
+    hypergraph: Optional[Any] = None
     warnings: List[str] = field(default_factory=list)
+    #: v1.4 §2.3：**降级必须留痕**——``knowledge_trace.json`` 里的
+    #: ``degraded`` / ``degraded_reason`` 由它产出（否则那是死字段）。
+    degraded: bool = False
+    degraded_reason: str = ""
+    #: v1.4 §2.3：最近一次检索的 trace（查询串、种子、命中边、打分、注入集合）。
+    last_trace: Dict[str, Any] = field(default_factory=dict)
     _index_cards: List[Card] = field(default_factory=list, init=False, repr=False)
     _engine_name: str = field(default="builtin.BM25Okapi", init=False, repr=False)
     _cache: Dict[str, Any] = field(default_factory=dict, init=False, repr=False)
+    #: 请求的后端（降级前）。降级之后仍然能看出"用户要的是超图"，
+    #: 供 ``knowledge_trace.json`` 记录。
+    requested_backend: RagBackend = field(default=RagBackend.BM25,
+                                          init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.cards = list(self.cards)
         self.capabilities = {str(item) for item in (self.capabilities or ())}
-        self.backend = self.resolve_backend(self.backend)
+        requested = self.backend
+        # 未识别的取值只能落成 `degraded_reason`，不能让构造直接抛崩——
+        # 配置是外部输入，检索器要给一条可读的告警并降级（见 resolve_backend）。
+        self.requested_backend = (requested if isinstance(requested, RagBackend)
+                                  else RagBackend.BM25)
+        self.backend = self.resolve_backend(requested)
         self._cache = {}
         self._engine(self.cards)          # 预热，顺便确定实现名
 
     # ------------------------------------------------------------ 选择逻辑
     def resolve_backend(self, requested: RagBackend) -> RagBackend:
-        requested = RagBackend(str(requested))
+        try:
+            requested = RagBackend(str(requested))
+        except ValueError:
+            # v1.4 §2.3：**未识别的 backend 不许静默回退**——显式记一条
+            # 告警并置 degraded，否则 trace 里的 degraded 永远是死字段。
+            self.warnings.append(
+                f"未知的 rag.backend 取值 {requested!r}：已降级为 bm25")
+            self.degraded = True
+            self.degraded_reason = f"unknown_backend:{requested}"
+            return RagBackend.BM25
         if requested is RagBackend.DIGEST:
             return RagBackend.DIGEST
+        if requested is RagBackend.HYPERGRAPH:
+            if "hypergraph" in self.capabilities and self.hypergraph is not None:
+                return RagBackend.HYPERGRAPH
+            self.warnings.append(
+                "配置要求超图检索，但传输层未确认 hypergraph 能力（或索引不可用）："
+                "已降级为 bm25 卡片检索，并在 knowledge_trace 里记 degraded=true")
+            self.degraded = True
+            self.degraded_reason = "hypergraph_unavailable"
+            return RagBackend.BM25
         if requested is RagBackend.VECTOR:
             if "vector" in self.capabilities and self.vector_store is not None:
                 return RagBackend.VECTOR
             self.warnings.append(
                 "配置要求向量检索，但传输层未确认 vector 能力：已降级为 bm25")
+            self.degraded = True
+            self.degraded_reason = "vector_unavailable"
             return RagBackend.BM25
         return RagBackend.BM25
 
@@ -133,7 +182,33 @@ class KnowledgeRetriever:
         return {"backend": str(self.backend), "engine": self.engine_name,
                 "cards": len(self.cards), "top_k": self.top_k,
                 "token_limit": self.token_limit,
+                "plan_token_limit": self.plan_token_limit,
+                "degraded": bool(self.degraded),
+                "degraded_reason": self.degraded_reason,
                 "warnings": list(self.warnings)}
+
+    def trace_payload(self) -> Dict[str, Any]:
+        """``knowledge_trace.json`` 的内容（v1.4 §2.3 / §3.3）。
+
+        每次运行必写：查询串、种子、扩展到的超边、逐条打分、最终注入集合、
+        后端、以及**降级留痕**。没有走超图时也返回一份（``backend`` 会写明
+        实际用的是谁），这样"这次到底查了什么"永远有据可查。
+        """
+        payload: Dict[str, Any] = {
+            "backend": str(self.backend),
+            "requested_backend": str(self.requested_backend),
+            "degraded": bool(self.degraded),
+            "degraded_reason": self.degraded_reason,
+            "cards": len(self.cards),
+            "top_k": self.top_k,
+            "token_limits": {"shot": self.token_limit,
+                             "plan": self.plan_token_limit},
+            "warnings": list(self.warnings),
+        }
+        payload.update(self.last_trace or {})
+        payload.setdefault("shot_scope", {})
+        payload.setdefault("plan_scope", {})
+        return payload
 
     # ------------------------------------------------------------ 检索
     @staticmethod
@@ -196,6 +271,54 @@ class KnowledgeRetriever:
         return [RetrievalHit(candidates[index], score)
                 for index, score in scored[:limit] if score > 0]
 
+    # ------------------------------------------------------- v1.4 §2.3 超图
+    def hypergraph_edges(self, query: str, *, top_k: Optional[int] = None,
+                         token_limit: Optional[int] = None
+                         ) -> List[Any]:
+        """走超图索引取**整条**超边（含全部 ``forbid`` 成员）。
+
+        返回 ``[]`` 表示没有可用索引/没有命中——调用方据此决定是否退回卡片。
+        过程写进 :attr:`last_trace`，供 ``knowledge_trace.json`` 落盘。
+        """
+        if self.backend is not RagBackend.HYPERGRAPH or self.hypergraph is None:
+            return []
+        limit = int(top_k or self.top_k)
+        try:
+            edges, _text, trace = self.hypergraph.retrieve(
+                query, top_k=limit,
+                token_limit=int(token_limit or self.token_limit))
+        except Exception as exc:  # noqa: BLE001 - 超图侧失败不该拖垮整场
+            self.warnings.append(f"超图检索失败，已退回卡片：{exc}")
+            self.degraded = True
+            self.degraded_reason = f"hypergraph_error:{type(exc).__name__}"
+            return []
+        self.last_trace = _trace_to_dict(trace)
+        return list(edges or [])
+
+    def edge_block(self, query: str, *, top_k: Optional[int] = None,
+                   token_limit: Optional[int] = None,
+                   title: str = "硬约束（禁/许）") -> str:
+        """按 §2.3 的**原子注入**渲染超边：装不下就整条丢弃，绝不截断。
+
+        ``render_edges`` 返回 ``(text, dropped_edge_ids, quality_fail)``；
+        后两者按 ``shot_scope`` / ``plan_scope`` 分列记进 trace（T5）。
+        """
+        from .hypergraph import render_edges
+
+        edges = self.hypergraph_edges(query, top_k=top_k,
+                                      token_limit=token_limit)
+        if not edges:
+            return ""
+        nodes = getattr(self.hypergraph, "nodes", {}) or {}
+        text, dropped, quality_fail = render_edges(
+            edges, nodes, limit=int(token_limit or self.token_limit))
+        scope = "shot_scope" if token_limit == self.token_limit else "plan_scope"
+        self.last_trace.setdefault(scope, {})["dropped_edge_ids"] = list(dropped)
+        self.last_trace.setdefault(scope, {})["quality_fail"] = list(quality_fail)
+        self.last_trace["degraded"] = bool(self.degraded)
+        self.last_trace["degraded_reason"] = self.degraded_reason
+        return f"【{title}】\n{text}" if text else ""
+
     def _vector_order(self, query: str,
                       limit: int) -> List[int]:  # pragma: no cover - 需 sidecar
         try:
@@ -248,15 +371,24 @@ class KnowledgeRetriever:
 
     # ------------------------------------------------------------ §6.5 时机
     def block_for_plan(self, script_digest: str,
-                       limit: int = TOKEN_LIMIT_PLAN) -> str:
+                       limit: int = 0) -> str:
         """阶段 A：按剧本摘要预取（轴线 / 构图 / 摄影最常相关）。
 
         v1.3：top_k 从 6 提到 8。语料从 37 条扩到 130 余条之后，6 条常常
         装不下"越轴 + 构图 + 运镜"这三类同时相关的内容；token 上限仍然是
         2000，因此注入体积可控。
         """
+        limit = int(limit or self.plan_token_limit or TOKEN_LIMIT_PLAN)
         if self.backend is RagBackend.DIGEST:
             return self.digest_block(limit)
+        if self.backend is RagBackend.HYPERGRAPH:
+            edges = self.edge_block(script_digest, top_k=max(self.top_k, 8),
+                                    token_limit=limit)
+            # 超边之外再补一点卡片正文（§2.3：超边优先、卡片补充）。
+            cards = self.block(script_digest, top_k=4, token_limit=limit)
+            if edges and cards:
+                return edges + "\n\n【卡片正文补充】\n" + cards
+            return edges or cards
         if not self.cards:
             return ""
         return self.block(script_digest, top_k=max(self.top_k, 8),
@@ -264,10 +396,22 @@ class KnowledgeRetriever:
 
     def block_for_shot(self, shot_type: str, intent: str = "",
                        action_types: Sequence[str] = (),
-                       limit: int = TOKEN_LIMIT_TOOL) -> str:
+                       limit: int = 0) -> str:
         """阶段 B1：按该镜的景别 / 意图 / 动作取条目。"""
+        limit = int(limit or self.token_limit or TOKEN_LIMIT_TOOL)
         if self.backend is RagBackend.DIGEST:
             return self.digest_block(limit)
+        if self.backend is RagBackend.HYPERGRAPH:
+            query = " ".join([shot_type or "", intent or "",
+                              " ".join(action_types or ())]).strip()
+            if not query:
+                return self.digest_block(limit)
+            edges = self.edge_block(query, top_k=self.top_k,
+                                    token_limit=limit)
+            cards = self.block(query, top_k=self.top_k, token_limit=limit)
+            if edges and cards:
+                return edges + "\n\n【卡片正文补充】\n" + cards
+            return edges or cards
         if not self.cards:
             return ""
         query = " ".join([shot_type or "", intent or "",
@@ -283,7 +427,9 @@ _DEFAULT: Optional[KnowledgeRetriever] = None
 def default_retriever(backend: RagBackend = RagBackend.BM25,
                       capabilities: Iterable[str] = (),
                       top_k: int = 5,
-                      token_limit: int = TOKEN_LIMIT_TOOL) -> KnowledgeRetriever:
+                      token_limit: int = TOKEN_LIMIT_TOOL,
+                      plan_token_limit: int = TOKEN_LIMIT_PLAN,
+                      hypergraph: Optional[Any] = None) -> KnowledgeRetriever:
     """进程级默认检索器（语料是静态的，默认参数下构建一次即可）。
 
     带了非默认参数时**不缓存**：否则第二次用不同配置调用会拿到上一份配置的
@@ -291,13 +437,15 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
     """
     global _DEFAULT
     if (backend is RagBackend.BM25 and not capabilities and top_k == 5
-            and token_limit == TOKEN_LIMIT_TOOL):
+            and token_limit == TOKEN_LIMIT_TOOL
+            and plan_token_limit == TOKEN_LIMIT_PLAN and hypergraph is None):
         if _DEFAULT is None:
             _DEFAULT = KnowledgeRetriever(cards=cards_in_domain_order())
         return _DEFAULT
     return KnowledgeRetriever(
         cards=cards_in_domain_order(), backend=backend,
-        capabilities=capabilities, top_k=top_k, token_limit=token_limit)
+        capabilities=capabilities, top_k=top_k, token_limit=token_limit,
+        plan_token_limit=plan_token_limit, hypergraph=hypergraph)
 
 
 def reset_default_retriever() -> None:
