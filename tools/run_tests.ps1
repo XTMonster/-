@@ -162,12 +162,20 @@ Write-Host ('  ' + ($exportMarker -replace 'BLOCKDIRECTOR_EXPORT ', '')) -Foregr
 # Blender-side probes from the manifest.
 # --------------------------------------------------------------------------- #
 $index = 5
+$probePassed = @()
 foreach ($check in $checks) {
     Write-Host ("[{0}/{1}] Blender probe: {2}" -f $index, $total, $check.Label) -ForegroundColor Cyan
     $probeOut = Invoke-BlenderScript $blender (Join-Path $root $check.Script) $null
     $probeLine = Assert-Marker $probeOut $check.Marker $check.Label
     if ($probeLine -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $probeLine) }
     Write-Host ('  OK: ' + $check.Label) -ForegroundColor Green
+    # 收集探针自报的 passed 名，交给 RK 聚合器推导"哪些 RK 真的被测了"。
+    try {
+        $payload = ($probeLine -replace ('^.*' + [regex]::Escape($check.Marker) + ' '), '') | ConvertFrom-Json
+        foreach ($name in $payload.passed) { $probePassed += $name }
+    } catch {
+        Write-Host '  WARN: could not parse the probe result for the RK aggregate' -ForegroundColor Yellow
+    }
     $index = $index + 1
 }
 
@@ -181,8 +189,25 @@ New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
 # Both helpers write their own file (never Set-Content: PowerShell 5.1 would
 # prepend a BOM and break json.loads downstream).
 python tools/evidence_fingerprint.py --out (Join-Path $evidenceDir 'config.fingerprint.json') | Out-Null
-python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --check 'RK-12,RK-18,RK-19' | Out-Null
+# pytest 侧的 RK 由具名用例覆盖（RK-11 的帧数等式、RK-12 的重放、
+# RK-18 的预算门、RK-19 的银幕方向）——它们的 check 名就是 RK 编号本身。
+$rks = (@('RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed) -join ','
+python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks | Out-Null
 Write-Host ('Evidence: ' + $evidenceDir) -ForegroundColor Green
+
+# --------------------------------------------------------------------------- #
+# P16 / S13：证据目录必须**自描述且可入库**。
+# --------------------------------------------------------------------------- #
+foreach ($name in @('rks.json', 'config.fingerprint.json')) {
+    if (-not (Test-Path (Join-Path $evidenceDir $name))) {
+        Fail ('  FAILED: evidence directory is missing ' + $name)
+    }
+}
+# `git check-ignore -q` 的**退出码 1 表示"没有被忽略"**（0 = 被忽略）。
+git check-ignore -q ('docs/evidence/' + $runId + '/rks.json')
+if ($LASTEXITCODE -ne 1) {
+    Fail '  FAILED: docs/evidence/** is ignored by .gitignore (S13)'
+}
 
 Write-Host 'All checks passed.' -ForegroundColor Green
 exit 0

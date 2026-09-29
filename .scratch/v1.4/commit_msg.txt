@@ -1,30 +1,18 @@
-feat(P16): make the composition gate and the assertion hygiene provable
+feat(P16): derive the RK verdicts from the probes, and prove the evidence is committable
 
-W10 (SS5 P16), first slice.
+W10 (SS5 P16), second slice.
 
-- cinema/composition.py: a subject that is (almost) entirely out of frame can no
-  longer score well. Headroom, occlusion and balance all become vacuously
-  satisfied when the frame holds no subject at all, so moving a character 30 m
-  away still scored 60/100. The score is now capped at 20 whenever the primary
-  subject's inside ratio is <= 5%, which is what makes RK-10's reverse mutation
-  (break the framing -> the score must fall by >= 20) actually hold, and what
-  stops a threshold of -1e9 from staying green.
-- New Blender probe tools/blender_tests/test_composition_gate.py (RK-10):
-  * the pass rate is computed with RK-10's own numerator/denominator (non-empty
-    shots whose type is not ELS/LS; numerator = composition_score >=
-    composition_threshold), never from AuditResult.passed;
-  * the threshold is asserted to be the auditor's own 70.0 read independently;
-  * the reverse mutation breaks ceil(0.3 * denominator) + 1 shots (at least
-    two) and requires the rate to fall below 70% and every broken shot to lose
-    at least 20 points. Measured: rate 1.00 -> 0.00 with drops of 50.0 / 62.8 /
-    62.8.
-  Registered in run_tests.ps1 (30 -> 31).
-- New tools/check_assertions.py: a bpy-free static check for tautological
-  assertions (assert True, assert 1 == 1, assert not False). It scans 118
-  files and stays honest about what an empty assertion is: a bare
-  ``assert findings`` is meaningful and is not flagged. tests/test_assertion_
-  hygiene.py runs it over the repo and pins two negative/positive cases.
-- New pure unit case in test_composition.py for the out-of-frame cap.
+- tools/run_tests_rks.py no longer takes a hand-written list of RK ids: the
+  PowerShell hook now harvests each probe's own BD_TEST_RESULT "passed" array
+  and hands the check names over, and the script derives which RKs were really
+  measured (rk6_* -> RK-6, rk17_* -> RK-17, plus the pytest-side RK-11/12/18/19
+  names). Everything else stays "not_measured" with pass=null -- never a
+  fabricated pass (SSB.2 L5).
+- tools/run_tests.ps1 tail: after writing docs/evidence/<run-id>/,assert both
+  rks.json and config.fingerprint.json exist, and use `git check-ignore -q`
+  (exit code 1 means "not ignored") to prove docs/evidence/** is committable
+  (S13's named assertion).
 
-python -m pytest tests/test_composition.py -> 21 passed; the composition-gate,
-phase3-audit and phase4-repair probes are green.
+Verified: the aggregator maps a synthetic check list to
+['RK-6','RK-10','RK-11','RK-17'] and leaves RK-19 not_measured; the
+check-ignore probe returns 1 for docs/evidence/<id>/rks.json.

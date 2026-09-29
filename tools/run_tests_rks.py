@@ -11,8 +11,15 @@ Honesty rule (SS 4.1b): an RK that this suite cannot measure is written with
 
 Pure Python, no bpy.
 
-Usage:
-  python tools/run_tests_rks.py --run-id <id> --evidence-dir <dir> [--check a,b]
+用法::
+
+  python tools/run_tests_rks.py --run-id <id> --evidence-dir <dir> \
+      [--checks rk6_no_floating_no_sinking,rk16_crowd_visibility,...]
+
+``--checks`` 是**本轮实际跑过的探针 check 名**（`tools/run_tests.ps1` 从每个
+探针的 ``BD_TEST_RESULT`` 里收集 `passed` 数组），另加 pytest 侧的 RK 名
+（``RK-11``/``RK-12``/``RK-18``/``RK-19``）。脚本按名字**推导**哪些 RK 被测到
+——``measured`` 因此是聚合结果，而不是手填的常量（§B.2 L5 的要求）。
 """
 
 from __future__ import annotations
@@ -73,14 +80,15 @@ RK_TABLE = [
 
 
 def build_report(run_id: str, checks: list) -> dict:
+    measured = measured_rks(checks)
     rks = []
     for rk_id, expected, sample_ref in RK_TABLE:
-        measured = rk_id in set(checks)
+        hit = rk_id in measured
         rks.append({
             "rk_id": rk_id,
-            "pass": True if measured else None,
-            "status": "measured" if measured else "not_measured",
-            "measured": bool(measured),
+            "pass": True if hit else None,
+            "status": "measured" if hit else "not_measured",
+            "measured": bool(hit),
             "expected": expected,
             "sample_ref": sample_ref,
         })
@@ -91,22 +99,54 @@ def build_report(run_id: str, checks: list) -> dict:
         "note": ("pass=null 表示本轮套件未度量该 RK（不得据此判通过，"
                  "见 v1.4 SS 4.1b 硬规则 1）。"),
         "checks": list(checks),
+        "measured_rks": sorted(measured),
         "rks": rks,
     }
+
+
+def rks_for_check(name: str) -> set:
+    """把一个 check 名映射到 RK 编号。
+
+    * ``rk6_xxx`` → ``RK-6``；``rk17_xxx`` → ``RK-17``（探针 check 的命名约定）；
+    * ``RK-11`` 这类大写名直接原样认；
+    * 其余名字（``bake_creates_keyframes`` 之类）不映射到任何 RK。
+    """
+    text = str(name or "").strip()
+    upper = text.upper()
+    if upper.startswith("RK-") and upper[3:].split("_")[0].isdigit():
+        return {"RK-" + upper[3:].split("_")[0]}
+    lower = text.lower()
+    if lower.startswith("rk"):
+        digits = ""
+        for char in lower[2:]:
+            if char.isdigit():
+                digits += char
+            else:
+                break
+        if digits:
+            return {f"RK-{digits}"}
+    return set()
+
+
+def measured_rks(checks) -> set:
+    found = set()
+    for name in checks or []:
+        found |= rks_for_check(name)
+    return found
 
 
 def parse_args(argv) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="run_tests_rks")
     parser.add_argument("--run-id", default="")
     parser.add_argument("--evidence-dir", default="")
-    parser.add_argument("--check", default="RK-12,RK-18,RK-19",
-                        help="本轮真正度量到的 RK id（逗号分隔）")
+    parser.add_argument("--checks", default="",
+                        help="本轮跑过的 check 名（逗号分隔；含 pytest 侧的 RK 名）")
     return parser.parse_args(argv[1:])
 
 
 def main(argv=None) -> int:
     args = parse_args(argv or sys.argv)
-    checks = [item.strip() for item in str(args.check).split(",") if item.strip()]
+    checks = [item.strip() for item in str(args.checks).split(",") if item.strip()]
     report = build_report(args.run_id, checks)
     if args.evidence_dir:
         target = Path(args.evidence_dir)
