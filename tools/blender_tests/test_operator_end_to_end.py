@@ -203,7 +203,8 @@ def main() -> int:
     check("operator_refuses_without_a_builder", t_missing_builder_is_refused)
     check("scene_clear_is_opt_in_and_snapshotted",
           t_scene_clear_is_opt_in_and_snapshotted)
-    check("operator_path_builds_and_exports", t_operator_path_builds_and_exports)
+    check("rk9_operator_path_builds_and_exports",
+          t_operator_path_builds_and_exports)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

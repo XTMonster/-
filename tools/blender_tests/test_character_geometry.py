@@ -269,11 +269,11 @@ def t_eyes_render_as_two_clusters():
 
 def main() -> int:
     capture_main_thread()
-    check("input_contract", t_input_contract)
-    check("head_is_not_occluded", t_head_is_not_occluded)
-    check("headroom_is_at_least_eight_percent",
+    check("rk4_input_contract", t_input_contract)
+    check("rk14_head_is_not_occluded", t_head_is_not_occluded)
+    check("rk15_headroom_is_at_least_eight_percent",
           t_headroom_is_at_least_eight_percent)
-    check("eyes_render_as_two_clusters", t_eyes_render_as_two_clusters)
+    check("rk4_eyes_render_as_two_clusters", t_eyes_render_as_two_clusters)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

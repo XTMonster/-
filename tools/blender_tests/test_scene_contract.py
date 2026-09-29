@@ -228,8 +228,9 @@ def t_over_the_shoulder_occludes_the_background():
 
 def main() -> int:
     capture_main_thread()
-    check("two_characters_face_each_other", t_two_characters_face_each_other)
-    check("over_the_shoulder_occludes_the_background",
+    check("rk3_two_characters_face_each_other",
+          t_two_characters_face_each_other)
+    check("rk3_over_the_shoulder_occludes_the_background",
           t_over_the_shoulder_occludes_the_background)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]

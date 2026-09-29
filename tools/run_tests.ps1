@@ -169,7 +169,8 @@ foreach ($check in $checks) {
     $probeLine = Assert-Marker $probeOut $check.Marker $check.Label
     if ($probeLine -notmatch '"failed": \[\]') { Fail ('  FAILED: ' + $probeLine) }
     Write-Host ('  OK: ' + $check.Label) -ForegroundColor Green
-    # 收集探针自报的 passed 名，交给 RK 聚合器推导"哪些 RK 真的被测了"。
+    # Collect the probe's self-reported "passed" names so the RK aggregator can
+    # derive which RKs were actually measured.
     try {
         $payload = ($probeLine -replace ('^.*' + [regex]::Escape($check.Marker) + ' '), '') | ConvertFrom-Json
         foreach ($name in $payload.passed) { $probePassed += $name }
@@ -189,21 +190,22 @@ New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
 # Both helpers write their own file (never Set-Content: PowerShell 5.1 would
 # prepend a BOM and break json.loads downstream).
 python tools/evidence_fingerprint.py --out (Join-Path $evidenceDir 'config.fingerprint.json') | Out-Null
-# pytest 侧的 RK 由具名用例覆盖（RK-11 的帧数等式、RK-12 的重放、
-# RK-18 的预算门、RK-19 的银幕方向）——它们的 check 名就是 RK 编号本身。
+# The pytest-side RKs are covered by named cases (RK-11 frame identity,
+# RK-12 replay, RK-18 budget gate, RK-19 screen direction); their check names
+# are the RK ids themselves.
 $rks = (@('RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed) -join ','
 python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks | Out-Null
 Write-Host ('Evidence: ' + $evidenceDir) -ForegroundColor Green
 
 # --------------------------------------------------------------------------- #
-# P16 / S13：证据目录必须**自描述且可入库**。
+# P16 / S13: the evidence directory must be self-describing and committable.
 # --------------------------------------------------------------------------- #
 foreach ($name in @('rks.json', 'config.fingerprint.json')) {
     if (-not (Test-Path (Join-Path $evidenceDir $name))) {
         Fail ('  FAILED: evidence directory is missing ' + $name)
     }
 }
-# `git check-ignore -q` 的**退出码 1 表示"没有被忽略"**（0 = 被忽略）。
+# `git check-ignore -q` exit code 1 means "not ignored" (0 = ignored).
 git check-ignore -q ('docs/evidence/' + $runId + '/rks.json')
 if ($LASTEXITCODE -ne 1) {
     Fail '  FAILED: docs/evidence/** is ignored by .gitignore (S13)'

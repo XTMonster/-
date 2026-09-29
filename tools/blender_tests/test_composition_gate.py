@@ -177,9 +177,9 @@ def t_breaking_the_framing_drops_the_rate():
 
 def main() -> int:
     capture_main_thread()
-    check("gate_passes_and_threshold_has_one_source",
+    check("rk10_gate_passes_and_threshold_has_one_source",
           t_gate_passes_and_threshold_has_one_source)
-    check("breaking_the_framing_drops_the_rate",
+    check("rk10_breaking_the_framing_drops_the_rate",
           t_breaking_the_framing_drops_the_rate)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]

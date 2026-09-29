@@ -364,7 +364,7 @@ def t_head_shots_are_present():
 
 def main() -> int:
     capture_main_thread()
-    check("one_pair_per_character", t_one_pair_per_character)
+    check("rk1_one_pair_per_character", t_one_pair_per_character)
     check("head_shots_are_present", t_head_shots_are_present)
     check("rk1_ink_stroke_and_components", t_rk1_ink_stroke_and_components)
     check("rk2_overlap_and_offsets", t_rk2_overlap_and_offsets)

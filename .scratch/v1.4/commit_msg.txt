@@ -1,28 +1,16 @@
-fix(sec): stop shot_id from escaping the export dir, and stop the GUI wiping the scene
+fix(P16): keep run_tests.ps1 ASCII-only and name the RK checks after their oracles
 
-Two findings from the parallel safety audit, both reproduced before the fix.
+- tools/run_tests.ps1: the comments I added carried CJK, and Windows
+  PowerShell 5.1 parses BOM-less UTF-8 as ANSI -- the script died with
+  "Unexpected token '}'" before running anything (the AGENTS rule exists for
+  exactly this). All non-ASCII lines are now English; the file is ASCII again
+  (checked with a byte scan).
+- Probe check names now carry their oracle id so the RK aggregator can map them
+  mechanically: rk3_* (scene contract), rk4_* / rk14_* / rk15_* (character
+  geometry), rk9_* (operator end to end), rk10_* (composition gate) and
+  rk1_one_pair_per_character. Previously those probes reported
+  "not_measured" in rks.json despite having run.
 
-- F1 (path traversal): ``shot_id`` is concatenated straight into file names
-  (``blockout_<id>.mp4``, ``first_frames/<id>.png``, ``depth_shot_<id>/``), but
-  ``ShotPlan.from_dict`` accepted any string. A plan (LLM output, a hand-edited
-  project.bdproj, or a replayed audit log) carrying
-  ``../../../../Users/Public/x`` made the exporter write outside its own
-  directory. The contract boundary now validates the id
-  (``[A-Za-z0-9_.-]{1,64}`` and no ``..``) and raises; the SDL load path reports
-  it as finding S11 instead of crashing.
-- F2 (destructive GUI): the panel's "generate previs" button cleared *every*
-  object in the scene -- the cleanup does not respect the BD_ prefix -- so a
-  user's own modelling disappeared with no confirmation and no snapshot. The
-  full clear is now an explicit panel option (``bd_clear_scene``, default on so
-  a clean previs still works), and when it is on the operator captures a
-  ``before_build`` checkpoint first.
-- Tests: tests/test_plan_shot_id.py (14 cases: legal ids pass, traversal /
-  absolute / separator / CJK / over-long ids raise at the contract boundary,
-  and a project file with a bad id yields S11 rather than an exception); the
-  operator probe gains scene_clear_is_opt_in_and_snapshotted, which pins both
-  halves (opted out -> the user's object survives and no snapshot is taken;
-  opted in -> a snapshot exists and the object is removed).
-
-python -m pytest -> 1065 tests, the only 6 failures are the parallel P14 branch's
-knowledge/holdout WIP (unrelated to these files). All three operator-probe
-checks are green.
+Full suite after the fix: powershell -File tools/run_tests.ps1 -> all 31 checks
+passed, and the tail wrote docs/evidence/20260930-050932/{rks.json,
+config.fingerprint.json} with the evidence directory proven committable.
