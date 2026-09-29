@@ -18,6 +18,11 @@ SIDE_POSITIVE = 1
 SIDE_NEGATIVE = -1
 SIDE_UNKNOWN = 0
 
+#: 机位相对已确立轴线的三种状态（§10.3 / R001）
+AXIS_CORRECT = "correct"
+AXIS_NEUTRAL = "neutral"
+AXIS_CROSSED = "crossed"
+
 # §10.5 的景别由紧到松，用于 R010 的"景别变化至少一档"
 SHOT_SIZE_ORDER: Tuple[str, ...] = ("ECU", "CU", "MCU", "MS", "MLS", "LS", "ELS")
 
@@ -105,15 +110,40 @@ def establish_axis(axis: Axis, camera: Sequence[float]) -> Axis:
                 left_label=axis.left_label, right_label=axis.right_label)
 
 
+def axis_status(axis: Axis, camera: Sequence[float]) -> str:
+    """机位相对轴线的状态：``correct`` / ``neutral`` / ``crossed``。
+
+    ``neutral`` = 机位恰好落在轴线上，画面没有左右信息。它不是"越轴"，
+    而是 §6.2 ``axis_neutral`` 卡片定义的跨轴桥梁。
+    """
+    side = axis.side_of(camera)
+    if side == SIDE_UNKNOWN:
+        return AXIS_NEUTRAL
+    return AXIS_CORRECT if side == axis.established_side else AXIS_CROSSED
+
+
 def axis_violation(axis: Axis, camera: Sequence[float]) -> Optional[str]:
-    """越轴时返回中文建议；合规返回 None（R001）。"""
-    if axis.is_correct_side(camera):
+    """**越轴**时返回中文建议；合规与中性机位都返回 ``None``（R001）。
+
+    v1.3 修正：v1.2 把"机位落在轴线上"也判为违规。但中性镜头在
+    §6.2 的 ``axis_neutral`` 卡片里是**合法**的跨轴桥梁，而且两人相对而立
+    （"互相看向对方"）时，任何单人正反打的机位都必然落在轴线上——按旧判据
+    这类镜头永远无法通过审核。现在中性不再是违规，改为由
+    :func:`axis_neutral_note` 给出的提示（R001 降级为 warning）；
+    真正跨到另一侧仍然报错。
+    """
+    if axis_status(axis, camera) == AXIS_CROSSED:
+        return ("相机位置违反 180° 轴线规则，可能导致角色左右方向混乱。"
+                "建议将相机移到轴线另一侧，或插入中性镜头过渡。")
+    return None
+
+
+def axis_neutral_note(axis: Axis, camera: Sequence[float]) -> Optional[str]:
+    """中性机位的提示文本；非中性返回 ``None``。"""
+    if axis_status(axis, camera) != AXIS_NEUTRAL:
         return None
-    if axis.side_of(camera) == SIDE_UNKNOWN:
-        return ("相机正好落在轴线上，画面会出现方向感塌陷。"
-                "建议机位沿垂直方向偏移后重拍，或插入中性镜头过渡。")
-    return ("相机位置违反 180° 轴线规则，可能导致角色左右方向混乱。"
-            "建议将相机移到轴线另一侧，或插入中性镜头过渡。")
+    return ("机位落在轴线上（中性镜头）：画面没有明确的左右信息，"
+            "可以作为跨轴桥梁，但连续使用会失去空间感。")
 
 
 # --------------------------------------------------------------------------- #

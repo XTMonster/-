@@ -25,11 +25,16 @@ def place_camera_for_shot(shot_id: str,
                           room: Optional[Sequence[float]] = None,
                           margin: float = 0.5,
                           use_constraint: bool = True,
-                          make_scene_camera: bool = True):
-    """解算机位并创建相机。返回 ``(CameraBundle, FramingResult)``。"""
+                          make_scene_camera: bool = True,
+                          direction: Optional[Sequence[float]] = None):
+    """解算机位并创建相机。返回 ``(CameraBundle, FramingResult)``。
+
+    ``direction`` 由 :mod:`block_director.cinema.station` 解算（双人镜头相对
+    两人连线），给出时覆盖 ``side``。
+    """
     solution: FramingResult = solve_framing(
         subject_pos=subject_pos, facing=facing, shot_type=shot_type, side=side,
-        lens=lens, room=room, margin=margin)
+        lens=lens, room=room, margin=margin, direction=direction)
     for warning in solution.warnings:
         log.warning("取景 %s: %s", shot_id, warning)
 

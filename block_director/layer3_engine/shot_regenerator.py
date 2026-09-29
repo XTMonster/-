@@ -23,10 +23,10 @@ from ..utils.blender_compat import action_fcurves
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .character_system import MotionBlender
-from .cinema_engine import place_camera_for_shot
 from .scene_context import SceneContext, get_context
 from .scene_sync import SceneSynchronizer, is_user_animated
-from .shot_builder import action_requests, conflict_warnings, subject_anchor
+from .shot_builder import (action_requests, conflict_warnings,
+                           place_shot_camera)
 
 log = get_logger("shot-regen")
 
@@ -98,11 +98,17 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
         scene.timeline_markers.remove(old_marker)
     if previous is not None:
         bpy.data.objects.remove(previous, do_unlink=True)
+    # 对准点 Empty 与相机成对存在，必须一起删。否则 create_camera 会新建出
+    # ``BD_CamTarget_<shot>.001``，而 ``_shot_target_object()`` 按原名查找时
+    # 仍返回旧对象——move_camera / reframe 会去动一个和相机已经没有约束关系
+    # 的 Empty，表现为"加了运镜但画面不动"。
+    stale_target = scene.objects.get(f"BD_CamTarget_{shot_id}")
+    if stale_target is not None:
+        bpy.data.objects.remove(stale_target, do_unlink=True)
 
-    anchor, facing = subject_anchor(shot, cast_map)
-    bundle, solution = place_camera_for_shot(
-        shot_id, anchor, facing=facing, shot_type=str(shot.shot_type),
-        side="front", room=spec.room)
+    # v1.3：与主构建共用同一个机位解算入口。
+    # v1.2 这里写死 side="front" 并丢掉 lens，重生成后朝向与焦距都会回退。
+    bundle, solution, _frame = place_shot_camera(shot, cast_map, spec)
     marker = scene.timeline_markers.new(f"BD_Cut_{shot_id}", frame=start)
     marker.camera = bundle.camera
     context.cameras[shot_id] = bundle.camera

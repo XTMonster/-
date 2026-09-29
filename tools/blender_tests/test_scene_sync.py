@@ -138,14 +138,17 @@ def t_sync_reads_the_new_placement():
         plan, spec, _summary = build(sync)
         character = get_context().characters["char_001"]
         character.root.location = (2.5, -0.5, 0.0)
-        character.root.rotation_euler[2] = 1.5708          # 面朝 +X
+        # 角色正面是局部 +Y；绕 Z 转 +π/2 之后世界朝向是 (-sin, cos) = **-X**。
+        # v1.2 这里写的是"面朝 +X"，那是把 X 分量镜像后的错误读法。
+        character.root.rotation_euler[2] = 1.5708          # 面朝 -X
         bpy.context.view_layer.update()
 
         _plan2, spec2 = sync.sync_from_blender(plan, spec)
         member = next(m for m in spec2.cast if m.id == "char_001")
         untouched = next(m for m in spec2.cast if m.id == "char_002")
         return {"ok": (member.initial_location == (2.5, -0.5, 0.0)
-                       and abs(member.initial_facing[0] - 1.0) < 1e-3
+                       and abs(member.initial_facing[0] + 1.0) < 1e-3
+                       and abs(member.initial_facing[1]) < 1e-3
                        and untouched.initial_location
                        == next(m.initial_location for m in spec.cast
                                if m.id == "char_002")),

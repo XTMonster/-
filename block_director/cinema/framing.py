@@ -135,10 +135,16 @@ def solve_framing(subject_pos: Sequence[float],
                   room: Optional[Sequence[float]] = None,
                   margin: float = 0.5,
                   sensor_width: float = SENSOR_WIDTH,
+                  direction: Optional[Sequence[float]] = None,
                   aspect: float = ASPECT_16_9) -> FramingResult:
     """解算机位与对准点。
 
     ``room`` 形如 ``(min_x, max_x, min_y, max_y)``；给出时机位会被夹在房间内。
+
+    ``direction`` 是**已经解算好的机位方向**（单位向量，XY 平面）。给出时
+    覆盖 ``side``：双人镜头的 ``side`` 必须相对两人连线而不是相对焦点主体
+    的朝向解析（否则相机正好落在轴线上，R001 必报），那段语义在
+    :mod:`block_director.cinema.station` 里，本函数只负责把它落到坐标上。
     """
     warnings: List[str] = []
     key = str(shot_type).upper()
@@ -162,7 +168,15 @@ def solve_framing(subject_pos: Sequence[float],
 
     distance = required_distance(frame.frame_height, effective_lens,
                                  sensor_width, aspect)
-    dx, dy = side_vector(facing, side)
+    if direction is not None:
+        dx, dy = float(direction[0]), float(direction[1])
+        norm = math.hypot(dx, dy)
+        if norm < 1e-9:
+            dx, dy = side_vector(facing, side)
+        else:
+            dx, dy = dx / norm, dy / norm
+    else:
+        dx, dy = side_vector(facing, side)
     position = (base_x + dx * distance, base_y + dy * distance, frame.camera_z)
     position, clamped = _clamp_to_room(position, room, margin)
     if clamped:

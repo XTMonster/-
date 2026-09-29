@@ -149,7 +149,11 @@ def _walk_root(start: int, end: int, source: Sequence[float],
     tx, ty = float(target[0]), float(target[1])
     dx, dy = tx - sx, ty - sy
     distance = math.hypot(dx, dy)
-    facing = math.atan2(dx, dy) if distance > 1e-9 else None
+    # 角色正面是局部 +Y，绕 Z 旋转 θ 后世界朝向为 (-sin θ, cos θ)；
+    # 要让朝向等于移动方向 (dx, dy)，θ 必须取 atan2(-dx, dy)。
+    # v1.2 用的是 atan2(dx, dy)，会把 X 分量镜像，于是目标带 X 偏移时
+    # 角色"倒着走"（面朝运动的反方向）。与 facing_to_rotation_z 同源修正。
+    facing = math.atan2(-dx, dy) if distance > 1e-9 else None
     span = max(end - start, 1)
     steps = max(span / FPS * rate, 0.5)
 

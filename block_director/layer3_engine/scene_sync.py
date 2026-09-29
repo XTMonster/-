@@ -16,7 +16,6 @@ Blender 对象 ↔ SDL 元素靠 ``bd_sdl_id`` 建立映射；用户手动改动
 from __future__ import annotations
 
 import contextlib
-import math
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -24,6 +23,7 @@ import bpy
 
 from ..contracts.cast import CastMember, SceneSpec
 from ..contracts.plan import Plan
+from ..utils.geometry import rotation_z_to_facing
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .scene_context import get_context
@@ -225,8 +225,10 @@ class SceneSynchronizer:
                 initial_location=(round(float(obj.location.x), 4),
                                   round(float(obj.location.y), 4),
                                   round(float(obj.location.z), 4)),
-                initial_facing=(round(math.sin(yaw), 4), round(math.cos(yaw), 4),
-                                0.0))
+                # 回读必须与写入（facing_to_rotation_z）互为逆运算，
+                # 否则用户转过的朝向会被读成它的镜像。
+                initial_facing=tuple(round(v, 4)
+                                     for v in rotation_z_to_facing(yaw)))
             cast.append(updated)
             log.info("回读用户改动：%s → %s", member.id,
                      tuple(round(v, 3) for v in updated.initial_location))

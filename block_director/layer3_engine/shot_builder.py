@@ -18,6 +18,7 @@ import bpy
 
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
+from ..cinema.station import SubjectFrame, camera_direction, subject_frame
 from ..cinema.schedule import shot_ranges, total_frames
 from ..motion.model import ActionRequest
 from ..utils.logger import get_logger
@@ -83,19 +84,57 @@ class BuildSummary:
         }
 
 
-def subject_anchor(shot: ShotPlan, cast: Dict[str, CastMember]
-                    ) -> Tuple[Tuple[float, float, float], Tuple[float, float, float]]:
-    """取镜头内角色的平均位置与首个角色的朝向。"""
-    positions = [cast[cid].initial_location for cid in shot.characters
-                 if cid in cast]
-    if not positions:
-        return (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)
-    x = sum(p[0] for p in positions) / len(positions)
-    y = sum(p[1] for p in positions) / len(positions)
-    facing = cast[shot.characters[0]].initial_facing \
-        if shot.characters[0] in cast \
-        else (0.0, 1.0, 0.0)
-    return (x, y, 0.0), facing
+def speaker_of(shot: ShotPlan) -> str:
+    """本镜第一个说话的角色 id；没有对白时返回空串。
+
+    焦点主体用它来定：把特写对准说话的人，而不是永远对准 characters[0]。
+    """
+    for item in getattr(shot, "dialogues", None) or []:
+        character_id = str((item or {}).get("character_id") or "")
+        if character_id:
+            return character_id
+    return ""
+
+
+def subject_frame_for(shot: ShotPlan,
+                      cast: Dict[str, CastMember]) -> SubjectFrame:
+    """把镜头里出场的角色整理成取景参考系（焦点主体 + 轴线）。
+
+    v1.2 的 ``subject_anchor`` 只返回"全体重心 + 第一个角色的朝向"，
+    两人相对而立时会把相机放到轴线上（见 ``cinema/station.py`` 的说明）。
+    """
+    entries: List[Tuple[str, Tuple[float, float, float],
+                        Tuple[float, float, float]]] = []
+    for character_id in shot.characters:
+        member = cast.get(character_id)
+        if member is None:
+            continue
+        entries.append((character_id, tuple(member.initial_location),
+                        tuple(member.initial_facing)))
+    return subject_frame(entries, shot_type=str(shot.shot_type),
+                         speaker_id=speaker_of(shot))
+
+
+def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
+                      spec: Optional[SceneSpec] = None, *,
+                      request: Optional[Dict[str, Any]] = None):
+    """**唯一的机位解算入口**：主构建与单镜再生共用。
+
+    v1.2 里 :mod:`shot_regenerator` 自己又写了一遍解算，而且写死
+    ``side="front"``、丢掉 ``lens``——两条路径必然漂移。v1.3 收敛到这里，
+    并让 ``side`` 经 :func:`cinema.station.camera_direction` 解析
+    （双人镜头相对两人连线，而不是相对焦点主体的朝向）。
+    """
+    resolved = dict(request if request is not None
+                    else (getattr(shot, "camera", None) or {}))
+    frame = subject_frame_for(shot, cast)
+    side = str(resolved.get("side") or "front")
+    bundle, solution = place_camera_for_shot(
+        shot.shot_id, frame.anchor, facing=frame.facing,
+        shot_type=str(shot.shot_type), side=side,
+        lens=resolved.get("lens"), room=(spec.room if spec else None),
+        direction=camera_direction(frame, side))
+    return bundle, solution, frame
 
 
 def action_requests(shot: ShotPlan, shot_start: int,
@@ -178,15 +217,12 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     motion_requests: Dict[str, List[ActionRequest]] = {}
     for shot in plan.shots:
         start, end = ranges[shot.shot_id]
-        anchor, facing = subject_anchor(shot, cast_map)
 
         # 阶段 B1 可以给这一镜一个"相对取景请求"（§16.1 的 CameraRequest）：
         # side 与 lens 由取景解算器消费；距离/高度仍按 §10.6/§10.5 推导。
-        request = dict(getattr(shot, "camera", None) or {})
-        bundle, solution = place_camera_for_shot(
-            shot.shot_id, anchor, facing=facing, shot_type=str(shot.shot_type),
-            side=str(request.get("side") or "front"),
-            lens=request.get("lens"), room=spec.room)
+        # v1.3：side 经 cinema.station 解析——双人镜头相对两人连线，
+        # 而不是相对焦点主体的朝向（否则机位会落在轴线上）。
+        bundle, solution, frame = place_shot_camera(shot, cast_map, spec)
         marker = scene.timeline_markers.new(f"BD_Cut_{shot.shot_id}", frame=start)
         marker.camera = bundle.camera
         context.cameras[shot.shot_id] = bundle.camera

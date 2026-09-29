@@ -125,7 +125,11 @@ def _overlapping_pairs(items: List[Tuple[int, int, str]]):
 def check_shot(shot_id: str, *, context=None,
                composition_threshold: float = 70.0) -> AuditResult:
     """对单个镜头跑全部已实现的 Level 1 规则。"""
-    from .cinema_engine import check_camera_axis, evaluate_camera_composition
+    from .cinema_engine import (
+        check_camera_axis,
+        check_camera_neutral,
+        evaluate_camera_composition,
+    )
     from .scene_context import get_context
 
     context = context or get_context()
@@ -166,12 +170,23 @@ def check_shot(shot_id: str, *, context=None,
             suggestion="时长必须为正整数帧"))
 
     # R001 轴线合规 ---------------------------------------------------------
+    neutral_here = False
     if context is not None and context.axis is not None:
         message = check_camera_axis(context.axis, camera)
         if message:
             findings.append(_error(
                 "R001", "E_AXIS_001", message, target=shot_id,
                 suggestion="将相机移到轴线另一侧，或插入中性镜头过渡"))
+        # 中性机位（正好落在轴线上）不是越轴：§6.2 的 axis_neutral 卡片把它
+        # 定义为合法的跨轴桥梁，而且两人相对而立时单人正反打的机位必然落在
+        # 轴线上。v1.2 把它判成 R001 错误，等于让这类镜头永远无法通过审核。
+        neutral_note = check_camera_neutral(context.axis, camera)
+        if neutral_note:
+            neutral_here = True
+            findings.append(_warning(
+                "R001", "E_AXIS_001", neutral_note, target=shot_id,
+                suggestion="需要明确左右关系时把机位移离轴线；"
+                           "中性机位适合作为跨轴过渡，不宜连续使用"))
 
     positions = _character_positions(characters)
 
@@ -276,6 +291,16 @@ def check_shot(shot_id: str, *, context=None,
                     findings.append(_warning(
                         "R010", "E_AXIS_001", message, target=shot_id,
                         suggestion="改变机位角度，或至少变化一档景别"))
+                # 连续中性镜头：单次中性是合法桥梁，连着用就没有左右关系了。
+                if (neutral_here and context.axis is not None
+                        and check_camera_neutral(context.axis,
+                                                 previous_camera)):
+                    findings.append(_warning(
+                        "R001", "E_AXIS_001",
+                        f"{previous_id} 与 {shot_id} 都是中性机位（落在轴线上），"
+                        f"连续使用会让观众失去左右关系的连续性",
+                        target=shot_id,
+                        suggestion="至少给其中一镜一个明确的轴线侧别"))
 
     # 构图质量门（§7.1 B3 把构图列为通过条件） -----------------------------
     composition = None

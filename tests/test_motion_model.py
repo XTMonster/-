@@ -89,8 +89,23 @@ def test_walk_moves_root_and_faces_target():
     trace = compose([walk(1, 48, (2.0, 0.0, 0.0))])
     assert trace[1][CH_ROOT_LOC][0] == pytest.approx(0.0)
     assert trace[48][CH_ROOT_LOC][0] == pytest.approx(2.0)
-    # 朝 +X 走 → 绕 Z 旋转 +90°
-    assert trace[48][CH_ROOT_ROT_Z] == pytest.approx(math.pi / 2)
+    # 朝 +X 走 → 绕 Z 旋转 -90°。
+    # 角色正面是局部 +Y，绕 Z 转 θ 后世界朝向为 (-sin θ, cos θ)；
+    # 取 θ = -π/2 才得到 (1, 0)。v1.2 断言的是 +π/2，那会让角色面朝 -X
+    # 也就是"倒着走"——这正是 P0-1 修正的镜像缺陷。
+    theta = trace[48][CH_ROOT_ROT_Z]
+    assert theta == pytest.approx(-math.pi / 2)
+    # 直接断言真正的不变量：脸的朝向 == 移动方向。
+    assert -math.sin(theta) == pytest.approx(1.0)
+    assert math.cos(theta) == pytest.approx(0.0, abs=1e-9)
+
+
+def test_walk_faces_a_diagonal_target():
+    """斜向走位同样要面朝目标，而不是它的镜像。"""
+    trace = compose([walk(1, 48, (2.0, 2.0, 0.0))])
+    theta = trace[48][CH_ROOT_ROT_Z]
+    assert -math.sin(theta) == pytest.approx(math.sqrt(0.5), abs=1e-6)
+    assert math.cos(theta) == pytest.approx(math.sqrt(0.5), abs=1e-6)
 
 
 def test_leg_swing_is_antisymmetric():

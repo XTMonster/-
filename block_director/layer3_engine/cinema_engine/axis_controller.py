@@ -14,6 +14,7 @@ from bpy.types import Object
 from ...cinema.axis import (
     Axis,
     axis_for_speakers,
+    axis_neutral_note,
     axis_violation,
     establish_axis,
 )
@@ -55,9 +56,20 @@ def establish_axis_from_speakers(speakers: Sequence,
 
 @main_thread_only("check_camera_axis")
 def check_camera_axis(axis: Axis, camera: Object) -> Optional[str]:
-    """返回越轴说明；合规返回 None。"""
+    """返回**越轴**说明；合规与中性机位都返回 None。"""
     bpy.context.view_layer.update()
     return axis_violation(axis, _world_xy(camera))
+
+
+@main_thread_only("check_camera_neutral")
+def check_camera_neutral(axis: Axis, camera: Object) -> Optional[str]:
+    """中性机位的提示文本；非中性返回 None。
+
+    中性 = 机位恰好落在轴线上。它不是违规（§6.2 的 ``axis_neutral`` 卡片把
+    它定义为合法的跨轴桥梁），但连续使用会失去空间感，因此单列出来告警。
+    """
+    bpy.context.view_layer.update()
+    return axis_neutral_note(axis, _world_xy(camera))
 
 
 @main_thread_only("visualize_axis")

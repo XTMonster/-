@@ -5,11 +5,16 @@ from __future__ import annotations
 import pytest
 
 from block_director.cinema.axis import (
+    AXIS_CORRECT,
+    AXIS_CROSSED,
+    AXIS_NEUTRAL,
     SIDE_NEGATIVE,
     SIDE_POSITIVE,
     SIDE_UNKNOWN,
     axis_for_speakers,
     axis_from_points,
+    axis_neutral_note,
+    axis_status,
     axis_violation,
     camera_angle_deg,
     establish_axis,
@@ -59,10 +64,23 @@ def test_violation_is_reported_only_when_crossing():
     assert message and "180° 轴线" in message
 
 
-def test_camera_on_the_axis_itself_is_flagged():
+def test_camera_on_the_axis_is_neutral_not_a_violation():
+    """中性机位是**合法**的跨轴桥梁（§6.2 的 axis_neutral 卡片）。
+
+    v1.2 把它判成 R001 错误。但两人相对而立时，单人正反打的机位必然落在
+    轴线上——按旧判据，这类镜头永远无法通过审核。v1.3 把它降为提示。
+    """
     axis = establish_axis(base_axis(), (0.0, 5.0))
-    message = axis_violation(axis, (0.5, 0.0))
-    assert message and "轴线上" in message
+    assert axis_status(axis, (0.5, 0.0)) == AXIS_NEUTRAL
+    assert axis_violation(axis, (0.5, 0.0)) is None
+    note = axis_neutral_note(axis, (0.5, 0.0))
+    assert note and "中性镜头" in note
+    # 真正跨到另一侧仍然报错，判据没有被放宽
+    assert axis_status(axis, (0.5, -3.0)) == AXIS_CROSSED
+    assert axis_violation(axis, (0.5, -3.0)) is not None
+    # 同侧则既不是违规也没有中性提示
+    assert axis_status(axis, (0.5, 3.0)) == AXIS_CORRECT
+    assert axis_neutral_note(axis, (0.5, 3.0)) is None
 
 
 # --------------------------------------------------------------------------- #
