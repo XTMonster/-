@@ -46,10 +46,16 @@ class DeliveryReport:
     depth_shots: List[Dict[str, Any]] = field(default_factory=list)
     full_video: str = ""
     total_frames_concat: int = 0
+    #: 声明要产出却没落盘的文件（视频 / 首帧）。v1.2 没有这个字段，
+    #: 于是"六段视频一个都没生成"也会因为 shots.json 等元数据文件写成功
+    #: 而报 ok=True——调用方据此判定成功，用户拿到的却是一个空交付包。
+    missing_clips: List[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
-        return not self.aborted and bool(self.files)
+        if self.aborted or not self.files:
+            return False
+        return not self.missing_clips
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -62,6 +68,7 @@ class DeliveryReport:
             "depth_shots": list(self.depth_shots),
             "full_video": self.full_video,
             "total_frames_concat": self.total_frames_concat,
+            "missing_clips": list(self.missing_clips),
         }
 
 
@@ -133,7 +140,10 @@ def export_project(plan: Plan, *,
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
     scene = bpy.context.scene
-    out_dir = Path(out_dir)
+    # 绝对化：Blender 内 ``bpy.path.abspath("//")`` 在未保存 .blend 时为空串，
+    # 相对路径的渲染产物不会落在进程工作目录（实测跑到 C:\runs\...）。
+    # 交付层自己做这道防线，不依赖每个调用方都记得传绝对路径。
+    out_dir = Path(os.path.abspath(str(out_dir)))
     export_dir = out_dir / "export"
     frames_dir = export_dir / "first_frames"
     frames_dir.mkdir(parents=True, exist_ok=True)
@@ -167,6 +177,7 @@ def export_project(plan: Plan, *,
                 report.files.append(path)
             else:
                 report.warnings.append(f"{shot_id}: 视频未生成（{path}）")
+                report.missing_clips.append(path)
             report.total_frames += frames
 
         frame_path = str(frames_dir / f"{shot_id}.png")
@@ -174,6 +185,7 @@ def export_project(plan: Plan, *,
             report.files.append(frame_path)
         else:
             report.warnings.append(f"{shot_id}: 首帧未生成")
+            report.missing_clips.append(frame_path)
 
         report.shots.append({"shot_id": shot_id,
                              "start_frame": shot["start_frame"],
@@ -214,6 +226,7 @@ def export_project(plan: Plan, *,
                 report.total_frames_concat = concat["frames"]
             else:
                 report.warnings.append(f"全片拼接未产出文件（{concat['path']}）")
+                report.missing_clips.append(concat["path"])
             if concat["skipped"]:
                 report.warnings.append(
                     "以下分镜视频不存在，未参与拼接："

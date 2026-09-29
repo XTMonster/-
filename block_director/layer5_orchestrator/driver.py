@@ -374,9 +374,7 @@ class PrevisDriver:
             self.audit.log_llm(purpose, None, duration,
                                self._pending_request_id, error=str(payload),
                                payload=self._pending_payload)
-            # 计划失败由 _step_planning 决定是否再试；修复失败则回到复核
-            self._transition(DriverState.CHECKING if repairing
-                             else DriverState.PLANNING)
+            self._recover_from_llm_error(self._call_purpose, str(payload))
             return
 
         reply: ChatReply = payload
@@ -442,6 +440,73 @@ class PrevisDriver:
                 resume=target)
             return
         self._transition(target)
+
+    def _recover_from_llm_error(self, purpose: str, problem: str) -> None:
+        """一次 LLM 调用失败之后的落点——**按阶段区分**。
+
+        v1.2 只区分 ``repair`` 与非 repair：``editor`` / ``review`` / ``react``
+        三个阶段的传输错误全被送回 PLANNING，于是计划被反复重新生成、
+        ``plan_attempts`` 迅速耗尽，最终报出"分镜计划生成失败（已达最大尝试
+        次数）"——与真实原因（一次瞬时 502，耗时 0.042 秒）完全不符，
+        并把整次运行终止掉。实测就是这么丢掉了一整次 18 分钟的运行的。
+
+        顺带修掉两条会让状态机空转的路径：
+
+        * ``repair`` 失败不计入 ``_repair_attempts`` → CHECKING ↔ REPAIRING
+          无限往返；
+        * ``review`` 失败不记入 ``_reviewed_shots`` → 同一镜被无限复核。
+        """
+        if purpose == "plan":
+            # 计划失败由 _step_planning 决定是否再试（消耗 plan_attempts）
+            self._transition(DriverState.PLANNING)
+            return
+        if purpose == "editor":
+            self._skip_editor_turn(problem)
+            return
+        if purpose == "review":
+            self._skip_review_turn(problem)
+            return
+        if purpose == "repair":
+            self._repair_attempts += 1
+            self.audit.log("repair_failed",
+                           f"修复调用失败（第 {self._repair_attempts} 次）："
+                           f"{problem}", level="warning",
+                           shot=self._current_shot_id)
+            self._transition(DriverState.CHECKING)
+            return
+        # react：结束本镜的 ReAct 回合，回到复核
+        self._finish_react(f"传输错误：{problem}")
+
+    def _skip_editor_turn(self, problem: str) -> None:
+        """单镜草案调用失败：记进 drafts_failed 并**前进**。
+
+        不能原地重试：``_step_editing`` 每次都从
+        ``_editing_queue[_editing_index]`` 取镜号，不前进就会卡在这一镜。
+        与 ``_finish_editor_turn`` 的失败分支保持同一语义（该镜沿用计划内容，
+        后面还有 B3/B4 兜住真正的执行问题）。
+        """
+        if self._editing_queue and self._editing_index < len(self._editing_queue):
+            shot_id = self._editing_queue[self._editing_index]
+            self.drafts_failed.append({"shot_id": shot_id, "error": problem})
+            self.audit.log("draft_invalid", f"{shot_id}: {problem}",
+                           level="warning", shot=shot_id)
+            self._emit("draft_invalid", f"{shot_id} 草案失败", shot=shot_id)
+            self._editing_index += 1
+        self._transition(DriverState.EDITING)
+
+    def _skip_review_turn(self, problem: str) -> None:
+        """复核调用失败：记为"本次未复核"并继续。
+
+        规则层已经放行，复核只是额外一层；拿不到结论就如实记录并前进，
+        绝不重试到死循环。
+        """
+        shot_id = self._pending_review or self._current_shot_id
+        self._pending_review = None
+        self._reviewed_shots.add(shot_id)
+        self.audit.log("self_review_invalid",
+                       f"{shot_id}: 复核未完成（{problem}）",
+                       level="warning", shot=shot_id)
+        self._transition(DriverState.CHECKING)
 
     def _plan_gate_detail(self) -> str:
         if self.plan is None:
@@ -550,6 +615,7 @@ class PrevisDriver:
         payload = build_editor_payload(
             shot, self.plan, shot_order=self._editing_index + 1,
             scene_state=self._scene_state_text(),
+            scene_text=self._shot_script_text(),
             continuity=render_shot_memory(
                 shot_memory(self.plan, done=self._finished_shots)),
             characters=characters, props=props, retriever=self.knowledge,
@@ -559,6 +625,32 @@ class PrevisDriver:
                              note=f"单镜结构化生成 {shot_id}"
                                   f"（{self._editing_index + 1}/"
                                   f"{len(self._editing_queue)}）")
+
+    def _shot_script_text(self) -> str:
+        """给 B1 的剧本原文（§18.2 的 ``{scene_text}``）。
+
+        v1.2 的 ``_start_editor_call`` **完全没有传这个参数**，于是 B1 只看到
+        "镜号 / 景别 / 时长 / 角色"，模型只能自己编台词。实测后果：
+        剧本里的"伊恩，这里就交给我吧！"在计划里变成了"我是米迦尔。"，
+        后面三镜的对白全部丢失。
+
+        这里先用 Layer 1 的解析结果渲染（动作行 + 对白行）。
+        逐镜的精确归属由 v1.3 的 Stage S（``SceneBrief.speakers``）接手。
+        """
+        lines: List[str] = []
+        parsed = self.parsed_script
+        for scene in getattr(parsed, "scenes", None) or []:
+            if getattr(scene, "heading", ""):
+                lines.append(f"【{scene.heading}】")
+            for action in getattr(scene, "actions", None) or []:
+                lines.append(f"· {action.text}")
+            for dialogue in getattr(scene, "dialogues", None) or []:
+                tag = (f"（{dialogue.parenthetical}）"
+                       if getattr(dialogue, "parenthetical", "") else "")
+                lines.append(f"{dialogue.character}{tag}：{dialogue.text}")
+        if lines:
+            return "\n".join(lines)
+        return self.script or ""
 
     def _finish_editor_turn(self, reply: ChatReply) -> None:
         shot_id = self._editing_queue[self._editing_index]
@@ -781,7 +873,18 @@ class PrevisDriver:
             return False
         if shot_id in self._reviewed_shots or self.plan is None:
             return False
-        return any(shot.shot_id == shot_id for shot in self.plan.shots)
+        shot = self._shot_plan(shot_id)
+        if shot is None:
+            return False
+        if not shot.characters:
+            # 空镜（无角色）没有表演可复核。v1.2 照样会审，实测得到的是
+            # "角色数量过多且静止站立，破坏宁静氛围"这类与镜头内容无关的意见，
+            # 白白花掉一次 LLM 调用，还可能把建立镜头改坏。
+            self.audit.log("self_review_skipped",
+                           f"{shot_id} 是无角色空镜，跳过自我审核",
+                           shot=shot_id)
+            return False
+        return True
 
     def _shot_plan(self, shot_id: str):
         if self.plan is None:

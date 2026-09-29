@@ -55,8 +55,13 @@ def main() -> int:
         if path.exists():
             script = path.read_text(encoding="utf-8", errors="replace")
             try:
-                from block_director.layer1_input import parse_script
+                from block_director.layer1_input import (
+                    apply_deterministic_coreferences,
+                    parse_script,
+                )
                 parsed = parse_script(path)
+                # v1.3 P0-3：把 §4.3 的确定性共指合并接进真实链路。
+                apply_deterministic_coreferences(parsed)
             except Exception as exc:  # noqa: BLE001
                 print(f"BLOCKDIRECTOR_WARN 剧本解析失败，将退回原文：{exc}")
         else:

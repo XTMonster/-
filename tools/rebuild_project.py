@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -39,7 +40,9 @@ def main() -> int:
     from block_director.layer9_persistence import load_project
     from block_director.settings import get_config
 
-    project_dir = Path(args.project)
+    # 绝对化：Blender 内 ``bpy.path.abspath("//")`` 在未保存 .blend 时为空串，
+    # 相对路径的渲染产物会落到进程工作目录之外（实测跑到 C:\runs\...）。
+    project_dir = Path(os.path.abspath(args.project))
     try:
         loaded = load_project(project_dir)
     except Exception as exc:  # noqa: BLE001 - 加载失败要让人看见原因

@@ -24,8 +24,24 @@ def test_plain_integer_formula():
 
 def test_unknown_formula_returns_none_so_the_static_cap_stays():
     for bad in ("", "shots ** 6", "shots / 2", "6 * shots", "按镜头算",
-                "shots * -1", None):
+                "shots * -1", None, "shots * 6 +", "shots * 6 - 1",
+                "+ 2", "shots * 6 + 2 + 3"):
         assert evaluate(bad, 3) is None
+
+
+def test_fixed_overhead_formula():
+    """v1.3：Stage S 与逐镜复核是每场固定开销，不随镜头数增长。"""
+    assert evaluate("shots * 6 + 2", 1) == 8
+    assert evaluate("shots * 6 + 2", 6) == 38
+    assert evaluate("shots*8+0", 5) == 40
+    assert evaluate("  SHOTS * 3 + 1  ", 4) == 13
+
+
+def test_fixed_overhead_is_per_scene_not_per_shot():
+    """固定项只加一次——否则镜头越多越离谱，等于悄悄放开预算。"""
+    one = evaluate("shots * 2 + 10", 1)
+    ten = evaluate("shots * 2 + 10", 10)
+    assert ten - one == 9 * 2
 
 
 def test_zero_shots_or_zero_factor_still_allows_one_call():

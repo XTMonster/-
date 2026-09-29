@@ -167,7 +167,20 @@ def test_replay_skips_control_tools(tmp_path):
     registry, seen = recording_registry()
     report = replay(tmp_path, registry, build=False)
     assert report.ok and seen == []
-    assert set(report.skipped) == set(CONTROL_TOOLS) - {"request_self_review"}
+    # 断言的是"日志里出现过的控制类工具都被跳过了"，而不是照着常量抄一遍。
+    # v1.2 的写法是 set(CONTROL_TOOLS) - {...}：常量和断言同源，改常量测试就跟着
+    # 变，同时把"名单漏了 finish_shot"这件事掩盖掉了。
+    assert set(report.skipped) == {"emit_plan", "abort"}
+
+
+def test_every_registered_control_tool_is_skipped_on_replay():
+    """控制类工具的名单必须完整——v1.2 的 CONTROL_TOOLS 漏了 finish_shot。"""
+    from block_director.contracts.tools import (
+        CONTROL_TOOL_NAMES,
+        REPLAY_SKIPPED_TOOLS,
+    )
+    assert set(CONTROL_TOOL_NAMES) <= set(REPLAY_SKIPPED_TOOLS)
+    assert CONTROL_TOOLS is REPLAY_SKIPPED_TOOLS
 
 
 def test_replay_skips_unknown_tools_instead_of_failing(tmp_path):

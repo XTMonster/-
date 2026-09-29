@@ -90,5 +90,19 @@ def apply_mapping(script: ParsedScript, mapping: Dict[str, str]) -> int:
     return changed
 
 
+def apply_deterministic_coreferences(script: ParsedScript) -> int:
+    """只做确定性合并（不需要 LLM），返回被改写的引用条数。
+
+    接线背景：v1.2 里 ``resolve_coreferences`` 与 ``apply_mapping`` **从未被
+    任何生产代码调用**——§4.3 承诺的共指消解整体是死代码，只有单测在用。
+    本函数是"至少把确定性那一半接上"的最小接线：写法归一化
+    （"小 明" / "小明 " / "小明."）不需要模型参与。
+
+    代词消解（"他/她/它"）必须结合上下文，由 v1.3 的 Stage S 承担——
+    在那里模型能看到整场文本与角色表，比在这里猜要可靠。
+    """
+    return apply_mapping(script, resolve_coreferences(script))
+
+
 def is_pronoun(name: str) -> bool:
     return normalize_name(name) in PRONOUNS

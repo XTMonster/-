@@ -176,3 +176,52 @@ def test_empty_fields_do_not_erase_plan_values():
         {"shot_id": "shot_001", "actions": []}))
     assert str(merged.shots[0].shot_type) == "MLS"
     assert merged.shots[0].prompt == "雨夜客厅"
+
+
+# --------------------------------------------------------------------------- #
+# v1.3：剧本声明的对白不可被草案改写
+# --------------------------------------------------------------------------- #
+def declared_plan() -> Plan:
+    """带剧本对白的计划（来自 SDL 或分镜表解析）。"""
+    payload = plan().to_dict()
+    payload["shots"][0]["dialogues"] = [
+        {"character_id": "char_001", "text": "伊恩，这里就交给我吧！",
+         "start_frame": 0, "end_frame": 0},
+        {"character_id": "char_002", "text": "好的，那你多小心一些。",
+         "start_frame": 0, "end_frame": 0},
+    ]
+    return Plan.from_dict(payload)
+
+
+def test_declared_dialogue_text_survives_a_rewriting_draft():
+    """模型顺手改台词时，声明文本必须留下。
+
+    实测缺陷：B1 拿不到剧本原文（v1.2 没传 scene_text），于是模型自己编台词
+    ——"伊恩，这里就交给我吧！"被写成"我是米迦尔。"，后面几镜的对白全丢。
+    现在就算草案换了词，声明的文字与条数也必须原样保留。
+    """
+    merged = merge_draft(declared_plan(), ShotDraft.from_dict(draft(
+        dialogues=[{"character_id": "char_001", "text": "我是米迦尔。",
+                    "start_frame": 12, "end_frame": 60}])))
+    texts = [item["text"] for item in merged.shots[0].dialogues]
+    assert texts == ["伊恩，这里就交给我吧！", "好的，那你多小心一些。"]
+
+
+def test_declared_dialogue_borrows_the_timeline_from_the_draft():
+    """文本以声明为准，时间轴仍可由草案落实。"""
+    merged = merge_draft(declared_plan(), ShotDraft.from_dict(draft(
+        dialogues=[
+            {"character_id": "char_001", "text": "伊恩，这里就交给我吧！",
+             "start_frame": 12, "end_frame": 60},
+            {"character_id": "char_002", "text": "好的，那你多小心一些。",
+             "start_frame": 72, "end_frame": 96},
+        ])))
+    dialogues = merged.shots[0].dialogues
+    assert [item["start_frame"] for item in dialogues] == [12, 72]
+    assert [item["end_frame"] for item in dialogues] == [60, 96]
+
+
+def test_draft_dialogues_are_used_when_the_plan_has_none():
+    """阶段 A 的计划只有 dialogue_ids、没有文本时，草案仍是唯一来源。"""
+    merged = merge_draft(plan(), ShotDraft.from_dict(draft()))
+    assert [item["text"] for item in merged.shots[0].dialogues] == ["你好"]

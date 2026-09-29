@@ -14,12 +14,35 @@ from bpy.types import Object
 
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
+from ..utils.geometry import hex_to_rgb
 from .collection_router import route_to_content
 from .transaction import Transaction
 
 log = get_logger("scene")
 
 DEFAULT_LIGHTING = "clay_studio"
+
+#: 没给颜色时道具用的中性灰（与 v1.2 的 create_prop 默认值一致）
+DEFAULT_PROP_COLOR = (0.7, 0.66, 0.6)
+
+
+def resolve_prop_color(value, default=DEFAULT_PROP_COLOR
+                       ) -> Tuple[float, float, float]:
+    """道具颜色：接受 ``#RRGGBB`` 字符串或 0..1 三元组。
+
+    v1.2 的 ``build_environment`` 压根没把 ``prop["color"]`` 传下来，
+    而且 SDL / 项目文件里写的是十六进制字符串、``create_prop`` 只认浮点三元组
+    ——即便传了也会抛 TypeError。实测结果是所有摊位一律是默认灰色，
+    与 SDL 里声明的颜色无关。
+    """
+    if isinstance(value, str):
+        return hex_to_rgb(value)
+    if isinstance(value, (list, tuple)) and len(value) >= 3:
+        try:
+            return (float(value[0]), float(value[1]), float(value[2]))
+        except (TypeError, ValueError):
+            return default
+    return default
 
 LIGHTING_PRESETS: Dict[str, List[Dict[str, Any]]] = {
     # 白模默认：一盏主光 + 一盏补光，中性白，形体质感清晰
@@ -102,14 +125,19 @@ def create_wall(index: int, position: Sequence[float],
 @main_thread_only("create_prop")
 def create_prop(prop_id: str, position: Sequence[float],
                 size: Sequence[float] = (1.0, 1.0, 0.8),
-                color: Sequence[float] = (0.7, 0.66, 0.6)) -> Object:
+                color: Sequence[float] = DEFAULT_PROP_COLOR,
+                rotation: Sequence[float] = (0.0, 0.0, 0.0)) -> Object:
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=tuple(position))
     prop = bpy.context.object
     prop.name = f"BD_Prop_{prop_id}"
     prop.scale = (float(size[0]), float(size[1]), float(size[2]))
+    prop.rotation_euler = (float(rotation[0]), float(rotation[1]),
+                           float(rotation[2]))
     prop["bd_element_type"] = "prop"
     prop["bd_sdl_id"] = prop_id
-    prop.data.materials.append(_ensure_material(f"BD_Mat_Prop_{prop_id}", color))
+    prop.data.materials.append(
+        _ensure_material(f"BD_Mat_Prop_{prop_id}",
+                         resolve_prop_color(color)))
     return route_to_content(prop)
 
 
@@ -159,6 +187,8 @@ def build_environment(*, ground_size: Tuple[float, float] = (20.0, 20.0),
                 str(prop.get("id", f"prop_{len(environment.props) + 1:02d}")),
                 prop.get("position", (0.0, 0.0, 0.4)),
                 prop.get("size", (1.0, 1.0, 0.8)),
+                prop.get("color", DEFAULT_PROP_COLOR),
+                prop.get("rotation", (0.0, 0.0, 0.0)),
             ))
         environment.lights = create_lights(lighting)
     log.info("环境搭建完成：预设=%s，物体 %d 个", lighting,

@@ -23,6 +23,7 @@ from .fdx import parse_fdx
 from .fountain import parse_fountain
 from .script_parser import ScriptParseError, detect_format, parse_script, parse_text
 from .coreference import (
+    apply_deterministic_coreferences,
     apply_mapping,
     collect_names,
     exact_groups,
@@ -36,7 +37,7 @@ __all__ = [
     "parse_script", "parse_text", "detect_format", "ScriptParseError",
     "parse_fountain", "parse_fdx",
     "resolve_coreferences", "apply_mapping", "collect_names", "exact_groups",
-    "normalize_name", "is_pronoun",
+    "normalize_name", "is_pronoun", "apply_deterministic_coreferences",
     "estimate_dialogue_frames", "estimate_dialogue_seconds",
     "schedule_dialogues", "detect_emotion", "count_cjk", "count_words",
     "render_timing_table",

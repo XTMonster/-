@@ -17,10 +17,11 @@ from ..contracts.messages import (
     new_request_id,
 )
 from ..contracts.plan import Plan
+from ..contracts.tools import PLAN_TOOL
 from ..motion.model import ACTION_TYPES
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES, render_timing_table
 
-PLAN_TOOL_NAME = "emit_plan"
+PLAN_TOOL_NAME = PLAN_TOOL
 
 # emit_plan 的参数 schema：与 §7.2 的分镜计划结构一致。
 EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = {

@@ -50,8 +50,14 @@ def find_cjk_font(explicit: str = "") -> str:
 
 @main_thread_only("create_label")
 def create_label(character, text: str = "", font_path: str = "",
-                 size: float = LABEL_SIZE) -> Object:
-    """在角色头顶创建标签；无中文字体时降级为编号（§9.4）。"""
+                 size: float = LABEL_SIZE,
+                 show_in_viewport: bool = True) -> Object:
+    """在角色头顶创建标签；无中文字体时降级为编号（§9.4）。
+
+    ``font_path`` / ``size`` / ``show_in_viewport`` 由 ``build_scene`` 从配置
+    传进来。v1.2 定义了 ``character.label_font_path`` 并在启动时提示
+    "未指定中文字体"，但**从来没有把它传到这里**——用户按提示配了路径也无效。
+    """
     display = text or character.name
     resolved = find_cjk_font(font_path)
     if has_cjk(display) and not resolved:
@@ -73,5 +79,8 @@ def create_label(character, text: str = "", font_path: str = "",
     label["bd_element_type"] = "label"
     label["bd_sdl_id"] = character.id
     label = mark_as_guide(label)                      # 进 Guides + hide_render
+    if not show_in_viewport:
+        # ui.show_labels 在 v1.2 里没有任何消费者。
+        label.hide_viewport = True
     log.debug("标签已创建：%s（%s）", display, label.name)
     return label

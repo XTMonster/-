@@ -23,10 +23,11 @@ from ..contracts.messages import (
     new_request_id,
 )
 from ..contracts.plan import Plan, ShotPlan
+from ..contracts.tools import SHOT_DRAFT_TOOL
 from ..motion.model import ACTION_TYPES
 from .react import render_shot_memory, shot_memory
 
-EDITOR_TOOL_NAME = "emit_shot_draft"
+EDITOR_TOOL_NAME = SHOT_DRAFT_TOOL
 
 #: 单镜草案的严格 schema：只允许这一镜该关心的事情。
 EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
@@ -230,7 +231,12 @@ def extract_draft(reply: ChatReply, shot_id: str) -> ShotDraft:
 
 
 def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
-    """把草案合并回计划：只改这一镜，镜号/顺序/时长仍以计划为准。"""
+    """把草案合并回计划：只改这一镜，镜号/顺序/时长仍以计划为准。
+
+    v1.3 追加一条保护：**剧本已经给出的对白文本不允许被草案改写**。
+    草案只能补时间轴，文字本身必须与剧本一致（R016 会逐字核对）。
+    没有这条保护，"AI 顺手改台词"会静默进入交付物。
+    """
     payload = plan.to_dict()
     for shot in payload.get("shots", []):
         if shot.get("shot_id") != draft.shot_id:
@@ -240,10 +246,42 @@ def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
         if draft.characters:
             shot["characters"] = list(draft.characters)
         shot["actions"] = [dict(item) for item in draft.actions]
-        shot["dialogues"] = [dict(item) for item in draft.dialogues]
+        shot["dialogues"] = merge_dialogues(shot.get("dialogues") or [],
+                                            draft.dialogues)
         if draft.prompt:
             shot["prompt"] = draft.prompt
         if draft.camera:
             shot["camera"] = dict(draft.camera)
         break
     return Plan.from_dict(payload)
+
+
+def merge_dialogues(declared: Sequence[dict],
+                    drafted: Sequence[dict]) -> List[Dict[str, Any]]:
+    """剧本声明的对白是**声明**，草案是**落实**；冲突时以声明为准。
+
+    * 声明里没有任何文本（阶段 A 的计划只带 ``dialogue_ids``）→ 完全采用草案；
+    * 声明里有文本 → 文本与条数一律保留声明，只从草案借用时间轴与缺失的
+      ``character_id``。草案新引入的台词会被丢掉。
+    """
+    declared_items = [dict(item) for item in (declared or [])]
+    drafted_items = [dict(item) for item in (drafted or [])]
+    if not declared_items:
+        return drafted_items
+    if not any(str(item.get("text") or "") for item in declared_items):
+        return drafted_items
+
+    for index, entry in enumerate(declared_items):
+        match = next((candidate for candidate in drafted_items
+                      if str(candidate.get("text") or "")
+                      == str(entry.get("text") or "")), None)
+        if match is None and index < len(drafted_items):
+            match = drafted_items[index]      # 同序兜底：只借时间轴
+        if match is None:
+            continue
+        for key in ("start_frame", "end_frame"):
+            if match.get(key) is not None:
+                entry[key] = match[key]
+        if not entry.get("character_id") and match.get("character_id"):
+            entry["character_id"] = match["character_id"]
+    return declared_items

@@ -23,8 +23,9 @@ from ..contracts.messages import (
     MessageRole,
     new_request_id,
 )
+from ..contracts.tools import REVIEW_TOOL
 
-REVIEW_TOOL_NAME = "submit_review"
+REVIEW_TOOL_NAME = REVIEW_TOOL
 
 REVIEW_TOOL_PARAMETERS: Dict[str, Any] = {
     "type": "object",

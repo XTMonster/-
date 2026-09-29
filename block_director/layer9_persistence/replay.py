@@ -22,13 +22,16 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 from ..contracts.plan import Plan
+from ..contracts.tools import REPLAY_SKIPPED_TOOLS
 
 AUDIT_FILENAME = "audit_log.jsonl"
 PLAN_EVENT = "plan_received"
 TOOL_EVENT = "tool_call"
 
 #: 只影响控制器、不改场景的工具：重放时登记为跳过，而不是当成失败。
-CONTROL_TOOLS = frozenset({"emit_plan", "request_self_review", "abort"})
+#: 名单来自 contracts 的单一真源——v1.2 在这里和 control_tools.py 各存一份，
+#: 新增控制类工具时两处极易失配。
+CONTROL_TOOLS = REPLAY_SKIPPED_TOOLS
 
 
 class ReplayError(RuntimeError):

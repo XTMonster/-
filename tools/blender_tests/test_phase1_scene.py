@@ -36,6 +36,7 @@ from block_director.layer3_engine.collection_router import (  # noqa: E402
 )
 from block_director.layer3_engine.scene_executor import build_environment  # noqa: E402
 from block_director.layer3_engine.transaction import Transaction  # noqa: E402
+from block_director.utils.geometry import hex_to_rgb  # noqa: E402
 from block_director.utils.threading_guard import capture_main_thread  # noqa: E402
 
 RESULTS: dict = {}
@@ -249,6 +250,75 @@ def t_environment_sizes():
 # --------------------------------------------------------------------------- #
 # 7. 非本插件对象必须被审计抓出来（Phase 6 被默认 Cube 坑过）
 # --------------------------------------------------------------------------- #
+def t_prop_color_and_rotation_are_applied():
+    """v1.3 P0-7：``build_environment`` 曾经把 color / rotation 直接丢掉。
+
+    实测后果：SDL 里声明的摊位颜色（#B98C5A）渲染出来全是默认灰。
+    """
+    fresh_scene()
+    environment = build_environment(
+        ground_size=(20.0, 20.0), walls=[],
+        props=[{"id": "tent", "position": (1.0, 2.0, 0.5),
+                "size": (3.0, 1.0, 1.0), "color": "#B98C5A",
+                "rotation": (0.0, 0.0, 0.5)}],
+        lighting="clay_studio",
+    )
+    prop = environment.props[0]
+    material = prop.data.materials[0]
+    got = tuple(round(float(v), 3) for v in material.diffuse_color[:3])
+    want = tuple(round(float(v), 3) for v in hex_to_rgb("#B98C5A"))
+    return {"ok": got == want and abs(float(prop.rotation_euler[2]) - 0.5) < 1e-6,
+            "color": got, "expected": want,
+            "rotation": round(float(prop.rotation_euler[2]), 4)}
+
+
+# --------------------------------------------------------------------------- #
+# 8. 标签必须真的吃配置（v1.3 P0-11）
+# --------------------------------------------------------------------------- #
+def t_label_config_is_wired():
+    """``character.label_font_path`` / ``ui.show_labels`` 在 v1.2 里是死配置。
+
+    v1.2 定义了它们、启动时还会提示"未指定中文字体"，但 ``build_scene``
+    从来没有把值传给 ``create_label``——用户按提示配了路径也无效。
+    """
+    from block_director.contracts.cast import SceneSpec
+    from block_director.layer3_engine.shot_builder import build_scene
+    from block_director.settings import get_config
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _fixtures import two_shot_plan
+
+    font_path = r"C:\Windows\Fonts\msyh.ttc"
+    if not os.path.exists(font_path):
+        return {"ok": True, "skipped": "系统无 msyh.ttc"}
+
+    config = get_config()
+    original_font = config.character.label_font_path
+    original_show = config.ui.show_labels
+    try:
+        config.character.label_font_path = font_path
+        config.ui.show_labels = False
+        fresh_scene()
+        plan = two_shot_plan()
+        build_scene(plan, SceneSpec.from_plan(plan), clear_scene=True)
+        labels = [o for o in bpy.data.objects
+                  if o.type == "FONT" and o.name.endswith("_Label")]
+        loaded = []
+        for obj in labels:
+            font = getattr(obj.data, "font", None)
+            path = str(getattr(font, "filepath", "") or "")
+            if path and os.path.exists(path) and os.path.samefile(path, font_path):
+                loaded.append(obj)
+        hidden = [o for o in labels if o.hide_viewport]
+        return {"ok": bool(labels) and len(loaded) == len(labels)
+                and len(hidden) == len(labels),
+                "labels": len(labels), "with_font": len(loaded),
+                "hidden_in_viewport": len(hidden)}
+    finally:
+        config.character.label_font_path = original_font
+        config.ui.show_labels = original_show
+
+
 def t_foreign_object_is_flagged():
     fresh_scene()
     bpy.ops.mesh.primitive_cube_add(size=2.0, location=(0.0, 0.0, 0.0))
@@ -290,6 +360,9 @@ def main() -> int:
     check("transaction_rollback", t_transaction_rollback)
     check("environment", t_environment)
     check("environment_sizes", t_environment_sizes)
+    check("prop_color_and_rotation_are_applied",
+          t_prop_color_and_rotation_are_applied)
+    check("label_config_is_wired", t_label_config_is_wired)
     check("foreign_object_is_flagged", t_foreign_object_is_flagged)
     check("clear_scene_removes_default_cube", t_clear_scene_removes_default_cube)
 

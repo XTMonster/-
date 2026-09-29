@@ -77,14 +77,21 @@ def main() -> int:
         if path.exists():
             script = path.read_text(encoding="utf-8", errors="replace")
             try:
-                from block_director.layer1_input import parse_script
+                from block_director.layer1_input import (
+                    apply_deterministic_coreferences,
+                    parse_script,
+                )
                 parsed = parse_script(path)
+                # v1.3 P0-3：共指消解此前从未被真实链路调用（§4.3 是死代码）。
+                # 先接上确定性的一面；代词消解交给 Stage S 的模型判断。
+                merged = apply_deterministic_coreferences(parsed)
                 print("BLOCKDIRECTOR_PARSE " + json.dumps(
                     {"format": parsed.source_format, "title": parsed.title,
                      "scenes": len(parsed.scenes),
                      "dialogues": parsed.dialogue_count,
                      "characters": parsed.character_names,
-                     "needs_llm_structure": parsed.needs_llm_structure},
+                     "needs_llm_structure": parsed.needs_llm_structure,
+                     "coreference_merged": merged},
                     ensure_ascii=False))
             except Exception as exc:  # noqa: BLE001 - 解析失败要让人看见
                 print(f"BLOCKDIRECTOR_WARN 剧本解析失败，将退回原文：{exc}")

@@ -13,11 +13,12 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-REQUEST_SELF_REVIEW = "request_self_review"
-FINISH_SHOT = "finish_shot"
-ABORT = "abort"
-
-CONTROL_TOOL_NAMES = (REQUEST_SELF_REVIEW, FINISH_SHOT, ABORT)
+from ..contracts.tools import (
+    ABORT,
+    CONTROL_TOOL_NAMES,
+    FINISH_SHOT,
+    REQUEST_SELF_REVIEW,
+)
 
 REQUEST_SELF_REVIEW_PARAMETERS: Dict[str, Any] = {
     "type": "object",

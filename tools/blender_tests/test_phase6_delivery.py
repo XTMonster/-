@@ -95,6 +95,65 @@ def t_export_produces_all_deliverables():
 
 
 # --------------------------------------------------------------------------- #
+# 1b. 缺片必须判失败（v1.3 P0-6）
+# --------------------------------------------------------------------------- #
+def t_missing_clip_is_reported_as_failure():
+    """把渲染打桩成"不产出文件"，报告必须为**失败**。
+
+    这正是 v1.2 的假成功路径：``files`` 里仍然有 shots.json / prompts.md /
+    README.md，旧实现据此返回 ``ok=True``，调用方于是以为交付成功，
+    用户拿到的却是一个没有视频的空包。
+    """
+    from block_director.layer8_delivery import export_director
+
+    tmp = tempfile.mkdtemp(prefix="bd_p6_miss_")
+    fresh_scene()
+    summary = build_scene(demo_plan()).to_dict()
+    original_video = export_director.render_shot_video
+    original_frame = export_director.render_first_frame
+    export_director.render_shot_video = (
+        lambda scene, start, end, base, codec="H264", crf="MEDIUM":
+        (base, end - start + 1))
+    export_director.render_first_frame = lambda scene, frame, path: False
+    try:
+        report = export_project(demo_plan(), build_summary=summary,
+                                out_dir=Path(tmp), config=fresh_config(),
+                                project="BlockDirector")
+    finally:
+        export_director.render_shot_video = original_video
+        export_director.render_first_frame = original_frame
+    payload = report.to_dict()
+    return {"ok": (report.ok is False and not report.aborted
+                   and len(report.missing_clips) >= 2
+                   and len(payload["missing_clips"]) == len(report.missing_clips)),
+            "report_ok": report.ok, "aborted": report.aborted,
+            "missing": len(report.missing_clips), "files": len(report.files)}
+
+
+def t_relative_out_dir_lands_in_the_asked_directory():
+    """相对 ``out_dir`` 必须落在**调用方给的目录**。
+
+    实测缺陷：以相对路径调用时，六段 mp4 被 Blender 写到了 ``C:\\runs\\...``
+    （``bpy.path.abspath("//")`` 在未保存 .blend 时为空串），而报告依旧 ok。
+    """
+    tmp = tempfile.mkdtemp(prefix="bd_p6_rel_")
+    previous = os.getcwd()
+    os.chdir(tmp)
+    try:
+        fresh_scene()
+        summary = build_scene(demo_plan()).to_dict()
+        report = export_project(demo_plan(), build_summary=summary,
+                                out_dir=Path("relout"), config=fresh_config(),
+                                project="BlockDirector")
+    finally:
+        os.chdir(previous)
+    landed = (Path(tmp) / "relout" / "export" / "blockout_shot_001.mp4").exists()
+    return {"ok": bool(report.ok and landed),
+            "out_dir": report.out_dir, "landed": landed,
+            "missing": len(report.missing_clips)}
+
+
+# --------------------------------------------------------------------------- #
 # 2. mp4 是真正的视频（容器魔数）
 # --------------------------------------------------------------------------- #
 def t_videos_are_real_mp4():
@@ -193,6 +252,10 @@ def t_prompt_sheet_covers_every_shot():
 def main() -> int:
     capture_main_thread()
     check("export_produces_all_deliverables", t_export_produces_all_deliverables)
+    check("missing_clip_is_reported_as_failure",
+          t_missing_clip_is_reported_as_failure)
+    check("relative_out_dir_lands_in_the_asked_directory",
+          t_relative_out_dir_lands_in_the_asked_directory)
     check("videos_are_real_mp4", t_videos_are_real_mp4)
     check("manifest_matches_build", t_manifest_matches_build)
     check("export_aborts_on_leak", t_export_aborts_on_leak)

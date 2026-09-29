@@ -198,12 +198,21 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
 
     cast_map: Dict[str, CastMember] = {}
     characters: Dict[str, Any] = {}
+    # 标签的字体/字号/视口开关必须从配置读出来再传下去：
+    # v1.2 定义了 character.label_font_path 与 ui.show_labels 却从没接线，
+    # 配置项是死的（启动时那句"未指定中文字体"的提示也就成了误导）。
+    from ..settings import get_config
+    label_config = get_config().character
+    show_labels = bool(get_config().ui.show_labels)
     for member in spec.cast:
         character = create_character(member.id, member.name, member.color,
                                      location=member.initial_location,
                                      facing=member.initial_facing)
         if spec.with_labels:
-            create_label(character, member.name)
+            create_label(character, member.name,
+                         font_path=label_config.label_font_path,
+                         size=float(label_config.label_size),
+                         show_in_viewport=show_labels)
         cast_map[member.id] = member
         characters[member.id] = character
     summary.characters = len(characters)

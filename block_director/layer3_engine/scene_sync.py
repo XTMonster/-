@@ -16,7 +16,7 @@ Blender 对象 ↔ SDL 元素靠 ``bd_sdl_id`` 建立映射；用户手动改动
 from __future__ import annotations
 
 import contextlib
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import bpy
@@ -232,10 +232,13 @@ class SceneSynchronizer:
             cast.append(updated)
             log.info("回读用户改动：%s → %s", member.id,
                      tuple(round(v, 3) for v in updated.initial_location))
-        return plan, SceneSpec(
-            heading=spec.heading, cast=cast, ground_size=spec.ground_size,
-            walls=spec.walls, props=spec.props, lighting=spec.lighting,
-            room=spec.room, with_labels=spec.with_labels)
+        # 只替换 cast，其余字段原样继承。
+        #
+        # v1.2 在这里逐字段枚举重建 SceneSpec。只要 SceneSpec 新增一个字段
+        # （v1.3 会加 crowd 与标签渲染设置），它就会在这一步被静默丢掉——
+        # 而 regenerate_shot() 每次都会先调用本方法，于是"改一镜重出一镜"
+        # 会顺手把观众、特效与标签设置一起抹掉。用 replace 从根上避免这种漂移。
+        return plan, replace(spec, cast=cast)
 
 
 def suppress_sync(synchronizer: Optional[SceneSynchronizer]):
