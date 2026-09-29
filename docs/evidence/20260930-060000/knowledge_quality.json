@@ -1,0 +1,49 @@
+{
+  "run_id": "20260930-060000",
+  "overall": "fail",
+  "holdout_entries": 0,
+  "index_edges": 168,
+  "metrics": [
+    {
+      "id": "Q0",
+      "status": "fail",
+      "note": "账不对：manifest 说 rejects=17，rejects 文件实际 21 行",
+      "source": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
+      "raw_edges": 658,
+      "valid_unique": 168,
+      "duplicates": 473,
+      "rejects": 17,
+      "rejects_file_lines": 21
+    },
+    {
+      "id": "Q1-Q7",
+      "status": "not_measured",
+      "note": "held-out 为空：Q1–Q7 无法判定（不得判通过）"
+    },
+    {
+      "id": "E3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 0,
+      "value": 0,
+      "line": 0,
+      "note": "经验边（source_kind=experience）单独产生的 forbid 条数必须为 0"
+    },
+    {
+      "id": "E3_cases",
+      "status": "not_measured",
+      "note": "没有 knowledge/cases.jsonl：L3 侧无证据"
+    },
+    {
+      "id": "E1",
+      "status": "not_measured",
+      "note": "需要人工对返回的 cases 按 >=4/5 打分（§2.3b）；没有 --e1-reviews 就不判——不得由 agent 代判"
+    },
+    {
+      "id": "E2",
+      "status": "not_measured",
+      "note": "没有 --shots：采纳率无法测量（诊断量，不设门）"
+    }
+  ],
+  "q_summary": {}
+}
