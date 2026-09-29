@@ -112,6 +112,14 @@ class ShotContract:
     shot_id: str
     order: int = 0
     intent: str = ""
+    #: 检索契约串要用的字段（§2.3b）：景别 / 焦段 / 运镜 / 动作 / 特效。
+    #: 它们从计划里**抄一份**（不是第二真源——计划仍是唯一真源，这里只是
+    #: 把"这一镜要检索什么"收敛成一个对象，供 `constraint_query()` 消费）。
+    shot_type: str = ""
+    lens: str = ""
+    movements: List[str] = field(default_factory=list)
+    actions: List[str] = field(default_factory=list)
+    vfx_kinds: List[str] = field(default_factory=list)
     characters: List[str] = field(default_factory=list)
     #: ``{character_id: target_character_id}``——这一镜里谁该朝向谁。
     facing_target: Dict[str, str] = field(default_factory=dict)
@@ -121,13 +129,31 @@ class ShotContract:
     unresolved: List[str] = field(default_factory=list)
 
     def constraint_query(self) -> str:
-        """这一镜的检索契约串（§2.3b 的 ``constraint_query``）。"""
-        return shot_constraint_query(self)
+        """这一镜的检索契约串（§2.3b 的 ``constraint_query``）。
+
+        与 :func:`shot_constraint_query`（吃计划里的 ``ShotPlan``）**逐字符同源**：
+        两者都由同一组"只写有值的键"的规则生成，因此同一镜的两条路径不会漂。
+        """
+        pairs: List[tuple] = []
+        for key, value in (("景别", self.shot_type), ("镜头", self.lens)):
+            if str(value or "").strip():
+                pairs.append((key, str(value).strip()))
+        for key, values in (("运镜", self.movements), ("动作", self.actions),
+                            ("特效", self.vfx_kinds)):
+            for value in values:
+                if str(value or "").strip():
+                    pairs.append((key, str(value).strip()))
+        if self.dialogues:
+            pairs.append(("对白", "有"))
+        return "；".join(f"{key}={value}" for key, value in pairs)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "shot_id": self.shot_id, "order": self.order,
             "intent": self.intent, "characters": list(self.characters),
+            "shot_type": self.shot_type, "lens": self.lens,
+            "movements": list(self.movements), "actions": list(self.actions),
+            "vfx_kinds": list(self.vfx_kinds),
             "facing_target": dict(self.facing_target),
             "dialogues": [dict(item) for item in self.dialogues],
             "vfx": [dict(item) for item in self.vfx],
@@ -213,6 +239,19 @@ class SceneContract:
             item = ShotContract(shot_id=shot_id,
                                 order=int(getattr(shot, "order", 0) or index),
                                 intent=str(getattr(shot, "intent", "") or ""),
+                                shot_type=str(getattr(shot, "shot_type", "") or ""),
+                                lens=str((getattr(shot, "camera", None) or {}).get(
+                                    "lens") or ""),
+                                movements=[_first_value(entry, "type", "kind")
+                                           for entry in
+                                           ((getattr(shot, "camera", None) or {})
+                                            .get("movements") or [])],
+                                actions=[_first_value(entry, "action_type", "type")
+                                         for entry in
+                                         (getattr(shot, "actions", None) or [])],
+                                vfx_kinds=[_first_value(entry, "type", "kind")
+                                           for entry in
+                                           (getattr(shot, "vfx", None) or [])],
                                 characters=characters,
                                 vfx=[dict(v) for v in
                                      (getattr(shot, "vfx", None) or [])])

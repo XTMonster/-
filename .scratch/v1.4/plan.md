@@ -72,3 +72,22 @@ P9.4 → P9.5 → P10 → P11 → P12 → P13 → P14(-1..5) → P15 → P16
 2. **人审 ≥120 条**：§2.3c 的约束④要求人复核 10–15%，agent 不能替代
    （`tools/check_holdout.py` 的门⑦专门拒绝 agent 自评）。
 3. **RK-7**（台词三方对拍）探针尚未编写。
+
+## P14-3 收尾（本轮，`docs/evidence/20260930-071500/`）
+
+- [x] `block_director/knowledge/cases.py`（新增，无 bpy）：`CaseIndex` 三态、
+      `load_index`、`render_cases`、`carries_constraint`；**Case 无 `forbid` 字段**。
+- [x] `block_director/knowledge/tokens.py`（新增）：超边与案例**同一个** token 估算。
+- [x] `tools/kb_fetch/build_cases.py`（新增）＋ `knowledge/cases.{jsonl,manifest.json}`：
+      **726 篇**（≥300），K1/K2 = 100%，体积门 pass，`--check` 幂等。
+- [x] `tools/sidecar_server.py`：删掉内联 `CaseLane`，改用包里的 `CaseIndex`；
+      trace 增 `lightrag_index_fingerprint` / `cases_index_fingerprint`。
+- [x] `retriever.py`：三栏注入（硬约束／经验建议（软）／参考案例）＋软边单独成栏
+      ＋**三栏共用一个 token 上限**（此前硬约束与卡片各自用满一次 = 2× 上限）。
+- [x] `scene_contract.py::shot_constraint_query()`：**契约串的生产者**——
+      在此之前超图那一条通道在真实运行里一个种子都命中不了（`parse_query` 只认 `键=值`）。
+- [x] 测试：`tests/test_cases.py`(15)、`tests/test_cases_corpus.py`(10)、
+      `tests/test_knowledge_cases_wiring.py`(7)、`test_scene_contract.py` 的
+      "生产 → 解析 → 命中"整链；`python -m pytest` = **1250 passed**。
+- [ ] held-out 长跑（后台进行中）→ 之后才能跑 `holdout_score` / `ab_triple_baseline`。
+- [ ] 人审 ≥120 条（只能由人做）。

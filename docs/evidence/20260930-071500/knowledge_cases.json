@@ -1,0 +1,41 @@
+{
+  "manifest": "knowledge\\cases.manifest.json",
+  "fingerprint": "e022cec24d363b8968f32cdb8ebe7c6e138363e72ca306cace9b79a7d2d836f7",
+  "corpus_fingerprint": "142d2df845cc2bf5a2d61f962c6c98681744f8e874ae5e1d20aec51af203b047",
+  "cases": 726,
+  "per_type": {
+    "narrative": 653,
+    "sequence_pattern": 2,
+    "lesson": 71
+  },
+  "per_domain": {
+    "anime": 43,
+    "axis_theory": 14,
+    "blocking": 44,
+    "cinematography": 213,
+    "composition": 160,
+    "editing": 45,
+    "performance": 40,
+    "production": 43,
+    "storyboard": 124
+  },
+  "segments_total": 7727,
+  "raw_segments": 833,
+  "duplicates": 5,
+  "quota_truncated": 100,
+  "rejects": 2,
+  "reject_ratio": 0.002401,
+  "size_gate": {
+    "sizes": {
+      "cases.jsonl": 439556,
+      "cases.manifest.json": 1631
+    },
+    "oversize": {},
+    "passed": true
+  },
+  "min_cases": 300,
+  "sequence_pattern_cases": [
+    "case_anime_language_md_003",
+    "case_storyboard_practice_md_004"
+  ]
+}

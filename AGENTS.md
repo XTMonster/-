@@ -231,16 +231,32 @@ and coreference) is done.
 | **P16** | 构图门 ≥70% + 反向突变（ADR-0012）；无 bpy 的空断言静态检查 `tools/check_assertions.py`；探针清单双向断言与 `docs/evidence/<run-id>/{rks.json,config.fingerprint.json}` 收尾钩子；`CONTEXT.md` + `docs/adr/0007…0012` |
 | **P14** | 知识栈三层：语料 1075 卡 / 九域（`knowledge/cards_generated/`）、超图索引（`knowledge/hypergraph.{nodes,edges}.jsonl`，143 边含 **19 个 `forbid` 成员**、最大 arity 4）、L3 案例层（`knowledge/cases.*`）；`/v1/retrieve` 三通道 `cards[]/edges[]/cases[]` ＋ `trace{}`（`contracts/knowledge.py` 的 `HyperEdge`/`Case` DTO，`specs/openapi.yaml` 同批）；`Capability.HYPERGRAPH` 由**索引是否加载成功**决定；插件侧 `knowledge/client.py` 每次检索写一条 `retrieval_call` 审计事件，`knowledge_trace.json` 每次运行必写；`tools/holdout_score.py` 判 Q1–Q7、`tools/knowledge/quality.py` 判 Q0 ＋ E1–E3 并落 `docs/evidence/<run-id>/knowledge_quality.json`；`tools/ab_triple_baseline.py` 出三元组对照；`tools/knowledge/sample_edges.py` 出 30 条人工抽查样本（`verdict` 留空，不预填） |
 
-**P14 未完成（不得当作通过）**：`fixtures/knowledge_holdout.jsonl` 仍是**空文件**，
-所以 **RK-13 = `not_measured`**（`docs/evidence/20260930-063042/rks.json` 里 19 条 RK 中唯一未度量的一条），
+**L3 案例层（P14-3）已落地**：`block_director/knowledge/cases.py`（三态 `lightrag`/`hybrid`/`off`、
+`CaseIndex`、`render_cases`，**没有 `forbid` 字段**——E3 的机制保证）＋
+`tools/kb_fetch/build_cases.py` ＋ `knowledge/cases.{jsonl,manifest.json}`（**726 篇**，
+`narrative=653/lesson=71/sequence_pattern=2`，`source_ref` 六字段全非空、许可全在白名单、
+摘要过"≤2 句 / ≤120 字"门、重复构建逐字节相同）。`sidecar_server.py` 不再自带第二份
+实现，改用包里的 `CaseIndex`，trace 补上 `lightrag_index_fingerprint` /
+`cases_index_fingerprint`；插件侧检索器现在真的会**分三栏注入**
+（硬约束／经验建议（软）／参考案例），且**三栏共用同一个 token 上限**。
+同时补上一个真实缺陷：`hypergraph.parse_query` 只认 `键=值`，而此前**没有任何生产侧
+生产者**，于是含 `forbid` 的那一栏在真实运行里一个种子都命中不了——
+`layer5_orchestrator/scene_contract.py::shot_constraint_query()` 就是那个生产者
+（`editor.py` 每镜用它取知识）。证据：`docs/evidence/20260930-071500/`。
+
+**P14 未完成（不得当作通过）**：`fixtures/knowledge_holdout.jsonl`
+（**本轮写作时仍在本地标注器的长跑中**）跑完之前 **RK-13 = `not_measured`**
+（`docs/evidence/20260930-063042/rks.json` 里 19 条 RK 中唯一未度量的一条），
 `tools/holdout_score.py` 与 `ab_triple_baseline.py` 会打印 `INCOMPLETE` 并非零退出。
 根因是本机标注通道：`qwen3-vl:30b` 是思考模型，官方三条关思考开关全无效
 （`docs/evidence/20260930-070000/knowledge_annotator_blocker.json`）；给 `/api/chat`
 加 **assistant 预填**可把它从"context 打满仍无正文"变成 4.7 s/次（`tools/kb_fetch/llm.py`
 的 `OLLAMA_ASSISTANT_PREFILL`，默认关闭），之后 1200 条的本地生成才成为可能，但需要数小时墙钟。
 **人审 ≥120 条**（协议门⑦）与 **Q5/Q7/E3 的最终裁定**必须由人做，agent 不可代替。
-另有两条账目/口径未收口：`knowledge/hypergraph.manifest.json` 的 `rejects` 与
-`hypergraph.rejects.jsonl` 的行数对不上（Q0 会直接判 fail），以及 L3 案例层 ≥300 篇尚未落地。
+还剩一条口径未收口：**LightRAG 的真实索引**——仓库里没有 `lightrag` 依赖、也没有它建的索引，
+所以 `rag.cases_backend=lightrag` 走的是 §2.3b **写明允许**的降级路径
+（`cases_degraded=true` ＋ `lightrag_adapter_unavailable`），`lightrag_index_fingerprint` 如实为空。
+（`hypergraph.manifest.json` 的 `rejects` 账目已对平，Q0 现在实测 **pass**。）
 
 安全审计（并行角色）另修了两条：`shot_id` 不再能越过导出目录
 （`contracts/plan.py::validate_shot_id` + SDL 的 S11），GUI 的"清空场景后构建"

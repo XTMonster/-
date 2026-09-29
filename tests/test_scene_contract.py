@@ -147,3 +147,18 @@ def test_the_contract_query_actually_seeds_the_hypergraph():
     selected, text, trace = graph.retrieve(query)
     assert trace.seed_miss is False and trace.seeds == ["shot_size:MS"]
     assert selected and "禁={" in text and "固定机位" in text
+
+
+def test_the_two_query_producers_agree_without_drifting():
+    """`ShotContract.constraint_query()` 与 `shot_constraint_query(ShotPlan)`
+    必须逐字符一致——两条生产者漂了，检索路由就会一镜一个口径。"""
+    plan = Plan.from_dict({"shots": [
+        {"shot_id": "shot_007", "order": 7, "intent": "逼近", "shot_type": "MS",
+         "duration_frames": 48, "characters": ["char_001"],
+         "actions": [{"action_type": "跺脚"}],
+         "dialogues": [{"character_id": "char_001", "text": "让开。"}],
+         "vfx": [{"type": "flame"}],
+         "camera": {"lens": "85mm", "movements": [{"type": "dolly_in"}]}}]})
+    contract = SceneContract.from_plan(plan)
+    assert (contract.shot("shot_007").constraint_query()
+            == shot_constraint_query(plan.shots[0]))
