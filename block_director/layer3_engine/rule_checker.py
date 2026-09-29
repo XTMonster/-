@@ -277,6 +277,18 @@ def check_shot(shot_id: str, *, context=None,
                 f"角色 {character.id} 位于地面以下"
                 f"（z={root.matrix_world.translation.z:.3f}）",
                 target=character.id, suggestion="把角色抬回 z ≥ 0"))
+        else:
+            # v1.4 BW-4a：R008 必须是**双向**的。旧实现只看 root.z < -0.02，
+            # 于是"站立的角色根节点被抬到地面上方"这种**悬空**完全抓不到
+            # （BW-4 的现象就是它）。这里用网格的实际最低点判上界。
+            box = _character_aabb(character)
+            if box is not None and box.minimum[2] > GROUND_EPS:
+                findings.append(_warning(
+                    "R008", "E_SPACE_001",
+                    f"角色 {character.id} 悬空：网格最低点 z="
+                    f"{box.minimum[2]:.3f} 高于地面 {GROUND_EPS}",
+                    target=character.id,
+                    suggestion="把站姿的末关键帧写回绝对地面（z=0）"))
         point = world_to_camera_view(scene, camera,
                                      root.matrix_world.translation
                                      + Vector((0.0, 0.0, 0.9)))

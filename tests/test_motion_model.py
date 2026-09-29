@@ -8,7 +8,9 @@ import pytest
 
 from block_director.motion.model import (
     BLEND_FRAMES,
+    BODY_TILT_KEYS,
     CH_BODY_ROT_X,
+    CH_BODY_ROT_Y,
     CH_HEAD_ROT_X,
     CH_HEAD_ROT_Z,
     CH_LEG_L,
@@ -81,6 +83,68 @@ def test_layer_channel_ownership_is_disjoint():
                 assert channel not in owners or owners[channel] == spec.layer, (
                     f"{channel} 同时被 {owners.get(channel)} 和 {spec.layer} 写入")
                 owners[channel] = spec.layer
+
+
+# --------------------------------------------------------------------------- #
+# v1.4 BW-1：姿态参数的允许键表
+# --------------------------------------------------------------------------- #
+def _tilt_spec(params):
+    specs = [item for item in expand(ActionRequest("body_tilt", 1, 25,
+                                                   params=params))]
+    assert specs, "body_tilt 必须产出一条轨道"
+    return specs[0]
+
+
+@pytest.mark.parametrize("params", [{"angle_deg": 12.0}, {"angle": 12.0},
+                                    {"degrees": 12.0}])
+def test_body_tilt_accepts_every_registered_angle_alias(params):
+    spec = _tilt_spec(params)
+    assert CH_BODY_ROT_X in spec.channels
+    # 末帧的倾角 = 目标角（弧度）。
+    assert spec.pose_fn(25)[CH_BODY_ROT_X] == pytest.approx(math.radians(12.0),
+                                                            abs=1e-6)
+
+
+def test_body_tilt_toward_picks_the_axis_from_the_direction():
+    spec = _tilt_spec({"angle_deg": 10.0, "toward": [0.0, 3.0, 0.0]})
+    assert CH_BODY_ROT_Y in spec.channels
+    assert CH_BODY_ROT_X not in spec.channels
+
+
+def test_unknown_body_tilt_key_is_rejected_not_silently_defaulted():
+    """BW-1 的负例：不认识的键必须报 E_MOTION_001，而不是悄悄取默认值。"""
+    from block_director.motion.model import MotionParamError
+
+    with pytest.raises(MotionParamError) as excinfo:
+        expand(ActionRequest("body_tilt", 1, 25, params={"tilt": 12.0}))
+    assert "E_MOTION_001" in str(excinfo.value)
+
+
+def test_interaction_params_use_the_registered_alias():
+    """``take``/``open``/``push`` 的参数必须能被 expand() 认出来。"""
+    # ``tool_bindings`` 顶层 import bpy，纯层进不去——这里对**源码**做静态
+    # 检查（同样是契约断言：字面量必须用登记过的别名）。
+    from pathlib import Path
+    import re
+
+    source = (Path(__file__).resolve().parents[1]
+              / "block_director" / "layer3_engine" / "tool_bindings.py"
+              ).read_text(encoding="utf-8")
+    block = re.search(r"INTERACTION_PARAMS\s*=\s*\{(.+?)\}\n",
+                      source, re.S)
+    assert block is not None, "找不到 INTERACTION_PARAMS 定义"
+    literal = block.group(1)
+    assert "degrees" not in literal
+    assert literal.count("angle_deg") == 3
+    for key in ("angle_deg", "axis", "toward"):
+        assert key in BODY_TILT_KEYS
+
+
+def test_stand_ends_on_the_absolute_ground():
+    """v1.4 BW-4a：站起段的末关键帧必须是**绝对地面**，不是 ``+drop``。"""
+    spec = expand(ActionRequest("stand", 1, 25, params={"drop": 0.2}))[0]
+    assert spec.pose_fn(1)[CH_ROOT_LOC][2] == pytest.approx(-0.2, abs=1e-6)
+    assert spec.pose_fn(25)[CH_ROOT_LOC][2] == pytest.approx(0.0, abs=1e-6)
 
 
 # --------------------------------------------------------------------------- #

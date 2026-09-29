@@ -1,34 +1,25 @@
-feat(P11): read the script properly, then converge it into a scene contract
+feat(P12-part1): make body tilt real, and stop the standing root from floating
 
-W3 + W4 (SS5 P11).
+BW-1 / BW-4a / R008 (SS5 P12, first slice).
 
-- layer1_input/shotlist.py: D-1 inline dialogue. The v1.3 DIALOGUE_RE was
-  anchored at the line start, so a "画面内容：米迦尔：“…”" line was swallowed
-  whole by FIELD_RE and the line vanished. There is now an unanchored variant
-  used by both the speaker scan and the field branch; the speaker token also
-  excludes CJK punctuation so "伊恩按住他的肩。米迦尔" can no longer be read
-  as one name.
-- D-3: split_alias() turns "莉莉安娜（贵妇）" into ("莉莉安娜", "贵妇"); the
-  parse records ParsedScript.character_aliases so the cast can carry it.
-- D-2: parse_chinese_number plus a clause-split negation window. "无路人入镜"
-  contributes nothing and "约三十名商贩" contributes 30 -- the two clauses are
-  judged separately, and 约/近/共 stay quantity modifiers.
-- New layer5_orchestrator/scene_contract.py (pure): ShotContract with
-  facing_target / dialogues[speaker_status] / unresolved[], built from the Plan
-  plus SceneBrief (BW-4b). resolve_speaker is exact-match only: an unknown
-  speaker yields an empty id and an "unresolved" record -- F2's "never
-  fabricate a character_id".
-- driver._pin_declared_dialogue now pins declared_shot_number (F4/X10), records
-  speaker_raw/speaker_status on each dialogue, writes dialogue_pins with the
-  pre-pin model text (F3) and logs speaker_unresolved when it cannot resolve.
-- compliance: R015 gains shot-number/order and cast mismatches (strict ->
-  ERROR), evaluated from the pinned declared_shot_number rather than position.
-- New fixture fixtures/script_node5_8_lines.md (node 9/10, an over-the-shoulder
-  shot, the parenthetical alias, and the D-2 two-clause contrast).
-- New tests: test_cast_aliases, test_script_inline_dialogue, test_scene_contract,
-  plus the three R015 cases and the F2 driver case in test_compliance.
-- New Blender probe tools/blender_tests/test_scene_contract.py (RK-3): facing
-  recomputed from matrix_world (0 degrees both ways) and a real over-the-
-  shoulder occlusion measurement (26.7% >= 5%). Registered (27 -> 28).
+- motion/model.py: body_tilt now goes through an explicit allowed-key table
+  (angle_deg / angle / degrees, axis / toward). Unknown keys raise
+  MotionParamError (E_MOTION_001) instead of silently taking a default -- the
+  old code read only "axis"/"angle_deg" while the only writer
+  (tool_bindings.INTERACTION_PARAMS) passed {"degrees": 12.0}, so take/open/
+  push tilted nothing at all and nobody noticed.
+- tool_bindings.INTERACTION_PARAMS moves to the registered alias in the same
+  change, otherwise those three interactions would go from "silently ignored"
+  to "hard error".
+- _root_drop(stand) now ends on the absolute ground (-drop -> 0) instead of the
+  relative 0 -> +drop, which left a lone stand hovering one drop above the
+  floor.
+- rule_checker R008 is bidirectional: the old check only looked at root.z < -eps
+  and could not see a floating character. It now also reports when the mesh's
+  lowest point is above the ground.
+- test_motion_model: alias parametrisation, the toward->axis derivation, the
+  unknown-key negative case, the stand-lands-on-the-ground case, and a static
+  contract check that INTERACTION_PARAMS only uses registered aliases (that
+  module imports bpy, so the pure layer reads it as source text).
 
-python -m pytest -> 880 passed; tools/run_tests.ps1 -> 28/28 green.
+python -m pytest -> 892 passed; tools/run_tests.ps1 -> 28/28 green.

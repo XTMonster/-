@@ -45,8 +45,12 @@ KNOWLEDGE_TOOLS = (SEARCH_KNOWLEDGE,)
 INTERACTION_ACTIONS = {"sit": "sit", "stand": "stand",
                        "take": "body_tilt", "open": "body_tilt",
                        "push": "body_tilt"}
-INTERACTION_PARAMS = {"take": {"degrees": 12.0}, "open": {"degrees": 10.0},
-                      "push": {"degrees": 15.0}}
+#: v1.4 BW-1：键名必须用 ``motion/model.py::body_tilt_params`` 登记过的别名。
+#: 旧写法 ``{"degrees": …}`` 与 ``expand()`` 只认的 ``angle_deg`` 对不上，
+#: 于是 take/open/push 的倾斜被**静默吃掉**（而改成报错之前必须先改这里，
+#: 否则这三条交互会从"静默失效"变成"直接报错"，属引入回归）。
+INTERACTION_PARAMS = {"take": {"angle_deg": 12.0}, "open": {"angle_deg": 10.0},
+                      "push": {"angle_deg": 15.0}}
 
 
 def _fail(text: str) -> ToolResult:

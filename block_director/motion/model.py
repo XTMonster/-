@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ..cinema.anchor import DEFAULT_PROFILE as _PROFILE
+from ..contracts.enums import ErrorCode
 
 FPS = 24
 BLEND_FRAMES = 6
@@ -229,14 +230,16 @@ def _fall_down(start: int, end: int,
 
 def _root_drop(start: int, end: int, drop: float,
                reverse: bool = False) -> Callable[[int], Dict[str, object]]:
-    """高度偏移：坐下是 ``0 → -drop``，站起是 ``0 → +drop``。
+    """高度偏移：坐下是 ``0 → -drop``，站起是 ``-drop → 0``（**绝对落地点**）。
 
-    两者都是**相对**量——配合 compose 的接管冻结语义，先 sit 后 stand
-    会精确回到地面，而不是各自从 0 重算。
+    v1.4 BW-4a：旧的站起分支写的是 ``0 → +drop``（**相对量**），于是"单独一个
+    stand"会把根节点抬到地面上方 ``drop``——角色**悬空**。现在站起段的末关键帧
+    恒为 ``0``（= 地面），与 sit 的末值 ``-drop`` 首尾相接。
     """
     def pose(frame: int) -> Dict[str, object]:
         t = _ease(_progress(frame, start, end))
-        return {"root.location": (0.0, 0.0, (drop if reverse else -drop) * t)}
+        z = -drop * (1.0 - t) if reverse else -drop * t
+        return {"root.location": (0.0, 0.0, z)}
 
     return pose
 
@@ -307,6 +310,71 @@ _SPEED_AMPLITUDE = {"walk": 25.0, "run": 30.0}
 #: 角色眼睛的高度，用于计算头部俯仰角。v1.4 P10：从 §2.1 的冻结 profile
 #: 派生（旧值 1.10 是 v1.3 的几何；``motion/`` 是纯层，不能 import bpy）。
 EYE_Z_DEFAULT = _PROFILE.eye_z
+
+
+class MotionParamError(ValueError):
+    """姿态参数不合规（v1.4 BW-1）。
+
+    旧实现遇到不认识的键**静默取默认值**——``take``/``open``/``push`` 写的
+    ``{"degrees": 12.0}`` 被完全吃掉，身体倾斜从头到尾没发生过，而没有任何
+    地方会报错。现在未知键直接抛出，工具层把它变成一条观察文本回灌给模型。
+    """
+
+    def __init__(self, message: str,
+                 code: ErrorCode = ErrorCode.MOTION_001) -> None:
+        super().__init__(f"{code}：{message}")
+        self.code = code
+
+
+#: v1.4 BW-1：``body_tilt`` 的**允许键表**（同义词 → 规范键）。
+#: ``angle_deg`` / ``angle`` / ``degrees`` 是同一个量的三种写法；
+#: ``axis`` / ``toward`` 是定向的两种写法。
+BODY_TILT_KEYS = ("angle_deg", "angle", "degrees", "axis", "toward")
+
+
+def _axis_from_toward(toward) -> str:
+    """把"朝某个物体倾"的方向量转成旋转轴。
+
+    纯几何、可复现：主分量在 X 上就绕 X 倾，在 Y 上就绕 Y 倾。
+    """
+    if isinstance(toward, (list, tuple)) and len(toward) >= 2:
+        dx = abs(float(toward[0]))
+        dy = abs(float(toward[1]))
+        return "x" if dx >= dy else "y"
+    name = str(toward or "").strip().lower()
+    if name in ("y", "left", "right", "side", "leftward", "rightward"):
+        return "y"
+    if name in ("x", "front", "back", "forward"):
+        return "x"
+    raise MotionParamError(f"无法理解的 toward 取值：{toward!r}")
+
+
+def body_tilt_params(params: Dict[str, Any]) -> Tuple[float, str]:
+    """把 ``body_tilt`` 的参数正规化成 ``(angle_deg, axis)``。
+
+    未知键 → :class:`MotionParamError`（不静默取默认值）。
+    """
+    unknown = sorted(set(params or {}) - set(BODY_TILT_KEYS))
+    if unknown:
+        raise MotionParamError(
+            f"body_tilt 不认识的姿态参数：{'、'.join(unknown)}；"
+            f"允许的键是 {'、'.join(BODY_TILT_KEYS)}")
+    angle = params.get("angle_deg")
+    if angle is None:
+        angle = params.get("angle")
+    if angle is None:
+        angle = params.get("degrees", 15.0)
+    axis = str(params.get("axis") or "").strip().lower()
+    if not axis and params.get("toward") is not None:
+        axis = _axis_from_toward(params["toward"])
+    if not axis:
+        axis = "x"
+    if axis not in ("x", "y"):
+        raise MotionParamError(f"body_tilt 的 axis 只能是 x / y（当前 {axis!r}）")
+    try:
+        return float(angle), axis
+    except (TypeError, ValueError) as exc:
+        raise MotionParamError(f"body_tilt 的角度必须是数字：{angle!r}") from exc
 
 
 def head_track_angles(origin: Sequence[float], facing: Sequence[float],
@@ -405,8 +473,10 @@ def expand(request: ActionRequest) -> List[MotionSpec]:
             _head_track(start, end, yaw, pitch))
 
     elif kind == "body_tilt":
-        axis = str(params.get("axis", "x")).lower()
-        angle = float(params.get("angle_deg", 15.0)) * DEG
+        # v1.4 BW-1：走**允许键表**——`degrees`/`angle`/`angle_deg` 同义，
+        # `toward` 与 `axis` 同义；未知键直接报 E_MOTION_001，不静默取默认。
+        angle_deg, axis = body_tilt_params(params)
+        angle = angle_deg * DEG
         add(LAYER_BODY, (CH_BODY_ROT_X if axis == "x" else CH_BODY_ROT_Y,),
             _body_tilt(start, end, angle, axis))
 
