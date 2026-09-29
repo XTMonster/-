@@ -19,6 +19,8 @@ from __future__ import annotations
 import math
 from typing import Dict, List, Optional, Sequence, Tuple
 
+from ..contracts.enums import MOVEMENT_TYPES
+
 Vector3 = Tuple[float, float, float]
 
 #: 平移类（amount 单位：米）
@@ -48,9 +50,16 @@ SUBJECT_TRACKING = ("steadicam", "follow_subject", "lead_subject")
 #: 手持（确定性噪声，不需要主体路径）
 HANDHELD = ("handheld",)
 
-MOVEMENT_TYPES = tuple(
+#: 分组表必须与 ``contracts/enums.py`` 的 ``MOVEMENT_TYPES`` 完全一致。
+#: 两份真源一旦漂移，知识卡的能力标注、工具 schema 的 enum 与这里的解算
+#: 就会各说各话，所以护栏放在导入期，而不是等测试来发现。
+_GROUPED_MOVEMENTS = frozenset(
     list(TRANSLATIONS) + list(ROTATIONS) + list(ZOOMS) + list(DOLLY_ZOOMS)
     + list(ORBITS) + list(SUBJECT_TRACKING) + list(HANDHELD))
+if _GROUPED_MOVEMENTS != frozenset(MOVEMENT_TYPES):     # pragma: no cover
+    raise RuntimeError(
+        "camera_motion 的分组表与 contracts 的 MOVEMENT_TYPES 不一致："
+        f"{sorted(_GROUPED_MOVEMENTS ^ set(MOVEMENT_TYPES))}")
 
 LOOK_AT_DISTANCE = 3.0
 DEFAULT_SAMPLES = 3          # 首 / 中 / 尾，够贝塞尔插值走出平滑弧线

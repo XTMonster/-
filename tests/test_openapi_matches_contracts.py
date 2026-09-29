@@ -76,7 +76,7 @@ def test_spec_declares_all_endpoints(spec):
 
 def test_spec_uses_openapi_31(spec):
     assert spec["openapi"].startswith("3.1")
-    assert spec["info"]["version"] == "1.2.0"
+    assert spec["info"]["version"] == "1.3.0"
 
 
 def test_schema_properties_match_dataclass_fields(spec):
@@ -119,7 +119,7 @@ def _sample_payloads() -> Dict[str, Dict[str, Any]]:
                      related=["axis_002"], engine_support="implemented",
                      emotion="对峙", tags=["轴线", "越轴"]).to_dict(),
         "HealthResponse": HealthStatus(
-            status="ok", version="1.2.0",
+            status="ok", version="1.3.0",
             capabilities=[Capability.LLM, Capability.BM25]).to_dict(),
         "EmbedRequest": EmbedRequest(texts=["a", "b"]).to_dict(),
         "EmbedResponse": EmbedResponse(vectors=[[0.1, 0.2], [0.3, 0.4]], dim=2).to_dict(),

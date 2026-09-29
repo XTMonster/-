@@ -45,7 +45,7 @@ from block_director.contracts.messages import (  # noqa: E402
 )
 from block_director.knowledge import default_retriever  # noqa: E402
 
-CONTRACT_VERSION = "1.2.0"
+CONTRACT_VERSION = "1.3.0"
 LOOPBACK = "127.0.0.1"
 
 

@@ -24,4 +24,4 @@ def test_version_is_consistent_with_contract():
     import block_director
 
     assert block_director.__version__ == block_director.CONTRACT_VERSION
-    assert block_director.__version__ == "1.2.0"
+    assert block_director.__version__ == "1.3.0"

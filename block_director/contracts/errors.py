@@ -41,7 +41,7 @@ def error_for_http_status(status: int) -> ErrorCode:
 USER_MESSAGES: Dict[ErrorCode, str] = {
     ErrorCode.PARSE_001: "无法识别剧本格式。建议改用 Fountain(.fountain) 或纯文本(.txt)。",
     ErrorCode.SDL_001: "场景描述校验未通过。请检查镜头、角色与道具的 ID 引用是否完整。",
-    ErrorCode.SDL_002: "旧版项目文件迁移失败。建议先用 v1.2 重新生成，或手工修正 project.bdproj。",
+    ErrorCode.SDL_002: "旧版项目文件迁移失败。建议用当前版本重新生成，或手工修正 project.bdproj。",
     ErrorCode.AXIS_001: ("相机位置违反 180° 轴线规则，可能导致角色左右方向混乱。"
                          "建议将相机移到轴线另一侧，或插入中性镜头过渡。"),
     ErrorCode.SPACE_001: "角色或相机与墙体/道具重叠。建议调整位置或扩大房间尺寸。",
@@ -58,6 +58,12 @@ USER_MESSAGES: Dict[ErrorCode, str] = {
                           "请将它们移入 BlockDirector/Guides 集合或设为不可渲染。"),
     ErrorCode.DELIV_002: "视频编码失败，已降级为 PNG 序列输出。",
     ErrorCode.CORR_001: "自纠错次数超过上限。该镜头已跳过并标注为降级。",
+    ErrorCode.SCRIPT_001: ("剧本声明的镜头数/顺序/景别/时长或对白与计划不一致。"
+                           "建议检查分镜表的「预估时长」「总时长」与台词归属，"
+                           "或放宽 dialogue.declared_tolerance_s。"),
+    ErrorCode.BRIEF_001: ("剧本理解（阶段 S）失败：模型两次都没有返回合法的"
+                          "SceneBrief。已退回确定性抽取（不猜代词），"
+                          "说话对象与注视关系可能缺失。"),
 }
 
 

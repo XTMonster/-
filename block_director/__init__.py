@@ -17,16 +17,16 @@ import logging
 from .registration import register_all, unregister_all
 from .utils.logger import configure, get_logger
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
-# 与执行文档 v1.2 §2.5 /health 返回的 version 字段保持一致
-CONTRACT_VERSION = "1.2.0"
+# 与执行文档 §2.5 /health 返回的 version 字段保持一致（v1.3 契约扩容）
+CONTRACT_VERSION = "1.3.0"
 
 # 传统 addon 兼容信息（Blender 4.2 起推荐 blender_manifest.toml，二者可并存）
 bl_info = {
     "name": "BlockDirector (白模导演)",
     "author": "BlockDirector",
-    "version": (1, 2, 0),
+    "version": (1, 3, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BlockDirector",
     "description": "剧本 → 白模预演 → AI 视频参考",

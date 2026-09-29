@@ -561,7 +561,7 @@ def _sidecar():
 
         def do_GET(self):
             if self.path == "/health":
-                self._send({"status": "ok", "version": "1.2.0",
+                self._send({"status": "ok", "version": "1.3.0",
                             "capabilities": ["llm", "bm25"]})
             else:
                 self._send({}, 404)

@@ -29,6 +29,7 @@ class MessageRole(StrEnum):
 class Purpose(StrEnum):
     """LLM 调用用途（§3.4 / §7.1 / §12.6 预算按用途分别核算）。"""
 
+    UNDERSTAND = "understand"  # 阶段 S：剧本理解（SceneBrief，v1.3 §3.2）
     PLAN = "plan"        # 阶段 A：分镜计划
     EDITOR = "editor"    # 阶段 B1：单镜结构化生成
     REPAIR = "repair"    # 阶段 B4：定向修复
@@ -136,6 +137,85 @@ SHOT_TYPES = tuple(t.value for t in ShotType)
 
 
 # --------------------------------------------------------------------------- #
+# §10.2 / 附录 B 运镜封闭清单（v1.3）
+# --------------------------------------------------------------------------- #
+class Movement(StrEnum):
+    """24 种运镜的 id。
+
+    **单一真源**：``cinema/camera_motion.py`` 的分组表（平移/旋转/变焦/环绕/
+    跟拍/手持）必须与这份清单完全一致，``tests/test_camera_motion.py`` 对拍。
+    放在 contracts 是因为知识卡的 ``engine_support``、工具 schema 的 ``enum``
+    与 SDL 的 ``movements[].type`` 都要引用同一个词表。
+    """
+
+    DOLLY_IN = "dolly_in"
+    DOLLY_OUT = "dolly_out"
+    TRACK_LEFT = "track_left"
+    TRACK_RIGHT = "track_right"
+    CRANE_UP = "crane_up"
+    CRANE_DOWN = "crane_down"
+    PUSH_THROUGH = "push_through"
+    DOLLY_ZOOM = "dolly_zoom"
+    PAN_LEFT = "pan_left"
+    PAN_RIGHT = "pan_right"
+    TILT_UP = "tilt_up"
+    TILT_DOWN = "tilt_down"
+    WHIP_PAN_LEFT = "whip_pan_left"
+    WHIP_PAN_RIGHT = "whip_pan_right"
+    ORBIT_CW = "orbit_cw"
+    ORBIT_CCW = "orbit_ccw"
+    CRANE_ARC_UP = "crane_arc_up"
+    CRANE_ARC_DOWN = "crane_arc_down"
+    ZOOM_IN = "zoom_in"
+    ZOOM_OUT = "zoom_out"
+    HANDHELD = "handheld"
+    STEADICAM = "steadicam"
+    FOLLOW_SUBJECT = "follow_subject"
+    LEAD_SUBJECT = "lead_subject"
+
+
+MOVEMENT_TYPES = tuple(m.value for m in Movement)
+
+
+class EngineSupport(StrEnum):
+    """知识卡的能力标注（v1.3 诉求 5）。
+
+    ``implemented``＝引擎真的能做；``approximated``＝用确定性近似（手持/斯坦
+    尼康/甩镜）；``unsupported``＝做不到，必须如实说明。**不允许**把做不到
+    包装成已支持（§6.3）。
+    """
+
+    IMPLEMENTED = "implemented"
+    APPROXIMATED = "approximated"
+    UNSUPPORTED = "unsupported"
+
+
+ENGINE_SUPPORT_LEVELS = tuple(level.value for level in EngineSupport)
+
+
+class VfxType(StrEnum):
+    """白模特效代理的类型（v1.3 §3.6）。"""
+
+    FLAME = "flame"
+    GLOW = "glow"
+    SPARK = "spark"
+    SMOKE = "smoke"
+
+
+VFX_TYPES = tuple(item.value for item in VfxType)
+
+
+class CrowdMode(StrEnum):
+    """群众代理的行为模式（v1.3 §3.6）。"""
+
+    STATIC = "static"
+    WALK = "walk"
+
+
+CROWD_MODES = tuple(item.value for item in CrowdMode)
+
+
+# --------------------------------------------------------------------------- #
 # §21.2 错误码
 # --------------------------------------------------------------------------- #
 class ErrorCode(StrEnum):
@@ -155,6 +235,8 @@ class ErrorCode(StrEnum):
     DELIV_001 = "E_DELIV_001"
     DELIV_002 = "E_DELIV_002"
     CORR_001 = "E_CORR_001"
+    SCRIPT_001 = "E_SCRIPT_001"
+    BRIEF_001 = "E_BRIEF_001"
 
 
 # --------------------------------------------------------------------------- #

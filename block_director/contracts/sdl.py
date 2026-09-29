@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from .cast import CastMember
 
-SDL_VERSION = "1.2"
+SDL_VERSION = "1.3"
 
 
 @dataclass
@@ -24,7 +24,12 @@ class SDLCamera:
     target: List[float] = field(default_factory=list)
     lens: float = 50.0
     sensor_width: float = 36.0
+    #: 旧版的单个运镜名（v1.2 遗留字段）。新写入一律用 ``movements``，
+    #: 这里保留是为了让老项目加载后仍能被读出来（``prompts.py`` 做兜底）。
     movement: str = "static"
+    #: v1.3：声明式运镜清单，元素形如
+    #: ``{type, amount, start_frame, end_frame, seed, subject}``（帧号为镜头内局部帧）。
+    movements: List[Dict[str, Any]] = field(default_factory=list)
     request: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -44,6 +49,10 @@ class SDLShot:
     characters: List[str] = field(default_factory=list)
     actions: List[Dict[str, Any]] = field(default_factory=list)
     dialogues: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.3：谁看谁（``{from, to, scope}``），由阶段 S 的 SceneBrief 落实。
+    gaze: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.3：特效代理（``{id, type, position, size, start_frame, end_frame}``）。
+    vfx: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""
 
 
@@ -54,6 +63,8 @@ class SDLEnvironment:
     props: List[Dict[str, Any]] = field(default_factory=list)
     lighting: str = "clay_studio"
     room: Optional[List[float]] = None
+    #: v1.3：群众代理（``{count, mode, seed, area, ...}``），独立于 characters。
+    crowd: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass

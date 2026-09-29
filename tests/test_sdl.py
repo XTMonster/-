@@ -139,7 +139,7 @@ def test_migrate_v10_folds_frames_into_duration():
              "end_frame": 48}]}],
     }
     payload, notes = migrate_sdl(legacy)
-    assert payload["version"] == "1.2"
+    assert payload["version"] == "1.3"
     assert payload["fps"] == 24
     shot = payload["scenes"][0]["shots"][0]
     assert shot["duration_frames"] == 48
@@ -150,7 +150,7 @@ def test_migrate_v10_folds_frames_into_duration():
 def test_migrate_is_idempotent_for_current_version():
     sdl = build_sdl(demo_plan(), build_summary=BUILD)
     payload, notes = migrate_sdl(sdl.to_dict())
-    assert payload["version"] == "1.2" and notes == []
+    assert payload["version"] == "1.3" and notes == []
     assert SDLProject.from_dict(payload).to_dict() == sdl.to_dict()
 
 
@@ -199,7 +199,12 @@ def test_migrate_heals_a_missing_cast_roster():
     assert "迁移" in notes[-1]               # 版本说明始终收尾
     sdl = SDLProject.from_dict(payload)
     assert validate_sdl(sdl) == []
-    assert sdl.characters[0].initial_location == (-0.75, 0.0, 0.0)
+    # v1.3：补进来的角色用**相对而立**的默认站位（v1.2 是并排朝前）。
+    first, second = sdl.characters
+    assert first.initial_location == (-0.9, 0.0, 0.0)
+    assert second.initial_location == (0.9, 0.0, 0.0)
+    assert tuple(first.initial_facing) == (1.0, 0.0, 0.0)
+    assert tuple(second.initial_facing) == (-1.0, 0.0, 0.0)
 
 
 def test_current_version_is_not_healed():
@@ -212,3 +217,39 @@ def test_current_version_is_not_healed():
     assert notes == []
     assert "S2" in {item.rule for item in
                     validate_sdl(SDLProject.from_dict(migrated))}
+
+
+def test_v12_roster_is_not_healed():
+    """1.2 起写入器就保证名册完整，缺失的引用因此是**真错误**。
+
+    v1.2 的文件由本插件自己写出，``characters`` 一定完整；引用到不存在的
+    角色说明文件被手改坏过。迁移只给"还没有名册这个结构"的更老文件补名册，
+    否则坏项目会被悄悄补成一个看似能用的半成品。
+    """
+    legacy = {
+        "version": "1.2",
+        "name": "旧项目",
+        "characters": [],
+        "scenes": [{"heading": "INT. 咖啡馆 - 日", "shots": [
+            {"id": "shot_001", "shot_type": "MS", "duration_frames": 48,
+             "characters": ["ghost"]}]}],
+    }
+    payload, notes = migrate_sdl(legacy)
+    assert payload["characters"] == []
+    assert not any("补齐角色表" in note for note in notes)
+    assert "S2" in {item.rule for item in
+                    validate_sdl(SDLProject.from_dict(payload))}
+
+
+def test_older_versions_still_get_a_healed_roster():
+    """1.1 及更早的文件没有可靠名册，结构补全仍然照做。"""
+    legacy = {
+        "version": "1.1",
+        "scenes": [{"heading": "INT. 咖啡馆 - 日", "shots": [
+            {"id": "shot_001", "shot_type": "MS", "duration_frames": 48,
+             "characters": ["char_007"]}]}],
+    }
+    payload, notes = migrate_sdl(legacy)
+    assert [member["id"] for member in payload["characters"]] == ["char_007"]
+    assert any("补齐角色表" in note for note in notes)
+    assert validate_sdl(SDLProject.from_dict(payload)) == []

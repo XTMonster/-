@@ -9,10 +9,29 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple
 
-from ..contracts.cast import DEFAULT_COLORS, DEFAULT_SPACING
+from ..contracts.cast import DEFAULT_COLORS, default_station
 from ..contracts.sdl import SDL_VERSION
 
-KNOWN_VERSIONS = ("1.0", "1.1", SDL_VERSION)
+#: 显式列出每一个**曾经的**版本，而不是只写"1.0/1.1/当前"：
+#: v1.3 升级时若把 1.2 漏掉，v1.2 的项目会被当成未知版本"尽力读取"，
+#: 迁移说明里就会多出一条误导性的告警（ADR-0005）。
+KNOWN_VERSIONS = ("1.0", "1.1", "1.2", SDL_VERSION)
+
+#: 写入器从 1.2 起就会把完整的 ``characters`` 名册写进文件。比这更老的文件
+#: 才需要"补名册"这种结构修复；1.2 及以后引用了不存在的角色，那是**真错误**，
+#: 迁移不许替它打掩护（否则坏项目会被悄悄补全成一个看似能用的半成品）。
+ROSTER_COMPLETE_FROM = "1.2"
+
+
+def _version_key(text: str) -> Tuple[int, ...]:
+    """``"1.2"`` → ``(1, 2)``；无法解析的版本按 (0,) 处理（最老）。"""
+    parts: List[int] = []
+    for chunk in str(text or "").split("."):
+        try:
+            parts.append(int(chunk))
+        except ValueError:
+            break
+    return tuple(parts) or (0,)
 
 
 def _referenced_characters(payload: Dict[str, Any]) -> List[str]:
@@ -49,7 +68,12 @@ def _referenced_characters(payload: Dict[str, Any]) -> List[str]:
 
 
 def _heal_cast(payload: Dict[str, Any], notes: List[str]) -> None:
-    """把被引用却不在名单里的角色补进 ``characters``（只补结构，不动已有序位）。"""
+    """把被引用却不在名单里的角色补进 ``characters``（只补结构，不动已有序位）。
+
+    v1.3：补进来的角色用**默认站位**（两人相对而立），而不是 v1.2 的
+    "并排朝前"。补站位不补坐标——已存在的角色保持它们自己的位置，
+    迁移的职责是让旧文件能加载，不是替用户重新调度。
+    """
     raw = payload.get("characters")
     known = [member for member in raw if isinstance(member, dict)] \
         if isinstance(raw, list) else []
@@ -61,15 +85,18 @@ def _heal_cast(payload: Dict[str, Any], notes: List[str]) -> None:
         return
 
     total = len(known) + len(missing)
+    stations = default_station(total)
+    base = len(known)            # known 在循环里会变长，索引基准必须先固定
     for offset, character_id in enumerate(missing):
-        index = len(known) + offset
-        offset_x = (index - (total - 1) / 2.0) * DEFAULT_SPACING
+        index = base + offset
+        location, facing = stations[index]
+        padded = tuple(float(v) for v in facing) + (0.0, 0.0, 0.0)
         known.append({
             "id": character_id,
             "name": character_id,
             "color": DEFAULT_COLORS[index % len(DEFAULT_COLORS)],
-            "initial_location": [round(offset_x, 3), 0.0, 0.0],
-            "initial_facing": [0.0, 1.0, 0.0],
+            "initial_location": [round(float(v), 3) for v in location],
+            "initial_facing": [round(value, 3) for value in padded[:3]],
         })
     notes.append("补齐角色表：" + ", ".join(missing))
 
@@ -132,7 +159,8 @@ def migrate_sdl(data: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
         for shot in scene.setdefault("shots", []):
             _migrate_shot(shot, notes)
 
-    _heal_cast(payload, notes)
+    if _version_key(version) < _version_key(ROSTER_COMPLETE_FROM):
+        _heal_cast(payload, notes)
     payload["version"] = SDL_VERSION
     notes.append(f"已从 {version} 迁移到 {SDL_VERSION}")
     return payload, notes

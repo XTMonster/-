@@ -132,7 +132,7 @@ def t_legacy_project_migrates_and_rebuilds():
     fresh_scene()
     rebuilt = build_scene(sdl_to_plan(loaded.sdl), sdl_to_spec(loaded.sdl),
                           clear_scene=True).to_dict()
-    return {"ok": (loaded.sdl.version == "1.2" and any("迁移" in note for note in loaded.notes)
+    return {"ok": (loaded.sdl.version == "1.3" and any("迁移" in note for note in loaded.notes)
                    and rebuilt["shots"] == 1
                    and rebuilt["results"][0]["start_frame"] == 1),
             "notes": loaded.notes, "result": rebuilt["results"][0]}

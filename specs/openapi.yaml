@@ -6,7 +6,7 @@
 openapi: 3.1.0
 info:
   title: BlockDirector Sidecar API
-  version: 1.2.0
+  version: 1.3.0
   description: |
     LLM 与 RAG 的本地服务接口。仅监听 127.0.0.1。
     上层（driver）只依赖 LLMTransport 抽象，本协议是 sidecar 模式的实现细节。
@@ -197,7 +197,7 @@ components:
           maximum: 2
         purpose:
           type: string
-          enum: [plan, editor, repair, react, review]
+          enum: [understand, plan, editor, repair, react, review]
           description: 调用用途，用于预算核算与审计
         max_tokens:
           type: [integer, "null"]
