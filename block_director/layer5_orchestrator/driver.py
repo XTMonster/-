@@ -250,6 +250,8 @@ class PrevisDriver:
         self._repair_attempts = 0
         self._repairs_total = 0
         self._pending_audit: Optional[AuditResult] = None
+        #: v1.4 §3.3：时长覆盖留痕（声明时长优先，引擎估算只兜底）。
+        self.timing_overrides: List[Dict[str, Any]] = []
         #: v1.4 §3.3：定向修复的留痕（生产者 = 本驱动器；消费者 = US-12②）。
         #: ``repair_applied`` 每个**失败镜**只写一条，所以用集合去重。
         self._pending_repair: Dict[str, Dict[str, Any]] = {}
@@ -327,8 +329,43 @@ class PrevisDriver:
             "drafts": len(self.draft_history),
             "drafts_failed": len(self.drafts_failed),
             "compliance": self._compliance,
+            #: v1.4 P15（§3.3）：交付清单要的两张表，由驱动器产出。
+            "timing_overrides": list(self.timing_overrides),
+            "audit_pass_rate": self._audit_pass_rate(),
             "error": self.error,
         }
+
+    def _audit_pass_rate(self) -> Dict[str, Any]:
+        """构图门通过率（RK-10 的分子/分母口径）。
+
+        * 分母 = **非空镜**且景别 ∉ {ELS, LS}——空镜与超大远景根本没有构图
+          可言，把它们算进去等于稀释样本；
+        * 分子 = ``composition_score ≥ composition_threshold`` 的镜头数；
+        * ``exempt_shots`` 恒为空列表：v1.4 不允许无理由豁免（§4.1b 硬规则 1）。
+        """
+        from ..contracts.enums import ShotType
+
+        excluded = {str(ShotType.ELS), str(ShotType.LS)}
+        threshold = getattr(self.auditor, "composition_threshold", None)
+        scores = {str(result.target): result.score
+                  for result in self.audit_results}
+        denominator = 0
+        numerator = 0
+        rules: List[str] = []
+        for shot in (self.plan.shots if self.plan else []):
+            if not shot.characters:
+                continue
+            if str(shot.shot_type).upper() in excluded:
+                continue
+            denominator += 1
+            score = scores.get(str(shot.shot_id))
+            if score is not None and threshold is not None \
+                    and float(score) >= float(threshold):
+                numerator += 1
+                rules.append(str(shot.shot_id))
+        return {"numerator": numerator, "denominator": denominator,
+                "rules": rules, "sampled_frames": len(self.audit_results),
+                "exempt_shots": []}
 
     # ------------------------------------------------------------ 状态机
     def step(self) -> bool:
@@ -618,6 +655,18 @@ class PrevisDriver:
             # v1.4 F4/X10：把分镜表声明的镜号钉在计划上——R015 的
             # "顺序/身份错位"就是拿它做判据的（模型自己不会写这个键）。
             shot.declared_shot_number = int(declared[index].shot_number)
+            # v1.4 §3.3：声明时长与计划时长的差异要留痕（US-4/S4）。
+            declared_seconds = getattr(declared[index], "declared_seconds", None)
+            if declared_seconds is not None:
+                applied_s = round(int(shot.duration_frames) / 24.0, 3)
+                if abs(applied_s - float(declared_seconds)) > 0.2:
+                    self.timing_overrides.append({
+                        "shot_number": int(declared[index].shot_number),
+                        "declared_s": float(declared_seconds),
+                        "engine_s": None,
+                        "applied_s": applied_s,
+                        "reason": "计划时长与声明不一致（R015 会单独报）",
+                    })
             lines = [item for item in declared[index].dialogues
                      if str(item.text or "").strip()]
             if not lines:

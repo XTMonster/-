@@ -180,6 +180,12 @@ def main() -> int:
                                 compliance=summary.get("compliance"),
                                 llm_calls=int(summary.get("llm_calls") or 0),
                                 crowd=crowd,
+                                parsed=parsed,
+                                timing_overrides=summary.get(
+                                    "timing_overrides"),
+                                action_conflicts=(summary.get("build") or {})
+                                .get("action_conflicts"),
+                                audit_pass_rate=summary.get("audit_pass_rate"),
                                 project=plan_obj.scene_heading or "BlockDirector")
         payload = report.to_dict()
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(

@@ -86,6 +86,8 @@ class BuildSummary:
     vfx: int = 0
     #: 渲染标签的烘焙摘要（v1.3 诉求 4）；没有标签时为空字典
     label_report: Dict[str, Any] = field(default_factory=dict)
+    #: v1.4 US-17：被自动错开的同层动作（写进 shots.json.action_conflicts）。
+    action_conflicts: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -96,6 +98,7 @@ class BuildSummary:
             "movements": self.movements,
             "crowd": self.crowd, "vfx": self.vfx,
             "label_report": dict(self.label_report),
+            "action_conflicts": [dict(item) for item in self.action_conflicts],
             "results": [r.to_dict() for r in self.results],
         }
 
@@ -364,6 +367,17 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             continue
         summary.motions += len(requests)
         summary.keyframes += result.keyframes
+        # v1.4 US-17：错开留痕（apply_motions 里的确定性错开）。
+        for event in getattr(result, "action_conflicts", []) or []:
+            record = dict(event)
+            # shots.json 的该字段按**镜**聚合，这里补上镜头 id：
+            # 事件本身只有"哪一层、哪两个动作"，用动作的起始帧反查排片表。
+            if not record.get("shot_id"):
+                frame = int(record.get("frame") or 0)
+                record["shot_id"] = next(
+                    (key for key, span in context.schedule.items()
+                     if int(span[0]) <= frame <= int(span[1])), "")
+            summary.action_conflicts.append(record)
 
     for shot_id, start, end, declared_moves, default_subject in movement_tasks:
         camera = context.cameras.get(shot_id)

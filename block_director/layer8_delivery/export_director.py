@@ -147,7 +147,11 @@ def export_project(plan: Plan, *,
                    project: str = "BlockDirector",
                    llm_calls: int = 0,
                    retrieval_calls: int = 0,
-                   crowd: Optional[Sequence[Dict[str, Any]]] = None
+                   crowd: Optional[Sequence[Dict[str, Any]]] = None,
+                   parsed=None,
+                   timing_overrides: Optional[Sequence[Dict[str, Any]]] = None,
+                   action_conflicts: Optional[Sequence[Dict[str, Any]]] = None,
+                   audit_pass_rate: Optional[Dict[str, Any]] = None
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -260,7 +264,11 @@ def export_project(plan: Plan, *,
     manifest = build_manifest(plan, build_summary=build_summary,
                               resolution=(width, height), style=style,
                               project=project, llm_calls=llm_calls,
-                              retrieval_calls=retrieval_calls, crowd=crowd)
+                              retrieval_calls=retrieval_calls, crowd=crowd,
+                              parsed=parsed,
+                              timing_overrides=timing_overrides,
+                              action_conflicts=action_conflicts,
+                              audit_pass_rate=audit_pass_rate)
     manifest_path = export_dir / "shots.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
                              encoding="utf-8")

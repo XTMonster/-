@@ -564,6 +564,67 @@ def check_conflicts(requests: Iterable[ActionRequest]) -> List[str]:
     return problems
 
 
+def stagger_conflicts(requests: Iterable[ActionRequest], *,
+                      gap: int = BLEND_FRAMES) -> Tuple[List[ActionRequest],
+                                                        List[Dict[str, Any]]]:
+    """把**同层重叠**的动作自动错开，返回 ``(调整后的动作, 留痕)``（v1.4 US-17）。
+
+    v1.3 的 ``check_conflicts`` 只会**拒绝**（抛 ``ValueError``），于是"同一角色
+    把两个动作挤在同一段帧里"整条镜头直接失败——真实模型排出来的时间轴常常
+    差一两帧，人看到的却是"这一镜根本没法渲"。
+
+    这里给的是**确定性错开**：同层动作按起始帧排序，后一个的起点被推到
+    ``前一个的结束帧 + gap``；语义禁忌对（§9.7 的 ``FORBIDDEN_PAIRS``）**不
+    自动错开**——"边走边倒地"改时间点也还是荒谬，必须由模型换动作。所以：
+
+    * 同层重叠 → 错开并留痕（每条 ``{character_id?, layer, pair, overlap_frames,
+      applied_shift}``）；
+    * 语义禁忌 → 原样保留，交给 :func:`check_conflicts` 报错。
+    """
+    items = list(requests)
+    adjusted: List[ActionRequest] = []
+    events: List[Dict[str, Any]] = []
+    by_layer: Dict[str, List[int]] = {}
+    for index, item in enumerate(items):
+        adjusted.append(item)
+        for spec in expand(item):
+            by_layer.setdefault(spec.layer, []).append(index)
+
+    for layer, indexes in by_layer.items():
+        ordered = sorted(indexes, key=lambda i: adjusted[i].start_frame)
+        for previous_index, current_index in zip(ordered, ordered[1:]):
+            previous = adjusted[previous_index]
+            current = adjusted[current_index]
+            if current.start_frame >= previous.end_frame:
+                continue
+            if frozenset({previous.action_type,
+                          current.action_type}) in FORBIDDEN_PAIRS:
+                # 语义禁忌（§9.7）不是时间问题：把"边走边摔"挪开几帧依然荒谬，
+                # 必须由模型换动作。留给 check_conflicts 报错。
+                continue
+            overlap = previous.end_frame - current.start_frame
+            shift = overlap + max(int(gap), 0)
+            adjusted[current_index] = ActionRequest(
+                action_type=current.action_type,
+                start_frame=current.start_frame + shift,
+                end_frame=current.end_frame + shift,
+                params=dict(current.params or {}),
+                character_id=current.character_id,
+                action_id=current.action_id,
+            )
+            events.append({
+                "layer": layer,
+                "character_id": str(current.character_id
+                                    or (current.params or {}).get(
+                                        "character_id") or ""),
+                "pair": [previous.action_type, current.action_type],
+                "overlap_frames": int(overlap),
+                "applied_shift": int(shift),
+                "frame": int(current.start_frame),
+            })
+    return adjusted, events
+
+
 def _zero_like(value: object) -> object:
     return tuple(0.0 for _ in value) if isinstance(value, tuple) else 0.0
 

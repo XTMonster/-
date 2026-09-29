@@ -394,7 +394,12 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                 worst_offset[item["character_id"]] = {
                     "offset_reason": item["offset_reason"],
                     "applied_offset_px": round(item["applied_offset_px"], 2),
-                    "frame": item["frame"]}
+                    "frame": item["frame"],
+                    # v1.4 §3.3：shots.json.labels{} 要写 text 与 anchor_z。
+                    "text": str(getattr(item["fill"].data, "body", "") or ""),
+                    "anchor_z": round(
+                        float(item["position"].z), 4),
+                }
 
     log.info("标签烘焙完成：%d 个标签 / %d 帧采样", len(entries), written)
     return {"labels": len(entries), "frames": written,

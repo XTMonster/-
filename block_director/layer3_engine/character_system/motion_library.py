@@ -54,6 +54,8 @@ class BakeResult:
     channels: List[str] = field(default_factory=list)
     start_frame: int = 0
     end_frame: int = 0
+    #: v1.4 US-17：本次烘焙里被**自动错开**的同层动作（写进 shots.json）。
+    action_conflicts: List[Dict[str, object]] = field(default_factory=list)
 
 
 @main_thread_only("clear_animation")
@@ -167,8 +169,21 @@ def set_interpolation(character, interpolation: str = "BEZIER") -> int:
 def apply_motions(character, requests: List[ActionRequest], *,
                   clear: bool = True,
                   interpolation: str = "BEZIER",
-                  base_pose: Optional[Dict[str, object]] = None) -> BakeResult:
-    """校验冲突 → 合成姿态 → 烘焙关键帧。冲突会抛 ValueError。"""
+                  base_pose: Optional[Dict[str, object]] = None,
+                  stagger: bool = True) -> BakeResult:
+    """校验冲突 → 合成姿态 → 烘焙关键帧。冲突会抛 ValueError。
+
+    v1.4 US-17：先走一次**确定性错开**（同层重叠自动后移，见
+    ``motion.model.stagger_conflicts``）。语义禁忌（§9.7 的
+    ``FORBIDDEN_PAIRS``）不参与错开，仍然抛错——那是"换动作"的事，
+    不是"挪几帧"的事。错开留痕写进 :class:`BakeResult`。
+    """
+    if stagger:
+        from ...motion.model import stagger_conflicts
+
+        requests, events = stagger_conflicts(requests)
+    else:
+        events = []
     problems = check_conflicts(requests)
     if problems:
         raise ValueError("动作冲突：\n" + "\n".join(problems))
@@ -184,6 +199,7 @@ def apply_motions(character, requests: List[ActionRequest], *,
     log.info("动作烘焙完成：%d 帧 / %d 个关键帧（%d-%d）",
              result.frames, result.keyframes,
              result.start_frame, result.end_frame)
+    result.action_conflicts = list(events)
     return result
 
 

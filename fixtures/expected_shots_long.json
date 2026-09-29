@@ -15,6 +15,16 @@
     "entries": [],
     "total": 0
   },
+  "timing_overrides": [],
+  "action_conflicts": [],
+  "dialogue_pins": [],
+  "audit_pass_rate": {
+    "numerator": 0,
+    "denominator": 0,
+    "rules": [],
+    "sampled_frames": 0,
+    "exempt_shots": []
+  },
   "shots": [
     {
       "shot_id": "shot_001",
@@ -40,7 +50,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_002",
@@ -67,7 +90,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_003",
@@ -93,7 +129,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_004",
@@ -119,7 +168,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_005",
@@ -145,7 +207,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_006",
@@ -172,7 +247,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_007",
@@ -198,7 +286,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_008",
@@ -224,7 +325,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_009",
@@ -251,7 +365,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_010",
@@ -277,7 +404,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_011",
@@ -303,7 +443,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_012",
@@ -329,7 +482,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_013",
@@ -356,7 +522,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_014",
@@ -382,7 +561,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_015",
@@ -408,7 +600,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_016",
@@ -434,7 +639,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_017",
@@ -460,7 +678,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_018",
@@ -487,7 +718,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_019",
@@ -513,7 +757,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_020",
@@ -539,7 +796,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_021",
@@ -566,7 +836,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_022",
@@ -592,7 +875,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_023",
@@ -618,7 +914,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_024",
@@ -645,7 +954,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_025",
@@ -671,7 +993,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_026",
@@ -698,7 +1033,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_027",
@@ -724,7 +1072,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_028",
@@ -750,7 +1111,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_029",
@@ -777,7 +1151,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_030",
@@ -803,7 +1190,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_031",
@@ -829,7 +1229,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_032",
@@ -856,7 +1269,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_033",
@@ -882,7 +1308,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_034",
@@ -909,7 +1348,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_035",
@@ -935,7 +1387,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_036",
@@ -961,7 +1426,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_037",
@@ -988,7 +1466,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_038",
@@ -1014,7 +1505,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_039",
@@ -1040,7 +1544,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_040",
@@ -1067,7 +1584,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_041",
@@ -1093,7 +1623,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_042",
@@ -1120,7 +1663,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_043",
@@ -1146,7 +1702,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_044",
@@ -1172,7 +1741,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_045",
@@ -1199,7 +1781,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_046",
@@ -1225,7 +1820,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_047",
@@ -1251,7 +1859,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_048",
@@ -1278,7 +1899,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_049",
@@ -1304,7 +1938,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_050",
@@ -1331,7 +1978,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_051",
@@ -1357,7 +2017,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_052",
@@ -1383,7 +2056,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_053",
@@ -1410,7 +2096,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_054",
@@ -1436,7 +2135,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_055",
@@ -1462,7 +2174,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_056",
@@ -1488,7 +2213,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_057",
@@ -1514,7 +2252,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_058",
@@ -1541,7 +2292,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_059",
@@ -1567,7 +2331,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_060",
@@ -1593,7 +2370,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_061",
@@ -1620,7 +2410,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_062",
@@ -1646,7 +2449,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_063",
@@ -1672,7 +2488,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     },
     {
       "shot_id": "shot_064",
@@ -1699,7 +2528,20 @@
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
-      "warnings": []
+      "warnings": [],
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": []
     }
   ]
 }

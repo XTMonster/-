@@ -89,6 +89,13 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
                      f"{movement_labels(shot)}）")
         lines.append("")
         lines.append(f"**帧范围**：{cursor}–{end}（共 {shot.duration_frames} 帧）")
+        # v1.4 US-15：`景别` / `运镜` 必须是**可拆分的独立行**——逐字段对拍
+        # 要拿它与计划的 `shot_type` / `camera.movements` 逐项比，塞在标题的
+        # 括号里就只能靠正则猜。
+        lines.append(f"**景别**：{label}")
+        movements = movement_labels(shot)
+        if movements:
+            lines.append(f"**运镜**：{movements}")
         lines.append(f"**参考视频**：export/blockout_{shot.shot_id}.mp4")
         lines.append(f"**首帧**：export/first_frames/{shot.shot_id}.png")
         lines.append("")
