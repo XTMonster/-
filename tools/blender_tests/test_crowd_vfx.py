@@ -36,6 +36,7 @@ from block_director.layer3_engine.scene_executor import (  # noqa: E402
 )
 from block_director.layer3_engine.shot_builder import build_scene  # noqa: E402
 from block_director.utils.threading_guard import capture_main_thread  # noqa: E402
+from mathutils import Vector  # noqa: E402
 
 RESULTS: dict = {}
 OUTDIR = Path(tempfile.gettempdir()) / "bd_crowd_vfx"
@@ -164,11 +165,50 @@ def t_crowd_walks_with_keyframes():
     return {"ok": bool(animated) and moved, "start": start, "end": end}
 
 
-def t_vfx_is_visible_in_the_render():
-    """RK-2：特效代理区域与背景的平均亮度差必须 > 0.05，且只在时间窗内可见。
+#: RK-16（§4.1，R43/R46 修正版）：代理形状 → 差分掩膜应占投影框的面积比。
+#: **锥体（火焰）的侧影只有包围盒的约 30%**，一律按 0.5 会让正确实现恒红。
+PROXY_RHO = {"flame": 0.30, "glow": 0.50, "spark": 0.30, "smoke": 0.50}
+#: 掩膜内 |Δ| 的中位数下限。判据**不得预筛像素**——先按阈值筛再取均值是恒真式。
+INSIDE_MEDIAN_MIN = 0.05
+#: 投影框外的环形区必须没有变化（留 1/255 的抗锯齿余量）。
+OUTSIDE_MEDIAN_MAX = 1.0 / 255.0
 
-    整帧平均会被背景稀释（代理只占几个百分点），所以按**逐像素差**先找出
-    代理覆盖的像素，再比较区域与背景的平均亮度——这才是"看得见"的判据。
+
+def _proxy_screen_box(obj, scene, camera):
+    """代理由 ``world_to_camera_view`` 独立算出的**投影框**（像素）。"""
+    from bpy_extras.object_utils import world_to_camera_view
+
+    width = float(scene.render.resolution_x)
+    height = float(scene.render.resolution_y)
+    points = [world_to_camera_view(scene, camera,
+                                   obj.matrix_world @ Vector(corner))
+              for corner in obj.bound_box]
+    xs = [point.x * width for point in points]
+    ys = [point.y * height for point in points]
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+def _median(values):
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    middle = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[middle]
+    return (ordered[middle - 1] + ordered[middle]) / 2.0
+
+
+def t_rk16_crowd_visibility():
+    """RK-16（§4.1 R43/R46）：代理可见性必须用**差分掩膜**判定。
+
+    旧判据（先按 ``abs(after-before) > 0.08`` 筛像素、再对筛出来的像素求均值
+    ``> 0.05``）是**恒真式**：筛完必然 > 0.08 > 0.05，抓不到任何回归，真正
+    起作用的只有那条 coverage。这里换成四条外生判据：
+
+    ① 掩膜 = ``|Δ| ≥ 1/255`` ∩ **投影框**（不是 bbox 当剪影），连通域 ≥1；
+    ② 掩膜内 ``median|Δ| ≥ 0.05``；
+    ③ ``|掩膜| ≥ ρ × 投影框面积``，ρ 按代理形状取（锥 ≈0.30、球 ≈0.50）；
+    ④ 框外 1.5 倍环形区的 ``median|Δ| < 1/255``（负对照；显式关阴影）。
     """
     vfx = [{"id": "flame", "type": "flame", "position": [0.0, 0.0, 1.0],
             "size": [0.5, 0.5, 1.2], "start_frame": 1, "end_frame": 48}]
@@ -178,41 +218,68 @@ def t_vfx_is_visible_in_the_render():
         return {"ok": False, "reason": "特效对象没有创建"}
     scene = bpy.context.scene
     scene.camera = bpy.data.objects["BD_Cam_shot_001"]
+    # 阴影会污染"框外必须没有变化"这条负对照（§4.1 RK-16 明文要求显式关闭）。
+    shading = getattr(scene.display, "shading", None)
+    if shading is not None:
+        shading.show_shadows = False
+    camera = scene.camera
     on_pixels = render_pixels("vfx_on", 24)
-    # 注意：代理的 hide_render 是**有关键帧**的，手动改值会被下一帧的动画
-    # 覆盖回 False（这正是 v1.3 已经踩过一次的坑）。要拿"没有代理"的对照
-    # 就得真的把它移出场景。
     scene.frame_set(24)
+    bpy.context.view_layer.update()
     inside_window = not obj.hide_render
+    box = _proxy_screen_box(obj, scene, camera)
     scene.frame_set(150)
     outside_window = bool(obj.hide_render)
     scene.frame_set(24)
+    # 代理的 hide_render 是**有关键帧**的，手动改值会被下一帧动画覆盖回
+    # False；要拿"没有代理"的对照就得真的把它移出场景。
     bpy.data.objects.remove(obj, do_unlink=True)
     off_pixels = render_pixels("vfx_off", 24)
     scene.frame_set(1)
     bpy.context.view_layer.update()
 
-    # 先按"明显变化"找出代理真正覆盖的像素（阈值 0.08 高于抗锯齿边缘的
-    # 微差），再比较这块区域在有/无代理时的平均亮度。
-    changed = [index for index, (before, after)
-               in enumerate(zip(off_pixels, on_pixels))
-               if abs(after - before) > 0.08]
-    # RK-2 的判据是"代理区域与背景的平均亮度差"。背景**逐个像素**不同
-    # （火焰一半压在地面上、一半压在背景板上，有亮有暗），所以取逐像素
-    # 绝对差的均值——有符号均值会正负抵消，反而测不出"看不看得见"。
-    deltas = [abs(on_pixels[index] - off_pixels[index])
-              for index in changed]
-    delta = sum(deltas) / len(deltas) if deltas else 0.0
-    signed = ((sum(on_pixels[index] for index in changed)
-               - sum(off_pixels[index] for index in changed))
-              / len(changed)) if changed else 0.0
-    coverage = len(changed) / max(len(on_pixels), 1)
-    return {"ok": (summary["vfx"] == 1 and inside_window and outside_window
-                   and coverage > 0.005
-                   and delta > 0.05),
-            "coverage": round(coverage, 5),
-            "mean_abs_delta": round(delta, 5),
-            "signed_delta": round(signed, 5),
+    width = int(scene.render.resolution_x)
+    height = int(scene.render.resolution_y)
+    # ``render_pixels`` 返回的是**逐像素亮度**（1 个浮点/像素），不是 RGBA；
+    # 差分直接逐像素做，**不做任何预筛**（预筛就是旧判据变恒真式的原因）。
+    deltas = [abs(after - before)
+              for after, before in zip(on_pixels, off_pixels)]
+
+    center_x = (box[0] + box[2]) / 2.0
+    center_y = (box[1] + box[3]) / 2.0
+    ring_half_w = (box[2] - box[0]) * 0.75
+    ring_half_h = (box[3] - box[1]) * 0.75
+    inside_values = []
+    outside_values = []
+    for index, delta in enumerate(deltas):
+        x, y = index % width, index // width
+        in_box = box[0] <= x <= box[2] and box[1] <= y <= box[3]
+        if in_box:
+            if delta >= 1.0 / 255.0:
+                inside_values.append(delta)
+        elif abs(x - center_x) <= ring_half_w and abs(y - center_y) <= ring_half_h:
+            outside_values.append(delta)
+    _ = height
+
+    box_area = max((box[2] - box[0]) * (box[3] - box[1]), 1.0)
+    rho = PROXY_RHO.get("flame", 0.5)
+    inside_median = _median(inside_values)
+    outside_median = _median(outside_values)
+    coverage = len(inside_values) / box_area
+    ok = (summary["vfx"] == 1 and inside_window and outside_window
+          and len(inside_values) > 0
+          and inside_median >= INSIDE_MEDIAN_MIN
+          and coverage >= rho
+          and outside_median < OUTSIDE_MEDIAN_MAX)
+    return {"ok": ok, "box": [round(value, 1) for value in box],
+            "box_area": round(box_area, 1),
+            "inside_pixels": len(inside_values),
+            "inside_median_delta": round(inside_median, 5),
+            "inside_min_delta": INSIDE_MEDIAN_MIN,
+            "coverage": round(coverage, 4), "rho": rho,
+            "outside_pixels": len(outside_values),
+            "outside_median_delta": round(outside_median, 6),
+            "outside_max_delta": round(OUTSIDE_MEDIAN_MAX, 6),
             "inside_window": inside_window,
             "hidden_outside_window": outside_window}
 
@@ -238,7 +305,7 @@ def main() -> int:
           t_crowd_instances_share_one_mesh_and_stay_out_of_the_cast)
     check("crowd_layout_is_deterministic", t_crowd_layout_is_deterministic)
     check("crowd_walks_with_keyframes", t_crowd_walks_with_keyframes)
-    check("vfx_is_visible_in_the_render", t_vfx_is_visible_in_the_render)
+    check("rk16_crowd_visibility", t_rk16_crowd_visibility)
     check("prop_shapes_are_not_all_boxes", t_prop_shapes_are_not_all_boxes)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]

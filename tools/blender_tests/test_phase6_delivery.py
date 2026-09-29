@@ -181,7 +181,14 @@ def t_render_labels_are_visible_sized_and_excluded_from_stills():
     """
     from mathutils import Vector
     from bpy_extras.object_utils import world_to_camera_view
-    from block_director.layer3_engine.collection_router import labels_collection
+    from block_director.layer3_engine.collection_router import (
+        CONTENT_COLLECTION,
+        LABELS_COLLECTION,
+        audit_renderable_objects,
+        label_pair_audit,
+        labels_collection,
+        route_object,
+    )
     from block_director.layer8_delivery.renderer import render_first_frame
 
     tmp = tempfile.mkdtemp(prefix="bd_p6_label_")
@@ -193,9 +200,29 @@ def t_render_labels_are_visible_sized_and_excluded_from_stills():
              if str(o.get("bd_label_role") or "") == "fill"]
     strokes = [o for o in bpy.data.objects
                if str(o.get("bd_label_role") or "") == "stroke"]
-    whitelisted = bool(fills) and all(
-        str(o.get("bd_element_type") or "") == "label_render"
-        for o in fills + strokes)
+    # v1.4 X4 / §1.6 #4：白名单必须是"集合 + 命名 + 数量"，不能再读对象自报的
+    # ``bd_element_type``（那是自证）。这里独立重算期望命名集合。
+    expected_names = set()
+    for character in ("char_001", "char_002"):
+        for role in ("Fill", "Stroke"):
+            expected_names.add(f"BD_Label_{character}_{role}")
+    in_labels = {o.name for o in labels.objects} if labels else set()
+    pair_audit = label_pair_audit()
+    whitelisted = (in_labels == expected_names
+                   and pair_audit["count"] == 2
+                   and pair_audit["problems"] == []
+                   and audit_renderable_objects() == [])
+    # 负例：把同一个标签对象挪进 Content（名字照旧、bd_element_type 照旧），
+    # 审计必须重新判它是泄漏 —— 证明白名单靠的是集合与命名，不是自报字段。
+    moved = None
+    if fills:
+        moved = fills[0]
+        route_object(moved, CONTENT_COLLECTION)
+        negative_leak = moved.name in audit_renderable_objects()
+        route_object(moved, LABELS_COLLECTION)
+    else:  # pragma: no cover - 没有标签时上面已经判失败
+        negative_leak = False
+    whitelisted = whitelisted and negative_leak
 
     scene = bpy.context.scene
     scene.frame_set(1)

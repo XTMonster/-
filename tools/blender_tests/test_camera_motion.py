@@ -196,6 +196,53 @@ def t_handheld_is_reproducible():
             "second": frames[1]}
 
 
+def t_rk17_camera_determinism():
+    """RK-17（v1.4 §4.1）：**同参数**两次构建，逐帧 6 自由度最大差 ≤1e-6。
+
+    与 ``t_handheld_is_reproducible``（同 seed 两次一致，§4.1 的旧名"确定性"）
+    的分工：那条只用 4 帧比位置；这条把**位置 + 旋转 + 焦距**在整段采样帧上
+    逐帧比，且要求的是"确定性求解"的数值界，而不是"两次字符串相等"。
+    运镜没有随机输入（``move_camera`` 无 seed 参数），所以这是可判定的硬界。
+    """
+    samples = []
+    for _attempt in range(2):
+        fresh_scene()
+        plan = _plan_with_movements("dolly_in", amount=0.4,
+                                    start_frame=1, end_frame=60)
+        build_scene(plan, SceneSpec.from_plan(plan), clear_scene=True)
+        camera = bpy.data.objects["BD_Cam_shot_002"]
+        scene = bpy.context.scene
+        here = []
+        for frame in range(97, 157, 4):
+            scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            matrix = camera.matrix_world
+            location = matrix.translation
+            rotation = matrix.to_euler()
+            here.append((location.x, location.y, location.z,
+                         rotation.x, rotation.y, rotation.z,
+                         float(camera.data.lens)))
+        samples.append(here)
+
+    first, second = samples
+    worst_pos = 0.0
+    worst_rot = 0.0
+    worst_lens = 0.0
+    for a, b in zip(first, second):
+        for index in range(3):
+            worst_pos = max(worst_pos, abs(a[index] - b[index]))
+        for index in range(3, 6):
+            worst_rot = max(worst_rot, abs(a[index] - b[index]))
+        worst_lens = max(worst_lens, abs(a[6] - b[6]))
+    return {"ok": (worst_pos <= 1e-6 and worst_rot <= 1e-6
+                   and worst_lens <= 1e-6 and len(first) >= 8),
+            "samples": len(first),
+            "max_delta_position": worst_pos,
+            "max_delta_rotation": worst_rot,
+            "max_delta_lens": worst_lens,
+            "tolerance": 1e-6}
+
+
 def main() -> int:
     capture_main_thread()
     check("declared_movement_becomes_camera_keyframes",
@@ -204,6 +251,7 @@ def main() -> int:
     check("follow_subject_keeps_the_offset", t_follow_subject_keeps_the_offset)
     check("rk3_movement_is_smooth", t_rk3_movement_is_smooth)
     check("handheld_is_reproducible", t_handheld_is_reproducible)
+    check("rk17_camera_determinism", t_rk17_camera_determinism)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

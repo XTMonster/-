@@ -7,7 +7,8 @@
 
 from __future__ import annotations
 
-from typing import Iterable, List, Optional, Tuple
+import re
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import bpy
 from bpy.types import Collection, Object
@@ -23,6 +24,12 @@ GUIDES_COLLECTION = "BlockDirector/Guides"
 #: 渲染可见的角色标签（v1.3 诉求 4）。与 Guides 刻意分开：Guides 是
 #: "绝不进画面"的辅助物，而这一集合是**要进参考视频**的。
 LABELS_COLLECTION = "BlockDirector/Labels"
+
+#: 渲染标签的**命名约定**（§2.5）：``BD_Label_<char_id>_Fill`` /
+#: ``BD_Label_<char_id>_Stroke``。白名单按"集合 + 命名 + 数量"三件套判定，
+#: 不再读对象自己写的 ``bd_element_type``——那等于让被检查者给自己发通行证。
+LABEL_NAME_RE = re.compile(r"^BD_Label_(?P<cid>.+)_(?P<role>Fill|Stroke)$")
+LABEL_ROLES = ("Fill", "Stroke")
 
 
 def _find_collection(name: str) -> Optional[Collection]:
@@ -101,6 +108,58 @@ def mark_as_guide(obj: Object) -> Object:
     return route_object(obj, GUIDES_COLLECTION)
 
 
+@main_thread_only("label_pair_audit")
+def label_pair_audit() -> Dict[str, Any]:
+    """渲染标签的"集合 + 命名 + 数量"体检（v1.4 X4 / §2.5）。
+
+    返回 ``{"pairs": {cid: {"Fill": n, "Stroke": n}}, "count": n,
+    "problems": [...]}``。判据是**外生**的：
+
+    * 每个启用标签的角色**恰好** 1 个 ``..._Fill`` 与 1 个 ``..._Stroke``；
+    * 两个对象都必须在 ``BlockDirector/Labels`` 集合里；
+    * 命名像标签却不在该集合里的对象，一律算问题（路由漏了 / 被挪走了）；
+    * 集合里出现非标签命名的对象，也算问题。
+
+    与 :func:`audit_renderable_objects` 的分工：本函数管**配对与归属**，
+    ``audit`` 管**会不会入画**。两者的判定都不读对象自报的
+    ``bd_element_type``（那是自证）。
+    """
+    labels = _find_collection(LABELS_COLLECTION)
+    in_labels = list(labels.objects) if labels is not None else []
+    in_labels_set = set(in_labels)
+    pairs: Dict[str, Dict[str, List[str]]] = {}
+    problems: List[str] = []
+
+    for obj in in_labels:
+        match = LABEL_NAME_RE.match(obj.name)
+        if match is None:
+            problems.append(f"{obj.name}（在 {LABELS_COLLECTION} 里却不是标签命名）")
+            continue
+        bucket = pairs.setdefault(match.group("cid"),
+                                  {role: [] for role in LABEL_ROLES})
+        bucket[match.group("role")].append(obj.name)
+
+    for cid, roles in sorted(pairs.items()):
+        for role in LABEL_ROLES:
+            names = roles[role]
+            if len(names) != 1:
+                detail = f"BD_Label_{cid}_{role}"
+                if names:
+                    detail += f"（找到 {len(names)} 个：{'、'.join(names)}）"
+                problems.append(f"{detail}（标签配对不完整）")
+
+    for obj in bpy.data.objects:
+        if LABEL_NAME_RE.match(obj.name) and obj not in in_labels_set:
+            problems.append(f"{obj.name}（标签不在 {LABELS_COLLECTION} 集合里）")
+
+    return {
+        "pairs": {cid: {role: len(roles[role]) for role in LABEL_ROLES}
+                  for cid, roles in pairs.items()},
+        "count": len(pairs),
+        "problems": sorted(set(problems)),
+    }
+
+
 @main_thread_only("audit_renderable_objects")
 def audit_renderable_objects() -> List[str]:
     """返回**不该出现在渲染里却会入画**的对象名（§15.2 导出前检查）。
@@ -113,16 +172,23 @@ def audit_renderable_objects() -> List[str]:
     3. **非本插件管理**（不叫 ``BD_``）的可渲染几何体——比如 Blender 启动
        场景自带的 Cube。Phase 6 首次端到端导出就是被这个默认方块坑了：
        它会作为一块灰板挡在角色前面，而旧版审计完全没报。
+
+    v1.4 X4：**要进参考视频**的角色标签走白名单，但白名单的判据是
+    "在 ``BlockDirector/Labels`` 集合里 + 命名符合 ``BD_Label_<id>_*``"，
+    外加 :func:`label_pair_audit` 的配对检查——不再读对象自报的
+    ``bd_element_type``（旧实现只要对象自己写一个字符串就能免检，等于自证）。
+    同名对象被挪到 Guides/Content 时依旧会被判泄漏。
     """
     bad: List[str] = []
+    bad.extend(label_pair_audit()["problems"])
     for obj in bpy.data.objects:
         if obj.type in {"EMPTY", "CAMERA", "LIGHT", "ARMATURE"}:
             continue
         if obj.hide_render:
             continue
-        # v1.3 诉求 4：**要进参考视频**的角色标签走白名单。
-        # 它们刻意留在可渲染集合里，其余 FONT/CURVE 仍然一律判泄漏。
-        if str(obj.get("bd_element_type") or "") == "label_render":
+        # 白名单 = 集合 + 命名（数量与配对由 label_pair_audit 单独判）。
+        if LABEL_NAME_RE.match(obj.name) and any(
+                c.name == LABELS_COLLECTION for c in obj.users_collection):
             continue
         if not obj.name.startswith("BD_"):
             bad.append(obj.name)

@@ -147,6 +147,16 @@ def test_stand_ends_on_the_absolute_ground():
     assert spec.pose_fn(25)[CH_ROOT_LOC][2] == pytest.approx(0.0, abs=1e-6)
 
 
+def test_walk_bob_never_sinks_the_root():
+    """v1.4 RK-6：行走的起伏是"抬脚抬高"，不得把根节点压到地面以下。"""
+    specs = expand(ActionRequest("walk_to", 1, 49,
+                                 params={"target_position": [2.0, 0.0, 0.0]}))
+    base = next(item for item in specs if CH_ROOT_LOC in item.channels)
+    lowest = min(float(base.pose_fn(frame)[CH_ROOT_LOC][2])
+                 for frame in range(1, 50))
+    assert lowest >= -1e-9
+
+
 # --------------------------------------------------------------------------- #
 # 姿态数值
 # --------------------------------------------------------------------------- #

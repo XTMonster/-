@@ -162,7 +162,10 @@ def _walk_root(start: int, end: int, source: Sequence[float],
 
     def pose(frame: int) -> Dict[str, object]:
         t = _progress(frame, start, end)
-        z = bob * math.sin(2 * math.pi * steps * t)
+        # v1.4 RK-6：行走的起伏必须**非负**——它是"抬脚时身体升高"，不是
+        # "身体沉到地面以下"。旧式 ``bob · sin(…)`` 会把根节点压到 −bob
+        # （实测 −0.033 m），R008/RK-6 的"行走段 min_z ≥ −0.02"当场失败。
+        z = bob * 0.5 * (1.0 - math.cos(2 * math.pi * steps * t))
         values: Dict[str, object] = {"root.location": (_lerp(sx, tx, t),
                                                        _lerp(sy, ty, t), z)}
         if facing is not None:

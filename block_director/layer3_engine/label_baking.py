@@ -41,20 +41,22 @@ DEFAULT_TARGET_PIXELS = 30.0
 DEFAULT_MIN_PIXELS = 24.0
 DEFAULT_MAX_RATIO = 0.06
 FRAME_MARGIN = 0.06          # 画内安全边距（占画面比例）
-AVOID_GAP_PX = 2.0           # 标签之间必须留出的最小像素间隙
-AVOID_MAX_ROUNDS = 16        # 避让松弛的迭代上限（确定性，够了就停）
-MAX_OFFSET_RATIO = 0.25      # 单帧总位移上限（× 画面高，RK-2 的同一口径）
-REASON_NONE = "none"
-REASON_OFFSCREEN = "offscreen"
-REASON_OCCLUDED = "occluded"
-REASON_OVERLAP = "overlap"
 
+#: 标签之间必须留出的最小像素间隙（避让松弛的停止条件）。
+AVOID_GAP_PX = 2.0
 #: v1.4 BW-2：标签之间的**交叠率上限**（area(A∩B) / min(area(A), area(B))）。
 OVERLAP_LIMIT = 0.05
 #: 避让迭代次数上限（逐个让位是收敛的；给个上界防止不收敛）。
-SEPARATE_ITERATIONS = 6
+SEPARATE_ITERATIONS = 16
 #: 触发避让的帧允许的最大位移（占画面高的比例，RK-2 的判据）。
+#: **只此一处定义**——两处定义会静默分叉（v1.4 §3.5 的"禁止死字段"同理）。
 MAX_OFFSET_RATIO = 0.25
+
+#: ``offset_reason`` 的取值（v1.4 §2.5 / RK-2 的口径，单一词表）。
+REASON_NONE = "none"
+REASON_OUT_OF_FRAME = "out_of_frame"
+REASON_OCCLUDED = "occluded"
+REASON_OVERLAP = "overlap"
 
 
 def _camera_frame_height(distance: float, lens: float,
@@ -186,8 +188,8 @@ def separate_labels(scene, camera, prepared: List[Dict[str, Any]],
                                                + prepared[upper]["up"] * world)
                 prepared[upper]["applied_offset_px"] = float(
                     prepared[upper].get("applied_offset_px") or 0.0) + shift_px
-                if prepared[upper]["offset_reason"] == "none":
-                    prepared[upper]["offset_reason"] = "overlap"
+                if prepared[upper]["offset_reason"] == REASON_NONE:
+                    prepared[upper]["offset_reason"] = REASON_OVERLAP
                 if prepared[upper] not in moved:
                     moved.append(prepared[upper])
         if worst <= OVERLAP_LIMIT:
@@ -289,7 +291,7 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                 unreadable.append({"character_id": character_id,
                                    "frame": frame, "reason": "低于可读下限"})
 
-            reason = "none"
+            reason = REASON_NONE
             offset = Vector((0.0, 0.0, 0.0))
             applied_px = 0.0
             # 避让（一）：锚点投影出画时推回画内
@@ -306,12 +308,13 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                 applied_px = max(abs(delta_x) / max(frame_height * aspect, 1e-6)
                                  * res_x, abs(delta_y)
                                  / max(frame_height, 1e-6) * res_y)
-                reason = "out_of_frame"
+                reason = REASON_OUT_OF_FRAME
             # 避让（二）：相机到锚点之间被内容物挡住时上移一档
             if _blocked(scene, camera, anchor_world):
                 offset += up * (frame_height * 0.20)
                 applied_px = max(applied_px, 0.20 * res_y)
-                reason = "occluded" if reason == "none" else reason + "+occluded"
+                reason = (REASON_OCCLUDED if reason == REASON_NONE
+                          else reason + "+" + REASON_OCCLUDED)
             prepared.append({
                 "character_id": character_id, "fill": fill, "stroke": stroke,
                 "position": position + offset, "rotation": rotation,

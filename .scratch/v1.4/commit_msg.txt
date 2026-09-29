@@ -1,27 +1,37 @@
-feat(P12-part3): separate overlapping labels and pin their layout
+feat(P12-part4): real ground/visibility/determinism probes, and a walk that stays up
 
-BW-2 (SS5 P12, third slice).
+P12's remaining oracle work (RK-6 / RK-8 / RK-16 / RK-17) plus X4's label
+white-list.
 
-- label_baking.bake_labels is now frame-major: for each sample frame it first
-  computes every label's landing point (out-of-frame push-back, occlusion
-  lift), then runs a label-vs-label separation pass, and only then writes the
-  keyframes. The old shape ("compute one label, write it, move to the next")
-  had nobody to yield to when two labels landed on top of each other.
-- separate_labels(): screen-space AABB overlap (area(A∩B)/min(area(A),area(B)))
-  is driven under 5% by lifting the upper label, with the displacement capped
-  at 0.25 x frame height (RK-2's band) and a bounded iteration count. Each
-  label now carries offset_reason ("none" / out_of_frame / occluded / overlap)
-  and applied_offset_px, and bake_labels returns a per-character worst-case
-  summary in "offsets".
-- New Blender probe tools/blender_tests/test_label_layout.py: one Fill+Stroke
-  pair per labelled character (RK-1 object side), no pair above the 5% overlap
-  limit across eight sample frames (RK-2), and label height continuity
-  (RK-5, <= 5% between adjacent samples within a shot). Registered (29 -> 30).
-- The probe also records, as a diagnostic, that the screen-constant size still
-  steps 37.5% across a 35mm -> 50mm cut (12.25 px -> 7.66 px). That is a real
-  defect in the "project a curve.size-long segment" baseline inside
-  bake_labels, documented in the code; the fit (iterating on the glyph's own
-  bound_box) did not stabilise yet, so it is deliberately not enabled rather
-  than shipped unverified.
+- motion/model.py: the walk bob is now non-negative. ``bob * sin(...)`` pushed
+  the root down to -bob (measured -0.033 m), so the feet sank below the floor
+  during every walk; RK-6 asks for ``min_z >= -0.02`` on the walking segment.
+  The new form ``bob * (1 - cos) / 2`` is a lift, never a sink.
+- test_phase2_motion.py gains RK-6 (per shot: first/middle/last +-4 frames,
+  depsgraph-evaluated world bounding box over the four mesh parts, standing in
+  [-0.02, +0.02] and walking >= -0.02) plus its negative case (a removed mesh
+  must be a failure, not a silent skip), and RK-8 (the torso's principal
+  inertia axis against +Z must equal the registered body_tilt angle +-3
+  degrees, with the angle taken from ``body_tilt_params`` so the BW-1 aliases
+  are exercised too).
+- test_camera_motion.py gains RK-17: the same deterministic move is built
+  twice and compared frame by frame over position + rotation + lens, max delta
+  <= 1e-6. ``t_handheld_is_reproducible`` stays as it was.
+- test_crowd_vfx.py: the VFX visibility check is rewritten to RK-16's current
+  wording. The old criterion (pre-filter |delta| > 0.08, then average the
+  survivors above 0.05) was a tautology. It now measures the difference mask
+  (|delta| >= 1/255) intersected with the *projected* box, requires
+  median|delta| >= 0.05 inside, coverage >= rho * box area with rho taken from
+  the proxy shape (cone 0.30, sphere 0.50), and median|delta| < 1/255 in the
+  1.5x ring outside, with shadows explicitly disabled.
+- collection_router: the renderable white-list no longer trusts the object's
+  own ``bd_element_type``. It now requires the BlockDirector/Labels collection
+  plus the ``BD_Label_<id>_Fill|Stroke`` naming and a complete pair, and
+  ``label_pair_audit()`` reports orphaned or misplaced labels. The phase 6
+  probe carries the matching assertion plus a negative case (moving a label
+  into Content must trip the leak audit again).
+- label_baking: one definition per constant (there were two MAX_OFFSET_RATIO
+  entries) and a single offset_reason vocabulary.
 
-python -m pytest -> 892 passed; tools/run_tests.ps1 -> 30/30 green.
+python -m pytest (before the parallel P14 branch touched knowledge/corpus.py)
+-> 892 passed; the four touched probes are green.
