@@ -53,4 +53,22 @@ P9.4 → P9.5 → P10 → P11 → P12 → P13 → P14(-1..5) → P15 → P16
     "遮挡上移"，没有标签互相让位）；RK-1/RK-2/RK-5 的
     `test_label_layout.py`；RK-6 的悬空双向探针；RK-16/RK-17 的探针重写
     （S6/S7/X13）
-- P12 并行中：`p13_long_concat`（P13）、`p14_corpus`（P14-1）
+- P12：完成（含安全审计修出的 F1/F2）
+- P13：完成（`tests/test_shotlist_render.py` + 64 镜端到端，证据 `docs/evidence/offline_run2`）
+- P14：P14-1 / P14-2 完成（1075 卡 + 超图索引 + 九道门）；P14-3（案例层）与
+  P14-4 的线协议由并行 agent 进行中；P14-4 的检索消费部分完成
+  （`rag.backend=hypergraph` 默认、降级留痕、`knowledge_trace.json`）；
+  P14-5 的打分器与 A/B 完成（`tools/holdout_score.py`、
+  `tools/ab_triple_baseline.py`）。
+- P15：完成（manifest 全字段 + 冲突错开 + prompts 逐字段对拍）
+- P16：完成（构图门 RK-10、空断言检查、探针清单双向断言、证据钩子、
+  `CONTEXT.md` + `docs/adr/0007…0012` + AGENTS.md 状态）
+
+## 仍未完成（如实记录）
+
+1. **held-out ≥1200 条**：需要换族标注器（本地 `qwen3-vl:30b`）跑数小时；
+   当前 `fixtures/knowledge_holdout.jsonl` 为空 → `tools/holdout_score.py`
+   一律报 `INCOMPLETE`，RK-13 的 Q1–Q7 在 `rks.json` 里是 `pass: null`。
+2. **人审 ≥120 条**：§2.3c 的约束④要求人复核 10–15%，agent 不能替代
+   （`tools/check_holdout.py` 的门⑦专门拒绝 agent 自评）。
+3. **RK-7**（台词三方对拍）探针尚未编写。

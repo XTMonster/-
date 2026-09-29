@@ -190,10 +190,10 @@ New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
 # Both helpers write their own file (never Set-Content: PowerShell 5.1 would
 # prepend a BOM and break json.loads downstream).
 python tools/evidence_fingerprint.py --out (Join-Path $evidenceDir 'config.fingerprint.json') | Out-Null
-# The pytest-side RKs are covered by named cases (RK-11 frame identity,
-# RK-12 replay, RK-18 budget gate, RK-19 screen direction); their check names
-# are the RK ids themselves.
-$rks = (@('RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed) -join ','
+# The pytest-side RKs are covered by named cases (RK-7 dialogue three-way,
+# RK-11 frame identity, RK-12 replay, RK-18 budget gate, RK-19 screen
+# direction); their check names are the RK ids themselves.
+$rks = (@('RK-7', 'RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed) -join ','
 python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks | Out-Null
 Write-Host ('Evidence: ' + $evidenceDir) -ForegroundColor Green
 
