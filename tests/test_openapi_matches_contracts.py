@@ -17,7 +17,7 @@ import yaml
 
 from block_director.contracts.enums import Capability, MessageRole, Purpose, ToolChoice
 from block_director.contracts.health import HealthStatus
-from block_director.contracts.knowledge import Card
+from block_director.contracts.knowledge import Card, Case, HyperEdge
 from block_director.contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -47,6 +47,8 @@ SCHEMA_TO_MODEL = {
     "ChatRequest": ChatPayload,
     "ChatResponse": ChatReply,
     "Card": Card,
+    "HyperEdge": HyperEdge,
+    "Case": Case,
     "HealthResponse": HealthStatus,
     "EmbedRequest": EmbedRequest,
     "EmbedResponse": EmbedResponse,
@@ -118,6 +120,25 @@ def _sample_payloads() -> Dict[str, Dict[str, Any]]:
                      parameters={"threshold": 180}, examples=["..."],
                      related=["axis_002"], engine_support="implemented",
                      emotion="对峙", tags=["轴线", "越轴"]).to_dict(),
+        "HyperEdge": HyperEdge(
+            edge_id="hg:0123456789ab", type="EMOTION_PACK",
+            members=[["allow", "emotion", "荒诞"],
+                     ["qualifier", "intensity", "high"],
+                     ["allow", "movement", "甩镜"],
+                     ["forbid", "movement", "固定机位"]],
+            forbid=[["forbid", "movement", "固定机位"]],
+            weight=1.0,
+            source_span={"chunk_id": "c1", "start": 0, "end": 42},
+            source_kind="theory", hardness="hard",
+            occurrences=3, confidence=0.8).to_dict(),
+        "Case": Case(
+            case_id="case_001", case_type="sequence_pattern",
+            title="建立→覆盖→反应",
+            excerpt="先给全景建立空间，再切中景覆盖对白，最后回到特写反应。",
+            beat_sequence=["establish", "coverage", "reaction"],
+            source_ref={"url": "https://example.org/x", "title": "t",
+                        "author": "a", "license": "PublicDomain"},
+            score=0.7).to_dict(),
         "HealthResponse": HealthStatus(
             status="ok", version="1.3.0",
             capabilities=[Capability.LLM, Capability.BM25]).to_dict(),
@@ -125,8 +146,11 @@ def _sample_payloads() -> Dict[str, Dict[str, Any]]:
         "EmbedResponse": EmbedResponse(vectors=[[0.1, 0.2], [0.3, 0.4]], dim=2).to_dict(),
         "RetrieveRequest": RetrieveRequest(query="越轴", domain="axis_theory",
                                            top_k=5).to_dict(),
-        "RetrieveResponse": RetrieveResponse(cards=[
-            Card(id="c1", domain="d", title="t", content="x")]).to_dict(),
+        "RetrieveResponse": RetrieveResponse(
+            cards=[Card(id="c1", domain="d", title="t", content="x")],
+            edges=[HyperEdge(edge_id="hg:0123456789ab", type="EMOTION_PACK",
+                             members=[["allow", "emotion", "荒诞"]])],
+            cases=[Case(case_id="case_001")]).to_dict(),
         "CancelRequest": CancelRequest(request_id="r1").to_dict(),
         "CancelResponse": CancelResponse(cancelled=True).to_dict(),
     }

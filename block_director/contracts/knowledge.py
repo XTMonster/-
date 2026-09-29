@@ -1,4 +1,4 @@
-"""知识条目契约（执行文档 v1.2 §6.3 / v1.3 诉求 5）。"""
+"""知识条目契约（执行文档 v1.2 §6.3 / v1.3 诉求 5 / v1.4 §2.3、§2.3b）。"""
 
 from __future__ import annotations
 
@@ -59,4 +59,122 @@ class Card:
             engine_support=str(data.get("engine_support", "")),
             emotion=str(data.get("emotion", "")),
             tags=list(data.get("tags", [])),
+        )
+
+
+# --------------------------------------------------------------------------- #
+# v1.4 §2.3：``/v1/retrieve`` 的响应形状加了两种元素——超边与案例。
+#
+# 设计约束：
+# * 超边以**整条**为单位传输，绝不截断（"半条边"会让模型照样做禁忌动作）；
+# * L3 案例**结构上不可能**携带约束（没有 ``forbid`` 字段），这是 E3
+#   「经验越权率 = 0」在类型层的机制保证，而不是靠调用方自觉。
+# --------------------------------------------------------------------------- #
+
+
+def _triples(raw: Any) -> List[List[str]]:
+    """把 ``[[role, kind, node_id], ...]`` 归一成纯字符串三元组。"""
+    out: List[List[str]] = []
+    for item in raw or ():
+        parts = list(item)
+        if len(parts) != 3:
+            raise ValueError(f"超边成员必须是 (role, kind, node_id) 三元组：{item!r}")
+        out.append([str(parts[0]), str(parts[1]), str(parts[2])])
+    return out
+
+
+@dataclass
+class HyperEdge:
+    """一条超边（§2.3 的线协议元素）。
+
+    ``members`` 是 ``[role, kind, node_id]`` 三元组列表
+    （``role ∈ {allow, forbid, qualifier}``）。``forbid`` 是其中 ``role=forbid``
+    的那一部分，**单独再列一次**：消费方即便只读 ``forbid`` 也不会漏掉禁忌
+    （Q6b 完整率 / Q7 拦截率的机制保证）。
+    """
+
+    edge_id: str
+    type: str
+    members: List[List[str]] = field(default_factory=list)
+    forbid: List[List[str]] = field(default_factory=list)
+    weight: float = 1.0
+    source_span: Dict[str, Any] = field(default_factory=dict)
+    source_kind: str = "theory"
+    hardness: str = "hard"
+    occurrences: int = 1
+    confidence: float = 0.7
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "edge_id": self.edge_id,
+            "type": self.type,
+            "members": [list(m) for m in self.members],
+            "forbid": [list(m) for m in self.forbid],
+            "weight": float(self.weight),
+            "source_span": dict(self.source_span),
+            "source_kind": self.source_kind,
+            "hardness": self.hardness,
+            "occurrences": int(self.occurrences),
+            "confidence": float(self.confidence),
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "HyperEdge":
+        members = _triples(data.get("members", []))
+        if "forbid" in data:
+            forbid = _triples(data.get("forbid"))
+        else:
+            forbid = [m for m in members if m[0] == "forbid"]
+        return cls(
+            edge_id=str(data["edge_id"]),
+            type=str(data["type"]),
+            members=members,
+            forbid=forbid,
+            weight=float(data.get("weight", 1.0)),
+            source_span=dict(data.get("source_span", {})),
+            source_kind=str(data.get("source_kind", "theory")),
+            hardness=str(data.get("hardness", "hard")),
+            occurrences=int(data.get("occurrences", 1)),
+            confidence=float(data.get("confidence", 0.7)),
+        )
+
+
+@dataclass
+class Case:
+    """一条 L3 参考案例（§2.3b）。
+
+    L3 **永不产出约束**——见类文档上方说明，这里刻意没有 ``forbid`` 字段。
+    ``case_type ∈ {narrative, sequence_pattern, lesson}``；``sequence_pattern``
+    携带 ``beat_sequence``（如 ``["establish", "coverage", "reaction"]``）。
+    """
+
+    case_id: str
+    case_type: str = "narrative"
+    title: str = ""
+    excerpt: str = ""
+    beat_sequence: List[str] = field(default_factory=list)
+    source_ref: Dict[str, Any] = field(default_factory=dict)
+    score: float = 0.0
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "case_id": self.case_id,
+            "case_type": self.case_type,
+            "title": self.title,
+            "excerpt": self.excerpt,
+            "beat_sequence": list(self.beat_sequence),
+            "source_ref": dict(self.source_ref),
+            "score": float(self.score),
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Case":
+        return cls(
+            case_id=str(data["case_id"]),
+            case_type=str(data.get("case_type", "narrative")),
+            title=str(data.get("title", "")),
+            excerpt=str(data.get("excerpt", "")),
+            beat_sequence=[str(item) for item in data.get("beat_sequence", [])],
+            source_ref=dict(data.get("source_ref", {})),
+            score=float(data.get("score", 0.0)),
         )

@@ -37,7 +37,7 @@ from .enums import (
 from .errors import TransportError, error_for_http_status, user_message
 from .health import HealthStatus
 from .brief import SceneBrief
-from .knowledge import Card
+from .knowledge import Card, Case, HyperEdge
 from .plan import Plan, ShotPlan
 from .audit import AuditError, AuditResult
 from .cast import CastMember, SceneSpec
@@ -103,7 +103,7 @@ __all__ = [
     "ShotType", "SHOT_TYPES",
     "resolve_engine_identifier",
     "TransportError", "error_for_http_status", "user_message",
-    "HealthStatus", "SceneBrief", "Card",
+    "HealthStatus", "SceneBrief", "Card", "HyperEdge", "Case",
     "Plan", "ShotPlan",
     "AuditError", "AuditResult",
     "CastMember", "SceneSpec",

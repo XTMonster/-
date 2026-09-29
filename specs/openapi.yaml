@@ -296,6 +296,63 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Card"
+        edges:
+          type: array
+          description: >-
+            L1/L2 超边（v1.4 §2.3）。**整条**返回，含全部 forbid 成员——
+            绝不截断，否则模型会照样做禁忌动作。
+          items:
+            $ref: "#/components/schemas/HyperEdge"
+        cases:
+          type: array
+          description: L3 参考案例（v1.4 §2.3b）。永不携带约束。
+          items:
+            $ref: "#/components/schemas/Case"
+
+    HyperEdge:
+      type: object
+      required: [edge_id, type]
+      properties:
+        edge_id: { type: string }
+        type: { type: string }
+        members:
+          type: array
+          description: "[role, kind, node_id] 三元组；role ∈ {allow, forbid, qualifier}"
+          items:
+            type: array
+            minItems: 3
+            maxItems: 3
+            items: { type: string }
+        forbid:
+          type: array
+          description: members 中 role=forbid 的子集，单独列出以防漏读禁忌
+          items:
+            type: array
+            minItems: 3
+            maxItems: 3
+            items: { type: string }
+        weight: { type: number }
+        source_span: { type: object }
+        source_kind: { type: string }
+        hardness: { type: string }
+        occurrences: { type: integer, minimum: 1 }
+        confidence: { type: number }
+
+    Case:
+      type: object
+      required: [case_id]
+      properties:
+        case_id: { type: string }
+        case_type:
+          type: string
+          enum: [narrative, sequence_pattern, lesson]
+        title: { type: string }
+        excerpt: { type: string }
+        beat_sequence:
+          type: array
+          items: { type: string }
+        source_ref: { type: object }
+        score: { type: number }
 
     # ---------------------------------------------------------------- 控制
     CancelRequest:
@@ -322,7 +379,7 @@ components:
           type: array
           items:
             type: string
-            enum: [llm, bm25, vector, pdf]
+            enum: [llm, bm25, vector, pdf, hypergraph]
           description: 能力协商依据（§2.5）
         detail:
           type: string

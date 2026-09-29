@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from .knowledge import Card
+from .knowledge import Card, Case, HyperEdge
 from .messages import new_request_id
 
 
@@ -63,14 +63,32 @@ class RetrieveRequest:
 
 @dataclass
 class RetrieveResponse:
+    """``POST /v1/retrieve`` 的响应（v1.4 §2.3 / §2.3b）。
+
+    三条通道一次返回：``cards[]``（卡片正文）＋ ``edges[]``（L1/L2 超边，
+    **整条**，含全部 ``forbid``）＋ ``cases[]``（L3 参考案例，永不携带约束）。
+    ``edges`` / ``cases`` 都带默认值，旧客户端只读 ``cards`` 时行为不变
+    （向后兼容）。
+    """
+
     cards: List[Card] = field(default_factory=list)
+    edges: List[HyperEdge] = field(default_factory=list)
+    cases: List[Case] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"cards": [c.to_dict() for c in self.cards]}
+        return {
+            "cards": [c.to_dict() for c in self.cards],
+            "edges": [e.to_dict() for e in self.edges],
+            "cases": [c.to_dict() for c in self.cases],
+        }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "RetrieveResponse":
-        return cls(cards=[Card.from_dict(c) for c in data.get("cards", [])])
+        return cls(
+            cards=[Card.from_dict(c) for c in data.get("cards", [])],
+            edges=[HyperEdge.from_dict(e) for e in data.get("edges", [])],
+            cases=[Case.from_dict(c) for c in data.get("cases", [])],
+        )
 
 
 @dataclass
