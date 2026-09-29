@@ -26,7 +26,7 @@ import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -37,16 +37,29 @@ from block_director.contracts.errors import (  # noqa: E402
     ErrorCode,
     TransportError,
 )
-from block_director.contracts.knowledge import Card  # noqa: E402
+from block_director.contracts.knowledge import (  # noqa: E402
+    Card,
+    Case,
+    HyperEdge as HyperEdgeDTO,
+)
 from block_director.contracts.messages import (  # noqa: E402
     ChatReply,
     FunctionCall,
     ToolCall,
 )
+from block_director.contracts.operations import RetrieveResponse  # noqa: E402
 from block_director.knowledge import default_retriever  # noqa: E402
+from block_director.knowledge.bm25 import make_bm25, ranked, tokenize  # noqa: E402
+from block_director.knowledge.hypergraph import (  # noqa: E402
+    HyperEdge,
+    Hypergraph,
+    Node,
+)
 
 CONTRACT_VERSION = "1.3.0"
 LOOPBACK = "127.0.0.1"
+DEFAULT_KNOWLEDGE_DIR = ROOT / "knowledge"
+CASE_LANES = ("lightrag", "hybrid", "off")
 
 
 class SidecarConfig:
@@ -58,8 +71,13 @@ class SidecarConfig:
         self.think = args.think
         self.max_tokens = args.max_tokens
         self.temperature = args.temperature
+        self.seed = args.seed
         self.token = args.token
         self.timeout = args.timeout
+        self.knowledge_dir = Path(args.knowledge_dir)
+        self.cases_backend = args.cases_backend
+        # 能力位**由实际加载结果决定**（见 main()）：宣告了却用不了，
+        # 插件就会"以为能用"，那是 §2.3 明令禁止的静默失败。
         self.capabilities = [Capability.LLM, Capability.BM25]
         if self.kind == "ollama":
             # Ollama 的原生接口是 {host}/api/chat，OpenAI 兼容层在 {host}/v1
@@ -69,6 +87,125 @@ class SidecarConfig:
 
 def detect_kind(upstream: str) -> str:
     return "ollama" if (":11434" in upstream or "/api" in upstream) else "openai"
+
+
+# --------------------------------------------------------------------------- #
+# 知识索引（v1.4 §2.3 / §2.3b）
+#
+# 超图与案例**都只在 sidecar 里装配**：插件侧零新依赖的承诺靠这一段兑现。
+# 两个索引都缺失时必须显式降级（能力位不宣告 / `cases_degraded=true`），
+# 不许"宣告了 hypergraph 却回空数组"。
+# --------------------------------------------------------------------------- #
+def read_jsonl(path: Path) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line:
+            rows.append(json.loads(line))
+    return rows
+
+
+def load_hypergraph_index(knowledge_dir: Path) -> Optional[Hypergraph]:
+    """读 ``knowledge/hypergraph.{nodes,edges}.jsonl``；缺任一文件返回 ``None``。"""
+    nodes_path = knowledge_dir / "hypergraph.nodes.jsonl"
+    edges_path = knowledge_dir / "hypergraph.edges.jsonl"
+    if not (nodes_path.is_file() and edges_path.is_file()):
+        return None
+    nodes = [Node.from_dict(row) for row in read_jsonl(nodes_path)]
+    edges = [HyperEdge.from_dict(row) for row in read_jsonl(edges_path)]
+    return Hypergraph(nodes, edges)
+
+
+def load_provenance(knowledge_dir: Path) -> Dict[str, Any]:
+    """索引的六元指纹片段（§2.3：trace 必须能指向"这份索引从哪来"）。"""
+    path = knowledge_dir / "hypergraph.manifest.json"
+    if not path.is_file():
+        return {}
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    extractor = manifest.get("extractor") or {}
+    return {
+        "corpus_fingerprint": str(manifest.get("fingerprint", "")),
+        "extractor_model_id": str(extractor.get("model_id", "")),
+        "schema_version": str(manifest.get("schema_version", "")),
+    }
+
+
+class CaseLane:
+    """L3 参考案例通道（§2.3b）。
+
+    取值语义写死：
+
+    * ``off`` —— 用户显式关闭：``cases[]`` 恒空，**不算降级**，也不报错；
+    * ``hybrid`` —— BM25 ＋ 标签过滤（sidecar 自带，永远可用）；
+    * ``lightrag`` —— 需要 LightRAG 依赖与索引。两者都不在仓库里，所以实际
+      走的是 §2.3b 写明的**降级路径**：退到 ``hybrid`` 并记
+      ``cases_degraded=true`` ＋ 具名原因。
+
+    L3 **永不产出约束**：``Case`` 契约里没有 ``forbid`` 字段，这里也不会造一个。
+    """
+
+    def __init__(self, cases: Sequence[Case], backend: str,
+                 reason: str = "") -> None:
+        self.requested = backend
+        self.effective = backend
+        self.degraded = False
+        self.reason = reason
+        self.cases: List[Case] = list(cases)
+        self._engine = None
+        if backend == "off":
+            return
+        if reason:                       # 索引缺失/读不出来：明确降级
+            self.degraded = True
+            self.effective = "off"
+            return
+        if backend == "lightrag":
+            self.degraded = True
+            self.effective = "hybrid"
+            self.reason = "lightrag_adapter_unavailable"
+        if self.cases:
+            documents = [tokenize(self._text(case)) for case in self.cases]
+            self._engine, _name = make_bm25(documents)
+
+    @staticmethod
+    def _text(case: Case) -> str:
+        return "\n".join([case.case_id, case.title, case.excerpt,
+                          " ".join(case.beat_sequence),
+                          str(case.source_ref.get("tags", ""))])
+
+    @property
+    def enabled(self) -> bool:
+        return self.requested != "off" and self.effective != "off"
+
+    def retrieve(self, query: str, top_k: int = 3) -> List[Case]:
+        if not self.enabled or self._engine is None or not self.cases:
+            return []
+        tokens = tokenize(query)
+        if not tokens:
+            return []
+        scored = ranked(self._engine, tokens, 0)
+        hits = [(index, score) for index, score in scored if score > 0]
+        hits.sort(key=lambda item: (-item[1], self.cases[item[0]].case_id))
+        out: List[Case] = []
+        for index, score in hits[:max(1, int(top_k))]:
+            case = self.cases[index]
+            case = Case.from_dict({**case.to_dict(), "score": round(float(score), 4)})
+            out.append(case)
+        return out
+
+
+def load_case_lane(knowledge_dir: Path, backend: str) -> CaseLane:
+    if backend == "off":
+        return CaseLane([], "off")
+    path = knowledge_dir / "cases.jsonl"
+    if not path.is_file():
+        return CaseLane([], backend, reason="cases_index_missing")
+    try:
+        cases = [Case.from_dict(row) for row in read_jsonl(path)]
+    except (OSError, ValueError, KeyError) as exc:
+        return CaseLane([], backend, reason=f"cases_index_unreadable:{type(exc).__name__}")
+    if not cases:
+        return CaseLane([], backend, reason="cases_index_empty")
+    return CaseLane(cases, backend)
 
 
 # --------------------------------------------------------------------------- #
@@ -93,6 +230,9 @@ def _ollama_body(config: "SidecarConfig", payload: Dict[str, Any]
     options: Dict[str, Any] = {"num_ctx": config.num_ctx,
                                "temperature": payload.get("temperature",
                                                           config.temperature)}
+    seed = payload.get("seed", config.seed)
+    if seed is not None:
+        options["seed"] = int(seed)
     limit = payload.get("max_tokens") or config.max_tokens
     if limit:
         options["num_predict"] = int(limit)
@@ -172,6 +312,9 @@ def _openai_body(config: "SidecarConfig", payload: Dict[str, Any]
                             "messages": payload.get("messages", []),
                             "temperature": payload.get("temperature",
                                                        config.temperature)}
+    seed = payload.get("seed", config.seed)
+    if seed is not None:
+        body["seed"] = int(seed)
     if payload.get("tools"):
         body["tools"] = payload["tools"]
     if payload.get("tool_choice"):
@@ -191,6 +334,12 @@ def _code_for(status: int) -> ErrorCode:
 # --------------------------------------------------------------------------- #
 def make_handler(config: "SidecarConfig"):
     retriever = default_retriever()
+    # 索引**装配在这里**，能力位跟着实际结果走（§2.3：宣告了就必须能用）。
+    hypergraph = load_hypergraph_index(config.knowledge_dir)
+    if hypergraph is not None and Capability.HYPERGRAPH not in config.capabilities:
+        config.capabilities.append(Capability.HYPERGRAPH)
+    case_lane = load_case_lane(config.knowledge_dir, config.cases_backend)
+    provenance = load_provenance(config.knowledge_dir)
     cancelled: set = set()
     lock = threading.Lock()
 
@@ -248,11 +397,7 @@ def make_handler(config: "SidecarConfig"):
                 self._json(200, call_upstream(config, body).to_dict())
                 return
             if self.path == "/v1/retrieve":
-                cards = retriever.retrieve(str(body.get("query", "")),
-                                           body.get("domain"),
-                                           int(body.get("top_k", 5) or 5))
-                self._json(200, {"cards": [_card_payload(card)
-                                           for card in cards]})
+                self._json(200, _retrieve_payload(body).to_dict())
                 return
             if self.path == "/v1/embed":
                 self._json(501, {"error": "本 sidecar 未配置向量嵌入；"
@@ -267,6 +412,51 @@ def make_handler(config: "SidecarConfig"):
 
     def _card_payload(card: Card) -> Dict[str, Any]:
         return card.to_dict()
+
+    def _edge_payload(edge: HyperEdge) -> HyperEdgeDTO:
+        """超图内部对象 → 线协议 DTO。**整条**搬运，含全部 forbid。"""
+        return HyperEdgeDTO(
+            edge_id=edge.edge_id,
+            type=edge.type,
+            members=[member.to_dict() for member in edge.members],
+            forbid=[member.to_dict() for member in edge.forbids],
+            weight=edge.weight,
+            source_span=dict(edge.source_span),
+            source_kind=edge.source_kind,
+            hardness=edge.hardness,
+            occurrences=edge.occurrences,
+            confidence=edge.confidence,
+        )
+
+    def _retrieve_payload(body: Dict[str, Any]) -> RetrieveResponse:
+        """三条通道一次返回：卡片正文 ＋ 超边 ＋ 参考案例 ＋ trace（§2.3/§2.3b）。"""
+        query = str(body.get("query", ""))
+        domain = body.get("domain")
+        top_k = int(body.get("top_k", 5) or 5)
+        cards = retriever.retrieve(query, domain, top_k)
+        edges: List[HyperEdgeDTO] = []
+        trace: Dict[str, Any] = {
+            "query": query, "seeds": [], "expanded_edges": [], "scores": {},
+            "selected": [], "seed_miss": True, "expansion_truncated": False,
+            "dropped_edge_ids": [], "quality_fail": False,
+        }
+        backend = "bm25"
+        if hypergraph is not None:
+            selected, _text, hg_trace = hypergraph.retrieve(query, top_k=top_k)
+            edges = [_edge_payload(edge) for edge in selected]
+            trace = hg_trace.to_dict()
+            backend = "hypergraph"
+        cases = case_lane.retrieve(query, top_k=int(body.get("cases_top_k", 3) or 3))
+        trace.update({
+            "backend": backend,
+            "lanes": 2 if case_lane.enabled else 1,
+            "cases_backend": case_lane.effective,
+            "cases_requested_backend": case_lane.requested,
+            "cases_degraded": bool(case_lane.degraded),
+            "cases_degraded_reason": case_lane.reason,
+            "provenance": dict(provenance),
+        })
+        return RetrieveResponse(cards=cards, edges=edges, cases=cases, trace=trace)
 
     return Handler
 
@@ -286,7 +476,14 @@ def parse_args(argv):
                         default="off",
                         help="思维链：结构化工具调用任务关掉更省预算")
     parser.add_argument("--max-tokens", type=int, default=8192)
-    parser.add_argument("--temperature", type=float, default=0.7)
+    parser.add_argument("--temperature", type=float, default=0.0,
+                        help="抽取/规划要求确定性，默认 0（v1.4 §2.3d T6）")
+    parser.add_argument("--seed", type=int, default=0,
+                        help="解码随机种子，默认 0（v1.4 §2.3d T6）")
+    parser.add_argument("--knowledge-dir", default=str(DEFAULT_KNOWLEDGE_DIR),
+                        help="知识索引目录（hypergraph.*.jsonl / cases.jsonl）")
+    parser.add_argument("--cases-backend", choices=CASE_LANES, default="lightrag",
+                        help="L3 案例通道（§2.3b）；lightrag 不可用时降级 hybrid")
     parser.add_argument("--token", default="")
     parser.add_argument("--timeout", type=float, default=600.0)
     parser.add_argument("--once", action="store_true",
@@ -308,6 +505,11 @@ def main(argv) -> int:
                       "upstream": config.upstream, "kind": config.kind,
                       "model": config.model, "num_ctx": config.num_ctx,
                       "think": config.think,
+                      "temperature": config.temperature,
+                      "seed": config.seed,
+                      "knowledge_dir": str(config.knowledge_dir),
+                      "cases_backend": config.cases_backend,
+                      "capabilities": [str(item) for item in config.capabilities],
                       "url": f"http://{args.host}:{args.port}"},
                      ensure_ascii=False), flush=True)
     try:

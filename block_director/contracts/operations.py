@@ -74,12 +74,16 @@ class RetrieveResponse:
     cards: List[Card] = field(default_factory=list)
     edges: List[HyperEdge] = field(default_factory=list)
     cases: List[Case] = field(default_factory=list)
+    #: v1.4 §2.3：``knowledge_trace.json`` 的数据源。种子/扩展/打分只有 sidecar
+    #: 算得出来，插件拿不到就算不出可重放的 trace，所以它随响应一起回来。
+    trace: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "cards": [c.to_dict() for c in self.cards],
             "edges": [e.to_dict() for e in self.edges],
             "cases": [c.to_dict() for c in self.cases],
+            "trace": dict(self.trace),
         }
 
     @classmethod
@@ -88,6 +92,7 @@ class RetrieveResponse:
             cards=[Card.from_dict(c) for c in data.get("cards", [])],
             edges=[HyperEdge.from_dict(e) for e in data.get("edges", [])],
             cases=[Case.from_dict(c) for c in data.get("cases", [])],
+            trace=dict(data.get("trace", {})),
         )
 
 

@@ -87,7 +87,8 @@ def test_retrieve_response_defaults_are_empty():
     resp = RetrieveResponse(cards=[Card(id="c1", domain="d", title="t",
                                         content="x")])
     assert resp.edges == [] and resp.cases == []
-    assert set(resp.to_dict()) == {"cards", "edges", "cases"}
+    assert resp.trace == {}
+    assert set(resp.to_dict()) == {"cards", "edges", "cases", "trace"}
 
 
 def test_retrieve_response_parses_legacy_payload():

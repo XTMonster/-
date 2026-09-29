@@ -308,6 +308,12 @@ components:
           description: L3 参考案例（v1.4 §2.3b）。永不携带约束。
           items:
             $ref: "#/components/schemas/Case"
+        trace:
+          type: object
+          description: >-
+            v1.4 §2.3：knowledge_trace.json 的数据源（种子 / 扩展 / 逐条打分 /
+            注入集合 / 后端 / 降级留痕 / 语料指纹）。只有 sidecar 算得出来，
+            所以随响应一起返回。
 
     HyperEdge:
       type: object
