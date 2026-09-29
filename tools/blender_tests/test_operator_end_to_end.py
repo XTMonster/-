@@ -103,6 +103,49 @@ def t_missing_builder_is_refused():
             "problems": list(run.problems)}
 
 
+def t_scene_clear_is_opt_in_and_snapshotted():
+    """v1.4 安全审计 F2：清空用户场景必须是**可选项**，且清空前有快照。
+
+    旧行为：GUI 一点"生成白模预演"就把 ``bpy.data.objects`` 全删了——包括
+    用户在白模之外做过的建模，且没有确认、没有快照。
+    """
+    scene = fresh_scene()
+    marker = bpy.data.meshes.new("MY_PROP")
+    props = bpy.data.objects.new("MY_PROP", marker)
+    scene.collection.objects.link(props)
+
+    # ① 关掉"清空场景" → 用户对象必须活下来。
+    scene.bd_clear_scene = False
+    run = modal_operator.build_run_context(
+        _Context(scene), transport=OfflineTransport())
+    if not run.ok:
+        return {"ok": False, "problems": list(run.problems)}
+    _run(run, None)
+    survived = bpy.data.objects.get("MY_PROP") is not None
+    snapshot_none = run.checkpoints is None
+
+    # ② 开着"清空场景" → 先拍检查点，再清掉。
+    scene = fresh_scene()
+    marker = bpy.data.meshes.new("MY_PROP")
+    props = bpy.data.objects.new("MY_PROP", marker)
+    scene.collection.objects.link(props)
+    scene.bd_clear_scene = True
+    run = modal_operator.build_run_context(
+        _Context(scene), transport=OfflineTransport())
+    if not run.ok:
+        return {"ok": False, "problems": list(run.problems)}
+    has_snapshot = (run.checkpoints is not None
+                    and run.checkpoints.get("before_build") is not None)
+    _run(run, None)
+    removed = bpy.data.objects.get("MY_PROP") is None
+    clear_active()
+    return {"ok": survived and snapshot_none and has_snapshot and removed,
+            "survived_when_opted_out": survived,
+            "no_snapshot_when_opted_out": snapshot_none,
+            "snapshot_when_clearing": has_snapshot,
+            "removed_when_clearing": removed}
+
+
 # --------------------------------------------------------------------------- #
 # 2. 正向：operator 路径建场景、出片、写全四类事件
 # --------------------------------------------------------------------------- #
@@ -158,6 +201,8 @@ def t_operator_path_builds_and_exports():
 def main() -> int:
     capture_main_thread()
     check("operator_refuses_without_a_builder", t_missing_builder_is_refused)
+    check("scene_clear_is_opt_in_and_snapshotted",
+          t_scene_clear_is_opt_in_and_snapshotted)
     check("operator_path_builds_and_exports", t_operator_path_builds_and_exports)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]

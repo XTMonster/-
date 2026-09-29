@@ -1,18 +1,28 @@
-feat(P16): derive the RK verdicts from the probes, and prove the evidence is committable
+fix(sec): stop shot_id from escaping the export dir, and stop the GUI wiping the scene
 
-W10 (SS5 P16), second slice.
+Two findings from the parallel safety audit, both reproduced before the fix.
 
-- tools/run_tests_rks.py no longer takes a hand-written list of RK ids: the
-  PowerShell hook now harvests each probe's own BD_TEST_RESULT "passed" array
-  and hands the check names over, and the script derives which RKs were really
-  measured (rk6_* -> RK-6, rk17_* -> RK-17, plus the pytest-side RK-11/12/18/19
-  names). Everything else stays "not_measured" with pass=null -- never a
-  fabricated pass (SSB.2 L5).
-- tools/run_tests.ps1 tail: after writing docs/evidence/<run-id>/,assert both
-  rks.json and config.fingerprint.json exist, and use `git check-ignore -q`
-  (exit code 1 means "not ignored") to prove docs/evidence/** is committable
-  (S13's named assertion).
+- F1 (path traversal): ``shot_id`` is concatenated straight into file names
+  (``blockout_<id>.mp4``, ``first_frames/<id>.png``, ``depth_shot_<id>/``), but
+  ``ShotPlan.from_dict`` accepted any string. A plan (LLM output, a hand-edited
+  project.bdproj, or a replayed audit log) carrying
+  ``../../../../Users/Public/x`` made the exporter write outside its own
+  directory. The contract boundary now validates the id
+  (``[A-Za-z0-9_.-]{1,64}`` and no ``..``) and raises; the SDL load path reports
+  it as finding S11 instead of crashing.
+- F2 (destructive GUI): the panel's "generate previs" button cleared *every*
+  object in the scene -- the cleanup does not respect the BD_ prefix -- so a
+  user's own modelling disappeared with no confirmation and no snapshot. The
+  full clear is now an explicit panel option (``bd_clear_scene``, default on so
+  a clean previs still works), and when it is on the operator captures a
+  ``before_build`` checkpoint first.
+- Tests: tests/test_plan_shot_id.py (14 cases: legal ids pass, traversal /
+  absolute / separator / CJK / over-long ids raise at the contract boundary,
+  and a project file with a bad id yields S11 rather than an exception); the
+  operator probe gains scene_clear_is_opt_in_and_snapshotted, which pins both
+  halves (opted out -> the user's object survives and no snapshot is taken;
+  opted in -> a snapshot exists and the object is removed).
 
-Verified: the aggregator maps a synthetic check list to
-['RK-6','RK-10','RK-11','RK-17'] and leaves RK-19 not_measured; the
-check-ignore probe returns 1 for docs/evidence/<id>/rks.json.
+python -m pytest -> 1065 tests, the only 6 failures are the parallel P14 branch's
+knowledge/holdout WIP (unrelated to these files). All three operator-probe
+checks are green.

@@ -87,6 +87,8 @@ class RunContext:
     mode: str = ""
     builder: Any = None
     problems: List[str] = field(default_factory=list)
+    #: v1.4 安全审计 F2：``clear_scene=True`` 时构建前的快照（可回滚）。
+    checkpoints: Any = None
 
     @property
     def ok(self) -> bool:
@@ -117,7 +119,25 @@ def build_run_context(context, *, builder=_DEFAULT_BUILDER, auditor=None,
         return RunContext(config=run_config, problems=problems)
 
     if builder is _DEFAULT_BUILDER:
-        builder = BpySceneBuilder(clear_scene=True)
+        # v1.4 安全审计 F2：``clear_scene=True`` 会删掉场景里**所有**对象
+        # （BuildScene 的清理不认 ``BD_`` 前缀），用户在白模之外做过的建模
+        # 会一起消失，而旧代码没有任何确认与快照。默认行为保持不变（白模
+        # 预演需要一块干净的地面），但：① 面板可以关掉；② 清空前先拍
+        # CheckpointManager 快照，失败/取消时能回滚。
+        clear = bool(getattr(context.scene, "bd_clear_scene", True))
+        checkpoints = None
+        if clear:
+            try:
+                from ..layer3_engine.checkpoint_manager import CheckpointManager
+
+                checkpoints = CheckpointManager()
+                checkpoints.capture("before_build")
+                log.info("构建前已拍检查点 before_build（%d 个对象）",
+                         len(bpy.data.objects))
+            except Exception as exc:  # noqa: BLE001 - 快照失败不阻断开跑
+                log.warning("构建前拍检查点失败：%s", exc)
+                checkpoints = None
+        builder = BpySceneBuilder(clear_scene=clear)
     if builder is None:
         # 负对照（RK-9）：operator 路径没有构建器时必须失败，而不是
         # 像 headless 的"仅规划"模式那样以 DONE 收尾。
@@ -156,7 +176,7 @@ def build_run_context(context, *, builder=_DEFAULT_BUILDER, auditor=None,
             audit_level=run_config.audit.level),
     )
     return RunContext(driver=driver, config=run_config, mode=mode,
-                      builder=builder)
+                      builder=builder, checkpoints=checkpoints)
 
 
 def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:

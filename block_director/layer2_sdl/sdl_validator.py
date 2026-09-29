@@ -148,6 +148,25 @@ def _warning(rule: str, code: str, message: str, target: str = "",
                       target=target, message=message, suggestion=suggestion)
 
 
+def _check_shot_ids(sdl: SDLProject, findings: List[AuditError]) -> None:
+    """S11（v1.4 安全审计）：``shot_id`` 会被拼进导出路径，必须合法。
+
+    契约层（``contracts/plan.py::validate_shot_id``）已经在**构造计划**时拦下
+    非法 id（``ValueError``）；这里是**加载旧项目/手改文件**的那条路：校验器
+    的职责是**报 finding**，而不是让整个加载崩掉。
+    """
+    from ..contracts.plan import validate_shot_id
+
+    for scene in sdl.scenes:
+        for shot in scene.shots:
+            try:
+                validate_shot_id(shot.id)
+            except ValueError as exc:
+                findings.append(_error(
+                    "S11", "E_SDL_001", str(exc), target=str(shot.id),
+                    suggestion="把 shot_id 改成 letters/digits/_/-/. 组成的短名"))
+
+
 def _check_references(sdl: SDLProject, findings: List[AuditError]) -> None:
     known: Set[str] = {member.id for member in sdl.characters}
     for scene in sdl.scenes:
@@ -343,6 +362,7 @@ def validate_sdl(sdl: SDLProject, *,
                                  suggestion="写入 version 字段以便将来迁移"))
 
     _check_references(sdl, findings)
+    _check_shot_ids(sdl, findings)
     _check_v13_fields(sdl, findings, limit)
     for scene in sdl.scenes:
         for shot in scene.shots:

@@ -97,6 +97,7 @@ class BLOCKDIRECTOR_PT_main(Panel):
         if not scene.bd_script_path:
             box.label(text="留空则用文本块 BlockDirector Script", icon='INFO')
         box.prop(scene, "bd_offline", text="离线自检（不联网）")
+        box.prop(scene, "bd_clear_scene", text="清空场景后构建")
 
         control = layout.box()
         control.label(text="生成控制", icon='SETTINGS')
@@ -185,6 +186,10 @@ _scene_props = {
     "bd_offline": BoolProperty(
         name="离线自检", default=True,
         description="不联网，用内置确定性计划验证链路"),
+    "bd_clear_scene": BoolProperty(
+        name="清空场景后构建", default=True,
+        description="构建前清掉场景里的全部对象（含非 BlockDirector 的）。"
+                    "关掉就只清理本插件自己的对象；开启时构建前会先拍检查点"),
     "bd_provider": EnumProperty(
         name="供应商", items=_enum_items(PROVIDERS), default=PROVIDERS[0],
         description="LLM 供应商（§21.5 的 llm.provider）"),

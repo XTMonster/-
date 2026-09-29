@@ -7,11 +7,32 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import re
 from typing import Any, Dict, List, Optional
 
 from .enums import SHOT_TYPES, ShotType
 
 FPS = 24
+
+#: ``shot_id`` 会被直接拼进导出路径
+#: （``blockout_<shot_id>.mp4`` / ``first_frames/<shot_id>.png`` /
+#: ``depth_shot_<shot_id>/``），所以它**不是**自由文本：
+#: 合同边界必须把它限制在一个安全的字符集里。旧实现照单全收，
+#: 于是计划里写 ``../../../../Users/Public/x`` 就能把文件写到导出目录之外
+#: （LLM 输出、手改的 project.bdproj、重放的旧日志都是入口）。
+SHOT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_.\-]{1,64}$")
+
+
+def validate_shot_id(value: object, *, where: str = "shot_id") -> str:
+    """校验并返回 ``shot_id``；非法一律抛 ``ValueError``（不做静默修正）。"""
+    text = str(value or "")
+    if not text:
+        raise ValueError(f"{where} 不能为空")
+    if not SHOT_ID_PATTERN.match(text) or ".." in text:
+        raise ValueError(
+            f"{where} 只能由字母/数字/下划线/短横线/点组成（1–64 字符），"
+            f"且不得包含 '..'（当前 {text!r}）；它会被用作导出文件名")
+    return text
 
 
 @dataclass
@@ -83,7 +104,7 @@ class ShotPlan:
         raw_type = str(data.get("shot_type", "MS")).upper()
         shot_type = ShotType(raw_type) if raw_type in SHOT_TYPES else ShotType.MS
         return cls(
-            shot_id=str(data["shot_id"]),
+            shot_id=validate_shot_id(data["shot_id"]),
             intent=str(data.get("intent", "")),
             shot_type=shot_type,
             duration_frames=int(data["duration_frames"]),
