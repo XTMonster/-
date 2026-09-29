@@ -142,8 +142,14 @@ def test_run_fingerprint_covers_the_prompt_text_and_the_decode_prefill(monkeypat
     assert holdout_fill.run_fingerprint(cards, _OtherVersion(), "v1") != baseline
 
 
-def test_fill_writes_covered_card_set_and_reports_gaps(tmp_path, monkeypatch):
-    """收尾产物：`.cards.json` 只列**真的产出过条目**的卡（门⑥ 双向相等）。"""
+def test_fill_writes_the_input_card_set_and_reports_the_missing_ones(tmp_path, monkeypatch):
+    """`.cards.json` 必须是**输入卡片全集**，否则门⑥ 会退化成同义反复。
+
+    原先这里写的是"covered 集合"，于是门⑥（每张入库卡至少派生 1 条）永远成立：
+    工具自己定义输入、再断言输入被覆盖。现在 `.cards.json` 写全量（门⑥ 的输入），
+    另存 `.covered.json` 与 `report["cards_missing"]` 作为诊断——缺口要能翻红，
+    而不是被抹平。
+    """
     out = tmp_path / "holdout.jsonl"
     vocab_path = tmp_path / "vocab.json"
     vocab_path.write_text(json.dumps({"holdout_vocab": {"emotion": ["荒诞"]}}),
@@ -167,7 +173,11 @@ def test_fill_writes_covered_card_set_and_reports_gaps(tmp_path, monkeypatch):
         "--report", str(tmp_path / "report.json"),
     ])
     assert code == 1, "远不到 1200 条时必须以非零退出，不得假装完成"
-    assert json.loads(out.with_suffix(".cards.json").read_text(encoding="utf-8")) == ["c1"]
+    declared = json.loads(out.with_suffix(".cards.json").read_text(encoding="utf-8"))
+    assert declared == ["c1", "c2"], "门⑥ 的输入是全量卡片，不是产出过条目的子集"
+    assert json.loads(out.with_suffix(".cards.covered.json").read_text(
+        encoding="utf-8")) == ["c1"]
     report = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
     assert report["entries"] == 1 and report["cards_covered"] == 1
+    assert report["cards_missing"] == ["c2"], "没派生条目的卡必须被点名（这才是门⑥ 的牙齿）"
     assert report["gaps"]["entries"] == 1

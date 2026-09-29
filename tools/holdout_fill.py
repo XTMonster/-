@@ -372,10 +372,16 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     covered = sorted({str(e["from_card"]) for e in entries})
     common.write_jsonl(out_path, entries)
-    common.dump_json(cards_json, covered)
+    #: 门⑥ 的输入是**这次要求标注的卡片全集**，不是"实际产出过条目的那些"。
+    #: 写 covered 会让门⑥ 变成同义反复（工具自己定义输入、再断言输入被覆盖），
+    #: 于是"某张卡一条都没派生"这种真实缺口永远不会翻红。缺口正是要能被看见，
+    #: 所以这里写全量、缺口交给覆盖轮去补，补不上就如实判红。
+    common.dump_json(cards_json, sorted({str(c["id"]) for c in cards}))
+    common.dump_json(cards_json.with_suffix(".covered.json"), covered)
     gaps = coverage_gaps(entries, vocab)
     common.dump_json(report_path, {
         "fingerprint": fingerprint, "cards": len(cards), "cards_covered": len(covered),
+        "cards_missing": sorted({str(c["id"]) for c in cards} - set(covered)),
         "entries": len(entries), "rejects": len(rejects),
         "annotator": dict(_ANNOTATOR), "gaps": gaps,
     })
