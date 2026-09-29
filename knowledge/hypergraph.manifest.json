@@ -1,5 +1,13 @@
 {
-  "fingerprint": "0c36a30a030969b3cd77cf2223dc4a97d26f03db99fd3f53803c5390e676bf01",
+  "fingerprint": "4968968e23840340ae9fe75e77d912f8471138e27354bef82e2e6804f895300b",
+  "cache_key": {
+    "corpus_sha256": "867029d6d33920038fd6ae2496451e3a81c46c0a3f049dc03212ca390d854231",
+    "model": "deepseek-chat@deepseek-flash",
+    "prompt_version": "extract/v1",
+    "chunker_version": "para-2400/v1",
+    "decode": "temperature=0;seed=0;ctx=8192",
+    "schema_version": "hg/v1"
+  },
   "extractor": {
     "model_id": "deepseek-chat",
     "family": "deepseek",

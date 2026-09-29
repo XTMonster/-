@@ -7,8 +7,13 @@
 校验：`block_director/knowledge/hypergraph.build_index` 的 9 条门。不合格的边进
 `knowledge/hypergraph.rejects.jsonl`；构建门是 `rejects ≤ 5%` 且没有 chunk 被跳过。
 
-断点续跑：六元指纹（语料 sha256 ＋ 抽取器 model id ＋ prompt 版本 ＋ chunk 策略 ＋
+断点续跑：六元指纹（语料 sha256 ＋ 抽取器 model id＋版本 ＋ prompt 版本 ＋ chunk 策略 ＋
 解码参数 ＋ schema 版本）写进 `knowledge/hypergraph.manifest.json`。
+
+**六元指纹必须是"记录下来的六个分量的纯函数"**（§2.3 的缓存键 / §6 的"重抽取成本"）：
+`fingerprint_of(manifest["cache_key"]) == manifest["fingerprint"]`，且六个分量任一个变了
+指纹就必须变——否则"改了 prompt / 换了 chunk 策略"会复用旧索引，而 manifest 上看不出来。
+本模块只认这六个键（多一个少一个都直接报错），免得以后加了新分量却忘了进哈希。
 """
 
 from __future__ import annotations
@@ -39,6 +44,89 @@ VOCAB = common.KNOWLEDGE / "hypergraph.vocab.json"
 PROMPT_VERSION = "extract/v1"
 BATCH_CARDS = 8
 MAX_EDGES_PER_CARD = 2
+#: 解码参数属于六元指纹的一部分：它写死在调用里（`extract()` 的 temperature=0/seed=0/ctx=8192）。
+DECODE = "temperature=0;seed=0;ctx=8192"
+
+#: 六元指纹的分量名（顺序即 `cache_key` 的键序）。
+CACHE_KEY_FIELDS = ("corpus_sha256", "model", "prompt_version",
+                    "chunker_version", "decode", "schema_version")
+
+
+def corpus_digest(cards: Sequence[Dict]) -> str:
+    """语料指纹：卡片 id ＋ chunk ＋ 源文档 sha256 ＋ 正文 sha256，按字典序拼后取 sha256。
+
+    只拿 id 列表去哈希是不够的：**同样的 id、改过的正文**必须让指纹变（否则缓存会
+    拿旧索引当新语料的产物）。源文档 sha256 与正文 sha256 同时计入，正是为此。
+    """
+    rows = []
+    for card in cards:
+        span = card.get("source_span") or {}
+        rows.append([
+            str(card.get("id", "")),
+            str(card.get("chunk_id") or span.get("chunk_id") or ""),
+            str((card.get("source_ref") or {}).get("sha256", "")),
+            common.sha256_text(str(card.get("content", ""))),
+        ])
+    rows.sort()
+    payload = json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def fingerprint_components(cards: Sequence[Dict], client, *,
+                           prompt_version: str = PROMPT_VERSION,
+                           decode: str = DECODE,
+                           chunker_version: str = "",
+                           schema_version: str = "") -> Dict[str, str]:
+    """把六元指纹的六个分量算出来（`cache_key` 的**唯一**生产者）。"""
+    return {
+        "corpus_sha256": corpus_digest(cards),
+        "model": f"{client.model_id}@{getattr(client, 'model_version', '')}",
+        "prompt_version": str(prompt_version),
+        "chunker_version": str(chunker_version or common.CHUNKER_VERSION),
+        "decode": str(decode),
+        "schema_version": str(schema_version or hg.SCHEMA_VERSION),
+    }
+
+
+def fingerprint_of(components: Dict) -> str:
+    """六元指纹：对**恰好这六个**分量做规范化 JSON 哈希。
+
+    键集不对就报错（不是忽略多余键）：这是"加了新分量却没进哈希"的机械防线。
+    """
+    keys = set(components)
+    expected = set(CACHE_KEY_FIELDS)
+    if keys != expected:
+        raise ValueError(f"六元指纹的分量不匹配：多 {sorted(keys - expected)} / "
+                         f"少 {sorted(expected - keys)}")
+    payload = json.dumps({key: str(components[key]) for key in CACHE_KEY_FIELDS},
+                         ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def rekey_manifest(path: pathlib.Path | None = None,
+                   cards: Sequence[Dict] | None = None) -> Dict:
+    """只重算 `cache_key`/`fingerprint`，**不重抽**。
+
+    指纹是"记录下来的六个分量"的纯函数，所以口径升级（例如以前只哈希 id＋model）
+    之后可以就地重算：`corpus_sha256` 用当前卡片重算，其余五个从 manifest 自己读。
+    """
+    target = pathlib.Path(path or MANIFEST)
+    manifest = json.loads(target.read_text(encoding="utf-8"))
+    extractor = manifest.get("extractor") or {}
+    components = {
+        "corpus_sha256": corpus_digest(list(cards if cards is not None else load_cards())),
+        "model": f"{extractor.get('model_id', '')}@{extractor.get('model_version', '')}",
+        "prompt_version": str(manifest.get("prompt_version", PROMPT_VERSION)),
+        "chunker_version": str(manifest.get("chunker_version", common.CHUNKER_VERSION)),
+        "decode": str(manifest.get("decode", DECODE)),
+        "schema_version": str(manifest.get("schema_version", hg.SCHEMA_VERSION)),
+    }
+    rekeyed = {"fingerprint": fingerprint_of(components), "cache_key": components}
+    rekeyed.update({key: value for key, value in manifest.items()
+                    if key not in ("fingerprint", "cache_key")})
+    common.dump_json(target, rekeyed)
+    return {"manifest": str(target), "fingerprint": rekeyed["fingerprint"],
+            "cache_key": components}
 
 SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与一份**冻结的取值词表**，把卡片里\
 的多元耦合（情绪×运镜×景别×剪辑×特效×禁忌）收敛成下面六类超边之一。
@@ -207,15 +295,14 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     common.write_jsonl(EDGES, [edge.to_dict() for edge in unique])
     common.write_jsonl(REJECTS, rejects)
     common.dump_json(REPORT, report.to_dict())
-    crypto = hashlib.sha256(json.dumps(
-        {"cards": [c["id"] for c in cards], "model": client.model_id},
-        ensure_ascii=False).encode("utf-8")).hexdigest()
+    components = fingerprint_components(cards, client)
     common.dump_json(MANIFEST, {
-        "fingerprint": crypto,
+        "fingerprint": fingerprint_of(components),
+        "cache_key": components,
         "extractor": {"model_id": client.model_id, "family": client.family,
                       "model_version": client.model_version},
         "prompt_version": PROMPT_VERSION,
-        "decode": "temperature=0;seed=0;ctx=8192",
+        "decode": DECODE,
         "chunker_version": common.CHUNKER_VERSION,
         "schema_version": hg.SCHEMA_VERSION,
         "cards": len(cards),
@@ -251,7 +338,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--model", default="")
     parser.add_argument("--scripted", default="")
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--rekey-manifest", action="store_true",
+                        help="只按当前卡片与 manifest 里记录的五个分量重算六元指纹，不重抽")
     args = parser.parse_args(list(argv) if argv is not None else None)
+
+    if args.rekey_manifest:
+        # 指纹是"记录下来的六个分量"的纯函数：口径升级后就地重算，不重抽语料。
+        print(json.dumps(rekey_manifest(), ensure_ascii=False, indent=2))
+        return 0
 
     if not VOCAB.exists():
         print(json.dumps({"error": "先跑 tools.kb_fetch.vocabulary"}, ensure_ascii=False))
