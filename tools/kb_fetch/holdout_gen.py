@@ -58,6 +58,8 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    AXIS_RULE: pair＋axis_side；TROPE: genre＋emotion；EDIT_RHYTHM: pacing＋avg_shot_len；
    LIGHT_PACK: lighting＋intensity。
 3. 槽位名 = kind；禁忌槽位写成 `forbid_<kind>=取值`。取值尽量用词表里的规范名。
+3b. 取值**必须**是词表里的那一个（闭集，逐字相同）：`q` 里和 `must` 里都一样。
+    写了词表外的说法会被机器判成 `unknown_values`——那**整条作废**，不是警告。
 4. `must` 最多 3 条（上限是硬的：top-3 内 100% 可检出要求 |must| ≤ 3）。
 5. `top1` 必须与 `must` 里的某一条**一字不差**。
 6. 期待排序靠前的边应当是"这张卡最核心的那条约束"；把"调用方必须避开的东西"

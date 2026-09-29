@@ -184,6 +184,12 @@ def build_gap_prompt(gaps: Dict, cards: Sequence[Dict],
     for kind, values in sorted(gaps["thin_values"].items()):
         lines.append("- 取值支撑不足（%s，每个至少要在 %d 条不同卡片上出现）：%s"
                      % (kind, MIN_SEED_SUPPORT, "、".join(values[:12])))
+    # 这一条以前漏了：门③ 的 unknown 侧是**双向**的，用了词表外的取值同样判红，
+    # 而补跑只盯着 missing/thin，于是"越补越红"。必须把用过的词表外取值也列出来。
+    for kind, values in sorted(gaps.get("unknown_values", {}).items()):
+        lines.append("- 这些取值**不在**词表内（必须改写成词表里的规范名，"
+                     "否则整条被判 unknown_values 而作废）：%s=%s"
+                     % (kind, "、".join(values[:12])))
     for etype, need in sorted(gaps["short_pairs"].items()):
         lines.append("- 边类型 %s 的 (卡片,查询) 对还差 %d 条（当前 %d，且至少来自 %d 张卡）"
                      % (etype, max(0, MIN_PER_TYPE - need), need, MIN_CARDS_PER_TYPE))
