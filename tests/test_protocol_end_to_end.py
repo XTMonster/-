@@ -34,6 +34,7 @@ from block_director.contracts.transport import (
     OpenAICompatibleTransport,
     SidecarTransport,
 )
+from block_director.knowledge.client import KnowledgeClient
 from block_director.layer5_orchestrator.driver import DriverLimits, PrevisDriver
 from block_director.layer5_orchestrator.planner import PLAN_TOOL_NAME
 from block_director.layer5_orchestrator.review import REVIEW_TOOL_NAME
@@ -117,10 +118,27 @@ class FakeModel:
 class FakeServer:
     """同时实现 sidecar 线协议与 OpenAI 兼容协议。"""
 
-    def __init__(self, *, capabilities=("llm", "bm25"), token: str = ""):
+    def __init__(self, *, capabilities=("llm", "bm25"), token: str = "",
+                 retrieve_payload: Dict[str, Any] | None = None):
         self.model = FakeModel()
         self.capabilities = list(capabilities)
         self.token = token
+        # v1.4 §2.3 / §2.3b：检索面是三条通道 ＋ trace（不是只有 cards）。
+        self.retrieve_payload = retrieve_payload if retrieve_payload is not None else {
+            "cards": [{"id": "c1", "domain": "axis_theory", "title": "轴线",
+                       "content": "…"}],
+            "edges": [{"edge_id": "hg:abc", "type": "EMOTION_PACK",
+                       "members": [["allow", "emotion", "emotion:荒诞"],
+                                   ["forbid", "movement", "movement:固定机位"]],
+                       "forbid": [["forbid", "movement", "movement:固定机位"]],
+                       "weight": 1.0, "source_span": {}, "source_kind": "theory",
+                       "hardness": "hard", "occurrences": 1, "confidence": 0.7}],
+            "cases": [{"case_id": "case_1", "case_type": "lesson", "title": "t",
+                       "excerpt": "e", "beat_sequence": [], "source_ref": {},
+                       "score": 0.4}],
+            "trace": {"query": "", "backend": "hypergraph", "lanes": 2,
+                      "seeds": ["emotion:荒诞"], "scores": {"hg:abc": 0.9}},
+        }
         self.requests = []
         outer = self
 
@@ -162,7 +180,7 @@ class FakeServer:
                     self._send(200, {"cancelled": True})
                     return
                 if self.path == "/v1/retrieve":
-                    self._send(200, {"cards": []})
+                    self._send(200, outer.retrieve_payload)
                     return
                 if self.path == "/v1/chat":              # sidecar 线协议
                     reply, _r, _d = outer.model.reply_for(
@@ -377,6 +395,27 @@ def test_sidecar_capabilities_come_from_health():
     with FakeServer(capabilities=("llm", "bm25", "vector")) as server:
         status = SidecarTransport(base_url=server.base_url, timeout=5.0).health()
     assert status.ok and Capability.VECTOR in status.capabilities
+
+
+def test_retrieve_carries_three_lanes_over_real_http():
+    """§2.3 / §2.3b：真实的线协议上，检索面是三条通道 ＋ 可重放的 trace。"""
+    with FakeServer(capabilities=("llm", "bm25", "hypergraph")) as server:
+        transport = SidecarTransport(base_url=server.base_url, timeout=5.0)
+        events = []
+        client = KnowledgeClient(transport, audit=events.append)
+        response = client.retrieve("情绪=荒诞；运镜=固定", top_k=3)
+        cards_only = transport.retrieve("情绪=荒诞", top_k=3)
+    assert [card.id for card in response.cards] == ["c1"]
+    assert response.edges[0].forbid == [["forbid", "movement", "movement:固定机位"]]
+    assert response.cases[0].case_id == "case_1"
+    assert response.trace["backend"] == "hypergraph"
+    assert response.trace["lanes"] == 2
+    # 旧调用点仍只拿卡片，行为不变。
+    assert [card.id for card in cards_only] == ["c1"]
+    # 记账与留痕：一次调用一条事件，且分列（§2.4）。
+    assert client.retrieval_calls == 1
+    assert events[0]["forbid_members"] == 1
+    assert events[0]["lanes"] == 2
 
 
 # --------------------------------------------------------------------------- #

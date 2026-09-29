@@ -16,10 +16,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ..contracts.errors import TransportError
+from ..contracts.knowledge import HyperEdge as HyperEdgeDTO
 from ..contracts.operations import RetrieveResponse
+from .hypergraph import HyperEdge as InternalEdge, Member, Node, render_edges
 
 #: 审计回调的载荷形状（由 audit logger 落进 run 的 JSONL）。
 AuditFn = Callable[[Dict[str, Any]], None]
@@ -31,6 +33,47 @@ def retrieval_call_bound(shots: int, lanes: int = 1) -> int:
     整场预取 1 次 ＋ 每镜 1 次 = ``2 + N``；L3 开启时 ``lanes = 2``。
     """
     return (2 + int(shots)) * int(lanes)
+
+
+def to_internal_edges(edges: Iterable[HyperEdgeDTO]) -> List[InternalEdge]:
+    """线协议 DTO → 超图内部对象。
+
+    ``/v1/retrieve`` 回的是契约 DTO，而渲染与去重用的是 ``hypergraph`` 的对象；
+    这一层转换是**唯一**的落点，避免两处以各自的写法拼 ``Member``。
+    """
+    out: List[InternalEdge] = []
+    for edge in edges:
+        members = tuple(Member(role=str(m[0]), kind=str(m[1]), node_id=str(m[2]))
+                        for m in edge.members)
+        out.append(InternalEdge(
+            type=edge.type,
+            members=members,
+            source_kind=edge.source_kind,
+            hardness=edge.hardness,
+            weight=float(edge.weight),
+            confidence=float(edge.confidence),
+            occurrences=int(edge.occurrences),
+            source_span=dict(edge.source_span),
+        ))
+    return out
+
+
+def render_edge_block(edges: Sequence[HyperEdgeDTO], *, limit: int,
+                      nodes: Optional[Dict[str, Node]] = None,
+                      title: str = "硬约束（禁/许）"
+                      ) -> Tuple[str, List[str], bool]:
+    """把响应里的超边渲染成注入块（§2.3 的**原子注入**）。
+
+    超边以整条为单位加入，装不下就整条不注入并记 ``dropped``——**绝不截断**，
+    否则 ``forbid`` 成员会被切掉，模型照样做禁忌动作。``nodes`` 缺省时用
+    ``node_id``（本身就是 ``kind:值``，可读）。返回
+    ``(文本, dropped_edge_ids, quality_fail)``；文本为空表示一条都没装下。
+    """
+    text, dropped, quality_fail = render_edges(
+        to_internal_edges(edges), dict(nodes or {}), int(limit))
+    if not text:
+        return "", dropped, quality_fail
+    return f"【{title}】\n{text}", dropped, quality_fail
 
 
 @dataclass

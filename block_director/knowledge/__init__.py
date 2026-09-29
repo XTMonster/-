@@ -3,7 +3,12 @@
 from __future__ import annotations
 
 from .bm25 import BM25, K1, B, make_bm25, ranked, tokenize
-from .client import KnowledgeClient, retrieval_call_bound
+from .client import (
+    KnowledgeClient,
+    render_edge_block,
+    retrieval_call_bound,
+    to_internal_edges,
+)
 from .corpus import (
     CARDS,
     DOMAIN_DIGESTS,
@@ -34,6 +39,7 @@ from .tool import (
 __all__ = [
     "BM25", "K1", "B", "make_bm25", "ranked", "tokenize",
     "KnowledgeClient", "retrieval_call_bound",
+    "to_internal_edges", "render_edge_block",
     "CARDS", "DOMAINS", "DOMAIN_LABELS", "DOMAIN_DIGESTS",
     "cards_by_domain", "digest_cards", "cards_in_domain_order",
     "KnowledgeRetriever", "RetrievalHit", "default_retriever",

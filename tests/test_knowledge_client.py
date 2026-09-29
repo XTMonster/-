@@ -15,14 +15,19 @@ from block_director.contracts.errors import ErrorCode, TransportError
 from block_director.contracts.knowledge import Card, Case, HyperEdge
 from block_director.contracts.operations import RetrieveResponse
 from block_director.knowledge.client import KnowledgeClient, retrieval_call_bound
+from block_director.knowledge.client import render_edge_block, to_internal_edges
+from block_director.knowledge.hypergraph import Member, edge_id_for
+
+_MEMBERS = [Member("allow", "emotion", "emotion:荒诞"),
+            Member("forbid", "movement", "movement:固定机位")]
+_EDGE_ID = edge_id_for("EMOTION_PACK", _MEMBERS, "theory", "hard")
 
 
 def _response(lanes: int = 2) -> RetrieveResponse:
     return RetrieveResponse(
         cards=[Card(id="c1", domain="d", title="t", content="x")],
-        edges=[HyperEdge(edge_id="hg:1", type="EMOTION_PACK",
-                         members=[["allow", "emotion", "emotion:荒诞"],
-                                  ["forbid", "movement", "movement:固定机位"]],
+        edges=[HyperEdge(edge_id=_EDGE_ID, type="EMOTION_PACK",
+                         members=[m.to_dict() for m in _MEMBERS],
                          forbid=[["forbid", "movement", "movement:固定机位"]])],
         cases=[Case(case_id="case_1", case_type="lesson")],
         trace={"backend": "hypergraph", "lanes": lanes, "seeds": ["emotion:荒诞"]},
@@ -117,3 +122,31 @@ def test_trace_payload_is_written_even_when_nothing_was_retrieved():
 def test_retrieval_budget_formula(shots, lanes, expected):
     """§2.3 写死的口径：retrieval_calls ≤ (2 + N) × lanes。"""
     assert retrieval_call_bound(shots, lanes) == expected
+
+
+def test_dto_edges_convert_to_internal_edges():
+    response = _response()
+    internal = to_internal_edges(response.edges)
+    assert len(internal) == 1
+    assert internal[0].type == "EMOTION_PACK"
+    assert [str(m) for m in internal[0].members] == [
+        "allow:emotion:emotion:荒诞", "forbid:movement:movement:固定机位"]
+    assert [str(m) for m in internal[0].forbids] == [
+        "forbid:movement:movement:固定机位"]
+
+
+def test_render_edge_block_keeps_the_forbid_member_and_titles_the_lane():
+    text, dropped, quality_fail = render_edge_block(_response().edges, limit=800)
+    assert text.startswith("【硬约束（禁/许）】")
+    assert "禁={" in text and "固定机位" in text
+    assert "甩镜" not in text                  # 该断言用的边里没有 allow 运镜
+    assert dropped == [] and quality_fail is False
+
+
+def test_render_edge_block_drops_a_whole_edge_instead_of_truncating():
+    """原子注入：装不下就整条丢，绝不截断（否则 forbid 会被切掉）。"""
+    edges = _response().edges
+    text, dropped, quality_fail = render_edge_block(edges, limit=1)
+    assert text == ""
+    assert dropped == [_EDGE_ID]
+    assert quality_fail is True               # 单条自超限 → quality_fail
