@@ -21,6 +21,7 @@ from ..contracts.enums import RagBackend
 from ..contracts.knowledge import Card
 from .bm25 import make_bm25, ranked, tokenize
 from .corpus import CARDS, DOMAIN_LABELS, DOMAINS, cards_by_domain, digest_cards
+from .generated import ID_PREFIX as GENERATED_ID_PREFIX
 
 TOKEN_LIMIT_TOOL = 800      # §6.5：search_knowledge 单次返回上限
 TOKEN_LIMIT_PLAN = 2000     # §6.5：阶段 A 预取上限
@@ -137,10 +138,14 @@ class KnowledgeRetriever:
     # ------------------------------------------------------------ 检索
     @staticmethod
     def _searchable(card: Card) -> str:
-        parts = [card.id, card.title, card.content,
-                 " ".join(card.keywords), " ".join(card.rules),
-                 " ".join(card.examples), " ".join(card.related),
-                 " ".join(str(value) for value in card.parameters.values())]
+        # 生成卡的检索面 = `id + title + content`：模型自写的关键词没有经过人工审阅，
+        # 实测会把生成卡抬到人工撰写的专题卡之前（P14-1 的回归：`comp_thirds` 与
+        # `axis_cross` 都被挤出首位）。关键词仍留在卡片产物里，只是不参与排序。
+        parts = [card.id, card.title, card.content]
+        if not card.id.startswith(GENERATED_ID_PREFIX):
+            parts += [" ".join(card.keywords), " ".join(card.rules),
+                      " ".join(card.examples), " ".join(card.related),
+                      " ".join(str(value) for value in card.parameters.values())]
         return "\n".join(part for part in parts if part)
 
     def _engine(self, cards: Sequence[Card]):

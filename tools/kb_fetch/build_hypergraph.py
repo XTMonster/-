@@ -1,0 +1,262 @@
+"""P14-2：把卡片抽取成超边并建索引（执行文档 v1.4 §2.3 的"索引构建"）。
+
+两段式（§2.3）在这里落地为：**逐卡抽原子事实**（batch = 若干张卡）→ **同域归并**。
+归并窗口写死为"同一 `domain`（含卡片自身的 `related` 邻域）且每批不超过 8 张卡"，
+这与 §2.3 的"同域 ＋ 一跳 related 闭包；每次归并最多 8 张卡"一致。
+
+校验：`block_director/knowledge/hypergraph.build_index` 的 9 条门。不合格的边进
+`knowledge/hypergraph.rejects.jsonl`；构建门是 `rejects ≤ 5%` 且没有 chunk 被跳过。
+
+断点续跑：六元指纹（语料 sha256 ＋ 抽取器 model id ＋ prompt 版本 ＋ chunk 策略 ＋
+解码参数 ＋ schema 版本）写进 `knowledge/hypergraph.manifest.json`。
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import pathlib
+from typing import Dict, List, Optional, Sequence, Tuple
+
+try:
+    from . import common, llm
+except ImportError:  # pragma: no cover
+    import sys
+
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+    from tools.kb_fetch import common, llm  # type: ignore
+
+from block_director.knowledge import hypergraph as hg
+
+EDGES = common.KNOWLEDGE / "hypergraph.edges.jsonl"
+NODES = common.KNOWLEDGE / "hypergraph.nodes.jsonl"
+REJECTS = common.KNOWLEDGE / "hypergraph.rejects.jsonl"
+MANIFEST = common.KNOWLEDGE / "hypergraph.manifest.json"
+REPORT = common.WORK / "hypergraph_report.json"
+VOCAB = common.KNOWLEDGE / "hypergraph.vocab.json"
+
+PROMPT_VERSION = "extract/v1"
+BATCH_CARDS = 8
+MAX_EDGES_PER_CARD = 2
+
+SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与一份**冻结的取值词表**，把卡片里\
+的多元耦合（情绪×运镜×景别×剪辑×特效×禁忌）收敛成下面六类超边之一。
+
+只输出 JSON：{"edges":[{"type":..., "members":[["role","kind","node_id"], ...],
+ "source_kind":"theory|experience|lesson", "hardness":"hard|soft",
+ "confidence":0.0-1.0, "source_card":"<卡片 id>"}]}
+
+硬规则（违反的边会被机器丢弃，因此宁少勿错）：
+1. `type` 只能取六类之一，必填成员必须写全：
+   EMOTION_PACK: (allow,emotion) ＋ (qualifier,intensity)；
+   SHOT_PATTERN: (allow,shot_size) ＋ (allow,lens) ＋ (qualifier,headroom_policy)；
+   AXIS_RULE: (qualifier,pair) ＋ (qualifier,axis_side)；
+   TROPE: (allow,genre) ＋ (allow,emotion)；
+   EDIT_RHYTHM: (allow,pacing) ＋ (qualifier,avg_shot_len)；
+   LIGHT_PACK: (allow,lighting) ＋ (qualifier,intensity)。
+2. `node_id` **必须**取自下面词表（`kind:取值` 已经写好）；词表里没有的取值就不要抽。
+3. 同一个 `node_id` 不能既出现在 `allow` 又出现在 `forbid`。
+4. 禁忌写成 `["forbid", kind, node_id]`——它是这条边最有价值的部分，别省略。
+   注意：**只有 EMOTION_PACK 允许 `forbid` 成员**（§2.3 的边表），其它五类不许写。
+5. `source_kind`：教科书/权威理论的边用 `theory`＋`hard`；来自个人经验的取舍用
+   `experience`＋`soft`；只有卡片明确写成"教训/禁忌"时才用 `lesson`。
+6. 一张卡最多产出 2 条边；卡片只是术语解释、没有多元耦合时可以不产出边。
+7. `value` 必须落在冻结取值域内（例如 intensity 只能是 low/mid/high）。
+"""
+
+
+def compact_vocab(vocab: Dict[str, List[str]]) -> str:
+    lines = []
+    for kind, values in sorted(vocab.items()):
+        lines.append("- " + kind + ": " + ", ".join(f"{kind}:{v}" for v in values[:80]))
+    return "\n".join(lines)
+
+
+def build_prompt(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> str:
+    parts = ["【冻结词表（node_id 直接抄这里）】", compact_vocab(vocab), "", "【知识卡】"]
+    for card in cards:
+        parts.append(f"### {card['id']}（domain={card['domain']}）\n"
+                     f"标题：{card['title']}\n内容：{card['content']}\n"
+                     f"标签：{'、'.join(card.get('tags', []))}\n"
+                     f"来源性质：{card.get('source_kind', 'theory')}")
+    return "\n".join(parts)
+
+
+def to_edge(raw: Dict, cards: Dict[str, Dict]) -> Tuple[Optional[hg.HyperEdge], str]:
+    if not isinstance(raw, dict):
+        return None, "edge_not_object"
+    edge_type = str(raw.get("type", "")).strip()
+    if edge_type not in hg.EDGE_TYPES:
+        return None, f"bad_type:{edge_type}"
+    card_id = str(raw.get("source_card", "")).strip()
+    card = cards.get(card_id)
+    if card is None:
+        return None, f"unknown_source_card:{card_id}"
+    members: List[hg.Member] = []
+    for item in raw.get("members") or []:
+        if not isinstance(item, (list, tuple)) or len(item) != 3:
+            return None, f"bad_member:{item}"
+        members.append(hg.Member(role=str(item[0]), kind=str(item[1]), node_id=str(item[2])))
+    span = dict(card.get("source_span") or {})
+    if not span or int(span.get("start", -1)) < 0:
+        return None, "unlocatable_source_span"
+    source_kind = str(raw.get("source_kind") or "theory")
+    if source_kind not in hg.SOURCE_KINDS:
+        source_kind = "theory"
+    hardness = str(raw.get("hardness") or ("hard" if source_kind == "theory" else "soft"))
+    if hardness not in hg.HARDNESS:
+        hardness = "hard" if source_kind == "theory" else "soft"
+    if source_kind == "experience" and any(m.role == "forbid" for m in members):
+        # §2.3b 的关键纪律 1：经验默认不得单独产生 forbid——除非显式标成 lesson。
+        return None, "experience_cannot_forbid"
+    return hg.HyperEdge(
+        type=edge_type,
+        members=tuple(members),
+        source_kind=source_kind,
+        hardness=hardness,
+        confidence=float(raw.get("confidence", 0.7) or 0.7),
+        confidence_max=float(raw.get("confidence", 0.7) or 0.7),
+        occurrences=1,
+        sources=(card_id,),
+        source_span=span,
+        extractor={"prompt_version": PROMPT_VERSION},
+        provenance_kind=str(card.get("provenance_kind", "生成卡片")),
+    ), ""
+
+
+def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
+            batch_size: int = BATCH_CARDS, limit: int = 0) -> Tuple[List[hg.HyperEdge], List[Dict], List[Dict]]:
+    by_id = {str(c["id"]): c for c in cards}
+    # 同域归并：批内只放同一个 domain 的卡（§2.3 的"同一 domain"约束）
+    groups: Dict[str, List[Dict]] = {}
+    for card in cards:
+        groups.setdefault(card["domain"], []).append(card)
+    batches: List[List[Dict]] = []
+    for domain in sorted(groups):
+        items = groups[domain]
+        for start in range(0, len(items), batch_size):
+            batches.append(items[start:start + batch_size])
+    if limit:
+        batches = batches[:limit]
+
+    edges: List[hg.HyperEdge] = []
+    rejects: List[Dict] = []
+    batch_log: List[Dict] = []
+    for index, batch in enumerate(batches, 1):
+        try:
+            reply = client.chat_json(SYSTEM_PROMPT, build_prompt(batch, vocab), 0.0, 0, 8192,
+                                     key=batch[0]["id"])
+        except Exception as exc:  # noqa: BLE001
+            rejects.append({"batch": index, "reason": f"{type(exc).__name__}: {exc}"})
+            batch_log.append({"batch": index, "status": "error"})
+            continue
+        raw_edges = reply.get("edges") if isinstance(reply, dict) else None
+        if not isinstance(raw_edges, list):
+            rejects.append({"batch": index, "reason": "reply_not_a_list"})
+            batch_log.append({"batch": index, "status": "error"})
+            continue
+        produced = 0
+        per_card: Dict[str, int] = {}
+        for raw in raw_edges:
+            card_id = str(raw.get("source_card", ""))
+            if per_card.get(card_id, 0) >= MAX_EDGES_PER_CARD:
+                reject = {"batch": index, "reason": "too_many_edges_for_card", "raw": raw}
+                rejects.append(reject)
+                continue
+            edge, reason = to_edge(raw, by_id)
+            if edge is None:
+                rejects.append({"batch": index, "reason": reason, "raw": raw})
+                continue
+            per_card[card_id] = per_card.get(card_id, 0) + 1
+            edges.append(edge)
+            produced += 1
+        batch_log.append({"batch": index, "status": "done", "edges": produced,
+                          "cards": [c["id"] for c in batch]})
+    return edges, rejects, batch_log
+
+
+def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
+        limit: int = 0) -> Dict:
+    edges, rejects, batch_log = extract(cards, vocab, client, BATCH_CARDS, limit)
+    node_by_id = {node["node_id"]: hg.Node.from_dict(node) for node in
+                  json.loads(VOCAB.read_text(encoding="utf-8"))["nodes"]}
+    # 构建门的"chunk 处理率"口径：按**批次覆盖到的 chunk_id** 计数，
+    # 出错/被跳过的批次不会贡献任何 chunk，因此比率会掉到 1.0 以下。
+    all_chunks = {str(c.get("source_span", {}).get("chunk_id", c["id"])) for c in cards}
+    processed_chunks = set()
+    for entry in batch_log:
+        if entry.get("status") == "done":
+            for card_id in entry.get("cards", []):
+                card = next((c for c in cards if c["id"] == card_id), None)
+                if card is not None:
+                    processed_chunks.add(str(card.get("source_span", {}).get("chunk_id", card_id)))
+    unique, report = hg.build_index(edges, node_by_id,
+                                    processed_chunks=len(processed_chunks),
+                                    total_chunks=len(all_chunks))
+
+    common.write_jsonl(EDGES, [edge.to_dict() for edge in unique])
+    common.write_jsonl(REJECTS, rejects)
+    common.dump_json(REPORT, report.to_dict())
+    crypto = hashlib.sha256(json.dumps(
+        {"cards": [c["id"] for c in cards], "model": client.model_id},
+        ensure_ascii=False).encode("utf-8")).hexdigest()
+    common.dump_json(MANIFEST, {
+        "fingerprint": crypto,
+        "extractor": {"model_id": client.model_id, "family": client.family,
+                      "model_version": client.model_version},
+        "prompt_version": PROMPT_VERSION,
+        "decode": "temperature=0;seed=0;ctx=8192",
+        "chunker_version": common.CHUNKER_VERSION,
+        "schema_version": hg.SCHEMA_VERSION,
+        "cards": len(cards),
+        "raw_edges": report.raw_edges,
+        "valid_unique": report.valid_unique,
+        "duplicates": report.duplicates,
+        "rejects": report.rejects,
+        "batches": batch_log,
+    })
+    return {"report": report.to_dict(), "edges": len(unique), "rejects": len(rejects)}
+
+
+def load_cards() -> List[Dict]:
+    """优先用生成卡（带 `source_span`）；缺失字段的手写卡不参与抽取。"""
+    out: List[Dict] = []
+    directory = common.CARDS_DIR
+    if not directory.is_dir():
+        return out
+    for path in sorted(directory.glob("*.jsonl")):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            card = json.loads(line)
+            if card.get("source_span"):
+                out.append(card)
+    return out
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    parser = argparse.ArgumentParser(prog="kb_fetch.build_hypergraph")
+    parser.add_argument("--provider", default="deepseek")
+    parser.add_argument("--model", default="")
+    parser.add_argument("--scripted", default="")
+    parser.add_argument("--limit", type=int, default=0)
+    args = parser.parse_args(list(argv) if argv is not None else None)
+
+    if not VOCAB.exists():
+        print(json.dumps({"error": "先跑 tools.kb_fetch.vocabulary"}, ensure_ascii=False))
+        return 1
+    vocab = json.loads(VOCAB.read_text(encoding="utf-8"))["vocab"]
+    cards = load_cards()
+    if not cards:
+        print(json.dumps({"error": "没有带 source_span 的生成卡"}, ensure_ascii=False))
+        return 1
+    client = llm.make_client(args.provider, args.model, args.scripted)
+    summary = run(cards, vocab, client, args.limit)
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    return 0 if summary["report"]["passed"] else 1
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())

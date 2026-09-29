@@ -1,0 +1,53 @@
+{
+  "counts": {
+    "cards_candidates": 943,
+    "cards_kept": 943,
+    "cards_deduped": 0,
+    "cards_rejected": 0,
+    "docs_deduped": 0,
+    "K2_license_ratio": 1.0
+  },
+  "per_domain": {
+    "cinematography": 103,
+    "axis_theory": 56,
+    "composition": 169,
+    "blocking": 98,
+    "performance": 131,
+    "storyboard": 163,
+    "editing": 75,
+    "anime": 72,
+    "production": 76
+  },
+  "per_domain_merged": {
+    "cinematography": 153,
+    "axis_theory": 73,
+    "composition": 196,
+    "blocking": 120,
+    "performance": 147,
+    "storyboard": 163,
+    "editing": 75,
+    "anime": 72,
+    "production": 76
+  },
+  "handwritten_per_domain": {
+    "cinematography": 50,
+    "axis_theory": 17,
+    "composition": 27,
+    "blocking": 22,
+    "performance": 16
+  },
+  "topics": {
+    "lighting": 79,
+    "color": 56,
+    "camera_angle": 37,
+    "editing": 75,
+    "anime": 72,
+    "storyboard": 163
+  },
+  "K1_source_ref_complete": 1.0,
+  "K4_dedupe_ratio": 1.0,
+  "rejects": [],
+  "dedupe_examples": [],
+  "passed": true,
+  "problems": []
+}

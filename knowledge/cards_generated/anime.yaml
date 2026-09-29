@@ -1,0 +1,2275 @@
+# 生成卡片：anime（自动生成，请勿手改；见 docs/knowledge/LICENSES.md）
+- id: gen_anime_0001
+  domain: anime
+  title: 静止部分画在赛璐珞
+  content: 为节省时间与人力，把画面中静止不动的部分单独画在赛璐珞片上，只让运动部分逐张更换，避免每帧重画全部内容。
+  keywords:
+  - 省工
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分层
+  topic: anime
+  quote: |-
+    ILLUSTRATING THE SAVING OF TIME AND LABOR IN MAKING USE OF THE EXPEDIENT OF DRAWING THE STILL PARTS ON CELLULOID SHEETS.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#006
+  source_span:
+    chunk_id: pg73455_txt#006
+    start: 938
+    end: 1058
+  provenance_kind: 网络语料
+- id: gen_anime_0002
+  domain: anime
+  title: 逐笔拍摄的作画方式
+  content: 作画时不是一次画完再拍，而是每画一笔（或一块色、一个细节）就拍一格，逐笔累积直到整个画面完成；这决定了动画的绘制与拍摄是同步进行的。
+  keywords:
+  - 累积作画
+  - 定格
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画流程
+  - 逐格拍摄
+  topic: anime
+  quote: |-
+    Each stroke of the pen, after it has been made, is photographed.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#008
+  source_span:
+    chunk_id: pg73455_txt#008
+    start: 1274
+    end: 1338
+  provenance_kind: 网络语料
+- id: gen_anime_0003
+  domain: anime
+  title: 透光台需遮强光
+  content: 使用透光玻璃台描线、需透过两三层纸分辨墨线时，要把工作台遮挡住强烈日光，避免反光干扰。
+  keywords:
+  - 遮光
+  - 描线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 工作环境
+  - 描线
+  topic: anime
+  quote: |-
+    the expedient is adopted of shading the work-table from the glare of strong daylight.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#004
+  source_span:
+    chunk_id: pg73455_txt#004
+    start: 2155
+    end: 2240
+  provenance_kind: 网络语料
+- id: gen_anime_0004
+  domain: anime
+  title: 静与冲击帧的对比
+  content: 冲击帧前必须安排足够长的静止段作为对比；没有静，冲击帧就没有冲击力。
+  keywords:
+  - 静止
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 节奏
+  topic: anime
+  quote: |-
+    这一段的"静"够不够长？没有静，冲击帧就没有对比；
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#007
+  source_span:
+    chunk_id: anime_language_md#007
+    start: 18
+    end: 43
+  provenance_kind: 权威文档
+- id: gen_anime_0005
+  domain: anime
+  title: 冲击帧只占1-2帧
+  content: 冲击帧只占1–2帧，且颜色或形状要与前一帧形成强对比，才能产生视觉冲击。
+  keywords:
+  - 帧数
+  - 强对比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 节奏
+  - 色彩对比
+  topic: anime
+  quote: |-
+    冲击帧是否只占 1–2 帧，并且颜色/形状与前一帧形成强对比？
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#007
+  source_span:
+    chunk_id: anime_language_md#007
+    start: 47
+    end: 78
+  provenance_kind: 权威文档
+- id: gen_anime_0006
+  domain: anime
+  title: 冲击帧的对比前提
+  content: 冲击帧必须与前一帧形成对比（低饱和/低对比→高饱和高对比）；若前一帧已高饱和，冲击帧会失效，需先压低前一帧的饱和度或对比度。
+  keywords:
+  - 饱和度
+  - 失效条件
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 色彩对比
+  - 剪辑
+  topic: anime
+  quote: |-
+    冲击帧若与前一帧之间没有对比（例如前一帧已经很高饱和），就会失效。
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#002
+  source_span:
+    chunk_id: anime_language_md#002
+    start: 131
+    end: 164
+  provenance_kind: 权威文档
+- id: gen_anime_0007
+  domain: anime
+  title: 走路先只画腿
+  content: 分析走路时先只关注腿的各阶段动作，暂不处理手臂与躯干的同步活动，待腿部阶段明确后再叠加其余部位。
+  keywords:
+  - 腿部阶段
+  - 分解
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动规律
+  - 分解练习
+  topic: anime
+  quote: |-
+    we will at the start dwell mainly upon the phases of action in the legs only
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#009
+  source_span:
+    chunk_id: pg73455_txt#009
+    start: 1472
+    end: 1548
+  provenance_kind: 网络语料
+- id: gen_anime_0008
+  domain: anime
+  title: 反应镜头优先
+  content: 剪辑对话时优先给听者的反应镜头而非说话者，因为观众更关注听的人的情绪变化。
+  keywords:
+  - 对话剪辑
+  - 听者
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 表演
+  topic: anime
+  quote: |-
+    反应镜头优先于说话镜头：观众更想看"听的人"；
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#006
+  source_span:
+    chunk_id: anime_language_md#006
+    start: 46
+    end: 69
+  provenance_kind: 权威文档
+- id: gen_anime_0009
+  domain: anime
+  title: 无生命物的循环通则
+  content: 动画中无生命物体的运动基本都用循环方式处理，本章多数技术项都按此方案执行，细节通常画在透明赛璐珞上。
+  keywords:
+  - 无生命物的循环通则
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 制作流程
+  topic: anime
+  quote: |-
+    This idea of arranging things in cycles is the general way of animating inanimate things.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#010
+  source_span:
+    chunk_id: pg73455_txt#010
+    start: 2049
+    end: 2138
+  provenance_kind: 网络语料
+- id: gen_anime_0010
+  domain: anime
+  title: 善用取巧手段提速
+  content: 动画制作不限于纯手绘，应主动采用各种合理的取巧手法与技巧来加快进度，拒绝使用会拖慢工作。
+  keywords:
+  - 效率
+  - 制作手法
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作流程
+  - 效率
+  topic: anime
+  quote: |-
+    The animator would make very little progress if he were to refuse to take advantage of any proper expedients or tricks to accelerate his work.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#014
+  source_span:
+    chunk_id: pg73455_txt#014
+    start: 636
+    end: 778
+  provenance_kind: 网络语料
+- id: gen_anime_0011
+  domain: anime
+  title: 省工与用力的取舍
+  content: 动画师应在任何具体镜头中只投入该镜头所需的劳动量，不多做；把省下的时间用在真正需要精细绘制的地方。
+  keywords:
+  - 工作量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作效率
+  topic: anime
+  quote: |-
+    He must, in short, in any particular case, put in as much work as it requires and no more.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#015
+  source_span:
+    chunk_id: pg73455_txt#015
+    start: 1205
+    end: 1295
+  provenance_kind: 网络语料
+- id: gen_anime_0012
+  domain: anime
+  title: 动画摄影台机位
+  content: 动画摄影机固定在木或铁制框架上，镜头朝下并对准桌面中心，画稿平放在台面上，形成俯拍正对画面的机位。
+  keywords:
+  - 俯拍
+  - 镜头朝下
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: anime
+  quote: |-
+    It is placed so that it faces downward with the lens centred on the table.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#006
+  source_span:
+    chunk_id: pg73455_txt#006
+    start: 1398
+    end: 1472
+  provenance_kind: 网络语料
+- id: gen_anime_0013
+  domain: anime
+  title: 动画入门先练走路
+  content: 动画新手的第一项训练是画走路循环：按顺序画出四肢与躯干各阶段的连续姿态，使逐格放映时呈现行走感，再扩展到跑步与动物运动。
+  keywords:
+  - 走路循环
+  - 逐格
+  - 基础训练
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 运动规律
+  topic: anime
+  quote: |-
+    The very first thing that a tyro in the animating art must learn is to draw a walk
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#009
+  source_span:
+    chunk_id: pg73455_txt#009
+    start: 400
+    end: 482
+  provenance_kind: 网络语料
+- id: gen_anime_0014
+  domain: anime
+  title: 水流用简线表现
+  content: 动画表现流水、波浪、涟漪时，用最朴素不加修饰的线条即可，不必细化，简线在银幕上反而效果最强烈。
+  keywords:
+  - 波浪
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 特效动画
+  topic: anime
+  quote: |-
+    the plainest unelaborated line work gives for these elusive pictorial ingredients the most striking effects on the screen.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#012
+  source_span:
+    chunk_id: pg73455_txt#012
+    start: 133
+    end: 255
+  provenance_kind: 网络语料
+- id: gen_anime_0015
+  domain: anime
+  title: 多层赛璐璐叠加
+  content: 可在背景赛璐璐之外再加第二张赛璐璐承载角色静止部分，拍摄时与各动作阶段的画稿叠合，构成完整角色画面。
+  keywords:
+  - 拍摄
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分层
+  - 合成
+  topic: anime
+  quote: |-
+    a second celluloid will be used in conjunction with that holding the scenery
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#005
+  source_span:
+    chunk_id: pg73455_txt#005
+    start: 1660
+    end: 1736
+  provenance_kind: 网络语料
+- id: gen_anime_0016
+  domain: anime
+  title: 台词动作运镜错位
+  content: 台词、动作、运镜三者中至少有一项要错位，避免同步造成的平淡。
+  keywords:
+  - 台词动作运镜错位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 调度
+  topic: anime
+  quote: |-
+    台词、动作、运镜是否至少有一项错位？
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#007
+  source_span:
+    chunk_id: anime_language_md#007
+    start: 82
+    end: 100
+  provenance_kind: 权威文档
+- id: gen_anime_0017
+  domain: anime
+  title: 时间错位制造层次
+  content: 台词、动作、镜头运动不要同时结束，用时间上的错位制造层次感。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: anime
+  quote: |-
+    台词、动作、镜头运动不同时结束，制造层次
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#003
+  source_span:
+    chunk_id: anime_language_md#003
+    start: 100
+    end: 120
+  provenance_kind: 权威文档
+- id: gen_anime_0018
+  domain: anime
+  title: 轮廓不可重复
+  content: 同一套动作相位图叠在透光台上检查时，任意两张的四肢轮廓位置都不能重合，否则动作会显得呆板重复。
+  keywords:
+  - 相位差异
+  - 透光台
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 检查
+  topic: anime
+  quote: |-
+    no two drawings should correspond with respect to the positions of the limbs
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#018
+  source_span:
+    chunk_id: pg73455_txt#018
+    start: 1266
+    end: 1342
+  provenance_kind: 网络语料
+- id: gen_anime_0019
+  domain: anime
+  title: 固定循环的单调与打破
+  content: 同一组循环按固定顺序反复播放会产生单调感；可通过偶尔打乱各元素的拍摄顺序，或加画一张额外的大拍打褶皱来增加变化。
+  keywords:
+  - 打乱顺序
+  - 额外张
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 变化
+  topic: anime
+  quote: |-
+    it can be diversified by an occasional break in the order in which the separate elements of the cycle are photographed
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#011
+  source_span:
+    chunk_id: pg73455_txt#011
+    start: 1823
+    end: 1941
+  provenance_kind: 网络语料
+- id: gen_anime_0020
+  domain: anime
+  title: 漫画式炮弹的夸张处理
+  content: 在漫画卡通中表现开炮时，让球形炮弹从炮口飞出即可；这样画不是追求写实，而是为了符合鲜明漫画式描绘的需要。
+  keywords:
+  - 开炮
+  - 写实取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 幽默
+  tags:
+  - 漫画风格
+  topic: anime
+  quote: |-
+    he indicates a globular projectile leaving the cannon’s mouth.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#013
+  source_span:
+    chunk_id: pg73455_txt#013
+    start: 2176
+    end: 2238
+  provenance_kind: 网络语料
+- id: gen_anime_0021
+  domain: anime
+  title: 躯干上下起伏
+  content: 在行走循环中让躯干沿垂直线轻微上下移动，模拟真实步态的起伏，可显著提升银幕上的运动真实感。
+  keywords:
+  - 躯干起伏
+  - 步态
+  - 真实感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 表演
+  topic: anime
+  quote: |-
+    if some attention is given to the rise and fall of the trunk, as in a typical walk, the screen illusion will be very much better
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#018
+  source_span:
+    chunk_id: pg73455_txt#018
+    start: 1410
+    end: 1538
+  provenance_kind: 网络语料
+- id: gen_anime_0022
+  domain: anime
+  title: 选不刮伤赛璐珞的笔
+  content: 在赛璐珞上落墨应选不会刮伤表面的笔；划痕深处会积存墨水或颜料，破坏均匀背景，在成片上显现为斑点，故以用旧的顺笔为佳。
+  keywords:
+  - 笔尖
+  - 划痕
+  - 斑点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画材料
+  - 上墨
+  topic: anime
+  quote: |-
+    In drawing on celluloid with a pen it is well to select one that will not scratch the surface.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#019
+  source_span:
+    chunk_id: pg73455_txt#019
+    start: 1587
+    end: 1681
+  provenance_kind: 网络语料
+- id: gen_anime_0023
+  domain: anime
+  title: 赛璐珞上墨前处理
+  content: 在赛璐珞光滑表面落墨前，先用弱氨水清洗一遍，使墨水流动均匀、线条一致。
+  keywords:
+  - 氨水
+  - 清洁
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画材料
+  topic: anime
+  quote: |-
+    In drawing over the smooth surface of the celluloid a preliminary cleaning with weak ammonia water will make the ink flow evenly.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#019
+  source_span:
+    chunk_id: pg73455_txt#019
+    start: 1289
+    end: 1418
+  provenance_kind: 网络语料
+- id: gen_anime_0024
+  domain: anime
+  title: 蓝线定位稿的拍摄安全
+  content: 在赛璐珞或Bristol板上用极淡的蓝铅笔起稿定位，蓝线不会被感光胶片记录；若不确定，先拍一小段胶片显影测试，若蓝线显影则用软橡皮擦淡到仅够描线辨识为止。
+  keywords:
+  - 感光测试
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画流程
+  - 技术校验
+  topic: anime
+  quote: |-
+    Light-blue marks do not take on the ordinary sensitized film. But the blue markings, it is to be remembered, must be of the faintest.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#008
+  source_span:
+    chunk_id: pg73455_txt#008
+    start: 264
+    end: 397
+  provenance_kind: 网络语料
+- id: gen_anime_0025
+  domain: anime
+  title: 循环画法表现小动作
+  content: 场景中的小动作（如汽车排出的废气、水壶嘴喷出的蒸汽、烟囱冒烟）通常用几张画的循环（cycle）或画中细节的循环来处理；例如三段画的循环就足以生动表现汽车噗噗排气。
+  keywords:
+  - cycle
+  - 排气
+  - 蒸汽
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 重复动作
+  topic: anime
+  quote: |-
+    A cycle of three drawings is sufficient to give a vivid representation of the puffing exhaust from an automobile.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#013
+  source_span:
+    chunk_id: pg73455_txt#013
+    start: 1298
+    end: 1411
+  provenance_kind: 网络语料
+- id: gen_anime_0026
+  domain: anime
+  title: 角色设定稿统一法
+  content: 多人协作的动画组应把角色标准稿刻版印刷分发给所有画师，画师用透光描图台把标准稿描到新纸上，避免各人凭记忆画导致脸型走样。
+  keywords:
+  - 描图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画管理
+  topic: anime
+  quote: |-
+    it is the custom to have plates engraved from the original sketches and a number of copies printed, so that all may have a set.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#017
+  source_span:
+    chunk_id: pg73455_txt#017
+    start: 400
+    end: 527
+  provenance_kind: 网络语料
+- id: gen_anime_0027
+  domain: anime
+  title: 对话段镜头时长
+  content: 对话段每个镜头平均保持2–4秒；动作段可压缩到4–8帧，用短切制造速度感。
+  keywords:
+  - 动作段
+  - 剪辑节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 剪辑
+  topic: anime
+  quote: |-
+    对话段的镜头平均 2–4 秒，动作段可以短到 4–8 帧；
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#006
+  source_span:
+    chunk_id: anime_language_md#006
+    start: 14
+    end: 43
+  provenance_kind: 权威文档
+- id: gen_anime_0028
+  domain: anime
+  title: 眼睛动作用挖孔叠加
+  content: 当只需大脸中的眼睛移动时，不必逐帧重画整张脸：在主图上留出眼睛空白并挖孔，另用一条窄纸画好双眼，从下方滑动到孔位，再逐格停格拍摄其不同位置。
+  keywords:
+  - 停格拍摄
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分层
+  - 停格
+  - 省工
+  topic: anime
+  quote: |-
+    The places for the eyes on the main drawing are left blank and holes cut out the size of these blank spaces.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#015
+  source_span:
+    chunk_id: pg73455_txt#015
+    start: 266
+    end: 374
+  provenance_kind: 网络语料
+- id: gen_anime_0029
+  domain: anime
+  title: 动态图示替代静态图解
+  content: 当教学内容涉及过程、动作或变化（如生物、地理机制）时，用逐格绘制的动态图示代替静态图解或文字描述，观众对运动中的事物属性理解更快。
+  keywords:
+  - 教学动画
+  - 视觉传达
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 动态图解
+  - 信息传达
+  topic: anime
+  quote: |-
+    the properties of things when depicted in action are more quickly grasped visually than by description or through motionless diagrams
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#000
+  source_span:
+    chunk_id: pg73455_txt#000
+    start: 718
+    end: 851
+  provenance_kind: 网络语料
+- id: gen_anime_0030
+  domain: anime
+  title: 实拍不足时改用手绘
+  content: 当题材无法用摄影机直接拍摄（抽象概念、微观过程、非实存对象）时，改用一系列按特定方式绘制的画稿，再逐格拍摄成动画影片。
+  keywords:
+  - 手绘替代
+  - 逐格拍摄
+  - 不可拍题材
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 逐格
+  topic: anime
+  quote: |-
+    For many themes the artist must be called in to prepare a series of drawings made in a certain way and then photographed
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#000
+  source_span:
+    chunk_id: pg73455_txt#000
+    start: 406
+    end: 526
+  provenance_kind: 网络语料
+- id: gen_anime_0031
+  domain: anime
+  title: 循环靠试画而非文字
+  content: 循环的间距无法用文字精确规定，应在草稿阶段反复试画、试拍来验证动作是否连贯，以实际绘制结果为准。
+  keywords:
+  - 草稿
+  - 验证
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 工作方法
+  topic: anime
+  quote: |-
+    actual drawing, with a testing in the preliminary sketches is the surest way of accomplishing it.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#011
+  source_span:
+    chunk_id: pg73455_txt#011
+    start: 460
+    end: 557
+  provenance_kind: 网络语料
+- id: gen_anime_0032
+  domain: anime
+  title: 瞳孔拉远做情绪转折
+  content: 情绪转折点用眼睛特写起手，从瞳孔反光连续拉远到全身，把内心变化外化为景别变化。
+  keywords:
+  - 眼睛特写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 转折
+  tags:
+  - 拉镜
+  - 特写
+  topic: anime
+  quote: |-
+    **眼睛特写 → 拉远**：从瞳孔反光拉远到全身，用于情绪转折；
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#004
+  source_span:
+    chunk_id: anime_language_md#004
+    start: 15
+    end: 47
+  provenance_kind: 权威文档
+- id: gen_anime_0033
+  domain: anime
+  title: 快速动作的中间画简略
+  content: 手臂快速摆动（如急步行走）时，手部难画，可只在部分位置（例如每隔一张）用快速线条示意手形，其余位置精细绘制；这些简线必须有助于动作表达。
+  keywords:
+  - 手部
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 省略
+  topic: anime
+  quote: |-
+    at times he can, for some of the positions, every other one perhaps, make quickly lined marks indicative of hands.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#015
+  source_span:
+    chunk_id: pg73455_txt#015
+    start: 1744
+    end: 1858
+  provenance_kind: 网络语料
+- id: gen_anime_0034
+  domain: anime
+  title: 循环与肢体同纸绘制
+  content: 把绳索循环画在承载手臂动作的同一张纸上，使手臂动作与绳索扭结的递进顺序同步，整组循环可反复使用。
+  keywords:
+  - 同步
+  - 复用
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 图层
+  topic: anime
+  quote: |-
+    The artist can put these rope drawings on the same sheets of paper that hold the arm movements
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#010
+  source_span:
+    chunk_id: pg73455_txt#010
+    start: 1696
+    end: 1790
+  provenance_kind: 网络语料
+- id: gen_anime_0035
+  domain: anime
+  title: 分工：动画师与描线员
+  content: 把重复单调的细节（如不动部位、静止角色）交给描线员复制，动画师只负责最初的规划和需要真正艺术能力的部分。
+  keywords:
+  - 规划
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作流程
+  topic: anime
+  quote: |-
+    The animator does the first planning and that part of the subsequent work requiring true artistic ability.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#004
+  source_span:
+    chunk_id: pg73455_txt#004
+    start: 1838
+    end: 1944
+  provenance_kind: 网络语料
+- id: gen_anime_0036
+  domain: anime
+  title: 先懂人体再画动物
+  content: 掌握人体运动的基本规律后，再理解动物运动及其他运动会更省力，因此人体结构应作为动画师的首要研究对象。
+  keywords:
+  - 动物运动
+  - 学习顺序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动规律
+  - 基础
+  topic: anime
+  quote: |-
+    When an artist knows the basic facts of movement in the human figure, he will more readily comprehend animal locomotion
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#009
+  source_span:
+    chunk_id: pg73455_txt#009
+    start: 1015
+    end: 1134
+  provenance_kind: 网络语料
+- id: gen_anime_0037
+  domain: anime
+  title: 背景层每格必用
+  content: 无论拍摄哪个动作阶段，背景赛璐珞都要在每一格中重复使用，以保证背景稳定不闪烁。
+  keywords:
+  - 每格复用
+  - 稳定
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分层
+  - 连续性
+  topic: anime
+  quote: |-
+    It is not to be forgotten that the celluloid with the scenery is used every time the different action phases are photographed.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#007
+  source_span:
+    chunk_id: pg73455_txt#007
+    start: 2181
+    end: 2307
+  provenance_kind: 网络语料
+- id: gen_anime_0038
+  domain: anime
+  title: 构图留出动作空间
+  content: 日式动画演出中，人物不放在画面正中，而是留出能看见下一个动作的空间，让构图有呼吸感。
+  keywords:
+  - 留白
+  - 呼吸感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 留白
+  topic: anime
+  quote: |-
+    人物不放在正中，留出"看得见的下一个动作"的空间
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#003
+  source_span:
+    chunk_id: anime_language_md#003
+    start: 60
+    end: 84
+  provenance_kind: 权威文档
+- id: gen_anime_0039
+  domain: anime
+  title: 头顶留白压环境
+  content: 日式构图常在人物上方留大片天空：要表达被环境压住或望向远方时，把人物压低、头顶留白加大。
+  keywords:
+  - 天空
+  - 日式构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压抑
+  tags:
+  - 构图
+  topic: anime
+  quote: |-
+    **头顶留白**：日式构图常在人物上方留出大片天空，表达"被环境压住"或"望向远方"。
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#004
+  source_span:
+    chunk_id: anime_language_md#004
+    start: 139
+    end: 182
+  provenance_kind: 权威文档
+- id: gen_anime_0040
+  domain: anime
+  title: 动画感判定
+  content: 检验一组动作画稿是否成立，看合成后能否产生流畅运动的错觉；画得对但缺少技法处理时，仍会不动。
+  keywords:
+  - 运动错觉
+  - 检验
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 动作检验
+  - 节奏
+  topic: anime
+  quote: |-
+    it is found that they do not animate; that is, give in synthesis the illusion of easy motion.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#017
+  source_span:
+    chunk_id: pg73455_txt#017
+    start: 2026
+    end: 2119
+  provenance_kind: 网络语料
+- id: gen_anime_0041
+  domain: anime
+  title: 背景反向移动
+  content: 横移镜头中，画着风景的纸带移动方向要与人物在画面中行进的方向相反，才能形成人物向前走的错觉。
+  keywords:
+  - 背景移动
+  - 方向
+  - 相对运动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 横移
+  - 运动方向
+  topic: anime
+  quote: |-
+    The band of paper with the landscape is moved in the direction opposite to that in which the figure is supposed to go.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#018
+  source_span:
+    chunk_id: pg73455_txt#018
+    start: 1607
+    end: 1725
+  provenance_kind: 网络语料
+- id: gen_anime_0042
+  domain: anime
+  title: 水柱循环防倒流
+  content: 水柱（jet of water）也用循环图；排图时须保证合成后是下落的水，后续细节稍有错位就会看成水在倒流。
+  keywords:
+  - 错位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 方向感
+  topic: anime
+  quote: |-
+    The slightest misplacing of succeeding details representing the jet may give an effect of the water going backward.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#012
+  source_span:
+    chunk_id: pg73455_txt#012
+    start: 1121
+    end: 1236
+  provenance_kind: 网络语料
+- id: gen_anime_0043
+  domain: anime
+  title: 水循环三到五张
+  content: 流水、波浪类动作通常做成三张或五张一组的循环（cycle）；因这类动作速度快，所需张数不必多。
+  keywords:
+  - 三张
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 张数
+  topic: anime
+  quote: |-
+    It is customary, again, for artistic particulars like these to be made in cycles of three or five drawings.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#012
+  source_span:
+    chunk_id: pg73455_txt#012
+    start: 257
+    end: 364
+  provenance_kind: 网络语料
+- id: gen_anime_0044
+  domain: anime
+  title: 小物次级动作表演
+  content: 用头发、衣角、雨滴等次级动作来表现风与情绪，作为小物的表演。
+  keywords:
+  - 情绪
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画
+  topic: anime
+  quote: |-
+    用头发、衣角、雨滴等次级动作说明风与情绪
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#003
+  source_span:
+    chunk_id: anime_language_md#003
+    start: 135
+    end: 155
+  provenance_kind: 权威文档
+- id: gen_anime_0045
+  domain: anime
+  title: 身体固定四肢变化
+  content: 画行走循环的各相位时，躯干在各张图上保持同一位置，只改变四肢与头部的姿态，避免整体位移造成抖动。
+  keywords:
+  - 行走循环
+  - 躯干固定
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 相位
+  topic: anime
+  quote: |-
+    the bodies remained relatively in the same place, but the limbs, or heads, varied in attitudes
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#018
+  source_span:
+    chunk_id: pg73455_txt#018
+    start: 756
+    end: 850
+  provenance_kind: 网络语料
+- id: gen_anime_0046
+  domain: anime
+  title: 黑色块留白线
+  content: 画衣服等大面积纯黑块时，不要做成绝对剪影，要用极细的白线勾出袖子等结构轮廓，银幕上效果更好。
+  keywords:
+  - 纯黑
+  - 轮廓
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画技法
+  - 剪影
+  topic: anime
+  quote: |-
+    instead of making it an absolute silhouette, to indicate by the thinnest of white lines the contours of the details.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#017
+  source_span:
+    chunk_id: pg73455_txt#017
+    start: 1521
+    end: 1637
+  provenance_kind: 网络语料
+- id: gen_anime_0047
+  domain: anime
+  title: 上下肢反向摆动
+  content: 画走路时上肢随肩摆动并与腿的摆动方向相反，作为配重维持平衡；躯干同时参与协调用力，不能只画腿。
+  keywords:
+  - 摆臂
+  - 配重
+  - 平衡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动规律
+  - 全身协调
+  topic: anime
+  quote: |-
+    The upper limbs act, as they swing from the shoulders, in concord with the legs, as counterpoises in maintaining the equilibrium.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#009
+  source_span:
+    chunk_id: pg73455_txt#009
+    start: 754
+    end: 883
+  provenance_kind: 网络语料
+- id: gen_anime_0048
+  domain: anime
+  title: 直线运动不产生动感
+  content: 画面中单独一条匀速平移的直线，没有对比元素时几乎看不出运动；要表现运动必须给线条加入波动、抖动或蛇形起伏。
+  keywords:
+  - 对比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动表现
+  - 线条
+  topic: anime
+  quote: |-
+    There is very little effect of motion on the screen of a moving straight line by itself without any contrasting elements.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#010
+  source_span:
+    chunk_id: pg73455_txt#010
+    start: 274
+    end: 395
+  provenance_kind: 网络语料
+- id: gen_anime_0049
+  domain: anime
+  title: 旗帜三张简易循环
+  content: 画飘动的旗帜或布幔时，用三张略有差异的波浪褶皱图即可构成循环，足以满足一般观众的观感。
+  keywords:
+  - 波浪
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 布料
+  topic: anime
+  quote: |-
+    Almost any sort of rippling effect, necessitating but three slightly different drawings, will satisfy the average audience.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#011
+  source_span:
+    chunk_id: pg73455_txt#011
+    start: 1031
+    end: 1154
+  provenance_kind: 网络语料
+- id: gen_anime_0050
+  domain: anime
+  title: 笔划长度决定生长速度
+  content: 线条在银幕上生长的速度由单笔长度决定：笔划短则生长慢，笔划长则生长快。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 线条动画
+  topic: anime
+  quote: |-
+    If the ink lines are short the movement on the screen will be very slow, and if they are long the movement will be very rapid.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#008
+  source_span:
+    chunk_id: pg73455_txt#008
+    start: 1339
+    end: 1465
+  provenance_kind: 网络语料
+- id: gen_anime_0051
+  domain: anime
+  title: 按叙事需要调节线速
+  content: 线条的快慢不是随意的，要依据要表达的想法或要讲的故事来变化，用速度差异制造变化。
+  keywords:
+  - 叙事需求
+  - 速度变化
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: anime
+  quote: |-
+    Variety is produced by having the lines go slowly or fast according to the requirements of the idea to be expressed or the story to be told.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#008
+  source_span:
+    chunk_id: pg73455_txt#008
+    start: 2165
+    end: 2305
+  provenance_kind: 网络语料
+- id: gen_anime_0052
+  domain: anime
+  title: 动画师先自演动作
+  content: 绘制动作前，动画师应亲自做一遍该动作，以体会自然、无拘束的弯曲方式，再在画稿中略微强调这种运动方式。
+  keywords:
+  - 参考
+  - 体验
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演参考
+  - 动作设计
+  topic: anime
+  quote: |-
+    The whole matter can be best comprehended if the artist, before depicting this action, try it himself.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#016
+  source_span:
+    chunk_id: pg73455_txt#016
+    start: 1805
+    end: 1907
+  provenance_kind: 网络语料
+- id: gen_anime_0053
+  domain: anime
+  title: 不用白颜料改错
+  content: 绘制错误不要用白色颜料覆盖，因为它在摄影中呈灰色还是正确白色难以预判；应先用利刃刮去多余墨线，再用橡皮擦平纸面。
+  keywords:
+  - 刮除
+  - 摄影
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画材料
+  - 修稿
+  topic: anime
+  quote: |-
+    It is not usual to obliterate a mistake in drawing with white pigment, as it is an uncertain quantity in photography.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#019
+  source_span:
+    chunk_id: pg73455_txt#019
+    start: 895
+    end: 1012
+  provenance_kind: 网络语料
+- id: gen_anime_0054
+  domain: anime
+  title: 避免机械式刚性运动
+  content: 若整条手臂在运动全程保持相同的相对伸直度与关节角度，只像在肩部铰接的刚体，屏幕上会呈现自动机械般的僵硬感，应避免。
+  keywords:
+  - 机械感
+  - 手臂
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 僵硬
+  - 运动规律
+  topic: anime
+  quote: |-
+    It would move then on the screen with the ungracefulness of an automaton.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#016
+  source_span:
+    chunk_id: pg73455_txt#016
+    start: 1480
+    end: 1553
+  provenance_kind: 网络语料
+- id: gen_anime_0055
+  domain: anime
+  title: 静止部分单独分层
+  content: 若角色某些部位在多张画中位置不变或全程不动，把这些静止部分单独画在一张赛璐璐上，与动作层叠加拍摄，避免逐张描摹。
+  keywords:
+  - 静止层
+  - 赛璐璐
+  - 描摹
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画效率
+  topic: anime
+  quote: |-
+    the tracer takes celluloid and draws the similarly placed quiet parts on it but once.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#005
+  source_span:
+    chunk_id: pg73455_txt#005
+    start: 2001
+    end: 2086
+  provenance_kind: 网络语料
+- id: gen_anime_0056
+  domain: anime
+  title: 远景切近景写孤独
+  content: 表现孤独时先给侧面远景交代环境，再切正面近景接人物表情，用景别落差把环境情绪落到脸上。
+  keywords:
+  - 侧面远景
+  - 正面近景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 孤独
+  tags:
+  - 景别切换
+  - 剪辑
+  topic: anime
+  quote: |-
+    **侧面远景 → 切正面近景**：从环境的孤独切到人物的表情；
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#004
+  source_span:
+    chunk_id: anime_language_md#004
+    start: 50
+    end: 81
+  provenance_kind: 权威文档
+- id: gen_anime_0057
+  domain: anime
+  title: 冲击帧的节奏结构
+  content: 表现打击、爆炸或情绪爆发时，按“准备（静止6–10帧）→极端帧（1–2帧）→反作用（2–4帧）→静止”的帧数节奏编排，用长静止衬托极短的爆发帧。
+  keywords:
+  - 帧数节奏
+  - 静止
+  - 爆发
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 时间控制
+  topic: anime
+  quote: |-
+    准备（静止 6–10 帧）→ 极端帧（1–2 帧）→ 反作用（2–4 帧）→ 静止。
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#002
+  source_span:
+    chunk_id: anime_language_md#002
+    start: 87
+    end: 129
+  provenance_kind: 权威文档
+- id: gen_anime_0058
+  domain: anime
+  title: 静人物配运动背景
+  content: 表现时间流逝或内心动摇时，让人物静止、背景运动（如流云、车流），以背景动势代替表演。
+  keywords:
+  - 静止人物
+  - 时间流逝
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 动摇
+  tags:
+  - 背景运动
+  - 象征
+  topic: anime
+  quote: |-
+    **人物静止、背景运动**：表现时间流逝或内心的动摇；
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#004
+  source_span:
+    chunk_id: anime_language_md#004
+    start: 109
+    end: 136
+  provenance_kind: 权威文档
+- id: gen_anime_0059
+  domain: anime
+  title: 绳索细节的递进方案
+  content: 表现绳索受力，普通情况用轻微抖动或线条摇摆；更好是画一缕散开的绳纤维沿拉力方向爬行；最好是在绳上形成几个扭结并让它们随拉力方向移动。
+  keywords:
+  - 扭结
+  - 纤维
+  - 拉力方向
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 细节层次
+  - 运动表现
+  topic: anime
+  quote: |-
+    But still better would it be to have a few kinks forming in the rope and showing them agitated as they go in the direction of the pull on the rope.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#010
+  source_span:
+    chunk_id: pg73455_txt#010
+    start: 1166
+    end: 1313
+  provenance_kind: 网络语料
+- id: gen_anime_0060
+  domain: anime
+  title: 雨用多层赛璐珞
+  content: 表现雨景：在若干张赛璐珞片上画线条表示雨，拍摄时按设计顺序依次叠用。
+  keywords:
+  - 叠层
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 特效动画
+  - 叠层
+  topic: anime
+  quote: |-
+    Imparting an appearance of rain over a scene is produced by having several celluloids with lines indicating this.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#012
+  source_span:
+    chunk_id: pg73455_txt#012
+    start: 1451
+    end: 1564
+  provenance_kind: 网络语料
+- id: gen_anime_0061
+  domain: anime
+  title: 静背景衬人物作画
+  content: 要突出人物动作时，让背景保持静止、只让人物作画动，用动静对比把注意力锁在角色身上。
+  keywords:
+  - 静止背景
+  - 动静对比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对比
+  topic: anime
+  quote: |-
+    **背景静止、人物作画**：突出人物的运动；
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#004
+  source_span:
+    chunk_id: anime_language_md#004
+    start: 84
+    end: 106
+  provenance_kind: 权威文档
+- id: gen_anime_0062
+  domain: anime
+  title: 循环用奇数张且不等距
+  content: 规划循环时取奇数张原画（如3、5、7张），并让各张之间的空间间隔不均匀；切忌等距排列，等距会使动作机械呆板。
+  keywords:
+  - 间隔
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 节奏
+  topic: anime
+  quote: |-
+    have an odd number of drawings and to vary the spatial intervals between the separate items. They should not, above all things, be equidistant.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#011
+  source_span:
+    chunk_id: pg73455_txt#011
+    start: 613
+    end: 756
+  provenance_kind: 网络语料
+- id: gen_anime_0063
+  domain: anime
+  title: 分层绘制角色与场景
+  content: 角色动作与固定场景分层处理：一般场景画在赛璐珞上，角色的连续动作画在数十张纸上，叠合后拍摄。
+  keywords:
+  - 赛璐珞
+  - 角色序列
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 赛璐珞
+  topic: anime
+  quote: |-
+    The general scene is drawn on celluloid, while fifty or more sheets of paper hold a sequence of pictures of the mouse in attitudes of running.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#008
+  source_span:
+    chunk_id: pg73455_txt#008
+    start: 931
+    end: 1073
+  provenance_kind: 网络语料
+- id: gen_anime_0064
+  domain: anime
+  title: 衣物布料三阶段颤动
+  content: 角色身上被风吹动或随动作飘动的普通衣料，用三个阶段绘制即可，放映时能得到令人满意的颤动效果。
+  keywords:
+  - 衣料
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  topic: anime
+  quote: |-
+    An ordinary fragment of drapery in a garment is easily animated by making it in three phases.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#011
+  source_span:
+    chunk_id: pg73455_txt#011
+    start: 2060
+    end: 2153
+  provenance_kind: 网络语料
+- id: gen_anime_0065
+  domain: anime
+  title: 背景不得压住角色
+  content: 设计场景时先规划角色活动的区域，背景中任何线条都不得与角色身体部分交叉重叠，否则叠加赛璐璐后会破坏角色轮廓。
+  keywords:
+  - 背景设计
+  - 轮廓
+  - 遮挡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 分层
+  topic: anime
+  quote: |-
+    no part of the components of the scenery should interfere by crossing lines with any portions of the figures
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#005
+  source_span:
+    chunk_id: pg73455_txt#005
+    start: 677
+    end: 785
+  provenance_kind: 网络语料
+- id: gen_anime_0066
+  domain: anime
+  title: 循环动画首尾衔接
+  content: 设计循环动作时，序列的每一格必须按顺序从第一格推进到最后一格，再无缝回到第一格；中间不得跳格、停顿或倒退，各格之间的间距要按彼此关系合理分配。
+  keywords:
+  - 间距
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: anime
+  quote: |-
+    The action must not skip, cause a hesitation, or go backward.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#011
+  source_span:
+    chunk_id: pg73455_txt#011
+    start: 208
+    end: 269
+  provenance_kind: 网络语料
+- id: gen_anime_0067
+  domain: anime
+  title: 多人观看需加透镜与光源
+  content: 费纳奇镜一次只能供一人观看反射画面，若要多人同时观看，需加装透镜、光源和镜子，或将画面置于玻璃圆盘上在幻灯镜头后旋转。
+  keywords:
+  - 投影
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 投影
+  - 观看方式
+  topic: anime
+  quote: |-
+    A lens was added with a light and mirrors so that a number of people could see its operation at the same time.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#003
+  source_span:
+    chunk_id: pg73455_txt#003
+    start: 1572
+    end: 1682
+  provenance_kind: 网络语料
+- id: gen_anime_0068
+  domain: anime
+  title: 头部走波浪线
+  content: 走路时头部并非水平直线前进，而是随步幅起伏描出波浪形轨迹；作画时按此波形安排头部高度变化。
+  keywords:
+  - 头部起伏
+  - 波形
+  - 步幅
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动规律
+  - 走路
+  topic: anime
+  quote: |-
+    Diagram to indicate the length of a stride and to show how the head describes a “wave.”
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#009
+  source_span:
+    chunk_id: pg73455_txt#009
+    start: 1918
+    end: 2005
+  provenance_kind: 网络语料
+- id: gen_anime_0069
+  domain: anime
+  title: 腿交替支撑与摆动
+  content: 走路时躯干悬于地面约三十英寸并前移，双腿交替：一腿摆动悬垂、另一腿支撑躯干，两腿角色互换构成循环。
+  keywords:
+  - 支撑腿
+  - 摆动腿
+  - 步幅
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动规律
+  - 走路
+  topic: anime
+  quote: |-
+    Attached to it are the nether limbs, alternately swinging pendently and alternately supporting the trunk
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#009
+  source_span:
+    chunk_id: pg73455_txt#009
+    start: 1700
+    end: 1804
+  provenance_kind: 网络语料
+- id: gen_anime_0070
+  domain: anime
+  title: 同形状与色彩匹配转场
+  content: 转场可用同形状匹配（如圆形月亮切圆形盘子）或色彩匹配，用图形/颜色的相似性把两场戏缝在一起。
+  keywords:
+  - 形状匹配
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 匹配剪辑
+  - 图形
+  topic: anime
+  quote: |-
+    转场常用"同形状匹配"（圆形的月亮切圆形的盘子）与"色彩匹配"。
+  source_ref:
+    url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 4ff78f23c17dbcfda00b18daa3b43018d21f10308ceaced485928960befe443a
+  chunk_id: anime_language_md#006
+  source_span:
+    chunk_id: anime_language_md#006
+    start: 72
+    end: 104
+  provenance_kind: 权威文档
+- id: gen_anime_0071
+  domain: anime
+  title: 主褶皱推进的旗帜循环
+  content: 追求写实效果时，让一条主导褶皱沿旗面逐渐推进：越接近末端体积越小，最后以一次突然的拍打消失；此循环需5到7张，并在末次拍打前接回主导褶皱的第一阶段。
+  keywords:
+  - 主导褶皱
+  - 拍打
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 循环动画
+  - 布料
+  - 写实
+  topic: anime
+  quote: |-
+    he will contrive that there be one dominant drapery fold which is carried out farther and farther along the ruffled flag.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#011
+  source_span:
+    chunk_id: pg73455_txt#011
+    start: 1301
+    end: 1422
+  provenance_kind: 网络语料
+- id: gen_anime_0072
+  domain: anime
+  title: 双层全景不同速
+  content: 需要更强纵深感时，可同时移动第二条全景纸带，并让它与第一条以不同速度移动，形成视差。
+  keywords:
+  - 双层背景
+  - 视差
+  - 速度差
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视差
+  - 横移
+  - 纵深
+  topic: anime
+  quote: |-
+    a second panorama strip to move, and at a different speed
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:15+00:00'
+    sha256: f4cf30feb1571f681614cd73333e68a1c11aed9abd2834830baf9cbf3518bb08
+  chunk_id: pg73455_txt#018
+  source_span:
+    chunk_id: pg73455_txt#018
+    start: 2140
+    end: 2197
+  provenance_kind: 网络语料

@@ -218,8 +218,13 @@ class _FakeVectorStore:
 
 
 def test_vector_rerank_uses_rrf_when_the_capability_is_confirmed():
+    # 假向量库返回的是**语料下标**；写死 5/6/7 只在 132 卡时代成立（P14-1 把
+    # 语料扩到 1000+ 之后，那三个下标已经落在别的域上）。按 id 反查真实下标，
+    # 断言（向量通道召回的卡必须活过 RRF 合并）保持不变。
+    ids = [card.id for card in cards_in_domain_order()]
+    anchor = ids.index("axis_cross")
     engine = retriever(backend=RagBackend.VECTOR, capabilities=("vector",),
-                       vector_store=_FakeVectorStore([5, 6, 7]))
+                       vector_store=_FakeVectorStore([anchor, anchor + 1, anchor + 2]))
     assert engine.backend is RagBackend.VECTOR
     hits = engine.search_hits("越轴", top_k=3)
     assert {hit.card.id for hit in hits} >= {"axis_cross"}

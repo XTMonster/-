@@ -1,0 +1,2398 @@
+# 生成卡片：production（自动生成，请勿手改；见 docs/knowledge/LICENSES.md）
+- id: gen_prod_0001
+  domain: production
+  title: Mazda灯维护要点
+  content: Mazda灯不要在冷却状态下清洁；震动大的位置应加装减震器；断丝可轻摇灯使断端接触，通电后电流会将其焊合。
+  keywords:
+  - 清洁
+  - 减震器
+  - 断丝焊合
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具维护
+  topic: lighting
+  quote: |-
+    It is best not to clean Mazda lamps when cold. Shock absorbers should be used where there is much jarring.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#015
+  source_span:
+    chunk_id: pg45231_txt#015
+    start: 519
+    end: 625
+  provenance_kind: 网络语料
+- id: gen_prod_0002
+  domain: production
+  title: Mazda灯组启动冲击
+  content: 一组Mazda灯接通瞬间会出现过大电流，配电与开关选型需考虑这一瞬时冲击。
+  keywords:
+  - 启动电流
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 配电
+  topic: lighting
+  quote: |-
+    When a bank of Mazda lamps is turned on there is an excessive current for an instant.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#015
+  source_span:
+    chunk_id: pg45231_txt#015
+    start: 979
+    end: 1064
+  provenance_kind: 网络语料
+- id: gen_prod_0003
+  domain: production
+  title: 电极须磨尖
+  content: 上下电极都要磨尖，尤其是下电极；下电极不磨尖会遮挡弧坑发出的光，影响画面亮度。
+  keywords:
+  - 弧坑
+  - 亮度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光灯
+  - 光输出
+  topic: lighting
+  quote: |-
+    Always point your electrodes, especially the lower. If the lower electrode is not pointed, it will interfere with the light of the crater.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#006
+  source_span:
+    chunk_id: pg45231_txt#006
+    start: 572
+    end: 710
+  provenance_kind: 网络语料
+- id: gen_prod_0004
+  domain: production
+  title: 电极尺寸按电流选
+  content: 上电极常用5/8英寸、下电极常用1/2英寸，具体取决于所用电流；电极过大时电弧会绕外侧游走，造成光线差且不均匀。
+  keywords:
+  - 电弧
+  - 均匀度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光灯
+  - 光质
+  topic: lighting
+  quote: |-
+    The recommendations for sizes of upper and lower electrodes vary somewhat but run mostly to 5/8 inch for upper and 1/2 inch for lower.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#006
+  source_span:
+    chunk_id: pg45231_txt#006
+    start: 712
+    end: 846
+  provenance_kind: 网络语料
+- id: gen_prod_0005
+  domain: production
+  title: 串联弧光灯隔离易燃物
+  content: 串联弧光灯必须与易燃材料仔细隔离，避免长时间高温引燃布景。
+  keywords:
+  - 串联弧光灯隔离易燃物
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 防火
+  - 现场安全
+  topic: lighting
+  quote: |-
+    Must be carefully isolated from inflammable material.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#012
+  source_span:
+    chunk_id: pg45231_txt#012
+    start: 1534
+    end: 1587
+  provenance_kind: 网络语料
+- id: gen_prod_0006
+  domain: production
+  title: 交流弧双弧坑易致双光斑
+  content: 交流弧有两个弧坑，若想同时利用两坑的光，电极必须对得极准；稍有偏差就会出现双光斑，且银幕中心照度不足。多数操作者最终会放弃双坑取光，改用图7A式设定。
+  keywords:
+  - 银幕中心
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光
+  - 照度均匀
+  topic: lighting
+  quote: |-
+    If the electrodes are not set exactly right, we may get a double spot and poor illumination at the center of the screen.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#005
+  source_span:
+    chunk_id: pg45231_txt#005
+    start: 954
+    end: 1074
+  provenance_kind: 网络语料
+- id: gen_prod_0007
+  domain: production
+  title: 交流弧噪声与频率
+  content: 交流弧比直流弧噪声大得多，但在很高频率下这种噪声会消失。
+  keywords:
+  - 交流弧噪声与频率
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电弧灯
+  - 现场录音
+  topic: lighting
+  quote: |-
+    The alternating-current arc is much noisier than the direct-current arc, but with very high frequencies this noise ceases.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#002
+  source_span:
+    chunk_id: pg45231_txt#002
+    start: 1691
+    end: 1813
+  provenance_kind: 网络语料
+- id: gen_prod_0008
+  domain: production
+  title: 通外门设门斗
+  content: 从舞台通往室外的门应设门斗，以防风把帷幕吹乱，并避免演员受穿堂风干扰。
+  keywords:
+  - 帷幕
+  - 穿堂风
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 舞台
+  - 环境控制
+  topic: lighting
+  quote: |-
+    The vestibule prevents the wind from blowing the drapery about unduly and also shields the actors from unpleasant drafts.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#007
+  source_span:
+    chunk_id: pg45231_txt#007
+    start: 2042
+    end: 2163
+  provenance_kind: 网络语料
+- id: gen_prod_0009
+  domain: production
+  title: 交流用有芯碳棒
+  content: 使用交流电时必须选用有芯碳棒（cored carbons），以保证电弧稳定。
+  keywords:
+  - 交流电
+  - 电弧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光灯
+  topic: lighting
+  quote: |-
+    Always use cored carbons for alternating current.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#006
+  source_span:
+    chunk_id: pg45231_txt#006
+    start: 1005
+    end: 1054
+  provenance_kind: 网络语料
+- id: gen_prod_0010
+  domain: production
+  title: 固定弧光灯用于外景
+  content: 剧场固定安装的弧光灯多用于室外照明，常在观众厅前部成组布置两盏以上，采用火焰弧光灯型并高悬安装。
+  keywords:
+  - 高悬
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 照明
+  - 灯具
+  topic: lighting
+  quote: |-
+    Permanently located arc lamps are used about theaters mostly for out-door lighting.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#011
+  source_span:
+    chunk_id: pg45231_txt#011
+    start: 1539
+    end: 1622
+  provenance_kind: 网络语料
+- id: gen_prod_0011
+  domain: production
+  title: 生成预算显式上限
+  content: 单次 AI 生成预算须写成显式上限（调用次数与墙钟时间），超限时报错，禁止静默降级。
+  keywords:
+  - 报错
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: ''
+  quote: |-
+    单次的 AI 生成预算应当写成显式的上限（调用次数与墙钟时间），超限时报错而不是静默降级；
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#003
+  source_span:
+    chunk_id: production_pipeline_md#003
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_prod_0012
+  domain: production
+  title: 台口上方排灯布光
+  content: 可在台口开口正上方的脚手架上成排布置小型透镜灯，某知名制作即用十二盏此类灯。
+  keywords:
+  - 脚手架
+  - 十二盏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光位置
+  - 台口光
+  topic: lighting
+  quote: |-
+    In one well-known production twelve such lamps were used upon scaffolding directly above the proscenium opening.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#018
+  source_span:
+    chunk_id: pg45231_txt#018
+    start: 1674
+    end: 1786
+  provenance_kind: 网络语料
+- id: gen_prod_0013
+  domain: production
+  title: 台口侧灯位置取舍
+  content: 台口侧灯置于钢幕两侧，有时装在观众席一侧以尽量前移；但该位置角度别扭，难以把光打向有用方向，需权衡。
+  keywords:
+  - 钢幕
+  - 角度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  topic: lighting
+  quote: |-
+    The location of these lights is awkward and it is difficult to get light from them in a useful direction.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#007
+  source_span:
+    chunk_id: pg45231_txt#007
+    start: 981
+    end: 1086
+  provenance_kind: 网络语料
+- id: gen_prod_0014
+  domain: production
+  title: 同回路导线同管敷设
+  content: 同一回路或同一系统的干线、支线所有导线必须穿在同一根管内；分开敷设会造成不必要的电压降并导致线管发热。
+  keywords:
+  - 电压降
+  - 发热
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布线
+  topic: lighting
+  quote: |-
+    All wires of any circuit or mains or sub-mains of any system must be run in the same conduit.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#011
+  source_span:
+    chunk_id: pg45231_txt#011
+    start: 1239
+    end: 1332
+  provenance_kind: 网络语料
+- id: gen_prod_0015
+  domain: production
+  title: 下电极前移的取舍
+  content: 图7A式设定中两电极均倾斜、下电极略前于上电极，可把上电极弧坑向前拉、改善聚光镜受光；但前移过度时下电极会遮挡透镜下部，因此下电极必须始终让聚光镜各部分都能直接收到上电极弧坑的光。
+  keywords:
+  - 聚光镜
+  - 遮挡
+  - 弧坑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光
+  - 光路
+  topic: lighting
+  quote: |-
+    The lower electrode must always be set so that it allows all parts of the condenser to receive direct rays of light from the crater of the upper.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#005
+  source_span:
+    chunk_id: pg45231_txt#005
+    start: 1554
+    end: 1699
+  provenance_kind: 网络语料
+- id: gen_prod_0016
+  domain: production
+  title: 飞絮环境全封闭灯罩
+  content: 在易燃料飞絮环境中使用弧光灯时，须把电极完全封在密闭灯罩内，从而免装火花罩。
+  keywords:
+  - 密闭灯罩
+  - 电极
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 防火
+  - 灯具安全
+  topic: lighting
+  quote: |-
+    must have the electrodes enclosed completely in a tight globe in such manner as to avoid the necessity for spark arresters.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#012
+  source_span:
+    chunk_id: pg45231_txt#012
+    start: 2250
+    end: 2373
+  provenance_kind: 网络语料
+- id: gen_prod_0017
+  domain: production
+  title: 易燃处加防火花罩
+  content: 在易燃物附近使用开放式弧光灯时，必须加装火花消除器。
+  keywords:
+  - 火花消除器
+  - 开放弧光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 安全
+  topic: lighting
+  quote: |-
+    Provide spark arresters for all open-arc lamps in the vicinity of inflammable material.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 1311
+    end: 1398
+  provenance_kind: 网络语料
+- id: gen_prod_0018
+  domain: production
+  title: 外罩脏污影响
+  content: 外罩脏污既影响观感又吸收光线，布光前应清洁外罩，避免亮度损失。
+  keywords:
+  - 清洁
+  - 吸光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具维护
+  - 光效
+  topic: lighting
+  quote: |-
+    A dirty globe looks very unsightly and absorbs much light.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 236
+    end: 294
+  provenance_kind: 网络语料
+- id: gen_prod_0019
+  domain: production
+  title: 弧光灯悬挂高度
+  content: 室外弧光灯须悬于人行道上方至少8英尺；室内弧光灯须置于够不到处或加适当防护。
+  keywords:
+  - 8英尺
+  - 防护
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 灯具安全
+  topic: lighting
+  quote: |-
+    Outside arc lamps must be suspended at least eight feet above sidewalks. Inside arc lamps must be placed out of reach or suitably protected.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#012
+  source_span:
+    chunk_id: pg45231_txt#012
+    start: 2011
+    end: 2151
+  provenance_kind: 网络语料
+- id: gen_prod_0020
+  domain: production
+  title: 弧光灯内罩清洁
+  content: 封闭式弧光灯的内罩若积存杂质会吸收大量光线，须定期清洁内罩以维持出光效率。
+  keywords:
+  - 光效
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具维护
+  - 光效
+  topic: lighting
+  quote: |-
+    impurities are cast off which soon coat the inner globe and absorb much of the light.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 80
+    end: 165
+  provenance_kind: 网络语料
+- id: gen_prod_0021
+  domain: production
+  title: 磁铁偏吹弧光
+  content: 将磁铁靠近电弧可将其吹灭或推向一侧，这一原理被用于某些避雷器中。
+  keywords:
+  - 避雷器
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电弧灯
+  - 磁场控制
+  topic: lighting
+  quote: |-
+    A magnet held close to an arc can be made to blow it out or force it to one side. This fact is made use of in some lightning arresters.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#002
+  source_span:
+    chunk_id: pg45231_txt#002
+    start: 2225
+    end: 2360
+  provenance_kind: 网络语料
+- id: gen_prod_0022
+  domain: production
+  title: 小规格用螺钉垫圈接线
+  content: 小规格开关端子采用螺钉加垫圈、端子带上翘接线耳的连接方式，可获得可靠接触。
+  keywords:
+  - 端子
+  - 接触
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电气
+  topic: lighting
+  quote: |-
+    For the smaller sizes, a screw and washer connection with up-turned lugs on the switch terminal gives a satisfactory contact.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#016
+  source_span:
+    chunk_id: pg45231_txt#016
+    start: 490
+    end: 615
+  provenance_kind: 网络语料
+- id: gen_prod_0023
+  domain: production
+  title: 可调电阻随手可及
+  content: 应始终把可调电阻放在手边，以便按不同胶片或幻灯灯调整电流。
+  keywords:
+  - 电流
+  - 胶片
+  - 幻灯
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光灯
+  - 调光
+  topic: lighting
+  quote: |-
+    An adjustable resistance should always be kept in reach so that the current may be varied to suit different films or stereopticon lamps.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#006
+  source_span:
+    chunk_id: pg45231_txt#006
+    start: 2119
+    end: 2255
+  provenance_kind: 网络语料
+- id: gen_prod_0024
+  domain: production
+  title: 弧光灯不宜做舞台面光
+  content: 廉价剧场在舞台上用一对弧光灯效果不佳：光不均匀、不稳定，且无法正常调光，故舞台照明不宜采用弧光灯。
+  keywords:
+  - 调光
+  - 均匀度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 照明
+  - 调光
+  topic: lighting
+  quote: |-
+    The light is not even and steady enough and cannot be properly “dimmed”.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#011
+  source_span:
+    chunk_id: pg45231_txt#011
+    start: 1901
+    end: 1973
+  provenance_kind: 网络语料
+- id: gen_prod_0025
+  domain: production
+  title: 弧光灯裸露件绝缘
+  content: 弧光灯所有裸露金属部件必须与电路可靠绝缘，避免演职人员触碰带电部位。
+  keywords:
+  - 裸露部件
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具安全
+  - 用电安全
+  topic: lighting
+  quote: |-
+    All exposed parts must be carefully insulated from the circuit.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#012
+  source_span:
+    chunk_id: pg45231_txt#012
+    start: 799
+    end: 862
+  provenance_kind: 网络语料
+- id: gen_prod_0026
+  domain: production
+  title: 弧光灯防碳棒坠落
+  content: 弧光灯须装可靠止挡，防止灯夹松动时碳棒掉落砸到下方人员或布景。
+  keywords:
+  - 止挡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具安全
+  - 现场安全
+  topic: lighting
+  quote: |-
+    Must be provided with reliable stops to prevent carbons from falling out in case the clamps become loose.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#012
+  source_span:
+    chunk_id: pg45231_txt#012
+    start: 692
+    end: 797
+  provenance_kind: 网络语料
+- id: gen_prod_0027
+  domain: production
+  title: 火花罩封住灯罩上口
+  content: 弧光灯须装火花罩，把灯罩上口封到碳棒火花无法逸出的程度，防止火花落到布景或演员身上。
+  keywords:
+  - 火花罩封住灯罩上口
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 防火
+  - 灯具安全
+  topic: lighting
+  quote: |-
+    Spark arresters must so close the upper orifice of the globe that it will be impossible for any sparks, thrown off by the carbons, to escape.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#012
+  source_span:
+    chunk_id: pg45231_txt#012
+    start: 1370
+    end: 1511
+  provenance_kind: 网络语料
+- id: gen_prod_0028
+  domain: production
+  title: 放映机位预留弧光灯插座
+  content: 当放映机需要架设在楼座（gallery）时，应在该处预留弧光灯插座，避免临时拉线；插座位置随放映机位一并规划。
+  keywords:
+  - 楼座
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 供电
+  topic: lighting
+  quote: |-
+    Pockets for arc lamps are often provided, as it often happens that a moving-picture machine must be placed in the gallery.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#014
+  source_span:
+    chunk_id: pg45231_txt#014
+    start: 20
+    end: 142
+  provenance_kind: 网络语料
+- id: gen_prod_0029
+  domain: production
+  title: 恒压灯需限流电阻
+  content: 恒压灯电路中必须有限流电阻，电阻可置于灯内或灯外。
+  keywords:
+  - 恒压灯需限流电阻
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电气系统
+  - 灯具操作
+  topic: lighting
+  quote: |-
+    Constant-potential lamps cannot be operated without resistance in the circuit; this resistance may be in the lamp itself or outside.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 1039
+    end: 1171
+  provenance_kind: 网络语料
+- id: gen_prod_0030
+  domain: production
+  title: 恒流灯不可开路
+  content: 恒流（串联）灯线路绝不能断开，若要切除某灯须用分流方式绕过该灯。
+  keywords:
+  - 串联
+  - 分流
+  - 切除
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电气安全
+  - 灯具操作
+  topic: lighting
+  quote: |-
+    With constant-current or series lamps, the line must never be opened, but must be shunted around the lamp if a lamp is to be cut out.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 727
+    end: 860
+  provenance_kind: 网络语料
+- id: gen_prod_0031
+  domain: production
+  title: 弧灯须专人看管
+  content: 所有便携式舞台灯均为手动进碳，需要操作员全程密切注意；串联高压工况下更难起弧，须按专门方法处理。
+  keywords:
+  - 手动进碳
+  - 操作员
+  - 便携灯
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 操作
+  - 灯具
+  topic: lighting
+  quote: |-
+    All portable stage lamps are hand feed and require close attention on the part of operators.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#017
+  source_span:
+    chunk_id: pg45231_txt#017
+    start: 325
+    end: 417
+  provenance_kind: 网络语料
+- id: gen_prod_0032
+  domain: production
+  title: 双极开关控制
+  content: 所有灯具都应使用双极开关控制，以保证两极同时切断。
+  keywords:
+  - 双极开关控制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电气安全
+  topic: lighting
+  quote: |-
+    In all cases each lamp should be controlled by a double pole switch.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 965
+    end: 1033
+  provenance_kind: 网络语料
+- id: gen_prod_0033
+  domain: production
+  title: 螺丝定期润滑
+  content: 所有螺丝与调节部件应经常充分润滑，因为灯箱内高温会很快蒸发掉润滑油。
+  keywords:
+  - 灯箱
+  - 高温
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光灯
+  - 维护
+  topic: lighting
+  quote: |-
+    All of the screws and adjustments should be well lubricated frequently. The heat in the lamp house soon evaporates all lubrication.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#006
+  source_span:
+    chunk_id: pg45231_txt#006
+    start: 0
+    end: 131
+  provenance_kind: 网络语料
+- id: gen_prod_0034
+  domain: production
+  title: 断碳棒先开槽
+  content: 折断碳棒电极前先在其上开一个小槽，以便干净折断。
+  keywords:
+  - 折断
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光灯
+  - 操作
+  topic: lighting
+  quote: |-
+    Notch the carbon electrode a little before attempting to break it off.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#006
+  source_span:
+    chunk_id: pg45231_txt#006
+    start: 1145
+    end: 1215
+  provenance_kind: 网络语料
+- id: gen_prod_0035
+  domain: production
+  title: 煤气灯与电灯不得同具
+  content: 按国家电气规程，除摩擦式系统外，电点火煤气灯不得与电灯装在同一灯具上，布光时须把两类光源分开设置。
+  keywords:
+  - 灯具
+  - 规程
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 规范
+  - 灯具布置
+  topic: lighting
+  quote: |-
+    Electric gas lighting, unless it is the frictional system, must not be used on the same fixtures with the electric light.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#014
+  source_span:
+    chunk_id: pg45231_txt#014
+    start: 1589
+    end: 1710
+  provenance_kind: 网络语料
+- id: gen_prod_0036
+  domain: production
+  title: 舞台用手动弧灯
+  content: 按操作方式弧灯分手动进给与自动进给两类；舞台照明实际只允许使用手动进给弧灯。
+  keywords:
+  - 手动进给
+  - 自动进给
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 操作
+  - 灯具
+  topic: lighting
+  quote: |-
+    The hand-feed lamp is generally used in theaters and is practically the only kind admitted on the stage, or for stage illuminating purposes.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#003
+  source_span:
+    chunk_id: pg45231_txt#003
+    start: 1279
+    end: 1419
+  provenance_kind: 网络语料
+- id: gen_prod_0037
+  domain: production
+  title: 高压灯绝缘操作
+  content: 操作高压灯前须与地面绝缘，接触带电导线时一次只用一只手。
+  keywords:
+  - 单手
+  - 安全
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电气安全
+  - 操作规范
+  topic: lighting
+  quote: |-
+    Never handle high tension lamps without insulating yourself from the ground; and handle live wires only with one hand at a time.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 1177
+    end: 1305
+  provenance_kind: 网络语料
+- id: gen_prod_0038
+  domain: production
+  title: 新增镜头用小数编号
+  content: 改稿新增镜头时用小数编号（如 12.1）插入，不整体重排，以免破坏已发出参考视频的对照关系。
+  keywords:
+  - 改稿
+  - 插入
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 命名规范
+  - 版本管理
+  topic: ''
+  quote: |-
+    改稿时新增的镜头用小数编号（如 12.1），而不是整体重排——
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#002
+  source_span:
+    chunk_id: production_pipeline_md#002
+    start: 105
+    end: 136
+  provenance_kind: 权威文档
+- id: gen_prod_0039
+  domain: production
+  title: 调用次数分列统计
+  content: 时间与调用次数必须分列统计，检索调用与模型调用分开计数，不可合并为一项。
+  keywords:
+  - 检索调用
+  - 模型调用
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: ''
+  quote: |-
+    时间与调用次数必须分列统计：检索调用与模型调用不是一回事。
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#003
+  source_span:
+    chunk_id: production_pipeline_md#003
+    start: 98
+    end: 127
+  provenance_kind: 权威文档
+- id: gen_prod_0040
+  domain: production
+  title: 电极选用与极性
+  content: 正极比负极保温更久；电极的质量与尺寸直接影响运行，应始终使用灯具厂商推荐的电极。
+  keywords:
+  - 正极
+  - 厂商推荐
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具维护
+  topic: lighting
+  quote: |-
+    The positive electrode retains heat longer than the negative. The quality and size of electrodes has much to do with successful operation.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 1747
+    end: 1885
+  provenance_kind: 网络语料
+- id: gen_prod_0041
+  domain: production
+  title: 文件名含镜号时间戳
+  content: 每个镜头的文件名必须包含镜号与时间戳，不使用自然语言描述，保证可排序与可检索。
+  keywords:
+  - 文件名含镜号时间戳
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 命名规范
+  - 文件管理
+  topic: ''
+  quote: |-
+    每个镜头的文件名包含镜号与时间戳，不用自然语言描述。
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#002
+  source_span:
+    chunk_id: production_pipeline_md#002
+    start: 77
+    end: 103
+  provenance_kind: 权威文档
+- id: gen_prod_0042
+  domain: production
+  title: 用基线识别手工修改
+  content: 每次构建都记录一份基线（每个对象的初始变换），用户的手工修改通过与基线比较来识别，而不是靠事件回调猜测。
+  keywords:
+  - 初始变换
+  - 差异比较
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 版本管理
+  - 预演流程
+  topic: ''
+  quote: |-
+    每次构建都必须记录一份**基线**（每个对象的初始变换），用户的手工修改通过与基线的比较被识别出来，而不是靠事件回调猜。
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#004
+  source_span:
+    chunk_id: production_pipeline_md#004
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_prod_0043
+  domain: production
+  title: 每灯独立保险与开关
+  content: 每盏灯应配各自的保险丝与开关，便于单独断电与保护。
+  keywords:
+  - 保险丝
+  - 独立回路
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 配电
+  - 安全
+  topic: lighting
+  quote: |-
+    Each lamp should be provided with its own fuses and switch.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#018
+  source_span:
+    chunk_id: pg45231_txt#018
+    start: 1275
+    end: 1334
+  provenance_kind: 网络语料
+- id: gen_prod_0044
+  domain: production
+  title: 过道灯独立回路
+  content: 沿台阶与过道布置的过道灯只照地面，应接独立回路，并在门口设开关控制，便于散场与引导。
+  keywords:
+  - 门口开关
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 照明
+  - 引导
+  topic: lighting
+  quote: |-
+    Aisle lights should be arranged on a separate circuit and controlled by a switch at the door.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#011
+  source_span:
+    chunk_id: pg45231_txt#011
+    start: 1120
+    end: 1213
+  provenance_kind: 网络语料
+- id: gen_prod_0045
+  domain: production
+  title: 多股线须用接线端子
+  content: 灯具内、开关处与变阻器处的所有多股绞合连接必须配经认可的接线端子（lugs）。
+  keywords:
+  - 变阻器
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布线
+  - 安全
+  topic: lighting
+  quote: |-
+    All stranded connections in lamp and at switch and rheostat must be provided with approved lugs.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#018
+  source_span:
+    chunk_id: pg45231_txt#018
+    start: 596
+    end: 692
+  provenance_kind: 网络语料
+- id: gen_prod_0046
+  domain: production
+  title: 易燃环境加金属网罩
+  content: 灯具附近有易燃料时，须在玻璃罩外加网孔不超过1.25英寸的金属网和合格火花罩，防止碳或熔铜火花逸出。
+  keywords:
+  - 网孔
+  - 火花罩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 防火
+  - 灯具安全
+  topic: lighting
+  quote: |-
+    Must be provided with a wire netting (having a mesh not exceeding one and one-fourth inches) around the globe and an approved spark arrester
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#012
+  source_span:
+    chunk_id: pg45231_txt#012
+    start: 1745
+    end: 1885
+  provenance_kind: 网络语料
+- id: gen_prod_0047
+  domain: production
+  title: 煤气线路接地报警
+  content: 煤气灯线路与煤气管共走易发生接地，应加装电铃与电池作接地指示：一旦接地造成持续电流，火花线圈吸动衔铁使铃持续鸣响，便于在演出前发现故障。
+  keywords:
+  - 电铃
+  - 火花线圈
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 故障指示
+  - 安全
+  topic: lighting
+  quote: |-
+    If a ground causes a continuous current, the spark coil will attract the armature, thus causing the bell to ring continuously.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#014
+  source_span:
+    chunk_id: pg45231_txt#014
+    start: 1410
+    end: 1536
+  provenance_kind: 网络语料
+- id: gen_prod_0048
+  domain: production
+  title: 串联电阻降压计算
+  content: 用串联电阻降压时，压降=电流×电阻；例如110V电路驱动45V、25A的弧灯，需电阻2.6Ω（25×2.6=65V压降，余45V给弧灯）。
+  keywords:
+  - 压降
+  - 欧姆定律
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯光
+  - 电气
+  topic: lighting
+  quote: |-
+    The drop in voltage is equal to the current multiplied by the resistance
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#009
+  source_span:
+    chunk_id: pg45231_txt#009
+    start: 582
+    end: 654
+  provenance_kind: 网络语料
+- id: gen_prod_0049
+  domain: production
+  title: 自动煤气应急灯的点火机构
+  content: 用煤气做应急照明时，可在每个煤气喷口装电磁铁：通电时既开气又打火，也可反向关气；系统需配大容量电池与火花线圈，并设开、关两个按钮。
+  keywords:
+  - 煤气灯
+  - 电磁铁
+  - 火花线圈
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 自动化
+  topic: lighting
+  quote: |-
+    At each gas jet a magnet _M_ is installed which, when energized, is capable of turning the gas on and at the same time producing a spark.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#014
+  source_span:
+    chunk_id: pg45231_txt#014
+    start: 916
+    end: 1053
+  provenance_kind: 网络语料
+- id: gen_prod_0050
+  domain: production
+  title: 电极须垂直面对齐
+  content: 电极必须在垂直平面内完全对齐（如图7B），否则燃烧过程中弧光会漂移，导致画面照度不稳。
+  keywords:
+  - 垂直对齐
+  - 弧光漂移
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 弧光
+  - 稳定性
+  topic: lighting
+  quote: |-
+    The electrode must align perfectly in the vertical plane as shown in _B_, Figure 7, or the arc will move while burning.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#005
+  source_span:
+    chunk_id: pg45231_txt#005
+    start: 1700
+    end: 1819
+  provenance_kind: 网络语料
+- id: gen_prod_0051
+  domain: production
+  title: 串联电阻防短路
+  content: 电极接触或间距极小时，须在电路中串联电阻（交流弧用电抗器）限制电流，否则起弧瞬间会短路。
+  keywords:
+  - 电抗器
+  - 限流
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电路
+  - 安全
+  topic: lighting
+  quote: |-
+    some resistance, or reactance in the case of alternating-current arcs, is always connected in series in the circuit.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#001
+  source_span:
+    chunk_id: pg45231_txt#001
+    start: 1300
+    end: 1416
+  provenance_kind: 网络语料
+- id: gen_prod_0052
+  domain: production
+  title: 间距过大的后果
+  content: 电极间距继续拉大，电弧会变长并出现火焰状，最终完全断裂熄灭。
+  keywords:
+  - 火焰弧
+  - 断弧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光源
+  - 失效
+  topic: lighting
+  quote: |-
+    If the separation be carried still further, the arc will grow longer and become flaming until finally it breaks entirely.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#001
+  source_span:
+    chunk_id: pg45231_txt#001
+    start: 2163
+    end: 2284
+  provenance_kind: 网络语料
+- id: gen_prod_0053
+  domain: production
+  title: 白光与彩色灯数量相等
+  content: 白光灯的数量通常等于所有彩色灯的总数，用于平衡色彩布光。
+  keywords:
+  - 配比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯光控制
+  - 色彩
+  topic: lighting
+  quote: |-
+    The number of white lights is usually equal to that of all of the colors.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#016
+  source_span:
+    chunk_id: pg45231_txt#016
+    start: 2022
+    end: 2095
+  provenance_kind: 网络语料
+- id: gen_prod_0054
+  domain: production
+  title: 预演交付物清单
+  content: 白模预演应交付五类产物：逐镜mp4片段、每镜首帧静帧、镜头清单shots.json（含镜号/景别/焦段/运镜/时长/台词）、提示词prompts.md、以及整段合片；缺镜头清单的预演只能看不能改，价值减半。
+  keywords:
+  - 镜头清单
+  - shots.json
+  - 合片
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制片流程
+  topic: ''
+  quote: |-
+    缺了镜头清单的"预演视频"只能看，不能改，价值减半。
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#001
+  source_span:
+    chunk_id: production_pipeline_md#001
+    start: 211
+    end: 237
+  provenance_kind: 权威文档
+- id: gen_prod_0055
+  domain: production
+  title: 弧光灯需降压供电
+  content: 直流弧灯最佳工作电压为45–50V，交流弧灯为30–40V；而市电配电多为110V或220V（偶达550V），因此必须在电路中串接降压装置才能让弧灯正常工作。
+  keywords:
+  - 弧灯
+  - 电压
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯光
+  - 电气
+  topic: lighting
+  quote: |-
+    The direct-current arc requires for its best operation a voltage of from 45 to 50, while the alternating-current arc uses from 30 to 40.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#009
+  source_span:
+    chunk_id: pg45231_txt#009
+    start: 154
+    end: 290
+  provenance_kind: 网络语料
+- id: gen_prod_0056
+  domain: production
+  title: 一镜一相机
+  content: 相机对象与镜号一一对应，一个镜头只配一台相机，便于预演中按镜号定位与替换。
+  keywords:
+  - 镜号
+  - 对应
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 命名规范
+  - 预演
+  topic: ''
+  quote: |-
+    相机对象与镜号一一对应，一镜一台相机；
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#002
+  source_span:
+    chunk_id: production_pipeline_md#002
+    start: 55
+    end: 74
+  provenance_kind: 权威文档
+- id: gen_prod_0057
+  domain: production
+  title: 观众席禁用弧光灯
+  content: 礼堂/观众席照明优先用高效白炽灯，不推荐装弧光灯；弧光灯唯一优势是布线初成本低，但高位灯具的修剪维护困难会抵消这点。
+  keywords:
+  - 观众席照明
+  - 白炽灯
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光源选择
+  - 礼堂照明
+  topic: lighting
+  quote: |-
+    In the auditorium, arc lamps are sometimes installed, but this practice can not be recommended
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#012
+  source_span:
+    chunk_id: pg45231_txt#012
+    start: 0
+    end: 94
+  provenance_kind: 网络语料
+- id: gen_prod_0058
+  domain: production
+  title: 弧形脚灯贴近观众
+  content: 脚灯沿舞台前缘排成与观众席同向的弧线，使演员能更靠近观众、声音更易传达，同时弧线布光比直线更能照亮演员侧面。
+  keywords:
+  - 弧线
+  - 舞台前缘
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 舞台
+  topic: lighting
+  quote: |-
+    If then the stage and foot lights are curved in the same way, the actors will be able to come that much closer to the audience
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#007
+  source_span:
+    chunk_id: pg45231_txt#007
+    start: 416
+    end: 542
+  provenance_kind: 网络语料
+- id: gen_prod_0059
+  domain: production
+  title: 自动弧灯用途
+  content: 自动进给弧灯如今主要用于剧场外立面照明，而非舞台内照明。
+  keywords:
+  - 自动进给
+  - 外立面
+  - 照明
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具
+  topic: lighting
+  quote: |-
+    At the present time these are used mostly, if at all, for the illumination of the exterior of the theater.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#003
+  source_span:
+    chunk_id: pg45231_txt#003
+    start: 1663
+    end: 1769
+  provenance_kind: 网络语料
+- id: gen_prod_0060
+  domain: production
+  title: 舞台侧不设总开关
+  content: 舞台侧灯光接另一组汇流排，但不宜由单一总开关整体控制；否则暗场时切断全部后重新给光，可能残留上一场布光而干扰新场。
+  keywords:
+  - 舞台灯
+  - 暗场
+  - 布光残留
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯光控制
+  - 换场
+  topic: lighting
+  quote: |-
+    it is best not to have the stage side of the board as a whole controlled by a main switch.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#016
+  source_span:
+    chunk_id: pg45231_txt#016
+    start: 1493
+    end: 1583
+  provenance_kind: 网络语料
+- id: gen_prod_0061
+  domain: production
+  title: 舞台插座藏于布景后
+  content: 舞台插座应离舞台中心足够远，确保始终位于布景之后；若太靠近中心，在全景布景中可能被观众看见。
+  keywords:
+  - 穿帮
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 穿帮控制
+  topic: lighting
+  quote: |-
+    The stage pockets are laid out far enough from the center of the stage to insure their being always behind the scenery.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#007
+  source_span:
+    chunk_id: pg45231_txt#007
+    start: 1708
+    end: 1827
+  provenance_kind: 网络语料
+- id: gen_prod_0062
+  domain: production
+  title: 舞台灯分四组
+  content: 舞台灯光通常分为四组：三个颜色组加一组舞台地排灯（pockets）。
+  keywords:
+  - 分组
+  - 颜色组
+  - 地排灯
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯光控制
+  - 分组
+  topic: lighting
+  quote: |-
+    The stage lighting is usually divided into four groups, viz.: three color groups and a group of stage pockets.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#016
+  source_span:
+    chunk_id: pg45231_txt#016
+    start: 1911
+    end: 2021
+  provenance_kind: 网络语料
+- id: gen_prod_0063
+  domain: production
+  title: 舞台用弧灯选型
+  content: 舞台照明优先选用开放式弧灯（open arc），封闭式弧灯电压高、剧场少用；开放式弧灯几乎只用于舞台。
+  keywords:
+  - 开放式
+  - 舞台照明
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具选型
+  topic: lighting
+  quote: |-
+    The open arc is almost universally used for stage work and this is about the only place where it is still considered useful.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#003
+  source_span:
+    chunk_id: pg45231_txt#003
+    start: 161
+    end: 285
+  provenance_kind: 网络语料
+- id: gen_prod_0064
+  domain: production
+  title: 舞台弧光灯的防护要求
+  content: 若必须在舞台上布置弧光灯，须将其悬吊于布景之间并用金属丝护罩包住；部分城市禁止在舞台上方悬吊弧光灯。
+  keywords:
+  - 护罩
+  - 悬吊
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 照明
+  - 安全
+  topic: lighting
+  quote: |-
+    they must be suspended amid the scenery and enclosed with wire guards.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#011
+  source_span:
+    chunk_id: pg45231_txt#011
+    start: 2032
+    end: 2102
+  provenance_kind: 网络语料
+- id: gen_prod_0065
+  domain: production
+  title: 上投阴影判倒装
+  content: 若阴影强烈向上投射，说明灯被倒装使用，应调整灯位。
+  keywords:
+  - 灯位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 故障判断
+  - 布光
+  topic: lighting
+  quote: |-
+    Strong shadows cast upwards indicate a lamp burning “upside down”.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#004
+  source_span:
+    chunk_id: pg45231_txt#004
+    start: 1680
+    end: 1746
+  provenance_kind: 网络语料
+- id: gen_prod_0066
+  domain: production
+  title: 支架开关防误触
+  content: 装在支架上的开关须做成无法意外触碰任何带电部位的结构。
+  keywords:
+  - 支架开关防误触
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具结构
+  - 安全
+  topic: lighting
+  quote: |-
+    Switch on standard must be so constructed that accidental contact with any live portion of same will be impossible.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#018
+  source_span:
+    chunk_id: pg45231_txt#018
+    start: 479
+    end: 594
+  provenance_kind: 网络语料
+- id: gen_prod_0067
+  domain: production
+  title: 起弧需先接触电极
+  content: 要形成电弧，必须先把两电极接触以启动电流，再缓慢分开电极使电流穿过间隙，产生约3500℃高温并挥发碳极材料。
+  keywords:
+  - 电极接触
+  - 挥发
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 操作
+  - 光源
+  topic: lighting
+  quote: |-
+    In order that an arc may be formed, it is necessary first to bring the electrodes together.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#001
+  source_span:
+    chunk_id: pg45231_txt#001
+    start: 516
+    end: 607
+  provenance_kind: 网络语料
+- id: gen_prod_0068
+  domain: production
+  title: 观众席灯单开关控制
+  content: 观众席（厅内）照明应全部经由一个总开关供电，便于统一开关。
+  keywords:
+  - 总开关
+  - 供电
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯光控制
+  topic: lighting
+  quote: |-
+    All of the house lights should be fed through one main switch
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#016
+  source_span:
+    chunk_id: pg45231_txt#016
+    start: 1361
+    end: 1422
+  provenance_kind: 网络语料
+- id: gen_prod_0069
+  domain: production
+  title: 小开关可用重型线夹
+  content: 较小规格的开关可用简单线夹，但须足够厚重以承受频繁使用。
+  keywords:
+  - 耐用
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 电气
+  - 接线
+  topic: lighting
+  quote: |-
+    For the smaller sized switches simple clamps can be employed, provided they are heavy enough to stand considerable hard usage.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#016
+  source_span:
+    chunk_id: pg45231_txt#016
+    start: 167
+    end: 293
+  provenance_kind: 网络语料
+- id: gen_prod_0070
+  domain: production
+  title: 聚光灯的三种机位
+  content: 透镜式聚光灯（spot/lens lamp）用于舞台、天桥以及“前区”（front，指楼座/廊台区域）三个位置打光，可配可拆卸的Sciopticon附件做投影效果。
+  keywords:
+  - 前区
+  - 天桥
+  - Sciopticon
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具
+  topic: lighting
+  quote: |-
+    This style of lamp is used on the stage, on bridges, or “in front”
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#017
+  source_span:
+    chunk_id: pg45231_txt#017
+    start: 1048
+    end: 1114
+  provenance_kind: 网络语料
+- id: gen_prod_0071
+  domain: production
+  title: 透镜灯可密闭
+  content: 透镜灯（lens lamp）可完全密闭，因为除穿过前方透镜的光外不需要其他光线外泄。
+  keywords:
+  - 控光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具
+  - 控光
+  topic: lighting
+  quote: |-
+    Lens lamps can be tightly enclosed since none of the light is wanted except that which passes through the lens in front.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#003
+  source_span:
+    chunk_id: pg45231_txt#003
+    start: 458
+    end: 578
+  provenance_kind: 网络语料
+- id: gen_prod_0072
+  domain: production
+  title: 配电盘位置与视线
+  content: 配电盘多设在舞台右侧面向观众处，便于舞台监督与电工配合；应抬高或嵌入台口墙，使操作者始终能看清舞台，因为许多灯光提示来自演员走位。
+  keywords:
+  - 舞台右侧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 灯光控制
+  topic: lighting
+  quote: |-
+    He should have a full view of the stage at all times, since many of his cues are given by movements of the actors.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#007
+  source_span:
+    chunk_id: pg45231_txt#007
+    start: 1592
+    end: 1706
+  provenance_kind: 网络语料
+- id: gen_prod_0073
+  domain: production
+  title: 配电盘抬高避免占台
+  content: 配电盘应抬高到舞台面以上，使舞台地面全部可供演员使用；若置于台面高度会占用宝贵空间并妨碍演员上下场。
+  keywords:
+  - 配电盘高度
+  - 舞台空间
+  - 上下场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 舞台布局
+  topic: lighting
+  quote: |-
+    It is preferable to have the board raised high enough above stage level to allow all space on the stage to be used by actors.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#016
+  source_span:
+    chunk_id: pg45231_txt#016
+    start: 919
+    end: 1044
+  provenance_kind: 网络语料
+- id: gen_prod_0074
+  domain: production
+  title: 镜号递增不重排
+  content: 镜号按剧本顺序递增分配；删除镜头后保留空号，不重新编号，避免已发出的参考视频失去对照。
+  keywords:
+  - 编号
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 命名规范
+  - 制片流程
+  topic: ''
+  quote: |-
+    镜号按剧本顺序递增，不因删除而重排；
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#002
+  source_span:
+    chunk_id: production_pipeline_md#002
+    start: 34
+    end: 52
+  provenance_kind: 权威文档
+- id: gen_prod_0075
+  domain: production
+  title: 弧灯可用白炽灯仿制
+  content: 需要弧灯外观但不用真弧灯时，可用白炽灯置于合适球形罩内、灯罩做成弧灯外形来仿制。
+  keywords:
+  - 灯罩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯具
+  - 替代方案
+  topic: lighting
+  quote: |-
+    Arc lamps are often imitated by an incandescent lamp placed within a suitable globe with the hood made up in the shape of an arc lamp.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:29+00:00'
+    sha256: 7dc16fab3ed6ffaffddfee15bcf658da3f317ec5d3c097ac0972e7d59bfd0700
+  chunk_id: pg45231_txt#017
+  source_span:
+    chunk_id: pg45231_txt#017
+    start: 1396
+    end: 1530
+  provenance_kind: 网络语料
+- id: gen_prod_0076
+  domain: production
+  title: 预演时长对齐成片
+  content: 预演阶段的总时长应与成片目标时长一致，误差控制在 5% 以内，作为预演交付的硬性验收指标。
+  keywords:
+  - 成片时长
+  - 误差控制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演交付
+  topic: ''
+  quote: |-
+    预演阶段的总时长应当与成片目标时长一致，误差控制在 5% 以内；
+  source_ref:
+    url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: ae65f854bcfc4d52fb4f5836bd90f916008e4341748d26df32d313e1197059be
+  chunk_id: production_pipeline_md#003
+  source_span:
+    chunk_id: production_pipeline_md#003
+    start: 14
+    end: 46
+  provenance_kind: 权威文档

@@ -1,0 +1,3250 @@
+# 生成卡片：cinematography（自动生成，请勿手改；见 docs/knowledge/LICENSES.md）
+- id: gen_cine_0001
+  domain: cinematography
+  title: 中焦标准视角约53度
+  content: 4×5画幅配5英寸焦距镜头时视角约53°，属于室内外通用的一般工作视角，适合常规取景。
+  keywords:
+  - 通用
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 镜头选择
+  topic: ''
+  quote: |-
+    A lens of 5-inch focal length, used on a 4 x 5 plate, will include an angle of view of 53°.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#001
+  source_span:
+    chunk_id: pg78373_txt#001
+    start: 598
+    end: 689
+  provenance_kind: 网络语料
+- id: gen_cine_0002
+  domain: cinematography
+  title: 固定焦点免对焦
+  content: Williamson等相机在特定距离内因光圈固定焦点而无需对焦，适合日常拍摄；只有需要严格对焦时才启用毛面胶片检查。
+  keywords:
+  - 日常拍摄
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 景深
+  topic: camera_angle
+  quote: |-
+    With the Williamson camera focussing is unnecessary within certain distances owing to the fixed foci of the stops.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#000
+  source_span:
+    chunk_id: pg45714_txt#000
+    start: 96
+    end: 210
+  provenance_kind: 网络语料
+- id: gen_cine_0003
+  domain: cinematography
+  title: 闪光前后开合快门
+  content: 一切就绪后先打开镜头或快门、揭开感光板，闪光前几秒的曝光有助于整体照明；闪光一结束立即遮住镜头并合上片盒。
+  keywords:
+  - 曝光时机
+  - 闪光同步
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 曝光
+  topic: ''
+  quote: |-
+    Immediately after the flash, however, the lens should be covered, and the plate-holder closed.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#003
+  source_span:
+    chunk_id: pg78373_txt#003
+    start: 2106
+    end: 2200
+  provenance_kind: 网络语料
+- id: gen_cine_0004
+  domain: cinematography
+  title: 干燥前除净表面水分
+  content: 上晾干架前须用湿麂皮仔细擦去胶片表面水分，否则会轻微渗色、挤水不足导致着色不匀。
+  keywords:
+  - 染色
+  - 麂皮
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 工艺
+  topic: color
+  quote: |-
+    Always carefully remove any surface moisture from the film with a damp chamois, before drying.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#002
+  source_span:
+    chunk_id: pg70417_txt#002
+    start: 269
+    end: 363
+  provenance_kind: 网络语料
+- id: gen_cine_0005
+  domain: cinematography
+  title: 闪光间距过大的后果
+  content: 两个闪光点不可相距过远，否则会产生混乱的照明和交叉阴影。
+  keywords:
+  - 交叉阴影
+  - 混乱照明
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 阴影
+  topic: ''
+  quote: |-
+    Care must be exercised that the flashes are not too far apart, or confused lighting and crossed shadows will result.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#003
+  source_span:
+    chunk_id: pg78373_txt#003
+    start: 493
+    end: 609
+  provenance_kind: 网络语料
+- id: gen_cine_0006
+  domain: cinematography
+  title: 50mm 标准中景
+  content: 中景与中近景用 50 mm，其透视接近人眼，作为标准镜头使用。
+  keywords:
+  - 标准镜头
+  - 中近景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 焦距
+  - 标准镜
+  topic: camera_angle
+  quote: |-
+    **50 mm**：接近人眼透视，中景与中近景的标准镜头。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: 161
+    end: 190
+  provenance_kind: 权威文档
+- id: gen_cine_0007
+  domain: cinematography
+  title: 聚光镜尺寸宁大勿小
+  content: 为给定底片选配聚光镜时，应选直径足够大的型号，避免因聚光镜过小造成底片边缘受光不足。
+  keywords:
+  - 受光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 器材选择
+  - 照明
+  topic: ''
+  quote: |-
+    it is always best to have the condensers of ample size for a given negative
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#002
+  source_span:
+    chunk_id: pg24637_txt#002
+    start: 629
+    end: 704
+  provenance_kind: 网络语料
+- id: gen_cine_0008
+  domain: cinematography
+  title: 局部补光压暗部反差
+  content: 人工光下阴影生硬沉重、反差刺眼时，用多盏灯分散布置在镜头视野之外做局部照明，照亮最暗区域以缓和反差。
+  keywords:
+  - 局部光
+  - 反差控制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 明暗
+  topic: ''
+  quote: |-
+    Skilful local lighting by lamps placed here and there, out of the range of the lens
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#002
+  source_span:
+    chunk_id: pg78373_txt#002
+    start: 1930
+    end: 2013
+  provenance_kind: 网络语料
+- id: gen_cine_0009
+  domain: cinematography
+  title: 人造光仅限目视比对
+  content: 人造光经漫射修正后可用于有限范围的色彩工作，但目前只限于目视匹配与任意比较，不能用于记录性拍摄。
+  keywords:
+  - 目视匹配
+  - 记录
+  - 限制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线
+  - 色彩
+  topic: lighting
+  quote: |-
+    In the case of artificial lights, their use is, as yet, limited to visual matching (not recording) and arbitrary comparisons.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:58+00:00'
+    sha256: ac7fc0edd09597c8e790a963005024db653bd82c8c859e408fa6985fdf0d6b73
+  chunk_id: pg57335_txt#000
+  source_span:
+    chunk_id: pg57335_txt#000
+    start: 2243
+    end: 2368
+  provenance_kind: 网络语料
+- id: gen_cine_0010
+  domain: cinematography
+  title: 缩小复制无皮腔难题
+  content: 从大原稿翻拍小尺寸复制品时，皮腔延伸不足的问题不会出现；只有等大或放大复制才需要两倍焦距的延伸量。
+  keywords:
+  - 放大倍率
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 翻拍
+  - 光学
+  topic: ''
+  quote: |-
+    As long as it is a question merely of making a small reproduction from a large original the difficulty does not appear.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#004
+  source_span:
+    chunk_id: pg78373_txt#004
+    start: 761
+    end: 880
+  provenance_kind: 网络语料
+- id: gen_cine_0011
+  domain: cinematography
+  title: 日光放大机底片放置
+  content: 使用日光放大机时，底片倒置放入片夹，正对毛玻璃中心，并朝向工作间一侧。
+  keywords:
+  - 片夹
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 操作
+  topic: ''
+  quote: |-
+    the negative is placed in the holder opposite the center of the ground-glass, upside down and facing into the work room
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#002
+  source_span:
+    chunk_id: pg24637_txt#002
+    start: 1174
+    end: 1293
+  provenance_kind: 网络语料
+- id: gen_cine_0012
+  domain: cinematography
+  title: 光圈档位与曝光倍增
+  content: 光圈每收小一档（如 f/4→f/5.6→f/8），进光量减半，所需曝光时间加倍；相邻档位孔径差异虽小，对曝光影响显著。
+  keywords:
+  - 光圈档位与曝光倍增
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: camera_angle
+  quote: |-
+    the exposure being doubled with every diminution of the stop up to the limits of the diaphragm
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#001
+  source_span:
+    chunk_id: pg45714_txt#001
+    start: 1742
+    end: 1836
+  provenance_kind: 网络语料
+- id: gen_cine_0013
+  domain: cinematography
+  title: 光圈环六档刻度
+  content: 光圈环旋转行程分为六个固定刻度，对应 f/3.5、f/4、f/5.6、f/8、f/11、f/16，孔径从约 3/5 英寸递减到 1/8 英寸，可微调以适应任意光线。
+  keywords:
+  - f值
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 器材操作
+  topic: camera_angle
+  quote: |-
+    the total rotary travel of the ring is graduated to six different definite points or as many different sized apertures
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#001
+  source_span:
+    chunk_id: pg45714_txt#001
+    start: 943
+    end: 1061
+  provenance_kind: 网络语料
+- id: gen_cine_0014
+  domain: cinematography
+  title: 高光比必补眼神光
+  content: 光比超过 4:1 时演员眼部细节会丢失，必须补眼神光，否则观众读不到情绪。
+  keywords:
+  - 眼部细节
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 补光
+  - 高反差
+  topic: lighting
+  quote: |-
+    光比一旦超过 4:1，演员的眼部细节就会丢失，必须补眼神光，否则观众读不到情绪。
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#001
+  source_span:
+    chunk_id: lighting_and_color_md#001
+    start: 144
+    end: 184
+  provenance_kind: 权威文档
+- id: gen_cine_0015
+  domain: cinematography
+  title: 调色片须上银幕判断
+  content: 判断调色效果必须在放映银幕上观察，不能只看手中的胶片：有些调色片手持看有色，投到银幕上却接近黑白。
+  keywords:
+  - 放映
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 校验
+  topic: color
+  quote: |-
+    when judging any particular tone, it is absolutely necessary to view the image on the screen.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#002
+  source_span:
+    chunk_id: pg70417_txt#002
+    start: 1716
+    end: 1809
+  provenance_kind: 网络语料
+- id: gen_cine_0016
+  domain: cinematography
+  title: 单闪光宜用广角短焦
+  content: 单次闪光的光线较局部且强度衰减极快，因此短焦（广角）镜头比长焦镜头更有优势。
+  keywords:
+  - 闪光衰减
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 镜头选择
+  topic: ''
+  quote: |-
+    a short focus lens (wide angle) will give definite advantage over one of longer focus.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#003
+  source_span:
+    chunk_id: pg78373_txt#003
+    start: 2312
+    end: 2398
+  provenance_kind: 网络语料
+- id: gen_cine_0017
+  domain: cinematography
+  title: 反射光损失不可硬套
+  content: 反射面造成的入射光损失量随光源不同而变化，不能把某次测得的反射损失比例硬套到所有光照条件下。
+  keywords:
+  - 反射损失
+  - 光值
+  - 变量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线衰减
+  - 测光
+  topic: lighting
+  quote: |-
+    The difference between the two curves is the loss of light incident on reflection, but this must not be rigidly interpreted for all cases
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:58+00:00'
+    sha256: ac7fc0edd09597c8e790a963005024db653bd82c8c859e408fa6985fdf0d6b73
+  chunk_id: pg57335_txt#002
+  source_span:
+    chunk_id: pg57335_txt#002
+    start: 1188
+    end: 1325
+  provenance_kind: 网络语料
+- id: gen_cine_0018
+  domain: cinematography
+  title: 用表格确定镜头距离
+  content: 可查表确定给定放大倍率下镜头到底片和屏幕的距离，该表覆盖常规需求，可用于搭建放大设备。
+  keywords:
+  - 距离表
+  - 放大倍率
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 参数表
+  - 放大
+  topic: ''
+  quote: |-
+    There are tables which show exactly the distance which the lens must be from the negative and screen in order to get an enlargement of a given size
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#002
+  source_span:
+    chunk_id: pg24637_txt#002
+    start: 1678
+    end: 1825
+  provenance_kind: 网络语料
+- id: gen_cine_0019
+  domain: cinematography
+  title: 酸停浴抑制渗色
+  content: 可用酸性停浴或在染浴中加酸来改变渗色，但渗色本质上是染料自身属性，选料时仍应以低渗色为准则。
+  keywords:
+  - 染料属性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩工艺
+  - 化学控制
+  topic: color
+  quote: |-
+    It is possible in some cases to modify this bleeding by an acid “stop bath,” or by adding acid to the dye-bath
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#000
+  source_span:
+    chunk_id: pg70417_txt#000
+    start: 743
+    end: 853
+  provenance_kind: 网络语料
+- id: gen_cine_0020
+  domain: cinematography
+  title: 对话段落机位高度统一
+  content: 同一对话段落内保持机位高度一致（同高或同侧），不要来回切换低机位与高机位，否则人物关系显得对抗、混乱。
+  keywords:
+  - 低机位
+  - 高机位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 对抗
+  tags:
+  - 轴线
+  - 连续性
+  topic: camera_angle
+  quote: |-
+    在同一个对话段落里来回切换低机位与高机位，会让人物关系像在"打架"；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#004
+  source_span:
+    chunk_id: camera_angle_and_lens_md#004
+    start: 13
+    end: 47
+  provenance_kind: 权威文档
+- id: gen_cine_0021
+  domain: cinematography
+  title: 段落内高度变化需理由
+  content: 同一段落内机位高度变化超过0.5米时，必须给出可见理由，如人物坐下、镜头上摇或场景转换，否则观众会感到突兀。
+  keywords:
+  - 机位高度变化
+  - 段落连贯
+  - 动机
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 连续性
+  - 调度
+  topic: camera_angle
+  quote: |-
+    在同一段落里改变机位高度超过 0.5 米，需要有一个可见的理由（人物坐下、镜头上摇、场景转换）
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#004
+  source_span:
+    chunk_id: camera_angle_in_practice_md#004
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_cine_0022
+  domain: cinematography
+  title: 段落内角度变化区间
+  content: 同一段落内连续镜头若角度完全不变会显得单调，跳变过大又会造成视觉断裂；建议把段落内的角度变化控制在15°–35°之间，兼顾变化感与连贯性。
+  keywords:
+  - 连贯性
+  - 单调
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位角度
+  - 剪辑连续性
+  topic: camera_angle
+  quote: |-
+    同一段落内的角度变化建议保持在 15°–35° 之间。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#002
+  source_span:
+    chunk_id: camera_angle_in_practice_md#002
+    start: 158
+    end: 185
+  provenance_kind: 权威文档
+- id: gen_cine_0023
+  domain: cinematography
+  title: 双色温制造冷暖对立
+  content: 同一画面内并置两种色温（如窗外冷蓝＋室内暖黄）即可形成内外/冷暖对立，是最省力也最有效的情绪手段，需要表达内外冲突时优先采用。
+  keywords:
+  - 冷暖对比
+  - 内外对立
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩对比
+  - 情绪手段
+  topic: lighting
+  quote: |-
+    同一个画面里出现两种色温（例如窗外冷蓝＋室内暖黄）会天然形成"内外/冷暖"的
+    对立，这是最省力也最有效的情绪手段。
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#003
+  source_span:
+    chunk_id: lighting_and_color_md#003
+    start: 138
+    end: 195
+  provenance_kind: 权威文档
+- id: gen_cine_0024
+  domain: cinematography
+  title: 混染浴色调漂移
+  content: 含多种染料的染浴中，酸对不同染料影响不一，随染浴耗尽与酸度变化色调会逐渐改变；因此加酸法只对单一染料的染浴可靠。
+  keywords:
+  - 酸度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩工艺
+  - 色调稳定
+  topic: color
+  quote: |-
+    as the dye-bath becomes exhausted and the acid content changes, the tint obtained will gradually change also.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#000
+  source_span:
+    chunk_id: pg70417_txt#000
+    start: 1921
+    end: 2030
+  provenance_kind: 网络语料
+- id: gen_cine_0025
+  domain: cinematography
+  title: 镜头固定方式取舍
+  content: 固定尺寸放大可用延长箱体并把镜头装在末端，但调整余地太小不推荐；双箱套叠稍好仍不理想；最佳方案是把相机直接对接底片盒开口，可翻转后背相机最易实现。
+  keywords:
+  - 相机对接
+  - 可调性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 器材布置
+  topic: ''
+  quote: |-
+    It is far better to adapt one's camera to the apparatus, and this can always be done
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#001
+  source_span:
+    chunk_id: pg24637_txt#001
+    start: 1399
+    end: 1483
+  provenance_kind: 网络语料
+- id: gen_cine_0026
+  domain: cinematography
+  title: 漫射日光作标准白
+  content: 在需要色彩一致性的拍摄中，以漫射日光作为标准白光源；它是目前唯一满足射线均衡条件的光，直射阳光和多数人造光都不满足。
+  keywords:
+  - 射线均衡
+  - 色彩一致性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线
+  - 标准光源
+  topic: lighting
+  quote: |-
+    Up to the present diffused daylight is the only light which complies with the condition of ray equality.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:58+00:00'
+    sha256: ac7fc0edd09597c8e790a963005024db653bd82c8c859e408fa6985fdf0d6b73
+  chunk_id: pg57335_txt#000
+  source_span:
+    chunk_id: pg57335_txt#000
+    start: 1167
+    end: 1271
+  provenance_kind: 网络语料
+- id: gen_cine_0027
+  domain: cinematography
+  title: 遮光罩防直射阳光
+  content: 夏季太阳近乎头顶时，在窗框外侧、毛玻璃上方一定距离加遮光罩，挡住直射阳光，避免光线过斜造成照明不均。
+  keywords:
+  - 照明不均
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线控制
+  topic: ''
+  quote: |-
+    It is placed on the outside of the window-frame, some distance above the ground-glass, and shields the latter from the direct rays of the sun
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#001
+  source_span:
+    chunk_id: pg24637_txt#001
+    start: 2748
+    end: 2889
+  provenance_kind: 网络语料
+- id: gen_cine_0028
+  domain: cinematography
+  title: 室内人像曝光加半档
+  content: 室内拍人像时，在正常测光所得曝光基础上乘以1.5倍作为完整曝光量，例如正常2秒则给4秒。
+  keywords:
+  - 曝光补偿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    We remember the rule to multiply normal exposure by 1½ for portraits indoors, and give 4 seconds as a full exposure.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#000
+  source_span:
+    chunk_id: pg78373_txt#000
+    start: 576
+    end: 692
+  provenance_kind: 网络语料
+- id: gen_cine_0029
+  domain: cinematography
+  title: 翻拍题材与用途
+  content: 家庭翻拍的对象包括老式达盖尔银版、锡版、褪色肖像、绘画、地图、文凭与手稿，也可从合影中单独放大某一人物的头像。
+  keywords:
+  - 翻拍对象
+  - 肖像
+  - 手稿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    The object to be copied may be an old Daguerreotype, tintype, or faded portrait
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#004
+  source_span:
+    chunk_id: pg78373_txt#004
+    start: 173
+    end: 252
+  provenance_kind: 网络语料
+- id: gen_cine_0030
+  domain: cinematography
+  title: 毛面胶片收纳
+  content: 对焦完成后取出毛面胶片并妥善存放，可用图钉将其钉在机内底面，以便下次需要时能立即找到。
+  keywords:
+  - 图钉
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 器材管理
+  topic: camera_angle
+  quote: |-
+    It is a good plan to clinch it to the bottom inner surface of the camera with drawing pins, for it can then be found when it is wanted.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#000
+  source_span:
+    chunk_id: pg45714_txt#000
+    start: 1559
+    end: 1694
+  provenance_kind: 网络语料
+- id: gen_cine_0031
+  domain: cinematography
+  title: 染色液配比调中间色
+  content: 将J、K、L三种染液按不同比例混合，可像染色一样得到中间色，用于精确控制画面色调。
+  keywords:
+  - 染液
+  - 混合
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩控制
+  - 调色
+  topic: color
+  quote: |-
+    By mixing the dye-baths J, K, and L in varying proportions intermediate colors may be obtained just as in tinting.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#004
+  source_span:
+    chunk_id: pg70417_txt#004
+    start: 0
+    end: 114
+  provenance_kind: 网络语料
+- id: gen_cine_0032
+  domain: cinematography
+  title: 调色后染色速度更快
+  content: 已调色的胶片（A、F调除外）比未调色胶片吸色更快；若要复现样片效果，须相应稀释染液。
+  keywords:
+  - 吸色速度
+  - 稀释
+  - 复现
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 工艺控制
+  - 色彩一致性
+  topic: color
+  quote: |-
+    toned film (except tones A and F) absorbs the dye more quickly than untoned film
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#004
+  source_span:
+    chunk_id: pg70417_txt#004
+    start: 2051
+    end: 2131
+  provenance_kind: 网络语料
+- id: gen_cine_0033
+  domain: cinematography
+  title: 广角需收小光圈保画质
+  content: 广角镜头在大光圈下画面四角与中心的清晰度和照度可能不均，需显著收小光圈（如f/11、f/18）来改善边缘成像与照明。
+  keywords:
+  - 收光圈
+  - 边缘画质
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    Whether the negative would be well defined or equally lighted at the corners and centre of the plate is another story.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#001
+  source_span:
+    chunk_id: pg78373_txt#001
+    start: 814
+    end: 932
+  provenance_kind: 网络语料
+- id: gen_cine_0034
+  domain: cinematography
+  title: 先定标准光强再放大
+  content: 开始放大前，先用一张好底片试出最适合它的光强，作为同类底片的标准，再按具体底片或放大倍率调整光强。
+  keywords:
+  - 标准底片
+  - 曝光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 曝光
+  - 工作流程
+  topic: ''
+  quote: |-
+    the worker should work with one good negative until he finds out exactly what light-intensity is best suited to it
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#002
+  source_span:
+    chunk_id: pg24637_txt#002
+    start: 753
+    end: 867
+  provenance_kind: 网络语料
+- id: gen_cine_0035
+  domain: cinematography
+  title: 快门速度固定时的补偿
+  content: 当摄影机手柄转速固定、无法延长曝光时间时，收小光圈造成的曝光不足必须靠提高被摄场景光照强度来补偿，而非延长曝光。
+  keywords:
+  - 曝光补偿
+  - 光照
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 曝光
+  - 布光
+  topic: camera_angle
+  quote: |-
+    Instead of increasing the duration of the exposure we must have a greater intensity of light for _f_/5·6 than for _f_/4.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#001
+  source_span:
+    chunk_id: pg45714_txt#001
+    start: 2044
+    end: 2164
+  provenance_kind: 网络语料
+- id: gen_cine_0036
+  domain: cinematography
+  title: 皮腔不足的三种解法
+  content: 当皮腔伸长量不足以做等大翻拍时，按优先级依次考虑：换用双倍延伸皮腔相机、换短焦（广角）镜头、或自制不透光木质前延伸板把镜头前移，以补足镜头与感光板之间的距离。
+  keywords:
+  - 双倍延伸
+  - 广角镜头
+  - 延伸板
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 翻拍
+  - 器材取舍
+  - 微距
+  topic: ''
+  quote: |-
+    If we have a double-extension its extra length of bellows will help us out of the difficulty.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#004
+  source_span:
+    chunk_id: pg78373_txt#004
+    start: 1497
+    end: 1590
+  provenance_kind: 网络语料
+- id: gen_cine_0037
+  domain: cinematography
+  title: 染料耐光耐热与二色性
+  content: 所选染料不得因受热或受光而褪色，也不得具有二色性（稀释时变色）。
+  keywords:
+  - 染料耐光耐热与二色性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩工艺
+  - 染料选择
+  topic: color
+  quote: |-
+    The dyes should not fade on exposure to heat or light and should not be “dichroic” or change color on dilution.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#000
+  source_span:
+    chunk_id: pg70417_txt#000
+    start: 2158
+    end: 2269
+  provenance_kind: 网络语料
+- id: gen_cine_0038
+  domain: cinematography
+  title: 三原色配色法
+  content: 把色调理解为红、黄、蓝三色的组合：橙=黄+红，紫=红+蓝，绿=黄+蓝，棕=红+黄+蓝三色混合。
+  keywords:
+  - 橙紫绿棕
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩理论
+  - 调色
+  topic: color
+  quote: |-
+    Colors such as orange are made by mixing yellow and red, violet by mixing red and blue, and green by mixing yellow and blue.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#001
+  source_span:
+    chunk_id: pg70417_txt#001
+    start: 1592
+    end: 1716
+  provenance_kind: 网络语料
+- id: gen_cine_0039
+  domain: cinematography
+  title: 中景取胸线高度
+  content: 拍中景时，机位高度取胸线（本引擎 0.91 米），这是交流感最自然的机位。
+  keywords:
+  - 机位高度
+  - 交流感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 自然
+  tags:
+  - 机位高度
+  - 景别
+  topic: camera_angle
+  quote: |-
+    中景取胸线高度（本引擎 0.91 米）——这是"交流感"最自然的机位；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#001
+  source_span:
+    chunk_id: camera_angle_and_lens_md#001
+    start: 41
+    end: 76
+  provenance_kind: 权威文档
+- id: gen_cine_0040
+  domain: cinematography
+  title: 读灯人物摆姿求支撑
+  content: 拍人物在桌旁灯下阅读时，把脸置于阴影中，姿势安排要放松并给身体充分支撑，避免僵硬。
+  keywords:
+  - 坐姿
+  - 阴影脸
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 松弛
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    The face is in shadow and the pose was arranged to give ease and abundant support to the figure.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#002
+  source_span:
+    chunk_id: pg78373_txt#002
+    start: 1397
+    end: 1493
+  provenance_kind: 网络语料
+- id: gen_cine_0041
+  domain: cinematography
+  title: 特写避免广角近距
+  content: 拍人脸特写时不要用 24 mm 广角且机位过近，透视会拉伸五官导致变形；特写应换更长焦距或拉远机位。
+  keywords:
+  - 焦距
+  - 变形
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 焦距
+  - 透视
+  topic: camera_angle
+  quote: |-
+    特写用 24 mm 且机位过近，人脸会变形；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#004
+  source_span:
+    chunk_id: camera_angle_and_lens_md#004
+    start: 50
+    end: 72
+  provenance_kind: 权威文档
+- id: gen_cine_0042
+  domain: cinematography
+  title: 大特写取眼高更近
+  content: 拍大特写时，机位仍取眼高但距离更近，让眼睛与嘴唇占据画面，用于情绪的临界点。
+  keywords:
+  - 机位高度
+  - 情绪临界点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 机位高度
+  topic: camera_angle
+  quote: |-
+    大特写取眼高但更近，眼睛与嘴唇占据画面，用于情绪的临界点。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#001
+  source_span:
+    chunk_id: camera_angle_and_lens_md#001
+    start: 139
+    end: 168
+  provenance_kind: 权威文档
+- id: gen_cine_0043
+  domain: cinematography
+  title: 小光圈长曝光拍静物
+  content: 拍室内静物可用极小光圈（如f/22）配合长曝光（如16分钟），以兼顾景深与暗光下的曝光量。
+  keywords:
+  - 小光圈长曝光拍静物
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 景深
+  topic: ''
+  quote: |-
+    we give an exposure of 16 minutes with _f_/22.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#000
+  source_span:
+    chunk_id: pg78373_txt#000
+    start: 1549
+    end: 1595
+  provenance_kind: 网络语料
+- id: gen_cine_0044
+  domain: cinematography
+  title: 中近景取胸口偏上
+  content: 拍对话戏时，主力景别用中近景，机位取胸口偏上（1.23 米）。
+  keywords:
+  - 机位高度
+  - 对话
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 对话
+  topic: camera_angle
+  quote: |-
+    中近景取胸口偏上（1.23 米）——对话时的主力景别；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#001
+  source_span:
+    chunk_id: camera_angle_and_lens_md#001
+    start: 79
+    end: 106
+  provenance_kind: 权威文档
+- id: gen_cine_0045
+  domain: cinematography
+  title: 小房间用广角镜头
+  content: 拍摄小房间或空间受限的室内时，应改用专用广角镜头（视角可达100°以上），以在狭窄空间内纳入更多环境。
+  keywords:
+  - 小空间
+  - 室内
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 镜头选择
+  topic: ''
+  quote: |-
+    For interiors of small rooms, or wherever the space is confined, a special wide-angle lens is indicated
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#001
+  source_span:
+    chunk_id: pg78373_txt#001
+    start: 1193
+    end: 1296
+  provenance_kind: 网络语料
+- id: gen_cine_0046
+  domain: cinematography
+  title: 车轮辐条频闪效应
+  content: 拍摄旋转车轮时，若在快门遮挡期间辐条移动的角度恰好等于相邻辐条夹角（如四辐条为90度），则每帧辐条位置重合，放映时辐条看似静止，而轮缘仍在移动，产生滑行错觉。
+  keywords:
+  - 快门
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动错觉
+  topic: camera_angle
+  quote: |-
+    when the four pictures are thrown successively upon the screen they will look exactly alike. The spokes will appear to be quite stationary
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#003
+  source_span:
+    chunk_id: pg45714_txt#003
+    start: 1190
+    end: 1328
+  provenance_kind: 网络语料
+- id: gen_cine_0047
+  domain: cinematography
+  title: 延时摄影的间歇驱动
+  content: 拍摄长时间间隔的延时镜头时，用时钟触点按秒/分/小时触发电机，每次只让机件转一圈完成一次曝光并把胶片推进一格，间隔可按需设定。
+  keywords:
+  - 时钟触点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 逐格
+  topic: camera_angle
+  quote: |-
+    The contacts may be disposed to coincide with intervals of a second, a minute, an hour, or more between successive exposures.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#004
+  source_span:
+    chunk_id: pg45714_txt#004
+    start: 1260
+    end: 1385
+  provenance_kind: 网络语料
+- id: gen_cine_0048
+  domain: cinematography
+  title: 只留主体隐去环境
+  content: 拍摄静物场景（如摆好的餐桌）时，可只让主体与陈设受光，其余部分沉入阴影中隐藏，以突出主体。
+  keywords:
+  - 主体突出
+  - 暗部隐藏
+  - 静物
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 静谧
+  tags:
+  - 布光
+  - 明暗
+  topic: ''
+  quote: |-
+    We desire only the table and its arrangement; all else may be hidden in shadow.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#000
+  source_span:
+    chunk_id: pg78373_txt#000
+    start: 1090
+    end: 1169
+  provenance_kind: 网络语料
+- id: gen_cine_0049
+  domain: cinematography
+  title: 单灯侧顶光拍睡姿
+  content: 拍熟睡人物可用单只磨砂玻璃罩灯，置于主体上方约4英尺并偏一侧，灯不入画，形成柔和侧顶光。
+  keywords:
+  - 柔光罩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 安静
+  tags:
+  - 布光
+  - 肖像
+  topic: ''
+  quote: |-
+    It was made by the light of a single gas-jet enclosed in a ground-glass globe, and fixed about 4 feet above and at one side of the crib.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#002
+  source_span:
+    chunk_id: pg78373_txt#002
+    start: 477
+    end: 613
+  provenance_kind: 网络语料
+- id: gen_cine_0050
+  domain: cinematography
+  title: 特写取眼高并留上三分
+  content: 拍特写时，机位取眼高（1.28 米），并把眼睛放在画面上三分之一处。
+  keywords:
+  - 机位高度
+  - 三分法
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 构图
+  topic: camera_angle
+  quote: |-
+    特写取眼高（1.28 米），眼睛落在画面上三分之一处；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#001
+  source_span:
+    chunk_id: camera_angle_and_lens_md#001
+    start: 109
+    end: 136
+  provenance_kind: 权威文档
+- id: gen_cine_0051
+  domain: cinematography
+  title: 85mm 情绪镜头首选
+  content: 拍近景与特写、需要情绪表达时用 85 mm：背景压缩明显、人脸比例好看，并把人物与背景分离开。
+  keywords:
+  - 背景压缩
+  - 近景
+  - 特写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 情绪
+  tags:
+  - 长焦
+  - 特写
+  topic: camera_angle
+  quote: |-
+    **85 mm**：背景压缩明显，人脸比例好看，适合近景与特写；它让"人物与背景"分离开来，是情绪镜头的首选。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_cine_0052
+  domain: cinematography
+  title: 远景避免长焦压缩
+  content: 拍远景不要用 85 mm 长焦，空间会被压缩得扁平、像贴图；远景宜用广角以保留纵深层次。
+  keywords:
+  - 空间纵深
+  - 焦距
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 焦距
+  - 纵深
+  topic: camera_angle
+  quote: |-
+    远景用 85 mm 会显得空间扁平、像贴图；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#004
+  source_span:
+    chunk_id: camera_angle_and_lens_md#004
+    start: 75
+    end: 97
+  provenance_kind: 权威文档
+- id: gen_cine_0053
+  domain: cinematography
+  title: 光比决定情绪强度
+  content: 按主光与辅光比例选情绪：1:1 平光用于采访、产品、喜剧；2:1 轻微立体用于通用对话；4:1 明显戏剧性用于紧张、怀疑；8:1 以上高反差、阴影只剩轮廓，用于恐怖、决裂。
+  keywords:
+  - 主光
+  - 辅光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 布光
+  topic: lighting
+  quote: |-
+    主光与辅光的比例（光比）直接决定画面的情绪强度
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#001
+  source_span:
+    chunk_id: lighting_and_color_md#001
+    start: 13
+    end: 36
+  provenance_kind: 权威文档
+- id: gen_cine_0054
+  domain: cinematography
+  title: 放大屏需大于相纸
+  content: 放大屏必须明显大于所用最大相纸尺寸，以便留出相纸位置调整余量；屏面最好覆白纸或细吸墨纸以辅助对焦。
+  keywords:
+  - 对焦
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 对焦
+  - 器材布置
+  topic: ''
+  quote: |-
+    it must be considerably larger than the largest sheet of bromide paper which is to be used
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#001
+  source_span:
+    chunk_id: pg24637_txt#001
+    start: 2186
+    end: 2276
+  provenance_kind: 网络语料
+- id: gen_cine_0055
+  domain: cinematography
+  title: 金属亚铁氰化物色相
+  content: 无机调色剂中金属亚铁氰化物最适用：铁（正铁）亚铁氰化物为蓝色，铜亚铁氰化物为红色，铀亚铁氰化物为红棕色。
+  keywords:
+  - 蓝
+  - 红
+  - 红棕
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 调色剂
+  topic: color
+  quote: |-
+    Iron (ferric) ferrocyanide is blue, Copper ferrocyanide is red, and Uranium ferrocyanide is reddish brown.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#002
+  source_span:
+    chunk_id: pg70417_txt#002
+    start: 1935
+    end: 2041
+  provenance_kind: 网络语料
+- id: gen_cine_0056
+  domain: cinematography
+  title: 底片盒需大于底片
+  content: 日光放大时，底片盒每边至少比最大底片大两英寸，否则边缘区域收不到斜射光线，底片照明不均匀；用直射阳光时尤其重要。
+  keywords:
+  - 斜射光
+  - 均匀照明
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 照明
+  - 放大
+  - 器材布置
+  topic: ''
+  quote: |-
+    The necessity for having the box at least two inches larger each way than the largest negative from which enlargements are to be made
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#001
+  source_span:
+    chunk_id: pg24637_txt#001
+    start: 0
+    end: 133
+  provenance_kind: 网络语料
+- id: gen_cine_0057
+  domain: cinematography
+  title: 景别越小高度越敏感
+  content: 景别越小，机位高度的差异越敏感：特写上下的 10 厘米差别会被观众看出来，因此特写类镜头的高度需精确控制。
+  keywords:
+  - 机位高度
+  - 敏感度
+  - 特写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  topic: camera_angle
+  quote: |-
+    景别越小，机位高度的差异越敏感：特写上下的 10 厘米差别会被观众看出来。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#001
+  source_span:
+    chunk_id: camera_angle_and_lens_md#001
+    start: 170
+    end: 207
+  provenance_kind: 权威文档
+- id: gen_cine_0058
+  domain: cinematography
+  title: 低于1米的视角语义
+  content: 机位低于1米时，画面进入儿童视角或仰视强者的语义，用于表现弱小、被压迫或对强者的敬畏。
+  keywords:
+  - 低机位
+  - 儿童视角
+  - 仰视
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 低机位
+  - 仰视
+  - 压迫
+  topic: camera_angle
+  quote: |-
+    低于 1 米：进入"儿童视角"或"仰视强者"的语义
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#004
+  source_span:
+    chunk_id: camera_angle_in_practice_md#004
+    start: 48
+    end: 73
+  provenance_kind: 权威文档
+- id: gen_cine_0059
+  domain: cinematography
+  title: 胸口高度拍对话
+  content: 机位取1.0–1.3米（胸口高度）时对话最自然，构图与字幕位置都舒服，适合常规对话场景。
+  keywords:
+  - 对话机位
+  - 构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  topic: camera_angle
+  quote: |-
+    1.0–1.3 米：胸口高度，对话最自然，字幕与构图都舒服
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#004
+  source_span:
+    chunk_id: camera_angle_in_practice_md#004
+    start: 77
+    end: 106
+  provenance_kind: 权威文档
+- id: gen_cine_0060
+  domain: cinematography
+  title: 高于1.8米即俯视
+  content: 机位高于1.8米形成俯视，观众产生自己在往下看的心理感受，用于弱化被摄对象。
+  keywords:
+  - 高机位
+  - 心理感受
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 高机位
+  topic: camera_angle
+  quote: |-
+    高于 1.8 米：俯视，观众感到自己在"往下看"
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#004
+  source_span:
+    chunk_id: camera_angle_in_practice_md#004
+    start: 110
+    end: 134
+  provenance_kind: 权威文档
+- id: gen_cine_0061
+  domain: cinematography
+  title: 3米以上为上帝视角
+  content: 机位高于3米进入上帝视角，强调环境与命运感，用于段落收尾或展现人物处境。
+  keywords:
+  - 高机位
+  - 命运感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 宿命
+  tags:
+  - 高机位
+  - 环境
+  topic: camera_angle
+  quote: |-
+    高于 3 米：进入"上帝视角"，强调环境与命运感
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#004
+  source_span:
+    chunk_id: camera_angle_in_practice_md#004
+    start: 138
+    end: 162
+  provenance_kind: 权威文档
+- id: gen_cine_0062
+  domain: cinematography
+  title: 人眼高度是默认机位
+  content: 机位高度取1.4–1.6米（人眼高度）时，观众与角色处于平等关系，可作为对话与常规叙事的默认机位高度。
+  keywords:
+  - 机位高度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 视角
+  topic: camera_angle
+  quote: |-
+    人眼高度的机位（1.4–1.6 米）是"平等"的默认值
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#004
+  source_span:
+    chunk_id: camera_angle_in_practice_md#004
+    start: 16
+    end: 43
+  provenance_kind: 权威文档
+- id: gen_cine_0063
+  domain: cinematography
+  title: 染色后水洗至高光清透
+  content: 染色达到目标色调后，须冲洗至高光区清透为止，避免高光被染色污染。
+  keywords:
+  - 染色后水洗至高光清透
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 工艺控制
+  topic: color
+  quote: |-
+    When the desired tone is obtained rinse until the highlights are clear.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#004
+  source_span:
+    chunk_id: pg70417_txt#004
+    start: 362
+    end: 433
+  provenance_kind: 网络语料
+- id: gen_cine_0064
+  domain: cinematography
+  title: 色调比较的表述法
+  content: 比较两种色调时，用“更红、更黄、更蓝”来描述差异，并据此进行匹配。
+  keywords:
+  - 偏红
+  - 偏黄
+  - 偏蓝
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩匹配
+  - 术语
+  topic: color
+  quote: |-
+    it is usual to say that one is redder, yellower or bluer than the other, and the two may therefore be matched accordingly.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#001
+  source_span:
+    chunk_id: pg70417_txt#001
+    start: 1829
+    end: 1951
+  provenance_kind: 网络语料
+- id: gen_cine_0065
+  domain: cinematography
+  title: 自制毛面胶片
+  content: 毛面胶片丢失时，取一小段废胶片，刮去明胶乳剂，用砂纸或粗糙石面打磨赛璐珞表面即可自制；建议随身携带几英寸废胶片备用。
+  keywords:
+  - 废胶片
+  - 打磨
+  - 应急
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 器材管理
+  - 应急
+  topic: camera_angle
+  quote: |-
+    Take a small bit of waste film; scrape off the gelatine emulsion; and rough the celluloid surface with a piece of sandpaper
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#000
+  source_span:
+    chunk_id: pg45714_txt#000
+    start: 1759
+    end: 1882
+  provenance_kind: 网络语料
+- id: gen_cine_0066
+  domain: cinematography
+  title: 染料槽沉淀的成因
+  content: 水中微量明矾或铁会使染料析出，在槽内形成沉淀；许多地区用明矾净水，极微量即可让部分染料脱离溶液。
+  keywords:
+  - 明矾
+  - 铁
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 工艺
+  topic: color
+  quote: |-
+    This is due to the precipitation of the dye by small traces of alum or iron in the water supply.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#002
+  source_span:
+    chunk_id: pg70417_txt#002
+    start: 389
+    end: 485
+  provenance_kind: 网络语料
+- id: gen_cine_0067
+  domain: cinematography
+  title: 测光表朝向光源
+  content: 测光时把测光表置于主体所在阴影位置并正对光源方向，以取得该受光条件下的读数。
+  keywords:
+  - 阴影位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    We expose the meter, facing the light source, in the shadow of the rose-bowl near the centre of the table.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#000
+  source_span:
+    chunk_id: pg78373_txt#000
+    start: 1266
+    end: 1372
+  provenance_kind: 网络语料
+- id: gen_cine_0068
+  domain: cinematography
+  title: 强直射光需先衰减
+  content: 测量或拍摄强直射光时，因不可吸收的红光成分会妨碍完全吸收，须先用已知漫射值的介质遮挡，或经白色表面反射一次，再做处理；漫射量随光强增大而增加。
+  keywords:
+  - 漫射
+  - 反射
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线控制
+  - 测光
+  topic: lighting
+  quote: |-
+    Such lights must first be modified by intercepting media of known diffusive value, or by reflection from a white surface.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:58+00:00'
+    sha256: ac7fc0edd09597c8e790a963005024db653bd82c8c859e408fa6985fdf0d6b73
+  chunk_id: pg57335_txt#002
+  source_span:
+    chunk_id: pg57335_txt#002
+    start: 162
+    end: 283
+  provenance_kind: 网络语料
+- id: gen_cine_0069
+  domain: cinematography
+  title: 推镜感靠短焦加机位前移
+  content: 焦段越大，镜头前后运动越钝，85 mm 上的推镜几乎看不出透视变化；要强烈推镜感应用短焦段并配合机位前移，而不是只换镜头。
+  keywords:
+  - 焦段
+  - 透视变化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动
+  - 焦距
+  topic: camera_angle
+  quote: |-
+    焦段越大，镜头与前后的运动越"钝"：85 mm 上的推镜几乎看不出透视变化，所以想要强烈的推镜感，应当用短焦段并配合机位前移，而不是只换镜头。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_cine_0070
+  domain: cinematography
+  title: 焦距改变透视而非大小
+  content: 焦距的作用是改变透视与空间压缩，不是把画面拉近；选焦段时按想要的透视关系决定，而非按被摄物大小决定。
+  keywords:
+  - 空间压缩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: camera_angle
+  quote: |-
+    把焦距当作"画面拉近"的工具是错的——焦距改变的是**透视与空间压缩**。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: 25
+    end: 62
+  provenance_kind: 权威文档
+- id: gen_cine_0071
+  domain: cinematography
+  title: 染料槽起泡的处理
+  content: 用Cine Scarlet、Cine Orange、Cine Green在转鼓上染色时会起泡，只要让转鼓缓慢旋转即可避免麻烦。
+  keywords:
+  - 转鼓
+  - 慢速
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 工艺
+  topic: color
+  quote: |-
+    no inconvenience will be caused if the drum is revolved slowly.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#002
+  source_span:
+    chunk_id: pg70417_txt#002
+    start: 746
+    end: 809
+  provenance_kind: 网络语料
+- id: gen_cine_0072
+  domain: cinematography
+  title: 变焦暴露摄像机
+  content: 用变焦时画面像被放大、空间关系不变，观众会意识到摄像机存在，因此只适合主观的注视或喜剧式强调，不宜用于需要沉浸的段落。
+  keywords:
+  - 间离
+  - 主观
+  - 喜剧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 间离效果
+  topic: camera_angle
+  quote: |-
+    观众会意识到摄像机的存在，适合主观的"注视"或喜剧式的强调。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#003
+  source_span:
+    chunk_id: camera_angle_and_lens_md#003
+    start: 59
+    end: 89
+  provenance_kind: 权威文档
+- id: gen_cine_0073
+  domain: cinematography
+  title: 油斑反射不可靠
+  content: 用油斑（grease spot）装置做反射测光时结果不可靠，因为油膜受特定吸收定律支配，会改变反射光值。
+  keywords:
+  - 吸收定律
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 测光
+  - 器材限制
+  topic: lighting
+  quote: |-
+    Light reflected from grease is not above suspicion, it being governed by the law of specific absorption already dealt with.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:58+00:00'
+    sha256: ac7fc0edd09597c8e790a963005024db653bd82c8c859e408fa6985fdf0d6b73
+  chunk_id: pg57335_txt#002
+  source_span:
+    chunk_id: pg57335_txt#002
+    start: 1957
+    end: 2080
+  provenance_kind: 网络语料
+- id: gen_cine_0074
+  domain: cinematography
+  title: 色温编码时间与情绪
+  content: 用色温给场景定情绪基调：3200K暖橙用于家庭、回忆、亲密；4300K混合/荧光用于写实的办公、教室、医院，略偏青绿；5600K日光为白天外景的中性基准；7500K以上偏蓝用于清晨、夜晚、冷酷与疏离。
+  keywords:
+  - 钨丝
+  - 日光
+  - 冷暖
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩情绪
+  - 基调
+  topic: lighting
+  quote: |-
+    3200 K（钨丝）——暖橙，家庭、回忆、亲密；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#003
+  source_span:
+    chunk_id: lighting_and_color_md#003
+    start: 22
+    end: 46
+  provenance_kind: 权威文档
+- id: gen_cine_0075
+  domain: cinematography
+  title: 纯黑靠对比实现
+  content: 画面中要得到接近理想黑的效果，应让黑色区域与周围亮部形成对比，而不是依赖颜料本身；可用内壁涂黑的箱体开孔，使进入孔内的光无法反射回镜头，从而在亮环境对比下呈现近乎全黑。
+  keywords:
+  - 暗部
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 明暗对比
+  - 黑位
+  topic: lighting
+  quote: |-
+    The nearest approach to ideal black by contrast, is to view a hole in a box with a blackened interior
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:58+00:00'
+    sha256: ac7fc0edd09597c8e790a963005024db653bd82c8c859e408fa6985fdf0d6b73
+  chunk_id: pg57335_txt#001
+  source_span:
+    chunk_id: pg57335_txt#001
+    start: 159
+    end: 260
+  provenance_kind: 网络语料
+- id: gen_cine_0076
+  domain: cinematography
+  title: 直射阳光的高强度
+  content: 直射阳光打在白色反光板上可获得高强度光线，适合需要高亮度的放大曝光。
+  keywords:
+  - 反光板
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 照明
+  - 曝光
+  topic: ''
+  quote: |-
+    The direct sun on the white reflector will give a light of high intensity.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#001
+  source_span:
+    chunk_id: pg24637_txt#001
+    start: 2974
+    end: 3048
+  provenance_kind: 网络语料
+- id: gen_cine_0077
+  domain: cinematography
+  title: 染色前不可放映
+  content: 胶片上的油脂会造成条纹与着色不匀，因此染色前绝不要放映胶片。
+  keywords:
+  - 油脂
+  - 条纹
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 瑕疵控制
+  topic: color
+  quote: |-
+    Grease on the film. Never project film before tinting.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#002
+  source_span:
+    chunk_id: pg70417_txt#002
+    start: 140
+    end: 194
+  provenance_kind: 网络语料
+- id: gen_cine_0078
+  domain: cinematography
+  title: 染色温度上限
+  content: 胶片染色时染浴温度不得超过70°F，否则明胶易软化；若必须加酸，温度更须控制在70°F以下。
+  keywords:
+  - 70°F
+  - 明胶软化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩工艺
+  - 温度控制
+  topic: color
+  quote: |-
+    By working at temperatures not higher than 70 degrees F.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#000
+  source_span:
+    chunk_id: pg70417_txt#000
+    start: 4
+    end: 60
+  provenance_kind: 网络语料
+- id: gen_cine_0079
+  domain: cinematography
+  title: 辐条倒转错觉
+  content: 若快门遮挡期间辐条移动角度小于相邻辐条夹角，则放映时辐条呈现与车轮前进方向相反的视觉运动。
+  keywords:
+  - 快门
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 频闪效应
+  - 运动错觉
+  topic: camera_angle
+  quote: |-
+    the spokes move less than the angle (AB) between them, producing apparent backward motion of the spokes while the wheel is running forwards
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#003
+  source_span:
+    chunk_id: pg45714_txt#003
+    start: 2151
+    end: 2290
+  provenance_kind: 网络语料
+- id: gen_cine_0080
+  domain: cinematography
+  title: 小幅放大的镜头位置
+  content: 若放大尺寸仅略大于底片，镜头需外移，使其到底片距离略小于到屏幕距离。
+  keywords:
+  - 放大倍率
+  - 对焦
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对焦
+  topic: ''
+  quote: |-
+    the lens must be racked out until its distance from the negative is but little less than its distance from the screen
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#002
+  source_span:
+    chunk_id: pg24637_txt#002
+    start: 1465
+    end: 1582
+  provenance_kind: 网络语料
+- id: gen_cine_0081
+  domain: cinematography
+  title: 附加镜缩短焦距
+  content: 若既无长皮腔也无短焦镜头，可在原镜头遮光罩上加装附加翻拍镜（如Ideal Copying Lens），通过缩短组合焦距来获得所需放大倍率与清晰度。
+  keywords:
+  - 近摄镜
+  - 翻拍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 翻拍
+  - 近摄
+  - 光学
+  topic: ''
+  quote: |-
+    A still simpler plan is to make use of a supplementary lens
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#004
+  source_span:
+    chunk_id: pg78373_txt#004
+    start: 2083
+    end: 2142
+  provenance_kind: 网络语料
+- id: gen_cine_0082
+  domain: cinematography
+  title: 对焦管直视取景
+  content: 若机身带对焦管，只需打开机侧插入毛面胶片，把伸缩管推到最长抵住片门，取下机身后盖上的盖帽，像用望远镜一样从管中直视，即可正对屏幕对焦，避免斜视毛面胶片。
+  keywords:
+  - 片门
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 取景器
+  topic: camera_angle
+  quote: |-
+    he is able to look squarely upon his screen.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#000
+  source_span:
+    chunk_id: pg45714_txt#000
+    start: 1428
+    end: 1472
+  provenance_kind: 网络语料
+- id: gen_cine_0083
+  domain: cinematography
+  title: 动态主体需快镜头
+  content: 若要在人工光下拍摄有生命、会动的主体，必须使用消像散或其他快作用镜头，并做好费心与耐心的准备。
+  keywords:
+  - 消像散
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 镜头选择
+  topic: ''
+  quote: |-
+    we will need an anastigmat or other quick-working lens if life subjects are to be attempted
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#002
+  source_span:
+    chunk_id: pg78373_txt#002
+    start: 221
+    end: 312
+  provenance_kind: 网络语料
+- id: gen_cine_0084
+  domain: cinematography
+  title: 荷兰角需节制使用
+  content: 荷兰角只在需要表达角色不安时少量使用；频繁倾斜会让观众读成画面歪斜而非情绪，失去表意功能。
+  keywords:
+  - 倾斜
+  - 情绪
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不安
+  tags:
+  - 机位角度
+  - 情绪
+  topic: camera_angle
+  quote: |-
+    荷兰角用得太多，观众会把它当成"画面歪了"而不是"角色不安"。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#004
+  source_span:
+    chunk_id: camera_angle_and_lens_md#004
+    start: 100
+    end: 131
+  provenance_kind: 权威文档
+- id: gen_cine_0085
+  domain: cinematography
+  title: 35mm 纪实基准镜
+  content: 要人物与环境并重、带纪实感时用 35 mm，它是中远景与全身镜的主力焦段。
+  keywords:
+  - 中远景
+  - 全身镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 焦距
+  topic: camera_angle
+  quote: |-
+    **35 mm**：纪实感的基准，人物与环境并重；中远景与全身镜的主力。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: 122
+    end: 158
+  provenance_kind: 权威文档
+- id: gen_cine_0086
+  domain: cinematography
+  title: 双色调分层法
+  content: 要得到阴影与半调不同色的双色调：先在A调色液中部分调色（65–70°F，3–4分钟），使半调完全调色而阴影仅部分调色，水洗10分钟后在蓝色调色液H中完成，阴影残留银被调成蓝色，得到阴影深蓝、半调红棕的效果。
+  keywords:
+  - 阴影
+  - 半调
+  - 部分调色
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩分层
+  - 阴影
+  - 半调
+  topic: color
+  quote: |-
+    so that the half-tones are completely toned but the shadows only partially
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#004
+  source_span:
+    chunk_id: pg70417_txt#004
+    start: 619
+    end: 693
+  provenance_kind: 网络语料
+- id: gen_cine_0087
+  domain: cinematography
+  title: 染色前禁过放映机
+  content: 要获得一致的色调结果，胶片在染色或调色之前绝不能先经过放映机。
+  keywords:
+  - 一致性
+  - 前置条件
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 染色工艺
+  - 流程控制
+  topic: color
+  quote: |-
+    If uniform results are to be obtained, film should never be passed through the projector before either tinting or toning.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#001
+  source_span:
+    chunk_id: pg70417_txt#001
+    start: 1007
+    end: 1128
+  provenance_kind: 网络语料
+- id: gen_cine_0088
+  domain: cinematography
+  title: 增大倍率的调焦方式
+  content: 要获得更大放大倍率，将镜头后移并同时把屏幕移远，两者配合调整。
+  keywords:
+  - 放大倍率
+  - 镜头后移
+  - 屏幕距离
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 放大
+  topic: ''
+  quote: |-
+    To make the enlargement greater we simply rack back the lens and move the screen further off
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:44+00:00'
+    sha256: 13ffa50f455d5075031cc87f26a4805297372ecf1bd64b302e9254ae5d276d45
+  chunk_id: pg24637_txt#002
+  source_span:
+    chunk_id: pg24637_txt#002
+    start: 1584
+    end: 1676
+  provenance_kind: 网络语料
+- id: gen_cine_0089
+  domain: cinematography
+  title: 视角由焦距与画幅决定
+  content: 视角大小由镜头焦距与画幅基线之比决定：焦距相对画幅越长视角越窄，越短视角越宽；可用画幅基线除以等效焦距来估算视角。
+  keywords:
+  - 视角由焦距与画幅决定
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 镜头选择
+  topic: ''
+  quote: |-
+    This is known as the angle of view, and may be determined by dividing the base measurement of the plate by the equivalent focus of the lens.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#001
+  source_span:
+    chunk_id: pg78373_txt#001
+    start: 187
+    end: 327
+  provenance_kind: 网络语料
+- id: gen_cine_0090
+  domain: cinematography
+  title: 晨昏光强随时间变化
+  content: 记录晨光与暮光的光强随时间变化，可用于确定阅读所需的最低亮度、不同距离观看物体所需亮度，以及颜色在视觉上消失的界限。
+  keywords:
+  - 晨光
+  - 暮光
+  - 最低亮度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线曲线
+  - 可见度
+  topic: lighting
+  quote: |-
+    records of intensity changes by time, in Morning and Evening light, and are of interest, as bearing on the lowest luminosities for reading
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:58+00:00'
+    sha256: ac7fc0edd09597c8e790a963005024db653bd82c8c859e408fa6985fdf0d6b73
+  chunk_id: pg57335_txt#002
+  source_span:
+    chunk_id: pg57335_txt#002
+    start: 466
+    end: 604
+  provenance_kind: 网络语料
+- id: gen_cine_0091
+  domain: cinematography
+  title: 调色置换银盐得中间调
+  content: 调色的目的是用上述化合物或其混合物部分或全部置换构成影像的金属银，从而获得中间色调。
+  keywords:
+  - 调色置换银盐得中间调
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 工艺
+  topic: color
+  quote: |-
+    It is the object in toning to replace the metallic silver composing the image more or less by one of the above compounds or by a mixture of these.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#002
+  source_span:
+    chunk_id: pg70417_txt#002
+    start: 2043
+    end: 2189
+  provenance_kind: 网络语料
+- id: gen_cine_0092
+  domain: cinematography
+  title: 前景占比的上下限
+  content: 过肩镜头中前景人物占画面一侧的比例应控制在1/4到1/3之间：超过则退化为背影镜头，不足则失去两人空间关系。
+  keywords:
+  - 背影镜头
+  - 空间关系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 过肩镜头
+  topic: camera_angle
+  quote: |-
+    前景人占得太多会变成"背影镜头"，太少则失去空间关系。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#003
+  source_span:
+    chunk_id: camera_angle_in_practice_md#003
+    start: 122
+    end: 149
+  provenance_kind: 权威文档
+- id: gen_cine_0093
+  domain: cinematography
+  title: 过肩镜头的成立条件
+  content: 过肩镜头（OTS）需同时满足三点：前景人物的肩部或后脑占画面一侧的1/4到1/3；焦点落在后景人物眼睛上、前景人虚化；机位高度接近前景人物眼高，以形成“从其肩后看”的视点。
+  keywords:
+  - OTS
+  - 前景遮挡
+  - 焦点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 焦点
+  topic: camera_angle
+  quote: |-
+    过肩镜头（OTS）需要三个条件同时成立：
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#003
+  source_span:
+    chunk_id: camera_angle_in_practice_md#003
+    start: 14
+    end: 34
+  provenance_kind: 权威文档
+- id: gen_cine_0094
+  domain: cinematography
+  title: 染料渗色控制
+  content: 选择染料时须选渗色倾向最小者；染色后水洗5分钟内只允许极少量染料洗出，否则表面水滴会饱和染料，干燥后形成银幕上可见的斑点与不规则痕迹。
+  keywords:
+  - 水洗
+  - 斑点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩工艺
+  - 染料选择
+  topic: color
+  quote: |-
+    the rate of removal of the dye should be slow and only a slight amount should wash out in a period of, say, five minutes.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#000
+  source_span:
+    chunk_id: pg70417_txt#000
+    start: 272
+    end: 393
+  provenance_kind: 网络语料
+- id: gen_cine_0095
+  domain: cinematography
+  title: 闪光点远离易燃物
+  content: 选择闪光点时必须避开蕾丝窗帘等易燃织物，并在闪光点下方放托盘接住落下的火星或燃烧碎屑。
+  keywords:
+  - 安全
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 安全
+  topic: ''
+  quote: |-
+    we must avoid proximity to lace curtains or similar inflammable fabrics.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#003
+  source_span:
+    chunk_id: pg78373_txt#003
+    start: 1517
+    end: 1589
+  provenance_kind: 网络语料
+- id: gen_cine_0096
+  domain: cinematography
+  title: 调色温度与时间
+  content: 铜调色最佳效果的温度为65–70°F，调色时间5–10分钟，随后水洗10分钟。
+  keywords:
+  - 调色时间
+  - 水洗
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 洗印
+  - 工艺参数
+  topic: color
+  quote: |-
+    _Temperature of Toning_—To obtain the best results the temperature of the bath should be from 65 degrees to 70 degrees F.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:01+00:00'
+    sha256: 499852fbbc89c706652619cd24f5c0b1245ba4dd8ba24b5e0d9ba50cd0b55b32
+  chunk_id: pg70417_txt#003
+  source_span:
+    chunk_id: pg70417_txt#003
+    start: 1781
+    end: 1902
+  provenance_kind: 网络语料
+- id: gen_cine_0097
+  domain: cinematography
+  title: 镜面反光的排查
+  content: 闪光前用点燃的蜡烛放在闪光点位置，从相机方向观察镜子或画框玻璃是否反射强光；若有反射，把镜面或玻璃倾斜到看不见反光的角度。
+  keywords:
+  - 镜子
+  - 画框玻璃
+  - 预检
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 反光控制
+  topic: ''
+  quote: |-
+    This may be determined by holding a lighted taper at the point where the flash will be made.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#003
+  source_span:
+    chunk_id: pg78373_txt#003
+    start: 713
+    end: 805
+  provenance_kind: 网络语料
+- id: gen_cine_0098
+  domain: cinematography
+  title: 闪光点的最佳位置
+  content: 闪光点置于相机后方约两英尺、侧向两三英尺并略高于相机处，可让阴影方向自然、获得理想的立体感。
+  keywords:
+  - 闪光位置
+  - 阴影方向
+  - 立体感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 机位关系
+  topic: ''
+  quote: |-
+    The best general effect is produced by flashing the light about two feet behind, and two or three feet at one side and slightly above the camera.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#003
+  source_span:
+    chunk_id: pg78373_txt#003
+    start: 958
+    end: 1103
+  provenance_kind: 网络语料
+- id: gen_cine_0099
+  domain: cinematography
+  title: 双闪光的间距与位置
+  content: 需要两次闪光时，等第一次闪光烟雾散尽后，在距第一闪光点约四英尺、且与第一闪光点成一直线的位置补第二次闪光，以扩大照明范围。
+  keywords:
+  - 补光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 多灯
+  topic: ''
+  quote: |-
+    a second flash should be given at a point about four feet away, and in line with the first flash.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:41+00:00'
+    sha256: c6ed1d1ed9ff1f3f6136fa10843cd27655be4158464292fa8a6544e8fe04c672
+  chunk_id: pg78373_txt#003
+  source_span:
+    chunk_id: pg78373_txt#003
+    start: 347
+    end: 444
+  provenance_kind: 网络语料
+- id: gen_cine_0100
+  domain: cinematography
+  title: 24mm 强透视交代环境
+  content: 需要交代远景与环境、强调空间纵深时用 24 mm：透视强、空间被拉深；但人脸会被拉宽，靠近画面边缘的物体明显变形，避免用它拍人物近景。
+  keywords:
+  - 广角
+  - 环境交代
+  - 变形
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 广角
+  - 远景
+  topic: camera_angle
+  quote: |-
+    **24 mm**：强透视，空间被拉深，适合远景与环境交代；人脸会被拉宽，靠近画面边缘的物体会明显变形。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_cine_0101
+  domain: cinematography
+  title: 超慢速逐格曝光
+  content: 需要比常规更慢的速率时，采用“转一圈拍一格”的方式，把电机间歇接入与断开，使曝光间隔从每20秒一次延长到每小时一次甚至更长。
+  keywords:
+  - 曝光间隔
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 延时
+  topic: camera_angle
+  quote: |-
+    the exposure could be varied from once in 20 seconds to once in an hour or more
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#004
+  source_span:
+    chunk_id: pg45714_txt#004
+    start: 265
+    end: 344
+  provenance_kind: 网络语料
+- id: gen_cine_0102
+  domain: cinematography
+  title: 毛玻璃对焦法
+  content: 需要精确对焦时，打开机侧、抬起片门压板，在片门窗口插入约2英寸的毛面胶片（毛面朝镜头），转动摇柄使镜头开启，影像投在毛面胶片上，再旋动镜头上的对焦螺丝直至影像足够锐利。
+  keywords:
+  - 毛面胶片
+  - 片门
+  - 对焦螺丝
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机内操作
+  topic: camera_angle
+  quote: |-
+    inserts into the gate window a small length, about 2 inches, of matt film, with the matt side towards the lens.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:38+00:00'
+    sha256: 28b5518420b872fcbeb9bdaaf26df1288288b1b911b72e43c5d10fbf0712e59c
+  chunk_id: pg45714_txt#000
+  source_span:
+    chunk_id: pg45714_txt#000
+    start: 505
+    end: 616
+  provenance_kind: 网络语料
+- id: gen_cine_0103
+  domain: cinematography
+  title: 黑是减量非能量
+  content: 黑色不是与彩色并列的主动能量，而是一个“负量”，只能通过与原始光的对比被辨识；反射光由显出的色彩加上未被吸收的残余白光组成，布光时应把黑理解为对光的削减而非一种颜色。
+  keywords:
+  - 对比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 黑位
+  - 色彩理论
+  topic: lighting
+  quote: |-
+    black is not itself an active energy analogous to colour, but is a minus quantity distinguishable by contrast with the original light
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:56:58+00:00'
+    sha256: ac7fc0edd09597c8e790a963005024db653bd82c8c859e408fa6985fdf0d6b73
+  chunk_id: pg57335_txt#001
+  source_span:
+    chunk_id: pg57335_txt#001
+    start: 2031
+    end: 2164
+  provenance_kind: 网络语料

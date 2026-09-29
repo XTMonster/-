@@ -19,6 +19,8 @@ from typing import Dict, List, Tuple
 
 from ..contracts.knowledge import Card
 from ..cinema.framing import CHEST_Z, EYE_Z, SHOT_FRAME
+from .generated import load_generated as _load_generated
+from .generated import merge_cards as _merge_cards
 from .card_factory import as_list as _as_list
 from .card_factory import make_card as _card
 from .cards_axis import CARDS as _AXIS_CARDS
@@ -29,6 +31,7 @@ from .cards_performance import CARDS as _PERFORMANCE_CARDS
 
 DOMAINS: Tuple[str, ...] = (
     "cinematography", "axis_theory", "composition", "blocking", "performance",
+    "storyboard", "editing", "anime", "production",
 )
 
 DOMAIN_LABELS: Dict[str, str] = {
@@ -37,6 +40,10 @@ DOMAIN_LABELS: Dict[str, str] = {
     "composition": "构图（三分法 / 留白 / 重心 / 遮挡）",
     "blocking": "调度（站位 / 运动 / 距离 / 群戏）",
     "performance": "表演（情绪 / 节奏 / 微动作）",
+    "storyboard": "分镜（镜头清单 / 段落节拍 / 画面说明）",
+    "editing": "剪辑（节奏 / 连贯 / 转场）",
+    "anime": "动画（作画节奏 / 演出 / 套路）",
+    "production": "制片（流程 / 预算 / 交付）",
 }
 
 #: 九宫格的**冻结顺序**（与 ``framing.SHOT_FRAME`` 的键同源）。
@@ -220,7 +227,8 @@ CARDS: Tuple[Card, ...] = (
         "到另一侧；(2) 中性镜头——机位落在轴线上，没有左右信息；(3) 骑轴"
         "过渡——从一个中性镜头穿过去；(4) 插入无关镜头（空镜/道具）作为缓冲。"
         "直接硬切到另一侧是禁忌。",
-        ["越轴", "运动越轴", "中性镜头", "骑轴", "换侧"],
+        ["越轴", "越轴之后", "越过轴线", "换到另一侧", "运动越轴", "中性镜头", "骑轴",
+         "插入镜头", "硬切", "轴线", "左右互换", "换边", "视线轴"],
         rules=("R001",),
         examples=("角色起身走向对面 → 机位随动作绕到另一侧"),
         related=("axis_neutral", "axis_180", "axis_action"),
@@ -470,12 +478,40 @@ CARDS: Tuple[Card, ...] = (
 #: v1.2 的基础语料 + v1.3 按域扩充的部分。
 #: 分模块是为了让每个域的内容能独立演进；``cards_by_domain`` 与检索都按
 #: ``DOMAINS`` 过滤，因此模块拼接顺序不影响检索结果。
+#: P14-1：九域扩容（§2.3c 的 K3、§2.3d 的 T7）——只补新增四个域的摘要，
+#: 原有五个域的文案一字不改。
+DOMAIN_DIGESTS.update({
+    "storyboard": "分镜先定轴线再定机位；段落默认四拍＝建立→覆盖→反应→收束；"
+                  "每个镜头只承担一条新信息；台词镜按每秒 3 字估时长。",
+    "editing": "相邻镜头的机位角度差 > 30°、景别至少拉开一档；视线匹配要求一方"
+               "看右侧、另一方从左侧回看；动作在中途切；节奏靠长短对比而不是"
+               "一味求快。",
+    "anime": "动画的「快」来自前面足够长的静；冲击帧只占 1–2 帧且必须与前一帧"
+             "形成强对比；台词、动作、运镜至少错开一项；构图上留白表达被环境"
+             "压住或望向远方。",
+    "production": "一次运行交付逐镜片段＋首帧＋镜头清单＋提示词＋合片；镜号稳定、"
+                  "一镜一台相机；预算显式（调用上限＋墙钟）且超限报错；记录基线"
+                  "以支持逐镜返工；留下语料/模型/参数指纹。",
+})
+
 _BASE_CARDS: Tuple[Card, ...] = CARDS
 
-CARDS: Tuple[Card, ...] = (
+_HANDWRITTEN: List[Card] = list(
     _BASE_CARDS + _CINEMATOGRAPHY_CARDS + _AXIS_CARDS
     + _COMPOSITION_CARDS + _BLOCKING_CARDS + _PERFORMANCE_CARDS
 )
+
+#: 手写卡（v1.2 基础语料 ＋ v1.3/P10 按域扩充）。语料的域覆盖（K3）算的是
+#: **整份语料**，所以 `tools/kb_fetch/import_cards.py` 需要读得到这一份。
+HANDWRITTEN_CARDS: Tuple[Card, ...] = tuple(_HANDWRITTEN)
+
+#: P14-1：采集进来的卡片（`knowledge/cards_generated/*.jsonl`）。
+GENERATED_CARDS: Tuple[Card, ...] = tuple(_load_generated())
+
+#: T8：生成卡与手写卡撞 id 时以手写卡为准，冲突记录在这里（测试断言为空）。
+_MERGED, _COLLISIONS = _merge_cards(_HANDWRITTEN, list(GENERATED_CARDS))
+CARDS: Tuple[Card, ...] = tuple(_MERGED)
+CARD_ID_COLLISIONS: Tuple[Tuple[str, str], ...] = tuple(_COLLISIONS)
 
 
 def cards_by_domain(domain: str) -> List[Card]:

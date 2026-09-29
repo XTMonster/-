@@ -1,0 +1,1776 @@
+# 生成卡片：axis_theory（自动生成，请勿手改；见 docs/knowledge/LICENSES.md）
+- id: gen_axis_0001
+  domain: axis_theory
+  title: POV 视线方向一致
+  content: POV 与常规镜头切换时保持视线方向一致：人物往右看，POV 中的对象就应出现在画面右侧，不可反向。
+  keywords:
+  - POV 视线方向一致
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视线匹配
+  - 方向连续性
+  topic: ''
+  quote: |-
+    POV 与常规镜头的切换必须保持视线方向一致：人物往右看，POV 里的对象就在右侧。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#022
+  source_span:
+    chunk_id: axis_continuity_md#022
+    start: 116
+    end: 158
+  provenance_kind: 权威文档
+- id: gen_axis_0002
+  domain: axis_theory
+  title: POV 后需反应镜头
+  content: POV 结束后必须接一个角色的反应镜头，作为视线回归客观视角的标记，否则观众无法判断何时脱离主观视角。
+  keywords:
+  - 主观镜头
+  - 视角回归
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    出 POV 之后需要一个"人物的反应"镜头，否则观众不知道自己什么时候回来的；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#022
+  source_span:
+    chunk_id: axis_continuity_md#022
+    start: 74
+    end: 113
+  provenance_kind: 权威文档
+- id: gen_axis_0003
+  domain: axis_theory
+  title: 视线失配的观众误读
+  content: 一旦打破视线匹配，观众会误判两人在看不同的对象，因此对切镜头必须保持视线方向与高度的连续。
+  keywords:
+  - 视线匹配
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视线匹配
+  - 连续性
+  - 观众认知
+  topic: ''
+  quote: |-
+    视线匹配被打破，观众会以为"两个人在看不同的东西"。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#005
+  source_span:
+    chunk_id: axis_continuity_md#005
+    start: 79
+    end: 105
+  provenance_kind: 权威文档
+- id: gen_axis_0004
+  domain: axis_theory
+  title: 银幕方向定义
+  content: 人物在画面中的左右运动方向即银幕方向，是判断相邻镜头方向是否连贯的依据。
+  keywords:
+  - 运动方向
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 方向连续性
+  topic: ''
+  quote: |-
+    人物在画面里的运动方向（向左/向右）构成银幕方向
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#004
+  source_span:
+    chunk_id: axis_continuity_md#004
+    start: 11
+    end: 35
+  provenance_kind: 权威文档
+- id: gen_axis_0005
+  domain: axis_theory
+  title: 伤痕脏污单调递增
+  content: 伤口、脏污、汗渍等身体状态在连续镜头中必须单调增加，不可逆减，以符合时间推进逻辑。
+  keywords:
+  - 时间逻辑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  - 化妆
+  topic: ''
+  quote: |-
+    伤口、脏污、汗渍必须单调增加。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#014
+  source_span:
+    chunk_id: axis_continuity_md#014
+    start: 107
+    end: 122
+  provenance_kind: 权威文档
+- id: gen_axis_0006
+  domain: axis_theory
+  title: POV 前需引导镜头
+  content: 使用主观镜头（POV）前，先给一个角色看向某处的引导镜头，让观众明确视线来源与方向，再切入 POV。
+  keywords:
+  - 主观镜头
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视线引导
+  topic: ''
+  quote: |-
+    在 POV 之前需要一个"人物看向某处"的引导镜头；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#022
+  source_span:
+    chunk_id: axis_continuity_md#022
+    start: 45
+    end: 71
+  provenance_kind: 权威文档
+- id: gen_axis_0007
+  domain: axis_theory
+  title: 回合结束用双人同框重置
+  content: 动作段落每个回合结束时回到一次双人同框，用同框镜头重置观众的空间模型，再进入下一回合。
+  keywords:
+  - 空间模型
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 空间重置
+  topic: ''
+  quote: |-
+    每一个回合的结束时都回到一次**双人同框**，用来重置观众的空间模型
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#021
+  source_span:
+    chunk_id: axis_continuity_md#021
+    start: 81
+    end: 115
+  provenance_kind: 权威文档
+- id: gen_axis_0008
+  domain: axis_theory
+  title: 30°规则
+  content: 同一主体、同一景别的相邻镜头，机位角度变化必须大于30°，否则两镜看起来像同一机位的抖动，观众会感到画面跳。
+  keywords:
+  - 机位角度
+  - 跳切
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  - 跳切
+  topic: ''
+  quote: |-
+    同一主体、同一景别的相邻镜头，机位角度变化必须大于 30°，否则两个镜头看起来像同一机位的抖动，观众会感到画面跳。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#003
+  source_span:
+    chunk_id: axis_continuity_md#003
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0009
+  domain: axis_theory
+  title: 同回合只改一个变量
+  content: 同一回合内不要同时换边、换景别、换速度；一次只改一个变量，否则观众失去判断空间的依据。
+  keywords:
+  - 换边
+  - 景别
+  - 速度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    不要在同一回合里既换边又换景别又换速度——观众会失去判断依据
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#021
+  source_span:
+    chunk_id: axis_continuity_md#021
+    start: 119
+    end: 149
+  provenance_kind: 权威文档
+- id: gen_axis_0010
+  domain: axis_theory
+  title: 同场景光线方向一致
+  content: 同一场景内，若阳光从窗户左侧进入，则所有镜头的阴影都应朝右，保持光线方向一致，避免观众感到时间或空间错乱。
+  keywords:
+  - 阴影
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线连续性
+  - 时间连续
+  topic: ''
+  quote: |-
+    阳光从窗户左侧进入，那么所有镜头的阴影都应当朝右
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#015
+  source_span:
+    chunk_id: axis_continuity_md#015
+    start: 35
+    end: 59
+  provenance_kind: 权威文档
+- id: gen_axis_0011
+  domain: axis_theory
+  title: 道具连续性规则
+  content: 同一场景内，角色手中的道具在剪辑点后不得无故消失；若需消失，必须用镜头交代其被放下或转移。
+  keywords:
+  - 剪辑点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 穿帮
+  topic: ''
+  quote: |-
+    手里拿的东西不能在一个剪辑点后消失（除非镜头交代了放下）；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#014
+  source_span:
+    chunk_id: axis_continuity_md#014
+    start: 30
+    end: 59
+  provenance_kind: 权威文档
+- id: gen_axis_0012
+  domain: axis_theory
+  title: 阴影翻转提示换边
+  content: 同一段落内若阴影方向从画面右侧变为左侧，说明机位换到了轴线另一侧或光线时间跳变，应检查是否越轴或穿帮。
+  keywords:
+  - 机位换边
+  - 光线连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    同一段落里阴影从右变左，说明机位换边或光线时间跳变
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#017
+  source_span:
+    chunk_id: axis_continuity_md#017
+    start: 147
+    end: 172
+  provenance_kind: 权威文档
+- id: gen_axis_0013
+  domain: axis_theory
+  title: 室内灯状态不跳变
+  content: 在一段连续动作中，室内灯的开关状态不能跳变，必须保持一致，以维持场景内的时间与光线连续性。
+  keywords:
+  - 开关状态
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线连续性
+  - 时间连续
+  topic: ''
+  quote: |-
+    室内灯的开关状态在一段连续动作里不能跳变
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#015
+  source_span:
+    chunk_id: axis_continuity_md#015
+    start: 94
+    end: 114
+  provenance_kind: 权威文档
+- id: gen_axis_0014
+  domain: axis_theory
+  title: 影子长度保持稳定
+  content: 在同一段落内，主体的影子长度不应发生变化，除非剧情明确表示跳过时间；否则应保持影子长度一致以维持时间连续感。
+  keywords:
+  - 时间连续
+  - 段落
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线连续性
+  - 时间连续
+  topic: ''
+  quote: |-
+    主体的影子长度在段落里不应发生变化（除非明确跳过时间）
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#015
+  source_span:
+    chunk_id: axis_continuity_md#015
+    start: 63
+    end: 90
+  provenance_kind: 权威文档
+- id: gen_axis_0015
+  domain: axis_theory
+  title: 地理模型不可重交代
+  content: 地理模型一旦确立就不能靠重新交代来修复；第二次交代会被观众当成另一个空间，因此宁可保持原模型也不要重设方位。
+  keywords:
+  - 重新交代
+  - 空间修复
+  - 观众认知
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 空间连续性
+  - 场景地理
+  topic: ''
+  quote: |-
+    地理模型一旦确立，不能靠"重新交代"来修复——观众会把第二次交代当成另一个空间。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#012
+  source_span:
+    chunk_id: axis_continuity_md#012
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0016
+  domain: axis_theory
+  title: 反应镜头须同侧轴线
+  content: 对话剪辑中，反应镜头的机位必须与前一说话镜头保持在同一条轴线同侧，否则视线方向会翻转、观众会误判两人相对位置。
+  keywords:
+  - 轴线同侧
+  - 对话剪辑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  topic: ''
+  quote: |-
+    对话中，反应镜头的机位必须与前一个说话镜头的轴线同侧。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#006
+  source_span:
+    chunk_id: axis_continuity_md#006
+    start: 14
+    end: 41
+  provenance_kind: 权威文档
+- id: gen_axis_0017
+  domain: axis_theory
+  title: 搜索镜头沿离场方向
+  content: 当人物离场后剧情转入寻找，搜索镜头应沿着该人物离开的方向运动，以维持观众对空间方位的判断。
+  keywords:
+  - 空间方位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 方向连续性
+  - 镜头运动
+  topic: ''
+  quote: |-
+    人物离开后被"寻找"，搜索镜头应当沿着他离开的方向；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#013
+  source_span:
+    chunk_id: axis_continuity_md#013
+    start: 66
+    end: 92
+  provenance_kind: 权威文档
+- id: gen_axis_0018
+  domain: axis_theory
+  title: 三轴优先级
+  content: 当视线轴、关系轴、运动轴同时存在时，优先级为视线轴 > 关系轴 > 运动轴，因为观众最先察觉到的是"他在看什么"；机位取舍应优先满足视线轴。
+  keywords:
+  - 视线轴
+  - 关系轴
+  - 运动轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 机位
+  - 取舍
+  topic: ''
+  quote: |-
+    三条轴同时存在时，优先级是：视线轴 > 关系轴 > 运动轴
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#008
+  source_span:
+    chunk_id: axis_continuity_md#008
+    start: 188
+    end: 217
+  provenance_kind: 权威文档
+- id: gen_axis_0019
+  domain: axis_theory
+  title: 运动镜头越轴合法
+  content: 当需要越轴时，优先用横移（truck）、环绕（orbit）或摇镜（pan）等运动镜头完成，因为观众能看到物理移动过程，从而接受换边；纯硬切没有移动提示，是唯一不合法的越轴方式。
+  keywords:
+  - 硬切
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  - 运动过渡
+  topic: ''
+  quote: |-
+    纯切换（硬切）没有任何"移动"的提示，因此是唯一不合法的越轴。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#024
+  source_span:
+    chunk_id: axis_continuity_md#024
+    start: 192
+    end: 223
+  provenance_kind: 权威文档
+- id: gen_axis_0020
+  domain: axis_theory
+  title: 平面图验证空间
+  content: 把段落内各镜头的人物位置画成俯视平面图，若同一人物在相邻镜头间位置瞬间跳跃、无法用走位解释，即判定为越轴。
+  keywords:
+  - 空间关系
+  - 越轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 检查法
+  topic: ''
+  quote: |-
+    把各镜头的人物位置画成平面图，若某人瞬间跳跃即越轴
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#017
+  source_span:
+    chunk_id: axis_continuity_md#017
+    start: 106
+    end: 131
+  provenance_kind: 权威文档
+- id: gen_axis_0021
+  domain: axis_theory
+  title: 视线方向对切规则
+  content: 拍两人对视时，若A看向画面右侧，则B必须从画面左侧回看，使两条视线在银幕上相向交汇；反向则视为视线不匹配。
+  keywords:
+  - 银幕方向
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视线匹配
+  - 轴线
+  - 正反打
+  topic: ''
+  quote: |-
+    A 看向画面右侧，B 必须从画面左侧回看；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#005
+  source_span:
+    chunk_id: axis_continuity_md#005
+    start: 23
+    end: 44
+  provenance_kind: 权威文档
+- id: gen_axis_0022
+  domain: axis_theory
+  title: 正反打表达对话进行
+  content: 拍两人对话时，若只想表达"对话正在进行"，用正反打（过肩）机位；它最安全也最平庸，适合常规对话段落。
+  keywords:
+  - 过肩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  topic: ''
+  quote: |-
+    **正反打**（过肩）表达"对话正在进行"，是最安全也最平庸的选择；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#023
+  source_span:
+    chunk_id: axis_continuity_md#023
+    start: 20
+    end: 54
+  provenance_kind: 权威文档
+- id: gen_axis_0023
+  domain: axis_theory
+  title: 双人对话六机位组
+  content: 拍双人对话段落时，标准配置为六个机位：双人全景建立关系与空间、过肩A、过肩B反打、单人近景A去背、单人近景B去背、插入镜头（手/道具/桌面）用于调节节奏。
+  keywords:
+  - 全景
+  - 过肩
+  - 近景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对话段落
+  - 分镜
+  topic: ''
+  quote: |-
+    一个完整的对话段落，通常需要六个机位：
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#010
+  source_span:
+    chunk_id: axis_continuity_md#010
+    start: 17
+    end: 36
+  provenance_kind: 权威文档
+- id: gen_axis_0024
+  domain: axis_theory
+  title: 反打镜头天然守轴
+  content: 拍对话时优先用反打（over-the-shoulder）机位，因为它本身就在轴线同侧，无需额外过渡即可满足轴线约束，因此成为对话主力机位。
+  keywords:
+  - 过肩镜头
+  - 轴线
+  - 对话机位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 过肩
+  - 轴线
+  topic: ''
+  quote: |-
+    反打镜头（over-the-shoulder）天然满足这条约束，这也是它成为对话主力机位的原因。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#006
+  source_span:
+    chunk_id: axis_continuity_md#006
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0025
+  domain: axis_theory
+  title: 视线配对判轴线
+  content: 拍对话正反打时，A 看向画面右侧、B 也应看向画面左侧以形成对视；若 B 同样看向右侧，则视线轴断裂，观众会误读为两人看同一方向。
+  keywords:
+  - 视线轴
+  - 正反打
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对话
+  topic: ''
+  quote: |-
+    A 看右、B 也看右 → 视线轴断裂
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#017
+  source_span:
+    chunk_id: axis_continuity_md#017
+    start: 72
+    end: 90
+  provenance_kind: 权威文档
+- id: gen_axis_0026
+  domain: axis_theory
+  title: 服装细节反打一致
+  content: 拍摄反打镜头时，服装的扣子、领口、袖口状态必须与前一镜完全一致，避免因换机位造成穿帮。
+  keywords:
+  - 一致性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  topic: ''
+  quote: |-
+    服装的扣子、领口、袖口在反打镜头里必须一致；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#014
+  source_span:
+    chunk_id: axis_continuity_md#014
+    start: 62
+    end: 84
+  provenance_kind: 权威文档
+- id: gen_axis_0027
+  domain: axis_theory
+  title: 稳定段落构图三要素
+  content: 拍稳定段落时，人物取居中偏侧、水平线保持水平、机位高度前后一致，用这三项维持空间与情绪的稳定。
+  keywords:
+  - 稳定构图
+  - 水平线
+  - 机位高度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 平稳
+  tags: []
+  topic: ''
+  quote: |-
+    稳定段落：人物居中偏侧、水平线水平、机位高度一致；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#019
+  source_span:
+    chunk_id: axis_continuity_md#019
+    start: 49
+    end: 74
+  provenance_kind: 权威文档
+- id: gen_axis_0028
+  domain: axis_theory
+  title: 小景别正反打严格同轴
+  content: 拍近景、特写的正反打时必须严格同轴，不得越轴；宽景别（全景）可容忍更大的机位自由。
+  keywords:
+  - 小景别正反打严格同轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 机位
+  topic: ''
+  quote: |-
+    小景别的正反打必须严格同轴；宽景别可以容忍更大的自由。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#018
+  source_span:
+    chunk_id: axis_continuity_md#018
+    start: 104
+    end: 131
+  provenance_kind: 权威文档
+- id: gen_axis_0029
+  domain: axis_theory
+  title: 追逐双方方向相反
+  content: 拍追击场景时，追逐者与被追者在画面中的运动方向必须相反，以维持空间对抗关系。
+  keywords:
+  - 追击
+  - 追逐者
+  - 被追者
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 银幕方向
+  topic: ''
+  quote: |-
+    追击场景中，追逐者与被追者的方向必须相反
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#004
+  source_span:
+    chunk_id: axis_continuity_md#004
+    start: 40
+    end: 60
+  provenance_kind: 权威文档
+- id: gen_axis_0030
+  domain: axis_theory
+  title: 动作场面的参照轴选择
+  content: 拍追逐或打斗时，先确定主动权在谁，把主动方作为参照轴，被动方绕其换位；不要每镜各自换轴，否则越打越乱。
+  keywords:
+  - 主动权
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 动作调度
+  topic: ''
+  quote: |-
+    先确定"主动权在谁"，把它作为参照轴，另一方绕着它换位
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#021
+  source_span:
+    chunk_id: axis_continuity_md#021
+    start: 50
+    end: 77
+  provenance_kind: 权威文档
+- id: gen_axis_0031
+  domain: axis_theory
+  title: 插入镜头不参与轴线
+  content: 插入镜头（手、道具、桌面）不参与轴线判断，可自由插入用于调整段落节奏。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    机位 6 不参与轴线判断。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#010
+  source_span:
+    chunk_id: axis_continuity_md#010
+    start: 210
+    end: 223
+  provenance_kind: 权威文档
+- id: gen_axis_0032
+  domain: axis_theory
+  title: 无过渡翻转最刺眼
+  content: 方向翻转若缺少过渡，是观众最容易察觉且最不满的错误，剪辑时应优先避免。
+  keywords:
+  - 方向翻转
+  - 观众感知
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 银幕方向
+  - 剪辑错误
+  topic: ''
+  quote: |-
+    方向翻转但没有过渡，是观众最容易察觉也最不满的错误
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#004
+  source_span:
+    chunk_id: axis_continuity_md#004
+    start: 112
+    end: 137
+  provenance_kind: 权威文档
+- id: gen_axis_0033
+  domain: axis_theory
+  title: 机位顺序即叙事
+  content: 机位切换顺序本身承担叙事：按过肩→骑轴→分离的顺序排列，观众会自然感到两人关系在恶化。
+  keywords:
+  - 关系恶化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 剪辑
+  - 段落结构
+  topic: ''
+  quote: |-
+    三种机位的切换顺序本身就是叙事：从过肩到骑轴再到分离，观众会自然感到关系在恶化。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#023
+  source_span:
+    chunk_id: axis_continuity_md#023
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0034
+  domain: axis_theory
+  title: 越轴导致位置互换
+  content: 机位越过两人连线轴时，A与B在画面中的左右位置会互换，观众会误以为两人交换了位置，因此除非用过渡手段，否则不要越轴。
+  keywords:
+  - 空间混乱
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    越过这条轴的机位，会让 A 与 B 的位置互换，观众会以为两人"换了位置"。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#001
+  source_span:
+    chunk_id: axis_continuity_md#001
+    start: 86
+    end: 124
+  provenance_kind: 权威文档
+- id: gen_axis_0035
+  domain: axis_theory
+  title: 用箭头检查越轴
+  content: 检查相邻两镜是否越轴时，把每个镜头的运动方向画成箭头并排比对：两箭头方向相反即判定为越轴，需用中性机位或运动过渡修正。
+  keywords:
+  - 运动方向
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  - 检查法
+  topic: ''
+  quote: |-
+    把两个相邻镜头的运动方向画成箭头，箭头相反即为越轴
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#017
+  source_span:
+    chunk_id: axis_continuity_md#017
+    start: 31
+    end: 56
+  provenance_kind: 权威文档
+- id: gen_axis_0036
+  domain: axis_theory
+  title: 液面高度单调下降
+  content: 涉及饮料等液体的镜头，液面高度只能随时间下降，不能上升；剪辑时须保证前后镜头的液面量符合消耗逻辑。
+  keywords:
+  - 道具
+  - 时间逻辑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  - 道具
+  topic: ''
+  quote: |-
+    饮料的液面高度只能下降，不能上升；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#014
+  source_span:
+    chunk_id: axis_continuity_md#014
+    start: 87
+    end: 104
+  provenance_kind: 权威文档
+- id: gen_axis_0037
+  domain: axis_theory
+  title: 环绕镜头换边可观察
+  content: 环绕镜头（orbit）会连续跨越轴线两侧，把"换边"变成一个观众可观察的连续过程，因此是合法的越轴手段。
+  keywords:
+  - 越轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 运动过渡
+  topic: ''
+  quote: |-
+    环绕镜头（orbit）会连续跨越两侧，它把"换边"变成一个可观察的过程；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#024
+  source_span:
+    chunk_id: axis_continuity_md#024
+    start: 106
+    end: 142
+  provenance_kind: 权威文档
+- id: gen_axis_0038
+  domain: axis_theory
+  title: 前三镜建立地理模型
+  content: 用前3个镜头确立场景地理（谁在左、谁在右、门在哪边），后续所有镜头必须与该模型保持一致，不得随意翻转左右关系。
+  keywords:
+  - 前3镜
+  - 左右关系
+  - 一致性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 空间连续性
+  - 场景地理
+  topic: ''
+  quote: |-
+    观众会在前 3 个镜头里建立起场景的地理模型（谁在左、谁在右、门在哪边）。之后的所有镜头都要与这个模型一致：
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#012
+  source_span:
+    chunk_id: axis_continuity_md#012
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0039
+  domain: axis_theory
+  title: 摇镜越轴需重建构图
+  content: 用摇镜越轴时，摇的过程可以跨越两人连线，但摇镜的终点必须重新建立稳定构图，否则观众会失去空间参照。
+  keywords:
+  - 摇镜越轴需重建构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  topic: ''
+  quote: |-
+    摇镜（pan）如果在摇的过程中越过两人连线，也算合法，但摇镜的终点必须重新建立稳定构图。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#024
+  source_span:
+    chunk_id: axis_continuity_md#024
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0040
+  domain: axis_theory
+  title: 禁止硬切越轴
+  content: 相邻两镜之间直接硬切跨越轴线是唯一不可接受的做法；越轴必须经由中性机位、镜头运动或人物走位三者之一完成。
+  keywords:
+  - 轴线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 剪辑
+  - 连续性
+  topic: ''
+  quote: |-
+    硬切越轴是唯一不可接受的做法。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#002
+  source_span:
+    chunk_id: axis_continuity_md#002
+    start: 154
+    end: 169
+  provenance_kind: 权威文档
+- id: gen_axis_0041
+  domain: axis_theory
+  title: 方向翻转需过渡
+  content: 若必须翻转人物运动方向，用中性镜头或明确的折返动作过渡，不要直接硬切。
+  keywords:
+  - 中性镜头
+  - 折返动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 银幕方向
+  - 过渡镜头
+  topic: ''
+  quote: |-
+    方向翻转必须用中性镜头或明确的折返动作过渡
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#004
+  source_span:
+    chunk_id: axis_continuity_md#004
+    start: 88
+    end: 109
+  provenance_kind: 权威文档
+- id: gen_axis_0042
+  domain: axis_theory
+  title: 门位决定走向
+  content: 若门在第10秒被建立为画面左侧，之后人物走向门时就必须向左移动，用运动方向呼应已建立的空间位置。
+  keywords:
+  - 运动方向
+  - 银幕方向
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 方向感
+  - 空间连续性
+  topic: ''
+  quote: |-
+    如果门在第 10 秒被建立为"画面左侧"，后面人物走向门时就应当向左；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#012
+  source_span:
+    chunk_id: axis_continuity_md#012
+    start: 75
+    end: 110
+  provenance_kind: 权威文档
+- id: gen_axis_0043
+  domain: axis_theory
+  title: 旅程方向保持一致
+  content: 表现同一段旅程时，人物在各镜头中的行进方向必须保持一致，不可中途反向。
+  keywords:
+  - 行进方向
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 银幕方向
+  - 连续性
+  topic: ''
+  quote: |-
+    同一段旅程中，人物的行进方向必须保持一致
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#004
+  source_span:
+    chunk_id: axis_continuity_md#004
+    start: 64
+    end: 84
+  provenance_kind: 权威文档
+- id: gen_axis_0044
+  domain: axis_theory
+  title: 分离单人镜表破裂
+  content: 表达"两人之间已无任何沟通"时，用完全分离的单人镜头（去背），常用于对话的破裂点。
+  keywords:
+  - 单人镜头
+  - 去背
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 疏离
+  tags:
+  - 机位
+  - 疏离
+  topic: ''
+  quote: |-
+    **完全分离的单人镜头**（去背）表达"两人之间已经没有任何沟通"，常用于对话的破裂点。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#023
+  source_span:
+    chunk_id: axis_continuity_md#023
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0045
+  domain: axis_theory
+  title: 视线高度匹配
+  content: 视线高度须与人物相对位置一致：A站着俯视B时，B的视线应朝上；高度不匹配会破坏空间关系。
+  keywords:
+  - 俯仰
+  - 空间关系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视线匹配
+  - 轴线
+  topic: ''
+  quote: |-
+    视线的高度要匹配：A 站着俯视 B，B 的视线就应该朝上；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#005
+  source_span:
+    chunk_id: axis_continuity_md#005
+    start: 47
+    end: 76
+  provenance_kind: 权威文档
+- id: gen_axis_0046
+  domain: axis_theory
+  title: 越轴破坏力随景别变化
+  content: 越轴的破坏力与景别成反比：全景越轴观众可能只当作换角度，中景越轴会察觉左右互换，近景/特写越轴则视线方向立刻矛盾、观众出戏。
+  keywords:
+  - 越轴破坏力随景别变化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    景别越小，越轴的破坏力越大
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#018
+  source_span:
+    chunk_id: axis_continuity_md#018
+    start: 16
+    end: 29
+  provenance_kind: 权威文档
+- id: gen_axis_0047
+  domain: axis_theory
+  title: 轴线三类型
+  content: 轴线分三类：关系轴（两人或多方连线，对话戏主体，机位须留同侧）、运动轴（人物运动方向构成，追车行军走廊行走属此类，判断标准是人物在画面里往哪走）、视线轴（人物视线指向目标构成，看向窗外时窗外反打须落在视线另一侧）。
+  keywords:
+  - 关系轴
+  - 运动轴
+  - 视线轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 连续性
+  topic: ''
+  quote: |-
+    轴线不止"两人连线"一种，判断方法也不同
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#008
+  source_span:
+    chunk_id: axis_continuity_md#008
+    start: 14
+    end: 34
+  provenance_kind: 权威文档
+- id: gen_axis_0048
+  domain: axis_theory
+  title: 机械步骤先做扎实
+  content: 轴线检查中，画位置朝向与标注机位侧别属于机械性工作，应先做扎实；侧别跳变、视线配对、运动方向连续这三项才需要判断。把机械部分做扎实可大幅减少轴线返工。
+  keywords:
+  - 判断步骤
+  - 返工
+  - 预演
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 工作流
+  topic: ''
+  quote: |-
+    前两步是机械工作，后三步才需要判断——把机械的部分做扎实，轴线的返工会少一大半。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#025
+  source_span:
+    chunk_id: axis_continuity_md#025
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0049
+  domain: axis_theory
+  title: 反打同半平面规则
+  content: 过肩A与过肩B（机位2/3）必须位于轴线两侧的同一半平面内，否则反打会变成越轴；单人近景A/B（机位4/5）同理，须与对应过肩同侧轴线。
+  keywords:
+  - 轴线
+  - 越轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    机位 2/3 与 4/5 必须分别在轴线两侧的同一半平面内，否则反打会变成越轴。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#010
+  source_span:
+    chunk_id: axis_continuity_md#010
+    start: 169
+    end: 209
+  provenance_kind: 权威文档
+- id: gen_axis_0050
+  domain: axis_theory
+  title: 道具穿帮最易被察觉
+  content: 道具连续性错误是观众最容易发现的穿帮类型，拍摄时应优先检查道具在剪辑点前后的状态。
+  keywords:
+  - 观众感知
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  topic: ''
+  quote: |-
+    道具连续性的错误是观众最容易发现的一类穿帮。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#014
+  source_span:
+    chunk_id: axis_continuity_md#014
+    start: 124
+    end: 146
+  provenance_kind: 权威文档
+- id: gen_axis_0051
+  domain: axis_theory
+  title: 非合法时机需过渡动作
+  content: 除场景切换和情绪断点外，任何换边都必须安排一个可见的过渡动作，否则会破坏空间连续性。
+  keywords:
+  - 越轴
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 越轴
+  topic: ''
+  quote: |-
+    这两种时机之外换边，都需要一个"可见的过渡动作"。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#020
+  source_span:
+    chunk_id: axis_continuity_md#020
+    start: 151
+    end: 176
+  provenance_kind: 权威文档
+- id: gen_axis_0052
+  domain: axis_theory
+  title: 不稳定段落构图三要素
+  content: 需要制造不安时，用人物被画框边缘切割、水平线倾斜、机位高度跳变三种手段，构成不稳定段落。
+  keywords:
+  - 不稳定构图
+  - 边缘切割
+  - 倾斜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不安
+  tags:
+  - 失衡
+  topic: ''
+  quote: |-
+    不稳定段落：人物被边缘切割、水平线倾斜、机位高度跳变。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#019
+  source_span:
+    chunk_id: axis_continuity_md#019
+    start: 77
+    end: 104
+  provenance_kind: 权威文档
+- id: gen_axis_0053
+  domain: axis_theory
+  title: 骑轴表达对峙
+  content: 需要表达"两人正面对峙"或"被摄者面对观众"时，改用骑轴机位，其视觉强度高于过肩正反打。
+  keywords:
+  - 强度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 机位
+  - 轴线
+  topic: ''
+  quote: |-
+    **骑轴**表达"两人正面对峙"或"被摄者面对观众"，强度更高；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#023
+  source_span:
+    chunk_id: axis_continuity_md#023
+    start: 57
+    end: 89
+  provenance_kind: 权威文档
+- id: gen_axis_0054
+  domain: axis_theory
+  title: 骑轴镜头强度最低
+  content: 骑轴镜头不产生压迫感，是强度最低的机位，应放在段落中段而非情绪顶点。
+  keywords:
+  - 压迫感
+  - 段落位置
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 节奏
+  - 情绪
+  topic: ''
+  quote: |-
+    骑轴镜头不产生压迫感，所以它也是"强度"最低的机位——用在段落的中段，而不是情绪的顶点。
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#009
+  source_span:
+    chunk_id: axis_continuity_md#009
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_axis_0055
+  domain: axis_theory
+  title: 骑轴后换边限一次
+  content: 骑轴镜头之后可以换边，但同一段落里只能换一次，避免反复越轴造成方向混乱。
+  keywords:
+  - 越轴
+  - 段落
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 越轴
+  - 连续性
+  topic: ''
+  quote: |-
+    骑轴镜头之后可以换边，但同一段落里只能换一次；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#009
+  source_span:
+    chunk_id: axis_continuity_md#009
+    start: 107
+    end: 130
+  provenance_kind: 权威文档
+- id: gen_axis_0056
+  domain: axis_theory
+  title: 骑轴镜头须落在轴线上
+  content: 骑轴镜头要真正落在轴线上，机位偏差需小于5°；偏差过大时观众仍能读出倾斜的左右关系，失去骑轴的中性作用。
+  keywords:
+  - 5°
+  - 中性机位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 连续性
+  topic: ''
+  quote: |-
+    必须真正落在轴线上（偏差小于 5°），否则观众仍然能读出倾斜的左右关系；
+  source_ref:
+    url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 58afea294034466a12cd5b4f2d010ff0447f3e5bc49a2b36bfd707d014c1d064
+  chunk_id: axis_continuity_md#009
+  source_span:
+    chunk_id: axis_continuity_md#009
+    start: 68
+    end: 104
+  provenance_kind: 权威文档

@@ -42,3 +42,9 @@ tools/_probe_out/seq/
 # OS
 Thumbs.db
 .DS_Store
+
+# P14-1 语料采集的中间产物与原文快照（执行文档 v1.4 §2.3c/§2.3d 的体积门）：
+# 入库的是「知识 ＋ 短引用 ＋ 出处」，不是原文长段落，因此原文缓存一律不入库，
+# 只保留 `source_ref.sha256` 供校验。管线可用 `python -m tools.kb_fetch.fetch`
+# 从 `knowledge/sources.yaml` 原样重建。
+/work/

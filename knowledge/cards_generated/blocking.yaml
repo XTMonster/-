@@ -1,0 +1,3102 @@
+# 生成卡片：blocking（自动生成，请勿手改；见 docs/knowledge/LICENSES.md）
+- id: gen_block_0001
+  domain: blocking
+  title: 走位越练越熟
+  content: 一人、两人或多人之间的横移与回移调度，排练次数再多也不为过。
+  keywords:
+  - 横移
+  - 回移
+  - 多人调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - blocking
+  topic: ''
+  quote: |-
+    The crossings and recrossing of one, two, or more characters, can scarcely be rehearsed too often.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#010
+  source_span:
+    chunk_id: pg39973_txt#010
+    start: 1526
+    end: 1624
+  provenance_kind: 网络语料
+- id: gen_block_0002
+  domain: blocking
+  title: 用反应镜头收束离场
+  content: 一人下场后，让其余角色留在原地互相对视、显出困惑，并由其中一人做出摸头的困惑手势——用群体静止反应来收束这一节拍，而不是立刻切走。
+  keywords:
+  - 困惑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 困惑
+  tags:
+  - 表演
+  - 群像调度
+  topic: ''
+  quote: |-
+    _They all stand looking at each other, nonplussed._ SIR CHRISTOPHER _slightly touching his head with perplexed gesture_.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#007
+  source_span:
+    chunk_id: pg39973_txt#007
+    start: 2271
+    end: 2391
+  provenance_kind: 网络语料
+- id: gen_block_0003
+  domain: blocking
+  title: 三人以上用三角站位
+  content: 三人及以上的场面调度采用三角站位，避免多人并排成一条线，以保证镜头内层次与视线关系清晰。
+  keywords:
+  - 多人调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 群戏
+  topic: ''
+  quote: |-
+    三人以上是否用了三角站位？
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#008
+  source_span:
+    chunk_id: blocking_and_performance_md#008
+    start: 70
+    end: 83
+  provenance_kind: 权威文档
+- id: gen_block_0004
+  domain: blocking
+  title: 反复排练上下场
+  content: 上下场必须反复排练直到顺畅为止，不能只走一遍就过。
+  keywords:
+  - 顺畅
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 排练流程
+  topic: ''
+  quote: |-
+    Entrances and exits must be repeatedly rehearsed until they go smoothly.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#010
+  source_span:
+    chunk_id: pg39973_txt#010
+    start: 1453
+    end: 1525
+  provenance_kind: 网络语料
+- id: gen_block_0005
+  domain: blocking
+  title: 避免双侧对打光
+  content: 不要像某些商业演出那样从舞台两侧同时打强光模拟阳光，这种双侧对打会破坏光源逻辑。
+  keywords:
+  - 双侧光
+  - 阳光
+  - 光源逻辑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 反例
+  topic: ''
+  quote: |-
+    the stage was at one time brilliantly lighted, supposedly by sunshine from the outside, from the two opposite sides of the stage!
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#016
+  source_span:
+    chunk_id: pg39973_txt#016
+    start: 1410
+    end: 1539
+  provenance_kind: 网络语料
+- id: gen_block_0006
+  domain: blocking
+  title: 间接光替代直射光
+  content: 业余演出无法搭建Fortuny式反射扩散系统时，导演与电工应通过实验尽量采用间接照明，而非直接打光。
+  keywords:
+  - 间接照明
+  - 实验
+  - 业余演出
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线
+  topic: ''
+  quote: |-
+    still amateur electricians and directors should do their best, by means of experimentation, to use indirect lighting.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#016
+  source_span:
+    chunk_id: pg39973_txt#016
+    start: 353
+    end: 470
+  provenance_kind: 网络语料
+- id: gen_block_0007
+  domain: blocking
+  title: 业余排练时长控制
+  content: 业余演员排练过长或过密会失去新鲜感与兴趣，因此排练时长与频率要控制，避免排“疲”。
+  keywords:
+  - 新鲜感
+  - 业余演员
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练流程
+  - 节奏
+  topic: ''
+  quote: |-
+    If he is rehearsed too long or too steadily, he will grow "stale", and lose interest in his work.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#011
+  source_span:
+    chunk_id: pg39973_txt#011
+    start: 2060
+    end: 2157
+  provenance_kind: 网络语料
+- id: gen_block_0008
+  domain: blocking
+  title: 临场不改台词与动作
+  content: 临近演出（彩排阶段）不要改动台词或舞台动作（business），此时改动弊大于利。
+  keywords:
+  - 舞台动作
+  - 临场改动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 彩排
+  - 调度
+  topic: ''
+  quote: |-
+    It is very unwise to change lines or "business" at this eleventh hour.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#012
+  source_span:
+    chunk_id: pg39973_txt#012
+    start: 1415
+    end: 1485
+  provenance_kind: 网络语料
+- id: gen_block_0009
+  domain: blocking
+  title: 备角整组训练
+  content: 为应对演员退出或生病，最好训练一整组替补阵容，任何成员都能随时顶替一组角色；替补须台词无误、熟悉全部调度，但表演精细度可低于原组。
+  keywords:
+  - 替补
+  - 台词
+  - 调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练
+  - 调度
+  topic: ''
+  quote: |-
+    If possible, an entire second cast should be trained, so that any member of it could at a moment's notice be called upon to play in the first cast.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#002
+  source_span:
+    chunk_id: pg39973_txt#002
+    start: 1266
+    end: 1413
+  provenance_kind: 网络语料
+- id: gen_block_0010
+  domain: blocking
+  title: 挪钻机腾出沙发位
+  content: 为给沙发腾位置，可把牙钻移到左侧角落，再把沙发紧挨桌子摆放，用移位而非加塞解决家具冲突。
+  keywords:
+  - 移位
+  - 牙钻
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布景
+  - 调度
+  topic: ''
+  quote: |-
+    By moving the drill to the left, in the corner, the sofa can be placed next to the table
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#005
+  source_span:
+    chunk_id: pg39973_txt#005
+    start: 2032
+    end: 2120
+  provenance_kind: 网络语料
+- id: gen_block_0011
+  domain: blocking
+  title: 道具交接的调度
+  content: 仆人走到桌边端起托盘递给主人，主人检视后取物并坐下；这些动作由对白推断，需在提示本中标注。
+  keywords:
+  - 托盘
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    Lane then goes to the table, takes up the salver with the sandwiches on it, and hands it to Algernon.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 1386
+    end: 1487
+  provenance_kind: 网络语料
+- id: gen_block_0012
+  domain: blocking
+  title: 首排即用道具家具
+  content: 从第一次排练起就应尽量使用关键道具与家具，让演员在接近正式演出的条件下建立走位与身体记忆。
+  keywords:
+  - 排练条件
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 排练
+  topic: ''
+  quote: |-
+    As many of the essential "props" and articles of furniture as possible should be used from the very first
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#003
+  source_span:
+    chunk_id: pg39973_txt#003
+    start: 610
+    end: 715
+  provenance_kind: 网络语料
+- id: gen_block_0013
+  domain: blocking
+  title: 壁炉与门的关系
+  content: 从采光窗望入时，把壁炉置于正对观众的墙中央，门紧靠壁炉设在演员左侧，形成纵深轴线的两个主要出入口。
+  keywords:
+  - 正对墙
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布景
+  - 轴线
+  topic: ''
+  quote: |-
+    you will see the fireplace in the middle of the wall opposite you, with the door beside it to your left
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#005
+  source_span:
+    chunk_id: pg39973_txt#005
+    start: 699
+    end: 802
+  provenance_kind: 网络语料
+- id: gen_block_0014
+  domain: blocking
+  title: 动作三段与留帧
+  content: 任何动作拆成起势（准备）、执行、收势（余韵）三段；拍摄与剪辑时不要只保留执行段，必须把准备帧和收势帧留给表演，动作才有重量、不显生硬。
+  keywords:
+  - 起势
+  - 执行
+  - 收势
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 动作节奏
+  - 表演
+  - 剪辑取舍
+  topic: ''
+  quote: |-
+    任何动作都有三段：起势（准备）、执行、收势（余韵）。只拍"执行"会显得生硬；把准备帧与收势帧留给表演，人物的动作才像有重量。
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#006
+  source_span:
+    chunk_id: blocking_and_performance_md#006
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_block_0015
+  domain: blocking
+  title: 箱式布景单窗采光
+  content: 使用至少有一扇窗的箱式布景且场景非夜间时，应让全部或相当部分的光从同一扇窗射入，以形成统一光源。
+  keywords:
+  - 窗户
+  - 单一光源
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  - 窗户光
+  topic: ''
+  quote: |-
+    it is much better to have all, or at least an appreciable portion of the light come in through one window.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#016
+  source_span:
+    chunk_id: pg39973_txt#016
+    start: 1191
+    end: 1297
+  provenance_kind: 网络语料
+- id: gen_block_0016
+  domain: blocking
+  title: 分幕排练与巩固周期
+  content: 先逐幕排练，每幕排完后至少每三到四天复排一次；全部幕排完后再进入整剧连排。
+  keywords:
+  - 复排周期
+  - 整剧连排
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练流程
+  - 节奏
+  topic: ''
+  quote: |-
+    Each act, after it is finished in this way, must be rehearsed at least every three or four days.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#011
+  source_span:
+    chunk_id: pg39973_txt#011
+    start: 50
+    end: 146
+  provenance_kind: 网络语料
+- id: gen_block_0017
+  domain: blocking
+  title: 提示本标注隐含调度
+  content: 凡由对白推断出的动作（如撤托盘），都要写进提示本和对应演员的台本，确保调度可执行。
+  keywords:
+  - 提示本标注隐含调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  topic: ''
+  quote: |-
+    This stage direction should be indicated in the prompt-copy, as well as in that of the actor playing Lane
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 2191
+    end: 2296
+  provenance_kind: 网络语料
+- id: gen_block_0018
+  domain: blocking
+  title: 舞台指示的完整度分级
+  content: 分镜/走位说明可分两级：一级给出每个上下场、交叉走位与关键家具道具的明确位置（如'中央后方立柜、桌边折凳、中线左侧箱子、最左沙发'）；二级只给最简提示，具体走位留给排演时确定。写分镜时按制作需要选择级别，但关键道具与出入口必须写明。
+  keywords:
+  - 走位
+  - 道具
+  - 出入口
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 分镜写法
+  topic: ''
+  quote: |-
+    make clear every crossing, entrance, and exit, and designate at least the important articles of furniture and "props."
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#007
+  source_span:
+    chunk_id: pg39973_txt#007
+    start: 187
+    end: 305
+  provenance_kind: 网络语料
+- id: gen_block_0019
+  domain: blocking
+  title: 舞台指示不可全信
+  content: 剧本自带的舞台指示通常不够完整可靠，排演前应把场景描述转绘成平面调度图，作为走位的工作底稿，再按实际舞台尺寸调整。
+  keywords:
+  - 调度图
+  - 走位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - blocking
+  - 调度
+  topic: ''
+  quote: |-
+    only in the rarest instances are stage directions so carefully worked out and indicated.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#008
+  source_span:
+    chunk_id: pg39973_txt#008
+    start: 25
+    end: 113
+  provenance_kind: 网络语料
+- id: gen_block_0020
+  domain: blocking
+  title: 语义冲突动作并行
+  content: 可让语义冲突的动作与台词并行播放（如嘴上拒绝、手上递东西），用矛盾制造潜台词。
+  keywords:
+  - 潜台词
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 潜台词
+  - 对位
+  topic: ''
+  quote: |-
+    有无语义冲突的动作被并行播放？
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#008
+  source_span:
+    chunk_id: blocking_and_performance_md#008
+    start: 112
+    end: 127
+  provenance_kind: 权威文档
+- id: gen_block_0021
+  domain: blocking
+  title: 两种走位写法对照
+  content: 同一场戏的走位说明有两种写法：一种给出具体指令（谁为谁开门、从哪侧下场），另一种只给最简提示。前者便于精确复现，后者给演员留空间；分镜可按镜头精度需求选用。
+  keywords:
+  - 具体指令
+  - 最简提示
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 调度
+  topic: ''
+  quote: |-
+    The first contains specific directions, the second only the merest suggestions.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#007
+  source_span:
+    chunk_id: pg39973_txt#007
+    start: 1741
+    end: 1820
+  provenance_kind: 网络语料
+- id: gen_block_0022
+  domain: blocking
+  title: 互斥动作不可并行
+  content: 同一角色在同一层出现语义矛盾的动作（如走路与摔倒、摔倒与起跳）时，必须让前一动作结束再起后一动作，或把后一动作延后到下一拍；禁止用同时播放来掩盖冲突，否则观众会读成抽搐而非表演。
+  keywords:
+  - 动作分层
+  - 时序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 表演节奏
+  - 动作衔接
+  topic: ''
+  quote: |-
+    语义矛盾的动作不能并行：走路与摔倒、摔倒与起跳、同一层的两个互斥动作。
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#007
+  source_span:
+    chunk_id: blocking_and_performance_md#007
+    start: 16
+    end: 51
+  provenance_kind: 权威文档
+- id: gen_block_0023
+  domain: blocking
+  title: 按人数定座位量
+  content: 同场角色多时需布置大量座椅；椅子数量与位置取决于舞台大小和形状，先按平面图排，再依实际台面修正。
+  keywords:
+  - 座椅
+  - 舞台尺寸
+  - 平面图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - blocking
+  - 调度
+  topic: ''
+  quote: |-
+    The exact number of chairs, as well as the positions they will have to occupy, depend largely on the size and shape of the stage.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#008
+  source_span:
+    chunk_id: pg39973_txt#008
+    start: 1428
+    end: 1557
+  provenance_kind: 网络语料
+- id: gen_block_0024
+  domain: blocking
+  title: 四周布光的两个弊端
+  content: 在舞台四周都设灯会导致两个问题：一是整体过亮，二是产生不自然、扭曲的阴影，失去浮雕感与立体感。
+  keywords:
+  - 过亮
+  - 阴影
+  - 立体感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 阴影
+  - 立体感
+  topic: ''
+  quote: |-
+    To station lights on all sides of the stage will first of all make the stage too bright, and furthermore produce unnatural and distorted shadows
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#016
+  source_span:
+    chunk_id: pg39973_txt#016
+    start: 1691
+    end: 1835
+  provenance_kind: 网络语料
+- id: gen_block_0025
+  domain: blocking
+  title: 长凳对称布置
+  content: 墙两侧各放一条乡村长凳；另在舞台前区最左最右各加长凳，供后续场次使用，形成对称构图。
+  keywords:
+  - 前区
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 布景
+  topic: ''
+  quote: |-
+    There is a rustic bench against each side of the wall.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#017
+  source_span:
+    chunk_id: pg39973_txt#017
+    start: 942
+    end: 996
+  provenance_kind: 网络语料
+- id: gen_block_0026
+  domain: blocking
+  title: 群众场面专人调度
+  content: 处理群众或大群戏时，指定一名助理专门负责把群众演员在正确时间带上、带下舞台，避免上下场混乱。
+  keywords:
+  - 上下场
+  - 助理
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 群戏
+  - 上下场
+  topic: ''
+  quote: |-
+    it is well to have an assistant whose duty it is to see that the "supes" [supernumeraries] are conducted on and off the stage at the right time.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#002
+  source_span:
+    chunk_id: pg39973_txt#002
+    start: 479
+    end: 623
+  provenance_kind: 网络语料
+- id: gen_block_0027
+  domain: blocking
+  title: 天幕的卷收与通行
+  content: 天幕用帆布制作时，不用时卷在舞台前侧一端的垂直卷筒上，沿圆形铁轨绕到舞台后方展开，与对侧卷筒相接；不用时卷回原筒，使舞台四面重新可通行。
+  keywords:
+  - 卷筒
+  - 铁轨
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 装置
+  - 调度
+  - 空间
+  topic: ''
+  quote: |-
+    It can be rolled up on its original cylinder when it is not needed, leaving the stage once more approachable from all sides.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#015
+  source_span:
+    chunk_id: pg39973_txt#015
+    start: 575
+    end: 699
+  provenance_kind: 网络语料
+- id: gen_block_0028
+  domain: blocking
+  title: 高度差需有动机
+  content: 安排人物高度差（站/坐、台阶、俯身）时必须给出动机，如权力、亲疏或空间限制；无动机的高度差不要用。
+  keywords:
+  - 权力关系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    有没有高度差？高度差是否有动机？
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#008
+  source_span:
+    chunk_id: blocking_and_performance_md#008
+    start: 50
+    end: 66
+  provenance_kind: 权威文档
+- id: gen_block_0029
+  domain: blocking
+  title: 台词与动作错开
+  content: 对白戏的表演节奏与台词错开：让话发生在动作之前或之后，避免说话与动作同时进行，从而让节拍清晰可读。
+  keywords:
+  - 对白
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演节奏
+  - 对白戏
+  topic: ''
+  quote: |-
+    对白戏的表演节奏通常与台词错开：**话在动作之前或之后，而不是同时**。
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#004
+  source_span:
+    chunk_id: blocking_and_performance_md#004
+    start: 127
+    end: 163
+  provenance_kind: 权威文档
+- id: gen_block_0030
+  domain: blocking
+  title: 导演缺席时的代行
+  content: 导演无法到场或同时排练两段戏时，由舞台监督代行导演职责，保证排练不中断。
+  keywords:
+  - 代行导演
+  - 排练
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 职责分工
+  topic: ''
+  quote: |-
+    In the event of the director's absence, he becomes the pro tem. director himself.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#000
+  source_span:
+    chunk_id: pg39973_txt#000
+    start: 943
+    end: 1024
+  provenance_kind: 网络语料
+- id: gen_block_0031
+  domain: blocking
+  title: 家具分散摆放避免拥挤
+  content: 布置家具时，把桌子、沙发、门等分散到舞台不同侧；若全挤在同一侧，后续围绕它们展开的动作会过于拥挤。
+  keywords:
+  - 家具布局
+  - 舞台分区
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 布景
+  topic: ''
+  quote: |-
+    If the table and the sofa and the door were all on the same side of the stage, it would be much too crowded
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 585
+    end: 692
+  provenance_kind: 网络语料
+- id: gen_block_0032
+  domain: blocking
+  title: 开场用动作交代人物
+  content: 幕启时让仆人整理茶具等动作先行，制造自然的生活化开场，再引入主要人物入场。
+  keywords:
+  - 幕启
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 节奏
+  topic: ''
+  quote: |-
+    Lane, then, is busied with the tea things for a moment, as and after the curtain rises.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 771
+    end: 858
+  provenance_kind: 网络语料
+- id: gen_block_0033
+  domain: blocking
+  title: 尽量取消脚灯
+  content: 应尽可能完全取消脚灯；若无法取消，则须极节制地使用，因为多数舞台本就照明过度。
+  keywords:
+  - 照明过度
+  - 节制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  topic: ''
+  quote: |-
+    If possible, the footlights should be entirely eliminated; if not, then most sparingly used.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#016
+  source_span:
+    chunk_id: pg39973_txt#016
+    start: 1909
+    end: 2001
+  provenance_kind: 网络语料
+- id: gen_block_0034
+  domain: blocking
+  title: 导演先讲戏再排
+  content: 开排前导演或舞监应就剧本的性质与精神做简短说明；演员若不了解全剧主旨，整体就难以统一和谐。
+  keywords:
+  - 全剧主旨
+  - 统一
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练
+  - 表演
+  topic: ''
+  quote: |-
+    a few remarks by him as to the nature and spirit of the play will not be amiss.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#003
+  source_span:
+    chunk_id: pg39973_txt#003
+    start: 1013
+    end: 1092
+  provenance_kind: 网络语料
+- id: gen_block_0035
+  domain: blocking
+  title: 演员自查道具
+  content: 开演前每位演员应找道具管理员确认自己戏份所需的全部道具已备齐，避免演出中因缺件中断。
+  keywords:
+  - 核对
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 准备
+  topic: ''
+  quote: |-
+    It is well for each actor to see the property man and make sure that all the "props" necessary to his part are in readiness.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#013
+  source_span:
+    chunk_id: pg39973_txt#013
+    start: 963
+    end: 1087
+  provenance_kind: 网络语料
+- id: gen_block_0036
+  domain: blocking
+  title: 40厘米注意力阈值
+  content: 当两人高度差超过40厘米时，观众注意力会自动偏向高的一方，因此需要把关键表演或台词放在高位角色身上。
+  keywords:
+  - 高度差
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 视觉引导
+  topic: ''
+  quote: |-
+    高度差超过 40 厘米时，观众的注意力会自动偏向高的一方。
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#002
+  source_span:
+    chunk_id: blocking_and_performance_md#002
+    start: 65
+    end: 94
+  provenance_kind: 权威文档
+- id: gen_block_0037
+  domain: blocking
+  title: 用坐下动作掩护撤道具
+  content: 当主人坐下时，让仆人趁机把托盘放回桌上，用主要动作掩护次要的撤道具动作，避免观众注意。
+  keywords:
+  - 用坐下动作掩护撤道具
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    we may assume that Lane takes the salver back to the table. Undoubtedly, he does this as Algernon sits on the sofa.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 2075
+    end: 2190
+  provenance_kind: 网络语料
+- id: gen_block_0038
+  domain: blocking
+  title: 无动作时站舞台中央
+  content: 当人物此刻无事可做时，让他站在舞台中央面向对手，对手停下手中工作回应，形成清晰的对话站位。
+  keywords:
+  - 对话站位
+  - 面向
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 站位
+  topic: ''
+  quote: |-
+    he may stand at the center of the stage, facing Lane, who stops his work and respectfully answers his master's questions.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 1028
+    end: 1149
+  provenance_kind: 网络语料
+- id: gen_block_0039
+  domain: blocking
+  title: 按窗定位布景
+  content: 当剧本提示房间靠海、需从窗户采光时，把该窗设在下场口左侧（演员左）半程处，作为观众视点与全场景物定位的基准。
+  keywords:
+  - 窗户
+  - 下场口
+  - 定位基准
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 平面图
+  topic: ''
+  quote: |-
+    Let us try to plot out the stage on the assumption that we are looking at it through a window halfway down-stage on the left
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#005
+  source_span:
+    chunk_id: pg39973_txt#005
+    start: 446
+    end: 570
+  provenance_kind: 网络语料
+- id: gen_block_0040
+  domain: blocking
+  title: 第二窗改置壁炉上方
+  content: 当剧本要求演员向左看到另一扇窗、而该方向在舞台上不可行时，把这扇窗改放到壁炉上方，避免与主窗方向冲突。
+  keywords:
+  - 方向冲突
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布景
+  - 取舍
+  topic: ''
+  quote: |-
+    The direction here is not practicable, but the window may well go above the fireplace, instead of below
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#005
+  source_span:
+    chunk_id: pg39973_txt#005
+    start: 1216
+    end: 1319
+  provenance_kind: 网络语料
+- id: gen_block_0041
+  domain: blocking
+  title: 改本需同步提示本
+  content: 当剧本需要删改时，导演应宣读改动内容，并让每位演员把自己的台本改成与提示本一致。
+  keywords:
+  - 删改
+  - 台本
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练
+  - 文本
+  topic: ''
+  quote: |-
+    The director should read his alterations and allow each actor to make his text conform with the prompt-copy.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#003
+  source_span:
+    chunk_id: pg39973_txt#003
+    start: 1410
+    end: 1518
+  provenance_kind: 网络语料
+- id: gen_block_0042
+  domain: blocking
+  title: 台词提示视线与走位
+  content: 当台词提到某物（如三明治）时，让演员顺势看向该物方向，并可向它迈一步，使动作由台词自然引出。
+  keywords:
+  - 台词提示视线与走位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 表演
+  topic: ''
+  quote: |-
+    what more natural than that he should look in the direction of the table, and perhaps even make a step toward it?
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 1272
+    end: 1385
+  provenance_kind: 网络语料
+- id: gen_block_0043
+  domain: blocking
+  title: 彩排与演出的总指挥
+  content: 彩排与正式演出时由舞台监督而非导演统管全场：确认演员候场、幕布起落时机、助手各就各位，使演出按计划进行。
+  keywords:
+  - 演出监督
+  - 幕布
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 现场调度
+  topic: ''
+  quote: |-
+    it is the stage manager, and not the director, who supervises everything.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#000
+  source_span:
+    chunk_id: pg39973_txt#000
+    start: 1539
+    end: 1612
+  provenance_kind: 网络语料
+- id: gen_block_0044
+  domain: blocking
+  title: 导演坐观众席看整体
+  content: 彩排时导演应坐在观众席后方观看，关注整体效果：舞台是否拥挤、灯光是否正常，尤其要盯住整场演出的节奏（tempo）。
+  keywords:
+  - 导演位置
+  - 整体效果
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 彩排
+  - 节奏
+  topic: ''
+  quote: |-
+    The director should be in the back of the "house", and stop the players only when they do something absolutely wrong.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#012
+  source_span:
+    chunk_id: pg39973_txt#012
+    start: 1297
+    end: 1414
+  provenance_kind: 网络语料
+- id: gen_block_0045
+  domain: blocking
+  title: 微动作幅度与对白
+  content: 微动作幅度必须小于主要动作，且不与对白争夺注意力；幅度过大会显得表演痕迹太重。
+  keywords:
+  - 微动作幅度与对白
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    微动作的幅度要小于主要动作，并且不与对白打架
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#005
+  source_span:
+    chunk_id: blocking_and_performance_md#005
+    start: 13
+    end: 35
+  provenance_kind: 权威文档
+- id: gen_block_0046
+  domain: blocking
+  title: 微动作落在重音
+  content: 微动作的节奏应落在句子的重音上，与台词重音同步，而不是均匀铺满整句。
+  keywords:
+  - 节奏
+  - 台词
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 节奏
+  topic: ''
+  quote: |-
+    微动作的节奏应落在句子的重音上
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#005
+  source_span:
+    chunk_id: blocking_and_performance_md#005
+    start: 64
+    end: 79
+  provenance_kind: 权威文档
+- id: gen_block_0047
+  domain: blocking
+  title: 布景留出入口缺口
+  content: 悬挂式背景需在上下场方向留出被褶皱遮住的缺口，供演员进出，避免演员从布景边缘硬穿。
+  keywords:
+  - 上下场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    Gaps, covered by the folds, must be made up- and down-stage to allow the actors to enter and leave the stage.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#017
+  source_span:
+    chunk_id: pg39973_txt#017
+    start: 725
+    end: 834
+  provenance_kind: 网络语料
+- id: gen_block_0048
+  domain: blocking
+  title: 各部门须与导演通气
+  content: 所有参与制作的人员都应保持与负责人的联系：道具、灯光、家具、服装人员须与业务经理密切联系，但任何采购未经导演许可不得进行。
+  keywords:
+  - 沟通
+  - 采购许可
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制片流程
+  topic: ''
+  quote: |-
+    every one connected with the production of a play should be in touch with those in authority
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#001
+  source_span:
+    chunk_id: pg39973_txt#001
+    start: 365
+    end: 457
+  provenance_kind: 网络语料
+- id: gen_block_0049
+  domain: blocking
+  title: 舞台监督持本调度
+  content: 技术彩排中由舞台监督持剧本统筹，所有幕后助手按他的指令行动，保证各环节按既定顺序衔接。
+  keywords:
+  - 统筹
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: ''
+  quote: |-
+    Everything should go according to clockwork, the stage manager "holding the book" on all his assistants.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#013
+  source_span:
+    chunk_id: pg39973_txt#013
+    start: 323
+    end: 427
+  provenance_kind: 网络语料
+- id: gen_block_0050
+  domain: blocking
+  title: 台词与动作错开
+  content: 把台词与动作在时间上错开：说话时不做关键动作，动作时不说关键台词，避免两者互相削弱。
+  keywords:
+  - 台词与动作错开
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 节奏
+  - 对位
+  topic: ''
+  quote: |-
+    话与动作是否错开？
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#008
+  source_span:
+    chunk_id: blocking_and_performance_md#008
+    start: 99
+    end: 108
+  provenance_kind: 权威文档
+- id: gen_block_0051
+  domain: blocking
+  title: 手术椅居中偏角
+  content: 把手术椅放在房间中央与某一角落之间的半程处，不指定具体哪一角，以保持构图居中偏侧的平衡。
+  keywords:
+  - 半程
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 布景
+  topic: ''
+  quote: |-
+    The operating chair is "_half way between the center of the room and one of the corners_."
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#005
+  source_span:
+    chunk_id: pg39973_txt#005
+    start: 323
+    end: 413
+  provenance_kind: 网络语料
+- id: gen_block_0052
+  domain: blocking
+  title: 桌子放上舞台右侧
+  content: 把茶桌放在上舞台右侧：既不挡演员走位，也不与沙发同侧，为后续围绕桌与沙发的动作留出空间。
+  keywords:
+  - 走位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 布景
+  topic: ''
+  quote: |-
+    let us assume that it is up-stage to the right
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 346
+    end: 392
+  provenance_kind: 网络语料
+- id: gen_block_0053
+  domain: blocking
+  title: 节拍即意图变化
+  content: 把表演拆成一连串节拍，一个节拍定义为一次意图变化（如想说话→忍住→还是说了）；排戏时按节拍切分，而不是按台词连续铺满。
+  keywords:
+  - 表演单位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演节奏
+  - 调度
+  topic: ''
+  quote: |-
+    一个节拍 = 一次意图的变化（想说话 → 忍住 → 还是说了）
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#004
+  source_span:
+    chunk_id: blocking_and_performance_md#004
+    start: 39
+    end: 70
+  provenance_kind: 权威文档
+- id: gen_block_0054
+  domain: blocking
+  title: 户外场景的简易背景
+  content: 拍户外场景时，背景可用棕褐色或深绿色粗麻布悬挂，不必搭复杂实景；用最基础的背景即可成立。
+  keywords:
+  - 麻布
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布景
+  topic: ''
+  quote: |-
+    The background hangings may be of tan burlap or else dark green.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#017
+  source_span:
+    chunk_id: pg39973_txt#017
+    start: 660
+    end: 724
+  provenance_kind: 网络语料
+- id: gen_block_0055
+  domain: blocking
+  title: 逐幕走位后回炉首幕
+  content: 按幕次依次完成走位（第一幕→第二幕→…→末幕），末幕走位完成后回头以更细致的方式重排第一幕。
+  keywords:
+  - 分幕排练
+  - 走位顺序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练流程
+  - 段落结构
+  topic: ''
+  quote: |-
+    At the next rehearsal--that is, after the blocking-out of the first act--the second is treated in the same way.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#010
+  source_span:
+    chunk_id: pg39973_txt#010
+    start: 991
+    end: 1102
+  provenance_kind: 网络语料
+- id: gen_block_0056
+  domain: blocking
+  title: 按指示逐拍追踪动作
+  content: 排演时按剧本正文与页边指示逐条追踪动作顺序：如'克雷斯潘夫人与克里斯托弗爵士握手'→'爵士为夫人开左侧门'→'夫人下场，众人面面相觑'。分镜可据此把一场戏拆成连续的动作节拍。
+  keywords:
+  - 动作节拍
+  - 页边指示
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 分镜写法
+  topic: ''
+  quote: |-
+    Following carefully the stage directions in the text and on the margin, the action is traced as follows:
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#007
+  source_span:
+    chunk_id: pg39973_txt#007
+    start: 2011
+    end: 2115
+  provenance_kind: 网络语料
+- id: gen_block_0057
+  domain: blocking
+  title: 经典剧本用舞台版
+  content: 排演莎士比亚等指示极简的经典剧本时，优先采用带传统舞台指示的演出本，而非原始文本，以补足走位与动作信息。
+  keywords:
+  - 莎士比亚
+  - 演出本
+  - 舞台指示
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - blocking
+  - 文本准备
+  topic: ''
+  quote: |-
+    The original text of Shakespeare affords us only the most elementary explanations of stage "business"
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#008
+  source_span:
+    chunk_id: pg39973_txt#008
+    start: 229
+    end: 330
+  provenance_kind: 网络语料
+- id: gen_block_0058
+  domain: blocking
+  title: 舞台监督的排练职责
+  content: 排练时由舞台监督持提示本，记录所有舞台调度（走位、手势、上下场）与删改；每次排练须能提词或提示动作，并提醒导演遗漏与错误。
+  keywords:
+  - 提示本
+  - 舞台调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练管理
+  - 记录
+  topic: ''
+  quote: |-
+    It is chiefly his duty to "hold" the prompt-book and keep a careful record of all stage business, "cuts", etc.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#000
+  source_span:
+    chunk_id: pg39973_txt#000
+    start: 619
+    end: 729
+  provenance_kind: 网络语料
+- id: gen_block_0059
+  domain: blocking
+  title: 提词员逐行跟戏
+  content: 提词员须逐行跟随剧本，随时准备为忘词演员提词，保证演出不因忘词停顿。
+  keywords:
+  - 忘词
+  - 跟本
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 表演
+  topic: ''
+  quote: |-
+    The prompter must follow the play line for line and be ready to prompt any actor who forgets his part.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#013
+  source_span:
+    chunk_id: pg39973_txt#013
+    start: 1539
+    end: 1641
+  provenance_kind: 网络语料
+- id: gen_block_0060
+  domain: blocking
+  title: 铃声与叫场分工
+  content: 摇铃、按场次叫演员等杂务可交给舞台监督或专门的叫场员执行，保证演出流程按点推进。
+  keywords:
+  - 舞台监督
+  - 流程
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: ''
+  quote: |-
+    the ringing of bells, calling of actors at the regular performance, etc. A "call boy" may be delegated to do this.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#002
+  source_span:
+    chunk_id: pg39973_txt#002
+    start: 740
+    end: 854
+  provenance_kind: 网络语料
+- id: gen_block_0061
+  domain: blocking
+  title: 连排尽量不打断
+  content: 整剧连排时应尽量不中断，让演员在无打断状态下进入作品氛围；只有演员真的做错或导演要改重要调度时才停机。
+  keywords:
+  - 氛围
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练流程
+  - 表演
+  topic: ''
+  quote: |-
+    the play should be interrupted as seldom as possible
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#011
+  source_span:
+    chunk_id: pg39973_txt#011
+    start: 441
+    end: 493
+  provenance_kind: 网络语料
+- id: gen_block_0062
+  domain: blocking
+  title: 连排看整体舞台画面
+  content: 整剧连排让导演获得任何其他方式都得不到的全局视角，用以判断整体与群体效果（舞台画面）。
+  keywords:
+  - 整体效果
+  - 导演视角
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 群体效果
+  topic: ''
+  quote: |-
+    the latter is given a general view of his stage pictures which could in no other way be afforded him
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#011
+  source_span:
+    chunk_id: pg39973_txt#011
+    start: 785
+    end: 885
+  provenance_kind: 网络语料
+- id: gen_block_0063
+  domain: blocking
+  title: 走位方案需按条件微调
+  content: 既定走位与调度方案不是死规定：需根据具体舞台尺寸与演员条件做修改，但这些属于次要调整，核心的上下场与关键位置关系应保持。
+  keywords:
+  - 走位调整
+  - 舞台条件
+  - 演员条件
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 排演
+  topic: ''
+  quote: |-
+    modifications must be made to meet the exigencies of certain stages and certain actors, but these are minor matters.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#007
+  source_span:
+    chunk_id: pg39973_txt#007
+    start: 724
+    end: 840
+  provenance_kind: 网络语料
+- id: gen_block_0064
+  domain: blocking
+  title: 替补排练由监督主导
+  content: 替补排练由舞台监督负责组织，导演至少到场观看两到三次以把控质量。
+  keywords:
+  - 舞台监督
+  - 导演
+  - 到场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分工
+  topic: ''
+  quote: |-
+    Understudy rehearsals are under the direction of the stage manager, although the director should witness at least two or three.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#002
+  source_span:
+    chunk_id: pg39973_txt#002
+    start: 1595
+    end: 1722
+  provenance_kind: 网络语料
+- id: gen_block_0065
+  domain: blocking
+  title: 小组单独排练
+  content: 有共同场次的少数角色可自行组织小组排练，以提高效率，不必占用全体排练时间。
+  keywords:
+  - 小组排练
+  - 同场角色
+  - 效率
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练流程
+  - 调度
+  topic: ''
+  quote: |-
+    for small groups of characters who have scenes together to rehearse by themselves
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#011
+  source_span:
+    chunk_id: pg39973_txt#011
+    start: 620
+    end: 701
+  provenance_kind: 网络语料
+- id: gen_block_0066
+  domain: blocking
+  title: 以舞台方位词标定位置
+  content: 标注人物与道具位置时使用舞台方位术语：up-stage 指远离观众的后区，Center 为中线，L/R 为观众视角的左右；如'up-Center'即后区正中。分镜中应统一用这套方位词，避免用画面左右造成歧义。
+  keywords:
+  - up-stage
+  - Center
+  - 方位术语
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 术语
+  topic: ''
+  quote: |-
+    there is a uniform case "up-Center"--up-stage, that is, in the center of it
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#007
+  source_span:
+    chunk_id: pg39973_txt#007
+    start: 394
+    end: 469
+  provenance_kind: 网络语料
+- id: gen_block_0067
+  domain: blocking
+  title: 技术彩排独立于表演彩排
+  content: 正式演出前除表演彩排外，必须单独安排一次布景与灯光彩排，只面向幕后人员：按演出顺序完成换景、撤景、家具与道具定位、灯光操作，全部按演出当晚的标准执行。
+  keywords:
+  - 换景
+  - 灯光
+  - 幕后
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    Besides the _acting_ dress rehearsal, there should be a scene and light rehearsal. This is merely for the assistants behind the stage.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#013
+  source_span:
+    chunk_id: pg39973_txt#013
+    start: 0
+    end: 134
+  provenance_kind: 网络语料
+- id: gen_block_0068
+  domain: blocking
+  title: 节拍要有物理落点
+  content: 每个节拍都要落到一个具体物理动作或位置变化上，让节拍在画面里可见，而不是只停留在台词层面。
+  keywords:
+  - 动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 表演
+  topic: ''
+  quote: |-
+    每个节拍是否有物理落点？
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#008
+  source_span:
+    chunk_id: blocking_and_performance_md#008
+    start: 87
+    end: 99
+  provenance_kind: 权威文档
+- id: gen_block_0069
+  domain: blocking
+  title: 军事化组织演出
+  content: 演出只有在各要素按军事化方式组织时才成功：演员、道具、灯光、提示各环节都按统一时间表执行。
+  keywords:
+  - 时间表
+  - 纪律
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 调度
+  topic: ''
+  quote: |-
+    the production of plays is successful only when the component elements are organized on a sort of military basis.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#013
+  source_span:
+    chunk_id: pg39973_txt#013
+    start: 732
+    end: 845
+  provenance_kind: 网络语料
+- id: gen_block_0070
+  domain: blocking
+  title: 准时开演
+  content: 演出必须准点开始，导演应把消除业余演出常见的开场延误当作目标；准时是效率的首要条件。
+  keywords:
+  - 效率
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 节奏
+  topic: ''
+  quote: |-
+    The performance should begin on time.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#013
+  source_span:
+    chunk_id: pg39973_txt#013
+    start: 429
+    end: 466
+  provenance_kind: 网络语料
+- id: gen_block_0071
+  domain: blocking
+  title: 用简图记动作
+  content: 演员初期记忆"动作（business）"的简便生动方法是画一张非常简单的示意图。
+  keywords:
+  - 示意图
+  - 记忆
+  - 演员
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度图
+  - 表演
+  topic: ''
+  quote: |-
+    An easy and vivid way of remembering "business" at first is to make a very simple diagram
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#009
+  source_span:
+    chunk_id: pg39973_txt#009
+    start: 2199
+    end: 2288
+  provenance_kind: 网络语料
+- id: gen_block_0072
+  domain: blocking
+  title: 台词与走位同步标注
+  content: 演员在剧本上为每句关键台词旁标注走位记号（如"A 走到小桌左侧"），使背台词与背调度同时进行，避免先记熟台词再学走位造成脱节。
+  keywords:
+  - 走位标注
+  - 剧本记号
+  - 台词调度同步
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - blocking
+  - 剧本标注
+  topic: ''
+  quote: |-
+    Just after this line, the actor places a mark referring him to the margin of his "script"
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#010
+  source_span:
+    chunk_id: pg39973_txt#010
+    start: 133
+    end: 222
+  provenance_kind: 网络语料
+- id: gen_block_0073
+  domain: blocking
+  title: 演员提前半小时到位
+  content: 演员须准时到剧场，并在开幕前至少半小时完成化妆与着装，以便留出检查道具的时间。
+  keywords:
+  - 提前到场
+  - 化妆
+  - 着装
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 准备
+  topic: ''
+  quote: |-
+    The actors must be in the theater on time, and "made-up" in costume, at least half an hour before the curtain rises.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#013
+  source_span:
+    chunk_id: pg39973_txt#013
+    start: 846
+    end: 962
+  provenance_kind: 网络语料
+- id: gen_block_0074
+  domain: blocking
+  title: 画外音引出人物入场
+  content: 用画外钢琴声作为提示：音乐响起后停止，稍停片刻人物再入场，形成有节奏的登场。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 声音
+  topic: ''
+  quote: |-
+    Then the music of a piano is heard off-stage to the right. It stops, and a moment later Algernon enters.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#004
+  source_span:
+    chunk_id: pg39973_txt#004
+    start: 859
+    end: 963
+  provenance_kind: 网络语料
+- id: gen_block_0075
+  domain: blocking
+  title: 群众中安插领头人
+  content: 由于群众角色通常不是训练有素的演员，应在人群中穿插两三名"领头人"，由他们给出统一行动的提示。
+  keywords:
+  - 提示
+  - 统一行动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 群众调度
+  topic: ''
+  quote: |-
+    it is well to intersperse two or three "leaders" in any crowd, who will give the cue for concerted action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#009
+  source_span:
+    chunk_id: pg39973_txt#009
+    start: 1864
+    end: 1970
+  provenance_kind: 网络语料
+- id: gen_block_0076
+  domain: blocking
+  title: 首排只读不演
+  content: 第一次排练只做剧本朗读，让演员熟悉剧情与彼此关系；此时不做表演尝试，表演留到下一次排练。
+  keywords:
+  - 读本
+  - 表演
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练
+  - 节奏
+  topic: ''
+  quote: |-
+    At this first rehearsal, there should be no attempt at acting; that is reserved for the next meeting.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#003
+  source_span:
+    chunk_id: pg39973_txt#003
+    start: 1935
+    end: 2036
+  provenance_kind: 网络语料
+- id: gen_block_0077
+  domain: blocking
+  title: 首轮走位需修正扩充
+  content: 第一次排练定下的走位往往需要修改或至少加以扩充，不要把它当作最终版本。
+  keywords:
+  - 走位修正
+  - 迭代
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - blocking
+  - 迭代
+  topic: ''
+  quote: |-
+    Probably some of the "business" blocked out in the first rehearsal will have to be changed, or at least amplified.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#010
+  source_span:
+    chunk_id: pg39973_txt#010
+    start: 1338
+    end: 1452
+  provenance_kind: 网络语料
+- id: gen_block_0078
+  domain: blocking
+  title: 次排开始排调度
+  content: 第二次排练紧接首排次日进行，由导演排出动作调度；全长戏约两小时者，一次排练只够排一幕，独幕剧则可整出排完。
+  keywords:
+  - 幕
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练
+  topic: ''
+  quote: |-
+    At the second rehearsal[1]--which should take place the day after the first--the director blocks out the action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#003
+  source_span:
+    chunk_id: pg39973_txt#003
+    start: 2038
+    end: 2150
+  provenance_kind: 网络语料
+- id: gen_block_0079
+  domain: blocking
+  title: 群戏忌一字排开
+  content: 群戏避免让所有人一字排开并同时面向镜头：这会抹平人物关系，且机位无处可放。
+  keywords:
+  - 关系
+  - 机位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场面调度
+  - 站位
+  - 构图
+  topic: ''
+  quote: |-
+    群戏里最忌讳"一字排开"：所有人都对着镜头，关系被抹平，并且机位无处可放。
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#003
+  source_span:
+    chunk_id: blocking_and_performance_md#003
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_block_0080
+  domain: blocking
+  title: 纱幕场景用中央反射光
+  content: 若使用纱幕与幕布，最好引入某种中央反射光作为主光，而非从四周布光。
+  keywords:
+  - 主光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  topic: ''
+  quote: |-
+    then it is best to introduce some sort of central reflected light.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#016
+  source_span:
+    chunk_id: pg39973_txt#016
+    start: 1624
+    end: 1690
+  provenance_kind: 网络语料
+- id: gen_block_0081
+  domain: blocking
+  title: 优先在舞台排练
+  content: 若在正规剧场演出，应尽早把总体动作调度排出来，并争取前两三次排练就在舞台上进行；条件允许则全部排练都在舞台完成。
+  keywords:
+  - 总体调度
+  - 剧场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    it is wise to block out the general action and have at least the first two or three rehearsals on the stage.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#003
+  source_span:
+    chunk_id: pg39973_txt#003
+    start: 182
+    end: 290
+  provenance_kind: 网络语料
+- id: gen_block_0082
+  domain: blocking
+  title: 天幕背投布光法
+  content: 若天幕或背景幕布为白色或浅色布料，可将弧光灯或钙光灯置于天幕顶部上方、幕布后方的吊景区，通过实验获得多种光效；单灯不足时可在不同位置加灯补强。
+  keywords:
+  - 弧光灯
+  - 吊景区
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 背光
+  topic: ''
+  quote: |-
+    an arc lamp or ordinary calcium light can be placed up in the loft, above the top of the cyclorama, and behind it.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#016
+  source_span:
+    chunk_id: pg39973_txt#016
+    start: 713
+    end: 827
+  provenance_kind: 网络语料
+- id: gen_block_0083
+  domain: blocking
+  title: 天幕的简易替代
+  content: 若无法搭建帆布或灰泥天幕，可用简易替代装置获取其基本效果：取木杆或更好用铁管，弯成所需形状作为骨架。
+  keywords:
+  - 铁管
+  - 骨架
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 装置
+  - 低成本
+  - 背景
+  topic: ''
+  quote: |-
+    there are certain simple substitutes which may be used to secure some of its elementary effects.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#015
+  source_span:
+    chunk_id: pg39973_txt#015
+    start: 1881
+    end: 1977
+  provenance_kind: 网络语料
+- id: gen_block_0084
+  domain: blocking
+  title: 业余演出舞台条件取舍
+  content: 若演出在已建成的固定舞台上进行，导演只能使用现有布景并在灯光上有发言权；若在私宅、俱乐部、教室或户外临时搭台，则可自行调整舞台尺寸并引入自己的创新。
+  keywords:
+  - 固定舞台
+  - 临时舞台
+  - 布景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 舞台调度
+  - 制作条件
+  topic: ''
+  quote: |-
+    It is likely that by far the greater number of amateur plays will be performed on a stage which is already built and equipped.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#014
+  source_span:
+    chunk_id: pg39973_txt#014
+    start: 1308
+    end: 1434
+  provenance_kind: 网络语料
+- id: gen_block_0085
+  domain: blocking
+  title: 承重墙体用实木
+  content: 若演员需站上或倚靠墙体，墙必须用实木搭建以承重，表面再画成砖纹；不可只用软景片。
+  keywords:
+  - 砖纹
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布景
+  - 安全
+  topic: ''
+  quote: |-
+    The wall must be constructed of solid wood, in order to support the actors, and painted to suggest bricks.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#017
+  source_span:
+    chunk_id: pg39973_txt#017
+    start: 835
+    end: 941
+  provenance_kind: 网络语料
+- id: gen_block_0086
+  domain: blocking
+  title: 天幕的反射式布光
+  content: 若要让舞台光接近自然日光，用天幕（尤其穹顶式）让光在幕面间交叉反射，使舞台主要由反射光照明，避免旧式直射人工强光造成的虚假感。
+  keywords:
+  - 反射光
+  - 自然光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 灯光
+  - 氛围
+  topic: ''
+  quote: |-
+    The cyclorama, and especially the dome cyclorama, permits the stage to be lighted largely or wholly by crisscrossing reflection.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#015
+  source_span:
+    chunk_id: pg39973_txt#015
+    start: 1492
+    end: 1620
+  provenance_kind: 网络语料
+- id: gen_block_0087
+  domain: blocking
+  title: 细节在连排中强调
+  content: 表演细节——小动作、台词处理、声音、手势等——应在排练中持续强调，但特殊个案放到常规排练之外处理。
+  keywords:
+  - 表演细节
+  - 小动作
+  - 台词处理
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 调度
+  topic: ''
+  quote: |-
+    Minor points in acting, minor "business", rendering of the lines, voice, gesture, etc., must naturally be insisted upon.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#011
+  source_span:
+    chunk_id: pg39973_txt#011
+    start: 251
+    end: 371
+  provenance_kind: 网络语料
+- id: gen_block_0088
+  domain: blocking
+  title: 半圆围坐听讲调度
+  content: 表现一人讲、多人听的场面，可让听众在台上排成半圆围坐，讲者置于半圆开口一侧，形成聚焦的群像构图。
+  keywords:
+  - 群像
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - blocking
+  - 构图
+  topic: ''
+  quote: |-
+    seated in a semi-circle, listening to Saint-Reault, who is finishing his lecture
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#008
+  source_span:
+    chunk_id: pg39973_txt#008
+    start: 1841
+    end: 1921
+  provenance_kind: 网络语料
+- id: gen_block_0089
+  domain: blocking
+  title: 树木对称点景
+  content: 表现公园场景时，用月桂或黄杨树：后区对称摆三四棵，前区左右各若干，靠墙再添一两棵即可。
+  keywords:
+  - 公园
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布景
+  - 构图
+  topic: ''
+  quote: |-
+    Perhaps three or four should be arranged more or less symmetrically at the back of the stage, and as many to the right and left, down-stage.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#017
+  source_span:
+    chunk_id: pg39973_txt#017
+    start: 1908
+    end: 2048
+  provenance_kind: 网络语料
+- id: gen_block_0090
+  domain: blocking
+  title: 高度差即权力差
+  content: 表现权力不对等时，让一方站立、另一方坐下，用高度差建立上下级关系；两人都坐则呈平等关系，但机位变化空间被压缩。
+  keywords:
+  - 权力关系
+  - 站坐调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 调度
+  - 构图
+  topic: ''
+  quote: |-
+    让一方坐下、另一方站着，画面立刻出现高低的权力关系；两人都坐着是平等的，但会削弱机位的变化空间。
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#002
+  source_span:
+    chunk_id: blocking_and_performance_md#002
+    start: -1
+    end: -1
+  provenance_kind: 权威文档
+- id: gen_block_0091
+  domain: blocking
+  title: 旁白用低声侧语
+  content: 角色向邻座说私密话时，用括号标注的旁白（aside）处理，压低音量并侧身靠近对方，与主场景台词形成层次。
+  keywords:
+  - aside
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 台词处理
+  topic: ''
+  quote: |-
+    JEANNE (_aside to Paul_). Are you asleep?
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#008
+  source_span:
+    chunk_id: pg39973_txt#008
+    start: 2323
+    end: 2364
+  provenance_kind: 网络语料
+- id: gen_block_0092
+  domain: blocking
+  title: 关系距离的段落变化
+  content: 调度前先判定这一场的人物关系是靠近、疏远还是拉锯，并检查距离在整段中是否发生变化；若全程距离不变，则关系没有通过走位被表达出来。
+  keywords:
+  - 走位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 走位
+  - 关系表达
+  topic: ''
+  quote: |-
+    这一场的关系是靠近、疏远还是拉锯？距离在段落里变化了吗？
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#008
+  source_span:
+    chunk_id: blocking_and_performance_md#008
+    start: 18
+    end: 46
+  provenance_kind: 权威文档
+- id: gen_block_0093
+  domain: blocking
+  title: 整剧连排的价值
+  content: 进入整剧连排阶段后，每次排练都完整走全剧，让演员习惯一气呵成地演完整个作品。
+  keywords:
+  - 连贯性
+  - 演员习惯
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练流程
+  - 段落结构
+  topic: ''
+  quote: |-
+    each rehearsal is devoted to going through the whole play
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#011
+  source_span:
+    chunk_id: pg39973_txt#011
+    start: 192
+    end: 249
+  provenance_kind: 网络语料
+- id: gen_block_0094
+  domain: blocking
+  title: 忘词只提词不停机
+  content: 连排中演员忘词时只用提词方式补上，不做其他停顿；只有出现实质性错误或需重大调整才暂停。
+  keywords:
+  - 停机条件
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排练流程
+  - 表演
+  topic: ''
+  quote: |-
+    Where the actors forget their lines, they should be prompted without other delay
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#011
+  source_span:
+    chunk_id: pg39973_txt#011
+    start: 1087
+    end: 1167
+  provenance_kind: 网络语料
+- id: gen_block_0095
+  domain: blocking
+  title: 各技术岗位分工
+  content: 道具、灯光、幕布、服装宜分派不同人员负责；即便如此，舞台监督仍须保存道具表、灯光表、家具表等记录。
+  keywords:
+  - 道具表
+  - 灯光表
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 技术统筹
+  topic: ''
+  quote: |-
+    it is better for the stage manager to keep a record of all "property plots", "light plots", "furniture plots", etc.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#000
+  source_span:
+    chunk_id: pg39973_txt#000
+    start: 1219
+    end: 1334
+  provenance_kind: 网络语料
+- id: gen_block_0096
+  domain: blocking
+  title: 道具与布景服装分工
+  content: 道具员在舞台监督之下提供演员实际使用的所有物件（手枪、剑、信件等），不包括布景、服装、家具；若无专职陈设人员，地毯、帷幔、画、家具等陈设也由道具员兼管。
+  keywords:
+  - 道具员
+  - 陈设
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制片分工
+  topic: ''
+  quote: |-
+    he supplies all the objects--such as revolvers, swords, letters, etc.--in a word, everything actually _used_ by the actors
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#001
+  source_span:
+    chunk_id: pg39973_txt#001
+    start: 1070
+    end: 1192
+  provenance_kind: 网络语料
+- id: gen_block_0097
+  domain: blocking
+  title: 道具管理员终检清单
+  content: 道具管理员在开演前须最后一次核对道具清单，以防演出过程中出现混乱。
+  keywords:
+  - 道具清单
+  - 防混乱
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 准备
+  topic: ''
+  quote: |-
+    The property man himself must also check up his list for the last time, in order to avoid confusion during the performance.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: 'How to Produce Amateur Plays: A Practical Manual'
+    author: Barrett H. Clark
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:18+00:00'
+    sha256: 170ec7d5ae861647b3a826ff5fc60a771d0598cbf40cfa4c026263f9d7a7b49b
+  chunk_id: pg39973_txt#013
+  source_span:
+    chunk_id: pg39973_txt#013
+    start: 1088
+    end: 1211
+  provenance_kind: 网络语料
+- id: gen_block_0098
+  domain: blocking
+  title: 三种经济微动作
+  content: 需要低成本、不抢戏的表演细节时，优先用点头、摇头、视线转移这三种微动作。
+  keywords:
+  - 点头
+  - 摇头
+  - 视线转移
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    点头、摇头、视线转移是最经济的三种微动作
+  source_ref:
+    url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f4789405f344ccc5b5f463565cd2a7f03a3dc0f0705de0c10974394031faa418
+  chunk_id: blocking_and_performance_md#005
+  source_span:
+    chunk_id: blocking_and_performance_md#005
+    start: 40
+    end: 60
+  provenance_kind: 权威文档

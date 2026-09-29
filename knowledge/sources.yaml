@@ -1,0 +1,244 @@
+# P14-1 来源清单（执行文档 v1.4 §2.3c）——**人工维护，机器只读**。
+#
+# 字段：url / title / author / license / domain / mode（＋选填 note / genre / theme /
+# retrieved_at）。`license` 必须在白名单内（CC0 / CC-BY / CC-BY-SA / PublicDomain /
+# OwnWork / ExplicitPermission），否则 `tools/kb_fetch/validate_licenses.py` 一律拒收。
+#
+# 两类来源走**同一**管线，只有第 1 步分叉：
+#   * mode: http   —— 公有领域文本（Project Gutenberg，逐本核过标题与作者）；
+#   * mode: manual —— 自撰笔记（正文在 `knowledge/source_notes/`，许可 OwnWork，
+#                     `sha256` 就是笔记正文的哈希，可独立复算）。
+# 许可与归属的逐条声明见 `docs/knowledge/LICENSES.md`。
+#
+# `theme` 只用于 K5（六个主题配额的诊断计数），不参与检索。
+
+sources:
+  # ---------------------------------------------------------------- 摄影 / 光学
+  - url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
+    title: Practical Cinematography and Its Applications
+    author: Frederick Arthur Ambrose Talbot
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    theme: camera_angle
+  - url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
+    title: Photography at home
+    author: John A. Tennant
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+  - url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
+    title: Bromide Printing and Enlarging
+    author: John A. Tennant
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+  - url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: cinematography
+    mode: manual
+    genre: film
+    theme: camera_angle
+    retrieved_at: "2026-09-30"
+  - url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: cinematography
+    mode: manual
+    genre: film
+    theme: camera_angle
+    retrieved_at: "2026-09-30"
+
+  # ---------------------------------------------------------------- 构图
+  - url: https://www.gutenberg.org/cache/epub/26638/pg26638.txt
+    title: Pictorial Composition and the Critical Judgment of Pictures
+    author: Henry Rankin Poore
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+  - url: https://www.gutenberg.org/cache/epub/55346/pg55346.txt
+    title: Lectures on Painting, Delivered to the Students of the Royal Academy
+    author: Edward Armitage
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+  - url: https://www.gutenberg.org/cache/epub/20165/pg20165.txt
+    title: The Theory and Practice of Perspective
+    author: G. A. Storey
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+  - url: https://www.gutenberg.org/cache/epub/32681/pg32681.txt
+    title: The Use of a Box of Colours, in a Practical Demonstration on Composition
+    author: Harry Willson
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+    theme: color
+
+  # ---------------------------------------------------------------- 光线 / 色彩
+  - url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
+    title: Light and Colour Theories, and their relation to light and colour standardization
+    author: Joseph W. Lovibond
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    theme: lighting
+  - url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
+    title: Tinting and toning of Eastman positive motion picture film
+    author: Eastman Kodak Company
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    theme: color
+  - url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: cinematography
+    mode: manual
+    genre: film
+    theme: lighting
+    retrieved_at: "2026-09-30"
+
+  # ---------------------------------------------------------------- 剪辑 / 节奏
+  - url: https://www.gutenberg.org/cache/epub/15383/pg15383.txt
+    title: "The Photoplay: A Psychological Study"
+    author: Hugo Münsterberg
+    license: PublicDomain
+    domain: editing
+    mode: http
+    genre: film
+    theme: editing
+  - url: repo://knowledge/source_notes/editing_rhythm.md
+    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: editing
+    mode: manual
+    genre: film
+    theme: editing
+    retrieved_at: "2026-09-30"
+
+  # ---------------------------------------------------------------- 分镜 / 剧本
+  - url: https://www.gutenberg.org/cache/epub/17903/pg17903.txt
+    title: Writing the Photoplay
+    author: J. Berg Esenwein
+    license: PublicDomain
+    domain: storyboard
+    mode: http
+    genre: film
+    theme: storyboard
+  - url: https://www.gutenberg.org/cache/epub/76829/pg76829.txt
+    title: How to write photoplays
+    author: Embrie Zuver
+    license: PublicDomain
+    domain: storyboard
+    mode: http
+    genre: film
+    theme: storyboard
+  - url: https://www.gutenberg.org/cache/epub/70937/pg70937.txt
+    title: "The photodrama: the philosophy of its principles"
+    author: Henry Albert Phillips
+    license: PublicDomain
+    domain: storyboard
+    mode: http
+    genre: film
+    theme: storyboard
+  - url: repo://knowledge/source_notes/storyboard_practice.md
+    title: 分镜表与镜头清单的写法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: storyboard
+    mode: manual
+    genre: film
+    theme: storyboard
+    retrieved_at: "2026-09-30"
+
+  # ---------------------------------------------------------------- 动画 / 分镜套路
+  - url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
+    title: Animated cartoons — How they are made, their origin and development
+    author: Edwin George Lutz
+    license: PublicDomain
+    domain: anime
+    mode: http
+    genre: anime
+    theme: anime
+  - url: repo://knowledge/source_notes/anime_language.md
+    title: 日式动画的镜头语言与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-09-30"
+
+  # ---------------------------------------------------------------- 调度 / 表演
+  - url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
+    title: "How to Produce Amateur Plays: A Practical Manual"
+    author: Barrett H. Clark
+    license: PublicDomain
+    domain: blocking
+    mode: http
+    genre: film
+  - url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    domain: performance
+    mode: http
+    genre: film
+  - url: https://www.gutenberg.org/cache/epub/57611/pg57611.txt
+    title: Heroines of the Modern Stage
+    author: Forrest Izard
+    license: PublicDomain
+    domain: performance
+    mode: http
+    genre: film
+  - url: repo://knowledge/source_notes/blocking_and_performance.md
+    title: 场面调度与表演节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: blocking
+    mode: manual
+    genre: film
+    retrieved_at: "2026-09-30"
+  - url: repo://knowledge/source_notes/axis_continuity.md
+    title: 轴线、视线与银幕方向连续性（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: axis_theory
+    mode: manual
+    genre: film
+    retrieved_at: "2026-09-30"
+
+  # ---------------------------------------------------------------- 制片 / 现场
+  - url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
+    title: Motion Picture Operation, Stage Electrics and Illusions
+    author: Henry Charles Horstmann
+    license: PublicDomain
+    domain: production
+    mode: http
+    genre: film
+    theme: lighting
+  - url: repo://knowledge/source_notes/production_pipeline.md
+    title: 预演交付与制片流程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: production
+    mode: manual
+    genre: film
+    retrieved_at: "2026-09-30"

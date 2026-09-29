@@ -1,0 +1,41 @@
+feat(P14-1): a real corpus pipeline, and 1075 knowledge cards behind it
+
+Seven pure-Python scripts (tools/kb_fetch/) implement §2.3c's pipeline end to
+end: sources.yaml -> fetch -> extract -> dedupe -> licence gate -> chunk ->
+annotate -> import_cards. Two source kinds share one pipeline: public-domain
+Project Gutenberg texts (mode: http, real url/author/licence/sha256) and
+self-authored notes (mode: manual, licence OwnWork, sha256 recomputable).
+
+Corpus: 943 generated cards + the 132 handwritten ones = 1075 across the nine
+domains (>= 900 total, >= 60 per domain, >= 5% share). K1 source-ref
+completeness, K2 licence compliance and K4 dedupe ratio are all 100%; the report
+is committed at knowledge/cards_generated/import_report.json.
+
+Findings that changed the implementation (each one measured, not guessed):
+
+- SimHash by token frequency collapsed long English books onto one fingerprint
+  (79 false near-duplicate pairs among 26 documents). Binary weighting over the
+  token *set* takes that to 0 while still catching real near-duplicates.
+- Uniform chunk sampling wasted most LLM calls: six of eight chunks from a 1912
+  camera manual carried no shot-craft knowledge at all. Chunks are now picked
+  per domain by an auditable keyword score, and notes are chunked by section.
+- Model-authored keywords must not be part of the retrieval surface. They pushed
+  generated cards ahead of the curated ones (comp_thirds lost to gen_cine_0050
+  by 0.07; axis_cross fell to rank 10 for "越轴"), so generated cards are indexed
+  by title+content only, and axis_cross's curated keyword list was widened.
+- A unit test called validate_licenses.run() against the real output paths and
+  silently overwrote work/licensed.jsonl with a single record; the pipeline tests
+  now redirect every module-level output path through an autouse fixture.
+
+block_director/knowledge/hypergraph.py is the hypergraph contract layer
+(16 node kinds / 10 qualifiers / 6 edge types, the frozen edge_id formula, the
+nine validation gates, dedup+merge, the four-step retrieval and atomic
+rendering), with tests/test_hypergraph_schema.py covering every gate and both
+directions of the build identity.
+
+Not done yet, and not claimed: fixtures/knowledge_holdout.jsonl (>= 1200 entries
+with per-entry human review). The generator, its swap-family annotator and the
+six-gate checker are in place, but the set needs a local-model run plus the
+human 10-15% review that agent annotation cannot stand in for.
+
+python -m pytest -> 1070 passed, 0 failed, 0 skipped.
