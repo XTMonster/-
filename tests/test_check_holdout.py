@@ -16,18 +16,19 @@ sys.path.insert(0, str(ROOT))
 
 from tools import check_holdout  # noqa: E402
 
-VOCAB = {"emotion": ["气急败坏"], "movement": ["跺脚"], "shot_size": ["中景"],
-         "lens": ["50mm"], "axis_topic": ["过肩"], "genre": ["film"],
-         "pacing": ["短镜硬切"], "lighting": ["逆光"]}
+#: kind -> allowed values; every value below is used under the matching q key
+VOCAB = {"emotion": ["气急败坏"], "action": ["跺脚"], "movement": ["固定"],
+         "shot_size": ["中景"], "lens": ["50mm"], "axis_topic": ["过肩"],
+         "genre": ["film"], "pacing": ["短镜硬切"], "lighting": ["逆光"]}
 
 
 def entry(idx: int = 1, **over: object) -> dict:
     base = {
         "id": f"hq_{idx:04d}",
         "from_card": f"card_{idx}",
-        "q": "情绪=气急败坏；动作=跺脚",
-        "must": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=跺脚"],
-        "top1": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=跺脚"],
+        "q": "情绪=气急败坏；动作=跺脚；运镜=固定",
+        "must": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定"],
+        "top1": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定"],
         "never": [],
         "expect_movements": ["固定"],
         "annotator": {"model_id": "m-a", "family": "fam-a", "model_version": "1",
@@ -65,12 +66,12 @@ def report(path: pathlib.Path, *extra: str, pilot: bool = True) -> dict:
     return json.loads(buf.getvalue())
 
 
-def q7_entry(idx: int = 1) -> dict:
+def q7_entry(idx: int = 1, **over: object) -> dict:
     """A record whose `q` names a value its own `must` forbids (Q7 冲突条目)."""
     return entry(idx,
                  must=["EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_shot_size=中景"],
                  top1=["EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_shot_size=中景"],
-                 q="情绪=气急败坏；景别=中景")
+                 q="情绪=气急败坏；景别=中景；运镜=固定", **over)
 
 
 def valid_records() -> list:
@@ -80,8 +81,10 @@ def valid_records() -> list:
     Q7 conflict (gate ⑤) — i.e. what a real pilot batch has to look like.
     """
     specs = [
-        ("EMOTION_PACK:emotion=气急败坏,intensity=high,movement=跺脚", "情绪=气急败坏；动作=跺脚"),
-        ("SHOT_PATTERN:shot_size=中景,lens=50mm,headroom_policy=board", "景别=中景；镜头=50mm"),
+        ("EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定",
+         "情绪=气急败坏；运镜=固定"),
+        ("SHOT_PATTERN:shot_size=中景,lens=50mm,headroom_policy=board",
+         "景别=中景；镜头=50mm；动作=跺脚"),
         ("AXIS_RULE:pair=any_two,axis_side=right", "轴线=过肩"),
         ("TROPE:genre=film,emotion=气急败坏", "题材=film"),
         ("EDIT_RHYTHM:pacing=短镜硬切,avg_shot_len=2.0", "节奏=短镜硬切"),
@@ -143,6 +146,19 @@ def test_unparseable_q_fails(tmp_path):
     assert full_run(tmp_path, [entry(q="情绪")]) == 1
 
 
+def test_q_key_must_come_from_the_frozen_key_set(tmp_path):
+    """协议 §2.1 冻结了 q 的键集；自造键必须当场失败。"""
+    assert full_run(tmp_path, [entry(q="心情=气急败坏")]) == 1
+
+
+def test_review_block_shape_is_checked(tmp_path):
+    bad = [q7_entry(1, review={"reviewed_by": "human", "verdict": "maybe"})]
+    assert full_run(tmp_path, bad) == 1
+    good = valid_records()
+    good[0]["review"] = {"reviewed_by": "human", "verdict": "accepted"}
+    assert full_run(tmp_path, good) == 0
+
+
 # ---------------------------------------------------------------- 门⑤ 禁忌覆盖
 
 def test_q7_conflict_is_counted(tmp_path):
@@ -183,6 +199,27 @@ def test_seed_coverage_detects_missing_value(tmp_path):
     data = report(write(tmp_path, valid_records()), "--vocab", str(vocab))
     assert data["gate_3_seed_coverage"]["status"] == "fail"
     assert data["gate_3_seed_coverage"]["missing_values"]["emotion"] == ["狂喜"]
+
+
+def test_seed_coverage_is_two_directional(tmp_path):
+    """用了词表外的值 → 必须失败（这就是 norm_key 对不上、Q4 归零的那个坑）。"""
+    vocab = tmp_path / "vocab.json"
+    narrowed = dict(VOCAB)
+    narrowed["emotion"] = ["别的情绪"]
+    vocab.write_text(json.dumps(narrowed, ensure_ascii=False), encoding="utf-8")
+    data = report(write(tmp_path, valid_records()), "--vocab", str(vocab))
+    assert data["gate_3_seed_coverage"]["status"] == "fail"
+    assert "气急败坏" in data["gate_3_seed_coverage"]["unknown_values"]["emotion"]
+
+
+def test_missing_vocab_file_is_a_clean_error(tmp_path):
+    """坏路径必须给出 JSON 错误 + 退出码 1，不能抛 traceback。"""
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = check_holdout.main([str(write(tmp_path, valid_records())), "--pilot",
+                                 "--vocab", str(tmp_path / "nope.json"), "--json"])
+    assert rc == 1
+    assert "error" in json.loads(buf.getvalue())
 
 
 # ---------------------------------------------------------------- 门⑥ 来源覆盖

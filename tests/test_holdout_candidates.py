@@ -163,3 +163,50 @@ def test_unknown_transport_is_rejected():
         assert "nope" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("应当 SystemExit")
+
+
+# ---------------------------------------------------------------- 人裁决的最后一公里
+
+def test_merge_decisions_drops_rejected_and_records_review():
+    entries = [{"id": "hq_0001", "from_card": "c1"}, {"id": "hq_0002", "from_card": "c2"}]
+    merged = hc.merge_decisions(entries, {"hq_0001": "accepted", "hq_0002": "rejected"})
+    assert [e["id"] for e in merged] == ["hq_0001"]
+    assert merged[0]["review"] == {"reviewed_by": "human", "verdict": "accepted"}
+
+
+def test_merge_decisions_keeps_undecided_entries_untouched():
+    """两族一致的条目不用人裁，保持原样入库。"""
+    entries = [{"id": "hq_0001"}, {"id": "hq_0002"}]
+    merged = hc.merge_decisions(entries, {"hq_0002": "amended"})
+    assert "review" not in merged[0]
+    assert merged[1]["review"]["verdict"] == "amended"
+
+
+def test_merge_decisions_accepts_rich_verdicts():
+    entries = [{"id": "hq_0001"}]
+    merged = hc.merge_decisions(entries, {"hq_0001": {"verdict": "amended",
+                                                      "note": "把 intensity 改成 low"}})
+    assert merged[0]["review"]["note"] == "把 intensity 改成 low"
+
+
+def test_merge_decisions_rejects_unknown_ids():
+    try:
+        hc.merge_decisions([{"id": "hq_0001"}], {"hq_9999": "accepted"})
+    except SystemExit as exc:
+        assert "hq_9999" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("应当 SystemExit（裁决表与文件漂移）")
+
+
+def test_cli_merge_writes_the_final_jsonl(tmp_path):
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(CARDS, ensure_ascii=False), encoding="utf-8")
+    assert hc.main(["--cards", str(cards), "--out-dir", str(tmp_path)]) == 0
+    decisions = tmp_path / "decisions.json"
+    decisions.write_text(json.dumps({"hq_0001": "accepted", "hq_0002": "rejected"}),
+                         encoding="utf-8")
+    rc = hc.main(["--merge-from", str(decisions), "--out-dir", str(tmp_path)])
+    assert rc == 0
+    final = (tmp_path / "knowledge_holdout.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(final) == 1
+    assert json.loads(final[0])["review"]["verdict"] == "accepted"

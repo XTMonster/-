@@ -44,6 +44,14 @@ REQUIRED_SLOTS = {
 KNOWN_TYPES = frozenset(EDGE_TYPES)
 PASS, FAIL, NA = "pass", "fail", "not_measured"
 
+#: protocol §2.1 — the frozen Chinese query keys, mapped to their kind
+Q_KEY_TO_KIND = {
+    "情绪": "emotion", "动作": "action", "运镜": "movement", "景别": "shot_size",
+    "镜头": "lens", "节奏": "pacing", "特效": "vfx", "音效": "sfx", "机位": "camera_angle",
+    "光线": "lighting", "构图": "composition_rule", "轴线": "axis_topic", "题材": "genre",
+    "桥段": "beat_type",
+}
+
 SPEC_RE = re.compile(r"^(?P<etype>[A-Za-z_]+):(?P<slots>.+)$")
 SLOT_RE = re.compile(r"^(?P<forbid>forbid_)?(?P<kind>[a-z_]+)=(?P<value>.+)$")
 
@@ -67,6 +75,8 @@ def parse_q(text: str) -> Dict[str, str]:
         key, value = key.strip(), value.strip()
         if not key or not value:
             raise EntryError(f"q 片段为空键或空值: {chunk!r}")
+        if key not in Q_KEY_TO_KIND:
+            raise EntryError(f"q 的键 {key!r} 不在协议 §2.1 的冻结键集里")
         pairs[key] = value
     if not pairs:
         raise EntryError("q 解析后为空")
@@ -131,6 +141,12 @@ def validate_entry(record: dict) -> Tuple[Dict[str, Dict[str, str]], int]:
         raise EntryError("annotator 必须含 model_id 与 family")
     if record["independence"] not in ("strong", "weak"):
         raise EntryError("independence 只能是 strong/weak")
+    review = record.get("review")
+    if review is not None:
+        if not isinstance(review, dict) or not review.get("reviewed_by"):
+            raise EntryError("review 若存在，必须是 {reviewed_by, verdict}")
+        if review.get("verdict") not in ("accepted", "rejected", "amended"):
+            raise EntryError("review.verdict 只能是 accepted/rejected/amended")
     must = record["must"]
     if not isinstance(must, list) or not 1 <= len(must) <= 3:
         raise EntryError("must 必须是 1–3 条")
@@ -199,13 +215,38 @@ def gate_forbid(q7: int, min_forbid: int) -> Tuple[str, dict]:
 
 
 def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequence[str]]) -> Tuple[str, dict]:
+    """Word-list coverage, **both directions**.
+
+    Unused vocabulary value  -> the seed space has a blind spot.
+    Used value outside the vocabulary -> the label is not expressed in the index's
+    namespace, which silently sends Q4 to zero (the trap the protocol warns about).
+    """
+    # (kind, value) pairs the annotation actually used, keyed through the frozen q keys
+    used: Dict[str, set] = {}
+    for q in parsed_q:
+        for key, value in q.items():
+            kind = Q_KEY_TO_KIND.get(key)
+            if kind:
+                used.setdefault(kind, set()).add(value)
+
     missing: Dict[str, List[str]] = {}
-    used_values = {value for q in parsed_q for value in q.values()}
     for kind, values in vocab.items():
-        gap = [v for v in values if v not in used_values]
+        gap = [v for v in values if v not in used.get(kind, set())]
         if gap:
             missing[kind] = gap
-    return (PASS if not missing else FAIL), {"missing_values": missing, "kinds_checked": len(vocab)}
+
+    unknown: Dict[str, List[str]] = {}
+    for kind, values in used.items():
+        allowed = set(vocab.get(kind, []))
+        if not allowed:
+            continue
+        extra = sorted(v for v in values if v not in allowed)
+        if extra:
+            unknown[kind] = extra
+
+    detail = {"missing_values": missing, "unknown_values": unknown,
+              "kinds_checked": len(vocab), "kinds_used": len(used)}
+    return (PASS if not missing and not unknown else FAIL), detail
 
 
 def gate_sources(entries: Sequence[dict], cards: Sequence[str]) -> Tuple[str, dict]:
@@ -264,7 +305,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     report["gate_5_forbid"] = {"status": gstatus, **gdetail}
 
     if args.vocab:
-        vocab = json.loads(pathlib.Path(args.vocab).read_text(encoding="utf-8"))
+        try:
+            vocab = json.loads(pathlib.Path(args.vocab).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(json.dumps({"error": f"读不到 --vocab {args.vocab}: {exc}"},
+                             ensure_ascii=False))
+            return 1
         sstatus, sdetail = gate_seed_coverage(fdetail["_parsed_q"], vocab)
     else:
         sstatus, sdetail = NA, {"reason": "未提供 --vocab"}
@@ -272,7 +318,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     report["gate_3_seed_coverage"] = {"status": sstatus, **sdetail}
 
     if args.cards:
-        cards = json.loads(pathlib.Path(args.cards).read_text(encoding="utf-8"))
+        try:
+            cards = json.loads(pathlib.Path(args.cards).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(json.dumps({"error": f"读不到 --cards {args.cards}: {exc}"},
+                             ensure_ascii=False))
+            return 1
         cstatus, cdetail = gate_sources(entries, cards)
     else:
         cstatus, cdetail = NA, {"reason": "未提供 --cards"}

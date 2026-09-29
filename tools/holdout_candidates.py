@@ -213,6 +213,49 @@ def render_sheet(drafts: Sequence[dict], diff_ids: Sequence[str]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def merge_decisions(entries: Sequence[dict], decisions: Dict[str, object]) -> List[dict]:
+    """Apply the human's verdicts — this is the missing last mile.
+
+    `decisions` maps entry id -> `"accepted" | "rejected" | "amended"` or
+    `{"verdict": ..., "note": ...}`. Rejected entries are dropped; the rest get a
+    `review` record so the audit trail survives into `knowledge_holdout.jsonl`.
+    An unknown id is a hard error (it means the sheet and the file drifted apart).
+    """
+    known = {str(e.get("id")) for e in entries}
+    unknown = sorted(set(decisions) - known)
+    if unknown:
+        raise SystemExit(f"[merge] 裁决表里有 {len(unknown)} 个未知 id：{unknown[:5]}")
+    out: List[dict] = []
+    for entry in entries:
+        ident = str(entry.get("id"))
+        verdict = decisions.get(ident)
+        note = ""
+        if isinstance(verdict, dict):
+            verdict, note = verdict.get("verdict"), str(verdict.get("note") or "")
+        if verdict == "rejected":
+            continue
+        merged = dict(entry)
+        if verdict:
+            merged["review"] = {"reviewed_by": "human", "verdict": verdict,
+                                **({"note": note} if note else {})}
+        out.append(merged)
+    return out
+
+
+def link_stub_chain(final: Sequence[dict], draft_a: Sequence[dict], draft_b: Sequence[dict],
+                    *, family_a: str, family_b: str) -> List[dict]:
+    """Record both families' drafts on each surviving entry (audit trail)."""
+    by_b = {str(d.get("from_card")): d.get("must") for d in draft_b}
+    by_a = {str(d.get("from_card")): d.get("must") for d in draft_a}
+    out = []
+    for entry in final:
+        card = str(entry.get("from_card"))
+        merged = dict(entry)
+        merged["drafts"] = {family_a: by_a.get(card), family_b: by_b.get(card)}
+        out.append(merged)
+    return out
+
+
 def load_cards(path: str) -> List[dict]:
     if path:
         payload = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
@@ -239,7 +282,27 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--family", default="offline", help="写进 annotator.family（第一个族）")
     parser.add_argument("--family-b", default="", help="第二个族的 family（默认 = --family + '-b'）")
     parser.add_argument("--out-dir", default=".")
+    parser.add_argument("--merge-from", default="",
+                        help="裁决文件（{id: accepted|rejected|amended}）；给了它就只做合并")
+    parser.add_argument("--merge-into", default="",
+                        help="要合并的 candidates.jsonl（默认 <out-dir>/candidates.jsonl）")
+    parser.add_argument("--final", default="",
+                        help="合并后的产物路径（默认 <out-dir>/knowledge_holdout.jsonl）")
     args = parser.parse_args(list(argv) if argv is not None else None)
+
+    out_dir = pathlib.Path(args.out_dir)
+    if args.merge_from:
+        src = pathlib.Path(args.merge_into or (out_dir / "candidates.jsonl"))
+        entries = [json.loads(l) for l in src.read_text(encoding="utf-8").splitlines() if l.strip()]
+        decisions = json.loads(pathlib.Path(args.merge_from).read_text(encoding="utf-8"))
+        final = merge_decisions(entries, decisions)
+        dest = pathlib.Path(args.final or (out_dir / "knowledge_holdout.jsonl"))
+        dest.write_text("\n".join(json.dumps(e, ensure_ascii=False) for e in final) + "\n",
+                        encoding="utf-8")
+        print(json.dumps({"merged": len(entries), "kept": len(final),
+                          "rejected": len(entries) - len(final), "out": str(dest)},
+                         ensure_ascii=False))
+        return 0
 
     cards = load_cards(args.cards)
     if args.n:
@@ -247,7 +310,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     transport_a = build_transport(args.transport_a)
     raw_drafts = draft_all(cards, transport_a)
 
-    out_dir = pathlib.Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     diff_ids: List[str] = []
