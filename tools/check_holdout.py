@@ -1,18 +1,32 @@
-"""Validate `fixtures/knowledge_holdout.jsonl` against the six coverage gates.
+"""Validate `fixtures/knowledge_holdout.jsonl` against the held-out coverage gates.
 
 Spec: execution plan v1.4 §4.1b (held-out 覆盖门) + `fixtures/knowledge_holdout.protocol.md`.
 
 Pure stdlib, no bpy, no repo imports: it can run anywhere.
 
+Gates
+    ① total          — ≥1200 **non-pilot** entries
+    ② format         — field shape, required slots, `top1 ⊆ must`, `must ∩ never = ∅`,
+                       no self-contradictory edge, and **q ↔ must consistency**
+                       (a query value that contradicts the required edges is rejected)
+    ③ seed coverage  — both directions, all 14 kinds, `must`/`never` values inside the
+                       vocabulary, and (outside pilot) a bound vocabulary fingerprint
+    ④ edge types     — every type carried by ≥N *distinct* (card, query) pairs from ≥M cards
+    ⑤ forbid count   — ≥60 Q7 conflict entries
+    ⑤b forbid members— every forbidden value has ≥1 conflict case
+    ⑥ sources        — card set and `from_card` set match both ways
+    ⑦ human review   — Q5/Q7 entries carry a human verdict
+
 Exit codes
     0  every gate passed
     1  at least one gate failed
-    2  at least one gate is `not_measured` (missing external input) — per the plan's
-       hard rule 1, missing evidence must never be reported as a pass
+    2  at least one gate is `not_measured` — per the plan's hard rule 1, missing evidence
+       must never be reported as a pass
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import re
@@ -41,10 +55,6 @@ REQUIRED_SLOTS = {
     "LIGHT_PACK": ("lighting", "intensity"),
 }
 
-KNOWN_TYPES = frozenset(EDGE_TYPES)
-PASS, FAIL, NA = "pass", "fail", "not_measured"
-ID_RE = re.compile(r"^hq_\d{4,}$")
-
 #: protocol §2.1 — the frozen Chinese query keys, mapped to their kind
 Q_KEY_TO_KIND = {
     "情绪": "emotion", "动作": "action", "运镜": "movement", "景别": "shot_size",
@@ -52,6 +62,10 @@ Q_KEY_TO_KIND = {
     "光线": "lighting", "构图": "composition_rule", "轴线": "axis_topic", "题材": "genre",
     "桥段": "beat_type",
 }
+
+KNOWN_TYPES = frozenset(EDGE_TYPES)
+PASS, FAIL, NA = "pass", "fail", "not_measured"
+ID_RE = re.compile(r"^hq_\d{4,}$")
 
 SPEC_RE = re.compile(r"^(?P<etype>[A-Za-z_]+):(?P<slots>.+)$")
 SLOT_RE = re.compile(r"^(?P<forbid>forbid_)?(?P<kind>[a-z_]+)=(?P<value>.+)$")
@@ -78,6 +92,8 @@ def parse_q(text: str) -> Dict[str, str]:
             raise EntryError(f"q 片段为空键或空值: {chunk!r}")
         if key not in Q_KEY_TO_KIND:
             raise EntryError(f"q 的键 {key!r} 不在协议 §2.1 的冻结键集里")
+        if key in pairs and pairs[key] != value:
+            raise EntryError(f"q 的键 {key!r} 出现了两个不同取值")
         pairs[key] = value
     if not pairs:
         raise EntryError("q 解析后为空")
@@ -108,6 +124,9 @@ def parse_spec(spec: str) -> Tuple[str, Dict[str, str], Dict[str, str]]:
     missing = [s for s in REQUIRED_SLOTS[etype] if s not in plain]
     if missing:
         raise EntryError(f"{etype} 缺必填槽位 {missing}（在 {spec!r} 内）")
+    clash = sorted(set(plain) & set(forbid))
+    if clash:
+        raise EntryError(f"同一条边里 {clash} 同时被要求和禁止（自相矛盾）")
     return etype, plain, forbid
 
 
@@ -141,7 +160,7 @@ def load_entries(path: pathlib.Path) -> List[dict]:
     return entries
 
 
-def validate_entry(record: dict) -> Tuple[Dict[str, Dict[str, str]], int]:
+def validate_entry(record: dict) -> Tuple[Dict[str, str], int]:
     """Raise EntryError, or return (parsed q, number of Q7 conflict hits)."""
     for field in ("id", "from_card", "q", "must", "top1", "never", "annotator", "independence"):
         if field not in record:
@@ -177,11 +196,25 @@ def validate_entry(record: dict) -> Tuple[Dict[str, Dict[str, str]], int]:
         raise EntryError("never 必须是数组")
     if {spec_key(s) for s in never} & {spec_key(s) for s in must}:
         raise EntryError("must 与 never 不得相交")
+    parsed_must = []
     for spec in list(must) + list(never):
         if not isinstance(spec, str):
             raise EntryError("must/never 的条目必须是字符串")
-        parse_spec(spec)
+        parsed_must.append(parse_spec(spec))
     q = parse_q(record["q"])
+
+    # q ↔ must 一致性：q 里的某个 kind，只要 must 里有该 kind 的槽位，
+    # 就必须有一个取值相同。挡住"把词表整段抄进 q、而边说的是另一回事"。
+    must_kinds: Dict[str, set] = {}
+    for _etype, plain, forbid in [parse_spec(s) for s in must]:
+        for kind, value in list(plain.items()) + list(forbid.items()):
+            must_kinds.setdefault(kind, set()).add(value)
+    for key, value in q.items():
+        kind = Q_KEY_TO_KIND[key]
+        if kind in must_kinds and value not in must_kinds[kind]:
+            raise EntryError(
+                f"q 的 {key}={value} 与 must 里的 {kind} 取值不一致"
+                f"（must 说的是 {sorted(must_kinds[kind])}）")
 
     hits = 0
     for spec in must:
@@ -195,14 +228,15 @@ def validate_entry(record: dict) -> Tuple[Dict[str, Dict[str, str]], int]:
     return q, hits
 
 
-def gate_entries(entries: Sequence[dict], min_entries: int) -> Tuple[str, dict]:
+def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
     problems: List[str] = []
     seen: Dict[str, int] = {}
     q7 = 0
     q7_members: Dict[str, int] = {}
     needs_human = 0
     human_reviewed = 0
-    type_counts: Dict[str, int] = {t: 0 for t in EDGE_TYPES}
+    type_pairs: Dict[str, set] = {t: set() for t in EDGE_TYPES}
+    type_cards: Dict[str, set] = {t: set() for t in EDGE_TYPES}
     parsed_q: List[Dict[str, str]] = []
     for record in entries:
         try:
@@ -212,22 +246,27 @@ def gate_entries(entries: Sequence[dict], min_entries: int) -> Tuple[str, dict]:
             continue
         ident = str(record["id"])
         if ident in seen:
-            problems.append(f"line {record.get('__line__')}: id {ident!r} 重复（首次在 line {seen[ident]}）")
+            problems.append(f"line {record.get('__line__')}: id {ident!r} 重复"
+                            f"（首次在 line {seen[ident]}）")
         seen[ident] = record.get("__line__", 0)
         q7 += 1 if hits else 0
         parsed_q.append(q)
+        qsig = tuple(sorted(q.items()))
         for spec in record["must"]:
             etype, _plain, forbid = parse_spec(spec)
-            type_counts[etype] += 1
+            # 计数以「去重后的 (卡片, 查询)」为单位：同一条 q 复制 30 次不算覆盖
+            type_pairs[etype].add((str(record["from_card"]), qsig))
+            type_cards[etype].add(str(record["from_card"]))
             for kind, value in forbid.items():
                 q7_members[f"{kind}={value}"] = q7_members.get(f"{kind}={value}", 0) + 1
-        # Q5 / Q7 的最终裁定必须由人做（协议 §5.5）
         if hits or (record.get("expect_movements") or []):
             needs_human += 1
             if str(((record.get("review") or {}).get("reviewed_by") or "")).lower() == "human":
                 human_reviewed += 1
     detail = {"entries": len(entries), "valid": len(parsed_q), "problems": problems[:20],
-              "problem_count": len(problems), "q7_conflicts": q7, "must_per_type": type_counts,
+              "problem_count": len(problems), "q7_conflicts": q7,
+              "must_pairs_per_type": {t: len(s) for t, s in type_pairs.items()},
+              "must_cards_per_type": {t: len(s) for t, s in type_cards.items()},
               "q7_forbid_members": q7_members, "needs_human": needs_human,
               "human_reviewed": human_reviewed, "q7_member_count": len(q7_members),
               "_parsed_q": parsed_q}
@@ -243,66 +282,17 @@ def gate_total(entries: Sequence[dict], min_entries: int) -> Tuple[str, dict]:
         "entries": n, "entries_pilot": len(pilot), "min_entries": min_entries}
 
 
-def gate_edge_types(type_counts: Dict[str, int], per_type: int) -> Tuple[str, dict]:
-    short = {t: c for t, c in type_counts.items() if c < per_type}
-    return (PASS if not short else FAIL), {"min_per_type": per_type, "short": short}
+def gate_edge_types(pairs: Dict[str, int], cards: Dict[str, int],
+                    per_type: int, min_cards: int) -> Tuple[str, dict]:
+    short = {t: n for t, n in pairs.items() if n < per_type}
+    thin = {t: n for t, n in cards.items() if n < min_cards}
+    return (PASS if not short and not thin else FAIL), {
+        "min_pairs_per_type": per_type, "min_cards_per_type": min_cards,
+        "short_pairs": short, "thin_cards": thin}
 
 
 def gate_forbid(q7: int, min_forbid: int) -> Tuple[str, dict]:
     return (PASS if q7 >= min_forbid else FAIL), {"q7_conflicts": q7, "min": min_forbid}
-
-
-def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequence[str]]) -> Tuple[str, dict]:
-    """Word-list coverage, **both directions**.
-
-    Unused vocabulary value  -> the seed space has a blind spot.
-    Used value outside the vocabulary -> the label is not expressed in the index's
-    namespace, which silently sends Q4 to zero (the trap the protocol warns about).
-    A missing kind is worse than a missing value: whatever kind the vocabulary omits
-    is simply never checked, so the vocabulary must cover all 14 kinds or we measure
-    nothing.
-    """
-    missing_kinds = sorted(set(Q_KEY_TO_KIND.values()) - set(vocab))
-    if missing_kinds:
-        return NA, {"reason": f"词表缺 kind：{missing_kinds}（缺哪个 kind，哪个 kind 就免检）",
-                    "missing_kinds": missing_kinds}
-
-    # (kind, value) pairs the annotation actually used, keyed through the frozen q keys
-    used: Dict[str, set] = {}
-    for q in parsed_q:
-        for key, value in q.items():
-            kind = Q_KEY_TO_KIND.get(key)
-            if kind:
-                used.setdefault(kind, set()).add(value)
-
-    missing: Dict[str, List[str]] = {}
-    for kind, values in vocab.items():
-        gap = [v for v in values if v not in used.get(kind, set())]
-        if gap:
-            missing[kind] = gap
-
-    unknown: Dict[str, List[str]] = {}
-    for kind, values in used.items():
-        allowed = set(vocab.get(kind, []))
-        if not allowed:
-            continue
-        extra = sorted(v for v in values if v not in allowed)
-        if extra:
-            unknown[kind] = extra
-
-    detail = {"missing_values": missing, "unknown_values": unknown,
-              "kinds_checked": len(vocab), "kinds_used": len(used)}
-    return (PASS if not missing and not unknown else FAIL), detail
-
-
-def gate_sources(entries: Sequence[dict], cards: Sequence[str]) -> Tuple[str, dict]:
-    """Both directions: every card has ≥1 entry, and no entry cites a ghost card."""
-    used = {str(e.get("from_card", "")) for e in entries}
-    gap = [c for c in cards if c not in used]
-    ghost = sorted(used - set(cards))
-    return (PASS if not gap and not ghost else FAIL), {
-        "cards": len(cards), "missing_cards": gap[:20], "missing_count": len(gap),
-        "ghost_cards": ghost[:20], "ghost_count": len(ghost)}
 
 
 def gate_forbid_members(members: Dict[str, int], minimum: int = 1) -> Tuple[str, dict]:
@@ -321,18 +311,107 @@ def gate_human_review(needs: int, reviewed: int, minimum: int) -> Tuple[str, dic
     return (PASS if reviewed >= min(needs, minimum) else FAIL), detail
 
 
+def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequence[str]],
+                       must_values: Dict[str, set], has_fingerprint: bool,
+                       min_support: int, support: Dict[str, Dict[str, set]]
+                       ) -> Tuple[str, dict]:
+    """Word-list coverage, **both directions**, over `q` **and** over `must`/`never`.
+
+    Unused vocabulary value      -> the seed space has a blind spot.
+    Used value outside the list  -> the label is not expressed in the index namespace,
+                                    which silently sends Q4 to zero (the protocol's trap).
+    A missing kind               -> whatever the vocabulary omits is simply never checked.
+    No vocabulary fingerprint     -> the vocabulary cannot be bound to the index build.
+    """
+    missing_kinds = sorted(set(Q_KEY_TO_KIND.values()) - set(vocab))
+    if missing_kinds:
+        return NA, {"reason": f"词表缺 kind：{missing_kinds}（缺哪个 kind，哪个 kind 就免检）",
+                    "missing_kinds": missing_kinds}
+    if not has_fingerprint:
+        return NA, {"reason": "词表没有 _fingerprint：无法与索引构建绑定（协议 §6）"}
+
+    used: Dict[str, set] = {}
+    for q in parsed_q:
+        for key, value in q.items():
+            used.setdefault(Q_KEY_TO_KIND[key], set()).add(value)
+
+    missing: Dict[str, List[str]] = {}
+    thin: Dict[str, List[str]] = {}
+    for kind, values in vocab.items():
+        gap = [v for v in values if v not in used.get(kind, set())]
+        if gap:
+            missing[kind] = gap
+        weak = [v for v in values
+                if len(support.get(kind, {}).get(v, set())) < min_support]
+        if weak:
+            thin[kind] = weak
+
+    unknown: Dict[str, List[str]] = {}
+    for kind, values in list(used.items()) + list(must_values.items()):
+        allowed = set(vocab.get(kind, []))
+        if not allowed:
+            continue
+        extra = sorted(v for v in values if v not in allowed)
+        if extra:
+            unknown.setdefault(kind, [])
+            unknown[kind] = sorted(set(unknown[kind]) | set(extra))
+
+    detail = {"missing_values": missing, "unknown_values": unknown, "thin_values": thin,
+              "min_support": min_support, "kinds_checked": len(vocab),
+              "vocab_fingerprint": True}
+    return (PASS if not missing and not unknown and not thin else FAIL), detail
+
+
+def gate_sources(entries: Sequence[dict], cards: Sequence[str]) -> Tuple[str, dict]:
+    """Both directions: every card has ≥1 entry, and no entry cites a ghost card."""
+    used = {str(e.get("from_card", "")) for e in entries}
+    gap = [c for c in cards if c not in used]
+    ghost = sorted(used - set(cards))
+    return (PASS if not gap and not ghost else FAIL), {
+        "cards": len(cards), "missing_cards": gap[:20], "missing_count": len(gap),
+        "ghost_cards": ghost[:20], "ghost_count": len(ghost)}
+
+
+def load_vocab(path: str, pilot: bool) -> Tuple[Dict[str, Sequence[str]] | None, bool]:
+    """Accept either `{kind: [...]}` or `{"_fingerprint": str, "kinds": {kind: [...]}}`."""
+    payload = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("--vocab 必须是对象")
+    if "kinds" in payload:
+        fingerprint = bool(str(payload.get("_fingerprint") or "").strip())
+        kinds = payload["kinds"]
+    else:
+        fingerprint = False
+        kinds = payload
+    if not isinstance(kinds, dict) or not all(
+            isinstance(k, str) and isinstance(v, list) for k, v in kinds.items()):
+        raise ValueError("--vocab 的 kinds 必须是 {kind: [value, ...]}")
+    if pilot:
+        # 试点阶段还没有索引可绑定；把指纹要求放行，但正式集必须带指纹
+        return kinds, True
+    if not fingerprint:
+        return None, False
+    return kinds, fingerprint
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="check_holdout")
     parser.add_argument("path", nargs="?", default="fixtures/knowledge_holdout.jsonl")
     parser.add_argument("--min-entries", type=int, default=1200)
-    parser.add_argument("--min-per-type", type=int, default=30)
+    parser.add_argument("--min-per-type", type=int, default=30,
+                        help="每类边至少被多少条 **去重后的 (卡片,查询)** 要求")
+    parser.add_argument("--min-cards-per-type", type=int, default=10,
+                        help="每类边的支撑条目至少来自多少张不同的卡")
     parser.add_argument("--min-forbid", type=int, default=60)
-    parser.add_argument("--vocab", default="", help="JSON: {kind: [value, ...]}（P14-1 产出）")
-    parser.add_argument("--cards", default="", help="JSON: 卡片 id 数组（来源覆盖门）")
-    parser.add_argument("--pilot", action="store_true",
-                        help="试点模式：门限放宽到 1/1/1，便于在语料落地前跑通管道")
+    parser.add_argument("--min-seed-support", type=int, default=3,
+                        help="每个词表取值至少出现在多少条不同的 (卡片,查询) 里")
     parser.add_argument("--min-human-review", type=int, default=120,
                         help="Q5/Q7 条目里必须带人裁决的条数（协议 §5.5；pilot 时为 1）")
+    parser.add_argument("--vocab", default="", help="JSON: {kind: [value, ...]}"
+                                                   " 或 {_fingerprint, kinds:{...}}（P14-1 产出）")
+    parser.add_argument("--cards", default="", help="JSON: 卡片 id 数组（来源覆盖门）")
+    parser.add_argument("--pilot", action="store_true",
+                        help="试点模式：门限放宽到 1，便于在语料落地前跑通管道")
     parser.add_argument("--json", action="store_true", help="只打印 JSON 报告")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -343,7 +422,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     min_entries = 1 if args.pilot else args.min_entries
     per_type = 1 if args.pilot else args.min_per_type
+    min_cards = 1 if args.pilot else args.min_cards_per_type
     min_forbid = 1 if args.pilot else args.min_forbid
+    min_support = 1 if args.pilot else args.min_seed_support
     min_review = 1 if args.pilot else args.min_human_review
 
     try:
@@ -359,12 +440,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     statuses.append(status)
     report["gate_1_total"] = {"status": status, **detail}
 
-    fstatus, fdetail = gate_entries(entries, min_entries)
+    fstatus, fdetail = gate_entries(entries)
     statuses.append(fstatus)
     report["gate_2_format"] = {"status": fstatus,
                                **{k: v for k, v in fdetail.items() if k != "_parsed_q"}}
 
-    tstatus, tdetail = gate_edge_types(fdetail["must_per_type"], per_type)
+    tstatus, tdetail = gate_edge_types(fdetail["must_pairs_per_type"],
+                                       fdetail["must_cards_per_type"], per_type, min_cards)
     statuses.append(tstatus)
     report["gate_4_edge_types"] = {"status": tstatus, **tdetail}
 
@@ -383,17 +465,17 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.vocab:
         try:
-            vocab = json.loads(pathlib.Path(args.vocab).read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
+            vocab, fingerprint = load_vocab(args.vocab, args.pilot)
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
             print(json.dumps({"error": f"读不到 --vocab {args.vocab}: {exc}"},
                              ensure_ascii=False))
             return 1
-        if not isinstance(vocab, dict) or not all(
-                isinstance(k, str) and isinstance(v, list) for k, v in vocab.items()):
-            print(json.dumps({"error": "--vocab 必须是 {kind: [value, ...]}"},
-                             ensure_ascii=False))
-            return 1
-        sstatus, sdetail = gate_seed_coverage(fdetail["_parsed_q"], vocab)
+        if vocab is None:
+            sstatus, sdetail = NA, {"reason": "词表没有 _fingerprint：无法与索引构建绑定"}
+        else:
+            sstatus, sdetail = gate_seed_coverage(fdetail["_parsed_q"], vocab,
+                                                  must_values_from(entries), fingerprint,
+                                                  min_support, support_from(entries))
     else:
         sstatus, sdetail = NA, {"reason": "未提供 --vocab"}
     statuses.append(sstatus)
@@ -428,6 +510,35 @@ def main(argv: Sequence[str] | None = None) -> int:
                          ensure_ascii=False))
         print(f"overall: {report['overall']}")
     return 0 if report["overall"] == PASS else (2 if report["overall"] == NA else 1)
+
+
+def must_values_from(entries: Sequence[dict]) -> Dict[str, set]:
+    """Every value that appears in a `must`/`never` slot, per kind."""
+    out: Dict[str, set] = {}
+    for record in entries:
+        for spec in list(record.get("must") or []) + list(record.get("never") or []):
+            try:
+                _etype, plain, forbid = parse_spec(spec)
+            except EntryError:
+                continue
+            for kind, value in list(plain.items()) + list(forbid.items()):
+                out.setdefault(kind, set()).add(value)
+    return out
+
+
+def support_from(entries: Sequence[dict]) -> Dict[str, Dict[str, set]]:
+    """kind -> value -> set of (card, query) pairs that used it (for the support gate)."""
+    out: Dict[str, Dict[str, set]] = {}
+    for record in entries:
+        try:
+            q = parse_q(record.get("q", ""))
+        except EntryError:
+            continue
+        card = str(record.get("from_card"))
+        qsig = tuple(sorted(q.items()))
+        for key, value in q.items():
+            out.setdefault(Q_KEY_TO_KIND[key], {}).setdefault(value, set()).add((card, qsig))
+    return out
 
 
 if __name__ == "__main__":  # pragma: no cover

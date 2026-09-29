@@ -218,7 +218,27 @@ def test_edge_type_coverage_gate_flags_short_types(tmp_path):
     data = report(write(tmp_path, [q7_entry()]))
     assert data["gate_4_edge_types"]["status"] == "fail"
     for missing in ("SHOT_PATTERN", "AXIS_RULE", "TROPE", "EDIT_RHYTHM", "LIGHT_PACK"):
-        assert missing in data["gate_4_edge_types"]["short"]
+        assert missing in data["gate_4_edge_types"]["short_pairs"]
+
+
+def test_edge_type_coverage_counts_distinct_card_query_pairs(tmp_path):
+    """同一条 q 复制 30 次不算覆盖——必须来自 ≥30 个不同的 (卡片,查询) 对。"""
+    copies = [q7_entry(i) for i in range(1, 4)]
+    data = report(write(tmp_path, copies), "--pilot")
+    assert data["gate_4_edge_types"]["short_pairs"]["SHOT_PATTERN"] == 0
+    assert data["gate_4_edge_types"]["must_pairs_per_type" if False else "status"] == "fail"
+    # 三张不同的卡 + 同一个查询 → EMOTION_PACK 有 3 对
+    assert data["gate_2_format"]["must_pairs_per_type"]["EMOTION_PACK"] == 3
+
+
+def test_edge_type_coverage_counts_distinct_cards(tmp_path):
+    """同一张卡刷 30 条也不算——每类边至少来自 10 张不同的卡。"""
+    same_card = [q7_entry(i) for i in range(1, 4)]
+    for rec in same_card:
+        rec["from_card"] = "card_1"
+    data = report(write(tmp_path, same_card),
+                  "--min-cards-per-type", "2", pilot=False)
+    assert data["gate_4_edge_types"]["thin_cards"]["EMOTION_PACK"] == 1
 
 
 # ---------------------------------------------------------------- 门③ 种子覆盖
@@ -247,6 +267,70 @@ def test_seed_coverage_is_two_directional(tmp_path):
     data = report(write(tmp_path, valid_records()), "--vocab", str(vocab))
     assert data["gate_3_seed_coverage"]["status"] == "fail"
     assert "气急败坏" in data["gate_3_seed_coverage"]["unknown_values"]["emotion"]
+
+
+def test_q_value_that_contradicts_must_is_rejected(tmp_path):
+    """自洽门：q 说"特写"而必须边说"中景"——查询与约束互相打架，必须当场失败。"""
+    rec = q7_entry()
+    rec["q"] = "情绪=气急败坏；景别=特写"
+    data = report(write(tmp_path, [rec]))
+    assert data["gate_2_format"]["status"] == "fail"
+    assert "不一致" in " ".join(data["gate_2_format"]["problems"])
+
+
+def test_same_value_required_and_forbidden_in_one_edge_is_rejected(tmp_path):
+    rec = entry(must=["EMOTION_PACK:emotion=气急败坏,intensity=high,shot_size=中景,"
+                      "forbid_shot_size=中景"])
+    data = report(write(tmp_path, [rec]))
+    assert data["gate_2_format"]["status"] == "fail"
+    assert "自相矛盾" in " ".join(data["gate_2_format"]["problems"])
+
+
+def test_must_values_must_come_from_the_vocabulary(tmp_path):
+    """must 的取值不在词表里 → Q4 会静默归零，门③ 必须抓住。"""
+    vocab = tmp_path / "vocab.json"
+    narrowed = dict(VOCAB, lens=["35mm"])          # valid_records 用的是 50mm
+    vocab.write_text(json.dumps(narrowed, ensure_ascii=False), encoding="utf-8")
+    data = report(write(tmp_path, valid_records()), "--vocab", str(vocab))
+    assert data["gate_3_seed_coverage"]["status"] == "fail"
+    assert "50mm" in data["gate_3_seed_coverage"]["unknown_values"]["lens"]
+
+
+def test_seed_support_gate_needs_more_than_one_use(tmp_path):
+    """一个取值只被用了一次不算覆盖（要求 ≥N 个不同的 (卡片,查询) 对）。"""
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps({"_fingerprint": "sha256:abc", "kinds": VOCAB},
+                                ensure_ascii=False), encoding="utf-8")
+    # 单条记录 → 每个取值只在 1 个 (卡片,查询) 对上出现 → 低于 --min-seed-support 2
+    data = report(write(tmp_path, [q7_entry(1)]), "--vocab", str(vocab),
+                  "--min-seed-support", "2", pilot=False)
+    assert data["gate_3_seed_coverage"]["status"] == "fail"
+    assert data["gate_3_seed_coverage"]["thin_values"]
+
+
+def test_vocab_fingerprint_is_required_outside_pilot(tmp_path):
+    """正式集必须把词表绑到索引构建上；缺指纹只能记 not_measured。"""
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps(VOCAB, ensure_ascii=False), encoding="utf-8")
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        check_holdout.main([str(write(tmp_path, valid_records())),
+                            "--vocab", str(vocab), "--json"])
+    data = json.loads(buf.getvalue())
+    assert data["gate_3_seed_coverage"]["status"] == "not_measured"
+    assert "fingerprint" in data["gate_3_seed_coverage"]["reason"]
+
+
+def test_vocab_fingerprint_form_is_accepted(tmp_path):
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps({"_fingerprint": "sha256:abc", "kinds": VOCAB},
+                                ensure_ascii=False), encoding="utf-8")
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(sorted({r["from_card"] for r in valid_records()})),
+                     encoding="utf-8")
+    rc = check_holdout.main([str(write(tmp_path, valid_records())), "--pilot",
+                             "--vocab", str(vocab), "--cards", str(cards)])
+    assert rc == 0
 
 
 def test_missing_vocab_file_is_a_clean_error(tmp_path):

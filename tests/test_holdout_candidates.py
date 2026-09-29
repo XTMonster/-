@@ -67,7 +67,7 @@ def test_parse_draft_rejects_missing_fields():
 
 
 def test_draft_all_attaches_card_id_and_prompt_hash():
-    drafts = hc.draft_all(CARDS, hc.offline_transport)
+    drafts = hc.draft_all(CARDS, hc.offline_transport, family="a")
     assert [d["from_card"] for d in drafts] == ["cine_shot_size", "axis_180"]
     assert all(len(d["_prompt_sha256"]) == 64 for d in drafts)
 
@@ -77,9 +77,53 @@ def test_draft_all_records_transport_failure_without_raising():
         raise RuntimeError("network down")
 
     try:
-        hc.draft_all(CARDS[:1], boom)
+        hc.draft_all(CARDS[:1], boom, family="a")
     except RuntimeError:
         pass  # 传输层异常原样冒泡是允许的；解析失败才被记录
+
+
+# ---------------------------------------------------------------- 并发与续跑
+
+def test_concurrent_drafting_matches_sequential():
+    seq = hc.draft_all(CARDS, hc.offline_transport, family="a", concurrency=1)
+    par = hc.draft_all(CARDS, hc.offline_transport, family="a", concurrency=3)
+    assert seq == par
+
+
+def test_resume_skips_cards_already_in_the_checkpoint(tmp_path):
+    checkpoint = tmp_path / "draft_checkpoint.jsonl"
+    calls: list = []
+    first = hc.draft_all(CARDS, hc.offline_transport, family="a", concurrency=1,
+                         checkpoint=checkpoint, calls=calls)
+    assert calls == ["cine_shot_size", "axis_180"]
+    assert checkpoint.is_file()
+
+    calls2: list = []
+    second = hc.draft_all(CARDS, hc.offline_transport, family="a", concurrency=1,
+                          checkpoint=checkpoint, calls=calls2)
+    assert calls2 == []                      # 全部命中检查点，没有再发请求
+    assert second == first
+
+
+def test_resume_reprompts_when_the_prompt_changes(tmp_path, monkeypatch):
+    """提示词一变，指纹就对不上，缓存必须失效（否则会静默复用旧答案）。"""
+    checkpoint = tmp_path / "draft_checkpoint.jsonl"
+    hc.draft_all(CARDS[:1], hc.offline_transport, family="a", checkpoint=checkpoint)
+    monkeypatch.setattr(hc, "prompt_for", lambda card: "完全不同的提示词 " + str(card.get("id")))
+    calls: list = []
+    hc.draft_all(CARDS[:1], hc.offline_transport, family="a", checkpoint=checkpoint,
+                 calls=calls)
+    assert calls == ["cine_shot_size"]
+
+
+def test_resume_is_per_family(tmp_path):
+    """两个族各存各的检查点行，互不冒充。"""
+    checkpoint = tmp_path / "draft_checkpoint.jsonl"
+    calls: list = []
+    hc.draft_all(CARDS[:1], hc.offline_transport, family="a", checkpoint=checkpoint)
+    hc.draft_all(CARDS[:1], hc.offline_transport_b, family="b", checkpoint=checkpoint,
+                 calls=calls)
+    assert calls == ["cine_shot_size"]
 
 
 def test_disagreements_detects_must_differences():

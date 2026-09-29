@@ -16,7 +16,9 @@ import hashlib
 import json
 import pathlib
 import re
+import threading
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Dict, Iterable, List, Sequence
 
 #: domain -> the edge type a card of that domain is most likely to justify
@@ -151,20 +153,80 @@ def parse_draft(raw: str) -> dict:
     return draft
 
 
-def draft_all(cards: Iterable[dict], transport: Transport) -> List[dict]:
-    out: List[dict] = []
-    for card in cards:
-        raw = transport(prompt_for(card))
-        try:
-            draft = parse_draft(raw)
-        except ValueError as exc:
-            out.append({"from_card": card.get("id"), "error": str(exc)})
+def load_checkpoint(path: pathlib.Path, family: str) -> Dict[str, dict]:
+    """`card_id -> draft` for entries whose prompt fingerprint still matches."""
+    if not path.is_file():
+        return {}
+    done: Dict[str, dict] = {}
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        raw = raw.strip()
+        if not raw:
             continue
-        draft["from_card"] = card.get("id")
-        draft["_prompt_sha256"] = hashlib.sha256(
-            prompt_for(card).encode("utf-8")).hexdigest()
-        out.append(draft)
-    return out
+        try:
+            row = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if row.get("family") == family and row.get("card"):
+            done[str(row["card"])] = row
+    return done
+
+
+def draft_all(cards: Iterable[dict], transport: Transport, *, family: str = "",
+              concurrency: int = 1, checkpoint: pathlib.Path | None = None,
+              calls: List[str] | None = None) -> List[dict]:
+    """Draft every card, optionally in parallel and resumable.
+
+    The checkpoint is keyed by `(card, family, prompt_sha256)` so a prompt change
+    invalidates the cached draft instead of silently reusing it. Writing happens as
+    each result lands, so a crash costs at most the in-flight calls.
+    """
+    cards = list(cards)
+    cached = load_checkpoint(checkpoint, family) if checkpoint else {}
+    lock = threading.Lock()
+    results: Dict[str, dict] = {}
+    pending: List[dict] = []
+
+    for card in cards:
+        cid = str(card.get("id"))
+        prompt = prompt_for(card)
+        digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+        row = cached.get(cid)
+        if row and row.get("prompt_sha256") == digest and not row.get("error"):
+            draft = dict(row.get("draft") or {})
+            draft["from_card"] = cid
+            draft["_prompt_sha256"] = digest
+            results[cid] = draft
+            continue
+        pending.append({"card": card, "prompt": prompt, "digest": digest, "id": cid})
+
+    def work(item: dict) -> None:
+        if calls is not None:
+            with lock:
+                calls.append(item["id"])
+        try:
+            draft = parse_draft(transport(item["prompt"]))
+        except ValueError as exc:
+            draft = {"from_card": item["id"], "error": str(exc)}
+        draft["from_card"] = item["id"]
+        draft["_prompt_sha256"] = item["digest"]
+        with lock:
+            results[item["id"]] = draft
+            if checkpoint is not None:
+                with open(checkpoint, "a", encoding="utf-8", newline="\n") as fh:
+                    fh.write(json.dumps({"card": item["id"], "family": family,
+                                         "prompt_sha256": item["digest"],
+                                         "draft": {k: v for k, v in draft.items()
+                                                   if not k.startswith("_")}},
+                                        ensure_ascii=False) + "\n")
+
+    if pending:
+        if concurrency > 1:
+            with ThreadPoolExecutor(max_workers=concurrency) as pool:
+                list(pool.map(work, pending))
+        else:
+            for item in pending:
+                work(item)
+    return [results[str(card.get("id"))] for card in cards if str(card.get("id")) in results]
 
 
 def disagreements(a: Sequence[dict], b: Sequence[dict]) -> List[str]:
@@ -326,6 +388,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="抽取器的 family；independence 由「标注族 vs 抽取族」派生（协议 §5.1）")
     parser.add_argument("--model-id", default="", help="标注模型 id（写进 annotator）")
     parser.add_argument("--model-version", default="", help="标注模型版本")
+    parser.add_argument("--concurrency", type=int, default=1,
+                        help="起草并发数（同一族的请求并行发出；默认 1）")
+    parser.add_argument("--resume", action="store_true",
+                        help="用 <out-dir>/draft_checkpoint.jsonl 续跑（指纹相同才复用）")
     parser.add_argument("--out-dir", default=".")
     parser.add_argument("--merge-from", default="",
                         help="裁决文件（{id: accepted|rejected|amended}）；给了它就只做合并")
@@ -359,15 +425,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.n:
         cards = cards[: args.n]
     transport_a = build_transport(args.transport_a)
-    raw_drafts = draft_all(cards, transport_a)
 
     out_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint = (out_dir / "draft_checkpoint.jsonl") if args.resume else None
+    raw_drafts = draft_all(cards, transport_a, family=args.family,
+                           concurrency=max(1, args.concurrency), checkpoint=checkpoint)
 
     diff_ids: List[str] = []
     family_b = args.family_b or f"{args.family}-b"
     if args.transport_b != "none":
         transport_b = build_transport(args.transport_b)
-        drafts_b = draft_all(cards, transport_b)
+        drafts_b = draft_all(cards, transport_b, family=family_b,
+                             concurrency=max(1, args.concurrency), checkpoint=checkpoint)
         diff_ids = disagreements(raw_drafts, drafts_b)
         (out_dir / "disagreements.json").write_text(
             json.dumps(diff_ids, ensure_ascii=False, indent=2), encoding="utf-8")
