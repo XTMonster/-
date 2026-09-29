@@ -32,6 +32,18 @@ RULE_DIALOGUE = "R016"
 
 #: v1.3：注视落实（SceneBrief.gaze 必须被 shot.gaze 落实，或显式豁免）
 RULE_GAZE = "R013"
+#: v1.3：运镜动机（声明了运动就要说得出为什么动）
+RULE_MOVEMENT = "R014"
+#: v1.3：空镜意图（无角色镜头必须说清建立/留白）
+RULE_EMPTY_SHOT = "R017"
+
+#: 会"跟着一个主体走"的运镜：没有会走的主体就没有动机
+FOLLOWING_MOVEMENTS = ("follow_subject", "lead_subject", "steadicam")
+#: 会移动的动作类型（跟拍要跟的就是它们）
+LOCOMOTION_ACTIONS = ("walk_to", "run_to")
+#: 空镜允许的意图词（建立 / 交代 / 氛围……）
+EMPTY_SHOT_INTENTS = ("建立", "交代", "环境", "空镜", "留白", "铺垫", "转场",
+                      "氛围", "场景", "全景", "大远景")
 
 CODE_SCRIPT = "E_SCRIPT_001"
 
@@ -60,6 +72,87 @@ def _gaze_pairs(entries) -> List[tuple]:
 
 def check_gaze(plan: Optional[Plan], brief, *,
                strict: bool = False) -> List[AuditError]:
+    """R013：阶段 S 读出来的注视关系，计划有没有落实（§3.5）。"""
+    return _gaze_findings(plan, brief, strict=strict)
+
+
+def check_movement_motivation(plan: Optional[Plan], *,
+                              strict: bool = False) -> List[AuditError]:
+    """R014：声明了运动就要说得出为什么动（v1.3 §3.5）。
+
+    判据是**结构性的**，不猜语义：跟拍/前导/斯坦尼康必须有一个会走的主体
+    （在这一镜里有 ``walk_to`` / ``run_to`` 动作），否则相机跟不到任何东西，
+    那正是"无动机运镜"在参考视频里最糟的形态——视频模型会把抖动当成场景在动。
+    """
+    if plan is None:
+        return []
+    severity = Severity.ERROR if strict else Severity.WARNING
+    findings: List[AuditError] = []
+    for shot in plan.shots:
+        shot_id = str(getattr(shot, "shot_id", "") or "")
+        movements = (getattr(shot, "camera", None) or {}).get("movements") or []
+        characters = list(getattr(shot, "characters", None) or [])
+        moving = {str(action.get("character_id") or "")
+                  for action in (getattr(shot, "actions", None) or [])
+                  if str(action.get("action_type") or "") in LOCOMOTION_ACTIONS}
+        for raw in movements:
+            if not isinstance(raw, dict):
+                continue
+            movement = str(raw.get("type") or "")
+            if movement not in FOLLOWING_MOVEMENTS:
+                continue
+            subject = str(raw.get("subject") or "").strip()
+            if not subject:
+                subject = characters[0] if characters else ""
+            if not subject:
+                findings.append(_finding(
+                    severity, RULE_MOVEMENT,
+                    f"{shot_id} 声明了 {movement}，但这一镜没有可跟的角色",
+                    target=shot_id,
+                    suggestion="指定 subject，或改用推拉/横移"))
+            elif subject not in moving:
+                findings.append(_finding(
+                    severity, RULE_MOVEMENT,
+                    f"{shot_id} 声明了 {movement}，但 {subject} 在这一镜里"
+                    f"没有走动（没有 walk_to / run_to），镜头跟不到任何动机",
+                    target=shot_id,
+                    suggestion=f"给 {subject} 加一个走位，或把运镜换成推/摇"))
+        if not characters and movements:
+            kinds = "、".join(str(item.get("type")) for item in movements
+                              if isinstance(item, dict))
+            findings.append(_finding(
+                severity, RULE_MOVEMENT,
+                f"{shot_id} 是空镜（无角色）却声明了运镜 {kinds}",
+                target=shot_id,
+                suggestion="空镜的运镜要写清动机（揭示空间 / 跟随人流），"
+                           "否则宁可用固定镜头"))
+    return findings
+
+
+def check_empty_shot_intent(plan: Optional[Plan]) -> List[AuditError]:
+    """R017：无角色镜头必须说清它是干什么用的（建立 / 留白 / 转场）。"""
+    if plan is None:
+        return []
+    findings: List[AuditError] = []
+    for shot in plan.shots:
+        if getattr(shot, "characters", None):
+            continue
+        shot_id = str(getattr(shot, "shot_id", "") or "")
+        text = (f"{getattr(shot, 'intent', '') or ''} "
+                f"{getattr(shot, 'prompt', '') or ''}")
+        if any(keyword in text for keyword in EMPTY_SHOT_INTENTS):
+            continue
+        findings.append(_finding(
+            Severity.WARNING, RULE_EMPTY_SHOT,
+            f"{shot_id} 是无角色空镜，但意图里没说清它要建立什么"
+            f"（建立 / 交代 / 留白 / 转场）",
+            target=shot_id,
+            suggestion="补一句空镜的作用，或让某个角色入画"))
+    return findings
+
+
+def _gaze_findings(plan: Optional[Plan], brief, *,
+                   strict: bool = False) -> List[AuditError]:
     """R013：阶段 S 读出来的注视关系，计划有没有落实（§3.5）。
 
     默认只是告警——理解可能有误，不该因为一条推断就把运行判为失败；
@@ -112,6 +205,9 @@ def check_compliance(plan: Plan, script, *, fps: int = FPS,
     """
     strict = str(audit_level or "") == str(AuditLevel.STRICT)
     findings: List[AuditError] = check_gaze(plan, brief, strict=strict)
+    # R014 / R017 只看计划本身，与剧本有没有分镜表无关。
+    findings.extend(check_movement_motivation(plan, strict=strict))
+    findings.extend(check_empty_shot_intent(plan))
     declared = _declared_shots(script)
     if not declared or plan is None:
         return findings

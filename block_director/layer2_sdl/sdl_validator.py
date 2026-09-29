@@ -17,6 +17,85 @@ WALL_MARGIN = 0.2
 CHARACTER_BOX = (0.5, 0.5, 1.45)
 CAMERA_BOX = (0.2, 0.2, 0.2)
 
+#: S8/S9：群众与特效的合法取值（v1.3 §3.5）
+CROWD_MODES = ("static", "walk")
+VFX_KINDS = ("flame", "glow", "spark", "smoke")
+
+
+def _check_v13_fields(sdl: SDLProject, findings: List[AuditError]) -> None:
+    """S8 群众引用、S9 特效引用、S10 声明时长自洽（v1.3 新增）。"""
+    characters = {member.id for member in sdl.characters}
+    for scene in sdl.scenes:
+        crowd = getattr(scene.environment, "crowd", None) or []
+        total = 0
+        for index, entry in enumerate(crowd, start=1):
+            if not isinstance(entry, dict):
+                findings.append(_error(
+                    "S8", "E_SDL_001",
+                    f"场景 {scene.id} 的第 {index} 条群众声明不是对象",
+                    target=scene.id, suggestion="写成 {count, mode, seed} 形式"))
+                continue
+            count = int(entry.get("count") or 0)
+            if count <= 0:
+                findings.append(_error(
+                    "S8", "E_SDL_001",
+                    f"场景 {scene.id} 的第 {index} 条群众声明的数量非法：{count}",
+                    target=scene.id, suggestion="数量必须是正整数"))
+            mode = str(entry.get("mode") or "static")
+            if mode not in CROWD_MODES:
+                findings.append(_error(
+                    "S8", "E_SDL_001",
+                    f"场景 {scene.id} 的第 {index} 条群众声明的 mode 非法：{mode}",
+                    target=scene.id,
+                    suggestion=f"只能是 {'/'.join(CROWD_MODES)}"))
+            total += max(count, 0)
+        if total > CROWD_LIMIT:
+            findings.append(_error(
+                "S8", "E_SDL_001",
+                f"场景 {scene.id} 声明了 {total} 个群众实例，超过上限 "
+                f"{CROWD_LIMIT}",
+                target=scene.id,
+                suggestion="降低 crowd.max_instances 或减少声明的人数"))
+
+        for shot in scene.shots:
+            for index, item in enumerate(getattr(shot, "vfx", None) or [],
+                                         start=1):
+                if not isinstance(item, dict):
+                    findings.append(_error(
+                        "S9", "E_SDL_001",
+                        f"镜头 {shot.id} 的第 {index} 条特效不是对象",
+                        target=shot.id, suggestion="写成 {id, type} 形式"))
+                    continue
+                if not str(item.get("id") or "").strip():
+                    findings.append(_error(
+                        "S9", "E_SDL_001",
+                        f"镜头 {shot.id} 的第 {index} 条特效缺少 id",
+                        target=shot.id, suggestion="给特效一个唯一 id"))
+                kind = str(item.get("type") or "")
+                if kind not in VFX_KINDS:
+                    findings.append(_error(
+                        "S9", "E_SDL_001",
+                        f"镜头 {shot.id} 的特效类型非法：{kind!r}",
+                        target=shot.id,
+                        suggestion=f"只能是 {'/'.join(VFX_KINDS)}"))
+            # S10：声明的运镜必须落在本镜的帧范围里
+            span = (shot.end_frame or shot.duration_frames
+                    or 1) - (shot.start_frame or 1) + 1
+            for index, move in enumerate(
+                    getattr(shot.camera, "movements", None) or [], start=1):
+                duration = int(move.get("end_frame") or span)
+                if duration > span:
+                    findings.append(_error(
+                        "S10", "E_SDL_001",
+                        f"镜头 {shot.id} 的第 {index} 条运镜声明到第 "
+                        f"{duration} 帧，超出镜头时长 {span} 帧",
+                        target=shot.id,
+                        suggestion="把运镜的起止帧缩回镜头内"))
+
+
+#: 群众实例的硬上限（与 crowd.max_instances 的默认值一致）
+CROWD_LIMIT = 40
+
 
 def _error(rule: str, code: str, message: str, target: str = "",
            suggestion: str = "") -> AuditError:
@@ -163,6 +242,7 @@ def validate_sdl(sdl: SDLProject) -> List[AuditError]:
                                  suggestion="写入 version 字段以便将来迁移"))
 
     _check_references(sdl, findings)
+    _check_v13_fields(sdl, findings)
     for scene in sdl.scenes:
         for shot in scene.shots:
             _check_shot_timing(shot, findings)

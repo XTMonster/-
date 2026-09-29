@@ -97,6 +97,56 @@ def test_sdl_carries_the_brief_the_gaze_and_the_declared_movements():
     assert SDLProject.from_dict(sdl.to_dict()).brief == sdl.brief
 
 
+# --------------------------------------------------------------------------- #
+# v1.3 新增校验：S8 群众 / S9 特效 / S10 运镜时间窗
+# --------------------------------------------------------------------------- #
+def test_s8_rejects_bad_crowd_declarations():
+    plan = demo_plan()
+    spec = SceneSpec.from_plan(plan, crowd=[{"count": 0, "mode": "fly"}])
+    sdl = build_sdl(plan, spec=spec)
+    rules = [item.rule for item in validate_sdl(sdl)]
+    assert rules.count("S8") == 2               # 数量非法 + mode 非法
+
+
+def test_s8_enforces_the_instance_ceiling():
+    plan = demo_plan()
+    spec = SceneSpec.from_plan(plan, crowd=[{"count": 25}, {"count": 25}])
+    sdl = build_sdl(plan, spec=spec)
+    findings = [item for item in validate_sdl(sdl) if item.rule == "S8"]
+    assert findings and "超过上限" in findings[0].message
+
+
+def test_s9_rejects_bad_vfx_declarations():
+    plan = demo_plan()
+    plan.shots[0].vfx = [{"type": "spark"}, {"id": "x", "type": "rain"}]
+    sdl = build_sdl(plan, spec=SceneSpec.from_plan(plan))
+    findings = [item for item in validate_sdl(sdl) if item.rule == "S9"]
+    assert len(findings) == 2
+    assert any("缺少 id" in item.message for item in findings)
+    assert any("类型非法" in item.message for item in findings)
+
+
+def test_s10_rejects_a_movement_that_outruns_its_shot():
+    plan = demo_plan()
+    plan.shots[0].camera = {"movements": [{"type": "dolly_in",
+                                           "start_frame": 1,
+                                           "end_frame": 400}]}
+    sdl = build_sdl(plan, spec=SceneSpec.from_plan(plan))
+    findings = [item for item in validate_sdl(sdl) if item.rule == "S10"]
+    assert findings and "超出镜头时长" in findings[0].message
+
+
+def test_a_clean_v13_project_still_validates():
+    plan = demo_plan()
+    plan.shots[0].camera = {"movements": [{"type": "dolly_in",
+                                           "start_frame": 1,
+                                           "end_frame": 48}]}
+    plan.shots[0].vfx = [{"id": "glow", "type": "glow"}]
+    spec = SceneSpec.from_plan(plan, crowd=[{"count": 12, "mode": "walk"}])
+    sdl = build_sdl(plan, spec=spec)
+    assert validate_sdl(sdl) == []
+
+
 def test_sdl_round_trips_through_dict():
     sdl = build_sdl(demo_plan(), build_summary=BUILD)
     restored = SDLProject.from_dict(sdl.to_dict())

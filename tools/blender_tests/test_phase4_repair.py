@@ -177,6 +177,28 @@ def t_rule_r008_below_ground():
 # --------------------------------------------------------------------------- #
 # 7. 工具参数错误仍是观察文本
 # --------------------------------------------------------------------------- #
+def t_rule_r012_eyeline():
+    """两人同框：相对而立不报，朝向同号报（v1.3 R012）。"""
+    _summary, context, _registry, auditor = _built_with_tools()
+    clean = auditor.audit("shot_001")
+    clean_rules = {f.rule for f in clean.warnings}
+    # 把第二个人转成"和第一个同向"——正反打就不成立了
+    from block_director.utils.geometry import facing_to_rotation_z
+
+    second = context.character("char_002")
+    second.root.rotation_euler = (0.0, 0.0, facing_to_rotation_z((1.0, 0.0, 0.0)))
+    bpy.context.view_layer.update()
+    broken = auditor.audit("shot_001")
+    broken_rules = {f.rule for f in broken.warnings}
+    return {"ok": "R012" not in clean_rules and "R012" in broken_rules,
+            "clean_warnings": sorted(clean_rules),
+            "broken_warnings": sorted(broken_rules),
+            "message": [f.message for f in broken.warnings if f.rule == "R012"]}
+
+
+# --------------------------------------------------------------------------- #
+# 8. 工具参数错误仍是观察文本
+# --------------------------------------------------------------------------- #
 def t_tool_errors_are_observations():
     _summary, _context, registry, _auditor = _built_with_tools()
     unknown_shot = registry.execute("setup_camera", {"shot_id": "nope"})
@@ -267,6 +289,7 @@ def main() -> int:
     check("character_action_adds_keyframes", t_character_action_adds_keyframes)
     check("rule_r007_missing_character", t_rule_r007_missing_character)
     check("rule_r008_below_ground", t_rule_r008_below_ground)
+    check("rule_r012_eyeline", t_rule_r012_eyeline)
     check("tool_errors_are_observations", t_tool_errors_are_observations)
     check("rule_r002_collision", t_rule_r002_collision)
     check("rule_r003_action_overlap", t_rule_r003_action_overlap)

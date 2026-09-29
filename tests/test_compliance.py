@@ -13,6 +13,8 @@ from block_director.contracts.plan import Plan
 from block_director.layer1_input import parse_script
 from block_director.layer5_orchestrator.compliance import (
     check_compliance,
+    check_empty_shot_intent,
+    check_movement_motivation,
     compliance_report,
 )
 
@@ -140,7 +142,9 @@ def test_a_narrative_script_produces_no_findings():
     script = parse_script(ROOT / "fixtures" / "script_simple.fountain")
     plan = _plan([{"shot_id": "shot_001", "order": 1, "intent": "x",
                    "shot_type": "MS", "duration_frames": 24}])
-    assert check_compliance(plan, script) == []
+    rules = {item.rule for item in check_compliance(plan, script)}
+    # R015/R016 只在导演写下约束时才生效；R014/R017 看的是计划本身
+    assert not (rules & {"R015", "R016"})
     assert compliance_report(plan, script)["ok"] is True
 
 
@@ -294,6 +298,54 @@ def test_report_records_the_brief_source():
     report = compliance_report(_gaze_plan([]), None, brief=brief)
     assert report["brief_source"] == "llm"
     assert report["ok"] is True
+
+
+# --------------------------------------------------------------------------- #
+# R014 运镜动机 / R017 空镜意图（v1.3 §3.5）
+# --------------------------------------------------------------------------- #
+def test_r014_flags_a_follow_shot_with_nothing_to_follow():
+    plan = _plan([
+        {"shot_id": "shot_001", "order": 1, "intent": "跟随",
+         "shot_type": "MS", "duration_frames": 48, "characters": ["甲"],
+         "camera": {"movements": [{"type": "follow_subject",
+                                   "subject": "甲"}]},
+         "actions": []}])
+    findings = check_movement_motivation(plan)
+    assert [item.rule for item in findings] == ["R014"]
+    assert "没有走动" in findings[0].message
+
+
+def test_r014_is_silent_when_the_subject_actually_moves():
+    plan = _plan([
+        {"shot_id": "shot_001", "order": 1, "intent": "跟随",
+         "shot_type": "MS", "duration_frames": 48, "characters": ["甲"],
+         "camera": {"movements": [{"type": "follow_subject",
+                                   "subject": "甲"}]},
+         "actions": [{"character_id": "甲", "action_type": "walk_to",
+                      "start_frame": 1, "end_frame": 48,
+                      "params": {"target_position": [2.0, 0.0, 0.0]}}]}])
+    assert check_movement_motivation(plan) == []
+
+
+def test_r014_flags_a_movement_in_an_empty_shot():
+    plan = _plan([
+        {"shot_id": "shot_001", "order": 1, "intent": "建立环境",
+         "shot_type": "LS", "duration_frames": 48, "characters": [],
+         "camera": {"movements": [{"type": "dolly_in"}]}}])
+    findings = check_movement_motivation(plan)
+    assert findings and "空镜" in findings[0].message
+
+
+def test_r017_flags_an_empty_shot_without_a_stated_purpose():
+    plan = _plan([
+        {"shot_id": "shot_001", "order": 1, "intent": "x",
+         "shot_type": "LS", "duration_frames": 48, "characters": []}])
+    findings = check_empty_shot_intent(plan)
+    assert [item.rule for item in findings] == ["R017"]
+    stated = _plan([
+        {"shot_id": "shot_001", "order": 1, "intent": "建立码头市场全貌",
+         "shot_type": "LS", "duration_frames": 48, "characters": []}])
+    assert check_empty_shot_intent(stated) == []
 
 
 class _GazeTransport:

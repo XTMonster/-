@@ -257,6 +257,37 @@ def check_shot(shot_id: str, *, context=None,
                 "R004", "E_CAM_001", "镜头对准点落在相机视锥之外",
                 target=shot_id, suggestion="重新对准被摄主体"))
 
+    # R012 视线匹配（v1.3）：两人同框时必须形成正反打 ------------------------
+    if len(characters) == 2:
+        from .character_system import get_facing
+
+        right = camera.matrix_world.to_quaternion() @ Vector((1.0, 0.0, 0.0))
+        flat_right = Vector((right.x, right.y, 0.0))
+        screen_facing: List[float] = []
+        heights: List[float] = []
+        for character in characters:
+            facing = get_facing(character)
+            flat = Vector((float(facing[0]), float(facing[1]), 0.0))
+            if flat.length > 1e-6 and flat_right.length > 1e-6:
+                flat.normalize()
+                screen_facing.append(flat.dot(flat_right.normalized()))
+            head = getattr(character, "head_pivot", None)
+            if head is not None:
+                heights.append(head.matrix_world.translation.z)
+        if len(screen_facing) == 2 and screen_facing[0] * screen_facing[1] > 0:
+            findings.append(_warning(
+                "R012", "E_CAM_001",
+                f"两人同框但屏幕朝向同号（{screen_facing[0]:+.2f} / "
+                f"{screen_facing[1]:+.2f}），没有形成正反打",
+                target=shot_id,
+                suggestion="让两人相对而立（face_character），或改用单人镜"))
+        if len(heights) == 2 and abs(heights[0] - heights[1]) > 0.15:
+            findings.append(_warning(
+                "R012", "E_CAM_001",
+                f"两人眼高差 {abs(heights[0] - heights[1]):.2f} m 超过 0.15 m，"
+                f"正反打会看出高低差",
+                target=shot_id, suggestion="把两人放在同一地面高度上"))
+
     # R002 空间碰撞（角色 vs 墙体/道具，AABB 膨胀 0.2） --------------------
     obstacles = _obstacles()
     for character in characters:
