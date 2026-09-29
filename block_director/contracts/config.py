@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -33,6 +34,13 @@ from .serde import to_plain as _to_plain
 
 CONFIG_VERSION = "1.2.0"
 CONFIG_ENV_VAR = "BLOCKDIRECTOR_CONFIG"
+
+#: ``#RRGGBB`` / ``#RGB``（契约层不 import utils，保持依赖单向）
+_HEX_COLOR_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+
+
+def _is_hex_color(value: object) -> bool:
+    return bool(_HEX_COLOR_RE.match(str(value or "")))
 
 
 # --------------------------------------------------------------------------- #
@@ -112,6 +120,9 @@ class CharacterConfig:
     body_height: float = 0.7
     leg_height: float = 0.4
     eye_radius: float = 0.06
+    #: 眼睛单独用一份深色材质。v1.2 给眼睛挂的是**与身体同一个材质**，
+    #: 于是眼睛和身体同色、看上去像没有五官。
+    eye_color: str = "#101010"
     label_size: float = 0.15
     label_font_path: str = ""      # 留空则自动探测 CJK 字体（§9.4）
 
@@ -259,6 +270,11 @@ class AppConfig:
             err("CFG_203", "rag.enabled",
                 "RAG 已关闭，将使用 digest 兜底知识注入",
                 Severity.WARNING)
+        if not _is_hex_color(self.character.eye_color):
+            # 非法颜色会被 hex_to_rgb 静默回退成白色——"黑色的眼睛"变成白色，
+            # 用户却看不到任何提示。宁可启动前就报错。
+            err("CFG_204", "character.eye_color",
+                f"眼睛颜色必须是 #RRGGBB（当前 {self.character.eye_color!r}）")
         return issues
 
     def errors(self) -> List[Issue]:

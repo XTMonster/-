@@ -43,6 +43,7 @@ character:
   body_height: 0.7
   leg_height: 0.4
   eye_radius: 0.06
+  eye_color: '#101010'
   label_size: 0.15
   label_font_path: ''
 animation:

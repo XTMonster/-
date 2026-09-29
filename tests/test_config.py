@@ -79,6 +79,8 @@ def test_viewport_backend_is_only_a_warning():
     (lambda c: setattr(c.llm, "temperature_plan", 3.0), "CFG_006"),
     (lambda c: setattr(c.rag, "top_k", 0), "CFG_007"),
     (lambda c: setattr(c.budget, "max_cost_usd", 0), "CFG_010"),
+    (lambda c: setattr(c.character, "eye_color", "dark"), "CFG_204"),
+    (lambda c: setattr(c.character, "eye_color", "#12"), "CFG_204"),
 ])
 def test_validation_rules(mutate, code):
     cfg = AppConfig()
@@ -133,3 +135,19 @@ def test_spec_file_matches_generated_content():
     """specs/config.default.yaml 必须与代码默认值逐字符一致（§16.5）。"""
     spec = (ROOT / "specs" / "config.default.yaml").read_text(encoding="utf-8")
     assert spec == dump_default_yaml()
+
+
+def test_eye_color_defaults_to_a_dark_colour():
+    """v1.3 诉求 1：眼睛与身体分材质，默认深色。
+
+    v1.2 的眼睛挂的是身体材质，于是眼睛和身体同色，看起来像没有五官。
+    """
+    cfg = AppConfig()
+    assert cfg.character.eye_color == "#101010"
+    assert cfg.errors() == []
+
+
+def test_eye_color_accepts_short_hex():
+    cfg = AppConfig()
+    cfg.character.eye_color = "#333"
+    assert "CFG_204" not in {i.code for i in cfg.errors()}

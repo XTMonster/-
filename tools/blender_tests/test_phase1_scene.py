@@ -275,6 +275,36 @@ def t_prop_color_and_rotation_are_applied():
 # --------------------------------------------------------------------------- #
 # 8. 标签必须真的吃配置（v1.3 P0-11）
 # --------------------------------------------------------------------------- #
+def t_eyes_use_a_separate_dark_material():
+    """v1.3 诉求 1：眼睛必须与身体**分材质**，且是深色。
+
+    v1.2 的 ``create_character`` 把身体材质直接挂到眼睛上，
+    于是眼睛与身体同色，看上去像没有五官。
+    """
+    fresh_scene()
+    character = create_character("char_001", "小明", "#FF6B6B",
+                                 (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))
+    eye = character.parts["eye_l"]
+    body = character.parts["body"]
+    eye_material = eye.data.materials[0]
+    body_material = body.data.materials[0]
+    eye_rgb = tuple(round(float(v), 3) for v in eye_material.diffuse_color[:3])
+    body_rgb = tuple(round(float(v), 3) for v in body_material.diffuse_color[:3])
+    dark = sum(eye_rgb) / 3.0 < 0.2
+
+    # 改身体颜色不得波及眼睛
+    from block_director.layer3_engine.character_system import (
+        set_character_color,
+    )
+    set_character_color(character, "#00FF00")
+    after_rgb = tuple(round(float(v), 3)
+                      for v in eye.data.materials[0].diffuse_color[:3])
+    return {"ok": (eye_material is not body_material and dark
+                   and eye_rgb != body_rgb and after_rgb == eye_rgb),
+            "eye": eye_rgb, "body": body_rgb, "after_body_recolour": after_rgb,
+            "same_material": eye_material is body_material}
+
+
 def t_label_config_is_wired():
     """``character.label_font_path`` / ``ui.show_labels`` 在 v1.2 里是死配置。
 
@@ -362,6 +392,8 @@ def main() -> int:
     check("environment_sizes", t_environment_sizes)
     check("prop_color_and_rotation_are_applied",
           t_prop_color_and_rotation_are_applied)
+    check("eyes_use_a_separate_dark_material",
+          t_eyes_use_a_separate_dark_material)
     check("label_config_is_wired", t_label_config_is_wired)
     check("foreign_object_is_flagged", t_foreign_object_is_flagged)
     check("clear_scene_removes_default_cube", t_clear_scene_removes_default_cube)

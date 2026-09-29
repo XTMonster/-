@@ -36,6 +36,9 @@ EYE_SEPARATION = 0.12
 EYE_FORWARD = 0.30
 LEG_SEPARATION = 0.12
 
+#: 眼睛默认颜色（§9.1）：深到能在任何身体颜色上都读出"眼睛"
+EYE_COLOR = "#101010"
+
 PIVOT_Z = {
     "leg": 0.40,      # 髋部
     "body": 0.40,     # 腰部（BodyPivot 原点）
@@ -109,6 +112,37 @@ def _character_material(color: str, character_id: str):
     return material
 
 
+def _eye_material(character_id: str, color: str):
+    """眼睛用**独立**的一份材质。
+
+    v1.2 把身体材质直接挂到了眼睛上，于是眼睛与身体同色、看上去像没有五官。
+    这里刻意用不同的名字（``BD_Mat_<id>_Eye``），
+    ``set_character_color`` 便只会改身体那一份，不会顺带把眼睛也染成身体色。
+    """
+    name = f"BD_Mat_{character_id}_Eye"
+    material = bpy.data.materials.get(name)
+    if material is None:
+        material = bpy.data.materials.new(name)
+    rgba = (*hex_to_rgb(color), 1.0)
+    material.diffuse_color = rgba          # Workbench 用
+    material.use_nodes = True
+    bsdf = material.node_tree.nodes.get("Principled BSDF")
+    if bsdf is not None:                   # EEVEE 用
+        bsdf.inputs["Base Color"].default_value = rgba
+        if "Roughness" in bsdf.inputs:
+            bsdf.inputs["Roughness"].default_value = 0.35
+    return material
+
+
+def _configured_eye_color() -> str:
+    """从配置读眼睛颜色；配置不可用时回退到默认深色。"""
+    try:
+        from ...settings import get_config
+        return str(get_config().character.eye_color or EYE_COLOR)
+    except Exception:  # noqa: BLE001 - 配置读不到不该拦住建角色
+        return EYE_COLOR
+
+
 @main_thread_only("create_character")
 def create_character(character_id: str, name: str, color: str = "#FFFFFF",
                      location: Sequence[float] = (0.0, 0.0, 0.0),
@@ -116,6 +150,7 @@ def create_character(character_id: str, name: str, color: str = "#FFFFFF",
     """按 §9.2 的层级创建 Q 版白模角色。"""
     character = Character(id=character_id, name=name, color=color)
     material = _character_material(color, character_id)
+    eye_material = _eye_material(character_id, _configured_eye_color())
     with Transaction(f"character:{character_id}"):
         root = _empty(f"BD_Char_{name}_Root")
         root.location = tuple(location)
@@ -149,7 +184,7 @@ def create_character(character_id: str, name: str, color: str = "#FFFFFF",
             eye = _adopt_last_object(f"BD_Char_{name}_Eye_{side}",
                                      character.head_pivot,
                                      (sign * EYE_SEPARATION, EYE_FORWARD, 0.0),
-                                     material)
+                                     eye_material)
             character.parts[f"eye_{side.lower()}"] = route_to_content(eye)
 
         anchor = _empty(f"BD_Char_{name}_LabelAnchor", character.head_pivot,
