@@ -233,20 +233,35 @@ and coreference) is done.
 
 **L3 案例层（P14-3）已落地**：`block_director/knowledge/cases.py`（三态 `lightrag`/`hybrid`/`off`、
 `CaseIndex`、`render_cases`，**没有 `forbid` 字段**——E3 的机制保证）＋
-`tools/kb_fetch/build_cases.py` ＋ `knowledge/cases.{jsonl,manifest.json}`（**726 篇**，
-`narrative=653/lesson=71/sequence_pattern=2`，`source_ref` 六字段全非空、许可全在白名单、
-摘要过"≤2 句 / ≤120 字"门、重复构建逐字节相同）。`sidecar_server.py` 不再自带第二份
+`tools/kb_fetch/build_cases.py` ＋ `knowledge/cases.{jsonl,manifest.json}`（**733 篇**，
+`narrative=654/lesson=72/sequence_pattern=7`，`source_ref` 六字段全非空、许可全在白名单、
+摘要过"≤2 句 / ≤120 字"门、重复构建逐字节相同）。
+`case_type=sequence_pattern` 的判据**只认显式箭头枚举**（`→`/`->`，每段各自落到一个节拍、
+不同节拍 ≥2、`beat_sequence` 严格按文本顺序），`excerpt` 就是那一行套路本身；门
+`SEQUENCE_FLOOR = 7` 正好是已提交语料里显式枚举的套路条数（`storyboard_practice.md` 4 ＋
+`anime_language.md` 3），**只许升**——此前那条"散文里猜套路"的分支会把
+"准备—执行—收势"判成套路且把节拍顺序写反，已删除（宁缺勿猜）。
+`sidecar_server.py` 不再自带第二份
 实现，改用包里的 `CaseIndex`，trace 补上 `lightrag_index_fingerprint` /
 `cases_index_fingerprint`；插件侧检索器现在真的会**分三栏注入**
-（硬约束／经验建议（软）／参考案例），且**三栏共用同一个 token 上限**。
+（硬约束／经验建议（软）／参考案例），且**三栏共用同一个 token 上限**；
+`rag.cases_backend` / `rag.cases_top_k` 也终于有了生产者
+（`off` ＝ 恒空、**不向 sidecar 索要案例**、不算降级；条数不再是写死的 3）。
 同时补上一个真实缺陷：`hypergraph.parse_query` 只认 `键=值`，而此前**没有任何生产侧
 生产者**，于是含 `forbid` 的那一栏在真实运行里一个种子都命中不了——
 `layer5_orchestrator/scene_contract.py::shot_constraint_query()` 就是那个生产者
 （`editor.py` 每镜用它取知识）。证据：`docs/evidence/20260930-071500/`。
 
-**P14 未完成（不得当作通过）**：`fixtures/knowledge_holdout.jsonl`
-（**本轮写作时仍在本地标注器的长跑中**）跑完之前 **RK-13 = `not_measured`**
-（`docs/evidence/20260930-063042/rks.json` 里 19 条 RK 中唯一未度量的一条），
+**P14 未完成（不得当作通过）**：`fixtures/knowledge_holdout.jsonl` 仍是 **0 字节**，
+本地标注器的长跑**尚未跑满 1200 条**（写作时 `work/holdout.partial.jsonl` 有 402 条
+真实 `qwen3-vl:30b` 标注，`work/holdout_run3.log` 停在 `batch 85/180`），因此
+**RK-13 = `not_measured`**（`docs/evidence/20260930-071539/rks.json` 里 19 条 RK 中
+唯一未度量的那一条）。`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl
+--vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json`
+现在报 **gate 1/2/3/4/5/5b/6 = fail、gate 7 = not_measured**（空 oracle 就该判失败，
+不许当成"还没判")。`fixtures/knowledge_holdout.cards.json` 已从 `["gen_cine_0001"]`
+这条调试残留改正为**运行时卡片 id 全集（1075 个）**——门⑥ 的输入只有 1 个 id 时恒真，
+那等于自己把门拆了。
 `tools/holdout_score.py` 与 `ab_triple_baseline.py` 会打印 `INCOMPLETE` 并非零退出。
 根因是本机标注通道：`qwen3-vl:30b` 是思考模型，官方三条关思考开关全无效
 （`docs/evidence/20260930-070000/knowledge_annotator_blocker.json`）；给 `/api/chat`
