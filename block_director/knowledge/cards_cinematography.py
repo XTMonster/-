@@ -13,17 +13,12 @@ from __future__ import annotations
 
 from typing import Tuple
 
+from ..cinema.camera_motion import MOVEMENT_TYPES as ENGINE_MOVEMENTS
+from ..cinema.camera_motion import describe as describe_movement
 from ..contracts.knowledge import Card
 from .card_factory import make_card as _card
 
 _D = "cinematography"
-
-#: 引擎当前实现的运镜（与 cinema/camera_motion.py 的 MOVEMENT_TYPES 对拍）
-ENGINE_MOVEMENTS = (
-    "dolly_in", "dolly_out", "track_left", "track_right",
-    "crane_up", "crane_down", "pan_left", "pan_right",
-    "tilt_up", "tilt_down",
-)
 
 
 def _movement(move_id: str, title: str, content: str, keywords, *,
@@ -375,28 +370,24 @@ _LIGHT_AND_OPTICS: Tuple[Card, ...] = (
           related=("cine_height", "cine_eyeline", "cine_low_angle")),
 )
 
-_MOVEMENT_TITLES = {
-    "dolly_in": "推近", "dolly_out": "拉远", "track_left": "左移",
-    "track_right": "右移", "crane_up": "升", "crane_down": "降",
-    "pan_left": "左摇", "pan_right": "右摇", "tilt_up": "上摇",
-    "tilt_down": "下摇",
-}
-
-
 def _index_card() -> Card:
     """运镜总表：让模型一眼看到有哪些运镜、哪几种现在就能用。"""
-    implemented = "、".join(_MOVEMENT_TITLES[key] for key in ENGINE_MOVEMENTS)
+    implemented = "、".join(describe_movement(key) for key in ENGINE_MOVEMENTS)
     planned = "、".join(card.title for card in _MOVEMENTS
                         if card.engine_support != "implemented")
+    tail = (f"计划实现但尚未落地的：{planned}。"
+            if planned else
+            "封闭清单 24 种全部已实现，没有缺口。")
     return _card(
         "cine_move_index", _D, "运镜总表与当前能力",
         f"引擎**当前已实现**的运镜：{implemented}。"
         f"剧本或计划里出现这些之外的运镜时，要么改用最接近的已实现项，"
         f"要么把运动交给下游视频模型——不要让引擎假装做到了。"
-        f"计划实现但尚未落地的：{planned}。",
+        f"{tail}",
         ["运镜", "总表", "能力", "支持"],
         parameters={"implemented": list(ENGINE_MOVEMENTS)},
-        examples=("想用「环绕」但目前不支持 → 用侧向横移 + 景别变化近似"),
+        examples=("想表达「眩晕」用 dolly_zoom；想表达「抽离」用 crane_up "
+                  "或 dolly_out，两者都有实现"),
         related=("cine_movement", "cine_move_motivation"),
         engine_support="implemented", emotion="—",
         tags=["运镜", "总表", "能力协商"])

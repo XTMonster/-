@@ -18,11 +18,19 @@ TARGET = (0.0, 0.0, 1.0)
 
 
 def test_documented_movement_vocabulary():
+    """v1.3 的封闭清单是 24 种（v1.2 只有 10 种）。"""
+    assert len(MOVEMENT_TYPES) == 24
     assert set(MOVEMENT_TYPES) == {
         "dolly_in", "dolly_out", "track_left", "track_right",
-        "crane_up", "crane_down",
-        "pan_left", "pan_right", "tilt_up", "tilt_down"}
+        "crane_up", "crane_down", "push_through",
+        "pan_left", "pan_right", "tilt_up", "tilt_down",
+        "whip_pan_left", "whip_pan_right",
+        "zoom_in", "zoom_out", "dolly_zoom",
+        "orbit_cw", "orbit_ccw", "crane_arc_up", "crane_arc_down",
+        "steadicam", "follow_subject", "lead_subject", "handheld"}
     assert describe("dolly_in") == "推近" and describe("pan_left") == "左摇"
+    for movement in MOVEMENT_TYPES:
+        assert describe(movement) != movement, f"{movement} 没有中文名"
 
 
 def test_samples_span_the_frame_range():
@@ -117,3 +125,130 @@ def test_non_positive_frame_range_is_refused():
 def test_two_samples_is_still_a_valid_motion():
     samples = movement_samples(CAMERA, TARGET, "dolly_in", 1.0, 1, 10, samples=2)
     assert [s["frame"] for s in samples] == [1, 10]
+
+
+# --------------------------------------------------------------------------- #
+# v1.3 新增的 14 种运镜
+# --------------------------------------------------------------------------- #
+def test_zoom_changes_the_lens_and_keeps_the_camera_still():
+    samples = movement_samples(CAMERA, TARGET, "zoom_in", 15.0, 1, 24,
+                               lens=50.0)
+    assert samples[-1]["position"] == pytest.approx(CAMERA)
+    assert samples[-1]["lens"] == pytest.approx(65.0)
+    assert movement_samples(CAMERA, TARGET, "zoom_out", 15.0, 1, 24,
+                            lens=50.0)[-1]["lens"] == pytest.approx(35.0)
+
+
+def test_zoom_can_aim_at_an_absolute_lens():
+    samples = movement_samples(CAMERA, TARGET, "zoom_in", 0.0, 1, 24,
+                               lens=50.0, lens_to=135.0)
+    assert samples[-1]["lens"] == pytest.approx(135.0)
+
+
+def test_zoom_never_leaves_the_supported_range():
+    assert movement_samples(CAMERA, TARGET, "zoom_out", 500.0, 1, 10,
+                            lens=50.0)[-1]["lens"] >= 8.0
+    assert movement_samples(CAMERA, TARGET, "zoom_in", 5000.0, 1, 10,
+                            lens=50.0)[-1]["lens"] <= 300.0
+
+
+def test_dolly_zoom_keeps_the_subject_size_while_the_distance_changes():
+    """推拉变焦的定义：主体大小不变、透视变化 → lens / distance 恒定。"""
+    samples = movement_samples(CAMERA, TARGET, "dolly_zoom", 1.0, 1, 24,
+                               lens=50.0)
+    start_ratio = 50.0 / math.dist(CAMERA, TARGET)
+    end = samples[-1]
+    end_ratio = float(end["lens"]) / math.dist(end["position"], TARGET)
+    assert end_ratio == pytest.approx(start_ratio, rel=1e-6)
+    assert math.dist(end["position"], TARGET) < math.dist(CAMERA, TARGET)
+
+
+def test_orbit_keeps_the_radius_and_moves_around_the_target():
+    samples = movement_samples(CAMERA, TARGET, "orbit_cw", 60.0, 1, 24)
+    radius = math.dist(CAMERA, TARGET)
+    for sample in samples:
+        assert math.dist(sample["position"], TARGET) == pytest.approx(
+            radius, abs=1e-6)
+        assert sample["look_at"] == pytest.approx(TARGET)
+    assert samples[-1]["position"] != pytest.approx(CAMERA)
+
+
+def test_orbit_directions_are_opposite():
+    cw = movement_samples(CAMERA, TARGET, "orbit_cw", 60.0, 1, 24)[-1]
+    ccw = movement_samples(CAMERA, TARGET, "orbit_ccw", 60.0, 1, 24)[-1]
+    assert cw["position"][0] * ccw["position"][0] < 0
+
+
+def test_crane_arc_up_rises_and_down_descends():
+    """附录 B：上升弧抬升机位，下降弧下沉机位，两者互为镜像。
+
+    规范更正：旧断言允许下降弧"不低于起点"，等于把升降符号互相抵消的
+    缺陷（绕 +right 转 +angle 会让相机下沉，再乘一遍 ORBITS 符号就抵消了）
+    写成了期望值。上升弧与下降弧的几何依据见 v1.3 附录 B 的情感语义表。
+    """
+    up = movement_samples(CAMERA, TARGET, "crane_arc_up", 45.0, 1, 24)[-1]
+    down = movement_samples(CAMERA, TARGET, "crane_arc_down", 45.0, 1, 24)[-1]
+    assert up["position"][2] > CAMERA[2]
+    assert down["position"][2] < CAMERA[2]
+    assert up["position"][2] - CAMERA[2] == pytest.approx(
+        CAMERA[2] - down["position"][2], abs=1e-9)
+    # 弧线同时改变水平角，且始终对准主体、半径不变
+    assert up["position"][1] != pytest.approx(CAMERA[1])
+    for sample in (up, down):
+        assert sample["look_at"] == pytest.approx(TARGET)
+        assert math.dist(sample["position"], TARGET) == pytest.approx(
+            math.dist(CAMERA, TARGET), abs=1e-6)
+
+
+def test_whip_pan_is_denser_and_front_loaded():
+    plain = movement_samples(CAMERA, TARGET, "pan_right", 90.0, 1, 24)
+    whip = movement_samples(CAMERA, TARGET, "whip_pan_right", 90.0, 1, 24)
+    assert len(whip) > len(plain)                   # 更密的采样
+    # 中间采样点已经走完大半（甩镜的"快"）
+    middle = whip[len(whip) // 2]["look_at"]
+    assert math.dist(middle, TARGET) > 0.0
+    total = math.dist(whip[-1]["look_at"], TARGET)
+    assert math.dist(middle, TARGET) > 0.4 * total
+
+
+def test_handheld_is_deterministic_and_keeps_the_look_point():
+    first = movement_samples(CAMERA, TARGET, "handheld", 0.05, 1, 24, seed=7)
+    again = movement_samples(CAMERA, TARGET, "handheld", 0.05, 1, 24, seed=7)
+    other = movement_samples(CAMERA, TARGET, "handheld", 0.05, 1, 24, seed=8)
+    assert [s["position"] for s in first] == [s["position"] for s in again]
+    assert [s["position"] for s in first] != [s["position"] for s in other]
+    for sample in first:
+        assert sample["look_at"] == pytest.approx(TARGET)
+        assert math.dist(sample["position"], CAMERA) <= 0.05 * math.sqrt(2) + 1e-9
+
+
+def test_follow_and_lead_keep_their_offset_from_the_subject():
+    path = [(0.0, 0.0, 1.0), (2.0, 0.0, 1.0), (4.0, 0.0, 1.0)]
+    follow = movement_samples(CAMERA, TARGET, "follow_subject", 0.0, 1, 24,
+                              subject_path=path)
+    lead = movement_samples(CAMERA, TARGET, "lead_subject", 0.0, 1, 24,
+                            subject_path=path)
+    offset = (CAMERA[0] - TARGET[0], CAMERA[1] - TARGET[1],
+              CAMERA[2] - TARGET[2])
+    for sample in follow:
+        subject = sample["look_at"]
+        assert (sample["position"][0] - subject[0]) == pytest.approx(offset[0])
+        assert (sample["position"][1] - subject[1]) == pytest.approx(offset[1])
+    for sample in lead:
+        subject = sample["look_at"]
+        assert (sample["position"][0] - subject[0]) == pytest.approx(-offset[0])
+    assert follow[-1]["look_at"][0] == pytest.approx(4.0)
+
+
+def test_steadicam_adds_a_bob_but_still_tracks():
+    path = [(0.0, 0.0, 1.0), (4.0, 0.0, 1.0)]
+    samples = movement_samples(CAMERA, TARGET, "steadicam", 0.0, 1, 24,
+                               subject_path=path)
+    middle = samples[len(samples) // 2]
+    assert middle["position"][2] > middle["look_at"][2]
+
+
+def test_subject_tracking_without_a_path_is_refused():
+    with pytest.raises(ValueError) as excinfo:
+        movement_samples(CAMERA, TARGET, "follow_subject", 1.0, 1, 24)
+    assert "subject_path" in str(excinfo.value)
