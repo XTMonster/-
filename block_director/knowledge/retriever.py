@@ -473,10 +473,18 @@ class KnowledgeRetriever:
                       else token_limit) or self.token_limit)
         edges = self.hypergraph_edges(query, top_k=top_k, token_limit=budget)
         nodes = getattr(self.hypergraph, "nodes", None) or {}
-        hard = [edge for edge in edges
-                if str(getattr(edge, "hardness", "hard")) != "soft"]
-        soft = [edge for edge in edges
-                if str(getattr(edge, "hardness", "hard")) == "soft"]
+        # 分栏判据：**带 `forbid` 成员的边永远进硬约束栏**。`hardness == "soft"`
+        # 只是"它是软先验"，但一条**禁忌**不是建议——把它放进「仅参考」那一栏，
+        # 模型就有理由照样做（Q7 的拦截率就是这么丢的）。索引里实测存在
+        # 1 条 `hardness=soft` 且带 `forbid` 的边，所以这不是假想情况。
+        def _is_soft(edge) -> bool:
+            if str(getattr(edge, "hardness", "hard")) != "soft":
+                return False
+            return not any(str(getattr(member, "role", "")) == "forbid"
+                           for member in getattr(edge, "members", ()))
+
+        hard = [edge for edge in edges if not _is_soft(edge)]
+        soft = [edge for edge in edges if _is_soft(edge)]
         hard_text, dropped_hard, fail_hard = render_edges(hard, nodes, budget)
         # 栏目标题也算注入体积——不把它计进预算，"≤800 token"会悄悄超发。
         hard_column = f"【{hard_title}】\n{hard_text}" if hard_text else ""

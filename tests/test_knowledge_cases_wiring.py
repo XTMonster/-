@@ -92,6 +92,27 @@ def test_the_soft_edge_never_lands_in_the_hard_column():
     assert "甩镜" in rest                        # 软边落在第二栏
 
 
+def test_a_prohibition_is_never_demoted_into_the_advice_column():
+    """`hardness=soft` 但带 `forbid` 的边仍属**硬约束**：禁不是建议。
+
+    索引里实测存在 1 条这种边——按"只看 hardness"分栏，它的禁忌会被放进
+    「经验建议（软）」，模型就有理由照样做（Q7 的拦截率就是这么丢的）。
+    """
+    nodes = _nodes()
+    soft_with_forbid = HyperEdge(
+        type="EMOTION_PACK", source_kind="lesson", hardness="soft",
+        members=(Member("allow", "emotion", "emotion:荒诞"),
+                 Member("qualifier", "intensity", "intensity:high"),
+                 Member("forbid", "movement", "movement:固定机位")))
+    graph = Hypergraph(nodes, [soft_with_forbid])
+    retriever = KnowledgeRetriever(cards=[], backend=RagBackend.HYPERGRAPH,
+                                   capabilities=("hypergraph",), hypergraph=graph)
+    block = retriever.block_for_shot("情绪=荒诞")
+    hard_column, _, rest = block.partition("【经验建议（软）】")
+    assert "禁={" in hard_column and "固定机位" in hard_column
+    assert "禁={" not in rest
+
+
 def test_the_three_columns_share_one_token_budget():
     retriever = _retriever(cases_index=CaseIndex(_cases(), "hybrid"),
                            token_limit=120, plan_token_limit=200)
