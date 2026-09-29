@@ -1,34 +1,21 @@
-feat(P12-part5): finish the label oracles and the stroke geometry they exposed
+feat(P13): prove the long script is not truncated and the film is joined
 
-RK-1(2..5) / RK-2(1..2) / RK-5 (SS5 P12, closing slice).
+W6 (SS5 P13).
 
-- test_label_layout.py is rebuilt: the fixture now has six shots including ELS
-  and LS plus head shots (SS4.1b's shared sample floor), the pixel thresholds
-  are calibrated at 1920x1080, and the checks are
-  * RK-1(1): exactly one Fill/Stroke pair per enabled character, in
-    BlockDirector/Labels, via label_pair_audit();
-  * RK-1(2)/(3): a single-label render of the fill gives ink >= 200 px and at
-    least one connected component per character;
-  * RK-1(5) (R43 form): the stroke layer is a 1.15x scaled copy, so the four
-    outward expansions must all be >= 1 px, |left-right| <= 1, |up-down| <= 1,
-    area(stroke)/area(fill) = 1.15^2 +- 3%, and the two AABBs' centres must
-    coincide within 1 px;
-  * RK-2(1): pairwise screen-AABB overlap <= 5% over 30 sampled frames;
-  * RK-2(2): every offset_reason is one of the frozen vocabulary and any
-    avoidance frame stays within 0.25 x frame height;
-  * RK-5: within a shot, adjacent sample frames differ by <= 5% in height
-    (the cross-cut re-scale is recorded as a diagnostic, not as a failure).
-- Mask renders use a mid-grey background: the stroke is #000000, and against
-  the dark viewport background its difference mask was being swallowed whole
-  (area ratio read 1.09 instead of 1.32).
-- label_baking: the out-of-frame push-back is clamped to the 0.25 x frame
-  height band (a large-wide shot could otherwise move a label 665 px, 62% of
-  the frame), the occlusion lift shares the same budget, the stroke is pushed
-  back along the camera-to-label ray rather than along the camera axis (the
-  axis form gave 3.8 px up vs 1.7 px down of parallax on an off-axis label),
-  and the stroke is re-centred on the fill's bounding-box centre so the ring is
-  symmetric (2.756 / 2.756 up-down, 10.444 / 10.444 left-right, centres within
-  6e-5 px).
+- New pure test tests/test_shotlist_render.py: the 64-shot fixture really
+  crosses the old 60-shot cutoff and every declared shot number reaches the
+  planning prompt with no "(remaining N shot numbers omitted)"; an explicit
+  smaller limit must raise E_SCRIPT_002 instead of truncating silently;
+  plan_parameters(0) omits maxItems while plan_parameters(12) writes it; and
+  the offline plan matches the declared shot count with
+  duration_frames == frames_from_seconds(declared seconds, 24) so RK-11's
+  frame identity holds. The two-shot fallback (no script / no shot numbers)
+  is pinned as a hard constraint.
+- SS4.4 step 1 re-run on the current tree (64 shots, fhd16x9, one command):
+  BLOCKDIRECTOR_RESULT state=DONE shots=64 total_frames=4584 built=true,
+  BLOCKDIRECTOR_EXPORT ok=true aborted=false files=133. The exported
+  shots.json reports 64 shots / 4584 frames (identity holds), 64 per-shot
+  clips, 64 first frames and blockout_full.mp4. Evidence lives in
+  docs/evidence/offline_run2/ (media excluded from git by .gitignore).
 
-All six affected Blender probes are green (label-layout, label-toggles,
-phase1, phase3-framing, phase3-audit, delivery-extras, scene-sync).
+python -m pytest tests/test_shotlist_render.py -> 6 passed.

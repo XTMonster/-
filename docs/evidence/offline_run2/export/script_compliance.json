@@ -1,0 +1,1608 @@
+{
+  "ok": true,
+  "declared_shot_count": 64,
+  "plan_shot_count": 64,
+  "declared_total_seconds": 191.0,
+  "plan_total_seconds": 191.0,
+  "fps": 24,
+  "brief_source": "llm",
+  "rows": [
+    {
+      "declared_shot_number": 1,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_001",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 2,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_002",
+      "plan_frames": 96,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 3,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_003",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 4,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_004",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 5,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_005",
+      "plan_frames": 96,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 6,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_006",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 7,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_007",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 8,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_008",
+      "plan_frames": 48,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 9,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_009",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 10,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_010",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 11,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_011",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 12,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_012",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 13,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_013",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 14,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_014",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 15,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_015",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 16,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_016",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 17,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_017",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 18,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_018",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 19,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_019",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 20,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_020",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 21,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_021",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 22,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_022",
+      "plan_frames": 72,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 23,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_023",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 24,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_024",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 25,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_025",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 26,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_026",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 27,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_027",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 28,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_028",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 29,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_029",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 30,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_030",
+      "plan_frames": 72,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 31,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_031",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 32,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_032",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 33,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_033",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 34,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_034",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 35,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_035",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 36,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_036",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 37,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_037",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 38,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_038",
+      "plan_frames": 72,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 39,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_039",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 40,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_040",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 41,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_041",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 42,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_042",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 43,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_043",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 44,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_044",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 45,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_045",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 46,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_046",
+      "plan_frames": 72,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 47,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_047",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 48,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_048",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 49,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_049",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 50,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_050",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 51,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_051",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 52,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_052",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 53,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_053",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 54,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_054",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 55,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_055",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 56,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_056",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 57,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_057",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 58,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_058",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 59,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_059",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 60,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_060",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 61,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_061",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 62,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_062",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 63,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_063",
+      "plan_frames": 48,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 64,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [
+        "我先上船。",
+        "等等我。",
+        "别拖了。",
+        "这一次我听你的。",
+        "走吧。",
+        "照顾好自己。",
+        "你也是。",
+        "再见。",
+        "再见。",
+        "船要开了。"
+      ],
+      "plan_shot_id": "shot_064",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [
+        "我先上船。",
+        "等等我。",
+        "别拖了。",
+        "这一次我听你的。",
+        "走吧。",
+        "照顾好自己。",
+        "你也是。",
+        "再见。",
+        "再见。",
+        "船要开了。"
+      ],
+      "frames_delta": 0
+    }
+  ],
+  "findings": [
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_001",
+      "message": "镜号1 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_002",
+      "message": "镜号2 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_003",
+      "message": "镜号3 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_004",
+      "message": "镜号4 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_005",
+      "message": "镜号5 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_006",
+      "message": "镜号6 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_007",
+      "message": "镜号7 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_008",
+      "message": "镜号8 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_009",
+      "message": "镜号9 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_010",
+      "message": "镜号10 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_011",
+      "message": "镜号11 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_012",
+      "message": "镜号12 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_013",
+      "message": "镜号13 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_014",
+      "message": "镜号14 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_015",
+      "message": "镜号15 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_016",
+      "message": "镜号16 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_017",
+      "message": "镜号17 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_018",
+      "message": "镜号18 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_019",
+      "message": "镜号19 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_020",
+      "message": "镜号20 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_021",
+      "message": "镜号21 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_022",
+      "message": "镜号22 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_023",
+      "message": "镜号23 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_024",
+      "message": "镜号24 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_025",
+      "message": "镜号25 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_026",
+      "message": "镜号26 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_027",
+      "message": "镜号27 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_028",
+      "message": "镜号28 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_029",
+      "message": "镜号29 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_030",
+      "message": "镜号30 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_031",
+      "message": "镜号31 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_032",
+      "message": "镜号32 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_033",
+      "message": "镜号33 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_034",
+      "message": "镜号34 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_035",
+      "message": "镜号35 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_036",
+      "message": "镜号36 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_037",
+      "message": "镜号37 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_038",
+      "message": "镜号38 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_039",
+      "message": "镜号39 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_040",
+      "message": "镜号40 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_041",
+      "message": "镜号41 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_042",
+      "message": "镜号42 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_043",
+      "message": "镜号43 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_044",
+      "message": "镜号44 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_045",
+      "message": "镜号45 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_046",
+      "message": "镜号46 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_047",
+      "message": "镜号47 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_048",
+      "message": "镜号48 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_049",
+      "message": "镜号49 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_050",
+      "message": "镜号50 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_051",
+      "message": "镜号51 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_052",
+      "message": "镜号52 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_053",
+      "message": "镜号53 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_054",
+      "message": "镜号54 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_055",
+      "message": "镜号55 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_056",
+      "message": "镜号56 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_057",
+      "message": "镜号57 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_058",
+      "message": "镜号58 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_059",
+      "message": "镜号59 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_060",
+      "message": "镜号60 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_061",
+      "message": "镜号61 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_062",
+      "message": "镜号62 声明的出场角色是米迦尔，计划里却是char_001（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_063",
+      "message": "镜号63 声明的出场角色是伊恩，计划里却是char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_064",
+      "message": "镜号64 声明的出场角色是伊恩、米迦尔，计划里却是char_001、char_002（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_001",
+      "message": "镜号1 声明的拍摄距离是「远景」（对应 LS），计划给的是 MLS",
+      "suggestion": "景别以剧本声明为准；确有理由改变时请说明"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_002",
+      "message": "镜号2 声明的拍摄距离是「中景」（对应 MS），计划给的是 MCU",
+      "suggestion": "景别以剧本声明为准；确有理由改变时请说明"
+    }
+  ]
+}
