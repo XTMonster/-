@@ -80,3 +80,49 @@ def test_forbid_kinds_are_real_nodes():
     for edge in _read_jsonl(EDGES_FILE):
         for member in edge["members"]:
             assert member[2] in node_ids, f"{edge['edge_id']} 的成员 {member[2]} 不在节点表里"
+
+
+def test_retrieval_actually_returns_a_forbid_carrying_edge():
+    """§2.3 的"闭合输出"必须能从检索侧拿到：命中就整条返回，禁忌一起带出来。
+
+    只看索引文件是不够的——`forbid` 成员存在但检索路径把它们丢掉，Q6b/Q7 一样是 0。
+    这里用**解析出来的查询串**（节点名反推，不手写）走一遍真实的 `Hypergraph.retrieve`。
+    """
+    from block_director.knowledge.hypergraph import Hypergraph, Node, HyperEdge, parse_query
+
+    nodes = {row["node_id"]: Node.from_dict(row) for row in _read_jsonl(NODES_FILE)}
+    edges = [HyperEdge.from_dict(row) for row in _read_jsonl(EDGES_FILE)]
+    graph = Hypergraph(list(nodes.values()), edges)
+
+    zh = {"emotion": "情绪", "movement": "运镜", "shot_size": "景别", "lens": "镜头",
+          "pacing": "节奏", "vfx": "特效", "sfx": "音效", "lighting": "光线",
+          "camera_angle": "机位", "composition_rule": "构图"}
+    checked = 0
+    missed = []
+    for edge in edges:
+        if not edge.forbids:
+            continue
+        # 用这条边**自己的**成员拼一个 SceneContract 串：它讲的东西查询里全有，
+        # 召回率低就说明"闭合输出"在检索侧被丢了，而不是查询没写对。
+        parts = []
+        for member in list(edge.allows) + list(edge.forbids):
+            key = zh.get(member.kind)
+            name = nodes[member.node_id].name or member.node_id
+            item = f"{key}={name}" if key else None
+            if item and item not in parts:
+                parts.append(item)
+        if not parts:
+            continue
+        checked += 1
+        query = "；".join(parts[:5])
+        parse_query(query)
+        selected, text, _trace = graph.retrieve(query, top_k=20)
+        hit = [item for item in selected if item.edge_id == edge.edge_id]
+        if not hit or not hit[0].forbids:
+            missed.append(edge.edge_id)
+            continue
+        for member in hit[0].forbids:
+            assert (nodes[member.node_id].name or member.node_id) in text, \
+                "渲染出来的注入文本里没有禁忌成员"
+    assert checked >= 1, "索引里没有带禁忌的边（见上一个用例）"
+    assert not missed, f"有 {len(missed)}/{checked} 条带禁忌的边召不回自己：{missed[:3]}"
