@@ -160,6 +160,9 @@ class ParsedScript:
     #: 分镜表里**逐镜声明**的内容（v1.3）。非分镜表输入时为空列表。
     #: 它是"剧本落实审核"（R015/R016）的声明侧来源。
     declared_nodes: List["ParsedNodeDeclaration"] = field(default_factory=list)
+    #: v1.4 D-3：``{正式名: [别名, ...]}``——``莉莉安娜（贵妇）`` 里的括注。
+    #: 角色管理（cast）与 ``shots.json`` 会把别名带上，避免"同一个人两个名字"。
+    character_aliases: Dict[str, List[str]] = field(default_factory=dict)
 
     @property
     def declared_shots(self) -> List["ParsedShotDeclaration"]:

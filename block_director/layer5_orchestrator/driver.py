@@ -615,15 +615,45 @@ class PrevisDriver:
         for index, shot in enumerate(self.plan.shots):
             if index >= len(declared):
                 break
+            # v1.4 F4/X10：把分镜表声明的镜号钉在计划上——R015 的
+            # "顺序/身份错位"就是拿它做判据的（模型自己不会写这个键）。
+            shot.declared_shot_number = int(declared[index].shot_number)
             lines = [item for item in declared[index].dialogues
                      if str(item.text or "").strip()]
             if not lines:
                 continue
-            shot.dialogues = [
-                {"character_id": (item.character
-                                  if item.character in shot.characters else ""),
-                 "text": item.text, "start_frame": 0, "end_frame": 0}
-                for item in lines]
+            # v1.4 F3：留下"pin 之前模型自己写了什么"的快照——R016 的
+            # 对照面必须是**模型的原始产出**，不能是 pin 之后的计划。
+            before = " | ".join(str(entry.get("text") or "")
+                                for entry in (shot.dialogues or []))
+            from .scene_contract import (STATUS_UNRESOLVED,
+                                         resolve_speaker)
+
+            entries = []
+            pins = []
+            for item in lines:
+                speaker_id, status = resolve_speaker(item.character,
+                                                     shot.characters)
+                if status is STATUS_UNRESOLVED:
+                    self.audit.log(
+                        "speaker_unresolved",
+                        f"{shot.shot_id} 的说话人无法落到在场角色："
+                        f"{item.character}（不伪造 character_id）",
+                        level="warning", shot=shot.shot_id,
+                        speaker=item.character)
+                entries.append({"character_id": speaker_id,
+                                "speaker_raw": str(item.character or ""),
+                                "speaker_status": status,
+                                "text": item.text,
+                                "start_frame": 0, "end_frame": 0})
+                pins.append({"shot_number": int(declared[index].shot_number),
+                             "speaker_raw": str(item.character or ""),
+                             "speaker_status": status,
+                             "declared_s": item.declared_seconds,
+                             "model_text": before,
+                             "applied_s": None})
+            shot.dialogues = entries
+            shot.dialogue_pins = pins
             pinned += len(lines)
         if pinned:
             self.audit.log("plan_declared_dialogue_pinned",

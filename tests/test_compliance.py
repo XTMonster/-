@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from block_director.contracts.plan import Plan
+from block_director.contracts.enums import Severity
 from block_director.layer1_input import parse_script
 from block_director.layer5_orchestrator.compliance import (
     check_compliance,
@@ -350,6 +351,79 @@ def test_r014_no_longer_double_reports_empty_shots():
     assert check_movement_motivation(plan) == []
     findings = check_empty_shot_intent(plan)
     assert [item.rule for item in findings] == ["R017"]
+
+
+# --------------------------------------------------------------------------- #
+# v1.4 F4：R015 的镜号/顺序错位与身份错位
+# --------------------------------------------------------------------------- #
+def test_r015_reports_a_shot_number_mismatch():
+    script = parse_script(MARKET)
+    plan = _plan_from_declarations(script)
+    # 把第 3 个镜头挂上前一个镜号 → 顺序错位。
+    plan.shots[2].declared_shot_number = 2
+    findings = [item for item in check_compliance(plan, script)
+                if "顺序/编号错位" in item.message]
+    assert len(findings) == 1
+    assert findings[0].severity is Severity.WARNING
+
+
+def test_r015_order_mismatch_upgrades_under_strict():
+    from block_director.contracts.enums import AuditLevel
+
+    script = parse_script(MARKET)
+    plan = _plan_from_declarations(script)
+    plan.shots[2].declared_shot_number = 2
+    findings = [item for item in check_compliance(
+        plan, script, audit_level=AuditLevel.STRICT)
+        if "顺序/编号错位" in item.message]
+    assert findings and findings[0].severity is Severity.ERROR
+
+
+def test_r015_reports_a_cast_mismatch():
+    script = parse_script(MARKET)
+    plan = _plan_from_declarations(script)
+    plan.shots[1].characters = ["某个不存在的人"]
+    findings = [item for item in check_compliance(plan, script)
+                if "身份错位" in item.message]
+    assert len(findings) == 1
+
+
+def test_r015_is_silent_when_the_plan_matches():
+    script = parse_script(MARKET)
+    assert [item for item in check_compliance(_plan_from_declarations(script),
+                                              script) if item.rule == "R015"
+            and ("错位" in item.message)] == []
+
+
+# --------------------------------------------------------------------------- #
+# v1.4 F2：说话人对不上时**不伪造 character_id**
+# --------------------------------------------------------------------------- #
+def test_driver_marks_unresolved_speakers_instead_of_faking_ids(tmp_path):
+    from block_director.layer5_orchestrator.driver import PrevisDriver
+    from block_director.layer5_orchestrator.offline import OfflineTransport
+    from block_director.layer6_audit.audit_logger import AuditLogger
+
+    audit = AuditLogger(directory=tmp_path)
+    driver = PrevisDriver(
+        transport=OfflineTransport(), audit=audit,
+        script=MARKET.read_text(encoding="utf-8"),
+        parsed_script=parse_script(MARKET),
+        builder=_StubBuilder(), thread_factory=_InlineThread)
+    driver.run_to_completion()
+
+    pins = [pin for shot in (driver.plan.shots if driver.plan else [])
+            for pin in (shot.dialogue_pins or [])]
+    assert pins, "分镜表声明的台词必须留下 dialogue_pins"
+    unresolved = [pin for pin in pins if pin["speaker_status"] == "unresolved"]
+    assert unresolved, "离线的 char_xxx 与剧本的角色名对不上，应当是 unresolved"
+    # 关键：不伪造 id——空就是空，并留下一句可审计的说明。
+    for shot in driver.plan.shots:
+        for dialogue in shot.dialogues:
+            if dialogue.get("speaker_status") == "unresolved":
+                assert dialogue.get("character_id") == ""
+                assert dialogue.get("speaker_raw")
+    kinds = [event.kind for event in driver.audit.recent(400)]
+    assert "speaker_unresolved" in kinds
 
 
 def test_empty_shot_with_stated_purpose_is_silent():

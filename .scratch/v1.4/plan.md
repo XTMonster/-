@@ -42,4 +42,7 @@ P9.4 → P9.5 → P10 → P11 → P12 → P13 → P14(-1..5) → P15 → P16
 - P10：**完成**（`cinema/anchor.py` + profile 派生的 `SHOT_FRAME`/`HEAD_SHOTS`，
   角色工厂/构图/校验器/知识卡/动作模型全部收敛；新探针
   `test_character_geometry.py`（RK-4/RK-14/RK-15）已登记，27 项全绿）。
-- P11：进行中
+- P11：**完成**（D-1 行内台词、D-2 中文数字/分句否定、D-3 括注别名、
+  `scene_contract.py` 语义收敛层、F2 不伪造说话人、F4 的 R015 顺序/身份错位；
+  新探针 `test_scene_contract.py`（RK-3）已登记，28 项全绿）。
+- P12：进行中

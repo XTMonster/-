@@ -217,6 +217,33 @@ def check_compliance(plan: Plan, script, *, fps: int = FPS,
             target="plan",
             suggestion="补齐缺失的镜号；镜号数量与顺序是硬约束"))
 
+    # R015 —— v1.4 F4：**镜号/顺序错位**与**身份错位**。
+    # 判据用 ``declared_shot_number``（由 driver 在 pin 声明的同一步钉入），
+    # 而不是"第 n 个镜头"这种位置假象——真实模型会把镜号重排。
+    order_severity = Severity.ERROR if strict else Severity.WARNING
+    for index, item in enumerate(declared):
+        if index >= len(planned):
+            break
+        shot = planned[index]
+        pinned = int(getattr(shot, "declared_shot_number", 0) or 0)
+        if pinned and pinned != int(item.shot_number):
+            findings.append(_finding(
+                order_severity, RULE_COUNT,
+                f"第 {index + 1} 个镜头挂的是镜号{pinned}，"
+                f"分镜表这里是镜号{item.shot_number}（顺序/编号错位）",
+                target=shot.shot_id,
+                suggestion="按分镜表的镜号顺序重新排片"))
+        declared_cast = {str(name) for name in (item.characters or [])}
+        actual_cast = {str(name) for name in (shot.characters or [])}
+        if declared_cast and actual_cast and not (declared_cast & actual_cast):
+            findings.append(_finding(
+                order_severity, RULE_COUNT,
+                f"镜号{item.shot_number} 声明的出场角色是"
+                f"{'、'.join(sorted(declared_cast))}，"
+                f"计划里却是{'、'.join(sorted(actual_cast))}（身份错位）",
+                target=shot.shot_id,
+                suggestion="镜头必须拍剧本声明的那些人"))
+
     # R015 —— 逐镜时长（按顺序对齐：声明的第 n 个镜号 ↔ 计划的第 n 个镜头）
     for index, item in enumerate(declared):
         if index >= len(planned):

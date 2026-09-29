@@ -51,11 +51,27 @@ FIELD_RE = re.compile(
 
 #: 台词：``米迦尔（自信）："伊恩，这里就交给我吧！"（约3秒）``
 #: 引号要求是**必需**的，否则"角色：米迦尔、伊恩"这类字段会被当成台词。
-DIALOGUE_RE = re.compile(
-    r"^\s*(?P<speaker>[^（(：:\s]{1,12})"
+_DIALOGUE_BODY = (
+    # 说话人里不允许出现句读与引号——否则"伊恩按住他的肩。米迦尔：…"这种
+    # 行内写法会把整句话当成名字（v1.4 D-1 实测踩到过）。
+    r"(?P<speaker>[^（(：:\s。！？；，、,.!?;\"'“”]{1,12})"
     r"(?:[（(](?P<emotion>[^）)]*)[）)])?\s*[：:]\s*"
-    r"[\"“](?P<text>.+?)[\"”]\s*"
-    r"(?P<tail>.*)$")
+    r"[\"“](?P<text>.+?)[\"”]\s*")
+
+#: 台词后面的时长注记：``（约3秒）`` / ``(3s)``。行内匹配用它而不是
+#: ``(?P<tail>.*)$``——贪婪到行尾会把同一行里的第二句台词整段吃掉。
+_DURATION_TAIL = (
+    r"\s*(?P<duration>(?:[（(]\s*约?\s*\d+(?:\.\d+)?\s*"
+    r"(?:秒|s|sec|seconds?)\s*[）)])?)")
+
+#: 行首台词（一行就是一句台词）。行首这一支保留"引号之后随便跟什么"的宽尾，
+#: 因为小结行、多个时长注记都可能跟在后面。
+DIALOGUE_RE = re.compile(r"^\s*" + _DIALOGUE_BODY + r"(?P<tail>.*)$")
+
+#: v1.4 D-1：**行内**台词。``画面内容：米迦尔："我先上船。"`` 这种写法在
+#: 真实分镜表里很常见，而 v1.3 只匹配行首，于是整行被 ``FIELD_RE`` 吃掉、
+#: 台词凭空消失。``finditer`` 用来在同一行里同时认出字段与台词。
+INLINE_DIALOGUE_RE = re.compile(_DIALOGUE_BODY + _DURATION_TAIL)
 
 #: ``0-3秒`` / ``2.5-4 秒``
 TIMECODE_RE = re.compile(
@@ -136,18 +152,49 @@ def _split_characters(value: str, known: List[str]) -> List[str]:
     只认已经在对白里出现过的名字。这样"背景有大量路人（约30人）在市场
     行走、交易"不会凭空造出一个叫"背景有大量路人"的角色——v1.2 的教训是
     "不要替剧本猜"。
+
+    v1.4 D-3：``莉莉安娜（贵妇）`` 这类**带括注**的写法要把括注当别名，
+    取括注之前的部分当正式名——旧实现整段比对，于是同一个人因为写法不同
+    变成了两个（或零个）角色。
     """
     if not value:
         return []
     found: List[str] = []
     for token in re.split(r"[、,，;；/\s]+", value):
-        name = token.strip().strip("（）()")
+        name = split_alias(token)[0]
         if not name or len(name) > 8:
             continue
         for candidate in known:
             if name == candidate and name not in found:
                 found.append(name)
     return found
+
+
+def split_alias(token: str) -> Tuple[str, str]:
+    """把 ``莉莉安娜（贵妇）`` 拆成 ``("莉莉安娜", "贵妇")``。
+
+    没有括注时别名是空串。只剥**一层**括注，且不猜任何东西：括注里写了
+    什么就是什么（v1.4 D-3 / §2.5）。
+    """
+    text = str(token or "").strip()
+    match = re.match(r"^(?P<name>[^（(]+)[（(](?P<alias>[^）)]*)[）)]\s*$", text)
+    if match is None:
+        return text.strip("（）()"), ""
+    return (str(match.group("name")).strip(),
+            str(match.group("alias")).strip())
+
+
+def _aliases_in(value: str, known: List[str]) -> Dict[str, List[str]]:
+    """从"角色："字段里收集 ``{正式名: [别名, ...]}``（只认已知说话人）。"""
+    mapping: Dict[str, List[str]] = {}
+    for token in re.split(r"[、,，;；/\s]+", str(value or "")):
+        name, alias = split_alias(token)
+        if not name or name not in known or not alias:
+            continue
+        bucket = mapping.setdefault(name, [])
+        if alias not in bucket:
+            bucket.append(alias)
+    return mapping
 
 
 def parse_shot_list(text: str, *, title: str = "",
@@ -253,6 +300,36 @@ def parse_shot_list(text: str, *, title: str = "",
                 scene.time_of_day = value
             elif key == "角色":
                 shot.characters = _split_characters(value, known_speakers)
+                for canonical, aliases in _aliases_in(value,
+                                                      known_speakers).items():
+                    bucket = script.character_aliases.setdefault(canonical, [])
+                    for alias in aliases:
+                        if alias not in bucket:
+                            bucket.append(alias)
+            # v1.4 D-1：字段值里夹着的台词同样要收——否则它会连同整行
+            # 一起被"字段"吃掉，模型永远看不到这句台词。
+            for match in INLINE_DIALOGUE_RE.finditer(value):
+                name = str(match.group("speaker") or "").strip()
+                text_value = str(match.group("text") or "").strip()
+                if not (name and text_value):
+                    continue
+                emotion = str(match.group("emotion") or "").strip()
+                # 传给 ``extract_declared_seconds`` 的必须**不是**纯时长串
+                # （它要求声明跟在别的文字之后），所以从引号结束处切到匹配末尾。
+                tail_text = match.string[match.end("text"):match.end()]
+                _, declared = extract_declared_seconds(tail_text.strip())
+                source_index += 1
+                dialogue = ParsedDialogue(
+                    character=name, text=text_value, parenthetical=emotion,
+                    source_index=source_index, emotion="normal",
+                    declared_seconds=declared)
+                dialogue_lines.append((len(script.scenes), name))
+                if scene is None:
+                    scene = ParsedScene(scene_number=1, heading="（未标注节点）")
+                    script.scenes.append(scene)
+                scene.dialogues.append(dialogue)
+                if shot is not None:
+                    shot.dialogues.append(dialogue)
             continue
 
         if SUMMARY_RE.match(stripped):
@@ -330,12 +407,12 @@ def _collect_speakers(lines: List[str]) -> List[str]:
     """先扫一遍，收集所有台词说话人——"角色："字段只认这些人。"""
     names: List[str] = []
     for line in lines:
-        match = DIALOGUE_RE.match(line.strip())
-        if match is None:
-            continue
-        name = str(match.group("speaker") or "").strip()
-        if name and name not in names:
-            names.append(name)
+        # v1.4 D-1：行内台词（``画面内容：米迦尔："…"``）同样是说话人来源，
+        # 否则"角色：米迦尔"会因为米迦尔"没说过话"而被整条丢掉。
+        for match in INLINE_DIALOGUE_RE.finditer(line.strip()):
+            name = str(match.group("speaker") or "").strip()
+            if name and name not in names:
+                names.append(name)
     return names
 
 

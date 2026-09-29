@@ -135,7 +135,68 @@ def station_from_space(characters: List[str], space,
 #: 从"角色 / 背景内容"字段里认出群众的字样 → 估算人数
 _CROWD_HINTS = ("路人", "人群", "群众", "行人", "商贩", "顾客", "围观",
                 "顾客群", "过客", "行人")
-_CROWD_COUNT_RE = re.compile(r"(?:约|大约|近|共)?\s*(\d{1,3})\s*(?:名|个|位|人)")
+
+#: v1.4 D-2：中文数字词表。分镜表里写的是"约三十名商贩"，旧正则只认阿拉伯
+#: 数字，于是 30 人被估成默认的 6 人。
+_CN_DIGITS = {"零": 0, "〇": 0, "一": 1, "两": 2, "二": 2, "三": 3, "四": 4,
+              "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
+_CN_UNITS = {"十": 10, "百": 100, "千": 1000}
+_CN_NUMBER_RE = (r"[零〇一二两三四五六七八九十百千]{1,6}")
+
+
+def parse_chinese_number(text: str) -> Optional[int]:
+    """``"三十"`` → 30、``"二十五"`` → 25、``"一百二十"`` → 120。
+
+    只支持分镜表里真的会出现的量级（≤ 9999）；解析不出来返回 ``None``——
+    宁可退回"人群"的默认规模，也不要猜错人数。
+    """
+    value = str(text or "").strip()
+    if not value:
+        return None
+    if value.isdigit():
+        return int(value)
+    total, current, seen = 0, 0, False
+    for char in value:
+        if char in _CN_DIGITS:
+            current = _CN_DIGITS[char]
+            seen = True
+        elif char in _CN_UNITS:
+            unit = _CN_UNITS[char]
+            total += (current or 1) * unit
+            current = 0
+            seen = True
+        else:
+            return None
+    if not seen:
+        return None
+    return total + current
+
+
+#: 数量：阿拉伯数字或中文数字 + 量词；"约/近/共/大约"是**数量修饰词**，
+#: 不是否定词（§2.5：把它们放进否定表会直接打红既有的市场剧本用例）。
+_CROWD_COUNT_RE = re.compile(
+    r"(?:约|大约|近|共)?\s*(?P<num>\d{1,3}|" + _CN_NUMBER_RE + r")\s*"
+    r"(?:名|个|位|人|号)")
+
+#: 否定词：出现在数量**之前 ≤6 个字**的窗口里时，这条声明按"没有人"处理。
+_CROWD_NEGATIONS = ("无", "没有", "未有", "不", "禁止", "不得")
+NEGATION_WINDOW = 6
+
+
+def _negated(text: str, start: int) -> bool:
+    """数量词前面 ``NEGATION_WINDOW`` 个字里有没有否定词（D-2）。"""
+    window = str(text or "")[max(start - NEGATION_WINDOW, 0):start]
+    return any(word in window for word in _CROWD_NEGATIONS)
+
+
+#: 分句边界：中英文句号、分号、换行（§2.5 的"分句窗口"）。
+_CLAUSE_SPLIT_RE = re.compile(r"[。！？!?；;\n]+")
+
+
+def _split_clauses(text: str) -> List[str]:
+    """把一行按分句切开——D-2 的否定判定只在**同一个分句**里生效。"""
+    return [part.strip() for part in _CLAUSE_SPLIT_RE.split(str(text or ""))
+            if part.strip()]
 
 
 def crowd_from_script(script, *, enabled: Optional[bool] = None,
@@ -175,15 +236,30 @@ def crowd_from_script(script, *, enabled: Optional[bool] = None,
     best_count = 0
     best_label = ""
     for text in sources:
-        if not text or not any(hint in text for hint in _CROWD_HINTS):
-            continue
         if text in seen:
             continue
         seen.add(text)
-        match = _CROWD_COUNT_RE.search(text)
-        count = int(match.group(1)) if match else 6      # 只写了"人群"时的默认规模
-        if count > best_count:
-            best_count, best_label = count, text
+        # v1.4 D-2：**按分句**判定，不按整行。同一行里"无路人入镜"与
+        # "约三十名商贩"是两个分句：前者判 0，后者判 30。整行一起看的话，
+        # 否定词会把后面合法的数量一起否掉（或反过来）。
+        for clause in _split_clauses(text):
+            if not clause or not any(hint in clause
+                                     for hint in _CROWD_HINTS):
+                continue
+            match = _CROWD_COUNT_RE.search(clause)
+            if match is None:
+                if any(word in clause for word in _CROWD_NEGATIONS):
+                    continue            # "无路人"这种没有数字的否定声明
+                count = 6               # 只写了"人群"时的默认规模
+            elif _negated(clause, match.start()):
+                continue                # "无 30 名路人" = 0
+            else:
+                number = parse_chinese_number(match.group("num"))
+                if number is None:
+                    continue
+                count = number
+            if count > best_count:
+                best_count, best_label = count, clause
     if best_count <= 0:
         return []
     return [{"count": max(min(best_count, limit), 1), "mode": str(mode),
