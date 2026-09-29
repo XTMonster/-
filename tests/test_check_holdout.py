@@ -21,7 +21,9 @@ VOCAB = {"emotion": ["气急败坏"], "action": ["跺脚"], "movement": ["固定
          "shot_size": ["中景"], "lens": ["50mm"], "pacing": ["短镜硬切"],
          "vfx": ["石化"], "sfx": ["浪声"], "camera_angle": ["平视"], "lighting": ["逆光"],
          "composition_rule": ["三分法"], "axis_topic": ["过肩"], "genre": ["film"],
-         "beat_type": ["反转"]}
+         "beat_type": ["反转"],
+         # 索引侧节点类型：词表**必须**有（门③ 的存在性要求），但不要求出现在 q 里
+         "character": ["米迦尔"], "object": ["钱袋"]}
 
 #: one query string that exercises every kind above (keeps gate ③ satisfiable)
 Q_ALL = ("情绪=气急败坏；动作=跺脚；运镜=固定；景别=中景；镜头=50mm；节奏=短镜硬切；"
@@ -156,6 +158,14 @@ def test_unparseable_q_fails(tmp_path):
 def test_q_key_must_come_from_the_frozen_key_set(tmp_path):
     """协议 §2.1 冻结了 q 的键集；自造键必须当场失败。"""
     assert full_run(tmp_path, [entry(q="心情=气急败坏")]) == 1
+
+
+def test_dialogue_key_maps_to_scene_type(tmp_path):
+    """`对白=有` 是合法的（折进 qualifier `scene_type`），不得被判未知键。"""
+    assert check_holdout.Q_KEY_TO_KIND["对白"] == "scene_type"
+    rec = entry(q="情绪=气急败坏；对白=有")
+    data = report(write(tmp_path, [rec]))
+    assert "不在协议" not in " ".join(data["gate_2_format"]["problems"])
 
 
 def test_review_block_shape_is_checked(tmp_path):

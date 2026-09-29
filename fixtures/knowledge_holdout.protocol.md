@@ -57,8 +57,10 @@
 | 轴线 | `axis_topic` | |
 | 题材 | `genre` | |
 | 桥段 | `beat_type` | |
+| 对白 | `scene_type` | 布尔型查询项（如"对白=有"）按 §2.3 折进 qualifier，**不新造节点类型** |
 
 布尔型查询项（如"对白=有"）**统一映射到 `pacing`／`scene_type` 的取值**，不新造节点类型（§2.3）。
+**词表覆盖门只要求 14 个节点 kind 齐全**；`scene_type` 是 qualifier，词表里有就一并检查、没有不阻塞。
 
 ### 2.2 `must`／`never` 的写法
 

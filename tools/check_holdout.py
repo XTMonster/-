@@ -61,7 +61,13 @@ Q_KEY_TO_KIND = {
     "镜头": "lens", "节奏": "pacing", "特效": "vfx", "音效": "sfx", "机位": "camera_angle",
     "光线": "lighting", "构图": "composition_rule", "轴线": "axis_topic", "题材": "genre",
     "桥段": "beat_type",
+    # 布尔型查询项按 §2.3 的裁定折进 qualifier，不新造节点类型
+    "对白": "scene_type",
 }
+
+#: the kinds a vocabulary must cover — the 14 node kinds. `scene_type` is a
+#: qualifier reached through the 对白 key, so it is checked only when present.
+REQUIRED_VOCAB_KINDS = frozenset(NODE_KINDS)
 
 KNOWN_TYPES = frozenset(EDGE_TYPES)
 PASS, FAIL, NA = "pass", "fail", "not_measured"
@@ -323,7 +329,7 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
     A missing kind               -> whatever the vocabulary omits is simply never checked.
     No vocabulary fingerprint     -> the vocabulary cannot be bound to the index build.
     """
-    missing_kinds = sorted(set(Q_KEY_TO_KIND.values()) - set(vocab))
+    missing_kinds = sorted(REQUIRED_VOCAB_KINDS - set(vocab))
     if missing_kinds:
         return NA, {"reason": f"词表缺 kind：{missing_kinds}（缺哪个 kind，哪个 kind 就免检）",
                     "missing_kinds": missing_kinds}
@@ -335,9 +341,14 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
         for key, value in q.items():
             used.setdefault(Q_KEY_TO_KIND[key], set()).add(value)
 
+    # 「用到了吗」只对**能用查询键表达**的 kind 检查：character/object 是索引侧
+    # 的节点类型，held-out 的 `q` 没有对应的中文键，要求它们出现是做不到的。
+    queryable = set(Q_KEY_TO_KIND.values())
     missing: Dict[str, List[str]] = {}
     thin: Dict[str, List[str]] = {}
     for kind, values in vocab.items():
+        if kind not in queryable:
+            continue
         gap = [v for v in values if v not in used.get(kind, set())]
         if gap:
             missing[kind] = gap
