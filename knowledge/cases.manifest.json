@@ -11,19 +11,19 @@
   "corpus_fingerprint": "142d2df845cc2bf5a2d61f962c6c98681744f8e874ae5e1d20aec51af203b047",
   "fingerprint": "e022cec24d363b8968f32cdb8ebe7c6e138363e72ca306cace9b79a7d2d836f7",
   "segments_total": 7727,
-  "raw_segments": 833,
-  "cases": 726,
+  "raw_segments": 840,
+  "cases": 733,
   "quota_truncated": 100,
   "duplicates": 5,
   "rejects": 2,
-  "reject_ratio": 0.002401,
+  "reject_ratio": 0.002381,
   "per_type": {
-    "narrative": 653,
-    "sequence_pattern": 2,
-    "lesson": 71
+    "narrative": 654,
+    "sequence_pattern": 7,
+    "lesson": 72
   },
   "per_domain": {
-    "anime": 43,
+    "anime": 46,
     "axis_theory": 14,
     "blocking": 44,
     "cinematography": 213,
@@ -31,10 +31,10 @@
     "editing": 45,
     "performance": 40,
     "production": 43,
-    "storyboard": 124
+    "storyboard": 128
   },
   "per_source": {
-    "anime_language_md": 3,
+    "anime_language_md": 6,
     "axis_continuity_md": 14,
     "blocking_and_performance_md": 4,
     "camera_angle_and_lens_md": 5,
@@ -59,12 +59,12 @@
     "pg76829_txt": 40,
     "pg78373_txt": 40,
     "production_pipeline_md": 3,
-    "storyboard_practice_md": 4
+    "storyboard_practice_md": 8
   },
   "min_cases": 300,
   "size_gate": {
     "sizes": {
-      "cases.jsonl": 439556,
+      "cases.jsonl": 443936,
       "cases.manifest.json": 1631
     },
     "oversize": {},

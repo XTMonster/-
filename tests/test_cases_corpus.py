@@ -89,7 +89,36 @@ def test_the_manifest_accounting_adds_up():
     assert manifest["segments_total"] >= manifest["raw_segments"] >= 1
     assert manifest["fingerprint"] and manifest["corpus_fingerprint"]
     assert manifest["size_gate"]["passed"] is True
-    assert manifest["per_type"]["sequence_pattern"] >= 1     # §2.3d T1 的消费对象
+    # §2.3d T1 的消费对象：门是**已提交语料里显式枚举的套路条数**（只许升）。
+    assert manifest["per_type"]["sequence_pattern"] >= builder.SEQUENCE_FLOOR
+
+
+def test_every_sequence_pattern_is_re_derivable_from_a_committed_note():
+    """独立复算：套路必须**从已提交的笔记原文**重新推得出来，且节拍与箭头同序。
+
+    这条判据刻意**不读实现自报字段**：它把 `knowledge/cases.jsonl` 的每一行拿回
+    `knowledge/source_notes/*.md` 去对——①``excerpt`` 必须是原文（脱装饰后）的
+    连续子串；②按 `→` 切开的每一段必须各自落到一个节拍上；③由此得到的节拍序列
+    必须与落盘行**逐字相同**（含顺序）。顺序写反、节拍与文本对不上、拿散文段冒充
+    套路，三种都会在这里翻红。
+    """
+    notes = {path.name: path.read_text(encoding="utf-8")
+             for path in NOTES_DIR.glob("*.md")}
+    rows = [row for row in _rows() if row["case_type"] == "sequence_pattern"]
+    assert len(rows) >= builder.SEQUENCE_FLOOR
+    for row in rows:
+        url = row["source_ref"]["url"]
+        assert url.startswith(common.OWNWORK_SCHEME), row["case_id"]
+        body = notes[url.rsplit("/", 1)[-1]].replace("**", "")
+        assert common.quote_is_verbatim(row["excerpt"], body), row["case_id"]
+        derived = []
+        for part in builder.ARROW_RE.split(row["excerpt"]):
+            beat = builder._beat_of(part)
+            if beat is not None and beat not in derived:
+                derived.append(beat)
+        assert derived == row["beat_sequence"], (
+            row["case_id"], derived, row["beat_sequence"])
+        assert len(derived) >= 2
 
 
 def _manual_docs() -> list:
@@ -159,14 +188,18 @@ def test_the_builder_is_deterministic_and_gated():
     assert first == second and report_a == report_b
     assert rejected_a == rejected_b
     assert first and all(row["case_type"] in CASE_TYPES for row in first)
-    # `evaluate()` 是**语料级**的门（≥300 篇、≥1 条序列套路）：一份合成的小语料
-    # 必然过不了数量门。要断言的是"除了数量，逐行形状一条问题都没有"。
+    # `evaluate()` 是**语料级**的门（≥300 篇、≥SEQUENCE_FLOOR 条显式套路）：
+    # 一份合成的小语料（没有箭头枚举、也远不到 300 篇）必然过不了这两道语料级门。
+    # 要断言的是"除了这两道语料级门，逐行形状一条问题都没有"。
     verdict = builder.evaluate(first, report_a)
     assert verdict["passed"] is False
     shape = [problem for problem in verdict["problems"]
-             if not problem.startswith(("cases_too_few", "no_sequence_pattern"))]
+             if not problem.startswith(("cases_too_few",
+                                        "sequence_pattern_too_few"))]
     assert shape == []
     assert any(problem.startswith("cases_too_few")
+               for problem in verdict["problems"])
+    assert any(problem.startswith("sequence_pattern_too_few")
                for problem in verdict["problems"])
 
 
