@@ -432,6 +432,7 @@ class PrevisDriver:
             return
         # 计划通过后先进阶段 B1（逐镜结构化生成），再落成场景（§7.1）。
         # 没有构建器时也不需要逐镜草案——那是给执行引擎吃的。
+        self._pin_declared_dialogue()
         target = (DriverState.EDITING if self.builder is not None
                   else DriverState.FINISHING)
         if self._gate_enabled("human_gate_on_plan"):
@@ -443,6 +444,41 @@ class PrevisDriver:
                 resume=target)
             return
         self._transition(target)
+
+    def _pin_declared_dialogue(self) -> None:
+        """把分镜表声明的台词**钉到计划上**（v1.3 R016 的落实侧）。
+
+        阶段 A 的计划只带 ``dialogue_ids``，没有文本。不把声明钉上去，
+        阶段 B1 就会按自己的理解分配台词——实测把镜号 3 的台词写进了
+        shot_002、把镜号 4 的两句换成自创的一句。钉住之后 B1 只负责
+        时间轴与动作，文本由剧本说了算（``merge_draft`` 会守住这条线）。
+
+        这是**阶段 A 的收尾动作**，不是修复回合改计划——它由剧本声明驱动，
+        与"计划只能由阶段 A 改写"并不冲突。
+        """
+        if self.plan is None or self.parsed_script is None:
+            return
+        declared = list(getattr(self.parsed_script, "declared_shots", []) or [])
+        if not declared:
+            return
+        pinned = 0
+        for index, shot in enumerate(self.plan.shots):
+            if index >= len(declared):
+                break
+            lines = [item for item in declared[index].dialogues
+                     if str(item.text or "").strip()]
+            if not lines:
+                continue
+            shot.dialogues = [
+                {"character_id": (item.character
+                                  if item.character in shot.characters else ""),
+                 "text": item.text, "start_frame": 0, "end_frame": 0}
+                for item in lines]
+            pinned += len(lines)
+        if pinned:
+            self.audit.log("plan_declared_dialogue_pinned",
+                           f"已钉住 {pinned} 句剧本声明的台词",
+                           shots=len(self.plan.shots))
 
     def _recover_from_llm_error(self, purpose: str, problem: str) -> None:
         """一次 LLM 调用失败之后的落点——**按阶段区分**。

@@ -104,6 +104,8 @@ EDITOR_SYSTEM_PROMPT = """\
 - 相机用**相对描述**（side / lens），不要给坐标——距离与高度由引擎按景别推导；
 - 角色移动必须给出目标位置与起止帧，且同一角色的动作不可时间重叠；
 - 对白必须落在镜头时长内，并留出收尾余量；
+- 若下面的镜头计划里已经列出了台词，必须**逐字照抄**：只补起止帧，
+  不得改写、增删，也不得把别的镜头的台词搬过来；
 - 只调用 emit_shot_draft 提交，不要输出其他内容。
 
 参考资料（构图 / 调度 / 表演）：
@@ -194,13 +196,21 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
 def _shot_plan_text(shot: ShotPlan, shot_order: int) -> str:
     import json
 
-    return json.dumps({"order": shot_order, "shot_id": shot.shot_id,
-                       "intent": shot.intent, "shot_type": str(shot.shot_type),
-                       "duration_frames": shot.duration_frames,
-                       "characters": list(shot.characters),
-                       "axis_note": shot.axis_note,
-                       "continuity_in": shot.continuity_in},
-                      ensure_ascii=False, indent=2)
+    payload = {"order": shot_order, "shot_id": shot.shot_id,
+               "intent": shot.intent, "shot_type": str(shot.shot_type),
+               "duration_frames": shot.duration_frames,
+               "characters": list(shot.characters),
+               "axis_note": shot.axis_note,
+               "continuity_in": shot.continuity_in}
+    # 剧本声明的台词必须让 B1 看见——否则它会按自己的理解分配台词，
+    # 实测把相邻镜号的台词搬了过来（R016 会报，但那时已经晚了）。
+    lines = [{"character_id": str(item.get("character_id") or ""),
+              "text": str(item.get("text") or "")}
+             for item in (shot.dialogues or [])
+             if str(item.get("text") or "").strip()]
+    if lines:
+        payload["dialogues"] = lines
+    return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
 def find_draft_call(reply: ChatReply):
@@ -272,6 +282,11 @@ def merge_dialogues(declared: Sequence[dict],
         return drafted_items
 
     for index, entry in enumerate(declared_items):
+        if not str(entry.get("text") or "").strip():
+            # 声明只有占位（没有文本）时，退回草案
+            if index < len(drafted_items):
+                declared_items[index] = dict(drafted_items[index])
+            continue
         match = next((candidate for candidate in drafted_items
                       if str(candidate.get("text") or "")
                       == str(entry.get("text") or "")), None)

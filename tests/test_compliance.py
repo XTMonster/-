@@ -213,3 +213,95 @@ def test_driver_skips_compliance_for_narrative_scripts(tmp_path):
         builder=_StubBuilder(), thread_factory=_InlineThread)
     driver.run_to_completion()
     assert driver.snapshot()["compliance"] is None
+
+
+# --------------------------------------------------------------------------- #
+# 台词是"声明"，模型不得改写或搬运（v1.3 P3 的落实侧）
+# --------------------------------------------------------------------------- #
+MARKET_PLAN = {"scene_heading": "第十四街区码头市场 - 午后", "shots": [
+    {"shot_id": "shot_001", "order": 1, "intent": "建立场景",
+     "shot_type": "MCU", "duration_frames": DECLARED_FRAMES[1],
+     "characters": []},
+    {"shot_id": "shot_002", "order": 2, "intent": "米迦尔请战",
+     "shot_type": "CU", "duration_frames": DECLARED_FRAMES[2],
+     "characters": ["米迦尔", "伊恩"]},
+    {"shot_id": "shot_003", "order": 3, "intent": "伊恩回应",
+     "shot_type": "MCU", "duration_frames": DECLARED_FRAMES[3],
+     "characters": ["伊恩"]},
+    {"shot_id": "shot_004", "order": 4, "intent": "施法准备",
+     "shot_type": "CU", "duration_frames": DECLARED_FRAMES[4],
+     "characters": ["米迦尔"]},
+    {"shot_id": "shot_005", "order": 5, "intent": "银币变金",
+     "shot_type": "MS", "duration_frames": DECLARED_FRAMES[5],
+     "characters": ["偷盗者"]},
+    {"shot_id": "shot_006", "order": 6, "intent": "喜剧反转",
+     "shot_type": "MCU", "duration_frames": DECLARED_FRAMES[6],
+     "characters": ["偷盗者"]}]}
+
+
+class _RewritingTransport:
+    """故意让草案改写台词，看计划侧的钉子守不守得住。"""
+
+    def __init__(self, plan_dict):
+        self.plan_dict = plan_dict
+        self.editor_calls = 0
+
+    def chat(self, payload, timeout=120.0):
+        import json
+
+        from block_director.contracts.messages import (
+            ChatReply, FunctionCall, ToolCall)
+        from block_director.layer5_orchestrator.editor import EDITOR_TOOL_NAME
+        from block_director.layer5_orchestrator.planner import PLAN_TOOL_NAME
+
+        purpose = str(payload.purpose)
+        if purpose == "plan":
+            name, args = PLAN_TOOL_NAME, self.plan_dict
+        elif purpose == "editor":
+            self.editor_calls += 1
+            name = EDITOR_TOOL_NAME
+            args = {"shot_id": f"shot_{self.editor_calls:03d}",
+                    "actions": [],
+                    "dialogues": [{"character_id": "米迦尔",
+                                   "text": "我是米迦尔。",
+                                   "start_frame": 1, "end_frame": 40}]}
+        else:                                   # review / repair / react
+            name = "abort"
+            args = {"reason": "测试不需要后续回合"}
+        return ChatReply(tool_calls=[ToolCall(
+            id="c", function=FunctionCall(name=name,
+                                          arguments=json.dumps(args)))])
+
+    def cancel(self, request_id):
+        return None
+
+
+def test_declared_dialogue_is_pinned_and_survives_a_rewriting_draft():
+    """真实模型实测把镜号 3 的台词写进了 shot_002、把镜号 4 换成自创一句。
+
+    钉住之后，计划里的台词必须逐字等于剧本声明，落实审核不应再有 R016 错误。
+    """
+    from block_director.layer5_orchestrator.driver import PrevisDriver
+    from block_director.layer6_audit.audit_logger import AuditLogger
+
+    script = _script()
+    driver = PrevisDriver(
+        transport=_RewritingTransport(MARKET_PLAN), audit=AuditLogger(),
+        script=MARKET.read_text(encoding="utf-8"), parsed_script=script,
+        builder=_StubBuilder(), thread_factory=_InlineThread)
+    driver.run_to_completion()
+
+    plan = driver.plan
+    for index, item in enumerate(script.declared_shots):
+        declared_texts = [d.text for d in item.dialogues]
+        actual_texts = [entry["text"]
+                        for entry in (plan.shots[index].dialogues or [])]
+        if not declared_texts:
+            continue          # 剧本没声明台词时，草案仍是唯一来源
+        assert actual_texts == declared_texts, f"镜号{item.shot_number}"
+
+    errors = [finding for finding in check_compliance(plan, script)
+              if finding.is_error]
+    # 剧本没声明台词的镜头（镜号 1/5）会被草案塞进一句，这是 WARNING；
+    # ERROR 必须为 0——那才是"剧本声明的台词没有被落实"。
+    assert errors == [], [item.message for item in errors]
