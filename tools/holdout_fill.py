@@ -319,7 +319,12 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
             break
         used = {str(e["from_card"]) for e in entries}
         fresh = [str(c["id"]) for c in cards if str(c["id"]) not in used]
-        pick = (fresh or [str(c["id"]) for c in cards])[:window]
+        # 新鲜卡用完时就**轮转**整份卡片列表（按 round 取窗口），而不是永远取前 `window` 张：
+        # 否则同一批卡 ＋ 同一个 prompt（temperature=0）会产出逐字相同的条目，全被去重掉，
+        # 于是后面的覆盖轮原地空转——"总量还差 N 条"永远补不上。
+        pool = fresh or [str(c["id"]) for c in cards]
+        start = ((round_index - 1) * window) % max(1, len(pool))
+        pick = [pool[(start + offset) % len(pool)] for offset in range(min(window, len(pool)))]
         key = "gap:%d:%s" % (round_index, ",".join(pick))
         if key in done:
             continue

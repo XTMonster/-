@@ -167,6 +167,37 @@ def test_gap_prompt_names_the_shortfall_and_the_cards():
     assert "EMOTION_PACK" in prompt
 
 
+def test_coverage_rounds_rotate_through_the_cards(tmp_path, monkeypatch):
+    """新鲜卡用完时必须**换一批卡**，不能在同样 12 张卡上空转。
+
+    temperature=0 下，同一批卡 ＋ 同一个 prompt 会产出逐字相同的条目，全被
+    `_dedupe_key` 丢掉——覆盖轮于是"跑了 60 轮，一条没加"，而总量门还差几百条。
+    """
+    cards = [{"id": f"c{i:02d}", "domain": "anime", "title": "t", "content": "x"}
+             for i in range(30)]
+    seen_picks = []
+
+    class _Client:
+        model_id = "m"
+        model_version = "v"
+        prefill = ""
+
+        def chat_json(self, system, user, temperature, seed, num_ctx, key="", retries=2):
+            # 从提示里把"用这几张卡"的段落记下来，然后什么都不产出
+            import re
+            seen_picks.append(tuple(sorted(re.findall(r"### (c\d+)", user))))
+            return {"entries": []}
+
+    holdout_fill.coverage_rounds(cards, {"emotion": ["荒诞"]}, _Client(), [], [], set(),
+                                 "fp", rounds=3, counter=0, window=6,
+                                 progress_path=tmp_path / "progress.json",
+                                 partial_path=tmp_path / "partial.jsonl")
+
+    assert len(seen_picks) == 3
+    assert seen_picks[0] != seen_picks[1], "相邻覆盖轮必须换卡"
+    assert seen_picks[1] != seen_picks[2]
+
+
 def test_run_fingerprint_changes_with_the_model():
     class _Client:
         model_id = "qwen3-vl:30b"
