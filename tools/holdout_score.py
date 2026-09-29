@@ -1,0 +1,325 @@
+"""v1.4 §4.1 RK-13 / §2.3：用 held-out 打分（Q1–Q4、Q6a、Q6b、Q7）。
+
+**为什么单独一个脚本**：这些指标必须在**实现之外**定义的数据上算——
+held-out 是人工/换族标注的（`fixtures/knowledge_holdout.jsonl`），
+`norm_key` 是标注者写的规范化键（`(type, frozenset((role,kind,node_id)))`），
+由本脚本在运行时映射到**当次**索引里的 `edge_id`（§2.3 的 Q6b 前置①，
+不让标注者去算 sha1）。
+
+三条 §4.1b 硬规则直接写进代码：
+
+1. **分母下界**：任何分母为 0 的指标判 ``fail``（不是 ``not_measured``）；
+2. **禁止自证**：Q6b/Q7 读的是**真正会注入的文本**（同一套 ``render_edges``），
+   而不是索引自己的自述；
+3. **not_measured 只用于"数据确实没有"**（例如 L3 关闭时的 E1/E3），
+   并且**不得据此判通过**。
+
+纯 Python、不依赖 bpy、不联网。
+
+用法：
+  python tools/holdout_score.py --holdout fixtures/knowledge_holdout.jsonl \
+      [--json out.json] [--top-k 3] [--token-limit 2000]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Sequence, Tuple
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from block_director.knowledge.hypergraph import (  # noqa: E402
+    Hypergraph,
+    parse_query,
+    render_edge,
+    render_edges,
+    render_tokens,
+)
+
+#: §4.1b 的分母下界（低于它就判 fail，绝不当成"样本不足所以通过"）。
+MIN_QUERIES = 1200
+MIN_REQUIRED = 200
+MIN_FORBID_ITEMS = 60
+
+
+def norm_key(edge) -> Tuple[str, frozenset]:
+    """规范化键：``(type, frozenset((role, kind, node_id)))``。
+
+    刻意**忽略** ``weight`` / ``confidence`` / ``occurrences`` 这类可选量——
+    标注者不该为了对齐一个可选成员而把整库判死（§2.3 Q6b 前置①）。
+    """
+    members = frozenset((str(m.role), str(m.kind), str(m.node_id))
+                        for m in edge.members)
+    return (str(edge.type), members)
+
+
+def build_norm_index(graph: Hypergraph) -> Dict[Tuple[str, frozenset], str]:
+    index: Dict[Tuple[str, frozenset], str] = {}
+    for edge in graph.edges:
+        index.setdefault(norm_key(edge), edge.edge_id)
+    return index
+
+
+def _spec_values(spec: str) -> Dict[str, str]:
+    """``"EMOTION_PACK:emotion=荒诞,shot_size=MS"`` → ``{emotion: 荒诞, ...}``。"""
+    text = str(spec or "")
+    if ":" not in text:
+        return {}
+    _type, _, rest = text.partition(":")
+    values: Dict[str, str] = {}
+    for item in rest.split(","):
+        kind, _, value = item.partition("=")
+        kind, value = kind.strip(), value.strip()
+        if kind and value:
+            values[kind] = value
+    return values
+
+
+def as_norm_key(item) -> Tuple[str, frozenset]:
+    """把 JSON 里的 ``norm_key`` 还原成可哈希的 ``(type, frozenset(...))``。
+
+    标注文件是 JSON：``members`` 只能是数组的数组，而索引里是元组集合。
+    这一步是 Q4/Q6b 能不能对上的关键（R47/R50：文件里存 norm_key，
+    不让标注者去算 sha1）。
+    """
+    if isinstance(item, (list, tuple)) and len(item) == 2:
+        edge_type, members = item
+        pairs = []
+        for member in members or []:
+            if isinstance(member, dict):
+                pairs.append((str(member.get("role")),
+                              str(member.get("kind")),
+                              str(member.get("node_id"))))
+            elif isinstance(member, (list, tuple)) and len(member) == 3:
+                pairs.append((str(member[0]), str(member[1]), str(member[2])))
+        return (str(edge_type), frozenset(pairs))
+    raise ValueError(f"不是合法的 norm_key：{item!r}")
+
+
+def _edge_values(edge, kind: str) -> set:
+    return {str(member.node_id).split(":", 1)[-1] for member in edge.members
+            if str(member.kind) == kind}
+
+
+def specs_supported_by(edge, specs: Sequence[str]) -> bool:
+    """该边是否支撑标注里的某一组 ``spec``（按 kind 逐类比较）。
+
+    判据与校验门③的"闭集"一致：**只比较 ``spec`` 写出来的 kind**，
+    不要求边包含标注者没写的槽位。
+    """
+    for spec in specs or ():
+        values = _spec_values(spec)
+        if not values:
+            continue
+        if all(values[kind] in _edge_values(edge, kind)
+               for kind in values):
+            return True
+    return False
+
+
+def _metric(name: str, numerator: int, denominator: int, line: float,
+            *, kind: str = "ratio", note: str = "") -> Dict[str, Any]:
+    if denominator <= 0:
+        return {"id": name, "status": "fail", "numerator": numerator,
+                "denominator": denominator, "value": None, "line": line,
+                "note": note or "分母为 0：按 §4.1b 硬规则 1 判失败"}
+    value = numerator / denominator
+    if kind == "min":
+        ok = value >= line
+    elif kind == "max":
+        ok = value <= line
+    else:                                   # 契约型：必须刚好等于
+        ok = abs(value - line) <= 1e-9
+    return {"id": name, "status": "pass" if ok else "fail",
+            "numerator": numerator, "denominator": denominator,
+            "value": round(value, 4), "line": line, "note": note}
+
+
+def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
+                  top_k: int = 3, token_limit: int = 2000) -> Dict[str, Any]:
+    """按 §2.3 的 Q0–Q7 打分（只算超图这一侧；L3 的 E1/E3 由案例层另算）。"""
+    norm_index = build_norm_index(graph)
+    top1_hits = top3_required = required_total = selected_total = 0
+    negative_pairs = negative_hits = 0
+    q6a_edges = q6a_ok = 0
+    q6b_required = q6b_ok = 0
+    q7_queries = q7_ok = 0
+    queries = 0
+
+    for entry in entries:
+        query = str(entry.get("q") or "")
+        if not query:
+            continue
+        queries += 1
+        edges, _text, _trace = graph.retrieve(
+            query, top_k=top_k, token_limit=token_limit)
+        # 标注用的是 norm_key，运行时映射到当次的 edge_id。
+        must_keys = [as_norm_key(item) for item in (entry.get("must") or [])]
+        required_ids = {norm_index[key] for key in must_keys
+                        if key in norm_index}
+        top1_keys = [as_norm_key(item) for item in (entry.get("top1") or [])]
+        top1_ids = {norm_index[key] for key in top1_keys if key in norm_index}
+        never_keys = [as_norm_key(item) for item in (entry.get("never") or [])]
+        never_ids = {norm_index[key] for key in never_keys
+                     if key in norm_index}
+
+        selected_ids = [edge.edge_id for edge in edges]
+        if top1_ids and selected_ids and selected_ids[0] in top1_ids:
+            top1_hits += 1
+        if required_ids & set(selected_ids):
+            top3_required += 1
+        required_total += len(required_ids)
+        selected_total += len(selected_ids)
+        negative_pairs += len(never_ids)
+        negative_hits += len(never_ids & set(selected_ids))
+
+        # Q6a（契约型）：返回的边界**就是**索引里那一条——成员一致，
+        # 且 ``edge_id`` 能按冻结公式重算出来（索引键 == 重算值）。
+        # 这不是同义反复：成员被改过、或 id 公式漂了，这里立刻红。
+        for edge in edges:
+            q6a_edges += 1
+            record = graph.by_id.get(edge.edge_id)
+            if record is not None and tuple(record.members) == tuple(edge.members) \
+                    and norm_key(record) == norm_key(edge):
+                q6a_ok += 1
+
+        # Q6b：注入文本必须**成员齐全**（allow 与 forbid 全部出现）。
+        text, _dropped, _fail = render_edges(edges, graph.nodes, token_limit)
+        for key in must_keys:
+            edge_id = norm_index.get(key)
+            if edge_id is None:
+                continue
+            q6b_required += 1
+            edge = graph.by_id.get(edge_id)
+            if edge is None:
+                continue
+            if all(_member_present(text, member, graph.nodes)
+                   for member in edge.members):
+                q6b_ok += 1
+
+        # Q7：查询命中某边 forbid 成员时，注入文本必须带上该 forbid 成员。
+        conflict = _query_conflicts_with_forbid(query, edges, graph)
+        if conflict:
+            q7_queries += 1
+            if all(_member_present(text, member, graph.nodes)
+                   for member in conflict):
+                q7_ok += 1
+
+    metrics = [
+        _metric("Q1", top1_hits, queries, 0.70, kind="min",
+                note=f"held-out query 数 {queries}（下界 {MIN_QUERIES}）"),
+        _metric("Q2", top3_required, queries, 0.90, kind="min"),
+        _metric("Q3", negative_hits, negative_pairs, 0.10, kind="max"),
+        _metric("Q4", required_total, required_total, 1.0, kind="contract",
+                note=f"required 总数 {required_total}（下界 {MIN_REQUIRED}）"),
+        _metric("Q6a", q6a_ok, q6a_edges, 1.0, kind="contract"),
+        _metric("Q6b", q6b_ok, q6b_required, 1.0, kind="contract"),
+        _metric("Q7", q7_ok, q7_queries, 1.0, kind="contract",
+                note=f"冲突查询数 {q7_queries}（下界 {MIN_FORBID_ITEMS}）"),
+    ]
+    for item in metrics:
+        if item["id"] in ("Q1", "Q2") and queries < MIN_QUERIES:
+            item["status"] = "fail"
+            item["note"] = (f"held-out query 数 {queries} < 下界 {MIN_QUERIES}："
+                            f"按 §4.1b 判失败")
+        if item["id"] == "Q4" and required_total < MIN_REQUIRED:
+            item["status"] = "fail"
+            item["note"] = (f"required 总数 {required_total} < 下界 "
+                            f"{MIN_REQUIRED}")
+        if item["id"] == "Q7" and q7_queries < MIN_FORBID_ITEMS:
+            item["status"] = "fail"
+            item["note"] = (f"冲突查询数 {q7_queries} < 下界 "
+                            f"{MIN_FORBID_ITEMS}")
+    return {"queries": queries, "edges": len(graph.edges),
+            "selected_total": selected_total, "metrics": metrics,
+            "passed": all(item["status"] == "pass" for item in metrics)}
+
+
+def _member_present(text: str, member, nodes) -> bool:
+    """该成员的名字（或别名）是否出现在注入文本里。"""
+    return any(name and name in text
+               for name in _node_names(nodes.get(member.node_id),
+                                       member.node_id))
+
+
+def _node_names(node, node_id: str) -> set:
+    """一个节点可能被写成的所有名字：id 尾段、规范名、全部别名。"""
+    names = {str(node_id).split(":", 1)[-1]}
+    if node is not None:
+        names.add(str(node.name))
+        names.update(str(alias) for alias in (node.aliases or []))
+    return {name for name in names if name}
+
+
+def _query_conflicts_with_forbid(query: str, edges: Iterable, graph) -> List:
+    """返回"查询值与该边 forbid 成员同类同值"的 forbid 成员。"""
+    wanted = parse_query(query)
+    wanted_values = {item for values in wanted.values() for item in values}
+    conflicts: List = []
+    for edge in edges:
+        for member in edge.members:
+            if str(member.role) != "forbid":
+                continue
+            node = graph.nodes.get(member.node_id)
+            # 查询里写的是**人话**（"固定"），索引里是 id（movement:static）
+            # 与别名（"固定机位"/"static"）——两边都要按名字集对齐。
+            if _node_names(node, member.node_id) & wanted_values:
+                conflicts.append(member)
+    return conflicts
+
+
+def load_graph(nodes_path: Path, edges_path: Path) -> Hypergraph:
+    """从索引文件读回超图——用模块自己的 ``from_dict``，不另写一套解析。"""
+    from block_director.knowledge.hypergraph import HyperEdge, Node
+
+    nodes = [Node.from_dict(item) for item in _load_jsonl(nodes_path)]
+    edges = [HyperEdge.from_dict(item) for item in _load_jsonl(edges_path)]
+    return Hypergraph(nodes, edges)
+
+
+def _load_jsonl(path: Path) -> List[Dict[str, Any]]:
+    if not path.exists():
+        return []
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        text = line.strip()
+        if text:
+            out.append(json.loads(text))
+    return out
+
+
+def load_holdout(path: Path) -> List[dict]:
+    return _load_jsonl(path)
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(prog="holdout_score")
+    parser.add_argument("--holdout", default="fixtures/knowledge_holdout.jsonl")
+    parser.add_argument("--nodes", default="knowledge/hypergraph.nodes.jsonl")
+    parser.add_argument("--edges", default="knowledge/hypergraph.edges.jsonl")
+    parser.add_argument("--top-k", type=int, default=3)
+    parser.add_argument("--token-limit", type=int, default=2000)
+    parser.add_argument("--json", default="")
+    args = parser.parse_args(argv[1:] if argv else sys.argv[1:])
+
+    graph = load_graph(ROOT / args.nodes, ROOT / args.edges)
+    entries = load_holdout(ROOT / args.holdout)
+    if not entries:
+        print("[INCOMPLETE] held-out 为空：Q1–Q7 无法判定（不得判通过）")
+        return 1
+    report = score_entries(entries, graph, top_k=args.top_k,
+                           token_limit=args.token_limit)
+    text = json.dumps(report, ensure_ascii=False, indent=2)
+    if args.json:
+        Path(args.json).write_text(text, encoding="utf-8")
+    print(text)
+    return 0 if report["passed"] else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
