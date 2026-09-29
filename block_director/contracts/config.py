@@ -434,6 +434,46 @@ class AppConfig:
             err("CFG_302", "framing.headroom_policy",
                 f"只能是 board / cinematic（当前 "
                 f"{self.framing.headroom_policy!r}）")
+        # --- v1.4 §2.1 CFG_301：profile 推导值必须与引擎里的硬编码一致 ---
+        from ..cinema.anchor import CharacterProfile, NECK_GAP_TOLERANCE
+
+        profile = CharacterProfile(
+            total_height=float(self.character.total_height),
+            head_ratio=float(self.character.head_ratio),
+            torso_ratio=float(self.character.torso_ratio),
+            leg_ratio=float(self.character.leg_ratio),
+            eye_r=float(self.character.eye_r),
+            eye_dx=float(self.character.eye_dx),
+            eye_protrusion=float(self.character.eye_protrusion),
+            neck_gap=float(self.character.neck_gap),
+        )
+        if abs(profile.neck_gap_error()) > NECK_GAP_TOLERANCE:
+            err("CFG_301", "character.neck_gap",
+                f"头球中心与躯干顶的间隙偏离相切 "
+                f"{profile.neck_gap_error():+.6f}（容差 "
+                f"±{NECK_GAP_TOLERANCE}）")
+        try:
+            profile.eye_offset()
+        except ValueError as exc:
+            err("CFG_301", "character.eye_protrusion", str(exc))
+        # 引擎里的取景常量必须等于 profile 的推导值——否则"配置改了、相机
+        # 还在按旧身高取景"，而且**不会有任何测试变红**。
+        try:
+            from ..cinema import framing as framing_module
+
+            if abs(float(framing_module.SUBJECT_HEIGHT)
+                   - profile.total_height) > 1e-6:
+                err("CFG_301", "character.total_height",
+                    f"cinema/framing.py 的身高常量 "
+                    f"{framing_module.SUBJECT_HEIGHT:.4f} 与 profile "
+                    f"{profile.total_height:.4f} 不一致")
+            if abs(float(framing_module.EYE_Z) - profile.eye_z) > 1e-6:
+                err("CFG_301", "character.head_ratio",
+                    f"cinema/framing.py 的眼睛高度 "
+                    f"{framing_module.EYE_Z:.4f} 与 profile "
+                    f"{profile.eye_z:.4f} 不一致")
+        except Exception:  # noqa: BLE001 - 取景模块不可用时不该让配置报错
+            pass
         return issues
 
     def errors(self) -> List[Issue]:

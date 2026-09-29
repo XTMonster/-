@@ -15,6 +15,7 @@ from typing import Tuple
 
 from ..cinema.camera_motion import MOVEMENT_TYPES as ENGINE_MOVEMENTS
 from ..cinema.camera_motion import describe as describe_movement
+from ..cinema.framing import EYE_Z
 from ..contracts.knowledge import Card
 from .card_factory import make_card as _card
 
@@ -365,7 +366,9 @@ _LIGHT_AND_OPTICS: Tuple[Card, ...] = (
           "机位与被摄者眼睛同高，是最中性的态度：既不仰视也不俯视。"
           "对话戏的默认选择就是平视——它让观众与角色平等地待在一起。",
           ["平视", "眼高", "中性"],
-          parameters={"eye_z": 1.10},
+          # v1.4 P10：眼睛高度必须来自 §2.1 的 profile。这一处是**没有任何
+          # 测试对拍**的最隐蔽的量错项（§1.6），所以直接在生成期派生。
+          parameters={"eye_z": EYE_Z},
           examples=("两人坦诚交谈的整段都用平视"),
           related=("cine_height", "cine_eyeline", "cine_low_angle")),
 )

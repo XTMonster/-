@@ -26,13 +26,17 @@ from block_director.layer3_engine.cinema_engine import (  # noqa: E402
     place_camera_for_shot,
 )
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
+from block_director.cinema.anchor import DEFAULT_PROFILE as PROFILE  # noqa: E402
 from block_director.utils.threading_guard import capture_main_thread  # noqa: E402
 
 RESULTS: dict = {}
 OUTDIR = ROOT / "tools" / "_probe_out"
-HEAD_TOP = 1.45
-FEET = 0.0
-FLOOR_CENTER = 0.75
+# v1.4 P10（§1.6 #14）：这三个常量必须是 §2.1 的 profile——旧值 1.45/0.75
+# 是 v1.3 的几何，不会变红，只会**一直量错人**。
+HEAD_TOP = PROFILE.head_top_z
+FEET = PROFILE.ground_z
+HEAD_CENTER = PROFILE.head_center_z
+HEAD_BOTTOM = PROFILE.head_center_z - PROFILE.head_r
 
 
 def fresh_scene():
@@ -96,7 +100,7 @@ def t_close_up_fills_more_of_frame():
     def head_span(shot_type: str) -> float:
         place_camera_for_shot(shot_type.lower(), (0.0, 0.0, 0.0), shot_type=shot_type)
         top = project(HEAD_TOP)[1]
-        chin = project(FLOOR_CENTER)[1]
+        chin = project(HEAD_BOTTOM)[1]
         return round(top - chin, 4)
 
     span_cu = head_span("CU")
@@ -131,7 +135,10 @@ def t_camera_direction_follows_facing():
 def t_room_clamp_keeps_camera_inside():
     fresh_scene()
     create_character("char_001", "小明", "#FF6B6B")
-    room = (-6.0, 6.0, -6.0, 6.0)
+    # v1.4 P10：取景距离变小（几何 1.70 + 按 profile 重算的画面高度）之后，
+    # ±6 m 的房间已经装得下 ELS 的 4.6 m 机位——改用 ±4 m 的室内才能
+    # 真正测到"夹回房间内"这条分支。
+    room = (-4.0, 4.0, -4.0, 4.0)
     bundle, solution = place_camera_for_shot(
         "wide", (0.0, 0.0, 0.0), shot_type="ELS", side="front", room=room)
     x, y, _ = bundle.camera.location

@@ -17,6 +17,8 @@ import math
 from dataclasses import dataclass, field
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
+from ..cinema.anchor import DEFAULT_PROFILE as _PROFILE
+
 FPS = 24
 BLEND_FRAMES = 6
 DEG = math.pi / 180.0
@@ -302,8 +304,9 @@ def _jump_root(start: int, end: int, height: float,
 _SPEED_RATE = {"walk": 1.0, "run": 2.0}
 _SPEED_AMPLITUDE = {"walk": 25.0, "run": 30.0}
 
-#: 角色眼睛的高度（与 §9.1 一致），用于计算头部俯仰角
-EYE_Z_DEFAULT = 1.10
+#: 角色眼睛的高度，用于计算头部俯仰角。v1.4 P10：从 §2.1 的冻结 profile
+#: 派生（旧值 1.10 是 v1.3 的几何；``motion/`` 是纯层，不能 import bpy）。
+EYE_Z_DEFAULT = _PROFILE.eye_z
 
 
 def head_track_angles(origin: Sequence[float], facing: Sequence[float],

@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import Dict, List, Tuple
 
 from ..contracts.knowledge import Card
+from ..cinema.framing import CHEST_Z, EYE_Z, SHOT_FRAME
 from .card_factory import as_list as _as_list
 from .card_factory import make_card as _card
 from .cards_axis import CARDS as _AXIS_CARDS
@@ -38,11 +39,39 @@ DOMAIN_LABELS: Dict[str, str] = {
     "performance": "表演（情绪 / 节奏 / 微动作）",
 }
 
+#: 九宫格的**冻结顺序**（与 ``framing.SHOT_FRAME`` 的键同源）。
+_SHOT_ORDER: Tuple[str, ...] = ("ECU", "CU", "MCU", "MS", "MLS", "LS", "ELS")
+
+
+def _frame_heights() -> Dict[str, float]:
+    """景别画面高度：直接从 ``framing.SHOT_FRAME`` 取（v1.4 P10）。"""
+    return {key: SHOT_FRAME[key].frame_height for key in _SHOT_ORDER}
+
+
+def _target_heights() -> Dict[str, float]:
+    return {key: SHOT_FRAME[key].target_z for key in _SHOT_ORDER}
+
+
+def _lenses() -> Dict[str, float]:
+    return {key: SHOT_FRAME[key].lens for key in _SHOT_ORDER}
+
+
+def _cinematography_digest() -> str:
+    """摄影域摘要：数字全部派生自 ``SHOT_FRAME`` / profile，不手抄。
+
+    §1.6 的量错项（digest 里写着 "CU 0.75" 而 ``SHOT_FRAME["CU"]`` 是别的
+    值）就是这么来的：**没有断言对拍**的手抄数字迟早会教旧几何。
+    """
+    heights = " / ".join(f"{key} {SHOT_FRAME[key].frame_height:.2f}"
+                         for key in _SHOT_ORDER)
+    lenses = "/".join(str(int(SHOT_FRAME[key].lens)) for key in _SHOT_ORDER)
+    return (f"景别越紧画面高度越小：{heights}；建议焦距 {lenses}mm。"
+            f"机位高度：眼睛 {EYE_Z:.2f}、胸口 {CHEST_Z:.2f}。")
+
+
 # RAG 整体关闭时用的"顶层摘要卡"（§6.1 的 digest 兜底，≤2000 token）
 DOMAIN_DIGESTS: Dict[str, str] = {
-    "cinematography": "景别越紧画面高度越小：ECU 0.35 / CU 0.75 / MCU 1.00 / "
-                      "MS 1.60 / MLS 2.30 / LS 3.00 / ELS 6.50；建议焦距 85/85/50/"
-                      "50/35/35/24mm。机位高度：眼睛 1.10、胸口 0.95。",
+    "cinematography": _cinematography_digest(),
     "axis_theory": "180° 规则：相邻镜头必须留在两人连线的同一侧；30° 规则：相邻"
                    "同景别镜头机位角度变化须 > 30°。合法越轴靠运动、中性镜头或"
                    "骑轴过渡。",
@@ -67,9 +96,7 @@ CARDS: Tuple[Card, ...] = (
         "景别跳跃要有依据：从 LS 直接切 ECU 只在强调情绪反转时使用。",
         ["景别", "取景", "shot size", "画面高度", "ECU", "MS", "ELS"],
         rules=("R009",),
-        parameters={"frame_height": {"ECU": 0.35, "CU": 0.90, "MCU": 1.00,
-                                     "MS": 1.60, "MLS": 2.30, "LS": 3.00,
-                                     "ELS": 6.50}},
+        parameters={"frame_height": _frame_heights()},
         examples=("对话主力用 MCU/MS", "交代空间用 LS/ELS，情绪爆点用 CU/ECU"),
         related=("cine_lens", "cine_height", "comp_framing"),
     ),
@@ -80,22 +107,19 @@ CARDS: Tuple[Card, ...] = (
         "强化纵深与空间关系，适合走位与环境交代。改焦距而不改机位会同时改变"
         "景别，需要重新解算距离（§10.6）。",
         ["焦距", "镜头", "透视", "长焦", "广角", "85mm", "50mm", "35mm"],
-        parameters={"lens": {"ECU": 85.0, "CU": 85.0, "MCU": 50.0, "MS": 50.0,
-                             "MLS": 35.0, "LS": 35.0, "ELS": 24.0}},
+        parameters={"lens": _lenses()},
         examples=("特写用 85mm 压缩背景", "室内走位用 35mm 保留纵深"),
         related=("cine_shot_size", "cine_movement", "comp_framing"),
     ),
     _card(
         "cine_height", "cinematography", "机位高度",
-        "机位高度是除景别外最影响观感的变量。眼睛高度（1.10）中立、平等；"
-        "胸口高度（0.95）常用在 MLS/LS；低机位让角色显得强势、压迫；高机位"
+        f"机位高度是除景别外最影响观感的变量。眼睛高度（{EYE_Z:.2f}）中立、平等；"
+        f"胸口高度（{CHEST_Z:.2f}）常用在 MLS/LS；低机位让角色显得强势、压迫；高机位"
         "俯拍显得渺小、被动。对准高度同样重要：特写要对准脸部，全景要覆盖"
         "脚到头顶。",
         ["机位高度", "仰拍", "俯拍", "眼睛高度", "胸口高度"],
-        parameters={"camera_z": {"eye": 1.10, "chest": 0.95},
-                    "target_z": {"ECU": 1.10, "CU": 1.10, "MCU": 1.12,
-                                 "MS": 1.00, "MLS": 0.80, "LS": 0.72,
-                                 "ELS": 0.72}},
+        parameters={"camera_z": {"eye": EYE_Z, "chest": CHEST_Z},
+                    "target_z": _target_heights()},
         examples=("反派登场用低机位", "受挫镜头用高机位俯拍"),
         related=("cine_shot_size", "comp_headroom", "cine_lens"),
     ),

@@ -76,6 +76,22 @@ def render_luma(name: str, frame: int) -> float:
     return round(sum(rgb) / max(len(rgb), 1), 5)
 
 
+def render_rgb(name: str, frame: int) -> list:
+    """渲染并返回 RGB 像素（不含 alpha）。"""
+    scene = bpy.context.scene
+    os.makedirs(OUTDIR, exist_ok=True)
+    path = str(OUTDIR / f"phase4_{name}.png")
+    scene.frame_set(frame)
+    scene.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+    image = bpy.data.images.load(path)
+    try:
+        pixels = list(image.pixels)
+    finally:
+        bpy.data.images.remove(image)
+    return [v for i, v in enumerate(pixels) if i % 4 != 3]
+
+
 def check(name, fn):
     try:
         RESULTS[name] = fn()
@@ -113,8 +129,16 @@ def t_shots_render_differently():
     build_scene(demo_plan())
     first = render_luma("shot1", 24)
     second = render_luma("shot2", 150)
-    return {"ok": abs(first - second) > 0.005 and first > 0.05,
-            "luma_shot1_f24": first, "luma_shot2_f150": second}
+    # v1.4 P10：几何改成 1.70 之后，两镜的**平均亮度**恰好接近（0.398 vs
+    # 0.400），旧判据 |Δluma| > 0.005 会误报"剪切没生效"。换成语义正确的
+    # 判据：逐像素比较，两镜必须有相当比例的像素真的不同。
+    shot1 = render_rgb("shot1", 24)
+    shot2 = render_rgb("shot2", 150)
+    differing = sum(1 for a, b in zip(shot1, shot2) if abs(a - b) > 1.0 / 255.0)
+    ratio = differing / max(len(shot1), 1)
+    return {"ok": first > 0.05 and ratio > 0.20,
+            "luma_shot1_f24": first, "luma_shot2_f150": second,
+            "differing_ratio": round(ratio, 4)}
 
 
 # --------------------------------------------------------------------------- #

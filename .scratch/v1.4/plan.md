@@ -39,4 +39,7 @@ P9.4 → P9.5 → P10 → P11 → P12 → P13 → P14(-1..5) → P15 → P16
 - P9.5：**完成**（`build_run_context` / `export_finished_run`，四件套注入、
   `export_started`、`SUFFIX_HELP`；新探针 `test_operator_end_to_end.py` 已登记，
   `run_tests.ps1` 25 → 26 项全绿）。
-- P10：进行中
+- P10：**完成**（`cinema/anchor.py` + profile 派生的 `SHOT_FRAME`/`HEAD_SHOTS`，
+  角色工厂/构图/校验器/知识卡/动作模型全部收敛；新探针
+  `test_character_geometry.py`（RK-4/RK-14/RK-15）已登记，27 项全绿）。
+- P11：进行中

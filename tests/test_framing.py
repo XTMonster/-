@@ -100,7 +100,10 @@ def test_no_room_no_clamp():
 
 def test_pov_sits_at_the_eyes():
     result = solve_framing((1.0, 2.0, 0.0), (0.0, 1.0, 0.0), "POV")
-    assert result.position == pytest.approx((1.0, 2.0, 1.10))
+    # v1.4 P10（§1.6 #1）：眼睛高度来自 §2.1 的 profile，不再是 1.10。
+    from block_director.cinema.framing import EYE_Z
+
+    assert result.position == pytest.approx((1.0, 2.0, EYE_Z))
     assert result.target[1] > result.position[1]     # 朝角色面朝方向看出去
 
 
@@ -113,4 +116,8 @@ def test_unknown_shot_type_warns_and_falls_back():
 def test_explicit_lens_overrides_default():
     result = solve_framing((0, 0, 0), (0, 1, 0), "MS", lens=24.0)
     assert result.lens == 24.0
-    assert result.distance == pytest.approx(required_distance(1.6, 24.0))
+    # 期望值必须取自引擎的同一张表，不能把旧的 1.6 抄进来（§1.6 #1）。
+    from block_director.cinema.framing import SHOT_FRAME
+
+    assert result.distance == pytest.approx(
+        required_distance(SHOT_FRAME["MS"].frame_height, 24.0))

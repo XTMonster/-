@@ -46,6 +46,7 @@ function Assert-Marker([object]$output, [string]$pattern, [string]$label) {
 # --------------------------------------------------------------------------- #
 $checks = @(
     @{ Script = 'tools\blender_tests\test_operator_end_to_end.py'; Marker = 'BD_TEST_RESULT'; Label = 'operator-e2e' },
+    @{ Script = 'tools\blender_tests\test_character_geometry.py';  Marker = 'BD_TEST_RESULT'; Label = 'character-geometry' },
     @{ Script = 'tools\blender_tests\test_phase1_scene.py';      Marker = 'BD_TEST_RESULT'; Label = 'phase1' },
     @{ Script = 'tools\blender_tests\test_phase2_motion.py';     Marker = 'BD_TEST_RESULT'; Label = 'phase2' },
     @{ Script = 'tools\blender_tests\test_phase3_framing.py';    Marker = 'BD_TEST_RESULT'; Label = 'phase3' },

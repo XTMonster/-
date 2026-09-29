@@ -1,11 +1,12 @@
-"""角色几何体创建（执行文档 v1.2 §9.1 / §9.2）。
+"""角色几何体创建（执行文档 v1.2 §9.1 / §9.2，几何按 v1.4 §2.1 冻结）。
 
-严格按 §9.1 的 Pivot 世界坐标表搭建骨架，而不是"堆部件"：
+严格按 §2.1 的 profile 推导锚点，而不是"堆部件"：::
 
-    脚底 0.00 | 髋 pivot 0.40 | 身体 0.40–1.10 | 头心 1.10 | 头顶 1.45 | 标签锚 1.75
+    总高 1.70 = 腿 0.323 + 躯干 0.748 + 头球直径 0.629
+    脚底 0.00 | 髋 0.323 | 躯干顶 1.071 | 头心 1.3855 | 头顶 1.70 | 标签锚 2.00
 
-总高 1.45 单位（1 单位 = 1 米）。这是 §9.1 修正版数值，不是 v1.0 那句
-"总高约 1.5、但按部件尺寸堆起来却有 1.8"的矛盾写法。
+v1.3 的旧表（头心 1.10 = 躯干顶）让头球下半埋进躯干——"看不到整个球"（BW-5）。
+现在的头球**与躯干顶相切**：``head_center_z = leg_h + torso_h + head_r``。
 """
 
 from __future__ import annotations
@@ -20,35 +21,42 @@ from mathutils import Vector
 from ...utils.geometry import facing_to_rotation_z, hex_to_rgb
 from ...utils.logger import get_logger
 from ...utils.threading_guard import main_thread_only
+from ...cinema.anchor import DEFAULT_PROFILE
 from ..collection_router import route_to_content
 from ..transaction import Transaction
 
 log = get_logger("character")
 
 # ---------------------------------------------------------------- 几何常量
-HEAD_RADIUS = 0.35
+#: v1.4 §2.1：所有竖直锚点由 profile 推导（**不再手抄数字**）。
+_PROFILE = DEFAULT_PROFILE
+
+HEAD_RADIUS = _PROFILE.head_r              # 0.3145
 BODY_RADIUS = 0.25
-BODY_HEIGHT = 0.70
+BODY_HEIGHT = _PROFILE.torso_h             # 0.748
 LEG_RADIUS = 0.08
-LEG_HEIGHT = 0.40
-EYE_RADIUS = 0.06
-EYE_SEPARATION = 0.12
-EYE_FORWARD = 0.30
+LEG_HEIGHT = _PROFILE.leg_h                # 0.323
+EYE_RADIUS = _PROFILE.eye_r                # 0.035
+EYE_SEPARATION = _PROFILE.eye_dx           # 0.11
+#: 眼睛的前向距离：``y = sqrt(d² - eye_dx²)``，``d = head_r - eye_r + p``。
+EYE_FORWARD = _PROFILE.eye_offset()[1]
 LEG_SEPARATION = 0.12
 
 #: 眼睛默认颜色（§9.1）：深到能在任何身体颜色上都读出"眼睛"
 EYE_COLOR = "#101010"
 
 PIVOT_Z = {
-    "leg": 0.40,      # 髋部
-    "body": 0.40,     # 腰部（BodyPivot 原点）
-    "head": 1.10,     # 头球中心
-    "label": 1.75,    # 标签锚点
+    "leg": _PROFILE.hip_z,             # 髋部 = 腿高
+    "body": _PROFILE.hip_z,            # 腰部（BodyPivot 原点）
+    "head": _PROFILE.head_center_z,    # 头球中心（与躯干顶相切）
+    "label": _PROFILE.label_anchor_z,  # 标签锚点
 }
-BODY_CENTER_LOCAL = 0.35                                  # 身体中心相对 BodyPivot
-HEAD_LOCAL = PIVOT_Z["head"] - PIVOT_Z["body"]            # 0.70
-LABEL_ANCHOR_LOCAL = PIVOT_Z["label"] - PIVOT_Z["head"]   # 0.65
-EXPECTED_TOTAL_HEIGHT = PIVOT_Z["head"] + HEAD_RADIUS     # 1.45
+#: 身体中心相对 BodyPivot（躯干中心 = 髋 + 躯干高/2）。
+BODY_CENTER_LOCAL = _PROFILE.torso_center_z - _PROFILE.hip_z
+HEAD_LOCAL = PIVOT_Z["head"] - PIVOT_Z["body"]
+LABEL_ANCHOR_LOCAL = PIVOT_Z["label"] - PIVOT_Z["head"]
+#: 头顶：头心 + 头半径 = 1.70。
+EXPECTED_TOTAL_HEIGHT = _PROFILE.head_top_z
 
 
 @dataclass

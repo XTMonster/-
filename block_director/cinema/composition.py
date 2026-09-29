@@ -12,6 +12,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional, Sequence
 
+from .anchor import DEFAULT_PROFILE as _PROFILE
+
 WEIGHTS: Dict[str, float] = {
     "headroom": 0.15,
     "lead_room": 0.20,
@@ -28,7 +30,9 @@ HEADROOM_IDEAL = (0.03, 0.12)
 
 # 头部留白只在"比全身更紧"的景别里才有意义：整身都在画里时，头顶上方的
 # 空间是宽景的固有属性，不是构图缺陷（见 §10.4 的实现注记）。
-SUBJECT_HEIGHT_FOR_HEADROOM = 1.45
+#: v1.4 P10：头顶留白只在"比全身更紧"的景别里才有意义，阈值必须跟着
+#: §2.1 的冻结身高走（旧值 1.45 是 v1.3 的几何）。
+SUBJECT_HEIGHT_FOR_HEADROOM = _PROFILE.total_height
 
 # 三分线交点
 THIRDS = (1.0 / 3.0, 2.0 / 3.0)

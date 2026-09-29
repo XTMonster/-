@@ -16,18 +16,39 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from ..contracts.enums import SHOT_TYPES, ShotType
+from .anchor import DEFAULT_PROFILE
 
 SENSOR_WIDTH = 36.0
 ASPECT_16_9 = 16.0 / 9.0
 
-# 角色身高常量（与 §9.1 一致）
-SUBJECT_HEIGHT = 1.45
-HEAD_TOP = 1.45
-EYE_Z = 1.10
-CHEST_Z = 0.95
-WAIST_Z = 0.70
-KNEE_Z = 0.20
-FLOOR_Z = 0.0
+#: 角色身高常量：**全部**从 §2.1 的冻结 profile 派生（v1.4 P10）。
+#: v1.3 这里的 1.45 / 1.10 / 0.95 是旧几何，且被当 ``camera_z`` 消费
+#: （§1.6 的 #34）——照旧实施会"不报错但一直量错"。
+_PROFILE = DEFAULT_PROFILE
+SUBJECT_HEIGHT = _PROFILE.total_height
+HEAD_TOP = _PROFILE.head_top_z
+EYE_Z = _PROFILE.eye_z
+CHEST_Z = _PROFILE.chest_z
+WAIST_Z = _PROFILE.waist_z
+KNEE_Z = _PROFILE.knee_z
+FLOOR_Z = _PROFILE.ground_z
+
+#: "含头部"景别的**代码单一真源**（§2.1/§2.2 的冻结枚举）。
+#: 头顶留白（RK-15）与头球可见（RK-14）都按这个集合判定。
+HEAD_SHOTS: Tuple[str, ...] = ("CU", "ECU", "MCU", "MS", "MLS")
+
+#: board 档的头顶**验收**最小留白（占画面高度的比例，§2.2 / RK-15）。
+HEADROOM_MIN = 0.08
+
+#: 取景解算用的**设计**留白：= 验收线 + 抗锯齿/像素量化的允许量。
+#: 实测（640×360 渲染）轮廓顶行比几何值低 1–2 px，正好吃掉整条 8% 线；把
+#: 设计值抬到 0.10 之后，渲染量出的留白稳定 ≥ 8%，而视觉差异只有画面高的
+#: 2%（中景 ≈ 2 cm）。这不是放宽验收，而是把"设计值 ≥ 验收线"写清楚。
+HEADROOM_DESIGN = 0.10
+
+#: 宽景（LS/ELS）在脚下留出的地面余量（占身高的比例）：脚正好压在画面下沿
+#: 会让"全身入画"的判据落在边界上（浮点误差就能翻转结论）。
+GROUND_MARGIN_RATIO = 0.06
 
 
 @dataclass(frozen=True)
@@ -41,19 +62,101 @@ class ShotFrame:
     note: str = ""
 
 
-# 单调递增：越靠后越"远"
-SHOT_FRAME: Dict[str, ShotFrame] = {
-    "ECU": ShotFrame(0.35, EYE_Z, EYE_Z, 85.0, "大特写：眼睛/局部占满"),
-    "CU": ShotFrame(0.90, EYE_Z, EYE_Z, 85.0, "特写：头部≈80%"),
-    "MCU": ShotFrame(1.00, 1.12, 1.05, 50.0, "中近景：胸部以上≈60%"),
-    "MS": ShotFrame(1.60, 1.00, 1.05, 50.0, "中景：腰部以上≈45%"),
-    "MLS": ShotFrame(2.30, 0.80, CHEST_Z, 35.0, "中远景：膝盖以上≈30%"),
-    "LS": ShotFrame(3.00, 0.72, CHEST_Z, 35.0, "全景：全身≈60%"),
-    "ELS": ShotFrame(6.50, 0.72, CHEST_Z, 24.0, "大远景：人物<20%"),
-    # OTS/POV 复用邻近景别的取景，位置另算
-    "OTS": ShotFrame(1.60, 1.12, 1.05, 50.0, "过肩：复用中景取景"),
-    "POV": ShotFrame(1.60, 1.10, EYE_Z, 35.0, "主观：机位落在角色眼睛"),
+def _frame_from_bottom(bottom_z: float, *, headroom: float = HEADROOM_DESIGN,
+                       profile=_PROFILE) -> Tuple[float, float]:
+    """由"画面下沿落在身体哪个高度"反推 ``(frame_height, target_z)``。
+
+    冻结规则（§2.2）：**含头部景别头顶不切**——上边距 ≥ ``headroom`` × 画面高。
+    于是 ``frame_top = head_top + headroom·h``，而 ``frame_top = target + h/2``、
+    ``frame_bottom = target - h/2 = bottom_z``。两式相减解出::
+
+        h        = (head_top - bottom_z) / (1 - headroom)
+        target_z = head_top - (0.5 - headroom) · h
+
+    这样"头顶留白"是**推导出来的**，不是手抄的一串数字——手抄的数值在几何
+    改成 1.70 之后必然切头（§1.6 的 #1/#34 就是这么来的）。
+    """
+    h = (profile.head_top_z - float(bottom_z)) / (1.0 - headroom)
+    target = profile.head_top_z - (0.5 - headroom) * h
+    return h, target
+
+
+#: 每个景别的**画面高度 ÷ 总身高**（v1.3 那张表按 1.45 归一后的比例）。
+#: 保留这组比例很重要：它们是**被构图评分与既有两个镜头夹具校准过**的，
+#: 直接改成"按身体部位反推"会让中远景突然收紧、两人镜的构图分掉到线下。
+#: 唯一被强制抬高的是 ECU——它必须装得下整个头球（§2.2 的"头顶不切"）。
+_FRAME_HEIGHT_RATIO: Dict[str, float] = {
+    "ECU": 0.35 / 1.45,
+    "CU": 0.90 / 1.45,
+    "MCU": 1.00 / 1.45,
+    "MS": 1.60 / 1.45,
+    "MLS": 2.30 / 1.45,
+    "LS": 3.00 / 1.45,
+    "ELS": 6.50 / 1.45,
 }
+
+#: 含头部景别的最小画面高度：整个头球 + 设计留白。
+_MIN_HEAD_FRAME = 1.0 / (1.0 - HEADROOM_DESIGN)
+
+#: 宽景（LS/ELS）的对准高度 ÷ 总身高（v1.3 的 0.72/1.45）。宽景的目标是
+#: "把人和环境一起交代清楚"，不是"给头顶留 8%"——照头顶留白反推会把
+#: 大远景的对准点推到地面以下（-1.3 m），画面里只剩地面。
+_WIDE_TARGET_RATIO = 0.72 / 1.45
+
+
+def _shot_frames(profile=_PROFILE) -> Dict[str, ShotFrame]:
+    """按 profile 重算九宫格的取景参数（单调：越靠后越"远"）。
+
+    ``h = 比例 × 总身高``（比例沿用 v1.3 的表，只是随身高缩放），
+    对准高度由"头顶留白 = 设计值"反推：``target_z = head_top -
+    (0.5 - headroom)·h``。这样**画面大小**保持既有观感与构图基准，
+    **画面位置**严格满足 §2.2 的头顶留白。
+    """
+    def frame_for(key: str) -> Tuple[float, float]:
+        height = _FRAME_HEIGHT_RATIO[key] * profile.total_height
+        if key in HEAD_SHOTS:
+            # 头球直径 + 设计留白（ECU 尤其需要这条下限，否则会切头）。
+            height = max(height, profile.head_d * _MIN_HEAD_FRAME)
+            target = profile.head_top_z - (0.5 - HEADROOM_DESIGN) * height
+        else:
+            target = _WIDE_TARGET_RATIO * profile.total_height
+        return height, target
+
+    ec_h, ec_t = frame_for("ECU")
+    cu_h, cu_t = frame_for("CU")
+    mcu_h, mcu_t = frame_for("MCU")
+    ms_h, ms_t = frame_for("MS")
+    mls_h, mls_t = frame_for("MLS")
+    ls_h, ls_t = frame_for("LS")
+    els_h, els_t = frame_for("ELS")
+    # **含头部景别**的机位与对准点**同高**（无俯仰）：纯解算器按"被摄平面
+    # 垂直于视轴"推导画面高度，一旦机位比对准点高/低就会引入几度的俯仰，
+    # 实测头顶留白会因此少 1–2% 的画面高（ECU 上最明显）。同高之后推导
+    # 与渲染逐像素一致（用 640×360 的对拍实测过），§2.2 的 8% 才是硬数字。
+    return {
+        "ECU": ShotFrame(ec_h, ec_t, ec_t, 85.0, "大特写：眼睛/局部占满"),
+        "CU": ShotFrame(cu_h, cu_t, cu_t, 85.0, "特写：头部为主"),
+        "MCU": ShotFrame(mcu_h, mcu_t, mcu_t, 50.0, "中近景：胸部以上"),
+        "MS": ShotFrame(ms_h, ms_t, ms_t, 50.0, "中景：腰部以上"),
+        "MLS": ShotFrame(mls_h, mls_t, mls_t, 35.0, "中远景：膝盖以上"),
+        "LS": ShotFrame(ls_h, ls_t, profile.chest_z, 35.0, "全景：全身"),
+        "ELS": ShotFrame(els_h, els_t, profile.chest_z, 24.0, "大远景：人物<20%"),
+        # OTS/POV 复用邻近景别的取景，位置另算
+        "OTS": ShotFrame(mcu_h, mcu_t, mcu_t, 50.0, "过肩：复用中近景取景"),
+        "POV": ShotFrame(mcu_h, profile.eye_z, profile.eye_z, 35.0,
+                         "主观：机位落在角色眼睛"),
+    }
+
+
+#: 单调递增：越靠后越"远"
+SHOT_FRAME: Dict[str, ShotFrame] = _shot_frames()
+
+
+def shot_frame_for(shot_type: str, profile=_PROFILE) -> ShotFrame:
+    """按给定 profile 取某一景别的取景参数（默认 profile 时等同查表）。"""
+    if profile is _PROFILE:
+        return SHOT_FRAME[str(shot_type).upper()]
+    return _shot_frames(profile)[str(shot_type).upper()]
 
 
 @dataclass

@@ -10,11 +10,14 @@ from typing import Dict, List, Optional, Set, Tuple
 from ..contracts.audit import AuditError
 from ..contracts.enums import CROWD_MODES, VFX_TYPES, Severity
 from ..contracts.sdl import SDLProject
+from ..cinema.anchor import DEFAULT_PROFILE
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
 from ..utils.aabb import AABB
 
 WALL_MARGIN = 0.2
-CHARACTER_BOX = (0.5, 0.5, 1.45)
+#: 角色碰撞盒（宽 / 深 / 高）。高度必须跟着 §2.1 的冻结几何走——
+#: v1.3 写死的 1.45 会让"角色与墙穿模"的判定整条偏移（§1.6 的量错项）。
+CHARACTER_BOX = (0.5, 0.5, DEFAULT_PROFILE.total_height)
 CAMERA_BOX = (0.2, 0.2, 0.2)
 
 #: S8/S9 的合法取值来自契约层枚举（v1.4 X8/S8 单一真源）：

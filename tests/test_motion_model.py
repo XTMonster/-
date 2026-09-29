@@ -220,21 +220,32 @@ def test_look_at_combines_with_walk():
 # --------------------------------------------------------------------------- #
 def test_head_track_turns_toward_a_target_in_front():
     # 站在原点、面朝 +Y，目标在 +X 侧 → 需要向右偏 90°
-    yaw, pitch, note = head_track_angles((0, 0, 0), (0, 1, 0), (3, 0, 1.10))
+    # v1.4 P10（§1.6 #17）：目标高度必须用**引擎自己的**眼睛高度，
+    # 否则几何一改，这条断言就变成"量错但继续绿"。
+    from block_director.motion.model import EYE_Z_DEFAULT
+
+    yaw, pitch, note = head_track_angles((0, 0, 0), (0, 1, 0),
+                                         (3, 0, EYE_Z_DEFAULT))
     assert yaw == pytest.approx(-90.0)      # facing_to_rotation_z 的约定
     assert pitch == pytest.approx(0.0)
     assert note == ""
 
 
 def test_head_track_is_zero_when_the_target_is_straight_ahead():
-    yaw, pitch, _note = head_track_angles((0, 0, 0), (0, 1, 0), (0, 5, 1.10))
+    from block_director.motion.model import EYE_Z_DEFAULT
+
+    yaw, pitch, _note = head_track_angles((0, 0, 0), (0, 1, 0),
+                                          (0, 5, EYE_Z_DEFAULT))
     assert yaw == pytest.approx(0.0)
     assert pitch == pytest.approx(0.0)
 
 
 def test_head_track_clamps_and_warns_about_a_target_behind():
     """头部只有 ±90°：目标在身后必须提示去转身体，而不是硬拧。"""
-    yaw, _pitch, note = head_track_angles((0, 0, 0), (0, 1, 0), (0, -5, 1.10))
+    from block_director.motion.model import EYE_Z_DEFAULT
+
+    yaw, _pitch, note = head_track_angles((0, 0, 0), (0, 1, 0),
+                                          (0, -5, EYE_Z_DEFAULT))
     assert abs(yaw) <= 90.0 + 1e-6
     assert "身体后方" in note and "face_character" in note
 
