@@ -1,0 +1,26 @@
+feat(P14-2): extract the hypergraph index, and gate it with the nine checks
+
+tools/kb_fetch/vocabulary.py freezes the node vocabulary from the corpus
+(295 nodes; the held-out subset keeps the 14 query kinds at <=12 values each,
+plus empty placeholders for character/object, which have no query key), and
+tools/kb_fetch/build_hypergraph.py turns cards into hyperedges with a
+temperature-0 extractor, merges them by the frozen dedupe key and runs the nine
+validation gates.
+
+Result on the shipped corpus: raw 658 -> unique 168 (473 duplicates merged,
+17 rejects = 2.6% <= 5%), processed_chunks == total_chunks == 250, so the build
+gate in knowledge/hypergraph.manifest.json passes. Edge mix: 57 EMOTION_PACK,
+60 SHOT_PATTERN, 34 LIGHT_PACK, 8 TROPE, 6 EDIT_RHYTHM, 3 AXIS_RULE.
+
+Also here: fixtures/knowledge_holdout.vocab.json (the frozen word list the
+annotator must use), and three prompt/schema fixes found by running the thing:
+an extractor that returned 81 edges for 943 cards until the prompt required one
+edge per card, gate-9 rejections traced to qualifier values outside the frozen
+domains (now spelled out in the prompt), and a looser quote locator that takes
+spans from 917/943 to 943/943 cards.
+
+Known gap, recorded rather than hidden: the extractor still parks a few
+non-lens node ids (ECU, movement:static) in the `lens` slot. The gates cannot
+see it because `lens` has no frozen value domain; Q1/Q2 in P14-5 will.
+
+python -m pytest -> 1070 passed, 0 failed, 0 skipped.

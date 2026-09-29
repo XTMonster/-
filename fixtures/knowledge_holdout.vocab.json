@@ -1,0 +1,121 @@
+{
+  "_fingerprint": "47c244d36f4a39da",
+  "kinds": {
+    "emotion": [
+      "压抑",
+      "孤独",
+      "平静",
+      "庄严",
+      "恐惧",
+      "悲伤",
+      "愤怒",
+      "期待",
+      "混乱",
+      "温柔",
+      "焦虑",
+      "荒诞"
+    ],
+    "action": [
+      "低头",
+      "后退",
+      "坐下",
+      "推门",
+      "起身",
+      "转身"
+    ],
+    "movement": [
+      "crane_down",
+      "crane_up",
+      "dolly_in",
+      "dolly_out",
+      "follow_subject",
+      "handheld",
+      "orbit_ccw",
+      "orbit_cw",
+      "pan_left",
+      "pan_right",
+      "tilt_up",
+      "track_left"
+    ],
+    "shot_size": [
+      "CU",
+      "ECU",
+      "ELS",
+      "LS",
+      "MCU",
+      "MLS",
+      "MS"
+    ],
+    "lens": [
+      "24mm",
+      "35mm",
+      "50mm",
+      "85mm"
+    ],
+    "pacing": [
+      "long",
+      "medium",
+      "short"
+    ],
+    "vfx": [
+      "flame",
+      "glow",
+      "impact_frame",
+      "smoke",
+      "spark"
+    ],
+    "sfx": [
+      "低频轰鸣",
+      "尖锐哨音",
+      "心跳",
+      "金属撞击",
+      "雨声",
+      "静默"
+    ],
+    "camera_angle": [
+      "低机位",
+      "平视",
+      "荷兰角",
+      "过肩",
+      "骑轴",
+      "高机位"
+    ],
+    "lighting": [
+      "低调",
+      "侧光",
+      "冷光",
+      "暖光",
+      "正面光",
+      "逆光",
+      "顶光"
+    ],
+    "composition_rule": [
+      "balance",
+      "framing",
+      "headroom",
+      "lead_room",
+      "occlusion",
+      "rule_of_thirds"
+    ],
+    "axis_topic": [
+      "中性机位",
+      "关系轴",
+      "视线轴",
+      "越轴",
+      "运动轴"
+    ],
+    "genre": [
+      "anime",
+      "documentary",
+      "film"
+    ],
+    "beat_type": [
+      "coverage",
+      "establish",
+      "insert",
+      "transition"
+    ],
+    "character": [],
+    "object": []
+  }
+}

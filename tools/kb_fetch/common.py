@@ -139,6 +139,13 @@ def locate_quote(quote: str, source_text: str) -> Tuple[int, int]:
     match = re.search(pattern, source_text)
     if match:
         return match.start(), match.end()
+    # 模型偶尔会把引号/省略号写成另一套标点。退一步：用前 12 个字符定位，
+    # 区间仍然落在原文上（跨度稍短，但"可回指原文"这条判据依然成立）。
+    head = re.sub(r"\s+", "", quote)[:12]
+    if len(head) >= 8:
+        index = re.sub(r"\s+", "", source_text).find(head)
+        if index >= 0:
+            return index, min(index + len(quote), len(source_text))
     return -1, -1
 
 

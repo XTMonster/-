@@ -61,8 +61,17 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
    注意：**只有 EMOTION_PACK 允许 `forbid` 成员**（§2.3 的边表），其它五类不许写。
 5. `source_kind`：教科书/权威理论的边用 `theory`＋`hard`；来自个人经验的取舍用
    `experience`＋`soft`；只有卡片明确写成"教训/禁忌"时才用 `lesson`。
-6. 一张卡最多产出 2 条边；卡片只是术语解释、没有多元耦合时可以不产出边。
+6. **每一张卡都要至少产出一条边**（除非它只是孤立术语的定义）。一张卡最多 2 条。
+   宁可少写成员，也不要空手而归——索引里没有边，这条知识就等于不存在。
 7. `value` 必须落在冻结取值域内（例如 intensity 只能是 low/mid/high）。
+   受限取值只有这几组，抄错即被拒收：intensity∈{low,mid,high}；
+   avg_shot_len∈{<1s,1-3s,3-8s,>8s}；pacing∈{short,medium,long}；
+   axis_side∈{left,right,neutral}；pair=any_two；headroom_policy∈{board,cinematic}；
+   transition∈{cut,dissolve,fade,whip}；
+   scene_type∈{establish,dialogue,action,reaction,transition,insert}；
+   genre 与 applies_to_genre∈{film,anime,documentary}；
+   shot_size 与 applies_to_shot_size∈{ECU,CU,MCU,MS,MLS,LS,ELS}。
+8. 若一组卡片表达的是同一条耦合（同 type ＋ 同成员），只写一条，让 `occurrences` 去计权。
 """
 
 

@@ -339,8 +339,8 @@
   chunk_id: production_pipeline_md#003
   source_span:
     chunk_id: production_pipeline_md#003
-    start: -1
-    end: -1
+    start: 41
+    end: 86
   provenance_kind: 权威文档
 - id: gen_prod_0012
   domain: production
@@ -1317,8 +1317,8 @@
   chunk_id: production_pipeline_md#004
   source_span:
     chunk_id: production_pipeline_md#004
-    start: -1
-    end: -1
+    start: 80
+    end: 140
   provenance_kind: 权威文档
 - id: gen_prod_0043
   domain: production

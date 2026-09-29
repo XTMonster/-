@@ -653,8 +653,8 @@
   chunk_id: camera_angle_in_practice_md#004
   source_span:
     chunk_id: camera_angle_in_practice_md#004
-    start: -1
-    end: -1
+    start: 143
+    end: 190
   provenance_kind: 权威文档
 - id: gen_cine_0022
   domain: cinematography
@@ -1596,8 +1596,8 @@
   chunk_id: camera_angle_and_lens_md#002
   source_span:
     chunk_id: camera_angle_and_lens_md#002
-    start: -1
-    end: -1
+    start: 177
+    end: 232
   provenance_kind: 权威文档
 - id: gen_cine_0052
   domain: cinematography
@@ -2169,8 +2169,8 @@
   chunk_id: camera_angle_and_lens_md#002
   source_span:
     chunk_id: camera_angle_and_lens_md#002
-    start: -1
-    end: -1
+    start: 231
+    end: 302
   provenance_kind: 权威文档
 - id: gen_cine_0070
   domain: cinematography
@@ -3152,8 +3152,8 @@
   chunk_id: camera_angle_and_lens_md#002
   source_span:
     chunk_id: camera_angle_and_lens_md#002
-    start: -1
-    end: -1
+    start: 60
+    end: 112
   provenance_kind: 权威文档
 - id: gen_cine_0101
   domain: cinematography

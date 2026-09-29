@@ -1275,8 +1275,8 @@
   chunk_id: storyboard_practice_md#006
   source_span:
     chunk_id: storyboard_practice_md#006
-    start: -1
-    end: -1
+    start: 40
+    end: 89
   provenance_kind: 权威文档
 - id: gen_story_0042
   domain: storyboard
@@ -4052,8 +4052,8 @@
   chunk_id: storyboard_practice_md#004
   source_span:
     chunk_id: storyboard_practice_md#004
-    start: -1
-    end: -1
+    start: 13
+    end: 65
   provenance_kind: 权威文档
 - id: gen_story_0130
   domain: storyboard

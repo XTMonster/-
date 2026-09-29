@@ -246,8 +246,8 @@
   chunk_id: axis_continuity_md#003
   source_span:
     chunk_id: axis_continuity_md#003
-    start: -1
-    end: -1
+    start: 9
+    end: 66
   provenance_kind: 权威文档
 - id: gen_axis_0009
   domain: axis_theory
@@ -471,8 +471,8 @@
   chunk_id: axis_continuity_md#012
   source_span:
     chunk_id: axis_continuity_md#012
-    start: -1
-    end: -1
+    start: 100
+    end: 140
   provenance_kind: 权威文档
 - id: gen_axis_0016
   domain: axis_theory
@@ -759,8 +759,8 @@
   chunk_id: axis_continuity_md#006
   source_span:
     chunk_id: axis_continuity_md#006
-    start: -1
-    end: -1
+    start: 38
+    end: 86
   provenance_kind: 权威文档
 - id: gen_axis_0025
   domain: axis_theory
@@ -1038,8 +1038,8 @@
   chunk_id: axis_continuity_md#023
   source_span:
     chunk_id: axis_continuity_md#023
-    start: -1
-    end: -1
+    start: 128
+    end: 168
   provenance_kind: 权威文档
 - id: gen_axis_0034
   domain: axis_theory
@@ -1198,8 +1198,8 @@
   chunk_id: axis_continuity_md#012
   source_span:
     chunk_id: axis_continuity_md#012
-    start: -1
-    end: -1
+    start: 13
+    end: 67
   provenance_kind: 权威文档
 - id: gen_axis_0039
   domain: axis_theory
@@ -1228,8 +1228,8 @@
   chunk_id: axis_continuity_md#024
   source_span:
     chunk_id: axis_continuity_md#024
-    start: -1
-    end: -1
+    start: 134
+    end: 178
   provenance_kind: 权威文档
 - id: gen_axis_0040
   domain: axis_theory
@@ -1387,8 +1387,8 @@
   chunk_id: axis_continuity_md#023
   source_span:
     chunk_id: axis_continuity_md#023
-    start: -1
-    end: -1
+    start: 84
+    end: 128
   provenance_kind: 权威文档
 - id: gen_axis_0045
   domain: axis_theory
@@ -1516,8 +1516,8 @@
   chunk_id: axis_continuity_md#025
   source_span:
     chunk_id: axis_continuity_md#025
-    start: -1
-    end: -1
+    start: 133
+    end: 173
   provenance_kind: 权威文档
 - id: gen_axis_0049
   domain: axis_theory
@@ -1706,8 +1706,8 @@
   chunk_id: axis_continuity_md#009
   source_span:
     chunk_id: axis_continuity_md#009
-    start: -1
-    end: -1
+    start: 121
+    end: 165
   provenance_kind: 权威文档
 - id: gen_axis_0055
   domain: axis_theory

@@ -93,8 +93,8 @@
   chunk_id: editing_rhythm_md#003
   source_span:
     chunk_id: editing_rhythm_md#003
-    start: -1
-    end: -1
+    start: 137
+    end: 173
   provenance_kind: 权威文档
 - id: gen_edit_0004
   domain: editing
@@ -350,8 +350,8 @@
   chunk_id: editing_rhythm_md#002
   source_span:
     chunk_id: editing_rhythm_md#002
-    start: -1
-    end: -1
+    start: 26
+    end: 67
   provenance_kind: 权威文档
 - id: gen_edit_0012
   domain: editing
@@ -953,8 +953,8 @@
   chunk_id: editing_rhythm_md#002
   source_span:
     chunk_id: editing_rhythm_md#002
-    start: -1
-    end: -1
+    start: 129
+    end: 179
   provenance_kind: 权威文档
 - id: gen_edit_0031
   domain: editing
@@ -1579,8 +1579,8 @@
   chunk_id: editing_rhythm_md#002
   source_span:
     chunk_id: editing_rhythm_md#002
-    start: -1
-    end: -1
+    start: 79
+    end: 118
   provenance_kind: 权威文档
 - id: gen_edit_0051
   domain: editing
@@ -1705,8 +1705,8 @@
   chunk_id: editing_rhythm_md#005
   source_span:
     chunk_id: editing_rhythm_md#005
-    start: -1
-    end: -1
+    start: 122
+    end: 163
   provenance_kind: 权威文档
 - id: gen_edit_0055
   domain: editing
@@ -2207,8 +2207,8 @@
   chunk_id: editing_rhythm_md#006
   source_span:
     chunk_id: editing_rhythm_md#006
-    start: -1
-    end: -1
+    start: 53
+    end: 97
   provenance_kind: 权威文档
 - id: gen_edit_0071
   domain: editing

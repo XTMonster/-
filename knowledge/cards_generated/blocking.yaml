@@ -440,8 +440,8 @@
   chunk_id: blocking_and_performance_md#006
   source_span:
     chunk_id: blocking_and_performance_md#006
-    start: -1
-    end: -1
+    start: 10
+    end: 72
   provenance_kind: 权威文档
 - id: gen_block_0015
   domain: blocking
@@ -2498,8 +2498,8 @@
   chunk_id: blocking_and_performance_md#003
   source_span:
     chunk_id: blocking_and_performance_md#003
-    start: -1
-    end: -1
+    start: 82
+    end: 119
   provenance_kind: 权威文档
 - id: gen_block_0080
   domain: blocking
@@ -2846,8 +2846,8 @@
   chunk_id: blocking_and_performance_md#002
   source_span:
     chunk_id: blocking_and_performance_md#002
-    start: -1
-    end: -1
+    start: 12
+    end: 60
   provenance_kind: 权威文档
 - id: gen_block_0091
   domain: blocking
