@@ -1,37 +1,34 @@
-feat(P12-part4): real ground/visibility/determinism probes, and a walk that stays up
+feat(P12-part5): finish the label oracles and the stroke geometry they exposed
 
-P12's remaining oracle work (RK-6 / RK-8 / RK-16 / RK-17) plus X4's label
-white-list.
+RK-1(2..5) / RK-2(1..2) / RK-5 (SS5 P12, closing slice).
 
-- motion/model.py: the walk bob is now non-negative. ``bob * sin(...)`` pushed
-  the root down to -bob (measured -0.033 m), so the feet sank below the floor
-  during every walk; RK-6 asks for ``min_z >= -0.02`` on the walking segment.
-  The new form ``bob * (1 - cos) / 2`` is a lift, never a sink.
-- test_phase2_motion.py gains RK-6 (per shot: first/middle/last +-4 frames,
-  depsgraph-evaluated world bounding box over the four mesh parts, standing in
-  [-0.02, +0.02] and walking >= -0.02) plus its negative case (a removed mesh
-  must be a failure, not a silent skip), and RK-8 (the torso's principal
-  inertia axis against +Z must equal the registered body_tilt angle +-3
-  degrees, with the angle taken from ``body_tilt_params`` so the BW-1 aliases
-  are exercised too).
-- test_camera_motion.py gains RK-17: the same deterministic move is built
-  twice and compared frame by frame over position + rotation + lens, max delta
-  <= 1e-6. ``t_handheld_is_reproducible`` stays as it was.
-- test_crowd_vfx.py: the VFX visibility check is rewritten to RK-16's current
-  wording. The old criterion (pre-filter |delta| > 0.08, then average the
-  survivors above 0.05) was a tautology. It now measures the difference mask
-  (|delta| >= 1/255) intersected with the *projected* box, requires
-  median|delta| >= 0.05 inside, coverage >= rho * box area with rho taken from
-  the proxy shape (cone 0.30, sphere 0.50), and median|delta| < 1/255 in the
-  1.5x ring outside, with shadows explicitly disabled.
-- collection_router: the renderable white-list no longer trusts the object's
-  own ``bd_element_type``. It now requires the BlockDirector/Labels collection
-  plus the ``BD_Label_<id>_Fill|Stroke`` naming and a complete pair, and
-  ``label_pair_audit()`` reports orphaned or misplaced labels. The phase 6
-  probe carries the matching assertion plus a negative case (moving a label
-  into Content must trip the leak audit again).
-- label_baking: one definition per constant (there were two MAX_OFFSET_RATIO
-  entries) and a single offset_reason vocabulary.
+- test_label_layout.py is rebuilt: the fixture now has six shots including ELS
+  and LS plus head shots (SS4.1b's shared sample floor), the pixel thresholds
+  are calibrated at 1920x1080, and the checks are
+  * RK-1(1): exactly one Fill/Stroke pair per enabled character, in
+    BlockDirector/Labels, via label_pair_audit();
+  * RK-1(2)/(3): a single-label render of the fill gives ink >= 200 px and at
+    least one connected component per character;
+  * RK-1(5) (R43 form): the stroke layer is a 1.15x scaled copy, so the four
+    outward expansions must all be >= 1 px, |left-right| <= 1, |up-down| <= 1,
+    area(stroke)/area(fill) = 1.15^2 +- 3%, and the two AABBs' centres must
+    coincide within 1 px;
+  * RK-2(1): pairwise screen-AABB overlap <= 5% over 30 sampled frames;
+  * RK-2(2): every offset_reason is one of the frozen vocabulary and any
+    avoidance frame stays within 0.25 x frame height;
+  * RK-5: within a shot, adjacent sample frames differ by <= 5% in height
+    (the cross-cut re-scale is recorded as a diagnostic, not as a failure).
+- Mask renders use a mid-grey background: the stroke is #000000, and against
+  the dark viewport background its difference mask was being swallowed whole
+  (area ratio read 1.09 instead of 1.32).
+- label_baking: the out-of-frame push-back is clamped to the 0.25 x frame
+  height band (a large-wide shot could otherwise move a label 665 px, 62% of
+  the frame), the occlusion lift shares the same budget, the stroke is pushed
+  back along the camera-to-label ray rather than along the camera axis (the
+  axis form gave 3.8 px up vs 1.7 px down of parallax on an off-axis label),
+  and the stroke is re-centred on the fill's bounding-box centre so the ring is
+  symmetric (2.756 / 2.756 up-down, 10.444 / 10.444 left-right, centres within
+  6e-5 px).
 
-python -m pytest (before the parallel P14 branch touched knowledge/corpus.py)
--> 892 passed; the four touched probes are green.
+All six affected Blender probes are green (label-layout, label-toggles,
+phase1, phase3-framing, phase3-audit, delivery-extras, scene-sync).

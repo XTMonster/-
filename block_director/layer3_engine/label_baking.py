@@ -147,6 +147,18 @@ def _overlap_ratio(a, b) -> float:
     return area / smaller
 
 
+def _object_centre(obj) -> Optional[Vector]:
+    """对象几何包围盒中心的世界坐标（``bound_box`` 已含字号）。"""
+    try:
+        corners = [obj.matrix_world @ Vector(corner)
+                   for corner in obj.bound_box]
+    except (ReferenceError, RuntimeError):
+        return None
+    if not corners:
+        return None
+    return sum(corners, Vector()) / len(corners)
+
+
 def separate_labels(scene, camera, prepared: List[Dict[str, Any]],
                     *, res_x: float, res_y: float,
                     iterations: int = SEPARATE_ITERATIONS) -> List[Dict[str, Any]]:
@@ -302,17 +314,30 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                                1.0 - FRAME_MARGIN)
                 target_y = min(max(projected.y, FRAME_MARGIN),
                                1.0 - FRAME_MARGIN)
-                delta_x = (target_x - projected.x) * frame_height * aspect
-                delta_y = (target_y - projected.y) * frame_height
+                px_x = (target_x - projected.x) * res_x
+                px_y = (target_y - projected.y) * res_y
+                # v1.4 RK-2②：触发避让的帧，位移不得超过 0.25 × 画面高。
+                # 大远景里角色贴着画框时，"完全推回画内"可能要挪半个画面——
+                # 那已经不是"避让"而是"另画一个标签"，按上限截断并如实记录。
+                span = math.hypot(px_x, px_y)
+                allowed = MAX_OFFSET_RATIO * float(res_y)
+                if span > allowed > 0.0:
+                    factor = allowed / span
+                    px_x *= factor
+                    px_y *= factor
+                delta_x = px_x / float(res_x) * frame_height * aspect
+                delta_y = px_y / float(res_y) * frame_height
                 offset += right * delta_x + up * delta_y
-                applied_px = max(abs(delta_x) / max(frame_height * aspect, 1e-6)
-                                 * res_x, abs(delta_y)
-                                 / max(frame_height, 1e-6) * res_y)
+                applied_px = math.hypot(px_x, px_y)
                 reason = REASON_OUT_OF_FRAME
             # 避让（二）：相机到锚点之间被内容物挡住时上移一档
             if _blocked(scene, camera, anchor_world):
-                offset += up * (frame_height * 0.20)
-                applied_px = max(applied_px, 0.20 * res_y)
+                shift = min(0.20 * res_y,
+                            max(MAX_OFFSET_RATIO * float(res_y) - applied_px,
+                                0.0))
+                if shift > 0.0:
+                    offset += up * (shift / float(res_y) * frame_height)
+                    applied_px += shift
                 reason = (REASON_OCCLUDED if reason == REASON_NONE
                           else reason + "+" + REASON_OCCLUDED)
             prepared.append({
@@ -330,11 +355,38 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
             _write(item["fill"], item["position"], item["rotation"],
                    item["scale"], camera, frame)
             if item["stroke"] is not None:
-                back = (camera.matrix_world.to_3x3() @
-                        Vector((0.0, 0.0, -LABEL_STROKE_BACK)))
-                _write(item["stroke"], item["position"] + back,
-                       item["rotation"], item["scale"] * LABEL_STROKE_SCALE,
-                       camera, frame)
+                # 描边是**同一层放大 1.15 倍**的副本，为了不与白字打架要沿视轴
+                # 后退一点。v1.4 RK-1⑤：后退必须沿**相机到标签的视线**后退，
+                # 否则离轴标签会产生视差——实测上扩 3.8 px、下扩 1.7 px，
+                # `|e_up − e_down| ≤ 1 px` 当场失败。沿视线后退则屏幕中心不变。
+                cam_world = camera.matrix_world.translation
+                ray = item["position"] - cam_world
+                depth = ray.length
+                if depth > LABEL_STROKE_BACK + 1e-4:
+                    stroke_position = (cam_world
+                                       + ray * ((depth - LABEL_STROKE_BACK)
+                                                / depth))
+                else:
+                    back = (camera.matrix_world.to_3x3() @
+                            Vector((0.0, 0.0, -LABEL_STROKE_BACK)))
+                    stroke_position = item["position"] + back
+                stroke_scale = item["scale"] * LABEL_STROKE_SCALE
+                # 放大是**绕文字原点**做的，而字形包围盒并不关于原点对称
+                # （下划线、降部会把盒子往下拉），于是环带会偏向一侧
+                # （实测上 3.4 px / 下 2.1 px）。这里把描边整体平移
+                # ``中心差``，让两个掩膜的 AABB 中心重合（RK-1⑤）。
+                stroke = item["stroke"]
+                stroke.location = stroke_position
+                stroke.rotation_euler = item["rotation"]
+                stroke.scale = (stroke_scale, stroke_scale, stroke_scale)
+                bpy.context.view_layer.update()
+                centre_fill = _object_centre(item["fill"])
+                centre_stroke = _object_centre(stroke)
+                if centre_fill is not None and centre_stroke is not None:
+                    stroke.location = (stroke.location
+                                       + (centre_fill - centre_stroke))
+                _write(stroke, stroke.location, item["rotation"],
+                       stroke_scale, camera, frame)
             written += 1
             current = worst_offset.get(item["character_id"])
             if current is None or item["applied_offset_px"] > \
