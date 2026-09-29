@@ -13,6 +13,16 @@
 真实断言（哪怕只是 ``assert findings``）**不算空断言**——它会因为空集合而
 失败，是有鉴别力的。
 
+第二条规则（2026-09-30 补，来自一次**真实**的回归）：``tools/blender_tests/``
+里的探针把结果打成 ``BD_TEST_RESULT {json}``，而 ``run_tests.ps1`` 用
+PowerShell 5.1 的 ``ConvertFrom-Json`` 读它。``json.dumps`` **默认允许**
+``NaN``/``Infinity``，但那是**非法 JSON**：一旦探针上报了一个 NaN，那一行就
+解析失败，该探针的 ``passed`` 名称整批丢失 → 挂在它上面的 RK **静默变成
+``not_measured``**（实测：``test_phase2_motion.py`` 的 ``min_z: NaN`` 让
+RK-6 与 RK-8 一起从"已量"掉成"未量"）。所以这里静态禁止探针源码里出现
+非有限浮点字面量（``float("nan")``/``float("inf")``/``math.nan``/``math.inf``）——
+上报值一律用 ``null`` ＋ 一个显式布尔标记。
+
 纯 Python、不依赖 bpy，因此**没有 Blender 时也照样跑**（与 F1 一致：
 它不能塞进 ``tools/audit_architecture.py`` 那种 ``import bpy`` 的脚本里）。
 
@@ -58,6 +68,41 @@ def _is_empty_assertion(node: ast.Assert) -> bool:
     return _is_empty_expression(node.test)
 
 
+#: 探针里**禁止**出现的非有限浮点写法（它们会让 `BD_TEST_RESULT` 变成非法 JSON）。
+NON_FINITE_LITERALS = ("nan", "inf", "infinity", "-inf", "-infinity")
+
+
+def find_non_finite(text: str) -> List[Tuple[int, str]]:
+    """返回 ``[(行号, 片段), ...]``：会让探针标记非法 JSON 的非有限浮点。
+
+    判据只看**字面量**与已知常量（``float("nan")`` / ``math.inf``），
+    因此不会把变量名里恰好含 ``inf`` 的标识符算进来（如 ``info``）。
+    """
+    tree = ast.parse(text)
+    found: List[Tuple[int, str]] = []
+
+    def flag(node: ast.AST) -> None:
+        found.append((getattr(node, "lineno", 0), ast.unparse(node)[:60]))
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, float):
+            if node.value != node.value or node.value in (
+                    float("inf"), float("-inf")):
+                flag(node)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) \
+                and node.func.id == "float" and node.args:
+            argument = node.args[0]
+            if isinstance(argument, ast.Constant) and isinstance(
+                    argument.value, str) \
+                    and argument.value.strip().lower() in NON_FINITE_LITERALS:
+                flag(node)
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) \
+                and node.value.id == "math" \
+                and node.attr.lower() in ("nan", "inf"):
+            flag(node)
+    return found
+
+
 def scan_source(text: str, filename: str = "<string>") -> List[Tuple[int, str]]:
     """返回 ``[(行号, 源码片段), ...]``：该文件里的空断言。"""
     tree = ast.parse(text, filename=filename)
@@ -95,6 +140,15 @@ def main(argv=None) -> int:
         scanned += 1
         for line, snippet in found:
             problems.append(f"{path}:{line}: 空断言（永远为真）：{snippet}")
+        if path.parent.name == "blender_tests":
+            # 探针的标记必须是**严格合法**的 JSON，否则 RK 聚合会静默变瞎。
+            try:
+                for line, snippet in find_non_finite(text):
+                    problems.append(
+                        f"{path}:{line}: 探针里的非有限浮点会让 BD_TEST_RESULT "
+                        f"变成非法 JSON（用 null 上报）：{snippet}")
+            except SyntaxError as exc:      # pragma: no cover - 上一轮已解析过
+                problems.append(f"{path}: 无法分析（{exc}）")
     if problems:
         print("[FAIL] 发现空断言：")
         for item in problems:

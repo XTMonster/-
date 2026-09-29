@@ -249,8 +249,15 @@ GROUND_EPS = 0.02
 _SAMPLE_OFFSETS = (-4, -3, -2, -1, 0, 1, 2, 3, 4)
 
 
-def _min_z(character, frame: int) -> float:
-    """depsgraph 求值后，四个网格对象的世界包围盒最低点。"""
+def _min_z(character, frame: int):
+    """depsgraph 求值后，四个网格对象的世界包围盒最低点；**量不到返回 ``None``**。
+
+    为什么不是 ``float("nan")``：探针把结果打成 ``BD_TEST_RESULT {json}``，而
+    `json.dumps` 会把 NaN 原样印成非法的 JSON 记号 `NaN` → PowerShell 5.1 的
+    `ConvertFrom-Json` 整行解析失败 → 这一批 `passed` 名称全丢 → 挂在它上面的
+    RK 静默变成 `not_measured`（实测 RK-6/RK-8 就是这么掉成"未量"的）。
+    ``None`` 在 JSON 里是合法的 ``null``，语义同样是"取不到值"。
+    """
     scene = bpy.context.scene
     scene.frame_set(frame)
     bpy.context.view_layer.update()
@@ -259,16 +266,16 @@ def _min_z(character, frame: int) -> float:
     for key in ("body", "head", "leg_l", "leg_r"):
         obj = character.parts.get(key)
         if obj is None:
-            return float("nan")
+            return None
         try:
             evaluated = obj.evaluated_get(depsgraph)
         except (ReferenceError, RuntimeError):
             # 对象已被删除（负例）：必须判失败，不能静默跳过。
-            return float("nan")
+            return None
         for corner in evaluated.bound_box:
             point = evaluated.matrix_world @ Vector(corner)
             lowest = point.z if lowest is None else min(lowest, point.z)
-    return float("nan") if lowest is None else lowest
+    return lowest
 
 
 def _sample_frames(start: int, end: int):
@@ -303,10 +310,10 @@ def t_rk6_no_floating_no_sinking():
         walking.append((frame, _min_z(character, frame)))
 
     bad_standing = [item for item in standing
-                    if not (item[1] == item[1]
+                    if not (item[1] is not None
                             and -GROUND_EPS <= item[1] <= GROUND_EPS)]
     bad_walking = [item for item in walking
-                   if not (item[1] == item[1] and item[1] >= -GROUND_EPS)]
+                   if not (item[1] is not None and item[1] >= -GROUND_EPS)]
     return {"ok": (bool(standing) and bool(walking)
                    and not bad_standing and not bad_walking),
             "standing_frames": len(standing), "walking_frames": len(walking),
@@ -327,8 +334,12 @@ def t_rk6_missing_mesh_is_a_failure():
     hidden_name = body.name
     bpy.data.objects.remove(body, do_unlink=True)
     value = _min_z(character, 1)
-    return {"ok": value != value, "removed": hidden_name,
-            "min_z": value}
+    # `NaN` **不是合法 JSON**：`json.dumps` 会原样印出 `NaN`，而 PowerShell 5.1 的
+    # `ConvertFrom-Json` 直接解析失败 → `run_tests.ps1` 收不到这一批 `passed`
+    # 名称 → **RK-6 与 RK-8 会双双变成 `not_measured`**（按 §4.1b 硬规则 1，
+    # "没量到"不能算通过）。判据本身不变（仍是"取不到 min_z 就判失败"），
+    # 只把上报值换成 JSON 安全的 `null`（`None`）。
+    return {"ok": value is None, "removed": hidden_name, "min_z": value}
 
 
 # --------------------------------------------------------------------------- #
