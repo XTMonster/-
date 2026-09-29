@@ -102,11 +102,27 @@
 | 单次标注吞吐 | DeepSeek `temperature=0`：约 3.5–4 s/段，约 2.5–3.5 张卡/段 |
 | 单元测试污染真实 `work/` | `validate_licenses.run()` 的单元测试把真实 `licensed.jsonl` 覆盖成 1 条 → 已用 autouse fixture 钉住全部输出路径 |
 
+### P14-1b/P14-2（已落地，commit 50c8a98 / b6cb899）
+
+- 语料：**1075 张卡**（943 生成 ＋ 132 手写），九域 72–196 张，全部 ≥60 且 ≥5%；
+  `knowledge/cards_generated/import_report.json` 的 K1/K2/K4 都是 1.0，`passed: true`。
+- 超图：**295 节点 / 168 条超边**（658 raw → 473 合并、17 拒收 = 2.6% ≤ 5%，
+  `processed == total == 250`）→ 构建门通过，落 `knowledge/hypergraph.{nodes,edges}.jsonl`
+  与 `hypergraph.manifest.json`；`fixtures/knowledge_holdout.vocab.json` 冻结了 86 个
+  查询取值（14 类，另加 character/object 空占位）。
+- 检索冒烟：`Hypergraph.retrieve("情绪=荒诞；动作=跺脚；运镜=固定", top_k=3)` 返回
+  3 条**整条**超边（含 `禁=` 成员）。
+
 ### 待办（本阶段未完成，不得当作通过）
 
 1. **`fixtures/knowledge_holdout.jsonl` ≥1200 条**：生成器已就绪（`holdout_gen.py`，
-   换族 = 本地 qwen3-vl:30b），需要在有本地模型时跑满并过六道门。
+   换族 = 本地 qwen3-vl:30b）。**实测该本地模型对本任务的单批（4 张卡）响应超过
+   10 分钟**，1200 条需要数小时；本轮没有跑满，因此六道门里只有门①②④⑤可判定，
+   门③⑥与门⑦（人审）未判定。工作区里残留的 `fixtures/knowledge_holdout.jsonl`
+   是空文件（曾在调试中写过），**不得**当作正式 oracle；正式集必须重新生成。
 2. **人抽查 ≥120 条**（协议 §5.5 / 门⑦）：agent 不能代替，必须由人裁决并署名
    `review.reviewed_by = "human"`；这是 RK-13 的前置。
 3. P14-3（L3 案例层 ≥300 篇）、P14-4（sidecar `edges[]`/`cases[]` ＋ 插件消费与
    `knowledge_trace.json`）、P14-5（质量闭环 Q0–Q7/E1–E3 ＋ 三元组对照）。
+4. 已记录但不隐藏的抽取质量缺口：抽取器偶尔把非镜头节点（`ECU`、`movement:static`）
+   塞进 `lens` 槽——门③/⑨ 抓不到（`lens` 没有冻结取值域），Q1/Q2 会抓到。
