@@ -36,8 +36,8 @@ from block_director.utils.blender_compat import action_fcurves  # noqa: E402
 from block_director.utils.threading_guard import capture_main_thread  # noqa: E402
 
 RESULTS: dict = {}
-EXTRA_TOOLS = ("move_character", "look_at", "interact_with", "move_camera",
-               "reframe", "estimate_shot_duration")
+EXTRA_TOOLS = ("move_character", "look_at", "face_character", "interact_with",
+               "move_camera", "reframe", "estimate_shot_duration")
 
 
 def check(name, fn):
@@ -101,6 +101,7 @@ def t_the_llm_facing_registry_is_complete():
     names = set(registry.names())
     spec_tools = {
         "place_character", "move_character", "character_action", "look_at",
+        "face_character",
         "interact_with", "setup_camera", "move_camera", "reframe",
         "get_scene_state", "check_composition", "check_axis",
         "check_visibility", "estimate_shot_duration", "search_knowledge",
@@ -152,6 +153,51 @@ def t_look_at_tracks_another_character():
             and "target" in missing_target.content,
             "content": result.content, "new_frames": len(new_frames),
             "missing_target": missing_target.content}
+
+
+def t_look_at_actually_aims_at_the_target():
+    """v1.3 诉求 2：``look_at`` 必须真的对准目标。
+
+    v1.2 把目标位置放进 ``params["target"]``，而动作层只读 ``yaw_deg`` /
+    ``pitch_deg``——目标被静默忽略，无论看向谁都是固定转 30°。
+    """
+    _plan, registry = built(with_actions=False)
+    context = get_context()
+    a = context.characters["char_001"]
+    b = context.characters["char_002"]
+    a.root.location = (-0.9, 0.0, 0.0)
+    a.root.rotation_euler = (0.0, 0.0, -1.5707963267948966)   # 面朝 +X
+    b.root.location = (0.9, 0.0, 0.0)
+    bpy.context.view_layer.update()
+
+    result = registry.execute("look_at", {
+        "character_id": "char_001", "target": "char_002",
+        "start_frame": 1, "end_frame": 24})
+    bpy.context.scene.frame_set(30)
+    head_yaw = float(a.head_pivot.rotation_euler[2])
+    return {"ok": (result.ok and abs(head_yaw) < 0.05
+                   and "偏航" in result.content),
+            "head_yaw_deg": round(head_yaw * 57.29577951308232, 3),
+            "content": result.content}
+
+
+def t_face_character_turns_the_body():
+    """身体朝向必须由 root 承担——头部只有 ±90°，转头转不过去。"""
+    _plan, registry = built(with_actions=False)
+    context = get_context()
+    a = context.characters["char_001"]
+    b = context.characters["char_002"]
+    a.root.location = (0.0, 0.0, 0.0)
+    b.root.location = (2.0, 0.0, 0.0)
+    bpy.context.view_layer.update()
+
+    result = registry.execute("face_character", {
+        "character_id": "char_001", "target": "char_002"})
+    bpy.context.view_layer.update()
+    from block_director.layer3_engine.character_system import get_facing
+    facing = get_facing(a)
+    return {"ok": (result.ok and facing[0] > 0.99 and abs(facing[1]) < 0.02),
+            "facing": list(facing), "content": result.content}
 
 
 # --------------------------------------------------------------------------- #
@@ -228,6 +274,9 @@ def main() -> int:
           t_the_llm_facing_registry_is_complete)
     check("move_character_walks", t_move_character_walks)
     check("look_at_tracks_another_character", t_look_at_tracks_another_character)
+    check("look_at_actually_aims_at_the_target",
+          t_look_at_actually_aims_at_the_target)
+    check("face_character_turns_the_body", t_face_character_turns_the_body)
     check("interact_with_updates_the_prop_ledger",
           t_interact_with_updates_the_prop_ledger)
     check("move_camera_animates_only_its_shot",

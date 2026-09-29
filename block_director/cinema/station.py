@@ -42,6 +42,14 @@ _AXIS_OFFSETS = {
 #: 过肩镜头在轴线上的偏移系数：足够小，保持"近轴"而不是变成侧面双人。
 OVER_SHOULDER_AXIS = 0.35
 
+#: 单主体镜头落在轴线上时的默认偏角（度）。
+#: 两人相对而立时，B 的正面机位恰好是 A 站着的地方——距离一旦大于两人间距，
+#: 相机就跑到 A 背后，把 A 拍进画面并挡住 B（实测构图 39.4、遮挡项 0.3）。
+#: 常规做法是把"干净单人"扭开 30°（dirty single）。当方向与轴线夹角小于
+#: OFF_AXIS_MIN_COS 对应的角度时，就按本值扭开。
+OFF_AXIS_DEG = 30.0
+OFF_AXIS_MIN_COS = 0.94          # ≈ 20°
+
 
 def _normalise(vec: Sequence[float],
                fallback: Tuple[float, float] = (0.0, 1.0)) -> Tuple[float, float]:
@@ -144,17 +152,64 @@ def subject_frame(entries: Sequence[Sequence[object]], *,
                         axis_end_id=second[0], axis_end=second[1])
 
 
-def camera_direction(frame: SubjectFrame, side: str = "front"
-                     ) -> Tuple[float, float]:
+def _rotate(vec: Tuple[float, float], degrees: float) -> Tuple[float, float]:
+    angle = math.radians(float(degrees))
+    cos_a, sin_a = math.cos(angle), math.sin(angle)
+    x, y = vec
+    return (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
+
+
+def _off_axis(base: Tuple[float, float], *,
+              axis_dir: Optional[Sequence[float]],
+              axis_side: int = 0,
+              subject_facing: Sequence[float] = (0.0, 1.0, 0.0)
+              ) -> Optional[Tuple[float, float]]:
+    """主体正对搭档时，把机位从轴线上扭开一档。
+
+    返回扭开后的方向；方向本来就不在轴线附近时返回 ``None``（不动）。
+    选哪一侧：优先匹配**已确立的轴侧**（否则会被判越轴）；还没有轴线时
+    选主体自己的右手边，保证确定性。
+    """
+    if axis_dir is None:
+        return None
+    direction = _normalise(axis_dir, fallback=(0.0, 0.0))
+    if direction == (0.0, 0.0):
+        return None
+    if abs(base[0] * direction[0] + base[1] * direction[1]) < OFF_AXIS_MIN_COS:
+        return None                      # 已经明显离开轴线，保持原样
+
+    candidates = (_rotate(base, OFF_AXIS_DEG), _rotate(base, -OFF_AXIS_DEG))
+    if axis_side:
+        for candidate in candidates:
+            cross = direction[0] * candidate[1] - direction[1] * candidate[0]
+            if (cross > 0) == (axis_side > 0):
+                return _normalise(candidate, fallback=base)
+    # 还没有轴线基准：选主体右手边（确定性，且不会与自身朝向打架）
+    right = right_of(subject_facing)
+    picked = max(candidates,
+                 key=lambda item: item[0] * right[0] + item[1] * right[1])
+    return _normalise(picked, fallback=base)
+
+
+def camera_direction(frame: SubjectFrame, side: str = "front", *,
+                     axis_dir: Optional[Sequence[float]] = None,
+                     axis_side: int = 0) -> Tuple[float, float]:
     """解析 ``side``，返回**单位**机位方向。
 
     单人镜头沿用 §10.1 / §10.5 的语义（相对角色朝向，由
     :func:`side_vector` 提供）；两人及以上的镜头改相对**轴线法线**——
     相对焦点主体朝向会把机位放到轴线上（见模块 docstring）。
+
+    ``axis_dir`` 是**整场**的轴线方向（由首镜确立，``Axis.direction``）。
+    单人镜头落在轴线上时会按 :func:`_off_axis` 扭开一档：否则相机正好站在
+    搭档的位置上，会把搭档拍进画面并挡住被摄主体。
     """
     key = str(side or "front")
     if not frame.has_axis:
-        return side_vector(frame.facing, key)
+        base = side_vector(frame.facing, key)
+        adjusted = _off_axis(base, axis_dir=axis_dir, axis_side=axis_side,
+                             subject_facing=frame.facing)
+        return adjusted if adjusted is not None else base
 
     axis = frame.axis_direction()
     if axis == (0.0, 0.0):

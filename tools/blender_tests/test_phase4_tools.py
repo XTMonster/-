@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 import traceback
 from pathlib import Path
@@ -156,7 +157,13 @@ def t_axis_violation_detected():
     context = get_context()
 
     good = registry.execute("check_axis", {})
-    bad_camera = create_camera("evil", (0.0, -6.0, 1.2), look_at=(0.0, 0.0, 1.0),
+    # 站到**已确立侧别的对面**去。v1.2 这里把机位写死在 (0, -6)：默认站位一改
+    # （两人相对而立，首镜机位落在 -Y 侧），(0, -6) 反而成了合法的一侧，
+    # "越轴"就再也测不出来了。
+    axis = context.axis
+    opposite = -1.0 if axis.established_side > 0 else 1.0
+    bad_camera = create_camera("evil", (0.0, opposite * 6.0, 1.2),
+                               look_at=(0.0, 0.0, 1.0),
                                make_scene_camera=False)
     context.cameras["evil"] = bad_camera.camera
     context.current_shot_id = "evil"
@@ -207,6 +214,7 @@ def t_knowledge_tool_is_callable():
                                     "estimate_shot_duration",
                                     "place_character", "move_character",
                                     "character_action", "look_at",
+                                    "face_character",
                                     "interact_with", "setup_camera",
                                     "move_camera", "reframe",
                                     "search_knowledge"}
@@ -218,8 +226,29 @@ def t_knowledge_tool_is_callable():
             "scoped": scoped.content, "bad": bad.content}
 
 
+def t_composition_judges_the_shots_own_subjects():
+    """构图必须只看**本镜声明的角色**。
+
+    v1.2 的 ``check_composition`` 拿全剧组当被摄主体：两人相对而立时，
+    单人镜的搭档离机位更近、在画面里显得更大，于是评分从 71 掉到 40，
+    修复循环被完全带偏（实测 shot_002：39.4 分，遮挡项 0.3）。
+    """
+    _summary, _context = _built()
+    registry = ToolRegistry()
+    register_scene_tools(registry)
+    context = get_context()
+    context.current_shot_id = "shot_002"          # 单人镜，搭档不在画面里
+    result = registry.execute("check_composition", {})
+    match = re.search(r"构图评分 ([0-9.]+)", result.content)
+    score = float(match.group(1)) if match else None
+    return {"ok": result.ok and score is not None and score >= 70.0,
+            "score": score, "content": result.content}
+
+
 def main() -> int:
     capture_main_thread()
+    check("composition_judges_the_shots_own_subjects",
+          t_composition_judges_the_shots_own_subjects)
     check("scene_state_light_vs_detailed", t_scene_state_light_vs_detailed)
     check("context_is_populated", t_context_is_populated)
     check("query_tools_are_callable", t_query_tools_are_callable)

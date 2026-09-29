@@ -24,6 +24,7 @@ from block_director.motion.model import (
     check_conflicts,
     compose,
     expand,
+    head_track_angles,
 )
 
 
@@ -212,6 +213,53 @@ def test_walk_then_sit_is_allowed():
 
 def test_look_at_combines_with_walk():
     assert check_conflicts([walk(1, 48), ActionRequest("look_at", 1, 48)]) == []
+
+
+# --------------------------------------------------------------------------- #
+# v1.3 诉求 2：头部跟踪目标（不能只转固定的 30°）
+# --------------------------------------------------------------------------- #
+def test_head_track_turns_toward_a_target_in_front():
+    # 站在原点、面朝 +Y，目标在 +X 侧 → 需要向右偏 90°
+    yaw, pitch, note = head_track_angles((0, 0, 0), (0, 1, 0), (3, 0, 1.10))
+    assert yaw == pytest.approx(-90.0)      # facing_to_rotation_z 的约定
+    assert pitch == pytest.approx(0.0)
+    assert note == ""
+
+
+def test_head_track_is_zero_when_the_target_is_straight_ahead():
+    yaw, pitch, _note = head_track_angles((0, 0, 0), (0, 1, 0), (0, 5, 1.10))
+    assert yaw == pytest.approx(0.0)
+    assert pitch == pytest.approx(0.0)
+
+
+def test_head_track_clamps_and_warns_about_a_target_behind():
+    """头部只有 ±90°：目标在身后必须提示去转身体，而不是硬拧。"""
+    yaw, _pitch, note = head_track_angles((0, 0, 0), (0, 1, 0), (0, -5, 1.10))
+    assert abs(yaw) <= 90.0 + 1e-6
+    assert "身体后方" in note and "face_character" in note
+
+
+def test_head_track_pitches_for_a_high_target():
+    _yaw, pitch, _note = head_track_angles((0, 0, 0), (0, 1, 0),
+                                           (0, 10, 3.10))
+    assert pitch > 0.0
+    assert pitch <= 30.0 + 1e-6             # HEAD_LIMIT_X
+
+
+def test_head_track_handles_a_coincident_target():
+    yaw, pitch, note = head_track_angles((1, 1, 0), (0, 1, 0), (1, 1, 0))
+    assert yaw == 0.0 and pitch == 0.0
+    assert "重合" in note
+
+
+def test_two_characters_facing_each_other_need_no_head_turn():
+    """相对而立时，两人看对方是 0°——这正是不该再靠扭头硬凑的原因。"""
+    a_pos, a_face = (-0.9, 0.0, 0.0), (1.0, 0.0, 0.0)
+    b_pos, b_face = (0.9, 0.0, 0.0), (-1.0, 0.0, 0.0)
+    yaw_a, _p, note_a = head_track_angles(a_pos, a_face, b_pos)
+    yaw_b, _p, note_b = head_track_angles(b_pos, b_face, a_pos)
+    assert yaw_a == pytest.approx(0.0) and yaw_b == pytest.approx(0.0)
+    assert note_a == "" and note_b == ""
 
 
 def test_overlapping_same_layer_actions_are_reported():

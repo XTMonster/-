@@ -11,9 +11,10 @@ from typing import Any, Dict, List, Optional
 import bpy
 from mathutils import Vector
 
-from ..motion.model import ACTION_TYPES
+from ..motion.model import ACTION_TYPES, head_track_angles
 from ..cinema.camera_motion import MOVEMENT_TYPES, TRANSLATIONS, describe
 from ..cinema.framing import solve_framing
+from ..cinema.station import camera_direction, subject_frame
 from ..contracts.enums import SHOT_TYPES
 from ..knowledge.tool import SEARCH_KNOWLEDGE, register_knowledge_tools
 from ..observation.state import format_scene_state
@@ -29,14 +30,15 @@ from .cinema_engine import (
 )
 from .scene_context import get_context
 from .scene_state import collect_scene_state
+from .shot_builder import speaker_of
 
 log = get_logger("tool-bindings")
 
 QUERY_TOOLS = ("get_scene_state", "check_visibility", "check_composition",
                "check_axis", "estimate_shot_duration")
 ACTION_TOOLS = ("place_character", "move_character", "character_action",
-                "look_at", "interact_with", "setup_camera", "move_camera",
-                "reframe")
+                "look_at", "face_character", "interact_with", "setup_camera",
+                "move_camera", "reframe")
 KNOWLEDGE_TOOLS = (SEARCH_KNOWLEDGE,)
 
 #: §9.8 道具交互（代理模式）：交互类型 → 复用哪一个动作层
@@ -123,7 +125,7 @@ def _tool_check_composition(camera_id: str = ""):
         return problem
     shot_id = context.current_shot_id
     shot_type = context.shot_types.get(shot_id, "MS")
-    report = evaluate_camera_composition(camera, context.character_list,
+    report = evaluate_camera_composition(camera, context.subjects_for(shot_id),
                                          shot_type=shot_type)
     lines = [f"构图评分 {report.score:.1f}（{'通过' if report.passed else '需调整'}）"]
     for name, item in report.items.items():
@@ -262,20 +264,79 @@ def _tool_move_character(character_id: str, target_position: List[float],
 @main_thread_only("tool_look_at")
 def _tool_look_at(character_id: str, start_frame: int, end_frame: int,
                   target: str = "", target_position: Optional[List[float]] = None):
-    """头部持续跟踪：目标可以是另一个角色 ID，也可以是世界坐标。"""
-    params: Dict[str, Any] = {}
+    """头部持续跟踪：目标可以是另一个角色 ID，也可以是世界坐标。
+
+    v1.2 把目标位置塞进 ``params["target"]``，而动作层
+    （``motion/model.py`` 的 ``look_at`` 分支）**只读 ``yaw_deg`` / ``pitch_deg``**
+    ——目标被静默忽略，于是"看向某人"永远只是把头固定转 30°。
+    这里先把目标换算成相对**身体朝向**的偏角再传下去。
+    """
+    character, problem = _require_character(character_id)
+    if character is None:
+        return problem
+    position: Optional[List[float]] = None
     if target_position is not None:
-        params["target"] = [float(v) for v in target_position]
+        position = [float(v) for v in target_position]
     elif target:
         other, problem = _require_character(target)
         if other is None:
             return problem
-        params["target"] = list(other.root.matrix_world.translation)
-        params["target_id"] = target
+        position = list(other.root.matrix_world.translation)
     else:
         return _fail("look_at 需要 target（角色 ID）或 target_position（坐标）之一")
-    return _tool_character_action(character_id, "look_at",
-                                  start_frame, end_frame, params)
+
+    bpy.context.view_layer.update()
+    origin = tuple(character.root.matrix_world.translation)
+    yaw, pitch, note = head_track_angles(origin, get_facing(character),
+                                         position)
+    params: Dict[str, Any] = {"yaw_deg": yaw, "pitch_deg": pitch,
+                              "target": list(position)}
+    if target:
+        params["target_id"] = target
+    result = _tool_character_action(character_id, "look_at",
+                                    start_frame, end_frame, params)
+    if isinstance(result, ToolResult):
+        return result
+    suffix = f"；{note}" if note else ""
+    return f"{result}（头部偏航 {yaw:.1f}°、俯仰 {pitch:.1f}°）{suffix}"
+
+
+@main_thread_only("tool_face_character")
+def _tool_face_character(character_id: str, target: str = "",
+                         target_position: Optional[List[float]] = None):
+    """把角色的**身体**转向目标（不是只转头）。
+
+    之所以需要单独一个工具：头部只有 ±90° 的活动范围，"看向彼此"必须由
+    身体朝向承担主体，否则两人正对时谁也看不见谁（见
+    ``motion.model.head_track_angles`` 的说明）。
+    """
+    character, problem = _require_character(character_id)
+    if character is None:
+        return problem
+    position: Optional[List[float]] = None
+    if target_position is not None:
+        position = [float(v) for v in target_position]
+    elif target:
+        other, problem = _require_character(target)
+        if other is None:
+            return problem
+        position = list(other.root.matrix_world.translation)
+    else:
+        return _fail("face_character 需要 target（角色 ID）"
+                     "或 target_position（坐标）之一")
+
+    bpy.context.view_layer.update()
+    origin = character.root.matrix_world.translation
+    dx = float(position[0]) - float(origin.x)
+    dy = float(position[1]) - float(origin.y)
+    if abs(dx) < 1e-9 and abs(dy) < 1e-9:
+        return _fail(f"角色 {character_id} 与目标位置重合，无法确定朝向")
+    from ..utils.geometry import facing_to_rotation_z
+    character.root.rotation_euler = (
+        0.0, 0.0, facing_to_rotation_z((dx, dy, 0.0)))
+    bpy.context.view_layer.update()
+    return (f"角色 {character_id} 已转身面向 "
+            f"({round(float(position[0]), 2)}, {round(float(position[1]), 2)})")
 
 
 @main_thread_only("tool_interact_with")
@@ -327,17 +388,28 @@ def _tool_setup_camera(shot_id: str = "", shot_type: str = "MS",
     if not characters:
         return _fail(f"镜头 {shot_id} 没有在场角色，无法解算机位")
 
-    positions = [c.root.matrix_world.translation for c in characters]
-    anchor = sum(positions, Vector()) / len(positions)
-    facing = get_facing(characters[0])
+    # 与主构建共用同一套取景参考系：单主体镜头若落在整场轴线上，
+    # 相机会正好站在搭档的位置上（把搭档拍进画面并挡住被摄主体）。
+    bpy.context.view_layer.update()
+    entries = [(cid, tuple(c.root.matrix_world.translation), get_facing(c))
+               for cid, c in ((cid, context.character(cid))
+                              for cid in shot.characters)
+               if c is not None]
+    frame = subject_frame(entries, shot_type=str(shot_type),
+                          speaker_id=speaker_of(shot))
+    direction = camera_direction(
+        frame, str(side),
+        axis_dir=(context.axis.direction if context.axis else None),
+        axis_side=(int(context.axis.established_side)
+                   if context.axis else 0))
 
     scene = bpy.context.scene
     previous = context.cameras.get(shot_id)
     if previous is not None:
         bpy.data.objects.remove(previous, do_unlink=True)
     bundle, solution = place_camera_for_shot(
-        shot_id, anchor, facing=facing, shot_type=shot_type, side=side,
-        lens=lens, make_scene_camera=False)
+        shot_id, frame.anchor, facing=frame.facing, shot_type=shot_type,
+        side=side, lens=lens, make_scene_camera=False, direction=direction)
     context.cameras[shot_id] = bundle.camera
     context.shot_types[shot_id] = str(shot_type).upper()
     if shot_id == context.current_shot_id or scene.camera is previous:
@@ -402,13 +474,23 @@ def _tool_reframe(shot_id: str = "", shot_type: Optional[str] = None,
     characters = [item for item in characters if item is not None]
     if not characters:
         return _fail(f"镜头 {shot_id} 没有在场角色，无法重解取景")
-    positions = [item.root.matrix_world.translation for item in characters]
-    anchor = sum(positions, Vector()) / len(positions)
-    facing = get_facing(characters[0])
-
-    solution = solve_framing(subject_pos=anchor, facing=facing,
+    # 与主构建、setup_camera 共用同一套参考系与同一套 side 解析。
+    bpy.context.view_layer.update()
+    entries = [(cid, tuple(item.root.matrix_world.translation),
+                get_facing(item))
+               for cid, item in ((cid, context.character(cid))
+                                 for cid in shot.characters)
+               if item is not None]
+    frame = subject_frame(entries, shot_type=resolved_type,
+                          speaker_id=speaker_of(shot))
+    direction = camera_direction(
+        frame, "front",
+        axis_dir=(context.axis.direction if context.axis else None),
+        axis_side=(int(context.axis.established_side)
+                   if context.axis else 0))
+    solution = solve_framing(subject_pos=frame.anchor, facing=frame.facing,
                              shot_type=resolved_type, side="front",
-                             lens=lens, room=None)
+                             lens=lens, room=None, direction=direction)
     camera.location = solution.position
     camera.data.lens = float(solution.lens)
     target = _shot_target_object(shot_id)
@@ -506,6 +588,20 @@ def register_action_tools(registry) -> None:
                         "start_frame": {"type": "integer", "minimum": 1},
                         "end_frame": {"type": "integer", "minimum": 1}}},
         handler=_tool_look_at,
+    )
+    registry.add(
+        name="face_character",
+        description="把角色的**身体**转向目标（角色 ID 或世界坐标）。"
+                    "头部只有 ±90°，需要看向身后或建立对视时必须先转身。",
+        parameters={"type": "object", "additionalProperties": False,
+                    "required": ["character_id"],
+                    "properties": {
+                        "character_id": {"type": "string"},
+                        "target": {"type": "string"},
+                        "target_position": {"type": "array", "minItems": 3,
+                                            "maxItems": 3,
+                                            "items": {"type": "number"}}}},
+        handler=_tool_face_character,
     )
     registry.add(
         name="interact_with",

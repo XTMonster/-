@@ -21,10 +21,12 @@ from .model import (
     check_conflicts,
     compose,
     expand,
+    head_track_angles,
 )
 
 __all__ = [
     "ActionRequest", "MotionSpec", "expand", "compose", "check_conflicts",
+    "head_track_angles",
     "LAYER_OF", "CHANNEL_OWNER", "BLEND_FRAMES", "FPS",
     "ACTION_TYPES",
 ]

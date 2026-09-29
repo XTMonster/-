@@ -8,13 +8,13 @@
       "name": "char_001",
       "color": "#FF6B6B",
       "initial_location": [
-        -0.75,
+        -0.9,
         0.0,
         0.0
       ],
       "initial_facing": [
-        0.0,
         1.0,
+        0.0,
         0.0
       ]
     },
@@ -23,13 +23,13 @@
       "name": "char_002",
       "color": "#6BC5FF",
       "initial_location": [
-        0.75,
+        0.9,
         0.0,
         0.0
       ],
       "initial_facing": [
+        -1.0,
         0.0,
-        1.0,
         0.0
       ]
     }
@@ -204,25 +204,25 @@
     "character_pose": {
       "char_001": {
         "position": [
-          -0.75,
+          -0.9,
           0.0,
           0.0
         ],
         "facing": [
-          0.0,
           1.0,
+          0.0,
           0.0
         ]
       },
       "char_002": {
         "position": [
-          0.75,
+          0.9,
           0.0,
           0.0
         ],
         "facing": [
+          -1.0,
           0.0,
-          1.0,
           0.0
         ]
       }

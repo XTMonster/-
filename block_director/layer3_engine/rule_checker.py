@@ -145,9 +145,8 @@ def check_shot(shot_id: str, *, context=None,
     # 而被判失败（Phase 5 首次跑 R003 的回归测试时就踩到了这个）。
     characters = []
     if shot is not None and context is not None:
-        characters = [c for c in (context.character(cid)
-                                  for cid in shot.characters) if c is not None]
-    if not characters and context is not None:
+        characters = context.subjects_for(shot_id)
+    elif context is not None:
         characters = context.character_list
 
     # R007 引用完整 ---------------------------------------------------------

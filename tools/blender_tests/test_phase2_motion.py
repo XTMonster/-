@@ -213,9 +213,37 @@ def t_head_motion_is_isolated():
             "head_pitch": angles, "root_animated": root_moved}
 
 
+def t_bake_keeps_the_authored_facing():
+    """v1.3：动作烘焙不得抹掉角色的身体朝向。
+
+    v1.2 的 ``clear_animation`` 把 root 的 ``rotation_euler`` 也清零了，
+    而 ``apply_motions`` 又在清除**之后**才读基姿态——于是角色第一次烘焙动作
+    时，"创建时设定的朝向"就被抹掉，两人相对而立会一起弹回面朝 +Y。
+    """
+    scene = fresh_scene()
+    scene.frame_start, scene.frame_end = 1, 48
+    character = create_character("char_001", "小明", "#FF6B6B",
+                                 location=(0.0, 0.0, 0.0),
+                                 facing=(1.0, 0.0, 0.0))   # 面朝 +X
+    create_camera("shot_001", (3.0, 0.0, 1.2), look_at=(0.0, 0.0, 0.9), lens=50.0)
+
+    blender = MotionBlender(character)
+    blender.add("nod", 1, 48, cycles=2)          # 只动头，不该动身体
+    blender.bake()
+    scene.frame_set(48)
+    bpy.context.view_layer.update()
+
+    from block_director.layer3_engine.character_system import get_facing
+    facing = get_facing(character)
+    return {"ok": facing[0] > 0.99 and abs(facing[1]) < 0.02,
+            "facing": list(facing),
+            "root_yaw": round(float(character.root.rotation_euler[2]), 4)}
+
+
 def main() -> int:
     capture_main_thread()
     check("bake_creates_keyframes", t_bake_creates_keyframes)
+    check("bake_keeps_the_authored_facing", t_bake_keeps_the_authored_facing)
     check("root_moves_over_time", t_root_moves_over_time)
     check("render_frames_differ", t_render_frames_differ)
     check("conflict_rejected", t_conflict_rejected)

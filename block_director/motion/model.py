@@ -302,6 +302,55 @@ def _jump_root(start: int, end: int, height: float,
 _SPEED_RATE = {"walk": 1.0, "run": 2.0}
 _SPEED_AMPLITUDE = {"walk": 25.0, "run": 30.0}
 
+#: 角色眼睛的高度（与 §9.1 一致），用于计算头部俯仰角
+EYE_Z_DEFAULT = 1.10
+
+
+def head_track_angles(origin: Sequence[float], facing: Sequence[float],
+                      target: Sequence[float]
+                      ) -> Tuple[float, float, str]:
+    """目标相对**身体朝向**的头部偏角，返回 ``(yaw_deg, pitch_deg, 说明)``。
+
+    头部只有 ±90°（``HEAD_LIMIT_Z``）与 ±30°（``HEAD_LIMIT_X``），
+    所以：
+
+    * 偏角会被钳位到头部活动范围；
+    * 目标落在身后（|偏角| > 90°）时给出一句说明——这时必须转身体，
+      光扭头是转不过去的（"看向彼此"要由 root 朝向承担主体）。
+
+    纯函数，可单测。bpy 侧只需把当前位置/朝向喂进来。
+    """
+    ox, oy, oz = (float(origin[0]), float(origin[1]),
+                  float(origin[2]) if len(origin) > 2 else 0.0)
+    tx, ty, tz = (float(target[0]), float(target[1]),
+                  float(target[2]) if len(target) > 2 else oz)
+    fx, fy = float(facing[0]), float(facing[1])
+
+    dx, dy = tx - ox, ty - oy
+    horizontal = math.hypot(dx, dy)
+    if horizontal < 1e-9 and abs(tz - oz) < 1e-9:
+        return 0.0, 0.0, "目标与角色重合，头部保持不动"
+
+    # 身体朝向的绝对角度（θ 使 (0,1) 转到 facing，见 utils.geometry）
+    if math.hypot(fx, fy) < 1e-9:
+        fx, fy = 0.0, 1.0
+    body = math.atan2(-fx, fy)
+    desired = math.atan2(-dx, dy) if horizontal > 1e-9 else body
+    delta = math.atan2(math.sin(desired - body), math.cos(desired - body))
+
+    note = ""
+    if abs(delta) > HEAD_LIMIT_Z + 1e-9:
+        note = ("目标在身体后方：头部只有 ±90°，请先用 turn_body / "
+                "face_character 把身体转过去")
+    yaw = _clamp(delta, -HEAD_LIMIT_Z, HEAD_LIMIT_Z)
+
+    pitch = 0.0
+    if horizontal > 1e-9:
+        pitch = math.atan2(tz - (oz + EYE_Z_DEFAULT), horizontal)
+    if abs(pitch) > HEAD_LIMIT_X:
+        pitch = _clamp(pitch, -HEAD_LIMIT_X, HEAD_LIMIT_X)
+    return math.degrees(yaw), math.degrees(pitch), note
+
 
 def expand(request: ActionRequest) -> List[MotionSpec]:
     """把一个动作展开成分层轨道（§9.6/§9.7 的实现基础）。"""

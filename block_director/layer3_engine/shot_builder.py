@@ -117,7 +117,8 @@ def subject_frame_for(shot: ShotPlan,
 
 def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
                       spec: Optional[SceneSpec] = None, *,
-                      request: Optional[Dict[str, Any]] = None):
+                      request: Optional[Dict[str, Any]] = None,
+                      axis: Optional[Any] = None):
     """**唯一的机位解算入口**：主构建与单镜再生共用。
 
     v1.2 里 :mod:`shot_regenerator` 自己又写了一遍解算，而且写死
@@ -129,11 +130,18 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
                     else (getattr(shot, "camera", None) or {}))
     frame = subject_frame_for(shot, cast)
     side = str(resolved.get("side") or "front")
+    axis_dir = None
+    axis_side = 0
+    if axis is not None:
+        # 单人镜头落在轴线上时要把机位扭开（否则相机站在搭档的位置上）
+        axis_dir = axis.direction
+        axis_side = int(getattr(axis, "established_side", 0))
     bundle, solution = place_camera_for_shot(
         shot.shot_id, frame.anchor, facing=frame.facing,
         shot_type=str(shot.shot_type), side=side,
         lens=resolved.get("lens"), room=(spec.room if spec else None),
-        direction=camera_direction(frame, side))
+        direction=camera_direction(frame, side, axis_dir=axis_dir,
+                                   axis_side=axis_side))
     return bundle, solution, frame
 
 
@@ -231,7 +239,8 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         # side 与 lens 由取景解算器消费；距离/高度仍按 §10.6/§10.5 推导。
         # v1.3：side 经 cinema.station 解析——双人镜头相对两人连线，
         # 而不是相对焦点主体的朝向（否则机位会落在轴线上）。
-        bundle, solution, frame = place_shot_camera(shot, cast_map, spec)
+        bundle, solution, frame = place_shot_camera(shot, cast_map, spec,
+                                                    axis=context.axis)
         marker = scene.timeline_markers.new(f"BD_Cut_{shot.shot_id}", frame=start)
         marker.camera = bundle.camera
         context.cameras[shot.shot_id] = bundle.camera

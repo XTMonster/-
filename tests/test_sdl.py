@@ -173,8 +173,13 @@ def test_cast_serialises_with_the_documented_field_names():
     member = data["characters"][0]
     assert set(member) == {"id", "name", "color", "initial_location",
                            "initial_facing"}
-    assert member["initial_location"] == [-0.75, 0.0, 0.0]
-    assert member["initial_facing"] == [0.0, 1.0, 0.0]
+    # v1.3：默认站位改成"两人相对而立"。v1.2 是并排朝前（间距 1.5、一律 +Y），
+    # 两个正在对话的人谁也不看谁——与"互相看向对方"的剧本语义相反。
+    assert member["initial_location"] == [-0.9, 0.0, 0.0]
+    assert member["initial_facing"] == [1.0, 0.0, 0.0]
+    other = data["characters"][1]
+    assert other["initial_location"] == [0.9, 0.0, 0.0]
+    assert other["initial_facing"] == [-1.0, 0.0, 0.0]
 
 
 def test_migrate_heals_a_missing_cast_roster():

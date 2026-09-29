@@ -14,10 +14,50 @@ from .plan import Plan
 DEFAULT_COLORS = ("#FF6B6B", "#6BC5FF", "#FFD166", "#9B8CFF",
                   "#6BE3A2", "#FF9F6B")
 DEFAULT_SPACING = 1.5
+#: 两人相对而立时的间距（§9.7 的"社交距离"上限附近，镜头里读得出对峙感）
+OPPOSITE_SPACING = 1.8
 DEFAULT_GROUND = (120.0, 120.0)
 
 ID_PREFIX = "char_"
 ID_DIGITS = 3
+
+
+def default_station(count: int) -> List[Tuple[Tuple[float, float, float],
+                                             Tuple[float, float, float]]]:
+    """没有更多语义信息时的默认站位：``[(位置, 朝向), ...]``。
+
+    v1.3 修正：v1.2 把所有角色沿 X 轴排开、**一律面朝 +Y**，于是两个正在
+    对话的人并排朝前、谁也不看谁——与"互相看向对方"的剧本语义正好相反，
+    也与"站位决定轴线"的 §10.3 前提不符。现在的规则是：
+
+    * 1 人：站在原点，面朝 +Y（不变）；
+    * 2 人：**相对而立**，对称分布在 X 轴上，互相面对；
+    * ≥3 人：沿 X 轴排开，各自面向队伍重心（比"全部朝前"更接近围谈）。
+
+    真正的站位由 v1.3 的 ``SceneBrief.space`` 决定；这里只保证"缺省姿态
+    是合理可读的"。纯函数，可单测。
+    """
+    total = int(count)
+    if total <= 0:
+        return []
+    if total == 1:
+        return [((0.0, 0.0, 0.0), (0.0, 1.0, 0.0))]
+    if total == 2:
+        half = OPPOSITE_SPACING / 2.0
+        return [((-half, 0.0, 0.0), (1.0, 0.0, 0.0)),
+                ((half, 0.0, 0.0), (-1.0, 0.0, 0.0))]
+
+    stations = []
+    for index in range(total):
+        offset = (index - (total - 1) / 2.0) * DEFAULT_SPACING
+        if offset > 1e-9:
+            facing = (-1.0, 0.0)
+        elif offset < -1e-9:
+            facing = (1.0, 0.0)
+        else:
+            facing = (0.0, 1.0)
+        stations.append(((round(offset, 3), 0.0, 0.0), facing))
+    return stations
 
 
 def next_character_id(existing) -> str:
@@ -76,20 +116,24 @@ class SceneSpec:
 
     @classmethod
     def from_plan(cls, plan: Plan, **overrides) -> "SceneSpec":
-        """按计划里出现的角色自动生成一份确定性剧组设定。"""
+        """按计划里出现的角色自动生成一份确定性剧组设定。
+
+        站位用 :func:`default_station`：两人时相对而立（v1.2 是并排朝前，
+        两个对话者谁也不看谁）。
+        """
         character_ids: List[str] = []
         for shot in plan.shots:
             for character_id in shot.characters:
                 if character_id not in character_ids:
                     character_ids.append(character_id)
-        cast: List[CastMember] = []
-        count = len(character_ids)
-        for index, character_id in enumerate(character_ids):
-            offset = (index - (count - 1) / 2.0) * DEFAULT_SPACING
-            cast.append(CastMember(
-                id=character_id, name=character_id,
-                color=DEFAULT_COLORS[index % len(DEFAULT_COLORS)],
-                initial_location=(round(offset, 3), 0.0, 0.0)))
+        stations = default_station(len(character_ids))
+        cast: List[CastMember] = [
+            CastMember(id=character_id, name=character_id,
+                       color=DEFAULT_COLORS[index % len(DEFAULT_COLORS)],
+                       initial_location=location,
+                       initial_facing=facing)
+            for index, (character_id, (location, facing))
+            in enumerate(zip(character_ids, stations))]
         return cls(heading=plan.scene_heading, cast=cast, **overrides)
 
     def to_dict(self) -> Dict[str, Any]:

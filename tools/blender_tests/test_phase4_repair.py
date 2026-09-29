@@ -59,9 +59,17 @@ def _built_with_tools():
 
 
 def _break_axis(context):
-    """把 shot_001 的相机换到轴线另一侧，制造 R001。"""
+    """把 shot_001 的相机换到轴线**另一侧**，制造 R001。
+
+    v1.2 这里把机位写死在 (0, -6)：默认站位改成"两人相对而立"之后，
+    首镜机位本身落在 -Y 侧，(0, -6) 反而是合法的一侧，越轴就制造不出来了。
+    所以这里按**已确立的侧别取反**。
+    """
     scene = bpy.context.scene
-    bundle = create_camera("broken", (0.0, -6.0, 1.2), look_at=(0.0, 0.0, 1.0),
+    axis = context.axis
+    opposite = -1.0 if (axis is None or axis.established_side > 0) else 1.0
+    bundle = create_camera("broken", (0.0, opposite * 6.0, 1.2),
+                           look_at=(0.0, 0.0, 1.0),
                            make_scene_camera=False)
     context.cameras["shot_001"] = bundle.camera
     scene.camera = bundle.camera

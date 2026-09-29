@@ -49,6 +49,22 @@ class SceneContext:
                 return shot
         return None
 
+    def subjects_for(self, shot_id: str = "") -> List[Any]:
+        """本镜的**被摄主体**：镜头自己声明的角色；为空时退回全部角色。
+
+        构图评分与规则判定必须共用同一份主体集合。v1.2 的
+        ``check_composition`` 工具直接拿 ``character_list``（全剧组）去评分，
+        于是画面里的第三个人会被当成主体——实测两人相对而立时，单人镜的
+        搭档离机位更近、显得更大，评分从 71 掉到 40，修复循环被完全带偏。
+        """
+        shot = self.shot(shot_id)
+        if shot is not None:
+            subjects = [self.character(cid) for cid in shot.characters]
+            subjects = [item for item in subjects if item is not None]
+            if subjects:
+                return subjects
+        return self.character_list
+
     @property
     def character_list(self) -> List[Any]:
         return list(self.characters.values())

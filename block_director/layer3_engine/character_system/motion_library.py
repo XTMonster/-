@@ -57,16 +57,48 @@ class BakeResult:
 
 
 @main_thread_only("clear_animation")
-def clear_animation(character) -> int:
-    """清掉角色各部件上的动画数据（重复烘焙前先归零，避免叠加）。"""
+def clear_animation(character, base_pose: Optional[Dict[str, object]] = None
+                    ) -> int:
+    """清掉角色各部件上的动画数据，并复位到**基准姿态**。
+
+    v1.3 修正：v1.2 把 root 的 ``rotation_euler`` 也一并清零，于是
+    "创建时设定的身体朝向"在角色第一次烘焙动作时就被抹掉——两人相对而立
+    会一起弹回面朝 +Y。root 的朝向是**角色的摆位**，不是动画残留。
+
+    ``base_pose`` 给出时按它复位（那是角色此刻真实的摆位与朝向）；
+    不给时才退回旧行为（位置保留、其余归零）。
+    """
     removed = 0
     for obj in character.all_objects():
         if obj.animation_data is not None:
             obj.animation_data_clear()
             removed += 1
-        # 复位旋转/缩放到中立姿态；root 的**位置**保留（那是角色的摆位）
-        obj.rotation_euler = (0.0, 0.0, 0.0)
         obj.scale = (1.0, 1.0, 1.0)
+
+    base = dict(base_pose) if base_pose is not None else None
+
+    def channel(channel_id: str, fallback: float) -> float:
+        if base is None:
+            return fallback
+        return float(base.get(channel_id, fallback))
+
+    if character.root is not None:
+        if base is not None and CH_ROOT_LOC in base:
+            character.root.location = tuple(base[CH_ROOT_LOC])
+        # root 的位置保留（那是角色的摆位）；旋转按基准还原。
+        character.root.rotation_euler = (0.0, 0.0,
+                                         channel(CH_ROOT_ROT_Z, 0.0))
+    if character.body_pivot is not None:
+        character.body_pivot.rotation_euler = (
+            channel(CH_BODY_ROT_X, 0.0), channel(CH_BODY_ROT_Y, 0.0), 0.0)
+    if character.head_pivot is not None:
+        character.head_pivot.rotation_euler = (
+            channel(CH_HEAD_ROT_X, 0.0), 0.0, channel(CH_HEAD_ROT_Z, 0.0))
+    if len(character.leg_pivots) >= 2:
+        character.leg_pivots[0].rotation_euler = (
+            channel(CH_LEG_L, 0.0), 0.0, 0.0)
+        character.leg_pivots[1].rotation_euler = (
+            channel(CH_LEG_R, 0.0), 0.0, 0.0)
     return removed
 
 
@@ -140,10 +172,12 @@ def apply_motions(character, requests: List[ActionRequest], *,
     problems = check_conflicts(requests)
     if problems:
         raise ValueError("动作冲突：\n" + "\n".join(problems))
-    if clear:
-        clear_animation(character)
     if base_pose is None:
+        # 必须在清除**之前**读基姿态：clear_animation 会把各部件复位，
+        # 读得晚会拿到"中立姿态"，角色的摆位与朝向就丢了（v1.2 的缺陷）。
         base_pose = character_base_pose(character)
+    if clear:
+        clear_animation(character, base_pose)
     trace = compose(requests, base_pose=base_pose)
     result = bake_trace(character, trace)
     set_interpolation(character, interpolation)

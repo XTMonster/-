@@ -176,3 +176,45 @@ def test_direction_is_always_a_unit_vector():
         for side in ALL_SIDES:
             dx, dy = camera_direction(frame, side)
             assert math.hypot(dx, dy) == pytest.approx(1.0, abs=1e-9)
+
+
+# --------------------------------------------------------------------------- #
+# 单主体镜头落在整场轴线上：必须扭开，否则相机站在搭档的位置上
+# --------------------------------------------------------------------------- #
+def _single_subject_facing_along_the_axis():
+    """乙站在 +X、面朝 -X（正对搭档），轴线沿 X。"""
+    return subject_frame([("char_002", (0.9, 0.0, 0.0), (-1.0, 0.0, 0.0))],
+                         shot_type="MCU")
+
+
+def test_single_subject_on_the_axis_is_turned_off_axis():
+    frame = _single_subject_facing_along_the_axis()
+    direction = camera_direction(frame, "front", axis_dir=(1.0, 0.0),
+                                 axis_side=-1)
+    cos = abs(direction[0] * 1.0 + direction[1] * 0.0)
+    assert cos == pytest.approx(math.cos(math.radians(30.0)), abs=1e-6)
+
+
+def test_the_off_axis_turn_follows_the_established_side():
+    """扭开的方向必须落在已确立的一侧，否则修好遮挡却换来越轴。"""
+    frame = _single_subject_facing_along_the_axis()
+    for axis_side in (1, -1):
+        direction = camera_direction(frame, "front", axis_dir=(1.0, 0.0),
+                                     axis_side=axis_side)
+        cross = 1.0 * direction[1] - 0.0 * direction[0]
+        assert (cross > 0) == (axis_side > 0)
+
+
+def test_single_subject_perpendicular_to_the_axis_is_left_alone():
+    """主体朝 +Y、轴线沿 X 时，正面机位本来就垂直于轴线，不该被动。"""
+    frame = subject_frame([("char_001", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))],
+                          shot_type="CU")
+    assert camera_direction(frame, "front", axis_dir=(1.0, 0.0),
+                            axis_side=1) == pytest.approx((0.0, 1.0))
+
+
+def test_without_an_axis_nothing_changes():
+    """没有整场轴线时保持 v1.2 语义（这是行为不变的保证）。"""
+    frame = _single_subject_facing_along_the_axis()
+    assert camera_direction(frame, "front") == \
+        pytest.approx(side_vector((-1.0, 0.0, 0.0), "front"))
