@@ -113,6 +113,11 @@ class KnowledgeRetriever:
     vector_store: Optional[Any] = None
     #: v1.4 §2.3：超图索引（由 sidecar 提供）。没有它就只能降级。
     hypergraph: Optional[Any] = None
+    #: v1.4 §2.3：sidecar 知识客户端。**有它就不需要在进程里装索引**——
+    #: 三条通道（cards/edges/cases）由 ``/v1/retrieve`` 一次带回。
+    client: Optional[Any] = None
+    #: v1.4 §2.4：检索调用与 ``llm_calls`` **分列**记账。
+    retrieval_calls: int = 0
     warnings: List[str] = field(default_factory=list)
     #: v1.4 §2.3：**降级必须留痕**——``knowledge_trace.json`` 里的
     #: ``degraded`` / ``degraded_reason`` 由它产出（否则那是死字段）。
@@ -155,7 +160,9 @@ class KnowledgeRetriever:
         if requested is RagBackend.DIGEST:
             return RagBackend.DIGEST
         if requested is RagBackend.HYPERGRAPH:
-            if "hypergraph" in self.capabilities and self.hypergraph is not None:
+            if self.client is not None or (
+                    "hypergraph" in self.capabilities
+                    and self.hypergraph is not None):
                 return RagBackend.HYPERGRAPH
             self.warnings.append(
                 "配置要求超图检索，但传输层未确认 hypergraph 能力（或索引不可用）："
@@ -183,6 +190,7 @@ class KnowledgeRetriever:
                 "cards": len(self.cards), "top_k": self.top_k,
                 "token_limit": self.token_limit,
                 "plan_token_limit": self.plan_token_limit,
+                "retrieval_calls": int(self.retrieval_calls),
                 "degraded": bool(self.degraded),
                 "degraded_reason": self.degraded_reason,
                 "warnings": list(self.warnings)}
@@ -203,6 +211,8 @@ class KnowledgeRetriever:
             "top_k": self.top_k,
             "token_limits": {"shot": self.token_limit,
                              "plan": self.plan_token_limit},
+            #: §2.4：检索调用与 llm_calls 分列，别混进同一个计数器。
+            "retrieval_calls": int(self.retrieval_calls),
             "warnings": list(self.warnings),
         }
         payload.update(self.last_trace or {})
@@ -279,10 +289,18 @@ class KnowledgeRetriever:
 
         返回 ``[]`` 表示没有可用索引/没有命中——调用方据此决定是否退回卡片。
         过程写进 :attr:`last_trace`，供 ``knowledge_trace.json`` 落盘。
+
+        v1.4 §2.3 的**首选路径是 sidecar**：装了 :attr:`client` 时，超边由
+        ``/v1/retrieve`` 拿回（插件进程里不需要索引）；进程内的
+        :attr:`hypergraph` 只是没有 sidecar 时的备选。
         """
-        if self.backend is not RagBackend.HYPERGRAPH or self.hypergraph is None:
+        if self.backend is not RagBackend.HYPERGRAPH:
             return []
         limit = int(top_k or self.top_k)
+        if self.client is not None:
+            return self._edges_from_client(query, limit)
+        if self.hypergraph is None:
+            return []
         try:
             edges, _text, trace = self.hypergraph.retrieve(
                 query, top_k=limit,
@@ -294,6 +312,22 @@ class KnowledgeRetriever:
             return []
         self.last_trace = _trace_to_dict(trace)
         return list(edges or [])
+
+    def _edges_from_client(self, query: str, limit: int) -> List[Any]:
+        """经 sidecar 取超边；不可达时**降级留痕**，不拖垮整场。"""
+        from .client import to_internal_edges
+
+        response = self.client.retrieve_or_none(query, top_k=limit)
+        self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
+        if response is None:
+            self.degraded = True
+            self.degraded_reason = (getattr(self.client, "degraded_reason", "")
+                                    or "sidecar_unavailable")
+            self.warnings.append(
+                "sidecar 检索不可达，本次退回卡片检索并在 knowledge_trace 记 degraded")
+            return []
+        self.last_trace = dict(response.trace or {})
+        return to_internal_edges(response.edges)
 
     def edge_block(self, query: str, *, top_k: Optional[int] = None,
                    token_limit: Optional[int] = None,
@@ -309,12 +343,12 @@ class KnowledgeRetriever:
                                       token_limit=token_limit)
         if not edges:
             return ""
-        nodes = getattr(self.hypergraph, "nodes", {}) or {}
+        nodes = getattr(self.hypergraph, "nodes", None) or {}
         text, dropped, quality_fail = render_edges(
-            edges, nodes, limit=int(token_limit or self.token_limit))
+            edges, nodes, token_limit=int(token_limit or self.token_limit))
         scope = "shot_scope" if token_limit == self.token_limit else "plan_scope"
         self.last_trace.setdefault(scope, {})["dropped_edge_ids"] = list(dropped)
-        self.last_trace.setdefault(scope, {})["quality_fail"] = list(quality_fail)
+        self.last_trace.setdefault(scope, {})["quality_fail"] = bool(quality_fail)
         self.last_trace["degraded"] = bool(self.degraded)
         self.last_trace["degraded_reason"] = self.degraded_reason
         return f"【{title}】\n{text}" if text else ""
@@ -429,7 +463,8 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
                       top_k: int = 5,
                       token_limit: int = TOKEN_LIMIT_TOOL,
                       plan_token_limit: int = TOKEN_LIMIT_PLAN,
-                      hypergraph: Optional[Any] = None) -> KnowledgeRetriever:
+                      hypergraph: Optional[Any] = None,
+                      client: Optional[Any] = None) -> KnowledgeRetriever:
     """进程级默认检索器（语料是静态的，默认参数下构建一次即可）。
 
     带了非默认参数时**不缓存**：否则第二次用不同配置调用会拿到上一份配置的
@@ -438,14 +473,16 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
     global _DEFAULT
     if (backend is RagBackend.BM25 and not capabilities and top_k == 5
             and token_limit == TOKEN_LIMIT_TOOL
-            and plan_token_limit == TOKEN_LIMIT_PLAN and hypergraph is None):
+            and plan_token_limit == TOKEN_LIMIT_PLAN and hypergraph is None
+            and client is None):
         if _DEFAULT is None:
             _DEFAULT = KnowledgeRetriever(cards=cards_in_domain_order())
         return _DEFAULT
     return KnowledgeRetriever(
         cards=cards_in_domain_order(), backend=backend,
         capabilities=capabilities, top_k=top_k, token_limit=token_limit,
-        plan_token_limit=plan_token_limit, hypergraph=hypergraph)
+        plan_token_limit=plan_token_limit, hypergraph=hypergraph,
+        client=client)
 
 
 def reset_default_retriever() -> None:

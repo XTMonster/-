@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from ..layer6_audit.audit_logger import AuditLogger
-from ..knowledge import default_retriever
+from ..knowledge import KnowledgeClient, default_retriever
 from ..contracts.enums import RagBackend
 from ..settings import get_config
 from ..utils.logger import get_logger
@@ -63,7 +63,7 @@ def run_headless(
                           registry=registry, auditor=auditor,
                           scene_state_provider=scene_state_provider,
                           human_gate=human_gate,
-                          knowledge=_make_knowledge(config))
+                          knowledge=_make_knowledge(config, transport, audit))
 
     log.info("headless 运行开始（模式=%s，run_id=%s）", mode, audit.run_id)
     state = driver.run_to_completion(poll_interval=poll_interval,
@@ -75,6 +75,9 @@ def run_headless(
     summary["llm_trace"] = str(audit.trace_path) if audit.trace_path else None
     # 分镜计划是值得持久化的产物，直接带回完整结构（交付层要用）
     summary["plan"] = driver.plan.to_dict() if driver.plan else None
+    # §2.4：检索调用与 llm_calls **分列**——把这一格交给交付层（manifest）。
+    summary["retrieval_calls"] = int(
+        getattr(getattr(driver, "knowledge", None), "retrieval_calls", 0) or 0)
     # v1.4 §2.3/§3.3：`knowledge_trace.json` **每次运行必写**。它记录这次
     # 到底查了什么（种子 / 命中边 / 打分 / 注入集合）与降级留痕；
     # 没有它，"检索是确定性的"这句话就没有证据。
@@ -113,22 +116,42 @@ def _apply_declarations(transport, parsed_script, config) -> None:
     setter(getattr(parsed_script, "declared_shots", []) or [], fps=fps)
 
 
-def _make_knowledge(config):
+def _audit_hook(audit):
+    """把 ``KnowledgeClient`` 的审计事件写进 run 的 JSONL（§2.4 的分列账本）。"""
+    if audit is None or not hasattr(audit, "log"):
+        return None
+
+    def hook(payload: Dict[str, Any]) -> None:
+        fields = {key: value for key, value in payload.items() if key != "event"}
+        audit.log(str(payload.get("event", "retrieval_call")),
+                  f"检索：卡片 {fields.get('cards', 0)} / 超边 "
+                  f"{fields.get('edges', 0)} / 案例 {fields.get('cases', 0)}",
+                  **fields)
+
+    return hook
+
+
+def _make_knowledge(config, transport=None, audit=None):
     """按 §6.1 / v1.4 §2.3 的确定性选择逻辑装配知识检索器。
 
     三个上限都从配置读：``rag.max_tokens_per_call``（每镜 800）、
     ``rag.plan_prefetch_tokens``（整场预取 2000）、``rag.top_k``。
-    后端默认是超图；没有 sidecar（``capabilities`` 里没有 ``hypergraph``）时
-    检索器**自己**降级为 BM25 并置 ``degraded``，由 trace 如实记录。
+    后端默认是超图；**装了 sidecar 客户端就走 ``/v1/retrieve``**（§2.3：超图
+    索引与检索跑在 sidecar，插件进程里不需要索引）。没有 sidecar 时检索器
+    **自己**降级为 BM25 并置 ``degraded``，由 trace 如实记录。
     """
     rag = getattr(config, "rag", None)
+    client = None
+    if transport is not None and hasattr(transport, "retrieve_response"):
+        client = KnowledgeClient(transport, audit=_audit_hook(audit))
     if rag is None:
         return default_retriever()
     backend = RagBackend.DIGEST if not rag.enabled else RagBackend(str(rag.backend))
     retriever = default_retriever(
         backend=backend, top_k=int(rag.top_k or 5),
         token_limit=int(getattr(rag, "max_tokens_per_call", 800) or 800),
-        plan_token_limit=int(getattr(rag, "plan_prefetch_tokens", 2000) or 2000))
+        plan_token_limit=int(getattr(rag, "plan_prefetch_tokens", 2000) or 2000),
+        client=client)
     log.info("Light RAG：%s", retriever.describe())
     return retriever
 
