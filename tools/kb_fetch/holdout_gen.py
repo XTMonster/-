@@ -34,12 +34,13 @@ from block_director.knowledge import hypergraph as hg
 HOLDOUT = common.ROOT / "fixtures" / "knowledge_holdout.jsonl"
 CARDS_JSON = common.ROOT / "fixtures" / "knowledge_holdout.cards.json"
 MANIFEST = common.WORK / "holdout.manifest.json"
-PROMPT_VERSION = "holdout/v1"
+PROMPT_VERSION = "holdout/v2"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
-超边 schema ＋ 取值词表。你的工作是：为每张卡写出 1 条**检索期望**，用来检验一个超图检索器\
-是否真能召回该卡所表达的知识。
+超边 schema ＋ 取值词表。你的工作是：**为每张卡写出 2 条不同的检索期望**，用来检验一个超图\
+检索器是否真能召回该卡所表达的知识。第 1 条抓这张卡最核心的那条约束；第 2 条换一组查询键\
+或取值（不要与第 1 条同义重复），让词表覆盖更广。每张卡都必须有 2 条。
 
 只输出 JSON：{"entries":[{...}, ...]}，每条：
 {
@@ -68,7 +69,9 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
 7. **禁忌槽位只出现在 EMOTION_PACK 上**（§2.3 的边表：只有它有 `forbid` 成员）；
    其它五类写 `forbid_` 会被判成不可召回。
 8. **q 与 must 必须自洽**：`q` 里出现的 kind，只要 `must` 里有同类槽位，
-   取值就必须与 `q` 完全一致（校验器会逐条对拍）。
+    取值就必须与 `q` **逐字相同**（校验器会逐条对拍）。
+8b. **`q` 里同一个键只能出现一次**（写两遍 `节奏=…` 会被判红）；同一个 kind 在
+    `q` 与 `must` 里必须用**同一个取值**，不许一个写中文、一个写英文代号。
 9. 词表里的**每个取值都必须至少出现在一条 `q` 里**（覆盖门③）；
    因此请在多个条目之间轮换取值，不要反复只用同一个词。
 

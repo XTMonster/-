@@ -36,6 +36,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.check_holdout import (  # noqa: E402
+    EntryError,
     REQUIRED_SLOTS,
     gate_edge_types,
     gate_entries,
@@ -45,6 +46,7 @@ from tools.check_holdout import (  # noqa: E402
     must_values_from,
     spec_key,
     support_from,
+    validate_entry as gate_validate_entry,
 )
 from tools.kb_fetch import common, holdout_gen, llm  # noqa: E402
 
@@ -236,17 +238,30 @@ def absorb(entries: List[Dict], rejects: List[Dict], raw_reply, card_ids: set,
         rejects.append({"reason": "reply_not_a_list"})
         return counter
     for raw in raw_entries:
-        entry, reason = holdout_gen.validate_entry(raw, card_ids)
-        if entry is None:
-            rejects.append({"reason": reason, "raw": str(raw)[:200]})
+        try:
+            entry, reason = holdout_gen.validate_entry(raw, card_ids)
+            if entry is None:
+                rejects.append({"reason": reason, "raw": str(raw)[:200]})
+                continue
+            candidate = {"id": f"hq_{counter + 1:04d}", **entry,
+                         "annotator": dict(_ANNOTATOR), "independence": "strong",
+                         "pilot": False}
+            # **与校验器同一套逐条判据**：门② 判红的结构（`q` 里重复键、`q` 与 `must`
+            # 同 kind 取值不一致、`top1` 不在 `must` 里、同成员既要又要……）绝不许在
+            # "产出侧"被放行——否则文件收尾时整批翻红，而生成器还自以为成功。
+            # 直接调 `check_holdout.validate_entry`，不另写一套；它抛的 `EntryError`
+            # **必须**在这里被收成一条 reject，绝不能让整轮长跑当场崩掉
+            # （实测崩过一次：`_dedupe_key()` 里的 `spec_key()` 对自相矛盾的槽位抛错）。
+            gate_validate_entry(candidate)
+            key = _dedupe_key(candidate)
+        except EntryError as exc:
+            rejects.append({"reason": f"gate2:{exc}", "raw": str(raw)[:200]})
             continue
-        if _dedupe_key(entry) in seen:
+        if key in seen:
             continue
-        seen.add(_dedupe_key(entry))
+        seen.add(key)
         counter += 1
-        entries.append({"id": f"hq_{counter:04d}", **entry,
-                        "annotator": dict(_ANNOTATOR), "independence": "strong",
-                        "pilot": False})
+        entries.append(candidate)
     return counter
 
 

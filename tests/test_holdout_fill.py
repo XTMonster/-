@@ -18,6 +18,17 @@ def _entry(card: str, q: str, must: list) -> dict:
             "top1": list(must), "never": []}
 
 
+_ANNOTATOR = {"model_id": "test-model", "family": "qwen",
+              "model_version": "test-model", "prompt_sha256": "deadbeef"}
+
+
+def _with_annotator(monkeypatch):
+    """`absorb()` 现在跑校验器的逐条判据，而 `annotator` 的
+    `model_id/family/model_version` 是换族证据链的必填项——真实调用里由
+    `set_annotator()` 填好，测试里要显式给。"""
+    monkeypatch.setattr(holdout_fill, "_ANNOTATOR", dict(_ANNOTATOR))
+
+
 def test_partial_checkpoint_round_trips(tmp_path):
     progress = tmp_path / "progress.json"
     partial = tmp_path / "partial.jsonl"
@@ -44,6 +55,48 @@ def test_absent_checkpoint_is_empty_not_an_error(tmp_path):
     assert (entries, rejects, done) == ([], [], set())
 
 
+def test_absorb_uses_the_same_per_entry_rules_as_the_gate(monkeypatch):
+    """产出侧不许比校验器松：门② 判红的条目在 `absorb()` 里也必须被拒。
+
+    实测过一次真实长跑：partial 里 284 条有 **94 条**带门② 问题（`q` 里同一个键写了
+    两个取值、`q` 与 `must` 同 kind 取值不一致），而生成器把它们全当成功收下了——
+    收尾时整批翻红，白跑一轮。根因是 `absorb()` 只做了 `holdout_gen.validate_entry`
+    的结构校验，没有跑校验器的逐条判据。
+    """
+    _with_annotator(monkeypatch)
+    duplicate_key = _entry("c1", "情绪=荒诞；情绪=压抑",
+                           ["EMOTION_PACK:emotion=荒诞,intensity=high"])
+    good = _entry("c1", "情绪=荒诞", ["EMOTION_PACK:emotion=荒诞,intensity=high"])
+
+    entries, rejects = [], []
+    counter = holdout_fill.absorb(entries, rejects, {"entries": [duplicate_key, good]},
+                                 {"c1"}, 0)
+
+    assert counter == 1, "只有合规的那条该被收下"
+    assert len(entries) == 1 and entries[0]["from_card"] == "c1"
+    assert rejects and rejects[0]["reason"].startswith("gate2:")
+
+
+def test_absorb_never_crashes_on_a_self_contradictory_spec(monkeypatch):
+    """同一个成员既要又要（`allow` 与 `forbid` 撞车）必须变成一条 reject，不许炸整轮。
+
+    实测过：`_dedupe_key()` 里的 `spec_key()` 会对这种槽位抛 `EntryError`，而它原先在
+    `try` 之外——于是 60 分钟的批处理跑到第 2 批就整个进程退出，前功尽弃。
+    """
+    _with_annotator(monkeypatch)
+    contradictory = _entry("c1", "情绪=荒诞；运镜=固定",
+                           ["EMOTION_PACK:emotion=荒诞,forbid_movement=固定,movement=固定"])
+    good = _entry("c1", "情绪=荒诞", ["EMOTION_PACK:emotion=荒诞,intensity=high"])
+
+    entries, rejects = [], []
+    counter = holdout_fill.absorb(entries, rejects,
+                                 {"entries": [contradictory, good]}, {"c1"}, 0)
+    assert counter == 1
+    assert [e["q"] for e in entries] == ["情绪=荒诞"]
+    assert len(rejects) == 1, "自相矛盾的那条必须变成一条 reject（而不是让整轮崩掉）"
+    assert "固定" in json.dumps(rejects, ensure_ascii=False)
+
+
 def test_corrupt_checkpoint_is_ignored(tmp_path):
     progress = tmp_path / "progress.json"
     partial = tmp_path / "partial.jsonl"
@@ -52,7 +105,8 @@ def test_corrupt_checkpoint_is_ignored(tmp_path):
     assert holdout_fill.load_partial("fp", progress, partial) == ([], [], set())
 
 
-def test_absorb_dedupes_and_counts_rejects():
+def test_absorb_dedupes_and_counts_rejects(monkeypatch):
+    _with_annotator(monkeypatch)
     entries = []
     rejects = []
     good = _entry("c1", "情绪=荒诞", ["EMOTION_PACK:emotion=荒诞,intensity=high"])
