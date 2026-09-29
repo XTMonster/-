@@ -1,0 +1,23 @@
+{
+  "windows": 122,
+  "groups": 574,
+  "merged_edges": 143,
+  "multi_card_edges": 95,
+  "forbid_wins": 0,
+  "dropped_optional": 0,
+  "over_budget_dropped": 0,
+  "forbid_members": 19,
+  "max_arity": 4,
+  "dropped_groups": [],
+  "before_dedupe": {
+    "merged_edges": 574,
+    "forbid_members": 22,
+    "max_arity": 4
+  },
+  "dangling_members_dropped": 0,
+  "fingerprint": "45eaf370b595ecb6ff86499247dc550b7d8b108cec309b6f6df77fa65532948d",
+  "atoms": 723,
+  "raw_edges": 574,
+  "valid_unique": 143,
+  "duplicates": 431
+}

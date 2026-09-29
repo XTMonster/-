@@ -69,6 +69,21 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    取值就必须与 `q` 完全一致（校验器会逐条对拍）。
 9. 词表里的**每个取值都必须至少出现在一条 `q` 里**（覆盖门③）；
    因此请在多个条目之间轮换取值，不要反复只用同一个词。
+
+**示例（照这个形状写，别只写个 `TYPE:` 占位符）**：
+```json
+{"entries": [
+  {"from_card": "gen_cine_0001",
+   "q": "情绪=荒诞；运镜=固定；景别=中景",
+   "must": ["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_movement=固定"],
+   "top1": ["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_movement=固定"],
+   "never": ["SHOT_PATTERN:shot_size=ELS,lens=24mm,headroom_policy=board"],
+   "expect_movements": ["甩镜"]}
+]}
+```
+注意示例里：`q` 用的是**中文键**；`must` 里写的是**真实的边类型名**
+（EMOTION_PACK／SHOT_PATTERN／AXIS_RULE／TROPE／EDIT_RHYTHM／LIGHT_PACK），
+不是字面量 `TYPE`；`forbid_movement` 的取值与 `q` 的 `运镜=` **一模一样**。
 """
 
 
@@ -79,9 +94,19 @@ def cards_fingerprint(cards: Sequence[Dict]) -> str:
 
 
 def build_prompt(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> str:
-    lines = ["【冻结的取值词表】（取值请尽量用这里的规范名）"]
+    # 词表按 kind 打印时，**必须同时给出对应的中文查询键**：只印英文 kind 名，
+    # 模型会把 `q` 写成 `emotion=...；pacing=...`（实测 qwen2.5:7b 就是这样），
+    # 而协议冻结的 `q` 键只有中文那一套，于是整批被格式门拒收。
+    from tools.check_holdout import Q_KEY_TO_KIND
+
+    zh_of: Dict[str, str] = {}
+    for key, kind in Q_KEY_TO_KIND.items():
+        zh_of.setdefault(kind, key)
+    lines = ["【冻结的取值词表】（`q` 的键用括号里的中文键；取值用这里的规范名）"]
     for kind, values in sorted(vocab.items()):
-        lines.append(f"- {kind}: " + ", ".join(values[:60]))
+        key = zh_of.get(kind)
+        head = f"{key}/{kind}" if key else f"{kind}（仅用于 must 槽位）"
+        lines.append(f"- {head}: " + ", ".join(values[:60]))
     lines.append("\n【知识卡】")
     for card in cards:
         lines.append(f"### {card['id']}（domain={card['domain']}）\n"

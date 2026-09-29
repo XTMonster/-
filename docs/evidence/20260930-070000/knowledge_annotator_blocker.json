@@ -1,0 +1,40 @@
+{
+  "why": "held-out >=1200 needs a capable local annotator; none of the installed ones can produce a single accepted entry",
+  "rule": "exec doc v1.4 2.3c R49: annotator family must differ from the extractor (extractor = deepseek-chat / family deepseek)",
+  "probes": [
+    {
+      "model": "qwen3-vl:30b",
+      "endpoint": "/v1/chat/completions",
+      "finish_reason": "length",
+      "completion_tokens": 2272,
+      "content_len": 0,
+      "note": "num_ctx defaults to 4096; the whole budget goes to thinking"
+    },
+    {
+      "model": "bd-annotator:latest",
+      "endpoint": "/api/chat (native)",
+      "done_reason": "length",
+      "eval_count": 8192,
+      "content_len": 0,
+      "thinking_len": 22257,
+      "note": "the derived no-think template did NOT suppress thinking"
+    },
+    {
+      "model": "bd-annotator:8k",
+      "endpoint": "/v1/chat/completions",
+      "finish_reason": "length",
+      "completion_tokens": 6135,
+      "content_len": 0,
+      "note": "all 8192-2057 tokens still spent thinking"
+    },
+    {
+      "model": "qwen2.5:7b-instruct",
+      "endpoint": "/v1/chat/completions",
+      "finish_reason": "stop",
+      "content_len": 2294,
+      "accepted_entries": "0/16",
+      "note": "non-thinking and fast enough, but cannot follow the frozen schema: it emitted the literal `TYPE:` placeholder and English q-keys; after the prompt fix it still drops required slots (intensity/emotion/avg_shot_len)"
+    }
+  ],
+  "consequence": "fixtures/knowledge_holdout.jsonl stays empty; tools/holdout_score.py and tools/ab_triple_baseline.py correctly report INCOMPLETE (never pass) per 4.1b hard rule 1"
+}
