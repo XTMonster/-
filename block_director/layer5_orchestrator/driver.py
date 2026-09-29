@@ -596,6 +596,30 @@ class PrevisDriver:
             self.audit.log("plan_declared_dialogue_pinned",
                            f"已钉住 {pinned} 句剧本声明的台词",
                            shots=len(self.plan.shots))
+        self._pin_declared_camera(declared)
+
+    def _pin_declared_camera(self, declared) -> None:
+        """把分镜表的「拍摄手法」钉成声明式运镜（v1.3 §3.6）。
+
+        剧本写了"快速推镜"却没有任何环节把它变成相机运动，交付的视频里
+        镜头就是死的——这正是 v1.2 的运镜"不可声明"缺口的最后一段。
+        B1 已经给了运镜时不覆盖：那才是落实侧。
+        """
+        pinned = 0
+        for index, shot in enumerate(self.plan.shots):
+            if index >= len(declared):
+                break
+            movement = str(getattr(declared[index], "camera_move", "") or "")
+            camera = dict(getattr(shot, "camera", None) or {})
+            if not movement or movement == "static" or camera.get("movements"):
+                continue
+            camera["movements"] = [{"type": movement}]
+            shot.camera = camera
+            pinned += 1
+        if pinned:
+            self.audit.log("plan_declared_camera_pinned",
+                           f"已钉住 {pinned} 个镜头的拍摄手法",
+                           shots=len(self.plan.shots))
 
     def _pin_brief_gaze(self) -> None:
         """阶段 B1 结束后再补注视关系（§3.5 的"声明 vs 落实"）。

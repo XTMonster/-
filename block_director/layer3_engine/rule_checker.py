@@ -122,6 +122,27 @@ def _overlapping_pairs(items: List[Tuple[int, int, str]]):
 
 
 @main_thread_only("check_shot")
+def shot_frame_span(shot_id: str, context=None) -> Tuple[int, int]:
+    """这一镜在时间轴上的 ``(起, 止)``；拿不到就退回 ``(1, 1)``。
+
+    带运镜的镜头在不同帧上的机位不同，规则必须说明"在**哪一帧**上判"。
+    """
+    context = context or get_context()
+    if context is not None:
+        span = context.schedule.get(shot_id)
+        if span:
+            return int(span[0]), int(span[1])
+    return 1, 1
+
+
+def audit_frames(shot_id: str, context=None) -> List[int]:
+    """镜头首 / 中 / 尾三帧（去重，单帧镜头只返回一帧）。"""
+    start, end = shot_frame_span(shot_id, context)
+    middle = start + max((end - start) // 2, 0)
+    return sorted({int(start), int(middle), int(end)})
+
+
+@main_thread_only("check_shot")
 def check_shot(shot_id: str, *, context=None,
                composition_threshold: float = 70.0) -> AuditResult:
     """对单个镜头跑全部已实现的 Level 1 规则。"""
@@ -135,11 +156,25 @@ def check_shot(shot_id: str, *, context=None,
     context = context or get_context()
     scene = bpy.context.scene
     findings: List[AuditError] = []
+    # v1.3：带运镜的镜头在不同帧上机位不同，规则必须说明判在哪一帧。
+    # 判定统一落在**本镜首帧**，构图的通过门槛再额外取首/中/尾的最小值
+    # （详见下方），结束后把帧号还原，绝不把审核的副作用留给渲染。
+    original_frame = int(scene.frame_current)
+    frame_start, frame_end = shot_frame_span(shot_id, context)
+    if frame_start != original_frame:
+        scene.frame_set(frame_start)
     bpy.context.view_layer.update()
 
     shot = context.shot(shot_id) if context else None
     camera = context.camera_for(shot_id) if context else None
     shot_type = context.shot_types.get(shot_id, "MS") if context else "MS"
+
+    def finish(result: AuditResult) -> AuditResult:
+        """规则评估完必须还原帧号——审核不该改变场景的状态。"""
+        if scene.frame_current != original_frame:
+            scene.frame_set(original_frame)
+            bpy.context.view_layer.update()
+        return result
 
     # 判定必须基于**本镜头的角色**：特写镜头不该因为"另一个角色不在画里"
     # 而被判失败（Phase 5 首次跑 R003 的回归测试时就踩到了这个）。
@@ -159,7 +194,7 @@ def check_shot(shot_id: str, *, context=None,
         findings.append(_error(
             "R007", "E_SDL_001", "该镜头没有可用相机", target=shot_id,
             suggestion="用 setup_camera 为该镜头建立机位"))
-        return AuditResult.from_findings(findings, target=shot_id)
+        return finish(AuditResult.from_findings(findings, target=shot_id))
 
     # R006 帧范围 -----------------------------------------------------------
     if shot is not None and shot.duration_frames <= 0:
@@ -266,6 +301,8 @@ def check_shot(shot_id: str, *, context=None,
     # R009 镜头距离与景别匹配 ----------------------------------------------
     frame = SHOT_FRAME.get(str(shot_type).upper())
     if frame is not None and center is not None:
+        # v1.3：在**首帧**评估。带运镜的镜头其余帧的机位是刻意变化的，
+        # 拿它们去比"景别期望距离"只会把合法的运动判成错误。
         actual = (camera.matrix_world.translation - center).length
         expected = required_distance(frame.frame_height, float(camera.data.lens))
         if expected > 0 and abs(actual - expected) / expected > DISTANCE_TOLERANCE:
@@ -282,8 +319,20 @@ def check_shot(shot_id: str, *, context=None,
             previous_id = order[order.index(shot_id) - 1]
             previous_camera = context.camera_for(previous_id)
             if previous_camera is not None:
+                # v1.3：两个镜头各自取**自己首帧**的机位。带运镜时拿同一帧
+                # 比较等于在比两个不相干的时刻，30° 规则会得出错误结论。
+                previous_start, _ = shot_frame_span(previous_id, context)
+                scene.frame_set(previous_start)
+                bpy.context.view_layer.update()
+                previous_position = \
+                    previous_camera.matrix_world.translation.copy()
+                previous_neutral = (context.axis is not None
+                                    and check_camera_neutral(context.axis,
+                                                             previous_camera))
+                scene.frame_set(frame_start)
+                bpy.context.view_layer.update()
                 message = thirty_degree_violation(
-                    previous_camera.matrix_world.translation,
+                    previous_position,
                     camera.matrix_world.translation, center,
                     context.shot_types.get(previous_id, "MS"), shot_type)
                 if message:
@@ -291,9 +340,7 @@ def check_shot(shot_id: str, *, context=None,
                         "R010", "E_AXIS_001", message, target=shot_id,
                         suggestion="改变机位角度，或至少变化一档景别"))
                 # 连续中性镜头：单次中性是合法桥梁，连着用就没有左右关系了。
-                if (neutral_here and context.axis is not None
-                        and check_camera_neutral(context.axis,
-                                                 previous_camera)):
+                if neutral_here and previous_neutral:
                     findings.append(_warning(
                         "R001", "E_AXIS_001",
                         f"{previous_id} 与 {shot_id} 都是中性机位（落在轴线上），"
@@ -304,16 +351,28 @@ def check_shot(shot_id: str, *, context=None,
     # 构图质量门（§7.1 B3 把构图列为通过条件） -----------------------------
     composition = None
     if characters:
-        composition = evaluate_camera_composition(camera, characters,
-                                                  shot_type=shot_type)
-        if composition.score < composition_threshold:
+        # v1.3：取首 / 中 / 尾三帧的**最小值**。只看首帧，运镜后段把主体
+        # 挤出画面的镜头照样能通过——那正是"运动"最容易出事的地方。
+        if frame_start != frame_end:
+            scene.frame_set(frame_start)
+            bpy.context.view_layer.update()
+        worst = None
+        for sample in audit_frames(shot_id, context):
+            scene.frame_set(sample)
+            bpy.context.view_layer.update()
+            report = evaluate_camera_composition(camera, characters,
+                                                 shot_type=shot_type)
+            if worst is None or report.score < worst.score:
+                worst = report
+        composition = worst
+        if composition is not None and composition.score < composition_threshold:
             detail = "；".join(composition.suggestions[:2]) or "请调整构图"
             findings.append(_error(
                 "COMPOSITION", "E_CAM_001",
-                f"构图评分 {composition.score:.1f} 低于阈值 "
+                f"构图评分 {composition.score:.1f}（首/中/尾最小值）低于阈值 "
                 f"{composition_threshold:.0f}",
                 target=shot_id, suggestion=detail))
 
-    return AuditResult.from_findings(
+    return finish(AuditResult.from_findings(
         findings, target=shot_id,
-        score=composition.score if composition else None)
+        score=composition.score if composition else None))

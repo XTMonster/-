@@ -7,10 +7,13 @@ import math
 import pytest
 
 from block_director.cinema.camera_motion import (
+    DEFAULT_AMOUNTS,
     DEFAULT_SAMPLES,
     MOVEMENT_TYPES,
     describe,
+    movement_spec,
     movement_samples,
+    sample_frames,
 )
 
 CAMERA = (0.0, -4.0, 1.0)
@@ -252,3 +255,59 @@ def test_subject_tracking_without_a_path_is_refused():
     with pytest.raises(ValueError) as excinfo:
         movement_samples(CAMERA, TARGET, "follow_subject", 1.0, 1, 24)
     assert "subject_path" in str(excinfo.value)
+
+
+# --------------------------------------------------------------------------- #
+# v1.3 P7：声明式消费用的纯工具
+# --------------------------------------------------------------------------- #
+def test_every_movement_has_a_default_amount():
+    """声明里只写 ``type`` 时要用默认强度——缺一个就会在构建时抛异常。"""
+    missing = [item for item in MOVEMENT_TYPES if item not in DEFAULT_AMOUNTS]
+    assert missing == []
+    assert all(value > 0 for value in DEFAULT_AMOUNTS.values())
+
+
+def test_sample_frames_matches_the_samples_the_solver_emits():
+    """帧号表必须和采样表一致，否则跟拍会对着错的时刻取主体位置。"""
+    frames = sample_frames(10, 34, movement="dolly_in")
+    assert frames == [s["frame"] for s in
+                      movement_samples(CAMERA, TARGET, "dolly_in", 1.0, 10, 34)]
+    dense = sample_frames(10, 34, movement="handheld")
+    assert len(dense) == 7
+    assert dense[0] == 10 and dense[-1] == 34
+
+
+def test_movement_spec_converts_local_frames_to_global_ones():
+    spec = movement_spec({"type": "dolly_in", "amount": 2.0,
+                          "start_frame": 3, "end_frame": 40},
+                         shot_start=97, shot_end=216)
+    assert spec == {"type": "dolly_in", "amount": 2.0,
+                    "start_frame": 99, "end_frame": 136,
+                    "seed": 0, "subject": ""}
+
+
+def test_movement_spec_fills_defaults_and_clamps_to_the_shot():
+    spec = movement_spec({"type": "orbit_cw"}, shot_start=1, shot_end=48)
+    assert spec["amount"] == DEFAULT_AMOUNTS["orbit_cw"]
+    assert (spec["start_frame"], spec["end_frame"]) == (1, 48)
+    # 越界的时间码被夹到镜头内，绝不写到别的镜头的时间轴上
+    clamped = movement_spec({"type": "pan_left", "start_frame": -5,
+                             "end_frame": 999}, shot_start=49, shot_end=96)
+    assert (clamped["start_frame"], clamped["end_frame"]) == (49, 96)
+
+
+def test_movement_spec_rejects_an_unknown_movement():
+    with pytest.raises(ValueError):
+        movement_spec({"type": "zoom"}, shot_start=1, shot_end=24)
+
+
+def test_movement_spec_accepts_a_plain_string_and_keeps_the_subject():
+    assert movement_spec("track_left", shot_start=1, shot_end=24)["type"] == \
+        "track_left"
+    spec = movement_spec({"type": "follow_subject", "subject": "char_002"},
+                         shot_start=1, shot_end=24, default_subject="char_001")
+    assert spec["subject"] == "char_002"
+    fallback = movement_spec({"type": "follow_subject"},
+                             shot_start=1, shot_end=24,
+                             default_subject="char_001")
+    assert fallback["subject"] == "char_001"

@@ -99,11 +99,16 @@ def t_trace_carries_prompt_and_response():
 def t_trace_still_records_the_metadata():
     tmp_dir = tempfile.mkdtemp(prefix="bd_trace_")
     _driver, records = run_once(tmp_dir)
+    # v1.3：记录的第一条是阶段 S 的剧本理解，计划是第二条
     first = records[0]
-    return {"ok": (first["tool_calls"] == ["emit_plan"] and first["error"] == ""
-                   and "usage" in first and "duration_s" in first
-                   and first["run_id"]),
-            "metadata": {key: first[key] for key in
+    plan = next(item for item in records if item["purpose"] == "plan")
+    return {"ok": (first["purpose"] == "understand"
+                   and first["tool_calls"] == ["emit_scene_brief"]
+                   and plan["tool_calls"] == ["emit_plan"]
+                   and all(item["error"] == "" for item in records)
+                   and "usage" in plan and "duration_s" in plan
+                   and plan["run_id"]),
+            "metadata": {key: plan[key] for key in
                          ("purpose", "tool_calls", "duration_s", "error")}}
 
 

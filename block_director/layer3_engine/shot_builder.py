@@ -18,6 +18,7 @@ import bpy
 
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
+from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
 from ..cinema.station import SubjectFrame, camera_direction, subject_frame
 from ..cinema.schedule import shot_ranges, total_frames
 from ..motion.model import ActionRequest
@@ -25,7 +26,11 @@ from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .character_system import MotionBlender, create_character, create_label
 from .character_system.character_label import create_render_label, hex_rgba
-from .cinema_engine import establish_axis_from_speakers, place_camera_for_shot
+from .cinema_engine import (
+    apply_camera_movement,
+    establish_axis_from_speakers,
+    place_camera_for_shot,
+)
 from .collection_router import (
     clear_blockdirector_objects,
     clear_scene_objects,
@@ -74,6 +79,8 @@ class BuildSummary:
     total_frames: int = 0
     results: List[ShotBuildResult] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
+    #: v1.3 P7：声明式运镜落地的条数（相机关键帧由它生成）
+    movements: int = 0
     #: 渲染标签的烘焙摘要（v1.3 诉求 4）；没有标签时为空字典
     label_report: Dict[str, Any] = field(default_factory=dict)
 
@@ -83,6 +90,7 @@ class BuildSummary:
             "cameras": self.cameras, "motions": self.motions,
             "keyframes": self.keyframes, "total_frames": self.total_frames,
             "warnings": list(self.warnings),
+            "movements": self.movements,
             "label_report": dict(self.label_report),
             "results": [r.to_dict() for r in self.results],
         }
@@ -254,6 +262,7 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
 
     ranges = shot_ranges(plan)
     motion_requests: Dict[str, List[ActionRequest]] = {}
+    movement_tasks: List[Tuple[str, int, int, List[Dict[str, Any]], str]] = []
     for shot in plan.shots:
         start, end = ranges[shot.shot_id]
 
@@ -283,6 +292,18 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         for request in requests:
             motion_requests.setdefault(request.character_id, []).append(request)
 
+        # §3.6 声明式消费：计划里写了运镜就自动生成相机关键帧，
+        # 不再依赖模型另外调一次 move_camera。放在动作烘焙**之后**执行
+        # （跟拍要读主体逐帧的位置），所以这里只登记任务。
+        declared_moves = [dict(item) for item in
+                          (getattr(shot, "camera", None) or {}).get("movements", [])
+                          if isinstance(item, dict)]
+        if declared_moves:
+            default_subject = (speaker_of(shot)
+                               or (shot.characters[0] if shot.characters else ""))
+            movement_tasks.append((shot.shot_id, start, end, declared_moves,
+                                   default_subject))
+
         summary.results.append(ShotBuildResult(
             shot_id=shot.shot_id, shot_type=str(shot.shot_type),
             start_frame=start, end_frame=end, camera=bundle.camera.name,
@@ -307,6 +328,39 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             continue
         summary.motions += len(requests)
         summary.keyframes += result.keyframes
+
+    for shot_id, start, end, declared_moves, default_subject in movement_tasks:
+        camera = context.cameras.get(shot_id)
+        target = bpy.data.objects.get(f"BD_CamTarget_{shot_id}")
+        if camera is None:
+            summary.warnings.append(f"{shot_id}: 没有相机，运镜声明已跳过")
+            continue
+        for raw in declared_moves:
+            try:
+                spec = movement_spec(raw, shot_start=start, shot_end=end,
+                                     default_subject=default_subject)
+            except ValueError as exc:
+                summary.warnings.append(
+                    f"{shot_id}: 运镜声明无效（{exc}），已跳过")
+                continue
+            subject = characters.get(str(spec["subject"]))
+            if spec["type"] in SUBJECT_TRACKING and subject is None:
+                summary.warnings.append(
+                    f"{shot_id}: {spec['type']} 找不到被摄主体"
+                    f"（{spec['subject'] or '未指定'}），已跳过")
+                continue
+            try:
+                report = apply_camera_movement(
+                    camera, target, str(spec["type"]), float(spec["amount"]),
+                    int(spec["start_frame"]), int(spec["end_frame"]),
+                    subject=subject, seed=int(spec["seed"]))
+            except ValueError as exc:
+                summary.warnings.append(f"{shot_id}: {exc}")
+                continue
+            summary.movements += 1
+            summary.keyframes += int(report["keyframes"])
+            log.info("%s: 运镜 %s（%s 帧）", shot_id, spec["type"],
+                     f"{spec['start_frame']}-{spec['end_frame']}")
 
     if label_entries:
         # v1.3 诉求 4：标签的公告板与"屏幕恒定字号"在**构建期**烘焙，

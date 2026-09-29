@@ -64,6 +64,25 @@ if _GROUPED_MOVEMENTS != frozenset(MOVEMENT_TYPES):     # pragma: no cover
 LOOK_AT_DISTANCE = 3.0
 DEFAULT_SAMPLES = 3          # 首 / 中 / 尾，够贝塞尔插值走出平滑弧线
 
+#: 每种运镜的默认强度（声明里只写了 ``type`` 时用它）。
+#: 平移类/推拉变焦/跟拍的单位是米，摇与环绕是度，变焦是毫米。
+DEFAULT_AMOUNTS: Dict[str, float] = {}
+for _key in TRANSLATIONS:
+    DEFAULT_AMOUNTS[_key] = 1.0
+for _key in ROTATIONS:
+    DEFAULT_AMOUNTS[_key] = 15.0
+for _key in ZOOMS:
+    DEFAULT_AMOUNTS[_key] = 15.0
+for _key in DOLLY_ZOOMS:
+    DEFAULT_AMOUNTS[_key] = 1.5
+for _key in ORBITS:
+    DEFAULT_AMOUNTS[_key] = 45.0
+for _key in SUBJECT_TRACKING:
+    DEFAULT_AMOUNTS[_key] = 2.0
+for _key in HANDHELD:
+    DEFAULT_AMOUNTS[_key] = 0.05
+del _key
+
 #: 甩镜与手持的采样密度更高：它们靠"短时间内快速变化"表达，
 #: 只有首中尾三个采样点会把变化抹平。
 DENSE_SAMPLES = {"whip_pan_left": 5, "whip_pan_right": 5, "handheld": 7}
@@ -161,6 +180,67 @@ def _path_point(subject_path: Sequence[Sequence[float]],
                  for i in range(3))
 
 
+def sample_count(movement: str, samples: int = DEFAULT_SAMPLES) -> int:
+    """这次运镜要取几个采样点（甩镜与手持更密）。"""
+    limit = max(int(samples), 2)
+    return max(limit, DENSE_SAMPLES.get(str(movement), 0))
+
+
+def sample_frames(start_frame: int, end_frame: int,
+                  samples: int = DEFAULT_SAMPLES,
+                  movement: str = "") -> List[int]:
+    """采样点落在哪些帧上。
+
+    bpy 侧要按**同一张时间表**去取被摄主体的位置（跟拍），所以帧号的计算
+    必须是共享的纯函数——两处各算一遍迟早会错位。
+    """
+    start, end = int(start_frame), int(end_frame)
+    if end <= start:
+        raise ValueError("end_frame 必须大于 start_frame")
+    limit = sample_count(movement, samples)
+    return [int(round(start + (end - start) * (index / float(limit - 1))))
+            for index in range(limit)]
+
+
+def movement_spec(raw, *, shot_start: int, shot_end: int,
+                  default_subject: str = "") -> Dict[str, object]:
+    """把计划里的一条运镜声明规整成可执行参数（纯函数，可单测）。
+
+    计划里的帧号是**镜头内局部帧**（与动作、对白一致），这里换算成全局帧
+    并夹在镜头范围内：越界的声明不至于把关键帧写到别的镜头里去。
+    """
+    item = dict(raw) if isinstance(raw, dict) else {"type": str(raw or "")}
+    movement = str(item.get("type") or item.get("movement") or "").strip()
+    if movement not in MOVEMENT_TYPES:
+        raise ValueError(f"未知运镜 {movement!r}。可用: "
+                         f"{', '.join(MOVEMENT_TYPES)}")
+    amount = item.get("amount")
+    try:
+        amount_value = float(amount)
+    except (TypeError, ValueError):
+        amount_value = DEFAULT_AMOUNTS[movement]
+    if amount_value <= 0:
+        amount_value = DEFAULT_AMOUNTS[movement]
+    duration = max(int(shot_end) - int(shot_start) + 1, 2)
+    local_start = int(item.get("start_frame") or 1)
+    local_end = int(item.get("end_frame") or duration)
+    local_start = min(max(local_start, 1), duration)
+    local_end = min(max(local_end, local_start + 1), duration)
+    start = int(shot_start) + local_start - 1
+    end = int(shot_start) + local_end - 1
+    if end <= start:                      # 单帧镜头：退回整镜的两端
+        start, end = int(shot_start), max(int(shot_end), int(shot_start) + 1)
+    seed = item.get("seed")
+    try:
+        seed_value = max(int(seed), 0)
+    except (TypeError, ValueError):
+        seed_value = 0
+    subject = str(item.get("subject") or "").strip() or str(default_subject or "")
+    return {"type": movement, "amount": amount_value,
+            "start_frame": start, "end_frame": end,
+            "seed": seed_value, "subject": subject}
+
+
 def movement_samples(position: Sequence[float], target: Sequence[float],
                      movement: str, amount: float,
                      start_frame: int, end_frame: int,
@@ -182,9 +262,7 @@ def movement_samples(position: Sequence[float], target: Sequence[float],
         raise ValueError(
             f"运镜 {movement} 需要被摄主体的逐帧路径（subject_path）；"
             f"没有主体就没法跟拍。请先指定主体，或改用推拉/横移。")
-    limit = max(int(samples), 2)
-    if movement in DENSE_SAMPLES:
-        limit = max(limit, DENSE_SAMPLES[movement])
+    limit = sample_count(movement, samples)
 
     forward, right, up = _basis(position, target)
     distance = max(_length(_sub(target, position)), 1e-6)
@@ -196,9 +274,10 @@ def movement_samples(position: Sequence[float], target: Sequence[float],
                  "up": up, "-up": _scale(up, -1.0)}
 
     result: List[Dict[str, object]] = []
+    frames = sample_frames(start, end, samples, movement)
     for index in range(limit):
         ratio = index / float(limit - 1)
-        frame = int(round(start + (end - start) * ratio))
+        frame = frames[index]
         result.append(_sample_one(
             movement, ratio, frame, position, target, direction, distance,
             base_lens, lens_to, float(amount), subject_path, int(seed), index,
