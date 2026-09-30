@@ -67,7 +67,7 @@ REPORT = common.WORK / "holdout_report.json"
 _ANNOTATOR: Dict[str, str] = {}
 
 # 缺口补写用的系统提示（不放进 holdout_gen，避免动它的冻结 prompt 版本）。
-GAP_PROMPT_VERSION = "holdout-gap/v2"
+GAP_PROMPT_VERSION = "holdout-gap/v3"
 GAP_PROMPT = (
     "你是分镜知识库的独立标注员。下面给出一份**缺口清单**与若干张知识卡。"
     "请**只**针对缺口写检索期望，输出 JSON：{\"entries\":[...]}，每条格式与之前一致："
@@ -87,6 +87,11 @@ GAP_PROMPT = (
     "LIGHT_PACK），不要发明 COMPOSITION 之类的新类型；构图/机位/特效/音效/动作类知识"
     "挂到最接近的那一类边上作为**额外槽位**（如构图 → `SHOT_PATTERN` ＋ "
     "`composition_rule=rule_of_thirds`，必填槽位照旧写全）。卡片属于哪个 domain 与边类型无关。\n"
+    "8. **`q` 的键只能取协议 §2.1 的这 15 个**：情绪/动作/运镜/景别/镜头/节奏/特效/"
+    "音效/机位/光线/构图/轴线/题材/桥段/对白。**不要自造键**——实测 `轴线侧`／`轴侧`／`景深`／`标签`／"
+    "`关键词`／`结构` 这类写法会被整条拒收（`轴线侧` 一个错就让整轮 36 条全废）。"
+    "`axis_side`（左/右/中性）**没有**对应的 `q` 键：把它写在 `must` 里就够了，"
+    "`q` 里只写 `轴线=<词表里的轴线取值>`。\n"
 )
 
 
