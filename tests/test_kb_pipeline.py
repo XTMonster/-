@@ -59,11 +59,14 @@ def isolated_work_dir(tmp_path, monkeypatch):
 def test_license_whitelist_is_exactly_the_frozen_set():
     assert common.LICENSE_WHITELIST == {
         "CC0", "CC-BY", "CC-BY-SA", "PublicDomain", "OwnWork", "ExplicitPermission",
+        #: v1.5 用户裁决：个人学习用途允许现代理论素材；单独记名便于以后筛选。
+        "PersonalStudy",
     }
 
 
 @pytest.mark.parametrize("license_name,expected", [
     ("CC-BY-SA", True), ("PublicDomain", True), ("OwnWork", True),
+    ("PersonalStudy", True),
     ("AllRightsReserved", False), ("Unknown", False), ("", False),
 ])
 def test_license_gate(license_name, expected):

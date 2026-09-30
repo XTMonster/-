@@ -31,8 +31,15 @@ DOMAINS: Tuple[str, ...] = (
 )
 
 #: §2.3c 的许可白名单：不在表内一律拒收。
+#:
+#: v1.5 用户裁决：这是一份**个人学习用**的知识库，不对外分发，所以现代理论素材
+#: （当代教材/论文/讲义等受版权保护但用户自用的材料）也要能进来——新增
+#: `PersonalStudy` 一档。它与 `ExplicitPermission`（拿到授权）**不是一回事**，
+#: 单独记名，便于以后真要对外分发时一眼筛出来。逐条归属见
+#: `docs/knowledge/LICENSES.md`。
 LICENSE_WHITELIST = frozenset(
-    {"CC0", "CC-BY", "CC-BY-SA", "PublicDomain", "OwnWork", "ExplicitPermission"}
+    {"CC0", "CC-BY", "CC-BY-SA", "PublicDomain", "OwnWork", "ExplicitPermission",
+     "PersonalStudy"}
 )
 
 #: §2.3c 的 K1：六个字段全非空，缺一不得入库。
