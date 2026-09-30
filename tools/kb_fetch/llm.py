@@ -43,6 +43,13 @@ OLLAMA_BASE = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
 #: 密钥只从环境变量读：**绝不写进仓库**（`GLM_API_KEY`）。
 GLM_BASE = os.environ.get("GLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
 GLM_API_KEY = os.environ.get("GLM_API_KEY", "")
+#: 思考开关与预算（用户裁决"思考强度直接拉满"）。
+#: 实测（raw 探针）：`glm-4.7` 关思考时 6 卡/批 ≈ 40 秒、通过率 0.94–1.0；
+#: 开思考且 `max_tokens=32768` 时**思考 6.5k–6.9k token、正文 12–14k 字符**、
+#: `finish_reason=stop`，12 卡/批约 5 分钟——质量优先就走这条。
+#: `max_tokens=16384` 会**截断**（实测思考 15068 token、正文被切断）。
+GLM_THINKING = os.environ.get("GLM_THINKING", "enabled").strip().lower()
+GLM_MAX_TOKENS = int(os.environ.get("GLM_MAX_TOKENS", "32768"))
 
 #: 本地思考模型的**思考税**实测（v1.4 §6 那条风险）没法用官方开关关掉：
 #: `/no_think`（写进 user 或 system）、`think: false`、精简词表都试过，`num_predict`
@@ -191,7 +198,14 @@ class GLMClient:
         self.model_id = model_id
         self.model_version = model_id
         self.api_key = api_key or GLM_API_KEY
+        self.thinking = GLM_THINKING
+        self.max_tokens = GLM_MAX_TOKENS
         self.last_usage: Dict[str, int] = {}
+
+    @property
+    def decode_tag(self) -> str:
+        """解码条件的可读指纹——进续跑指纹与 `annotator.decode`，避免混解。"""
+        return f"thinking={self.thinking};max_tokens={self.max_tokens}"
 
     def chat_json(self, system: str, user: str, temperature: float, seed: int,
                   num_ctx: int, key: str = "", retries: int = 3) -> Dict:
@@ -203,14 +217,14 @@ class GLMClient:
             "messages": [{"role": "system", "content": system},
                          {"role": "user", "content": user}],
             "temperature": temperature,
-            #: 每张卡 4 条 × 一批 6 张 ≈ 24 条条目，4096 会截断；给足 8192。
-            "max_tokens": 8192,
-            #: 实测（`work` 里的 raw 探针）：`glm-4.7` 默认是**思考模型**——不关思考时
-            #: 整段 `max_tokens` 都花在 `reasoning_content` 上、`content` 恒为空
-            #: （`finish_reason=length`；4096 与 8192 都一样）。`{"thinking":
-            #: {"type": "disabled"}}` 是**它唯一有效的关闭开关**（布尔写法会 400）：
-            #: 关掉后 `finish_reason=stop`、`reasoning_len=0`、正文直接给 JSON。
-            "thinking": {"type": "disabled"},
+            #: 每张卡 4 条 × 一批 12 张 ≈ 48 条，32k 预算给思考＋正文都留足。
+            "max_tokens": self.max_tokens,
+            #: 实测：`glm-4.7` 默认是思考模型。**开思考**时思考 6.5k–6.9k token、
+            #: 正文 12–14k 字符（`finish_reason=stop`）；**关思考**（`{"type":
+            #: "disabled"}`，布尔写法会 400）时 ~40 秒出结果、通过率 0.94–1.0。
+            #: 用户裁决"思考强度直接拉满"→ 默认 `enabled`，用 `GLM_THINKING=disabled`
+            #: 才能切回快档。
+            "thinking": {"type": "enabled" if self.thinking != "disabled" else "disabled"},
         }
         last: Optional[Exception] = None
         for attempt in range(retries):

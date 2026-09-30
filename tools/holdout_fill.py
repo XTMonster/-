@@ -133,6 +133,8 @@ def run_fingerprint(cards: Sequence[Dict], client, prompt_version: str) -> str:
         str(prompt_version),
         hashlib.sha256(holdout_gen.SYSTEM_PROMPT.encode("utf-8")).hexdigest(),
         str(getattr(client, "prefill", "")),
+        #: 解码条件（GLM 的思考开关/预算、本地模型的预填）同样是"标注者身份"的一部分。
+        str(getattr(client, "decode_tag", "")),
     ])
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
@@ -383,7 +385,8 @@ def set_annotator(client, prompt_version: str) -> None:
     _ANNOTATOR.clear()
     _ANNOTATOR.update({"model_id": client.model_id, "family": client.family,
                        "model_version": client.model_version,
-                       "prompt_sha256": prompt_sha})
+                       "prompt_sha256": prompt_sha,
+                       "decode": str(getattr(client, "decode_tag", ""))})
 
 
 # --------------------------------------------------------------------------- 主流程

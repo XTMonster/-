@@ -33,7 +33,13 @@ def test_glm_family_differs_from_the_extractor():
     assert llm.make_client("glm", "glm-4.7").__class__ is llm.GLMClient
 
 
-def test_glm_disables_thinking_in_the_payload(monkeypatch):
+def test_glm_thinks_by_default_and_can_be_switched_off(monkeypatch):
+    """用户裁决"思考强度直接拉满"→ 默认 `thinking=enabled` ＋ 32k 预算。
+
+    实测边界：`max_tokens=16384` 会截断（思考就吃掉 15068 token、正文被切断），
+    32k 才稳（思考 6.5k–6.9k、正文 12–14k 字符、`finish_reason=stop`）。
+    `GLM_THINKING=disabled` 是快档（~40 秒/批、通过率 0.94–1.0）。
+    """
     seen = {}
 
     def fake_post(url, payload, headers, timeout):
@@ -51,11 +57,18 @@ def test_glm_disables_thinking_in_the_payload(monkeypatch):
     out = client.chat_json("sys", "user", 0.0, 0, 8192)
 
     assert out == {"entries": []}
-    assert seen["payload"]["thinking"] == {"type": "disabled"}, \
-        "不关思考时 content 恒为空（整段预算被 reasoning_content 吃光）"
+    assert seen["payload"]["thinking"] == {"type": "enabled"}
+    assert seen["payload"]["max_tokens"] >= 32768, "16k 会截断思考"
+    assert "thinking=enabled" in client.decode_tag
     assert seen["url"].endswith("/chat/completions")
     assert seen["headers"]["Authorization"] == "Bearer test-key"
     assert client.last_usage == {"prompt_tokens": 11, "completion_tokens": 22}
+
+    fast = llm.GLMClient("glm-4.7", api_key="test-key")
+    fast.thinking = "disabled"
+    fast.chat_json("sys", "user", 0.0, 0, 8192)
+    assert seen["payload"]["thinking"] == {"type": "disabled"}
+    assert "thinking=disabled" in fast.decode_tag
 
 
 def test_glm_empty_content_is_a_failure(monkeypatch):
