@@ -1,8 +1,18 @@
-# held-out 标注协议（冻结版 v1 · R50/R49）
+# held-out 标注协议（冻结版 v1 · R50/R49；示例取值口径于 2026-10-01 对齐到 holdout/v14）
 
 > **本文件在标注开始前冻结，标注期间不得修改**（执行文档 §2.3c 的标注通道约束第 3 条）。
 > 词表取值一节标记为 **待语料冻结**：它依赖 P14-1 采集进来的卡片，其余各节现在即为终稿。
 > 校验器：`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl`（八道覆盖门，见 §4.1b）。
+>
+> **2026-10-01 勘误（改的是示例，不是判据）**：§2 的示例原先写着
+> `q="情绪=气急败坏；动作=跺脚；景别=中景"`、`never=["LIGHT_PACK:lighting=逆光"]`。
+> `气急败坏`／`中景` 都不在词表里，`LIGHT_PACK` 又缺必填槽位 `intensity` ——
+> 照抄这个示例产出的条目会被逐条校验（缺必填槽位）与词表校验（`unknown_values`）
+> **整条拒收**；示例的 `must` 里写了 `intensity=high` 却没在 `q` 里写 `强度=high`，
+> 还会被 `query_shortfall()` 判成"召不回自己"。现在示例与
+> `tools/kb_fetch/holdout_gen.py::SYSTEM_PROMPT` 的示例**逐字同源**，并且被
+> `tests/test_knowledge_holdout.py::test_holdout_protocol_and_prompt_examples_are_citable`
+> 双重钉住：门限一个字没动。
 
 ## 1. 产物
 
@@ -12,18 +22,24 @@
 
 ```json
 {"id": "hq_0001",
- "from_card": "cine_shot_size",
- "q": "情绪=气急败坏；动作=跺脚；景别=中景",
- "must": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=跺脚,forbid_shot_size=特写"],
- "top1": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=跺脚,forbid_shot_size=特写"],
- "never": ["LIGHT_PACK:lighting=逆光"],
- "expect_movements": ["固定"],
+ "from_card": "gen_cine_0001",
+ "q": "情绪=荒诞；强度=high；运镜=固定",
+ "must": ["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_movement=固定"],
+ "top1": ["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_movement=固定"],
+ "never": ["SHOT_PATTERN:shot_size=ELS,lens=24mm,headroom_policy=board"],
+ "expect_movements": ["甩镜"],
  "annotator": {"model_id": "deepseek-chat", "family": "deepseek", "model_version": "v3",
                "prompt_sha256": "…"},
  "independence": "strong",
  "pilot": false,
  "review": {"reviewed_by": "human", "verdict": "accepted"}}
 ```
+
+示例里的每个取值都**逐字取自词表**（`荒诞`／`high`／`固定`／`ELS`／`24mm`／`board`），
+`must` 里出现的每个可查询槽位都在 `q` 里有同名取值（`emotion`→`情绪`、
+`intensity`→`强度`），`never` 的 `SHOT_PATTERN` 三个必填槽位
+（`shot_size`／`lens`／`headroom_policy`）也一个不少——任一条不满足都会被逐条校验
+或 `q` 覆盖校验整条拒收。
 
 | 字段 | 必填 | 含义 |
 |---|---|---|

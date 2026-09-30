@@ -152,7 +152,35 @@ def parse_spec(spec: str) -> Tuple[str, Dict[str, str], Dict[str, str]]:
     clash = sorted(set(plain) & set(forbid))
     if clash:
         raise EntryError(f"同一条边里 {clash} 同时被要求和禁止（自相矛盾）")
+    illegal = illegal_members(etype, plain, forbid)
+    if illegal:
+        legal = set(_hg.REQUIRED_MEMBERS[etype]) | set(_hg.OPTIONAL_MEMBERS.get(etype, ()))
+        raise EntryError(
+            f"{etype} 上不允许 {illegal}（在 {spec!r} 内）——"
+            f"该 (role, kind) 不在 §2.3 的必填＋选填成员表里：{sorted(legal)}。"
+            f"索引是照这张表建的（实测 890 条边零非法成员），所以这样的边"
+            f"**在索引里根本不可能存在**，标注等于断言一条永远召不回的边"
+            f"（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）")
     return etype, plain, forbid
+
+
+def illegal_members(etype: str, plain, forbid) -> List[str]:
+    """列出这条边里**角色不合法**的成员（`plain`／`forbid` 是 kind 的容器）。
+
+    为什么必须在这里拦：`parse_spec` 原先只查"kind 是否是已知 kind"，不查
+    "这个 kind 能不能以这个 role 挂在这个边类型上"。于是
+    `EMOTION_PACK:...,forbid_lighting=低调` 一路放行——而
+    `block_director/knowledge/hypergraph.py` 的 `OPTIONAL_MEMBERS[EMOTION_PACK]`
+    只允许 `forbid_movement`／`forbid_shot_size`／`forbid_vfx`。抽取器照 schema
+    建边、非法成员根本进不了索引（实测 890 条边里零个非法成员），
+    这种标注断言的就是一条**构造上不存在**的边。
+    """
+    legal = set(_hg.REQUIRED_MEMBERS[etype]) | set(_hg.OPTIONAL_MEMBERS.get(etype, ()))
+    ok_plain = {kind for role, kind in legal if role != "forbid"}
+    ok_forbid = {kind for role, kind in legal if role == "forbid"}
+    bad = sorted({str(kind) for kind in plain if kind not in ok_plain})
+    bad += sorted("forbid_%s" % kind for kind in forbid if kind not in ok_forbid)
+    return bad
 
 
 def spec_key(spec: str) -> Tuple[str, frozenset]:

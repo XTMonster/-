@@ -38,7 +38,18 @@ MANIFEST = common.WORK / "holdout.manifest.json"
 #: v13：`intensity` 补了查询键（`强度`）。提示里的键清单是**从 schema 渲染**的，
 #: 所以模板一个字没改、**有效提示**却变了——版本号是让指纹诚实地跟着变，
 #: 免得下一轮"续跑"把旧口径的 partial 当成同一批（那正是 §2.3 禁止的事）。
-PROMPT_VERSION = "holdout/v13"
+#:
+#: v14：**v13 只换了键清单，却漏了正文**。正文第 1 条当时仍写着
+#: "`intensity`／`headroom_policy`／`avg_shot_len` … 协议里没有给它们查询键，所以
+#: `q` 里不写它们"，而渲染出来的键清单里**已经有 `强度`**——同一段话自相矛盾。
+#: 标注员照正文办（写 `intensity=<取值>` 却不写 `强度=`），产出侧的
+#: `query_shortfall()` 就把这些条目整条拒收：上一代 oracle 实测
+#: **2449/4539 = 54.0% 不可达**，其中 `intensity` 一个 kind 占 **1501** 条，
+#: 是门⑨ 红的**单一最大成因**。v14 把正文、禁写键名单与示例一并改成与 schema 同口径，
+#: 并新增一条对抗性回归：**提示里的 JSON 示例本身必须是一条合格条目**
+#: （逐条校验 ＋ 词表校验 ＋ `q` 覆盖校验三重）。改动提示文本 ⇒ 必须换版本号，
+#: 否则上一轮按 v13 写出的 partial 会被指纹当成同一批续跑。
+PROMPT_VERSION = "holdout/v14"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
@@ -65,11 +76,17 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    `景别=MS` 与 `镜头=50mm`；`AXIS_RULE:…,axis_topic=越轴` → `q` 写 `轴线=越轴`。
    **实测**：查询覆盖到目标边 ≥2 个成员时 Q1=0.727／Q2=0.917（都过验收线），只覆盖 1 个时
    0.508／0.754，覆盖 0 个则根本召不回。
-1. `q` 的键**只能取协议 §2.1 的这 __QKEY_COUNT__ 个**：__QKEY_LIST__。
-   **一个都不能多、一个都不能少**——`tools/check_holdout.py::parse_q` 对冻结键集之外的键
-   **直接抛错**，整条作废。`intensity`／`headroom_policy`／`avg_shot_len` 虽然也是必填槽位、
-   索引里也有同名 node，但**协议里没有给它们查询键**，所以 `q` 里不写它们；边里写了哪个
-   可查询槽位，`q` 里就要有对应键与逐字相同的取值。
+1. `q` 的键**只能**取协议 §2.1 的这 __QKEY_COUNT__ 个：__QKEY_LIST__。
+   **不得自造键**——`tools/check_holdout.py::parse_q` 对冻结键集之外的键**直接抛错**，
+   整条作废（实测 `轴线侧`／`轴侧`／`景深`／`标签`／`关键词`／`结构` 都是自造键）。
+   反过来，冻结键**不必全用**：一条查询用得上几个就写几个（多写无关键只会稀释查询）。
+   哪些槽位**没有**查询键？只有 `headroom_policy`／`avg_shot_len`／`pair`／`axis_side`
+   这四个 schema 常量，它们不出现在 `q` 里。
+   **`intensity` 不在这个名单里**：v1.5 起它有查询键 `强度`，而 `must` 里的
+   `intensity=<取值>` 是「能写进 `q` 的槽位」——不写 `强度=<同一个取值>`，
+   这条查询就**召不回它自己的 `must`**（产出侧 `query_shortfall()` 整条拒收；
+   实测上一代 oracle 因此有 2449/4539 = 54.0% 的条目在数学上不可达）。
+   边里写了哪个可查询槽位，`q` 里就要有对应键与逐字相同的取值。
 **`type` 只允许这 13 个字符串**：`EMOTION_PACK`、`SHOT_PATTERN`、`AXIS_RULE`、`TROPE`、
 `EDIT_RHYTHM`、`LIGHT_PACK`、`ACTION_BEAT`、`PERFORMANCE_PACK`、`INTENT_PACK`、
 `IMPACT_PACK`、`STAGING_PACK`、`SOUND_PACK`、`TRANSITION_PACK`。写别的（`ACTION`／
@@ -146,7 +163,7 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
 ```json
 {"entries": [
   {"from_card": "gen_cine_0001",
-   "q": "情绪=荒诞；运镜=固定；景别=中景",
+   "q": "情绪=荒诞；强度=high；运镜=固定",
    "must": ["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_movement=固定"],
    "top1": ["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_movement=固定"],
    "never": ["SHOT_PATTERN:shot_size=ELS,lens=24mm,headroom_policy=board"],
@@ -155,7 +172,12 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
 ```
 注意示例里：`q` 用的是**中文键**；`must` 里写的是**真实的边类型名**
 （__EDGE_TYPES__），
-不是字面量 `TYPE`；`forbid_movement` 的取值与 `q` 的 `运镜=` **一模一样**。
+不是字面量 `TYPE`；`forbid_movement` 的取值与 `q` 的 `运镜=` **一模一样**；
+`intensity=high` 出现在 `must` 里，所以 `q` 里**必须**有 `强度=high`
+（少了它这条查询就召不回自己的 `must`）。
+**这个示例本身是一条合格条目**：它同时过逐条校验、词表校验与「`q` 覆盖 `must` 可写槽位」
+校验（`tests/test_knowledge_holdout.py::test_holdout_prompt_example_is_a_citable_entry`）。
+示例里的每个取值也都在词表里——**照抄示例不会产出废条**。
 """
 
 #: 提示里的**键集与类型清单一律从 schema 渲染**，不得手抄：手抄的那份曾经多出
@@ -202,7 +224,8 @@ _SLOT_RE = re.compile(r"^(?P<forbid>forbid_)?(?P<kind>[a-z_]+)=(?P<value>.+)$")
 
 
 def validate_entry(raw: Dict, card_ids: set) -> Tuple[Optional[Dict], str]:
-    from tools.check_holdout import ALLOWED_KINDS, EDGE_TYPES, REQUIRED_SLOTS
+    from tools.check_holdout import (ALLOWED_KINDS, EDGE_TYPES, REQUIRED_SLOTS,
+                                     illegal_members)
 
     if not isinstance(raw, dict):
         return None, "entry_not_object"
@@ -229,6 +252,8 @@ def validate_entry(raw: Dict, card_ids: set) -> Tuple[Optional[Dict], str]:
         if etype not in EDGE_TYPES:
             return None, f"bad_type:{etype}"
         seen = set()
+        plain_seen = set()
+        forbid_seen = set()
         for slot in match.group("slots").split(","):
             slot = slot.strip()
             if not slot:
@@ -237,6 +262,13 @@ def validate_entry(raw: Dict, card_ids: set) -> Tuple[Optional[Dict], str]:
             if not sm or sm.group("kind") not in ALLOWED_KINDS:
                 return None, f"bad_slot:{slot}"
             seen.add(sm.group("kind"))
+            (forbid_seen if sm.group("forbid") else plain_seen).add(sm.group("kind"))
+        # 角色合法性走**校验器的同一份**实现：`forbid_<kind>` 只能挂在 schema 允许
+        # 它的边类型上。产出侧原先不查这一条，于是 `forbid_lighting` 这类
+        # "索引里不可能存在"的边照样落盘（上一代 oracle 实测 243 个）。
+        illegal = illegal_members(etype, plain_seen, forbid_seen)
+        if illegal:
+            return None, f"illegal_slot:{etype}:{illegal}"
         missing = [s for s in REQUIRED_SLOTS[etype] if s not in seen]
         if missing:
             return None, f"missing_slots:{etype}:{missing}"

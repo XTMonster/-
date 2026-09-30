@@ -20,6 +20,87 @@ from block_director.knowledge import hypergraph as hg
 from tests._holdout_index import index_args, read_jsonl
 from tools import check_holdout
 from tools.kb_fetch import common, holdout_gen, vocabulary
+from tools import holdout_fill
+
+
+def _json_block_after(text: str, marker: str) -> dict:
+    """取 `marker` 之后第一个 ```json 代码块并解析。
+
+    不能"扫全文的 json 块"：提示开头那段**字段形状**说明故意带 `//` 注释与
+    `TYPE:` 占位符，本来就不是合法 JSON。这里按锚点定位，锚点不在就报错。
+    """
+    start = text.index(marker)
+    fence = text.index("```json", start)
+    end = text.index("```", fence + len("```json"))
+    return json.loads(text[fence + len("```json"):end])
+
+
+def _citable_vocab() -> dict:
+    """标注方真正看到的那份词表（`knowledge/hypergraph.vocab.json`）。
+
+    **故意不用测试夹具的 3 张卡**：那样算出来的词表与真实标注口径脱钩，
+    示例里出现一个真实词表里没有的取值也照样"通过"——这条护栏就白装了。
+    """
+    payload = json.loads((ROOT / "knowledge" / "hypergraph.vocab.json")
+                         .read_text(encoding="utf-8"))
+    vocab = payload["holdout_vocab"]
+    assert vocab["shot_size"] and vocab["movement"] and vocab["emotion"], "词表快照不完整"
+    return vocab
+
+
+def _assert_citable(raw: dict, vocab: dict, label: str) -> dict:
+    """一条示例必须同时过三道**真实**的产出侧判据（产出侧用的就是这三个函数）。"""
+    entry, reason = holdout_gen.validate_entry(raw, {str(raw["from_card"])})
+    assert reason == "", f"{label} 过不了逐条校验：{reason}"
+    assert entry is not None
+    unknown = holdout_fill.unknown_values_in(entry, vocab)
+    assert unknown == [], (
+        f"{label} 用了词表外的取值 {unknown}——标注员照抄示例就会产出废条")
+    short = check_holdout.query_shortfall(entry)
+    assert short == [], (
+        f"{label} 的 `q` 没覆盖自己的 `must` 可写槽位 {short}——这条查询召不回自己，"
+        f"Q1/Q2 数学上恒为 0")
+    return entry
+
+
+def test_holdout_prompt_example_is_a_citable_entry():
+    """提示里的 JSON 示例**本身必须是一条合格条目**。
+
+    真缺陷（2026-10-01 修）：示例写着 `q="情绪=荒诞；运镜=固定；景别=中景"`，
+    而 `景别` 的取值必须来自词表（`MS`／`CU`／…）——`中景` 根本不在词表里，
+    照抄示例的条目会被 `unknown_values` 整条拒收。同一段示例的 `must` 里写了
+    `intensity=high`，`q` 里却没有 `强度=high`：产出侧 `query_shortfall()` 会把
+    这种条目判成"召不回自己"。上一代 oracle 实测 **2449/4539 = 54.0%** 的条目
+    正是这样不可达（`intensity` 一个 kind 占 1501 条），而示例是标注员唯一的形状参照。
+    """
+    prompt = holdout_gen.SYSTEM_PROMPT
+    payload = _json_block_after(prompt, "**示例（照这个形状写")
+    entries = payload["entries"]
+    assert entries, "提示里的示例没有条目"
+    vocab = _citable_vocab()
+    for raw in entries:
+        _assert_citable(raw, vocab, "提示里的示例条目")
+
+
+def test_holdout_protocol_and_prompt_examples_are_citable():
+    """协议文档 §2 的示例必须与提示的示例**同源**，并且同样合格。
+
+    两份示例各自演进过一次：文档里的那份带 `气急败坏`／`中景`（都不在词表里）、
+    `never` 是缺 `intensity` 的 `LIGHT_PACK`；提示里的那份缺 `强度=`。
+    同源断言让它们**不可能再次分叉**——改一份不改另一份就红。
+    """
+    doc = (ROOT / "fixtures" / "knowledge_holdout.protocol.md").read_text(encoding="utf-8")
+    doc_payload = _json_block_after(doc, "## 2. 一条记录的形状")
+    prompt_payload = _json_block_after(holdout_gen.SYSTEM_PROMPT, "**示例（照这个形状写")
+    citable_keys = ("from_card", "q", "must", "top1", "never", "expect_movements")
+    doc_first = doc_payload if "entries" not in doc_payload else doc_payload["entries"][0]
+    prompt_first = prompt_payload["entries"][0]
+    assert {k: doc_first.get(k) for k in citable_keys} == \
+        {k: prompt_first.get(k) for k in citable_keys}, (
+            "协议文档与提示的示例已经分叉；两份都必须逐字同源")
+    vocab = _citable_vocab()
+    _assert_citable(doc_first, vocab, "协议文档 §2 的示例条目")
+
 
 
 def card(card_id: str, domain: str, title: str, content: str, tags=(), keywords=(),
@@ -176,6 +257,31 @@ def test_holdout_entry_validation_accepts_a_wellformed_entry():
     assert reason == ""
     assert entry["from_card"] == "gen_cine_0001"
     assert entry["expect_movements"] == ["whip_pan"]
+
+
+def test_holdout_generator_rejects_an_illegal_forbid_role():
+    """产出侧预检必须与校验器**同一口径**地拦下角色非法的槽位。
+
+    产出侧原先不查这一条，于是 `forbid_lighting`（EMOTION_PACK 的 schema 里
+    只有 `forbid_movement`／`forbid_shot_size`／`forbid_vfx`）会一路落进 oracle。
+    这里断言它**在产出侧就被拒**，判据取自 `check_holdout.illegal_members`
+    （单一真源），而不是在生成器里再抄一份。
+    """
+    bad = {"from_card": "gen_cine_0001",
+           "q": "情绪=荒诞；强度=high；光线=逆光",
+           "must": ["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_lighting=逆光"],
+           "top1": ["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_lighting=逆光"],
+           "never": []}
+    entry, reason = holdout_gen.validate_entry(bad, {"gen_cine_0001"})
+    assert entry is None
+    assert reason.startswith("illegal_slot:EMOTION_PACK:")
+    assert "forbid_lighting" in reason
+    # 正对照：同一个位置换成 schema 允许的 `forbid_movement` 必须放行。
+    good = dict(bad, q="情绪=荒诞；强度=high；运镜=固定",
+                must=["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_movement=固定"],
+                top1=["EMOTION_PACK:emotion=荒诞,intensity=high,forbid_movement=固定"])
+    entry2, reason2 = holdout_gen.validate_entry(good, {"gen_cine_0001"})
+    assert reason2 == "" and entry2 is not None
 
 
 @pytest.mark.parametrize("mutate,reason", [

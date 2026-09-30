@@ -174,6 +174,28 @@ def test_unknown_kind_fails(tmp_path):
     assert full_run(tmp_path, [entry(must=[spec])]) == 1
 
 
+def test_illegal_role_on_a_legal_kind_fails(tmp_path):
+    """`forbid_<kind>` 只能挂在 schema 允许它的边类型上。
+
+    真缺陷（2026-10-01 修）：两个校验器原先只查"kind 是不是已知 kind"，
+    不查"这个 kind 能不能以这个 role 挂在这个边类型上"。于是
+    `EMOTION_PACK:…,forbid_lighting=逆光` 一路放行 —— 而
+    `hypergraph.OPTIONAL_MEMBERS[EMOTION_PACK]` 只允许
+    `forbid_movement`／`forbid_shot_size`／`forbid_vfx`。抽取器照 schema 建边，
+    这样的边**在索引里根本不存在**（实测 890 条边零非法成员），标注断言的就是
+    一条永远召不回的边；上一代 oracle 实测落了 **243 个**这种槽位
+    （`forbid_pacing` 49／`forbid_lighting` 48／`forbid_camera_angle` 36…）。
+    """
+    assert check_holdout.illegal_members(
+        "EMOTION_PACK", {"emotion", "intensity"}, {"lighting"}) == ["forbid_lighting"]
+    # 合法角色是**正对照**：同一条边上 `forbid_movement` 必须放行（门⑤ 要靠它）。
+    assert check_holdout.illegal_members(
+        "EMOTION_PACK", {"emotion", "intensity"}, {"movement"}) == []
+    spec = "EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_lighting=逆光"
+    rec = entry(must=[spec], top1=[spec], q="情绪=气急败坏；强度=high；光线=逆光")
+    assert full_run(tmp_path, [rec]) == 1
+
+
 def test_duplicate_id_fails(tmp_path):
     assert full_run(tmp_path, [q7_entry(1), q7_entry(1)]) == 1
 
