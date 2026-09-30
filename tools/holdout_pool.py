@@ -346,6 +346,141 @@ def write_jsonl(path: pathlib.Path, rows: Sequence[dict]) -> None:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
+# --------------------------------------------------------------------------- GLM 通道
+
+#: 换族纪律（协议 §5.1）：抽取器是 `deepseek`，所以标注必须换族。
+#: 用户裁决：用智谱 GLM（`glm-4.7-flash` —— 同一套门，实测比 `glm-4.7` 快两个
+#: 数量级；`glm-4.6`/`glm-4.5` 的资源包按模型计费，实测 429）。
+GLM_MODEL = "glm-4.7-flash"
+
+GLM_SYSTEM = (
+    "你是分镜知识库的**独立标注员**。给你若干条**已抽取好的知识边**，每条边附一段"
+    "它来自的卡片正文。你要为每条边写**一条检索期望**：\n"
+    "1. `q`：导演会怎么写这条查询。**硬规则**：`q` 必须覆盖该边全部"
+    "「有中文查询键的槽位」，取值逐字相同（键=值；键=值）；同一个键只能出现一次。\n"
+    "2. `never`：从候选负样本里挑**最多 1 条**「这条查询绝不该召回它」的边，"
+    "逐字复制；实在挑不出就写 []。\n"
+    "只输出 JSON：{\"entries\":[{\"index\":<第几条>,\"q\":\"...\",\"never\":[\"...\"]}, ...]}。"
+    "不要改写边的成员，不要发明新的边。"
+)
+
+
+def _rule_text() -> str:
+    """键集与逐类槽位一律**从 `check_holdout` 渲染**，不手抄第二份。"""
+    from tools.check_holdout import query_key_text, queryable_slot_hint
+    return ("允许的查询键：%s。\n有查询键的槽位：%s。"
+            % (query_key_text(), queryable_slot_hint()) +
+            "\n**`q` 的键必须是上面那串中文键**（`运镜=`／`景别=`／`情绪=`…），"
+            "写英文 kind 名（`action=`／`movement=`）会被机器整条拒收。")
+
+
+def required_q_hint(item: dict) -> str:
+    """这一条 `q` 里**必须出现**的 `键=取值`——由池直接算出来交给模型。
+
+    把"哪些键不能漏"从"模型要记住规则"变成"照抄这一行"，是因为实测模型会写
+    英文 kind 名（`action=…`）而被门② 整条拒收（首批 15/15 全废）。取值仍然是
+    池里那条边的真值，模型要写的是"怎么组织一次导演查询"。
+    """
+    from tools.check_holdout import parse_spec
+
+    seen: Dict[str, str] = {}
+    for spec in item["specs"]:
+        _etype, plain, forbid = parse_spec(spec)
+        for kind, value in plain.items():
+            key = KEY_FOR_KIND.get(kind)
+            if key:
+                seen[key] = value
+        for kind, value in forbid.items():
+            key = KEY_FOR_KIND.get(kind)
+            if key and key not in seen:
+                seen[key] = value
+    return "；".join("%s=%s" % (key, value) for key, value in seen.items())
+
+
+def build_glm_prompt(batch: Sequence[dict]) -> str:
+    lines = [_rule_text(), ""]
+    for item in batch:
+        lines.append("### 第 %d 条" % item["index"])
+        lines.append("边（必须原样成为 must/top1）：%s" % item["specs"])
+        lines.append("`q` 里**一个都不能少**的键值（逐字照用，可再加别的键）：%s"
+                     % required_q_hint(item))
+        lines.append("卡片正文：%s" % str(item["card_text"])[:1200])
+        if item["negatives"]:
+            lines.append("候选负样本（挑最多 1 条，逐字复制）：")
+            for spec in item["negatives"][:8]:
+                lines.append("  - %s" % spec)
+        else:
+            lines.append("候选负样本：（无，`never` 写 []）")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int = 8,
+             limit: int = 0) -> Tuple[List[dict], List[dict], Dict]:
+    """用 GLM 为候选池里的每条边写 `q` 与 `never`；`must`/`top1` 由池固定。
+
+    为什么把 `must` 固定：这正是"候选池标注"的定义（TREC pooling）——标注方判断
+    的是"这条查询该不该召回这条边"，而不是凭记忆把它拼出来。换族的证据落在
+    `annotator.model_id/family`，产出侧再用**同一套**判据逐条拦。
+    """
+    from tools.check_holdout import parse_spec
+
+    raw, stats = mechanical(graph, universe, vocab=vocab)
+    by_card = {}
+    for card in _corpus_cards():
+        by_card[str(card.id)] = (card.title or "") + " " + (card.content or "")
+
+    # 同一 `must` 组的原始条目是逐卡复制的，这里按 (must, top1) 去重成"待写 q 的组"。
+    buckets: Dict[Tuple, dict] = collections.OrderedDict()
+    for row in raw:
+        key = (tuple(row["must"]), tuple(row["top1"]))
+        item = buckets.setdefault(key, {"index": len(buckets) + 1, "specs": row["must"],
+                                        "top1": row["top1"],
+                                        "cards": [], "negatives": []})
+        item["cards"].append(row["from_card"])
+        if row["never"] and row["never"][0] not in item["negatives"]:
+            item["negatives"].append(row["never"][0])
+    items = list(buckets.values())
+    for item in items:
+        text = next((by_card[c] for c in item["cards"] if by_card.get(c)), "")
+        item["card_text"] = text
+        item["target"] = parse_spec(item["specs"][0])[0] if item["specs"] else ""
+    if limit:
+        items = items[:limit]
+
+    entries: List[dict] = []
+    rejects: List[dict] = []
+    for start in range(0, len(items), batch_size):
+        batch = items[start:start + batch_size]
+        try:
+            reply = client.chat_json(GLM_SYSTEM, build_glm_prompt(batch),
+                                     temperature=0.0, seed=0, num_ctx=8192)
+        except Exception as exc:  # noqa: BLE001 - 单批失败不许打崩整轮
+            rejects.append({"reason": "transport:%s" % type(exc).__name__,
+                            "batch": start})
+            continue
+        got = {int(item["index"]): item for item in reply.get("entries", [])
+               if isinstance(item, dict) and str(item.get("index", "")).isdigit()}
+        for item in batch:
+            answer = got.get(item["index"])
+            if not answer:
+                rejects.append({"reason": "missing_index", "batch": start})
+                continue
+            never = [s for s in (answer.get("never") or [])
+                     if str(s) in item["negatives"]]
+            for card in item["cards"]:
+                entries.append({"from_card": card, "q": str(answer.get("q") or ""),
+                                "must": list(item["specs"]),
+                                "top1": list(item["top1"]),
+                                "never": never[:1]})
+    return entries, rejects, {"groups": len(items), "stats": stats}
+
+
+def _corpus_cards():
+    from block_director.knowledge.corpus import CARDS
+    return CARDS
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="holdout_pool")
     parser.add_argument("--nodes", default=DEFAULT_NODES)
@@ -357,29 +492,42 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="冻结词表（门③ 的硬边界）；给空串表示不限制")
     parser.add_argument("--mechanical", action="store_true",
                         help="不调模型：把每条索引边写成一条期望")
+    parser.add_argument("--provider", default="",
+                        help="用模型写 q/never 的通道；目前支持 glm（智谱，换族）")
+    parser.add_argument("--model", default=GLM_MODEL)
+    parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--limit", type=int, default=0, help="只生成前 N 条（自检用）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     graph = load_graph(ROOT / args.nodes, ROOT / args.edges)
     universe = json.loads((ROOT / args.cards).read_text(encoding="utf-8"))
-    if not args.mechanical:
-        print(json.dumps({"error": "目前只实现了 --mechanical；"
-                                   "--provider glm 通道见 alias_quality lane"},
-                         ensure_ascii=False))
-        return 2
-
     vocab = {}
     if args.vocab:
         payload = json.loads((ROOT / args.vocab).read_text(encoding="utf-8"))
         vocab = payload.get("kinds", payload)
-    raw, stats = mechanical(graph, universe, vocab=vocab)
-    if args.limit:
-        raw = raw[:args.limit]
-    entries, rejects = finalise(raw, graph, universe,
-                                model_id="mechanical-pool", family="rule",
-                                model_version="pool/v1", decode="deterministic")
+    if args.provider:
+        from tools.kb_fetch import llm as _llm
+
+        client = _llm.make_client(args.provider, args.model)
+        raw, rejects, extra = glm_pass(graph, universe, client, vocab=vocab,
+                                       batch_size=args.batch_size, limit=args.limit)
+        entries, more = finalise(raw, graph, universe,
+                                 model_id=client.model_id, family=client.family,
+                                 model_version=client.model_version,
+                                 decode=str(getattr(client, "decode_tag", "")))
+        rejects = list(rejects) + list(more)
+        stats = extra["stats"]
+        mode = "%s:%s" % (args.provider, args.model)
+    else:
+        raw, stats = mechanical(graph, universe, vocab=vocab)
+        if args.limit:
+            raw = raw[:args.limit]
+        entries, rejects = finalise(raw, graph, universe,
+                                    model_id="mechanical-pool", family="rule",
+                                    model_version="pool/v1", decode="deterministic")
+        mode = "mechanical"
     write_jsonl(ROOT / args.out, entries)
-    report = {"mode": "mechanical", "entries": len(entries),
+    report = {"mode": mode, "entries": len(entries),
               "rejects": len(rejects),
               "reject_reasons": dict(collections.Counter(
                   str(item["reason"]) for item in rejects)),

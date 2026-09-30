@@ -1,5 +1,5 @@
 {
-"_fingerprint": "c7f243993d91aaba",
+"_fingerprint": "491390ecf05f6775",
 "kinds": {
 "action": [
 "上下场",
@@ -14,6 +14,7 @@
 "候场",
 "克制",
 "入场调度",
+"内心独白",
 "准备",
 "出场",
 "分工",
@@ -113,6 +114,7 @@
 "crane_up",
 "dolly_in",
 "dolly_out",
+"dolly_zoom",
 "follow_subject",
 "handheld",
 "orbit_cw",
