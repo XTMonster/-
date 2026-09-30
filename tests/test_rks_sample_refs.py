@@ -17,7 +17,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from tools.run_tests_rks import RK_TABLE, rks_for_check  # noqa: E402
+from tools.run_tests_rks import RK_TABLE, build_report, rks_for_check  # noqa: E402
 
 _PATH_RE = re.compile(r"[\w./-]+\.py")
 
@@ -46,3 +46,18 @@ def test_check_names_map_back_to_their_rk():
     assert rks_for_check("rk14_head_is_not_occluded") == {"RK-14"}
     assert rks_for_check("RK-11") == {"RK-11"}
     assert rks_for_check("bake_creates_keyframes") == set()
+
+
+def test_measured_but_failing_is_not_a_pass():
+    """跑过探针 ≠ 通过：`--failed` 点名的 RK 必须记 `pass: False`。
+
+    v1.5 起 RK-13 由 held-out 真判（`tools/holdout_score.py` 退出码 0/1），
+    如果只按"这条 RK 的名字出现在检查清单里"就记 pass，那 Q1/Q2 明明没达标
+    也会写成一个通过——这正是 §4.1b 要堵的"用跑过代替达标"。
+    """
+    report = build_report("ut", ["RK-13", "RK-7"], ["RK-13"])
+    by_id = {item["rk_id"]: item for item in report["rks"]}
+    assert by_id["RK-13"]["status"] == "measured"
+    assert by_id["RK-13"]["pass"] is False
+    assert by_id["RK-7"]["pass"] is True
+    assert report["failed_checks"] == ["RK-13"]

@@ -71,7 +71,8 @@ RK_TABLE = [
     ("RK-12", "重放产物与入库基线逐字段一致，零 LLM 调用",
      "tools/blender_tests/test_replay.py [RK-12]"),
     ("RK-13", "K1-K4 + Q0-Q7 + E1-E3",
-     "tools/holdout_score.py [Q0-Q7 由 fixtures 的 held-out 判分；人审 10-15% 未完成]"),
+     "tools/holdout_score.py + tools/knowledge/quality.py [held-out 已落地；"
+     "run_tests.ps1 按它的退出码判 measured；人审 10-15% 仍未做]"),
     ("RK-14", "头球可见比例 >= 99%；neck_gap = 0 +- 0.005",
      "tools/blender_tests/test_character_geometry.py [rk14_head_is_not_occluded]"),
     ("RK-15", "含头部景别上边距 >= 8% 画面高",
@@ -87,14 +88,17 @@ RK_TABLE = [
 ]
 
 
-def build_report(run_id: str, checks: list) -> dict:
+def build_report(run_id: str, checks: list, failed: list = ()) -> dict:
     measured = measured_rks(checks)
+    failed_set = {str(item) for item in failed or ()}
     rks = []
     for rk_id, expected, sample_ref in RK_TABLE:
         hit = rk_id in measured
+        bad = rk_id in failed_set
         rks.append({
             "rk_id": rk_id,
-            "pass": True if hit else None,
+            #: 度量到但**没达标**的必须记 False——不能因为"跑过这条探针"就算过。
+            "pass": False if bad else (True if hit else None),
             "status": "measured" if hit else "not_measured",
             "measured": bool(hit),
             "expected": expected,
@@ -107,6 +111,7 @@ def build_report(run_id: str, checks: list) -> dict:
         "note": ("pass=null 表示本轮套件未度量该 RK（不得据此判通过，"
                  "见 v1.4 SS 4.1b 硬规则 1）。"),
         "checks": list(checks),
+        "failed_checks": sorted(failed_set),
         "measured_rks": sorted(measured),
         "rks": rks,
     }
@@ -149,13 +154,17 @@ def parse_args(argv) -> argparse.Namespace:
     parser.add_argument("--evidence-dir", default="")
     parser.add_argument("--checks", default="",
                         help="本轮跑过的 check 名（逗号分隔；含 pytest 侧的 RK 名）")
+    parser.add_argument("--failed", default="",
+                        help="其中没达标的 check 名（逗号分隔）：它们的 pass 记 False，"
+                             "而不是「跑过就算过」")
     return parser.parse_args(argv[1:])
 
 
 def main(argv=None) -> int:
     args = parse_args(argv or sys.argv)
     checks = [item.strip() for item in str(args.checks).split(",") if item.strip()]
-    report = build_report(args.run_id, checks)
+    failed = [item.strip() for item in str(args.failed).split(",") if item.strip()]
+    report = build_report(args.run_id, checks, failed)
     if args.evidence_dir:
         target = Path(args.evidence_dir)
         target.mkdir(parents=True, exist_ok=True)

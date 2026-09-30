@@ -275,8 +275,24 @@ python tools/evidence_fingerprint.py --out (Join-Path $evidenceDir 'config.finge
 # The pytest-side RKs are covered by named cases (RK-7 dialogue three-way,
 # RK-11 frame identity, RK-12 replay, RK-18 budget gate, RK-19 screen
 # direction); their check names are the RK ids themselves.
-$rks = (@('RK-7', 'RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed) -join ','
-python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks | Out-Null
+#
+# RK-13 is measured from the held-out oracle: holdout_score exits 0 (all
+# metrics on the line) or 1 (measured but below the line). Exit 2 / INCOMPLETE
+# means the oracle is missing, and then RK-13 stays not_measured (never a pass).
+$rk13Checks = @()
+$rk13Failed = @()
+python tools/holdout_score.py --holdout fixtures/knowledge_holdout.jsonl --json (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+$rk13Exit = $LASTEXITCODE
+if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
+    $rk13Checks += 'RK-13'
+    if ($rk13Exit -eq 1) { $rk13Failed += 'RK-13' }
+    Write-Host ('  RK-13 measured from the held-out (exit ' + $rk13Exit + ')') -ForegroundColor Green
+} else {
+    Write-Host '  RK-13 not measured: no usable held-out oracle' -ForegroundColor Yellow
+}
+$rks = (@('RK-7', 'RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed + $rk13Checks) -join ','
+$rksFailed = $rk13Failed -join ','
+python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks --failed $rksFailed | Out-Null
 Write-Host ('Evidence: ' + $evidenceDir) -ForegroundColor Green
 
 # --------------------------------------------------------------------------- #
