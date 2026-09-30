@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import dataclasses
 import hashlib
 import json
@@ -57,7 +58,13 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: `EMOTION_PACK` 677/771、`IMPACT_PACK` 240/256 同样如此：两个读者（标注方与
 #: 抽取器）对同一张卡选了不同类型，这是当前最大的召回损失。v6 要求对每张卡
 #: **把 13 类逐条过一遍**，命中一类写一条。
-PROMPT_VERSION = "extract/v6"
+#: v7：规则 8b —— `action` 只能是"看得见的身体行为"。实测 v6 的产物里 915 条
+#: 归并边有 **170 条（18.6%）**把 `人物弧光`／`分镜写法`／`制作流程` 这类**话题名词**
+#: 塞进了 `action`（`ACTION_BEAT` 85 条里一半是这种），覆盖 329 张卡 —— 成因是必填
+#: 槽位逼出来的：讲"人物塑造"的卡没有动作可写，模型就抓卡片主题顶上。
+#: 改提示文本 ⇒ 必须换版本号，否则 `--only-missing`／`--replace-cards` 的续跑判定
+#: 会把 v6 的原子边当成同一批（那正是 §2.3 禁止的事）。
+PROMPT_VERSION = "extract/v7"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -260,6 +267,21 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
    genre 与 applies_to_genre∈{film,anime,documentary}；
    shot_size 与 applies_to_shot_size∈{ECU,CU,MCU,MS,MLS,LS,ELS}。
 8. 若一组卡片表达的是同一条耦合（同 type ＋ 同成员），只写一条，让 `occurrences` 去计权。
+
+8b. **`action` 只能是"看得见的身体行为"，不能是概念/技法/流程/职务**（v7 的核心修正）。
+   实测（2026-10-01）：915 条归并边里有 **170 条（18.6%）**的 `action` 成员是
+   `人物弧光`／`人物塑造`／`分镜写法`／`制作流程`／`分工`／`动线`／`化妆`／`协作`／
+   `反派表演`／`在场处理`／`叙事`／`台词` 这类**话题名词**，分布在 **329 张卡**上。
+   成因是必填槽位逼出来的：`ACTION_BEAT`／`PERFORMANCE_PACK` 都要 `action`，
+   而一张讲"人物塑造"的卡根本没有动作可写，模型就抓了卡片主题顶上。
+   正确的动作长这样：`推开`／`摔门`／`回头`／`举起`／`蹲下`／`拥抱`／`奔跑`／`颤抖`…
+   判据是一句话自问：**"摄影机拍得到这个吗？"** 拍不到的（弧光、塑造、叙事、分工、
+   流程、协作、台词处理）**一个字都不要写进 `action`**。
+   **若这张卡确实没有任何看得见的身体行为，就不要写 `ACTION_BEAT`／
+   `PERFORMANCE_PACK`** —— 宁可少一条边，也不要写一条 `action=人物弧光` 的边：
+   它既召不回任何真实查询，还会把这一类边整体稀释（实测 `ACTION_BEAT` 85 条里
+   一半是这种边）。要表达"人物塑造"这类知识，请挂到它真正的耦合上去
+   （构图→`STAGING_PACK`、节奏→`EDIT_RHYTHM`、意图→`INTENT_PACK`…）。
 
 9. **把卡里能写的成员写全**：一条边除了必填项，**还要**补上卡里明说的其它
    `allow` 成员（运镜/景别/镜头/节奏/特效/音效…）与适用范围 `applies_to_*`。
@@ -805,10 +827,18 @@ def nodes_from_vocab() -> Dict[str, hg.Node]:
             json.loads(VOCAB.read_text(encoding="utf-8"))["nodes"]}
 
 
-def chunk_counts(cards: Sequence[Dict], batch_log: Sequence[Dict]) -> Tuple[int, int]:
+def chunk_counts(cards: Sequence[Dict], batch_log: Sequence[Dict],
+                 atoms: Sequence = ()) -> Tuple[int, int]:
     """构建门的"chunk 处理率"：按**批次覆盖到的 chunk_id** 计数。
 
     出错/被跳过的批次不贡献任何 chunk，因此比率会掉到 1.0 以下——这正是门要抓的。
+
+    `atoms` 是**这一轮结束后的完整原子边集合**，参与计数是必须的：增量路径
+    （`--only-missing` 补边、`--replace-cards` 清洗）只重抽一部分卡，本轮 `batch_log`
+    自然只覆盖那一部分，而索引其实覆盖了全量 —— 只看本轮日志会把"补抽/清洗"
+    误判成"构建门没过"（实测：清洗 329 张卡后 Q0 报 `processed != total`，
+    `tests/test_knowledge_quality.py` 当场转红）。判据本身不变：**每一张卡的
+    chunk 都必须在"本轮抽过"或"磁盘上已有它的原子边"里出现一次**。
     """
     all_chunks = {str(c.get("source_span", {}).get("chunk_id", c["id"])) for c in cards}
     by_id = {str(c["id"]): c for c in cards}
@@ -820,6 +850,11 @@ def chunk_counts(cards: Sequence[Dict], batch_log: Sequence[Dict]) -> Tuple[int,
             card = by_id.get(str(card_id))
             if card is not None:
                 processed.add(str(card.get("source_span", {}).get("chunk_id", card_id)))
+    for edge in atoms:
+        for source in (getattr(edge, "sources", ()) or ()):
+            card = by_id.get(str(source))
+            if card is not None:
+                processed.add(str(card.get("source_span", {}).get("chunk_id", source)))
     return len(processed), len(all_chunks)
 
 
@@ -828,7 +863,7 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
                  extractor: Dict[str, str], cache_key: Dict[str, str],
                  fingerprint: str, merged, merge_report: Dict) -> Dict:
     """第 1 段产物之后的公共收尾：归并 → 9 条门 → 落盘 → manifest。"""
-    processed, total = chunk_counts(cards, batch_log)
+    processed, total = chunk_counts(cards, batch_log, atoms)
     gate_rejects: List[Dict] = []
     unique, report = hg.build_index(merged, nodes_from_vocab(),
                                     processed_chunks=processed, total_chunks=total,
@@ -862,6 +897,13 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
         "cache_key": cache_key,
         "extractor": extractor,
         "prompt_version": PROMPT_VERSION,
+        # 清洗路径（`--replace-cards`）会让索引里**混着两个 prompt 版本**的原子边。
+        # 六元指纹只有一个 `prompt_version` 字段，所以这里必须把混版这件事**显式记下来**，
+        # 否则 manifest 会声称整库都是当前口径 —— 那是自报一个对不上的汇总
+        # （§4.1b 硬规则 2 禁止）。`atoms_by_prompt_version` 直接从原子边里数。
+        "atom_prompt_versions": dict(collections.Counter(
+            str((edge.extractor or {}).get("prompt_version") or "unknown")
+            for edge in atoms)),
         "decode": DECODE,
         "chunker_version": common.CHUNKER_VERSION,
         "schema_version": hg.SCHEMA_VERSION,
@@ -912,21 +954,44 @@ def cards_with_atoms() -> set:
 def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         limit: int = 0, *, concurrency: int = 1,
         extract_only: Optional[Sequence[Dict]] = None,
-        keep_atoms: bool = False) -> Dict:
+        keep_atoms: bool = False,
+        replace_atoms_for: Optional[Sequence[str]] = None) -> Dict:
     """抽第 1 段 → 落盘 → 归并 → 写索引。
 
     `extract_only` 限定**抽取哪些卡**（指纹与索引仍然按**全量** `cards` 算），
     `keep_atoms` 把新原子边**并入**已有文件——这是"给漏抽的卡补边"的路径：
     实测 167 张卡（占 9.6%）在整轮抽取里一条原子边都没拿到，重抽整库既慢又不
     保证覆盖它们，而只喂这些卡一批，模型就会认真对待。
+
+    `replace_atoms_for` 是**清洗**路径：重新抽这些卡，并**丢掉它们原来的原子边**。
+    与 `keep_atoms` 的区别是决定性的——`keep_atoms` 只做并集，旧边还在索引里，
+    "把 `action=人物弧光` 这类边清掉"根本做不到。实测 v6 有 170 条这样的边，
+    分布在 329 张卡上，只能靠"重抽 + 替换"。
     """
     todo = list(extract_only) if extract_only is not None else list(cards)
+    refresh_info: Optional[Dict] = None
     atoms, rejects, batch_log = extract(todo, vocab, client, BATCH_CARDS, limit,
                                         concurrency=concurrency)
     if keep_atoms:
         previous = load_atoms()
         seen = {_atom_key(edge) for edge in previous}
         atoms = previous + [edge for edge in atoms if _atom_key(edge) not in seen]
+    if replace_atoms_for:
+        # 清洗路径：**先丢旧的，再放新的**。顺序不能反——反了会把刚抽到的边
+        # 当成"旧边"一起丢掉。`sources` 里只要出现被替换的卡，整条原子边就作废。
+        dropped = set(str(item) for item in replace_atoms_for)
+        previous = load_atoms()
+        kept = [edge for edge in previous
+                if not (dropped & {str(s) for s in (edge.sources or ())})]
+        replaced = len(previous) - len(kept)
+        seen = {_atom_key(edge) for edge in kept}
+        atoms = kept + [edge for edge in atoms if _atom_key(edge) not in seen]
+        # **不许写进 `batch_log`**：那个清单是"抽取批次"的账，构建门 Q0 会数
+        # "多少批 done / 共多少批"。塞一条非抽取条目进去会让 `processed != total`
+        # （实测 44/45），于是 Q0 把一次**成功的清洗**报成构建失败
+        # （`tests/test_knowledge_quality.py` 当场转红）。清洗的账另记在 `refresh`。
+        refresh_info = {"cards": len(dropped), "atoms_dropped": replaced,
+                        "atoms_kept": len(kept)}
     # §2.3 第 1 段全部落盘**之后**才跑第 2 段，且第 2 段是纯函数（串行、确定）。
     # 落盘原子边是为了"只换归并口径"时不必重抽（改 prompt 要重抽，改归并不是）。
     common.write_jsonl(ATOMS, [edge.to_dict() for edge in atoms])
@@ -936,6 +1001,9 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     # 全局的，所以这里再补一刀（实测 852 条边里有 144 条是副本）。
     merged, global_dedupe = dedupe_by_norm_key(merged)
     merge_report["global_dedupe"] = global_dedupe
+    if refresh_info is not None:
+        merge_report["refresh"] = refresh_info
+        merge_report["refresh_prompt_version"] = PROMPT_VERSION
     components = fingerprint_components(cards, client)
     return _write_index(cards, atoms, rejects, batch_log, merged=merged,
                         merge_report=merge_report, fingerprint=fingerprint_of(components),
@@ -1054,7 +1122,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="不重抽：从 work/hypergraph.atoms.jsonl 重跑第 2 段归并并重建索引")
     parser.add_argument("--only-missing", action="store_true",
                         help="只重抽「现有原子边里没有」的卡，并把新原子边并入旧文件"
-                             "（给整轮抽取漏掉的卡补边）")
+                            "（给整轮抽取漏掉的卡补边）")
+    parser.add_argument("--replace-cards", default="",
+                        help="卡片 id 清单文件（每行一个）：重抽这些卡并**丢弃它们原来的"
+                             "原子边**。用于清洗——`--only-missing` 只做并集，清不掉旧边。"
+                             "实测用途：v6 把 170 条 `action=人物弧光` 之类的概念名词"
+                             "写进了动作槽位（分布在 329 张卡上）。")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     if args.rekey_manifest:
@@ -1083,6 +1156,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         summary = run(cards, vocab, client, args.limit,
                       concurrency=_concurrency(args.concurrency),
                       extract_only=missing, keep_atoms=True)
+    elif args.replace_cards:
+        # 清洗路径：见 `run(..., replace_atoms_for=...)`。与 `--only-missing` 的区别是
+        # **替换**而不是并集——只有替换才能把 `action=人物弧光` 这类边真正清出索引。
+        wanted = [line.strip() for line in
+                  pathlib.Path(args.replace_cards).read_text(encoding="utf-8").split("\n")
+                  if line.strip()]
+        by_id = {str(card["id"]): card for card in cards}
+        todo = [by_id[card_id] for card_id in wanted if card_id in by_id]
+        unknown = sorted(set(wanted) - set(by_id))
+        print(json.dumps({"replace_cards": True, "requested": len(wanted),
+                          "matched": len(todo), "unknown": unknown[:8]},
+                         ensure_ascii=False))
+        summary = run(cards, vocab, client, args.limit,
+                      concurrency=_concurrency(args.concurrency),
+                      extract_only=todo, replace_atoms_for=wanted)
     else:
         summary = run(cards, vocab, client, args.limit,
                       concurrency=_concurrency(args.concurrency))
