@@ -27,6 +27,7 @@ chunk_id → sha256**、模型与解码参数，并用与 strict 完全相同的
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import pathlib
@@ -331,10 +332,43 @@ def _checkpoint(fp: str, client, decode: str, total: int,
                                                  manifest_chunks, base_passes, stats))
 
 
+def _annotate_todo(todo: Sequence[Dict], client, temperature: float, seed: int,
+                   num_ctx: int, workers: int, progress=None):
+    """按批并发调用标注器，并**按原顺序**产出结果。
+
+    并发是网络等待的并发，不是口径的放松：每个 chunk 仍然各自调用一次
+    `annotate_chunk`，用的是同一套 prompt、同一套 `validate_card` 校验，
+    结果按提交顺序回收，因此产物与串行**逐字节一致**（见
+    `tests/test_kb_pipeline.py::test_parallel_annotate_matches_serial_output`）。
+    批大小 = `CHECKPOINT_EVERY`：一批落了盘再开下一批，中断不丢中间进度。
+    """
+    total = len(todo)
+    if workers <= 1:
+        for index, chunk in enumerate(todo, 1):
+            if progress:
+                progress(index, total, chunk["chunk_id"])
+            yield index, chunk, annotate_chunk(client, chunk, temperature, seed, num_ctx)
+        return
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=workers)
+    try:
+        for start in range(0, total, CHECKPOINT_EVERY):
+            batch = todo[start:start + CHECKPOINT_EVERY]
+            for offset, chunk in enumerate(batch, 1):
+                if progress:
+                    progress(start + offset, total, chunk["chunk_id"])
+            futures = [executor.submit(annotate_chunk, client, chunk, temperature,
+                                       seed, num_ctx) for chunk in batch]
+            for offset, (chunk, future) in enumerate(zip(batch, futures), 1):
+                yield start + offset, chunk, future.result()
+    finally:
+        executor.shutdown(wait=True)
+
+
 def run(chunks: Sequence[Dict], client, temperature: float = 0.0, seed: int = 0,
         num_ctx: int = 8192, limit: int = 0, progress=None,
         incremental: bool = False,
-        retry_rejects: bool = False) -> Tuple[List[Dict], List[Dict]]:
+        retry_rejects: bool = False,
+        workers: int = 1) -> Tuple[List[Dict], List[Dict]]:
     decode = decode_params(temperature, seed, num_ctx)
     fp = fingerprint(chunks, client.model_id, decode)
     previous = _read_manifest()
@@ -381,10 +415,9 @@ def run(chunks: Sequence[Dict], client, temperature: float = 0.0, seed: int = 0,
 
     stats = {"incremental": bool(incremental), "reused": len(done),
              "reused_rejects": len(reused_rejects), "annotated": 0}
-    for index, chunk in enumerate(todo, 1):
-        if progress:
-            progress(index, len(todo), chunk["chunk_id"])
-        cards, reasons = annotate_chunk(client, chunk, temperature, seed, num_ctx)
+    for index, chunk, outcome in _annotate_todo(todo, client, temperature, seed,
+                                                num_ctx, workers, progress):
+        cards, reasons = outcome
         if len(cards) < MIN_CARDS_PER_CHUNK:
             rejects.append({"chunk_id": chunk["chunk_id"], "domain": chunk["domain"],
                             "reasons": reasons or ["no_cards"], "chars": len(chunk["text"])})
@@ -438,6 +471,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                              "口径或正文变了的那一段仍然重抽")
     parser.add_argument("--retry-rejects", action="store_true",
                         help="配 --incremental：连「已判无卡片」的段也重抽一遍")
+    parser.add_argument("--workers", type=int, default=1,
+                        help="并发调用数（默认 1 = 串行；产物与串行逐字节相同）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     chunks = common.read_jsonl(CHUNKS)
@@ -451,7 +486,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     annotated, rejects = run(chunks, client, args.temperature, args.seed,
                              args.num_ctx, args.limit, progress,
                              incremental=args.incremental,
-                             retry_rejects=args.retry_rejects)
+                             retry_rejects=args.retry_rejects,
+                             workers=max(1, args.workers))
     total_cards = sum(len(r["cards"]) for r in annotated)
     print(json.dumps({"chunks_annotated": len(annotated), "chunks_rejected": len(rejects),
                       "cards": total_cards}, ensure_ascii=False))
