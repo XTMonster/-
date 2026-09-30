@@ -652,7 +652,7 @@
       ],
       "value": "后退",
       "unit": "",
-      "occurrences": 9
+      "occurrences": 10
     },
     {
       "node_id": "action:命名",
@@ -2471,7 +2471,7 @@
       ],
       "value": "运动轴",
       "unit": "",
-      "occurrences": 27
+      "occurrences": 28
     },
     {
       "node_id": "beat_type:coverage",
@@ -2527,7 +2527,7 @@
       ],
       "value": "低机位",
       "unit": "",
-      "occurrences": 10
+      "occurrences": 11
     },
     {
       "node_id": "camera_angle:平视",
@@ -2597,7 +2597,7 @@
       ],
       "value": "balance",
       "unit": "",
-      "occurrences": 42
+      "occurrences": 45
     },
     {
       "node_id": "composition_rule:framing",
@@ -2609,7 +2609,7 @@
       ],
       "value": "framing",
       "unit": "",
-      "occurrences": 8
+      "occurrences": 9
     },
     {
       "node_id": "composition_rule:headroom",
@@ -2645,7 +2645,7 @@
       ],
       "value": "occlusion",
       "unit": "",
-      "occurrences": 17
+      "occurrences": 21
     },
     {
       "node_id": "composition_rule:rule_of_thirds",
@@ -2680,7 +2680,7 @@
       ],
       "value": "压抑",
       "unit": "",
-      "occurrences": 12
+      "occurrences": 13
     },
     {
       "node_id": "emotion:喜悦",
@@ -2716,7 +2716,7 @@
       ],
       "value": "平静",
       "unit": "",
-      "occurrences": 28
+      "occurrences": 34
     },
     {
       "node_id": "emotion:庄严",
@@ -2764,7 +2764,7 @@
       ],
       "value": "愤怒",
       "unit": "",
-      "occurrences": 4
+      "occurrences": 5
     },
     {
       "node_id": "emotion:期待",
@@ -2788,7 +2788,7 @@
       ],
       "value": "混乱",
       "unit": "",
-      "occurrences": 14
+      "occurrences": 15
     },
     {
       "node_id": "emotion:温柔",
@@ -2812,7 +2812,7 @@
       ],
       "value": "焦虑",
       "unit": "",
-      "occurrences": 51
+      "occurrences": 56
     },
     {
       "node_id": "emotion:绝望",
@@ -2861,7 +2861,7 @@
       ],
       "value": "anime",
       "unit": "",
-      "occurrences": 35
+      "occurrences": 43
     },
     {
       "node_id": "genre:documentary",
@@ -2935,7 +2935,7 @@
       "aliases": [],
       "value": "停顿",
       "unit": "",
-      "occurrences": 22
+      "occurrences": 24
     },
     {
       "node_id": "intent:压迫",
@@ -2944,7 +2944,7 @@
       "aliases": [],
       "value": "压迫",
       "unit": "",
-      "occurrences": 32
+      "occurrences": 33
     },
     {
       "node_id": "intent:回望",
@@ -2970,7 +2970,7 @@
       "aliases": [],
       "value": "推进",
       "unit": "",
-      "occurrences": 37
+      "occurrences": 39
     },
     {
       "node_id": "intent:揭示",
@@ -3005,7 +3005,7 @@
       "aliases": [],
       "value": "留白",
       "unit": "",
-      "occurrences": 22
+      "occurrences": 28
     },
     {
       "node_id": "intent:转折",
@@ -3014,7 +3014,7 @@
       "aliases": [],
       "value": "转折",
       "unit": "",
-      "occurrences": 25
+      "occurrences": 28
     },
     {
       "node_id": "intent:释放",
@@ -3110,7 +3110,7 @@
       ],
       "value": "侧光",
       "unit": "",
-      "occurrences": 2
+      "occurrences": 3
     },
     {
       "node_id": "lighting:冷光",
@@ -3167,7 +3167,7 @@
       ],
       "value": "逆光",
       "unit": "",
-      "occurrences": 5
+      "occurrences": 8
     },
     {
       "node_id": "lighting:顶光",
@@ -3178,7 +3178,7 @@
       ],
       "value": "顶光",
       "unit": "",
-      "occurrences": 2
+      "occurrences": 3
     },
     {
       "node_id": "lighting:高调",
@@ -3220,7 +3220,7 @@
       ],
       "value": "crane_down",
       "unit": "",
-      "occurrences": 25
+      "occurrences": 30
     },
     {
       "node_id": "movement:crane_up",
@@ -3231,7 +3231,7 @@
       ],
       "value": "crane_up",
       "unit": "",
-      "occurrences": 23
+      "occurrences": 25
     },
     {
       "node_id": "movement:dolly_in",
@@ -3279,7 +3279,7 @@
       ],
       "value": "follow_subject",
       "unit": "",
-      "occurrences": 13
+      "occurrences": 14
     },
     {
       "node_id": "movement:handheld",
@@ -3467,7 +3467,7 @@
       ],
       "value": "固定",
       "unit": "",
-      "occurrences": 2
+      "occurrences": 3
     },
     {
       "node_id": "pacing:long",
@@ -3480,7 +3480,7 @@
       ],
       "value": "long",
       "unit": "",
-      "occurrences": 6
+      "occurrences": 13
     },
     {
       "node_id": "pacing:medium",
@@ -3503,7 +3503,7 @@
       ],
       "value": "short",
       "unit": "",
-      "occurrences": 5
+      "occurrences": 8
     },
     {
       "node_id": "pair:any_two",
@@ -3575,7 +3575,7 @@
       ],
       "value": "低频轰鸣",
       "unit": "",
-      "occurrences": 2
+      "occurrences": 3
     },
     {
       "node_id": "sfx:尖锐哨音",
@@ -3618,7 +3618,7 @@
       ],
       "value": "雨声",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 6
     },
     {
       "node_id": "sfx:静默",
@@ -3641,7 +3641,7 @@
       ],
       "value": "CU",
       "unit": "",
-      "occurrences": 48
+      "occurrences": 50
     },
     {
       "node_id": "shot_size:ECU",
@@ -3665,7 +3665,7 @@
       ],
       "value": "ELS",
       "unit": "",
-      "occurrences": 20
+      "occurrences": 21
     },
     {
       "node_id": "shot_size:LS",
@@ -3677,7 +3677,7 @@
       ],
       "value": "LS",
       "unit": "",
-      "occurrences": 27
+      "occurrences": 28
     },
     {
       "node_id": "shot_size:MCU",
@@ -3711,7 +3711,7 @@
       ],
       "value": "MS",
       "unit": "",
-      "occurrences": 19
+      "occurrences": 20
     },
     {
       "node_id": "transition:cut",
@@ -4482,9 +4482,9 @@
       "orbit_ccw",
       "orbit_cw",
       "pan_left",
-      "pan_right",
       "tilt_up",
-      "track_left"
+      "track_left",
+      "固定"
     ],
     "shot_size": [
       "CU",
@@ -4579,5 +4579,5 @@
     "character": [],
     "object": []
   },
-  "_fingerprint": "5a96c561b886ca67"
+  "_fingerprint": "23dba0b08512ac81"
 }

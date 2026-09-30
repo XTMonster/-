@@ -34,7 +34,7 @@ from block_director.knowledge import hypergraph as hg
 HOLDOUT = common.ROOT / "fixtures" / "knowledge_holdout.jsonl"
 CARDS_JSON = common.ROOT / "fixtures" / "knowledge_holdout.cards.json"
 MANIFEST = common.WORK / "holdout.manifest.json"
-PROMPT_VERSION = "holdout/v10"
+PROMPT_VERSION = "holdout/v11"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
@@ -61,7 +61,7 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    `景别=MS` 与 `镜头=50mm`；`AXIS_RULE:…,axis_topic=越轴` → `q` 写 `轴线=越轴`。
    **实测**：查询覆盖到目标边 ≥2 个成员时 Q1=0.727／Q2=0.917（都过验收线），只覆盖 1 个时
    0.508／0.754，覆盖 0 个则根本召不回。
-1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段/意图。
+1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段/意图/转场。
 **`type` 只允许这 13 个字符串**：`EMOTION_PACK`、`SHOT_PATTERN`、`AXIS_RULE`、`TROPE`、
 `EDIT_RHYTHM`、`LIGHT_PACK`、`ACTION_BEAT`、`PERFORMANCE_PACK`、`INTENT_PACK`、
 `IMPACT_PACK`、`STAGING_PACK`、`SOUND_PACK`、`TRANSITION_PACK`。写别的（`ACTION`／
@@ -72,7 +72,10 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    * `EMOTION_PACK:emotion=<情绪>,intensity=<low|mid|high>`（要写禁忌时再加
      `,forbid_<kind>=<该 kind 的取值>`）
    * `SHOT_PATTERN:shot_size=<ECU|CU|MCU|MS|MLS|LS|ELS>,lens=<24mm|35mm|50mm|85mm>,headroom_policy=<board|cinematic>`
-   * `AXIS_RULE:pair=any_two,axis_side=<left|right|neutral>`
+   * `AXIS_RULE:pair=any_two,axis_side=<left|right|neutral>,axis_topic=<轴线>` ——
+     **`axis_topic` 必须写**：`pair`／`axis_side` 是 schema 常量，在查询空间里
+     没有对应取值，只写它们的话这条边**一个种子都挂不上**（实测 263 条里只有
+     16 条能命中索引）。`q` 里对应写 `轴线=<同一个取值>`。
    * `TROPE:genre=<film|anime|documentary>,emotion=<情绪>`
    * `EDIT_RHYTHM:pacing=<short|medium|long>,avg_shot_len=<<1s|1-3s|3-8s|>8s>`
    * `LIGHT_PACK:lighting=<光线>,intensity=<low|mid|high>`

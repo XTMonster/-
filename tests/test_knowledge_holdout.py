@@ -42,12 +42,14 @@ CARDS = [
 #: `VALUE_DOMAINS` 里有枚举的 kind（`example_shot` 是自由文本，不在此列）。
 ENUM_KINDS = tuple(kind for kind, values in hg.VALUE_DOMAINS.items() if values is not None)
 
-#: 门③ 要求词表覆盖全部 14 个查询 kind；取值必须与 `q` 里真正用到的完全一致。
+#: 门③ 要求词表覆盖全部查询 kind；取值必须与 `q` 里真正用到的完全一致。
+#: v1.5 解冻后 `transition` 也有查询键（`转场=`），因此它必须在这里出现。
 FULL_VOCAB = {
     "emotion": ["荒诞"], "action": ["跺脚"], "movement": ["固定"], "shot_size": ["特写"],
     "lens": ["50mm"], "pacing": ["short"], "vfx": ["petrify"], "sfx": ["心跳"],
     "camera_angle": ["平视"], "lighting": ["逆光"], "composition_rule": ["rule_of_thirds"],
     "axis_topic": ["关系轴"], "genre": ["film"], "beat_type": ["establish"],
+    "transition": ["dissolve"],
     # 下面三类的取值永远不可能出现在 q 里（没有对应查询键），只作占位：
     # `intent` 随 INTENT_PACK 一起进 schema（v1.5 扩到 13 类边时加的）。
     "intent": [], "character": [], "object": [],
@@ -79,6 +81,41 @@ def test_vocabulary_picks_up_card_values_and_lenses():
 
 
 # --------------------------------------------------------------------------- 标注校验
+
+
+def test_holdout_prompt_covers_every_edge_type_and_reachable_slot():
+    """标注提示必须覆盖 schema 里**能挂上查询种子**的每个类型与槽位。
+
+    这是一条机器校验，不是文档约定。两件真实发生过的事都由它守住：
+
+    * v1.5 把边扩到 13 类时，提示只写到 6 类——新类型整类无法被 held-out
+      覆盖，而校验器早就认这 13 类；
+    * `AXIS_RULE` 的模板漏了 `axis_topic`（`pair`/`axis_side` 是 schema 常量、
+      在查询空间里没有取值），于是 263 条里只有 16 条能命中索引。
+    """
+    prompt = holdout_gen.SYSTEM_PROMPT
+    # 与门⑨同一份口径：只要求**能挂种子**的 kind（`scene_type`/`beat_type`
+    # 在协议里没有对应的可锚取值，不在此列）。
+    queryable = set(check_holdout.QUERYABLE_KINDS)
+
+    for zh, kind in hg.QUERY_KEYS.items():
+        if kind in queryable:
+            assert zh in prompt, f"查询键 {zh}（{kind}）没写进提示"
+
+    for etype in hg.EDGE_TYPES:
+        assert etype in prompt, f"边类型 {etype} 没写进提示"
+        required = [k for _role, k in hg.REQUIRED_MEMBERS[etype] if k in queryable]
+        optional = [k for _role, k in hg.OPTIONAL_MEMBERS.get(etype, ())
+                    if k in queryable]
+        if required:
+            for kind in required:
+                assert f"{kind}=" in prompt, f"{etype} 的可查询必填槽位 {kind} 没写进模板"
+        else:
+            # 必填槽位全是 schema 常量时必须给一个可选的**可锚**槽位，
+            # 否则这类边在检索里恒为 0 命中，门⑩/门⑪ 永远红。
+            assert optional, f"{etype} 没有任何可查询槽位，无法被 held-out 覆盖"
+            for kind in optional:
+                assert f"{kind}=" in prompt, f"{etype} 缺少可锚槽位 {kind}"
 
 
 def test_holdout_entry_validation_accepts_a_wellformed_entry():
@@ -164,7 +201,7 @@ def test_holdout_generation_writes_annotator_metadata(tmp_path, monkeypatch):
 #: 自己就够不着自己的期望边。
 Q_ALL = ("情绪=荒诞；动作=跺脚；运镜=固定；景别=特写；镜头=50mm；节奏=short；"
          "特效=petrify；音效=心跳；机位=平视；光线=逆光；构图=rule_of_thirds；"
-         "轴线=关系轴；题材=film；桥段=establish；意图=反转")
+         "轴线=关系轴；题材=film；桥段=establish；意图=反转；转场=dissolve")
 
 SPEC_BY_TYPE = {
     "EMOTION_PACK": "EMOTION_PACK:emotion=荒诞,intensity=high,forbid_shot_size=特写",

@@ -78,7 +78,7 @@
 {"record": "node", "node_id": "action:台词处理", "type": "action", "name": "台词处理", "aliases": [], "value": "台词处理", "unit": ""}
 {"record": "node", "node_id": "action:台词节奏", "type": "action", "name": "台词节奏", "aliases": [], "value": "台词节奏", "unit": ""}
 {"record": "node", "node_id": "action:台词风格", "type": "action", "name": "台词风格", "aliases": [], "value": "台词风格", "unit": ""}
-{"record": "node", "node_id": "action:后退", "type": "action", "name": "后退", "aliases": ["退步"], "value": "后退", "unit": "", "occurrences": 9}
+{"record": "node", "node_id": "action:后退", "type": "action", "name": "后退", "aliases": ["退步"], "value": "后退", "unit": "", "occurrences": 10}
 {"record": "node", "node_id": "action:命名", "type": "action", "name": "命名", "aliases": [], "value": "命名", "unit": ""}
 {"record": "node", "node_id": "action:喜剧节奏", "type": "action", "name": "喜剧节奏", "aliases": [], "value": "喜剧节奏", "unit": ""}
 {"record": "node", "node_id": "action:场次", "type": "action", "name": "场次", "aliases": [], "value": "场次", "unit": ""}
@@ -300,41 +300,41 @@
 {"record": "node", "node_id": "axis_topic:关系轴", "type": "axis_topic", "name": "关系轴", "aliases": ["人物连线"], "value": "关系轴", "unit": "", "occurrences": 4}
 {"record": "node", "node_id": "axis_topic:视线轴", "type": "axis_topic", "name": "视线轴", "aliases": ["视线方向"], "value": "视线轴", "unit": "", "occurrences": 21}
 {"record": "node", "node_id": "axis_topic:越轴", "type": "axis_topic", "name": "越轴", "aliases": ["跳轴"], "value": "越轴", "unit": "", "occurrences": 50}
-{"record": "node", "node_id": "axis_topic:运动轴", "type": "axis_topic", "name": "运动轴", "aliases": ["运动方向"], "value": "运动轴", "unit": "", "occurrences": 27}
+{"record": "node", "node_id": "axis_topic:运动轴", "type": "axis_topic", "name": "运动轴", "aliases": ["运动方向"], "value": "运动轴", "unit": "", "occurrences": 28}
 {"record": "node", "node_id": "beat_type:coverage", "type": "beat_type", "name": "coverage", "aliases": [], "value": "coverage", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "beat_type:establish", "type": "beat_type", "name": "establish", "aliases": [], "value": "establish", "unit": "", "occurrences": 2}
 {"record": "node", "node_id": "beat_type:insert", "type": "beat_type", "name": "insert", "aliases": [], "value": "insert", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "beat_type:reaction", "type": "beat_type", "name": "reaction", "aliases": [], "value": "reaction", "unit": ""}
 {"record": "node", "node_id": "beat_type:transition", "type": "beat_type", "name": "transition", "aliases": [], "value": "transition", "unit": "", "occurrences": 3}
-{"record": "node", "node_id": "camera_angle:低机位", "type": "camera_angle", "name": "低机位", "aliases": ["仰拍", "低角度"], "value": "低机位", "unit": "", "occurrences": 10}
+{"record": "node", "node_id": "camera_angle:低机位", "type": "camera_angle", "name": "低机位", "aliases": ["仰拍", "低角度"], "value": "低机位", "unit": "", "occurrences": 11}
 {"record": "node", "node_id": "camera_angle:平视", "type": "camera_angle", "name": "平视", "aliases": ["眼平", "eye_level"], "value": "平视", "unit": "", "occurrences": 3}
 {"record": "node", "node_id": "camera_angle:荷兰角", "type": "camera_angle", "name": "荷兰角", "aliases": ["倾斜", "滚转"], "value": "荷兰角", "unit": "", "occurrences": 12}
 {"record": "node", "node_id": "camera_angle:过肩", "type": "camera_angle", "name": "过肩", "aliases": ["OTS"], "value": "过肩", "unit": "", "occurrences": 14}
 {"record": "node", "node_id": "camera_angle:骑轴", "type": "camera_angle", "name": "骑轴", "aliases": ["中性机位"], "value": "骑轴", "unit": "", "occurrences": 14}
 {"record": "node", "node_id": "camera_angle:高机位", "type": "camera_angle", "name": "高机位", "aliases": ["俯拍", "高角度"], "value": "高机位", "unit": "", "occurrences": 17}
-{"record": "node", "node_id": "composition_rule:balance", "type": "composition_rule", "name": "balance", "aliases": ["平衡", "重心"], "value": "balance", "unit": "", "occurrences": 42}
-{"record": "node", "node_id": "composition_rule:framing", "type": "composition_rule", "name": "framing", "aliases": ["景别匹配", "取景"], "value": "framing", "unit": "", "occurrences": 8}
+{"record": "node", "node_id": "composition_rule:balance", "type": "composition_rule", "name": "balance", "aliases": ["平衡", "重心"], "value": "balance", "unit": "", "occurrences": 45}
+{"record": "node", "node_id": "composition_rule:framing", "type": "composition_rule", "name": "framing", "aliases": ["景别匹配", "取景"], "value": "framing", "unit": "", "occurrences": 9}
 {"record": "node", "node_id": "composition_rule:headroom", "type": "composition_rule", "name": "headroom", "aliases": ["头顶留白", "头顶不切"], "value": "headroom", "unit": "", "occurrences": 5}
 {"record": "node", "node_id": "composition_rule:lead_room", "type": "composition_rule", "name": "lead_room", "aliases": ["视线留白", "前视空间"], "value": "lead_room", "unit": "", "occurrences": 3}
-{"record": "node", "node_id": "composition_rule:occlusion", "type": "composition_rule", "name": "occlusion", "aliases": ["遮挡", "前景遮挡"], "value": "occlusion", "unit": "", "occurrences": 17}
+{"record": "node", "node_id": "composition_rule:occlusion", "type": "composition_rule", "name": "occlusion", "aliases": ["遮挡", "前景遮挡"], "value": "occlusion", "unit": "", "occurrences": 21}
 {"record": "node", "node_id": "composition_rule:rule_of_thirds", "type": "composition_rule", "name": "rule_of_thirds", "aliases": ["三分法"], "value": "rule_of_thirds", "unit": "", "occurrences": 4}
 {"record": "node", "node_id": "emotion:冷漠", "type": "emotion", "name": "冷漠", "aliases": ["冷峻", "无表情"], "value": "冷漠", "unit": "", "occurrences": 1}
-{"record": "node", "node_id": "emotion:压抑", "type": "emotion", "name": "压抑", "aliases": ["憋闷", "沉闷"], "value": "压抑", "unit": "", "occurrences": 12}
+{"record": "node", "node_id": "emotion:压抑", "type": "emotion", "name": "压抑", "aliases": ["憋闷", "沉闷"], "value": "压抑", "unit": "", "occurrences": 13}
 {"record": "node", "node_id": "emotion:喜悦", "type": "emotion", "name": "喜悦", "aliases": ["开心", "愉快"], "value": "喜悦", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "emotion:孤独", "type": "emotion", "name": "孤独", "aliases": ["疏离", "落寞"], "value": "孤独", "unit": "", "occurrences": 17}
-{"record": "node", "node_id": "emotion:平静", "type": "emotion", "name": "平静", "aliases": ["安宁", "留白"], "value": "平静", "unit": "", "occurrences": 28}
+{"record": "node", "node_id": "emotion:平静", "type": "emotion", "name": "平静", "aliases": ["安宁", "留白"], "value": "平静", "unit": "", "occurrences": 34}
 {"record": "node", "node_id": "emotion:庄严", "type": "emotion", "name": "庄严", "aliases": ["肃穆", "仪式感"], "value": "庄严", "unit": "", "occurrences": 9}
 {"record": "node", "node_id": "emotion:恐惧", "type": "emotion", "name": "恐惧", "aliases": ["害怕", "惊恐"], "value": "恐惧", "unit": "", "occurrences": 5}
 {"record": "node", "node_id": "emotion:悲伤", "type": "emotion", "name": "悲伤", "aliases": ["难过", "哀伤"], "value": "悲伤", "unit": "", "occurrences": 5}
-{"record": "node", "node_id": "emotion:愤怒", "type": "emotion", "name": "愤怒", "aliases": ["暴怒", "气急败坏"], "value": "愤怒", "unit": "", "occurrences": 4}
+{"record": "node", "node_id": "emotion:愤怒", "type": "emotion", "name": "愤怒", "aliases": ["暴怒", "气急败坏"], "value": "愤怒", "unit": "", "occurrences": 5}
 {"record": "node", "node_id": "emotion:期待", "type": "emotion", "name": "期待", "aliases": ["盼望", "悬念"], "value": "期待", "unit": "", "occurrences": 19}
-{"record": "node", "node_id": "emotion:混乱", "type": "emotion", "name": "混乱", "aliases": ["失序", "躁动"], "value": "混乱", "unit": "", "occurrences": 14}
+{"record": "node", "node_id": "emotion:混乱", "type": "emotion", "name": "混乱", "aliases": ["失序", "躁动"], "value": "混乱", "unit": "", "occurrences": 15}
 {"record": "node", "node_id": "emotion:温柔", "type": "emotion", "name": "温柔", "aliases": ["柔和", "亲密"], "value": "温柔", "unit": "", "occurrences": 12}
-{"record": "node", "node_id": "emotion:焦虑", "type": "emotion", "name": "焦虑", "aliases": ["紧张", "不安"], "value": "焦虑", "unit": "", "occurrences": 51}
+{"record": "node", "node_id": "emotion:焦虑", "type": "emotion", "name": "焦虑", "aliases": ["紧张", "不安"], "value": "焦虑", "unit": "", "occurrences": 56}
 {"record": "node", "node_id": "emotion:绝望", "type": "emotion", "name": "绝望", "aliases": ["无望", "崩溃"], "value": "绝望", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "emotion:荒诞", "type": "emotion", "name": "荒诞", "aliases": ["滑稽", "absurd", "怪诞"], "value": "荒诞", "unit": "", "occurrences": 5}
 {"record": "node", "node_id": "emotion:讽刺", "type": "emotion", "name": "讽刺", "aliases": ["嘲弄", "黑色幽默"], "value": "讽刺", "unit": "", "occurrences": 2}
-{"record": "node", "node_id": "genre:anime", "type": "genre", "name": "anime", "aliases": ["动画", "日式动画"], "value": "anime", "unit": "", "occurrences": 35}
+{"record": "node", "node_id": "genre:anime", "type": "genre", "name": "anime", "aliases": ["动画", "日式动画"], "value": "anime", "unit": "", "occurrences": 43}
 {"record": "node", "node_id": "genre:documentary", "type": "genre", "name": "documentary", "aliases": ["纪录片", "纪实"], "value": "documentary", "unit": "", "occurrences": 2}
 {"record": "node", "node_id": "genre:film", "type": "genre", "name": "film", "aliases": ["电影", "剧情片"], "value": "film", "unit": "", "occurrences": 18}
 {"record": "node", "node_id": "headroom_policy:board", "type": "headroom_policy", "name": "board", "aliases": [], "value": "board", "unit": ""}
@@ -342,16 +342,16 @@
 {"record": "node", "node_id": "intensity:high", "type": "intensity", "name": "high", "aliases": [], "value": "high", "unit": ""}
 {"record": "node", "node_id": "intensity:low", "type": "intensity", "name": "low", "aliases": [], "value": "low", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "intensity:mid", "type": "intensity", "name": "mid", "aliases": [], "value": "mid", "unit": ""}
-{"record": "node", "node_id": "intent:停顿", "type": "intent", "name": "停顿", "aliases": [], "value": "停顿", "unit": "", "occurrences": 22}
-{"record": "node", "node_id": "intent:压迫", "type": "intent", "name": "压迫", "aliases": [], "value": "压迫", "unit": "", "occurrences": 32}
+{"record": "node", "node_id": "intent:停顿", "type": "intent", "name": "停顿", "aliases": [], "value": "停顿", "unit": "", "occurrences": 24}
+{"record": "node", "node_id": "intent:压迫", "type": "intent", "name": "压迫", "aliases": [], "value": "压迫", "unit": "", "occurrences": 33}
 {"record": "node", "node_id": "intent:回望", "type": "intent", "name": "回望", "aliases": [], "value": "回望", "unit": ""}
 {"record": "node", "node_id": "intent:对抗", "type": "intent", "name": "对抗", "aliases": [], "value": "对抗", "unit": "", "occurrences": 8}
-{"record": "node", "node_id": "intent:推进", "type": "intent", "name": "推进", "aliases": [], "value": "推进", "unit": "", "occurrences": 37}
+{"record": "node", "node_id": "intent:推进", "type": "intent", "name": "推进", "aliases": [], "value": "推进", "unit": "", "occurrences": 39}
 {"record": "node", "node_id": "intent:揭示", "type": "intent", "name": "揭示", "aliases": [], "value": "揭示", "unit": "", "occurrences": 17}
 {"record": "node", "node_id": "intent:收束", "type": "intent", "name": "收束", "aliases": [], "value": "收束", "unit": "", "occurrences": 10}
 {"record": "node", "node_id": "intent:煽动", "type": "intent", "name": "煽动", "aliases": [], "value": "煽动", "unit": ""}
-{"record": "node", "node_id": "intent:留白", "type": "intent", "name": "留白", "aliases": [], "value": "留白", "unit": "", "occurrences": 22}
-{"record": "node", "node_id": "intent:转折", "type": "intent", "name": "转折", "aliases": [], "value": "转折", "unit": "", "occurrences": 25}
+{"record": "node", "node_id": "intent:留白", "type": "intent", "name": "留白", "aliases": [], "value": "留白", "unit": "", "occurrences": 28}
+{"record": "node", "node_id": "intent:转折", "type": "intent", "name": "转折", "aliases": [], "value": "转折", "unit": "", "occurrences": 28}
 {"record": "node", "node_id": "intent:释放", "type": "intent", "name": "释放", "aliases": [], "value": "释放", "unit": "", "occurrences": 3}
 {"record": "node", "node_id": "intent:铺垫", "type": "intent", "name": "铺垫", "aliases": [], "value": "铺垫", "unit": "", "occurrences": 7}
 {"record": "node", "node_id": "lens:10mm", "type": "lens", "name": "10mm", "aliases": [], "value": "10mm", "unit": "", "occurrences": 1}
@@ -361,22 +361,22 @@
 {"record": "node", "node_id": "lens:50mm", "type": "lens", "name": "50mm", "aliases": [], "value": "50mm", "unit": "", "occurrences": 5}
 {"record": "node", "node_id": "lens:85mm", "type": "lens", "name": "85mm", "aliases": [], "value": "85mm", "unit": "", "occurrences": 7}
 {"record": "node", "node_id": "lighting:低调", "type": "lighting", "name": "低调", "aliases": ["低照度", "暗调"], "value": "低调", "unit": "", "occurrences": 3}
-{"record": "node", "node_id": "lighting:侧光", "type": "lighting", "name": "侧光", "aliases": ["侧面光", "四十五度光"], "value": "侧光", "unit": "", "occurrences": 2}
+{"record": "node", "node_id": "lighting:侧光", "type": "lighting", "name": "侧光", "aliases": ["侧面光", "四十五度光"], "value": "侧光", "unit": "", "occurrences": 3}
 {"record": "node", "node_id": "lighting:冷光", "type": "lighting", "name": "冷光", "aliases": ["高色温", "日光"], "value": "冷光", "unit": "", "occurrences": 6}
 {"record": "node", "node_id": "lighting:底光", "type": "lighting", "name": "底光", "aliases": ["脚光"], "value": "底光", "unit": ""}
 {"record": "node", "node_id": "lighting:暖光", "type": "lighting", "name": "暖光", "aliases": ["低色温", "钨丝灯"], "value": "暖光", "unit": "", "occurrences": 3}
 {"record": "node", "node_id": "lighting:正面光", "type": "lighting", "name": "正面光", "aliases": ["顺光"], "value": "正面光", "unit": "", "occurrences": 1}
-{"record": "node", "node_id": "lighting:逆光", "type": "lighting", "name": "逆光", "aliases": ["背光", "轮廓光"], "value": "逆光", "unit": "", "occurrences": 5}
-{"record": "node", "node_id": "lighting:顶光", "type": "lighting", "name": "顶光", "aliases": ["正上方光"], "value": "顶光", "unit": "", "occurrences": 2}
+{"record": "node", "node_id": "lighting:逆光", "type": "lighting", "name": "逆光", "aliases": ["背光", "轮廓光"], "value": "逆光", "unit": "", "occurrences": 8}
+{"record": "node", "node_id": "lighting:顶光", "type": "lighting", "name": "顶光", "aliases": ["正上方光"], "value": "顶光", "unit": "", "occurrences": 3}
 {"record": "node", "node_id": "lighting:高调", "type": "lighting", "name": "高调", "aliases": ["高照度", "亮调"], "value": "高调", "unit": ""}
 {"record": "node", "node_id": "movement:crane_arc_down", "type": "movement", "name": "弧线降", "aliases": ["弧线降"], "value": "crane_arc_down", "unit": ""}
 {"record": "node", "node_id": "movement:crane_arc_up", "type": "movement", "name": "弧线升", "aliases": ["弧线升"], "value": "crane_arc_up", "unit": ""}
-{"record": "node", "node_id": "movement:crane_down", "type": "movement", "name": "降", "aliases": ["降"], "value": "crane_down", "unit": "", "occurrences": 25}
-{"record": "node", "node_id": "movement:crane_up", "type": "movement", "name": "升", "aliases": ["升"], "value": "crane_up", "unit": "", "occurrences": 23}
+{"record": "node", "node_id": "movement:crane_down", "type": "movement", "name": "降", "aliases": ["降"], "value": "crane_down", "unit": "", "occurrences": 30}
+{"record": "node", "node_id": "movement:crane_up", "type": "movement", "name": "升", "aliases": ["升"], "value": "crane_up", "unit": "", "occurrences": 25}
 {"record": "node", "node_id": "movement:dolly_in", "type": "movement", "name": "推镜", "aliases": ["推镜", "推近"], "value": "dolly_in", "unit": "", "occurrences": 6}
 {"record": "node", "node_id": "movement:dolly_out", "type": "movement", "name": "拉镜", "aliases": ["拉镜", "拉远"], "value": "dolly_out", "unit": "", "occurrences": 7}
 {"record": "node", "node_id": "movement:dolly_zoom", "type": "movement", "name": "移焦眩晕", "aliases": ["移焦眩晕", "希区柯克变焦", "变焦推拉"], "value": "dolly_zoom", "unit": ""}
-{"record": "node", "node_id": "movement:follow_subject", "type": "movement", "name": "跟拍", "aliases": ["跟拍", "跟随"], "value": "follow_subject", "unit": "", "occurrences": 13}
+{"record": "node", "node_id": "movement:follow_subject", "type": "movement", "name": "跟拍", "aliases": ["跟拍", "跟随"], "value": "follow_subject", "unit": "", "occurrences": 14}
 {"record": "node", "node_id": "movement:handheld", "type": "movement", "name": "手持", "aliases": ["手持"], "value": "handheld", "unit": "", "occurrences": 8}
 {"record": "node", "node_id": "movement:lead_subject", "type": "movement", "name": "前置引导", "aliases": ["前置引导"], "value": "lead_subject", "unit": ""}
 {"record": "node", "node_id": "movement:orbit_ccw", "type": "movement", "name": "逆时针环绕", "aliases": ["逆时针环绕"], "value": "orbit_ccw", "unit": "", "occurrences": 2}
@@ -393,10 +393,10 @@
 {"record": "node", "node_id": "movement:whip_pan_right", "type": "movement", "name": "右甩镜", "aliases": ["右甩镜"], "value": "whip_pan_right", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "movement:zoom_in", "type": "movement", "name": "变焦推近", "aliases": ["变焦推近"], "value": "zoom_in", "unit": "", "occurrences": 2}
 {"record": "node", "node_id": "movement:zoom_out", "type": "movement", "name": "变焦拉远", "aliases": ["变焦拉远"], "value": "zoom_out", "unit": "", "occurrences": 2}
-{"record": "node", "node_id": "movement:固定", "type": "movement", "name": "固定机位", "aliases": ["固定机位", "static", "静止机位"], "value": "固定", "unit": "", "occurrences": 2}
-{"record": "node", "node_id": "pacing:long", "type": "pacing", "name": "long", "aliases": ["长镜", "长镜留白", "凝视"], "value": "long", "unit": "", "occurrences": 6}
+{"record": "node", "node_id": "movement:固定", "type": "movement", "name": "固定机位", "aliases": ["固定机位", "static", "静止机位"], "value": "固定", "unit": "", "occurrences": 3}
+{"record": "node", "node_id": "pacing:long", "type": "pacing", "name": "long", "aliases": ["长镜", "长镜留白", "凝视"], "value": "long", "unit": "", "occurrences": 13}
 {"record": "node", "node_id": "pacing:medium", "type": "pacing", "name": "medium", "aliases": ["常规节奏"], "value": "medium", "unit": ""}
-{"record": "node", "node_id": "pacing:short", "type": "pacing", "name": "short", "aliases": ["短镜", "快切", "短镜硬切"], "value": "short", "unit": "", "occurrences": 5}
+{"record": "node", "node_id": "pacing:short", "type": "pacing", "name": "short", "aliases": ["短镜", "快切", "短镜硬切"], "value": "short", "unit": "", "occurrences": 8}
 {"record": "node", "node_id": "pair:any_two", "type": "pair", "name": "any_two", "aliases": [], "value": "any_two", "unit": ""}
 {"record": "node", "node_id": "scene_type:action", "type": "scene_type", "name": "action", "aliases": [], "value": "action", "unit": "", "occurrences": 8}
 {"record": "node", "node_id": "scene_type:dialogue", "type": "scene_type", "name": "dialogue", "aliases": [], "value": "dialogue", "unit": ""}
@@ -404,19 +404,19 @@
 {"record": "node", "node_id": "scene_type:insert", "type": "scene_type", "name": "insert", "aliases": [], "value": "insert", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "scene_type:reaction", "type": "scene_type", "name": "reaction", "aliases": [], "value": "reaction", "unit": ""}
 {"record": "node", "node_id": "scene_type:transition", "type": "scene_type", "name": "transition", "aliases": [], "value": "transition", "unit": "", "occurrences": 3}
-{"record": "node", "node_id": "sfx:低频轰鸣", "type": "sfx", "name": "低频轰鸣", "aliases": ["轰鸣", "低频"], "value": "低频轰鸣", "unit": "", "occurrences": 2}
+{"record": "node", "node_id": "sfx:低频轰鸣", "type": "sfx", "name": "低频轰鸣", "aliases": ["轰鸣", "低频"], "value": "低频轰鸣", "unit": "", "occurrences": 3}
 {"record": "node", "node_id": "sfx:尖锐哨音", "type": "sfx", "name": "尖锐哨音", "aliases": ["哨音", "耳鸣"], "value": "尖锐哨音", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "sfx:心跳", "type": "sfx", "name": "心跳", "aliases": ["心跳声"], "value": "心跳", "unit": ""}
 {"record": "node", "node_id": "sfx:金属撞击", "type": "sfx", "name": "金属撞击", "aliases": ["撞击"], "value": "金属撞击", "unit": ""}
-{"record": "node", "node_id": "sfx:雨声", "type": "sfx", "name": "雨声", "aliases": ["雨"], "value": "雨声", "unit": "", "occurrences": 3}
+{"record": "node", "node_id": "sfx:雨声", "type": "sfx", "name": "雨声", "aliases": ["雨"], "value": "雨声", "unit": "", "occurrences": 6}
 {"record": "node", "node_id": "sfx:静默", "type": "sfx", "name": "静默", "aliases": ["无声", "寂静"], "value": "静默", "unit": "", "occurrences": 12}
-{"record": "node", "node_id": "shot_size:CU", "type": "shot_size", "name": "CU", "aliases": ["特写"], "value": "CU", "unit": "", "occurrences": 48}
+{"record": "node", "node_id": "shot_size:CU", "type": "shot_size", "name": "CU", "aliases": ["特写"], "value": "CU", "unit": "", "occurrences": 50}
 {"record": "node", "node_id": "shot_size:ECU", "type": "shot_size", "name": "ECU", "aliases": ["大特写", "极特写"], "value": "ECU", "unit": "", "occurrences": 3}
-{"record": "node", "node_id": "shot_size:ELS", "type": "shot_size", "name": "ELS", "aliases": ["远景", "大远景"], "value": "ELS", "unit": "", "occurrences": 20}
-{"record": "node", "node_id": "shot_size:LS", "type": "shot_size", "name": "LS", "aliases": ["全景", "全身"], "value": "LS", "unit": "", "occurrences": 27}
+{"record": "node", "node_id": "shot_size:ELS", "type": "shot_size", "name": "ELS", "aliases": ["远景", "大远景"], "value": "ELS", "unit": "", "occurrences": 21}
+{"record": "node", "node_id": "shot_size:LS", "type": "shot_size", "name": "LS", "aliases": ["全景", "全身"], "value": "LS", "unit": "", "occurrences": 28}
 {"record": "node", "node_id": "shot_size:MCU", "type": "shot_size", "name": "MCU", "aliases": ["中近景", "近景"], "value": "MCU", "unit": "", "occurrences": 32}
 {"record": "node", "node_id": "shot_size:MLS", "type": "shot_size", "name": "MLS", "aliases": ["中远景"], "value": "MLS", "unit": "", "occurrences": 5}
-{"record": "node", "node_id": "shot_size:MS", "type": "shot_size", "name": "MS", "aliases": ["中景"], "value": "MS", "unit": "", "occurrences": 19}
+{"record": "node", "node_id": "shot_size:MS", "type": "shot_size", "name": "MS", "aliases": ["中景"], "value": "MS", "unit": "", "occurrences": 20}
 {"record": "node", "node_id": "transition:cut", "type": "transition", "name": "cut", "aliases": [], "value": "cut", "unit": "", "occurrences": 10}
 {"record": "node", "node_id": "transition:dissolve", "type": "transition", "name": "dissolve", "aliases": [], "value": "dissolve", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "transition:fade", "type": "transition", "name": "fade", "aliases": [], "value": "fade", "unit": ""}

@@ -373,3 +373,66 @@ sources:
     genre: film
     theme: editing
     retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-10-01"

@@ -1,5 +1,5 @@
 {
-  "_fingerprint": "5a96c561b886ca67",
+  "_fingerprint": "23dba0b08512ac81",
   "kinds": {
     "emotion": [
       "压抑",
@@ -33,9 +33,9 @@
       "orbit_ccw",
       "orbit_cw",
       "pan_left",
-      "pan_right",
       "tilt_up",
-      "track_left"
+      "track_left",
+      "固定"
     ],
     "shot_size": [
       "CU",

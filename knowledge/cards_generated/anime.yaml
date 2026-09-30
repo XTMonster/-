@@ -3096,3 +3096,5241 @@
     start: 108
     end: 158
   provenance_kind: 权威文档
+- id: gen_anime_0099
+  domain: anime
+  title: 间与空镜时长
+  content: '"间"的时长取 0.5–2 秒，空镜取 1–3 秒，且空镜须带缓慢运动，避免静止死板。'
+  keywords:
+  - 缓慢运动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 留白
+  topic: anime
+  quote: |-
+    "间"与空镜的时长是否落在 0.5–2 秒 / 1–3 秒，且空镜有缓慢运动？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#012
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#012
+    start: 195
+    end: 234
+  provenance_kind: 权威文档
+- id: gen_anime_0100
+  domain: anime
+  title: 作画集中而非均匀铺开
+  content: 1格作画（高精度作画）只集中在观众会凝视的段落，不要在全片均匀铺开，以控制工时与作监负荷。
+  keywords:
+  - 作画密度
+  - 凝视
+  - 工时分配
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 资源分配
+  topic: anime
+  quote: |-
+    1 格作画是否集中在观众会凝视的段落，而不是均匀铺开？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#011
+  source_span:
+    chunk_id: modern_anime_film_production_md#011
+    start: 69
+    end: 96
+  provenance_kind: 权威文档
+- id: gen_anime_0101
+  domain: anime
+  title: LAYOUT 交付必须带参数
+  content: 3D LAYOUT 的交付口径为：相机参数（焦距、传感器、机位高度）＋人物站位标记＋关键遮挡关系；只给参考图不给参数，后续镜头仍要重新猜机位。
+  keywords:
+  - 相机参数
+  - 焦距
+  - 传感器
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 交付规范
+  - 机位
+  - 遮挡
+  topic: anime
+  quote: |-
+    导出相机参数（焦距、传感器、机位高度）＋人物站位标记 ＋ 关键遮挡关系
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#002
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#002
+    start: 133
+    end: 168
+  provenance_kind: 权威文档
+- id: gen_anime_0102
+  domain: anime
+  title: 3D LAYOUT交付物
+  content: 3D LAYOUT阶段必须导出相机参数与遮挡关系数据，不能只交参考图，否则后续无法与手绘对齐。
+  keywords:
+  - 相机参数
+  - 遮挡关系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: anime
+  quote: |-
+    3D LAYOUT 是否导出相机参数与遮挡关系，而不只是参考图？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#011
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#011
+    start: 45
+    end: 77
+  provenance_kind: 权威文档
+- id: gen_anime_0103
+  domain: anime
+  title: 3D 轮廓线按 2D 重绘
+  content: 3D 模型的轮廓线要按 2D 设定重绘，不要直接使用渲染边缘，否则线条质感与手绘镜头不一致。
+  keywords:
+  - 2D设定
+  - 渲染边缘
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 混合制作
+  topic: anime
+  quote: |-
+    **3D 模型按 2D 设定重绘轮廓线**
+    （不要直接用渲染边缘）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#003
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#003
+    start: 73
+    end: 106
+  provenance_kind: 权威文档
+- id: gen_anime_0104
+  domain: anime
+  title: 时间密度对齐手绘
+  content: 3D 镜头的时间密度要与相邻手绘镜头一致：3D 默认 1 格连续，手绘常用 2 格，不对齐会被读成另一部片子。
+  keywords:
+  - 1格
+  - 2格
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 混合制作
+  topic: anime
+  quote: |-
+    **时间密度与相邻手绘镜头一致**（3D 默认 1 格连续，手绘常用 2 格，
+    不对齐会读成"这段是另一部片子"）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#003
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#003
+    start: 140
+    end: 198
+  provenance_kind: 权威文档
+- id: gen_anime_0105
+  domain: anime
+  title: 透视统一 LAYOUT 基准
+  content: 3D 镜头的透视要按 LAYOUT 的统一基准来，不要各自使用渲染默认透视，避免与手绘镜头透视强度不一致。
+  keywords:
+  - 渲染默认
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混合制作
+  topic: anime
+  quote: |-
+    **透视按 LAYOUT 的统一基准**（不要各自用渲染默认）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#003
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#003
+    start: 107
+    end: 138
+  provenance_kind: 权威文档
+- id: gen_anime_0106
+  domain: anime
+  title: 3D与手绘三项对齐
+  content: 3D与手绘混合时，必须对齐线条、透视、时间密度三项；任一项不一致就会在连播中暴露风格断层。
+  keywords:
+  - 线条
+  - 透视
+  - 时间密度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混合制作
+  topic: anime
+  quote: |-
+    3D 与手绘的线条、透视、时间密度三项是否对齐？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#011
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#011
+    start: 81
+    end: 105
+  provenance_kind: 权威文档
+- id: gen_anime_0107
+  domain: anime
+  title: 3D资产需2D设定图
+  content: 3D资产必须配有2D对照的设定图，并在交付时附上允许的简化范围（哪些细节可在远景省略）；没有简化许可的3D资产会在远景拖垮渲染与作画合成。
+  keywords:
+  - 简化范围
+  - 远景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 资产规范
+  - 远景
+  topic: anime
+  quote: |-
+    **3D 资产必须有 2D 对照的设定图**，并在交付时附上"允许的简化范围"（哪些细节可以在远景省略）。 **没有简化许可的 3D 资产会在远景里拖垮渲染与作画合成**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#005
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#005
+    start: 159
+    end: 245
+  provenance_kind: 权威文档
+- id: gen_anime_0108
+  domain: anime
+  title: 3D资产简化与冻结
+  content: 3D资产需附带简化许可与冻结时间：明确可简化到何种程度、何时停止修改，避免制作中途返工。
+  keywords:
+  - 简化许可
+  - 冻结时间
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: anime
+  quote: |-
+    3D 资产是否附有简化许可与冻结时间？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#011
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#011
+    start: 138
+    end: 157
+  provenance_kind: 权威文档
+- id: gen_anime_0109
+  domain: anime
+  title: 混合制作三项对齐
+  content: CG 与手绘混合时，线条粗细、透视强度、时间密度三项必须对齐；任一项不对齐，观众会读出技术切换。
+  keywords:
+  - 接缝
+  - 线条
+  - 透视
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 接口对齐
+  topic: anime
+  quote: |-
+    混合制作最容易出问题的是接缝：**线条粗细、透视强度、时间密度**三项
+    必须对齐。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#003
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#003
+    start: 25
+    end: 66
+  provenance_kind: 权威文档
+- id: gen_anime_0110
+  domain: anime
+  title: CG作画保留手绘节奏
+  content: CG作画镜头也要按律表标注关键张与时间密度，控制节奏，不要让3D按渲染帧连续播放。
+  keywords:
+  - 律表
+  - 关键张
+  - 时间密度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 律表
+  topic: anime
+  quote: |-
+    CG 作画必须保留手绘的节奏
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#007
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#007
+    start: 195
+    end: 209
+  provenance_kind: 权威文档
+- id: gen_anime_0111
+  domain: anime
+  title: OP/ED响度归一
+  content: OP/ED响度通常高于正片，不做归一会在每集固定位置产生音量跳变；做法是整集统一做响度归一（如-24 LKFS），再交由平台侧转换。
+  keywords:
+  - LKFS
+  - 音量跳变
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混音
+  topic: anime
+  quote: |-
+    OP/ED 的响度通常高于正片
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#009
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#009
+    start: 130
+    end: 145
+  provenance_kind: 权威文档
+- id: gen_anime_0112
+  domain: anime
+  title: Toon阴影与色指定
+  content: Toon渲染的阴影分界位置必须与2D色指定一致，否则同一角色在3D镜与手绘镜间会出现明暗跳变。
+  keywords:
+  - 阴影分界
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 渲染
+  - 色彩
+  topic: anime
+  quote: |-
+    Toon 渲染的阴影分界是否与 2D 色指定一致？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#011
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#011
+    start: 109
+    end: 134
+  provenance_kind: 权威文档
+- id: gen_anime_0113
+  domain: anime
+  title: v编锁定镜头时长
+  content: v编（视频剪辑）阶段就锁定每个镜头的时长，进入配音后不再改动镜头长度，防止音画错位。
+  keywords:
+  - 配音
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 音画同步
+  topic: anime
+  quote: |-
+    v编阶段是否已锁定镜头时长，配音后不再改动？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#011
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#011
+    start: 98
+    end: 120
+  provenance_kind: 权威文档
+- id: gen_anime_0114
+  domain: anime
+  title: 多层合成的层数与分工
+  content: 一个镜头通常由5–15层构成，按功能分为前景作画、角色层（可再分部件）、中景美术、背景美术、效果层；分层时先按这五类归位，再决定各层位移。
+  keywords:
+  - 分层
+  - 前景
+  - 背景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分层
+  topic: anime
+  quote: |-
+    一个镜头通常由 5–15 层构成：前景作画、角色层（可再分部件）、中景美术、背景美术、效果层。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#002
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#002
+    start: 11
+    end: 58
+  provenance_kind: 权威文档
+- id: gen_anime_0115
+  domain: anime
+  title: 改空间须重出LAYOUT
+  content: 一旦需要改变场景空间关系（相机位置、透视、地平线等），必须重新出LAYOUT，不能靠原画师各自理解去补，否则各镜头空间会互相矛盾。
+  keywords:
+  - 空间变更
+  - 原画
+  - 一致性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 空间基准
+  - 流程纪律
+  topic: anime
+  quote: |-
+    **改空间必须重新出 LAYOUT**，不能靠原画师各自理解。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#003
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#003
+    start: 120
+    end: 151
+  provenance_kind: 权威文档
+- id: gen_anime_0116
+  domain: anime
+  title: 摇移跨三环境致失焦
+  content: 一次摇移跨过三种环境时，巨幕上观众视线会失焦，应避免这种大跨度摇移。
+  keywords:
+  - 环境跨度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: anime
+  quote: |-
+    或者一次摇移跨过三种环境时，在巨幕上观众的视线会失焦
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#008
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#008
+    start: 182
+    end: 208
+  provenance_kind: 权威文档
+- id: gen_anime_0117
+  domain: anime
+  title: 长镜缺失像电视
+  content: 一部长片若没有若干10秒以上的长镜头，整体会被观众读成"像电视"，因此排片时须保留足量10秒以上长镜。
+  keywords:
+  - 长镜头
+  - 10秒
+  - 电视感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: anime
+  quote: |-
+    一部长片如果没有若干 10 秒以上的长镜，会被读成"像电视"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#005
+  source_span:
+    chunk_id: modern_anime_film_production_md#005
+    start: 96
+    end: 127
+  provenance_kind: 权威文档
+- id: gen_anime_0118
+  domain: anime
+  title: 分镜必备字段
+  content: 一镜的分镜表须给全：镜号、构图、运动、时长、台词与演出指示，缺项即视为分镜不完整。
+  keywords:
+  - 镜号
+  - 构图
+  - 时长
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 规范
+  topic: anime
+  quote: |-
+    分镜是否给全镜号、构图、运动、时长、台词与演出指示？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#012
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#012
+    start: 41
+    end: 67
+  provenance_kind: 权威文档
+- id: gen_anime_0119
+  domain: anime
+  title: 情绪曲线两次喘息
+  content: 一集情绪曲线至少安排两次喘息：一次在开场3–5分钟内让观众进入，一次放在高潮之前制造落差；全片最高点与次高点之间至少间隔3分钟，中间要有一次明显回落。
+  keywords:
+  - 高潮
+  - 落差
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 段落结构
+  topic: anime
+  quote: |-
+    一集的情绪曲线应当有**至少两次喘息**：一次在开场 3–5 分钟内（让观众进入），一次在高潮之前（制造落差）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#007
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#007
+    start: 14
+    end: 70
+  provenance_kind: 权威文档
+- id: gen_anime_0120
+  domain: anime
+  title: DCP放映测试
+  content: 交付前必须完成一次完整的DCP/KDM放映测试（QC放映），在真实影院设备上验证画面与声音。
+  keywords:
+  - KDM
+  - QC放映
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 交付
+  - 质检
+  topic: anime
+  quote: |-
+    是否完成过一次完整的 DCP/KDM 放映测试（QC 放映）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#011
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#011
+    start: 122
+    end: 153
+  provenance_kind: 权威文档
+- id: gen_anime_0121
+  domain: anime
+  title: 交付前核对规格与可访问性
+  content: 交付前需逐项核对画面与声音的规格表，并检查可访问性项，确认无误后方可交付。
+  keywords:
+  - 规格表
+  - 交付核对
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 交付检查
+  - 声音规格
+  - 画面规格
+  topic: anime
+  quote: |-
+    交付前是否逐项核对画面与声音的规格表与可访问性？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#011
+    start: 162
+    end: 186
+  provenance_kind: 权威文档
+- id: gen_anime_0122
+  domain: anime
+  title: 企划先定需求与硬档期
+  content: 企划阶段就要确定委员会的优先需求与硬档期，作为后续分镜、作画排期的约束条件。
+  keywords:
+  - 委员会
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排期
+  topic: anime
+  quote: |-
+    企划阶段是否已确定委员会的优先需求与硬档期？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#011
+  source_span:
+    chunk_id: modern_anime_film_production_md#011
+    start: 15
+    end: 37
+  provenance_kind: 权威文档
+- id: gen_anime_0123
+  domain: anime
+  title: 伏笔埋与收
+  content: 伏笔首次出现时不加强调（不做特写、不配重音），回收间隔与线索长度匹配：短线快收、长线慢收。
+  keywords:
+  - 回收
+  - 间隔
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: anime
+  quote: |-
+    伏笔首次出现是否未被强调，回收间隔是否与线长匹配？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#012
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#012
+    start: 133
+    end: 158
+  provenance_kind: 权威文档
+- id: gen_anime_0124
+  domain: anime
+  title: 1格比例与枚数换算
+  content: 估算作画量时，1格作画比例每提高10%，作画总枚数约增加20%–30%（张数翻倍且单张完成度更高）。
+  keywords:
+  - 1格作画
+  - 作画枚数
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画密度
+  - 产能估算
+  topic: anime
+  quote: |-
+    1 格作画的比例每提高 10%，作画总枚数约增加 20%–30%
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#004
+  source_span:
+    chunk_id: modern_anime_film_production_md#004
+    start: 89
+    end: 121
+  provenance_kind: 权威文档
+- id: gen_anime_0125
+  domain: anime
+  title: 修正优先顺序
+  content: 作画修正按固定优先级执行：先修形状与重心，再修动作与姿势，最后才处理线条与细节；剧场版与TV顺序一致。
+  keywords:
+  - 修正顺序
+  - 形状
+  - 重心
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 优先级
+  topic: anime
+  quote: |-
+    修正的优先顺序与 TV 相同：**形状与重心 → 动作与姿势 → 线条与细节**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#006
+  source_span:
+    chunk_id: modern_anime_film_production_md#006
+    start: 167
+    end: 208
+  provenance_kind: 权威文档
+- id: gen_anime_0126
+  domain: anime
+  title: 修正层数开工前写死
+  content: 作画修正的层数在开工前就写进日程并固定，避免每层反复修改同一张造成返工叠加。
+  keywords:
+  - 返工
+  - 日程
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画管理
+  - 排期
+  topic: anime
+  quote: |-
+    作画修正的层数在开工前写死在日程里
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#009
+  source_span:
+    chunk_id: modern_anime_film_production_md#009
+    start: 164
+    end: 181
+  provenance_kind: 权威文档
+- id: gen_anime_0127
+  domain: anime
+  title: 作画修正层数预先排期
+  content: 作画修正的层数要在开工前写进日程，并预留整段时间集中处理，避免修正被挤压到后期。
+  keywords:
+  - 日程
+  - 作监
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: anime
+  quote: |-
+    作画修正层数是否在开工前写进日程，并留出整段时间？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#011
+  source_span:
+    chunk_id: modern_anime_film_production_md#011
+    start: 131
+    end: 156
+  provenance_kind: 权威文档
+- id: gen_anime_0128
+  domain: anime
+  title: 按最终画幅作画
+  content: 作画阶段就按最终放映画幅的比例构图，不要先按16:9画完再裁切；裁切会损失构图信息并改变镜头意图。
+  keywords:
+  - 构图
+  - 裁切
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: anime
+  quote: |-
+    是否按最终画幅作画，而不是 16:9 事后裁切？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#011
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#011
+    start: 15
+    end: 39
+  provenance_kind: 权威文档
+- id: gen_anime_0129
+  domain: anime
+  title: 修正优先顺序
+  content: 修正按形状与比例（脸、手、身体重心）→动作与姿势→线条细节的顺序执行；若先修线条，会发现形状已跑偏，等于重画，是排期上最常见的浪费。
+  keywords:
+  - 修正顺序
+  - 形状
+  - 动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画修正
+  - 流程
+  topic: anime
+  quote: |-
+    先修形状与比例（脸、手、身体重心），再修动作与姿势，最后修线条细节
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#005
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#005
+    start: 176
+    end: 209
+  provenance_kind: 权威文档
+- id: gen_anime_0130
+  domain: anime
+  title: 三集定调
+  content: 全季前 1–3 集用于建立世界观、主角目标与主要关系，把定调信息集中在这三集内完成。
+  keywords:
+  - 世界观
+  - 主角目标
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 开篇
+  topic: anime
+  quote: |-
+    第 1–3 集建立世界观、主角目标与主要关系
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#003
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#003
+    start: 142
+    end: 164
+  provenance_kind: 权威文档
+- id: gen_anime_0131
+  domain: anime
+  title: 两次喘息与高点间隔
+  content: 全片安排两次喘息段落；最高点与次高点之间间隔须超过 3 分钟，避免情绪峰值挤在一起。
+  keywords:
+  - 情绪峰值
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 情绪曲线
+  topic: anime
+  quote: |-
+    全片是否有两次喘息，最高点与次高点间隔是否超过 3 分钟？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#012
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#012
+    start: 162
+    end: 191
+  provenance_kind: 权威文档
+- id: gen_anime_0132
+  domain: anime
+  title: 长镜头承担空间与情绪
+  content: 全片至少安排若干10秒以上的长镜头，用来承担空间建立与情绪积累，不要全部用短切堆节奏。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: anime
+  quote: |-
+    是否至少包含若干 10 秒以上的长镜头承担空间与情绪？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#011
+  source_span:
+    chunk_id: modern_anime_film_production_md#011
+    start: 100
+    end: 127
+  provenance_kind: 权威文档
+- id: gen_anime_0133
+  domain: anime
+  title: 视点分配决定共情
+  content: 关键信息处把镜头交给主角视线（拍他的所见与反应），需要抽离时切到客观全景；若整段戏主角只被当观察对象，观众不会为他担心。
+  keywords:
+  - 主观镜头
+  - 客观全景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 共情
+  tags:
+  - 主观镜头
+  topic: anime
+  quote: |-
+    共情来自**视点的分配**：观众与谁共享视角，就会倾向谁。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#010
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#010
+    start: 16
+    end: 45
+  provenance_kind: 权威文档
+- id: gen_anime_0134
+  domain: anime
+  title: 每镜先定观众感受
+  content: 写分镜前先为每一镜写明"要让观众感到什么/知道什么"，作为该镜构图、运动与时长取舍的依据；没有这一句的镜头视为未完成。
+  keywords:
+  - 演出意图
+  - 镜头目的
+  - 分镜检查
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 演出
+  topic: anime
+  quote: |-
+    每一镜是否写出了"要让观众感到/知道什么"？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#012
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#012
+    start: 15
+    end: 37
+  provenance_kind: 权威文档
+- id: gen_anime_0135
+  domain: anime
+  title: 3D化收益排序
+  content: 决定哪些元素做3D时，按机械>道具>背景>角色的收益顺序取舍；判断依据是复用次数×单次绘制成本，出场越多、形状越复杂越优先3D化。
+  keywords:
+  - 复用次数
+  - 绘制成本
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作决策
+  topic: anime
+  quote: |-
+    3D 化的收益顺序是：**机械 > 道具 > 背景 > 角色**。可执行的判断是 **复用次数 × 单次绘制成本**：出场次数越多、形状越复杂，3D 越划算。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#005
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#005
+    start: 21
+    end: 100
+  provenance_kind: 权威文档
+- id: gen_anime_0136
+  domain: anime
+  title: 失焦的修正方式
+  content: 出现失焦风险时，修正不是加快节奏，而是拆成两个镜头或缩短运动幅度。
+  keywords:
+  - 拆分镜头
+  - 运动幅度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 运镜
+  topic: anime
+  quote: |-
+    可执行的修正不是加快节奏，而是拆成两个镜头或者缩短运动幅度
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#008
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#008
+    start: 211
+    end: 240
+  provenance_kind: 权威文档
+- id: gen_anime_0137
+  domain: anime
+  title: 时长缺失必被重定
+  content: 分镜上没写清的时长，一定会在演出或作画阶段被重新决定，而那时的修改成本远高于在分镜阶段多花一天；因此时长必须在分镜阶段定死。
+  keywords:
+  - 修改成本
+  - 演出
+  - 作画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 成本控制
+  topic: anime
+  quote: |-
+    **分镜上没写清的时长，一定会在演出或作画阶段被重新决定**，而那时的修改成本远高于在分镜阶段多花一天。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#002
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#002
+    start: 80
+    end: 132
+  provenance_kind: 权威文档
+- id: gen_anime_0138
+  domain: anime
+  title: 演出三决定
+  content: 分镜之后、作画之前，演出层必须定下三件事：镜头怎么摆（构图与机位）、时间怎么走（时长与节奏）、表演怎么给（作画密度与姿势）；三者缺一，原画师只能自行猜测，导致一集内风格漂移。
+  keywords:
+  - 构图
+  - 机位
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜
+  - 调度
+  topic: anime
+  quote: |-
+    "演出"在动画里指**分镜之后、作画之前**的那一层调度，它做三个决定：
+    **镜头怎么摆（构图与机位）**、**时间怎么走（时长与节奏）**、
+    **表演怎么给（作画密度与姿势）**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#001
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#001
+    start: 21
+    end: 112
+  provenance_kind: 权威文档
+- id: gen_anime_0139
+  domain: anime
+  title: 运动镜头标起止构图
+  content: 分镜只写"PAN"而不写起止构图时，LAYOUT与摄影无法判断最终画幅；可执行的修补是给运动镜头标注起止两格构图（開始コマ／終了コマ），这是动画分镜的通用做法。
+  keywords:
+  - PAN
+  - 開始コマ
+  - 終了コマ
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜标注
+  topic: anime
+  quote: |-
+    **可执行的修补是给运动镜头标注起止两格构图**（開始コマ／終了コマ），这是动画分镜的通用做法。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#003
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#003
+    start: 212
+    end: 260
+  provenance_kind: 权威文档
+- id: gen_anime_0140
+  domain: anime
+  title: LAYOUT定空间基准
+  content: 分镜只定镜头与时长，LAYOUT负责确定相机位置、视野、人物与背景的透视关系，以及全场景共用的地平线与消失点；同一场景只出一份空间基准，后续镜头都在此基准上取景。
+  keywords:
+  - 地平线
+  - 消失点
+  - 透视
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: anime
+  quote: |-
+    分镜定镜头与时长，**LAYOUT 定空间**：相机位置、视野、人物与背景的透视关系、以及此后所有镜头共用的地平线与消失点。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#003
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#003
+    start: 23
+    end: 85
+  provenance_kind: 权威文档
+- id: gen_anime_0141
+  domain: anime
+  title: 锁定镜头数防作画失控
+  content: 分镜定稿后立即锁定镜头数，不再增删镜头；作画密度提升时工期不变，镜头数失控会直接导致延期。
+  keywords:
+  - 分镜定稿
+  - 作画枚数
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制片管理
+  - 分镜
+  topic: anime
+  quote: |-
+    分镜定稿后锁定镜头数
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#009
+  source_span:
+    chunk_id: modern_anime_film_production_md#009
+    start: 121
+    end: 131
+  provenance_kind: 权威文档
+- id: gen_anime_0142
+  domain: anime
+  title: 配音前锁定镜头时长
+  content: 分镜时长可在v编阶段微调，但进入配音后时长变更就要重配台词；纪律是配音前锁定镜头时长，此后只允许音频层面的调整。
+  keywords:
+  - 锁定时长
+  - 纪律
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 时长控制
+  topic: anime
+  quote: |-
+    **可执行的纪律是配音前锁定镜头时长，此后只允许音频层面的调整**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#007
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#007
+    start: 205
+    end: 239
+  provenance_kind: 权威文档
+- id: gen_anime_0143
+  domain: anime
+  title: 分镜是长度唯一真源
+  content: 分镜是决定全片长度的唯一依据；分镜未定稿时，作画、撮影与音响都无法锁定各自的工作范围，因此排期上必须把分镜定稿作为其他部门开工的前置条件。
+  keywords:
+  - 定稿
+  - 排期
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作流程
+  topic: anime
+  quote: |-
+    分镜是长度的唯一真源，它没定稿，作画、撮影与音响都无法锁定自己的工作范围。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#003
+  source_span:
+    chunk_id: modern_anime_film_production_md#003
+    start: 124
+    end: 161
+  provenance_kind: 权威文档
+- id: gen_anime_0144
+  domain: anime
+  title: 分镜最小信息集六项
+  content: 分镜的最小信息集为六项：镜号、构图（含人物位置）、镜头运动、时长（格）、台词/音效、演出指示；缺任一项即信息不完整。
+  keywords:
+  - 镜号
+  - 构图
+  - 镜头运动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: anime
+  quote: |-
+    分镜的最小信息集是六项：**镜号、构图（含人物位置）、镜头运动、时长（格）、台词/音效、演出指示**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#002
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#002
+    start: 132
+    end: 183
+  provenance_kind: 权威文档
+- id: gen_anime_0145
+  domain: anime
+  title: 分镜提前12个月定稿
+  content: 分镜需在上映前12个月完成到“段落全定”的程度，为后续作画、摄影留出可排期的余量。
+  keywords:
+  - 档期
+  - 段落全定
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排期
+  topic: anime
+  quote: |-
+    分镜是否在上映前 12 个月完成到"段落全定"？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#011
+  source_span:
+    chunk_id: modern_anime_film_production_md#011
+    start: 41
+    end: 65
+  provenance_kind: 权威文档
+- id: gen_anime_0146
+  domain: anime
+  title: 用3D的四个判断条件
+  content: 判断一个镜头是否用3D，看四条：需要严格透视与重复使用（机械、道具、车辆）；需要连续运动且不允许形变（旋转、环绕、升降）；需要与实拍或复杂摄影结合（虚拟摄影机、LED背景）；需要在多镜头间保持完全一致的形状（量产机体、固定布景）。命中两条以上，用3D通常比手绘便宜。
+  keywords:
+  - 3D判断
+  - 透视
+  - 重复使用
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作决策
+  topic: anime
+  quote: |-
+    四条命中两条以上，用 3D 通常比手绘便宜。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#001
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#001
+    start: 193
+    end: 215
+  provenance_kind: 权威文档
+- id: gen_anime_0147
+  domain: anime
+  title: 3D适用性判断
+  content: 判断某镜是否该用3D时，先核对四个条件（如透视复杂、重复运动、机械结构、镜头运动复杂），满足两条以上才用3D，否则优先手绘。
+  keywords:
+  - 条件判断
+  - 镜头取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 决策
+  topic: anime
+  quote: |-
+    这一镜是否满足"该用 3D"的四个条件中的两条以上？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#011
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#011
+    start: 15
+    end: 41
+  provenance_kind: 权威文档
+- id: gen_anime_0148
+  domain: anime
+  title: 延期风险的判断线
+  content: 判断项目是否进入延期风险：若上映前 12 个月仍有两个以上段落的分镜未定，即视为已进入延期风险，需要调整排期或压缩范围。
+  keywords:
+  - 分镜
+  - 上映前12个月
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排期
+  - 风险管理
+  topic: anime
+  quote: |-
+    上映前 12 个月仍有两个以上段落的分镜未定，说明项目已经进入延期风险
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#003
+  source_span:
+    chunk_id: modern_anime_film_production_md#003
+    start: 172
+    end: 207
+  provenance_kind: 权威文档
+- id: gen_anime_0149
+  domain: anime
+  title: 剧伴进出落在情绪转折
+  content: 剧中音乐（剧伴）的进入与退出应落在情绪转折点上，而不是对齐剪辑点；剪辑点只负责画面切换，音乐切换另找情绪节点。
+  keywords:
+  - 剪辑点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 音乐
+  - 节奏
+  - 情绪设计
+  topic: anime
+  quote: |-
+    剧伴的进入与退出落在情绪转折点，而不是剪辑点上
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#007
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#007
+    start: 67
+    end: 90
+  provenance_kind: 权威文档
+- id: gen_anime_0150
+  domain: anime
+  title: 剧场版与TV的三种衔接
+  content: 剧场版与TV的衔接分三种形态：衔接集（承接TV剧情设定，需看过前作）、总集篇/再编集（用既有素材重构，成本最低）、新作独立篇（只保留设定与角色，门槛最低）。
+  keywords:
+  - 衔接集
+  - 总集篇
+  - 独立篇
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 企划形态
+  topic: anime
+  quote: |-
+    剧场版与 TV 的衔接有三种常见形态：**衔接集**（承接 TV 的剧情与设定，需要看过前作）、**总集篇/再编集**（用既有素材重构，成本最低）、**新作独立篇**（只保留设定与角色，门槛最低）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#008
+  source_span:
+    chunk_id: modern_anime_film_production_md#008
+    start: 14
+    end: 113
+  provenance_kind: 权威文档
+- id: gen_anime_0151
+  domain: anime
+  title: 按最终画幅作画
+  content: 剧场版作画与摄影必须按最终画幅（1.85:1 或 2.39:1）设计，不要按 16:9 画完再裁切；裁切会丢失头顶与脚下，并使 LAYOUT 的空间基准失效。
+  keywords:
+  - 宽银幕
+  - LAYOUT
+  - 裁切
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 作画纪律
+  topic: anime
+  quote: |-
+    可执行的纪律是**按最终画幅作画**，而不是按 16:9 完成后裁切——裁切会丢掉头顶与脚下，也会让 LAYOUT 的空间基准失效。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#002
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#002
+    start: 88
+    end: 154
+  provenance_kind: 权威文档
+- id: gen_anime_0152
+  domain: anime
+  title: 剧场版作监体制规模
+  content: 剧场版作画监督人数通常为TV的2–4倍，并普遍设置总作画监督与作画监督补，角色与机械常分设不同的作监。
+  keywords:
+  - 作画监督人数
+  - 总作画监督
+  - 作画监督补
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作体制
+  topic: anime
+  quote: |-
+    **作画監督人数通常是 TV 的 2–4 倍**，并普遍设置**総作画監督**与**作画監督補**，角色与机械常有分别的作监。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#006
+  source_span:
+    chunk_id: modern_anime_film_production_md#006
+    start: 26
+    end: 89
+  provenance_kind: 权威文档
+- id: gen_anime_0153
+  domain: anime
+  title: 剧场版分辨率基准
+  content: 剧场版分辨率以 2K（2048×1080）为基准，4K 交付日益常见；作画与摄影的精度应按此基准准备。
+  keywords:
+  - 2K
+  - 4K
+  - 交付
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 技术规格
+  topic: anime
+  quote: |-
+    分辨率以 **2K（2048×1080）为基准，4K 交付日益常见**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#002
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#002
+    start: 61
+    end: 97
+  provenance_kind: 权威文档
+- id: gen_anime_0154
+  domain: anime
+  title: 分镜由核心单人完成
+  content: 剧场版分镜常由监督本人或核心演出单独完成，以保证全片镜头语言一致。
+  keywords:
+  - 监督
+  - 镜头语言
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 统一性
+  topic: anime
+  quote: |-
+    剧场版分镜常由**监督本人或核心演出单独完成**，以保证全片的镜头语言一致。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#005
+  source_span:
+    chunk_id: modern_anime_film_production_md#005
+    start: 136
+    end: 174
+  provenance_kind: 权威文档
+- id: gen_anime_0155
+  domain: anime
+  title: 大银幕凝视下的单镜完成度
+  content: 剧场版每一镜都要经得起大银幕与几十秒的凝视：TV里可用短镜带过的过渡，在剧场版会因观众看清而暴露问题。因此预算优先投入同一镜的完成度，而非增加镜头数量。
+  keywords:
+  - 过渡镜
+  - 预算分配
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 节奏
+  - 制作规模
+  topic: anime
+  quote: |-
+    剧场版的每一镜都要经得起大银幕与几十秒的凝视
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#001
+  source_span:
+    chunk_id: modern_anime_film_production_md#001
+    start: 179
+    end: 201
+  provenance_kind: 权威文档
+- id: gen_anime_0156
+  domain: anime
+  title: 剧场版多出层级的用法
+  content: 剧场版比TV多出的那一层修正应投入跨段落统一（同一角色在不同段落的脸型、同一机体的比例），而非用于单张画面的细化。
+  keywords:
+  - 跨段落统一
+  - 脸型
+  - 机体比例
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 统一性
+  - 修正
+  - 角色一致性
+  topic: anime
+  quote: |-
+    **剧场版多出的那一层修正应当用在"跨段落的统一"上**（同一角色在不同段落的脸型、同一机体的比例），而不是用在单张的细化。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#006
+  source_span:
+    chunk_id: modern_anime_film_production_md#006
+    start: 187
+    end: 249
+  provenance_kind: 权威文档
+- id: gen_anime_0157
+  domain: anime
+  title: 剧场版镜头长度基准
+  content: 剧场版镜头平均长度比TV长，主力区间取3–8秒；长镜头用于承担空间与情绪，短镜头用于承担信息与冲击。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 镜头时长
+  topic: anime
+  quote: |-
+    3–8 秒是主力区间
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#005
+  source_span:
+    chunk_id: modern_anime_film_production_md#005
+    start: 58
+    end: 68
+  provenance_kind: 权威文档
+- id: gen_anime_0158
+  domain: anime
+  title: 光晕强度上限
+  content: 加光晕（bloom）时强度不超过画面峰值亮度的 15%，避免高光溢出糊掉画面细节。
+  keywords:
+  - bloom
+  - 峰值亮度
+  - 高光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 合成
+  topic: anime
+  quote: |-
+    光晕强度是否不超过峰值亮度的 15%？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#011
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#011
+    start: 75
+    end: 94
+  provenance_kind: 权威文档
+- id: gen_anime_0159
+  domain: anime
+  title: 蓄势与压缩的格数配比
+  content: 动作前用蓄势（静止或减速几格）建立预期，动作瞬间用压缩（极少格数完成位移）；可执行配比为蓄势 6–12 格、压缩 1–3 格。
+  keywords:
+  - 时间记号
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 节奏
+  - 时间控制
+  - 动作
+  topic: anime
+  quote: |-
+    **蓄势**在动作前插入静止或减速的几格，让观众预期；**压缩**在动作瞬间用极少的格数完成位移。可执行的配比是**蓄势 6–12 格，压缩 1–3 格**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#009
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#009
+    start: 44
+    end: 123
+  provenance_kind: 权威文档
+- id: gen_anime_0160
+  domain: anime
+  title: 分镜是权威第一稿
+  content: 动画分镜（絵コンテ）是制作的第一稿也是权威稿，需同时确定镜头、时长（秒或格）、台词位置、音效与摄影指示；后续演出与作画以分镜为准。
+  keywords:
+  - 絵コンテ
+  - 权威稿
+  - 时长
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作流程
+  topic: anime
+  quote: |-
+    动画分镜（絵コンテ）是**制作的第一稿也是权威稿**：它同时确定镜头、时长（以秒或格计）、台词位置、音效与摄影指示。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#002
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#002
+    start: 15
+    end: 73
+  provenance_kind: 权威文档
+- id: gen_anime_0161
+  domain: anime
+  title: v编与本编的分工
+  content: 动画剪辑分两步：v编用未完成作画的镜头排时间与节奏，供配音与音响作业；本编在作画与摄影完成后定稿。
+  keywords:
+  - 剪辑流程
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 流程
+  topic: anime
+  quote: |-
+    **v编（ビデオ編集/仮編集）**用尚未完成作画的镜头排出时间与节奏，用于配音与音响作业；**本编（本編集）**在作画与摄影完成后定稿。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#007
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#007
+    start: 27
+    end: 95
+  provenance_kind: 权威文档
+- id: gen_anime_0162
+  domain: anime
+  title: 口型近似同步
+  content: 动画口型与台词做近似同步：只在重音与停顿处对齐，中间用闭口与半开交替，不逐音素精确对位。
+  keywords:
+  - 重音
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: anime
+  quote: |-
+    只在重音与停顿处对齐，中间用闭口与半开交替
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#005
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#005
+    start: 161
+    end: 182
+  provenance_kind: 权威文档
+- id: gen_anime_0163
+  domain: anime
+  title: 符号化表现的种类
+  content: 动画可继承漫画的符号化表现：集中线指向注意力、汗滴表紧张、怒符表愤怒、速度线表运动方向、星星表惊喜。
+  keywords:
+  - 集中线
+  - 汗滴
+  - 怒符
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视觉语法
+  topic: anime
+  quote: |-
+    集中线（注意力的指向）、汗滴（紧张）、怒符（愤怒）、速度线（运动方向）、星星（惊喜）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#005
+  source_span:
+    chunk_id: modern_anime_visual_design_md#005
+    start: 39
+    end: 82
+  provenance_kind: 权威文档
+- id: gen_anime_0164
+  domain: anime
+  title: 高潮与中点位置
+  content: 单集高潮落在全片 70%–90% 区间，中点落在 45%–55% 区间；偏离则调整段落配比。
+  keywords:
+  - 高潮位置
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 段落结构
+  topic: anime
+  quote: |-
+    单集的高潮位置是否落在 70%–90% 区间，中点在 45%–55%？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#012
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#012
+    start: 94
+    end: 129
+  provenance_kind: 权威文档
+- id: gen_anime_0165
+  domain: anime
+  title: 阴影分界由设定决定
+  content: 卡通渲染中阴影的分界位置由色指定设定决定，而不是由灯光角度决定；否则同一角色在不同镜头里会出现不同形状的阴影。
+  keywords:
+  - 色指定
+  - 灯光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - Toon
+  - 一致性
+  topic: anime
+  quote: |-
+    阴影的分界位置由设定决定而不是由灯光角度决定
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#004
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#004
+    start: 137
+    end: 159
+  provenance_kind: 权威文档
+- id: gen_anime_0166
+  domain: anime
+  title: 原画動画律表分工
+  content: 原画负责关键动作与表演，動画（中割）负责中间过程，律表负责时间：每格1/24秒，标注原画张号、中割张数与セル位置。
+  keywords:
+  - 1/24秒
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 时间载体
+  topic: anime
+  quote: |-
+    原画承载**关键动作与表演**，動画（中割）承载**中间过程**，律表（タイム
+    シート）承载**时间**：每一格对应 1/24 秒，标注原画张号、中割张数与
+    セル位置。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#004
+    start: 21
+    end: 105
+  provenance_kind: 权威文档
+- id: gen_anime_0167
+  domain: anime
+  title: 外包需完整设定与检查标准
+  content: 发包前必须提供完整设定与检查标准，否则外包部分无法与内部画面统一，成片会出现风格断层。
+  keywords:
+  - 外包需完整设定与检查标准
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 规范
+  topic: anime
+  quote: |-
+    外包部分必须有完整的设定与检查标准
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#007
+  source_span:
+    chunk_id: modern_anime_film_production_md#007
+    start: 200
+    end: 217
+  provenance_kind: 权威文档
+- id: gen_anime_0168
+  domain: anime
+  title: 影院条件合成检查
+  content: 合成完成后要在影院放映条件下检查色带与边缘，因为大银幕会放大渐变断层和抠像边缘问题。
+  keywords:
+  - 色带
+  - 边缘
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 质检
+  topic: anime
+  quote: |-
+    合成是否做过影院条件下的色带与边缘检查？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#011
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#011
+    start: 71
+    end: 91
+  provenance_kind: 权威文档
+- id: gen_anime_0169
+  domain: anime
+  title: 双画幅安全框交集
+  content: 同一作品需同时交付影院与电视/流媒体时，在 LAYOUT 阶段就确定两个画幅的安全框交集，把关键信息（人物头部、动作核心）放在交集内；事后重新构图等于重做 LAYOUT 与部分作画。
+  keywords:
+  - 多画幅
+  - LAYOUT
+  - 交付
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 多版本
+  topic: anime
+  quote: |-
+    **当同一作品需要同时交付影院与电视/流媒体时**，应当在 LAYOUT 阶段就确定**两个画幅的安全框交集**，并把关键信息放在交集内。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#002
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#002
+    start: 150
+    end: 219
+  provenance_kind: 权威文档
+- id: gen_anime_0170
+  domain: anime
+  title: 场景复用同一 LAYOUT
+  content: 同一场景反复出现时，复用同一份 LAYOUT 与空间基准，保证机位与空间关系前后一致。
+  keywords:
+  - 空间基准
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场景一致性
+  - 空间
+  topic: anime
+  quote: |-
+    同一场景是否复用同一份 LAYOUT 与空间基准？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#012
+  source_span:
+    chunk_id: modern_anime_visual_design_md#012
+    start: 199
+    end: 224
+  provenance_kind: 权威文档
+- id: gen_anime_0171
+  domain: anime
+  title: 单场景唯一空间基准
+  content: 同一场景只允许存在一份空间基准（LAYOUT），所有镜头共用该基准，避免多份设定导致空间关系冲突。
+  keywords:
+  - LAYOUT
+  - 场景一致性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场景一致性
+  - 空间关系
+  - LAYOUT
+  topic: anime
+  quote: |-
+    同一场景是否只有一份空间基准（LAYOUT）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#011
+    start: 63
+    end: 86
+  provenance_kind: 权威文档
+- id: gen_anime_0172
+  domain: anime
+  title: 混用密度须对应转折
+  content: 同一镜头内混用1/2/3格密度时，密度变化点必须落在动作或情绪的转折点上，否则观众会读成作画事故。
+  keywords:
+  - 密度变化
+  - 转折点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 情绪转折
+  topic: anime
+  quote: |-
+    **同一镜头内混用密度时，密度变化必须对应动作或情绪的转折点**，否则会被读成作画事故。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#004
+    start: 217
+    end: 261
+  provenance_kind: 权威文档
+- id: gen_anime_0173
+  domain: anime
+  title: 多画幅安全框交集
+  content: 同一镜头要交付多种画幅时，把关键信息（人物面部、字幕、动作核心）放在各画幅安全框的交集内，避免某一版本被裁掉。
+  keywords:
+  - 构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: anime
+  quote: |-
+    多画幅交付时，关键信息是否在两个安全框的交集内？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#011
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#011
+    start: 43
+    end: 67
+  provenance_kind: 权威文档
+- id: gen_anime_0174
+  domain: anime
+  title: 单镜符号数量上限
+  content: 同一镜头里符号不超过两种，避免画面读成贴纸堆叠。
+  keywords:
+  - 单镜符号数量上限
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 符号化
+  - 节制
+  topic: anime
+  quote: |-
+    同一镜头里不超过两种符号
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#005
+  source_span:
+    chunk_id: modern_anime_visual_design_md#005
+    start: 121
+    end: 133
+  provenance_kind: 权威文档
+- id: gen_anime_0175
+  domain: anime
+  title: 多集并行推进
+  content: 因单集工期约6周且多集并行，同一周内通常同时推进4–6集；做分镜排期时须按此并行度安排人力与镜头产出节奏。
+  keywords:
+  - 集数
+  - 排期
+  - 人力
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 日程结构
+  - 并行制作
+  topic: anime
+  quote: |-
+    多个集数**并行**推进，因此**同一周里同时在做的集数通常是 4–6 集**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#006
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#006
+    start: 85
+    end: 125
+  provenance_kind: 权威文档
+- id: gen_anime_0176
+  domain: anime
+  title: 间的时间尺度
+  content: 在动作或台词之间插入不承载信息的静态时刻（间），长度取0.5–2秒：短于0.5秒观众读不出来，长于2秒会被读成停顿过久。
+  keywords:
+  - 停顿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 留白
+  topic: anime
+  quote: |-
+    可执行的时间尺度是**0.5–2 秒**——短于此读不出来，长于此会读成停顿过久。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#008
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#008
+    start: 54
+    end: 95
+  provenance_kind: 权威文档
+- id: gen_anime_0177
+  domain: anime
+  title: 留白后进音乐更有效
+  content: 在影院中，先留白再进音乐（音乐后退）格外有效，因为影院环境噪声极低，留白能强化音乐进入的冲击。
+  keywords:
+  - 后退
+  - 环境噪声
+  - 冲击
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 配乐
+  - 节奏
+  topic: anime
+  quote: |-
+    而后退（先留白再进音乐）在影院里格外有效，因为环境噪声极低。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#007
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#007
+    start: 190
+    end: 220
+  provenance_kind: 权威文档
+- id: gen_anime_0178
+  domain: anime
+  title: 一处偏离制造记忆点
+  content: 在既定类型语法上只做一处偏离来让作品被记住，例如日常系里插入一场高对比战斗、机战里给一次柔光日常；偏离只做一次且不做解释，重复使用会变成风格混乱。
+  keywords:
+  - 风格
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 风格控制
+  - 反差
+  topic: anime
+  quote: |-
+    **偏离只做一次且不做解释**，重复使用会变成风格混乱。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#007
+  source_span:
+    chunk_id: modern_anime_visual_design_md#007
+    start: 198
+    end: 226
+  provenance_kind: 权威文档
+- id: gen_anime_0179
+  domain: anime
+  title: 低密度镜头调节节奏
+  content: 处理镜头之间的呼吸时，在两个高密度镜头之间插入一个低密度镜头（空镜或反应镜），观众才读得出节奏变化；可执行口径为每20–40秒至少出现一次低密度镜头。
+  keywords:
+  - 空镜
+  - 反应镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 呼吸
+  topic: anime
+  quote: |-
+    两个高密度镜头之间插入一个低密度镜头（空镜或反应镜），观众才读得出节奏变化。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#004
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#004
+    start: 147
+    end: 185
+  provenance_kind: 权威文档
+- id: gen_anime_0180
+  domain: anime
+  title: 外包保持同等作监流程
+  content: 外包部分必须拿到完整设定，并执行与内部同等的作监流程，防止外包段作画质量掉档。
+  keywords:
+  - 设定
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 质量管控
+  topic: anime
+  quote: |-
+    外包部分是否有完整设定与内部同等的作监流程？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#011
+  source_span:
+    chunk_id: modern_anime_film_production_md#011
+    start: 160
+    end: 182
+  provenance_kind: 权威文档
+- id: gen_anime_0181
+  domain: anime
+  title: 多层视差按距离分配
+  content: 多层合成时视差比按景物距离分配，常用 3:2:1 或 4:2:1，使近层位移大于远层，形成纵深。
+  keywords:
+  - 多层合成
+  - 纵深
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 合成
+  - 纵深
+  topic: anime
+  quote: |-
+    多层合成的视差比是否按距离分配（3:2:1 或 4:2:1）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#011
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#011
+    start: 40
+    end: 71
+  provenance_kind: 权威文档
+- id: gen_anime_0182
+  domain: anime
+  title: 逐段连播断层检查
+  content: 完成镜头后做逐段连播检查，重点排查风格、时间、空间、密度四类断层，而非只看单镜。
+  keywords:
+  - 风格
+  - 密度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  topic: anime
+  quote: |-
+    是否做了逐段连播的断层检查（风格/时间/空间/密度）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#011
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#011
+    start: 187
+    end: 214
+  provenance_kind: 权威文档
+- id: gen_anime_0183
+  domain: anime
+  title: 宽色域单向映射
+  content: 宽色域素材应通过一次色调映射下变换到目标色域，不要反向拉伸窄色域素材，否则会出现色彩失真。
+  keywords:
+  - 色调映射
+  - 下变换
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩管理
+  - 色调映射
+  topic: anime
+  quote: |-
+    宽色域是否由一次色调映射下变换，而非反向拉伸？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#011
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#011
+    start: 95
+    end: 118
+  provenance_kind: 权威文档
+- id: gen_anime_0184
+  domain: anime
+  title: 对白锚定中置
+  content: 对白锚定中置声道；影院版与电视版分开混音，因为两者的动态范围与监听环境不同。
+  keywords:
+  - 中置声道
+  - 混音
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音
+  - 混音
+  topic: anime
+  quote: |-
+    对白是否锚定中置声道，影院与电视是否分开做混音？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#011
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#011
+    start: 157
+    end: 181
+  provenance_kind: 权威文档
+- id: gen_anime_0185
+  domain: anime
+  title: 巨幕高帧率限段落
+  content: 巨幕或高帧率只用于特定段落，并控制段落之间的密度差异，避免观众因格式突变而出戏。
+  keywords:
+  - 巨幕高帧率限段落
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 格式
+  - 节奏
+  topic: anime
+  quote: |-
+    巨幕/高帧率是否只用于特定段落，且密度差异是否可控？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#011
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#011
+    start: 185
+    end: 211
+  provenance_kind: 权威文档
+- id: gen_anime_0186
+  domain: anime
+  title: 3D 与手绘同框先对齐阴影
+  content: 当 3D 角色与手绘角色同框时，先对齐两者的阴影分界，这是判断融合度的第一眼指标，优先级高于模型精度。
+  keywords:
+  - 阴影分界
+  - 融合
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混合制作
+  - 合成
+  topic: anime
+  quote: |-
+    当 3D 角色与手绘角色同框时，必须先对齐阴影分界
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#004
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#004
+    start: 191
+    end: 216
+  provenance_kind: 权威文档
+- id: gen_anime_0187
+  domain: anime
+  title: 多人分镜须统一基准
+  content: 当分镜由多人分担时，必须由监督统一镜头长度基准与运动幅度，否则观众会在段落切换处感到风格跳变。
+  keywords:
+  - 镜头长度
+  - 运动幅度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 统一性
+  - 风格跳变
+  topic: anime
+  quote: |-
+    **当分镜由多人分担时，必须由监督统一镜头长度基准与运动幅度**，否则观众会在段落切换处感到风格跳变。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#005
+  source_span:
+    chunk_id: modern_anime_film_production_md#005
+    start: 174
+    end: 225
+  provenance_kind: 权威文档
+- id: gen_anime_0188
+  domain: anime
+  title: 超长台词改镜头不改语速
+  content: 当台词超出镜头长度时，延长镜头或删减台词，不要加快语速——加速会读成不自然。
+  keywords:
+  - 延长镜头
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 配音
+  topic: anime
+  quote: |-
+    当台词超出镜头长度时，正确的做法是延长镜头或减少台词，而不是加快语速
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#005
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#005
+    start: 92
+    end: 126
+  provenance_kind: 权威文档
+- id: gen_anime_0189
+  domain: anime
+  title: 长台词插反应镜头
+  content: 当台词连续超过20秒时，应插入一次反应镜头，否则观众会脱离画面只听声音。
+  keywords:
+  - 20秒
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 插入镜头
+  - 节奏
+  topic: anime
+  quote: |-
+    当台词连续超过 20 秒时应当插入一次反应镜头
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#005
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#005
+    start: 197
+    end: 220
+  provenance_kind: 权威文档
+- id: gen_anime_0190
+  domain: anime
+  title: 多主体运动致失焦
+  content: 当画面里出现两个以上同时运动的主体时，巨幕上观众视线会失焦，应避免这种调度。
+  keywords:
+  - 巨幕
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: anime
+  quote: |-
+    当画面里出现两个以上同时运动的主体，或者一次摇移跨过三种环境时，在巨幕上观众的视线会失焦
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#008
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#008
+    start: 164
+    end: 208
+  provenance_kind: 权威文档
+- id: gen_anime_0191
+  domain: anime
+  title: 极端角度须标注特例
+  content: 当镜头刻意使用俯视或仰视等极端角度时，必须在 LAYOUT 中明确写出这是特例，否则下一集会被误当成基准沿用。
+  keywords:
+  - 俯视
+  - 仰视
+  - 特例标注
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 空间一致性
+  - 机位
+  - LAYOUT
+  topic: anime
+  quote: |-
+    当镜头刻意使用极端角度（俯视/仰视）时，必须明确写出这是特例
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#009
+  source_span:
+    chunk_id: modern_anime_visual_design_md#009
+    start: 214
+    end: 244
+  provenance_kind: 权威文档
+- id: gen_anime_0192
+  domain: anime
+  title: 预算不足时拆镜或固定
+  content: 当预算不足以支撑高密度手绘时，应拆镜或改为固定机位，而不是降低原画密度，否则观众会读成偷工。
+  keywords:
+  - 固定机位
+  - 原画密度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 机位
+  - 成本控制
+  topic: anime
+  quote: |-
+    预算不够时应当拆镜或改为固定机位，而不是降低密度（会读成偷工）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#006
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#006
+    start: 214
+    end: 246
+  provenance_kind: 权威文档
+- id: gen_anime_0193
+  domain: anime
+  title: 对白锚定中置声道
+  content: 影院5.1/沉浸声混音时，对白必须锚定在中置声道，不要用左右声道做对白的立体声扩散，否则偏离中心的座位会听到失衡的对白。
+  keywords:
+  - '5.1'
+  - 声像
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混音
+  - 声道分配
+  topic: anime
+  quote: |-
+    中置声道承担对白，环绕承担环境与效果，低频承担冲击
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#006
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#006
+    start: 64
+    end: 89
+  provenance_kind: 权威文档
+- id: gen_anime_0194
+  domain: anime
+  title: 影院与电视混音分版
+  content: 影院按参考电平混音、动态范围更大；需先完成影院版混音，再单独做电视/流媒体版（压缩动态并重新归一响度），两版不可共用同一条总线的动态处理。
+  keywords:
+  - 响度
+  - 动态范围
+  - 混音版本
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 响度标准
+  topic: anime
+  quote: |-
+    先按影院标准完成混音，再单独做一版电视/流媒体混音
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#006
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#006
+    start: 203
+    end: 228
+  provenance_kind: 权威文档
+- id: gen_anime_0195
+  domain: anime
+  title: 律表先于作画
+  content: 律表（时间表）应在作画开始前确定，且其密度变化需对应剧情的转折点，用节奏密度承载叙事起伏。
+  keywords:
+  - 密度变化
+  - 转折
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 时间表
+  - 作画流程
+  topic: anime
+  quote: |-
+    律表是否先于作画确定，密度变化是否对应转折？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#011
+    start: 108
+    end: 130
+  provenance_kind: 权威文档
+- id: gen_anime_0196
+  domain: anime
+  title: 光的符号化绑定
+  content: 把光的类型与情绪固定绑定：逆光=神圣或压迫，侧光=矛盾与犹豫，顶光=危险，正面平光=日常；同一情绪反复使用同一种光，让观众习得这套语法。
+  keywords:
+  - 逆光
+  - 侧光
+  - 顶光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线
+  - 情绪语法
+  topic: anime
+  quote: |-
+    逆光读作"神圣或压迫"、侧光读作"矛盾与犹豫"、顶光读作"危险"、正面平光读作"日常"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#003
+  source_span:
+    chunk_id: modern_anime_visual_design_md#003
+    start: 35
+    end: 79
+  provenance_kind: 权威文档
+- id: gen_anime_0197
+  domain: anime
+  title: 资产冻结后只修材质
+  content: 把资产冻结时间写进日程：冻结之后只允许修材质，不允许改形状，以锁住接口风险。
+  keywords:
+  - 形状锁定
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 日程
+  topic: anime
+  quote: |-
+    冻结之后只允许修材质，不允许改形状
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#008
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#008
+    start: 173
+    end: 190
+  provenance_kind: 权威文档
+- id: gen_anime_0198
+  domain: anime
+  title: 前十分钟重述前情
+  content: 拍衔接集时，必须在前10分钟内完成前情与人物关系的重述，否则新观众会流失。
+  keywords:
+  - 前情重述
+  - 前10分钟
+  - 新观众
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 开场
+  - 信息交代
+  topic: anime
+  quote: |-
+    **必须在前 10 分钟内完成"前情与人物关系"的重述**，否则新观众会流失
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#008
+  source_span:
+    chunk_id: modern_anime_film_production_md#008
+    start: 161
+    end: 199
+  provenance_kind: 权威文档
+- id: gen_anime_0199
+  domain: anime
+  title: 类型片视觉语法对照
+  content: 按类型定基调：少年向用高饱和、大眼、明确主色与夸张动势；日常系用低对比、柔光、大量手部与饮食特写；机战/科幻用冷色、硬边、机械细节与低机位制造巨大感；恐怖用低明度、深阴影、留白与失衡构图。
+  keywords:
+  - 类型语法
+  - 色彩
+  - 构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视觉基调
+  topic: anime
+  quote: |-
+    **少年向**用高饱和、大眼、明确的主色与
+    夸张的动势；**日常系**用低对比、柔光、大量的手部与饮食特写；
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#007
+  source_span:
+    chunk_id: modern_anime_visual_design_md#007
+    start: 27
+    end: 81
+  provenance_kind: 权威文档
+- id: gen_anime_0200
+  domain: anime
+  title: 时间密度三档取舍
+  content: 按镜头需要选时间密度：1格用于高速与冲击，2格为电视动画常规，3格用于静止与对白。
+  keywords:
+  - 1格
+  - 2格
+  - 3格
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 作画密度
+  topic: anime
+  quote: |-
+    **1 格用于高速与冲击，2 格是电视动画的常规，3 格用于静止与对白**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#004
+    start: 182
+    end: 220
+  provenance_kind: 权威文档
+- id: gen_anime_0201
+  domain: anime
+  title: 律表先行定时间
+  content: 排动作时间时先定律表：确定每张原画落在哪一格，再据此决定中割张数；不要先画完再排时间，否则动作与台词同步会失效。
+  keywords:
+  - 中割
+  - 同步
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 时间控制
+  topic: anime
+  quote: |-
+    可执行的口径是**律表先行**：先定每张原画落在哪一格，再决定要多少中割，**反过来（先画再排时间）会让动作与台词的同步失效**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#004
+    start: 98
+    end: 163
+  provenance_kind: 权威文档
+- id: gen_anime_0202
+  domain: anime
+  title: 台词留时长余量
+  content: 排台词时给每句留 5%–10% 的时长余量，供配音呼吸与语速波动，避免赶词。
+  keywords:
+  - 配音
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 音响
+  - 节奏
+  topic: anime
+  quote: |-
+    台词是否留出 5%–10% 的时长余量？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#011
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#011
+    start: 124
+    end: 144
+  provenance_kind: 权威文档
+- id: gen_anime_0203
+  domain: anime
+  title: 预留一次完整返工预算
+  content: 排期时为3D资产留出一次完整返工的预算作为缓冲，而不是只留零散修补时间。
+  keywords:
+  - 缓冲
+  - 排期
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 日程
+  - 缓冲
+  topic: anime
+  quote: |-
+    为 3D 资产留出一次完整返工的预算
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#008
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#008
+    start: 134
+    end: 152
+  provenance_kind: 权威文档
+- id: gen_anime_0204
+  domain: anime
+  title: 摄影音响留尾部缓冲
+  content: 排期时摄影与音响必须留出尾部缓冲；这两段被压缩只能靠删镜头或降低合成质量消化，二者都是可见的质量损失。
+  keywords:
+  - 删镜头
+  - 合成质量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排期约束
+  - 质量损失
+  topic: anime
+  quote: |-
+    排期的关键约束是**摄影与音响必须留出尾部缓冲**：这两段一旦被压缩，只能靠删镜头或降低合成质量来消化，而这两者都是可见的质量损失。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#006
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#006
+    start: 123
+    end: 189
+  provenance_kind: 权威文档
+- id: gen_anime_0205
+  domain: anime
+  title: 摄影编辑留尾部缓冲
+  content: 摄影与编辑环节需预留 15%–20% 的尾部缓冲，用于吸收镜头时长与节奏调整的余量。
+  keywords:
+  - 余量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑节奏
+  - 流程管理
+  topic: anime
+  quote: |-
+    摄影与编辑是否留有 15%–20% 的尾部缓冲？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#011
+    start: 134
+    end: 158
+  provenance_kind: 权威文档
+- id: gen_anime_0206
+  domain: anime
+  title: 后期留15%–20%缓冲
+  content: 摄影与音响环节各预留15%–20%的时间缓冲；后期时间不足时只能用降质消化，因此缓冲必须在排期时留出。
+  keywords:
+  - 摄影
+  - 音响
+  - 时间缓冲
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排期
+  topic: anime
+  quote: |-
+    摄影与音响各留 15%–20% 的时间缓冲
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#009
+  source_span:
+    chunk_id: modern_anime_film_production_md#009
+    start: 137
+    end: 158
+  provenance_kind: 权威文档
+- id: gen_anime_0207
+  domain: anime
+  title: 摄影音响留缓冲
+  content: 摄影与音响环节各预留15%–20%的缓冲时间，用于吸收上游作画延迟与返工。
+  keywords:
+  - 排期
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排期
+  topic: anime
+  quote: |-
+    摄影与音响是否各留了 15%–20% 的缓冲？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#011
+  source_span:
+    chunk_id: modern_anime_film_production_md#011
+    start: 186
+    end: 209
+  provenance_kind: 权威文档
+- id: gen_anime_0208
+  domain: anime
+  title: 摄影层慢于作画层
+  content: 摄影层（背景/特效层）的变化周期取 2–6 秒，作画层取 1–4 格；摄影层必须比作画层慢，形成层次差。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 层次
+  - 节奏
+  topic: anime
+  quote: |-
+    摄影层的变化周期（2–6 秒）是否慢于作画（1–4 格）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#012
+  source_span:
+    chunk_id: modern_anime_visual_design_md#012
+    start: 103
+    end: 132
+  provenance_kind: 权威文档
+- id: gen_anime_0209
+  domain: anime
+  title: 撮影最小工作集五项
+  content: 撮影的最小工作集固定为五项：层合成、色调整（色彩平衡与对比）、滤镜（光晕、扩散、颗粒）、虚化与景深、效果层（雨、雪、粒子）。
+  keywords:
+  - 层合成
+  - 色调整
+  - 滤镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 合成
+  - 工作流
+  topic: anime
+  quote: |-
+    层合成、色调整（色彩平衡与对比）、滤镜（光晕、扩散、颗粒）、虚化与景深、以及效果层（雨、雪、粒子）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#001
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#001
+    start: 141
+    end: 190
+  provenance_kind: 权威文档
+- id: gen_anime_0210
+  domain: anime
+  title: 撮影不改动作时间
+  content: 撮影（合成）阶段只调整质感与明暗，不得改动原画的动作时间；动作节奏的修改必须回到作画阶段处理。
+  keywords:
+  - 合成
+  - 质感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 合成
+  - 作画管理
+  topic: anime
+  quote: |-
+    撮影是否只改质感与明暗，没有改动作画时间？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#011
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#011
+    start: 15
+    end: 36
+  provenance_kind: 权威文档
+- id: gen_anime_0211
+  domain: anime
+  title: 撮影不改作画时间
+  content: 数字动画的撮影（合成）只改变画面的质感与明暗，不得改动作画的时间；一旦撮影改时间，作画的时间表就失去意义。
+  keywords:
+  - 合成
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 合成
+  - 时间管理
+  topic: anime
+  quote: |-
+    撮影不改作画的时间，只改画面的质感与明暗
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#001
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#001
+    start: 83
+    end: 103
+  provenance_kind: 权威文档
+- id: gen_anime_0212
+  domain: anime
+  title: 色板数量与时段区分
+  content: 整体色板控制在 12–20 色以内；为四个时段各做一套色板，且四套之间必须能一眼分辨。
+  keywords:
+  - 配色
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩设计
+  - 时段色
+  topic: anime
+  quote: |-
+    色板是否在 12–20 色以内，四个时段色板是否可辨？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#012
+  source_span:
+    chunk_id: modern_anime_visual_design_md#012
+    start: 53
+    end: 80
+  provenance_kind: 权威文档
+- id: gen_anime_0213
+  domain: anime
+  title: 整集响度归一
+  content: 整集做响度归一，跨集响度偏差控制在 2–3 dB 以内，保证连续观看时音量一致。
+  keywords:
+  - 跨集
+  - dB
+  - 混音
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 音响
+  - 混音
+  topic: anime
+  quote: |-
+    整集是否做过响度归一，跨集偏差是否在 2–3 dB 以内？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#011
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#011
+    start: 177
+    end: 206
+  provenance_kind: 权威文档
+- id: gen_anime_0214
+  domain: anime
+  title: 日常到非日常需中介画面
+  content: 日常与非日常之间的切换必须插入一个中介画面（如主角拿起武器的一镜），让观众看见切换本身；直接硬切会让非日常显得廉价。
+  keywords:
+  - 过渡
+  - 硬切
+  - 切换
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 转场
+  - 剪辑
+  topic: anime
+  quote: |-
+    两者之间的**过渡必须有中介画面**（例如主角拿起武器的一镜），让观众看见"切换"这件事本身。**直接硬切会让非日常显得廉价**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#006
+  source_span:
+    chunk_id: modern_anime_visual_design_md#006
+    start: 162
+    end: 227
+  provenance_kind: 权威文档
+- id: gen_anime_0215
+  domain: anime
+  title: 日常与非日常的视觉差异
+  content: 日常与非日常之间需建立三条视觉差异，并在两者切换时插入中介画面作为过渡。
+  keywords:
+  - 过渡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 过渡
+  topic: anime
+  quote: |-
+    日常/非日常的三条视觉差异是否成立，过渡是否有中介画面？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#012
+  source_span:
+    chunk_id: modern_anime_visual_design_md#012
+    start: 167
+    end: 195
+  provenance_kind: 权威文档
+- id: gen_anime_0216
+  domain: anime
+  title: 日常与非日常的空间区分
+  content: 日常场景用前景遮挡与生活杂物填满空间；非日常场景改用开阔空间与留白，用空间密度区分两种状态。
+  keywords:
+  - 前景遮挡
+  - 留白
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: anime
+  quote: |-
+    **空间**（日常有前景遮挡与生活杂物、非日常用开阔空间与留白）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#006
+  source_span:
+    chunk_id: modern_anime_visual_design_md#006
+    start: 129
+    end: 161
+  provenance_kind: 权威文档
+- id: gen_anime_0217
+  domain: anime
+  title: 日常与非日常的色彩区分
+  content: 日常场景用高饱和低对比的色彩，非日常（战斗、超能力、异世界）用低饱和高对比的色彩，用色彩差异给观众建立紧张感的标尺。
+  keywords:
+  - 饱和度
+  - 对比度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 色彩设计
+  - 氛围
+  topic: anime
+  quote: |-
+    **色彩**（日常高饱和但低对比、非日常低饱和但高对比）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#006
+  source_span:
+    chunk_id: modern_anime_visual_design_md#006
+    start: 72
+    end: 100
+  provenance_kind: 权威文档
+- id: gen_anime_0218
+  domain: anime
+  title: 日常与非日常的线条区分
+  content: 日常场景线条保持均匀统一；非日常场景在线条上加入粗细变化与断裂，以线条质感区分两种状态。
+  keywords:
+  - 粗细变化
+  - 断裂
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作画
+  topic: anime
+  quote: |-
+    **线条**（日常线条均匀、非日常加入粗细变化与断裂）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#006
+  source_span:
+    chunk_id: modern_anime_visual_design_md#006
+    start: 101
+    end: 128
+  provenance_kind: 权威文档
+- id: gen_anime_0219
+  domain: anime
+  title: 接口合格检验法
+  content: 检验接口是否合格，把 3D 镜头与相邻手绘镜头连起来播放；若观众能指出这里换了技术，说明三项中至少一项没对齐。
+  keywords:
+  - 连播
+  - 技术切换
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混合制作
+  topic: anime
+  quote: |-
+    判断接口是否合格的检验是**把 3D 镜头与相邻手绘镜头连起来播放**：
+    如果观众能指出"这里换技术了"，说明三项里至少一项没对齐。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#003
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#003
+    start: 200
+    end: 266
+  provenance_kind: 权威文档
+- id: gen_anime_0220
+  domain: anime
+  title: 遮住人物的辨识检验
+  content: 检验美术设定是否成立：遮住人物只看背景，观众能否认出是哪部作品；若不能，说明设定只是"好看"而未形成视觉语言，需回到世界细节的重复上重做。
+  keywords:
+  - 辨识度
+  - 背景
+  - 视觉语言
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 美术设定
+  - 辨识度
+  - 检验标准
+  topic: anime
+  quote: |-
+    判断美术设定是否成立的检验是**遮住人物还能认出作品**：只看背景，观众能否说出这是哪一部作品。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#001
+  source_span:
+    chunk_id: modern_anime_visual_design_md#001
+    start: 137
+    end: 185
+  provenance_kind: 权威文档
+- id: gen_anime_0221
+  domain: anime
+  title: 同组合勿连用三次
+  content: 段落内四种镜头长度×作画密度组合要有目的性地交替使用；连续三次以上使用同一组合会让观众麻木，须换组合或插入回落。
+  keywords:
+  - 麻木
+  - 交替
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 段落结构
+  topic: anime
+  quote: |-
+    四种组合在段落内应当有目的性，**连续三次以上使用同一组合会让观众麻木**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#007
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#007
+    start: 234
+    end: 272
+  provenance_kind: 权威文档
+- id: gen_anime_0222
+  domain: anime
+  title: 每环交付可消费产物
+  content: 每一制作环节都必须向下游交出可被直接消费的产物，否则视为该环节未完成。
+  keywords:
+  - 交付物
+  - 下游消费
+  - 环节验收
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程管理
+  - 交付标准
+  topic: anime
+  quote: |-
+    每一环是否交出了可被下游消费的产物？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#011
+    start: 15
+    end: 33
+  provenance_kind: 权威文档
+- id: gen_anime_0223
+  domain: anime
+  title: 演出意图写进分镜
+  content: 每一镜必须在分镜或演出笔记中写明“这一镜要让观众感到/知道什么”；写不出这句话的镜头应删除或与相邻镜合并，因为它通常只是在重复上一镜的信息。
+  keywords:
+  - 分镜笔记
+  - 删镜
+  - 合并
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 信息密度
+  topic: anime
+  quote: |-
+    **演出意图必须写进分镜或演出笔记**：每一镜注明
+    "这一镜要让观众感到/知道什么"。**写不出这句话的镜头应当被删掉或合并**，
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#001
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#001
+    start: 155
+    end: 220
+  provenance_kind: 权威文档
+- id: gen_anime_0224
+  domain: anime
+  title: 视觉基准表作为交付物
+  content: 每一集的演出与作画监督必须共用同一份视觉基准表，并将其作为正式交付物而非口头共识，以此防止跨集视觉漂移。
+  keywords:
+  - 演出
+  - 作画监督
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作流程
+  - 跨集一致性
+  topic: anime
+  quote: |-
+    每一集的演出与作画监督必须共用同一份视觉基准表**，并把它作为交付物而不是口头共识。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#010
+  source_span:
+    chunk_id: modern_anime_visual_design_md#010
+    start: 159
+    end: 201
+  provenance_kind: 权威文档
+- id: gen_anime_0225
+  domain: anime
+  title: 双参考系统监听
+  content: 每一项混音都要在两个参考系统上试听：近场监听音箱与便携设备（如手机喇叭），确保关键信息不丢失。
+  keywords:
+  - 参考监听
+  - 近场
+  - 便携设备
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混音
+  topic: anime
+  quote: |-
+    每一项在两个参考系统上听（近场监听与便携设备）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#008
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#008
+    start: 171
+    end: 195
+  provenance_kind: 权威文档
+- id: gen_anime_0226
+  domain: anime
+  title: 无冻结期必爆返工
+  content: 没有设定资产冻结时间的混合项目，接口返工会集中在最后两周爆发，因此冻结时间是必需项而非可选项。
+  keywords:
+  - 冻结时间
+  - 最后两周
+  - 返工爆发
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 风险
+  - 日程
+  topic: anime
+  quote: |-
+    没有冻结时间的混合项目，会在最后两周集中爆发接口返工
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#008
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#008
+    start: 196
+    end: 222
+  provenance_kind: 权威文档
+- id: gen_anime_0227
+  domain: anime
+  title: 修正权与决定权分离
+  content: 流程中修正权与决定权应分离，并设置明确的裁判路径，使冲突有裁决出口而非反复返工。
+  keywords:
+  - 裁判路径
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程管理
+  - 决策
+  - 冲突裁决
+  topic: anime
+  quote: |-
+    修正权与决定权是否分离，冲突是否有裁判路径？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#011
+    start: 37
+    end: 59
+  provenance_kind: 权威文档
+- id: gen_anime_0228
+  domain: anime
+  title: 混合制作先划界线
+  content: 混合制作的第一步不是建模，而是先划清3D与手绘的分工界线，并把它写进演出笔记，再进入制作。
+  keywords:
+  - 分工
+  - 演出笔记
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: anime
+  quote: |-
+    混合制作的第一步不是建模，而是划清这条界线并写进演出笔记
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#001
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#001
+    start: 291
+    end: 319
+  provenance_kind: 权威文档
+- id: gen_anime_0229
+  domain: anime
+  title: 逐段连播验收
+  content: 混合段落的验收必须把该段与前后纯手绘段落连起来播放，逐项核对四类断层；不要只检查静帧，因为静帧验收必然漏掉时间密度与运动质感问题。
+  keywords:
+  - 连播检查
+  - 运动质感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: anime
+  quote: |-
+    可执行的验收方式是**逐段连播检查**：把混合段落与前后纯手绘段落
+    连起来播放，逐项核对上述四项断层。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#009
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#009
+    start: 156
+    end: 207
+  provenance_kind: 权威文档
+- id: gen_anime_0230
+  domain: anime
+  title: CG作画的适用判断
+  content: 用形变自由度决定是否用3D作画：3D形变受绑定限制、手绘可任意形变，因此形状稳定的动（旋转、缩放、机械变形）交给CG作画，形状撕裂的动（挤压拉伸的夸张表演）留给手绘。
+  keywords:
+  - 形变自由度
+  - 绑定限制
+  - 机械动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 3D作画
+  - 手绘
+  - 形变
+  topic: anime
+  quote: |-
+    3D 能做的形变受绑定限制，手绘能做任意形变
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#007
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#007
+    start: 105
+    end: 127
+  provenance_kind: 权威文档
+- id: gen_anime_0231
+  domain: anime
+  title: 3D LAYOUT 的空间一致性
+  content: 用简化模型在 3D 中摆出空间与相机，再导出轮廓线给原画；同一场景的机位高度、透视与遮挡关系由 3D 天然保持一致，避免手绘 LAYOUT 逐镜漂移。
+  keywords:
+  - 轮廓线
+  - 原画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 3D构图
+  - 空间基准
+  - 预演
+  topic: anime
+  quote: |-
+    3D LAYOUT（3D 构图）用简化模型摆出空间与相机，再把轮廓线导出给原画。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#002
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#002
+    start: 27
+    end: 67
+  provenance_kind: 权威文档
+- id: gen_anime_0232
+  domain: anime
+  title: 镜头长度×作画密度四读法
+  content: 用镜头长度与作画密度组合控制节奏：长镜+高密度=凝重的紧张，长镜+低密度=日常或压抑，短镜+高密度=爆发，短镜+低密度=慌乱或喜剧。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 剪辑
+  topic: anime
+  quote: |-
+    **长镜 + 高密度作画**读作"凝重的紧张"，**长镜 + 低密度**读作"日常或压抑"，**短镜 + 高密度**读作"爆发"，**短镜 + 低密度**读作"慌乱或喜剧"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#007
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#007
+    start: 133
+    end: 220
+  provenance_kind: 权威文档
+- id: gen_anime_0233
+  domain: anime
+  title: 一集六周工期模型
+  content: 电视动画单集按约6周排期：分镜2–3周、LAYOUT与原画2–3周、動画与上色1–2周、摄影与編集1周、音响与纳品3–5天；排期时按此比例分配各阶段工时。
+  keywords:
+  - 分镜
+  - 原画
+  - 摄影
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 日程结构
+  - 制作流程
+  topic: anime
+  quote: |-
+    电视动画一集的典型工期是**约 6 周**：分镜 2–3 周、LAYOUT 与原画 2–3 周、動画与上色 1–2 周、摄影与編集 1 周、音响与纳品 3–5 天。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#006
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#006
+    start: 16
+    end: 98
+  provenance_kind: 权威文档
+- id: gen_anime_0234
+  domain: anime
+  title: 阴影色相偏移
+  content: 画阴影时颜色沿色相偏移，不要用纯黑，否则画面会变脏。
+  keywords:
+  - 纯黑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  topic: anime
+  quote: |-
+    阴影色沿色相偏移而不是纯黑
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#003
+  source_span:
+    chunk_id: modern_anime_visual_design_md#003
+    start: 153
+    end: 166
+  provenance_kind: 权威文档
+- id: gen_anime_0235
+  domain: anime
+  title: 空镜须有微动
+  content: 空镜画面里应安排一处极缓慢的运动（云、雨、光影），否则画面会被读成静止帧，属于作画事故。
+  keywords:
+  - 缓慢运动
+  - 静止帧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动
+  topic: anime
+  quote: |-
+    **空镜里应当有一处极缓慢的
+    运动**（云、雨、光影），否则画面会读成静止帧（作画事故）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#008
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#008
+    start: 204
+    end: 249
+  provenance_kind: 权威文档
+- id: gen_anime_0236
+  domain: anime
+  title: 空镜的时长与功能
+  content: 空镜（天空、雨、走廊）用于给观众处理情绪的时间，可用长度参考为1–3秒。
+  keywords:
+  - 情绪处理
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 留白
+  topic: anime
+  quote: |-
+    空镜的功能是给观众处理
+    情绪的时间，可用长度参考是**1–3 秒**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#008
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#008
+    start: 168
+    end: 202
+  provenance_kind: 权威文档
+- id: gen_anime_0237
+  domain: anime
+  title: 符号不能替代表演
+  content: 符号不能替代表演：只靠怒符而无肩膀、下巴、呼吸等身体变化，画面会读成贴纸。
+  keywords:
+  - 身体变化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 符号化
+  topic: anime
+  quote: |-
+    符号不能替代表演
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#005
+  source_span:
+    chunk_id: modern_anime_visual_design_md#005
+    start: 151
+    end: 159
+  provenance_kind: 权威文档
+- id: gen_anime_0238
+  domain: anime
+  title: 符号化表现的阈值与限量
+  content: 符号化表现只在情绪超过阈值时出现，且同一镜头内不超过两种符号，避免视觉过载。
+  keywords:
+  - 情绪阈值
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情绪表达
+  topic: anime
+  quote: |-
+    符号化表现是否只在情绪超阈值时出现，且同镜不超过两种？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#012
+  source_span:
+    chunk_id: modern_anime_visual_design_md#012
+    start: 136
+    end: 163
+  provenance_kind: 权威文档
+- id: gen_anime_0239
+  domain: anime
+  title: 符号出现阈值
+  content: 符号只在情绪强度超过阈值时出现，不要为常态情绪加符号。
+  keywords:
+  - 情绪强度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 符号化
+  - 节制
+  topic: anime
+  quote: |-
+    符号只在情绪强度超过阈值时出现
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#005
+  source_span:
+    chunk_id: modern_anime_visual_design_md#005
+    start: 98
+    end: 113
+  provenance_kind: 权威文档
+- id: gen_anime_0240
+  domain: anime
+  title: 系列构成双表
+  content: 系列构成层面须同时给出主线进度表与情绪曲线，用两张表对齐剧情推进与情绪起伏，缺一不可。
+  keywords:
+  - 主线进度
+  - 情绪曲线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: anime
+  quote: |-
+    系列构成是否给出主线进度表与情绪曲线？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#012
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#012
+    start: 71
+    end: 90
+  provenance_kind: 权威文档
+- id: gen_anime_0241
+  domain: anime
+  title: 缓冲口径15%–20%
+  content: 给摄影与编辑各预留15%–20%的时间作为可执行缓冲，用于吸收前段延误，避免以删镜头或降合成质量收尾。
+  keywords:
+  - 摄影
+  - 编辑
+  - 百分比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 排期约束
+  topic: anime
+  quote: |-
+    **可执行的缓冲口径是给摄影与编辑各留 15%–20% 的时间**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#006
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#006
+    start: 213
+    end: 247
+  provenance_kind: 权威文档
+- id: gen_anime_0242
+  domain: anime
+  title: 缺时长与缺构图是硬缺陷
+  content: 缺时长的分镜无法排期，缺构图的分镜无法作画，两者都是硬缺陷而非风格选择；分镜阶段必须补齐这两项。
+  keywords:
+  - 排期
+  - 作画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜
+  - 检查项
+  topic: anime
+  quote: |-
+    **缺时长的分镜无法排期，缺构图的分镜无法作画**，两者都是硬缺陷而不是风格选择。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#002
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#002
+    start: 183
+    end: 224
+  provenance_kind: 权威文档
+- id: gen_anime_0243
+  domain: anime
+  title: 世界细节的重复密度
+  content: 美术设定需定义 8–15 个世界细节，并让其中每个细节在每集至少重复出现 3 次，用重复建立世界的可信度。
+  keywords:
+  - 美术设定
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 设定
+  - 重复母题
+  topic: anime
+  quote: |-
+    美术设定是否定义了 8–15 个世界细节，且每集重复出现 ≥3 个？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#012
+  source_span:
+    chunk_id: modern_anime_visual_design_md#012
+    start: 15
+    end: 49
+  provenance_kind: 权威文档
+- id: gen_anime_0244
+  domain: anime
+  title: 背景3D化需美术监督
+  content: 背景3D化要谨慎：手绘背景承载美术风格，3D背景若只做几何复现会与美术风格脱节，必须由美术监督参与贴图与色彩的统一。
+  keywords:
+  - 贴图
+  - 色彩统一
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 美术风格
+  topic: anime
+  quote: |-
+    **背景 3D 化要谨慎**：手绘背景承载美术风格，3D 背景如果只做几何复现，会与美术风格脱节，**必须由美术监督参与贴图与色彩的统一**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#005
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#005
+    start: 84
+    end: 155
+  provenance_kind: 权威文档
+- id: gen_anime_0245
+  domain: anime
+  title: 蓄势密度须低于压缩
+  content: 蓄势与压缩配合时，蓄势的作画密度必须低于压缩：蓄势用静止或近似静止的一张原画，压缩用拖影或变形帧；若蓄势画满、压缩慢慢来，动作会失去速度感。
+  keywords:
+  - 拖影
+  - 变形帧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 节奏
+  - 作画密度
+  - 速度感
+  topic: anime
+  quote: |-
+    **蓄势的密度必须低于压缩**：蓄势用静止或近似静止的一张原画，压缩用拖影或变形帧。**反过来（蓄势画满、压缩慢慢来）会让动作失去速度感**，是新手最常见的失误。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#009
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#009
+    start: 130
+    end: 211
+  provenance_kind: 权威文档
+- id: gen_anime_0246
+  domain: anime
+  title: 冲击瞬间声音组合
+  content: 表现冲击瞬间时，用「抽掉环境声 + 低频进入」的组合，先静后轰，强化打击感。
+  keywords:
+  - 环境声
+  - 低频
+  - 音效
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 音响
+  topic: anime
+  quote: |-
+    冲击瞬间是否用了"抽环境声 + 低频进入"的组合？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#011
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#011
+    start: 148
+    end: 173
+  provenance_kind: 权威文档
+- id: gen_anime_0247
+  domain: anime
+  title: 逆光角色的轮廓边线
+  content: 角色处于逆光时，必须给出一条可读的轮廓边线（rim light/描边），否则剪影会糊掉、失去辨识度。
+  keywords:
+  - 轮廓光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轮廓光
+  topic: anime
+  quote: |-
+    逆光角色是否有可读的轮廓边线？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#012
+  source_span:
+    chunk_id: modern_anime_visual_design_md#012
+    start: 84
+    end: 99
+  provenance_kind: 权威文档
+- id: gen_anime_0248
+  domain: anime
+  title: 逆光必留轮廓边线
+  content: 角色处于逆光时，必须给出一条可读的轮廓边线，否则角色会与背景糊在一起。
+  keywords:
+  - 角色分离
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轮廓光
+  topic: anime
+  quote: |-
+    当角色处于逆光时，必须给出一条可读的轮廓边线
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#003
+  source_span:
+    chunk_id: modern_anime_visual_design_md#003
+    start: 203
+    end: 225
+  provenance_kind: 权威文档
+- id: gen_anime_0249
+  domain: anime
+  title: 该保持手绘的镜头
+  content: 角色表演、脸部、手部，以及需要夸张演出的镜头应保持手绘：3D表情幅度受绑定限制，夸张到位的形变通常要逐帧手绘。
+  keywords:
+  - 表演
+  - 夸张
+  - 绑定限制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: anime
+  quote: |-
+    角色表演、脸部、手部、以及需要"演出的夸张"的镜头应当保持手绘
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#001
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#001
+    start: 223
+    end: 254
+  provenance_kind: 权威文档
+- id: gen_anime_0250
+  domain: anime
+  title: 代价可视化
+  content: 让主角为选择付出可见代价（体力、伤口、关系、时间），观众才会把胜利读成值得；无代价的胜利不产生情绪，长篇中期最易因此塌陷。
+  keywords:
+  - 胜利
+  - 情绪
+  - 长篇结构
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 沉重
+  tags:
+  - 情绪设计
+  - 段落结构
+  topic: anime
+  quote: |-
+    **没有代价的胜利不产生情绪**，这也是长篇作品中期最容易塌陷的原因。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#010
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#010
+    start: 200
+    end: 235
+  provenance_kind: 权威文档
+- id: gen_anime_0251
+  domain: anime
+  title: 视觉一致性四项检查
+  content: 跨集制作时用四项可执行检查守住视觉一致性：色板控制在12–20色且按时段分明；同一场景复用同一份LAYOUT作为空间基准；光的类型与情绪绑定并重复使用；符号化表现不得替代表演。任一项漂移都会让观众觉得"这一集感觉不对"。
+  keywords:
+  - 一致性检查
+  - 色板
+  - LAYOUT
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视觉基准
+  - 跨集一致性
+  - 色彩管理
+  topic: anime
+  quote: |-
+    可执行的一致性检查有四项：**色板是否在 12–20 色以内且时段分明**、**同一场景的空间基准是否复用了同一份 LAYOUT**、**光的类型是否与情绪绑定并重复使用**、**符号化表现是否没有替代表演**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#010
+  source_span:
+    chunk_id: modern_anime_visual_design_md#010
+    start: 14
+    end: 120
+  provenance_kind: 权威文档
+- id: gen_anime_0252
+  domain: anime
+  title: 运动镜头须标起止构图
+  content: 运动镜头（推、拉、摇、移）在分镜/LAYOUT阶段必须同时标注起始构图与终止构图，使作画与摄影能据此确定画框变化范围。
+  keywords:
+  - LAYOUT
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜标注
+  topic: anime
+  quote: |-
+    运动镜头是否标注了起止构图？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#011
+    start: 90
+    end: 104
+  provenance_kind: 权威文档
+- id: gen_anime_0253
+  domain: anime
+  title: 门槛与成本成反比
+  content: 选择衔接形态时按反比取舍：观众进入门槛越低，越要投入成本重建设定；门槛越高（如衔接集）越可依赖前作认知。
+  keywords:
+  - 进入门槛
+  - 制作成本
+  - 设定重建
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 企划取舍
+  topic: anime
+  quote: |-
+    **观众的进入门槛与制作成本成反比**：门槛越低，越要花成本重建设定。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#008
+  source_span:
+    chunk_id: modern_anime_film_production_md#008
+    start: 128
+    end: 163
+  provenance_kind: 权威文档
+- id: gen_anime_0254
+  domain: anime
+  title: v编时长须等于最终时长
+  content: 配音与音响基于v编进行，因此v编的镜头时长必须与最终时长一致，否则会出现口型与画面的系统性错位。
+  keywords:
+  - 口型同步
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 口型
+  - 时长控制
+  topic: anime
+  quote: |-
+    **v编的时长必须与最终时长一致**，否则会出现口型与画面的系统性错位。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
+    title: 动漫视频制作流程各工程（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: bfb9d1b63afeef00388244d6a82c4e6fb6240c20708d1fe4038d7bcc7abc605a
+  chunk_id: modern_anime_production_pipeline_md#007
+  source_span:
+    chunk_id: modern_anime_production_pipeline_md#007
+    start: 128
+    end: 164
+  provenance_kind: 权威文档
+- id: gen_anime_0255
+  domain: anime
+  title: 台词时长留余量
+  content: 配音在画面基本完成后进行，演员对着v编画面录台词；写台词时按镜头长度预留5%–10%的余量，因为实际配音通常比预想更长。
+  keywords:
+  - アフレコ
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 配音
+  - 时长控制
+  topic: anime
+  quote: |-
+    台词时长必须留出 5%–10% 的余量
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
+    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 76ab80f38eeb9755de2744b8e5d581f934f442840314e20097d122b157131325
+  chunk_id: modern_anime_compositing_and_editing_md#005
+  source_span:
+    chunk_id: modern_anime_compositing_and_editing_md#005
+    start: 61
+    end: 80
+  provenance_kind: 权威文档
+- id: gen_anime_0256
+  domain: anime
+  title: 重述用场景不用旁白
+  content: 重述前情优先用场景与动作呈现，避免旁白；旁白在影院里最容易被当成没做完的处理。
+  keywords:
+  - 动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 信息交代
+  - 演出
+  topic: anime
+  quote: |-
+    重述的手段优先用**场景与动作**而不是旁白，因为旁白在影院里是最容易被当成"没做完"的处理。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#008
+  source_span:
+    chunk_id: modern_anime_film_production_md#008
+    start: 198
+    end: 245
+  provenance_kind: 权威文档
+- id: gen_anime_0257
+  domain: anime
+  title: 三条防线越晚越易延期
+  content: 镜头数锁定、后期缓冲、修正层数这三条规则确定得越晚，延期概率越高；剧场版延期通常意味着档期与质量二选一。
+  keywords:
+  - 档期
+  - 质量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 风险控制
+  - 制片
+  topic: anime
+  quote: |-
+    这三条越晚确定，延期的概率越高
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_production.md
+    title: 剧场版动画的制作体制与规模（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 7a3abcd3bc0da215cec5cbf6829c05c132f46120c17760a6e1be63cca0a757dc
+  chunk_id: modern_anime_film_production_md#009
+  source_span:
+    chunk_id: modern_anime_film_production_md#009
+    start: 187
+    end: 202
+  provenance_kind: 权威文档
+- id: gen_anime_0258
+  domain: anime
+  title: 运动幅度与作画预算
+  content: 镜头运动幅度要与作画预算匹配；超出预算时拆镜，把复杂运动分摊到多镜而非硬撑单镜。
+  keywords:
+  - 拆镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: anime
+  quote: |-
+    运动幅度是否与作画预算匹配，必要时是否拆镜？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#011
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#011
+    start: 161
+    end: 183
+  provenance_kind: 权威文档
+- id: gen_anime_0259
+  domain: anime
+  title: 间的落点条件
+  content: 间必须放在信息落差处，例如一句重话之后或一个决定之前；若没有信息落差而插入静态时刻，只会被读成拖时间。
+  keywords:
+  - 信息落差
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 演出
+  topic: anime
+  quote: |-
+    **"间"必须发生在信息落差处**（一句重话之后、一个决定之前），否则只是拖时间。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_direction_theory.md
+    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: a7143ea3b7a66184d2afe0d3320dfd6aa768865051543d940c4ff04232956895
+  chunk_id: modern_anime_direction_theory_md#008
+  source_span:
+    chunk_id: modern_anime_direction_theory_md#008
+    start: 94
+    end: 135
+  provenance_kind: 权威文档
+- id: gen_anime_0260
+  domain: anime
+  title: 阴影边缘随光质变化
+  content: 阴影边缘的软硬跟随光源性质：硬光下阴影边缘锐利，软光下阴影边缘扩散。
+  keywords:
+  - 硬光
+  - 软光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光线
+  topic: anime
+  quote: |-
+    阴影边缘在硬光下锐利、在软光下扩散
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_visual_design.md
+    title: 动漫美术设定与视觉语法（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 4b730529b3f1668d820919ad3e888fd1c204e7c375e9107361ba6cc23143fe67
+  chunk_id: modern_anime_visual_design_md#003
+  source_span:
+    chunk_id: modern_anime_visual_design_md#003
+    start: 180
+    end: 197
+  provenance_kind: 权威文档
+- id: gen_anime_0261
+  domain: anime
+  title: 巨幕放宽构图信息量
+  content: 面向巨幕（IMAX 类）放映时，画幅更大，可把构图放宽、纳入更多环境信息；普通画幅则应收紧构图、减少背景细节负担。
+  keywords:
+  - 画幅
+  - 环境信息
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 画幅
+  topic: anime
+  quote: |-
+    更大的画幅允许更宽的构图与更多的环境信息
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#009
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#009
+    start: 39
+    end: 59
+  provenance_kind: 权威文档
+- id: gen_anime_0262
+  domain: anime
+  title: 混合段落四类断层
+  content: 验收3D与手绘混合段落时，逐项核对四类可判定断层：线条/阴影不一致的风格断层、3D用1格而手绘用2格的时间断层、透视基准不同的空间断层、3D细节远多于手绘的密度断层；任一出现即说明观众能指出换技术了。
+  keywords:
+  - 风格断层
+  - 时间断层
+  - 空间断层
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混合制作
+  - 连续性
+  - 验收
+  topic: anime
+  quote: |-
+    四种可判定的失败模式：**风格断层**（3D 与手绘的线条/阴影不一致）、
+    **时间断层**（3D 用 1 格、手绘用 2 格）、**空间断层**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
+    title: 动漫的 3DCG 与混合制作（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 321d450175b6771f7ddce10c570c3d3afd0dd2b530429b1d411282a97bb98d78
+  chunk_id: modern_anime_3dcg_and_hybrid_md#009
+  source_span:
+    chunk_id: modern_anime_3dcg_and_hybrid_md#009
+    start: 14
+    end: 87
+  provenance_kind: 权威文档
+- id: gen_anime_0263
+  domain: anime
+  title: 影院条件验收
+  content: 验收剧场版合成必须把成片放到影院亮度与尺寸下观看，只在剪辑室小屏上验收不够；TV上不可见的色带、边缘锯齿与颗粒不均会在影院放大数倍。
+  keywords:
+  - 影院亮度
+  - 放映尺寸
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 影院标准
+  - 质检
+  topic: anime
+  quote: |-
+    把成片放到影院亮度与尺寸下看
+  source_ref:
+    url: repo://knowledge/source_notes/modern_anime_film_presentation.md
+    title: 剧场版动画的影像与音响呈现（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 8d48991d8aeaeee07e3474ba9ec354c1e2aa6b7c363337225464551f556636ef
+  chunk_id: modern_anime_film_presentation_md#003
+  source_span:
+    chunk_id: modern_anime_film_presentation_md#003
+    start: 172
+    end: 186
+  provenance_kind: 权威文档

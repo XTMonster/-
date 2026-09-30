@@ -2,8 +2,8 @@
   "size_gate": {
     "passed": true,
     "files": {
-      "anime.jsonl": 102027,
-      "anime.yaml": 98997,
+      "anime.jsonl": 276577,
+      "anime.yaml": 268353,
       "axis_theory.jsonl": 90187,
       "axis_theory.yaml": 87617,
       "blocking.jsonl": 145476,
@@ -22,14 +22,14 @@
       "storyboard.yaml": 199861
     },
     "file_count": 18,
-    "total_bytes": 2877799,
+    "total_bytes": 3221705,
     "max_file_bytes": 524288,
     "max_total_bytes": 20971520,
     "oversize": {}
   },
   "counts": {
-    "cards_candidates": 1436,
-    "cards_kept": 1436,
+    "cards_candidates": 1601,
+    "cards_kept": 1601,
     "cards_deduped": 0,
     "cards_rejected": 0,
     "docs_deduped": 0,
@@ -43,7 +43,7 @@
     "performance": 308,
     "storyboard": 204,
     "editing": 127,
-    "anime": 98,
+    "anime": 263,
     "production": 113
   },
   "per_domain_merged": {
@@ -54,7 +54,7 @@
     "performance": 324,
     "storyboard": 204,
     "editing": 127,
-    "anime": 98,
+    "anime": 263,
     "production": 113
   },
   "handwritten_per_domain": {
@@ -69,7 +69,7 @@
     "color": 56,
     "camera_angle": 131,
     "editing": 127,
-    "anime": 98,
+    "anime": 263,
     "storyboard": 204
   },
   "K1_source_ref_complete": 1.0,
