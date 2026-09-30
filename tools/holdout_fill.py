@@ -37,6 +37,7 @@ if str(ROOT) not in sys.path:
 
 from tools.check_holdout import (  # noqa: E402
     EntryError,
+    Q_KEY_TO_KIND,
     REQUIRED_SLOTS,
     gate_edge_types,
     gate_entries,
@@ -44,6 +45,8 @@ from tools.check_holdout import (  # noqa: E402
     gate_forbid_members,
     gate_seed_coverage,
     must_values_from,
+    parse_q,
+    parse_spec,
     spec_key,
     support_from,
     validate_entry as gate_validate_entry,
@@ -255,8 +258,41 @@ def _dedupe_key(entry: Dict) -> Tuple:
             tuple(sorted(spec_key(s) for s in entry.get("must", []))))
 
 
+def unknown_values_in(entry: Dict, vocab: Dict[str, Sequence[str]]) -> List[str]:
+    """条目里用到的**词表外取值**（门③ 的 unknown 侧，逐条版）。
+
+    为什么必须在产出侧就拦：`q` 里写了词表外的取值，`hypergraph.parse_query` 找不到
+    对应 node → **一个种子都命中不了** → 该条在 Q1/Q2 上恒为未召回，而且门③ 还会
+    判整份文件 fail。实测：`轴线=银幕方向` 这种写法让 38 条查询的 Q1 掉到 0.026、
+    Q2 掉到 0.184——不是检索器不行，是查询串根本落不进索引的词表。
+    """
+    allowed = {str(kind): {str(v) for v in values} for kind, values in (vocab or {}).items()}
+    if not allowed:
+        return []
+    bad: List[str] = []
+    try:
+        pairs = parse_q(str(entry.get("q") or ""))
+    except EntryError:
+        return ["q_unparsable"]
+    for key, value in pairs.items():
+        values = allowed.get(Q_KEY_TO_KIND.get(key, ""))
+        if values and value not in values:
+            bad.append(f"q:{key}={value}")
+    for spec in list(entry.get("must") or []) + list(entry.get("never") or []):
+        try:
+            _etype, plain, forbid = parse_spec(spec)
+        except EntryError:
+            continue
+        for kind, value in list(plain.items()) + list(forbid.items()):
+            values = allowed.get(kind)
+            if values and value not in values:
+                bad.append(f"{kind}={value}")
+    return bad
+
+
 def absorb(entries: List[Dict], rejects: List[Dict], raw_reply, card_ids: set,
-           counter: int, prompt_sha: str = "") -> int:
+           counter: int, prompt_sha: str = "",
+           vocab: Optional[Dict[str, Sequence[str]]] = None) -> int:
     """把一次回复里合格的条目并进 `entries`（去重），返回新的序号。"""
     seen = {_dedupe_key(entry) for entry in entries}
     raw_entries = raw_reply.get("entries") if isinstance(raw_reply, dict) else None
@@ -284,6 +320,11 @@ def absorb(entries: List[Dict], rejects: List[Dict], raw_reply, card_ids: set,
             # **必须**在这里被收成一条 reject，绝不能让整轮长跑当场崩掉
             # （实测崩过一次：`_dedupe_key()` 里的 `spec_key()` 对自相矛盾的槽位抛错）。
             gate_validate_entry(candidate)
+            unknown = unknown_values_in(candidate, vocab or {})
+            if unknown:
+                rejects.append({"reason": "vocab:" + ",".join(sorted(set(unknown))[:4]),
+                                "raw": str(raw)[:200]})
+                continue
             key = _dedupe_key(candidate)
         except EntryError as exc:
             rejects.append({"reason": f"gate2:{exc}", "raw": str(raw)[:200]})
@@ -323,7 +364,7 @@ def per_card_round(cards, vocab, client, entries, rejects, done, fingerprint,
         except Exception as exc:  # noqa: BLE001 - 记因由并继续下一批
             rejects.append({"batch": key, "reason": "%s: %s" % (type(exc).__name__, exc)})
             continue
-        counter = absorb(entries, rejects, reply, card_ids, counter)
+        counter = absorb(entries, rejects, reply, card_ids, counter, vocab=vocab)
         done.add(key)
         save_partial(entries, rejects, done, fingerprint, progress_path, partial_path)
         print(json.dumps({"phase": "cards", "batch": index, "of": len(batches),
@@ -365,7 +406,7 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
             continue
         before = len(entries)
         counter = absorb(entries, rejects, reply, card_ids, counter,
-                         prompt_sha=gap_prompt_sha())
+                         prompt_sha=gap_prompt_sha(), vocab=vocab)
         done.add(key)
         save_partial(entries, rejects, done, fingerprint, progress_path, partial_path)
         print(json.dumps({"phase": "gaps", "round": round_index,

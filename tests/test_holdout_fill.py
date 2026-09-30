@@ -97,6 +97,28 @@ def test_absorb_never_crashes_on_a_self_contradictory_spec(monkeypatch):
     assert "固定" in json.dumps(rejects, ensure_ascii=False)
 
 
+def test_absorb_rejects_values_outside_the_frozen_vocab(monkeypatch):
+    """`q`/`must` 里写了词表外的取值 → 产出侧就要拦（门③ 的 unknown 侧）。
+
+    实测：`轴线=银幕方向` 这种写法在索引里找不到 node，一个种子都命中不了——
+    38 条查询的 Q1 掉到 0.026、Q2 掉到 0.184，而根因只是查询串没落进词表。
+    """
+    _with_annotator(monkeypatch)
+    vocab = {"emotion": ["荒诞", "平静"], "intensity": ["high", "low"],
+             "shot_size": ["MS"]}
+    good = _entry("c1", "情绪=荒诞", ["EMOTION_PACK:emotion=荒诞,intensity=high"])
+    bad_q = _entry("c1", "情绪=暴怒", ["EMOTION_PACK:emotion=暴怒,intensity=high"])
+    bad_slot = _entry("c2", "情绪=荒诞", ["EMOTION_PACK:emotion=荒诞,intensity=extreme"])
+
+    entries, rejects = [], []
+    holdout_fill.absorb(entries, rejects, {"entries": [good, bad_q, bad_slot]},
+                        {"c1", "c2"}, 0, vocab=vocab)
+
+    assert [e["id"] for e in entries] == ["hq_0001"]
+    reasons = [r["reason"] for r in rejects]
+    assert sum(1 for r in reasons if r.startswith("vocab:")) == 2
+
+
 def test_corrupt_checkpoint_is_ignored(tmp_path):
     progress = tmp_path / "progress.json"
     partial = tmp_path / "partial.jsonl"

@@ -40,6 +40,7 @@ from block_director.knowledge.hypergraph import (  # noqa: E402
     render_edges,
     render_tokens,
 )
+from tools.check_holdout import EntryError, parse_spec  # noqa: E402
 
 #: §4.1b 的分母下界（低于它就判 fail，绝不当成"样本不足所以通过"）。
 MIN_QUERIES = 1200
@@ -101,6 +102,73 @@ def as_norm_key(item) -> Tuple[str, frozenset]:
     raise ValueError(f"不是合法的 norm_key：{item!r}")
 
 
+def _node_id_for(graph: Hypergraph, kind: str, value: str) -> str:
+    """把标注里的 `kind=取值` 解析成索引里的 `node_id`。
+
+    标注写的是**人话/规范名**（`构图=rule_of_thirds`、`情绪=荒诞`），索引里是
+    `node_id`（`composition_rule:rule_of_thirds`）。三级匹配：node_id 直接相等 →
+    `value` 字段相等 → 名字/别名相等。
+    """
+    for node in graph.nodes.values():
+        if str(node.type) != kind:
+            continue
+        if node.node_id == f"{kind}:{value}" or str(node.value) == value \
+                or str(node.name) == value or value in tuple(node.aliases):
+            return node.node_id
+    return ""
+
+
+def spec_to_norm_key(spec: str, graph: Hypergraph) -> Optional[Tuple[str, frozenset]]:
+    """把一条 `must`/`never` 写法（协议 §2.2 的字符串）解析成**索引里那条边**的 norm_key。
+
+    §2.3 前置① 的判据是 `norm_key(该边) == norm_key(标注边)`，而 `norm_key` 是
+    `(type, frozenset((role,kind,node_id)))`——**包含 role 与完整成员集**。标注侧只写
+    `kind=取值`（没有 role），所以这里用"成员集完全相等"在索引里找出那条边，再取它的
+    真 norm_key；找不到就返回 `None`（＝这条 required 边不存在，按 §2.3 应判构建失败）。
+
+    为什么不能直接把标注串当成 norm_key：`tools/holdout_score.py` 原先就是这么假设的，
+    于是拿真实的 held-out 一跑就 `ValueError: 不是合法的 norm_key`——**Q1–Q7 一条都算不出来**。
+    """
+    try:
+        etype, plain, forbid = parse_spec(spec)
+    except EntryError:
+        return None
+    want_plain = set()
+    for kind, value in plain.items():
+        node_id = _node_id_for(graph, kind, value)
+        if not node_id:
+            return None
+        want_plain.add((kind, node_id))
+    want_forbid = set()
+    for kind, value in forbid.items():
+        node_id = _node_id_for(graph, kind, value)
+        if not node_id:
+            return None
+        want_forbid.add((kind, node_id))
+    for edge in graph.edges:
+        if str(edge.type) != etype:
+            continue
+        edge_plain = {(m.kind, m.node_id) for m in edge.members if m.role != "forbid"}
+        edge_forbid = {(m.kind, m.node_id) for m in edge.members if m.role == "forbid"}
+        if edge_plain == want_plain and edge_forbid == want_forbid:
+            return norm_key(edge)
+    return None
+
+
+def entry_key(item, graph: Hypergraph) -> Optional[Tuple[str, frozenset]]:
+    """标注条目里的一个 `must`/`never` 元素 → norm_key。
+
+    同时兼容两种写法：协议里的字符串（`TYPE:槽位=取值,…`）与已经算好的 `norm_key`
+    结构（旧夹具/测试里出现过）。两种都解析不出来就返回 `None`。
+    """
+    if isinstance(item, str):
+        return spec_to_norm_key(item, graph)
+    try:
+        return as_norm_key(item)
+    except ValueError:
+        return None
+
+
 def _edge_values(edge, kind: str) -> set:
     return {str(member.node_id).split(":", 1)[-1] for member in edge.members
             if str(member.kind) == kind}
@@ -158,13 +226,20 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
         queries += 1
         edges, _text, _trace = graph.retrieve(
             query, top_k=top_k, token_limit=token_limit)
-        # 标注用的是 norm_key，运行时映射到当次的 edge_id。
-        must_keys = [as_norm_key(item) for item in (entry.get("must") or [])]
+        # 标注写的是 `TYPE:槽位=取值,…`（协议 §2.2）；这里按"成员集完全相等"映射到
+        # 当次索引里的那条边，再取它的真 norm_key（含 role）。
+        must_keys = [key for key in
+                     (entry_key(item, graph) for item in (entry.get("must") or []))
+                     if key is not None]
         required_ids = {norm_index[key] for key in must_keys
                         if key in norm_index}
-        top1_keys = [as_norm_key(item) for item in (entry.get("top1") or [])]
+        top1_keys = [key for key in
+                     (entry_key(item, graph) for item in (entry.get("top1") or []))
+                     if key is not None]
         top1_ids = {norm_index[key] for key in top1_keys if key in norm_index}
-        never_keys = [as_norm_key(item) for item in (entry.get("never") or [])]
+        never_keys = [key for key in
+                      (entry_key(item, graph) for item in (entry.get("never") or []))
+                      if key is not None]
         never_ids = {norm_index[key] for key in never_keys
                      if key in norm_index}
 
