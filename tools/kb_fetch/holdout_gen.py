@@ -35,7 +35,10 @@ from tools.check_holdout import Q_KEY_TO_KIND, query_key_text
 HOLDOUT = common.ROOT / "fixtures" / "knowledge_holdout.jsonl"
 CARDS_JSON = common.ROOT / "fixtures" / "knowledge_holdout.cards.json"
 MANIFEST = common.WORK / "holdout.manifest.json"
-PROMPT_VERSION = "holdout/v12"
+#: v13：`intensity` 补了查询键（`强度`）。提示里的键清单是**从 schema 渲染**的，
+#: 所以模板一个字没改、**有效提示**却变了——版本号是让指纹诚实地跟着变，
+#: 免得下一轮"续跑"把旧口径的 partial 当成同一批（那正是 §2.3 禁止的事）。
+PROMPT_VERSION = "holdout/v13"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
