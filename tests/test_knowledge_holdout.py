@@ -51,6 +51,8 @@ FULL_VOCAB = {
     "camera_angle": ["平视"], "lighting": ["逆光"], "composition_rule": ["rule_of_thirds"],
     "axis_topic": ["关系轴"], "genre": ["film"], "beat_type": ["establish"],
     "transition": ["dissolve"],
+    #: v1.5：`intensity` 有查询键（`强度`）了，取值必须能在 `q` 里出现。
+    "intensity": ["high"],
     # 下面三类的取值永远不可能出现在 q 里（没有对应查询键），只作占位：
     # `intent` 随 INTENT_PACK 一起进 schema（v1.5 扩到 13 类边时加的）。
     "intent": [], "character": [], "object": [],
@@ -246,7 +248,10 @@ def test_holdout_generation_writes_annotator_metadata(tmp_path, monkeypatch):
 #: 自己就够不着自己的期望边。
 Q_ALL = ("情绪=荒诞；动作=跺脚；运镜=固定；景别=特写；镜头=50mm；节奏=short；"
          "特效=petrify；音效=心跳；机位=平视；光线=逆光；构图=rule_of_thirds；"
-         "轴线=关系轴；题材=film；桥段=establish；意图=反转；转场=dissolve")
+         "轴线=关系轴；题材=film；桥段=establish；意图=反转；转场=dissolve；"
+         # v1.5：`intensity` 补了查询键（`强度`），必填槽位就必须写进 `q`
+         # ——否则门⑨ 会如实判这条查询够不着自己的期望边。
+         "强度=high")
 
 SPEC_BY_TYPE = {
     "EMOTION_PACK": "EMOTION_PACK:emotion=荒诞,intensity=high,forbid_shot_size=特写",
@@ -261,7 +266,9 @@ SPEC_BY_TYPE = {
     "INTENT_PACK": "INTENT_PACK:intent=反转,shot_size=特写,movement=固定",
     "IMPACT_PACK": "IMPACT_PACK:vfx=petrify,sfx=心跳,movement=固定",
     "STAGING_PACK": "STAGING_PACK:composition_rule=rule_of_thirds,shot_size=特写,camera_angle=平视",
-    "SOUND_PACK": "SOUND_PACK:sfx=心跳,pacing=short,intensity=mid",
+    # `intensity` 现在有查询键（`强度`），夹具里的取值必须与 `Q_ALL` 一致——
+    # 否则会先被门②判"q 与 must 的 intensity 不一致"（这正是不一致该有的下场）。
+    "SOUND_PACK": "SOUND_PACK:sfx=心跳,pacing=short,intensity=high",
     "TRANSITION_PACK": "TRANSITION_PACK:transition=dissolve,pacing=short,scene_type=scene",
 }
 

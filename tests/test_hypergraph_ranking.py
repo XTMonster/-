@@ -51,3 +51,36 @@ def test_exact_edge_outranks_a_superset_that_merely_covers_the_seeds():
 
     selected, _text, _trace = graph.retrieve("情绪=荒诞", top_k=2, token_limit=10 ** 6)
     assert [edge.edge_id for edge in selected][0] == exact.edge_id
+
+
+def test_intensity_key_makes_sibling_edges_distinguishable():
+    """`强度` 这个查询键值不值，实测说了算。
+
+    我先前只按"**可达性**"判定它没用（加键不会让任何边从召不回变成召得回），
+    漏了"**区分度**"：同一类型里大量近邻边**只差一个 `intensity`**，查询说
+    不出强度时它们无法区分，排序只能交给 occurrences/confidence，目标边常常
+    屈居第二。全量 683 条索引派生查询：加 `强度` Q1 0.6164 → **0.7189**、
+    Q2 0.8653 → **0.9165**（双双越过 0.70/0.90 线）。
+    """
+    assert hg.QUERY_KEYS.get("强度") == "intensity", "查询键必须存在，否则查询说不出强度"
+
+    def pack(intensity: str) -> hg.HyperEdge:
+        return hg.HyperEdge(
+            type="EMOTION_PACK",
+            members=(hg.Member("allow", "emotion", "emotion:荒诞"),
+                     hg.Member("qualifier", "intensity", f"intensity:{intensity}")),
+            source_kind="theory", hardness="hard", occurrences=1, confidence=0.7,
+            confidence_max=0.7, sources=("card_1",),
+            source_span={"chunk_id": "c1", "start": 0, "end": 4},
+            extractor={"prompt_version": "test"}, provenance_kind="生成卡片")
+
+    low, mid = pack("low"), pack("mid")
+    nodes = [hg.Node(node_id="emotion:荒诞", type="emotion", name="荒诞", value="荒诞"),
+             hg.Node(node_id="intensity:low", type="intensity", name="low", value="low"),
+             hg.Node(node_id="intensity:mid", type="intensity", name="mid", value="mid")]
+    graph = hg.Hypergraph(nodes, [low, mid])
+
+    selected, _text, _trace = graph.retrieve("情绪=荒诞；强度=low", top_k=2,
+                                             token_limit=10 ** 6)
+    # 两条边只差强度：点名 low 时 low 必须在前，mid 只能排第二（这就是"能区分"）。
+    assert [edge.edge_id for edge in selected] == [low.edge_id, mid.edge_id]

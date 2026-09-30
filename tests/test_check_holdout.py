@@ -113,7 +113,10 @@ def q7_entry(idx: int = 1, **over: object) -> dict:
             f"forbid_movement={VALUE['movement']}")
     return entry(idx, must=[spec], top1=[spec],
                  q=f"{KEY_FOR['emotion']}={VALUE['emotion']}；"
-                   f"{KEY_FOR['movement']}={VALUE['movement']}", **over)
+                   f"{KEY_FOR['movement']}={VALUE['movement']}；"
+                   # v1.5：`intensity` 有查询键了，必填槽位必须出现在 `q` 里
+                   # （门⑨ 的"可达性"判据，与门⑩ 的"可解析"是两回事）。
+                   f"{KEY_FOR['intensity']}={VALUE['intensity']}", **over)
 
 
 def valid_records() -> list:

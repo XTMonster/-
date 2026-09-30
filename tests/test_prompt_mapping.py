@@ -181,11 +181,13 @@ def test_every_edge_type_has_a_query_anchor_and_the_prompts_say_so():
 
 def test_key_run_detector_actually_catches_a_hand_copied_list():
     """给上面的机器闸一个**对抗性**自检：坏清单必须被抓到，举例句必须不被误伤。"""
-    bad = "1. `q` 的键只能用：" + check_holdout.query_key_text() + "/强度/头留白/平均镜长。"
+    # 追加的必须是**真不在** `QUERY_KEYS` 里的键：`强度` 在 v1.5 已经是真键，
+    # 拿它当"手抄多出来的"会误报——而那正是探测器按 schema 判、判对了的表现。
+    bad = "1. `q` 的键只能用：" + check_holdout.query_key_text() + "/头留白/平均镜长。"
     runs = list(_key_runs(bad))
     assert runs, "键清单没被识别出来，闸是空的"
     assert [token for run in runs for token in run if token not in hg.QUERY_KEYS] == \
-        ["强度", "头留白", "平均镜长"]
+        ["头留白", "平均镜长"]
     # 正文里顺带的举例（只有 3 个真键）必须**不**被判成键清单。
     assert not list(_key_runs("构图/机位/动作/打击感/声画知识优先选对应的新类型"))
 

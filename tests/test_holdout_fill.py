@@ -14,6 +14,13 @@ from tools import holdout_fill  # noqa: E402
 
 
 def _entry(card: str, q: str, must: list) -> dict:
+    # v1.5：`intensity` 有了查询键（`强度`），门⑨ 要求 `must` 里的必填槽位能在 `q`
+    # 里逐字找到。这些夹具关心的是 absorb/断点续跑的行为、不是查询写法，所以在
+    # helper 里把强度补上；专门测"q 够不着自己的 must"的用例仍由显式构造保持。
+    for spec in must:
+        if "intensity=" in str(spec) and "强度=" not in q:
+            value = str(spec).split("intensity=", 1)[1].split(",", 1)[0]
+            q = f"{q}；强度={value}"
     return {"from_card": card, "q": q, "must": list(must),
             "top1": list(must), "never": []}
 
@@ -32,7 +39,7 @@ def _with_annotator(monkeypatch):
 def test_partial_checkpoint_round_trips(tmp_path):
     progress = tmp_path / "progress.json"
     partial = tmp_path / "partial.jsonl"
-    entry = {"id": "hq_0001", **_entry("c1", "情绪=荒诞",
+    entry = {"id": "hq_0001", **_entry("c1", "情绪=荒诞；强度=high",
                                        ["EMOTION_PACK:emotion=荒诞,intensity=high"]),
              "annotator": {"model_id": "m", "family": "f", "model_version": "v"},
              "independence": "strong", "pilot": False}
@@ -92,7 +99,8 @@ def test_absorb_never_crashes_on_a_self_contradictory_spec(monkeypatch):
     counter = holdout_fill.absorb(entries, rejects,
                                  {"entries": [contradictory, good]}, {"c1"}, 0)
     assert counter == 1
-    assert [e["q"] for e in entries] == ["情绪=荒诞"]
+    assert [e["q"] for e in entries] == [good["q"]], "活下来的应当是 good 那条"
+    assert "强度=high" in good["q"], "夹具 helper 会替它补上强度键"
     assert len(rejects) == 1, "自相矛盾的那条必须变成一条 reject（而不是让整轮崩掉）"
     assert "固定" in json.dumps(rejects, ensure_ascii=False)
 

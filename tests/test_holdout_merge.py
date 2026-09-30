@@ -29,13 +29,16 @@ def _write(path: pathlib.Path, rows: list) -> pathlib.Path:
 
 
 def test_merge_dedupes_validates_and_renumbers(tmp_path):
-    good = _entry("gen_cine_0001", "情绪=荒诞；运镜=固定",
+    # `intensity` 有查询键（`强度`）之后，`q` 必须把它写出来——否则
+    # `holdout_merge` 会用门⑨ 的 `query_shortfall` 把这条判成"够不着自己的 must"
+    # （这正是合并要拦的那类条目）。
+    good = _entry("gen_cine_0001", "情绪=荒诞；运镜=固定；强度=high",
                   ["EMOTION_PACK:emotion=荒诞,intensity=high"])
     other = _entry("gen_cine_0002", "题材=film；情绪=荒诞",
                    ["TROPE:genre=film,emotion=荒诞"])
     # 取值域由门③判（`unknown_values`），合并这一步判的是**格式**：
     # 未知边类型、top1 不在 must 里、缺字段这类问题在这里就被拦下。
-    broken = _entry("gen_cine_0003", "情绪=荒诞", ["NOPE_PACK:emotion=荒诞"])
+    broken = _entry("gen_cine_0003", "情绪=荒诞；强度=high", ["NOPE_PACK:emotion=荒诞"])
     shard_a = _write(tmp_path / "partial0.jsonl", [good, other])
     shard_b = _write(tmp_path / "partial1.jsonl", [good, broken])   # good 是重复
 
@@ -56,7 +59,7 @@ def test_merge_dedupes_validates_and_renumbers(tmp_path):
 
 def test_merge_dry_run_writes_nothing(tmp_path):
     shard = _write(tmp_path / "partial0.jsonl",
-                   [_entry("gen_cine_0001", "情绪=荒诞",
+                   [_entry("gen_cine_0001", "情绪=荒诞；强度=high",
                            ["EMOTION_PACK:emotion=荒诞,intensity=high"])])
     out = tmp_path / "holdout.jsonl"
     report = holdout_merge.run([str(shard)], out, dry_run=True, cards=["gen_cine_0001"])
@@ -88,7 +91,7 @@ def test_merge_main_returns_nonzero_when_nothing_valid(tmp_path, capsys):
 def test_merge_refuses_to_invent_cards_it_was_not_given(tmp_path):
     """`--cards` 是"这次要求标注的全量"；不给就用运行时的语料全集。"""
     shard = _write(tmp_path / "partial0.jsonl",
-                   [_entry("gen_cine_0001", "情绪=荒诞",
+                   [_entry("gen_cine_0001", "情绪=荒诞；强度=high",
                            ["EMOTION_PACK:emotion=荒诞,intensity=high"])])
     report = holdout_merge.run([str(shard)], tmp_path / "holdout.jsonl",
                                cards=["gen_cine_0001", "gen_cine_0009"])
