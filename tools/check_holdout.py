@@ -354,8 +354,10 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
     """
     missing_kinds = sorted(REQUIRED_VOCAB_KINDS - set(vocab))
     if missing_kinds:
-        return NA, {"reason": f"词表缺 kind：{missing_kinds}（缺哪个 kind，哪个 kind 就免检）",
-                    "missing_kinds": missing_kinds}
+        # 词表缺一个 kind 不是"没测到"，是**输入本身有缺陷**：那个 kind 的取值
+        # 从此不受任何约束（§4.1b 硬规则 1：分母为 0 一律判失败，不是 not_measured）。
+        return FAIL, {"reason": f"词表缺 kind：{missing_kinds}（缺哪个 kind，哪个 kind 就免检）",
+                      "missing_kinds": missing_kinds}
     if not has_fingerprint:
         return NA, {"reason": "词表没有 _fingerprint：无法与索引构建绑定（协议 §6）"}
 
@@ -510,6 +512,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     report["gate_7_human_review"] = {"status": rstatus, **rdetail}
 
     extractor_family = args.extractor_family
+    if not extractor_family and not args.extractor_manifest:
+        # 默认自动发现仓库里的 manifest——抽取族是仓库产物，不该逼每个调用方
+        # 再传一次；否则门⑧ 会永远停在 not_measured（硬规则 1 之下等于没判）。
+        default_manifest = _ROOT / "knowledge" / "hypergraph.manifest.json"
+        if default_manifest.is_file():
+            args.extractor_manifest = str(default_manifest)
     if not extractor_family and args.extractor_manifest:
         try:
             man = json.loads(pathlib.Path(args.extractor_manifest).read_text(encoding="utf-8"))

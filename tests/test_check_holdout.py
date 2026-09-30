@@ -411,7 +411,17 @@ def test_independence_gate_reads_the_extractor_manifest(tmp_path):
     assert data["gate_8_independence"]["extractor_family"] == "deepseek"
 
 
-def test_independence_gate_is_not_measured_without_the_extractor(tmp_path):
+def test_independence_gate_discovers_the_repo_manifest(tmp_path):
+    """不给参数时自动读 `knowledge/hypergraph.manifest.json`——抽取族是仓库产物，
+    不该逼每个调用方再传一次；否则门⑧ 会永远停在 not_measured。"""
+    data = report(write(tmp_path, [q7_entry()]))
+    assert data["gate_8_independence"]["status"] == "pass"
+    assert data["gate_8_independence"]["extractor_family"] == "deepseek"
+
+
+def test_independence_gate_is_not_measured_without_any_manifest(tmp_path, monkeypatch):
+    """仓库根下也没有 manifest（例如脱离仓库跑）时才记 not_measured。"""
+    monkeypatch.setattr(check_holdout, "_ROOT", tmp_path)
     data = report(write(tmp_path, [q7_entry()]))
     assert data["gate_8_independence"]["status"] == "not_measured"
 

@@ -54,10 +54,12 @@ def emotion_pack(**over) -> hg.HyperEdge:
 
 
 def test_vocabularies_match_the_spec():
-    assert len(hg.NODE_TYPES) == 16
+    assert len(hg.NODE_TYPES) == 17          # v1.5 起含 `intent`
     assert len(hg.QUALIFIER_KINDS) == 10
     assert set(hg.EDGE_TYPES) == {
         "EMOTION_PACK", "SHOT_PATTERN", "AXIS_RULE", "TROPE", "EDIT_RHYTHM", "LIGHT_PACK",
+        "ACTION_BEAT", "PERFORMANCE_PACK", "INTENT_PACK", "IMPACT_PACK",
+        "STAGING_PACK", "SOUND_PACK", "TRANSITION_PACK",
     }
     assert set(hg.EDGE_TYPES) <= set(hg.TYPE_PRIORITY)
     for edge_type, required in hg.REQUIRED_MEMBERS.items():

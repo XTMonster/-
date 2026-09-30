@@ -47,8 +47,9 @@ FULL_VOCAB = {
     "lens": ["50mm"], "pacing": ["short"], "vfx": ["petrify"], "sfx": ["心跳"],
     "camera_angle": ["平视"], "lighting": ["逆光"], "composition_rule": ["rule_of_thirds"],
     "axis_topic": ["关系轴"], "genre": ["film"], "beat_type": ["establish"],
-    # 两类的取值永远不可能出现在 q 里（没有对应查询键），只作占位
-    "character": [], "object": [],
+    # 下面三类的取值永远不可能出现在 q 里（没有对应查询键），只作占位：
+    # `intent` 随 INTENT_PACK 一起进 schema（v1.5 扩到 13 类边时加的）。
+    "intent": [], "character": [], "object": [],
 }
 
 
@@ -168,6 +169,14 @@ SPEC_BY_TYPE = {
     "TROPE": "TROPE:genre=film,emotion=荒诞",
     "EDIT_RHYTHM": "EDIT_RHYTHM:pacing=short,avg_shot_len=1-3s",
     "LIGHT_PACK": "LIGHT_PACK:lighting=逆光,intensity=high",
+    # v1.5 把边类型扩到 13 类；夹具必须跟着覆盖，否则门④ 在 7 个新类型上恒为 0。
+    "ACTION_BEAT": "ACTION_BEAT:action=跺脚,beat_type=establish,intensity=high",
+    "PERFORMANCE_PACK": "PERFORMANCE_PACK:emotion=荒诞,action=跺脚,camera_angle=平视",
+    "INTENT_PACK": "INTENT_PACK:intent=反转,shot_size=特写,movement=固定",
+    "IMPACT_PACK": "IMPACT_PACK:vfx=petrify,sfx=心跳,movement=固定",
+    "STAGING_PACK": "STAGING_PACK:composition_rule=rule_of_thirds,shot_size=特写,camera_angle=平视",
+    "SOUND_PACK": "SOUND_PACK:sfx=心跳,pacing=short,intensity=mid",
+    "TRANSITION_PACK": "TRANSITION_PACK:transition=dissolve,pacing=short,scene_type=scene",
 }
 
 
