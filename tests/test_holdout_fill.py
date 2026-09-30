@@ -178,6 +178,28 @@ def test_total_shortfall_keeps_the_coverage_rounds_running():
     assert "300" in prompt and "1200" in prompt
 
 
+def test_gate6_card_coverage_keeps_the_coverage_rounds_running():
+    """门⑥（每张入库卡 ≥1 条）也必须进"缺口是否闭合"。
+
+    实测过：覆盖轮只认 ②③④⑤⑥(按边类型算的 thin_cards) ＋ 总量，
+    于是"总量刚过 1200、还有 494 张卡一条都没有"时它照样判闭合收工——
+    交出来的文件过不了门⑥。
+    """
+    cards = [{"id": "c1"}, {"id": "c2"}, {"id": "c3"}]
+    half = [{"id": "hq_0001", "from_card": "c1", "q": "情绪=荒诞", "must": [], "top1": [],
+             "never": []}]
+    gaps = holdout_fill.coverage_gaps(half, {"emotion": ["荒诞"]}, cards)
+    assert gaps["cards_missing"] == 2
+    assert holdout_fill.gaps_closed(gaps) is False
+
+    full = [dict(half[0], from_card=card["id"]) for card in cards]
+    closed = holdout_fill.coverage_gaps(full, {"emotion": ["荒诞"]}, cards)
+    assert closed["cards_missing"] == 0
+
+    # 不传 cards 的老调用保持向后兼容（记 0，不误判成"还有卡没覆盖"）
+    assert holdout_fill.coverage_gaps(half, {"emotion": ["荒诞"]})["cards_missing"] == 0
+
+
 def test_gap_prompt_names_the_shortfall_and_the_cards():
     gaps = {"missing_values": {"emotion": ["荒诞"]}, "thin_values": {},
             "short_pairs": {"EMOTION_PACK": 2}, "thin_cards": {},

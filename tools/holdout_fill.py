@@ -167,7 +167,8 @@ def save_partial(entries: Sequence[Dict], rejects: Sequence[Dict], done,
 # --------------------------------------------------------------------------- 覆盖缺口
 
 
-def coverage_gaps(entries: Sequence[Dict], vocab: Dict[str, Sequence[str]]) -> Dict:
+def coverage_gaps(entries: Sequence[Dict], vocab: Dict[str, Sequence[str]],
+                  cards: Sequence[Dict] = ()) -> Dict:
     """用校验器的**同一套门**算出还缺什么（分子/分母都来自它）。"""
     fstatus, fdetail = gate_entries(entries)
     tstatus, tdetail = gate_edge_types(fdetail["must_pairs_per_type"],
@@ -184,6 +185,12 @@ def coverage_gaps(entries: Sequence[Dict], vocab: Dict[str, Sequence[str]]) -> D
         #: 只管 ②③④⑤⑥ 的话，覆盖轮会在总量还差几百条时就判定"闭合"并收工，
         #: 交出来的文件照样过不了门①。
         "deficit": max(0, MIN_ENTRIES - len(entries)),
+        #: 门⑥：**每张入库卡**至少派生 1 条。它和门① 一样必须参与"缺口是否闭合"，
+        #: 否则覆盖轮会在总量刚过 1200、而还有几百张卡一条都没有的时候就收工。
+        "cards_missing": (0 if not cards else
+                          len([c for c in cards
+                               if str(c["id"]) not in {str(e.get("from_card"))
+                                                       for e in entries}])),
         "format_ok": fstatus == "pass",
         "format_problems": fdetail["problems"][:5],
         "missing_values": sdetail.get("missing_values", {}),
@@ -203,6 +210,7 @@ def coverage_gaps(entries: Sequence[Dict], vocab: Dict[str, Sequence[str]]) -> D
 
 def gaps_closed(gaps: Dict) -> bool:
     return (gaps["format_ok"] and int(gaps.get("deficit", 0)) == 0
+            and int(gaps.get("cards_missing", 0)) == 0
             and not gaps["missing_values"] and not gaps["unknown_values"]
             and not gaps["thin_values"] and not gaps["short_pairs"]
             and not gaps["thin_cards"] and gaps["q7_deficit"] == 0
@@ -382,7 +390,7 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
                     progress_path, partial_path) -> int:
     card_ids = {str(c["id"]) for c in cards}
     for round_index in range(1, rounds + 1):
-        gaps = coverage_gaps(entries, vocab)
+        gaps = coverage_gaps(entries, vocab, cards)
         if gaps_closed(gaps):
             print(json.dumps({"phase": "gaps", "round": round_index, "closed": True},
                              ensure_ascii=False), flush=True)
@@ -480,7 +488,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     #: 所以这里写全量、缺口交给覆盖轮去补，补不上就如实判红。
     common.dump_json(cards_json, sorted({str(c["id"]) for c in cards}))
     common.dump_json(cards_json.with_suffix(".covered.json"), covered)
-    gaps = coverage_gaps(entries, vocab)
+    gaps = coverage_gaps(entries, vocab, cards)
     common.dump_json(report_path, {
         "fingerprint": fingerprint, "cards": len(cards), "cards_covered": len(covered),
         "cards_missing": sorted({str(c["id"]) for c in cards} - set(covered)),
