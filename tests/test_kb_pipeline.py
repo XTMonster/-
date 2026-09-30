@@ -187,6 +187,47 @@ def _annotated(domain: str, count: int, text: str, quote: str, topic: str = "") 
     }]
 
 
+def _annotated_with(contents: Sequence[str], chunk_id: str) -> list:
+    return [{
+        "chunk_id": chunk_id,
+        "sha256": "e" * 64,
+        "domain": "cinematography",
+        "genre": "film",
+        "theme": "",
+        "source_ref": _source_ref(),
+        "cards": [{"title": f"标题{i}", "content": content,
+                   "quote": "低机位让人物显得高大。", "keywords": ["k"], "tags": ["t"],
+                   "rules": [], "emotion": ""} for i, content in enumerate(contents)],
+        "dropped_cards": [],
+        "extractor": {"model_id": "scripted", "family": "scripted", "model_version": "s"},
+    }]
+
+
+def test_generated_card_ids_survive_corpus_growth(tmp_path):
+    """语料长大时，老卡必须保住自己的 id。
+
+    否则 held-out 条目的 `from_card` 会静默地指向**另一张卡**：门③/门⑥ 只看
+    "id 在不在集合里"，会一路全绿，而评测其实在拿别人的期望打分。
+    """
+    cards_dir = tmp_path / "cards"
+    first = _annotated_with(["中中中中中中中中中中中中", "文文文文文文文文文文文文"], "old#000")
+    import_cards.run(first, {})
+    before = {row["content"]: row["id"]
+              for row in common.read_jsonl(cards_dir / "cinematography.jsonl")}
+    assert sorted(before.values()) == ["gen_cine_0001", "gen_cine_0002"]
+
+    # 新卡的正文排序在最前面（U+4E00 < U+4E2D < U+6587）：按旧口径重排，
+    # 老卡会被挤到 0002/0003，id 整体下移。
+    grown = first + _annotated_with(["一一一一一一一一一一一一"], "new#000")
+    import_cards.run(grown, {})
+    after = {row["content"]: row["id"]
+             for row in common.read_jsonl(cards_dir / "cinematography.jsonl")}
+
+    assert after["中中中中中中中中中中中中"] == before["中中中中中中中中中中中中"]
+    assert after["文文文文文文文文文文文文"] == before["文文文文文文文文文文文文"]
+    assert after["一一一一一一一一一一一一"] == "gen_cine_0003"
+
+
 def test_import_report_counts_and_k_gates(tmp_path, monkeypatch):
     quote = "低机位让人物显得高大。"
     annotated = []

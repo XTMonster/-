@@ -150,14 +150,71 @@ def gate(card: Dict) -> Tuple[bool, str]:
     return True, ""
 
 
-def _finalise(cards: Sequence[Dict]) -> List[Dict]:
+def card_identity(card: Dict) -> str:
+    """卡片的**稳定身份**：域 ＋ 出处段落 ＋ 正文 sha256。
+
+    id 是序号（`gen_cine_0007`），序号会随语料长大而整体下移——那样一来
+    任何引用旧 id 的产物（held-out 条目的 `from_card`、评测证据）就会**指向
+    另一张卡**，而且是静默地指错。所以 id 不能由排序决定：先认身份，
+    身份在旧账里就沿用旧 id，只有真正的新卡才发新号。
+    """
+    return "|".join([
+        str(card.get("domain", "")),
+        str(card.get("chunk_id", "")),
+        common.sha256_text(str(card.get("content", ""))),
+    ])
+
+
+def existing_ids(cards_dir: pathlib.Path | None = None) -> Dict[str, str]:
+    """上一次入库的 `身份 -> id`。读的就是随仓库入库的那份产物。"""
+    directory = pathlib.Path(cards_dir or common.CARDS_DIR)
+    out: Dict[str, str] = {}
+    if not directory.is_dir():
+        return out
+    for path in sorted(directory.glob("*.jsonl")):
+        for row in common.read_jsonl(path):
+            ident, ident_id = card_identity(row), str(row.get("id", ""))
+            if ident_id and ident not in out:
+                out[ident] = ident_id
+    return out
+
+
+def _prefix_of(card_id: str) -> str:
+    """`gen_cine_0007` -> `cine`。"""
+    return card_id[len("gen_"):].rsplit("_", 1)[0]
+
+
+def _finalise(cards: Sequence[Dict],
+              previous: Optional[Dict[str, str]] = None) -> List[Dict]:
+    previous = dict(existing_ids() if previous is None else previous)
     counters: Dict[str, int] = {}
+    claimed: Dict[str, str] = {}
+    for ident, ident_id in previous.items():
+        if not ident_id.startswith("gen_"):
+            continue
+        claimed.setdefault(ident_id, ident)
+        prefix = _prefix_of(ident_id)
+        tail = ident_id.rsplit("_", 1)[1]
+        if tail.isdigit():
+            counters[prefix] = max(counters.get(prefix, 0), int(tail))
+    assigned: set = set()
     out: List[Dict] = []
     for card in sorted(cards, key=lambda c: (c["domain"], c["content"])):
         prefix = DOMAIN_PREFIX[card["domain"]]
-        counters[prefix] = counters.get(prefix, 0) + 1
+        ident = card_identity(card)
+        reused = previous.get(ident, "")
+        if reused and claimed.get(reused) == ident and reused not in assigned:
+            card_id = reused
+        else:
+            while True:
+                counters[prefix] = counters.get(prefix, 0) + 1
+                card_id = f"gen_{prefix}_{counters[prefix]:04d}"
+                if card_id not in claimed and card_id not in assigned:
+                    break
+            claimed[card_id] = ident
+        assigned.add(card_id)
         out.append({
-            "id": f"gen_{prefix}_{counters[prefix]:04d}",
+            "id": card_id,
             "domain": card["domain"],
             "title": card["title"],
             "content": card["content"],
@@ -191,6 +248,10 @@ def _write_domain_files(entries: Sequence[Dict]) -> Dict[str, int]:
     by_domain: Dict[str, List[Dict]] = {d: [] for d in common.DOMAINS}
     for entry in entries:
         by_domain[entry["domain"]].append(entry)
+    # 按 id 落盘：老卡的位置不动，新卡追加在尾部——既让 diff 可读，
+    # 也让"语料长大"这件事在产物里是**追加**而不是整份重排。
+    for items in by_domain.values():
+        items.sort(key=lambda entry: entry["id"])
 
     common.CARDS_DIR.mkdir(parents=True, exist_ok=True)
     for stale in common.CARDS_DIR.glob("*.jsonl"):
