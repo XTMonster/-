@@ -2,7 +2,7 @@
 
 > **本文件在标注开始前冻结，标注期间不得修改**（执行文档 §2.3c 的标注通道约束第 3 条）。
 > 词表取值一节标记为 **待语料冻结**：它依赖 P14-1 采集进来的卡片，其余各节现在即为终稿。
-> 校验器：`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl`（六道覆盖门，见 §4.1b）。
+> 校验器：`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl`（八道覆盖门，见 §4.1b）。
 
 ## 1. 产物
 
@@ -117,19 +117,29 @@
 例：`q` 含 `景别=特写`，`must` 含 `forbid_shot_size=特写` → 该条计入 Q7。
 这类条目 **≥ 60 条**（覆盖门⑤）。**由 `tools/check_holdout.py` 机械统计**，不靠人报。
 
-## 4. 六道覆盖门（与 §4.1b 一致；不过门则 RK-13 的一切指标无效）
+## 4. 八道覆盖门（与 §4.1b 一致；不过门则 RK-13 的一切指标无效）
 
 | # | 门 | 要求 |
 |---|---|---|
 | ① | 总量 | `len(entries) ≥ 1200` |
 | ② | 逐条格式 | 见 §2 的必填与 2.2 的必填槽位；`1 ≤ len(must) ≤ 3`；`top1 ⊆ must`；`must ∩ never = ∅` |
 | ③ | 种子覆盖 | **词表里每个取值至少出现在 1 条 `q` 里** |
-| ④ | 边类覆盖 | **6 类边每类至少被 30 条 `q` 的 `must` 要求** |
+| ④ | 边类覆盖 | **13 类边（`hypergraph.EDGE_TYPES`）每类至少被 30 条 `q` 的 `must` 要求**（v1.5 D6 把边类从 6 扩到 13，旧值 6 作废） |
 | ⑤ | 禁忌覆盖 | **Q7 冲突条目 ≥ 60** |
 | ⑥ | 来源覆盖 | **每张入库卡至少派生 1 条**（`from_card` 去重后 ⊇ 卡片集合） |
+| ⑦ | 可达性（R54 新增；报告键 `gate_9_reachability`） | **`must[0]`/`top1` 里每个"有查询键"的 `plain` 槽位，必须在 `q` 里逐字出现**——这是 §3.1 对 `must` 的定义（"抽不到它就算检索失败"）的机器实现 |
+| ⑧ | 可解析（R54 新增；报告键 `gate_10_index_resolvable`） | **每条 `must`/`top1`/`never` 必须映射到当前索引里的边**（§2.3 Q6b 前置① 的 `norm_key` 口径）；缺索引时记 `not_measured` |
 
-> 门③与门⑥需要外部输入（词表、卡片清单）；缺输入时校验器报 `not_measured`，
+> 门③与门⑥需要外部输入（词表、卡片清单），门⑧需要索引（`--nodes/--edges`，默认读仓库里的
+> `knowledge/hypergraph.{nodes,edges}.jsonl`）；缺输入时校验器报 `not_measured`，
 > **按 §4.1b 硬规则 1，`not_measured` 不得当作通过**（退出码 2）。
+
+> **R54 的性质说明（与"协议先冻结"不冲突）**：门⑦/门⑧**不是新规则**，是把本协议
+> §3.1（`must` 的定义）与执行文档 §2.3 的 Q6b 前置①（required 边必须存在）
+> **已有**的条文变成机器检查——此前只有产出侧 `tools/holdout_fill.py` 在拦，
+> 校验器不拦。判据口径（只看 `must[0]`+`top1`、只看 `plain` 槽位、
+> `QUERYABLE_KINDS` 排除 `scene_type`/`beat_type`）与产出侧**同一份**，
+> 未放宽也未收紧。
 
 ## 5. 标注通道（R49）
 

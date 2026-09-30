@@ -265,22 +265,28 @@ Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`revie
 `layer5_orchestrator/scene_contract.py::shot_constraint_query()` 就是那个生产者
 （`editor.py` 每镜用它取知识）。证据：`docs/evidence/20260930-071500/`。
 
-**P14 未完成（不得当作通过）**：`fixtures/knowledge_holdout.jsonl` 仍是 **0 字节**，
-本地标注器的长跑**尚未跑满 1200 条**（写作时 `work/holdout.partial.jsonl` 有 402 条
-真实 `qwen3-vl:30b` 标注，`work/holdout_run3.log` 停在 `batch 85/180`），因此
-**RK-13 = `not_measured`**（`docs/evidence/20260930-071539/rks.json` 里 19 条 RK 中
-唯一未度量的那一条）。`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl
---vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json`
-现在报 **gate 1/2/3/4/5/5b/6 = fail、gate 7 = not_measured**（空 oracle 就该判失败，
-不许当成"还没判")。`fixtures/knowledge_holdout.cards.json` 已从 `["gen_cine_0001"]`
-这条调试残留改正为**运行时卡片 id 全集（1075 个）**——门⑥ 的输入只有 1 个 id 时恒真，
-那等于自己把门拆了。
-`tools/holdout_score.py` 与 `ab_triple_baseline.py` 会打印 `INCOMPLETE` 并非零退出。
-根因是本机标注通道：`qwen3-vl:30b` 是思考模型，官方三条关思考开关全无效
-（`docs/evidence/20260930-070000/knowledge_annotator_blocker.json`）；给 `/api/chat`
-加 **assistant 预填**可把它从"context 打满仍无正文"变成 4.7 s/次（`tools/kb_fetch/llm.py`
-的 `OLLAMA_ASSISTANT_PREFILL`，默认关闭），之后 1200 条的本地生成才成为可能，但需要数小时墙钟。
-**人审 ≥120 条**（协议门⑦）与 **Q5/Q7/E3 的最终裁定**必须由人做，agent 不可代替。
+**P14 未完成（不得当作通过）**（2026-10-01 R54 复核后的准确数字）：`fixtures/knowledge_holdout.jsonl`
+已落地 **4539 条**（不再空），但仍有两道覆盖门是红的，且**已证伪了此前的归因**：
+
+- `python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json`
+  现在报 **gate 1/2/3/4/5/5b/6/8 = pass**、**gate 7（人审）= fail**、
+  **gate 9（可达性）= fail（816/4539 = 18.0%）**、**gate 10（可解析）= fail（10046/13713 = 73.3%）**。
+  后两道是 R54 新加的**机器检查**（协议 §3.1 与 §2.3 Q6b 前置① 早就写了规则，只是没人查）。
+- `tools/holdout_score.py` 的 Q4 曾是**恒真式**（分子＝分母），R54 已按 §4.1 的定义改成
+  `Σ_q|required∩top-k| / Σ_q|required|`，实测 **984/1323 = 0.744**；不可解析的 `must` 也从
+  "静默丢掉"改成"单独记账并判失败"。
+- **Q1/Q2 不达标的主因是 oracle 与索引不同构，不是排序**：全量实测 `must` 能进候选集的 query
+  只有 1277/4539（**Q2 天花板 0.281**）、目标边在候选集里的名次中位数＝**1**。所以
+  并行 lane 正在用 `holdout/v10` 提示重标（提示里新增"查询必须覆盖目标边 ≥2 个成员"，
+  实测该子集 **Q1=0.727 / Q2=0.917**）。**在没有重标完之前不要动 `SCORE_WEIGHTS`**——
+  动它只会掩盖 oracle 缺陷。证据：`docs/evidence/20261001-0057/`。
+- **人审 ≥120 条**（协议门⑦）与 **Q5/Q7/E3 的最终裁定**必须由人做，agent 不可代替。
+  Q5 只在真实模型运行（§4.4 步骤 2）上判，CI/离线上只记 `not_measured`。
+- 重跑长标注仍须知：本机 `qwen3-vl:30b` 是思考模型，走 `/api/chat` 加 `think:false`
+  也**恒无正文**（`docs/evidence/20260930-070000/knowledge_annotator_blocker.json`），
+  必须走 `/v1/chat/completions` 或加 **assistant 预填**（`tools/kb_fetch/llm.py` 的
+  `OLLAMA_ASSISTANT_PREFILL`，默认关闭）；一次 4.7 s，跑满 1200 条要数小时墙钟，且
+  `tools/holdout_fill.py` 支持断点续跑与逐批落盘。
 还剩一条口径未收口：**LightRAG 的真实索引**——仓库里没有 `lightrag` 依赖、也没有它建的索引，
 所以 `rag.cases_backend=lightrag` 走的是 §2.3b **写明允许**的降级路径
 （`cases_degraded=true` ＋ `lightrag_adapter_unavailable`），`lightrag_index_fingerprint` 如实为空。
