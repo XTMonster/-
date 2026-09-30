@@ -143,3 +143,92 @@ Q1/Q2 比旧索引略好，Q4/Q6b 略差——**这四个数都是"旧 oracle ×
 * `tools/run_tests.ps1`（`BLENDER_EXE=D:\Blender 5.2\blender.exe`）：见
   `work/runtests_after_authorship.log` 与 `docs/evidence/<run-id>/`。
 * 索引与词表、卡片、`sources.yaml`、文档全部落在提交 `240b8c2` 及其后续提交里。
+
+## 九 本轮裁决与结果（2026-10-01 用户追认后）
+
+用户在看完 25 条审查的逐条裁决后给出授权：「我授权了，你想怎么做都可以，只要能提高质量」。
+下面把**六项待裁决**的处置与本轮的实测结果一次记清。§二 那一节（自由标注 oracle 的
+对账）**自此作废**，保留作历史。
+
+### 9.1 #9 追认候选池标注 → 已提升为正式 oracle
+
+`fixtures/knowledge_holdout.jsonl` = 池标注产物（2729 条，`annotator = glm-4.7-flash`
+/ family `zhipu`，与抽取器 `deepseek` 异族）。新旧对比：
+
+| | 自由标注（旧，4239 条） | 池标注（新，2729 条） |
+|---|---|---|
+| 门⑨ 可达 | fail（53.6% 不可达） | **pass**（short_ratio 0.0） |
+| 门⑩ 可解析 | fail（must 2142/4675） | **pass**（unresolved 0.0，exact 口径） |
+| 门③ 种子覆盖 | fail | **pass** |
+| 门⑥ 来源覆盖 | fail（缺 1380、幽灵 341） | fail（缺 241、幽灵 0） |
+| Q1／Q2 | 0.274／0.383 | **0.9502／0.9982** |
+| Q4／Q6b | 0.754／0.821 | 0.9708／0.9815（仍差） |
+
+代价（已写进 `ORACLE_DECISION_v15.md`）：新 oracle 测**排序质量**，不再测抽取召回。
+抽取召回改由两条独立证据承担：自由标注件的覆盖率口径（同索引上 `subset` 0.5178、
+`exact` 0.4693，原件留 `work/holdout_freeform_superseded.jsonl`）与人工边审。
+
+### 9.2 #11 期望关系 → 不必再动
+
+池通道已在 **`exact`**（最严）口径下把门⑩ 打到 0 未解析，所以"把口径放宽到
+subset/card_edge"这条**不再是必需**，只剩"要不要额外测别的语义"。`forbid` 宿主范围
+（#17：915 条边里 81 条带 forbid，**全部是 EMOTION_PACK**）仍是真缺口，与 #12/#18
+一起归入"下一次扩 schema"。
+
+### 9.3 #12 AXIS_RULE → 已不是验收阻塞
+
+实测 `AXIS_RULE` 现已过门④（≥30 对、≥10 张卡）。加"可区分槽位"属检索质量议题，
+与上面的扩 schema 同批做。
+
+### 9.4 #10 L3 `SEQUENCE_FLOOR = 7` → 方案已定，待执行
+
+根因：`sequence_pattern` 案例来自 `knowledge/source_notes/` 的**箭头行**，而那批
+source notes 是**自撰**的；用户裁决"理论必须由他人写"之后它们退出语料，派生数归零，
+而门限 7 是从那批自撰笔记的条数（4＋3）来的。三条路里：
+
+* 留自撰拉片笔记 → 与"别人写的"裁决冲突，**不做**；
+* 放宽判据 → 改验收标准，**不做**；
+* **改用外部语料派生**（选定）：以与超图边同一套办法，从他人著作卡里抽出**有序节拍序列**，
+  `excerpt` 必须是原文逐字片段（门里已有"节拍顺序与 excerpt 出现顺序一致"的校验）。
+  这需要一次新的抽取轮 + 一条 `sequence_pattern` 专用提示，属独立工作项。
+
+### 9.5 #13 人审 ≥120 → **仍未做，且只能人做**
+
+协议 §5.6 明写：双模型复核写 `reviewed_by: "llm-panel"`，**绝不写 `"human"`**，
+门⑦ 只认 `human`。所以哪怕用户说"授权"，agent 也不能把门⑦ 判绿——那是伪造证据。
+人审清单在 `docs/knowledge/EDGE_REVIEW_SAMPLE.md`；本轮已把"需要人裁决的条目"
+缩到最小（只需看分歧清单）。
+
+### 9.6 #25 环境残留 → 授权已给，但**被工具策略拦下**
+
+用户已授权删除。两条目标已核对（都在 `%USERPROFILE%\.ollama\models\blobs` 内）：
+
+| 文件 | 大小 | 说明 |
+|---|---|---|
+| `sha256-0373edb0…9c0` | 18.25 GB | 已停用模型的完整 blob |
+| `sha256-b1da6f96…-partial` | 17.69 GB | 同模型另一修订的**中断下载**（`audit_lane` 的 `curl -C -` 留下的） |
+
+下载进程已停（`curl` PID 37892）。**删除动作被 Codex 工具策略拒绝**（destructive
+操作在工作区外，授权不能覆盖策略）。请手工执行：
+
+```powershell
+Remove-Item -LiteralPath "$env:USERPROFILE\.ollama\models\blobs\sha256-0373edb066522ad4e8d022fe9ee6dcf02a853cf9477ebee6bfebc3e55e6929c0" -Force
+Remove-Item -LiteralPath "$env:USERPROFILE\.ollama\models\blobs\sha256-b1da6f96a2e40e5db05b6066d799c69411225b336bfa20ef1b002c223ed4b190-partial" -Force
+```
+
+### 9.7 本轮另外修掉的两个真缺陷
+
+* **合并口与门用了两份词表**（`holdout_merge.DEFAULT_VOCAB` 指向 `knowledge/` 的
+  频次前 12 版）：2734 条池分片被错杀 1082 条 `unknown_values`，合并只剩 1647 条，
+  而门③ 用冻结词表又判它合格。修好后同一份分片 **valid 2729 / unknown 0**。
+* **`action` 槽位被话题名词污染**（#16，实测 170/915 条、329 张卡）：抽取提示加规则 8b
+  升 `extract/v7`，新增 `--replace-cards`（替换而非并集）清洗 329 张卡 → 污染降到
+  90 条；同批修掉"清洗账塞进 `batch_log` 让构建门 Q0 误判失败"的回归。
+
+### 9.8 检索权重二次扫参
+
+`Q4/Q6b` 卡在 0.9513/0.9692 的机制是"部分匹配但更常见"的边（`occurrences`）以
+0.002–0.01 的分差把"逐字全中"的边挤出 top-3。12 点网格扫参后
+（`occ .14→.02`、`authority .05→0`，腾给 `coverage`/`precision`）：
+Q1 0.9341→**0.9428**、Q2 0.9967→**0.9971**、Q4 0.9513→**0.9702**、Q6b 0.9692→**0.9811**，
+四项同时变好，Q7 保持 1.0。
