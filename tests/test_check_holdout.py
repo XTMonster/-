@@ -85,7 +85,8 @@ def full_run(tmp_path: pathlib.Path, records, *extra: str) -> int:
     cards = tmp_path / "cards.json"
     cards.write_text(json.dumps(sorted({r["from_card"] for r in records})), encoding="utf-8")
     return check_holdout.main([str(write(tmp_path, records)), "--pilot",
-                               "--vocab", str(vocab), "--cards", str(cards), *extra])
+                               "--vocab", str(vocab), "--cards", str(cards),
+                               "--extractor-family", "deepseek", *extra])
 
 
 def report(path: pathlib.Path, *extra: str, pilot: bool = True) -> dict:
@@ -358,8 +359,61 @@ def test_vocab_fingerprint_form_is_accepted(tmp_path):
     cards.write_text(json.dumps(sorted({r["from_card"] for r in valid_records()})),
                      encoding="utf-8")
     rc = check_holdout.main([str(write(tmp_path, valid_records())), "--pilot",
-                             "--vocab", str(vocab), "--cards", str(cards)])
+                             "--vocab", str(vocab), "--cards", str(cards),
+                             "--extractor-family", "deepseek"])
     assert rc == 0
+
+
+# ---------------------------------------------------------------- 门⑧ 换族诚实性
+
+def test_strong_independence_is_checked_against_the_extractor(tmp_path):
+    """谎报 strong：标注族与抽取族相同却写 strong —— 必须被抓住。"""
+    rec = q7_entry(1, review={"reviewed_by": "human", "verdict": "accepted"})
+    rec["annotator"]["family"] = "deepseek"          # 与抽取器同族
+    rec["independence"] = "strong"
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps(VOCAB, ensure_ascii=False), encoding="utf-8")
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(["card_1"]), encoding="utf-8")
+    data = report(write(tmp_path, [rec]), "--vocab", str(vocab), "--cards", str(cards),
+                  "--extractor-family", "deepseek")
+    assert data["gate_8_independence"]["status"] == "fail"
+    assert data["gate_8_independence"]["liar_count"] == 1
+
+
+def test_same_family_is_fine_when_declared_weak(tmp_path):
+    """同厂不同型号 = weak，不算谎报（协议 §5.1 的滑杆）。"""
+    rec = q7_entry(1, review={"reviewed_by": "human", "verdict": "accepted"})
+    rec["annotator"]["family"] = "deepseek"
+    rec["independence"] = "weak"
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps(VOCAB, ensure_ascii=False), encoding="utf-8")
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(["card_1"]), encoding="utf-8")
+    data = report(write(tmp_path, [rec]), "--vocab", str(vocab), "--cards", str(cards),
+                  "--extractor-family", "deepseek")
+    assert data["gate_8_independence"]["status"] == "pass"
+
+
+def test_independence_gate_reads_the_extractor_manifest(tmp_path):
+    """给 manifest 也能自动取抽取族（真实用法）。"""
+    man = tmp_path / "hypergraph.manifest.json"
+    man.write_text(json.dumps({"extractor": {"family": "deepseek", "model_id": "deepseek-chat"}}),
+                   encoding="utf-8")
+    rec = q7_entry(1, review={"reviewed_by": "human", "verdict": "accepted"})
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps(VOCAB, ensure_ascii=False), encoding="utf-8")
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(["card_1"]), encoding="utf-8")
+    data = report(write(tmp_path, [rec]), "--vocab", str(vocab), "--cards", str(cards),
+                  "--extractor-manifest", str(man))
+    assert data["gate_8_independence"]["status"] == "pass"
+    assert data["gate_8_independence"]["extractor_family"] == "deepseek"
+
+
+def test_independence_gate_is_not_measured_without_the_extractor(tmp_path):
+    data = report(write(tmp_path, [q7_entry()]))
+    assert data["gate_8_independence"]["status"] == "not_measured"
 
 
 def test_missing_vocab_file_is_a_clean_error(tmp_path):

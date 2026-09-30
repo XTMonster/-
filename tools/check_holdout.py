@@ -36,6 +36,12 @@ from typing import Dict, List, Sequence, Tuple
 #: **单一真源**：边类型/节点 kind/必填槽位一律从超图 schema 读。
 #: 这里原先各抄了一份（六类型、16 个 kind 硬编码），新增边类型时两边会漂——
 #: v1.5 扩到 13 类时正是这么暴露的：校验器认不出新类型，抽取器却已经在产。
+#: 直接 `python tools/check_holdout.py …` 运行时 `sys.path[0]` 是 `tools/`，
+#: 所以先把仓库根挂上去——否则 CLI 会 ModuleNotFoundError（文档里的验收命令就是这么跑的）。
+_ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 from block_director.knowledge import hypergraph as _hg  # noqa: E402
 
 EDGE_TYPES = tuple(_hg.EDGE_TYPES)
@@ -316,6 +322,24 @@ def gate_human_review(needs: int, reviewed: int, minimum: int) -> Tuple[str, dic
     return (PASS if reviewed >= min(needs, minimum) else FAIL), detail
 
 
+def gate_independence(entries: Sequence[dict], extractor_family: str) -> Tuple[str, dict]:
+    """`independence: strong` has to be true, not just claimed.
+
+    R49's whole point is that the annotator must not share the extractor's family;
+    the field is an assertion about two *different* artefacts, so the checker has to
+    compare it against the extractor's identity rather than trust the label.
+    """
+    if not extractor_family:
+        return NA, {"reason": "未提供 --extractor-family / --extractor-manifest：无法核对换族"}
+    families = {str((e.get("annotator") or {}).get("family") or "") for e in entries}
+    liars = sorted({str(e.get("id")) for e in entries
+                    if e.get("independence") == "strong"
+                    and str((e.get("annotator") or {}).get("family") or "") == extractor_family})
+    detail = {"extractor_family": extractor_family, "annotator_families": sorted(families),
+              "strong_but_same_family": liars[:20], "liar_count": len(liars)}
+    return (PASS if not liars else FAIL), detail
+
+
 def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequence[str]],
                        must_values: Dict[str, set], has_fingerprint: bool,
                        min_support: int, support: Dict[str, Dict[str, set]]
@@ -428,6 +452,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--vocab", default="", help="JSON: {kind: [value, ...]}"
                                                    " 或 {_fingerprint, kinds:{...}}（P14-1 产出）")
     parser.add_argument("--cards", default="", help="JSON: 卡片 id 数组（来源覆盖门）")
+    parser.add_argument("--extractor-family", default="",
+                        help="抽取器的 family（或给 --extractor-manifest）；门⑧ 用它核对换族是否属实")
+    parser.add_argument("--extractor-manifest", default="",
+                        help="knowledge/hypergraph.manifest.json；自动读它的 extractor.family")
     parser.add_argument("--pilot", action="store_true",
                         help="试点模式：门限放宽到 1，便于在语料落地前跑通管道")
     parser.add_argument("--json", action="store_true", help="只打印 JSON 报告")
@@ -480,6 +508,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                                          min_review)
     statuses.append(rstatus)
     report["gate_7_human_review"] = {"status": rstatus, **rdetail}
+
+    extractor_family = args.extractor_family
+    if not extractor_family and args.extractor_manifest:
+        try:
+            man = json.loads(pathlib.Path(args.extractor_manifest).read_text(encoding="utf-8"))
+            extractor_family = str((man.get("extractor") or {}).get("family") or "")
+        except (OSError, json.JSONDecodeError) as exc:
+            print(json.dumps({"error": f"读不到 --extractor-manifest: {exc}"}, ensure_ascii=False))
+            return 1
+    istatus, idetail = gate_independence(entries, extractor_family)
+    statuses.append(istatus)
+    report["gate_8_independence"] = {"status": istatus, **idetail}
 
     if args.vocab:
         try:
