@@ -753,10 +753,52 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
             "merge_rejects": len(merge_rejects)}
 
 
+def _atom_key(edge) -> Tuple:
+    """原子边去重键：**类型 ＋ 成员 ＋ 来源卡**。
+
+    来源卡必须进键：两张不同的卡可能表达同一条耦合，归并期正靠
+    `sources` 把 `multi_card_edges` 记出来；只按（类型, 成员）去重会把
+    后一张卡的原子边当成重复丢掉——`--only-missing` 补进来的边会原地消失。
+    """
+    return (str(edge.type),
+            tuple(sorted((m.role, m.kind, m.node_id) for m in edge.members)),
+            tuple(sorted(str(source) for source in (edge.sources or ()))))
+
+
+def load_atoms() -> List:
+    """读回第 1 段落盘的原子边（`--only-missing` 与 `--rematch` 共用）。"""
+    if not ATOMS.is_file():
+        return []
+    out = []
+    for line in ATOMS.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            out.append(hg.HyperEdge.from_dict(json.loads(line)))
+    return out
+
+
+def cards_with_atoms() -> set:
+    """已经有原子边的卡 id 集合——`--only-missing` 的输入就是它的补集。"""
+    return {str(source) for edge in load_atoms() for source in (edge.sources or ())}
+
+
 def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
-        limit: int = 0, *, concurrency: int = 1) -> Dict:
-    atoms, rejects, batch_log = extract(cards, vocab, client, BATCH_CARDS, limit,
+        limit: int = 0, *, concurrency: int = 1,
+        extract_only: Optional[Sequence[Dict]] = None,
+        keep_atoms: bool = False) -> Dict:
+    """抽第 1 段 → 落盘 → 归并 → 写索引。
+
+    `extract_only` 限定**抽取哪些卡**（指纹与索引仍然按**全量** `cards` 算），
+    `keep_atoms` 把新原子边**并入**已有文件——这是"给漏抽的卡补边"的路径：
+    实测 167 张卡（占 9.6%）在整轮抽取里一条原子边都没拿到，重抽整库既慢又不
+    保证覆盖它们，而只喂这些卡一批，模型就会认真对待。
+    """
+    todo = list(extract_only) if extract_only is not None else list(cards)
+    atoms, rejects, batch_log = extract(todo, vocab, client, BATCH_CARDS, limit,
                                         concurrency=concurrency)
+    if keep_atoms:
+        previous = load_atoms()
+        seen = {_atom_key(edge) for edge in previous}
+        atoms = previous + [edge for edge in atoms if _atom_key(edge) not in seen]
     # §2.3 第 1 段全部落盘**之后**才跑第 2 段，且第 2 段是纯函数（串行、确定）。
     # 落盘原子边是为了"只换归并口径"时不必重抽（改 prompt 要重抽，改归并不是）。
     common.write_jsonl(ATOMS, [edge.to_dict() for edge in atoms])
@@ -878,6 +920,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="只按当前卡片与 manifest 里记录的五个分量重算六元指纹，不重抽")
     parser.add_argument("--rematch", action="store_true",
                         help="不重抽：从 work/hypergraph.atoms.jsonl 重跑第 2 段归并并重建索引")
+    parser.add_argument("--only-missing", action="store_true",
+                        help="只重抽「现有原子边里没有」的卡，并把新原子边并入旧文件"
+                             "（给整轮抽取漏掉的卡补边）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     if args.rekey_manifest:
@@ -897,8 +942,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(json.dumps(rematch(cards, vocab), ensure_ascii=False, indent=2))
         return 0
     client = llm.make_client(args.provider, args.model, args.scripted)
-    summary = run(cards, vocab, client, args.limit,
-                  concurrency=_concurrency(args.concurrency))
+    if args.only_missing:
+        have = cards_with_atoms()
+        missing = [card for card in cards if str(card["id"]) not in have]
+        print(json.dumps({"only_missing": True, "cards_total": len(cards),
+                          "cards_with_atoms": len(have), "to_extract": len(missing)},
+                         ensure_ascii=False))
+        summary = run(cards, vocab, client, args.limit,
+                      concurrency=_concurrency(args.concurrency),
+                      extract_only=missing, keep_atoms=True)
+    else:
+        summary = run(cards, vocab, client, args.limit,
+                      concurrency=_concurrency(args.concurrency))
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0 if summary["report"]["passed"] else 1
 

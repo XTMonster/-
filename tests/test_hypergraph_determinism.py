@@ -114,6 +114,42 @@ def test_every_component_changes_the_fingerprint():
         assert bh.fingerprint_of(mutated) != baseline, f"{key} 没进指纹"
 
 
+def test_only_missing_backfills_edges_without_losing_the_old_atoms(tmp_path, monkeypatch):
+    """`--only-missing`：只抽"没有原子边"的卡，并且**并入**旧原子边。
+
+    实测动机（2026-10-01）：整轮抽取后仍有 167 张生成卡（占 9.6%）一条原子边
+    都没拿到——它们在批次里被模型跳过了。重抽整库既慢又不保证覆盖它们，
+    而只喂这些卡一批，模型就会认真对待。
+    """
+    def card(ident: str, content: str) -> dict:
+        # `title` 是批次提示的必填项：缺它时抽取器会以 `KeyError: 'title'` 整批
+        # 拒收（这正是这条测试第一次跑出来的原因，记在这里免得下次再踩）。
+        return {"id": ident, "title": ident, "content": content,
+                "domain": "cinematography", "keywords": [], "tags": [], "emotion": "",
+                "chunk_id": f"ch-{ident}",
+                "source_span": {"chunk_id": f"ch-{ident}", "start": 0, "end": len(content)}}
+
+    cards = [card("card_a", "低机位让人物显得高大。"), card("card_b", "长焦压缩空间。")]
+    prepared = _prepare(tmp_path, monkeypatch, cards)
+    vocab = json.loads((tmp_path / "vocab.json").read_text(encoding="utf-8"))["vocab"]
+    raw_edge = _read_jsonl(EDGES_FILE)[0]
+
+    # 第一趟：整轮抽取只拿到了 card_a 的边（card_b 被跳过）。
+    bh.run([cards[0]], vocab, _ScriptedClient(_raw_edge_for("card_a", raw_edge)))
+    assert bh.cards_with_atoms() == {"card_a"}
+
+    # 第二趟：只补 card_b，并且不许把 card_a 的原子边冲掉。
+    summary = bh.run(cards, vocab, _ScriptedClient(_raw_edge_for("card_b", raw_edge)),
+                     extract_only=[cards[1]], keep_atoms=True)
+    assert bh.cards_with_atoms() == {"card_a", "card_b"}
+    # 两张卡的原子边是同一条耦合、来源不同：归并后应当合成**一条带两个来源**的边。
+    assert summary["merge"]["merged_edges"] == 1
+    assert summary["merge"]["multi_card_edges"] == 1
+    manifest = json.loads(prepared["paths"]["hypergraph.manifest.json"].read_text(
+        encoding="utf-8"))
+    assert manifest["cards"] == 2, "指纹与卡片数仍按**全量**算，不是只算补抽的那张"
+
+
 def test_corpus_digest_covers_content_not_only_ids():
     cards = [{"id": "c1", "content": "第一版", "chunk_id": "ch1",
               "source_ref": {"sha256": "aa"}},
