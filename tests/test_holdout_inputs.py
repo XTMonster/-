@@ -59,3 +59,27 @@ def test_quarantined_annotation_shards_are_not_merge_inputs():
     # 隔离目录之外不该再有 v14 的分片（有就说明有人在往回搬）
     leftovers = sorted(p.name for p in quarantine.parent.glob("partial*.jsonl"))
     assert leftovers == [], f"隔离目录外的 v14 分片会被误并：{leftovers}"
+
+
+def test_merge_uses_the_same_frozen_vocab_as_the_gate():
+    """合并口与门必须用**同一份**词表。
+
+    实测事故：`holdout_merge.DEFAULT_VOCAB` 指向 `knowledge/hypergraph.vocab.json`
+    （`vocabulary.py` 按"频次前 12"裁的中间产物），而门③ 用的是
+    `fixtures/knowledge_holdout.vocab.json`（"支撑 ≥3 对"的不动点）。两份内容不同，
+    于是 2734 条池分片走合并被旧词表判掉 **1082 条 `unknown_values`**，合并只剩
+    1647 条 —— 同一个产物在合并口与门口得到两个结论。这条测试把两者的身份钉死。
+    """
+    from tools import holdout_merge
+
+    assert pathlib.Path(holdout_merge.DEFAULT_VOCAB).resolve() == \
+        (ROOT / "fixtures" / "knowledge_holdout.vocab.json").resolve(), (
+        "合并必须用冻结词表，否则会按另一份（频次前 12）错杀条目")
+    # 两种形状都要能读：冻结件是 {"_fingerprint", "kinds"}，
+    # 中间产物是 {"nodes", "vocab", "holdout_vocab"} —— 只认一种就会 KeyError。
+    frozen = holdout_merge.load_vocab()
+    assert frozen and "action" in frozen, "冻结词表读不出来"
+    legacy = ROOT / "knowledge" / "hypergraph.vocab.json"
+    if legacy.is_file():
+        payload = json.loads(legacy.read_text(encoding="utf-8"))
+        assert holdout_merge.load_vocab(legacy) == payload["holdout_vocab"]
