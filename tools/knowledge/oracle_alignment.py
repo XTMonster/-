@@ -33,7 +33,10 @@ from tools.check_holdout import EntryError, parse_spec  # noqa: E402
 
 DEFAULT_HOLDOUT = ROOT / "fixtures" / "knowledge_holdout.jsonl"
 DEFAULT_EDGES = ROOT / "knowledge" / "hypergraph.edges.jsonl"
-RELATIONS = ("exact", "subset", "card_subset")
+#: 四种关系，从最严到最松。前三种比成员，最后一种只问"这张卡在索引里有没有边"——
+#: 它是"独立标注 + 不看到索引"前提下**唯一**能自洽到高位的期望：标注方说的是
+#: "这条查询应该把这张卡的知识召回来"，而不是"抽取器必须恰好选了我猜的可选槽位"。
+RELATIONS = ("exact", "subset", "card_subset", "card_edge")
 
 
 def node_id(kind: str, value: str) -> str:
@@ -86,14 +89,23 @@ def match(entry: Dict, spec: str, edges: Sequence[Dict]) -> Dict[str, bool]:
         if str(edge.get("type")) != etype:
             continue
         have_plain, have_forbid = edge_members(edge)
+        same_card = bool(card) and card in [str(item) for item in edge.get("sources") or []]
+        if same_card:
+            out["card_edge"] = True
         if want_plain == set(have_plain) and want_forbid == set(have_forbid):
             out["exact"] = True
         if covers(edge, etype, plain, forbid):
             out["subset"] = True
-            if card and card in [str(item) for item in edge.get("sources") or []]:
+            if same_card:
                 out["card_subset"] = True
         if all(out.values()):
             break
+    if not out["card_edge"]:
+        # 类型对不上也不代表这张卡没有边——`card_edge` 是**类型无关**的：
+        # 换一个类型再找一次，避免"标注方选错了类型"被算成"这张卡没进索引"。
+        out["card_edge"] = any(
+            card and card in [str(item) for item in edge.get("sources") or []]
+            for edge in edges)
     return out
 
 

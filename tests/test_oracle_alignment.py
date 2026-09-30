@@ -34,7 +34,8 @@ def test_exact_requires_the_member_set_to_be_identical():
     entry = _entry("gen_cine_0001", ["EMOTION_PACK:emotion=荒诞,intensity=high,"
                                      "forbid_movement=固定"])
     result = oa.match(entry, entry["must"][0], EDGES)
-    assert result == {"exact": True, "subset": True, "card_subset": True}
+    assert result == {"exact": True, "subset": True, "card_subset": True,
+                      "card_edge": True}
 
 
 def test_subset_accepts_an_edge_with_extra_members_but_not_extra_forbids():
@@ -63,6 +64,7 @@ def test_card_subset_is_scoped_to_the_source_card():
     result = oa.match(entry, entry["must"][0], [other])
     assert result["exact"] is True and result["subset"] is True
     assert result["card_subset"] is False
+    assert result["card_edge"] is False, "别的卡的边不算这张卡有边"
 
 
 def test_run_reports_the_three_relations_separately():
@@ -85,4 +87,25 @@ def test_run_reports_the_three_relations_separately():
 def test_unparsable_specs_count_as_misses_not_crashes():
     entry = _entry("gen_cine_0001", ["NOT_A_TYPE:emotion=荒诞"])
     report = oa.run([entry], EDGES)
-    assert report["must_hits"] == {"exact": 0, "subset": 0, "card_subset": 0}
+    assert report["must_hits"] == {"exact": 0, "subset": 0, "card_subset": 0,
+                                   "card_edge": 0}
+
+
+def test_card_edge_is_type_agnostic_and_measures_index_coverage():
+    """`card_edge`：这张卡在索引里有没有边（不看类型、不看成员）。
+
+    它是"独立标注 + 不看到索引"下唯一能自洽的期望口径，所以必须与前三档
+    分开报——混在一起会把"标注选错类型"和"这张卡根本没进索引"当成同一件事。
+    """
+    only_other_type = [_edge("EDIT_RHYTHM",
+                             [["allow", "pacing", "pacing:short"],
+                              ["qualifier", "avg_shot_len", "avg_shot_len:<1s"]],
+                             "gen_cine_0001")]
+    entry = _entry("gen_cine_0001", ["EMOTION_PACK:emotion=荒诞,intensity=high"])
+    result = oa.match(entry, entry["must"][0], only_other_type)
+    assert result["exact"] is False and result["card_subset"] is False
+    assert result["card_edge"] is True, "类型不同也算这张卡有边"
+
+    report = oa.run([entry], only_other_type)
+    assert report["ceiling_Q2"] == {"exact": 0.0, "subset": 0.0,
+                                    "card_subset": 0.0, "card_edge": 1.0}
