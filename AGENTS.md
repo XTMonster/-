@@ -229,7 +229,20 @@ and coreference) is done.
 | **P13** | 长剧本不被截断（提示侧无"其余 N 个镜号略"；显式上限超限报 `E_SCRIPT_002`）、连续成片默认产出 |
 | **P15** | `shots.json` 补齐 §3.3 全字段；同层动作自动错开并留痕（US-17）；`prompts.md` 逐字段可对拍且不含引擎内部键 |
 | **P16** | 构图门 ≥70% + 反向突变（ADR-0012）；无 bpy 的空断言静态检查 `tools/check_assertions.py`；探针清单双向断言与 `docs/evidence/<run-id>/{rks.json,config.fingerprint.json}` 收尾钩子；`CONTEXT.md` + `docs/adr/0007…0012` |
-| **P14** | 知识栈三层：语料 1075 卡 / 九域（`knowledge/cards_generated/`）、超图索引（`knowledge/hypergraph.{nodes,edges}.jsonl`，**222 边**（含 15 个 `forbid` 成员与 **97 个 `composition_rule` 成员**，arity 2–10，`rejects 0/578`，`extract/v3` 重建））、L3 案例层（`knowledge/cases.*`）；`/v1/retrieve` 三通道 `cards[]/edges[]/cases[]` ＋ `trace{}`（`contracts/knowledge.py` 的 `HyperEdge`/`Case` DTO，`specs/openapi.yaml` 同批）；`Capability.HYPERGRAPH` 由**索引是否加载成功**决定；插件侧 `knowledge/client.py` 每次检索写一条 `retrieval_call` 审计事件，`knowledge_trace.json` 每次运行必写；`tools/holdout_score.py` 判 Q1–Q7、`tools/knowledge/quality.py` 判 Q0 ＋ E1–E3 并落 `docs/evidence/<run-id>/knowledge_quality.json`；`tools/ab_triple_baseline.py` 出三元组对照；`tools/knowledge/sample_edges.py` 出 30 条人工抽查样本（`verdict` 留空，不预填） |
+| **P14** | 知识栈三层：语料 1075 卡 / 九域（`knowledge/cards_generated/`）、超图索引（`knowledge/hypergraph.{nodes,edges}.jsonl`，**`hg/v2`：13 类边 / 307 节点 / 382 边**，其中带 `forbid` 成员的边 21 条（24 个 forbid 成员），arity 2–6，`rejects 0/667`，`processed == total == 250`）、L3 案例层（`knowledge/cases.*`）；`/v1/retrieve` 三通道 `cards[]/edges[]/cases[]` ＋ `trace{}`（`contracts/knowledge.py` 的 `HyperEdge`/`Case` DTO，`specs/openapi.yaml` 同批）；`Capability.HYPERGRAPH` 由**索引是否加载成功**决定；插件侧 `knowledge/client.py` 每次检索写一条 `retrieval_call` 审计事件，`knowledge_trace.json` 每次运行必写；`tools/holdout_score.py` 判 Q1–Q4/Q6a/Q6b/Q7（**Q5 属人裁决，见下**）、`tools/knowledge/quality.py` 判 Q0 ＋ E1–E3 并落 `docs/evidence/<run-id>/knowledge_quality.json`；`tools/ab_triple_baseline.py` 出三元组对照；`tools/knowledge/sample_edges.py` 出 30 条人工抽查样本（`verdict` 留空，不预填） |
+
+**v1.5（用户裁决 D6/D7）已落地**：节点 **16 → 17**（+`intent`）、超边 **6 → 13**
+（+`ACTION_BEAT`/`PERFORMANCE_PACK`/`INTENT_PACK`/`IMPACT_PACK`/`STAGING_PACK`/`SOUND_PACK`/
+`TRANSITION_PACK`），`hypergraph.SCHEMA_VERSION` 升 `hg/v2`。
+**schema 的单一真源是 `block_director/knowledge/hypergraph.py`**（`NODE_TYPES`/`QUALIFIER_KINDS`/
+`EDGE_TYPES`/`REQUIRED_MEMBERS`/`OPTIONAL_MEMBERS`/`TYPE_PRIORITY`/`VALUE_DOMAINS`/`QUERY_KEYS`）；
+`tools/check_holdout.py`、`tools/kb_fetch/{build_hypergraph,holdout_gen,vocabulary}.py` 一律**导入**它，
+不得再抄第二份——本次扩类暴露的正是"各抄一份 6 类型 / 16 kind"的漂移。
+`INTENT_PACK` 的查询键是 `意图`（`QUERY_KEYS`），取值是 12 个中文闭集（`VALUE_DOMAINS["intent"]`）。
+标注通道可选 GLM（`tools/kb_fetch/llm.py::GLMClient`，`family=zhipu`，`GLM_API_KEY` 只从环境变量读）
+或本地 `qwen3-vl:30b`；**无论走哪条都必须与抽取族（DeepSeek）不同**，`annotator.family` 写进每条。
+Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`reviewed_by: "llm-panel"`，
+**绝不写 `human`**，因此门⑦ 照旧不通过）——那是辅助证据，不是降低验收标准。
 
 **L3 案例层（P14-3）已落地**：`block_director/knowledge/cases.py`（三态 `lightrag`/`hybrid`/`off`、
 `CaseIndex`、`render_cases`，**没有 `forbid` 字段**——E3 的机制保证）＋
