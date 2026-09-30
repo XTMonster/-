@@ -265,35 +265,43 @@ Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`revie
 `layer5_orchestrator/scene_contract.py::shot_constraint_query()` 就是那个生产者
 （`editor.py` 每镜用它取知识）。证据：`docs/evidence/20260930-071500/`。
 
-**P14 未完成（不得当作通过）**（2026-10-01 02:07 复跑的准确数字，证据 `docs/evidence/20261001-0207/`）：
+**P14 未完成（不得当作通过）**（2026-10-01 02:20 复跑的准确数字，证据 `docs/evidence/20261001-0220/`；
+**索引与 oracle 仍在重建中，数字会动 —— 复跑上面那两条命令，以最新一次输出为准**）：
 `fixtures/knowledge_holdout.jsonl` 已落地 **4539 条**（下界 1200），但**五道门是红的**：
 
 - `python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json`
   现在报 **gate 1/2/4/5/5b/8 = pass**、**gate 3（词表双向覆盖）= fail**、
   **gate 6（来源覆盖）= fail（1733 张卡里 687 张零条目、29 条引用已消失的卡 id）**、
   **gate 7（人审）= fail（0/120）**、**gate 9（可达性）= fail（970/4539 = 21.4%）**、
-  **gate 10（可解析）= fail（9405/13713 = 68.6%）**。
+  **gate 10（可解析）= fail（8617/13713 = 62.8%，索引 683 条边）**。
+  gate 3/6/9 只取决于 oracle 与词表快照，本轮索引重建（579 → 683 条边）动不了它们，
+  必须**用当前语料重标一次 oracle 并重建词表快照**；gate 10 已从 68.6% 降到 62.8%。
   gate 3/6 在 `docs/evidence/20261001-011631/` 还是绿的，转红的分界点是
   **语料从 1075 张长到 1733 张** —— oracle 与词表快照都是旧世代，需要
   **用当前语料重标一次**，不是改判据。门⑨/⑩ 是 R54 新加的**机器检查**
   （协议 §3.1 与 §2.3 Q6b 前置① 早就写了规则，只是没人查）。
 - `tools/check_holdout.py` 的门⑪ 现在给出**根因分类**（`unresolved_by_cause` /
   `unresolved_by_edge_type` / `unresolved_closeness`，**纯诊断，不改判据**）：
-  8151 条 `no_edge_with_those_plain_members`、685 条 `plain_subset_but_forbid_differs`、
-  534 条 `plain_subset_index_has_extra_members`、35 条 `value_not_in_index`。
+  7307 条 `no_edge_with_those_plain_members`、705 条 `plain_subset_but_forbid_differs`、
+  570 条 `plain_subset_index_has_extra_members`、35 条 `value_not_in_index`。
 - `tools/holdout_merge.py` 已在**合并**这一步就按门③ 的 unknown 侧与门⑨ 的可达性拦截
   （import `check_holdout.query_shortfall` / `holdout_fill.unknown_values_in`，**不另写第二份判据**），
   三类拒收**分开记账**进报告 —— oracle 只有一个入口，不能等收尾才发现"格式对但语义不可达"。
   实测 `work/glm_v10|v11|v12` 的一批分片 5368 条 → 4722 条合规
   （248 条不可达 + 398 条词表外取值被拦下并报出）。
 - `tools/holdout_score.py` 的 Q4 曾是**恒真式**（分子＝分母），R54 已按 §4.1 的定义改成
-  `Σ_q|required∩top-k| / Σ_q|required|`，实测 **1154/1563 = 0.738**；不可解析的 `must` 也从
-  "静默丢掉"改成"单独记账并判失败"（**3480/5043**，即 §2.3 Q6b 前置① 的"索引构建失败"）。
+  `Σ_q|required∩top-k| / Σ_q|required|`，实测 **1356/1846 = 0.735**；不可解析的 `must` 也从
+  "静默丢掉"改成"单独记账并判失败"（**3197/5043**，即 §2.3 Q6b 前置① 的"索引构建失败"）。
 - **Q1/Q2 不达标的主因是 oracle 与索引不同构，不是排序**：全量实测 `must` 能进候选集的 query
   只有 1277/4539（**Q2 天花板 0.281**）、目标边在候选集里的名次中位数＝**1**。所以
   并行 lane 正在用 `holdout/v12` 提示重标（提示里新增"查询必须覆盖目标边 ≥2 个成员"，
   实测该子集 **Q1=0.727 / Q2=0.917**）。**在没有重标完之前不要动 `SCORE_WEIGHTS`**——
   动它只会掩盖 oracle 缺陷。证据：`docs/evidence/20261001-0057/`。
+  （上面那组天花板数字来自 `docs/evidence/20261001-0057/` 的那一版索引。2026-10-01 02:20 重测：
+  `python tools/knowledge/holdout_ceiling.py` → **Q1 0.357 / Q2 0.375 / Q4 0.366 / Q6b 0.366**，
+  `ceilings_below_lines` 四条全列；实际 Q1=933/4539=0.206、Q2=1350/4539=0.297。
+  索引已从 579 条边长到 683 条，上限却仍只有 ~36% —— 这就是"**先修 oracle/索引，
+  不是先改检索**"的直接证据，也说明改 `SCORE_WEIGHTS` 永远到不了线。）
 - **门⑩ 的判据本身待用户裁决**：§2.3 Q6b 前置① 要求 `norm_key` 完全相等（含**完整成员集**），
   而 §2.3c 又写死"标注方不可见索引"。同一 fixture、同一索引下的四档上限实测
   A=31.4% / B=35.3% / C=40.3% / D=99.7%（四档定义见

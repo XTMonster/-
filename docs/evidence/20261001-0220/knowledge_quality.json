@@ -1,0 +1,208 @@
+{
+  "run_id": "20261001-0220",
+  "overall": "fail",
+  "holdout_entries": 4539,
+  "index_edges": 683,
+  "metrics": [
+    {
+      "id": "Q0",
+      "status": "pass",
+      "note": "rejects/raw <= 5% 且 processed == total",
+      "source": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
+      "raw_edges": 1662,
+      "valid_unique": 683,
+      "duplicates": 979,
+      "rejects": 0,
+      "rejects_file_lines": 0,
+      "processed_chunks": 14,
+      "total_chunks": 14,
+      "reject_ratio": 0.0
+    },
+    {
+      "id": "Q1",
+      "status": "fail",
+      "numerator": 933,
+      "denominator": 4539,
+      "value": 0.2056,
+      "line": 0.7,
+      "note": "held-out query 数 4539（下界 1200）"
+    },
+    {
+      "id": "Q2",
+      "status": "fail",
+      "numerator": 1350,
+      "denominator": 4539,
+      "value": 0.2974,
+      "line": 0.9,
+      "note": ""
+    },
+    {
+      "id": "Q3",
+      "status": "pass",
+      "numerator": 24,
+      "denominator": 1548,
+      "value": 0.0155,
+      "line": 0.1,
+      "note": ""
+    },
+    {
+      "id": "Q4",
+      "status": "fail",
+      "numerator": 1356,
+      "denominator": 1846,
+      "value": 0.7346,
+      "line": 1.0,
+      "note": "required 总数 1846（下界 200）"
+    },
+    {
+      "id": "Q6a",
+      "status": "pass",
+      "numerator": 13605,
+      "denominator": 13605,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q6b",
+      "status": "fail",
+      "numerator": 1451,
+      "denominator": 1846,
+      "value": 0.786,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q7",
+      "status": "pass",
+      "numerator": 487,
+      "denominator": 487,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "冲突查询数 487（下界 60）"
+    },
+    {
+      "id": "Q4_pre_required_edges_exist",
+      "status": "fail",
+      "numerator": 1846,
+      "denominator": 5043,
+      "value": 0.3661,
+      "line": 1.0,
+      "note": "§2.3 Q6b 前置①：3197/5043 条 must 在索引里找不到对应边（oracle 与索引不同构 → 索引构建失败）",
+      "examples": [
+        {
+          "id": "hq_0001",
+          "q": "轴线=中性机位；光线=正面光",
+          "unresolved": [
+            "AXIS_RULE:pair=any_two,axis_side=neutral"
+          ]
+        },
+        {
+          "id": "hq_0003",
+          "q": "意图=收束；景别=MCU",
+          "unresolved": [
+            "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
+            "AXIS_RULE:pair=any_two,axis_side=left"
+          ]
+        },
+        {
+          "id": "hq_0004",
+          "q": "轴线=视线轴；景别=MS",
+          "unresolved": [
+            "AXIS_RULE:pair=any_two,axis_side=left"
+          ]
+        },
+        {
+          "id": "hq_0005",
+          "q": "景别=MS；镜头=85mm",
+          "unresolved": [
+            "AXIS_RULE:pair=any_two,axis_side=right"
+          ]
+        },
+        {
+          "id": "hq_0006",
+          "q": "情绪=温柔；构图=framing",
+          "unresolved": [
+            "EMOTION_PACK:emotion=温柔,intensity=low",
+            "SHOT_PATTERN:shot_size=CU,lens=35mm,headroom_policy=board,composition_rule=framing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "E3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 0,
+      "value": 0,
+      "line": 0,
+      "note": "经验边（source_kind=experience）单独产生的 forbid 条数必须为 0"
+    },
+    {
+      "id": "E3_cases",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 733,
+      "line": 0,
+      "note": "L3 案例永不产出约束"
+    },
+    {
+      "id": "E1",
+      "status": "not_measured",
+      "note": "需要人工对返回的 cases 按 >=4/5 打分（§2.3b）；没有 --e1-reviews 就不判——不得由 agent 代判"
+    },
+    {
+      "id": "E2",
+      "status": "not_measured",
+      "note": "没有 --shots：采纳率无法测量（诊断量，不设门）"
+    }
+  ],
+  "q_summary": {
+    "queries": 4539,
+    "edges": 683,
+    "selected_total": 13605,
+    "must_total": 5043,
+    "required_unresolved": 3197,
+    "required_unresolved_entries": 2935,
+    "unresolved_examples": [
+      {
+        "id": "hq_0001",
+        "q": "轴线=中性机位；光线=正面光",
+        "unresolved": [
+          "AXIS_RULE:pair=any_two,axis_side=neutral"
+        ]
+      },
+      {
+        "id": "hq_0003",
+        "q": "意图=收束；景别=MCU",
+        "unresolved": [
+          "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
+          "AXIS_RULE:pair=any_two,axis_side=left"
+        ]
+      },
+      {
+        "id": "hq_0004",
+        "q": "轴线=视线轴；景别=MS",
+        "unresolved": [
+          "AXIS_RULE:pair=any_two,axis_side=left"
+        ]
+      },
+      {
+        "id": "hq_0005",
+        "q": "景别=MS；镜头=85mm",
+        "unresolved": [
+          "AXIS_RULE:pair=any_two,axis_side=right"
+        ]
+      },
+      {
+        "id": "hq_0006",
+        "q": "情绪=温柔；构图=framing",
+        "unresolved": [
+          "EMOTION_PACK:emotion=温柔,intensity=low",
+          "SHOT_PATTERN:shot_size=CU,lens=35mm,headroom_policy=board,composition_rule=framing"
+        ]
+      }
+    ],
+    "passed": false
+  }
+}
