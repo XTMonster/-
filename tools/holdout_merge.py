@@ -166,7 +166,7 @@ def run(patterns: Sequence[str], out: pathlib.Path = DEFAULT_OUT,
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="holdout_merge")
-    parser.add_argument("--inputs", nargs="+", required=True,
+    parser.add_argument("--inputs", nargs="+", default=None,
                         help="分片 partial 文件/通配/目录（目录 = 其中的 partial*.jsonl）")
     parser.add_argument("--out", default=str(DEFAULT_OUT))
     parser.add_argument("--report", default="", help="把合并报告写到这个路径")
@@ -174,7 +174,31 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="冻结词表：用来在合并时就拦下词表外取值与不可达查询"
                              "（与门③/门⑨ 同一套判据）")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--cards-only", action="store_true",
+                        help="只把**卡片全集**重写出来（门⑥ 的输入），不碰 oracle。"
+                             "语料换了之后 `fixtures/knowledge_holdout.cards.json` 会"
+                             "与运行时的 `CARDS` 脱节（实测 2067 vs 2113：97 个 id 已"
+                             "不存在、143 张卡不在文件里），门⑥ 报的缺口里就混进了"
+                             "**输入本身错**的部分。")
     args = parser.parse_args(list(argv) if argv is not None else None)
+
+    if args.cards_only:
+        # 卡片全集**只有一个真源**：`block_director.knowledge.corpus.CARDS`。
+        # 手抄第二份必然漂移，所以这里直接用同一个写出函数。
+        from block_director.knowledge.corpus import CARDS
+
+        universe = sorted(str(card.id) for card in CARDS)
+        out_path = pathlib.Path(args.out)
+        out_path.with_suffix(".cards.json").write_text(
+            json.dumps(universe, ensure_ascii=False, indent=0),
+            encoding="utf-8", newline="\n")
+        print(json.dumps({"cards": len(universe),
+                          "path": str(out_path.with_suffix(".cards.json"))},
+                         ensure_ascii=False))
+        return 0
+
+    if not args.inputs:
+        parser.error("--inputs 必填（或给 --cards-only）")
 
     vocab_path = pathlib.Path(args.vocab)
     vocab = load_vocab(vocab_path) if vocab_path.is_file() else None

@@ -1,17 +1,22 @@
-"""本地模型端到端探针（执行文档 v1.2 §19.3 / §21.7）。
+"""OpenAI 兼容端点的端到端探针（执行文档 v1.2 §19.3 / §21.7）。
 
-用途：在**不接任何外部 API**的前提下，用本地 OpenAI 兼容端点（Ollama / vLLM）
-跑一次真实调用，回答三个问题：
+用途：对任意 OpenAI 兼容端点跑一次真实调用，回答三个问题：
 
-1. 我们构造的 `emit_plan` 请求，本地模型是否真的会按工具调用回？
+1. 我们构造的 `emit_plan` 请求，这个模型是否真的会按工具调用回？
 2. 延迟量级是多少（决定预算与超时该设多大）？
 3. 返回的结构化参数能否直接过 `Plan.from_dict` 与 §5.2 校验？
 
 只读探针：不发文件、不改场景、不落盘（除非显式给 --out）。
 
+**`--model` 是必填的**：默认值曾经写死成 `qwen3-vl:30b`，而本地 Ollama 路线已在
+2026-10-01 停用（加载即 `HTTP 500 token repeat limit`；`ollama pull` 还把 C 盘
+吃到过 4.1 GB）。留一个跑不起来的默认值会让"验收命令"看起来可跑、实际必炸，
+所以这里不给默认值——要跑什么端点，自己写清楚。
+
 用法：
-  python tools/probe_local_model.py --base-url http://127.0.0.1:11434/v1 \
-      --model qwen3-vl:30b [--script fixtures/script_simple.fountain] [--out <json>]
+  python tools/probe_local_model.py --model glm-4.7-flash \
+      --base-url https://open.bigmodel.cn/api/paas/v4 \
+      [--script fixtures/script_simple.fountain] [--out <json>]
 """
 
 from __future__ import annotations
@@ -37,8 +42,10 @@ DEFAULT_SCRIPT = "INT. 公寓客厅 - 夜\n\n林可坐在沙发上打电话。\n
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(prog="probe_local_model")
-    parser.add_argument("--base-url", default="http://127.0.0.1:11434/v1")
-    parser.add_argument("--model", default="qwen3-vl:30b")
+    parser.add_argument("--base-url", default="",
+                        help="OpenAI 兼容端点；留空则读 $env:OPENAI_BASE_URL")
+    parser.add_argument("--model", required=True,
+                        help="**必填**：不给默认值——写死的本地模型已于 2026-10-01 停用")
     parser.add_argument("--script", default="")
     parser.add_argument("--timeout", type=float, default=600.0)
     parser.add_argument("--out", default="")

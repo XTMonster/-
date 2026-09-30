@@ -1,8 +1,15 @@
+# **文件名里的 "local" 是历史遗留（2026-10-01 用户裁决："别用本地模型了"）。**
+# sidecar 这条**通道**仍然是一等公民，只是上游不再是 Ollama：现在是云端
+# `provider: glm`（智谱）/ `deepseek`。下面 `model:` 一行已经换成当前可跑的写法；
+# §21.10 那次本地运行（`qwen3-vl:30b`）作为历史证据保留在配置注释里。
+#
 # 走 sidecar 的真实模型配置样例（§2.4 的形态 ②）。
 #
 # 先用 tools/sidecar_server.py 起服务，再让插件按 sidecar 模式调用：
-#   python tools/sidecar_server.py --port 8899 --upstream http://127.0.0.1:11434 \
-#       --model qwen3-vl:30b --num-ctx 32768 --max-tokens 8192
+#   云端上游（推荐）：把插件指向 sidecar，sidecar 转发到智谱：
+#   python tools/sidecar_server.py --port 8899 \
+#       --upstream https://open.bigmodel.cn/api/paas/v4 --model glm-4.7-flash
+#   历史（已停用）：--upstream http://127.0.0.1:11434 --model qwen3-vl:30b
 #   $env:BLOCKDIRECTOR_CONFIG="<repo>\fixtures\local_sidecar.config.yaml"
 #   blender --background --factory-startup --python tools/run_headless.py -- \
 #       --sidecar --build --script fixtures\script_simple.fountain --wall 3600 \
@@ -17,7 +24,9 @@ llm:
   sidecar_token: ""
   sidecar_timeout_s: 900
   provider: local
-  model: "qwen3-vl:30b"
+  # 本地 qwen3-vl:30b 已停用（加载即 `HTTP 500 token repeat limit`）；
+  # 这条通道现在的上游是云端 GLM（用户裁决：用智谱 glm-4.7 一路的模型）。
+  model: "glm-4.7-flash"
   base_url: ""
   api_key: ""
   max_tokens: 8192

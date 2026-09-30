@@ -1,4 +1,13 @@
-# 用本地 OpenAI 兼容端点（Ollama）跑真实模型的配置样例。
+# **已停用（2026-10-01 用户裁决："别用本地模型了"）。**
+#
+# 本文件是 §21.10「真实模型联调」那次运行的**历史记录**，保留是为了让证据可复现，
+# 不再是一条可跑通的验收路径：`ollama pull` 把 C 盘吃到过 4.1 GB，且
+# `qwen3-vl:30b` 加载即 `HTTP 500 token repeat limit`（安装 blob 的 sha256 与
+# manifest 一致，文件没坏，是运行不了）。
+# 现在的真实模型走**云端**：`fixtures/local_sidecar.config.yaml` 的 sidecar 通道 +
+# `provider: glm`（智谱），或 `llm.provider: deepseek`。见执行文档 §4.4。
+#
+# 下面是**当时**用本地 OpenAI 兼容端点（Ollama）跑真实模型的配置样例。
 # 用法：
 #   $env:BLOCKDIRECTOR_CONFIG="<repo>\fixtures\local_model.config.yaml"
 #   blender --background --factory-startup --python tools/run_headless.py -- ^
@@ -10,7 +19,9 @@
 llm:
   transport: direct
   provider: local
-  model: "qwen3-vl:30b"
+  # 本地 qwen3-vl:30b 已停用（用户裁决 2026-10-01）；本文件现在是历史记录，
+  # 如果要重跑这条直连通道，把 model/base_url 换成云端端点即可。
+  model: "glm-4.7-flash"
   base_url: "http://127.0.0.1:11434/v1"
   api_key: ""
   sidecar_timeout_s: 600
