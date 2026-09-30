@@ -1,0 +1,392 @@
+{
+  "path": "fixtures\\knowledge_holdout.jsonl",
+  "pilot": false,
+  "gate_1_total": {
+    "status": "pass",
+    "entries": 4539,
+    "entries_pilot": 0,
+    "min_entries": 1200
+  },
+  "gate_2_format": {
+    "status": "fail",
+    "entries": 4539,
+    "valid": 4239,
+    "problems": [
+      "line 43: AXIS_RULE 上不允许 ['camera_angle']（在 'AXIS_RULE:pair=any_two,axis_side=neutral,camera_angle=骑轴' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 44: SHOT_PATTERN 上不允许 ['camera_angle']（在 'SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=cinematic,camera_angle=骑轴' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'lens'), ('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'composition_rule'), ('qualifier', 'headroom_policy')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 47: AXIS_RULE 上不允许 ['camera_angle']（在 'AXIS_RULE:pair=any_two,axis_side=neutral,camera_angle=骑轴' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 51: AXIS_RULE 上不允许 ['camera_angle']（在 'AXIS_RULE:pair=any_two,axis_side=neutral,camera_angle=过肩' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 52: SHOT_PATTERN 上不允许 ['camera_angle']（在 'SHOT_PATTERN:shot_size=MCU,lens=50mm,headroom_policy=cinematic,camera_angle=过肩' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'lens'), ('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'composition_rule'), ('qualifier', 'headroom_policy')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 54: AXIS_RULE 上不允许 ['camera_angle']（在 'AXIS_RULE:pair=any_two,axis_side=neutral,camera_angle=骑轴' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 55: SHOT_PATTERN 上不允许 ['camera_angle']（在 'SHOT_PATTERN:shot_size=ECU,lens=24mm,headroom_policy=board,camera_angle=过肩' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'lens'), ('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'composition_rule'), ('qualifier', 'headroom_policy')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 58: AXIS_RULE 上不允许 ['camera_angle']（在 'AXIS_RULE:pair=any_two,axis_side=left,camera_angle=平视' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 74: AXIS_RULE 上不允许 ['camera_angle']（在 'AXIS_RULE:pair=any_two,axis_side=left,camera_angle=平视' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 112: SHOT_PATTERN 上不允许 ['camera_angle']（在 'SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board,camera_angle=过肩' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'lens'), ('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'composition_rule'), ('qualifier', 'headroom_policy')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 137: ACTION_BEAT 上不允许 ['camera_angle']（在 'ACTION_BEAT:action=坐下,beat_type=establish,intensity=mid,camera_angle=平视' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'action'), ('allow', 'emotion'), ('allow', 'movement'), ('qualifier', 'applies_to_genre'), ('qualifier', 'beat_type'), ('qualifier', 'intensity'), ('qualifier', 'scene_type')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 145: EDIT_RHYTHM 上不允许 ['applies_to_shot_size']（在 'EDIT_RHYTHM:pacing=short,avg_shot_len=<1s,applies_to_shot_size=MLS' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'pacing'), ('qualifier', 'avg_shot_len'), ('qualifier', 'scene_type'), ('qualifier', 'transition')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 154: EMOTION_PACK 上不允许 ['forbid_lighting']（在 'EMOTION_PACK:emotion=悲伤,intensity=mid,forbid_lighting=暖光' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'emotion'), ('allow', 'lens'), ('allow', 'movement'), ('allow', 'pacing'), ('allow', 'sfx'), ('allow', 'shot_size'), ('allow', 'vfx'), ('forbid', 'movement'), ('forbid', 'shot_size'), ('forbid', 'vfx'), ('qualifier', 'applies_to_genre'), ('qualifier', 'applies_to_shot_size'), ('qualifier', 'intensity')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 156: AXIS_RULE 上不允许 ['applies_to_shot_size']（在 'AXIS_RULE:pair=any_two,axis_side=left,applies_to_shot_size=MS' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 157: EDIT_RHYTHM 上不允许 ['applies_to_shot_size']（在 'EDIT_RHYTHM:pacing=medium,avg_shot_len=3-8s,applies_to_shot_size=MS' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'pacing'), ('qualifier', 'avg_shot_len'), ('qualifier', 'scene_type'), ('qualifier', 'transition')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 168: EMOTION_PACK 上不允许 ['forbid_camera_angle']（在 'EMOTION_PACK:emotion=恐惧,intensity=high,forbid_camera_angle=平视' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'emotion'), ('allow', 'lens'), ('allow', 'movement'), ('allow', 'pacing'), ('allow', 'sfx'), ('allow', 'shot_size'), ('allow', 'vfx'), ('forbid', 'movement'), ('forbid', 'shot_size'), ('forbid', 'vfx'), ('qualifier', 'applies_to_genre'), ('qualifier', 'applies_to_shot_size'), ('qualifier', 'intensity')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 172: AXIS_RULE 上不允许 ['applies_to_shot_size']（在 'AXIS_RULE:pair=any_two,axis_side=left,applies_to_shot_size=ELS' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 176: AXIS_RULE 上不允许 ['applies_to_shot_size']（在 'AXIS_RULE:pair=any_two,axis_side=neutral,applies_to_shot_size=MS' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 461: AXIS_RULE 上不允许 ['camera_angle']（在 'AXIS_RULE:pair=any_two,axis_side=right,axis_topic=运动轴,camera_angle=平视' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）",
+      "line 466: AXIS_RULE 上不允许 ['camera_angle']（在 'AXIS_RULE:pair=any_two,axis_side=neutral,axis_topic=越轴,camera_angle=低机位' 内）——该 (role, kind) 不在 §2.3 的必填＋选填成员表里：[('allow', 'movement'), ('allow', 'shot_size'), ('qualifier', 'axis_side'), ('qualifier', 'axis_topic'), ('qualifier', 'pair')]。索引是照这张表建的（实测 890 条边零非法成员），所以这样的边**在索引里根本不可能存在**，标注等于断言一条永远召不回的边（上一代 oracle 实测有 243 个 `forbid_<kind>` 就是这么落进去的）"
+    ],
+    "problem_count": 300,
+    "q7_conflicts": 272,
+    "must_pairs_per_type": {
+      "EMOTION_PACK": 604,
+      "SHOT_PATTERN": 553,
+      "AXIS_RULE": 197,
+      "TROPE": 242,
+      "EDIT_RHYTHM": 300,
+      "LIGHT_PACK": 349,
+      "ACTION_BEAT": 300,
+      "PERFORMANCE_PACK": 317,
+      "INTENT_PACK": 660,
+      "IMPACT_PACK": 248,
+      "STAGING_PACK": 490,
+      "SOUND_PACK": 224,
+      "TRANSITION_PACK": 189
+    },
+    "must_cards_per_type": {
+      "EMOTION_PACK": 481,
+      "SHOT_PATTERN": 494,
+      "AXIS_RULE": 141,
+      "TROPE": 237,
+      "EDIT_RHYTHM": 284,
+      "LIGHT_PACK": 329,
+      "ACTION_BEAT": 295,
+      "PERFORMANCE_PACK": 292,
+      "INTENT_PACK": 634,
+      "IMPACT_PACK": 234,
+      "STAGING_PACK": 483,
+      "SOUND_PACK": 217,
+      "TRANSITION_PACK": 150
+    },
+    "q7_forbid_members": {
+      "movement=handheld": 67,
+      "movement=dolly_in": 13,
+      "movement=dolly_out": 17,
+      "movement=crane_up": 33,
+      "movement=orbit_cw": 23,
+      "movement=crane_down": 16,
+      "movement=orbit_ccw": 18,
+      "movement=track_left": 11,
+      "movement=pan_left": 13,
+      "vfx=flame": 5,
+      "shot_size=ELS": 5,
+      "movement=tilt_up": 11,
+      "shot_size=ECU": 5,
+      "shot_size=LS": 5,
+      "shot_size=MCU": 6,
+      "movement=pan_right": 8,
+      "shot_size=MS": 6,
+      "shot_size=MLS": 5,
+      "movement=follow_subject": 8,
+      "shot_size=CU": 5,
+      "vfx=smoke": 1,
+      "vfx=glow": 2,
+      "vfx=impact_frame": 1,
+      "vfx=spark": 1
+    },
+    "needs_human": 622,
+    "human_reviewed": 0,
+    "q7_member_count": 24
+  },
+  "gate_4_edge_types": {
+    "status": "pass",
+    "min_pairs_per_type": 30,
+    "min_cards_per_type": 10,
+    "short_pairs": {},
+    "thin_cards": {}
+  },
+  "gate_5_forbid": {
+    "status": "pass",
+    "q7_conflicts": 272,
+    "min": 60
+  },
+  "gate_5b_forbid_members": {
+    "status": "pass",
+    "members": 24,
+    "under_covered": {}
+  },
+  "gate_7_human_review": {
+    "status": "fail",
+    "needs_human": 622,
+    "human_reviewed": 0,
+    "min_human_review": 120
+  },
+  "gate_8_independence": {
+    "status": "pass",
+    "extractor_family": "deepseek",
+    "annotator_families": [
+      "zhipu"
+    ],
+    "strong_but_same_family": [],
+    "liar_count": 0
+  },
+  "gate_3_seed_coverage": {
+    "status": "fail",
+    "missing_values": {
+      "action": [
+        "跺脚"
+      ],
+      "movement": [
+        "固定"
+      ],
+      "lighting": [
+        "底光"
+      ]
+    },
+    "unknown_values": {
+      "axis_topic": [
+        "关系轴"
+      ],
+      "vfx": [
+        "impact_frame"
+      ],
+      "movement": [
+        "pan_right"
+      ]
+    },
+    "thin_values": {
+      "action": [
+        "跺脚"
+      ],
+      "movement": [
+        "固定"
+      ],
+      "lighting": [
+        "底光"
+      ]
+    },
+    "min_support": 3,
+    "kinds_checked": 17,
+    "vocab_fingerprint": true,
+    "unreachable_kinds": [
+      "axis_topic",
+      "character",
+      "object"
+    ]
+  },
+  "gate_6_sources": {
+    "status": "fail",
+    "cards": 2067,
+    "missing_cards": [
+      "gen_anime_0264",
+      "gen_anime_0265",
+      "gen_anime_0266",
+      "gen_anime_0267",
+      "gen_anime_0268",
+      "gen_anime_0269",
+      "gen_anime_0270",
+      "gen_anime_0271",
+      "gen_anime_0272",
+      "gen_anime_0273",
+      "gen_anime_0274",
+      "gen_anime_0275",
+      "gen_anime_0276",
+      "gen_anime_0277",
+      "gen_anime_0278",
+      "gen_anime_0279",
+      "gen_anime_0280",
+      "gen_anime_0281",
+      "gen_anime_0282",
+      "gen_anime_0283"
+    ],
+    "missing_count": 1334,
+    "ghost_cards": [
+      "gen_anime_0001",
+      "gen_anime_0002",
+      "gen_anime_0003",
+      "gen_anime_0004",
+      "gen_anime_0005",
+      "gen_anime_0006",
+      "gen_anime_0007",
+      "gen_anime_0008",
+      "gen_anime_0009",
+      "gen_anime_0010",
+      "gen_anime_0011",
+      "gen_anime_0012",
+      "gen_anime_0013",
+      "gen_anime_0014",
+      "gen_anime_0015",
+      "gen_anime_0016",
+      "gen_anime_0017",
+      "gen_anime_0018",
+      "gen_anime_0019",
+      "gen_anime_0020"
+    ],
+    "ghost_count": 342
+  },
+  "gate_9_reachability": {
+    "status": "fail",
+    "entries": 4539,
+    "short": 2309,
+    "short_ratio": 0.5087,
+    "examples": [
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "q": "意图=收束；景别=MCU",
+        "unreachable": [
+          "movement=crane_down"
+        ]
+      },
+      {
+        "id": "hq_0006",
+        "line": 6,
+        "q": "情绪=温柔；构图=framing",
+        "unreachable": [
+          "intensity=low"
+        ]
+      },
+      {
+        "id": "hq_0008",
+        "line": 8,
+        "q": "景别=MLS；构图=occlusion",
+        "unreachable": [
+          "lens=35mm"
+        ]
+      },
+      {
+        "id": "hq_0009",
+        "line": 9,
+        "q": "动作=推门；特效=glow",
+        "unreachable": [
+          "intensity=mid"
+        ]
+      },
+      {
+        "id": "hq_0010",
+        "line": 10,
+        "q": "意图=压迫；光线=顶光",
+        "unreachable": [
+          "movement=dolly_in",
+          "shot_size=CU"
+        ]
+      }
+    ],
+    "scope": "must[0] + top1，plain 槽位；QUERYABLE_KINDS 排除 scene_type/beat_type（与产出侧同一份口径）"
+  },
+  "gate_10_index_resolvable": {
+    "status": "fail",
+    "entries": 4539,
+    "specs": 13713,
+    "resolved": {
+      "must": 2164,
+      "top1": 1982,
+      "never": 1933
+    },
+    "totals": {
+      "must": 5043,
+      "top1": 4539,
+      "never": 4131
+    },
+    "unresolved_per_field": {
+      "must": 2879,
+      "top1": 2557,
+      "never": 2198
+    },
+    "unresolved": 7634,
+    "unresolved_ratio": 0.5567,
+    "unresolved_by_cause": {
+      "plain_subset_index_has_extra_members": 750,
+      "no_edge_with_those_plain_members": 5728,
+      "plain_subset_but_forbid_differs": 530,
+      "unparsable": 591,
+      "value_not_in_index": 35
+    },
+    "unresolved_by_edge_type": {
+      "AXIS_RULE": 481,
+      "INTENT_PACK": 1528,
+      "SHOT_PATTERN": 871,
+      "ACTION_BEAT": 799,
+      "IMPACT_PACK": 621,
+      "SOUND_PACK": 313,
+      "EMOTION_PACK": 593,
+      "TROPE": 264,
+      "STAGING_PACK": 575,
+      "LIGHT_PACK": 88,
+      "TRANSITION_PACK": 175,
+      "PERFORMANCE_PACK": 703,
+      "EDIT_RHYTHM": 32
+    },
+    "unresolved_closeness": {
+      "2": 4988,
+      "1": 1294,
+      "3": 675,
+      "0": 631,
+      "4": 46
+    },
+    "strict_relation_matches": 6079,
+    "subset_relation_matches": 6829,
+    "subset_relation_ratio": 0.498,
+    "expectation_relation": "exact",
+    "card_edge_matches": 5699,
+    "card_edge_ratio": 0.4156,
+    "index_edges": 890,
+    "examples": [
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=neutral",
+        "cause": "plain_subset_index_has_extra_members"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "top1",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=neutral",
+        "cause": "plain_subset_index_has_extra_members"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "never",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left",
+        "cause": "plain_subset_index_has_extra_members"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "must",
+        "spec": "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left",
+        "cause": "plain_subset_index_has_extra_members"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "top1",
+        "spec": "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "never",
+        "spec": "INTENT_PACK:intent=铺垫,shot_size=ELS,movement=dolly_out",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0004",
+        "line": 4,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left",
+        "cause": "plain_subset_index_has_extra_members"
+      }
+    ],
+    "note": "§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。 逐字段未命中：{'must': 2879, 'top1': 2557, 'never': 2198}；诊断：另有 6829/13713 条满足「标注成员 ⊆ 索引边（forbid 完全相等）」——这一层与规格字面的「成员集完全相等」不同，标注方不可见索引时后者在构造上不可能全过（AXIS_RULE 的可选 axis_topic 就是结构性一例），属规格级裁决"
+  },
+  "overall": "fail"
+}
