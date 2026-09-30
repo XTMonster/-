@@ -180,11 +180,15 @@ SCORE_WEIGHTS = {
     #: 一条"把种子成员全带上、另外还多带几个成员"的**超集边**能拿到同样的 1.0，
     #: 再靠 occurrences/confidence 把**精确匹配的那条边**挤到后面。
     #: 实测口径：`tools/knowledge/ranking_quality.py` **全量 683 条**索引派生查询
-    #: （确定性，不抽样）——原权重（coverage .70、无 precision）Q1 0.5564 / Q2 0.8097，
-    #: 改用本行 **Q1 0.6325 / Q2 0.8755**（+7.6pp / +6.6pp）。
-    #: 权重在六组归一化候选里按全量结果挑的（见 `work/_diag_precision_term.py`）。
-    "coverage": 0.35, "precision": 0.40, "type_priority": 0.05, "occurrences": 0.10,
-    "confidence": 0.02, "authority": 0.05, "forbid_hit": 0.03,
+    #: （确定性，不抽样）——原权重（coverage .70、无 precision、forbid .03）
+    #: Q1 0.5564 / Q2 0.8097；改用本行 **Q1 0.6164 / Q2 0.8653**。
+    #:
+    #: `forbid_hit` 从 .03 提到 .16 不是随手加的：第一版只把 coverage 让给 precision
+    #: （.35/.40/.10，forbid 仍 .03）虽然 Q1 到 0.6325，却把**冲突查询数从 487 压到 52**
+    #: ——Q7（禁忌拦截）的分母跌破 ≥60 下界。多目标扫参（`work/_diag_weight_sweep.py`）
+    #: 后取这一档：三个指标**同时**优于原权重（Q1/Q2 见上，冲突查询 601 > 487）。
+    "coverage": 0.25, "precision": 0.33, "type_priority": 0.05, "occurrences": 0.14,
+    "confidence": 0.02, "authority": 0.05, "forbid_hit": 0.16,
 }
 
 #: 查询键（中文）-> kind。布尔项（如"对白=有"）映射到 `pacing`/`scene_type`，不新造节点类型。
