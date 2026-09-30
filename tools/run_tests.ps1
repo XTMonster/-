@@ -290,6 +290,27 @@ if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
 } else {
     Write-Host '  RK-13 not measured: no usable held-out oracle' -ForegroundColor Yellow
 }
+# The held-out coverage gates (v1.4 SS 4.1b, gates 1-8 as of R54) decide whether
+# the RK-13 numbers above are usable at all: "if a gate is not passed, every
+# RK-13 metric is void". Run them into the same evidence directory, and treat a
+# non-zero exit as RK-13 failing (this mirrors the holdout_score exit handling
+# above; it never turns the suite itself red, it attributes the failure).
+# `--out` is written by Python on purpose: PowerShell 5.1's `>` emits UTF-16,
+# which breaks the downstream json.loads.
+python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
+$gateExit = $LASTEXITCODE
+if ($gateExit -eq 0) {
+    Write-Host '  held-out coverage gates: all passed' -ForegroundColor Green
+} elseif ($rk13Checks.Count -gt 0) {
+    if ($rk13Failed -notcontains 'RK-13') { $rk13Failed = @($rk13Failed) + 'RK-13' }
+    Write-Host ('  held-out coverage gates exit ' + $gateExit + ' -> RK-13 counts as failed') -ForegroundColor Yellow
+} else {
+    # No usable oracle: RK-13 stays not_measured - running a gate is not a measurement.
+    Write-Host ('  held-out coverage gates exit ' + $gateExit + ' (no usable oracle: RK-13 stays not_measured)') -ForegroundColor Yellow
+}
+if (-not (Test-Path (Join-Path $evidenceDir 'holdout_gates.json'))) {
+    Fail '  FAILED: the held-out gate report was not written'
+}
 $rks = (@('RK-7', 'RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed + $rk13Checks) -join ','
 $rksFailed = $rk13Failed -join ','
 python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks --failed $rksFailed | Out-Null

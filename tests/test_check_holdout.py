@@ -578,3 +578,19 @@ def test_human_readable_output_lists_gate_status(tmp_path):
     text = buf.getvalue()
     assert "gate_1_total" in text
     assert "overall" in text
+
+
+def test_out_writes_utf8_json_for_the_harness(tmp_path):
+    """`--out` 必须由 Python 写 UTF-8（PowerShell 的 `>` 会写 UTF-16，下游 json.loads 会炸）。
+
+    `tools/run_tests.ps1` 的 RK 证据钩子就是靠它把门报告落进
+    `docs/evidence/<run-id>/holdout_gates.json` 的。
+    """
+    out = tmp_path / "gates.json"
+    rc = full_run(tmp_path, valid_records(), "--out", str(out), "--json")
+    assert rc == 0
+    raw = out.read_bytes()
+    assert not raw.startswith(b"\xff\xfe") and not raw.startswith(b"\xef\xbb\xbf")
+    report = json.loads(raw.decode("utf-8"))
+    assert report["overall"] == check_holdout.PASS
+    assert report["gate_10_index_resolvable"]["status"] == check_holdout.PASS

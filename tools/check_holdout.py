@@ -587,6 +587,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--pilot", action="store_true",
                         help="试点模式：门限放宽到 1，便于在语料落地前跑通管道")
     parser.add_argument("--json", action="store_true", help="只打印 JSON 报告")
+    parser.add_argument("--out", default="",
+                        help="把 JSON 报告写到这个路径（UTF-8，由 Python 写——"
+                             "PowerShell 5.1 的 `>` 会写成 UTF-16，下游 json.loads 会炸）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     path = pathlib.Path(args.path)
@@ -709,6 +712,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     report["gate_10_index_resolvable"] = {"status": xstatus, **xdetail}
 
     report["overall"] = FAIL if FAIL in statuses else (NA if NA in statuses else PASS)
+    if args.out:
+        out_path = pathlib.Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2),
+                            encoding="utf-8")
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
