@@ -167,6 +167,17 @@ MAX_HOPS = 2
 MAX_EDGES_PER_NODE = 8
 MAX_EDGES_TOTAL = 40
 MAX_NODES = 120
+
+#: 枢纽节点的**单节点保底配额**：一个节点的邻边数超过 `len(edges)/20` 时会被当成
+#: 枢纽并截断，但截断必须保证"查询里点名了它某个成员的边"不会被整批丢掉。
+#: 旧值写死成 4（且排序键只有 coverage → occurrences → edge_id），实测把它踩穿：
+#: `movement:固定` 有 66 条邻边，而
+#: `EMOTION_PACK(emotion=平静, intensity=low, forbid movement=固定)` 的 occurrences=1，
+#: 于是它在"coverage 全是 1.0"的并列里排最后、被切掉 —— 那条边的**三个成员全在
+#: 查询里**，却连候选都不是，`tests/test_hypergraph_index_content.py` 因此红。
+#: 现在按 `(coverage, precision, occurrences, edge_id)` 排序（precision 优先保住
+#: "整条边都被查询解释"的那些），并把配额提到 12。
+HUB_EDGES_PER_NODE = 12
 MAX_RENDER_TOKENS = 400
 
 SCORE_WEIGHTS = {
@@ -713,6 +724,17 @@ class Hypergraph:
         members = {m.node_id for m in edge.members}
         return len(members & seed_set) / len(seed_set)
 
+    def _edge_precision(self, edge: HyperEdge, seed_set: set) -> float:
+        """查询里的种子解释了这条边的多少（`forbid` 成员不计入分母）。
+
+        与 `score()` 里那一项**同一份口径**：枢纽截断要按"整条边都被查询解释"
+        优先保住，否则一条成员全在查询里的边会被 occurrences 挤出候选。
+        """
+        members = [m for m in edge.members if m.role != "forbid"]
+        if not members or not seed_set:
+            return 0.0
+        return len({m.node_id for m in members} & seed_set) / len(members)
+
     def expand(self, seed_ids: Sequence[str]) -> Tuple[List[HyperEdge], bool]:
         seed_set = set(seed_ids)
         frontier = list(seed_ids)
@@ -727,8 +749,9 @@ class Hypergraph:
                 edges = [self.by_id[eid] for eid in candidates]
                 if hub_threshold and len(candidates) > hub_threshold:
                     edges.sort(key=lambda e: (-self._edge_coverage(e, seed_set),
+                                              -self._edge_precision(e, seed_set),
                                               -e.occurrences, e.edge_id))
-                    edges = edges[:min(4, MAX_EDGES_PER_NODE)]
+                    edges = edges[:HUB_EDGES_PER_NODE]
                     truncated = truncated or len(candidates) > len(edges)
                 for edge in edges:
                     if edge.edge_id in seen_edges:
@@ -757,9 +780,7 @@ class Hypergraph:
         coverage = self._edge_coverage(edge, seed_set)
         # 精确率：种子解释了这条边的多少。**超集边**在只有 coverage 时与精确匹配同分，
         # 会靠 occurrences/confidence 挤掉后者（实测 Q1 0.517 → 加这一项后 0.587）。
-        members = [m for m in edge.members if m.role != "forbid"]
-        precision = (len({m.node_id for m in members} & seed_set) / len(members)
-                     if members and seed_set else 0.0)
+        precision = self._edge_precision(edge, seed_set)
         priority = TYPE_PRIORITY.get(edge.type, 0.5)
         occurrence = (math.log1p(edge.occurrences) / math.log1p(self.max_occurrences)
                       if self.max_occurrences > 0 else 0.0)
