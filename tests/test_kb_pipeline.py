@@ -58,14 +58,15 @@ def isolated_work_dir(tmp_path, monkeypatch):
 
 def test_license_whitelist_is_exactly_the_frozen_set():
     assert common.LICENSE_WHITELIST == {
-        "CC0", "CC-BY", "CC-BY-SA", "PublicDomain", "OwnWork", "ExplicitPermission",
+        "CC0", "CC-BY", "CC-BY-SA", "CC-BY-NC-SA", "PublicDomain", "OwnWork",
+        "ExplicitPermission",
         #: v1.5 用户裁决：个人学习用途允许现代理论素材；单独记名便于以后筛选。
         "PersonalStudy",
     }
 
 
 @pytest.mark.parametrize("license_name,expected", [
-    ("CC-BY-SA", True), ("PublicDomain", True), ("OwnWork", True),
+    ("CC-BY-SA", True), ("CC-BY-NC-SA", True), ("PublicDomain", True), ("OwnWork", True),
     ("PersonalStudy", True),
     ("AllRightsReserved", False), ("Unknown", False), ("", False),
 ])
@@ -270,8 +271,24 @@ def test_import_rejects_quote_that_is_not_verbatim_or_too_long(tmp_path, monkeyp
 
 def test_manual_pipeline_end_to_end_with_scripted_annotator(tmp_path, monkeypatch):
     work = tmp_path / "work"
-    sources = [s for s in common.load_sources() if s["mode"] == "manual"]
-    assert sources, "sources.yaml 里必须有自撰笔记来源"
+    # v1.5：用户裁决"理论不要自己写"，`sources.yaml` 里的 `mode: manual` 已全部移除，
+    # 所以这条端到端用例**自带**一份临时来源清单——它要验的是"manual 这条路还能跑"，
+    # 不是"语料里还有自撰笔记"。笔记文件本身仍留在仓库里（只作设计文档）。
+    note = common.ROOT / "knowledge" / "source_notes" / "editing_rhythm.md"
+    assert note.is_file(), "自撰笔记文件仍应留在仓库里（只是不再进语料）"
+    sources_yaml = tmp_path / "sources.manual.yaml"
+    sources_yaml.write_text(
+        "sources:\n"
+        "  - url: repo://knowledge/source_notes/editing_rhythm.md\n"
+        "    title: manual 路径回归用笔记\n"
+        "    author: BlockDirector knowledge team\n"
+        "    license: OwnWork\n"
+        "    domain: editing\n"
+        "    mode: manual\n"
+        '    retrieved_at: "2026-10-01"\n',
+        encoding="utf-8", newline="\n")
+    sources = common.load_sources(sources_yaml)
+    assert sources and sources[0]["mode"] == "manual"
 
     fetched, rejects = fetch.run(sources, rate_seconds=0.0)
     assert not rejects
@@ -813,6 +830,83 @@ def test_robots_cache_dir_is_resolved_at_call_time(tmp_path, monkeypatch):
     assert allowed and not reason
     written = sorted(path.name for path in pinned.glob("*.txt"))
     assert written == ["example.invalid.txt"], written
+
+
+def test_robots_crawl_delay_is_read_from_the_cached_robots_txt(tmp_path):
+    """`Crawl-delay` 也是 robots 要求，不能只读 `Disallow`。
+
+    arxiv.org 的 robots.txt 同时写着 `Crawl-delay: 15` 与"Indiscriminate
+    automated downloads from this site are not permitted"。判据按**同一套分组
+    语义**解析：只有对 `*`（或我们的 UA）生效的那一组里的 `Crawl-delay` 才算数。
+    """
+    robots = tmp_path / "robots"
+    robots.mkdir()
+    (robots / "slow.example.txt").write_text(
+        "# 注释行\nUser-agent: *\nCrawl-delay: 15\nDisallow:\n", encoding="utf-8")
+    assert fetch.crawl_delay("https://slow.example/a", 5.0, cache_dir=robots) == 15.0
+
+    (robots / "fast.example.txt").write_text("User-agent: *\nDisallow: /x\n",
+                                             encoding="utf-8")
+    assert fetch.crawl_delay("https://fast.example/a", 5.0, cache_dir=robots) == 0.0
+
+    # 只对别的 UA 生效的那一组：与我们无关，不该拿它给自己限速
+    (robots / "other.example.txt").write_text(
+        "User-agent: SomeoneElse\nCrawl-delay: 99\n", encoding="utf-8")
+    assert fetch.crawl_delay("https://other.example/a", 5.0, cache_dir=robots) == 0.0
+
+
+def test_robots_crawl_delay_lowers_the_request_rate(monkeypatch):
+    """`--rate` 是**下限**：robots 要求更慢时按 robots 走，否则按 `--rate`。"""
+    slept: list = []
+    monkeypatch.setattr(fetch, "crawl_delay", lambda url, timeout, cache_dir=None: 12.0)
+    with _DisciplineServer() as server:
+        fetch.fetch_source(_http_source(f"{server.base}/ok"), timeout=5.0,
+                           rate_seconds=0.5, sleeper=slept.append)
+    assert slept == [12.0], slept
+
+    slept.clear()
+    monkeypatch.setattr(fetch, "crawl_delay", lambda url, timeout, cache_dir=None: 0.5)
+    with _DisciplineServer() as server:
+        fetch.fetch_source(_http_source(f"{server.base}/ok"), timeout=5.0,
+                           rate_seconds=3.0, sleeper=slept.append)
+    assert slept == [3.0], slept
+
+
+# --------------------------------------------------------------------------- JSONL 读取纪律
+
+
+def test_jsonl_readers_ignore_unicode_line_separators(tmp_path):
+    """JSONL 只能按 `\\n` 切，不能用 `str.splitlines()`。
+
+    `\\u0085`(NEL) / `\\u2028` / `\\u2029` 都是合法 JSON 字符串内容，`json.dumps`
+    也不会转义它们；而 `splitlines()` 把它们当换行，于是**一条记录从中间被切断**。
+    实测触发路径：PDF 正文按 UTF-8 `errors="replace"` 解码时 `0xC2 0x85` 就是 NEL，
+    `work/fetched.jsonl` 因此报 "Unterminated string"。
+    """
+    nasty = "前文\u0085中段\u2028后段\u2029结尾"
+    row = {"id": "gen_cine_0001", "domain": "cinematography", "title": nasty,
+           "content": nasty, "keywords": [], "rules": [], "parameters": {},
+           "examples": [], "related": [], "engine_support": {"supported": True},
+           "emotion": "", "tags": [],
+           "source_ref": {"url": "https://example.test/book.txt", "title": "t",
+                          "author": "a", "license": "PublicDomain",
+                          "retrieved_at": "2026-10-01", "sha256": "0" * 64}}
+    path = tmp_path / "cinematography.jsonl"
+    common.write_jsonl(path, [row])
+
+    raw = path.read_text(encoding="utf-8")
+    assert len(raw.split("\n")) == 2, "一条记录 + 结尾换行"
+    assert len(raw.splitlines()) > 2, "陷阱本身要成立：splitlines 会多切"
+
+    # 三个独立读取器（管线 / 运行时 / 署名门）都要读回同一条记录
+    assert common.read_jsonl(path) == [row]
+
+    from block_director.knowledge import generated as generated_module
+    cards = generated_module.load_generated(tmp_path)
+    assert len(cards) == 1 and cards[0].title == nasty
+
+    from tools.knowledge import authorship_report as ar
+    assert ar.generated_cards(tmp_path)[0]["title"] == nasty
 
 
 # --------------------------------------------------------------------------- 路径围栏

@@ -38,8 +38,8 @@ DOMAINS: Tuple[str, ...] = (
 #: 单独记名，便于以后真要对外分发时一眼筛出来。逐条归属见
 #: `docs/knowledge/LICENSES.md`。
 LICENSE_WHITELIST = frozenset(
-    {"CC0", "CC-BY", "CC-BY-SA", "PublicDomain", "OwnWork", "ExplicitPermission",
-     "PersonalStudy"}
+    {"CC0", "CC-BY", "CC-BY-SA", "CC-BY-NC-SA", "PublicDomain", "OwnWork",
+     "ExplicitPermission", "PersonalStudy"}
 )
 
 #: §2.3c 的 K1：六个字段全非空，缺一不得入库。
@@ -266,7 +266,13 @@ def read_jsonl(path: pathlib.Path) -> List[Dict]:
     if not path.exists():
         return []
     out: List[Dict] = []
-    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    # **只按 `\n` 切**：JSONL 的换行符只有这一个。`str.splitlines()` 会按 **Unicode
+    # 行边界**切分，而 `\u0085`(NEL) / `\u2028` / `\u2029` 都是合法 JSON 字符串内容，
+    # `json.dumps` 也不会转义它们——实测 `work/fetched.jsonl` 里一条 PDF 记录
+    # （PDF 字节按 UTF-8 `errors="replace"` 解码时 `0xC2 0x85` 就是 NEL）被
+    # `splitlines()` 从中间切开，报"Unterminated string"。
+    # 回归用例：`tests/test_kb_pipeline.py::test_jsonl_readers_ignore_unicode_line_separators`。
+    for lineno, raw in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
         raw = raw.strip()
         if not raw:
             continue
