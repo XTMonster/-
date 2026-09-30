@@ -58,16 +58,22 @@
 | 题材 | `genre` | |
 | 桥段 | `beat_type` | |
 | 对白 | `scene_type` | 布尔型查询项（如"对白=有"）按 §2.3 折进 qualifier，**不新造节点类型** |
+| 意图 | `intent` | v1.5 新增：**角色/导演想干什么**（铺垫/推进/揭示/转折/停顿/压迫/释放/回望/收束/煽动/留白/对抗），中文闭集 |
 
 布尔型查询项（如"对白=有"）**统一映射到 `pacing`／`scene_type` 的取值**，不新造节点类型（§2.3）。
-**词表覆盖门只要求 14 个节点 kind 齐全**；`scene_type` 是 qualifier，词表里有就一并检查、没有不阻塞。
+**词表覆盖门只要求 15 个节点 kind 齐全**（v1.5 起含 `intent`）；`scene_type` 是 qualifier，
+词表里有就一并检查、没有不阻塞。
 
 ### 2.2 `must`／`never` 的写法
 
 `TYPE:槽位=取值,槽位=取值`，其中
 
-- `TYPE` 只能是 6 类之一：`EMOTION_PACK` / `SHOT_PATTERN` / `AXIS_RULE` / `TROPE` / `EDIT_RHYTHM` / `LIGHT_PACK`；
-- 槽位名 = **kind**（16 类节点）或 **qualifier**（`pair/axis_side/intensity/applies_to_genre/applies_to_shot_size/headroom_policy/avg_shot_len/transition/scene_type/example_shot`）；
+- `TYPE` 只能是 **13 类**之一：`EMOTION_PACK` / `SHOT_PATTERN` / `AXIS_RULE` / `TROPE` /
+  `EDIT_RHYTHM` / `LIGHT_PACK` / `ACTION_BEAT` / `PERFORMANCE_PACK` / `INTENT_PACK` /
+  `IMPACT_PACK` / `STAGING_PACK` / `SOUND_PACK` / `TRANSITION_PACK`
+  （v1.5 用户裁决：把"角色行为/动作/情绪/意图/镜头语言/震动与打击感/构图"这些**强耦合**
+  建成独立边类型；真源是 `block_director/knowledge/hypergraph.py`）；
+- 槽位名 = **kind**（17 类节点）或 **qualifier**（`pair/axis_side/intensity/applies_to_genre/applies_to_shot_size/headroom_policy/avg_shot_len/transition/scene_type/example_shot`）；
 - **禁忌槽位**写成 `forbid_<kind>=取值`——它同时是 Q7 的判定依据（见 3.3）；
 - **标注者不写 `norm_key`、不写 `edge_id`、不抄成员清单**：runner 按冻结 schema 展开。
 
@@ -81,6 +87,13 @@
 | `TROPE` | `genre` ＋ `emotion` |
 | `EDIT_RHYTHM` | `pacing` ＋ `avg_shot_len` |
 | `LIGHT_PACK` | `lighting` ＋ `intensity` |
+| `ACTION_BEAT` | `action` ＋ `beat_type` ＋ `intensity` |
+| `PERFORMANCE_PACK` | `emotion` ＋ `action` ＋ `camera_angle` |
+| `INTENT_PACK` | `intent` ＋ `shot_size` ＋ `movement` |
+| `IMPACT_PACK` | `vfx` ＋ `sfx` ＋ `movement` |
+| `STAGING_PACK` | `composition_rule` ＋ `shot_size` ＋ `camera_angle` |
+| `SOUND_PACK` | `sfx` ＋ `pacing` ＋ `intensity` |
+| `TRANSITION_PACK` | `transition` ＋ `pacing` ＋ `scene_type` |
 
 ## 3. 判定规则（冻结）
 
@@ -130,6 +143,18 @@
 **双族分歧驱动裁决（推荐流程）**：两个不同族的模型各标一遍 →
 **一致的部分直接入库**，**分歧的部分（通常 15–30%）只把人推到选择题界面**。
 分歧率本身就是质检信号：一致率 >95% 说明协议太松（都在说套话），<60% 说明协议有歧义。
+
+### 5.6 双模型复核通道（v1.5 用户裁决）
+
+用户明确指示：**Q5／Q7／E3 这一层交给 DeepSeek 与 GLM 两个模型判**（"我没有经验"）。
+落地方式与边界（`tools/holdout_review_llm.py`）：
+
+* 复核记录写 `reviewed_by: "llm-panel"`，**绝不写 `"human"`**；门⑦ 只认 `human`，
+  因此它**照旧不通过**——这是"多一份辅助证据"，不是"降低验收标准"；
+* 两模型**一致 accepted** → 记为 `accepted`；一致 `rejected` → 该条**从 held-out 剔除**；
+  分歧 → 保留并打 `panel_disagreement: true`，同时写进 `--sheet` 的分歧清单（只有几十条），
+  人可以只看那份清单来满足门⑦ 的 ≥120 条；
+* 工具的入口在 `tools/holdout_review_llm.py`，报告落 `work/holdout_panel.json`。
 
 ## 6. 待语料冻结的部分（P14-1 内补齐）
 

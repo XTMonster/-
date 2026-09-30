@@ -38,6 +38,11 @@ from typing import Dict, Optional
 
 DEEPSEEK_BASE = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 OLLAMA_BASE = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+#: 智谱 GLM（OpenAI 兼容端点，`/api/paas/v4/chat/completions`）。§2.3c 的换族要求是
+#: "标注 family ≠ 抽取 family"（抽取走 deepseek），GLM 是独立厂商族 → `independence: strong`。
+#: 密钥只从环境变量读：**绝不写进仓库**（`GLM_API_KEY`）。
+GLM_BASE = os.environ.get("GLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
+GLM_API_KEY = os.environ.get("GLM_API_KEY", "")
 
 #: 本地思考模型的**思考税**实测（v1.4 §6 那条风险）没法用官方开关关掉：
 #: `/no_think`（写进 user 或 system）、`think: false`、精简词表都试过，`num_predict`
@@ -53,6 +58,7 @@ OLLAMA_PREFILL = os.environ.get("OLLAMA_ASSISTANT_PREFILL", "")
 FAMILIES = {
     "deepseek": "deepseek",
     "ollama": "qwen",
+    "glm": "zhipu",
     "scripted": "scripted",
 }
 
@@ -133,7 +139,7 @@ class DeepSeekClient:
         self.last_usage: Dict[str, int] = {}
 
     def chat_json(self, system: str, user: str, temperature: float, seed: int,
-                  num_ctx: int, key: str = "", retries: int = 3) -> Dict:
+                  num_ctx: int, key: str = "", retries: int = 5) -> Dict:
         payload = {
             "model": self.model_id,
             "messages": [{"role": "system", "content": system},
@@ -163,8 +169,70 @@ class DeepSeekClient:
                 return parse_json_content(message.get("content") or "")
             except Exception as exc:  # noqa: BLE001
                 last = exc
-                time.sleep(1.5 * (attempt + 1))
+                #: 实测：多进程并发打 GLM 会拿到 `HTTP 429 code=1302`（并发上限）。
+                #: 429 一律**长退避**，否则整批会被限流吃掉（实测 4 个并发进程时
+                #: 单进程的产出从 18 条/批掉到 1.5 条/批）。
+                throttled = "429" in str(exc)
+                time.sleep((20.0 if throttled else 1.5) * (attempt + 1))
         raise LLMError(f"deepseek 调用失败：{last}")
+
+
+class GLMClient:
+    """智谱 GLM（OpenAI 兼容端点）。标注通道的第二族：`family = "zhipu"`。
+
+    与本地 30B 的区别（实测）：它不吃"思考税"、指令遵循好得多，也不需要预填；
+    接口形状与 DeepSeek 一致（`choices[0].message.content`），因此复用 `parse_json_content`
+    与"空正文即判失败"的纪律。
+    """
+
+    family = "zhipu"
+
+    def __init__(self, model_id: str = "glm-4.7", api_key: str = ""):
+        self.model_id = model_id
+        self.model_version = model_id
+        self.api_key = api_key or GLM_API_KEY
+        self.last_usage: Dict[str, int] = {}
+
+    def chat_json(self, system: str, user: str, temperature: float, seed: int,
+                  num_ctx: int, key: str = "", retries: int = 3) -> Dict:
+        if not self.api_key:
+            raise LLMError("缺少 GLM_API_KEY（只从环境变量读，绝不写进仓库）")
+        payload = {
+            "model": self.model_id,
+            "stream": False,
+            "messages": [{"role": "system", "content": system},
+                         {"role": "user", "content": user}],
+            "temperature": temperature,
+            #: 每张卡 4 条 × 一批 6 张 ≈ 24 条条目，4096 会截断；给足 8192。
+            "max_tokens": 8192,
+            #: 实测（`work` 里的 raw 探针）：`glm-4.7` 默认是**思考模型**——不关思考时
+            #: 整段 `max_tokens` 都花在 `reasoning_content` 上、`content` 恒为空
+            #: （`finish_reason=length`；4096 与 8192 都一样）。`{"thinking":
+            #: {"type": "disabled"}}` 是**它唯一有效的关闭开关**（布尔写法会 400）：
+            #: 关掉后 `finish_reason=stop`、`reasoning_len=0`、正文直接给 JSON。
+            "thinking": {"type": "disabled"},
+        }
+        last: Optional[Exception] = None
+        for attempt in range(retries):
+            try:
+                reply = _post_json(f"{GLM_BASE}/chat/completions", payload,
+                                   {"Content-Type": "application/json",
+                                    "Authorization": f"Bearer {self.api_key}"}, 300.0)
+                choices = reply.get("choices") or []
+                if not choices:
+                    raise LLMError("上游没有返回 choices")
+                usage = reply.get("usage") or {}
+                self.last_usage = {
+                    "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+                    "completion_tokens": int(usage.get("completion_tokens") or 0),
+                }
+                self.model_version = str(reply.get("model") or self.model_id)
+                message = choices[0].get("message") or {}
+                return parse_json_content(message.get("content") or "")
+            except Exception as exc:  # noqa: BLE001
+                last = exc
+                time.sleep(1.5 * (attempt + 1))
+        raise LLMError(f"glm 调用失败：{last}")
 
 
 class OllamaClient:
@@ -243,4 +311,6 @@ def make_client(provider: str, model: str = "", scripted: str = ""):
         return DeepSeekClient(model or "deepseek-chat")
     if provider == "ollama":
         return OllamaClient(model or "qwen3-vl:30b")
+    if provider == "glm":
+        return GLMClient(model or "glm-4.7")
     raise LLMError(f"未知 provider: {provider!r}")
