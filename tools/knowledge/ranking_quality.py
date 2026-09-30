@@ -46,6 +46,9 @@ def query_for(edge: hg.HyperEdge, nodes: Dict[str, hg.Node],
     """从边的成员派生查询串：只取**有查询键**的成员，最多 `wanted` 个。
 
     与检索器同一套键（`hg.QUERY_KEYS`），因此能被 `parse_query` 原样解析。
+    `wanted` 默认 3（现实中人一次也就写得出两三个约束）；把它调大可以回答
+    "再加一个查询键值不值"——**只取前 3 个成员会掩盖新键的价值**（新键可能排在
+    第 4 位而被截掉），这正是我先前判错 `强度` 之外的第二个方法学坑。
     """
     pairs: List[str] = []
     for member in edge.members:
@@ -64,7 +67,7 @@ def query_for(edge: hg.HyperEdge, nodes: Dict[str, hg.Node],
 
 
 def run(graph: hg.Hypergraph, limit: int = 300, top_k: int = 3,
-        seed: int = 0) -> dict:
+        seed: int = 0, members: int = 3) -> dict:
     key_for = {kind: zh for zh, kind in hg.QUERY_KEYS.items()}
     edges = sorted(graph.edges, key=lambda edge: edge.edge_id)
     if limit and limit < len(edges):
@@ -72,7 +75,7 @@ def run(graph: hg.Hypergraph, limit: int = 300, top_k: int = 3,
     top1 = top3 = asked = 0
     ranks: List[int] = []
     for edge in edges:
-        query = query_for(edge, graph.nodes, key_for)
+        query = query_for(edge, graph.nodes, key_for, wanted=members)
         if not query:
             continue
         asked += 1
