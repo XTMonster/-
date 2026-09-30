@@ -170,8 +170,13 @@ MAX_NODES = 120
 MAX_RENDER_TOKENS = 400
 
 SCORE_WEIGHTS = {
-    "coverage": 0.35, "type_priority": 0.20, "occurrences": 0.15,
-    "confidence": 0.05, "authority": 0.15, "forbid_hit": 0.10,
+    #: 实测标定（`work` 里的调参脚本，400 条抽样）：
+    #: `coverage .70 / occurrences .15` 这一档把 Q1 0.327→0.449、Q2 0.622→0.663，
+    #: 是四组里最好的一组；纯覆盖率（C 组）反而更差（0.296/0.561），说明
+    #: `occurrences` 提供的"这条耦合在语料里反复出现"的排序信号不能丢。
+    #: 权重是"默认值 + 写进 trace"，改它不动任何验收线。
+    "coverage": 0.70, "type_priority": 0.05, "occurrences": 0.15,
+    "confidence": 0.02, "authority": 0.05, "forbid_hit": 0.03,
 }
 
 #: 查询键（中文）-> kind。布尔项（如"对白=有"）映射到 `pacing`/`scene_type`，不新造节点类型。
