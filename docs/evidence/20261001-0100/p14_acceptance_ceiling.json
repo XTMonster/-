@@ -4,6 +4,9 @@
   "must_total": 5043,
   "must_resolvable": 1323,
   "top1_total": 1224,
+  "top1_in_candidates": 1204,
+  "top1_ambiguous": 1201,
+  "qonly_ranking_floor_Q1": 0.0007,
   "seed_miss_queries": 0,
   "ceilings": {
     "Q1": 0.2653,

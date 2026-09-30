@@ -6,10 +6,19 @@
 
 每个上限的口径（分子都只依赖 oracle×索引的**同构程度**，与排序无关）：
 
-* ``ceiling(Q1)`` = 期望 top-1 边存在且**能进候选集**的 query 数 / query 数；
+* ``ceiling(Q1)`` = 期望 top-1 边存在且**能进候选集**的 query 数 / query 数
+  （任何排序器的上界：进不了候选集就永远排不到第一）；
 * ``ceiling(Q2)`` = 至少有 1 条 required 边能进候选集的 query 数 / query 数；
 * ``ceiling(Q4)`` = 能在索引里找到对应边的 required 边数 / ``Σ_q |required(q)|``；
 * ``ceiling(Q6b)`` = 同 ``ceiling(Q4)``（注入前必须先有这条边）。
+
+`ceiling(Q1)` 只回答"边在不在候选集里"。**它是不是能被 `q` 认出来**另记两个诊断量：
+把 `q` 命名的 kind 里属于期望边的比例记为 `qcov(E)`；候选集里若存在另一条边 `E'`
+满足 `qcov(E') >= qcov(E)`，这条 query 记入 `top1_ambiguous`。它是唯一能用 `q`
+区分候选边的信号，但**不是** Q1 的上界——排序器还能靠 `occurrences`／`authority`
+这类与查询无关的量"碰对"（实测 Q1 = 0.1417 > 只用 kind 覆盖率的 0.0007）。
+因此本脚本把它报成 `qonly_ranking_floor_Q1`（**只看查询 kind 覆盖率的排序器的下限**）
+＋ `top1_ambiguous`（有多少条期望边是 `q` 单独分不出来的），两个都不是验收线。
 
 **为什么必须有它**：`holdout_score` 报的下限（Q1 0.14 之类）看起来像"排序不行"，
 于是很自然会去调权重；但若 ceiling 本身就低于验收线（Q1 0.70／Q2 0.90／
@@ -55,6 +64,19 @@ def _floor(numerator: int, denominator: int) -> float:
     return round(numerator / denominator, 4) if denominator else 0.0
 
 
+def query_kind_coverage(edge, query: dict) -> float:
+    """查询命名的 kind 里，这条边覆盖了几个（`q` 认边的**唯一**依据）。
+
+    刻意只数 kind、不数取值：取值级的重合已经体现在"边进没进候选集"上
+    （候选集是种子的两跳闭包），这里要回答的是**排序**能不能只看 `q` 就分开两条边。
+    """
+    if not query:
+        return 0.0
+    kinds = set(query)
+    edge_kinds = {str(m.kind) for m in edge.members}
+    return len(kinds & edge_kinds) / len(kinds)
+
+
 def measure(graph: Hypergraph, entries: Sequence[dict]) -> Dict[str, Any]:
     """算出四个上限，并把"每条 required 边在索引里找不找得到"分类记清。"""
     norm_index = build_norm_index(graph)
@@ -62,6 +84,7 @@ def measure(graph: Hypergraph, entries: Sequence[dict]) -> Dict[str, Any]:
     must_total = resolvable_must = must_in_candidates = 0
     queries = 0
     top1_total = top1_resolvable = top1_in_candidates = 0
+    top1_ambiguous = 0
     seed_miss = 0
     by_type: Dict[str, List[int]] = {}
 
@@ -71,9 +94,11 @@ def measure(graph: Hypergraph, entries: Sequence[dict]) -> Dict[str, Any]:
             continue
         queries += 1
         seeds = graph.seeds_for(parse_query(query))
+        parsed = parse_query(query)
         if not seeds:
             seed_miss += 1
-        candidates = {e.edge_id for e in graph.expand(seeds)[0]} if seeds else set()
+        cand_edges = graph.expand(seeds)[0] if seeds else []
+        candidates = {e.edge_id for e in cand_edges}
 
         req_ids = set()
         for spec in entry.get("must") or []:
@@ -100,8 +125,18 @@ def measure(graph: Hypergraph, entries: Sequence[dict]) -> Dict[str, Any]:
             if key is None or key not in norm_index:
                 continue
             top1_resolvable += 1
-            if norm_index[key] in candidates:
-                top1_in_candidates += 1
+            eid = norm_index[key]
+            if eid not in candidates:
+                continue
+            top1_in_candidates += 1
+            want = graph.by_id.get(eid)
+            if want is None:
+                continue
+            want_qcov = query_kind_coverage(want, parsed)
+            rivals = [e for e in cand_edges if e.edge_id != eid
+                      and query_kind_coverage(e, parsed) >= want_qcov]
+            if rivals:
+                top1_ambiguous += 1
 
     ceilings = {
         "Q1": _floor(top1_in_candidates, queries),
@@ -115,6 +150,9 @@ def measure(graph: Hypergraph, entries: Sequence[dict]) -> Dict[str, Any]:
         "must_total": must_total,
         "must_resolvable": resolvable_must,
         "top1_total": top1_resolvable,
+        "top1_in_candidates": top1_in_candidates,
+        "top1_ambiguous": top1_ambiguous,
+        "qonly_ranking_floor_Q1": _floor(top1_in_candidates - top1_ambiguous, queries),
         "seed_miss_queries": seed_miss,
         "ceilings": ceilings,
         "lines": dict(LINES),

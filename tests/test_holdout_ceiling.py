@@ -107,6 +107,24 @@ def test_a_resolvable_edge_that_never_enters_the_candidate_set_caps_q1_and_q2():
     assert "Q4" not in report["ceilings_below_lines"]
 
 
+def test_top1_ambiguity_is_reported_as_a_diagnostic_not_as_the_ceiling():
+    """`q` 单独分不出胜负的 top1 记成诊断量，**不得**冒充 Q1 的上界。
+
+    实测里 Q1 = 0.1417 高于"只看 kind 覆盖率"的 0.0007，所以后者是**下限**；
+    把这个数当上限会得出"Q1 完全不可能"的错误结论。
+    """
+    graph = _graph()
+    # q 只写「光线=逆光」，期望边是 LIGHT_PACK(逆光,high)；候选集里还有
+    # EMOTION_PACK(荒诞,high) —— 两者对 q 的 kind 覆盖都是 1（一个 lighting、一个
+    # 靠 intensity 也不行），所以这里既验证计数也验证"上限仍是 1.0"。
+    report = holdout_ceiling.measure(
+        graph, [_entry(1, "光线=逆光", ["LIGHT_PACK:lighting=逆光,intensity=high"])])
+    assert report["ceilings"]["Q1"] == 1.0           # 上界只问"在不在候选集"
+    assert report["top1_in_candidates"] == 1
+    assert report["qonly_ranking_floor_Q1"] == pytest.approx(
+        (1 - report["top1_ambiguous"]) / report["queries"])
+
+
 def test_empty_oracle_is_incomplete_and_never_a_pass(tmp_path, capsys):
     """空集：上限全为 0、退出码非 0，**不得**当成"还没判"或通过（硬规则 1）。"""
     empty = tmp_path / "holdout.jsonl"
