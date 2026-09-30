@@ -213,7 +213,10 @@ def test_gap_round_entries_record_the_gap_prompt_sha(tmp_path, monkeypatch):
         prefill = ""
 
         def chat_json(self, system, user, temperature, seed, num_ctx, key="", retries=2):
-            assert system == holdout_fill.GAP_PROMPT
+            # 补跑轮的**有效**系统提示 = 基础 prompt ＋ 缺口清单段（缺了前者，
+            # 模型会写出 `标签=`/`关键词=` 这种不在冻结键集里的键）
+            assert system == holdout_fill.holdout_gen.SYSTEM_PROMPT + "\n\n" + \
+                holdout_fill.GAP_PROMPT
             return {"entries": [_entry("c0", "情绪=荒诞",
                                        ["EMOTION_PACK:emotion=荒诞,intensity=high"])]}
 
@@ -227,8 +230,14 @@ def test_gap_round_entries_record_the_gap_prompt_sha(tmp_path, monkeypatch):
     assert entries[0]["annotator"]["prompt_sha256"] != base_sha
 
 
-def test_fingerprint_changes_when_the_gap_prompt_changes(monkeypatch):
-    """补跑提示改了也得作废旧半成品——它同样是"标注者身份"的一部分。"""
+def test_gap_prompt_change_scopes_the_gap_keys_not_the_card_rounds(monkeypatch):
+    """改补跑提示：**只**让补跑轮重跑，不该把卡片轮的结果一起作废。
+
+    卡片轮与补跑轮是两套提示：前者用 `holdout_gen.SYSTEM_PROMPT`，后者是
+    `SYSTEM_PROMPT ＋ GAP_PROMPT`。把它们塞进同一个续跑指纹，会出现"改补跑提示
+    ＝丢掉整轮卡片结果"这种过度作废（实测：674 条卡片结果会因补跑提示措辞变化被扔）。
+    现在补跑轮的完成键带补跑提示 sha 前缀，提示一变旧键自然失效、该轮重跑。
+    """
     _with_annotator(monkeypatch)
 
     class _Client:
@@ -238,8 +247,12 @@ def test_fingerprint_changes_when_the_gap_prompt_changes(monkeypatch):
 
     cards = [{"id": "c1", "content": "x"}]
     baseline = holdout_fill.run_fingerprint(cards, _Client(), "v1")
+    old_key = holdout_fill.gap_round_key(3, ["c1", "c2"])
     monkeypatch.setattr(holdout_fill, "GAP_PROMPT", holdout_fill.GAP_PROMPT + "\n新增")
-    assert holdout_fill.run_fingerprint(cards, _Client(), "v1") != baseline
+    assert holdout_fill.run_fingerprint(cards, _Client(), "v1") == baseline, \
+        "卡片轮的续跑指纹不该被补跑提示牵动"
+    assert holdout_fill.gap_round_key(3, ["c1", "c2"]) != old_key, \
+        "补跑提示变了，同一轮的完成键必须换，逼它重跑"
 
 
 def test_run_fingerprint_changes_with_the_model():

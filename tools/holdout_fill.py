@@ -64,7 +64,7 @@ REPORT = common.WORK / "holdout_report.json"
 _ANNOTATOR: Dict[str, str] = {}
 
 # 缺口补写用的系统提示（不放进 holdout_gen，避免动它的冻结 prompt 版本）。
-GAP_PROMPT_VERSION = "holdout-gap/v1"
+GAP_PROMPT_VERSION = "holdout-gap/v2"
 GAP_PROMPT = (
     "你是分镜知识库的独立标注员。下面给出一份**缺口清单**与若干张知识卡。"
     "请**只**针对缺口写检索期望，输出 JSON：{\"entries\":[...]}，每条格式与之前一致："
@@ -105,15 +105,23 @@ def run_fingerprint(cards: Sequence[Dict], client, prompt_version: str) -> str:
         str(getattr(client, "model_version", "")),
         str(prompt_version),
         hashlib.sha256(holdout_gen.SYSTEM_PROMPT.encode("utf-8")).hexdigest(),
-        #: 补跑提示也是"标注者身份"的一部分：它变了，旧半成品同样不该续跑。
-        gap_prompt_sha(),
         str(getattr(client, "prefill", "")),
     ])
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def gap_prompt_sha() -> str:
-    return hashlib.sha256((GAP_PROMPT + GAP_PROMPT_VERSION).encode("utf-8")).hexdigest()
+    """补跑轮的**有效**提示 = 基础 prompt ＋ 缺口清单段——sha 必须覆盖两者。"""
+    return hashlib.sha256(
+        (holdout_gen.SYSTEM_PROMPT + GAP_PROMPT + GAP_PROMPT_VERSION).encode("utf-8")
+    ).hexdigest()
+
+
+def gap_round_key(round_index: int, pick: Sequence[str]) -> str:
+    """补跑轮的完成键**带上补跑提示的 sha 前缀**：提示一变，旧键自然失效、该轮重跑，
+    而不是"接着用旧提示产出的半成品续跑"。卡片轮的键不带它——两者互不牵连，
+    改补跑提示不该把卡片轮的结果一起作废。"""
+    return "gap:%s:%d:%s" % (gap_prompt_sha()[:8], round_index, ",".join(pick))
 
 
 def load_partial(fingerprint: str, progress_path: pathlib.Path = PROGRESS,
@@ -341,12 +349,16 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
         pool = fresh or [str(c["id"]) for c in cards]
         start = ((round_index - 1) * window) % max(1, len(pool))
         pick = [pool[(start + offset) % len(pool)] for offset in range(min(window, len(pool)))]
-        key = "gap:%d:%s" % (round_index, ",".join(pick))
+        key = gap_round_key(round_index, pick)
         if key in done:
             continue
         prompt = build_gap_prompt(gaps, cards, vocab, pick)
         try:
-            reply = client.chat_json(GAP_PROMPT, prompt, 0.0, 0, 8192,
+            # 补跑轮必须带上**完整的**基础 prompt（六类模板、取值一致性、自检清单），
+            # 否则只给"缺口清单+卡"会让模型写 `标签=`/`关键词=`/`结构=` 这种不在
+            # 冻结键集里的键——实测补跑轮连续两轮 added=0。
+            reply = client.chat_json(holdout_gen.SYSTEM_PROMPT + "\n\n" + GAP_PROMPT, prompt,
+                                     0.0, 0, 8192,
                                      key="gap:%d" % round_index)
         except Exception as exc:  # noqa: BLE001
             rejects.append({"batch": key, "reason": "%s: %s" % (type(exc).__name__, exc)})
