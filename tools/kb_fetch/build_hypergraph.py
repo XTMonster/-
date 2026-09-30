@@ -48,7 +48,7 @@ VOCAB = common.KNOWLEDGE / "hypergraph.vocab.json"
 #: 第 1 段的**原子边**落盘（可只看归并口径重跑第 2 段，不必重抽）。
 ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 
-PROMPT_VERSION = "extract/v2"
+PROMPT_VERSION = "extract/v3"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -152,13 +152,30 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
    EMOTION_PACK: (allow,emotion) ＋ (qualifier,intensity)；
    SHOT_PATTERN: (allow,shot_size) ＋ (allow,lens) ＋ (qualifier,headroom_policy)；
    AXIS_RULE: (qualifier,pair) ＋ (qualifier,axis_side)；
-   TROPE: (allow,genre) ＋ (allow,emotion)；
-   EDIT_RHYTHM: (allow,pacing) ＋ (qualifier,avg_shot_len)；
-   LIGHT_PACK: (allow,lighting) ＋ (qualifier,intensity)。
+  TROPE: (allow,genre) ＋ (allow,emotion)；
+  EDIT_RHYTHM: (allow,pacing) ＋ (qualifier,avg_shot_len)；
+  LIGHT_PACK: (allow,lighting) ＋ (qualifier,intensity)。
+1b. **只有这六个 `type`**。不要发明 `COMPOSITION`／`COMPOSITION_RULE`／`FRAMING`／
+   `SFX` 之类的新类型——那些会被校验门以 `bad_type` 丢掉。
+1c. **卡片属于哪个 `domain` 与 `type` 无关**：构图/机位/特效/音效/动作类的知识要挂到
+   最接近的那一类边上，作为**额外成员**（必填成员照旧写全）。词表里有这些 kind：
+   * 构图（均衡/三分/留白/引导空间/遮挡/头部空间）→ `SHOT_PATTERN` ＋
+     `(allow|qualifier, composition_rule, composition_rule:<取值>)`；
+   * 机位（高低/荷兰角/过肩/骑轴）→ 就近那类 ＋ `(qualifier, camera_angle, …)`；
+   * 特效/音效 → 就近那类 ＋ `(qualifier, vfx|sfx, …)`；
+   * 动作 → 就近那类 ＋ `(allow, action, …)`；
+   * 适用题材/景别 → `(qualifier, applies_to_genre|applies_to_shot_size, …)`。
+   **每一张卡都必须至少产出一条边**（见第 6 条）；抽不出情绪/运镜耦合的构图卡，
+   就写成带 `composition_rule` 的 `SHOT_PATTERN`。
 2. `node_id` **必须**取自下面词表（`kind:取值` 已经写好）；词表里没有的取值就不要抽。
 3. 同一个 `node_id` 不能既出现在 `allow` 又出现在 `forbid`。
 4. 禁忌写成 `["forbid", kind, node_id]`——它是这条边最有价值的部分，别省略。
    注意：**只有 EMOTION_PACK 允许 `forbid` 成员**（§2.3 的边表），其它五类不许写。
+4b. **卡片里凡是出现"忌讳/避免/不要/禁用/宁可…也不"这类表述的，必须把那个取值写成
+   `forbid` 成员**（挂在 EMOTION_PACK 上；如果这张卡本身不是情绪卡，就把它写成
+   "该情绪下不要这样拍"的 EMOTION_PACK）。词表里已经给了 `movement`／`shot_size`／
+   `lens`／`composition_rule` 等 kind 的取值，不要漏掉这条"最有价值"的边。
+   实测教训：不写这一条时整库只剩 1 个 forbid 成员，Q7 就没有可拦截对象。
 5. `source_kind`：教科书/权威理论的边用 `theory`＋`hard`；来自个人经验的取舍用
    `experience`＋`soft`；只有卡片明确写成"教训/禁忌"时才用 `lesson`。
 6. **每一张卡都要至少产出一条边**（除非它只是孤立术语的定义）。一张卡最多 4 条。

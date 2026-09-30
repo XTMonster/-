@@ -1,9 +1,9 @@
 {
-  "fingerprint": "45eaf370b595ecb6ff86499247dc550b7d8b108cec309b6f6df77fa65532948d",
+  "fingerprint": "271c55b474de6f540754801aaa18965c8fd9a3b6f448f526e3a469e5f9976074",
   "cache_key": {
     "corpus_sha256": "867029d6d33920038fd6ae2496451e3a81c46c0a3f049dc03212ca390d854231",
     "model": "deepseek-chat@deepseek-flash",
-    "prompt_version": "extract/v2",
+    "prompt_version": "extract/v3",
     "chunker_version": "para-2400/v1",
     "decode": "temperature=0;seed=0;ctx=8192",
     "schema_version": "hg/v1"
@@ -13,33 +13,33 @@
     "family": "deepseek",
     "model_version": "deepseek-flash"
   },
-  "prompt_version": "extract/v2",
+  "prompt_version": "extract/v3",
   "decode": "temperature=0;seed=0;ctx=8192",
   "chunker_version": "para-2400/v1",
   "schema_version": "hg/v1",
   "cards": 943,
-  "raw_edges": 574,
-  "valid_unique": 143,
-  "duplicates": 431,
+  "raw_edges": 578,
+  "valid_unique": 222,
+  "duplicates": 356,
   "rejects": 0,
-  "atom_rejects": 0,
+  "atom_rejects": 98,
   "merge_rejects": 0,
-  "atoms": 723,
+  "atoms": 848,
   "merge": {
     "windows": 122,
-    "groups": 574,
-    "merged_edges": 143,
-    "multi_card_edges": 95,
+    "groups": 578,
+    "merged_edges": 222,
+    "multi_card_edges": 136,
     "forbid_wins": 0,
-    "dropped_optional": 0,
+    "dropped_optional": 576,
     "over_budget_dropped": 0,
-    "forbid_members": 19,
-    "max_arity": 4,
+    "forbid_members": 15,
+    "max_arity": 7,
     "dropped_groups": [],
     "before_dedupe": {
-      "merged_edges": 574,
-      "forbid_members": 22,
-      "max_arity": 4
+      "merged_edges": 578,
+      "forbid_members": 15,
+      "max_arity": 7
     },
     "dangling_members_dropped": 0
   },
@@ -47,7 +47,7 @@
     {
       "batch": 1,
       "status": "done",
-      "edges": 5,
+      "edges": 4,
       "cards": [
         "gen_anime_0001",
         "gen_anime_0002",
@@ -62,7 +62,7 @@
     {
       "batch": 2,
       "status": "done",
-      "edges": 3,
+      "edges": 9,
       "cards": [
         "gen_anime_0009",
         "gen_anime_0010",
@@ -77,7 +77,7 @@
     {
       "batch": 3,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_anime_0017",
         "gen_anime_0018",
@@ -92,7 +92,7 @@
     {
       "batch": 4,
       "status": "done",
-      "edges": 4,
+      "edges": 10,
       "cards": [
         "gen_anime_0025",
         "gen_anime_0026",
@@ -107,7 +107,7 @@
     {
       "batch": 5,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_anime_0033",
         "gen_anime_0034",
@@ -122,7 +122,7 @@
     {
       "batch": 6,
       "status": "done",
-      "edges": 5,
+      "edges": 6,
       "cards": [
         "gen_anime_0041",
         "gen_anime_0042",
@@ -137,7 +137,7 @@
     {
       "batch": 7,
       "status": "done",
-      "edges": 4,
+      "edges": 10,
       "cards": [
         "gen_anime_0049",
         "gen_anime_0050",
@@ -182,7 +182,7 @@
     {
       "batch": 10,
       "status": "done",
-      "edges": 7,
+      "edges": 8,
       "cards": [
         "gen_axis_0001",
         "gen_axis_0002",
@@ -197,7 +197,7 @@
     {
       "batch": 11,
       "status": "done",
-      "edges": 7,
+      "edges": 8,
       "cards": [
         "gen_axis_0009",
         "gen_axis_0010",
@@ -242,7 +242,7 @@
     {
       "batch": 14,
       "status": "done",
-      "edges": 7,
+      "edges": 6,
       "cards": [
         "gen_axis_0033",
         "gen_axis_0034",
@@ -272,7 +272,7 @@
     {
       "batch": 16,
       "status": "done",
-      "edges": 6,
+      "edges": 8,
       "cards": [
         "gen_axis_0049",
         "gen_axis_0050",
@@ -332,7 +332,7 @@
     {
       "batch": 20,
       "status": "done",
-      "edges": 9,
+      "edges": 3,
       "cards": [
         "gen_block_0025",
         "gen_block_0026",
@@ -347,7 +347,7 @@
     {
       "batch": 21,
       "status": "done",
-      "edges": 8,
+      "edges": 9,
       "cards": [
         "gen_block_0033",
         "gen_block_0034",
@@ -362,7 +362,7 @@
     {
       "batch": 22,
       "status": "done",
-      "edges": 4,
+      "edges": 8,
       "cards": [
         "gen_block_0041",
         "gen_block_0042",
@@ -377,7 +377,7 @@
     {
       "batch": 23,
       "status": "done",
-      "edges": 10,
+      "edges": 8,
       "cards": [
         "gen_block_0049",
         "gen_block_0050",
@@ -392,7 +392,7 @@
     {
       "batch": 24,
       "status": "done",
-      "edges": 5,
+      "edges": 8,
       "cards": [
         "gen_block_0057",
         "gen_block_0058",
@@ -407,7 +407,7 @@
     {
       "batch": 25,
       "status": "done",
-      "edges": 8,
+      "edges": 3,
       "cards": [
         "gen_block_0065",
         "gen_block_0066",
@@ -422,7 +422,7 @@
     {
       "batch": 26,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_block_0073",
         "gen_block_0074",
@@ -452,7 +452,7 @@
     {
       "batch": 28,
       "status": "done",
-      "edges": 11,
+      "edges": 8,
       "cards": [
         "gen_block_0089",
         "gen_block_0090",
@@ -476,7 +476,7 @@
     {
       "batch": 30,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_cine_0001",
         "gen_cine_0002",
@@ -491,7 +491,7 @@
     {
       "batch": 31,
       "status": "done",
-      "edges": 4,
+      "edges": 8,
       "cards": [
         "gen_cine_0009",
         "gen_cine_0010",
@@ -506,7 +506,7 @@
     {
       "batch": 32,
       "status": "done",
-      "edges": 4,
+      "edges": 10,
       "cards": [
         "gen_cine_0017",
         "gen_cine_0018",
@@ -521,7 +521,7 @@
     {
       "batch": 33,
       "status": "done",
-      "edges": 3,
+      "edges": 6,
       "cards": [
         "gen_cine_0025",
         "gen_cine_0026",
@@ -536,7 +536,7 @@
     {
       "batch": 34,
       "status": "done",
-      "edges": 1,
+      "edges": 7,
       "cards": [
         "gen_cine_0033",
         "gen_cine_0034",
@@ -566,7 +566,7 @@
     {
       "batch": 36,
       "status": "done",
-      "edges": 5,
+      "edges": 10,
       "cards": [
         "gen_cine_0049",
         "gen_cine_0050",
@@ -581,7 +581,7 @@
     {
       "batch": 37,
       "status": "done",
-      "edges": 6,
+      "edges": 9,
       "cards": [
         "gen_cine_0057",
         "gen_cine_0058",
@@ -596,7 +596,7 @@
     {
       "batch": 38,
       "status": "done",
-      "edges": 1,
+      "edges": 4,
       "cards": [
         "gen_cine_0065",
         "gen_cine_0066",
@@ -641,7 +641,7 @@
     {
       "batch": 41,
       "status": "done",
-      "edges": 5,
+      "edges": 4,
       "cards": [
         "gen_cine_0089",
         "gen_cine_0090",
@@ -685,7 +685,7 @@
     {
       "batch": 44,
       "status": "done",
-      "edges": 8,
+      "edges": 0,
       "cards": [
         "gen_comp_0009",
         "gen_comp_0010",
@@ -730,7 +730,7 @@
     {
       "batch": 47,
       "status": "done",
-      "edges": 5,
+      "edges": 9,
       "cards": [
         "gen_comp_0033",
         "gen_comp_0034",
@@ -790,7 +790,7 @@
     {
       "batch": 51,
       "status": "done",
-      "edges": 3,
+      "edges": 0,
       "cards": [
         "gen_comp_0065",
         "gen_comp_0066",
@@ -820,7 +820,7 @@
     {
       "batch": 53,
       "status": "done",
-      "edges": 9,
+      "edges": 8,
       "cards": [
         "gen_comp_0081",
         "gen_comp_0082",
@@ -835,7 +835,7 @@
     {
       "batch": 54,
       "status": "done",
-      "edges": 11,
+      "edges": 10,
       "cards": [
         "gen_comp_0089",
         "gen_comp_0090",
@@ -850,7 +850,7 @@
     {
       "batch": 55,
       "status": "done",
-      "edges": 8,
+      "edges": 0,
       "cards": [
         "gen_comp_0097",
         "gen_comp_0098",
@@ -865,7 +865,7 @@
     {
       "batch": 56,
       "status": "done",
-      "edges": 8,
+      "edges": 0,
       "cards": [
         "gen_comp_0105",
         "gen_comp_0106",
@@ -895,7 +895,7 @@
     {
       "batch": 58,
       "status": "done",
-      "edges": 2,
+      "edges": 0,
       "cards": [
         "gen_comp_0121",
         "gen_comp_0122",
@@ -910,7 +910,7 @@
     {
       "batch": 59,
       "status": "done",
-      "edges": 9,
+      "edges": 8,
       "cards": [
         "gen_comp_0129",
         "gen_comp_0130",
@@ -925,7 +925,7 @@
     {
       "batch": 60,
       "status": "done",
-      "edges": 4,
+      "edges": 3,
       "cards": [
         "gen_comp_0137",
         "gen_comp_0138",
@@ -955,7 +955,7 @@
     {
       "batch": 62,
       "status": "done",
-      "edges": 5,
+      "edges": 6,
       "cards": [
         "gen_comp_0153",
         "gen_comp_0154",
@@ -970,7 +970,7 @@
     {
       "batch": 63,
       "status": "done",
-      "edges": 8,
+      "edges": 0,
       "cards": [
         "gen_comp_0161",
         "gen_comp_0162",
@@ -993,7 +993,7 @@
     {
       "batch": 65,
       "status": "done",
-      "edges": 6,
+      "edges": 8,
       "cards": [
         "gen_edit_0001",
         "gen_edit_0002",
@@ -1008,7 +1008,7 @@
     {
       "batch": 66,
       "status": "done",
-      "edges": 7,
+      "edges": 8,
       "cards": [
         "gen_edit_0009",
         "gen_edit_0010",
@@ -1038,7 +1038,7 @@
     {
       "batch": 68,
       "status": "done",
-      "edges": 14,
+      "edges": 8,
       "cards": [
         "gen_edit_0025",
         "gen_edit_0026",
@@ -1053,7 +1053,7 @@
     {
       "batch": 69,
       "status": "done",
-      "edges": 4,
+      "edges": 8,
       "cards": [
         "gen_edit_0033",
         "gen_edit_0034",
@@ -1068,7 +1068,7 @@
     {
       "batch": 70,
       "status": "done",
-      "edges": 0,
+      "edges": 7,
       "cards": [
         "gen_edit_0041",
         "gen_edit_0042",
@@ -1083,7 +1083,7 @@
     {
       "batch": 71,
       "status": "done",
-      "edges": 4,
+      "edges": 6,
       "cards": [
         "gen_edit_0049",
         "gen_edit_0050",
@@ -1098,7 +1098,7 @@
     {
       "batch": 72,
       "status": "done",
-      "edges": 9,
+      "edges": 8,
       "cards": [
         "gen_edit_0057",
         "gen_edit_0058",
@@ -1113,7 +1113,7 @@
     {
       "batch": 73,
       "status": "done",
-      "edges": 3,
+      "edges": 7,
       "cards": [
         "gen_edit_0065",
         "gen_edit_0066",
@@ -1128,7 +1128,7 @@
     {
       "batch": 74,
       "status": "done",
-      "edges": 1,
+      "edges": 6,
       "cards": [
         "gen_edit_0073",
         "gen_edit_0074",
@@ -1153,7 +1153,7 @@
     {
       "batch": 76,
       "status": "done",
-      "edges": 6,
+      "edges": 8,
       "cards": [
         "gen_perf_0009",
         "gen_perf_0010",
@@ -1183,7 +1183,7 @@
     {
       "batch": 78,
       "status": "done",
-      "edges": 5,
+      "edges": 8,
       "cards": [
         "gen_perf_0025",
         "gen_perf_0026",
@@ -1213,7 +1213,7 @@
     {
       "batch": 80,
       "status": "done",
-      "edges": 6,
+      "edges": 7,
       "cards": [
         "gen_perf_0041",
         "gen_perf_0042",
@@ -1228,7 +1228,7 @@
     {
       "batch": 81,
       "status": "done",
-      "edges": 4,
+      "edges": 8,
       "cards": [
         "gen_perf_0049",
         "gen_perf_0050",
@@ -1273,7 +1273,7 @@
     {
       "batch": 84,
       "status": "done",
-      "edges": 7,
+      "edges": 8,
       "cards": [
         "gen_perf_0073",
         "gen_perf_0074",
@@ -1288,7 +1288,7 @@
     {
       "batch": 85,
       "status": "done",
-      "edges": 8,
+      "edges": 9,
       "cards": [
         "gen_perf_0081",
         "gen_perf_0082",
@@ -1303,7 +1303,7 @@
     {
       "batch": 86,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_perf_0089",
         "gen_perf_0090",
@@ -1318,7 +1318,7 @@
     {
       "batch": 87,
       "status": "done",
-      "edges": 4,
+      "edges": 8,
       "cards": [
         "gen_perf_0097",
         "gen_perf_0098",
@@ -1348,7 +1348,7 @@
     {
       "batch": 89,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_perf_0113",
         "gen_perf_0114",
@@ -1388,7 +1388,7 @@
     {
       "batch": 92,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_prod_0001",
         "gen_prod_0002",
@@ -1403,7 +1403,7 @@
     {
       "batch": 93,
       "status": "done",
-      "edges": 6,
+      "edges": 8,
       "cards": [
         "gen_prod_0009",
         "gen_prod_0010",
@@ -1478,7 +1478,7 @@
     {
       "batch": 98,
       "status": "done",
-      "edges": 4,
+      "edges": 3,
       "cards": [
         "gen_prod_0049",
         "gen_prod_0050",
@@ -1534,7 +1534,7 @@
     {
       "batch": 102,
       "status": "done",
-      "edges": 5,
+      "edges": 8,
       "cards": [
         "gen_story_0001",
         "gen_story_0002",
@@ -1549,7 +1549,7 @@
     {
       "batch": 103,
       "status": "done",
-      "edges": 7,
+      "edges": 9,
       "cards": [
         "gen_story_0009",
         "gen_story_0010",
@@ -1579,7 +1579,7 @@
     {
       "batch": 105,
       "status": "done",
-      "edges": 10,
+      "edges": 9,
       "cards": [
         "gen_story_0025",
         "gen_story_0026",
@@ -1594,7 +1594,7 @@
     {
       "batch": 106,
       "status": "done",
-      "edges": 5,
+      "edges": 6,
       "cards": [
         "gen_story_0033",
         "gen_story_0034",
@@ -1609,7 +1609,7 @@
     {
       "batch": 107,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_story_0041",
         "gen_story_0042",
@@ -1624,7 +1624,7 @@
     {
       "batch": 108,
       "status": "done",
-      "edges": 6,
+      "edges": 8,
       "cards": [
         "gen_story_0049",
         "gen_story_0050",
@@ -1639,7 +1639,7 @@
     {
       "batch": 109,
       "status": "done",
-      "edges": 7,
+      "edges": 6,
       "cards": [
         "gen_story_0057",
         "gen_story_0058",
@@ -1654,7 +1654,7 @@
     {
       "batch": 110,
       "status": "done",
-      "edges": 5,
+      "edges": 7,
       "cards": [
         "gen_story_0065",
         "gen_story_0066",
@@ -1669,7 +1669,7 @@
     {
       "batch": 111,
       "status": "done",
-      "edges": 2,
+      "edges": 8,
       "cards": [
         "gen_story_0073",
         "gen_story_0074",
@@ -1684,7 +1684,7 @@
     {
       "batch": 112,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_story_0081",
         "gen_story_0082",
@@ -1699,7 +1699,7 @@
     {
       "batch": 113,
       "status": "done",
-      "edges": 5,
+      "edges": 8,
       "cards": [
         "gen_story_0089",
         "gen_story_0090",
@@ -1714,7 +1714,7 @@
     {
       "batch": 114,
       "status": "done",
-      "edges": 10,
+      "edges": 9,
       "cards": [
         "gen_story_0097",
         "gen_story_0098",
@@ -1729,7 +1729,7 @@
     {
       "batch": 115,
       "status": "done",
-      "edges": 4,
+      "edges": 8,
       "cards": [
         "gen_story_0105",
         "gen_story_0106",
@@ -1744,7 +1744,7 @@
     {
       "batch": 116,
       "status": "done",
-      "edges": 2,
+      "edges": 8,
       "cards": [
         "gen_story_0113",
         "gen_story_0114",
@@ -1774,7 +1774,7 @@
     {
       "batch": 118,
       "status": "done",
-      "edges": 7,
+      "edges": 9,
       "cards": [
         "gen_story_0129",
         "gen_story_0130",
@@ -1789,7 +1789,7 @@
     {
       "batch": 119,
       "status": "done",
-      "edges": 4,
+      "edges": 8,
       "cards": [
         "gen_story_0137",
         "gen_story_0138",
@@ -1804,7 +1804,7 @@
     {
       "batch": 120,
       "status": "done",
-      "edges": 3,
+      "edges": 8,
       "cards": [
         "gen_story_0145",
         "gen_story_0146",
@@ -1834,7 +1834,7 @@
     {
       "batch": 122,
       "status": "done",
-      "edges": 1,
+      "edges": 3,
       "cards": [
         "gen_story_0161",
         "gen_story_0162",

@@ -34,13 +34,13 @@ from block_director.knowledge import hypergraph as hg
 HOLDOUT = common.ROOT / "fixtures" / "knowledge_holdout.jsonl"
 CARDS_JSON = common.ROOT / "fixtures" / "knowledge_holdout.cards.json"
 MANIFEST = common.WORK / "holdout.manifest.json"
-PROMPT_VERSION = "holdout/v3"
+PROMPT_VERSION = "holdout/v7"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
-超边 schema ＋ 取值词表。你的工作是：**为每张卡写出 2 条不同的检索期望**，用来检验一个超图\
+超边 schema ＋ 取值词表。你的工作是：**为每张卡写出 3 条不同的检索期望**，用来检验一个超图\
 检索器是否真能召回该卡所表达的知识。第 1 条抓这张卡最核心的那条约束；第 2 条换一组查询键\
-或取值（不要与第 1 条同义重复），让词表覆盖更广。每张卡都必须有 2 条。
+或取值；第 3 条再换一组（不要同义重复），让词表覆盖更广。每张卡都必须有 3 条。
 
 只输出 JSON：{"entries":[{...}, ...]}，每条：
 {
@@ -54,10 +54,20 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
 
 规则（违反的条目会被机器拒绝）：
 1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段。
-2. `must` 的边类型只能取六类之一；**每条边的必填槽位必须写全**：
-   EMOTION_PACK: emotion＋intensity；SHOT_PATTERN: shot_size＋lens＋headroom_policy；
-   AXIS_RULE: pair＋axis_side；TROPE: genre＋emotion；EDIT_RHYTHM: pacing＋avg_shot_len；
-   LIGHT_PACK: lighting＋intensity。
+**`type` 只允许这六个字符串**：`EMOTION_PACK`、`SHOT_PATTERN`、`AXIS_RULE`、`TROPE`、
+`EDIT_RHYTHM`、`LIGHT_PACK`。写别的（`ACTION`／`SFX`／`MOVEMENT`／`COMPOSITION`／
+`FRAMING`…）**整条作废**——动作/音效/特效/机位/构图只能作为**槽位**写在上面某一类里。
+
+2. `must` 的边类型只能取六类之一；**照下面模板逐字写全**（`<…>` 换成词表取值，
+   逗号分隔，一项都不能少）：
+   * `EMOTION_PACK:emotion=<情绪>,intensity=<low|mid|high>`（要写禁忌时再加
+     `,forbid_<kind>=<该 kind 的取值>`）
+   * `SHOT_PATTERN:shot_size=<ECU|CU|MCU|MS|MLS|LS|ELS>,lens=<24mm|35mm|50mm|85mm>,headroom_policy=<board|cinematic>`
+   * `AXIS_RULE:pair=any_two,axis_side=<left|right|neutral>`
+   * `TROPE:genre=<film|anime|documentary>,emotion=<情绪>`
+   * `EDIT_RHYTHM:pacing=<short|medium|long>,avg_shot_len=<<1s|1-3s|3-8s|>8s>`
+   * `LIGHT_PACK:lighting=<光线>,intensity=<low|mid|high>`
+   `top1` 一律把 `must` 的**第 1 条原样复制**过来（不要改写、不要只写前半段）。
 2b. **只有这六个类型名**。不要发明 `COMPOSITION`／`COMPOSITION_RULE`／`FRAMING` 之类的
    新类型——机器会以 `bad_type` 整条拒收。
 2c. **构图/机位/特效/音效/动作类知识挂到最接近的那一类边上，作为额外槽位**
@@ -71,6 +81,14 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
 3. 槽位名 = kind；禁忌槽位写成 `forbid_<kind>=取值`。取值尽量用词表里的规范名。
 3b. 取值**必须**是词表里的那一个（闭集，逐字相同）：`q` 里和 `must` 里都一样。
     写了词表外的说法会被机器判成 `unknown_values`——那**整条作废**，不是警告。
+3c. **不许把卡片原文的说法抄进取值**。`q` 的每个 `<值>` 都要从下面词表里**逐字挑一个**
+    （哪怕卡片说的是"垂直破坏画面统一"，也只能挑词表里最接近的 `构图` 取值，例如
+    `rule_of_thirds`／`balance`／`framing`／`headroom`／`lead_room`／`occlusion`）。
+    同一 kind 的取值在 `q` 与 `must` 里必须**完全同一串字符**。
+3d. **写法顺序**：先想好这条边的 `must`，再把 `q` 里同 kind 的取值**从 `must` 里复制**过来
+    ——不要分别想两遍。`q` 里每个键**只写一次**。例：
+    `must:["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board,composition_rule=rule_of_thirds"]`
+    对应的 `q` 只能是 `"构图=rule_of_thirds；景别=MS"`（取值与 must 逐字相同，且 `构图` 只出现一次）。
 4. `must` 最多 3 条（上限是硬的：top-3 内 100% 可检出要求 |must| ≤ 3）。
 5. `top1` 必须与 `must` 里的某一条**一字不差**。
 6. 期待排序靠前的边应当是"这张卡最核心的那条约束"；把"调用方必须避开的东西"
@@ -84,6 +102,13 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
     `q` 与 `must` 里必须用**同一个取值**，不许一个写中文、一个写英文代号。
 9. 词表里的**每个取值都必须至少出现在一条 `q` 里**（覆盖门③）；
    因此请在多个条目之间轮换取值，不要反复只用同一个词。
+
+**输出前逐条自检（这四类错误占实测拒收的绝大多数，务必先自查再输出）**：
+* 每条 `must` 的**必填槽位是否写全**？（SHOT_PATTERN 必须同时有 shot_size ＋ lens ＋
+  headroom_policy —— 少 headroom_policy 是最常见的一种。）
+* `top1` 是否与 `must` 里的某一条**逐字相同**（复制粘贴，不要改写、不要只写一部分）？
+* `never` 与 `must` 是否**有交集**？（有交集整条作废。）
+* `q` 里同一个键是否只出现一次？`q` 的取值与 `must` 里同 kind 的取值是否逐字相同？
 
 **示例（照这个形状写，别只写个 `TYPE:` 占位符）**：
 ```json
