@@ -149,9 +149,20 @@ def parse_spec(spec: str) -> Tuple[str, Dict[str, str], Dict[str, str]]:
     missing = [s for s in REQUIRED_SLOTS[etype] if s not in plain]
     if missing:
         raise EntryError(f"{etype} 缺必填槽位 {missing}（在 {spec!r} 内）")
-    clash = sorted(set(plain) & set(forbid))
+    # 「自相矛盾」的判据是**同 kind 同取值**，不是同 kind。
+    # 原先写成 `set(plain) & set(forbid)`（kind 级），于是
+    # `EMOTION_PACK:emotion=冷淡,intensity=mid,movement=crane_up,forbid_movement=dolly_out`
+    # 这种**完全合法**的约束被整条拒收——它要求 crane_up、禁止 dolly_out，
+    # 两者是不同的取值，并不冲突。实测 `knowledge/hypergraph.edges.jsonl` 里有
+    # **8 条**这样的边（抽取器照 schema 产出，`illegal_members()` 也放行，
+    # 因为 `forbid_movement` 就在 `OPTIONAL_MEMBERS[EMOTION_PACK]` 里），
+    # kind 级判据让它们**在 oracle 语法里根本表达不出来** → 门⑩ 结构性未解析。
+    # 真正的矛盾（`shot_size=中景` ＋ `forbid_shot_size=中景`）仍然照旧被拒。
+    clash = sorted(kind for kind in set(plain) & set(forbid)
+                   if plain[kind] == forbid[kind])
     if clash:
-        raise EntryError(f"同一条边里 {clash} 同时被要求和禁止（自相矛盾）")
+        raise EntryError(
+            f"同一条边里 {clash} 同时被要求和禁止**同一个取值**（自相矛盾）")
     illegal = illegal_members(etype, plain, forbid)
     if illegal:
         legal = set(_hg.REQUIRED_MEMBERS[etype]) | set(_hg.OPTIONAL_MEMBERS.get(etype, ()))

@@ -527,14 +527,28 @@ def _merge_group(group: Sequence[hg.HyperEdge], nodes: Dict[str, hg.Node]) -> Tu
     forbid_ids = {m.node_id for edge in ordered for m in edge.forbids}
     forbid_wins = sum(1 for edge in ordered for m in edge.allows if m.node_id in forbid_ids)
 
-    optional: Dict[Tuple[str, str, str], hg.Member] = {}
+    # 选填成员按 **(role, kind) 槽位** 收，而不是按 (role, kind, node_id) 收：
+    # 同一个槽位上的多个取值是**备选**（不同卡教的是两种做法），不是"同时成立"。
+    # 旧写法把 (role, kind, node_id) 当键、逐个塞进同一条边，于是产出
+    #   `SHOT_PATTERN:…,composition_rule=lead_room,composition_rule=rule`
+    #   `AXIS_RULE:…,axis_topic=越轴,axis_topic=运动轴`
+    # 这类**同 kind 多值**的边（实测 31 条）。它在 oracle 的规格语法里根本写不出来
+    # （`tools/check_holdout.parse_spec` 用 dict 收同 kind，第二个值覆盖第一个），
+    # 于是门⑩ 对这 31 条边**结构性未解析**——不是标注质量，是索引自己造的语法死角。
+    # 修法：主边取每个槽位的第一个取值，**其余备选各自复制一条边**（笛卡尔展开的
+    # 最小形式），备选语义完整保留、且每条边的每个 kind 都是单值。
+    optional: Dict[Tuple[str, str], List[hg.Member]] = {}
     for edge in ordered:
         for member in edge.members:
             if (member.role, member.kind) in required_pairs:
                 continue
             if member.role == "allow" and member.node_id in forbid_ids:
                 continue  # §2.3b 关键纪律 2：禁忌压过放行
-            optional[(member.role, member.kind, member.node_id)] = member
+            bucket = optional.setdefault((member.role, member.kind), [])
+            if all(existing.node_id != member.node_id for existing in bucket):
+                bucket.append(member)
+    for bucket in optional.values():
+        bucket.sort(key=lambda member: member.node_id)
 
     def build(members: Sequence[hg.Member]) -> hg.HyperEdge:
         return hg.HyperEdge(
@@ -551,29 +565,56 @@ def _merge_group(group: Sequence[hg.HyperEdge], nodes: Dict[str, hg.Node]) -> Tu
             provenance_kind=ordered[0].provenance_kind,
         )
 
-    members = list(required)
-    dropped_optional = 0
-    over_budget_dropped = 0
-    for key in sorted(optional):
-        trial = members + [optional[key]]
-        candidate = build(trial)
+    def _fits(members: Sequence[hg.Member]) -> bool:
+        candidate = build(members)
         if hg.render_tokens(hg.render_edge(candidate, nodes)) > hg.MAX_RENDER_TOKENS:
-            dropped_optional += 1
-            over_budget_dropped += 1
-            continue
+            return False
         try:
             hg.validate_edge(candidate, nodes)
         except hg.GateError:
-            dropped_optional += 1
-            continue
-        members = trial
+            return False
+        return True
+
+    members = list(required)
+    dropped_optional = 0
+    over_budget_dropped = 0
+    def _over_budget(trial: Sequence[hg.Member]) -> bool:
+        return hg.render_tokens(hg.render_edge(build(trial), nodes)) > hg.MAX_RENDER_TOKENS
+
+    # 主边：每个选填槽位取**第一个装得下**的取值（与旧行为一致）。
+    accepted: List[Tuple[Tuple[str, str], hg.Member]] = []
+    for key in sorted(optional):
+        for member in optional[key]:
+            if _fits(members + [member]):
+                members.append(member)
+                accepted.append((key, member))
+                break
+
+    # 备选：同一槽位的**其余取值**各自复制一条边，主边的其它槽位照抄。
+    # 没有取到主边取值的槽位（整组都装不下）也在这里统一记账，保证
+    # `dropped_optional` 只数一次、且不静默丢知识。
+    variants: List[hg.HyperEdge] = []
+    for key in sorted(optional):
+        chosen = next((member for slot, member in accepted if slot == key), None)
+        for alt in optional[key]:
+            if chosen is not None and alt.node_id == chosen.node_id:
+                continue
+            trial = [alt if m is chosen else m for m in members]
+            if chosen is None and alt not in trial:
+                trial = members + [alt]
+            if _fits(trial):
+                variants.append(build(trial))
+            else:
+                dropped_optional += 1
+                if _over_budget(trial):
+                    over_budget_dropped += 1
 
     def _dict() -> Dict:
         return {"merged_from": len(ordered), "forbid_wins": forbid_wins,
                 "dropped_optional": dropped_optional,
                 "over_budget_dropped": over_budget_dropped}
 
-    return build(members), _dict()
+    return [build(members)] + variants, _dict()
 
 
 def merge_edges(edges: Sequence[hg.HyperEdge], cards_by_id: Dict[str, Dict],
@@ -605,7 +646,7 @@ def merge_edges(edges: Sequence[hg.HyperEdge], cards_by_id: Dict[str, Dict],
               "dropped_groups": []}
     for key in sorted(groups):
         try:
-            edge, detail = _merge_group(groups[key], nodes)
+            produced, detail = _merge_group(groups[key], nodes)
         except hg.GateError as exc:
             # 畸形的一组：**整组丢弃并留痕**（不静默、也不伪造一条边出来）
             report["dropped_groups"].append({
@@ -613,10 +654,14 @@ def merge_edges(edges: Sequence[hg.HyperEdge], cards_by_id: Dict[str, Dict],
                 "edge_ids": sorted(item.edge_id for item in groups[key]),
             })
             continue
-        merged.append(edge)
+        # 一个组可能产出**多条**边：同 kind 的多个取值是备选，各自复制一条
+        # （见 `_merge_group` 的说明）。备选边与原边同源、同硬度、同必填签名，
+        # 因此 `multi_card_edges` 只对主边计数，避免把备选当"跨卡归并"多算一次。
+        merged.extend(produced)
         report["forbid_wins"] += detail["forbid_wins"]
         report["dropped_optional"] += detail["dropped_optional"]
         report["over_budget_dropped"] += detail["over_budget_dropped"]
+        report["alternatives"] = report.get("alternatives", 0) + max(0, len(produced) - 1)
         if detail["merged_from"] > 1:
             report["multi_card_edges"] += 1
     merged.sort(key=lambda e: (e.type, required_signature(e), e.source_kind,

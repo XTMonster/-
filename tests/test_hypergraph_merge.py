@@ -199,8 +199,21 @@ def test_merge_is_deterministic_and_order_independent():
 # --------------------------------------------------------------------------- 预算
 
 
-def test_merge_drops_optional_members_instead_of_breaking_the_render_budget():
-    """门⑧：单条超边渲染 ≤ 400 token。归并**整条丢**不行，必须退到能装下的成员集。"""
+def test_merge_splits_alternatives_instead_of_breaking_the_render_budget():
+    """门⑧（渲染 ≤ 400 token）＋ 本轮修掉的"同 kind 多值"死角。
+
+    契约变更说明：旧行为把同一个槽位上的多个取值**塞进同一条边**、塞不下的丢掉，
+    于是产出 `TYPE:…,sfx=甲,sfx=乙,sfx=丙` 这种**同 kind 多值**的边。它在 oracle 的
+    规格语法里根本写不出来（`tools/check_holdout.parse_spec` 用 dict 收同 kind，
+    后一个值覆盖前一个），实测索引里 31 条这样的边 = 门⑩ 的结构性未解析。
+    新契约：每个槽位取一个取值，**其余备选各自复制一条边**（备选是"两种做法"，
+    不是"同时成立"）。因此下面断言的是**更强**的性质，而不是放宽：
+
+    * 每条边仍 ≤ 渲染预算（门⑧ 原样）；
+    * 6 个 `sfx` 取值**一个都不许丢**（旧行为会丢掉 5 个）；
+    * 每条边里每个 kind 只出现一次（同 kind 多值 = 语法死角，测试 `test_check_holdout
+      ::test_every_index_edge_can_be_written_as_a_spec` 会整库扫这一条）。
+    """
     fat = [_node(f"sfx:长{i}", "sfx", "啰" * 120) for i in range(6)]
     nodes = _nodes(*fat)
     cards = {f"c{i}": _card(f"c{i}") for i in range(6)}
@@ -215,8 +228,39 @@ def test_merge_drops_optional_members_instead_of_breaking_the_render_budget():
     for edge in merged:
         hg.validate_edge(edge, nodes)
         assert hg.render_tokens(hg.render_edge(edge, nodes)) <= hg.MAX_RENDER_TOKENS
-    assert report["dropped_optional"] >= 1, "超预算时必须真的丢了可选成员"
-    assert report["over_budget_dropped"] >= 1
+        plain_kinds = [m.kind for m in edge.members if m.role != "forbid"]
+        assert len(plain_kinds) == len(set(plain_kinds)), (
+            f"同 kind 多值会让门⑩ 结构性未解析：{plain_kinds}")
+    survivors = {m.node_id for edge in merged for m in edge.members
+                 if m.kind == "sfx"}
+    assert survivors == {f"sfx:长{i}" for i in range(6)}, (
+        f"拆边不许丢知识，实测丢了：{{'sfx:长{i}' for i in range(6)}} - {survivors}")
+    assert report["dropped_optional"] == 0, "能拆开就不该丢"
+
+
+def test_merge_still_accounts_for_members_that_cannot_fit_even_alone():
+    """拆边**不是**免死金牌：单个成员自己就超预算时仍要丢掉并记账。
+
+    与上一条互补——上一条证明"能拆的必须拆"，这条证明"真装不下的必须记账"，
+    两条合起来才是"不静默丢知识"的完整契约。
+    """
+    huge = [_node(f"sfx:巨{i}", "sfx", "啰" * 4000) for i in range(3)]
+    nodes = _nodes(*huge)
+    cards = {f"c{i}": _card(f"c{i}") for i in range(3)}
+    edges = [
+        _edge(f"c{i}",
+              [("allow", "emotion", "emotion:荒诞"),
+               ("qualifier", "intensity", "intensity:high"),
+               ("allow", "sfx", f"sfx:巨{i}")])
+        for i in range(3)
+    ]
+    merged, report = bh.merge_edges(edges, cards, nodes)
+    for edge in merged:
+        assert hg.render_tokens(hg.render_edge(edge, nodes)) <= hg.MAX_RENDER_TOKENS
+    assert not any(m.kind == "sfx" for edge in merged for m in edge.members), (
+        "装不下的成员不许硬塞进边里")
+    assert report["dropped_optional"] >= 3, "每一个装不下的成员都要计数"
+    assert report["over_budget_dropped"] >= 3, "根因必须是超预算，不是校验失败"
 
 
 def test_every_merged_edge_passes_the_nine_gates():

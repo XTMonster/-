@@ -581,6 +581,61 @@ def test_same_value_required_and_forbidden_in_one_edge_is_rejected(tmp_path):
     assert "自相矛盾" in " ".join(data["gate_2_format"]["problems"])
 
 
+def test_different_value_required_and_forbidden_in_one_edge_is_accepted(tmp_path):
+    """同 kind 的**不同取值**既要求又禁止不是矛盾，是合法的约束。
+
+    反例（必须过门②）：`movement=crane_up` ＋ `forbid_movement=dolly_out`
+    = "用 crane_up、别用 dolly_out"。旧判据是 kind 级的
+    (`set(plain) & set(forbid)`)，把这条**完全合法**的边整条拒收；而
+    `knowledge/hypergraph.edges.jsonl` 里实测有 8 条这样的边（抽取器照
+    `OPTIONAL_MEMBERS[EMOTION_PACK]` 产出），它们因此**在 oracle 语法里
+    根本写不出来** → 门⑩ 结构性未解析。这条对抗性用例把"kind 级 vs 取值级"
+    钉死：改回 kind 级它就会红。
+    """
+    spec = ("EMOTION_PACK:emotion=气急败坏,intensity=high,"
+            "movement=crane_up,forbid_movement=dolly_out")
+    rec = entry(must=[spec], top1=[spec],
+                q="情绪=气急败坏；强度=high；运镜=crane_up")
+    data = report(write(tmp_path, [rec]))
+    assert data["gate_2_format"]["status"] == "pass", data["gate_2_format"]["problems"]
+
+
+def test_every_index_edge_can_be_written_as_a_spec():
+    """**索引里每一条边都必须能被 oracle 语法写出来**，否则门⑩ 结构性不可达。
+
+    这是本轮"同 kind 多值"缺陷（31 条归并边）与"同 kind 同时 allow+forbid"
+    缺陷（8 条）的守卫：前者在规格语法里无法单值表达，后者被 kind 级 clash
+    判据误杀。任一类回归，门⑩ 就会重新出现"构造上写不出来"的规格。
+    """
+    import pathlib as _pathlib
+
+    root = _pathlib.Path(__file__).resolve().parents[1]
+    edges_path = root / "knowledge" / "hypergraph.edges.jsonl"
+    if not edges_path.is_file():  # pragma: no cover - 索引未入库时的历史状态
+        pytest.skip("索引未入库")
+    unexpressible = []
+    for line in edges_path.read_text(encoding="utf-8").split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        edge = json.loads(line)
+        kinds = [m[1] for m in edge["members"] if m[0] != "forbid"]
+        if len(set(kinds)) != len(kinds):
+            unexpressible.append((edge["edge_id"], "same_kind_multi_value"))
+            continue
+        slots = []
+        for role, kind, node_id in edge["members"]:
+            value = str(node_id).split(":", 1)[1]
+            slots.append(("forbid_%s=%s" if role == "forbid" else "%s=%s") % (kind, value))
+        try:
+            check_holdout.parse_spec("%s:%s" % (edge["type"], ",".join(slots)))
+        except check_holdout.EntryError as exc:
+            unexpressible.append((edge["edge_id"], str(exc)[:60]))
+    assert unexpressible == [], (
+        "索引里有 oracle 语法写不出来的边，门⑩ 会对它们结构性未解析："
+        f"{unexpressible[:6]}（共 {len(unexpressible)} 条）")
+
+
 def test_must_values_must_come_from_the_vocabulary(tmp_path):
     """must 的取值不在词表里 → Q4 会静默归零，门③ 必须抓住。"""
     vocab = tmp_path / "vocab.json"
