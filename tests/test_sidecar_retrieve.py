@@ -201,6 +201,29 @@ def test_retrieve_without_index_degrades_to_bm25_without_pretending(tmp_path):
     assert body["trace"]["cases_degraded_reason"] == "cases_index_missing"
 
 
+def test_seed_miss_falls_back_to_the_domain_digest(knowledge_dir):
+    """§2.3 第 1 步：种子全空时必须 digest 兜底并留痕，不得静默返回空。"""
+    with _Sidecar(["--knowledge-dir", str(knowledge_dir),
+                   "--cases-backend", "hybrid"]) as server:
+        body = server.retrieve("完全没有键值对的自由文本查询")
+    trace = body["trace"]
+    assert trace["seed_miss"] is True
+    assert trace["digest_fallback"] is True
+    ids = [card["id"] for card in body["cards"]]
+    assert any(card_id.startswith("digest_") for card_id in ids), ids
+    # 已有的关键词命中不许被 digest 挤掉。
+    assert len(ids) == len(set(ids))
+
+
+def test_a_hit_does_not_trigger_the_digest_fallback(knowledge_dir):
+    with _Sidecar(["--knowledge-dir", str(knowledge_dir),
+                   "--cases-backend", "hybrid"]) as server:
+        body = server.retrieve(QUERY)
+    assert body["trace"]["seed_miss"] is False
+    assert "digest_fallback" not in body["trace"]
+    assert not [c for c in body["cards"] if c["id"].startswith("digest_")]
+
+
 def test_cases_backend_off_is_silent_not_degraded(knowledge_dir):
     with _Sidecar(["--knowledge-dir", str(knowledge_dir),
                    "--cases-backend", "off"]) as server:

@@ -137,6 +137,19 @@ def load_provenance(knowledge_dir: Path) -> Dict[str, Any]:
     }
 
 
+def with_digest_fallback(cards: Sequence[Card]) -> List[Card]:
+    """§2.3 第 1 步：**无种子 → 走 digest 兜底，不得静默返回空**。
+
+    种子全空时把顶层摘要卡补进卡片通道（按 id 去重，已有的关键词命中一条不丢），
+    调用方据此还能给出非空注入块；trace 里另置 ``digest_fallback = true``。
+    """
+    from block_director.knowledge.corpus import digest_cards
+
+    seen = {card.id for card in cards}
+    extra = [card for card in digest_cards() if card.id not in seen]
+    return list(cards) + extra
+
+
 # --------------------------------------------------------------------------- #
 # 上游调用
 # --------------------------------------------------------------------------- #
@@ -376,6 +389,10 @@ def make_handler(config: "SidecarConfig"):
             edges = [_edge_payload(edge) for edge in selected]
             trace = hg_trace.to_dict()
             backend = "hypergraph"
+            if trace.get("seed_miss"):
+                # §2.3 第 1 步：无种子 → digest 兜底并留痕，不得静默返回空。
+                cards = with_digest_fallback(cards)
+                trace["digest_fallback"] = True
         cases = case_lane.retrieve(query, top_k=int(body.get("cases_top_k", 3) or 3))
         trace.update({
             "backend": backend,

@@ -1,0 +1,75 @@
+{
+  "capabilities": [
+    "llm",
+    "bm25",
+    "hypergraph"
+  ],
+  "knowledge_dir": "E:\\白模预演codex\\knowledge",
+  "queries": [
+    {
+      "query": "情绪=荒诞；动作=跺脚；运镜=固定；景别=中景；特效=石化",
+      "cards": 3,
+      "edges": 3,
+      "cases": 3,
+      "forbid_members": 1,
+      "arities": [
+        3,
+        3,
+        3
+      ],
+      "types": [
+        "EMOTION_PACK",
+        "INTENT_PACK",
+        "INTENT_PACK"
+      ],
+      "trace_backend": "hypergraph",
+      "seed_miss": false,
+      "lanes": 2,
+      "cases_degraded": true,
+      "cases_degraded_reason": "lightrag_adapter_unavailable"
+    },
+    {
+      "query": "情绪=紧张；景别=特写",
+      "cards": 3,
+      "edges": 3,
+      "cases": 3,
+      "forbid_members": 2,
+      "arities": [
+        3,
+        3,
+        3
+      ],
+      "types": [
+        "EMOTION_PACK",
+        "EMOTION_PACK",
+        "INTENT_PACK"
+      ],
+      "trace_backend": "hypergraph",
+      "seed_miss": false,
+      "lanes": 2,
+      "cases_degraded": true,
+      "cases_degraded_reason": "lightrag_adapter_unavailable"
+    },
+    {
+      "query": "越轴 轴线 中性镜头",
+      "cards": 12,
+      "edges": 0,
+      "cases": 3,
+      "forbid_members": 0,
+      "arities": [],
+      "types": [],
+      "trace_backend": "hypergraph",
+      "seed_miss": true,
+      "lanes": 2,
+      "cases_degraded": true,
+      "cases_degraded_reason": "lightrag_adapter_unavailable"
+    }
+  ],
+  "retrieval_calls": 3,
+  "trace_payload": {
+    "backend": "hypergraph",
+    "lanes": 2,
+    "retrieval_calls": 3
+  },
+  "probed_at": "2026-10-01T06:05:27+08:00"
+}
