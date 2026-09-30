@@ -33,40 +33,30 @@ import re
 import sys
 from typing import Dict, List, Sequence, Tuple
 
-EDGE_TYPES = ("EMOTION_PACK", "SHOT_PATTERN", "AXIS_RULE", "TROPE", "EDIT_RHYTHM", "LIGHT_PACK")
+#: **单一真源**：边类型/节点 kind/必填槽位一律从超图 schema 读。
+#: 这里原先各抄了一份（六类型、16 个 kind 硬编码），新增边类型时两边会漂——
+#: v1.5 扩到 13 类时正是这么暴露的：校验器认不出新类型，抽取器却已经在产。
+from block_director.knowledge import hypergraph as _hg  # noqa: E402
 
-NODE_KINDS = (
-    "emotion", "movement", "shot_size", "lens", "pacing", "vfx", "sfx", "composition_rule",
-    "axis_topic", "character", "object", "action", "genre", "beat_type", "camera_angle", "lighting",
-)
-QUALIFIER_KINDS = (
-    "pair", "axis_side", "intensity", "applies_to_genre", "applies_to_shot_size",
-    "headroom_policy", "avg_shot_len", "transition", "scene_type", "example_shot",
-)
-ALLOWED_KINDS = frozenset(NODE_KINDS) | frozenset(QUALIFIER_KINDS)
+EDGE_TYPES = tuple(_hg.EDGE_TYPES)
+NODE_KINDS = tuple(_hg.NODE_TYPES)
+QUALIFIER_KINDS = tuple(_hg.QUALIFIER_KINDS)
+ALLOWED_KINDS = frozenset(_hg.ALLOWED_KINDS)
 
 #: required slots per edge type (execution plan §2.3 validation gate ④)
 REQUIRED_SLOTS = {
-    "EMOTION_PACK": ("emotion", "intensity"),
-    "SHOT_PATTERN": ("shot_size", "lens", "headroom_policy"),
-    "AXIS_RULE": ("pair", "axis_side"),
-    "TROPE": ("genre", "emotion"),
-    "EDIT_RHYTHM": ("pacing", "avg_shot_len"),
-    "LIGHT_PACK": ("lighting", "intensity"),
+    etype: tuple(kind for _role, kind in _hg.REQUIRED_MEMBERS[etype])
+    for etype in EDGE_TYPES
 }
 
-#: protocol §2.1 — the frozen Chinese query keys, mapped to their kind
-Q_KEY_TO_KIND = {
-    "情绪": "emotion", "动作": "action", "运镜": "movement", "景别": "shot_size",
-    "镜头": "lens", "节奏": "pacing", "特效": "vfx", "音效": "sfx", "机位": "camera_angle",
-    "光线": "lighting", "构图": "composition_rule", "轴线": "axis_topic", "题材": "genre",
-    "桥段": "beat_type",
-    # 布尔型查询项按 §2.3 的裁定折进 qualifier，不新造节点类型
-    "对白": "scene_type",
-}
+#: protocol §2.1 — the frozen Chinese query keys.
+#: **单一真源 = `hypergraph.QUERY_KEYS`**：检索器、生成器与校验器必须逐键一致，
+#: 所以这里读它而不是再抄一份——抄的那份已经漂过一次（它带 `意图→intent`，
+#: 而 schema 当时还没有这个键）。
+Q_KEY_TO_KIND = dict(_hg.QUERY_KEYS)
 
-#: the kinds a vocabulary must cover — the 14 node kinds. `scene_type` is a
-#: qualifier reached through the 对白 key, so it is checked only when present.
+#: the kinds a vocabulary must cover — every node kind. Kinds reached only through a
+#: qualifier (e.g. `scene_type` via the 对白 key) are checked only when present.
 REQUIRED_VOCAB_KINDS = frozenset(NODE_KINDS)
 
 KNOWN_TYPES = frozenset(EDGE_TYPES)
@@ -350,9 +340,17 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
         for key, value in q.items():
             used.setdefault(Q_KEY_TO_KIND[key], set()).add(value)
 
-    # 「用到了吗」只对**能用查询键表达**的 kind 检查：character/object 是索引侧
-    # 的节点类型，held-out 的 `q` 没有对应的中文键，要求它们出现是做不到的。
-    queryable = set(Q_KEY_TO_KIND.values())
+    # 「用到了吗」只对**既能用查询键表达、又有边类型接受**的 kind 检查：
+    #   * character/object 是索引侧节点类型，`q` 没有对应的中文键；
+    #   * axis_topic 之类即使有键，也没有任何边类型收它 —— 要求它出现在 q 里
+    #     等于要求标注者写一条永远命中不了种子的查询。
+    # 两类都会在 `unreachable_kinds` 里显式报出来，**不静默忽略**（§0.5 第 2 条）。
+    slotted = {kind for etype in EDGE_TYPES
+               for group in (REQUIRED_SLOTS.get(etype) or (),)
+               for kind in group}
+
+    queryable = set(Q_KEY_TO_KIND.values()) & slotted
+    unreachable = sorted((set(Q_KEY_TO_KIND.values()) - slotted) | (set(vocab) - slotted))
     missing: Dict[str, List[str]] = {}
     thin: Dict[str, List[str]] = {}
     for kind, values in vocab.items():
@@ -378,7 +376,7 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
 
     detail = {"missing_values": missing, "unknown_values": unknown, "thin_values": thin,
               "min_support": min_support, "kinds_checked": len(vocab),
-              "vocab_fingerprint": True}
+              "vocab_fingerprint": True, "unreachable_kinds": unreachable}
     return (PASS if not missing and not unknown and not thin else FAIL), detail
 
 

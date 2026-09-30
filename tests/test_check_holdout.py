@@ -16,19 +16,42 @@ sys.path.insert(0, str(ROOT))
 
 from tools import check_holdout  # noqa: E402
 
-#: kind -> allowed values; all 14 kinds must be present or the gate is not_measured
-VOCAB = {"emotion": ["气急败坏"], "action": ["跺脚"], "movement": ["固定"],
-         "shot_size": ["中景"], "lens": ["50mm"], "pacing": ["短镜硬切"],
-         "vfx": ["石化"], "sfx": ["浪声"], "camera_angle": ["平视"], "lighting": ["逆光"],
-         "composition_rule": ["三分法"], "axis_topic": ["过肩"], "genre": ["film"],
-         "beat_type": ["反转"],
-         # 索引侧节点类型：词表**必须**有（门③ 的存在性要求），但不要求出现在 q 里
-         "character": ["米迦尔"], "object": ["钱袋"]}
+from block_director.knowledge import hypergraph as hg  # noqa: E402
 
-#: one query string that exercises every kind above (keeps gate ③ satisfiable)
-Q_ALL = ("情绪=气急败坏；动作=跺脚；运镜=固定；景别=中景；镜头=50mm；节奏=短镜硬切；"
-         "特效=石化；音效=浪声；机位=平视；光线=逆光；构图=三分法；轴线=过肩；"
-         "题材=film；桥段=反转")
+# --- fixtures derived from the schema -------------------------------------------
+# Hard-coding "6 edge types / 16 kinds" is what broke when the schema expanded to
+# 13 types; everything below is read from the single source so it tracks the schema.
+VALUE = {kind: f"{kind}_v" for kind in set(hg.NODE_TYPES) | set(hg.QUALIFIER_KINDS)}
+VOCAB = {kind: [VALUE[kind]] for kind in hg.NODE_TYPES}
+KEY_FOR = {kind: zh for zh, kind in hg.QUERY_KEYS.items()}
+
+
+def spec_for(etype: str) -> str:
+    slots = [f"{kind}={VALUE[kind]}" for _role, kind in hg.REQUIRED_MEMBERS[etype]]
+    return f"{etype}:" + ",".join(slots)
+
+
+def q_for(spec: str, etype: str = "") -> str:
+    """A query that names exactly the kinds the given `must` spec covers.
+
+    Keeping the two in step is what the self-consistency gate checks, so the fixture
+    has to be built from the same source rather than written out by hand.
+    """
+    kinds = {chunk.split("=", 1)[0].replace("forbid_", "")
+             for chunk in spec.split(":", 1)[1].split(",")}
+    if etype:
+        kinds |= {kind for _role, kind in (hg.OPTIONAL_MEMBERS.get(etype) or ())}
+    pairs = [f"{KEY_FOR[kind]}={VALUE[kind]}" for kind in sorted(kinds) if kind in KEY_FOR]
+    if not pairs:
+        # 该边的必填槽位都不是查询键（如 AXIS_RULE 的 pair/axis_side）——用可选槽位里
+        # 能表达的 kind 兜底；仍然保持"q 只命名 must 里出现过的 kind"这条自洽约束。
+        pairs = [f"{KEY_FOR['shot_size']}={VALUE['shot_size']}"]
+    return "；".join(pairs)
+
+
+#: the default spec/query pair used by most tests
+DEFAULT_SPEC = spec_for("EMOTION_PACK")
+Q_ALL = q_for(DEFAULT_SPEC)
 
 
 def entry(idx: int = 1, **over: object) -> dict:
@@ -36,8 +59,8 @@ def entry(idx: int = 1, **over: object) -> dict:
         "id": f"hq_{idx:04d}",
         "from_card": f"card_{idx}",
         "q": Q_ALL,
-        "must": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定"],
-        "top1": ["EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定"],
+        "must": [DEFAULT_SPEC],
+        "top1": [DEFAULT_SPEC],
         "never": [],
         "expect_movements": ["固定"],
         "annotator": {"model_id": "m-a", "family": "fam-a", "model_version": "1",
@@ -77,30 +100,26 @@ def report(path: pathlib.Path, *extra: str, pilot: bool = True) -> dict:
 
 def q7_entry(idx: int = 1, **over: object) -> dict:
     """A record whose `q` names a value its own `must` forbids (Q7 冲突条目)."""
-    return entry(idx,
-                 must=["EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_shot_size=中景"],
-                 top1=["EMOTION_PACK:emotion=气急败坏,intensity=high,forbid_shot_size=中景"],
-                 q=Q_ALL, **over)
+    spec = (f"EMOTION_PACK:emotion={VALUE['emotion']},intensity={VALUE['intensity']},"
+            f"forbid_movement={VALUE['movement']}")
+    return entry(idx, must=[spec], top1=[spec],
+                 q=f"{KEY_FOR['emotion']}={VALUE['emotion']}；"
+                   f"{KEY_FOR['movement']}={VALUE['movement']}", **over)
 
 
 def valid_records() -> list:
-    """A minimal set that satisfies all six gates under `--pilot`.
+    """A minimal set that satisfies every gate under `--pilot`.
 
-    It covers all six edge types (gate ④), every vocabulary value (gate ③) and one
-    Q7 conflict (gate ⑤) — i.e. what a real pilot batch has to look like.
+    One entry per edge type in the schema (gate ④), every query-expressible
+    vocabulary value used (gate ③), one Q7 conflict (gate ⑤) and a human verdict on
+    everything that needs one (gate ⑦) — i.e. what a real pilot batch has to look like.
     """
-    specs = [
-        ("EMOTION_PACK:emotion=气急败坏,intensity=high,movement=固定", Q_ALL),
-        ("SHOT_PATTERN:shot_size=中景,lens=50mm,headroom_policy=board", Q_ALL),
-        ("AXIS_RULE:pair=any_two,axis_side=right", Q_ALL),
-        ("TROPE:genre=film,emotion=气急败坏", Q_ALL),
-        ("EDIT_RHYTHM:pacing=短镜硬切,avg_shot_len=2.0", Q_ALL),
-        ("LIGHT_PACK:lighting=逆光,intensity=mid", Q_ALL),
-    ]
     review = {"reviewed_by": "human", "verdict": "accepted"}
-    out = [entry(i, must=[spec], top1=[spec], q=q, review=review)
-           for i, (spec, q) in enumerate(specs, 1)]
-    out.append(q7_entry(7, review=review))
+    out = []
+    for i, etype in enumerate(hg.EDGE_TYPES, 1):
+        spec = spec_for(etype)
+        out.append(entry(i, must=[spec], top1=[spec], q=q_for(spec, etype), review=review))
+    out.append(q7_entry(len(out) + 1, review=review))
     return out
 
 
@@ -261,7 +280,7 @@ def test_seed_coverage_not_measured_without_vocab(tmp_path):
 
 def test_seed_coverage_detects_missing_value(tmp_path):
     vocab = tmp_path / "vocab.json"
-    widened = dict(VOCAB, emotion=["气急败坏", "狂喜"])
+    widened = dict(VOCAB, emotion=[VALUE["emotion"], "狂喜"])
     vocab.write_text(json.dumps(widened, ensure_ascii=False), encoding="utf-8")
     data = report(write(tmp_path, valid_records()), "--vocab", str(vocab))
     assert data["gate_3_seed_coverage"]["status"] == "fail"
@@ -276,7 +295,7 @@ def test_seed_coverage_is_two_directional(tmp_path):
     vocab.write_text(json.dumps(narrowed, ensure_ascii=False), encoding="utf-8")
     data = report(write(tmp_path, valid_records()), "--vocab", str(vocab))
     assert data["gate_3_seed_coverage"]["status"] == "fail"
-    assert "气急败坏" in data["gate_3_seed_coverage"]["unknown_values"]["emotion"]
+    assert VALUE["emotion"] in data["gate_3_seed_coverage"]["unknown_values"]["emotion"]
 
 
 def test_q_value_that_contradicts_must_is_rejected(tmp_path):
@@ -299,11 +318,11 @@ def test_same_value_required_and_forbidden_in_one_edge_is_rejected(tmp_path):
 def test_must_values_must_come_from_the_vocabulary(tmp_path):
     """must 的取值不在词表里 → Q4 会静默归零，门③ 必须抓住。"""
     vocab = tmp_path / "vocab.json"
-    narrowed = dict(VOCAB, lens=["35mm"])          # valid_records 用的是 50mm
+    narrowed = dict(VOCAB, lens=["35mm"])          # fixture 用的是 VALUE["lens"]
     vocab.write_text(json.dumps(narrowed, ensure_ascii=False), encoding="utf-8")
     data = report(write(tmp_path, valid_records()), "--vocab", str(vocab))
     assert data["gate_3_seed_coverage"]["status"] == "fail"
-    assert "50mm" in data["gate_3_seed_coverage"]["unknown_values"]["lens"]
+    assert VALUE["lens"] in data["gate_3_seed_coverage"]["unknown_values"]["lens"]
 
 
 def test_seed_support_gate_needs_more_than_one_use(tmp_path):
