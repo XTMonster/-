@@ -139,6 +139,70 @@ def test_negative_samples_are_counted_for_q3():
     assert by_id["Q3"]["status"] in ("pass", "fail")
 
 
+def test_q4_is_not_a_tautology():
+    """Q4 是**按 (query, edge) 对**聚合的，不是分子恒等于分母。
+
+    规格 §4.1（line 831）写死：`Q4 = 命中的 required_hyperedge_ids 数 /
+    Σ_q |required(q)|`。此前的实现是 `_metric("Q4", required_total,
+    required_total, 1.0)` —— 分子分母同一个变量，等于把自己判成 100%，
+    正是 §4.1b 硬规则 2 要堵的"自证"。
+
+    构造：一条 `must` 里有两张边，查询只够得着其中一张 → Q4 必须 < 1 且判 fail。
+    """
+    module = _load()
+    graph, edge, other = _graph(module)
+    entry = _entry(module, edge, q="情绪=荒诞")
+    entry["must"] = [_norm(edge), _norm(other)]
+    entry["top1"] = [_norm(edge)]
+    report = module.score_entries([entry], graph)
+    by_id = {item["id"]: item for item in report["metrics"]}
+    # 分子只能是 1（`other` 是 SHOT_PATTERN，查询里没有任何景别种子）
+    assert by_id["Q4"]["denominator"] == 2
+    assert by_id["Q4"]["numerator"] == 1
+    assert by_id["Q4"]["value"] == 0.5
+    assert by_id["Q4"]["status"] == "fail"
+    assert report["passed"] is False
+
+
+def test_a_must_spec_that_maps_to_no_index_edge_is_reported_and_fails():
+    """§2.3 的 Q6b 前置①：required 边在索引里不存在 ⇒ **索引构建失败**。
+
+    此前 `if key is not None` 会把它**静默丢掉**，于是分母凭空变小、
+    Q1/Q2/Q4/Q6b 一起被抬高——这正是硬规则 1（分母下界）与硬规则 2（禁自证）
+    联手要堵的洞。
+    """
+    module = _load()
+    from block_director.knowledge.hypergraph import Node
+
+    graph, edge, _other = _graph(module)
+    # 让 lens / headroom_policy 两个 kind 在词表里存在，但**没有**任何边同时带
+    # (MS, 50mm, board) —— 于是这条 `must` 解析不出索引边。
+    graph.nodes["lens:50mm"] = Node("lens:50mm", "lens", "50mm")
+    entry = _entry(module, edge, q="情绪=荒诞")
+    entry["must"] = ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"]
+    entry["top1"] = entry["must"]
+    report = module.score_entries([entry], graph)
+    assert report["must_total"] == 1
+    assert report["required_unresolved"] == 1
+    assert report["required_unresolved_entries"] == 1
+    assert report["unresolved_examples"][0]["id"] == "h1"
+    by_id = {item["id"]: item for item in report["metrics"]}
+    # required 分母随之归零 → Q4 按硬规则 1 判 fail（不是"没有 required 所以免测"）
+    assert by_id["Q4"]["denominator"] == 0
+    assert by_id["Q4"]["status"] == "fail"
+    assert report["passed"] is False
+
+
+def test_all_resolvable_musts_leave_the_report_clean():
+    """负对照：每条 `must` 都解析得上时，`required_unresolved` 必须为 0。"""
+    module = _load()
+    graph, edge, _other = _graph(module)
+    report = module.score_entries([_entry(module, edge)], graph)
+    assert report["must_total"] == 1
+    assert report["required_unresolved"] == 0
+    assert report["unresolved_examples"] == []
+
+
 def test_the_shipped_holdout_is_scored_or_explicitly_incomplete(capsys):
     """正式 held-out 的两种状态都必须**明说**：
 

@@ -154,6 +154,33 @@ def e1_relevance(reviews_path: Optional[Path]) -> Dict[str, Any]:
             "value": round(value, 4), "line": 0.70}
 
 
+def q4_build_gate(q_report: Dict[str, Any]) -> Dict[str, Any]:
+    """§2.3 Q6b 前置①：标注的 required 边必须能在索引里逐条找到。
+
+    这条判据**不能**由 Q1/Q2/Q4 代替：`score_entries` 把解析不到的 `must` 从
+    required 分母里剔掉，于是"oracle 与索引不同构"只会让分母变好看，不会被报出来。
+    按 §2.3（以及 §4.1b 硬规则 1）这里必须单独记账：分母为 0 判失败，
+    有任何一条 required 边不存在也判失败。
+    """
+    total = int(q_report.get("must_total") or 0)
+    unresolved = int(q_report.get("required_unresolved") or 0)
+    if total <= 0:
+        return {"id": "Q4_pre_required_edges_exist", "status": FAIL,
+                "numerator": 0, "denominator": 0,
+                "note": "must 总数为 0：按 §4.1b 硬规则 1 判失败"}
+    return {
+        "id": "Q4_pre_required_edges_exist", "status": FAIL if unresolved else PASS,
+        "numerator": total - unresolved, "denominator": total,
+        "value": round((total - unresolved) / total, 4),
+        "line": 1.0,
+        "note": (f"§2.3 Q6b 前置①：{unresolved}/{total} 条 must 在索引里找不到"
+                 f"对应边（oracle 与索引不同构 → 索引构建失败）"
+                 if unresolved else
+                 f"§2.3 Q6b 前置①：{total} 条 must 全部能在索引里找到对应边"),
+        "examples": q_report.get("unresolved_examples") or [],
+    }
+
+
 def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
                  manifest: Path, rejects: Path, cases: Optional[Path],
                  shots: Optional[Path], e1_reviews: Optional[Path],
@@ -170,6 +197,10 @@ def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
         q_report = score_entries(entries, graph, top_k=top_k,
                                  token_limit=token_limit)
         metrics.extend(q_report["metrics"])
+        # §2.3 的 Q6b 前置①（构建期覆盖门）：标注的 required 边必须在索引里真的存在，
+        # 否则"索引构建失败"。它是一条**独立于 Q1/Q4** 的判据：Q4 的分母会随不可解析
+        # 的 must 一起缩小，所以只看 Q4 会漏掉"oracle 与索引不同构"这件事本身。
+        metrics.append(q4_build_gate(q_report))
 
     metrics.append(e3_experience_override(graph))
     metrics.append(e3_cases(cases))

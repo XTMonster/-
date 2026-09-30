@@ -213,6 +213,11 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
     """按 §2.3 的 Q0–Q7 打分（只算超图这一侧；L3 的 E1/E3 由案例层另算）。"""
     norm_index = build_norm_index(graph)
     top1_hits = top3_required = required_total = selected_total = 0
+    q4_hits = 0
+    must_total = 0
+    unresolved_must = 0
+    unresolved_entries = 0
+    unresolved_examples: List[Dict[str, Any]] = []
     negative_pairs = negative_hits = 0
     q6a_edges = q6a_ok = 0
     q6b_required = q6b_ok = 0
@@ -228,9 +233,18 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
             query, top_k=top_k, token_limit=token_limit)
         # 标注写的是 `TYPE:槽位=取值,…`（协议 §2.2）；这里按"成员集完全相等"映射到
         # 当次索引里的那条边，再取它的真 norm_key（含 role）。
-        must_keys = [key for key in
-                     (entry_key(item, graph) for item in (entry.get("must") or []))
-                     if key is not None]
+        must_items = list(entry.get("must") or [])
+        must_resolved = [entry_key(item, graph) for item in must_items]
+        must_keys = [key for key in must_resolved if key is not None]
+        must_total += len(must_items)
+        missing = [str(item) for item, key in zip(must_items, must_resolved)
+                   if key is None]
+        if missing:
+            unresolved_must += len(missing)
+            unresolved_entries += 1
+            if len(unresolved_examples) < 5:
+                unresolved_examples.append(
+                    {"id": entry.get("id"), "q": query, "unresolved": missing[:3]})
         required_ids = {norm_index[key] for key in must_keys
                         if key in norm_index}
         top1_keys = [key for key in
@@ -248,6 +262,10 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
             top1_hits += 1
         if required_ids & set(selected_ids):
             top3_required += 1
+        # Q4 是**按 (query, edge) 对**聚合的（规格 §4.1 line 831：
+        # `命中的 required_hyperedge_ids 数 / Σ_q |required(q)|`）——不是
+        # "至少命中一条的 query 数"，更不是分子恒等于分母的恒真式。
+        q4_hits += len(required_ids & set(selected_ids))
         required_total += len(required_ids)
         selected_total += len(selected_ids)
         negative_pairs += len(never_ids)
@@ -290,7 +308,7 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
                 note=f"held-out query 数 {queries}（下界 {MIN_QUERIES}）"),
         _metric("Q2", top3_required, queries, 0.90, kind="min"),
         _metric("Q3", negative_hits, negative_pairs, 0.10, kind="max"),
-        _metric("Q4", required_total, required_total, 1.0, kind="contract",
+        _metric("Q4", q4_hits, required_total, 1.0, kind="contract",
                 note=f"required 总数 {required_total}（下界 {MIN_REQUIRED}）"),
         _metric("Q6a", q6a_ok, q6a_edges, 1.0, kind="contract"),
         _metric("Q6b", q6b_ok, q6b_required, 1.0, kind="contract"),
@@ -310,9 +328,20 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
             item["status"] = "fail"
             item["note"] = (f"冲突查询数 {q7_queries} < 下界 "
                             f"{MIN_FORBID_ITEMS}")
+    # §2.3 的 Q6b 前置①（构建期覆盖门）：「若某 query 的 required 边在归并后确实
+    # 不存在，则**索引构建失败**（不留给 P14-4 去发现）」。也就是说，解析不到索引边的
+    # `must` **不是**"这条不计"，而是 oracle 与索引不同构——它会让 required 的分母
+    # 凭空变小（把 Q1/Q2/Q4/Q6b 一起抬高），因此必须单独记账并判失败。
+    # （此前它被 `if key is not None` 静默丢掉，正是硬规则 1/2 要堵的洞。）
+    unresolved_ok = unresolved_must == 0
     return {"queries": queries, "edges": len(graph.edges),
             "selected_total": selected_total, "metrics": metrics,
-            "passed": all(item["status"] == "pass" for item in metrics)}
+            "must_total": must_total,
+            "required_unresolved": unresolved_must,
+            "required_unresolved_entries": unresolved_entries,
+            "unresolved_examples": unresolved_examples,
+            "passed": unresolved_ok
+            and all(item["status"] == "pass" for item in metrics)}
 
 
 def _member_present(text: str, member, nodes) -> bool:

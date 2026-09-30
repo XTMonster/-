@@ -139,6 +139,29 @@ def test_e2_counts_adopted_movements_and_is_never_a_gate(tmp_path):
 # --------------------------------------------------------------------------- 总判
 
 
+def test_q4_build_gate_fails_when_a_must_maps_to_no_index_edge():
+    """§2.3 Q6b 前置①：required 边在索引里不存在 ⇒ 索引构建失败。
+
+    这条判据**不能**由 Q1/Q2/Q4 代替——`score_entries` 会把解析不到的 `must`
+    从 required 分母里剔掉，分母变小只会让比率变好看，缺陷不会被报出来。
+    """
+    bad = quality.q4_build_gate({"must_total": 10, "required_unresolved": 1,
+                                 "unresolved_examples": [{"id": "hq_0009"}]})
+    assert bad["status"] == "fail"
+    assert bad["numerator"] == 9 and bad["denominator"] == 10
+    assert "不同构" in bad["note"]
+
+    good = quality.q4_build_gate({"must_total": 10, "required_unresolved": 0})
+    assert good["status"] == "pass" and good["value"] == 1.0
+
+
+def test_q4_build_gate_obeys_the_denominator_floor():
+    """硬规则 1：分母为 0 一律判失败，不得记 not_measured 后放过。"""
+    out = quality.q4_build_gate({"must_total": 0, "required_unresolved": 0})
+    assert out["status"] == "fail" and out["denominator"] == 0
+    assert "硬规则 1" in out["note"]
+
+
 def test_overall_is_not_measured_when_evidence_is_missing(tmp_path):
     """缺证据时退出码必须是 2，绝不当成通过（§4.1b 硬规则 1）。"""
     manifest = tmp_path / "manifest.json"
