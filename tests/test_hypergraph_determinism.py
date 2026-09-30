@@ -11,11 +11,14 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import pathlib
 import sys
 
 import pytest
+
+from block_director.knowledge import hypergraph as hg
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -112,6 +115,37 @@ def test_every_component_changes_the_fingerprint():
         mutated = dict(base)
         mutated[key] = "changed"
         assert bh.fingerprint_of(mutated) != baseline, f"{key} 没进指纹"
+
+
+def test_global_dedupe_collapses_cross_window_copies_and_unions_sources():
+    """同一 `(type, members, scope)` 在索引里只能有一条。
+
+    第 2 段是按**窗口**分组的，同一个耦合出现在两个窗口就会各留一条——实测
+    852 条边里只有 708 个不同 `norm_key`（144 条副本）。§2.3 的去重键是全局的，
+    所以补这一刀；副本的 `sources` 必须**并起来**（出处不能因为去重而丢）。
+    """
+    def make(source: str, occurrences: int) -> hg.HyperEdge:
+        return hg.HyperEdge(
+            type="EMOTION_PACK",
+            members=(hg.Member("allow", "emotion", "emotion:荒诞"),
+                     hg.Member("qualifier", "intensity", "intensity:high")),
+            source_kind="theory", hardness="hard", occurrences=occurrences,
+            confidence=0.6, confidence_max=0.6, sources=(source,),
+            source_span={"chunk_id": "c1", "start": 0, "end": 4},
+            extractor={"prompt_version": "test"}, provenance_kind="生成卡片")
+
+    first, second = make("card_a", 2), make("card_b", 3)
+    kept, report = bh.dedupe_by_norm_key([first, second])
+    assert len(kept) == 1 and report["dropped"] == 1
+    assert set(kept[0].sources) == {"card_a", "card_b"}, "副本的出处必须并起来"
+    assert kept[0].occurrences == 5, "重复出现次数要相加"
+
+    # scope 不同（理论 vs 教训）**不得**合并：去重键带 scope。
+    lesson = hg.HyperEdge(**{**{f.name: getattr(first, f.name)
+                                for f in dataclasses.fields(first)},
+                             "source_kind": "lesson"})
+    kept2, _report2 = bh.dedupe_by_norm_key([first, lesson])
+    assert len(kept2) == 2
 
 
 def test_only_missing_backfills_edges_without_losing_the_old_atoms(tmp_path, monkeypatch):
