@@ -1,0 +1,84 @@
+[1/31] Check spec and golden-fixture consistency
+[OK] E:\白模预演codex\specs\config.default.yaml 与代码一致
+[OK] Golden 夹具与 fixtures/mock_llm_responses/plan_simple.json 一致
+[2/31] Run pytest suite
+........................................................................ [  5%]
+........................................................................ [ 11%]
+........................................................................ [ 16%]
+........................................................................ [ 22%]
+........................................................................ [ 28%]
+........................................................................ [ 33%]
+........................................................................ [ 39%]
+........................................................................ [ 44%]
+........................................................................ [ 50%]
+........................................................................ [ 56%]
+........................................................................ [ 61%]
+........................................................................ [ 67%]
+........................................................................ [ 72%]
+........................................................................ [ 78%]
+........................................................................ [ 84%]
+........................................................................ [ 89%]
+........................................................................ [ 95%]
+...........................................................              [100%]
+1283 passed in 47.54s
+[3/31] Smoke test contracts inside Blender Python
+  SMOKE_OK 1.3.0 3.13.13 0
+[4/31] Run the add-on headless (plan -> scene -> delivery, one command)
+  {"run_id": "a8d7330b050a", "state": "DONE", "steps": 19, "llm_calls": 6, "tool_calls": 1, "shots": 2, "total_frames": 216, "built": true, "build": {"shots": 2, "characters": 2, "cameras": 2, "motions": 2, "keyframes": 366, "total_frames": 216, "warnings": [], "movements": 0, "crowd": 0, "vfx": 0, "label_report": {"labels": 2, "frames": 112, "sample_step": 4, "resolution": [1280, 720], "unreadable": [], "offsets": {"char_001": {"offset_reason": "out_of_frame", "applied_offset_px": 180.0, "frame": 97, "text": "char_001", "anchor_z": 1.8655}, "char_002": {"offset_reason": "out_of_frame", "applied_offset_px": 155.44, "frame": 97, "text": "char_002", "anchor_z": 1.7381}}}, "action_conflicts": [], "results": [{"shot_id": "shot_001", "shot_type": "MLS", "start_frame": 1, "end_frame": 96, "camera": "BD_Cam_shot_001", "camera_position": [0.0, -4.661, 0.621], "camera_target": [0.0, 0.0, 0.621], "lens": 35.0, "characters": ["char_001", "char_002"], "motions": 1, "warnings": []}, {"shot_id": "shot_002", "shot_type": "MCU", "start_frame": 97, "end_frame": 216, "camera": "BD_Cam_shot_002", "camera_position": [-1.607, -1.447, 1.231], "camera_target": [0.9, 0.0, 1.231], "lens": 50.0, "characters": ["char_002"], "motions": 1, "warnings": []}]}, "current_shot": "shot_002", "shots_remaining": 0, "audits": 2, "failed_audits": 0, "repairs": 0, "shot_repairs": 0, "budget": {"llm_calls": 6, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "cost_usd": 0.0, "elapsed_seconds": 0.3, "limits": {"max_llm_calls": 200, "max_tokens": 2000000, "max_cost_usd": 5.0, "max_wall_seconds": 7200.0}, "exhausted": null}, "loops": {"calls": 1, "distinct": 1, "query_streak": 0}, "knowledge": {"backend": "bm25", "engine": "builtin.BM25Okapi", "cards": 1075, "top_k": 5, "token_limit": 800, "plan_token_limit": 2000, "retrieval_calls": 0, "degraded": true, "degraded_reason": "hypergraph_unavailable", "cases": 0, "lanes": 1, "cases_backend": "off", "cases_requested_backend": "off", "cases_degraded": false, "cases_degraded_reason": "", "lightrag_index_fingerprint": "", "cases_index_fingerprint": "", "warnings": ["配置要求超图检索，但传输层未确认 hypergraph 能力（或索引不可用）：已降级为 bm25 卡片检索，并在 knowledge_trace 里记 degraded=true"]}, "degraded_reason": "", "abort_reason": "", "paused": false, "finished_shots": 0, "review_requests": 0, "react_rounds": 0, "brief": {"speakers": [], "gaze": [], "beats": [{"id": "beat_001", "summary": "建立场景与人物关系", "participants": [], "emotion": "平静", "function": "建立"}, {"id": "beat_002", "summary": "推进对话，给出反应", "participants": [], "emotion": "推进", "function": "推进"}], "space": [], "arc": {}, "props": [], "notes": ["离线自检：SceneBrief 为确定性夹具，不含注视关系"], "source": "llm"}, "brief_source": "llm", "drafts": 2, "drafts_failed": 0, "compliance": {"ok": true, "declared_shot_count": 0, "plan_shot_count": 2, "declared_total_seconds": null, "plan_total_seconds": 9.0, "fps": 24, "brief_source": "llm", "rows": [], "findings": []}, "timing_overrides": [], "audit_pass_rate": {"numerator": 2, "denominator": 2, "rules": ["shot_001", "shot_002"], "sampled_frames": 2, "exempt_shots": []}, "error": "", "mode": "offline", "success": true, "audit_log": "C:\\Users\\小皮\\AppData\\Local\\Temp\\bd_run_145849\\runs\\audit_log.jsonl", "llm_trace": "C:\\Users\\小皮\\AppData\\Local\\Temp\\bd_run_145849\\runs\\llm_trace.jsonl", "plan": {"scene_heading": "（空剧本）", "continuity_notes": ["离线自检模式生成，仅供链路验证"], "shots": [{"shot_id": "shot_001", "order": 1, "intent": "建立场景与人物关系", "shot_type": "MLS", "duration_frames": 96, "characters": ["char_001", "char_002"], "dialogue_ids": [], "actions": [{"character_id": "char_001", "action_type": "nod", "start_frame": 1, "end_frame": 96, "params": {"cycles": 2}}], "dialogues": [], "prompt": "", "camera": {}, "axis_note": "以两人连线建立轴线", "continuity_in": "开场", "gaze": [], "vfx": [], "declared_duration_frames": 0, "declared_shot_number": 0, "dialogue_pins": []}, {"shot_id": "shot_002", "order": 2, "intent": "推进对话，给出反应", "shot_type": "MCU", "duration_frames": 120, "characters": ["char_002"], "dialogue_ids": [], "actions": [{"character_id": "char_002", "action_type": "sit", "start_frame": 1, "end_frame": 60, "params": {"drop": 0.2}}], "dialogues": [], "prompt": "", "camera": {}, "axis_note": "保持轴线同侧", "continuity_in": "承接 shot_001 的站位", "gaze": [], "vfx": [], "declared_duration_frames": 0, "declared_shot_number": 0, "dialogue_pins": []}]}, "retrieval_calls": 0, "knowledge_trace": "C:\\Users\\小皮\\AppData\\Local\\Temp\\bd_run_145849\\knowledge_trace.json"}
+  {"ok": true, "aborted": false, "out_dir": "C:\\Users\\小皮\\AppData\\Local\\Temp\\bd_run_145849\\export", "files": 9, "warnings": [], "reason": ""}
+[5/31] Blender probe: operator-e2e
+  OK: operator-e2e
+[6/31] Blender probe: character-geometry
+  OK: character-geometry
+[7/31] Blender probe: scene-contract
+  OK: scene-contract
+[8/31] Blender probe: label-toggles
+  OK: label-toggles
+[9/31] Blender probe: label-layout
+  OK: label-layout
+[10/31] Blender probe: composition-gate
+  OK: composition-gate
+[11/31] Blender probe: phase1
+  OK: phase1
+[12/31] Blender probe: phase2
+  OK: phase2
+[13/31] Blender probe: phase3
+  OK: phase3
+[14/31] Blender probe: phase3-audit
+  OK: phase3-audit
+[15/31] Blender probe: phase4
+  OK: phase4
+[16/31] Blender probe: phase4-tools
+  OK: phase4-tools
+[17/31] Blender probe: phase4-repair
+  OK: phase4-repair
+[18/31] Blender probe: phase5-checkpoint
+  OK: phase5-checkpoint
+[19/31] Blender probe: phase6
+  OK: phase6
+[20/31] Blender probe: layer2-project
+  OK: layer2-project
+[21/31] Blender probe: replay
+  OK: replay
+[22/31] Blender probe: golden
+  OK: golden
+[23/31] Blender probe: scene-sync
+  OK: scene-sync
+[24/31] Blender probe: ui-panels
+  OK: ui-panels
+[25/31] Blender probe: overlay-path
+  OK: overlay-path
+[26/31] Blender probe: delivery-extras
+  OK: delivery-extras
+[27/31] Blender probe: tools-extended
+  OK: tools-extended
+[28/31] Blender probe: cast-panel
+  OK: cast-panel
+[29/31] Blender probe: llm-trace
+  OK: llm-trace
+[30/31] Blender probe: camera-motion
+  OK: camera-motion
+[31/31] Blender probe: crowd-vfx
+  OK: crowd-vfx
+Evidence: E:\白模预演codex\docs\evidence\20260930-150154
+All checks passed.
