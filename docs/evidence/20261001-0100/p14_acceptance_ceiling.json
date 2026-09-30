@@ -1,0 +1,121 @@
+{
+  "queries": 4539,
+  "index_edges": 387,
+  "must_total": 5043,
+  "must_resolvable": 1323,
+  "top1_total": 1224,
+  "seed_miss_queries": 0,
+  "ceilings": {
+    "Q1": 0.2653,
+    "Q2": 0.2813,
+    "Q4": 0.2623,
+    "Q6b": 0.2623
+  },
+  "lines": {
+    "Q1": 0.7,
+    "Q2": 0.9,
+    "Q4": 1.0,
+    "Q6b": 1.0
+  },
+  "ceilings_below_lines": [
+    "Q1",
+    "Q2",
+    "Q4",
+    "Q6b"
+  ],
+  "edges_per_type": {
+    "ACTION_BEAT": 97,
+    "AXIS_RULE": 16,
+    "EDIT_RHYTHM": 17,
+    "EMOTION_PACK": 41,
+    "IMPACT_PACK": 6,
+    "INTENT_PACK": 8,
+    "LIGHT_PACK": 21,
+    "PERFORMANCE_PACK": 97,
+    "SHOT_PATTERN": 40,
+    "SOUND_PACK": 2,
+    "STAGING_PACK": 27,
+    "TRANSITION_PACK": 13,
+    "TROPE": 2
+  },
+  "must_per_type": {
+    "ACTION_BEAT": {
+      "demanded": 308,
+      "resolvable": 57,
+      "in_candidates": 57,
+      "absent": 251
+    },
+    "AXIS_RULE": {
+      "demanded": 263,
+      "resolvable": 16,
+      "in_candidates": 16,
+      "absent": 247
+    },
+    "EDIT_RHYTHM": {
+      "demanded": 316,
+      "resolvable": 300,
+      "in_candidates": 300,
+      "absent": 16
+    },
+    "EMOTION_PACK": {
+      "demanded": 771,
+      "resolvable": 207,
+      "in_candidates": 190,
+      "absent": 564
+    },
+    "IMPACT_PACK": {
+      "demanded": 256,
+      "resolvable": 0,
+      "in_candidates": 0,
+      "absent": 256
+    },
+    "INTENT_PACK": {
+      "demanded": 679,
+      "resolvable": 33,
+      "in_candidates": 33,
+      "absent": 646
+    },
+    "LIGHT_PACK": {
+      "demanded": 364,
+      "resolvable": 300,
+      "in_candidates": 298,
+      "absent": 64
+    },
+    "PERFORMANCE_PACK": {
+      "demanded": 328,
+      "resolvable": 0,
+      "in_candidates": 0,
+      "absent": 328
+    },
+    "SHOT_PATTERN": {
+      "demanded": 569,
+      "resolvable": 132,
+      "in_candidates": 125,
+      "absent": 437
+    },
+    "SOUND_PACK": {
+      "demanded": 240,
+      "resolvable": 0,
+      "in_candidates": 0,
+      "absent": 240
+    },
+    "STAGING_PACK": {
+      "demanded": 493,
+      "resolvable": 176,
+      "in_candidates": 176,
+      "absent": 317
+    },
+    "TRANSITION_PACK": {
+      "demanded": 212,
+      "resolvable": 66,
+      "in_candidates": 66,
+      "absent": 146
+    },
+    "TROPE": {
+      "demanded": 244,
+      "resolvable": 36,
+      "in_candidates": 36,
+      "absent": 208
+    }
+  }
+}
