@@ -185,7 +185,8 @@ def test_gate6_card_coverage_keeps_the_coverage_rounds_running():
     于是"总量刚过 1200、还有 494 张卡一条都没有"时它照样判闭合收工——
     交出来的文件过不了门⑥。
     """
-    cards = [{"id": "c1"}, {"id": "c2"}, {"id": "c3"}]
+    cards = [{"id": card_id, "domain": "anime", "title": "t", "content": "x" * 20}
+             for card_id in ("c1", "c2", "c3")]
     half = [{"id": "hq_0001", "from_card": "c1", "q": "情绪=荒诞", "must": [], "top1": [],
              "never": []}]
     gaps = holdout_fill.coverage_gaps(half, {"emotion": ["荒诞"]}, cards)
@@ -198,6 +199,20 @@ def test_gate6_card_coverage_keeps_the_coverage_rounds_running():
 
     # 不传 cards 的老调用保持向后兼容（记 0，不误判成"还有卡没覆盖"）
     assert holdout_fill.coverage_gaps(half, {"emotion": ["荒诞"]})["cards_missing"] == 0
+
+
+def test_gap_prompt_lists_the_cards_that_still_have_no_entry():
+    """补跑提示必须**点名**那些一条都没有的卡，否则模型只会继续给已有条目的卡写。"""
+    cards = [{"id": card_id, "domain": "anime", "title": "t", "content": "x" * 20}
+             for card_id in ("c1", "c2", "c3")]
+    entries = [{"id": "hq_0001", "from_card": "c1", "q": "情绪=荒诞", "must": [],
+                "top1": [], "never": []}]
+    gaps = holdout_fill.coverage_gaps(entries, {"emotion": ["荒诞"]}, cards)
+    prompt = holdout_fill.build_gap_prompt(gaps, cards, {"emotion": ["荒诞"]},
+                                           ["c2", "c3"], entries)
+    assert "c2" in prompt and "c3" in prompt
+    assert "门⑥" in prompt
+    assert "c1" not in prompt.split("目前一条条目都没有")[1].split("\n")[0]
 
 
 def test_gap_prompt_names_the_shortfall_and_the_cards():

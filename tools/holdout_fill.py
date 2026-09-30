@@ -67,7 +67,7 @@ REPORT = common.WORK / "holdout_report.json"
 _ANNOTATOR: Dict[str, str] = {}
 
 # 缺口补写用的系统提示（不放进 holdout_gen，避免动它的冻结 prompt 版本）。
-GAP_PROMPT_VERSION = "holdout-gap/v3"
+GAP_PROMPT_VERSION = "holdout-gap/v4"
 GAP_PROMPT = (
     "你是分镜知识库的独立标注员。下面给出一份**缺口清单**与若干张知识卡。"
     "请**只**针对缺口写检索期望，输出 JSON：{\"entries\":[...]}，每条格式与之前一致："
@@ -218,8 +218,15 @@ def gaps_closed(gaps: Dict) -> bool:
 
 
 def build_gap_prompt(gaps: Dict, cards: Sequence[Dict],
-                     vocab: Dict[str, Sequence[str]], use_cards: Sequence[str]) -> str:
+                     vocab: Dict[str, Sequence[str]], use_cards: Sequence[str],
+                     entries: Sequence[Dict] = ()) -> str:
     lines = ["【缺口清单】"]
+    if gaps.get("cards_missing"):
+        used = {str(e.get("from_card")) for e in entries}
+        missing = [str(c["id"]) for c in cards if str(c["id"]) not in used]
+        if missing:
+            lines.append("- **下面这些卡片目前一条条目都没有**（门⑥ 要求每张入库卡至少 1 条，"
+                         "请优先给它们写）：%s" % "、".join(missing[:20]))
     if gaps.get("deficit"):
         lines.append("- **总条数还差 %d 条**（门① 要求 ≥%d 条；本轮请按卡片尽量多写，"
                      "每张卡 2 条）" % (int(gaps["deficit"]), MIN_ENTRIES))
@@ -406,7 +413,7 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
         key = gap_round_key(round_index, pick)
         if key in done:
             continue
-        prompt = build_gap_prompt(gaps, cards, vocab, pick)
+        prompt = build_gap_prompt(gaps, cards, vocab, pick, entries)
         try:
             # 补跑轮必须带上**完整的**基础 prompt（六类模板、取值一致性、自检清单），
             # 否则只给"缺口清单+卡"会让模型写 `标签=`/`关键词=`/`结构=` 这种不在
