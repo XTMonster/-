@@ -34,7 +34,7 @@ from block_director.knowledge import hypergraph as hg
 HOLDOUT = common.ROOT / "fixtures" / "knowledge_holdout.jsonl"
 CARDS_JSON = common.ROOT / "fixtures" / "knowledge_holdout.cards.json"
 MANIFEST = common.WORK / "holdout.manifest.json"
-PROMPT_VERSION = "holdout/v9"
+PROMPT_VERSION = "holdout/v10"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
@@ -55,6 +55,12 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
 }
 
 规则（违反的条目会被机器拒绝）：
+0. **`q` 必须真能把 `must` 那条边查出来**——`must` 里**每个能写进 `q` 的槽位**都要在
+   `q` 里出现，取值逐字相同（没有查询键的槽位如 `headroom_policy`／`pair`／`axis_side`
+   不写）。例：`SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board` → `q` 要同时写
+   `景别=MS` 与 `镜头=50mm`；`AXIS_RULE:…,axis_topic=越轴` → `q` 写 `轴线=越轴`。
+   **实测**：查询覆盖到目标边 ≥2 个成员时 Q1=0.727／Q2=0.917（都过验收线），只覆盖 1 个时
+   0.508／0.754，覆盖 0 个则根本召不回。
 1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段/意图。
 **`type` 只允许这 13 个字符串**：`EMOTION_PACK`、`SHOT_PATTERN`、`AXIS_RULE`、`TROPE`、
 `EDIT_RHYTHM`、`LIGHT_PACK`、`ACTION_BEAT`、`PERFORMANCE_PACK`、`INTENT_PACK`、

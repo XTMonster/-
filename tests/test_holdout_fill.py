@@ -119,6 +119,28 @@ def test_absorb_rejects_values_outside_the_frozen_vocab(monkeypatch):
     assert sum(1 for r in reasons if r.startswith("vocab:")) == 2
 
 
+def test_absorb_rejects_a_query_that_cannot_reach_its_own_must_edge(monkeypatch):
+    """协议 §3.1：`must` 是"必须能从这条查询检出"的边。
+
+    实测依据：4539 条里按"查询覆盖目标边几个成员"分组，覆盖 ≥2 的那批
+    **Q1=0.727 / Q2=0.917（都过线）**，覆盖 1 个的 0.508/0.754，覆盖 0 的根本召不回。
+    所以产出侧必须拦下"查询写得太弱"的条目——`SHOT_PATTERN` 的 `shot_size`
+    与 `lens` 都能写进 `q`，两条都得出现。
+    """
+    _with_annotator(monkeypatch)
+    vocab = {"shot_size": ["MS"], "lens": ["50mm"], "headroom_policy": ["board"]}
+    weak = _entry("c1", "景别=MS",
+                  ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"])
+    strong = _entry("c1", "景别=MS；镜头=50mm",
+                    ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"])
+
+    entries, rejects = [], []
+    holdout_fill.absorb(entries, rejects, {"entries": [weak, strong]}, {"c1"}, 0,
+                        vocab=vocab)
+    assert [e["q"] for e in entries] == ["景别=MS；镜头=50mm"]
+    assert rejects and rejects[0]["reason"].startswith("weak_q:")
+
+
 def test_corrupt_checkpoint_is_ignored(tmp_path):
     progress = tmp_path / "progress.json"
     partial = tmp_path / "partial.jsonl"
