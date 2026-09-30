@@ -55,7 +55,7 @@ python tools/check_holdout.py fixtures/knowledge_holdout.jsonl `
 | Q7 禁忌拦截 | = 1.0（冲突查询 ≥60） | 1.0（487） | **pass** | 分母仍偏小，见 FORBID_COVERAGE.md |
 | Q5 运镜命中 | ≥0.80 | not_measured | — | 需真实计划镜头（人评） |
 | E1 经验引用相关性 | ≥0.70 | not_measured | — | 需人评 |
-| E2 双索引成本 | 诊断量 | not_measured | — | — |
+| E2 经验采纳率 | 诊断量（不设门） | **0.0（0/64）** | measured | 用 `docs/evidence/offline_run2/export/shots.json` 实测得到；**这条 0 是结构性的**：`block_director/delivery/manifest.py::_movements_payload` 只写 `declared`/`planned` 两种来源，注释自己写着"P14 之后 `theory`/`experience`/`lesson`/`case` 由知识 trace 填"——而那一步没做。于是"这条运镜是不是知识层给的"无从追溯，E2 恒为 0（不是因为知识层没被用，而是**没人记账**） |
 | E3 经验越权率 | = 0 | 0（类型级保证） | **pass** | `Case` 结构上没有 forbid 字段 |
 
 ## 四、要把 RK-13 判绿，必须先行裁决的三件事
@@ -70,6 +70,15 @@ python tools/check_holdout.py fixtures/knowledge_holdout.jsonl `
    这两项**不可能**变绿，不是实现缺陷。
 
 ## 五、这一轮（P14 知识 lane）已经把什么做实的
+
+### 4.1 两处"要接但没接"的地方（本轮实测确认）
+
+* **`movements[].source` 的知识层来源没人写**（见上表 E2 行）：`delivery/manifest.py`
+  只写 `declared`/`planned`。要 E2 有意义，需要在产出 `shots.json` 时把该镜注入过的
+  知识来源（`theory`/`experience`/`lesson`/`case`）落到每条运镜上——这需要驱动层保留
+  **逐镜**的知识归属（现在 `knowledge_trace.json` 是**整轮**一份）。
+* **`intensity` 这类必填槽位缺查询键**曾经把排序压在 0.62——已修（见 §四 之后的
+  `ORACLE_ALIGNMENT.md §6.1`），但它同时把门⑨ 的弱查询暴露到 54%，需要一轮重标。
 
 * 语料 1075 → **1733 卡**（新增现代理论 11 篇 + 动漫制作/剧场版 7 篇，全部走同一套机器门）；
 * 索引 387 → **683 条边**，其中：手写策展卡**首次进索引**（`curated/<id>`）、
