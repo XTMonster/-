@@ -319,6 +319,18 @@ def load_sources(path: pathlib.Path | None = None) -> List[Dict]:
             raise ValueError(f"sources.yaml 第 {index} 条 domain 不在九域内: {entry['domain']!r}")
         if entry["mode"] not in ("http", "manual", "dataset"):
             raise ValueError(f"sources.yaml 第 {index} 条 mode 非法: {entry['mode']!r}")
+        # 选填 `chunk_budget`：非负整数（0/缺省 = 不限，交给 chunk.py 的域预算）。
+        # 类型写错时要**报错**而不是静默忽略——静默忽略会悄悄换成域预算，
+        # 把"每个来源切多少段"这条口径偷偷改掉。
+        raw_budget = entry.get("chunk_budget", 0) or 0
+        try:
+            budget = int(raw_budget)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"sources.yaml 第 {index} 条 chunk_budget 不是整数: {raw_budget!r}") from exc
+        if budget < 0:
+            raise ValueError(f"sources.yaml 第 {index} 条 chunk_budget 为负: {budget}")
+        entry["chunk_budget"] = budget
         out.append(dict(entry))
     return out
 

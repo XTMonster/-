@@ -185,13 +185,16 @@ def run(records: Sequence[Dict], per_domain_chunks: int = 0,
 
     out: List[Dict] = []
     for domain, items in by_domain.items():
-        per_source = 0
+        domain_budget = 0
         if budget.get(domain):
-            per_source = max(1, -(-budget[domain] // len(items)))  # ceil
+            domain_budget = max(1, -(-budget[domain] // len(items)))  # ceil
         if max_per_source:
-            per_source = min(per_source or max_per_source, max_per_source) \
-                if per_source else max_per_source
+            domain_budget = (min(domain_budget or max_per_source, max_per_source)
+                             if domain_budget else max_per_source)
         for record in items:
+            # 来源自己声明的预算优先：它是"这一份语料切几段"的属性，
+            # 不随同域里其他来源的增减而改变（域预算只做兜底）。
+            per_source = int(record.get("chunk_budget") or 0) or domain_budget
             slug = common.source_slug({"url": record["source_ref"]["url"]})
             if record.get("mode") == "manual":
                 # 自撰笔记：一节一个 chunk（每个小标题就是一条独立知识点），

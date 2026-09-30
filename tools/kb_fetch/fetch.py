@@ -217,6 +217,11 @@ def fetch_source(source: Dict, timeout: float, rate_seconds: float,
         "genre": str(source.get("genre", "") or ""),
         "theme": str(source.get("theme", "") or ""),
         "note": str(source.get("note", "") or ""),
+        # 每来源的切块预算（0 = 交给 `chunk.py` 的域预算/不限）。
+        # 它必须**跟着来源走**：域预算是"这个域一共切多少段"，同一域里多一个来源
+        # 就会把每个来源的配额改掉，于是老段的切法跟着变、指纹全变——语料一长，
+        # 已有的标注就全部作废。写成来源自己的属性，增长才只影响新增的那一份。
+        "chunk_budget": int(source.get("chunk_budget") or 0),
         "cache_path": _display_path(cache_file),
         "chars": len(text),
         "text": text,

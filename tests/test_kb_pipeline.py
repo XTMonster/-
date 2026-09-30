@@ -473,6 +473,60 @@ def test_v1_manifest_with_a_stale_prompt_is_not_migrated(tmp_path):
     assert client.calls == ["inc#000"], "prompt 版本对不上就不迁移，宁可重抽"
 
 
+class _OverlapClient:
+    """记录「同时在飞的调用数」，用来证明 `--workers` 真的在并发。"""
+
+    def __init__(self, inner):
+        import threading
+
+        self._inner = inner
+        self._lock = threading.Lock()
+        self.live = 0
+        self.peak = 0
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+    def chat_json(self, *args, **kwargs):
+        import time
+
+        with self._lock:
+            self.live += 1
+            self.peak = max(self.peak, self.live)
+        try:
+            time.sleep(0.02)
+            return self._inner.chat_json(*args, **kwargs)
+        finally:
+            with self._lock:
+                self.live -= 1
+
+
+def test_parallel_annotate_matches_serial_output(tmp_path, monkeypatch):
+    chunks = [_annotate_chunk(i) for i in range(8)]
+    inner = _scripted_annotator(tmp_path, chunks, "m1")
+
+    def run_in(name, client, workers):
+        work = tmp_path / name
+        work.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr(annotate, "ANNOTATED", work / "annotated.jsonl")
+        monkeypatch.setattr(annotate, "ANNOTATE_REJECTS", work / "rejects.jsonl")
+        monkeypatch.setattr(annotate, "MANIFEST", work / "manifest.json")
+        return annotate.run(chunks, client, workers=workers)
+
+    serial, _ = run_in("serial", inner, 1)
+    overlap = _OverlapClient(inner)
+    parallel, _ = run_in("parallel", overlap, 4)
+
+    assert parallel == serial, "并发标注的产物必须与串行逐字段相同"
+    assert overlap.peak > 1, "workers=4 时应当真的出现同时在飞的调用"
+    serial_manifest = json.loads(
+        (tmp_path / "serial" / "manifest.json").read_text(encoding="utf-8"))
+    parallel_manifest = json.loads(
+        (tmp_path / "parallel" / "manifest.json").read_text(encoding="utf-8"))
+    assert serial_manifest["chunks"] == parallel_manifest["chunks"]
+    assert serial_manifest["passes"] == parallel_manifest["passes"]
+
+
 def test_incremental_rejects_are_kept_and_can_be_retried(tmp_path):
     chunks = [_annotate_chunk(0)]
     annotated, rejects = annotate.run(chunks, _scripted_annotator(tmp_path, [], "m1"),
@@ -491,6 +545,59 @@ def test_incremental_rejects_are_kept_and_can_be_retried(tmp_path):
     # 重抽只针对"被判无卡片"的那一段；已经抽出卡片的那段照旧复用。
     assert client3.calls == ["inc#000"]
     assert len(again3) == 2 and not rejects3
+
+
+def _budget_record(url: str, budget: int = 0, domain: str = "composition") -> dict:
+    body = "\n\n".join(f"第{i}段。" + "这是用于切块预算测试的正文，必须足够长。" * 60
+                       for i in range(20))
+    return {"source_ref": {"url": url, "title": "t", "author": "a",
+                           "license": "PublicDomain", "retrieved_at": "2026-10-01",
+                           "sha256": common.sha256_text(url)},
+            "domain": domain, "mode": "http", "genre": "film", "theme": "",
+            "chunk_budget": budget, "text": body, "chars": len(body)}
+
+
+def test_source_declared_chunk_budget_beats_the_domain_budget():
+    """来源自己声明的预算不随同域里其他来源的增减而改变。
+
+    域预算是"这个域一共切多少段"，多一个来源就会把每个来源的配额改掉，
+    于是老段的切法跟着变、正文 sha 跟着变，已有的标注全部作废。
+    """
+    records = [_budget_record("https://example.test/a.txt", 2),
+               _budget_record("https://example.test/b.txt", 0)]
+    chunks = chunk.run(records, per_domain_chunks=10)
+    ids = [c["chunk_id"] for c in chunks]
+    assert [i for i in ids if i.startswith("a_txt")] == ["a_txt#000", "a_txt#001"]
+    # 另一个来源没有声明预算，仍然吃域预算：ceil(10 / 2) = 5
+    assert len([i for i in ids if i.startswith("b_txt")]) == 5
+
+
+def test_fetch_carries_the_source_chunk_budget():
+    source = {"url": "repo://knowledge/source_notes/editing_rhythm.md", "title": "t",
+              "author": "a", "license": "OwnWork", "domain": "editing",
+              "mode": "manual", "chunk_budget": 7, "retrieved_at": "2026-10-01"}
+    record = fetch.fetch_source(source, 30.0, 0.0)
+    assert record["chunk_budget"] == 7
+
+
+def test_chunk_budget_must_be_a_non_negative_integer(tmp_path):
+    path = tmp_path / "sources.yaml"
+    path.write_text(
+        "sources:\n"
+        "  - url: repo://knowledge/source_notes/editing_rhythm.md\n"
+        "    title: t\n    author: a\n    license: OwnWork\n"
+        "    domain: editing\n    mode: manual\n    chunk_budget: 很多\n",
+        encoding="utf-8")
+    with pytest.raises(ValueError, match="chunk_budget"):
+        common.load_sources(path)
+    path.write_text(
+        "sources:\n"
+        "  - url: repo://knowledge/source_notes/editing_rhythm.md\n"
+        "    title: t\n    author: a\n    license: OwnWork\n"
+        "    domain: editing\n    mode: manual\n    chunk_budget: -3\n",
+        encoding="utf-8")
+    with pytest.raises(ValueError, match="chunk_budget"):
+        common.load_sources(path)
 
 
 def test_annotator_rejects_non_verbatim_quote():
