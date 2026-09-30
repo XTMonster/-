@@ -1,0 +1,300 @@
+{
+  "path": "fixtures\\knowledge_holdout.jsonl",
+  "pilot": false,
+  "gate_1_total": {
+    "status": "pass",
+    "entries": 4539,
+    "entries_pilot": 0,
+    "min_entries": 1200
+  },
+  "gate_2_format": {
+    "status": "pass",
+    "entries": 4539,
+    "valid": 4539,
+    "problems": [],
+    "problem_count": 0,
+    "q7_conflicts": 429,
+    "must_pairs_per_type": {
+      "EMOTION_PACK": 771,
+      "SHOT_PATTERN": 569,
+      "AXIS_RULE": 261,
+      "TROPE": 244,
+      "EDIT_RHYTHM": 316,
+      "LIGHT_PACK": 364,
+      "ACTION_BEAT": 308,
+      "PERFORMANCE_PACK": 328,
+      "INTENT_PACK": 679,
+      "IMPACT_PACK": 256,
+      "STAGING_PACK": 493,
+      "SOUND_PACK": 240,
+      "TRANSITION_PACK": 212
+    },
+    "must_cards_per_type": {
+      "EMOTION_PACK": 512,
+      "SHOT_PATTERN": 510,
+      "AXIS_RULE": 197,
+      "TROPE": 238,
+      "EDIT_RHYTHM": 300,
+      "LIGHT_PACK": 343,
+      "ACTION_BEAT": 301,
+      "PERFORMANCE_PACK": 299,
+      "INTENT_PACK": 646,
+      "IMPACT_PACK": 239,
+      "STAGING_PACK": 486,
+      "SOUND_PACK": 228,
+      "TRANSITION_PACK": 167
+    },
+    "q7_forbid_members": {
+      "movement=handheld": 69,
+      "movement=dolly_in": 14,
+      "movement=dolly_out": 19,
+      "lighting=暖光": 5,
+      "camera_angle=平视": 4,
+      "movement=crane_up": 34,
+      "movement=orbit_cw": 24,
+      "movement=crane_down": 17,
+      "movement=orbit_ccw": 19,
+      "movement=track_left": 12,
+      "movement=pan_left": 14,
+      "lighting=侧光": 3,
+      "pacing=long": 10,
+      "vfx=flame": 5,
+      "sfx=尖锐哨音": 7,
+      "intent=停顿": 4,
+      "lighting=逆光": 6,
+      "shot_size=ELS": 5,
+      "intent=压迫": 4,
+      "intent=释放": 4,
+      "movement=tilt_up": 12,
+      "shot_size=ECU": 5,
+      "sfx=静默": 3,
+      "action=转身": 1,
+      "shot_size=LS": 5,
+      "pacing=short": 12,
+      "action=低头": 3,
+      "shot_size=MCU": 6,
+      "movement=pan_right": 9,
+      "pacing=medium": 8,
+      "sfx=低频轰鸣": 3,
+      "shot_size=MS": 6,
+      "action=起身": 2,
+      "shot_size=MLS": 5,
+      "movement=follow_subject": 9,
+      "lens=24mm": 5,
+      "camera_angle=荷兰角": 3,
+      "lighting=顶光": 3,
+      "composition_rule=occlusion": 3,
+      "lens=85mm": 4,
+      "camera_angle=高机位": 4,
+      "lighting=正面光": 4,
+      "lens=35mm": 4,
+      "camera_angle=过肩": 3,
+      "composition_rule=lead_room": 2,
+      "camera_angle=骑轴": 4,
+      "composition_rule=framing": 2,
+      "lens=50mm": 4,
+      "lighting=冷光": 2,
+      "composition_rule=rule_of_thirds": 2,
+      "camera_angle=低机位": 3,
+      "shot_size=CU": 5,
+      "composition_rule=balance": 3,
+      "action=后退": 3,
+      "sfx=心跳": 2,
+      "vfx=smoke": 1,
+      "action=坐下": 1,
+      "sfx=雨声": 2,
+      "vfx=glow": 2,
+      "vfx=impact_frame": 1,
+      "action=推门": 2,
+      "sfx=金属撞击": 1,
+      "vfx=spark": 1,
+      "lighting=低调": 4
+    },
+    "needs_human": 789,
+    "human_reviewed": 0,
+    "q7_member_count": 64
+  },
+  "gate_4_edge_types": {
+    "status": "pass",
+    "min_pairs_per_type": 30,
+    "min_cards_per_type": 10,
+    "short_pairs": {},
+    "thin_cards": {}
+  },
+  "gate_5_forbid": {
+    "status": "pass",
+    "q7_conflicts": 429,
+    "min": 60
+  },
+  "gate_5b_forbid_members": {
+    "status": "pass",
+    "members": 64,
+    "under_covered": {}
+  },
+  "gate_7_human_review": {
+    "status": "fail",
+    "needs_human": 789,
+    "human_reviewed": 0,
+    "min_human_review": 120
+  },
+  "gate_8_independence": {
+    "status": "pass",
+    "extractor_family": "deepseek",
+    "annotator_families": [
+      "zhipu"
+    ],
+    "strong_but_same_family": [],
+    "liar_count": 0
+  },
+  "gate_3_seed_coverage": {
+    "status": "pass",
+    "missing_values": {},
+    "unknown_values": {},
+    "thin_values": {},
+    "min_support": 3,
+    "kinds_checked": 17,
+    "vocab_fingerprint": true,
+    "unreachable_kinds": [
+      "axis_topic",
+      "character",
+      "object"
+    ]
+  },
+  "gate_6_sources": {
+    "status": "pass",
+    "cards": 1075,
+    "missing_cards": [],
+    "missing_count": 0,
+    "ghost_cards": [],
+    "ghost_count": 0
+  },
+  "gate_9_reachability": {
+    "status": "fail",
+    "entries": 4539,
+    "short": 816,
+    "short_ratio": 0.1798,
+    "examples": [
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "q": "意图=收束；景别=MCU",
+        "unreachable": [
+          "movement=crane_down"
+        ]
+      },
+      {
+        "id": "hq_0008",
+        "line": 8,
+        "q": "景别=MLS；构图=occlusion",
+        "unreachable": [
+          "lens=35mm"
+        ]
+      },
+      {
+        "id": "hq_0010",
+        "line": 10,
+        "q": "意图=压迫；光线=顶光",
+        "unreachable": [
+          "movement=dolly_in",
+          "shot_size=CU"
+        ]
+      },
+      {
+        "id": "hq_0014",
+        "line": 14,
+        "q": "意图=推进；光线=低调",
+        "unreachable": [
+          "movement=follow_subject",
+          "shot_size=LS"
+        ]
+      },
+      {
+        "id": "hq_0017",
+        "line": 17,
+        "q": "意图=对抗；景别=MCU",
+        "unreachable": [
+          "movement=pan_right"
+        ]
+      }
+    ],
+    "scope": "must[0] + top1，plain 槽位；QUERYABLE_KINDS 排除 scene_type/beat_type（与产出侧同一份口径）"
+  },
+  "gate_10_index_resolvable": {
+    "status": "fail",
+    "entries": 4539,
+    "specs": 13713,
+    "resolved": {
+      "must": 1323,
+      "top1": 1224,
+      "never": 1120
+    },
+    "totals": {
+      "must": 5043,
+      "top1": 4539,
+      "never": 4131
+    },
+    "unresolved_per_field": {
+      "must": 3720,
+      "top1": 3315,
+      "never": 3011
+    },
+    "unresolved": 10046,
+    "unresolved_ratio": 0.7326,
+    "strict_relation_matches": 3667,
+    "subset_relation_matches": 4273,
+    "subset_relation_ratio": 0.3116,
+    "index_edges": 387,
+    "examples": [
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=neutral"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "top1",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=neutral"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "never",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "must",
+        "spec": "TROPE:genre=film,emotion=恐惧"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "top1",
+        "spec": "TROPE:genre=film,emotion=恐惧"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "never",
+        "spec": "TROPE:genre=documentary,emotion=平静"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "must",
+        "spec": "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left"
+      }
+    ],
+    "note": "§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。 逐字段未命中：{'must': 3720, 'top1': 3315, 'never': 3011}；诊断：另有 4273/13713 条满足「标注成员 ⊆ 索引边（forbid 完全相等）」——这一层与规格字面的「成员集完全相等」不同，标注方不可见索引时后者在构造上不可能全过（AXIS_RULE 的可选 axis_topic 就是结构性一例），属规格级裁决"
+  },
+  "overall": "fail"
+}
