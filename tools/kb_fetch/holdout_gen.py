@@ -82,7 +82,12 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
      没有对应取值，只写它们的话这条边**一个种子都挂不上**（实测 263 条里只有
      16 条能命中索引）。`q` 里对应写 `轴线=<同一个取值>`。
    * `TROPE:genre=<film|anime|documentary>,emotion=<情绪>`
-   * `EDIT_RHYTHM:pacing=<short|medium|long>,avg_shot_len=<<1s|1-3s|3-8s|>8s>`
+   * `EDIT_RHYTHM:pacing=<short|medium|long>,avg_shot_len=<时长档>`，其中
+     `<时长档>` 只能取这四个**字符串**之一（逐字照抄，**别加引号**）：
+     `<1s`、`1-3s`、`3-8s`、`>8s`。
+     **注意**：第一个档位本身就是 `<1s` —— **一个**小于号后面直接跟 `1s`。
+     把它写成两个小于号开头，会被机器当成词表外的取值整条拒收
+     （实测 35 条 `must` 因此解析不到索引边）。
    * `LIGHT_PACK:lighting=<光线>,intensity=<low|mid|high>`
    * `ACTION_BEAT:action=<动作>,beat_type=<establish|coverage|reaction|insert|transition>,intensity=<low|mid|high>`
    * `PERFORMANCE_PACK:emotion=<情绪>,action=<动作>,camera_angle=<低机位|平视|荷兰角|过肩|骑轴|高机位>`

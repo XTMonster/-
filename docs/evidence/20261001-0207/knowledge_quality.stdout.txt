@@ -1,0 +1,14 @@
+[         pass] Q0: rejects/raw <= 5% 且 processed == total
+[         fail] Q1: held-out query 数 4539（下界 1200）
+[         fail] Q2: 
+[         pass] Q3: 
+[         fail] Q4: required 总数 1563（下界 200）
+[         pass] Q6a: 
+[         fail] Q6b: 
+[         pass] Q7: 冲突查询数 249（下界 60）
+[         fail] Q4_pre_required_edges_exist: §2.3 Q6b 前置①：3480/5043 条 must 在索引里找不到对应边（oracle 与索引不同构 → 索引构建失败）
+[         pass] E3: 经验边（source_kind=experience）单独产生的 forbid 条数必须为 0
+[         pass] E3_cases: L3 案例永不产出约束
+[ not_measured] E1: 需要人工对返回的 cases 按 >=4/5 打分（§2.3b）；没有 --e1-reviews 就不判——不得由 agent 代判
+[ not_measured] E2: 没有 --shots：采纳率无法测量（诊断量，不设门）
+overall: fail  -> docs\evidence\20261001-0207\knowledge_quality.json

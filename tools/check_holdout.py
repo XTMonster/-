@@ -583,6 +583,60 @@ def load_index(nodes_path: str, edges_path: str):
     return load_graph(pathlib.Path(nodes_path), pathlib.Path(edges_path))
 
 
+def _unresolved_cause(spec: str, by_type: Dict[str, list], node_lookup,
+                      graph) -> Tuple[str, int]:
+    """给一条**没通过严格 `norm_key` 相等**的 spec 定根因。
+
+    返回 `(cause, covered_plain_members)`。三档对应三种完全不同的处分：
+
+    * `unparsable` —— 写法本身不合法（由门② 先兜住，这里只是不炸）；
+    * `value_not_in_index` —— spec 里的某个 `kind=取值` 在索引节点里不存在。
+      **标注侧抄错了词表取值**（真实案例：提示模板把 ``avg_shot_len=<1s``
+      写成 ``<<1s``，标注员逐字照抄，35 条 `must` 因此永远解析不到）；
+    * `no_edge_of_type` / `no_edge_with_those_plain_members` —— 同类边不存在，
+      或存在但没有一条覆盖全部 plain 成员。这是**索引里没有这条知识**，
+      只能靠重抽取／补语料，改标注改不出来；
+    * `plain_subset_index_has_extra_members` / `plain_subset_but_forbid_differs`
+      —— 边其实在，只是索引那条边**多带了成员**（`axis_topic` 那类可选槽位）
+      或 forbid 集不同。这一档是"标注方不可见索引"结构性冲突的直接证据。
+
+    `covered_plain_members` 用来量"差多远"：值等于 `len(plain)` 说明差在
+    forbid 或多出来的成员上（第一档），远小于 `len(plain)` 说明索引里根本
+    没有这条知识（第二档）。**这一层是诊断，不参与门⑪的判据。**
+    """
+    try:
+        etype, plain, forbid = parse_spec(spec)
+    except EntryError:
+        return "unparsable", 0
+    for kind, value in list(plain.items()) + list(forbid.items()):
+        if not node_lookup(graph, kind, value):
+            return "value_not_in_index", 0
+    same = by_type.get(etype) or []
+    if not same:
+        return "no_edge_of_type", 0
+    want = {(kind, node_lookup(graph, kind, value)) for kind, value in plain.items()}
+    want_forbid = {(kind, node_lookup(graph, kind, value))
+                   for kind, value in forbid.items()}
+    best = 0
+    subset_same_forbid = False
+    subset_diff_forbid = False
+    for edge in same:
+        edge_plain = {(m.kind, m.node_id) for m in edge.members if m.role != "forbid"}
+        best = max(best, len(want & edge_plain))
+        if not want <= edge_plain:
+            continue
+        edge_forbid = {(m.kind, m.node_id) for m in edge.members if m.role == "forbid"}
+        if want_forbid == edge_forbid:
+            subset_same_forbid = True
+        else:
+            subset_diff_forbid = True
+    if subset_same_forbid:
+        return "plain_subset_index_has_extra_members", best
+    if subset_diff_forbid:
+        return "plain_subset_but_forbid_differs", best
+    return "no_edge_with_those_plain_members", best
+
+
 def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
     """门⑪：每条 `must`/`top1`/`never` 必须映射到当前索引里的边。
 
@@ -592,14 +646,27 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
     """
     from tools.holdout_score import spec_to_norm_key
     from tools.holdout_score import spec_matches_by_subset
+    from tools.holdout_score import _node_id_for
 
     if not entries:
         return FAIL, {"entries": 0, "specs": 0, "unresolved": 0,
                       "reason": "空集：没有条目可判"}
+    by_type: Dict[str, list] = {}
+    for edge in graph.edges:
+        by_type.setdefault(str(edge.type), []).append(edge)
     per_field = {"must": [0, 0], "top1": [0, 0], "never": [0, 0]}
     subset_ok = 0          # 满足「标注 ⊆ 索引」的 spec 数（**包含**已满足严格相等的）
     strict_ok = 0          # 满足「成员集完全相等」的 spec 数
     unresolved: List[dict] = []
+    # 未命中的**根因**分类（诊断量，不改判据）。三档对应三种完全不同的处分：
+    # `value_not_in_index`（词表/取值写错，标注侧可修）、
+    # `no_edge_of_type`/`no_edge_with_those_plain_members`（索引里没有这条知识，
+    # 只有重抽取或补语料才可能补上）、
+    # `plain_subset_but_forbid_differs`（边在，只差 forbid 集）。
+    causes: Dict[str, int] = {}
+    unresolved_by_type: Dict[str, int] = {}
+    #: `plain` 成员被索引边覆盖了几个（0..n）——用它看"差多远"，而不是只看 0/1。
+    closeness: Dict[str, int] = {}
     specs = 0
     for record in entries:
         for field in ("must", "top1", "never"):
@@ -618,10 +685,18 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
                 if strict:
                     per_field[field][0] += 1
                     continue
+                cause, covered = _unresolved_cause(text, by_type, _node_id_for,
+                                                   graph)
+                causes[cause] = causes.get(cause, 0) + 1
+                if cause != "unparsable":
+                    etype = text.split(":", 1)[0].strip()
+                    unresolved_by_type[etype] = unresolved_by_type.get(etype, 0) + 1
+                closeness[str(covered)] = closeness.get(str(covered), 0) + 1
                 if len(unresolved) < 8:
                     unresolved.append({"id": record.get("id"),
                                        "line": record.get("__line__"),
-                                       "field": field, "spec": str(spec)})
+                                       "field": field, "spec": str(spec),
+                                       "cause": cause})
     n_unresolved = specs - sum(v[0] for v in per_field.values())
     per_field_unresolved = {k: v[1] - v[0] for k, v in per_field.items()}
     detail = {"entries": len(entries), "specs": specs,
@@ -630,6 +705,11 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
               "unresolved_per_field": per_field_unresolved,
               "unresolved": n_unresolved,
               "unresolved_ratio": round(n_unresolved / specs, 4) if specs else 0.0,
+              # 根因分类（诊断量）：把"73% 未命中"拆成"标注写错取值 / 索引里没这条
+              # 知识 / 边在但 forbid 集不同"。测法见 `work/diag_gate10.py`。
+              "unresolved_by_cause": causes,
+              "unresolved_by_edge_type": unresolved_by_type,
+              "unresolved_closeness": closeness,
               # 诊断量：把"标注成员 ⊆ 索引边"单独算一遍。它**不改判据**，
               # 只把"完全相等（规格字面）vs 只多不少（构造上可达）"这两层摆开，
               # 供规格裁决；见 holdout_score.spec_matches_by_subset 的说明。

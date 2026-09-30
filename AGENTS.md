@@ -265,21 +265,41 @@ Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`revie
 `layer5_orchestrator/scene_contract.py::shot_constraint_query()` 就是那个生产者
 （`editor.py` 每镜用它取知识）。证据：`docs/evidence/20260930-071500/`。
 
-**P14 未完成（不得当作通过）**（2026-10-01 R54 复核后的准确数字）：`fixtures/knowledge_holdout.jsonl`
-已落地 **4539 条**（不再空），但仍有两道覆盖门是红的，且**已证伪了此前的归因**：
+**P14 未完成（不得当作通过）**（2026-10-01 02:07 复跑的准确数字，证据 `docs/evidence/20261001-0207/`）：
+`fixtures/knowledge_holdout.jsonl` 已落地 **4539 条**（下界 1200），但**五道门是红的**：
 
 - `python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json`
-  现在报 **gate 1/2/3/4/5/5b/6/8 = pass**、**gate 7（人审）= fail**、
-  **gate 9（可达性）= fail（816/4539 = 18.0%）**、**gate 10（可解析）= fail（10046/13713 = 73.3%）**。
-  后两道是 R54 新加的**机器检查**（协议 §3.1 与 §2.3 Q6b 前置① 早就写了规则，只是没人查）。
+  现在报 **gate 1/2/4/5/5b/8 = pass**、**gate 3（词表双向覆盖）= fail**、
+  **gate 6（来源覆盖）= fail（1733 张卡里 687 张零条目、29 条引用已消失的卡 id）**、
+  **gate 7（人审）= fail（0/120）**、**gate 9（可达性）= fail（970/4539 = 21.4%）**、
+  **gate 10（可解析）= fail（9405/13713 = 68.6%）**。
+  gate 3/6 在 `docs/evidence/20261001-011631/` 还是绿的，转红的分界点是
+  **语料从 1075 张长到 1733 张** —— oracle 与词表快照都是旧世代，需要
+  **用当前语料重标一次**，不是改判据。门⑨/⑩ 是 R54 新加的**机器检查**
+  （协议 §3.1 与 §2.3 Q6b 前置① 早就写了规则，只是没人查）。
+- `tools/check_holdout.py` 的门⑪ 现在给出**根因分类**（`unresolved_by_cause` /
+  `unresolved_by_edge_type` / `unresolved_closeness`，**纯诊断，不改判据**）：
+  8151 条 `no_edge_with_those_plain_members`、685 条 `plain_subset_but_forbid_differs`、
+  534 条 `plain_subset_index_has_extra_members`、35 条 `value_not_in_index`。
+- `tools/holdout_merge.py` 已在**合并**这一步就按门③ 的 unknown 侧与门⑨ 的可达性拦截
+  （import `check_holdout.query_shortfall` / `holdout_fill.unknown_values_in`，**不另写第二份判据**），
+  三类拒收**分开记账**进报告 —— oracle 只有一个入口，不能等收尾才发现"格式对但语义不可达"。
+  实测 `work/glm_v10|v11|v12` 的一批分片 5368 条 → 4722 条合规
+  （248 条不可达 + 398 条词表外取值被拦下并报出）。
 - `tools/holdout_score.py` 的 Q4 曾是**恒真式**（分子＝分母），R54 已按 §4.1 的定义改成
-  `Σ_q|required∩top-k| / Σ_q|required|`，实测 **984/1323 = 0.744**；不可解析的 `must` 也从
-  "静默丢掉"改成"单独记账并判失败"。
+  `Σ_q|required∩top-k| / Σ_q|required|`，实测 **1154/1563 = 0.738**；不可解析的 `must` 也从
+  "静默丢掉"改成"单独记账并判失败"（**3480/5043**，即 §2.3 Q6b 前置① 的"索引构建失败"）。
 - **Q1/Q2 不达标的主因是 oracle 与索引不同构，不是排序**：全量实测 `must` 能进候选集的 query
   只有 1277/4539（**Q2 天花板 0.281**）、目标边在候选集里的名次中位数＝**1**。所以
-  并行 lane 正在用 `holdout/v10` 提示重标（提示里新增"查询必须覆盖目标边 ≥2 个成员"，
+  并行 lane 正在用 `holdout/v12` 提示重标（提示里新增"查询必须覆盖目标边 ≥2 个成员"，
   实测该子集 **Q1=0.727 / Q2=0.917**）。**在没有重标完之前不要动 `SCORE_WEIGHTS`**——
   动它只会掩盖 oracle 缺陷。证据：`docs/evidence/20261001-0057/`。
+- **门⑩ 的判据本身待用户裁决**：§2.3 Q6b 前置① 要求 `norm_key` 完全相等（含**完整成员集**），
+  而 §2.3c 又写死"标注方不可见索引"。同一 fixture、同一索引下的四档上限实测
+  A=31.4% / B=35.3% / C=40.3% / D=99.7%（四档定义见
+  `docs/evidence/20261001-0207/p14_measurement_round.md` §4 与
+  `docs/evidence/20261001-0159/gate10_rootcause.md` §5）。
+  **在用户拍板前不要改 `SCORE_WEIGHTS`、不要改门限、不要用脚本机械补 `q`。**
 - **人审 ≥120 条**（协议门⑦）与 **Q5/Q7/E3 的最终裁定**必须由人做，agent 不可代替。
   Q5 只在真实模型运行（§4.4 步骤 2）上判，CI/离线上只记 `not_measured`。
 - 重跑长标注仍须知：本机 `qwen3-vl:30b` 是思考模型，走 `/api/chat` 加 `think:false`
@@ -287,6 +307,10 @@ Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`revie
   必须走 `/v1/chat/completions` 或加 **assistant 预填**（`tools/kb_fetch/llm.py` 的
   `OLLAMA_ASSISTANT_PREFILL`，默认关闭）；一次 4.7 s，跑满 1200 条要数小时墙钟，且
   `tools/holdout_fill.py` 支持断点续跑与逐批落盘。
+- 提示侧修掉一条真缺陷：`EDIT_RHYTHM` 模板曾写成 `avg_shot_len=<<1s|1-3s|3-8s|>8s>`
+  （取值表外层尖括号与取值自带的尖括号叠成 `<<1s`），标注员逐字照抄 → 35 条 `must`
+  带词表外取值、**从构造上**解析不到索引边。已改并加回归测试
+  （`tests/test_knowledge_holdout.py::test_holdout_prompt_spells_inline_enum_values_verbatim`）。
 还剩一条口径未收口：**LightRAG 的真实索引**——仓库里没有 `lightrag` 依赖、也没有它建的索引，
 所以 `rag.cases_backend=lightrag` 走的是 §2.3b **写明允许**的降级路径
 （`cases_degraded=true` ＋ `lightrag_adapter_unavailable`），`lightrag_index_fingerprint` 如实为空。

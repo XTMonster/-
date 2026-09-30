@@ -363,6 +363,58 @@ def test_gate11_reports_the_subset_relation_as_a_diagnostic(tmp_path):
     assert gate["subset_relation_matches"] == 2     # 但"只多不少"这一层是满足的
     assert gate["subset_relation_ratio"] == 1.0
     assert "规格级裁决" in gate["note"]
+    # 根因分类：这条不是"索引里没这条知识"，而是"索引那条边多带了成员"。
+    assert gate["unresolved_by_cause"] == {"plain_subset_index_has_extra_members": 2}
+    assert gate["unresolved_closeness"] == {"3": 2}   # plain 的三个成员全被覆盖
+
+
+def test_gate11_classifies_why_a_spec_did_not_resolve(tmp_path):
+    """门⑪ 的未命中必须能按**根因**分类，否则"73% 未命中"根本没法处分。
+
+    三种根因对应三种完全不同的动作：
+
+    * `value_not_in_index` —— 标注侧抄错词表取值（改提示／重标就能修）；
+    * `no_edge_with_those_plain_members` —— 索引里没有这条知识（只能重抽取／补语料）；
+    * `plain_subset_index_has_extra_members` —— 边在，只是索引那条边多带了成员。
+
+    这一层是**诊断量**：门⑪ 的 status 仍按规格字面的「成员集完全相等」判，
+    分类只是把"83% 未命中"拆成可处分的几堆，不参与判据。
+    """
+    narrow = entry(1, must=[SPEC_MS50], top1=[SPEC_MS50],
+                   q="景别=MS；镜头=50mm",
+                   review={"reviewed_by": "human", "verdict": "accepted"})
+    typo_spec = "SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=borad"
+    typo = entry(2, must=[typo_spec], top1=[typo_spec],
+                 q="景别=MS；镜头=50mm",
+                 review={"reviewed_by": "human", "verdict": "accepted"})
+    # 索引里只有一条**不同留白策略**的同类边：`lens=50mm` 这个节点在（`_node_id_for`
+    # 认得出它），但没有一条 SHOT_PATTERN 边同时要 board 留白，所以 narrow 只被
+    # 覆盖 2/3 个 plain 成员。
+    other = entry(99,
+                  must=["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=cinematic"],
+                  top1=["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=cinematic"],
+                  q="景别=MS；镜头=50mm")
+    # 再来一条把 `headroom_policy=board` 这个**节点**带进索引的边（它不是 narrow
+    # 要找的那条边），这样 narrow 的未命中根因就落在"边不存在"而不是"取值不存在"。
+    filler = entry(98, must=["SHOT_PATTERN:shot_size=LS,lens=35mm,headroom_policy=board"],
+                   top1=["SHOT_PATTERN:shot_size=LS,lens=35mm,headroom_policy=board"],
+                   q="景别=LS；镜头=35mm")
+    nodes, edges = write_index(tmp_path, [other, filler])
+    path = write(tmp_path, [narrow, typo], "causes.jsonl")
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = check_holdout.main([str(path), "--pilot", "--json",
+                                 "--nodes", str(nodes), "--edges", str(edges)])
+    assert rc == 1
+    gate = json.loads(buf.getvalue())["gate_10_index_resolvable"]
+    assert gate["status"] == "fail"
+    assert gate["unresolved_by_cause"] == {
+        "no_edge_with_those_plain_members": 2,   # narrow 的 must + top1
+        "value_not_in_index": 2,                 # typo 的 must + top1
+    }
+    # 差多远：narrow 只被覆盖 2/3 个 plain 成员；typo 一个都没算。
+    assert gate["unresolved_closeness"] == {"2": 2, "0": 2}
+    assert gate["unresolved_by_edge_type"] == {"SHOT_PATTERN": 4}
 
 
 # ---------------------------------------------------------------- 门④ 边类覆盖

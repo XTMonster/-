@@ -95,3 +95,71 @@ def test_merge_refuses_to_invent_cards_it_was_not_given(tmp_path):
     assert report["cards"] == 2 and report["cards_covered"] == 1
     assert report["cards_missing"] == ["gen_cine_0009"]
     assert report["ghost_cards"] == []
+
+
+#: 一份**自足**的冻结词表（不读仓库产物，测试才不会被语料增长带跑）。
+VOCAB = {"emotion": ["荒诞", "压抑"], "shot_size": ["MS"], "lens": ["50mm"],
+         "movement": ["固定"], "genre": ["film"]}
+
+
+def test_merge_drops_a_query_that_cannot_reach_its_own_must_edge(tmp_path):
+    """门⑨ 的判据必须在**合并**这一步就生效——它是 oracle 的唯一入口。
+
+    一条 `must` 里凡是有查询键的槽位，`q` 里就必须逐字出现，否则这条查询
+    永远召不回它自己的期望边（Q1/Q2 数学不可达）。
+    """
+    reachable = _entry("gen_cine_0001", "景别=MS；镜头=50mm",
+                       ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"])
+    unreachable = _entry("gen_cine_0002", "景别=MS",
+                         ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"])
+    shard = _write(tmp_path / "partial0.jsonl", [reachable, unreachable])
+
+    report = holdout_merge.run([str(shard)], tmp_path / "holdout.jsonl",
+                               cards=["gen_cine_0001", "gen_cine_0002"],
+                               vocab=VOCAB)
+
+    assert report["valid"] == 1 and report["unreachable"] == 1
+    assert "50mm" in report["rejected_examples"][0]["reason"]
+    rows = [json.loads(line) for line in
+            (tmp_path / "holdout.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    assert [row["id"] for row in rows] == ["hq_0001"]
+    assert rows[0]["from_card"] == "gen_cine_0001"
+
+
+def test_merge_drops_values_outside_the_frozen_vocab(tmp_path):
+    """门③ 的 unknown 侧同样在合并时生效（词表外取值 = 一个种子都挂不上）。"""
+    bad = _entry("gen_cine_0001", "情绪=悲伤",
+                 ["EMOTION_PACK:emotion=悲伤,intensity=high"])
+    shard = _write(tmp_path / "partial0.jsonl", [bad])
+
+    report = holdout_merge.run([str(shard)], tmp_path / "holdout.jsonl",
+                               cards=["gen_cine_0001"], vocab=VOCAB)
+
+    assert report["valid"] == 0 and report["unknown_values"] == 1
+    assert "悲伤" in report["rejected_examples"][0]["reason"]
+
+
+def test_merge_without_a_vocab_still_enforces_reachability():
+    """没给词表时只跳过门③ 的 unknown 侧——门⑨ 的判据不依赖词表，照旧执行。"""
+    rows = [_entry("gen_cine_0001", "景别=MS",
+                   ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"])]
+    valid, counts = holdout_merge.merge(rows, None)
+    assert valid == [] and counts["unreachable"] == 1
+    assert counts["unknown_values"] == 0
+
+
+def test_merge_counts_every_rejection_bucket_separately():
+    """三类拒收**分开记账**：格式（门②）、词表外取值（门③）、不可达（门⑨）。"""
+    rows = [
+        _entry("gen_cine_0001", "景别=MS；镜头=50mm",
+               ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"]),
+        _entry("gen_cine_0002", "景别=MS", ["NOPE:shot_size=MS"]),
+        _entry("gen_cine_0003", "情绪=悲伤",
+               ["EMOTION_PACK:emotion=悲伤,intensity=high"]),
+        _entry("gen_cine_0004", "景别=MS",
+               ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"]),
+    ]
+    valid, counts = holdout_merge.merge(rows, VOCAB)
+    assert len(valid) == 1
+    assert (counts["invalid"], counts["unknown_values"], counts["unreachable"]) == (1, 1, 1)
+    assert counts["raw"] == 4 and counts["after_dedupe"] == 4

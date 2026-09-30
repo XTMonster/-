@@ -29,9 +29,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from block_director.knowledge.corpus import CARDS  # noqa: E402
-from tools.check_holdout import EntryError, validate_entry  # noqa: E402
+from tools.check_holdout import EntryError, query_shortfall, validate_entry  # noqa: E402
+from tools.holdout_fill import unknown_values_in  # noqa: E402
 
 DEFAULT_OUT = ROOT / "fixtures" / "knowledge_holdout.jsonl"
+DEFAULT_VOCAB = ROOT / "knowledge" / "hypergraph.vocab.json"
 
 
 def expand(patterns: Sequence[str]) -> List[pathlib.Path]:
@@ -69,8 +71,26 @@ def dedupe_key(row: Dict) -> Tuple[str, str, Tuple[str, ...]]:
             tuple(sorted(str(spec) for spec in (row.get("must") or []))))
 
 
-def merge(rows: Sequence[Dict]) -> Tuple[List[Dict], Dict[str, int]]:
-    """去重 → 校验 → 重新编号。返回 (合规条目, 计数)。"""
+def load_vocab(path: pathlib.Path | str = DEFAULT_VOCAB) -> Dict[str, Sequence[str]]:
+    return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))["holdout_vocab"]
+
+
+def merge(rows: Sequence[Dict],
+          vocab: Dict[str, Sequence[str]] | None = None
+          ) -> Tuple[List[Dict], Dict[str, object]]:
+    """去重 → 校验 → 重新编号。返回 (合规条目, 计数)。
+
+    **校验用的是门自己的那套判据**，一处都不另写：
+
+    * 门②：`check_holdout.validate_entry`（写法、必填槽位、`top1 ⊆ must`…）；
+    * 门③ 的 unknown 侧：`holdout_fill.unknown_values_in`（用了词表外的取值）；
+    * 门⑨：`check_holdout.query_shortfall`（`q` 够不着自己的 `must` 边）。
+
+    后两条原先只有产出侧（`holdout_fill.absorb`）在拦。合并是 oracle 的**唯一入口**，
+    它若只判格式，任何来路的"格式正确但语义不可达"的分片都会被写进库，再由门③/门⑨
+    在收尾时整份判红——那时已经分不清是哪一批产出的了。所以这里补上，逐类计数并
+    如实报告（不静默丢弃）。
+    """
     seen, unique = set(), []
     for row in rows:
         key = dedupe_key(row)
@@ -80,6 +100,8 @@ def merge(rows: Sequence[Dict]) -> Tuple[List[Dict], Dict[str, int]]:
         unique.append(row)
     valid: List[Dict] = []
     rejected: List[Dict] = []
+    unreachable: List[Dict] = []
+    unknown: List[Dict] = []
     for row in unique:
         candidate = dict(row)
         candidate["id"] = f"hq_{len(valid) + 1:04d}"
@@ -89,9 +111,24 @@ def merge(rows: Sequence[Dict]) -> Tuple[List[Dict], Dict[str, int]]:
             rejected.append({"from_card": str(row.get("from_card", "")),
                              "q": str(row.get("q", "")), "reason": str(exc)})
             continue
+        if vocab:
+            bad_values = unknown_values_in(candidate, vocab)
+            if bad_values:
+                unknown.append({"from_card": str(row.get("from_card", "")),
+                                "q": str(row.get("q", "")),
+                                "reason": ",".join(sorted(set(bad_values))[:4])})
+                continue
+        short = query_shortfall(candidate)
+        if short:
+            unreachable.append({"from_card": str(row.get("from_card", "")),
+                                "q": str(row.get("q", "")),
+                                "reason": ",".join(short[:4])})
+            continue
         valid.append(candidate)
     return valid, {"raw": len(rows), "after_dedupe": len(unique),
-                   "valid": len(valid), "invalid": len(rejected)}
+                   "valid": len(valid), "invalid": len(rejected),
+                   "unreachable": len(unreachable), "unknown_values": len(unknown),
+                   "rejected_examples": (rejected + unknown + unreachable)[:5]}
 
 
 def write(entries: Sequence[Dict], out: pathlib.Path,
@@ -112,10 +149,13 @@ def write(entries: Sequence[Dict], out: pathlib.Path,
 
 
 def run(patterns: Sequence[str], out: pathlib.Path = DEFAULT_OUT,
-        dry_run: bool = False, cards: Sequence[str] | None = None) -> Dict:
+        dry_run: bool = False, cards: Sequence[str] | None = None,
+        vocab: Dict[str, Sequence[str]] | None = None) -> Dict:
     paths = expand(patterns)
     rows = load_rows(paths)
-    entries, counts = merge(rows)
+    if vocab is None and DEFAULT_VOCAB.is_file():
+        vocab = load_vocab(DEFAULT_VOCAB)
+    entries, counts = merge(rows, vocab)
     report = {"shards": [str(path) for path in paths], **counts}
     if dry_run:
         report["dry_run"] = True
@@ -130,10 +170,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="分片 partial 文件/通配/目录（目录 = 其中的 partial*.jsonl）")
     parser.add_argument("--out", default=str(DEFAULT_OUT))
     parser.add_argument("--report", default="", help="把合并报告写到这个路径")
+    parser.add_argument("--vocab", default=str(DEFAULT_VOCAB),
+                        help="冻结词表：用来在合并时就拦下词表外取值与不可达查询"
+                             "（与门③/门⑨ 同一套判据）")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
-    report = run(args.inputs, pathlib.Path(args.out), args.dry_run)
+    vocab_path = pathlib.Path(args.vocab)
+    vocab = load_vocab(vocab_path) if vocab_path.is_file() else None
+    if vocab is None:
+        print(f"warning: 词表 {vocab_path} 不存在，合并只做格式校验（门③/门⑨ 仍会在收尾判）")
+    report = run(args.inputs, pathlib.Path(args.out), args.dry_run, vocab=vocab)
     if args.report:
         pathlib.Path(args.report).write_text(
             json.dumps(report, ensure_ascii=False, indent=2) + "\n",

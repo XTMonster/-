@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import sys
 
 import pytest
@@ -116,6 +117,50 @@ def test_holdout_prompt_covers_every_edge_type_and_reachable_slot():
             assert optional, f"{etype} 没有任何可查询槽位，无法被 held-out 覆盖"
             for kind in optional:
                 assert f"{kind}=" in prompt, f"{etype} 缺少可锚槽位 {kind}"
+
+
+def test_holdout_prompt_spells_inline_enum_values_verbatim():
+    """提示里**内联写死**的取值域必须与 schema 的 `VALUE_DOMAINS` 逐字一致。
+
+    真实缺陷（本轮修掉的那条）：`EDIT_RHYTHM` 的模板原来写成
+    ``avg_shot_len=<<1s|1-3s|3-8s|>8s>`` —— 外层 ``<>`` 是"取值表"的记号，
+    而第一个取值本身就是 ``<1s``，两层叠出一个 ``<<1s``。标注员逐字照抄，
+    于是 35 条 `must` 带着词表里根本不存在的 ``avg_shot_len=<<1s`` 落盘，
+    门⑪ 把这一小组全判成"映射不到索引边"（`work/diag_gate10.py` 的
+    `value_not_in_index` 桶，实测 35/13713）。
+
+    两条断言合起来把这一类错误钉死：① 提示里不许出现 ``<<``（取值表与外层
+    尖括号叠加的指纹）；② `VALUE_DOMAINS` 里凡是提示内联写出来的 kind，
+    它的每个取值都必须逐字出现——改词表不更提示就会红。
+    """
+    prompt = holdout_gen.SYSTEM_PROMPT
+    # 只扫**模板行**（`* \`TYPE:槽位=…\``），不扫解释性段落。
+    templates = [line for line in prompt.splitlines()
+                 if re.match(r"^\s*\*\s+\S", line)]
+    assert templates, "提示里没有模板行，口径写错了"
+    for line in templates:
+        assert "<<" not in line, (
+            f"模板行里出现 `<<`：多半是「取值表外层尖括号」与「取值自带尖括号」"
+            f"叠在一起，标注员会逐字照抄成词表外的取值 → {line.strip()}")
+
+    def spelled(value: str) -> bool:
+        """整词出现（`headroom` 不算出现在 `headroom_policy` 里）。"""
+        return re.search(r"(?<![0-9A-Za-z_])" + re.escape(value) + r"(?![0-9A-Za-z_])",
+                         prompt) is not None
+
+    # 提示里的取值域分两类：**内联写死**的（`pacing=<short|medium|long>`）与
+    # 运行时由词表注入的（提示里只有中文占位符 `<运镜>`）。名单只收前者——
+    # 判据不能靠"取值恰好也在别处出现"，`applies_to_shot_size` 与 `shot_size`
+    # 共享 ECU/CU/… 的写法，自动判别会把它误算成内联。
+    inline_enum_kinds = ("pacing", "transition", "axis_side", "avg_shot_len",
+                         "scene_type", "genre", "beat_type", "intensity",
+                         "headroom_policy")
+    for kind in inline_enum_kinds:
+        values = hg.VALUE_DOMAINS[kind]
+        assert values, f"{kind} 在 VALUE_DOMAINS 里没有取值域"
+        assert f"{kind}=" in prompt, f"内联枚举 {kind} 没写进提示"
+        for value in values:
+            assert spelled(value), f"内联枚举 {kind} 的取值 {value!r} 没写进提示"
 
 
 def test_holdout_entry_validation_accepts_a_wellformed_entry():
