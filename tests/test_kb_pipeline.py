@@ -275,6 +275,183 @@ def test_manual_pipeline_end_to_end_with_scripted_annotator(tmp_path, monkeypatc
     assert len({r["chunk_id"] for r in again}) == len(again)
 
 
+# ----------------------------------------------------------- 增量入库（--incremental）
+
+_SENTENCE = "机位高度决定权力关系：低机位让人物显得高大，高机位让人物显得渺小。"
+
+
+class _CountingClient:
+    """把 scripted 客户端包一层，用来断言"这一次到底调用了几次模型"。"""
+
+    def __init__(self, inner):
+        self._inner = inner
+        self.calls: list = []
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+    def chat_json(self, *args, **kwargs):
+        self.calls.append(str(kwargs.get("key", "")))
+        return self._inner.chat_json(*args, **kwargs)
+
+
+def _annotate_chunk(index: int, text: str = "") -> dict:
+    body = text or f"{_SENTENCE}这是第 {index} 段的正文，用来验证增量入库。"
+    return {"chunk_id": f"inc#{index:03d}", "sha256": common.sha256_text(body),
+            "text": body, "domain": "cinematography", "genre": "film", "theme": "",
+            "source_ref": {"url": "repo://knowledge/source_notes/x.md", "title": "增量测试笔记",
+                           "author": "BlockDirector knowledge team", "license": "OwnWork",
+                           "retrieved_at": "2026-10-01", "sha256": common.sha256_text(body)}}
+
+
+def _scripted_annotator(tmp_path, chunks, model_id: str):
+    responses = {c["chunk_id"]: [{
+        "title": f"脚本卡{c['chunk_id']}",
+        "content": "低机位抬升人物权力，高机位压低人物；高度差要大于视线高度才读得出来。",
+        "quote": common.split_sentences(c["text"])[0][:60],
+        "keywords": ["机位"], "tags": ["低机位"], "rules": [], "emotion": "",
+    }] for c in chunks}
+    path = tmp_path / f"scripted-{model_id}.json"
+    path.write_text(json.dumps({"responses": responses}, ensure_ascii=False), encoding="utf-8")
+    return annotate.llm.make_client("scripted", model_id, str(path))
+
+
+def _manifest_of(tmp_path) -> dict:
+    return json.loads((tmp_path / "work" / "annotate.manifest.json").read_text(encoding="utf-8"))
+
+
+def test_incremental_annotate_reuses_the_old_pass_when_the_corpus_grows(tmp_path):
+    first = [_annotate_chunk(0), _annotate_chunk(1)]
+    client_a = _CountingClient(_scripted_annotator(tmp_path, first, "annotator-a"))
+    annotated, _ = annotate.run(first, client_a, incremental=True)
+    assert len(annotated) == 2 and len(client_a.calls) == 2
+
+    grown = first + [_annotate_chunk(2)]
+    client_b = _CountingClient(_scripted_annotator(tmp_path, grown, "annotator-b"))
+    again, rejects = annotate.run(grown, client_b, incremental=True)
+
+    assert not rejects
+    assert len(again) == 3
+    assert client_b.calls == ["inc#002"], "语料长大时只有新增的那一段该被抽"
+    by_id = {r["chunk_id"]: r for r in again}
+    # 换模型不让旧 pass 失效：每条记录带自己的 extractor，逐条可审计。
+    assert by_id["inc#000"]["extractor"]["model_id"] == "annotator-a"
+    assert by_id["inc#002"]["extractor"]["model_id"] == "annotator-b"
+    manifest = _manifest_of(tmp_path)
+    assert manifest["version"] == annotate.MANIFEST_VERSION
+    assert manifest["mode"] == "incremental"
+    assert manifest["reused_chunks"] == 2 and manifest["annotated_chunks"] == 1
+    assert len(manifest["passes"]) == 2
+    assert manifest["total_chunks"] == 3
+    assert [p["model_id"] for p in manifest["passes"]] == ["annotator-a", "annotator-b"]
+
+
+def test_incremental_annotate_reannotates_only_the_chunk_that_changed(tmp_path):
+    first = [_annotate_chunk(0), _annotate_chunk(1)]
+    annotate.run(first, _scripted_annotator(tmp_path, first, "m1"), incremental=True)
+
+    changed = [_annotate_chunk(0), _annotate_chunk(1, text=_SENTENCE + "这一段被改写了。")]
+    client = _CountingClient(_scripted_annotator(tmp_path, changed, "m2"))
+    again, _ = annotate.run(changed, client, incremental=True)
+    assert client.calls == ["inc#001"], "正文变了只重抽那一段，不牵连别的段"
+    assert len(again) == 2
+
+
+def test_incremental_annotate_is_invalidated_by_a_prompt_version_bump(tmp_path, monkeypatch):
+    chunks = [_annotate_chunk(0), _annotate_chunk(1)]
+    annotate.run(chunks, _scripted_annotator(tmp_path, chunks, "m1"), incremental=True)
+
+    monkeypatch.setattr(common, "ANNOTATE_PROMPT_VERSION", "annotate/v5")
+    client = _CountingClient(_scripted_annotator(tmp_path, chunks, "m2"))
+    again, _ = annotate.run(chunks, client, incremental=True)
+    assert client.calls == ["inc#000", "inc#001"], "口径升级必须整体重抽（§2.3）"
+    assert len(again) == 2
+
+
+def test_strict_mode_still_reannotates_when_the_fingerprint_moves(tmp_path):
+    first = [_annotate_chunk(0), _annotate_chunk(1)]
+    annotate.run(first, _scripted_annotator(tmp_path, first, "m1"))
+
+    grown = first + [_annotate_chunk(2)]
+    client = _CountingClient(_scripted_annotator(tmp_path, grown, "m1"))
+    again, _ = annotate.run(grown, client)
+    assert len(client.calls) == 3, "默认（strict）口径下指纹变了就整体重抽"
+    assert len(again) == 3
+    assert _manifest_of(tmp_path)["mode"] == "strict"
+
+
+def test_v1_flat_manifest_is_migrated_into_a_pass(tmp_path):
+    chunks = [_annotate_chunk(0), _annotate_chunk(1)]
+    annotate.run(chunks, _scripted_annotator(tmp_path, chunks, "legacy-model"))
+
+    manifest_path = tmp_path / "work" / "annotate.manifest.json"
+    v2 = json.loads(manifest_path.read_text(encoding="utf-8"))
+    decode = v2["decode"]
+    v1 = {
+        "fingerprint": annotate.fingerprint(chunks, "legacy-model", decode),
+        "extractor": {"model_id": "legacy-model", "family": "scripted",
+                      "model_version": "scripted"},
+        "decode": decode,
+        "chunker_version": common.CHUNKER_VERSION,
+        "schema_version": common.SCHEMA_VERSION,
+        "prompt_version": common.ANNOTATE_PROMPT_VERSION,
+        "total_chunks": len(chunks),
+        "chunks": [{"chunk_id": c["chunk_id"], "sha256": c["sha256"],
+                    "status": "done", "cards": ["脚本卡"]} for c in chunks],
+    }
+    manifest_path.write_text(json.dumps(v1, ensure_ascii=False), encoding="utf-8")
+
+    grown = chunks + [_annotate_chunk(2)]
+    client = _CountingClient(_scripted_annotator(tmp_path, grown, "new-model"))
+    again, _ = annotate.run(grown, client, incremental=True)
+    assert client.calls == ["inc#002"], "v1 清单要迁移成 pass，而不是整体重抽"
+    assert len(again) == 3
+    migrated = _manifest_of(tmp_path)["passes"][0]
+    assert migrated["legacy_fingerprint"] == v1["fingerprint"]
+    assert migrated["model_id"] == "legacy-model"
+
+
+def test_v1_manifest_with_a_stale_prompt_is_not_migrated(tmp_path):
+    chunks = [_annotate_chunk(0)]
+    annotate.run(chunks, _scripted_annotator(tmp_path, chunks, "legacy-model"))
+
+    manifest_path = tmp_path / "work" / "annotate.manifest.json"
+    v2 = json.loads(manifest_path.read_text(encoding="utf-8"))
+    v1 = {"fingerprint": "deadbeef", "version": 1,
+          "extractor": {"model_id": "legacy-model", "family": "scripted",
+                        "model_version": "scripted"},
+          "decode": v2["decode"], "chunker_version": common.CHUNKER_VERSION,
+          "schema_version": common.SCHEMA_VERSION, "prompt_version": "annotate/v3",
+          "total_chunks": 1,
+          "chunks": [{"chunk_id": chunks[0]["chunk_id"], "sha256": chunks[0]["sha256"],
+                      "status": "done", "cards": ["脚本卡"]}]}
+    manifest_path.write_text(json.dumps(v1, ensure_ascii=False), encoding="utf-8")
+
+    client = _CountingClient(_scripted_annotator(tmp_path, chunks, "new-model"))
+    annotate.run(chunks, client, incremental=True)
+    assert client.calls == ["inc#000"], "prompt 版本对不上就不迁移，宁可重抽"
+
+
+def test_incremental_rejects_are_kept_and_can_be_retried(tmp_path):
+    chunks = [_annotate_chunk(0)]
+    annotated, rejects = annotate.run(chunks, _scripted_annotator(tmp_path, [], "m1"),
+                                      incremental=True)
+    assert not annotated and len(rejects) == 1
+
+    grown = [_annotate_chunk(0), _annotate_chunk(1)]
+    client = _CountingClient(_scripted_annotator(tmp_path, grown, "m2"))
+    again, rejects2 = annotate.run(grown, client, incremental=True)
+    assert client.calls == ["inc#001"], "已判「无卡片」的段不该每轮重烧一次 API"
+    assert len(again) == 1 and len(rejects2) == 1
+    assert rejects2[0]["chunk_id"] == "inc#000"
+
+    client3 = _CountingClient(_scripted_annotator(tmp_path, grown, "m3"))
+    again3, rejects3 = annotate.run(grown, client3, incremental=True, retry_rejects=True)
+    # 重抽只针对"被判无卡片"的那一段；已经抽出卡片的那段照旧复用。
+    assert client3.calls == ["inc#000"]
+    assert len(again3) == 2 and not rejects3
+
+
 def test_annotator_rejects_non_verbatim_quote():
     chunk_record = {"chunk_id": "x#000", "text": "机位高度决定权力关系。低机位让人物显得高大。",
                     "domain": "cinematography"}

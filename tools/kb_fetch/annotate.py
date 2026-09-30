@@ -8,6 +8,20 @@
 
 断点续跑绑在**六元指纹**上：语料 sha256 / 抽取器 model id / prompt 版本 /
 切块版本 / 解码参数 / schema 版本——指纹变了就整体重抽（§2.3）。
+
+**增量入库（v1.5，`--incremental`）**：语料是会长的。默认口径（strict）在指纹
+任何一位变化时整体重抽——旧书那 298 段为此要重烧一遍 API，而它们一个字节都没变。
+`--incremental` 把"一份指纹"换成"若干 pass"：每个 pass 记下**它自己抽过的
+chunk_id → sha256**、模型与解码参数，并用与 strict 完全相同的公式自证（
+`fingerprint_of_shas`）。复用条件是三条同时成立：
+
+1. 该 pass 的指纹按当前 prompt/切块/schema 口径重算后仍等于记录值（口径升级 → 整体失效）；
+2. chunk 的 sha256 与该 pass 记录的一致（正文变了 → 只重抽这一段）；
+3. `annotated.jsonl` 里确有这条记录（产物与账本必须对得上）。
+
+换模型**不**使旧 pass 失效：每条记录都带自己的 `extractor`，族与版本可逐条审计，
+而"这段正文在这个 prompt/切块口径下已经抽过"这一事实与是谁抽的无关。
+宁严勿松：任何一条不成立就重抽，`--incremental` 从不降低 `validate_card` 的标准。
 """
 
 from __future__ import annotations
@@ -31,6 +45,10 @@ CHUNKS = common.WORK / "chunks.jsonl"
 ANNOTATED = common.WORK / "annotated.jsonl"
 ANNOTATE_REJECTS = common.WORK / "annotate_rejects.jsonl"
 MANIFEST = common.WORK / "annotate.manifest.json"
+
+#: 清单结构版本。v1 是"一份全局指纹 + 一张 chunk 状态表"；v2 在它之上加
+#: `passes[]`（见模块 docstring）。v2 仍然写 v1 的全部字段，旧读者不会瞎。
+MANIFEST_VERSION = 2
 
 MIN_CARDS_PER_CHUNK = 1
 MAX_CARDS_PER_CHUNK = 16
@@ -66,7 +84,11 @@ SYSTEM_PROMPT = """你是电影 / 动画分镜知识库的语料标注员。你�
 
 
 def corpus_fingerprint(chunks: Sequence[Dict]) -> str:
-    payload = "".join(sorted(c["sha256"] for c in chunks))
+    return corpus_fingerprint_of([c["sha256"] for c in chunks])
+
+
+def corpus_fingerprint_of(shas: Sequence[str]) -> str:
+    payload = "".join(sorted(str(sha) for sha in shas))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
 
@@ -75,12 +97,21 @@ def decode_params(temperature: float, seed: int, num_ctx: int) -> str:
 
 
 def fingerprint(chunks: Sequence[Dict], model_id: str, decode: str) -> str:
+    return fingerprint_of_shas([c["sha256"] for c in chunks], model_id, decode)
+
+
+def fingerprint_of_shas(shas: Sequence[str], model_id: str, decode: str) -> str:
+    """与 `fingerprint` 同一个公式，但输入是"一批 chunk 的 sha 列表"。
+
+    pass 只留得下 sha（正文在 `work/` 里，未必还在），所以指纹必须能从这个
+    最小充分集重算——否则 pass 无法自证，增量入库就退化成"盲信旧结果"。
+    """
     six = [
-        corpus_fingerprint(chunks),
-        model_id,
+        corpus_fingerprint_of(shas),
+        str(model_id),
         common.ANNOTATE_PROMPT_VERSION,
         common.CHUNKER_VERSION,
-        decode,
+        str(decode),
         common.SCHEMA_VERSION,
     ]
     return hashlib.sha256("|".join(six).encode("utf-8")).hexdigest()
@@ -147,65 +178,209 @@ def annotate_chunk(client, chunk: Dict, temperature: float, seed: int,
     return cards, reasons
 
 
-def _checkpoint(fp: str, client, decode: str, total: int,
-                manifest_chunks: List[Dict], annotated: List[Dict],
-                rejects: List[Dict]) -> None:
-    """长跑任务每 10 段落一次盘：中断后按指纹与 chunk sha256 续跑，不重抽。"""
+def _read_manifest() -> Dict:
+    if not MANIFEST.exists():
+        return {}
+    try:
+        payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def passes_of(manifest: Dict) -> List[Dict]:
+    """清单里的 pass 列表；v1（扁平清单）就地折成一条。
+
+    v1 的 `fingerprint` 是"整份语料 + 一个模型"的指纹，语料一长就整体失效。
+    折成 pass 时按**记录下来的 chunk sha256** 重算指纹（自证），并且要求
+    prompt / 切块 / schema 三项版本与当前一致——口径变了就不迁移，
+    宁可重抽，也不拿旧口径的产物冒充新口径（§2.3）。
+    """
+    stored = manifest.get("passes")
+    if isinstance(stored, list) and stored:
+        return [dict(p) for p in stored if isinstance(p, dict)]
+    if not manifest:
+        return []
+    for field, current in (("prompt_version", common.ANNOTATE_PROMPT_VERSION),
+                           ("chunker_version", common.CHUNKER_VERSION),
+                           ("schema_version", common.SCHEMA_VERSION)):
+        if str(manifest.get(field, "")) != str(current):
+            return []
+    entries = [c for c in (manifest.get("chunks") or [])
+               if isinstance(c, dict) and c.get("chunk_id") and c.get("sha256")]
+    if not entries:
+        return []
+    extractor = manifest.get("extractor") or {}
+    sha_map = {str(e["chunk_id"]): str(e["sha256"]) for e in entries}
+    decode = str(manifest.get("decode", ""))
+    model_id = str(extractor.get("model_id", ""))
+    return [{
+        "pass_id": "p001",
+        "model_id": model_id,
+        "family": str(extractor.get("family", "")),
+        "model_version": str(extractor.get("model_version", "")),
+        "decode": decode,
+        "fingerprint": fingerprint_of_shas(list(sha_map.values()), model_id, decode),
+        "legacy_fingerprint": str(manifest.get("fingerprint", "")),
+        "chunk_sha256": sha_map,
+        "status": {str(e["chunk_id"]): str(e.get("status") or "done") for e in entries},
+        "reject_reason": {str(e["chunk_id"]): str(e.get("reject_reason", ""))
+                          for e in entries if e.get("status") == "rejected"},
+    }]
+
+
+def pass_is_valid(payload: Dict) -> bool:
+    """pass 自证：按**当前** prompt / 切块 / schema 口径重算它自己的指纹。"""
+    sha_map = payload.get("chunk_sha256") or {}
+    if not sha_map or not str(payload.get("fingerprint", "")):
+        return False
+    expected = fingerprint_of_shas(list(sha_map.values()),
+                                   str(payload.get("model_id", "")),
+                                   str(payload.get("decode", "")))
+    return expected == str(payload["fingerprint"])
+
+
+def reusable_from_passes(chunks: Sequence[Dict], passes: Sequence[Dict],
+                         records: Dict[str, Dict],
+                         retry_rejects: bool = False) -> Tuple[Dict[str, Dict], Dict[str, Dict]]:
+    """逐条判定"这一段已经抽过、且产物还在"；返回 (可复用, 已判无卡片的拒收)。"""
+    shas = {c["chunk_id"]: c["sha256"] for c in chunks}
+    done: Dict[str, Dict] = {}
+    rejected: Dict[str, Dict] = {}
+    for payload in passes:
+        if not pass_is_valid(payload):
+            continue
+        status = payload.get("status") or {}
+        reasons = payload.get("reject_reason") or {}
+        for chunk_id, sha in (payload.get("chunk_sha256") or {}).items():
+            if shas.get(chunk_id) != sha or chunk_id in done or chunk_id in rejected:
+                continue
+            if str(status.get(chunk_id) or "done") == "rejected":
+                if not retry_rejects:
+                    rejected[chunk_id] = {
+                        "chunk_id": chunk_id,
+                        "reasons": [str(reasons.get(chunk_id) or "no_cards")],
+                    }
+                continue
+            record = records.get(chunk_id)
+            if (record is not None and str(record.get("sha256", "")) == str(sha)
+                    and record.get("cards")):
+                done[chunk_id] = {"chunk_id": chunk_id, "sha256": str(sha),
+                                  "status": "done",
+                                  "cards": [c["title"] for c in record["cards"]]}
+    return done, rejected
+
+
+def _manifest_payload(fp: str, client, decode: str, total: int, previous: Dict,
+                      run_entries: Sequence[Dict], base_passes: Sequence[Dict],
+                      stats: Dict) -> Dict:
+    """写清单：v2 = v1 的全部字段 ＋ `passes[]` ＋ 本次的复用/新抽计数。"""
+    passes = [dict(p) for p in base_passes]
+    fresh = [e for e in run_entries if e.get("chunk_id") and e.get("sha256")]
+    if fresh:
+        sha_map = {str(e["chunk_id"]): str(e["sha256"]) for e in fresh}
+        passes.append({
+            "pass_id": f"p{len(passes) + 1:03d}",
+            "model_id": str(client.model_id),
+            "family": str(client.family),
+            "model_version": str(getattr(client, "model_version", "")),
+            "decode": str(decode),
+            "fingerprint": fingerprint_of_shas(list(sha_map.values()),
+                                               str(client.model_id), str(decode)),
+            "chunk_sha256": sha_map,
+            "status": {str(e["chunk_id"]): str(e.get("status") or "done") for e in fresh},
+            "reject_reason": {str(e["chunk_id"]): str(e.get("reject_reason", ""))
+                              for e in fresh if e.get("status") == "rejected"},
+        })
+    # 账本要能回答"这份语料里每一段现在是什么状态"：以旧清单为底再覆盖本次结果，
+    # 否则被 `--limit` 截断或被复用跳过的那些段会从清单里消失。
     existing: Dict[str, Dict] = {}
-    if MANIFEST.exists():
-        try:
-            previous = json.loads(MANIFEST.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            previous = {}
-        for entry in previous.get("chunks", []):
-            existing[entry["chunk_id"]] = entry
-    for entry in manifest_chunks:
-        existing[entry["chunk_id"]] = entry
-    common.write_jsonl(ANNOTATED, annotated)
-    common.write_jsonl(ANNOTATE_REJECTS, rejects)
-    common.dump_json(MANIFEST, {
+    for entry in (previous.get("chunks") or []):
+        if isinstance(entry, dict) and entry.get("chunk_id"):
+            existing[str(entry["chunk_id"])] = entry
+    for entry in run_entries:
+        if entry.get("chunk_id"):
+            existing[str(entry["chunk_id"])] = entry
+    return {
+        "version": MANIFEST_VERSION,
+        "mode": "incremental" if stats.get("incremental") else "strict",
         "fingerprint": fp,
         "extractor": {"model_id": client.model_id, "family": client.family,
-                      "model_version": client.model_version},
+                      "model_version": getattr(client, "model_version", "")},
         "decode": decode,
         "chunker_version": common.CHUNKER_VERSION,
         "schema_version": common.SCHEMA_VERSION,
         "prompt_version": common.ANNOTATE_PROMPT_VERSION,
         "total_chunks": total,
-        "chunks": sorted(existing.values(), key=lambda c: c["chunk_id"]),
-    })
+        "reused_chunks": int(stats.get("reused", 0)),
+        "reused_rejects": int(stats.get("reused_rejects", 0)),
+        "annotated_chunks": int(stats.get("annotated", 0)),
+        "passes": passes,
+        "chunks": sorted(existing.values(), key=lambda c: str(c.get("chunk_id", ""))),
+    }
+
+
+def _checkpoint(fp: str, client, decode: str, total: int,
+                manifest_chunks: List[Dict], annotated: List[Dict],
+                rejects: List[Dict], previous: Dict, base_passes: Sequence[Dict],
+                stats: Dict) -> None:
+    """长跑任务每 10 段落一次盘：中断后按 pass 与 chunk sha256 续跑，不重抽。"""
+    common.write_jsonl(ANNOTATED, annotated)
+    common.write_jsonl(ANNOTATE_REJECTS, rejects)
+    common.dump_json(MANIFEST, _manifest_payload(fp, client, decode, total, previous,
+                                                 manifest_chunks, base_passes, stats))
 
 
 def run(chunks: Sequence[Dict], client, temperature: float = 0.0, seed: int = 0,
-        num_ctx: int = 8192, limit: int = 0, progress=None) -> Tuple[List[Dict], List[Dict]]:
+        num_ctx: int = 8192, limit: int = 0, progress=None,
+        incremental: bool = False,
+        retry_rejects: bool = False) -> Tuple[List[Dict], List[Dict]]:
     decode = decode_params(temperature, seed, num_ctx)
     fp = fingerprint(chunks, client.model_id, decode)
+    previous = _read_manifest()
+    base_passes = passes_of(previous)
+    previous_records = {r["chunk_id"]: r for r in common.read_jsonl(ANNOTATED)}
     done: Dict[str, Dict] = {}
-    if MANIFEST.exists():
-        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-        if manifest.get("fingerprint") == fp:
-            by_chunk = {c["chunk_id"]: c for c in manifest.get("chunks", [])
-                        if c.get("status") == "done"}
-            # §2.3 的断点续跑纪律：**先比指纹，再比 per-chunk sha256**——
-            # 同一 id 换了正文（改了笔记、改了切块）必须重抽，不能复用旧结果。
-            done = {c["chunk_id"]: by_chunk[c["chunk_id"]] for c in chunks
-                    if c["chunk_id"] in by_chunk
-                    and by_chunk[c["chunk_id"]].get("sha256") == c["sha256"]}
+    reused_rejects: Dict[str, Dict] = {}
+    if previous.get("fingerprint") == fp:
+        by_chunk = {c["chunk_id"]: c for c in (previous.get("chunks") or [])
+                    if c.get("status") == "done"}
+        # §2.3 的断点续跑纪律：**先比指纹，再比 per-chunk sha256**——
+        # 同一 id 换了正文（改了笔记、改了切块）必须重抽，不能复用旧结果。
+        done = {c["chunk_id"]: by_chunk[c["chunk_id"]] for c in chunks
+                if c["chunk_id"] in by_chunk
+                and by_chunk[c["chunk_id"]].get("sha256") == c["sha256"]}
+    elif incremental:
+        done, reused_rejects = reusable_from_passes(chunks, base_passes, previous_records,
+                                                   retry_rejects)
 
     annotated: List[Dict] = []
     rejects: List[Dict] = []
+    if incremental:
+        # 旧的"已判无卡片"要留在账上：它们没被重抽，就不该从 rejects 里消失。
+        chunk_index = {c["chunk_id"]: c for c in chunks}
+        for chunk_id, entry in reused_rejects.items():
+            chunk = chunk_index.get(chunk_id) or {}
+            rejects.append({"chunk_id": chunk_id,
+                            "domain": str(chunk.get("domain", "")),
+                            "reasons": list(entry.get("reasons", [])),
+                            "chars": len(str(chunk.get("text", "")))})
     manifest_chunks: List[Dict] = []
-    todo = [c for c in chunks if c["chunk_id"] not in done]
+    # 复用过的"已判无卡片"也要从 todo 里剔除：它是**已判定**的结果，
+    # 不是"还没抽"，否则每一轮增量都会把它们重烧一遍（`--retry-rejects` 才重抽）。
+    settled = set(done) | set(reused_rejects)
+    todo = [c for c in chunks if c["chunk_id"] not in settled]
     if limit:
         todo = todo[:limit]
 
     # 指纹未变时，已标注的 chunk 直接复用上次的记录——否则 `annotated.jsonl`
     # 会随着每次续跑而缩水（只剩本次新增的部分），导入计数跟着失真。
-    previous_records = {r["chunk_id"]: r for r in common.read_jsonl(ANNOTATED)}
     for chunk_id in done:
         if chunk_id in previous_records:
             annotated.append(previous_records[chunk_id])
 
+    stats = {"incremental": bool(incremental), "reused": len(done),
+             "reused_rejects": len(reused_rejects), "annotated": 0}
     for index, chunk in enumerate(todo, 1):
         if progress:
             progress(index, len(todo), chunk["chunk_id"])
@@ -234,27 +409,17 @@ def run(chunks: Sequence[Dict], client, temperature: float = 0.0, seed: int = 0,
             manifest_chunks.append({"chunk_id": chunk["chunk_id"], "sha256": chunk["sha256"],
                                     "status": "done", "cards": [c["title"] for c in cards]})
         if index % CHECKPOINT_EVERY == 0:
-            _checkpoint(fp, client, decode, len(chunks), manifest_chunks, annotated, rejects)
+            _checkpoint(fp, client, decode, len(chunks), manifest_chunks, annotated,
+                        rejects, previous, base_passes, stats)
 
+    stats["annotated"] = sum(1 for e in manifest_chunks if e.get("status") == "done")
     for chunk_id, entry in done.items():  # 指纹未变：复用上次结果
         manifest_chunks.append({**entry, "status": "done"})
 
     common.write_jsonl(ANNOTATED, annotated)
     common.write_jsonl(ANNOTATE_REJECTS, rejects)
-    existing = {}
-    for entry in manifest_chunks:
-        existing.setdefault(entry["chunk_id"], entry)
-    common.dump_json(MANIFEST, {
-        "fingerprint": fp,
-        "extractor": {"model_id": client.model_id, "family": client.family,
-                      "model_version": client.model_version},
-        "decode": decode,
-        "chunker_version": common.CHUNKER_VERSION,
-        "schema_version": common.SCHEMA_VERSION,
-        "prompt_version": common.ANNOTATE_PROMPT_VERSION,
-        "total_chunks": len(chunks),
-        "chunks": sorted(existing.values(), key=lambda c: c["chunk_id"]),
-    })
+    common.dump_json(MANIFEST, _manifest_payload(fp, client, decode, len(chunks), previous,
+                                                 manifest_chunks, base_passes, stats))
     return annotated, rejects
 
 
@@ -268,6 +433,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--num-ctx", type=int, default=8192)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--domain", default="")
+    parser.add_argument("--incremental", action="store_true",
+                        help="按 pass 逐段复用（语料长大时不重抽没变过的段）；"
+                             "口径或正文变了的那一段仍然重抽")
+    parser.add_argument("--retry-rejects", action="store_true",
+                        help="配 --incremental：连「已判无卡片」的段也重抽一遍")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     chunks = common.read_jsonl(CHUNKS)
@@ -279,7 +449,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"[{index}/{total}] {chunk_id}", flush=True)
 
     annotated, rejects = run(chunks, client, args.temperature, args.seed,
-                             args.num_ctx, args.limit, progress)
+                             args.num_ctx, args.limit, progress,
+                             incremental=args.incremental,
+                             retry_rejects=args.retry_rejects)
     total_cards = sum(len(r["cards"]) for r in annotated)
     print(json.dumps({"chunks_annotated": len(annotated), "chunks_rejected": len(rejects),
                       "cards": total_cards}, ensure_ascii=False))
