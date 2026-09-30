@@ -431,3 +431,31 @@ def test_fill_writes_the_input_card_set_and_reports_the_missing_ones(tmp_path, m
     assert report["entries"] == 1 and report["cards_covered"] == 1
     assert report["cards_missing"] == ["c2"], "没派生条目的卡必须被点名（这才是门⑥ 的牙齿）"
     assert report["gaps"]["entries"] == 1
+
+
+def test_gap_prompt_renders_the_legal_forbid_slots_from_the_schema():
+    """补跑轮的提示必须把 `forbid_<kind>` 的**合法位置连同合法 kind** 一起渲染。
+
+    真缺陷（2026-10-01 修）：规则 5 原先只说"禁忌槽位只允许出现在 EMOTION_PACK 上"，
+    没说哪些 kind —— 而 schema 里 `OPTIONAL_MEMBERS[EMOTION_PACK]` 的 forbid 只收
+    `movement`／`shot_size`／`vfx`。标注员于是写出 `forbid_lighting`（上一代 oracle
+    实测 48 条）／`forbid_pacing`（49 条）这类组合，校验器一旦拦住，补跑轮就会拿
+    **同一个缺口**反复重试——把 GPU 时间烧在构造上不可能通过的条目上。
+
+    断言的是"提示里出现的就是渲染出来的那一串"，所以任何手抄的清单都会红。
+    """
+    from tools import check_holdout
+
+    hint = check_holdout.forbid_slot_hint()
+    assert hint, "schema 里应当至少有一类边带 forbid 成员"
+    assert hint in holdout_fill.GAP_PROMPT, (
+        "补跑提示里的合法禁忌位置不是从 schema 渲染的（手抄的清单会与 schema 漂移）")
+    for kind in ("movement", "shot_size", "vfx"):
+        assert "`forbid_%s`" % kind in hint
+    for kind in ("lighting", "pacing", "sfx", "camera_angle"):
+        assert "`forbid_%s`" % kind not in hint, (
+            "%s 不能以 forbid 角色出现，提示里不得把它写成合法位置" % kind)
+    # 只有 EMOTION_PACK 有 forbid 成员：别的类型一个都不许被写成宿主。
+    for etype in check_holdout.EDGE_TYPES:
+        if etype != "EMOTION_PACK":
+            assert "%s: `forbid_" % etype not in hint

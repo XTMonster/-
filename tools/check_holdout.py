@@ -279,6 +279,25 @@ def queryable_slot_hint(sep: str = "、") -> str:
                     for kind in QUERYABLE_KINDS_SORTED)
 
 
+def forbid_slot_hint(sep: str = "；") -> str:
+    """`forbid_<kind>` 的**合法位置**，从 `REQUIRED_MEMBERS`／`OPTIONAL_MEMBERS` 渲染。
+
+    为什么必须渲染而不是手抄一句"禁忌槽位只允许出现在 EMOTION_PACK 上"：
+    那句话只说了**哪一类边**，没说**哪些 kind**。标注员于是写出
+    `EMOTION_PACK:…,forbid_lighting=…`——而 schema 里 EMOTION_PACK 的 forbid
+    只收 `movement`／`shot_size`／`vfx`，抽取器照 schema 建边，
+    这样的边在索引里根本不存在（`illegal_members()` 现在会当场拒收，
+    但补跑轮会拿同一个缺口反复重试，把 GPU 时间烧在构造上不可能通过的条目上）。
+    """
+    parts: List[str] = []
+    for etype in EDGE_TYPES:
+        members = tuple(_hg.REQUIRED_MEMBERS[etype]) + tuple(_hg.OPTIONAL_MEMBERS.get(etype, ()))
+        kinds = [kind for role, kind in members if role == "forbid"]
+        if kinds:
+            parts.append("%s: %s" % (etype, "／".join("`forbid_%s`" % k for k in kinds)))
+    return sep.join(parts)
+
+
 def load_entries(path: pathlib.Path) -> List[dict]:
     entries: List[dict] = []
     for lineno, raw in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):

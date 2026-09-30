@@ -53,6 +53,7 @@ from tools.check_holdout import (  # noqa: E402
     query_key_text,
     query_shortfall,
     queryable_slot_hint,
+    forbid_slot_hint,
     spec_key,
     support_from,
     validate_entry as gate_validate_entry,
@@ -82,7 +83,12 @@ _ANNOTATOR: Dict[str, str] = {}
 #: 与基础提示（`holdout_gen.SYSTEM_PROMPT`）**互相矛盾**：两段拼在一起发给模型时，
 #: 它照旧写出挂不上种子的边，门⑨ 因此恒红（实测 TRANSITION_PACK 158/158 不可达、
 #: AXIS_RULE 一个可锚槽位都没有）。改 v8 = 文案跟着 schema 走。
-GAP_PROMPT_VERSION = "holdout-gap/v8"
+#: v9：规则 5 原先只说"禁忌槽位只允许出现在 EMOTION_PACK 上"，**没说 kind 限制**，
+#: 标注员因此写出 `forbid_lighting`／`forbid_pacing` 这类 schema 里不存在的组合
+#: （EMOTION_PACK 的 forbid 只收 `movement`／`shot_size`／`vfx`）。校验器现在会
+#: 当场拒收，而补跑轮会拿**同一个缺口**反复重试——把 GPU 时间烧在构造上不可能
+#: 通过的条目上。这一版把合法位置连同合法 kind 一起**从 schema 渲染**（单一真源）。
+GAP_PROMPT_VERSION = "holdout-gap/v9"
 #: 补跑轮的解码参数：**必须让重试产生不同样本**。
 #: 温度 0 ＋ 同一个 prompt ＝ 逐字相同的输出 ＝ 同一批拒收永远重放（实测：连续 4 轮
 #: `added=0`、覆盖卡在 1039/1075）。这里给补跑轮一点温度、并按轮次给不同 seed——
@@ -109,8 +115,11 @@ GAP_PROMPT = (
     "`headroom_policy`／`avg_shot_len`）在 `q` 里**没有**对应键，写在 `must` 里就够了。\n"
     % queryable_slot_hint() +
     "4. `top1` 必须与 `must` 里某条**一字不差**；`never` 与 `must` 不相交。\n"
-    "5. 禁忌槽位 `forbid_<kind>=取值` **只允许出现在 EMOTION_PACK** 上，"
-    "且该 kind 的同名取值必须同时出现在 `q` 里（这样才算一次禁忌冲突）。\n"
+    "5. 禁忌槽位 `forbid_<kind>=取值` **只能写在这些位置**：%s —— 其它"
+    "（边类型, kind）组合在 schema 里不存在，会被当场拒收（补跑轮会拿同一个缺口"
+    "反复重试，白烧时间）。且该 kind 的同名取值必须同时出现在 `q` 里"
+    "（这样才算一次禁忌冲突）。\n"
+    % forbid_slot_hint() +
     "6. `from_card` 必须是下面列出的卡片 id 之一，且**优先用没被用过的卡**。\n"
     "7. **只有这 %d 个类型名**（%s），不要发明 COMPOSITION／SHAKE 之类的新类型；构图/机位/"
     "动作/打击感/声画知识优先选对应的新类型（`STAGING_PACK`／`PERFORMANCE_PACK`／"
