@@ -1,0 +1,32 @@
+命令：python tools/probe_sidecar_wiring.py
+capabilities=['llm', 'bm25', 'hypergraph']
+backend=hypergraph degraded=False retrieval_calls=2
+trace={"backend": "hypergraph", "lanes": 2, "cases_backend": "hybrid"}
+
+【单镜注入块（节选）】
+【硬约束（禁/许）】
+[EMOTION_PACK] emotion:荒诞 => intensity=mid 禁={movement:固定}
+[INTENT_PACK] intent=intent:铺垫 shot_size=shot_size:MS movement=固定
+[INTENT_PACK] intent=intent:揭示 shot_size=shot_size:MS movement=固定
+[INTENT_PACK] intent=intent:留白 shot_size=shot_size:MS movement=固定
+
+【经验建议（软）】
+[INTENT_PACK] intent=intent:铺垫 shot_size=shot_size:MS movement=固定
+
+【参考案例（仅参考）】
+[case_camera_angle_and_lens_md_004] 镜头与焦距：机位高度、角度与镜头焦距的对应关摘记004
+- **50 mm**：接近人眼透视，中景与中近景的标准镜头。- **85 mm**：背景压缩明显，人脸比例好看，适合近景与特写；
+
+【整场预取块（节选）】
+【硬约束（禁/许）】
+[EMOTION_PACK] emotion:孤独 => intensity=mid 禁={shot_size:CU}
+[EMOTION_PACK] emotion:平静 => intensity=low 禁={shot_size:CU}
+[INTENT_PACK] intent=intent:揭示 shot_size=shot_size:CU movement=固定
+[EMOTION_PACK] emotion:悲伤 => intensity=low 禁={shot_size:CU}
+[EMOTION_PACK] emotion:混乱 => intensity=mid 禁={shot_size:CU}
+[EMOTION_PACK] emotion:平静 => intensity=low 禁={shot_size:CU}
+[EMOTION_PACK] emotion:混乱 => intensity=high 禁={shot_size:CU}
+[EMOTION_PACK] emotion:荒诞 => intensity=mid 禁={shot_size:CU}
+
+【参考案例（仅参考）】
+[case_anime_language_md_seq002] 镜序套路：日式动画的镜头语言与作画节奏
