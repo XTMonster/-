@@ -1,0 +1,191 @@
+{
+  "path": "fixtures\\knowledge_holdout.jsonl",
+  "pilot": false,
+  "gate_1_total": {
+    "status": "pass",
+    "entries": 2729,
+    "entries_pilot": 0,
+    "min_entries": 1200
+  },
+  "gate_2_format": {
+    "status": "pass",
+    "entries": 2729,
+    "valid": 2729,
+    "problems": [],
+    "problem_count": 0,
+    "q7_conflicts": 118,
+    "must_pairs_per_type": {
+      "EMOTION_PACK": 365,
+      "SHOT_PATTERN": 513,
+      "AXIS_RULE": 53,
+      "TROPE": 139,
+      "EDIT_RHYTHM": 1,
+      "LIGHT_PACK": 173,
+      "ACTION_BEAT": 366,
+      "PERFORMANCE_PACK": 276,
+      "INTENT_PACK": 119,
+      "IMPACT_PACK": 26,
+      "STAGING_PACK": 546,
+      "SOUND_PACK": 44,
+      "TRANSITION_PACK": 108
+    },
+    "must_cards_per_type": {
+      "EMOTION_PACK": 336,
+      "SHOT_PATTERN": 407,
+      "AXIS_RULE": 30,
+      "TROPE": 139,
+      "EDIT_RHYTHM": 1,
+      "LIGHT_PACK": 169,
+      "ACTION_BEAT": 362,
+      "PERFORMANCE_PACK": 274,
+      "INTENT_PACK": 114,
+      "IMPACT_PACK": 26,
+      "STAGING_PACK": 542,
+      "SOUND_PACK": 44,
+      "TRANSITION_PACK": 108
+    },
+    "q7_forbid_members": {
+      "vfx=smoke": 2,
+      "movement=handheld": 11,
+      "shot_size=ECU": 16,
+      "movement=固定": 103,
+      "shot_size=ELS": 17,
+      "shot_size=CU": 11,
+      "movement=steadicam": 1,
+      "movement=dolly_in": 4,
+      "movement=zoom_in": 7,
+      "vfx=glow": 23,
+      "movement=dolly_zoom": 2,
+      "movement=track_left": 30,
+      "movement=whip_pan_left": 2,
+      "vfx=impact_frame": 1,
+      "movement=dolly_out": 2
+    },
+    "needs_human": 118,
+    "human_reviewed": 0,
+    "q7_member_count": 15
+  },
+  "gate_4_edge_types": {
+    "status": "fail",
+    "min_pairs_per_type": 30,
+    "min_cards_per_type": 10,
+    "short_pairs": {
+      "EDIT_RHYTHM": 1,
+      "IMPACT_PACK": 26
+    },
+    "thin_cards": {
+      "EDIT_RHYTHM": 1
+    }
+  },
+  "gate_5_forbid": {
+    "status": "pass",
+    "q7_conflicts": 118,
+    "min": 60
+  },
+  "gate_5b_forbid_members": {
+    "status": "pass",
+    "members": 15,
+    "under_covered": {}
+  },
+  "gate_7_human_review": {
+    "status": "fail",
+    "needs_human": 118,
+    "human_reviewed": 0,
+    "min_human_review": 120
+  },
+  "gate_8_independence": {
+    "status": "pass",
+    "extractor_family": "deepseek",
+    "annotator_families": [
+      "zhipu"
+    ],
+    "strong_but_same_family": [],
+    "liar_count": 0
+  },
+  "gate_3_seed_coverage": {
+    "status": "pass",
+    "missing_values": {},
+    "unknown_values": {},
+    "thin_values": {},
+    "min_support": 3,
+    "kinds_checked": 20,
+    "vocab_fingerprint": true,
+    "unreachable_kinds": [
+      "axis_topic",
+      "character",
+      "object"
+    ]
+  },
+  "gate_6_sources": {
+    "status": "fail",
+    "cards": 2113,
+    "missing_cards": [
+      "cine_coverage",
+      "cine_duration",
+      "cine_move_crane_arc_down",
+      "cine_move_crane_arc_up",
+      "cine_move_crane_down",
+      "cine_move_lead_subject",
+      "cine_move_orbit_ccw",
+      "cine_move_pan_left",
+      "cine_move_pan_right",
+      "cine_move_push_through",
+      "cine_move_tilt_down",
+      "cine_move_tilt_up",
+      "cine_move_zoom_out",
+      "gen_anime_0276",
+      "gen_anime_0277",
+      "gen_anime_0304",
+      "gen_anime_0310",
+      "gen_anime_0311",
+      "gen_anime_0312",
+      "gen_anime_0320"
+    ],
+    "missing_count": 241,
+    "ghost_cards": [],
+    "ghost_count": 0
+  },
+  "gate_9_reachability": {
+    "status": "pass",
+    "entries": 2729,
+    "short": 0,
+    "short_ratio": 0.0,
+    "examples": [],
+    "scope": "must[0] + top1，plain 槽位；QUERYABLE_KINDS 排除 scene_type/beat_type（与产出侧同一份口径）"
+  },
+  "gate_10_index_resolvable": {
+    "status": "pass",
+    "entries": 2729,
+    "specs": 10279,
+    "resolved": {
+      "must": 4874,
+      "top1": 2729,
+      "never": 2676
+    },
+    "totals": {
+      "must": 4874,
+      "top1": 2729,
+      "never": 2676
+    },
+    "unresolved_per_field": {
+      "must": 0,
+      "top1": 0,
+      "never": 0
+    },
+    "unresolved": 0,
+    "unresolved_ratio": 0.0,
+    "unresolved_by_cause": {},
+    "unresolved_by_edge_type": {},
+    "unresolved_closeness": {},
+    "strict_relation_matches": 10279,
+    "subset_relation_matches": 10279,
+    "subset_relation_ratio": 1.0,
+    "expectation_relation": "exact",
+    "card_edge_matches": 7603,
+    "card_edge_ratio": 0.7397,
+    "index_edges": 847,
+    "examples": [],
+    "note": "§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。 逐字段未命中：{'must': 0, 'top1': 0, 'never': 0}；诊断：另有 10279/10279 条满足「标注成员 ⊆ 索引边（forbid 完全相等）」——这一层与规格字面的「成员集完全相等」不同，标注方不可见索引时后者在构造上不可能全过（AXIS_RULE 的可选 axis_topic 就是结构性一例），属规格级裁决"
+  },
+  "overall": "fail"
+}
