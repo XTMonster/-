@@ -278,3 +278,25 @@ def test_rematch_rebuilds_from_the_persisted_atoms_without_the_model(tmp_path, m
     summary = bh.rematch(cards, {})
     assert summary["edges"] >= 1
     assert (tmp_path / "hypergraph.edges.jsonl").read_bytes() == first
+def test_index_cards_include_the_curated_handwritten_ones():
+    """手写策展卡必须在抽取器的输入里。
+
+    它们原先只存在于运行时的 `CARDS`，不在 `cards_generated/*.jsonl`，
+    于是 `load_cards()` 把 132 张人工把关的硬规则整批漏在索引之外——实测
+    held-out 涉及的 1075 张卡里有 268 张"一条边都没有"，示例正是
+    `axis_180`／`axis_cross`／`comp_thirds`。
+    """
+    from block_director.knowledge.corpus import HANDWRITTEN_CARDS
+
+    cards = bh.load_cards()
+    ids = {str(card["id"]) for card in cards}
+    handwritten = {card.id for card in HANDWRITTEN_CARDS}
+    assert handwritten, "运行时应当有手写策展卡"
+    assert handwritten <= ids, "手写卡没进抽取器输入：" + str(sorted(handwritten - ids)[:5])
+
+    sample = next(card for card in cards if str(card["id"]) in handwritten)
+    assert sample["source_span"]["chunk_id"].startswith("curated/")
+    assert sample["source_span"]["start"] == 0
+    assert sample["source_span"]["end"] == len(sample["content"]) > 0
+    assert sample["provenance_kind"] == "权威文档"
+    assert sample["source_ref"]["license"] == "OwnWork"

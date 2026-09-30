@@ -48,7 +48,10 @@ VOCAB = common.KNOWLEDGE / "hypergraph.vocab.json"
 #: 第 1 段的**原子边**落盘（可只看归并口径重跑第 2 段，不必重抽）。
 ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 
-PROMPT_VERSION = "extract/v4"
+#: 版本进六元指纹：改了提示就整体重抽，不拿旧原子边冒充新口径。
+#: v5：把"每张卡至少一条边"改成**按耦合写**（实测 1241/1359 张卡只抽出一条，
+#: 卡里其余的耦合整块丢失）。
+PROMPT_VERSION = "extract/v5"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -195,7 +198,19 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
    实测教训：不写这一条时整库只剩 1 个 forbid 成员，Q7 就没有可拦截对象。
 5. `source_kind`：教科书/权威理论的边用 `theory`＋`hard`；来自个人经验的取舍用
    `experience`＋`soft`；只有卡片明确写成"教训/禁忌"时才用 `lesson`。
-6. **每一张卡都要至少产出一条边**（除非它只是孤立术语的定义）。一张卡最多 4 条。
+6. **每一张卡都要写出它表达的全部耦合**（除非它只是孤立术语的定义）。一张卡最多 4 条。
+   实测教训（2026-10-01）：只要求"至少一条"时，模型给 1359 张卡一共写了 1241 张
+   **只有一条边**的卡——一张讲"冲击帧只占 1–2 帧，配低频音效与手持机位"的卡，
+   最后只落成一条 `EDIT_RHYTHM`，卡里真正的**打击感**与**声画**耦合整块丢失，
+   检索再怎么排都召不回它。所以这里的口径是**按耦合写、不是按卡写**：
+   * 卡里同时讲了 A×B 与 C×D，就写**两条**边；
+   * 讲了两件事却只写一条，等于把那件事从索引里删掉；
+   * 拿不准时先自问："这张卡还讲了什么**别的**类型的耦合？"
+   **自检：如果一条卡抽出 1 条边，回头再看一遍它的正文**，多半漏了一条。
+   例（照这个粒度写）：卡写着"冲击帧只占 1–2 帧，配合低频音效与手持机位，剪辑上
+   前后要留 6–10 格静止" → 至少两条：
+   `IMPACT_PACK:vfx=<冲击帧>,sfx=<低频>,movement=<手持>` ＋
+   `EDIT_RHYTHM:pacing=short,avg_shot_len=<1s>`。
    宁可少写成员，也不要空手而归——索引里没有边，这条知识就等于不存在。
 7. `value` 必须落在冻结取值域内（例如 intensity 只能是 low/mid/high）。
    受限取值只有这几组，抄错即被拒收：intensity∈{low,mid,high}；
@@ -794,19 +809,60 @@ class _ExtractorStub:
         self.model_id = str(extractor.get("model_id", ""))
         self.model_version = str(extractor.get("model_version", ""))
 def load_cards() -> List[Dict]:
-    """优先用生成卡（带 `source_span`）；缺失字段的手写卡不参与抽取。"""
+    """抽取器看到的卡片全集 = 生成卡 ＋ **手写策展卡**。
+
+    v1.5 修正：手写卡（`block_director/knowledge/cards_*.py` 里那 132 张）原先
+    **完全不进索引**——`cards_generated/*.jsonl` 里没有它们，于是
+    `axis_180`／`axis_cross`／`comp_thirds` 这些旗舰硬规则在超图侧永远召不回。
+    实测（2026-10-01）：held-out 涉及 1075 张卡，其中 **268 张在索引里一条边
+    都没有**，示例正是上面这几张。
+
+    它们缺的只是出处字段，而"出处"本身就是**卡片自己**：文件在仓库里、
+    许可是 `OwnWork`、正文可复算 sha256。所以补一个**如实的**出处即可：
+    `chunk_id = curated/<id>`，span 取整段正文，provenance 记 `权威文档`。
+    这不是放宽门，而是把一条早就该在索引里的知识放进去。
+    """
     out: List[Dict] = []
     directory = common.CARDS_DIR
-    if not directory.is_dir():
+    if directory.is_dir():
+        for path in sorted(directory.glob("*.jsonl")):
+            for line in path.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                card = json.loads(line)
+                if card.get("source_span"):
+                    out.append(card)
+    try:
+        from block_director.knowledge.corpus import HANDWRITTEN_CARDS
+    except Exception:  # pragma: no cover - 换环境时不该因此失败
         return out
-    for path in sorted(directory.glob("*.jsonl")):
-        for line in path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            card = json.loads(line)
-            if card.get("source_span"):
-                out.append(card)
+    known = {str(card.get("id")) for card in out}
+    for card in HANDWRITTEN_CARDS:
+        if card.id in known:
+            continue
+        span = {"chunk_id": f"curated/{card.id}", "start": 0, "end": len(card.content)}
+        out.append({
+            "id": card.id,
+            "domain": card.domain,
+            "title": card.title,
+            "content": card.content,
+            "keywords": list(card.keywords),
+            "tags": list(card.tags),
+            "rules": list(card.rules),
+            "emotion": card.emotion,
+            "chunk_id": span["chunk_id"],
+            "source_span": span,
+            "provenance_kind": "权威文档",
+            "source_ref": {
+                "url": f"repo://block_director/knowledge/cards#{card.id}",
+                "title": card.title,
+                "author": "BlockDirector knowledge team",
+                "license": "OwnWork",
+                "retrieved_at": "2026-10-01",
+                "sha256": common.sha256_text(card.content),
+            },
+        })
     return out
 
 
