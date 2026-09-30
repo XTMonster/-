@@ -123,3 +123,16 @@ K3 的门一个字不放宽。
   `grep -c 'PersonalStudy' knowledge/cards_generated/*.jsonl` 即可定位全部条目；
 * **逐条归属**：每一条的 `source_ref` 六字段（含 URL、作者、许可、抓取时间、
   sha256）随卡片入库，可回溯到原页面。
+
+当前 `PersonalStudy` 的三条来源（Frames Cinema Journal 第 22 期"空间"专辑，ISSN
+2053-8812，同行评审开放获取）。`source_ref.author` 记的是**出版方**（期刊），
+逐篇作者在这里补齐——期刊页面没有给出具名的 CC 声明，所以不按开放许可记：
+
+| 文章 | 作者 | 域 |
+|---|---|---|
+| *The Logic of Disorientation: Exploring Space in Albert Serra's Afternoons of Solitude* | Alexandra Semenova | axis_theory |
+| *Geology of Ideas, Hydrology of Matter: Nature and Space in Abbas Kiarostami's Cinema* | Alborz Mahboobkhah | axis_theory |
+| *Blurring Space Across Film, Theatre and Virtual Reality: Zero-Calorie Restaurant (2023)* | Xunnan Li | axis_theory |
+
+另外 60 张卡来自 MIT OpenCourseWare（`21L.011 The Film Experience` 的两份讲义 PDF，
+`license: CC-BY-NC-SA`，课程由 MIT 发布）。

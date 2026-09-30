@@ -56,7 +56,11 @@ class BLOCKDIRECTOR_OT_open_llm_trace(Operator):
         if text is None:
             text = bpy.data.texts.new(TRACE_TEXT_NAME)
         text.clear()
-        lines = Path(trace_path).read_text(encoding="utf-8").split("\n")
+        # 只按 `\n` 切（见 `tools/kb_fetch/common.py::read_jsonl`：`splitlines()` 会把
+        # `\u0085`/`\u2028`/`\u2029` 当成换行，而它们可能是卡片/脚本文本里的一部分）。
+        # 审计日志是 Windows 文本模式写的（CRLF），所以这里要顺手把行尾的 `\r` 去掉。
+        lines = [line.rstrip("\r") for line in
+                 Path(trace_path).read_text(encoding="utf-8").split("\n")]
         for line in lines:
             text.write(line + "\n")
         for area in context.screen.areas if context.screen else []:

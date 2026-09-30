@@ -265,7 +265,24 @@ Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`revie
 `layer5_orchestrator/scene_contract.py::shot_constraint_query()` 就是那个生产者
 （`editor.py` 每镜用它取知识）。证据：`docs/evidence/20260930-071500/`。
 
-**P14 未完成（不得当作通过）**（2026-10-01 02:20 复跑的准确数字，证据 `docs/evidence/20261001-0220/`；
+**2026-10-01 语料重建（用户裁决：理论不要自己写，要别人写的）——这一版是当前口径**：
+`sources.yaml` 里 27 条 `mode: manual`（自撰笔记）全部移除，换成 41 条**他人著作**
+（Gutenberg 公有领域教材 ＋ MIT OCW `CC-BY-NC-SA` 讲义 ＋ Frames Cinema Journal
+`PersonalStudy` 论文）；生成卡 **1981 张、自撰 0 张**（重建前 1601 张里 671 张自撰），
+`python tools/knowledge/authorship_report.py` → `passed: true`，并接进
+`tools/run_tests.ps1` 的证据钩子（`authorship.json`，失败归属 RK-13）。
+K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime` 141 张 / 6.7%）；
+超图 **890 条边 / 2843 原子**，Q0 pass，13 类边全部非空（`extract/v6` 的"逐类自问"把
+`IMPACT_PACK` 15→23、`INTENT_PACK` 45→56、`SOUND_PACK` 21→24 等补了回来），
+但 **`AXIS_RULE` 37 → 11**（去重口径的必然结果，见待裁决清单）；
+`python -m pytest` = **1367 passed / 0 failed**。
+**仍红的**：held-out 的 ⑦（人审只能人做）与 ③/⑥/⑨/⑩ —— 根因不再是实现缺陷，而是
+**oracle 是上一代语料的产物**（卡 id 换代），必须重标一轮；
+以及 **L3 `SEQUENCE_FLOOR = 7` 现在无解**（外部语料里箭头枚举实测只有 1 个、派生 0 条）。
+逐项对账与必须由用户拍板的四件事见 `docs/knowledge/ACCEPTANCE_STATUS.md`，
+裁决理由见 `docs/adr/0013-theory-must-be-authored-by-others.md`。
+
+**以下为重建前的历史数字（保留以供对照）**：**P14 未完成（不得当作通过）**（2026-10-01 02:20 复跑的准确数字，证据 `docs/evidence/20261001-0220/`；
 **索引与 oracle 仍在重建中，数字会动 —— 复跑上面那两条命令，以最新一次输出为准**）：
 `fixtures/knowledge_holdout.jsonl` 已落地 **4539 条**（下界 1200），但**五道门是红的**：
 
