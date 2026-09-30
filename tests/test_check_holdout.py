@@ -14,6 +14,7 @@ from contextlib import redirect_stdout
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from tests._holdout_index import index_args, read_jsonl, write_index  # noqa: E402
 from tools import check_holdout  # noqa: E402
 
 from block_director.knowledge import hypergraph as hg  # noqa: E402
@@ -78,22 +79,29 @@ def write(tmp_path: pathlib.Path, records, name: str = "holdout.jsonl") -> pathl
     return path
 
 
-def full_run(tmp_path: pathlib.Path, records, *extra: str) -> int:
+def full_run(tmp_path: pathlib.Path, records, *extra: str,
+             index_records=None, with_index: bool = True) -> int:
     """A pilot run with both external inputs supplied, so no gate is not_measured."""
     vocab = tmp_path / "vocab.json"
     vocab.write_text(json.dumps(VOCAB, ensure_ascii=False), encoding="utf-8")
     cards = tmp_path / "cards.json"
     cards.write_text(json.dumps(sorted({r["from_card"] for r in records})), encoding="utf-8")
-    return check_holdout.main([str(write(tmp_path, records)), "--pilot",
-                               "--vocab", str(vocab), "--cards", str(cards),
-                               "--extractor-family", "deepseek", *extra])
+    argv = [str(write(tmp_path, records)), "--pilot",
+            "--vocab", str(vocab), "--cards", str(cards),
+            "--extractor-family", "deepseek"]
+    if with_index:
+        argv += index_args(
+            tmp_path, records if index_records is None else index_records)
+    return check_holdout.main(argv + list(extra))
 
 
 def report(path: pathlib.Path, *extra: str, pilot: bool = True) -> dict:
     buf = io.StringIO()
-    argv = [str(path), "--json", *extra]
+    argv = [str(path), "--json"]
     if pilot:
         argv.insert(1, "--pilot")
+    nodes, edges = write_index(path.parent, read_jsonl(path))
+    argv += ["--nodes", str(nodes), "--edges", str(edges), *extra]
     with redirect_stdout(buf):
         check_holdout.main(argv)
     return json.loads(buf.getvalue())
@@ -242,6 +250,93 @@ def test_pilot_entries_do_not_count_towards_the_1200(tmp_path):
     assert data["gate_1_total"]["status"] == "fail"
 
 
+# ---------------------------------------------------------------- 门⑩ 可达性（R54）
+
+SPEC_MS50 = "SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"
+
+
+def test_gate10_flags_a_query_that_cannot_reach_its_own_must_edge(tmp_path):
+    """协议 §3.1：`must` = "抽不到这条边我就认为检索失败了"。
+
+    这条查询只写了 `景别=MS`，而它的 `must` 还要求 `镜头=50mm` —— 该边**从这条
+    查询根本召不回**，Q1/Q2 在这种条目上数学不可达。产出侧
+    （`holdout_fill.query_shortfall`）已经在拦，但**校验器一直没有**，于是已经写进
+    `fixtures/knowledge_holdout.jsonl` 的那批弱查询谁也没报出来。
+    """
+    rec = entry(must=[SPEC_MS50], top1=[SPEC_MS50], q="景别=MS")
+    data = report(write(tmp_path, [rec], "unreach.jsonl"))
+    assert data["gate_2_format"]["status"] == "pass"      # 格式本身没毛病
+    assert data["gate_9_reachability"]["status"] == "fail"
+    assert data["gate_9_reachability"]["short"] == 1
+    assert "lens=50mm" in data["gate_9_reachability"]["examples"][0]["unreachable"]
+
+
+def test_gate10_passes_when_q_names_every_queryable_slot(tmp_path):
+    """负对照：把 `must` 能表达的槽位全写进 `q`，门⑩ 必须绿。"""
+    rec = entry(must=[SPEC_MS50], top1=[SPEC_MS50], q="景别=MS；镜头=50mm")
+    data = report(write(tmp_path, [rec], "reach.jsonl"))
+    assert data["gate_9_reachability"]["status"] == "pass"
+    assert data["gate_9_reachability"]["short"] == 0
+
+
+def test_gate10_only_judges_the_expected_edge_not_never(tmp_path):
+    """`never` 本来就该跟查询不相交，不得被门⑩ 判红（否则负样本全废）。"""
+    rec = entry(must=[SPEC_MS50], top1=[SPEC_MS50],
+                never=["TROPE:genre=anime,emotion=emotion_v"],
+                q="景别=MS；镜头=50mm")
+    data = report(write(tmp_path, [rec], "never.jsonl"))
+    assert data["gate_9_reachability"]["status"] == "pass"
+
+
+# ---------------------------------------------------------------- 门⑪ 可解析（R54）
+
+
+def test_gate11_flags_a_must_the_index_does_not_carry(tmp_path):
+    """§2.3 Q6b 前置①：索引里没有这条 required 边 ⇒ 索引构建失败。
+
+    这里让 held-out 多写一条索引里不存在的边：门⑪ 必须点名它，而不是让下游
+    把这条 `must` 从分母里静默剔掉（那会让 Q1/Q2/Q4/Q6b 一起变好看）。
+    """
+    good = entry(1, review={"reviewed_by": "human", "verdict": "accepted"})
+    bad = q7_entry(2, review={"reviewed_by": "human", "verdict": "accepted"})
+    records = [good, bad]
+    assert full_run(tmp_path, records, index_records=[good]) == 1
+    nodes, edges = write_index(tmp_path, [good])
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        check_holdout.main([str(write(tmp_path, records)), "--pilot",
+                            "--nodes", str(nodes), "--edges", str(edges), "--json"])
+    data = json.loads(buf.getvalue())
+    assert data["gate_10_index_resolvable"]["status"] == "fail"
+    assert data["gate_10_index_resolvable"]["unresolved"] > 0
+    assert data["gate_10_index_resolvable"]["unresolved_ratio"] > 0
+    assert data["gate_10_index_resolvable"]["examples"]
+
+
+def test_gate11_is_not_measured_without_an_index(tmp_path):
+    """缺索引 → `not_measured`（退出码 2），绝不当作通过（§4.1b 硬规则 1）。"""
+    # 用"其余门全过"的夹具，这样唯一的非 pass 就是门⑪ 的 not_measured
+    # （fail 优先于 not_measured，混进别的红门就测不出退出码 2 了）。
+    path = write(tmp_path, valid_records(), "noindex.jsonl")
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = check_holdout.main([str(path), "--pilot", "--json",
+                                 "--nodes", str(tmp_path / "missing.nodes.jsonl"),
+                                 "--edges", str(tmp_path / "missing.edges.jsonl")])
+    assert rc == 2
+    data = json.loads(buf.getvalue())
+    assert data["gate_10_index_resolvable"]["status"] == "not_measured"
+    assert "索引缺失" in data["gate_10_index_resolvable"]["reason"]
+
+
+def test_gate11_passes_when_the_index_carries_every_spec(tmp_path):
+    """负对照：索引与 fixture 同源派生时，门⑪ 必须绿。"""
+    data = report(write(tmp_path, valid_records(), "resolvable.jsonl"))
+    assert data["gate_10_index_resolvable"]["status"] == "pass"
+    assert data["gate_10_index_resolvable"]["unresolved"] == 0
+    assert data["gate_10_index_resolvable"]["index_edges"] > 0
+
+
 # ---------------------------------------------------------------- 门④ 边类覆盖
 
 def test_edge_type_coverage_gate_flags_short_types(tmp_path):
@@ -360,7 +455,8 @@ def test_vocab_fingerprint_form_is_accepted(tmp_path):
                      encoding="utf-8")
     rc = check_holdout.main([str(write(tmp_path, valid_records())), "--pilot",
                              "--vocab", str(vocab), "--cards", str(cards),
-                             "--extractor-family", "deepseek"])
+                             "--extractor-family", "deepseek",
+                             *index_args(tmp_path, valid_records())])
     assert rc == 0
 
 

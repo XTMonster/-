@@ -17,6 +17,16 @@ Gates
     ⑥ sources        — card set and `from_card` set match both ways
     ⑦ human review   — Q5/Q7 entries carry a human verdict
 
+新增（R54，v1.5 复查后补的两条"协议写了、机器没查"的口子）：
+
+    ⑩ reachability  — 每条条目的 `must`/`top1` 边**必须能从这个 `q` 检出**
+                      （协议 §3.1 对 `must` 的定义；标注提示词规则 0）。
+                      够不着的边 = 这条查询永远召不回它自己的期望边。
+    ⑪ resolvable    — 每条 `must`/`top1`/`never` 必须映射到**当前索引里的边**
+                      （§2.3 的 Q6b 前置①：不存在则"索引构建失败"）。
+                      需要 `--nodes/--edges`；索引缺失时记 `not_measured`
+                      （§4.1b 硬规则 1：缺证据不得判通过）。
+
 Exit codes
     0  every gate passed
     1  at least one gate failed
@@ -66,6 +76,14 @@ Q_KEY_TO_KIND = dict(_hg.QUERY_KEYS)
 REQUIRED_VOCAB_KINDS = frozenset(NODE_KINDS)
 
 KNOWN_TYPES = frozenset(EDGE_TYPES)
+
+#: `q` 里**能表达**的 kind（其余成员是 schema 常量，或根本没有查询键）。
+#: 门⑩ 用它判"这条 `must` 边是否真的能从这条查询检出"——协议 §3.1 的原话。
+#: **单一真源**：`tools/holdout_fill.py` 从这里 import，不得再抄第二份
+#: （此前 `query_shortfall()` 只存在于产出侧、门侧没有，于是产出的文件里
+#: 有 1183/4539 条"查询够不着自己的 `must` 边"要到收尾才被发现）。
+QUERYABLE_KINDS = frozenset(Q_KEY_TO_KIND.values()) - {"scene_type", "beat_type"}
+
 PASS, FAIL, NA = "pass", "fail", "not_measured"
 ID_RE = re.compile(r"^hq_\d{4,}$")
 
@@ -416,6 +434,110 @@ def gate_sources(entries: Sequence[dict], cards: Sequence[str]) -> Tuple[str, di
         "ghost_cards": ghost[:20], "ghost_count": len(ghost)}
 
 
+def query_shortfall(entry: dict) -> List[str]:
+    """返回"查询没能覆盖到的、本可表达的槽位"清单（空 = 合格）。
+
+    这是协议 §3.1 那句"`must` = **如果抽不到这条边我会认为检索失败了**"的机器
+    实现：一条 `must` 边如果连它自己能在 `q` 里写出来的槽位都没被 `q` 点名，
+    这条查询就**根本召不回**它——Q1/Q2 在这种条目上数学不可达。
+
+    口径与产出侧**同一份**（`tools/holdout_fill.py` 从这里 import）：
+    只看 `must[0]` 与全部 `top1`，只看 `plain` 槽位，`QUERYABLE_KINDS` 里不含
+    `scene_type`/`beat_type`（这两个 kind 的 `must` 槽位历史上不要求写进 `q`）。
+    **这条口径的覆盖面是有限的，报告里如实写明**——不在这里偷偷放宽或收紧，
+    否则"覆盖 ≥2 个成员时 Q1=0.727/Q2=0.917"这条实测标定就对不上了。
+    """
+    try:
+        pairs = parse_q(str(entry.get("q") or ""))
+    except EntryError:
+        return ["q_unparsable"]
+    have = {(Q_KEY_TO_KIND[key], value) for key, value in pairs.items()
+            if key in Q_KEY_TO_KIND}
+    short: List[str] = []
+    for spec in list(entry.get("must") or [])[:1] + list(entry.get("top1") or []):
+        try:
+            _etype, plain, _forbid = parse_spec(spec)
+        except EntryError:
+            continue
+        for kind, value in plain.items():
+            if kind in QUERYABLE_KINDS and (kind, value) not in have:
+                short.append(f"{kind}={value}")
+    return sorted(set(short))
+
+
+def gate_reachability(entries: Sequence[dict]) -> Tuple[str, dict]:
+    """门⑩：每条条目的期望边都必须能从它自己的 `q` 检出（协议 §3.1）。
+
+    分母下界（§4.1b 硬规则 1）：没有任何条目 → 没有可判的东西，判失败。
+    """
+    if not entries:
+        return FAIL, {"entries": 0, "short": 0,
+                      "reason": "空集：没有条目可判"}
+    short: List[dict] = []
+    for record in entries:
+        miss = query_shortfall(record)
+        if miss:
+            short.append({"id": record.get("id"), "line": record.get("__line__"),
+                          "q": record.get("q"), "unreachable": miss[:4]})
+    detail = {"entries": len(entries), "short": len(short),
+              "short_ratio": round(len(short) / len(entries), 4),
+              "examples": short[:5],
+              "scope": "must[0] + top1，plain 槽位；QUERYABLE_KINDS 排除 "
+                       "scene_type/beat_type（与产出侧同一份口径）"}
+    return (FAIL if short else PASS), detail
+
+
+def load_index(nodes_path: str, edges_path: str):
+    """读当前索引。**懒 import** 是为了不引入 `holdout_score` 的循环依赖
+    （`holdout_score` 在模块级 import 本模块的 `parse_spec`）。"""
+    from tools.holdout_score import load_graph
+
+    return load_graph(pathlib.Path(nodes_path), pathlib.Path(edges_path))
+
+
+def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
+    """门⑪：每条 `must`/`top1`/`never` 必须映射到当前索引里的边。
+
+    §2.3 的 Q6b 前置①：**"若某 query 的 required 边在归并后确实不存在，则索引
+    构建失败（不留给 P14-4 去发现）"**。不作为的话，`holdout_score` 只能把这些
+    标注从 required 分母里剔掉——分母变小、比率变好看，缺陷反而看不见。
+    """
+    from tools.holdout_score import spec_to_norm_key
+
+    if not entries:
+        return FAIL, {"entries": 0, "specs": 0, "unresolved": 0,
+                      "reason": "空集：没有条目可判"}
+    per_field = {"must": [0, 0], "top1": [0, 0], "never": [0, 0]}
+    unresolved: List[dict] = []
+    specs = 0
+    for record in entries:
+        for field in ("must", "top1", "never"):
+            for spec in record.get(field) or []:
+                specs += 1
+                per_field[field][1] += 1
+                if spec_to_norm_key(str(spec), graph) is not None:
+                    per_field[field][0] += 1
+                    continue
+                if len(unresolved) < 8:
+                    unresolved.append({"id": record.get("id"),
+                                       "line": record.get("__line__"),
+                                       "field": field, "spec": str(spec)})
+    n_unresolved = specs - sum(v[0] for v in per_field.values())
+    per_field_unresolved = {k: v[1] - v[0] for k, v in per_field.items()}
+    detail = {"entries": len(entries), "specs": specs,
+              "resolved": {k: v[0] for k, v in per_field.items()},
+              "totals": {k: v[1] for k, v in per_field.items()},
+              "unresolved_per_field": per_field_unresolved,
+              "unresolved": n_unresolved,
+              "unresolved_ratio": round(n_unresolved / specs, 4) if specs else 0.0,
+              "index_edges": len(graph.edges),
+              "examples": unresolved,
+              "note": ("§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；"
+                       "never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。"
+                       f" 逐字段未命中：{per_field_unresolved}")}
+    return (FAIL if n_unresolved else PASS), detail
+
+
 def load_vocab(path: str, pilot: bool) -> Tuple[Dict[str, Sequence[str]] | None, bool]:
     """Accept either `{kind: [...]}` or `{"_fingerprint": str, "kinds": {kind: [...]}}`."""
     payload = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
@@ -458,6 +580,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="抽取器的 family（或给 --extractor-manifest）；门⑧ 用它核对换族是否属实")
     parser.add_argument("--extractor-manifest", default="",
                         help="knowledge/hypergraph.manifest.json；自动读它的 extractor.family")
+    parser.add_argument("--nodes", default="",
+                        help="索引节点 JSONL（门⑪ 用）；缺省 knowledge/hypergraph.nodes.jsonl")
+    parser.add_argument("--edges", default="",
+                        help="索引超边 JSONL（门⑪ 用）；缺省 knowledge/hypergraph.edges.jsonl")
     parser.add_argument("--pilot", action="store_true",
                         help="试点模式：门限放宽到 1，便于在语料落地前跑通管道")
     parser.add_argument("--json", action="store_true", help="只打印 JSON 报告")
@@ -564,6 +690,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         cstatus, cdetail = NA, {"reason": "未提供 --cards"}
     statuses.append(cstatus)
     report["gate_6_sources"] = {"status": cstatus, **cdetail}
+
+    # 门⑩：期望边必须能从它自己的 q 检出（协议 §3.1）。不需要任何外部输入。
+    rstatus, rdetail = gate_reachability(entries)
+    statuses.append(rstatus)
+    report["gate_9_reachability"] = {"status": rstatus, **rdetail}
+
+    # 门⑪：must/top1/never 必须映射到当前索引里的边（§2.3 Q6b 前置①）。
+    # 索引是仓库产物，默认自动发现；确实读不到时记 not_measured，不得判通过。
+    nodes_path = args.nodes or str(_ROOT / "knowledge" / "hypergraph.nodes.jsonl")
+    edges_path = args.edges or str(_ROOT / "knowledge" / "hypergraph.edges.jsonl")
+    if not (pathlib.Path(nodes_path).is_file() and pathlib.Path(edges_path).is_file()):
+        xstatus, xdetail = NA, {"reason": "索引缺失，无法判 required 边是否存在",
+                                "nodes": nodes_path, "edges": edges_path}
+    else:
+        xstatus, xdetail = gate_index_resolvable(entries, load_index(nodes_path, edges_path))
+    statuses.append(xstatus)
+    report["gate_10_index_resolvable"] = {"status": xstatus, **xdetail}
 
     report["overall"] = FAIL if FAIL in statuses else (NA if NA in statuses else PASS)
     if args.json:

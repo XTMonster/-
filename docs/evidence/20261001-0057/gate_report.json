@@ -1,0 +1,297 @@
+{
+  "path": "fixtures\\knowledge_holdout.jsonl",
+  "pilot": false,
+  "gate_1_total": {
+    "status": "pass",
+    "entries": 4539,
+    "entries_pilot": 0,
+    "min_entries": 1200
+  },
+  "gate_2_format": {
+    "status": "pass",
+    "entries": 4539,
+    "valid": 4539,
+    "problems": [],
+    "problem_count": 0,
+    "q7_conflicts": 429,
+    "must_pairs_per_type": {
+      "EMOTION_PACK": 771,
+      "SHOT_PATTERN": 569,
+      "AXIS_RULE": 261,
+      "TROPE": 244,
+      "EDIT_RHYTHM": 316,
+      "LIGHT_PACK": 364,
+      "ACTION_BEAT": 308,
+      "PERFORMANCE_PACK": 328,
+      "INTENT_PACK": 679,
+      "IMPACT_PACK": 256,
+      "STAGING_PACK": 493,
+      "SOUND_PACK": 240,
+      "TRANSITION_PACK": 212
+    },
+    "must_cards_per_type": {
+      "EMOTION_PACK": 512,
+      "SHOT_PATTERN": 510,
+      "AXIS_RULE": 197,
+      "TROPE": 238,
+      "EDIT_RHYTHM": 300,
+      "LIGHT_PACK": 343,
+      "ACTION_BEAT": 301,
+      "PERFORMANCE_PACK": 299,
+      "INTENT_PACK": 646,
+      "IMPACT_PACK": 239,
+      "STAGING_PACK": 486,
+      "SOUND_PACK": 228,
+      "TRANSITION_PACK": 167
+    },
+    "q7_forbid_members": {
+      "movement=handheld": 69,
+      "movement=dolly_in": 14,
+      "movement=dolly_out": 19,
+      "lighting=ů��": 5,
+      "camera_angle=ƽ��": 4,
+      "movement=crane_up": 34,
+      "movement=orbit_cw": 24,
+      "movement=crane_down": 17,
+      "movement=orbit_ccw": 19,
+      "movement=track_left": 12,
+      "movement=pan_left": 14,
+      "lighting=���": 3,
+      "pacing=long": 10,
+      "vfx=flame": 5,
+      "sfx=��������": 7,
+      "intent=ͣ��": 4,
+      "lighting=���": 6,
+      "shot_size=ELS": 5,
+      "intent=ѹ��": 4,
+      "intent=�ͷ�": 4,
+      "movement=tilt_up": 12,
+      "shot_size=ECU": 5,
+      "sfx=��Ĭ": 3,
+      "action=ת��": 1,
+      "shot_size=LS": 5,
+      "pacing=short": 12,
+      "action=��ͷ": 3,
+      "shot_size=MCU": 6,
+      "movement=pan_right": 9,
+      "pacing=medium": 8,
+      "sfx=��Ƶ����": 3,
+      "shot_size=MS": 6,
+      "action=����": 2,
+      "shot_size=MLS": 5,
+      "movement=follow_subject": 9,
+      "lens=24mm": 5,
+      "camera_angle=������": 3,
+      "lighting=����": 3,
+      "composition_rule=occlusion": 3,
+      "lens=85mm": 4,
+      "camera_angle=�߻�λ": 4,
+      "lighting=�����": 4,
+      "lens=35mm": 4,
+      "camera_angle=����": 3,
+      "composition_rule=lead_room": 2,
+      "camera_angle=����": 4,
+      "composition_rule=framing": 2,
+      "lens=50mm": 4,
+      "lighting=���": 2,
+      "composition_rule=rule_of_thirds": 2,
+      "camera_angle=�ͻ�λ": 3,
+      "shot_size=CU": 5,
+      "composition_rule=balance": 3,
+      "action=����": 3,
+      "sfx=����": 2,
+      "vfx=smoke": 1,
+      "action=����": 1,
+      "sfx=����": 2,
+      "vfx=glow": 2,
+      "vfx=impact_frame": 1,
+      "action=����": 2,
+      "sfx=����ײ��": 1,
+      "vfx=spark": 1,
+      "lighting=�͵�": 4
+    },
+    "needs_human": 789,
+    "human_reviewed": 0,
+    "q7_member_count": 64
+  },
+  "gate_4_edge_types": {
+    "status": "pass",
+    "min_pairs_per_type": 30,
+    "min_cards_per_type": 10,
+    "short_pairs": {},
+    "thin_cards": {}
+  },
+  "gate_5_forbid": {
+    "status": "pass",
+    "q7_conflicts": 429,
+    "min": 60
+  },
+  "gate_5b_forbid_members": {
+    "status": "pass",
+    "members": 64,
+    "under_covered": {}
+  },
+  "gate_7_human_review": {
+    "status": "fail",
+    "needs_human": 789,
+    "human_reviewed": 0,
+    "min_human_review": 120
+  },
+  "gate_8_independence": {
+    "status": "pass",
+    "extractor_family": "deepseek",
+    "annotator_families": [
+      "zhipu"
+    ],
+    "strong_but_same_family": [],
+    "liar_count": 0
+  },
+  "gate_3_seed_coverage": {
+    "status": "pass",
+    "missing_values": {},
+    "unknown_values": {},
+    "thin_values": {},
+    "min_support": 3,
+    "kinds_checked": 17,
+    "vocab_fingerprint": true,
+    "unreachable_kinds": [
+      "axis_topic",
+      "character",
+      "object"
+    ]
+  },
+  "gate_6_sources": {
+    "status": "pass",
+    "cards": 1075,
+    "missing_cards": [],
+    "missing_count": 0,
+    "ghost_cards": [],
+    "ghost_count": 0
+  },
+  "gate_9_reachability": {
+    "status": "fail",
+    "entries": 4539,
+    "short": 816,
+    "short_ratio": 0.1798,
+    "examples": [
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "q": "��ͼ=����������=MCU",
+        "unreachable": [
+          "movement=crane_down"
+        ]
+      },
+      {
+        "id": "hq_0008",
+        "line": 8,
+        "q": "����=MLS����ͼ=occlusion",
+        "unreachable": [
+          "lens=35mm"
+        ]
+      },
+      {
+        "id": "hq_0010",
+        "line": 10,
+        "q": "��ͼ=ѹ�ȣ�����=����",
+        "unreachable": [
+          "movement=dolly_in",
+          "shot_size=CU"
+        ]
+      },
+      {
+        "id": "hq_0014",
+        "line": 14,
+        "q": "��ͼ=�ƽ�������=�͵�",
+        "unreachable": [
+          "movement=follow_subject",
+          "shot_size=LS"
+        ]
+      },
+      {
+        "id": "hq_0017",
+        "line": 17,
+        "q": "��ͼ=�Կ�������=MCU",
+        "unreachable": [
+          "movement=pan_right"
+        ]
+      }
+    ],
+    "scope": "must[0] + top1��plain ��λ��QUERYABLE_KINDS �ų� scene_type/beat_type���������ͬһ�ݿھ���"
+  },
+  "gate_10_index_resolvable": {
+    "status": "fail",
+    "entries": 4539,
+    "specs": 13713,
+    "resolved": {
+      "must": 1323,
+      "top1": 1224,
+      "never": 1120
+    },
+    "totals": {
+      "must": 5043,
+      "top1": 4539,
+      "never": 4131
+    },
+    "unresolved_per_field": {
+      "must": 3720,
+      "top1": 3315,
+      "never": 3011
+    },
+    "unresolved": 10046,
+    "unresolved_ratio": 0.7326,
+    "index_edges": 387,
+    "examples": [
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=neutral"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "top1",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=neutral"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "never",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "must",
+        "spec": "TROPE:genre=film,emotion=�־�"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "top1",
+        "spec": "TROPE:genre=film,emotion=�־�"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "never",
+        "spec": "TROPE:genre=documentary,emotion=ƽ��"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "must",
+        "spec": "INTENT_PACK:intent=����,shot_size=MCU,movement=crane_down"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left"
+      }
+    ],
+    "note": "��2.3 Q6b ǰ�â٣�must/top1 ָ�򲻴��ڵı� = ��������ʧ�ܣ�never ָ�򲻴��ڵı� = �����������ǿ�̸��Q3 �ⲻ���������� ���ֶ�δ���У�{'must': 3720, 'top1': 3315, 'never': 3011}"
+  },
+  "overall": "fail"
+}

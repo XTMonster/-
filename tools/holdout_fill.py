@@ -37,6 +37,7 @@ if str(ROOT) not in sys.path:
 
 from tools.check_holdout import (  # noqa: E402
     EntryError,
+    QUERYABLE_KINDS,
     Q_KEY_TO_KIND,
     REQUIRED_SLOTS,
     gate_edge_types,
@@ -47,6 +48,7 @@ from tools.check_holdout import (  # noqa: E402
     must_values_from,
     parse_q,
     parse_spec,
+    query_shortfall,
     spec_key,
     support_from,
     validate_entry as gate_validate_entry,
@@ -332,36 +334,6 @@ def unknown_values_in(entry: Dict, vocab: Dict[str, Sequence[str]]) -> List[str]
     return bad
 
 
-#: `q` 里能表达的 kind（其余成员是 schema 常量或没有查询键）。用于判定
-#: "**must/top1 的每条边是否真的能从这条查询检出**"——协议 §3.1 的原话。
-QUERYABLE_KINDS = frozenset(Q_KEY_TO_KIND.values()) - {"scene_type", "beat_type"}
-
-
-def query_shortfall(entry: Dict) -> List[str]:
-    """返回"查询没能覆盖到的、本可表达的槽位"清单（空 = 合格）。
-
-    为什么需要它：实测 4539 条 held-out 里，只有 447 条的查询覆盖到目标边的**两个**
-    成员；而按覆盖率分组统计，覆盖 ≥2 的那批 **Q1=0.727 / Q2=0.917（都过线）**，
-    覆盖 1 个的 0.508/0.754，覆盖 0 个的根本召不回。也就是说 Q1/Q2 不达标的主因是
-    **查询写得太弱**，不是检索器不行——协议写了"must 必须能从这条查询检出"，
-    但机器一直没查这件事。
-    """
-    try:
-        pairs = parse_q(str(entry.get("q") or ""))
-    except EntryError:
-        return ["q_unparsable"]
-    have = {(Q_KEY_TO_KIND[key], value) for key, value in pairs.items()
-            if key in Q_KEY_TO_KIND}
-    short: List[str] = []
-    for spec in list(entry.get("must") or [])[:1] + list(entry.get("top1") or []):
-        try:
-            _etype, plain, _forbid = parse_spec(spec)
-        except EntryError:
-            continue
-        for kind, value in plain.items():
-            if kind in QUERYABLE_KINDS and (kind, value) not in have:
-                short.append(f"{kind}={value}")
-    return sorted(set(short))
 
 
 def absorb(entries: List[Dict], rejects: List[Dict], raw_reply, card_ids: set,

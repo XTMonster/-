@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT))
 
 from block_director.contracts.knowledge import Card
 from block_director.knowledge import hypergraph as hg
+from tests._holdout_index import index_args, read_jsonl
 from tools import check_holdout
 from tools.kb_fetch import common, holdout_gen, vocabulary
 
@@ -157,10 +158,13 @@ def test_holdout_generation_writes_annotator_metadata(tmp_path, monkeypatch):
 # --------------------------------------------------------------------------- 覆盖门
 
 
-#: 一条覆盖全部 14 个查询 kind 的 q（门③ 要求每个词表取值都被用到）
+#: 一条覆盖全部查询 kind 的 q（门③ 要求每个词表取值都被用到）。
+#: R54 起门⑩ 会检查"`must` 能表达的槽位必须出现在 `q` 里"，所以 `意图`（v1.5 新增的
+#: 第 15 个查询键）也必须写进来——否则 `INTENT_PACK:intent=…` 这条夹具条目
+#: 自己就够不着自己的期望边。
 Q_ALL = ("情绪=荒诞；动作=跺脚；运镜=固定；景别=特写；镜头=50mm；节奏=short；"
          "特效=petrify；音效=心跳；机位=平视；光线=逆光；构图=rule_of_thirds；"
-         "轴线=关系轴；题材=film；桥段=establish")
+         "轴线=关系轴；题材=film；桥段=establish；意图=反转")
 
 SPEC_BY_TYPE = {
     "EMOTION_PACK": "EMOTION_PACK:emotion=荒诞,intensity=high,forbid_shot_size=特写",
@@ -229,7 +233,8 @@ def test_coverage_gates_pass_on_a_complete_fixture(tmp_path, capsys):
     code = check_holdout.main([str(holdout), "--min-entries", "240", "--min-per-type", "30",
                                "--min-cards-per-type", "10", "--min-forbid", "60",
                                "--min-human-review", "120", "--vocab", str(vocab),
-                               "--cards", str(cards), "--json"])
+                               "--cards", str(cards), "--json",
+                               *index_args(tmp_path, read_jsonl(holdout))])
     assert code == 0
     report = json.loads(capsys.readouterr().out)
     assert report["overall"] == check_holdout.PASS
@@ -237,6 +242,9 @@ def test_coverage_gates_pass_on_a_complete_fixture(tmp_path, capsys):
     assert report["gate_6_sources"]["missing_count"] == 0
     assert report["gate_3_seed_coverage"]["status"] == check_holdout.PASS
     assert report["gate_7_human_review"]["status"] == check_holdout.PASS
+    # 门⑩/⑪（R54）：期望边可达 + 全部能在索引里找到
+    assert report["gate_9_reachability"]["status"] == check_holdout.PASS
+    assert report["gate_10_index_resolvable"]["status"] == check_holdout.PASS
 
 
 def test_coverage_gates_fail_when_a_card_has_no_entry(tmp_path, capsys):
