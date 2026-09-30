@@ -182,6 +182,7 @@ def mechanical(graph, universe: Sequence[str], *,
 
     entries: List[dict] = []
     skipped = collections.Counter()
+    full_counts = full_match_counts(graph)
     #: `(kind, value)` → 该取值出现过的 (edge_group, edge_index, card) 三元组。
     #: 补覆盖轮用它来找"还能换哪张卡"。
     holders: Dict[Tuple[str, str], List[Tuple[int, int]]] = collections.defaultdict(list)
@@ -202,6 +203,16 @@ def mechanical(graph, universe: Sequence[str], *,
         if len(group) > 3:
             # Q4 要求每一条 required 边都进 top-3；组内边数 >3 时构造上做不到。
             skipped["query_ambiguous_group"] += len(group)
+            continue
+        oversubscribed = full_counts[(_etype, _sig)]
+        if oversubscribed > 3:
+            # **比"组内条数"更准的一刀**：`(type, q)` 相同只是必要条件，真正会被
+            # top-3 挤掉的，是"种子全被它解释、它的成员也全被查询点名"的那些边
+            # ——实测有一组 `(type,q)` 只有 2 条边，却有 5 条别的边完全对齐同一个
+            # 查询，于是 required 仍然进不了 top-3（Q4 卡在 0.95 的根因）。
+            # 这类查询在 top-3 里**数学上塞不下**，按 `q_oversubscribed` 计入报告，
+            # 不编造查询、也不许靠调 `top_k` 让它看起来过线。
+            skipped["q_oversubscribed"] += len(group)
             continue
         group_ids = {e.edge_id for e in group}
         # 整组一起写进 `must`（≤3 条，符合协议上限），这样一组的每条边都被 required
@@ -275,6 +286,22 @@ def _q_pairs(text: str) -> List[Tuple[str, str]]:
         if kind:
             out.append((kind, value.strip()))
     return out
+
+
+def full_match_counts(graph) -> Dict[Tuple, int]:
+    """`(type, q)` → 同一查询下**完全对齐**的边数（含自己）。
+
+    这里"完全对齐"的口径与检索侧一致：查询只包含目标边自己的可查询成员，所以
+    一条边与之完全对齐 ⟺ 它的**可查询成员集合**相等。超过 3 条时 top-3 装不下，
+    `Q4`（合同线 1.0）在数学上不可能过 —— 这类查询必须显式跳过并计数，
+    而不是靠调 `top_k` 让它看起来过线。
+
+    预计算一次，避免在分组循环里反复 O(边) 扫（654 组 × 847 边）。
+    """
+    counts: Dict[Tuple, int] = collections.Counter()
+    for edge in graph.edges:
+        counts[(edge.type, query_signature(edge))] += 1
+    return dict(counts)
 
 
 def _q_from_spec(spec: str) -> str:
