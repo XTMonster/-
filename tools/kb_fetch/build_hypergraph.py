@@ -64,7 +64,11 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: 槽位逼出来的：讲"人物塑造"的卡没有动作可写，模型就抓卡片主题顶上。
 #: 改提示文本 ⇒ 必须换版本号，否则 `--only-missing`／`--replace-cards` 的续跑判定
 #: 会把 v6 的原子边当成同一批（那正是 §2.3 禁止的事）。
-PROMPT_VERSION = "extract/v7"
+#: v8：schema 扩到 16 类（＋`DIALOGUE_PACK`／`MUSIC_PACK`／`PROP_PACK`），并把
+#: `forbid` 的宿主从"只有 EMOTION_PACK"放宽到"这条边里本来就有这个槽位"
+#: （用户裁决）。两处都是提示正文的改动 ⇒ 必须换版本号，否则整库续跑判定会把
+#: v7 的原子边当成同一批。换版本号同时意味着**全库重抽**（旧边里没有这三类）。
+PROMPT_VERSION = "extract/v8"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -197,6 +201,14 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
      —— **声画关系**：音效 × 剪辑节奏 × 强度；
    TRANSITION_PACK: (qualifier,transition) ＋ (allow,pacing) ＋ (qualifier,scene_type)
      —— **转场** × 节奏 × 场景类型。
+   DIALOGUE_PACK: (allow,delivery) ＋ (qualifier,pacing) ＋ (qualifier,intensity)
+     —— **台词怎么念**：语气/发声方式（耳语/喊叫/平淡/颤抖/画外音）× 语速 × 强度；
+   MUSIC_PACK: (allow,music) ＋ (qualifier,pacing) ＋ (qualifier,intensity)
+     —— **配乐与环境声**（静默/铺底/重音/环境底噪）× 剪辑节奏 × 强度；
+   PROP_PACK: (allow,prop) ＋ (allow,shot_size) ＋ (qualifier,camera_angle)
+     —— **道具与环境元素** × 呈现景别 × 机位。
+   （v1.6 新增这三类，是用户裁决"尽可能囊括除灯光以外影响电影制作的其他元素"里
+     还缺的三块；语料支撑实测：台词交付 38 张卡、配乐 26、道具 160。）
 1b. **只有这 13 个 `type` 字符串**。不要发明 `COMPOSITION`／`SOUND`／`SHAKE` 之类
    的新类型——那些会被校验门以 `bad_type` 丢掉。
 1c. **卡片属于哪个 `domain` 与 `type` 无关**：构图/机位/特效/音效/动作类的知识要挂到
@@ -212,7 +224,14 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
 2. `node_id` **必须**取自下面词表（`kind:取值` 已经写好）；词表里没有的取值就不要抽。
 3. 同一个 `node_id` 不能既出现在 `allow` 又出现在 `forbid`。
 4. 禁忌写成 `["forbid", kind, node_id]`——它是这条边最有价值的部分，别省略。
-   注意：**只有 EMOTION_PACK 允许 `forbid` 成员**（§2.3 的边表），其它类不许写。
+   **v1.6 起 `forbid` 的宿主放宽到"这条边里本来就有这个槽位"**（用户裁决）：一个
+   kind 只要在本类型里以 `allow`／`qualifier` 出现过，就可以再以 `forbid` 出现
+   （取值必须与它自己的 allow／qualifier 取值**不同**——"要求 crane_up、禁止
+   dolly_out" 是合法的；"要求 X 又禁止 X" 会被门② 拒收）。旧规则只许挂在
+   EMOTION_PACK 上，实测后果是 915 条边里 81 条带 forbid **全是情绪包**，其余 12 类
+   为 0 —— "这个动作不该配这个运镜"这类跨类负向知识**结构上表达不了**。
+   仍然不许碰 schema 常量（`pair`／`axis_side`／`headroom_policy`／`avg_shot_len`／
+   `applies_to_*`）：禁止一个常量没有意义。
 4b. **卡片里凡是出现"忌讳/避免/不要/禁用/宁可…也不"这类表述的，必须把那个取值写成
    `forbid` 成员**（挂在 EMOTION_PACK 上；如果这张卡本身不是情绪卡，就把它写成
    "该情绪下不要这样拍"的 EMOTION_PACK）。词表里已经给了 `movement`／`shot_size`／

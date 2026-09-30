@@ -3171,6 +3171,70 @@
       "occurrences": 2
     },
     {
+      "node_id": "delivery:喊叫",
+      "type": "delivery",
+      "name": "喊叫",
+      "aliases": [
+        "吼",
+        "咆哮",
+        "嘶喊"
+      ],
+      "value": "喊叫",
+      "unit": ""
+    },
+    {
+      "node_id": "delivery:平淡",
+      "type": "delivery",
+      "name": "平淡",
+      "aliases": [
+        "平铺",
+        "无起伏",
+        "克制念白"
+      ],
+      "value": "平淡",
+      "unit": "",
+      "occurrences": 5
+    },
+    {
+      "node_id": "delivery:画外音",
+      "type": "delivery",
+      "name": "画外音",
+      "aliases": [
+        "旁白",
+        "独白",
+        "voice over",
+        "vo"
+      ],
+      "value": "画外音",
+      "unit": "",
+      "occurrences": 15
+    },
+    {
+      "node_id": "delivery:耳语",
+      "type": "delivery",
+      "name": "耳语",
+      "aliases": [
+        "低语",
+        "气声",
+        "轻声"
+      ],
+      "value": "耳语",
+      "unit": ""
+    },
+    {
+      "node_id": "delivery:颤抖",
+      "type": "delivery",
+      "name": "颤抖",
+      "aliases": [
+        "颤声",
+        "发抖",
+        "哽咽"
+      ],
+      "value": "颤抖",
+      "unit": "",
+      "occurrences": 2
+    },
+    {
       "node_id": "emotion:冷漠",
       "type": "emotion",
       "name": "冷漠",
@@ -3965,6 +4029,59 @@
       "occurrences": 6
     },
     {
+      "node_id": "music:环境底噪",
+      "type": "music",
+      "name": "环境底噪",
+      "aliases": [
+        "环境声",
+        "氛围声",
+        "底噪",
+        "ambience"
+      ],
+      "value": "环境底噪",
+      "unit": "",
+      "occurrences": 3
+    },
+    {
+      "node_id": "music:重音",
+      "type": "music",
+      "name": "重音",
+      "aliases": [
+        "打击乐",
+        "强调音",
+        "重音落下"
+      ],
+      "value": "重音",
+      "unit": "",
+      "occurrences": 4
+    },
+    {
+      "node_id": "music:铺底",
+      "type": "music",
+      "name": "铺底",
+      "aliases": [
+        "背景音乐",
+        "配乐",
+        "垫乐"
+      ],
+      "value": "铺底",
+      "unit": "",
+      "occurrences": 5
+    },
+    {
+      "node_id": "music:静默",
+      "type": "music",
+      "name": "静默",
+      "aliases": [
+        "无声",
+        "静音",
+        "留白处理"
+      ],
+      "value": "静默",
+      "unit": "",
+      "occurrences": 11
+    },
+    {
       "node_id": "pacing:long",
       "type": "pacing",
       "name": "long",
@@ -4007,6 +4124,45 @@
       "aliases": [],
       "value": "any_two",
       "unit": ""
+    },
+    {
+      "node_id": "prop:手持道具",
+      "type": "prop",
+      "name": "手持道具",
+      "aliases": [
+        "道具",
+        "手持物件",
+        "手中物"
+      ],
+      "value": "手持道具",
+      "unit": "",
+      "occurrences": 62
+    },
+    {
+      "node_id": "prop:环境元素",
+      "type": "prop",
+      "name": "环境元素",
+      "aliases": [
+        "布景",
+        "场景元素",
+        "背景元素"
+      ],
+      "value": "环境元素",
+      "unit": "",
+      "occurrences": 99
+    },
+    {
+      "node_id": "prop:陈设",
+      "type": "prop",
+      "name": "陈设",
+      "aliases": [
+        "摆设",
+        "家具",
+        "布置"
+      ],
+      "value": "陈设",
+      "unit": "",
+      "occurrences": 34
     },
     {
       "node_id": "scene_type:action",
@@ -4750,6 +4906,29 @@
       "遮挡",
       "重心"
     ],
+    "delivery": [
+      "vo",
+      "voice over",
+      "低语",
+      "克制念白",
+      "发抖",
+      "吼",
+      "咆哮",
+      "哽咽",
+      "喊叫",
+      "嘶喊",
+      "平淡",
+      "平铺",
+      "旁白",
+      "无起伏",
+      "气声",
+      "独白",
+      "画外音",
+      "耳语",
+      "轻声",
+      "颤声",
+      "颤抖"
+    ],
     "emotion": [
       "absurd",
       "不安",
@@ -4920,6 +5099,25 @@
       "静止机位",
       "顺时针环绕"
     ],
+    "music": [
+      "ambience",
+      "垫乐",
+      "底噪",
+      "强调音",
+      "打击乐",
+      "无声",
+      "氛围声",
+      "环境声",
+      "环境底噪",
+      "留白处理",
+      "背景音乐",
+      "配乐",
+      "重音",
+      "重音落下",
+      "铺底",
+      "静音",
+      "静默"
+    ],
     "pacing": [
       "long",
       "medium",
@@ -4934,6 +5132,20 @@
     ],
     "pair": [
       "any_two"
+    ],
+    "prop": [
+      "场景元素",
+      "家具",
+      "布景",
+      "布置",
+      "手中物",
+      "手持物件",
+      "手持道具",
+      "摆设",
+      "环境元素",
+      "背景元素",
+      "道具",
+      "陈设"
     ],
     "scene_type": [
       "action",

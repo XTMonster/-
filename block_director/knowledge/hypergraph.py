@@ -33,6 +33,9 @@ NODE_TYPES: Tuple[str, ...] = (
     "emotion", "movement", "shot_size", "lens", "pacing", "vfx", "sfx",
     "composition_rule", "axis_topic", "character", "object", "action", "genre",
     "beat_type", "camera_angle", "lighting", "intent",
+    #: v1.6：用户裁决"尽可能囊括除灯光以外影响电影制作的其他元素"里，还缺三块——
+    #: 台词**怎么念**、**配乐/环境声**、**道具/环境元素**。三者都是零依赖的按需加载项。
+    "delivery", "music", "prop",
 )
 
 #: qualifier 类型闭集（10 类）。`axis_side` 必须在表里——否则最高优先级的
@@ -60,11 +63,17 @@ IMPACT_PACK = "IMPACT_PACK"            # 震动与打击感：特效×音效×�
 STAGING_PACK = "STAGING_PACK"          # 构图×调度：构图规则×景别×机位
 SOUND_PACK = "SOUND_PACK"              # 声画关系：音效×节奏×强度
 TRANSITION_PACK = "TRANSITION_PACK"    # 转场×节奏×场景类型
+#: v1.6：三块"缺失的边"（实测语料支撑：dialogue 38 张卡 / music 26 / prop 160，
+#: 小规模试点抽取分别产出 9 / 4 / 2 条边，都是真耦合而不是硬塞）。
+DIALOGUE_PACK = "DIALOGUE_PACK"        # 台词交付：语气/发声 × 语速 × 强度
+MUSIC_PACK = "MUSIC_PACK"              # 配乐与环境声：策略 × 节奏 × 强度
+PROP_PACK = "PROP_PACK"                # 道具与环境元素 × 呈现景别 × 机位
 
 EDGE_TYPES: Tuple[str, ...] = (
     EMOTION_PACK, SHOT_PATTERN, AXIS_RULE, TROPE, EDIT_RHYTHM, LIGHT_PACK,
     ACTION_BEAT, PERFORMANCE_PACK, INTENT_PACK, IMPACT_PACK, STAGING_PACK,
     SOUND_PACK, TRANSITION_PACK,
+    DIALOGUE_PACK, MUSIC_PACK, PROP_PACK,
 )
 
 #: 类型优先级（§2.3 的排序表）。
@@ -75,6 +84,9 @@ TYPE_PRIORITY: Dict[str, float] = {
     #: 意图/表演/调度直接影响演员与机位，打击感/声画是呈现层，转场最弱。
     INTENT_PACK: 0.95, PERFORMANCE_PACK: 0.9, STAGING_PACK: 0.85,
     ACTION_BEAT: 0.8, IMPACT_PACK: 0.75, SOUND_PACK: 0.7, TRANSITION_PACK: 0.65,
+    #: v1.6 沿用同一口径：对白交付/配乐直接影响观众听到什么（高于转场），
+    #: 道具调度偏呈现层（与 IMPACT_PACK 同档）。
+    DIALOGUE_PACK: 0.85, MUSIC_PACK: 0.8, PROP_PACK: 0.75,
 }
 
 #: 必填成员（role, kind）。
@@ -94,6 +106,12 @@ REQUIRED_MEMBERS: Dict[str, Tuple[Tuple[str, str], ...]] = {
     SOUND_PACK: (("allow", "sfx"), ("allow", "pacing"), ("qualifier", "intensity")),
     TRANSITION_PACK: (("qualifier", "transition"), ("allow", "pacing"),
                       ("qualifier", "scene_type")),
+    DIALOGUE_PACK: (("allow", "delivery"), ("qualifier", "pacing"),
+                    ("qualifier", "intensity")),
+    MUSIC_PACK: (("allow", "music"), ("qualifier", "pacing"),
+                 ("qualifier", "intensity")),
+    PROP_PACK: (("allow", "prop"), ("allow", "shot_size"),
+                ("qualifier", "camera_angle")),
 }
 
 #: 选填成员：表里没有的 (role, kind) 组合即非法（防止抽取器往边里塞任意东西）。
@@ -126,7 +144,39 @@ OPTIONAL_MEMBERS: Dict[str, Tuple[Tuple[str, str], ...]] = {
                  ("qualifier", "scene_type"), ("qualifier", "beat_type")),
     TRANSITION_PACK: (("allow", "shot_size"), ("qualifier", "avg_shot_len"),
                       ("allow", "movement"), ("qualifier", "example_shot")),
+    DIALOGUE_PACK: (("allow", "emotion"), ("allow", "sfx"),
+                    ("qualifier", "scene_type")),
+    MUSIC_PACK: (("allow", "emotion"), ("allow", "movement"),
+                 ("qualifier", "scene_type")),
+    PROP_PACK: (("allow", "movement"), ("qualifier", "composition_rule"),
+                ("qualifier", "scene_type")),
 }
+
+
+def _forbid_hosts(edge_type: str) -> Tuple[Tuple[str, str], ...]:
+    """该类型**已经出现过**的内容型 kind，自动获得一个 `forbid` 宿主。
+
+    用户裁决（2026-10-01，审查第 17 条）："边里本来就有这个槽位，就允许禁止它"。
+    审查那一条的实测是：915 条边里带 `forbid` 的 **81 条全部是 `EMOTION_PACK`**，
+    其余 12 类为 0 —— 于是"这个动作不该配这个运镜"这类**跨类负向知识结构上表达不了**。
+
+    这条规则是**机械的**（不是手抄 16 张表）：本类型里凡是以 `allow`／`qualifier`
+    出现过的内容型 kind（`NODE_TYPES` 里的），都自动补一个 `forbid` 宿主。
+    schema 常量（`pair`／`axis_side`／`headroom_policy`／`avg_shot_len`／
+    `applies_to_*`）不在此列——禁止一个常量没有意义，只会把规格空间灌水。
+    `tests/test_knowledge_holdout_vocab.py` 与 `tests/test_hypergraph_schema.py`
+    会复核这条不变量，防止哪天手改表把规则改破。
+    """
+    present = {kind for _role, kind in
+               tuple(REQUIRED_MEMBERS[edge_type]) + tuple(OPTIONAL_MEMBERS[edge_type])
+               if kind in NODE_TYPES}
+    already = {kind for role, kind in OPTIONAL_MEMBERS[edge_type] if role == "forbid"}
+    return tuple(("forbid", kind) for kind in sorted(present - already))
+
+
+for _edge_type in EDGE_TYPES:  # noqa: B020 - 就地补全，见 `_forbid_hosts` 的说明
+    OPTIONAL_MEMBERS[_edge_type] = (tuple(OPTIONAL_MEMBERS[_edge_type])
+                                    + _forbid_hosts(_edge_type))
 
 #: §2.3d T3：qualifier 的取值域。`None` = 显式"不设枚举"。
 VALUE_DOMAINS: Dict[str, Optional[Tuple[str, ...]]] = {
@@ -227,6 +277,10 @@ QUERY_KEYS: Dict[str, str] = {
     #: v1.5：意图是"角色/导演想干什么"，`INTENT_PACK` 的必填成员就是它。
     "意图": "intent",
     "对白": "scene_type",
+    #: v1.6：三块新内容各自的查询键（没有键的 kind 挂不上种子，AXIS_RULE 踩过这个坑）。
+    "语气": "delivery",
+    "配乐": "music",
+    "道具": "prop",
     #: v1.5 解冻：`TRANSITION_PACK` 的必填成员是 `transition`，而冻结查询键里
     #: 没有对应项——那一类边**一个种子都挂不上**（实测：这类边在检索里恒为
     #: 0 命中，与 AXIS_RULE 早先的毛病同源）。补上键，让"转场=黑场"这类

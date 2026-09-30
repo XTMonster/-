@@ -123,14 +123,17 @@ def build_vocab(graph, *, min_support: int = MIN_SUPPORT_EDGES,
     for (kind, value), count in sorted(support.items()):
         if kind not in kinds:
             continue
-        if count < min_support:
-            dropped.setdefault(kind, {})[value] = count
-            continue
+        # **不再用"出现在 ≥3 条边里"当预筛**。那是把"能凑出 ≥3 个 (卡片,查询) 对"
+        # 这个真正的判据近似成了一个更严的代理，实测代价很大：一条**跨卡归并**出来的
+        # 边可以挂几十张来源卡，于是某个取值只出现在 1–2 条边里、却能轻松凑出几十个
+        # 对——它被预筛丢掉，而它所在的那条边又因为"含词表外取值"被**整条**跳过，
+        # 连它覆盖的几十张卡一起从门⑥ 里消失（实测：词表预筛单独吃掉 49 张卡，
+        # 加上"整条边被跳"的连带效应共 351 张）。
+        # 现在只按**对**判：凑不出 `min_support` 个对的取值，由下面的不动点轮剔掉。
         if universe and len(pairs.get((kind, value), ())) < min_support:
             thin.setdefault(kind, []).append(value)
             continue
-        if count >= min_support:
-            out.setdefault(kind, []).append(value)
+        out.setdefault(kind, []).append(value)
     for values in out.values():
         values.sort()
     report = {

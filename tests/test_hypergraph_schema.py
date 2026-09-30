@@ -54,12 +54,16 @@ def emotion_pack(**over) -> hg.HyperEdge:
 
 
 def test_vocabularies_match_the_spec():
-    assert len(hg.NODE_TYPES) == 17          # v1.5 起含 `intent`
+    # v1.5 起含 `intent`（17 个）；v1.6 用户裁决补上"除灯光以外还缺的三块"——
+    # 台词交付／配乐与环境声／道具与环境元素（20 个）。数量是**规格**，改动要同步
+    # 更新这里的数字，而不是让断言去迁就实现。
+    assert len(hg.NODE_TYPES) == 20
     assert len(hg.QUALIFIER_KINDS) == 10
     assert set(hg.EDGE_TYPES) == {
         "EMOTION_PACK", "SHOT_PATTERN", "AXIS_RULE", "TROPE", "EDIT_RHYTHM", "LIGHT_PACK",
         "ACTION_BEAT", "PERFORMANCE_PACK", "INTENT_PACK", "IMPACT_PACK",
         "STAGING_PACK", "SOUND_PACK", "TRANSITION_PACK",
+        "DIALOGUE_PACK", "MUSIC_PACK", "PROP_PACK",
     }
     assert set(hg.EDGE_TYPES) <= set(hg.TYPE_PRIORITY)
     for edge_type, required in hg.REQUIRED_MEMBERS.items():
@@ -68,6 +72,61 @@ def test_vocabularies_match_the_spec():
         for role, kind in legal:
             assert kind in hg.ALLOWED_KINDS, (edge_type, kind)
             assert role in hg.ROLES
+
+
+def test_every_forbid_host_is_a_kind_the_edge_type_already_carries():
+    """`forbid` 的宿主 = 这条边里**本来就有**的内容型 kind（用户裁决，审查第 17 条）。
+
+    旧契约"只有 EMOTION_PACK 允许 forbid"的实测后果：915 条边里带 forbid 的 81 条
+    **全是情绪包**，其余 12 类为 0 —— 跨类负向知识（"这个动作不该配这个运镜"）
+    结构上表达不了。这条测试把**新契约**本身钉死：任何 `(forbid, kind)` 都必须能在
+    同类型的 `allow`／`qualifier` 里找到同名 kind；schema 常量永远不许当宿主。
+    """
+    constants = {"pair", "axis_side", "headroom_policy", "avg_shot_len",
+                 "applies_to_genre", "applies_to_shot_size"}
+    for edge_type in hg.EDGE_TYPES:
+        legal = tuple(hg.REQUIRED_MEMBERS[edge_type]) + tuple(hg.OPTIONAL_MEMBERS[edge_type])
+        allow_qualifier = {kind for role, kind in legal if role in ("allow", "qualifier")}
+        forbid_kinds = {kind for role, kind in legal if role == "forbid"}
+        assert forbid_kinds, f"{edge_type} 一个 forbid 宿主都没有"
+        for kind in sorted(forbid_kinds):
+            assert kind in allow_qualifier, (
+                f"{edge_type} 上的 forbid_{kind} 没有同名的 allow/qualifier 槽位")
+            assert kind not in constants, f"{edge_type} 不许禁止 schema 常量 {kind}"
+
+
+def test_every_edge_type_has_at_least_one_seedable_member():
+    """每类边至少要有一个**带查询键**的成员，否则它在检索里挂不上任何种子。
+
+    `AXIS_RULE` 与 `TRANSITION_PACK` 都踩过这个坑：必填槽位全是 schema 常量，
+    查询里没有对应取值，召回结构性为 0（实测 `TRANSITION_PACK` 158/158 不可达）。
+    v1.6 三类新边同样要过这一关。
+    """
+    seedable = {kind for role, kind in
+                [(r, k) for t in hg.EDGE_TYPES
+                 for r, k in tuple(hg.REQUIRED_MEMBERS[t]) + tuple(hg.OPTIONAL_MEMBERS[t])]
+                if kind in set(hg.QUERY_KEYS.values())}
+    for edge_type in hg.EDGE_TYPES:
+        members = tuple(hg.REQUIRED_MEMBERS[edge_type]) + tuple(hg.OPTIONAL_MEMBERS[edge_type])
+        kinds = {kind for _role, kind in members}
+        assert kinds & seedable, (
+            f"{edge_type} 的所有成员都没有查询键，检索时挂不上种子")
+
+
+def test_orphan_node_kinds_are_declared_not_hidden():
+    """声明了却没有任何边类型使用的 kind，必须**显式列在测试里**，不许悄悄带着。
+
+    实测（审查第 18 条）：`character` 与 `object` 两个节点类 **0 个节点、0 次使用**。
+    它们留在 `NODE_TYPES` 里会让"闭集"看起来比实际宽。这里把孤儿写成白名单：
+    要么补上使用它们的边类型，要么从 `NODE_TYPES` 里拿掉——但**不许两者都不做**。
+    """
+    used = {kind for edge_type in hg.EDGE_TYPES
+            for _role, kind in (tuple(hg.REQUIRED_MEMBERS[edge_type])
+                                + tuple(hg.OPTIONAL_MEMBERS[edge_type]))}
+    orphans = set(hg.NODE_TYPES) - used
+    assert orphans == {"character", "object"}, (
+        f"孤儿 kind 的集合变了：{sorted(orphans)}。若这是有意的，请同步更新本测试"
+        "与 `docs/knowledge/ACCEPTANCE_STATUS.md` 的口径")
 
 
 def test_gate9_value_domains_cover_every_qualifier_kind():

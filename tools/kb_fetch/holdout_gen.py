@@ -89,7 +89,8 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    边里写了哪个可查询槽位，`q` 里就要有对应键与逐字相同的取值。
 **`type` 只允许这 13 个字符串**：`EMOTION_PACK`、`SHOT_PATTERN`、`AXIS_RULE`、`TROPE`、
 `EDIT_RHYTHM`、`LIGHT_PACK`、`ACTION_BEAT`、`PERFORMANCE_PACK`、`INTENT_PACK`、
-`IMPACT_PACK`、`STAGING_PACK`、`SOUND_PACK`、`TRANSITION_PACK`。写别的（`ACTION`／
+`IMPACT_PACK`、`STAGING_PACK`、`SOUND_PACK`、`TRANSITION_PACK`、`DIALOGUE_PACK`、
+`MUSIC_PACK`、`PROP_PACK`。写别的（`ACTION`／
 `SFX`／`MOVEMENT`／`COMPOSITION`／`SHAKE`…）**整条作废**。
 
 2. `must` 的边类型只能取下面每一类；**照下面模板逐字写全**（`<…>` 换成词表取值，
@@ -116,8 +117,11 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    * `STAGING_PACK:composition_rule=<构图>,shot_size=<景别>,camera_angle=<机位>`
    * `SOUND_PACK:sfx=<音效>,pacing=<short|medium|long>,intensity=<low|mid|high>`
    * `TRANSITION_PACK:transition=<cut|dissolve|fade|whip>,pacing=<short|medium|long>,scene_type=<establish|dialogue|action|reaction|transition|insert>`
+   * `DIALOGUE_PACK:delivery=<对白交付方式>,pacing=<short|medium|long>,intensity=<low|mid|high>`
+   * `MUSIC_PACK:music=<配乐/环境声策略>,pacing=<short|medium|long>,intensity=<low|mid|high>`
+   * `PROP_PACK:prop=<道具/环境元素>,shot_size=<景别>,camera_angle=<机位>`
    `top1` 一律把 `must` 的**第 1 条原样复制**过来（不要改写、不要只写前半段）。
-2b. **只有上面那 13 个类型名**。不要发明 `COMPOSITION`／`SHAKE`／`SOUND` 之类的
+2b. **只有上面那 16 个类型名**。不要发明 `COMPOSITION`／`SHAKE`／`SOUND` 之类的
    新类型——机器会以 `bad_type` 整条拒收。
 2c. **构图/机位/特效/音效/动作类知识挂到最接近的那一类边上，作为额外槽位**
    （必填槽位照旧写全）：

@@ -137,6 +137,8 @@ FULL_VOCAB = {
     # 下面三类的取值永远不可能出现在 q 里（没有对应查询键），只作占位：
     # `intent` 随 INTENT_PACK 一起进 schema（v1.5 扩到 13 类边时加的）。
     "intent": [], "character": [], "object": [],
+    #: v1.6：三块新增内容各自的取值（都要能在 `q` 里出现）。
+    "delivery": ["耳语"], "music": ["铺底"], "prop": ["手持道具"],
 }
 
 
@@ -355,9 +357,11 @@ def test_holdout_generation_writes_annotator_metadata(tmp_path, monkeypatch):
 Q_ALL = ("情绪=荒诞；动作=跺脚；运镜=固定；景别=特写；镜头=50mm；节奏=short；"
          "特效=petrify；音效=心跳；机位=平视；光线=逆光；构图=rule_of_thirds；"
          "轴线=关系轴；题材=film；桥段=establish；意图=反转；转场=dissolve；"
-         # v1.5：`intensity` 补了查询键（`强度`），必填槽位就必须写进 `q`
-         # ——否则门⑨ 会如实判这条查询够不着自己的期望边。
-         "强度=high")
+        # v1.5：`intensity` 补了查询键（`强度`），必填槽位就必须写进 `q`
+        # ——否则门⑨ 会如实判这条查询够不着自己的期望边。
+        "强度=high；"
+        # v1.6：三块新增内容各有查询键（`语气`／`配乐`／`道具`），必填槽位同样必须写进 `q`。
+        "语气=耳语；配乐=铺底；道具=手持道具")
 
 SPEC_BY_TYPE = {
     "EMOTION_PACK": "EMOTION_PACK:emotion=荒诞,intensity=high,forbid_shot_size=特写",
@@ -376,6 +380,11 @@ SPEC_BY_TYPE = {
     # 否则会先被门②判"q 与 must 的 intensity 不一致"（这正是不一致该有的下场）。
     "SOUND_PACK": "SOUND_PACK:sfx=心跳,pacing=short,intensity=high",
     "TRANSITION_PACK": "TRANSITION_PACK:transition=dissolve,pacing=short,scene_type=scene",
+    # v1.6：边类型扩到 16 类（台词交付／配乐与环境声／道具与环境元素）。
+    # 夹具必须跟着覆盖，否则门④ 在这三类上恒为 0。
+    "DIALOGUE_PACK": "DIALOGUE_PACK:delivery=耳语,pacing=short,intensity=high",
+    "MUSIC_PACK": "MUSIC_PACK:music=铺底,pacing=short,intensity=high",
+    "PROP_PACK": "PROP_PACK:prop=手持道具,shot_size=特写,camera_angle=平视",
 }
 
 

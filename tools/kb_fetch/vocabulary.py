@@ -90,6 +90,23 @@ AXIS_TOPICS = (
     ("关系轴", ("人物连线",)), ("运动轴", ("运动方向",)), ("视线轴", ("视线方向",)),
     ("越轴", ("跳轴",)), ("中性机位", ("骑轴", "中性镜头")),
 )
+#: v1.6 三块新增内容各自的受控词表。**为什么给闭集而不是像 `action` 那样放开**：
+#: `action` 放开之后实测被话题名词污染（170/915 条边把"人物弧光"写进动作槽位），
+#: 靠事后清洗才压下去。新 kind 一开始就收在闭集里，别名表负责把卡片里的常见说法
+#: 映射到规范值，`occurrences` 计数因此仍然真实（卡片正文提到别名就算命中）。
+DELIVERIES = (
+    ("耳语", ("低语", "气声", "轻声")), ("喊叫", ("吼", "咆哮", "嘶喊")),
+    ("平淡", ("平铺", "无起伏", "克制念白")), ("颤抖", ("颤声", "发抖", "哽咽")),
+    ("画外音", ("旁白", "独白", "voice over", "vo")),
+)
+MUSIC_STRATEGIES = (
+    ("静默", ("无声", "静音", "留白处理")), ("铺底", ("背景音乐", "配乐", "垫乐")),
+    ("重音", ("打击乐", "强调音", "重音落下")), ("环境底噪", ("环境声", "氛围声", "底噪", "ambience")),
+)
+PROPS = (
+    ("手持道具", ("道具", "手持物件", "手中物")), ("陈设", ("摆设", "家具", "布置")),
+    ("环境元素", ("布景", "场景元素", "背景元素")),
+)
 
 GENRE_ZH = {"film": ("电影", "剧情片"), "anime": ("动画", "日式动画"),
             "documentary": ("纪录片", "纪实")}
@@ -168,6 +185,12 @@ def build_nodes(cards) -> List[Dict]:
         _add(nodes, f"sfx:{canon}", "sfx", canon, values, value=canon)
     for canon, values in AXIS_TOPICS:
         _add(nodes, f"axis_topic:{canon}", "axis_topic", canon, values, value=canon)
+    for canon, values in DELIVERIES:
+        _add(nodes, f"delivery:{canon}", "delivery", canon, values, value=canon)
+    for canon, values in MUSIC_STRATEGIES:
+        _add(nodes, f"music:{canon}", "music", canon, values, value=canon)
+    for canon, values in PROPS:
+        _add(nodes, f"prop:{canon}", "prop", canon, values, value=canon)
 
     # 3) 只收卡片里**真实出现过**的取值（词表认得、且正文/标签里出现过）
     for card in cards:

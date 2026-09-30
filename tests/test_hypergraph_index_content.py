@@ -55,14 +55,46 @@ def test_the_index_has_true_n_ary_edges():
 
 
 def test_forbidden_members_appear_only_where_the_schema_allows_them():
-    """§2.3 的边表：只有 EMOTION_PACK 允许 `forbid`，且 kind ∈ {movement, shot_size, vfx}。"""
-    allowed = {"movement", "shot_size", "vfx"}
+    """`forbid` 只能出现在 schema 允许的宿主上，且 kind 必须是该类型里本来就有的。
+
+    **契约变更（2026-10-01，用户裁决审查第 17 条）**：旧契约是"只有 EMOTION_PACK
+    允许 forbid，且 kind ∈ {movement, shot_size, vfx}"。那条契约的实测后果是：
+    915 条边里带 forbid 的 81 条**全部是情绪包**，其余 12 类为 0 ——
+    "这个动作不该配这个运镜"这类跨类负向知识**结构上表达不了**。
+
+    新契约：**该类型里本来出现过的内容型 kind，就允许以 `forbid` 出现**
+    （`hypergraph._forbid_hosts`，机械派生）。所以这条测试改成对**契约本身**做
+    双向核对，而不是钉住某一类的白名单：
+
+    * 索引里出现的每一个 `(type, kind)` forbid 组合，都必须在 schema 的
+      `OPTIONAL_MEMBERS` 里能找到；
+    * schema 常量（`pair`／`axis_side`／`headroom_policy`／`avg_shot_len`／
+      `applies_to_*`）永远不许当 forbid 宿主；
+    * 反向：schema 里允许的宿主，索引**至少要用到一类以上**（否则"放宽宿主"
+      在产物里没有兑现）。
+    """
+    import sys
+
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+    from block_director.knowledge import hypergraph as hg
+
+    constants = {"pair", "axis_side", "headroom_policy", "avg_shot_len",
+                 "applies_to_genre", "applies_to_shot_size"}
+    used_types = set()
     for edge in _read_jsonl(EDGES_FILE):
         for member in edge["members"]:
             if member[0] != "forbid":
                 continue
-            assert edge["type"] == "EMOTION_PACK", f"{edge['edge_id']} 越界带 forbid"
-            assert member[1] in allowed, f"{edge['edge_id']} 的 forbid kind 非法：{member[1]}"
+            legal = {kind for role, kind in hg.OPTIONAL_MEMBERS.get(edge["type"], ())
+                     if role == "forbid"}
+            assert member[1] in legal, (
+                f"{edge['edge_id']} 的 forbid 宿主非法：{edge['type']}/{member[1]}")
+            assert member[1] not in constants, (
+                f"{edge['edge_id']} 试图禁止一个 schema 常量：{member[1]}")
+            used_types.add(edge["type"])
+    assert len(used_types) >= 2, (
+        f"放宽 forbid 宿主之后，索引里仍然只有 {sorted(used_types)} 带禁忌——"
+        "跨类负向知识没有真正兑现")
 
 
 def test_manifest_merge_block_matches_the_edges_on_disk():

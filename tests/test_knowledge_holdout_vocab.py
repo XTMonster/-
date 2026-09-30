@@ -74,16 +74,31 @@ def test_frozen_vocab_survives_the_gate_it_feeds(graph):
 
 
 def test_long_tail_values_are_dropped_with_a_reason(graph):
-    """只被 1–2 条边表达的取值**必须被剔除**，并且报告里指出是"尾巴"。"""
+    """凑不出 ≥`min_support` 个 `(卡片, 查询)` 对的取值**必须被剔除**，并有账可查。
+
+    **口径变更（2026-10-01）**：原实现先用"出现在 ≥3 条边里"做预筛，再算对；
+    那个预筛比真正的判据**更严**，实测代价是一条跨卡归并出来的边可以挂几十张来源卡，
+    某个取值只出现在 1–2 条边里却能凑出几十个对——它被预筛丢掉，而它所在的那条边
+    又因"含词表外取值"被整条跳过，连它覆盖的几十张卡一起从门⑥ 里消失。
+    现在只按**对**判，所以 `dropped_values`（按边数预筛掉的）恒为 0，
+    被剔的取值全部记在 `dropped_unreachable_pairs` 里。断言因此改成查那一栏，
+    并且**逐值复核**（比只数个数更强）。
+    """
     universe = json.loads(CARDS.read_text(encoding="utf-8"))
-    _payload, report = HV.build_vocab(graph, universe=universe)
-    assert report["dropped_values"] > 0, "语料有长尾，剔除数不可能为 0"
-    assert report["dropped_long_tail"], "剔除必须按 kind 记账"
-    # 剔除的是"支撑不足"，不是"随便砍"：每个被剔的值都 < min_support
-    support = HV.edge_support(graph)
-    for kind, values in HV.build_vocab(graph, universe=universe)[0].items():
+    payload, report = HV.build_vocab(graph, universe=universe)
+    assert report["dropped_unreachable_count"] > 0, "语料有长尾，剔除数不可能为 0"
+    assert report["dropped_unreachable_pairs"], "剔除必须按 kind 记账"
+    pairs = HV.pair_support(graph, universe)
+    dropped = {(kind, value)
+               for kind, values in report["dropped_unreachable_pairs"].items()
+               for value in values}
+    # 正面：剔掉的每一个取值都确实是"凑不出 min_support 个对"的。
+    for key in dropped:
+        assert len(pairs.get(key, ())) < HV.MIN_SUPPORT_EDGES, key
+    # 反面：留在词表里的每一个取值都必须**真的**凑得出 min_support 个对。
+    for kind, values in payload.items():
         for value in values:
-            assert support.get((kind, value), 0) >= HV.MIN_SUPPORT_EDGES
+            assert len(pairs.get((kind, value), ())) >= HV.MIN_SUPPORT_EDGES, (kind, value)
 
 
 def test_fixpoint_removes_values_that_cannot_reach_the_support_line(graph):

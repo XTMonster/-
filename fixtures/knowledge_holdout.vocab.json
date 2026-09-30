@@ -1,33 +1,38 @@
 {
-"_fingerprint": "fe448c0c92820f54",
+"_fingerprint": "450f6f325e83ac53",
 "kinds": {
 "action": [
 "上下场",
+"人数限制",
+"人物",
+"人物一致性",
 "人物塑造",
+"低头",
 "候场",
 "克制",
 "入场调度",
-"内心独白",
 "准备",
 "出场",
-"分镜",
+"分镜写法",
 "动作",
 "动作规范",
 "动作设计",
 "动线",
 "化妆",
 "协作",
-"去自我意识",
 "反应",
+"反派表演",
 "台词处理",
 "后退",
 "呈现",
 "喜剧表演",
-"场景",
-"坐下"
+"坐下",
+"塑造"
 ],
 "axis_topic": [
+"中性机位",
 "关系轴",
+"视线轴",
 "越轴",
 "运动轴"
 ],
@@ -41,7 +46,9 @@
 "camera_angle": [
 "低机位",
 "平视",
+"荷兰角",
 "过肩",
+"骑轴",
 "高机位"
 ],
 "character": [],
@@ -52,6 +59,12 @@
 "lead_room",
 "occlusion",
 "rule_of_thirds"
+],
+"delivery": [
+"喊叫",
+"平淡",
+"画外音",
+"颤抖"
 ],
 "emotion": [
 "冷漠",
@@ -75,11 +88,15 @@
 "film"
 ],
 "intent": [
+"压迫",
+"回望",
+"对抗",
 "推进",
 "揭示",
 "收束",
 "煽动",
 "留白",
+"转折",
 "铺垫"
 ],
 "lens": [
@@ -99,26 +116,37 @@
 "高调"
 ],
 "movement": [
+"crane_down",
 "crane_up",
 "dolly_in",
 "dolly_out",
-"dolly_zoom",
 "follow_subject",
 "handheld",
+"orbit_ccw",
 "orbit_cw",
+"pan_left",
+"pan_right",
+"push_through",
 "steadicam",
-"track_left",
 "track_right",
 "whip_pan_left",
 "whip_pan_right",
-"zoom_in",
 "固定"
+],
+"music": [
+"铺底",
+"静默"
 ],
 "object": [],
 "pacing": [
 "long",
 "medium",
 "short"
+],
+"prop": [
+"手持道具",
+"环境元素",
+"陈设"
 ],
 "sfx": [
 "低频轰鸣",

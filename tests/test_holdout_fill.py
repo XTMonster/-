@@ -11,6 +11,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools import holdout_fill  # noqa: E402
+from block_director.knowledge import hypergraph as hg  # noqa: E402
 
 
 def _entry(card: str, q: str, must: list) -> dict:
@@ -450,12 +451,29 @@ def test_gap_prompt_renders_the_legal_forbid_slots_from_the_schema():
     assert hint, "schema 里应当至少有一类边带 forbid 成员"
     assert hint in holdout_fill.GAP_PROMPT, (
         "补跑提示里的合法禁忌位置不是从 schema 渲染的（手抄的清单会与 schema 漂移）")
-    for kind in ("movement", "shot_size", "vfx"):
-        assert "`forbid_%s`" % kind in hint
-    for kind in ("lighting", "pacing", "sfx", "camera_angle"):
+    # **契约变更（2026-10-01，用户裁决审查第 17 条）**：旧契约是"`forbid` 只长在
+    # EMOTION_PACK 上"，本测试原先把 `forbid_lighting`／`forbid_pacing`／
+    # `forbid_sfx`／`forbid_camera_angle` 钉成**非法**。这条契约的核心问题是
+    # 实测 915 条边里带 forbid 的 81 条**全部**是 EMOTION_PACK，其余 12 类为 0 ——
+    # "这个动作不该配这个运镜"这类跨类负向知识**结构上表达不了**。
+    # 新契约：**该类型里本来出现过的内容型 kind，就允许以 forbid 出现**
+    # （`hypergraph._forbid_hosts`，机械派生，不手抄 16 张表）。
+    # 因此这里改为对**新契约本身**做双向断言：提示必须是渲染出来的那一串，
+    # 且每个渲染出来的 (类型, kind) 组合都真的是 schema 里的合法宿主。
+    assert hint in holdout_fill.GAP_PROMPT, (
+        "补跑提示里的合法禁忌位置不是从 schema 渲染的（手抄的清单会与 schema 漂移）")
+    # 正向：至少要覆盖到旧契约下的三类 + 新契约才解锁的几类。
+    for kind in ("movement", "shot_size", "vfx", "lighting", "pacing", "camera_angle"):
+        assert "`forbid_%s`" % kind in hint, (
+            "%s 在 v1.6 里是合法 forbid 宿主（该类型里本来就有这个槽位），提示必须写出来" % kind)
+    # 反向：**schema 常量**永远不能当 forbid 宿主 —— 禁止一个常量没有意义，
+    # 只会把规格空间灌水。这条反向断言是新的、比旧版更严的守卫。
+    for kind in ("pair", "axis_side", "headroom_policy", "avg_shot_len",
+                 "applies_to_genre", "applies_to_shot_size"):
         assert "`forbid_%s`" % kind not in hint, (
-            "%s 不能以 forbid 角色出现，提示里不得把它写成合法位置" % kind)
-    # 只有 EMOTION_PACK 有 forbid 成员：别的类型一个都不许被写成宿主。
+            "%s 是 schema 常量，不允许当 forbid 宿主" % kind)
+    # 双向：提示里出现的每一个 "TYPE: `forbid_k`" 都必须能在 schema 里找到对应条目。
     for etype in check_holdout.EDGE_TYPES:
-        if etype != "EMOTION_PACK":
-            assert "%s: `forbid_" % etype not in hint
+        legal = {kind for role, kind in hg.OPTIONAL_MEMBERS[etype] if role == "forbid"}
+        for kind in sorted(legal):
+            assert "`forbid_%s`" % kind in hint, (etype, kind)

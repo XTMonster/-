@@ -382,6 +382,11 @@
 {"record": "node", "node_id": "composition_rule:lead_room", "type": "composition_rule", "name": "lead_room", "aliases": ["视线留白", "前视空间"], "value": "lead_room", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "composition_rule:occlusion", "type": "composition_rule", "name": "occlusion", "aliases": ["遮挡", "前景遮挡"], "value": "occlusion", "unit": "", "occurrences": 18}
 {"record": "node", "node_id": "composition_rule:rule_of_thirds", "type": "composition_rule", "name": "rule_of_thirds", "aliases": ["三分法"], "value": "rule_of_thirds", "unit": "", "occurrences": 2}
+{"record": "node", "node_id": "delivery:喊叫", "type": "delivery", "name": "喊叫", "aliases": ["吼", "咆哮", "嘶喊"], "value": "喊叫", "unit": ""}
+{"record": "node", "node_id": "delivery:平淡", "type": "delivery", "name": "平淡", "aliases": ["平铺", "无起伏", "克制念白"], "value": "平淡", "unit": "", "occurrences": 5}
+{"record": "node", "node_id": "delivery:画外音", "type": "delivery", "name": "画外音", "aliases": ["旁白", "独白", "voice over", "vo"], "value": "画外音", "unit": "", "occurrences": 15}
+{"record": "node", "node_id": "delivery:耳语", "type": "delivery", "name": "耳语", "aliases": ["低语", "气声", "轻声"], "value": "耳语", "unit": ""}
+{"record": "node", "node_id": "delivery:颤抖", "type": "delivery", "name": "颤抖", "aliases": ["颤声", "发抖", "哽咽"], "value": "颤抖", "unit": "", "occurrences": 2}
 {"record": "node", "node_id": "emotion:冷漠", "type": "emotion", "name": "冷漠", "aliases": ["冷峻", "无表情"], "value": "冷漠", "unit": "", "occurrences": 3}
 {"record": "node", "node_id": "emotion:压抑", "type": "emotion", "name": "压抑", "aliases": ["憋闷", "沉闷"], "value": "压抑", "unit": "", "occurrences": 19}
 {"record": "node", "node_id": "emotion:喜悦", "type": "emotion", "name": "喜悦", "aliases": ["开心", "愉快"], "value": "喜悦", "unit": "", "occurrences": 4}
@@ -456,10 +461,17 @@
 {"record": "node", "node_id": "movement:zoom_in", "type": "movement", "name": "变焦推近", "aliases": ["变焦推近"], "value": "zoom_in", "unit": "", "occurrences": 2}
 {"record": "node", "node_id": "movement:zoom_out", "type": "movement", "name": "变焦拉远", "aliases": ["变焦拉远"], "value": "zoom_out", "unit": "", "occurrences": 2}
 {"record": "node", "node_id": "movement:固定", "type": "movement", "name": "固定机位", "aliases": ["固定机位", "static", "静止机位"], "value": "固定", "unit": "", "occurrences": 6}
+{"record": "node", "node_id": "music:环境底噪", "type": "music", "name": "环境底噪", "aliases": ["环境声", "氛围声", "底噪", "ambience"], "value": "环境底噪", "unit": "", "occurrences": 3}
+{"record": "node", "node_id": "music:重音", "type": "music", "name": "重音", "aliases": ["打击乐", "强调音", "重音落下"], "value": "重音", "unit": "", "occurrences": 4}
+{"record": "node", "node_id": "music:铺底", "type": "music", "name": "铺底", "aliases": ["背景音乐", "配乐", "垫乐"], "value": "铺底", "unit": "", "occurrences": 5}
+{"record": "node", "node_id": "music:静默", "type": "music", "name": "静默", "aliases": ["无声", "静音", "留白处理"], "value": "静默", "unit": "", "occurrences": 11}
 {"record": "node", "node_id": "pacing:long", "type": "pacing", "name": "long", "aliases": ["长镜", "长镜留白", "凝视"], "value": "long", "unit": "", "occurrences": 12}
 {"record": "node", "node_id": "pacing:medium", "type": "pacing", "name": "medium", "aliases": ["常规节奏"], "value": "medium", "unit": ""}
 {"record": "node", "node_id": "pacing:short", "type": "pacing", "name": "short", "aliases": ["短镜", "快切", "短镜硬切"], "value": "short", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "pair:any_two", "type": "pair", "name": "any_two", "aliases": [], "value": "any_two", "unit": ""}
+{"record": "node", "node_id": "prop:手持道具", "type": "prop", "name": "手持道具", "aliases": ["道具", "手持物件", "手中物"], "value": "手持道具", "unit": "", "occurrences": 62}
+{"record": "node", "node_id": "prop:环境元素", "type": "prop", "name": "环境元素", "aliases": ["布景", "场景元素", "背景元素"], "value": "环境元素", "unit": "", "occurrences": 99}
+{"record": "node", "node_id": "prop:陈设", "type": "prop", "name": "陈设", "aliases": ["摆设", "家具", "布置"], "value": "陈设", "unit": "", "occurrences": 34}
 {"record": "node", "node_id": "scene_type:action", "type": "scene_type", "name": "action", "aliases": [], "value": "action", "unit": "", "occurrences": 2}
 {"record": "node", "node_id": "scene_type:dialogue", "type": "scene_type", "name": "dialogue", "aliases": [], "value": "dialogue", "unit": ""}
 {"record": "node", "node_id": "scene_type:establish", "type": "scene_type", "name": "establish", "aliases": [], "value": "establish", "unit": "", "occurrences": 2}
