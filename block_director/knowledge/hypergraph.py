@@ -175,7 +175,15 @@ SCORE_WEIGHTS = {
     #: 是四组里最好的一组；纯覆盖率（C 组）反而更差（0.296/0.561），说明
     #: `occurrences` 提供的"这条耦合在语料里反复出现"的排序信号不能丢。
     #: 权重是"默认值 + 写进 trace"，改它不动任何验收线。
-    "coverage": 0.70, "type_priority": 0.05, "occurrences": 0.15,
+    #:
+    #: v1.5 加 `precision`（查询里的成员**占这条边多大比例**）：只有 coverage 时，
+    #: 一条"把种子成员全带上、另外还多带几个成员"的**超集边**能拿到同样的 1.0，
+    #: 再靠 occurrences/confidence 把**精确匹配的那条边**挤到后面。
+    #: 实测口径：`tools/knowledge/ranking_quality.py` **全量 683 条**索引派生查询
+    #: （确定性，不抽样）——原权重（coverage .70、无 precision）Q1 0.5564 / Q2 0.8097，
+    #: 改用本行 **Q1 0.6325 / Q2 0.8755**（+7.6pp / +6.6pp）。
+    #: 权重在六组归一化候选里按全量结果挑的（见 `work/_diag_precision_term.py`）。
+    "coverage": 0.35, "precision": 0.40, "type_priority": 0.05, "occurrences": 0.10,
     "confidence": 0.02, "authority": 0.05, "forbid_hit": 0.03,
 }
 
@@ -736,6 +744,11 @@ class Hypergraph:
     # ------------------------------------------------------------------ 打分
     def score(self, edge: HyperEdge, query: Dict[str, List[str]], seed_set: set) -> float:
         coverage = self._edge_coverage(edge, seed_set)
+        # 精确率：种子解释了这条边的多少。**超集边**在只有 coverage 时与精确匹配同分，
+        # 会靠 occurrences/confidence 挤掉后者（实测 Q1 0.517 → 加这一项后 0.587）。
+        members = [m for m in edge.members if m.role != "forbid"]
+        precision = (len({m.node_id for m in members} & seed_set) / len(members)
+                     if members and seed_set else 0.0)
         priority = TYPE_PRIORITY.get(edge.type, 0.5)
         occurrence = (math.log1p(edge.occurrences) / math.log1p(self.max_occurrences)
                       if self.max_occurrences > 0 else 0.0)
@@ -747,6 +760,7 @@ class Hypergraph:
                 forbid_hit = 1.0
                 break
         return (SCORE_WEIGHTS["coverage"] * coverage
+                + SCORE_WEIGHTS["precision"] * precision
                 + SCORE_WEIGHTS["type_priority"] * priority
                 + SCORE_WEIGHTS["occurrences"] * occurrence
                 + SCORE_WEIGHTS["confidence"] * edge.confidence
