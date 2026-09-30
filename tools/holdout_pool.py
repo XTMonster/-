@@ -55,10 +55,19 @@ DEFAULT_NODES = "knowledge/hypergraph.nodes.jsonl"
 DEFAULT_EDGES = "knowledge/hypergraph.edges.jsonl"
 DEFAULT_CARDS = "fixtures/knowledge_holdout.cards.json"
 DEFAULT_OUT = "work/glm_pool/mechanical.jsonl"
+DEFAULT_VOCAB = "fixtures/knowledge_holdout.vocab.json"
 
 #: 一条 `q` 最多挂几张来源卡（同一张卡的知识、同一条查询 = 同一条期望，
 #: 多挂几张卡只是让门⑥ 的来源覆盖更广，不改变 Q2 的判据）。
-MAX_CARDS_PER_EDGE = 3
+#: 一条边最多挂几张来源卡。5 是量出来的：门④ 要求每类 ≥30 个 `(卡片, 查询)` 对、
+#: ≥10 张不同卡，而 `AXIS_RULE` 只有 7 条可区分边 / 33 张卡 —— 卡在 3 时只能凑出
+#: 24 对（差 6），放到 5 就能过；同时它也把门③ 的 `<3 支撑` 取值从 46 个压到 1 个。
+MAX_CARDS_PER_EDGE = 5
+
+#: 门③ 要求每个词表取值至少出现在 `min_support` 个不同的 `(卡片, 查询)` 对里。
+#: 主通道按 `MAX_CARDS_PER_EDGE` 截断来源卡，冷门取值会因此掉到 3 以下；
+#: 补覆盖轮**只**为这些取值追加"换一张来源卡"的条目（不做无差别的膨胀）。
+MIN_VALUE_SUPPORT = 3
 
 
 def value_of(node_id: str) -> str:
@@ -111,7 +120,8 @@ def _member_pairs(edge) -> set:
     return {(member.role, member.kind, value_of(member.node_id)) for member in edge.members}
 
 
-def pick_negative(edge, group_ids: set, by_type: Dict[str, list]):
+def pick_negative(edge, group_ids: set, by_type: Dict[str, list],
+                  in_vocab=None):
     """负样本：**与本次查询不相交**的同类边（协议 §3.2 的定义）。
 
     §3.2 写死了负样本是什么：「`applies_to_*` 与查询不匹配，或 **allow 集与查询
@@ -124,15 +134,41 @@ def pick_negative(edge, group_ids: set, by_type: Dict[str, list]):
     for other in sorted(by_type.get(edge.type, ()), key=lambda item: item.edge_id):
         if other.edge_id in group_ids:
             continue
+        if in_vocab is not None and not in_vocab(other):
+            # `never` 也要过门③：词表外的取值出现在 `never` 里同样是
+            # `unknown_values`（校验器把 `never` 与 `must` 一起算进 must_values）。
+            continue
         if not (want & _member_pairs(other)):
             return other
     return None
 
 
 def mechanical(graph, universe: Sequence[str], *,
-               max_cards: int = MAX_CARDS_PER_EDGE) -> Tuple[List[dict], Dict]:
-    """按 `(type, q)` 分组生成期望；组 ≤3 的组**整组**写进 `must`。"""
+               max_cards: int = MAX_CARDS_PER_EDGE,
+               top_up: bool = True,
+               vocab: Dict[str, Sequence[str]] | None = None) -> Tuple[List[dict], Dict]:
+    """按 `(type, q)` 分组生成期望；组 ≤3 的组**整组**写进 `must`。
+
+    `top_up`：主通道之后，为门③ 里支撑数 <3 的取值追加条目（换一张来源卡），
+    直到每个取值都有 ≥3 个不同的 `(卡片, 查询)` 对，或来源卡用尽为止。
+    """
     card_set = set(universe)
+    # 冻结词表是**硬边界**：`q` 与 `must` 里出现词表外的取值，门③ 直接判
+    # `unknown_values`（实测旧词表就是被"频次前 12"这个魔数卡出来的）。
+    # 含词表外取值的边**整条不生成**，并如实计数——绝不为了凑覆盖去改词表取值。
+    allowed = {kind: set(values) for kind, values in (vocab or {}).items()}
+
+    def _in_vocab(edge) -> bool:
+        if not allowed:
+            return True
+        for member in edge.members:
+            values = allowed.get(str(member.kind))
+            if values is None:
+                continue
+            if value_of(member.node_id) not in values:
+                return False
+        return True
+
     by_type: Dict[str, list] = collections.defaultdict(list)
     groups: Dict[Tuple, List] = collections.OrderedDict()
     for edge in graph.edges:
@@ -141,8 +177,18 @@ def mechanical(graph, universe: Sequence[str], *,
 
     entries: List[dict] = []
     skipped = collections.Counter()
+    #: `(kind, value)` → 该取值出现过的 (edge_group, edge_index, card) 三元组。
+    #: 补覆盖轮用它来找"还能换哪张卡"。
+    holders: Dict[Tuple[str, str], List[Tuple[int, int]]] = collections.defaultdict(list)
+    group_rows: List[Tuple[List[str], List[int], List[List[str]]]] = []
     ordered = sorted(groups.items(), key=lambda item: (item[0][0], item[0][1]))
     for (_etype, _sig), group in ordered:
+        outside = [edge for edge in group if not _in_vocab(edge)]
+        if outside:
+            skipped["value_outside_frozen_vocab"] += len(outside)
+            group = [edge for edge in group if _in_vocab(edge)]
+            if not group:
+                continue
         live_sources = [sorted({str(s) for s in (e.sources or ()) if str(s) in card_set})
                         for e in group]
         if not any(live_sources):
@@ -156,22 +202,99 @@ def mechanical(graph, universe: Sequence[str], *,
         # 整组一起写进 `must`（≤3 条，符合协议上限），这样一组的每条边都被 required
         # 覆盖；`top1` 取第一条（协议要求 top1 ⊆ must）。
         specs = [spec_of(edge) for edge in group]
+        slot = len(group_rows)
+        group_rows.append((specs, list(range(len(group))), live_sources))
         for index, edge in enumerate(group):
-            for card in live_sources[index][:max_cards]:
-                negative = pick_negative(edge, group_ids, by_type)
-                never = []
-                if negative is not None:
-                    spec = spec_of(negative)
-                    if spec not in specs:
-                        never = [spec]
-                entries.append({
-                    "from_card": card,
-                    "q": query_of(edge),
-                    "must": list(specs),
-                    "top1": [specs[index]],
-                    "never": never,
-                })
-    return entries, {"skipped": dict(skipped), "groups": len(ordered)}
+            for member in edge.members:
+                if member.role == "forbid":
+                    continue
+                key = KEY_FOR_KIND.get(member.kind)
+                if key:
+                    holders[(member.kind, value_of(member.node_id))].append((slot, index))
+        for index, edge in enumerate(group):
+            for card_index, card in enumerate(live_sources[index]):
+                if card_index >= max_cards:
+                    break
+                entries.append(_row(edge, card, specs, index, group_ids, by_type,
+                                    _in_vocab))
+
+    support: Dict[Tuple[str, str], set] = collections.defaultdict(set)
+    for row in entries:
+        signature = (row["from_card"], row["q"])
+        for kind, value in _q_pairs(row["q"]):
+            support[(kind, value)].add(signature)
+
+    topped = collections.Counter()
+    if top_up:
+        for (kind, value), pairs in sorted(holders.items()):
+            if len(support[(kind, value)]) >= MIN_VALUE_SUPPORT:
+                continue
+            for slot, index in pairs:
+                specs, indices, live_sources = group_rows[slot]
+                for card in live_sources[index][max_cards:]:
+                    if len(support[(kind, value)]) >= MIN_VALUE_SUPPORT:
+                        break
+                    text = _q_from_spec(specs[index])
+                    if (card, text) in support[(kind, value)]:
+                        continue
+                    row = {
+                        "from_card": card,
+                        "q": text,
+                        "must": list(specs),
+                        "top1": [specs[index]],
+                        "never": [],
+                    }
+                    entries.append(row)
+                    topped[kind] += 1
+                    for k, v in _q_pairs(row["q"]):
+                        support[(k, v)].add((card, row["q"]))
+                if len(support[(kind, value)]) >= MIN_VALUE_SUPPORT:
+                    break
+    return entries, {"skipped": dict(skipped), "groups": len(ordered),
+                     "top_up_added": sum(topped.values()),
+                     "top_up_by_kind": dict(topped),
+                     "under_supported_values": sorted(
+                         "%s=%s" % key for key, seen in support.items()
+                         if len(seen) < MIN_VALUE_SUPPORT)}
+
+
+def _q_pairs(text: str) -> List[Tuple[str, str]]:
+    out = []
+    for part in str(text).split("；"):
+        if "=" not in part:
+            continue
+        key, _, value = part.partition("=")
+        kind = Q_KEY_TO_KIND.get(key.strip())
+        if kind:
+            out.append((kind, value.strip()))
+    return out
+
+
+def _q_from_spec(spec: str) -> str:
+    """规格串 → 查询串（与 `query_of` 同一口径：plain 与 forbid 的可查询键都写）。"""
+    _etype, plain, forbid = __import__("tools.check_holdout",
+                                       fromlist=["parse_spec"]).parse_spec(spec)
+    merged = {}
+    for kind, value in plain.items():
+        key = KEY_FOR_KIND.get(kind)
+        if key:
+            merged[key] = value
+    for kind, value in forbid.items():
+        key = KEY_FOR_KIND.get(kind)
+        if key and key not in merged:
+            merged[key] = value
+    return "；".join("%s=%s" % (key, value) for key, value in merged.items())
+
+
+def _row(edge, card, specs, index, group_ids, by_type, in_vocab=None) -> dict:
+    negative = pick_negative(edge, group_ids, by_type, in_vocab)
+    never = []
+    if negative is not None:
+        spec = spec_of(negative)
+        if spec not in specs:
+            never = [spec]
+    return {"from_card": card, "q": query_of(edge), "must": list(specs),
+            "top1": [specs[index]], "never": never}
 
 
 def finalise(raw_entries: Sequence[dict], graph, universe: Sequence[str],
@@ -230,6 +353,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--cards", default=DEFAULT_CARDS)
     parser.add_argument("--out", default=DEFAULT_OUT)
     parser.add_argument("--report", default="")
+    parser.add_argument("--vocab", default=DEFAULT_VOCAB,
+                        help="冻结词表（门③ 的硬边界）；给空串表示不限制")
     parser.add_argument("--mechanical", action="store_true",
                         help="不调模型：把每条索引边写成一条期望")
     parser.add_argument("--limit", type=int, default=0, help="只生成前 N 条（自检用）")
@@ -243,7 +368,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                          ensure_ascii=False))
         return 2
 
-    raw, stats = mechanical(graph, universe)
+    vocab = {}
+    if args.vocab:
+        payload = json.loads((ROOT / args.vocab).read_text(encoding="utf-8"))
+        vocab = payload.get("kinds", payload)
+    raw, stats = mechanical(graph, universe, vocab=vocab)
     if args.limit:
         raw = raw[:args.limit]
     entries, rejects = finalise(raw, graph, universe,

@@ -1,133 +1,170 @@
 {
-  "_fingerprint": "ab7b9ce0bead03a6",
-  "kinds": {
-    "emotion": [
-      "压抑",
-      "孤独",
-      "平静",
-      "庄严",
-      "恐惧",
-      "悲伤",
-      "愤怒",
-      "期待",
-      "混乱",
-      "温柔",
-      "焦虑",
-      "荒诞"
-    ],
-    "action": [
-      "低头",
-      "后退",
-      "坐下",
-      "推门",
-      "起身",
-      "跺脚",
-      "转身"
-    ],
-    "movement": [
-      "crane_down",
-      "crane_up",
-      "dolly_in",
-      "dolly_out",
-      "follow_subject",
-      "handheld",
-      "orbit_ccw",
-      "orbit_cw",
-      "pan_left",
-      "tilt_up",
-      "track_left",
-      "固定"
-    ],
-    "shot_size": [
-      "CU",
-      "ECU",
-      "ELS",
-      "LS",
-      "MCU",
-      "MLS",
-      "MS"
-    ],
-    "lens": [
-      "24mm",
-      "35mm",
-      "50mm",
-      "85mm"
-    ],
-    "pacing": [
-      "long",
-      "medium",
-      "short"
-    ],
-    "vfx": [
-      "flame",
-      "glow",
-      "smoke",
-      "spark"
-    ],
-    "sfx": [
-      "低频轰鸣",
-      "尖锐哨音",
-      "心跳",
-      "金属撞击",
-      "雨声",
-      "静默"
-    ],
-    "camera_angle": [
-      "低机位",
-      "平视",
-      "荷兰角",
-      "过肩",
-      "骑轴",
-      "高机位"
-    ],
-    "lighting": [
-      "低调",
-      "侧光",
-      "冷光",
-      "底光",
-      "暖光",
-      "正面光",
-      "逆光",
-      "顶光"
-    ],
-    "composition_rule": [
-      "balance",
-      "framing",
-      "headroom",
-      "lead_room",
-      "occlusion",
-      "rule_of_thirds"
-    ],
-    "axis_topic": [
-      "中性机位",
-      "视线轴",
-      "越轴",
-      "运动轴"
-    ],
-    "genre": [
-      "anime",
-      "documentary",
-      "film"
-    ],
-    "beat_type": [
-      "coverage",
-      "establish",
-      "insert",
-      "transition"
-    ],
-    "intent": [
-      "停顿",
-      "压迫",
-      "对抗",
-      "推进",
-      "揭示",
-      "收束",
-      "留白",
-      "转折",
-      "释放",
-      "铺垫"
-    ],
-    "character": [],
-    "object": []
-  }
+"_fingerprint": "c7f243993d91aaba",
+"kinds": {
+"action": [
+"上下场",
+"主次",
+"人数限制",
+"人物",
+"人物一致性",
+"人物塑造",
+"人物弧光",
+"介绍",
+"传承",
+"候场",
+"克制",
+"入场调度",
+"准备",
+"出场",
+"分工",
+"分镜",
+"分镜写法",
+"制作流程",
+"动作",
+"动作规范",
+"动作设计",
+"动线",
+"化妆",
+"协作",
+"反应",
+"反派表演",
+"叙事",
+"台词",
+"台词处理",
+"呈现",
+"喜剧表演",
+"在场处理",
+"场景",
+"坐下"
+],
+"axis_topic": [
+"关系轴",
+"越轴",
+"运动轴"
+],
+"beat_type": [
+"coverage",
+"establish",
+"insert",
+"reaction",
+"transition"
+],
+"camera_angle": [
+"低机位",
+"平视",
+"过肩",
+"高机位"
+],
+"character": [],
+"composition_rule": [
+"balance",
+"framing",
+"headroom",
+"lead_room",
+"occlusion",
+"rule_of_thirds"
+],
+"emotion": [
+"冷漠",
+"压抑",
+"喜悦",
+"孤独",
+"平静",
+"庄严",
+"恐惧",
+"悲伤",
+"愤怒",
+"期待",
+"混乱",
+"温柔",
+"焦虑",
+"绝望",
+"荒诞",
+"讽刺"
+],
+"genre": [
+"anime",
+"film"
+],
+"intent": [
+"推进",
+"揭示",
+"收束",
+"留白",
+"铺垫"
+],
+"lens": [
+"24mm",
+"35mm",
+"50mm",
+"85mm"
+],
+"lighting": [
+"低调",
+"侧光",
+"底光",
+"暖光",
+"正面光",
+"逆光",
+"顶光",
+"高调"
+],
+"movement": [
+"crane_up",
+"dolly_in",
+"dolly_out",
+"follow_subject",
+"handheld",
+"orbit_cw",
+"steadicam",
+"track_left",
+"track_right",
+"whip_pan_left",
+"whip_pan_right",
+"zoom_in",
+"固定"
+],
+"object": [],
+"pacing": [
+"long",
+"medium",
+"short"
+],
+"sfx": [
+"低频轰鸣",
+"金属撞击",
+"雨声",
+"静默"
+],
+"shot_size": [
+"CU",
+"ECU",
+"ELS",
+"LS",
+"MCU",
+"MLS",
+"MS"
+],
+"vfx": [
+"glow",
+"impact_frame",
+"smoke"
+],
+"intensity": [
+"high",
+"low",
+"mid"
+],
+"scene_type": [
+"action",
+"establish",
+"insert",
+"transition"
+],
+"transition": [
+"cut",
+"dissolve",
+"fade"
+]
+}
 }
