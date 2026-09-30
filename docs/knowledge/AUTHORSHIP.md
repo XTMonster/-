@@ -36,6 +36,27 @@ production 67/113、composition 169/196、performance 284/308。
 
 ## 三、执行顺序（每步都要能独立验收）
 
+### 3.0 补齐三域的具体条目（已按管线自己的门验证过）
+
+并行 lane 已把 `sources.yaml` 的自撰条目全部删掉，并补了 38 条他人来源
+（36 条 Gutenberg ＋ 2 条 MIT OCW `CC-BY-NC-SA`），覆盖 8 个域——
+**但 `anime` 一条没补、`axis_theory` 只补了 1 条**，而这两个域正是删后跌破 K3 的。
+按 Gutenberg 官方目录（`cache/epub/feeds/pg_catalog.csv`，对镜像开放；检索页
+`/ebooks/search` 被它自己的 robots 禁止，所以不用）筛出并逐本验证：
+
+| 域 | 来源 | 体量 | 许可 |
+|---|---|---|---|
+| `axis_theory` | `https://www.gutenberg.org/cache/epub/53117/pg53117.txt`（*Motion Picture Directing: The Facts and Theories of the Newest Art*） | 229,677 字符 | PublicDomain |
+| `axis_theory` | `https://www.gutenberg.org/cache/epub/13029/pg13029.txt`（*The Art of the Moving Picture*，Vachel Lindsay） | 365,279 字符 | PublicDomain |
+| `anime` | **提高既有来源 `pg73455`（*Animated cartoons*）的 `chunk_budget`：20 → 40** | 1914 年那本，现有 56 张卡 | PublicDomain |
+
+说明：Gutenberg 目录里**只有一本**真正讲动画的技术书（`Animated cartoons`，已收录；
+其余命中"animat/cartoon"的要么是素描册、要么是科幻小说）。所以 `anime` 域靠
+**把这本书的收录量提上去**（≥60 卡即可过 K3），而不是去找不存在的第二本。
+更现代的动画理论若要补，只能走 arXiv/开放期刊，而 arXiv 的 PDF 抓取在本机
+**时通时断**（同一条 URL 单发 7.1 秒成功、连发时大量 `WinError 10060`），
+所以它只能作为"有则加、无则如实上报"的补充通道。
+
 1. **补现代他人来源**（进行中）：arXiv 官方 API ＋ MIT OCW 讲义 PDF，按九域配额
    （每域 ≥3 条）；边界条件：三域至少要补到 `anime ≥60`、`axis_theory ≥60`、
    `editing ≥60`（含删后仍满足占比 ≥5%）。
