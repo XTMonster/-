@@ -46,12 +46,12 @@ python tools/check_holdout.py fixtures/knowledge_holdout.jsonl `
 | 指标 | 线 | 当前 | 判定 | 说明 |
 |---|---|---|---|---|
 | Q0 构建恒等式与拒收率 | rejects ≤5% 且 processed=total | 满足 | **pass** | 683 条边，rejects 0 |
-| Q1 top-1 命中 | ≥0.70 | **0.2313** | fail | 独立 oracle 口径，上限受种子可达性压制约 0.38；**索引派生查询下已达 0.7555**（`ranking_quality.py`） |
-| Q2 top-3 命中 | ≥0.90 | **0.3283** | fail | 同上；索引派生查询下 **0.9488** |
+| Q1 top-1 命中 | ≥0.70 | **0.2483** | fail | 独立 oracle 口径，上限受种子可达性压制约 0.38；**索引派生查询下已达 0.7555**（`ranking_quality.py`） |
+| Q2 top-3 命中 | ≥0.90 | **0.3582** | fail | 同上；索引派生查询下 **0.9488** |
 | Q3 负样本误命中 | ≤0.10 | 0.0194 | **pass** | — |
-| Q4 required 边 top-3 检出 | = 1.0 | **0.8120** | fail | 分母只含**能在索引里解析**的 required 边（1846 条）；`required_unresolved` 3197 另计 |
+| Q4 required 边 top-3 检出 | = 1.0 | **0.8243** | fail | 分母只含**能在索引里解析**的 required 边（1846 条）；`required_unresolved` 3197 另计 |
 | Q6a 契约往返 | = 1.0 | 1.0 | **pass** | — |
-| Q6b 成员完整率 | = 1.0 | **0.8602** | fail | 未解析的边不进分母，故与 Q4 同源 |
+| Q6b 成员完整率 | = 1.0 | **0.8666** | fail | 未解析的边不进分母，故与 Q4 同源 |
 | Q7 禁忌拦截 | = 1.0（冲突查询 ≥60） | 1.0（**616**） | **pass** | 排序重标定后分母从 487 涨到 616（安全层覆盖更广），见 FORBID_COVERAGE.md |
 | Q5 运镜命中 | ≥0.80 | not_measured | — | 需真实计划镜头（人评） |
 | E1 经验引用相关性 | ≥0.70 | not_measured | — | 需人评 |

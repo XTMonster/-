@@ -111,9 +111,12 @@ def test_retrieval_actually_returns_a_forbid_carrying_edge():
     edges = [HyperEdge.from_dict(row) for row in _read_jsonl(EDGES_FILE)]
     graph = Hypergraph(list(nodes.values()), edges)
 
-    zh = {"emotion": "情绪", "movement": "运镜", "shot_size": "景别", "lens": "镜头",
-          "pacing": "节奏", "vfx": "特效", "sfx": "音效", "lighting": "光线",
-          "camera_angle": "机位", "composition_rule": "构图"}
+    # **单一真源**：键表从 schema 渲染，不在这里再抄一份。抄的那份曾经少了
+    # `intensity` 等 kind，于是测试自己构造出"说不出强度"的**弱查询**，再用它
+    # 断言"这条边召不回自己"——那是测试的缺陷，不是索引的缺陷。
+    from block_director.knowledge import hypergraph as hg
+
+    zh = {kind: key for key, kind in hg.QUERY_KEYS.items()}
     checked = 0
     missed = []
     for edge in edges:
@@ -122,7 +125,9 @@ def test_retrieval_actually_returns_a_forbid_carrying_edge():
         # 用这条边**自己的**成员拼一个 SceneContract 串：它讲的东西查询里全有，
         # 召回率低就说明"闭合输出"在检索侧被丢了，而不是查询没写对。
         parts = []
-        for member in list(edge.allows) + list(edge.forbids):
+        # allow／qualifier／forbid **都要**写进查询：门⑨ 的口径就是"must 里每个
+        # 可查询槽位都能在 q 里逐字找到"，漏掉 qualifier 会让近邻边无法区分。
+        for member in list(edge.allows) + list(edge.qualifiers) + list(edge.forbids):
             key = zh.get(member.kind)
             name = nodes[member.node_id].name or member.node_id
             item = f"{key}={name}" if key else None
