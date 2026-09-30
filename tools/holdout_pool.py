@@ -59,10 +59,15 @@ DEFAULT_VOCAB = "fixtures/knowledge_holdout.vocab.json"
 
 #: 一条 `q` 最多挂几张来源卡（同一张卡的知识、同一条查询 = 同一条期望，
 #: 多挂几张卡只是让门⑥ 的来源覆盖更广，不改变 Q2 的判据）。
-#: 一条边最多挂几张来源卡。5 是量出来的：门④ 要求每类 ≥30 个 `(卡片, 查询)` 对、
-#: ≥10 张不同卡，而 `AXIS_RULE` 只有 7 条可区分边 / 33 张卡 —— 卡在 3 时只能凑出
-#: 24 对（差 6），放到 5 就能过；同时它也把门③ 的 `<3 支撑` 取值从 46 个压到 1 个。
-MAX_CARDS_PER_EDGE = 5
+#: 一条边挂几张来源卡。**0 = 不设上限**（默认）。
+#:
+#: 门⑥ 要求「每张入库卡至少派生 1 条」（`from_card` 去重后 ⊇ 卡片集合），
+#: 所以"每条边 × 它的每一张来源卡 = 一条期望"**本来就是协议要的形态**，
+#: 不是凑数：每条边在不同卡上表达的是那张卡的知识。实测 915 条边覆盖
+#: **1937/2067 张卡**，而截断到 5 张时门⑥ 缺 809 张 —— 少掉的那 679 张
+#: 全是"卡在边上、但被截断/被词表/被组大小挡掉"的。
+#: 截断只在**自检**时有用（`--max-cards N`），出正式产物时不该截断。
+MAX_CARDS_PER_EDGE = 0
 
 #: 门③ 要求每个词表取值至少出现在 `min_support` 个不同的 `(卡片, 查询)` 对里。
 #: 主通道按 `MAX_CARDS_PER_EDGE` 截断来源卡，冷门取值会因此掉到 3 以下；
@@ -213,7 +218,7 @@ def mechanical(graph, universe: Sequence[str], *,
                     holders[(member.kind, value_of(member.node_id))].append((slot, index))
         for index, edge in enumerate(group):
             for card_index, card in enumerate(live_sources[index]):
-                if card_index >= max_cards:
+                if max_cards and card_index >= max_cards:
                     break
                 entries.append(_row(edge, card, specs, index, group_ids, by_type,
                                     _in_vocab))
@@ -231,7 +236,9 @@ def mechanical(graph, universe: Sequence[str], *,
                 continue
             for slot, index in pairs:
                 specs, indices, live_sources = group_rows[slot]
-                for card in live_sources[index][max_cards:]:
+                # 不截断时所有来源卡都已经在主通道里发过条目，补覆盖轮无处可加。
+                tail = live_sources[index][max_cards:] if max_cards else []
+                for card in tail:
                     if len(support[(kind, value)]) >= MIN_VALUE_SUPPORT:
                         break
                     text = _q_from_spec(specs[index])
