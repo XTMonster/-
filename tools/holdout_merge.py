@@ -33,7 +33,15 @@ from tools.check_holdout import EntryError, query_shortfall, validate_entry  # n
 from tools.holdout_fill import unknown_values_in  # noqa: E402
 
 DEFAULT_OUT = ROOT / "fixtures" / "knowledge_holdout.jsonl"
-DEFAULT_VOCAB = ROOT / "knowledge" / "hypergraph.vocab.json"
+#: **冻结词表只有一份**：`fixtures/knowledge_holdout.vocab.json`（由
+#: `tools/knowledge/holdout_vocab.py` 按"支撑 ≥3 对"的不动点生成）。
+#: 这里原先指向 `knowledge/hypergraph.vocab.json` —— 那是 `vocabulary.py` 按
+#: **频次前 12** 裁出来的另一份，两份内容不同。后果实测：用池通道产出的 2734 条
+#: 分片走合并，被这份旧词表判掉 **1082 条** `unknown_values`（`action=上下场` 之类
+#: 明明在冻结词表里），合并只剩 1647 条 —— 而门③ 用的却是冻结词表，于是
+#: **同一个产物在合并口与门口得到两个结论**。合并是 oracle 的唯一入口，它必须
+#: 与门用同一份词表。
+DEFAULT_VOCAB = ROOT / "fixtures" / "knowledge_holdout.vocab.json"
 
 
 def expand(patterns: Sequence[str]) -> List[pathlib.Path]:
@@ -72,7 +80,21 @@ def dedupe_key(row: Dict) -> Tuple[str, str, Tuple[str, ...]]:
 
 
 def load_vocab(path: pathlib.Path | str = DEFAULT_VOCAB) -> Dict[str, Sequence[str]]:
-    return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))["holdout_vocab"]
+    """读冻结词表。**两种形状都收**，因为仓库里历史上存在过两份：
+
+    * `fixtures/knowledge_holdout.vocab.json` —— `{"_fingerprint", "kinds"}`，
+      冻结产物（`tools/knowledge/holdout_vocab.py`），门③ 用的就是它；
+    * `knowledge/hypergraph.vocab.json` —— `{"nodes", "vocab", "holdout_vocab", …}`，
+      `vocabulary.py` 的中间产物（按"频次前 12"裁）。
+
+    原先只认后者，于是默认路径一改就 `KeyError: 'holdout_vocab'`；两份词表内容
+    又确实不同（前者是"支撑 ≥3 对"的不动点），所以**形状兼容 + 默认指向冻结那份**
+    缺一不可。
+    """
+    payload = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    if "kinds" in payload:
+        return payload["kinds"]
+    return payload["holdout_vocab"]
 
 
 def merge(rows: Sequence[Dict],
