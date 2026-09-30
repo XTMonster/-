@@ -337,6 +337,34 @@ def test_gate11_passes_when_the_index_carries_every_spec(tmp_path):
     assert data["gate_10_index_resolvable"]["index_edges"] > 0
 
 
+def test_gate11_reports_the_subset_relation_as_a_diagnostic(tmp_path):
+    """§2.3 前置① 的字面判据是"成员集完全相等"，而 §2.3c 又写死"标注方不可见索引"。
+
+    两条放在一起在构造上不可能全过（`AXIS_RULE` 的可选 `axis_topic` 就是结构性一例）。
+    门⑪ 的 status 仍按规格字面（完全相等），但必须同时把"标注 ⊆ 索引"这一层
+    作为**诊断量**报出来——否则会把结构性冲突误读成标注噪声。
+    """
+    wide = SPEC_MS50 + ",composition_rule=rule_of_thirds"   # 索引里的那条边
+    narrow = entry(1, must=[SPEC_MS50], top1=[SPEC_MS50],
+                   q="景别=MS；镜头=50mm",
+                   review={"reviewed_by": "human", "verdict": "accepted"})
+    index_record = entry(99, must=[wide], top1=[wide], q="景别=MS；镜头=50mm")
+    nodes, edges = write_index(tmp_path, [index_record])
+    path = write(tmp_path, [narrow], "subset.jsonl")
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = check_holdout.main([str(path), "--pilot", "--json",
+                                 "--nodes", str(nodes), "--edges", str(edges)])
+    assert rc == 1
+    gate = json.loads(buf.getvalue())["gate_10_index_resolvable"]
+    assert gate["status"] == "fail"                 # 规格字面：完全相等 → 仍然红
+    assert gate["unresolved"] == 2                  # must + top1 都是"少一个成员"
+    assert gate["strict_relation_matches"] == 0
+    assert gate["subset_relation_matches"] == 2     # 但"只多不少"这一层是满足的
+    assert gate["subset_relation_ratio"] == 1.0
+    assert "规格级裁决" in gate["note"]
+
+
 # ---------------------------------------------------------------- 门④ 边类覆盖
 
 def test_edge_type_coverage_gate_flags_short_types(tmp_path):

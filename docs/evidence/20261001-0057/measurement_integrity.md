@@ -102,3 +102,30 @@ python -m pytest -q
 
 上述未达标项要在 oracle 重标（`holdout/v10`）与索引重建收口后复测；
 **人审与 Q5/Q7/E3 的最终裁定必须由人给出**。
+
+## 7. 追加：门⑪ 的两层关系（完全相等 vs 只多不少）
+
+门⑪ 的 status 按 §2.3 前置① 的**字面**判据（`norm_key` **完全相等**）判红，
+但同一份实测还必须把第二层事实摆出来，否则会把**结构性冲突**误读成标注噪声：
+
+| 关系 | 命中 / 全部 spec | 比率 |
+|---|---|---|
+| **完全相等**（规格字面；`spec_to_norm_key`） | 3667 / 13713 | **0.2674** |
+| **标注成员 ⊆ 索引边**（`forbid` 仍要求完全相等） | 4273 / 13713 | **0.3116** |
+
+两层都远低于 100%，所以问题不是"标注噪声大"：
+
+* 表面冲突：§2.3 前置① 要求成员集**逐字相同**，而协议 §5.2（`knowledge_holdout.protocol.md:148`）
+  写死**标注方不可见索引**——标注者必须在看不见索引的前提下猜中抽取器的成员集；
+  抽取（DeepSeek）与标注（GLM/qwen）是两个族，实测吻合率 **1323/5043 = 26.2%**。
+* 结构性一例：`AXIS_RULE` 的必填槽位是 `pair`＋`axis_side`，v1.5 给同类边加了**可选**
+  `axis_topic`，而冻结的标注提示（`tools/kb_fetch/holdout_gen.py` 规则 10）明确要求
+  `must` 里只写 `pair`＋`axis_side` → 这一类边**永远**少一个成员，严格相等判据下
+  263 条只有 16 条能命中。
+
+因此 `gate_10_index_resolvable` 额外报出 `strict_relation_matches` /
+`subset_relation_matches` / `subset_relation_ratio`（**诊断量，不参与 status**）与
+一句 `note`，把"要不要把判据放宽成子集关系"这件事显式交回**规格裁决**。
+同类结论与更细的逐类型上限见并行 lane 的
+`docs/evidence/20261001-0100/p14_acceptance_ceiling.md`（该文件同时指出 Q3 的
+`never` 侧有同款静默缩分母问题，本 lane 的门⑪ 已把 `never` 一并记账）。

@@ -503,11 +503,14 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
     标注从 required 分母里剔掉——分母变小、比率变好看，缺陷反而看不见。
     """
     from tools.holdout_score import spec_to_norm_key
+    from tools.holdout_score import spec_matches_by_subset
 
     if not entries:
         return FAIL, {"entries": 0, "specs": 0, "unresolved": 0,
                       "reason": "空集：没有条目可判"}
     per_field = {"must": [0, 0], "top1": [0, 0], "never": [0, 0]}
+    subset_ok = 0          # 满足「标注 ⊆ 索引」的 spec 数（**包含**已满足严格相等的）
+    strict_ok = 0          # 满足「成员集完全相等」的 spec 数
     unresolved: List[dict] = []
     specs = 0
     for record in entries:
@@ -515,7 +518,16 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
             for spec in record.get(field) or []:
                 specs += 1
                 per_field[field][1] += 1
-                if spec_to_norm_key(str(spec), graph) is not None:
+                text = str(spec)
+                strict = spec_to_norm_key(text, graph) is not None
+                # 诊断量（不参与 status）：标注成员"只多不少"地落在某条索引边上。
+                # 规格字面要求的是**完全相等**，而标注方不可见索引——两条一起
+                # 在构造上把某一类边（如带可选 `axis_topic` 的 AXIS_RULE）判死。
+                # 这是规格级冲突，门这里只如实把两层事实都摆出来。
+                wider = strict or spec_matches_by_subset(text, graph)
+                strict_ok += 1 if strict else 0
+                subset_ok += 1 if wider else 0
+                if strict:
                     per_field[field][0] += 1
                     continue
                 if len(unresolved) < 8:
@@ -530,11 +542,22 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
               "unresolved_per_field": per_field_unresolved,
               "unresolved": n_unresolved,
               "unresolved_ratio": round(n_unresolved / specs, 4) if specs else 0.0,
+              # 诊断量：把"标注成员 ⊆ 索引边"单独算一遍。它**不改判据**，
+              # 只把"完全相等（规格字面）vs 只多不少（构造上可达）"这两层摆开，
+              # 供规格裁决；见 holdout_score.spec_matches_by_subset 的说明。
+              "strict_relation_matches": strict_ok,
+              "subset_relation_matches": subset_ok,
+              "subset_relation_ratio": (round(subset_ok / specs, 4)
+                                        if specs else 0.0),
               "index_edges": len(graph.edges),
               "examples": unresolved,
               "note": ("§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；"
                        "never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。"
-                       f" 逐字段未命中：{per_field_unresolved}")}
+                       f" 逐字段未命中：{per_field_unresolved}"
+                       f"；诊断：另有 {subset_ok}/{specs} 条满足"
+                       f"「标注成员 ⊆ 索引边（forbid 完全相等）」——这一层与规格字面的"
+                       f"「成员集完全相等」不同，标注方不可见索引时后者在构造上不可能"
+                       f"全过（AXIS_RULE 的可选 axis_topic 就是结构性一例），属规格级裁决")}
     return (FAIL if n_unresolved else PASS), detail
 
 

@@ -169,6 +169,52 @@ def entry_key(item, graph: Hypergraph) -> Optional[Tuple[str, frozenset]]:
         return None
 
 
+def spec_matches_by_subset(spec: str, graph: Hypergraph) -> bool:
+    """诊断量：标注成员**只多不少**地落在某条索引边上（`forbid` 仍要求完全相等）。
+
+    为什么要有这一条（而不是让它替代 `spec_to_norm_key`）：规格 §2.3 前置① 的字面
+    判据是 `norm_key(该边) == norm_key(标注边)`（**完整成员集相等**），而 §2.3c 的
+    标注通道第 2 条又写死"**标注方不可见**：只能拿到语料、schema、本协议，不得拿
+    index"。两条放在一起，等于要求标注者在**看不见索引**的前提下把成员集猜到与
+    抽取器逐字相同——实测吻合率 **1323/5043 = 26.2%**，其中 `AXIS_RULE` 更是结构性
+    不可达：它的必填槽位只有 `pair`＋`axis_side`，而 v1.5 给同类型边加了**可选**
+    `axis_topic`，冻结的标注提示又明确要求 `must` 里只写 `pair`＋`axis_side`
+    （`tools/kb_fetch/holdout_gen.py` 的规则 10），于是那一类边**永远**少一个成员。
+
+    这是**规格级**的冲突（改判据＝改验收口径），不是实现能自行选的。所以这里只把
+    "标注 ⊆ 索引"这一层单独算出来作**诊断**，门⑪ 的判据仍按规格字面（完全相等），
+    免得把"结构性冲突"误读成"标注噪声"。详见
+    `docs/evidence/20261001-0100/p14_acceptance_ceiling.md` 与
+    `docs/evidence/20261001-0057/measurement_integrity.md`。
+    """
+    try:
+        etype, plain, forbid = parse_spec(spec)
+    except EntryError:
+        return False
+    want_plain = set()
+    for kind, value in plain.items():
+        node_id = _node_id_for(graph, kind, value)
+        if not node_id:
+            return False
+        want_plain.add((kind, node_id))
+    want_forbid = set()
+    for kind, value in forbid.items():
+        node_id = _node_id_for(graph, kind, value)
+        if not node_id:
+            return False
+        want_forbid.add((kind, node_id))
+    for edge in graph.edges:
+        if str(edge.type) != etype:
+            continue
+        edge_plain = {(m.kind, m.node_id) for m in edge.members
+                      if m.role != "forbid"}
+        edge_forbid = {(m.kind, m.node_id) for m in edge.members
+                       if m.role == "forbid"}
+        if want_forbid == edge_forbid and want_plain <= edge_plain:
+            return True
+    return False
+
+
 def _edge_values(edge, kind: str) -> set:
     return {str(member.node_id).split(":", 1)[-1] for member in edge.members
             if str(member.kind) == kind}
