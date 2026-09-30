@@ -30,11 +30,12 @@ except ImportError:  # pragma: no cover
     from tools.kb_fetch import common, llm  # type: ignore
 
 from block_director.knowledge import hypergraph as hg
+from tools.check_holdout import Q_KEY_TO_KIND, query_key_text
 
 HOLDOUT = common.ROOT / "fixtures" / "knowledge_holdout.jsonl"
 CARDS_JSON = common.ROOT / "fixtures" / "knowledge_holdout.cards.json"
 MANIFEST = common.WORK / "holdout.manifest.json"
-PROMPT_VERSION = "holdout/v11"
+PROMPT_VERSION = "holdout/v12"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
@@ -61,7 +62,11 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    `景别=MS` 与 `镜头=50mm`；`AXIS_RULE:…,axis_topic=越轴` → `q` 写 `轴线=越轴`。
    **实测**：查询覆盖到目标边 ≥2 个成员时 Q1=0.727／Q2=0.917（都过验收线），只覆盖 1 个时
    0.508／0.754，覆盖 0 个则根本召不回。
-1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段/意图/转场。
+1. `q` 的键**只能取协议 §2.1 的这 __QKEY_COUNT__ 个**：__QKEY_LIST__。
+   **一个都不能多、一个都不能少**——`tools/check_holdout.py::parse_q` 对冻结键集之外的键
+   **直接抛错**，整条作废。`intensity`／`headroom_policy`／`avg_shot_len` 虽然也是必填槽位、
+   索引里也有同名 node，但**协议里没有给它们查询键**，所以 `q` 里不写它们；边里写了哪个
+   可查询槽位，`q` 里就要有对应键与逐字相同的取值。
 **`type` 只允许这 13 个字符串**：`EMOTION_PACK`、`SHOT_PATTERN`、`AXIS_RULE`、`TROPE`、
 `EDIT_RHYTHM`、`LIGHT_PACK`、`ACTION_BEAT`、`PERFORMANCE_PACK`、`INTENT_PACK`、
 `IMPACT_PACK`、`STAGING_PACK`、`SOUND_PACK`、`TRANSITION_PACK`。写别的（`ACTION`／
@@ -141,9 +146,18 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
 ]}
 ```
 注意示例里：`q` 用的是**中文键**；`must` 里写的是**真实的边类型名**
-（EMOTION_PACK／SHOT_PATTERN／AXIS_RULE／TROPE／EDIT_RHYTHM／LIGHT_PACK），
+（__EDGE_TYPES__），
 不是字面量 `TYPE`；`forbid_movement` 的取值与 `q` 的 `运镜=` **一模一样**。
 """
+
+#: 提示里的**键集与类型清单一律从 schema 渲染**，不得手抄：手抄的那份曾经多出
+#: `强度`／`头留白`／`平均镜长` 三个协议里并不存在的查询键，而
+#: `tools/check_holdout.py::parse_q` 对冻结键集之外的键直接抛错——**每一条**用到它们
+#: 的期望都会被整条拒收。渲染之后，"契约变、提示跟着变"由机器保证。
+SYSTEM_PROMPT = (SYSTEM_PROMPT
+                 .replace("__QKEY_COUNT__", str(len(Q_KEY_TO_KIND)))
+                 .replace("__QKEY_LIST__", query_key_text())
+                 .replace("__EDGE_TYPES__", "／".join(hg.EDGE_TYPES)))
 
 
 def cards_fingerprint(cards: Sequence[Dict]) -> str:

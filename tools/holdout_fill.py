@@ -36,6 +36,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.check_holdout import (  # noqa: E402
+    EDGE_TYPES,
     EntryError,
     QUERYABLE_KINDS,
     Q_KEY_TO_KIND,
@@ -48,7 +49,10 @@ from tools.check_holdout import (  # noqa: E402
     must_values_from,
     parse_q,
     parse_spec,
+    anchor_slot_templates,
+    query_key_text,
     query_shortfall,
+    queryable_slot_hint,
     spec_key,
     support_from,
     validate_entry as gate_validate_entry,
@@ -69,50 +73,59 @@ REPORT = common.WORK / "holdout_report.json"
 _ANNOTATOR: Dict[str, str] = {}
 
 # 缺口补写用的系统提示（不放进 holdout_gen，避免动它的冻结 prompt 版本）。
-GAP_PROMPT_VERSION = "holdout-gap/v7"
+#:
+#: **本提示里的 schema 文案一律渲染，不得手抄**：键集来自
+#: `check_holdout.query_key_text()`、必填槽位来自
+#: `check_holdout.required_slot_templates()`、kind→键对照来自
+#: `check_holdout.queryable_slot_hint()`——三者又都从 `hypergraph` 的真源派生。
+#: 此前这里抄了第二份"六类 ＋ 16 键 ＋ AXIS_RULE 只写 pair/axis_side"的旧表，
+#: 与基础提示（`holdout_gen.SYSTEM_PROMPT`）**互相矛盾**：两段拼在一起发给模型时，
+#: 它照旧写出挂不上种子的边，门⑨ 因此恒红（实测 TRANSITION_PACK 158/158 不可达、
+#: AXIS_RULE 一个可锚槽位都没有）。改 v8 = 文案跟着 schema 走。
+GAP_PROMPT_VERSION = "holdout-gap/v8"
 #: 补跑轮的解码参数：**必须让重试产生不同样本**。
 #: 温度 0 ＋ 同一个 prompt ＝ 逐字相同的输出 ＝ 同一批拒收永远重放（实测：连续 4 轮
 #: `added=0`、覆盖卡在 1039/1075）。这里给补跑轮一点温度、并按轮次给不同 seed——
 #: 仍然可复现（同一轮 → 同 seed → 同输出），但换一轮就是一次新的尝试。
 GAP_TEMPERATURE = 0.2
 GAP_SEED_BASE = 20260930
+_GAP_TYPE_LIST = "／".join(EDGE_TYPES)
+_GAP_SLOT_TEMPLATES = "\n".join("   * `%s`" % tpl for tpl in anchor_slot_templates())
 GAP_PROMPT = (
     "你是分镜知识库的独立标注员。下面给出一份**缺口清单**与若干张知识卡。"
     "请**只**针对缺口写检索期望，输出 JSON：{\"entries\":[...]}，每条格式与之前一致："
     "{\"from_card\":\"<卡片 id>\",\"q\":\"键=值；键=值\",\"must\":[...],\"top1\":[...],\"never\":[...]}。\n"
     "硬规则（违反即被机器拒收）：\n"
-    "1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段。\n"
-    "2. `must` 1–3 条，边类型取六类之一，**必填槽位必须写全**："
-    "EMOTION_PACK: emotion＋intensity；SHOT_PATTERN: shot_size＋lens＋headroom_policy；"
-    "AXIS_RULE: pair＋axis_side；TROPE: genre＋emotion；EDIT_RHYTHM: pacing＋avg_shot_len；"
-    "LIGHT_PACK: lighting＋intensity。\n"
-    "3. `top1` 必须与 `must` 里某条**一字不差**；`never` 与 `must` 不相交。\n"
-    "4. `q` 里出现的取值，只要 `must` 里有同 kind 的槽位，就必须**取值完全相同**。\n"
+    "1. `q` 的键**只能取协议 §2.1 的这 %d 个**：%s。**不要自造键**——"
+    "实测 `轴线侧`／`轴侧`／`景深`／`标签`／`关键词`／`结构` 这类写法会被整条拒收"
+    "（`轴线侧` 一个错就让整轮 36 条全废）。\n"
+    % (len(Q_KEY_TO_KIND), query_key_text()) +
+    "2. `must` 1–3 条，边类型只能取下面这 %d 个，**每个类型的必填槽位都必须写全**"
+    "（`<…>` 换成词表取值，逗号分隔，一项都不能少）：\n%s\n"
+    % (len(EDGE_TYPES), _GAP_SLOT_TEMPLATES) +
+    "3. **`q` 必须真能把 `must` 那条边查出来**：`must` 里**每个能写进 `q` 的槽位**"
+    "都要在 `q` 里出现，取值逐字相同；`q` 里同一个键只能出现一次。能写进 `q` 的槽位与"
+    "对应的中文键是：%s。**没在上面这串里的槽位**（如 `pair`／`axis_side`／"
+    "`headroom_policy`／`avg_shot_len`）在 `q` 里**没有**对应键，写在 `must` 里就够了。\n"
+    % queryable_slot_hint() +
+    "4. `top1` 必须与 `must` 里某条**一字不差**；`never` 与 `must` 不相交。\n"
     "5. 禁忌槽位 `forbid_<kind>=取值` **只允许出现在 EMOTION_PACK** 上，"
     "且该 kind 的同名取值必须同时出现在 `q` 里（这样才算一次禁忌冲突）。\n"
     "6. `from_card` 必须是下面列出的卡片 id 之一，且**优先用没被用过的卡**。\n"
-    "7. **只有这 13 个类型名**（EMOTION_PACK／SHOT_PATTERN／AXIS_RULE／TROPE／EDIT_RHYTHM／"
-    "LIGHT_PACK／ACTION_BEAT／PERFORMANCE_PACK／INTENT_PACK／IMPACT_PACK／STAGING_PACK／"
-    "SOUND_PACK／TRANSITION_PACK），不要发明 COMPOSITION／SHAKE 之类的新类型；构图/机位/"
+    "7. **只有这 %d 个类型名**（%s），不要发明 COMPOSITION／SHAKE 之类的新类型；构图/机位/"
     "动作/打击感/声画知识优先选对应的新类型（`STAGING_PACK`／`PERFORMANCE_PACK`／"
     "`ACTION_BEAT`／`IMPACT_PACK`／`SOUND_PACK`），实在放不进去再作为**额外槽位**挂在"
     "最接近的那一类上（必填槽位照旧写全）。卡片属于哪个 domain 与边类型无关。\n"
-    "8. **`q` 的键只能取协议 §2.1 的这 16 个**：情绪/动作/运镜/景别/镜头/节奏/特效/"
-    "音效/机位/光线/构图/轴线/题材/桥段/对白/意图。**不要自造键**——实测 `轴线侧`／`轴侧`／`景深`／`标签`／"
-    "`关键词`／`结构` 这类写法会被整条拒收（`轴线侧` 一个错就让整轮 36 条全废）。"
-    "`axis_side`（左/右/中性）**没有**对应的 `q` 键：把它写在 `must` 里就够了，"
-    "`q` 里只写 `轴线=<词表里的轴线取值>`。\n"
-    "9. **取值写法必须用词表里的那一串字符**（多数 kind 的规范写法是英文代号）："
+    % (len(EDGE_TYPES), _GAP_TYPE_LIST) +
+    "8. **取值写法必须用词表里的那一串字符**（多数 kind 的规范写法是英文代号）："
     "`节奏=short`／`运镜=dolly_in`／`景别=MS`／`镜头=50mm`／`构图=rule_of_thirds`／"
     "`光线=冷光`；只有本来就是中文的 kind 才写中文（`情绪=荒诞`／`机位=低机位`／"
     "`轴线=越轴`）。`q` 与 `must` 里同 kind 的取值**必须一字不差**——"
     "实测最常见的拒收就是 `q` 写 `节奏=短` 而 `must` 写 `pacing=short`。\n"
-    "10. **轴线类卡片（AXIS_RULE）**：`pair` 与 `axis_side` **都写在 `must` 里**"
-    "（`pair=any_two`、`axis_side=left|right|neutral`），`q` 里只写 `轴线=` ＋ "
-    "词表里的轴线取值（`中性机位`/`关系轴`/`视线轴`/`越轴`/`运动轴`）。"
-    "例：卡讲 180° 规则 → `q=\"轴线=越轴\"`，"
-    "`must=[\"AXIS_RULE:pair=any_two,axis_side=left\"]`。"
-    "**不要**写 `轴线侧=`／`轴线方式=` 这类自造键。\n"
+    "9. **AXIS_RULE 必须带一个可锚的 `axis_topic`**（例：卡讲 180° 规则 → "
+    "`must=[\"AXIS_RULE:pair=any_two,axis_side=left,axis_topic=越轴\"]` 且 "
+    "`q=\"轴线=越轴\"`）。只写 `pair`／`axis_side` 的边**一个种子都挂不上**，"
+    "会整条不可达。**不要**写 `轴线侧=`／`轴线方式=` 这类自造键。\n"
 )
 
 
@@ -284,9 +297,11 @@ def build_gap_prompt(gaps: Dict, cards: Sequence[Dict],
                      % (card_id, card["domain"], card["title"],
                         str(card["content"])[:400]))
     lines.append("")
-    lines.append("【必填槽位表】")
-    for etype, slots in sorted(REQUIRED_SLOTS.items()):
-        lines.append("- %s: %s" % (etype, " ＋ ".join(slots)))
+    # 这张表也用**可锚模板**：必填槽位里全是查询常量的边（AXIS_RULE）必须一并给出
+    # 可锚的选填槽位，否则按表格写出来的边照样一个种子都挂不上。
+    lines.append("【必填槽位表（带 `axis_topic` 这类可锚选填槽位的已一并列出）】")
+    for template in sorted(anchor_slot_templates()):
+        lines.append("- %s" % template)
     lines.append("")
     lines.append("【取值词表（尽量用规范名）】")
     for kind, values in sorted(vocab.items()):
@@ -447,7 +462,7 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
             continue
         prompt = build_gap_prompt(gaps, cards, vocab, pick, entries)
         try:
-            # 补跑轮必须带上**完整的**基础 prompt（六类模板、取值一致性、自检清单），
+            # 补跑轮必须带上**完整的**基础 prompt（全部类型模板、取值一致性、自检清单），
             # 否则只给"缺口清单+卡"会让模型写 `标签=`/`关键词=`/`结构=` 这种不在
             # 冻结键集里的键——实测补跑轮连续两轮 added=0。
             reply = client.chat_json(holdout_gen.SYSTEM_PROMPT + "\n\n" + GAP_PROMPT, prompt,

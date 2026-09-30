@@ -36,6 +36,7 @@ if str(ROOT) not in sys.path:
 
 from tools.holdout_review import needs_human  # noqa: E402
 from tools.kb_fetch import llm  # noqa: E402
+from tools.check_holdout import EDGE_TYPES, Q_KEY_TO_KIND, query_key_text  # noqa: E402
 
 PANEL_TAG = "llm-panel"
 DEFAULT_PANEL = ("deepseek-chat", "glm-4.7")
@@ -45,16 +46,14 @@ SYSTEM = """你是分镜知识库 held-out 的**复核员**。给你一张知识
 {"verdict":"accepted|rejected|amended","reason":"不超过 40 字","fix":"若 amended 给出改法，否则空串"}
 
 判据（逐条看）：
-1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段/对白/意图；
+1. `q` 的键**只能取协议 §2.1 的这 %d 个**：%s；
    取值必须是词表里的规范写法，`q` 与 `must` 里同 kind 的取值**逐字相同**。
-2. `must` 的边类型只能是这 13 个之一（EMOTION_PACK/SHOT_PATTERN/AXIS_RULE/TROPE/
-   EDIT_RHYTHM/LIGHT_PACK/ACTION_BEAT/PERFORMANCE_PACK/INTENT_PACK/IMPACT_PACK/
-   STAGING_PACK/SOUND_PACK/TRANSITION_PACK），必填槽位必须写全。
+2. `must` 的边类型只能是这 %d 个之一（%s），必填槽位必须写全。
 3. `top1` 必须与 `must` 中某条一字不差；`never` 与 `must` 不得相交。
 4. **这张卡是否真的支持这条边**？卡里没写的耦合不要硬凑——宁可 rejected。
 5. `forbid_<kind>=取值` 只在 `q` 里出现同 kind 同取值时才算一次禁忌冲突；`
    expect_movements` 要符合卡里描述的作者意图。
-"""
+""" % (len(Q_KEY_TO_KIND), query_key_text(), len(EDGE_TYPES), "/".join(EDGE_TYPES))
 
 
 def entry_prompt(entry: Dict, card: Dict) -> str:

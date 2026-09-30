@@ -84,6 +84,11 @@ KNOWN_TYPES = frozenset(EDGE_TYPES)
 #: 有 1183/4539 条"查询够不着自己的 `must` 边"要到收尾才被发现）。
 QUERYABLE_KINDS = frozenset(Q_KEY_TO_KIND.values()) - {"scene_type", "beat_type"}
 
+#: kind -> the frozen Chinese key that carries it (`""` if a kind has no query key).
+#: Only meaningful for `QUERYABLE_KINDS`; the qualifier kinds (`intensity`, `pair`, …)
+#: are schema constants inside an edge and never appear in `q`.
+QUERY_KEY_OF_KIND = {str(kind): str(key) for key, kind in Q_KEY_TO_KIND.items()}
+
 PASS, FAIL, NA = "pass", "fail", "not_measured"
 ID_RE = re.compile(r"^hq_\d{4,}$")
 
@@ -161,6 +166,89 @@ def spec_key(spec: str) -> Tuple[str, frozenset]:
     items = frozenset([("allow", k, v) for k, v in plain.items()] +
                       [("forbid", k, v) for k, v in forbid.items()])
     return etype, items
+
+
+# --------------------------------------------------------------------------- 提示词渲染
+#
+# 下面三个渲染函数是**唯一**被允许生成"键集 / 必填槽位"文案的地方。任何提示词
+# （`kb_fetch.holdout_gen`、`holdout_fill`、`holdout_candidates`、`holdout_review_llm`）
+# 都必须 import 它们，**不得再抄第二份**——`holdout_fill.GAP_PROMPT` 就抄过一份
+# "六类 ＋ 16 键 ＋ AXIS_RULE 只写 pair/axis_side" 的旧表，于是补跑轮的提示与基础
+# 提示自相矛盾，模型照样写不可达的边（实测 TRANSITION_PACK 158/158 不可达）。
+
+
+def query_key_text(sep: str = "/") -> str:
+    """协议 §2.1 的冻结查询键，按 schema 顺序拼成一行（用于提示词）。"""
+    return sep.join(str(key) for key in Q_KEY_TO_KIND)
+
+
+#: `QUERYABLE_KINDS` 的**有序**版本（按 `QUERY_KEYS` 的声明顺序）——提示词要求确定性输出。
+QUERYABLE_KINDS_SORTED: Tuple[str, ...] = tuple(
+    str(kind) for kind in Q_KEY_TO_KIND.values() if kind in QUERYABLE_KINDS)
+
+
+def required_slot_template(etype: str, placeholder: bool = True) -> str:
+    """一条边的必填槽位模板，槽位名与顺序都从 `REQUIRED_MEMBERS` 派生。
+
+    ``placeholder=True``  -> ``EMOTION_PACK:emotion=<emotion>,intensity=<intensity>``
+    ``placeholder=False`` -> ``EMOTION_PACK:emotion ＋ intensity``
+    """
+    if etype not in REQUIRED_SLOTS:
+        raise EntryError(f"未知边类型 {etype!r}")
+    slots = list(REQUIRED_SLOTS[etype])
+    if placeholder:
+        return "%s:%s" % (etype, ",".join("%s=<%s>" % (kind, kind) for kind in slots))
+    return "%s:%s" % (etype, "＋".join(slots))
+
+
+def required_slot_templates(placeholder: bool = True) -> List[str]:
+    """Every edge type's required-slot template, in `EDGE_TYPES` order."""
+    return [required_slot_template(etype, placeholder) for etype in EDGE_TYPES]
+
+
+def anchor_members(etype: str) -> List[str]:
+    """这条边**真能被查询锚上**的成员 kind（有查询键的那些）。
+
+    必填槽位里可能全是"在查询空间里没有取值"的常量（`pair`/`axis_side`、
+    `scene_type`、`headroom_policy`……），这类边光写必填槽位是**检索不到的**：
+    `AXIS_RULE` 只有补上可选的 `axis_topic` 才挂得上种子。这就是
+    `TRANSITION_PACK` 158/158 不可达、`AXIS_RULE` 263 条只命中 16 条的根因。
+    """
+    members = list(_hg.REQUIRED_MEMBERS.get(etype, ())) + list(
+        _hg.OPTIONAL_MEMBERS.get(etype, ()))
+    seen: List[str] = []
+    for _role, kind in members:
+        if kind in QUERYABLE_KINDS and kind not in seen:
+            seen.append(str(kind))
+    return seen
+
+
+def anchor_slot_template(etype: str) -> str:
+    """必填槽位模板 ＋（若必填一个可锚槽位都没有）一个可锚的选填槽位。
+
+    ``AXIS_RULE:pair=<pair>,axis_side=<axis_side>,axis_topic=<axis_topic>``
+    """
+    template = required_slot_template(etype)
+    required_kinds = set(REQUIRED_SLOTS[etype])
+    extra = [kind for kind in anchor_members(etype) if kind not in required_kinds]
+    if extra:
+        template += "," + ",".join("%s=<%s>" % (kind, kind) for kind in extra)
+    return template
+
+
+def anchor_slot_templates() -> List[str]:
+    """Every edge type's anchorable template, in `EDGE_TYPES` order."""
+    return [anchor_slot_template(etype) for etype in EDGE_TYPES]
+
+
+def queryable_slot_hint(sep: str = "、") -> str:
+    """``kind``→中文键 的对照，只含**真能写进 `q`** 的 kind（门⑨ 的同一口径）。
+
+    提示词用这一行取代"每条 AXIS_RULE 都手写一遍 axis_topic"之类的特判：凡是这里
+    列出的槽位，只要出现在 `must` 里，`q` 里就必须有同名键、同取值。
+    """
+    return sep.join("`%s`→`%s`" % (kind, QUERY_KEY_OF_KIND[kind])
+                    for kind in QUERYABLE_KINDS_SORTED)
 
 
 def load_entries(path: pathlib.Path) -> List[dict]:

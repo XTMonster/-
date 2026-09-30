@@ -21,6 +21,19 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Dict, Iterable, List, Sequence
 
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+#: **单一真源**：提示词里的键集与必填槽位一律由 `check_holdout` 从
+#: `block_director.knowledge.hypergraph` 渲染，这里不再手抄第二份。
+#: （手抄的那份曾经是"六类 ＋ 14 键"，v1.5 扩到 13 类后整类边都进不了候选。）
+from tools.check_holdout import (  # noqa: E402
+    EDGE_TYPES,
+    anchor_slot_templates,
+    query_key_text,
+)
+
 #: domain -> the edge type a card of that domain is most likely to justify
 DOMAIN_EDGE = {
     "cinematography": "SHOT_PATTERN",
@@ -39,21 +52,20 @@ Transport = Callable[[str], str]
 
 def prompt_for(card: dict) -> str:
     """The labelling prompt handed to a drafting model (frozen wording)."""
+    key_text = query_key_text()
+    slot_templates = "／".join(anchor_slot_templates())
     return (
         "你在为一个白模预演插件的知识库做标注。给定一张知识卡，产出 1 条检索期望条目。\n"
         "只输出 JSON：{\"q\": \"键=值；键=值\", \"must\": [\"TYPE:槽位=取值,...\"], "
         "\"top1\": [...], \"never\": [...], \"expect_movements\": [...]}\n"
         "规则：\n"
         "1. must 1–3 条；top1 ⊆ must；never 与 must 不相交。\n"
-        "2. q 的键只用协议 §2.1 的冻结键集（情绪/动作/运镜/景别/镜头/节奏/特效/音效/"
-        "机位/光线/构图/轴线/题材/桥段），取值只用冻结词表里的规范名。\n"
+        f"2. q 的键只用协议 §2.1 的冻结键集（{key_text}），取值只用冻结词表里的规范名。\n"
         "3. **禁忌必须写出来**：若这张卡说明某个取值应当被禁止，写成 "
         "`forbid_<kind>=取值`（例：`EMOTION_PACK:emotion=荒诞,intensity=high,forbid_shot_size=特写`）。\n"
         "4. 若某个关键词应当**被禁止**（而不是被要求），把它同时写进 `q` 与 `forbid_<kind>`——"
         "这正是 Q7 要测的「禁忌拦截」，**至少 1/20 的条目必须带这种冲突**。\n"
-        "5. 每条边的必填槽位：EMOTION_PACK(emotion,intensity)／SHOT_PATTERN(shot_size,lens,headroom_policy)／"
-        "AXIS_RULE(pair,axis_side)／TROPE(genre,emotion)／EDIT_RHYTHM(pacing,avg_shot_len)／"
-        "LIGHT_PACK(lighting,intensity)。\n"
+        f"5. 每条边的必填槽位（**{len(EDGE_TYPES)} 类，逐项写全**）：{slot_templates}。\n"
         f"卡 id：{card.get('id')}\n域：{card.get('domain')}\n标题：{card.get('title')}\n"
         f"关键词：{','.join(str(k) for k in (card.get('keywords') or []))}\n"
         f"正文：{card.get('content')}\n"
