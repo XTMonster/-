@@ -46,25 +46,32 @@ PersonalStudy`；
 > Project Gutenberg 的文本在美国属公有领域；本仓库只保留改写后的知识与 ≤2 句短引用，
 > 并保留书名、作者与 URL，符合"知识＋短引用＋出处"的入库纪律。
 
-## 三、自撰笔记（`mode: manual`，`license: OwnWork`）
+## 三、自撰笔记（**已退出语料，仅作设计文档**）
 
-`knowledge/source_notes/*.md` 由本项目自撰，版权归本项目作者，许可记为 `OwnWork`。
+**2026-10-01 用户裁决**：「理论不要自己写，要别人写的——专业的事情交给专业的人做」。
+因此 `knowledge/source_notes/*.md`（27 篇）**不再进语料**：
+`knowledge/sources.yaml` 里 `mode: manual` 的条数为 **0**，
+`knowledge/cards_generated/*.jsonl` 里 `repo://` 的条数为 **0**。
 
-**URL 约定**：因为来源就在本仓库里，`url` 用 `repo://<仓库相对路径>` 表示
-（例如 `repo://knowledge/source_notes/anime_language.md`）。它不是网络地址，
-而是可被任何人打开、复算 sha256 的稳定标识——`fetch.py` 因此不需要网络就能取到正文，
-并且 `sha256` 可以直接对文件内容重算验证。
+文件本身留在仓库里，身份从"知识来源"降为"设计文档"：它们记录了每条规则当初的
+引擎落点与取舍理由（`docs/adr/0007`…`0013` 引用它们）。判据是机器门
+`tools/knowledge/authorship_report.py`（退出码 0 = 生成卡全部来自他人著作），
+由 `tools/run_tests.ps1` 写进 `docs/evidence/<run-id>/authorship.json`。
 
-| 文件 | 主题 | 域 |
-|---|---|---|
-| `camera_angle_and_lens.md` | 机位高度、角度与焦距 | 摄影 |
-| `lighting_and_color.md` | 布光体系与色彩情绪 | 摄影（K5: lighting / color） |
-| `editing_rhythm.md` | 剪辑节奏与动作连贯 | 剪辑（K5: editing） |
-| `storyboard_practice.md` | 分镜表与镜头清单 | 分镜（K5: storyboard） |
-| `anime_language.md` | 日式动画镜头语言 | 动画（K5: anime） |
-| `blocking_and_performance.md` | 场面调度与表演节拍 | 调度 / 表演 |
-| `axis_continuity.md` | 轴线与银幕方向 | 轴线理论 |
-| `production_pipeline.md` | 预演交付与制片流程 | 制片 |
+> 仍然**允许** `mode: manual` ＋ `repo://` 这条管线能力本身（`fetch.py` 有它、有测试），
+> 只是**当前语料不再用它**——`repo://` 依然被当作"本项目自撰"，一旦出现在生成卡里
+> 就判失败。
+
+| 文件 | 主题 | 域 | 现状 |
+|---|---|---|---|
+| `camera_angle_and_lens.md` | 机位高度、角度与焦距 | 摄影 | 设计文档 |
+| `lighting_and_color.md` | 布光体系与色彩情绪 | 摄影（K5: lighting / color） | 设计文档 |
+| `editing_rhythm.md` | 剪辑节奏与动作连贯 | 剪辑（K5: editing） | 设计文档 |
+| `storyboard_practice.md` | 分镜表与镜头清单 | 分镜（K5: storyboard） | 设计文档 |
+| `anime_language.md` | 日式动画镜头语言 | 动画（K5: anime） | 设计文档 |
+| `blocking_and_performance.md` | 场面调度与表演节拍 | 调度 / 表演 | 设计文档 |
+| `axis_continuity.md` | 轴线与银幕方向 | 轴线理论 | 设计文档 |
+| `production_pipeline.md` | 预演交付与制片流程 | 制片 | 设计文档 |
 
 ## 四、引用块与"改写"的机器判定
 
@@ -83,10 +90,12 @@ PersonalStudy`；
 成立，但数字摄影、虚拟制片、声音设计、动作与打击感、现代分镜与演出实务
 完全没有覆盖。第五节以下的材料就是补这一半。
 
-### 5.1 自撰现代理论笔记（`license: OwnWork`）
+### 5.1 自撰现代理论笔记（`license: OwnWork`）——**已退出语料**
 
-下面这组笔记由本项目自撰，与第三节同属 `OwnWork`，正文在
-`knowledge/source_notes/`，规则同前（`quote` 逐字、≤2 句、≤120 字）。
+下面这组笔记由本项目自撰，是 v1.5 为补现代理论而写的。按 2026-10-01 的用户裁决，
+它们和第三节一起**退出语料、只作设计文档**；空出来的域由第五节以下的
+**他人著作**（Project Gutenberg 公有领域实务书 ＋ MIT OCW 讲义）补，
+K3 的门一个字不放宽。
 
 | 文件 | 主题（域） |
 |---|---|

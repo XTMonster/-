@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import json
 import pathlib
@@ -626,6 +627,50 @@ def merge_edges(edges: Sequence[hg.HyperEdge], cards_by_id: Dict[str, Dict],
     return merged, report
 
 
+def dedupe_by_norm_key(edges: Sequence[hg.HyperEdge]) -> Tuple[List[hg.HyperEdge], Dict]:
+    """**全局**按 `norm_key` 去重：同一个 `(type, 成员集, source_kind, hardness)` 只留一条。
+
+    为什么必须在第 2 段之后再补一刀：第 2 段是**按窗口**分组的（同域 ＋ 一跳
+    `related` 闭包），同一个耦合如果出现在两个窗口里，就会各留一条——实测
+    852 条边里只有 708 个不同的 `norm_key`，**142 个键重复、多出 144 条边**
+    （占 17%）。§2.3 的去重键写的是 `(type, members, scope)`，是**全局**的，
+    所以这是实现漏了一刀，不是口径问题。
+
+    重复的副作用不只是浪费：同一条知识在索引里有三个副本，查询命中时名次只能
+    靠 occurrences/confidence 决定（索引派生 Q1 一度从 0.7555 掉到 0.5786）。
+    代表元的取法：**成员最多的那条**（信息最全）→ occurrences 大 → edge_id 小，
+    并把所有副本的 `sources` **并起来**（出处不能因为去重而丢），occurrences 相加。
+    """
+    groups: Dict[Tuple, List[hg.HyperEdge]] = {}
+    for edge in edges:
+        key = (str(edge.type), edge.norm_key[1], str(edge.source_kind), str(edge.hardness))
+        groups.setdefault(key, []).append(edge)
+    out: List[hg.HyperEdge] = []
+    for key in sorted(groups, key=lambda item: (str(item[0]), sorted(item[1]))):
+        group = sorted(groups[key],
+                       key=lambda e: (-len(e.members), -e.occurrences, e.edge_id))
+        representative = group[0]
+        if len(group) == 1:
+            out.append(representative)
+            continue
+        sources: List[str] = []
+        for edge in group:
+            for source in edge.sources or ():
+                if str(source) not in sources:
+                    sources.append(str(source))
+        out.append(dataclasses.replace(
+            representative,
+            sources=tuple(sources),
+            occurrences=sum(edge.occurrences for edge in group),
+            confidence=max(edge.confidence for edge in group),
+            confidence_max=max(edge.confidence_max for edge in group),
+            extractor={**(representative.extractor or {}),
+                       "global_dedupe_from": len(group)},
+        ))
+    return out, {"keys": len(groups), "duplicate_groups": sum(1 for g in groups.values() if len(g) > 1),
+                 "dropped": len(edges) - len(out)}
+
+
 def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
             batch_size: int = BATCH_CARDS, limit: int = 0, *,
             concurrency: int = 1,
@@ -808,7 +853,7 @@ def load_atoms() -> List:
     if not ATOMS.is_file():
         return []
     out = []
-    for line in ATOMS.read_text(encoding="utf-8").splitlines():
+    for line in ATOMS.read_text(encoding="utf-8").split("\n"):
         if line.strip():
             out.append(hg.HyperEdge.from_dict(json.loads(line)))
     return out
@@ -842,6 +887,10 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     common.write_jsonl(ATOMS, [edge.to_dict() for edge in atoms])
     merged, merge_report = merge_edges(atoms, {str(card["id"]): card for card in cards},
                                        nodes_from_vocab())
+    # 第 2 段是**按窗口**分组，跨窗口的同 norm_key 会留下副本；§2.3 的去重键是
+    # 全局的，所以这里再补一刀（实测 852 条边里有 144 条是副本）。
+    merged, global_dedupe = dedupe_by_norm_key(merged)
+    merge_report["global_dedupe"] = global_dedupe
     components = fingerprint_components(cards, client)
     return _write_index(cards, atoms, rejects, batch_log, merged=merged,
                         merge_report=merge_report, fingerprint=fingerprint_of(components),
@@ -860,7 +909,7 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     if not ATOMS.is_file():
         raise FileNotFoundError(f"没有第 1 段的原子边：{ATOMS}（先跑一次完整抽取）")
     atoms = [hg.HyperEdge.from_dict(row) for row in
-             [json.loads(line) for line in ATOMS.read_text(encoding="utf-8").splitlines()
+             [json.loads(line) for line in ATOMS.read_text(encoding="utf-8").split("\n")
               if line.strip()]]
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.is_file() else {}
     extractor = manifest.get("extractor") or {"model_id": "", "family": "",
@@ -872,7 +921,7 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     # 归并级拒收是本次重算出来的，所以只要 `phase != merge` 的那些。
     rejects = [row for row in
                [json.loads(line) for line in
-                (ATOM_REJECTS.read_text(encoding="utf-8").splitlines()
+                (ATOM_REJECTS.read_text(encoding="utf-8").split("\n")
                  if ATOM_REJECTS.is_file() else [])
                 if line.strip()]
                if row.get("phase") != "merge"]
@@ -906,7 +955,7 @@ def load_cards() -> List[Dict]:
     directory = common.CARDS_DIR
     if directory.is_dir():
         for path in sorted(directory.glob("*.jsonl")):
-            for line in path.read_text(encoding="utf-8").splitlines():
+            for line in path.read_text(encoding="utf-8").split("\n"):
                 line = line.strip()
                 if not line:
                     continue

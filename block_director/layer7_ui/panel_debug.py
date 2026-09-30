@@ -56,7 +56,7 @@ class BLOCKDIRECTOR_OT_open_llm_trace(Operator):
         if text is None:
             text = bpy.data.texts.new(TRACE_TEXT_NAME)
         text.clear()
-        lines = Path(trace_path).read_text(encoding="utf-8").splitlines()
+        lines = Path(trace_path).read_text(encoding="utf-8").split("\n")
         for line in lines:
             text.write(line + "\n")
         for area in context.screen.areas if context.screen else []:

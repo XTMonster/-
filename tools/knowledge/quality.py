@@ -54,7 +54,7 @@ def q0_build_gate(manifest_path: Path, rejects_path: Path) -> Dict[str, Any]:
     detail.update({"raw_edges": raw, "valid_unique": valid,
                    "duplicates": duplicates, "rejects": rejects})
     if rejects_path.is_file():
-        actual = sum(1 for line in rejects_path.read_text(encoding="utf-8").splitlines()
+        actual = sum(1 for line in rejects_path.read_text(encoding="utf-8").split("\n")
                      if line.strip())
         detail["rejects_file_lines"] = actual
         if actual != rejects:
@@ -107,7 +107,7 @@ def e3_cases(cases_path: Optional[Path]) -> Dict[str, Any]:
         return {"id": "E3_cases", "status": NA,
                 "note": "没有 knowledge/cases.jsonl：L3 侧无证据"}
     rows = [json.loads(line) for line in Path(cases_path).read_text(
-        encoding="utf-8").splitlines() if line.strip()]
+        encoding="utf-8").split("\n") if line.strip()]
     bad = [row.get("case_id") for row in rows
            if any(key in row for key in ("forbid", "forbids", "constraint"))]
     return {"id": "E3_cases", "status": PASS if not bad else FAIL,
@@ -143,7 +143,7 @@ def e1_relevance(reviews_path: Optional[Path]) -> Dict[str, Any]:
                 "note": "需要人工对返回的 cases 按 >=4/5 打分（§2.3b）；"
                         "没有 --e1-reviews 就不判——不得由 agent 代判"}
     rows = [json.loads(line) for line in Path(reviews_path).read_text(
-        encoding="utf-8").splitlines() if line.strip()]
+        encoding="utf-8").split("\n") if line.strip()]
     scored = [row for row in rows if isinstance(row.get("score"), (int, float))]
     good = [row for row in scored if float(row["score"]) >= 4]
     if not scored:

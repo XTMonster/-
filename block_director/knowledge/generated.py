@@ -61,7 +61,10 @@ def load_generated(directory: pathlib.Path | None = None) -> List[Card]:
         return []
     cards: List[Card] = []
     for path in sorted(target.glob("*.jsonl")):
-        for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        # 只按 `\n` 切：卡片正文来自抓取到的他人著作，里面可能有 `\u0085` / `\u2028` /
+        # `\u2029`（PDF 解码尤其容易），而 `splitlines()` 会把它们当成换行、
+        # 把一条记录从中间切断。见 `tools/kb_fetch/common.py::read_jsonl` 的说明。
+        for lineno, raw in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
             raw = raw.strip()
             if not raw:
                 continue

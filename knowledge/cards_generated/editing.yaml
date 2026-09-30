@@ -32,70 +32,6 @@
     start: 1822
     end: 1931
   provenance_kind: 网络语料
-- id: gen_edit_0002
-  domain: editing
-  title: 交叉剪辑的节奏差
-  content: 两条线交替剪辑时，用节奏差区分叙事线：让一条线保持慢速作为基准，另一条线用快速剪辑形成干扰，速度反差越大，观众越容易分辨当前处于哪条线。
-  keywords:
-  - 平行叙事
-  - 基准线
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 平行叙事
-  topic: editing
-  quote: |-
-    两条线交替出现时，节奏差是最重要的工具：慢线做基准，快线做干扰。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#007
-  source_span:
-    chunk_id: editing_rhythm_md#007
-    start: 16
-    end: 48
-  provenance_kind: 权威文档
-- id: gen_edit_0003
-  domain: editing
-  title: 动作方向须一致
-  content: 做动作连贯剪辑时，前后两镜的动作方向必须一致：前一镜人物向右转身，下一镜必须继续向右，否则观众会感到被拽回来。
-  keywords:
-  - 连贯
-  - 越轴
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 方向一致
-  - 连贯性
-  - match on action
-  topic: editing
-  quote: |-
-    如果前一镜人物向右转身，下一镜必须继续向右，否则观众会感到"被拽回来"。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#003
-  source_span:
-    chunk_id: editing_rhythm_md#003
-    start: 137
-    end: 173
-  provenance_kind: 权威文档
 - id: gen_edit_0004
   domain: editing
   title: 有因无果的悬念
@@ -159,71 +95,6 @@
     start: 684
     end: 788
   provenance_kind: 网络语料
-- id: gen_edit_0006
-  domain: editing
-  title: 动作中途切更顺
-  content: 剪辑点应落在动作进行中而非动作起止点：起身到一半、手伸向门把手的瞬间、转身约45°处切到下一机位，用动作动势把观众视线带过剪辑点。
-  keywords:
-  - 动作连贯
-  - 剪辑点
-  - 动势
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - match on action
-  - 剪辑点
-  - 连贯性
-  topic: editing
-  quote: |-
-    在动作的中途切，比在动作开始或结束时切更顺。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#003
-  source_span:
-    chunk_id: editing_rhythm_md#003
-    start: 28
-    end: 50
-  provenance_kind: 权威文档
-- id: gen_edit_0007
-  domain: editing
-  title: 动作中途切与方向连续
-  content: 动作镜头应在动作中途切换，并保持运动方向连续，避免动作断裂。
-  keywords:
-  - 动作剪辑
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 动作连贯
-  - 剪辑点
-  topic: editing
-  quote: |-
-    动作是否在中途切、方向是否连续？
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#008
-  source_span:
-    chunk_id: editing_rhythm_md#008
-    start: 102
-    end: 118
-  provenance_kind: 权威文档
 - id: gen_edit_0008
   domain: editing
   title: 历史剧的群众场面
@@ -320,39 +191,6 @@
     start: 298
     end: 355
   provenance_kind: 网络语料
-- id: gen_edit_0011
-  domain: editing
-  title: 30°规则
-  content: 同一主体、同一景别的相邻镜头，机位角度变化必须大于30°，否则观众会感觉像跳帧；若角度变化不足，应改变景别或插入其他镜头。
-  keywords:
-  - 机位角度
-  - 跳帧
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 轴线
-  - 连续性
-  - 剪辑
-  topic: editing
-  quote: |-
-    同一主体、同一景别的相邻镜头，机位角度变化必须大于 30°，否则看起来像"跳帧"；
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#002
-  source_span:
-    chunk_id: editing_rhythm_md#002
-    start: 26
-    end: 67
-  provenance_kind: 权威文档
 - id: gen_edit_0012
   domain: editing
   title: 紧张与流畅的版本取舍
@@ -450,104 +288,6 @@
     start: 147
     end: 265
   provenance_kind: 网络语料
-- id: gen_edit_0015
-  domain: editing
-  title: 视线方向匹配
-  content: 对话剪辑中检查视线方向是否匹配，两人应看向相反的两侧以维持对视关系。
-  keywords:
-  - 视线匹配
-  - 对话剪辑
-  - 对视
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 视线匹配
-  - 连续性
-  topic: editing
-  quote: |-
-    视线方向是否匹配？两人是否看向相反的两侧？
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#008
-  source_span:
-    chunk_id: editing_rhythm_md#008
-    start: 77
-    end: 98
-  provenance_kind: 权威文档
-- id: gen_edit_0016
-  domain: editing
-  title: 对话场用声画错位
-  content: 对话场景中几乎全部采用J-cut或L-cut，避免声音与画面同时硬切，否则会显得生硬。
-  keywords:
-  - 硬切
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 对话剪辑
-  - 声音剪辑
-  topic: editing
-  quote: |-
-    对话场里几乎全部使用这两种切法，硬切声音与画面会显得生硬。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#004
-  source_span:
-    chunk_id: editing_rhythm_md#004
-    start: 114
-    end: 143
-  provenance_kind: 权威文档
-- id: gen_edit_0017
-  domain: editing
-  title: 双线反差强化辨识
-  content: 平行叙事中，除速度外还可用光线反差区分两条线：速度与光线反差越大，观众对“现在在哪条线”的判断越清晰。
-  keywords:
-  - 平行叙事
-  - 光线反差
-  - 速度反差
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 平行叙事
-  - 光线
-  - 节奏
-  topic: editing
-  quote: |-
-    两条线在速度与光线上的反差越大，观众越容易分辨"我们在哪一条线上"。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#007
-  source_span:
-    chunk_id: editing_rhythm_md#007
-    start: 49
-    end: 83
-  provenance_kind: 权威文档
 - id: gen_edit_0018
   domain: editing
   title: 平行剪辑表现多线关注
@@ -925,37 +665,6 @@
     start: 2130
     end: 2213
   provenance_kind: 网络语料
-- id: gen_edit_0030
-  domain: editing
-  title: 视线匹配方向
-  content: 拍对话时，若A看向画面右侧，B应从画面左侧看回来；两人都看向同一边会让观众误以为他们在看同一方向的东西。
-  keywords:
-  - 对话
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 轴线
-  - 连续性
-  topic: editing
-  quote: |-
-    A 看向画面右侧，B 就应当从画面左侧看回来；两人都看向同一边，观众会以为他们在看同一个方向的东西。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#002
-  source_span:
-    chunk_id: editing_rhythm_md#002
-    start: 129
-    end: 179
-  provenance_kind: 权威文档
 - id: gen_edit_0031
   domain: editing
   title: 注意力决定画面重点
@@ -1176,129 +885,6 @@
     start: 539
     end: 661
   provenance_kind: 网络语料
-- id: gen_edit_0038
-  domain: editing
-  title: 呼吸式段落结构
-  content: 有效段落采用"短—短—短—长"的呼吸结构：先用连续短镜积累压力，再用一个长镜释放与沉淀，避免单一节奏贯穿整段。
-  keywords:
-  - 呼吸结构
-  - 长短搭配
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 节奏
-  topic: editing
-  quote: |-
-    有效的段落通常是"短—短—短—长"的呼吸结构。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#005
-  source_span:
-    chunk_id: editing_rhythm_md#005
-    start: 181
-    end: 204
-  provenance_kind: 权威文档
-- id: gen_edit_0039
-  domain: editing
-  title: 段落镜头长度呼吸感
-  content: 段落内镜头长度要有长有短形成呼吸节奏，避免所有镜头等长成一条直线。
-  keywords:
-  - 节奏
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑节奏
-  - 段落结构
-  topic: editing
-  quote: |-
-    这个段落的镜头长度是否构成"呼吸"（有长有短），而不是一条直线？
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#008
-  source_span:
-    chunk_id: editing_rhythm_md#008
-    start: 122
-    end: 154
-  provenance_kind: 权威文档
-- id: gen_edit_0040
-  domain: editing
-  title: 剪辑点的两种驱动力
-  content: 每个剪辑点只由一种动力决定：信息驱动（观众缺信息时切、信息给完即切走）或情绪驱动（情绪未落地则留、情绪落地立刻切）；不要在同一剪辑点上混用两种动力。
-  keywords:
-  - 信息驱动
-  - 情绪驱动
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑节奏
-  topic: editing
-  quote: |-
-    剪辑点只有两种驱动力：**信息驱动**与**情绪驱动**。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#001
-  source_span:
-    chunk_id: editing_rhythm_md#001
-    start: 16
-    end: 45
-  provenance_kind: 权威文档
-- id: gen_edit_0041
-  domain: editing
-  title: 切点动机先确认
-  content: 每次下剪前先明确这一刀的动机是传递信息还是制造情绪，说不出动机就不要切。
-  keywords:
-  - 剪辑决策
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑节奏
-  topic: editing
-  quote: |-
-    这一刀的动机是信息还是情绪？说得出动机再切；
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#008
-  source_span:
-    chunk_id: editing_rhythm_md#008
-    start: 18
-    end: 40
-  provenance_kind: 权威文档
 - id: gen_edit_0042
   domain: editing
   title: 电影与戏剧的美学比较
@@ -1518,70 +1104,6 @@
     start: 1215
     end: 1334
   provenance_kind: 网络语料
-- id: gen_edit_0049
-  domain: editing
-  title: 相邻镜头角度与景别
-  content: 相邻两镜的机位角度变化应大于30°，景别至少拉开一档，避免跳切感。
-  keywords:
-  - 机位角度
-  - 跳切
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 轴线
-  - 连续性
-  topic: editing
-  quote: |-
-    相邻镜头的机位角度变化是否大于 30°？景别是否拉开一档？
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#008
-  source_span:
-    chunk_id: editing_rhythm_md#008
-    start: 44
-    end: 73
-  provenance_kind: 权威文档
-- id: gen_edit_0050
-  domain: editing
-  title: 景别差至少一档
-  content: 相邻镜头若景别相同，必须改变机位角度；若角度不变，则景别至少差一档，如中景切中近景或中景切特写，避免中景切中景造成画面抽搐感。
-  keywords:
-  - 中景
-  - 特写
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑
-  - 连续性
-  topic: editing
-  quote: |-
-    中景切中景而不改变角度，观众会感到画面在抽搐；应当中景切中近景、或中景切特写；
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#002
-  source_span:
-    chunk_id: editing_rhythm_md#002
-    start: 79
-    end: 118
-  provenance_kind: 权威文档
 - id: gen_edit_0051
   domain: editing
   title: 电影特写由表演决定焦点
@@ -1678,36 +1200,6 @@
     start: 866
     end: 1002
   provenance_kind: 网络语料
-- id: gen_edit_0054
-  domain: editing
-  title: 节奏靠相对变化
-  content: 节奏的关键不是单个镜头的绝对长度，而是镜头间的相对变化：持续快切会让观众麻木，持续长镜会让观众失焦，必须让长短交替出现。
-  keywords:
-  - 长短交替
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑
-  topic: editing
-  quote: |-
-    节奏的关键不是绝对长度，而是**相对变化**：一直快观众会麻木，一直慢观众会失焦。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#005
-  source_span:
-    chunk_id: editing_rhythm_md#005
-    start: 122
-    end: 163
-  provenance_kind: 权威文档
 - id: gen_edit_0055
   domain: editing
   title: 切镜过频的节奏上限
@@ -1993,36 +1485,6 @@
     start: 606
     end: 719
   provenance_kind: 网络语料
-- id: gen_edit_0064
-  domain: editing
-  title: 省略动作中段
-  content: 表现进门、坐下等完整动作时，可剪掉动作的中段过程，只保留起始与结束，观众不需要看到完整动作过程。
-  keywords:
-  - 动作剪辑
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 动作连贯
-  topic: editing
-  quote: |-
-    观众不需要看完整的动作过程。进门、坐下的中段都可以剪掉；
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#006
-  source_span:
-    chunk_id: editing_rhythm_md#006
-    start: 21
-    end: 49
-  provenance_kind: 权威文档
 - id: gen_edit_0065
   domain: editing
   title: 连续运动拆为瞬间印象
@@ -2148,100 +1610,6 @@
     start: 1022
     end: 1102
   provenance_kind: 网络语料
-- id: gen_edit_0069
-  domain: editing
-  title: 跳切的使用前提
-  content: 跳切属于主动破坏规则，只能在观众已建立起连续性预期之后使用，不可在连续性尚未建立时贸然使用。
-  keywords:
-  - 连续性预期
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 连续性
-  topic: editing
-  quote: |-
-    跳切是"主动破坏规则"，只能在观众已经建立起连续性的预期之后使用。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#006
-  source_span:
-    chunk_id: editing_rhythm_md#006
-    start: 106
-    end: 139
-  provenance_kind: 权威文档
-- id: gen_edit_0070
-  domain: editing
-  title: 跳切定义与用法
-  content: 跳切指同一机位、同一景别下的时间跳跃，刻意破坏连续感，用于表达焦虑、重复的日常或时间的快速流逝。
-  keywords:
-  - 同机位
-  - 同景别
-  - 时间跳跃
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 焦虑
-  tags:
-  - 节奏
-  topic: editing
-  quote: |-
-    同一机位、同一景别的时间跳跃，刻意破坏连续感，用于表达焦虑、重复的日常或时间的快速流逝。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#006
-  source_span:
-    chunk_id: editing_rhythm_md#006
-    start: 53
-    end: 97
-  provenance_kind: 权威文档
-- id: gen_edit_0071
-  domain: editing
-  title: 混用动力的失误
-  content: 避免在情绪刚落地时切去交代环境：观众刚被打动就被切走，是混用信息驱动与情绪驱动导致的典型失误。
-  keywords:
-  - 情绪落地
-  - 环境交代
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 被打动
-  tags:
-  - 剪辑节奏
-  - 情绪
-  topic: editing
-  quote: |-
-    把两种动力混在一起是最常见的失误：观众刚被打动，就被切去交代环境。
-  source_ref:
-    url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: d77328168cb4b10b75c9593af6aeb73b3aeb51409fba02c74d7a6729a986a441
-  chunk_id: editing_rhythm_md#001
-  source_span:
-    chunk_id: editing_rhythm_md#001
-    start: 107
-    end: 140
-  provenance_kind: 权威文档
 - id: gen_edit_0072
   domain: editing
   title: 运动由心理合成
@@ -2369,12 +1737,12 @@
     start: 1411
     end: 1472
   provenance_kind: 网络语料
-- id: gen_edit_0076
+- id: gen_edit_0128
   domain: editing
-  title: J-cut与L-cut定义
-  content: J-cut指下一镜的声音先于画面出现，L-cut指上一镜的声音延续到下一镜画面之后；两者是声画错位的两种基本切法。
+  title: 华丽场面若无悬念无效
+  content: 《印度陵墓》中王子带英国客人绕行一刻钟，东方神庙与半支军队的奇观被呈现出来，却没有悬念，观众只对排场微笑、保持冷静——说明奇观本身不产生悬念。
   keywords:
-  - 声画错位
+  - 奇观
   rules: []
   parameters: {}
   examples: []
@@ -2382,31 +1750,58 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 声音先入
-  - 声音延后
-  - 剪辑
+  - 场面调度
   topic: editing
   quote: |-
-    J-cut 是下一镜的声音先出现，L-cut 是上一镜的声音延续到下一镜。
+    The splendor of an Oriental temple, the half of a whole army, was conjured up and visualized—but there was no suspense.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#003
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#011
   source_span:
-    chunk_id: modern_sound_and_impact_md#003
-    start: 28
-    end: 65
-  provenance_kind: 权威文档
-- id: gen_edit_0077
+    chunk_id: pg73028_txt#011
+    start: 1114
+    end: 1233
+  provenance_kind: 网络语料
+- id: gen_edit_0129
   domain: editing
-  title: 比例变化即情绪曲线
-  content: 三轨的相对比例变化就是情绪曲线；只调音乐而环境与效果不动，观众会感到音乐在推，反而出戏。
+  title: 高潮不能靠字幕
+  content: 一场戏的高潮不能用一个词或五十个词的字幕来呈现，必须落在动作上。
   keywords:
-  - 混音
+  - 动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: editing
+  quote: |-
+    The climax of a motion picture scene cannot be one word or fifty words.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#011
+  source_span:
+    chunk_id: pg13029_txt#011
+    start: 1243
+    end: 1314
+  provenance_kind: 网络语料
+- id: gen_edit_0130
+  domain: editing
+  title: 艺术与机械的界限
+  content: 一旦机械手段在创作中扮演被视为创造性或重要的角色，艺术即告终止；凡为取得效果而与纯机械结盟的艺术，从一开始就应被怀疑。
+  keywords:
+  - 怀疑
   rules: []
   parameters: {}
   examples: []
@@ -2414,123 +1809,59 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 混音
+  - 风格判断
   topic: editing
   quote: |-
-    三轨的**相对比例变化**就是情绪曲线；只调音乐而环境与效果不动，观众会感到"音乐在推"，反而出戏。
+    art ceases when mechanismus begins to play a rôle that can in any way be considered creative or important.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#001
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#002
   source_span:
-    chunk_id: modern_sound_and_impact_md#001
-    start: 174
-    end: 224
-  provenance_kind: 权威文档
-- id: gen_edit_0078
+    chunk_id: pg73028_txt#002
+    start: 1446
+    end: 1552
+  provenance_kind: 网络语料
+- id: gen_edit_0131
   domain: editing
-  title: 镜头长度节奏变化
-  content: 以 30 秒为窗口统计平均镜头长度，各窗口之间应有变化，避免整段节奏恒定。
+  title: 悬念不是催促节奏
+  content: 不要用一镜接一镜的加速堆叠来制造悬念；把每场戏都往前赶只会让影片显得被追逐、歇斯底里，沦为犯罪片的浮夸节奏。悬念应来自作者从容的引导感。
   keywords:
-  - 平均镜头长度
-  - 30秒窗口
+  - 堆叠
   rules: []
   parameters: {}
   examples: []
   related: []
   engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑率
+  emotion: 紧张
+  tags: []
   topic: editing
   quote: |-
-    每 30 秒窗口的平均镜头长度是否有变化？
+    one picture should not be made to tumble over another, following the command of “On, on and more of the same kind!”
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#010
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#011
   source_span:
-    chunk_id: modern_editing_theory_md#010
-    start: 124
-    end: 145
-  provenance_kind: 权威文档
-- id: gen_edit_0079
+    chunk_id: pg73028_txt#011
+    start: 101
+    end: 216
+  provenance_kind: 网络语料
+- id: gen_edit_0132
   domain: editing
-  title: 低频主角与中频留位
-  content: 低频段指定一个明确的"主角"声源，同时在中频保留可听分量，避免低频堆叠把中频盖死。
+  title: 电影表演的能量分配
+  content: 与舞台演员逐步蓄力、把能量集中到高潮不同，电影演员容易把能量平摊到所有场次；拍摄时应按各场在整体中的主次来分配表演强度。
   keywords:
-  - 频谱
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 频率分配
-  - 混音
-  topic: editing
-  quote: |-
-    低频是否有明确的"主角"，并在中频保留了可听分量？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#010
-  source_span:
-    chunk_id: modern_sound_and_impact_md#010
-    start: 136
-    end: 161
-  provenance_kind: 权威文档
-- id: gen_edit_0080
-  domain: editing
-  title: J/L-cut 时间窗
-  content: 使用 J-cut 或 L-cut 时，声音提前或延后的量控制在 0.5–2 秒之间，超出则声画关系松散。
-  keywords:
-  - J-cut
-  - 声画错位
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音剪辑
-  - 声画关系
-  topic: editing
-  quote: |-
-    J-cut / L-cut 的提前或延后是否在 0.5–2 秒之间？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#010
-  source_span:
-    chunk_id: modern_editing_theory_md#010
-    start: 86
-    end: 120
-  provenance_kind: 权威文档
-- id: gen_edit_0081
-  domain: editing
-  title: 静默前的噪声基底
-  content: 使用静默做冲击前，先建立一段噪声基底，基底长度取 0.5–3 秒，再切入静默。
-  keywords:
-  - 时长
+  - 主次
+  - 场次
   rules: []
   parameters: {}
   examples: []
@@ -2541,26 +1872,27 @@
   - 节奏
   topic: editing
   quote: |-
-    静默前是否建立了噪声基底，长度是否在 0.5–3 秒？
+    the film actor scatters his entire energy over all the scenes
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#010
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#006
   source_span:
-    chunk_id: modern_sound_and_impact_md#010
-    start: 165
-    end: 192
-  provenance_kind: 权威文档
-- id: gen_edit_0082
+    chunk_id: pg73028_txt#006
+    start: 418
+    end: 479
+  provenance_kind: 网络语料
+- id: gen_edit_0133
   domain: editing
-  title: 静默前先建噪声基底
-  content: 使用静默前必须先铺出噪声基底（环境声/底噪），否则抽掉环境声不产生对比，静默失效。
+  title: 以动作代替说话
+  content: 两人交谈的戏用递接物件、开门送客、献花受花等动作来承载台词，让"动的物件而非动的嘴唇"说出剧作的话。
   keywords:
-  - 对比
+  - 物件
+  - 哑剧
   rules: []
   parameters: {}
   examples: []
@@ -2568,32 +1900,30 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 声音设计
-  - 铺垫
+  - 动作叙事
+  - 表演
   topic: editing
   quote: |-
-    **在静默之前必须先建立噪声基底**，否则抽掉环境声不会有对比。
+    Moving objects, not moving lips, make the words of the photoplay.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#006
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#011
   source_span:
-    chunk_id: modern_sound_and_impact_md#006
-    start: 165
-    end: 197
-  provenance_kind: 权威文档
-- id: gen_edit_0083
+    chunk_id: pg13029_txt#011
+    start: 851
+    end: 916
+  provenance_kind: 网络语料
+- id: gen_edit_0134
   domain: editing
-  title: 叙事内与叙事外分工
-  content: 信息交代交给叙事内声音（角色能听到的声源），情绪渲染交给叙事外声音（配乐、旁白等角色听不到的声源），两者分工不要混用。
+  title: 副线作为结构对位
+  content: 主线之外安排若干副线，让副线在主题上与主线形成对位或变奏，用优雅的结构把分散段落组织成整体。
   keywords:
-  - 叙事内声音
-  - 叙事外声音
-  - 信息
+  - 副线作为结构对位
   rules: []
   parameters: {}
   examples: []
@@ -2601,734 +1931,29 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 声画关系
-  - 声音功能
-  topic: editing
-  quote: |-
-    信息是由叙事内声音完成，情绪由叙事外声音完成吗？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#010
-  source_span:
-    chunk_id: modern_sound_and_impact_md#010
-    start: 47
-    end: 71
-  provenance_kind: 权威文档
-- id: gen_edit_0084
-  domain: editing
-  title: 倒叙用视听标记区分
-  content: 倒叙段落用色彩、声音或画质做标记，让观众识别时间线的跳转。
-  keywords:
-  - 色彩
-  - 声音
-  - 画质
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 时间操纵
-  topic: editing
-  quote: |-
-    **倒叙**（用色彩、声音或画质做标记）
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#006
-  source_span:
-    chunk_id: modern_editing_theory_md#006
-    start: 180
-    end: 200
-  provenance_kind: 权威文档
-- id: gen_edit_0085
-  domain: editing
-  title: J/L-cut 的时值
-  content: 做 J-cut（声音先入）或 L-cut（声音延后）时，声音相对画面的提前或延后量控制在 0.5–2 秒之间。
-  keywords:
-  - J-cut
-  - 声音先入
-  - 声音延后
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑
-  - 声画错位
-  topic: editing
-  quote: |-
-    J-cut / L-cut 的提前或延后是否在 0.5–2 秒之间？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#010
-  source_span:
-    chunk_id: modern_sound_and_impact_md#010
-    start: 75
-    end: 109
-  provenance_kind: 权威文档
-- id: gen_edit_0086
-  domain: editing
-  title: 声画错位时间尺度
-  content: 做J-cut或L-cut时，声音提前或延后控制在0.5–2秒：少于0.5秒观众察觉不到过渡，超过2秒观众会以为画面出错。
-  keywords:
-  - 0.5-2秒
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 节奏
-  - 声音先入
-  - 声音延后
-  topic: editing
-  quote: |-
-    可执行的时间尺度是**声音提前或延后 0.5–2 秒**：少于 0.5 秒观众察觉不到
-    过渡，超过 2 秒会让观众以为画面错了。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#003
-  source_span:
-    chunk_id: modern_sound_and_impact_md#003
-    start: 66
-    end: 130
-  provenance_kind: 权威文档
-- id: gen_edit_0087
-  domain: editing
-  title: J-cut与L-cut的时间尺度
-  content: 做声画错位时，声音提前或延后控制在0.5–2秒：不足0.5秒观众察觉不到，超过2秒观众会怀疑画面出错。
-  keywords:
-  - 声画错位
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音先入
-  - 声音延续
-  - 剪辑节奏
-  topic: editing
-  quote: |-
-    可执行的时间尺度是**提前或延后 0.5–2 秒**：不足 0.5 秒观众察觉不到，超过 2 秒会怀疑画面错了。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#004
-  source_span:
-    chunk_id: modern_editing_theory_md#004
-    start: 61
-    end: 117
-  provenance_kind: 权威文档
-- id: gen_edit_0088
-  domain: editing
-  title: 先剪无音乐版
-  content: 先把没有音乐的版本剪完再加音乐：若加音乐前节奏已成立，音乐只起加强作用；若节奏靠音乐才成立，说明画面节奏尚未解决，应回到画面重剪。
-  keywords:
-  - 节奏检验
-  - 剪辑流程
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音设计
-  - 节奏
-  - 工作流
-  topic: editing
-  quote: |-
-    先把没有音乐的版本剪完，再加音乐
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#008
-  source_span:
-    chunk_id: modern_sound_and_impact_md#008
-    start: 134
-    end: 150
-  provenance_kind: 权威文档
-- id: gen_edit_0089
-  domain: editing
-  title: 动作中途切与方向连续
-  content: 动作剪辑点取在动作进行中途而非动作完成后，并保持运动方向在相邻镜头间连续。
-  keywords:
-  - 动作剪辑
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 动作切
-  - 连续性
-  topic: editing
-  quote: |-
-    动作是否在中途切、方向是否连续？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#010
-  source_span:
-    chunk_id: modern_editing_theory_md#010
-    start: 66
-    end: 82
-  provenance_kind: 权威文档
-- id: gen_edit_0090
-  domain: editing
-  title: 匹配剪辑的使用频率
-  content: 匹配剪辑是最强也最显眼的手法，应放在段落转折处使用，不要每10秒用一次，否则会因过于抢眼而失效。
-  keywords:
-  - 段落转折
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 节奏
-  topic: editing
-  quote: |-
-    匹配剪辑是**最强也最显眼的手法**，因此适合用在段落转折处，不适合每 10 秒来一次。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#007
-  source_span:
-    chunk_id: modern_editing_theory_md#007
-    start: 102
-    end: 146
-  provenance_kind: 权威文档
-- id: gen_edit_0091
-  domain: editing
-  title: 匹配剪辑的三种类型
-  content: 匹配剪辑用动作或形状的相似性连接两个空间，具体分三类：形状匹配（如圆形月亮切圆形盘子）、动作匹配（举手切举手）、色彩匹配（同一色块跨越剪辑点）。
-  keywords:
-  - 形状匹配
-  - 动作匹配
-  - 色彩匹配
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 转场
-  topic: editing
-  quote: |-
-    匹配剪辑利用**动作或形状的相似性**把两个空间连起来：**形状匹配**（圆形的月亮切圆形的盘子）、**动作匹配**（举手切举手）、**色彩匹配**（同一色块跨越剪辑点）。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#007
-  source_span:
-    chunk_id: modern_editing_theory_md#007
-    start: 16
-    end: 102
-  provenance_kind: 权威文档
-- id: gen_edit_0092
-  domain: editing
-  title: 时间压缩用插入镜头跨越
-  content: 压缩时间时省略不必要的过程，用插入镜头跨越时间，而不是完整呈现全过程。
-  keywords:
-  - 省略
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 时间操纵
-  topic: editing
-  quote: |-
-    **压缩**（省略不必要的过程，用插入镜头跨越时间）
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#006
-  source_span:
-    chunk_id: modern_editing_theory_md#006
-    start: 133
-    end: 159
-  provenance_kind: 权威文档
-- id: gen_edit_0093
-  domain: editing
-  title: 远近镜头对白空间处理
-  content: 同一场对白在远景与近景之间切换时，要给两种景别使用不同的空间处理（混响、距离感、声像），不要沿用同一套对白声。
-  keywords:
-  - 景别
-  - 空间感
-  - 混响
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 对白处理
-  - 空间感
-  topic: editing
-  quote: |-
-    远近镜头的对白是否使用不同的空间处理？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#010
-  source_span:
-    chunk_id: modern_sound_and_impact_md#010
-    start: 113
-    end: 132
-  provenance_kind: 权威文档
-- id: gen_edit_0094
-  domain: editing
-  title: 一段音乐只担一职
-  content: 同一段音乐不要同时承担推进剧情与表达情绪两件事，二者择一，避免功能过载导致观众感受被稀释。
-  keywords:
-  - 音乐功能
-  - 剧情推进
-  - 情绪表达
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音设计
-  - 功能分配
-  topic: editing
-  quote: |-
-    同一段音乐不要同时承担"推进剧情"与"表达情绪"两件事
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#008
-  source_span:
-    chunk_id: modern_sound_and_impact_md#008
-    start: 90
-    end: 117
-  provenance_kind: 权威文档
-- id: gen_edit_0095
-  domain: editing
-  title: 声音改写画面判断
-  content: 同一表情配不同环境音与音乐会被读成不同情绪，因此判断镜头情绪时不能只看画面，必须把声音层一起纳入预演。
-  keywords:
-  - 声画关系
-  - 情绪判断
-  - 环境音
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声画对位
-  - 情绪
-  topic: editing
-  quote: |-
-    声音不是画面的附属，它**改写观众对画面的判断**：同一个表情配上不同的环境音与音乐，会被读成完全不同的情绪。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#001
-  source_span:
-    chunk_id: modern_sound_and_impact_md#001
-    start: 20
-    end: 75
-  provenance_kind: 权威文档
-- id: gen_edit_0096
-  domain: editing
-  title: 相邻镜头三硬约束
-  content: 同主体同景别的相邻镜头，机位角度差须大于30°；同角度时必须改变景别至少一档；视线匹配要求A看向画面右侧时B从画面左侧看回来。三条同时违反会让观众读成画面在抽搐。
-  keywords:
-  - 30°规则
-  - 景别差
-  - 视线匹配
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 轴线
-  - 连续性
-  - 景别
-  topic: editing
-  quote: |-
-    三条可判定的硬约束：**30° 规则**（同主体同景别的相邻镜头，机位角度差大于 30°）、**景别差至少一档**（同角度时必须改景别）、**视线匹配**（A 看向画面右侧，B 就从画面左侧看回来）。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#003
-  source_span:
-    chunk_id: modern_editing_theory_md#003
-    start: 13
-    end: 113
-  provenance_kind: 权威文档
-- id: gen_edit_0097
-  domain: editing
-  title: 用声音预建下一场
-  content: 在上一场最后一镜中提前引入下一场的声音，把转场变成叙事推进而非停顿。
-  keywords:
-  - 转场
-  - 声音先入
-  - 叙事
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 转场
-  - 声音设计
   - 段落结构
   topic: editing
   quote: |-
-    在上一场的最后一镜里让下一场的声音出现，把转场变成叙事而不是停顿。
+    An elegant structure: the subplots
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#004
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
   source_span:
-    chunk_id: modern_editing_theory_md#004
-    start: 170
-    end: 203
-  provenance_kind: 权威文档
-- id: gen_edit_0098
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 622
+    end: 656
+  provenance_kind: 网络语料
+- id: gen_edit_0135
   domain: editing
-  title: 声音层级写进镜头清单
-  content: 在预演阶段就把声音层级写进镜头清单，不要等后期填补，否则节奏会在混音阶段被推翻。
+  title: 追逐中的哑剧只作路标
+  content: 主追逐段中残留的哑剧式"对白"只作奔向目标途中的路标，不要做成需要勒马停下、费力升降的情节收费站。
   keywords:
-  - 预演
   - 节奏
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 预演
-  - 声音设计
-  topic: editing
-  quote: |-
-    **在预演阶段就把声音层级写进镜头清单**，而不是等后期填补，否则节奏会在混音阶段被推翻。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#001
-  source_span:
-    chunk_id: modern_sound_and_impact_md#001
-    start: 83
-    end: 128
-  provenance_kind: 权威文档
-- id: gen_edit_0099
-  domain: editing
-  title: 声音先入须顺画面方向
-  content: 声音先入的方向应与画面运动方向一致，方向相反会让观众产生被拽回去的错觉。
-  keywords:
-  - 运动方向
-  - 方向一致
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声画关系
-  - 运动匹配
-  topic: editing
-  quote: |-
-    **声音先入的方向应当与画面运动方向一致**，否则观众会感到被拽回去。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#004
-  source_span:
-    chunk_id: modern_editing_theory_md#004
-    start: 203
-    end: 238
-  provenance_kind: 权威文档
-- id: gen_edit_0100
-  domain: editing
-  title: 声音先入方向一致
-  content: 声音先入的方向要与画面运动方向一致，否则观众会感到被拽回去。
-  keywords:
-  - 画面运动
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声画关系
-  topic: editing
-  quote: |-
-    **声音先入的方向要与画面运动方向一致**，否则观众会感到被拽回去。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#003
-  source_span:
-    chunk_id: modern_sound_and_impact_md#003
-    start: 212
-    end: 246
-  provenance_kind: 权威文档
-- id: gen_edit_0101
-  domain: editing
-  title: 声音设计三轨层级
-  content: 声音设计最小层级为三轨：环境声（底噪与空间）、效果声（动作与物件）、音乐与情绪声。
-  keywords:
-  - 环境声
-  - 效果声
-  - 音乐
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音层级
-  topic: editing
-  quote: |-
-    声音设计的最小层级是三轨：**环境声（底噪与空间）、效果声（动作与物件）、音乐与情绪声**。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#001
-  source_span:
-    chunk_id: modern_sound_and_impact_md#001
-    start: 128
-    end: 174
-  provenance_kind: 权威文档
-- id: gen_edit_0102
-  domain: editing
-  title: 对话场用声画错位
-  content: 对话场几乎全部使用J-cut与L-cut来切换，而非硬切，以保持对话的连贯与自然。
-  keywords:
-  - J-cut
-  - L-cut
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 对话剪辑
-  topic: editing
-  quote: |-
-    对话场几乎全部使用这两种切法。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#003
-  source_span:
-    chunk_id: modern_sound_and_impact_md#003
-    start: 130
-    end: 145
-  provenance_kind: 权威文档
-- id: gen_edit_0103
-  domain: editing
-  title: 对话场用声画错位切
-  content: 对话场避免声音与画面同时硬切，改用J-cut或L-cut过渡，使切换不生硬。
-  keywords:
-  - 硬切
-  - 声画同步
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 对话剪辑
-  topic: editing
-  quote: |-
-    **硬切声音与画面会显得生硬**，因此对话场几乎全部使用这两种切法。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#004
-  source_span:
-    chunk_id: modern_editing_theory_md#004
-    start: 111
-    end: 145
-  provenance_kind: 权威文档
-- id: gen_edit_0104
-  domain: editing
-  title: 平行剪辑用节奏差区分线
-  content: 平行剪辑两条叙事线时，让一条线保持慢速作为基准、另一条线用快速作为干扰；速度与光线反差越大，观众越容易分辨当前处于哪条线。
-  keywords:
-  - 叙事线
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 紧张
-  tags:
-  - 交叉剪辑
-  topic: editing
-  quote: |-
-    平行剪辑（cross-cutting）用**节奏差**区分叙事线：**慢线做基准，快线做干扰**
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#006
-  source_span:
-    chunk_id: modern_editing_theory_md#006
-    start: 13
-    end: 61
-  provenance_kind: 权威文档
-- id: gen_edit_0105
-  domain: editing
-  title: 切换频率随冲突升级加快
-  content: 平行剪辑中，切换频率应随冲突升级而加快，用越来越短的镜头交替推进紧张感。
-  keywords:
-  - 加速
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 紧张
-  tags:
-  - 平行剪辑
-  - 节奏
-  - 加速剪辑
-  topic: editing
-  quote: |-
-    **平行剪辑的切换频率应当随冲突升级而加快**。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#006
-  source_span:
-    chunk_id: modern_editing_theory_md#006
-    start: 99
-    end: 123
-  provenance_kind: 权威文档
-- id: gen_edit_0106
-  domain: editing
-  title: 平行剪辑随冲突加速
-  content: 平行剪辑中，切换频率随冲突升级而加快，用剪辑率的提升对应叙事张力的提升。
-  keywords:
-  - 切换频率
-  - 冲突升级
   rules: []
   parameters: {}
   examples: []
@@ -3337,30 +1962,28 @@
   emotion: 紧张
   tags:
   - 节奏
-  - 张力
   topic: editing
   quote: |-
-    平行剪辑的切换频率是否随冲突升级而加快？
+    Such remnants of pantomimic dialogue as remain in the main chase of the photoplay film are but guide-posts in the race toward the goal.
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#010
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#011
   source_span:
-    chunk_id: modern_editing_theory_md#010
-    start: 149
-    end: 169
-  provenance_kind: 权威文档
-- id: gen_edit_0107
+    chunk_id: pg13029_txt#011
+    start: 1553
+    end: 1688
+  provenance_kind: 网络语料
+- id: gen_edit_0136
   domain: editing
-  title: 延展手法每场戏只用一次
-  content: 延展手法在同一场戏里只用一次，重复使用会让时间感彻底混乱。
+  title: 段落须以戏剧必然收束
+  content: 事件应被组织成一个完整的圆环，以戏剧必然性而非史诗随意性收尾；即每段情节都要指向并汇入一个戏剧性结局。
   keywords:
-  - 单次使用
-  - 时间感
+  - 圆环结构
   rules: []
   parameters: {}
   examples: []
@@ -3368,127 +1991,96 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 时间操纵
-  - 限制
+  - 叙事结构
+  - 段落结构
   topic: editing
   quote: |-
-    **延展手法在同一场戏里只用一次**，重复使用会让时间感彻底混乱。
+    The incidents of his life are joined together into a complete circle; they end with dramatic necessity, not with epic arbitrariness.
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#006
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#010
   source_span:
-    chunk_id: modern_editing_theory_md#006
-    start: 201
-    end: 234
-  provenance_kind: 权威文档
-- id: gen_edit_0108
+    chunk_id: pg73028_txt#010
+    start: 1649
+    end: 1781
+  provenance_kind: 网络语料
+- id: gen_edit_0137
   domain: editing
-  title: 延展用多角度重复同一时刻
-  content: 延展时间时，对同一时刻用多个角度重复播放，用于强调关键动作或情绪。
+  title: 亲密型影片的景别尺度
+  content: 亲密型影片在较私人的段落里，可把人物面部拍得极大（下巴到额头约五英尺），但光线与影调必须保持精致柔美，不可粗糙。
   keywords:
-  - 时间延展
+  - 大特写
+  - 面部
+  - 影调
   rules: []
   parameters: {}
   examples: []
   related: []
   engine_support: ''
-  emotion: 强调
+  emotion: 亲密
   tags:
-  - 时间操纵
+  - 特写
+  - 光线
   topic: editing
   quote: |-
-    **延展**（同一时刻用多个角度重复播放，用于强调）
+    some of the faces five feet from chin to forehead in the more personal episodes, yet exquisitely fair
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#006
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#004
   source_span:
-    chunk_id: modern_editing_theory_md#006
-    start: 161
-    end: 187
-  provenance_kind: 权威文档
-- id: gen_edit_0109
+    chunk_id: pg13029_txt#004
+    start: 1506
+    end: 1607
+  provenance_kind: 网络语料
+- id: gen_edit_0138
   domain: editing
-  title: 信息动机避免重音切
-  content: 当剪辑动机是传递信息而非情绪时，避免在重音上切：重音会把注意力吸到声音上，使观众漏掉新镜头里的信息；判断标准是这一刀想让观众“感到”还是“知道”。
+  title: 亲密型影片的叙事口吻
+  content: 亲密型影片应以炉边闲谈般的亲切口吻讲故事，让观众感到贴近而非被宏大场面压倒。
   keywords:
-  - 信息剪辑
-  - 注意力
-  - 动机判断
+  - 亲切
+  - 炉边
   rules: []
   parameters: {}
   examples: []
   related: []
   engine_support: ''
-  emotion: ''
+  emotion: 亲切
   tags:
-  - 信息传达
-  - 剪辑动机
+  - 氛围
   topic: editing
   quote: |-
-    当剪辑的动机是信息而不是情绪时，应当避免在重音上切
+    The story is told with fireside friendliness.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#007
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#004
   source_span:
-    chunk_id: modern_sound_and_impact_md#007
-    start: 140
-    end: 165
-  provenance_kind: 权威文档
-- id: gen_edit_0110
+    chunk_id: pg13029_txt#004
+    start: 551
+    end: 596
+  provenance_kind: 网络语料
+- id: gen_edit_0139
   domain: editing
-  title: 用声音做切换动机
-  content: 当剪辑需要一个理由时，让新场景的声音（门、脚步、电话）提前出现，比硬切更容易被观众接受。
+  title: 亲密型影片的镜头序列
+  content: 亲密型影片应把画面组织成一组约六百张、影调细腻且按逻辑顺序排列的照片，其中以舒适的室内场景为主，外景与群众场面只作补充。
   keywords:
-  - 声音先入
-  - 硬切
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音先入
-  - 转场
-  topic: editing
-  quote: |-
-    **用声音承担切换的动机**：当剪辑需要一个理由时，
-    让新场景的声音提前出现（门、脚步、电话）比硬切更容易被接受。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#003
-  source_span:
-    chunk_id: modern_sound_and_impact_md#003
-    start: 154
-    end: 211
-  provenance_kind: 权威文档
-- id: gen_edit_0111
-  domain: editing
-  title: 限制声域绑定视角
-  content: 想让观众跟随某个人物的视角时，把声音限制在该人物能听到的范围内，只保留他能听到的声源，以此绑定观众与人物的听觉视角。
-  keywords:
-  - 听觉范围
-  - 声域限制
+  - 逻辑顺序
+  - 室内为主
+  - 影调
   rules: []
   parameters: {}
   examples: []
@@ -3496,30 +2088,33 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 主观视角
-  - 声音设计
+  - 段落结构
+  - 剪辑
+  - 影调
   topic: editing
   quote: |-
-    想让观众跟随某个人物的视角时，就限制声音只能来自他能听到的范围
+    a gallery of six hundred delicately toned photographs hung in logical order, most of them cosy interior scenes
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#002
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#004
   source_span:
-    chunk_id: modern_sound_and_impact_md#002
-    start: 173
-    end: 204
-  provenance_kind: 权威文档
-- id: gen_edit_0112
+    chunk_id: pg13029_txt#004
+    start: 1394
+    end: 1504
+  provenance_kind: 网络语料
+- id: gen_edit_0140
   domain: editing
-  title: 关键动作双角度覆盖
-  content: 拍摄覆盖时，每个关键动作至少准备两个可用角度，保证剪辑时该动作有替代切点可选。
+  title: 亲密型影片的变体
+  content: 亲密型（intimate）影片的变体应以"运动中的素描"方式处理，与"运动中的建筑"这类宏大构想（如 Theodora）形成对立取向。
   keywords:
-  - 关键动作双角度覆盖
+  - 运动中的素描
+  - 宏大
+  - 对立
   rules: []
   parameters: {}
   examples: []
@@ -3527,31 +2122,63 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 素材
+  - 类型
+  - 风格取向
   topic: editing
   quote: |-
-    覆盖是否支持每个关键动作有两个可用角度？
+    It is drawing-in-motion, instead of painting-in-motion.
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#010
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#001
   source_span:
-    chunk_id: modern_editing_theory_md#010
-    start: 173
-    end: 193
-  provenance_kind: 权威文档
-- id: gen_edit_0113
+    chunk_id: pg13029_txt#001
+    start: 1322
+    end: 1377
+  provenance_kind: 网络语料
+- id: gen_edit_0141
   domain: editing
-  title: 剪辑动机检查
-  content: 每一刀都必须能说出动力来源：要么推进信息，要么推进情绪；说不出动机的切点应删掉或合并。
+  title: 四类壮丽皆由背景承载
+  content: 仙灵、人群、爱国、宗教四类壮丽段落，其表现力都来自背景的选择与呈现，而非情节本身。
   keywords:
-  - 切点
-  - 信息
-  - 情绪
+  - 四类壮丽皆由背景承载
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 壮丽
+  tags:
+  - 段落结构
+  - 环境
+  topic: editing
+  quote: |-
+    The pictures of Fairy Splendor, Crowd Splendor, Patriotic Splendor, and Religious Splendor are but the embodiments of these backgrounds.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#005
+  source_span:
+    chunk_id: pg13029_txt#005
+    start: 1490
+    end: 1626
+  provenance_kind: 网络语料
+- id: gen_edit_0142
+  domain: editing
+  title: 父与子的角色轴
+  content: 以父亲与儿子的关系作为角色轴心，用两人同框的走位与视线来承载社会主题。
+  keywords:
+  - 父子
+  - 角色关系
+  - 同框
   rules: []
   parameters: {}
   examples: []
@@ -3559,31 +2186,93 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 剪辑点
+  - 人物调度
   topic: editing
   quote: |-
-    每一刀是否说得出动力（信息或情绪）？
+    Character: father and son
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#010
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
   source_span:
-    chunk_id: modern_editing_theory_md#010
-    start: 15
-    end: 33
-  provenance_kind: 权威文档
-- id: gen_edit_0114
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+    start: 1249
+    end: 1274
+  provenance_kind: 网络语料
+- id: gen_edit_0143
   domain: editing
-  title: 声音三轨与情绪比例
-  content: 混音时把声音分为环境、效果、音乐三条独立轨；三者的相对比例随情绪变化调整，而非固定配比。
+  title: 幻象先铺垫再落实
+  content: 先让死者幻象出现，使观众心理准备好把琐碎物件赋予意义，再用铅笔与钟摆的日常动作完成更高级的恐怖。
   keywords:
-  - 环境声
-  - 效果声
-  - 音乐
+  - 幻象铺垫
+  - 赋予意义
+  - 恐怖升级
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 惊悚
+  tags:
+  - 段落结构
+  - 心理
+  - 恐怖
+  topic: editing
+  quote: |-
+    Those visions prepared the mind to invest trifles with significance.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#009
+  source_span:
+    chunk_id: pg13029_txt#009
+    start: 1375
+    end: 1443
+  provenance_kind: 网络语料
+- id: gen_edit_0144
+  domain: editing
+  title: 蒙太奇与场面调度的对立
+  content: 分析或设计段落时，把蒙太奇（靠剪辑并列镜头产生意义）与场面调度（靠单镜内构图、景深、走位产生意义）作为两种可取舍的调度策略：前者用镜头间的冲突制造含义，后者用镜头内的空间关系制造含义。
+  keywords:
+  - 剪辑策略
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: editing
+  quote: |-
+    Montage vs. Mise en Scene
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#000
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#000
+    start: 2231
+    end: 2256
+  provenance_kind: 网络语料
+- id: gen_edit_0145
+  domain: editing
+  title: 跳拍导致表演单音化
+  content: 分镜按场次跳拍（先拍首场、再拍末场、再拍中间场）时，演员无法建立角色整体弧线，表演会退化为单一音调；预演排期应尽量按剧情顺序排列镜头，或为跳拍段落标注情绪基调供演员衔接。
+  keywords:
+  - 场次顺序
+  - 表演弧线
   rules: []
   parameters: {}
   examples: []
@@ -3591,161 +2280,94 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 声音分层
-  - 混音
+  - 调度
+  - 排期
   topic: editing
   quote: |-
-    声音是否分为环境、效果、音乐三轨，且相对比例随情绪变化？
+    The actor plays on a certain day just one individual scene, now from the first and then from the last and still again from some intervening act.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#010
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#007
   source_span:
-    chunk_id: modern_sound_and_impact_md#010
-    start: 15
-    end: 43
-  provenance_kind: 权威文档
-- id: gen_edit_0115
+    chunk_id: pg73028_txt#007
+    start: 634
+    end: 778
+  provenance_kind: 网络语料
+- id: gen_edit_0146
   domain: editing
-  title: 低频只留一个主角
-  content: 混音时若同时叠加多条低频会互相掩蔽、整体反而变轻；应为每段低频指定唯一主角（以爆炸为主或以音乐为主），其余声部让路。
+  title: 追逐片节奏：障碍即节拍
+  content: 动作/追逐段落中，把每个障碍（hurdle）当作一个节拍点而非舞台式的情节纠葛；追逐应匀速推进到高潮，不要因支线插叙而停顿或痉挛式抖动。
   keywords:
-  - 掩蔽
-  - 混音
-  - 主次
+  - 追逐片节奏：障碍即节拍
   rules: []
   parameters: {}
   examples: []
   related: []
   engine_support: ''
-  emotion: ''
+  emotion: 紧张
   tags:
-  - 混音
-  - 层次
+  - 剪辑
   topic: editing
   quote: |-
-    同时叠加多条低频会互相掩蔽，整体反而变轻
+    The sudden cut-backs into side branches of the story are but hurdles also, not plot complications in the stage sense.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#005
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#002
   source_span:
-    chunk_id: modern_sound_and_impact_md#005
-    start: 135
-    end: 155
-  provenance_kind: 权威文档
-- id: gen_edit_0116
+    chunk_id: pg13029_txt#002
+    start: 573
+    end: 690
+  provenance_kind: 网络语料
+- id: gen_edit_0147
   domain: editing
-  title: 叙事内外声音分工
-  content: 用叙事内声音（画面中的收音机、脚步等）交代信息与空间可信度，用叙事外声音（配乐、旁白）承担情绪与评价；不要把关键信息交给配乐，否则观众会感到被操纵。
+  title: 障碍即画面（tableau）
+  content: 动作片的高级浪漫来自把每个障碍处理成一幅画面（tableau）：每个快速一瞥都具备画廊级的美感，动作与动作之间以优雅的衔接相连，终点是全片最美的一瞥。
   keywords:
-  - 叙事内声音
-  - 叙事外声音
-  - 信息
+  - 衔接
+  - 高潮
   rules: []
   parameters: {}
   examples: []
   related: []
   engine_support: ''
-  emotion: ''
+  emotion: 美感
   tags:
-  - 声画关系
-  - 声音设计
-  topic: editing
-  quote: |-
-    用叙事内声音完成信息，用叙事外声音完成情绪
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#002
-  source_span:
-    chunk_id: modern_sound_and_impact_md#002
-    start: 72
-    end: 93
-  provenance_kind: 权威文档
-- id: gen_edit_0117
-  domain: editing
-  title: 混响长短对应空间
-  content: 用混响量与直达声的比例塑造空间大小：小空间反射快、混响短；大空间反射慢、混响尾巴长。
-  keywords:
-  - 直达声
-  - 空间大小
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音设计
-  - 空间感
-  topic: editing
-  quote: |-
-    小空间反射快、混响短，大空间反射慢、尾巴长。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#004
-  source_span:
-    chunk_id: modern_sound_and_impact_md#004
-    start: 35
-    end: 57
-  provenance_kind: 权威文档
-- id: gen_edit_0118
-  domain: editing
-  title: 静默的时长尺度
-  content: 用静默制造主观耳鸣感时，静默时长取 0.5–3 秒：少于 0.5 秒观众读不出来，超过 3 秒会被误认为技术故障。
-  keywords:
-  - 耳鸣感
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 主观沉浸
-  tags:
-  - 声音设计
+  - 构图
   - 节奏
+  - 调度
   topic: editing
   quote: |-
-    可执行的时间尺度是**静默 0.5–3 秒**：少于 0.5 秒读不出来，超过 3 秒观众会开始怀疑是技术故障。
+    Action Picture romance comes when each hurdle is a tableau, when there is indeed an art-gallery-beauty in each one of these swift glimpses
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#006
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#002
   source_span:
-    chunk_id: modern_sound_and_impact_md#006
-    start: 60
-    end: 116
-  provenance_kind: 权威文档
-- id: gen_edit_0119
+    chunk_id: pg13029_txt#002
+    start: 1592
+    end: 1730
+  provenance_kind: 网络语料
+- id: gen_edit_0148
   domain: editing
-  title: 相邻镜头匹配约束
-  content: 相邻两镜需同时满足三个约束：机位夹角至少30°、景别有差异、视线方向匹配，否则视为跳切或越轴。
+  title: 动作片速度的取舍
+  content: 动作片追求的是升降速度的最大化，但速度不能快到让观众被颠得失去知觉；剪辑节奏要在快与可读之间取平衡。
   keywords:
-  - 30度原则
-  - 景别差
-  - 视线匹配
+  - 节奏
+  - 可读性
   rules: []
   parameters: {}
   examples: []
@@ -3753,31 +2375,31 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 轴线
-  - 连续性
-  - 跳切
+  - 节奏
+  - 剪辑
   topic: editing
   quote: |-
-    相邻镜头是否满足 30°、景别差与视线匹配的约束？
+    The ideal is the maximum of speed in descending or ascending, not to be jolted into insensibility.
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#010
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#002
   source_span:
-    chunk_id: modern_editing_theory_md#010
-    start: 37
-    end: 62
-  provenance_kind: 权威文档
-- id: gen_edit_0120
+    chunk_id: pg13029_txt#002
+    start: 1002
+    end: 1100
+  provenance_kind: 网络语料
+- id: gen_edit_0149
   domain: editing
-  title: 跳切的使用前提
-  content: 跳切必须在观众已经建立连续性预期之后使用，否则会被读成拍错；先立连续性再破坏它。
+  title: 服装不破坏纪念碑感
+  content: 即使角色穿现代晚礼服等非古典服装，也要通过体块与姿态保持其纪念碑式的造型质量，不因服装时代而削弱画面的雕塑感。
   keywords:
-  - 连续性预期
+  - 体块
+  - 姿态
   rules: []
   parameters: {}
   examples: []
@@ -3785,62 +2407,31 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 连续性
+  - 造型
+  - 构图
   topic: editing
   quote: |-
-    **跳切必须在观众已经建立连续性预期之后使用**，否则只会被读成拍错。
+    The fact that he is in evening dress does not alter his monumental quality.
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#007
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#007
   source_span:
-    chunk_id: modern_editing_theory_md#007
-    start: 204
-    end: 239
-  provenance_kind: 权威文档
-- id: gen_edit_0121
+    chunk_id: pg13029_txt#007
+    start: 1962
+    end: 2037
+  provenance_kind: 网络语料
+- id: gen_edit_0150
   domain: editing
-  title: 跳切的定义与用途
-  content: 跳切是主动破坏连续性：同一机位、同一景别下的时间跳跃，用于表现焦虑、重复的日常或时间的快速流逝。
+  title: 字幕不承担高潮
+  content: 叙事尽量少用银幕文字说明，高潮点绝不用字幕交代，而必须落在一个有吸引力的画面/场面（tableau）上。
   keywords:
-  - 连续性
-  - 时间跳跃
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 焦虑
-  tags:
-  - 时间压缩
-  topic: editing
-  quote: |-
-    跳切（jump cut）是主动破坏连续性：**同一机位、同一景别的时间跳跃**，用于表现焦虑、重复的日常或时间的快速流逝。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#007
-  source_span:
-    chunk_id: modern_editing_theory_md#007
-    start: 144
-    end: 205
-  provenance_kind: 权威文档
-- id: gen_edit_0122
-  domain: editing
-  title: 相邻镜头对照表检查法
-  content: 逐对检查相邻镜头时，画一张对照表列出每镜的景别、机位方位角、主体朝向与视线方向，逐对比较；违反约束的一对必须改其中一镜，改景别通常比改机位便宜。
-  keywords:
-  - 景别
-  - 方位角
-  - 视线
+  - 画面叙事
+  - tableau
   rules: []
   parameters: {}
   examples: []
@@ -3848,32 +2439,64 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 连续性
-  - 检查表
+  - 高潮处理
+  - 视觉叙事
   topic: editing
   quote: |-
-    可执行的检查方法是**画一张相邻镜头对照表**：列出每镜的景别、机位方位角、主体朝向与视线方向，逐对比较。
+    very little of the tale was thrown on the screen in reading matter, and no climax was ever a printed word, but always an enthralling tableau.
   source_ref:
-    url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
-  chunk_id: modern_editing_theory_md#003
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#006
   source_span:
-    chunk_id: modern_editing_theory_md#003
-    start: 129
-    end: 182
-  provenance_kind: 权威文档
-- id: gen_edit_0123
+    chunk_id: pg13029_txt#006
+    start: 1305
+    end: 1446
+  provenance_kind: 网络语料
+- id: gen_edit_0151
   domain: editing
-  title: 无音乐版本对照
-  content: 配乐完成后做一次去掉音乐的对照检验，确认去掉音乐后画面叙事仍然成立，否则说明音乐在替画面讲故事。
+  title: 奇幻装置须贴合命运
+  content: 古怪奇巧的布景装置若不同人物命运真正内在关联就会失败；判断标准是它是否与人的命运相系，而非造型是否新奇。
   keywords:
-  - 配乐
-  - 对照检验
+  - 奇幻布景
+  - 人物命运
+  - 关联
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布景
   - 叙事
+  topic: editing
+  quote: |-
+    The odd and fanciful device fails if it is not truly and inwardly affiliated with human fate.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#008
+  source_span:
+    chunk_id: pg73028_txt#008
+    start: 1665
+    end: 1758
+  provenance_kind: 网络语料
+- id: gen_edit_0152
+  domain: editing
+  title: 演员需具备变调能力
+  content: 只有具备心理变调能力的演员才能在角色塑造中呈现多样性；选角与分镜设计应优先考虑能随剧情改变情绪和弦的表演者。
+  keywords:
+  - 角色塑造
+  - 选角
   rules: []
   parameters: {}
   examples: []
@@ -3881,30 +2504,312 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 配乐
-  - 检验
+  - 表演
+  - 选角
   topic: editing
   quote: |-
-    音乐是否通过了"无音乐版本"的对照检验？
+    There are a few, however, who have the psychic power which spells variety in the creation of character.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#010
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#007
   source_span:
-    chunk_id: modern_sound_and_impact_md#010
-    start: 196
-    end: 216
-  provenance_kind: 权威文档
-- id: gen_edit_0124
+    chunk_id: pg73028_txt#007
+    start: 1843
+    end: 1946
+  provenance_kind: 网络语料
+- id: gen_edit_0153
   domain: editing
-  title: 静默要抽掉环境声
-  content: 静默不等于无声轨留白，而是把环境声一并抽掉，才能让观众进入人物的主观听觉状态。
+  title: 连贯片段链的构成
+  content: 可用一连串不间断、彼此衔接的片段与画面构成整段戏，以密集的片段链替代单场长戏，从而弥补电影技术上的先天局限。
   keywords:
-  - 主观状态
+  - 段落
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 剪辑
+  topic: editing
+  quote: |-
+    it consisted of an unbroken and dazzling chain of episodes and pictures
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#006
+  source_span:
+    chunk_id: pg73028_txt#006
+    start: 1483
+    end: 1554
+  provenance_kind: 网络语料
+- id: gen_edit_0154
+  domain: editing
+  title: 用色彩区分两条时空线
+  content: 同一人物的两条场景线用色彩体系区分：清修/祈祷线用灰与银的冷调，敌营/诱惑线用保罗·韦罗内塞式的浓艳华丽色；靠色调差异让观众一眼分辨当前处于哪条线。
+  keywords:
+  - 冷调
+  - 华丽色
+  - 双线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色调对比
+  - 场景区分
+  topic: editing
+  quote: |-
+    In either type of scene, the first gray and silver, the other painted with Paul Veronese splendor
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#006
+  source_span:
+    chunk_id: pg13029_txt#006
+    start: 1837
+    end: 1934
+  provenance_kind: 网络语料
+- id: gen_edit_0155
+  domain: editing
+  title: 跳拍对表演的影响
+  content: 因镜头不按逻辑顺序拍摄，演员无法随剧情渐进积累情绪；表演需在缺乏铺垫的情况下瞬间爆发并骤然收束，不能依赖连贯的情绪过渡。
+  keywords:
+  - 情绪爆发
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情绪
+  topic: editing
+  quote: |-
+    The action does not carry him into his playing, or into the inner nature of his rôle, in calm, gradual development.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#005
+  source_span:
+    chunk_id: pg73028_txt#005
+    start: 1402
+    end: 1517
+  provenance_kind: 网络语料
+- id: gen_edit_0156
+  domain: editing
+  title: 为后续爆发蓄势
+  content: 在侮辱性冲突之后，要预留足够的篇幅让角色的火山式愤怒"烧尽自己"，即用后续段落消化情绪，而不是让爆发一闪而过。
+  keywords:
+  - 情绪蓄势
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 愤怒
+  tags:
+  - 节奏
+  - 情绪曲线
+  - 段落
+  topic: editing
+  quote: |-
+    It accounts for the volcanic fury of the nephew that takes such trouble to burn itself out afterwards.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#008
+  source_span:
+    chunk_id: pg13029_txt#008
+    start: 1394
+    end: 1496
+  provenance_kind: 网络语料
+- id: gen_edit_0157
+  domain: editing
+  title: 群戏不能是停摆
+  content: 在平庸影片里，游行、狂欢、神秘仪式等群戏往往只是动作的填充物/停摆；应避免让群戏脱离主线动作。
+  keywords:
+  - 填充
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场面调度
+  - 剪辑
+  topic: editing
+  quote: |-
+    In the average film every group scene—parades, carnivals, mysteries—is a stop-gap of the action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#011
+  source_span:
+    chunk_id: pg73028_txt#011
+    start: 1636
+    end: 1732
+  provenance_kind: 网络语料
+- id: gen_edit_0158
+  domain: editing
+  title: 童话片可有内在发展
+  content: 在特技片尤其是童话片中，一定程度的内在、亲密的发展是可能的且时有显现，但这类艺术始终带有无法修补的缺陷。
+  keywords:
+  - 缺陷
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 类型
+  - 叙事
+  topic: editing
+  quote: |-
+    in the trick film, and particularly in the fairy film, a certain measure of inner and intimate development is possible, and is at times evident.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#002
+  source_span:
+    chunk_id: pg73028_txt#002
+    start: 1070
+    end: 1214
+  provenance_kind: 网络语料
+- id: gen_edit_0159
+  domain: editing
+  title: 转折点的设置
+  content: 在结构的中后段安排一个明确的转折点（turning point），使主角的目标或立场发生不可逆的改变。
+  keywords:
+  - 结构
+  - 不可逆
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: editing
+  quote: |-
+    A turning point
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+    start: 153
+    end: 168
+  provenance_kind: 网络语料
+- id: gen_edit_0160
+  domain: editing
+  title: 特技须极度节制
+  content: 在表现违反自然法则的奇幻题材时，特技使用量应压到情境允许的最低限度，且必须极其谨慎地使用，不可依赖特技撑起场面。
+  keywords:
+  - 奇幻
+  - 谨慎
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分寸
+  topic: editing
+  quote: |-
+    there should be just as little use made of tricks as the situation allows; and when employed, they should be employed with extreme caution.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#002
+  source_span:
+    chunk_id: pg73028_txt#002
+    start: 1851
+    end: 1990
+  provenance_kind: 网络语料
+- id: gen_edit_0161
+  domain: editing
+  title: 基顿式主角的表演基调
+  content: 塑造基顿式主角时，表演基调取“坚定而笨拙”：人物始终目标明确、不放弃，但行动方式不断出错，靠偶然与应变推进，而非靠能力取胜。
+  keywords:
+  - 基顿式主角的表演基调
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 荒诞
+  tags:
+  - 喜剧
+  topic: editing
+  quote: |-
+    The Keaton hero: steadfast, muddling
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#000
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#000
+    start: 1537
+    end: 1573
+  provenance_kind: 网络语料
+- id: gen_edit_0162
+  domain: editing
+  title: 反派塑造的复合意象
+  content: 塑造强势反派时，把多个威权意象叠加到同一人物身上（如亚述公牛、带翼狮子、神祇），并让他的每个动作都透出权力感，且时刻被赋予神性礼遇。
+  keywords:
+  - 权力感
+  - 动作设计
   rules: []
   parameters: {}
   examples: []
@@ -3912,117 +2817,2888 @@
   engine_support: ''
   emotion: 压迫
   tags:
-  - 声音设计
-  - 主观视角
+  - 人物塑造
+  - 表演
+  - 调度
   topic: editing
   quote: |-
-    静默不是没有声音，而是**把环境声也抽掉**：完全的静默会制造"耳鸣感"，让观众进入人物的主观状态。
+    He is an Assyrian bull, a winged lion, and a god at the same time, and divine honors are paid to him every moment.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#006
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#006
   source_span:
-    chunk_id: modern_sound_and_impact_md#006
-    start: 10
-    end: 60
-  provenance_kind: 权威文档
-- id: gen_edit_0125
+    chunk_id: pg13029_txt#006
+    start: 2149
+    end: 2263
+  provenance_kind: 网络语料
+- id: gen_edit_0163
   domain: editing
-  title: 静默的两种落点
-  content: 静默放在最大冲击前的一瞬以打断听觉预期，或放在冲击之后把余韵留给画面；两种落点对应不同的情绪功能。
+  title: 动作片以追逐为骨架
+  content: 处理动作类型段落时，可用'猎人与猎物'的追逐骨架组织调度：主角不断脱逃、追兵不断被甩开，节奏靠距离的反复拉近拉远推进。
   keywords:
-  - 冲击点
-  - 余韵
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音设计
-  - 剪辑点
-  topic: editing
-  quote: |-
-    静默的最佳位置是**在最大冲击之前的一瞬**（把观众的听觉预期打断），或**在冲击之后**（把余韵留给画面）。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#006
-  source_span:
-    chunk_id: modern_sound_and_impact_md#006
-    start: 110
-    end: 165
-  provenance_kind: 权威文档
-- id: gen_edit_0126
-  domain: editing
-  title: 音乐进出对齐情绪转折
-  content: 音乐的进入与退出应落在画面情绪转折点上，而不是剪辑点上；剪辑点只决定画面切换，情绪转折点才决定音乐起落。
-  keywords:
-  - 情绪转折点
-  - 剪辑点
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音设计
-  - 剪辑节奏
-  topic: editing
-  quote: |-
-    音乐的进入与退出应当在画面的情绪转折点上，而不是在剪辑点上
-  source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#008
-  source_span:
-    chunk_id: modern_sound_and_impact_md#008
-    start: 55
-    end: 84
-  provenance_kind: 权威文档
-- id: gen_edit_0127
-  domain: editing
-  title: 音乐高点需铺垫
-  content: 音乐的高点应落在观众已经准备好的位置；提前2–4秒进入高点会显得廉价，需让情绪铺垫到位再推高。
-  keywords:
-  - 提前量
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 声音设计
+  - 脱逃
   - 节奏
-  - 情绪铺垫
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 调度
   topic: editing
   quote: |-
-    音乐的高点应当落在观众已经准备好的位置
+    It is one long race with the Cardinal's guards who are at last left behind.
   source_ref:
-    url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
-  chunk_id: modern_sound_and_impact_md#008
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#000
   source_span:
-    chunk_id: modern_sound_and_impact_md#008
-    start: 205
-    end: 224
-  provenance_kind: 权威文档
+    chunk_id: pg13029_txt#000
+    start: 1764
+    end: 1839
+  provenance_kind: 网络语料
+- id: gen_edit_0164
+  domain: editing
+  title: 无战役的战争片
+  content: 处理战争题材时，可把情节写成'没有战役的战争故事'，把冲突放在人物与日常处境上，而非战斗场面。
+  keywords:
+  - 情节
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事结构
+  topic: editing
+  quote: |-
+    Plot: a war story without battles
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+    start: 261
+    end: 294
+  provenance_kind: 网络语料
+- id: gen_edit_0165
+  domain: editing
+  title: 纪念碑谷取景
+  content: 外景地选纪念碑谷（Monument Valley）这类标志性岩柱地貌，用其独特轮廓作为视觉母题反复出现。
+  keywords:
+  - 外景地
+  - 视觉母题
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场景
+  topic: editing
+  quote: |-
+    Setting: Monument Valley
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+    start: 43
+    end: 67
+  provenance_kind: 网络语料
+- id: gen_edit_0166
+  domain: editing
+  title: 外景与俗套段落的取舍
+  content: 外景段落（如荒岛、海难）容易落入其他影片的俗套，拍摄时应压缩其比重，把风格重心放在有独特情绪的室内段落上。
+  keywords:
+  - 荒岛
+  - 海难
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: editing
+  quote: |-
+    The scenes on the desert island are some of them commonplace. The shipwreck and the like remind one of other photoplays
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#004
+  source_span:
+    chunk_id: pg13029_txt#004
+    start: 795
+    end: 914
+  provenance_kind: 网络语料
+- id: gen_edit_0167
+  domain: editing
+  title: 字幕只用于时空转换
+  content: 字幕句只用来交代时间、地点的变化等基本事项，且应放在段落正式开始之前，不要用字幕承载对白或情节转折。
+  keywords:
+  - 段落开头
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 转场
+  topic: editing
+  quote: |-
+    Sentences should be used to show changes of time and place and a few such elementary matters before the episode is fully started.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#011
+  source_span:
+    chunk_id: pg13029_txt#011
+    start: 1113
+    end: 1242
+  provenance_kind: 网络语料
+- id: gen_edit_0168
+  domain: editing
+  title: 布景写实而非抽象
+  content: 室内景要像室内、街道要像街道、屋顶要像屋顶，演员不要在疯狂的几何形中移动；布景可以压抑但必须合理，怪诞感靠表演与情节表达，而非把场景做成抽象几何。
+  keywords:
+  - 压抑
+  - 合理
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压抑
+  tags:
+  - 美术
+  - 场景
+  topic: editing
+  quote: |-
+    Indoors looks like indoors. Streets are always streets, roofs are always roofs.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#001
+  source_span:
+    chunk_id: pg13029_txt#001
+    start: 275
+    end: 354
+  provenance_kind: 网络语料
+- id: gen_edit_0169
+  domain: editing
+  title: 布景须与动作相关
+  content: 布景必须与剧情动作发生关联：若场景陈设无法暗示人物身份与处境（如看不出这是美国女百万富翁的房间），该布景即与动作无关，应舍弃。
+  keywords:
+  - 人物身份
+  - 关联
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事
+  topic: editing
+  quote: |-
+    Moreover, this scenery has nothing to do with the action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#008
+  source_span:
+    chunk_id: pg73028_txt#008
+    start: 1284
+    end: 1341
+  provenance_kind: 网络语料
+- id: gen_edit_0170
+  domain: editing
+  title: 布景是情感的框架
+  content: 布景无论多宏大华丽，只有当它成为人物内心活动的框架时才有效；否则其效果是虚张的、不真诚的，从任何角度看都不可取。
+  keywords:
+  - 内心
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情绪
+  topic: editing
+  quote: |-
+    if it is not a frame, or a framework, for the things that go on in the human heart, its effect is swollen, disingenuous, and undesirable
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#008
+  source_span:
+    chunk_id: pg73028_txt#008
+    start: 1501
+    end: 1637
+  provenance_kind: 网络语料
+- id: gen_edit_0171
+  domain: editing
+  title: 实验感来自对比而非手法
+  content: 布景本身不必实验性；当它被置于常规商业套路旁边对照时，才显得实验。判断风格是否激进，要看它与同行业惯用公式的落差。
+  keywords:
+  - 实验性
+  - 商业公式
+  - 风格落差
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 风格判断
+  - 语境
+  topic: editing
+  quote: |-
+    It seems experimental because it is thrown into contrast with extreme commercial formulas in the regular line of the "movie trade."
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#001
+  source_span:
+    chunk_id: pg13029_txt#001
+    start: 721
+    end: 852
+  provenance_kind: 网络语料
+- id: gen_edit_0172
+  domain: editing
+  title: 布景须服务动作
+  content: 布景装饰不能抢戏：画面元素若复杂到需要观众停下来细看，就会把注意力从动作上拉走；电影画面几秒即过，没有时间供人研究装饰细节，因此装饰应简洁、可一眼读懂。
+  keywords:
+  - 装饰
+  - 注意力
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视觉引导
+  topic: editing
+  quote: |-
+    it is not the business of the decoration to draw attention away from the action
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#008
+  source_span:
+    chunk_id: pg73028_txt#008
+    start: 874
+    end: 953
+  provenance_kind: 网络语料
+- id: gen_edit_0173
+  domain: editing
+  title: 用押韵镜头建立双主角
+  content: 当两个角色共享同一名字或身份时，用构图、机位、动作重复的"押韵镜头"在两人之间建立对位关系，让观众感到命运呼应。
+  keywords:
+  - 对位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 宿命
+  tags:
+  - 构图
+  - 对位剪辑
+  topic: editing
+  quote: |-
+    Two Charlies: rhyming shots
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 449
+    end: 476
+  provenance_kind: 网络语料
+- id: gen_edit_0174
+  domain: editing
+  title: 台词要像真实冒犯
+  content: 当对白承担冲突爆发点时，要让它听起来像真实的侮辱而非戏剧腔的台词，让话语仿佛"冲出胶片"；这种处理在默片/影像叙事中极难做到，但一旦成立，冲击力远超情节化台词。
+  keywords:
+  - 侮辱
+  - 真实感
+  - 冲突
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 愤怒
+  tags:
+  - 对白
+  - 冲突
+  - 写实
+  topic: editing
+  quote: |-
+    The words actually burst through the film, not as a melodramatic, but as an actual insult.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#008
+  source_span:
+    chunk_id: pg13029_txt#008
+    start: 1153
+    end: 1243
+  provenance_kind: 网络语料
+- id: gen_edit_0175
+  domain: editing
+  title: 线条主导的动画式影像
+  content: 当影片以绘画而非油画方式呈现时，应消除半调过渡、让线条在各处占主导，形成"运动中的素描"而非"运动中的绘画"。
+  keywords:
+  - 半调
+  - 素描
+  - 绘画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视觉风格
+  topic: editing
+  quote: |-
+    Half-tone effects are, for the most part, eliminated. Line is dominant everywhere.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#001
+  source_span:
+    chunk_id: pg13029_txt#001
+    start: 1498
+    end: 1580
+  provenance_kind: 网络语料
+- id: gen_edit_0176
+  domain: editing
+  title: 影片应动而不喘
+  content: 当抒情被动作吸收后，影片成为欢快流动却从不气喘吁吁的艺术——即保持持续运动感但避免节奏失控、令人窒息。
+  keywords:
+  - 节奏
+  - 流动感
+  - 呼吸感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 轻快
+  tags:
+  - 节奏
+  - 运动感
+  topic: editing
+  quote: |-
+    In this way, the moving picture becomes a cheerfully moved and never breathless art.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#010
+  source_span:
+    chunk_id: pg73028_txt#010
+    start: 630
+    end: 714
+  provenance_kind: 网络语料
+- id: gen_edit_0177
+  domain: editing
+  title: 单音调表演的识别
+  content: 当整场戏由一名或数名演员用同一情绪基调演完时，即为单音调表演；分镜应安排情绪转折点，迫使表演出现色彩变化。
+  keywords:
+  - 情绪转折
+  - 色彩变化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情绪
+  topic: editing
+  quote: |-
+    entire film actions are played by one or several actors on a single string
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#007
+  source_span:
+    chunk_id: pg73028_txt#007
+    start: 1463
+    end: 1537
+  provenance_kind: 网络语料
+- id: gen_edit_0178
+  domain: editing
+  title: 完美层次的无痕感
+  content: 当每场戏的强调与高潮递进都准确时，观众会感到整体完美却说不出原因；因此分镜不必依赖显眼的技巧标记，而应让层次自然成立。
+  keywords:
+  - 自然
+  - 观众感受
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 观感
+  topic: editing
+  quote: |-
+    He feels the perfection though he is unable to explain it.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#006
+  source_span:
+    chunk_id: pg73028_txt#006
+    start: 1327
+    end: 1385
+  provenance_kind: 网络语料
+- id: gen_edit_0179
+  domain: editing
+  title: 拖拽假人的穿帮
+  content: 当镜头需要角色被拖拽（如抓头发拖行）时，用假人代替真人会因重量与关节运动不自然而露馅；应让真人演员完成拖拽动作，或用局部特写、暗部与快速运动掩盖假人。
+  keywords:
+  - 关节
+  - 特写
+  - 暗部
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 滑稽
+  tags:
+  - 特技
+  - 穿帮规避
+  topic: editing
+  quote: |-
+    we merely smile when the Golem drags a stuffed doll around by the hair
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#003
+  source_span:
+    chunk_id: pg73028_txt#003
+    start: 1507
+    end: 1577
+  provenance_kind: 网络语料
+- id: gen_edit_0180
+  domain: editing
+  title: 悬念与布景无关
+  content: 悬念不取决于装饰或布景；宏大的战争场面极少成为戏剧悬念的来源，战略部署在电影里也很少奏效。
+  keywords:
+  - 战争
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 美术
+  topic: editing
+  quote: |-
+    Suspense has nothing to do with decoration or scenery.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#011
+  source_span:
+    chunk_id: pg73028_txt#011
+    start: 1770
+    end: 1824
+  provenance_kind: 网络语料
+- id: gen_edit_0181
+  domain: editing
+  title: 悬念集中于少数人
+  content: 悬念几乎总是集中在少数个体身上或围绕他们展开，而非分散在庞大群体与宏大场面中。
+  keywords:
+  - 个体
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  topic: editing
+  quote: |-
+    Suspense is almost always concentrated in or around just a few individuals.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#011
+  source_span:
+    chunk_id: pg73028_txt#011
+    start: 1984
+    end: 2059
+  provenance_kind: 网络语料
+- id: gen_edit_0182
+  domain: editing
+  title: 面部特写承载情绪流动
+  content: 情绪变化用面部特写呈现，让情感像风吹过草甸湖面一样在脸上连续流动，而不是靠台词或字幕说明。
+  keywords:
+  - 微表情
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 细腻
+  tags:
+  - 表演
+  topic: editing
+  quote: |-
+    Over her face the emotions play like winds on a meadow lake.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#006
+  source_span:
+    chunk_id: pg13029_txt#006
+    start: 1979
+    end: 2039
+  provenance_kind: 网络语料
+- id: gen_edit_0183
+  domain: editing
+  title: 奠基故事与俘虏叙事
+  content: 情节采用'奠基故事'（founding story）与'俘虏的故事'（captive's tale）两条母题线交织，用俘虏线推动搜寻行动。
+  keywords:
+  - 情节母题
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情节
+  - 母题
+  topic: editing
+  quote: |-
+    Plot: founding story, captive’s tale
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+    start: 75
+    end: 111
+  provenance_kind: 网络语料
+- id: gen_edit_0184
+  domain: editing
+  title: 布景要清晰易读
+  content: 所有装饰性布景必须安排得有条理、明晰、易于扫视；混乱难读的布景会让观众无法在短时间内获取信息。
+  keywords:
+  - 构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 可读性
+  topic: editing
+  quote: |-
+    All decorative scenery has to be well arranged; it must be lucid, clear, and easy of survey.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#008
+  source_span:
+    chunk_id: pg73028_txt#008
+    start: 1142
+    end: 1234
+  provenance_kind: 网络语料
+- id: gen_edit_0185
+  domain: editing
+  title: 受损主角的塑造
+  content: 把主角设定为'受损的英雄'（damaged hero）：带有创伤或道德污点，其行动动机由这一损伤驱动。
+  keywords:
+  - 受损英雄
+  - 主角塑造
+  - 创伤
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  topic: editing
+  quote: |-
+    Damaged hero
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+    start: 27
+    end: 39
+  provenance_kind: 网络语料
+- id: gen_edit_0186
+  domain: editing
+  title: 环境与人物气质统一
+  content: 把人物安置在与群体精神气质相称的环境中，例如让三人站在石制阳台上，以环境的体量与半古典服饰共同支撑画面的宏大感。
+  keywords:
+  - 阳台
+  - 宏大感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 调度
+  topic: editing
+  quote: |-
+    All three are on a stone balcony that relates itself to the general largeness of spirit in the group
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#007
+  source_span:
+    chunk_id: pg13029_txt#007
+    start: 2038
+    end: 2138
+  provenance_kind: 网络语料
+- id: gen_edit_0187
+  domain: editing
+  title: 画面字母表
+  content: 把反复出现的物件当作视觉字母表中的一个字母：如王座在银幕上一出现，观众立刻识别为皇室或权力含义，无需额外解释。
+  keywords:
+  - 视觉字母
+  - 王座
+  - 识别
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 符号化
+  - 视觉母题
+  topic: editing
+  quote: |-
+    When you see one flashed on the screen, you know instantly you are dealing with royalty or its implications.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#013
+  source_span:
+    chunk_id: pg13029_txt#013
+    start: 1903
+    end: 2011
+  provenance_kind: 网络语料
+- id: gen_edit_0188
+  domain: editing
+  title: 摄影机即笔
+  content: 把摄影机当作笔（caméra-stylo）：导演用场面调度与镜头运动直接书写观点，而非仅记录剧本。
+  keywords:
+  - 作者
+  - 调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 作者论
+  - 调度
+  topic: editing
+  quote: |-
+    Alexandre Astruc (1923- ); caméra-stylo
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+    start: 1495
+    end: 1534
+  provenance_kind: 网络语料
+- id: gen_edit_0189
+  domain: editing
+  title: 隐形见证者机位
+  content: 把摄影机当作隐形见证者：机位保持尊重、专注但不静止，用持续微调的运动感观察场景，避免呆板的固定机位。
+  keywords:
+  - 运动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动
+  topic: editing
+  quote: |-
+    Invisible witness: respectful, attentive, restless
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+    start: 12
+    end: 62
+  provenance_kind: 网络语料
+- id: gen_edit_0190
+  domain: editing
+  title: 流浪汉作为神话符号
+  content: 把流浪汉处理为神话式符号而非具体个人：造型固定（礼帽、手杖、步态），使其可跨影片重复出现，观众识别的是姿态而非身份。
+  keywords:
+  - 流浪汉作为神话符号
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物设计
+  topic: editing
+  quote: |-
+    The Tramp as Myth
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#000
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#000
+    start: 1746
+    end: 1763
+  provenance_kind: 网络语料
+- id: gen_edit_0191
+  domain: editing
+  title: 声画同步的巧合
+  content: 把窗外猫头鹰的叫声与室内敲击声剪成同一节拍，用声音的巧合把角色推向最终崩溃点。
+  keywords:
+  - 节拍
+  - 崩溃点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 惊悚
+  tags:
+  - 声音
+  - 剪辑
+  - 节奏
+  topic: editing
+  quote: |-
+    the startling coincidence of the owl hoot-hooting outside the window to the same measure, bring us close to the final breakdown
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#009
+  source_span:
+    chunk_id: pg13029_txt#009
+    start: 1138
+    end: 1265
+  provenance_kind: 网络语料
+- id: gen_edit_0192
+  domain: editing
+  title: 类型作为共识叙事空间
+  content: 把类型片理解为一种论坛式的"话语空间"，是"国家的剧场"，创作者在其中与观众协商共同价值。
+  keywords:
+  - 话语空间
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: editing
+  quote: |-
+    Genre as a forum, a discourse space, the “theater of a nation”
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 1962
+    end: 2024
+  provenance_kind: 网络语料
+- id: gen_edit_0193
+  domain: editing
+  title: 礼教氛围中的暴行
+  content: 把粗暴的侮辱性言行放在整体礼教、骑士风度的氛围中，反差本身构成高潮时刻；这种"氛围中的暴行"比单纯的情节冲突更有力。
+  keywords:
+  - 反差
+  - 高潮
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 震惊
+  tags:
+  - 段落结构
+  - 反差
+  - 高潮
+  topic: editing
+  quote: |-
+    This outrage in the midst of an atmosphere of chivalry is one of Griffith's master-moments.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#008
+  source_span:
+    chunk_id: pg13029_txt#008
+    start: 1302
+    end: 1393
+  provenance_kind: 网络语料
+- id: gen_edit_0194
+  domain: editing
+  title: 亲密戏靠细腻表演
+  content: 拍亲密/抒情段落时，让演员保持细腻克制的表演状态，不要为了抓住观众注意力而让角色翻跟头式地过度活跃。
+  keywords:
+  - 克制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 温柔
+  tags:
+  - 抒情
+  topic: editing
+  quote: |-
+    when they are not roused up by their directors to turn handsprings to keep the people staring
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#000
+  source_span:
+    chunk_id: pg13029_txt#000
+    start: 2500
+    end: 2593
+  provenance_kind: 网络语料
+- id: gen_edit_0195
+  domain: editing
+  title: 亲密段落需整段延续
+  content: 拍亲密友好类段落时，把最动人的画面按逻辑延续一到三卷，中途不插入情节剧式打断或激烈撞车。
+  keywords:
+  - 一卷
+  - 无打断
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 温和
+  tags:
+  - 节奏
+  - 段落结构
+  topic: editing
+  quote: |-
+    extended logically through one or three reels, with no melodramatic interruptions or awful smashes
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#005
+  source_span:
+    chunk_id: pg13029_txt#005
+    start: 411
+    end: 509
+  provenance_kind: 网络语料
+- id: gen_edit_0196
+  domain: editing
+  title: 三人组构成雕塑群像
+  content: 拍劫持—拦截的三人场面时，让被劫女子与反派在造型上和谐成组，英雄以厚重块面与二者呼应，三人共同构成可作雕塑展品的整体群像。
+  keywords:
+  - 三人构图
+  - 块面
+  - 呼应
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 构图
+  - 雕塑感
+  topic: editing
+  quote: |-
+    The figures of the lady and the monk are in sufficient sculptural harmony to make a formal sculptural group for an art exhibition.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#007
+  source_span:
+    chunk_id: pg13029_txt#007
+    start: 1751
+    end: 1881
+  provenance_kind: 网络语料
+- id: gen_edit_0197
+  domain: editing
+  title: 环境对比营造庄严
+  content: 拍抒情段落时，可用巨大自然景物（如红杉林）作为环境，与人物细腻优雅的仪态形成对比，从而获得庄严感。
+  keywords:
+  - 环境对比营造庄严
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 庄严
+  tags:
+  - 构图
+  - 氛围
+  topic: editing
+  quote: |-
+    There is something of the grandeur of the redwoods in it, in contrast to the sustained Botticelli grace
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#000
+  source_span:
+    chunk_id: pg13029_txt#000
+    start: 2960
+    end: 3063
+  provenance_kind: 网络语料
+- id: gen_edit_0198
+  domain: editing
+  title: 亲密型影片的节奏取舍
+  content: 拍摄亲密型（Intimate）剧情片时，若总时长偏长，应把每一场都略微缩短来压缩整体篇幅，而不是删掉整场戏；本片四本各二十分钟，作者认为应缩成三本。
+  keywords:
+  - 时长
+  - 压缩
+  - 场次
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 结构
+  topic: editing
+  quote: |-
+    The play is in four reels of twenty minutes each. It should have been made into three reels by shortening every scene just a bit.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#004
+  source_span:
+    chunk_id: pg13029_txt#004
+    start: 254
+    end: 383
+  provenance_kind: 网络语料
+- id: gen_edit_0199
+  domain: editing
+  title: 替身坠落镜头的破绽
+  content: 拍摄人物被推下高台、坠落致死的镜头时，若用填充假人替代演员，观众会立刻识破；应避免让假人出现在可辨认的轮廓或近景中，改用遮挡、剪影、快速摇移或只拍坠落起点与落点来隐藏替身。
+  keywords:
+  - 假人
+  - 遮挡
+  - 剪影
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 出戏
+  tags:
+  - 特技
+  - 穿帮规避
+  topic: editing
+  quote: |-
+    a big stuffed doll is substituted for the mortal thus to be visualized
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#003
+  source_span:
+    chunk_id: pg73028_txt#003
+    start: 1298
+    end: 1368
+  provenance_kind: 网络语料
+- id: gen_edit_0200
+  domain: editing
+  title: 群众场面拍成整体运动
+  content: 拍摄人群/军队场面时，把人群当作一个整体运动来拍，使其像海洋般流动，而非聚焦个体。
+  keywords:
+  - 军队
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 恢弘
+  tags:
+  - 调度
+  - 大场面
+  topic: editing
+  quote: |-
+    It can give us tremendous armies, moving as oceans move.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#005
+  source_span:
+    chunk_id: pg13029_txt#005
+    start: 1433
+    end: 1489
+  provenance_kind: 网络语料
+- id: gen_edit_0201
+  domain: editing
+  title: 用模型预演关键情境
+  content: 拍摄前用小型蜡像模型呈现故事的关键情境（如七个转折点），模型需按角色设计服装与色调，作为动作与调度的视觉依据。
+  keywords:
+  - 蜡像模型
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜
+  topic: editing
+  quote: |-
+    tiny wax models of the figures, toned and costumed to the heart's delight, would tell the high points of the story
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#010
+  source_span:
+    chunk_id: pg13029_txt#010
+    start: 871
+    end: 985
+  provenance_kind: 网络语料
+- id: gen_edit_0202
+  domain: editing
+  title: 动作戏以公路奔跑为基底
+  content: 拍摄动作类段落时，以公路上的追逐奔跑作为影像基底，用运动与速度建立段落基调。
+  keywords:
+  - 追逐
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 运动
+  - 段落基调
+  topic: editing
+  quote: |-
+    Just as the Action Motion Picture has its photographic basis in the race down the high-road
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#005
+  source_span:
+    chunk_id: pg13029_txt#005
+    start: 825
+    end: 916
+  provenance_kind: 网络语料
+- id: gen_edit_0203
+  domain: editing
+  title: 歌舞片用场面调度与蒙太奇
+  content: 拍摄歌舞段落时，用场面调度处理空间内的歌舞，用蒙太奇处理时间与节奏的跳跃，两者结合形成"真正的整合"。
+  keywords:
+  - 歌舞片用场面调度与蒙太奇
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 欢快
+  tags: []
+  topic: editing
+  quote: |-
+    Style: mise en scene and montage
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 1749
+    end: 1781
+  provenance_kind: 网络语料
+- id: gen_edit_0204
+  domain: editing
+  title: 新现实主义核心手法
+  content: 拍新现实主义段落时，用非职业演员、户外摄影、场面调度与纪录片质感，让角色优先于情节。
+  keywords:
+  - 非职业演员
+  - 户外摄影
+  - 场面调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 纪实
+  topic: editing
+  quote: |-
+    Non-professional actors, outdoor camera, mise en scène, documentary flavor, character vs plot
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+    start: 564
+    end: 657
+  provenance_kind: 网络语料
+- id: gen_edit_0205
+  domain: editing
+  title: 电影演员是环境符号
+  content: 拍电影时，演员不应像舞台那样成为画面重心；应让演员成为人群、风景或场景的一个符号化元素，环境与氛围优先于个人表演。
+  keywords:
+  - 符号化
+  - 氛围
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 构图
+  topic: editing
+  quote: |-
+    But the motion picture actor is but the mood of the mob or the landscape or the department store behind him, reduced to a single hieroglyphic.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#012
+  source_span:
+    chunk_id: pg13029_txt#012
+    start: 100
+    end: 242
+  provenance_kind: 网络语料
+- id: gen_edit_0206
+  domain: editing
+  title: 宗教场面的表演取舍
+  content: 拍祈祷等宗教场面时，可用孩童式的模仿手势（跪下、合掌）获得虔诚感，但不要试图表现超验的神性——银幕上的神圣只会显得空洞。
+  keywords:
+  - 祈祷
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 虔诚
+  tags: []
+  topic: editing
+  quote: |-
+    But her action was a sweet, imitated, childlike gesture, while in her little head there was no room for the superhuman picture of the creator.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#009
+  source_span:
+    chunk_id: pg73028_txt#009
+    start: 2033
+    end: 2175
+  provenance_kind: 网络语料
+- id: gen_edit_0207
+  domain: editing
+  title: 追逐片单线结构
+  content: 拍追逐/动作段落时，把整部故事压缩为单一情节线：全片只围绕一个目标物（如信物）的夺取与送达展开，让追逐成为唯一主线，反派始终被甩在身后。
+  keywords:
+  - 单情节
+  - 动作片
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 段落结构
+  topic: editing
+  quote: |-
+    The story is cut to one episode. The whole task of the four famous swordsmen of Dumas is to get the Queen's token
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#000
+  source_span:
+    chunk_id: pg13029_txt#000
+    start: 1547
+    end: 1660
+  provenance_kind: 网络语料
+- id: gen_edit_0208
+  domain: editing
+  title: 队列行进用浮雕式构图
+  content: 拍骑马队列、游行或赶集场面时，参考帕特农神庙浮雕的构图：让骑手一个接一个、姿态与头部不断变化，在看似重复的队形中制造细腻而常新的构图关系，避免整齐划一的呆板排列。
+  keywords:
+  - 重复变化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 昂扬
+  tags:
+  - 群像
+  - 节奏
+  topic: editing
+  quote: |-
+    The delicate composition relations, ever varying, ever refreshing, amid the seeming sameness of formula of rider behind rider
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#007
+  source_span:
+    chunk_id: pg13029_txt#007
+    start: 517
+    end: 642
+  provenance_kind: 网络语料
+- id: gen_edit_0209
+  domain: editing
+  title: 避免过度运动化表演
+  content: 指导女演员演文戏时，避免被刺激成过度运动化的表演；把她的细腻一面留给少数镜头，其余段落不要用夸张肢体去维持观众注视。
+  keywords:
+  - 细腻
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 克制
+  topic: editing
+  quote: |-
+    Mary Pickford in particular has been stimulated to be over-athletic
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#000
+  source_span:
+    chunk_id: pg13029_txt#000
+    start: 2595
+    end: 2662
+  provenance_kind: 网络语料
+- id: gen_edit_0210
+  domain: editing
+  title: 忠实于原作的情绪
+  content: 改编文学作品时，应让影片整体情绪尽量贴近原作诗文的情绪，而非只复述情节。
+  keywords:
+  - 改编
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 氛围
+  - 改编
+  topic: editing
+  quote: |-
+    The mood of the original poem is approximated.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#004
+  source_span:
+    chunk_id: pg13029_txt#004
+    start: 504
+    end: 550
+  provenance_kind: 网络语料
+- id: gen_edit_0211
+  domain: editing
+  title: 统一空间与质感关系
+  content: 整组预演素材（模型与插画）必须保持统一的空间与质感关系系统，避免各镜头间视觉断裂。
+  keywords:
+  - 空间关系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视觉连续性
+  topic: editing
+  quote: |-
+    Let there be a definite system of space and texture relations retained throughout the set.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#010
+  source_span:
+    chunk_id: pg13029_txt#010
+    start: 1352
+    end: 1442
+  provenance_kind: 网络语料
+- id: gen_edit_0212
+  domain: editing
+  title: 反情节的开场
+  content: 新现实主义常用'反情节'开场：以日常、松散、无强因果的事件起手，替代经典戏剧式钩子。
+  keywords:
+  - 日常
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事结构
+  topic: editing
+  quote: |-
+    The Neorealist Counter-plot • The beginning of Open City
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+    start: 868
+    end: 924
+  provenance_kind: 网络语料
+- id: gen_edit_0213
+  domain: editing
+  title: 主角动作的克制节奏
+  content: 无论在哪条色彩线里，主角的形体动作都保持细腻、从容、有节制的步态（delicate deliberation），不因场面宏大而加快，以此维持人物统一性。
+  keywords:
+  - 表演节奏
+  - 动作节制
+  - 人物统一
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 调度
+  topic: editing
+  quote: |-
+    Judith moves with a delicate deliberation.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#006
+  source_span:
+    chunk_id: pg13029_txt#006
+    start: 1936
+    end: 1978
+  provenance_kind: 网络语料
+- id: gen_edit_0214
+  domain: editing
+  title: 偶然性世界的调度
+  content: 构建基顿式世界时，让环境与道具成为不可控变量：事件由偶然触发，人物只能被动应对，调度上避免因果严密的连锁，改用意外打断动作。
+  keywords:
+  - 基顿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 荒诞
+  tags:
+  - 世界观
+  topic: editing
+  quote: |-
+    The Keaton universe: contingency
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#000
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#000
+    start: 1576
+    end: 1608
+  provenance_kind: 网络语料
+- id: gen_edit_0215
+  domain: editing
+  title: 用二元对立构建神话
+  content: 构建文化神话时，围绕一组组二元对立（如文明/荒野、秩序/自由）组织冲突，让叙事成为价值的辩论场。
+  keywords:
+  - 冲突
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 主题
+  topic: editing
+  quote: |-
+    Dichotomies
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 2213
+    end: 2224
+  provenance_kind: 网络语料
+- id: gen_edit_0216
+  domain: editing
+  title: 歌舞段落的整合原则
+  content: 歌舞片中的歌曲与舞蹈不应是插入的表演，而应嵌入叙事，让歌舞成为推动情节与揭示人物的手段。
+  keywords:
+  - 叙事
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: editing
+  quote: |-
+    Musical numbers: true integration
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 1808
+    end: 1841
+  provenance_kind: 网络语料
+- id: gen_edit_0217
+  domain: editing
+  title: 多重性原则开场
+  content: 段落开场可用'多重性原则'：同时铺开多条人物/事件线索，让观众在交叉观察中自行建立世界。
+  keywords:
+  - 群像
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: editing
+  quote: |-
+    The Opening of Bicycle Thieves • The multiplicity principle
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+    start: 370
+    end: 429
+  provenance_kind: 网络语料
+- id: gen_edit_0218
+  domain: editing
+  title: 符号正反双义法
+  content: 每个图形符号正面写字面含义，翻到背面写一个与之相关的抽象含义；拍摄时在字面与抽象两层含义之间取得平衡，使画面兼具具体与精神性。
+  keywords:
+  - 字面义
+  - 抽象义
+  - 双层含义
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 符号化
+  - 隐喻
+  topic: editing
+  quote: |-
+    let him turn over each cardboard, making the white undersurface uppermost, and there write a more abstract meaning of the hieroglyphic
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#013
+  source_span:
+    chunk_id: pg13029_txt#013
+    start: 650
+    end: 784
+  provenance_kind: 网络语料
+- id: gen_edit_0219
+  domain: editing
+  title: 角色基调需预先设定
+  content: 每个角色的性格应被设定为单一基调（尖锐或平缓、大调或小调），一旦定调便持续贯穿；分镜阶段需为角色标注该基调，避免逐场漂移。
+  keywords:
+  - 性格设定
+  - 贯穿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: editing
+  quote: |-
+    the entire character of a figure is tuned either to a sharp or a flat note, in a major or a minor key
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#007
+  source_span:
+    chunk_id: pg73028_txt#007
+    start: 475
+    end: 576
+  provenance_kind: 网络语料
+- id: gen_edit_0220
+  domain: editing
+  title: 逐场递进的艺术层次
+  content: 每场戏应获得与其功能相称的强调：铺垫场次保持次要分量，逐级递进，使高潮从前面所有铺垫中凸显出来，而非各场平均用力。
+  keywords:
+  - 强调
+  - 高潮
+  - 铺垫
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: editing
+  quote: |-
+    each scene receiving the emphasis it deserves and the climax rising up above all that has gone before
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#006
+  source_span:
+    chunk_id: pg73028_txt#006
+    start: 671
+    end: 772
+  provenance_kind: 网络语料
+- id: gen_edit_0221
+  domain: editing
+  title: 演员场景为艺术轴心
+  content: 演员—场景是全部艺术考量的枢轴，一切取材与再创造都由此辐射；创作与荣誉应归于在观众面前呈现人心搏动的人。
+  keywords:
+  - 人心呈现
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 创作重心
+  topic: editing
+  quote: |-
+    The actor-scene becomes the pivot of all art consideration. It is from it that all recruiting and recreation radiate
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#004
+  source_span:
+    chunk_id: pg73028_txt#004
+    start: 777
+    end: 893
+  provenance_kind: 网络语料
+- id: gen_edit_0222
+  domain: editing
+  title: 结局留白制造暧昧
+  content: 片名与结尾并置时，让结尾不给出明确道德或情节结论，用暧昧（ambiguity）收束，使主题保持开放。
+  keywords:
+  - 结尾
+  - 开放结局
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 暧昧
+  tags: []
+  topic: editing
+  quote: |-
+    The title and the ending: ambiguity
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+    start: 172
+    end: 207
+  provenance_kind: 网络语料
+- id: gen_edit_0223
+  domain: editing
+  title: 特技镜头非艺术
+  content: 特技/魔术类镜头（如让魔鬼劫走火车）属于杂耍式身体技巧，缺乏内在发展与创作痛苦，不应作为艺术表现手段；判断标准是：该效果是否只靠机关完成而无人物或情境的内在发展。
+  keywords:
+  - 魔术
+  - 杂耍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 风格判断
+  topic: editing
+  quote: |-
+    The trick film is the work of a cold hand.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#002
+  source_span:
+    chunk_id: pg73028_txt#002
+    start: 438
+    end: 480
+  provenance_kind: 网络语料
+- id: gen_edit_0224
+  domain: editing
+  title: 七道门槛式结构
+  content: 用七个'门槛镜头'（threshold shots）作为段落骨架来组织全片结构，每个门槛镜头标记主角跨越一次地理或心理边界，形成可数的结构节点。
+  keywords:
+  - 门槛镜头
+  - 段落结构
+  - 结构节点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落
+  - 门槛镜头
+  topic: editing
+  quote: |-
+    Structure: seven ‘threshold shots’
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#003
+    start: 115
+    end: 149
+  provenance_kind: 网络语料
+- id: gen_edit_0225
+  domain: editing
+  title: 重复递进制造紧迫
+  content: 用同一动作的连续重复（一个骑手到来、又一个、再一个，每个都匆忙）在远景中累积紧迫感，替代单次交代。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧迫
+  tags:
+  - 节奏
+  topic: editing
+  quote: |-
+    A rider comes up, and then another, and then another. Each is in haste.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#009
+  source_span:
+    chunk_id: pg73028_txt#009
+    start: 558
+    end: 629
+  provenance_kind: 网络语料
+- id: gen_edit_0226
+  domain: editing
+  title: 象形符号构建分镜表
+  content: 用数百个基础图形符号（如埃及象形符号）排列成行来搭建场景大纲，每个符号先取最字面的含义，作为分镜组合的检索单元。
+  keywords:
+  - 场景大纲
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 符号化
+  topic: editing
+  quote: |-
+    He can construct the outlines of his scenarios by placing these little pictures in rows.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#013
+  source_span:
+    chunk_id: pg13029_txt#013
+    start: 267
+    end: 355
+  provenance_kind: 网络语料
+- id: gen_edit_0227
+  domain: editing
+  title: 用速度替代激情
+  content: 电影不直接表现缓慢逼近的情感强度，而用速度狂热加一个明显情节框架来替代；拍摄时以快速运动承载情绪。
+  keywords:
+  - 情节框架
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 叙事
+  topic: editing
+  quote: |-
+    its first substitute is the excitement of speed-mania stretched on the framework of an obvious plot.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#012
+  source_span:
+    chunk_id: pg13029_txt#012
+    start: 1502
+    end: 1602
+  provenance_kind: 网络语料
+- id: gen_edit_0228
+  domain: editing
+  title: 电影内景取小
+  content: 电影内景应比舞台内景小，用较小的室内空间拍摄，以贴近镜头语言而非舞台的宽阔感。
+  keywords:
+  - 空间
+  - 舞台对比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场景
+  - 构图
+  topic: editing
+  quote: |-
+    The stage-interior is large. The motion-picture interior is small.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#012
+  source_span:
+    chunk_id: pg13029_txt#012
+    start: 244
+    end: 310
+  provenance_kind: 网络语料
+- id: gen_edit_0229
+  domain: editing
+  title: 电影接近短篇与抒情诗
+  content: 电影在文学上最接近短篇小说或抒情诗，而非长篇小说；拍摄结构应短促、凝练、以情绪与意象为主。
+  keywords:
+  - 结构
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事
+  - 结构
+  topic: editing
+  quote: |-
+    Its nearest analogy in literature is, perhaps, the short story, or the lyric poem.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#012
+  source_span:
+    chunk_id: pg13029_txt#012
+    start: 738
+    end: 820
+  provenance_kind: 网络语料
+- id: gen_edit_0230
+  domain: editing
+  title: 外景要有真实运动
+  content: 电影外景应拍出真实、宏大的运动（如海浪翻涌、水流奔泻），避免舞台式静止或做作的运动。
+  keywords:
+  - 真实感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: editing
+  quote: |-
+    The motion picture out-of-door scene is as big as the universe. And only pictures of the Sahara are without magnificent motion.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#012
+  source_span:
+    chunk_id: pg13029_txt#012
+    start: 516
+    end: 643
+  provenance_kind: 网络语料
+- id: gen_edit_0231
+  domain: editing
+  title: 电影关键词：壮丽与速度
+  content: 电影的核心是壮丽（splendor）与速度（speed），而非舞台的激情与性格；拍摄时应优先呈现宏大场面与快速运动。
+  keywords:
+  - 电影特性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 风格
+  topic: editing
+  quote: |-
+    The key-words of the stage are _passion_ and _character_; of the photoplay, _splendor_ and _speed_.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#012
+  source_span:
+    chunk_id: pg13029_txt#012
+    start: 821
+    end: 920
+  provenance_kind: 网络语料
+- id: gen_edit_0232
+  domain: editing
+  title: 图文融合为有机统一
+  content: 画面与文字应在观众心灵中彼此消融、交织，构成有机的统一体与精神实体——这是图文结合可达到的独特艺术形式。
+  keywords:
+  - 精神实体
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 字幕
+  - 叙事
+  topic: editing
+  quote: |-
+    In our soul, Busch’s contrasts are dissolved and intertwined; they constitute an organic unity; they are a spiritual entity.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#001
+  source_span:
+    chunk_id: pg73028_txt#001
+    start: 2204
+    end: 2328
+  provenance_kind: 网络语料
+- id: gen_edit_0233
+  domain: editing
+  title: 开放式结局保留歧义
+  content: 结尾不要给出单一确定的答案，保留歧义让观众自行判断，使主题在散场后继续发酵。
+  keywords:
+  - 开放式结局保留歧义
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 悬疑
+  tags: []
+  topic: editing
+  quote: |-
+    The ending: ambiguity
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 510
+    end: 531
+  provenance_kind: 网络语料
+- id: gen_edit_0234
+  domain: editing
+  title: 有机形式结构
+  content: 结构上采用'有机形式'：让段落随人物生活自然生长，而非套用三幕式强结构。
+  keywords:
+  - 生活流
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事结构
+  topic: editing
+  quote: |-
+    Structure: organic form
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#005
+    start: 1207
+    end: 1230
+  provenance_kind: 网络语料
+- id: gen_edit_0235
+  domain: editing
+  title: 分镜节奏的起伏
+  content: 编剧在分镜阶段就要为场景安排节奏：各场戏要有自然的起伏与平滑过渡，避免全片能量平均散落；高潮场必须明显高于此前所有铺垫场。
+  keywords:
+  - 场景
+  - 高潮
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: editing
+  quote: |-
+    He must see to it that there is a rhythm about his scenes; these must rise and fall naturally and smoothly.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#006
+  source_span:
+    chunk_id: pg73028_txt#006
+    start: 1669
+    end: 1776
+  provenance_kind: 网络语料
+- id: gen_edit_0236
+  domain: editing
+  title: 演员即诗人的传声筒
+  content: 舞台演员被定位为诗人的'传声筒'（per-sona，声音穿透之物），其职能是传达剧作意图；表演调度应服务于文本意图而非演员个人表现。
+  keywords:
+  - per-sona
+  - 剧作意图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 角色定位
+  topic: editing
+  quote: |-
+    The actor on the legitimate stage is a person—that is, a _per-sona_ (a “sounding-through”); he is the speaking tube of the poet.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#004
+  source_span:
+    chunk_id: pg73028_txt#004
+    start: 1131
+    end: 1259
+  provenance_kind: 网络语料
+- id: gen_edit_0237
+  domain: editing
+  title: 艺术目的在再现场景
+  content: 艺术的目的明确：服务于对场景的富有色彩的再现；判断一个镜头手段是否成立，看它是否服务于这一再现目的。
+  keywords:
+  - 色彩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作原则
+  topic: editing
+  quote: |-
+    The purpose of art is clear: it is to serve in the colorful reproduction of a scene.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#002
+  source_span:
+    chunk_id: pg73028_txt#002
+    start: 1553
+    end: 1637
+  provenance_kind: 网络语料
+- id: gen_edit_0238
+  domain: editing
+  title: 群戏要融入动作
+  content: 若观众要求每部影片都有盛大场面，就给他们；但必须尽力让这些场面动起来、融入动作，像管弦乐中强有力的渐强乐段融入整首乐曲那样。
+  keywords:
+  - 渐强
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场面调度
+  - 段落结构
+  topic: editing
+  quote: |-
+    try to make even these fit into the action, just as a powerful crescendo movement of the orchestra fits into the music that is being played.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#011
+  source_span:
+    chunk_id: pg73028_txt#011
+    start: 1495
+    end: 1635
+  provenance_kind: 网络语料
+- id: gen_edit_0239
+  domain: editing
+  title: 纸板式建筑与封闭空间
+  content: 若追求亲密感与心理压迫，可让全部建筑呈纸板质感，把整个故事收在一个"柜子"般的封闭空间内完成。
+  keywords:
+  - 亲密
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 幽闭
+  tags:
+  - 美术
+  topic: editing
+  quote: |-
+    All the architecture of the Caligari film seems pasteboard. The whole thing happens in a cabinet.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#001
+  source_span:
+    chunk_id: pg13029_txt#001
+    start: 1669
+    end: 1766
+  provenance_kind: 网络语料
+- id: gen_edit_0240
+  domain: editing
+  title: 平庸节奏拖慢影片
+  content: 若镜头与段落缺乏变化，整体节奏会像平庸之作一样缓慢呆板；剪辑时应通过镜头长度与内容变化打破匀速推进。
+  keywords:
+  - 匀速
+  - 呆板
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 沉闷
+  tags:
+  - 剪辑
+  topic: editing
+  quote: |-
+    The average film is a tedious, wooden affair that moves along with the slowness of all that is mediocre and commonplace.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#007
+  source_span:
+    chunk_id: pg73028_txt#007
+    start: 88
+    end: 208
+  provenance_kind: 网络语料
+- id: gen_edit_0241
+  domain: editing
+  title: 用物件动作写独白
+  content: 表现人物内心独白时，把人物与其所持物件（如人与伪造的支票）交替剪辑，用物件与人的并置代替口头独白。
+  keywords:
+  - 并置剪辑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 物件并置
+  - 内心
+  topic: editing
+  quote: |-
+    By alternating the picture of a man and the check he is forging, we have his soliloquy.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#011
+  source_span:
+    chunk_id: pg13029_txt#011
+    start: 553
+    end: 640
+  provenance_kind: 网络语料
+- id: gen_edit_0242
+  domain: editing
+  title: 用封闭空间表现禁锢
+  content: 表现人物被禁锢时，把开场场景限制在单一封闭空间内，并让摄影机从该空间向外窥视，空间限制本身即叙事。
+  keywords:
+  - 窥视
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压抑
+  tags:
+  - 空间调度
+  - 开场设计
+  topic: editing
+  quote: |-
+    The opening scene: confinement, voyeurism
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 557
+    end: 598
+  provenance_kind: 网络语料
+- id: gen_edit_0243
+  domain: editing
+  title: 家庭题材的构图母题
+  content: 表现家庭温情时，用浅色调人物被孩童环绕的室内群像反复构成画面，形成类似风俗画的构图母题，以支撑全片的居家氛围。
+  keywords:
+  - 群像
+  - 风俗画
+  - 室内
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 温馨
+  tags:
+  - 氛围
+  topic: editing
+  quote: |-
+    The pale Lillian Gish surrounded by happy children gives us many a genre painting on the theme of domesticity.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#004
+  source_span:
+    chunk_id: pg13029_txt#004
+    start: 597
+    end: 707
+  provenance_kind: 网络语料
+- id: gen_edit_0244
+  domain: editing
+  title: 分裂英雄的双重身份
+  content: 西部片英雄常被写成"救世主与野蛮人"的双重身份，用同一人物承载文明与野性两种对立价值。
+  keywords:
+  - 二元
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 二元对立
+  topic: editing
+  quote: |-
+    The divided hero: savior and savage
+  source_ref:
+    url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: MIT 21L.011 The Film Experience - lecture outlines
+    author: MIT OpenCourseWare (David Thorburn)
+    license: CC-BY-NC-SA
+    retrieved_at: '2026-09-30T20:25:01+00:00'
+    sha256: 14c1ee4404458bc1c640be664b18dba508220d2f16a85d17f73c8811901fd869
+  chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+  source_span:
+    chunk_id: 08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l#002
+    start: 2227
+    end: 2262
+  provenance_kind: 网络语料
+- id: gen_edit_0245
+  domain: editing
+  title: 无声指控的表演
+  content: 让指控者全程不说话，只用敲铅笔、跺脚等重复动作施压，被指控者试图无视却失败，以此累积紧张直到崩溃。
+  keywords:
+  - 无声表演
+  - 重复动作
+  - 施压
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 调度
+  - 紧张
+  topic: editing
+  quote: |-
+    the bold tapping of the detective's foot, who would do all his accusing without saying a word
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#009
+  source_span:
+    chunk_id: pg13029_txt#009
+    start: 1039
+    end: 1132
+  provenance_kind: 网络语料
+- id: gen_edit_0246
+  domain: editing
+  title: 悬念=预谋目标的引导感
+  content: 让观众感到创作者正带着故事越过一切潜在阻碍、直奔一个预先设定的目标，这种从容的引导感才是悬念；每场戏都应抛出“接下来会怎样”的问题。
+  keywords:
+  - 悬念=预谋目标的引导感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事
+  topic: editing
+  quote: |-
+    Suspense is rather the calm, serene hand of the poet that guides the work he is creating.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#011
+  source_span:
+    chunk_id: pg73028_txt#011
+    start: 470
+    end: 559
+  provenance_kind: 网络语料
+- id: gen_edit_0247
+  domain: editing
+  title: 鬼怪造型的尺度
+  content: 设计鬼怪形象时，使其既非男也非女、既非兽也非人，保持介于人与非人之间的模糊感，才接近 Poe 式的阴森。
+  keywords:
+  - 模糊感
+  - 阴森
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 恐惧
+  tags:
+  - 恐怖
+  topic: editing
+  quote: |-
+    They are neither man nor woman, they are neither brute nor human; they are ghouls.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#009
+  source_span:
+    chunk_id: pg13029_txt#009
+    start: 2013
+    end: 2095
+  provenance_kind: 网络语料
+- id: gen_edit_0248
+  domain: editing
+  title: 道具需有说服力
+  content: 象征性道具（如王座）若不够可信会削弱镜头效果，应选择或制作形态明确的道具，使符号含义在画面中成立。
+  keywords:
+  - 可信度
+  - 王座
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 符号化
+  topic: editing
+  quote: |-
+    I only wished then that she had a more convincing throne.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#013
+  source_span:
+    chunk_id: pg13029_txt#013
+    start: 2120
+    end: 2177
+  provenance_kind: 网络语料
+- id: gen_edit_0249
+  domain: editing
+  title: 超自然场景的建筑感
+  content: 超自然场景的布景与构图应具备建筑式的庄重感，而非随意堆砌巫术道具，以提升段落的整体格调。
+  keywords:
+  - 布景
+  - 庄重
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 美术
+  - 格调
+  topic: editing
+  quote: |-
+    The scenes are designed with the architectural dignity that the first part of this chapter has insisted wizard trappings should take on.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#009
+  source_span:
+    chunk_id: pg13029_txt#009
+    start: 2097
+    end: 2233
+  provenance_kind: 网络语料
+- id: gen_edit_0250
+  domain: editing
+  title: 支线插叙的定位
+  content: 追逐中切入故事支线的快速回切，其功能等同于跨栏障碍，而不是舞台剧意义上的情节复杂化；剪辑上应把它们当作节奏单元处理。
+  keywords:
+  - 回切
+  - 障碍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 叙事
+  topic: editing
+  quote: |-
+    The sudden cut-backs into side branches of the story are but hurdles also
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#002
+  source_span:
+    chunk_id: pg13029_txt#002
+    start: 573
+    end: 646
+  provenance_kind: 网络语料
+- id: gen_edit_0251
+  domain: editing
+  title: 高浮雕式大块面造型
+  content: 选择画面元素时优先取大块面、高浮雕感、边缘带长线条的造型，使人物与景物在银幕上形成厚重的雕塑体积感，而非琐碎细节。
+  keywords:
+  - 长线条
+  - 体积感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 雕塑感
+  topic: editing
+  quote: |-
+    Mark the illustrations that are massive, in high relief, with long lines in their edges.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#007
+  source_span:
+    chunk_id: pg13029_txt#007
+    start: 1041
+    end: 1129
+  provenance_kind: 网络语料
+- id: gen_edit_0252
+  domain: editing
+  title: 摄影机可作超现实变形
+  content: 需要超现实效果时，利用摄影机的变形能力让仙女、树精、守护灵等非现实元素出现在实景中（如云端、树间）。
+  keywords:
+  - 特效
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 奇幻
+  tags:
+  - 特效
+  - 幻想
+  topic: editing
+  quote: |-
+    the camera has a kind of Hallowe'en witch-power
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#005
+  source_span:
+    chunk_id: pg13029_txt#005
+    start: 1698
+    end: 1745
+  provenance_kind: 网络语料
+- id: gen_edit_0253
+  domain: editing
+  title: 高潮=更锐动作+更美画面
+  content: 高潮镜头的构成条件：动作要比此前任何动作更锐利，同时画面（tableau）要比此前任何画面更美，二者有机统一，如第十道浪拍上沙滩。
+  keywords:
+  - 动作强度
+  - 画面美感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 震撼
+  tags:
+  - 构图
+  topic: editing
+  quote: |-
+    the crisis must be an action sharper than any that has gone before in organic union with a tableau more beautiful than any that has preceded
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: The Art of the Moving Picture
+    author: Lindsay, Vachel, 1879-1931
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:57+00:00'
+    sha256: 0b4745a0f05eb24e49cc9dfcee42a31003eb1ec6668d4f9ac78cc3a22580aaba
+  chunk_id: pg13029_txt#011
+  source_span:
+    chunk_id: pg13029_txt#011
+    start: 1365
+    end: 1505
+  provenance_kind: 网络语料
+- id: gen_edit_0254
+  domain: editing
+  title: 黑白并非电影本体
+  content: 黑白造型本身不构成电影艺术价值：仅靠黑白对比与塑形效果不足以保证画面成立，若缺乏艺术与客观价值，画面只是猎奇之物。
+  keywords:
+  - 塑形
+  - 艺术价值
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 影调
+  - 造型
+  topic: editing
+  quote: |-
+    the film, as an art-form, has to do with and rests upon the art of black and white
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: The soul of the moving picture
+    author: Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:00+00:00'
+    sha256: 29e2fc38a2610e3707d08819e7e91b7f8b3165344cdc2d8ce7bf40b6e96614ae
+  chunk_id: pg73028_txt#008
+  source_span:
+    chunk_id: pg73028_txt#008
+    start: 2050
+    end: 2132
+  provenance_kind: 网络语料

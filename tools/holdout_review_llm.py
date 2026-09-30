@@ -120,7 +120,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not path.is_file():
         print(json.dumps({"error": f"{path} 不存在"}, ensure_ascii=False))
         return 2
-    entries = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+    entries = [json.loads(line) for line in path.read_text(encoding="utf-8").split("\n")
                if line.strip()]
     models = [item.strip() for item in str(args.models).split(",") if item.strip()]
     if len(models) != 2 and not (args.scripted_a and args.scripted_b):

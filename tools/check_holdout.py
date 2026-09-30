@@ -253,7 +253,7 @@ def queryable_slot_hint(sep: str = "、") -> str:
 
 def load_entries(path: pathlib.Path) -> List[dict]:
     entries: List[dict] = []
-    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    for lineno, raw in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
         raw = raw.strip()
         if not raw:
             continue

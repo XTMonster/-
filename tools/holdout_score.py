@@ -436,7 +436,7 @@ def _load_jsonl(path: Path) -> List[Dict[str, Any]]:
     if not path.exists():
         return []
     out = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in path.read_text(encoding="utf-8").split("\n"):
         text = line.strip()
         if text:
             out.append(json.loads(text))

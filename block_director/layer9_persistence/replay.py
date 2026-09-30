@@ -108,7 +108,7 @@ def read_audit_log(directory: Union[str, Path]) -> List[Dict[str, Any]]:
         raise ReplayError(f"找不到审计日志（找过：{looked}）。"
                           f"请先完整跑过至少一次生成，或检查 --project 目录是否正确")
     records: List[Dict[str, Any]] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in path.read_text(encoding="utf-8").split("\n"):
         text = line.strip()
         if not text:
             continue

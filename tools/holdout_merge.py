@@ -60,7 +60,7 @@ def expand(patterns: Sequence[str]) -> List[pathlib.Path]:
 def load_rows(paths: Sequence[pathlib.Path]) -> List[Dict]:
     rows: List[Dict] = []
     for path in paths:
-        for line in path.read_text(encoding="utf-8").splitlines():
+        for line in path.read_text(encoding="utf-8").split("\n"):
             if line.strip():
                 rows.append(json.loads(line))
     return rows

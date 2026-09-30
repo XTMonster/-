@@ -170,7 +170,7 @@ def load_checkpoint(path: pathlib.Path, family: str) -> Dict[str, dict]:
     if not path.is_file():
         return {}
     done: Dict[str, dict] = {}
-    for raw in path.read_text(encoding="utf-8").splitlines():
+    for raw in path.read_text(encoding="utf-8").split("\n"):
         raw = raw.strip()
         if not raw:
             continue
@@ -418,7 +418,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     out_dir = pathlib.Path(args.out_dir)
     if args.merge_from or args.merge_sheet:
         src = pathlib.Path(args.merge_into or (out_dir / "candidates.jsonl"))
-        entries = [json.loads(l) for l in src.read_text(encoding="utf-8").splitlines() if l.strip()]
+        entries = [json.loads(l) for l in src.read_text(encoding="utf-8").split("\n") if l.strip()]
         if args.merge_sheet:
             decisions = sheet_to_decisions(
                 pathlib.Path(args.merge_sheet).read_text(encoding="utf-8"))

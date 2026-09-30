@@ -2,63 +2,63 @@
   "run_id": "adhoc",
   "overall": "fail",
   "holdout_entries": 4539,
-  "index_edges": 579,
+  "index_edges": 683,
   "metrics": [
     {
       "id": "Q0",
       "status": "pass",
       "note": "rejects/raw <= 5% 且 processed == total",
       "source": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
-      "raw_edges": 1216,
-      "valid_unique": 579,
-      "duplicates": 637,
+      "raw_edges": 1662,
+      "valid_unique": 683,
+      "duplicates": 979,
       "rejects": 0,
       "rejects_file_lines": 0,
-      "processed_chunks": 204,
-      "total_chunks": 204,
+      "processed_chunks": 14,
+      "total_chunks": 14,
       "reject_ratio": 0.0
     },
     {
       "id": "Q1",
       "status": "fail",
-      "numerator": 765,
+      "numerator": 1050,
       "denominator": 4539,
-      "value": 0.1685,
+      "value": 0.2313,
       "line": 0.7,
       "note": "held-out query 数 4539（下界 1200）"
     },
     {
       "id": "Q2",
       "status": "fail",
-      "numerator": 1153,
+      "numerator": 1490,
       "denominator": 4539,
-      "value": 0.254,
+      "value": 0.3283,
       "line": 0.9,
       "note": ""
     },
     {
       "id": "Q3",
       "status": "pass",
-      "numerator": 23,
-      "denominator": 1291,
-      "value": 0.0178,
+      "numerator": 30,
+      "denominator": 1548,
+      "value": 0.0194,
       "line": 0.1,
       "note": ""
     },
     {
       "id": "Q4",
       "status": "fail",
-      "numerator": 1154,
-      "denominator": 1563,
-      "value": 0.7383,
+      "numerator": 1499,
+      "denominator": 1846,
+      "value": 0.812,
       "line": 1.0,
-      "note": "required 总数 1563（下界 200）"
+      "note": "required 总数 1846（下界 200）"
     },
     {
       "id": "Q6a",
       "status": "pass",
-      "numerator": 13536,
-      "denominator": 13536,
+      "numerator": 13605,
+      "denominator": 13605,
       "value": 1.0,
       "line": 1.0,
       "note": ""
@@ -66,42 +66,35 @@
     {
       "id": "Q6b",
       "status": "fail",
-      "numerator": 1232,
-      "denominator": 1563,
-      "value": 0.7882,
+      "numerator": 1588,
+      "denominator": 1846,
+      "value": 0.8602,
       "line": 1.0,
       "note": ""
     },
     {
       "id": "Q7",
       "status": "pass",
-      "numerator": 249,
-      "denominator": 249,
+      "numerator": 616,
+      "denominator": 616,
       "value": 1.0,
       "line": 1.0,
-      "note": "冲突查询数 249（下界 60）"
+      "note": "冲突查询数 616（下界 60）"
     },
     {
       "id": "Q4_pre_required_edges_exist",
       "status": "fail",
-      "numerator": 1563,
+      "numerator": 1846,
       "denominator": 5043,
-      "value": 0.3099,
+      "value": 0.3661,
       "line": 1.0,
-      "note": "§2.3 Q6b 前置①：3480/5043 条 must 在索引里找不到对应边（oracle 与索引不同构 → 索引构建失败）",
+      "note": "§2.3 Q6b 前置①：3197/5043 条 must 在索引里找不到对应边（oracle 与索引不同构 → 索引构建失败）",
       "examples": [
         {
           "id": "hq_0001",
           "q": "轴线=中性机位；光线=正面光",
           "unresolved": [
             "AXIS_RULE:pair=any_two,axis_side=neutral"
-          ]
-        },
-        {
-          "id": "hq_0002",
-          "q": "题材=film；情绪=恐惧",
-          "unresolved": [
-            "TROPE:genre=film,emotion=恐惧"
           ]
         },
         {
@@ -116,16 +109,22 @@
           "id": "hq_0004",
           "q": "轴线=视线轴；景别=MS",
           "unresolved": [
-            "AXIS_RULE:pair=any_two,axis_side=left",
-            "SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"
+            "AXIS_RULE:pair=any_two,axis_side=left"
           ]
         },
         {
           "id": "hq_0005",
           "q": "景别=MS；镜头=85mm",
           "unresolved": [
-            "SHOT_PATTERN:shot_size=MS,lens=85mm,headroom_policy=cinematic",
             "AXIS_RULE:pair=any_two,axis_side=right"
+          ]
+        },
+        {
+          "id": "hq_0006",
+          "q": "情绪=温柔；构图=framing",
+          "unresolved": [
+            "EMOTION_PACK:emotion=温柔,intensity=low",
+            "SHOT_PATTERN:shot_size=CU,lens=35mm,headroom_policy=board,composition_rule=framing"
           ]
         }
       ]
@@ -155,29 +154,26 @@
     {
       "id": "E2",
       "status": "not_measured",
-      "note": "没有 --shots：采纳率无法测量（诊断量，不设门）"
+      "diagnostic": true,
+      "numerator": 0,
+      "denominator": 64,
+      "value": 0.0,
+      "note": "命中人工期望的镜头数 / 64（记录，不设门）"
     }
   ],
   "q_summary": {
     "queries": 4539,
-    "edges": 579,
-    "selected_total": 13536,
+    "edges": 683,
+    "selected_total": 13605,
     "must_total": 5043,
-    "required_unresolved": 3480,
-    "required_unresolved_entries": 3179,
+    "required_unresolved": 3197,
+    "required_unresolved_entries": 2935,
     "unresolved_examples": [
       {
         "id": "hq_0001",
         "q": "轴线=中性机位；光线=正面光",
         "unresolved": [
           "AXIS_RULE:pair=any_two,axis_side=neutral"
-        ]
-      },
-      {
-        "id": "hq_0002",
-        "q": "题材=film；情绪=恐惧",
-        "unresolved": [
-          "TROPE:genre=film,emotion=恐惧"
         ]
       },
       {
@@ -192,16 +188,22 @@
         "id": "hq_0004",
         "q": "轴线=视线轴；景别=MS",
         "unresolved": [
-          "AXIS_RULE:pair=any_two,axis_side=left",
-          "SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"
+          "AXIS_RULE:pair=any_two,axis_side=left"
         ]
       },
       {
         "id": "hq_0005",
         "q": "景别=MS；镜头=85mm",
         "unresolved": [
-          "SHOT_PATTERN:shot_size=MS,lens=85mm,headroom_policy=cinematic",
           "AXIS_RULE:pair=any_two,axis_side=right"
+        ]
+      },
+      {
+        "id": "hq_0006",
+        "q": "情绪=温柔；构图=framing",
+        "unresolved": [
+          "EMOTION_PACK:emotion=温柔,intensity=low",
+          "SHOT_PATTERN:shot_size=CU,lens=35mm,headroom_policy=board,composition_rule=framing"
         ]
       }
     ],

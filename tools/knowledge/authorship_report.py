@@ -36,7 +36,7 @@ def generated_cards(cards_dir: pathlib.Path | str = DEFAULT_CARDS_DIR) -> list:
     directory = pathlib.Path(cards_dir)
     out = []
     for path in sorted(directory.glob("*.jsonl")):
-        for line in path.read_text(encoding="utf-8").splitlines():
+        for line in path.read_text(encoding="utf-8").split("\n"):
             if line.strip():
                 out.append(json.loads(line))
     return out

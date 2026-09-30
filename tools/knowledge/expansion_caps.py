@@ -34,10 +34,10 @@ from tools.holdout_score import spec_to_norm_key  # noqa: E402
 def load_graph(knowledge_dir: pathlib.Path | str = ROOT / "knowledge") -> hg.Hypergraph:
     root = pathlib.Path(knowledge_dir)
     nodes = [hg.Node.from_dict(json.loads(line)) for line in
-             (root / "hypergraph.nodes.jsonl").read_text(encoding="utf-8").splitlines()
+             (root / "hypergraph.nodes.jsonl").read_text(encoding="utf-8").split("\n")
              if line.strip()]
     edges = [hg.HyperEdge.from_dict(json.loads(line)) for line in
-             (root / "hypergraph.edges.jsonl").read_text(encoding="utf-8").splitlines()
+             (root / "hypergraph.edges.jsonl").read_text(encoding="utf-8").split("\n")
              if line.strip()]
     return hg.Hypergraph(nodes, edges)
 
@@ -74,7 +74,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     entries = [json.loads(line) for line in
-               pathlib.Path(args.holdout).read_text(encoding="utf-8").splitlines()
+               pathlib.Path(args.holdout).read_text(encoding="utf-8").split("\n")
                if line.strip()]
     graph = load_graph(args.knowledge_dir)
     base = (hg.MAX_HOPS, hg.MAX_EDGES_TOTAL, hg.MAX_NODES, hg.MAX_EDGES_PER_NODE)

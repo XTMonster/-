@@ -115,6 +115,51 @@ def robots_allows(url: str, timeout: float, cache_dir: Optional[pathlib.Path] = 
     return True, ""
 
 
+def crawl_delay(url: str, timeout: float,
+                cache_dir: Optional[pathlib.Path] = None) -> float:
+    """robots.txt 里的 `Crawl-delay`（秒）；没有这一行就返回 0。
+
+    为什么必须有这条：抓取纪律原来看的只有 `Disallow`，等于把"没被禁止"当成
+    "以多快都行"。arxiv.org 的 robots.txt 在同一个文件里写着
+    `Crawl-delay: 15` **和** "Indiscriminate automated downloads from this site
+    are not permitted"——忽略前者去抓它的 `/pdf` 就是违反 robots 协议。
+
+    `--rate` 是**下限**：实际间隔取 `max(rate_seconds, crawl_delay)`，见
+    `tests/test_kb_pipeline.py::test_robots_crawl_delay_lowers_the_request_rate`。
+    取不到 robots.txt 时返回 0（此时 `robots_allows` 已经先行拒收，抓取不会发生）。
+    """
+    parsed = urllib.parse.urlsplit(url)
+    cache_dir = pathlib.Path(cache_dir or ROBOTS_DIR)
+    cache_file = _robots_cache_file(cache_dir, parsed.netloc)
+    if cache_file.exists():
+        text = cache_file.read_text(encoding="utf-8", errors="replace")
+    else:
+        robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
+        try:
+            raw = _http_get(robots_url, timeout, robots_seen=(parsed.netloc,))
+        except Exception:  # noqa: BLE001 - 取不到就一定拒收，这里只是取不到时的兜底
+            return 0.0
+        text = raw.decode("utf-8", errors="replace")
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_file.write_text(text, encoding="utf-8", newline="\n")
+    delay = 0.0
+    applies = False
+    for line in text.splitlines():
+        line = line.split("#", 1)[0].strip()
+        if not line or ":" not in line:
+            continue
+        key, _, value = line.partition(":")
+        key, value = key.strip().lower(), value.strip()
+        if key == "user-agent":
+            applies = value == "*" or "blockdirectorbot" in value.lower()
+        elif key == "crawl-delay" and applies:
+            try:
+                delay = max(delay, float(value))
+            except ValueError:
+                continue
+    return delay
+
+
 class _RobotsAwareRedirect(urllib.request.HTTPRedirectHandler):
     """跟随重定向前，对**目标 URL**重跑 scheme 白名单与 robots 门。
 
@@ -191,7 +236,9 @@ def fetch_source(source: Dict, timeout: float, rate_seconds: float,
         allowed, reason = robots_allows(url, timeout)
         if not allowed:
             raise FetchError(reason)
-        sleeper(rate_seconds)
+        # robots 协议不只有 `Disallow`：同一个文件里的 `Crawl-delay` 也是要求。
+        # `--rate` 是下限，实际间隔取两者较大者（arxiv.org 要求 15 s）。
+        sleeper(max(float(rate_seconds), crawl_delay(url, timeout)))
         raw = _http_get(url, timeout)
         digest = common.sha256_bytes(raw)
         cache_file = _cache_path(digest)
@@ -289,7 +336,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--sources", default=str(common.SOURCES_YAML))
     parser.add_argument("--only", default="", help="只跑某个 domain 或 slug")
     parser.add_argument("--timeout", type=float, default=30.0)
-    parser.add_argument("--rate", type=float, default=1.0, help="同域两次请求的最小间隔（秒）")
+    parser.add_argument("--rate", type=float, default=1.0,
+                        help="两次请求的最小间隔秒数（下限；robots 的 Crawl-delay 更大时按它走）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     sources = common.load_sources(pathlib.Path(args.sources))

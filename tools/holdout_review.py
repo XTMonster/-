@@ -43,7 +43,7 @@ COMPARED_FIELDS = ("q", "must", "top1", "never")
 
 def load_jsonl(path: pathlib.Path) -> List[dict]:
     out: List[dict] = []
-    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    for lineno, raw in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
         raw = raw.strip()
         if not raw:
             continue

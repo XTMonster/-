@@ -404,7 +404,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     if args.cards:
         cards = [json.loads(line) for line in
-                 pathlib.Path(args.cards).read_text(encoding="utf-8").splitlines() if line.strip()]
+                 pathlib.Path(args.cards).read_text(encoding="utf-8").split("\n") if line.strip()]
     else:
         from block_director.knowledge.corpus import CARDS
         cards = [{"id": c.id, "domain": c.domain, "title": c.title, "content": c.content,

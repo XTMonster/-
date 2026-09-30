@@ -45,7 +45,7 @@ def node_id(kind: str, value: str) -> str:
 
 def load_edges(path: pathlib.Path | str = DEFAULT_EDGES) -> List[Dict]:
     rows = []
-    for line in pathlib.Path(path).read_text(encoding="utf-8").splitlines():
+    for line in pathlib.Path(path).read_text(encoding="utf-8").split("\n"):
         if line.strip():
             rows.append(json.loads(line))
     return rows
@@ -157,7 +157,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     entries = [json.loads(line) for line in
-               pathlib.Path(args.holdout).read_text(encoding="utf-8").splitlines()
+               pathlib.Path(args.holdout).read_text(encoding="utf-8").split("\n")
                if line.strip()]
     report = run(entries, load_edges(args.edges))
     if args.json:

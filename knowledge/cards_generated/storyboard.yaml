@@ -371,70 +371,6 @@
     start: 510
     end: 603
   provenance_kind: 网络语料
-- id: gen_story_0013
-  domain: storyboard
-  title: 时长宁长勿短
-  content: 估算镜头时长时宁可略长：现场剪短容易，补拍不可能，因此取偏长的估值。
-  keywords:
-  - 冗余
-  - 剪辑
-  - 补拍
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 时长估算
-  - 取舍
-  topic: storyboard
-  quote: |-
-    时长宁可略长，因为现场剪短容易、补拍不可能。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#006
-  source_span:
-    chunk_id: storyboard_practice_md#006
-    start: 96
-    end: 118
-  provenance_kind: 权威文档
-- id: gen_story_0014
-  domain: storyboard
-  title: 时长估算依据
-  content: 估算镜头时长时，依据只能是语速或动作三段，二选一，不可凭感觉给时长。
-  keywords:
-  - 语速
-  - 动作三段
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 节奏
-  topic: storyboard
-  quote: |-
-    时长的估算依据是语速还是动作三段？
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#008
-  source_span:
-    chunk_id: storyboard_practice_md#008
-    start: 107
-    end: 124
-  provenance_kind: 权威文档
 - id: gen_story_0015
   domain: storyboard
   title: 信件电报要精简
@@ -934,37 +870,6 @@
     start: 944
     end: 1081
   provenance_kind: 网络语料
-- id: gen_story_0031
-  domain: storyboard
-  title: 分镜决定信息顺序
-  content: 分镜的核心不是逐句配图，而是安排信息的呈现顺序；同一场景先给环境还是先给人脸，会形成两种完全不同的开场，需在分镜阶段明确取舍。
-  keywords:
-  - 开场
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜写法
-  - 段落结构
-  topic: storyboard
-  quote: |-
-    分镜不是把剧本按句拆开配图，而是决定**信息的呈现顺序**。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#001
-  source_span:
-    chunk_id: storyboard_practice_md#001
-    start: 24
-    end: 54
-  provenance_kind: 权威文档
 - id: gen_story_0032
   domain: storyboard
   title: 分镜要指示导演演员
@@ -1027,69 +932,6 @@
     start: 195
     end: 340
   provenance_kind: 网络语料
-- id: gen_story_0034
-  domain: storyboard
-  title: 分镜表六字段
-  content: 分镜表必须写全六个字段，缺字段视为不合格，需补齐后再进入拍摄。
-  keywords:
-  - 规范
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 格式
-  topic: storyboard
-  quote: |-
-    分镜表的六个字段是否写全？
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#008
-  source_span:
-    chunk_id: storyboard_practice_md#008
-    start: 90
-    end: 103
-  provenance_kind: 权威文档
-- id: gen_story_0035
-  domain: storyboard
-  title: 分镜表最小字段集
-  content: 分镜表每行至少包含：镜号与机号、景别（ECU/CU/MCU/MS/MLS/LS/ELS）与焦段、运镜（固定/推/拉/摇/移/跟/升降/手持）、画面内容（人物位置、朝向、动作、道具）、台词或音效与时长、转场方式（切/叠/淡/甩）；缺字段的分镜表在现场等于没有分镜。
-  keywords:
-  - 镜号
-  - 景别
-  - 运镜
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜写法
-  - 镜头清单
-  topic: storyboard
-  quote: |-
-    字段缺失的分镜表在拍摄现场等价于没有分镜。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#005
-  source_span:
-    chunk_id: storyboard_practice_md#005
-    start: 150
-    end: 171
-  provenance_kind: 权威文档
 - id: gen_story_0036
   domain: storyboard
   title: 新手先写短本
@@ -1247,37 +1089,6 @@
     start: 1622
     end: 1710
   provenance_kind: 网络语料
-- id: gen_story_0041
-  domain: storyboard
-  title: 动作镜按三段估时
-  content: 动作镜按“准备—执行—收势”三段估算时长：一个完整起身约 1.5–2 秒，一次落座约 1–1.5 秒。
-  keywords:
-  - 起身
-  - 落座
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 时长估算
-  topic: storyboard
-  quote: |-
-    动作镜按"准备—执行—收势"三段估：一个完整的起身约 1.5–2 秒，一次落座约 1–1.5 秒。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#006
-  source_span:
-    chunk_id: storyboard_practice_md#006
-    start: 40
-    end: 89
-  provenance_kind: 权威文档
 - id: gen_story_0042
   domain: storyboard
   title: 动作指演员的表演
@@ -1564,70 +1375,6 @@
     start: 1761
     end: 1846
   provenance_kind: 网络语料
-- id: gen_story_0051
-  domain: storyboard
-  title: 段落四拍默认结构
-  content: 叙事段落默认按四拍组织：建立（远景/全景交代空间与人物关系）→覆盖（中景/中近景承载主体动作与对话）→反应（近景/特写给听者情绪落点）→收束（插入物或过渡镜头收句）。
-  keywords:
-  - 四拍结构
-  - 建立
-  - 覆盖
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 段落结构
-  - 分镜写法
-  topic: storyboard
-  quote: |-
-    绝大多数叙事段落都可以拆成四拍：
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#002
-  source_span:
-    chunk_id: storyboard_practice_md#002
-    start: 14
-    end: 30
-  provenance_kind: 权威文档
-- id: gen_story_0052
-  domain: storyboard
-  title: 台词镜时长按语速估算
-  content: 台词镜的时长按语速估算：中文对白约每秒 3 字，用此默认语速把台词字数换算成镜头秒数。
-  keywords:
-  - 每秒3字
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 时长估算
-  - 对白
-  topic: storyboard
-  quote: |-
-    台词镜的时长按语速估算：中文对白约每秒 3 字（本引擎的默认语速）。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#006
-  source_span:
-    chunk_id: storyboard_practice_md#006
-    start: 11
-    end: 45
-  provenance_kind: 权威文档
 - id: gen_story_0053
   domain: storyboard
   title: 同场景多镜集中拍摄
@@ -1818,39 +1565,6 @@
     start: 736
     end: 827
   provenance_kind: 网络语料
-- id: gen_story_0059
-  domain: storyboard
-  title: 四拍是默认非公式
-  content: 四拍结构作为默认值使用而非硬性公式：可按段落需要增删拍子，但删减时要清楚会损失情绪（缺反应）或空间（缺建立）。
-  keywords:
-  - 四拍结构
-  - 默认值
-  - 取舍
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 段落结构
-  - 节奏
-  topic: storyboard
-  quote: |-
-    四拍不是公式而是默认值：
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#002
-  source_span:
-    chunk_id: storyboard_practice_md#002
-    start: 197
-    end: 209
-  provenance_kind: 权威文档
 - id: gen_story_0060
   domain: storyboard
   title: 多场次需配角铺环境
@@ -3136,39 +2850,6 @@
     start: 445
     end: 527
   provenance_kind: 网络语料
-- id: gen_story_0101
-  domain: storyboard
-  title: 对话段落的通用节拍
-  content: 拍对话段落时，按“建立→覆盖→反应”三段式组织：先建立空间关系，再覆盖说话人，最后切到听者反应；在镜头清单中标注 case_type = sequence_pattern，并把节拍序列写入 beat_sequence 字段。
-  keywords:
-  - 节拍序列
-  - 建立
-  - 覆盖
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 段落结构
-  - 镜头清单
-  topic: storyboard
-  quote: |-
-    **建立→覆盖→反应**：最通用的对话段落；
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#007
-  source_span:
-    chunk_id: storyboard_practice_md#007
-    start: 36
-    end: 58
-  provenance_kind: 权威文档
 - id: gen_story_0102
   domain: storyboard
   title: 插入字幕打断场景
@@ -3482,37 +3163,6 @@
     start: 1937
     end: 2072
   provenance_kind: 网络语料
-- id: gen_story_0112
-  domain: storyboard
-  title: 段落四拍检查
-  content: 检查段落结构时，先确认四拍是否齐全；若缺拍，必须写明缺失的理由，不能默认省略。
-  keywords:
-  - 检查清单
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 段落结构
-  - 节奏
-  topic: storyboard
-  quote: |-
-    段落的四拍是否齐全？缺哪一拍，缺的理由是什么？
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#008
-  source_span:
-    chunk_id: storyboard_practice_md#008
-    start: 18
-    end: 41
-  provenance_kind: 权威文档
 - id: gen_story_0113
   domain: storyboard
   title: 单一主线不跑题
@@ -3544,72 +3194,6 @@
     start: 2039
     end: 2140
   provenance_kind: 网络语料
-- id: gen_story_0114
-  domain: storyboard
-  title: 一镜只给一条新信息
-  content: 每个镜头只承担一条新信息（新人物、新位置、新情绪或新道具）；若一镜塞入两条新信息，观众通常只记住一条且常记错，因此分镜时应把第二条信息拆到下一镜。
-  keywords:
-  - 一镜一信息
-  - 信息量
-  - 分镜拆分
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜写法
-  - 信息控制
-  topic: storyboard
-  quote: |-
-    每个镜头应当只承担一条**新信息**（新人物、新位置、新情绪、新道具）。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#003
-  source_span:
-    chunk_id: storyboard_practice_md#003
-    start: 13
-    end: 49
-  provenance_kind: 权威文档
-- id: gen_story_0115
-  domain: storyboard
-  title: 一镜一信息
-  content: 每个镜头只承担一条新信息；若一个镜头塞入多条新信息，应拆分或删减。
-  keywords:
-  - 镜头
-  - 信息量
-  - 拆分
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 镜头设计
-  - 信息控制
-  topic: storyboard
-  quote: |-
-    每个镜头是否只承担一条新信息？
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#008
-  source_span:
-    chunk_id: storyboard_practice_md#008
-    start: 45
-    end: 60
-  provenance_kind: 权威文档
 - id: gen_story_0116
   domain: storyboard
   title: 场景标题的写法
@@ -4022,39 +3606,6 @@
     start: 769
     end: 890
   provenance_kind: 网络语料
-- id: gen_story_0129
-  domain: storyboard
-  title: 先定轴线再定机位
-  content: 画分镜时先画出两人连线作为轴线，再在同一侧布置所有机位；越轴处必须显式画出中性镜头或运动过渡，不要留到后期补轴线，否则几乎必然重拍。
-  keywords:
-  - 越轴
-  - 中性镜头
-  - 运动过渡
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 连续性
-  - 分镜流程
-  topic: storyboard
-  quote: |-
-    画分镜时必须先画一条**轴线**（两人连线）：所有机位都在同一侧，越轴处必须显式画出中性镜头或运动过渡。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#004
-  source_span:
-    chunk_id: storyboard_practice_md#004
-    start: 13
-    end: 65
-  provenance_kind: 权威文档
 - id: gen_story_0130
   domain: storyboard
   title: 连续场次的空间衔接
@@ -4375,68 +3926,6 @@
     start: 261
     end: 346
   provenance_kind: 网络语料
-- id: gen_story_0140
-  domain: storyboard
-  title: 缺反应则无情绪
-  content: 若段落省略“反应”拍，画面只剩动作而缺少情绪落点；需要情绪时必须在覆盖之后补一个近景或特写反应镜。
-  keywords:
-  - 反应镜
-  - 情绪落点
-  - 近景
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 共情
-  tags: []
-  topic: storyboard
-  quote: |-
-    缺了"反应"，段落会显得只有动作没有情绪；
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#002
-  source_span:
-    chunk_id: storyboard_practice_md#002
-    start: 209
-    end: 230
-  provenance_kind: 权威文档
-- id: gen_story_0141
-  domain: storyboard
-  title: 缺建立则空间迷失
-  content: 若段落省略“建立”拍，观众会在开头约 5 秒内无法判断空间关系；因此段落起手优先给远景或全景交代空间。
-  keywords:
-  - 建立镜头
-  - 远景
-  - 全景
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 迷失
-  tags: []
-  topic: storyboard
-  quote: |-
-    缺了"建立"，观众会在前 5 秒里迷失空间。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#002
-  source_span:
-    chunk_id: storyboard_practice_md#002
-    start: 231
-    end: 253
-  provenance_kind: 权威文档
 - id: gen_story_0142
   domain: storyboard
   title: 双线交替剪辑
@@ -4468,40 +3957,6 @@
     start: 2134
     end: 2254
   provenance_kind: 网络语料
-- id: gen_story_0143
-  domain: storyboard
-  title: 动作与结果的切分
-  content: 表现打击或发力时，用“动作→结果”：先拍动作的发力瞬间，再切到承受方的反应镜头；清单中记 case_type = sequence_pattern，节拍写入 beat_sequence。
-  keywords:
-  - 反应
-  - 发力
-  - 切换
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 动作剪辑
-  - 反应镜头
-  - 段落结构
-  topic: storyboard
-  quote: |-
-    **动作→结果**：先看动作的发力，再切到承受方的反应。
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#007
-  source_span:
-    chunk_id: storyboard_practice_md#007
-    start: 125
-    end: 153
-  provenance_kind: 权威文档
 - id: gen_story_0144
   domain: storyboard
   title: 从观众反应找原创
@@ -4595,37 +4050,6 @@
     start: 459
     end: 518
   provenance_kind: 网络语料
-- id: gen_story_0147
-  domain: storyboard
-  title: 轴线开拍前定
-  content: 轴线必须在开拍前确定；越轴处必须安排中性镜头作为过渡，否则不允许越轴。
-  keywords:
-  - 越轴
-  - 中性镜头
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 连续性
-  topic: storyboard
-  quote: |-
-    轴线是否在开拍前定下？越轴处是否有中性镜头？
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#008
-  source_span:
-    chunk_id: storyboard_practice_md#008
-    start: 64
-    end: 86
-  provenance_kind: 权威文档
 - id: gen_story_0148
   domain: storyboard
   title: 连续剧每集收在悬念高潮
@@ -4974,73 +4398,6 @@
     start: 1406
     end: 1442
   provenance_kind: 网络语料
-- id: gen_story_0159
-  domain: storyboard
-  title: 环境先行的引导套路
-  content: 需要引导观众注意某道具时，用“全貌→细节”：先交代环境全貌，再把视线引到关键道具上；清单中标注 case_type = sequence_pattern 并写 beat_sequence。
-  keywords:
-  - 关键道具
-  - 景别
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 景别变化
-  - 视线引导
-  - 段落结构
-  topic: storyboard
-  quote: |-
-    **全貌→细节**：先交代环境，再把视线引到关键道具上；
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#007
-  source_span:
-    chunk_id: storyboard_practice_md#007
-    start: 94
-    end: 122
-  provenance_kind: 权威文档
-- id: gen_story_0160
-  domain: storyboard
-  title: 细节先行的揭示套路
-  content: 需要强调关键道具时，用“细节→全貌”：先给道具特写，再拉开镜头交代它在环境中的位置；清单中记 case_type = sequence_pattern 并在 beat_sequence 写节拍。
-  keywords:
-  - 特写
-  - 拉开
-  - 关键道具
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 特写
-  - 景别变化
-  - 段落结构
-  topic: storyboard
-  quote: |-
-    **细节→全貌**：先给关键道具的特写，再拉开交代它的位置；
-  source_ref:
-    url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9c178c6ff0bb5183f2b0ead6e14dabfd17665f9c29750a346b55987bb948f7ae
-  chunk_id: storyboard_practice_md#007
-  source_span:
-    chunk_id: storyboard_practice_md#007
-    start: 61
-    end: 91
-  provenance_kind: 权威文档
 - id: gen_story_0161
   domain: storyboard
   title: 溶镜转场
@@ -5134,13 +4491,235 @@
     start: 529
     end: 652
   provenance_kind: 网络语料
-- id: gen_story_0164
+- id: gen_story_0205
   domain: storyboard
-  title: 对白戏覆盖阈值
-  content: 2 分钟对白戏的经验阈值：主镜头覆盖整场，单人镜头每 20–30 秒提供一个反应镜头。
+  title: 主导激情的旧式教条
+  content: '"主导激情"式写法（把角色设定为一种压倒一切的主控激情，再把他放入若干情境展示其支配或消灭其他动机）属于十八世纪趣味，现代创作不宜照搬。'
   keywords:
-  - 反应镜头
-  - 主镜头
+  - 情境
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色塑造
+  - 创作观念
+  topic: storyboard
+  quote: |-
+    a character is a master faculty or passion, which absorbs all the rest
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#011
+  source_span:
+    chunk_id: pg10865_txt#011
+    start: 1905
+    end: 1975
+  provenance_kind: 网络语料
+- id: gen_story_0206
+  domain: storyboard
+  title: 情境不等于构思
+  content: 一个戏剧情境本身不是构思；构思须有开端、中段、结尾，即交代、发展、收束，难点在于铺垫情境、让观众接受、使其可信，尤其是解结。
+  keywords:
+  - 铺垫
+  - 解结
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 三幕
+  topic: storyboard
+  quote: |-
+    An idea, has a beginning, a middle and an end: an exposition, a development, a conclusion.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#008
+  source_span:
+    chunk_id: pg10865_txt#008
+    start: 1420
+    end: 1510
+  provenance_kind: 网络语料
+- id: gen_story_0207
+  domain: storyboard
+  title: 诗性模仿三要素
+  content: 一切诗性模仿由三样东西构成：话语、悦耳的韵文、和谐（即音乐）；这三者此前也为悲剧共有。
+  keywords:
+  - 话语
+  - 韵文
+  - 音乐
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: storyboard
+  quote: |-
+    all poetic imitation whatsoever is composed of three things, which are discourse, agreeable verse, harmony, that is to say music
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#004
+  source_span:
+    chunk_id: pg76719_txt#004
+    start: 897
+    end: 1025
+  provenance_kind: 网络语料
+- id: gen_story_0208
+  domain: storyboard
+  title: 剧本写作无固定规则
+  content: 不存在可套用的剧本写作规则；不要指望从写作指南里获得可操作的指导，剧作方法因人而异，需自行判断。
+  keywords:
+  - 剧作
+  - 方法
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剧作方法
+  topic: storyboard
+  quote: |-
+    There are no workable rules for play-writing to be found here
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#000
+  source_span:
+    chunk_id: pg18230_txt#000
+    start: 0
+    end: 61
+  provenance_kind: 网络语料
+- id: gen_story_0209
+  domain: storyboard
+  title: 把前情戏剧化
+  content: 不要冷冰冰地叙述前情，而应把叙述本身戏剧化——让前情在冲突与张力中被呈现，这是伊卜生式方法的关键差别。
+  keywords:
+  - 叙述
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 前史
+  topic: storyboard
+  quote: |-
+    instead of narrating his preliminaries in cold blood, Ibsen, in his best work, _dramatizes_ the narration.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#008
+  source_span:
+    chunk_id: pg10865_txt#008
+    start: 1784
+    end: 1890
+  provenance_kind: 网络语料
+- id: gen_story_0210
+  domain: storyboard
+  title: 五幕源于合唱分隔
+  content: 五幕形式间接源自雅典戏剧：合唱段落被限制为四段，从而把对话分成五段，删去抒情间奏后即成为五个独立幕。
+  keywords:
+  - 雅典戏剧
+  - 分幕
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 幕结构
+  topic: storyboard
+  quote: |-
+    the number of choral passages came in time to be limited to four, separating five passages in dialog
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#006
+  source_span:
+    chunk_id: pg76719_txt#006
+    start: 276
+    end: 376
+  provenance_kind: 网络语料
+- id: gen_story_0211
+  domain: storyboard
+  title: 第五幕浸泪，前四幕撒智
+  content: 五幕结构的情绪配比：第五幕以温和的泪水（情感高潮/悲悯）收束，前四幕用机智的穿插（wit）调味，避免全剧情绪单一。
+  keywords:
+  - 情绪配比
+  - 机智
+  - 泪水
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 情绪曲线
+  topic: storyboard
+  quote: |-
+    Soak your fifth act in gentle tears, and salt the other four with dashes of wit.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#003
+  source_span:
+    chunk_id: pg18230_txt#003
+    start: 1739
+    end: 1819
+  provenance_kind: 网络语料
+- id: gen_story_0212
+  domain: storyboard
+  title: 多句台词压成一句
+  content: 修改时把原本多行的台词浓缩为一个有力的短句，用更少的字承载同样的信息与情绪。
+  keywords:
+  - 台词压缩
+  - 精炼
+  - 短句
   rules: []
   parameters: {}
   examples: []
@@ -5151,1206 +4730,27 @@
   - 节奏
   topic: storyboard
   quote: |-
-    **一场 2 分钟的对白戏，主镜头至少覆盖整场，单人镜头每 20–30 秒提供一个反应镜头**。
+    Sometimes he was able to compact into a single pregnant phrase the substance of a speech of many lines.
   source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#006
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#009
   source_span:
-    chunk_id: modern_storyboard_and_previs_md#006
-    start: 204
-    end: 252
-  provenance_kind: 权威文档
-- id: gen_story_0165
+    chunk_id: pg18230_txt#009
+    start: 1447
+    end: 1550
+  provenance_kind: 网络语料
+- id: gen_story_0213
   domain: storyboard
-  title: 覆盖三件套的分工
-  content: 一场戏的覆盖由主镜头、单人镜头、插入镜头组成：主镜头确立空间与轴线，单人镜头承担表演与情绪，插入镜头解决信息与节奏，三者缺一不可。
+  title: 模型先行法不宜通用
+  content: 先搭建完整场景模型、用人体模型摆位再写戏的做法，作为普遍实践并不值得推荐。
   keywords:
-  - 主镜头
-  - 单人镜头
-  - 插入镜头
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜结构
-  topic: storyboard
-  quote: |-
-    一场戏的覆盖通常是**主镜头 + 单人镜头 + 插入镜头**。主镜头确立空间与轴线，单人镜头提供表演与情绪，插入镜头解决信息与节奏。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#006
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#006
-    start: 18
-    end: 84
-  provenance_kind: 权威文档
-- id: gen_story_0166
-  domain: storyboard
-  title: 按风险选预演档
-  content: 三档预演不是依次替代关系，而是按风险选择：廉价、低风险镜头用第一档走位预演即可，动作与特效镜头才需要做到第三档技术预演。
-  keywords:
-  - 风险选择
-  - 预演档位
-  - 成本控制
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 取舍
-  topic: storyboard
-  quote: |-
-    三档不是依次替代的关系，而是**按风险选择**：廉价镜头用第一档，动作与特效镜头才需要第三档。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#005
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#005
-    start: 106
-    end: 153
-  provenance_kind: 权威文档
-- id: gen_story_0167
-  domain: storyboard
-  title: 交接事故主因是坐标不一致
-  content: 交接事故最常见的原因不是精度不足，而是两边坐标系或帧率不同，会导致相机路径整体偏移或时长对不上；排查时优先核对坐标系与帧率。
-  keywords:
-  - 坐标系
-  - 帧率
-  - 路径偏移
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 排错
-  topic: storyboard
-  quote: |-
-    交接事故里最常见的一类不是精度不足，而是**两边的坐标系或帧率不同**，导致相机路径整体偏移或时长对不上。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#008
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#008
-    start: 177
-    end: 230
-  provenance_kind: 权威文档
-- id: gen_story_0168
-  domain: storyboard
-  title: 交接数据四要素
-  content: 交接数据必须写明单位、坐标系、旋转顺序与帧率，四项缺一即视为交接不完整。
-  keywords:
-  - 单位
-  - 坐标系
-  - 帧率
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 技术
-  topic: storyboard
-  quote: |-
-    交接数据是否写明单位、坐标系、旋转顺序与帧率？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#010
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#010
-    start: 173
-    end: 196
-  provenance_kind: 权威文档
-- id: gen_story_0169
-  domain: storyboard
-  title: 单位与坐标系必须写明
-  content: 交接硬要求：米/英尺、Y上或Z上、旋转顺序、帧率必须全部写明，否则下游无法正确还原相机路径与时长。
-  keywords:
-  - 帧率
-  - 旋转顺序
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 交接
-  - 规范
-  topic: storyboard
-  quote: |-
-    交接的硬要求是**单位与坐标系一致**：米/英尺、Y 上或 Z 上、旋转顺序、帧率必须全部写明。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#008
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#008
-    start: 128
-    end: 176
-  provenance_kind: 权威文档
-- id: gen_story_0170
-  domain: storyboard
-  title: 镜头清单必备字段
-  content: 写镜头清单时，每一行必须写全编号、景别、机位、运动、主体、时长与信息目的七项，缺项视为清单不合格。
-  keywords:
-  - 编号
-  - 景别
-  - 时长
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜写法
-  topic: storyboard
-  quote: |-
-    每一行镜头清单是否写全了编号、景别、机位、运动、主体、时长与信息目的？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#010
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#010
-    start: 15
-    end: 50
-  provenance_kind: 权威文档
-- id: gen_story_0171
-  domain: storyboard
-  title: 跟踪虚拟棚须第三档
-  content: 凡是涉及跟踪、虚拟棚或复杂器材的镜头，预演必须做到第三档技术预演，验证器材与特效可行性。
-  keywords:
-  - 复杂器材
-  - 技术预演
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 预演
-  - 特效
-  topic: storyboard
-  quote: |-
-    凡是涉及
-    跟踪、虚拟棚或复杂器材的镜头，必须做到第三档。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#005
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#005
-    start: 193
-    end: 221
-  provenance_kind: 权威文档
-- id: gen_story_0172
-  domain: storyboard
-  title: 现场决策须第二档
-  content: 凡是要在现场做决定的镜头，预演必须做到第二档摄影预演（含镜头运动与焦距），以保证构图与节奏在现场可执行。
-  keywords:
-  - 摄影预演
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 预演
-  - 执行标准
-  topic: storyboard
-  quote: |-
-    **凡是要在现场做决定的镜头，预演就要做到第二档**
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#005
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#005
-    start: 166
-    end: 192
-  provenance_kind: 权威文档
-- id: gen_story_0173
-  domain: storyboard
-  title: 景别五档记法
-  content: 分镜清单中景别统一用五档标注：大远景、远景、中景、近景、特写；景别越大信息量越多、人物越小，特写则压缩环境信息。
-  keywords:
-  - 分镜清单
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜记法
-  topic: storyboard
-  quote: |-
-    景别用五档表达：大远景、远景、中景、近景、特写。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#002
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#002
-    start: 18
-    end: 42
-  provenance_kind: 权威文档
-- id: gen_story_0174
-  domain: storyboard
-  title: 镜头清单六要素
-  content: 分镜的产物是镜头清单而非画面；每行必须写明镜头编号、景别与机位、镜头运动、主体与朝向、时长、该镜要完成的信息，缺一项即不可执行。
-  keywords:
-  - 可执行
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜写法
-  topic: storyboard
-  quote: |-
-    清单的每一行必须回答六件事：镜头编号、景别与机位、镜头运动、主体与朝向、时长、以及这一镜要完成的信息。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#001
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#001
-    start: 42
-    end: 93
-  provenance_kind: 权威文档
-- id: gen_story_0175
-  domain: storyboard
-  title: 出戏点即成片问题
-  content: 判断动态分镜问题的方法：动态分镜里让人出戏的地方，在成片里一定也出戏；常见原因是某镜太长、两镜信息重复、或越轴未交代。
-  keywords:
-  - 镜头过长
-  - 信息重复
-  - 越轴
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 节奏诊断
-  - 越轴
-  topic: storyboard
-  quote: |-
-    **动态分镜里让人出戏的地方，
-    在成片里一定也出戏**——通常是某镜太长、某两镜信息重复、或某次越轴没交代。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#004
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#004
-    start: 88
-    end: 142
-  provenance_kind: 权威文档
-- id: gen_story_0176
-  domain: storyboard
-  title: 动态分镜验证节奏
-  content: 动态分镜的唯一目的是验证节奏，必须使用与成片一致的逐镜时长；若时长与成片不符，验证结果无效。
-  keywords:
-  - 逐镜时长
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - animatic
-  - 节奏验证
-  topic: storyboard
-  quote: |-
-    动态分镜把分镜按实际时长串起来，唯一目的是**验证节奏**。它必须使用与成片
-    一致的逐镜时长，否则验证毫无意义。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#004
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#004
-    start: 26
-    end: 82
-  provenance_kind: 权威文档
-- id: gen_story_0177
-  domain: storyboard
-  title: 动态分镜先删后加
-  content: 动态分镜迭代纪律为先删后加：先删多余镜头，再检查是否缺镜头；第一版通常多出15%–25%的镜头，删减比加快节奏更有效，因为快来自内容密度而非镜头数量。
-  keywords:
-  - 迭代
-  - 镜头数量
-  - 内容密度
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑节奏
-  - 迭代
-  topic: storyboard
-  quote: |-
-    动态分镜的迭代纪律是**先删后加**：先把多余的镜头删掉，再看是否缺镜头。
-    经验上，第一版动态分镜通常多出 15%–25% 的镜头，删掉它们比加快节奏更有效，
-    因为"快"来自镜头的内容密度，而不是镜头数量。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#004
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#004
-    start: 144
-    end: 247
-  provenance_kind: 权威文档
-- id: gen_story_0178
-  domain: storyboard
-  title: 动态分镜时长对齐
-  content: 动态分镜须使用与成片一致的逐镜时长，并在此之前删掉多余镜头，避免预演节奏与成片脱节。
-  keywords:
-  - 节奏
-  - 删镜
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 节奏
-  - 预演
-  topic: storyboard
-  quote: |-
-    动态分镜是否使用了与成片一致的逐镜时长，且已删掉多余镜头？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#010
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#010
-    start: 96
-    end: 125
-  provenance_kind: 权威文档
-- id: gen_story_0179
-  domain: storyboard
-  title: 每场镜头数区间
-  content: 常规剧情片每场安排 12–25 个镜头；动作场可超过 40 个，但每个额外镜头必须说明它提供了什么新信息，否则删掉。
-  keywords:
-  - 动作场
-  - 新信息
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 场次设计
-  topic: storyboard
-  quote: |-
-    **常规剧情片每场 12–25 个镜头**，动作场可以到 40 个以上，但每一个额外镜头都要说明它提供了什么新信息。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#007
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#007
-    start: 64
-    end: 122
-  provenance_kind: 权威文档
-- id: gen_story_0180
-  domain: storyboard
-  title: 镜头数超标的排查
-  content: 当预演产出的镜头数明显高于时长换算区间时，先检查是否在用镜头数量代替信息密度，而不是直接开拍。
-  keywords:
-  - 信息密度
-  - 预演检查
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 预演
-  - 节奏
-  topic: storyboard
-  quote: |-
-    **当预演产出的镜头数明显高于这个区间时，应当先检查是否在用镜头数量代替信息密度**。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#007
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#007
-    start: 172
-    end: 215
-  provenance_kind: 权威文档
-- id: gen_story_0181
-  domain: storyboard
-  title: 页长换算镜头数
-  content: 按一页剧本约等于一分钟成片换算：2 分钟的场次需要 25–40 个可剪辑镜头（含覆盖镜头）。
-  keywords:
-  - 成片时长
-  - 覆盖镜头
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 时长预算
-  - 覆盖
-  topic: storyboard
-  quote: |-
-    **一页剧本约 1 分钟成片**，因此 2 分钟的场次大约需要 25–40 个可剪辑镜头（含覆盖）。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#007
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#007
-    start: 141
-    end: 191
-  provenance_kind: 权威文档
-- id: gen_story_0182
-  domain: storyboard
-  title: 镜头数决定拍摄天数
-  content: 排拍摄计划时用镜头数而非剧本页数估算：拍摄天数 ≈ 镜头数 × 单镜平均架设时间，因此预算口径应落在镜头数上。
-  keywords:
-  - 架设时间
-  - 预算
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 制片预算
-  topic: storyboard
-  quote: |-
-    镜头数是时间的代理量：**镜头数 × 单镜平均架设时间**决定拍摄天数，而不是剧本页数。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#007
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#007
-    start: 13
-    end: 57
-  provenance_kind: 权威文档
-- id: gen_story_0183
-  domain: storyboard
-  title: 景别与机位分工
-  content: 景别负责决定画面信息量，机位高度负责决定权力关系；两者在清单上分开记录，不要混写成一栏。
-  keywords:
-  - 机位高度
-  - 信息量
-  - 权力关系
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 构图
-  - 分镜记法
-  topic: storyboard
-  quote: |-
-    景别决定信息量，机位高度决定权力关系
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#002
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#002
-    start: 80
-    end: 98
-  provenance_kind: 权威文档
-- id: gen_story_0184
-  domain: storyboard
-  title: 机位高度三档
-  content: 机位高度只分三档标注：低机位（低于视线）、平视（约与视线等高）、高机位（高于视线），便于跨镜统一比较。
-  keywords:
-  - 低机位
-  - 平视
-  - 高机位
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜记法
-  topic: storyboard
-  quote: |-
-    机位高度用三档：低机位（低于视线）、平视（约与视线等高）、高机位（高于视线）。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#002
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#002
-    start: 39
-    end: 78
-  provenance_kind: 权威文档
-- id: gen_story_0185
-  domain: storyboard
-  title: 关键动作双角度原则
-  content: 每个关键动作至少准备两个可用拍摄角度，否则剪辑时没有选择权；覆盖必须显式服务于剪辑。
-  keywords:
-  - 剪辑选择权
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑
-  - 覆盖
-  topic: storyboard
-  quote: |-
-    **每个关键动作至少要有两个可用的拍摄角度**，否则剪辑没有选择权。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#006
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#006
-    start: 165
-    end: 199
-  provenance_kind: 权威文档
-- id: gen_story_0186
-  domain: storyboard
-  title: 关键动作双角度
-  content: 每个关键动作至少准备两个可用角度，以便剪辑时在角度间切换而不牺牲动作完整性。
-  keywords:
-  - 覆盖
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位
-  - 覆盖
-  topic: storyboard
-  quote: |-
-    每个关键动作是否至少有两个可用角度？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#010
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#010
-    start: 151
-    end: 169
-  provenance_kind: 权威文档
-- id: gen_story_0187
-  domain: storyboard
-  title: 未标越轴即失守
-  content: 没有写明越轴手段的越轴，等于把连续性问题丢给剪辑，应在分镜阶段就补齐手段标注。
-  keywords:
-  - 连续性
-  - 剪辑
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 轴线
-  - 分镜规范
-  topic: storyboard
-  quote: |-
-    没有写明越轴手段的越轴，等于把连续性问题丢给剪辑
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#002
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#002
-    start: 218
-    end: 242
-  provenance_kind: 权威文档
-- id: gen_story_0188
-  domain: storyboard
-  title: 含糊描述等于没有分镜
-  content: 清单条目禁止使用“张力镜头”这类含糊描述；无法被执行的模糊行等同于没有分镜，必须替换为具体机位、焦段与运动。
-  keywords:
-  - 可执行
-  - 张力镜头
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜写法
-  - 规范
-  topic: storyboard
-  quote: |-
-    含糊的行（例如"张力镜头"）不能被执行，等于没有分镜。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#001
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#001
-    start: 98
-    end: 125
-  provenance_kind: 权威文档
-- id: gen_story_0189
-  domain: storyboard
-  title: 低档预演推高成本
-  content: 用第一档走位预演糊弄高风险镜头，等于把风险推迟到拍摄当天——成本最高的时刻，因此高风险镜头不可降档。
-  keywords:
-  - 高风险镜头
-  - 风险推迟
-  - 拍摄当天
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 风险管理
-  topic: storyboard
-  quote: |-
-    用第一档糊弄高风险镜头，
-    等于把风险推到最贵的时刻——拍摄当天。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#005
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#005
-    start: 221
-    end: 253
-  provenance_kind: 权威文档
-- id: gen_story_0190
-  domain: storyboard
-  title: 相邻镜头标轴线
-  content: 相邻两镜之间必须标明轴线关系与越轴手段，未标注轴线的镜头对不得直接进入预演。
-  keywords:
-  - 越轴
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 连续性
-  topic: storyboard
-  quote: |-
-    相邻镜头是否标明了轴线与越轴手段？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#010
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#010
-    start: 54
-    end: 71
-  provenance_kind: 权威文档
-- id: gen_story_0191
-  domain: storyboard
-  title: 越轴须写明手段
-  content: 相邻两镜若必须越轴，清单上要写明越轴手段：中性机位、演员走位或运动镜头过渡，三选一注明。
-  keywords:
-  - 中性机位
-  - 走位
-  - 运动镜头
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 轴线
-  - 连续性
-  topic: storyboard
-  quote: |-
-    相邻两镜若必须越轴，清单上要写明越轴手段：中性机位、演员走位或运动镜头过渡。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#002
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#002
-    start: 169
-    end: 207
-  provenance_kind: 权威文档
-- id: gen_story_0192
-  domain: storyboard
-  title: 高机位压低主体
-  content: 要压低、弱化被摄主体的气势或处境时用高机位（高于视线）拍摄。
-  keywords:
-  - 权力关系
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 压抑
-  tags:
-  - 俯拍
-  topic: storyboard
-  quote: |-
-    低机位抬升主体，高机位压低主体
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#002
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#002
-    start: 107
-    end: 122
-  provenance_kind: 权威文档
-- id: gen_story_0193
-  domain: storyboard
-  title: 低机位抬升主体
-  content: 要抬升、强化被摄主体的气势或权力时用低机位（低于视线）拍摄。
-  keywords:
-  - 权力关系
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 压迫
-  tags:
-  - 仰拍
-  topic: storyboard
-  quote: |-
-    低机位抬升主体，高机位压低主体
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#002
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#002
-    start: 107
-    end: 122
-  provenance_kind: 权威文档
-- id: gen_story_0194
-  domain: storyboard
-  title: 按戏种定覆盖比例
-  content: 覆盖比例由内容类型决定：对白密集的场以单人镜头为主（观众要看反应），动作密集的场以插入镜头为主（插入决定打击点的读法）。
-  keywords:
-  - 对白戏
-  - 动作戏
-  - 反应镜头
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 节奏
-  topic: storyboard
-  quote: |-
-    **对白密集的场，单人镜头应占多数**，因为观众要看反应；**动作密集的场，插入镜头应占多数**，因为它们决定打击点的读法。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#006
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#006
-    start: 92
-    end: 154
-  provenance_kind: 权威文档
-- id: gen_story_0195
-  domain: storyboard
-  title: 幅度与时长成正比
-  content: 运动幅度与时长成正比：90°摇镜少于2秒会读成抖动，超过8秒会读成环境展示，两者都不属于叙事，应据此调整摇镜时长。
-  keywords:
-  - 摇镜
-  - 节奏
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 镜头运动
-  - 节奏
-  topic: storyboard
-  quote: |-
-    **运动幅度与时长成正比**：一个 90° 的
-    摇镜少于 2 秒会读成抖动，超过 8 秒会读成"环境展示"——两者都不是叙事。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#003
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#003
-    start: 185
-    end: 248
-  provenance_kind: 权威文档
-- id: gen_story_0196
-  domain: storyboard
-  title: 运动镜头三要素
-  content: 运动镜头在分镜清单上必须写清方向、速度、落点三个量：方向用向左/向右/推进/拉远/升起/降下表达，速度用慢/中/快并附秒数，落点写明运动结束时主体在画面中的位置；缺一项就只能靠猜。
-  keywords:
-  - 方向
-  - 速度
-  - 落点
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 镜头运动
-  - 分镜写法
-  topic: storyboard
-  quote: |-
-    运动镜头要在清单上写三个量：**方向、速度、落点**。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#003
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#003
-    start: 20
-    end: 47
-  provenance_kind: 权威文档
-- id: gen_story_0197
-  domain: storyboard
-  title: 运动镜头三要素
-  content: 运动镜头必须写明方向、速度与落点三项参数，只写“推/摇”而不给落点视为无效描述。
-  keywords:
-  - 方向
-  - 速度
-  - 落点
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位
-  topic: storyboard
-  quote: |-
-    运动镜头是否给出方向、速度与落点？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#010
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#010
-    start: 75
-    end: 92
-  provenance_kind: 权威文档
-- id: gen_story_0198
-  domain: storyboard
-  title: 条目30秒可读阈值
-  content: 镜头清单条目应在30秒内被读懂；读不懂即说明写得过长或过虚，需精简或补足具体参数。
-  keywords:
-  - 可读性
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 分镜写法
-  - 节奏
-  topic: storyboard
-  quote: |-
-    **一个镜头清单条目应当在 30 秒内被读懂**，读不懂就说明写得太长或者太虚。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#001
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#001
-    start: 200
-    end: 240
-  provenance_kind: 权威文档
-- id: gen_story_0199
-  domain: storyboard
-  title: 运动落点落在三分线
-  content: 镜头运动结束时，主体应落在三分线或安全区内；否则观众会在运动末尾失去注意力落点。
-  keywords:
-  - 安全区
-  - 注意力
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 构图
-  - 镜头运动
-  topic: storyboard
-  quote: |-
-    **镜头运动结束时主体应落在三分线或安全区内**，否则
-    观众会在运动末尾失去注意力落点。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#003
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#003
-    start: 141
-    end: 185
-  provenance_kind: 权威文档
-- id: gen_story_0200
-  domain: storyboard
-  title: 交接清单三件套
-  content: 预演交接至少包含逐镜时长表、相机路径数据、标注特效需求的镜头清单三项，缺一不可。
-  keywords:
-  - 时长表
-  - 相机路径
-  - 特效清单
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags: []
-  topic: storyboard
-  quote: |-
-    因此交接至少包含：逐镜时长表、相机路径数据、以及标注了特效需求的镜头清单。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#008
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#008
-    start: 97
-    end: 134
-  provenance_kind: 权威文档
-- id: gen_story_0201
-  domain: storyboard
-  title: 预演交接的三类对象
-  content: 预演产物需分别交付摄影（机位、焦距、运动）、美术与置景（空间尺寸与视线范围）、后期与VFX（相机数据、时长、跟踪需求）三类使用者，按各自需求裁剪信息。
-  keywords:
-  - 摄影
-  - 美术置景
-  - 后期VFX
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags: []
-  topic: storyboard
-  quote: |-
-    预演产物要交给三类人使用：**摄影**（机位、焦距、运动）、**美术与置景**（空间尺寸与视线范围）、**后期与 VFX**（相机数据、时长、跟踪需求）。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#008
-  source_span:
-    chunk_id: modern_storyboard_and_previs_md#008
-    start: 15
-    end: 92
-  provenance_kind: 权威文档
-- id: gen_story_0202
-  domain: storyboard
-  title: 预演三档精度
-  content: 预演按精度分三档：走位预演用几何块面验证调度与轴线；摄影预演加入镜头运动与焦距，验证构图与节奏；技术预演加入器材、虚拟棚与特效需求，验证可行性。
-  keywords:
-  - 预演精度
-  - 走位预演
-  - 摄影预演
+  - 摆位
+  - 实践
   rules: []
   parameters: {}
   examples: []
@@ -6359,28 +4759,2267 @@
   emotion: ''
   tags:
   - 分镜流程
+  - 场景设计
   topic: storyboard
   quote: |-
-    预演按精度分三档：**走位预演**（几何块面，验证调度与轴线）、**摄影预演**（加入镜头运动与焦距，验证构图与节奏）、**技术预演**（加入器材、虚拟棚与特效需求，验证可行性）。
+    As a general practice, this is scarcely to be commended.
   source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#005
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#007
   source_span:
-    chunk_id: modern_storyboard_and_previs_md#005
-    start: 16
-    end: 106
-  provenance_kind: 权威文档
-- id: gen_story_0203
+    chunk_id: pg10865_txt#007
+    start: 2454
+    end: 2510
+  provenance_kind: 网络语料
+- id: gen_story_0214
   domain: storyboard
-  title: 可复现性验收标准
-  content: 验收镜头清单的标准是可复现性：另一位导演只看这一行能否摆出同一台相机；做不到说明缺的是机位高度、焦段或运动方向，而非画面精细度。
+  title: 天才与常人：与观众相处
+  content: 关于剧作才能的差异：天才只需与观众短暂接触便能通晓一切，常人则须终生浸淫仍所知有限。这提示创作者应把长期反复的观众反馈当作必要训练，而非指望一次顿悟。
   keywords:
-  - 机位高度
+  - 经验
+  - 训练
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作方法
+  - 观众意识
+  topic: storyboard
+  quote: |-
+    he can associate but briefly with audiences and know it all, whereas we must spend our lives at it and know but little
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#003
+  source_span:
+    chunk_id: pg18230_txt#003
+    start: 209
+    end: 327
+  provenance_kind: 网络语料
+- id: gen_story_0215
+  domain: storyboard
+  title: 用特定纸张写作
+  content: 写作媒介影响想象：只用白纸、亚麻纸（linen paper）起草，换其他纸就什么都想不出来。
+  keywords:
+  - 媒介
+  - 习惯
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作流程
+  topic: storyboard
+  quote: |-
+    I take a quire of white paper, linen paper--on any other kind I can imagine nothing
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#004
+  source_span:
+    chunk_id: pg18230_txt#004
+    start: 1850
+    end: 1933
+  provenance_kind: 网络语料
+- id: gen_story_0216
+  domain: storyboard
+  title: 明确方向再选路径
+  content: 写作没有唯一正确方法，但作者必须清楚自己要走向哪里，并选择通往该目标的最佳路径。
+  keywords:
+  - 目标
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剧作方法
+  topic: storyboard
+  quote: |-
+    there is no one necessary way to write a play, but that a dramatist must know where he is going and take the best road that leads there
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#000
+  source_span:
+    chunk_id: pg18230_txt#000
+    start: 2015
+    end: 2150
+  provenance_kind: 网络语料
+- id: gen_story_0217
+  domain: storyboard
+  title: 先散文后韵文的流程
+  content: 写作流程上可先以散文写出完整场景（含全部动作与对白内容），再在时间允许时逐段转为韵文；时间不足时保留散文部分亦可成稿。
+  keywords:
+  - 散文稿
+  - 改写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 工作流程
+  topic: storyboard
+  quote: |-
+    he had completely constructed in prose and which he had not been able wholly to turn into verse within the limits of time set by the king.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#005
+  source_span:
+    chunk_id: pg76719_txt#005
+    start: 545
+    end: 683
+  provenance_kind: 网络语料
+- id: gen_story_0218
+  domain: storyboard
+  title: 用危机揭示而非改变角色
+  content: 写分镜/段落时，把角色的"发展"处理为揭示（unveiling）而非转变：让主角在一连串关键处境中暴露原本潜伏的特质，结尾时观众对角色的了解应超过角色本人或挚友在开场时的了解。
+  keywords:
+  - 角色揭示
+  - 潜伏特质
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色弧
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    a dramatic crisis ought to disclose latent qualities in the persons chiefly concerned in it
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#011
+  source_span:
+    chunk_id: pg10865_txt#011
+    start: 130
+    end: 221
+  provenance_kind: 网络语料
+- id: gen_story_0219
+  domain: storyboard
+  title: 喜剧配方：先挖洞再浇铸
+  content: 写喜剧可套用'先挖洞、再往洞里浇青铜'的比喻：先确立一个空洞的核心（戏剧情境/冲突），再让素材围绕它成形；若反过来，则等于先有青铜再从中挖出核心与透光口。
+  keywords:
+  - 结构
+  - 核心
+  - 情境
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剧作结构
+  - 比喻
+  topic: storyboard
+  quote: |-
+    You take a hole and you pour bronze around it.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#003
+  source_span:
+    chunk_id: pg18230_txt#003
+    start: 1216
+    end: 1262
+  provenance_kind: 网络语料
+- id: gen_story_0220
+  domain: storyboard
+  title: 假定观众天真
+  content: 写戏必须假定观众有点天真（naif），作者自己也要天真；若无法承认观众天真，就写不出让观众投入的关系戏。
+  keywords:
+  - 假定观众天真
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 观众心理
+  topic: storyboard
+  quote: |-
+    You simply must suppose the public a trifle naif,--and be so yourself.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#004
+  source_span:
+    chunk_id: pg18230_txt#004
+    start: 722
+    end: 792
+  provenance_kind: 网络语料
+- id: gen_story_0221
+  domain: storyboard
+  title: 先定终点再写起点
+  content: 写戏（分镜/剧本）时先确定最后一场或全剧中心点，再倒推每一场的位置与功能；起点只是问号，只有能通向终点或中心点时才采用。
+  keywords:
+  - 倒推
+  - 中心点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 段落
+  topic: storyboard
+  quote: |-
+    By beginning at the end.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#005
+  source_span:
+    chunk_id: pg18230_txt#005
+    start: 506
+    end: 530
+  provenance_kind: 网络语料
+- id: gen_story_0222
+  domain: storyboard
+  title: 动作是戏剧的骨架
+  content: 分镜/剧本结构上，先保证有可演的动作（doing）作为骨架，人物性格可后置；没有动作的纯对话或独白无法构成戏剧。
+  keywords:
+  - 动作是戏剧的骨架
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 动作线
+  topic: storyboard
+  quote: |-
+    A play can exist without anything that can be called character, but not without some sort of action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#001
+  source_span:
+    chunk_id: pg10865_txt#001
+    start: 231
+    end: 331
+  provenance_kind: 网络语料
+- id: gen_story_0223
+  domain: storyboard
+  title: 冲突非戏剧唯一要素
+  content: 分镜/段落设计时不要把'意志对意志的冲突'当作戏剧性的必要条件；可用意志的和谐共鸣（如阳台戏、定情戏）或纯情境张力（如宴会戏、牧歌段落）作为场景核心。
+  keywords:
+  - 戏剧性
+  - 意志
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 戏剧张力
+  topic: storyboard
+  quote: |-
+    it is clearly an error to make conflict indispensable to drama
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#003
+  source_span:
+    chunk_id: pg10865_txt#003
+    start: 517
+    end: 579
+  provenance_kind: 网络语料
+- id: gen_story_0224
+  domain: storyboard
+  title: 戏剧取顶点而非渐变
+  content: 分镜只呈现两三条命运线的交汇顶点，不铺陈渐变过程；若把缓慢成长或衰败的渐变当作主体，就侵入了小说的领域。
+  keywords:
+  - 交汇
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 节奏
+  topic: storyboard
+  quote: |-
+    the drama gives us only the culminating points--or shall we say the intersecting culminations?--two or three destinies.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#004
+  source_span:
+    chunk_id: pg10865_txt#004
+    start: 946
+    end: 1065
+  provenance_kind: 网络语料
+- id: gen_story_0225
+  domain: storyboard
+  title: 戏剧性危机是分镜核心
+  content: 分镜段落应围绕人物生活中的一个危机时刻来组织：把镜头与节奏集中到角色必须做出抉择或承受后果的那一瞬间，而不是平铺日常。
+  keywords:
+  - 段落结构
+  - 人物
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    a drama should be, or tends to be, the presentation of a crisis in the life of certain characters
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#005
+  source_span:
+    chunk_id: pg10865_txt#005
+    start: 93
+    end: 190
+  provenance_kind: 网络语料
+- id: gen_story_0226
+  domain: storyboard
+  title: 靠观察观众获得直觉
+  content: 判断有效与无效手法的能力来自长期与观众共处形成的直觉，而非向人请教；这种直觉需不断更新以对应观众口味的变化。
+  keywords:
+  - 观众观察
+  - 经验
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 受众
+  - 创作方法
+  topic: storyboard
+  quote: |-
+    This instinct must be planted and nourisht by more or less (more if possible) _living_ with audiences, until it becomes a part of the system
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#002
+  source_span:
+    chunk_id: pg18230_txt#002
+    start: 1669
+    end: 1809
+  provenance_kind: 网络语料
+- id: gen_story_0227
+  domain: storyboard
+  title: 悬念与惊奇驱动
+  content: 剧作依赖情节、悬念，尤其依赖惊奇；惊奇常通过人物性格的自相矛盾来实现。
+  keywords:
+  - 性格矛盾
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 惊奇
+  tags:
+  - 反转
+  topic: storyboard
+  quote: |-
+    as playwrights they depended on plot, on suspense and especially on surprize--often achieved only by contradiction of character.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#002
+  source_span:
+    chunk_id: pg76719_txt#002
+    start: 960
+    end: 1088
+  provenance_kind: 网络语料
+- id: gen_story_0228
+  domain: storyboard
+  title: 剧作法不可言传
+  content: 剧作规则难以被完整口述传授：即使作者本人会写，也无法把方法直接讲给别人。因此学习路径应偏向拆解实例与反复实践，而非只依赖成文的'配方'。
+  keywords:
+  - 传授
+  - 实践
+  - 实例
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 学习方法
+  - 剧作观
+  topic: storyboard
+  quote: |-
+    they cannot tell _us_ how to do it for the very good reason that it cannot be told
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#003
+  source_span:
+    chunk_id: pg18230_txt#003
+    start: 644
+    end: 726
+  provenance_kind: 网络语料
+- id: gen_story_0229
+  domain: storyboard
+  title: 戏非直线叙事
+  content: 剧本不是简单直白讲述的故事，而是经过精心调校的机关序列，边捕获观众边无中断地推进主题。
+  keywords:
+  - 叙事结构
+  - 机关
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    A play or drama is not a simple and straight-told story
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#001
+  source_span:
+    chunk_id: pg18230_txt#001
+    start: 826
+    end: 881
+  provenance_kind: 网络语料
+- id: gen_story_0230
+  domain: storyboard
+  title: 只标必要走位
+  content: 剧本中只写绝对必要的角色动作与走位，其余调度细节留给导演和舞台监督处理。
+  keywords:
+  - 调度
+  - 剧本写法
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 剧本格式
+  topic: storyboard
+  quote: |-
+    he put down in his manuscript only the absolutely necessary movements of his characters. The rest he left to the manager and the stage-manager.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#008
+  source_span:
+    chunk_id: pg18230_txt#008
+    start: 2207
+    end: 2350
+  provenance_kind: 网络语料
+- id: gen_story_0231
+  domain: storyboard
+  title: 散文分场提纲法
+  content: 动笔前先以散文写一份分场提纲（scenario），确定各场动作与顺序，再据此展开正式文本；此法与直接写韵文并行不悖。
+  keywords:
+  - scenario
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 前期规划
+  topic: storyboard
+  quote: |-
+    on occasion he drew up a preliminary scenario in prose
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#005
+  source_span:
+    chunk_id: pg76719_txt#005
+    start: 270
+    end: 324
+  provenance_kind: 网络语料
+- id: gen_story_0232
+  domain: storyboard
+  title: 先写全剧分场计划
+  content: 动笔前先写 PLAN：把全剧从开头到结尾逐场展开成连续场景序列；未写到结尾就不算拥有开头与中段，此阶段最费力，属创作与分娩。
+  keywords:
+  - 场景序列
+  - 结构
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 分镜写法
+  topic: storyboard
+  quote: |-
+    By the plan I mean the developed succession, scene by scene, of the whole piece, from the beginning to the end.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#004
+  source_span:
+    chunk_id: pg18230_txt#004
+    start: 1974
+    end: 2085
+  provenance_kind: 网络语料
+- id: gen_story_0233
+  domain: storyboard
+  title: 先定有趣主题
+  content: 动笔前先选定一个自己觉得有趣、能激发兴趣的主题；主题的趣味性是可持续写作的前提条件。
+  keywords:
+  - 趣味
+  - 前提
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 选题
+  topic: storyboard
+  quote: |-
+    Take an interesting theme.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#000
+  source_span:
+    chunk_id: pg18230_txt#000
+    start: 1129
+    end: 1155
+  provenance_kind: 网络语料
+- id: gen_story_0234
+  domain: storyboard
+  title: 剧场成功与佳作成功之别
+  content: 区分两种目标：在剧场'获得成功'（迎合观众、易达成）与'以好剧本获得成功'（极难）。创作取舍时应明确自己追求的是哪一种，不要用前者替代后者。
+  keywords:
+  - 好剧本
+  - 观众
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作目标
+  - 剧作观
+  topic: storyboard
+  quote: |-
+    It is not hard to succeed in the theater, but it is extremely hard to gain success there with a fine play.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#003
+  source_span:
+    chunk_id: pg18230_txt#003
+    start: 2152
+    end: 2258
+  provenance_kind: 网络语料
+- id: gen_story_0235
+  domain: storyboard
+  title: 危机须揭示人物
+  content: 危机段落除推进情节外，还应成为人物性格的说明性时刻；分镜时优先选择能暴露角色本性的反应镜头。
+  keywords:
+  - 性格
+  - 反应
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 人物塑造
+  topic: storyboard
+  quote: |-
+    eminently illustrative of character
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#005
+  source_span:
+    chunk_id: pg10865_txt#005
+    start: 2670
+    end: 2705
+  provenance_kind: 网络语料
+- id: gen_story_0236
+  domain: storyboard
+  title: 节奏停滞的后果
+  content: 叙事节奏一旦放慢观众就厌倦，一旦停下观众就喝倒彩；因此每场都必须保持前进动力，不允许原地打转。
+  keywords:
+  - 动力
+  - 观众
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: storyboard
+  quote: |-
+    If it slows up, the public yawns; if it stops, the public hisses.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#005
+  source_span:
+    chunk_id: pg18230_txt#005
+    start: 254
+    end: 319
+  provenance_kind: 网络语料
+- id: gen_story_0237
+  domain: storyboard
+  title: 悲剧须保持严肃格调
+  content: 古典规则严格要求悲剧维持庄重严肃的格调，不容许降低其严肃性。
+  keywords:
+  - 庄重
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 类型规则
+  - 基调
+  topic: storyboard
+  quote: |-
+    It insisted severely upon the austere dignity of tragedy.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#000
+  source_span:
+    chunk_id: pg76719_txt#000
+    start: 823
+    end: 880
+  provenance_kind: 网络语料
+- id: gen_story_0238
+  domain: storyboard
+  title: 每幕前配诗体引子
+  content: 可为每一幕之前配置一首十四行诗，用它诗意地描述该幕即将展开的场景环境，起到分幕引子的作用。
+  keywords:
+  - 分幕
+  - 十四行诗
+  - 场景描述
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    M. Rostand prefixes a sonnet to every act of his 'Chantecler,' utilizing them for a poetical description of the successive sets
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#007
+  source_span:
+    chunk_id: pg76719_txt#007
+    start: 2296
+    end: 2423
+  provenance_kind: 网络语料
+- id: gen_story_0239
+  domain: storyboard
+  title: 先写初稿再排场景
+  content: 可先在随身小本上完成初稿，待初稿完整后再设定场景、规划舞台调度，避免边写边排。
+  keywords:
+  - 舞台调度
+  - 流程
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜流程
+  - 调度
+  topic: storyboard
+  quote: |-
+    Only when the first draft was complete did he proceed to set the scenes, as it were, and map out the stage-management.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#007
+  source_span:
+    chunk_id: pg10865_txt#007
+    start: 2126
+    end: 2244
+  provenance_kind: 网络语料
+- id: gen_story_0240
+  domain: storyboard
+  title: 从结尾倒推写作
+  content: 可先确定结尾再倒推前面内容，即从故事的终点开始构思，而非从开头顺序推进。
+  keywords:
+  - 顺序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构规划
+  topic: storyboard
+  quote: |-
+    another still wants us to be sure and begin work at the end instead of the beginning
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#000
+  source_span:
+    chunk_id: pg18230_txt#000
+    start: 1434
+    end: 1518
+  provenance_kind: 网络语料
+- id: gen_story_0241
+  domain: storyboard
+  title: 交代戏的两种写法
+  content: 同为交代性场景，可写成无情绪起伏的叙述段落，也可写成充满脉搏的戏剧段落；后者把叙述本身戏剧化，效果更强。
+  keywords:
+  - 叙述
+  - 戏剧化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 戏剧化
+  topic: storyboard
+  quote: |-
+    the earlier scene is a passage of quite unemotional narrative; the later is a passage of palpitating drama
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#008
+  source_span:
+    chunk_id: pg10865_txt#008
+    start: 574
+    end: 680
+  provenance_kind: 网络语料
+- id: gen_story_0242
+  domain: storyboard
+  title: 情节量以自然为限
+  content: 图景式段落中只保留自然且必然落入其边界内的那部分故事，超出此范围的情节应舍弃，不必迎合观众对强情节的期待。
+  keywords:
+  - 边界
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情节取舍
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    give his tableau-play just so much of story as may naturally and inevitably fall within its limits.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#000
+  source_span:
+    chunk_id: pg10865_txt#000
+    start: 1965
+    end: 2064
+  provenance_kind: 网络语料
+- id: gen_story_0243
+  domain: storyboard
+  title: 预埋伏笔的指路牌
+  content: 在情节推进中，若某场戏看似纯插曲、与前后无关联，应设置"指路牌"（finger-post）让不知后续的观众也能预感到走向；否则该场戏会显得无动机、无结果。
+  keywords:
+  - 预判
+  - 戏剧结构
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 悬念
+  tags:
+  - 结构
+  - 悬念
+  topic: storyboard
+  quote: |-
+    He has neglected the great art of forecasting, of keeping anticipation on the alert, which is half the secret of dramatic construction.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#009
+  source_span:
+    chunk_id: pg10865_txt#009
+    start: 507
+    end: 642
+  provenance_kind: 网络语料
+- id: gen_story_0244
+  domain: storyboard
+  title: 场景可视化宜晚不宜早
+  content: 在构思每一幕时，先完成对白与情节的初稿，再确定家具、道具与人物站位；把场景可视化留到相对后期的阶段，避免过早被环境细节束缚。
+  keywords:
+  - 创作阶段
+  - 初稿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜流程
+  - 场景设计
+  topic: storyboard
+  quote: |-
+    it is wisest to reserve it for a comparatively late stage
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#007
+  source_span:
+    chunk_id: pg10865_txt#007
+    start: 1830
+    end: 1887
+  provenance_kind: 网络语料
+- id: gen_story_0245
+  domain: storyboard
+  title: 按气质定基调
+  content: 基调依作者气质与灵感而定：有人唱欢快调子，有人更爱让人落泪，不必强求统一风格。
+  keywords:
+  - 灵感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 风格
+  topic: storyboard
+  quote: |-
+    Everyone writes in accordance with his inspiration and his temperament. Some sing a gay note, others find more pleasure in making people weep.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#004
+  source_span:
+    chunk_id: pg18230_txt#004
+    start: 1386
+    end: 1528
+  provenance_kind: 网络语料
+- id: gen_story_0246
+  domain: storyboard
+  title: 以行动展示性格
+  content: 塑造人物时用行动而非台词来证明性格：让角色在事件中做出选择与举动，避免只靠对话或独白交代性格。
+  keywords:
+  - 以行动展示性格
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 人物塑造
+  topic: storyboard
+  quote: |-
+    deeds, not words, are the demonstration and test of character
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#001
+  source_span:
+    chunk_id: pg10865_txt#001
+    start: 656
+    end: 717
+  provenance_kind: 网络语料
+- id: gen_story_0247
+  domain: storyboard
+  title: 情节为人物服务
+  content: 安排情节时以人物为目的：动作应存在以成全性格；若反过来让人物迁就情节，作品会沦为精巧玩具而非有生命的艺术。
+  keywords:
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 人物驱动
+  topic: storyboard
+  quote: |-
+    Action ought to exist for the sake of character: when the relation is reversed, the play may be an ingenious toy, but scarcely a vital work of art.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#001
+  source_span:
+    chunk_id: pg10865_txt#001
+    start: 1926
+    end: 2073
+  provenance_kind: 网络语料
+- id: gen_story_0248
+  domain: storyboard
+  title: 同时看见与听见
+  content: 定稿过程中不仅要听到每个角色说的每句话，还要在脑中看见推动动作的每一个动作；即同时具备"看见动作"与"听见台词"的双重能力。
+  keywords:
+  - 视听同步
+  - 动作预演
+  - 双重能力
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演
+  - 调度
+  topic: storyboard
+  quote: |-
+    he also saw every one of the movements which would animate the action
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#009
+  source_span:
+    chunk_id: pg18230_txt#009
+    start: 1666
+    end: 1735
+  provenance_kind: 网络语料
+- id: gen_story_0249
+  domain: storyboard
+  title: 布景只作简略提示
+  content: 对布景与舞台管理细节兴趣不大时，只需简要指明所需房间类型，不必详述陈设。
+  keywords:
+  - 舞台管理
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 美术
+  topic: storyboard
+  quote: |-
+    He indicated summarily the kind of room that he desired
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#008
+  source_span:
+    chunk_id: pg18230_txt#008
+    start: 2146
+    end: 2201
+  provenance_kind: 网络语料
+- id: gen_story_0250
+  domain: storyboard
+  title: 首场交代结局
+  content: 常见做法是第一场就给出全剧最终结果，后续靠过程与细节维持观众兴趣；若只堆细节而忽略这条，会失败。
+  keywords:
+  - 悬念
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 叙事
+  topic: storyboard
+  quote: |-
+    an intrigue of which the ultimate result is usually given in the first scene
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#004
+  source_span:
+    chunk_id: pg18230_txt#004
+    start: 976
+    end: 1052
+  provenance_kind: 网络语料
+- id: gen_story_0251
+  domain: storyboard
+  title: 幕间插短剧填场
+  content: 幕与幕之间可插入若干短小的幕间戏（entremeses）填补换场空档，数量约三出，用以维持观众注意力并衔接各幕。
+  keywords:
+  - 幕间戏
+  - entremeses
+  - 换场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 转场
+  topic: storyboard
+  quote: |-
+    Three _entremeses_ short filled up the scene.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#005
+  source_span:
+    chunk_id: pg76719_txt#005
+    start: 1446
+    end: 1491
+  provenance_kind: 网络语料
+- id: gen_story_0252
+  domain: storyboard
+  title: 幕间短剧的单一动作
+  content: 幕间短剧（entremés）只保留一个动作，且发生在平民人物之间；从未见过有国王出场的幕间短剧。
+  keywords:
+  - 平民
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    there being one action and that between plebeian people; for an _entrémes_ with a king has never been seen.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#004
+  source_span:
+    chunk_id: pg76719_txt#004
+    start: 1677
+    end: 1784
+  provenance_kind: 网络语料
+- id: gen_story_0253
+  domain: storyboard
+  title: 随手记录单场灵感
+  content: 平时持续记录单场戏的点子与精彩设想，积累成素材库；决定写某部戏时再把这些散记汇总、排序、扩充加强，而不是等到动笔才想。
+  keywords:
+  - 笔记
+  - 素材积累
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 前期准备
+  topic: storyboard
+  quote: |-
+    He was a constant note-taker, putting down suggestions for single scenes or for striking suggestions, as these might occur to him
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#009
+  source_span:
+    chunk_id: pg18230_txt#009
+    start: 345
+    end: 474
+  provenance_kind: 网络语料
+- id: gen_story_0254
+  domain: storyboard
+  title: 写作前需周密计划
+  content: 开写前应制定经过仔细考虑的整体计划，明确结构再落笔，而非边写边想。
+  keywords:
+  - 结构
+  - 准备
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构规划
+  topic: storyboard
+  quote: |-
+    Two insist upon the necessity of a carefully considered plan
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#000
+  source_span:
+    chunk_id: pg18230_txt#000
+    start: 1289
+    end: 1349
+  provenance_kind: 网络语料
+- id: gen_story_0255
+  domain: storyboard
+  title: 三幕结构的现代倾向
+  content: 当五幕形式被废除后，主流现代剧作家倾向采用逻辑性的三幕结构；易卜生的社会剧与洛佩的剧作多为三幕，可作为现代剧作分幕的参照。
+  keywords:
+  - 五幕
+  - 分幕
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    as soon as the five-act form was disestablished the tendency of the leading modern dramatists has been to adopt the logical three-act form.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#006
+  source_span:
+    chunk_id: pg76719_txt#006
+    start: 739
+    end: 878
+  provenance_kind: 网络语料
+- id: gen_story_0256
+  domain: storyboard
+  title: 无情节剧的张力来源
+  content: 当剧本没有事件纠葛、没有情绪张力时，仍可让观众四幕专注：靠对生活细节的准确观察，加上戏剧本能的取舍，把'想走却没走'这类未完成的抉择作为全剧动作核心。
+  keywords:
+  - 观察
+  - 戏剧本能
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事结构
+  topic: storyboard
+  quote: |-
+    There is absolutely no "story" in it, no complication of incidents, not even any emotional tension worth speaking of.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#006
+  source_span:
+    chunk_id: pg10865_txt#006
+    start: 143
+    end: 260
+  provenance_kind: 网络语料
+- id: gen_story_0257
+  domain: storyboard
+  title: 和谐共鸣同样有效
+  content: 当场景的落点是两个意志的狂喜式一致（而非对抗）时，同样可以拍得极具戏剧性；分镜上应把镜头重心放在双方情绪的同步与交融，而不是对峙。
+  keywords:
+  - 情感同步
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 喜悦
+  tags:
+  - 调度
+  - 表演
+  topic: storyboard
+  quote: |-
+    the point of these scenes is not a clash, but an ecstatic concordance, of wills
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#003
+  source_span:
+    chunk_id: pg10865_txt#003
+    start: 1476
+    end: 1555
+  provenance_kind: 网络语料
+- id: gen_story_0258
+  domain: storyboard
+  title: 迎合观众与艺术取舍
+  content: 当观众为喜剧付费时，作者会为满足其口味而放弃古典法则，甚至把普劳图斯与泰伦斯逐出书房，按迎合人群的艺术写作。
+  keywords:
+  - 古典法则
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作取舍
+  topic: storyboard
+  quote: |-
+    since the crowd pays for the comedies, it is fitting to talk foolishly to it to satisfy its taste.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#004
+  source_span:
+    chunk_id: pg76719_txt#004
+    start: 608
+    end: 706
+  provenance_kind: 网络语料
+- id: gen_story_0259
+  domain: storyboard
+  title: 用观众已知信息造反讽
+  content: 当观众掌握角色所不知的关键信息（如身份禁忌）时，同一场戏会获得反讽与灾难将至的张力；对不知情的观众则只是平淡的恋爱场面。
+  keywords:
+  - 信息差
+  - 灾难预感
+  - 戏剧张力
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不安
+  tags:
+  - 信息差
+  - 张力
+  topic: storyboard
+  quote: |-
+    Knowing this, we have a sense of irony, of impending disaster, which renders the love-scene of the second act dramatic.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#009
+  source_span:
+    chunk_id: pg10865_txt#009
+    start: 2376
+    end: 2495
+  provenance_kind: 网络语料
+- id: gen_story_0260
+  domain: storyboard
+  title: 抉择瞬间的镜头处理
+  content: 当角色掌握一个能颠覆现状的秘密、只需一句话即可改变局面时，把镜头停在她开口与否的犹豫上，用停顿与近景放大这一抉择。
+  keywords:
+  - 停顿
+  - 近景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 犹豫
+  tags:
+  - 特写
+  - 节奏
+  - 表演
+  topic: storyboard
+  quote: |-
+    Shall she speak that word, or shall she not?
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#005
+  source_span:
+    chunk_id: pg10865_txt#005
+    start: 2484
+    end: 2528
+  provenance_kind: 网络语料
+- id: gen_story_0261
+  domain: storyboard
+  title: 意志冲突适合单场
+  content: 意志对意志的正面冲突强度最高，但作为整部作品的公式较罕见；更适合用在个别场景中作为局部高潮，而非贯穿全片的唯一结构。
+  keywords:
+  - 高潮
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 节奏
+  topic: storyboard
+  quote: |-
+    In individual scenes a conflict of will is frequent enough; but it is, after all, only one among a multitude of equally telling forms of drama.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#003
+  source_span:
+    chunk_id: pg10865_txt#003
+    start: 1169
+    end: 1312
+  provenance_kind: 网络语料
+- id: gen_story_0262
+  domain: storyboard
+  title: 戏剧结构即陷阱装置
+  content: 把剧本理解为一系列彼此独立又相互依存的'陷阱'（场景、情境、高潮、幕与画面），每个陷阱须精确设置并在恰当时刻触发，在捕获观众注意的同时不间断推进情节。
+  keywords:
+  - 情节推进
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 节奏
+  topic: storyboard
+  quote: |-
+    it is a device--an invention--a carefully adjusted series of more or less ingenious traps, independent yet inter-dependent
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#001
+  source_span:
+    chunk_id: pg18230_txt#001
+    start: 883
+    end: 1005
+  provenance_kind: 网络语料
+- id: gen_story_0263
+  domain: storyboard
+  title: 显影式角色呈现
+  content: 把角色塑造类比摄影显影：剧情的作用是让底片上潜藏的形象"显出来"，而不是让角色成长或发生根本改变；分镜安排事件时应服务于"显影"这一目标。
+  keywords:
+  - 揭示
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色弧
+  - 隐喻
+  topic: storyboard
+  quote: |-
+    A drama ought to bring out character as the photographer's chemicals "bring out" the forms latent in the negative.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#011
+  source_span:
+    chunk_id: pg10865_txt#011
+    start: 749
+    end: 863
+  provenance_kind: 网络语料
+- id: gen_story_0264
+  domain: storyboard
+  title: 幕长与篇幅的配比
+  content: 按早期舞台惯例，全剧四张纸、每幕一张纸，即每幕篇幅大致等长；三幕或四幕均按此比例分配，使各幕体量均衡。
+  keywords:
+  - 均衡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 节奏
+  topic: storyboard
+  quote: |-
+    Four sheets to every play, an act on every sheet.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#005
+  source_span:
+    chunk_id: pg76719_txt#005
+    start: 997
+    end: 1046
+  provenance_kind: 网络语料
+- id: gen_story_0265
+  domain: storyboard
+  title: 无观众即无价值
+  content: 无论立意多好、作者多懂人生，若机关不能有效运作、无法为自身找到观众，这出戏就毫无价值。
+  keywords:
+  - 有效性
+  - 价值判断
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: storyboard
+  quote: |-
+    will fail of its appeal and be worthless--for a play is worthless that is unable to provide itself with people to play _to_.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#001
+  source_span:
+    chunk_id: pg18230_txt#001
+    start: 1720
+    end: 1844
+  provenance_kind: 网络语料
+- id: gen_story_0266
+  domain: storyboard
+  title: 结构复杂度已升级
+  content: 机关的设计与调校过去是最简单的事，如今必然变得极为复杂精细，创作者须按当下标准提高结构精度。
+  keywords:
+  - 调校
+  - 标准
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    Their construction and adjustment--once one of the simplest--is now of necessity most complicated and intricate.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#001
+  source_span:
+    chunk_id: pg18230_txt#001
+    start: 1447
+    end: 1559
+  provenance_kind: 网络语料
+- id: gen_story_0267
+  domain: storyboard
+  title: 危机要素非充分条件
+  content: 某要素是戏剧场景的必要或理想成分，并不等于含该要素的场景就是好戏；分镜取舍时不能只凭要素清单判定镜头成立。
+  keywords:
+  - 判断标准
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事逻辑
+  topic: storyboard
+  quote: |-
+    is by no means to imply that every scene which contains this factor is good drama
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#005
+  source_span:
+    chunk_id: pg10865_txt#005
+    start: 1828
+    end: 1909
+  provenance_kind: 网络语料
+- id: gen_story_0268
+  domain: storyboard
+  title: 障碍揭示的时机
+  content: 核心障碍若拖到第三幕中段才揭示，前面两幕半的准备期观众毫无头绪，戏才真正开始；应权衡揭示时机以维持前段动力。
+  keywords:
+  - 揭示时机
+  - 幕结构
+  - 准备期
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 节奏
+  - 幕
+  topic: storyboard
+  quote: |-
+    Not till the middle of the third act (out of four) is the obstacle revealed, and we see that the mighty maze was not without a plan.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#009
+  source_span:
+    chunk_id: pg10865_txt#009
+    start: 2718
+    end: 2850
+  provenance_kind: 网络语料
+- id: gen_story_0269
+  domain: storyboard
+  title: 无冲突场景的戏剧性
+  content: 死亡场景、宴会场景、牧歌式段落中并不存在意志冲突，却依然成立；处理这类段落时靠氛围、仪式感与情境压力制造张力，不必强加对抗。
+  keywords:
+  - 氛围
+  - 情境
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 气氛
+  topic: storyboard
+  quote: |-
+    Yet in none of these is there any conflict of wills.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#003
+  source_span:
+    chunk_id: pg10865_txt#003
+    start: 1680
+    end: 1732
+  provenance_kind: 网络语料
+- id: gen_story_0270
+  domain: storyboard
+  title: 陷阱须精确触发
+  content: 每个场景/情境/高潮的机关必须按精确时刻与精确方式触发，以捕获观众的赞赏、同情或兴趣；触发失准则整部戏失败。
+  keywords:
+  - 触发时机
+  - 观众反应
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 高潮
+  topic: storyboard
+  quote: |-
+    require to be set and adjusted with the utmost nicety and skill so that they will spring at the precise instant and in the precise manner
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#001
+  source_span:
+    chunk_id: pg18230_txt#001
+    start: 1194
+    end: 1331
+  provenance_kind: 网络语料
+- id: gen_story_0271
+  domain: storyboard
+  title: 无想法时先搁置
+  content: 没有想法时不硬写，先搁置并求助灵感（Providence）；有想法时也求助，但热度更低，因为自觉可以独立完成。
+  keywords:
+  - 灵感
+  - 等待
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作流程
+  topic: storyboard
+  quote: |-
+    When I have no idea, I gnaw my nails and invoke the aid of Providence.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#004
+  source_span:
+    chunk_id: pg18230_txt#004
+    start: 1564
+    end: 1634
+  provenance_kind: 网络语料
+- id: gen_story_0272
+  domain: storyboard
+  title: 喜剧篇幅按页数控制
+  content: 洛佩规定喜剧每幕四张纸、十六页，全剧四十八页，约三千行；当时剧作家普遍严格遵守，偏差多因纸张尺寸不同。
+  keywords:
+  - 三千行
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 篇幅控制
+  topic: storyboard
+  quote: |-
+    Four sheets--sixteen leaves for each act, that is forty-eight leaves to a _comedia_.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#006
+  source_span:
+    chunk_id: pg76719_txt#006
+    start: 1254
+    end: 1338
+  provenance_kind: 网络语料
+- id: gen_story_0273
+  domain: storyboard
+  title: 现代舞台要求完整画面
+  content: 现代戏剧中布景不再是衬托人物的暗示性背景，而是要求人物完全融入其中的完整画面，因此编剧必须细致地视觉化舞台画面。
+  keywords:
+  - 布景
+  - 视觉化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 场景设计
+  topic: storyboard
+  quote: |-
+    The stage now aims at presenting a complete picture, with the figures, not "a little out of the picture," but completely in it.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#007
+  source_span:
+    chunk_id: pg10865_txt#007
+    start: 1087
+    end: 1214
+  provenance_kind: 网络语料
+- id: gen_story_0274
+  domain: storyboard
+  title: 环境与站位需精确设计
+  content: 现代编剧须重视场景的地形布局与人物不断变化的站位，明确每一时刻谁站在何处、谁坐在何处。
+  keywords:
+  - 地形布局
+  - 调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 走位
+  topic: storyboard
+  quote: |-
+    pay great attention to what may be called the topography of their scenes, and the shifting "positions" of their characters
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#007
+  source_span:
+    chunk_id: pg10865_txt#007
+    start: 1430
+    end: 1552
+  provenance_kind: 网络语料
+- id: gen_story_0275
+  domain: storyboard
+  title: 初稿必删至一半
+  content: 第一版永远过长，需反复三到四遍修改、压缩、锐化、收紧效果，最终长度常只剩初稿的一半左右。
+  keywords:
+  - 修改
+  - 压缩
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 剪辑
+  topic: storyboard
+  quote: |-
+    The first version was always too long; and the successive revisions reduced it to scarcely more than a half of its original length.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#009
+  source_span:
+    chunk_id: pg18230_txt#009
+    start: 1315
+    end: 1446
+  provenance_kind: 网络语料
+- id: gen_story_0276
+  domain: storyboard
+  title: 结尾决定头尾
+  content: 结构上先确定全剧终点，再回推开头与中段；只有写到结尾，开头和中段才成立。
+  keywords:
+  - 开头
+  - 中段
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  topic: storyboard
+  quote: |-
+    So long as one has not reached the end of his play he has neither the beginning nor the middle.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#004
+  source_span:
+    chunk_id: pg18230_txt#004
+    start: 2087
+    end: 2182
+  provenance_kind: 网络语料
+- id: gen_story_0277
+  domain: storyboard
+  title: 动作优先于性格
+  content: 结构取舍上，情节/动作是目的，性格是手段：先确立动作线（Fable/Plot）作为全片骨架，人物性格为推进动作而设；没有动作不成戏，没有性格仍可成戏。
+  keywords:
+  - 情节
+  - 结构
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事结构
+  - 情节优先
+  topic: storyboard
+  quote: |-
+    they do not act in order to portray the characters, they include the characters for the sake of the action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#002
+  source_span:
+    chunk_id: pg10865_txt#002
+    start: 225
+    end: 332
+  provenance_kind: 网络语料
+- id: gen_story_0278
+  domain: storyboard
+  title: 技法建议来自成功实践
+  content: 给新手的写作建议应是对已成功作品特征的归纳：先看哪些戏取悦了观众，再让初学者照此特征与套路去写。
+  keywords:
+  - 实践归纳
+  - 观众反馈
+  - 套路
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 编剧法
+  - 经验规则
+  topic: storyboard
+  quote: |-
+    As these plays had pleased the public, beginners would do well to consider these characteristics and to follow this fashion.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#001
+  source_span:
+    chunk_id: pg76719_txt#001
+    start: 1326
+    end: 1450
+  provenance_kind: 网络语料
+- id: gen_story_0279
+  domain: storyboard
+  title: 核心道具须先行设定
+  content: 若某件道具或家具是整场戏的支点（如藏人的桌子、屏风），则必须在构思之初就把它确定下来，不能留到后期。
+  keywords:
+  - 支点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场景设计
+  topic: storyboard
+  quote: |-
+    some property or piece of furniture, is the very pivot of the scene; in which case it must, of course, be posited from the first
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#007
+  source_span:
+    chunk_id: pg10865_txt#007
+    start: 2718
+    end: 2846
+  provenance_kind: 网络语料
+- id: gen_story_0280
+  domain: storyboard
+  title: 压缩时间需谨慎
+  content: 若让角色在短时间内完成本需数月的演变（如娜拉式觉醒），必须意识到这是被压缩的演化，需用集中的关键事件支撑，否则可信度受损。
+  keywords:
+  - 时间压缩
+  - 演变
+  - 可信度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 角色弧
+  topic: storyboard
+  quote: |-
+    the poet has compressed into a week an evolution which, in fact, would have demanded many months
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#011
+  source_span:
+    chunk_id: pg10865_txt#011
+    start: 1121
+    end: 1217
+  provenance_kind: 网络语料
+- id: gen_story_0281
+  domain: storyboard
+  title: 过去压倒当下的风险
+  content: 若让过去占据动作的四分之三，变成对往事的激情分析，只有极少数大师能撑住；日常舞台不宜采用这种公式。
+  keywords:
+  - 比例
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 比例
+  topic: storyboard
+  quote: |-
+    the past took the upper hand of the present to a degree which could only be justified by the genius of an Ibsen
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#008
+  source_span:
+    chunk_id: pg10865_txt#008
+    start: 750
+    end: 861
+  provenance_kind: 网络语料
+- id: gen_story_0282
+  domain: storyboard
+  title: 三幕制的结构依据
+  content: 若采用三幕结构，可用"一个动作须有开头、中段、结尾"的古典原则为其辩护：三幕分别对应动作的起、承、结，而非随意切分。
+  keywords:
+  - 动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 幕结构
+  topic: storyboard
+  quote: |-
+    a play must have an action with a beginning, a middle and an end.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: The new art of writing plays
+    author: Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:17+00:00'
+    sha256: 27d0ead65e776bf0b5a65043b37c3fd69ab9b3c62b83d0c72fe87da62a8c7152
+  chunk_id: pg76719_txt#005
+  source_span:
+    chunk_id: pg76719_txt#005
+    start: 2126
+    end: 2191
+  provenance_kind: 网络语料
+- id: gen_story_0283
+  domain: storyboard
+  title: 观众口味持续变化
+  content: 观众的口味、需求与习惯不断变化，过去有效的戏剧手法今天可能完全失效；创作手法需随观众变化持续调整，不能照搬旧成功模式。
+  keywords:
+  - 口味变化
+  - 时效性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 受众
+  topic: storyboard
+  quote: |-
+    The dramatic trap that would work like a charm not long ago may not work at all to-day; the successful trap of to-day may be useless junk tomorrow.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#002
+  source_span:
+    chunk_id: pg18230_txt#002
+    start: 657
+    end: 804
+  provenance_kind: 网络语料
+- id: gen_story_0284
+  domain: storyboard
+  title: 危机须自然可信
+  content: 设计危机镜头时，事件必须符合人物性格与情境逻辑；若危机只靠巧合堆砌（如凭空出现的杂技仆人搭桥），即便再戏剧化也不可用。
+  keywords:
+  - 可信度
+  - 巧合
+  - 逻辑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事逻辑
+  - 可信度
+  topic: storyboard
+  quote: |-
+    it is not a piece of rational or commendable drama
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#005
+  source_span:
+    chunk_id: pg10865_txt#005
+    start: 1685
+    end: 1735
+  provenance_kind: 网络语料
+- id: gen_story_0285
+  domain: storyboard
+  title: 效果来源需具体判断
+  content: 评估一场戏的吸引力时，要具体判断其效果来自何处（如揭示、误会、场面调度），不要笼统归因于'意志冲突'这一公式。
+  keywords:
+  - 公式
   rules: []
   parameters: {}
   examples: []
@@ -6391,27 +7030,26 @@
   - 分镜写法
   topic: storyboard
   quote: |-
-    清单的验收标准是**可复现性**：另一位导演只看这一行，能否摆出同一台相机。
+    who can pretend that any considerable part of the attraction or interest of the play is due to that possibility?
   source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#001
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#003
   source_span:
-    chunk_id: modern_storyboard_and_previs_md#001
-    start: 127
-    end: 165
-  provenance_kind: 权威文档
-- id: gen_story_0204
+    chunk_id: pg10865_txt#003
+    start: 2178
+    end: 2290
+  provenance_kind: 网络语料
+- id: gen_story_0286
   domain: storyboard
-  title: 高风险镜头三档预演
-  content: 高风险镜头必须做到第三档技术预演，即完成到可验证技术可行性的深度，而非停留在草图档。
+  title: 简洁不等于海报式画面
+  content: 追求镜头处理的简洁利落时，要守住自然与常识的边界，避免滑向只为冲击力服务的海报式单幅画面。
   keywords:
-  - 技术预演
-  - 档位
+  - 节制
   rules: []
   parameters: {}
   examples: []
@@ -6419,20 +7057,84 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 技术
+  - 构图
+  - 节制
   topic: storyboard
   quote: |-
-    高风险镜头是否做到了第三档技术预演？
+    crispness of handling may easily degenerate into the pursuit of mere picture-poster situation
   source_ref:
-    url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: df2b83954a489e122712a2a12e82efbfb0f49318d822af6edc040293ed7c290d
-  chunk_id: modern_storyboard_and_previs_md#010
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#005
   source_span:
-    chunk_id: modern_storyboard_and_previs_md#010
-    start: 129
-    end: 147
-  provenance_kind: 权威文档
+    chunk_id: pg10865_txt#005
+    start: 654
+    end: 747
+  provenance_kind: 网络语料
+- id: gen_story_0287
+  domain: storyboard
+  title: 题材先看可写性
+  content: 选材时先问这个题材写起来是否有趣、是否好玩，而不是先问能否写成杰作；追求写作过程的乐趣优先于身后名声。
+  keywords:
+  - 选材
+  - 趣味
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作取舍
+  topic: storyboard
+  quote: |-
+    I ask whether the subject will be amusing to treat.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola
+    author: Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:15+00:00'
+    sha256: 11597df3c79324691e8d3ca95095b42f58787cb7eb1585dc61ab1dd2cce2e892
+  chunk_id: pg18230_txt#004
+  source_span:
+    chunk_id: pg18230_txt#004
+    start: 269
+    end: 320
+  provenance_kind: 网络语料
+- id: gen_story_0288
+  domain: storyboard
+  title: 预判而不透支
+  content: 预判（forecast）效果时不可提前透支（discounting）效果：让观众保持期待，但不把后续高潮的冲击力提前用掉。
+  keywords:
+  - 期待
+  - 效果
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 期待
+  tags:
+  - 悬念
+  - 节奏
+  topic: storyboard
+  quote: |-
+    To forecast, without discounting, your effects--that is all the Law and the Prophets.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: 'Play-Making: A Manual of Craftsmanship'
+    author: Archer, William, 1856-1924
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:25:13+00:00'
+    sha256: 774c188d6ef3992ff8f1c7378a6cafc00eeaef92612be9f5d7ff292164b027cc
+  chunk_id: pg10865_txt#009
+  source_span:
+    chunk_id: pg10865_txt#009
+    start: 642
+    end: 727
+  provenance_kind: 网络语料

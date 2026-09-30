@@ -5299,45 +5299,46 @@
     start: 294
     end: 386
   provenance_kind: 网络语料
-- id: gen_comp_0170
+- id: gen_comp_0197
   domain: composition
-  title: 构图策略按情绪选择
-  content: 三分法只提供稳定起点；要制造张力时按目标情绪选路径：中心构图给对称/权威/仪式感，对角线给运动与不确定，黄金或斐波那契螺旋引导视线游走，边缘构图给压迫、裁切与不适。
+  title: NOTAN与光影的区别
+  content: NOTAN是画面内部明暗色块的量比与配置，属于普遍美感元素；LIGHT AND SHADOW是外部自然的单一事实。构图时按notan组织画面明暗块面，而非照搬自然光影。
   keywords:
-  - 三分法
-  - 中心构图
-  - 对角线构图
+  - notan
+  - 明暗块面
   rules: []
   parameters: {}
   examples: []
   related: []
   engine_support: ''
-  emotion: 张力
+  emotion: ''
   tags:
-  - 张力
-  topic: camera_angle
+  - 明暗
+  - 构图
+  topic: color
   quote: |-
-    三分法是**起点不是终点**：它把主体放在交叉点上，天然稳定。想制造张力，可选四条路径
+    Careful distinction should be made between NOTAN, an element of universal beauty, and LIGHT AND SHADOW, a single fact of external nature.
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#005
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#000
   source_span:
-    chunk_id: modern_composition_theory_md#005
-    start: 14
-    end: 57
-  provenance_kind: 权威文档
-- id: gen_comp_0171
+    chunk_id: pg45410_txt#000
+    start: 705
+    end: 842
+  provenance_kind: 网络语料
+- id: gen_comp_0198
   domain: composition
-  title: 空间占比即权力
-  content: 两人共处一框时，谁占的画面空间更大谁在关系中更强；用画面占比直接编码权力关系。
+  title: 明暗之美来自块面组合
+  content: notan之美来自明暗块面的组合和谐，不论是否着色、不论用于建筑、绘画还是自然景物，都按同一标准衡量。
   keywords:
-  - 权力关系
-  - 双人构图
+  - notan之美
+  - 明暗块面
+  - 和谐
   rules: []
   parameters: {}
   examples: []
@@ -5346,92 +5347,30 @@
   emotion: ''
   tags:
   - 构图
-  topic: camera_angle
+  topic: color
   quote: |-
-    **两人共处一框时，谁占的空间更大，谁在关系中更强**。
+    Notan‐beauty means the harmony resulting from the combination of dark and light spaces—whether colored or not
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#007
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#000
   source_span:
-    chunk_id: modern_composition_theory_md#007
-    start: 145
-    end: 173
-  provenance_kind: 权威文档
-- id: gen_comp_0172
+    chunk_id: pg45410_txt#000
+    start: 331
+    end: 440
+  provenance_kind: 网络语料
+- id: gen_comp_0199
   domain: composition
-  title: 主体背景分离与三层平面
-  content: 主体与背景之间至少要有两条分离手段（如明暗、色彩、焦点、运动等），并且前中后三层平面必须齐备，否则主体会与背景粘连。
+  title: 教学推进顺序
+  content: 一般教学顺序为：先分别练习线、notan、色彩各要素，再回头分别做更细致的研究，然后合并，逐步走向高级构图；无论选择何种顺序，都必须先扎实掌握空间切割与简单明暗块面的基本关系。
   keywords:
-  - 分离手段
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 层次
-  topic: camera_angle
-  quote: |-
-    主体与背景是否至少满足两条分离手段，三层平面是否齐备？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#010
-  source_span:
-    chunk_id: modern_composition_theory_md#010
-    start: 71
-    end: 98
-  provenance_kind: 权威文档
-- id: gen_comp_0173
-  domain: composition
-  title: 构图策略与切换边界
-  content: 全场构图策略必须保持一致；若需切换构图策略，应发生在段落边界处，避免在段落内部随意改变。
-  keywords:
-  - 一致性
-  - 段落边界
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 段落结构
-  - 连续性
-  topic: camera_angle
-  quote: |-
-    全场构图策略是否一致，切换是否发生在段落边界？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#010
-  source_span:
-    chunk_id: modern_composition_theory_md#010
-    start: 132
-    end: 155
-  provenance_kind: 权威文档
-- id: gen_comp_0174
-  domain: composition
-  title: 视觉重量排序
-  content: 判断构图平衡时按视觉重量从强到弱排序：人脸朝向 > 高对比区域 > 高饱和色 > 主体体积 > 纹理密度；据此决定哪一侧更重。
-  keywords:
-  - 平衡
-  - 对比
-  - 饱和度
+  - 教学顺序
+  - 空间切割
+  - 明暗块面
   rules: []
   parameters: {}
   examples: []
@@ -5440,155 +5379,30 @@
   emotion: ''
   tags:
   - 构图
-  - 平衡
-  topic: camera_angle
+  - 训练
+  topic: color
   quote: |-
-    人脸的朝向 > 高对比区域 > 高饱和色 > 主体体积 > 纹理密度
+    the best plan is to take up exercises in each element in turn; then go back to them separately and make more detailed studies; then combine them
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#001
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#000
   source_span:
-    chunk_id: modern_composition_theory_md#001
-    start: 52
-    end: 86
-  provenance_kind: 权威文档
-- id: gen_comp_0175
+    chunk_id: pg45410_txt#000
+    start: 1595
+    end: 1739
+  provenance_kind: 网络语料
+- id: gen_comp_0200
   domain: composition
-  title: 构图切换放在段落边界
-  content: 只有当叙事本身发生转折时才切换构图策略，并把切换点放在段落边界上，避免在段落内部突变。
+  title: 想象线也能构成画面
+  content: 两个主体之间即使没有可见线条，只要位置关系明确，那条想象连线在画面中与可见线条同样有力，可用来连接主体、形成戏剧统一。
   keywords:
-  - 叙事转折
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 剪辑节奏
-  topic: camera_angle
-  quote: |-
-    **只有当叙事本身发生转折时，才切换构图策略**，并把切换放在段落边界上。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#005
-  source_span:
-    chunk_id: modern_composition_theory_md#005
-    start: 212
-    end: 249
-  provenance_kind: 权威文档
-- id: gen_comp_0176
-  domain: composition
-  title: 一场戏构图策略须统一
-  content: 同一场戏内保持构图策略一致，不要混用中心构图与边缘构图等不同策略，否则观众会感到风格漂移。
-  keywords:
-  - 构图一致性
-  - 风格漂移
-  - 场次
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 连续性
-  topic: camera_angle
-  quote: |-
-    可执行的纪律是**在一场戏内保持构图策略一致**：同一场戏里既用中心又用边缘，会让观众感到风格漂移。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#005
-  source_span:
-    chunk_id: modern_composition_theory_md#005
-    start: 162
-    end: 212
-  provenance_kind: 权威文档
-- id: gen_comp_0177
-  domain: composition
-  title: 多画幅取安全框交集
-  content: 同一素材需交付两种画幅时，在预演阶段就取两者安全框的交集，把主体与关键信息放在交集内，避免后期裁切损失。
-  keywords:
-  - 预演
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 画幅比
-  - 预演
-  topic: camera_angle
-  quote: |-
-    当同一素材需要交付
-    两种画幅时，应当在预演阶段就取两者的安全框交集
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#008
-  source_span:
-    chunk_id: modern_composition_theory_md#008
-    start: 222
-    end: 255
-  provenance_kind: 权威文档
-- id: gen_comp_0178
-  domain: composition
-  title: 头顶视线鼻前留白
-  content: 头顶留白、视线留白与鼻前留白需达到经验值，三者共同决定人物在画框中的舒适度与呼吸感。
-  keywords:
-  - 头顶留白
-  - 视线留白
-  - 经验值
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 人物构图
-  topic: camera_angle
-  quote: |-
-    头顶、视线与鼻前留白是否达到经验值？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#010
-  source_span:
-    chunk_id: modern_composition_theory_md#010
-    start: 159
-    end: 177
-  provenance_kind: 权威文档
-- id: gen_comp_0179
-  domain: composition
-  title: 头顶留白按景别取值
-  content: 头顶留白（人物头顶到画框上缘）按景别取值：近景约 5–10% 画高，中景 10–15%，远景可更大；低于该值画面会显得顶格。
-  keywords:
-  - 画高
+  - 主体连线
+  - 戏剧统一
   rules: []
   parameters: {}
   examples: []
@@ -5597,30 +5411,29 @@
   emotion: ''
   tags:
   - 构图
-  topic: camera_angle
+  - 视线引导
+  topic: ''
   quote: |-
-    **头顶留白**（人物头顶到画框上缘）在近景里约 5–10% 画高，中景 10–15%，远景可以更大
+    only an imaginary line between the faces of the man and the boy, but that imaginary line is nevertheless as vivid as any visible thing
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#006
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#004
   source_span:
-    chunk_id: modern_composition_theory_md#006
-    start: 24
-    end: 74
-  provenance_kind: 权威文档
-- id: gen_comp_0180
+    chunk_id: pg66049_txt#004
+    start: 185
+    end: 319
+  provenance_kind: 网络语料
+- id: gen_comp_0201
   domain: composition
-  title: 三平面层次检查法
-  content: 层次感来自前景—中景—背景三个平面；可执行检查是能否在同一画面里指出这三个平面各自是什么。若只有两个平面，用前景遮挡（树枝、门框、人物肩部）补出第三层，这是最便宜也最有效的加深手段。
+  title: 文字排版归入线条明暗
+  content: 书籍、海报、手稿中的文字排版应视为线条与明暗（notan of line）的构图问题，首要考虑的是字块之间的间距安排。
   keywords:
-  - 前景
-  - 中景
-  - 背景
+  - 间距
   rules: []
   parameters: {}
   examples: []
@@ -5629,30 +5442,30 @@
   emotion: ''
   tags:
   - 构图
-  - 前景遮挡
-  topic: camera_angle
+  topic: color
   quote: |-
-    层次感来自**前景—中景—背景**三个平面的存在。可执行的检查是：**在同一画面里能否指出这三个平面各自是什么**；如果只有两个，可以用前景遮挡（树枝、门框、人物的肩）补出第三层
+    lettering should be classed as Notan of Line. Obviously the spacing of masses of letters has first consideration
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#003
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#005
   source_span:
-    chunk_id: modern_composition_theory_md#003
-    start: 135
-    end: 224
-  provenance_kind: 权威文档
-- id: gen_comp_0181
+    chunk_id: pg45410_txt#005
+    start: 1401
+    end: 1513
+  provenance_kind: 网络语料
+- id: gen_comp_0202
   domain: composition
-  title: 运动镜头预留10%余量
-  content: 手持或运动镜头中主体会在运动结束时向边缘漂移，应在构图起始位置预留 10% 余量，使运动结束时主体仍落在安全区内。
+  title: 少线也能成大关系
+  content: 仅用几条直线，通过运动与间距的和谐安排，即可构成高级构图；帕特农神庙与乔托钟楼的比例都可简化为几条关系精妙的直线。
   keywords:
-  - 手持
-  - 安全区
+  - 直线
+  - 间距
+  - 比例
   rules: []
   parameters: {}
   examples: []
@@ -5660,62 +5473,31 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 构图
-  - 留白
-  topic: camera_angle
+  - 构图原理
+  - 比例
+  topic: color
   quote: |-
-    可执行的预防是**在构图的起始位置预留 10% 的余量**，让运动结束时主体仍落在安全区内。
+    the proportions of the Parthenon and Giotto’s Tower can be reduced to a few straight lines finely related and spaced
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#006
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#002
   source_span:
-    chunk_id: modern_composition_theory_md#006
-    start: 187
-    end: 233
-  provenance_kind: 权威文档
-- id: gen_comp_0182
+    chunk_id: pg45410_txt#002
+    start: 2168
+    end: 2284
+  provenance_kind: 网络语料
+- id: gen_comp_0203
   domain: composition
-  title: 刻意失衡表压迫
-  content: 把主体压在画面边缘可制造压迫感，但失衡必须有方向感——主体被“逼”向一侧，而非随机偏移。
+  title: 站点线垂直定位
+  content: 从视点S向纸面底部作一条垂直线SR，称为站点线，用于确定观者站位与画面的垂直对应关系。
   keywords:
-  - 边缘
-  - 方向感
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 压迫
-  tags:
-  - 构图
-  topic: camera_angle
-  quote: |-
-    刻意的失衡（把主体压在画面边缘）是表达压迫的手段
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#001
-  source_span:
-    chunk_id: modern_composition_theory_md#001
-    start: 208
-    end: 232
-  provenance_kind: 权威文档
-- id: gen_comp_0183
-  domain: composition
-  title: 四宫格称重法
-  content: 把画面分成四宫格，逐格估算重量和；当一侧明显重于另一侧时，用一个小而重的元素（人脸、亮部、饱和色）去平衡。
-  keywords:
-  - 重量和
-  - 平衡元素
+  - 垂直线
+  - 站位
   rules: []
   parameters: {}
   examples: []
@@ -5723,159 +5505,30 @@
   engine_support: ''
   emotion: ''
   tags:
+  - 透视
   - 构图
-  - 平衡
-  topic: camera_angle
+  topic: ''
   quote: |-
-    把画面分成四宫格，估算每一格的重量和
+    From _S_ let fall a perpendicular line, _SR_, to the bottom of the paper, and call this line the “Station-Line.”
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#001
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#000
   source_span:
-    chunk_id: modern_composition_theory_md#001
-    start: 99
-    end: 117
-  provenance_kind: 权威文档
-- id: gen_comp_0184
+    chunk_id: pg60816_txt#000
+    start: 1758
+    end: 1870
+  provenance_kind: 网络语料
+- id: gen_comp_0204
   domain: composition
-  title: 画框四边的压力
-  content: 构图时把画框四边当作压力源：上缘压头、下缘切手、左右压缩空间；需要制造压迫感时让主体贴近或顶出这些边。
+  title: 长线作为构图母题
+  content: 以一条长线作为画面基本母题：这里的“线”不限于单笔，而是由线条、形状甚至斑点连续排列成的一条供眼睛追随的轨迹。
   keywords:
-  - 边缘压力
-  - 压迫感
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 压迫
-  tags:
-  - 构图
-  - 压迫
-  topic: camera_angle
-  quote: |-
-    画框的四条边都在施加压力：**上缘压头、下缘切手、左右压缩空间**。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#007
-  source_span:
-    chunk_id: modern_composition_theory_md#007
-    start: 15
-    end: 49
-  provenance_kind: 权威文档
-- id: gen_comp_0185
-  domain: composition
-  title: 引导线须指向主体
-  content: 构图时用道路、栏杆、光线、阴影或人物视线作为引导线，功能是把观众视线送到主体；检查方法是用手指沿线条追踪，若线条把视线带出画框而非带到主体，即为反向引导线，应改机位或改构图。
-  keywords:
-  - 视线追踪
-  - 反向引导线
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 构图检查
-  topic: camera_angle
-  quote: |-
-    如果这条线把视线带出画框而不是带到主体，它就是反向引导线，应当改机位或改构图。
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#002
-  source_span:
-    chunk_id: modern_composition_theory_md#002
-    start: 79
-    end: 118
-  provenance_kind: 权威文档
-- id: gen_comp_0186
-  domain: composition
-  title: 鼻前空间下限
-  content: 正面近景中，鼻子到画框边缘的鼻前空间不小于 5% 画宽，低于此值画面顶格。
-  keywords:
-  - 近景
-  - 画宽
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 构图
-  - 留白
-  - 近景
-  topic: camera_angle
-  quote: |-
-    **鼻前空间**（正面近景中鼻子到画框边缘）不小于 5% 画宽
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#006
-  source_span:
-    chunk_id: modern_composition_theory_md#006
-    start: 104
-    end: 135
-  provenance_kind: 权威文档
-- id: gen_comp_0187
-  domain: composition
-  title: 四宫格重量偏差检查
-  content: 用四宫格评估画面重量分布，偏差超过30%即视为失衡；若失衡，需确认其方向感是否服务于叙事，否则调整主体或配重。
-  keywords:
-  - 失衡
-  - 方向感
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 构图
-  - 平衡
-  topic: camera_angle
-  quote: |-
-    四宫格的重量和偏差是否超过 30%，失衡是否有方向感？
-  source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#010
-  source_span:
-    chunk_id: modern_composition_theory_md#010
-    start: 15
-    end: 42
-  provenance_kind: 权威文档
-- id: gen_comp_0188
-  domain: composition
-  title: 引导线指向主体
-  content: 画面中的引导线必须把观众视线引向主体；若引导线把视线带出画框，则视为无效或错误构图，需改变线条走向或机位。
-  keywords:
-  - 视线
-  - 画框
+  - 视线轨迹
   rules: []
   parameters: {}
   examples: []
@@ -5884,28 +5537,282 @@
   emotion: ''
   tags:
   - 视线引导
-  topic: camera_angle
+  topic: ''
   quote: |-
-    引导线是否把视线带到主体，而不是带出画框？
+    any succession of lines, shapes, or even spots, so arranged that they make a track for the eye to follow
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#010
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#004
   source_span:
-    chunk_id: modern_composition_theory_md#010
-    start: 46
-    end: 67
-  provenance_kind: 权威文档
-- id: gen_comp_0189
+    chunk_id: pg66049_txt#004
+    start: 1165
+    end: 1269
+  provenance_kind: 网络语料
+- id: gen_comp_0205
   domain: composition
-  title: 失衡30%阈值
-  content: 画面重量偏差超过 30% 时观众会感到“要倒”；若不需要失衡效果，应把偏差控制在 30% 以内。
+  title: 消失点必在视线线上
+  content: 任何平面内所有直线的消失点都落在该平面的 sight-line 上；反之，连接同一平面内任意两个消失点即可求出该平面的 sight-line。
   keywords:
-  - 重量偏差
+  - 平面
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: ''
+  quote: |-
+    all vanishing-points of lines in any plane must be found on its sight-line
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#006
+  source_span:
+    chunk_id: pg60816_txt#006
+    start: 2072
+    end: 2146
+  provenance_kind: 网络语料
+- id: gen_comp_0206
+  domain: composition
+  title: 斜面的视线边界
+  content: 任何平面向远处延伸，在观察者眼中都会终止于一条边界线：水平面为水平线（近似可见地平线），垂直面为垂直线，斜面为斜线；这条线称为该平面的 sight-line，只有水平面才可称 horizon。
+  keywords:
+  - 平面
+  - 地平线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  - 地平线
+  topic: ''
+  quote: |-
+    it will be terminated, to the eye of the observer, by a boundary line, which, in a horizontal plane, is horizontal
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#006
+  source_span:
+    chunk_id: pg60816_txt#006
+    start: 1241
+    end: 1355
+  provenance_kind: 网络语料
+- id: gen_comp_0207
+  domain: composition
+  title: 锐点出纯线
+  content: 使用尖锐笔尖作画时产生的是纯线条，其品质可以做到极高；惠斯勒的蚀刻版画即追求线条美，阴影与调子只被感受而不被表现。
+  keywords:
+  - 笔尖
+  - 惠斯勒
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 风格
+  topic: color
+  quote: |-
+    If a sharp point is used in drawing, it will produce pure line, whose quality may reach any degree of excellence.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#007
+  source_span:
+    chunk_id: pg45410_txt#007
+    start: 1028
+    end: 1141
+  provenance_kind: 网络语料
+- id: gen_comp_0208
+  domain: composition
+  title: 书籍页面的构图练习
+  content: 做书籍页面构图练习时，用一块浅灰明度代表文字块的位置与重量，自由运笔，不必拘泥于色阶与间隔的精确计算，需要更细腻效果处加入渐变。
+  keywords:
+  - 浅灰
+  - 文字块
+  - 渐变
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 版面
+  - 明度
+  - 渐变
+  topic: color
+  quote: |-
+    Compose for a book‐page, using one light gray value to represent the effect of type
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#007
+  source_span:
+    chunk_id: pg45410_txt#007
+    start: 324
+    end: 407
+  provenance_kind: 网络语料
+- id: gen_comp_0209
+  domain: composition
+  title: 明暗双值练习法
+  content: 做明暗（notan）构图训练时，先用两值（黑/白）在既有线稿上反复套用不同明暗方案，重点不是复制原图，而是借旧图案生成新的明暗关系。
+  keywords:
+  - notan
+  - 两值
+  - 明暗方案
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图练习
+  topic: color
+  quote: |-
+    copy or trace the line and play upon this several notan‐schemes of two values.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#006
+  source_span:
+    chunk_id: pg45410_txt#006
+    start: 735
+    end: 813
+  provenance_kind: 网络语料
+- id: gen_comp_0210
+  domain: composition
+  title: 多方案并排择优
+  content: 做构图练习时先大量尝试不同排布方案，把它们并排摆开，再从中挑出最好的一个。
+  keywords:
+  - 多方案并排择优
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 筛选
+  topic: color
+  quote: |-
+    Try a large number of arrangements, set them up in a row and pick out the best.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#005
+  source_span:
+    chunk_id: pg45410_txt#005
+    start: 771
+    end: 850
+  provenance_kind: 网络语料
+- id: gen_comp_0211
+  domain: composition
+  title: 方形圆形内部分割练习
+  content: 做构图练习时选边界确定、规则的封闭形（方形与圆形最佳，因外框不可变），用等粗线条把内部切成和谐的小区域组，注意力集中在内部线条的分割上。
+  keywords:
+  - 封闭形
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: color
+  quote: |-
+    Choose an enclosed area of definite and regular shape, and break it up into a harmonious group of smaller areas by drawing lines.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#003
+  source_span:
+    chunk_id: pg45410_txt#003
+    start: 1268
+    end: 1397
+  provenance_kind: 网络语料
+- id: gen_comp_0212
+  domain: composition
+  title: 丑的负担在脑不在眼
+  content: 判断画面丑不丑，不看眼球运动是否费力（优雅线与锯齿线的眼动几乎相同），而看大脑辨识是否费力；因此构图取舍以'是否易于被心智快速把握'为准，而非以线条是否平滑的物理属性为准。
+  keywords:
+  - 视觉心理
+  - 大脑
+  - 辨识负担
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 视觉心理
+  topic: ''
+  quote: |-
+    the difference must lie in that function of seeing which the brain performs
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#001
+  source_span:
+    chunk_id: pg66049_txt#001
+    start: 1038
+    end: 1113
+  provenance_kind: 网络语料
+- id: gen_comp_0213
+  domain: composition
+  title: 丑线条靠重复成组
+  content: 单看不好看的线条，若与对称位置的相似线条成组出现，会因平衡或重复而变得悦目；因此成组（EF、FG、EFG）比单独一条更可取。
+  keywords:
+  - 对称
   rules: []
   parameters: {}
   examples: []
@@ -5915,28 +5822,345 @@
   tags:
   - 构图
   - 平衡
-  topic: camera_angle
+  topic: ''
   quote: |-
-    画面重量的偏差超过 30% 时，观众会感到"要倒"
+    lines which are ugly when considered singly take on a kind of beauty or interestingness when considered as a group
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#001
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#002
   source_span:
-    chunk_id: modern_composition_theory_md#001
-    start: 166
-    end: 191
-  provenance_kind: 权威文档
-- id: gen_comp_0190
+    chunk_id: pg66049_txt#002
+    start: 950
+    end: 1064
+  provenance_kind: 网络语料
+- id: gen_comp_0214
   domain: composition
-  title: 多画幅安全框交集
-  content: 若需多画幅交付，必须在预演阶段就确定各画幅安全框的交集，确保关键信息在所有画幅内均可见。
+  title: 线群自然生调子
+  content: 即便主张针笔只画线，线条聚集处也必然产生调子并暗示块面（线的notan）；蚀刻版画在印刷擦版过程中还会把这种效果发展为丰富的渐变。
   keywords:
-  - 预演
+  - 块面
+  - 擦版
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 渐变
+  topic: color
+  quote: |-
+    clustering of lines inevitably produces tone and suggests massing
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#007
+  source_span:
+    chunk_id: pg45410_txt#007
+    start: 1570
+    end: 1635
+  provenance_kind: 网络语料
+- id: gen_comp_0215
+  domain: composition
+  title: 水面倒影画成垂直线
+  content: 发光点或孤立物体（如日、月）在水中的倒影，在透视中应画成一条垂直线，因为该倒影延长后会从观者脚下穿过。
+  keywords:
+  - 日月
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: ''
+  quote: |-
+    The reflection in water of any luminous point or isolated object (such as the sun or moon) is therefore, in perspective, a vertical line
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#001
+  source_span:
+    chunk_id: pg60816_txt#001
+    start: 1415
+    end: 1551
+  provenance_kind: 网络语料
+- id: gen_comp_0216
+  domain: composition
+  title: 禅意与哥特避用对称
+  content: 受禅宗哲学影响的日本艺术视对称为无趣而刻意回避；哥特艺术出自富创造力的想象，也从不以平庸方式使用对称。追求趣味或想象力的画面应避免常规对称。
+  keywords:
+  - 禅宗
+  - 日本艺术
+  - 避免对称
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 风格
+  topic: color
+  quote: |-
+    Japanese art, when influenced by Zen philosophy, as Okakura Kakuzo tells us in “The Book of Tea”, avoids symmetry as uninteresting.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#003
+  source_span:
+    chunk_id: pg45410_txt#003
+    start: 651
+    end: 782
+  provenance_kind: 网络语料
+- id: gen_comp_0217
+  domain: composition
+  title: 直线设计的明暗手段
+  content: 受限于只用直线的设计（如纺织品图案），可通过加粗线条、变化色调深浅、施以色彩来扩展表现范围，说明窄题材也能有宽表现。
+  keywords:
+  - 色调
+  - 色彩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 色彩
+  topic: color
+  quote: |-
+    They widen lines, vary their depth of tone, glorify them with color, and show that what seems a narrow field is really one of wide range.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#005
+  source_span:
+    chunk_id: pg45410_txt#005
+    start: 313
+    end: 450
+  provenance_kind: 网络语料
+- id: gen_comp_0218
+  domain: composition
+  title: 运动中的静止感
+  content: 在充满运动与破坏的场景中，通过均衡的构图安排，可以让画面传达出瞬间的静止与安宁感。
+  keywords:
+  - 构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 宁静
+  tags:
+  - 构图平衡
+  - 情绪
+  topic: ''
+  quote: |-
+    because of the artistic composition of the picture, we get from it all a momentary sense of repose, as though war itself were at rest.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#007
+  source_span:
+    chunk_id: pg66049_txt#007
+    start: 1302
+    end: 1436
+  provenance_kind: 网络语料
+- id: gen_comp_0219
+  domain: composition
+  title: 坡度随方向变化
+  content: 在斜面上，越靠近最陡线 CD 的线越陡，越靠近水平线 AB 的线越接近水平；绘制坡面纹理或分层时应按此渐变处理线的倾斜。
+  keywords:
+  - 渐变
+  - 倾斜
+  - 斜面
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  - 斜面
+  topic: ''
+  quote: |-
+    The nearer the lines to _CD_, the steeper they will be; and the nearer to _AB_, the more nearly horizontal.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#006
+  source_span:
+    chunk_id: pg60816_txt#006
+    start: 349
+    end: 456
+  provenance_kind: 网络语料
+- id: gen_comp_0220
+  domain: composition
+  title: 地毯构图两原则
+  content: 处理地毯类构图时，把它视为从属（Subordination）与重复（Repetition）两原则的组合：主体与边框要有主次，母题要重复出现。
+  keywords:
+  - 从属
+  - 重复
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图原则
+  - 图案
+  topic: color
+  quote: |-
+    As composition it is a combination of two principles: Subordination and Repetition.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#006
+  source_span:
+    chunk_id: pg45410_txt#006
+    start: 1058
+    end: 1141
+  provenance_kind: 网络语料
+- id: gen_comp_0221
+  domain: composition
+  title: 线条组合的和谐取舍
+  content: 多条线并置时，选各自都优雅的线（A+B）组合，比优雅线与丑线混搭（B+C）或双丑线（C+D）更悦目；判断标准是组合后能否被快速把握为一个统一整体。
+  keywords:
+  - 统一
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: ''
+  quote: |-
+    lines A and B taken together make a more pleasing combination than lines B and C or lines C and D
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#001
+  source_span:
+    chunk_id: pg66049_txt#001
+    start: 1676
+    end: 1773
+  provenance_kind: 网络语料
+- id: gen_comp_0222
+  domain: composition
+  title: 线条汇聚点做主体位
+  content: 多条线相交的汇聚点是视线天然落点，把主体放在线条汇聚处（如树根处）能获得更强强调；若主体远离汇聚点，强调会被削弱。
+  keywords:
+  - 汇聚线
+  - 主体位置
+  - 强调
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 强调
+  topic: ''
+  quote: |-
+    this picture would have given more emphasis to the woman if she had been placed near the root of the tree trunk, where many lines converge
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#003
+  source_span:
+    chunk_id: pg66049_txt#003
+    start: 1010
+    end: 1148
+  provenance_kind: 网络语料
+- id: gen_comp_0223
+  domain: composition
+  title: 临摹优质原作
+  content: 学习构图应直接面对原作、照片复制品、描摹稿或石膏模；粗劣的石版画与木刻插图无法传达原作，不可用作参考。
+  keywords:
+  - 复制品
+  - 参考素材
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 素材选择
+  topic: color
+  quote: |-
+    The commonplace lithographic plates and rude wood cuts in some books of design are useless for our purpose.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#006
+  source_span:
+    chunk_id: pg45410_txt#006
+    start: 186
+    end: 293
+  provenance_kind: 网络语料
+- id: gen_comp_0224
+  domain: composition
+  title: 对称易流于廉价设计
+  content: 对称因构造需要（人体、船只、建筑、家具、陶器、书籍）或模仿而被滥用，一旦不讲究形体之美，就会落入廉价平庸的设计；使用对称时须以形体美感为前提，不可机械套用。
+  keywords:
+  - 滥用
+  - 形体美
   rules: []
   parameters: {}
   examples: []
@@ -5944,30 +6168,60 @@
   engine_support: ''
   emotion: ''
   tags: []
-  topic: camera_angle
+  topic: color
   quote: |-
-    若需多画幅交付，安全框交集是否已在预演阶段确定？
+    Symmetry, like Repetition, has come to be used in cheap and mean design where no regard is paid to beauty of form.
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#010
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#003
   source_span:
-    chunk_id: modern_composition_theory_md#010
-    start: 181
-    end: 205
-  provenance_kind: 权威文档
-- id: gen_comp_0191
+    chunk_id: pg45410_txt#003
+    start: 536
+    end: 650
+  provenance_kind: 网络语料
+- id: gen_comp_0225
   domain: composition
-  title: 用占比逆转关系
-  content: 表现关系逆转时，最经济的手段是改变两人的画面占比，而不是改台词。
+  title: 斜平面最陡线消失点
+  content: 已知斜平面视平线VX时，延长其与水平视平线交于X；连TX并作TY垂直于TX得直角消失点Y；由Y作垂线YP交斜平面视平线于P，P即该平面内最陡线的消失点，所有指向P的线为平面内最陡线。
   keywords:
-  - 关系逆转
-  - 画面占比
-  - 调度
+  - 垂线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  - 斜面
+  topic: ''
+  quote: |-
+    Then _P_ is the vanishing-point of steepest lines in the plane.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#005
+  source_span:
+    chunk_id: pg60816_txt#005
+    start: 1438
+    end: 1501
+  provenance_kind: 网络语料
+- id: gen_comp_0226
+  domain: composition
+  title: 幼龄学员从色彩入手
+  content: 年龄很小的学员应从色彩开始，但教师须在每节课中纳入间距（spacing）与notan的练习，避免只练色彩而缺失结构基础。
+  keywords:
+  - 间距
+  - notan
   rules: []
   parameters: {}
   examples: []
@@ -5976,29 +6230,90 @@
   emotion: ''
   tags:
   - 构图
-  topic: camera_angle
+  - 教学
+  topic: color
   quote: |-
-    **最经济的手段是改变两人的
-    画面占比**，而不是改变台词。
+    Very young pupils should begin with color but the instructor will take pains to include spacing and notan in each lesson.
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#007
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#000
   source_span:
-    chunk_id: modern_composition_theory_md#007
-    start: 193
-    end: 223
-  provenance_kind: 权威文档
-- id: gen_comp_0192
+    chunk_id: pg45410_txt#000
+    start: 1452
+    end: 1573
+  provenance_kind: 网络语料
+- id: gen_comp_0227
   domain: composition
-  title: 视线留白取人物宽度倍数
-  content: 视线留白（人物看向方向到画框的距离）取人物宽度的 1–2 倍，低于此值视线方向会显得被堵住。
+  title: 临摹大师线描
+  content: 手部控制与线条质感可通过临摹日本笔绘与大师线描（如曾我萧白、伦勃朗、达芬奇）来训练，临摹安排在基础练习之后。
   keywords:
-  - 朝向
+  - 笔触质感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  topic: color
+  quote: |-
+    Copy brush drawings from Japanese books, for a study of control of the hand and quality of touch
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#002
+  source_span:
+    chunk_id: pg45410_txt#002
+    start: 202
+    end: 298
+  provenance_kind: 网络语料
+- id: gen_comp_0228
+  domain: composition
+  title: 构图优先于再现
+  content: 把构图置于再现之上：先学艺术本身（构图），透视、解剖、颜料与工具等再现技能会在需要时自然习得，它们是辅助而非替代。
+  keywords:
+  - 技能次序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 教学次序
+  topic: color
+  quote: |-
+    they are only helps to art, not substitutes for it
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#004
+  source_span:
+    chunk_id: pg45410_txt#004
+    start: 1556
+    end: 1606
+  provenance_kind: 网络语料
+- id: gen_comp_0229
+  domain: composition
+  title: 抽象设计与画面同构
+  content: 把画面与抽象设计视为结构上高度相似，可用简单间隔（spacing）的练习来理解风景构图。
+  keywords:
+  - 间隔
+  - 结构
   rules: []
   parameters: {}
   examples: []
@@ -6007,30 +6322,30 @@
   emotion: ''
   tags:
   - 构图
-  topic: camera_angle
+  - 间隔
+  topic: color
   quote: |-
-    **视线留白**（人物看向的方向到画框）约为人物宽度的 1–2 倍
+    the picture and the abstract design are much alike in structure, let us see how some of the simple spacings may be illustrated by landscape.
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#006
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#004
   source_span:
-    chunk_id: modern_composition_theory_md#006
-    start: 72
-    end: 105
-  provenance_kind: 权威文档
-- id: gen_comp_0193
+    chunk_id: pg45410_txt#004
+    start: 1793
+    end: 1933
+  provenance_kind: 网络语料
+- id: gen_comp_0230
   domain: composition
-  title: 主体分离的四条手段
-  content: 让主体从背景中分离，可用明暗差（主体与背景至少相差两档）、色彩差（互补色或明度差）、焦点差（背景失焦）、运动差（主体动背景静或反之）四种手段；四条中至少满足两条，否则主体会糊在背景里。
+  title: 画面本质是线条图案
+  content: 把画面在起始阶段当作线条图案来处理，先确定线条的分布与分割，再进入明暗与色彩阶段。
   keywords:
-  - 图底分离
-  - 明暗差
-  - 色彩差
+  - 起稿
+  - 结构
   rules: []
   parameters: {}
   examples: []
@@ -6039,29 +6354,93 @@
   emotion: ''
   tags:
   - 构图
-  - 层次
-  topic: camera_angle
+  - 线稿
+  topic: color
   quote: |-
-    四条可执行的分离手段：**明暗差**（主体与背景至少相差两档）、**色彩差**（互补或明度差）、**焦点差**（背景失焦）、**运动差**（主体动、背景静，或反之）。**四条中至少要满足两条**，否则主体会糊在背景里。
+    A picture, then, may be said to be in its beginning actually a pattern of lines.
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#003
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#004
   source_span:
-    chunk_id: modern_composition_theory_md#003
-    start: 26
-    end: 135
-  provenance_kind: 权威文档
-- id: gen_comp_0194
+    chunk_id: pg45410_txt#004
+    start: 304
+    end: 384
+  provenance_kind: 网络语料
+- id: gen_comp_0231
   domain: composition
-  title: 负空间方向随主体朝向
-  content: 负空间应开在主体朝向的一侧；若把负空间留在主体背后，画面读作无法前进，仅在剧本需要受阻感时使用，否则与向前叙事矛盾。
+  title: 前后景之间设平衡点
+  content: 把背景与前景作为两组力量对比时，在两者之间（如街道最窄处）设一个平衡点，使视线从前到后或从后到前的扫视连续均匀，不偏向任何一侧。
   keywords:
-  - 前进感
+  - 视线流动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图平衡
+  - 纵深
+  topic: ''
+  quote: |-
+    if we take the background of the picture as against the foreground, we shall find a balancing point in the narrowest part of the street.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#007
+  source_span:
+    chunk_id: pg66049_txt#007
+    start: 913
+    end: 1049
+  provenance_kind: 网络语料
+- id: gen_comp_0232
+  domain: composition
+  title: 徒手画线忌机械工具
+  content: 描线时避免僵硬紧绷的线条和一切尺规痕迹或刻意费力的感觉；不使用任何量具，尺寸、形状与方向都必须不借助机械辅助来决定。
+  keywords:
+  - 尺规
+  - 线条
+  - 自由
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 手绘
+  topic: color
+  quote: |-
+    Avoid hard wiry lines and all that savors of rule and compass or laborious pains‐taking. Use no measure of any kind
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#003
+  source_span:
+    chunk_id: pg45410_txt#003
+    start: 2106
+    end: 2221
+  provenance_kind: 网络语料
+- id: gen_comp_0233
+  domain: composition
+  title: 首帧即见中心兴趣
+  content: 放映的第一瞬间观众就应看到画面的中心兴趣；因此开拍前就要摆好所有指示线、手势、衣褶等引导元素，并让这些线与先前运动物体的路径衔接，使视线立刻扫向中心兴趣。
+  keywords:
+  - 视线衔接
   rules: []
   parameters: {}
   examples: []
@@ -6070,31 +6449,30 @@
   emotion: ''
   tags:
   - 构图
-  - 方向性
   - 视线引导
-  topic: camera_angle
+  - 调度
+  topic: ''
   quote: |-
-    主体朝向哪里，负空间就应当开在哪里
+    The spectator in the theater should be enabled to see the central interest at the very first instant of projection.
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#004
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#003
   source_span:
-    chunk_id: modern_composition_theory_md#004
-    start: 142
-    end: 159
-  provenance_kind: 权威文档
-- id: gen_comp_0195
+    chunk_id: pg66049_txt#003
+    start: 1151
+    end: 1266
+  provenance_kind: 网络语料
+- id: gen_comp_0234
   domain: composition
-  title: 负空间比例与方向
-  content: 负空间的比例要与叙事情绪一致，且负空间的方向应朝向主体的视线方向，以强化情绪与视线引导。
+  title: 数量平衡与对称
+  content: 数量平衡指画面左右两半或上下两半的物象数量对比；它常与基本图形的对称相关，例如三角形构图。
   keywords:
-  - 情绪
-  - 视线方向
+  - 三角形
   rules: []
   parameters: {}
   examples: []
@@ -6102,50 +6480,1497 @@
   engine_support: ''
   emotion: ''
   tags:
-  - 留白
-  topic: camera_angle
+  - 构图
+  topic: ''
   quote: |-
-    负空间比例是否与叙事情绪一致，方向是否朝向主体视线？
+    Balance of quantity is often connected with symmetry in the fundamental pattern, as in the figure of the triangle.
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#010
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#005
   source_span:
-    chunk_id: modern_composition_theory_md#010
-    start: 102
-    end: 128
-  provenance_kind: 权威文档
-- id: gen_comp_0196
+    chunk_id: pg66049_txt#005
+    start: 256
+    end: 370
+  provenance_kind: 网络语料
+- id: gen_comp_0235
   domain: composition
-  title: 近景切头顶与切下巴
-  content: 近景中切掉头顶比切掉下巴更'危险'：切下巴会破坏面部识别，因此表现不安可用切头顶，保持识别度则保下巴。
+  title: 整体即美与噪音之别
+  content: 整体性是美的必要条件，它把音乐与噪音区分开来；构图时任何局部都不能压过整体。
   keywords:
-  - 面部识别
+  - 整体性
   rules: []
   parameters: {}
   examples: []
   related: []
   engine_support: ''
-  emotion: 不安
+  emotion: ''
   tags:
-  - 切边
-  topic: camera_angle
+  - 构图
+  - 整体性
+  topic: color
   quote: |-
-    **在近景里切掉头顶比切掉下巴更"危险"**，因为切掉下巴会毁掉面部识别。
+    In a word, wholeness is essential to beauty; it distinguishes Music from Noise.
   source_ref:
-    url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-10-01'
-    sha256: 4001dd3a160ac2a4f5d616217ea9204a34160bb58c106968b43e0e5a134befba
-  chunk_id: modern_composition_theory_md#007
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#005
   source_span:
-    chunk_id: modern_composition_theory_md#007
-    start: 91
-    end: 128
-  provenance_kind: 权威文档
+    chunk_id: pg45410_txt#005
+    start: 1210
+    end: 1289
+  provenance_kind: 网络语料
+- id: gen_comp_0236
+  domain: composition
+  title: 斜平面水平线消失点
+  content: 斜平面视平线与水平视平线的交点X，就是该斜平面内所有水平线的消失点；画斜面上的水平线时统一指向X。
+  keywords:
+  - 斜平面水平线消失点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: ''
+  quote: |-
+    _X_ is the vanishing-point of all horizontal lines in the inclined plane.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#005
+  source_span:
+    chunk_id: pg60816_txt#005
+    start: 706
+    end: 779
+  provenance_kind: 网络语料
+- id: gen_comp_0237
+  domain: composition
+  title: 线、明暗与色彩的关系
+  content: 构图三要素为线（LINE）、明暗块面（NOTAN）与色彩（COLOR）：线指形状边界与线面关系，notan指明暗色块的量比与分布，色彩指光的品质。好色彩依赖好notan，好notan依赖好间距，因此设计顺序应先线、再notan、后色彩。
+  keywords:
+  - notan
+  - 间距
+  - 构图要素
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: color
+  quote: |-
+    Good color is dependent upon good notan, and that in turn is dependent upon good spacing.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#000
+  source_span:
+    chunk_id: pg45410_txt#000
+    start: 943
+    end: 1032
+  provenance_kind: 网络语料
+- id: gen_comp_0238
+  domain: composition
+  title: 亮部优先吸引视线
+  content: 构图中若想让观众先看到某主体，可让该主体成为画面中最亮的区域（如暗背景上的一块白），因为眼睛天然先寻光后寻暗；反之若主体处于暗部而别处有亮斑，注意力会被亮斑抢走。
+  keywords:
+  - 明暗对比
+  - 视觉引导
+  - 主体突出
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 明暗
+  - 视线引导
+  - 构图
+  topic: ''
+  quote: |-
+    a patch of white on an area of dark will attract the eye, because it is natural for the eye to seek light in preference to dark
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#003
+  source_span:
+    chunk_id: pg66049_txt#003
+    start: 414
+    end: 541
+  provenance_kind: 网络语料
+- id: gen_comp_0239
+  domain: composition
+  title: 和谐即美的关系
+  content: 构图的核心是创造线条、块面与色彩之间的良好关系（和谐、美），一切造型训练都应围绕感知与创造这种关系展开。
+  keywords:
+  - 线条
+  - 块面
+  - 色彩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图原理
+  topic: color
+  quote: |-
+    Art study is the attempt to perceive and to create fine relations of line, mass and color.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#002
+  source_span:
+    chunk_id: pg45410_txt#002
+    start: 1119
+    end: 1209
+  provenance_kind: 网络语料
+- id: gen_comp_0240
+  domain: composition
+  title: 记忆度检验构图优劣
+  content: 检验一个构图是否成功，可用记忆测试：合上画面后能否凭记忆复现其线条；优雅线条几乎可完整记住，丑线条连局部都记不住，说明前者观看更成功，而成功的观看更令人愉悦。
+  keywords:
+  - 记忆度检验构图优劣
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 检验方法
+  topic: ''
+  quote: |-
+    you remember A and B almost perfectly, while you can hardly remember a single part of either C or D
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#001
+  source_span:
+    chunk_id: pg66049_txt#001
+    start: 1901
+    end: 2000
+  provenance_kind: 网络语料
+- id: gen_comp_0241
+  domain: composition
+  title: 倒置画面检验构图
+  content: 检验构图是否平衡时，把画面倒过来看，可更清楚地看出线条与重量的分布关系。
+  keywords:
+  - 倒置画面检验构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图检验
+  topic: ''
+  quote: |-
+    This relation can be clearly seen by holding the “still” upside down.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#007
+  source_span:
+    chunk_id: pg66049_txt#007
+    start: 1883
+    end: 1952
+  provenance_kind: 网络语料
+- id: gen_comp_0242
+  domain: composition
+  title: 水平线的灭点求法
+  content: 求一条给定水平线的灭点时，从视点T作一条与该水平线平行的直线，它与视平线（sight-line）的交点V即为该线的灭点。
+  keywords:
+  - 视点
+  - 视平线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  - 构图
+  topic: ''
+  quote: |-
+    From _T_, the station-point, draw _TV_ parallel to _AB_, cutting the sight-line in _V_. _V_ is the Vanishing-point required.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#001
+  source_span:
+    chunk_id: pg60816_txt#001
+    start: 1973
+    end: 2098
+  provenance_kind: 网络语料
+- id: gen_comp_0243
+  domain: composition
+  title: 斜平面视平线求法
+  content: 求倾斜平面的视平线：先分别求出平面内两条线的消失点V与V′，连接VV′并延长与视平线相交于X，VX即为该斜平面的视平线；它可向两端无限延长，平面向下延伸时会与水平视平线相交。
+  keywords:
+  - 消失点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  - 消失点
+  topic: ''
+  quote: |-
+    Join _VV′_ and produce it to cut the sight-line in _X_. Then _VX_ is the sight-line of the inclined plane.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#005
+  source_span:
+    chunk_id: pg60816_txt#005
+    start: 384
+    end: 491
+  provenance_kind: 网络语料
+- id: gen_comp_0244
+  domain: composition
+  title: 斜面法线消失点求法
+  content: 求垂直于斜平面表面的线（法线）的消失点：取平面内一条最陡线AB及其相对水平线的消失点V，过V作垂线GF；由A在相对水平线上取AC，在垂直平面内以AC为直径作半圆ADC交AB于E，据此确定法线消失点。
+  keywords:
+  - 垂直平面
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: ''
+  quote: |-
+    Through _V_ draw the vertical _GF_ upwards and downwards.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#005
+  source_span:
+    chunk_id: pg60816_txt#005
+    start: 2195
+    end: 2252
+  provenance_kind: 网络语料
+- id: gen_comp_0245
+  domain: composition
+  title: 测线的定义与画法
+  content: 测线是过线段起点、用于量取视大小的水平线；若线段位于视平线之上，测线也画在上方，分割点连线则向下引向分割点。
+  keywords:
+  - 视大小
+  - 视平线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: ''
+  quote: |-
+    The horizontal line drawn through _a_, on which the sight-magnitudes are measured, is called the “MEASURING-LINE.”
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#002
+  source_span:
+    chunk_id: pg60816_txt#002
+    start: 1693
+    end: 1807
+  provenance_kind: 网络语料
+- id: gen_comp_0246
+  domain: composition
+  title: 对称构图的两分平衡
+  content: 满足秩序感最直接的做法是把两条等长的线或两个等大的形做精确对等平衡，如人字屋顶、门两侧的窗、架上并列的器物；对称适用于三、四部分或偶数平衡的组群，但最典型的是两部分对等排列。
+  keywords:
+  - 两部分
+  - 秩序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: color
+  quote: |-
+    The most common and obvious way of satisfying the desire for order is to place two equal lines or shapes in exact balance
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#003
+  source_span:
+    chunk_id: pg45410_txt#003
+    start: 10
+    end: 131
+  provenance_kind: 网络语料
+- id: gen_comp_0247
+  domain: composition
+  title: 灭点连线平行于原线
+  content: 灭点V与视点T的连线TV，在空间上平行于产生该灭点的原直线AB；可据此校验灭点位置是否正确。
+  keywords:
+  - 视点
+  - 校验
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: ''
+  quote: |-
+    Join _TV_. Then the student will find experimentally that _TV_ is parallel to _AB_.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#001
+  source_span:
+    chunk_id: pg60816_txt#001
+    start: 687
+    end: 770
+  provenance_kind: 网络语料
+- id: gen_comp_0248
+  domain: composition
+  title: 主曲线定调全画
+  content: 用一条主导曲线（如人物背部的弧线）配合一条平衡线（如器皿侧边），即可为整幅画面的布局定下基调，使观众一眼把握全局。
+  keywords:
+  - 平衡线
+  - 布局
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 视觉引导
+  topic: ''
+  quote: |-
+    you will observe instantly the beautifully curving line of the woman’s back and also a balancing line down the side of the urn
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#002
+  source_span:
+    chunk_id: pg66049_txt#002
+    start: 1467
+    end: 1593
+  provenance_kind: 网络语料
+- id: gen_comp_0249
+  domain: composition
+  title: 对比平衡
+  content: 用对立元素互相平衡，如明对暗、直线对曲线，在画面中成对布置。
+  keywords:
+  - 明暗
+  - 直线
+  - 曲线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: ''
+  quote: |-
+    And there is the balance of contrasts, such as light against shadow, or straight lines against curved lines.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#005
+  source_span:
+    chunk_id: pg66049_txt#005
+    start: 768
+    end: 876
+  provenance_kind: 网络语料
+- id: gen_comp_0250
+  domain: composition
+  title: 椭圆构图的视线路径
+  content: 用椭圆或环形线条组织画面时，让线条成为眼睛的顺畅路径，把主体（如两人）绑进同一戏剧单元；椭圆可见部分的断口可放在主体面部处，使视线每次绕行时都被短暂钉在面部。
+  keywords:
+  - 断口
+  - 戏剧焦点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视线引导
+  - 主体绑定
+  topic: ''
+  quote: |-
+    The lines furnish easy paths for the eye, and bind the boy and man together into a dramatic unity.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#004
+  source_span:
+    chunk_id: pg66049_txt#004
+    start: 64
+    end: 162
+  provenance_kind: 网络语料
+- id: gen_comp_0251
+  domain: composition
+  title: 呼应母题平衡
+  content: 用重复出现的母题来平衡画面，即满足观众眼睛对呼应元素的预期。
+  keywords:
+  - 预期
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 重复
+  topic: ''
+  quote: |-
+    Another kind of balance is that of echoing motifs, a sort of fulfillment of the eye’s expectations.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#005
+  source_span:
+    chunk_id: pg66049_txt#005
+    start: 460
+    end: 559
+  provenance_kind: 网络语料
+- id: gen_comp_0252
+  domain: composition
+  title: 一笔成线的练习法
+  content: 画加粗线条时要求一笔完成：先把笔尖压到所需宽度，再匀速拉出线条，以此训练笔触控制。
+  keywords:
+  - 笔触
+  - 加粗
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 笔触
+  topic: color
+  quote: |-
+    Push the point of the brush down to the required width, then draw the line.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#005
+  source_span:
+    chunk_id: pg45410_txt#005
+    start: 695
+    end: 770
+  provenance_kind: 网络语料
+- id: gen_comp_0253
+  domain: composition
+  title: 执笔垂直全臂运笔
+  content: 画线时笔杆保持垂直于纸面，以便向任意方向自由移动；运笔用整只手和手臂一次扫出，不要只用手指，必要时以手腕或小指末端抵纸稳定。
+  keywords:
+  - 执笔垂直全臂运笔
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 笔法
+  - 姿势
+  topic: color
+  quote: |-
+    For line drawing the brush is held in a perpendicular position, that it may move freely in all directions
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#001
+  source_span:
+    chunk_id: pg45410_txt#001
+    start: 1618
+    end: 1723
+  provenance_kind: 网络语料
+- id: gen_comp_0254
+  domain: composition
+  title: 慢画以意志控线
+  content: 画线要非常慢，让线条在笔尖下生长时能被观察和引导；表现力来自意志对手的控制而非惯性冲力，轻微抖动反而常给线条增添性格。
+  keywords:
+  - 意志控制
+  - 线条性格
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 笔法
+  - 节奏
+  topic: color
+  quote: |-
+    Draw very slowly. Expressive line is not made by mere momentum, but by force of will controlling the hand.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#001
+  source_span:
+    chunk_id: pg45410_txt#001
+    start: 2051
+    end: 2157
+  provenance_kind: 网络语料
+- id: gen_comp_0255
+  domain: composition
+  title: 斜线用矩形对角线定位
+  content: 画透视中的斜线时，把它当作一个矩形的对角线来处理：先确定矩形的水平边AC的位置与长度，再确定竖直边AD的高度，斜线AB的斜率与位置即被唯一确定。
+  keywords:
+  - 斜线用矩形对角线定位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  - 构图
+  topic: ''
+  quote: |-
+    the position of an inclined line may be most conveniently defined by considering it as the diagonal of a rectangle
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#003
+  source_span:
+    chunk_id: pg60816_txt#003
+    start: 599
+    end: 713
+  provenance_kind: 网络语料
+- id: gen_comp_0256
+  domain: composition
+  title: 长线用长笔短线用短笔
+  content: 画长而连续的线条时选长锋毛笔，画尖锐转角或断续线时选短锋毛笔；写字则把长锋笔尖剪平使用。
+  keywords:
+  - 长锋笔
+  - 短锋笔
+  - 线条
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 工具选择
+  - 线条
+  topic: color
+  quote: |-
+    Long brushes are best for long continuous lines, short brushes for sharp corners and broken lines.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#001
+  source_span:
+    chunk_id: pg45410_txt#001
+    start: 542
+    end: 640
+  provenance_kind: 网络语料
+- id: gen_comp_0257
+  domain: composition
+  title: 长线牵引视线
+  content: 画面中最长的线条会先被眼睛捕捉并顺着它移动；可用长线（如倒下的树干、栏杆）把观众视线引向戏剧主体，也可检查长线是否把视线引到了非重点处。
+  keywords:
+  - 视线引导
+  - 构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 视线引导
+  topic: ''
+  quote: |-
+    It is also natural for the eye to catch and follow the longest line in a composition.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#003
+  source_span:
+    chunk_id: pg66049_txt#003
+    start: 727
+    end: 812
+  provenance_kind: 网络语料
+- id: gen_comp_0258
+  domain: composition
+  title: 引导线须指向戏剧焦点
+  content: 画面中的直线（如床铺、桌子的边线）应朝向戏剧焦点汇聚，以提供统一与力度；若某组线条（如窗框）自成孤立图案、把视线引离焦点，整体设计即不完整，观看会不顺畅。
+  keywords:
+  - 孤立图案
+  - 统一
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 视线引导
+  topic: ''
+  quote: |-
+    the lines of the window make an isolated pattern which, instead of leading one’s eye toward the dramatic focus, does just the opposite.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#004
+  source_span:
+    chunk_id: pg66049_txt#004
+    start: 618
+    end: 753
+  provenance_kind: 网络语料
+- id: gen_comp_0259
+  domain: composition
+  title: 失衡的两种成因
+  content: 画面失衡常因某一半同时承载过多戏剧兴趣与过多物体、形状、线条；判断时先看兴趣分布再看元素密度。
+  keywords:
+  - 戏剧兴趣
+  - 元素密度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: ''
+  quote: |-
+    Besides containing by far the greater dramatic interest, it contains too many objects, shapes, and lines to attract the eye.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#005
+  source_span:
+    chunk_id: pg66049_txt#005
+    start: 1358
+    end: 1482
+  provenance_kind: 网络语料
+- id: gen_comp_0260
+  domain: composition
+  title: 冷暖色平衡
+  content: 画面除线条构图外，还需考虑冷暖色的平衡，把色彩平衡作为与线条并列的构图课题。
+  keywords:
+  - 色彩平衡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 构图
+  topic: ''
+  quote: |-
+    this canvas, as the title indicates, is also a study in the balancing of cool and warm colors
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#002
+  source_span:
+    chunk_id: pg66049_txt#002
+    start: 2046
+    end: 2139
+  provenance_kind: 网络语料
+- id: gen_comp_0261
+  domain: composition
+  title: 风景先作图案
+  content: 画风景明暗构图时，先把它当图案处理，再当画面处理；其不规则间距与图案的对称性形成对比，套上明暗后效果新奇。
+  keywords:
+  - 明暗构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: color
+  quote: |-
+    Landscape is a good subject for notan‐composition, to be treated at first as a design, afterward as a picture.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#006
+  source_span:
+    chunk_id: pg45410_txt#006
+    start: 1913
+    end: 2023
+  provenance_kind: 网络语料
+- id: gen_comp_0262
+  domain: composition
+  title: 墨色浓黑靠少水
+  content: 研墨时只用几滴水即可立刻获得浓黑墨色；墨条用后擦干包纸，绝不可泡在水里。
+  keywords:
+  - 研墨
+  - 墨条保养
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 材料
+  topic: color
+  quote: |-
+    Intense blackness can be secured immediately by using only a few drops of water.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#001
+  source_span:
+    chunk_id: pg45410_txt#001
+    start: 1050
+    end: 1130
+  provenance_kind: 网络语料
+- id: gen_comp_0263
+  domain: composition
+  title: 向优秀插画师学色调布局
+  content: 研究优秀插画师的作品时，重点分析其色调方案（tone-scheme）与元素在页面上的位置安排，而非只临摹造型。
+  keywords:
+  - 色调方案
+  - 页面布局
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 版面
+  - 参考学习
+  topic: color
+  quote: |-
+    Study the work of the best illustrators, noting the tone‐scheme and the placing upon the page.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#007
+  source_span:
+    chunk_id: pg45410_txt#007
+    start: 554
+    end: 648
+  provenance_kind: 网络语料
+- id: gen_comp_0264
+  domain: composition
+  title: 斜面用两线定位
+  content: 确定一个斜面的空间位置，只需在面内取两条线：一条水平线 AB 与一条与之垂直的最陡线 CD；面内平行 AB 的线皆水平，平行 CD 的线皆最陡。
+  keywords:
+  - 最陡线
+  - 水平线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: ''
+  quote: |-
+    To fix the position of an inclined plane, therefore, is to determine the direction of any two lines in the plane, _AB_ and _CD_
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#006
+  source_span:
+    chunk_id: pg60816_txt#006
+    start: 745
+    end: 872
+  provenance_kind: 网络语料
+- id: gen_comp_0265
+  domain: composition
+  title: 练习勿脱离设计
+  content: 纯技术练习不应占用过多时间，须与构图设计结合，避免为练而练。
+  keywords:
+  - 练习量
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 训练方法
+  topic: color
+  quote: |-
+    too much time should not be given to mere practice, apart from design
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#002
+  source_span:
+    chunk_id: pg45410_txt#002
+    start: 445
+    end: 514
+  provenance_kind: 网络语料
+- id: gen_comp_0266
+  domain: composition
+  title: 纵深平衡
+  content: 纵深平衡指前景的重量与背景的重量相互抵消，安排画面时让前景元素与背景元素在视觉重量上对等。
+  keywords:
+  - 前景
+  - 背景
+  - 重量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 景深
+  topic: ''
+  quote: |-
+    Further, there is balance through depth, the foreground weighing against the background.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#005
+  source_span:
+    chunk_id: pg66049_txt#005
+    start: 371
+    end: 459
+  provenance_kind: 网络语料
+- id: gen_comp_0267
+  domain: composition
+  title: 线之美的定义
+  content: 线之美指组合线条的和谐，或由特殊处理赋予的独特品质；判断线条好坏看其组合是否和谐，而非单根线条本身。
+  keywords:
+  - 和谐
+  - 组合线条
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 构图
+  topic: color
+  quote: |-
+    Line‐beauty means harmony of combined lines or the peculiar quality imparted by special treatment.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#000
+  source_span:
+    chunk_id: pg45410_txt#000
+    start: 89
+    end: 187
+  provenance_kind: 网络语料
+- id: gen_comp_0268
+  domain: composition
+  title: 构图靠学艺术而非自然
+  content: 自然本身不会教构图，必须通过研究大师作品与持续创作实践来掌握构图规律，不能指望从写生自然中自动获得。
+  keywords:
+  - 构图学习
+  - 大师作品
+  - 创作实践
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 学习方法
+  topic: color
+  quote: |-
+    Nature will not teach him composition.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#004
+  source_span:
+    chunk_id: pg45410_txt#004
+    start: 486
+    end: 524
+  provenance_kind: 网络语料
+- id: gen_comp_0269
+  domain: composition
+  title: 艺术无固定法则
+  content: 艺术家不受限制性法则约束，即使大师也不能干涉其自由；艺术中没有“必须”与“不可”，规则只是参考而非禁令。
+  keywords:
+  - 创作自由
+  - 限制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作观
+  - 自由
+  topic: color
+  quote: |-
+    there is no “thou shalt” and “thou shalt not” in art.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#007
+  source_span:
+    chunk_id: pg45410_txt#007
+    start: 1398
+    end: 1451
+  provenance_kind: 网络语料
+- id: gen_comp_0270
+  domain: composition
+  title: 鉴赏力不可灌输
+  content: 艺术鉴赏力无法像信息一样被讲授或通过阅读获得，只能靠训练与练习逐步培养，因此教学应以培养鉴赏力为基础。
+  keywords:
+  - 训练
+  - 教学
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 训练方法
+  topic: color
+  quote: |-
+    This power cannot be imparted like information. Artistic skill cannot be given by dictation or acquired by reading.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#002
+  source_span:
+    chunk_id: pg45410_txt#002
+    start: 1466
+    end: 1581
+  provenance_kind: 网络语料
+- id: gen_comp_0271
+  domain: composition
+  title: 替代材料可练线
+  content: 若无法获得或不使用日本画材，可用铅笔、炭笔、水彩、蜡笔乃至油画颜料完成线条与块面练习。
+  keywords:
+  - 铅笔
+  - 炭笔
+  - 练习
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 练习
+  topic: color
+  quote: |-
+    the exercises can be carried on with pencil, charcoal, water colors, crayons, and even oil paint.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#001
+  source_span:
+    chunk_id: pg45410_txt#001
+    start: 1488
+    end: 1585
+  provenance_kind: 网络语料
+- id: gen_comp_0272
+  domain: composition
+  title: 水平线两端等高
+  content: 若直线AB位于水平面内，则其两个端点的垂直距离（高度）必须相同，即AC等于BC′。
+  keywords:
+  - 水平面
+  - 端点
+  - 垂直距离
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: ''
+  quote: |-
+    If the line _AB_ is in a horizontal plane, the vertical distance of one of its extremities must be the same as that of the other.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#001
+  source_span:
+    chunk_id: pg60816_txt#001
+    start: 282
+    end: 411
+  provenance_kind: 网络语料
+- id: gen_comp_0273
+  domain: composition
+  title: 线描工具不宜做调子
+  content: 蚀刻针、钢笔、铅笔属于线描工具，用它们作画时不应试图表现调子与阴影；工具决定作品性格，充分发挥工具与材料的可能性才能得到最佳效果。
+  keywords:
+  - 工具特性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条
+  - 取舍
+  topic: color
+  quote: |-
+    Etching, pen drawing and pencil sketching are line‐arts. The needle, pen and lead pencil are tools for drawing lines
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#007
+  source_span:
+    chunk_id: pg45410_txt#007
+    start: 659
+    end: 775
+  provenance_kind: 网络语料
+- id: gen_comp_0274
+  domain: composition
+  title: 平面定位需两线
+  content: 要确定一个平面在画面中的空间位置，必须先给出该平面内的两条直线；只有一条线无法固定平面，构图时至少找两条共面参考线（如地平线与墙角线）来建立透视。
+  keywords:
+  - 两条线
+  - 透视基准
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  - 构图基准
+  topic: ''
+  quote: |-
+    As in order to fix the position of a line two points in it must be given, so in order to fix the position of a plane, two lines in it must be given.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#005
+  source_span:
+    chunk_id: pg60816_txt#005
+    start: 0
+    end: 148
+  provenance_kind: 网络语料
+- id: gen_comp_0275
+  domain: composition
+  title: 线条呼应的构图平衡
+  content: 让主体形成的线条（如行军队列线）与画面中另一条自然线条（如树冠线）走向呼应，形成线条层面的平衡关系。
+  keywords:
+  - 线条呼应的构图平衡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 线条构图
+  topic: ''
+  quote: |-
+    the balance between the line described by the leading company of soldiers and the line of tree tops on the wooded hill
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#007
+  source_span:
+    chunk_id: pg66049_txt#007
+    start: 1690
+    end: 1808
+  provenance_kind: 网络语料
+- id: gen_comp_0276
+  domain: composition
+  title: 线条的连续与呼应
+  content: 让画面中某一部分成为相邻或对应部分的线索：用相似曲线上下衔接、平滑过渡，使观众一眼看出各部分之间的平衡关系。
+  keywords:
+  - 连续性
+  - 平衡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视觉引导
+  topic: ''
+  quote: |-
+    any one part of the whole is a kind of key to some adjoining or corresponding part
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#002
+  source_span:
+    chunk_id: pg66049_txt#002
+    start: 484
+    end: 566
+  provenance_kind: 网络语料
+- id: gen_comp_0277
+  domain: composition
+  title: 边框与中心的反差
+  content: 设计带边框与中心的图案时，两者必须形成差异，可用两值实现：黑底白纹对白底黑纹，或小纹样边框配单一大型中心纹样。
+  keywords:
+  - 两值
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 对比
+  topic: color
+  quote: |-
+    Border and centre must differ, and there are many ways of doing this even in two values
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#006
+  source_span:
+    chunk_id: pg45410_txt#006
+    start: 1367
+    end: 1454
+  provenance_kind: 网络语料
+- id: gen_comp_0278
+  domain: composition
+  title: 长线穿行画面的走法
+  content: 设计长线时让它从画面一角（如右下角）起，依次穿过若干中间元素（动物、道具、车轮轴心、人群头顶），再沿边缘（田边、树篱）微降滑行，最后从画面另一端（左端）穿出，形成贯穿全幅的连续轨迹。
+  keywords:
+  - 贯穿构图
+  - 起止点
+  - 元素串联
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 视线引导
+  - 场面调度
+  topic: ''
+  quote: |-
+    It begins, in fact, with the feet of the donkey at the lower right-hand corner of the frame
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: Pictorial Beauty on the Screen
+    author: Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:51+00:00'
+    sha256: 0bbf0dbf4ababb36132d0e3e653d570d532357bab02fa267314389926ad7ffcb
+  chunk_id: pg66049_txt#004
+  source_span:
+    chunk_id: pg66049_txt#004
+    start: 1409
+    end: 1500
+  provenance_kind: 网络语料
+- id: gen_comp_0279
+  domain: composition
+  title: 整体性优先于突出
+  content: 评判构图时，若某一部分过于突出以致其余部分失去存在理由，作品的整体性就被破坏；线条可多可少，但每条都必须服务于整体。
+  keywords:
+  - 协调
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: color
+  quote: |-
+    If one part is made so prominent that the others have no reason for being there, the art is gone.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#005
+  source_span:
+    chunk_id: pg45410_txt#005
+    start: 944
+    end: 1041
+  provenance_kind: 网络语料
+- id: gen_comp_0280
+  domain: composition
+  title: 视平线即眼高
+  content: 过视点S画一条横贯纸面的水平线GH，称为视平线；它代表观者眼睛在整幅画面中的高度，若画面中要表现远处海面或平原的地平线，就用这条线来定义。
+  keywords:
+  - 地平线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  - 水平线
+  - 构图
+  topic: ''
+  quote: |-
+    This line is of great practical use, representing the level of the eye of the observer all through the picture.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid
+    author: Ruskin, John, 1819-1900
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:48+00:00'
+    sha256: 6b9bef5c13bce3360a034e2273cd2d8da7dafa3f5ee41cb528a74fdd5c670b15
+  chunk_id: pg60816_txt#000
+  source_span:
+    chunk_id: pg60816_txt#000
+    start: 1486
+    end: 1597
+  provenance_kind: 网络语料
+- id: gen_comp_0281
+  domain: composition
+  title: 避免单一要素过久
+  content: 长时间停留在单一要素上有失去兴趣的危险，应轮换练习线、notan、色彩，以保持学习动力。
+  keywords:
+  - 轮换
+  - 兴趣
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 训练
+  topic: color
+  quote: |-
+    There is danger, however, of losing interest by dwelling upon one subject too long.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: Composition
+    author: Dow, Arthur W. (Arthur Wesley), 1857-1922
+    license: PublicDomain
+    retrieved_at: '2026-09-30T20:24:45+00:00'
+    sha256: f4e46c8ea869505e9c24a4dea6466a85c26b1e9367f69cdad5782c9475c9a3c2
+  chunk_id: pg45410_txt#000
+  source_span:
+    chunk_id: pg45410_txt#000
+    start: 1225
+    end: 1308
+  provenance_kind: 网络语料

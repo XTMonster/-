@@ -33,10 +33,10 @@ from block_director.knowledge import hypergraph as hg  # noqa: E402
 def load_graph(knowledge_dir: pathlib.Path | str = ROOT / "knowledge") -> hg.Hypergraph:
     root = pathlib.Path(knowledge_dir)
     nodes = [hg.Node.from_dict(json.loads(line)) for line in
-             (root / "hypergraph.nodes.jsonl").read_text(encoding="utf-8").splitlines()
+             (root / "hypergraph.nodes.jsonl").read_text(encoding="utf-8").split("\n")
              if line.strip()]
     edges = [hg.HyperEdge.from_dict(json.loads(line)) for line in
-             (root / "hypergraph.edges.jsonl").read_text(encoding="utf-8").splitlines()
+             (root / "hypergraph.edges.jsonl").read_text(encoding="utf-8").split("\n")
              if line.strip()]
     return hg.Hypergraph(nodes, edges)
 

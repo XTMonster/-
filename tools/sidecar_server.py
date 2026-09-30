@@ -105,7 +105,7 @@ def detect_kind(upstream: str) -> str:
 # --------------------------------------------------------------------------- #
 def read_jsonl(path: Path) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in path.read_text(encoding="utf-8").split("\n"):
         line = line.strip()
         if line:
             rows.append(json.loads(line))

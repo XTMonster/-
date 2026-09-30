@@ -38,10 +38,10 @@ QUERIES: Sequence[str] = (
 def load_index(knowledge_dir: pathlib.Path | str = ROOT / "knowledge") -> Hypergraph:
     root = pathlib.Path(knowledge_dir)
     nodes = [Node.from_dict(json.loads(line)) for line in
-             (root / "hypergraph.nodes.jsonl").read_text(encoding="utf-8").splitlines()
+             (root / "hypergraph.nodes.jsonl").read_text(encoding="utf-8").split("\n")
              if line.strip()]
     edges = [HyperEdge.from_dict(json.loads(line)) for line in
-             (root / "hypergraph.edges.jsonl").read_text(encoding="utf-8").splitlines()
+             (root / "hypergraph.edges.jsonl").read_text(encoding="utf-8").split("\n")
              if line.strip()]
     return Hypergraph(nodes, edges)
 

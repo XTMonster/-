@@ -1,25 +1,28 @@
 # P14-1 来源清单（执行文档 v1.4 §2.3c）——**人工维护，机器只读**。
 #
 # 字段：url / title / author / license / domain / mode（＋选填 note / genre / theme /
-# retrieved_at）。`license` 必须在白名单内（CC0 / CC-BY / CC-BY-SA / PublicDomain /
+# chunk_budget）。`license` 必须在白名单内（CC0 / CC-BY / CC-BY-SA / PublicDomain /
 # OwnWork / ExplicitPermission / PersonalStudy），否则
-# `tools/kb_fetch/validate_licenses.py` 一律拒收。`PersonalStudy` 是 v1.5 为
-# **个人学习用**的现代教材/论文/讲义新增的一档：它与"拿到授权"不是一回事，
-# 单独记名，便于以后真要对外分发时一眼筛出来（见 docs/knowledge/LICENSES.md）。
+# `tools/kb_fetch/validate_licenses.py` 一律拒收。
 #
-# 两类来源走**同一**管线，只有第 1 步分叉：
-#   * mode: http   —— 公有领域文本（Project Gutenberg，逐本核过标题与作者）；
-#   * mode: manual —— 自撰笔记（正文在 `knowledge/source_notes/`，许可 OwnWork，
-#                     `sha256` 就是笔记正文的哈希，可独立复算）。
-# 许可与归属的逐条声明见 `docs/knowledge/LICENSES.md`。
+# **2026-10-01 用户裁决：「理论不要自己写，要别人写的——专业的事情交给专业的人做」。**
+# 因此 27 条 `mode: manual`（`repo://knowledge/source_notes/*.md`，`license: OwnWork`）
+# 已**全部移除**：它们产出的 671 张自撰卡是"本项目自己写的理论"。空出来的域用
+# **他人著作**补：Project Gutenberg 的公有领域教材/实务书（`license: PublicDomain`）
+# 与 MIT OpenCourseWare 讲义（`license: CC-BY-NC-SA`）。判据是机器门
+# `tools/knowledge/authorship_report.py`（生成卡的 `source_ref.url` 必须是 http/https）。
+# 逐条归属见 `docs/knowledge/LICENSES.md` 与 `docs/knowledge/MODERN_SOURCES.md`。
 #
-# `theme` 只用于 K5（六个主题配额的诊断计数），不参与检索。
+# 检索与抓取纪律：只走 http/https；先过 `fetch.py` 的 robots 门（取不到 robots.txt 就拒收），
+# 同域限速，重定向每一跳重新过门。实测不可达/被 robots 拒的域名（pressbooks.pub、
+# milnepublishing.geneseo.edu、jamsjournal.com、en.wikisource.org、archive.org、
+# upload.wikimedia.org、doi.org）**一律不收录**。
 
 sources:
-  # ---------------------------------------------------------------- 摄影 / 光学
+  # ---------------------------------------------------------------- cinematography
   - url: https://www.gutenberg.org/cache/epub/45714/pg45714.txt
-    title: Practical Cinematography and Its Applications
-    author: Frederick Arthur Ambrose Talbot
+    title: "Practical Cinematography and Its Applications"
+    author: "Frederick Arthur Ambrose Talbot"
     license: PublicDomain
     domain: cinematography
     mode: http
@@ -27,81 +30,24 @@ sources:
     theme: camera_angle
     chunk_budget: 5
   - url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
-    title: Photography at home
-    author: John A. Tennant
+    title: "Photography at home"
+    author: "John A. Tennant"
     license: PublicDomain
     domain: cinematography
     mode: http
     genre: film
     chunk_budget: 5
   - url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
-    title: Bromide Printing and Enlarging
-    author: John A. Tennant
+    title: "Bromide Printing and Enlarging"
+    author: "John A. Tennant"
     license: PublicDomain
     domain: cinematography
     mode: http
     genre: film
     chunk_budget: 5
-  - url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: cinematography
-    mode: manual
-    genre: film
-    theme: camera_angle
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-  - url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: cinematography
-    mode: manual
-    genre: film
-    theme: camera_angle
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-
-  # ---------------------------------------------------------------- 构图
-  - url: https://www.gutenberg.org/cache/epub/26638/pg26638.txt
-    title: Pictorial Composition and the Critical Judgment of Pictures
-    author: Henry Rankin Poore
-    license: PublicDomain
-    domain: composition
-    mode: http
-    genre: film
-    chunk_budget: 10
-  - url: https://www.gutenberg.org/cache/epub/55346/pg55346.txt
-    title: Lectures on Painting, Delivered to the Students of the Royal Academy
-    author: Edward Armitage
-    license: PublicDomain
-    domain: composition
-    mode: http
-    genre: film
-    chunk_budget: 10
-  - url: https://www.gutenberg.org/cache/epub/20165/pg20165.txt
-    title: The Theory and Practice of Perspective
-    author: G. A. Storey
-    license: PublicDomain
-    domain: composition
-    mode: http
-    genre: film
-    chunk_budget: 10
-  - url: https://www.gutenberg.org/cache/epub/32681/pg32681.txt
-    title: The Use of a Box of Colours, in a Practical Demonstration on Composition
-    author: Harry Willson
-    license: PublicDomain
-    domain: composition
-    mode: http
-    genre: film
-    theme: color
-    chunk_budget: 10
-
-  # ---------------------------------------------------------------- 光线 / 色彩
   - url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
-    title: Light and Colour Theories, and their relation to light and colour standardization
-    author: Joseph W. Lovibond
+    title: "Light and Colour Theories, and their relation to light and colour standardization"
+    author: "Joseph W. Lovibond"
     license: PublicDomain
     domain: cinematography
     mode: http
@@ -109,50 +55,199 @@ sources:
     theme: lighting
     chunk_budget: 5
   - url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
-    title: Tinting and toning of Eastman positive motion picture film
-    author: Eastman Kodak Company
+    title: "Tinting and toning of Eastman positive motion picture film"
+    author: "Eastman Kodak Company"
     license: PublicDomain
     domain: cinematography
     mode: http
     genre: film
     theme: color
     chunk_budget: 5
-  - url: repo://knowledge/source_notes/lighting_and_color.md
-    title: 布光体系与色彩情绪的对应（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
+  - url: https://www.gutenberg.org/cache/epub/42982/pg42982.txt
+    title: "Photography in the studio and in the field"
+    author: "Estabrooke, Edward M., 1838-1903"
+    license: PublicDomain
     domain: cinematography
-    mode: manual
+    mode: http
+    genre: film
+    theme: camera_angle
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/40468/pg40468.txt
+    title: "The Barnet Book of Photography: A Collection of Practical Articles"
+    author: "Various"
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    chunk_budget: 6
+  - url: https://www.gutenberg.org/cache/epub/56833/pg56833.txt
+    title: "Naturalistic Photography for Students of the Art."
+    author: "Emerson, P. H. (Peter Henry), 1856-1936"
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    chunk_budget: 6
+  - url: https://www.gutenberg.org/cache/epub/17625/pg17625.txt
+    title: "Artificial Light: Its Influence upon Civilization"
+    author: "Luckiesh, Matthew, 1883-1967"
+    license: PublicDomain
+    domain: cinematography
+    mode: http
     genre: film
     theme: lighting
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-
-  # ---------------------------------------------------------------- 剪辑 / 节奏
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/39998/pg39998.txt
+    title: "The Science of Animal Locomotion (Zoopraxography) An Electro-Photographic Investigation of Consecutive Phases of Animal Movements"
+    author: "Muybridge, Eadweard, 1830-1904"
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    theme: camera_angle
+    chunk_budget: 7
+  - url: https://www.gutenberg.org/cache/epub/33899/pg33899.txt
+    title: "Optical Projection. Part 1: The Projection of Lantern Slides"
+    author: "Wright, Lewis, 1838-1905; Wright, Russell Stuart"
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    theme: lighting
+    chunk_budget: 6
+  - url: https://www.gutenberg.org/cache/epub/75890/pg75890.txt
+    title: "The magic lantern and its management"
+    author: "Hepworth, Thomas Cradock, -1905"
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    chunk_budget: 6
+  - url: https://www.gutenberg.org/cache/epub/33447/pg33447.txt
+    title: "The Pencil of Nature"
+    author: "Talbot, William Henry Fox, 1800-1877"
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    chunk_budget: 6
+  - url: https://www.gutenberg.org/cache/epub/38866/pg38866.txt
+    title: "The Evolution of Photography With a Chronological Record of Discoveries, Inventions, Etc., Contributions to Photographic Literature, and Personal Reminescences Extending over Forty Years"
+    author: "Werge, John, active 1854-1890"
+    license: PublicDomain
+    domain: cinematography
+    mode: http
+    genre: film
+    chunk_budget: 6
+  - url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/c7c1a8f078c559256fbe9ed93ba9e5b8_MIT21L_011F13_2006_Notes.pdf
+    title: "MIT 21L.011 The Film Experience - 2006 lecture notes"
+    author: "MIT OpenCourseWare (David Thorburn)"
+    license: CC-BY-NC-SA
+    domain: cinematography
+    mode: http
+    genre: film
+    theme: camera_angle
+    chunk_budget: 6
+  # ---------------------------------------------------------------- composition
+  - url: https://www.gutenberg.org/cache/epub/26638/pg26638.txt
+    title: "Pictorial Composition and the Critical Judgment of Pictures"
+    author: "Henry Rankin Poore"
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/55346/pg55346.txt
+    title: "Lectures on Painting, Delivered to the Students of the Royal Academy"
+    author: "Edward Armitage"
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/20165/pg20165.txt
+    title: "The Theory and Practice of Perspective"
+    author: "G. A. Storey"
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/32681/pg32681.txt
+    title: "The Use of a Box of Colours, in a Practical Demonstration on Composition"
+    author: "Harry Willson"
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+    theme: color
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
+    title: "Composition"
+    author: "Dow, Arthur W. (Arthur Wesley), 1857-1922"
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+    theme: color
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
+    title: "The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid"
+    author: "Ruskin, John, 1819-1900"
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
+    title: "Pictorial Beauty on the Screen"
+    author: "Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]"
+    license: PublicDomain
+    domain: composition
+    mode: http
+    genre: film
+    chunk_budget: 8
+  # ---------------------------------------------------------------- editing
   - url: https://www.gutenberg.org/cache/epub/15383/pg15383.txt
     title: "The Photoplay: A Psychological Study"
-    author: Hugo Münsterberg
+    author: "Hugo Münsterberg"
     license: PublicDomain
     domain: editing
     mode: http
     genre: film
     theme: editing
     chunk_budget: 20
-  - url: repo://knowledge/source_notes/editing_rhythm.md
-    title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
+  - url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
+    title: "The Art of the Moving Picture"
+    author: "Lindsay, Vachel, 1879-1931"
+    license: PublicDomain
     domain: editing
-    mode: manual
+    mode: http
     genre: film
     theme: editing
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-
-  # ---------------------------------------------------------------- 分镜 / 剧本
+    chunk_budget: 14
+  - url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
+    title: "The soul of the moving picture"
+    author: "Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]"
+    license: PublicDomain
+    domain: editing
+    mode: http
+    genre: film
+    theme: editing
+    chunk_budget: 12
+  - url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+    title: "MIT 21L.011 The Film Experience - lecture outlines"
+    author: "MIT OpenCourseWare (David Thorburn)"
+    license: CC-BY-NC-SA
+    domain: editing
+    mode: http
+    genre: film
+    theme: editing
+    chunk_budget: 6
+  # ---------------------------------------------------------------- storyboard
   - url: https://www.gutenberg.org/cache/epub/17903/pg17903.txt
-    title: Writing the Photoplay
-    author: J. Berg Esenwein
+    title: "Writing the Photoplay"
+    author: "J. Berg Esenwein"
     license: PublicDomain
     domain: storyboard
     mode: http
@@ -160,8 +255,8 @@ sources:
     theme: storyboard
     chunk_budget: 10
   - url: https://www.gutenberg.org/cache/epub/76829/pg76829.txt
-    title: How to write photoplays
-    author: Embrie Zuver
+    title: "How to write photoplays"
+    author: "Embrie Zuver"
     license: PublicDomain
     domain: storyboard
     mode: http
@@ -170,269 +265,261 @@ sources:
     chunk_budget: 10
   - url: https://www.gutenberg.org/cache/epub/70937/pg70937.txt
     title: "The photodrama: the philosophy of its principles"
-    author: Henry Albert Phillips
+    author: "Henry Albert Phillips"
     license: PublicDomain
     domain: storyboard
     mode: http
     genre: film
     theme: storyboard
     chunk_budget: 10
-  - url: repo://knowledge/source_notes/storyboard_practice.md
-    title: 分镜表与镜头清单的写法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
+  - url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
+    title: "Play-Making: A Manual of Craftsmanship"
+    author: "Archer, William, 1856-1924"
+    license: PublicDomain
     domain: storyboard
-    mode: manual
+    mode: http
     genre: film
     theme: storyboard
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-
-  # ---------------------------------------------------------------- 动画 / 分镜套路
+    chunk_budget: 12
+  - url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
+    title: "How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola"
+    author: "Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]"
+    license: PublicDomain
+    domain: storyboard
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
+    title: "The new art of writing plays"
+    author: "Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]"
+    license: PublicDomain
+    domain: storyboard
+    mode: http
+    genre: film
+    chunk_budget: 8
+  # ---------------------------------------------------------------- anime
   - url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
-    title: Animated cartoons — How they are made, their origin and development
-    author: Edwin George Lutz
+    title: "Animated cartoons — How they are made, their origin and development"
+    author: "Edwin George Lutz"
     license: PublicDomain
     domain: anime
     mode: http
     genre: anime
     theme: anime
-    chunk_budget: 20
-  - url: repo://knowledge/source_notes/anime_language.md
-    title: 日式动画的镜头语言与作画节奏（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-
-  # ---------------------------------------------------------------- 调度 / 表演
+    chunk_budget: 45
+  # ---------------------------------------------------------------- blocking
   - url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
     title: "How to Produce Amateur Plays: A Practical Manual"
-    author: Barrett H. Clark
+    author: "Barrett H. Clark"
     license: PublicDomain
     domain: blocking
     mode: http
     genre: film
     chunk_budget: 20
-  - url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
-    title: Dramatic Technique
-    author: George Pierce Baker
+  - url: https://www.gutenberg.org/cache/epub/72655/pg72655.txt
+    title: "Continental stagecraft"
+    author: "Macgowan, Kenneth, 1888-1963; Jones, Robert Edmond, 1887-1954 [Illustrator]"
     license: PublicDomain
-    domain: performance
-    mode: http
-    genre: film
-    chunk_budget: 40
-  - url: https://www.gutenberg.org/cache/epub/57611/pg57611.txt
-    title: Heroines of the Modern Stage
-    author: Forrest Izard
-    license: PublicDomain
-    domain: performance
-    mode: http
-    genre: film
-    chunk_budget: 40
-  - url: repo://knowledge/source_notes/blocking_and_performance.md
-    title: 场面调度与表演节奏（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
     domain: blocking
-    mode: manual
+    mode: http
     genre: film
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-  - url: repo://knowledge/source_notes/axis_continuity.md
-    title: 轴线、视线与银幕方向连续性（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: axis_theory
-    mode: manual
+    chunk_budget: 12
+  - url: https://www.gutenberg.org/cache/epub/76304/pg76304.txt
+    title: "Secrets of scene painting and stage effects"
+    author: "Goldston, Will, 1877-1948"
+    license: PublicDomain
+    domain: blocking
+    mode: http
     genre: film
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-
-  # ---------------------------------------------------------------- 制片 / 现场
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/70471/pg70471.txt
+    title: "Kabuki"
+    author: "Kincaid, Zoë, 1878-1944"
+    license: PublicDomain
+    domain: blocking
+    mode: http
+    genre: film
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/57239/pg57239.txt
+    title: "Japanese Plays and Playfellows"
+    author: "Edwards, Osman, 1864-1936"
+    license: PublicDomain
+    domain: blocking
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/69095/pg69095.txt
+    title: "The Greek theater and its drama"
+    author: "Flickinger, Roy C. (Roy Caston), 1876-1942"
+    license: PublicDomain
+    domain: blocking
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/66391/pg66391.txt
+    title: "A Book of Marionettes"
+    author: "Joseph, Helen Haiman"
+    license: PublicDomain
+    domain: blocking
+    mode: http
+    genre: film
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/74969/pg74969.txt
+    title: "Marionettes, masks and shadows"
+    author: "Mills, Winifred H."
+    license: PublicDomain
+    domain: blocking
+    mode: http
+    genre: film
+    chunk_budget: 8
+  # ---------------------------------------------------------------- performance
+  - url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: "Dramatic Technique"
+    author: "George Pierce Baker"
+    license: PublicDomain
+    domain: performance
+    mode: http
+    genre: film
+    chunk_budget: 20
+  - url: https://www.gutenberg.org/cache/epub/57611/pg57611.txt
+    title: "Heroines of the Modern Stage"
+    author: "Forrest Izard"
+    license: PublicDomain
+    domain: performance
+    mode: http
+    genre: film
+    chunk_budget: 20
+  - url: https://www.gutenberg.org/cache/epub/77829/pg77829.txt
+    title: "Screen acting"
+    author: "Marsh, Mae, 1894-1968"
+    license: PublicDomain
+    domain: performance
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/13483/pg13483.txt
+    title: "The Drama"
+    author: "Irving, Henry, Sir, 1838-1905"
+    license: PublicDomain
+    domain: performance
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/13928/pg13928.txt
+    title: "Plays, Acting and Music: A Book Of Theory"
+    author: "Symons, Arthur, 1865-1945"
+    license: PublicDomain
+    domain: performance
+    mode: http
+    genre: film
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/51658/pg51658.txt
+    title: "How to become an actor"
+    author: "Warford, Aaron A."
+    license: PublicDomain
+    domain: performance
+    mode: http
+    genre: film
+    chunk_budget: 8
+  # ---------------------------------------------------------------- production
   - url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
-    title: Motion Picture Operation, Stage Electrics and Illusions
-    author: Henry Charles Horstmann
+    title: "Motion Picture Operation, Stage Electrics and Illusions"
+    author: "Henry Charles Horstmann"
     license: PublicDomain
     domain: production
     mode: http
     genre: film
     theme: lighting
     chunk_budget: 20
-  - url: repo://knowledge/source_notes/production_pipeline.md
-    title: 预演交付与制片流程（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
+  - url: https://www.gutenberg.org/cache/epub/67972/pg67972.txt
+    title: "Moving Pictures: How They Are Made and Worked"
+    author: "Talbot, Frederick Arthur Ambrose, 1880-1924"
+    license: PublicDomain
     domain: production
-    mode: manual
+    mode: http
     genre: film
-    retrieved_at: "2026-09-30"
-    chunk_budget: 40
-
-  # ------------------------------------------------- 现代理论体系（v1.5，自撰 · OwnWork）
-  # 老书部分全是 1900–1920 年的公有领域文本：机位、轴线、剪辑的**原理**仍然
-  # 成立，但缺少数字摄影、虚拟制片、声音设计、动作设计与现代分镜/演出实务。
-  # 下面这组笔记是为了补上"现代"这一半：每条规则都写成"当 X 时取 Y，因为 Z"，
-  # 并带上可判定的量（格、秒、毫米、档、厘米、dB、Hz）。
-  - url: repo://knowledge/source_notes/modern_production_pipeline.md
-    title: 现代制片流程中的预演（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
+    chunk_budget: 10
+  - url: https://www.gutenberg.org/cache/epub/74971/pg74971.txt
+    title: "A-B-C of motion pictures"
+    author: "Welsh, Robert E. (Robert Emmet), 1893-1964; Frohman, Daniel, 1851-1940 [Author of introduction, etc.]"
+    license: PublicDomain
     domain: production
-    mode: manual
+    mode: http
     genre: film
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_anime_and_2d_practice.md
-    title: 现代二维动画的演出与作画节奏（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
-    title: 现代分镜与预演实务（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: storyboard
-    mode: manual
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/56570/pg56570.txt
+    title: "Breaking into the movies"
+    author: "Emerson, John, 1874-1956; Loos, Anita, 1893-1981"
+    license: PublicDomain
+    domain: production
+    mode: http
     genre: film
-    theme: storyboard
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_performance_theory.md
-    title: 现代银幕表演的调度与节拍（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: performance
-    mode: manual
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/59730/pg59730.txt
+    title: "Behind the Screen"
+    author: "Goldwyn, Samuel, 1879-1974"
+    license: PublicDomain
+    domain: production
+    mode: http
     genre: film
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_blocking_and_staging.md
-    title: 现代场面调度：为镜头而站（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: blocking
-    mode: manual
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/64578/pg64578.txt
+    title: "Magic Shadows: The Story of the Origin of Motion Pictures"
+    author: "Quigley, Martin, 1917-2011; Curtis, Edward Peck, 1897-1987 [Author of introduction, etc.]"
+    license: PublicDomain
+    domain: production
+    mode: http
     genre: film
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_action_and_impact.md
-    title: 动作设计与打击感（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: blocking
-    mode: manual
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/66368/pg66368.txt
+    title: "That Marvel—The Movie A Glance at Its Past, Its Promising Present and Its Significant Future"
+    author: "Van Zile, Edward S. (Edward Sims), 1863-1931; Hays, Will H. (Will Harrison), 1879-1954 [Author of introduction, etc.]; Pyle, Howard, 1853-1911 [Illustrator]"
+    license: PublicDomain
+    domain: production
+    mode: http
     genre: film
-    theme: camera_angle
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_sound_and_impact.md
-    title: 现代声音设计与声画关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: editing
-    mode: manual
+    chunk_budget: 8
+  - url: https://www.gutenberg.org/cache/epub/68850/pg68850.txt
+    title: "When the movies were young"
+    author: "Arvidson, Linda, 1884-1949"
+    license: PublicDomain
+    domain: production
+    mode: http
     genre: film
-    theme: editing
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_cinematography_digital.md
-    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: cinematography
-    mode: manual
-    genre: film
-    theme: camera_angle
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_axis_and_continuity.md
-    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
+    chunk_budget: 8
+  # ---------------------------------------------------------------- axis_theory
+  - url: https://www.gutenberg.org/cache/epub/53117/pg53117.txt
+    title: "Motion Picture Directing: The Facts and Theories of the Newest Art"
+    author: "Milne, Peter, 1896-1968"
+    license: PublicDomain
     domain: axis_theory
-    mode: manual
+    mode: http
     genre: film
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_composition_theory.md
-    title: 现代构图的量化口径（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: composition
-    mode: manual
+    chunk_budget: 58
+  # Frames Cinema Journal（BAFTSS，同行评审开放获取，ISSN 2053-8812）里**讨论
+  # 空间/方位/连续性的**文章。逐篇找不到具名的 CC 声明，所以按 §2.3c 的
+  # `PersonalStudy` 记名（个人学习，不对外分发），不冒充开放许可。
+  - url: https://framescinemajournal.com/article/the-logic-of-disorientation-exploring-space-in-albert-serras-afternoons-of-solitude/
+    title: "The Logic of Disorientation: Exploring Space in Albert Serra's Afternoons of Solitude"
+    author: "Frames Cinema Journal"
+    license: PersonalStudy
+    domain: axis_theory
+    mode: http
     genre: film
-    theme: camera_angle
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_editing_theory.md
-    title: 现代剪辑：动机、节奏与结构（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: editing
-    mode: manual
+    chunk_budget: 8
+  - url: https://framescinemajournal.com/article/geology-of-ideas-hydrology-of-matter-nature-and-space-in-abbas-kiarostamis-cinema/
+    title: "Geology of Ideas, Hydrology of Matter: Nature and Space in Abbas Kiarostami's Cinema"
+    author: "Frames Cinema Journal"
+    license: PersonalStudy
+    domain: axis_theory
+    mode: http
     genre: film
-    theme: editing
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_anime_production_pipeline.md
-    title: 动漫视频制作流程各工程（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_anime_compositing_and_editing.md
-    title: 动漫的撮影（合成）、編集与音響（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_anime_direction_theory.md
-    title: 动漫演出论：分镜、构成与情绪设计（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_anime_visual_design.md
-    title: 动漫美术设定与视觉语法（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_anime_3dcg_and_hybrid.md
-    title: 动漫的 3DCG 与混合制作（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_anime_film_production.md
-    title: 剧场版动画的制作体制与规模（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-10-01"
-  - url: repo://knowledge/source_notes/modern_anime_film_presentation.md
-    title: 剧场版动画的影像与音响呈现（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    domain: anime
-    mode: manual
-    genre: anime
-    theme: anime
-    retrieved_at: "2026-10-01"
+    chunk_budget: 8
+  - url: https://framescinemajournal.com/article/blurring-space-across-film-theatre-and-virtual-reality-zero-calorie-restaurant-2023/
+    title: "Blurring Space Across Film, Theatre and Virtual Reality: Zero Calorie Restaurant (2023)"
+    author: "Frames Cinema Journal"
+    license: PersonalStudy
+    domain: axis_theory
+    mode: http
+    genre: film
+    chunk_budget: 8

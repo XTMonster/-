@@ -55,7 +55,7 @@ DEFAULT_EDGES = ROOT / "knowledge" / "hypergraph.edges.jsonl"
 
 
 def _read_jsonl(path: pathlib.Path) -> List[Dict]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").split("\n")
             if line.strip()]
 
 

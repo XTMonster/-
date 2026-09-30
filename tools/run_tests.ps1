@@ -311,6 +311,22 @@ if ($gateExit -eq 0) {
 if (-not (Test-Path (Join-Path $evidenceDir 'holdout_gates.json'))) {
     Fail '  FAILED: the held-out gate report was not written'
 }
+# Provenance gate (user ruling 2026-10-01): every generated knowledge card must come
+# from somebody else's work (http/https source_ref). A single `repo://` record means
+# the project wrote its own theory - that is a hard fail, and it is attributed to
+# RK-13 exactly like the held-out gates above (it never turns the suite red by
+# itself, it says WHY the knowledge stack is not passing).
+python tools/knowledge/authorship_report.py --json (Join-Path $evidenceDir 'authorship.json') > $null 2>&1
+$authorshipExit = $LASTEXITCODE
+if (-not (Test-Path (Join-Path $evidenceDir 'authorship.json'))) {
+    Fail '  FAILED: the authorship report was not written'
+}
+if ($authorshipExit -eq 0) {
+    Write-Host '  authorship: every generated card comes from an external work' -ForegroundColor Green
+} else {
+    if ($rk13Failed -notcontains 'RK-13') { $rk13Failed = @($rk13Failed) + 'RK-13' }
+    Write-Host ('  authorship gate exit ' + $authorshipExit + ' -> RK-13 counts as failed') -ForegroundColor Yellow
+}
 $rks = (@('RK-7', 'RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed + $rk13Checks) -join ','
 $rksFailed = $rk13Failed -join ','
 python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks --failed $rksFailed | Out-Null
