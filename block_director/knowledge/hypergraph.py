@@ -103,7 +103,12 @@ OPTIONAL_MEMBERS: Dict[str, Tuple[Tuple[str, str], ...]] = {
                    ("forbid", "movement"), ("forbid", "shot_size"), ("forbid", "vfx"),
                    ("qualifier", "applies_to_genre"), ("qualifier", "applies_to_shot_size")),
     SHOT_PATTERN: (("allow", "movement"), ("qualifier", "composition_rule")),
-    AXIS_RULE: (("allow", "shot_size"), ("allow", "movement")),
+    #: v1.5：`AXIS_RULE` 的必填成员只有 `pair`/`axis_side` 两个 **schema 常量**，
+    #: 它们在查询空间里没有对应取值（`轴线=` 映射到的是 `axis_topic`）——于是这类边
+    #: 在检索里**一个种子都挂不上**，Q1/Q2 结构性为 0（实测 held-out 里 23/125 的
+    #: 未命中就是这种）。允许把 `axis_topic` 挂在 AXIS_RULE 上，让边能锚到查询。
+    AXIS_RULE: (("allow", "shot_size"), ("allow", "movement"),
+                ("qualifier", "axis_topic")),
     TROPE: (("allow", "vfx"), ("allow", "movement"), ("qualifier", "example_shot")),
     EDIT_RHYTHM: (("qualifier", "transition"), ("qualifier", "scene_type")),
     LIGHT_PACK: (("allow", "emotion"), ("allow", "camera_angle")),

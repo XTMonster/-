@@ -12,6 +12,7 @@ held-out 正式集还没产出（需要换族模型跑满 1200 条 + 人抽查�
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -138,14 +139,31 @@ def test_negative_samples_are_counted_for_q3():
     assert by_id["Q3"]["status"] in ("pass", "fail")
 
 
-def test_the_shipped_holdout_is_reported_as_incomplete(capsys):
-    """正式 held-out 还没产出时，脚本必须**明说无法判定**而不是判通过。"""
+def test_the_shipped_holdout_is_scored_or_explicitly_incomplete(capsys):
+    """正式 held-out 的两种状态都必须**明说**：
+
+    * 还没产出/为空 → 明说 `INCOMPLETE` 并且**退出码非 0**（可判定的天条）；
+    * 已产出 → 必须给出 Q1–Q7 的**分子/分母**，不再是 INCOMPLETE。
+
+    v1.5 起 held-out 已经落地（4539 条），所以这条从"只查 INCOMPLETE"升级成
+    "两种状态都不许含糊"——空文件仍然必须报 INCOMPLETE，这一点不能因为有了数据就丢掉。
+    """
     module = _load()
-    code = module.main(["prog", "--holdout", "fixtures/knowledge_holdout.jsonl"])
+    shipped = ROOT / "fixtures" / "knowledge_holdout.jsonl"
+    rows = [line for line in shipped.read_text(encoding="utf-8").splitlines() if line.strip()] \
+        if shipped.is_file() else []
+
+    code = module.main(["prog", "--holdout", str(shipped)])
     out = capsys.readouterr().out
-    if code == 0:
-        pytest.skip("held-out 已经产出，这条 INSTALL 检查不适用")
-    assert "INCOMPLETE" in out
+    if not rows:
+        assert code != 0 and "INCOMPLETE" in out
+        return
+    report = json.loads(out[out.find("{"):])
+    assert code in (0, 1)
+    ids = {m["id"]: m for m in report["metrics"]}
+    for name in ("Q1", "Q2", "Q3", "Q4", "Q6a", "Q6b", "Q7"):
+        assert name in ids and "denominator" in ids[name]
+        assert ids[name]["denominator"] > 0, f"{name} 的分母必须为正（硬规则 1）"
 
 
 def test_triple_split_keeps_members_but_loses_the_pack():

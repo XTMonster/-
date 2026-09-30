@@ -152,7 +152,9 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
    以外的强耦合元素都建模进来——动作/表演/意图/打击感/调度/声画/转场）：
    EMOTION_PACK: (allow,emotion) ＋ (qualifier,intensity)；
    SHOT_PATTERN: (allow,shot_size) ＋ (allow,lens) ＋ (qualifier,headroom_policy)；
-   AXIS_RULE: (qualifier,pair) ＋ (qualifier,axis_side)；
+   AXIS_RULE: (qualifier,pair) ＋ (qualifier,axis_side) ＋ **(qualifier,axis_topic)**
+     —— `axis_topic` 必须写（`轴线:<中性机位|关系轴|视线轴|越轴|运动轴>`），
+     否则这条边在检索里挂不上任何种子（实测：不写它时 AXIS_RULE 整类召不回）；
    TROPE: (allow,genre) ＋ (allow,emotion)；
    EDIT_RHYTHM: (allow,pacing) ＋ (qualifier,avg_shot_len)；
    LIGHT_PACK: (allow,lighting) ＋ (qualifier,intensity)；

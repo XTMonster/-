@@ -147,8 +147,12 @@ def test_overall_is_not_measured_when_evidence_is_missing(tmp_path):
         "batches": [{"status": "done"}, {"status": "done"}]}), encoding="utf-8")
     rejects = tmp_path / "rejects.jsonl"
     rejects.write_text("\n".join(["{}"] * 3), encoding="utf-8")
+    #: 用**空**的 held-out：这条测的是"证据缺失时必须 not_measured"，
+    #: 与正式 held-out 是否落地无关（正式文件在 v1.5 已经落地）。
+    empty_holdout = tmp_path / "empty_holdout.jsonl"
+    empty_holdout.write_text("", encoding="utf-8")
     code = quality.main([
-        "--run-id", "ut", "--holdout", "fixtures/knowledge_holdout.jsonl",
+        "--run-id", "ut", "--holdout", str(empty_holdout),
         "--nodes", "knowledge/hypergraph.nodes.jsonl",
         "--edges", "knowledge/hypergraph.edges.jsonl",
         "--manifest", str(manifest), "--rejects", str(rejects),
