@@ -38,6 +38,13 @@ from tools.kb_fetch import common, holdout_gen, llm  # noqa: E402
 CHANNELS = (
     #: 顺序即优先级：先试还在额度内的 glm-4.7，再试 4.6/4.5（同为 zhipu 族）。
     ("glm", "glm-4.7", "annotator"),
+    #: glm-4.7-flash 同样有额度，而且**快两个数量级**（关思考时 12 卡/批 ≈ 30 秒，
+    #: 实测 3 张卡 4.7 秒出 4 条）。它与 glm-4.7 同族但有额度，是重标时最划算的
+    #: 第二路：机器门（必填槽位、q 与 must 一致、弱查询拒收）一视同仁，
+    #: 所以用它加速**不等于**放宽标准。实测产出的 `must`/`q` 完全合规
+    #: （`ACTION_BEAT:action=转身,beat_type=coverage,intensity=high` ↔
+    #: `q: 动作=转身；强度=high`；`AXIS_RULE` 也带上了 `axis_topic`）。
+    ("glm", "glm-4.7-flash", "annotator(fast: 本机实测 12 卡/批 ≈ 30 秒)"),
     ("glm", "glm-4.6", "annotator(本机实测 1113：该模型无资源包)"),
     ("ollama", "qwen3-vl:30b", "record-only(用户裁决停用本地模型)"),
     ("deepseek", "deepseek-chat", "extractor-only(换族规则禁止当标注方)"),
