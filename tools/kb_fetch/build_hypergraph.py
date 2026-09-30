@@ -48,7 +48,7 @@ VOCAB = common.KNOWLEDGE / "hypergraph.vocab.json"
 #: 第 1 段的**原子边**落盘（可只看归并口径重跑第 2 段，不必重抽）。
 ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 
-PROMPT_VERSION = "extract/v3"
+PROMPT_VERSION = "extract/v4"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -148,15 +148,30 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
  "confidence":0.0-1.0, "source_card":"<卡片 id>"}]}
 
 硬规则（违反的边会被机器丢弃，因此宁少勿错）：
-1. `type` 只能取六类之一，必填成员必须写全：
+1. `type` 只能取下面 **13 类**之一，必填成员必须写全（v1.5 扩充：把电影制作里除灯光
+   以外的强耦合元素都建模进来——动作/表演/意图/打击感/调度/声画/转场）：
    EMOTION_PACK: (allow,emotion) ＋ (qualifier,intensity)；
    SHOT_PATTERN: (allow,shot_size) ＋ (allow,lens) ＋ (qualifier,headroom_policy)；
    AXIS_RULE: (qualifier,pair) ＋ (qualifier,axis_side)；
-  TROPE: (allow,genre) ＋ (allow,emotion)；
-  EDIT_RHYTHM: (allow,pacing) ＋ (qualifier,avg_shot_len)；
-  LIGHT_PACK: (allow,lighting) ＋ (qualifier,intensity)。
-1b. **只有这六个 `type`**。不要发明 `COMPOSITION`／`COMPOSITION_RULE`／`FRAMING`／
-   `SFX` 之类的新类型——那些会被校验门以 `bad_type` 丢掉。
+   TROPE: (allow,genre) ＋ (allow,emotion)；
+   EDIT_RHYTHM: (allow,pacing) ＋ (qualifier,avg_shot_len)；
+   LIGHT_PACK: (allow,lighting) ＋ (qualifier,intensity)；
+   ACTION_BEAT: (allow,action) ＋ (qualifier,beat_type) ＋ (qualifier,intensity)
+     —— 角色的**动作**与叙事**节拍**、强度绑死（"推门 = establish = high"）；
+   PERFORMANCE_PACK: (allow,emotion) ＋ (allow,action) ＋ (qualifier,camera_angle)
+     —— **角色行为**：情绪外化成动作，并规定机位怎么看它；
+   INTENT_PACK: (allow,intent) ＋ (allow,shot_size) ＋ (qualifier,movement)
+     —— **意图**决定镜头语言（`intent:<取值>` 见词表，中文闭集）；
+   IMPACT_PACK: (allow,vfx) ＋ (allow,sfx) ＋ (qualifier,movement)
+     —— **震动与打击感**：冲击帧/抖屏 × 音效 × 运镜；
+   STAGING_PACK: (qualifier,composition_rule) ＋ (allow,shot_size) ＋ (qualifier,camera_angle)
+     —— **构图与场面调度**：构图规则决定景别与机位；
+   SOUND_PACK: (allow,sfx) ＋ (allow,pacing) ＋ (qualifier,intensity)
+     —— **声画关系**：音效 × 剪辑节奏 × 强度；
+   TRANSITION_PACK: (qualifier,transition) ＋ (allow,pacing) ＋ (qualifier,scene_type)
+     —— **转场** × 节奏 × 场景类型。
+1b. **只有这 13 个 `type` 字符串**。不要发明 `COMPOSITION`／`SOUND`／`SHAKE` 之类
+   的新类型——那些会被校验门以 `bad_type` 丢掉。
 1c. **卡片属于哪个 `domain` 与 `type` 无关**：构图/机位/特效/音效/动作类的知识要挂到
    最接近的那一类边上，作为**额外成员**（必填成员照旧写全）。词表里有这些 kind：
    * 构图（均衡/三分/留白/引导空间/遮挡/头部空间）→ `SHOT_PATTERN` ＋
@@ -170,7 +185,7 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
 2. `node_id` **必须**取自下面词表（`kind:取值` 已经写好）；词表里没有的取值就不要抽。
 3. 同一个 `node_id` 不能既出现在 `allow` 又出现在 `forbid`。
 4. 禁忌写成 `["forbid", kind, node_id]`——它是这条边最有价值的部分，别省略。
-   注意：**只有 EMOTION_PACK 允许 `forbid` 成员**（§2.3 的边表），其它五类不许写。
+   注意：**只有 EMOTION_PACK 允许 `forbid` 成员**（§2.3 的边表），其它类不许写。
 4b. **卡片里凡是出现"忌讳/避免/不要/禁用/宁可…也不"这类表述的，必须把那个取值写成
    `forbid` 成员**（挂在 EMOTION_PACK 上；如果这张卡本身不是情绪卡，就把它写成
    "该情绪下不要这样拍"的 EMOTION_PACK）。词表里已经给了 `movement`／`shot_size`／

@@ -222,6 +222,18 @@
 {"record": "node", "node_id": "intensity:high", "type": "intensity", "name": "high", "aliases": [], "value": "high", "unit": ""}
 {"record": "node", "node_id": "intensity:low", "type": "intensity", "name": "low", "aliases": [], "value": "low", "unit": "", "occurrences": 1}
 {"record": "node", "node_id": "intensity:mid", "type": "intensity", "name": "mid", "aliases": [], "value": "mid", "unit": ""}
+{"record": "node", "node_id": "intent:停顿", "type": "intent", "name": "停顿", "aliases": [], "value": "停顿", "unit": "", "occurrences": 11}
+{"record": "node", "node_id": "intent:压迫", "type": "intent", "name": "压迫", "aliases": [], "value": "压迫", "unit": "", "occurrences": 19}
+{"record": "node", "node_id": "intent:回望", "type": "intent", "name": "回望", "aliases": [], "value": "回望", "unit": ""}
+{"record": "node", "node_id": "intent:对抗", "type": "intent", "name": "对抗", "aliases": [], "value": "对抗", "unit": "", "occurrences": 7}
+{"record": "node", "node_id": "intent:推进", "type": "intent", "name": "推进", "aliases": [], "value": "推进", "unit": "", "occurrences": 21}
+{"record": "node", "node_id": "intent:揭示", "type": "intent", "name": "揭示", "aliases": [], "value": "揭示", "unit": "", "occurrences": 9}
+{"record": "node", "node_id": "intent:收束", "type": "intent", "name": "收束", "aliases": [], "value": "收束", "unit": "", "occurrences": 7}
+{"record": "node", "node_id": "intent:煽动", "type": "intent", "name": "煽动", "aliases": [], "value": "煽动", "unit": ""}
+{"record": "node", "node_id": "intent:留白", "type": "intent", "name": "留白", "aliases": [], "value": "留白", "unit": "", "occurrences": 11}
+{"record": "node", "node_id": "intent:转折", "type": "intent", "name": "转折", "aliases": [], "value": "转折", "unit": "", "occurrences": 11}
+{"record": "node", "node_id": "intent:释放", "type": "intent", "name": "释放", "aliases": [], "value": "释放", "unit": "", "occurrences": 2}
+{"record": "node", "node_id": "intent:铺垫", "type": "intent", "name": "铺垫", "aliases": [], "value": "铺垫", "unit": "", "occurrences": 3}
 {"record": "node", "node_id": "lens:24mm", "type": "lens", "name": "24mm", "aliases": [], "value": "24mm", "unit": "", "occurrences": 4}
 {"record": "node", "node_id": "lens:35mm", "type": "lens", "name": "35mm", "aliases": [], "value": "35mm", "unit": "", "occurrences": 4}
 {"record": "node", "node_id": "lens:50mm", "type": "lens", "name": "50mm", "aliases": [], "value": "50mm", "unit": "", "occurrences": 4}

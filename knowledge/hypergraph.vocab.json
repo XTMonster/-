@@ -1968,6 +1968,112 @@
       "unit": ""
     },
     {
+      "node_id": "intent:停顿",
+      "type": "intent",
+      "name": "停顿",
+      "aliases": [],
+      "value": "停顿",
+      "unit": "",
+      "occurrences": 11
+    },
+    {
+      "node_id": "intent:压迫",
+      "type": "intent",
+      "name": "压迫",
+      "aliases": [],
+      "value": "压迫",
+      "unit": "",
+      "occurrences": 19
+    },
+    {
+      "node_id": "intent:回望",
+      "type": "intent",
+      "name": "回望",
+      "aliases": [],
+      "value": "回望",
+      "unit": ""
+    },
+    {
+      "node_id": "intent:对抗",
+      "type": "intent",
+      "name": "对抗",
+      "aliases": [],
+      "value": "对抗",
+      "unit": "",
+      "occurrences": 7
+    },
+    {
+      "node_id": "intent:推进",
+      "type": "intent",
+      "name": "推进",
+      "aliases": [],
+      "value": "推进",
+      "unit": "",
+      "occurrences": 21
+    },
+    {
+      "node_id": "intent:揭示",
+      "type": "intent",
+      "name": "揭示",
+      "aliases": [],
+      "value": "揭示",
+      "unit": "",
+      "occurrences": 9
+    },
+    {
+      "node_id": "intent:收束",
+      "type": "intent",
+      "name": "收束",
+      "aliases": [],
+      "value": "收束",
+      "unit": "",
+      "occurrences": 7
+    },
+    {
+      "node_id": "intent:煽动",
+      "type": "intent",
+      "name": "煽动",
+      "aliases": [],
+      "value": "煽动",
+      "unit": ""
+    },
+    {
+      "node_id": "intent:留白",
+      "type": "intent",
+      "name": "留白",
+      "aliases": [],
+      "value": "留白",
+      "unit": "",
+      "occurrences": 11
+    },
+    {
+      "node_id": "intent:转折",
+      "type": "intent",
+      "name": "转折",
+      "aliases": [],
+      "value": "转折",
+      "unit": "",
+      "occurrences": 11
+    },
+    {
+      "node_id": "intent:释放",
+      "type": "intent",
+      "name": "释放",
+      "aliases": [],
+      "value": "释放",
+      "unit": "",
+      "occurrences": 2
+    },
+    {
+      "node_id": "intent:铺垫",
+      "type": "intent",
+      "name": "铺垫",
+      "aliases": [],
+      "value": "铺垫",
+      "unit": "",
+      "occurrences": 3
+    },
+    {
       "node_id": "lens:24mm",
       "type": "lens",
       "name": "24mm",
@@ -3057,6 +3163,20 @@
       "low",
       "mid"
     ],
+    "intent": [
+      "停顿",
+      "压迫",
+      "回望",
+      "对抗",
+      "推进",
+      "揭示",
+      "收束",
+      "煽动",
+      "留白",
+      "转折",
+      "释放",
+      "铺垫"
+    ],
     "lighting": [
       "亮调",
       "低照度",
@@ -3343,8 +3463,20 @@
       "insert",
       "transition"
     ],
+    "intent": [
+      "停顿",
+      "压迫",
+      "对抗",
+      "推进",
+      "揭示",
+      "收束",
+      "留白",
+      "转折",
+      "释放",
+      "铺垫"
+    ],
     "character": [],
     "object": []
   },
-  "_fingerprint": "47c244d36f4a39da"
+  "_fingerprint": "67228d38fe384fda"
 }

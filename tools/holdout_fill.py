@@ -67,7 +67,13 @@ REPORT = common.WORK / "holdout_report.json"
 _ANNOTATOR: Dict[str, str] = {}
 
 # 缺口补写用的系统提示（不放进 holdout_gen，避免动它的冻结 prompt 版本）。
-GAP_PROMPT_VERSION = "holdout-gap/v4"
+GAP_PROMPT_VERSION = "holdout-gap/v7"
+#: 补跑轮的解码参数：**必须让重试产生不同样本**。
+#: 温度 0 ＋ 同一个 prompt ＝ 逐字相同的输出 ＝ 同一批拒收永远重放（实测：连续 4 轮
+#: `added=0`、覆盖卡在 1039/1075）。这里给补跑轮一点温度、并按轮次给不同 seed——
+#: 仍然可复现（同一轮 → 同 seed → 同输出），但换一轮就是一次新的尝试。
+GAP_TEMPERATURE = 0.2
+GAP_SEED_BASE = 20260930
 GAP_PROMPT = (
     "你是分镜知识库的独立标注员。下面给出一份**缺口清单**与若干张知识卡。"
     "请**只**针对缺口写检索期望，输出 JSON：{\"entries\":[...]}，每条格式与之前一致："
@@ -83,15 +89,28 @@ GAP_PROMPT = (
     "5. 禁忌槽位 `forbid_<kind>=取值` **只允许出现在 EMOTION_PACK** 上，"
     "且该 kind 的同名取值必须同时出现在 `q` 里（这样才算一次禁忌冲突）。\n"
     "6. `from_card` 必须是下面列出的卡片 id 之一，且**优先用没被用过的卡**。\n"
-    "7. **只有六个类型名**（EMOTION_PACK／SHOT_PATTERN／AXIS_RULE／TROPE／EDIT_RHYTHM／"
-    "LIGHT_PACK），不要发明 COMPOSITION 之类的新类型；构图/机位/特效/音效/动作类知识"
-    "挂到最接近的那一类边上作为**额外槽位**（如构图 → `SHOT_PATTERN` ＋ "
-    "`composition_rule=rule_of_thirds`，必填槽位照旧写全）。卡片属于哪个 domain 与边类型无关。\n"
-    "8. **`q` 的键只能取协议 §2.1 的这 15 个**：情绪/动作/运镜/景别/镜头/节奏/特效/"
-    "音效/机位/光线/构图/轴线/题材/桥段/对白。**不要自造键**——实测 `轴线侧`／`轴侧`／`景深`／`标签`／"
+    "7. **只有这 13 个类型名**（EMOTION_PACK／SHOT_PATTERN／AXIS_RULE／TROPE／EDIT_RHYTHM／"
+    "LIGHT_PACK／ACTION_BEAT／PERFORMANCE_PACK／INTENT_PACK／IMPACT_PACK／STAGING_PACK／"
+    "SOUND_PACK／TRANSITION_PACK），不要发明 COMPOSITION／SHAKE 之类的新类型；构图/机位/"
+    "动作/打击感/声画知识优先选对应的新类型（`STAGING_PACK`／`PERFORMANCE_PACK`／"
+    "`ACTION_BEAT`／`IMPACT_PACK`／`SOUND_PACK`），实在放不进去再作为**额外槽位**挂在"
+    "最接近的那一类上（必填槽位照旧写全）。卡片属于哪个 domain 与边类型无关。\n"
+    "8. **`q` 的键只能取协议 §2.1 的这 16 个**：情绪/动作/运镜/景别/镜头/节奏/特效/"
+    "音效/机位/光线/构图/轴线/题材/桥段/对白/意图。**不要自造键**——实测 `轴线侧`／`轴侧`／`景深`／`标签`／"
     "`关键词`／`结构` 这类写法会被整条拒收（`轴线侧` 一个错就让整轮 36 条全废）。"
     "`axis_side`（左/右/中性）**没有**对应的 `q` 键：把它写在 `must` 里就够了，"
     "`q` 里只写 `轴线=<词表里的轴线取值>`。\n"
+    "9. **取值写法必须用词表里的那一串字符**（多数 kind 的规范写法是英文代号）："
+    "`节奏=short`／`运镜=dolly_in`／`景别=MS`／`镜头=50mm`／`构图=rule_of_thirds`／"
+    "`光线=冷光`；只有本来就是中文的 kind 才写中文（`情绪=荒诞`／`机位=低机位`／"
+    "`轴线=越轴`）。`q` 与 `must` 里同 kind 的取值**必须一字不差**——"
+    "实测最常见的拒收就是 `q` 写 `节奏=短` 而 `must` 写 `pacing=short`。\n"
+    "10. **轴线类卡片（AXIS_RULE）**：`pair` 与 `axis_side` **都写在 `must` 里**"
+    "（`pair=any_two`、`axis_side=left|right|neutral`），`q` 里只写 `轴线=` ＋ "
+    "词表里的轴线取值（`中性机位`/`关系轴`/`视线轴`/`越轴`/`运动轴`）。"
+    "例：卡讲 180° 规则 → `q=\"轴线=越轴\"`，"
+    "`must=[\"AXIS_RULE:pair=any_two,axis_side=left\"]`。"
+    "**不要**写 `轴线侧=`／`轴线方式=` 这类自造键。\n"
 )
 
 
@@ -121,7 +140,8 @@ def run_fingerprint(cards: Sequence[Dict], client, prompt_version: str) -> str:
 def gap_prompt_sha() -> str:
     """补跑轮的**有效**提示 = 基础 prompt ＋ 缺口清单段——sha 必须覆盖两者。"""
     return hashlib.sha256(
-        (holdout_gen.SYSTEM_PROMPT + GAP_PROMPT + GAP_PROMPT_VERSION).encode("utf-8")
+        (holdout_gen.SYSTEM_PROMPT + GAP_PROMPT + GAP_PROMPT_VERSION
+         + f"|t={GAP_TEMPERATURE}").encode("utf-8")
     ).hexdigest()
 
 
@@ -168,7 +188,7 @@ def save_partial(entries: Sequence[Dict], rejects: Sequence[Dict], done,
 
 
 def coverage_gaps(entries: Sequence[Dict], vocab: Dict[str, Sequence[str]],
-                  cards: Sequence[Dict] = ()) -> Dict:
+                  cards: Sequence[Dict] = (), min_entries: int = MIN_ENTRIES) -> Dict:
     """用校验器的**同一套门**算出还缺什么（分子/分母都来自它）。"""
     fstatus, fdetail = gate_entries(entries)
     tstatus, tdetail = gate_edge_types(fdetail["must_pairs_per_type"],
@@ -184,7 +204,7 @@ def coverage_gaps(entries: Sequence[Dict], vocab: Dict[str, Sequence[str]],
         #: 门① 的缺口（总量 ≥1200）。**必须参与"缺口是否已闭合"的判定**：
         #: 只管 ②③④⑤⑥ 的话，覆盖轮会在总量还差几百条时就判定"闭合"并收工，
         #: 交出来的文件照样过不了门①。
-        "deficit": max(0, MIN_ENTRIES - len(entries)),
+        "deficit": max(0, int(min_entries or MIN_ENTRIES) - len(entries)),
         #: 门⑥：**每张入库卡**至少派生 1 条。它和门① 一样必须参与"缺口是否闭合"，
         #: 否则覆盖轮会在总量刚过 1200、而还有几百张卡一条都没有的时候就收工。
         "cards_missing": (0 if not cards else
@@ -393,11 +413,11 @@ def per_card_round(cards, vocab, client, entries, rejects, done, fingerprint,
 
 
 def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
-                    rounds: int, counter: int, window: int,
-                    progress_path, partial_path) -> int:
+                     rounds: int, counter: int, window: int,
+                     progress_path, partial_path, min_entries: int = MIN_ENTRIES) -> int:
     card_ids = {str(c["id"]) for c in cards}
     for round_index in range(1, rounds + 1):
-        gaps = coverage_gaps(entries, vocab, cards)
+        gaps = coverage_gaps(entries, vocab, cards, min_entries)
         if gaps_closed(gaps):
             print(json.dumps({"phase": "gaps", "round": round_index, "closed": True},
                              ensure_ascii=False), flush=True)
@@ -419,7 +439,7 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
             # 否则只给"缺口清单+卡"会让模型写 `标签=`/`关键词=`/`结构=` 这种不在
             # 冻结键集里的键——实测补跑轮连续两轮 added=0。
             reply = client.chat_json(holdout_gen.SYSTEM_PROMPT + "\n\n" + GAP_PROMPT, prompt,
-                                     0.0, 0, 8192,
+                                     GAP_TEMPERATURE, GAP_SEED_BASE + round_index, 8192,
                                      key="gap:%d" % round_index)
         except Exception as exc:  # noqa: BLE001
             rejects.append({"batch": key, "reason": "%s: %s" % (type(exc).__name__, exc)})
@@ -450,6 +470,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--progress", default=str(PROGRESS))
     parser.add_argument("--partial", default=str(PARTIAL))
     parser.add_argument("--report", default=str(REPORT))
+    parser.add_argument("--min-entries", type=int, default=MIN_ENTRIES,
+                        help="本轮要凑到的条目数（分片跑时按分片配额给，例如 4 片各 600 "
+                             "＝ 合计 2400）；0 视为用默认值")
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -485,7 +508,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     counter = per_card_round(cards, vocab, client, entries, rejects, done, fingerprint,
                              args.batch, counter, progress_path, partial_path)
     counter = coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
-                              args.rounds, counter, args.window, progress_path, partial_path)
+                              args.rounds, counter, args.window, progress_path, partial_path,
+                              args.min_entries)
 
     covered = sorted({str(e["from_card"]) for e in entries})
     common.write_jsonl(out_path, entries)
@@ -495,7 +519,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     #: 所以这里写全量、缺口交给覆盖轮去补，补不上就如实判红。
     common.dump_json(cards_json, sorted({str(c["id"]) for c in cards}))
     common.dump_json(cards_json.with_suffix(".covered.json"), covered)
-    gaps = coverage_gaps(entries, vocab, cards)
+    gaps = coverage_gaps(entries, vocab, cards, args.min_entries)
     common.dump_json(report_path, {
         "fingerprint": fingerprint, "cards": len(cards), "cards_covered": len(covered),
         "cards_missing": sorted({str(c["id"]) for c in cards} - set(covered)),
@@ -504,7 +528,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     })
     print(json.dumps({"entries": len(entries), "cards_covered": len(covered),
                       "rejects": len(rejects), "gaps": gaps}, ensure_ascii=False))
-    return 0 if len(entries) >= MIN_ENTRIES else 1
+    return 0 if len(entries) >= args.min_entries else 1
 
 
 if __name__ == "__main__":  # pragma: no cover

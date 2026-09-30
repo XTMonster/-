@@ -34,13 +34,15 @@ from block_director.knowledge import hypergraph as hg
 HOLDOUT = common.ROOT / "fixtures" / "knowledge_holdout.jsonl"
 CARDS_JSON = common.ROOT / "fixtures" / "knowledge_holdout.cards.json"
 MANIFEST = common.WORK / "holdout.manifest.json"
-PROMPT_VERSION = "holdout/v7"
+PROMPT_VERSION = "holdout/v9"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
-超边 schema ＋ 取值词表。你的工作是：**为每张卡写出 3 条不同的检索期望**，用来检验一个超图\
-检索器是否真能召回该卡所表达的知识。第 1 条抓这张卡最核心的那条约束；第 2 条换一组查询键\
-或取值；第 3 条再换一组（不要同义重复），让词表覆盖更广。每张卡都必须有 3 条。
+超边 schema ＋ 取值词表。你的工作是：**为每张卡写出 4 条不同的检索期望**，用来检验一个超图\
+检索器是否真能召回该卡所表达的知识。第 1 条抓这张卡最核心的那条约束；第 2／3／4 条各换一组\
+查询键或取值，并**尽量落到不同的边类型上**（v1.5 后边有 13 类，同一张卡往往能从不同\
+类型各考一次：比如一张打斗卡可以同时考 `ACTION_BEAT`／`IMPACT_PACK`／`SOUND_PACK`）。\
+不要同义重复。每张卡都必须有 4 条。
 
 只输出 JSON：{"entries":[{...}, ...]}，每条：
 {
@@ -53,12 +55,13 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
 }
 
 规则（违反的条目会被机器拒绝）：
-1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段。
-**`type` 只允许这六个字符串**：`EMOTION_PACK`、`SHOT_PATTERN`、`AXIS_RULE`、`TROPE`、
-`EDIT_RHYTHM`、`LIGHT_PACK`。写别的（`ACTION`／`SFX`／`MOVEMENT`／`COMPOSITION`／
-`FRAMING`…）**整条作废**——动作/音效/特效/机位/构图只能作为**槽位**写在上面某一类里。
+1. `q` 的键只能用：情绪/动作/运镜/景别/镜头/节奏/特效/音效/机位/光线/构图/轴线/题材/桥段/意图。
+**`type` 只允许这 13 个字符串**：`EMOTION_PACK`、`SHOT_PATTERN`、`AXIS_RULE`、`TROPE`、
+`EDIT_RHYTHM`、`LIGHT_PACK`、`ACTION_BEAT`、`PERFORMANCE_PACK`、`INTENT_PACK`、
+`IMPACT_PACK`、`STAGING_PACK`、`SOUND_PACK`、`TRANSITION_PACK`。写别的（`ACTION`／
+`SFX`／`MOVEMENT`／`COMPOSITION`／`SHAKE`…）**整条作废**。
 
-2. `must` 的边类型只能取六类之一；**照下面模板逐字写全**（`<…>` 换成词表取值，
+2. `must` 的边类型只能取下面每一类；**照下面模板逐字写全**（`<…>` 换成词表取值，
    逗号分隔，一项都不能少）：
    * `EMOTION_PACK:emotion=<情绪>,intensity=<low|mid|high>`（要写禁忌时再加
      `,forbid_<kind>=<该 kind 的取值>`）
@@ -67,8 +70,15 @@ SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若
    * `TROPE:genre=<film|anime|documentary>,emotion=<情绪>`
    * `EDIT_RHYTHM:pacing=<short|medium|long>,avg_shot_len=<<1s|1-3s|3-8s|>8s>`
    * `LIGHT_PACK:lighting=<光线>,intensity=<low|mid|high>`
+   * `ACTION_BEAT:action=<动作>,beat_type=<establish|coverage|reaction|insert|transition>,intensity=<low|mid|high>`
+   * `PERFORMANCE_PACK:emotion=<情绪>,action=<动作>,camera_angle=<低机位|平视|荷兰角|过肩|骑轴|高机位>`
+   * `INTENT_PACK:intent=<意图>,shot_size=<景别>,movement=<运镜>`
+   * `IMPACT_PACK:vfx=<特效>,sfx=<音效>,movement=<运镜>`
+   * `STAGING_PACK:composition_rule=<构图>,shot_size=<景别>,camera_angle=<机位>`
+   * `SOUND_PACK:sfx=<音效>,pacing=<short|medium|long>,intensity=<low|mid|high>`
+   * `TRANSITION_PACK:transition=<cut|dissolve|fade|whip>,pacing=<short|medium|long>,scene_type=<establish|dialogue|action|reaction|transition|insert>`
    `top1` 一律把 `must` 的**第 1 条原样复制**过来（不要改写、不要只写前半段）。
-2b. **只有这六个类型名**。不要发明 `COMPOSITION`／`COMPOSITION_RULE`／`FRAMING` 之类的
+2b. **只有上面那 13 个类型名**。不要发明 `COMPOSITION`／`SHAKE`／`SOUND` 之类的
    新类型——机器会以 `bad_type` 整条拒收。
 2c. **构图/机位/特效/音效/动作类知识挂到最接近的那一类边上，作为额外槽位**
    （必填槽位照旧写全）：

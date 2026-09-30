@@ -21,35 +21,36 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from block_director.knowledge import hypergraph as hg  # noqa: E402
 from tools.kb_fetch import build_hypergraph as bh  # noqa: E402
 from tools.kb_fetch import holdout_gen  # noqa: E402
 from tools import holdout_fill  # noqa: E402
 
-SIX_TYPES = ("EMOTION_PACK", "SHOT_PATTERN", "AXIS_RULE", "TROPE", "EDIT_RHYTHM",
-             "LIGHT_PACK")
+#: **单一真源**：类型清单从超图 schema 读，别再手抄一份（v1.5 扩到 13 类时正是
+#: "测试抄了一份六类"把扩类卡住的）。
+FROZEN_TYPES = tuple(hg.EDGE_TYPES)
 
 
-def test_extractor_prompt_names_all_six_types_and_the_composition_mapping():
+def test_extractor_prompt_names_every_frozen_type_and_the_composition_mapping():
     text = bh.SYSTEM_PROMPT
-    for edge_type in SIX_TYPES:
+    for edge_type in FROZEN_TYPES:
         assert edge_type in text, f"抽取 prompt 少了边类型 {edge_type}"
     assert "composition_rule" in text, "构图知识点映射没写进抽取 prompt"
     assert "camera_angle" in text and "vfx" in text and "sfx" in text
     assert "forbid" in text
 
 
-def test_annotator_prompt_names_all_six_types_and_the_composition_mapping():
+def test_annotator_prompt_names_every_frozen_type_and_the_composition_mapping():
     text = holdout_gen.SYSTEM_PROMPT
-    for edge_type in SIX_TYPES:
+    for edge_type in FROZEN_TYPES:
         assert edge_type in text, f"标注 prompt 少了边类型 {edge_type}"
     assert "composition_rule" in text
-    # 只允许这六个 type，且明确点名"不要发明 COMPOSITION 之类"
-    assert "COMPOSITION" in text and "整条作废" in text
+    # 只允许冻结的那几类，且明确点名"不要发明 COMPOSITION／SHAKE 之类"
+    assert ("COMPOSITION" in text or "SHAKE" in text) and "整条作废" in text
 
 
 def test_gap_prompt_carries_the_same_mapping_rule():
-    assert "composition_rule" in holdout_fill.GAP_PROMPT
-    for edge_type in SIX_TYPES:
+    for edge_type in FROZEN_TYPES:
         assert edge_type in holdout_fill.GAP_PROMPT
 
 

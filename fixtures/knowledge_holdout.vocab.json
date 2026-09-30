@@ -1,5 +1,5 @@
 {
-  "_fingerprint": "47c244d36f4a39da",
+  "_fingerprint": "67228d38fe384fda",
   "kinds": {
     "emotion": [
       "压抑",
@@ -114,6 +114,18 @@
       "establish",
       "insert",
       "transition"
+    ],
+    "intent": [
+      "停顿",
+      "压迫",
+      "对抗",
+      "推进",
+      "揭示",
+      "收束",
+      "留白",
+      "转折",
+      "释放",
+      "铺垫"
     ],
     "character": [],
     "object": []

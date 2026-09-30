@@ -217,6 +217,7 @@ def vocab_payload(nodes: Sequence[Dict]) -> Dict[str, List[str]]:
 HOLDOUT_KINDS: Tuple[str, ...] = (
     "emotion", "action", "movement", "shot_size", "lens", "pacing", "vfx", "sfx",
     "camera_angle", "lighting", "composition_rule", "axis_topic", "genre", "beat_type",
+    "intent",
 )
 
 #: 校验器的 `REQUIRED_VOCAB_KINDS` 是整个节点闭集（16 类），但 `character` / `object`

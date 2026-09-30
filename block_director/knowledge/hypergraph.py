@@ -24,13 +24,15 @@ from ..cinema.composition import WEIGHTS as COMPOSITION_WEIGHTS
 from ..cinema.framing import SHOT_FRAME
 from .bm25 import tokenize as _bm25_tokenize
 
-SCHEMA_VERSION = "hg/v1"
+SCHEMA_VERSION = "hg/v2"
 
-#: 节点类型闭集（16 类，§2.3 是单一真源）。
+#: 节点类型闭集（17 类，§2.3 是单一真源）。v1.5 起新增 `intent`（意图）：它是
+#: "角色/导演想干什么"这一层，和 `emotion`（感受）一样是**强耦合的源头**——
+#: 意图决定镜头语言，所以 `INTENT_PACK` 必须能把它写进边里。
 NODE_TYPES: Tuple[str, ...] = (
     "emotion", "movement", "shot_size", "lens", "pacing", "vfx", "sfx",
     "composition_rule", "axis_topic", "character", "object", "action", "genre",
-    "beat_type", "camera_angle", "lighting",
+    "beat_type", "camera_angle", "lighting", "intent",
 )
 
 #: qualifier 类型闭集（10 类）。`axis_side` 必须在表里——否则最高优先级的
@@ -49,15 +51,30 @@ AXIS_RULE = "AXIS_RULE"
 TROPE = "TROPE"
 EDIT_RHYTHM = "EDIT_RHYTHM"
 LIGHT_PACK = "LIGHT_PACK"
+#: v1.5 新增：用户裁决"边要更细、把电影制作里除灯光以外的强耦合元素都囊括进来"。
+#: 这七类都是**跨域强耦合**，不是"再拆一个原子字段"（单独一个字段不需要超边）。
+ACTION_BEAT = "ACTION_BEAT"            # 动作×叙事节拍×强度
+PERFORMANCE_PACK = "PERFORMANCE_PACK"  # 角色行为：情绪×动作×机位
+INTENT_PACK = "INTENT_PACK"            # 意图×镜头语言（景别＋运镜）
+IMPACT_PACK = "IMPACT_PACK"            # 震动与打击感：特效×音效×运镜
+STAGING_PACK = "STAGING_PACK"          # 构图×调度：构图规则×景别×机位
+SOUND_PACK = "SOUND_PACK"              # 声画关系：音效×节奏×强度
+TRANSITION_PACK = "TRANSITION_PACK"    # 转场×节奏×场景类型
 
 EDGE_TYPES: Tuple[str, ...] = (
     EMOTION_PACK, SHOT_PATTERN, AXIS_RULE, TROPE, EDIT_RHYTHM, LIGHT_PACK,
+    ACTION_BEAT, PERFORMANCE_PACK, INTENT_PACK, IMPACT_PACK, STAGING_PACK,
+    SOUND_PACK, TRANSITION_PACK,
 )
 
 #: 类型优先级（§2.3 的排序表）。
 TYPE_PRIORITY: Dict[str, float] = {
     AXIS_RULE: 1.0, EMOTION_PACK: 1.0, LIGHT_PACK: 0.8,
     SHOT_PATTERN: 0.9, EDIT_RHYTHM: 0.7, TROPE: 0.6,
+    #: v1.5 新增类型沿用"越靠近硬约束越高"的口径：
+    #: 意图/表演/调度直接影响演员与机位，打击感/声画是呈现层，转场最弱。
+    INTENT_PACK: 0.95, PERFORMANCE_PACK: 0.9, STAGING_PACK: 0.85,
+    ACTION_BEAT: 0.8, IMPACT_PACK: 0.75, SOUND_PACK: 0.7, TRANSITION_PACK: 0.65,
 }
 
 #: 必填成员（role, kind）。
@@ -68,6 +85,15 @@ REQUIRED_MEMBERS: Dict[str, Tuple[Tuple[str, str], ...]] = {
     TROPE: (("allow", "genre"), ("allow", "emotion")),
     EDIT_RHYTHM: (("allow", "pacing"), ("qualifier", "avg_shot_len")),
     LIGHT_PACK: (("allow", "lighting"), ("qualifier", "intensity")),
+    ACTION_BEAT: (("allow", "action"), ("qualifier", "beat_type"), ("qualifier", "intensity")),
+    PERFORMANCE_PACK: (("allow", "emotion"), ("allow", "action"), ("qualifier", "camera_angle")),
+    INTENT_PACK: (("allow", "intent"), ("allow", "shot_size"), ("qualifier", "movement")),
+    IMPACT_PACK: (("allow", "vfx"), ("allow", "sfx"), ("qualifier", "movement")),
+    STAGING_PACK: (("qualifier", "composition_rule"), ("allow", "shot_size"),
+                   ("qualifier", "camera_angle")),
+    SOUND_PACK: (("allow", "sfx"), ("allow", "pacing"), ("qualifier", "intensity")),
+    TRANSITION_PACK: (("qualifier", "transition"), ("allow", "pacing"),
+                      ("qualifier", "scene_type")),
 }
 
 #: 选填成员：表里没有的 (role, kind) 组合即非法（防止抽取器往边里塞任意东西）。
@@ -81,6 +107,20 @@ OPTIONAL_MEMBERS: Dict[str, Tuple[Tuple[str, str], ...]] = {
     TROPE: (("allow", "vfx"), ("allow", "movement"), ("qualifier", "example_shot")),
     EDIT_RHYTHM: (("qualifier", "transition"), ("qualifier", "scene_type")),
     LIGHT_PACK: (("allow", "emotion"), ("allow", "camera_angle")),
+    ACTION_BEAT: (("allow", "movement"), ("allow", "emotion"),
+                  ("qualifier", "applies_to_genre"), ("qualifier", "scene_type")),
+    PERFORMANCE_PACK: (("allow", "shot_size"), ("qualifier", "intensity"),
+                       ("qualifier", "beat_type")),
+    INTENT_PACK: (("allow", "lens"), ("qualifier", "camera_angle"),
+                  ("qualifier", "composition_rule"), ("qualifier", "intensity")),
+    IMPACT_PACK: (("allow", "movement"), ("qualifier", "intensity"),
+                  ("qualifier", "transition"), ("qualifier", "scene_type")),
+    STAGING_PACK: (("allow", "lens"), ("allow", "movement"),
+                   ("qualifier", "applies_to_shot_size")),
+    SOUND_PACK: (("allow", "vfx"), ("qualifier", "transition"),
+                 ("qualifier", "scene_type"), ("qualifier", "beat_type")),
+    TRANSITION_PACK: (("allow", "shot_size"), ("qualifier", "avg_shot_len"),
+                      ("allow", "movement"), ("qualifier", "example_shot")),
 }
 
 #: §2.3d T3：qualifier 的取值域。`None` = 显式"不设枚举"。
@@ -99,6 +139,10 @@ VALUE_DOMAINS: Dict[str, Optional[Tuple[str, ...]]] = {
     "applies_to_shot_size": tuple(SHOT_FRAME.keys()),
     "composition_rule": tuple(sorted(COMPOSITION_WEIGHTS.keys())),
     "example_shot": None,  # 自由文本：参考资料引用，不参与判定
+    #: v1.5：意图的闭集——"角色想要什么/导演在铺什么"。闭集才能被机器判对错；
+    #: 中文取值，避免与 `must` 里的写法不一致（这正是本地模型最常翻车的地方）。
+    "intent": ("铺垫", "推进", "揭示", "转折", "停顿", "压迫", "释放", "回望",
+               "收束", "煽动", "留白", "对抗"),
 }
 
 #: `source_kind`（来源性质）与 `hardness`（软硬）是边级属性，
@@ -131,6 +175,8 @@ QUERY_KEYS: Dict[str, str] = {
     "镜头": "lens", "节奏": "pacing", "特效": "vfx", "音效": "sfx",
     "机位": "camera_angle", "光线": "lighting", "构图": "composition_rule",
     "轴线": "axis_topic", "题材": "genre", "桥段": "beat_type",
+    #: v1.5：意图是"角色/导演想干什么"，`INTENT_PACK` 的必填成员就是它。
+    "意图": "intent",
     "对白": "scene_type",
 }
 
