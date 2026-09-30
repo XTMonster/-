@@ -57,6 +57,9 @@ def test_glm_thinks_by_default_and_can_be_switched_off(monkeypatch):
     out = client.chat_json("sys", "user", 0.0, 0, 8192)
 
     assert out == {"entries": []}
+    #: 默认取"能跑完的最高档" = `{"type":"enabled"}`：实测 `level=max` 在 glm-5.3-flash
+    #: 上把 32768 个 token 全烧在思考里（reasoning_tokens=32306、finish_reason=length）、
+    #: **正文为空** ⇒ 每次都失败。`max` 仍可显式指定（见下）。
     assert seen["payload"]["thinking"] == {"type": "enabled"}
     assert seen["payload"]["max_tokens"] >= 32768, "16k 会截断思考"
     assert "thinking=enabled" in client.decode_tag
@@ -69,6 +72,30 @@ def test_glm_thinks_by_default_and_can_be_switched_off(monkeypatch):
     fast.chat_json("sys", "user", 0.0, 0, 8192)
     assert seen["payload"]["thinking"] == {"type": "disabled"}
     assert "thinking=disabled" in fast.decode_tag
+
+    #: `glm-5.3` 那类"始终思考"的模型要 `level`：显式指定时按它发。
+    maxed = llm.GLMClient("glm-5.3-flash", api_key="test-key")
+    maxed.thinking = "max"
+    maxed.chat_json("sys", "user", 0.0, 0, 8192)
+    assert seen["payload"]["thinking"] == {"type": "enabled", "level": "max"}
+    #: 老一代的 glm-5.3（始终思考、不允许关）若被要求关思考，客户端会退回 max 重试。
+    always = llm.GLMClient("glm-5.3-flash", api_key="test-key")
+    calls = {"n": 0}
+
+    def reject_disabled(url, payload, headers, timeout):
+        calls["n"] += 1
+        if payload["thinking"] == {"type": "disabled"}:
+            raise llm.LLMError('HTTP 400: {"error":{"code":"1210","message":"该模型始终思考，'
+                               '不支持关闭思考；请使用 low、high 或 max。"}}')
+        seen["payload"] = payload
+        return {"choices": [{"message": {"content": '{"entries": []}'},
+                             "finish_reason": "stop"}]}
+
+    monkeypatch.setattr(llm, "_post_json", reject_disabled)
+    always.thinking = "disabled"
+    assert always.chat_json("sys", "user", 0.0, 0, 8192) == {"entries": []}
+    assert calls["n"] == 2 and seen["payload"]["thinking"] == {"type": "enabled",
+                                                               "level": "max"}
 
 
 def test_glm_empty_content_is_a_failure(monkeypatch):

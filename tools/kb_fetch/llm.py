@@ -48,6 +48,13 @@ GLM_API_KEY = os.environ.get("GLM_API_KEY", "")
 #: 开思考且 `max_tokens=32768` 时**思考 6.5k–6.9k token、正文 12–14k 字符**、
 #: `finish_reason=stop`，12 卡/批约 5 分钟——质量优先就走这条。
 #: `max_tokens=16384` 会**截断**（实测思考 15068 token、正文被切断）。
+#: 思考档位。用户要"拉满"，但实测**上限档跑不完**：`glm-5.3-flash` + `level=max`
+#: 在 3 张卡的小批上思考 12.4 分钟、烧掉整整 32768 个 completion token
+#: （`reasoning_tokens=32306`、`finish_reason=length`）、**正文一个字都没有** ⇒
+#: 每一次调用都是失败。`enabled`（不开 level）实测：`glm-4.6` 上 3 张卡思考 9.5k
+#: token、4.7 分钟、`finish_reason=stop`、正文 3607 字符 ✓。
+#: 所以默认取"能跑完的最高档" = `enabled`；`GLM_THINKING=max|high|low|disabled`
+#: 仍可显式切换（`glm-5.3` 那类只认 `{"type":"enabled","level":"…"}`）。
 GLM_THINKING = os.environ.get("GLM_THINKING", "enabled").strip().lower()
 GLM_MAX_TOKENS = int(os.environ.get("GLM_MAX_TOKENS", "32768"))
 
@@ -207,6 +214,15 @@ class GLMClient:
         """解码条件的可读指纹——进续跑指纹与 `annotator.decode`，避免混解。"""
         return f"thinking={self.thinking};max_tokens={self.max_tokens}"
 
+    def _thinking_payload(self) -> Dict:
+        """`glm-5.3-flash`／`glm-5.3` 这类"始终思考"的模型只认
+        `{"type":"enabled","level":"low|high|max"}`（实测 `{"type":"max"}` 会 400）。"""
+        if self.thinking == "disabled":
+            return {"type": "disabled"}
+        if self.thinking in ("low", "high", "max"):
+            return {"type": "enabled", "level": self.thinking}
+        return {"type": "enabled"}
+
     def chat_json(self, system: str, user: str, temperature: float, seed: int,
                   num_ctx: int, key: str = "", retries: int = 3) -> Dict:
         if not self.api_key:
@@ -219,19 +235,20 @@ class GLMClient:
             "temperature": temperature,
             #: 每张卡 4 条 × 一批 12 张 ≈ 48 条，32k 预算给思考＋正文都留足。
             "max_tokens": self.max_tokens,
-            #: 实测：`glm-4.7` 默认是思考模型。**开思考**时思考 6.5k–6.9k token、
-            #: 正文 12–14k 字符（`finish_reason=stop`）；**关思考**（`{"type":
-            #: "disabled"}`，布尔写法会 400）时 ~40 秒出结果、通过率 0.94–1.0。
-            #: 用户裁决"思考强度直接拉满"→ 默认 `enabled`，用 `GLM_THINKING=disabled`
-            #: 才能切回快档。
-            "thinking": {"type": "enabled" if self.thinking != "disabled" else "disabled"},
+            #: 用户裁决"思考强度拉满"→ 默认 `max`（`{"type":"enabled","level":"max"}`）。
+            #: `glm-4.7` 实测：开思考时 reasoning 6.5k–6.9k token、正文 12–14k 字符、
+            #: `finish_reason=stop`；关思考（`{"type":"disabled"}`）~40 秒出结果、
+            #: 通过率 0.94–1.0。
+            "thinking": self._thinking_payload(),
         }
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:
                 reply = _post_json(f"{GLM_BASE}/chat/completions", payload,
                                    {"Content-Type": "application/json",
-                                    "Authorization": f"Bearer {self.api_key}"}, 300.0)
+                                    #: 思考拉满时单次调用会超过 5 分钟（实测 6 卡一批就
+                                    #: 打穿了 300 秒的读超时）——给到 30 分钟。
+                                    "Authorization": f"Bearer {self.api_key}"}, 1800.0)
                 choices = reply.get("choices") or []
                 if not choices:
                     raise LLMError("上游没有返回 choices")
@@ -245,7 +262,14 @@ class GLMClient:
                 return parse_json_content(message.get("content") or "")
             except Exception as exc:  # noqa: BLE001
                 last = exc
-                time.sleep(1.5 * (attempt + 1))
+                #: "该模型始终思考，不支持关闭思考"（code 1210）→ 换成 max 档再来，
+                #: 免得"换了新一代模型"被当成调用失败。
+                if "1210" in str(exc) and self.thinking == "disabled":
+                    self.thinking = "max"
+                    payload["thinking"] = self._thinking_payload()
+                    continue
+                #: 并发打 GLM 会拿到 `HTTP 429`（1302 速率 / 1305 模型忙）：长退避。
+                time.sleep((20.0 if "429" in str(exc) else 1.5) * (attempt + 1))
         raise LLMError(f"glm 调用失败：{last}")
 
 
@@ -278,6 +302,11 @@ class OllamaClient:
                 "num_predict": self.num_predict,
                 "temperature": temperature,
                 "seed": seed,
+                #: 实测：temperature=0 且不给重复惩罚时，本地 30B 在长 prompt 上会
+                #: 退化成复读机，Ollama 直接 `HTTP 500: prediction aborted, token
+                #: repeat limit reached`（一条条目都拿不到）。1.15 是常用档位。
+                "repeat_penalty": 1.15,
+                "repeat_last_n": 256,
             },
         }
         if self.prefill:
