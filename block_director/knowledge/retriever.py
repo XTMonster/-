@@ -555,6 +555,13 @@ class KnowledgeRetriever:
 
         hard = [edge for edge in edges if not _is_soft(edge)]
         soft = [edge for edge in edges if _is_soft(edge)]
+        # §2.3b 的关键纪律 2：**同一组成员**若同时以 hard 与 soft 出现（抽取器
+        # 跨批把同一条理论边标成了两种硬度，索引里实测有 168 组），硬的那条已经
+        # 说了同样的话。再把软的那条放进「经验建议」栏，等于同一句话既"必须遵守"
+        # 又"仅供参考"——模型只会照软的做。取硬边，并把条数记进 trace 供审计。
+        hard_keys = {edge.norm_key for edge in hard}
+        suppressed_soft = [edge for edge in soft if edge.norm_key in hard_keys]
+        soft = [edge for edge in soft if edge.norm_key not in hard_keys]
         hard_text, dropped_hard, fail_hard = render_edges(hard, nodes, budget)
         # 栏目标题也算注入体积——不把它计进预算，"≤800 token"会悄悄超发。
         hard_column = f"【{hard_title}】\n{hard_text}" if hard_text else ""
@@ -576,6 +583,7 @@ class KnowledgeRetriever:
         section.setdefault("columns", {})
         section["columns"].update({"hard_edges": len(hard),
                                    "soft_edges": len(soft),
+                                   "suppressed_soft_edges": len(suppressed_soft),
                                    "hard_tokens": estimate_tokens(hard_column),
                                    "soft_tokens": estimate_tokens(soft_column)})
         self.last_trace["degraded"] = bool(self.degraded)

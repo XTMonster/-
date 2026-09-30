@@ -121,3 +121,35 @@ def test_digest_backend_is_not_rerouted_to_the_sidecar():
     retriever = _make_knowledge(config, transport)
     assert retriever.backend is RagBackend.DIGEST
     assert transport.calls == 0
+
+
+def test_a_hard_and_soft_twin_does_not_land_in_both_columns():
+    """§2.3b 纪律 2：同一条边不能既"必须遵守"又"仅供参考"。
+
+    索引里实测有 168 组同成员、不同 `hardness` 的孪生边（抽取器跨批给了两种
+    硬度）。硬的那条已经说了同样的话，软的那条必须从「经验建议」栏里去掉，
+    否则模型看到的是自相矛盾的同一行文本。
+    """
+    members = [["allow", "intent", "intent:铺垫"]]
+    hard = HyperEdge(edge_id="hg:hard", type="INTENT_PACK", hardness="hard",
+                     members=members)
+    soft = HyperEdge(edge_id="hg:soft", type="INTENT_PACK", hardness="soft",
+                     members=[list(m) for m in members])
+    retriever = _make_knowledge(_config(), _Sidecar(edges=[hard, soft]))
+    hard_column, soft_column = retriever.edge_columns("情绪=荒诞")
+    assert "[INTENT_PACK]" in hard_column
+    assert "[INTENT_PACK]" not in soft_column
+    section = retriever.last_trace["shot_scope"]
+    assert section["columns"]["suppressed_soft_edges"] == 1
+    assert section["columns"]["soft_edges"] == 0
+
+
+def test_a_soft_edge_with_no_hard_twin_still_reaches_its_own_column():
+    """反向断言：把"去掉孪生软边"写成"去掉所有软边"是错的。"""
+    soft = HyperEdge(edge_id="hg:soft", type="INTENT_PACK", hardness="soft",
+                     members=[["allow", "intent", "intent:留白"]])
+    retriever = _make_knowledge(_config(), _Sidecar(edges=[soft]))
+    hard_column, soft_column = retriever.edge_columns("情绪=荒诞")
+    assert "[INTENT_PACK]" in soft_column
+    assert "[INTENT_PACK]" not in hard_column
+    assert retriever.last_trace["shot_scope"]["columns"]["suppressed_soft_edges"] == 0
