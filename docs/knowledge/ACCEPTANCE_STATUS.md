@@ -46,13 +46,13 @@ python tools/check_holdout.py fixtures/knowledge_holdout.jsonl `
 | 指标 | 线 | 当前 | 判定 | 说明 |
 |---|---|---|---|---|
 | Q0 构建恒等式与拒收率 | rejects ≤5% 且 processed=total | 满足 | **pass** | 683 条边，rejects 0 |
-| Q1 top-1 命中 | ≥0.70 | **0.2056**（933/4539） | fail | 索引重建把它从 0.142 抬到 0.206 |
-| Q2 top-3 命中 | ≥0.90 | **0.2974**（1350/4539） | fail | 同上：0.217 → 0.297 |
-| Q3 负样本误命中 | ≤0.10 | 0.0155 | **pass** | — |
-| Q4 required 边 top-3 检出 | = 1.0 | **0.7346** | fail | 分母只含**能在索引里解析**的 required 边（1846 条）；`required_unresolved` 3197 另计 |
+| Q1 top-1 命中 | ≥0.70 | **0.2313** | fail | 独立 oracle 口径，上限受种子可达性压制约 0.38；**索引派生查询下已达 0.7555**（`ranking_quality.py`） |
+| Q2 top-3 命中 | ≥0.90 | **0.3283** | fail | 同上；索引派生查询下 **0.9488** |
+| Q3 负样本误命中 | ≤0.10 | 0.0194 | **pass** | — |
+| Q4 required 边 top-3 检出 | = 1.0 | **0.8120** | fail | 分母只含**能在索引里解析**的 required 边（1846 条）；`required_unresolved` 3197 另计 |
 | Q6a 契约往返 | = 1.0 | 1.0 | **pass** | — |
-| Q6b 成员完整率 | = 1.0 | **0.786** | fail | 未解析的边不进分母，故与 Q4 同源 |
-| Q7 禁忌拦截 | = 1.0（冲突查询 ≥60） | 1.0（487） | **pass** | 分母仍偏小，见 FORBID_COVERAGE.md |
+| Q6b 成员完整率 | = 1.0 | **0.8602** | fail | 未解析的边不进分母，故与 Q4 同源 |
+| Q7 禁忌拦截 | = 1.0（冲突查询 ≥60） | 1.0（**616**） | **pass** | 排序重标定后分母从 487 涨到 616（安全层覆盖更广），见 FORBID_COVERAGE.md |
 | Q5 运镜命中 | ≥0.80 | not_measured | — | 需真实计划镜头（人评） |
 | E1 经验引用相关性 | ≥0.70 | not_measured | — | 需人评 |
 | E2 经验采纳率 | 诊断量（不设门） | **0.0（0/64）** | measured | 用 `docs/evidence/offline_run2/export/shots.json` 实测得到；**这条 0 是结构性的**：`block_director/delivery/manifest.py::_movements_payload` 只写 `declared`/`planned` 两种来源，注释自己写着"P14 之后 `theory`/`experience`/`lesson`/`case` 由知识 trace 填"——而那一步没做。于是"这条运镜是不是知识层给的"无从追溯，E2 恒为 0（不是因为知识层没被用，而是**没人记账**） |
