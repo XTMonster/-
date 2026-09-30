@@ -50,9 +50,15 @@ def write_index(dirpath: pathlib.Path,
                                   "value": value}
                 members.append(["forbid", kind, node_id])
             members.sort()
-            edges[(etype, tuple(map(tuple, members)))] = {
+            key = (etype, tuple(map(tuple, members)))
+            edge = edges.setdefault(key, {
                 "record": "edge", "type": etype, "members": members,
-                "source_kind": "theory", "hardness": "hard"}
+                "source_kind": "theory", "hardness": "hard", "sources": []})
+            # 同一条边可能来自多张卡（与生产索引的 `sources[]` 同形）：
+            # 门⑪ 的 `card_edge` 口径要看这个字段，缺了它卡级判据永远为假。
+            card = str(rec.get("from_card", ""))
+            if card and card not in edge["sources"]:
+                edge["sources"].append(card)
     nodes_path = dirpath / "index.nodes.jsonl"
     edges_path = dirpath / "index.edges.jsonl"
     nodes_path.write_text("\n".join(json.dumps(v, ensure_ascii=False)

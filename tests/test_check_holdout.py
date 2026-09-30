@@ -255,6 +255,71 @@ def test_pilot_entries_do_not_count_towards_the_1200(tmp_path):
 SPEC_MS50 = "SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"
 
 
+def test_gate11_relation_is_selectable_and_defaults_to_exact(tmp_path):
+    """门⑪的期望关系可切，但**默认必须是规格字面的 exact**。
+
+    背景（见 docs/knowledge/ORACLE_ALIGNMENT.md）：标注方看不到索引，
+    成员集完全相等在构造上只有 ~37% 可满足；卡级口径（这张卡有没有边）是 94%。
+    实现只把开关装上并把三档都量出来，选哪一档由规格裁决——
+    所以默认不变、另两档永远只是诊断量，除非显式传 `--expectation-relation`。
+    """
+    # 索引里那条边来自 card_1，成员比标注**多一个可选槽位**——这正是现实里
+    # 最常见的情形：完全相等判不过，只多不少判得过。
+    narrow = spec_for("EMOTION_PACK")
+    wider = narrow + f",movement={VALUE['movement']}"
+    source = entry(9, from_card="card_1", must=[wider], top1=[wider],
+                   q=q_for(wider, "EMOTION_PACK"))
+    want = entry(1, from_card="card_1", must=[narrow], top1=[narrow], q=q_for(narrow))
+    holdout = write(tmp_path, [want])
+    nodes, edges = write_index(tmp_path, [source])
+
+    def gate(relation: str) -> dict:
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            check_holdout.main([str(holdout), "--pilot", "--json",
+                                "--expectation-relation", relation,
+                                "--nodes", str(nodes), "--edges", str(edges)])
+        return json.loads(buf.getvalue())["gate_10_index_resolvable"]
+
+    exact = gate("exact")
+    assert exact["status"] == "fail"
+    assert exact["expectation_relation"] == "exact"
+    assert exact["card_edge_matches"] >= 1, "卡级诊断量必须同时报出来"
+
+    subset = gate("subset")
+    assert subset["expectation_relation"] == "subset"
+    assert subset["subset_relation_matches"] >= 1
+
+    card = gate("card_edge")
+    assert card["status"] == "pass", "卡级口径下这张卡有边，应当判过"
+    assert card["expectation_relation"] == "card_edge"
+
+
+def test_gate11_card_edge_relation_does_not_relax_never(tmp_path):
+    """`never` 不参与放宽：负样本的语义是"这条**不该**命中"。"""
+    spec = spec_for("EMOTION_PACK")
+    # 索引里只有一张卡 card_9 的边；目标条目 from_card=card_9，但它把 EMOTION_PACK
+    # 写进了 never——卡级口径若把它算命中，负样本就成了空谈。
+    indexed = entry(9, from_card="card_9", must=[spec], top1=[spec], q=q_for(spec))
+    want = entry(1, from_card="card_9", must=[spec], top1=[spec], never=[spec],
+                 q=q_for(spec))
+    holdout = write(tmp_path, [want])
+    nodes, edges = write_index(tmp_path, [indexed])
+    detail = gate_only(holdout, nodes, edges, "card_edge")
+    assert detail["totals"]["never"] == 1
+    assert detail["resolved"]["never"] == 1, "never 命中的是索引里真有的那条边"
+
+
+def gate_only(holdout: pathlib.Path, nodes: pathlib.Path, edges: pathlib.Path,
+              relation: str) -> dict:
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        check_holdout.main([str(holdout), "--pilot", "--json",
+                            "--expectation-relation", relation,
+                            "--nodes", str(nodes), "--edges", str(edges)])
+    return json.loads(buf.getvalue())["gate_10_index_resolvable"]
+
+
 def test_gate10_flags_a_query_that_cannot_reach_its_own_must_edge(tmp_path):
     """协议 §3.1：`must` = "抽不到这条边我就认为检索失败了"。
 

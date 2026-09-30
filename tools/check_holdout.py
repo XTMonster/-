@@ -637,13 +637,26 @@ def _unresolved_cause(spec: str, by_type: Dict[str, list], node_lookup,
     return "no_edge_with_those_plain_members", best
 
 
-def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
+#: 门⑪的**期望关系**（v1.5 解冻）。默认 `exact` = 规格字面（成员集完全相等）。
+#: 另两档是可选口径，**默认不变**：选哪一档是规格裁决，实现只把开关装上、
+#: 并把三档的数字都量出来（三种口径的天花板见 docs/knowledge/ORACLE_ALIGNMENT.md）。
+#:  - `subset`    ：标注的 plain 成员 ⊆ 索引那条边（forbid 仍完全相等）；
+#:  - `card_edge` ：该条目的卡在索引里有没有边（不看类型与成员）。
+#: `never` 槽位不参与这两档放宽：负样本的语义是"这条**不该**命中"，
+#: 用"这张卡有没有边"去判它是答非所问。
+EXPECTATION_RELATIONS = ("exact", "subset", "card_edge")
+
+
+def gate_index_resolvable(entries: Sequence[dict], graph,
+                          relation: str = "exact") -> Tuple[str, dict]:
     """门⑪：每条 `must`/`top1`/`never` 必须映射到当前索引里的边。
 
     §2.3 的 Q6b 前置①：**"若某 query 的 required 边在归并后确实不存在，则索引
     构建失败（不留给 P14-4 去发现）"**。不作为的话，`holdout_score` 只能把这些
     标注从 required 分母里剔掉——分母变小、比率变好看，缺陷反而看不见。
     """
+    if relation not in EXPECTATION_RELATIONS:
+        raise EntryError(f"未知的期望关系 {relation!r}，只能取 {EXPECTATION_RELATIONS}")
     from tools.holdout_score import spec_to_norm_key
     from tools.holdout_score import spec_matches_by_subset
     from tools.holdout_score import _node_id_for
@@ -654,9 +667,13 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
     by_type: Dict[str, list] = {}
     for edge in graph.edges:
         by_type.setdefault(str(edge.type), []).append(edge)
+    # 卡级口径的索引：这张卡在索引里有没有边。**类型无关**。
+    cards_with_edge = {str(source) for edge in graph.edges
+                       for source in (getattr(edge, "sources", ()) or ())}
     per_field = {"must": [0, 0], "top1": [0, 0], "never": [0, 0]}
     subset_ok = 0          # 满足「标注 ⊆ 索引」的 spec 数（**包含**已满足严格相等的）
     strict_ok = 0          # 满足「成员集完全相等」的 spec 数
+    card_edge_ok = 0       # must/top1 里"该卡在索引里有边"的 spec 数（诊断量）
     unresolved: List[dict] = []
     # 未命中的**根因**分类（诊断量，不改判据）。三档对应三种完全不同的处分：
     # `value_not_in_index`（词表/取值写错，标注侧可修）、
@@ -682,7 +699,15 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
                 wider = strict or spec_matches_by_subset(text, graph)
                 strict_ok += 1 if strict else 0
                 subset_ok += 1 if wider else 0
-                if strict:
+                card_ok = (field != "never"
+                           and str(record.get("from_card", "")) in cards_with_edge)
+                card_edge_ok += 1 if card_ok else 0
+                if field == "never":
+                    matched = wider if relation == "subset" else strict
+                else:
+                    matched = {"exact": strict, "subset": wider,
+                               "card_edge": card_ok}[relation]
+                if matched:
                     per_field[field][0] += 1
                     continue
                 cause, covered = _unresolved_cause(text, by_type, _node_id_for,
@@ -717,6 +742,11 @@ def gate_index_resolvable(entries: Sequence[dict], graph) -> Tuple[str, dict]:
               "subset_relation_matches": subset_ok,
               "subset_relation_ratio": (round(subset_ok / specs, 4)
                                         if specs else 0.0),
+              # v1.5：可选口径。`expectation_relation` 是**实际用于判 status 的那一档**，
+              # 另两档永远是诊断量——谁都不许悄悄改验收线。
+              "expectation_relation": relation,
+              "card_edge_matches": card_edge_ok,
+              "card_edge_ratio": (round(card_edge_ok / specs, 4) if specs else 0.0),
               "index_edges": len(graph.edges),
               "examples": unresolved,
               "note": ("§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；"
@@ -775,6 +805,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="索引节点 JSONL（门⑪ 用）；缺省 knowledge/hypergraph.nodes.jsonl")
     parser.add_argument("--edges", default="",
                         help="索引超边 JSONL（门⑪ 用）；缺省 knowledge/hypergraph.edges.jsonl")
+    parser.add_argument("--expectation-relation", default="exact",
+                        choices=list(EXPECTATION_RELATIONS),
+                        help="门⑪按哪种关系判「期望边存在」：exact（规格字面，默认）／"
+                             "subset／card_edge。另两档永远是诊断量，改口径必须显式选")
     parser.add_argument("--pilot", action="store_true",
                         help="试点模式：门限放宽到 1，便于在语料落地前跑通管道")
     parser.add_argument("--json", action="store_true", help="只打印 JSON 报告")
@@ -898,7 +932,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         xstatus, xdetail = NA, {"reason": "索引缺失，无法判 required 边是否存在",
                                 "nodes": nodes_path, "edges": edges_path}
     else:
-        xstatus, xdetail = gate_index_resolvable(entries, load_index(nodes_path, edges_path))
+        xstatus, xdetail = gate_index_resolvable(
+            entries, load_index(nodes_path, edges_path),
+            getattr(args, "expectation_relation", "exact"))
     statuses.append(xstatus)
     report["gate_10_index_resolvable"] = {"status": xstatus, **xdetail}
 
