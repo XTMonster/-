@@ -2396,3 +2396,1184 @@
     start: 14
     end: 46
   provenance_kind: 权威文档
+- id: gen_prod_0077
+  domain: production
+  title: 虚拟棚预演须锁定相机数据
+  content: LED虚拟棚中背景透视随相机轨迹锁死，预演阶段必须输出相机位置、焦距与运动轨迹的完整数据，误差容忍度远低于传统拍摄。
+  keywords:
+  - 相机轨迹
+  - 焦距
+  - 预演数据
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 虚拟制片
+  - 机位
+  topic: ''
+  quote: |-
+    一旦镜头轨迹确定，屏幕上的透视就锁死了。因此虚拟棚拍摄的镜头，预演阶段必须给出相机位置、焦距与运动轨迹的完整数据，误差容忍度远低于传统拍摄。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#003
+  source_span:
+    chunk_id: modern_production_pipeline_md#003
+    start: 57
+    end: 127
+  provenance_kind: 权威文档
+- id: gen_prod_0078
+  domain: production
+  title: 特效镜头记录清单项
+  content: 为每个特效镜头记录跟踪点数量、所需数据（HDRI、镜头畸变、通道）与拍摄顺序依赖，并在预演阶段标在镜头清单上，而非等后期发现素材不够。
+  keywords:
+  - 跟踪点数量
+  - HDRI
+  - 镜头畸变
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演
+  - 素材规划
+  topic: ''
+  quote: |-
+    为每个特效镜头记录跟踪点数量、需要的数据（HDRI、镜头畸变、通道）与拍摄顺序依赖，在预演阶段就把它们标在镜头清单上，而不是等后期发现素材不够。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_production_pipeline_md#004
+    start: 251
+    end: 323
+  provenance_kind: 权威文档
+- id: gen_prod_0079
+  domain: production
+  title: 单位与坐标系是事故主因
+  content: 交接事故超过一半源于单位（米/英尺）与坐标系（Y上/Z上）不一致，而非精度不足，因此优先统一并标注这两项。
+  keywords:
+  - 交接事故
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 数据交接
+  topic: ''
+  quote: |-
+    交接事故里超过一半源于**单位与坐标系不一致**，而不是精度不足。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#005
+  source_span:
+    chunk_id: modern_production_pipeline_md#005
+    start: 261
+    end: 294
+  provenance_kind: 权威文档
+- id: gen_prod_0080
+  domain: production
+  title: 只交数据不交假设
+  content: 交接时只交数据本身，不依赖对方默认读法；同一份相机必须显式附带单位、坐标系、旋转顺序与帧率，并写入文件名或伴随元数据文件。
+  keywords:
+  - 元数据
+  - 单位
+  - 坐标系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 数据交接
+  topic: ''
+  quote: |-
+    只交数据，不交"相信对方会读对"的假设
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#005
+  source_span:
+    chunk_id: modern_production_pipeline_md#005
+    start: 187
+    end: 206
+  provenance_kind: 权威文档
+- id: gen_prod_0081
+  domain: production
+  title: 相机数据交接规范
+  content: 交接的相机数据必须带单位、坐标系、旋转顺序与帧率，避免下游因约定不一致而重建错误。
+  keywords:
+  - 单位
+  - 坐标系
+  - 帧率
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    交接的相机数据是否带单位、坐标系、旋转顺序与帧率？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_production_pipeline_md#011
+    start: 113
+    end: 138
+  provenance_kind: 权威文档
+- id: gen_prod_0082
+  domain: production
+  title: 相机数据最小集
+  content: 交接相机时最小数据集为：位置、旋转、焦距、传感器宽度、路径关键帧与帧率，缺一不可。
+  keywords:
+  - 焦距
+  - 传感器
+  - 帧率
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 数据交接
+  topic: ''
+  quote: |-
+    相机数据的最小集是：位置、旋转、焦距、传感器宽度、路径关键帧与帧率。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#005
+  source_span:
+    chunk_id: modern_production_pipeline_md#005
+    start: 130
+    end: 164
+  provenance_kind: 权威文档
+- id: gen_prod_0083
+  domain: production
+  title: AI生成一镜一文件
+  content: 交给AI生成时，每个镜头单独一个文件，并给出首帧、末帧、时长与镜头说明。
+  keywords:
+  - 首末帧
+  - 时长
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜文件
+  topic: ''
+  quote: |-
+    若要交给 AI 生成，是否一镜一文件给出首末帧、时长与镜头说明？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_production_pipeline_md#011
+    start: 205
+    end: 237
+  provenance_kind: 权威文档
+- id: gen_prod_0084
+  domain: production
+  title: AI参考必含四要素
+  content: 交给AI的参考至少包含四项：逐镜时长、机位运动方向与速度、主体在画面中的位置与朝向、镜头景别；缺任一项都会让AI自行猜测。
+  keywords:
+  - 时长
+  - 机位运动
+  - 主体位置
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演
+  - 镜头信息
+  topic: ''
+  quote: |-
+    给 AI 的参考至少要包含逐镜时长、机位运动方向与速度、主体在画面里的位置与朝向，以及镜头的景别。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#009
+  source_span:
+    chunk_id: modern_production_pipeline_md#009
+    start: 99
+    end: 148
+  provenance_kind: 权威文档
+- id: gen_prod_0085
+  domain: production
+  title: 版本只追加不覆盖
+  content: 任何产物都不覆盖，只追加版本号；文件名包含项目、场、镜、版本（如 SH010_shot020_v004.usda），并在每个版本旁写一行改动说明。
+  keywords:
+  - 版本号
+  - 命名规范
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 版本管理
+  - 命名
+  topic: ''
+  quote: |-
+    任何产物都不覆盖，只追加版本号
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#006
+  source_span:
+    chunk_id: modern_production_pipeline_md#006
+    start: 130
+    end: 145
+  provenance_kind: 权威文档
+- id: gen_prod_0086
+  domain: production
+  title: 阶段产出物须书面化
+  content: 八个阶段（开发、融资排期、筹备、拍摄、剪辑、视效配光、混音、交付）中，每阶段产出物是下一阶段输入；任何一环用口头共识替代书面产物都会在后面变成返工。
+  keywords:
+  - 阶段产出物须书面化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 返工
+  topic: ''
+  quote: |-
+    每个阶段的产出物是下一阶段的输入，所以任何一环用"口头共识"替代书面产物，都会在后面变成返工。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#001
+  source_span:
+    chunk_id: modern_production_pipeline_md#001
+    start: 107
+    end: 154
+  provenance_kind: 权威文档
+- id: gen_prod_0087
+  domain: production
+  title: 减法类拍干净背景板
+  content: 减法类特效镜头需额外拍摄干净背景板（clean plate），供后期抹除元素时填补背景。
+  keywords:
+  - clean plate
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 后期
+  topic: ''
+  quote: |-
+    减法类要额外拍摄干净背景板（clean plate）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_production_pipeline_md#004
+    start: 120
+    end: 146
+  provenance_kind: 权威文档
+- id: gen_prod_0088
+  domain: production
+  title: 白模够用的判断标准
+  content: 判断白模是否够用，看可执行性：另一个部门只看预演产物、在没有主创解释的情况下能否复现同一镜；达不到就补机位高度、镜头数据或时长，而不是提高画面精度。
+  keywords:
+  - 可执行性
+  - 复现
+  - 机位高度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演
+  - 验收标准
+  topic: ''
+  quote: |-
+    判断白模是否够用的标准是**可执行性**：另一个部门只看预演产物，能否在没有
+    主创解释的情况下复现同一镜。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#002
+  source_span:
+    chunk_id: modern_production_pipeline_md#002
+    start: 166
+    end: 219
+  provenance_kind: 权威文档
+- id: gen_prod_0089
+  domain: production
+  title: 加法类预演锁跟踪点
+  content: 加法类特效镜头优先在预演阶段锁定跟踪点与机位，避免实拍后才发现跟踪数据不足。
+  keywords:
+  - 机位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    加法类优先在预演里锁定跟踪点与机位
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_production_pipeline_md#004
+    start: 108
+    end: 125
+  provenance_kind: 权威文档
+- id: gen_prod_0090
+  domain: production
+  title: 超6版回预演
+  content: 同一镜超过 6 个版本仍未定稿时，应回到预演重新确认镜头目的，而不是继续微调。
+  keywords:
+  - 版本阈值
+  - 镜头目的
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 版本管理
+  topic: ''
+  quote: |-
+    同一镜超过 6 个版本仍未定稿，应当回到预演重新确认镜头目的
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#006
+  source_span:
+    chunk_id: modern_production_pipeline_md#006
+    start: 254
+    end: 284
+  provenance_kind: 权威文档
+- id: gen_prod_0091
+  domain: production
+  title: 版本号与返工责任
+  content: 多部门基于不同版本并行工作时，没有版本号就无法判断返工责任、无法估算时间，因此版本纪律是排期前提而非洁癖。
+  keywords:
+  - 时间估算
+  - 多部门协作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 版本管理
+  - 协作
+  topic: ''
+  quote: |-
+    没有版本号就无法判断返工责任，也就无法估算时间
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#006
+  source_span:
+    chunk_id: modern_production_pipeline_md#006
+    start: 223
+    end: 246
+  provenance_kind: 权威文档
+- id: gen_prod_0092
+  domain: production
+  title: 参考视频的泄漏检查
+  content: 导出参考视频前必须检查其中不含辅助物泄漏；比例畸变、伪影、与设定冲突的服装等任何最终镜头不应存在的东西都会污染生成结果。
+  keywords:
+  - 辅助物
+  - 伪影
+  - 导出
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演
+  - 质检
+  topic: ''
+  quote: |-
+    参考视频里出现的任何在最终镜头里不应存在的东西——比例畸变、伪影、与设定冲突的服装——都会污染生成结果，所以导出前必须检查参考视频里没有辅助物泄漏。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#009
+  source_span:
+    chunk_id: modern_production_pipeline_md#009
+    start: 201
+    end: 275
+  provenance_kind: 权威文档
+- id: gen_prod_0093
+  domain: production
+  title: 先保意图再换手段
+  content: 当安全/后勤约束与镜头意图冲突时，先保留镜头意图，再替换实现手段：小场地高机位俯拍可用无人机替代摇臂，长轨道推镜可用手持稳定器加后期稳定替代，前提是运动透视效果可接受。
+  keywords:
+  - 意图优先
+  - 替代方案
+  - 无人机
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位替代
+  - 运动方案
+  topic: ''
+  quote: |-
+    先保留意图，再换实现手段
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#008
+  source_span:
+    chunk_id: modern_production_pipeline_md#008
+    start: 178
+    end: 190
+  provenance_kind: 权威文档
+- id: gen_prod_0094
+  domain: production
+  title: 超视差运动拆成两镜
+  content: 当镜头运动幅度大于虚拟场景的有效视差范围时，应把运动拆成两个镜头，而不是硬摇。
+  keywords:
+  - 拆镜
+  - 硬摇
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 虚拟制片
+  - 剪辑
+  - 运镜
+  topic: ''
+  quote: |-
+    当镜头运动幅度大于虚拟场景的有效视差范围时，应当把运动拆成两镜，而不是硬摇。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#003
+  source_span:
+    chunk_id: modern_production_pipeline_md#003
+    start: 251
+    end: 289
+  provenance_kind: 权威文档
+- id: gen_prod_0095
+  domain: production
+  title: 扩展类依赖通道与镜头数据
+  content: 扩展类特效镜头依赖通道与镜头数据的完整性，数据缺失会限制场景延长的实现。
+  keywords:
+  - 扩展类依赖通道与镜头数据
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 数据完整性
+  - 场景扩展
+  topic: ''
+  quote: |-
+    扩展类依赖通道与镜头数据的完整性
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_production_pipeline_md#004
+    start: 160
+    end: 176
+  provenance_kind: 权威文档
+- id: gen_prod_0096
+  domain: production
+  title: 同机位镜头集中拍摄
+  content: 排期时把同一机位的镜头排在一起连续拍摄，可省下最多的架设时间，因为机位运动、器材更换与灯光调整都归入架设成本。
+  keywords:
+  - 排期
+  - 架设
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制片
+  - 排期
+  - 效率
+  topic: ''
+  quote: |-
+    把同机位的镜头排在一起拍摄能省下最多时间。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#007
+  source_span:
+    chunk_id: modern_production_pipeline_md#007
+    start: 104
+    end: 125
+  provenance_kind: 权威文档
+- id: gen_prod_0097
+  domain: production
+  title: 同机位合并与运动压缩
+  content: 排期时把同机位镜头排在一起以减少换机位次数，并把运动镜头比例压到必要值，避免无谓的运镜。
+  keywords:
+  - 排期
+  - 运动镜头比例
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 排期
+  topic: ''
+  quote: |-
+    同机位镜头是否已排在一起，运动镜头的比例是否已压到必要值？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_production_pipeline_md#011
+    start: 142
+    end: 171
+  provenance_kind: 权威文档
+- id: gen_prod_0098
+  domain: production
+  title: 取舍顺序：机位优先
+  content: 时间不够时的取舍顺序固定为：先合并同机位镜头，再减少运动镜头比例，最后才考虑缩短镜头数量。
+  keywords:
+  - 合并机位
+  - 运动镜头
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制片
+  - 排期
+  topic: ''
+  quote: |-
+    先合并同机位镜头，再减少运动镜头的比例，最后才考虑缩短镜头数量。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#007
+  source_span:
+    chunk_id: modern_production_pipeline_md#007
+    start: 130
+    end: 162
+  provenance_kind: 权威文档
+- id: gen_prod_0099
+  domain: production
+  title: 预演定稿时限
+  content: 普通镜头需在拍摄日前3个工作日定稿，特效镜头需提前10个工作日定稿，以保证下游有足够时间准备。
+  keywords:
+  - 特效镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 排期
+  topic: ''
+  quote: |-
+    这一镜是否在拍摄日前 3 个工作日定稿（特效镜 10 个）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_production_pipeline_md#011
+    start: 15
+    end: 45
+  provenance_kind: 权威文档
+- id: gen_prod_0100
+  domain: production
+  title: 替换类需动作光照参考
+  content: 替换类特效镜头需要动作与光照的参考素材，以保证置换后的主体与背景匹配。
+  keywords:
+  - 动作参考
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 参考素材
+  - 匹配
+  topic: ''
+  quote: |-
+    替换类需要动作与光照的参考
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_production_pipeline_md#004
+    start: 154
+    end: 167
+  provenance_kind: 权威文档
+- id: gen_prod_0101
+  domain: production
+  title: 标注VFX与数据需求
+  content: 每个镜头需标注其VFX类别，并列出该镜需要额外拍摄的数据（如参考板、HDR、测量数据）。
+  keywords:
+  - VFX类别
+  - 额外数据
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 特效
+  - 数据采集
+  topic: ''
+  quote: |-
+    是否标出了本镜的 VFX 类别，以及需要额外拍摄的数据？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_production_pipeline_md#011
+    start: 81
+    end: 109
+  provenance_kind: 权威文档
+- id: gen_prod_0102
+  domain: production
+  title: 新增机位的成本换算
+  content: 每增加一个需要重新架设的机位，成本约等于多拍 3–5 个同机位镜头，因此能用同机位解决就不要新增机位。
+  keywords:
+  - 架设
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制片
+  - 预算
+  topic: ''
+  quote: |-
+    每增加一个需要重新架设的机位，成本大约等于多拍 3–5 个同机位镜头
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#007
+  source_span:
+    chunk_id: modern_production_pipeline_md#007
+    start: 169
+    end: 203
+  provenance_kind: 权威文档
+- id: gen_prod_0103
+  domain: production
+  title: 拆分落到镜头级
+  content: 特效拆分必须落到镜头级而非场级：一场戏里只要有一个镜头需要跟踪，整场的拍摄顺序、光线连续性与器材都会受影响。
+  keywords:
+  - 场级
+  - 跟踪
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 镜头清单
+  topic: ''
+  quote: |-
+    拆分（breakdown）必须落到**镜头级而不是场级**：一场戏里只要有一个镜头需要跟踪，整场的拍摄顺序、光线连续性与器材都会受影响。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_production_pipeline_md#004
+    start: 177
+    end: 245
+  provenance_kind: 权威文档
+- id: gen_prod_0104
+  domain: production
+  title: 特效镜头按操作分类
+  content: 特效镜头按最贵的操作分为四类：加法（加入不存在元素）、减法（抹掉存在元素）、替换（置换背景或主体）、扩展（延长场景）；分类决定后续拍摄方式。
+  keywords:
+  - VFX分类
+  - 加法
+  - 减法
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 特效分类
+  - 镜头规划
+  topic: ''
+  quote: |-
+    特效镜头按"最贵的那种操作"分类：**加法**（加入不存在的元素）、**减法**（抹掉存在的元素）、**替换**（置换背景或主体）、**扩展**（延长场景）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#004
+  source_span:
+    chunk_id: modern_production_pipeline_md#004
+    start: 14
+    end: 93
+  provenance_kind: 权威文档
+- id: gen_prod_0105
+  domain: production
+  title: 白模追求照片级是浪费
+  content: 白模阶段追求照片级画面是明确的时间浪费，因为它不会改变任何一个拍摄决定；把白模做到能看出调度与节奏，就已覆盖预演约 80% 的价值。
+  keywords:
+  - 时间浪费
+  - 调度
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演
+  - 成本控制
+  topic: ''
+  quote: |-
+    **白模阶段追求照片级画面是明确的时间浪费**，
+    因为它不会改变任何一个拍摄决定。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#002
+  source_span:
+    chunk_id: modern_production_pipeline_md#002
+    start: 257
+    end: 298
+  provenance_kind: 权威文档
+- id: gen_prod_0106
+  domain: production
+  title: 白模预演只答四问
+  content: 白模（blocking pass）预演只回答四个问题：主体在画面哪里、摄影机位置与高度、镜头怎么运动、这一镜持续多久；材质、灯光、细节表演一律不做，因为它们是后期最容易改也最贵的部分。
+  keywords:
+  - 机位
+  - 镜头运动
+  - 时长
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    白模（blocking pass）预演只回答四个问题：**主体在画面哪里、摄影机在什么位置与
+    高度、镜头怎么运动、这一镜持续多久**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#002
+  source_span:
+    chunk_id: modern_production_pipeline_md#002
+    start: 20
+    end: 87
+  provenance_kind: 权威文档
+- id: gen_prod_0107
+  domain: production
+  title: 评审节奏与产出
+  content: 评审按固定节奏进行：每日看当天产出，每个阶段末看整合版本；每次评审必须产出被接受的改动、被拒绝的改动、下一步动作三项，只给'感觉不对'的反馈视为无效评审。
+  keywords:
+  - 反馈产出
+  - 阶段整合
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: ''
+  quote: |-
+    每日看当天产出，每个阶段末看整合版本
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#006
+  source_span:
+    chunk_id: modern_production_pipeline_md#006
+    start: 30
+    end: 48
+  provenance_kind: 权威文档
+- id: gen_prod_0108
+  domain: production
+  title: 三类约束作为设计输入
+  content: 镜头设计前必须把场地、设备、人员三类约束作为输入纳入，而不是设计完再考虑可行性。
+  keywords:
+  - 场地
+  - 设备
+  - 人员
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 可行性
+  - 前置约束
+  topic: ''
+  quote: |-
+    场地、设备、人员三类约束是否已作为输入进入镜头设计？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_production_pipeline_md#011
+    start: 175
+    end: 201
+  provenance_kind: 权威文档
+- id: gen_prod_0109
+  domain: production
+  title: 镜头参数可复现
+  content: 镜头设计必须写明机位高度、焦距、运动路径与时长，使他人能据此复现同一镜头的拍摄。
+  keywords:
+  - 机位高度
+  - 焦距
+  - 运动路径
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  topic: ''
+  quote: |-
+    机位高度、焦距、运动路径与时长是否都已写明，他人可复现？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#011
+  source_span:
+    chunk_id: modern_production_pipeline_md#011
+    start: 49
+    end: 77
+  provenance_kind: 权威文档
+- id: gen_prod_0110
+  domain: production
+  title: 预演必须输出USD与EXR
+  content: 预演工具链至少能输出场景层（USD：几何、相机、变换）与图像层（EXR：多通道线性图像），因为追踪、合成与虚拟棚直接消费这两层；仅输出SDI信号层不够。
+  keywords:
+  - 数据交接
+  - 预演输出
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  - 数据交接
+  topic: ''
+  quote: |-
+    预演工具链至少要能输出后两者，因为追踪、合成与虚拟棚都直接消费它们。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#005
+  source_span:
+    chunk_id: modern_production_pipeline_md#005
+    start: 96
+    end: 130
+  provenance_kind: 权威文档
+- id: gen_prod_0111
+  domain: production
+  title: 预演须可逐镜复现
+  content: 预演必须在拍摄前完成到“可以被逐镜复现”的程度：机位、镜头运动、时长都要明确到能照做，否则进入拍摄后改动会牵动场地、演员与灯光。
+  keywords:
+  - 机位
+  - 时长
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 可执行性
+  topic: ''
+  quote: |-
+    预演必须在拍摄前完成到"可以被逐镜复现"的程度
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#001
+  source_span:
+    chunk_id: modern_production_pipeline_md#001
+    start: 225
+    end: 248
+  provenance_kind: 权威文档
+- id: gen_prod_0112
+  domain: production
+  title: 约束作为预演输入
+  content: 预演阶段必须把场地（面积、承重、净高、噪声）、设备（轨道/摇臂/无人机可用性与审批）、人员（替身、特技协调、未成年演员工时）三类约束作为输入，不能留到拍摄当天才发现。
+  keywords:
+  - 场地约束
+  - 设备审批
+  - 人员工时
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制片约束
+  topic: ''
+  quote: |-
+    这些约束必须在预演阶段作为输入，而不是拍摄当天才发现。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#008
+  source_span:
+    chunk_id: modern_production_pipeline_md#008
+    start: 123
+    end: 150
+  provenance_kind: 权威文档
+- id: gen_prod_0113
+  domain: production
+  title: 固定机位加构图变化优先
+  content: 预演阶段若能用固定机位配合构图变化表达同一信息，应优先选它，而不是用运动镜头。
+  keywords:
+  - 预演
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演
+  - 取舍
+  topic: ''
+  quote: |-
+    预演阶段如果能用"固定机位 + 构图变化"表达同一信息，应当优先选它。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fe536934d03bc7b36307ce504fd83e0bb080df9eb257d1eb37f6b47b84000ffe
+  chunk_id: modern_production_pipeline_md#007
+  source_span:
+    chunk_id: modern_production_pipeline_md#007
+    start: 241
+    end: 276
+  provenance_kind: 权威文档

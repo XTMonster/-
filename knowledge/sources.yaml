@@ -2,7 +2,10 @@
 #
 # 字段：url / title / author / license / domain / mode（＋选填 note / genre / theme /
 # retrieved_at）。`license` 必须在白名单内（CC0 / CC-BY / CC-BY-SA / PublicDomain /
-# OwnWork / ExplicitPermission），否则 `tools/kb_fetch/validate_licenses.py` 一律拒收。
+# OwnWork / ExplicitPermission / PersonalStudy），否则
+# `tools/kb_fetch/validate_licenses.py` 一律拒收。`PersonalStudy` 是 v1.5 为
+# **个人学习用**的现代教材/论文/讲义新增的一档：它与"拿到授权"不是一回事，
+# 单独记名，便于以后真要对外分发时一眼筛出来（见 docs/knowledge/LICENSES.md）。
 #
 # 两类来源走**同一**管线，只有第 1 步分叉：
 #   * mode: http   —— 公有领域文本（Project Gutenberg，逐本核过标题与作者）；
@@ -22,6 +25,7 @@ sources:
     mode: http
     genre: film
     theme: camera_angle
+    chunk_budget: 5
   - url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
     title: Photography at home
     author: John A. Tennant
@@ -29,6 +33,7 @@ sources:
     domain: cinematography
     mode: http
     genre: film
+    chunk_budget: 5
   - url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
     title: Bromide Printing and Enlarging
     author: John A. Tennant
@@ -36,6 +41,7 @@ sources:
     domain: cinematography
     mode: http
     genre: film
+    chunk_budget: 5
   - url: repo://knowledge/source_notes/camera_angle_and_lens.md
     title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
     author: BlockDirector knowledge team
@@ -45,6 +51,7 @@ sources:
     genre: film
     theme: camera_angle
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
   - url: repo://knowledge/source_notes/camera_angle_in_practice.md
     title: 机位角度的实操选择（自撰笔记）
     author: BlockDirector knowledge team
@@ -54,6 +61,7 @@ sources:
     genre: film
     theme: camera_angle
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
 
   # ---------------------------------------------------------------- 构图
   - url: https://www.gutenberg.org/cache/epub/26638/pg26638.txt
@@ -63,6 +71,7 @@ sources:
     domain: composition
     mode: http
     genre: film
+    chunk_budget: 10
   - url: https://www.gutenberg.org/cache/epub/55346/pg55346.txt
     title: Lectures on Painting, Delivered to the Students of the Royal Academy
     author: Edward Armitage
@@ -70,6 +79,7 @@ sources:
     domain: composition
     mode: http
     genre: film
+    chunk_budget: 10
   - url: https://www.gutenberg.org/cache/epub/20165/pg20165.txt
     title: The Theory and Practice of Perspective
     author: G. A. Storey
@@ -77,6 +87,7 @@ sources:
     domain: composition
     mode: http
     genre: film
+    chunk_budget: 10
   - url: https://www.gutenberg.org/cache/epub/32681/pg32681.txt
     title: The Use of a Box of Colours, in a Practical Demonstration on Composition
     author: Harry Willson
@@ -85,6 +96,7 @@ sources:
     mode: http
     genre: film
     theme: color
+    chunk_budget: 10
 
   # ---------------------------------------------------------------- 光线 / 色彩
   - url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
@@ -95,6 +107,7 @@ sources:
     mode: http
     genre: film
     theme: lighting
+    chunk_budget: 5
   - url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
     title: Tinting and toning of Eastman positive motion picture film
     author: Eastman Kodak Company
@@ -103,6 +116,7 @@ sources:
     mode: http
     genre: film
     theme: color
+    chunk_budget: 5
   - url: repo://knowledge/source_notes/lighting_and_color.md
     title: 布光体系与色彩情绪的对应（自撰笔记）
     author: BlockDirector knowledge team
@@ -112,6 +126,7 @@ sources:
     genre: film
     theme: lighting
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
 
   # ---------------------------------------------------------------- 剪辑 / 节奏
   - url: https://www.gutenberg.org/cache/epub/15383/pg15383.txt
@@ -122,6 +137,7 @@ sources:
     mode: http
     genre: film
     theme: editing
+    chunk_budget: 20
   - url: repo://knowledge/source_notes/editing_rhythm.md
     title: 剪辑节奏、视线匹配与动作连贯（自撰笔记）
     author: BlockDirector knowledge team
@@ -131,6 +147,7 @@ sources:
     genre: film
     theme: editing
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
 
   # ---------------------------------------------------------------- 分镜 / 剧本
   - url: https://www.gutenberg.org/cache/epub/17903/pg17903.txt
@@ -141,6 +158,7 @@ sources:
     mode: http
     genre: film
     theme: storyboard
+    chunk_budget: 10
   - url: https://www.gutenberg.org/cache/epub/76829/pg76829.txt
     title: How to write photoplays
     author: Embrie Zuver
@@ -149,6 +167,7 @@ sources:
     mode: http
     genre: film
     theme: storyboard
+    chunk_budget: 10
   - url: https://www.gutenberg.org/cache/epub/70937/pg70937.txt
     title: "The photodrama: the philosophy of its principles"
     author: Henry Albert Phillips
@@ -157,6 +176,7 @@ sources:
     mode: http
     genre: film
     theme: storyboard
+    chunk_budget: 10
   - url: repo://knowledge/source_notes/storyboard_practice.md
     title: 分镜表与镜头清单的写法（自撰笔记）
     author: BlockDirector knowledge team
@@ -166,6 +186,7 @@ sources:
     genre: film
     theme: storyboard
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
 
   # ---------------------------------------------------------------- 动画 / 分镜套路
   - url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
@@ -176,6 +197,7 @@ sources:
     mode: http
     genre: anime
     theme: anime
+    chunk_budget: 20
   - url: repo://knowledge/source_notes/anime_language.md
     title: 日式动画的镜头语言与作画节奏（自撰笔记）
     author: BlockDirector knowledge team
@@ -185,6 +207,7 @@ sources:
     genre: anime
     theme: anime
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
 
   # ---------------------------------------------------------------- 调度 / 表演
   - url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
@@ -194,6 +217,7 @@ sources:
     domain: blocking
     mode: http
     genre: film
+    chunk_budget: 20
   - url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
     title: Dramatic Technique
     author: George Pierce Baker
@@ -201,6 +225,7 @@ sources:
     domain: performance
     mode: http
     genre: film
+    chunk_budget: 40
   - url: https://www.gutenberg.org/cache/epub/57611/pg57611.txt
     title: Heroines of the Modern Stage
     author: Forrest Izard
@@ -208,6 +233,7 @@ sources:
     domain: performance
     mode: http
     genre: film
+    chunk_budget: 40
   - url: repo://knowledge/source_notes/blocking_and_performance.md
     title: 场面调度与表演节奏（自撰笔记）
     author: BlockDirector knowledge team
@@ -216,6 +242,7 @@ sources:
     mode: manual
     genre: film
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
   - url: repo://knowledge/source_notes/axis_continuity.md
     title: 轴线、视线与银幕方向连续性（自撰笔记）
     author: BlockDirector knowledge team
@@ -224,6 +251,7 @@ sources:
     mode: manual
     genre: film
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
 
   # ---------------------------------------------------------------- 制片 / 现场
   - url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
@@ -234,6 +262,7 @@ sources:
     mode: http
     genre: film
     theme: lighting
+    chunk_budget: 20
   - url: repo://knowledge/source_notes/production_pipeline.md
     title: 预演交付与制片流程（自撰笔记）
     author: BlockDirector knowledge team
@@ -242,3 +271,105 @@ sources:
     mode: manual
     genre: film
     retrieved_at: "2026-09-30"
+    chunk_budget: 40
+
+  # ------------------------------------------------- 现代理论体系（v1.5，自撰 · OwnWork）
+  # 老书部分全是 1900–1920 年的公有领域文本：机位、轴线、剪辑的**原理**仍然
+  # 成立，但缺少数字摄影、虚拟制片、声音设计、动作设计与现代分镜/演出实务。
+  # 下面这组笔记是为了补上"现代"这一半：每条规则都写成"当 X 时取 Y，因为 Z"，
+  # 并带上可判定的量（格、秒、毫米、档、厘米、dB、Hz）。
+  - url: repo://knowledge/source_notes/modern_production_pipeline.md
+    title: 现代制片流程中的预演（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: production
+    mode: manual
+    genre: film
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_anime_and_2d_practice.md
+    title: 现代二维动画的演出与作画节奏（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: anime
+    mode: manual
+    genre: anime
+    theme: anime
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_storyboard_and_previs.md
+    title: 现代分镜与预演实务（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: storyboard
+    mode: manual
+    genre: film
+    theme: storyboard
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: performance
+    mode: manual
+    genre: film
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: blocking
+    mode: manual
+    genre: film
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: blocking
+    mode: manual
+    genre: film
+    theme: camera_angle
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: editing
+    mode: manual
+    genre: film
+    theme: editing
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: cinematography
+    mode: manual
+    genre: film
+    theme: camera_angle
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: axis_theory
+    mode: manual
+    genre: film
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_composition_theory.md
+    title: 现代构图的量化口径（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: composition
+    mode: manual
+    genre: film
+    theme: camera_angle
+    retrieved_at: "2026-10-01"
+  - url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    domain: editing
+    mode: manual
+    genre: film
+    theme: editing
+    retrieved_at: "2026-10-01"

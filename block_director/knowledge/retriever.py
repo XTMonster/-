@@ -36,6 +36,28 @@ TOKEN_LIMIT_TOOL = 800      # §6.5：search_knowledge 单次返回上限
 TOKEN_LIMIT_PLAN = 2000     # §6.5：阶段 A 预取上限
 RRF_K = 60                  # 倒数排名融合常数（§6.4 的 rrf_merge）
 
+#: 人工撰写卡相对生成卡的优先级系数（v1.5）。人工卡是**人工审阅过的规范答案**，
+#: 生成卡是"从语料里抽出来的候选"：两者分数接近时应当由人工卡胜出，否则语料
+#: 一长大，`comp_thirds` / `axis_cross` 这类旗舰卡就会被同主题的生成卡挤出首位
+#: （实测：`越轴` 上 axis_cross 15.01 对生成卡 17.04，差 13.6%；`三分法 构图`
+#: 上 comp_thirds 25.14 对 25.91，差 3%）。15% 以内视为并列；超过 15% 说明
+#: 生成卡确实更贴题，此时不抢它的位置。
+CURATED_BOOST = 1.15
+
+
+def curated_priority(scored: Sequence, cards: Sequence[Card]) -> List:
+    """给人工撰写卡一个**有界**的分数加成后重新排序。
+
+    只改跨档比较：同档之间顺序不变（BM25 分是首位，下标是稳定的次序键）。
+    """
+    boosted = [
+        (index, score * CURATED_BOOST
+         if not str(cards[index].id).startswith(GENERATED_ID_PREFIX) else score)
+        for index, score in scored
+    ]
+    boosted.sort(key=lambda item: (-item[1], item[0]))
+    return boosted
+
 
 def rrf_merge(vector_hits: Sequence[int], keyword_hits: Sequence[int],
               k: int = RRF_K) -> List[int]:
@@ -270,6 +292,8 @@ class KnowledgeRetriever:
 
         engine = self._engine(candidates)
         scored = ranked(engine, tokens, 0)
+        # 人工卡优先：只把分数**接近**的生成卡挤到后面（见 CURATED_BOOST）。
+        scored = curated_priority(scored, candidates)
         keyword_order = [index for index, score in scored if score > 0]
 
         if self.backend is RagBackend.VECTOR and self.vector_store is not None:

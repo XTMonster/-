@@ -1774,3 +1774,1056 @@
     start: 68
     end: 104
   provenance_kind: 权威文档
+- id: gen_axis_0057
+  domain: axis_theory
+  title: 180°规则的本质
+  content: 180°规则的核心是维持观众在首镜建立的左右关系（如甲左乙右）；后续镜头若打破该关系，观众会读成两人交换了位置。
+  keywords:
+  - 左右关系
+  - 空间稳定
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    180° 规则的本质是**保持左右关系不变**：观众在第一个镜头里建立了"甲在左、乙在右"，后续镜头应当维持这一关系，否则观众会感到两人交换了位置。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#002
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#002
+    start: 15
+    end: 89
+  provenance_kind: 权威文档
+- id: gen_axis_0058
+  domain: axis_theory
+  title: 空间被切断可越轴
+  content: 中间插入别处再回到此处时允许越轴，插入段落切断了空间连续性，使左右关系可重置。
+  keywords:
+  - 空间切断
+  - 插入镜头
+  - 越轴例外
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 越轴例外
+  topic: ''
+  quote: |-
+    **空间被切断**（中间插入别处再回到此处）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 208
+    end: 230
+  provenance_kind: 权威文档
+- id: gen_axis_0059
+  domain: axis_theory
+  title: 刻意空间失序可越轴
+  content: 为表现精神状态混乱而刻意制造空间失序时允许越轴，失序本身即表达手段。
+  keywords:
+  - 精神状态
+  - 混乱
+  - 越轴例外
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 混乱
+  tags:
+  - 轴线
+  - 心理
+  - 越轴例外
+  topic: ''
+  quote: |-
+    **刻意的空间失序**（表现精神状态的混乱）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 234
+    end: 256
+  provenance_kind: 权威文档
+- id: gen_axis_0060
+  domain: axis_theory
+  title: 交叉走动用全景重建
+  content: 人物在画面中交叉走动时，用一次全景或俯拍重新交代空间，比用特写猜测更有效。
+  keywords:
+  - 俯拍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 俯拍
+  topic: ''
+  quote: |-
+    当人物在画面中交叉走动时，**用一次全景或俯拍重新交代空间**比用特写
+    猜测更有效。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#005
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#005
+    start: 163
+    end: 205
+  provenance_kind: 权威文档
+- id: gen_axis_0061
+  domain: axis_theory
+  title: 视角切换可越轴
+  content: 从客观镜头切到主观镜头时，允许越轴，因为视角切换本身构成空间关系的重新定义。
+  keywords:
+  - 主观镜头
+  - 客观镜头
+  - 越轴例外
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 主观视角
+  - 越轴例外
+  topic: ''
+  quote: |-
+    **视角切换**（从客观切到主观）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 168
+    end: 185
+  provenance_kind: 权威文档
+- id: gen_axis_0062
+  domain: axis_theory
+  title: 每镜标注轴线类型
+  content: 分镜或拍摄前，每一镜都要标明它遵守的是关系轴、视线轴还是运动轴，作为后续检查左右关系与越轴是否成立的依据。
+  keywords:
+  - 关系轴
+  - 视线轴
+  - 运动轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜检查
+  topic: ''
+  quote: |-
+    每一镜是否标明了它遵守的是关系轴、视线轴还是运动轴？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#009
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#009
+    start: 15
+    end: 41
+  provenance_kind: 权威文档
+- id: gen_axis_0063
+  domain: axis_theory
+  title: 越轴四问判定法
+  content: 判定一次越轴是否可接受，依次问四问：观众空间感是否已建立（未建立就谈不上破坏）、越轴是否有标记、是否服务于意图（迷失/冲突/失衡）、越轴后是否被后续镜头回收（重建左右关系）。四问皆答得上即为语言，答不上即为失误。
+  keywords:
+  - 判定清单
+  - 空间感
+  - 意图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  - 越轴判定
+  topic: ''
+  quote: |-
+    判定一次越轴是否可以接受，依次问四个问题：**观众此刻的空间感是否已经建立（没有建立就谈不上破坏）**、**越轴是否有标记**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 14
+    end: 77
+  provenance_kind: 权威文档
+- id: gen_axis_0064
+  domain: axis_theory
+  title: 越轴判断标准
+  content: 判断越轴是否成立，不看"能不能越"，而看它是意外还是意图：无意图的越轴会被观众读成拍错。
+  keywords:
+  - 意图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  topic: ''
+  quote: |-
+    因此判断标准不是"能不能越轴"，而是**越轴是意外还是意图**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#002
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#002
+    start: 150
+    end: 182
+  provenance_kind: 权威文档
+- id: gen_axis_0065
+  domain: axis_theory
+  title: 先判观众读哪种轴
+  content: 判断轴线前先确定这一镜中观众正在读取的是哪一种关系（关系/视线/运动），据此决定该镜应遵守哪条轴，而非笼统地守一条线。
+  keywords:
+  - 轴线判断
+  - 观众读解
+  - 关系类型
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 机位逻辑
+  topic: ''
+  quote: |-
+    判断轴线要先判断"这一镜里观众在读的是哪一种关系"
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#001
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#001
+    start: 88
+    end: 113
+  provenance_kind: 权威文档
+- id: gen_axis_0066
+  domain: axis_theory
+  title: 分镜上画出轴线
+  content: 可执行做法是在分镜图上把轴线画出来并标明属于哪一类；未画轴的分镜在现场只能靠记忆维持，容易在换机位时把轴换到另一侧。
+  keywords:
+  - 分镜标注
+  - 轴线绘制
+  - 现场执行
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  topic: ''
+  quote: |-
+    可执行的做法是**在分镜上把轴画出来**并标明属于哪一类。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#001
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#001
+    start: 156
+    end: 185
+  provenance_kind: 权威文档
+- id: gen_axis_0067
+  domain: axis_theory
+  title: 多人调度围绕主关系轴
+  content: 多人调度时优先围绕主关系轴建立空间，其余人物按主关系的左右位置分配，避免多轴并行导致混乱。
+  keywords:
+  - 左右分配
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  topic: ''
+  quote: |-
+    多人调度里，**优先围绕主关系轴建立空间**，其余人物按主关系的左右分配。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#005
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#005
+    start: 125
+    end: 162
+  provenance_kind: 权威文档
+- id: gen_axis_0068
+  domain: axis_theory
+  title: 转向需拍下并换轴
+  content: 当主体运动发生转向时，要把转向过程拍下来，后续镜头按转向后的新轴线拍摄。
+  keywords:
+  - 运动轴
+  - 新轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动
+  - 轴线
+  topic: ''
+  quote: |-
+    运动转向是否被拍下来，后续是否按新轴拍摄？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#009
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#009
+    start: 120
+    end: 141
+  provenance_kind: 权威文档
+- id: gen_axis_0069
+  domain: axis_theory
+  title: 轴线失守改俯拍全景
+  content: 当调度本身让轴线无法维持时，正确做法是改用俯拍或全景重建空间，而不是硬切特写。
+  keywords:
+  - 硬切
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    **当调度本身让轴线无法维持时，正确的是改用俯拍或全景
+    重建空间，而不是硬切特写**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#005
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#005
+    start: 205
+    end: 248
+  provenance_kind: 权威文档
+- id: gen_axis_0070
+  domain: axis_theory
+  title: 转向用中性角度过渡
+  content: 当运动方向改变时，先用一个中性角度交代转向，再按新轴线拍摄后续镜头。
+  keywords:
+  - 过渡镜头
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 中性机位
+  topic: ''
+  quote: |-
+    当运动方向改变时，先用一个**中性角度**交代转向，再按新轴拍摄。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#005
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#005
+    start: 58
+    end: 91
+  provenance_kind: 权威文档
+- id: gen_axis_0071
+  domain: axis_theory
+  title: 例外须被选择
+  content: 所有越轴例外必须是有意选择的结果，而非疏忽忽略；分镜阶段应明确标注该越轴属于哪类例外。
+  keywords:
+  - 标注
+  - 越轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 分镜写法
+  - 越轴例外
+  topic: ''
+  quote: |-
+    **例外必须是被选择的，而不是被忽略的**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 247
+    end: 269
+  provenance_kind: 权威文档
+- id: gen_axis_0072
+  domain: axis_theory
+  title: 有意越轴需标记
+  content: 有意越轴必须给出明确标记——运动、中性机位、时间跳跃或视角切换；缺少标记的越轴只会被读成失误。
+  keywords:
+  - 中性机位
+  - 运动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 过渡
+  topic: ''
+  quote: |-
+    **有意越轴必须有明确的标记（运动、中性机位、时间跳跃或视角切换）**，
+    没有标记的越轴只会被读成"拍错了"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#002
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#002
+    start: 183
+    end: 238
+  provenance_kind: 权威文档
+- id: gen_axis_0073
+  domain: axis_theory
+  title: 越轴须能答为什么
+  content: 每一次越轴都要能回答“为什么越”，即越轴必须有明确的叙事或调度理由，否则不越。
+  keywords:
+  - 动机
+  - 理由
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 决策
+  topic: ''
+  quote: |-
+    每次越轴是否都能回答"为什么"？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#009
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#009
+    start: 168
+    end: 184
+  provenance_kind: 权威文档
+- id: gen_axis_0074
+  domain: axis_theory
+  title: 中性机位需前后各一
+  content: 用中性机位越轴时，越轴前后必须各有一个中性镜头；只用一个中性镜头仍会产生跳轴感。
+  keywords:
+  - 越轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 中性镜头
+  - 连续性
+  topic: ''
+  quote: |-
+    **中性机位越轴必须在越轴前后各有一个中性镜头**，只用一个仍然会跳；
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#003
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#003
+    start: 193
+    end: 228
+  provenance_kind: 权威文档
+- id: gen_axis_0075
+  domain: axis_theory
+  title: 插入镜头不带方向性
+  content: 用插入镜头隔开越轴时，插入镜头本身不能带方向性（如俯拍手部），否则观众会据其判断方向而察觉跳轴。
+  keywords:
+  - 越轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    **插入镜头越轴时，插入镜头的视角不能带方向性**（例如俯拍手部）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#003
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#003
+    start: 229
+    end: 263
+  provenance_kind: 权威文档
+- id: gen_axis_0076
+  domain: axis_theory
+  title: 运动越轴至少1.5秒
+  content: 用运动镜头越轴时，摇/移过轴线的过程时长至少 1.5 秒，低于此值观众看不清越轴过程，会误判为跳轴。
+  keywords:
+  - 时长
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动镜头
+  - 节奏
+  topic: ''
+  quote: |-
+    **运动越轴的时长至少 1.5 秒**，否则观众看不清过程；
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#003
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#003
+    start: 162
+    end: 192
+  provenance_kind: 权威文档
+- id: gen_axis_0077
+  domain: axis_theory
+  title: 同景别30°角度差
+  content: 相邻两个同景别镜头之间要满足至少30°的机位角度差，避免跳切感。
+  keywords:
+  - 30度
+  - 跳切
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 剪辑
+  topic: ''
+  quote: |-
+    相邻同景别镜头是否满足 30° 角度差？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#009
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#009
+    start: 96
+    end: 116
+  provenance_kind: 权威文档
+- id: gen_axis_0078
+  domain: axis_theory
+  title: 相邻镜左右关系一致
+  content: 相邻镜头中主体的左右位置关系必须保持一致；若不一致即构成越轴，需用越轴手段处理而非默认通过。
+  keywords:
+  - 一致性
+  - 越轴
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    相邻镜头的主体左右关系是否保持一致？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#009
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#009
+    start: 45
+    end: 63
+  provenance_kind: 权威文档
+- id: gen_axis_0079
+  domain: axis_theory
+  title: 小角度需改景别
+  content: 若相邻两镜机位角度变化小于30°，必须同时改变景别至少一档，用景别差弥补角度差，避免跳帧感。
+  keywords:
+  - 30°规则
+  - 跳帧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑连续性
+  topic: ''
+  quote: |-
+    若角度变化小于 30°，应当同时改变景别（至少一档）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#004
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#004
+    start: 109
+    end: 136
+  provenance_kind: 权威文档
+- id: gen_axis_0080
+  domain: axis_theory
+  title: 越轴服务意图
+  content: 越轴只在服务于明确意图时成立：表现迷失、冲突或失衡；无意图的越轴是失误。
+  keywords:
+  - 迷失
+  - 冲突
+  - 失衡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 失衡
+  tags:
+  - 轴线
+  - 情绪
+  - 调度
+  topic: ''
+  quote: |-
+    **越轴是否服务于意图（迷失、冲突、失衡）**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 78
+    end: 101
+  provenance_kind: 权威文档
+- id: gen_axis_0081
+  domain: axis_theory
+  title: 越轴需被后续镜头回收
+  content: 越轴后必须用后续镜头重新建立左右关系（回收），否则观众空间关系断裂；把回收镜头纳入分镜序列设计，而非只处理单镜。
+  keywords:
+  - 左右关系
+  - 空间重建
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  - 镜头序列
+  topic: ''
+  quote: |-
+    **越轴后是否会被后续镜头回收**（重新建立左右关系）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 102
+    end: 130
+  provenance_kind: 权威文档
+- id: gen_axis_0082
+  domain: axis_theory
+  title: 越轴需有手段标记
+  content: 越轴必须使用四种手段之一作为标记，且该标记的时长要足够让观众看清，否则越轴会被读成穿帮。
+  keywords:
+  - 时长
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 过渡
+  topic: ''
+  quote: |-
+    越轴是否有四种手段之一作为标记，且时长足够被看清？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#009
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#009
+    start: 67
+    end: 92
+  provenance_kind: 权威文档
+- id: gen_axis_0083
+  domain: axis_theory
+  title: 越轴须有标记
+  content: 越轴必须带可识别的标记（如中性机位、运动过渡、视角切换等），无标记的硬切越轴视为失误。
+  keywords:
+  - 中性机位
+  - 过渡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 过渡
+  topic: ''
+  quote: |-
+    **越轴是否有标记**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 70
+    end: 81
+  provenance_kind: 权威文档
+- id: gen_axis_0084
+  domain: axis_theory
+  title: 越轴作为失稳手段
+  content: 轴线用于稳定空间；当导演意图让观众失去空间稳定感时，越轴本身就是可用的表现手段，而非必须避免的错误。
+  keywords:
+  - 空间失稳
+  - 导演意图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不安
+  tags:
+  - 轴线
+  topic: ''
+  quote: |-
+    轴线是用来稳定空间的，**当导演想让观众失去
+    空间稳定感时，越轴正是手段**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#002
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#002
+    start: 109
+    end: 148
+  provenance_kind: 权威文档
+- id: gen_axis_0085
+  domain: axis_theory
+  title: 运动段落需重建轴线
+  content: 运动场景中轴线随运动方向改变，应为每一段运动重新建立轴线，而不是沿用上一段的轴线拍到底。
+  keywords:
+  - 运动轴线
+  - 段落划分
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    运动场景里轴线会随运动改变，因此需要**为每一段运动重新建立轴**：
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#005
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#005
+    start: 23
+    end: 57
+  provenance_kind: 权威文档
+- id: gen_axis_0086
+  domain: axis_theory
+  title: 转向过程必须入画
+  content: 运动方向改变时，转向过程本身必须被拍下来；若省略转向直接切到新方向，观众方位感会断裂。
+  keywords:
+  - 方位感
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: ''
+  quote: |-
+    **转向过程必须被拍下来**，否则观众的方位感会在切换时断裂。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#005
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#005
+    start: 92
+    end: 123
+  provenance_kind: 权威文档
+- id: gen_axis_0087
+  domain: axis_theory
+  title: 道具服装影长留参考
+  content: 道具、服装、影长等连续性元素每一镜都要有参考照可供核对，保证跨镜一致。
+  keywords:
+  - 参考照
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  - 场记
+  topic: ''
+  quote: |-
+    道具、服装、影长是否每镜有参考照可核？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#009
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#009
+    start: 145
+    end: 164
+  provenance_kind: 权威文档
+- id: gen_axis_0088
+  domain: axis_theory
+  title: 时间跳跃可越轴
+  content: 闪回或跨时段的同场戏允许越轴，时间断裂为空间关系变化提供依据。
+  keywords:
+  - 闪回
+  - 跨时段
+  - 越轴例外
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 越轴例外
+  topic: ''
+  quote: |-
+    **时间跳跃**（闪回或跨时段的同场戏）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#007
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#007
+    start: 178
+    end: 198
+  provenance_kind: 权威文档
+- id: gen_axis_0089
+  domain: axis_theory
+  title: 正反打作越轴替代
+  content: 需要越轴时优先改用正反打（过肩反打），它天然满足180°关系，是最安全的越轴替代方案。
+  keywords:
+  - 过肩
+  - 180°
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  topic: ''
+  quote: |-
+    正反打（过肩反打）天然满足 180° 关系，因此是最安全的越轴替代方案
+  source_ref:
+    url: repo://knowledge/source_notes/modern_axis_and_continuity.md
+    title: 现代轴线与连续性：什么时候可以越轴（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: d1a78357535d36bfd3ea6ac85c70161d167df3e5f9692fd529d77c499a65bf9d
+  chunk_id: modern_axis_and_continuity_md#004
+  source_span:
+    chunk_id: modern_axis_and_continuity_md#004
+    start: 197
+    end: 232
+  provenance_kind: 权威文档

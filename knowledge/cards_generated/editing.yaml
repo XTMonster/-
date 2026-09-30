@@ -2369,3 +2369,1660 @@
     start: 1411
     end: 1472
   provenance_kind: 网络语料
+- id: gen_edit_0076
+  domain: editing
+  title: J-cut与L-cut定义
+  content: J-cut指下一镜的声音先于画面出现，L-cut指上一镜的声音延续到下一镜画面之后；两者是声画错位的两种基本切法。
+  keywords:
+  - 声画错位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音先入
+  - 声音延后
+  - 剪辑
+  topic: editing
+  quote: |-
+    J-cut 是下一镜的声音先出现，L-cut 是上一镜的声音延续到下一镜。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#003
+  source_span:
+    chunk_id: modern_sound_and_impact_md#003
+    start: 28
+    end: 65
+  provenance_kind: 权威文档
+- id: gen_edit_0077
+  domain: editing
+  title: 比例变化即情绪曲线
+  content: 三轨的相对比例变化就是情绪曲线；只调音乐而环境与效果不动，观众会感到音乐在推，反而出戏。
+  keywords:
+  - 混音
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混音
+  topic: editing
+  quote: |-
+    三轨的**相对比例变化**就是情绪曲线；只调音乐而环境与效果不动，观众会感到"音乐在推"，反而出戏。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#001
+  source_span:
+    chunk_id: modern_sound_and_impact_md#001
+    start: 174
+    end: 224
+  provenance_kind: 权威文档
+- id: gen_edit_0078
+  domain: editing
+  title: 镜头长度节奏变化
+  content: 以 30 秒为窗口统计平均镜头长度，各窗口之间应有变化，避免整段节奏恒定。
+  keywords:
+  - 平均镜头长度
+  - 30秒窗口
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑率
+  topic: editing
+  quote: |-
+    每 30 秒窗口的平均镜头长度是否有变化？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#010
+  source_span:
+    chunk_id: modern_editing_theory_md#010
+    start: 124
+    end: 145
+  provenance_kind: 权威文档
+- id: gen_edit_0079
+  domain: editing
+  title: 低频主角与中频留位
+  content: 低频段指定一个明确的"主角"声源，同时在中频保留可听分量，避免低频堆叠把中频盖死。
+  keywords:
+  - 频谱
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 频率分配
+  - 混音
+  topic: editing
+  quote: |-
+    低频是否有明确的"主角"，并在中频保留了可听分量？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#010
+  source_span:
+    chunk_id: modern_sound_and_impact_md#010
+    start: 136
+    end: 161
+  provenance_kind: 权威文档
+- id: gen_edit_0080
+  domain: editing
+  title: J/L-cut 时间窗
+  content: 使用 J-cut 或 L-cut 时，声音提前或延后的量控制在 0.5–2 秒之间，超出则声画关系松散。
+  keywords:
+  - J-cut
+  - 声画错位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音剪辑
+  - 声画关系
+  topic: editing
+  quote: |-
+    J-cut / L-cut 的提前或延后是否在 0.5–2 秒之间？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#010
+  source_span:
+    chunk_id: modern_editing_theory_md#010
+    start: 86
+    end: 120
+  provenance_kind: 权威文档
+- id: gen_edit_0081
+  domain: editing
+  title: 静默前的噪声基底
+  content: 使用静默做冲击前，先建立一段噪声基底，基底长度取 0.5–3 秒，再切入静默。
+  keywords:
+  - 时长
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: editing
+  quote: |-
+    静默前是否建立了噪声基底，长度是否在 0.5–3 秒？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#010
+  source_span:
+    chunk_id: modern_sound_and_impact_md#010
+    start: 165
+    end: 192
+  provenance_kind: 权威文档
+- id: gen_edit_0082
+  domain: editing
+  title: 静默前先建噪声基底
+  content: 使用静默前必须先铺出噪声基底（环境声/底噪），否则抽掉环境声不产生对比，静默失效。
+  keywords:
+  - 对比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音设计
+  - 铺垫
+  topic: editing
+  quote: |-
+    **在静默之前必须先建立噪声基底**，否则抽掉环境声不会有对比。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#006
+  source_span:
+    chunk_id: modern_sound_and_impact_md#006
+    start: 165
+    end: 197
+  provenance_kind: 权威文档
+- id: gen_edit_0083
+  domain: editing
+  title: 叙事内与叙事外分工
+  content: 信息交代交给叙事内声音（角色能听到的声源），情绪渲染交给叙事外声音（配乐、旁白等角色听不到的声源），两者分工不要混用。
+  keywords:
+  - 叙事内声音
+  - 叙事外声音
+  - 信息
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声画关系
+  - 声音功能
+  topic: editing
+  quote: |-
+    信息是由叙事内声音完成，情绪由叙事外声音完成吗？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#010
+  source_span:
+    chunk_id: modern_sound_and_impact_md#010
+    start: 47
+    end: 71
+  provenance_kind: 权威文档
+- id: gen_edit_0084
+  domain: editing
+  title: 倒叙用视听标记区分
+  content: 倒叙段落用色彩、声音或画质做标记，让观众识别时间线的跳转。
+  keywords:
+  - 色彩
+  - 声音
+  - 画质
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 时间操纵
+  topic: editing
+  quote: |-
+    **倒叙**（用色彩、声音或画质做标记）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#006
+  source_span:
+    chunk_id: modern_editing_theory_md#006
+    start: 180
+    end: 200
+  provenance_kind: 权威文档
+- id: gen_edit_0085
+  domain: editing
+  title: J/L-cut 的时值
+  content: 做 J-cut（声音先入）或 L-cut（声音延后）时，声音相对画面的提前或延后量控制在 0.5–2 秒之间。
+  keywords:
+  - J-cut
+  - 声音先入
+  - 声音延后
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 声画错位
+  topic: editing
+  quote: |-
+    J-cut / L-cut 的提前或延后是否在 0.5–2 秒之间？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#010
+  source_span:
+    chunk_id: modern_sound_and_impact_md#010
+    start: 75
+    end: 109
+  provenance_kind: 权威文档
+- id: gen_edit_0086
+  domain: editing
+  title: 声画错位时间尺度
+  content: 做J-cut或L-cut时，声音提前或延后控制在0.5–2秒：少于0.5秒观众察觉不到过渡，超过2秒观众会以为画面出错。
+  keywords:
+  - 0.5-2秒
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 声音先入
+  - 声音延后
+  topic: editing
+  quote: |-
+    可执行的时间尺度是**声音提前或延后 0.5–2 秒**：少于 0.5 秒观众察觉不到
+    过渡，超过 2 秒会让观众以为画面错了。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#003
+  source_span:
+    chunk_id: modern_sound_and_impact_md#003
+    start: 66
+    end: 130
+  provenance_kind: 权威文档
+- id: gen_edit_0087
+  domain: editing
+  title: J-cut与L-cut的时间尺度
+  content: 做声画错位时，声音提前或延后控制在0.5–2秒：不足0.5秒观众察觉不到，超过2秒观众会怀疑画面出错。
+  keywords:
+  - 声画错位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音先入
+  - 声音延续
+  - 剪辑节奏
+  topic: editing
+  quote: |-
+    可执行的时间尺度是**提前或延后 0.5–2 秒**：不足 0.5 秒观众察觉不到，超过 2 秒会怀疑画面错了。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#004
+  source_span:
+    chunk_id: modern_editing_theory_md#004
+    start: 61
+    end: 117
+  provenance_kind: 权威文档
+- id: gen_edit_0088
+  domain: editing
+  title: 先剪无音乐版
+  content: 先把没有音乐的版本剪完再加音乐：若加音乐前节奏已成立，音乐只起加强作用；若节奏靠音乐才成立，说明画面节奏尚未解决，应回到画面重剪。
+  keywords:
+  - 节奏检验
+  - 剪辑流程
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音设计
+  - 节奏
+  - 工作流
+  topic: editing
+  quote: |-
+    先把没有音乐的版本剪完，再加音乐
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#008
+  source_span:
+    chunk_id: modern_sound_and_impact_md#008
+    start: 134
+    end: 150
+  provenance_kind: 权威文档
+- id: gen_edit_0089
+  domain: editing
+  title: 动作中途切与方向连续
+  content: 动作剪辑点取在动作进行中途而非动作完成后，并保持运动方向在相邻镜头间连续。
+  keywords:
+  - 动作剪辑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 动作切
+  - 连续性
+  topic: editing
+  quote: |-
+    动作是否在中途切、方向是否连续？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#010
+  source_span:
+    chunk_id: modern_editing_theory_md#010
+    start: 66
+    end: 82
+  provenance_kind: 权威文档
+- id: gen_edit_0090
+  domain: editing
+  title: 匹配剪辑的使用频率
+  content: 匹配剪辑是最强也最显眼的手法，应放在段落转折处使用，不要每10秒用一次，否则会因过于抢眼而失效。
+  keywords:
+  - 段落转折
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: editing
+  quote: |-
+    匹配剪辑是**最强也最显眼的手法**，因此适合用在段落转折处，不适合每 10 秒来一次。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#007
+  source_span:
+    chunk_id: modern_editing_theory_md#007
+    start: 102
+    end: 146
+  provenance_kind: 权威文档
+- id: gen_edit_0091
+  domain: editing
+  title: 匹配剪辑的三种类型
+  content: 匹配剪辑用动作或形状的相似性连接两个空间，具体分三类：形状匹配（如圆形月亮切圆形盘子）、动作匹配（举手切举手）、色彩匹配（同一色块跨越剪辑点）。
+  keywords:
+  - 形状匹配
+  - 动作匹配
+  - 色彩匹配
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 转场
+  topic: editing
+  quote: |-
+    匹配剪辑利用**动作或形状的相似性**把两个空间连起来：**形状匹配**（圆形的月亮切圆形的盘子）、**动作匹配**（举手切举手）、**色彩匹配**（同一色块跨越剪辑点）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#007
+  source_span:
+    chunk_id: modern_editing_theory_md#007
+    start: 16
+    end: 102
+  provenance_kind: 权威文档
+- id: gen_edit_0092
+  domain: editing
+  title: 时间压缩用插入镜头跨越
+  content: 压缩时间时省略不必要的过程，用插入镜头跨越时间，而不是完整呈现全过程。
+  keywords:
+  - 省略
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 时间操纵
+  topic: editing
+  quote: |-
+    **压缩**（省略不必要的过程，用插入镜头跨越时间）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#006
+  source_span:
+    chunk_id: modern_editing_theory_md#006
+    start: 133
+    end: 159
+  provenance_kind: 权威文档
+- id: gen_edit_0093
+  domain: editing
+  title: 远近镜头对白空间处理
+  content: 同一场对白在远景与近景之间切换时，要给两种景别使用不同的空间处理（混响、距离感、声像），不要沿用同一套对白声。
+  keywords:
+  - 景别
+  - 空间感
+  - 混响
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白处理
+  - 空间感
+  topic: editing
+  quote: |-
+    远近镜头的对白是否使用不同的空间处理？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#010
+  source_span:
+    chunk_id: modern_sound_and_impact_md#010
+    start: 113
+    end: 132
+  provenance_kind: 权威文档
+- id: gen_edit_0094
+  domain: editing
+  title: 一段音乐只担一职
+  content: 同一段音乐不要同时承担推进剧情与表达情绪两件事，二者择一，避免功能过载导致观众感受被稀释。
+  keywords:
+  - 音乐功能
+  - 剧情推进
+  - 情绪表达
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音设计
+  - 功能分配
+  topic: editing
+  quote: |-
+    同一段音乐不要同时承担"推进剧情"与"表达情绪"两件事
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#008
+  source_span:
+    chunk_id: modern_sound_and_impact_md#008
+    start: 90
+    end: 117
+  provenance_kind: 权威文档
+- id: gen_edit_0095
+  domain: editing
+  title: 声音改写画面判断
+  content: 同一表情配不同环境音与音乐会被读成不同情绪，因此判断镜头情绪时不能只看画面，必须把声音层一起纳入预演。
+  keywords:
+  - 声画关系
+  - 情绪判断
+  - 环境音
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声画对位
+  - 情绪
+  topic: editing
+  quote: |-
+    声音不是画面的附属，它**改写观众对画面的判断**：同一个表情配上不同的环境音与音乐，会被读成完全不同的情绪。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#001
+  source_span:
+    chunk_id: modern_sound_and_impact_md#001
+    start: 20
+    end: 75
+  provenance_kind: 权威文档
+- id: gen_edit_0096
+  domain: editing
+  title: 相邻镜头三硬约束
+  content: 同主体同景别的相邻镜头，机位角度差须大于30°；同角度时必须改变景别至少一档；视线匹配要求A看向画面右侧时B从画面左侧看回来。三条同时违反会让观众读成画面在抽搐。
+  keywords:
+  - 30°规则
+  - 景别差
+  - 视线匹配
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  - 景别
+  topic: editing
+  quote: |-
+    三条可判定的硬约束：**30° 规则**（同主体同景别的相邻镜头，机位角度差大于 30°）、**景别差至少一档**（同角度时必须改景别）、**视线匹配**（A 看向画面右侧，B 就从画面左侧看回来）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#003
+  source_span:
+    chunk_id: modern_editing_theory_md#003
+    start: 13
+    end: 113
+  provenance_kind: 权威文档
+- id: gen_edit_0097
+  domain: editing
+  title: 用声音预建下一场
+  content: 在上一场最后一镜中提前引入下一场的声音，把转场变成叙事推进而非停顿。
+  keywords:
+  - 转场
+  - 声音先入
+  - 叙事
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 转场
+  - 声音设计
+  - 段落结构
+  topic: editing
+  quote: |-
+    在上一场的最后一镜里让下一场的声音出现，把转场变成叙事而不是停顿。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#004
+  source_span:
+    chunk_id: modern_editing_theory_md#004
+    start: 170
+    end: 203
+  provenance_kind: 权威文档
+- id: gen_edit_0098
+  domain: editing
+  title: 声音层级写进镜头清单
+  content: 在预演阶段就把声音层级写进镜头清单，不要等后期填补，否则节奏会在混音阶段被推翻。
+  keywords:
+  - 预演
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 预演
+  - 声音设计
+  topic: editing
+  quote: |-
+    **在预演阶段就把声音层级写进镜头清单**，而不是等后期填补，否则节奏会在混音阶段被推翻。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#001
+  source_span:
+    chunk_id: modern_sound_and_impact_md#001
+    start: 83
+    end: 128
+  provenance_kind: 权威文档
+- id: gen_edit_0099
+  domain: editing
+  title: 声音先入须顺画面方向
+  content: 声音先入的方向应与画面运动方向一致，方向相反会让观众产生被拽回去的错觉。
+  keywords:
+  - 运动方向
+  - 方向一致
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声画关系
+  - 运动匹配
+  topic: editing
+  quote: |-
+    **声音先入的方向应当与画面运动方向一致**，否则观众会感到被拽回去。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#004
+  source_span:
+    chunk_id: modern_editing_theory_md#004
+    start: 203
+    end: 238
+  provenance_kind: 权威文档
+- id: gen_edit_0100
+  domain: editing
+  title: 声音先入方向一致
+  content: 声音先入的方向要与画面运动方向一致，否则观众会感到被拽回去。
+  keywords:
+  - 画面运动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声画关系
+  topic: editing
+  quote: |-
+    **声音先入的方向要与画面运动方向一致**，否则观众会感到被拽回去。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#003
+  source_span:
+    chunk_id: modern_sound_and_impact_md#003
+    start: 212
+    end: 246
+  provenance_kind: 权威文档
+- id: gen_edit_0101
+  domain: editing
+  title: 声音设计三轨层级
+  content: 声音设计最小层级为三轨：环境声（底噪与空间）、效果声（动作与物件）、音乐与情绪声。
+  keywords:
+  - 环境声
+  - 效果声
+  - 音乐
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音层级
+  topic: editing
+  quote: |-
+    声音设计的最小层级是三轨：**环境声（底噪与空间）、效果声（动作与物件）、音乐与情绪声**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#001
+  source_span:
+    chunk_id: modern_sound_and_impact_md#001
+    start: 128
+    end: 174
+  provenance_kind: 权威文档
+- id: gen_edit_0102
+  domain: editing
+  title: 对话场用声画错位
+  content: 对话场几乎全部使用J-cut与L-cut来切换，而非硬切，以保持对话的连贯与自然。
+  keywords:
+  - J-cut
+  - L-cut
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对话剪辑
+  topic: editing
+  quote: |-
+    对话场几乎全部使用这两种切法。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#003
+  source_span:
+    chunk_id: modern_sound_and_impact_md#003
+    start: 130
+    end: 145
+  provenance_kind: 权威文档
+- id: gen_edit_0103
+  domain: editing
+  title: 对话场用声画错位切
+  content: 对话场避免声音与画面同时硬切，改用J-cut或L-cut过渡，使切换不生硬。
+  keywords:
+  - 硬切
+  - 声画同步
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对话剪辑
+  topic: editing
+  quote: |-
+    **硬切声音与画面会显得生硬**，因此对话场几乎全部使用这两种切法。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#004
+  source_span:
+    chunk_id: modern_editing_theory_md#004
+    start: 111
+    end: 145
+  provenance_kind: 权威文档
+- id: gen_edit_0104
+  domain: editing
+  title: 平行剪辑用节奏差区分线
+  content: 平行剪辑两条叙事线时，让一条线保持慢速作为基准、另一条线用快速作为干扰；速度与光线反差越大，观众越容易分辨当前处于哪条线。
+  keywords:
+  - 叙事线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 交叉剪辑
+  topic: editing
+  quote: |-
+    平行剪辑（cross-cutting）用**节奏差**区分叙事线：**慢线做基准，快线做干扰**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#006
+  source_span:
+    chunk_id: modern_editing_theory_md#006
+    start: 13
+    end: 61
+  provenance_kind: 权威文档
+- id: gen_edit_0105
+  domain: editing
+  title: 切换频率随冲突升级加快
+  content: 平行剪辑中，切换频率应随冲突升级而加快，用越来越短的镜头交替推进紧张感。
+  keywords:
+  - 加速
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 平行剪辑
+  - 节奏
+  - 加速剪辑
+  topic: editing
+  quote: |-
+    **平行剪辑的切换频率应当随冲突升级而加快**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#006
+  source_span:
+    chunk_id: modern_editing_theory_md#006
+    start: 99
+    end: 123
+  provenance_kind: 权威文档
+- id: gen_edit_0106
+  domain: editing
+  title: 平行剪辑随冲突加速
+  content: 平行剪辑中，切换频率随冲突升级而加快，用剪辑率的提升对应叙事张力的提升。
+  keywords:
+  - 切换频率
+  - 冲突升级
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 节奏
+  - 张力
+  topic: editing
+  quote: |-
+    平行剪辑的切换频率是否随冲突升级而加快？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#010
+  source_span:
+    chunk_id: modern_editing_theory_md#010
+    start: 149
+    end: 169
+  provenance_kind: 权威文档
+- id: gen_edit_0107
+  domain: editing
+  title: 延展手法每场戏只用一次
+  content: 延展手法在同一场戏里只用一次，重复使用会让时间感彻底混乱。
+  keywords:
+  - 单次使用
+  - 时间感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 时间操纵
+  - 限制
+  topic: editing
+  quote: |-
+    **延展手法在同一场戏里只用一次**，重复使用会让时间感彻底混乱。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#006
+  source_span:
+    chunk_id: modern_editing_theory_md#006
+    start: 201
+    end: 234
+  provenance_kind: 权威文档
+- id: gen_edit_0108
+  domain: editing
+  title: 延展用多角度重复同一时刻
+  content: 延展时间时，对同一时刻用多个角度重复播放，用于强调关键动作或情绪。
+  keywords:
+  - 时间延展
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 强调
+  tags:
+  - 时间操纵
+  topic: editing
+  quote: |-
+    **延展**（同一时刻用多个角度重复播放，用于强调）
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#006
+  source_span:
+    chunk_id: modern_editing_theory_md#006
+    start: 161
+    end: 187
+  provenance_kind: 权威文档
+- id: gen_edit_0109
+  domain: editing
+  title: 信息动机避免重音切
+  content: 当剪辑动机是传递信息而非情绪时，避免在重音上切：重音会把注意力吸到声音上，使观众漏掉新镜头里的信息；判断标准是这一刀想让观众“感到”还是“知道”。
+  keywords:
+  - 信息剪辑
+  - 注意力
+  - 动机判断
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 信息传达
+  - 剪辑动机
+  topic: editing
+  quote: |-
+    当剪辑的动机是信息而不是情绪时，应当避免在重音上切
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#007
+  source_span:
+    chunk_id: modern_sound_and_impact_md#007
+    start: 140
+    end: 165
+  provenance_kind: 权威文档
+- id: gen_edit_0110
+  domain: editing
+  title: 用声音做切换动机
+  content: 当剪辑需要一个理由时，让新场景的声音（门、脚步、电话）提前出现，比硬切更容易被观众接受。
+  keywords:
+  - 声音先入
+  - 硬切
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音先入
+  - 转场
+  topic: editing
+  quote: |-
+    **用声音承担切换的动机**：当剪辑需要一个理由时，
+    让新场景的声音提前出现（门、脚步、电话）比硬切更容易被接受。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#003
+  source_span:
+    chunk_id: modern_sound_and_impact_md#003
+    start: 154
+    end: 211
+  provenance_kind: 权威文档
+- id: gen_edit_0111
+  domain: editing
+  title: 限制声域绑定视角
+  content: 想让观众跟随某个人物的视角时，把声音限制在该人物能听到的范围内，只保留他能听到的声源，以此绑定观众与人物的听觉视角。
+  keywords:
+  - 听觉范围
+  - 声域限制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 主观视角
+  - 声音设计
+  topic: editing
+  quote: |-
+    想让观众跟随某个人物的视角时，就限制声音只能来自他能听到的范围
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#002
+  source_span:
+    chunk_id: modern_sound_and_impact_md#002
+    start: 173
+    end: 204
+  provenance_kind: 权威文档
+- id: gen_edit_0112
+  domain: editing
+  title: 关键动作双角度覆盖
+  content: 拍摄覆盖时，每个关键动作至少准备两个可用角度，保证剪辑时该动作有替代切点可选。
+  keywords:
+  - 关键动作双角度覆盖
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 素材
+  topic: editing
+  quote: |-
+    覆盖是否支持每个关键动作有两个可用角度？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#010
+  source_span:
+    chunk_id: modern_editing_theory_md#010
+    start: 173
+    end: 193
+  provenance_kind: 权威文档
+- id: gen_edit_0113
+  domain: editing
+  title: 剪辑动机检查
+  content: 每一刀都必须能说出动力来源：要么推进信息，要么推进情绪；说不出动机的切点应删掉或合并。
+  keywords:
+  - 切点
+  - 信息
+  - 情绪
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑点
+  topic: editing
+  quote: |-
+    每一刀是否说得出动力（信息或情绪）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#010
+  source_span:
+    chunk_id: modern_editing_theory_md#010
+    start: 15
+    end: 33
+  provenance_kind: 权威文档
+- id: gen_edit_0114
+  domain: editing
+  title: 声音三轨与情绪比例
+  content: 混音时把声音分为环境、效果、音乐三条独立轨；三者的相对比例随情绪变化调整，而非固定配比。
+  keywords:
+  - 环境声
+  - 效果声
+  - 音乐
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音分层
+  - 混音
+  topic: editing
+  quote: |-
+    声音是否分为环境、效果、音乐三轨，且相对比例随情绪变化？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#010
+  source_span:
+    chunk_id: modern_sound_and_impact_md#010
+    start: 15
+    end: 43
+  provenance_kind: 权威文档
+- id: gen_edit_0115
+  domain: editing
+  title: 低频只留一个主角
+  content: 混音时若同时叠加多条低频会互相掩蔽、整体反而变轻；应为每段低频指定唯一主角（以爆炸为主或以音乐为主），其余声部让路。
+  keywords:
+  - 掩蔽
+  - 混音
+  - 主次
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 混音
+  - 层次
+  topic: editing
+  quote: |-
+    同时叠加多条低频会互相掩蔽，整体反而变轻
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#005
+  source_span:
+    chunk_id: modern_sound_and_impact_md#005
+    start: 135
+    end: 155
+  provenance_kind: 权威文档
+- id: gen_edit_0116
+  domain: editing
+  title: 叙事内外声音分工
+  content: 用叙事内声音（画面中的收音机、脚步等）交代信息与空间可信度，用叙事外声音（配乐、旁白）承担情绪与评价；不要把关键信息交给配乐，否则观众会感到被操纵。
+  keywords:
+  - 叙事内声音
+  - 叙事外声音
+  - 信息
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声画关系
+  - 声音设计
+  topic: editing
+  quote: |-
+    用叙事内声音完成信息，用叙事外声音完成情绪
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#002
+  source_span:
+    chunk_id: modern_sound_and_impact_md#002
+    start: 72
+    end: 93
+  provenance_kind: 权威文档
+- id: gen_edit_0117
+  domain: editing
+  title: 混响长短对应空间
+  content: 用混响量与直达声的比例塑造空间大小：小空间反射快、混响短；大空间反射慢、混响尾巴长。
+  keywords:
+  - 直达声
+  - 空间大小
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音设计
+  - 空间感
+  topic: editing
+  quote: |-
+    小空间反射快、混响短，大空间反射慢、尾巴长。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#004
+  source_span:
+    chunk_id: modern_sound_and_impact_md#004
+    start: 35
+    end: 57
+  provenance_kind: 权威文档
+- id: gen_edit_0118
+  domain: editing
+  title: 静默的时长尺度
+  content: 用静默制造主观耳鸣感时，静默时长取 0.5–3 秒：少于 0.5 秒观众读不出来，超过 3 秒会被误认为技术故障。
+  keywords:
+  - 耳鸣感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 主观沉浸
+  tags:
+  - 声音设计
+  - 节奏
+  topic: editing
+  quote: |-
+    可执行的时间尺度是**静默 0.5–3 秒**：少于 0.5 秒读不出来，超过 3 秒观众会开始怀疑是技术故障。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#006
+  source_span:
+    chunk_id: modern_sound_and_impact_md#006
+    start: 60
+    end: 116
+  provenance_kind: 权威文档
+- id: gen_edit_0119
+  domain: editing
+  title: 相邻镜头匹配约束
+  content: 相邻两镜需同时满足三个约束：机位夹角至少30°、景别有差异、视线方向匹配，否则视为跳切或越轴。
+  keywords:
+  - 30度原则
+  - 景别差
+  - 视线匹配
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  - 跳切
+  topic: editing
+  quote: |-
+    相邻镜头是否满足 30°、景别差与视线匹配的约束？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#010
+  source_span:
+    chunk_id: modern_editing_theory_md#010
+    start: 37
+    end: 62
+  provenance_kind: 权威文档
+- id: gen_edit_0120
+  domain: editing
+  title: 跳切的使用前提
+  content: 跳切必须在观众已经建立连续性预期之后使用，否则会被读成拍错；先立连续性再破坏它。
+  keywords:
+  - 连续性预期
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  topic: editing
+  quote: |-
+    **跳切必须在观众已经建立连续性预期之后使用**，否则只会被读成拍错。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#007
+  source_span:
+    chunk_id: modern_editing_theory_md#007
+    start: 204
+    end: 239
+  provenance_kind: 权威文档
+- id: gen_edit_0121
+  domain: editing
+  title: 跳切的定义与用途
+  content: 跳切是主动破坏连续性：同一机位、同一景别下的时间跳跃，用于表现焦虑、重复的日常或时间的快速流逝。
+  keywords:
+  - 连续性
+  - 时间跳跃
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 焦虑
+  tags:
+  - 时间压缩
+  topic: editing
+  quote: |-
+    跳切（jump cut）是主动破坏连续性：**同一机位、同一景别的时间跳跃**，用于表现焦虑、重复的日常或时间的快速流逝。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#007
+  source_span:
+    chunk_id: modern_editing_theory_md#007
+    start: 144
+    end: 205
+  provenance_kind: 权威文档
+- id: gen_edit_0122
+  domain: editing
+  title: 相邻镜头对照表检查法
+  content: 逐对检查相邻镜头时，画一张对照表列出每镜的景别、机位方位角、主体朝向与视线方向，逐对比较；违反约束的一对必须改其中一镜，改景别通常比改机位便宜。
+  keywords:
+  - 景别
+  - 方位角
+  - 视线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  - 检查表
+  topic: editing
+  quote: |-
+    可执行的检查方法是**画一张相邻镜头对照表**：列出每镜的景别、机位方位角、主体朝向与视线方向，逐对比较。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_editing_theory.md
+    title: 现代剪辑：动机、节奏与结构（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 9b3cf71a48a6bc876afffdb25b24a3718c58669fb152a33a788bf3cd5717988c
+  chunk_id: modern_editing_theory_md#003
+  source_span:
+    chunk_id: modern_editing_theory_md#003
+    start: 129
+    end: 182
+  provenance_kind: 权威文档
+- id: gen_edit_0123
+  domain: editing
+  title: 无音乐版本对照
+  content: 配乐完成后做一次去掉音乐的对照检验，确认去掉音乐后画面叙事仍然成立，否则说明音乐在替画面讲故事。
+  keywords:
+  - 配乐
+  - 对照检验
+  - 叙事
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 配乐
+  - 检验
+  topic: editing
+  quote: |-
+    音乐是否通过了"无音乐版本"的对照检验？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#010
+  source_span:
+    chunk_id: modern_sound_and_impact_md#010
+    start: 196
+    end: 216
+  provenance_kind: 权威文档
+- id: gen_edit_0124
+  domain: editing
+  title: 静默要抽掉环境声
+  content: 静默不等于无声轨留白，而是把环境声一并抽掉，才能让观众进入人物的主观听觉状态。
+  keywords:
+  - 主观状态
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 声音设计
+  - 主观视角
+  topic: editing
+  quote: |-
+    静默不是没有声音，而是**把环境声也抽掉**：完全的静默会制造"耳鸣感"，让观众进入人物的主观状态。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#006
+  source_span:
+    chunk_id: modern_sound_and_impact_md#006
+    start: 10
+    end: 60
+  provenance_kind: 权威文档
+- id: gen_edit_0125
+  domain: editing
+  title: 静默的两种落点
+  content: 静默放在最大冲击前的一瞬以打断听觉预期，或放在冲击之后把余韵留给画面；两种落点对应不同的情绪功能。
+  keywords:
+  - 冲击点
+  - 余韵
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音设计
+  - 剪辑点
+  topic: editing
+  quote: |-
+    静默的最佳位置是**在最大冲击之前的一瞬**（把观众的听觉预期打断），或**在冲击之后**（把余韵留给画面）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#006
+  source_span:
+    chunk_id: modern_sound_and_impact_md#006
+    start: 110
+    end: 165
+  provenance_kind: 权威文档
+- id: gen_edit_0126
+  domain: editing
+  title: 音乐进出对齐情绪转折
+  content: 音乐的进入与退出应落在画面情绪转折点上，而不是剪辑点上；剪辑点只决定画面切换，情绪转折点才决定音乐起落。
+  keywords:
+  - 情绪转折点
+  - 剪辑点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音设计
+  - 剪辑节奏
+  topic: editing
+  quote: |-
+    音乐的进入与退出应当在画面的情绪转折点上，而不是在剪辑点上
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#008
+  source_span:
+    chunk_id: modern_sound_and_impact_md#008
+    start: 55
+    end: 84
+  provenance_kind: 权威文档
+- id: gen_edit_0127
+  domain: editing
+  title: 音乐高点需铺垫
+  content: 音乐的高点应落在观众已经准备好的位置；提前2–4秒进入高点会显得廉价，需让情绪铺垫到位再推高。
+  keywords:
+  - 提前量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音设计
+  - 节奏
+  - 情绪铺垫
+  topic: editing
+  quote: |-
+    音乐的高点应当落在观众已经准备好的位置
+  source_ref:
+    url: repo://knowledge/source_notes/modern_sound_and_impact.md
+    title: 现代声音设计与声画关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 2946baccd3e5bc9027705fa052f7ff9646df7fa77f0e1176b97cb76ddb9ff687
+  chunk_id: modern_sound_and_impact_md#008
+  source_span:
+    chunk_id: modern_sound_and_impact_md#008
+    start: 205
+    end: 224
+  provenance_kind: 权威文档

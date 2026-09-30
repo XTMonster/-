@@ -2,7 +2,8 @@
 
 本文件逐条声明 `knowledge/` 下语料的来源、许可与归属，供审计。
 机器可判的许可门在 `tools/kb_fetch/validate_licenses.py`，白名单为
-`CC0 / CC-BY / CC-BY-SA / PublicDomain / OwnWork / ExplicitPermission`；
+`CC0 / CC-BY / CC-BY-SA / PublicDomain / OwnWork / ExplicitPermission /
+PersonalStudy`；
 不在白名单内的一律进 `work/license_rejects.jsonl`，**不入库**。
 
 ## 一、入库规则（写死的口径）
@@ -75,3 +76,41 @@
 4. `title` / `content` 非空，`domain` 属于九域。
 
 任一条不过 → 该条进 `cards_rejected`，并在报告里留原因。
+
+## 五、现代理论语料（v1.5）
+
+老语料的话题是 1900–1920 年的：机位、轴线、构图、剪辑的**原理**今天仍然
+成立，但数字摄影、虚拟制片、声音设计、动作与打击感、现代分镜与演出实务
+完全没有覆盖。第五节以下的材料就是补这一半。
+
+### 5.1 自撰现代理论笔记（`license: OwnWork`）
+
+下面这组笔记由本项目自撰，与第三节同属 `OwnWork`，正文在
+`knowledge/source_notes/`，规则同前（`quote` 逐字、≤2 句、≤120 字）。
+
+| 文件 | 主题（域） |
+|---|---|
+| `modern_cinematography_digital.md` | 曝光/快门/感光度、传感器与景深、宽容度、LUT 与虚拟棚（摄影） |
+| `modern_axis_and_continuity.md` | 三种轴线、越轴的四种安全手法、银幕方向与连续性（轴线） |
+| `modern_composition_theory.md` | 视觉重量、引导线与视线、图底分离、留白数值、画幅（构图） |
+| `modern_editing_theory.md` | 剪辑动机、动作剪辑点、声画错位、节奏分布、覆盖（剪辑） |
+| `modern_sound_and_impact.md` | 声画关系、J/L-cut、空间感、低频、静默、音乐克制（剪辑） |
+| `modern_performance_theory.md` | 目标/障碍/动作、节拍、潜台词、景别与表演尺度（表演） |
+| `modern_blocking_and_staging.md` | 为镜头调度、纵深三平面、群体调度、单灯位约束（调度） |
+| `modern_action_and_impact.md` | 准备/打击/恢复、打击感三要素、震动换算、速度斜坡（调度） |
+| `modern_storyboard_and_previs.md` | 镜头清单契约、动态分镜、三档精度、覆盖与预算（分镜） |
+| `modern_anime_and_2d_practice.md` | 演出、时间表与 1/2/3 格、冲击帧、口型经济、合成（动画） |
+| `modern_production_pipeline.md` | 阶段划分、虚拟制片、VFX 拆分、数据交接、版本纪律（制片） |
+
+### 5.2 现代教材/论文/讲义（`license: PersonalStudy`）
+
+`PersonalStudy` 是 v1.5 新增的一档，专门给**受版权保护的现代教材、论文与
+课程讲义**。它的含义是**作者本人（库的使用者）出于个人学习目的阅读与摘录**，
+与"拿到授权"（`ExplicitPermission`）不是一回事，因此单独记名：
+
+* **不对外分发**：本仓库不作为该部分材料的分发渠道；派生出的卡片只保留
+  **改写后的知识＋≤2 句短引用＋出处**，不保留原文长段；
+* **可一眼筛出**：需要对外发布、投稿或商用前，用
+  `grep -c 'PersonalStudy' knowledge/cards_generated/*.jsonl` 即可定位全部条目；
+* **逐条归属**：每一条的 `source_ref` 六字段（含 URL、作者、许可、抓取时间、
+  sha256）随卡片入库，可回溯到原页面。

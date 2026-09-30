@@ -4148,3 +4148,5564 @@
     start: 707
     end: 842
   provenance_kind: 网络语料
+- id: gen_perf_0132
+  domain: performance
+  title: 剧场性的正负两义
+  content: theatric 应取“为剧场目的而改编”的中性义，而非“夸张、煽情、做作”的贬义；判断素材时按前者标准取舍。
+  keywords:
+  - 术语定义
+  - 夸张
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 术语
+  - 改编
+  topic: ''
+  quote: |-
+    It should mean, and it will be so used in this book, _adapted for the purpose of the theatre_.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#008
+  source_span:
+    chunk_id: pg36580_txt#008
+    start: 124
+    end: 218
+  provenance_kind: 网络语料
+- id: gen_perf_0133
+  domain: performance
+  title: 性格塑造决定作品价值
+  content: 一场戏的持久价值落在性格塑造（characterization）上；性格塑造是让观众对剧中人物或主题产生同情的主要手段，因此表演与调度应把注意力集中在人物性格的呈现上。
+  keywords:
+  - 同情
+  - 注意力
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 表演
+  topic: ''
+  quote: |-
+    The permanent value of a play, however, rests on its characterization.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#017
+  source_span:
+    chunk_id: pg36580_txt#017
+    start: 193
+    end: 263
+  provenance_kind: 网络语料
+- id: gen_perf_0134
+  domain: performance
+  title: 情境须由人物生长
+  content: 不要先找强情绪效果再硬塞人物；若新场戏与原有角色无关，角色会变得难处理，正确做法是让情境从人物性格中生长出来。
+  keywords:
+  - 匹配
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物驱动
+  - 情境设计
+  topic: ''
+  quote: |-
+    Returning triumphantly with some strong emotional effect, he must perforce put the characters of the earlier scenes into these.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#013
+  source_span:
+    chunk_id: pg36580_txt#013
+    start: 1572
+    end: 1699
+  provenance_kind: 网络语料
+- id: gen_perf_0135
+  domain: performance
+  title: 个体化在类型内做区分
+  content: 个体化是在类型内部做区分，从粗放的差异一直做到非常细微的差别；写个体化角色时要在同一类型框架内找出并放大细微差异。
+  keywords:
+  - 细微差异
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 表演
+  topic: ''
+  quote: |-
+    Individualization differentiates within the types, running from broad distinctions to presentation of very subtle differences.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#017
+  source_span:
+    chunk_id: pg36580_txt#017
+    start: 2217
+    end: 2343
+  provenance_kind: 网络语料
+- id: gen_perf_0136
+  domain: performance
+  title: 画外歌声引入主角
+  content: 主角登场前，先用画外歌声由远及近（Outside a voice sings as it approaches in the distance）标示其位置与逼近，配合旁人台词反应，让观众先于主角获知环境危险。
+  keywords:
+  - 画外声
+  - 由远及近
+  - 登场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 画外音
+  - 声音引导
+  topic: ''
+  quote: |-
+    (_Outside a voice sings as it approaches in the distance._)
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#012
+  source_span:
+    chunk_id: pg36580_txt#012
+    start: 1170
+    end: 1229
+  provenance_kind: 网络语料
+- id: gen_perf_0137
+  domain: performance
+  title: 无统一则非戏
+  content: 互不连贯的片段或许能构成杂耍短剧或低等音乐喜剧脚本，但除非以故事统一起来（哪怕故事很单薄），否则不能成为一出戏。
+  keywords:
+  - 故事
+  - 片段
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 统一性
+  topic: ''
+  quote: |-
+    Unless unified in story, even though it be very slight, they cannot make a play.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#010
+  source_span:
+    chunk_id: pg36580_txt#010
+    start: 2065
+    end: 2145
+  provenance_kind: 网络语料
+- id: gen_perf_0138
+  domain: performance
+  title: 性格突变需充分铺垫
+  content: 人物在短时间内发生彻底转变（如从甘为情妇到弑君）时，仅靠他人责备与劝诫不足以支撑，必须给出与原有性格相称的转变依据。
+  keywords:
+  - 性格转变
+  - 说服力
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物弧线
+  - 转折
+  topic: ''
+  quote: |-
+    Nor are the reproaches and exhortations of her brother Melantius powerful enough to change a woman of her character so swiftly and completely.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#024
+  source_span:
+    chunk_id: pg36580_txt#024
+    start: 484
+    end: 626
+  provenance_kind: 网络语料
+- id: gen_perf_0139
+  domain: performance
+  title: 无关事件致混乱
+  content: 仅因历史同属一人、按时间顺序排列的例证性事件，彼此无关联，容易造成观众混乱。
+  keywords:
+  - 关联
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 连贯性
+  topic: ''
+  quote: |-
+    Illustrative incidents, unrelated except that historically they happen to the same person
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#009
+  source_span:
+    chunk_id: pg36580_txt#009
+    start: 1383
+    end: 1472
+  provenance_kind: 网络语料
+- id: gen_perf_0140
+  domain: performance
+  title: 无性格化止于闹剧
+  content: 仅有肢体动作只能停留在粗劣情节剧或闹剧层面；必须加入性格化来解释和诠释动作，作品才能进入更高形式。
+  keywords:
+  - 情节剧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 剧作层级
+  topic: ''
+  quote: |-
+    no higher form than crude melodrama or crude farce can develop till characterization appears to explain and interpret action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#003
+  source_span:
+    chunk_id: pg36580_txt#003
+    start: 1913
+    end: 2038
+  provenance_kind: 网络语料
+- id: gen_perf_0141
+  domain: performance
+  title: 事实陈述需带情感色彩
+  content: 仅陈述事实的台词虽清楚却毫无说话者的情感色彩；应像莎士比亚那样以共情赋予角色感受，使台词带有情绪温度。
+  keywords:
+  - 共情
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词
+  topic: ''
+  quote: |-
+    states the facts clearly enough, but wholly uncolored by the emotion of the speaker
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#028
+  source_span:
+    chunk_id: pg36580_txt#028
+    start: 312
+    end: 395
+  provenance_kind: 网络语料
+- id: gen_perf_0142
+  domain: performance
+  title: 动作贯穿戏剧史
+  content: 从希腊戏剧、中世纪奇迹剧到莎士比亚时代，身体动作始终居于中心；即便在人物塑造更精细的作品里，也不能取消核心动作，否则精细的性格刻画会失去意义。
+  keywords:
+  - 动作中心
+  - 性格刻画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 结构
+  topic: ''
+  quote: |-
+    Nor, as the drama develops, does physical action cease to be central.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#001
+  source_span:
+    chunk_id: pg36580_txt#001
+    start: 261
+    end: 330
+  provenance_kind: 网络语料
+- id: gen_perf_0143
+  domain: performance
+  title: 从故事起步更近目标
+  content: 以故事为起点比以理念或人物为起点更接近目标，因为故事本身已具备事件的组织。
+  keywords:
+  - 起点
+  - 效率
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作方法
+  topic: ''
+  quote: |-
+    Undoubtedly, however, he who begins with a story is nearer his goal than he who begins with an idea or a character.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#010
+  source_span:
+    chunk_id: pg36580_txt#010
+    start: 1830
+    end: 1945
+  provenance_kind: 网络语料
+- id: gen_perf_0144
+  domain: performance
+  title: 理解角色才写得简单
+  content: 作者对角色有完整共情时，角色会因情感充盈而说得简单直接；若缺乏对角色的理解，就会为辞藻本身而写，台词变得雕琢。
+  keywords:
+  - 共情
+  - 简洁
+  - 辞藻
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词
+  - 角色理解
+  topic: ''
+  quote: |-
+    the complete sympathy of Heywood with his characters makes them speak simply, out of the fullness of their emotion
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#028
+  source_span:
+    chunk_id: pg36580_txt#028
+    start: 1920
+    end: 2034
+  provenance_kind: 网络语料
+- id: gen_perf_0145
+  domain: performance
+  title: 作者的反讽渗入台词
+  content: 作者对角色陷入困境感到反讽、轻浮时，这种态度会渗入某个角色的语言，使其暂时'说得不正确'——因为此刻他按作者的口吻说话；此类越界需在后期修改中处理。
+  keywords:
+  - 角色语言
+  - 作者介入
+  - 修改
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 反讽
+  tags:
+  - 表演
+  - 修改
+  topic: ''
+  quote: |-
+    That transpires sometimes in the language of some other character who, at the moment, ceases to speak correctly because he speaks as I should.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#027
+  source_span:
+    chunk_id: pg36580_txt#027
+    start: 1357
+    end: 1499
+  provenance_kind: 网络语料
+- id: gen_perf_0146
+  domain: performance
+  title: 保持情境
+  content: 保持情境（holding a situation）指在场面中维持张力与关注，不急于推进，让情境充分展开。
+  keywords:
+  - 张力
+  - 维持
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    Holding a situation, 93-110.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 2276
+    end: 2304
+  provenance_kind: 网络语料
+- id: gen_perf_0147
+  domain: performance
+  title: 重音落在态度上
+  content: 关键台词的重音处理落在角色的态度与意图上，而不是字面意思上，用重音暴露潜台词而非复述信息。
+  keywords:
+  - 潜台词
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词
+  - 表演
+  topic: ''
+  quote: |-
+    关键台词的重音是否落在态度上，而不是字面意思上？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#010
+  source_span:
+    chunk_id: modern_performance_theory_md#010
+    start: 98
+    end: 122
+  provenance_kind: 权威文档
+- id: gen_perf_0148
+  domain: performance
+  title: 有才者难守类型
+  content: 具备观察力、洞察力或共情力的剧作者无法始终停留在类型上，会不时跃升到真正的个性化；因此同一剧本中可混用类型与个性化角色。
+  keywords:
+  - 个性化
+  - 跃升
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色塑造
+  - 创作方法
+  topic: ''
+  quote: |-
+    no dramatist with inborn or acquired ability to characterize, can hold consistently to types.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#018
+  source_span:
+    chunk_id: pg36580_txt#018
+    start: 1381
+    end: 1474
+  provenance_kind: 网络语料
+- id: gen_perf_0149
+  domain: performance
+  title: 转变要有充分动机
+  content: 写人物转变时，应像《月出》中的军士或《玩偶之家》的娜拉那样给出充分动机，让观众看到转变的因果链条，而非仅由作者宣称其性格已变。
+  keywords:
+  - 因果
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物弧光
+  topic: ''
+  quote: |-
+    Contrast with these plays the thoroughly motivated change in the Sergeant of _The Rising of the Moon_ or of Nora in _A Doll's House_.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#025
+  source_span:
+    chunk_id: pg36580_txt#025
+    start: 2182
+    end: 2315
+  provenance_kind: 网络语料
+- id: gen_perf_0150
+  domain: performance
+  title: 历史剧选材先立人物
+  content: 写历史剧时，先细致研究核心人物，再决定哪些事件、台词、动作可作为例证性动作搬上舞台；选材标准由人物性格决定，而非事件本身的戏剧性。
+  keywords:
+  - 人物研究
+  - 例证性动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物驱动
+  topic: ''
+  quote: |-
+    how can he decide which bits among his material make the best illustrative action before he has minutely studied the important figures?
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#023
+  source_span:
+    chunk_id: pg36580_txt#023
+    start: 419
+    end: 554
+  provenance_kind: 网络语料
+- id: gen_perf_0151
+  domain: performance
+  title: 对白须为嗓音而写
+  content: 写对白时要考虑说话嗓音的物理条件：纸上和谐平衡的散文若不为发声而设计，演员用再好的嗓音也念得难以忍受。
+  keywords:
+  - 可念性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    Emotion in the _tone_ and, on the part of the writer, consideration for the speaking voice.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#029
+  source_span:
+    chunk_id: pg36580_txt#029
+    start: 619
+    end: 710
+  provenance_kind: 网络语料
+- id: gen_perf_0152
+  domain: performance
+  title: 对白三要素
+  content: 写对白时须同时满足三点：语义清晰、推动故事前进、符合说话者性格；只陈述事实的对白会显得乏味平庸。
+  keywords:
+  - 清晰
+  - 推进
+  - 性格化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剧作
+  topic: ''
+  quote: |-
+    the three essentials of dialogue are clearness, helping the onward movement of the story, and doing all this in character
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#036
+  source_span:
+    chunk_id: pg36580_txt#036
+    start: 52
+    end: 173
+  provenance_kind: 网络语料
+- id: gen_perf_0153
+  domain: performance
+  title: 用台词本身承载情绪
+  content: 写对白时，应让台词文本自身传达情绪，而非依赖'Tenderly''Sarcastically'等表演提示；初稿阶段尤其要避免用舞台指示替台词补情绪，否则会写成无情绪的对白，把情绪工作推给演员。
+  keywords:
+  - 对白
+  - 舞台指示
+  - 初稿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演提示
+  topic: ''
+  quote: |-
+    the safest way is to insist, in early drafts, on making the text convey the desired emotion without such statements.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#035
+  source_span:
+    chunk_id: pg36580_txt#035
+    start: 646
+    end: 762
+  provenance_kind: 网络语料
+- id: gen_perf_0154
+  domain: performance
+  title: 小说对白需自足
+  content: 写小说对白时不能依赖语调与手势，必须把清晰度写足，因为作者无法保证读者读出正确语调或感到应有的动作。
+  keywords:
+  - 清晰度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白写法
+  - 媒介差异
+  topic: ''
+  quote: |-
+    In a story or novel, mere clearness would demand more because the author could not be sure that the reader would hit the right intonation
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#000
+  source_span:
+    chunk_id: pg36580_txt#000
+    start: 1037
+    end: 1174
+  provenance_kind: 网络语料
+- id: gen_perf_0155
+  domain: performance
+  title: 开场即调用表演手段
+  content: 写开场戏时，应像《The Case of Rebellious Susan》第一幕那样，在场景说明与人物进出中直接要求走位、指示动作与声音效果，而非只交代信息。
+  keywords:
+  - 走位
+  - 指示
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 调度
+  topic: ''
+  quote: |-
+    Note in the opening of _The Case of Rebellious Susan_, by Henry Arthur Jones, the effects demanded from the aids just named.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#029
+  source_span:
+    chunk_id: pg36580_txt#029
+    start: 1692
+    end: 1816
+  provenance_kind: 网络语料
+- id: gen_perf_0156
+  domain: performance
+  title: 戏剧对白是演员的速记
+  content: 写戏剧对白时按'速记'原则处理：只写事实与人物性格的关键词，把描述、叙述和部分对白交给演员的手势、面部表情、语调与动作去补足；不要像小说那样把一切写满。
+  keywords:
+  - 表演补足
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白写法
+  - 表演
+  topic: ''
+  quote: |-
+    dramatic dialogue is a kind of shorthand written by the dramatist for the actor to fill out
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#000
+  source_span:
+    chunk_id: pg36580_txt#000
+    start: 1260
+    end: 1351
+  provenance_kind: 网络语料
+- id: gen_perf_0157
+  domain: performance
+  title: 动作优先于台词
+  content: 写戏时把动作当作唤起观众情绪的最快手段：先让角色在危机中做出本能、自发的行为，再让台词解释动机；观众先要知道人物做了什么，才关心为什么。
+  keywords:
+  - 情绪唤起
+  - 危机
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 节奏
+  topic: ''
+  quote: |-
+    it is his quickest means of arousing emotion in an audience
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#002
+  source_span:
+    chunk_id: pg36580_txt#002
+    start: 481
+    end: 540
+  provenance_kind: 网络语料
+- id: gen_perf_0158
+  domain: performance
+  title: 舞台对白必须带情绪
+  content: 写舞台对白时，无论机智、哲理、道德真理或诗意语言多出色，都必须以明显、普通的真情实感为底；缺少情感语调的对白在台上无法被演员救活。
+  keywords:
+  - 情感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    Stage dialogue may have or may not have many qualities, but it must be emotional. It rests primarily on feeling.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#029
+  source_span:
+    chunk_id: pg36580_txt#029
+    start: 711
+    end: 823
+  provenance_kind: 网络语料
+- id: gen_perf_0159
+  domain: performance
+  title: 作者须钻进角色皮囊
+  content: 写角色情感时，作者要完全进入角色内部（'在他们的皮囊里'），对角色自身的悲喜保持中立；只有事后重读时才被感动，这种距离感反而保证台词准确。
+  keywords:
+  - 代入
+  - 中立
+  - 距离
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 创作方法
+  topic: ''
+  quote: |-
+    When the sentiments of my characters are in question I am absolutely in their skins, for my own part indifferent as to their griefs or joys.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#027
+  source_span:
+    chunk_id: pg36580_txt#027
+    start: 895
+    end: 1035
+  provenance_kind: 网络语料
+- id: gen_perf_0160
+  domain: performance
+  title: 情绪优先于动作
+  content: 判断一场戏是否成立，看它能否唤起观众情绪，而非动作是否热闹；动作只是情绪最容易理解的表达方式，不能替代情绪本身。
+  keywords:
+  - 戏剧核心
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 情绪设计
+  topic: ''
+  quote: |-
+    while action is popularly held to be central in drama, emotion is really the essential.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#005
+  source_span:
+    chunk_id: pg36580_txt#005
+    start: 524
+    end: 611
+  provenance_kind: 网络语料
+- id: gen_perf_0161
+  domain: performance
+  title: 自然与幻觉为终审
+  content: 判断一段动作或台词是否保留，以是否显得自然、是否维持幻觉为最终标准。
+  keywords:
+  - 终审标准
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 真实感
+  topic: ''
+  quote: |-
+    What seems natural, what makes for illusion, is the final test.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#034
+  source_span:
+    chunk_id: pg36580_txt#034
+    start: 1854
+    end: 1917
+  provenance_kind: 网络语料
+- id: gen_perf_0162
+  domain: performance
+  title: 戏剧性指情感反应
+  content: 判断素材是否"戏剧性"，标准是它能否在观众身上激起情感反应，而非是否包含动作；"适合在剧场条件下演出"应另用"剧场性"一词，避免混用。
+  keywords:
+  - 剧场性
+  - 术语
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 术语定义
+  topic: ''
+  quote: |-
+    _dramatic_ should stand only for the first two definitions, and that _theatric_ must be used for the third.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#006
+  source_span:
+    chunk_id: pg36580_txt#006
+    start: 458
+    end: 565
+  provenance_kind: 网络语料
+- id: gen_perf_0163
+  domain: performance
+  title: 理念须靠人物呈现
+  content: 剧作家的艺术或道德理念只能通过人物形象来传达，人物是他做情感调度的棋子，由此自然走向故事。
+  keywords:
+  - 情感调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 主题
+  topic: ''
+  quote: |-
+    The artistic or moral idea of the dramatist can be made clear only by human figures, the pawns with which he makes his emotional moves.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#010
+  source_span:
+    chunk_id: pg36580_txt#010
+    start: 713
+    end: 848
+  provenance_kind: 网络语料
+- id: gen_perf_0164
+  domain: performance
+  title: 剧作者须有语言敏感
+  content: 剧作者还应培养对语言最精微用法的强烈感觉——每个剧作家身上都要有一点诗人、文字艺术家的成分。
+  keywords:
+  - 文字
+  - 诗人
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词写作
+  topic: ''
+  quote: |-
+    also he should have, or develop, a strong feeling for the nicest use of language.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#037
+  source_span:
+    chunk_id: pg36580_txt#037
+    start: 1581
+    end: 1662
+  provenance_kind: 网络语料
+- id: gen_perf_0165
+  domain: performance
+  title: 反应镜头优先于说话镜头
+  content: 剪辑与拍摄时优先保留反应镜头而非说话镜头，且每个反应必须有明确的起点与终点，不能只截取中间状态。
+  keywords:
+  - 起点终点
+  - 剪辑取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 表演
+  topic: ''
+  quote: |-
+    反应镜头是否优先于说话镜头，反应是否有起点与终点？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#010
+  source_span:
+    chunk_id: modern_performance_theory_md#010
+    start: 40
+    end: 65
+  provenance_kind: 权威文档
+- id: gen_perf_0166
+  domain: performance
+  title: 强度断层比画面不连更伤
+  content: 剪辑时检查相邻镜头的强度衔接，若前一条结束在8而后一条从4开始，即出现强度断层；这种断层比画面不连更伤观感，应优先修正。
+  keywords:
+  - 剪辑检查
+  - 衔接
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 情绪连续性
+  topic: ''
+  quote: |-
+    剪辑时可以发现强度断层（例如前一条结束在 8，后一条从 4 开始），这类断层比画面不连更伤观感。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#007
+  source_span:
+    chunk_id: modern_performance_theory_md#007
+    start: 100
+    end: 148
+  provenance_kind: 权威文档
+- id: gen_perf_0167
+  domain: performance
+  title: 性格化决定爱憎
+  content: 动作之前与动作之中的性格刻画，决定观众对角色产生同情还是反感；这种爱憎再把单纯兴趣转化为最强烈的情绪反应。
+  keywords:
+  - 性格刻画
+  - 同情
+  - 反感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 人物塑造
+  topic: ''
+  quote: |-
+    Characterization, preceding and accompanying action, creates sympathy or repulsion for the figure or figures involved.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#003
+  source_span:
+    chunk_id: pg36580_txt#003
+    start: 1631
+    end: 1749
+  provenance_kind: 网络语料
+- id: gen_perf_0168
+  domain: performance
+  title: 动作与延迟交代
+  content: 动作可与延迟交代、解释性末幕配合使用，用动作填补信息延迟造成的空档。
+  keywords:
+  - 末幕
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 节奏
+  topic: ''
+  quote: |-
+    and delayed exposition, 211. and explanatory last act, 211.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 543
+    end: 602
+  provenance_kind: 网络语料
+- id: gen_perf_0169
+  domain: performance
+  title: 动作与高潮
+  content: 动作需与高潮段落结合，高潮处的动作安排决定段落强度。
+  keywords:
+  - 动作与高潮
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    and climax, 215-233
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 603
+    end: 622
+  provenance_kind: 网络语料
+- id: gen_perf_0170
+  domain: performance
+  title: 动作与悬念的关系
+  content: 动作（movement）与悬念相互关联：动作推进情节，悬念维持观众期待，二者需在段落中交替安排。
+  keywords:
+  - 情节
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    Movement-- and suspense, 207-212.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 393
+    end: 426
+  provenance_kind: 网络语料
+- id: gen_perf_0171
+  domain: performance
+  title: 性格刻画与心理刻画之分
+  content: 区分标准：只画出人物可辨识的性格特征属于character drawing；若进一步揭示复杂、矛盾的内在动机并让观众信服，才是psychology。多数好戏剧停留在性格刻画，只有伟大作品达到心理刻画。
+  keywords:
+  - 人物塑造
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 表演层次
+  topic: ''
+  quote: |-
+    By this distinction, most good drama shows character drawing; only the great work, psychology.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#019
+  source_span:
+    chunk_id: pg36580_txt#019
+    start: 189
+    end: 283
+  provenance_kind: 网络语料
+- id: gen_perf_0172
+  domain: performance
+  title: 理念剧仍含故事
+  content: 即使是以理念为主旨的戏（如《红袍》），也仍由若干人物各自的故事构成，如穆宗的希望、钻营与死亡，构成从开端到结局的事件群。
+  keywords:
+  - 事件群
+  - 开端结局
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 主题
+  topic: ''
+  quote: |-
+    Is it without story? Surely we have the story of Mouzon,--his hopes, his consequent intrigues for advancement, and his resulting death.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#010
+  source_span:
+    chunk_id: pg36580_txt#010
+    start: 1049
+    end: 1184
+  provenance_kind: 网络语料
+- id: gen_perf_0173
+  domain: performance
+  title: 主角为傀儡则全剧失效
+  content: 即使次要人物塑造完美，只要主要人物是任人摆布的傀儡，观众仍无法把作品当作高于纯虚构的戏剧接受。
+  keywords:
+  - 次要人物
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物塑造
+  - 主次
+  topic: ''
+  quote: |-
+    Even perfect characterization of some figures, when the chief are mere puppets, cannot make us accept the play as more than pure fiction.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#024
+  source_span:
+    chunk_id: pg36580_txt#024
+    start: 946
+    end: 1083
+  provenance_kind: 网络语料
+- id: gen_perf_0174
+  domain: performance
+  title: 动作为对白铺路
+  content: 即使目标观众更看重性格刻画与对白，也必须先用动作铺路：动作交代清楚发生了什么，之后的对白与性格描写才立得住。
+  keywords:
+  - 动作铺垫
+  - 性格刻画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: ''
+  quote: |-
+    it is necessary as preparing the way for that characterization and dialogue on which they insist
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#002
+  source_span:
+    chunk_id: pg36580_txt#002
+    start: 2176
+    end: 2272
+  provenance_kind: 网络语料
+- id: gen_perf_0175
+  domain: performance
+  title: 单一性格也需故事
+  content: 即便只强调一个性格特征（如对噪音的病态敏感），也须配一条计谋/事件线来承载，否则无法成戏。
+  keywords:
+  - 事件线
+  - 计谋
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 性格剧
+  - 情节线
+  topic: ''
+  quote: |-
+    Yet even in this play we find the story of the tricking of Morose by his nephew, Dauphine
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#009
+  source_span:
+    chunk_id: pg36580_txt#009
+    start: 941
+    end: 1030
+  provenance_kind: 网络语料
+- id: gen_perf_0176
+  domain: performance
+  title: 反应镜头时长0.5–2秒
+  content: 反应镜头的时间尺度取0.5–2秒；纯反应超过3秒且没有新的内心活动，观众会读成演员在等台词。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 剪辑
+  topic: ''
+  quote: |-
+    反应镜头的时间尺度通常是**0.5–2 秒**，超过 3 秒的纯反应如果没有新的内心活动，观众会把它读成"演员在等台词"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#002
+  source_span:
+    chunk_id: modern_performance_theory_md#002
+    start: 66
+    end: 127
+  provenance_kind: 权威文档
+- id: gen_perf_0177
+  domain: performance
+  title: 用动作展示性格
+  content: 可借由带说明性的动作来发展性格：让动作本身既制造笑料，又同时暴露角色的怯懦或混乱等性格特征。
+  keywords:
+  - 说明性动作
+  - 性格展示
+  - 喜剧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 滑稽
+  tags:
+  - 表演
+  - 动作设计
+  topic: ''
+  quote: |-
+    physical action, silly it is true, yet developing characterization by illustrative action
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#003
+  source_span:
+    chunk_id: pg36580_txt#003
+    start: 2092
+    end: 2181
+  provenance_kind: 网络语料
+- id: gen_perf_0178
+  domain: performance
+  title: 依语境推断隐含动作
+  content: 台词字面易误导时（如"looking-glass"），须结合上下文与时代背景（如当时的剑舞）推断其隐含动作，再决定表演方式。
+  keywords:
+  - 时代背景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 语境分析
+  topic: ''
+  quote: |-
+    is distinctly misleading because of the word, "looking-glass" unless one studies the context closely for implied business
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#031
+  source_span:
+    chunk_id: pg36580_txt#031
+    start: 1673
+    end: 1794
+  provenance_kind: 网络语料
+- id: gen_perf_0179
+  domain: performance
+  title: 风格须匹配假定性程度
+  content: 台词文体（诗体/散文体）的选择取决于整部作品设定的假定性程度：写实风格用日常散文体，理想化/象征风格才用诗体，文体与假定性错位会破坏幻觉。
+  keywords:
+  - 文体
+  - 写实
+  - 诗体
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词风格
+  - 写实主义
+  topic: ''
+  quote: |-
+    Style must conform to the degree of ideality which pervades the representation.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#037
+  source_span:
+    chunk_id: pg36580_txt#037
+    start: 16
+    end: 95
+  provenance_kind: 网络语料
+- id: gen_perf_0180
+  domain: performance
+  title: 按观众趣味定风格
+  content: 同一段台词对不同时代观众效果不同：伊丽莎白时代观众欣赏华丽辞藻本身，现代观众要求简洁；排演时应按目标观众的审美标准决定台词的呈现风格。
+  keywords:
+  - 时代
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    For an Elizabethan audience it came forth in a style delightful in itself.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#030
+  source_span:
+    chunk_id: pg36580_txt#030
+    start: 1588
+    end: 1662
+  provenance_kind: 网络语料
+- id: gen_perf_0181
+  domain: performance
+  title: 同一情境靠细分变化
+  content: 同一类情境（如复仇）可通过改变执行者身份（雇来的侦探、受害者本人、官员）与犯罪周围条件来产生不同戏，不必另找新情境。
+  keywords:
+  - 复仇
+  - 身份
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 变体
+  topic: ''
+  quote: |-
+    there are many different kinds of vengeance, as the person pursuing the crime is a hired detective, a wronged person, an officer of state, etc.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#011
+  source_span:
+    chunk_id: pg36580_txt#011
+    start: 1060
+    end: 1203
+  provenance_kind: 网络语料
+- id: gen_perf_0182
+  domain: performance
+  title: 类型与个性化混用
+  content: 同一部戏里可以既有高度个性化的角色（如《炼金术士》的Subtle、Face、Doll），又有纯类型角色（如Ananias、Mammon）；观众会因最好的角色塑造而忽略其余的类型化。
+  keywords:
+  - 类型与个性化混用
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色塑造
+  - 群像
+  topic: ''
+  quote: |-
+    Contrast the thoroughly real Subtle, Face, and Doll of _The Alchemist_[4] with the types, Ananias and Sir Epicure Mammon;
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#018
+  source_span:
+    chunk_id: pg36580_txt#018
+    start: 1644
+    end: 1765
+  provenance_kind: 网络语料
+- id: gen_perf_0183
+  domain: performance
+  title: 哑剧与独白的表演
+  content: 哑剧段落（无台词）与独白、独白式独语是两种独立的表演形式，需分别处理其动作与语言节奏。
+  keywords:
+  - 独语
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    Pantomime, 373-382, 388-390.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 848
+    end: 876
+  provenance_kind: 网络语料
+- id: gen_perf_0184
+  domain: performance
+  title: 哑剧的适用边界
+  content: 哑剧适合传达纯肢体动作与可由动作自然外化的情绪；当观众必须知道角色内心在想什么才能看懂动作时，改用台词或加解释性字幕，不要硬用哑剧。
+  keywords:
+  - 肢体动作
+  - 内心活动
+  - 清晰度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 叙事清晰
+  topic: ''
+  quote: |-
+    when action for its clearness depends on knowledge of what is going on in the mind of the actor, pantomime begins to fail.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#034
+  source_span:
+    chunk_id: pg36580_txt#034
+    start: 487
+    end: 609
+  provenance_kind: 网络语料
+- id: gen_perf_0185
+  domain: performance
+  title: 兴趣线统一素材
+  content: 在大量事件中埋一条贯穿的兴趣线（如泽诺克拉特的愿望），可赋予素材统一性并形成有头有尾的小故事。
+  keywords:
+  - 故事
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事线
+  - 统一性
+  topic: ''
+  quote: |-
+    This thread of interest gives a certain unity to the material presented, creates a slight story in the mass of incident
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#009
+  source_span:
+    chunk_id: pg36580_txt#009
+    start: 2396
+    end: 2515
+  provenance_kind: 网络语料
+- id: gen_perf_0186
+  domain: performance
+  title: 瞬时情绪可掩盖动机缺陷
+  content: 在强情绪、事件推进迅猛的段落里，观众被当下情绪裹挟，可能暂时忽略人物动机不足；但这是以牺牲作品长期评价为代价的取巧做法。
+  keywords:
+  - 观众
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    An audience, absorbed in the emotion of the moment, may overlook such faults of characterization in the theatre.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#024
+  source_span:
+    chunk_id: pg36580_txt#024
+    start: 627
+    end: 739
+  provenance_kind: 网络语料
+- id: gen_perf_0187
+  domain: performance
+  title: 个体化是艺术成熟的标志
+  content: 在戏剧中，个体化（individualization）始终是艺术发展成熟的标志；创作应从抽象、类型走向个体化角色。
+  keywords:
+  - 艺术发展
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 风格
+  topic: ''
+  quote: |-
+    Indeed, in drama, individualization is always the sign of developing art.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#017
+  source_span:
+    chunk_id: pg36580_txt#017
+    start: 853
+    end: 926
+  provenance_kind: 网络语料
+- id: gen_perf_0188
+  domain: performance
+  title: 危机处慎用比喻
+  content: 在戏剧危机点用明喻堆砌最强效果属陈规做法，易被讥为造作；危机处应靠人物自身语言而非外部修辞取胜。
+  keywords:
+  - 明喻
+  - 修辞
+  - 陈规
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白
+  - 修辞
+  topic: ''
+  quote: |-
+    at nearly all crises the Heroic Drama rested on a simile for its strongest effect
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#036
+  source_span:
+    chunk_id: pg36580_txt#036
+    start: 2079
+    end: 2160
+  provenance_kind: 网络语料
+- id: gen_perf_0189
+  domain: performance
+  title: 地点与时间的统一
+  content: 地点统一与时间统一是古典结构原则，用于约束场景转换的范围。
+  keywords:
+  - 地点统一
+  - 时间统一
+  - 结构
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 统一性
+  topic: ''
+  quote: |-
+    Place, unity of, 120-130.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 903
+    end: 928
+  provenance_kind: 网络语料
+- id: gen_perf_0190
+  domain: performance
+  title: 场景的定义
+  content: 场景（scene）以地点或时间的连续为单位定义，是分镜划分的基本单元。
+  keywords:
+  - 单元
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: ''
+  quote: |-
+    Scene, definition of, 130-132.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 1142
+    end: 1172
+  provenance_kind: 网络语料
+- id: gen_perf_0191
+  domain: performance
+  title: 事件需聚合
+  content: 堆砌各类事件而缺少聚合，会使整体效果不清晰；须把事件聚合成一个讲得好的故事。
+  keywords:
+  - 整体效果
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: ''
+  quote: |-
+    crowding incident of all kinds lacks the massing needed to give it clearness of total effect
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#009
+  source_span:
+    chunk_id: pg36580_txt#009
+    start: 1250
+    end: 1342
+  provenance_kind: 网络语料
+- id: gen_perf_0192
+  domain: performance
+  title: 群像齐声台词
+  content: 多人同时说同一意思的台词（如众人齐说“没有婚礼”）可作集体反应，用并列短句叠加情绪，制造群体一致的压迫感或喜剧感。
+  keywords:
+  - 群体反应
+  - 并列短句
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 失望
+  tags:
+  - 群戏
+  topic: ''
+  quote: |-
+    _Aline._ No wedding, no wedding! > _Together_
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#003
+  source_span:
+    chunk_id: pg36580_txt#003
+    start: 388
+    end: 433
+  provenance_kind: 网络语料
+- id: gen_perf_0193
+  domain: performance
+  title: 视角决定同情归属
+  content: 安排观众同情时，先确定以谁的视角看生活：若以浪子视角，受害者被看作傻瓜；若转向受害者视角，同一故事素材的同情对象就完全反转。
+  keywords:
+  - 浪子
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    The audience, viewing life through his eyes saw the victims of his selfishness as fools
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#011
+  source_span:
+    chunk_id: pg36580_txt#011
+    start: 2326
+    end: 2413
+  provenance_kind: 网络语料
+- id: gen_perf_0194
+  domain: performance
+  title: 静止的戏剧性
+  content: 完全静止（无动作）也可以具有戏剧性，可用于制造张力或停顿，不必每镜都安排动作。
+  keywords:
+  - 无动作
+  - 张力
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 停顿
+  topic: ''
+  quote: |-
+    Inaction, utter, possibly dramatic, 41.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 139
+    end: 178
+  provenance_kind: 网络语料
+- id: gen_perf_0195
+  domain: performance
+  title: 对白戏的节拍数量
+  content: 对白密集的一场戏通常安排 4–12 个节拍；节拍过少显得拖沓，过多则信息拥挤，可按此区间检查场次节奏。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    对白密集的一场戏通常有 4–12 个节拍
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#003
+  source_span:
+    chunk_id: modern_performance_theory_md#003
+    start: 56
+    end: 76
+  provenance_kind: 权威文档
+- id: gen_perf_0196
+  domain: performance
+  title: 风格须出自人物
+  content: 对白的魅力、优雅、机智、反讽必须源自说话者的性格；若从外部硬加装饰性文采，则违背性格化原则，观众与后世都不会接受。
+  keywords:
+  - 性格化
+  - 文采
+  - 外部装饰
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白
+  topic: ''
+  quote: |-
+    If the charm, the grace, the wit, the irony of the dialogue does not come from the characters speaking, that dialogue fails
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#036
+  source_span:
+    chunk_id: pg36580_txt#036
+    start: 1100
+    end: 1223
+  provenance_kind: 网络语料
+- id: gen_perf_0197
+  domain: performance
+  title: 对白与舞台动作配合
+  content: 对白需与舞台动作（stage business）配合，包括哑剧、面部表情与手势；演员靠声音、手势辅助传达。
+  keywords:
+  - 哑剧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 表演
+  topic: ''
+  quote: |-
+    dialogue and "stage business," 372-382. pantomime, 373-382.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 986
+    end: 1045
+  provenance_kind: 网络语料
+- id: gen_perf_0198
+  domain: performance
+  title: 时代须以动作例证
+  content: 将历史时代戏剧化时，须用动作例证该时代的主导特征，并由此必然生成一个故事。
+  keywords:
+  - 历史
+  - 故事
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 历史剧
+  - 动作化
+  topic: ''
+  quote: |-
+    Its chief characteristic or characteristics must be illustrated in action. Some story is inevitable.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#009
+  source_span:
+    chunk_id: pg36580_txt#009
+    start: 548
+    end: 648
+  provenance_kind: 网络语料
+- id: gen_perf_0199
+  domain: performance
+  title: 演说式煽情不可直接入戏
+  content: 布道者/演说家靠情绪对情绪打动观众，属演说而非剧作；若要把这种效果搬上舞台，必须整体重写为戏剧形式，不能照搬其表演。
+  keywords:
+  - 重写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 改编
+  topic: ''
+  quote: |-
+    They worked as speakers, not as playwrights.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#008
+  source_span:
+    chunk_id: pg36580_txt#008
+    start: 881
+    end: 925
+  provenance_kind: 网络语料
+- id: gen_perf_0200
+  domain: performance
+  title: 延宕的说明与动作
+  content: 延迟说明（delayed exposition）与动作推进相互配合：说明信息不宜一次给完，应随动作逐步释放。
+  keywords:
+  - 延迟说明
+  - 信息释放
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    Delayed exposition and movement, 211.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 332
+    end: 369
+  provenance_kind: 网络语料
+- id: gen_perf_0201
+  domain: performance
+  title: 开场说明的手法
+  content: 开场说明（preliminary exposition）可用多种手法呈现；需区分开场说明与后续说明，前者承担建立情境的任务。
+  keywords:
+  - 情境建立
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    devices in, 167-173. distinction between preliminary and later, 176-182.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 2031
+    end: 2103
+  provenance_kind: 网络语料
+- id: gen_perf_0202
+  domain: performance
+  title: 动作事件支撑性格戏
+  content: 当一场戏以人物塑造为主时，仍要安排一连串具体动作事件（如赶路、准备、捆绑、举刀、拥抱、天使降临、献羊）来承载它；没有这些中心动作，性格刻画就失去分量。
+  keywords:
+  - 性格刻画
+  - 场面设计
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 场面调度
+  topic: ''
+  quote: |-
+    Without all this central action, the fine characterization of the play would lose its significance.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#001
+  source_span:
+    chunk_id: pg36580_txt#001
+    start: 1026
+    end: 1125
+  provenance_kind: 网络语料
+- id: gen_perf_0203
+  domain: performance
+  title: 风格优先削弱动作与人物
+  content: 当严肃段落把动作和人物塑造从属于当时被认为最佳的表达标准时，戏的效力下降；应让表达标准服务于动作与人物，而非相反。
+  keywords:
+  - 人物塑造
+  - 表达标准
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物化
+  topic: ''
+  quote: |-
+    we find in the more serious portions both action and characterization subordinated to standards of expression supposed at the time to be best
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#026
+  source_span:
+    chunk_id: pg36580_txt#026
+    start: 337
+    end: 478
+  provenance_kind: 网络语料
+- id: gen_perf_0204
+  domain: performance
+  title: 素材相同，处理定倾向
+  content: 当人物与故事几乎不变时，仅靠处理方式即可改变观众立场：同一喜剧素材可让同情落在不幸的妻子而非丈夫身上。
+  keywords:
+  - 同情
+  - 立场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 立场
+  topic: ''
+  quote: |-
+    the material is so treated that our sympathies go to the unfortunate wife of _The Careless Husband_, not to the man himself
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#011
+  source_span:
+    chunk_id: pg36580_txt#011
+    start: 2798
+    end: 2921
+  provenance_kind: 网络语料
+- id: gen_perf_0205
+  domain: performance
+  title: 人物不肯入戏须让步
+  content: 当人物拒绝进入作者设定的精彩情境时，作者应承认人物是对的并让步，而非为保住情境强行驱赶人物。
+  keywords:
+  - 人物正确
+  - 情境取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物逻辑
+  - 创作态度
+  topic: ''
+  quote: |-
+    I don't want to give in, I don't want to lose that situation; but she's right, of course she's right, and the trouble is I know I've got to yield.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#022
+  source_span:
+    chunk_id: pg36580_txt#022
+    start: 2314
+    end: 2460
+  provenance_kind: 网络语料
+- id: gen_perf_0206
+  domain: performance
+  title: 情绪驱动台词写作
+  content: 当剧作者按正确方式工作时，角色的情绪会替他找到把情感传达给观众的恰当措辞，且每个词都承担信息量，不写可有可无的字。
+  keywords:
+  - 措辞
+  - 精炼
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情感传达
+  topic: ''
+  quote: |-
+    the emotion of his characters gives him the right words for carrying their feelings to the audience, and every word counts
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#028
+  source_span:
+    chunk_id: pg36580_txt#028
+    start: 1529
+    end: 1651
+  provenance_kind: 网络语料
+- id: gen_perf_0207
+  domain: performance
+  title: 表演替代叙述
+  content: 当台词依赖说话者的动作、语调与面部表情才能获得完整价值时（如被打断时的短促反应），就让表演承担信息，不要再用旁白或描述重复说明。
+  keywords:
+  - 动作
+  - 语调
+  - 面部表情
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 省略
+  topic: ''
+  quote: |-
+    Here we need the action of the speaker, his intonation, and his facial expression, if the speech is to have its full value.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#000
+  source_span:
+    chunk_id: pg36580_txt#000
+    start: 852
+    end: 975
+  provenance_kind: 网络语料
+- id: gen_perf_0208
+  domain: performance
+  title: 避免话完人未到
+  content: 当演员必须在某个词上落位时，台词分句要跟着走位调整，否则会出现“话说完了人还没走到”的空档，只能靠别的镜头盖过去。
+  keywords:
+  - 落位
+  - 分句
+  - 空档
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词节奏
+  - 剪辑衔接
+  topic: ''
+  quote: |-
+    否则会出现"话说完了人还没走到"的空档，剪辑只好用别的镜头盖过去。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#008
+  source_span:
+    chunk_id: modern_performance_theory_md#008
+    start: 203
+    end: 236
+  provenance_kind: 权威文档
+- id: gen_perf_0209
+  domain: performance
+  title: 用动作化解性格矛盾
+  content: 当观众觉得人物前后自相矛盾时，作者须以说明性动作（illustrative action）逐步揭示，让观众相信这只是表面矛盾；否则戏会跌落到通俗剧或闹剧的水平。
+  keywords:
+  - 表面矛盾
+  - 说明性动作
+  - 可信度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 说服
+  topic: ''
+  quote: |-
+    the psychologist in the dramatist, stepping to the front, must convince his audience that there is only a seeming contradiction.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#019
+  source_span:
+    chunk_id: pg36580_txt#019
+    start: 1525
+    end: 1653
+  provenance_kind: 网络语料
+- id: gen_perf_0210
+  domain: performance
+  title: 沉浸式旁白与动作并行
+  content: 当角色陷入沉思、对周围动作浑然不觉时，可让另一角色同时进行道具操作，形成内心独白与外部动作并行的双层调度。
+  keywords:
+  - 沉思
+  - 并行调度
+  - 内心独白
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 双层表演
+  topic: ''
+  quote: |-
+    He falls into disturbed reverie and is so absorbed in thinking out the situation that he is oblivious to what she does.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#032
+  source_span:
+    chunk_id: pg36580_txt#032
+    start: 1699
+    end: 1818
+  provenance_kind: 网络语料
+- id: gen_perf_0211
+  domain: performance
+  title: 静止也是表演手段
+  content: 当配角对话与人物刻画质量足够高时，主角可以完全不动，用静止（inaction）来承载情绪，不必强行加动作。
+  keywords:
+  - inaction
+  - 对话
+  - 刻画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情绪设计
+  topic: ''
+  quote: |-
+    and even by inaction, if characterization and dialogue by means of other figures are of high order
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#005
+  source_span:
+    chunk_id: pg36580_txt#005
+    start: 320
+    end: 418
+  provenance_kind: 网络语料
+- id: gen_perf_0212
+  domain: performance
+  title: 技术改变英雄主义处理
+  content: 当题材涉及英雄主义时，须考虑现代发明已改变其外在条件（如战争形态），因此同一英雄主义需要完全不同的戏剧处理方式。
+  keywords:
+  - 技术改变英雄主义处理
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 题材
+  - 时代
+  topic: ''
+  quote: |-
+    It is still heroism, but under conditions so different that it needs wholly different treatment dramatically.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#011
+  source_span:
+    chunk_id: pg36580_txt#011
+    start: 2171
+    end: 2280
+  provenance_kind: 网络语料
+- id: gen_perf_0213
+  domain: performance
+  title: 悬念与顺序
+  content: 悬念与事件呈现顺序相关：调整顺序可制造或削弱悬念，需在分镜排序时考虑。
+  keywords:
+  - 排序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  topic: ''
+  quote: |-
+    Order and suspense, 208-210.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 818
+    end: 846
+  provenance_kind: 网络语料
+- id: gen_perf_0214
+  domain: performance
+  title: 悬念与惊讶的区别
+  content: 悬念与惊讶是两种不同效果：悬念靠延迟信息，惊讶靠突然揭示，二者需区分使用。
+  keywords:
+  - 悬念与惊讶的区别
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    Surprise, 212-214. and suspense, distinction, 214.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 2047
+    end: 2097
+  provenance_kind: 网络语料
+- id: gen_perf_0215
+  domain: performance
+  title: 悬念与同情
+  content: 悬念需与观众对人物的同情结合，同情越强，悬念效果越明显。
+  keywords:
+  - 观众
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情感
+  topic: ''
+  quote: |-
+    and sympathy, 214-215.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 2181
+    end: 2203
+  provenance_kind: 网络语料
+- id: gen_perf_0216
+  domain: performance
+  title: 反应须在剧场条件下取得
+  content: 情绪反应必须在剧场所提供的条件（空间、观演关系、演出方式）下获得；因此素材在成为戏剧前，先要按这些条件改造。
+  keywords:
+  - 观演关系
+  - 改造
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剧场性
+  - 改编
+  topic: ''
+  quote: |-
+    This response must be gained under the conditions which a dramatist finds or develops in a theatre
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#008
+  source_span:
+    chunk_id: pg36580_txt#008
+    start: 1551
+    end: 1649
+  provenance_kind: 网络语料
+- id: gen_perf_0217
+  domain: performance
+  title: 情节过满则兴趣分散
+  content: 情节过于拥挤会让观众兴趣被分散；应让主线集中，使主角拥有独占舞台的空间，并把家庭/私人兴趣与历史/宏大题材挂钩。
+  keywords:
+  - 情节拥挤
+  - 主线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 主线
+  topic: ''
+  quote: |-
+    You are right about the Plot--it is too crowded & the interest too divided.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#013
+  source_span:
+    chunk_id: pg36580_txt#013
+    start: 29
+    end: 104
+  provenance_kind: 网络语料
+- id: gen_perf_0218
+  domain: performance
+  title: 戏剧靠动作与声音
+  content: 戏剧家可用的手段是手势、面部表情、舞台走位，尤其是声音；这些辅助手段加上演出时长限制，会极大影响对白的写法与长度。
+  keywords:
+  - 手势
+  - 表情
+  - 走位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 表演
+  topic: ''
+  quote: |-
+    gesture, facial expression, movement about the stage, and above all, the voice, aid the dramatist as they cannot aid the novelist.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#029
+  source_span:
+    chunk_id: pg36580_txt#029
+    start: 1466
+    end: 1596
+  provenance_kind: 网络语料
+- id: gen_perf_0219
+  domain: performance
+  title: 情绪落差与对比
+  content: 戏剧性可建立在情绪的同量复制、减量、增量或制造对比情绪之上；从闹剧、滑稽剧到高喜剧与悲剧都以此为基础，编排段落时可用情绪落差而非单纯冲突来制造效果。
+  keywords:
+  - 情绪对比
+  - 戏剧性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 情绪设计
+  topic: ''
+  quote: |-
+    That it is duplication of emotion to the same, a less, or a greater extent or the creation of contrasting emotion which underlies all drama
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#007
+  source_span:
+    chunk_id: pg36580_txt#007
+    start: 655
+    end: 794
+  provenance_kind: 网络语料
+- id: gen_perf_0220
+  domain: performance
+  title: 起点无优劣
+  content: 戏可以从任何所见或所想之物开始，广义上说没有哪个起点比另一个更好，关键在于它能否激起剧作家的情感并迫使其写下去。
+  keywords:
+  - 情感
+  - 动机
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作方法
+  topic: ''
+  quote: |-
+    Speaking broadly, there is no reason why one source is better than another.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#010
+  source_span:
+    chunk_id: pg36580_txt#010
+    start: 1472
+    end: 1547
+  provenance_kind: 网络语料
+- id: gen_perf_0221
+  domain: performance
+  title: 塑造依赖精准台词
+  content: 成功的人物塑造很大程度取决于措辞得当的台词；写静场戏时，靠台词把角色的过去、可能性和关系交代清楚，才能支撑起无动作的表演。
+  keywords:
+  - 措辞
+  - 人物塑造
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 写作
+  topic: ''
+  quote: |-
+    characterization so successful must depend a good deal on well-chosen words.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#004
+  source_span:
+    chunk_id: pg36580_txt#004
+    start: 2198
+    end: 2274
+  provenance_kind: 网络语料
+- id: gen_perf_0222
+  domain: performance
+  title: 硬塞情境的两种恶果
+  content: 把新场戏强加给原人物会造成明显的不匹配；若反过来修改人物去迁就新场戏，人物又不再契合原有场戏，形成来回拉扯的死循环。
+  keywords:
+  - 不匹配
+  - 修改人物
+  - 死循环
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物一致性
+  - 结构
+  topic: ''
+  quote: |-
+    the scenes are foisted on the original characters, becoming obvious misfits, or that the original characters are so modified as to fit them.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#013
+  source_span:
+    chunk_id: pg36580_txt#013
+    start: 1907
+    end: 2047
+  provenance_kind: 网络语料
+- id: gen_perf_0223
+  domain: performance
+  title: 揭示内心换取共情
+  content: 把角色内心正在想什么直接呈现给观众，单纯的兴趣就会转为同情。可用独白、反应特写或主观视点让观众进入角色心理。
+  keywords:
+  - 内心呈现
+  - 主观视点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 同情
+  tags:
+  - 表演
+  - 心理描写
+  topic: ''
+  quote: |-
+    Reveal to him exactly what is passing in the crazed mind of the woman, and his mere interest will probably turn to sympathy.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#003
+  source_span:
+    chunk_id: pg36580_txt#003
+    start: 1506
+    end: 1630
+  provenance_kind: 网络语料
+- id: gen_perf_0224
+  domain: performance
+  title: 从类型名到个人名
+  content: 把角色前缀从类型称谓（如"A Lord""A Page"）改为具体人名（如"Eustace""Jacques"），会迫使创作者对角色做个性化处理，从而自然带来人物性格的个体化。
+  keywords:
+  - 命名
+  - 个体化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 设定
+  topic: ''
+  quote: |-
+    they changed these prefixes to "Eustace," "Jacques," "Nano," etc.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#017
+  source_span:
+    chunk_id: pg36580_txt#017
+    start: 672
+    end: 737
+  provenance_kind: 网络语料
+- id: gen_perf_0225
+  domain: performance
+  title: 走位即表演证据
+  content: 把走位当作表演的物理证据而非外部调度：人物改变与他人的距离，用来外化关系的改变，而不是单纯为了画面好看。
+  keywords:
+  - 距离
+  - 关系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    走位不是表演之外的调度，它是**表演的物理证据**：人物改变与他人的距离，说明关系正在改变。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#008
+  source_span:
+    chunk_id: modern_performance_theory_md#008
+    start: 12
+    end: 58
+  provenance_kind: 权威文档
+- id: gen_perf_0226
+  domain: performance
+  title: 抽象角色最省力
+  content: 抽象（abstractions）允许作者几乎不必考虑性格塑造就能随意安排台词与行动，是最省力的写法，但代价是人物缺乏辨识度。
+  keywords:
+  - 性格塑造
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 写法
+  topic: ''
+  quote: |-
+    Abstractions permit an author to say what he pleases with the least possible thought for characterization.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#017
+  source_span:
+    chunk_id: pg36580_txt#017
+    start: 1988
+    end: 2094
+  provenance_kind: 网络语料
+- id: gen_perf_0227
+  domain: performance
+  title: 反应镜头优先拍
+  content: 拍对话场面时，先拍听话者的反应镜头，再拍说话者的镜头；因为观众看的是听的人，反应素材缺失会让剪辑无料可用。
+  keywords:
+  - 对话场面
+  - 拍摄顺序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 对话
+  topic: ''
+  quote: |-
+    对话场面里，观众看的是**听的人**。因此拍摄时的优先级是：先拿到听话者的反应镜头，再拿到说话者的镜头。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#002
+  source_span:
+    chunk_id: modern_performance_theory_md#002
+    start: 14
+    end: 66
+  provenance_kind: 权威文档
+- id: gen_perf_0228
+  domain: performance
+  title: 脾性决定语体
+  content: 按人物脾性分配语体：忧郁易怒者用讽刺机智、语气肯定；快活乐观者用诙谐机智、语气随意，因其更少受判断力约束。
+  keywords:
+  - 机智
+  - 语气
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白
+  - 人物
+  topic: ''
+  quote: |-
+    A character of a splenetic and peevish humour should have a satirical wit. A jolly and sanguine humour should have a facetious wit.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#036
+  source_span:
+    chunk_id: pg36580_txt#036
+    start: 1417
+    end: 1548
+  provenance_kind: 网络语料
+- id: gen_perf_0229
+  domain: performance
+  title: 先定落点再定节奏
+  content: 排练顺序为先定走位落点、再定台词节奏；落点作为节拍转换的物理标记，台词分句随落点调整。
+  keywords:
+  - 节拍
+  - 排练顺序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节拍
+  - 排练
+  topic: ''
+  quote: |-
+    排练时应当先定走位落点，再定台词节奏：**走位落点就是节拍转换的物理标记**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#008
+  source_span:
+    chunk_id: modern_performance_theory_md#008
+    start: 127
+    end: 166
+  provenance_kind: 权威文档
+- id: gen_perf_0230
+  domain: performance
+  title: 情绪到情绪的公式
+  content: 整场戏按“从情绪到情绪”的公式结构：起点是角色或剧作家的情绪，终点是观众的情绪，中间用动作作为最短路径连接。
+  keywords:
+  - 情绪弧线
+  - 结构公式
+  - 观众
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: ''
+  quote: |-
+    "From emotions to emotions" is the formula for any good play.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#002
+  source_span:
+    chunk_id: pg36580_txt#002
+    start: 83
+    end: 144
+  provenance_kind: 网络语料
+- id: gen_perf_0231
+  domain: performance
+  title: 模仿性动作抓注意力
+  content: 无论何种题材与时代，抓住并维持观众注意力的核心手段是演员的模仿性身体动作（physical action），而非台词或人物塑造；设计场面时先确保有可见的动作事件。
+  keywords:
+  - 身体动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 调度
+  topic: ''
+  quote: |-
+    the chief essential in winning and holding the attention of the spectator was imitative movement by the actors, that is, physical action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#001
+  source_span:
+    chunk_id: pg36580_txt#001
+    start: 124
+    end: 261
+  provenance_kind: 网络语料
+- id: gen_perf_0232
+  domain: performance
+  title: 舞台指示的朗读取舍
+  content: 朗读剧本时，要么把指示如何念台词的舞台指示一并念出，要么删去；若保留，它们会成为评判朗读的别扭标准，若删去，快速朗读时又常来不及跳过。
+  keywords:
+  - 舞台指示的朗读取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 剧本
+  topic: ''
+  quote: |-
+    do we give all the stage directions, or, cutting out those which state how certain speeches should be read, try to give these as directed?
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#029
+  source_span:
+    chunk_id: pg36580_txt#029
+    start: 985
+    end: 1123
+  provenance_kind: 网络语料
+- id: gen_perf_0233
+  domain: performance
+  title: 把人物情感放进声音
+  content: 朗读华丽或看似空洞的台词时，演员应把角色此刻的情感（如丧子之父的悲痛）注入声音，使辞藻成为传达情绪的有效媒介，而非障碍。
+  keywords:
+  - 情感注入
+  - 角色
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 悲痛
+  tags:
+  - 表演
+  - 台词
+  - 情绪
+  topic: ''
+  quote: |-
+    Put the feeling of the father into the voice as one reads, and lo, these lines are not a bad medium for expressing Hieronimo's grief.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#030
+  source_span:
+    chunk_id: pg36580_txt#030
+    start: 1328
+    end: 1461
+  provenance_kind: 网络语料
+- id: gen_perf_0234
+  domain: performance
+  title: 戏剧情境数量有限
+  content: 构思情节时不必刻意寻找新奇题材；可用的戏剧情境数量有限（如三十六种），差异主要来自细分方式与人物、条件的不同，而非情境本身全新。
+  keywords:
+  - 题材
+  - 三十六种
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剧作
+  topic: ''
+  quote: |-
+    A book has been published to show that there are but thirty-six possible dramatic situations.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#011
+  source_span:
+    chunk_id: pg36580_txt#011
+    start: 527
+    end: 620
+  provenance_kind: 网络语料
+- id: gen_perf_0235
+  domain: performance
+  title: 标出转换点检查法
+  content: 检查节拍划分时，把剧本按节拍分段并为每段写出一个动词；若相邻两节拍之间找不出动词变化，说明二者实为同一节拍，应合并。
+  keywords:
+  - 动词
+  - 分段
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节拍
+  - 剧本分析
+  topic: ''
+  quote: |-
+    把剧本按节拍分段，写出每一段的动词，如果在两个相邻节拍之间找不出动词的变化，那么这两个节拍其实是同一个，应当合并
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#003
+  source_span:
+    chunk_id: modern_performance_theory_md#003
+    start: 143
+    end: 199
+  provenance_kind: 权威文档
+- id: gen_perf_0236
+  domain: performance
+  title: 以静默收束段落
+  content: 段落结尾用一声“Chut!”和“Listen!”把动作停住，让全场转入静默倾听，用停顿而非台词收尾，为下一拍留出空白。
+  keywords:
+  - 停顿
+  - 收尾
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 警觉
+  tags:
+  - 节奏
+  - 停顿
+  topic: ''
+  quote: |-
+    (_They are just starting off when Bastian stops them._)
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#012
+  source_span:
+    chunk_id: pg36580_txt#012
+    start: 2276
+    end: 2331
+  provenance_kind: 网络语料
+- id: gen_perf_0237
+  domain: performance
+  title: 一场戏的目标障碍动作
+  content: 每场戏开拍前用一句话写出角色的目标、障碍与动作；三者写不出来说明这场戏的调度与表演没有可执行依据，需先改戏再拍。
+  keywords:
+  - 场次分析
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 调度
+  - 场次
+  topic: ''
+  quote: |-
+    每一场是否能用一句话写出目标、障碍与动作？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#010
+  source_span:
+    chunk_id: modern_performance_theory_md#010
+    start: 15
+    end: 36
+  provenance_kind: 权威文档
+- id: gen_perf_0238
+  domain: performance
+  title: 用目标障碍动作拆戏
+  content: 每场戏用一句"他想要X，但Y挡着，所以他正在做Z"写清目标、障碍、动作；写不出这句就说明该场人物没有可演的动词。
+  keywords:
+  - 动词
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演调度
+  - 角色动机
+  topic: ''
+  quote: |-
+    每一场戏用一句"他想要 X，但 Y 挡着，所以他正在做 Z"写清，写不出这一句就说明人物在这一场没有可演的动词。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#001
+  source_span:
+    chunk_id: modern_performance_theory_md#001
+    start: 100
+    end: 156
+  provenance_kind: 权威文档
+- id: gen_perf_0239
+  domain: performance
+  title: 记录情绪强度起止值
+  content: 每条镜头都要记录情绪强度的起止值，使相邻镜头的情绪曲线可衔接、可对比，避免剪辑时情绪断层。
+  keywords:
+  - 镜头记录
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  - 镜头
+  topic: ''
+  quote: |-
+    每条镜头是否记录了情绪强度的起止值？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#010
+  source_span:
+    chunk_id: modern_performance_theory_md#010
+    start: 155
+    end: 173
+  provenance_kind: 权威文档
+- id: gen_perf_0240
+  domain: performance
+  title: 反应要有起止变化线
+  content: 每次反应都要有明确的起点与终点，即从听到到决定之间有一条可看出的变化线；反应若是平的，剪辑只能靠缩短镜头制造节奏，会丢掉表演本身。
+  keywords:
+  - 起点终点
+  - 表演
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 剪辑
+  topic: ''
+  quote: |-
+    **每一次反应都要有明确的起点与终点**，即从"听到"到"决定"之间有一条可看出的变化线。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#002
+  source_span:
+    chunk_id: modern_performance_theory_md#002
+    start: 138
+    end: 183
+  provenance_kind: 权威文档
+- id: gen_perf_0241
+  domain: performance
+  title: 特写禁用大动作
+  content: 特写镜头不要用大动作：抬手会遮住半张脸并显得夸张；同样的抬手在远景里才刚好被看见。表演尺度必须与景别匹配，同一段表演需按景别分别拍摄。
+  keywords:
+  - 表演尺度
+  - 景别匹配
+  - 远景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演尺度
+  - 景别
+  topic: ''
+  quote: |-
+    特写镜头不要用大动作
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#005
+  source_span:
+    chunk_id: modern_performance_theory_md#005
+    start: 148
+    end: 158
+  provenance_kind: 权威文档
+- id: gen_perf_0242
+  domain: performance
+  title: 独白与旁白的运用
+  content: 独白（soliloquy）与旁白（aside）用于直接外化内心；使用时需与整体对白风格协调，不可滥用。
+  keywords:
+  - 内心
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    soliloquy, 382-390. aside, 393-396.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 1046
+    end: 1081
+  provenance_kind: 网络语料
+- id: gen_perf_0243
+  domain: performance
+  title: 写人而非写神
+  content: 现代写实剧不采用古典悲剧的"神的语言"，目标是刻画人，因此台词应贴近人的日常说话方式，而非拔高的诗化腔调。
+  keywords:
+  - 日常语言
+  - 反诗化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词风格
+  - 写实主义
+  topic: ''
+  quote: |-
+    what I desired to depict were human beings, and therefore I would not let them talk "the language of the Gods."
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#037
+  source_span:
+    chunk_id: pg36580_txt#037
+    start: 1069
+    end: 1180
+  provenance_kind: 网络语料
+- id: gen_perf_0244
+  domain: performance
+  title: 走位与落座标记
+  content: 用“横移至左中并坐下”这类走位提示标记角色在对话中的位置变化，为机位与调度提供依据。
+  keywords:
+  - 调度标记
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场面调度
+  - 舞台指示
+  topic: ''
+  quote: |-
+    (_Crossing L.C. and sitting._)
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#016
+  source_span:
+    chunk_id: pg36580_txt#016
+    start: 622
+    end: 652
+  provenance_kind: 网络语料
+- id: gen_perf_0245
+  domain: performance
+  title: 自然哑剧非程式手势
+  content: 用于替代对白的哑剧指人物面部与身体自然流露情感的动作，而非 Commedia dell'arte 一类有固定手势代码的技术性哑剧；写戏时应写自然反应，不要套用象征性手势。
+  keywords:
+  - 情感外化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 写实
+  topic: ''
+  quote: |-
+    What is meant here is the natural human pantomime of people whose faces and bodies portray or betray their feelings.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#033
+  source_span:
+    chunk_id: pg36580_txt#033
+    start: 1254
+    end: 1370
+  provenance_kind: 网络语料
+- id: gen_perf_0246
+  domain: performance
+  title: 关键道具触发哑剧
+  content: 用关键道具动作作为哑剧段落的起点，例如把支票与其它票据放在一起这一动作，开启随后数分钟的无台词表演。
+  keywords:
+  - 哑剧起点
+  - 动作触发
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    The significant pantomime began with "She puts cheque with others."
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#032
+  source_span:
+    chunk_id: pg36580_txt#032
+    start: 1237
+    end: 1304
+  provenance_kind: 网络语料
+- id: gen_perf_0247
+  domain: performance
+  title: 出场入场用于塑造
+  content: 用出场与入场（exits and entrances）来塑造人物：人物如何进场、离场可揭示其性格与状态。
+  keywords:
+  - 人物塑造
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 人物
+  topic: ''
+  quote: |-
+    Exits and entrances, for characterization, 287-294.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 1934
+    end: 1985
+  provenance_kind: 网络语料
+- id: gen_perf_0248
+  domain: performance
+  title: 旁人反应放大信息
+  content: 用在场配角的短促台词（如“谁这么大胆唱这支曲子”）对同一声音反复评论，把单一信息拆成多次反应，逐层加重其危险含义。
+  keywords:
+  - 反应镜头
+  - 配角
+  - 递进
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不安
+  tags:
+  - 信息放大
+  topic: ''
+  quote: |-
+    Ah, look there! Who can be so imprudent as to sing that air of Alsace?
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#012
+  source_span:
+    chunk_id: pg36580_txt#012
+    start: 1322
+    end: 1392
+  provenance_kind: 网络语料
+- id: gen_perf_0249
+  domain: performance
+  title: 对比强调法
+  content: 用对比（contrast）来强调重点：在明暗、动静、强弱之间制造反差，使被强调对象突出。
+  keywords:
+  - 反差
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    Contrast, for emphasis, 201-204.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 246
+    end: 278
+  provenance_kind: 网络语料
+- id: gen_perf_0250
+  domain: performance
+  title: 场外声造氛围
+  content: 用画外乐声（如小提琴在幕后奏哀调）配合入场队列，可在人物未开口前先定下场景的情绪基调。
+  keywords:
+  - 画外音
+  - 配乐
+  - 入场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 哀伤
+  tags:
+  - 声音
+  topic: ''
+  quote: |-
+    The fiddlers are heard without, playing dolefully.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#003
+  source_span:
+    chunk_id: pg36580_txt#003
+    start: 213
+    end: 263
+  provenance_kind: 网络语料
+- id: gen_perf_0251
+  domain: performance
+  title: 省略句与破折号慎用
+  content: 用破折号结尾的未完成句让读者自行补全，虽能带来满足感，但易被滥用；若作者不清楚要说什么，或读者补全的方向与作者意图不符，就会造成混乱。对白首要的是清晰，因此未完成句只在意图明确时使用。
+  keywords:
+  - 未完成句
+  - 清晰
+  - 对白
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词
+  - 留白
+  topic: ''
+  quote: |-
+    the device is easily overdone, and too often the uncompleted line means either that the author does not know exactly what he wishes to say
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#035
+  source_span:
+    chunk_id: pg36580_txt#035
+    start: 1157
+    end: 1295
+  provenance_kind: 网络语料
+- id: gen_perf_0252
+  domain: performance
+  title: 电影一切从属于动作
+  content: 电影（movie）在其现有形式中把一切都从属于动作；为银幕写作或预演时，应默认以动作驱动段落，把对白与人物信息嵌入动作之中。
+  keywords:
+  - 动作驱动
+  - 银幕写作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  - 表演
+  topic: ''
+  quote: |-
+    yet who will deny that the "movie" in its present form subordinates everything to action?
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#001
+  source_span:
+    chunk_id: pg36580_txt#001
+    start: 3102
+    end: 3191
+  provenance_kind: 网络语料
+- id: gen_perf_0253
+  domain: performance
+  title: 类型化易写易模仿
+  content: 类型化角色不仅易于创造，更易于被模仿，因此会在剧坛形成长期跟风（如1605—1750年间的琼森追随者）；若追求原创性，应避免停留在类型层面。
+  keywords:
+  - 跟风
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色塑造
+  - 创作方法
+  topic: ''
+  quote: |-
+    Secondly, it is both easy to create, and, as Ben Jonson's great following between 1605 and 1750 proves, even easier to imitate.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#018
+  source_span:
+    chunk_id: pg36580_txt#018
+    start: 366
+    end: 493
+  provenance_kind: 网络语料
+- id: gen_perf_0254
+  domain: performance
+  title: 类型特征须外显
+  content: 类型（type）呈现的特征必须足够鲜明，连最不善于观察的观众也能一眼辨认；因此类型角色的外形、动作、台词都要放大其标志性特征。
+  keywords:
+  - 辨识度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  - 表演
+  topic: ''
+  quote: |-
+    Type presents characteristics so marked that even the unobservant cannot have failed to discern them in their fellow men.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#017
+  source_span:
+    chunk_id: pg36580_txt#017
+    start: 2095
+    end: 2216
+  provenance_kind: 网络语料
+- id: gen_perf_0255
+  domain: performance
+  title: 戏剧性不等于剧场性
+  content: 素材本身能引发情绪（dramatic）并不等于可直接上演；必须经过改写，使其适配剧场的呈现条件（theatric），才能成为剧本。
+  keywords:
+  - 改写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 素材处理
+  - 改编
+  topic: ''
+  quote: |-
+    even material so emotional in its nature as to be genuinely dramatic may need careful reworking if it is to succeed as a play
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#008
+  source_span:
+    chunk_id: pg36580_txt#008
+    start: 1192
+    end: 1317
+  provenance_kind: 网络语料
+- id: gen_perf_0256
+  domain: performance
+  title: 动作须带信息量
+  content: 纯形体动作只能表达情绪世界的一部分；若动作不承担刻画人物或推进故事的功能，就不足以撑起整场戏。
+  keywords:
+  - 人物刻画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 动作设计
+  topic: ''
+  quote: |-
+    physical action, which without illuminating characterization and dialogue can express only a part of the world of emotion
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#005
+  source_span:
+    chunk_id: pg36580_txt#005
+    start: 675
+    end: 796
+  provenance_kind: 网络语料
+- id: gen_perf_0257
+  domain: performance
+  title: 以人物视角收束全剧
+  content: 结尾可落在某个人物对另一人物的看法上：即使被看者被呈现得迷人欢快，最终留给观众的是观看者的视角。
+  keywords:
+  - 结尾
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结尾
+  topic: ''
+  quote: |-
+    it is the point of view of that husband as to Lady Townley, though she is presented in all her charm and gaiety, with which we are left
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#011
+  source_span:
+    chunk_id: pg36580_txt#011
+    start: 2993
+    end: 3128
+  provenance_kind: 网络语料
+- id: gen_perf_0258
+  domain: performance
+  title: 内在冲突统一续篇
+  content: 续篇可用一个内在观念统一：主角虽自认无敌，却面对无法抵抗的隐形力量（亲子懦弱、爱妻病亡、自身衰弱）。
+  keywords:
+  - 隐形力量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 统一性
+  topic: ''
+  quote: |-
+    he faces unseen forces against which he cannot stand
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#009
+  source_span:
+    chunk_id: pg36580_txt#009
+    start: 2701
+    end: 2753
+  provenance_kind: 网络语料
+- id: gen_perf_0259
+  domain: performance
+  title: 为听而写而非为读
+  content: 舞台写作面向的是被听见、被群体共同感受，而非被个人阅读；因此同一素材的处理方式必须与小说形式不同。
+  keywords:
+  - 听觉
+  - 群体
+  - 舞台写作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 观众
+  topic: ''
+  quote: |-
+    because he is writing not to be read but to be heard, and to affect the emotions, not of the individual, but of a large group taken as a group
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#005
+  source_span:
+    chunk_id: pg36580_txt#005
+    start: 1799
+    end: 1941
+  provenance_kind: 网络语料
+- id: gen_perf_0260
+  domain: performance
+  title: 舞台指示撑起长段落
+  content: 舞台指示中短短几行动作，可通过表演延展为约五分钟、情绪持续增强的段落，说明动作指示的密度不等于时长。
+  keywords:
+  - 时长
+  - 情绪强度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: ''
+  quote: |-
+    The acting of the next seven lines of stage direction held an audience with increasing intensity of feeling for some five minutes.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#032
+  source_span:
+    chunk_id: pg36580_txt#032
+    start: 1305
+    end: 1435
+  provenance_kind: 网络语料
+- id: gen_perf_0261
+  domain: performance
+  title: 舞台等待
+  content: 舞台等待（stage waits）是制造悬念与节奏停顿的手段，可用于段落间的呼吸。
+  keywords:
+  - 停顿
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 停顿
+  topic: ''
+  quote: |-
+    Stage waits, 208-209.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 1773
+    end: 1794
+  provenance_kind: 网络语料
+- id: gen_perf_0262
+  domain: performance
+  title: 节拍的定义
+  content: 节拍是人物行动的最小单位，一次行动意图的变化即构成一个节拍转换；分析剧本时以行动意图是否改变来切分节拍，而非按台词段落切分。
+  keywords:
+  - 行动意图
+  - 最小单位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演分析
+  topic: ''
+  quote: |-
+    节拍（beat）是人物行动的最小单位：**一次行动意图的变化就是一个节拍转换**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#003
+  source_span:
+    chunk_id: modern_performance_theory_md#003
+    start: 14
+    end: 55
+  provenance_kind: 权威文档
+- id: gen_perf_0263
+  domain: performance
+  title: 重复动作的后果
+  content: 节拍未合并会导致演员在原地重复同一动作，画面看起来没有进展；发现重复动作时应回到节拍划分上合并节拍或改写行动。
+  keywords:
+  - 无进展
+  - 合并
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 节拍
+  topic: ''
+  quote: |-
+    否则演员会在原地重复同一个动作，画面看起来没进展。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#003
+  source_span:
+    chunk_id: modern_performance_theory_md#003
+    start: 212
+    end: 237
+  provenance_kind: 权威文档
+- id: gen_perf_0264
+  domain: performance
+  title: 转换点三重合
+  content: 节拍转换点应与台词转折点、身体动作变化点或走位落点重合；三者不同时发生时观众会感到节奏散，因此调度时至少让转换点落在其中一项上。
+  keywords:
+  - 台词转折
+  - 走位落点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节拍
+  - 调度
+  - 节奏
+  topic: ''
+  quote: |-
+    节拍转换点应当与台词的转折点、身体动作的变化点或走位的落点重合，三者不同时发生时，观众会感到"节奏散了"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#003
+  source_span:
+    chunk_id: modern_performance_theory_md#003
+    start: 71
+    end: 124
+  provenance_kind: 权威文档
+- id: gen_perf_0265
+  domain: performance
+  title: 节拍转换点对齐
+  content: 节拍转换点要落在台词转折、动作变化或走位落点三者之一上，使节奏变化有可见的物理依据，避免无来由的情绪跳变。
+  keywords:
+  - 台词转折
+  - 走位落点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 调度
+  topic: ''
+  quote: |-
+    节拍转换点是否与台词转折、动作变化或走位落点重合？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#010
+  source_span:
+    chunk_id: modern_performance_theory_md#010
+    start: 69
+    end: 94
+  provenance_kind: 权威文档
+- id: gen_perf_0266
+  domain: performance
+  title: 理论先行脱离现实
+  content: 若一场戏建立在戏剧理论而非现实经验之上，人物会变成理论造物；创作时应以现实经验校验台词与行为是否可信。
+  keywords:
+  - 英雄剧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 真实性
+  topic: ''
+  quote: |-
+    The Heroic Drama of the second half of the seventeenth century rested upon theory rather than reality.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#026
+  source_span:
+    chunk_id: pg36580_txt#026
+    start: 743
+    end: 845
+  provenance_kind: 网络语料
+- id: gen_perf_0267
+  domain: performance
+  title: 性格须以动作呈现
+  content: 若以人物为起点，不能只叙述其性格，必须用动作例证某一主导特征或性格群；否则只是历史记录而非戏剧。
+  keywords:
+  - 人物
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物塑造
+  - 动作化
+  topic: ''
+  quote: |-
+    He cannot merely talk about the figure. This might produce a kind of history; it cannot produce drama.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#009
+  source_span:
+    chunk_id: pg36580_txt#009
+    start: 185
+    end: 287
+  provenance_kind: 网络语料
+- id: gen_perf_0268
+  domain: performance
+  title: 重情境轻性格的后果
+  content: 若作者更看重情境而非性格，只草草勾画人物，观众不会像作者那样自我欺骗，会给出应得的否定评价；因为演员可能看不出轮廓的全部含义，或为快速出效果而把角色演成作者未意图的样子。
+  keywords:
+  - 观众
+  - 失真
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 角色
+  topic: ''
+  quote: |-
+    Rarely, however, does the self-deceived author of such slovenly work deceive his audience.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#020
+  source_span:
+    chunk_id: pg36580_txt#020
+    start: 1182
+    end: 1272
+  provenance_kind: 网络语料
+- id: gen_perf_0269
+  domain: performance
+  title: 情感骤变须在可见时间内可信
+  content: 若剧情要求人物情感发生显著转变，必须让这一转变在观众实际看到的时长内仍然可信，否则需重写故事结构。
+  keywords:
+  - 情感转变
+  - 可信度
+  - 重写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 改编
+  topic: ''
+  quote: |-
+    for success on the stage the story must be so re-told that the marked changes in feeling are convincing even when seen.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#015
+  source_span:
+    chunk_id: pg36580_txt#015
+    start: 1509
+    end: 1628
+  provenance_kind: 网络语料
+- id: gen_perf_0270
+  domain: performance
+  title: 弱对白可被强动作补偿
+  content: 若动作足够吸引人，观众会容忍人物塑造不足与对白薄弱；因此当对白或人物写得不理想时，用强动作段落来补偿，而不是靠加台词解决。
+  keywords:
+  - 观众容忍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 节奏
+  topic: ''
+  quote: |-
+    willingly accepted inadequate characterization and weak dialogue so long as the action was absorbing.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#001
+  source_span:
+    chunk_id: pg36580_txt#001
+    start: 1244
+    end: 1345
+  provenance_kind: 网络语料
+- id: gen_perf_0271
+  domain: performance
+  title: 虚构人物勿挂真名
+  content: 若必须虚构与史实相反的人物，就不要使用历史人物的名字；宁可把已知史实安在无名者身上，也不要给知名人物编造性格。
+  keywords:
+  - 历史人物
+  - 命名
+  - 可信度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 改编
+  - 命名
+  topic: ''
+  quote: |-
+    Only if he chooses other and even opposed characters to the historical, he should refrain from using historical names
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#023
+  source_span:
+    chunk_id: pg36580_txt#023
+    start: 719
+    end: 836
+  provenance_kind: 网络语料
+- id: gen_perf_0272
+  domain: performance
+  title: 用覆盖场景跳过时间
+  content: 若无法靠情绪戏或强动机交代时间流逝，就把人物调离舞台，插入一段“覆盖场景”（Cover Scene）来填补时间空档。
+  keywords:
+  - 调离舞台
+  - 时间空档
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 时间处理
+  - 调度
+  topic: ''
+  quote: |-
+    (_c_) or must get his person or persons off stage and write what is known as a "Cover Scene."
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#015
+  source_span:
+    chunk_id: pg36580_txt#015
+    start: 2254
+    end: 2347
+  provenance_kind: 网络语料
+- id: gen_perf_0273
+  domain: performance
+  title: 写实剧用散文体保幻觉
+  content: 若目标是制造"真事发生"的写实幻觉，就应放弃诗体改用散文体；用诗体会抵消写实意图，使观众意识到这是被编排的演出。
+  keywords:
+  - 写实幻觉
+  - 诗体
+  - 取舍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 台词风格
+  topic: ''
+  quote: |-
+    If I had employed verse I should have counteracted my own intention and prevented the accomplishment of the task I had set myself.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#037
+  source_span:
+    chunk_id: pg36580_txt#037
+    start: 484
+    end: 614
+  provenance_kind: 网络语料
+- id: gen_perf_0274
+  domain: performance
+  title: 重塑人物后重写前后戏
+  content: 若选择重塑人物以适配核心情境，则核心情境之前与之后的所有段落都必须按重塑后的人物逻辑重写，而非按作者意愿保留。
+  keywords:
+  - 前后段落
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构重写
+  - 人物逻辑
+  topic: ''
+  quote: |-
+    all that precedes and follows the central situation must be re-worked, not as the dramatist may wish, but as the remodeled characters permit.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#022
+  source_span:
+    chunk_id: pg36580_txt#022
+    start: 1732
+    end: 1873
+  provenance_kind: 网络语料
+- id: gen_perf_0275
+  domain: performance
+  title: 面部表情与声音的表演
+  content: 表演中面部表情、手势与声音是传达情绪的主要手段，三者需配合使用，不可只依赖台词。
+  keywords:
+  - 手势
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    Importance of facial expression, gesture and voice, 367-372.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 77
+    end: 137
+  provenance_kind: 网络语料
+- id: gen_perf_0276
+  domain: performance
+  title: 避免跨两级尺度错配
+  content: 表演尺度与景别错配不得超过一级：在特写里给全身动作、或在远景里只给表情，都会让观众读不到信息。
+  keywords:
+  - 信息传达
+  - 景别
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 景别
+  - 表演调度
+  topic: ''
+  quote: |-
+    跨越两级以上的尺度错配（在特写里给全身动作，或在远景里只给表情）会让观众读不到信息。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#006
+  source_span:
+    chunk_id: modern_performance_theory_md#006
+    start: 93
+    end: 135
+  provenance_kind: 权威文档
+- id: gen_perf_0277
+  domain: performance
+  title: 表演尺度匹配景别
+  content: 表演幅度与景别匹配：远景用身体与整体姿态表达，特写用面部细微表情表达，避免远景做微表情、特写做大幅肢体。
+  keywords:
+  - 远景
+  - 特写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    表演尺度是否与景别匹配（远景给身体、特写给面部）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#010
+  source_span:
+    chunk_id: modern_performance_theory_md#010
+    start: 126
+    end: 151
+  provenance_kind: 权威文档
+- id: gen_perf_0278
+  domain: performance
+  title: 观众情绪量可调
+  content: 表演时演员投入的情绪强度不必等于观众被唤起的强度：悲剧若让观众与角色同等剧烈地感受会难以承受，喜剧演员若像观众一样觉得好笑就演不下去；应按剧作意图让观众感受多于、少于或不同于角色的情绪。
+  keywords:
+  - 演员
+  - 投入度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 情绪控制
+  - 观众心理
+  topic: ''
+  quote: |-
+    Evidently, an audience may be made, as the dramatist wills, to feel more or less emotion than the characters of the play.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#007
+  source_span:
+    chunk_id: pg36580_txt#007
+    start: 532
+    end: 653
+  provenance_kind: 网络语料
+- id: gen_perf_0279
+  domain: performance
+  title: 危机动作揭示性格
+  content: 表现人物性格时，不要依赖他自称的想法，而要安排在危机时刻让他本能、自发地行动，用这个动作来暴露真实信念。
+  keywords:
+  - 本能动作
+  - 性格揭示
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    what at a crisis he does, instinctively, spontaneously, best shows his character
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#002
+  source_span:
+    chunk_id: pg36580_txt#002
+    start: 770
+    end: 850
+  provenance_kind: 网络语料
+- id: gen_perf_0280
+  domain: performance
+  title: 环境势力以在场感呈现
+  content: 表现占领者或外部压力时，不靠叙述说明，而让每个说话者在对话中都感到其存在与警觉，使压力成为可感知的在场而非背景交代。
+  keywords:
+  - 环境压力
+  - 对话
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压抑
+  tags:
+  - 环境叙事
+  - 压迫
+  topic: ''
+  quote: |-
+    In the play we feel with each of the speakers the irritating presence of the troops, and so have perfect dramatic illustrative action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#012
+  source_span:
+    chunk_id: pg36580_txt#012
+    start: 2140
+    end: 2274
+  provenance_kind: 网络语料
+- id: gen_perf_0281
+  domain: performance
+  title: 情绪台词应压缩为直述
+  content: 表达强烈感情时，去掉自我诊断、比喻与呼告，只保留核心意思；例如把大段修辞压缩成一句直述，如“我爱你，爱到不敢让自己或你留下”。
+  keywords:
+  - 台词压缩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白
+  - 精简
+  topic: ''
+  quote: |-
+    All that these two worthy people are trying to say is
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#026
+  source_span:
+    chunk_id: pg36580_txt#026
+    start: 1389
+    end: 1442
+  provenance_kind: 网络语料
+- id: gen_perf_0282
+  domain: performance
+  title: 所谓非戏剧素材可转化
+  content: 被认为只能靠分析与叙述、几乎无法用动作呈现的故事或人物，作者若看出其中的情绪价值，就能发展出相应技巧使其在舞台上成立。
+  keywords:
+  - 情绪价值
+  - 改编
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 段落结构
+  - 情绪设计
+  topic: ''
+  quote: |-
+    A dramatist may see in the so-called undramatic material emotional values.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#005
+  source_span:
+    chunk_id: pg36580_txt#005
+    start: 1489
+    end: 1563
+  provenance_kind: 网络语料
+- id: gen_perf_0283
+  domain: performance
+  title: 严肃表演出喜剧效果
+  content: 要制造强烈喜剧效果，可让角色极其严肃认真地对待自己的处境与行为，观众因信息与视角差异而发笑，而非让演员自己演得好笑。
+  keywords:
+  - 反差
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 幽默
+  tags:
+  - 喜剧节奏
+  topic: ''
+  quote: |-
+    the most intensely comic effects often come from people acting very seriously.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#006
+  source_span:
+    chunk_id: pg36580_txt#006
+    start: 1695
+    end: 1773
+  provenance_kind: 网络语料
+- id: gen_perf_0284
+  domain: performance
+  title: 以愤怒压泪替代自怜
+  content: 角色因怜悯他人而落泪时，与其直接表现哀伤，不如让他对自己的软弱感到愤怒（如'这是眼泪吗？可耻，可耻，老糊涂'），用羞愤对抗泪水，效果更强。
+  keywords:
+  - 眼泪
+  - 羞耻
+  - 情绪转折
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 羞愤
+  tags:
+  - 表演
+  - 情绪
+  - 台词
+  topic: ''
+  quote: |-
+    the effect would I think be better if he felt the tears with indignation at his own weakness
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#027
+  source_span:
+    chunk_id: pg36580_txt#027
+    start: 228
+    end: 320
+  provenance_kind: 网络语料
+- id: gen_perf_0285
+  domain: performance
+  title: 人物转变须在幕中呈现
+  content: 角色性格的重大转变不能只靠幕间留白交代，必须在观众可见的戏剧动作中演出转变过程；只展示转变前的好与转变后的坏、把中间变化推到幕后，会削弱人物可信度。
+  keywords:
+  - 幕间
+  - 戏剧动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物弧光
+  - 动机
+  - 结构
+  topic: ''
+  quote: |-
+    The favorite place of many so-called dramatists for a change of character is in their vast silences between the acts.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#025
+  source_span:
+    chunk_id: pg36580_txt#025
+    start: 1447
+    end: 1564
+  provenance_kind: 网络语料
+- id: gen_perf_0286
+  domain: performance
+  title: 人物动机决定可信度
+  content: 角色行为必须由其性格自然生长出来；若行为只是剧作家为推进情境而强加，观众在冷静回味时会判定该剧只是娱乐而非对生活的诠释。
+  keywords:
+  - 性格
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物塑造
+  topic: ''
+  quote: |-
+    Their motivation is totally inadequate; that is, their conduct seems not to grow out of their characters.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#024
+  source_span:
+    chunk_id: pg36580_txt#024
+    start: 1641
+    end: 1746
+  provenance_kind: 网络语料
+- id: gen_perf_0287
+  domain: performance
+  title: 声音渐近制造压迫
+  content: 让同一歌声重复出现且一次比一次近、一次比一次响（Again, and louder than ever），用声音的距离与音量变化替代画面运动来推进紧张。
+  keywords:
+  - 重复
+  - 音量
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 声音节奏
+  topic: ''
+  quote: |-
+    Again, and louder than ever!
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#012
+  source_span:
+    chunk_id: pg36580_txt#012
+    start: 1682
+    end: 1710
+  provenance_kind: 网络语料
+- id: gen_perf_0288
+  domain: performance
+  title: 观察者与幻想者之别
+  content: 让观察型人物按事物本相说话并指出事实，让幻想型人物忽略现实、按自己所愿描述事物，以此区分两类人物的台词。
+  keywords:
+  - 观察型
+  - 幻想型
+  - 台词差异
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白
+  - 人物
+  topic: ''
+  quote: |-
+    the former observes and shows things as they are; the latter rather overlooks nature, and speaks things as he would have them
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#036
+  source_span:
+    chunk_id: pg36580_txt#036
+    start: 1613
+    end: 1738
+  provenance_kind: 网络语料
+- id: gen_perf_0289
+  domain: performance
+  title: 角色自我诊断不可信
+  content: 让角色准确诊断自身处境并呼告命运，属于理论化写法；真实情境下的人不会这样说话，写实对白应避免此类自我分析。
+  keywords:
+  - 呼告
+  - 可信度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白
+  - 真实性
+  topic: ''
+  quote: |-
+    Almanzor, too, confidently diagnoses his own condition and apostrophizes fate.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#026
+  source_span:
+    chunk_id: pg36580_txt#026
+    start: 1756
+    end: 1834
+  provenance_kind: 网络语料
+- id: gen_perf_0290
+  domain: performance
+  title: 自述情绪加比喻是套路
+  content: 让角色描述自己的情绪状态并在关键时刻转入比喻，是英雄剧的程式化写法；它服务于神话式人物而非真实生活，写实场景中应避免。
+  keywords:
+  - 情绪自述
+  - 程式
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 对白
+  - 程式化
+  topic: ''
+  quote: |-
+    Dryden makes Almahide describe her own emotional condition and, as is proper at any critical moment in Heroic Drama, drop into simile.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#026
+  source_span:
+    chunk_id: pg36580_txt#026
+    start: 1621
+    end: 1755
+  provenance_kind: 网络语料
+- id: gen_perf_0291
+  domain: performance
+  title: 作者情感传给观众
+  content: 讽刺剧与伦理剧的力量来自让观众对剧中人产生作者所持的态度（如嘲弄、轻蔑、道德愤怒），而非复制角色的愚蠢或恶念；调度与表演应服务于传递作者立场。
+  keywords:
+  - 作者立场
+  - 讽刺
+  - 伦理剧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情感设计
+  - 作者视角
+  topic: ''
+  quote: |-
+    All ethical drama gets its force by creating in an audience the feelings toward the people in the play held by the author.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#006
+  source_span:
+    chunk_id: pg36580_txt#006
+    start: 1084
+    end: 1206
+  provenance_kind: 网络语料
+- id: gen_perf_0292
+  domain: performance
+  title: 情绪恒定，条件可变
+  content: 设计人物情绪时，应假定爱、野心、嫉妒、自私等基本情绪跨时代不变，变化的是气候、文明与理想造成的强度差异，因此同一情绪需按当下条件重新处理。
+  keywords:
+  - 情绪恒定，条件可变
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物
+  topic: ''
+  quote: |-
+    the emotional life of yesterday, today, and tomorrow can differ little fundamentally
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#011
+  source_span:
+    chunk_id: pg36580_txt#011
+    start: 240
+    end: 324
+  provenance_kind: 网络语料
+- id: gen_perf_0293
+  domain: performance
+  title: 观众情感可异于角色
+  content: 设计表演与场面时，观众被激起的情感不必等同于台上人物的情感，可以相同、相近甚至完全相反；创作者据此选择让观众产生何种反应。
+  keywords:
+  - 角色情感
+  - 反差
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情感设计
+  - 观众反应
+  topic: ''
+  quote: |-
+    the emotions aroused in an audience need not be the same as those felt by the people on the stage. They may be in the sharpest contrast.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#006
+  source_span:
+    chunk_id: pg36580_txt#006
+    start: 1518
+    end: 1654
+  provenance_kind: 网络语料
+- id: gen_perf_0294
+  domain: performance
+  title: 戏剧是集体协作
+  content: 评估一场戏的表演效果时，须把作者、演员、制作人与观众视为协作整体：剧本只有经排演、演出并获得观众反应后才算被正确判断。
+  keywords:
+  - 观众
+  - 排演
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 制作流程
+  - 观众反应
+  topic: ''
+  quote: |-
+    a play is a cooperative effort--of author, actor, producer, and even audience.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#000
+  source_span:
+    chunk_id: pg36580_txt#000
+    start: 54
+    end: 132
+  provenance_kind: 网络语料
+- id: gen_perf_0295
+  domain: performance
+  title: 先定动作再判对白
+  content: 评估对白好坏前，必须先确定台词所暗示的"business"（动作调度）；脱离动作无法判断对白是否成立。
+  keywords:
+  - 动作调度
+  - business
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 对白评估
+  topic: ''
+  quote: |-
+    often we cannot tell whether dialogue is good or bad till we have made sure of the "business" implied by it
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#031
+  source_span:
+    chunk_id: pg36580_txt#031
+    start: 1465
+    end: 1572
+  provenance_kind: 网络语料
+- id: gen_perf_0296
+  domain: performance
+  title: 移动方向表权力
+  content: 说关键台词时让人物移动，用方向编码权力：靠近=施压或亲近，后退=回避或退让，横向移动=转移话题。
+  keywords:
+  - 关键台词
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 走位
+  - 权力关系
+  topic: ''
+  quote: |-
+    **人物在说关键台词时移动，移动的方向表达权力方向**——靠近是施压或亲近，后退是回避或退让，横向移动是转移话题。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#008
+  source_span:
+    chunk_id: modern_performance_theory_md#008
+    start: 68
+    end: 125
+  provenance_kind: 权威文档
+- id: gen_perf_0297
+  domain: performance
+  title: 走位表达权力方向
+  content: 走位承担权力方向的表达，并与台词分句对齐：角色移动的时机对应台词的分句点，用位移变化体现权力转移。
+  keywords:
+  - 台词分句
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    走位是否承担了权力方向的表达，且与台词分句对齐？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#010
+  source_span:
+    chunk_id: modern_performance_theory_md#010
+    start: 177
+    end: 201
+  provenance_kind: 权威文档
+- id: gen_perf_0298
+  domain: performance
+  title: 过渡场景
+  content: 过渡场景用于连接主要段落，处理时间与空间的转换，不宜承载核心冲突。
+  keywords:
+  - 连接
+  - 转换
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: ''
+  quote: |-
+    Transitional Scenes, 109-110.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#039
+  source_span:
+    chunk_id: pg36580_txt#039
+    start: 2544
+    end: 2573
+  provenance_kind: 网络语料
+- id: gen_perf_0299
+  domain: performance
+  title: 心理戏与静止戏可行
+  content: 近年来的心理状态剧与在看似静止中揭示情绪意义的戏证明：任何人类经验都可入戏，静止与内心戏同样能构成有效场面。
+  keywords:
+  - 心理状态
+  - 内心戏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 情绪设计
+  topic: ''
+  quote: |-
+    the drama of mental states and the drama which has revealed emotional significance in seeming or real inaction
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#005
+  source_span:
+    chunk_id: pg36580_txt#005
+    start: 1314
+    end: 1424
+  provenance_kind: 网络语料
+- id: gen_perf_0300
+  domain: performance
+  title: 近景微表情的时间尺度
+  content: 近景与特写中，用眨眼频率变化（紧张变密、思考时停顿）、呼吸深浅与停顿、眼神落点变化来传达情绪；这些线索的时间尺度为0.2–1秒，一次呼吸的停顿即可承担一个节拍转换。
+  keywords:
+  - 眨眼
+  - 呼吸
+  - 节拍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 节拍
+  - 特写
+  topic: ''
+  quote: |-
+    这些线索的时间尺度是 0.2–1 秒，因此在近景里，一次呼吸的停顿就足以承担一个节拍转换。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_performance_theory.md
+    title: 现代银幕表演的调度与节拍（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 046b0ff8e8c1f86a21186c8e559ba4f13b2f3709e354717ee6599ad3caf99095
+  chunk_id: modern_performance_theory_md#005
+  source_span:
+    chunk_id: modern_performance_theory_md#005
+    start: 85
+    end: 130
+  provenance_kind: 权威文档
+- id: gen_perf_0301
+  domain: performance
+  title: 手势词需全身配合
+  content: 遇到"gesture words"（如"Eyes, eyes"）时，演员应配合抬头、直视对方、抬手示意眼睛等哑剧动作，使台词获得最终确定性与完整含义。
+  keywords:
+  - 哑剧
+  - 直视
+  - 抬头
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    The old man lifts his head, and, though unwillingly, looks his master straight in the face as he speaks.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#031
+  source_span:
+    chunk_id: pg36580_txt#031
+    start: 1078
+    end: 1182
+  provenance_kind: 网络语料
+- id: gen_perf_0302
+  domain: performance
+  title: 台词报时易引观众发笑
+  content: 避免让角色用台词直接报出流逝的时间（如“聊了一小时”），因为观众明知实际只演了几分钟，会出戏嘲笑。
+  keywords:
+  - 出戏
+  - 观众反应
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 尴尬
+  tags:
+  - 时间处理
+  topic: ''
+  quote: |-
+    auditors who recognize perfectly that the two people have not talked ten minutes are likely to laugh derisively.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#015
+  source_span:
+    chunk_id: pg36580_txt#015
+    start: 930
+    end: 1042
+  provenance_kind: 网络语料
+- id: gen_perf_0303
+  domain: performance
+  title: 台词是情绪主武器
+  content: 需要揭示情绪、并让观众产生共鸣情绪时，优先用台词而非哑剧；台词是最强的情绪手段。
+  keywords:
+  - 情绪揭示
+  - 共鸣
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  topic: ''
+  quote: |-
+    Speech is the greatest emotional weapon of the dramatist. It best reveals emotion, and best of all creates responsive emotion.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#034
+  source_span:
+    chunk_id: pg36580_txt#034
+    start: 1561
+    end: 1687
+  provenance_kind: 网络语料
+- id: gen_perf_0304
+  domain: performance
+  title: 迅速识别剧中人物
+  content: 需让观众迅速识别剧中人物（identifying promptly persons of play），尽早建立人物身份与关系。
+  keywords:
+  - 人物识别
+  - 身份
+  - 关系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 说明
+  topic: ''
+  quote: |-
+    Identifying promptly persons of play, 154-161.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 2306
+    end: 2352
+  provenance_kind: 网络语料
+- id: gen_perf_0305
+  domain: performance
+  title: 动作优先于对白
+  content: 面向大众观众时，动作（action）是最直接有效的吸引力；对白是传达作者意图的必要手段，但若要在两者间取舍，优先保证动作的可看性。
+  keywords:
+  - 观众
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 节奏
+  topic: ''
+  quote: |-
+    In drama, undoubtedly the strongest immediate appeal to the general public is action.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#017
+  source_span:
+    chunk_id: pg36580_txt#017
+    start: 0
+    end: 85
+  provenance_kind: 网络语料
+- id: gen_perf_0306
+  domain: performance
+  title: 需强调事件意义
+  content: 须像传记家或史家的导游书那样强调事件，使作者赋予事件的意义对观众清晰。
+  keywords:
+  - 导游
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 叙事
+  topic: ''
+  quote: |-
+    We need the Baedeker of a biographer or an historian to emphasize the incidents
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#009
+  source_span:
+    chunk_id: pg36580_txt#009
+    start: 1559
+    end: 1638
+  provenance_kind: 网络语料
+- id: gen_perf_0307
+  domain: performance
+  title: 反高潮的收束方式
+  content: 高潮后可用安静收尾或反讽方式收束，避免情绪持续拉高；反高潮通过降低强度完成余韵。
+  keywords:
+  - 安静收尾
+  - 反讽
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: ''
+  quote: |-
+    by quiet endings, 221-222, 224-225. by irony, 222-225.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 109
+    end: 163
+  provenance_kind: 网络语料
+- id: gen_perf_0308
+  domain: performance
+  title: 高潮的定义与位置
+  content: 高潮是戏剧动作的顶点，需在结构上明确定义其位置；它由动作推进累积而成，而非孤立事件。
+  keywords:
+  - 结构
+  - 动作
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 结构
+  topic: ''
+  quote: |-
+    Climax-- definition of, 215.
+  source_ref:
+    url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
+    title: Dramatic Technique
+    author: George Pierce Baker
+    license: PublicDomain
+    retrieved_at: '2026-09-29T19:57:21+00:00'
+    sha256: 6d6cdbca152419620b891b93f58f0bd5781b0df7426b514244cd8dea7b7561b3
+  chunk_id: pg36580_txt#038
+  source_span:
+    chunk_id: pg36580_txt#038
+    start: 0
+    end: 28
+  provenance_kind: 网络语料

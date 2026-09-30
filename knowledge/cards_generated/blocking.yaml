@@ -3100,3 +3100,1469 @@
     start: 40
     end: 60
   provenance_kind: 权威文档
+- id: gen_block_0099
+  domain: blocking
+  title: 一场戏变化不超三次
+  content: 一场戏里高度或距离的变化不超过3次，超过后观众读不出哪一次是转折。
+  keywords:
+  - 变化次数
+  - 转折
+  - 阈值
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 调度
+  topic: ''
+  quote: |-
+    **一场戏里的高度或距离变化不超过 3 次**，超过之后观众读不出哪一次是转折。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#008
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#008
+    start: 235
+    end: 275
+  provenance_kind: 权威文档
+- id: gen_block_0100
+  domain: blocking
+  title: 连续动作的节拍停顿
+  content: 一组连续动作由3–5个三段式动作组成，段与段之间插入2–6帧的节拍停顿；若完全不留停顿，连续打击会糊成一团，观众只能看出在打、看不出谁占上风。
+  keywords:
+  - 帧数
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 剪辑
+  - 动作段落
+  topic: camera_angle
+  quote: |-
+    段与段之间用一个**节拍停顿**（2–6 帧）分开。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#001
+  source_span:
+    chunk_id: modern_action_and_impact_md#001
+    start: 198
+    end: 224
+  provenance_kind: 权威文档
+- id: gen_block_0101
+  domain: blocking
+  title: 同打击不重复播放
+  content: 不同角度拍摄的同一打击不要重复播放两次，除非刻意强调该次打击。
+  keywords:
+  - 强调
+  - 多角度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 时间连续性
+  topic: camera_angle
+  quote: |-
+    不同角度拍摄的同一打击不要重复播放两次，除非刻意强调
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#008
+  source_span:
+    chunk_id: modern_action_and_impact_md#008
+    start: 218
+    end: 244
+  provenance_kind: 权威文档
+- id: gen_block_0102
+  domain: blocking
+  title: 人形重量的骨盆先行
+  content: 人形主体要读成有重量，必须骨盆先动、四肢跟随；若四肢先动，观众会读成轻飘飘。
+  keywords:
+  - 四肢
+  - 重量感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 重量感
+  - 身体力学
+  topic: camera_angle
+  quote: |-
+    人形主体的重量感还取决于**骨盆先动、四肢跟随**，反过来（四肢先动）会读成"轻飘飘"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#006
+  source_span:
+    chunk_id: modern_action_and_impact_md#006
+    start: 96
+    end: 140
+  provenance_kind: 权威文档
+- id: gen_block_0103
+  domain: blocking
+  title: 入场方向随轴线
+  content: 人物入场方向应与轴线一致，使入场作为信息进入的段落标点保持空间连续。
+  keywords:
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    入场方向应当与轴线一致
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#005
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#005
+    start: 39
+    end: 50
+  provenance_kind: 权威文档
+- id: gen_block_0104
+  domain: blocking
+  title: 出场在动作后
+  content: 人物出场代表信息离开，应在其动作完成之后再出画，不要动作未完成就切出。
+  keywords:
+  - 动作完成
+  - 出画
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    出场代表信息离开，应当在动作完成之后再出画。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#005
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#005
+    start: 55
+    end: 77
+  provenance_kind: 权威文档
+- id: gen_block_0105
+  domain: blocking
+  title: 速度斜坡转折点
+  content: 使用速度斜坡时，把速度变化的转折点落在接触帧上，使加速或减速与打击瞬间对齐。
+  keywords:
+  - 接触帧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 变速
+  - 节奏
+  topic: camera_angle
+  quote: |-
+    速度斜坡的转折点是否落在接触帧上？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#010
+  source_span:
+    chunk_id: modern_action_and_impact_md#010
+    start: 111
+    end: 128
+  provenance_kind: 权威文档
+- id: gen_block_0106
+  domain: blocking
+  title: 三层景别信息分配
+  content: 前景、中景、后景应各承载不同信息，且同一时刻只让其中一层运动，避免多层同时运动导致视觉混乱。
+  keywords:
+  - 前景
+  - 中景
+  - 后景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 景深
+  - 层次
+  topic: ''
+  quote: |-
+    前景/中景/后景是否各有信息，且没有同时运动？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#010
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#010
+    start: 36
+    end: 59
+  provenance_kind: 权威文档
+- id: gen_block_0107
+  domain: blocking
+  title: 可读性优先于真实感
+  content: 动作设计以可读性优先于真实感：观众必须能看清谁打了谁、打在哪里、结果如何，再考虑物理真实。
+  keywords:
+  - 动作设计
+  - 打击
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 动作
+  topic: camera_angle
+  quote: |-
+    动作设计的第一原则是**可读性优先于真实感**：观众需要看清"谁打了谁、打在哪里、结果如何"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#005
+  source_span:
+    chunk_id: modern_action_and_impact_md#005
+    start: 17
+    end: 64
+  provenance_kind: 权威文档
+- id: gen_block_0108
+  domain: blocking
+  title: 三种权力组合公式
+  content: 可执行组合：高机位+高者+近距离=压倒；低机位+高者+远距离=孤立；等高+近距离=对峙。按所需情绪选组合。
+  keywords:
+  - 机位高度
+  - 距离
+  - 压倒
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 调度
+  - 权力关系
+  topic: ''
+  quote: |-
+    **高机位 + 高者 + 近距离 = 压倒**，**低机位 + 高者 + 远距离 = 孤立**，**等高 + 近距离 = 对峙**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#008
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#008
+    start: 99
+    end: 165
+  provenance_kind: 权威文档
+- id: gen_block_0109
+  domain: blocking
+  title: 同场戏不混用口径
+  content: 同一场戏内只能使用一套打击口径（真实感或风格化），混用会导致力度忽强忽弱；口径选择由全片基调决定。
+  keywords:
+  - 口径统一
+  - 力度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  - 节奏
+  topic: camera_angle
+  quote: |-
+    **同一场戏里不要混用两套口径**，混用会让力度忽强忽弱。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#002
+  source_span:
+    chunk_id: modern_action_and_impact_md#002
+    start: 237
+    end: 266
+  provenance_kind: 权威文档
+- id: gen_block_0110
+  domain: blocking
+  title: 人脸数量上限
+  content: 同一镜头里不要出现超过7个同等重要的人脸，否则观众放弃辨认，只读到“很多”；需要数量感时改用景深、遮挡或运动模糊把个体降为纹理。
+  keywords:
+  - 辨认阈值
+  - 纹理化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 密度控制
+  topic: ''
+  quote: |-
+    镜头里出现超过 7 个同等重要的人脸时，观众会放弃辨认，剩下的只有"很多"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#004
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#004
+    start: 90
+    end: 128
+  provenance_kind: 权威文档
+- id: gen_block_0111
+  domain: blocking
+  title: 景别密度取值
+  content: 密度控制取值：中景同时可辨认主体不超过3人，远景可给到5–7人；超出时用景深、遮挡或运动模糊弱化个体。
+  keywords:
+  - 中景
+  - 远景
+  - 景深
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 密度控制
+  topic: ''
+  quote: |-
+    **中景里同时可辨认的主体不超过 3 人**，**远景可以给到 5–7 人**，需要表现"数量"时应当用景深、遮挡或运动模糊把个体降为纹理。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#004
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#004
+    start: 139
+    end: 209
+  provenance_kind: 权威文档
+- id: gen_block_0112
+  domain: blocking
+  title: 主导方式与场面类型
+  content: 对话与表演密集的场面用演员标记主导；动作与长镜头用相机主导。
+  keywords:
+  - 对话场面
+  - 动作场面
+  - 长镜头
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    前者适合对话与表演密集的场面，后者适合动作与长镜头。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#003
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#003
+    start: 72
+    end: 98
+  provenance_kind: 权威文档
+- id: gen_block_0113
+  domain: blocking
+  title: 表演主导还是相机主导
+  content: 开拍前明确镜头由表演主导还是由相机主导：表演主导时相机跟随演员，相机主导时演员配合机位走位。
+  keywords:
+  - 分工
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 机位
+  topic: ''
+  quote: |-
+    镜头由表演主导还是由相机主导，是否已明确？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#010
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#010
+    start: 93
+    end: 114
+  provenance_kind: 权威文档
+- id: gen_block_0114
+  domain: blocking
+  title: 长台词超20秒必切
+  content: 当一句台词超过20秒时，至少切一次镜头，否则观众会脱离画面去听内容。
+  keywords:
+  - 切镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 节奏
+  topic: ''
+  quote: |-
+    当一句台词超过 20 秒时，应当至少切一次
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#006
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#006
+    start: 192
+    end: 213
+  provenance_kind: 权威文档
+- id: gen_block_0115
+  domain: blocking
+  title: 接触点不可入画的替代
+  content: 当打击接触点无法入画时，改用反应镜头或声音提示来交代击中，不要用摇镜把相机摇开。
+  keywords:
+  - 反应镜头
+  - 声音提示
+  - 替代方案
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  - 声音
+  topic: camera_angle
+  quote: |-
+    **当动作的接触点无法入画时，应当改用反应镜头或声音提示**，而不是把相机摇开。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#005
+  source_span:
+    chunk_id: modern_action_and_impact_md#005
+    start: 190
+    end: 230
+  provenance_kind: 权威文档
+- id: gen_block_0116
+  domain: blocking
+  title: 克制与想象补足
+  content: 当镜头不展示伤害细节、只展示后果时，观众会用想象补足强度，因此克制是有效选择；不要用直白的伤害细节替代后果暗示。
+  keywords:
+  - 后果
+  - 伤害细节
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 留白
+  - 暗示
+  - 节奏
+  topic: camera_angle
+  quote: |-
+    当镜头不展示伤害细节、只展示后果时，观众的想象会补足强度
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#007
+  source_span:
+    chunk_id: modern_action_and_impact_md#007
+    start: 129
+    end: 157
+  provenance_kind: 权威文档
+- id: gen_block_0117
+  domain: blocking
+  title: 打击感三要素
+  content: 打击感由三个可造手段构成：速度差（打击瞬间比前后快2–4倍）、形状变形（受击部位压缩、衣服与头发拖拽）、停顿（hit-stop，1–3帧完全静止）；三者同时使用冲击力最大，只用其一通常读不出来。
+  keywords:
+  - 速度差
+  - 形状变形
+  - hit-stop
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 节奏
+  - 冲击帧
+  - 停顿
+  topic: camera_angle
+  quote: |-
+    打击感不来自真实物理，而来自三个可造的手段：**速度差**（打击瞬间比前后快 2–4 倍）、**形状变形**（受击部位压缩、衣服与头发的拖拽）、**停顿**（hit-stop，1–3 帧的完全静止）。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#002
+  source_span:
+    chunk_id: modern_action_and_impact_md#002
+    start: 20
+    end: 120
+  provenance_kind: 权威文档
+- id: gen_block_0118
+  domain: blocking
+  title: 接触点在画框内
+  content: 打击接触点必须落在画框内，并保证轮廓可辨认，避免关键冲击被裁切或糊掉。
+  keywords:
+  - 轮廓
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 可读性
+  topic: camera_angle
+  quote: |-
+    打击接触点是否在画框内、轮廓是否可辨认？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#010
+  source_span:
+    chunk_id: modern_action_and_impact_md#010
+    start: 132
+    end: 152
+  provenance_kind: 权威文档
+- id: gen_block_0119
+  domain: blocking
+  title: 接触点留在画框内
+  content: 拍摄打击动作时，把打击的接触点安排在画框内，并在打击前后保留可辨认的主体轮廓，避免接触点被裁出画面。
+  keywords:
+  - 轮廓
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 动作
+  topic: camera_angle
+  quote: |-
+    **打击的接触点应当留在画框内**，并在打击前后保留一个可辨认的主体轮廓
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#005
+  source_span:
+    chunk_id: modern_action_and_impact_md#005
+    start: 74
+    end: 110
+  provenance_kind: 权威文档
+- id: gen_block_0120
+  domain: blocking
+  title: 群众场面分组原则
+  content: 拍群众场面时把人群分成3–5个可辨识小组，每组给一个内部关系（交谈、围观、经过），使群体呈现可读的社会结构，而不是均匀排布。
+  keywords:
+  - 群众调度
+  - 社会结构
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 群体调度
+  - 构图
+  topic: ''
+  quote: |-
+    群众场面的调度原则是**分组而不是排布**：把人群分成 3–5 个可辨识的小组，每组有一个内部关系（交谈、围观、经过），群体才有可读的社会结构。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#004
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#004
+    start: 13
+    end: 85
+  provenance_kind: 权威文档
+- id: gen_block_0121
+  domain: blocking
+  title: 权力变化要拍过程
+  content: 权力关系变化时至少改变高度或距离中的一个量，并把变化过程拍下来；只改台词不改高度距离，观众会觉得说了但没变化。
+  keywords:
+  - 高度
+  - 距离
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 表演
+  topic: ''
+  quote: |-
+    权力关系变化时，**至少改变一个量并把变化过程拍下来**。只改变台词内容而不改变高度或距离，观众会感到"说了但没有变化"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#008
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#008
+    start: 142
+    end: 203
+  provenance_kind: 权威文档
+- id: gen_block_0122
+  domain: blocking
+  title: 权力落到高度与距离
+  content: 权力关系的变化要落到人物高度或彼此距离上，并把变化过程拍出来，而不是只靠台词说明。
+  keywords:
+  - 过程
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 权力关系
+  - 调度
+  topic: ''
+  quote: |-
+    权力变化是否落到高度或距离，并把变化过程拍出来？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#010
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#010
+    start: 170
+    end: 194
+  provenance_kind: 权威文档
+- id: gen_block_0123
+  domain: blocking
+  title: 次级动作延迟收尾
+  content: 次级动作的结束要比主体动作晚 2–6 帧，用时间差制造跟随与重量感。
+  keywords:
+  - 跟随
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 重量感
+  topic: camera_angle
+  quote: |-
+    次级动作的结束是否比主体晚 2–6 帧？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#010
+  source_span:
+    chunk_id: modern_action_and_impact_md#010
+    start: 156
+    end: 176
+  provenance_kind: 权威文档
+- id: gen_block_0124
+  domain: blocking
+  title: 打击点双角度切换
+  content: 每个打击点安排两个角度，并把切换点落在打击瞬间，用角度跳变强化冲击。
+  keywords:
+  - 切换点
+  - 打击瞬间
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 剪辑
+  - 多机位
+  topic: camera_angle
+  quote: |-
+    每个打击点是否有两个角度，切换点是否落在打击瞬间？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#010
+  source_span:
+    chunk_id: modern_action_and_impact_md#010
+    start: 180
+    end: 205
+  provenance_kind: 权威文档
+- id: gen_block_0125
+  domain: blocking
+  title: 动作三段节拍配比
+  content: 每个有效动作拆成准备、打击、恢复三段，时间分配约为准备40%、打击瞬间5%–10%、恢复50%；准备不足则打击读不出来，恢复不足则打击没有重量。
+  keywords:
+  - 准备
+  - 打击
+  - 恢复
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 动作设计
+  - 打击感
+  topic: camera_angle
+  quote: |-
+    准备约占 40%、打击瞬间占 5%–10%、恢复占 50%。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#001
+  source_span:
+    chunk_id: modern_action_and_impact_md#001
+    start: 87
+    end: 117
+  provenance_kind: 权威文档
+- id: gen_block_0126
+  domain: blocking
+  title: 景深与调度方式匹配
+  content: 浅景深时改用横向调度或跟焦来保持主体清晰，不要用纵深走位让演员穿出焦平面。
+  keywords:
+  - 横向调度
+  - 跟焦
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 跟焦
+  topic: ''
+  quote: |-
+    景深与调度方式是否匹配（浅景深时是否改横向或跟焦）？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#010
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#010
+    start: 63
+    end: 89
+  provenance_kind: 权威文档
+- id: gen_block_0127
+  domain: blocking
+  title: 进出场预判与方向连续
+  content: 演员进出场要有预判，跨镜时保持银幕方向连续，不要让人物在切镜后突然反向。
+  keywords:
+  - 银幕方向
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  topic: ''
+  quote: |-
+    进出场是否有预判，银幕方向是否跨镜连续？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#010
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#010
+    start: 146
+    end: 166
+  provenance_kind: 权威文档
+- id: gen_block_0128
+  domain: blocking
+  title: 用反应强化打击
+  content: 用受击者的头部位移、脚步后退或武器脱手等反应来强化打击，这些反应比打击动作本身更容易被观众看清。
+  keywords:
+  - 受击
+  - 位移
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 表演
+  - 动作
+  topic: camera_angle
+  quote: |-
+    **用反应强化打击**：受击者的头部位移、脚步后退或武器脱手，都是"打到了"的证据，比打击本身更容易被看清。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#005
+  source_span:
+    chunk_id: modern_action_and_impact_md#005
+    start: 136
+    end: 190
+  provenance_kind: 权威文档
+- id: gen_block_0129
+  domain: blocking
+  title: 过肩镜头不遮接触点
+  content: 用过肩镜头拍打击时，肩线不得遮挡打击的接触点，否则观众读不出击中位置。
+  keywords:
+  - 肩线
+  - 遮挡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: camera_angle
+  quote: |-
+    **过肩镜头的肩线不要遮住接触点**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#005
+  source_span:
+    chunk_id: modern_action_and_impact_md#005
+    start: 116
+    end: 135
+  provenance_kind: 权威文档
+- id: gen_block_0130
+  domain: blocking
+  title: 速度斜坡的三段配速
+  content: 用速度斜坡强化打击时，按三段配速：准备段压到 0.5–0.7 倍速，打击段提到 1.5–3 倍速，恢复段回到 0.7–1.0 倍速，形成蓄力—爆发—回落的节奏。
+  keywords:
+  - 倍速
+  - 打击节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 爆发
+  tags:
+  - 节奏
+  - 打击感
+  topic: camera_angle
+  quote: |-
+    准备段 0.5–0.7 倍速，打击段 1.5–3 倍速，恢复段 0.7–1.0 倍速
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#004
+  source_span:
+    chunk_id: modern_action_and_impact_md#004
+    start: 62
+    end: 104
+  provenance_kind: 权威文档
+- id: gen_block_0131
+  domain: blocking
+  title: 真实感打击口径
+  content: 真实感取向的打击组合：速度差 + 1帧停顿，不加形状变形与高对比冲击帧。
+  keywords:
+  - 速度差
+  - 1帧停顿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 写实
+  topic: camera_angle
+  quote: |-
+    **真实感取向用"速度差 + 1 帧停顿"**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#002
+  source_span:
+    chunk_id: modern_action_and_impact_md#002
+    start: 161
+    end: 184
+  provenance_kind: 权威文档
+- id: gen_block_0132
+  domain: blocking
+  title: 群众运动方向关系
+  content: 群众演员的运动方向要与主调度方向形成对比或呼应，不要随机；随机方向会稀释主体运动的可读性。
+  keywords:
+  - 主调度
+  - 对比
+  - 呼应
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: ''
+  quote: |-
+    群众演员的运动方向要与主调度的运动方向**形成对比或呼应**，而不应随机，因为随机方向会稀释主体运动的可读性。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#004
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#004
+    start: 194
+    end: 249
+  provenance_kind: 权威文档
+- id: gen_block_0133
+  domain: blocking
+  title: 群众分组与主体人数
+  content: 群众演员要分组布置，中景里可辨认的主体不超过 3 人，避免观众注意力被分散。
+  keywords:
+  - 中景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 群戏
+  - 构图
+  topic: ''
+  quote: |-
+    群众是否分组，中景可辨认主体是否不超过 3 人？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#010
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#010
+    start: 118
+    end: 142
+  provenance_kind: 权威文档
+- id: gen_block_0134
+  domain: blocking
+  title: 打击感三要素取二
+  content: 营造打击感时，至少从速度差、变形、停顿三者中选用两个，单一手段不足以形成冲击。
+  keywords:
+  - 速度差
+  - 变形
+  - 停顿
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 冲击
+  topic: camera_angle
+  quote: |-
+    打击感是否至少用到速度差、变形、停顿三者中的两个？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#010
+  source_span:
+    chunk_id: modern_action_and_impact_md#010
+    start: 50
+    end: 75
+  provenance_kind: 权威文档
+- id: gen_block_0135
+  domain: blocking
+  title: 次级动作的延迟收尾
+  content: 衣物、头发、尘土、水等次级动作的结束应比主体晚2–6帧；若与主体同时开始同时结束，画面会像贴图。
+  keywords:
+  - 跟随动作
+  - 帧数
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 跟随动作
+  - 节奏
+  topic: camera_angle
+  quote: |-
+    **次级动作的结束应当比主体晚 2–6 帧**，这是画面"活着"的主要来源。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#006
+  source_span:
+    chunk_id: modern_action_and_impact_md#006
+    start: 199
+    end: 237
+  provenance_kind: 权威文档
+- id: gen_block_0136
+  domain: blocking
+  title: 重量感的三段式表达
+  content: 表现重量要抓三个时间点：起步迟滞、运动惯性、停止余势；重物起步比轻物晚2–4帧，停止后多4–8帧余势，轻物起步与停止几乎与指令同步。
+  keywords:
+  - 迟滞
+  - 惯性
+  - 余势
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 时间控制
+  topic: camera_angle
+  quote: |-
+    重量由三件事表达：**起步的迟滞、运动的惯性、停止后的余势**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#006
+  source_span:
+    chunk_id: modern_action_and_impact_md#006
+    start: 14
+    end: 46
+  provenance_kind: 权威文档
+- id: gen_block_0137
+  domain: blocking
+  title: 动作三段与时间比
+  content: 设计打击动作时，把每个动作拆成准备、打击、恢复三段，时间比约为 4:1:5，让打击瞬间短促、恢复留足余韵。
+  keywords:
+  - 准备
+  - 打击
+  - 恢复
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  - 动作结构
+  topic: camera_angle
+  quote: |-
+    每个动作是否写全了准备、打击、恢复，且时间比约为 4:1:5？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#010
+  source_span:
+    chunk_id: modern_action_and_impact_md#010
+    start: 15
+    end: 46
+  provenance_kind: 权威文档
+- id: gen_block_0138
+  domain: blocking
+  title: 权力由高度差与距离表达
+  content: 调度中权力关系用两个量表达：高度差与距离。高度差大于一个头时高者权力感成立；距离小于45厘米时两人进入亲密或压迫区间。
+  keywords:
+  - 阈值
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 权力关系
+  topic: ''
+  quote: |-
+    调度里的权力由两个量表达：**高度差**与**距离**。高度差大于一个头时，高者的权力感成立；距离小于 45 厘米时两人进入"亲密或压迫"区间。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#008
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#008
+    start: 14
+    end: 86
+  provenance_kind: 权威文档
+- id: gen_block_0139
+  domain: blocking
+  title: 先定机位再定站位
+  content: 调度前先确定机位与画框，再据此安排演员站位；不要先摆好演员再找机位，否则画框与走位互相迁就。
+  keywords:
+  - 画框
+  - 调度顺序
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 场面调度
+  topic: ''
+  quote: |-
+    是否先定了机位与画框，再决定站位？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#010
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#010
+    start: 15
+    end: 32
+  provenance_kind: 权威文档
+- id: gen_block_0140
+  domain: blocking
+  title: 斜坡转折点对齐接触帧
+  content: 速度斜坡的快慢转折点必须落在打击接触的那一帧上；若转折点偏离接触帧，观众会感到节奏被拖着走、打击失去力度。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 速度斜坡
+  - 剪辑点
+  - 打击感
+  topic: camera_angle
+  quote: |-
+    斜坡的转折点必须落在打击接触的帧上，否则观众会感到"节奏被拖着走"。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#004
+  source_span:
+    chunk_id: modern_action_and_impact_md#004
+    start: 108
+    end: 142
+  provenance_kind: 权威文档
+- id: gen_block_0141
+  domain: blocking
+  title: 震动方向与时长
+  content: 镜头震动方向要与打击方向一致，震动时长控制在 1–4 帧，过长会削弱打击的瞬时感。
+  keywords:
+  - 镜头震动
+  - 帧数
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 打击感
+  topic: camera_angle
+  quote: |-
+    镜头震动方向是否与打击方向一致，时长是否在 1–4 帧？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#010
+  source_span:
+    chunk_id: modern_action_and_impact_md#010
+    start: 79
+    end: 107
+  provenance_kind: 权威文档
+- id: gen_block_0142
+  domain: blocking
+  title: 震动时长1–4帧
+  content: 镜头震动时长通常取 1–4 帧；超过 6 帧就不再是冲击，而会被读成晃动。
+  keywords:
+  - 帧数
+  - 冲击
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 节奏
+  - 剪辑
+  topic: camera_angle
+  quote: |-
+    震动时长通常 1–4 帧，超过 6 帧会变成晃动而不是冲击。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#003
+  source_span:
+    chunk_id: modern_action_and_impact_md#003
+    start: 216
+    end: 246
+  provenance_kind: 权威文档
+- id: gen_block_0143
+  domain: blocking
+  title: 一字排开只用于对峙
+  content: 面对面的一字排开站位只用于刻意的对峙场面，其他情境下不要使用，否则会显得像并列展示。
+  keywords:
+  - 站位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 对峙
+  tags:
+  - 调度
+  - 站位
+  topic: ''
+  quote: |-
+    面对面的一字排开应当只用于刻意的对峙
+  source_ref:
+    url: repo://knowledge/source_notes/modern_blocking_and_staging.md
+    title: 现代场面调度：为镜头而站（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 6ceb8725c8ef7a12158918d2d935a47f8dc2bc3b18c90a0878862069ea351f17
+  chunk_id: modern_blocking_and_staging_md#006
+  source_span:
+    chunk_id: modern_blocking_and_staging_md#006
+    start: 113
+    end: 131
+  provenance_kind: 权威文档
+- id: gen_block_0144
+  domain: blocking
+  title: 风格化打击口径
+  content: 风格化取向的打击组合：形状变形 + 2–3帧停顿 + 高对比冲击帧，力度更强、更夸张。
+  keywords:
+  - 形状变形
+  - 2-3帧停顿
+  - 冲击帧
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 冲击
+  tags:
+  - 节奏
+  - 夸张
+  - 冲击帧
+  topic: camera_angle
+  quote: |-
+    **风格化取向用"形状变形 + 2–3 帧停顿 + 高对比冲击帧"**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_action_and_impact.md
+    title: 动作设计与打击感（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: fc8b41705ce1e4353edb4c0697bb5e76579ca77dc12822f47cd6294e96a65dc1
+  chunk_id: modern_action_and_impact_md#002
+  source_span:
+    chunk_id: modern_action_and_impact_md#002
+    start: 171
+    end: 206
+  provenance_kind: 权威文档

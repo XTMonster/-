@@ -154,38 +154,6 @@
     start: 493
     end: 609
   provenance_kind: 网络语料
-- id: gen_cine_0006
-  domain: cinematography
-  title: 50mm 标准中景
-  content: 中景与中近景用 50 mm，其透视接近人眼，作为标准镜头使用。
-  keywords:
-  - 标准镜头
-  - 中近景
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 焦距
-  - 标准镜
-  topic: camera_angle
-  quote: |-
-    **50 mm**：接近人眼透视，中景与中近景的标准镜头。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#002
-  source_span:
-    chunk_id: camera_angle_and_lens_md#002
-    start: 161
-    end: 190
-  provenance_kind: 权威文档
 - id: gen_cine_0007
   domain: cinematography
   title: 聚光镜尺寸宁大勿小
@@ -402,37 +370,6 @@
     start: 943
     end: 1061
   provenance_kind: 网络语料
-- id: gen_cine_0014
-  domain: cinematography
-  title: 高光比必补眼神光
-  content: 光比超过 4:1 时演员眼部细节会丢失，必须补眼神光，否则观众读不到情绪。
-  keywords:
-  - 眼部细节
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 补光
-  - 高反差
-  topic: lighting
-  quote: |-
-    光比一旦超过 4:1，演员的眼部细节就会丢失，必须补眼神光，否则观众读不到情绪。
-  source_ref:
-    url: repo://knowledge/source_notes/lighting_and_color.md
-    title: 布光体系与色彩情绪的对应（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
-  chunk_id: lighting_and_color_md#001
-  source_span:
-    chunk_id: lighting_and_color_md#001
-    start: 144
-    end: 184
-  provenance_kind: 权威文档
 - id: gen_cine_0015
   domain: cinematography
   title: 调色片须上银幕判断
@@ -590,137 +527,6 @@
     start: 743
     end: 853
   provenance_kind: 网络语料
-- id: gen_cine_0020
-  domain: cinematography
-  title: 对话段落机位高度统一
-  content: 同一对话段落内保持机位高度一致（同高或同侧），不要来回切换低机位与高机位，否则人物关系显得对抗、混乱。
-  keywords:
-  - 低机位
-  - 高机位
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 对抗
-  tags:
-  - 轴线
-  - 连续性
-  topic: camera_angle
-  quote: |-
-    在同一个对话段落里来回切换低机位与高机位，会让人物关系像在"打架"；
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#004
-  source_span:
-    chunk_id: camera_angle_and_lens_md#004
-    start: 13
-    end: 47
-  provenance_kind: 权威文档
-- id: gen_cine_0021
-  domain: cinematography
-  title: 段落内高度变化需理由
-  content: 同一段落内机位高度变化超过0.5米时，必须给出可见理由，如人物坐下、镜头上摇或场景转换，否则观众会感到突兀。
-  keywords:
-  - 机位高度变化
-  - 段落连贯
-  - 动机
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位高度
-  - 连续性
-  - 调度
-  topic: camera_angle
-  quote: |-
-    在同一段落里改变机位高度超过 0.5 米，需要有一个可见的理由（人物坐下、镜头上摇、场景转换）
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#004
-  source_span:
-    chunk_id: camera_angle_in_practice_md#004
-    start: 143
-    end: 190
-  provenance_kind: 权威文档
-- id: gen_cine_0022
-  domain: cinematography
-  title: 段落内角度变化区间
-  content: 同一段落内连续镜头若角度完全不变会显得单调，跳变过大又会造成视觉断裂；建议把段落内的角度变化控制在15°–35°之间，兼顾变化感与连贯性。
-  keywords:
-  - 连贯性
-  - 单调
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位角度
-  - 剪辑连续性
-  topic: camera_angle
-  quote: |-
-    同一段落内的角度变化建议保持在 15°–35° 之间。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#002
-  source_span:
-    chunk_id: camera_angle_in_practice_md#002
-    start: 158
-    end: 185
-  provenance_kind: 权威文档
-- id: gen_cine_0023
-  domain: cinematography
-  title: 双色温制造冷暖对立
-  content: 同一画面内并置两种色温（如窗外冷蓝＋室内暖黄）即可形成内外/冷暖对立，是最省力也最有效的情绪手段，需要表达内外冲突时优先采用。
-  keywords:
-  - 冷暖对比
-  - 内外对立
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 色彩对比
-  - 情绪手段
-  topic: lighting
-  quote: |-
-    同一个画面里出现两种色温（例如窗外冷蓝＋室内暖黄）会天然形成"内外/冷暖"的
-    对立，这是最省力也最有效的情绪手段。
-  source_ref:
-    url: repo://knowledge/source_notes/lighting_and_color.md
-    title: 布光体系与色彩情绪的对应（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
-  chunk_id: lighting_and_color_md#003
-  source_span:
-    chunk_id: lighting_and_color_md#003
-    start: 138
-    end: 195
-  provenance_kind: 权威文档
 - id: gen_cine_0024
   domain: cinematography
   title: 混染浴色调漂移
@@ -1191,38 +997,6 @@
     start: 1592
     end: 1716
   provenance_kind: 网络语料
-- id: gen_cine_0039
-  domain: cinematography
-  title: 中景取胸线高度
-  content: 拍中景时，机位高度取胸线（本引擎 0.91 米），这是交流感最自然的机位。
-  keywords:
-  - 机位高度
-  - 交流感
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 自然
-  tags:
-  - 机位高度
-  - 景别
-  topic: camera_angle
-  quote: |-
-    中景取胸线高度（本引擎 0.91 米）——这是"交流感"最自然的机位；
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#001
-  source_span:
-    chunk_id: camera_angle_and_lens_md#001
-    start: 41
-    end: 76
-  provenance_kind: 权威文档
 - id: gen_cine_0040
   domain: cinematography
   title: 读灯人物摆姿求支撑
@@ -1254,69 +1028,6 @@
     start: 1397
     end: 1493
   provenance_kind: 网络语料
-- id: gen_cine_0041
-  domain: cinematography
-  title: 特写避免广角近距
-  content: 拍人脸特写时不要用 24 mm 广角且机位过近，透视会拉伸五官导致变形；特写应换更长焦距或拉远机位。
-  keywords:
-  - 焦距
-  - 变形
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 焦距
-  - 透视
-  topic: camera_angle
-  quote: |-
-    特写用 24 mm 且机位过近，人脸会变形；
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#004
-  source_span:
-    chunk_id: camera_angle_and_lens_md#004
-    start: 50
-    end: 72
-  provenance_kind: 权威文档
-- id: gen_cine_0042
-  domain: cinematography
-  title: 大特写取眼高更近
-  content: 拍大特写时，机位仍取眼高但距离更近，让眼睛与嘴唇占据画面，用于情绪的临界点。
-  keywords:
-  - 机位高度
-  - 情绪临界点
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 紧张
-  tags:
-  - 机位高度
-  topic: camera_angle
-  quote: |-
-    大特写取眼高但更近，眼睛与嘴唇占据画面，用于情绪的临界点。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#001
-  source_span:
-    chunk_id: camera_angle_and_lens_md#001
-    start: 139
-    end: 168
-  provenance_kind: 权威文档
 - id: gen_cine_0043
   domain: cinematography
   title: 小光圈长曝光拍静物
@@ -1347,38 +1058,6 @@
     start: 1549
     end: 1595
   provenance_kind: 网络语料
-- id: gen_cine_0044
-  domain: cinematography
-  title: 中近景取胸口偏上
-  content: 拍对话戏时，主力景别用中近景，机位取胸口偏上（1.23 米）。
-  keywords:
-  - 机位高度
-  - 对话
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位高度
-  - 对话
-  topic: camera_angle
-  quote: |-
-    中近景取胸口偏上（1.23 米）——对话时的主力景别；
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#001
-  source_span:
-    chunk_id: camera_angle_and_lens_md#001
-    start: 79
-    end: 106
-  provenance_kind: 权威文档
 - id: gen_cine_0045
   domain: cinematography
   title: 小房间用广角镜头
@@ -1534,134 +1213,6 @@
     start: 477
     end: 613
   provenance_kind: 网络语料
-- id: gen_cine_0050
-  domain: cinematography
-  title: 特写取眼高并留上三分
-  content: 拍特写时，机位取眼高（1.28 米），并把眼睛放在画面上三分之一处。
-  keywords:
-  - 机位高度
-  - 三分法
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位高度
-  - 构图
-  topic: camera_angle
-  quote: |-
-    特写取眼高（1.28 米），眼睛落在画面上三分之一处；
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#001
-  source_span:
-    chunk_id: camera_angle_and_lens_md#001
-    start: 109
-    end: 136
-  provenance_kind: 权威文档
-- id: gen_cine_0051
-  domain: cinematography
-  title: 85mm 情绪镜头首选
-  content: 拍近景与特写、需要情绪表达时用 85 mm：背景压缩明显、人脸比例好看，并把人物与背景分离开。
-  keywords:
-  - 背景压缩
-  - 近景
-  - 特写
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 情绪
-  tags:
-  - 长焦
-  - 特写
-  topic: camera_angle
-  quote: |-
-    **85 mm**：背景压缩明显，人脸比例好看，适合近景与特写；它让"人物与背景"分离开来，是情绪镜头的首选。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#002
-  source_span:
-    chunk_id: camera_angle_and_lens_md#002
-    start: 177
-    end: 232
-  provenance_kind: 权威文档
-- id: gen_cine_0052
-  domain: cinematography
-  title: 远景避免长焦压缩
-  content: 拍远景不要用 85 mm 长焦，空间会被压缩得扁平、像贴图；远景宜用广角以保留纵深层次。
-  keywords:
-  - 空间纵深
-  - 焦距
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 焦距
-  - 纵深
-  topic: camera_angle
-  quote: |-
-    远景用 85 mm 会显得空间扁平、像贴图；
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#004
-  source_span:
-    chunk_id: camera_angle_and_lens_md#004
-    start: 75
-    end: 97
-  provenance_kind: 权威文档
-- id: gen_cine_0053
-  domain: cinematography
-  title: 光比决定情绪强度
-  content: 按主光与辅光比例选情绪：1:1 平光用于采访、产品、喜剧；2:1 轻微立体用于通用对话；4:1 明显戏剧性用于紧张、怀疑；8:1 以上高反差、阴影只剩轮廓，用于恐怖、决裂。
-  keywords:
-  - 主光
-  - 辅光
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 紧张
-  tags:
-  - 布光
-  topic: lighting
-  quote: |-
-    主光与辅光的比例（光比）直接决定画面的情绪强度
-  source_ref:
-    url: repo://knowledge/source_notes/lighting_and_color.md
-    title: 布光体系与色彩情绪的对应（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
-  chunk_id: lighting_and_color_md#001
-  source_span:
-    chunk_id: lighting_and_color_md#001
-    start: 13
-    end: 36
-  provenance_kind: 权威文档
 - id: gen_cine_0054
   domain: cinematography
   title: 放大屏需大于相纸
@@ -1760,197 +1311,6 @@
     start: 0
     end: 133
   provenance_kind: 网络语料
-- id: gen_cine_0057
-  domain: cinematography
-  title: 景别越小高度越敏感
-  content: 景别越小，机位高度的差异越敏感：特写上下的 10 厘米差别会被观众看出来，因此特写类镜头的高度需精确控制。
-  keywords:
-  - 机位高度
-  - 敏感度
-  - 特写
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位高度
-  topic: camera_angle
-  quote: |-
-    景别越小，机位高度的差异越敏感：特写上下的 10 厘米差别会被观众看出来。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#001
-  source_span:
-    chunk_id: camera_angle_and_lens_md#001
-    start: 170
-    end: 207
-  provenance_kind: 权威文档
-- id: gen_cine_0058
-  domain: cinematography
-  title: 低于1米的视角语义
-  content: 机位低于1米时，画面进入儿童视角或仰视强者的语义，用于表现弱小、被压迫或对强者的敬畏。
-  keywords:
-  - 低机位
-  - 儿童视角
-  - 仰视
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 压迫
-  tags:
-  - 低机位
-  - 仰视
-  - 压迫
-  topic: camera_angle
-  quote: |-
-    低于 1 米：进入"儿童视角"或"仰视强者"的语义
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#004
-  source_span:
-    chunk_id: camera_angle_in_practice_md#004
-    start: 48
-    end: 73
-  provenance_kind: 权威文档
-- id: gen_cine_0059
-  domain: cinematography
-  title: 胸口高度拍对话
-  content: 机位取1.0–1.3米（胸口高度）时对话最自然，构图与字幕位置都舒服，适合常规对话场景。
-  keywords:
-  - 对话机位
-  - 构图
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位高度
-  topic: camera_angle
-  quote: |-
-    1.0–1.3 米：胸口高度，对话最自然，字幕与构图都舒服
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#004
-  source_span:
-    chunk_id: camera_angle_in_practice_md#004
-    start: 77
-    end: 106
-  provenance_kind: 权威文档
-- id: gen_cine_0060
-  domain: cinematography
-  title: 高于1.8米即俯视
-  content: 机位高于1.8米形成俯视，观众产生自己在往下看的心理感受，用于弱化被摄对象。
-  keywords:
-  - 高机位
-  - 心理感受
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 高机位
-  topic: camera_angle
-  quote: |-
-    高于 1.8 米：俯视，观众感到自己在"往下看"
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#004
-  source_span:
-    chunk_id: camera_angle_in_practice_md#004
-    start: 110
-    end: 134
-  provenance_kind: 权威文档
-- id: gen_cine_0061
-  domain: cinematography
-  title: 3米以上为上帝视角
-  content: 机位高于3米进入上帝视角，强调环境与命运感，用于段落收尾或展现人物处境。
-  keywords:
-  - 高机位
-  - 命运感
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 宿命
-  tags:
-  - 高机位
-  - 环境
-  topic: camera_angle
-  quote: |-
-    高于 3 米：进入"上帝视角"，强调环境与命运感
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#004
-  source_span:
-    chunk_id: camera_angle_in_practice_md#004
-    start: 138
-    end: 162
-  provenance_kind: 权威文档
-- id: gen_cine_0062
-  domain: cinematography
-  title: 人眼高度是默认机位
-  content: 机位高度取1.4–1.6米（人眼高度）时，观众与角色处于平等关系，可作为对话与常规叙事的默认机位高度。
-  keywords:
-  - 机位高度
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 机位高度
-  - 视角
-  topic: camera_angle
-  quote: |-
-    人眼高度的机位（1.4–1.6 米）是"平等"的默认值
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#004
-  source_span:
-    chunk_id: camera_angle_in_practice_md#004
-    start: 16
-    end: 43
-  provenance_kind: 权威文档
 - id: gen_cine_0063
   domain: cinematography
   title: 染色后水洗至高光清透
@@ -2140,67 +1500,6 @@
     start: 162
     end: 283
   provenance_kind: 网络语料
-- id: gen_cine_0069
-  domain: cinematography
-  title: 推镜感靠短焦加机位前移
-  content: 焦段越大，镜头前后运动越钝，85 mm 上的推镜几乎看不出透视变化；要强烈推镜感应用短焦段并配合机位前移，而不是只换镜头。
-  keywords:
-  - 焦段
-  - 透视变化
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 运动
-  - 焦距
-  topic: camera_angle
-  quote: |-
-    焦段越大，镜头与前后的运动越"钝"：85 mm 上的推镜几乎看不出透视变化，所以想要强烈的推镜感，应当用短焦段并配合机位前移，而不是只换镜头。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#002
-  source_span:
-    chunk_id: camera_angle_and_lens_md#002
-    start: 231
-    end: 302
-  provenance_kind: 权威文档
-- id: gen_cine_0070
-  domain: cinematography
-  title: 焦距改变透视而非大小
-  content: 焦距的作用是改变透视与空间压缩，不是把画面拉近；选焦段时按想要的透视关系决定，而非按被摄物大小决定。
-  keywords:
-  - 空间压缩
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags: []
-  topic: camera_angle
-  quote: |-
-    把焦距当作"画面拉近"的工具是错的——焦距改变的是**透视与空间压缩**。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#002
-  source_span:
-    chunk_id: camera_angle_and_lens_md#002
-    start: 25
-    end: 62
-  provenance_kind: 权威文档
 - id: gen_cine_0071
   domain: cinematography
   title: 染料槽起泡的处理
@@ -2233,38 +1532,6 @@
     start: 746
     end: 809
   provenance_kind: 网络语料
-- id: gen_cine_0072
-  domain: cinematography
-  title: 变焦暴露摄像机
-  content: 用变焦时画面像被放大、空间关系不变，观众会意识到摄像机存在，因此只适合主观的注视或喜剧式强调，不宜用于需要沉浸的段落。
-  keywords:
-  - 间离
-  - 主观
-  - 喜剧
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 间离效果
-  topic: camera_angle
-  quote: |-
-    观众会意识到摄像机的存在，适合主观的"注视"或喜剧式的强调。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#003
-  source_span:
-    chunk_id: camera_angle_and_lens_md#003
-    start: 59
-    end: 89
-  provenance_kind: 权威文档
 - id: gen_cine_0073
   domain: cinematography
   title: 油斑反射不可靠
@@ -2296,39 +1563,6 @@
     start: 1957
     end: 2080
   provenance_kind: 网络语料
-- id: gen_cine_0074
-  domain: cinematography
-  title: 色温编码时间与情绪
-  content: 用色温给场景定情绪基调：3200K暖橙用于家庭、回忆、亲密；4300K混合/荧光用于写实的办公、教室、医院，略偏青绿；5600K日光为白天外景的中性基准；7500K以上偏蓝用于清晨、夜晚、冷酷与疏离。
-  keywords:
-  - 钨丝
-  - 日光
-  - 冷暖
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 色彩情绪
-  - 基调
-  topic: lighting
-  quote: |-
-    3200 K（钨丝）——暖橙，家庭、回忆、亲密；
-  source_ref:
-    url: repo://knowledge/source_notes/lighting_and_color.md
-    title: 布光体系与色彩情绪的对应（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
-  chunk_id: lighting_and_color_md#003
-  source_span:
-    chunk_id: lighting_and_color_md#003
-    start: 22
-    end: 46
-  provenance_kind: 权威文档
 - id: gen_cine_0075
   domain: cinematography
   title: 纯黑靠对比实现
@@ -2610,69 +1844,6 @@
     start: 221
     end: 312
   provenance_kind: 网络语料
-- id: gen_cine_0084
-  domain: cinematography
-  title: 荷兰角需节制使用
-  content: 荷兰角只在需要表达角色不安时少量使用；频繁倾斜会让观众读成画面歪斜而非情绪，失去表意功能。
-  keywords:
-  - 倾斜
-  - 情绪
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: 不安
-  tags:
-  - 机位角度
-  - 情绪
-  topic: camera_angle
-  quote: |-
-    荷兰角用得太多，观众会把它当成"画面歪了"而不是"角色不安"。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#004
-  source_span:
-    chunk_id: camera_angle_and_lens_md#004
-    start: 100
-    end: 131
-  provenance_kind: 权威文档
-- id: gen_cine_0085
-  domain: cinematography
-  title: 35mm 纪实基准镜
-  content: 要人物与环境并重、带纪实感时用 35 mm，它是中远景与全身镜的主力焦段。
-  keywords:
-  - 中远景
-  - 全身镜
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 焦距
-  topic: camera_angle
-  quote: |-
-    **35 mm**：纪实感的基准，人物与环境并重；中远景与全身镜的主力。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#002
-  source_span:
-    chunk_id: camera_angle_and_lens_md#002
-    start: 122
-    end: 158
-  provenance_kind: 权威文档
 - id: gen_cine_0086
   domain: cinematography
   title: 双色调分层法
@@ -2865,71 +2036,6 @@
     start: 2043
     end: 2189
   provenance_kind: 网络语料
-- id: gen_cine_0092
-  domain: cinematography
-  title: 前景占比的上下限
-  content: 过肩镜头中前景人物占画面一侧的比例应控制在1/4到1/3之间：超过则退化为背影镜头，不足则失去两人空间关系。
-  keywords:
-  - 背影镜头
-  - 空间关系
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 构图
-  - 过肩镜头
-  topic: camera_angle
-  quote: |-
-    前景人占得太多会变成"背影镜头"，太少则失去空间关系。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#003
-  source_span:
-    chunk_id: camera_angle_in_practice_md#003
-    start: 122
-    end: 149
-  provenance_kind: 权威文档
-- id: gen_cine_0093
-  domain: cinematography
-  title: 过肩镜头的成立条件
-  content: 过肩镜头（OTS）需同时满足三点：前景人物的肩部或后脑占画面一侧的1/4到1/3；焦点落在后景人物眼睛上、前景人虚化；机位高度接近前景人物眼高，以形成“从其肩后看”的视点。
-  keywords:
-  - OTS
-  - 前景遮挡
-  - 焦点
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 构图
-  - 焦点
-  topic: camera_angle
-  quote: |-
-    过肩镜头（OTS）需要三个条件同时成立：
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_in_practice.md
-    title: 机位角度的实操选择（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
-  chunk_id: camera_angle_in_practice_md#003
-  source_span:
-    chunk_id: camera_angle_in_practice_md#003
-    start: 14
-    end: 34
-  provenance_kind: 权威文档
 - id: gen_cine_0094
   domain: cinematography
   title: 染料渗色控制
@@ -3122,39 +2228,6 @@
     start: 347
     end: 444
   provenance_kind: 网络语料
-- id: gen_cine_0100
-  domain: cinematography
-  title: 24mm 强透视交代环境
-  content: 需要交代远景与环境、强调空间纵深时用 24 mm：透视强、空间被拉深；但人脸会被拉宽，靠近画面边缘的物体明显变形，避免用它拍人物近景。
-  keywords:
-  - 广角
-  - 环境交代
-  - 变形
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags:
-  - 广角
-  - 远景
-  topic: camera_angle
-  quote: |-
-    **24 mm**：强透视，空间被拉深，适合远景与环境交代；人脸会被拉宽，靠近画面边缘的物体会明显变形。
-  source_ref:
-    url: repo://knowledge/source_notes/camera_angle_and_lens.md
-    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
-    author: BlockDirector knowledge team
-    license: OwnWork
-    retrieved_at: '2026-09-30'
-    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
-  chunk_id: camera_angle_and_lens_md#002
-  source_span:
-    chunk_id: camera_angle_and_lens_md#002
-    start: 60
-    end: 112
-  provenance_kind: 权威文档
 - id: gen_cine_0101
   domain: cinematography
   title: 超慢速逐格曝光
@@ -3248,3 +2321,2649 @@
     start: 2031
     end: 2164
   provenance_kind: 网络语料
+- id: gen_cine_0104
+  domain: cinematography
+  title: 观众关系中途不可乱改
+  content: 一旦为整场戏选定了观众与人物关系（旁观/参与/当事人），中途改变必须由情节提供理由，否则会造成视点混乱。
+  keywords:
+  - 视点一致性
+  - 情节理由
+  - 整场
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视点
+  - 连续性
+  topic: camera_angle
+  quote: |-
+    三个选择决定了整场的拍摄方式，中途改变必须由情节提供理由。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#001
+  source_span:
+    chunk_id: camera_angle_in_practice_md#001
+    start: 157
+    end: 186
+  provenance_kind: 权威文档
+- id: gen_cine_0105
+  domain: cinematography
+  title: 焦距改变透视而非大小
+  content: 不要把焦距当拉近画面的工具；焦距决定的是透视强度与空间压缩感，选焦段时先想清楚要什么空间关系，而不是要多大的人。
+  keywords:
+  - 空间压缩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: camera_angle
+  quote: |-
+    把焦距当作"画面拉近"的工具是错的——焦距改变的是**透视与空间压缩**。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#003
+  source_span:
+    chunk_id: camera_angle_and_lens_md#003
+    start: 25
+    end: 62
+  provenance_kind: 权威文档
+- id: gen_cine_0106
+  domain: cinematography
+  title: 50mm 标准中景镜头
+  content: 中景与中近景用 50 mm，其透视接近人眼，作为标准镜头使用。
+  keywords:
+  - 标准镜头
+  - 中近景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 标准镜头
+  topic: camera_angle
+  quote: |-
+    **50 mm**：接近人眼透视，中景与中近景的标准镜头。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#003
+  source_span:
+    chunk_id: camera_angle_and_lens_md#003
+    start: 161
+    end: 190
+  provenance_kind: 权威文档
+- id: gen_cine_0107
+  domain: cinematography
+  title: POV三段式结构
+  content: 主观镜头必须成组出现，按"看的人→看到的东西→看的人的反应"三镜排列：第一镜拍人物头部朝向与视线，第二镜拍视线方向上的对象，第三镜拍人物面部反应。
+  keywords:
+  - 主观镜头
+  - 镜头组
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 镜头组接
+  - 主观视角
+  topic: camera_angle
+  quote: |-
+    主观镜头必须成组出现：**看的人 → 看到的东西 → 看的人的反应**。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#003
+  source_span:
+    chunk_id: camera_angle_in_practice_md#003
+    start: 15
+    end: 51
+  provenance_kind: 权威文档
+- id: gen_cine_0108
+  domain: cinematography
+  title: POV第三镜不可省
+  content: 主观镜头组必须保留第三镜（人物面部反应），用来回答"这件事对他意味着什么"；缺第三镜观众会以为在看电影而非看人物。
+  keywords:
+  - 反应镜
+  - 面部
+  - 情绪落点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 代入
+  tags:
+  - 反应镜头
+  - 情绪
+  topic: camera_angle
+  quote: |-
+    缺了第三镜，观众会以为自己在看电影而不是看人物。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#003
+  source_span:
+    chunk_id: camera_angle_in_practice_md#003
+    start: 135
+    end: 159
+  provenance_kind: 权威文档
+- id: gen_cine_0109
+  domain: cinematography
+  title: 眼神光检查
+  content: 人物出镜的镜头必须检查眼睛里是否有眼神光；没有眼神光时需补灯或调整角度，使眼球出现高光点。
+  keywords:
+  - 人物
+  - 补光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 人物布光
+  topic: lighting
+  quote: |-
+    人物的眼睛有没有眼神光？
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#007
+  source_span:
+    chunk_id: lighting_and_color_md#007
+    start: 50
+    end: 62
+  provenance_kind: 权威文档
+- id: gen_cine_0110
+  domain: cinematography
+  title: 三点布光最小结构
+  content: 任何布光都可拆为主光、辅光、轮廓光三件事：主光决定光的方向与造型并占曝光主导；辅光只提亮阴影到能看见细节、不产生新阴影；轮廓光从背后擦出边界把人物与背景分离。
+  keywords:
+  - 主光
+  - 辅光
+  - 轮廓光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光结构
+  - 基础
+  topic: lighting
+  quote: |-
+    任何布光都能拆成三件事：
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#001
+  source_span:
+    chunk_id: lighting_and_color_md#001
+    start: 16
+    end: 28
+  provenance_kind: 权威文档
+- id: gen_cine_0111
+  domain: cinematography
+  title: 快门优先的曝光顺序
+  content: 先按 1/(2×帧率) 定快门（如 24fps 用 1/48），再调光圈，最后用 ND 与感光度补齐曝光；若偏离该快门值，需在拍摄说明中写明理由。
+  keywords:
+  - 帧率
+  - ND
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: camera_angle
+  quote: |-
+    快门是否按 1/(2×帧率) 设定，或已明确说明偏离的理由？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#009
+  source_span:
+    chunk_id: modern_cinematography_digital_md#009
+    start: 15
+    end: 45
+  provenance_kind: 权威文档
+- id: gen_cine_0112
+  domain: cinematography
+  title: 高光比必补眼神光
+  content: 光比超过4:1时演员眼部细节会丢失，必须补眼神光，否则观众读不到情绪；即使用高反差营造恐怖或决裂，也要保留眼部可读性。
+  keywords:
+  - 眼部细节
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 补光
+  - 可读性
+  topic: lighting
+  quote: |-
+    光比一旦超过 4:1，演员的眼部细节就会丢失，必须补眼神光，否则观众读不到情绪。
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#002
+  source_span:
+    chunk_id: lighting_and_color_md#002
+    start: 144
+    end: 184
+  provenance_kind: 权威文档
+- id: gen_cine_0113
+  domain: cinematography
+  title: 角度变化的取舍标准
+  content: 判断一次角度变化是否成立：它必须带来新信息或情绪推进，否则就是无意义的晃动，应删掉该变化。
+  keywords:
+  - 新信息
+  - 情绪推进
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  topic: camera_angle
+  quote: |-
+    角度变化要么带来新信息，要么带来情绪推进，否则就是无意义的晃动。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#008
+  source_span:
+    chunk_id: camera_angle_in_practice_md#008
+    start: 118
+    end: 150
+  provenance_kind: 权威文档
+- id: gen_cine_0114
+  domain: cinematography
+  title: 布光成立的判断标准
+  content: 判断布光是否成立看两点：人物边界是否清楚、眼睛是否有眼神光；眼神光一旦消失，人物立刻显得死板，需优先补回。
+  keywords:
+  - 眼神光
+  - 边界
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 眼神光
+  - 人物分离
+  topic: lighting
+  quote: |-
+    人物的边界是否清楚、眼睛是否有光（眼神光）
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#001
+  source_span:
+    chunk_id: lighting_and_color_md#001
+    start: 164
+    end: 185
+  provenance_kind: 权威文档
+- id: gen_cine_0115
+  domain: cinematography
+  title: 变焦暴露摄像机
+  content: 变焦不改变空间关系，画面像被放大，观众会意识到摄像机存在；因此它适合主观的注视或喜剧式的强调，而不适合需要沉浸的段落。
+  keywords:
+  - 间离
+  - 主观注视
+  - 喜剧强调
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 间离效果
+  topic: camera_angle
+  quote: |-
+    观众会意识到摄像机的存在，适合主观的"注视"或喜剧式的强调。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#004
+  source_span:
+    chunk_id: camera_angle_and_lens_md#004
+    start: 59
+    end: 89
+  provenance_kind: 权威文档
+- id: gen_cine_0116
+  domain: cinematography
+  title: LUT错误则判断作废
+  content: 只要 LUT 或监看曲线不正确，现场对曝光与色彩的一切判断都作废；这是比参数设置更常出错的一环，需优先排查。
+  keywords:
+  - 监看曲线
+  - 曝光判断
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 监看
+  - 色彩管理
+  topic: camera_angle
+  quote: |-
+    **只要 LUT 或监看曲线不对，现场对曝光与色彩的一切判断都作废**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#007
+  source_span:
+    chunk_id: modern_cinematography_digital_md#007
+    start: 145
+    end: 180
+  provenance_kind: 权威文档
+- id: gen_cine_0117
+  domain: cinematography
+  title: 一场戏统一焦段家族
+  content: 同一场戏内保持同一焦段家族（如全用定焦或同一变焦段），避免因焦段跳变造成空间感与透视不一致。
+  keywords:
+  - 镜头一致性
+  - 透视
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 镜头选择
+  - 连续性
+  topic: camera_angle
+  quote: |-
+    焦段家族是否在一场戏内保持一致？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#009
+  source_span:
+    chunk_id: modern_cinematography_digital_md#009
+    start: 77
+    end: 93
+  provenance_kind: 权威文档
+- id: gen_cine_0118
+  domain: cinematography
+  title: 同场戏不换焦段家族
+  content: 同一场戏内保持同一焦段家族，避免因焦段改变导致空间关系变化、观众感到"空间漂移"；若确需变化，宁可换景别（如从全景切近景）也不要换焦段家族。
+  keywords:
+  - 空间漂移
+  - 景别
+  - 连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 焦段一致性
+  - 空间连续性
+  - 剪辑
+  topic: camera_angle
+  quote: |-
+    **同一场戏内不要频繁更换焦段家族**，因为焦段改变会连带改变空间关系，观众会感到"空间漂移"。需要变化时，宁可换景别也不要换焦段家族。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#003
+  source_span:
+    chunk_id: modern_cinematography_digital_md#003
+    start: 187
+    end: 255
+  provenance_kind: 权威文档
+- id: gen_cine_0119
+  domain: cinematography
+  title: 对话段落机位高度统一
+  content: 同一对话段落内不要反复切换低机位与高机位；机位高度应保持稳定，否则人物关系会显得在对抗、打架。
+  keywords:
+  - 低机位
+  - 高机位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 对抗
+  tags:
+  - 轴线
+  - 连续性
+  topic: camera_angle
+  quote: |-
+    在同一个对话段落里来回切换低机位与高机位，会让人物关系像在"打架"；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#006
+  source_span:
+    chunk_id: camera_angle_and_lens_md#006
+    start: 13
+    end: 47
+  provenance_kind: 权威文档
+- id: gen_cine_0120
+  domain: cinematography
+  title: 同角度连用需有动机
+  content: 同一机位角度的连续使用（如三个平视近景）在有动机时有效，用来表达"时间在流逝、人物状态没有变化"；无动机地重复同一角度则不可取。
+  keywords:
+  - 重复机位
+  - 时间流逝
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 停滞
+  tags:
+  - 重复
+  - 节奏
+  topic: camera_angle
+  quote: |-
+    **同一角度的连续使用**（例如三个平视近景）在有动机时是有效的：它表达"时间在流逝、人物的状态没有变化"。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#008
+  source_span:
+    chunk_id: camera_angle_in_practice_md#008
+    start: 56
+    end: 110
+  provenance_kind: 权威文档
+- id: gen_cine_0121
+  domain: cinematography
+  title: 段落内高度变化需理由
+  content: 同一段落内机位高度变化超过0.5米时，必须给出可见理由（人物坐下、镜头上摇、场景转换），否则视为跳轴式突兀。
+  keywords:
+  - 机位高度
+  - 动机
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 连续性
+  topic: camera_angle
+  quote: |-
+    在同一段落里改变机位高度超过 0.5 米，需要有一个可见的理由（人物坐下、镜头上摇、场景转换）
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#007
+  source_span:
+    chunk_id: camera_angle_in_practice_md#007
+    start: 143
+    end: 190
+  provenance_kind: 权威文档
+- id: gen_cine_0122
+  domain: cinematography
+  title: 段落内角度变化区间
+  content: 同一段落内连续镜头若角度完全不变会显得单调，跳变过大又会造成断裂；建议把段落内的角度变化控制在15°–35°之间。
+  keywords:
+  - 单调
+  - 断裂
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位角度
+  - 剪辑连续性
+  - 节奏
+  topic: camera_angle
+  quote: |-
+    同一段落内的角度变化建议保持在 15°–35° 之间。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#004
+  source_span:
+    chunk_id: camera_angle_in_practice_md#004
+    start: 158
+    end: 185
+  provenance_kind: 权威文档
+- id: gen_cine_0123
+  domain: cinematography
+  title: 双色温制造冷暖对立
+  content: 同一画面内并置两种色温（如窗外冷蓝＋室内暖黄）即可形成内外/冷暖对立，是最省力有效的情绪手段，需要对立感时优先用色温差而非其他手段。
+  keywords:
+  - 冷暖对比
+  - 内外对立
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 对立
+  tags:
+  - 色温对比
+  - 情绪
+  topic: lighting
+  quote: |-
+    同一个画面里出现两种色温（例如窗外冷蓝＋室内暖黄）会天然形成"内外/冷暖"的对立，这是最省力也最有效的情绪手段。
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#004
+  source_span:
+    chunk_id: lighting_and_color_md#004
+    start: 121
+    end: 177
+  provenance_kind: 权威文档
+- id: gen_cine_0124
+  domain: cinematography
+  title: 画幅与景深平移
+  content: 同一视角下，画幅每缩小一档，可用焦段的景深关系整体平移一档：全画幅50mm的视角在约1/2.4英寸传感器上等效为8–10mm，此时景深极大，几乎无法用虚化分离主体。
+  keywords:
+  - 传感器尺寸
+  - 等效焦距
+  - 视角
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 透视
+  topic: camera_angle
+  quote: |-
+    画幅每缩小一档，同一视角的焦距与景深关系就整体平移一档
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#002
+  source_span:
+    chunk_id: modern_cinematography_digital_md#002
+    start: 54
+    end: 81
+  provenance_kind: 权威文档
+- id: gen_cine_0125
+  domain: cinematography
+  title: 合成仅限静态镜头
+  content: 多机位或多次曝光合成会带来运动与闪烁问题，只有在镜头静态时才划算，运动镜头应改用加光/压光解决动态范围。
+  keywords:
+  - 多次曝光
+  - 闪烁
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - HDR
+  - 运动
+  topic: camera_angle
+  quote: |-
+    合成会带来运动与闪烁问题，只有在镜头静态时才划算。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#004
+  source_span:
+    chunk_id: modern_cinematography_digital_md#004
+    start: 200
+    end: 225
+  provenance_kind: 权威文档
+- id: gen_cine_0126
+  domain: cinematography
+  title: 对焦距离与景深换算
+  content: 对焦距离减半，景深大约减为四分之一；这条换算比光圈档位更实用，可用于预判近景中背景的虚化程度。
+  keywords:
+  - 对焦距离与景深换算
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: camera_angle
+  quote: |-
+    对焦距离减半，景深大约减为四分之一
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#002
+  source_span:
+    chunk_id: modern_cinematography_digital_md#002
+    start: 193
+    end: 210
+  provenance_kind: 权威文档
+- id: gen_cine_0127
+  domain: cinematography
+  title: 小传感器靠构图分离
+  content: 小传感器无法用浅景深分离主体时，把主体分离交给构图与光比处理，不要靠开大光圈硬压景深。
+  keywords:
+  - 主体分离
+  - 光比
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 光比
+  - 景深
+  topic: camera_angle
+  quote: |-
+    小传感器要把分离交给构图与光比，而不是光圈
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#002
+  source_span:
+    chunk_id: modern_cinematography_digital_md#002
+    start: 137
+    end: 158
+  provenance_kind: 权威文档
+- id: gen_cine_0128
+  domain: cinematography
+  title: 情绪决定光比色温
+  content: 布光前先确定这一镜的主要情绪是暖、冷还是反差，再据此选定光比档位与色温档位，让光比和色温共同服务同一情绪。
+  keywords:
+  - 情绪决定光比色温
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 布光
+  topic: lighting
+  quote: |-
+    这一镜的主要情绪是暖、冷还是反差？光比与色温分别落在哪一档？
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#007
+  source_span:
+    chunk_id: lighting_and_color_md#007
+    start: 17
+    end: 47
+  provenance_kind: 权威文档
+- id: gen_cine_0129
+  domain: cinematography
+  title: 机位高度先定权力关系
+  content: 开拍前先确定这一镜要表达平等、压迫还是被压迫：平等用眼高机位，压迫感用高机位俯拍，被压迫感用低机位仰拍，机位高度优先于其他构图参数确定。
+  keywords:
+  - 俯拍
+  - 仰拍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 俯仰
+  topic: camera_angle
+  quote: |-
+    这一镜要表达的权力关系是平等、压迫还是被压迫？机位高度先定这一件事。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#007
+  source_span:
+    chunk_id: camera_angle_and_lens_md#007
+    start: 18
+    end: 52
+  provenance_kind: 权威文档
+- id: gen_cine_0130
+  domain: cinematography
+  title: 监看链路预先确认
+  content: 开拍前确认监看设备、LUT 与曝光工具均已校准并统一，避免因监看偏差导致曝光与色彩误判。
+  keywords:
+  - LUT
+  - 曝光工具
+  - 校准
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: camera_angle
+  quote: |-
+    监看设备、LUT、曝光工具是否都经过确认？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#009
+  source_span:
+    chunk_id: modern_cinematography_digital_md#009
+    start: 177
+    end: 198
+  provenance_kind: 权威文档
+- id: gen_cine_0131
+  domain: cinematography
+  title: 动态范围超限取舍顺序
+  content: 当场景动态范围超过传感器时，按顺序取舍：先加光补暗部，再压光遮高光，最后才考虑多机位或多次曝光合成。
+  keywords:
+  - 补光
+  - 遮光
+  - 合成
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 曝光
+  - 布光
+  - HDR
+  topic: camera_angle
+  quote: |-
+    **先加光（补暗部）、再压光（遮高光）、最后才考虑多机位/多次曝光合成**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#004
+  source_span:
+    chunk_id: modern_cinematography_digital_md#004
+    start: 162
+    end: 200
+  provenance_kind: 权威文档
+- id: gen_cine_0132
+  domain: cinematography
+  title: 中性机位过渡越轴
+  content: 当轴线被打破时，用骑轴镜头（沿两人连线拍）或正面/背面镜头作为过渡；这类中性机位不表达左右关系，不承担银幕方向连续性，之后即可合法地把机位放到任一侧。
+  keywords:
+  - 骑轴镜头
+  - 轴线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 连续性
+  topic: camera_angle
+  quote: |-
+    轴线被打破时，需要中性机位过渡：**骑轴镜头**（沿两人连线拍）与**正面/背面镜头**都不表达左右关系，因此不承担银幕方向的连续性。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#005
+  source_span:
+    chunk_id: camera_angle_and_lens_md#005
+    start: 11
+    end: 78
+  provenance_kind: 权威文档
+- id: gen_cine_0133
+  domain: cinematography
+  title: 元数据须标注曲线色域
+  content: 录制元数据必须写明所用曲线与色域，因为不同曲线需要不同还原矩阵，写错会导致肤色与高光同时偏掉。
+  keywords:
+  - 还原矩阵
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩管线
+  topic: camera_angle
+  quote: |-
+    录制的元数据里必须写明曲线与色域
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#005
+  source_span:
+    chunk_id: modern_cinematography_digital_md#005
+    start: 143
+    end: 159
+  provenance_kind: 权威文档
+- id: gen_cine_0134
+  domain: cinematography
+  title: 曲线色域全场统一
+  content: 录制所用曲线与色域须写入元数据，并在全场所有机位、所有场次保持一致，便于后期统一匹配。
+  keywords:
+  - 元数据
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩管理
+  - 元数据
+  topic: camera_angle
+  quote: |-
+    录制的曲线与色域是否写进元数据，且全场统一？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#009
+  source_span:
+    chunk_id: modern_cinematography_digital_md#009
+    start: 126
+    end: 148
+  provenance_kind: 权威文档
+- id: gen_cine_0135
+  domain: cinematography
+  title: 快门时间与运动质感
+  content: 想要更锐的动作就减小快门时间（如1/250），代价是运动模糊减少、画面像视频；想要更强拖影就拉长快门时间，但超过1/24秒会出现明显涂抹感。
+  keywords:
+  - 运动模糊
+  - 拖影
+  - 锐度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动模糊
+  topic: camera_angle
+  quote: |-
+    想要更"锐"的动作就减小快门时间（如 1/250），代价是运动模糊减少、画面显得像视频；想要更强的拖影就把快门时间拉长，但超过 1/24 秒会出现明显的涂抹感。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#001
+  source_span:
+    chunk_id: modern_cinematography_digital_md#001
+    start: 243
+    end: 323
+  provenance_kind: 权威文档
+- id: gen_cine_0136
+  domain: cinematography
+  title: 中景取胸线高度
+  content: 拍中景时，机位高度取胸线（本引擎 0.91 米），这是交流感最自然的机位。
+  keywords:
+  - 机位高度
+  - 交流感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 自然
+  tags:
+  - 机位高度
+  - 景别
+  topic: camera_angle
+  quote: |-
+    中景取胸线高度（本引擎 0.91 米）——这是"交流感"最自然的机位；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: 41
+    end: 76
+  provenance_kind: 权威文档
+- id: gen_cine_0137
+  domain: cinematography
+  title: POV第二镜机位取值
+  content: 拍主观镜头的第二镜（视线对象）时，机位高度取人物眼高，视角取人物视线方向，使观众与人物视点重合。
+  keywords:
+  - 眼高
+  - 视线
+  - 主观机位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 主观视角
+  topic: camera_angle
+  quote: |-
+    第二镜：视线方向上的对象（机位取人物眼高，视角取人物视线）
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#003
+  source_span:
+    chunk_id: camera_angle_in_practice_md#003
+    start: 73
+    end: 102
+  provenance_kind: 权威文档
+- id: gen_cine_0138
+  domain: cinematography
+  title: 特写避免24mm近距
+  content: 拍人脸特写时不要用 24 mm 广角并让机位过近，否则人脸会透视变形；特写应改用更长焦距或拉远机位。
+  keywords:
+  - 广角
+  - 变形
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 焦距
+  - 透视
+  topic: camera_angle
+  quote: |-
+    特写用 24 mm 且机位过近，人脸会变形；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#006
+  source_span:
+    chunk_id: camera_angle_and_lens_md#006
+    start: 50
+    end: 72
+  provenance_kind: 权威文档
+- id: gen_cine_0139
+  domain: cinematography
+  title: 大特写取眼高更近
+  content: 拍大特写时，机位仍取眼高但距离更近，让眼睛与嘴唇占据画面，用于情绪的临界点。
+  keywords:
+  - 机位高度
+  - 情绪临界点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 机位高度
+  topic: camera_angle
+  quote: |-
+    大特写取眼高但更近，眼睛与嘴唇占据画面，用于情绪的临界点。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: 139
+    end: 168
+  provenance_kind: 权威文档
+- id: gen_cine_0140
+  domain: cinematography
+  title: 中近景取胸口偏上
+  content: 拍对话戏时，主力景别用中近景，机位取胸口偏上（1.23 米）。
+  keywords:
+  - 机位高度
+  - 对话
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 对话
+  topic: camera_angle
+  quote: |-
+    中近景取胸口偏上（1.23 米）——对话时的主力景别；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: 79
+    end: 106
+  provenance_kind: 权威文档
+- id: gen_cine_0141
+  domain: cinematography
+  title: 对数宽色域录制流程
+  content: 拍摄时用对数或宽色域曲线（如Log/广色域）录制，再用LUT映射到Rec.709供现场判断，交付时从原始素材重新配光。
+  keywords:
+  - Log
+  - Rec.709
+  - 配光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩管线
+  - 录制格式
+  topic: camera_angle
+  quote: |-
+    用对数或宽色域曲线录制（如 Log / 广色域），用 LUT 把画面映射到
+    Rec.709 供现场判断，交付时从原始素材重新做一次配光
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#005
+  source_span:
+    chunk_id: modern_cinematography_digital_md#005
+    start: 61
+    end: 128
+  provenance_kind: 权威文档
+- id: gen_cine_0142
+  domain: cinematography
+  title: 特写取眼高并留上三分
+  content: 拍特写时，机位取眼高（1.28 米），并把眼睛放在画面上三分之一处。
+  keywords:
+  - 机位高度
+  - 三分法
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 构图
+  topic: camera_angle
+  quote: |-
+    特写取眼高（1.28 米），眼睛落在画面上三分之一处；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: 109
+    end: 136
+  provenance_kind: 权威文档
+- id: gen_cine_0143
+  domain: cinematography
+  title: 85mm 情绪镜头首选
+  content: 拍近景与特写、需要情绪表达时用 85 mm：背景压缩明显、人脸比例好看，并把人物与背景分离开。
+  keywords:
+  - 背景压缩
+  - 近景
+  - 特写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 情绪
+  tags:
+  - 长焦
+  - 特写
+  topic: camera_angle
+  quote: |-
+    **85 mm**：背景压缩明显，人脸比例好看，适合近景与特写；它让"人物与背景"分离开来，是情绪镜头的首选。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#003
+  source_span:
+    chunk_id: camera_angle_and_lens_md#003
+    start: 177
+    end: 232
+  provenance_kind: 权威文档
+- id: gen_cine_0144
+  domain: cinematography
+  title: 近特写机位贴眼高
+  content: 拍近景与特写时，机位高度应落在演员眼高附近；偏离眼高超过 15 厘米必须给出明确的表达理由，否则回到眼高。
+  keywords:
+  - 近景
+  - 机位高度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 近景
+  topic: camera_angle
+  quote: |-
+    近景与特写的机位高度是否落在眼高附近？偏离超过 15 厘米就要有理由。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#007
+  source_span:
+    chunk_id: camera_angle_and_lens_md#007
+    start: 98
+    end: 133
+  provenance_kind: 权威文档
+- id: gen_cine_0145
+  domain: cinematography
+  title: 远景避免85mm长焦
+  content: 拍远景不要用 85 mm 长焦，否则空间被压缩、画面扁平像贴图；远景应选广角以保留纵深。
+  keywords:
+  - 空间压缩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 焦距
+  - 纵深
+  topic: camera_angle
+  quote: |-
+    远景用 85 mm 会显得空间扁平、像贴图；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#006
+  source_span:
+    chunk_id: camera_angle_and_lens_md#006
+    start: 75
+    end: 97
+  provenance_kind: 权威文档
+- id: gen_cine_0146
+  domain: cinematography
+  title: 色彩情绪查表
+  content: 按色相定情绪基调：红=危险/激情/暴力，橙=温暖/怀旧/安全，黄=警示/病态/焦虑，绿=不安/毒/非人，青蓝=冷静/科技/孤独/夜，紫=异质/梦幻/暧昧，品红=人工/消费/虚幻；选色时先按目标情绪查表再定主色。
+  keywords:
+  - 色相
+  - 情绪映射
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: lighting
+  quote: |-
+    红：危险、激情、暴力；大面积红会令观众生理性紧张；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#005
+  source_span:
+    chunk_id: lighting_and_color_md#005
+    start: 23
+    end: 48
+  provenance_kind: 权威文档
+- id: gen_cine_0147
+  domain: cinematography
+  title: 曝光保护高光
+  content: 数字传感器上方宽容度（4–6档）小于下方（8–10档），曝光时优先保护高光，让观景器高光落在80–90%，暗部留给后期抬升；高光溢出后像素无信息，无法恢复。
+  keywords:
+  - 宽容度
+  - 高光保护
+  - 曝光策略
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 宽容度
+  topic: camera_angle
+  quote: |-
+    现代数字传感器的宽容度通常在上方 4–6 档、下方 8–10 档，**上方的余量远小于下方**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#004
+  source_span:
+    chunk_id: modern_cinematography_digital_md#004
+    start: 16
+    end: 64
+  provenance_kind: 权威文档
+- id: gen_cine_0148
+  domain: cinematography
+  title: 景别越小高度越敏感
+  content: 景别越小，机位高度的差异越敏感：特写上下的 10 厘米差别会被观众看出来，因此特写类镜头的高度需精确控制。
+  keywords:
+  - 机位高度
+  - 敏感度
+  - 特写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  topic: camera_angle
+  quote: |-
+    景别越小，机位高度的差异越敏感：特写上下的 10 厘米差别会被观众看出来。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#002
+  source_span:
+    chunk_id: camera_angle_and_lens_md#002
+    start: 170
+    end: 207
+  provenance_kind: 权威文档
+- id: gen_cine_0149
+  domain: cinematography
+  title: 高光与暗部余量
+  content: 曝光时把高光控制在 80–90% 区间，暗部保留足够后期余量，避免死黑与过曝削波。
+  keywords:
+  - 宽容度
+  - 后期
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 曝光
+  - 影调
+  topic: camera_angle
+  quote: |-
+    高光是否落在 80–90%，暗部是否留足后期余量？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#009
+  source_span:
+    chunk_id: modern_cinematography_digital_md#009
+    start: 97
+    end: 122
+  provenance_kind: 权威文档
+- id: gen_cine_0150
+  domain: cinematography
+  title: 低于1米的机位语义
+  content: 机位低于1米时，画面进入'儿童视角'或'仰视强者'的语义，用于表现弱小者视点或强化被摄者的强势。
+  keywords:
+  - 低机位
+  - 儿童视角
+  - 仰视
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 低机位
+  - 仰视
+  - 视角
+  topic: camera_angle
+  quote: |-
+    低于 1 米：进入"儿童视角"或"仰视强者"的语义
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#007
+  source_span:
+    chunk_id: camera_angle_in_practice_md#007
+    start: 48
+    end: 73
+  provenance_kind: 权威文档
+- id: gen_cine_0151
+  domain: cinematography
+  title: 胸口高度对话机位
+  content: 机位取1.0–1.3米（胸口高度）时，对话最自然，字幕与构图都舒服，适合常规对话场景。
+  keywords:
+  - 构图
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  topic: camera_angle
+  quote: |-
+    1.0–1.3 米：胸口高度，对话最自然，字幕与构图都舒服
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#007
+  source_span:
+    chunk_id: camera_angle_in_practice_md#007
+    start: 77
+    end: 106
+  provenance_kind: 权威文档
+- id: gen_cine_0152
+  domain: cinematography
+  title: 角度与背景同步决定
+  content: 机位角度与背景必须一起选定，不能先定角度再去找背景；选角度时就要把该角度会带入的天空、天花板或地面一并纳入考量。
+  keywords:
+  - 机位角度
+  - 同步决策
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位选择
+  - 工作流程
+  topic: camera_angle
+  quote: |-
+    角度与背景必须一起选，不能先定角度再找背景。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#006
+  source_span:
+    chunk_id: camera_angle_in_practice_md#006
+    start: 132
+    end: 154
+  provenance_kind: 权威文档
+- id: gen_cine_0153
+  domain: cinematography
+  title: 高于1.8米的俯视
+  content: 机位高于1.8米时形成俯视，观众感到自己在'往下看'，用于制造观察者与被观察者的落差。
+  keywords:
+  - 高机位
+  - 视点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 疏离
+  tags:
+  - 高机位
+  topic: camera_angle
+  quote: |-
+    高于 1.8 米：俯视，观众感到自己在"往下看"
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#007
+  source_span:
+    chunk_id: camera_angle_in_practice_md#007
+    start: 110
+    end: 134
+  provenance_kind: 权威文档
+- id: gen_cine_0154
+  domain: cinematography
+  title: 高于3米的上帝视角
+  content: 机位高于3米时进入'上帝视角'，用于强调环境与命运感，适合段落收尾或命运转折。
+  keywords:
+  - 高机位
+  - 命运感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 宿命
+  tags:
+  - 高机位
+  - 俯视
+  - 环境
+  topic: camera_angle
+  quote: |-
+    高于 3 米：进入"上帝视角"，强调环境与命运感
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#007
+  source_span:
+    chunk_id: camera_angle_in_practice_md#007
+    start: 138
+    end: 162
+  provenance_kind: 权威文档
+- id: gen_cine_0155
+  domain: cinematography
+  title: 人眼高度为默认机位
+  content: 机位高度取1.4–1.6米（人眼高度）时，画面语义为'平等'，是对话与常规叙事的默认机位高度。
+  keywords:
+  - 机位高度
+  - 默认值
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位高度
+  - 视角
+  topic: camera_angle
+  quote: |-
+    人眼高度的机位（1.4–1.6 米）是"平等"的默认值
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#007
+  source_span:
+    chunk_id: camera_angle_in_practice_md#007
+    start: 16
+    end: 43
+  provenance_kind: 权威文档
+- id: gen_cine_0156
+  domain: cinematography
+  title: 推镜感靠短焦加机位前移
+  content: 焦段越大，镜头前后运动越钝，85 mm 上的推镜几乎看不出透视变化；要强烈推镜感就用短焦段并配合机位前移，而不是只换镜头。
+  keywords:
+  - 透视变化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动
+  - 焦距
+  topic: camera_angle
+  quote: |-
+    焦段越大，镜头与前后的运动越"钝"：85 mm 上的推镜几乎看不出透视变化，所以想要强烈的推镜感，应当用短焦段并配合机位前移，而不是只换镜头。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#003
+  source_span:
+    chunk_id: camera_angle_and_lens_md#003
+    start: 231
+    end: 302
+  provenance_kind: 权威文档
+- id: gen_cine_0157
+  domain: cinematography
+  title: 监看检查顺序
+  content: 现场判断画面前的检查顺序固定为：先确认监看设备已校准，再确认 LUT 正确，最后才看画面；顺序颠倒会让后续判断失去依据。
+  keywords:
+  - 校准
+  - LUT
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 流程
+  topic: camera_angle
+  quote: |-
+    **先确认监看设备已校准、再确认 LUT 正确、最后才看画面**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#007
+  source_span:
+    chunk_id: modern_cinematography_digital_md#007
+    start: 114
+    end: 147
+  provenance_kind: 权威文档
+- id: gen_cine_0158
+  domain: cinematography
+  title: 现场LUT只用于监看
+  content: 现场监看LUT仅作监看工具，不进入交付流程；交付时应从原始素材重新配光，而非直接套用现场LUT。
+  keywords:
+  - 交付
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩管线
+  topic: camera_angle
+  quote: |-
+    现场监看用的 LUT 只是**监看工具**，不参与交付。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#005
+  source_span:
+    chunk_id: modern_cinematography_digital_md#005
+    start: 23
+    end: 51
+  provenance_kind: 权威文档
+- id: gen_cine_0159
+  domain: cinematography
+  title: 监看以可判断为目标
+  content: 现场监看的目标是让画面可判断而非好看：曝光依据波形与伪色，焦点依据放大对焦，构图依据安全框；不要凭监看画面的感觉定曝光，否则不同监视器会得出不同结论并导致返工。
+  keywords:
+  - 波形
+  - 伪色
+  - 安全框
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 曝光判断
+  - 焦点
+  topic: camera_angle
+  quote: |-
+    现场监看的目标不是"好看"，而是**可判断**：**曝光看波形与伪色，焦点看放大对焦，构图看安全框**。
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#007
+  source_span:
+    chunk_id: modern_cinematography_digital_md#007
+    start: 15
+    end: 67
+  provenance_kind: 权威文档
+- id: gen_cine_0160
+  domain: cinematography
+  title: 低机位仰角阈值
+  content: 用低机位仰拍使人物高大、有压迫感；仰角控制在15°以内以免观众察觉机位，超过15°观众会意识到低机位，超过30°则夸张、漫画化。
+  keywords:
+  - 压迫感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 仰拍
+  - 压迫
+  topic: camera_angle
+  quote: |-
+    仰角超过 15° 就会让观众意识到"这是低机位"，超过 30° 会显得夸张甚至漫画化。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#001
+  source_span:
+    chunk_id: camera_angle_and_lens_md#001
+    start: 156
+    end: 199
+  provenance_kind: 权威文档
+- id: gen_cine_0161
+  domain: cinematography
+  title: 色温编码时间与情绪
+  content: 用色温锚定场景的时间与情绪：3200K暖橙用于家庭、回忆、亲密；4300K混合光用于写实办公/教室/医院并略偏青绿；5600K日光为白天外景中性基准；7500K以上偏蓝用于清晨、夜晚、冷酷疏离。
+  keywords:
+  - 情绪编码
+  - 时间感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 亲密
+  tags:
+  - 基调
+  topic: lighting
+  quote: |-
+    3200 K（钨丝）——暖橙，家庭、回忆、亲密；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#004
+  source_span:
+    chunk_id: lighting_and_color_md#004
+    start: 22
+    end: 46
+  provenance_kind: 权威文档
+- id: gen_cine_0162
+  domain: cinematography
+  title: 高机位俯角阈值
+  content: 用高机位俯拍使人物弱小、被观察、被支配；俯角超过25°时空间关系被压扁、地面成为画面主体，需谨慎使用。
+  keywords:
+  - 弱小
+  - 空间压扁
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 弱小
+  tags:
+  - 俯拍
+  - 支配
+  topic: camera_angle
+  quote: |-
+    俯角超过 25° 时空间关系会被压扁，地面成为画面主体。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#001
+  source_span:
+    chunk_id: camera_angle_and_lens_md#001
+    start: 238
+    end: 266
+  provenance_kind: 权威文档
+- id: gen_cine_0163
+  domain: cinematography
+  title: 角度变化小于15°会跳
+  content: 相邻两镜的机位角度变化小于15°时，观众会感觉画面发生"跳跃"；因此切镜时要么把角度差拉到15°以上，要么改用其他景别或机位来区分。
+  keywords:
+  - 机位角度
+  - 跳切
+  - 15度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  - 跳切
+  topic: camera_angle
+  quote: |-
+    相邻镜头的机位角度变化小于 15° 会被感觉为"跳"；
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#008
+  source_span:
+    chunk_id: camera_angle_in_practice_md#008
+    start: 18
+    end: 45
+  provenance_kind: 权威文档
+- id: gen_cine_0164
+  domain: cinematography
+  title: 高度变化需有动机
+  content: 相邻镜头之间的机位高度变化必须有叙事或情绪动机；若无动机，则把机位高度回到基准镜高度，避免无意义的高度跳动。
+  keywords:
+  - 机位高度
+  - 相邻镜头
+  - 基准镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 剪辑
+  - 连续性
+  topic: camera_angle
+  quote: |-
+    相邻镜头之间的机位高度变化是否有动机？没有动机就回到基准镜高度。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#007
+  source_span:
+    chunk_id: camera_angle_and_lens_md#007
+    start: 137
+    end: 169
+  provenance_kind: 权威文档
+- id: gen_cine_0165
+  domain: cinematography
+  title: 色温跳变需有动机
+  content: 相邻镜头之间的色温不得无动机跳变；若跳变，必须由时间、地点或情绪转折给出理由。
+  keywords:
+  - 剪辑连续性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩连续性
+  - 剪辑
+  topic: lighting
+  quote: |-
+    相邻镜头之间的色温是否发生无动机的跳变？跳变必须有理由（时间/地点/情绪转折）。
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#007
+  source_span:
+    chunk_id: lighting_and_color_md#007
+    start: 87
+    end: 127
+  provenance_kind: 权威文档
+- id: gen_cine_0166
+  domain: cinematography
+  title: 色彩靠相对关系
+  content: 色彩设计的关键不是选哪个颜色，而是画面内的相对关系；只有一个暖色时，该暖色即成为观众注意力落点，可用它引导视线。
+  keywords:
+  - 暖色
+  - 注意力
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 引导
+  topic: lighting
+  quote: |-
+    色彩设计的关键不是"用哪个颜色"，而是**相对关系**：画面里只有一个暖色时，
+    它就是观众的注意力落点。
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#005
+  source_span:
+    chunk_id: lighting_and_color_md#005
+    start: 174
+    end: 226
+  provenance_kind: 权威文档
+- id: gen_cine_0167
+  domain: cinematography
+  title: 荷兰角表达失衡
+  content: 荷兰角绕光轴滚转，不表达权力而表达失衡与不安；滚转3°以内几乎不可见，5°–15°为隐隐不安，超过20°成为显性危险信号。
+  keywords:
+  - 滚转
+  - 不安
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不安
+  tags:
+  - 倾斜
+  - 不安
+  topic: camera_angle
+  quote: |-
+    滚转 3° 以内几乎看不出来，5°–15° 是"隐隐不安"，超过 20° 就变成显性的危险信号。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#001
+  source_span:
+    chunk_id: camera_angle_and_lens_md#001
+    start: 307
+    end: 355
+  provenance_kind: 权威文档
+- id: gen_cine_0168
+  domain: cinematography
+  title: 荷兰角节制使用
+  content: 荷兰角（倾斜构图）要节制使用；用得太频繁观众只会读成画面歪了，而读不出角色不安。
+  keywords:
+  - 倾斜
+  - 不安
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不安
+  tags:
+  - 构图
+  - 情绪
+  topic: camera_angle
+  quote: |-
+    荷兰角用得太多，观众会把它当成"画面歪了"而不是"角色不安"。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#006
+  source_span:
+    chunk_id: camera_angle_and_lens_md#006
+    start: 100
+    end: 131
+  provenance_kind: 权威文档
+- id: gen_cine_0169
+  domain: cinematography
+  title: 虚拟棚视差范围
+  content: 虚拟棚拍摄时，镜头运动幅度必须限制在有效视差范围内，超出会导致 LED 背景与实拍透视错位。
+  keywords:
+  - 运动幅度
+  - LED
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 虚拟制作
+  - 运动
+  topic: camera_angle
+  quote: |-
+    虚拟棚镜头的运动幅度是否在有效视差范围内？
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#009
+  source_span:
+    chunk_id: modern_cinematography_digital_md#009
+    start: 152
+    end: 173
+  provenance_kind: 权威文档
+- id: gen_cine_0170
+  domain: cinematography
+  title: 黄绿最不适
+  content: 表现不安、毒、非人感时用绿色，并取偏黄绿的方向；偏黄绿是绿色中最令人不适的取值。
+  keywords:
+  - 绿色
+  - 不安
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不安
+  tags:
+  - 色彩
+  topic: lighting
+  quote: |-
+    绿：不安、毒、非人（偏黄绿最不舒服）；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#005
+  source_span:
+    chunk_id: lighting_and_color_md#005
+    start: 106
+    end: 125
+  provenance_kind: 权威文档
+- id: gen_cine_0171
+  domain: cinematography
+  title: 青蓝定夜与孤独
+  content: 表现冷静、科技、孤独或夜景时用青蓝色调，青蓝同时承担冷感与夜感两种功能。
+  keywords:
+  - 夜景
+  - 冷静
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 孤独
+  tags:
+  - 色彩
+  - 冷调
+  topic: lighting
+  quote: |-
+    青蓝：冷静、科技、孤独、夜；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#005
+  source_span:
+    chunk_id: lighting_and_color_md#005
+    start: 128
+    end: 142
+  provenance_kind: 权威文档
+- id: gen_cine_0172
+  domain: cinematography
+  title: 紫与品红的异质区分
+  content: 表现异质感、梦幻、暧昧用紫色；表现人工、消费、虚幻用品红；两者不可混用，紫偏梦幻暧昧，品红偏人造虚幻。
+  keywords:
+  - 紫色
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 色彩
+  - 梦幻
+  topic: lighting
+  quote: |-
+    紫：异质感、梦幻、暧昧；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#005
+  source_span:
+    chunk_id: lighting_and_color_md#005
+    start: 145
+    end: 157
+  provenance_kind: 权威文档
+- id: gen_cine_0173
+  domain: cinematography
+  title: 偏绿黄制造焦虑
+  content: 表现警示、病态、焦虑时用黄色，并把黄色往绿偏；黄色偏绿时焦虑感最明显。
+  keywords:
+  - 黄色
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 焦虑
+  tags:
+  - 色彩
+  - 病态
+  topic: lighting
+  quote: |-
+    黄：警示、病态、焦虑（当黄色偏绿时尤其明显）；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#005
+  source_span:
+    chunk_id: lighting_and_color_md#005
+    start: 80
+    end: 103
+  provenance_kind: 权威文档
+- id: gen_cine_0174
+  domain: cinematography
+  title: 35mm 纪实基准焦段
+  content: 要人物与环境并重的纪实感画面时用 35 mm，它是中远景与全身镜的主力焦段。
+  keywords:
+  - 中远景
+  - 全身镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 中远景
+  topic: camera_angle
+  quote: |-
+    **35 mm**：纪实感的基准，人物与环境并重；中远景与全身镜的主力。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#003
+  source_span:
+    chunk_id: camera_angle_and_lens_md#003
+    start: 122
+    end: 158
+  provenance_kind: 权威文档
+- id: gen_cine_0175
+  domain: cinematography
+  title: 金色时刻的暖橙来源
+  content: 要拍温暖、怀旧、安全的橙调，用低角度暖阳（金色时刻）作光源，而不是靠后期加橙；低角度暖阳本身即橙调来源。
+  keywords:
+  - 橙色
+  - 低角度光
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 温暖
+  tags:
+  - 自然光
+  - 暖调
+  topic: lighting
+  quote: |-
+    橙：温暖、怀旧、安全（"金色时刻"来自低角度暖阳）；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#005
+  source_span:
+    chunk_id: lighting_and_color_md#005
+    start: 51
+    end: 77
+  provenance_kind: 权威文档
+- id: gen_cine_0176
+  domain: cinematography
+  title: 焦距定空间剥离感
+  content: 要表达"人在环境里"用广角焦距保留环境信息；要表达"人从环境里剥离"用长焦压缩空间、虚化背景，焦距选择由空间感诉求决定。
+  keywords:
+  - 空间感
+  - 广角
+  - 长焦
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 景深
+  topic: camera_angle
+  quote: |-
+    这一镜要表达的空间感是"人在环境里"还是"人从环境里剥离"？焦距定这一件事。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#007
+  source_span:
+    chunk_id: camera_angle_and_lens_md#007
+    start: 56
+    end: 94
+  provenance_kind: 权威文档
+- id: gen_cine_0177
+  domain: cinematography
+  title: 角度变化需隐蔽
+  content: 角度随情节推进而抬高或压低时，应让观众察觉不到机位变化，只感受到情绪被推着走；避免角度切换过于突兀而暴露技巧。
+  keywords:
+  - 隐蔽性
+  - 情绪引导
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 情绪推进
+  topic: camera_angle
+  quote: |-
+    角度随情节走，观众感觉不到，但情绪会被推着走。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#002
+  source_span:
+    chunk_id: camera_angle_in_practice_md#002
+    start: 141
+    end: 164
+  provenance_kind: 权威文档
+- id: gen_cine_0178
+  domain: cinematography
+  title: 背景暗部分离主体
+  content: 让人物从背景中跳出来，需保证背景有足够暗部，用亮度差把主体与背景分离。
+  keywords:
+  - 主体分离
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 明暗对比
+  topic: lighting
+  quote: |-
+    背景是否有足够的暗部让人物"跳出来"？
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#007
+  source_span:
+    chunk_id: lighting_and_color_md#007
+    start: 65
+    end: 84
+  provenance_kind: 权威文档
+- id: gen_cine_0179
+  domain: cinematography
+  title: 前景占比的取舍
+  content: 过肩镜头中前景人物占画面比例需控制在1/4到1/3之间：占比过大变成背影镜头、失去对话关系，占比过小则失去空间关系。
+  keywords:
+  - 背影镜头
+  - 空间关系
+  - 构图比例
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 过肩镜头
+  - 空间关系
+  topic: camera_angle
+  quote: |-
+    前景人占得太多会变成"背影镜头"，太少则失去空间关系。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#005
+  source_span:
+    chunk_id: camera_angle_in_practice_md#005
+    start: 122
+    end: 149
+  provenance_kind: 权威文档
+- id: gen_cine_0180
+  domain: cinematography
+  title: 过肩镜头三条件
+  content: 过肩镜头（OTS）需同时满足三点：前景人物的肩部或后脑占画面一侧的1/4到1/3；焦点落在后景人物眼睛上、前景人虚化；机位高度接近前景人物眼高，以形成“从其肩后看”的视点。
+  keywords:
+  - OTS
+  - 前景遮挡
+  - 焦点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 焦点
+  - 视点
+  topic: camera_angle
+  quote: |-
+    过肩镜头（OTS）需要三个条件同时成立：
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#005
+  source_span:
+    chunk_id: camera_angle_in_practice_md#005
+    start: 14
+    end: 34
+  provenance_kind: 权威文档
+- id: gen_cine_0181
+  domain: cinematography
+  title: 近景保留背景用长焦
+  content: 近景中想保留背景可读性，唯一有效办法是拉远机位并改用长焦，而不是把光圈收到衍射极限（通常小于f/11就开始明显软化）。
+  keywords:
+  - 背景可读性
+  - 衍射
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 景深
+  - 机位
+  topic: camera_angle
+  quote: |-
+    拉远机位并改用长焦
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#002
+  source_span:
+    chunk_id: modern_cinematography_digital_md#002
+    start: 249
+    end: 258
+  provenance_kind: 权威文档
+- id: gen_cine_0182
+  domain: cinematography
+  title: 先定观众与人物关系
+  content: 选机位角度前先确定观众身份：旁观者（机位在人物动线之外、不介入）、参与者（机位落在人物活动空间内，常用手持或过肩）、当事人（机位取代某人物眼睛即POV）。三者决定整场拍摄方式。
+  keywords:
+  - 机位角度
+  - 观众关系
+  - 旁观者
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 机位
+  - 视点
+  - 调度
+  topic: camera_angle
+  quote: |-
+    机位角度的第一个问题不是"低机位还是高机位"，而是**观众与人物处于什么关系**
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#001
+  source_span:
+    chunk_id: camera_angle_in_practice_md#001
+    start: 17
+    end: 57
+  provenance_kind: 权威文档
+- id: gen_cine_0183
+  domain: cinematography
+  title: 焦段即空间关系读法
+  content: 选焦段前先确定观众与人物的心理距离：广角（≤24mm）拉大前后景距离，用于压迫、追逐、空间展示；标准（35–50mm）接近人眼关系，用于对话与中性叙事；中长焦（85–135mm）压缩空间突出主体，用于情绪与亲密；超长焦（200mm以上）把背景压成色块，用于孤独与窥视。
+  keywords:
+  - 心理距离
+  - 广角
+  - 长焦
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 焦段选择
+  - 空间感
+  - 心理读法
+  topic: camera_angle
+  quote: |-
+    焦段不是"远近"，而是**空间关系的读法**
+  source_ref:
+    url: repo://knowledge/source_notes/modern_cinematography_digital.md
+    title: 现代数字摄影：曝光、格式与画面控制（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-10-01'
+    sha256: 3d8cd4ba365051d1a5e23217bf33160ea70a000707e1c066e77496feede32cd9
+  chunk_id: modern_cinematography_digital_md#003
+  source_span:
+    chunk_id: modern_cinematography_digital_md#003
+    start: 16
+    end: 38
+  provenance_kind: 权威文档
+- id: gen_cine_0184
+  domain: cinematography
+  title: 24mm 强透视交代环境
+  content: 需要交代远景与环境关系时用 24 mm：空间被拉深、透视强烈；代价是人脸被拉宽，靠近画面边缘的物体明显变形，避免用它拍人物近景。
+  keywords:
+  - 广角
+  - 环境交代
+  - 变形
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 广角
+  - 远景
+  - 畸变
+  topic: camera_angle
+  quote: |-
+    **24 mm**：强透视，空间被拉深，适合远景与环境交代；人脸会被拉宽，靠近画面边缘的物体会明显变形。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_and_lens.md
+    title: 机位高度、角度与镜头焦距的对应关系（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: b5f94e98f73d10ba3fb9a0b29f2fa1b15eb9b8485cafa099cde9ed43057428b4
+  chunk_id: camera_angle_and_lens_md#003
+  source_span:
+    chunk_id: camera_angle_and_lens_md#003
+    start: 60
+    end: 112
+  provenance_kind: 权威文档
+- id: gen_cine_0185
+  domain: cinematography
+  title: 大面积红的生理压迫
+  content: 需要制造生理性紧张时，用大面积红色铺满画面，而非小面积红色点缀；红色面积越大，观众的身体紧张反应越强。
+  keywords:
+  - 红色
+  - 紧张
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 色彩
+  topic: lighting
+  quote: |-
+    大面积红会令观众生理性紧张；
+  source_ref:
+    url: repo://knowledge/source_notes/lighting_and_color.md
+    title: 布光体系与色彩情绪的对应（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: 9f60db51ad44c13ed68561af09df6f4baff92aa895d539f66bff15b01d09aa00
+  chunk_id: lighting_and_color_md#005
+  source_span:
+    chunk_id: lighting_and_color_md#005
+    start: 34
+    end: 48
+  provenance_kind: 权威文档
+- id: gen_cine_0186
+  domain: cinematography
+  title: 高机位与地面关系
+  content: 高机位俯拍会带入地面，地面越干净，俯拍传达的孤独感越强；想强化孤独就选干净地面，想削弱则让地面有杂物或结构。
+  keywords:
+  - 俯拍
+  - 孤独感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 孤独
+  tags:
+  - 俯拍
+  - 背景选择
+  - 孤独
+  topic: camera_angle
+  quote: |-
+    高机位则相反，它带入地面——地面越干净，俯拍的"孤独感"越强。
+  source_ref:
+    url: repo://knowledge/source_notes/camera_angle_in_practice.md
+    title: 机位角度的实操选择（自撰笔记）
+    author: BlockDirector knowledge team
+    license: OwnWork
+    retrieved_at: '2026-09-30'
+    sha256: f69e276bfe7a1ddf1fa6e77ec39bcf727e6d2f4ea834f2bb1d0794dee8c9d33a
+  chunk_id: camera_angle_in_practice_md#006
+  source_span:
+    chunk_id: camera_angle_in_practice_md#006
+    start: 99
+    end: 130
+  provenance_kind: 权威文档

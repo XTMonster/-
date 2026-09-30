@@ -17,6 +17,30 @@
       "unit": ""
     },
     {
+      "node_id": "action:主次",
+      "type": "action",
+      "name": "主次",
+      "aliases": [],
+      "value": "主次",
+      "unit": ""
+    },
+    {
+      "node_id": "action:主线",
+      "type": "action",
+      "name": "主线",
+      "aliases": [],
+      "value": "主线",
+      "unit": ""
+    },
+    {
+      "node_id": "action:主题",
+      "type": "action",
+      "name": "主题",
+      "aliases": [],
+      "value": "主题",
+      "unit": ""
+    },
+    {
       "node_id": "action:人物",
       "type": "action",
       "name": "人物",
@@ -25,11 +49,59 @@
       "unit": ""
     },
     {
+      "node_id": "action:人物一致性",
+      "type": "action",
+      "name": "人物一致性",
+      "aliases": [],
+      "value": "人物一致性",
+      "unit": ""
+    },
+    {
+      "node_id": "action:人物化",
+      "type": "action",
+      "name": "人物化",
+      "aliases": [],
+      "value": "人物化",
+      "unit": ""
+    },
+    {
+      "node_id": "action:人物塑造",
+      "type": "action",
+      "name": "人物塑造",
+      "aliases": [],
+      "value": "人物塑造",
+      "unit": ""
+    },
+    {
       "node_id": "action:人物弧光",
       "type": "action",
       "name": "人物弧光",
       "aliases": [],
       "value": "人物弧光",
+      "unit": ""
+    },
+    {
+      "node_id": "action:人物弧线",
+      "type": "action",
+      "name": "人物弧线",
+      "aliases": [],
+      "value": "人物弧线",
+      "unit": ""
+    },
+    {
+      "node_id": "action:人物逻辑",
+      "type": "action",
+      "name": "人物逻辑",
+      "aliases": [],
+      "value": "人物逻辑",
+      "unit": ""
+    },
+    {
+      "node_id": "action:人物驱动",
+      "type": "action",
+      "name": "人物驱动",
+      "aliases": [],
+      "value": "人物驱动",
       "unit": ""
     },
     {
@@ -49,6 +121,38 @@
       "name": "低成本",
       "aliases": [],
       "value": "低成本",
+      "unit": ""
+    },
+    {
+      "node_id": "action:作者视角",
+      "type": "action",
+      "name": "作者视角",
+      "aliases": [],
+      "value": "作者视角",
+      "unit": ""
+    },
+    {
+      "node_id": "action:信息放大",
+      "type": "action",
+      "name": "信息放大",
+      "aliases": [],
+      "value": "信息放大",
+      "unit": ""
+    },
+    {
+      "node_id": "action:修改",
+      "type": "action",
+      "name": "修改",
+      "aliases": [],
+      "value": "修改",
+      "unit": ""
+    },
+    {
+      "node_id": "action:修辞",
+      "type": "action",
+      "name": "修辞",
+      "aliases": [],
+      "value": "修辞",
       "unit": ""
     },
     {
@@ -108,11 +212,59 @@
       "unit": ""
     },
     {
+      "node_id": "action:写作",
+      "type": "action",
+      "name": "写作",
+      "aliases": [],
+      "value": "写作",
+      "unit": ""
+    },
+    {
+      "node_id": "action:写实",
+      "type": "action",
+      "name": "写实",
+      "aliases": [],
+      "value": "写实",
+      "unit": ""
+    },
+    {
+      "node_id": "action:写实主义",
+      "type": "action",
+      "name": "写实主义",
+      "aliases": [],
+      "value": "写实主义",
+      "unit": ""
+    },
+    {
       "node_id": "action:写实表演",
       "type": "action",
       "name": "写实表演",
       "aliases": [],
       "value": "写实表演",
+      "unit": ""
+    },
+    {
+      "node_id": "action:写法",
+      "type": "action",
+      "name": "写法",
+      "aliases": [],
+      "value": "写法",
+      "unit": ""
+    },
+    {
+      "node_id": "action:冲击",
+      "type": "action",
+      "name": "冲击",
+      "aliases": [],
+      "value": "冲击",
+      "unit": ""
+    },
+    {
+      "node_id": "action:冲击帧",
+      "type": "action",
+      "name": "冲击帧",
+      "aliases": [],
+      "value": "冲击帧",
       "unit": ""
     },
     {
@@ -140,11 +292,35 @@
       "unit": ""
     },
     {
+      "node_id": "action:创作态度",
+      "type": "action",
+      "name": "创作态度",
+      "aliases": [],
+      "value": "创作态度",
+      "unit": ""
+    },
+    {
+      "node_id": "action:创作方法",
+      "type": "action",
+      "name": "创作方法",
+      "aliases": [],
+      "value": "创作方法",
+      "unit": ""
+    },
+    {
       "node_id": "action:制作条件",
       "type": "action",
       "name": "制作条件",
       "aliases": [],
       "value": "制作条件",
+      "unit": ""
+    },
+    {
+      "node_id": "action:制作流程",
+      "type": "action",
+      "name": "制作流程",
+      "aliases": [],
+      "value": "制作流程",
       "unit": ""
     },
     {
@@ -164,6 +340,22 @@
       "unit": ""
     },
     {
+      "node_id": "action:剧作",
+      "type": "action",
+      "name": "剧作",
+      "aliases": [],
+      "value": "剧作",
+      "unit": ""
+    },
+    {
+      "node_id": "action:剧作层级",
+      "type": "action",
+      "name": "剧作层级",
+      "aliases": [],
+      "value": "剧作层级",
+      "unit": ""
+    },
+    {
       "node_id": "action:剧团政治",
       "type": "action",
       "name": "剧团政治",
@@ -172,11 +364,27 @@
       "unit": ""
     },
     {
+      "node_id": "action:剧场性",
+      "type": "action",
+      "name": "剧场性",
+      "aliases": [],
+      "value": "剧场性",
+      "unit": ""
+    },
+    {
       "node_id": "action:剧本",
       "type": "action",
       "name": "剧本",
       "aliases": [],
       "value": "剧本",
+      "unit": ""
+    },
+    {
+      "node_id": "action:剧本分析",
+      "type": "action",
+      "name": "剧本分析",
+      "aliases": [],
+      "value": "剧本分析",
       "unit": ""
     },
     {
@@ -196,11 +404,67 @@
       "unit": ""
     },
     {
+      "node_id": "action:剪辑",
+      "type": "action",
+      "name": "剪辑",
+      "aliases": [],
+      "value": "剪辑",
+      "unit": ""
+    },
+    {
       "node_id": "action:剪辑取舍",
       "type": "action",
       "name": "剪辑取舍",
       "aliases": [],
       "value": "剪辑取舍",
+      "unit": ""
+    },
+    {
+      "node_id": "action:剪辑点",
+      "type": "action",
+      "name": "剪辑点",
+      "aliases": [],
+      "value": "剪辑点",
+      "unit": ""
+    },
+    {
+      "node_id": "action:剪辑衔接",
+      "type": "action",
+      "name": "剪辑衔接",
+      "aliases": [],
+      "value": "剪辑衔接",
+      "unit": ""
+    },
+    {
+      "node_id": "action:动作",
+      "type": "action",
+      "name": "动作",
+      "aliases": [],
+      "value": "动作",
+      "unit": ""
+    },
+    {
+      "node_id": "action:动作化",
+      "type": "action",
+      "name": "动作化",
+      "aliases": [],
+      "value": "动作化",
+      "unit": ""
+    },
+    {
+      "node_id": "action:动作段落",
+      "type": "action",
+      "name": "动作段落",
+      "aliases": [],
+      "value": "动作段落",
+      "unit": ""
+    },
+    {
+      "node_id": "action:动作结构",
+      "type": "action",
+      "name": "动作结构",
+      "aliases": [],
+      "value": "动作结构",
       "unit": ""
     },
     {
@@ -220,6 +484,38 @@
       "unit": ""
     },
     {
+      "node_id": "action:动作设计",
+      "type": "action",
+      "name": "动作设计",
+      "aliases": [],
+      "value": "动作设计",
+      "unit": ""
+    },
+    {
+      "node_id": "action:动机",
+      "type": "action",
+      "name": "动机",
+      "aliases": [],
+      "value": "动机",
+      "unit": ""
+    },
+    {
+      "node_id": "action:历史剧",
+      "type": "action",
+      "name": "历史剧",
+      "aliases": [],
+      "value": "历史剧",
+      "unit": ""
+    },
+    {
+      "node_id": "action:双层表演",
+      "type": "action",
+      "name": "双层表演",
+      "aliases": [],
+      "value": "双层表演",
+      "unit": ""
+    },
+    {
       "node_id": "action:反例",
       "type": "action",
       "name": "反例",
@@ -236,11 +532,43 @@
       "unit": ""
     },
     {
+      "node_id": "action:变体",
+      "type": "action",
+      "name": "变体",
+      "aliases": [],
+      "value": "变体",
+      "unit": ""
+    },
+    {
+      "node_id": "action:变速",
+      "type": "action",
+      "name": "变速",
+      "aliases": [],
+      "value": "变速",
+      "unit": ""
+    },
+    {
       "node_id": "action:叙事",
       "type": "action",
       "name": "叙事",
       "aliases": [],
       "value": "叙事",
+      "unit": ""
+    },
+    {
+      "node_id": "action:叙事清晰",
+      "type": "action",
+      "name": "叙事清晰",
+      "aliases": [],
+      "value": "叙事清晰",
+      "unit": ""
+    },
+    {
+      "node_id": "action:叙事线",
+      "type": "action",
+      "name": "叙事线",
+      "aliases": [],
+      "value": "叙事线",
       "unit": ""
     },
     {
@@ -260,11 +588,27 @@
       "unit": ""
     },
     {
+      "node_id": "action:可读性",
+      "type": "action",
+      "name": "可读性",
+      "aliases": [],
+      "value": "可读性",
+      "unit": ""
+    },
+    {
       "node_id": "action:台词",
       "type": "action",
       "name": "台词",
       "aliases": [],
       "value": "台词",
+      "unit": ""
+    },
+    {
+      "node_id": "action:台词写作",
+      "type": "action",
+      "name": "台词写作",
+      "aliases": [],
+      "value": "台词写作",
       "unit": ""
     },
     {
@@ -284,6 +628,22 @@
       "unit": ""
     },
     {
+      "node_id": "action:台词节奏",
+      "type": "action",
+      "name": "台词节奏",
+      "aliases": [],
+      "value": "台词节奏",
+      "unit": ""
+    },
+    {
+      "node_id": "action:台词风格",
+      "type": "action",
+      "name": "台词风格",
+      "aliases": [],
+      "value": "台词风格",
+      "unit": ""
+    },
+    {
       "node_id": "action:后退",
       "type": "action",
       "name": "后退",
@@ -292,7 +652,15 @@
       ],
       "value": "后退",
       "unit": "",
-      "occurrences": 7
+      "occurrences": 9
+    },
+    {
+      "node_id": "action:命名",
+      "type": "action",
+      "name": "命名",
+      "aliases": [],
+      "value": "命名",
+      "unit": ""
     },
     {
       "node_id": "action:喜剧节奏",
@@ -300,6 +668,14 @@
       "name": "喜剧节奏",
       "aliases": [],
       "value": "喜剧节奏",
+      "unit": ""
+    },
+    {
+      "node_id": "action:场次",
+      "type": "action",
+      "name": "场次",
+      "aliases": [],
+      "value": "场次",
       "unit": ""
     },
     {
@@ -319,7 +695,7 @@
       ],
       "value": "坐下",
       "unit": "",
-      "occurrences": 9
+      "occurrences": 10
     },
     {
       "node_id": "action:声音",
@@ -327,6 +703,22 @@
       "name": "声音",
       "aliases": [],
       "value": "声音",
+      "unit": ""
+    },
+    {
+      "node_id": "action:声音引导",
+      "type": "action",
+      "name": "声音引导",
+      "aliases": [],
+      "value": "声音引导",
+      "unit": ""
+    },
+    {
+      "node_id": "action:声音节奏",
+      "type": "action",
+      "name": "声音节奏",
+      "aliases": [],
+      "value": "声音节奏",
       "unit": ""
     },
     {
@@ -354,11 +746,35 @@
       "unit": ""
     },
     {
+      "node_id": "action:多机位",
+      "type": "action",
+      "name": "多机位",
+      "aliases": [],
+      "value": "多机位",
+      "unit": ""
+    },
+    {
+      "node_id": "action:夸张",
+      "type": "action",
+      "name": "夸张",
+      "aliases": [],
+      "value": "夸张",
+      "unit": ""
+    },
+    {
       "node_id": "action:姿态",
       "type": "action",
       "name": "姿态",
       "aliases": [],
       "value": "姿态",
+      "unit": ""
+    },
+    {
+      "node_id": "action:媒介差异",
+      "type": "action",
+      "name": "媒介差异",
+      "aliases": [],
+      "value": "媒介差异",
       "unit": ""
     },
     {
@@ -378,6 +794,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:密度控制",
+      "type": "action",
+      "name": "密度控制",
+      "aliases": [],
+      "value": "密度控制",
+      "unit": ""
+    },
+    {
       "node_id": "action:对位",
       "type": "action",
       "name": "对位",
@@ -386,11 +810,51 @@
       "unit": ""
     },
     {
+      "node_id": "action:对白",
+      "type": "action",
+      "name": "对白",
+      "aliases": [],
+      "value": "对白",
+      "unit": ""
+    },
+    {
+      "node_id": "action:对白写法",
+      "type": "action",
+      "name": "对白写法",
+      "aliases": [],
+      "value": "对白写法",
+      "unit": ""
+    },
+    {
       "node_id": "action:对白戏",
       "type": "action",
       "name": "对白戏",
       "aliases": [],
       "value": "对白戏",
+      "unit": ""
+    },
+    {
+      "node_id": "action:对白评估",
+      "type": "action",
+      "name": "对白评估",
+      "aliases": [],
+      "value": "对白评估",
+      "unit": ""
+    },
+    {
+      "node_id": "action:对话",
+      "type": "action",
+      "name": "对话",
+      "aliases": [],
+      "value": "对话",
+      "unit": ""
+    },
+    {
+      "node_id": "action:层次",
+      "type": "action",
+      "name": "层次",
+      "aliases": [],
+      "value": "层次",
       "unit": ""
     },
     {
@@ -450,6 +914,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:心理描写",
+      "type": "action",
+      "name": "心理描写",
+      "aliases": [],
+      "value": "心理描写",
+      "unit": ""
+    },
+    {
       "node_id": "action:态度",
       "type": "action",
       "name": "态度",
@@ -458,11 +930,51 @@
       "unit": ""
     },
     {
+      "node_id": "action:性格剧",
+      "type": "action",
+      "name": "性格剧",
+      "aliases": [],
+      "value": "性格剧",
+      "unit": ""
+    },
+    {
+      "node_id": "action:情境设计",
+      "type": "action",
+      "name": "情境设计",
+      "aliases": [],
+      "value": "情境设计",
+      "unit": ""
+    },
+    {
+      "node_id": "action:情感",
+      "type": "action",
+      "name": "情感",
+      "aliases": [],
+      "value": "情感",
+      "unit": ""
+    },
+    {
       "node_id": "action:情感两极",
       "type": "action",
       "name": "情感两极",
       "aliases": [],
       "value": "情感两极",
+      "unit": ""
+    },
+    {
+      "node_id": "action:情感传达",
+      "type": "action",
+      "name": "情感传达",
+      "aliases": [],
+      "value": "情感传达",
+      "unit": ""
+    },
+    {
+      "node_id": "action:情感设计",
+      "type": "action",
+      "name": "情感设计",
+      "aliases": [],
+      "value": "情感设计",
       "unit": ""
     },
     {
@@ -498,6 +1010,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:情绪控制",
+      "type": "action",
+      "name": "情绪控制",
+      "aliases": [],
+      "value": "情绪控制",
+      "unit": ""
+    },
+    {
       "node_id": "action:情绪积累",
       "type": "action",
       "name": "情绪积累",
@@ -506,11 +1026,43 @@
       "unit": ""
     },
     {
+      "node_id": "action:情绪设计",
+      "type": "action",
+      "name": "情绪设计",
+      "aliases": [],
+      "value": "情绪设计",
+      "unit": ""
+    },
+    {
+      "node_id": "action:情绪连续性",
+      "type": "action",
+      "name": "情绪连续性",
+      "aliases": [],
+      "value": "情绪连续性",
+      "unit": ""
+    },
+    {
+      "node_id": "action:情节线",
+      "type": "action",
+      "name": "情节线",
+      "aliases": [],
+      "value": "情节线",
+      "unit": ""
+    },
+    {
       "node_id": "action:戏路",
       "type": "action",
       "name": "戏路",
       "aliases": [],
       "value": "戏路",
+      "unit": ""
+    },
+    {
+      "node_id": "action:打击感",
+      "type": "action",
+      "name": "打击感",
+      "aliases": [],
+      "value": "打击感",
       "unit": ""
     },
     {
@@ -583,6 +1135,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:改编",
+      "type": "action",
+      "name": "改编",
+      "aliases": [],
+      "value": "改编",
+      "unit": ""
+    },
+    {
       "node_id": "action:整体性",
       "type": "action",
       "name": "整体性",
@@ -607,11 +1167,67 @@
       "unit": ""
     },
     {
+      "node_id": "action:时代",
+      "type": "action",
+      "name": "时代",
+      "aliases": [],
+      "value": "时代",
+      "unit": ""
+    },
+    {
       "node_id": "action:时代背景",
       "type": "action",
       "name": "时代背景",
       "aliases": [],
       "value": "时代背景",
+      "unit": ""
+    },
+    {
+      "node_id": "action:时间处理",
+      "type": "action",
+      "name": "时间处理",
+      "aliases": [],
+      "value": "时间处理",
+      "unit": ""
+    },
+    {
+      "node_id": "action:时间控制",
+      "type": "action",
+      "name": "时间控制",
+      "aliases": [],
+      "value": "时间控制",
+      "unit": ""
+    },
+    {
+      "node_id": "action:时间连续性",
+      "type": "action",
+      "name": "时间连续性",
+      "aliases": [],
+      "value": "时间连续性",
+      "unit": ""
+    },
+    {
+      "node_id": "action:景别",
+      "type": "action",
+      "name": "景别",
+      "aliases": [],
+      "value": "景别",
+      "unit": ""
+    },
+    {
+      "node_id": "action:景深",
+      "type": "action",
+      "name": "景深",
+      "aliases": [],
+      "value": "景深",
+      "unit": ""
+    },
+    {
+      "node_id": "action:暗示",
+      "type": "action",
+      "name": "暗示",
+      "aliases": [],
+      "value": "暗示",
       "unit": ""
     },
     {
@@ -623,11 +1239,27 @@
       "unit": ""
     },
     {
+      "node_id": "action:术语定义",
+      "type": "action",
+      "name": "术语定义",
+      "aliases": [],
+      "value": "术语定义",
+      "unit": ""
+    },
+    {
       "node_id": "action:机位",
       "type": "action",
       "name": "机位",
       "aliases": [],
       "value": "机位",
+      "unit": ""
+    },
+    {
+      "node_id": "action:权力关系",
+      "type": "action",
+      "name": "权力关系",
+      "aliases": [],
+      "value": "权力关系",
       "unit": ""
     },
     {
@@ -719,6 +1351,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:环境叙事",
+      "type": "action",
+      "name": "环境叙事",
+      "aliases": [],
+      "value": "环境叙事",
+      "unit": ""
+    },
+    {
       "node_id": "action:现场调度",
       "type": "action",
       "name": "现场调度",
@@ -727,11 +1367,43 @@
       "unit": ""
     },
     {
+      "node_id": "action:画外音",
+      "type": "action",
+      "name": "画外音",
+      "aliases": [],
+      "value": "画外音",
+      "unit": ""
+    },
+    {
+      "node_id": "action:省略",
+      "type": "action",
+      "name": "省略",
+      "aliases": [],
+      "value": "省略",
+      "unit": ""
+    },
+    {
+      "node_id": "action:真实性",
+      "type": "action",
+      "name": "真实性",
+      "aliases": [],
+      "value": "真实性",
+      "unit": ""
+    },
+    {
       "node_id": "action:真实感",
       "type": "action",
       "name": "真实感",
       "aliases": [],
       "value": "真实感",
+      "unit": ""
+    },
+    {
+      "node_id": "action:程式化",
+      "type": "action",
+      "name": "程式化",
+      "aliases": [],
+      "value": "程式化",
       "unit": ""
     },
     {
@@ -759,6 +1431,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:立场",
+      "type": "action",
+      "name": "立场",
+      "aliases": [],
+      "value": "立场",
+      "unit": ""
+    },
+    {
       "node_id": "action:站位",
       "type": "action",
       "name": "站位",
@@ -772,6 +1452,22 @@
       "name": "类型跨度",
       "aliases": [],
       "value": "类型跨度",
+      "unit": ""
+    },
+    {
+      "node_id": "action:精简",
+      "type": "action",
+      "name": "精简",
+      "aliases": [],
+      "value": "精简",
+      "unit": ""
+    },
+    {
+      "node_id": "action:素材处理",
+      "type": "action",
+      "name": "素材处理",
+      "aliases": [],
+      "value": "素材处理",
       "unit": ""
     },
     {
@@ -791,6 +1487,38 @@
       "unit": ""
     },
     {
+      "node_id": "action:结尾",
+      "type": "action",
+      "name": "结尾",
+      "aliases": [],
+      "value": "结尾",
+      "unit": ""
+    },
+    {
+      "node_id": "action:结构",
+      "type": "action",
+      "name": "结构",
+      "aliases": [],
+      "value": "结构",
+      "unit": ""
+    },
+    {
+      "node_id": "action:结构重写",
+      "type": "action",
+      "name": "结构重写",
+      "aliases": [],
+      "value": "结构重写",
+      "unit": ""
+    },
+    {
+      "node_id": "action:统一性",
+      "type": "action",
+      "name": "统一性",
+      "aliases": [],
+      "value": "统一性",
+      "unit": ""
+    },
+    {
       "node_id": "action:群众调度",
       "type": "action",
       "name": "群众调度",
@@ -804,6 +1532,22 @@
       "name": "群体效果",
       "aliases": [],
       "value": "群体效果",
+      "unit": ""
+    },
+    {
+      "node_id": "action:群体调度",
+      "type": "action",
+      "name": "群体调度",
+      "aliases": [],
+      "value": "群体调度",
+      "unit": ""
+    },
+    {
+      "node_id": "action:群像",
+      "type": "action",
+      "name": "群像",
+      "aliases": [],
+      "value": "群像",
       "unit": ""
     },
     {
@@ -895,6 +1639,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:舞台指示",
+      "type": "action",
+      "name": "舞台指示",
+      "aliases": [],
+      "value": "舞台指示",
+      "unit": ""
+    },
+    {
       "node_id": "action:舞台调度",
       "type": "action",
       "name": "舞台调度",
@@ -916,6 +1668,14 @@
       "name": "节奏",
       "aliases": [],
       "value": "节奏",
+      "unit": ""
+    },
+    {
+      "node_id": "action:节拍",
+      "type": "action",
+      "name": "节拍",
+      "aliases": [],
+      "value": "节拍",
       "unit": ""
     },
     {
@@ -967,6 +1727,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:表演分析",
+      "type": "action",
+      "name": "表演分析",
+      "aliases": [],
+      "value": "表演分析",
+      "unit": ""
+    },
+    {
       "node_id": "action:表演动机",
       "type": "action",
       "name": "表演动机",
@@ -980,6 +1748,22 @@
       "name": "表演基调",
       "aliases": [],
       "value": "表演基调",
+      "unit": ""
+    },
+    {
+      "node_id": "action:表演尺度",
+      "type": "action",
+      "name": "表演尺度",
+      "aliases": [],
+      "value": "表演尺度",
+      "unit": ""
+    },
+    {
+      "node_id": "action:表演层次",
+      "type": "action",
+      "name": "表演层次",
+      "aliases": [],
+      "value": "表演层次",
       "unit": ""
     },
     {
@@ -1004,6 +1788,14 @@
       "name": "表演控制",
       "aliases": [],
       "value": "表演控制",
+      "unit": ""
+    },
+    {
+      "node_id": "action:表演提示",
+      "type": "action",
+      "name": "表演提示",
+      "aliases": [],
+      "value": "表演提示",
       "unit": ""
     },
     {
@@ -1071,6 +1863,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:表演调度",
+      "type": "action",
+      "name": "表演调度",
+      "aliases": [],
+      "value": "表演调度",
+      "unit": ""
+    },
+    {
       "node_id": "action:表演质感",
       "type": "action",
       "name": "表演质感",
@@ -1095,6 +1895,30 @@
       "unit": ""
     },
     {
+      "node_id": "action:观众",
+      "type": "action",
+      "name": "观众",
+      "aliases": [],
+      "value": "观众",
+      "unit": ""
+    },
+    {
+      "node_id": "action:观众反应",
+      "type": "action",
+      "name": "观众反应",
+      "aliases": [],
+      "value": "观众反应",
+      "unit": ""
+    },
+    {
+      "node_id": "action:观众心理",
+      "type": "action",
+      "name": "观众心理",
+      "aliases": [],
+      "value": "观众心理",
+      "unit": ""
+    },
+    {
       "node_id": "action:观众控制",
       "type": "action",
       "name": "观众控制",
@@ -1108,6 +1932,22 @@
       "name": "视觉引导",
       "aliases": [],
       "value": "视觉引导",
+      "unit": ""
+    },
+    {
+      "node_id": "action:角色",
+      "type": "action",
+      "name": "角色",
+      "aliases": [],
+      "value": "角色",
+      "unit": ""
+    },
+    {
+      "node_id": "action:角色动机",
+      "type": "action",
+      "name": "角色动机",
+      "aliases": [],
+      "value": "角色动机",
       "unit": ""
     },
     {
@@ -1132,6 +1972,14 @@
       "name": "角色性格",
       "aliases": [],
       "value": "角色性格",
+      "unit": ""
+    },
+    {
+      "node_id": "action:角色理解",
+      "type": "action",
+      "name": "角色理解",
+      "aliases": [],
+      "value": "角色理解",
       "unit": ""
     },
     {
@@ -1164,6 +2012,38 @@
       "name": "记录",
       "aliases": [],
       "value": "记录",
+      "unit": ""
+    },
+    {
+      "node_id": "action:设定",
+      "type": "action",
+      "name": "设定",
+      "aliases": [],
+      "value": "设定",
+      "unit": ""
+    },
+    {
+      "node_id": "action:语境分析",
+      "type": "action",
+      "name": "语境分析",
+      "aliases": [],
+      "value": "语境分析",
+      "unit": ""
+    },
+    {
+      "node_id": "action:说明",
+      "type": "action",
+      "name": "说明",
+      "aliases": [],
+      "value": "说明",
+      "unit": ""
+    },
+    {
+      "node_id": "action:说服",
+      "type": "action",
+      "name": "说服",
+      "aliases": [],
+      "value": "说服",
       "unit": ""
     },
     {
@@ -1202,6 +2082,22 @@
       "occurrences": 5
     },
     {
+      "node_id": "action:跟焦",
+      "type": "action",
+      "name": "跟焦",
+      "aliases": [],
+      "value": "跟焦",
+      "unit": ""
+    },
+    {
+      "node_id": "action:跟随动作",
+      "type": "action",
+      "name": "跟随动作",
+      "aliases": [],
+      "value": "跟随动作",
+      "unit": ""
+    },
+    {
       "node_id": "action:跺脚",
       "type": "action",
       "name": "跺脚",
@@ -1209,6 +2105,14 @@
         "跺足"
       ],
       "value": "跺脚",
+      "unit": ""
+    },
+    {
+      "node_id": "action:身体力学",
+      "type": "action",
+      "name": "身体力学",
+      "aliases": [],
+      "value": "身体力学",
       "unit": ""
     },
     {
@@ -1231,6 +2135,22 @@
       "unit": ""
     },
     {
+      "node_id": "action:连续性",
+      "type": "action",
+      "name": "连续性",
+      "aliases": [],
+      "value": "连续性",
+      "unit": ""
+    },
+    {
+      "node_id": "action:连贯性",
+      "type": "action",
+      "name": "连贯性",
+      "aliases": [],
+      "value": "连贯性",
+      "unit": ""
+    },
+    {
       "node_id": "action:迭代",
       "type": "action",
       "name": "迭代",
@@ -1247,6 +2167,14 @@
       "unit": ""
     },
     {
+      "node_id": "action:速度斜坡",
+      "type": "action",
+      "name": "速度斜坡",
+      "aliases": [],
+      "value": "速度斜坡",
+      "unit": ""
+    },
+    {
       "node_id": "action:造型",
       "type": "action",
       "name": "造型",
@@ -1255,11 +2183,27 @@
       "unit": ""
     },
     {
+      "node_id": "action:重量感",
+      "type": "action",
+      "name": "重量感",
+      "aliases": [],
+      "value": "重量感",
+      "unit": ""
+    },
+    {
       "node_id": "action:镜中构图",
       "type": "action",
       "name": "镜中构图",
       "aliases": [],
       "value": "镜中构图",
+      "unit": ""
+    },
+    {
+      "node_id": "action:镜头",
+      "type": "action",
+      "name": "镜头",
+      "aliases": [],
+      "value": "镜头",
       "unit": ""
     },
     {
@@ -1292,6 +2236,22 @@
       "name": "韵律",
       "aliases": [],
       "value": "韵律",
+      "unit": ""
+    },
+    {
+      "node_id": "action:题材",
+      "type": "action",
+      "name": "题材",
+      "aliases": [],
+      "value": "题材",
+      "unit": ""
+    },
+    {
+      "node_id": "action:风格",
+      "type": "action",
+      "name": "风格",
+      "aliases": [],
+      "value": "风格",
       "unit": ""
     },
     {
@@ -1397,7 +2357,7 @@
       "aliases": [],
       "value": "POV",
       "unit": "",
-      "occurrences": 4
+      "occurrences": 8
     },
     {
       "node_id": "avg_shot_len:1-3s",
@@ -1467,7 +2427,7 @@
       ],
       "value": "中性机位",
       "unit": "",
-      "occurrences": 17
+      "occurrences": 23
     },
     {
       "node_id": "axis_topic:关系轴",
@@ -1478,7 +2438,7 @@
       ],
       "value": "关系轴",
       "unit": "",
-      "occurrences": 2
+      "occurrences": 4
     },
     {
       "node_id": "axis_topic:视线轴",
@@ -1489,7 +2449,7 @@
       ],
       "value": "视线轴",
       "unit": "",
-      "occurrences": 14
+      "occurrences": 21
     },
     {
       "node_id": "axis_topic:越轴",
@@ -1500,7 +2460,7 @@
       ],
       "value": "越轴",
       "unit": "",
-      "occurrences": 23
+      "occurrences": 50
     },
     {
       "node_id": "axis_topic:运动轴",
@@ -1511,7 +2471,7 @@
       ],
       "value": "运动轴",
       "unit": "",
-      "occurrences": 14
+      "occurrences": 27
     },
     {
       "node_id": "beat_type:coverage",
@@ -1567,7 +2527,7 @@
       ],
       "value": "低机位",
       "unit": "",
-      "occurrences": 4
+      "occurrences": 10
     },
     {
       "node_id": "camera_angle:平视",
@@ -1579,7 +2539,7 @@
       ],
       "value": "平视",
       "unit": "",
-      "occurrences": 1
+      "occurrences": 3
     },
     {
       "node_id": "camera_angle:荷兰角",
@@ -1591,7 +2551,7 @@
       ],
       "value": "荷兰角",
       "unit": "",
-      "occurrences": 11
+      "occurrences": 12
     },
     {
       "node_id": "camera_angle:过肩",
@@ -1602,7 +2562,7 @@
       ],
       "value": "过肩",
       "unit": "",
-      "occurrences": 11
+      "occurrences": 14
     },
     {
       "node_id": "camera_angle:骑轴",
@@ -1613,7 +2573,7 @@
       ],
       "value": "骑轴",
       "unit": "",
-      "occurrences": 8
+      "occurrences": 14
     },
     {
       "node_id": "camera_angle:高机位",
@@ -1625,7 +2585,7 @@
       ],
       "value": "高机位",
       "unit": "",
-      "occurrences": 7
+      "occurrences": 17
     },
     {
       "node_id": "composition_rule:balance",
@@ -1637,7 +2597,7 @@
       ],
       "value": "balance",
       "unit": "",
-      "occurrences": 36
+      "occurrences": 42
     },
     {
       "node_id": "composition_rule:framing",
@@ -1649,7 +2609,7 @@
       ],
       "value": "framing",
       "unit": "",
-      "occurrences": 6
+      "occurrences": 8
     },
     {
       "node_id": "composition_rule:headroom",
@@ -1661,7 +2621,7 @@
       ],
       "value": "headroom",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 5
     },
     {
       "node_id": "composition_rule:lead_room",
@@ -1673,7 +2633,7 @@
       ],
       "value": "lead_room",
       "unit": "",
-      "occurrences": 1
+      "occurrences": 3
     },
     {
       "node_id": "composition_rule:occlusion",
@@ -1685,7 +2645,7 @@
       ],
       "value": "occlusion",
       "unit": "",
-      "occurrences": 13
+      "occurrences": 17
     },
     {
       "node_id": "composition_rule:rule_of_thirds",
@@ -1696,7 +2656,7 @@
       ],
       "value": "rule_of_thirds",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 4
     },
     {
       "node_id": "emotion:冷漠",
@@ -1720,7 +2680,7 @@
       ],
       "value": "压抑",
       "unit": "",
-      "occurrences": 10
+      "occurrences": 12
     },
     {
       "node_id": "emotion:喜悦",
@@ -1744,7 +2704,7 @@
       ],
       "value": "孤独",
       "unit": "",
-      "occurrences": 12
+      "occurrences": 17
     },
     {
       "node_id": "emotion:平静",
@@ -1756,7 +2716,7 @@
       ],
       "value": "平静",
       "unit": "",
-      "occurrences": 16
+      "occurrences": 28
     },
     {
       "node_id": "emotion:庄严",
@@ -1768,7 +2728,7 @@
       ],
       "value": "庄严",
       "unit": "",
-      "occurrences": 8
+      "occurrences": 9
     },
     {
       "node_id": "emotion:恐惧",
@@ -1792,7 +2752,7 @@
       ],
       "value": "悲伤",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 5
     },
     {
       "node_id": "emotion:愤怒",
@@ -1804,7 +2764,7 @@
       ],
       "value": "愤怒",
       "unit": "",
-      "occurrences": 2
+      "occurrences": 4
     },
     {
       "node_id": "emotion:期待",
@@ -1816,7 +2776,7 @@
       ],
       "value": "期待",
       "unit": "",
-      "occurrences": 14
+      "occurrences": 19
     },
     {
       "node_id": "emotion:混乱",
@@ -1828,7 +2788,7 @@
       ],
       "value": "混乱",
       "unit": "",
-      "occurrences": 7
+      "occurrences": 14
     },
     {
       "node_id": "emotion:温柔",
@@ -1840,7 +2800,7 @@
       ],
       "value": "温柔",
       "unit": "",
-      "occurrences": 10
+      "occurrences": 12
     },
     {
       "node_id": "emotion:焦虑",
@@ -1852,7 +2812,7 @@
       ],
       "value": "焦虑",
       "unit": "",
-      "occurrences": 36
+      "occurrences": 51
     },
     {
       "node_id": "emotion:绝望",
@@ -1877,7 +2837,7 @@
       ],
       "value": "荒诞",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 5
     },
     {
       "node_id": "emotion:讽刺",
@@ -1888,7 +2848,8 @@
         "黑色幽默"
       ],
       "value": "讽刺",
-      "unit": ""
+      "unit": "",
+      "occurrences": 2
     },
     {
       "node_id": "genre:anime",
@@ -1900,7 +2861,7 @@
       ],
       "value": "anime",
       "unit": "",
-      "occurrences": 31
+      "occurrences": 35
     },
     {
       "node_id": "genre:documentary",
@@ -1924,7 +2885,7 @@
       ],
       "value": "film",
       "unit": "",
-      "occurrences": 15
+      "occurrences": 18
     },
     {
       "node_id": "headroom_policy:board",
@@ -1974,7 +2935,7 @@
       "aliases": [],
       "value": "停顿",
       "unit": "",
-      "occurrences": 11
+      "occurrences": 22
     },
     {
       "node_id": "intent:压迫",
@@ -1983,7 +2944,7 @@
       "aliases": [],
       "value": "压迫",
       "unit": "",
-      "occurrences": 19
+      "occurrences": 32
     },
     {
       "node_id": "intent:回望",
@@ -2000,7 +2961,7 @@
       "aliases": [],
       "value": "对抗",
       "unit": "",
-      "occurrences": 7
+      "occurrences": 8
     },
     {
       "node_id": "intent:推进",
@@ -2009,7 +2970,7 @@
       "aliases": [],
       "value": "推进",
       "unit": "",
-      "occurrences": 21
+      "occurrences": 37
     },
     {
       "node_id": "intent:揭示",
@@ -2018,7 +2979,7 @@
       "aliases": [],
       "value": "揭示",
       "unit": "",
-      "occurrences": 9
+      "occurrences": 17
     },
     {
       "node_id": "intent:收束",
@@ -2027,7 +2988,7 @@
       "aliases": [],
       "value": "收束",
       "unit": "",
-      "occurrences": 7
+      "occurrences": 10
     },
     {
       "node_id": "intent:煽动",
@@ -2044,7 +3005,7 @@
       "aliases": [],
       "value": "留白",
       "unit": "",
-      "occurrences": 11
+      "occurrences": 22
     },
     {
       "node_id": "intent:转折",
@@ -2053,7 +3014,7 @@
       "aliases": [],
       "value": "转折",
       "unit": "",
-      "occurrences": 11
+      "occurrences": 25
     },
     {
       "node_id": "intent:释放",
@@ -2062,7 +3023,7 @@
       "aliases": [],
       "value": "释放",
       "unit": "",
-      "occurrences": 2
+      "occurrences": 3
     },
     {
       "node_id": "intent:铺垫",
@@ -2071,7 +3032,25 @@
       "aliases": [],
       "value": "铺垫",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 7
+    },
+    {
+      "node_id": "lens:10mm",
+      "type": "lens",
+      "name": "10mm",
+      "aliases": [],
+      "value": "10mm",
+      "unit": "",
+      "occurrences": 1
+    },
+    {
+      "node_id": "lens:135mm",
+      "type": "lens",
+      "name": "135mm",
+      "aliases": [],
+      "value": "135mm",
+      "unit": "",
+      "occurrences": 1
     },
     {
       "node_id": "lens:24mm",
@@ -2080,7 +3059,7 @@
       "aliases": [],
       "value": "24mm",
       "unit": "",
-      "occurrences": 4
+      "occurrences": 5
     },
     {
       "node_id": "lens:35mm",
@@ -2098,7 +3077,7 @@
       "aliases": [],
       "value": "50mm",
       "unit": "",
-      "occurrences": 4
+      "occurrences": 5
     },
     {
       "node_id": "lens:85mm",
@@ -2188,7 +3167,7 @@
       ],
       "value": "逆光",
       "unit": "",
-      "occurrences": 4
+      "occurrences": 5
     },
     {
       "node_id": "lighting:顶光",
@@ -2241,7 +3220,7 @@
       ],
       "value": "crane_down",
       "unit": "",
-      "occurrences": 18
+      "occurrences": 25
     },
     {
       "node_id": "movement:crane_up",
@@ -2252,7 +3231,7 @@
       ],
       "value": "crane_up",
       "unit": "",
-      "occurrences": 17
+      "occurrences": 23
     },
     {
       "node_id": "movement:dolly_in",
@@ -2264,7 +3243,7 @@
       ],
       "value": "dolly_in",
       "unit": "",
-      "occurrences": 5
+      "occurrences": 6
     },
     {
       "node_id": "movement:dolly_out",
@@ -2276,7 +3255,7 @@
       ],
       "value": "dolly_out",
       "unit": "",
-      "occurrences": 5
+      "occurrences": 7
     },
     {
       "node_id": "movement:dolly_zoom",
@@ -2300,7 +3279,7 @@
       ],
       "value": "follow_subject",
       "unit": "",
-      "occurrences": 8
+      "occurrences": 13
     },
     {
       "node_id": "movement:handheld",
@@ -2311,7 +3290,7 @@
       ],
       "value": "handheld",
       "unit": "",
-      "occurrences": 5
+      "occurrences": 8
     },
     {
       "node_id": "movement:lead_subject",
@@ -2488,7 +3467,7 @@
       ],
       "value": "固定",
       "unit": "",
-      "occurrences": 1
+      "occurrences": 2
     },
     {
       "node_id": "pacing:long",
@@ -2501,7 +3480,7 @@
       ],
       "value": "long",
       "unit": "",
-      "occurrences": 5
+      "occurrences": 6
     },
     {
       "node_id": "pacing:medium",
@@ -2524,7 +3503,7 @@
       ],
       "value": "short",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 5
     },
     {
       "node_id": "pair:any_two",
@@ -2541,7 +3520,7 @@
       "aliases": [],
       "value": "action",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 8
     },
     {
       "node_id": "scene_type:dialogue",
@@ -2595,7 +3574,8 @@
         "低频"
       ],
       "value": "低频轰鸣",
-      "unit": ""
+      "unit": "",
+      "occurrences": 2
     },
     {
       "node_id": "sfx:尖锐哨音",
@@ -2606,7 +3586,8 @@
         "耳鸣"
       ],
       "value": "尖锐哨音",
-      "unit": ""
+      "unit": "",
+      "occurrences": 1
     },
     {
       "node_id": "sfx:心跳",
@@ -2637,7 +3618,7 @@
       ],
       "value": "雨声",
       "unit": "",
-      "occurrences": 2
+      "occurrences": 3
     },
     {
       "node_id": "sfx:静默",
@@ -2649,7 +3630,7 @@
       ],
       "value": "静默",
       "unit": "",
-      "occurrences": 6
+      "occurrences": 12
     },
     {
       "node_id": "shot_size:CU",
@@ -2660,7 +3641,7 @@
       ],
       "value": "CU",
       "unit": "",
-      "occurrences": 39
+      "occurrences": 48
     },
     {
       "node_id": "shot_size:ECU",
@@ -2684,7 +3665,7 @@
       ],
       "value": "ELS",
       "unit": "",
-      "occurrences": 13
+      "occurrences": 20
     },
     {
       "node_id": "shot_size:LS",
@@ -2696,7 +3677,7 @@
       ],
       "value": "LS",
       "unit": "",
-      "occurrences": 22
+      "occurrences": 27
     },
     {
       "node_id": "shot_size:MCU",
@@ -2708,7 +3689,7 @@
       ],
       "value": "MCU",
       "unit": "",
-      "occurrences": 21
+      "occurrences": 32
     },
     {
       "node_id": "shot_size:MLS",
@@ -2730,7 +3711,7 @@
       ],
       "value": "MS",
       "unit": "",
-      "occurrences": 12
+      "occurrences": 19
     },
     {
       "node_id": "transition:cut",
@@ -2739,7 +3720,7 @@
       "aliases": [],
       "value": "cut",
       "unit": "",
-      "occurrences": 3
+      "occurrences": 10
     },
     {
       "node_id": "transition:dissolve",
@@ -2801,7 +3782,7 @@
       ],
       "value": "impact_frame",
       "unit": "",
-      "occurrences": 4
+      "occurrences": 9
     },
     {
       "node_id": "vfx:petrify",
@@ -2842,10 +3823,23 @@
     "action": [
       "上下场",
       "专注力",
+      "主次",
+      "主线",
+      "主题",
       "人物",
+      "人物一致性",
+      "人物化",
+      "人物塑造",
       "人物弧光",
+      "人物弧线",
+      "人物逻辑",
+      "人物驱动",
       "低头",
       "低成本",
+      "作者视角",
+      "信息放大",
+      "修改",
+      "修辞",
       "光线",
       "克制",
       "克制与释放",
@@ -2853,43 +3847,88 @@
       "内在依据",
       "内在动机",
       "内心",
+      "写作",
+      "写实",
+      "写实主义",
       "写实表演",
+      "写法",
+      "冲击",
+      "冲击帧",
       "准备",
       "分工",
       "分镜写法",
+      "创作态度",
+      "创作方法",
       "制作条件",
+      "制作流程",
       "制片分工",
       "制片流程",
+      "剧作",
+      "剧作层级",
       "剧团政治",
+      "剧场性",
       "剧本",
+      "剧本分析",
       "剧本标注",
       "剧目安排",
+      "剪辑",
       "剪辑取舍",
+      "剪辑点",
+      "剪辑衔接",
+      "动作",
+      "动作化",
+      "动作段落",
+      "动作结构",
       "动作节奏",
       "动作衔接",
+      "动作设计",
+      "动机",
+      "历史剧",
+      "双层表演",
       "反例",
       "取舍",
+      "变体",
+      "变速",
       "叙事",
+      "叙事清晰",
+      "叙事线",
       "叙事视角",
       "叙事重心",
+      "可读性",
       "台词",
+      "台词写作",
       "台词冲击",
       "台词处理",
+      "台词节奏",
+      "台词风格",
       "后退",
+      "命名",
       "喜剧节奏",
       "回头",
+      "场次",
       "场面调度",
       "坐下",
       "垂头",
       "声音",
+      "声音引导",
+      "声音节奏",
       "声音表演",
       "声音设计",
       "外表",
+      "多机位",
+      "夸张",
       "姿态",
+      "媒介差异",
       "安全",
       "定格",
+      "密度控制",
       "对位",
+      "对白",
+      "对白写法",
       "对白戏",
+      "对白评估",
+      "对话",
+      "层次",
       "布光",
       "布景",
       "平面图",
@@ -2898,14 +3937,25 @@
       "彩排",
       "微表演",
       "心态",
+      "心理描写",
       "态度",
+      "性格剧",
+      "情境设计",
+      "情感",
       "情感两极",
+      "情感传达",
+      "情感设计",
       "情绪",
       "情绪对比",
       "情绪层次",
       "情绪张力",
+      "情绪控制",
       "情绪积累",
+      "情绪设计",
+      "情绪连续性",
+      "情节线",
       "戏路",
+      "打击感",
       "技术统筹",
       "招手",
       "挥手",
@@ -2915,12 +3965,22 @@
       "排练管理",
       "推门",
       "收尾",
+      "改编",
       "整体性",
       "文本",
       "文本准备",
+      "时代",
       "时代背景",
+      "时间处理",
+      "时间控制",
+      "时间连续性",
+      "景别",
+      "景深",
+      "暗示",
       "术语",
+      "术语定义",
       "机位",
+      "权力关系",
       "松弛",
       "构图",
       "段落结构",
@@ -2932,18 +3992,32 @@
       "灯光",
       "特写",
       "状态",
+      "环境叙事",
       "现场调度",
+      "画外音",
+      "省略",
+      "真实性",
       "真实感",
+      "程式化",
       "空间",
       "窗户光",
       "立体感",
+      "立场",
       "站位",
       "站起",
       "类型跨度",
+      "精简",
+      "素材处理",
       "细节",
       "细节调度",
+      "结尾",
+      "结构",
+      "结构重写",
+      "统一性",
       "群众调度",
       "群体效果",
+      "群体调度",
+      "群像",
       "群像调度",
       "群戏",
       "职业方法",
@@ -2955,9 +4029,11 @@
       "自律",
       "自然主义",
       "舞台感",
+      "舞台指示",
       "舞台调度",
       "节制",
       "节奏",
+      "节拍",
       "落座",
       "行业变迁",
       "表情管理",
@@ -2965,11 +4041,15 @@
       "表演体系",
       "表演修养",
       "表演准备",
+      "表演分析",
       "表演动机",
       "表演基调",
+      "表演尺度",
+      "表演层次",
       "表演幅度",
       "表演心理",
       "表演控制",
+      "表演提示",
       "表演方法",
       "表演状态",
       "表演能力",
@@ -2978,35 +4058,56 @@
       "表演训练",
       "表演设计",
       "表演评价",
+      "表演调度",
       "表演质感",
       "表演风格",
       "装置",
+      "观众",
+      "观众反应",
+      "观众心理",
       "观众控制",
       "视觉引导",
+      "角色",
+      "角色动机",
       "角色塑造",
       "角色层次",
       "角色性格",
+      "角色理解",
       "角色类型",
       "角色设计",
       "角色跨度",
       "记录",
+      "设定",
+      "语境分析",
+      "说明",
+      "说服",
       "调度",
       "调度图",
       "走位",
       "起身",
+      "跟焦",
+      "跟随动作",
       "跺脚",
       "跺足",
+      "身体力学",
       "转身",
       "轴线",
+      "连续性",
+      "连贯性",
       "迭代",
       "退步",
       "选角",
+      "速度斜坡",
       "造型",
+      "重量感",
       "镜中构图",
+      "镜头",
       "阴影",
       "静动对比",
       "静默表演",
-      "韵律"
+      "韵律",
+      "题材",
+      "风格"
     ],
     "applies_to_genre": [
       "anime",
@@ -3395,6 +4496,8 @@
       "MS"
     ],
     "lens": [
+      "10mm",
+      "135mm",
       "24mm",
       "35mm",
       "50mm",
@@ -3415,8 +4518,6 @@
     "sfx": [
       "低频轰鸣",
       "尖锐哨音",
-      "心跳",
-      "金属撞击",
       "雨声",
       "静默"
     ],
@@ -3478,5 +4579,5 @@
     "character": [],
     "object": []
   },
-  "_fingerprint": "67228d38fe384fda"
+  "_fingerprint": "5a96c561b886ca67"
 }

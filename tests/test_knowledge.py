@@ -199,6 +199,29 @@ def test_queries_land_on_the_expected_card():
         assert hits and hits[0].card.id == expected, f"{query} → {hits}"
 
 
+def test_curated_cards_win_only_near_ties():
+    """人工卡只在**分数接近**时抢位；生成卡高出一截时仍然由它胜出。
+
+    这条规则是有界的：语料里每加一批生成卡，旗舰人工卡就会被同主题的候选
+    挤下去一位。无界的"人工卡永远优先"会把明显更贴题的生成卡也压掉，
+    所以并列带取实测差距（`越轴` 上 13.6%）之上的最小值。
+    """
+    from block_director.knowledge.retriever import CURATED_BOOST, curated_priority
+
+    class _Card:
+        def __init__(self, ident: str):
+            self.id = ident
+
+    cards = [_Card("comp_thirds"), _Card("gen_comp_0001"), _Card("comp_x")]
+    near = curated_priority([(0, 100.0), (1, 100.0 * (CURATED_BOOST - 0.02))], cards)
+    assert near[0][0] == 0, "13% 的差距属于并列，人工卡应当胜出"
+    clear = curated_priority([(0, 100.0), (1, 100.0 * (CURATED_BOOST + 0.05))], cards)
+    assert clear[0][0] == 1, "生成卡高出并列带时不能被人为压掉"
+    # 同档之间只按分数排，且次序键稳定（分数相同时保留下标顺序）。
+    same_tier = curated_priority([(2, 90.0), (0, 95.0)], cards)
+    assert [index for index, _ in same_tier] == [0, 2]
+
+
 def test_empty_query_returns_nothing():
     assert retriever().retrieve("   ") == []
 
