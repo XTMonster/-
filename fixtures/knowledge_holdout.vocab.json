@@ -1,5 +1,5 @@
 {
-"_fingerprint": "744612d657de6119",
+"_fingerprint": "2cc4005553378d3a",
 "kinds": {
 "action": [
 "上下场",
@@ -165,6 +165,12 @@
 "glow",
 "impact_frame",
 "smoke"
+],
+"avg_shot_len": [
+"1-3s",
+"3-8s",
+"<1s",
+">8s"
 ],
 "intensity": [
 "high",
