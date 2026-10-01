@@ -80,7 +80,10 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: forbid"）。实测代价是禁忌全挤在情绪包上、其余 12 类为 0（`AUDIT_TRIAGE.md` #17），
 #: 而这个语料里"不要正面光""避免三分法""别用手持"这类跨类禁忌本来很多——
 #: 结果是 Q7 的 ≥60 条冲突查询只能靠**编出来的**禁忌去填（复核两模型一致判掉 45 条）。
-PROMPT_VERSION = "extract/v11"
+#: v12：把 `source_kind` 的判据从"来源"改成"**知识形态**"（§2.3b 的用户裁决），
+#: 并且不再给每张卡塞一句假的"来源性质：theory"——正是那句让 738 条边的
+#: `source_kind=experience` 恒为 0，L2 经验层形同不存在、`E3 经验越权率` 因分母为 0 判失败。
+PROMPT_VERSION = "extract/v12"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -268,8 +271,17 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
    "该情绪下不要这样拍"的 EMOTION_PACK）。词表里已经给了 `movement`／`shot_size`／
    `lens`／`composition_rule` 等 kind 的取值，不要漏掉这条"最有价值"的边。
    实测教训：不写这一条时整库只剩 1 个 forbid 成员，Q7 就没有可拦截对象。
-5. `source_kind`：教科书/权威理论的边用 `theory`＋`hard`；来自个人经验的取舍用
-   `experience`＋`soft`；只有卡片明确写成"教训/禁忌"时才用 `lesson`。
+5. **`source_kind` 按"知识的形态"判，不按来源判**（§2.3b 的用户裁决：切分标准是形态）：
+   * `theory`＋`hard`：普遍适用的规则/结论/定义（"180 度轴线两侧不能跳""三分法把
+     主体放在交点"）；
+   * `experience`＋`soft`：**明确带条件的实践取舍**——某个具体条件（镜头/光位/景别/
+     情绪/场景/成本）下优先什么、避开什么、换来什么结果，常带实践口吻（"实测""一般来说"
+     "在…时""会显得""别用"）。例："24mm 拍饭桌会显得脏"、"喜剧别用长镜静止"、
+     "若对方动作夸张会分散注意力，需主动屏蔽"；
+   * `lesson`：卡片**明确写成"教训/禁忌"**时（只有这一档、以及 `theory`，允许带 `forbid`）。
+   **每张卡都要先判形态再落边**：同一批卡里既有理论也有取舍，不要一律写 `theory`
+   （实测：一律 `theory` 时 L2 经验层是 **0/738** 条边，`E3 经验越权率` 因为分母为 0
+   直接判失败——§4.1b 硬规则 1）。
 6b. **逐类自问（v6 的核心修正，务必执行）**：实测 oracle 要求的 5043 条边里，
    `TROPE` 的 244 条中有 **224 条**是"那张卡有边、但抽取器选了**别的类型**"，
    `EMOTION_PACK` 677/771、`INTENT_PACK` 605/679、`IMPACT_PACK` 240/256 同样如此
@@ -414,7 +426,14 @@ def build_prompt(cards: Sequence[Dict], vocab: Dict[str, List[str]],
         parts.append(f"### {card['id']}（domain={card['domain']}）\n"
                      f"标题：{card['title']}\n内容：{card['content']}\n"
                      f"标签：{'、'.join(card.get('tags', []))}\n"
-                     f"来源性质：{card.get('source_kind', 'theory')}")
+                     #: **不要再给一个假的"来源性质"**：卡上没有这个字段时写
+                     #: `theory` 等于告诉模型"这是教科书"——实测 1981 张生成卡**全部**
+                     #: 没有该字段，于是 738 条边里 `source_kind=experience` 为 **0**，
+                     #: L2 经验层形同不存在。改成把"按形态判"的判据再钉一次。
+                     f"来源性质：按**知识形态**判（见规则 5）：卡里给的是普遍规则就写 "
+                     f"theory＋hard；给的是「某条件下优先/避免什么」的实践取舍就写 "
+                     f"experience＋soft；明确写成教训/禁忌才写 lesson。"
+                     f"（抽取器不知道这张卡的出处，只能按写法判。）")
     return "\n".join(parts)
 
 
@@ -809,6 +828,59 @@ def dedupe_by_norm_key(edges: Sequence[hg.HyperEdge]) -> Tuple[List[hg.HyperEdge
                  "dropped": len(edges) - len(out)}
 
 
+#: §2.3b 关键纪律 2 的裁决顺序：**硬理论 > 软理论 > 结构化经验 > 案例类比**。
+#: 成员集完全相同时（同一条耦合，只是出处不同），只留最硬的那条。
+_SOURCE_KIND_RANK = {"theory": 0, "lesson": 1, "experience": 2}
+_HARDNESS_RANK = {"hard": 0, "soft": 1}
+
+
+def arbitrate_by_hardness(edges: Sequence[hg.HyperEdge]) -> Tuple[List[hg.HyperEdge], Dict]:
+    """**成员集相同、只有出处/软硬不同**时，按 §2.3b 关键纪律 2 只留最硬那条。
+
+    为什么必须有这一刀：`dedupe_key` 把 `(source_kind, hardness)` 也算进身份，所以
+    "同一句耦合，一张理论卡和一张经验卡都说了"会产出**两条成员集完全相同**的边。
+    实测（2026-10-02，L2 落地那一轮）783 条边里有 **242 组**这样的孪生边；而
+    `check_holdout` 的 `norm_key`（type ＋ 成员集）**不看** source_kind，标注的
+    `must` 只指向成员集——孪生边让"该召回的那条"变成两条，检索名次立刻被稀释
+    （实测 Q1 0.8655 → **0.3032**、Q4 1.0 → 0.9669）。
+
+    裁决顺序与 `KnowledgeRetriever.edge_columns` 的呈现规则同源（那条规则做的是
+    "同一句耦合既当硬约束又当建议"的抑制，这里做的是同一件事的索引侧版本）。
+    被裁掉的那条**并进胜者的 `sources`**（出处不能丢），并如实记进合并报告。
+    """
+    groups: Dict[Tuple, List[hg.HyperEdge]] = {}
+    for edge in edges:
+        groups.setdefault(edge.norm_key, []).append(edge)
+    out: List[hg.HyperEdge] = []
+    dropped_kinds: Dict[str, int] = {}
+    groups_with_drop = 0
+    for key in sorted(groups, key=lambda item: (str(item[0]), sorted(map(str, item[1])))):
+        group = sorted(groups[key], key=lambda e: (
+            _HARDNESS_RANK.get(str(e.hardness), 9),
+            _SOURCE_KIND_RANK.get(str(e.source_kind), 9),
+            -e.occurrences, e.edge_id))
+        winner = group[0]
+        if len(group) == 1:
+            out.append(winner)
+            continue
+        groups_with_drop += 1
+        sources: List[str] = []
+        for edge in group:
+            for source in edge.sources or ():
+                if str(source) not in sources:
+                    sources.append(str(source))
+        for edge in group[1:]:
+            label = "%s/%s" % (edge.source_kind, edge.hardness)
+            dropped_kinds[label] = dropped_kinds.get(label, 0) + 1
+        out.append(dataclasses.replace(
+            winner, sources=tuple(sources),
+            occurrences=sum(edge.occurrences for edge in group),
+            extractor={**(winner.extractor or {}), "arbitrated_from": len(group)}))
+    return out, {"groups": groups_with_drop,
+                 "dropped": sum(dropped_kinds.values()),
+                 "dropped_by_source_kind": dict(sorted(dropped_kinds.items()))}
+
+
 def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
             batch_size: int = BATCH_CARDS, limit: int = 0, *,
             concurrency: int = 1,
@@ -1089,6 +1161,9 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     # 全局的，所以这里再补一刀（实测 852 条边里有 144 条是副本）。
     merged, global_dedupe = dedupe_by_norm_key(merged)
     merge_report["global_dedupe"] = global_dedupe
+    # §2.3b 关键纪律 2：成员集相同、只有出处/软硬不同时，硬理论优先（见函数注释）。
+    merged, arbitration = arbitrate_by_hardness(merged)
+    merge_report["arbitrate_by_hardness"] = arbitration
     if refresh_info is not None:
         merge_report["refresh"] = refresh_info
         merge_report["refresh_prompt_version"] = PROMPT_VERSION
@@ -1118,6 +1193,14 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     components = fingerprint_components(cards, _ExtractorStub(extractor))
     merged, merge_report = merge_edges(atoms, {str(card["id"]): card for card in cards},
                                        nodes_from_vocab())
+    #: 第 2 段的**收尾两步**必须与 `run()` 逐字一致，否则"重归并之后的索引"和
+    #: "重抽之后的索引"不是同一份东西。实测代价：漏掉 `arbitrate_by_hardness` 时
+    #: 783 条边里留着 **242 组**孪生边（同成员集、不同 source_kind），
+    #: Q1 0.8655 → **0.3032**、Q4 1.0 → 0.9669。
+    merged, global_dedupe = dedupe_by_norm_key(merged)
+    merge_report["global_dedupe"] = global_dedupe
+    merged, arbitration = arbitrate_by_hardness(merged)
+    merge_report["arbitrate_by_hardness"] = arbitration
     #: `--rematch` 是"不重抽、只重跑第 2 段"，它建的是**全新**的 merge_report——
     #: 清洗（`--replace-cards`）留下的 `refresh` 账会就此丢掉，manifest 于是
     #: "混着多个 prompt 版本却没有任何清洗记录"（§4.1b 硬规则 2 禁止自报一个

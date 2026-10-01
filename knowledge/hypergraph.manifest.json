@@ -1,9 +1,9 @@
 {
-  "fingerprint": "4500ac3b97f408168c33cdb1e5d09e9608064aaf5a8d91075299a36cc8308e5f",
+  "fingerprint": "01f20fa202a2d55033e441936ec7cddaea1badff5ab1fec3e5cb6dad66e6de0d",
   "cache_key": {
     "corpus_sha256": "829ad2aece51b8c906b35db44cf53886e0dcd9e999975697cd80d3a6569fb07a",
     "model": "deepseek-chat@deepseek-flash",
-    "prompt_version": "extract/v11",
+    "prompt_version": "extract/v12",
     "chunker_version": "para-2400/v1",
     "decode": "temperature=0;seed=0;ctx=8192",
     "schema_version": "hg/v2"
@@ -13,7 +13,7 @@
     "family": "deepseek",
     "model_version": "deepseek-flash"
   },
-  "prompt_version": "extract/v11",
+  "prompt_version": "extract/v12",
   "atom_prompt_versions": {
     "extract/v10": 2692,
     "extract/v11": 154
@@ -22,25 +22,38 @@
   "chunker_version": "para-2400/v1",
   "schema_version": "hg/v2",
   "cards": 2113,
-  "raw_edges": 2539,
-  "valid_unique": 738,
-  "duplicates": 1801,
+  "raw_edges": 540,
+  "valid_unique": 540,
+  "duplicates": 0,
   "rejects": 0,
   "atom_rejects": 0,
   "merge_rejects": 0,
   "atoms": 2846,
   "merge": {
     "windows": 269,
-    "groups": 2521,
-    "merged_edges": 738,
-    "multi_card_edges": 232,
+    "groups": 2590,
+    "merged_edges": 540,
+    "multi_card_edges": 189,
     "forbid_wins": 0,
     "dropped_optional": 65,
     "over_budget_dropped": 0,
     "forbid_members": 8,
     "max_arity": 5,
     "dropped_groups": [],
-    "alternatives": 18,
+    "alternatives": 15,
+    "global_dedupe": {
+      "keys": 783,
+      "duplicate_groups": 368,
+      "dropped": 1822
+    },
+    "arbitrate_by_hardness": {
+      "groups": 242,
+      "dropped": 243,
+      "dropped_by_source_kind": {
+        "experience/soft": 240,
+        "lesson/soft": 3
+      }
+    },
     "refresh": {
       "reason": "rematch：原子边是多个 prompt 版本的混合（清洗路径的产物）",
       "atom_prompt_versions": {
@@ -48,9 +61,9 @@
         "extract/v11": 154
       }
     },
-    "refresh_prompt_version": "extract/v11",
+    "refresh_prompt_version": "extract/v12",
     "before_dedupe": {
-      "merged_edges": 2539,
+      "merged_edges": 2605,
       "forbid_members": 9,
       "max_arity": 5
     },

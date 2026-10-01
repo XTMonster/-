@@ -1,7 +1,7 @@
 {
   "assertable_pairs_per_type": {
     "ACTION_BEAT": 356,
-    "AXIS_RULE": 63,
+    "AXIS_RULE": 52,
     "DIALOGUE_PACK": 80,
     "EDIT_RHYTHM": 306,
     "EMOTION_PACK": 179,
@@ -11,7 +11,7 @@
     "MUSIC_PACK": 15,
     "PERFORMANCE_PACK": 268,
     "PROP_PACK": 170,
-    "SHOT_PATTERN": 192,
+    "SHOT_PATTERN": 206,
     "SOUND_PACK": 18,
     "STAGING_PACK": 651,
     "TRANSITION_PACK": 108,
