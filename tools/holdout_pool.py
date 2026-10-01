@@ -488,7 +488,8 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
              limit: int = 0, partial_path=None, progress_path=None,
              resume: bool = True,
              only_values: Sequence[str] = (),
-             only_cards: Sequence[str] = ()) -> Tuple[List[dict], List[dict], Dict]:
+             only_cards: Sequence[str] = (),
+             only_types: Sequence[str] = ()) -> Tuple[List[dict], List[dict], Dict]:
     """用 GLM 为候选池里的每条边写 `q` 与 `never`；`must`/`top1` 由池固定。
 
     为什么把 `must` 固定：这正是"候选池标注"的定义（TREC pooling）——标注方判断
@@ -534,6 +535,14 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
         # 只把这些卡所在的组重跑一遍即可，索引与词表都不动（不会作废别的产物）。
         wanted_cards = {str(c) for c in only_cards}
         items = [item for item in items if wanted_cards & set(item["cards"])]
+    if only_types:
+        # **类型缺口补跑轮**：门④ 要求每类至少 `min(30, 该类可断言对数)` 条 `(卡片,查询)`
+        # 要求。`--only-values`／`--only-cards` 都定位不到"某一类还差两对"这种情形，
+        # 所以再加一档：只把指定类型的组喂给模型（实测 `IMPACT_PACK` 可断言 22 对、
+        # oracle 只交了 20，差 2 对）。
+        wanted_types = {str(t) for t in only_types}
+        items = [item for item in items
+                 if any(spec.split(":", 1)[0] in wanted_types for spec in item["specs"])]
 
     #: **增量落盘**：原先只在整轮结束时写文件，实测一次 31 分钟的跑卡在一次 HTTP
     #: 调用上（CPU 60 秒增量为 0）就**一点产物都没有**——v2 那次也是。现在每批
@@ -651,6 +660,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                              "只把「这些卡是它来源」的组喂给模型。用来补门⑥ —— "
                              "实测缺的卡里有一类是「边在词表内、卡也是来源，却没发出条目」"
                              "（成因是长跑里几批 transport 失败）。同样支持 `@文件`。")
+    parser.add_argument("--only-types", default="",
+                        help="**类型缺口补跑**：逗号分隔的边类型（如 `IMPACT_PACK`），"
+                             "只把该类型的组喂给模型。用来补门④ —— 实测 `IMPACT_PACK` "
+                             "可断言 22 对而 oracle 只交了 20 对，差两对时只有这一档能定位。")
     parser.add_argument("--limit", type=int, default=0, help="只生成前 N 条（自检用）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -676,6 +689,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             card_text = card_spec
         only_cards = [c.strip() for c in card_text.replace("\n", ",").split(",") if c.strip()]
+        only_types = [t.strip() for t in args.only_types.split(",") if t.strip()]
         raw, rejects, extra = glm_pass(graph, universe, client, vocab=vocab,
                                        batch_size=args.batch_size, limit=args.limit,
                                        partial_path=(args.partial or
@@ -683,7 +697,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                                        progress_path=(args.progress or
                                                       str(ROOT / args.out) + ".progress.json"),
                                        resume=not args.no_resume,
-                                       only_values=only_values, only_cards=only_cards)
+                                       only_values=only_values, only_cards=only_cards,
+                                       only_types=only_types)
         entries, more = finalise(raw, graph, universe,
                                  model_id=client.model_id, family=client.family,
                                  model_version=client.model_version,
