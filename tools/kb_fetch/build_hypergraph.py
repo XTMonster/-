@@ -76,7 +76,11 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: v10：`forbid` 纪律（规则 8d）——**只有卡里真写了"不要/避免/切忌…"并且那个取值
 #: 就写在同一张卡里时，才允许写 `forbid_<kind>=取值`**。实测旧产物 101 个 `forbid`
 #: 成员里只有 9 个有卡里理据，双模型复核因此判掉 93/116 条 Q7 条目。
-PROMPT_VERSION = "extract/v10"
+#: v11：修掉规则 10 里那句**与规则 4 自相矛盾**的旧约束（"只有 EMOTION_PACK 允许
+#: forbid"）。实测代价是禁忌全挤在情绪包上、其余 12 类为 0（`AUDIT_TRIAGE.md` #17），
+#: 而这个语料里"不要正面光""避免三分法""别用手持"这类跨类禁忌本来很多——
+#: 结果是 Q7 的 ≥60 条冲突查询只能靠**编出来的**禁忌去填（复核两模型一致判掉 45 条）。
+PROMPT_VERSION = "extract/v11"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -176,6 +180,25 @@ def rekey_manifest(path: pathlib.Path | None = None,
     common.dump_json(target, rekeyed)
     return {"manifest": str(target), "fingerprint": rekeyed["fingerprint"],
             "cache_key": components}
+
+def _forbid_slots_text() -> str:
+    """规则 10 的那张表：**每个边类型允许带哪些 `forbid` 槽位**。
+
+    唯一真源是 `hg.OPTIONAL_MEMBERS`——与 `check_holdout.illegal_members()` 判非法角色
+    用的是同一张表。旧版提示在规则 10 里写死了一句"只有 EMOTION_PACK 允许 forbid"，
+    与规则 4 自相矛盾，实测后果就是 915 条边里带 forbid 的 81 条**全是情绪包**、
+    其余 12 类为 0（`AUDIT_TRIAGE.md` #17）。把表渲染出来，这条矛盾就不再有落点。
+    """
+    rows = []
+    for etype in hg.EDGE_TYPES:
+        kinds = sorted({kind for role, kind in (hg.OPTIONAL_MEMBERS.get(etype) or ())
+                        if role == "forbid"})
+        if kinds:
+            rows.append("      %-16s %s" % (etype + ":", " / ".join("forbid_" + k for k in kinds)))
+        else:
+            rows.append("      %-16s （这一类型不许带 forbid）" % (etype + ":"))
+    return "\n".join(rows)
+
 
 SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与一份**冻结的取值词表**，把卡片里\
 的多元耦合（情绪×运镜×景别×剪辑×特效×禁忌）收敛成下面六类超边之一。
@@ -325,9 +348,17 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
    `allow` 成员（运镜/景别/镜头/节奏/特效/音效…）与适用范围 `applies_to_*`。
    边越完整，检索时的多元约束才越有用；只写必填项等于把知识丢掉一半。
 10. **禁忌是你最有价值的产出**：卡里出现"忌/禁/不要/避免/不拍/别用/不能让"
-    这类措辞时，把被否定的取值写成 `["forbid", kind, node_id]`
-    （只有 EMOTION_PACK 允许 forbid：movement / shot_size / vfx）。
-    例：卡里说"荒诞情绪下忌讳固定机位" → `["forbid","movement","movement:固定机位"]`。
+    这类措辞时，把被否定的取值写成 `["forbid", kind, node_id]`。
+    **允许带 `forbid` 的槽位按边类型各不相同**——下表是唯一真源（抄错即被门② 拒收）：
+[[FORBID_SLOTS]]
+    旧版这里写死成"只有 EMOTION_PACK 允许 forbid：movement / shot_size / vfx"，
+    与第 4 条**互相矛盾**；实测后果是禁忌全挤在情绪包、其余类型为 0
+    （`AUDIT_TRIAGE.md` #17），而这个语料里"不要正面光""避免三分法""别用手持"
+    这类**跨类**禁忌本来很多。
+    例："荒诞情绪下忌讳固定机位" → `["forbid","movement","movement:固定"]`（挂 EMOTION_PACK）；
+        "主光不要放正中" → `["forbid","lighting","lighting:正面光"]`（挂 LIGHT_PACK）；
+        "避免长时间静止固定" → `["forbid","movement","movement:固定"]`（挂 TRANSITION_PACK /
+        INTENT_PACK —— 前提是那一类在下面这张表里确实列了 `forbid_movement`）。
     注意 `allow` 与 `forbid` 里的"约束"不要混写：**禁的东西只能出现在 forbid 里**。
 
 > 抽取分两段：你先做**第 1 段**（逐批给出上面这种原子边）；第 2 段会由构建脚本
@@ -335,6 +366,8 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
 > 完整超边。因此**你不需要**在一张卡里凑齐整套 pack，只要如实把该卡讲的成员写出来——
 > 但**必须写全**，漏了就没有第二次机会。
 """
+
+SYSTEM_PROMPT = SYSTEM_PROMPT.replace("[[FORBID_SLOTS]]", _forbid_slots_text())
 
 
 def compact_vocab(vocab: Dict[str, List[str]]) -> str:

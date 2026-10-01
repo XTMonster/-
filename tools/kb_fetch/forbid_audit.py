@@ -122,6 +122,12 @@ def apply(atoms_path: pathlib.Path, report: Dict) -> Dict:
     是把抽取器违反自己规则 8d 写进来的东西去掉。摘掉之后必填槽位可能填不满——
     那一档由 `to_edge` 的同一套规则处理（各边类型的必填槽位都不含 forbid 成员），
     所以不会产生"非法边"。
+
+    **按卡匹配，不按 edge_id 匹配**（第一版就是栽在这里）：审计读的是**归并后**的
+    超边，而归并边只沿用**其中一个**原子边的 `edge_id`。按 edge_id 摘，只会摘掉那
+    一张卡的原子边，同组其它卡的原子边会把它**带回来**（实测：审出 42 条没依据，
+    重归并后还剩 11 条）。按 `(来源卡, kind, 取值)` 摘才是对的——判据本来就是
+    "这张卡有没有说"，一张卡说了就不该被另一张卡连累。
     """
     # 一条 (edge, kind, value) 只有在**所有**来源卡都说不清时才摘：一张卡写了禁忌，
     # 这条主张对这个来源就是成立的。
@@ -131,7 +137,7 @@ def apply(atoms_path: pathlib.Path, report: Dict) -> Dict:
                    if (other["edge_id"], other["kind"], other["value"])
                    == (edge_id, kind, value))
 
-    drop = {(row["edge_id"], row["kind"], row["value"]) for row in report["ungrounded"]
+    drop = {(str(row["card"]), row["kind"], row["value"]) for row in report["ungrounded"]
             if not _grounded_anywhere(row["edge_id"], row["kind"], row["value"])}
 
     rows = [json.loads(line) for line in
@@ -139,11 +145,12 @@ def apply(atoms_path: pathlib.Path, report: Dict) -> Dict:
     changed = 0
     out = []
     for row in rows:
+        sources = {str(source) for source in (row.get("sources") or ())}
         members = []
         for member in row.get("members") or []:
             role, kind, node_id = (list(member) + ["", "", ""])[:3]
             value = str(node_id).split(":", 1)[-1]
-            if role == "forbid" and (row.get("edge_id"), kind, value) in drop:
+            if role == "forbid" and any((card, kind, value) in drop for card in sources):
                 changed += 1
                 continue
             members.append(member)

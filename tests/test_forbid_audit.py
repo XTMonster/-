@@ -82,18 +82,18 @@ def test_apply_only_touches_forbid_members_and_is_idempotent(tmp_path):
     """`--apply` 只摘 `role=forbid` 的成员，不动 allow/qualifier；再跑一次不再变。"""
     atoms = tmp_path / "atoms.jsonl"
     rows = [
-        {"record": "edge", "edge_id": "e1", "type": "LIGHT_PACK",
+        {"record": "edge", "edge_id": "e1", "sources": ["c1"], "type": "LIGHT_PACK",
          "members": [["allow", "lighting", "lighting:逆光"],
                      ["qualifier", "intensity", "intensity:high"],
                      ["forbid", "lighting", "lighting:正面光"]]},
-        {"record": "edge", "edge_id": "e2", "type": "LIGHT_PACK",
+        {"record": "edge", "edge_id": "e2", "sources": ["c2"], "type": "LIGHT_PACK",
          "members": [["allow", "lighting", "lighting:侧光"],
                      ["qualifier", "intensity", "intensity:mid"]]},
     ]
     atoms.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
                      encoding="utf-8")
-    report = {"ungrounded": [{"edge_id": "e1", "kind": "lighting", "value": "正面光",
-                              "grounded": False}],
+    report = {"ungrounded": [{"edge_id": "e1", "card": "c1", "kind": "lighting",
+                              "value": "正面光", "grounded": False}],
               "kept": [], "errors": []}
     first = FA.apply(atoms, report)
     assert first["members_dropped"] == 1
@@ -106,7 +106,7 @@ def test_apply_only_touches_forbid_members_and_is_idempotent(tmp_path):
 
 def test_a_grounded_claim_on_the_same_edge_protects_it():
     """正对照：同一条边上**另一张卡**写了禁忌时，那条成员必须留着。"""
-    rows = [{"record": "edge", "edge_id": "e9", "type": "LIGHT_PACK",
+    rows = [{"record": "edge", "edge_id": "e9", "sources": ["c9"], "type": "LIGHT_PACK",
              "members": [["allow", "lighting", "lighting:逆光"],
                          ["forbid", "lighting", "lighting:正面光"]]}]
     import tempfile
@@ -115,8 +115,45 @@ def test_a_grounded_claim_on_the_same_edge_protects_it():
         path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
                         encoding="utf-8")
         report = {"ungrounded": [
-            {"edge_id": "e9", "kind": "lighting", "value": "正面光", "grounded": False},
-            {"edge_id": "e9", "kind": "lighting", "value": "正面光", "grounded": True}],
+            {"edge_id": "e9", "card": "c9", "kind": "lighting", "value": "正面光",
+             "grounded": False},
+            {"edge_id": "e9", "card": "c8", "kind": "lighting", "value": "正面光",
+             "grounded": True}],
             "kept": [], "errors": []}
         result = FA.apply(path, report)
         assert result["members_dropped"] == 0
+
+
+def test_apply_matches_on_the_source_card_not_on_the_merged_edge_id(tmp_path):
+    """**核心修正**：按 `(来源卡, kind, 取值)` 摘，不按 `edge_id` 摘。
+
+    审计读的是**归并后**的超边，而归并边只沿用**其中一个**原子边的 `edge_id`。
+    按 edge_id 摘，只会摘掉那一张卡的原子边，**同组其它卡的原子边会把它带回来**
+    （实测：审出 42 条没依据，重归并后还剩 11 条）。按卡摘才是判据的原义——
+    "这张卡有没有说"。
+    """
+    path = tmp_path / "atoms.jsonl"
+    rows = [
+        # 两张卡都贡献了同一条 (type, members)，归并后只会留下 c1 的 edge_id
+        {"record": "edge", "edge_id": "hx", "sources": ["c1"], "type": "EMOTION_PACK",
+         "members": [["allow", "emotion", "emotion:混乱"],
+                     ["forbid", "movement", "movement:orbit_cw"]]},
+        {"record": "edge", "edge_id": "hy", "sources": ["c2"], "type": "EMOTION_PACK",
+         "members": [["allow", "emotion", "emotion:混乱"],
+                     ["forbid", "movement", "movement:orbit_cw"]]},
+    ]
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
+                    encoding="utf-8")
+    report = {
+        "ungrounded": [
+            {"edge_id": "hx", "card": "c1", "kind": "movement", "value": "orbit_cw",
+             "grounded": False},
+            {"edge_id": "hx", "card": "c2", "kind": "movement", "value": "orbit_cw",
+             "grounded": False},
+        ],
+        "kept": [], "errors": []}
+    result = FA.apply(path, report)
+    assert result["members_dropped"] == 2, "两张卡的原子边都要摘掉"
+    written = [json.loads(l) for l in path.read_text(encoding="utf-8").split("\n") if l.strip()]
+    for row in written:
+        assert all(m[0] != "forbid" for m in row["members"]), "重归并时它会被带回来"

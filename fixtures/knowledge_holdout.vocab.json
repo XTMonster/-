@@ -1,5 +1,5 @@
 {
-"_fingerprint": "0ef85afda4841b60",
+"_fingerprint": "71da1d23a43b806b",
 "kinds": {
 "action": [
 "上下场",
@@ -111,7 +111,6 @@
 "dolly_zoom",
 "follow_subject",
 "handheld",
-"lead_subject",
 "pan_left",
 "pan_right",
 "push_through",
