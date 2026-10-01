@@ -991,3 +991,34 @@ def test_gate_entries_reports_uncorroborated_reviews(tmp_path):
     assert detail["uncorroborated_count"] == stamped
     assert detail["reviewed_by_class"] == {}          # 未佐证 = 没裁过
     assert detail["panel_prompt_hashes"] == {}
+
+
+#: 复核工具真实写出的佐证块（`holdout_review_llm.main` 的 `PANEL_SOURCE`）。
+PANEL_SOURCE = {"models": ["deepseek-chat", "glm-4.7-flash"], "prompt_sha256": "b" * 64}
+
+
+def test_a_corroborated_panel_review_turns_gate_7_green_only_under_the_recorded_classes(tmp_path):
+    """端到端正例：**能**让门⑦ 转绿的路径必须真的存在，而且只有一条。
+
+    三条一起钉住，缺一条这个功能就是空的：
+
+    * 佐证过的 `llm-panel` 记录 ＋ 链上的 `--reviewer-classes human,llm-panel` → 通过；
+    * 同一份记录、默认口径（只认 `human`）→ 仍然判红（协议原文没有被偷偷放宽）；
+    * 同一份记录但少了 `source` → 不算裁决（无佐证 = 自证）。
+
+    这条用例是我上一轮那条「链里必须传 `--reviewer-classes`」的反面：那条只能证明
+    *开关*在，这条证明开关**后面真的有路**——没有它，复核跑完门⑦ 照样红，而报告
+    只会说"0/36 已裁"。
+    """
+    def stamped(source: bool) -> list:
+        """`valid_records()` 的每一条 needs_human 都换成面板裁决（可选带佐证）。"""
+        review = {"reviewed_by": "llm-panel", "verdict": "accepted"}
+        if source:
+            review["source"] = dict(PANEL_SOURCE)
+        return [dict(record, review=dict(review)) for record in valid_records()]
+
+    assert full_run(tmp_path, stamped(True),
+                    "--reviewer-classes", "human,llm-panel") == 0
+    assert full_run(tmp_path, stamped(True)) == 1               # 默认只认人
+    assert full_run(tmp_path, stamped(False),
+                    "--reviewer-classes", "human,llm-panel") == 1   # 无佐证 = 没裁过
