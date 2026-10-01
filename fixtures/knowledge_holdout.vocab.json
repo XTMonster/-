@@ -1,5 +1,5 @@
 {
-"_fingerprint": "2cc4005553378d3a",
+"_fingerprint": "9a88bf2f14dd17e3",
 "kinds": {
 "action": [
 "上下场",
@@ -127,6 +127,7 @@
 "pan_right",
 "push_through",
 "steadicam",
+"track_left",
 "track_right",
 "whip_pan_left",
 "whip_pan_right",

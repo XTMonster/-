@@ -54,7 +54,9 @@ _MIN_KEYS_IN_A_RUN = 5
 def _key_runs(text: str):
     for match in _KEY_RUN.finditer(text):
         run = [token for token in re.split(r"[/／]", match.group(0)) if token]
-        if sum(1 for token in run if token in hg.QUERY_KEYS) >= _MIN_KEYS_IN_A_RUN:
+        # v1.6：`禁<键>`（`FORBID_QUERY_KEYS`）也是真键，计入"这看起来像一份键清单"。
+        known = set(hg.QUERY_KEYS) | set(hg.FORBID_QUERY_KEYS)
+        if sum(1 for token in run if token in known) >= _MIN_KEYS_IN_A_RUN:
             yield run
 
 
@@ -68,7 +70,8 @@ def _assert_prompt_is_renderable(name: str, text: str) -> None:
         f"{name} 里没有逐字出现冻结键清单——键必须由 "
         f"`check_holdout.query_key_text()` 渲染，不许手抄")
     for run in _key_runs(text):
-        unknown = [token for token in run if token not in hg.QUERY_KEYS]
+        unknown = [token for token in run
+                   if token not in hg.QUERY_KEYS and token not in hg.FORBID_QUERY_KEYS]
         assert not unknown, (
             f"{name} 的键清单里出现了协议里不存在的键 {unknown}——"
             f"`check_holdout.parse_q` 会把用到它们的条目整条拒收")
@@ -181,12 +184,14 @@ def test_every_edge_type_has_a_query_anchor_and_the_prompts_say_so():
 
 def test_key_run_detector_actually_catches_a_hand_copied_list():
     """给上面的机器闸一个**对抗性**自检：坏清单必须被抓到，举例句必须不被误伤。"""
-    # 追加的必须是**真不在** `QUERY_KEYS` 里的键：`强度` 在 v1.5 已经是真键，
-    # 拿它当"手抄多出来的"会误报——而那正是探测器按 schema 判、判对了的表现。
+    # 追加的必须是**真不在**键集里的键：`强度` 在 v1.5 已经是真键、`禁构图` 在 v1.6
+    # 也是真键（`FORBID_QUERY_KEYS`），拿它们当"手抄多出来的"会误报——
+    # 而那正是探测器按 schema 判、判对了的表现。
     bad = "1. `q` 的键只能用：" + check_holdout.query_key_text() + "/头留白/平均镜长。"
     runs = list(_key_runs(bad))
     assert runs, "键清单没被识别出来，闸是空的"
-    assert [token for run in runs for token in run if token not in hg.QUERY_KEYS] == \
+    known = set(hg.QUERY_KEYS) | set(hg.FORBID_QUERY_KEYS)   # v1.6：`禁<键>` 也是真键
+    assert [token for run in runs for token in run if token not in known] == \
         ["头留白", "平均镜长"]
     # 正文里顺带的举例（只有 3 个真键）必须**不**被判成键清单。
     assert not list(_key_runs("构图/机位/动作/打击感/声画知识优先选对应的新类型"))

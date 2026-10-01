@@ -69,7 +69,10 @@ REQUIRED_SLOTS = {
 #: **单一真源 = `hypergraph.QUERY_KEYS`**：检索器、生成器与校验器必须逐键一致，
 #: 所以这里读它而不是再抄一份——抄的那份已经漂过一次（它带 `意图→intent`，
 #: 而 schema 当时还没有这个键）。
-Q_KEY_TO_KIND = dict(_hg.QUERY_KEYS)
+#: 主键（`构图`…）＋ v1.6 的 **`forbid` 键**（`禁构图`…，同样映射到 `composition_rule`）。
+#: 顺序很重要：主键在前，所以下面按 `_hg.QUERY_KEYS` 建的 `QUERY_KEY_OF_KIND`
+#: 取到的仍是主键（提示词要的是主键，不是 `禁<键>`）。
+Q_KEY_TO_KIND = {**_hg.QUERY_KEYS, **_hg.FORBID_QUERY_KEYS}
 
 #: the kinds a vocabulary must cover — every node kind. Kinds reached only through a
 #: qualifier (e.g. `scene_type` via the 对白 key) are checked only when present.
@@ -87,7 +90,11 @@ QUERYABLE_KINDS = frozenset(Q_KEY_TO_KIND.values()) - {"scene_type", "beat_type"
 #: kind -> the frozen Chinese key that carries it (`""` if a kind has no query key).
 #: Only meaningful for `QUERYABLE_KINDS`; the qualifier kinds (`intensity`, `pair`, …)
 #: are schema constants inside an edge and never appear in `q`.
-QUERY_KEY_OF_KIND = {str(kind): str(key) for key, kind in Q_KEY_TO_KIND.items()}
+QUERY_KEY_OF_KIND = {str(kind): str(key) for key, kind in _hg.QUERY_KEYS.items()}
+
+#: 哪些键是 `forbid` 键（`q` 里用它点名"不要这个取值"）。门③ 的支撑统计与
+#: 门⑨ 的可达性都用得到：它们必须**按同一个 kind** 计，但又不能冒充主键。
+FORBID_KEYS = frozenset(_hg.FORBID_QUERY_KEYS)
 
 PASS, FAIL, NA = "pass", "fail", "not_measured"
 ID_RE = re.compile(r"^hq_\d{4,}$")
@@ -223,7 +230,8 @@ def query_key_text(sep: str = "/") -> str:
 
 #: `QUERYABLE_KINDS` 的**有序**版本（按 `QUERY_KEYS` 的声明顺序）——提示词要求确定性输出。
 QUERYABLE_KINDS_SORTED: Tuple[str, ...] = tuple(
-    str(kind) for kind in Q_KEY_TO_KIND.values() if kind in QUERYABLE_KINDS)
+    dict.fromkeys(str(kind) for kind in Q_KEY_TO_KIND.values()
+                  if kind in QUERYABLE_KINDS))
 
 
 def required_slot_template(etype: str, placeholder: bool = True) -> str:

@@ -313,6 +313,25 @@ QUERY_KEYS: Dict[str, str] = {
     "镜长": "avg_shot_len",
 }
 
+#: `forbid` 值的**独立查询键**（v1.6，协议 §2.1 键集的扩展）。
+#:
+#: 为什么必须另给一套键：`q` 里同一个键只能有一个取值。当一条边的**必填**成员是
+#: `构图=occlusion`、而它又**禁止** `构图=balance` 时，`构图` 这个键已经被必填值占了，
+#: 被禁止的那个取值**写不进 `q`**。后果实测：`STAGING_PACK` 有 4 条边**必填成员完全相同、
+#: 只差"禁止哪个构图规则"**，它们因此共用一个 `q`、彼此不可区分，oracle 通道整组跳过
+#: （组 >3 进不了 top-3）——**150 张卡**在门⑥ 里永远拿不到条目。
+#:
+#: 新键形如 `禁<主键>`（`禁构图`／`禁运镜`／`禁音效`…），**映射到同一个 kind**，
+#: 所以 `q` 里可以同时写 `构图=occlusion`（要）与 `禁构图=balance`（不要）：
+#: 前者满足门⑨"必填槽位要写进 q"，后者把四条边区分开。这也正是协议 §3.3 的
+#: Q7 冲突语义（"你点名了一个被这条边禁止的取值"），并且与 Q4 的机制同源。
+#:
+#: 只给**内容型 kind**（`NODE_TYPES`）发键：schema 常量（`pair`／`headroom_policy`／
+#: `applies_to_*`）本来就禁止被当作 forbid 宿主（见 `_forbid_hosts`）。
+FORBID_QUERY_KEYS: Dict[str, str] = {
+    "禁" + key: kind for key, kind in QUERY_KEYS.items() if kind in NODE_TYPES
+}
+
 #: 查询值的别名（§2.3 第 1 步要求"别名至少覆盖查询里会出现的值"）。
 VALUE_ALIASES: Dict[str, str] = {
     "甩镜": "whip_pan", "甩镜头": "whip_pan", "whip_pan": "whip_pan",

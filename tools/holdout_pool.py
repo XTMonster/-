@@ -48,9 +48,20 @@ from tools.check_holdout import (  # noqa: E402
     validate_entry,
 )
 from tools.holdout_score import load_graph, spec_to_norm_key  # noqa: E402
+from block_director.knowledge import hypergraph as _hg  # noqa: E402
 
 #: `kind` → `q` 里的中文键。**从 `check_holdout` 反查**，不手抄第二份。
-KEY_FOR_KIND: Dict[str, str] = {kind: key for key, kind in Q_KEY_TO_KIND.items()}
+#: kind → **主键**。必须只从 `hypergraph.QUERY_KEYS` 建：`Q_KEY_TO_KIND` 现在还含
+#: `禁<键>`（同样映射到同一个 kind），从它建会让**主键被 forbid 键覆盖**
+#: ——实测后果是 `构图=framing` 被 `禁构图=rule_of_thirds` 顶掉，于是
+#: 门⑨ 判"必填槽位没写进 q"，一次跑出 **263 条 weak_q 拒收**。
+KEY_FOR_KIND: Dict[str, str] = {kind: key for key, kind in _hg.QUERY_KEYS.items()}
+#: kind → **forbid 键**（`构图` → `禁构图`）。见 `hypergraph.FORBID_QUERY_KEYS`：
+#: 主键已被必填值占用时，被禁止的取值只能走这个键，否则 `q` 表达不出"不要它"。
+FORBID_KEY_FOR_KIND: Dict[str, str] = {kind: key for key, kind in
+                                       _hg.FORBID_QUERY_KEYS.items()}
+#: `q` 里的键 → kind（`构图` 与 `禁构图` 都指向 `composition_rule`）。
+KIND_OF_KEY: Dict[str, str] = dict(Q_KEY_TO_KIND)
 
 DEFAULT_NODES = "knowledge/hypergraph.nodes.jsonl"
 DEFAULT_EDGES = "knowledge/hypergraph.edges.jsonl"
@@ -97,8 +108,10 @@ def query_of(edge) -> str:
     要的样本；顺带把 EMOTION_PACK 这类"同 plain、不同 forbid"的边区分开
     （唯一命中数 469 → 527）。
 
-    同一个键既出现在 plain 又出现在 forbid 的边（实测 8 条）跳过 forbid 那侧：
-    `q` 里一个键只能出现一次，而 §2.1 没有"同一键两个值"的写法。
+    同一个键既出现在 plain 又出现在 forbid 的边：被禁止的取值不能挤掉主键
+    （`q` 里一个键只能有一个取值），所以走 **v1.6 的 `forbid` 键**（`构图=occlusion`
+    ＋ `禁构图=balance`）。没有这套键时只能整条跳过 forbid 侧，实测后果是
+    `STAGING_PACK` 4 条边不可区分、**150 张卡**在门⑥ 里拿不到条目。
     """
     plain: Dict[str, str] = {}
     forbid: Dict[str, str] = {}
@@ -112,6 +125,10 @@ def query_of(edge) -> str:
     for key, value in forbid.items():
         if key not in plain:
             merged[key] = value
+            continue
+        forbid_key = FORBID_KEY_FOR_KIND.get(KIND_OF_KEY[key])
+        if forbid_key:
+            merged[forbid_key] = value
     return "；".join("%s=%s" % (key, value) for key, value in merged.items())
 
 
@@ -431,8 +448,15 @@ def required_q_hint(item: dict) -> str:
                 seen[key] = value
         for kind, value in forbid.items():
             key = KEY_FOR_KIND.get(kind)
-            if key and key not in seen:
+            if not key:
+                continue
+            if key not in seen:
                 seen[key] = value
+            else:
+                # 主键已被必填值占用 → 用 forbid 键，把"不要这个取值"也写进 q。
+                forbid_key = FORBID_KEY_FOR_KIND.get(kind)
+                if forbid_key:
+                    seen[forbid_key] = value
     return "；".join("%s=%s" % (key, value) for key, value in seen.items())
 
 
