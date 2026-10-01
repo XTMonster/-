@@ -15,7 +15,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 （只有当你确认整表都填过之后才跑 `apply` —— 它有 `must_touch` 守卫，漏填会直接拒绝写回。）
 
-## hq_0770 · gen_perf_0521 · Q7 冲突 2 处
+## hq_0720 · gen_perf_0521 · Q7 冲突 2 处
 
 查询 A：`情绪=压抑；强度=high；运镜=固定`
 
@@ -30,7 +30,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0771 · gen_edit_0239 · Q7 冲突 2 处
+## hq_0721 · gen_edit_0239 · Q7 冲突 2 处
 
 查询 A：`情绪=压抑；强度=high；运镜=固定`
 
@@ -45,7 +45,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0779 · gen_story_0237 · Q7 冲突 1 处
+## hq_0729 · gen_story_0237 · Q7 冲突 1 处
 
 查询 A：`情绪=庄严；强度=high；运镜=handheld`
 
@@ -59,7 +59,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0781 · gen_story_0027 · Q7 冲突 1 处
+## hq_0731 · gen_story_0027 · Q7 冲突 1 处
 
 查询 A：`情绪=恐惧；强度=high；景别=ECU`
 
@@ -73,7 +73,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0782 · cine_low_angle · Q7 冲突 1 处
+## hq_0732 · cine_low_angle · Q7 冲突 1 处
 
 查询 A：`情绪=恐惧；强度=high；景别=ELS`
 
@@ -87,7 +87,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0783 · gen_story_0284 · Q7 冲突 2 处
+## hq_0733 · gen_story_0284 · Q7 冲突 2 处
 
 查询 A：`情绪=恐惧；强度=high；运镜=固定`
 
@@ -102,7 +102,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0784 · gen_perf_0406 · Q7 冲突 2 处
+## hq_0734 · gen_perf_0406 · Q7 冲突 2 处
 
 查询 A：`情绪=恐惧；强度=high；运镜=固定`
 
@@ -117,7 +117,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0799 · gen_story_0211 · Q7 冲突 1 处
+## hq_0749 · gen_story_0211 · Q7 冲突 1 处
 
 查询 A：`情绪=悲伤；强度=high；运镜=whip_pan_left`
 
@@ -131,7 +131,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0800 · gen_edit_0075 · Q7 冲突 1 处
+## hq_0750 · gen_edit_0075 · Q7 冲突 1 处
 
 查询 A：`情绪=悲伤；强度=high；运镜=固定`
 
@@ -145,7 +145,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0805 · gen_perf_0494 · Q7 冲突 1 处
+## hq_0755 · gen_perf_0494 · Q7 冲突 1 处
 
 查询 A：`情绪=愤怒；强度=high；景别=ECU`
 
@@ -159,7 +159,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0806 · gen_prod_0245 · Q7 冲突 1 处
+## hq_0756 · gen_prod_0245 · Q7 冲突 1 处
 
 查询 A：`情绪=愤怒；强度=high；景别=ELS`
 
@@ -173,7 +173,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0808 · gen_perf_0040 · Q7 冲突 2 处
+## hq_0758 · gen_perf_0040 · Q7 冲突 2 处
 
 查询 A：`情绪=愤怒；强度=high；运镜=固定`
 
@@ -188,7 +188,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0809 · gen_perf_0111 · Q7 冲突 2 处
+## hq_0759 · gen_perf_0111 · Q7 冲突 2 处
 
 查询 A：`情绪=愤怒；强度=high；运镜=固定`
 
@@ -203,7 +203,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0810 · gen_perf_0513 · Q7 冲突 2 处
+## hq_0760 · gen_perf_0513 · Q7 冲突 2 处
 
 查询 A：`情绪=愤怒；强度=high；运镜=固定`
 
@@ -218,7 +218,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0811 · gen_story_0241 · Q7 冲突 2 处
+## hq_0761 · gen_story_0241 · Q7 冲突 2 处
 
 查询 A：`情绪=愤怒；强度=high；运镜=固定`
 
@@ -233,7 +233,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0813 · gen_edit_0026 · Q7 冲突 1 处
+## hq_0763 · gen_edit_0026 · Q7 冲突 1 处
 
 查询 A：`情绪=期待；强度=high；运镜=固定`
 
@@ -247,7 +247,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0823 · cine_move_whip_pan_left · Q7 冲突 1 处
+## hq_0773 · cine_move_whip_pan_left · Q7 冲突 1 处
 
 查询 A：`情绪=混乱；强度=high；运镜=whip_pan_left`
 
@@ -261,7 +261,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0824 · cine_move_whip_pan_right · Q7 冲突 1 处
+## hq_0774 · cine_move_whip_pan_right · Q7 冲突 1 处
 
 查询 A：`情绪=混乱；强度=high；运镜=whip_pan_left`
 
@@ -275,7 +275,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0825 · cine_move_whip_pan_left · Q7 冲突 1 处
+## hq_0775 · cine_move_whip_pan_left · Q7 冲突 1 处
 
 查询 A：`情绪=混乱；强度=high；运镜=whip_pan_right`
 
@@ -289,7 +289,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0826 · cine_move_whip_pan_right · Q7 冲突 1 处
+## hq_0776 · cine_move_whip_pan_right · Q7 冲突 1 处
 
 查询 A：`情绪=混乱；强度=high；运镜=whip_pan_right`
 
@@ -303,7 +303,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0827 · cine_dutch_angle · Q7 冲突 1 处
+## hq_0777 · cine_dutch_angle · Q7 冲突 1 处
 
 查询 A：`情绪=混乱；强度=high；运镜=固定`
 
@@ -317,7 +317,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0828 · gen_perf_0554 · Q7 冲突 1 处
+## hq_0778 · gen_perf_0554 · Q7 冲突 1 处
 
 查询 A：`情绪=混乱；强度=high；运镜=固定`
 
@@ -331,7 +331,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0834 · gen_axis_0285 · Q7 冲突 1 处
+## hq_0784 · gen_axis_0285 · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=high；运镜=handheld`
 
@@ -345,7 +345,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0835 · cine_move_dolly_in · Q7 冲突 1 处
+## hq_0785 · cine_move_dolly_in · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=high；运镜=固定`
 
@@ -359,7 +359,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0836 · gen_edit_0009 · Q7 冲突 1 处
+## hq_0786 · gen_edit_0009 · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=high；运镜=固定`
 
@@ -373,7 +373,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0837 · gen_edit_0012 · Q7 冲突 1 处
+## hq_0787 · gen_edit_0012 · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=high；运镜=固定`
 
@@ -387,7 +387,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0838 · gen_edit_0131 · Q7 冲突 1 处
+## hq_0788 · gen_edit_0131 · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=high；运镜=固定`
 
@@ -401,7 +401,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0839 · gen_perf_0077 · Q7 冲突 1 处
+## hq_0789 · gen_perf_0077 · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=high；运镜=固定`
 
@@ -415,7 +415,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0840 · gen_story_0236 · Q7 冲突 1 处
+## hq_0790 · gen_story_0236 · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=high；运镜=固定`
 
@@ -429,7 +429,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0841 · gen_cine_0211 · Q7 冲突 1 处
+## hq_0791 · gen_cine_0211 · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=high；音效=低频轰鸣`
 
@@ -443,7 +443,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0850 · gen_edit_0128 · Q7 冲突 1 处
+## hq_0800 · gen_edit_0128 · Q7 冲突 1 处
 
 查询 A：`情绪=冷漠；强度=low；运镜=orbit_cw`
 
@@ -457,7 +457,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0852 · gen_axis_0105 · Q7 冲突 2 处
+## hq_0802 · gen_axis_0105 · Q7 冲突 2 处
 
 查询 A：`情绪=压抑；强度=low；运镜=固定`
 
@@ -472,7 +472,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0853 · gen_perf_0475 · Q7 冲突 2 处
+## hq_0803 · gen_perf_0475 · Q7 冲突 2 处
 
 查询 A：`情绪=压抑；强度=low；运镜=固定`
 
@@ -487,7 +487,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0854 · gen_prod_0241 · Q7 冲突 2 处
+## hq_0804 · gen_prod_0241 · Q7 冲突 2 处
 
 查询 A：`情绪=压抑；强度=low；运镜=固定`
 
@@ -502,7 +502,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0878 · gen_perf_0444 · Q7 冲突 2 处
+## hq_0828 · gen_perf_0444 · Q7 冲突 2 处
 
 查询 A：`情绪=平静；强度=low；运镜=handheld；景别=CU`
 
@@ -516,7 +516,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0879 · gen_perf_0447 · Q7 冲突 2 处
+## hq_0829 · gen_perf_0447 · Q7 冲突 2 处
 
 查询 A：`情绪=平静；强度=low；运镜=handheld；景别=CU`
 
@@ -530,24 +530,9 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0880 · gen_edit_0059 · Q7 冲突 2 处
+## hq_0830 · gen_edit_0059 · Q7 冲突 2 处
 
-查询 A：`情绪=平静；强度=low；景别=ECU`
-
-| 族 | 必须边 |
-|---|---|
-| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_shot_size=ECU` |
-| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_shot_size=ECU` |
-
-不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
-
-**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
-
-采纳 A ？ [ ]
-
-## hq_0881 · gen_edit_0060 · Q7 冲突 2 处
-
-查询 A：`情绪=平静；强度=low；景别=ECU`
+查询 A：`情绪=平静;强度=low;景别=ECU`
 
 | 族 | 必须边 |
 |---|---|
@@ -560,24 +545,9 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0882 · gen_perf_0563 · Q7 冲突 2 处
+## hq_0831 · gen_edit_0060 · Q7 冲突 2 处
 
-查询 A：`情绪=平静；强度=low；景别=ECU`
-
-| 族 | 必须边 |
-|---|---|
-| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_shot_size=ECU` |
-| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_shot_size=ECU` |
-
-不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
-
-**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
-
-采纳 A ？ [ ]
-
-## hq_0883 · gen_story_0286 · Q7 冲突 2 处
-
-查询 A：`情绪=平静；强度=low；景别=ECU`
+查询 A：`情绪=平静;强度=low;景别=ECU`
 
 | 族 | 必须边 |
 |---|---|
@@ -590,9 +560,39 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0887 · gen_story_0241 · Q7 冲突 1 处
+## hq_0832 · gen_perf_0563 · Q7 冲突 2 处
 
-查询 A：`情绪=平静；强度=low；运镜=handheld`
+查询 A：`情绪=平静;强度=low;景别=ECU`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_shot_size=ECU` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_shot_size=ECU` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_0833 · gen_story_0286 · Q7 冲突 2 处
+
+查询 A：`情绪=平静;强度=low;景别=ECU`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_shot_size=ECU` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_shot_size=ECU` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_0837 · gen_story_0241 · Q7 冲突 1 处
+
+查询 A：`情绪=平静;强度=low;运镜=handheld`
 
 | 族 | 必须边 |
 |---|---|
@@ -604,9 +604,9 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0891 · gen_perf_0432 · Q7 冲突 1 处
+## hq_0841 · gen_perf_0432 · Q7 冲突 1 处
 
-查询 A：`情绪=悲伤；强度=low；运镜=固定`
+查询 A：`情绪=悲伤;强度=low;运镜=固定`
 
 | 族 | 必须边 |
 |---|---|
@@ -618,23 +618,9 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0893 · gen_edit_0194 · Q7 冲突 1 处
+## hq_0843 · gen_edit_0194 · Q7 冲突 1 处
 
-查询 A：`情绪=温柔；强度=low；运镜=handheld`
-
-| 族 | 必须边 |
-|---|---|
-| A | `EMOTION_PACK:emotion=温柔,intensity=low,forbid_movement=handheld` |
-
-不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
-
-**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
-
-采纳 A ？ [ ]
-
-## hq_0894 · gen_edit_0209 · Q7 冲突 1 处
-
-查询 A：`情绪=温柔；强度=low；运镜=handheld`
+查询 A：`情绪=温柔;强度=low;运镜=handheld`
 
 | 族 | 必须边 |
 |---|---|
@@ -646,9 +632,23 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0895 · gen_perf_0505 · Q7 冲突 1 处
+## hq_0844 · gen_edit_0209 · Q7 冲突 1 处
 
-查询 A：`情绪=温柔；强度=low；运镜=固定`
+查询 A：`情绪=温柔;强度=low;运镜=handheld`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=温柔,intensity=low,forbid_movement=handheld` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_0845 · gen_perf_0505 · Q7 冲突 1 处
+
+查询 A：`情绪=温柔;强度=low;运镜=固定`
 
 | 族 | 必须边 |
 |---|---|
@@ -660,7 +660,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0899 · gen_axis_0288 · Q7 冲突 1 处
+## hq_0849 · gen_axis_0288 · Q7 冲突 1 处
 
 查询 A：`情绪=冷漠；强度=mid；运镜=dolly_in`
 
@@ -674,7 +674,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0906 · gen_axis_0160 · Q7 冲突 1 处
+## hq_0856 · gen_axis_0160 · Q7 冲突 1 处
 
 查询 A：`情绪=压抑；强度=mid；运镜=固定`
 
@@ -688,7 +688,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0913 · gen_perf_0469 · Q7 冲突 1 处
+## hq_0863 · gen_perf_0469 · Q7 冲突 1 处
 
 查询 A：`情绪=喜悦；强度=mid；运镜=固定`
 
@@ -702,7 +702,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0917 · cine_high_angle · Q7 冲突 1 处
+## hq_0867 · cine_high_angle · Q7 冲突 1 处
 
 查询 A：`情绪=孤独；强度=mid；景别=ECU`
 
@@ -716,7 +716,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0932 · gen_perf_0352 · Q7 冲突 2 处
+## hq_0882 · gen_perf_0352 · Q7 冲突 2 处
 
 查询 A：`情绪=平静；强度=mid；运镜=固定`
 
@@ -731,7 +731,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0933 · gen_perf_0468 · Q7 冲突 2 处
+## hq_0883 · gen_perf_0468 · Q7 冲突 2 处
 
 查询 A：`情绪=平静；强度=mid；运镜=固定`
 
@@ -746,7 +746,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0934 · gen_perf_0472 · Q7 冲突 2 处
+## hq_0884 · gen_perf_0472 · Q7 冲突 2 处
 
 查询 A：`情绪=平静；强度=mid；运镜=固定`
 
@@ -761,7 +761,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0941 · gen_comp_0161 · Q7 冲突 1 处
+## hq_0891 · gen_comp_0161 · Q7 冲突 1 处
 
 查询 A：`情绪=庄严；强度=mid；运镜=handheld`
 
@@ -775,7 +775,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0942 · cine_move_orbit_ccw · Q7 冲突 1 处
+## hq_0892 · cine_move_orbit_ccw · Q7 冲突 1 处
 
 查询 A：`情绪=庄严；强度=mid；运镜=orbit_ccw`
 
@@ -789,7 +789,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0943 · cine_move_orbit_cw · Q7 冲突 1 处
+## hq_0893 · cine_move_orbit_cw · Q7 冲突 1 处
 
 查询 A：`情绪=庄严；强度=mid；运镜=orbit_ccw`
 
@@ -803,7 +803,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0944 · cine_move_orbit_ccw · Q7 冲突 1 处
+## hq_0894 · cine_move_orbit_ccw · Q7 冲突 1 处
 
 查询 A：`情绪=庄严；强度=mid；运镜=orbit_cw`
 
@@ -817,7 +817,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0945 · cine_move_orbit_cw · Q7 冲突 1 处
+## hq_0895 · cine_move_orbit_cw · Q7 冲突 1 处
 
 查询 A：`情绪=庄严；强度=mid；运镜=orbit_cw`
 
@@ -831,7 +831,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0946 · gen_edit_0206 · Q7 冲突 1 处
+## hq_0896 · gen_edit_0206 · Q7 冲突 1 处
 
 查询 A：`情绪=庄严；强度=mid；运镜=固定`
 
@@ -845,7 +845,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0953 · gen_prod_0258 · Q7 冲突 1 处
+## hq_0903 · gen_prod_0258 · Q7 冲突 1 处
 
 查询 A：`情绪=悲伤；强度=mid；景别=CU`
 
@@ -859,7 +859,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0954 · gen_edit_0027 · Q7 冲突 1 处
+## hq_0904 · gen_edit_0027 · Q7 冲突 1 处
 
 查询 A：`情绪=悲伤；强度=mid；景别=ELS`
 
@@ -873,7 +873,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0955 · gen_perf_0474 · Q7 冲突 1 处
+## hq_0905 · gen_perf_0474 · Q7 冲突 1 处
 
 查询 A：`情绪=悲伤；强度=mid；运镜=固定`
 
@@ -887,7 +887,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0956 · gen_prod_0231 · Q7 冲突 1 处
+## hq_0906 · gen_prod_0231 · Q7 冲突 1 处
 
 查询 A：`情绪=悲伤；强度=mid；运镜=固定`
 
@@ -901,7 +901,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0964 · gen_story_0288 · Q7 冲突 1 处
+## hq_0914 · gen_story_0288 · Q7 冲突 1 处
 
 查询 A：`情绪=期待；强度=mid；运镜=dolly_in`
 
@@ -915,7 +915,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0971 · gen_edit_0068 · Q7 冲突 2 处
+## hq_0921 · gen_edit_0068 · Q7 冲突 2 处
 
 查询 A：`情绪=期待；强度=mid；运镜=固定`
 
@@ -930,7 +930,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0972 · gen_perf_0446 · Q7 冲突 2 处
+## hq_0922 · gen_perf_0446 · Q7 冲突 2 处
 
 查询 A：`情绪=期待；强度=mid；运镜=固定`
 
@@ -945,7 +945,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0974 · gen_story_0076 · Q7 冲突 2 处
+## hq_0924 · gen_story_0076 · Q7 冲突 2 处
 
 查询 A：`情绪=混乱；强度=mid；运镜=固定`
 
@@ -960,7 +960,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0975 · gen_edit_0157 · Q7 冲突 2 处
+## hq_0925 · gen_edit_0157 · Q7 冲突 2 处
 
 查询 A：`情绪=混乱；强度=mid；运镜=固定`
 
@@ -975,7 +975,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0981 · gen_edit_0137 · Q7 冲突 1 处
+## hq_0931 · gen_edit_0137 · Q7 冲突 1 处
 
 查询 A：`情绪=温柔；强度=mid；景别=ELS`
 
@@ -989,7 +989,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0984 · gen_prod_0141 · Q7 冲突 1 处
+## hq_0934 · gen_prod_0141 · Q7 冲突 1 处
 
 查询 A：`情绪=焦虑；强度=mid；景别=ECU`
 
@@ -1003,7 +1003,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0985 · cine_move_steadicam · Q7 冲突 2 处
+## hq_0935 · cine_move_steadicam · Q7 冲突 2 处
 
 查询 A：`情绪=焦虑；强度=mid；运镜=steadicam`
 
@@ -1018,7 +1018,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0986 · gen_cine_0295 · Q7 冲突 2 处
+## hq_0936 · gen_cine_0295 · Q7 冲突 2 处
 
 查询 A：`情绪=焦虑；强度=mid；运镜=steadicam`
 
@@ -1033,7 +1033,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0987 · gen_story_0146 · Q7 冲突 1 处
+## hq_0937 · gen_story_0146 · Q7 冲突 1 处
 
 查询 A：`情绪=荒诞；强度=mid；景别=ECU`
 
@@ -1047,7 +1047,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0988 · cine_move_zoom_out · Q7 冲突 1 处
+## hq_0938 · cine_move_zoom_out · Q7 冲突 1 处
 
 查询 A：`情绪=荒诞；强度=mid；运镜=dolly_in`
 
@@ -1061,7 +1061,7 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-## hq_0993 · gen_perf_0359 · Q7 冲突 1 处
+## hq_0943 · gen_perf_0359 · Q7 冲突 1 处
 
 查询 A：`情绪=讽刺；强度=mid；运镜=固定`
 

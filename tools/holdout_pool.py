@@ -456,7 +456,8 @@ def build_glm_prompt(batch: Sequence[dict]) -> str:
 
 def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int = 8,
              limit: int = 0, partial_path=None, progress_path=None,
-             resume: bool = True) -> Tuple[List[dict], List[dict], Dict]:
+             resume: bool = True,
+             only_values: Sequence[str] = ()) -> Tuple[List[dict], List[dict], Dict]:
     """用 GLM 为候选池里的每条边写 `q` 与 `never`；`must`/`top1` 由池固定。
 
     为什么把 `must` 固定：这正是"候选池标注"的定义（TREC pooling）——标注方判断
@@ -487,6 +488,14 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
         item["target"] = parse_spec(item["specs"][0])[0] if item["specs"] else ""
     if limit:
         items = items[:limit]
+    if only_values:
+        # **缺口补跑轮**：门③ 要求每个词表取值至少出现在 3 个 `(卡片,查询)` 对里。
+        # 模型写 q 时可能漏掉某些槽位（或某批被拒），于是个别取值支撑不足。
+        # 只把这些取值所在的组喂给模型重跑一轮，**标注族不变**（还是 zhipu）——
+        # 不拿机械产物凑数，否则门⑧ 会看到 `rule` 族并如实判红。
+        wanted = {str(v) for v in only_values}
+        items = [item for item in items
+                 if any(("=" + value) in required_q_hint(item) for value in wanted)]
 
     #: **增量落盘**：原先只在整轮结束时写文件，实测一次 31 分钟的跑卡在一次 HTTP
     #: 调用上（CPU 60 秒增量为 0）就**一点产物都没有**——v2 那次也是。现在每批
@@ -586,6 +595,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="逐批进度 JSON（配合 `--partial` 用；卡住时看这个文件就知道跑到哪）")
     parser.add_argument("--no-resume", action="store_true",
                         help="忽略已有 partial，从头跑")
+    parser.add_argument("--only-values", default="",
+                        help="缺口补跑：逗号分隔的取值（如 `smoke,crane_down`），"
+                             "只把用到这些取值的组喂给模型。用来补门③ 的支撑数，"
+                             "标注族不变（仍写真实模型族）。"
+                             "**中文取值请用 `@文件` 传**：PowerShell 会把命令行里的中文"
+                             "按本地码页转码，实测 `--only-values 压倒,揭示` 到 Python 手里"
+                             "已经变了，过滤器一个都匹配不上（同一个坑在别处也踩过）。"
+                             "`@路径` 表示读一个 UTF-8 文本文件，取值按行或逗号分隔。")
     parser.add_argument("--limit", type=int, default=0, help="只生成前 N 条（自检用）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -599,13 +616,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         from tools.kb_fetch import llm as _llm
 
         client = _llm.make_client(args.provider, args.model)
+        spec = args.only_values
+        if spec.startswith("@"):
+            text = pathlib.Path(spec[1:]).read_text(encoding="utf-8")
+        else:
+            text = spec
+        only_values = [v.strip() for v in text.replace("\n", ",").split(",") if v.strip()]
         raw, rejects, extra = glm_pass(graph, universe, client, vocab=vocab,
                                        batch_size=args.batch_size, limit=args.limit,
                                        partial_path=(args.partial or
                                                      str(ROOT / args.out) + ".partial"),
                                        progress_path=(args.progress or
                                                       str(ROOT / args.out) + ".progress.json"),
-                                       resume=not args.no_resume)
+                                       resume=not args.no_resume,
+                                       only_values=only_values)
         entries, more = finalise(raw, graph, universe,
                                  model_id=client.model_id, family=client.family,
                                  model_version=client.model_version,
