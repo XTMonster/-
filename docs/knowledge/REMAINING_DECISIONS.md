@@ -202,3 +202,27 @@ data.json   ->  只有元数据（course_title/description/instructors/…），
 2. 立刻跑：抓取 → 分块 → 卡片 → 索引 → 薄边统计；
 3. 若 `IMPACT_PACK`/`SOUND_PACK`/`MUSIC_PACK` 的对数**没动**，就说明这条路也补不上，
    **回到门限裁决**（那是一个需要你拍板的规格问题，我不会单方面调）。
+
+## 附六：扩来源**结案**——两个馆藏都不产"影视制作技术"
+
+按附五的次序执行 A（入库前先看清候选是什么），逐份核对了那 17 份"影视/媒体课"PDF：
+
+| 课程 | 候选实际内容 | 字符数 |
+|---|---|---|
+| `24-209-philosophy-in-film` | **哲学论文**（imagination／death／Philosophy…） | 9.6k–18.8k |
+| `4-343-photography-and-related-media` | 学生作品说明／展览单 | **28–1164** |
+| `4-341-introduction-to-photography` | wolfe／exhibit 小页 | 1.3k–2.1k |
+| `21l-435-shakespeare-film-and-media` | 一份影评 | 12.9k |
+| `21a-550j-dv-lab` | **Cronon《The Trouble with Wilderness》**（阅读材料，不是技术讲义） | 74.5k |
+
+即：**OCW 的"影视课"给的是阅读材料与学生作业，不是制作技术**。加上前面 Gutenberg 的
+结论（三轮检索 29 本里 4 本沾边、其中 3 本本来就在语料里），两个馆藏**都不产**
+`IMPACT_PACK`/`SOUND_PACK`/`MUSIC_PACK` 需要的那类知识。
+
+所以 **A 的结论是负的**，而且是在**烧掉整条链之前**就得到的——本次没有把这 17 份写进
+`sources.yaml`（写进去只会给语料灌入与三类短线无关的卡，并把门⑥ 的分母推高）。
+
+**剩下只有 B**：`--min-per-type 30` 是 schema 只有 6 类、语料是另一批时的常数。
+16 类摊一份**许可可得**的语料之后，这三类在构造上够不到 30 对（原子边数 ≈ 覆盖卡片数 ≈ 22，
+且 required 签名大多各不相同、跨卡归并无从下手）。这条门限要不要按"每类 ≥10 张卡 ＋
+该类全部可断言对"重定，是**规格裁决**，实现不得单方面调。
