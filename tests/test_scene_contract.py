@@ -122,7 +122,12 @@ def _query_shot() -> ShotPlan:
 
 def test_the_constraint_query_uses_the_frozen_keys_and_skips_empty_values():
     query = shot_constraint_query(_query_shot())
-    assert query == "景别=MS；镜头=85mm；运镜=dolly_in；动作=跺脚；特效=flame；对白=有"
+    # **2026-10-02 改的是取值拼法，不是断言强度**：`对白=有` 里的"有"根本不在查询
+    # 词表里（`scene_type` 的取值是 establish/dialogue/…），它是一个死值——命不中
+    # 任何节点，还占掉 `q` 的一位；"这一镜有人说话"在词表里的说法是 `dialogue`。
+    # 见 `tests/test_scene_contract_query_vocab.py` 的更强不变量：
+    # **契约串里每个取值都必须能在入库索引的节点表里找到**。
+    assert query == "景别=MS；镜头=85mm；运镜=dolly_in；动作=跺脚；特效=flame；对白=dialogue"
     # 空字段**不写**：`情绪=` 这种空值会造出永不命中的种子，把 `seed_miss`
     # 伪装成"知识库里没有"。
     bare = ShotPlan(shot_id="s", intent="x", shot_type="", duration_frames=24)

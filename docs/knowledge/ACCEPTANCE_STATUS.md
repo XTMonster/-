@@ -701,3 +701,50 @@ blender  --sidecar --preset fhd16x9 --save ... --export ...
 RK-13 现在剩**三条**且都记着确切原因：门⑥ 的 55 张卡（索引构造下限）、
 Q7 的分母（语料只有 27 条取值级禁忌）、Q5 的夹具字段（0 条 `expect_movements`）。
 后两条都是**标注/语料**工作，不是实现缺陷。
+
+## 十五、P14-7（2026-10-02 02:50）：契约串里的死值，以及真实运行暴露的两个问题
+
+### 15.1 契约串里的三个**死值**（已修）
+
+§4.1b 的 Q5 把"计划镜头"与"held-out 条目"按**键值对集合相等**join，所以
+`SceneContract` 的取值必须活在**查询词表**里。实测（一次真实运行的 8 条契约串
+对 466 个 held-out 键集）**零命中**，逐个看下来是三个死值：
+
+| 位置 | 旧写法 | 词表里的说法 |
+|---|---|---|
+| 对白标记 | `对白=有` | `scene_type` 的取值是 `establish/dialogue/…`，**没有"有"** → 改 `dialogue` |
+| 镜头 | `镜头=50.0`（计划里是数字） | 词表是 `50mm` → 折成 `50mm` |
+| 运镜 | `static`／`fixed`（引擎名） | 词表规范值是 `固定`（`static` 是别名，`fixed` 连别名都不是） |
+
+死值的代价不只是"join 不上"：`seeds_for` 只在节点名/别名上匹配，死值命不中任何节点，
+却照样占 `q` 的一位——把覆盖率的分母撑大。修法在
+`layer5_orchestrator/scene_contract.py::_canonical()`（两个生产者
+`shot_constraint_query` 与 `ShotContract.constraint_query` 必须同源），
+对抗性用例 `tests/test_scene_contract_query_vocab.py` 的核心不变量是
+**"契约串里每个取值都必须能在入库索引的节点表里找到"**。
+
+修完重跑真实运行（`docs/evidence/market4/`，第三次）：`ok=true / DONE / 6 镜 / 792 帧`，
+契约串现在是 `景别=CU；运镜=dolly_in；对白=dialogue` 这种**词表内**的写法。
+**但 Q5 的 join 仍然是 0 命中**——计划侧的键集是"镜头描述"（1–3 个键），
+held-out 的键集是"边描述"（2–3 个键，如 `情绪×强度×运镜`），两个空间不重合。
+要判 Q5，`expect_movements` 那批条目得写成**计划形状**的 `q`（§4.1b 的 join 才是
+"同一条"），这是下一步的标注工作。
+
+### 15.2 真实运行暴露的第二个问题：计划里的动作参数是**自由形状**
+
+第二次真实运行死在构建期，不是死在审计期：
+
+```
+MotionParamError: E_MOTION_001：body_tilt 不认识的姿态参数：amount；
+允许的键是 angle_deg、angle、degrees、axis、toward
+```
+
+模型在计划里写了 `"action_type": "body_tilt", "params": {"amount": 15}`。动作层
+`body_tilt_params()` **刻意**不静默取默认值（v1.4 BW-1），所以它如实报错；
+问题在上游——`layer5_orchestrator/editor.py` 的 `emit_plan`/`emit_shot_draft` 工具
+schema 里 `"params": {"type": "object"}` 是**自由形状**，模型写什么键都合法，
+于是这个 typo 一路走到构建期把整轮打成 `ERROR`（本轮 9 次调用、6 个镜头全部白跑）。
+
+正确落点（下一步做）：把每个动作类型的**允许参数键**从 `motion/model.py` 渲染进
+schema（`body_tilt` 已经有 `BODY_TILT_KEYS` 这张表），让非法键在 **emit 时**就被拒、
+由工具错误回给模型重试——而不是让整轮在构建期死掉。

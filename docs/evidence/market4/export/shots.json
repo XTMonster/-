@@ -6,11 +6,11 @@
     1080
   ],
   "style": "写实电影质感，35mm，柔和自然光",
-  "generated_at": "2026-10-02T02:04:48+08:00",
-  "scene_heading": "【第十四街区码头市场 - 午后】",
+  "generated_at": "2026-10-02T02:33:06+08:00",
+  "scene_heading": "",
   "total_frames": 792,
-  "llm_calls": 30,
-  "retrieval_calls": 8,
+  "llm_calls": 25,
+  "retrieval_calls": 7,
   "crowd": {
     "entries": [],
     "total": 0
@@ -114,14 +114,7 @@
         "declared_duration_s": null
       },
       "labels": {},
-      "movements": [
-        {
-          "kind": "fixed",
-          "start_frame": 1,
-          "end_frame": 120,
-          "source": "planned"
-        }
-      ]
+      "movements": []
     },
     {
       "shot_id": "shot_002",
@@ -137,8 +130,8 @@
       "camera": {
         "name": "BD_Cam_shot_002",
         "position": [
-          1.1,
-          4.429,
+          -1.5,
+          -4.429,
           1.278
         ],
         "lens": 85.0
@@ -148,7 +141,7 @@
         "伊恩"
       ],
       "dialogue_ids": [
-        "dialogue_002"
+        "米迦尔 对 伊恩 说"
       ],
       "action_types": [],
       "axis_note": "",
@@ -169,7 +162,7 @@
       "labels": {
         "米迦尔": {
           "text": "米迦尔",
-          "anchor_z": 1.7381,
+          "anchor_z": 1.7723,
           "offset_px": [
             0.0,
             180.0
@@ -178,7 +171,7 @@
         },
         "伊恩": {
           "text": "伊恩",
-          "anchor_z": 1.8432,
+          "anchor_z": 1.8261,
           "offset_px": [
             0.0,
             180.0
@@ -209,7 +202,7 @@
       "camera": {
         "name": "BD_Cam_shot_003",
         "position": [
-          2.2,
+          0.0,
           2.895,
           1.231
         ],
@@ -219,7 +212,7 @@
         "伊恩"
       ],
       "dialogue_ids": [
-        "dialogue_003"
+        "伊恩 对 （未指明） 说"
       ],
       "action_types": [],
       "axis_note": "",
@@ -240,7 +233,7 @@
       "labels": {
         "伊恩": {
           "text": "伊恩",
-          "anchor_z": 1.8432,
+          "anchor_z": 1.8261,
           "offset_px": [
             0.0,
             180.0
@@ -264,8 +257,8 @@
       "camera": {
         "name": "BD_Cam_shot_004",
         "position": [
-          1.1,
-          4.429,
+          2.336,
+          -2.215,
           1.278
         ],
         "lens": 85.0
@@ -274,8 +267,8 @@
         "米迦尔"
       ],
       "dialogue_ids": [
-        "dialogue_004",
-        "dialogue_005"
+        "米迦尔 对 （未指明） 说",
+        "米迦尔 对 （未指明） 说"
       ],
       "action_types": [],
       "axis_note": "",
@@ -296,7 +289,7 @@
       "labels": {
         "米迦尔": {
           "text": "米迦尔",
-          "anchor_z": 1.7381,
+          "anchor_z": 1.7723,
           "offset_px": [
             0.0,
             180.0
@@ -320,8 +313,8 @@
       "camera": {
         "name": "BD_Cam_shot_005",
         "position": [
-          1.1,
-          -7.832,
+          -2.511,
+          -2.316,
           0.95
         ],
         "lens": 50.0
@@ -349,7 +342,7 @@
       "labels": {
         "偷盗者": {
           "text": "偷盗者",
-          "anchor_z": 1.726,
+          "anchor_z": 1.9583,
           "offset_px": [
             0.0,
             180.0
@@ -380,8 +373,8 @@
       "camera": {
         "name": "BD_Cam_shot_006",
         "position": [
-          1.1,
-          -6.095,
+          -1.007,
+          -1.447,
           1.231
         ],
         "lens": 50.0
@@ -390,8 +383,8 @@
         "偷盗者"
       ],
       "dialogue_ids": [
-        "dialogue_006",
-        "dialogue_007"
+        "偷盗者 对 （未指明） 说",
+        "偷盗者 对 （未指明） 说"
       ],
       "action_types": [],
       "axis_note": "",
@@ -412,7 +405,7 @@
       "labels": {
         "偷盗者": {
           "text": "偷盗者",
-          "anchor_z": 1.726,
+          "anchor_z": 1.9583,
           "offset_px": [
             0.0,
             180.0
@@ -420,14 +413,7 @@
           "offset_reason": "out_of_frame"
         }
       },
-      "movements": [
-        {
-          "kind": "dolly_in",
-          "start_frame": 1,
-          "end_frame": 168,
-          "source": "experience"
-        }
-      ]
+      "movements": []
     }
   ]
 }

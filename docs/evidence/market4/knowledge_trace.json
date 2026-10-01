@@ -9,9 +9,9 @@
     "shot": 800,
     "plan": 2000
   },
-  "retrieval_calls": 8,
+  "retrieval_calls": 7,
   "warnings": [],
-  "query": "景别=MCU；对白=有",
+  "query": "景别=MCU；对白=dialogue",
   "seeds": [
     "scene_type:dialogue",
     "applies_to_shot_size:MCU",
@@ -138,5 +138,5 @@
   },
   "cases": 0,
   "plan_scope": {},
-  "written_at": "2026-10-02T02:04:00+08:00"
+  "written_at": "2026-10-02T02:32:18+08:00"
 }

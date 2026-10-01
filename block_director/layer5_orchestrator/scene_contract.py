@@ -46,6 +46,40 @@ def _first_value(item: Any, *keys: str) -> str:
     return ""
 
 
+#: 引擎的运镜名 → **查询词表里的规范取值**。
+#:
+#: 计划里的运镜是**引擎名**（`static`／`fixed`／`dolly_in`…），而 held-out 的 `q`
+#: 与冻结词表用的是 `固定`／`dolly_in`…。两边对不上时 `运镜=static` 是**死值**：
+#: 它命不中任何节点（`seeds_for` 只在节点名/别名上匹配），还会占掉 `q` 的一位，
+#: 让 Q5 的"键值对集合相等"永远不成立（实测：一次真实运行的 8 条契约串与 466 个
+#: held-out 键集**零命中**）。`NodeIndex` 认得 `static`／`静止机位` 这些别名，
+#: 但 `fixed` 不在其中，所以这里给出一张**显式**的等价表，其余引擎名与词表同名
+#: （`dolly_in`／`follow_subject`…）原样通过。
+_MOVEMENT_ALIASES: Dict[str, str] = {
+    "static": "固定", "fixed": "固定", "静止机位": "固定", "固定机位": "固定",
+    "locked": "固定", "locked_off": "固定",
+}
+
+
+def _canonical(key: str, value: str) -> str:
+    """把一个契约取值折到**查询词表的规范写法**上；折不到就原样返回。"""
+    text = str(value or "").strip()
+    if key == "运镜":
+        return _MOVEMENT_ALIASES.get(text.lower(), text)
+    if key == "镜头":
+        #: 词表的镜头取值是 `50mm` 这种字符串，而计划里给的是数字（`50.0`）。
+        #: 不折的话 `镜头=50.0` 同样是死值——实测计划里的镜头维度**从来没进过种子**。
+        try:
+            return "%dmm" % int(round(float(text)))
+        except (TypeError, ValueError):
+            return text
+    if key == "对白":
+        #: `对白=有` 不在词表里（`scene_type` 的取值是 establish/dialogue/…）。
+        #: "这一镜有人说话"在词表里的说法就是 `dialogue`。
+        return "dialogue" if text in ("有", "true", "True", "yes") else text
+    return text
+
+
 def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
     """把**一镜的计划字段**变成 §2.3b 的查询串：``键=值；键=值``。
 
@@ -69,7 +103,7 @@ def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
     def add(key: str, values) -> None:
         seen = used.setdefault(key, set())
         for value in values:
-            text = str(value or "").strip()
+            text = _canonical(key, str(value or "").strip())
             if not text or text in seen:
                 continue
             seen.add(text)
@@ -88,7 +122,7 @@ def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
     add("特效", [_first_value(item, "type", "kind")
                  for item in (getattr(shot, "vfx", None) or [])])
     if getattr(shot, "dialogues", None):
-        pairs.append(("对白", "有"))
+        pairs.append(("对白", _canonical("对白", "有")))
     return "；".join(f"{key}={value}" for key, value in pairs)
 
 
@@ -171,7 +205,7 @@ class ShotContract:
                 if str(value or "").strip():
                     pairs.append((key, str(value).strip()))
         if self.dialogues:
-            pairs.append(("对白", "有"))
+            pairs.append(("对白", _canonical("对白", "有")))
         return "；".join(f"{key}={value}" for key, value in pairs)
 
     def to_dict(self) -> Dict[str, Any]:
