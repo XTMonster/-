@@ -191,10 +191,28 @@ def t_operator_path_builds_and_exports():
           and "shots.json" in products and "prompts.md" in products
           and len(clips) >= len(driver.plan.shots)
           and len(stills) == len(driver.plan.shots))
+    # E2 / 审查 #21：GUI 通路以前**根本没装配知识检索器**（driver.knowledge
+    # 恒为 None），于是逐镜检索与 `retrieval_calls` 在插件路径上是死的；
+    # 同时 `shots.json.movements[].source` 必须落在 R46 的六取值词表里。
+    knowledge = getattr(driver, "knowledge", None)
+    manifest = None
+    if out_dir and (out_dir / "shots.json").is_file():
+        manifest = json.loads((out_dir / "shots.json").read_text(encoding="utf-8"))
+    sources = {item["source"] for shot in (manifest or {}).get("shots", [])
+               for item in shot.get("movements", [])}
+    vocab = {"declared", "planned", "theory", "experience", "lesson", "case"}
+    ok = (ok and knowledge is not None
+          and bool(knowledge.describe().get("backend"))
+          and sources <= vocab
+          and "retrieval_calls" in (manifest or {}))
     return {"ok": ok, "state": state.value, "kinds": kinds,
             "characters": len(characters), "cameras": len(cameras),
             "targets": len(targets), "products": products,
             "clips": len(clips), "stills": len(stills),
+            "knowledge_backend": (knowledge.describe().get("backend")
+                                  if knowledge is not None else None),
+            "movement_sources": sorted(sources),
+            "retrieval_calls": (manifest or {}).get("retrieval_calls"),
             "shots": len(driver.plan.shots) if driver.plan else 0}
 
 

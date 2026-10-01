@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from ..contracts.plan import Plan
 
@@ -27,8 +27,9 @@ def build_manifest(plan: Plan, *,
                    parsed=None,
                    timing_overrides: Optional[Sequence[Dict[str, Any]]] = None,
                    action_conflicts: Optional[Sequence[Dict[str, Any]]] = None,
-                   audit_pass_rate: Optional[Dict[str, Any]] = None
-                   ) -> Dict[str, Any]:
+                  audit_pass_rate: Optional[Dict[str, Any]] = None,
+                  knowledge_provenance: Optional[Dict[str, Any]] = None
+                  ) -> Dict[str, Any]:
     """把分镜计划与构建结果拼成交付用清单。
 
     v1.4 R45：``llm_calls`` / ``retrieval_calls`` / ``crowd{}`` 三个字段的
@@ -39,6 +40,12 @@ def build_manifest(plan: Plan, *,
     ``labels{}`` / ``movements[]``，跨镜字段是 ``crowd{}`` /
     ``timing_overrides[]`` / ``action_conflicts[]`` / ``dialogue_pins[]`` /
     ``audit_pass_rate{}``。
+
+    ``knowledge_provenance``（2026-10-01，审查 #21）：``{shot_id: {来源类:
+    [[kind, 取值], ...]}}``，来自该镜 B1 **那一次**检索真的注入的超边。有它，
+    ``movements[].source`` 才写得出 ``theory`` / ``lesson`` / ``experience``——
+    在那之前这一栏只有 ``declared|planned``，E2（经验采纳率）因此结构性恒为 0
+    （"有指标没数据"）。缺省 ``None`` ＝ 没有知识层，行为与 P15 逐字相同。
     """
     results = {r.get("shot_id"): r for r in
                (build_summary or {}).get("results", [])}
@@ -80,7 +87,9 @@ def build_manifest(plan: Plan, *,
             # ---- v1.4 P15（§3.3）的逐镜字段 ----
             "declared": _declared_payload(declared, shot),
             "labels": _labels_payload(shot, label_offsets),
-            "movements": _movements_payload(shot, declared),
+            "movements": _movements_payload(
+                shot, declared,
+                (knowledge_provenance or {}).get(shot.shot_id)),
         })
 
     return {
@@ -159,13 +168,25 @@ def _labels_payload(shot, offsets: Dict[str, Any]) -> Dict[str, Any]:
     return payload
 
 
-def _movements_payload(shot, declaration) -> List[Dict[str, Any]]:
+#: R46（§3.3）的统一词表里"由知识带来的"那四个取值，也定下了优先级：
+#: 硬理论 > 教训 > 结构化经验 > 案例类比（§2.3b 的冲突裁决顺序）。
+KNOWLEDGE_SOURCE_ORDER = ("theory", "lesson", "experience", "case")
+
+
+def _movements_payload(shot, declaration, provenance=None) -> List[Dict[str, Any]]:
     """§3.3 的 ``movements[]``：``source`` 只用 R46 的统一词表。
 
-    本版还没有知识层（P14 才接），所以来源只有两种：剧本**声明**的运镜
-    （``declared``）与计划自己排的（``planned``）。P14 之后 ``theory`` /
-    ``experience`` / ``lesson`` / ``case`` 由知识 trace 填。
+    取值优先级：剧本**声明**的运镜（``declared``）→ 该镜检索命中的知识
+    （``theory`` / ``lesson`` / ``experience`` / ``case``，按
+    :data:`KNOWLEDGE_SOURCE_ORDER` 取第一个命中）→ 计划自己排的（``planned``）。
+    判据是"这条运镜的取值，被这一镜注入的超边点过名"，不是猜，也不拿别的
+    镜头的命中来顶。
     """
+    lookup: Dict[Tuple[str, str], str] = {}
+    for source_kind in KNOWLEDGE_SOURCE_ORDER:
+        for pair in (provenance or {}).get(source_kind, []) or []:
+            if isinstance(pair, (list, tuple)) and len(pair) == 2:
+                lookup.setdefault((str(pair[0]), str(pair[1])), source_kind)
     items = []
     declared_move = str(getattr(declaration, "camera_move", "") or "")
     for raw in (getattr(shot, "camera", None) or {}).get("movements", []) or []:
@@ -174,8 +195,10 @@ def _movements_payload(shot, declaration) -> List[Dict[str, Any]]:
         kind = str(raw.get("type") or raw.get("kind") or "")
         if not kind:
             continue
-        source = "declared" if declared_move and kind == declared_move \
-            else "planned"
+        if declared_move and kind == declared_move:
+            source = "declared"
+        else:
+            source = lookup.get(("movement", kind), "planned")
         items.append({
             "kind": kind,
             "start_frame": int(raw.get("start_frame") or 1),

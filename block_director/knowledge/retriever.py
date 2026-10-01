@@ -143,6 +143,13 @@ class KnowledgeRetriever:
     #: 真正的空查询混淆。取过之后就记下查询串，**空结果也算取过**
     #: （否则同一条查询会被反复重取，§2.4 的 ``retrieval_calls`` 直接翻倍）。
     last_cases_query: Optional[str] = None
+    #: E2 溯源（2026-10-01）：**最近一次**注入的超边（去掉了因预算被整条丢弃的），
+    #: 交付层用它把 ``movements[].source`` 写成 ``theory`` / ``lesson`` 等。
+    #: 必须在**同一次**检索里留下来——再查一次会把 §2.4 的 ``retrieval_calls``
+    #: 记账翻倍（RK-18 会红），而 E2 只是诊断量，不值得拿预算账换。
+    last_edges: List[Any] = field(default_factory=list)
+    #: 上面那批边属于哪条查询（查询不同就不许把 A 的溯源贴到 B 上）。
+    last_edges_query: str = ""
     _index_cards: List[Card] = field(default_factory=list, init=False, repr=False)
     _engine_name: str = field(default="builtin.BM25Okapi", init=False, repr=False)
     _cache: Dict[str, Any] = field(default_factory=dict, init=False, repr=False)
@@ -586,9 +593,45 @@ class KnowledgeRetriever:
                                    "suppressed_soft_edges": len(suppressed_soft),
                                    "hard_tokens": estimate_tokens(hard_column),
                                    "soft_tokens": estimate_tokens(soft_column)})
+        # E2 溯源：只留**真的注入了**的边（被预算整条丢掉的不算"检索命中"）。
+        dropped = set(dropped_hard) | set(dropped_soft)
+        self.last_edges_query = str(query)
+        self.last_edges = [edge for edge in edges
+                           if getattr(edge, "edge_id", "") not in dropped]
         self.last_trace["degraded"] = bool(self.degraded)
         self.last_trace["degraded_reason"] = self.degraded_reason
         return hard_column, soft_column
+
+    def provenance(self, query: Optional[str] = None) -> Dict[str, List[List[str]]]:
+        """最近一次注入的超边按 ``source_kind`` 归类的 ``(kind, value)`` 清单。
+
+        v1.4 §3.3 的 ``movements[].source`` 只能取 R46 的六个取值
+        （``declared|planned|theory|experience|lesson|case``）；E2（经验采纳率）
+        数的就是其中 ``experience|lesson|case`` 那几个。**在此之前 manifest
+        永远只写 ``declared|planned``**——E2 因此结构性恒为 0（审查 #21：
+        "有指标没数据"）。这里提供的是"这条具体取值是哪一类知识带回来的"，
+        由 ``delivery/manifest.py::_movements_payload`` 消费。
+
+        传了 ``query`` 且与最近一次不同则返回空表：**绝不**把上一条查询的
+        命中贴到这一条上（那会把溯源变成编造）。
+        """
+        if query is not None and str(query) != self.last_edges_query:
+            return {}
+        out: Dict[str, List[List[str]]] = {}
+        for edge in self.last_edges:
+            kind_of_source = str(getattr(edge, "source_kind", "") or "theory")
+            bucket = out.setdefault(kind_of_source, [])
+            for member in getattr(edge, "members", ()) or ():
+                if str(getattr(member, "role", "")) == "forbid":
+                    # 禁忌不是"被采纳的建议"：把它算进来等于把违反禁忌也记成采纳。
+                    continue
+                node = str(getattr(member, "node_id", ""))
+                if ":" not in node:
+                    continue
+                pair = [node.split(":", 1)[0], node.split(":", 1)[1]]
+                if pair not in bucket:
+                    bucket.append(pair)
+        return out
 
     def _vector_order(self, query: str,
                       limit: int) -> List[int]:  # pragma: no cover - 需 sidecar

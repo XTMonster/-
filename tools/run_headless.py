@@ -186,6 +186,8 @@ def main() -> int:
                                 action_conflicts=(summary.get("build") or {})
                                 .get("action_conflicts"),
                                 audit_pass_rate=summary.get("audit_pass_rate"),
+                                knowledge_provenance=summary.get(
+                                    "knowledge_provenance"),
                                 project=plan_obj.scene_heading or "BlockDirector")
         payload = report.to_dict()
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(

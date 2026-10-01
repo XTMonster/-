@@ -136,6 +136,10 @@ def main() -> int:
 
     report = export_project(plan, build_summary=summary.get("build"),
                             out_dir=out_dir, config=config.delivery,
+                            llm_calls=int(summary.get("llm_calls") or 0),
+                            retrieval_calls=int(summary.get("retrieval_calls") or 0),
+                            knowledge_provenance=summary.get(
+                                "knowledge_provenance"),
                             project="BlockDirector")
     payload = report.to_dict()
     payload["summary"] = {"state": summary.get("state"),

@@ -192,6 +192,12 @@ class PrevisDriver:
         self.degraded_reason = ""
         self.human_gate = human_gate
         self.knowledge = knowledge
+        #: E2 溯源（2026-10-01）：逐镜记下"这一镜的检索**真的注入了**哪几类知识的
+        #: 哪些取值"，交付层据此写 ``movements[].source``（``theory`` /
+        #: ``lesson`` / ``experience``）。此前 manifest 只有 ``declared|planned``
+        #: 两个取值，E2（经验采纳率）因此**结构性恒为 0**（审查 #21）。
+        self._shot_knowledge: Dict[str, Dict[str, List[List[str]]]] = {}
+        self._shot_knowledge_query: Dict[str, str] = {}
         self._gate_request: Optional[GateRequest] = None
         self._gate_decision: Optional[GateDecision] = None
         self._gate_resume: DriverState = DriverState.FINISHING
@@ -332,8 +338,22 @@ class PrevisDriver:
             #: v1.4 P15（§3.3）：交付清单要的两张表，由驱动器产出。
             "timing_overrides": list(self.timing_overrides),
             "audit_pass_rate": self._audit_pass_rate(),
+            #: E2（§2.3b）：逐镜知识溯源，交付层写 ``movements[].source`` 用。
+            "knowledge_provenance": self.knowledge_provenance(),
             "error": self.error,
         }
+
+    def knowledge_provenance(self) -> Dict[str, Dict[str, List[List[str]]]]:
+        """逐镜的知识溯源：``{shot_id: {source_kind: [[kind, value], ...]}}``。
+
+        数据来自**该镜构造 B1 请求时那一次**检索（``retriever.provenance()``），
+        不额外发起检索——§2.4 的 ``retrieval_calls`` 预算账因此不受影响。
+        没有知识层（``--offline``、GUI 未装配）时是空表，交付层就照旧只写
+        ``declared|planned``。
+        """
+        return {shot_id: {kind: [list(pair) for pair in pairs]
+                          for kind, pairs in buckets.items()}
+                for shot_id, buckets in self._shot_knowledge.items()}
 
     def _audit_pass_rate(self) -> Dict[str, Any]:
         """构图门通过率（RK-10 的分子/分母口径）。
@@ -971,10 +991,26 @@ class PrevisDriver:
             characters=characters, props=props, retriever=self.knowledge,
             temperature=(float(self.config.llm.temperature_plan)
                          if self.config is not None else 0.7))
+        # E2 溯源：`build_editor_payload` 刚刚（且只）发起了这一镜的检索，
+        # 所以此刻读 `provenance()` 拿到的一定是这一镜的命中集。
+        self._record_shot_knowledge(shot_id)
         self._start_llm_call("editor", payload,
                              note=f"单镜结构化生成 {shot_id}"
                                   f"（{self._editing_index + 1}/"
                                   f"{len(self._editing_queue)}）")
+
+    def _record_shot_knowledge(self, shot_id: str) -> None:
+        """把这一镜注入的知识溯源记下来（E2 的数据源，不发新检索）。"""
+        provenance_fn = getattr(self.knowledge, "provenance", None)
+        if provenance_fn is None:
+            return
+        buckets = provenance_fn() or {}
+        pairs = {kind: [list(pair) for pair in values]
+                 for kind, values in buckets.items() if values}
+        if pairs:
+            self._shot_knowledge[shot_id] = pairs
+            self._shot_knowledge_query[shot_id] = str(
+                getattr(self.knowledge, "last_edges_query", ""))
 
     def _shot_script_text(self) -> str:
         """给 B1 的剧本原文（§18.2 的 ``{scene_text}``）。

@@ -162,6 +162,14 @@ def build_run_context(context, *, builder=_DEFAULT_BUILDER, auditor=None,
     run_dir = ensure_dir(default_project_root() / "runs")
     audit = AuditLogger(directory=run_dir, echo=True,
                         **trace_options(run_config))
+    # P14-4 的**插件侧消费**：GUI 通路此前**根本没有装配知识检索器**
+    # （`PrevisDriver(knowledge=...)` 缺省 None），于是逐镜的
+    # `block_for_shot()` 永远拿不到超图，`knowledge_trace.json` 与
+    # `retrieval_calls` 恒为零——"插件会消费知识"只写在文档里。
+    # 这里复用 headless 通路同一份装配函数（`_make_knowledge`），
+    # 让两条通路的检索器**同源**，不各写一份。
+    from .headless_runner import _make_knowledge
+
     driver = PrevisDriver(
         transport=transport,
         audit=audit,
@@ -174,6 +182,7 @@ def build_run_context(context, *, builder=_DEFAULT_BUILDER, auditor=None,
         builder=builder,
         auditor=auditor or BpyShotAuditor(
             audit_level=run_config.audit.level),
+        knowledge=_make_knowledge(run_config, transport, audit),
     )
     return RunContext(driver=driver, config=run_config, mode=mode,
                       builder=builder, checkpoints=checkpoints)
@@ -200,6 +209,9 @@ def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
                             out_dir=out_dir, config=run.config.delivery,
                             compliance=driver.snapshot().get("compliance"),
                             llm_calls=int(driver.snapshot().get("llm_calls") or 0),
+                            retrieval_calls=int(getattr(driver.knowledge,
+                                                        "retrieval_calls", 0) or 0),
+                            knowledge_provenance=driver.knowledge_provenance(),
                             crowd=crowd,
                             project=driver.plan.scene_heading or "BlockDirector")
     payload = report.to_dict()

@@ -68,6 +68,17 @@ class BLOCKDIRECTOR_OT_export_delivery(Operator):
         report = export_project(plan, build_summary=build_summary,
                                 out_dir=Path(bpy.path.abspath(out_dir)),
                                 config=config.delivery,
+                                llm_calls=int(getattr(driver, "_llm_calls", 0) or 0)
+                                if driver is not None else 0,
+                                retrieval_calls=int(getattr(
+                                    getattr(driver, "knowledge", None),
+                                    "retrieval_calls", 0) or 0)
+                                if driver is not None else 0,
+                                knowledge_provenance=(
+                                    driver.knowledge_provenance()
+                                    if driver is not None
+                                    and hasattr(driver, "knowledge_provenance")
+                                    else None),
                                 project=plan.scene_heading or "BlockDirector")
         if not report.ok:
             self.report({'ERROR'}, report.reason or "导出未完成")

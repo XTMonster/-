@@ -78,6 +78,11 @@ def run_headless(
     # §2.4：检索调用与 llm_calls **分列**——把这一格交给交付层（manifest）。
     summary["retrieval_calls"] = int(
         getattr(getattr(driver, "knowledge", None), "retrieval_calls", 0) or 0)
+    # E2（§2.3b）的数据源：逐镜"这一镜的检索真的注入了哪几类知识的哪些取值"。
+    # 交付层用它写 `movements[].source`；没有它 E2 结构性恒为 0（审查 #21）。
+    summary["knowledge_provenance"] = (
+        driver.knowledge_provenance()
+        if hasattr(driver, "knowledge_provenance") else {})
     # v1.4 §2.3/§3.3：`knowledge_trace.json` **每次运行必写**。它记录这次
     # 到底查了什么（种子 / 命中边 / 打分 / 注入集合）与降级留痕；
     # 没有它，"检索是确定性的"这句话就没有证据。
