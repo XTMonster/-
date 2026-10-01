@@ -201,3 +201,31 @@ def test_a_clean_oracle_reports_no_gap(tmp_path):
                       assertable={etype: 0 for etype in check_holdout.EDGE_TYPES})
     assert report["cards"] == []
     assert report["types"] == []
+
+
+def test_the_cli_defaults_to_the_shipped_index_side_cap(tmp_path):
+    """缺省必须带上**入库的** `--assertable`，否则会报出一轮白烧的假缺口。
+
+    实测（2026-10-01）：不带那个开关时，`IMPACT_PACK 17 / SOUND_PACK 19 /
+    MUSIC_PACK 16` 会被列进 `--only-types` 轮——而门④ 的口径早已是
+    `min(30, 该类可断言对数)`，这三类**在构造上**给不到 30 对（组内没有可并的
+    东西），那一轮既跑不出新边、又白烧 GLM 调用。验收链里一直是显式传这个文件的，
+    工具缺省必须与它同源。
+    """
+    code = gap_report.main(["--json", "--out-dir", str(tmp_path / "gaps")])
+    # 退出码：0 = 无缺口、1 = 有缺口、2 = 有词表外取值（补跑修不了）。
+    # 这里只关心**类型表**是否与门④ 同源，所以退出码不作断言。
+    assert code in (0, 1, 2)
+    payload = json.loads(
+        (tmp_path / "gaps" / "gap_report.json").read_text(encoding="utf-8"))
+    assert payload["types"] == [], payload["types"]
+    assert (tmp_path / "gaps" / "gap_types.txt").read_text(encoding="utf-8") == ""
+
+
+def test_a_missing_assertable_file_warns_instead_of_failing_silently(tmp_path, capsys):
+    """文件不在时要**说出来**：退回名义上限会把"索引侧够不到"报成缺口。"""
+    missing = tmp_path / "nope.json"
+    code = gap_report.main(["--json", "--assertable", str(missing),
+                            "--out-dir", str(tmp_path / "gaps")])
+    assert code in (0, 1, 2)
+    assert "不存在" in capsys.readouterr().err

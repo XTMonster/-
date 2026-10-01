@@ -141,8 +141,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--holdout", default="fixtures/knowledge_holdout.jsonl")
     parser.add_argument("--cards", default="fixtures/knowledge_holdout.cards.json")
     parser.add_argument("--vocab", default="fixtures/knowledge_holdout.vocab.json")
-    parser.add_argument("--assertable", default="",
-                        help="门④ 的索引侧上限（同 check_holdout）")
+    #: 缺省就用**入库的那份**（`holdout_pool --assertable-out` 产出）。
+    #: 空缺省会把"索引侧本来就够不到 30 对"的类型报成缺口 —— 实测
+    #: `IMPACT_PACK 17 / SOUND_PACK 19 / MUSIC_PACK 16` 会被列进 `--only-types` 轮，
+    #: 而那一轮既跑不出东西（组内 nowhere 可加）、又白烧 GLM 调用；门④ 的口径
+    #: 早已是 `min(30, 该类可断言对数)`，工具缺省必须与验收链同源。
+    parser.add_argument("--assertable",
+                        default="fixtures/knowledge_holdout.assertable.json",
+                        help="门④ 的索引侧上限（同 check_holdout）；缺省用入库的那份。")
     parser.add_argument("--min-support", type=int, default=3)
     parser.add_argument("--min-per-type", type=int, default=30)
     parser.add_argument("--min-cards-per-type", type=int, default=10)
@@ -160,8 +166,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     assertable = None
     if args.assertable:
-        payload = json.loads(pathlib.Path(args.assertable).read_text(encoding="utf-8"))
-        assertable = payload.get("assertable_pairs_per_type", payload)
+        path = pathlib.Path(args.assertable)
+        if not path.is_file():
+            print(json.dumps(
+                {"warning": f"--assertable {path} 不存在：门④ 退回名义上限 "
+                            f"{args.min_per_type}，可能把'索引侧本来就够不到'的类型"
+                            f"报成缺口（会白烧一轮补跑）"},
+                ensure_ascii=False), file=sys.stderr)
+        else:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            assertable = payload.get("assertable_pairs_per_type", payload)
 
     gaps = build_gaps(entries=entries, cards=cards, vocab=vocab,
                       min_support=args.min_support, per_type=args.min_per_type,
