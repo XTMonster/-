@@ -619,6 +619,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--cards", default=DEFAULT_CARDS)
     parser.add_argument("--out", default=DEFAULT_OUT)
     parser.add_argument("--report", default="")
+    parser.add_argument("--assertable-out", default="",
+                        help="把**可断言对**（每类多少 `(卡片,查询)` 对，由索引＋词表决定、"
+                             "与 oracle 生成了什么无关）写成 JSON，供 "
+                             "`check_holdout --assertable` 判门④。建议随 oracle 一起入库："
+                             "它是 `(索引, 词表)` 的属性，不随标注批次变动。")
     parser.add_argument("--vocab", default=DEFAULT_VOCAB,
                         help="冻结词表（门③ 的硬边界）；给空串表示不限制")
     parser.add_argument("--mechanical", action="store_true",
@@ -705,6 +710,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         (ROOT / args.report).parent.mkdir(parents=True, exist_ok=True)
         (ROOT / args.report).write_text(
             json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.assertable_out:
+        target = ROOT / args.assertable_out
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            json.dumps({"assertable_pairs_per_type":
+                        stats.get("assertable_pairs_per_type", {})},
+                       ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8", newline="\n")
     print(json.dumps({k: v for k, v in report.items() if k != "reject_examples"},
                      ensure_ascii=False))
     return 0

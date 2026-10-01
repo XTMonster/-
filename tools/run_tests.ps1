@@ -297,7 +297,10 @@ if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
 # above; it never turns the suite itself red, it attributes the failure).
 # `--out` is written by Python on purpose: PowerShell 5.1's `>` emits UTF-16,
 # which breaks the downstream json.loads.
-python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
+# `--assertable` 是门④ 的口径（2026-10-01 用户裁决）：每类要 `min(30, 该类可断言对数)` 条。
+# 那份 JSON 是 `(索引, 词表)` 的属性（由 `holdout_pool --assertable-out` 生成并入库），
+# 与 oracle 生成了什么无关 —— 所以判门时用它不构成自证。
+python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
 $gateExit = $LASTEXITCODE
 if ($gateExit -eq 0) {
     Write-Host '  held-out coverage gates: all passed' -ForegroundColor Green
