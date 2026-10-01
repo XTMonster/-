@@ -1068,6 +1068,23 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     common.write_jsonl(ATOMS, [edge.to_dict() for edge in atoms])
     merged, merge_report = merge_edges(atoms, {str(card["id"]): card for card in cards},
                                        nodes_from_vocab())
+    #: **混版记账必须在 `--rematch` 路径上续上**。清洗（`--replace-cards`）会留下
+    #: 两个 prompt 版本的原子边，而 `--rematch` 是"不重抽、只重跑第 2 段"，它建的
+    #: 是一份**全新**的 merge_report——上一轮写下的 `refresh` 就这样丢了，
+    #: manifest 于是"混着多版却没有任何清洗记录"（§4.1b 硬规则 2 禁止自报一个
+    #: 对不上的汇总；`tests/test_build_ledger.py::test_refresh_bookkeeping…` 当场抓到）。
+    #: 有旧账就续用，没有就如实造一条"重归并时发现原子边混版"的账。
+    versions = collections.Counter(
+        str((edge.extractor or {}).get("prompt_version") or "unknown") for edge in atoms)
+    if len(versions) > 1:
+        previous_report = (json.loads(REPORT.read_text(encoding="utf-8"))
+                           if REPORT.is_file() else {})
+        previous_refresh = ((previous_report.get("merge") or {}).get("refresh")
+                            if isinstance(previous_report, dict) else None)
+        merge_report["refresh"] = previous_refresh or {
+            "reason": "rematch：原子边是多个 prompt 版本的混合（清洗路径的产物）",
+            "atom_prompt_versions": dict(versions)}
+        merge_report["refresh_prompt_version"] = PROMPT_VERSION
     # 第 2 段是**按窗口**分组，跨窗口的同 norm_key 会留下副本；§2.3 的去重键是
     # 全局的，所以这里再补一刀（实测 852 条边里有 144 条是副本）。
     merged, global_dedupe = dedupe_by_norm_key(merged)
@@ -1101,6 +1118,22 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     components = fingerprint_components(cards, _ExtractorStub(extractor))
     merged, merge_report = merge_edges(atoms, {str(card["id"]): card for card in cards},
                                        nodes_from_vocab())
+    #: `--rematch` 是"不重抽、只重跑第 2 段"，它建的是**全新**的 merge_report——
+    #: 清洗（`--replace-cards`）留下的 `refresh` 账会就此丢掉，manifest 于是
+    #: "混着多个 prompt 版本却没有任何清洗记录"（§4.1b 硬规则 2 禁止自报一个
+    #: 对不上的汇总；`tests/test_build_ledger.py` 当场抓到）。有旧账就续用，
+    #: 没有就如实造一条"重归并时发现原子边混版"的账。
+    versions = collections.Counter(
+        str((edge.extractor or {}).get("prompt_version") or "unknown") for edge in atoms)
+    if len(versions) > 1:
+        previous_report = (json.loads(REPORT.read_text(encoding="utf-8"))
+                           if REPORT.is_file() else {})
+        previous_refresh = ((previous_report.get("merge") or {}).get("refresh")
+                            if isinstance(previous_report, dict) else None)
+        merge_report["refresh"] = previous_refresh or {
+            "reason": "rematch：原子边是多个 prompt 版本的混合（清洗路径的产物）",
+            "atom_prompt_versions": dict(versions)}
+        merge_report["refresh_prompt_version"] = PROMPT_VERSION
     # 第 1 段的原子级拒收在上一次运行里已经落盘（重抽才会变），这里原样带回去；
     # 归并级拒收是本次重算出来的，所以只要 `phase != merge` 的那些。
     rejects = [row for row in

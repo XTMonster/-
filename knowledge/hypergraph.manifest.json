@@ -26,7 +26,7 @@
   "valid_unique": 738,
   "duplicates": 1801,
   "rejects": 0,
-  "atom_rejects": 1,
+  "atom_rejects": 0,
   "merge_rejects": 0,
   "atoms": 2846,
   "merge": {
@@ -41,6 +41,14 @@
     "max_arity": 5,
     "dropped_groups": [],
     "alternatives": 18,
+    "refresh": {
+      "reason": "rematch：原子边是多个 prompt 版本的混合（清洗路径的产物）",
+      "atom_prompt_versions": {
+        "extract/v10": 2692,
+        "extract/v11": 154
+      }
+    },
+    "refresh_prompt_version": "extract/v11",
     "before_dedupe": {
       "merged_edges": 2539,
       "forbid_members": 9,
