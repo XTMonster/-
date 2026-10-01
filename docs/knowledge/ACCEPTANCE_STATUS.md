@@ -232,3 +232,34 @@ Remove-Item -LiteralPath "$env:USERPROFILE\.ollama\models\blobs\sha256-b1da6f96a
 （`occ .14→.02`、`authority .05→0`，腾给 `coverage`/`precision`）：
 Q1 0.9341→**0.9428**、Q2 0.9967→**0.9971**、Q4 0.9513→**0.9702**、Q6b 0.9692→**0.9811**，
 四项同时变好，Q7 保持 1.0。
+
+### 9.9 schema v1.6：补上三块缺失的耦合，`forbid` 放宽到"有槽位就能禁"
+
+用户授权后的第一批质量改动，覆盖审查 #17（跨类负向知识表达不了）与 #18（缺三类边／两个孤儿节点）。
+
+**先测量再动手**：关键词扫 2113 张卡 → 台词交付 38 张、配乐/环境声 26 张、道具/环境 160 张；
+再用这些卡各跑一次**小规模试点抽取**（真实 `deepseek` 通道）→ 分别产出 9 / 4 / 2 条真边，
+没有硬塞。据此把 schema 从 13 类扩到 **16 类**：
+
+* `DIALOGUE_PACK`（台词怎么念：delivery × pacing × intensity）
+* `MUSIC_PACK`（配乐与环境声：music × pacing × intensity）
+* `PROP_PACK`（道具/环境 × 景别 × 机位）
+* 三个新 kind `delivery`/`music`/`prop` **一开始就收闭集**（各 3–5 个规范值 ＋ 别名）——
+  因为 `action` 放开后实测被话题名词污染（170/915 条），靠事后清洗才压下去。
+* 三个新查询键 `语气`/`配乐`/`道具`——没有查询键的 kind 挂不上种子（AXIS_RULE 踩过）。
+
+`forbid` 宿主由 `hypergraph._forbid_hosts()` **机械派生**（不是手抄 16 张表）：
+本类型里凡以 allow/qualifier 出现过的内容型 kind 自动获得 forbid 宿主；
+schema 常量永远不许当宿主。
+
+全库重抽（`extract/v8`）实测：
+
+| | v1.5（13 类） | v1.6（16 类） |
+|---|---|---|
+| 归并边 | 847 | 862 |
+| 新增三类边 | — | PROP 30 / DIALOGUE 23 / MUSIC 9 |
+| forbid 成员 | 113（**全在 EMOTION_PACK**） | 100，分布在 **9 类** |
+
+**代价（如实记）**：16 类摊同一份语料，每类分到的边变薄 → 门④ 短线从 2 类变成 4 类
+（`EDIT_RHYTHM` 3／`IMPACT_PACK` 22／`SOUND_PACK` 21／`MUSIC_PACK` 14），门⑥ 缺卡
+235 → 512。**下一步是补语料（增采来源），不是调门限。**
