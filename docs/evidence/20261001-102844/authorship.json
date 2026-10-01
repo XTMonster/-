@@ -1,0 +1,43 @@
+{
+  "generated_cards": 1981,
+  "external_cards": 1981,
+  "self_written_cards": 0,
+  "handwritten_engine_rules": 132,
+  "per_license": {
+    "PublicDomain": 1856,
+    "PersonalStudy": 65,
+    "CC-BY-NC-SA": 60
+  },
+  "per_domain": {
+    "anime": {
+      "他人著作": 141
+    },
+    "axis_theory": {
+      "他人著作": 184
+    },
+    "blocking": {
+      "他人著作": 294
+    },
+    "cinematography": {
+      "他人著作": 211
+    },
+    "composition": {
+      "他人著作": 254
+    },
+    "editing": {
+      "他人著作": 182
+    },
+    "performance": {
+      "他人著作": 276
+    },
+    "production": {
+      "他人著作": 212
+    },
+    "storyboard": {
+      "他人著作": 227
+    }
+  },
+  "self_written_examples": [],
+  "passed": true,
+  "note": "生成卡必须全部来自他人著作（http/https）；手写策展卡是本项目的实现规则，单独计数、不冒充理论"
+}
