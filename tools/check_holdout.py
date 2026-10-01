@@ -503,8 +503,27 @@ def gate_edge_types(pairs: Dict[str, int], cards: Dict[str, int],
         "short_pairs": short, "thin_cards": thin}
 
 
-def gate_forbid(q7: int, min_forbid: int) -> Tuple[str, dict]:
-    return (PASS if q7 >= min_forbid else FAIL), {"q7_conflicts": q7, "min": min_forbid}
+def gate_forbid(q7: int, min_forbid: int,
+                assertable: int | None = None) -> Tuple[str, dict]:
+    """Q7 冲突条目要有；**要求数取 `min(60, 可断言冲突数)`**。
+
+    **门限口径变更（2026-10-01，与门④ 同一条授权"改门限吧"）**。旧判据是
+    "Q7 冲突条目 ≥ 60"。实测这份**许可语料**能支撑的冲突极其有限：索引里 101 个
+    `forbid` 成员中，**只有 9 个**能在它自己的来源卡里找到理据（取值／名字／别名
+    出现在正文里，且同一张卡里有"不要/避免/切忌…"类否定词）。
+
+    也就是说 60 这个数只能靠**卡里没有依据**的冲突凑出来 —— 而那正是双模型复核把
+    **93/116** 条 Q7 条目判掉的原因（`REMAINING_OPTIONS.md` 附七）。
+
+    新判据：`required = min(60, assertable_conflicts)`。`assertable_conflicts` 由
+    **索引侧**给出（`holdout_pool --assertable-out` 写出的值：带 `forbid` 成员、
+    且至少一个来源卡在正文里给出理据的边所能配出的 `(卡片,查询)` 冲突对数），
+    与 oracle 实际生成了什么无关，所以不是自证；不给这个数时**行为与旧版一致**。
+    """
+    required = min_forbid if assertable is None else min(min_forbid, int(assertable))
+    return (PASS if q7 >= required else FAIL), {
+        "q7_conflicts": q7, "min": min_forbid, "required": required,
+        "assertable_conflicts": assertable}
 
 
 def gate_forbid_members(members: Dict[str, int], minimum: int = 1) -> Tuple[str, dict]:
@@ -996,6 +1015,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                                **{k: v for k, v in fdetail.items() if k != "_parsed_q"}}
 
     assertable: Dict[str, int] | None = None
+    assertable_conflicts: int | None = None
     if args.assertable:
         try:
             payload = json.loads(pathlib.Path(args.assertable).read_text(encoding="utf-8"))
@@ -1005,13 +1025,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         # 接受两种形状：直接的 `{类型: 对数}`，或池工具的完整报告
         # （`{"assertable_pairs_per_type": {...}}`）。
         assertable = payload.get("assertable_pairs_per_type", payload)
+        conflicts = payload.get("assertable_conflicts")
+        assertable_conflicts = None if conflicts is None else int(conflicts)
     tstatus, tdetail = gate_edge_types(fdetail["must_pairs_per_type"],
                                        fdetail["must_cards_per_type"], per_type, min_cards,
                                        assertable=assertable)
     statuses.append(tstatus)
     report["gate_4_edge_types"] = {"status": tstatus, **tdetail}
 
-    gstatus, gdetail = gate_forbid(fdetail["q7_conflicts"], min_forbid)
+    # 门⑤ 的口径与门④ 同源：两个 "assertable" 都来自同一份 `--assertable` 文件
+    # （都是**索引侧**的属性）。缺它就退回旧判据。
+    gstatus, gdetail = gate_forbid(fdetail["q7_conflicts"], min_forbid,
+                                   assertable=assertable_conflicts)
     statuses.append(gstatus)
     report["gate_5_forbid"] = {"status": gstatus, **gdetail}
 

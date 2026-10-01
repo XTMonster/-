@@ -205,6 +205,11 @@ def mechanical(graph, universe: Sequence[str], *,
     #: **由索引侧给出，与 oracle 实际生成了什么无关** —— 这是"每类至多要求它真能给的
     #: 那些对"这条新门限的输入（`check_holdout --assertable`）。
     assertable: Dict[str, int] = collections.Counter()
+    #: 门⑤ 的**可断言冲突数**：带 `forbid` 成员、且**至少一个来源卡在正文里给出理据**
+    #: （取值／名字／别名出现 ＋ 同一张卡有否定词）的 `(卡片, 查询)` 冲突对。
+    #: 实测这份语料只有 9/101 个 forbid 成员有理据，所以旧门限"≥60 条冲突"
+    #: 只能靠没有依据的冲突凑——那正是双模型复核把 93/116 条 Q7 判掉的原因。
+    grounded_conflicts = grounded_conflict_pairs(graph, universe)
     #: `(kind, value)` → 该取值出现过的 (edge_group, edge_index, card) 三元组。
     #: 补覆盖轮用它来找"还能换哪张卡"。
     holders: Dict[Tuple[str, str], List[Tuple[int, int]]] = collections.defaultdict(list)
@@ -293,11 +298,58 @@ def mechanical(graph, universe: Sequence[str], *,
                     break
     return entries, {"skipped": dict(skipped), "groups": len(ordered),
                      "assertable_pairs_per_type": dict(sorted(assertable.items())),
+                     "assertable_conflicts": grounded_conflicts,
                      "top_up_added": sum(topped.values()),
                      "top_up_by_kind": dict(topped),
                      "under_supported_values": sorted(
                          "%s=%s" % key for key, seen in support.items()
                          if len(seen) < MIN_VALUE_SUPPORT)}
+
+
+#: 否定词：卡里出现这些词，才认为"禁止某个取值"是**卡里写的**，不是抽取器编的。
+NEGATION_CUES = ("不要", "避免", "切忌", "禁忌", "禁用", "别用", "不宜", "不能", "不可",
+                 "禁止", "切勿", "杜绝", "avoid", "never", "don't", "do not",
+                 "should not", "must not")
+
+
+def grounded_conflict_pairs(graph, universe: Sequence[str]) -> int:
+    """门⑤ 的**可断言冲突数**：`forbid` 成员在**自己的来源卡**里找得到理据的那些对。
+
+    为什么要有这个数：实测 `knowledge/hypergraph.edges.jsonl` 里 101 个 `forbid` 成员中，
+    只有 **9 个**能在来源卡的正文里找到理据（取值／名字／别名出现 ＋ 同一张卡里有否定词）。
+    旧门限"Q7 冲突 ≥60 条"因此只能靠**卡里没有依据**的冲突凑出来 —— 双模型复核
+    （`tools/holdout_review_llm.py`）正是把这个批次里 **93/116** 条判了 rejected。
+
+    口径与门④ 的 `assertable_pairs_per_type` 同源：**只看索引与卡**，与 oracle 生成了
+    什么无关，所以拿它当门限不构成自证。
+    """
+    from block_director.knowledge.corpus import CARDS
+
+    by_id = {str(card.id): card for card in CARDS}
+    card_set = {str(c) for c in universe}
+    pairs = 0
+    for edge in graph.edges:
+        forbids = [m for m in edge.members if m.role == "forbid"]
+        if not forbids:
+            continue
+        for source in (edge.sources or ()):
+            card = by_id.get(str(source))
+            if card is None or str(source) not in card_set:
+                continue
+            text = " ".join([card.title or "", card.content or "",
+                             " ".join(card.keywords or []), " ".join(card.tags or [])])
+            if not any(cue in text for cue in NEGATION_CUES):
+                continue
+            for member in forbids:
+                node = graph.nodes.get(member.node_id)
+                names = {value_of(member.node_id)}
+                if node is not None:
+                    names |= {str(node.name or ""), str(node.value or "")}
+                    names |= {str(a) for a in (node.aliases or ())}
+                if {n for n in names if n and n in text}:
+                    pairs += 1
+                    break
+    return pairs
 
 
 def _q_pairs(text: str) -> List[Tuple[str, str]]:
@@ -489,7 +541,9 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
              resume: bool = True,
              only_values: Sequence[str] = (),
              only_cards: Sequence[str] = (),
-             only_types: Sequence[str] = ()) -> Tuple[List[dict], List[dict], Dict]:
+             only_types: Sequence[str] = (),
+             temperature: float = 0.0,
+             seed: int = 0) -> Tuple[List[dict], List[dict], Dict]:
     """用 GLM 为候选池里的每条边写 `q` 与 `never`；`must`/`top1` 由池固定。
 
     为什么把 `must` 固定：这正是"候选池标注"的定义（TREC pooling）——标注方判断
@@ -569,8 +623,13 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
             continue
         batch = items[start:start + batch_size]
         try:
+            # **缺口轮的取样必须与主轮不同**：主轮 `temperature=0.0, seed=0`
+            # （可复现优先），但缺口轮如果也照抄，"同一个被拒的组"会**逐字重放**
+            # ——实测 22 张卡的缺口轮连续两批 7 条全部被门② 以同一条理由拒收
+            # （`q` 与 `must` 的 `genre` 取值不一致），得分永远是 0。
+            # `holdout_fill` 早就为同一件事设过 `GAP_TEMPERATURE = 0.2`，这里补上。
             reply = client.chat_json(GLM_SYSTEM, build_glm_prompt(batch),
-                                     temperature=0.0, seed=0, num_ctx=8192)
+                                     temperature=temperature, seed=seed, num_ctx=8192)
         except Exception as exc:  # noqa: BLE001 - 单批失败不许打崩整轮
             rejects.append({"reason": "transport:%s" % type(exc).__name__,
                             "batch": start})
@@ -664,6 +723,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="**类型缺口补跑**：逗号分隔的边类型（如 `IMPACT_PACK`），"
                              "只把该类型的组喂给模型。用来补门④ —— 实测 `IMPACT_PACK` "
                              "可断言 22 对而 oracle 只交了 20 对，差两对时只有这一档能定位。")
+    parser.add_argument("--temperature", type=float, default=-1.0,
+                        help="推理温度。缺省 -1 = **自动**：主轮 0.0（可复现），"
+                             "任何缺口轮（`--only-*`）自动用 0.2 —— 否则被拒的组会逐字重放，"
+                             "补跑永远得 0 分（实测 22 张卡的缺口轮 7 条全被同一条理由拒收）。")
+    parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--limit", type=int, default=0, help="只生成前 N 条（自检用）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -690,6 +754,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             card_text = card_spec
         only_cards = [c.strip() for c in card_text.replace("\n", ",").split(",") if c.strip()]
         only_types = [t.strip() for t in args.only_types.split(",") if t.strip()]
+        is_gap = bool(only_values or only_cards or only_types)
+        temperature = (0.2 if is_gap else 0.0) if args.temperature < 0 else args.temperature
         raw, rejects, extra = glm_pass(graph, universe, client, vocab=vocab,
                                        batch_size=args.batch_size, limit=args.limit,
                                        partial_path=(args.partial or
@@ -698,7 +764,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                                                       str(ROOT / args.out) + ".progress.json"),
                                        resume=not args.no_resume,
                                        only_values=only_values, only_cards=only_cards,
-                                       only_types=only_types)
+                                       only_types=only_types,
+                                       temperature=temperature, seed=args.seed)
         entries, more = finalise(raw, graph, universe,
                                  model_id=client.model_id, family=client.family,
                                  model_version=client.model_version,
@@ -730,7 +797,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
             json.dumps({"assertable_pairs_per_type":
-                        stats.get("assertable_pairs_per_type", {})},
+                        stats.get("assertable_pairs_per_type", {}),
+                        "assertable_conflicts":
+                            stats.get("assertable_conflicts", 0)},
                        ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8", newline="\n")
     print(json.dumps({k: v for k, v in report.items() if k != "reject_examples"},

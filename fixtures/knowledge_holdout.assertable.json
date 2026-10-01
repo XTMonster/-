@@ -1,6 +1,6 @@
 {
   "assertable_pairs_per_type": {
-    "ACTION_BEAT": 345,
+    "ACTION_BEAT": 351,
     "AXIS_RULE": 64,
     "DIALOGUE_PACK": 78,
     "EDIT_RHYTHM": 316,
@@ -16,5 +16,6 @@
     "STAGING_PACK": 646,
     "TRANSITION_PACK": 90,
     "TROPE": 94
-  }
+  },
+  "assertable_conflicts": 9
 }
