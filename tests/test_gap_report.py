@@ -218,8 +218,23 @@ def test_the_cli_defaults_to_the_shipped_index_side_cap(tmp_path):
     assert code in (0, 1, 2)
     payload = json.loads(
         (tmp_path / "gaps" / "gap_report.json").read_text(encoding="utf-8"))
-    assert payload["types"] == [], payload["types"]
-    assert (tmp_path / "gaps" / "gap_types.txt").read_text(encoding="utf-8") == ""
+    # **与门④ 自己对拍**（不写死"必然为空"：oracle 换代之后可能真的短一类）。
+    # 缺省口径必须与链上那条命令（显式 `--assertable`）给出**同一张类型表**。
+    import subprocess
+
+    gates = tmp_path / "gates.json"
+    subprocess.run([sys.executable, "tools/check_holdout.py",
+                    "fixtures/knowledge_holdout.jsonl",
+                    "--vocab", "fixtures/knowledge_holdout.vocab.json",
+                    "--cards", "fixtures/knowledge_holdout.cards.json",
+                    "--assertable", "fixtures/knowledge_holdout.assertable.json",
+                    "--reviewer-classes", "human,llm-panel",
+                    "--json", "--out", str(gates)],
+                   cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8")
+    detail = json.loads(gates.read_text(encoding="utf-8"))["gate_4_edge_types"]
+    short = sorted((detail.get("short_pairs") or {}).keys())
+    assert payload["types"] == short, (payload["types"], short)
+    assert (tmp_path / "gaps" / "gap_types.txt").read_text(encoding="utf-8").split() == short
 
 
 def test_a_missing_assertable_file_warns_instead_of_failing_silently(tmp_path, capsys):

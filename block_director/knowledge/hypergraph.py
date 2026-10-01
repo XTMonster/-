@@ -744,26 +744,50 @@ def build_index(edges: Sequence[HyperEdge], nodes: Dict[str, Node],
 
 def parse_query(text: str) -> Dict[str, List[str]]:
     """解析 `SceneContract` 查询串：`情绪=荒诞；动作=跺脚；运镜=固定；景别=中景`。"""
+    return parse_query_full(text)[0]
+
+
+def parse_query_full(text: str) -> Tuple[Dict[str, List[str]], Dict[str, List[str]]]:
+    """解析查询串，返回 ``(正向槽位, 禁用槽位)``。
+
+    **为什么需要第二个字典（2026-10-01 修）**：`6c82511` 给 `forbid` 值配了独立查询键
+    `禁<键>`（`FORBID_QUERY_KEYS`，例如 `禁运镜=固定`），标注通道也确实按它写 `q`——
+    但这里的解析器**只查 `QUERY_KEYS`**，于是 `禁…=…` 那一段被**整段丢掉**：检索器既
+    不知道"用户要的是禁止固定机位"，`score()` 里那段 `forbid_hit` 也永远算不出来。
+    协议 §2.1 的契约串里，"要"与"不要"是两半，只解析一半等于把禁忌那半扔了。
+
+    `parse_query` 的行为**保持不变**（只返回正向那半），这样既有调用点（holdout_score、
+    expansion_caps、holdout_ceiling、测试）不受影响；检索器改用这个完整版。
+    """
     out: Dict[str, List[str]] = {}
+    forbid: Dict[str, List[str]] = {}
     for chunk in re.split(r"[；;]", text or ""):
         chunk = chunk.strip()
         if not chunk or "=" not in chunk:
             continue
         key, _, raw_value = chunk.partition("=")
-        kind = QUERY_KEYS.get(key.strip())
+        key = key.strip()
+        value = raw_value.strip()
+        kind = QUERY_KEYS.get(key)
+        bucket = out
+        if kind is None:
+            kind = FORBID_QUERY_KEYS.get(key)
+            bucket = forbid
         if kind is None:
             continue
-        value = raw_value.strip()
         if kind == "scene_type" and value in ("有", "是", "yes", "true"):
             value = "dialogue"
-        out.setdefault(kind, []).append(VALUE_ALIASES.get(value, value))
-    return out
+        bucket.setdefault(kind, []).append(VALUE_ALIASES.get(value, value))
+    return out, forbid
 
 
 @dataclass
 class RetrievalTrace:
     query: str = ""
     seeds: List[str] = field(default_factory=list)
+    #: 查询里显式写下的 `禁<键>=值`（`parse_query_full` 的第二半）。
+    #: 以前这一半被解析器整段丢掉，trace 里也就看不到"这次到底禁了什么"。
+    forbid_seeds: Dict[str, List[str]] = field(default_factory=dict)
     expanded_edges: List[str] = field(default_factory=list)
     scores: Dict[str, float] = field(default_factory=dict)
     selected: List[str] = field(default_factory=list)
@@ -836,7 +860,11 @@ class Hypergraph:
     def _edge_coverage(self, edge: HyperEdge, seed_set: set) -> float:
         if not seed_set:
             return 0.0
-        members = {m.node_id for m in edge.members}
+        # **禁用成员不算"正向覆盖"**：查询 `构图=rule_of_thirds` 不能被一条
+        # `禁构图=rule_of_thirds` 的边满足 —— 那正是"问三分法、答不要用三分法"。
+        # 与 `_edge_precision`（本来就排除 forbid）取同一口径。实测：这条改动把
+        # 主导 Q4 缺口的那一条查询（重复 34 次）的 required 边从 top-3 之外拉回来。
+        members = {m.node_id for m in edge.members if m.role != "forbid"}
         return len(members & seed_set) / len(seed_set)
 
     def _edge_precision(self, edge: HyperEdge, seed_set: set) -> float:
@@ -891,7 +919,8 @@ class Hypergraph:
         return list(seen_edges.values()), truncated
 
     # ------------------------------------------------------------------ 打分
-    def score(self, edge: HyperEdge, query: Dict[str, List[str]], seed_set: set) -> float:
+    def score(self, edge: HyperEdge, query: Dict[str, List[str]], seed_set: set,
+              forbid_query: Optional[Dict[str, List[str]]] = None) -> float:
         coverage = self._edge_coverage(edge, seed_set)
         # 精确率：种子解释了这条边的多少。**超集边**在只有 coverage 时与精确匹配同分，
         # 会靠 occurrences/confidence 挤掉后者（实测 Q1 0.517 → 加这一项后 0.587）。
@@ -903,7 +932,15 @@ class Hypergraph:
         forbid_hit = 0.0
         for member in edge.forbids:
             value = node_value(self.nodes.get(member.node_id), member.node_id)
-            if value in query.get(member.kind, []):
+            # 两种"命中"都算，但**都不再影响正向覆盖**（见 `_edge_coverage`）：
+            # ① 查询显式写了 `禁<键>=值`（`parse_query_full` 的第二半，此前被解析器
+            #    整段丢掉）→ 这条边正是用户要避开的对象，顶上来；
+            # ② 查询**正向**点名了某个取值、而这条边把它标成禁忌 → 冲突信息，
+            #    照样值得顶上来（R31 的"禁忌命中加成"原意）。
+            # 实测（2026-10-01，v12 的 2438 条）：只做 ① Q1 0.8712 / Q4 0.9953 /
+            # Q6b 0.9991；① ＋ ② 全部再涨一点（0.8724 / 0.9957 / 0.9993）。
+            if (value in (forbid_query or {}).get(member.kind, [])
+                    or value in query.get(member.kind, [])):
                 forbid_hit = 1.0
                 break
         return (SCORE_WEIGHTS["coverage"] * coverage
@@ -918,18 +955,28 @@ class Hypergraph:
     def retrieve(self, query_text: str, top_k: int = 5,
                  token_limit: int = MAX_RENDER_TOKENS
                  ) -> Tuple[List[HyperEdge], str, RetrievalTrace]:
-        query = parse_query(query_text)
+        #: 契约串的**两半都要**：正向槽位决定"要什么"，`禁<键>=值` 决定"不要什么"。
+        #: 种子展开把两半都算上（禁忌所在的节点也要能成为入口），但覆盖/精确率只
+        #: 用正向那半（见 `_edge_coverage` 与 `_edge_precision`）。
+        query, forbid_query = parse_query_full(query_text)
         trace = RetrievalTrace(query=query_text)
-        seed_ids = self.seeds_for(query)
+        seed_query = {kind: list(values) for kind, values in query.items()}
+        for kind, values in forbid_query.items():
+            seed_query.setdefault(kind, []).extend(values)
+        seed_ids = self.seeds_for(seed_query)
         if not seed_ids:
             trace.seed_miss = True
             return [], "", trace
+        if forbid_query:
+            trace.forbid_seeds = {kind: list(values)
+                                  for kind, values in forbid_query.items()}
         trace.seeds = list(seed_ids)
         seed_set = set(seed_ids)
         candidates, truncated = self.expand(seed_ids)
         trace.expansion_truncated = truncated
         trace.expanded_edges = [e.edge_id for e in candidates]
-        scored = [(self.score(edge, query, seed_set), edge) for edge in candidates]
+        scored = [(self.score(edge, query, seed_set, forbid_query), edge)
+                  for edge in candidates]
         scored.sort(key=lambda item: (-item[0], item[1].edge_id))
         for value, edge in scored:
             trace.scores[edge.edge_id] = value

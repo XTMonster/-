@@ -84,3 +84,91 @@ def test_intensity_key_makes_sibling_edges_distinguishable():
                                              token_limit=10 ** 6)
     # 两条边只差强度：点名 low 时 low 必须在前，mid 只能排第二（这就是"能区分"）。
     assert [edge.edge_id for edge in selected] == [low.edge_id, mid.edge_id]
+
+
+# --------------------------------------------------------------------------- #
+# 契约串的**两半**：正向槽位与 `禁<键>`（2026-10-01 修）
+# --------------------------------------------------------------------------- #
+def _staging(composition: str, *, role: str) -> hg.HyperEdge:
+    return hg.HyperEdge(
+        type="STAGING_PACK",
+        members=(hg.Member(role, "composition_rule", f"composition_rule:{composition}"),
+                 hg.Member("allow", "shot_size", "shot_size:MS"),
+                 hg.Member("qualifier", "camera_angle", "camera_angle:平视")),
+        source_kind="theory", hardness="hard", occurrences=1, confidence=0.7,
+        confidence_max=0.7, sources=("card_1",),
+        source_span={"chunk_id": "c1", "start": 0, "end": 4},
+        extractor={"prompt_version": "test"}, provenance_kind="生成卡片")
+
+
+def test_parse_query_full_keeps_the_forbid_half_that_used_to_be_dropped():
+    """`禁<键>=值` 必须被解析出来——此前它被 `parse_query` **整段丢掉**。
+
+    `6c82511` 给 forbid 值配了独立查询键（`禁运镜=固定`），标注通道照它写 `q`，
+    但解析器只查 `QUERY_KEYS`，于是"不要什么"这半从来没进过检索器：种子不含那个
+    取值、`score()` 的禁忌项也永远算不出来。`parse_query` 的**公开行为不变**
+    （只回正向半），新加的 `parse_query_full` 回两半。
+    """
+    plain, forbid = hg.parse_query_full("情绪=压抑；强度=high；禁运镜=固定")
+    assert plain == {"emotion": ["压抑"], "intensity": ["high"]}
+    assert forbid == {"movement": ["固定"]}
+    # 老函数不变（既有调用点不受影响）
+    assert hg.parse_query("情绪=压抑；禁运镜=固定") == {"emotion": ["压抑"]}
+    # 别名在禁用半同样生效
+    assert hg.parse_query_full("禁景别=特写")[1] == {"shot_size": ["CU"]}
+
+
+def test_a_forbidden_value_never_counts_as_positive_coverage():
+    """**问"三分法"不能被"不要用三分法"的边满足**——禁用成员不算正向覆盖。
+
+    实测（v12 的 2438 条 oracle）：主导 Q4 缺口的那条查询
+    `构图=rule_of_thirds；景别=MS；机位=平视` 重复 34 次，required 边输给三条
+    "把 rule_of_thirds 标成 forbid"的 STAGING_PACK —— 因为 `_edge_coverage`
+    把 **forbid 成员也算成覆盖**。修掉之后那条查询的 required 边在真实索引里
+    排到 **第 1**（0.7329 vs 被禁边的 0.6598），全量 Q1 0.797→0.872、Q4 缺失 55→12。
+
+    这里断言的是**不变量本身**（覆盖口径），不是"谁排第一"：查询里**正向**点名
+    的取值，只有当它出现在 allow/qualifier 槽位上时才算覆盖；`禁<键>=值` 那半
+    走 `forbid_hit`（见 `test_an_explicit_forbid_seed_pulls_the_forbidding_edge_up`）。
+    """
+    want = _staging("rule_of_thirds", role="qualifier")
+    forbidding = _staging("rule_of_thirds", role="forbid")
+    other = _staging("balance", role="qualifier")
+    nodes = [hg.Node(node_id="composition_rule:rule_of_thirds",
+                     type="composition_rule", name="rule_of_thirds", value="rule_of_thirds"),
+             hg.Node(node_id="composition_rule:balance", type="composition_rule",
+                     name="balance", value="balance"),
+             hg.Node(node_id="shot_size:MS", type="shot_size", name="MS", value="MS"),
+             hg.Node(node_id="camera_angle:平视", type="camera_angle", name="平视", value="平视")]
+    graph = hg.Hypergraph(nodes, [want, forbidding, other])
+    query, forbid = hg.parse_query_full("构图=rule_of_thirds；景别=MS；机位=平视")
+    seeds = set(graph.seeds_for(query))
+    assert seeds == {"composition_rule:rule_of_thirds", "shot_size:MS",
+                     "camera_angle:平视"}
+    # 正向覆盖：allow/qualifier 那 3 个槽位都命中 = 1.0；被禁的那条只有 2/3。
+    assert graph._edge_coverage(want, seeds) == 1.0
+    assert abs(graph._edge_coverage(forbidding, seeds) - 2 / 3) < 1e-9
+    # 而"另一条完全不同的构图规则"完全不覆盖 rule_of_thirds（2/3 也一样）。
+    assert abs(graph._edge_coverage(other, seeds) - 2 / 3) < 1e-9
+
+
+def test_an_explicit_forbid_seed_pulls_the_forbidding_edge_up():
+    """反向：查询写 `禁构图=occlusion` 时，**带这条禁忌的边**要能被点名。
+
+    它靠两件事：`parse_query_full` 把禁用语义带出来（`trace.forbid_seeds`），
+    以及 `forbid_hit` 认得它。
+    """
+    forbidding = _staging("occlusion", role="forbid")
+    other = _staging("balance", role="qualifier")
+    nodes = [hg.Node(node_id="composition_rule:occlusion", type="composition_rule",
+                     name="occlusion", value="occlusion"),
+             hg.Node(node_id="composition_rule:balance", type="composition_rule",
+                     name="balance", value="balance"),
+             hg.Node(node_id="shot_size:MS", type="shot_size", name="MS", value="MS"),
+             hg.Node(node_id="camera_angle:平视", type="camera_angle", name="平视", value="平视")]
+    graph = hg.Hypergraph(nodes, [forbidding, other])
+    text = "构图=balance；景别=MS；机位=平视；禁构图=occlusion"
+    selected, rendered, trace = graph.retrieve(text, top_k=3, token_limit=10 ** 6)
+    assert trace.forbid_seeds == {"composition_rule": ["occlusion"]}
+    assert selected and selected[0].edge_id == forbidding.edge_id
+    assert "禁=" in rendered
