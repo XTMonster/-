@@ -280,6 +280,29 @@ def test_seed_and_temperature_reach_the_upstream_body():
     assert sidecar._openai_body(config, {"messages": [], "seed": 7})["seed"] == 7
 
 
+def test_a_cloud_upstream_gets_the_authorization_header_from_an_env_var(monkeypatch):
+    """云端 OpenAI 兼容上游（智谱 GLM 等）必须带 `Authorization`。
+
+    §4.4 步骤 2 的 sidecar 命令原先指向本机 Ollama（不需要鉴权）；用户裁决
+    "别用本地模型了" 之后上游换成 GLM，缺这个头就 401、真实模型通路跑不起来，
+    Q5/E2 只能一直记 `not_measured`。密钥**只从环境变量读**，不进仓库、不进日志。
+    """
+    monkeypatch.setenv("BD_TEST_UPSTREAM_KEY", "sk-test-123")
+    args = sidecar.parse_args(["--upstream", "https://open.bigmodel.cn/api/paas/v4",
+                               "--upstream-api-key-env", "BD_TEST_UPSTREAM_KEY"])
+    config = sidecar.SidecarConfig(args)
+    assert sidecar._upstream_headers(config) == {"Authorization": "Bearer sk-test-123"}
+
+    # 正对照 1：本地 Ollama 不给这个开关 → 不带鉴权头（别给本地端点乱发密钥）。
+    plain = sidecar.SidecarConfig(sidecar.parse_args([]))
+    assert sidecar._upstream_headers(plain) == {}
+    # 正对照 2：环境变量名给了但为空 → **当场失败**，不许静默跑一个必 401 的上游。
+    monkeypatch.delenv("BD_TEST_UPSTREAM_KEY", raising=False)
+    with pytest.raises(SystemExit):
+        sidecar.SidecarConfig(sidecar.parse_args(
+            ["--upstream-api-key-env", "BD_TEST_UPSTREAM_KEY"]))
+
+
 def test_repo_index_is_loadable_by_the_sidecar():
     """仓库自带的索引必须真能被 sidecar 装配（否则 P14-2 的产物是死数据）。"""
     graph = sidecar.load_hypergraph_index(ROOT / "knowledge")

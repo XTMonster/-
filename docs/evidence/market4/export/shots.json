@@ -1,0 +1,433 @@
+{
+  "project": "BlockDirector",
+  "fps": 24,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "style": "写实电影质感，35mm，柔和自然光",
+  "generated_at": "2026-10-02T02:04:48+08:00",
+  "scene_heading": "【第十四街区码头市场 - 午后】",
+  "total_frames": 792,
+  "llm_calls": 30,
+  "retrieval_calls": 8,
+  "crowd": {
+    "entries": [],
+    "total": 0
+  },
+  "timing_overrides": [],
+  "action_conflicts": [],
+  "dialogue_pins": [
+    {
+      "shot_number": 2,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 3,
+      "speaker_raw": "伊恩",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 4,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 1.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 4,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 4.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 6,
+      "speaker_raw": "偷盗者",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 6,
+      "speaker_raw": "偷盗者",
+      "speaker_status": "resolved",
+      "declared_s": 4.0,
+      "model_text": "",
+      "applied_s": null
+    }
+  ],
+  "audit_pass_rate": {
+    "numerator": 0,
+    "denominator": 0,
+    "rules": [],
+    "sampled_frames": 0,
+    "exempt_shots": []
+  },
+  "shots": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "intent": "建立场景，用微风打破宁静，铺垫即将发生的冲突",
+      "shot_type": "MCU",
+      "start_frame": 1,
+      "end_frame": 120,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_001.mp4",
+      "first_frame": "first_frames/shot_001.png",
+      "camera": {
+        "name": "BD_Cam_shot_001",
+        "position": [
+          0.0,
+          2.895,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 1,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {},
+      "movements": [
+        {
+          "kind": "fixed",
+          "start_frame": 1,
+          "end_frame": 120,
+          "source": "planned"
+        }
+      ]
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "intent": "建立米迦尔的角色性格，引出战斗",
+      "shot_type": "CU",
+      "start_frame": 121,
+      "end_frame": 264,
+      "duration_frames": 144,
+      "duration_seconds": 6.0,
+      "video_file": "blockout_shot_002.mp4",
+      "first_frame": "first_frames/shot_002.png",
+      "camera": {
+        "name": "BD_Cam_shot_002",
+        "position": [
+          1.1,
+          4.429,
+          1.278
+        ],
+        "lens": 85.0
+      },
+      "characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "dialogue_ids": [
+        "dialogue_002"
+      ],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 2,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 1.7381,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        },
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.8432,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "dolly_in",
+          "start_frame": 1,
+          "end_frame": 144,
+          "source": "theory"
+        }
+      ]
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "intent": "表现两人的搭档关系",
+      "shot_type": "MCU",
+      "start_frame": 265,
+      "end_frame": 360,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_003.mp4",
+      "first_frame": "first_frames/shot_003.png",
+      "camera": {
+        "name": "BD_Cam_shot_003",
+        "position": [
+          2.2,
+          2.895,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "伊恩"
+      ],
+      "dialogue_ids": [
+        "dialogue_003"
+      ],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 3,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.8432,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": []
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "intent": "铺垫米迦尔即将施法，暗示魔法即将出现",
+      "shot_type": "CU",
+      "start_frame": 361,
+      "end_frame": 504,
+      "duration_frames": 144,
+      "duration_seconds": 6.0,
+      "video_file": "blockout_shot_004.mp4",
+      "first_frame": "first_frames/shot_004.png",
+      "camera": {
+        "name": "BD_Cam_shot_004",
+        "position": [
+          1.1,
+          4.429,
+          1.278
+        ],
+        "lens": 85.0
+      },
+      "characters": [
+        "米迦尔"
+      ],
+      "dialogue_ids": [
+        "dialogue_004",
+        "dialogue_005"
+      ],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 4,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 1.7381,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": []
+    },
+    {
+      "shot_id": "shot_005",
+      "order": 5,
+      "intent": "展示米迦尔的魔法第一次生效，制造悬念",
+      "shot_type": "MS",
+      "start_frame": 505,
+      "end_frame": 624,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_005.mp4",
+      "first_frame": "first_frames/shot_005.png",
+      "camera": {
+        "name": "BD_Cam_shot_005",
+        "position": [
+          1.1,
+          -7.832,
+          0.95
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "偷盗者"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 5,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 1.726,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "follow_subject",
+          "start_frame": 1,
+          "end_frame": 120,
+          "source": "theory"
+        }
+      ]
+    },
+    {
+      "shot_id": "shot_006",
+      "order": 6,
+      "intent": "制造喜剧反转",
+      "shot_type": "MCU",
+      "start_frame": 625,
+      "end_frame": 792,
+      "duration_frames": 168,
+      "duration_seconds": 7.0,
+      "video_file": "blockout_shot_006.mp4",
+      "first_frame": "first_frames/shot_006.png",
+      "camera": {
+        "name": "BD_Cam_shot_006",
+        "position": [
+          1.1,
+          -6.095,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "偷盗者"
+      ],
+      "dialogue_ids": [
+        "dialogue_006",
+        "dialogue_007"
+      ],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 6,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null
+      },
+      "labels": {
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 1.726,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "dolly_in",
+          "start_frame": 1,
+          "end_frame": 168,
+          "source": "experience"
+        }
+      ]
+    }
+  ]
+}

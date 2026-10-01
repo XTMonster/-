@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import threading
 import urllib.error
@@ -80,6 +81,16 @@ class SidecarConfig:
         self.temperature = args.temperature
         self.seed = args.seed
         self.token = args.token
+        #: 上游 API 密钥**只从环境变量读**（`--upstream-api-key-env` 给变量名）：
+        #: 云端 OpenAI 兼容端点（智谱 GLM 等）必须带 `Authorization: Bearer <key>`，
+        #: 而本地 Ollama 不需要。密钥绝不写进仓库，也不进日志。
+        self.upstream_api_key = ""
+        key_env = str(getattr(args, "upstream_api_key_env", "") or "").strip()
+        if key_env:
+            self.upstream_api_key = os.environ.get(key_env, "")
+            if not self.upstream_api_key:
+                raise SystemExit(
+                    "环境变量 %s 为空：云端上游需要它来带 Authorization 头" % key_env)
         self.timeout = args.timeout
         self.knowledge_dir = Path(args.knowledge_dir)
         self.cases_backend = args.cases_backend
@@ -228,9 +239,23 @@ def _openai_reply(data: Dict[str, Any]) -> ChatReply:
     return parse_chat_response(data)
 
 
+def _upstream_headers(config: "SidecarConfig") -> Dict[str, str]:
+    """云端上游的鉴权头。
+
+    §4.4 步骤 2 的 sidecar 命令此前指向本机 Ollama，所以不需要鉴权；用户裁决
+    "别用本地模型了" 之后上游换成智谱 GLM 这类 OpenAI 兼容端点，**必须**带
+    `Authorization: Bearer <key>`，否则上游回 401、整条真实模型通路跑不起来
+    （Q5/E2 就只能一直记 `not_measured`）。密钥由 `--upstream-api-key-env` 指名的
+    环境变量提供：不进仓库、不进日志、不进 `knowledge_trace`。
+    """
+    key = str(getattr(config, "upstream_api_key", "") or "")
+    return {"Authorization": f"Bearer {key}"} if key else {}
+
+
 def call_upstream(config: "SidecarConfig", payload: Dict[str, Any]
                   ) -> ChatReply:
     """把插件侧的请求转发给上游模型。"""
+
     if config.kind == "ollama":
         status, text = _post_json(f"{config.upstream}/api/chat",
                                   _ollama_body(config, payload),
@@ -241,7 +266,8 @@ def call_upstream(config: "SidecarConfig", payload: Dict[str, Any]
                                  body=text[:2000])
         return _ollama_reply(json.loads(text))
     status, text = _post_json(f"{config.upstream}/chat/completions",
-                              _openai_body(config, payload), config.timeout)
+                              _openai_body(config, payload), config.timeout,
+                              _upstream_headers(config))
     if not 200 <= status < 300:
         raise TransportError(_code_for(status), f"上游返回 {status}",
                              http_status=status, body=text[:2000])
@@ -435,6 +461,10 @@ def parse_args(argv):
     parser.add_argument("--cases-backend", choices=CASE_LANES, default="lightrag",
                         help="L3 案例通道（§2.3b）；lightrag 不可用时降级 hybrid")
     parser.add_argument("--token", default="")
+    parser.add_argument("--upstream-api-key-env", default="",
+                        help="上游 API 密钥所在的**环境变量名**（不传密钥本身）。"
+                             "云端 OpenAI 兼容端点（智谱 GLM 等）必须给；"
+                             "本地 Ollama 留空。密钥不进仓库、不进日志。")
     parser.add_argument("--timeout", type=float, default=600.0)
     parser.add_argument("--once", action="store_true",
                         help="处理一个请求后退出（测试用）")

@@ -1,0 +1,1014 @@
+{
+  "name": "【第十四街区码头市场 - 午后】",
+  "version": "1.4",
+  "fps": 24,
+  "characters": [
+    {
+      "id": "米迦尔",
+      "name": "米迦尔",
+      "color": "#FF6B6B",
+      "initial_location": [
+        1.1,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "id": "伊恩",
+      "name": "伊恩",
+      "color": "#6BC5FF",
+      "initial_location": [
+        2.2,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "id": "偷盗者",
+      "name": "偷盗者",
+      "color": "#FFD166",
+      "initial_location": [
+        1.1,
+        -3.2,
+        0.0
+      ],
+      "initial_facing": [
+        0.0,
+        -1.0,
+        0.0
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene_001",
+      "number": 1,
+      "heading": "【第十四街区码头市场 - 午后】",
+      "environment": {
+        "ground_size": [
+          120.0,
+          120.0
+        ],
+        "walls": [],
+        "props": [],
+        "lighting": "clay_studio",
+        "room": null,
+        "crowd": []
+      },
+      "shots": [
+        {
+          "id": "shot_001",
+          "intent": "建立场景，用微风打破宁静，铺垫即将发生的冲突",
+          "shot_type": "MCU",
+          "duration_frames": 120,
+          "start_frame": 1,
+          "end_frame": 120,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_001",
+            "position": [
+              0.0,
+              2.895,
+              1.231
+            ],
+            "target": [
+              0.0,
+              0.0,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "fixed",
+            "movements": [
+              {
+                "type": "fixed",
+                "amount": 0
+              }
+            ],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [],
+          "characters": [],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [],
+          "vfx": [],
+          "prompt": "第十四街区码头市场，午后暖侧光，宁静的氛围。MCU景别，50mm镜头。画面中央是一个略显空旷的摊位区域，几片树叶在微风中轻轻摇曳，空气中浮动着细小的尘埃，远处隐约可见市场的轮廓。光影斑驳，营造出一种即将被打破的平静感。"
+        },
+        {
+          "id": "shot_002",
+          "intent": "建立米迦尔的角色性格，引出战斗",
+          "shot_type": "CU",
+          "duration_frames": 144,
+          "start_frame": 121,
+          "end_frame": 264,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_002",
+            "position": [
+              1.1,
+              4.429,
+              1.278
+            ],
+            "target": [
+              1.1,
+              0.0,
+              1.278
+            ],
+            "lens": 85.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in"
+              }
+            ],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "伊恩，这里就交给我吧！",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            }
+          ],
+          "vfx": [],
+          "prompt": ""
+        },
+        {
+          "id": "shot_003",
+          "intent": "表现两人的搭档关系",
+          "shot_type": "MCU",
+          "duration_frames": 96,
+          "start_frame": 265,
+          "end_frame": 360,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_003",
+            "position": [
+              2.2,
+              2.895,
+              1.231
+            ],
+            "target": [
+              2.2,
+              0.0,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "speaker_raw": "伊恩",
+              "speaker_status": "resolved",
+              "text": "好的，那你多小心一些。",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": ""
+        },
+        {
+          "id": "shot_004",
+          "intent": "铺垫米迦尔即将施法，暗示魔法即将出现",
+          "shot_type": "CU",
+          "duration_frames": 144,
+          "start_frame": 361,
+          "end_frame": 504,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_004",
+            "position": [
+              1.1,
+              4.429,
+              1.278
+            ],
+            "target": [
+              1.1,
+              0.0,
+              1.278
+            ],
+            "lens": 85.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "放心吧。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "看我怎么惩罚他，让他砰的一声，嘻嘻。",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "prompt": ""
+        },
+        {
+          "id": "shot_005",
+          "intent": "展示米迦尔的魔法第一次生效，制造悬念",
+          "shot_type": "MS",
+          "duration_frames": 120,
+          "start_frame": 505,
+          "end_frame": 624,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_005",
+            "position": [
+              1.1,
+              -7.832,
+              0.95
+            ],
+            "target": [
+              1.1,
+              -3.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "follow_subject",
+            "movements": [
+              {
+                "type": "follow_subject"
+              }
+            ],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "偷盗者"
+          ],
+          "characters": [
+            "偷盗者"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "偷盗者",
+              "to": "手心"
+            }
+          ],
+          "vfx": [],
+          "prompt": ""
+        },
+        {
+          "id": "shot_006",
+          "intent": "制造喜剧反转",
+          "shot_type": "MCU",
+          "duration_frames": 168,
+          "start_frame": 625,
+          "end_frame": 792,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_006",
+            "position": [
+              1.1,
+              -6.095,
+              1.231
+            ],
+            "target": [
+              1.1,
+              -3.2,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 20,
+                "start_frame": 1,
+                "end_frame": 168
+              }
+            ],
+            "request": {
+              "lens": 50,
+              "side": "front"
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "偷盗者"
+          ],
+          "characters": [
+            "偷盗者"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "偷盗者",
+              "speaker_raw": "偷盗者",
+              "speaker_status": "resolved",
+              "text": "怎么回事，不应该只是普通的银币么？",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "偷盗者",
+              "speaker_raw": "偷盗者",
+              "speaker_status": "resolved",
+              "text": "哈哈，一定是命运眷顾，我发财了！",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [
+            {
+              "from": "偷盗者",
+              "to": "金子"
+            }
+          ],
+          "vfx": [],
+          "prompt": "偷盗者打开一个破旧的袋子，发现里面不是普通的银币，而是满满一袋金灿灿的金币。偷盗者先是愣住，然后眼睛发亮，突然兴奋地跳起来，双手举着金币狂笑。MCU景别，聚焦偷盗者的面部表情和上肢动作，50mm镜头。"
+        }
+      ]
+    }
+  ],
+  "continuity": {
+    "axis_note": [
+      "遵循 180° 轴线规则：镜号2-3-4 两人对话时保持同一轴线，米迦尔在左，伊恩在右",
+      "镜号5-6 偷盗者从画面一侧跑入，镜头跟随（follow_subject）后切换至偷盗者中景，保持银幕方向一致",
+      "镜号4 CU 米迦尔面部，镜号5 MS 偷盗者全身，景别变化一档（CU→MS），符合 30° 规则",
+      "镜号5-6 偷盗者手心银币变金，需确保道具位置与光线变化在两镜间连贯",
+      "所有镜头均保持暖侧光氛围，镜号2-4 两人对话时保持侧光角度一致"
+    ],
+    "character_pose": {
+      "米迦尔": {
+        "position": [
+          1.1,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          0.0,
+          1.0,
+          0.0
+        ]
+      },
+      "伊恩": {
+        "position": [
+          2.2,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          0.0,
+          1.0,
+          0.0
+        ]
+      },
+      "偷盗者": {
+        "position": [
+          1.1,
+          -3.2,
+          0.0
+        ],
+        "facing": [
+          0.0,
+          -1.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "warnings": [
+    "shot_001: 运镜声明无效（未知运镜 'fixed'。可用: dolly_in, dolly_out, track_left, track_right, crane_up, crane_down, push_through, dolly_zoom, pan_left, pan_right, tilt_up, tilt_down, whip_pan_left, whip_pan_right, orbit_cw, orbit_ccw, crane_arc_up, crane_arc_down, zoom_in, zoom_out, handheld, steadicam, follow_subject, lead_subject），已跳过"
+  ],
+  "brief": {
+    "speakers": [
+      {
+        "speaker": "米迦尔",
+        "listener": "伊恩",
+        "dialogue_ref": "台词2"
+      },
+      {
+        "speaker": "伊恩",
+        "listener": "米迦尔",
+        "dialogue_ref": "台词3"
+      },
+      {
+        "speaker": "米迦尔",
+        "listener": "偷盗者",
+        "dialogue_ref": "台词4"
+      },
+      {
+        "speaker": "偷盗者",
+        "listener": "",
+        "dialogue_ref": "台词6"
+      }
+    ],
+    "gaze": [
+      {
+        "from": "米迦尔",
+        "to": "伊恩",
+        "scope": "镜号2"
+      },
+      {
+        "from": "伊恩",
+        "to": "米迦尔",
+        "scope": "镜号3"
+      },
+      {
+        "from": "偷盗者",
+        "to": "手心",
+        "scope": "镜号5"
+      },
+      {
+        "from": "偷盗者",
+        "to": "金子",
+        "scope": "镜号6"
+      }
+    ],
+    "beats": [
+      {
+        "id": "1",
+        "summary": "市场静场，微风打破宁静，营造暴风雨前的平静氛围",
+        "participants": [
+          "背景路人"
+        ],
+        "emotion": "宁静",
+        "function": "建立场景"
+      },
+      {
+        "id": "2",
+        "summary": "米迦尔自信请战，伊恩表示信任与关心",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "自信、信任",
+        "function": "建立角色关系"
+      },
+      {
+        "id": "3",
+        "summary": "米迦尔施法准备，调皮自信",
+        "participants": [
+          "米迦尔"
+        ],
+        "emotion": "调皮、自信",
+        "function": "铺垫"
+      },
+      {
+        "id": "4",
+        "summary": "偷盗者奔跑中银币变金，制造悬念",
+        "participants": [
+          "偷盗者"
+        ],
+        "emotion": "疑惑、惊讶",
+        "function": "转折"
+      },
+      {
+        "id": "5",
+        "summary": "偷盗者发现金子，狂喜大笑，喜剧反转",
+        "participants": [
+          "偷盗者"
+        ],
+        "emotion": "狂喜、荒诞",
+        "function": "收束"
+      }
+    ],
+    "space": [
+      {
+        "character": "米迦尔",
+        "relative_to": "伊恩",
+        "relation": "side_by_side",
+        "distance_class": "personal"
+      },
+      {
+        "character": "伊恩",
+        "relative_to": "米迦尔",
+        "relation": "side_by_side",
+        "distance_class": "personal"
+      },
+      {
+        "character": "偷盗者",
+        "relative_to": "米迦尔",
+        "relation": "apart",
+        "distance_class": "public"
+      }
+    ],
+    "arc": {
+      "emotion_start": "宁静",
+      "emotion_end": "狂喜荒诞",
+      "turning_point": "银币变金"
+    },
+    "props": [
+      {
+        "id": "银币",
+        "kind": "道具",
+        "owner": "偷盗者",
+        "state_changes": [
+          "银色 → 金色"
+        ]
+      },
+      {
+        "id": "钱袋",
+        "kind": "道具",
+        "owner": "偷盗者",
+        "state_changes": []
+      }
+    ],
+    "notes": [
+      "偷盗者与米迦尔的关系未明确说明，可能是目标/敌人关系",
+      "米迦尔对偷盗者说",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1"
+    ],
+    "source": "llm"
+  },
+  "with_labels": true,
+  "saved_at": "2026-10-02T02:04:00+08:00"
+}
