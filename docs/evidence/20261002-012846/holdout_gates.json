@@ -1,0 +1,219 @@
+{
+  "path": "fixtures\\knowledge_holdout.jsonl",
+  "pilot": false,
+  "gate_1_total": {
+    "status": "pass",
+    "entries": 2840,
+    "entries_pilot": 0,
+    "min_entries": 1200
+  },
+  "gate_2_format": {
+    "status": "pass",
+    "entries": 2840,
+    "valid": 2840,
+    "problems": [],
+    "problem_count": 0,
+    "q7_conflicts": 5,
+    "must_pairs_per_type": {
+      "EMOTION_PACK": 156,
+      "SHOT_PATTERN": 193,
+      "AXIS_RULE": 58,
+      "TROPE": 96,
+      "EDIT_RHYTHM": 313,
+      "LIGHT_PACK": 187,
+      "ACTION_BEAT": 353,
+      "PERFORMANCE_PACK": 270,
+      "INTENT_PACK": 138,
+      "IMPACT_PACK": 17,
+      "STAGING_PACK": 647,
+      "SOUND_PACK": 19,
+      "TRANSITION_PACK": 112,
+      "DIALOGUE_PACK": 83,
+      "MUSIC_PACK": 16,
+      "PROP_PACK": 170
+    },
+    "must_cards_per_type": {
+      "EMOTION_PACK": 147,
+      "SHOT_PATTERN": 151,
+      "AXIS_RULE": 30,
+      "TROPE": 96,
+      "EDIT_RHYTHM": 300,
+      "LIGHT_PACK": 178,
+      "ACTION_BEAT": 341,
+      "PERFORMANCE_PACK": 265,
+      "INTENT_PACK": 126,
+      "IMPACT_PACK": 17,
+      "STAGING_PACK": 645,
+      "SOUND_PACK": 19,
+      "TRANSITION_PACK": 111,
+      "DIALOGUE_PACK": 82,
+      "MUSIC_PACK": 16,
+      "PROP_PACK": 170
+    },
+    "q7_forbid_members": {
+      "lighting=正面光": 2,
+      "pacing=long": 2,
+      "pacing=short": 1
+    },
+    "needs_human": 5,
+    "human_reviewed": 0,
+    "reviewed_by_class": {
+      "llm-panel": 5
+    },
+    "uncorroborated_reviews": [],
+    "uncorroborated_count": 0,
+    "panel_prompt_hashes": {
+      "52c09bf2889202a6b5c1b0662f448d56232e7325a9309c30217afa19c79471d3": 5
+    },
+    "q7_member_count": 3
+  },
+  "gate_4_edge_types": {
+    "status": "pass",
+    "min_pairs_per_type": 30,
+    "min_cards_per_type": 10,
+    "required_pairs_per_type": {
+      "EMOTION_PACK": 30,
+      "SHOT_PATTERN": 30,
+      "AXIS_RULE": 30,
+      "TROPE": 30,
+      "EDIT_RHYTHM": 30,
+      "LIGHT_PACK": 30,
+      "ACTION_BEAT": 30,
+      "PERFORMANCE_PACK": 30,
+      "INTENT_PACK": 30,
+      "IMPACT_PACK": 17,
+      "STAGING_PACK": 30,
+      "SOUND_PACK": 18,
+      "TRANSITION_PACK": 30,
+      "DIALOGUE_PACK": 30,
+      "MUSIC_PACK": 15,
+      "PROP_PACK": 30
+    },
+    "assertable_provided": true,
+    "short_pairs": {},
+    "thin_cards": {}
+  },
+  "gate_5_forbid": {
+    "status": "pass",
+    "q7_conflicts": 5,
+    "min": 60,
+    "required": 3,
+    "assertable_conflicts": 3
+  },
+  "gate_5b_forbid_members": {
+    "status": "pass",
+    "members": 3,
+    "under_covered": {}
+  },
+  "gate_7_human_review": {
+    "status": "pass",
+    "needs_human": 5,
+    "human_reviewed": 5,
+    "min_human_review": 120,
+    "accepted_reviewers": [
+      "human",
+      "llm-panel"
+    ],
+    "reviewed_by_class": {
+      "llm-panel": 5
+    },
+    "uncorroborated_reviews": 0,
+    "panel_prompt_hashes": {
+      "52c09bf2889202a6b5c1b0662f448d56232e7325a9309c30217afa19c79471d3": 5
+    }
+  },
+  "gate_8_independence": {
+    "status": "pass",
+    "extractor_family": "deepseek",
+    "annotator_families": [
+      "zhipu"
+    ],
+    "non_model_families": [],
+    "strong_but_same_family": [],
+    "liar_count": 0
+  },
+  "gate_3_seed_coverage": {
+    "status": "pass",
+    "missing_values": {},
+    "unknown_values": {},
+    "thin_values": {},
+    "min_support": 3,
+    "kinds_checked": 22,
+    "vocab_fingerprint": true,
+    "unreachable_kinds": [
+      "axis_topic"
+    ]
+  },
+  "gate_6_sources": {
+    "status": "fail",
+    "cards": 2113,
+    "missing_cards": [
+      "cine_move_crane_arc_down",
+      "cine_move_crane_arc_up",
+      "cine_move_orbit_ccw",
+      "cine_move_orbit_cw",
+      "cine_move_tilt_down",
+      "cine_move_tilt_up",
+      "cine_move_track_left",
+      "cine_move_track_right",
+      "cine_move_whip_pan_left",
+      "cine_move_whip_pan_right",
+      "cine_move_zoom_in",
+      "gen_anime_0281",
+      "gen_anime_0309",
+      "gen_anime_0328",
+      "gen_anime_0332",
+      "gen_anime_0391",
+      "gen_anime_0406",
+      "gen_anime_0407",
+      "gen_axis_0133",
+      "gen_axis_0159"
+    ],
+    "missing_count": 55,
+    "ghost_cards": [],
+    "ghost_count": 0
+  },
+  "gate_9_reachability": {
+    "status": "pass",
+    "entries": 2840,
+    "short": 0,
+    "short_ratio": 0.0,
+    "examples": [],
+    "scope": "must[0] + top1，plain 槽位；QUERYABLE_KINDS 排除 scene_type/beat_type（与产出侧同一份口径）"
+  },
+  "gate_10_index_resolvable": {
+    "status": "pass",
+    "entries": 2840,
+    "specs": 10749,
+    "resolved": {
+      "must": 5305,
+      "top1": 2840,
+      "never": 2604
+    },
+    "totals": {
+      "must": 5305,
+      "top1": 2840,
+      "never": 2604
+    },
+    "unresolved_per_field": {
+      "must": 0,
+      "top1": 0,
+      "never": 0
+    },
+    "unresolved": 0,
+    "unresolved_ratio": 0.0,
+    "unresolved_by_cause": {},
+    "unresolved_by_edge_type": {},
+    "unresolved_closeness": {},
+    "strict_relation_matches": 10749,
+    "subset_relation_matches": 10749,
+    "subset_relation_ratio": 1.0,
+    "expectation_relation": "exact",
+    "card_edge_matches": 8136,
+    "card_edge_ratio": 0.7569,
+    "index_edges": 738,
+    "examples": [],
+    "note": "§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。 逐字段未命中：{'must': 0, 'top1': 0, 'never': 0}；诊断：另有 10749/10749 条满足「标注成员 ⊆ 索引边（forbid 完全相等）」——这一层与规格字面的「成员集完全相等」不同，标注方不可见索引时后者在构造上不可能全过（AXIS_RULE 的可选 axis_topic 就是结构性一例），属规格级裁决"
+  },
+  "overall": "fail"
+}

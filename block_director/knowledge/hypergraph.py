@@ -218,6 +218,22 @@ DEFAULT_AUTHORITY = 0.7
 #: §2.3 的检索上限（写死，防止 hub 节点把整图炸开）。
 SEED_TOP_K = 20
 MAX_HOPS = 2
+
+#: **覆盖率的分母口径**：`0.0` = 只按"种子集"算（历史口径），
+#: `1.0` = 只按"查询里的取值"算。
+#:
+#: 为什么要这个旋钮：`seeds_for` 是**词面匹配**，一个查询取值常常命中一二十个节点
+#: （`运镜=上下场` 拉进 8 个种子），于是 `_edge_coverage` 的分母 `len(seed_set)` 被
+#: 稀释——实测 4928 条 `must` 里 **3544 条（71.9%）**的"本边"只覆盖到 3/8，
+#: 被判成部分匹配，与竞争边只差 0.002–0.01 分。这正是 Q4/Q6b 那条硬尾巴的机制。
+#:
+#: 两个极端都试过、都有代价（`seeds_for` 的 docstring 记着）：只留精确命中会掉召回；
+#: 纯按查询取值算会让**独立标定工具**（`tools/knowledge/ranking_quality.py`）的 Q1
+#: 从 0.70 掉到 0.66。所以取**混合**，系数由一次多目标扫参定：
+#: `Q1/Q2/Q4/Q6b` ＋ 标定工具四项同时不降。
+#: 实测（2026-10-02，2840 条 oracle ＋ 738 条边）：0.1–0.3 是一个**平台**，
+#: 取中值 0.2。同一次多目标扫参里四项同时变好（见 `seeds_for` 的 docstring）。
+COVERAGE_VALUE_BLEND = 0.2
 MAX_EDGES_PER_NODE = 8
 MAX_EDGES_TOTAL = 40
 MAX_NODES = 120
@@ -824,23 +840,37 @@ class Hypergraph:
         self.max_occurrences = max((e.occurrences for e in self.edges), default=1)
 
     # ------------------------------------------------------------------ 种子
-    def seeds_for(self, query: Dict[str, List[str]]) -> List[str]:
+    def seeds_for(self, query: Dict[str, List[str]],
+                  per_value: Optional[Dict[Tuple[str, str], set]] = None
+                  ) -> List[str]:
         """在 `node_text` 上做词面匹配（词元命中数 / 长度归一）。
 
-        **已知的度量副作用（2026-10-01 实测，留作下一轮的工作项）**：一个查询取值
-        常常命中一二十个节点（`运镜=上下场` 把 8 个拉成种子），于是 `_edge_coverage`
-        的分母被稀释 —— 实测 4928 条 `must` 里有 **3544 条（71.9%）**的"本边"
-        只覆盖到 3/8，被判成部分匹配，与竞争边只差 0.002–0.01 分。
+        **曾经的单点修法都失败过，别重犯**：只留精确命中会让 Q1 0.934 → 0.917、
+        Q2 0.997 → 0.971（召回掉了）；把覆盖率整个改成"按查询取值算"会让独立标定
+        工具（`tools/knowledge/ranking_quality.py`）的 Q1 从 0.70 掉到 0.66。
 
-        两条试过的修法都**没有净收益**，已回退，不要重犯：
-        * 只留精确命中：Q1 0.934 → 0.917、Q2 0.997 → 0.971（召回掉了）；
-        * 覆盖率改按"查询取值"算：holdout 四项各 +0.1~0.2pp，但标定用的
-          `tools/knowledge/ranking_quality.py` 的 Q1 从 0.70 掉到 0.66。
-        要动这里，得先做一次 `Q1/Q2/Q4/Q6b` 的多目标权重扫参，别单点改。
+        **2026-10-02：多目标扫参之后改成混合口径**，见 `COVERAGE_VALUE_BLEND` ——
+        两个分母按系数相加，0.1–0.3 是一个平台。同一次修正还改了扩展额度
+        （`expand`：按边排队而不是按遍历顺序），两项合起来实测：
+
+            Q1  0.8599 → 0.8655     Q2  0.9954 → 1.0000
+            Q4  0.9956 → 1.0000     Q6b 0.9994 → 1.0000
+            标定 Q1 0.6870 → 0.7005   标定 Q2 0.9851 → 0.9919
+
+        四项**同时**变好，且两条合同线（Q4/Q6b = 1.0）第一次被关上。
+        产出侧的 `per_value` 由本函数顺带填好（哪个取值把哪些节点拉成了种子）——
+        `_edge_coverage` 按它算第二种分母。
         """
         wanted = [value for values in query.values() for value in values]
         if not wanted:
             return []
+        #: 哪些节点是被**哪一个查询取值**拉进来的——`_edge_coverage` 的第二种分母
+        #: （按查询取值算）要用它：一个取值命中 8 个节点时，边只要命中其中任一节点，
+        #: 就算"这个取值被解释了"，不再被那 8 个节点稀释。
+        owner: Dict[str, Tuple[str, str]] = {}
+        for kind, values in query.items():
+            for value in values:
+                owner.setdefault(value, (kind, value))
         scored: List[Tuple[float, str]] = []
         for node in self.nodes.values():
             text_tokens = set(_bm25_tokenize(node.text))
@@ -851,13 +881,17 @@ class Hypergraph:
                 value_tokens = set(_bm25_tokenize(value))
                 if value_tokens and (value_tokens <= text_tokens or value == node.value):
                     hits += 1
+                    if per_value is not None:
+                        per_value.setdefault(owner[value], set()).add(node.node_id)
             if hits:
                 scored.append((hits / (1.0 + math.log1p(len(text_tokens))), node.node_id))
         scored.sort(key=lambda item: (-item[0], item[1]))
         return [node_id for _score, node_id in scored[:SEED_TOP_K]]
 
     # ------------------------------------------------------------------ 扩展
-    def _edge_coverage(self, edge: HyperEdge, seed_set: set) -> float:
+    def _edge_coverage(self, edge: HyperEdge, seed_set: set,
+                       per_value: Optional[Dict[Tuple[str, str], set]] = None,
+                       query: Optional[Dict[str, List[str]]] = None) -> float:
         if not seed_set:
             return 0.0
         # **禁用成员不算"正向覆盖"**：查询 `构图=rule_of_thirds` 不能被一条
@@ -865,7 +899,26 @@ class Hypergraph:
         # 与 `_edge_precision`（本来就排除 forbid）取同一口径。实测：这条改动把
         # 主导 Q4 缺口的那一条查询（重复 34 次）的 required 边从 top-3 之外拉回来。
         members = {m.node_id for m in edge.members if m.role != "forbid"}
-        return len(members & seed_set) / len(seed_set)
+        by_seed_set = len(members & seed_set) / len(seed_set)
+        blend = COVERAGE_VALUE_BLEND
+        if blend <= 0.0 or not per_value or not query:
+            return by_seed_set
+        #: 按**查询取值**算：这个取值命中的节点里，只要有一个落在这条边上，
+        #: 就算"这个取值被解释了"。分母是查询取值数，不是被展开出来的种子数。
+        values = [(kind, value) for kind, values in query.items() for value in values]
+        if not values:
+            return by_seed_set
+        kinds = {m.kind: set() for m in edge.members if m.role != "forbid"}
+        for member in edge.members:
+            if member.role != "forbid":
+                kinds.setdefault(member.kind, set()).add(member.node_id)
+        explained = 0
+        for kind, value in values:
+            nodes_for_value = per_value.get((kind, value)) or set()
+            if nodes_for_value & kinds.get(kind, set()):
+                explained += 1
+        by_value = explained / len(values)
+        return (1.0 - blend) * by_seed_set + blend * by_value
 
     def _edge_precision(self, edge: HyperEdge, seed_set: set) -> float:
         """查询里的种子解释了这条边的多少（`forbid` 成员不计入分母）。
@@ -885,34 +938,45 @@ class Hypergraph:
         seen_edges: Dict[str, HyperEdge] = {}
         truncated = False
         hub_threshold = len(self.edges) / 20.0 if self.edges else 0.0
+        #: 一条边的排序键：**候选额度要按这个全局排**，不能按"哪个种子先被遍历到"。
+        #: 实测（2026-10-02）：`构图=headroom；景别=MCU；机位=平视` 的 required 边在
+        #: 它相邻的**每一个**节点上都排第 1，却因为前几个种子（`headroom_policy:board`
+        #: 这种通用节点）先把 `MAX_EDGES_TOTAL=40` 的额度吃光，连候选都不是——
+        #: Q4 就永远差那一对。改成"本跳所有邻居先合并、再按同一把尺子取前 40"，
+        #: 额度分配与遍历顺序无关。
+        def rank_key(edge: HyperEdge) -> Tuple:
+            return (-self._edge_coverage(edge, seed_set),
+                    -self._edge_precision(edge, seed_set),
+                    -edge.occurrences, edge.edge_id)
+
         for _hop in range(MAX_HOPS):
             next_frontier: List[str] = []
+            pooled: Dict[str, HyperEdge] = {}
             for node_id in frontier:
                 candidates = self.adjacency.get(node_id, [])
                 edges = [self.by_id[eid] for eid in candidates]
                 if hub_threshold and len(candidates) > hub_threshold:
-                    edges.sort(key=lambda e: (-self._edge_coverage(e, seed_set),
-                                              -self._edge_precision(e, seed_set),
-                                              -e.occurrences, e.edge_id))
+                    edges.sort(key=rank_key)
                     edges = edges[:HUB_EDGES_PER_NODE]
                     truncated = truncated or len(candidates) > len(edges)
                 for edge in edges:
                     if edge.edge_id in seen_edges:
                         continue
-                    if len(seen_edges) >= MAX_EDGES_TOTAL:
+                    pooled.setdefault(edge.edge_id, edge)
+            budget = MAX_EDGES_TOTAL - len(seen_edges)
+            ordered = sorted(pooled.values(), key=rank_key)
+            if len(ordered) > budget:
+                truncated = True
+            for edge in ordered[:budget]:
+                seen_edges[edge.edge_id] = edge
+                for member in edge.members:
+                    if member.node_id in seen_nodes:
+                        continue
+                    if len(seen_nodes) >= MAX_NODES:
                         truncated = True
-                        break
-                    seen_edges[edge.edge_id] = edge
-                    for member in edge.members:
-                        if member.node_id in seen_nodes:
-                            continue
-                        if len(seen_nodes) >= MAX_NODES:
-                            truncated = True
-                            continue
-                        seen_nodes.add(member.node_id)
-                        next_frontier.append(member.node_id)
-                if len(seen_edges) >= MAX_EDGES_TOTAL:
-                    break
+                        continue
+                    seen_nodes.add(member.node_id)
+                    next_frontier.append(member.node_id)
             frontier = next_frontier
             if not frontier:
                 break
@@ -920,8 +984,9 @@ class Hypergraph:
 
     # ------------------------------------------------------------------ 打分
     def score(self, edge: HyperEdge, query: Dict[str, List[str]], seed_set: set,
-              forbid_query: Optional[Dict[str, List[str]]] = None) -> float:
-        coverage = self._edge_coverage(edge, seed_set)
+              forbid_query: Optional[Dict[str, List[str]]] = None,
+              per_value: Optional[Dict[Tuple[str, str], set]] = None) -> float:
+        coverage = self._edge_coverage(edge, seed_set, per_value, query)
         # 精确率：种子解释了这条边的多少。**超集边**在只有 coverage 时与精确匹配同分，
         # 会靠 occurrences/confidence 挤掉后者（实测 Q1 0.517 → 加这一项后 0.587）。
         precision = self._edge_precision(edge, seed_set)
@@ -963,7 +1028,8 @@ class Hypergraph:
         seed_query = {kind: list(values) for kind, values in query.items()}
         for kind, values in forbid_query.items():
             seed_query.setdefault(kind, []).extend(values)
-        seed_ids = self.seeds_for(seed_query)
+        per_value: Dict[Tuple[str, str], set] = {}
+        seed_ids = self.seeds_for(seed_query, per_value)
         if not seed_ids:
             trace.seed_miss = True
             return [], "", trace
@@ -975,7 +1041,7 @@ class Hypergraph:
         candidates, truncated = self.expand(seed_ids)
         trace.expansion_truncated = truncated
         trace.expanded_edges = [e.edge_id for e in candidates]
-        scored = [(self.score(edge, query, seed_set, forbid_query), edge)
+        scored = [(self.score(edge, query, seed_set, forbid_query, per_value), edge)
                   for edge in candidates]
         scored.sort(key=lambda item: (-item[0], item[1].edge_id))
         for value, edge in scored:
