@@ -24,7 +24,7 @@ from ..contracts.messages import (
 )
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.tools import SHOT_DRAFT_TOOL
-from ..motion.model import ACTION_TYPES
+from ..motion.model import ACTION_TYPES, ALL_ACTION_PARAM_KEYS, unknown_action_params
 from .react import render_shot_memory, shot_memory
 from .scene_contract import shot_constraint_query
 
@@ -55,7 +55,14 @@ EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
                     "target_position": {"type": "array", "minItems": 3,
                                         "maxItems": 3,
                                         "items": {"type": "number"}},
-                    "params": {"type": "object"},
+                    #: `params` **不是自由形状**：键表从 `motion/model.py` 渲染
+                    #: （单一真源）。实测代价——模型写 `body_tilt` + `{"amount": 15}`
+                    #: 时 schema 放行、构建期才报 `E_MOTION_001`，整轮真实运行直接
+                    #: 变 ERROR。现在"任何动作都不认识的键"在**解析期**就被
+                    #: `tool_schema.validate_args` 挡住，工具错误回给模型重试。
+                    "params": {"type": "object", "additionalProperties": False,
+                               "properties": {key: {} for key
+                                              in ALL_ACTION_PARAM_KEYS}},
                 },
             },
         },
@@ -312,6 +319,20 @@ def extract_draft(reply: ChatReply, shot_id: str) -> ShotDraft:
     if draft.shot_id != shot_id:
         raise ValueError(f"草案的 shot_id（{draft.shot_id}）与请求的镜头"
                          f"（{shot_id}）不一致")
+    #: **逐动作**核参数键（schema 只能挡"任何动作都不认识的键"，挡不住
+    #: "这个动作不认识的键"）。在这里失败 → 驱动器记 `draft_invalid` 并重试，
+    #: 而不是让它在构建期炸成 `E_MOTION_001` 把整轮打成 ERROR。
+    bad = []
+    for item in draft.actions:
+        kind = str((item or {}).get("action_type") or "")
+        unknown = unknown_action_params(kind, (item or {}).get("params"))
+        if unknown:
+            from ..motion.model import ACTION_PARAMS
+
+            bad.append(f"{kind} 不认识的参数 {unknown}；允许的是 "
+                       f"{list(ACTION_PARAMS.get(kind, ()))}")
+    if bad:
+        raise ValueError("；".join(bad))
     return draft
 
 

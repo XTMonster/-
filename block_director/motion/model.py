@@ -71,6 +71,43 @@ LAYER_OF: Dict[str, str] = {
 #: 全部合法动作类型（单一真源：工具 schema 与校验都从这里取）
 ACTION_TYPES: Tuple[str, ...] = tuple(LAYER_OF)
 
+#: **每个动作类型允许的 `params` 键**（单一真源）。
+#:
+#: 为什么要有这张表：这些键原先只散落在下面的 `params.get(...)` 调用里，
+#: 而计划/草案的工具 schema 把 `params` 声明成**自由形状**（`{"type": "object"}`）。
+#: 于是模型写一个引擎不认识的键（实测：`body_tilt` 配 `{"amount": 15}`）时，
+#: schema 放行、构建期才由 `body_tilt_params()` 报 `E_MOTION_001` ——
+#: **整轮真实运行直接变成 ERROR**（§4.4 步骤 2 全白跑）。
+#: 把表放到这里之后，schema 与校验都从它渲染：非法键在 **emit 时**就被拒，
+#: 由工具错误回给模型重试，而不是把整轮打死。
+ACTION_PARAMS: Dict[str, Tuple[str, ...]] = {
+    "walk_to": ("speed", "from", "from_", "target_position", "to", "bob"),
+    "run_to": ("speed", "from", "from_", "target_position", "to", "bob"),
+    "turn_body": ("angle_deg", "angle", "degrees"),
+    "turn_head": ("angle_deg", "angle", "degrees"),
+    "look_at": ("yaw_deg", "pitch_deg"),
+    "body_tilt": ("angle_deg", "angle", "degrees", "axis", "toward"),
+    "fall_down": ("direction_deg", "drop"),
+    "sit": ("drop", "leg_fold_deg", "lean_deg"),
+    "stand": ("drop", "leg_fold_deg", "lean_deg"),
+    "nod": ("cycles",),
+    "shake_head": ("cycles",),
+    "jump": ("height", "base_z", "leg_tuck_deg"),
+}
+
+#: 全部动作允许的键的并集（给工具 schema 用：声明成 `properties` ＋
+#: `additionalProperties: False`，就能在**解析期**挡住"任何动作都不认识的键"）。
+ALL_ACTION_PARAM_KEYS: Tuple[str, ...] = tuple(
+    sorted({key for keys in ACTION_PARAMS.values() for key in keys}))
+
+
+def unknown_action_params(kind: str, params) -> List[str]:
+    """这个动作类型**不认识**的 `params` 键（空列表 = 合法）。纯函数，可单测。"""
+    allowed = ACTION_PARAMS.get(str(kind or "").strip())
+    if allowed is None:
+        return []
+    return sorted(set(params or {}) - set(allowed))
+
 # §9.7 冲突仲裁表：语义矛盾的动作组合一律拒绝，而不是算出怪动作
 FORBIDDEN_PAIRS = frozenset({
     frozenset({"walk_to", "fall_down"}),

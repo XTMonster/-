@@ -748,3 +748,31 @@ schema 里 `"params": {"type": "object"}` 是**自由形状**，模型写什么�
 正确落点（下一步做）：把每个动作类型的**允许参数键**从 `motion/model.py` 渲染进
 schema（`body_tilt` 已经有 `BODY_TILT_KEYS` 这张表），让非法键在 **emit 时**就被拒、
 由工具错误回给模型重试——而不是让整轮在构建期死掉。
+
+### 15.3 修法落地（2026-10-02 03:00）
+
+键表搬进 `motion/model.py::ACTION_PARAMS`（**单一真源**：12 个动作类型各自的允许键
+＋ `ALL_ACTION_PARAM_KEYS` 并集 ＋ `unknown_action_params()` 纯函数），两层一起收：
+
+* **解析期**：`emit_shot_draft` 的 schema 把 `params` 从自由形状改成
+  `properties = 并集` ＋ `additionalProperties: False`——"**任何动作都不认识的键**"
+  （就是 `amount` 那一种）当场被 `tool_schema.validate_args` 挡下；
+* **逐动作**：`extract_draft` 再核一遍"**这个动作**不认识的键"（`cycles` 是 `nod`
+  的合法键，却不是 `body_tilt` 的），失败抛 `ValueError` → 驱动器记
+  `draft_invalid` 并重试。
+
+对抗性用例 `tests/test_action_params_are_constrained.py`：复现原始故障（`body_tilt`
+＋`{"amount": 15}`）在 schema 层与 `extract_draft` 层**都被拒**，并带两条正对照
+（合法参数照常放行；未知动作类型不在这里判，那是 schema 的 `enum` 的活）。
+
+真实运行复跑（`docs/evidence/market4/`，第五次）：`ok=true / DONE / 6 镜 / 792 帧`。
+同一次运行里 `draft_invalid` 只出现在 `TransportError: 502`（上游瞬时抽风）上，
+参数类错误一次都没有——守卫没被绕过。
+
+### 15.4 顺带记下的一条供给风险
+
+第四次真实运行**死在计划阶段**：三次 `emit_plan` 尝试全部拿到
+`TransportError: [E_LLM_001] sidecar 返回 502`（上游瞬时抽风），于是
+`run_failed: 分镜计划生成失败（已达最大尝试次数）`，整轮 `ERROR`、`llm_calls=3`。
+同一天稍后再跑就正常——**云端上游的瞬时失败必须被算进重试预算**，
+而计划阶段是整轮的单点：它一失败，后面全都没有。这一条已记入待办。

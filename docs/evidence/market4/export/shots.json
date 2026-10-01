@@ -6,10 +6,10 @@
     1080
   ],
   "style": "写实电影质感，35mm，柔和自然光",
-  "generated_at": "2026-10-02T02:33:06+08:00",
-  "scene_heading": "",
+  "generated_at": "2026-10-02T02:56:25+08:00",
+  "scene_heading": "【第十四街区码头市场 - 午后】",
   "total_frames": 792,
-  "llm_calls": 25,
+  "llm_calls": 27,
   "retrieval_calls": 7,
   "crowd": {
     "entries": [],
@@ -130,7 +130,7 @@
       "camera": {
         "name": "BD_Cam_shot_002",
         "position": [
-          -1.5,
+          -1.7,
           -4.429,
           1.278
         ],
@@ -141,7 +141,7 @@
         "伊恩"
       ],
       "dialogue_ids": [
-        "米迦尔 对 伊恩 说"
+        "dialogue_001"
       ],
       "action_types": [],
       "axis_note": "",
@@ -162,7 +162,7 @@
       "labels": {
         "米迦尔": {
           "text": "米迦尔",
-          "anchor_z": 1.7723,
+          "anchor_z": 1.9904,
           "offset_px": [
             0.0,
             180.0
@@ -212,7 +212,7 @@
         "伊恩"
       ],
       "dialogue_ids": [
-        "伊恩 对 （未指明） 说"
+        "dialogue_002"
       ],
       "action_types": [],
       "axis_note": "",
@@ -257,7 +257,7 @@
       "camera": {
         "name": "BD_Cam_shot_004",
         "position": [
-          2.336,
+          -5.536,
           -2.215,
           1.278
         ],
@@ -267,8 +267,8 @@
         "米迦尔"
       ],
       "dialogue_ids": [
-        "米迦尔 对 （未指明） 说",
-        "米迦尔 对 （未指明） 说"
+        "dialogue_003",
+        "dialogue_004"
       ],
       "action_types": [],
       "axis_note": "",
@@ -289,7 +289,7 @@
       "labels": {
         "米迦尔": {
           "text": "米迦尔",
-          "anchor_z": 1.7723,
+          "anchor_z": 1.9904,
           "offset_px": [
             0.0,
             180.0
@@ -313,8 +313,8 @@
       "camera": {
         "name": "BD_Cam_shot_005",
         "position": [
-          -2.511,
-          -2.316,
+          1.5,
+          4.632,
           0.95
         ],
         "lens": 50.0
@@ -323,7 +323,10 @@
         "偷盗者"
       ],
       "dialogue_ids": [],
-      "action_types": [],
+      "action_types": [
+        "turn_body",
+        "stand"
+      ],
       "axis_note": "",
       "continuity_in": "",
       "degraded": false,
@@ -342,7 +345,7 @@
       "labels": {
         "偷盗者": {
           "text": "偷盗者",
-          "anchor_z": 1.9583,
+          "anchor_z": 1.9244,
           "offset_px": [
             0.0,
             180.0
@@ -383,8 +386,8 @@
         "偷盗者"
       ],
       "dialogue_ids": [
-        "偷盗者 对 （未指明） 说",
-        "偷盗者 对 （未指明） 说"
+        "dialogue_005",
+        "dialogue_006"
       ],
       "action_types": [],
       "axis_note": "",
@@ -405,7 +408,7 @@
       "labels": {
         "偷盗者": {
           "text": "偷盗者",
-          "anchor_z": 1.9583,
+          "anchor_z": 1.9244,
           "offset_px": [
             0.0,
             180.0
