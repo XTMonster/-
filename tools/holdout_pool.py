@@ -450,7 +450,8 @@ def build_glm_prompt(batch: Sequence[dict]) -> str:
 
 
 def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int = 8,
-             limit: int = 0) -> Tuple[List[dict], List[dict], Dict]:
+             limit: int = 0, partial_path=None, progress_path=None,
+             resume: bool = True) -> Tuple[List[dict], List[dict], Dict]:
     """用 GLM 为候选池里的每条边写 `q` 与 `never`；`must`/`top1` 由池固定。
 
     为什么把 `must` 固定：这正是"候选池标注"的定义（TREC pooling）——标注方判断
@@ -482,9 +483,29 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
     if limit:
         items = items[:limit]
 
+    #: **增量落盘**：原先只在整轮结束时写文件，实测一次 31 分钟的跑卡在一次 HTTP
+    #: 调用上（CPU 60 秒增量为 0）就**一点产物都没有**——v2 那次也是。现在每批
+    #: 结束就把已接受的条目**追加**进 partial，并写一行进度；重跑时按批次序号跳过
+    #: 已经完成的批（`resume=True`）。这是"长跑必须可观测、可续跑"的下限。
     entries: List[dict] = []
     rejects: List[dict] = []
-    for start in range(0, len(items), batch_size):
+    done_batches: set = set()
+    if resume and partial_path is not None:
+        path = pathlib.Path(partial_path)
+        if path.is_file():
+            for line in path.read_text(encoding="utf-8").split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+                row = json.loads(line)
+                if "_batch" in row:
+                    done_batches.add(int(row["_batch"]))
+                    row = {k: v for k, v in row.items() if k != "_batch"}
+                entries.append(row)
+    total_batches = (len(items) + batch_size - 1) // batch_size
+    for batch_index, start in enumerate(range(0, len(items), batch_size)):
+        if batch_index in done_batches:
+            continue
         batch = items[start:start + batch_size]
         try:
             reply = client.chat_json(GLM_SYSTEM, build_glm_prompt(batch),
@@ -492,6 +513,8 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
         except Exception as exc:  # noqa: BLE001 - 单批失败不许打崩整轮
             rejects.append({"reason": "transport:%s" % type(exc).__name__,
                             "batch": start})
+            _record_progress(progress_path, batch_index, total_batches, len(entries),
+                             len(rejects))
             continue
         got = {int(item["index"]): item for item in reply.get("entries", [])
                if isinstance(item, dict) and str(item.get("index", "")).isdigit()}
@@ -507,7 +530,29 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
                                 "must": list(item["specs"]),
                                 "top1": list(item["top1"]),
                                 "never": never[:1]})
+        if partial_path is not None:
+            rows = entries[len(entries) - sum(len(item["cards"]) for item in batch):]
+            with pathlib.Path(partial_path).open("a", encoding="utf-8", newline="\n") as fh:
+                for row in rows:
+                    fh.write(json.dumps({**row, "_batch": batch_index},
+                                        ensure_ascii=False) + "\n")
+        _record_progress(progress_path, batch_index, total_batches, len(entries),
+                         len(rejects))
     return entries, rejects, {"groups": len(items), "stats": stats}
+
+
+def _record_progress(path, batch_index: int, total: int, entries: int,
+                     rejects: int) -> None:
+    """写一行进度到 stdout 并把状态 JSON 落盘（长跑必须能看见它在动）。"""
+    line = "batch %d/%d entries=%d rejects=%d" % (batch_index + 1, total, entries, rejects)
+    print(line, flush=True)
+    if path:
+        target = pathlib.Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps({"batch": batch_index + 1, "total_batches": total,
+                                      "entries": entries, "rejects": rejects},
+                                     ensure_ascii=False, indent=2),
+                          encoding="utf-8", newline="\n")
 
 
 def _corpus_cards():
@@ -530,6 +575,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="用模型写 q/never 的通道；目前支持 glm（智谱，换族）")
     parser.add_argument("--model", default=GLM_MODEL)
     parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--partial", default="",
+                        help="GLM 通道的**增量**落盘路径（长跑卡住时留下的产物）")
+    parser.add_argument("--progress", default="",
+                        help="逐批进度 JSON（配合 `--partial` 用；卡住时看这个文件就知道跑到哪）")
+    parser.add_argument("--no-resume", action="store_true",
+                        help="忽略已有 partial，从头跑")
     parser.add_argument("--limit", type=int, default=0, help="只生成前 N 条（自检用）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -544,7 +595,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         client = _llm.make_client(args.provider, args.model)
         raw, rejects, extra = glm_pass(graph, universe, client, vocab=vocab,
-                                       batch_size=args.batch_size, limit=args.limit)
+                                       batch_size=args.batch_size, limit=args.limit,
+                                       partial_path=(args.partial or
+                                                     str(ROOT / args.out) + ".partial"),
+                                       progress_path=(args.progress or
+                                                      str(ROOT / args.out) + ".progress.json"),
+                                       resume=not args.no_resume)
         entries, more = finalise(raw, graph, universe,
                                  model_id=client.model_id, family=client.family,
                                  model_version=client.model_version,

@@ -57,6 +57,11 @@ GLM_API_KEY = os.environ.get("GLM_API_KEY", "")
 #: 仍可显式切换（`glm-5.3` 那类只认 `{"type":"enabled","level":"…"}`）。
 GLM_THINKING = os.environ.get("GLM_THINKING", "enabled").strip().lower()
 GLM_MAX_TOKENS = int(os.environ.get("GLM_MAX_TOKENS", "32768"))
+#: 单次调用的读超时。默认 1800 秒是给"思考拉满"的模型留的；但实测一次 31 分钟的
+#: 长跑会**卡在一次调用上**（进程 CPU 60 秒增量为 0），而客户端 `retries=3` 意味着
+#: 最坏情况要等 90 分钟才放弃。批处理通道（如 `tools/holdout_pool.py --provider glm`）
+#: 可以把 `GLM_TIMEOUT` 调小，让坏调用快速失败并被记成一条 reject 而不是拖死整轮。
+GLM_TIMEOUT = float(os.environ.get("GLM_TIMEOUT", "1800"))
 
 #: 本地思考模型的**思考税**实测（v1.4 §6 那条风险）没法用官方开关关掉：
 #: `/no_think`（写进 user 或 system）、`think: false`、精简词表都试过，`num_predict`
@@ -248,7 +253,7 @@ class GLMClient:
                                    {"Content-Type": "application/json",
                                     #: 思考拉满时单次调用会超过 5 分钟（实测 6 卡一批就
                                     #: 打穿了 300 秒的读超时）——给到 30 分钟。
-                                    "Authorization": f"Bearer {self.api_key}"}, 1800.0)
+                                    "Authorization": f"Bearer {self.api_key}"}, GLM_TIMEOUT)
                 choices = reply.get("choices") or []
                 if not choices:
                     raise LLMError("上游没有返回 choices")

@@ -126,3 +126,62 @@ def test_negative_sample_is_disjoint_from_the_query(pool):
         have = {(CH.Q_KEY_TO_KIND[key], value) for key, value in q_pairs.items()}
         assert not ({(kind, value) for kind, value in plain.items()} & have), (
             f"负样本 {spec} 与查询 {entry['q']} 相交：它本来就该被召回")
+
+
+class _ScriptedGlm:
+    """假 GLM：从提示里读出"一个都不能少的键值"，原样当 `q` 回。"""
+
+    model_id = "fake-glm"
+    family = "zhipu"
+    model_version = "fake-0"
+    decode_tag = "test"
+
+    def __init__(self, fail_on_call: int = 0):
+        self.calls = 0
+        self.fail_on_call = fail_on_call
+
+    def chat_json(self, system, user, temperature, seed, num_ctx, retries=3):
+        self.calls += 1
+        if self.fail_on_call and self.calls == self.fail_on_call:
+            raise RuntimeError("boom")
+        out = []
+        index = None
+        for line in user.split("\n"):
+            if line.startswith("### 第 "):
+                index = int(line.split("### 第 ")[1].split(" 条")[0])
+            if "一个都不能少" in line and index is not None:
+                out.append({"index": index, "q": line.split("：", 1)[1], "never": []})
+        return {"entries": out}
+
+
+def test_glm_pass_writes_partials_per_batch_and_resumes(graph, universe, tmp_path):
+    """长跑必须**可观测、可续跑**。
+
+    实测事故：`glm_v4` 跑 31 分钟后卡在一次 HTTP 调用上（CPU 60 秒增量为 0），
+    而原先只在整轮结束时落盘 —— 一点产物都没有。现在每批追加 partial，
+    重跑时按批次号跳过已完成的批。
+    """
+    partial = tmp_path / "out.jsonl.partial"
+    progress = tmp_path / "out.jsonl.progress.json"
+    vocab = json.loads((ROOT / "fixtures" / "knowledge_holdout.vocab.json")
+                       .read_text(encoding="utf-8"))["kinds"]
+    client = _ScriptedGlm(fail_on_call=2)          # 第 2 批失败
+    entries, rejects, _extra = HP.glm_pass(graph, universe, client, vocab=vocab,
+                                           batch_size=4, limit=8,
+                                           partial_path=partial, progress_path=progress)
+    assert rejects and rejects[0]["reason"].startswith("transport:")
+    assert partial.is_file(), "失败的批之前的产物必须已经落盘"
+    assert progress.is_file(), "必须有逐批进度文件（否则卡住时看不见它在哪）"
+    written = [line for line in partial.read_text(encoding="utf-8").split("\n") if line]
+    assert written, "第一批的产物必须已经落盘"
+    first_batch = json.loads(written[0])["_batch"]
+    assert first_batch == 0
+    before = len(entries)
+
+    # 续跑：成功的批不再重发请求。
+    resume_client = _ScriptedGlm()
+    entries2, rejects2, _ = HP.glm_pass(graph, universe, resume_client, vocab=vocab,
+                                        batch_size=4, limit=8,
+                                        partial_path=partial, progress_path=progress)
+    assert len(entries2) >= before, "续跑不该丢掉已落盘的条目"
+    assert resume_client.calls < client.calls, "续跑必须跳过已完成的批"
