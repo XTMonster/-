@@ -67,6 +67,86 @@ def test_merge_dry_run_writes_nothing(tmp_path):
     assert not out.exists() and not out.with_suffix(".cards.json").exists()
 
 
+def test_merge_intercepts_rows_whose_edges_are_not_in_the_index(tmp_path):
+    """**门⑩ 也要在合并口拦**（2026-10-01 补）。
+
+    产出侧（`holdout_pool.finalise`）一直在拦"`must` 指向不存在的边"，但合并是
+    oracle 的**唯一入口**：`holdout_fill` 那条自由标注通道、以及任何手工分片都
+    绕过它。混进库之后，收尾时门⑩ 整份判红，**分不清是哪一批产出的**——正是
+    这个文件头部注释担心的那件事。这里用一个真索引（`AXIS_RULE` 存在、
+    `EMOTION_PACK` 不存在的那种）验证：不可解析的条目进 `unresolvable`，不进 `valid`。
+    """
+    from tools.holdout_score import load_graph
+    import pathlib as _pathlib
+
+    root = _pathlib.Path(__file__).resolve().parents[1]
+    nodes = root / "knowledge" / "hypergraph.nodes.jsonl"
+    edges = root / "knowledge" / "hypergraph.edges.jsonl"
+    if not (nodes.is_file() and edges.is_file()):
+        import pytest
+
+        pytest.skip("索引未入库")
+    graph = load_graph(nodes, edges)
+
+    # 拿索引里**真实存在**的一条边当"好"条目，再把它改成不存在的取值当"坏"条目。
+    spec = None
+    for edge in graph.edges:
+        members = [f"{m.kind}={str(m.node_id).split(':', 1)[1]}"
+                   for m in edge.members if str(m.role) != "forbid"]
+        if len(members) >= 2:
+            spec = "%s:%s" % (edge.type, ",".join(members))
+            break
+    assert spec, "索引里找不到一条 ≥2 成员的边"
+    # `q` 的形状由门⑨ 判，这里只关心门⑩，所以直接构造一条"够得着"的查询串：
+    from tools import check_holdout as CH
+
+    def _q_for(spec_text: str) -> str:
+        #: 查询键的真源是 schema 的 `QUERY_KEYS`（`键 -> kind`，**不含** `禁<键>`）。
+        #: 这里反查 kind → 键，让 `q` 覆盖 `must` 的每个可查询槽位。
+        from block_director.knowledge import hypergraph as _hg
+
+        key_for = {kind: zh for zh, kind in _hg.QUERY_KEYS.items()}
+        pairs = []
+        for part in spec_text.split(":", 1)[1].split(","):
+            kind, value = part.split("=", 1)
+            key = key_for.get(kind)
+            if key:
+                pairs.append(f"{key}={value}")
+        return "；".join(pairs)
+
+    good = _entry("gen_cine_0001", _q_for(spec), [spec])
+    # 造一条"**格式合法、查询也够得着、但索引里没有这条边**"的条目：把最后一个
+    # 成员换成本 kind 的**另一个合法取值**（仍在节点表里），`q` 同时写出这个新取值。
+    # 这样门②（写法）与门⑨（够得着）都过，只有门⑩ 判得出来。
+    etype, body = spec.split(":", 1)
+    parts = body.split(",")
+    kind, value = parts[-1].split("=", 1)
+    others = sorted({str(node.node_id).split(":", 1)[1] for node in graph.nodes.values()
+                     if getattr(node, "type", "") == kind
+                     and str(node.node_id).split(":", 1)[1] != value})
+    if not others:
+        import pytest
+
+        pytest.skip(f"节点表里 {kind} 只有一个取值，造不出'合法但不存在'的边")
+    swapped = parts[:-1] + [f"{kind}={others[0]}"]
+    bogus_spec = "%s:%s" % (etype, ",".join(swapped))
+    bogus = _entry("gen_cine_0002", _q_for(bogus_spec), [bogus_spec])
+    shard = _write(tmp_path / "partial0.jsonl", [good, bogus])
+    report = holdout_merge.run([str(shard)], tmp_path / "out.jsonl",
+                               cards=["gen_cine_0001", "gen_cine_0002"], graph=graph)
+    assert report["index_available"] is True
+    assert report["valid"] == 1, report
+    assert report["unresolvable"] == 1, report
+    rows = [json.loads(line) for line in
+            (tmp_path / "out.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    assert [row["from_card"] for row in rows] == ["gen_cine_0001"]
+    # 索引不可用时**不假装通过**：低层 `merge(graph=None)` 如实记
+    # `index_available: false`（`run()` 缺省会自动去装入库的索引，所以这里直接调
+    # 低层函数验证那条分支）。
+    _valid, counts = holdout_merge.merge([good, bogus], vocab=None, graph=None)
+    assert counts["index_available"] is False
+
+
 def test_merge_expands_directories_and_rejects_unknown_inputs(tmp_path):
     directory = tmp_path / "shards"
     directory.mkdir()

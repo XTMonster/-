@@ -30,6 +30,8 @@ if str(ROOT) not in sys.path:
 
 from block_director.knowledge.corpus import CARDS  # noqa: E402
 from tools.check_holdout import EntryError, query_shortfall, validate_entry  # noqa: E402
+#: 门⑩ 的唯一真源在 `holdout_score`（与 `check_holdout` 的门⑩ 同一函数对象）。
+from tools.holdout_score import spec_to_norm_key  # noqa: E402
 from tools.holdout_fill import unknown_values_in  # noqa: E402
 
 DEFAULT_OUT = ROOT / "fixtures" / "knowledge_holdout.jsonl"
@@ -42,6 +44,9 @@ DEFAULT_OUT = ROOT / "fixtures" / "knowledge_holdout.jsonl"
 #: **同一个产物在合并口与门口得到两个结论**。合并是 oracle 的唯一入口，它必须
 #: 与门用同一份词表。
 DEFAULT_VOCAB = ROOT / "fixtures" / "knowledge_holdout.vocab.json"
+#: 门⑩（索引可解析）要用的索引；缺文件时不假装通过，报告里记 `index_available: false`。
+DEFAULT_NODES = ROOT / "knowledge" / "hypergraph.nodes.jsonl"
+DEFAULT_EDGES = ROOT / "knowledge" / "hypergraph.edges.jsonl"
 
 
 def expand(patterns: Sequence[str]) -> List[pathlib.Path]:
@@ -98,7 +103,8 @@ def load_vocab(path: pathlib.Path | str = DEFAULT_VOCAB) -> Dict[str, Sequence[s
 
 
 def merge(rows: Sequence[Dict],
-          vocab: Dict[str, Sequence[str]] | None = None
+          vocab: Dict[str, Sequence[str]] | None = None,
+          graph=None
           ) -> Tuple[List[Dict], Dict[str, object]]:
     """去重 → 校验 → 重新编号。返回 (合规条目, 计数)。
 
@@ -107,6 +113,11 @@ def merge(rows: Sequence[Dict],
     * 门②：`check_holdout.validate_entry`（写法、必填槽位、`top1 ⊆ must`…）；
     * 门③ 的 unknown 侧：`holdout_fill.unknown_values_in`（用了词表外的取值）；
     * 门⑨：`check_holdout.query_shortfall`（`q` 够不着自己的 `must` 边）。
+    * 门⑩：`check_holdout.spec_to_norm_key`（`must`/`top1`/`never` 必须映射到**当前
+      索引里真实存在的边**）。这一条 2026-10-01 才补上：产出侧（`holdout_pool.finalise`）
+      一直在拦，但**合并是 oracle 的唯一入口**，`holdout_fill` 那条自由标注通道与任何
+      手工分片都绕过它 —— 一旦混进库里，收尾时门⑩ 整份判红，分不清是哪一批的。
+      `graph is None`（索引文件不在）时**不假装通过**：记 `index_available: false`。
 
     后两条原先只有产出侧（`holdout_fill.absorb`）在拦。合并是 oracle 的**唯一入口**，
     它若只判格式，任何来路的"格式正确但语义不可达"的分片都会被写进库，再由门③/门⑨
@@ -124,6 +135,7 @@ def merge(rows: Sequence[Dict],
     rejected: List[Dict] = []
     unreachable: List[Dict] = []
     unknown: List[Dict] = []
+    unresolvable: List[Dict] = []
     for row in unique:
         candidate = dict(row)
         candidate["id"] = f"hq_{len(valid) + 1:04d}"
@@ -146,11 +158,23 @@ def merge(rows: Sequence[Dict],
                                 "q": str(row.get("q", "")),
                                 "reason": ",".join(short[:4])})
             continue
+        if graph is not None:
+            dangling = [str(spec)[:80] for field in ("must", "top1", "never")
+                        for spec in (candidate.get(field) or [])
+                        if spec_to_norm_key(str(spec), graph) is None]
+            if dangling:
+                unresolvable.append({"from_card": str(row.get("from_card", "")),
+                                     "q": str(row.get("q", "")),
+                                     "reason": ",".join(dangling[:2])})
+                continue
         valid.append(candidate)
     return valid, {"raw": len(rows), "after_dedupe": len(unique),
                    "valid": len(valid), "invalid": len(rejected),
                    "unreachable": len(unreachable), "unknown_values": len(unknown),
-                   "rejected_examples": (rejected + unknown + unreachable)[:5]}
+                   "unresolvable": len(unresolvable),
+                   "index_available": graph is not None,
+                   "rejected_examples": (rejected + unknown + unreachable
+                                         + unresolvable)[:5]}
 
 
 def write(entries: Sequence[Dict], out: pathlib.Path,
@@ -172,12 +196,16 @@ def write(entries: Sequence[Dict], out: pathlib.Path,
 
 def run(patterns: Sequence[str], out: pathlib.Path = DEFAULT_OUT,
         dry_run: bool = False, cards: Sequence[str] | None = None,
-        vocab: Dict[str, Sequence[str]] | None = None) -> Dict:
+        vocab: Dict[str, Sequence[str]] | None = None, graph=None) -> Dict:
     paths = expand(patterns)
     rows = load_rows(paths)
     if vocab is None and DEFAULT_VOCAB.is_file():
         vocab = load_vocab(DEFAULT_VOCAB)
-    entries, counts = merge(rows, vocab)
+    if graph is None and DEFAULT_NODES.is_file() and DEFAULT_EDGES.is_file():
+        from tools.holdout_score import load_graph
+
+        graph = load_graph(DEFAULT_NODES, DEFAULT_EDGES)
+    entries, counts = merge(rows, vocab, graph)
     report = {"shards": [str(path) for path in paths], **counts}
     if dry_run:
         report["dry_run"] = True
