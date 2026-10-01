@@ -40,6 +40,41 @@ from tools.holdout_score import load_graph, load_holdout, score_entries  # noqa:
 
 PASS, FAIL, NA = "pass", "fail", "not_measured"
 
+#: §4.1b 的 Q5 第一步：夹具里带 `expect_movements` 的条目下界。不足时 Q5 记
+#: `not_measured`（**不得判通过**）——它的分母是"真实模型跑出来的同 q 镜头数"，
+#: 夹具没有这条标注就无从 join。
+MIN_Q5_FIXTURE_ITEMS = 30
+
+
+def q5_movement_hit(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Q5 运镜命中（§4.1b 分两步判；本函数负责第一步与"缺什么"的如实记账）。
+
+    §4.1b 原文：① 夹具侧：带 `expect_movements` 的条目 **≥ 30**（不足则 Q5 记
+    `not_measured`，不得判过）；② 运行侧：实跑中与本条 `q` **等价**的计划镜头数
+    **≥ 1** 才计入分母（join 键是 `q`，不是镜号）。
+
+    实测（2026-10-02，2840 条 oracle）：**带 `expect_movements` 的条目是 0 条**——
+    池通道的标注模板只写 `q/must/top1/never`，从来没写过这个字段（旧的
+    `holdout_gen` 写过，换成池通道之后就没了）。所以 Q5 现在**测不到东西**；
+    按 §4.1b 硬规则 1 这种"分母为 0"必须**明确记账**，绝不允许因为"报告里没这条"
+    而看起来像通过了。
+
+    补齐它要一次**独立标注**（判据是"这张卡描述的作者意图是什么运镜"，由换族模型
+    或人来写）；把索引里的 movement 成员抄一遍是自证，§4.1b 硬规则 2 禁止。
+    """
+    expected = [entry for entry in entries if entry.get("expect_movements")]
+    if len(expected) < MIN_Q5_FIXTURE_ITEMS:
+        return {"id": "Q5", "status": NA,
+                "numerator": len(expected), "denominator": 0, "line": 0.80,
+                "note": (f"夹具里带 `expect_movements` 的条目 {len(expected)} < "
+                         f"{MIN_Q5_FIXTURE_ITEMS}（§4.1b 第一步）：Q5 无法判定、"
+                         f"不得判通过。池通道的标注模板不产这个字段，"
+                         f"补齐要走一次独立标注（判据＝卡里描述的作者意图）")}
+    return {"id": "Q5", "status": NA,
+            "numerator": len(expected), "denominator": 0, "line": 0.80,
+            "note": (f"夹具侧已够（{len(expected)} 条），但运行侧的 join 需要一次"
+                     f"真实模型运行的逐镜查询镜像：本工具还没接上")}
+
 
 def q0_build_gate(manifest_path: Path, rejects_path: Path) -> Dict[str, Any]:
     """构建门：`rejects/raw <= 5%` 且 `processed == total`，且账目与 rejects 文件对得上。"""
@@ -229,6 +264,7 @@ def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
 
     metrics.append(e3_experience_override(graph))
     metrics.append(e3_cases(cases))
+    metrics.append(q5_movement_hit(entries))
     metrics.append(e1_relevance(e1_reviews))
     metrics.append(e2_adoption(shots))
 

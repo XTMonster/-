@@ -660,3 +660,44 @@ RK-13 现在只剩**两条**不过，且都不是实现问题：
 * **门⑥ 缺 55 张卡**（索引构造下限：27 张卡的知识不在镜头层、28 张卡的长尾取值
   进不了冻结词表）；
 * **Q7 的分母 27 < 60**（语料里"取值级禁忌"就这么多；编出来的那些已经全部清掉）。
+
+## 十四、P14-6（2026-10-02 02:10）：真实模型通路打通，Q5 从"报告里没有"变成"明说缺什么"
+
+### 14.1 sidecar 现在能连云端上游（`--upstream-api-key-env`）
+
+§4.4 步骤 2 是**唯一**能判 Q5 与 E2 的地方。文档里的命令指向本机 Ollama，
+而 sidecar 的 OpenAI 路径**根本不发 `Authorization` 头**——用户裁决"别用本地模型了"
+之后上游换成智谱 GLM，这一步只能 401。现在 `--upstream-api-key-env NAME` 从环境变量
+读密钥（不进命令行、不进仓库、不进日志），openai 路径带 `Bearer` 头，
+**变量名给了但为空时当场退出**，绝不静默对着一个必然拒绝的端点跑。
+
+实测步骤 2 全链路（`docs/evidence/market4/`）：
+
+```
+sidecar  upstream=open.bigmodel.cn model=glm-4.7-flash capabilities=[llm,bm25,hypergraph]
+blender  --sidecar --preset fhd16x9 --save ... --export ...
+→ BLOCKDIRECTOR_EXPORT ok=true / state=DONE / 6 镜 / 792 帧 / 16 个交付文件
+```
+
+### 14.2 Q5 以前**根本不存在**——现在它如实说"缺什么"
+
+`tools/knowledge/quality.py` 自称聚合 "Q0–Q7"，但 **Q5 一行代码都没有**：
+报告里少一条，读起来像"没有这条要求"。而它的夹具侧也不满足——实测
+**2840 条 oracle 里带 `expect_movements` 的是 0 条**（池通道的标注模板只写
+`q/must/top1/never`；旧的 `holdout_gen` 写过，换通道之后就没了）。
+
+现在 `q5_movement_hit()` 按 §4.1b 的第一步记账：不足 30 条就记 `not_measured`
+并写明"缺这个字段、缺多少、补齐要走一次独立标注"。**运行侧的 join 还没接**
+（要一次真实模型运行的逐镜查询镜像），所以它现在如实停在 `not_measured`。
+
+### 14.3 当前账
+
+| | 结果 |
+|---|---|
+| 门 | ①②③④⑤⑤b⑦⑧⑨⑩ pass；⑥ fail 55 |
+| 质量 | Q0–Q6b pass；**Q5 not_measured（夹具缺 `expect_movements`）**；Q7 fail（分母 27<60）；E3 pass |
+| 链路 | 31/31 探针、pytest 全绿，唯一 failed 仍是 RK-13 |
+
+RK-13 现在剩**三条**且都记着确切原因：门⑥ 的 55 张卡（索引构造下限）、
+Q7 的分母（语料只有 27 条取值级禁忌）、Q5 的夹具字段（0 条 `expect_movements`）。
+后两条都是**标注/语料**工作，不是实现缺陷。
