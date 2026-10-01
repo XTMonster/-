@@ -15,46 +15,45 @@
   },
   "prompt_version": "extract/v10",
   "atom_prompt_versions": {
-    "extract/v8": 2748,
-    "extract/v10": 200
+    "extract/v10": 2584
   },
   "decode": "temperature=0;seed=0;ctx=8192",
   "chunker_version": "para-2400/v1",
   "schema_version": "hg/v2",
   "cards": 2113,
-  "raw_edges": 837,
-  "valid_unique": 837,
+  "raw_edges": 746,
+  "valid_unique": 746,
   "duplicates": 0,
   "rejects": 0,
-  "atom_rejects": 2,
+  "atom_rejects": 0,
   "merge_rejects": 0,
-  "atoms": 2948,
+  "atoms": 2584,
   "merge": {
     "windows": 269,
-    "groups": 2638,
-    "merged_edges": 837,
-    "multi_card_edges": 217,
+    "groups": 2302,
+    "merged_edges": 746,
+    "multi_card_edges": 195,
     "forbid_wins": 0,
-    "dropped_optional": 54,
+    "dropped_optional": 55,
     "over_budget_dropped": 0,
-    "forbid_members": 28,
+    "forbid_members": 47,
     "max_arity": 5,
     "dropped_groups": [],
-    "alternatives": 25,
+    "alternatives": 20,
     "global_dedupe": {
-      "keys": 837,
-      "duplicate_groups": 379,
-      "dropped": 1826
+      "keys": 746,
+      "duplicate_groups": 334,
+      "dropped": 1576
     },
     "refresh": {
-      "cards": 122,
-      "atoms_dropped": 211,
-      "atoms_kept": 2748
+      "cards": 3,
+      "atoms_dropped": 1,
+      "atoms_kept": 2579
     },
     "refresh_prompt_version": "extract/v10",
     "before_dedupe": {
-      "merged_edges": 2663,
-      "forbid_members": 28,
+      "merged_edges": 2322,
+      "forbid_members": 53,
       "max_arity": 5
     },
     "dangling_members_dropped": 0
@@ -65,254 +64,16 @@
       "status": "done",
       "edges": 2,
       "cards": [
-        "gen_anime_0355"
+        "gen_axis_0133",
+        "gen_axis_0159"
       ]
     },
     {
       "batch": 2,
       "status": "done",
-      "edges": 10,
+      "edges": 3,
       "cards": [
-        "gen_axis_0105",
-        "gen_axis_0146",
-        "gen_axis_0159",
-        "gen_axis_0160",
-        "gen_axis_0285",
-        "gen_axis_0288",
-        "gen_axis_0304"
-      ]
-    },
-    {
-      "batch": 3,
-      "status": "done",
-      "edges": 5,
-      "cards": [
-        "gen_block_0005",
-        "gen_block_0006",
-        "gen_block_0024",
-        "gen_block_0190",
-        "gen_block_0355"
-      ]
-    },
-    {
-      "batch": 4,
-      "status": "done",
-      "edges": 16,
-      "cards": [
-        "cine_dutch_angle",
-        "cine_eye_level",
-        "cine_high_angle",
-        "cine_low_angle",
-        "cine_move_and_axis",
-        "cine_move_crane_arc_down",
-        "cine_move_crane_arc_up",
-        "cine_move_crane_down"
-      ]
-    },
-    {
-      "batch": 5,
-      "status": "done",
-      "edges": 16,
-      "cards": [
-        "cine_move_crane_up",
-        "cine_move_dolly_in",
-        "cine_move_dolly_out",
-        "cine_move_dolly_zoom",
-        "cine_move_follow_subject",
-        "cine_move_handheld",
-        "cine_move_motivation",
-        "cine_move_stacking"
-      ]
-    },
-    {
-      "batch": 6,
-      "status": "done",
-      "edges": 16,
-      "cards": [
-        "cine_move_steadicam",
-        "cine_move_tilt_down",
-        "cine_move_tilt_up",
-        "cine_move_track_left",
-        "cine_move_track_right",
-        "cine_move_whip_pan_left",
-        "cine_move_whip_pan_right",
-        "cine_move_zoom_in"
-      ]
-    },
-    {
-      "batch": 7,
-      "status": "done",
-      "edges": 7,
-      "cards": [
-        "cine_move_zoom_out",
-        "gen_cine_0077",
-        "gen_cine_0087",
-        "gen_cine_0224",
-        "gen_cine_0295"
-      ]
-    },
-    {
-      "batch": 8,
-      "status": "done",
-      "edges": 8,
-      "cards": [
-        "gen_comp_0003",
-        "gen_comp_0006",
-        "gen_comp_0028",
-        "gen_comp_0031",
-        "gen_comp_0042",
-        "gen_comp_0044",
-        "gen_comp_0051",
-        "gen_comp_0056"
-      ]
-    },
-    {
-      "batch": 9,
-      "status": "done",
-      "edges": 8,
-      "cards": [
-        "gen_comp_0063",
-        "gen_comp_0086",
-        "gen_comp_0107",
-        "gen_comp_0110",
-        "gen_comp_0144",
-        "gen_comp_0152",
-        "gen_comp_0161",
-        "gen_comp_0216"
-      ]
-    },
-    {
-      "batch": 10,
-      "status": "done",
-      "edges": 1,
-      "cards": [
-        "gen_comp_0232"
-      ]
-    },
-    {
-      "batch": 11,
-      "status": "done",
-      "edges": 11,
-      "cards": [
-        "gen_edit_0009",
-        "gen_edit_0012",
-        "gen_edit_0026",
-        "gen_edit_0027",
-        "gen_edit_0060",
-        "gen_edit_0068",
-        "gen_edit_0075",
-        "gen_edit_0128"
-      ]
-    },
-    {
-      "batch": 12,
-      "status": "done",
-      "edges": 16,
-      "cards": [
-        "gen_edit_0131",
-        "gen_edit_0137",
-        "gen_edit_0157",
-        "gen_edit_0177",
-        "gen_edit_0194",
-        "gen_edit_0206",
-        "gen_edit_0209",
-        "gen_edit_0239"
-      ]
-    },
-    {
-      "batch": 13,
-      "status": "done",
-      "edges": 11,
-      "cards": [
-        "gen_perf_0040",
-        "gen_perf_0077",
-        "gen_perf_0111",
-        "gen_perf_0313",
-        "gen_perf_0329",
-        "gen_perf_0352",
-        "gen_perf_0359",
-        "gen_perf_0382"
-      ]
-    },
-    {
-      "batch": 14,
-      "status": "done",
-      "edges": 15,
-      "cards": [
-        "gen_perf_0406",
-        "gen_perf_0416",
-        "gen_perf_0432",
-        "gen_perf_0444",
-        "gen_perf_0446",
-        "gen_perf_0447",
-        "gen_perf_0453",
-        "gen_perf_0468"
-      ]
-    },
-    {
-      "batch": 15,
-      "status": "done",
-      "edges": 16,
-      "cards": [
-        "gen_perf_0469",
-        "gen_perf_0472",
-        "gen_perf_0474",
-        "gen_perf_0475",
-        "gen_perf_0494",
-        "gen_perf_0505",
-        "gen_perf_0513",
-        "gen_perf_0521"
-      ]
-    },
-    {
-      "batch": 16,
-      "status": "done",
-      "edges": 9,
-      "cards": [
-        "gen_perf_0537",
-        "gen_perf_0541",
-        "gen_perf_0554",
-        "gen_perf_0563"
-      ]
-    },
-    {
-      "batch": 17,
-      "status": "done",
-      "edges": 9,
-      "cards": [
-        "gen_prod_0057",
-        "gen_prod_0063",
-        "gen_prod_0141",
-        "gen_prod_0209",
-        "gen_prod_0231",
-        "gen_prod_0241",
-        "gen_prod_0245",
-        "gen_prod_0258"
-      ]
-    },
-    {
-      "batch": 18,
-      "status": "done",
-      "edges": 18,
-      "cards": [
-        "gen_story_0025",
-        "gen_story_0027",
-        "gen_story_0076",
-        "gen_story_0146",
-        "gen_story_0211",
-        "gen_story_0236",
-        "gen_story_0237",
-        "gen_story_0241"
-      ]
-    },
-    {
-      "batch": 19,
-      "status": "done",
-      "edges": 6,
-      "cards": [
-        "gen_story_0284",
-        "gen_story_0286",
-        "gen_story_0288"
+        "gen_edit_0207"
       ]
     }
   ]

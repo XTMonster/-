@@ -1,35 +1,23 @@
 {
-"_fingerprint": "0a3d44ce0cb29cb6",
+"_fingerprint": "64db0caba25130e2",
 "kinds": {
 "action": [
 "上下场",
-"人数限制",
-"人物",
-"人物一致性",
-"人物塑造",
-"传承",
 "低头",
-"候场",
-"克制",
-"入场调度",
-"准备",
 "出场",
-"分工",
-"分镜写法",
-"动作",
-"动作规范",
-"动作设计",
-"动线",
-"化妆",
-"协作",
 "反应",
-"反派表演",
-"台词处理",
 "后退",
-"呈现",
-"喜剧表演",
 "坐下",
-"塑造"
+"微表情",
+"挥手",
+"推门",
+"登场",
+"站位",
+"表情",
+"走位",
+"起身",
+"转身",
+"退场"
 ],
 "axis_topic": [
 "中性机位",
@@ -50,7 +38,6 @@
 "平视",
 "荷兰角",
 "过肩",
-"骑轴",
 "高机位"
 ],
 "composition_rule": [
@@ -90,7 +77,6 @@
 ],
 "intent": [
 "压迫",
-"回望",
 "推进",
 "揭示",
 "收束",
@@ -108,6 +94,7 @@
 "lighting": [
 "低调",
 "侧光",
+"冷光",
 "底光",
 "暖光",
 "正面光",
@@ -116,26 +103,20 @@
 "高调"
 ],
 "movement": [
-"crane_arc_up",
 "crane_down",
 "crane_up",
 "dolly_in",
 "dolly_out",
 "follow_subject",
 "handheld",
-"orbit_ccw",
+"lead_subject",
 "orbit_cw",
-"pan_left",
 "push_through",
 "steadicam",
 "track_left",
-"track_right",
-"whip_pan_left",
-"zoom_in",
 "固定"
 ],
 "music": [
-"环境底噪",
 "铺底",
 "静默"
 ],
@@ -182,6 +163,7 @@
 ],
 "scene_type": [
 "action",
+"dialogue",
 "establish",
 "insert",
 "transition"

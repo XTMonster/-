@@ -208,16 +208,48 @@ def build_nodes(cards) -> List[Dict]:
             nodes[f"lens:{lens}mm"]["occurrences"] = \
                 int(nodes[f"lens:{lens}mm"].get("occurrences", 0)) + 1
 
-    # 4) 动作 / 对象 两类开放节点：只收显式标注过的 tag（宁缺勿猜）
-    for card in cards:
-        for tag in card.tags:
-            tag = str(tag).strip()
-            if not tag or tag in {n["name"] for n in nodes.values()}:
-                continue
-            if card.domain in ("performance", "blocking") and 1 <= len(tag) <= 6:
-                _add(nodes, f"action:{tag}", "action", tag, value=tag)
+    # 4) `action` 只能是**看得见的身体行为**（审计 #16）。
+    #
+    # 旧规则把 performance／blocking 域卡片里长度 ≤6 的 tag **全部**铺成
+    # `action:` 节点（"让必填槽位有的可填"）。而 tag 是卡片生成模型写的**话题词**，
+    # 于是实测 343 个 action 节点里只有 7 个是真动作，837 条边里 258 条
+    # （`ACTION_BEAT` 69%、`PERFORMANCE_PACK`）带一个不是动作的 `action` 取值
+    # （`动作`×41、`反应`×27、`克制`×15、`人物塑造`×12…）。抽取提示早就写了
+    # "不能写概念/技法/流程/职务"，可**节点表把话题词当成了合法取值**，模型自然照抄。
+    #
+    # 现在只收两份来源，都不靠猜：
+    #   1. 受控表 `ACTIONS`（人工维护的可见行为）；
+    #   2. `knowledge/action_lexicon.json` 里**判定通过**的标签——那份文件由
+    #      `tools/kb_fetch/action_lexicon.py` 用抽取族模型按同一条判据逐词判定后
+    #      钉进仓库（带模型与提示指纹），所以这里仍然是确定性的。
+    #
+    # 文件缺席时**只**回落受控表：宁可 `ACTION_BEAT` 少几条，也不要再铺话题词
+    # （`build_hypergraph` 规则 8b：卡里确实没有看得见的行为时，就不该写这类边）。
+    for value in _action_values():
+        _add(nodes, f"action:{value}", "action", value, value=value)
 
     return sorted(nodes.values(), key=lambda n: (n["type"], n["node_id"]))
+
+
+def _action_values() -> List[str]:
+    """`action:` 节点的取值全集：受控表 ＋ 已钉住的判定结果。
+
+    读不到 `action_lexicon.json` 时**只**返回受控表 —— 这是刻意的：回落旧规则
+    等于把 258 条污染边重新放回索引（审计 #16），而"少几条 `ACTION_BEAT`"是可
+    接受的代价（`docs/knowledge/AUDIT_TRIAGE.md` #16 的处分）。
+    """
+    values = [canon for canon, _ in ACTIONS]
+    path = common.KNOWLEDGE / "action_lexicon.json"
+    if path.is_file():
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            payload = {}
+        for value in (payload.get("controlled") or []) + (payload.get("accepted") or []):
+            value = str(value).strip()
+            if value and value not in values:
+                values.append(value)
+    return values
 
 
 def vocab_payload(nodes: Sequence[Dict]) -> Dict[str, List[str]]:
