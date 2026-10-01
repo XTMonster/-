@@ -33,6 +33,7 @@ import argparse
 import collections
 import json
 import pathlib
+import re
 import sys
 from typing import Dict, List, Sequence, Tuple
 
@@ -525,6 +526,13 @@ def build_glm_prompt(batch: Sequence[dict]) -> str:
         lines.append("边（必须原样成为 must/top1）：%s" % item["specs"])
         lines.append("`q` 里**一个都不能少**的键值（逐字照用，可再加别的键）：%s"
                      % required_q_hint(item))
+        # 分隔符必须写成**它自己会照抄的那一行**：实测 `glm-4.7-flash` 会把
+        # `道具=陈设；景别=MS；机位=平视` 写成 `道具=陈设 景别=MS 机位=平视`
+        # （空格分隔），于是 `q` 解析出一个把整串尾巴当取值的 `道具`，
+        # 门② 以"取值不一致"整条拒收 —— `g9c` 一轮 192 条里 100 条栽在这里，
+        # 而它们覆盖的卡在门⑥ 里直接消失（一个组一条 `q`，坏一条丢整组）。
+        lines.append("`q` 里多个「键=值」之间**只能用中文分号 `；` 分隔**"
+                     "（不要用空格、逗号、换行）")
         lines.append("卡片正文：%s" % str(item["card_text"])[:1200])
         if item["negatives"]:
             lines.append("候选负样本（挑最多 1 条，逐字复制）：")
@@ -536,6 +544,80 @@ def build_glm_prompt(batch: Sequence[dict]) -> str:
     return "\n".join(lines)
 
 
+_Q_SEPARATORS = ("；", ";")
+
+
+def normalise_q_answer(text: str) -> str:
+    """把模型用空格分隔的 `q` 折回协议的分号形式——**只做格式归一，不动语义**。
+
+    协议里 `q` 是「`键=取值` 用 `；`/`;` 连起来的一串」。实测 `glm-4.7-flash`
+    有时把分隔符写成空格（`道具=陈设 景别=MS 机位=平视`）。那种串对校验器来说
+    是**一个** pair（key=`道具`，value=`陈设 景别=MS 机位=平视`），门② 判"与
+    must 的 prop 取值不一致"并整条拒收；它覆盖的卡也因此在门⑥ 里消失。
+
+    归一条件写得很紧，避免把真的带空格的取值拆坏：
+
+    * 原文里**没有**任何 `；`/`;`（有分号说明模型本来就按协议写了，别动）；
+    * 用空白（含全角空格、换行、制表符）切出的每一段都必须**恰好**含一个 `=`，
+      且 `=` 两边都非空；
+    * 折完之后用 `parse_q` 真的能解析出**更多**的 pair ——穷尽条件，猜不出来就不改。
+    """
+    text = str(text or "")
+    if any(sep in text for sep in _Q_SEPARATORS):
+        return text
+    if text.count("=") < 2:
+        return text
+    parts = [part for part in re.split(r"[\s\u3000]+", text.strip()) if part]
+    if len(parts) < 2:
+        return text
+    if any(part.count("=") != 1 or part.startswith("=") or part.endswith("=")
+           for part in parts):
+        return text
+    from tools.check_holdout import parse_q
+
+    try:
+        before = len(parse_q(text))
+    except Exception:  # noqa: BLE001 - 解析不了就更该试一次折行
+        before = 0
+    folded = "；".join(parts)
+    try:
+        after = len(parse_q(folded))
+    except Exception:  # noqa: BLE001
+        return text
+    return folded if after > before else text
+
+
+def _answer_rows(item: dict, answer: dict) -> List[dict]:
+    """一条组答案 → 该组每张来源卡一行（与 `finalise` 吃的形状一致）。"""
+    never = [s for s in (answer.get("never") or []) if str(s) in item["negatives"]]
+    q = normalise_q_answer(answer.get("q"))
+    return [{"from_card": card, "q": q, "must": list(item["specs"]),
+             "top1": list(item["top1"]), "never": never[:1]}
+            for card in item["cards"]]
+
+
+def _answer_usable(rows: Sequence[dict], graph, universe: Sequence[str]) -> bool:
+    """这一组的答案**过不过产出侧那一套判据**（门② ＋ 门⑨ 的 `q` 短路）。"""
+    if not rows:
+        return False
+    from tools.check_holdout import validate_entry, query_shortfall, EntryError
+
+    for row in rows:
+        # `id` 必须**形如 hq_0001**（门② 用 ID_RE 卡），否则每个探针都会
+        # 在 id 这一关被判不合法 → 明明可用的答案被当成"没答对"去重问。
+        candidate = {"id": "hq_0000", **row,
+                     "annotator": {"model_id": "probe", "family": "probe",
+                                   "model_version": "probe"},
+                     "independence": "strong", "pilot": False}
+        try:
+            validate_entry(candidate)
+        except EntryError:
+            return False
+        if query_shortfall(candidate):
+            return False
+    return True
+
+
 def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int = 8,
              limit: int = 0, partial_path=None, progress_path=None,
              resume: bool = True,
@@ -543,7 +625,8 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
              only_cards: Sequence[str] = (),
              only_types: Sequence[str] = (),
              temperature: float = 0.0,
-             seed: int = 0) -> Tuple[List[dict], List[dict], Dict]:
+             seed: int = 0,
+             retry_failed: int = 1) -> Tuple[List[dict], List[dict], Dict]:
     """用 GLM 为候选池里的每条边写 `q` 与 `never`；`must`/`top1` 由池固定。
 
     为什么把 `must` 固定：这正是"候选池标注"的定义（TREC pooling）——标注方判断
@@ -638,18 +721,60 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
             continue
         got = {int(item["index"]): item for item in reply.get("entries", [])
                if isinstance(item, dict) and str(item.get("index", "")).isdigit()}
+        #: 一个组一条 `q`、一个组可能挂几十张卡：**一条坏 `q` 会把整组卡从门⑥
+        #: 里抹掉**（实测 `PROP_PACK` 一个组 40+ 张卡，`g9c` 一轮 192 条里 100 条
+        #: 因分隔符写成空格被门② 拒收）。所以在**落盘之前**按产出侧同一套判据
+        #: 自查，没过的组**单独重问**（小批、换个取样），而不是把它交给下游当 reject。
+        #: 重问不改变任何判据，只是把"一次抽样不好"与"这条边真的写不出查询"分开。
+        retried = recovered = 0
+        answers: Dict[int, dict] = {}
+        answered: set = set()
         for item in batch:
             answer = got.get(item["index"])
-            if not answer:
+            if answer is None:
+                if retry_failed <= 0:
+                    continue
+                retried += 1
+            elif retry_failed <= 0 or _answer_usable(_answer_rows(item, answer),
+                                                     graph, universe):
+                answers[item["index"]] = answer
+                answered.add(item["index"])
+                continue
+            else:
+                retried += 1
+            fixed = None
+            for attempt in range(retry_failed):
+                try:
+                    again = client.chat_json(
+                        GLM_SYSTEM, build_glm_prompt([item]),
+                        temperature=max(0.2, temperature), seed=seed + attempt + 1,
+                        num_ctx=8192)
+                except Exception:  # noqa: BLE001 - 重问失败就用原答案，交给下游如实计 reject
+                    break
+                retry_entries = {int(row["index"]): row for row in again.get("entries", [])
+                                 if isinstance(row, dict)
+                                 and str(row.get("index", "")).isdigit()}
+                candidate = retry_entries.get(item["index"])
+                if candidate is None:
+                    continue
+                if _answer_usable(_answer_rows(item, candidate), graph, universe):
+                    fixed = candidate
+                    break
+            if fixed is not None:
+                answers[item["index"]] = fixed
+                answered.add(item["index"])
+                recovered += 1
+            elif answer is not None:
+                answers[item["index"]] = answer
+                answered.add(item["index"])
+        stats["retried_items"] = stats.get("retried_items", 0) + retried
+        stats["recovered_items"] = stats.get("recovered_items", 0) + recovered
+        for item in batch:
+            answer = answers.get(item["index"])
+            if item["index"] not in answered:
                 rejects.append({"reason": "missing_index", "batch": start})
                 continue
-            never = [s for s in (answer.get("never") or [])
-                     if str(s) in item["negatives"]]
-            for card in item["cards"]:
-                entries.append({"from_card": card, "q": str(answer.get("q") or ""),
-                                "must": list(item["specs"]),
-                                "top1": list(item["top1"]),
-                                "never": never[:1]})
+            entries.extend(_answer_rows(item, answer))
         if partial_path is not None:
             rows = entries[len(entries) - sum(len(item["cards"]) for item in batch):]
             with pathlib.Path(partial_path).open("a", encoding="utf-8", newline="\n") as fh:
@@ -729,6 +854,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                              "补跑永远得 0 分（实测 22 张卡的缺口轮 7 条全被同一条理由拒收）。")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--limit", type=int, default=0, help="只生成前 N 条（自检用）")
+    parser.add_argument("--retry-failed", type=int, default=1,
+                        help="一个组的答案过不了产出侧判据时，**单独重问**几次"
+                             "（默认 1，`0` = 关）。一个组可能挂几十张来源卡，"
+                             "一条坏 `q` 就把整组卡从门⑥ 抹掉；重问只换取样，"
+                             "不改判据。")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     graph = load_graph(ROOT / args.nodes, ROOT / args.edges)
@@ -765,7 +895,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                                        resume=not args.no_resume,
                                        only_values=only_values, only_cards=only_cards,
                                        only_types=only_types,
-                                       temperature=temperature, seed=args.seed)
+                                       temperature=temperature, seed=args.seed,
+                                       retry_failed=args.retry_failed)
         entries, more = finalise(raw, graph, universe,
                                  model_id=client.model_id, family=client.family,
                                  model_version=client.model_version,

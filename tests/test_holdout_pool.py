@@ -226,3 +226,129 @@ def test_glm_pass_writes_partials_per_batch_and_resumes(graph, universe, tmp_pat
                                         partial_path=partial, progress_path=progress)
     assert len(entries2) >= before, "续跑不该丢掉已落盘的条目"
     assert resume_client.calls < client.calls, "续跑必须跳过已完成的批"
+
+
+# --------------------------------------------------------------------------- 分隔符归一
+
+
+def test_space_separated_q_is_folded_back_to_the_protocol_separator():
+    """实测事故：`glm-4.7-flash` 把 `道具=陈设；景别=MS；机位=平视` 写成空格分隔。
+
+    `tools/check_holdout.parse_q` 只认 `；`/`;`，于是那一串被读成**一个** pair
+    （`道具` 的取值是整条尾巴），门② 判"与 must 的 prop 取值不一致"整条拒收。
+    `g9c` 一轮 192 条里 100 条栽在这里，它们覆盖的卡随之从门⑥ 消失——
+    因为**一个组只有一条 `q`**，坏一条丢整组。
+    """
+    folded = HP.normalise_q_answer("道具=陈设 景别=MS 机位=平视")
+    assert folded == "道具=陈设；景别=MS；机位=平视"
+    parsed = CH.parse_q(folded)
+    assert parsed["道具"] == "陈设" and parsed["景别"] == "MS" and parsed["机位"] == "平视"
+    # 全角空格与换行同样折叠：模型两种都写过。
+    assert HP.normalise_q_answer("情绪=压抑\u3000强度=high") == "情绪=压抑；强度=high"
+    assert HP.normalise_q_answer("情绪=压抑\n强度=high") == "情绪=压抑；强度=high"
+
+
+def test_normalisation_leaves_legitimate_q_untouched():
+    """反面：不许把**本来就合法**的 `q` 改坏——这是这条归一唯一的风险。"""
+    # 已经是分号形式：原样返回。
+    for text in ("道具=陈设；景别=MS", "道具=陈设;景别=MS", "情绪=压抑"):
+        assert HP.normalise_q_answer(text) == text
+    # 只有一个 pair 的 `q`：即使用空格，也不能猜着拆（取值本身可能带空格）。
+    assert HP.normalise_q_answer("镜长=3-8s") == "镜长=3-8s"
+    assert HP.normalise_q_answer("") == ""
+    # 切出来的段里有**不止一个** `=`，或段首尾就是 `=`：一律不动。
+    assert HP.normalise_q_answer("道具=陈设=多余 景别=MS") == "道具=陈设=多余 景别=MS"
+    assert HP.normalise_q_answer("道具= 景别=MS") == "道具= 景别=MS"
+
+
+def test_empty_q_is_never_fabricated_into_something():
+    """归一不许**凭空造** pair：折完解析出的 pair 数没变多就退回原文。"""
+    assert HP.normalise_q_answer("景别=MS") == "景别=MS"
+    assert len(CH.parse_q(HP.normalise_q_answer("景别=MS"))) == 1
+
+
+# --------------------------------------------------------------------------- 单组重问
+
+
+class _RetryableGlm:
+    """第一批把 `q` 写残（丢掉一个必填键），重问时写对。"""
+
+    model_id = "fake-glm"
+    family = "zhipu"
+    model_version = "fake-0"
+    decode_tag = "test"
+
+    def __init__(self, *, heal_on_retry: bool = True):
+        self.calls = 0
+        self.single_calls = 0
+        self.heal_on_retry = heal_on_retry
+
+    def chat_json(self, system, user, temperature, seed, num_ctx, retries=3):
+        self.calls += 1
+        single = user.count("### 第 ") == 1
+        if single:
+            self.single_calls += 1
+        good = single and self.heal_on_retry
+        out = []
+        index = None
+        for line in user.split("\n"):
+            if line.startswith("### 第 "):
+                index = int(line.split("### 第 ")[1].split(" 条")[0])
+            if "一个都不能少" in line and index is not None:
+                hint = line.split("：", 1)[1]
+                q = hint if good else hint.split("；", 1)[-1].replace("；", " ")
+                if not good and "；" not in hint:
+                    q = ""
+                out.append({"index": index, "q": q, "never": []})
+        return {"entries": out}
+
+
+def test_a_group_whose_answer_fails_the_gates_is_re_asked_alone(graph, universe, tmp_path):
+    """一个组一条 `q`、一个组可能挂几十张卡：坏答案必须在落盘前**单独重问**。
+
+    重问只换取样，**不改任何判据**——产出的条目照样过 `finalise` 的同一套门。
+    """
+    vocab = json.loads((ROOT / "fixtures" / "knowledge_holdout.vocab.json")
+                       .read_text(encoding="utf-8"))["kinds"]
+    client = _RetryableGlm()
+    raw, rejects, extra = HP.glm_pass(graph, universe, client, vocab=vocab,
+                                      batch_size=4, limit=4, retry_failed=2,
+                                      partial_path=tmp_path / "p.partial",
+                                      progress_path=tmp_path / "p.json")
+    stats = extra["stats"]
+    assert stats["retried_items"] >= 1, "坏答案必须触发重问"
+    assert stats["recovered_items"] >= 1, "重问写对了就必须算作救回"
+    entries, more = HP.finalise(raw, graph, universe, model_id=client.model_id,
+                                family=client.family, model_version=client.model_version)
+    assert entries, "救回的组必须真的落成条目"
+    assert list(rejects) + list(more) == [], "重问救回之后不该再有 reject"
+
+
+def test_a_group_that_never_validates_is_still_a_reject(graph, universe, tmp_path):
+    """反面：重问也写不对时**不许粉饰** —— 条目必须缺席、reject 必须如实记录。"""
+    vocab = json.loads((ROOT / "fixtures" / "knowledge_holdout.vocab.json")
+                       .read_text(encoding="utf-8"))["kinds"]
+    client = _RetryableGlm(heal_on_retry=False)
+    raw, rejects, extra = HP.glm_pass(graph, universe, client, vocab=vocab,
+                                      batch_size=4, limit=4, retry_failed=1,
+                                      partial_path=tmp_path / "q.partial",
+                                      progress_path=tmp_path / "q.json")
+    assert extra["stats"]["recovered_items"] == 0
+    assert client.single_calls >= 1, "确实重问过，不是直接放弃"
+    entries, more = HP.finalise(raw, graph, universe, model_id=client.model_id,
+                                family=client.family, model_version=client.model_version)
+    assert entries == [], "写不对的组不得产出条目"
+    assert more, "写不对的组必须留下 reject 记录，不能静默消失"
+
+
+def test_retry_failed_zero_keeps_the_old_one_shot_behaviour(graph, universe, tmp_path):
+    """`--retry-failed 0` 必须回到"一次抽样、不重问"的旧行为（可关是硬要求）。"""
+    vocab = json.loads((ROOT / "fixtures" / "knowledge_holdout.vocab.json")
+                       .read_text(encoding="utf-8"))["kinds"]
+    client = _RetryableGlm()
+    _raw, _rejects, extra = HP.glm_pass(graph, universe, client, vocab=vocab,
+                                        batch_size=4, limit=4, retry_failed=0,
+                                        partial_path=tmp_path / "z.partial",
+                                        progress_path=tmp_path / "z.json")
+    assert client.calls == 1, "关掉重问就只该发一次批次请求"
+    assert extra["stats"]["retried_items"] == 0
