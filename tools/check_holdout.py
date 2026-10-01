@@ -402,6 +402,40 @@ def validate_entry(record: dict) -> Tuple[Dict[str, str], int]:
     return q, hits
 
 
+#: 机器复核（双模型面板）的记录必须自带这三样，否则**不可佐证**：
+#: 两个**不同**的模型 id（换族之外还要"两条独立意见"）＋ 面板提示的指纹
+#: （「协议先冻结」：同一次复核里所有记录必须同指纹）。缺任何一样，
+#: 门⑦ **不认**这条记录 —— 否则门⑦ 读的就是"被测文件自己写的判决书"，
+#: 而 §4.1b 硬规则 2 明写判据不得自证。
+PANEL_TAG = "llm-panel"
+
+
+def review_class(review: dict) -> Tuple[Optional[str], str]:
+    """一条复核记录 → ``(被承认的裁决者类别, 不承认的原因)``。
+
+    * ``human``：协议原文的裁决者，**不需要**佐证字段（人审本来就没有工具指纹）。
+    * ``llm-panel``：必须有 ``source.models``（≥2 个且互不相同）与
+      ``source.prompt_sha256``；缺了就当**没有裁决记录**并把原因如实报出来。
+    * 其它字符串：一律不认（此前是"写什么算什么"）。
+    """
+    who = str((review or {}).get("reviewed_by") or "").strip().lower()
+    if not who:
+        return None, ""
+    if who == "human":
+        return "human", ""
+    if who != PANEL_TAG:
+        return None, f"reviewed_by={who!r} 不是 human/llm-panel"
+    source = review.get("source") or {}
+    models = [str(item).strip() for item in (source.get("models") or []) if str(item).strip()]
+    if len(models) < 2:
+        return None, "llm-panel 缺 source.models（双模型）"
+    if len(set(models)) < 2:
+        return None, f"llm-panel 的两个模型 id 相同：{models}"
+    if not str(source.get("prompt_sha256") or "").strip():
+        return None, "llm-panel 缺 source.prompt_sha256"
+    return PANEL_TAG, ""
+
+
 def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
     if not entries:
         # 硬规则 1：空集不得判"格式通过"——against a zero-entry file every
@@ -412,6 +446,8 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
                       "must_cards_per_type": {t: 0 for t in EDGE_TYPES},
                       "q7_forbid_members": {}, "needs_human": 0, "human_reviewed": 0,
                       "reviewed_by_class": {},
+                      "uncorroborated_reviews": [], "uncorroborated_count": 0,
+                      "panel_prompt_hashes": {},
                       "q7_member_count": 0, "_parsed_q": []}
     problems: List[str] = []
     seen: Dict[str, int] = {}
@@ -419,6 +455,11 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
     q7_members: Dict[str, int] = {}
     needs_human = 0
     reviewed_by_class: Dict[str, int] = {}
+    #: 复核记录必须**可被外部佐证**（§4.1b 硬规则 2「禁止自证」）。机器复核的
+    #: 记录里要带 `source{models, prompt_sha256}`：没有它，门⑦ 读的就是"被测文件
+    #: 自己写的判决书"——任何实现都能凭空填一个 `reviewed_by` 字符串。
+    uncorroborated: List[str] = []
+    panel_hashes: Dict[str, int] = {}
     type_pairs: Dict[str, set] = {t: set() for t in EDGE_TYPES}
     type_cards: Dict[str, set] = {t: set() for t in EDGE_TYPES}
     parsed_q: List[Dict[str, str]] = []
@@ -445,7 +486,14 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
                 q7_members[f"{kind}={value}"] = q7_members.get(f"{kind}={value}", 0) + 1
         if hits or (record.get("expect_movements") or []):
             needs_human += 1
-            who = str(((record.get("review") or {}).get("reviewed_by") or "")).lower()
+            review = record.get("review") or {}
+            who, why = review_class(review)
+            if who is None and why:
+                uncorroborated.append(f"{ident}: {why}")
+                who = ""
+            if who == "llm-panel":
+                stamp = str((review.get("source") or {}).get("prompt_sha256") or "")
+                panel_hashes[stamp] = panel_hashes.get(stamp, 0) + 1
             if who:
                 reviewed_by_class[who] = reviewed_by_class.get(who, 0) + 1
     detail = {"entries": len(entries), "valid": len(parsed_q), "problems": problems[:20],
@@ -455,6 +503,9 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
               "q7_forbid_members": q7_members, "needs_human": needs_human,
               "human_reviewed": reviewed_by_class.get("human", 0),
               "reviewed_by_class": reviewed_by_class,
+              "uncorroborated_reviews": uncorroborated[:10],
+              "uncorroborated_count": len(uncorroborated),
+              "panel_prompt_hashes": {k: v for k, v in panel_hashes.items()},
               "q7_member_count": len(q7_members),
               "_parsed_q": parsed_q}
     return (FAIL if problems else PASS), detail
@@ -535,7 +586,10 @@ def gate_forbid_members(members: Dict[str, int], minimum: int = 1) -> Tuple[str,
 
 
 def gate_human_review(needs: int, reviewed_by_class: Dict[str, int], minimum: int,
-                      classes: Sequence[str] = ("human",)) -> Tuple[str, dict]:
+                      classes: Sequence[str] = ("human",), *,
+                      uncorroborated: int = 0,
+                      panel_prompt_hashes: Optional[Dict[str, int]] = None
+                      ) -> Tuple[str, dict]:
     """Q5/Q7 条目必须有**裁决记录**；接受哪些裁决者由 `classes` 指定。
 
     **裁决者类别（2026-10-01，用户明确授权"不理协议了，你能做尽量做"）**：
@@ -550,13 +604,26 @@ def gate_human_review(needs: int, reviewed_by_class: Dict[str, int], minimum: in
 
     双模型分歧的条目仍会被复核工具标 `panel_disagreement` 并单独成表
     （`docs/knowledge/PANEL_DISAGREEMENTS.md`），人可以只复核那一份。
+
+    **可佐证性（2026-10-01，§4.1b 硬规则 2）**：机器复核的记录只有自带
+    `source{models ≥2 且互异, prompt_sha256}` 才计数（:func:`review_class`）；
+    同一份文件里出现**两个不同的面板提示指纹**同样判失败——协议不冻结，
+    前后两半就不是同一套判据。
     """
     accepted = tuple(str(name).lower() for name in classes)
     reviewed = sum(int(count) for name, count in reviewed_by_class.items()
                    if str(name).lower() in accepted)
+    hashes = {str(key): int(value)
+              for key, value in (panel_prompt_hashes or {}).items() if str(key)}
     detail = {"needs_human": needs, "human_reviewed": reviewed,
               "min_human_review": minimum, "accepted_reviewers": list(accepted),
-              "reviewed_by_class": dict(reviewed_by_class)}
+              "reviewed_by_class": dict(reviewed_by_class),
+              "uncorroborated_reviews": int(uncorroborated),
+              "panel_prompt_hashes": hashes}
+    if len(hashes) > 1:
+        detail["reason"] = ("同一份 held-out 里出现了多个面板提示指纹："
+                            f"{sorted(hashes)}（协议未冻结，复核不可比）")
+        return FAIL, detail
     if needs == 0:
         return NA, detail
     return (PASS if reviewed >= min(needs, minimum) else FAIL), detail
@@ -1048,7 +1115,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                              if name.strip()) or ("human",)
     rstatus, rdetail = gate_human_review(fdetail["needs_human"],
                                          fdetail["reviewed_by_class"], min_review,
-                                         classes=reviewer_classes)
+                                         classes=reviewer_classes,
+                                         uncorroborated=fdetail.get(
+                                             "uncorroborated_count", 0),
+                                         panel_prompt_hashes=fdetail.get(
+                                             "panel_prompt_hashes"))
     statuses.append(rstatus)
     report["gate_7_human_review"] = {"status": rstatus, **rdetail}
 

@@ -133,6 +133,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     cards = load_cards()
     picked = select(entries, args.limit)
 
+    #: 每条复核记录自带的**可佐证**字段（§4.1b 硬规则 2）：两个模型 id 必须互异、
+    #: 面板提示指纹必须存在且整份文件只有一个（协议先冻结）。门⑦ 用
+    #: `check_holdout.review_class()` 判它 —— 缺了就不算一条裁决记录。
+    PANEL_SOURCE = {"models": [models[0], models[1]],
+                    "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
+                    "tool": "holdout_review_llm"}
+    ran_at = datetime.datetime.now(
+        datetime.timezone.utc).astimezone().isoformat(timespec="seconds")
+
     reviewed: Dict[str, Dict] = {}
     dropped: List[Dict] = []
     flagged: List[Dict] = []
@@ -142,6 +151,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         a = _judge(client_a, entry, card)
         b = _judge(client_b, entry, card)
         action, review = merge(a, b)
+        # §4.1b 硬规则 2「禁止自证」：门⑦ 读的是**这份文件里**的判决书，
+        # 所以每条记录都要自带可外部佐证的东西——两个模型 id 与面板提示指纹。
+        # `check_holdout.review_class()` 不认没有这一块的 `llm-panel` 记录。
+        review["source"] = dict(PANEL_SOURCE, ran_at=ran_at)
         reviewed[str(entry["id"])] = review
         if action == "drop":
             counts["dropped"] += 1
@@ -181,9 +194,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         "entries": str(path), "out": str(out_path), "sheet": str(sheet_path),
         "panel": {"a": models[0], "b": models[1], "tag": PANEL_TAG,
                   "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest()},
+        # 每条被保留的记录都带同一份 source（模型 id ＋ 指纹 ＋ 时间）；门⑦
+        # 用 `check_holdout.review_class()` 判它——缺了就不算裁决记录。
+        "review_source": dict(PANEL_SOURCE, ran_at=ran_at),
         "counts": counts, "dropped": dropped, "disagreement_ids": [i["id"] for i in flagged],
         "honesty": ("reviewed_by 写的是 llm-panel；门⑦ 需要 reviewed_by=human，"
-                    "这份复核**不构成**人审，不得当作门⑦ 通过。")}
+                    "这份复核**不构成**人审，不得当作门⑦ 通过。每条记录另带 "
+                    "source{models,prompt_sha256,ran_at}，门⑦ 只认带这一块的记录"
+                    "（§4.1b 禁止自证）。")}
     report_path = pathlib.Path(args.report)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

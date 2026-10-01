@@ -930,3 +930,64 @@ def test_acceptance_chain_judges_gate_7_with_the_recorded_reviewer_classes():
     offenders = [line for line in calls if "--reviewer-classes " in line
                  and "llm-panel" not in line]
     assert not offenders, offenders
+
+
+# --------------------------------------------------------------------------- #
+# 门⑦ 的证据必须**可外部佐证**（§4.1b 硬规则 2「禁止自证」）
+# --------------------------------------------------------------------------- #
+def test_a_bare_llm_panel_string_is_not_a_review_record():
+    """只写一个 `reviewed_by: "llm-panel"` 不算裁决——那是被测文件自己发的判决书。
+
+    门⑦ 读的字段就在 oracle 里，任何实现都能凭空填一个字符串。所以机器复核
+    必须自带 `source{models ≥2 且互异, prompt_sha256}`；缺了就当**没有**记录，
+    并把原因如实报出来（`uncorroborated_reviews`），不是静默放行。
+    """
+    assert check_holdout.review_class({"reviewed_by": "llm-panel"})[0] is None
+    assert check_holdout.review_class(
+        {"reviewed_by": "llm-panel", "source": {"models": ["a"]}})[0] is None
+    assert "模型 id 相同" in check_holdout.review_class(
+        {"reviewed_by": "llm-panel",
+         "source": {"models": ["a", "a"], "prompt_sha256": "x"}})[1]
+    assert "prompt_sha256" in check_holdout.review_class(
+        {"reviewed_by": "llm-panel", "source": {"models": ["a", "b"]}})[1]
+    # 正面：两个互异模型 ＋ 指纹 → 认。
+    ok, why = check_holdout.review_class(
+        {"reviewed_by": "llm-panel",
+         "source": {"models": ["deepseek-chat", "glm-4.7-flash"],
+                    "prompt_sha256": "abc"}})
+    assert ok == "llm-panel" and why == ""
+    # 人审按协议原文认，不需要工具指纹（人要留的是签名，不是 sha256）。
+    assert check_holdout.review_class({"reviewed_by": "human"})[0] == "human"
+    # 别的字符串一律不认——此前是"写什么算什么"。
+    assert check_holdout.review_class({"reviewed_by": "vibes"})[0] is None
+
+
+def test_gate_7_refuses_two_panel_protocol_hashes():
+    """同一份 held-out 里出现两个面板提示指纹 = 协议没冻结，前后两半不可比。"""
+    status, detail = check_holdout.gate_human_review(
+        3, {"llm-panel": 3}, 3, classes=("human", "llm-panel"),
+        uncorroborated=0,
+        panel_prompt_hashes={"aaa": 2, "bbb": 1})
+    assert status == check_holdout.FAIL
+    assert "协议未冻结" in detail["reason"]
+    # 单一指纹时按条数判，并原样报出用了哪些指纹。
+    status, detail = check_holdout.gate_human_review(
+        3, {"llm-panel": 3}, 3, classes=("human", "llm-panel"),
+        uncorroborated=0, panel_prompt_hashes={"aaa": 3})
+    assert status == check_holdout.PASS and list(detail["panel_prompt_hashes"]) == ["aaa"]
+
+
+def test_gate_entries_reports_uncorroborated_reviews(tmp_path):
+    """端到端：条目上挂一个没佐证的面板记录 → 报告里出现、且**不计入**已裁。"""
+    records = valid_records()
+    stamped = 0
+    for record in records:
+        if record.get("expect_movements"):
+            record["review"] = {"reviewed_by": "llm-panel", "verdict": "accepted"}
+            stamped += 1
+    assert stamped, "夹具里必须有 needs_human 的条目，否则这条测试是空的"
+    status, detail = check_holdout.gate_entries(records)
+    assert status == check_holdout.PASS
+    assert detail["uncorroborated_count"] == stamped
+    assert detail["reviewed_by_class"] == {}          # 未佐证 = 没裁过
+    assert detail["panel_prompt_hashes"] == {}
