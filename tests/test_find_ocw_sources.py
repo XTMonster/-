@@ -69,3 +69,33 @@ def test_every_hop_goes_through_the_robots_gate(monkeypatch):
         ocw._get("https://ocw.mit.edu/blocked/x.pdf", 5.0)
     ocw._get("https://ocw.mit.edu/courses/ok/x.pdf", 5.0)
     assert called["fetched"] == 1, "被 robots 拒的那一跳不许真的抓"
+
+
+def test_harvest_records_the_course_and_honours_the_want_filter(monkeypatch):
+    """候选必须带**课程归属**，且 `--want` 能按题材挑——否则只能"全吞"。
+
+    为什么重要：扩语料会**抬高门⑥ 的分母**（每张新卡都要有至少一条条目），
+    所以只能按题材挑最可能补薄边的几门课，而不是把 40 门全收进来。
+    第一版没有归属字段，45 份候选全成了无名氏，根本没法挑。
+    """
+    monkeypatch.setattr(ocw, "resource_pages",
+                        lambda slug, timeout=30.0: ["https://ocw.mit.edu/p/%s" % slug])
+    monkeypatch.setattr(ocw, "pdfs_on",
+                        lambda page, timeout=30.0: [page.replace("/p/", "/f_") + ".pdf"])
+
+    def fake_fetch(source, timeout, rate):
+        return {"url": source["url"]}
+
+    monkeypatch.setattr(ocw.fetch_mod, "fetch_source", fake_fetch)
+    monkeypatch.setattr(ocw.extract_mod, "extract_record",
+                        lambda record: ("正文" * 40, ""))
+    monkeypatch.setattr(ocw.time, "sleep", lambda _s: None)
+
+    slugs = ["21a-550j-dv-lab-documenting-science-through-video-and-new-media-fall-2012",
+             "21l-011-the-film-experience-fall-2013"]
+    report = ocw.harvest(slugs, timeout=1.0, rate=0.0, max_courses=5,
+                         max_pages_per_course=5, want=["dv-lab"])
+    assert report["stats"]["courses"] == 1, "`--want` 之外课程不许被抓"
+    assert report["candidates"], "应当产出候选"
+    assert {c["course"] for c in report["candidates"]} == {slugs[0]}, (
+        "候选必须记录课程归属")

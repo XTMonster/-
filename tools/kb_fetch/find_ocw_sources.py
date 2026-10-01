@@ -90,11 +90,13 @@ def pdfs_on(page: str, timeout: float = 30.0) -> List[str]:
 
 
 def harvest(slugs: Sequence[str], *, timeout: float = 30.0, rate: float = 1.0,
-            max_courses: int = 5, max_pages_per_course: int = 12) -> Dict:
+            max_courses: int = 5, max_pages_per_course: int = 12,
+            want: Sequence[str] = ()) -> Dict:
     """对若干课程走完"资源页 → PDF → 管线验证"。返回候选与统计。"""
     candidates: List[Dict] = []
     stats = {"courses": 0, "pages": 0, "pdfs": 0, "verified": 0}
-    for slug in slugs[:max_courses]:
+    picked = [s for s in slugs if not want or any(w in s for w in want)]
+    for slug in picked[:max_courses]:
         stats["courses"] += 1
         for page in resource_pages(slug, timeout)[:max_pages_per_course]:
             stats["pages"] += 1
@@ -117,7 +119,9 @@ def harvest(slugs: Sequence[str], *, timeout: float = 30.0, rate: float = 1.0,
                     continue
                 if text:
                     stats["verified"] += 1
-                    candidates.append({**hit, "chars": len(text)})
+                    # **记录课程归属**：否则分不清哪份 PDF 来自哪门课，
+                    # 也就没法"按题材收"（实测第一版就是这样，45 份候选全成了无名氏）。
+                    candidates.append({**hit, "course": slug, "chars": len(text)})
                     print("  OK %7d chars %s" % (len(text), hit["title"][:48]))
                 time.sleep(rate)
     return {"stats": stats, "candidates": candidates}
@@ -132,6 +136,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--out", default="work/ocw_candidates.json")
     parser.add_argument("--list-only", action="store_true",
                         help="只列筛出来的课程名，不抓资源页")
+    parser.add_argument("--want", nargs="*", default=[],
+                        help="**只收课程名里含这些子串的课**（例：`--want editing sound`）。"
+                             "用来按题材挑，而不是把 40 门课全吞 —— 扩语料会抬高门⑥ 的分母。")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     for stream in (sys.stdout, sys.stderr):
@@ -148,7 +155,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     report = harvest(picked, timeout=args.timeout, rate=args.rate,
                      max_courses=args.max_courses,
-                     max_pages_per_course=args.max_pages_per_course)
+                     max_pages_per_course=args.max_pages_per_course,
+                     want=args.want)
     pathlib.Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     pathlib.Path(args.out).write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n",
