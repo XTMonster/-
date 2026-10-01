@@ -117,6 +117,11 @@ def test_e3_cases_flag_a_constraint_field(tmp_path):
     out = quality.e3_cases(cases)
     assert out["status"] == "fail" and out["numerator"] == 1
     assert quality.e3_cases(None)["status"] == "not_measured"
+    # 空文件同样判失败：分母 0 不是"没有越权案例"，是"没有案例可查"（§4.1b）。
+    empty = tmp_path / "empty_cases.jsonl"
+    empty.write_text("", encoding="utf-8")
+    blank = quality.e3_cases(empty)
+    assert blank["status"] == "fail" and blank["denominator"] == 0
 
 
 # --------------------------------------------------------------------------- E1 / E2

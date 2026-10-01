@@ -117,12 +117,22 @@ def e3_experience_override(graph) -> Dict[str, Any]:
 
 
 def e3_cases(cases_path: Optional[Path]) -> Dict[str, Any]:
-    """L3 侧的 E3：案例**结构上**不能带约束；文件层面再核一遍。"""
+    """L3 侧的 E3：案例**结构上**不能带约束；文件层面再核一遍。
+
+    **空文件同样判失败**（2026-10-01）：`cases.jsonl` 存在但一行都没有时，
+    `bad` 为空 → 旧实现判 PASS，而它的分母正是 0 —— 和 L2 侧的 E3 是同一种
+    空集通过（§4.1b 硬规则 1）。"没有越权案例"与"没有案例可查"必须分开。
+    """
     if cases_path is None or not Path(cases_path).is_file():
         return {"id": "E3_cases", "status": NA,
                 "note": "没有 knowledge/cases.jsonl：L3 侧无证据"}
     rows = [json.loads(line) for line in Path(cases_path).read_text(
         encoding="utf-8").split("\n") if line.strip()]
+    if not rows:
+        return {"id": "E3_cases", "status": FAIL,
+                "numerator": 0, "denominator": 0, "line": 0,
+                "note": "cases.jsonl 存在但为空：分母为 0，按 §4.1b 判失败"
+                        "（不得当成'没有越权案例'）"}
     bad = [row.get("case_id") for row in rows
            if any(key in row for key in ("forbid", "forbids", "constraint"))]
     return {"id": "E3_cases", "status": PASS if not bad else FAIL,
