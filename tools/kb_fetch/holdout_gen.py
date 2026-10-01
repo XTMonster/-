@@ -52,7 +52,12 @@ MANIFEST = common.WORK / "holdout.manifest.json"
 #: v15：`avg_shot_len` 补了查询键 `镜长`（见正文规则 1 的说明）。提示正文变了 ⇒
 #: 版本号必须跟着变，否则"续跑"会把 v14 口径产出的 partial 当成同一批。
 #: **不需要重抽索引**：`avg_shot_len` 本来就在边里，改的只是"查询能不能说出它"。
-PROMPT_VERSION = "holdout/v15"
+#: v16：`q` 的键集里多了 **`forbid` 键**（`禁构图`／`禁运镜`…，v1.6 加的）。
+#: 键清单是**从 schema 渲染**的（`check_holdout.query_key_text()`），所以模板一个字没改、
+#: 有效提示却变了——版本号是让指纹诚实地跟着变，免得"续跑"把旧口径的 partial
+#: 当成同一批。用法：`q` 里可以同时写 `构图=occlusion`（要）与 `禁构图=balance`
+#: （不要）；后者用来把"必填成员相同、只差禁止哪个取值"的边区分开。
+PROMPT_VERSION = "holdout/v16"
 REVIEW_BATCH = 1
 
 SYSTEM_PROMPT = """你是分镜知识库的**独立标注员**。你会看到若干条知识卡（语料）与一份冻结的\
