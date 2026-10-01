@@ -285,3 +285,45 @@ schema 常量永远不许当宿主。
 close-up" 是列举景别，不是镜序——这条分支以前就是因为放过它才被删掉的）。
 顺带修掉裁剪缺陷：`_clip_quote` 会把最后一个节拍切在引之外，改为先定位
 "第一个节拍到最后一个节拍"的跨度再裁。
+
+### 9.11 薄边来源选型的实测结论：**Project Gutenberg 供不上**
+
+按 9.9 的结论动手补语料，两次定向检索（每次都用管线自己的 `find_sources.py`，
+候选**逐本过真实 fetch＋extract 门**，不是只看目录命中）：
+
+```powershell
+python -m tools.kb_fetch.find_sources --domain editing --terms photoplay scenario `
+    continuity "screen writing" "picture music" --limit 14
+# → 命中 8，可抓 8/8：Writing the Photoplay / How to write photoplays /
+#   The Photoplay: A Psychological Study 有用；Papacy、Church of England、Sacountala、
+#   Million Dollar Mystery、Canadian Photoplay 是小说/宗教/剧本改编（无技术内容）
+
+python -m tools.kb_fetch.find_sources --domain editing --terms "motion pictures" `
+    cinematography sound technique editing --limit 12
+# → 命中 12，可抓 12/12：Fifty "Bab" Ballads、澳洲探险日志 ×3、Plautus、Hamburgische
+#   Dramaturgie、Tom Swift… **只有 1 本**（Moral Deliberations in Modern Cinema）沾边
+```
+
+**关键事实**：那三本真正有用的（`pg15383`／`pg17903`／`pg76829`）**本来就已经在
+`sources.yaml` 里**（59 条 → 它们是其中 3 条），v1.6 的全库重抽已经覆盖过它们。
+也就是说：门④ 的 4 类短线（`EDIT_RHYTHM` 3／`IMPACT_PACK` 22／`SOUND_PACK` 21／
+`MUSIC_PACK` 14）与门⑥ 的 512 张卡，**不是"来源没进来"，是这批来源产不出那些边**。
+
+供给侧的三条约束叠在一起：
+
+1. **许可白名单**（CC0/CC-BY/CC-BY-SA/PublicDomain/OwnWork/ExplicitPermission/PersonalStudy）
+   把现代剪辑/声音实务教材挡在外面 —— 它们绝大多数是 1929 年之后的商业出版物；
+2. **robots 门**（取不到 robots.txt 就拒收）已经淘汰了 archive.org、wikisource、
+   pressbooks 等能提供期扫描件的站点，实测记录在 `sources.yaml` 抬头；
+3. Gutenberg 目录的元数据很薄，关键词检索命中的多半是**小说**（这次两轮共 20 本里
+   只有 4 本有技术内容）。
+
+**处置**：门④/⑥ **保持红，不调门限**。要让它们真的转绿，只有两条路——
+(a) 找到新的、许可与 robots 都过得去且**真的讲剪辑/声音实务**的来源族
+（例如 CC 授权的高校影视制作课程讲义、开放教材）；
+(b) 规格裁决：`--min-per-type 30` 是 schema 只有 6 类、语料是另一批时定的常数；
+16 类摊同一份语料之后，"每类 ≥30 对"是否还是正确的判据，需要重新拍板
+（**不允许**由实现单方面调低，这正是本文件存在的意义）。
+
+在 (a)/(b) 落地之前，这两道门就应该是红的 —— 它们如实反映了
+"当前许可语料的覆盖面对不上 16 类 schema"。
