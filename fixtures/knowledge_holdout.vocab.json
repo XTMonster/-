@@ -1,5 +1,5 @@
 {
-"_fingerprint": "9a88bf2f14dd17e3",
+"_fingerprint": "7885d97eb45ecab5",
 "kinds": {
 "action": [
 "上下场",
@@ -89,7 +89,6 @@
 "intent": [
 "压迫",
 "回望",
-"对抗",
 "推进",
 "揭示",
 "收束",
@@ -123,17 +122,17 @@
 "handheld",
 "orbit_ccw",
 "orbit_cw",
-"pan_left",
-"pan_right",
 "push_through",
 "steadicam",
-"track_left",
+"tilt_down",
+"tilt_up",
 "track_right",
 "whip_pan_left",
 "whip_pan_right",
 "固定"
 ],
 "music": [
+"环境底噪",
 "铺底",
 "静默"
 ],
