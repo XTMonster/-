@@ -573,6 +573,41 @@ def test_q_value_that_contradicts_must_is_rejected(tmp_path):
     assert "不一致" in " ".join(data["gate_2_format"]["problems"])
 
 
+def test_edge_type_gate_scales_down_to_what_the_index_can_assert():
+    """门④ 的对数要求取 `min(--min-per-type, 该类可断言对数)`（2026-10-01 用户裁决）。
+
+    旧判据"每类 ≥30 对"是 schema 只有 6 类时的常数；v1.6 有 16 类，同一份许可语料
+    摊到每类只剩 20 上下，而三类的原子边数 ≈ 覆盖卡片数（跨卡归并无从下手）——
+    门限在构造上够不到。新增的 `assertable` 由**索引侧**给出（与 oracle 生成了什么无关），
+    所以这不是自证：**能给到 30 的类必须交满 30，给不到的按它真能给的要求**。
+    """
+    pairs = {"ACTION_BEAT": 335, "MUSIC_PACK": 16}
+    cards = {"ACTION_BEAT": 300, "MUSIC_PACK": 16}
+    # 不给 assertable → 退回旧判据（行为不变）
+    status, detail = check_holdout.gate_edge_types(pairs, cards, 30, 10)
+    assert status == check_holdout.FAIL
+    assert detail["short_pairs"] == {"MUSIC_PACK": 16}
+    assert detail["assertable_provided"] is False
+    # 给了 → ACTION_BEAT 仍要 30（它有 335），MUSIC_PACK 只要 16（它就只有 16）
+    status, detail = check_holdout.gate_edge_types(
+        pairs, cards, 30, 10, assertable={"ACTION_BEAT": 335, "MUSIC_PACK": 16})
+    assert status == check_holdout.PASS
+    assert detail["required_pairs_per_type"] == {"ACTION_BEAT": 30, "MUSIC_PACK": 16}
+    # 覆盖不足仍然红：MUSIC_PACK 只交了 10 对时不许过
+    status, _detail = check_holdout.gate_edge_types(
+        {"ACTION_BEAT": 335, "MUSIC_PACK": 10}, cards, 30, 10,
+        assertable={"ACTION_BEAT": 335, "MUSIC_PACK": 16})
+    assert status == check_holdout.FAIL
+
+
+def test_assertable_cap_never_raises_the_bar():
+    """`assertable` 只能把要求**压到实际能给**，不许把某个类的要求抬到 30 以上。"""
+    status, detail = check_holdout.gate_edge_types(
+        {"TROPE": 40}, {"TROPE": 40}, 30, 10, assertable={"TROPE": 500})
+    assert status == check_holdout.PASS
+    assert detail["required_pairs_per_type"]["TROPE"] == 30
+
+
 def test_same_value_required_and_forbidden_in_one_edge_is_rejected(tmp_path):
     rec = entry(must=["EMOTION_PACK:emotion=气急败坏,intensity=high,shot_size=中景,"
                       "forbid_shot_size=中景"])

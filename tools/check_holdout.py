@@ -466,11 +466,36 @@ def gate_total(entries: Sequence[dict], min_entries: int) -> Tuple[str, dict]:
 
 
 def gate_edge_types(pairs: Dict[str, int], cards: Dict[str, int],
-                    per_type: int, min_cards: int) -> Tuple[str, dict]:
-    short = {t: n for t, n in pairs.items() if n < per_type}
+                    per_type: int, min_cards: int,
+                    assertable: Dict[str, int] | None = None) -> Tuple[str, dict]:
+    """每类边都要被考到；**每类的对数据"该类能断言多少对"取小**。
+
+    **门限口径变更（2026-10-01，用户裁决"改门限吧"）**。旧判据是"每类 ≥ `per_type`
+    （30）条 `(卡片, 查询)` 要求 + ≥ `min_cards`（10）张不同的卡"。这个 30 是 schema
+    **只有 6 类**、语料是另一批时的常数；v1.6 扩到 16 类之后，同一份**许可可得**的语料
+    摊到每类只剩 20 上下（实测 `IMPACT_PACK` 22／`SOUND_PACK` 22／`MUSIC_PACK` 16），
+    而这三类的原子边数 ≈ 覆盖卡片数、required 签名大多各不相同（跨卡归并无从下手）——
+    它们**在构造上够不到 30**。供给侧也两度查到底：Gutenberg 与 OCW 两个能用的馆藏
+    **都不产**这类知识（`REMAINING_DECISIONS.md` 附一～附六）。
+
+    新判据：`required = min(per_type, assertable[type])` ——
+    **"每类至多要求它真能给的那些对，但能给到 30 就必须交满 30"**。
+
+    `assertable` 由**索引**侧给出（`tools/holdout_pool.py --report` 里的
+    `assertable_pairs_per_type`：该类在词表内、且有来源卡的 `(卡片, 查询)` 对，
+    **与 oracle 实际生成了什么无关**），所以这不是"拿自己的答案给自己判卷"：
+    它仍然要求 oracle 把该类**能断言的对**全部对出来。
+    没给 `assertable` 时退回旧判据（`required = per_type`），行为不变。
+    """
+    limits = {}
+    for edge_type in pairs:
+        cap = per_type if not assertable else int(assertable.get(edge_type, per_type))
+        limits[edge_type] = min(per_type, cap)
+    short = {t: n for t, n in pairs.items() if n < limits.get(t, per_type)}
     thin = {t: n for t, n in cards.items() if n < min_cards}
     return (PASS if not short and not thin else FAIL), {
         "min_pairs_per_type": per_type, "min_cards_per_type": min_cards,
+        "required_pairs_per_type": limits, "assertable_provided": bool(assertable),
         "short_pairs": short, "thin_cards": thin}
 
 
@@ -878,6 +903,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="每类边至少被多少条 **去重后的 (卡片,查询)** 要求")
     parser.add_argument("--min-cards-per-type", type=int, default=10,
                         help="每类边的支撑条目至少来自多少张不同的卡")
+    parser.add_argument("--assertable", default="",
+                        help="门④ 的**可断言对**上限（JSON：{类型: 对数}，来自 "
+                             "`tools/holdout_pool.py --report`）。给了它，每类的对数要求"
+                             "取 `min(--min-per-type, 该类可断言对数)`：**能给到 30 的必须"
+                             "交满 30，给不到的按它真能给的要求**（2026-10-01 用户裁决）。"
+                             "不给就退回旧判据。")
     parser.add_argument("--min-forbid", type=int, default=60)
     parser.add_argument("--min-seed-support", type=int, default=3,
                         help="每个词表取值至少出现在多少条不同的 (卡片,查询) 里")
@@ -936,8 +967,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     report["gate_2_format"] = {"status": fstatus,
                                **{k: v for k, v in fdetail.items() if k != "_parsed_q"}}
 
+    assertable: Dict[str, int] | None = None
+    if args.assertable:
+        try:
+            payload = json.loads(pathlib.Path(args.assertable).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(json.dumps({"error": f"读不到 --assertable: {exc}"}, ensure_ascii=False))
+            return 1
+        # 接受两种形状：直接的 `{类型: 对数}`，或池工具的完整报告
+        # （`{"assertable_pairs_per_type": {...}}`）。
+        assertable = payload.get("assertable_pairs_per_type", payload)
     tstatus, tdetail = gate_edge_types(fdetail["must_pairs_per_type"],
-                                       fdetail["must_cards_per_type"], per_type, min_cards)
+                                       fdetail["must_cards_per_type"], per_type, min_cards,
+                                       assertable=assertable)
     statuses.append(tstatus)
     report["gate_4_edge_types"] = {"status": tstatus, **tdetail}
 

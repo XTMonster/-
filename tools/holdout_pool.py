@@ -201,6 +201,10 @@ def mechanical(graph, universe: Sequence[str], *,
     entries: List[dict] = []
     skipped = collections.Counter()
     full_counts = full_match_counts(graph)
+    #: 门④ 的**可断言对**：该类在词表内、且有来源卡的 `(卡片, 查询)` 对。
+    #: **由索引侧给出，与 oracle 实际生成了什么无关** —— 这是"每类至多要求它真能给的
+    #: 那些对"这条新门限的输入（`check_holdout --assertable`）。
+    assertable: Dict[str, int] = collections.Counter()
     #: `(kind, value)` → 该取值出现过的 (edge_group, edge_index, card) 三元组。
     #: 补覆盖轮用它来找"还能换哪张卡"。
     holders: Dict[Tuple[str, str], List[Tuple[int, int]]] = collections.defaultdict(list)
@@ -251,6 +255,7 @@ def mechanical(graph, universe: Sequence[str], *,
                     break
                 entries.append(_row(edge, card, specs, index, group_ids, by_type,
                                     _in_vocab))
+                assertable[edge.type] += 1
 
     support: Dict[Tuple[str, str], set] = collections.defaultdict(set)
     for row in entries:
@@ -287,6 +292,7 @@ def mechanical(graph, universe: Sequence[str], *,
                 if len(support[(kind, value)]) >= MIN_VALUE_SUPPORT:
                     break
     return entries, {"skipped": dict(skipped), "groups": len(ordered),
+                     "assertable_pairs_per_type": dict(sorted(assertable.items())),
                      "top_up_added": sum(topped.values()),
                      "top_up_by_kind": dict(topped),
                      "under_supported_values": sorted(
