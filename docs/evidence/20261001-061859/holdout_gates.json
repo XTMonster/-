@@ -1,0 +1,369 @@
+{
+  "path": "fixtures\\knowledge_holdout.jsonl",
+  "pilot": false,
+  "gate_1_total": {
+    "status": "pass",
+    "entries": 4239,
+    "entries_pilot": 0,
+    "min_entries": 1200
+  },
+  "gate_2_format": {
+    "status": "pass",
+    "entries": 4239,
+    "valid": 4239,
+    "problems": [],
+    "problem_count": 0,
+    "q7_conflicts": 272,
+    "must_pairs_per_type": {
+      "EMOTION_PACK": 604,
+      "SHOT_PATTERN": 553,
+      "AXIS_RULE": 197,
+      "TROPE": 242,
+      "EDIT_RHYTHM": 300,
+      "LIGHT_PACK": 349,
+      "ACTION_BEAT": 300,
+      "PERFORMANCE_PACK": 317,
+      "INTENT_PACK": 660,
+      "IMPACT_PACK": 248,
+      "STAGING_PACK": 490,
+      "SOUND_PACK": 224,
+      "TRANSITION_PACK": 189
+    },
+    "must_cards_per_type": {
+      "EMOTION_PACK": 481,
+      "SHOT_PATTERN": 494,
+      "AXIS_RULE": 141,
+      "TROPE": 237,
+      "EDIT_RHYTHM": 284,
+      "LIGHT_PACK": 329,
+      "ACTION_BEAT": 295,
+      "PERFORMANCE_PACK": 292,
+      "INTENT_PACK": 634,
+      "IMPACT_PACK": 234,
+      "STAGING_PACK": 483,
+      "SOUND_PACK": 217,
+      "TRANSITION_PACK": 150
+    },
+    "q7_forbid_members": {
+      "movement=handheld": 67,
+      "movement=dolly_in": 13,
+      "movement=dolly_out": 17,
+      "movement=crane_up": 33,
+      "movement=orbit_cw": 23,
+      "movement=crane_down": 16,
+      "movement=orbit_ccw": 18,
+      "movement=track_left": 11,
+      "movement=pan_left": 13,
+      "vfx=flame": 5,
+      "shot_size=ELS": 5,
+      "movement=tilt_up": 11,
+      "shot_size=ECU": 5,
+      "shot_size=LS": 5,
+      "shot_size=MCU": 6,
+      "movement=pan_right": 8,
+      "shot_size=MS": 6,
+      "shot_size=MLS": 5,
+      "movement=follow_subject": 8,
+      "shot_size=CU": 5,
+      "vfx=smoke": 1,
+      "vfx=glow": 2,
+      "vfx=impact_frame": 1,
+      "vfx=spark": 1
+    },
+    "needs_human": 622,
+    "human_reviewed": 0,
+    "q7_member_count": 24
+  },
+  "gate_4_edge_types": {
+    "status": "pass",
+    "min_pairs_per_type": 30,
+    "min_cards_per_type": 10,
+    "short_pairs": {},
+    "thin_cards": {}
+  },
+  "gate_5_forbid": {
+    "status": "pass",
+    "q7_conflicts": 272,
+    "min": 60
+  },
+  "gate_5b_forbid_members": {
+    "status": "pass",
+    "members": 24,
+    "under_covered": {}
+  },
+  "gate_7_human_review": {
+    "status": "fail",
+    "needs_human": 622,
+    "human_reviewed": 0,
+    "min_human_review": 120
+  },
+  "gate_8_independence": {
+    "status": "pass",
+    "extractor_family": "deepseek",
+    "annotator_families": [
+      "zhipu"
+    ],
+    "strong_but_same_family": [],
+    "liar_count": 0
+  },
+  "gate_3_seed_coverage": {
+    "status": "fail",
+    "missing_values": {
+      "action": [
+        "跺脚"
+      ],
+      "movement": [
+        "固定"
+      ],
+      "lighting": [
+        "底光"
+      ]
+    },
+    "unknown_values": {
+      "axis_topic": [
+        "关系轴"
+      ],
+      "vfx": [
+        "impact_frame"
+      ],
+      "movement": [
+        "pan_right"
+      ]
+    },
+    "thin_values": {
+      "action": [
+        "跺脚"
+      ],
+      "movement": [
+        "固定"
+      ],
+      "lighting": [
+        "底光"
+      ]
+    },
+    "min_support": 3,
+    "kinds_checked": 17,
+    "vocab_fingerprint": true,
+    "unreachable_kinds": [
+      "axis_topic",
+      "character",
+      "object"
+    ]
+  },
+  "gate_6_sources": {
+    "status": "fail",
+    "cards": 2067,
+    "missing_cards": [
+      "gen_anime_0264",
+      "gen_anime_0265",
+      "gen_anime_0266",
+      "gen_anime_0267",
+      "gen_anime_0268",
+      "gen_anime_0269",
+      "gen_anime_0270",
+      "gen_anime_0271",
+      "gen_anime_0272",
+      "gen_anime_0273",
+      "gen_anime_0274",
+      "gen_anime_0275",
+      "gen_anime_0276",
+      "gen_anime_0277",
+      "gen_anime_0278",
+      "gen_anime_0279",
+      "gen_anime_0280",
+      "gen_anime_0281",
+      "gen_anime_0282",
+      "gen_anime_0283"
+    ],
+    "missing_count": 1334,
+    "ghost_cards": [
+      "gen_anime_0001",
+      "gen_anime_0002",
+      "gen_anime_0003",
+      "gen_anime_0004",
+      "gen_anime_0005",
+      "gen_anime_0006",
+      "gen_anime_0007",
+      "gen_anime_0008",
+      "gen_anime_0009",
+      "gen_anime_0010",
+      "gen_anime_0011",
+      "gen_anime_0012",
+      "gen_anime_0013",
+      "gen_anime_0014",
+      "gen_anime_0015",
+      "gen_anime_0016",
+      "gen_anime_0017",
+      "gen_anime_0018",
+      "gen_anime_0019",
+      "gen_anime_0020"
+    ],
+    "ghost_count": 341
+  },
+  "gate_9_reachability": {
+    "status": "fail",
+    "entries": 4239,
+    "short": 2271,
+    "short_ratio": 0.5357,
+    "examples": [
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "q": "意图=收束；景别=MCU",
+        "unreachable": [
+          "movement=crane_down"
+        ]
+      },
+      {
+        "id": "hq_0006",
+        "line": 6,
+        "q": "情绪=温柔；构图=framing",
+        "unreachable": [
+          "intensity=low"
+        ]
+      },
+      {
+        "id": "hq_0008",
+        "line": 8,
+        "q": "景别=MLS；构图=occlusion",
+        "unreachable": [
+          "lens=35mm"
+        ]
+      },
+      {
+        "id": "hq_0009",
+        "line": 9,
+        "q": "动作=推门；特效=glow",
+        "unreachable": [
+          "intensity=mid"
+        ]
+      },
+      {
+        "id": "hq_0010",
+        "line": 10,
+        "q": "意图=压迫；光线=顶光",
+        "unreachable": [
+          "movement=dolly_in",
+          "shot_size=CU"
+        ]
+      }
+    ],
+    "scope": "must[0] + top1，plain 槽位；QUERYABLE_KINDS 排除 scene_type/beat_type（与产出侧同一份口径）"
+  },
+  "gate_10_index_resolvable": {
+    "status": "fail",
+    "entries": 4239,
+    "specs": 12805,
+    "resolved": {
+      "must": 2173,
+      "top1": 1988,
+      "never": 1862
+    },
+    "totals": {
+      "must": 4675,
+      "top1": 4239,
+      "never": 3891
+    },
+    "unresolved_per_field": {
+      "must": 2502,
+      "top1": 2251,
+      "never": 2029
+    },
+    "unresolved": 6782,
+    "unresolved_ratio": 0.5296,
+    "unresolved_by_cause": {
+      "plain_subset_index_has_extra_members": 602,
+      "no_edge_with_those_plain_members": 5624,
+      "plain_subset_but_forbid_differs": 521,
+      "value_not_in_index": 35
+    },
+    "unresolved_by_edge_type": {
+      "AXIS_RULE": 420,
+      "INTENT_PACK": 1488,
+      "SHOT_PATTERN": 775,
+      "ACTION_BEAT": 795,
+      "IMPACT_PACK": 608,
+      "SOUND_PACK": 295,
+      "EMOTION_PACK": 593,
+      "TROPE": 259,
+      "STAGING_PACK": 572,
+      "LIGHT_PACK": 75,
+      "TRANSITION_PACK": 167,
+      "PERFORMANCE_PACK": 703,
+      "EDIT_RHYTHM": 32
+    },
+    "unresolved_closeness": {
+      "2": 4883,
+      "1": 1258,
+      "3": 601,
+      "0": 40
+    },
+    "strict_relation_matches": 6023,
+    "subset_relation_matches": 6625,
+    "subset_relation_ratio": 0.5174,
+    "expectation_relation": "exact",
+    "card_edge_matches": 5294,
+    "card_edge_ratio": 0.4134,
+    "index_edges": 891,
+    "examples": [
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=neutral",
+        "cause": "plain_subset_index_has_extra_members"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "top1",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=neutral",
+        "cause": "plain_subset_index_has_extra_members"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "never",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left",
+        "cause": "plain_subset_index_has_extra_members"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "must",
+        "spec": "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left",
+        "cause": "plain_subset_index_has_extra_members"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "top1",
+        "spec": "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "never",
+        "spec": "INTENT_PACK:intent=铺垫,shot_size=ELS,movement=dolly_out",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0004",
+        "line": 4,
+        "field": "must",
+        "spec": "AXIS_RULE:pair=any_two,axis_side=left",
+        "cause": "plain_subset_index_has_extra_members"
+      }
+    ],
+    "note": "§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。 逐字段未命中：{'must': 2502, 'top1': 2251, 'never': 2029}；诊断：另有 6625/12805 条满足「标注成员 ⊆ 索引边（forbid 完全相等）」——这一层与规格字面的「成员集完全相等」不同，标注方不可见索引时后者在构造上不可能全过（AXIS_RULE 的可选 axis_topic 就是结构性一例），属规格级裁决"
+  },
+  "overall": "fail"
+}

@@ -1,0 +1,111 @@
+{
+  "queries": 2927,
+  "edges": 766,
+  "selected_total": 8781,
+  "metrics": [
+    {
+      "id": "Q1",
+      "status": "fail",
+      "numerator": 1884,
+      "denominator": 2927,
+      "value": 0.6437,
+      "line": 0.7,
+      "note": "held-out query 数 2927（下界 1200）"
+    },
+    {
+      "id": "Q2",
+      "status": "fail",
+      "numerator": 2238,
+      "denominator": 2927,
+      "value": 0.7646,
+      "line": 0.9,
+      "note": ""
+    },
+    {
+      "id": "Q3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 1259,
+      "value": 0.0,
+      "line": 0.1,
+      "note": ""
+    },
+    {
+      "id": "Q4",
+      "status": "fail",
+      "numerator": 2294,
+      "denominator": 2319,
+      "value": 0.9892,
+      "line": 1.0,
+      "note": "required 总数 2319（下界 200）"
+    },
+    {
+      "id": "Q6a",
+      "status": "pass",
+      "numerator": 8781,
+      "denominator": 8781,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q6b",
+      "status": "fail",
+      "numerator": 4150,
+      "denominator": 4156,
+      "value": 0.9986,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q7",
+      "status": "pass",
+      "numerator": 145,
+      "denominator": 145,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "冲突查询数 145（下界 60）"
+    }
+  ],
+  "must_total": 5203,
+  "required_unresolved": 1047,
+  "required_unresolved_entries": 702,
+  "unresolved_examples": [
+    {
+      "id": "hq_0001",
+      "q": "动作=上下场；桥段=transition；强度=high",
+      "unresolved": [
+        "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high"
+      ]
+    },
+    {
+      "id": "hq_0002",
+      "q": "动作=上下场；桥段=transition；强度=high",
+      "unresolved": [
+        "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high"
+      ]
+    },
+    {
+      "id": "hq_0008",
+      "q": "动作=人数限制；桥段=coverage；强度=low",
+      "unresolved": [
+        "ACTION_BEAT:action=人数限制,beat_type=coverage,intensity=low"
+      ]
+    },
+    {
+      "id": "hq_0009",
+      "q": "动作=人数限制；桥段=establish；强度=low",
+      "unresolved": [
+        "ACTION_BEAT:action=人数限制,beat_type=establish,intensity=low"
+      ]
+    },
+    {
+      "id": "hq_0010",
+      "q": "动作=人数限制；桥段=establish；强度=low",
+      "unresolved": [
+        "ACTION_BEAT:action=人数限制,beat_type=establish,intensity=low"
+      ]
+    }
+  ],
+  "passed": false
+}

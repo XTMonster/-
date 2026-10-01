@@ -1,0 +1,112 @@
+{
+  "queries": 4239,
+  "edges": 891,
+  "selected_total": 12711,
+  "metrics": [
+    {
+      "id": "Q1",
+      "status": "fail",
+      "numerator": 1161,
+      "denominator": 4239,
+      "value": 0.2739,
+      "line": 0.7,
+      "note": "held-out query 数 4239（下界 1200）"
+    },
+    {
+      "id": "Q2",
+      "status": "fail",
+      "numerator": 1624,
+      "denominator": 4239,
+      "value": 0.3831,
+      "line": 0.9,
+      "note": ""
+    },
+    {
+      "id": "Q3",
+      "status": "pass",
+      "numerator": 37,
+      "denominator": 1862,
+      "value": 0.0199,
+      "line": 0.1,
+      "note": ""
+    },
+    {
+      "id": "Q4",
+      "status": "fail",
+      "numerator": 1639,
+      "denominator": 2173,
+      "value": 0.7543,
+      "line": 1.0,
+      "note": "required 总数 2173（下界 200）"
+    },
+    {
+      "id": "Q6a",
+      "status": "pass",
+      "numerator": 12711,
+      "denominator": 12711,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q6b",
+      "status": "fail",
+      "numerator": 1783,
+      "denominator": 2173,
+      "value": 0.8205,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q7",
+      "status": "pass",
+      "numerator": 472,
+      "denominator": 472,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "冲突查询数 472（下界 60）"
+    }
+  ],
+  "must_total": 4675,
+  "required_unresolved": 2502,
+  "required_unresolved_entries": 2336,
+  "unresolved_examples": [
+    {
+      "id": "hq_0001",
+      "q": "轴线=中性机位；光线=正面光",
+      "unresolved": [
+        "AXIS_RULE:pair=any_two,axis_side=neutral"
+      ]
+    },
+    {
+      "id": "hq_0003",
+      "q": "意图=收束；景别=MCU",
+      "unresolved": [
+        "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
+        "AXIS_RULE:pair=any_two,axis_side=left"
+      ]
+    },
+    {
+      "id": "hq_0004",
+      "q": "轴线=视线轴；景别=MS",
+      "unresolved": [
+        "AXIS_RULE:pair=any_two,axis_side=left"
+      ]
+    },
+    {
+      "id": "hq_0005",
+      "q": "景别=MS；镜头=85mm",
+      "unresolved": [
+        "AXIS_RULE:pair=any_two,axis_side=right"
+      ]
+    },
+    {
+      "id": "hq_0006",
+      "q": "情绪=温柔；构图=framing",
+      "unresolved": [
+        "SHOT_PATTERN:shot_size=CU,lens=35mm,headroom_policy=board,composition_rule=framing"
+      ]
+    }
+  ],
+  "passed": false
+}
