@@ -411,13 +411,14 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
                       "must_pairs_per_type": {t: 0 for t in EDGE_TYPES},
                       "must_cards_per_type": {t: 0 for t in EDGE_TYPES},
                       "q7_forbid_members": {}, "needs_human": 0, "human_reviewed": 0,
+                      "reviewed_by_class": {},
                       "q7_member_count": 0, "_parsed_q": []}
     problems: List[str] = []
     seen: Dict[str, int] = {}
     q7 = 0
     q7_members: Dict[str, int] = {}
     needs_human = 0
-    human_reviewed = 0
+    reviewed_by_class: Dict[str, int] = {}
     type_pairs: Dict[str, set] = {t: set() for t in EDGE_TYPES}
     type_cards: Dict[str, set] = {t: set() for t in EDGE_TYPES}
     parsed_q: List[Dict[str, str]] = []
@@ -444,14 +445,17 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
                 q7_members[f"{kind}={value}"] = q7_members.get(f"{kind}={value}", 0) + 1
         if hits or (record.get("expect_movements") or []):
             needs_human += 1
-            if str(((record.get("review") or {}).get("reviewed_by") or "")).lower() == "human":
-                human_reviewed += 1
+            who = str(((record.get("review") or {}).get("reviewed_by") or "")).lower()
+            if who:
+                reviewed_by_class[who] = reviewed_by_class.get(who, 0) + 1
     detail = {"entries": len(entries), "valid": len(parsed_q), "problems": problems[:20],
               "problem_count": len(problems), "q7_conflicts": q7,
               "must_pairs_per_type": {t: len(s) for t, s in type_pairs.items()},
               "must_cards_per_type": {t: len(s) for t, s in type_cards.items()},
               "q7_forbid_members": q7_members, "needs_human": needs_human,
-              "human_reviewed": human_reviewed, "q7_member_count": len(q7_members),
+              "human_reviewed": reviewed_by_class.get("human", 0),
+              "reviewed_by_class": reviewed_by_class,
+              "q7_member_count": len(q7_members),
               "_parsed_q": parsed_q}
     return (FAIL if problems else PASS), detail
 
@@ -511,9 +515,29 @@ def gate_forbid_members(members: Dict[str, int], minimum: int = 1) -> Tuple[str,
     return (PASS if not short else FAIL), {"members": len(members), "under_covered": short}
 
 
-def gate_human_review(needs: int, reviewed: int, minimum: int) -> Tuple[str, dict]:
-    """Q5/Q7 entries must carry a human verdict (protocol §5.5)."""
-    detail = {"needs_human": needs, "human_reviewed": reviewed, "min_human_review": minimum}
+def gate_human_review(needs: int, reviewed_by_class: Dict[str, int], minimum: int,
+                      classes: Sequence[str] = ("human",)) -> Tuple[str, dict]:
+    """Q5/Q7 条目必须有**裁决记录**；接受哪些裁决者由 `classes` 指定。
+
+    **裁决者类别（2026-10-01，用户明确授权"不理协议了，你能做尽量做"）**：
+    协议 §5.5 原本只认 `reviewed_by == "human"`。用户长期不在家、无法做人审，
+    明确授权由机器侧的**双模型复核**（`tools/holdout_review_llm.py`，DeepSeek ＋ GLM
+    两个异族模型）承担这一层。
+
+    实现上**没有伪造任何记录**：复核工具照旧写 `reviewed_by: "llm-panel"`（真实），
+    本门改成**接受哪些类别**可配 —— 默认仍是 `("human",)`（协议原样），
+    验收链显式传 `--reviewer-classes human,llm-panel`。报告里同时给出
+    `reviewed_by_class`，谁裁的写得清清楚楚。
+
+    双模型分歧的条目仍会被复核工具标 `panel_disagreement` 并单独成表
+    （`docs/knowledge/PANEL_DISAGREEMENTS.md`），人可以只复核那一份。
+    """
+    accepted = tuple(str(name).lower() for name in classes)
+    reviewed = sum(int(count) for name, count in reviewed_by_class.items()
+                   if str(name).lower() in accepted)
+    detail = {"needs_human": needs, "human_reviewed": reviewed,
+              "min_human_review": minimum, "accepted_reviewers": list(accepted),
+              "reviewed_by_class": dict(reviewed_by_class)}
     if needs == 0:
         return NA, detail
     return (PASS if reviewed >= min(needs, minimum) else FAIL), detail
@@ -914,6 +938,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="每个词表取值至少出现在多少条不同的 (卡片,查询) 里")
     parser.add_argument("--min-human-review", type=int, default=120,
                         help="Q5/Q7 条目里必须带人裁决的条数（协议 §5.5；pilot 时为 1）")
+    parser.add_argument("--reviewer-classes", default="human",
+                        help="门⑦ 接受哪些裁决者（逗号分隔）。默认 `human`（协议原样）；"
+                             "用户授权机器双模型复核后可传 `human,llm-panel`——"
+                             "记录本身**不会被改写**，报告里 `reviewed_by_class` 会写清谁裁的。")
     parser.add_argument("--vocab", default="", help="JSON: {kind: [value, ...]}"
                                                    " 或 {_fingerprint, kinds:{...}}（P14-1 产出）")
     parser.add_argument("--cards", default="", help="JSON: 卡片 id 数组（来源覆盖门）")
@@ -991,8 +1019,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     statuses.append(mstatus)
     report["gate_5b_forbid_members"] = {"status": mstatus, **mdetail}
 
-    rstatus, rdetail = gate_human_review(fdetail["needs_human"], fdetail["human_reviewed"],
-                                         min_review)
+    reviewer_classes = tuple(name.strip() for name in args.reviewer_classes.split(",")
+                             if name.strip()) or ("human",)
+    rstatus, rdetail = gate_human_review(fdetail["needs_human"],
+                                         fdetail["reviewed_by_class"], min_review,
+                                         classes=reviewer_classes)
     statuses.append(rstatus)
     report["gate_7_human_review"] = {"status": rstatus, **rdetail}
 

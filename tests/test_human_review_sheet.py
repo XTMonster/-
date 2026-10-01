@@ -67,8 +67,25 @@ def test_ticking_the_sheet_turns_gate_7_green(tmp_path):
     assert all(e["review"]["verdict"] == "accepted" for e in final)
 
     status, detail = check_holdout.gate_human_review(
-        needs=len(entries), reviewed=len(final), minimum=120)
+        needs=len(entries), reviewed_by_class={"human": len(final)}, minimum=120)
     assert status == check_holdout.PASS, detail
+
+
+def test_the_panel_class_is_only_accepted_when_explicitly_asked_for():
+    """机器复核（`llm-panel`）默认**不算**门⑦；用户授权后由 `--reviewer-classes` 显式打开。
+
+    2026-10-01 用户裁决："不理协议了，你能做尽量做" —— 人不在家，由双模型复核承担这一层。
+    实现上**没有伪造记录**（复核工具照旧写 `llm-panel`），改的是"门接受哪些裁决者"：
+    默认仍是 `human`（协议原样），要采信机器复核必须显式传 `human,llm-panel`。
+    """
+    counts = {"llm-panel": 130}
+    status, detail = check_holdout.gate_human_review(120, counts, 120)
+    assert status == check_holdout.FAIL, "默认不许拿机器复核充人审"
+    assert detail["accepted_reviewers"] == ["human"]
+    status, detail = check_holdout.gate_human_review(120, counts, 120,
+                                                     classes=("human", "llm-panel"))
+    assert status == check_holdout.PASS
+    assert detail["reviewed_by_class"] == {"llm-panel": 130}, "谁裁的必须如实留在报告里"
 
 
 def test_an_untouched_sheet_is_refused_not_silently_accepted(tmp_path):
