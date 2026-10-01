@@ -1,7 +1,7 @@
 # held-out 人审裁决表（门⑦）
 
-- 需要人裁决的条目：**142** 条（门⑦ 要求其中至少 `min(总数, 120)` 条带上 `reviewed_by == "human"`）。
-- 本表列出 **142** 条（`--limit` 控制）。
+- 需要人裁决的条目：**146** 条（门⑦ 要求其中至少 `min(总数, 120)` 条带上 `reviewed_by == "human"`）。
+- 本表列出 **146** 条（`--limit` 控制）。
 
 **怎么填**：每节末尾的打勾位从 `[ ]` 改成 `[x]` 表示这条期望成立；不成立就删掉那行、改写成 `rejected: 原因`；要改写成别的就写 `amended: 改成什么`。三种写法 `tools/holdout_review.py apply` 都认。
 
@@ -2019,4 +2019,60 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-<!-- 142/142 -->
+## hq_2688 · gen_comp_0006 · Q7 冲突 1 处
+
+查询 A：`构图=headroom；景别=MS；机位=平视；禁构图=rule_of_thirds`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=headroom,shot_size=MS,camera_angle=平视,forbid_composition_rule=rule_of_thirds` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2689 · gen_comp_0051 · Q7 冲突 1 处
+
+查询 A：`构图=headroom；景别=MS；机位=平视；禁构图=rule_of_thirds`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=headroom,shot_size=MS,camera_angle=平视,forbid_composition_rule=rule_of_thirds` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2752 · gen_comp_0056 · Q7 冲突 1 处
+
+查询 A：`构图=occlusion；景别=MS；机位=平视；禁构图=balance`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=occlusion,shot_size=MS,camera_angle=平视,forbid_composition_rule=balance` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2753 · gen_comp_0110 · Q7 冲突 1 处
+
+查询 A：`构图=occlusion；景别=MS；机位=平视；禁构图=rule_of_thirds`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=occlusion,shot_size=MS,camera_angle=平视,forbid_composition_rule=rule_of_thirds` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+<!-- 146/146 -->
