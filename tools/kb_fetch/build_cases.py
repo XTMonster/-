@@ -94,6 +94,20 @@ BEAT_CUES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
 )
 #: 箭头枚举的切分符（显式列举的唯一判据）。`—>` 是中文长破折号后缀的写法。
 ARROW_RE = re.compile(r"\s*(?:→|->|—>)\s*")
+#: **散文里的显式顺序枚举**（v1.6 新增）。为什么需要：`sequence_pattern` 原先只认
+#: 箭头（`→`/`->`），而箭头是**我们自己的笔记**的写法；外部他人著作里基本没有箭头，
+#: 于是"理论必须由他人写"的裁决一生效，派生数直接归零，而门限 7 是从那批自撰笔记的
+#: 条数（4＋3）来的 —— 门与语料一起失效。
+#: 外部语料表达镜序用的是**顺序词**："先给建立镜头，再切覆盖，最后落到反应"。
+#: 这类同样是**显式枚举**（不是我们推断出来的顺序），只是标点不同：
+#: 判据仍然全部保留 —— 每段至多一个节拍、≥2 个不同节拍、节拍顺序 == 文本顺序、
+#: `excerpt` 必须逐字可回指，且**必须出现顺序标记**（否则"提到过两个节拍"会被误判成套路，
+#: 那正是这条分支以前被删掉的原因）。
+#: **中英双语**：外部他人著作（Gutenberg／MIT OCW）绝大多数是英文，
+#: 只写中文顺序词等于一条都命中不到 —— 实测第一版就是 0 条（语料是英文散文）。
+ORDER_CUES = ("先", "首先", "然后", "再", "接着", "随后", "随即", "最后", "之后", "继而",
+              "first", "then", "next", "finally", "lastly", "after that", "second",
+              "third", "subsequently", "afterwards", "at last")
 #: 行首的列表装饰（`- ` / `* ` / `1. ` / `1、` / `一、`），只脱前缀不脱正文——
 #: 脱掉的都是装饰符，剩下的仍然是原文的**连续子串**（"可回指原文"成立）。
 LIST_MARKER_RE = re.compile(r"^\s*(?:[-*·]|\d+\s*[.、)]|[一二三四五六七八九十]+\s*[、.)])\s*")
@@ -267,6 +281,55 @@ def sequence_pattern_of(text: str) -> List[Tuple[str, List[str]]]:
     return out
 
 
+def prose_sequence_pattern_of(text: str) -> List[Tuple[str, List[str]]]:
+    """抽**散文里的显式顺序枚举**：`先建立镜头，再切覆盖，最后落到反应`。
+
+    为什么要有这一条（2026-10-01 用户裁决"理论必须由他人写"之后）：箭头枚举是
+    **我们自己笔记**的写法，外部他人著作里几乎不用；只用箭头会让 `sequence_pattern`
+    这一类比配额外全部落空，而门限 `SEQUENCE_FLOOR = 7` 又是从那批自撰笔记的条数
+    （4＋3）来的 —— 门和语料一起失去依据。
+
+    判据**一条都不放宽**（缺一不算）：
+
+    1. 按句读切出的每一段**至多**映射到一个节拍（复用 `_beat_of`，同一套 `BEAT_CUES`）；
+    2. 映射到的**不同**节拍 ≥2；
+    3. `beat_sequence` 严格按文本出现位置排（不做任何重排）；
+    4. 整段里**必须出现显式顺序标记**（`ORDER_CUES`）—— 这条是防"只是提到了两个
+       节拍"被误判成套路的闸门：这条分支以前就是因为放过 3 而把"准备—执行—收势"
+       判成镜序，才被删掉的；
+    5. `excerpt` 必须逐字可回指原文（复用 `_clip_quote` 与 `quote_is_verbatim`）。
+    """
+    plain = MARKUP_RE.sub("", str(text or ""))
+    out: List[Tuple[str, List[str]]] = []
+    for raw_segment in common.split_sentences(plain):
+        segment = raw_segment.strip()
+        if len(segment) < 12 or not any(cue in segment for cue in ORDER_CUES):
+            continue
+        beats: List[str] = []
+        for clause in re.split(r"[，、；,;]", segment):
+            beat = _beat_of(clause)
+            if beat is not None and beat in BEAT_TYPES and beat not in beats:
+                beats.append(beat)
+        if len(beats) < 2:
+            continue
+        # **裁剪必须罩住全部节拍**：`_clip_quote` 是按句子/逗号截最长前缀的，
+        # 实测会把最后一个节拍切在引之外（"first…then…finally…" 引到第二个逗号就停），
+        # 于是 `beat_positions` 给出 -1、整条被门判 `beat_not_in_excerpt`。
+        # 先定位第一个节拍到最后一个节拍的那一段，再对它裁剪。
+        span_positions = beat_positions(segment, beats)
+        if any(position < 0 for position in span_positions):
+            continue
+        excerpt = _clip_quote(segment[min(span_positions):])
+        if excerpt is None or not common.quote_is_verbatim(excerpt, plain):
+            continue
+        # 节拍必须都能在 excerpt 里找到出处，且顺序一致（与门里的复核同一口径）。
+        positions = beat_positions(excerpt, beats)
+        if any(position < 0 for position in positions) or positions != sorted(positions):
+            continue
+        out.append((excerpt, beats))
+    return out
+
+
 def pick_excerpt(segment: str) -> Optional[str]:
     """取一段**可回指原文**的短引：≤2 句且 ≤120 字；取不到就整段作废。"""
     sentences = common.split_sentences(segment)
@@ -331,6 +394,12 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
         for pattern_index, (excerpt, beats) in enumerate(
                 sequence_pattern_of(body), 1):
             candidates.append((f"case_{slug}_seq{pattern_index:03d}",
+                               "sequence_pattern", list(beats), excerpt, excerpt))
+        # 候选一b：**散文里的显式顺序枚举**（外部他人著作的主要写法，见
+        # `prose_sequence_pattern_of`）。与箭头枚举同一张表、同一套判据，只是标点不同。
+        for pattern_index, (excerpt, beats) in enumerate(
+                prose_sequence_pattern_of(body), 1):
+            candidates.append((f"case_{slug}_pseq{pattern_index:03d}",
                                "sequence_pattern", list(beats), excerpt, excerpt))
         # 候选二：散文段落（`lesson` ／ `narrative`）。
         items = list(enumerate(segments_of(body), 1))

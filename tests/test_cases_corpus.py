@@ -257,3 +257,42 @@ def test_evaluate_reports_an_undersized_corpus():
     verdict = builder.evaluate(cases[:2], {**report, "cases": 2})
     assert verdict["passed"] is False
     assert any(problem.startswith("cases_too_few") for problem in verdict["problems"])
+def test_prose_sequence_pattern_recognises_ordered_enumerations():
+    """散文里的**显式顺序枚举**要能派生套路（外部他人著作的主要写法）。
+
+    背景：`sequence_pattern` 原先只认箭头（`→`/`->`），而箭头是**我们自己笔记**的
+    写法；用户裁决"理论必须由他人写"之后那批笔记退出语料，外部 Gutenberg／OCW
+    散文里根本没有箭头 —— 实测 59 篇语料 **0 条**箭头套路。补上这条通道：
+    "先…再…最后…" / "first…then…finally…" 同样是**显式枚举**，判据一条没放宽。
+    """
+    from tools.kb_fetch import build_cases as bc
+
+    english = ("First the director opens on an establishing shot of the street, "
+               "then he cuts to coverage of the two men talking, and finally he "
+               "lands on a close-up insert of the letter.")
+    got = bc.prose_sequence_pattern_of(english)
+    assert got, "英文顺序枚举没被识别"
+    _excerpt, beats = got[0]
+    assert len(set(beats)) >= 2
+    assert beats == [b for b in beats if b in bc.BEAT_TYPES]
+    # 节拍顺序必须与文本顺序一致（门里的复核同一口径）。
+    assert bc.beat_positions(_excerpt, beats) == sorted(bc.beat_positions(_excerpt, beats))
+
+    chinese = "先给一个建立镜头交代环境，再切到两人的覆盖镜头，最后落到信件特写。"
+    got_cn = bc.prose_sequence_pattern_of(chinese)
+    assert got_cn, "中文顺序枚举没被识别"
+
+
+def test_prose_sequence_pattern_rejects_order_free_enumeration():
+    """**没有顺序标记**的并列枚举不是套路——这是这条分支以前被删掉的原因。
+
+    "There is the long shot, the intermediate and the close-up" 只是**列举景别**，
+    不是镜序；把它判成 `sequence_pattern` 会让 `beat_sequence` 变成编造的顺序。
+    """
+    from tools.kb_fetch import build_cases as bc
+
+    enumeration = "There is the long shot, the intermediate and the close-up or insert."
+    assert bc.prose_sequence_pattern_of(enumeration) == []
+    # 同理：只提到一个节拍不算。
+    single = "First, the director opens on an establishing shot of the whole street."
+    assert bc.prose_sequence_pattern_of(single) == []
