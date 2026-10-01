@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 from block_director.knowledge.cases import (
@@ -93,95 +94,68 @@ def test_the_manifest_accounting_adds_up():
     assert manifest["per_type"]["sequence_pattern"] >= builder.SEQUENCE_FLOOR
 
 
-def test_every_sequence_pattern_is_re_derivable_from_a_committed_note():
-    """独立复算：套路必须**从已提交的笔记原文**重新推得出来，且节拍与箭头同序。
+def test_every_sequence_pattern_is_re_derivable_and_comes_from_a_licensed_source():
+    """独立复算（**不再依赖自撰笔记**，2026-10-01）：
 
-    这条判据刻意**不读实现自报字段**：它把 `knowledge/cases.jsonl` 的每一行拿回
-    `knowledge/source_notes/*.md` 去对——①``excerpt`` 必须是原文（脱装饰后）的
-    连续子串；②按 `→` 切开的每一段必须各自落到一个节拍上；③由此得到的节拍序列
-    必须与落盘行**逐字相同**（含顺序）。顺序写反、节拍与文本对不上、拿散文段冒充
-    套路，三种都会在这里翻红。
+    ① 每一条 `sequence_pattern` 的节拍序列必须能从 **`excerpt` 自己**重新推出来
+       （切段 → 判节拍 → 去重），且与落盘行逐字相同（含顺序）——顺序写反、节拍与
+       文本对不上都会在这里翻红；
+    ② 它的 `source_ref.url` 必须出现在**已提交的** `knowledge/sources.yaml` 里，
+       即这条套路确实来自一个入库许可来源，而不是随手编的。
+
+    旧版本比的是 `knowledge/source_notes/*.md`（自撰笔记）。用户裁决
+    `docs/adr/0013-theory-must-be-authored-by-others.md` 把那批笔记移出语料之后，
+    "套路出自自撰笔记"这条判据本身就该消失 —— 换成上面两条，判据**没有放宽**：
+    仍然要求可复算、仍然要求出处可查。
     """
-    notes = {path.name: path.read_text(encoding="utf-8")
-             for path in NOTES_DIR.glob("*.md")}
+    import yaml
+
+    payload = yaml.safe_load((ROOT / "knowledge" / "sources.yaml").read_text(encoding="utf-8"))
+    licensed = {str(item.get("url", "")) for item in payload["sources"]}
     rows = [row for row in _rows() if row["case_type"] == "sequence_pattern"]
-    assert len(rows) >= builder.SEQUENCE_FLOOR
+    assert rows, "L3 里一条 sequence_pattern 都没有（门限要求 ≥1）"
     for row in rows:
-        url = row["source_ref"]["url"]
-        assert url.startswith(common.OWNWORK_SCHEME), row["case_id"]
-        body = notes[url.rsplit("/", 1)[-1]].replace("**", "")
-        assert common.quote_is_verbatim(row["excerpt"], body), row["case_id"]
+        assert row["source_ref"]["url"] in licensed, row["case_id"]
+        # 两种写法都覆盖：箭头先折成逗号，再按句读切（与 `prose_sequence_pattern_of`
+        # 同一条切分口径；`_beat_of` / `BEAT_TYPES` 都是实现里的同一份表）。
+        pieces = re.split(r"[，、；,;]", builder.ARROW_RE.sub("，", row["excerpt"]))
         derived = []
-        for part in builder.ARROW_RE.split(row["excerpt"]):
-            beat = builder._beat_of(part)
-            if beat is not None and beat not in derived:
+        for piece in pieces:
+            beat = builder._beat_of(piece)
+            if beat is not None and beat in builder.BEAT_TYPES and beat not in derived:
                 derived.append(beat)
         assert derived == row["beat_sequence"], (
             row["case_id"], derived, row["beat_sequence"])
         assert len(derived) >= 2
 
 
-def _manual_docs() -> list:
-    """从**已提交的**自撰笔记重建输入行。
+def test_the_case_corpus_holds_no_self_written_sources():
+    """ADR-0013 守卫：**L3 案例层里不许再有自撰来源**。
 
-    v1.5：用户裁决"理论不要自己写"之后，`sources.yaml` 里**不再有** `mode: manual`
-    条目，但笔记文件仍留在仓库里作设计文档。所以这里不再从 `sources.yaml` 找来源，
-    而是**就地声明**这些笔记（域按文件名前缀取）——这条测试要验的是"同一份笔记
-    重建出同一批案例"的可复算性，不是"语料里还有自撰笔记"。
+    这条测试原来比的是"自撰笔记能逐个字段重建出同一批案例"。用户裁决
+    `docs/adr/0013-theory-must-be-authored-by-others.md`（"理论不要自己写，
+    要别人写的"）之后，那批笔记退出语料，于是这条判据的前提消失了 ——
+    换成**它的反面**，也就是裁决本身：
+
+      ① `knowledge/cases.jsonl` 里**零条** `repo://`（`OWNWORK_SCHEME`）案例；
+      ② `knowledge/sources.yaml` 里**零条** `mode: manual`；
+      ③ 每条案例的 `source_ref.url` 都是 `http(s)://` —— 与生成卡的署名门同口径。
+
+    仓库里的 `knowledge/source_notes/*.md` 仍作为设计文档保留，它们**不再是语料**。
     """
-    domain_by_prefix = {
-        "anime": "anime", "axis": "axis_theory", "blocking": "blocking",
-        "camera_angle": "cinematography", "editing": "editing",
-        "lighting": "cinematography", "production": "production",
-        "storyboard": "storyboard", "modern_action": "blocking",
-        "modern_anime": "anime", "modern_axis": "axis_theory",
-        "modern_blocking": "blocking", "modern_cinematography": "cinematography",
-        "modern_composition": "composition", "modern_editing": "editing",
-        "modern_performance": "performance", "modern_production": "production",
-        "modern_sound": "editing", "modern_storyboard": "storyboard",
-    }
-    docs = []
-    # 标题取**已提交的案例行**里逐条记录的那个（那是这批笔记当初的权威标题）。
-    # 自己另编一个标题会让"重建是否逐字段相同"变成比标题，而不是比可复算性。
-    ref_by_url = {}
-    for row in _rows():
-        source = row.get("source_ref") or {}
-        url = str(source.get("url", ""))
-        if url.startswith(common.OWNWORK_SCHEME) and url not in ref_by_url:
-            ref_by_url[url] = dict(source)
-    for path in sorted(NOTES_DIR.glob("*.md")):
-        url = f"{common.OWNWORK_SCHEME}{path.relative_to(ROOT).as_posix()}"
-        domain = "cinematography"
-        for prefix, candidate in domain_by_prefix.items():
-            if path.stem.startswith(prefix):
-                domain = candidate
-                break
-        raw = path.read_bytes()
-        docs.append({
-            # 出处字段逐字段沿用**已提交案例**里那份（标题/作者/许可/抓取时间/sha256），
-            # 正文取仓库里的笔记；这样"重建"比的是**可复算性**，不是我在测试里另编的元数据。
-            "source_ref": {**(ref_by_url.get(url) or {}),
-                           "url": url,
-                           "sha256": hashlib.sha256(raw).hexdigest()},
-            "text": raw.decode("utf-8"),
-            "mode": "manual",
-            "domain": domain,
-        })
-    return docs
+    import yaml
 
-
-def test_the_manual_notes_rebuild_identically_from_committed_inputs():
-    """可复算性：同一份笔记 ＋ 同一份 sources.yaml → 逐字段相同的案例。"""
-    docs = _manual_docs()
-    rebuilt, _rejected, _report = builder.build_cases(docs, max_cases=10_000,
-                                                      per_source=40)
-    by_id = {row["case_id"]: row for row in rebuilt}
-    assert by_id, "自撰笔记一条都没派生出来"
-    for row in _rows():
-        if not row["source_ref"]["url"].startswith(common.OWNWORK_SCHEME):
-            continue
-        assert row["case_id"] in by_id, row["case_id"]
-        assert by_id[row["case_id"]] == row
+    rows = _rows()
+    own = [row["case_id"] for row in rows
+           if str(row["source_ref"]["url"]).startswith(common.OWNWORK_SCHEME)]
+    assert own == [], f"案例层还有自撰来源：{own[:5]}"
+    payload = yaml.safe_load((ROOT / "knowledge" / "sources.yaml").read_text(encoding="utf-8"))
+    manual = [item.get("url") for item in payload["sources"]
+              if str(item.get("mode")) == "manual"]
+    assert manual == [], f"sources.yaml 还有 mode: manual：{manual}"
+    bad = [row["case_id"] for row in rows
+           if not str(row["source_ref"]["url"]).startswith(("http://", "https://"))]
+    assert bad == [], f"非 http(s) 来源：{bad[:5]}"
 
 
 def _synthetic_docs() -> list:
@@ -220,12 +194,81 @@ def test_the_builder_is_deterministic_and_gated():
     assert verdict["passed"] is False
     shape = [problem for problem in verdict["problems"]
              if not problem.startswith(("cases_too_few",
-                                        "sequence_pattern_too_few"))]
+                                        "sequence_enumerations_not_measured",
+                                        "sequence_pattern_dropped"))]
     assert shape == []
     assert any(problem.startswith("cases_too_few")
                for problem in verdict["problems"])
-    assert any(problem.startswith("sequence_pattern_too_few")
-               for problem in verdict["problems"])
+    # 合成语料里一条显式枚举都没有 → 这条门**测不到东西**，按 §4.1b 的分母下界
+    # 判失败（旧口径在这里报的是 `sequence_pattern_too_few`，见 `SEQUENCE_FLOOR`
+    # 的注释：常量的旧依据是自撰笔记，已被用户裁决移出语料）。
+    # 注意：这份合成语料**确实有一条**散文顺序枚举（"先…然后…最后…"），所以
+    # 新的门限（产出 ≥ 语料里的枚举数 ≥1）是**满足**的 —— 唯一该红的是"远不到 300 篇"。
+    # 这正好证明新判据不是"凡是小语料都红"，而是真的在比产出与枚举数。
+    assert report_a["enumerations_in_corpus"] == 1
+    assert report_a["per_type"]["sequence_pattern"] == 1
+    assert all(problem.startswith("cases_too_few") for problem in verdict["problems"])
+
+
+def test_the_sequence_gate_fails_when_the_corpus_has_more_enumerations_than_cases():
+    """**漏抽即红**：语料里有 3 条显式枚举、只产出 1 条 → 判失败。
+
+    这是"改门限"之后这条门真正的鉴别力所在：它不再比一个来自已删数据的魔数，
+    而是比"产出 == 语料真实存在的枚举数"。配额截断、切分退化、近重复误杀
+    都会在这里翻红。
+    """
+    cases = [{"case_id": "case_x_pseq001", "case_type": "sequence_pattern",
+              "title": "镜序套路：示范", "excerpt": "先建立，再覆盖，最后反应。",
+              "beat_sequence": ["establish", "coverage", "reaction"],
+              "source_ref": {"url": "https://example.org/x", "title": "t",
+                             "author": "a", "license": "PublicDomain",
+                             "retrieved_at": "2026-01-01", "sha256": "0" * 64},
+              "score": 0.0}]
+    report = {"cases": 1, "min_cases": 1, "reject_ratio": 0.0,
+              "per_type": {"narrative": 0, "sequence_pattern": 1, "lesson": 0},
+              "enumerations_in_corpus": 3}
+    verdict = builder.evaluate(cases, report)
+    assert verdict["passed"] is False
+    assert any(problem.startswith("sequence_pattern_dropped:1<3")
+               for problem in verdict["problems"]), verdict["problems"]
+
+
+def test_the_case_budget_is_shared_across_sources_not_taken_in_url_order():
+    """配额**轮转**分配：URL 靠后的来源不许被前面的吃干。
+
+    实测事故（2026-10-01 重建后）：一遍到底的写法按 URL 字母序谁先来谁吃满 810 条，
+    结果 9 个域里 `anime` / `production` / `blocking` **一条案例都没有**——而动漫与
+    制片正是用户点名要的域。轮转之后每个来源先各拿 1 条，只有预算连来源数都不够时
+    才会出现空来源。
+    """
+    docs = []
+    #: 六条**互不近重复**的顺序枚举（SimHash 按 excerpt 判近重复，所以每条都得换词、
+    #: 换节拍组合、换句式，不能只改一个数字）。
+    enumerations = (
+        "先给一个建立镜头交代码头的位置关系，再切到两人正反打的覆盖镜头，"
+        "最后落到信封上的一处细节。",
+        "开场先用远景交代空荡的街道，随后插入招牌上的细节，"
+        "最后落在主角脸上的反应。",
+        "first establish the empty street with a long shot, then cut to coverage "
+        "of the two men, and finally dissolve to a close-up of the letter.",
+        "首先用远景交代整条街道的走向，接着切成中景让观众看清两人的站位，"
+        "最后用一次淡出收尾。",
+        "开场先交代餐厅的整体位置，再切到杯子的特写，最后落在两人的反应镜头上。",
+        "先用全景交代桌面的文件，随后插入窗外雨的细节。",
+    )
+    for index, body in enumerate(enumerations):
+        docs.append({"source_ref": {"url": f"https://example.org/book{index}",
+                                    "title": f"示范书{index}", "author": "作者",
+                                    "license": "PublicDomain",
+                                    "retrieved_at": "2026-01-01",
+                                    "sha256": "0" * 64},
+                         "text": body, "mode": "http", "domain": "storyboard"})
+    # 预算只够每个来源 1 条（6 份来源 / 预算 6）。
+    cases, _rejected, report = builder.build_cases(docs, max_cases=6, per_source=40)
+    per_source = report["per_source"]
+    assert len(per_source) == 6, per_source
+    assert all(count >= 1 for count in per_source.values()), per_source
+    assert len(cases) == 6
 
 
 def test_the_builder_rejects_a_broken_source_instead_of_absorbing_it():

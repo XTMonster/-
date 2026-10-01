@@ -70,7 +70,12 @@ BUILD_REJECT_RATIO = 0.05
 MIN_SEGMENT_CHARS = 120
 MAX_SEGMENT_CHARS = 420
 SENTENCES_PER_SEGMENT = 3
-DEFAULT_MAX_CASES = 900
+#: 条数上限**由入库体积门反推**（单文件 ≤ 512 KB，见 `MAX_CASE_FILE_BYTES`）：
+#: 实测每条案例序列化后约 630 B，512 KB ÷ 630 ≈ 830；取 **810** 留出余量。
+#: 原值 900 是在较小的旧语料上定的，重建后的语料一跑就写出 567 KB —— 直接违反
+#: 体积门（写盘路径自己报了 `oversize`）。这不是放宽判据：`min_cases` 仍是 300，
+#: 被裁掉的条数进 `quota_truncated`（实测 1710），账目照记。
+DEFAULT_MAX_CASES = 810
 DEFAULT_PER_SOURCE = 40
 
 #: 有序镜序套路的节拍词 → §2.3d T3 的 ``beat_type`` 取值（**不得自造**）。
@@ -115,11 +120,21 @@ LIST_MARKER_RE = re.compile(r"^\s*(?:[-*·]|\d+\s*[.、)]|[一二三四五六七
 #: "可回指原文"的判据在**同样去掉装饰符**的正文上做（见 `sequence_pattern_of`），
 #: 因此这一步不是放宽门，只是让注入文本里不再出现裸 asterisk。
 MARKUP_RE = re.compile(r"\*\*|__")
-#: §2.3d T1 的 ``sequence_pattern`` 数量门：**已提交语料里显式枚举的套路条数**。
-#: 这个数字来自 `knowledge/source_notes/` 的箭头行（storyboard_practice.md 4 条 ＋
-#: anime_language.md 3 条），不是"够用就行"的拍脑袋值：新增一条真套路就该往上调，
-#: 少一条就说明派生退化了（此门只允许**升**，不允许为了通过而调低）。
-SEQUENCE_FLOOR = 7
+#: §2.3d T1 的 ``sequence_pattern`` 门：**语料里有多少条显式枚举，就必须产出多少条**。
+#:
+#: 原来的常量是 **7**，依据是 `knowledge/source_notes/` 里那批**自撰笔记**的箭头行
+#: （storyboard_practice.md 4 条 ＋ anime_language.md 3 条）。2026-10-01 的用户裁决
+#: `docs/adr/0013-theory-must-be-authored-by-others.md` 把自撰笔记全部移出语料，
+#: 依据随之消失 —— 而外部他人著作里实测只有 **1 条**显式枚举（箭头 0、散文顺序词 1）。
+#: 用户对"L3 无解"的处置明确回过"**改门限吧**"，因此这个数不再写死：
+#:
+#:   门限 = 本次语料里**显式枚举的条数**（`enumerations_in_corpus`，构建时实测），
+#:          且它必须 ≥1（空集判失败 —— §4.1b 硬规则 1 的分母下界）。
+#:
+#: 这样它测的东西从"许可语料够不够多"（供给，本项目已两次查到底）变成
+#: "**产出有没有漏掉语料里真实存在的枚举**"（实现质量）——配额截断、切分退化、
+#: 去重误杀都会当场判红，而它不再依赖一个已经不存在的数据来源。
+SEQUENCE_FLOOR = 1
 LESSON_CUES = ("失败", "错误", "切忌", "避免", "不要", "不可", "禁忌", "教训",
                "误区", "误用", "不宜", "avoid", "mistake", "never", "fault",
                "error", "don't", "do not")
@@ -374,7 +389,19 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
     per_source_docs: Dict[str, int] = {}
     raw_segments = 0
     segments_total = 0
+    #: 语料里**显式枚举**的条数（箭头行 ＋ 散文顺序枚举），**在配额/去重之前**数。
+    #: 它是门限的来源：产出的 `sequence_pattern` 少于它，就说明有真的枚举被漏掉
+    #: （配额截断、切分退化、或近重复误杀），而不是"语料不够多"。
+    enumerations_in_corpus = 0
 
+    #: 第一遍：**每个来源先把候选攒齐**（不消费配额），第二遍按轮转分配。
+    #:
+    #: 为什么不能一遍到底：原来的写法是"按来源 URL 字母序，谁先来谁吃满配额"，
+    #: 实测在重建后的语料上**饿死整域**——`per_domain` 里 `anime` / `production` /
+    #: `blocking` 直接是 0 条（9 个域里 3 个在 L3 层完全没有覆盖），而它们是
+    #: 用户点名要的（动漫/制片）。轮转让每个来源先各拿 1 条、再拿第 2 条……，
+    #: 于是"某几个域一条都没有"只可能发生在预算连来源数都不够的时候。
+    plans: List[Dict] = []
     for doc in sorted(docs, key=lambda item: str(item.get("source_ref", {}).get("url", ""))):
         source_ref = dict(doc.get("source_ref", {}))
         slug = common.source_slug({"url": source_ref.get("url", "")})
@@ -386,7 +413,6 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
             rejects.append({"source": slug,
                             "reason": f"license_not_allowed:{source_ref.get('license')}"})
             continue
-        accepted = 0
         body = str(doc.get("text", ""))
         # 候选一：显式箭头枚举的镜序套路（`sequence_pattern`）。它们**先于**
         # 散文段落参评：套路是 §2.3d T1 点名要 L3 承载的东西，不能被配额挤掉。
@@ -401,6 +427,8 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
                 prose_sequence_pattern_of(body), 1):
             candidates.append((f"case_{slug}_pseq{pattern_index:03d}",
                                "sequence_pattern", list(beats), excerpt, excerpt))
+        enumerations_in_corpus += sum(1 for item in candidates
+                                      if item[1] == "sequence_pattern")
         # 候选二：散文段落（`lesson` ／ `narrative`）。
         items = list(enumerate(segments_of(body), 1))
         segments_total += len(items)
@@ -418,10 +446,23 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
                 continue
             candidates.append((f"case_{slug}_{index:03d}", classify(segment), [],
                                excerpt, segment))
+        plans.append({"slug": slug, "source_ref": source_ref,
+                      "domain": str(doc.get("domain", "")),
+                      "candidates": candidates, "accepted": 0})
 
-        for case_id, case_type, beats, excerpt, hint in candidates:
+    #: 第二遍：**轮转配额**（每个来源第 1 条 → 第 2 条 → …）。候选在来源内的相对
+    #: 顺序不变（套路永远排在散文段之前），所以 `sequence_pattern` 仍然优先。
+    rounds = max((len(plan["candidates"]) for plan in plans), default=0)
+    for round_index in range(rounds):
+        for plan in plans:
+            candidates = plan["candidates"]
+            if round_index >= len(candidates):
+                continue
+            slug = plan["slug"]
+            source_ref = plan["source_ref"]
+            case_id, case_type, beats, excerpt, hint = candidates[round_index]
             raw_segments += 1
-            if accepted >= per_source or len(cases) >= max_cases:
+            if plan["accepted"] >= per_source or len(cases) >= max_cases:
                 # 超出配额：不是"拒绝"，是**配额截断**，单独计数（别混进 rejects）。
                 quota.append({"source": slug, "segment": case_id, "reason": "quota"})
                 continue
@@ -460,11 +501,11 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
             seen_keys.add(digest)
             seen_excerpts.append(signature)
             cases.append(row)
-            accepted += 1
+            plan["accepted"] += 1
             counters[case_type] += 1
-            domain = str(doc.get("domain", ""))
-            per_domain[domain] = per_domain.get(domain, 0) + 1
-        per_source_docs[slug] = accepted
+            per_domain[plan["domain"]] = per_domain.get(plan["domain"], 0) + 1
+    for plan in plans:
+        per_source_docs[plan["slug"]] = plan["accepted"]
 
     cases.sort(key=lambda row: row["case_id"])
     raw = max(raw_segments, 1)
@@ -482,6 +523,8 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
         "per_type": counters,
         "per_domain": dict(sorted(per_domain.items())),
         "per_source": dict(sorted(per_source_docs.items())),
+        #: 门限的**来源**：语料里显式枚举了几条（配额/去重之前）。产出少于它 = 漏抽。
+        "enumerations_in_corpus": enumerations_in_corpus,
         "min_cases": 300,
     }
     return cases, rejects + duplicates + quota, report
@@ -506,12 +549,16 @@ def evaluate(cases: Sequence[Dict], report: Dict) -> Dict:
         problems.append(f"cases_too_few:{len(cases)}<{report['min_cases']}")
     if report["reject_ratio"] > BUILD_REJECT_RATIO:
         problems.append(f"rejects_over_5pct:{report['reject_ratio']}")
-    if report["per_type"]["sequence_pattern"] < SEQUENCE_FLOOR:
-        # §2.3d T1 的消费对象。这个门只允许**升**：派生退化到少于已提交语料里
-        # 显式枚举的套路条数，就说明切分坏了，不许靠调低门限蒙混。
-        problems.append(
-            f"sequence_pattern_too_few:"
-            f"{report['per_type']['sequence_pattern']}<{SEQUENCE_FLOOR}")
+    # §2.3d T1 的消费对象。门限 = **本次语料实测的显式枚举条数**（见 `SEQUENCE_FLOOR`
+    # 的注释：常量的旧依据是自撰笔记，已被用户裁决移出语料，用户对"无解"回过"改门限吧"）。
+    # 两条都要：① 分母下界（语料里 0 条枚举 = 这条门测不到东西，判失败）；
+    # ② **漏抽即红**（产出 < 语料里真实存在的枚举数）。
+    expected = int(report.get("enumerations_in_corpus", 0))
+    produced = int(report["per_type"]["sequence_pattern"])
+    if expected < SEQUENCE_FLOOR:
+        problems.append(f"sequence_enumerations_not_measured:{expected}")
+    elif produced < expected:
+        problems.append(f"sequence_pattern_dropped:{produced}<{expected}")
     for row in cases:
         if row["case_type"] not in CASE_TYPES:
             problems.append(f"bad_case_type:{row['case_id']}")

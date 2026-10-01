@@ -345,8 +345,15 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 （`contracts/plan.py::validate_shot_id` + SDL 的 S11），GUI 的"清空场景后构建"
 改成显式开关且清空前先拍检查点。
 
-`depth` and `full_concat` are declared in the config but produce a warning
-instead of silently doing nothing.
+`depth` and `full_concat` are implemented and probed, not stubs: `delivery.export_depth`
+raises `CFG_102` unless the backend is EEVEE, `layer8_delivery/depth_pass.py` writes
+the 16-bit grey sequence (0.1-50 m, documented in the README), and
+`layer8_delivery/concat.py` joins the per-shot clips in Blender's own sequencer.
+Evidence: `tools/blender_tests/test_delivery_extras.py` - `t_depth_sequence_is_written`,
+`t_depth_frames_are_16bit_grey_with_range`, `t_full_concat_produces_one_video`,
+`t_readme_documents_the_depth_range`, `t_depth_without_eevee_warns_instead_of_failing`.
+(The old line here said they "produce a warning instead of silently doing nothing",
+which described the pre-P13 tree and contradicted the status section above.)
 
 `tools/run_tests.ps1` drives a hard-coded manifest of Blender probes plus four
 non-probe steps (spec + golden drift, pytest, the in-Blender contract smoke
