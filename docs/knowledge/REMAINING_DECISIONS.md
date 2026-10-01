@@ -77,3 +77,23 @@ group size 4 | type STAGING_PACK | q = 景别=MS；机位=平视；构图=occlus
 3. **门⑥ 的 forbid 键**（我，协议级扩展）——实测直接回收 150 张卡，且与 Q4 的机制同源。
 4. **门④/⑥ 的来源族**（我，需要新抓取族；不保证成功）。
 5. **门④ 的门限重定**（你，规格裁决；我不会单方面动）。
+
+## 附：三次定向来源检索的原始结果（避免重复同样的关键词）
+
+每次都走管线自己的 `find_sources.py`（候选逐本过真实 fetch＋extract 门）：
+
+| # | terms | 命中/可抓 | 有技术内容的 |
+|---|---|---|---|
+| 1 | `photoplay scenario continuity "screen writing" "picture music"` | 8 / 8 | **3**（Writing the Photoplay、How to write photoplays、The Photoplay: A Psychological Study）——**且这 3 本本来就在语料里** |
+| 2 | `"motion pictures" cinematography sound technique editing` | 12 / 12 | **1**（Moral Deliberations in Modern Cinema） |
+| 3 | `"incidental music" "moving picture music" "trick photography" stunt "mechanical effect"` | 9 / 9 | **2 待评估**（Magic, Stage Illusions and Scientific Diversions；Photographic Amusements）——其余是芬兰语小说／stunt 短篇／"Picture stuff" |
+
+三次共 29 本，只有 4 本与前 3 类短线相关，其中 3 本**已在语料里**。
+即：**Project Gutenberg 的关键词检索基本只返回小说**，用它补 `IMPACT_PACK`／
+`SOUND_PACK`／`MUSIC_PACK` 是低效路径。下一步要换**馆藏**（CC 授权的高校影视制作
+课程讲义/开放教材），而不是继续换关键词。
+
+顺带修掉一个真缺陷（提交见下）：`find_sources.py` 在中文 Windows（控制台 GBK）上
+碰到书名里的 `ä` 会抛 `UnicodeEncodeError` **把整轮验证打断**，已经抓完的书一起丢。
+现在 stdout/stderr 一律 reconfigure 成 UTF-8 + replace：编码问题最多显示成 `?`，
+不会作废一次几十分钟的抓取。

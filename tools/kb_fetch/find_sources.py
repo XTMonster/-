@@ -100,6 +100,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--out", default="")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
+    # **stdout 必须是 UTF-8**：实测在中文 Windows 上（控制台 GBK）碰见书名里带
+    # `ä` 这类字符时，`print` 会抛 `UnicodeEncodeError` **把整轮验证打断**
+    # —— 已经抓完的书也一起丢掉。这里把标准输出改成 UTF-8 + replace，
+    # 编码问题最多让某个字符显示成 `?`，不会把一次几十分钟的抓取整批作废。
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):  # pragma: no cover - 老解释器
+            pass
+
     hits = search(args.terms, args.limit)
     print("目录命中 %d 本；逐本验证：" % len(hits))
     verified = verify(hits, args.domain)
