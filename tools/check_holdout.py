@@ -486,21 +486,44 @@ def gate_human_review(needs: int, reviewed: int, minimum: int) -> Tuple[str, dic
     return (PASS if reviewed >= min(needs, minimum) else FAIL), detail
 
 
+#: 非模型标注族。机械/规则通道（`holdout_pool --mechanical` 写 `family="rule"`）的
+#: oracle 是**从索引自己派生**的 —— `ORACLE_DECISION_v15.md` §二 的原话是
+#: "「门⑧（换族）禁止『机械从索引派生 oracle』绕过」——那等于自己考自己"。
+#: 空 family 同样不是标注者，一并收在这里。
+#:
+#: 实测事故（2026-10-01）：`holdout_pool --mechanical` 的 2191 条产物写
+#: `family="rule"` ＋ `independence="strong"`，而旧门⑧ 只抓"与抽取器同族的 strong"，
+#: 于是把一份自证文件判成 **pass**，RK-13 的全部指标都建立在这份文件之上。
+NON_MODEL_ANNOTATOR_FAMILIES = frozenset({"rule", ""})
+
+
 def gate_independence(entries: Sequence[dict], extractor_family: str) -> Tuple[str, dict]:
     """`independence: strong` has to be true, not just claimed.
 
     R49's whole point is that the annotator must not share the extractor's family;
     the field is an assertion about two *different* artefacts, so the checker has to
     compare it against the extractor's identity rather than trust the label.
+
+    "Different from the extractor" is necessary but **not sufficient**: a family that
+    is not a model family at all (`rule`) is the index grading itself. Both halves
+    have to be rejected, otherwise the gate only catches the sloppier one and the
+    cheaper bypass stays open.
     """
     if not extractor_family:
         return NA, {"reason": "未提供 --extractor-family / --extractor-manifest：无法核对换族"}
     families = {str((e.get("annotator") or {}).get("family") or "") for e in entries}
+    non_model = sorted(f for f in families if f in NON_MODEL_ANNOTATOR_FAMILIES)
     liars = sorted({str(e.get("id")) for e in entries
                     if e.get("independence") == "strong"
                     and str((e.get("annotator") or {}).get("family") or "") == extractor_family})
     detail = {"extractor_family": extractor_family, "annotator_families": sorted(families),
+              "non_model_families": non_model,
               "strong_but_same_family": liars[:20], "liar_count": len(liars)}
+    if non_model:
+        detail["reason"] = (
+            f"标注族 {non_model} 不是模型族：这份 oracle 由索引自己派生（机械/规则通道），"
+            "不构成协议 §5.1 的换族证据")
+        return FAIL, detail
     return (PASS if not liars else FAIL), detail
 
 

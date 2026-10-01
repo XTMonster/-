@@ -41,6 +41,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.check_holdout import (  # noqa: E402
+    NON_MODEL_ANNOTATOR_FAMILIES,
     Q_KEY_TO_KIND,
     EntryError,
     query_shortfall,
@@ -341,10 +342,14 @@ def finalise(raw_entries: Sequence[dict], graph, universe: Sequence[str],
     annotator = {"model_id": model_id, "family": family,
                  "model_version": model_version, "prompt_sha256": "",
                  "decode": decode}
+    #: 机械/规则通道**不是**换族证据（门⑧ 会判红，见 `NON_MODEL_ANNOTATOR_FAMILIES`）。
+    #: 字段只有 strong/weak 两档，但默认挑好看的那档就是把"看起来独立"当成了"独立"：
+    #: 实测 `--mechanical` 的产物曾写 `family="rule"` ＋ `independence="strong"`。
+    independence = ("weak" if family in NON_MODEL_ANNOTATOR_FAMILIES else "strong")
     for raw in raw_entries:
         candidate = {"id": "hq_%04d" % (len(entries) + 1), **raw,
                      "annotator": dict(annotator),
-                     "independence": "strong", "pilot": False}
+                     "independence": independence, "pilot": False}
         try:
             validate_entry(candidate)
         except EntryError as exc:

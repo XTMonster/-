@@ -716,6 +716,60 @@ def test_same_family_is_fine_when_declared_weak(tmp_path):
     assert data["gate_8_independence"]["status"] == "pass"
 
 
+def test_rule_generated_oracle_is_not_cross_family_evidence(tmp_path):
+    """机械/规则通道（`family="rule"`）**必须判红**：它是索引自己派生出来的。
+
+    实测事故：`holdout_pool --mechanical` 的 2191 条产物写 `family="rule"` ＋
+    `independence="strong"`。旧门⑧ 只找"与抽取器同族的 strong"，于是判 **pass** ——
+    而 `ORACLE_DECISION_v15.md` §二 白纸黑字写着门⑧ 存在的意义就是禁止这条绕过
+    （"那等于自己考自己"）。`family != extractor_family` 是必要条件，不是充分条件。
+    """
+    rec = q7_entry(1, review={"reviewed_by": "human", "verdict": "accepted"})
+    rec["annotator"]["family"] = "rule"          # 机械通道的标注族
+    rec["independence"] = "strong"
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps(VOCAB, ensure_ascii=False), encoding="utf-8")
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(["card_1"]), encoding="utf-8")
+    data = report(write(tmp_path, [rec]), "--vocab", str(vocab), "--cards", str(cards),
+                  "--extractor-family", "deepseek")
+    assert data["gate_8_independence"]["status"] == "fail"
+    assert data["gate_8_independence"]["non_model_families"] == ["rule"]
+    assert data["gate_8_independence"]["liar_count"] == 0, (
+        "它不是'同族谎报 strong'，而是'根本不是标注者'——两类缺陷必须分开记")
+
+
+def test_missing_annotator_family_is_not_cross_family_evidence(tmp_path):
+    """`annotator.family` 为空同样不算换族证据（缺字段不等于独立）。"""
+    rec = q7_entry(1, review={"reviewed_by": "human", "verdict": "accepted"})
+    rec["annotator"] = {k: v for k, v in rec["annotator"].items() if k != "family"}
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps(VOCAB, ensure_ascii=False), encoding="utf-8")
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(["card_1"]), encoding="utf-8")
+    data = report(write(tmp_path, [rec]), "--vocab", str(vocab), "--cards", str(cards),
+                  "--extractor-family", "deepseek")
+    assert data["gate_8_independence"]["status"] == "fail"
+    assert data["gate_8_independence"]["non_model_families"] == [""]
+
+
+def test_a_real_model_family_still_passes_gate_8(tmp_path):
+    """正对照：异族模型标注必须放行，否则上面两条就只是"把门调红"。"""
+    rec = q7_entry(1, review={"reviewed_by": "human", "verdict": "accepted"})
+    rec["annotator"]["family"] = "zhipu"
+    rec["annotator"]["model_id"] = "glm-4.7-flash"
+    rec["independence"] = "strong"
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps(VOCAB, ensure_ascii=False), encoding="utf-8")
+    cards = tmp_path / "cards.json"
+    cards.write_text(json.dumps(["card_1"]), encoding="utf-8")
+    data = report(write(tmp_path, [rec]), "--vocab", str(vocab), "--cards", str(cards),
+                  "--extractor-family", "deepseek")
+    assert data["gate_8_independence"]["status"] == "pass"
+    assert data["gate_8_independence"]["non_model_families"] == []
+    assert data["gate_8_independence"]["annotator_families"] == ["zhipu"]
+
+
 def test_independence_gate_reads_the_extractor_manifest(tmp_path):
     """给 manifest 也能自动取抽取族（真实用法）。"""
     man = tmp_path / "hypergraph.manifest.json"

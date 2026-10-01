@@ -114,6 +114,36 @@ def test_ambiguous_groups_are_skipped_not_faked(pool):
     assert emitted
 
 
+def test_the_rule_channel_never_claims_strong_independence(graph, universe):
+    """机械通道的产物必须**如实**写 `weak`，且门⑧ 判红。
+
+    两个方向一起钉住：只改标签而门⑧ 仍放行，或者门⑧ 判红而产物还自称 strong，
+    都是"看起来独立"。字段只有 strong/weak 两档，所以机械通道取保守的那一档。
+    """
+    raw, _stats = HP.mechanical(graph, universe)
+    entries, _rejects = HP.finalise(raw[:20], graph, universe,
+                                    model_id="mechanical-pool", family="rule",
+                                    model_version="pool/v1", decode="deterministic")
+    assert entries
+    assert {entry["independence"] for entry in entries} == {"weak"}
+    status, detail = CH.gate_independence(entries, "deepseek")
+    assert status == "fail", detail
+    assert detail["non_model_families"] == ["rule"]
+
+
+def test_a_model_channel_still_claims_strong_independence(graph, universe):
+    """正对照：异族模型通道仍是 `strong` ＋ 门⑧ pass。"""
+    raw, _stats = HP.mechanical(graph, universe)
+    entries, _rejects = HP.finalise(raw[:20], graph, universe,
+                                    model_id="glm-4.7-flash", family="zhipu",
+                                    model_version="glm-4.7-flash")
+    assert entries
+    assert {entry["independence"] for entry in entries} == {"strong"}
+    status, detail = CH.gate_independence(entries, "deepseek")
+    assert status == "pass", detail
+    assert detail["non_model_families"] == []
+
+
 def test_negative_sample_is_disjoint_from_the_query(pool):
     """负样本必须与查询**不相交**（协议 §3.2），否则 Q3 会把该召回的边算成误召。"""
     entries, _rejects, _stats = pool
