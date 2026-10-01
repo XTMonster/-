@@ -1,0 +1,211 @@
+{
+  "path": "fixtures\\knowledge_holdout.jsonl",
+  "pilot": false,
+  "gate_1_total": {
+    "status": "pass",
+    "entries": 2191,
+    "entries_pilot": 0,
+    "min_entries": 1200
+  },
+  "gate_2_format": {
+    "status": "pass",
+    "entries": 2191,
+    "valid": 2191,
+    "problems": [],
+    "problem_count": 0,
+    "q7_conflicts": 74,
+    "must_pairs_per_type": {
+      "EMOTION_PACK": 227,
+      "SHOT_PATTERN": 214,
+      "AXIS_RULE": 56,
+      "TROPE": 81,
+      "EDIT_RHYTHM": 3,
+      "LIGHT_PACK": 151,
+      "ACTION_BEAT": 337,
+      "PERFORMANCE_PACK": 242,
+      "INTENT_PACK": 162,
+      "IMPACT_PACK": 22,
+      "STAGING_PACK": 351,
+      "SOUND_PACK": 21,
+      "TRANSITION_PACK": 86,
+      "DIALOGUE_PACK": 74,
+      "MUSIC_PACK": 14,
+      "PROP_PACK": 150
+    },
+    "must_cards_per_type": {
+      "EMOTION_PACK": 206,
+      "SHOT_PATTERN": 164,
+      "AXIS_RULE": 28,
+      "TROPE": 79,
+      "EDIT_RHYTHM": 3,
+      "LIGHT_PACK": 148,
+      "ACTION_BEAT": 327,
+      "PERFORMANCE_PACK": 238,
+      "INTENT_PACK": 156,
+      "IMPACT_PACK": 22,
+      "STAGING_PACK": 349,
+      "SOUND_PACK": 21,
+      "TRANSITION_PACK": 85,
+      "DIALOGUE_PACK": 72,
+      "MUSIC_PACK": 14,
+      "PROP_PACK": 150
+    },
+    "q7_forbid_members": {
+      "action=动作规范": 55,
+      "movement=固定": 60,
+      "delivery=喊叫": 5,
+      "emotion=悲伤": 4,
+      "movement=handheld": 13,
+      "emotion=期待": 1,
+      "shot_size=ECU": 13,
+      "shot_size=ELS": 6,
+      "movement=whip_pan_left": 3,
+      "movement=whip_pan_right": 2,
+      "sfx=低频轰鸣": 1,
+      "movement=orbit_cw": 3,
+      "emotion=喜悦": 20,
+      "shot_size=CU": 3,
+      "movement=dolly_in": 3,
+      "movement=dolly_out": 2,
+      "movement=orbit_ccw": 2,
+      "emotion=恐惧": 7,
+      "movement=steadicam": 4,
+      "lighting=正面光": 12,
+      "lighting=侧光": 11,
+      "lighting=顶光": 11,
+      "lighting=底光": 24,
+      "action=人物一致性": 6,
+      "composition_rule=rule_of_thirds": 60
+    },
+    "needs_human": 74,
+    "human_reviewed": 0,
+    "q7_member_count": 25
+  },
+  "gate_4_edge_types": {
+    "status": "fail",
+    "min_pairs_per_type": 30,
+    "min_cards_per_type": 10,
+    "short_pairs": {
+      "EDIT_RHYTHM": 3,
+      "IMPACT_PACK": 22,
+      "SOUND_PACK": 21,
+      "MUSIC_PACK": 14
+    },
+    "thin_cards": {
+      "EDIT_RHYTHM": 3
+    }
+  },
+  "gate_5_forbid": {
+    "status": "pass",
+    "q7_conflicts": 74,
+    "min": 60
+  },
+  "gate_5b_forbid_members": {
+    "status": "pass",
+    "members": 25,
+    "under_covered": {}
+  },
+  "gate_7_human_review": {
+    "status": "fail",
+    "needs_human": 74,
+    "human_reviewed": 0,
+    "min_human_review": 120
+  },
+  "gate_8_independence": {
+    "status": "fail",
+    "extractor_family": "deepseek",
+    "annotator_families": [
+      "rule"
+    ],
+    "non_model_families": [
+      "rule"
+    ],
+    "strong_but_same_family": [],
+    "liar_count": 0,
+    "reason": "标注族 ['rule'] 不是模型族：这份 oracle 由索引自己派生（机械/规则通道），不构成协议 §5.1 的换族证据"
+  },
+  "gate_3_seed_coverage": {
+    "status": "pass",
+    "missing_values": {},
+    "unknown_values": {},
+    "thin_values": {},
+    "min_support": 3,
+    "kinds_checked": 21,
+    "vocab_fingerprint": true,
+    "unreachable_kinds": [
+      "axis_topic"
+    ]
+  },
+  "gate_6_sources": {
+    "status": "fail",
+    "cards": 2113,
+    "missing_cards": [
+      "block_depth_staging",
+      "block_ensemble_focus_rotation",
+      "block_territory",
+      "cine_move_crane_arc_down",
+      "cine_move_crane_arc_up",
+      "cine_move_dolly_zoom",
+      "cine_move_tilt_down",
+      "cine_move_tilt_up",
+      "cine_move_track_left",
+      "cine_move_zoom_in",
+      "cine_pov",
+      "comp_center_composition",
+      "comp_depth_layers",
+      "comp_frame_in_frame",
+      "comp_graphic_contrast",
+      "comp_isolation",
+      "comp_triangle",
+      "comp_visual_weight",
+      "gen_anime_0277",
+      "gen_anime_0278"
+    ],
+    "missing_count": 512,
+    "ghost_cards": [],
+    "ghost_count": 0
+  },
+  "gate_9_reachability": {
+    "status": "pass",
+    "entries": 2191,
+    "short": 0,
+    "short_ratio": 0.0,
+    "examples": [],
+    "scope": "must[0] + top1，plain 槽位；QUERYABLE_KINDS 排除 scene_type/beat_type（与产出侧同一份口径）"
+  },
+  "gate_10_index_resolvable": {
+    "status": "pass",
+    "entries": 2191,
+    "specs": 8167,
+    "resolved": {
+      "must": 3844,
+      "top1": 2191,
+      "never": 2132
+    },
+    "totals": {
+      "must": 3844,
+      "top1": 2191,
+      "never": 2132
+    },
+    "unresolved_per_field": {
+      "must": 0,
+      "top1": 0,
+      "never": 0
+    },
+    "unresolved": 0,
+    "unresolved_ratio": 0.0,
+    "unresolved_by_cause": {},
+    "unresolved_by_edge_type": {},
+    "unresolved_closeness": {},
+    "strict_relation_matches": 8167,
+    "subset_relation_matches": 8167,
+    "subset_relation_ratio": 1.0,
+    "expectation_relation": "exact",
+    "card_edge_matches": 6035,
+    "card_edge_ratio": 0.7389,
+    "index_edges": 862,
+    "examples": [],
+    "note": "§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。 逐字段未命中：{'must': 0, 'top1': 0, 'never': 0}；诊断：另有 8167/8167 条满足「标注成员 ⊆ 索引边（forbid 完全相等）」——这一层与规格字面的「成员集完全相等」不同，标注方不可见索引时后者在构造上不可能全过（AXIS_RULE 的可选 axis_topic 就是结构性一例），属规格级裁决"
+  },
+  "overall": "fail"
+}
