@@ -4,9 +4,9 @@
     "AXIS_RULE": 61,
     "DIALOGUE_PACK": 82,
     "EDIT_RHYTHM": 297,
-    "EMOTION_PACK": 183,
+    "EMOTION_PACK": 182,
     "IMPACT_PACK": 17,
-    "INTENT_PACK": 127,
+    "INTENT_PACK": 139,
     "LIGHT_PACK": 185,
     "MUSIC_PACK": 16,
     "PERFORMANCE_PACK": 270,
@@ -17,5 +17,5 @@
     "TRANSITION_PACK": 111,
     "TROPE": 96
   },
-  "assertable_conflicts": 4
+  "assertable_conflicts": 2
 }
