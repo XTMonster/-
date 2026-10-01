@@ -99,8 +99,18 @@ def load_cards() -> Dict[str, Dict]:
 
 
 def select(entries: Sequence[Dict], limit: int) -> List[Dict]:
+    """要复核的条目：需要裁决、且**还没有复核记录**。
+
+    为什么跳过已有记录的：补齐轮（新加了几条带冲突的条目）之后必须能只判新增的
+    那几条。否则第二趟会把上一趟已经裁过的条目**重判一遍**——同一对模型对同一条
+    期望给出不同结论时，"哪一份记录为准"就没有答案了，而且复核会**剔除**条目，
+    剔掉一条就可能让门③ 的支撑数掉到线下（实测：应用 44 条剔除后
+    `movement=track_left` 变 thin，补跑一轮才回来）。
+
+    幂等：`select()` 只挑 `review` 缺席的条目，所以重复跑不会改写既有裁决。
+    """
     chosen = [entry for entry in sorted(entries, key=lambda e: str(e.get("id", "")))
-              if needs_human(entry)]
+              if needs_human(entry) and not entry.get("review")]
     return chosen[:limit] if limit else chosen
 
 

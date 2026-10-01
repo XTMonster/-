@@ -109,3 +109,27 @@ def test_merge_never_emits_a_human_reviewer():
                  (("accepted"), ("rejected"))):
         _action, review = panel.merge({"verdict": a}, {"verdict": b})
         assert review["reviewed_by"] == panel.PANEL_TAG != "human"
+
+
+def test_selector_never_re_judges_an_entry_that_already_has_a_record():
+    """复核必须**幂等**：已经有裁决记录的条目不重判。
+
+    为什么这条重要：复核会**剔除**条目，而剔除会牵动别的门——实测第一趟把
+    44 条一致否决的条目剔掉之后，门③ 的 `movement=track_left` 掉到 2 个支撑
+    （低于线 3），补跑一轮才回来。于是"补齐新条目"这件事必须能**只判新增的**：
+    否则第二趟会把上一趟裁过的条目重判一遍，同一对模型对同一条期望给出不同
+    结论时，"哪一份记录为准"就没有答案了；而且可能再剔一次，门③ 再掉一次。
+    """
+    fresh = _entry("hq_0001", "card_a", forbid=True)
+    judged = dict(_entry("hq_0002", "card_b", forbid=True),
+                  review={"reviewed_by": "llm-panel", "verdict": "amended",
+                          "agreement": False, "needs_human": True})
+    clean = _entry("hq_0003", "card_c")
+
+    picked = panel.select([fresh, judged, clean], 0)
+    assert [item["id"] for item in picked] == ["hq_0001"]
+
+    # 正对照：去掉那条记录，同一条就会被重新选中（不是"永远跳过"）。
+    again = dict(judged)
+    again.pop("review")
+    assert [item["id"] for item in panel.select([again], 0)] == ["hq_0002"]

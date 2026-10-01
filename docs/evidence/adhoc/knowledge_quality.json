@@ -1,64 +1,64 @@
 {
   "run_id": "adhoc",
   "overall": "fail",
-  "holdout_entries": 4239,
-  "index_edges": 891,
+  "holdout_entries": 2927,
+  "index_edges": 766,
   "metrics": [
     {
       "id": "Q0",
       "status": "pass",
       "note": "rejects/raw <= 5% 且 processed == total",
       "source": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
-      "raw_edges": 2576,
-      "valid_unique": 891,
-      "duplicates": 1685,
+      "raw_edges": 766,
+      "valid_unique": 766,
+      "duplicates": 0,
       "rejects": 0,
       "rejects_file_lines": 0,
-      "processed_chunks": 269,
-      "total_chunks": 269,
+      "processed_chunks": 33,
+      "total_chunks": 33,
       "reject_ratio": 0.0
     },
     {
       "id": "Q1",
       "status": "fail",
-      "numerator": 1161,
-      "denominator": 4239,
-      "value": 0.2739,
+      "numerator": 1884,
+      "denominator": 2927,
+      "value": 0.6437,
       "line": 0.7,
-      "note": "held-out query 数 4239（下界 1200）"
+      "note": "held-out query 数 2927（下界 1200）"
     },
     {
       "id": "Q2",
       "status": "fail",
-      "numerator": 1624,
-      "denominator": 4239,
-      "value": 0.3831,
+      "numerator": 2238,
+      "denominator": 2927,
+      "value": 0.7646,
       "line": 0.9,
       "note": ""
     },
     {
       "id": "Q3",
       "status": "pass",
-      "numerator": 37,
-      "denominator": 1862,
-      "value": 0.0199,
+      "numerator": 0,
+      "denominator": 1259,
+      "value": 0.0,
       "line": 0.1,
       "note": ""
     },
     {
       "id": "Q4",
       "status": "fail",
-      "numerator": 1639,
-      "denominator": 2173,
-      "value": 0.7543,
+      "numerator": 2294,
+      "denominator": 2319,
+      "value": 0.9892,
       "line": 1.0,
-      "note": "required 总数 2173（下界 200）"
+      "note": "required 总数 2319（下界 200）"
     },
     {
       "id": "Q6a",
       "status": "pass",
-      "numerator": 12711,
-      "denominator": 12711,
+      "numerator": 8781,
+      "denominator": 8781,
       "value": 1.0,
       "line": 1.0,
       "note": ""
@@ -66,82 +66,81 @@
     {
       "id": "Q6b",
       "status": "fail",
-      "numerator": 1783,
-      "denominator": 2173,
-      "value": 0.8205,
+      "numerator": 4150,
+      "denominator": 4156,
+      "value": 0.9986,
       "line": 1.0,
       "note": ""
     },
     {
       "id": "Q7",
       "status": "pass",
-      "numerator": 472,
-      "denominator": 472,
+      "numerator": 145,
+      "denominator": 145,
       "value": 1.0,
       "line": 1.0,
-      "note": "冲突查询数 472（下界 60）"
+      "note": "冲突查询数 145（下界 60）"
     },
     {
       "id": "Q4_pre_required_edges_exist",
       "status": "fail",
-      "numerator": 2173,
-      "denominator": 4675,
-      "value": 0.4648,
+      "numerator": 4156,
+      "denominator": 5203,
+      "value": 0.7988,
       "line": 1.0,
-      "note": "§2.3 Q6b 前置①：2502/4675 条 must 在索引里找不到对应边（oracle 与索引不同构 → 索引构建失败）",
+      "note": "§2.3 Q6b 前置①：1047/5203 条 must 在索引里找不到对应边（oracle 与索引不同构 → 索引构建失败）",
       "examples": [
         {
           "id": "hq_0001",
-          "q": "轴线=中性机位；光线=正面光",
+          "q": "动作=上下场；桥段=transition；强度=high",
           "unresolved": [
-            "AXIS_RULE:pair=any_two,axis_side=neutral"
+            "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high"
           ]
         },
         {
-          "id": "hq_0003",
-          "q": "意图=收束；景别=MCU",
+          "id": "hq_0002",
+          "q": "动作=上下场；桥段=transition；强度=high",
           "unresolved": [
-            "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
-            "AXIS_RULE:pair=any_two,axis_side=left"
+            "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high"
           ]
         },
         {
-          "id": "hq_0004",
-          "q": "轴线=视线轴；景别=MS",
+          "id": "hq_0008",
+          "q": "动作=人数限制；桥段=coverage；强度=low",
           "unresolved": [
-            "AXIS_RULE:pair=any_two,axis_side=left"
+            "ACTION_BEAT:action=人数限制,beat_type=coverage,intensity=low"
           ]
         },
         {
-          "id": "hq_0005",
-          "q": "景别=MS；镜头=85mm",
+          "id": "hq_0009",
+          "q": "动作=人数限制；桥段=establish；强度=low",
           "unresolved": [
-            "AXIS_RULE:pair=any_two,axis_side=right"
+            "ACTION_BEAT:action=人数限制,beat_type=establish,intensity=low"
           ]
         },
         {
-          "id": "hq_0006",
-          "q": "情绪=温柔；构图=framing",
+          "id": "hq_0010",
+          "q": "动作=人数限制；桥段=establish；强度=low",
           "unresolved": [
-            "SHOT_PATTERN:shot_size=CU,lens=35mm,headroom_policy=board,composition_rule=framing"
+            "ACTION_BEAT:action=人数限制,beat_type=establish,intensity=low"
           ]
         }
       ]
     },
     {
       "id": "E3",
-      "status": "pass",
+      "status": "fail",
       "numerator": 0,
-      "denominator": 2,
-      "value": 0,
+      "denominator": 0,
+      "value": null,
       "line": 0,
-      "note": "经验边（source_kind=experience）单独产生的 forbid 条数必须为 0"
+      "note": "L2 经验层为空（`source_kind=experience` 0 条）：这条门**测不到东西**，按 §4.1b 的分母下界判失败 —— 不得记成'经验不越权已达标'"
     },
     {
       "id": "E3_cases",
       "status": "pass",
       "numerator": 0,
-      "denominator": 733,
+      "denominator": 810,
       "line": 0,
       "note": "L3 案例永不产出约束"
     },
@@ -157,47 +156,46 @@
     }
   ],
   "q_summary": {
-    "queries": 4239,
-    "edges": 891,
-    "selected_total": 12711,
-    "must_total": 4675,
-    "required_unresolved": 2502,
-    "required_unresolved_entries": 2336,
+    "queries": 2927,
+    "edges": 766,
+    "selected_total": 8781,
+    "must_total": 5203,
+    "required_unresolved": 1047,
+    "required_unresolved_entries": 702,
     "unresolved_examples": [
       {
         "id": "hq_0001",
-        "q": "轴线=中性机位；光线=正面光",
+        "q": "动作=上下场；桥段=transition；强度=high",
         "unresolved": [
-          "AXIS_RULE:pair=any_two,axis_side=neutral"
+          "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high"
         ]
       },
       {
-        "id": "hq_0003",
-        "q": "意图=收束；景别=MCU",
+        "id": "hq_0002",
+        "q": "动作=上下场；桥段=transition；强度=high",
         "unresolved": [
-          "INTENT_PACK:intent=收束,shot_size=MCU,movement=crane_down",
-          "AXIS_RULE:pair=any_two,axis_side=left"
+          "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high"
         ]
       },
       {
-        "id": "hq_0004",
-        "q": "轴线=视线轴；景别=MS",
+        "id": "hq_0008",
+        "q": "动作=人数限制；桥段=coverage；强度=low",
         "unresolved": [
-          "AXIS_RULE:pair=any_two,axis_side=left"
+          "ACTION_BEAT:action=人数限制,beat_type=coverage,intensity=low"
         ]
       },
       {
-        "id": "hq_0005",
-        "q": "景别=MS；镜头=85mm",
+        "id": "hq_0009",
+        "q": "动作=人数限制；桥段=establish；强度=low",
         "unresolved": [
-          "AXIS_RULE:pair=any_two,axis_side=right"
+          "ACTION_BEAT:action=人数限制,beat_type=establish,intensity=low"
         ]
       },
       {
-        "id": "hq_0006",
-        "q": "情绪=温柔；构图=framing",
+        "id": "hq_0010",
+        "q": "动作=人数限制；桥段=establish；强度=low",
         "unresolved": [
-          "SHOT_PATTERN:shot_size=CU,lens=35mm,headroom_policy=board,composition_rule=framing"
+          "ACTION_BEAT:action=人数限制,beat_type=establish,intensity=low"
         ]
       }
     ],

@@ -1,21 +1,21 @@
 {
   "assertable_pairs_per_type": {
-    "ACTION_BEAT": 328,
+    "ACTION_BEAT": 356,
     "AXIS_RULE": 61,
-    "DIALOGUE_PACK": 78,
-    "EDIT_RHYTHM": 276,
-    "EMOTION_PACK": 175,
-    "IMPACT_PACK": 14,
-    "INTENT_PACK": 114,
-    "LIGHT_PACK": 178,
+    "DIALOGUE_PACK": 82,
+    "EDIT_RHYTHM": 297,
+    "EMOTION_PACK": 183,
+    "IMPACT_PACK": 17,
+    "INTENT_PACK": 127,
+    "LIGHT_PACK": 185,
     "MUSIC_PACK": 16,
-    "PERFORMANCE_PACK": 244,
-    "PROP_PACK": 135,
-    "SHOT_PATTERN": 207,
-    "SOUND_PACK": 16,
-    "STAGING_PACK": 590,
-    "TRANSITION_PACK": 105,
-    "TROPE": 77
+    "PERFORMANCE_PACK": 270,
+    "PROP_PACK": 170,
+    "SHOT_PATTERN": 199,
+    "SOUND_PACK": 19,
+    "STAGING_PACK": 652,
+    "TRANSITION_PACK": 111,
+    "TROPE": 96
   },
   "assertable_conflicts": 4
 }

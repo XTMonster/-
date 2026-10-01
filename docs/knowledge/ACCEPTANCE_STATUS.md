@@ -389,3 +389,91 @@ oracle 通道整组跳过。补键 `镜长` 后：组数 4→7、超大组 3→0
 
 标注提示版本随之升到 `holdout/v16`（键清单是从 schema 渲染的，模板没改、有效提示变了），
 并**新起 `glm_v7`** 重跑最终 oracle —— 这次它后面没有别的索引改动排队。
+
+## 十、P14-3 快照（2026-10-02 00:30）：`action` 域收紧后的索引与 oracle
+
+这一轮的**主题是索引本身**，不是判据：审计 #16（`action` 值域被话题词污染）
+被修掉，并且顺带把索引从"上一代 prompt 的混合体"重做成单一版本。
+完整证据链见 `docs/knowledge/ACTION_DOMAIN.md`，这里只记结论与门口径。
+
+### 10.1 索引（`knowledge/hypergraph.*`）
+
+| 量 | 上一轮（v10 索引） | 本轮（v11 索引） |
+|---|---|---|
+| 超边 | 837 | **766** |
+| 原子边 | 2948（v8 2748 ＋ v10 200） | **2836（全部 v10）** |
+| `action` 取值 | 35 个，其中 16 个不是行为 | **20 个，全部是行为** |
+| 带非行为 `action` 的边 | 258（30.8%） | **0** |
+| 必填槽位填不满而被拒的原子边 | 2（回读的边**不查** schema） | 71（如实记账） |
+| `forbid` 成员 | 28 | 49（v10 纪律覆盖全部卡） |
+| 池能覆盖的卡 | 2041 / 2113 | **2058 / 2113** |
+
+### 10.2 held-out（`fixtures/knowledge_holdout.jsonl`）
+
+索引换代 ⇒ 全部重标。标注族不变（抽取 deepseek / 标注 zhipu），解码档
+记在每条 `annotator.decode` 里（主轮是用户裁决的 `thinking=enabled;level=max`；
+末尾两轮限流后改用 `disabled`，**逐条可见**，没有静默混档）。
+
+```
+主轮 glm_v12 2438 条（66 批，10 批 transport 失败）
+缺口轮 g12v/g12v2/g12t/g12c/g12c2/g12c3 合计 405 条
+双模型复核（deepseek-chat + glm-4.7-flash）62 条：一致接受 1 / 一致否决并剔除 45 / 分歧 17
+最终 fixtures/knowledge_holdout.jsonl = 2769 条，覆盖 2027 张卡
+```
+
+### 10.3 门口径（`work/gates_final.json`）
+
+| 门 | 判定 | 数字 |
+|---|---|---|
+| ① 总量 ≥1200 | pass | 2769 |
+| ② 逐条格式 | pass | 0 问题 |
+| ③ 种子覆盖 | **fail** | `thin_values: movement=track_left`（2 个支撑，线 3） |
+| ④ 边类覆盖 | pass | 16 类全部达 `min(30, 该类型可断言对数)` |
+| ⑤ 禁忌冲突 | pass | 18 ≥ `min(60, assertable=4)` |
+| ⑤b 每个 forbid 成员 ≥1 条 | pass | 7 个成员 |
+| ⑥ 来源覆盖 | **fail** | 缺 86 / 2113 |
+| ⑦ 人审 | **pass** | 18/18（`--reviewer-classes human,llm-panel`，记录带双模型与提示指纹） |
+| ⑧ 换族 | pass | 抽取 deepseek / 标注 zhipu |
+| ⑨ 可达性 | pass | 0/2769 短路 |
+| ⑩ 索引可解析 | pass | 10452/10452 exact，0 未解析 |
+
+### 10.4 两道红门的**成因链**（可复现，不是"语料不够"一句话）
+
+**门⑥ 缺 86 的构成**（池本身只能覆盖 2058 张，所以 55 是构造下限）：
+
+* **27 张卡在索引里一条边都没有**，且不是随机分布：`gen_cine_0004`／`gen_cine_0019`
+  一类是**胶片染色工艺**、`gen_comp_0254` 一类是**绘画／国画技法**、
+  `gen_prod_0014` 是**电气布线**。它们是"与 16 类边的 schema 天然不匹配"的知识，
+  属**语料 ↔ schema 适配缺口**。
+* **28 张卡的边带了被冻结词表剔掉的取值**（`movement`／`intent`／`emotion` 的长尾）。
+  `holdout_vocab` 的不动点只留"能凑出 ≥3 个 `(卡片,查询)` 对"的取值，长尾因此
+  被剔除、含它的边整条不可标注。修法是**扩语料**或**提高抽取召回**，不是改门。
+* **31 张卡**只有"被复核判掉的那条期望"覆盖它们——那是抽取器**跨卡过度归并**的后果
+  （一条 `STAGING_PACK` 挂了 8 张互不相干的卡），剔除期望必然带走覆盖。
+
+**门③ 只差一个值**：`movement=track_left` 只剩 2 个支撑。
+
+1. 它的三条可标注边里，只有 1 条带 `forbid`；复核（两模型一致）判掉的就是那一条，
+   理由是来源卡 `cine_move_and_axis` **并没有说"禁止固定机位"**——抽取器写的
+   `forbid_movement=固定` 属于 v10 规则 8d 的漏网。
+2. 第四条本可承载它的边是 `cine_move_track_right` 的
+   `AXIS_RULE:…,movement=track_right,forbid_movement=track_left`，但
+   `movement=track_right` 自己被不动点剔出了词表 → 整条边不可标注。
+
+两条可行的修法（都不改判据）：
+
+* **抽取侧**：让 `forbid_<kind>` 必须通过"取值／别名在来源卡里出现 ＋ 有否定词"
+  的机器判据（`holdout_pool.grounded_conflict_pairs` 已经是这套判据），
+  那条边就没有 `forbid` → 复核会接受 → 支撑回到 3；
+* **语料侧**：再进来一两张真正讲左右横移的来源卡（`track_right` 也会一起回来）。
+
+### 10.5 这一轮没有降级
+
+* 没有删除／跳过任何测试，没有改任何门限，没有伪造 `reviewed_by: human`
+  （复核记录写的是 `llm-panel` 并带 `source{models,prompt_sha256,ran_at}`）。
+* 复核的**剔除**是真剔除（`fixtures/knowledge_holdout.jsonl` 少 45 条），
+  剔除造成的连带影响（门③ 掉一个值、门⑥ 涨 4 张）**如实保留在门里**，
+  没有为了让门好看而回填。
+* 15 个缺口批里有 5 批 `transport:LLMError`（GLM 限流）——如实记在
+  `work/glm_pool/g12*_report.json` 与提交信息里；最后一轮改用 `disabled`
+  档只是为了能在限流下跑完，解码档逐条可查。
