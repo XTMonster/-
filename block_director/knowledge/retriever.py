@@ -20,7 +20,8 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 from ..contracts.enums import RagBackend
 from ..contracts.knowledge import Card, Case
 from .bm25 import make_bm25, ranked, tokenize
-from .cases import CASE_COLUMN_TITLE, CaseIndex, render_cases
+from .cases import (CASE_COLUMN_TITLE, CaseIndex, load_index, render_cases,
+                    repo_knowledge_dir)
 from .corpus import CARDS, DOMAIN_LABELS, DOMAINS, cards_by_domain, digest_cards
 from .generated import ID_PREFIX as GENERATED_ID_PREFIX
 #: v1.4 §2.3d T5：token 估算的**单一真源**在 `tokens.py`——案例通道（`cases.py`）
@@ -404,6 +405,7 @@ class KnowledgeRetriever:
             self.last_cases = list(response.cases or [])[:limit]
             self.last_cases_query = query
             return list(self.last_cases)[:limit]
+        self._ensure_cases_index()
         if isinstance(self.cases_index, CaseIndex):
             hits = self.cases_index.retrieve(query, top_k=limit)
             self.last_cases = list(hits)
@@ -416,12 +418,37 @@ class KnowledgeRetriever:
         """L3 这条通道这次是否真的开着（决定 §2.4 的 ``lanes``）。"""
         if str(self.cases_backend) == "off":
             return False
+        self._ensure_cases_index()
         if isinstance(self.cases_index, CaseIndex):
             return bool(self.cases_index.enabled)
         trace = self.last_trace or {}
         if self.client is not None and trace:
             return int(trace.get("lanes", 1) or 1) >= 2
         return bool(self.last_cases)
+
+    def _ensure_cases_index(self) -> Optional[Any]:
+        """没有 sidecar 时**就地装配**进程内 L3 索引（§2.3b 的备选通道）。
+
+        这条回落写了很久却**没有生产者**：`cases_index` 只有测试与 sidecar 会传，
+        插件侧的 `_make_knowledge` 从来不传 —— "没有 client 时才用它"这句因此
+        从来没有发生过。实测代价有两条（2026-10-01）：
+
+        1. **凡是没有 client 又会渲染三栏的通路**（进程内超图），第三栏
+           「参考案例」恒空，哪怕 `knowledge/cases.jsonl` 就在仓库里、`CaseIndex`
+           装上就能检索（`load_index()` 本来就是干这个的，sidecar 一直在用它）。
+           （注意边界：没有 client 时 `backend` 会先降级成 BM25 卡片通路，
+           那条通路本来就不渲染三栏 —— 这不是本次修复的对象，也不要把两件事混起来。）
+        2. `cases_info()` 把这种情况报成 `cases_backend: "off"` —— 而 `off` 的定义是
+           **用户显式关闭**（§2.3b）。配置写的是 `lightrag`、报告说"你自己关的"，
+           那是 trace 在说假话，E1/E3 也会被记成 not_measured 而不是降级。
+
+        只在**没有 client** 时兜底：sidecar 在时它仍是唯一数据源（客户端带回的案例
+        优先，见 `cases_for`）；sidecar 不可达时照旧整体降级为 BM25 卡片检索。
+        """
+        if str(self.cases_backend) == "off" or self.cases_index is not None:
+            return self.cases_index
+        self.cases_index = load_index(repo_knowledge_dir(), str(self.cases_backend))
+        return self.cases_index
 
     def cases_info(self) -> Dict[str, Any]:
         """``knowledge_trace.json`` 里的 L3 分节（§2.3b：每次运行必记）。"""
@@ -439,6 +466,7 @@ class KnowledgeRetriever:
                 "cases_index_fingerprint": "",
             }
         trace = dict(self.last_trace or {})
+        self._ensure_cases_index()
         index = self.cases_index if isinstance(self.cases_index, CaseIndex) else None
         if not trace and index is not None:
             trace = index.describe()

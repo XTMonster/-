@@ -193,6 +193,57 @@ def test_a_degraded_case_lane_says_so_in_the_trace():
 # §3.2 的两个配置键（`rag.cases_backend` / `rag.cases_top_k`）必须有生产者。
 # 在此之前两个键都没有任何读取点：`off` 关不掉第三栏，条数永远是写死的 3。
 # --------------------------------------------------------------------------- #
+def test_the_packaged_case_index_is_assembled_when_there_is_no_sidecar():
+    """**没有 sidecar 时的回落必须真的发生**（2026-10-01 修）。
+
+    文档写着"装了 client 时案例由 `/v1/retrieve` 带回；**没有 client 时才用它**
+    （进程内案例索引）"，但 `cases_index` 只有测试和 sidecar 会传 ——
+    插件侧的 `_make_knowledge` 从来不传，于是这句回落**从来没有执行过**：
+
+    * **凡是没有 client 又会渲染三栏的通路**（进程内超图）第三栏「参考案例」
+      恒空，哪怕 `knowledge/cases.jsonl` 就在仓库里、`CaseIndex` 装上就能检索；
+      （没有 client 时 backend 会先降级成 BM25 卡片通路，那条路不渲染三栏，
+      不属本次修复范围 —— 这里只断言"装上并如实降级"。）
+    * `cases_info()` 还会把 `rag.cases_backend=lightrag` 报成 `"off"` —— 而 `off`
+      的定义是"**用户显式关闭**"，报告说反了。
+
+    这条用例断言的是"装上并如实降级"：backend 报 `hybrid`、`cases_degraded=true`
+    且原因是 `lightrag_adapter_unavailable`（仓库里没有 lightrag 依赖），
+    `cases_requested_backend` 保留用户配的 `lightrag`。
+    """
+    from block_director.contracts.enums import RagBackend
+    from block_director.knowledge.retriever import default_retriever
+
+    retriever = default_retriever(backend=RagBackend.BM25,
+                                  cases_backend="lightrag", cases_top_k=3)
+    assert retriever.cases_enabled is True
+    block = retriever.case_block("剪辑节奏 短镜 硬切")
+    assert block and "【参考案例（仅参考）】" in block
+    info = retriever.cases_info()
+    assert info["cases_backend"] == "hybrid"           # §2.3b 的降级路径
+    assert info["cases_requested_backend"] == "lightrag"
+    assert info["cases_degraded"] is True
+    assert info["cases_degraded_reason"] == "lightrag_adapter_unavailable"
+    assert info["lanes"] == 2
+    assert info["cases_index_fingerprint"], "装了索引就必须报出它的指纹"
+    # 这条通道**不额外发检索**：进程内索引，`retrieval_calls` 保持 0。
+    assert retriever.retrieval_calls == 0
+
+
+def test_an_explicitly_off_case_lane_does_not_even_load_the_index():
+    """用户显式关闭时不装索引、不产出第三栏、也不说自己降级了（§2.3b）。"""
+    from block_director.contracts.enums import RagBackend
+    from block_director.knowledge.retriever import default_retriever
+
+    retriever = default_retriever(backend=RagBackend.BM25, cases_backend="off")
+    assert retriever.cases_enabled is False
+    assert retriever.cases_index is None
+    assert retriever.case_block("剪辑节奏") == ""
+    info = retriever.cases_info()
+    assert info["cases_backend"] == "off" and info["lanes"] == 1
+    assert info["cases_degraded"] is False
+
+
 class _RecordingTransport:
     def __init__(self):
         self.cases_top_k_seen = []
