@@ -1,0 +1,394 @@
+{
+  "path": "fixtures\\knowledge_holdout.jsonl",
+  "pilot": false,
+  "gate_1_total": {
+    "status": "pass",
+    "entries": 2927,
+    "entries_pilot": 0,
+    "min_entries": 1200
+  },
+  "gate_2_format": {
+    "status": "pass",
+    "entries": 2927,
+    "valid": 2927,
+    "problems": [],
+    "problem_count": 0,
+    "q7_conflicts": 36,
+    "must_pairs_per_type": {
+      "EMOTION_PACK": 216,
+      "SHOT_PATTERN": 192,
+      "AXIS_RULE": 37,
+      "TROPE": 94,
+      "EDIT_RHYTHM": 319,
+      "LIGHT_PACK": 179,
+      "ACTION_BEAT": 353,
+      "PERFORMANCE_PACK": 253,
+      "INTENT_PACK": 170,
+      "IMPACT_PACK": 24,
+      "STAGING_PACK": 644,
+      "SOUND_PACK": 23,
+      "TRANSITION_PACK": 90,
+      "DIALOGUE_PACK": 78,
+      "MUSIC_PACK": 16,
+      "PROP_PACK": 183
+    },
+    "must_cards_per_type": {
+      "EMOTION_PACK": 193,
+      "SHOT_PATTERN": 168,
+      "AXIS_RULE": 28,
+      "TROPE": 92,
+      "EDIT_RHYTHM": 318,
+      "LIGHT_PACK": 175,
+      "ACTION_BEAT": 343,
+      "PERFORMANCE_PACK": 248,
+      "INTENT_PACK": 164,
+      "IMPACT_PACK": 24,
+      "STAGING_PACK": 642,
+      "SOUND_PACK": 23,
+      "TRANSITION_PACK": 89,
+      "DIALOGUE_PACK": 77,
+      "MUSIC_PACK": 16,
+      "PROP_PACK": 183
+    },
+    "q7_forbid_members": {
+      "movement=whip_pan_left": 2,
+      "pacing=long": 3,
+      "shot_size=ECU": 2,
+      "shot_size=ELS": 1,
+      "movement=pan_left": 4,
+      "movement=固定": 9,
+      "pacing=short": 1,
+      "emotion=荒诞": 2,
+      "movement=handheld": 5,
+      "emotion=喜悦": 1,
+      "vfx=glow": 1,
+      "movement=zoom_in": 1,
+      "movement=steadicam": 1,
+      "movement=dolly_in": 1,
+      "lighting=正面光": 1,
+      "lighting=底光": 4
+    },
+    "needs_human": 36,
+    "human_reviewed": 0,
+    "reviewed_by_class": {},
+    "uncorroborated_reviews": [],
+    "uncorroborated_count": 0,
+    "panel_prompt_hashes": {},
+    "q7_member_count": 16
+  },
+  "gate_4_edge_types": {
+    "status": "pass",
+    "min_pairs_per_type": 30,
+    "min_cards_per_type": 10,
+    "required_pairs_per_type": {
+      "EMOTION_PACK": 30,
+      "SHOT_PATTERN": 30,
+      "AXIS_RULE": 30,
+      "TROPE": 30,
+      "EDIT_RHYTHM": 30,
+      "LIGHT_PACK": 30,
+      "ACTION_BEAT": 30,
+      "PERFORMANCE_PACK": 30,
+      "INTENT_PACK": 30,
+      "IMPACT_PACK": 17,
+      "STAGING_PACK": 30,
+      "SOUND_PACK": 19,
+      "TRANSITION_PACK": 30,
+      "DIALOGUE_PACK": 30,
+      "MUSIC_PACK": 16,
+      "PROP_PACK": 30
+    },
+    "assertable_provided": true,
+    "short_pairs": {},
+    "thin_cards": {}
+  },
+  "gate_5_forbid": {
+    "status": "pass",
+    "q7_conflicts": 36,
+    "min": 60,
+    "required": 4,
+    "assertable_conflicts": 4
+  },
+  "gate_5b_forbid_members": {
+    "status": "pass",
+    "members": 16,
+    "under_covered": {}
+  },
+  "gate_7_human_review": {
+    "status": "fail",
+    "needs_human": 36,
+    "human_reviewed": 0,
+    "min_human_review": 120,
+    "accepted_reviewers": [
+      "human",
+      "llm-panel"
+    ],
+    "reviewed_by_class": {},
+    "uncorroborated_reviews": 0,
+    "panel_prompt_hashes": {}
+  },
+  "gate_8_independence": {
+    "status": "pass",
+    "extractor_family": "deepseek",
+    "annotator_families": [
+      "zhipu"
+    ],
+    "non_model_families": [],
+    "strong_but_same_family": [],
+    "liar_count": 0
+  },
+  "gate_3_seed_coverage": {
+    "status": "fail",
+    "missing_values": {
+      "action": [
+        "微表情",
+        "挥手",
+        "推门",
+        "登场",
+        "站位",
+        "表情",
+        "走位",
+        "起身",
+        "转身",
+        "退场"
+      ],
+      "lighting": [
+        "冷光"
+      ],
+      "movement": [
+        "lead_subject"
+      ],
+      "scene_type": [
+        "dialogue"
+      ]
+    },
+    "unknown_values": {
+      "action": [
+        "人数限制",
+        "人物",
+        "人物一致性",
+        "人物塑造",
+        "传承",
+        "候场",
+        "克制",
+        "入场调度",
+        "准备",
+        "分工",
+        "分镜写法",
+        "动作",
+        "动作规范",
+        "动作设计",
+        "动线",
+        "化妆",
+        "协作",
+        "反派表演",
+        "台词处理",
+        "呈现",
+        "喜剧表演",
+        "塑造"
+      ],
+      "movement": [
+        "crane_arc_up",
+        "orbit_ccw",
+        "pan_left",
+        "track_right",
+        "whip_pan_left",
+        "zoom_in"
+      ],
+      "intent": [
+        "回望"
+      ],
+      "camera_angle": [
+        "骑轴"
+      ],
+      "music": [
+        "环境底噪"
+      ]
+    },
+    "thin_values": {
+      "action": [
+        "微表情",
+        "挥手",
+        "推门",
+        "登场",
+        "站位",
+        "表情",
+        "走位",
+        "起身",
+        "转身",
+        "退场"
+      ],
+      "lighting": [
+        "冷光"
+      ],
+      "movement": [
+        "lead_subject"
+      ],
+      "scene_type": [
+        "dialogue"
+      ]
+    },
+    "min_support": 3,
+    "kinds_checked": 22,
+    "vocab_fingerprint": true,
+    "unreachable_kinds": [
+      "axis_topic"
+    ]
+  },
+  "gate_6_sources": {
+    "status": "fail",
+    "cards": 2113,
+    "missing_cards": [
+      "cine_move_crane_arc_down",
+      "cine_move_dolly_zoom",
+      "cine_move_lead_subject",
+      "cine_move_pan_right",
+      "cine_move_tilt_down",
+      "cine_move_tilt_up",
+      "gen_anime_0283",
+      "gen_anime_0287",
+      "gen_anime_0306",
+      "gen_anime_0309",
+      "gen_anime_0406",
+      "gen_axis_0133",
+      "gen_axis_0146",
+      "gen_axis_0202",
+      "gen_axis_0204",
+      "gen_axis_0243",
+      "gen_block_0049",
+      "gen_block_0064",
+      "gen_block_0091",
+      "gen_block_0156"
+    ],
+    "missing_count": 72,
+    "ghost_cards": [],
+    "ghost_count": 0
+  },
+  "gate_9_reachability": {
+    "status": "pass",
+    "entries": 2927,
+    "short": 0,
+    "short_ratio": 0.0,
+    "examples": [],
+    "scope": "must[0] + top1，plain 槽位；QUERYABLE_KINDS 排除 scene_type/beat_type（与产出侧同一份口径）"
+  },
+  "gate_10_index_resolvable": {
+    "status": "fail",
+    "entries": 2927,
+    "specs": 11020,
+    "resolved": {
+      "must": 4156,
+      "top1": 2259,
+      "never": 1259
+    },
+    "totals": {
+      "must": 5203,
+      "top1": 2927,
+      "never": 2890
+    },
+    "unresolved_per_field": {
+      "must": 1047,
+      "top1": 668,
+      "never": 1631
+    },
+    "unresolved": 3346,
+    "unresolved_ratio": 0.3036,
+    "unresolved_by_cause": {
+      "no_edge_with_those_plain_members": 1529,
+      "value_not_in_index": 1732,
+      "plain_subset_but_forbid_differs": 81,
+      "plain_subset_index_has_extra_members": 4
+    },
+    "unresolved_by_edge_type": {
+      "ACTION_BEAT": 1107,
+      "AXIS_RULE": 6,
+      "DIALOGUE_PACK": 50,
+      "EDIT_RHYTHM": 87,
+      "EMOTION_PACK": 278,
+      "IMPACT_PACK": 58,
+      "INTENT_PACK": 84,
+      "LIGHT_PACK": 8,
+      "MUSIC_PACK": 18,
+      "PERFORMANCE_PACK": 838,
+      "SHOT_PATTERN": 265,
+      "SOUND_PACK": 19,
+      "STAGING_PACK": 480,
+      "TRANSITION_PACK": 46,
+      "TROPE": 2
+    },
+    "unresolved_closeness": {
+      "2": 1431,
+      "0": 1732,
+      "4": 4,
+      "3": 129,
+      "1": 50
+    },
+    "strict_relation_matches": 7674,
+    "subset_relation_matches": 7678,
+    "subset_relation_ratio": 0.6967,
+    "expectation_relation": "exact",
+    "card_edge_matches": 8070,
+    "card_edge_ratio": 0.7323,
+    "index_edges": 766,
+    "examples": [
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "must",
+        "spec": "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "top1",
+        "spec": "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0001",
+        "line": 1,
+        "field": "never",
+        "spec": "ACTION_BEAT:action=准备,beat_type=establish,intensity=low",
+        "cause": "value_not_in_index"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "must",
+        "spec": "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "top1",
+        "spec": "ACTION_BEAT:action=上下场,beat_type=transition,intensity=high",
+        "cause": "no_edge_with_those_plain_members"
+      },
+      {
+        "id": "hq_0002",
+        "line": 2,
+        "field": "never",
+        "spec": "ACTION_BEAT:action=准备,beat_type=establish,intensity=low",
+        "cause": "value_not_in_index"
+      },
+      {
+        "id": "hq_0003",
+        "line": 3,
+        "field": "never",
+        "spec": "ACTION_BEAT:action=准备,beat_type=establish,intensity=low",
+        "cause": "value_not_in_index"
+      },
+      {
+        "id": "hq_0004",
+        "line": 4,
+        "field": "never",
+        "spec": "ACTION_BEAT:action=准备,beat_type=establish,intensity=low",
+        "cause": "value_not_in_index"
+      }
+    ],
+    "note": "§2.3 Q6b 前置①：must/top1 指向不存在的边 = 索引构建失败；never 指向不存在的边 = 那条负样本是空谈（Q3 测不到东西）。 逐字段未命中：{'must': 1047, 'top1': 668, 'never': 1631}；诊断：另有 7678/11020 条满足「标注成员 ⊆ 索引边（forbid 完全相等）」——这一层与规格字面的「成员集完全相等」不同，标注方不可见索引时后者在构造上不可能全过（AXIS_RULE 的可选 axis_topic 就是结构性一例），属规格级裁决"
+  },
+  "overall": "fail"
+}
