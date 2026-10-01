@@ -297,10 +297,17 @@ if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
 # above; it never turns the suite itself red, it attributes the failure).
 # `--out` is written by Python on purpose: PowerShell 5.1's `>` emits UTF-16,
 # which breaks the downstream json.loads.
-# `--assertable` 是门④ 的口径（2026-10-01 用户裁决）：每类要 `min(30, 该类可断言对数)` 条。
-# 那份 JSON 是 `(索引, 词表)` 的属性（由 `holdout_pool --assertable-out` 生成并入库），
-# 与 oracle 生成了什么无关 —— 所以判门时用它不构成自证。
-python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
+# `--assertable` is gate 4's cap (user ruling 2026-10-01): each type must supply
+# `min(30, assertable pairs for that type)`. The JSON is a property of
+# (index, vocabulary) - produced by `holdout_pool --assertable-out` and committed -
+# so using it here is not the oracle grading itself.
+# `--reviewer-classes human,llm-panel` is gate 7's recorded scope: the user
+# delegated Q5/Q7/E3 to the DeepSeek + GLM panel ("I have no experience") and
+# then authorised the machine pass outright. The review records themselves are
+# NOT rewritten - `holdout_review_llm.py` still writes `reviewed_by: "llm-panel"`,
+# and the report's `reviewed_by_class` says who judged. Leaving the flag off made
+# the panel's work invisible to RK-13 while the docs claimed the chain passed it.
+python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --reviewer-classes human,llm-panel --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
 $gateExit = $LASTEXITCODE
 if ($gateExit -eq 0) {
     Write-Host '  held-out coverage gates: all passed' -ForegroundColor Green

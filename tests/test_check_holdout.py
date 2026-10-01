@@ -908,3 +908,25 @@ def test_out_writes_utf8_json_for_the_harness(tmp_path):
     report = json.loads(raw.decode("utf-8"))
     assert report["overall"] == check_holdout.PASS
     assert report["gate_10_index_resolvable"]["status"] == check_holdout.PASS
+
+
+def test_acceptance_chain_judges_gate_7_with_the_recorded_reviewer_classes():
+    """门⑦ 在验收链里必须按**已记录的口径**判，否则机器复核做了也白做。
+
+    2026-10-01 用户把 Q5/Q7/E3 交给 DeepSeek ＋ GLM 双模型（"我没有经验"），
+    随后又明确授权机器侧承担这一层。协议 §5.6 的 `reviewed_by` 字段**没有被
+    改写**：复核工具照旧写 `"llm-panel"`，报告里 `reviewed_by_class` 说清是谁裁的。
+
+    这条不变量断过一次：链里跑门时**没有**传 `--reviewer-classes`，于是默认只认
+    `human`，双模型复核的成果对 RK-13 完全不可见；而文档已经写成"验收链显式传"。
+    机器的判据与文档分叉，正是这份文件存在的理由。
+    """
+    chain = (ROOT / "tools" / "run_tests.ps1").read_text(encoding="utf-8")
+    calls = [line for line in chain.splitlines() if "check_holdout.py" in line]
+    assert calls, "验收链必须跑一遍 held-out 门（不跑就是没测）"
+    for line in calls:
+        assert "--reviewer-classes human,llm-panel" in line, line
+    # 反过来也要钉住：链里不许出现"只认人"的写法，那会把门⑦ 永久钉成红。
+    offenders = [line for line in calls if "--reviewer-classes " in line
+                 and "llm-panel" not in line]
+    assert not offenders, offenders
