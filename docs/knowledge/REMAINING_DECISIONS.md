@@ -97,3 +97,26 @@ group size 4 | type STAGING_PACK | q = 景别=MS；机位=平视；构图=occlus
 碰到书名里的 `ä` 会抛 `UnicodeEncodeError` **把整轮验证打断**，已经抓完的书一起丢。
 现在 stdout/stderr 一律 reconfigure 成 UTF-8 + replace：编码问题最多显示成 `?`，
 不会作废一次几十分钟的抓取。
+
+## 附二：换馆藏的第一次尝试（MIT OCW）——**HTML 抓不到**
+
+思路：Gutenberg 三次检索都只返回小说，那就换 CC 授权的高校课程材料（OCW 的
+`CC-BY-NC-SA` 已在许可白名单里，语料里已有 2 份 21L.011 的 PDF）。
+
+实测（走管线自己的 `fetch._http_get`，含 robots 门）：
+
+```
+robots_allows("https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/") -> (True, "")
+_http_get(...) -> 49845 bytes
+页面内 ".pdf" 出现次数        -> 0
+页面内 "/resources/" 链接数   -> 0
+```
+
+即：**OCW 的课程页是 JS 外壳**，静态 HTML 里既没有 PDF 链接也没有资源列表
+（语料里那两份 PDF 的 URL 带内容哈希，像是从别处/旧版页面拿到的）。
+所以"抓课程页 → 抽 PDF 链接"这条路**在静态 HTML 上走不通**，需要 OCW 的
+JSON/API 或 sitemap（本轮未找到、不猜）。
+
+下一步的候选（都还没试）：OCW 的课程 JSON、其他 CC 馆藏（OER Commons 等）、
+公开的 CC 授权影视制作讲义。**在找到可用来源之前，门④/⑥ 的红就如实留着** ——
+它们测的正是"许可语料的供给够不够 16 类 schema"。
