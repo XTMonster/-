@@ -1,7 +1,7 @@
 # held-out 人审裁决表（门⑦）
 
-- 需要人裁决的条目：**116** 条（门⑦ 要求其中至少 `min(总数, 120)` 条带上 `reviewed_by == "human"`）。
-- 本表列出 **116** 条（`--limit` 控制）。
+- 需要人裁决的条目：**133** 条（门⑦ 要求其中至少 `min(总数, 120)` 条带上 `reviewed_by == "human"`）。
+- 本表列出 **133** 条（`--limit` 控制）。
 
 **怎么填**：每节末尾的打勾位从 `[ ]` 改成 `[x]` 表示这条期望成立；不成立就删掉那行、改写成 `rejected: 原因`；要改写成别的就写 `amended: 改成什么`。三种写法 `tools/holdout_review.py apply` 都认。
 
@@ -1652,4 +1652,261 @@ python tools/holdout_review.py apply --entries fixtures/knowledge_holdout.jsonl 
 
 采纳 A ？ [ ]
 
-<!-- 116/116 -->
+## hq_2827 · gen_cine_0077 · Q7 冲突 6 处
+
+查询 A：`情绪=平静;强度=low;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2828 · gen_cine_0087 · Q7 冲突 6 处
+
+查询 A：`情绪=平静;强度=low;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2829 · gen_perf_0469 · Q7 冲突 6 处
+
+查询 A：`情绪=平静;强度=low;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2830 · gen_prod_0209 · Q7 冲突 6 处
+
+查询 A：`情绪=平静;强度=low;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2831 · gen_perf_0324 · Q7 冲突 6 处
+
+查询 A：`情绪=平静;强度=low;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2832 · gen_perf_0329 · Q7 冲突 6 处
+
+查询 A：`情绪=平静;强度=low;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2833 · gen_perf_0537 · Q7 冲突 6 处
+
+查询 A：`情绪=平静;强度=low;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2834 · gen_perf_0538 · Q7 冲突 6 处
+
+查询 A：`情绪=平静;强度=low;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=讽刺,intensity=mid']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2850 · gen_perf_0352 · Q7 冲突 4 处
+
+查询 A：`情绪=平静;强度=mid;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=mid,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=mid,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=冷漠,intensity=low,forbid_movement=orbit_cw']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2851 · gen_perf_0468 · Q7 冲突 4 处
+
+查询 A：`情绪=平静;强度=mid;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=mid,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=mid,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=冷漠,intensity=low,forbid_movement=orbit_cw']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2852 · gen_perf_0472 · Q7 冲突 4 处
+
+查询 A：`情绪=平静;强度=mid;运镜=固定;禁运镜=固定`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=平静,intensity=mid,forbid_movement=固定` |
+| A | `EMOTION_PACK:emotion=平静,intensity=mid,forbid_movement=固定` |
+
+不该召回：`['EMOTION_PACK:emotion=冷漠,intensity=low,forbid_movement=orbit_cw']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_2853 · gen_comp_0161 · Q7 冲突 1 处
+
+查询 A：`情绪=庄严;强度=mid;运镜=handheld`
+
+| 族 | 必须边 |
+|---|---|
+| A | `EMOTION_PACK:emotion=庄严,intensity=mid,forbid_movement=handheld` |
+
+不该召回：`['EMOTION_PACK:emotion=冷漠,intensity=low,forbid_movement=orbit_cw']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_3128 · gen_comp_0066 · Q7 冲突 1 处
+
+查询 A：`构图=balance；景别=MS；机位=平视；禁构图=rule_of_thirds`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视,forbid_composition_rule=rule_of_thirds` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_3129 · gen_comp_0150 · Q7 冲突 1 处
+
+查询 A：`构图=balance；景别=MS；机位=平视；禁构图=rule_of_thirds`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视,forbid_composition_rule=rule_of_thirds` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_3130 · gen_comp_0152 · Q7 冲突 1 处
+
+查询 A：`构图=balance；景别=MS；机位=平视；禁构图=rule_of_thirds`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视,forbid_composition_rule=rule_of_thirds` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_3131 · gen_comp_0154 · Q7 冲突 1 处
+
+查询 A：`构图=balance；景别=MS；机位=平视；禁构图=rule_of_thirds`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视,forbid_composition_rule=rule_of_thirds` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+## hq_3132 · gen_comp_0156 · Q7 冲突 1 处
+
+查询 A：`构图=balance；景别=MS；机位=平视；禁构图=rule_of_thirds`
+
+| 族 | 必须边 |
+|---|---|
+| A | `STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视,forbid_composition_rule=rule_of_thirds` |
+
+不该召回：`['STAGING_PACK:composition_rule=framing,shot_size=MLS,camera_angle=低机位']`
+
+**这条期望成立吗？**（查询里点名的取值，正是 must 那条边禁止的——引擎要能靠它拦住那个取值）
+
+采纳 A ？ [ ]
+
+<!-- 133/133 -->
