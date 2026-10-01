@@ -31,11 +31,15 @@ SCHEMA_VERSION = "hg/v2"
 #: 意图决定镜头语言，所以 `INTENT_PACK` 必须能把它写进边里。
 NODE_TYPES: Tuple[str, ...] = (
     "emotion", "movement", "shot_size", "lens", "pacing", "vfx", "sfx",
-    "composition_rule", "axis_topic", "character", "object", "action", "genre",
+    "composition_rule", "axis_topic", "action", "genre",
     "beat_type", "camera_angle", "lighting", "intent",
     #: v1.6：用户裁决"尽可能囊括除灯光以外影响电影制作的其他元素"里，还缺三块——
     #: 台词**怎么念**、**配乐/环境声**、**道具/环境元素**。三者都是零依赖的按需加载项。
     "delivery", "music", "prop",
+    #: 同批删掉两个**声明了却没有任何边类型使用**的 kind：`character` 与 `object`。
+    #: 实测（审查第 18 条）它们 0 个节点、0 次使用，留在闭集里只会让"闭集"看起来比实际宽；
+    #: 而 `object` 的角色已经被 v1.6 的 `prop`（道具/环境元素 × 景别 × 机位）取代。
+    #: 要重新引入 `character`，正确做法是**先有边类型用它、再有语料填它**，而不是先占位。
 )
 
 #: qualifier 类型闭集（10 类）。`axis_side` 必须在表里——否则最高优先级的

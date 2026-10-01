@@ -41,16 +41,23 @@ def graph():
 
 
 def test_every_required_kind_is_present_even_when_empty(graph):
-    """`character`／`object` 没有查询键，但键**必须存在**。
+    """词表的键集必须**恰好**等于校验器要求的 kind 集。
 
     键缺席时门③ 判"缺 kind → 那个 kind 免检"并**直接失败**（不是 not_measured），
-    所以空表也得写出来。这是上一版实现踩过的坑：词表里少了两个键，整道门红。
+    所以一个都不能少；反过来多出**已经不在闭集里**的键（v1.6 删掉的
+    `character`／`object`）同样是脏数据 —— 那会让读者以为还有这两类可用。
+    这条测试因此是**双向**的：不少、也不多。
     """
     universe = json.loads(CARDS.read_text(encoding="utf-8"))
     payload, _report = HV.build_vocab(graph, universe=universe)
     missing = sorted(set(CH.REQUIRED_VOCAB_KINDS) - set(payload))
     assert missing == [], f"词表缺 kind 会让门③ 直接判失败：{missing}"
-    assert payload["character"] == [] and payload["object"] == []
+    # 合法键集 = 节点类（`NODE_TYPES`）∪ 有查询键的 qualifier 类（`强度`/`对白`/`转场`…）。
+    # 两边都不是的键才是脏数据 —— v1.6 删掉的 `character`／`object` 就属于这一类。
+    from block_director.knowledge import hypergraph as _hg
+    legal = set(_hg.NODE_TYPES) | set(CH.Q_KEY_TO_KIND.values())
+    extra = sorted(set(payload) - legal)
+    assert extra == [], f"词表里有闭集外的键（脏数据）：{extra}"
 
 
 def test_frozen_vocab_survives_the_gate_it_feeds(graph):

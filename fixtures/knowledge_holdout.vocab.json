@@ -1,5 +1,5 @@
 {
-"_fingerprint": "450f6f325e83ac53",
+"_fingerprint": "744612d657de6119",
 "kinds": {
 "action": [
 "上下场",
@@ -51,7 +51,6 @@
 "骑轴",
 "高机位"
 ],
-"character": [],
 "composition_rule": [
 "balance",
 "framing",
@@ -137,7 +136,6 @@
 "铺底",
 "静默"
 ],
-"object": [],
 "pacing": [
 "long",
 "medium",

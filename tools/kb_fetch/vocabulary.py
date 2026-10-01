@@ -243,10 +243,14 @@ HOLDOUT_KINDS: Tuple[str, ...] = (
     "intent",
 )
 
-#: 校验器的 `REQUIRED_VOCAB_KINDS` 是整个节点闭集（16 类），但 `character` / `object`
-#: 没有对应的查询键，取值永远不可能出现在 `q` 里。做法：**这两类作为空列表占位**——
-#: 键在（门③ 不判 not_measured）、值空（不会有"从没被用到的取值"）。
-UNQUERYABLE_KINDS: Tuple[str, ...] = ("character", "object")
+#: 没有查询键、只能以**空表占位**的 kind。
+#:
+#: v1.5 时这里是 `("character", "object")`——它们是索引侧节点类型，`q` 里没有对应键，
+#: 只能在词表里占个空位（否则门③ 判"缺 kind → 该 kind 免检"并直接失败）。
+#: **v1.6 已把这两个 kind 从 `NODE_TYPES` 删掉**（实测 0 节点、0 次使用，且 `object`
+#: 的角色已被新增的 `prop` 取代），所以这里不再需要任何占位。留成空元组而不是删掉
+#: 常量，是为了让"占位机制"本身还在——将来若再出现没有查询键的 kind，用同一处表达。
+UNQUERYABLE_KINDS: Tuple[str, ...] = ()
 
 #: 每个 kind 的上限：词表越大，"每个取值都要出现在至少 3 条不同的 (卡片,查询) 里"
 #: 越难做到（`tools/check_holdout.py --min-seed-support 3`）。

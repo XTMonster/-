@@ -57,7 +57,10 @@ def test_vocabularies_match_the_spec():
     # v1.5 起含 `intent`（17 个）；v1.6 用户裁决补上"除灯光以外还缺的三块"——
     # 台词交付／配乐与环境声／道具与环境元素（20 个）。数量是**规格**，改动要同步
     # 更新这里的数字，而不是让断言去迁就实现。
-    assert len(hg.NODE_TYPES) == 20
+    # v1.6 又删掉两个**从未被任何边类型使用**的 kind（`character`／`object`）——
+    # 声明了却没人用的类留在闭集里只会让"闭集"看起来比实际宽，而 `object` 的角色
+    # 已被新增的 `prop` 取代。20 → 18。
+    assert len(hg.NODE_TYPES) == 18
     assert len(hg.QUALIFIER_KINDS) == 10
     assert set(hg.EDGE_TYPES) == {
         "EMOTION_PACK", "SHOT_PATTERN", "AXIS_RULE", "TROPE", "EDIT_RHYTHM", "LIGHT_PACK",
@@ -114,19 +117,21 @@ def test_every_edge_type_has_at_least_one_seedable_member():
 
 
 def test_orphan_node_kinds_are_declared_not_hidden():
-    """声明了却没有任何边类型使用的 kind，必须**显式列在测试里**，不许悄悄带着。
+    """闭集里**不许有孤儿**：每个声明的 kind 都必须至少被一个边类型用到。
 
     实测（审查第 18 条）：`character` 与 `object` 两个节点类 **0 个节点、0 次使用**。
-    它们留在 `NODE_TYPES` 里会让"闭集"看起来比实际宽。这里把孤儿写成白名单：
-    要么补上使用它们的边类型，要么从 `NODE_TYPES` 里拿掉——但**不许两者都不做**。
+    当时的处置是"显式白名单"，现在是**直接删掉**：声明了却没人用的类留在闭集里，
+    只会让"闭集"看起来比实际宽（读者会以为有 20 类可用，实际只有 18 类被任何边用到）；
+    而 `object` 的角色已经被 v1.6 新增的 `prop`（道具/环境元素 × 景别 × 机位）取代。
+    要重新引入，正确顺序是**先有边类型用它、再有语料填它**，而不是先占位。
     """
     used = {kind for edge_type in hg.EDGE_TYPES
             for _role, kind in (tuple(hg.REQUIRED_MEMBERS[edge_type])
                                 + tuple(hg.OPTIONAL_MEMBERS[edge_type]))}
     orphans = set(hg.NODE_TYPES) - used
-    assert orphans == {"character", "object"}, (
-        f"孤儿 kind 的集合变了：{sorted(orphans)}。若这是有意的，请同步更新本测试"
-        "与 `docs/knowledge/ACCEPTANCE_STATUS.md` 的口径")
+    assert orphans == set(), (
+        f"闭集里有没被任何边类型使用的 kind：{sorted(orphans)}。"
+        "要么给它一个真的用它的边类型（并确认语料能填），要么从 `NODE_TYPES` 里删掉")
 
 
 def test_gate9_value_domains_cover_every_qualifier_kind():
