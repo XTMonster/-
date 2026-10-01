@@ -120,3 +120,29 @@ JSON/API 或 sitemap（本轮未找到、不猜）。
 下一步的候选（都还没试）：OCW 的课程 JSON、其他 CC 馆藏（OER Commons 等）、
 公开的 CC 授权影视制作讲义。**在找到可用来源之前，门④/⑥ 的红就如实留着** ——
 它们测的正是"许可语料的供给够不够 16 类 schema"。
+
+## 附三：MIT OCW 的**可抓路径**已经找到（下一步照这个做）
+
+上一节说"课程页是 JS 外壳、抓不到 PDF"——继续往下挖，**静态入口是有的**：
+
+```
+robots.txt  ->  "Allow: /"  +  "Sitemap: https://ocw.mit.edu/sitemap.xml"
+sitemap.xml ->  2588 个 <loc>，**每个课程一个子 sitemap**
+                （形如 /courses/<slug>/sitemap.xml）
+课程 sitemap ->  ~11 个 <loc>：都是**页面** URL（资源页），不含 .pdf
+data.json   ->  只有元数据（course_title/description/instructors/…），**没有资源清单**
+```
+
+也就是说：**PDF 链接在"资源页"这一层**，与语料里已有的那两份一致（形如
+`/courses/<slug>/<hash>_MIT21L_011F13_2006_Notes.pdf`）。所以可抓路径是：
+
+1. 从 `sitemap.xml` 取 2588 个课程 slug，按**片名/课程名关键词**筛出影视相关课程
+   （`film`／`cinema`／`photography`／`media`／`video`／`animation`／`storyboard`）；
+2. 对每个候选课程取 `/courses/<slug>/sitemap.xml` → 拿到资源页 URL；
+3. 逐个资源页（**过 robots 门、按域限速**）抓静态 HTML，正则抽 `*.pdf`；
+4. 抽到的 PDF 走**既有管线**验证（`fetch.py` 的 robots 门 + `extract_text.py`），
+   通过的写进 `sources.yaml`（`license: CC-BY-NC-SA`，已在白名单里）。
+
+这是一次**有边界的爬取**（课程数可控、每课程约 10 个资源页、同域限速），
+但要真跑起来还需要一个新工具 `tools/kb_fetch/find_ocw_sources.py` ——
+把它排进下一轮，与 `MUSIC_PACK` 漏抽、L3 的 `SEQUENCE_FLOOR` 同批（都靠新来源）。
