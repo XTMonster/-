@@ -78,8 +78,15 @@ def test_q0_is_not_measured_without_a_manifest(tmp_path):
 
 
 def test_e3_is_zero_for_a_theory_only_index():
+    """理论-only 索引**不再**判 pass：分母为 0 就是空集通过（§4.1b 硬规则 1）。
+
+    2026-10-01 实测：入库索引 766 条边里 `theory 762 / lesson 4 / experience 0`，
+    旧实现因此把"经验不越权"这条硬门**恒真**地判成 pass 并记进 RK-13。规格
+    §B.5 的 E3 行写死了"只有分子没有分母 = 空集通过；分母为 0 → 失败"。
+    """
     out = quality.e3_experience_override(_graph([_edge("theory", forbid=True)]))
-    assert out["status"] == "pass" and out["denominator"] == 0
+    assert out["status"] == "fail" and out["denominator"] == 0
+    assert "分母下界" in out["note"]
 
 
 def test_e3_counts_an_experience_edge_that_forbids():
@@ -92,7 +99,13 @@ def test_e3_counts_an_experience_edge_that_forbids():
 def test_e3_lesson_may_forbid_but_experience_may_not():
     """只有显式 lesson 允许带 forbid（§2.3b 关键纪律 1）。"""
     lesson = _edge("lesson", forbid=True)
-    assert quality.e3_experience_override(_graph([lesson]))["status"] == "pass"
+    # 分母必须有东西：单给 lesson 会让 experience 计数为 0，那是"测不到"（fail），
+    # 不是"lesson 允许带禁"。这里补一条干净的 experience 边当分母。
+    clean = _edge("experience")
+    out = quality.e3_experience_override(_graph([lesson, clean]))
+    assert out["status"] == "pass" and out["denominator"] == 1
+    # 反面：分母为 0 时同一条 lesson 索引判 fail（不是 pass）。
+    assert quality.e3_experience_override(_graph([lesson]))["status"] == "fail"
 
 
 def test_e3_cases_flag_a_constraint_field(tmp_path):
@@ -174,10 +187,24 @@ def test_overall_is_not_measured_when_evidence_is_missing(tmp_path):
     #: 与正式 held-out 是否落地无关（正式文件在 v1.5 已经落地）。
     empty_holdout = tmp_path / "empty_holdout.jsonl"
     empty_holdout.write_text("", encoding="utf-8")
+    # 这条用例测的是"证据缺失 → not_measured"，所以先让 E3 有分母：入库索引进
+    # 现在是 experience 0（分母 0 → 按 §4.1b 判 fail），会让 overall 变成 fail，
+    # 掩盖掉本用例要断言的 not_measured。这里复制真实索引再追加一条**不带 forbid**
+    # 的经验边，其它部分逐字节不变。
+    nodes_path = "knowledge/hypergraph.nodes.jsonl"
+    real_edges = (ROOT / "knowledge" / "hypergraph.edges.jsonl").read_text(
+        encoding="utf-8").rstrip("\n").splitlines()
+    probe = json.loads(real_edges[0])
+    probe["edge_id"] = "hg:ut_experience_probe"
+    probe["source_kind"] = "experience"
+    probe["hardness"] = "soft"
+    probe["members"] = [m for m in probe["members"] if m[0] != "forbid"]
+    edges_path = tmp_path / "edges.jsonl"
+    edges_path.write_text("\n".join(real_edges + [json.dumps(probe, ensure_ascii=False)])
+                          + "\n", encoding="utf-8")
     code = quality.main([
         "--run-id", "ut", "--holdout", str(empty_holdout),
-        "--nodes", "knowledge/hypergraph.nodes.jsonl",
-        "--edges", "knowledge/hypergraph.edges.jsonl",
+        "--nodes", nodes_path, "--edges", str(edges_path),
         "--manifest", str(manifest), "--rejects", str(rejects),
         "--cases", "", "--out", str(tmp_path / "q.json"),
     ])

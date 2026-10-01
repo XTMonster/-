@@ -84,7 +84,16 @@ def q0_build_gate(manifest_path: Path, rejects_path: Path) -> Dict[str, Any]:
 
 
 def e3_experience_override(graph) -> Dict[str, Any]:
-    """E3 硬门：经验边**不得**带 forbid（只有显式 lesson 可以）。"""
+    """E3 硬门：经验边**不得**带 forbid（只有显式 lesson 可以）。
+
+    **分母下界（2026-10-01 修）**：规格 §4.1b 与 §B.5 的 E3 行都写着
+    "只有分子没有分母 = 空集通过；**分母为 0 → 失败**"。旧实现只看
+    `offenders` 是否为空，于是索引里 `source_kind=experience` 一条都没有时
+    （实测 2026-10-01：766 条边里 theory 762 / lesson 4 / **experience 0**）
+    这条硬门**恒为 pass**——一个恒真的绿比一个诚实的红更危险，RK-13 会把
+    "经验不越权"记成已达标。现在分母为 0 直接判 FAIL，并把 L2 层的真实条数
+    写进 note（`lesson` 允许带 forbid，不参与分子）。
+    """
     offenders: List[str] = []
     experience = 0
     for edge in graph.edges:
@@ -94,6 +103,12 @@ def e3_experience_override(graph) -> Dict[str, Any]:
         forbidden = [m for m in edge.members if str(m.role) == "forbid"]
         if forbidden:
             offenders.append(edge.edge_id)
+    if experience == 0:
+        return {"id": "E3", "status": FAIL,
+                "numerator": 0, "denominator": 0, "value": None, "line": 0,
+                "note": ("L2 经验层为空（`source_kind=experience` 0 条）：这条门"
+                         "**测不到东西**，按 §4.1b 的分母下界判失败 —— "
+                         "不得记成'经验不越权已达标'")}
     return {"id": "E3", "status": PASS if not offenders else FAIL,
             "numerator": len(offenders), "denominator": experience,
             "value": 0 if not offenders else None, "line": 0,
