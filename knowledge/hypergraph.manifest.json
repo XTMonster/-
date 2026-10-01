@@ -1,9 +1,9 @@
 {
-  "fingerprint": "89404c7895cc3ffbbdf7d56df9e155003e9faea2856d88e70b605c4be1e5aca0",
+  "fingerprint": "ffd88c75f8282aa6794e58d34e9ddb3e93103515edc8a9abc6e58b135941c3ad",
   "cache_key": {
     "corpus_sha256": "829ad2aece51b8c906b35db44cf53886e0dcd9e999975697cd80d3a6569fb07a",
     "model": "deepseek-chat@deepseek-flash",
-    "prompt_version": "extract/v8",
+    "prompt_version": "extract/v10",
     "chunker_version": "para-2400/v1",
     "decode": "temperature=0;seed=0;ctx=8192",
     "schema_version": "hg/v2"
@@ -13,41 +13,48 @@
     "family": "deepseek",
     "model_version": "deepseek-flash"
   },
-  "prompt_version": "extract/v8",
+  "prompt_version": "extract/v10",
   "atom_prompt_versions": {
-    "extract/v8": 2959
+    "extract/v8": 2748,
+    "extract/v10": 200
   },
   "decode": "temperature=0;seed=0;ctx=8192",
   "chunker_version": "para-2400/v1",
   "schema_version": "hg/v2",
   "cards": 2113,
-  "raw_edges": 882,
-  "valid_unique": 882,
+  "raw_edges": 837,
+  "valid_unique": 837,
   "duplicates": 0,
   "rejects": 0,
-  "atom_rejects": 17,
+  "atom_rejects": 2,
   "merge_rejects": 0,
-  "atoms": 2959,
+  "atoms": 2948,
   "merge": {
     "windows": 269,
     "groups": 2638,
-    "merged_edges": 882,
-    "multi_card_edges": 228,
-    "forbid_wins": 1,
-    "dropped_optional": 48,
+    "merged_edges": 837,
+    "multi_card_edges": 217,
+    "forbid_wins": 0,
+    "dropped_optional": 54,
     "over_budget_dropped": 0,
-    "forbid_members": 101,
+    "forbid_members": 28,
     "max_arity": 5,
     "dropped_groups": [],
-    "alternatives": 26,
+    "alternatives": 25,
     "global_dedupe": {
-      "keys": 882,
-      "duplicate_groups": 385,
-      "dropped": 1782
+      "keys": 837,
+      "duplicate_groups": 379,
+      "dropped": 1826
     },
+    "refresh": {
+      "cards": 122,
+      "atoms_dropped": 211,
+      "atoms_kept": 2748
+    },
+    "refresh_prompt_version": "extract/v10",
     "before_dedupe": {
-      "merged_edges": 2664,
-      "forbid_members": 118,
+      "merged_edges": 2663,
+      "forbid_members": 28,
       "max_arity": 5
     },
     "dangling_members_dropped": 0
@@ -56,374 +63,256 @@
     {
       "batch": 1,
       "status": "done",
-      "edges": 8,
+      "edges": 2,
       "cards": [
-        "gen_anime_0309",
-        "gen_anime_0314",
-        "gen_anime_0315",
-        "gen_anime_0363",
-        "gen_anime_0370",
-        "gen_anime_0406",
-        "gen_anime_0407"
+        "gen_anime_0355"
       ]
     },
     {
       "batch": 2,
       "status": "done",
-      "edges": 8,
+      "edges": 10,
       "cards": [
-        "gen_axis_0119",
-        "gen_axis_0120",
-        "gen_axis_0221",
-        "gen_axis_0224",
-        "gen_axis_0228",
-        "gen_axis_0230",
-        "gen_axis_0238",
-        "gen_axis_0242"
+        "gen_axis_0105",
+        "gen_axis_0146",
+        "gen_axis_0159",
+        "gen_axis_0160",
+        "gen_axis_0285",
+        "gen_axis_0288",
+        "gen_axis_0304"
       ]
     },
     {
       "batch": 3,
       "status": "done",
-      "edges": 1,
+      "edges": 5,
       "cards": [
-        "gen_axis_0243",
-        "gen_axis_0289"
+        "gen_block_0005",
+        "gen_block_0006",
+        "gen_block_0024",
+        "gen_block_0190",
+        "gen_block_0355"
       ]
     },
     {
       "batch": 4,
       "status": "done",
-      "edges": 12,
+      "edges": 16,
       "cards": [
-        "gen_block_0059",
-        "gen_block_0087",
-        "gen_block_0094",
-        "gen_block_0169",
-        "gen_block_0191",
-        "gen_block_0193",
-        "gen_block_0194",
-        "gen_block_0247"
+        "cine_dutch_angle",
+        "cine_eye_level",
+        "cine_high_angle",
+        "cine_low_angle",
+        "cine_move_and_axis",
+        "cine_move_crane_arc_down",
+        "cine_move_crane_arc_up",
+        "cine_move_crane_down"
       ]
     },
     {
       "batch": 5,
       "status": "done",
-      "edges": 4,
+      "edges": 16,
       "cards": [
-        "gen_block_0249",
-        "gen_block_0263"
+        "cine_move_crane_up",
+        "cine_move_dolly_in",
+        "cine_move_dolly_out",
+        "cine_move_dolly_zoom",
+        "cine_move_follow_subject",
+        "cine_move_handheld",
+        "cine_move_motivation",
+        "cine_move_stacking"
       ]
     },
     {
       "batch": 6,
       "status": "done",
-      "edges": 1,
+      "edges": 16,
       "cards": [
-        "gen_cine_0001",
-        "gen_cine_0004",
-        "gen_cine_0019",
-        "gen_cine_0024",
-        "gen_cine_0031",
-        "gen_cine_0032",
-        "gen_cine_0033",
-        "gen_cine_0034"
+        "cine_move_steadicam",
+        "cine_move_tilt_down",
+        "cine_move_tilt_up",
+        "cine_move_track_left",
+        "cine_move_track_right",
+        "cine_move_whip_pan_left",
+        "cine_move_whip_pan_right",
+        "cine_move_zoom_in"
       ]
     },
     {
       "batch": 7,
       "status": "done",
-      "edges": 8,
+      "edges": 7,
       "cards": [
-        "gen_cine_0036",
-        "gen_cine_0037",
-        "gen_cine_0038",
-        "gen_cine_0055",
-        "gen_cine_0063",
-        "gen_cine_0064",
-        "gen_cine_0065",
-        "gen_cine_0066"
+        "cine_move_zoom_out",
+        "gen_cine_0077",
+        "gen_cine_0087",
+        "gen_cine_0224",
+        "gen_cine_0295"
       ]
     },
     {
       "batch": 8,
       "status": "done",
-      "edges": 11,
+      "edges": 8,
       "cards": [
-        "gen_cine_0067",
-        "gen_cine_0071",
-        "gen_cine_0073",
-        "gen_cine_0075",
-        "gen_cine_0078",
-        "gen_cine_0081",
-        "gen_cine_0082",
-        "gen_cine_0083"
+        "gen_comp_0003",
+        "gen_comp_0006",
+        "gen_comp_0028",
+        "gen_comp_0031",
+        "gen_comp_0042",
+        "gen_comp_0044",
+        "gen_comp_0051",
+        "gen_comp_0056"
       ]
     },
     {
       "batch": 9,
       "status": "done",
-      "edges": 6,
+      "edges": 8,
       "cards": [
-        "gen_cine_0086",
-        "gen_cine_0087",
-        "gen_cine_0088",
-        "gen_cine_0089",
-        "gen_cine_0204",
-        "gen_cine_0207",
-        "gen_cine_0210",
-        "gen_cine_0226"
+        "gen_comp_0063",
+        "gen_comp_0086",
+        "gen_comp_0107",
+        "gen_comp_0110",
+        "gen_comp_0144",
+        "gen_comp_0152",
+        "gen_comp_0161",
+        "gen_comp_0216"
       ]
     },
     {
       "batch": 10,
       "status": "done",
-      "edges": 8,
+      "edges": 1,
       "cards": [
-        "gen_cine_0232",
-        "gen_cine_0288",
-        "gen_cine_0304",
-        "gen_cine_0309",
-        "gen_cine_0312",
-        "gen_cine_0313",
-        "gen_cine_0315",
-        "gen_cine_0316"
+        "gen_comp_0232"
       ]
     },
     {
       "batch": 11,
       "status": "done",
-      "edges": 1,
+      "edges": 11,
       "cards": [
-        "cine_pov"
+        "gen_edit_0009",
+        "gen_edit_0012",
+        "gen_edit_0026",
+        "gen_edit_0027",
+        "gen_edit_0060",
+        "gen_edit_0068",
+        "gen_edit_0075",
+        "gen_edit_0128"
       ]
     },
     {
       "batch": 12,
       "status": "done",
-      "edges": 8,
+      "edges": 16,
       "cards": [
-        "gen_comp_0065",
-        "gen_comp_0066",
-        "gen_comp_0069",
-        "gen_comp_0070",
-        "gen_comp_0071",
-        "gen_comp_0072",
-        "gen_comp_0073",
-        "gen_comp_0074"
+        "gen_edit_0131",
+        "gen_edit_0137",
+        "gen_edit_0157",
+        "gen_edit_0177",
+        "gen_edit_0194",
+        "gen_edit_0206",
+        "gen_edit_0209",
+        "gen_edit_0239"
       ]
     },
     {
       "batch": 13,
       "status": "done",
-      "edges": 8,
+      "edges": 11,
       "cards": [
-        "gen_comp_0075",
-        "gen_comp_0076",
-        "gen_comp_0077",
-        "gen_comp_0078",
-        "gen_comp_0079",
-        "gen_comp_0080",
-        "gen_comp_0129",
-        "gen_comp_0135"
+        "gen_perf_0040",
+        "gen_perf_0077",
+        "gen_perf_0111",
+        "gen_perf_0313",
+        "gen_perf_0329",
+        "gen_perf_0352",
+        "gen_perf_0359",
+        "gen_perf_0382"
       ]
     },
     {
       "batch": 14,
       "status": "done",
-      "edges": 8,
+      "edges": 15,
       "cards": [
-        "gen_comp_0145",
-        "gen_comp_0146",
-        "gen_comp_0148",
-        "gen_comp_0150",
-        "gen_comp_0151",
-        "gen_comp_0152",
-        "gen_comp_0153",
-        "gen_comp_0154"
+        "gen_perf_0406",
+        "gen_perf_0416",
+        "gen_perf_0432",
+        "gen_perf_0444",
+        "gen_perf_0446",
+        "gen_perf_0447",
+        "gen_perf_0453",
+        "gen_perf_0468"
       ]
     },
     {
       "batch": 15,
       "status": "done",
-      "edges": 8,
+      "edges": 16,
       "cards": [
-        "gen_comp_0156",
-        "gen_comp_0157",
-        "gen_comp_0158",
-        "gen_comp_0160",
-        "gen_comp_0162",
-        "gen_comp_0163",
-        "gen_comp_0164",
-        "gen_comp_0165"
+        "gen_perf_0469",
+        "gen_perf_0472",
+        "gen_perf_0474",
+        "gen_perf_0475",
+        "gen_perf_0494",
+        "gen_perf_0505",
+        "gen_perf_0513",
+        "gen_perf_0521"
       ]
     },
     {
       "batch": 16,
       "status": "done",
-      "edges": 8,
+      "edges": 9,
       "cards": [
-        "gen_comp_0166",
-        "gen_comp_0167",
-        "gen_comp_0168",
-        "gen_comp_0244",
-        "gen_comp_0245",
-        "gen_comp_0247",
-        "gen_comp_0252",
-        "gen_comp_0253"
+        "gen_perf_0537",
+        "gen_perf_0541",
+        "gen_perf_0554",
+        "gen_perf_0563"
       ]
     },
     {
       "batch": 17,
       "status": "done",
-      "edges": 0,
+      "edges": 9,
       "cards": [
-        "gen_comp_0254",
-        "gen_comp_0255",
-        "gen_comp_0256",
-        "gen_comp_0260",
-        "gen_comp_0261",
-        "gen_comp_0262",
-        "gen_comp_0263",
-        "gen_comp_0264"
+        "gen_prod_0057",
+        "gen_prod_0063",
+        "gen_prod_0141",
+        "gen_prod_0209",
+        "gen_prod_0231",
+        "gen_prod_0241",
+        "gen_prod_0245",
+        "gen_prod_0258"
       ]
     },
     {
       "batch": 18,
       "status": "done",
-      "edges": 7,
+      "edges": 18,
       "cards": [
-        "gen_comp_0265",
-        "gen_comp_0266",
-        "gen_comp_0267",
-        "gen_comp_0269",
-        "gen_comp_0274"
+        "gen_story_0025",
+        "gen_story_0027",
+        "gen_story_0076",
+        "gen_story_0146",
+        "gen_story_0211",
+        "gen_story_0236",
+        "gen_story_0237",
+        "gen_story_0241"
       ]
     },
     {
       "batch": 19,
       "status": "done",
-      "edges": 8,
-      "cards": [
-        "gen_edit_0037",
-        "gen_edit_0042",
-        "gen_edit_0045",
-        "gen_edit_0130",
-        "gen_edit_0154",
-        "gen_edit_0240"
-      ]
-    },
-    {
-      "batch": 20,
-      "status": "done",
-      "edges": 16,
-      "cards": [
-        "gen_perf_0324",
-        "gen_perf_0329",
-        "gen_perf_0348",
-        "gen_perf_0350",
-        "gen_perf_0417",
-        "gen_perf_0436",
-        "gen_perf_0440",
-        "gen_perf_0460"
-      ]
-    },
-    {
-      "batch": 21,
-      "status": "done",
-      "edges": 9,
-      "cards": [
-        "gen_perf_0492",
-        "gen_perf_0493",
-        "gen_perf_0537",
-        "gen_perf_0549",
-        "gen_perf_0574",
-        "gen_perf_0575"
-      ]
-    },
-    {
-      "batch": 22,
-      "status": "done",
       "edges": 6,
       "cards": [
-        "gen_prod_0001",
-        "gen_prod_0002",
-        "gen_prod_0005",
-        "gen_prod_0007",
-        "gen_prod_0014",
-        "gen_prod_0073",
-        "gen_prod_0075",
-        "gen_prod_0143"
-      ]
-    },
-    {
-      "batch": 23,
-      "status": "done",
-      "edges": 8,
-      "cards": [
-        "gen_prod_0154",
-        "gen_prod_0155",
-        "gen_prod_0168",
-        "gen_prod_0183",
-        "gen_prod_0184",
-        "gen_prod_0207",
-        "gen_prod_0216",
-        "gen_prod_0218"
-      ]
-    },
-    {
-      "batch": 24,
-      "status": "done",
-      "edges": 12,
-      "cards": [
-        "gen_prod_0221",
-        "gen_prod_0224",
-        "gen_prod_0228",
-        "gen_prod_0242",
-        "gen_prod_0243",
-        "gen_prod_0244"
-      ]
-    },
-    {
-      "batch": 25,
-      "status": "done",
-      "edges": 8,
-      "cards": [
-        "gen_story_0020",
-        "gen_story_0023",
-        "gen_story_0030",
-        "gen_story_0033",
-        "gen_story_0036",
-        "gen_story_0044",
-        "gen_story_0045",
-        "gen_story_0066"
-      ]
-    },
-    {
-      "batch": 26,
-      "status": "done",
-      "edges": 7,
-      "cards": [
-        "gen_story_0068",
-        "gen_story_0072",
-        "gen_story_0093",
-        "gen_story_0126",
-        "gen_story_0139",
-        "gen_story_0144",
-        "gen_story_0156",
-        "gen_story_0205"
-      ]
-    },
-    {
-      "batch": 27,
-      "status": "done",
-      "edges": 12,
-      "cards": [
-        "gen_story_0223",
-        "gen_story_0226",
-        "gen_story_0228",
-        "gen_story_0271",
-        "gen_story_0278"
+        "gen_story_0284",
+        "gen_story_0286",
+        "gen_story_0288"
       ]
     }
   ]

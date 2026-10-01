@@ -1,5 +1,5 @@
 {
-"_fingerprint": "fa6ced829800f828",
+"_fingerprint": "0a3d44ce0cb29cb6",
 "kinds": {
 "action": [
 "上下场",
@@ -116,6 +116,7 @@
 "高调"
 ],
 "movement": [
+"crane_arc_up",
 "crane_down",
 "crane_up",
 "dolly_in",
@@ -124,13 +125,13 @@
 "handheld",
 "orbit_ccw",
 "orbit_cw",
+"pan_left",
 "push_through",
 "steadicam",
-"tilt_down",
-"tilt_up",
+"track_left",
 "track_right",
 "whip_pan_left",
-"whip_pan_right",
+"zoom_in",
 "固定"
 ],
 "music": [
