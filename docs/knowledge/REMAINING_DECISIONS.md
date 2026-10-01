@@ -174,3 +174,31 @@ data.json   ->  只有元数据（course_title/description/instructors/…），
 
 （`find_ocw_sources.py` 目前不记录候选属于哪个课程；下一轮先补上 attribution，
 再按课挑选，否则分不清哪份 PDF 来自哪门课。）
+
+## 附五：只收"制作课"的那一轮产量
+
+`--want video media dv-lab --max-courses 8 --max-pages-per-course 10`：
+
+```
+课程 8 ｜ 资源页 80 ｜ 抽到 PDF 50 ｜ 通过验证 47
+```
+
+课程归属（新加的 `course` 字段终于让它可读）：
+
+| 课程 | 候选数 |
+|---|---|
+| `cms-611j-creating-video-games-...` | 多数 |
+| `4-351-introduction-to-video-spring-2004` | — |
+| `21a-550j-dv-lab-...` | — |
+
+**但"制作课"这个名字不等于"讲剪辑/声音/配乐"**：CMS.611 是**游戏制作**，
+4.351 是影像导论，dv-lab 是科学纪录片工作坊。它们对 `IMPACT_PACK`/`SOUND_PACK`/
+`MUSIC_PACK` 的补益**仍未验证**。
+
+**判定这件事只能靠"收进去 → 抽边 → 数对数"**，不能靠课程名或关键词粗扫
+（粗扫用的 `sound`/`music` 在任何影视文本里都会命中）。所以下一轮的次序是：
+
+1. 先入库**一小批**（不是 47 份全收 —— 扩语料会抬高门⑥ 的分母）；
+2. 立刻跑：抓取 → 分块 → 卡片 → 索引 → 薄边统计；
+3. 若 `IMPACT_PACK`/`SOUND_PACK`/`MUSIC_PACK` 的对数**没动**，就说明这条路也补不上，
+   **回到门限裁决**（那是一个需要你拍板的规格问题，我不会单方面调）。
