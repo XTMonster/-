@@ -644,6 +644,10 @@ def render_edges(edges: Sequence[HyperEdge], nodes: Dict[str, Node],
 
     返回 `(渲染文本, dropped_edge_ids, quality_fail)`；单条自超限时
     `quality_fail = True`（§2.3 第 4 步）。
+
+    分栏不在这里做：`KnowledgeRetriever.edge_columns` 已经把"硬约束／经验建议"
+    按 §2.3b 的关键纪律 2 分好（而且带 `forbid` 的边**永远**进硬约束栏），
+    这里只负责"把这一栏的边渲染成原子注入块"。
     """
     lines: List[str] = []
     dropped: List[str] = []
