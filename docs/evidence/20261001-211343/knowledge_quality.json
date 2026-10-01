@@ -1,0 +1,75 @@
+{
+  "queries": 2437,
+  "edges": 766,
+  "selected_total": 7311,
+  "metrics": [
+    {
+      "id": "Q1",
+      "status": "pass",
+      "numerator": 2127,
+      "denominator": 2437,
+      "value": 0.8728,
+      "line": 0.7,
+      "note": "held-out query 数 2437（下界 1200）"
+    },
+    {
+      "id": "Q2",
+      "status": "pass",
+      "numerator": 2426,
+      "denominator": 2437,
+      "value": 0.9955,
+      "line": 0.9,
+      "note": ""
+    },
+    {
+      "id": "Q3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 2201,
+      "value": 0.0,
+      "line": 0.1,
+      "note": ""
+    },
+    {
+      "id": "Q4",
+      "status": "fail",
+      "numerator": 2562,
+      "denominator": 2573,
+      "value": 0.9957,
+      "line": 1.0,
+      "note": "required 总数 2573（下界 200）"
+    },
+    {
+      "id": "Q6a",
+      "status": "pass",
+      "numerator": 7311,
+      "denominator": 7311,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q6b",
+      "status": "fail",
+      "numerator": 4494,
+      "denominator": 4497,
+      "value": 0.9993,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q7",
+      "status": "pass",
+      "numerator": 110,
+      "denominator": 110,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "冲突查询数 110（下界 60）"
+    }
+  ],
+  "must_total": 4497,
+  "required_unresolved": 0,
+  "required_unresolved_entries": 0,
+  "unresolved_examples": [],
+  "passed": false
+}
