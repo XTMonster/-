@@ -1,0 +1,253 @@
+{
+  "models": [
+    "deepseek-chat",
+    "glm-4.7-flash"
+  ],
+  "controls": [],
+  "edge_controls": [],
+  "criterion_errors": [],
+  "decisions": {
+    "gen_anime_0309": {
+      "deepseek-chat": {
+        "category": "drawing_technique",
+        "reason": "讲临摹学习，非镜头取舍",
+        "quote": "可借图书馆或画册中的照片临摹"
+      },
+      "glm-4.7-flash": {
+        "category": "not_expressible",
+        "reason": "美术技法与临摹学习，非镜头层面",
+        "quote": "学习前缩人物姿态时，可参考米开朗基罗的湿壁画"
+      }
+    },
+    "gen_anime_0406": {
+      "deepseek-chat": {
+        "category": "not_expressible",
+        "reason": "动画描线工位与作画台工艺，无对应槽位",
+        "quote": "重复性细节交给描线员按符号指示描摹"
+      },
+      "glm-4.7-flash": {
+        "category": "not_expressible",
+        "reason": "动画制作工艺与工位设置，非镜头层面",
+        "quote": "重复性细节（静止角色、不动部位）交给描线员按符号指示描摹"
+      }
+    },
+    "gen_axis_0300": {
+      "deepseek-chat": {
+        "category": "production_admin",
+        "reason": "导演职能定位，非镜头语言",
+        "quote": "仍可仅依据作者定稿的剧本完成有艺术价值的影片"
+      },
+      "glm-4.7-flash": {
+        "category": "not_expressible",
+        "reason": "导演职能定位与创作理论，非镜头层面",
+        "quote": "若导演未参与编剧，仍可仅依据作者定稿的剧本完成有艺术价值的影片"
+      }
+    },
+    "gen_axis_0308": {
+      "deepseek-chat": {
+        "category": "shot_language",
+        "reason": "裂缝作为生成性虚空，可指导构图与调度",
+        "quote": "把产生的裂缝与裂隙拍成不只是障碍，而是美学中必要的生成性虚空"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "reason": "空间破坏事件中的镜头美学设计",
+        "quote": "把产生的裂缝与裂隙拍成不只是障碍，而是美学中必要的生成性虚空"
+      }
+    },
+    "gen_block_0030": {
+      "deepseek-chat": {
+        "category": "stage_management",
+        "reason": "舞台监督代行导演职责，属管理",
+        "quote": "由舞台监督代行导演职责，保证排练不中断"
+      },
+      "glm-4.7-flash": {
+        "category": "not_expressible",
+        "reason": "舞台管理职责，非镜头层面",
+        "quote": "由舞台监督代行导演职责，保证排练不中断"
+      }
+    },
+    "gen_block_0048": {
+      "deepseek-chat": {
+        "category": "production_admin",
+        "reason": "采购审批与部门通气，属制片管理",
+        "quote": "任何采购未经导演许可不得进行"
+      },
+      "glm-4.7-flash": {
+        "category": "not_expressible",
+        "reason": "制作行政管理，非镜头层面",
+        "quote": "所有参与制作的人员都应保持与负责人的联系"
+      }
+    },
+    "gen_block_0339": {
+      "deepseek-chat": {
+        "category": "casting",
+        "reason": "选角来源与训练，属选角",
+        "quote": "选角可从艺术家、作家、学生、店主等非职业人群中挑选"
+      },
+      "glm-4.7-flash": {
+        "category": "casting",
+        "reason": "非职业演员的选角策略",
+        "quote": "选角可从艺术家、作家、学生、店主等非职业人群中挑选"
+      }
+    },
+    "gen_cine_0073": {
+      "deepseek-chat": {
+        "category": "not_expressible",
+        "reason": "测光读表技术，无对应槽位",
+        "quote": "用油斑装置做反射测光时结果不可靠"
+      },
+      "glm-4.7-flash": {
+        "category": "not_expressible",
+        "reason": "摄影技术原理与测光表读数，非镜头层面",
+        "quote": "用油斑（grease spot）装置做反射测光时结果不可靠"
+      }
+    },
+    "gen_cine_0199": {
+      "deepseek-chat": {
+        "category": "not_expressible",
+        "reason": "跟焦标尺操作，无对应槽位",
+        "quote": "在相机顶部调焦杆上标出对应刻度"
+      },
+      "glm-4.7-flash": {
+        "category": "not_expressible",
+        "reason": "摄影机技术操作与对焦标尺，非镜头层面",
+        "quote": "先用毛玻璃对好各距离的焦点，并在相机顶部调焦杆上标出对应刻度"
+      }
+    },
+    "gen_cine_0247": {
+      "deepseek-chat": {
+        "category": "shot_language",
+        "reason": "摄影机运动原则，直接指导运镜",
+        "quote": "摄影机始终处于某种运动中——位移、摇移或改变焦距"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "reason": "摄影机运动与画面流动感设计",
+        "quote": "摄影机始终处于某种运动中——位移、摇移或改变焦距，避免长时间静止固定"
+      }
+    },
+    "gen_story_0020": {
+      "deepseek-chat": {
+        "category": "manuscript_format",
+        "reason": "剧本修改与交稿流程，非镜头取舍",
+        "quote": "写剧本要慢工出细活，寄给制片人前反复通读多遍"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0033": {
+      "deepseek-chat": {
+        "category": "casting",
+        "reason": "角色表用于选角，属选角范畴",
+        "quote": "角色表是选角指引而非硬性规定"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0064": {
+      "deepseek-chat": {
+        "category": "manuscript_format",
+        "reason": "场景表格式规定，非镜头语言",
+        "quote": "场景表只需列出外景与内景的清单"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0065": {
+      "deepseek-chat": {
+        "category": "manuscript_format",
+        "reason": "剧本与场景表撰写顺序，属稿件格式",
+        "quote": "场景表应在剧本完成后再整理成稿"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0066": {
+      "deepseek-chat": {
+        "category": "shot_language",
+        "reason": "导演增删场次以适配节奏时长，涉及剪辑节奏",
+        "quote": "导演可按判断增补或删减场次，以适配成片节奏与时长"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0068": {
+      "deepseek-chat": {
+        "category": "manuscript_format",
+        "reason": "填充定义涉及剧本写作，非镜头语言",
+        "quote": "填充指为凑满一整卷胶片而在故事中加入不必要的动作"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0107": {
+      "deepseek-chat": {
+        "category": "manuscript_format",
+        "reason": "剧本格式与片长无关，属稿件格式",
+        "quote": "无论单本还是多本影片，完整剧本的格式完全一致"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0110": {
+      "deepseek-chat": {
+        "category": "manuscript_format",
+        "reason": "角色表在剧本中单列一节，属稿件格式",
+        "quote": "还须在剧本中另设“角色表”一节单独列出"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0111": {
+      "deepseek-chat": {
+        "category": "manuscript_format",
+        "reason": "梗概只写轮廓，属剧本结构格式",
+        "quote": "梗概是剧本的第一部分，只写故事轮廓，不展开细节"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "gen_story_0113": {
+      "deepseek-chat": {
+        "category": "shot_language",
+        "reason": "单一主线不跑题，涉及分镜叙事结构",
+        "quote": "分镜中不留任何支线行程"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "error": "LLMError"
+      }
+    },
+    "perf_conflict": {
+      "deepseek-chat": {
+        "category": "shot_language",
+        "reason": "动作层冲突规则直接决定表演调度取舍",
+        "quote": "walk/run 与 fall_down 冲突（摔倒前要先停下）"
+      },
+      "glm-4.7-flash": {
+        "category": "shot_language",
+        "reason": "动作冲突逻辑决定镜头调度与表演节奏",
+        "quote": "walk/run 与 fall_down 冲突（摔倒前要先停下）"
+      }
+    }
+  }
+}

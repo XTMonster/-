@@ -41,12 +41,19 @@ excluded  ⟺  全语料抽取对这张卡一条边都没抽出来
 
 ## 面板只作旁证，不作判据（2026-10-02 实测）
 
-双模型（DeepSeek ＋ GLM，跨族、闭集类别）判读**在同一批卡上不可复现**：
-同一提示、`temperature=0`、同一批卡，两次运行会把同一张卡一次判
-`not_expressible`、一次判 `shot_language`（批内邻居一换结果就变）。实测两次运行对
-同一张 `gen_cine_0199` 给出相反结论。用一个不可复现的判据去缩小分母，等于把
-验收标准交给运气——所以判据是确定性的索引证据，面板的原始判决留在 `--panel-out`
-指向的文件里，只用来回答"这个边界像不像话"。
+双模型（DeepSeek ＋ GLM，跨族、闭集类别）判读**在同一批卡上不可复现**。固定同一份
+21 张卡的名单、同一提示、`temperature=0`、同一对模型，连跑两遍
+（`--panel-only @名单 --panel-out …`）：
+
+| | DeepSeek | GLM |
+|---|---|---|
+| 21 张里类别与上一次相同 | **21** | **11** |
+| 类别变了 | 0 | **10** |
+
+10 次翻转**全部**是 GLM 从 `not_expressible` 翻成 `shot_language`（批内邻居一换结果
+就变）。原始记录：`docs/evidence/20261002-1130_panel/panel_run_{a,b}.json`。
+用一个不可复现的判据去缩小分母，等于把验收标准交给运气——所以判据是确定性的索引
+证据，面板的原始判决只留在 `--panel-out` 指向的文件里，用来回答"这个边界像不像话"。
 """
 
 from __future__ import annotations
@@ -61,6 +68,8 @@ from typing import Dict, List, Sequence, Tuple
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+from block_director.utils.console import force_utf8_streams  # noqa: E402
 
 DEFAULT_OUT = "knowledge/card_scope.json"
 DEFAULT_CATALOGUE = "fixtures/knowledge_holdout.cards.json"
@@ -246,11 +255,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--panel-out", default="",
                         help="把面板旁证写到这个文件（默认不跑面板：判据是确定性的，"
                              "面板同批不可复现，见模块文档）")
+    parser.add_argument("--panel-only", default="",
+                        help="面板只判这些 id（`@文件` 或逗号分隔），默认判全部被剔的卡。"
+                             "**不影响判据与产物**：用来在固定的一份名单上重复跑，"
+                             "把「同一批卡不可复现」这件事本身留成证据。")
     parser.add_argument("--models", default="deepseek-chat,glm-4.7-flash")
     parser.add_argument("--batch-size", type=int, default=10)
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--seed", type=int, default=20261002)
     args = parser.parse_args(list(argv) if argv is not None else None)
+    # 判据的产物里带中文（判据原文、卡片 id），而 stdout 的字节不许取决于控制台
+    # 码页：cp936 下 `⊆` 这类符号编不出，会让一次**成功的**运行以
+    # `UnicodeEncodeError` 退出（退出码 1 = "有门失败"）。同 `tools/check_holdout.py`。
+    force_utf8_streams()
 
     cards = _cards(args.catalogue)
     edge_counts = edges_per_card(ROOT / args.edges)
@@ -271,7 +288,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                                      args.seed)
         plain_controls = control_pool(sorted(cards), report["excluded"],
                                       sorted(set(covered)), args.control, args.seed)
-        wanted = report["excluded"] + plain_controls + edge_controls
+        if args.panel_only:
+            spec = str(args.panel_only)
+            if spec.startswith("@"):
+                spec = pathlib.Path(spec[1:]).read_text(encoding="utf-8")
+            named = [item.strip() for item in spec.replace("\n", ",").split(",")
+                     if item.strip()]
+        else:
+            named = list(report["excluded"])
+        wanted = named + plain_controls + edge_controls
         models = []
         for mid in [m.strip() for m in str(args.models).split(",") if m.strip()]:
             provider = ("glm" if mid.lower().startswith("glm")

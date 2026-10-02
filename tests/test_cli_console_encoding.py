@@ -97,6 +97,12 @@ ACCEPTANCE_TOOLS = [
     ("run_tests_rks",
      lambda tmp: ["tools/run_tests_rks.py", "--run-id", "probe",
                   "--evidence-dir", str(tmp / "evidence"), "--checks", "RK-7"]),
+    # `card_scope_audit` 也会把判据原文（含 `⊆`）与卡片 id 打到 stdout；实测
+    # 2026-10-02 它在 cp936 控制台上以 `UnicodeEncodeError` 退出 1，而门⑥ 的
+    # 分母正是这份产物——"成功"会被读成"有门失败"。
+    ("card_scope_audit",
+     lambda tmp: ["tools/kb_fetch/card_scope_audit.py",
+                  "--out", str(tmp / "card_scope.json")]),
 ]
 
 
