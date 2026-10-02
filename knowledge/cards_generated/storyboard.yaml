@@ -7138,3 +7138,67 @@
     start: 642
     end: 727
   provenance_kind: 网络语料
+- id: gen_story_0289
+  domain: storyboard
+  title: 相邻镜景别须差异明显
+  content: 相邻两镜的角色取景必须差异显著，否则会出现严重跳切问题；真人导演偶有艺术化使用跳切，但极难成立，最好直接避免。
+  keywords:
+  - 跳切
+  - 剪辑
+  - 取景
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 跳切
+  - 剪辑
+  topic: storyboard
+  quote: |-
+    you must be sure that your character is framed dramatically different from one scene to another, or you will have a major problem
+  source_ref:
+    url: https://www.skwigly.co.uk/storyboarding-tutorial-pt-1-the-dos-and-donts/
+    title: Storyboarding Tutorial - "The Do's and Don'ts"
+    author: Wade Konowalchuk
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:03+00:00'
+    sha256: 21461c7690eb05197aaedcfde061d036f1127542122998a852f8a64fc853978d
+  chunk_id: storyboarding-tutorial-pt-1-the-dos-and-donts#000
+  source_span:
+    chunk_id: storyboarding-tutorial-pt-1-the-dos-and-donts#000
+    start: 1332
+    end: 1461
+  provenance_kind: 网络语料
+- id: gen_story_0290
+  domain: storyboard
+  title: 避免用运镜补救调度
+  content: 若整场戏的原始调度不成立，不要靠加摄影机运动来"调整"构图；应重新布局场面调度使其全程可用。运镜补救通常显得分镜师偷懒，只在确实无法避免时才用。
+  keywords:
+  - 构图
+  - 分镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: storyboard
+  quote: |-
+    Many people use a camera move because their original staging does not work for the entire scene, so they “adjust” the framing as necessary.
+  source_ref:
+    url: https://www.skwigly.co.uk/storyboarding-tutorial-pt-1-the-dos-and-donts/
+    title: Storyboarding Tutorial - "The Do's and Don'ts"
+    author: Wade Konowalchuk
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:03+00:00'
+    sha256: 21461c7690eb05197aaedcfde061d036f1127542122998a852f8a64fc853978d
+  chunk_id: storyboarding-tutorial-pt-1-the-dos-and-donts#000
+  source_span:
+    chunk_id: storyboarding-tutorial-pt-1-the-dos-and-donts#000
+    start: 0
+    end: 139
+  provenance_kind: 网络语料

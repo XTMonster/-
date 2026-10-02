@@ -523,3 +523,157 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+  # ------------------------------------------------ anime / 现代动画制作（2026-10-02 加）
+  # 用户裁决：「补一些动漫设计理论」「**不是角色设计，是动漫那些视频制作理论**」
+  # 「动漫电影，围绕着动漫视频制作展开」「理论不要自己写，要别人写的」。
+  # `anime` 域此前只有 Lutz 1920 一本书。这一族是**现代**（2000s–2020s）动画
+  # **制作用**写作：动画表演、故事板、layout、管线、灯光、动态影像技法。
+  # 许可：Skwigly 是商业刊物，按用户「个人学习使用」的口径记 `PersonalStudy`
+  # （白名单内，与已有的 Frames Cinema Journal 三条同口径）。
+  # 选片判据：URL 先过 `fetch.py` 的 robots 门；再按正文的动画工艺关键词打分
+  # （与 `chunk.py` 的 `anime` 词表同源），分数 <10 或正文 <2400 字符的不收；
+  # 最后人工剔除纯新闻/评奖/招聘/课程报名（它们讲的是产业，不是拍法）。
+  - url: https://www.skwigly.co.uk/acting-animation-observation/
+    title: "Acting For Animation - Observation"
+    author: "Andy Joule"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: performance
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/acting-for-animation-character-performance/
+    title: "Acting For Animation & Character Performance"
+    author: "Andy Joule"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: performance
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/acting-animation-character-animation-working-dialogue/
+    title: "Acting For Animation: Character Animation – Working With Dialogue"
+    author: "Andy Joule"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: performance
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/acting-animation-character-animation-character-development/
+    title: "Acting For Animation: Character Development"
+    author: "Andy Joule"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: performance
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/storyboarding-tutorial-pt-1-the-dos-and-donts/
+    title: "Storyboarding Tutorial - \"The Do's and Don'ts\""
+    author: "Wade Konowalchuk"
+    license: PersonalStudy
+    domain: storyboard
+    mode: http
+    genre: anime
+    theme: storyboard
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/cartoon-character-animation-maya-book-review/
+    title: "\"Cartoon Character Animation with Maya\" book review"
+    author: "Gareth Cavanagh"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: character_animation
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/illuminated-pixels-digital-lighting-book-review/
+    title: "Illuminated Pixels: The Why, What, and How of Digital Lighting - Book Review"
+    author: "Harvey Deneroff"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    genre: anime
+    theme: lighting
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/tony-white-book-2d-animation-career/
+    title: "Veteran Traditional 2D Animator Tony White Releases Book Giving Insight into his Career & Life"
+    author: "Aaron Wood"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: character_animation
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/character-animation-in-3d-cgi/
+    title: "Character Animation In 3D - New Book"
+    author: "Skwigly"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: character_animation
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/inbetweens-jessica-meier/
+    title: "INBETWEENS Filmmaker Focus: Jessica Meier"
+    author: "Luzie Lilie"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: anime_production
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/inbetweens-steven-fraser/
+    title: "INBETWEENS Filmmaker Focus: Steven Fraser"
+    author: "Luzie Lilie"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: anime_production
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/colourbang-getting-noticed-on-youtube/
+    title: "ColourBANG! Getting noticed on YouTube"
+    author: "Steve Henderson"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: anime_production
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/corporate-animation-showcase-character-design/
+    title: "Corporate Animation Showcase 2 - Character Design"
+    author: "Tom Sanders"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: character_design
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/piripenguins-unreal-pipeline/
+    title: "Wild Child Animation’s Unreal pipeline behind Piripenguins’ hybrid 2D/3D style"
+    author: "Skwigly"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: pipeline
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/cheatin-in-colour/
+    title: "Bill Plympton's Cheatin' In Colour"
+    author: "Ben Mitchell"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: technique
+    chunk_budget: 1
+  - url: https://www.skwigly.co.uk/childrens-tv-show-animation-pipeline-cinema-4d/
+    title: "Walk-through of a Children's TV Show Animation Pipeline in Cinema 4D: Animatic to Render"
+    author: "Skwigly"
+    license: PersonalStudy
+    domain: anime
+    mode: http
+    genre: anime
+    theme: pipeline
+    chunk_budget: 1

@@ -6652,3 +6652,96 @@
     start: 1168
     end: 1270
   provenance_kind: 网络语料
+- id: gen_cine_0332
+  domain: cinematography
+  title: 实景层替代绘制背景
+  content: Fleischer的setback摄影系统用真实三维布景作为角色表演的背景层，使二维角色能与被实际打光的实体环境同框，从而获得真实光照。
+  keywords:
+  - setback
+  - 三维布景
+  - 背景层
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 多层摄影机
+  - 照明
+  topic: lighting
+  quote: |-
+    the Fleischer setback camera system used actual three-dimensional sets against which characters like Popeye could perform
+  source_ref:
+    url: https://www.skwigly.co.uk/illuminated-pixels-digital-lighting-book-review/
+    title: 'Illuminated Pixels: The Why, What, and How of Digital Lighting - Book Review'
+    author: Harvey Deneroff
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:06+00:00'
+    sha256: c5db646890c7e197157b69c482405744a5fd1b28bfa37ed5924d111368b0b6c0
+  chunk_id: illuminated-pixels-digital-lighting-book-review#000
+  source_span:
+    chunk_id: illuminated-pixels-digital-lighting-book-review#000
+    start: 2059
+    end: 2180
+  provenance_kind: 网络语料
+- id: gen_cine_0333
+  domain: cinematography
+  title: 多层摄影机扩展光效
+  content: 多层摄影机让二维动画能制造更丰富的光照效果：把画面分层并分别控制各层曝光与运动，即可获得单层绘制做不到的光影变化。
+  keywords:
+  - 分层
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 照明
+  topic: lighting
+  quote: |-
+    Achmed also pioneered the use of the multiplane camera, which seems to have enabled her to provide for a greater range of lighting effects.
+  source_ref:
+    url: https://www.skwigly.co.uk/illuminated-pixels-digital-lighting-book-review/
+    title: 'Illuminated Pixels: The Why, What, and How of Digital Lighting - Book Review'
+    author: Harvey Deneroff
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:06+00:00'
+    sha256: c5db646890c7e197157b69c482405744a5fd1b28bfa37ed5924d111368b0b6c0
+  chunk_id: illuminated-pixels-digital-lighting-book-review#000
+  source_span:
+    chunk_id: illuminated-pixels-digital-lighting-book-review#000
+    start: 1308
+    end: 1447
+  provenance_kind: 网络语料
+- id: gen_cine_0334
+  domain: cinematography
+  title: 多层摄影机强化风景
+  content: 用多层摄影机拍摄风景开场时，通过分层移动与景深差异可显著增强森林等场景的如画感，如《小鹿斑比》开场的长跟拍。
+  keywords:
+  - 跟拍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 运动镜头
+  topic: lighting
+  quote: |-
+    consider the spectacular opening tracking shot in Bambi where the Disney multiplane camera greatly enhances the picturesque forest scene.
+  source_ref:
+    url: https://www.skwigly.co.uk/illuminated-pixels-digital-lighting-book-review/
+    title: 'Illuminated Pixels: The Why, What, and How of Digital Lighting - Book Review'
+    author: Harvey Deneroff
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:06+00:00'
+    sha256: c5db646890c7e197157b69c482405744a5fd1b28bfa37ed5924d111368b0b6c0
+  chunk_id: illuminated-pixels-digital-lighting-book-review#000
+  source_span:
+    chunk_id: illuminated-pixels-digital-lighting-book-review#000
+    start: 2252
+    end: 2389
+  provenance_kind: 网络语料

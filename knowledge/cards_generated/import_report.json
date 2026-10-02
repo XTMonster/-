@@ -2,14 +2,14 @@
   "size_gate": {
     "passed": true,
     "files": {
-      "anime.jsonl": 148154,
-      "anime.yaml": 143817,
+      "anime.jsonl": 161149,
+      "anime.yaml": 156439,
       "axis_theory.jsonl": 206092,
       "axis_theory.yaml": 201083,
       "blocking.jsonl": 298777,
       "blocking.yaml": 290300,
-      "cinematography.jsonl": 226075,
-      "cinematography.yaml": 219780,
+      "cinematography.jsonl": 229636,
+      "cinematography.yaml": 223251,
       "composition.jsonl": 261622,
       "composition.yaml": 253994,
       "editing.jsonl": 190462,
@@ -18,43 +18,43 @@
       "performance.yaml": 264650,
       "production.jsonl": 217912,
       "production.yaml": 211614,
-      "storyboard.jsonl": 234770,
-      "storyboard.yaml": 227744
+      "storyboard.jsonl": 237128,
+      "storyboard.yaml": 230034
     },
     "file_count": 18,
-    "total_bytes": 4054332,
+    "total_bytes": 4091629,
     "max_file_bytes": 524288,
     "max_total_bytes": 20971520,
     "oversize": {}
   },
   "counts": {
-    "cards_candidates": 1981,
-    "cards_kept": 1981,
+    "cards_candidates": 1998,
+    "cards_kept": 1998,
     "cards_deduped": 0,
     "cards_rejected": 0,
     "docs_deduped": 0,
     "K2_license_ratio": 1.0
   },
   "per_domain": {
-    "cinematography": 211,
+    "cinematography": 214,
     "axis_theory": 184,
     "composition": 254,
     "blocking": 294,
     "performance": 276,
-    "storyboard": 227,
+    "storyboard": 229,
     "editing": 182,
-    "anime": 141,
+    "anime": 153,
     "production": 212
   },
   "per_domain_merged": {
-    "cinematography": 261,
+    "cinematography": 264,
     "axis_theory": 201,
     "composition": 281,
     "blocking": 316,
     "performance": 292,
-    "storyboard": 227,
+    "storyboard": 229,
     "editing": 182,
-    "anime": 141,
+    "anime": 153,
     "production": 212
   },
   "handwritten_per_domain": {
@@ -65,12 +65,12 @@
     "performance": 16
   },
   "topics": {
-    "lighting": 101,
+    "lighting": 104,
     "color": 99,
     "camera_angle": 59,
     "editing": 182,
     "anime": 141,
-    "storyboard": 227
+    "storyboard": 229
   },
   "K1_source_ref_complete": 1.0,
   "K4_dedupe_ratio": 1.0,

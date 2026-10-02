@@ -4460,3 +4460,382 @@
     start: 1738
     end: 1850
   provenance_kind: 网络语料
+- id: gen_anime_0417
+  domain: anime
+  title: 动画表演更近舞台
+  content: 动画表演与实拍电影表演有本质区别，更接近舞台表演：需靠夸张、可读性强的外部动作传达内心，而非依赖镜头前的细微自然主义。
+  keywords:
+  - 舞台表演
+  - 实拍差异
+  - 夸张
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 风格
+  topic: performance
+  quote: |-
+    I believe that acting for animation is distinctly different from live-action acting for film and is closer to performaning on the stage.
+  source_ref:
+    url: https://www.skwigly.co.uk/acting-for-animation-character-performance/
+    title: Acting For Animation & Character Performance
+    author: Andy Joule
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:25:57+00:00'
+    sha256: 08e30437301bbc8e2895c202eddefbc13e1683f19a312a3a889878270b1088bb
+  chunk_id: acting-for-animation-character-performance#000
+  source_span:
+    chunk_id: acting-for-animation-character-performance#000
+    start: 1990
+    end: 2126
+  provenance_kind: 网络语料
+- id: gen_anime_0418
+  domain: anime
+  title: 导演须明确每场戏
+  content: 导演进棚前要在自己脑中明确每场戏到底发生了什么，不能直接进棚让配音演员开始念台词。
+  keywords:
+  - 场景意图
+  - 配音
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 导演功课
+  topic: performance
+  quote: |-
+    As a director you need to be clear in your own mind exactly what is going on in each scene.
+  source_ref:
+    url: https://www.skwigly.co.uk/acting-animation-character-animation-working-dialogue/
+    title: 'Acting For Animation: Character Animation – Working With Dialogue'
+    author: Andy Joule
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:25:59+00:00'
+    sha256: e90e8b805c2b8aef145c9b36b4ab1bf8007a38cc0b175096c3df029d697a0148
+  chunk_id: acting-animation-character-animation-working-dia#000
+  source_span:
+    chunk_id: acting-animation-character-animation-working-dia#000
+    start: 1522
+    end: 1613
+  provenance_kind: 网络语料
+- id: gen_anime_0419
+  domain: anime
+  title: 图形元素呼应细线角色
+  content: 当角色线条细而缠绕时，画面中的图形元素应与之风格呼应，保持整体视觉统一。
+  keywords:
+  - 线条风格
+  - 统一
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色设计
+  - 风格统一
+  topic: character_design
+  quote: |-
+    the graphical elements tie in nicely with the somewhat thin, tangled line of its character counterparts.
+  source_ref:
+    url: https://www.skwigly.co.uk/corporate-animation-showcase-character-design/
+    title: Corporate Animation Showcase 2 - Character Design
+    author: Tom Sanders
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:17+00:00'
+    sha256: 3432e3a8485b0b3a5e138c5d2acb05892f51b3b3f01d47626b9df35d0fce0bd1
+  chunk_id: corporate-animation-showcase-character-design#000
+  source_span:
+    chunk_id: corporate-animation-showcase-character-design#000
+    start: 1343
+    end: 1447
+  provenance_kind: 网络语料
+- id: gen_anime_0420
+  domain: anime
+  title: 强图形形状配夸张动作
+  content: 用强图形形状构建角色时，表情应易于读取，动作可夸张但须保持形体结构不散。
+  keywords:
+  - 表情
+  - 保持形体
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色设计
+  - 表演
+  topic: character_design
+  quote: |-
+    Strong graphical shapes make the expressions easy to read with actions being exaggerated, yet still holding form.
+  source_ref:
+    url: https://www.skwigly.co.uk/corporate-animation-showcase-character-design/
+    title: Corporate Animation Showcase 2 - Character Design
+    author: Tom Sanders
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:17+00:00'
+    sha256: 3432e3a8485b0b3a5e138c5d2acb05892f51b3b3f01d47626b9df35d0fce0bd1
+  chunk_id: corporate-animation-showcase-character-design#000
+  source_span:
+    chunk_id: corporate-animation-showcase-character-design#000
+    start: 636
+    end: 749
+  provenance_kind: 网络语料
+- id: gen_anime_0421
+  domain: anime
+  title: 无对白叙事
+  content: 用音乐与音效承担叙事与情绪推进，去掉对白；故事信息靠画面动作与音乐节奏传达，适合默片式或黑色电影风格的段落。
+  keywords:
+  - 音乐叙事
+  - 音效
+  - 黑色电影
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音设计
+  - 叙事结构
+  topic: technique
+  quote: |-
+    The story, told with music and sound but without dialogue, is a love story harkening back to the days of film noir fiction:
+  source_ref:
+    url: https://www.skwigly.co.uk/cheatin-in-colour/
+    title: Bill Plympton's Cheatin' In Colour
+    author: Ben Mitchell
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:20+00:00'
+    sha256: 8b5eb89b74a9832d5070b536ab5431f941236642a3be5647398a78620cb6202f
+  chunk_id: cheatin-in-colour#000
+  source_span:
+    chunk_id: cheatin-in-colour#000
+    start: 1093
+    end: 1216
+  provenance_kind: 网络语料
+- id: gen_anime_0422
+  domain: anime
+  title: 工具不主导节奏
+  content: 节奏由动画师决定，不能被所用媒介工具的限制或便利效果牵着走；先定表演需要的时间，再选实现手段。
+  keywords:
+  - 主导权
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: performance
+  quote: |-
+    Timing for animation should be directed by the animator alone and not driven by the tools used to execute the medium.
+  source_ref:
+    url: https://www.skwigly.co.uk/acting-animation-observation/
+    title: Acting For Animation - Observation
+    author: Andy Joule
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:25:55+00:00'
+    sha256: 2a68ca3297cfcdadadfd7b1f8e435d410cfff4ffbc34ce8dd6a1b6b4b159d4f6
+  chunk_id: acting-animation-observation#000
+  source_span:
+    chunk_id: acting-animation-observation#000
+    start: 1383
+    end: 1500
+  provenance_kind: 网络语料
+- id: gen_anime_0423
+  domain: anime
+  title: 黑色电影氛围
+  content: 要营造黑色电影（film noir）氛围，可借鉴其阴暗、情欲、宿命感的题材取向：不忠、背叛、外来者破坏恋人关系等情节母题。
+  keywords:
+  - 情欲
+  - 背叛
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压抑
+  tags:
+  - 题材母题
+  topic: technique
+  quote: |-
+    which are very sordid, dark, romantic, lusty, sexual films. So this is along those lines.
+  source_ref:
+    url: https://www.skwigly.co.uk/cheatin-in-colour/
+    title: Bill Plympton's Cheatin' In Colour
+    author: Ben Mitchell
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:20+00:00'
+    sha256: 8b5eb89b74a9832d5070b536ab5431f941236642a3be5647398a78620cb6202f
+  chunk_id: cheatin-in-colour#000
+  source_span:
+    chunk_id: cheatin-in-colour#000
+    start: 1374
+    end: 1463
+  provenance_kind: 网络语料
+- id: gen_anime_0424
+  domain: anime
+  title: 放大头部提升辨识度
+  content: 角色头部比例应明显放大；头部过小会使造型辨识度下降、更难读取，放大比例能最好地展示技法。
+  keywords:
+  - 头部比例
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色设计
+  - 比例
+  topic: character_design
+  quote: |-
+    The heads are clearly enlarged and vital to the designs in my opinion; If they were smaller they would become less defined and harder to read.
+  source_ref:
+    url: https://www.skwigly.co.uk/corporate-animation-showcase-character-design/
+    title: Corporate Animation Showcase 2 - Character Design
+    author: Tom Sanders
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:17+00:00'
+    sha256: 3432e3a8485b0b3a5e138c5d2acb05892f51b3b3f01d47626b9df35d0fce0bd1
+  chunk_id: corporate-animation-showcase-character-design#000
+  source_span:
+    chunk_id: corporate-animation-showcase-character-design#000
+    start: 1448
+    end: 1590
+  provenance_kind: 网络语料
+- id: gen_anime_0425
+  domain: anime
+  title: 简洁并非唯一路径
+  content: 角色设计不必总走简洁路线；有时需要胆量和取舍，才能得到原创、令人兴奋且与众不同的影片。
+  keywords:
+  - 取舍
+  - 原创
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色设计
+  - 风格
+  topic: character_design
+  quote: |-
+    demonstrating that simplicity isn’t always the road to go down. Sometimes it takes guts and a little bit of swaying
+  source_ref:
+    url: https://www.skwigly.co.uk/corporate-animation-showcase-character-design/
+    title: Corporate Animation Showcase 2 - Character Design
+    author: Tom Sanders
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:17+00:00'
+    sha256: 3432e3a8485b0b3a5e138c5d2acb05892f51b3b3f01d47626b9df35d0fce0bd1
+  chunk_id: corporate-animation-showcase-character-design#000
+  source_span:
+    chunk_id: corporate-animation-showcase-character-design#000
+    start: 1671
+    end: 1786
+  provenance_kind: 网络语料
+- id: gen_anime_0426
+  domain: anime
+  title: 节奏要成为本能
+  content: 训练目标是把节奏变成直觉：看到一个动作就能直接判断它需要多长时间，而不是靠试错或工具提示。
+  keywords:
+  - 直觉
+  - 时间感
+  - 判断
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: performance
+  quote: |-
+    Timing needs to become an instinctive thing – you look at a movement and you just know how long it is.
+  source_ref:
+    url: https://www.skwigly.co.uk/acting-animation-observation/
+    title: Acting For Animation - Observation
+    author: Andy Joule
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:25:55+00:00'
+    sha256: 2a68ca3297cfcdadadfd7b1f8e435d410cfff4ffbc34ce8dd6a1b6b4b159d4f6
+  chunk_id: acting-animation-observation#000
+  source_span:
+    chunk_id: acting-animation-observation#000
+    start: 1201
+    end: 1303
+  provenance_kind: 网络语料
+- id: gen_anime_0427
+  domain: anime
+  title: 录音前先定动作
+  content: 进录音棚前必须先把每场戏里每个角色的动作确定下来；通常在做分镜时就完成，若尚未到分镜阶段，则至少要把剧本吃透，以便现场引导配音演员。
+  keywords:
+  - 配音
+  - 动作设计
+  - 分镜
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 前期准备
+  - 配音
+  topic: performance
+  quote: |-
+    it is really important that you have figured out what actions each of the characters are going to perform before hand
+  source_ref:
+    url: https://www.skwigly.co.uk/acting-animation-character-animation-working-dialogue/
+    title: 'Acting For Animation: Character Animation – Working With Dialogue'
+    author: Andy Joule
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:25:59+00:00'
+    sha256: e90e8b805c2b8aef145c9b36b4ab1bf8007a38cc0b175096c3df029d697a0148
+  chunk_id: acting-animation-character-animation-working-dia#000
+  source_span:
+    chunk_id: acting-animation-character-animation-working-dia#000
+    start: 1694
+    end: 1811
+  provenance_kind: 网络语料
+- id: gen_anime_0428
+  domain: anime
+  title: 抽象设计需胆量与自信
+  content: 采用较抽象、非主流的角色设计时，需要大胆自信；这种取舍可换来原创、兴奋且脱颖而出的成片。
+  keywords:
+  - 大胆
+  - 原创
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色设计
+  - 风格
+  topic: character_design
+  quote: |-
+    It is daring and confident, with quite an abstract design not always seen in a lot of corporates.
+  source_ref:
+    url: https://www.skwigly.co.uk/corporate-animation-showcase-character-design/
+    title: Corporate Animation Showcase 2 - Character Design
+    author: Tom Sanders
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T05:26:17+00:00'
+    sha256: 3432e3a8485b0b3a5e138c5d2acb05892f51b3b3f01d47626b9df35d0fce0bd1
+  chunk_id: corporate-animation-showcase-character-design#000
+  source_span:
+    chunk_id: corporate-animation-showcase-character-design#000
+    start: 1158
+    end: 1255
+  provenance_kind: 网络语料
