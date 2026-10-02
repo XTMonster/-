@@ -36,6 +36,7 @@ Exit codes
 from __future__ import annotations
 
 import argparse
+import collections
 import hashlib
 import json
 import pathlib
@@ -461,6 +462,8 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
     #: 自己写的判决书"——任何实现都能凭空填一个 `reviewed_by` 字符串。
     uncorroborated: List[str] = []
     panel_hashes: Dict[str, int] = {}
+    #: 复核记录的**裁到什么程度**：一致裁决 vs 面板分歧（待人类裁决）。
+    agreement_split: Dict[str, int] = collections.Counter()
     type_pairs: Dict[str, set] = {t: set() for t in EDGE_TYPES}
     type_cards: Dict[str, set] = {t: set() for t in EDGE_TYPES}
     parsed_q: List[Dict[str, str]] = []
@@ -497,6 +500,11 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
                 panel_hashes[stamp] = panel_hashes.get(stamp, 0) + 1
             if who:
                 reviewed_by_class[who] = reviewed_by_class.get(who, 0) + 1
+                #: 2026-10-03：面板**分歧**的条目也是"复核过"，但记录里写着
+                #: `agreement: false` / `needs_human: true`。不把这两个数分开报，
+                #: "已复核 176 条"会被读成"176 条都裁定了"——那是另一件事。
+                agreement_split["一致" if review.get("agreement") is True
+                                else "分歧（待人类裁决）"] += 1
     detail = {"entries": len(entries), "valid": len(parsed_q), "problems": problems[:20],
               "problem_count": len(problems), "q7_conflicts": q7,
               "must_pairs_per_type": {t: len(s) for t, s in type_pairs.items()},
@@ -506,6 +514,8 @@ def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
               "reviewed_by_class": reviewed_by_class,
               "uncorroborated_reviews": uncorroborated[:10],
               "uncorroborated_count": len(uncorroborated),
+              #: `reviewed_by_class` 只说"谁裁的"；这两个计数说"裁到什么程度"。
+              "panel_agreement_split": dict(agreement_split),
               "panel_prompt_hashes": {k: v for k, v in panel_hashes.items()},
               "q7_member_count": len(q7_members),
               "_parsed_q": parsed_q}
@@ -1179,6 +1189,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                                              "uncorroborated_count", 0),
                                          panel_prompt_hashes=fdetail.get(
                                              "panel_prompt_hashes"))
+    #: "谁裁的"和"裁到什么程度"是两件事：面板分歧的记录也算**复核过**（它带
+    #: `source{models,prompt_sha256}`，满足 §4.1b 硬规则 2），但记录里写着
+    #: `agreement:false` / `needs_human:true`。把这两个数并排放出来，免得
+    #: "已复核 176 条"被读成"176 条都裁定了"。
+    rdetail["panel_agreement_split"] = dict(fdetail.get("panel_agreement_split") or {})
     statuses.append(rstatus)
     report["gate_7_human_review"] = {"status": rstatus, **rdetail}
 

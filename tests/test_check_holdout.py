@@ -1050,6 +1050,29 @@ def test_gate_entries_reports_uncorroborated_reviews(tmp_path):
     assert detail["panel_prompt_hashes"] == {}
 
 
+def test_gate_entries_reports_how_far_the_panel_actually_agreed():
+    """「谁裁的」与「裁到什么程度」必须分开报。
+
+    2026-10-03 的现场：面板跑完 177 条，176 条有记录；但其中 118 条是
+    `agreement: false` / `needs_human: true`（两个模型不一致，等人类裁决）。
+    只报 `reviewed_by_class: {llm-panel: 176}` 会让"已复核 176"被读成"176 条都
+    裁定了"——那是另一件事。所以 `gate_entries` 的明细里并排给出两个计数。
+    """
+    records = valid_records()
+    needs = [record for record in records if record.get("expect_movements")]
+    assert len(needs) >= 2, "夹具里至少要有两条 needs_human 才谈得上一致与分歧"
+    for index, record in enumerate(needs):
+        record["review"] = {"reviewed_by": "llm-panel", "verdict": "accepted",
+                            "agreement": index % 2 == 0,
+                            "source": dict(PANEL_SOURCE)}
+    status, detail = check_holdout.gate_entries(records)
+    assert status == check_holdout.PASS
+    split = detail["panel_agreement_split"]
+    assert split.get("一致") == (len(needs) + 1) // 2
+    assert split.get("分歧（待人类裁决）") == len(needs) // 2
+    assert detail["reviewed_by_class"] == {"llm-panel": len(needs)}
+
+
 #: 复核工具真实写出的佐证块（`holdout_review_llm.main` 的 `PANEL_SOURCE`）。
 PANEL_SOURCE = {"models": ["deepseek-chat", "glm-4.7-flash"], "prompt_sha256": "b" * 64}
 
