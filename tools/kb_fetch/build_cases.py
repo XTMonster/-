@@ -458,12 +458,30 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
         # 候选二：散文段落（`lesson` ／ `narrative`）。
         items = list(enumerate(segments_of(body), 1))
         segments_total += len(items)
-        # 跨整篇**均匀抽样**：只取开头会让扫描件的序言/目录占满配额。
-        # 例外是 `mode: manual`（我们自己的笔记，§2.3c 白名单第 6 条的"最干净语料"）
-        # ——它们只有几 KB，抽样反而会把"建立→覆盖→反应"这类**序列套路**整段跳过。
-        stride = 1 if str(doc.get("mode")) == "manual" else max(
-            1, len(items) // max(per_source, 1))
-        for index, segment in items[::stride]:
+        # **按域关键词排序后再截**（2026-10-02）：同一套"可审计的确定性筛选"设备，
+        # `chunk.py` 早就用它挑卡片语料，而案例层原先只按**文档顺序**取样。
+        # 实测代价（英文查询打英文语料的**同语言**对照）：返回的 18 条案例里只有
+        # 1 条 ≥4 分（**5.6%**），被捞上来的多是目录行（"1--The Fairy Camera--…"）、
+        # 器材机械句（"each single turn of the camera handle…"）与无关叙述
+        # （"Danjuro's widow cut her hair short"）——它们都排在被均匀抽样的位置上。
+        # 改成按域关键词打分从高到低排（同分保持原顺序），"讲拍法"的段就排到了配额之前。
+        from .chunk import DOMAIN_KEYWORDS, relevance_score
+
+        domain_name = str(doc.get("domain", ""))
+        if domain_name in DOMAIN_KEYWORDS:
+            items.sort(key=lambda pair: (-relevance_score(pair[1], domain_name), pair[0]))
+        else:
+            items.sort(key=lambda pair: pair[0])
+        # 跨整篇**均匀抽样**只作为**同分内的兜底顺序**：`mode: manual`（我们自己的笔记）
+        # 只有几 KB，抽样反而会把"建立→覆盖→反应"这类**序列套路**整段跳过，所以不抽。
+        if str(doc.get("mode")) != "manual" and items:
+            ranked = items
+            stride = max(1, len(ranked) // max(per_source, 1))
+            #: 取前 `per_source × stride` 条（打分已经把它们排出优先级），
+            #: 仍按 strided 顺序喂给候选列表，避免同一篇的相邻三段同时挤进配额。
+            head = ranked[:max(per_source * stride, per_source)]
+            items = head[::stride] if stride > 1 else head
+        for index, segment in items:
             excerpt = pick_excerpt(segment)
             if excerpt is None:
                 raw_segments += 1

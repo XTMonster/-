@@ -220,8 +220,15 @@ def test_the_packaged_case_index_is_assembled_when_there_is_no_sidecar():
     retriever = default_retriever(backend=RagBackend.BM25,
                                   cases_backend="lightrag", cases_top_k=3)
     assert retriever.cases_enabled is True
-    block = retriever.case_block("剪辑节奏 短镜 硬切")
+    #: 查询要落在**作者写的字**上（见 `CaseIndex._text`）：这条查询在仓库的案例语料里
+    #: 有逐字出处（Skwigly 的故事板教程），所以第三栏出得来。
+    block = retriever.case_block("cut to a close-up")
     assert block and "【参考案例（仅参考）】" in block
+    #: **反面**：纯中文查询在**英文**案例语料里没有词命中，于是拿不到案例。
+    #: 这不是"少给"，是不给噪声——2026-10-02 实测过代价：标签（我们生成的
+    #: `镜头与焦距：…摘记NNN` 与域标签 `色彩`）也曾进检索，于是中文查询能"命中"
+    #: 自己的标签，返回一堆 1900 年代散句（双模型面板 1–2 分，E1 = 0/16）。
+    assert retriever.case_block("剪辑节奏 短镜 硬切") == ""
     info = retriever.cases_info()
     assert info["cases_backend"] == "hybrid"           # §2.3b 的降级路径
     assert info["cases_requested_backend"] == "lightrag"

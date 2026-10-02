@@ -204,10 +204,20 @@ class CaseIndex:
     # --------------------------------------------------------------- 检索
     @staticmethod
     def _text(case: Case) -> str:
+        """检索**只吃作者写的字**：`excerpt` ＋ 出处标题。
+
+        为什么不能把 `case_id` 与 `title` 也算进去（2026-10-02 实测）：`title` 是我们
+        生成的标签（`镜头与焦距：Practical Cinema摘记086`），`case_id` 是
+        `case_pg76304_txt_007` —— 两者都不是作者写的。把标签喂进 BM25 的直接后果是
+        **拿中文查询去"命中"中文标签前缀**：`偷盗者奔逃中…` 会命中 `镜头与焦距：…`
+        里的 `镜/头` 两个字，于是案例层总是返回一堆与作者原文毫无关系的 1900 年代
+        散句（双模型面板 1–2 分，E1 = 0/16）。`source_ref.tags` 同样是**我们的**域标签
+        （`色彩`／`剪辑与节奏`），实测它让中文查询单字命中（查询里的 `色`／`画`／`向`
+        命中标签里的同一个字），所以一并去掉。去掉之后中文查询不再有词命中
+        ——**返回空是诚实的"没有参考案例"，返回噪声不是**。
+        """
         source = case.source_ref if isinstance(case.source_ref, dict) else {}
-        return "\n".join([case.case_id, case.title, case.excerpt,
-                          " ".join(case.beat_sequence),
-                          str(source.get("tags", ""))])
+        return "\n".join([case.excerpt, str(source.get("title", ""))])
 
     def retrieve(self, query: str, top_k: int = 3) -> List[Case]:
         """取参考案例；不可用/无命中返回 ``[]``（**不抛**，也不造假数据）。"""
