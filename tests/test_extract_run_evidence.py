@@ -146,7 +146,39 @@ def test_the_landed_real_run_evidence_is_fresh():
     run_dir = ROOT / "docs" / "evidence" / "20261003_real_glm"
     assert (run_dir / "run_manifest.json").is_file(), (
         "真实运行的证据还没入库：缺 run_manifest.json")
-    reasons = X.check(out_dir=run_dir,
-                      holdout=ROOT / "fixtures" / "knowledge_holdout.jsonl",
-                      index_manifest=ROOT / "knowledge" / "hypergraph.manifest.json")
+    reasons, warnings = X.check(
+        out_dir=run_dir, holdout=ROOT / "fixtures" / "knowledge_holdout.jsonl",
+        index_manifest=ROOT / "knowledge" / "hypergraph.manifest.json",
+        with_warnings=True)
     assert reasons == [], reasons
+    # §3.3 的契约字段在**这一份**证据里是修复前的产物：顶层 `retrieval_calls=0`，
+    # 而审计日志里 7 条 `retrieval_call`（`knowledge.retrieval_calls` 也写 7）。
+    # `--check` 把它当**警告**如实报出来（不影响同代性判定），并逐跑钉住——数字
+    # 变了就说明证据被换过（或有人把这份改成了"干净"的，那要一跑覆盖）。
+    assert len(warnings) == 1, warnings
+    assert "retrieval_calls=0" in warnings[0]
+    assert "retrieval_call 事件 7 条" in warnings[0]
+
+
+def test_the_retrieval_cross_check_compares_shots_with_the_audit_events():
+    """契约对拍：`shots.json.retrieval_calls` 与 audit 事件数不一致时**必须报**。"""
+    run_dir = ROOT / "docs" / "evidence" / "20261003_real_glm"
+    assert X.retrieval_cross_checks(run_dir), "这一份的已知不一致必须报出来"
+    # 一致的两份（同数）不报——否则这条对拍就成恒真告警了。
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out = pathlib.Path(tmp)
+        (out / "audit_log.jsonl").write_text(
+            json.dumps(_event("r", "retrieval_call", 1.0,
+                              scope="shot", shot_id="shot_001",
+                              query="景别=MCU"), ensure_ascii=False) + "\n",
+            encoding="utf-8")
+        (out / "shots.json").write_text(
+            json.dumps({"shots": [], "retrieval_calls": 1}), encoding="utf-8")
+        (out / X.MANIFEST_NAME).write_text(json.dumps({
+            "run_id": "r",
+            "artifacts": {"audit_log.jsonl": {"path": "audit_log.jsonl"},
+                          "shots.json": {"path": "shots.json"}}}),
+            encoding="utf-8")
+        assert X.retrieval_cross_checks(out) == []

@@ -5,13 +5,21 @@
       "sha256": "5274494a97b6ef5d52af59de9cd9b697d17a7bd3ac40841bbe513b12a6cfba24",
       "lines": 338,
       "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\runs\\audit_log.jsonl",
-      "source_lines": 7186
+      "source_lines": 7346
     },
     "llm_trace.jsonl": {
       "sha256": "f447284eb2e96d62353605272e11b45bbe24f91791fea4433363463c78f9f4a8",
       "lines": 50,
       "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\runs\\llm_trace.jsonl",
-      "source_lines": 1069
+      "source_lines": 1093
+    },
+    "knowledge_trace.json": {
+      "sha256": "c1fb42326d092b2b3c551b182689ef02f0e15b116ee1b56099f12507a16bbe2f",
+      "source": "docs\\evidence\\20261003_real_glm\\knowledge_trace.json"
+    },
+    "shots.json": {
+      "path": "export/shots.json",
+      "sha256": "c8b0a13d3d41d6a85e76ad777a7a0c8d23896d69f5169b83285653f4d7fd67e9"
     }
   },
   "run_span": {

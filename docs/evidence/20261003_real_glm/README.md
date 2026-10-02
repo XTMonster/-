@@ -32,7 +32,7 @@
 | `llm_trace.jsonl` | 50 次调用的 prompt/response 分片 | §11.3 的 trace、Q6b 的"读实际 prompt"通道 |
 | `knowledge_trace.json` | 这一跑最后一次检索的 trace（含六元 provenance） | 索引代际的旁证 |
 | `export/shots.json` | 交付清单（顶层带 `knowledge` 块） | `quality.run_evidence_is_stale` 读它判代际；E2 读 `movements[].source` |
-| `run_manifest.json` | 四个 sha256 ＋ 时间跨度 | `tools/extract_run_evidence.py --check` |
+| `run_manifest.json` | 四个分片的 sha256（audit / trace / shots / knowledge_trace）＋ oracle 与索引代际 ＋ 时间跨度 | `tools/extract_run_evidence.py --check` |
 
 复算（在任何机器上，只要仓库这一份是当前代）：
 
@@ -43,6 +43,16 @@ python tools/knowledge/quality.py --cases knowledge/cases.jsonl \
     --audit-log docs/evidence/20261003_real_glm/audit_log.jsonl \
     --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --out work/_q5.json
 ```
+
+`--check` 现在报一条 **WARNING**（不是 STALE）：这份 `export/shots.json` 的顶层
+`retrieval_calls` 写着 **0**，而同一跑的 `knowledge.retrieval_calls` 与
+`audit_log.jsonl` 都写着 **7**。成因是时间线——`tools/run_headless.py` 把
+`retrieval_calls=` 传进 `export_project()` 的修复落在这一跑**之后**，所以交付件
+是修复前的产物。`retrieval_calls` 是 §3.3 的契约字段，两个数不一致就是"契约字段
+在说假话"；按 §4.1b 硬规则 2，独立计数只认 audit 的逐次事件（`--check` 因此拿
+audit 当裁判）。这条记**警告**而不是 STALE：整条验收链的判据都不读这个字段
+（Q5 读 audit、RK-18 也数 audit），而"让这一份彻底干净"要一次**修复后**的真实
+运行覆盖它——那要模型额度，单独记在这里（见 §5 的未决项）。
 
 ## 3. 这一跑量出来的 Q5：**分母 0，判失败**（不是"测不了"）
 
@@ -91,3 +101,9 @@ shot_002 发出 景别=CU；运镜=dolly_in；对白=dialogue
   （`react_invalid` 30 条）。Q5 只量"发出的查询能不能与人工期望对上"，
   与构图门（RK-10，P16）不是同一件事。
 * **不覆盖 GUI 手工交互**：它是 headless 的 sidecar 通路。
+
+* **顶层 `retrieval_calls` 是修复前的 0**（见 §2 的 WARNING）。这一跑发生在
+  `run_headless.py` 补上 `retrieval_calls=` 之前，所以交付件里那个契约字段写着 0、
+  而真实发生的是 7 次检索。**要消掉它需要一次修复后的真实运行**（同样要模型额度，
+  并且会换掉这里所有分片的 sha256），因此本轮**没有**假装修好：`--check` 每次都会
+  把这条警告打出来，`tests/test_extract_run_evidence.py` 也逐跑钉住这个数字。

@@ -97,6 +97,70 @@ def _run_span(lines: List[str]) -> Dict[str, Any]:
             "last_ts": max(stamps) if stamps else None}
 
 
+def _count_kind(lines: List[str], kind: str) -> int:
+    """数某一类事件（解析不了的行不计——它们不是证据）。"""
+    total = 0
+    for line in lines:
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and str(event.get("kind") or "") == kind:
+            total += 1
+    return total
+
+
+def retrieval_cross_checks(out_dir: Path) -> List[str]:
+    """证据内部的**契约对拍**：`shots.json.retrieval_calls` 是否等于审计里的事件数。
+
+    为什么要有这一条（2026-10-03 实测）：`docs/evidence/20261003_real_glm/` 那一跑
+    的 `export/shots.json` 顶层写着 `retrieval_calls: 0`，而同一份证据的
+    `knowledge.retrieval_calls` 与 `audit_log.jsonl` 都写着 **7**。成因是时间线：
+    `tools/run_headless.py` 把 `retrieval_calls=` 传进 `export_project()` 的修复
+    **晚于**那一跑（`b661f23` 之后才落盘），所以那份交付件是修复前的产物。
+    §3.3 把 `retrieval_calls` 写成契约字段，两个数不一致就是"契约字段在说假话"——
+    而 §4.1b 硬规则 2 只允许拿**逐次事件**（audit）当独立计数，所以这里拿它当
+    裁判：audit 是唯一真源，shots.json 只能对拍。
+
+    语义：这是**硬失败**还是**警告**？这一份是已知的"修复前产物"（字段 0 而事件
+    非 0，且整条链的验收判据都不读它），按证据纪律**如实记账、不静默**，所以记
+    `warning` 而不是 `reason`：`--check` 的退出码不变，但 `main` 会把它们打出来，
+    并在 JSON 里返回。想让这一跑彻底干净，需要一次**修复后**的真实运行覆盖它——
+    那要模型额度，不在本工具的职责里。
+    """
+    warnings: List[str] = []
+    audit_path = Path(out_dir) / "audit_log.jsonl"
+    manifest_path = Path(out_dir) / MANIFEST_NAME
+    if not audit_path.is_file() or not manifest_path.is_file():
+        return warnings
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return warnings
+    shots_rel = ((manifest.get("artifacts") or {}).get("shots.json") or {}).get("path")
+    if not shots_rel:
+        return warnings
+    shots_path = Path(out_dir) / str(shots_rel)
+    if not shots_path.is_file():
+        return warnings
+    try:
+        shots = json.loads(shots_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return warnings
+    if not isinstance(shots, dict):
+        return warnings
+    recorded = int(shots.get("retrieval_calls") or 0)
+    events = _count_kind(
+        audit_path.read_text(encoding="utf-8").splitlines(), "retrieval_call")
+    if recorded != events:
+        warnings.append(
+            f"shots.json 顶层 retrieval_calls={recorded}，而审计日志里 "
+            f"retrieval_call 事件 {events} 条（§3.3 的契约字段与逐次事件对不上；"
+            f"审计是唯一真源）。成因通常是这一跑发生在 "
+            f"tools/run_headless.py 把 retrieval_calls 传进 export_project() 之前。")
+    return warnings
+
+
 def extract(*, run_id: str, out_dir: Path, audit_log: Path, llm_trace: Path,
             shots: Optional[Path], knowledge_trace: Optional[Path],
             holdout: Path, index_manifest: Path) -> Dict[str, Any]:
@@ -154,12 +218,19 @@ def extract(*, run_id: str, out_dir: Path, audit_log: Path, llm_trace: Path,
     return manifest
 
 
-def check(*, out_dir: Path, holdout: Path, index_manifest: Path) -> List[str]:
-    """复算分片与 pins；返回**不能用的理由**（空列表 = 证据齐且同代）。"""
+def check(*, out_dir: Path, holdout: Path, index_manifest: Path,
+          with_warnings: bool = False):
+    """复算分片与 pins；返回**不能用的理由**（空列表 = 证据齐且同代）。
+
+    ``with_warnings=True`` 时返回 ``(reasons, warnings)``：`warnings` 是**不影响
+    同代性**但必须如实记账的契约对拍（当前只有 `retrieval_calls` 一条，见
+    :func:`retrieval_cross_checks`）。默认仍只返回 reasons，改动对既有调用点透明。
+    """
     out_dir = Path(out_dir)
     manifest_path = out_dir / MANIFEST_NAME
     if not manifest_path.is_file():
-        return [f"缺 {manifest_path}：这份证据没有来源说明"]
+        reasons = [f"缺 {manifest_path}：这份证据没有来源说明"]
+        return (reasons, []) if with_warnings else reasons
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     reasons: List[str] = []
     for name, item in (manifest.get("artifacts") or {}).items():
@@ -184,7 +255,9 @@ def check(*, out_dir: Path, holdout: Path, index_manifest: Path) -> List[str]:
     if not pinned_index or pinned_index != live_index:
         reasons.append(f"索引指纹不符（证据 {pinned_index[:12]}… vs 现行 "
                        f"{live_index[:12]}…）：这份运行不是这一代索引跑的")
-    return reasons
+    if not with_warnings:
+        return reasons
+    return reasons, retrieval_cross_checks(out_dir)
 
 
 def main(argv=None) -> int:
@@ -204,11 +277,15 @@ def main(argv=None) -> int:
     holdout = ROOT / args.holdout
     index_manifest = ROOT / args.index_manifest
     if args.check:
-        reasons = check(out_dir=out_dir, holdout=holdout,
-                        index_manifest=index_manifest)
+        reasons, warnings = check(out_dir=out_dir, holdout=holdout,
+                                  index_manifest=index_manifest,
+                                  with_warnings=True)
         for reason in reasons:
             print(f"STALE: {reason}")
-        print(json.dumps({"ok": not reasons, "reasons": reasons},
+        for warning in warnings:
+            print(f"WARNING: {warning}")
+        print(json.dumps({"ok": not reasons, "reasons": reasons,
+                          "warnings": warnings},
                          ensure_ascii=False))
         return 0 if not reasons else 1
 
