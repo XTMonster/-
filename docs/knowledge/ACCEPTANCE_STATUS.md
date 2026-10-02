@@ -1013,12 +1013,17 @@ other_card    311 / 3168 =  9.8%
 ④ 用户手工项：`%USERPROFILE%\.ollama\models\blobs` 里 17.69 GB 续传残件
 ＋ 18.25 GB 坏修订（本机 `qwen3-vl:30b` 的 tag 现指向会输出纯噪声的那份）。
 
-## 十八、P14-10（2026-10-02 10:5x）：验收链自己量错了三处
+## 十九、P14-10 補（2026-10-02 10:5x）：验收链自己量错了另外三处
+
+> 编号说明：本节与 §十八 是**同一轮**的两份记账（各支并行提交，落地时撞了号，
+> 这里把本节改为 §十九）。与 §十八.6 重叠的部分（RAG 硬门按 id 判、Q0 与 E3
+> 第一次上链）以 §十八.6 为准，本节只保留它没记的：控制台编码、探针证据、
+> 三条"缺证据被当成通过"的不变量，以及仍未裁决的三项。
 
 本轮不碰语料、不动索引，只把"链到底量到了什么"逐条复核了一遍。三处都是**链**
 的缺陷（判据没变），证据与命令都在下面。
 
-### 18.1 硬门 E3 从来没有被链量过（已修）
+### 19.1 硬门 E3 从来没有被链量过（已修；与 §十八.6 同一件事）
 
 `tools/run_tests.ps1` 只跑 `tools/holdout_score.py`，却把它的报告写在
 `knowledge_quality.json` 名下——而 AGENTS.md 把这个名字给了
@@ -1042,7 +1047,7 @@ Q1–Q4、`Q4_pre_required_edges_exist`、Q6a、Q6b、Q7、E3、E3_cases）**缺
 一件事。对抗性用例 `tests/test_hard_gates.py`（含"链以前那份报告必须判失败"与
 "清单与 quality.py 真实产出的 id 必须一一对应"）。
 
-### 18.2 判据的退出码曾被控制台编码决定（已修）
+### 19.2 判据的退出码曾被控制台编码决定（已修）
 
 ```
 python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab … --cards … --json
@@ -1065,14 +1070,14 @@ python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab … --car
 traceback 按 cp936 写到 stderr，父进程按 utf-8 严格解码 → 线程里抛
 `UnicodeDecodeError`（实测那一字节 0xb0 就是 `白` 的 cp936 首字节）。
 
-### 18.3 解析不到探针结果 ≠ 通过（已修）
+### 19.3 解析不到探针结果 ≠ 通过（已修）
 
 `run_tests.ps1` 里探针的 `BD_TEST_RESULT` 解析失败时只打印 WARN 就继续，
 链最后照旧 `All checks passed.`——挂在那条探针上的 RK 全部静默变成
 `not_measured`（脚本自己的注释就写着这一点，但没人据此判）。现在收集这类失败，
 收尾时走 `INCOMPLETE:` ＋ 非零退出码：探针确实跑过，这不是"跳过"，是"证据没回来"。
 
-### 18.4 顺带钉住的三条不变量（都是"缺证据被当成通过"的同一个形状）
+### 19.4 顺带钉住的三条不变量（都是"缺证据被当成通过"的同一个形状）
 
 * **验收夹具必须在位**：删掉 `knowledge/hypergraph.*.jsonl` 或 held-out 三件套之后，
   pytest 只是让 ~15 条用例变 skip、链把 RK-13 从"实测失败"降级成"未量"，
@@ -1081,7 +1086,7 @@ traceback 按 cp936 写到 stderr，父进程按 utf-8 严格解码 → 线程�
 * **链上每一步门命令都必须落在活行上**，且后面紧跟退出码检查——`a1fe8c4` 那次
   事故（命令行被注释吃掉、`$LASTEXITCODE` 还留着上一条的 0）正是这个形状。
 
-### 18.5 仍未解决（口径/供给，需用户裁决）
+### 19.5 仍未解决（口径/供给，需用户裁决）
 
 1. **Q5 的基准串没定死**：计划期 `retrieval_call.query` 与 build 后 `ShotContract`
    在同一个真实运行里给出 0 vs 1 的不同分母（见 §十七）。
