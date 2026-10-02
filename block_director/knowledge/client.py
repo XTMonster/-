@@ -101,8 +101,15 @@ class KnowledgeClient:
             self.audit(payload)
 
     def retrieve(self, query: str, *, domain: Optional[str] = None,
-                 top_k: int = 5, cases_top_k: int = 3) -> RetrieveResponse:
-        """发起一次检索；三条通道 ＋ trace 一次拿回。"""
+                 top_k: int = 5, cases_top_k: int = 3,
+                 scope: str = "", shot_id: str = "") -> RetrieveResponse:
+        """发起一次检索；三条通道 ＋ trace 一次拿回。
+
+        ``scope`` / ``shot_id`` 是 §3.3 给 ``retrieval_call`` 事件写死的两个字段
+        （``{shot_id, scope, backend, lane}``）。它们**只进审计**，不影响请求：
+        没有它们，RK-18② 只能数调用次数，回答不了"这次检索属于哪一镜"——而
+        Q5／E2 这两个指标的运行侧分母正是按镜算的。
+        """
         response = self.transport.retrieve_response(
             query, domain, top_k, self.timeout, cases_top_k)
         self.retrieval_calls += 1
@@ -111,6 +118,8 @@ class KnowledgeClient:
         self._emit({
             "event": "retrieval_call",
             "query": query,
+            "scope": str(scope),
+            "shot_id": (str(shot_id) or None),
             "domain": domain,
             "top_k": int(top_k),
             "cards": len(response.cards),
@@ -125,7 +134,8 @@ class KnowledgeClient:
         return response
 
     def retrieve_or_none(self, query: str, *, domain: Optional[str] = None,
-                         top_k: int = 5, cases_top_k: int = 3
+                         top_k: int = 5, cases_top_k: int = 3,
+                         scope: str = "", shot_id: str = ""
                          ) -> Optional[RetrieveResponse]:
         """sidecar 不可达时返回 ``None`` 并**留痕**（调用方退回 BM25）。
 
@@ -134,13 +144,16 @@ class KnowledgeClient:
         """
         try:
             return self.retrieve(query, domain=domain, top_k=top_k,
-                                 cases_top_k=cases_top_k)
+                                 cases_top_k=cases_top_k,
+                                 scope=scope, shot_id=shot_id)
         except TransportError as exc:
             self.degraded = True
             self.degraded_reason = f"sidecar_unavailable:{exc.code}"
             self._emit({
                 "event": "retrieval_failed",
                 "query": query,
+                "scope": str(scope),
+                "shot_id": (str(shot_id) or None),
                 "domain": domain,
                 "reason": self.degraded_reason,
                 "detail": str(exc)[:300],

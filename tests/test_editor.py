@@ -71,14 +71,22 @@ def test_editor_payload_uses_the_retriever_when_given():
         # 与真实接口同形：`intent`/`action_types` 都有缺省值——脚本检索走
         # **契约串**（§2.3b：超图那条通道只认 `键=值`），契约串为空时才退回
         # "景别 ＋ 意图 ＋ 动作"的自由文本。
-        def block_for_shot(self, shot_type, intent="", action_types=(), limit=800):
+        # `shot_id` 是审计用的（§3.3 的 `retrieval_call{shot_id, scope}`），但调用方
+        # 必须把它传下来——所以这里把它记下来，让"加了参数却没传"当场红。
+        def __init__(self):
+            self.seen = []
+
+        def block_for_shot(self, shot_type, intent="", action_types=(), limit=800,
+                           shot_id=""):
+            self.seen.append(shot_id)
             return f"知识：{shot_type}/{intent}"
 
-    payload = build_editor_payload(plan().shots[1], plan(),
-                                   retriever=FakeRetriever())
+    retriever = FakeRetriever()
+    payload = build_editor_payload(plan().shots[1], plan(), retriever=retriever)
     # shot_002 的景别是 MCU → 契约串是 `景别=MCU`（意图文字不再拼进查询串：
     # 拼进去会让 `parse_query` 把 `景别=` 的值取成 `MCU 反应`，种子必然落空）。
     assert "知识：景别=MCU/" in payload.messages[0].content
+    assert retriever.seen == ["shot_002"]
 
 
 def test_editor_payload_says_when_knowledge_is_off():

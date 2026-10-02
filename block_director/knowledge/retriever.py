@@ -316,7 +316,8 @@ class KnowledgeRetriever:
 
     # ------------------------------------------------------- v1.4 §2.3 超图
     def hypergraph_edges(self, query: str, *, top_k: Optional[int] = None,
-                         token_limit: Optional[int] = None
+                         token_limit: Optional[int] = None,
+                         scope: str = "", shot_id: str = ""
                          ) -> List[Any]:
         """走超图索引取**整条**超边（含全部 ``forbid`` 成员）。
 
@@ -331,7 +332,8 @@ class KnowledgeRetriever:
             return []
         limit = int(top_k or self.top_k)
         if self.client is not None:
-            return self._edges_from_client(query, limit)
+            return self._edges_from_client(query, limit, scope=scope,
+                                           shot_id=shot_id)
         if self.hypergraph is None:
             return []
         try:
@@ -346,12 +348,18 @@ class KnowledgeRetriever:
         self.last_trace = _trace_to_dict(trace)
         return list(edges or [])
 
-    def _edges_from_client(self, query: str, limit: int) -> List[Any]:
-        """经 sidecar 取超边；不可达时**降级留痕**，不拖垮整场。"""
+    def _edges_from_client(self, query: str, limit: int, *, scope: str = "",
+                           shot_id: str = "") -> List[Any]:
+        """经 sidecar 取超边；不可达时**降级留痕**，不拖垮整场。
+
+        ``scope``/``shot_id`` 一路传到 :meth:`KnowledgeClient.retrieve_or_none`，
+        落进 §3.3 的 ``retrieval_call`` 事件——见那里的注释。
+        """
         from .client import to_internal_edges
 
         response = self.client.retrieve_or_none(query, top_k=limit,
-                                                cases_top_k=self._cases_request())
+                                                cases_top_k=self._cases_request(),
+                                                scope=scope, shot_id=shot_id)
         self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
         if response is None:
             self.degraded = True
@@ -381,7 +389,8 @@ class KnowledgeRetriever:
             return 0
         return max(1, int(self.cases_top_k or 1))
 
-    def cases_for(self, query: str, *, top_k: Optional[int] = None) -> List[Any]:
+    def cases_for(self, query: str, *, top_k: Optional[int] = None,
+                  scope: str = "", shot_id: str = "") -> List[Any]:
         """取这条查询的参考案例（L3）。
 
         优先级与超图一致：**sidecar 带回的**（已经在上一次 ``/v1/retrieve``
@@ -394,7 +403,9 @@ class KnowledgeRetriever:
             return list(self.last_cases)[:limit]
         if self.client is not None and self.backend is RagBackend.HYPERGRAPH:
             response = self.client.retrieve_or_none(query, top_k=self.top_k,
-                                                    cases_top_k=limit)
+                                                    cases_top_k=limit,
+                                                    scope=scope,
+                                                    shot_id=shot_id)
             self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
             if response is None:
                 self.degraded = True
@@ -492,6 +503,7 @@ class KnowledgeRetriever:
                    token_limit: Optional[int] = None,
                    title: str = CASE_COLUMN_TITLE,
                    scope: str = "shot",
+                   shot_id: str = "",
                    budgets: Optional[Dict[str, int]] = None) -> str:
         """§2.3b 的第三栏「参考案例（仅参考）」。
 
@@ -503,7 +515,7 @@ class KnowledgeRetriever:
         if str(self.cases_backend) == "off":
             return ""
         top_k = int(top_k or self.cases_top_k or 3)
-        cases = self.cases_for(query, top_k=top_k)
+        cases = self.cases_for(query, top_k=top_k, scope=scope, shot_id=shot_id)
         self._record_budget(scope, budgets)
         if not cases:
             return ""
@@ -562,6 +574,7 @@ class KnowledgeRetriever:
 
     def edge_columns(self, query: str, *, top_k: Optional[int] = None,
                      token_limit: Optional[int] = None, scope: str = "shot",
+                     shot_id: str = "",
                      budgets: Optional[Dict[str, int]] = None,
                      hard_title: str = "硬约束（禁/许）",
                      soft_title: str = "经验建议（软）") -> tuple:
@@ -576,7 +589,8 @@ class KnowledgeRetriever:
         self._record_budget(scope, budgets)
         budget = int((budgets["remaining"] if budgets
                       else token_limit) or self.token_limit)
-        edges = self.hypergraph_edges(query, top_k=top_k, token_limit=budget)
+        edges = self.hypergraph_edges(query, top_k=top_k, token_limit=budget,
+                                      scope=scope, shot_id=shot_id)
         nodes = getattr(self.hypergraph, "nodes", None) or {}
         # 分栏判据：**带 `forbid` 成员的边永远进硬约束栏**。`hardness == "soft"`
         # 只是"它是软先验"，但一条**禁忌**不是建议——把它放进「仅参考」那一栏，
@@ -734,8 +748,12 @@ class KnowledgeRetriever:
 
     def block_for_shot(self, shot_type: str, intent: str = "",
                        action_types: Sequence[str] = (),
-                       limit: int = 0) -> str:
-        """阶段 B1：按该镜的景别 / 意图 / 动作取条目。"""
+                       limit: int = 0, shot_id: str = "") -> str:
+        """阶段 B1：按该镜的景别 / 意图 / 动作取条目。
+
+        ``shot_id`` 只用于审计（§3.3 的 ``retrieval_call`` 事件要它）：运行侧的
+        按镜指标（Q5/E2）没有它就得从产物反推。留空＝调用方没有镜身份可比。
+        """
         limit = int(limit or self.token_limit or TOKEN_LIMIT_TOOL)
         if self.backend is RagBackend.DIGEST:
             return self.digest_block(limit)
@@ -745,7 +763,8 @@ class KnowledgeRetriever:
             if not query:
                 return self.digest_block(limit)
             return self._hypergraph_block(query, limit=limit, top_k=self.top_k,
-                                          cards_top_k=self.top_k, scope="shot")
+                                          cards_top_k=self.top_k, scope="shot",
+                                          shot_id=shot_id)
         if not self.cards:
             return ""
         query = " ".join([shot_type or "", intent or "",
@@ -755,7 +774,8 @@ class KnowledgeRetriever:
         return self.block(query, top_k=self.top_k, token_limit=limit)
 
     def _hypergraph_block(self, query: str, *, limit: int, top_k: int,
-                          cards_top_k: int, scope: str) -> str:
+                          cards_top_k: int, scope: str,
+                          shot_id: str = "") -> str:
         """§2.3b 的**三栏注入**：硬约束 → 经验建议（软）→ 参考案例 → 卡片补充。
 
         R44/Q6b 的硬约束：**三栏共用一个上限**（每镜 ``rag.max_tokens_per_call``、
@@ -764,14 +784,16 @@ class KnowledgeRetriever:
         """
         budgets = {"limit": int(limit), "remaining": int(limit)}
         hard, soft = self.edge_columns(query, top_k=top_k, token_limit=limit,
-                                       scope=scope, budgets=budgets)
+                                       scope=scope, shot_id=shot_id,
+                                       budgets=budgets)
         columns: List[str] = []
         if hard:
             columns.append(hard)
         if soft:
             columns.append(soft)
         #: 条数来自 `rag.cases_top_k`（§3.2）；这里**不许**再写死 3。
-        cases_text = self.case_block(query, scope=scope, budgets=budgets)
+        cases_text = self.case_block(query, scope=scope, shot_id=shot_id,
+                                     budgets=budgets)
         if cases_text and self._take(budgets, cases_text, columns):
             columns.append(cases_text)
         if budgets["remaining"] > 0:

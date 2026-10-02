@@ -241,11 +241,14 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
         # 本来就是 BM25，自由文本照样能命中）。
         query = shot_constraint_query(shot)
         if query:
-            knowledge = retriever.block_for_shot(query)
+            knowledge = retriever.block_for_shot(
+                query, shot_id=str(getattr(shot, "shot_id", "") or ""))
         else:
             knowledge = retriever.block_for_shot(str(shot.shot_type),
                                                  shot.intent or "",
-                                                 action_types)
+                                                 action_types,
+                                                 shot_id=str(getattr(
+                                                     shot, "shot_id", "") or ""))
     memory = render_shot_memory(shot_memory(plan))
     continuity_text = continuity or memory or "（第一镜，无历史）"
     system_text = (EDITOR_SYSTEM_PROMPT

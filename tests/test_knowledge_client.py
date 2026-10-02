@@ -88,6 +88,51 @@ def test_client_reports_degraded_when_the_sidecar_is_unreachable():
     assert events[0]["reason"] == client.degraded_reason
 
 
+def test_retrieval_call_events_carry_the_shot_they_belong_to():
+    """§3.3 写死的字段是 `{shot_id, scope, backend, lane}`；前两个曾经没人产出。
+
+    缺了它们，`audit_log.jsonl` 只能回答"检索了几次"，回答不了"这一条查询属于哪一镜"
+    ——而 Q5（与本条 `q` 等价的**实跑镜头**）与 E2（按镜的采纳率）的分母就是按镜算的，
+    `retrieval_call.shot_id` 恒为 null 时，运行侧只能从 `shots.json` 反推。
+    """
+    events: List[Dict[str, Any]] = []
+    client = KnowledgeClient(_FakeTransport(_response()), audit=events.append)
+    client.retrieve("景别=MCU；镜头=50mm", scope="shot", shot_id="shot_007")
+    event = events[0]
+    assert event["scope"] == "shot"
+    assert event["shot_id"] == "shot_007"
+    # 传输层拿到的请求**不因这两个字段而变**：它们只进审计。
+    assert client.transport.calls == [{"query": "景别=MCU；镜头=50mm",
+                                       "domain": None, "top_k": 5,
+                                       "timeout": 30.0, "cases_top_k": 3}]
+
+    # 正对照：计划期检索没有镜身份，字段如实为空（不是编一个假 shot_id）。
+    client.retrieve("剧本摘要")
+    assert events[1]["scope"] == "" and events[1]["shot_id"] is None
+
+
+def test_the_per_shot_path_actually_threads_the_shot_id():
+    """端到端：`block_for_shot(..., shot_id=...)` 必须把镜号送到审计事件里。
+
+    这条挡的是"参数加了但没人传"——`shot_id` 只在最外层的调用点才知道。
+    """
+    from block_director.knowledge.client import to_internal_edges
+    from block_director.knowledge.retriever import KnowledgeRetriever
+
+    events: List[Dict[str, Any]] = []
+    transport = _FakeTransport(_response())
+    client = KnowledgeClient(transport, audit=events.append)
+    retriever = KnowledgeRetriever(backend="hypergraph", client=client)
+
+    retriever.block_for_shot("景别=MCU", shot_id="shot_012", limit=200)
+
+    calls = [e for e in events if e["event"] == "retrieval_call"]
+    assert calls, "一次检索事件都没发出来"
+    assert {event["shot_id"] for event in calls} == {"shot_012"}
+    assert {event["scope"] for event in calls} == {"shot"}
+    assert to_internal_edges(transport.response.edges)     # 索引真被消费过
+
+
 def test_client_refuses_a_transport_without_the_three_lane_method():
     class OnlyCards:                    # 只有旧契约的 retrieve()
         def retrieve(self, query, domain=None, top_k=5):
