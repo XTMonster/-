@@ -357,6 +357,15 @@ cinematography 214），卡片全集 **2130**；超边索引 **541** 条边；or
     `corpus_digest`），`tests/test_cases_corpus.py` 拿它与
     `hypergraph.manifest.json` 对拍——语料一变、哪一层没重建就按名字报错。
     2026-10-02 实测过一次代价：案例层漏跑一天（`anime` 13 篇 vs 重建后 120 篇）而链路全绿。
+3d. **`sources.yaml` 新增两个分层旋钮**（2026-10-02，取值写错会报错）：
+    `layers: [L3]` ＝ **只喂案例层**（`chunk.py` 跳过并计入 `l3_only_skipped`；影评不是
+    镜头层硬约束，也不该抬高门⑥ 的分母）；`case_budget: N` ＝ 这份来源在 L3 的**份额上限**
+    （轮转配额会让来源数一涨就摊薄稠密来源——实测 161 篇进来后 `anime` 120→628、
+    同语言 E1 对照 1/18→**0/18**，限 1 之后回到 1/18 且现代材料在场）。
+3e. **robots 口径 = RFC 9309**：**404/410 ⇒ 没有规则 ⇒ 放行**（并把这件事缓存留痕）；
+    **403／5xx／断网 ⇒ 仍拒收**。旧口径"拿不到就拒"把 `journal.animationstudies.org`
+    （*Animation Studies*，CC-BY 4.0，文章页 4.9 万字符）整站挡在外面——那正是 §2.3b 给
+    L3 定义的"拉片/影评"档。全部 161 篇已按 `layers: [L3]` 入库。
 4. **用户手工项**：`%USERPROFILE%\.ollama\models\blobs` 里的旧修订
    （`sha256-0373edb0…`，18.25 GiB）与中断下载残件——**Codex 工具策略拒绝工作区外的
    删除**，只能用户手工执行（§9.6 给了命令）。注意该 blob **仍被 `qwen3-vl:30b` 的 tag
