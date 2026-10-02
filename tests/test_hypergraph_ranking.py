@@ -172,3 +172,106 @@ def test_an_explicit_forbid_seed_pulls_the_forbidding_edge_up():
     assert trace.forbid_seeds == {"composition_rule": ["occlusion"]}
     assert selected and selected[0].edge_id == forbidding.edge_id
     assert "禁=" in rendered
+
+
+# --------------------------------------------------------------------------- #
+# 对靶度：`precision` 故意不算 `forbid`，于是"同靶但多带一个禁忌"的边只差
+# occurrences/confidence —— 这正是 Q4 最后 2 条卡住的地方（2026-10-03 修）
+# --------------------------------------------------------------------------- #
+def _axis(side: str, *, extra_forbid=None, occurrences: int = 1,
+          confidence: float = 0.7) -> hg.HyperEdge:
+    members = [hg.Member("qualifier", "pair", "pair:any_two"),
+               hg.Member("qualifier", "axis_side", f"axis_side:{side}")]
+    if extra_forbid:
+        members.append(hg.Member("forbid", extra_forbid[0], extra_forbid[1]))
+    members.append(hg.Member("qualifier", "axis_topic", "axis_topic:运动轴"))
+    return hg.HyperEdge(
+        type="AXIS_RULE", members=tuple(members), source_kind="theory",
+        hardness="hard", occurrences=occurrences, confidence=confidence,
+        confidence_max=confidence, sources=("card_1",),
+        source_span={"chunk_id": "c1", "start": 0, "end": 4},
+        extractor={"prompt_version": "test"}, provenance_kind="生成卡片")
+
+
+def _axis_graph(edges):
+    nodes = [hg.Node(node_id="axis_topic:运动轴", type="axis_topic", name="运动轴",
+                     value="运动轴"),
+             hg.Node(node_id="axis_topic:越轴", type="axis_topic", name="越轴",
+                     value="越轴"),
+             hg.Node(node_id="movement:track_left", type="movement",
+                     name="track_left", value="track_left"),
+             hg.Node(node_id="pair:any_two", type="pair", name="any_two",
+                     value="any_two"),
+             hg.Node(node_id="axis_side:left", type="axis_side", name="left",
+                     value="left"),
+             hg.Node(node_id="axis_side:right", type="axis_side", name="right",
+                     value="right")]
+    return hg.Hypergraph(nodes, list(edges))
+
+
+def test_the_off_target_penalty_is_what_the_axis_case_rides_on():
+    """**实测现场**：查询 `轴线=运动轴` 下，四条边的 coverage/precision 全是 1.0/0.3333。
+
+    多带 `禁轴线=越轴`、且 `occurrences` 更高的那条（真实索引里是
+    `hg:a0561faf2b48`）会把**精确匹配**的干净左轴边挤出 top-3 —— held-out 的
+    `must`（按成员集完全相等解析）里有它，Q4 因此卡在 2878/2880。`precision`
+    扣不了这一分（它故意排除 `forbid`），所以要有 `_edge_off_target`。
+    """
+    clean_left = _axis("left", occurrences=1, confidence=0.27)
+    dirty_left = _axis("left", extra_forbid=("axis_topic", "axis_topic:越轴"),
+                       occurrences=3, confidence=0.9)
+    clean_right = _axis("right", occurrences=1, confidence=0.6)
+    dirty_right = _axis("right", extra_forbid=("movement", "movement:track_left"),
+                        occurrences=1, confidence=0.6)
+    graph = _axis_graph([clean_left, dirty_left, clean_right, dirty_right])
+
+    selected, _text, _trace = graph.retrieve("轴线=运动轴", top_k=3,
+                                             token_limit=10 ** 6)
+    ids = [edge.edge_id for edge in selected]
+    # 两条 `must`（左干净、右干净）都必须在 top-3 里，Q4 才可能 100%。
+    assert clean_left.edge_id in ids and clean_right.edge_id in ids, (
+        "多带一个未被问到的禁忌，不该把精确匹配的那条挤出 top-3；"
+        "回归点见 SCORE_WEIGHTS['specificity']")
+    # **自证**：把这一项归零，精确匹配的那条立刻掉出 top-3——上面那两条断言
+    # 真的挂在这一项上，而不是碰巧。
+    weight = hg.SCORE_WEIGHTS["specificity"]
+    hg.SCORE_WEIGHTS["specificity"] = 0.0
+    try:
+        without, _text, _trace = graph.retrieve("轴线=运动轴", top_k=3,
+                                                token_limit=10 ** 6)
+    finally:
+        hg.SCORE_WEIGHTS["specificity"] = weight
+    assert clean_left.edge_id not in [edge.edge_id for edge in without], (
+        "归零 specificity 之后名次没变，说明这条用例并没有测到那一项")
+    # 污染边不是被**删掉**（它仍是有价值的负向知识），只是排到后面：给足额度还在。
+    wide, _text, _trace = graph.retrieve("轴线=运动轴", top_k=4, token_limit=10 ** 6)
+    assert dirty_left.edge_id in [edge.edge_id for edge in wide]
+
+
+def test_the_penalty_is_bounded_and_never_a_filter():
+    """负对照：惩罚项是**有界的一项**，不是硬过滤。
+
+    两条不变量：① 跑偏成员再多，惩罚也封顶在 `SCORE_WEIGHTS["specificity"]`
+    ——它永远小于 `coverage` 的权重，所以"这条边把查询解释得更全"始终能翻盘；
+    ② 被扣分的边照样能被召回，只是排在后面（`retrieve` 里没有任何过滤分支）。
+    """
+    assert hg.SCORE_WEIGHTS["specificity"] < hg.SCORE_WEIGHTS["coverage"]
+    clean = _axis("left")
+    dirty = hg.HyperEdge(
+        type="AXIS_RULE",
+        members=(hg.Member("qualifier", "pair", "pair:any_two"),
+                 hg.Member("qualifier", "axis_side", "axis_side:left"),
+                 hg.Member("qualifier", "axis_topic", "axis_topic:运动轴"),
+                 hg.Member("forbid", "axis_topic", "axis_topic:越轴"),
+                 hg.Member("forbid", "axis_topic", "axis_topic:关系轴"),
+                 hg.Member("forbid", "axis_topic", "axis_topic:对话轴")),
+        source_kind="theory", hardness="hard", occurrences=1, confidence=0.7,
+        confidence_max=0.7, sources=("card_1",),
+        source_span={"chunk_id": "c1", "start": 0, "end": 4},
+        extractor={"prompt_version": "test"}, provenance_kind="生成卡片")
+    graph = _axis_graph([clean, dirty])
+    assert graph._edge_off_target(dirty, {"axis_topic": ["运动轴"]}) == 1.0, (
+        "跑偏成员数必须被封顶成 [0,1]，否则成员多的边会被无限惩罚")
+    selected, _text, _trace = graph.retrieve("轴线=运动轴", top_k=2,
+                                             token_limit=10 ** 6)
+    assert dirty.edge_id in [edge.edge_id for edge in selected]

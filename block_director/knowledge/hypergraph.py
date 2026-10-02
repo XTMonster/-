@@ -311,6 +311,24 @@ SCORE_WEIGHTS = {
     #: `hardness` 决定，不靠这个排序项。
     "coverage": 0.3689, "precision": 0.3883, "type_priority": 0.0485, "occurrences": 0.0194,
     "confidence": 0.0194, "authority": 0.0, "forbid_hit": 0.1553,
+    #: 2026-10-03：`precision` 把 `forbid` 排除在分母外，于是"多带一个禁忌"的同靶
+    #: 边一分不扣，靠 occurrences/confidence 把**精确匹配**的那条挤出 top-3
+    #: （Q4 卡在 2878/2880 的最后 2 条就是这个形状，见 `_edge_off_target`）。
+    #: 这一项按"查询点名的 kind 里带了别的取值"扣分。实测（同一份 2847 条 oracle
+    #: ＋ 300 条标定抽样），权重 0.03→0.60 的扫参：
+    #:
+    #:   | 权重 | 独立 Q1 | 独立 Q4 | 独立 Q6b | 标定 Q1 | 标定 Q2 |
+    #:   |---|---|---|---|---|---|
+    #:   | 0（旧）| 0.9726 | 0.9993 | 1.0000 | 0.9067 | 0.9933 |
+    #:   | 0.03 | 0.9975 | 0.9993 | 1.0000 | 0.9133 | 0.9933 |
+    #:   | **0.04–0.20** | **0.9975** | **1.0000** | **1.0000** | **0.9133** | **0.9967** |
+    #:   | 0.30 | 0.9775 | 0.9976 | 0.9976 | 0.9033 | 0.9733 |
+    #:   | 0.60 | 0.9691 | 0.9819 | 0.9819 | 0.8933 | 0.9167 |
+    #:
+    #: 平台是 **[0.04, 0.20]**，取 0.10（平台内、离两侧边界都远）。四项指标同向变好、
+    #: 没有一项变差；这不是"把门调松"——判据与门限一个字没动，只是把排序里缺的
+    #: 那一项补上。
+    "specificity": 0.10,
 }
 
 #: 查询键（中文）-> kind。布尔项（如"对白=有"）映射到 `pacing`/`scene_type`，不新造节点类型。
@@ -960,6 +978,36 @@ class Hypergraph:
             return 0.0
         return len({m.node_id for m in members} & seed_set) / len(members)
 
+    def _edge_off_target(self, edge: HyperEdge,
+                         query: Optional[Dict[str, List[str]]]) -> float:
+        """查询点名的 kind 里，这条边带了**别的取值**的成员的比例（0 = 完全对靶）。
+
+        为什么需要它（2026-10-03 实测，Q4 最后 2 条）：`_edge_precision` 把
+        `forbid` 成员排除在分母之外，于是"同一条边、只是多带一个禁忌"在打分上
+        一分不扣。实测现场——查询 `轴线=运动轴` 下有两条 left 边：
+
+            hg:a0561faf2b48  pair=any_two, axis_side=left, 禁轴线=越轴, 轴线=运动轴  (occ 3)
+            hg:bc1080003563  pair=any_two, axis_side=left,              轴线=运动轴  (occ 1)
+
+        两条的 coverage=1.0、precision=0.3333，只差 occurrences/confidence，于是
+        多带禁忌的那条把**精确匹配**的那条挤到第 3 名之外 ⇒ `must` 里那条
+        （按成员集完全相等解析出来的）永远进不了 top-3，Q4 卡在 2878/2880。
+
+        这一项只数"kind 出现在查询里、值却不是查询点名的值"的成员（含 forbid）。
+        非 `forbid` 的那个方向已经由 `_edge_precision` 处理；这一项补的是它故意
+        排除掉的那一半。除以 3 是把它压成 [0,1]（实测跑偏成员数很少超过 3）。
+        """
+        query = query or {}
+        off = 0
+        for member in edge.members:
+            wanted = query.get(member.kind)
+            if not wanted:
+                continue
+            value = node_value(self.nodes.get(member.node_id), member.node_id)
+            if value not in wanted:
+                off += 1
+        return min(1.0, off / 3.0)
+
     def expand(self, seed_ids: Sequence[str]) -> Tuple[List[HyperEdge], bool]:
         seed_set = set(seed_ids)
         frontier = list(seed_ids)
@@ -1019,6 +1067,10 @@ class Hypergraph:
         # 精确率：种子解释了这条边的多少。**超集边**在只有 coverage 时与精确匹配同分，
         # 会靠 occurrences/confidence 挤掉后者（实测 Q1 0.517 → 加这一项后 0.587）。
         precision = self._edge_precision(edge, seed_set)
+        #: 对靶度：查询点名的 kind 里，这条边带了别的取值就扣分。`precision` 故意
+        #: 不算 `forbid`，所以"同靶但多带一个禁忌"的边只能靠这一项区分（Q4 的最后
+        #: 2 条就是这样卡住的）。详见 `_edge_off_target` 与 `SCORE_WEIGHTS`。
+        off_target = self._edge_off_target(edge, query)
         priority = TYPE_PRIORITY.get(edge.type, 0.5)
         occurrence = (math.log1p(edge.occurrences) / math.log1p(self.max_occurrences)
                       if self.max_occurrences > 0 else 0.0)
@@ -1039,6 +1091,7 @@ class Hypergraph:
                 break
         return (SCORE_WEIGHTS["coverage"] * coverage
                 + SCORE_WEIGHTS["precision"] * precision
+                - SCORE_WEIGHTS["specificity"] * off_target
                 + SCORE_WEIGHTS["type_priority"] * priority
                 + SCORE_WEIGHTS["occurrences"] * occurrence
                 + SCORE_WEIGHTS["confidence"] * edge.confidence
