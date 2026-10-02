@@ -1288,7 +1288,7 @@ manifest["fingerprint"]：ef179c9f…b187f6a → 5e8eac1e…d640de
 
 也就是说这一轮**没有改任何知识**，只是把"来源指纹"补全——这正是修 bug 的形状。
 
-### 21.4 对抗性用例（`tests/test_hypergraph_determinism.py`，17 条）
+### 21.4 对抗性用例（`tests/test_hypergraph_determinism.py`，18 条）
 
 | 用例 | 钉住的事 |
 |---|---|
@@ -1297,6 +1297,7 @@ manifest["fingerprint"]：ef179c9f…b187f6a → 5e8eac1e…d640de
 | `test_lexicon_fingerprint_moves_when_an_alias_table_changes`（新） | 改 `EMOTIONS`（与 §20.4 实测同形状）与改 `hg.VALUE_ALIASES` 各一次，指纹**必须动**；撤销后必须回到原值 |
 | `test_rekey_manifest_recomputes_the_lexicon_component_from_code`（新） | 把 manifest 的该格改成 `"stale"` 后 rekey，必须被**现算**覆盖（读回就等于把洞留着） |
 | `test_committed_manifest_vocabulary_fingerprint_matches_the_tables`（新） | 入库 manifest 的该格必须等于**现在**这份别名表算出来的值——改了别名表却没重签，当场变红 |
+| `test_lexicon_fingerprint_is_stable_across_processes_and_hash_seeds`（新） | `PYTHONHASHSEED=0/12345/random` 三档各起一个子进程，指纹必须**逐字节相同**（随机化的缓存键 = 每次都判"该重抽了"，或同一份索引被记成两枚指纹） |
 
 ### 21.5 现在的账
 

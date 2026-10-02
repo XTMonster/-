@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import os
 import pathlib
+import subprocess
 import sys
 
 import pytest
@@ -209,6 +211,26 @@ def test_committed_manifest_vocabulary_fingerprint_matches_the_tables():
         pytest.skip("仓库里还没有超图 manifest")
     manifest = json.loads(MANIFEST_FILE.read_text(encoding="utf-8"))
     assert manifest["cache_key"]["vocabulary_fingerprint"] == vocab.lexicon_fingerprint()
+
+
+def test_lexicon_fingerprint_is_stable_across_processes_and_hash_seeds():
+    """缓存键必须**跨进程**稳定：`PYTHONHASHSEED` 不能影响它。
+
+    词表里有字典与集合，它们的迭代顺序在随机哈希下会变。本函数对字典按键排序、
+    对集合按元素排序，所以三档哈希种子必须给出同一个值——这不是"锦上添花"：
+    一个随机的分量会让每次运行都判成"该重抽了"，或者更糟：**同一份索引被记成
+    两枚指纹**（那正是这一整轮要关掉的那类洞）。
+    """
+    script = ("from tools.kb_fetch import vocabulary as v; "
+              "print(v.lexicon_fingerprint())")
+    digests = []
+    for seed in ("0", "12345", "random"):
+        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONIOENCODING": "utf-8"}
+        out = subprocess.run([sys.executable, "-c", script], cwd=ROOT, env=env,
+                             capture_output=True, text=True, check=True)
+        digests.append(out.stdout.strip())
+    assert len(set(digests)) == 1, digests
+    assert digests[0] == vocab.lexicon_fingerprint()
 
 
 def test_every_component_changes_the_fingerprint():
