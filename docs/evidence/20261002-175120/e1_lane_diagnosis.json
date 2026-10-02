@@ -1,0 +1,136 @@
+{
+  "what": "L3 案例栏在真实运行的计划查询上返回了什么（2026-10-02 实测）",
+  "index": {
+    "backend_requested": "hybrid",
+    "backend_effective": "hybrid",
+    "degraded": false,
+    "degraded_reason": "",
+    "product_path": {
+      "rag.cases_backend": "lightrag",
+      "effective": "hybrid",
+      "degraded": true,
+      "degraded_reason": "lightrag_adapter_unavailable",
+      "lanes": 2
+    },
+    "cases": 810,
+    "cases_with_a_CJK_excerpt": 0,
+    "cases_with_a_CJK_source_title": 0,
+    "case_type": {
+      "narrative": 751,
+      "lesson": 58,
+      "sequence_pattern": 1
+    },
+    "top_sources": {
+      "MIT 21L.011 The Film Experience - lecture outlin": 10,
+      "Blurring Space Across Film, Theatre and Virtual ": 10,
+      "MIT 21L.011 The Film Experience - 2006 lecture n": 10,
+      "Geology of Ideas, Hydrology of Matter: Nature an": 10,
+      "Play-Making: A Manual of Craftsmanship": 10,
+      "The Art of the Moving Picture": 10,
+      "The Drama": 10,
+      "Plays, Acting and Music: A Book Of Theory": 10,
+      "The Photoplay: A Psychological Study": 10,
+      "Artificial Light: Its Influence upon Civilizatio": 10,
+      "Writing the Photoplay": 10,
+      "The Logic of Disorientation: Exploring Space in ": 10
+    },
+    "retrieval_text_is": "case.excerpt + source_ref.title (作者写的字；不含我们的标签)"
+  },
+  "queries": {
+    "language": "中文（渲染后的镜头提示词）",
+    "count": 6,
+    "hits_total": 0,
+    "per_shot": [
+      {
+        "shot_id": "shot_001",
+        "query_head": "第十四街区码头市场午后建立镜——MCU 焦点对准市场摊位上的货物细节：木桌上散落的银币与铜器在暖侧光下泛出柔和高光，背景虚化中可见帆布遮篷的褶皱与随风轻摆的挂旗",
+        "query_tokens": 329,
+        "hits": []
+      },
+      {
+        "shot_id": "shot_002",
+        "query_head": "米迦尔自信面朝画面左侧（伊恩方向），推镜缓入，目光坚定",
+        "query_tokens": 42,
+        "hits": []
+      },
+      {
+        "shot_id": "shot_003",
+        "query_head": "留白镜头：伊恩站立后望向偷盗者离去的方向，缓缓点头，画面留出大量视线空间，营造沉思氛围",
+        "query_tokens": 73,
+        "hits": []
+      },
+      {
+        "shot_id": "shot_004",
+        "query_head": "米迦尔手部特写，握拳缓缓松开、手指晃动银币，调皮神态暗示即将施法",
+        "query_tokens": 54,
+        "hits": []
+      },
+      {
+        "shot_id": "shot_005",
+        "query_head": "偷盗者奔逃中从画面左向右跑，跟拍，手心银币燃起黑红火焰渐变为金色，魔法生效",
+        "query_tokens": 64,
+        "hits": []
+      },
+      {
+        "shot_id": "shot_006",
+        "query_head": "偷盗者停下脚步低头看手，银币已变金色，表情从困惑转为狂喜",
+        "query_tokens": 49,
+        "hits": []
+      }
+    ]
+  },
+  "reviews": [
+    {
+      "path": "docs/evidence/20261002_real/e1_reviews.jsonl",
+      "rows": 16,
+      "scored": 16,
+      "scores": {
+        "1.0": 14,
+        "1.5": 2
+      },
+      "meeting_the_line_ge_4": 0,
+      "case_ids_still_in_the_index": 7,
+      "case_ids_gone": [
+        "case_pg17625_txt_217",
+        "case_pg17625_txt_217",
+        "case_pg17625_txt_217",
+        "case_pg40468_txt_118",
+        "case_pg57335_txt_037",
+        "case_pg76304_txt_007",
+        "case_pg76304_txt_007",
+        "case_pg76304_txt_007",
+        "case_pg78373_txt_029"
+      ],
+      "carries_cases_fingerprint": 0,
+      "reviewed_by": {
+        "llm-panel": 16
+      }
+    },
+    {
+      "path": "docs/evidence/20261002_real/e1_english_diagnostic.jsonl",
+      "rows": 18,
+      "scored": 18,
+      "scores": {
+        "2.0": 6,
+        "1.0": 4,
+        "2.5": 2,
+        "4.0": 1,
+        "1.5": 3,
+        "3.0": 2
+      },
+      "meeting_the_line_ge_4": 1,
+      "case_ids_still_in_the_index": 18,
+      "case_ids_gone": [],
+      "carries_cases_fingerprint": 0,
+      "reviewed_by": {
+        "llm-panel": 18
+      }
+    }
+  ],
+  "reading": [
+    "案例语料 810 篇全是英文；产品的查询全是中文。",
+    "检索只吃作者写的字（不含我们的中文标签），所以中文查询在英文语料上没有词命中：6 个镜头全部 0 条返回——这是设计过的诚实空，不是崩溃。",
+    "把查询改写成英文再打英文语料（e1_english_diagnostic）也只拿到 1/18 条 ≥4 分：**换成英文查询也过不了线**，所以 E1 的缺口不是跨语言检索，而是案例语料本身不是'对具体影片的逐镜分析'。",
+    "两份打分的 case_id 有一份（e1_reviews）已有 9/16 条不在当前索引里，且 0/16 携带 cases_fingerprint——它们量的是上一代语料。"
+  ]
+}
