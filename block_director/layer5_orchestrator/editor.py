@@ -240,15 +240,22 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
         # 契约串为空时才退回"景别 ＋ 意图 ＋ 动作"的自由文本（卡片/案例两栏
         # 本来就是 BM25，自由文本照样能命中）。
         query = shot_constraint_query(shot)
+        #: §2.3b 的两通道路由：约束串走 L1/L2，**散文走 L3**。
+        #: 类比查询取这一镜自己的散文（提示词优先，退回意图）——案例层要找的是
+        #: "相似的场面/处理"，不是"键=值"。旧实现把约束串一并送去查案例层，
+        #: 返回的是 1900 年代摄影书的散句（双模型面板 1–2 分，E1 = 0/24）。
+        analogy = str(getattr(shot, "prompt", "") or shot.intent or "").strip()
         if query:
             knowledge = retriever.block_for_shot(
-                query, shot_id=str(getattr(shot, "shot_id", "") or ""))
+                query, shot_id=str(getattr(shot, "shot_id", "") or ""),
+                analogy=analogy)
         else:
             knowledge = retriever.block_for_shot(str(shot.shot_type),
                                                  shot.intent or "",
                                                  action_types,
                                                  shot_id=str(getattr(
-                                                     shot, "shot_id", "") or ""))
+                                                     shot, "shot_id", "") or ""),
+                                                 analogy=analogy)
     memory = render_shot_memory(shot_memory(plan))
     continuity_text = continuity or memory or "（第一镜，无历史）"
     system_text = (EDITOR_SYSTEM_PROMPT

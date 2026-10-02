@@ -45,7 +45,7 @@ class _Sidecar:
         self.calls = 0
 
     def retrieve_response(self, query, domain=None, top_k=5, timeout=30.0,
-                          cases_top_k=3) -> RetrieveResponse:
+                          cases_top_k=3, analogy_query="") -> RetrieveResponse:
         self.calls += 1
         return RetrieveResponse(
             cards=[Card(id="c1", domain="d", title="t", content="x")],
@@ -156,7 +156,7 @@ class _MovementSidecar:
         self.calls = 0
 
     def retrieve_response(self, query, domain=None, top_k=5, timeout=30.0,
-                          cases_top_k=3) -> RetrieveResponse:
+                          cases_top_k=3, analogy_query="") -> RetrieveResponse:
         self.calls += 1
         return RetrieveResponse(cards=[], edges=list(self.edges),
                                 trace={"backend": "hypergraph", "query": query})

@@ -419,7 +419,13 @@ def make_handler(config: "SidecarConfig"):
                 # §2.3 第 1 步：无种子 → digest 兜底并留痕，不得静默返回空。
                 cards = with_digest_fallback(cards)
                 trace["digest_fallback"] = True
-        cases = case_lane.retrieve(query, top_k=int(body.get("cases_top_k", 3) or 3))
+        #: §2.3b 的**两通道路由**：超图那条恒用 `query`（约束串），案例层用
+        #: `analogy_query`（散文）。**路由的判据在插件侧**（没有类比查询时它把
+        #: `cases_top_k` 发成 0），这里保持对直连调用方的兼容：
+        #: `analogy_query` 缺省时沿用 `query`，但 `cases_top_k=0` 就是**不查**。
+        analogy = str(body.get("analogy_query") or "").strip() or query
+        wanted_cases = int(body.get("cases_top_k", 3) or 3)
+        cases = case_lane.retrieve(analogy, top_k=wanted_cases) if wanted_cases > 0 else []
         trace.update({
             "backend": backend,
             "lanes": case_lane.lanes,

@@ -75,10 +75,15 @@ def test_editor_payload_uses_the_retriever_when_given():
         # 必须把它传下来——所以这里把它记下来，让"加了参数却没传"当场红。
         def __init__(self):
             self.seen = []
+            self.analogies = []
 
         def block_for_shot(self, shot_type, intent="", action_types=(), limit=800,
-                           shot_id=""):
+                           shot_id="", analogy=""):
             self.seen.append(shot_id)
+            #: §2.3b 的两条通道：案例层吃的是**散文类比查询**（这一镜的提示词）。
+            #: 编辑器必须把它传下来——漏传就等于案例栏永远空着（而"拿约束串
+            #: 去查案例"那种补救是不许的：实测 E1 = 0/24）。
+            self.analogies.append(analogy)
             return f"知识：{shot_type}/{intent}"
 
     retriever = FakeRetriever()
@@ -87,6 +92,8 @@ def test_editor_payload_uses_the_retriever_when_given():
     # 拼进去会让 `parse_query` 把 `景别=` 的值取成 `MCU 反应`，种子必然落空）。
     assert "知识：景别=MCU/" in payload.messages[0].content
     assert retriever.seen == ["shot_002"]
+    shot = plan().shots[1]
+    assert retriever.analogies == [str(shot.prompt or shot.intent or "")]
 
 
 def test_editor_payload_says_when_knowledge_is_off():

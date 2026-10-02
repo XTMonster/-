@@ -36,7 +36,7 @@ class _Sidecar:
         self.calls = 0
 
     def retrieve_response(self, query, domain=None, top_k=5, timeout=30.0,
-                          cases_top_k=3) -> RetrieveResponse:
+                          cases_top_k=3, analogy_query="") -> RetrieveResponse:
         self.calls += 1
         if self.error is not None:
             raise self.error

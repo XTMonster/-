@@ -291,6 +291,12 @@ components:
           type: integer
           minimum: 1
           description: L3 参考案例条数（v1.4 §2.3b，默认 3，取 2–5）
+        analogy_query:
+          type: string
+          description: >-
+            v1.4 §2.3b 的类比查询（散文，走 L3 案例层）。留空 = 不查 L3；
+            `query` 是约束串（`键=值`），恒走 L1/L2 —— 两通道各走各的，
+            拿约束串去查 L3 会让"参考案例"那一栏全是噪声（实测 E1 = 0/24）。
 
     RetrieveResponse:
       type: object

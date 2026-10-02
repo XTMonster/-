@@ -102,7 +102,8 @@ class KnowledgeClient:
 
     def retrieve(self, query: str, *, domain: Optional[str] = None,
                  top_k: int = 5, cases_top_k: int = 3,
-                 scope: str = "", shot_id: str = "") -> RetrieveResponse:
+                 scope: str = "", shot_id: str = "",
+                 analogy_query: str = "") -> RetrieveResponse:
         """发起一次检索；三条通道 ＋ trace 一次拿回。
 
         ``scope`` / ``shot_id`` 是 §3.3 给 ``retrieval_call`` 事件写死的两个字段
@@ -111,13 +112,17 @@ class KnowledgeClient:
         Q5／E2 这两个指标的运行侧分母正是按镜算的。
         """
         response = self.transport.retrieve_response(
-            query, domain, top_k, self.timeout, cases_top_k)
+            query, domain, top_k, self.timeout, cases_top_k,
+            analogy_query=analogy_query)
         self.retrieval_calls += 1
         self.last_response = response
         trace = dict(response.trace or {})
         self._emit({
             "event": "retrieval_call",
             "query": query,
+            #: §2.3b 的两通道路由：这一栏记**案例层实际用的那条查询**。
+            #: E1 要人给返回的案例打分，判的正是"它对不对得上这条查询"。
+            "analogy_query": str(analogy_query),
             "scope": str(scope),
             "shot_id": (str(shot_id) or None),
             "domain": domain,
@@ -125,6 +130,12 @@ class KnowledgeClient:
             "cards": len(response.cards),
             "edges": len(response.edges),
             "cases": len(response.cases),
+            #: **具体是哪几条**（不只是条数）。E1（经验引用相关性）要人给返回的案例打分，
+            #: 而"返回了什么"在事后必须能从审计里读到——只记 `cases: 3` 的话，
+            #: 一次跑完之后谁都拿不出可评分的那三条，E1 在原理上就不可测。
+            #: 与 `shot_id`/`scope` 同一路：只进审计，不改请求。
+            "case_ids": [str(case.case_id) for case in (response.cases or [])],
+            "edge_ids": [str(edge.edge_id) for edge in (response.edges or [])],
             "forbid_members": sum(len(edge.forbid) for edge in response.edges),
             "lanes": int(trace.get("lanes", 1) or 1),
             "backend": str(trace.get("backend", "")),
@@ -135,7 +146,8 @@ class KnowledgeClient:
 
     def retrieve_or_none(self, query: str, *, domain: Optional[str] = None,
                          top_k: int = 5, cases_top_k: int = 3,
-                         scope: str = "", shot_id: str = ""
+                         scope: str = "", shot_id: str = "",
+                         analogy_query: str = ""
                          ) -> Optional[RetrieveResponse]:
         """sidecar 不可达时返回 ``None`` 并**留痕**（调用方退回 BM25）。
 
@@ -145,7 +157,8 @@ class KnowledgeClient:
         try:
             return self.retrieve(query, domain=domain, top_k=top_k,
                                  cases_top_k=cases_top_k,
-                                 scope=scope, shot_id=shot_id)
+                                 scope=scope, shot_id=shot_id,
+                                 analogy_query=analogy_query)
         except TransportError as exc:
             self.degraded = True
             self.degraded_reason = f"sidecar_unavailable:{exc.code}"
@@ -154,6 +167,7 @@ class KnowledgeClient:
                 "query": query,
                 "scope": str(scope),
                 "shot_id": (str(shot_id) or None),
+                "analogy_query": str(analogy_query),
                 "domain": domain,
                 "reason": self.degraded_reason,
                 "detail": str(exc)[:300],

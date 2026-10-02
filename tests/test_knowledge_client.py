@@ -41,9 +41,10 @@ class _FakeTransport:
         self.calls: List[Dict[str, Any]] = []
 
     def retrieve_response(self, query, domain=None, top_k=5, timeout=30.0,
-                          cases_top_k=3):
+                          cases_top_k=3, analogy_query=""):
         self.calls.append({"query": query, "domain": domain, "top_k": top_k,
-                           "timeout": timeout, "cases_top_k": cases_top_k})
+                           "timeout": timeout, "cases_top_k": cases_top_k,
+                           "analogy_query": analogy_query})
         if self.error is not None:
             raise self.error
         assert self.response is not None
@@ -104,11 +105,28 @@ def test_retrieval_call_events_carry_the_shot_they_belong_to():
     # 传输层拿到的请求**不因这两个字段而变**：它们只进审计。
     assert client.transport.calls == [{"query": "景别=MCU；镜头=50mm",
                                        "domain": None, "top_k": 5,
-                                       "timeout": 30.0, "cases_top_k": 3}]
+                                       "timeout": 30.0, "cases_top_k": 3,
+                                       "analogy_query": ""}]
 
     # 正对照：计划期检索没有镜身份，字段如实为空（不是编一个假 shot_id）。
     client.retrieve("剧本摘要")
     assert events[1]["scope"] == "" and events[1]["shot_id"] is None
+
+
+def test_the_audit_event_names_which_cases_and_edges_came_back():
+    """只记条数的话，**E1 在原理上就不可测**——事后谁都拿不出可评分的那几条。
+
+    E1（经验引用相关性）要人对"检索返回的案例"打分；`{cases: 3, edges: 5}` 这种审计
+    记录**回答不了"是哪三条"**。实测（2026-10-02 的真实运行）：`retrieval_call`
+    事件里只有计数，E1 因此只能记 `not_measured`，连人工都没法补
+    ——因为要评的东西没被记下来。
+    """
+    events: List[Dict[str, Any]] = []
+    client = KnowledgeClient(_FakeTransport(_response()), audit=events.append)
+    client.retrieve("情绪=荒诞；运镜=固定")
+    event = events[0]
+    assert event["cases"] == 1 and event["case_ids"] == ["case_1"]
+    assert event["edges"] == 1 and event["edge_ids"] == [_EDGE_ID]
 
 
 def test_the_per_shot_path_actually_threads_the_shot_id():

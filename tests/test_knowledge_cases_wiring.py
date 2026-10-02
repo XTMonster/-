@@ -74,7 +74,8 @@ def _retriever(**kwargs) -> KnowledgeRetriever:
 
 def test_the_shot_block_carries_all_three_columns():
     retriever = _retriever(cases_index=CaseIndex(_cases(), "hybrid"))
-    block = retriever.block_for_shot("情绪=荒诞")
+    #: §2.3b 的两通道路由：案例栏吃的是**散文**类比查询，不是约束串。
+    block = retriever.block_for_shot("情绪=荒诞", analogy="荒诞的段落该怎么处理")
     assert "【硬约束（禁/许）】" in block
     assert "【经验建议（软）】" in block          # L2 的软边自成一栏
     assert "【参考案例（仅参考）】" in block
@@ -85,7 +86,7 @@ def test_the_shot_block_carries_all_three_columns():
 
 def test_the_soft_edge_never_lands_in_the_hard_column():
     retriever = _retriever(cases_index=CaseIndex(_cases(), "hybrid"))
-    block = retriever.block_for_shot("情绪=荒诞")
+    block = retriever.block_for_shot("情绪=荒诞", analogy="荒诞的段落该怎么处理")
     hard_column, _, rest = block.partition("【经验建议（软）】")
     assert "禁={" in hard_column                 # 硬约束那栏才有禁忌
     assert "禁={" not in rest or "【" not in rest
@@ -116,7 +117,7 @@ def test_a_prohibition_is_never_demoted_into_the_advice_column():
 def test_the_three_columns_share_one_token_budget():
     retriever = _retriever(cases_index=CaseIndex(_cases(), "hybrid"),
                            token_limit=120, plan_token_limit=200)
-    block = retriever.block_for_shot("情绪=荒诞")
+    block = retriever.block_for_shot("情绪=荒诞", analogy="荒诞的段落该怎么处理")
     assert block
     assert estimate_tokens(block) <= 120
     plan_block = retriever.block_for_plan("情绪=荒诞；运镜=固定")
@@ -126,7 +127,7 @@ def test_the_three_columns_share_one_token_budget():
 def test_a_case_that_does_not_fit_is_dropped_whole_and_recorded():
     retriever = _retriever(cases_index=CaseIndex(_cases(), "hybrid"),
                            token_limit=1)          # 连一条案例都装不下
-    block = retriever.block_for_shot("情绪=荒诞")
+    block = retriever.block_for_shot("情绪=荒诞", analogy="荒诞的段落该怎么处理")
     assert "【参考案例（仅参考）】" not in block   # 不输出空栏
     trace = retriever.trace_payload()
     # 顺序由 BM25 打分决定（不是 case_id 顺序），所以这里按集合判。
@@ -140,7 +141,8 @@ def test_the_client_lane_fetches_edges_and_cases_in_one_call():
         def __init__(self):
             self.calls = 0
 
-        def retrieve_response(self, query, domain, top_k, timeout, cases_top_k):
+        def retrieve_response(self, query, domain, top_k, timeout, cases_top_k,
+                              analogy_query=""):
             self.calls += 1
             edge = EdgeDTO(edge_id="hg:1", type="EMOTION_PACK",
                            members=[["allow", "emotion", "emotion:荒诞"],
@@ -158,7 +160,8 @@ def test_the_client_lane_fetches_edges_and_cases_in_one_call():
     client = KnowledgeClient(transport)
     retriever = KnowledgeRetriever(cards=[], backend=RagBackend.HYPERGRAPH,
                                    capabilities=("hypergraph",), client=client)
-    block = retriever.block_for_shot("情绪=荒诞", "荒诞的瞬间")
+    #: §2.3b 的两条通道各喂各的：约束串给超图，散文给案例层。
+    block = retriever.block_for_shot("情绪=荒诞", analogy="荒诞的瞬间")
     assert "【硬约束（禁/许）】" in block
     assert "【参考案例（仅参考）】" in block
     assert transport.calls == 1                 # 两栏共用一次检索
@@ -248,7 +251,8 @@ class _RecordingTransport:
     def __init__(self):
         self.cases_top_k_seen = []
 
-    def retrieve_response(self, query, domain, top_k, timeout, cases_top_k):
+    def retrieve_response(self, query, domain, top_k, timeout, cases_top_k,
+                          analogy_query=""):
         self.cases_top_k_seen.append(cases_top_k)
         return RetrieveResponse(cards=[], edges=[], cases=_cases(),
                                 trace={"backend": "hypergraph", "lanes": 2,
@@ -261,10 +265,28 @@ def test_the_case_lane_sends_the_configured_top_k_not_a_hardcoded_three():
     retriever = KnowledgeRetriever(
         cards=[], backend=RagBackend.HYPERGRAPH, capabilities=("hypergraph",),
         client=KnowledgeClient(transport), cases_top_k=1)
-    block = retriever.block_for_shot("情绪=荒诞")
+    block = retriever.block_for_shot("情绪=荒诞", analogy="荒诞的瞬间")
     assert transport.cases_top_k_seen == [1]     # 发出去的就是配置值
     assert "【参考案例（仅参考）】" in block
     assert len(retriever.last_cases) == 1        # 注入的条数也跟着配置
+
+
+def test_without_an_analogy_query_the_case_lane_is_not_asked_at_all():
+    """§2.3b 的两通道路由：**没有类比查询就不查 L3**，而不是拿约束串去查。
+
+    旧实现让两条通道共用 `query`，于是 `景别=CU；运镜=dolly_in；对白=dialogue`
+    这种契约串也被送去查案例层。实测代价（2026-10-02，真实运行的 10 条逐镜查询 ×
+    每镜 top-3）：返回的 24 条案例被双模型面板判成 1–2 分，**E1 = 0/24**
+    ——"参考案例"那一栏在镜头上是噪声。现在没类比查询就**一条都不索要**
+    （`cases_top_k=0`），`retrieval_calls` 的账也如实反映这一点。
+    """
+    transport = _RecordingTransport()
+    retriever = KnowledgeRetriever(
+        cards=[], backend=RagBackend.HYPERGRAPH, capabilities=("hypergraph",),
+        client=KnowledgeClient(transport))
+    block = retriever.block_for_shot("情绪=荒诞")
+    assert transport.cases_top_k_seen == [0]
+    assert "【参考案例（仅参考）】" not in block
 
 
 def test_cases_backend_off_does_not_even_ask_the_sidecar():

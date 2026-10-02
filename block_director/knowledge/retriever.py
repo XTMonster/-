@@ -317,7 +317,8 @@ class KnowledgeRetriever:
     # ------------------------------------------------------- v1.4 §2.3 超图
     def hypergraph_edges(self, query: str, *, top_k: Optional[int] = None,
                          token_limit: Optional[int] = None,
-                         scope: str = "", shot_id: str = ""
+                         scope: str = "", shot_id: str = "",
+                         analogy_query: str = ""
                          ) -> List[Any]:
         """走超图索引取**整条**超边（含全部 ``forbid`` 成员）。
 
@@ -333,7 +334,8 @@ class KnowledgeRetriever:
         limit = int(top_k or self.top_k)
         if self.client is not None:
             return self._edges_from_client(query, limit, scope=scope,
-                                           shot_id=shot_id)
+                                           shot_id=shot_id,
+                                           analogy_query=analogy_query)
         if self.hypergraph is None:
             return []
         try:
@@ -349,17 +351,22 @@ class KnowledgeRetriever:
         return list(edges or [])
 
     def _edges_from_client(self, query: str, limit: int, *, scope: str = "",
-                           shot_id: str = "") -> List[Any]:
+                           shot_id: str = "", analogy_query: str = "") -> List[Any]:
         """经 sidecar 取超边；不可达时**降级留痕**，不拖垮整场。
 
         ``scope``/``shot_id`` 一路传到 :meth:`KnowledgeClient.retrieve_or_none`，
         落进 §3.3 的 ``retrieval_call`` 事件——见那里的注释。
+
+        ``analogy_query`` 是 §2.3b 的**第二条通道**：案例层按散文查，超图按约束串查。
+        留空 ⇒ 本次**不查 L3**（`cases_top_k=0`），而不是拿约束串去查案例层。
         """
         from .client import to_internal_edges
 
         response = self.client.retrieve_or_none(query, top_k=limit,
-                                                cases_top_k=self._cases_request(),
-                                                scope=scope, shot_id=shot_id)
+                                                cases_top_k=self._cases_request(
+                                                    analogy_query),
+                                                scope=scope, shot_id=shot_id,
+                                                analogy_query=analogy_query)
         self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
         if response is None:
             self.degraded = True
@@ -373,19 +380,29 @@ class KnowledgeRetriever:
         #: `retrieval_calls` 账翻倍）。案例在这里缓存，`case_block()` 直接取。
         #: 只留**真要注入**的条数（`rag.cases_top_k`）；`off` 时是空——
         #: `cases_info()["cases"]` 报的就是"这一次实际拿到的参考案例条数"。
-        requested = self._cases_request()
+        requested = self._cases_request(analogy_query)
         self.last_cases = list(response.cases or [])[:requested] if requested else []
-        self.last_cases_query = query
+        #: 缓存键必须是**案例层实际用的那条查询**（类比查询）——写成约束串的话
+        #: `case_block(analogy)` 查不到缓存，会再发一次 `/v1/retrieve`：
+        #: 既让 `retrieval_calls` 的账翻倍，又让 §2.4 的预算口径失真。
+        self.last_cases_query = analogy_query or None
         return to_internal_edges(response.edges)
 
     # ------------------------------------------------- v1.4 §2.3b L3 案例（第三栏）
-    def _cases_request(self) -> int:
-        """向 sidecar 索要的案例条数（``cases_backend=off`` 时是 **0**）。
+    def _cases_request(self, analogy_query: str = "") -> int:
+        """向 sidecar 索要的案例条数（``cases_backend=off`` 或**没有类比查询**时是 0）。
 
         关掉时**根本不发这个请求**——不是"要回来再丢掉"：后者会让 §2.4 的
         ``retrieval_calls`` 与 sidecar 的实际工作量与配置不符。
+
+        v1.4 §2.3b 的**两通道路由**：案例层是 `analogy_query`（散文）的通道，
+        约束串（`键=值`）不属于它。没有类比查询时**不查 L3**——旧实现把约束串
+        一并送去查案例层，实测拿到的是 1900 年代摄影书的散句，双模型面板给 1–2 分，
+        E1 = **0/24**；那一栏在镜头上是噪声，不是"参考"。
         """
         if str(self.cases_backend) == "off":
+            return 0
+        if not str(analogy_query or "").strip():
             return 0
         return max(1, int(self.cases_top_k or 1))
 
@@ -405,7 +422,8 @@ class KnowledgeRetriever:
             response = self.client.retrieve_or_none(query, top_k=self.top_k,
                                                     cases_top_k=limit,
                                                     scope=scope,
-                                                    shot_id=shot_id)
+                                                    shot_id=shot_id,
+                                                    analogy_query=query)
             self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
             if response is None:
                 self.degraded = True
@@ -511,8 +529,13 @@ class KnowledgeRetriever:
         绝不截断——截断会把"出处"切掉，模型就分不清"某人的经验"与"规则"。
         ``top_k`` 缺省时取 :attr:`cases_top_k`（``rag.cases_top_k`` 的接线点）；
         :attr:`cases_backend` 为 ``off`` 时**整栏不产出**。
+
+        v1.4 §2.3b：这一栏的查询是 **`analogy_query`（散文）**，不是约束串。
+        空查询 ⇒ 整栏不产出（**不**退回"拿约束串查案例"——那是噪声）。
         """
         if str(self.cases_backend) == "off":
+            return ""
+        if not str(query or "").strip():
             return ""
         top_k = int(top_k or self.cases_top_k or 3)
         cases = self.cases_for(query, top_k=top_k, scope=scope, shot_id=shot_id)
@@ -575,6 +598,7 @@ class KnowledgeRetriever:
     def edge_columns(self, query: str, *, top_k: Optional[int] = None,
                      token_limit: Optional[int] = None, scope: str = "shot",
                      shot_id: str = "",
+                     analogy_query: str = "",
                      budgets: Optional[Dict[str, int]] = None,
                      hard_title: str = "硬约束（禁/许）",
                      soft_title: str = "经验建议（软）") -> tuple:
@@ -590,7 +614,8 @@ class KnowledgeRetriever:
         budget = int((budgets["remaining"] if budgets
                       else token_limit) or self.token_limit)
         edges = self.hypergraph_edges(query, top_k=top_k, token_limit=budget,
-                                      scope=scope, shot_id=shot_id)
+                                      scope=scope, shot_id=shot_id,
+                                      analogy_query=analogy_query)
         nodes = getattr(self.hypergraph, "nodes", None) or {}
         # 分栏判据：**带 `forbid` 成员的边永远进硬约束栏**。`hardness == "soft"`
         # 只是"它是软先验"，但一条**禁忌**不是建议——把它放进「仅参考」那一栏，
@@ -748,11 +773,15 @@ class KnowledgeRetriever:
 
     def block_for_shot(self, shot_type: str, intent: str = "",
                        action_types: Sequence[str] = (),
-                       limit: int = 0, shot_id: str = "") -> str:
+                       limit: int = 0, shot_id: str = "",
+                       analogy: str = "") -> str:
         """阶段 B1：按该镜的景别 / 意图 / 动作取条目。
 
         ``shot_id`` 只用于审计（§3.3 的 ``retrieval_call`` 事件要它）：运行侧的
         按镜指标（Q5/E2）没有它就得从产物反推。留空＝调用方没有镜身份可比。
+
+        ``analogy`` 是 §2.3b 的**第二条通道**：散文（这一镜想表达什么），只喂 L3
+        案例层。留下空串 ⇒ 这一次不查 L3，第三栏不产出。
         """
         limit = int(limit or self.token_limit or TOKEN_LIMIT_TOOL)
         if self.backend is RagBackend.DIGEST:
@@ -764,7 +793,7 @@ class KnowledgeRetriever:
                 return self.digest_block(limit)
             return self._hypergraph_block(query, limit=limit, top_k=self.top_k,
                                           cards_top_k=self.top_k, scope="shot",
-                                          shot_id=shot_id)
+                                          shot_id=shot_id, analogy_query=analogy)
         if not self.cards:
             return ""
         query = " ".join([shot_type or "", intent or "",
@@ -775,16 +804,20 @@ class KnowledgeRetriever:
 
     def _hypergraph_block(self, query: str, *, limit: int, top_k: int,
                           cards_top_k: int, scope: str,
-                          shot_id: str = "") -> str:
+                          shot_id: str = "", analogy_query: str = "") -> str:
         """§2.3b 的**三栏注入**：硬约束 → 经验建议（软）→ 参考案例 → 卡片补充。
 
         R44/Q6b 的硬约束：**三栏共用一个上限**（每镜 ``rag.max_tokens_per_call``、
         整场 ``rag.plan_prefetch_tokens``）。以前硬约束用满上限、卡片再用满一次，
         单块可以到 2×上限——那会让"注入 token ≤ 800"的判定看似通过而实为超发。
+
+        v1.4 §2.3b 的两条通道在这一层分开：硬/软两栏用 ``query``（约束串），
+        第三栏「参考案例」用 ``analogy_query``（散文）。没有类比查询 ⇒ 第三栏不产出。
         """
         budgets = {"limit": int(limit), "remaining": int(limit)}
         hard, soft = self.edge_columns(query, top_k=top_k, token_limit=limit,
                                        scope=scope, shot_id=shot_id,
+                                       analogy_query=analogy_query,
                                        budgets=budgets)
         columns: List[str] = []
         if hard:
@@ -792,7 +825,7 @@ class KnowledgeRetriever:
         if soft:
             columns.append(soft)
         #: 条数来自 `rag.cases_top_k`（§3.2）；这里**不许**再写死 3。
-        cases_text = self.case_block(query, scope=scope, shot_id=shot_id,
+        cases_text = self.case_block(analogy_query, scope=scope, shot_id=shot_id,
                                      budgets=budgets)
         if cases_text and self._take(budgets, cases_text, columns):
             columns.append(cases_text)

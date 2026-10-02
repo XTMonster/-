@@ -49,12 +49,18 @@ class RetrieveRequest:
     top_k: int = 5
     #: v1.4 §2.3b：L3 参考案例单独一条通道，条数由它控制（默认 3，取 2–5）。
     cases_top_k: int = 3
+    #: v1.4 §2.3b 的**两通道路由**：`query` 是 `constraint_query`（`键=值` 的契约串，
+    #: 恒走 L1/L2 超图）；`analogy_query` 是 `analogy_query`（散文，走 L3 案例层）。
+    #: 留空 = 不查 L3（**不是**"拿契约串去查 L3"——实测那样案例栏全是噪声，
+    #: 双模型面板给 1–2 分，E1 = 0/24）。
+    analogy_query: str = ""
     request_id: str = field(default_factory=new_request_id)
 
     def to_dict(self) -> Dict[str, Any]:
         return {"request_id": self.request_id, "query": self.query,
                 "domain": self.domain, "top_k": self.top_k,
-                "cases_top_k": self.cases_top_k}
+                "cases_top_k": self.cases_top_k,
+                "analogy_query": self.analogy_query}
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "RetrieveRequest":
@@ -62,6 +68,7 @@ class RetrieveRequest:
                    domain=data.get("domain"),
                    top_k=int(data.get("top_k", 5)),
                    cases_top_k=int(data.get("cases_top_k", 3)),
+                   analogy_query=data.get("analogy_query", ""),
                    request_id=data.get("request_id", new_request_id()))
 
 
