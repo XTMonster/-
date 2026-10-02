@@ -73,7 +73,22 @@ def _robots_cache_file(cache_dir: pathlib.Path, netloc: str) -> pathlib.Path:
 
 def robots_allows(url: str, timeout: float, cache_dir: Optional[pathlib.Path] = None,
                   _seen: Optional[Sequence[str]] = None) -> Tuple[bool, str]:
-    """按 robots.txt 判定；拿不到 robots.txt 时**拒绝**（宁缺勿滥）。"""
+    """按 robots.txt 判定——**口径采用 RFC 9309**，不是"拿不到就拒"。
+
+    * 取到 robots.txt → 按 `*`（或我们 UA）那一组的 `Disallow` 判；
+    * **404/410（文件确实不存在）→ 视为"没有任何规则" ⇒ 放行**。RFC 9309 §2.3.1.3
+      的原话是 "If the server responds with 4xx (except 429), the crawler MAY access
+      any resources"；doc §2.3c 禁止的也是"**robots.txt 禁止的路径**"——一个不存在
+      的 robots.txt 没有禁止任何路径。
+    * **403／5xx／网络失败／重定向循环 → 仍然拒收**：403 常常是"专门挡机器人"的
+      信号（Cloudflare 的 AI 屏蔽就是回 403），5xx 是"暂时答不了"，两者都不能读成
+      "没有规则"。
+
+    **2026-10-02 实测的代价**：旧实现把 404 也当"拿不到 ⇒ 拒收"，于是
+    `journal.animationstudies.org`（同行评审的动画研究期刊 *Animation Studies*，
+    文章页实测 4.9 万字符的正文）整站进不来——而它正是 §2.3b 定义 L3 时写的
+    "拉片/复盘/影评"那一档最对口的来源族。把 404 读成"没有规则"之后它才可用。
+    """
     # 默认值必须在**调用时**解析 `ROBOTS_DIR`：写成 `cache_dir=ROBOTS_DIR`
     # 会把默认参数绑定到导入那一刻的对象，测试的 monkeypatch 会静默失效，
     # 结果就是单元测试写到仓库真实的 `work/robots/`。
@@ -91,6 +106,14 @@ def robots_allows(url: str, timeout: float, cache_dir: Optional[pathlib.Path] = 
             return False, "robots_loop"
         try:
             raw = _http_get(robots_url, timeout, robots_seen=seen + (parsed.netloc,))
+        except urllib.error.HTTPError as exc:
+            if exc.code in (404, 410):
+                #: 文件确实不存在 ⇒ 没有规则 ⇒ 放行（RFC 9309 §2.3.1.3）。
+                #: 把"这里没有 robots.txt"这件事**落盘留痕**：既省掉重复请求，
+                #: 也让"我们凭什么抓它"在 `work/robots/` 里可查（空文件＝没有规则）。
+                cache_file.write_text("", encoding="utf-8", newline="\n")
+                return True, ""
+            return False, f"robots_unavailable:HTTP{exc.code}"
         except Exception as exc:  # noqa: BLE001 - 明确记因由并拒收
             return False, f"robots_unavailable:{type(exc).__name__}"
         text = raw.decode("utf-8", errors="replace")
@@ -269,6 +292,12 @@ def fetch_source(source: Dict, timeout: float, rate_seconds: float,
         # 就会把每个来源的配额改掉，于是老段的切法跟着变、指纹全变——语料一长，
         # 已有的标注就全部作废。写成来源自己的属性，增长才只影响新增的那一份。
         "chunk_budget": int(source.get("chunk_budget") or 0),
+        #: 这份来源喂哪一层（§2.3b）。`["L3"]` ＝ 只喂案例层，`chunk.py` 据此把它
+        #: 挡在卡片管线之外（并如实计数）——影评/分析不该变成"镜头层硬约束"。
+        "layers": list(source.get("layers") or []),
+        #: 这份来源在 L3 的份额上限（0 = 交给 `build_cases` 的全局 `--per-source`）。
+        #: 与 `chunk_budget` 同理：它是**来源自己的属性**，来源数一涨也不会被摊薄。
+        "case_budget": int(source.get("case_budget") or 0),
         "cache_path": _display_path(cache_file),
         "chars": len(text),
         "text": text,

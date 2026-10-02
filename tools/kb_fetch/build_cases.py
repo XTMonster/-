@@ -492,6 +492,14 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
                                excerpt, segment))
         plans.append({"slug": slug, "source_ref": source_ref,
                       "domain": str(doc.get("domain", "")),
+                      #: `case_budget`：这一份来源在 L3 的**份额上限**（0 = 用全局
+                      #: `per_source`）。轮转配额是"每个来源各拿一条"——来源数一涨，
+                      #: 稠密的技术书就被摊薄。2026-10-02 实测：一次加进 161 篇现代
+                      #: 影评之后，`anime` 从 120 条涨到 628 条，而**唯一**拿到 4 分的
+                      #: 那条现代工艺案例被挤出 top-3，同语言对照的 E1 从 1/18 掉到
+                      #: **0/18**。有了这个字段，"现代材料要进来"与"稠密来源不被摊薄"
+                      #: 就不再互斥。
+                      "case_budget": int(doc.get("case_budget") or 0),
                       "candidates": candidates, "accepted": 0})
 
     #: 第二遍：**轮转配额**（每个来源第 1 条 → 第 2 条 → …）。候选在来源内的相对
@@ -506,7 +514,8 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
             source_ref = plan["source_ref"]
             case_id, case_type, beats, excerpt, hint = candidates[round_index]
             raw_segments += 1
-            if plan["accepted"] >= per_source or len(cases) >= max_cases:
+            cap = plan["case_budget"] or per_source
+            if plan["accepted"] >= cap or len(cases) >= max_cases:
                 # 超出配额：不是"拒绝"，是**配额截断**，单独计数（别混进 rejects）。
                 quota.append({"source": slug, "segment": case_id, "reason": "quota"})
                 continue

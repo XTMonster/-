@@ -4620,35 +4620,6 @@
     start: 1093
     end: 1216
   provenance_kind: 网络语料
-- id: gen_anime_0422
-  domain: anime
-  title: 工具不主导节奏
-  content: 节奏由动画师决定，不能被所用媒介工具的限制或便利效果牵着走；先定表演需要的时间，再选实现手段。
-  keywords:
-  - 主导权
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags: []
-  topic: performance
-  quote: |-
-    Timing for animation should be directed by the animator alone and not driven by the tools used to execute the medium.
-  source_ref:
-    url: https://www.skwigly.co.uk/acting-animation-observation/
-    title: Acting For Animation - Observation
-    author: Andy Joule
-    license: PersonalStudy
-    retrieved_at: '2026-10-02T05:25:55+00:00'
-    sha256: 2a68ca3297cfcdadadfd7b1f8e435d410cfff4ffbc34ce8dd6a1b6b4b159d4f6
-  chunk_id: acting-animation-observation#000
-  source_span:
-    chunk_id: acting-animation-observation#000
-    start: 1383
-    end: 1500
-  provenance_kind: 网络语料
 - id: gen_anime_0423
   domain: anime
   title: 黑色电影氛围
@@ -4743,37 +4714,6 @@
     start: 1671
     end: 1786
   provenance_kind: 网络语料
-- id: gen_anime_0426
-  domain: anime
-  title: 节奏要成为本能
-  content: 训练目标是把节奏变成直觉：看到一个动作就能直接判断它需要多长时间，而不是靠试错或工具提示。
-  keywords:
-  - 直觉
-  - 时间感
-  - 判断
-  rules: []
-  parameters: {}
-  examples: []
-  related: []
-  engine_support: ''
-  emotion: ''
-  tags: []
-  topic: performance
-  quote: |-
-    Timing needs to become an instinctive thing – you look at a movement and you just know how long it is.
-  source_ref:
-    url: https://www.skwigly.co.uk/acting-animation-observation/
-    title: Acting For Animation - Observation
-    author: Andy Joule
-    license: PersonalStudy
-    retrieved_at: '2026-10-02T05:25:55+00:00'
-    sha256: 2a68ca3297cfcdadadfd7b1f8e435d410cfff4ffbc34ce8dd6a1b6b4b159d4f6
-  chunk_id: acting-animation-observation#000
-  source_span:
-    chunk_id: acting-animation-observation#000
-    start: 1201
-    end: 1303
-  provenance_kind: 网络语料
 - id: gen_anime_0427
   domain: anime
   title: 录音前先定动作
@@ -4838,4 +4778,65 @@
     chunk_id: corporate-animation-showcase-character-design#000
     start: 1158
     end: 1255
+  provenance_kind: 网络语料
+- id: gen_anime_0429
+  domain: anime
+  title: 时序由动画师而非工具决定
+  content: 动作节奏的决策权归动画师，不要被媒介工具的限制和便利效果牵着走；工具只负责执行，不负责定节奏。
+  keywords:
+  - 决策权
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 创作主导
+  topic: performance
+  quote: |-
+    Timing for animation should be directed by the animator alone and not driven by the tools used to execute the medium.
+  source_ref:
+    url: https://www.skwigly.co.uk/acting-animation-observation/
+    title: Acting For Animation - Observation
+    author: Andy Joule
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T08:37:07+00:00'
+    sha256: 6a86ba0de51e67e80cc1d2bd6a800b298efe1033fb1ddb2d97888a8872a36abe
+  chunk_id: acting-animation-observation#000
+  source_span:
+    chunk_id: acting-animation-observation#000
+    start: 1383
+    end: 1500
+  provenance_kind: 网络语料
+- id: gen_anime_0430
+  domain: anime
+  title: 时序要练成直觉
+  content: 把时序训练成直觉：看一个动作就能直接判断它需要多长时间，而不是靠试错或工具反馈。
+  keywords:
+  - 时长判断
+  - 训练
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: performance
+  quote: |-
+    Timing needs to become an instinctive thing – you look at a movement and you just know how long it is.
+  source_ref:
+    url: https://www.skwigly.co.uk/acting-animation-observation/
+    title: Acting For Animation - Observation
+    author: Andy Joule
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T08:37:07+00:00'
+    sha256: 6a86ba0de51e67e80cc1d2bd6a800b298efe1033fb1ddb2d97888a8872a36abe
+  chunk_id: acting-animation-observation#000
+  source_span:
+    chunk_id: acting-animation-observation#000
+    start: 1201
+    end: 1303
   provenance_kind: 网络语料

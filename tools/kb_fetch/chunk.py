@@ -173,9 +173,17 @@ def select_evenly(pieces: Sequence[str], limit: int) -> List[str]:
 
 
 def run(records: Sequence[Dict], per_domain_chunks: int = 0,
-        max_per_source: int = 0) -> List[Dict]:
+        max_per_source: int = 0, report: Optional[Dict] = None) -> List[Dict]:
     by_domain: Dict[str, List[Dict]] = {}
+    skipped_l3_only: List[str] = []
     for record in records:
+        #: `layers: [L3]`：这份来源只喂**案例层**（§2.3b 把 L3 定义成"拉片/复盘/影评"）。
+        #: 影评/分析不是"镜头层硬约束"，让它们进超图会挤掉公式化的理论卡、
+        #: 也会抬高门⑥ 的分母（每张新卡都要派生期望）；而案例层正是缺这一类。
+        #: 落在 `work/chunks.jsonl` 之外的这部分**如实计数**，不静默丢。
+        if [str(x).upper() for x in (record.get("layers") or [])] == ["L3"]:
+            skipped_l3_only.append(str(common.source_slug(record.get("source_ref", {}))))
+            continue
         by_domain.setdefault(record["domain"], []).append(record)
 
     budget: Dict[str, int] = {}
@@ -223,6 +231,9 @@ def run(records: Sequence[Dict], per_domain_chunks: int = 0,
                     "chunker_version": common.CHUNKER_VERSION,
                 })
     common.write_jsonl(CHUNKS, out)
+    if report is not None:
+        #: 如实记账：被 `layers: [L3]` 挡在卡片管线之外的来源，逐条列出来。
+        report["l3_only_skipped"] = skipped_l3_only
     return out
 
 
@@ -233,11 +244,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--max-per-source", type=int, default=0,
                         help="每个来源最多取多少段（0 = 不限制）")
     args = parser.parse_args(list(argv) if argv is not None else None)
-    chunks = run(common.read_jsonl(LICENSED), args.per_domain_chunks, args.max_per_source)
+    report: Dict = {}
+    chunks = run(common.read_jsonl(LICENSED), args.per_domain_chunks,
+                 args.max_per_source, report)
     counts: Dict[str, int] = {}
     for item in chunks:
         counts[item["domain"]] = counts.get(item["domain"], 0) + 1
-    print(json.dumps({"chunks": len(chunks), "per_domain": counts}, ensure_ascii=False))
+    print(json.dumps({"chunks": len(chunks), "per_domain": counts,
+                      "l3_only_skipped": len(report.get("l3_only_skipped") or [])},
+                     ensure_ascii=False))
     return 0 if chunks else 1
 
 

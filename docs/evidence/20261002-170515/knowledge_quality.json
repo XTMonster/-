@@ -1,0 +1,142 @@
+{
+  "run_id": "20261002-170515",
+  "overall": "not_measured",
+  "holdout_entries": 2786,
+  "index_edges": 544,
+  "metrics": [
+    {
+      "id": "Q0",
+      "status": "pass",
+      "note": "rejects/raw <= 5% 且 processed == total",
+      "source": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
+      "raw_edges": 544,
+      "valid_unique": 544,
+      "duplicates": 0,
+      "rejects": 0,
+      "rejects_file_lines": 0,
+      "processed_chunks": 2,
+      "total_chunks": 2,
+      "reject_ratio": 0.0
+    },
+    {
+      "id": "Q1",
+      "status": "pass",
+      "numerator": 2693,
+      "denominator": 2786,
+      "value": 0.9666,
+      "line": 0.7,
+      "note": "held-out query 数 2786（下界 1200）"
+    },
+    {
+      "id": "Q2",
+      "status": "pass",
+      "numerator": 2786,
+      "denominator": 2786,
+      "value": 1.0,
+      "line": 0.9,
+      "note": ""
+    },
+    {
+      "id": "Q3",
+      "status": "pass",
+      "numerator": 1,
+      "denominator": 2732,
+      "value": 0.0004,
+      "line": 0.1,
+      "note": ""
+    },
+    {
+      "id": "Q4",
+      "status": "pass",
+      "numerator": 2915,
+      "denominator": 2915,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "required 总数 2915（下界 200）"
+    },
+    {
+      "id": "Q6a",
+      "status": "pass",
+      "numerator": 8358,
+      "denominator": 8358,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q6b",
+      "status": "pass",
+      "numerator": 2915,
+      "denominator": 2915,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q7",
+      "status": "pass",
+      "numerator": 691,
+      "denominator": 60,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "§4.1b 夹具覆盖门：`q` 点名了索引里被禁取值的条目数 691（下界 60）；索引里 8 个 `forbid` 成员有 8 个至少被 1 条 `q` 点名。运行期的拦截率（按镜头）是**另一个分母**（§4.1 R52），只在真实模型运行上判。",
+      "forbid_members": 8,
+      "uncovered_forbid_members": []
+    },
+    {
+      "id": "Q4_pre_required_edges_exist",
+      "status": "pass",
+      "numerator": 2915,
+      "denominator": 2915,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "§2.3 Q6b 前置①：2915 条 must 全部能在索引里找到对应边",
+      "examples": []
+    },
+    {
+      "id": "E3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 124,
+      "value": 0,
+      "line": 0,
+      "note": "经验边（source_kind=experience）单独产生的 forbid 条数必须为 0"
+    },
+    {
+      "id": "E3_cases",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 810,
+      "line": 0,
+      "note": "L3 案例永不产出约束"
+    },
+    {
+      "id": "Q5",
+      "status": "not_measured",
+      "numerator": 0,
+      "denominator": 0,
+      "line": 0.8,
+      "note": "夹具里带 `expect_movements` 的条目 0 < 30（§4.1b 第一步）：Q5 无法判定、不得判通过。池通道的标注模板不产这个字段，补齐要走一次独立标注（判据＝卡里描述的作者意图）"
+    },
+    {
+      "id": "E1",
+      "status": "not_measured",
+      "note": "需要人工对返回的 cases 按 >=4/5 打分（§2.3b）；没有 --e1-reviews 就不判——不得由 agent 代判"
+    },
+    {
+      "id": "E2",
+      "status": "not_measured",
+      "note": "没有 --shots：采纳率无法测量（诊断量，不设门）"
+    }
+  ],
+  "q_summary": {
+    "queries": 2786,
+    "edges": 544,
+    "selected_total": 8358,
+    "must_total": 2915,
+    "required_unresolved": 0,
+    "required_unresolved_entries": 0,
+    "unresolved_examples": [],
+    "passed": true
+  }
+}

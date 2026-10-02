@@ -2,8 +2,8 @@
   "size_gate": {
     "passed": true,
     "files": {
-      "anime.jsonl": 161149,
-      "anime.yaml": 156439,
+      "anime.jsonl": 161166,
+      "anime.yaml": 156456,
       "axis_theory.jsonl": 206092,
       "axis_theory.yaml": 201083,
       "blocking.jsonl": 298777,
@@ -22,7 +22,7 @@
       "storyboard.yaml": 230034
     },
     "file_count": 18,
-    "total_bytes": 4091629,
+    "total_bytes": 4091663,
     "max_file_bytes": 524288,
     "max_total_bytes": 20971520,
     "oversize": {}

@@ -337,6 +337,31 @@ def load_sources(path: pathlib.Path | None = None) -> List[Dict]:
         if budget < 0:
             raise ValueError(f"sources.yaml 第 {index} 条 chunk_budget 为负: {budget}")
         entry["chunk_budget"] = budget
+        # 选填 `layers`：这份来源喂哪一层（§2.3b：L1/L2 是镜头层理论/经验，L3 是
+        # 拉片/影评/复盘）。缺省 = 两层都喂（既有行为）；`[L3]` = **只喂案例层**，
+        # `chunk.py` 会把它挡在卡片管线之外并如实计数。取值写错时**报错**，
+        # 与 `chunk_budget` 同一条纪律——静默忽略会把"这份语料进哪一层"偷偷改掉。
+        layers = entry.get("layers") or []
+        if isinstance(layers, str):
+            layers = [layers]
+        if not isinstance(layers, (list, tuple)):
+            raise ValueError(f"sources.yaml 第 {index} 条 layers 必须是数组: {layers!r}")
+        normalized = [str(item).strip().upper() for item in layers if str(item).strip()]
+        unknown = [item for item in normalized if item not in ("L1", "L2", "L3")]
+        if unknown:
+            raise ValueError(f"sources.yaml 第 {index} 条 layers 取值非法 {unknown}"
+                             "（只允许 L1／L2／L3）")
+        entry["layers"] = normalized
+        # 选填 `case_budget`：这份来源在 L3 的份额上限（0 = 用 build_cases 的全局值）。
+        raw_case_budget = entry.get("case_budget", 0) or 0
+        try:
+            case_budget = int(raw_case_budget)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"sources.yaml 第 {index} 条 case_budget 不是整数: {raw_case_budget!r}") from exc
+        if case_budget < 0:
+            raise ValueError(f"sources.yaml 第 {index} 条 case_budget 为负: {case_budget}")
+        entry["case_budget"] = case_budget
         out.append(dict(entry))
     return out
 

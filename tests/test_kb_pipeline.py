@@ -832,6 +832,49 @@ def test_robots_cache_dir_is_resolved_at_call_time(tmp_path, monkeypatch):
     assert written == ["example.invalid.txt"], written
 
 
+def test_missing_robots_txt_is_read_as_no_rules(tmp_path, monkeypatch):
+    """**404 ⇒ 没有规则 ⇒ 放行**（RFC 9309 §2.3.1.3），403／5xx／断网 ⇒ 拒收。
+
+    旧口径是"拿不到 robots.txt 一律拒收"。实测代价（2026-10-02）：
+    `journal.animationstudies.org`（*Animation Studies* 期刊，文章页 4.9 万字符正文）
+    整站进不来——而 §2.3b 把 L3 定义成"拉片/复盘/影评"，它是最对口的一族。
+    doc §2.3c 禁止的是"**robots.txt 禁止的路径**"，不存在的 robots.txt 没有禁止任何路径。
+
+    另一侧同样要钉死：**403 不能被读成"没有规则"**——那常常就是"专门挡机器人"的信号。
+    """
+    import urllib.error
+
+    pinned = tmp_path / "robots"
+    monkeypatch.setattr(fetch, "ROBOTS_DIR", pinned)
+
+    def _http_get_404(url, timeout, robots_seen=()):
+        raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+
+    monkeypatch.setattr(fetch, "_http_get", _http_get_404)
+    allowed, reason = fetch.robots_allows("https://no-robots.example/a", 5.0)
+    assert allowed and reason == ""
+    #: 决定要落盘留痕（空文件 ＝ "这里没有规则"），否则下一次还得再问一遍。
+    assert (pinned / "no-robots.example.txt").read_text(encoding="utf-8") == ""
+
+    for code, expect in ((403, "HTTP403"), (500, "HTTP500")):
+        pinned2 = tmp_path / f"robots{code}"
+        monkeypatch.setattr(fetch, "ROBOTS_DIR", pinned2)
+
+        def _http_get_code(url, timeout, robots_seen=(), _code=code):
+            raise urllib.error.HTTPError(url, _code, "denied", {}, None)
+
+        monkeypatch.setattr(fetch, "_http_get", _http_get_code)
+        allowed, reason = fetch.robots_allows("https://blocked.example/a", 5.0)
+        assert not allowed and expect in reason, (code, reason)
+
+    pinned3 = tmp_path / "robotsnet"
+    monkeypatch.setattr(fetch, "ROBOTS_DIR", pinned3)
+    monkeypatch.setattr(fetch, "_http_get",
+                        lambda *a, **k: (_ for _ in ()).throw(OSError("no route")))
+    allowed, reason = fetch.robots_allows("https://offline.example/a", 5.0)
+    assert not allowed and "robots_unavailable" in reason
+
+
 def test_robots_crawl_delay_is_read_from_the_cached_robots_txt(tmp_path):
     """`Crawl-delay` 也是 robots 要求，不能只读 `Disallow`。
 

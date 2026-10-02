@@ -1,7 +1,7 @@
 {
-  "fingerprint": "ebf28f7c41aeb6515b49f2b132d0c5afc2583e481b64e9f4f6eb54535c6134d5",
+  "fingerprint": "52fa1c175105747b00c784d49615cca7ad1ed201325769231f21ea2354bba105",
   "cache_key": {
-    "corpus_sha256": "cb5d07812f72a44a01f308558be3dc6f9e8140988e06b59414051bc712679e11",
+    "corpus_sha256": "921b82543f4ab39bdf867fc8a2bf4663fc52f5ba306045f8c8bdcc3d0fb1afc8",
     "model": "deepseek-chat@deepseek-flash",
     "prompt_version": "extract/v13",
     "chunker_version": "para-2400/v1",
@@ -31,14 +31,14 @@
   "valid_unique": 544,
   "duplicates": 0,
   "rejects": 0,
-  "atom_rejects": 2,
+  "atom_rejects": 0,
   "merge_rejects": 0,
   "atoms": 2754,
   "merge": {
     "windows": 271,
-    "groups": 2505,
+    "groups": 2504,
     "merged_edges": 544,
-    "multi_card_edges": 184,
+    "multi_card_edges": 185,
     "forbid_wins": 0,
     "dropped_optional": 61,
     "over_budget_dropped": 0,
@@ -46,16 +46,10 @@
     "max_arity": 5,
     "dropped_groups": [],
     "alternatives": 14,
-    "refresh": {
-      "cards": 2,
-      "atoms_dropped": 2,
-      "atoms_kept": 2754
-    },
-    "refresh_prompt_version": "extract/v13",
     "global_dedupe": {
       "keys": 769,
       "duplicate_groups": 351,
-      "dropped": 1750
+      "dropped": 1749
     },
     "arbitrate_by_hardness": {
       "groups": 222,
@@ -96,8 +90,14 @@
       "dropped": 0,
       "edges": []
     },
+    "refresh": {
+      "cards": 2,
+      "atoms_dropped": 2,
+      "atoms_kept": 2754
+    },
+    "refresh_prompt_version": "extract/v13",
     "before_dedupe": {
-      "merged_edges": 2519,
+      "merged_edges": 2518,
       "forbid_members": 10,
       "max_arity": 5
     },
