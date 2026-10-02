@@ -302,11 +302,11 @@ held-out 覆盖门 ①–⑩ **全 pass**（⑪ 是**诊断**，不参与判定�
 （Q5／E1／E2 记 `not_measured`，永不判过）；`python -m pytest` = **1626 passed / 0 failed**；
 `powershell -File tools\run_tests.ps1` = **31/31 探针 ＋ `All checks passed.`**；
 `rks.json failed_checks = []`（**RK-13 第一次 measured 且 pass**）。
-最新证据 `docs/evidence/20261002-175120/`（本轮：E1 的落点诊断 ＋ 验收链四个洞的修复）
+最新证据 `docs/evidence/20261002-180124/`（本轮：E1 的落点诊断 ＋ 验收链四个洞的修复）
 与 `docs/evidence/20261002_real/`（真实模型运行）。逐项对账以
 `docs/knowledge/ACCEPTANCE_STATUS.md` §二十…§二十七 与 `docs/knowledge/MODERN_SOURCES.md` §五 为准。
 
-**E1 的落点是语料，不是检索（2026-10-02 实测，别再修路由）**：`docs/evidence/20261002-175120/e1_lane_diagnosis.json`
+**E1 的落点是语料，不是检索（2026-10-02 实测，别再修路由）**：`docs/evidence/20261002-180124/e1_lane_diagnosis.json`
 ——L3 的 810 篇里**有中文摘句的 0 篇**，产品路径的 6 个中文查询逐镜检索**命中 0 条**
 （`CaseIndex._text` 只吃作者写的字：返回空是诚实的）；把查询换成**英文**再打英文语料
 也只有 **1/18 = 5.6%** 条 ≥4 分 → **跨语言不是根因，案例里没有"逐镜分析"这类内容才是**。
