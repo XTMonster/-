@@ -197,3 +197,48 @@ def test_the_panel_records_which_prompt_version_judged_it(tmp_path, monkeypatch)
     assert source["prompt_version"] == panel.PROMPT_VERSION
     assert len(source["prompt_sha256"]) == 64
     assert len(set(source["models"])) == 2
+
+
+def test_concurrency_does_not_change_the_result(tmp_path, monkeypatch):
+    """`--concurrency N` 只改吞吐，不改产物。
+
+    为什么值得钉：面板一趟是**小时级**（157 条 × 2 个模型，实测约 3 分钟/条），
+    所以并发是必需项；但并发很容易顺手把"谁先判完谁先落盘"渗进产物里 —— 那样
+    `--out` 的逐行顺序就会随网络抖动变化，链上的对拍与 `--resume` 都会漂。
+    判据：同一批条目、同一批桩判决，串行与 6 并发的 `--out` **逐字节相同**。
+    """
+    rows = [_entry(f"hq_{index:04d}", "axis_180", forbid=True)
+            for index in range(1, 13)]
+    entries = _write(tmp_path, rows)
+    counter = {"n": 0}
+    serial = _run(tmp_path, entries, resume=False, counter=counter,
+                  monkeypatch=monkeypatch)
+    baseline = serial.read_text(encoding="utf-8")
+    assert counter["n"] == 24
+
+    # 换一个目录跑 6 并发：产物必须与串行逐字节相同。
+    other = tmp_path / "concurrent"
+    other.mkdir()
+    scripted = other / "a.json"
+    scripted.write_text(json.dumps({"responses": {}}), encoding="utf-8")
+
+    def judge(client, entry, card):
+        counter["n"] += 1
+        return {"verdict": "accepted", "reason": "ok", "fix": ""}
+
+    monkeypatch.setattr(panel, "_judge", judge)
+    counter["n"] = 0
+    out = other / "reviewed.jsonl"
+    rc = panel.main(["--entries", str(entries), "--limit", "0",
+                     "--concurrency", "6",
+                     "--scripted-a", str(scripted), "--scripted-b", str(scripted),
+                     "--out", str(out), "--report", str(other / "panel.json"),
+                     "--sheet", str(other / "sheet.md")])
+    assert rc == 0
+    assert counter["n"] == 24
+    assert out.read_text(encoding="utf-8") == baseline
+    # 进度文件也要齐：12 条，一条一行（并发不许丢行）。
+    lines = [line for line in
+             (other / "reviewed.jsonl.decisions.jsonl").read_text(
+                 encoding="utf-8").splitlines() if line.strip()]
+    assert len(lines) == 12

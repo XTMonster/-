@@ -28,6 +28,8 @@ import hashlib
 import json
 import pathlib
 import sys
+import threading
+from concurrent import futures
 from typing import Dict, List, Sequence, Tuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -160,6 +162,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--resume", default="",
                         help="接着 <out>.decisions.jsonl 里已经判过的条目继续（缺省关闭）。"
                              "长跑**一律**带上它——这一趟是双模型 × 小时级。")
+    parser.add_argument("--concurrency", type=int, default=1,
+                        help="同时在飞的条目数（每条 = 2 次模型调用）。实测约 3 分钟/条，"
+                             "157 条顺序要 ~8 小时；4–6 是吞吐与限流之间的平衡点。")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     path = pathlib.Path(args.entries)
@@ -222,7 +227,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             dropped.append(record["detail"])
         if action == "flag" and isinstance(record.get("detail"), dict):
             flagged.append(record["detail"])
-    for entry in picked:
+    #: 并发（2026-10-03 加）：一条 = 两次模型调用，实测**约 3 分钟/条** ⇒ 157 条
+    #: 顺序跑要 ~8 小时。`--concurrency N` 让 N 条同时在飞；两个客户端本身对 429
+    #: 有长退避（`tools/kb_fetch/llm.py`），所以并发是"更快"，不是"更容易失败"。
+    #: **落盘仍是逐条 append ＋ flush**（加锁），`--resume` 语义不变。
+    write_lock = threading.Lock()
+
+    def decide(entry: Dict) -> Tuple[Dict, str, Dict, Optional[Dict]]:
         card = cards.get(str(entry.get("from_card")), {})
         a = _judge(client_a, entry, card)
         b = _judge(client_b, entry, card)
@@ -231,26 +242,41 @@ def main(argv: Sequence[str] | None = None) -> int:
         # 所以每条记录都要自带可外部佐证的东西——两个模型 id 与面板提示指纹。
         # `check_holdout.review_class()` 不认没有这一块的 `llm-panel` 记录。
         review["source"] = dict(PANEL_SOURCE, ran_at=ran_at)
-        reviewed[str(entry["id"])] = review
+        detail = None
         if action == "drop":
-            counts["dropped"] += 1
-            dropped.append({"id": entry["id"], "q": entry.get("q"),
-                            "reasons": {"a": a.get("reason"), "b": b.get("reason")}})
+            detail = {"id": entry["id"], "q": entry.get("q"),
+                      "reasons": {"a": a.get("reason"), "b": b.get("reason")}}
         elif action == "flag":
-            counts["flagged"] += 1
-            flagged.append({"id": entry["id"], "q": entry.get("q"), "must": entry.get("must"),
-                            "expect_movements": entry.get("expect_movements"),
-                            "a": a, "b": b})
-        else:
-            counts["accepted"] += 1
-        #: 逐条落盘（append + flush）：这一趟的进度不许因为一次超时而归零。
-        with decisions_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(
-                {"id": str(entry["id"]), "action": action, "review": review,
-                 "detail": (dropped[-1] if action == "drop"
-                            else flagged[-1] if action == "flag" else None)},
-                ensure_ascii=False) + "\n")
-            handle.flush()
+            detail = {"id": entry["id"], "q": entry.get("q"), "must": entry.get("must"),
+                      "expect_movements": entry.get("expect_movements"), "a": a, "b": b}
+        return entry, action, review, detail
+
+    def record(result) -> None:
+        entry, action, review, detail = result
+        with write_lock:
+            reviewed[str(entry["id"])] = review
+            if action == "drop":
+                counts["dropped"] += 1
+                dropped.append(detail)
+            elif action == "flag":
+                counts["flagged"] += 1
+                flagged.append(detail)
+            else:
+                counts["accepted"] += 1
+            #: 逐条落盘（append + flush）：这一趟的进度不许因为一次超时而归零。
+            with decisions_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(
+                    {"id": str(entry["id"]), "action": action, "review": review,
+                     "detail": detail}, ensure_ascii=False) + "\n")
+                handle.flush()
+
+    if args.concurrency > 1 and picked:
+        with futures.ThreadPoolExecutor(max_workers=args.concurrency) as pool:
+            for result in pool.map(decide, picked):
+                record(result)
+    else:
+        for entry in picked:
+            record(decide(entry))
 
     kept = [dict(entry, review=reviewed[str(entry["id"])]) if str(entry["id"]) in reviewed
             else entry for entry in entries
