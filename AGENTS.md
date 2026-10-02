@@ -338,6 +338,17 @@ cinematography 214），卡片全集 **2130**；超边索引 **541** 条边；or
 3. **Q5 的基准串口径未拍板**：计划期 `retrieval_call.query` 与 build 后 `ShotContract`
    在同一次真实运行里给出 **0 与 1** 两个分母（§十九.5）；`SHOT_PATTERN.movement` 在
    schema 里有、索引里零条（同第 1 条，要重抽）。
+3b. **E1（经验引用相关性 ≥70%）第一次被量出来就是 0**，而且**两个口径都是 0**：
+    路由修好前用契约串打 L3 是 **0/24**，按 §2.3b 改用散文类比查询后仍是 **0/16**
+    （跨族双模型面板，`reviewed_by: llm-panel`，提示指纹在
+    `docs/evidence/20261002_real/e1_reviews.jsonl`）。根因**不是路由**（那一层已修）：
+    §2.3b 把 L3 定义成"**拉片/复盘/影评**"，而现在的案例层是从**同一份 L1/L2 语料**
+    切出来的 1900 年代老书散句。要它达标得给 L3 补"对具体影片的逐镜分析"这类来源，
+    **不是**调 E1 的门限。逐条见 `ACCEPTANCE_STATUS.md` §二十四。
+3c. **L3 现在有陈旧门**：`build_cases` 记 `cards_sha256`（与超图同一个
+    `corpus_digest`），`tests/test_cases_corpus.py` 拿它与
+    `hypergraph.manifest.json` 对拍——语料一变、哪一层没重建就按名字报错。
+    2026-10-02 实测过一次代价：案例层漏跑一天（`anime` 13 篇 vs 重建后 120 篇）而链路全绿。
 4. **用户手工项**：`%USERPROFILE%\.ollama\models\blobs` 里的旧修订
    （`sha256-0373edb0…`，18.25 GiB）与中断下载残件——**Codex 工具策略拒绝工作区外的
    删除**，只能用户手工执行（§9.6 给了命令）。注意该 blob **仍被 `qwen3-vl:30b` 的 tag
