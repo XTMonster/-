@@ -2144,14 +2144,28 @@ run5 2f86f6ca…  edges 693   ✅ identical
 
 ### 29.5 这一轮之后的账
 
-* 索引 **693 条边 / 原子 2838**（`extract/v14` ＋ `gate/v2`，`raw = valid = 693`、rejects 0、
-  Q0 `708/708`）；`card_scope`：`edge_backed 2285 / excluded 68 / share 97.11%`。
-* **诊断（不判门）**：证据支持率 **20.7%**、全槽位有依据的边 **5.4%**。
-* oracle 已按这份索引重标（`work/glm_v19/`），门①–⑥、⑧–⑩ 与门⑦ 的最终数字见
-  下一次链运行的 `docs/evidence/<run-id>/holdout_gates.json`。
+**终态（`docs/evidence/20261002-224500/`，链实跑）**
+
+```
+索引 700 条边（extract/v14 ＋ gate/v2，raw = valid = 700、rejects 0、Q0 708/708）
+card_scope：cards 2353 / expected 2331 / excluded 22 / expressible_share 99.065% / missing 0
+oracle 2948 条（work/glm_v20/，对同一份 snap 快照重标，0 unknown / 0 unresolvable）
+
+held-out 覆盖门 ①–⑥、⑧–⑩ **全 pass**；**⑦ fail**（needs_human 156 / reviewed 0，要 ≥120）
+holdout_score：Q0 pass｜Q1 **0.9786**｜Q2 **1.0**｜Q3 0.0｜Q4 **0.9983（3019/3024）**
+               Q6a 1.0｜Q6b **0.9983**｜Q7 pass｜E3 pass｜Q5/E1/E2 not_measured
+attestation（诊断）：**21.19%** 可查槽位有依据；全槽位有依据的边 **41/700**
+python -m pytest 全绿；run_tests.ps1 31/31 探针，RK-13 判 failed（门⑦ ＋ Q4/Q6b）
+```
+
 * **仍然红的**：门⑦（§28.4 的结构性冲突——现在有了量化解释：复核说"卡不支持这条边"，
-  证据支持率说 20.7%，两者是同一件事的两面）；Q4/Q6b 的 5 条（`AXIS_RULE` 无区分槽位，
+  证据支持率说 21.2%，两者是同一件事的两面）；Q4/Q6b 的 5 条（`AXIS_RULE` 无区分槽位，
   待裁决第 12 条）；E1（跨语言 ＋ L3 没有逐镜分析内容）。
+* **中途踩到的坑（写下来免得重犯）**：池标注与合并必须**对同一份产物快照**跑。
+  这一轮第一次合并时，盘上的索引/词表已被另一条 lane 的一次构建换掉（池用的是含 `MLS`
+  的词表、盘上那份没有），合并当场拒收 890 条（3 条词表外 ＋ 887 条不可解析）。
+  处置：把索引/节点/卡片清单/词表快照到 `work/snap/`，池标注、合并、门全部用显式路径，
+  于是"谁在中途重建"都不再影响结果。
 
 ### 29.6 **更正与收口（root，2026-10-02 20:5x，以本节为准）**
 

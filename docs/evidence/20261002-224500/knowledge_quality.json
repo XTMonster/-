@@ -1,0 +1,147 @@
+{
+  "run_id": "20261002-224500",
+  "overall": "fail",
+  "holdout_entries": 2948,
+  "index_edges": 700,
+  "metrics": [
+    {
+      "id": "Q0",
+      "status": "pass",
+      "note": "rejects/raw <= 5% 且 processed == total",
+      "source": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
+      "raw_edges": 700,
+      "valid_unique": 700,
+      "duplicates": 0,
+      "rejects": 0,
+      "rejects_file_lines": 0,
+      "processed_chunks": 382,
+      "total_chunks": 382,
+      "reject_ratio": 0.0
+    },
+    {
+      "id": "Q1",
+      "status": "pass",
+      "numerator": 2885,
+      "denominator": 2948,
+      "value": 0.9786,
+      "line": 0.7,
+      "note": "held-out query 数 2948（下界 1200）"
+    },
+    {
+      "id": "Q2",
+      "status": "pass",
+      "numerator": 2948,
+      "denominator": 2948,
+      "value": 1.0,
+      "line": 0.9,
+      "note": ""
+    },
+    {
+      "id": "Q3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 2882,
+      "value": 0.0,
+      "line": 0.1,
+      "note": ""
+    },
+    {
+      "id": "Q4",
+      "status": "fail",
+      "numerator": 3019,
+      "denominator": 3024,
+      "value": 0.9983,
+      "line": 1.0,
+      "note": "required 总数 3024（下界 200）"
+    },
+    {
+      "id": "Q6a",
+      "status": "pass",
+      "numerator": 8844,
+      "denominator": 8844,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q6b",
+      "status": "fail",
+      "numerator": 3019,
+      "denominator": 3024,
+      "value": 0.9983,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q7",
+      "status": "pass",
+      "numerator": 2309,
+      "denominator": 60,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "§4.1b 夹具覆盖门：`q` 点名了索引里被禁取值的条目数 2309（下界 60）；索引里 101 个 `forbid` 成员有 101 个至少被 1 条 `q` 点名。运行期的拦截率（按镜头）是**另一个分母**（§4.1 R52），只在真实模型运行上判。",
+      "forbid_members": 101,
+      "uncovered_forbid_members": []
+    },
+    {
+      "id": "Q4_pre_required_edges_exist",
+      "status": "pass",
+      "numerator": 3024,
+      "denominator": 3024,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "§2.3 Q6b 前置①：3024 条 must 全部能在索引里找到对应边",
+      "examples": []
+    },
+    {
+      "id": "E3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 119,
+      "value": 0,
+      "line": 0,
+      "note": "经验边（source_kind=experience）单独产生的 forbid 条数必须为 0"
+    },
+    {
+      "id": "E3_cases",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 810,
+      "line": 0,
+      "note": "L3 案例永不产出约束"
+    },
+    {
+      "id": "Q5",
+      "status": "not_measured",
+      "numerator": 0,
+      "denominator": 0,
+      "line": 0.8,
+      "note": "夹具里带 `expect_movements` 的条目 0 < 30（§4.1b 第一步）：Q5 无法判定、不得判通过。池通道的标注模板不产这个字段，补齐要走一次独立标注（判据＝卡里描述的作者意图）"
+    },
+    {
+      "id": "E1",
+      "numerator": 0,
+      "denominator": 16,
+      "value": 0.0,
+      "line": 0.7,
+      "status": "not_measured",
+      "stale_evidence": true,
+      "note": "这批打分与当前案例索引脱钩（历史记录，不得当成通过）：10/16 条打分指向的 case_id 已不在当前 cases.jsonl（例：case_pg78373_txt_017、case_pg78373_txt_029、case_pg17625_txt_217）——那是上一代语料；16/16 条打分没有携带当前案例索引指纹 (3eebf6856b30…)：无法证明它量的是这一份索引"
+    },
+    {
+      "id": "E2",
+      "status": "not_measured",
+      "note": "没有 --shots：采纳率无法测量（诊断量，不设门）"
+    }
+  ],
+  "q_summary": {
+    "queries": 2948,
+    "edges": 700,
+    "selected_total": 8844,
+    "must_total": 3024,
+    "required_unresolved": 0,
+    "required_unresolved_entries": 0,
+    "unresolved_examples": [],
+    "passed": false
+  }
+}
