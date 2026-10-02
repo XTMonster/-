@@ -265,3 +265,49 @@ def test_a_stale_run_never_shows_up_as_a_pass_in_the_metric(tmp_path):
     assert metric["status"] == Q.NA
     assert metric["run_stale_evidence"] is True
     assert metric["fixture_items"] == 30
+
+
+def test_the_shipped_movement_entries_decompose_into_tautological_and_usable():
+    """入册的 70 条里，**只有 18 条有鉴别力**（2026-10-03 盘点；数字被本用例钉住）。
+
+    为什么这条要单独钉：Q5 的分子是"计划实际产出的运镜 ∈ 条目期望"。如果条目
+    自己的 `q` 里就写了同一个运镜，那么 join 一旦成功就**构造上必中**——它证明的
+    是"计划把 q 里已有的运镜又写了一遍"，不是"计划采纳了这张卡的理论"。真实逐镜
+    检索发生在运镜被决定**之前**，所以把运镜写进 `q` 等于"先给答案再提问"。
+
+    三分类（口径与 `docs/knowledge/ACCEPTANCE_STATUS.md` §35.6 一字不差）：
+
+    * `q` 带 `运镜=X` 且期望与 `X` 有交集 ⇒ **52 条**（近似恒真）；
+    * `q` 带 `运镜=X` 而期望是**另一个**运镜 ⇒ **10 条**（反向样本，最有价值）；
+    * `q` 不带 `运镜` ⇒ **8 条**（真正的预测）。
+
+    数字变了就说明 oracle 的入口形状被改过（重标 / 换标注口径 / 扩表），那时
+    §35.6 与待裁决清单必须同批更新——不能让"有鉴别力的样本还剩几条"这件事
+    悄悄漂走。
+    """
+    rows = [json.loads(line) for line in
+            (ROOT / "fixtures" / "knowledge_holdout.jsonl")
+            .read_text(encoding="utf-8").splitlines() if line.strip()]
+    entries = [row for row in rows if row.get("expect_movements")]
+
+    tautological = discriminating = predictive = 0
+    for entry in entries:
+        named = {value for key, value in Q._normalise_query_pairs(entry["q"])
+                 if key == "运镜"}
+        expected = {str(item) for item in entry["expect_movements"]}
+        if not named:
+            predictive += 1
+        elif named & expected:
+            tautological += 1
+        else:
+            discriminating += 1
+
+    assert (tautological, discriminating, predictive) == (52, 10, 8), (
+        "带 expect_movements 的条目形状变了："
+        f"恒真 {tautological} / 反向 {discriminating} / 预测 {predictive}。"
+        "改 oracle 或改标注口径时，请同批更新 ACCEPTANCE_STATUS §35.6 与"
+        "待裁决清单里的数字，别让 Q5 的鉴别力悄悄变了。")
+    # 下界断言：真正能证伪"计划采纳了理论"的样本（反向 ＋ 预测）不得低于 18——
+    # 它比 §4.1b 的夹具下界（≥30 条带 expect_movements）**更严**，两者不冲突：
+    # 前者是"有没有标注"，这一条是"标注能不能测出东西"。
+    assert discriminating + predictive >= 18

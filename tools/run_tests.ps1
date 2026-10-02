@@ -414,7 +414,7 @@ if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_attestation.json'))) {
 # SS4.1b rule 2 (no self-reporting) allows reading "what was actually sent" only
 # from the audit events, never from shots.json - which is a wrap-up snapshot whose
 # camera/movements differ from what the per-shot retrieval saw (measured
-# 2026-10-03: 2 of 6 shots drift).  quality.py joins on the emitted query and
+# 2026-10-03: 6 of 6 shots drift).  quality.py joins on the emitted query and
 # reports the re-derived one as a drift diagnostic only.
 python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261003_real_glm/export/shots.json --audit-log docs/evidence/20261003_real_glm/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
