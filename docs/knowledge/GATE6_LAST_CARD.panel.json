@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-10-02T10:48:34+08:00",
+  "entries": "fixtures\\knowledge_holdout.jsonl",
+  "out": "work\\gate6\\panel_reviewed.jsonl",
+  "sheet": "work\\holdout_panel_disagreements.md",
+  "panel": {
+    "a": "deepseek-chat",
+    "b": "glm-4.7",
+    "tag": "llm-panel",
+    "prompt_sha256": "52c09bf2889202a6b5c1b0662f448d56232e7325a9309c30217afa19c79471d3"
+  },
+  "review_source": {
+    "models": [
+      "deepseek-chat",
+      "glm-4.7"
+    ],
+    "prompt_sha256": "52c09bf2889202a6b5c1b0662f448d56232e7325a9309c30217afa19c79471d3",
+    "tool": "holdout_review_llm",
+    "ran_at": "2026-10-02T10:48:29+08:00"
+  },
+  "counts": {
+    "selected": 1,
+    "accepted": 0,
+    "dropped": 1,
+    "flagged": 0
+  },
+  "dropped": [
+    {
+      "id": "hq_2954",
+      "q": "情绪=平静；强度=low；禁运镜=固定",
+      "reasons": {
+        "a": "卡只讲运镜持续运动，未支持情绪=平静或强度=low的耦合",
+        "b": "卡未提及情绪平静或强度低，不支持该EMOTION_PACK耦合"
+      }
+    }
+  ],
+  "disagreement_ids": [],
+  "honesty": "reviewed_by 写的是 llm-panel；门⑦ 需要 reviewed_by=human，这份复核**不构成**人审，不得当作门⑦ 通过。每条记录另带 source{models,prompt_sha256,ran_at}，门⑦ 只认带这一块的记录（§4.1b 禁止自证）。"
+}
