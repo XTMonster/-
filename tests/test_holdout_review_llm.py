@@ -133,3 +133,67 @@ def test_selector_never_re_judges_an_entry_that_already_has_a_record():
     again = dict(judged)
     again.pop("review")
     assert [item["id"] for item in panel.select([again], 0)] == ["hq_0002"]
+
+
+# --------------------------------------------------------------------------- #
+# 断点续跑（2026-10-03 加）：这一趟是**双模型 × 每一条 needs_human**，当前 157 条
+# ⇒ ≥314 次调用，按实测是**小时级**。原实现只在全部跑完之后才写 `--out`，中途
+# 429/断网/被杀就整趟白跑（§34.3 已经为同一形状付过一次代价）。
+# --------------------------------------------------------------------------- #
+def _run(tmp_path, entries, *, resume: bool, counter, monkeypatch):
+    scripted = tmp_path / "a.json"
+    scripted.write_text(json.dumps({"responses": {}}), encoding="utf-8")
+    out = tmp_path / "reviewed.jsonl"
+
+    def judge(client, entry, card):
+        counter["n"] += 1
+        return {"verdict": "accepted", "reason": "ok", "fix": ""}
+
+    monkeypatch.setattr(panel, "_judge", judge)
+    argv = ["--entries", str(entries), "--limit", "0",
+            "--scripted-a", str(scripted), "--scripted-b", str(scripted),
+            "--out", str(out), "--report", str(tmp_path / "panel.json"),
+            "--sheet", str(tmp_path / "sheet.md")]
+    if resume:
+        argv += ["--resume", "1"]
+    rc = panel.main(argv)
+    assert rc == 0
+    return out
+
+
+def test_a_second_run_with_resume_re_judges_nothing(tmp_path, monkeypatch):
+    """`--resume` 之后**一次模型调用都不该发生**，产物必须与第一趟一致。"""
+    entries = _write(tmp_path, [_entry("hq_0001", "axis_180", forbid=True),
+                               _entry("hq_0002", "axis_180", forbid=True)])
+    counter = {"n": 0}
+    first = _run(tmp_path, entries, resume=False, counter=counter,
+                 monkeypatch=monkeypatch)
+    assert counter["n"] == 4, "两条 × 两个模型"
+    before = first.read_text(encoding="utf-8")
+    counter["n"] = 0
+    second = _run(tmp_path, entries, resume=True, counter=counter,
+                  monkeypatch=monkeypatch)
+    assert counter["n"] == 0, "--resume 之后不许再调模型（那正是它存在的理由）"
+    assert second.read_text(encoding="utf-8") == before
+
+    # 负对照：不带 `--resume` 的同一条命令必须**重新判**（不是"永远跳过"）。
+    counter["n"] = 0
+    _run(tmp_path, entries, resume=False, counter=counter, monkeypatch=monkeypatch)
+    assert counter["n"] == 4
+
+
+def test_the_panel_records_which_prompt_version_judged_it(tmp_path, monkeypatch):
+    """判据改一次，`prompt_sha256` 就变；把它和版本号一起写进记录。
+
+    没有这两个字段，门⑦ 读到的"裁决记录"无法说明**是谁、按哪一版判据**判的——
+    那正是 §4.1b 硬规则 2 禁止的自证形状。
+    """
+    entries = _write(tmp_path, [_entry("hq_0001", "axis_180", forbid=True)])
+    counter = {"n": 0}
+    out = _run(tmp_path, entries, resume=False, counter=counter,
+               monkeypatch=monkeypatch)
+    row = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
+    source = row["review"]["source"]
+    assert source["prompt_version"] == panel.PROMPT_VERSION
+    assert len(source["prompt_sha256"]) == 64
+    assert len(set(source["models"])) == 2

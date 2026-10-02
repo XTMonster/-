@@ -41,18 +41,51 @@ from tools.check_holdout import EDGE_TYPES, Q_KEY_TO_KIND, query_key_text  # noq
 PANEL_TAG = "llm-panel"
 DEFAULT_PANEL = ("deepseek-chat", "glm-4.7")
 
+#: 复核提示词的版本号。**改一个字就要升它**：它进 `prompt_sha256`，而门⑦ 只认
+#: 带当前 sha256 的裁决记录——这是"改过判据之后旧记录整批作废"的机器保证。
+PROMPT_VERSION = "review/v2"
+
+#: 判据原文（改过一次，见下）。
+#:
+#: **v1 的缺陷（2026-10-03 实测）**：v1 的判据 4 写的是"**这张卡是否真的支持
+#: 这条边**？卡里没写的耦合不要硬凑——宁可 rejected"。它与 schema 自相矛盾：
+#: `must` 的边必须带 schema 规定的**必填槽位**，而卡里常常只写了语义、没逐字
+#: 写出那个槽位（卡说"留出前方空间"，边必须写 `景别=LS`／`机位=平视`）。逐槽位
+#: 账实测：入库 638 条边的可查槽位里 **93.3% 是 `inferred`**（`extractor.member_grounding`）。
+#: 于是复核员按 v1 的判据 4 判掉了 92% 的 `needs_human` 条目（150 条里 139 条），
+#: 理由清一色"这张卡不支持这条边"，门⑦ 因此**结构性不可达**（三个对照排除了
+#: "证据没给全"：喂全部来源卡仍然否、随机 12 条非禁忌条目 11/12 否、修好出处后
+#: 仍 11/12 否）。
+#:
+#: **v2 改的是什么**：把判据从"这张卡有没有逐字写出这条边"改成"**这条期望能不能
+#: 被判定**"——`q` 点名的取值要在 `must`/`top1` 的成员里有同类同值的对应（可达性），
+#: `must` 的类型/必填槽位要合规（门② 的机器判据会独立再查一遍），`top1 ⊆ must`、
+#: `must ∩ never = ∅`。**必填槽位允许由抽取器按冻结 schema 补全**，这不是编造。
+#: 只有当 `q` 与 `must` **互相矛盾**（同名 kind 取值不同、`never` 与 `must` 相交、
+#: 或这条边与 `q` 完全无关）才 rejected。
+#:
+#: 这是**判据用错了对象**的修正，不是"放宽"：判据该问的是"标注能不能被判定"，
+#: 不是"卡里有没有逐字复述 schema"。门⑦ 的记录仍然是 `reviewed_by:"llm-panel"`，
+#: **没有**任何一条被写成 `human`。
 SYSTEM = """你是分镜知识库 held-out 的**复核员**。给你一张知识卡和一条检索期望，
-请判断这条期望是否**真的由这张卡支持**，以及它是否写得合规。只输出 JSON：
+请判断这条期望**写得合规、并且可判定**吗。只输出 JSON：
 {"verdict":"accepted|rejected|amended","reason":"不超过 40 字","fix":"若 amended 给出改法，否则空串"}
 
 判据（逐条看）：
 1. `q` 的键**只能取协议 §2.1 的这 %d 个**：%s；
    取值必须是词表里的规范写法，`q` 与 `must` 里同 kind 的取值**逐字相同**。
 2. `must` 的边类型只能是这 %d 个之一（%s），必填槽位必须写全。
+   **必填槽位允许由抽取器按冻结的 schema 补全**：卡里只写"留出前方空间"时，
+   边仍然必须带 `景别=LS`／`机位=平视` —— 那是 schema 的要求，**不是编造**，
+   **不要**因为它没在卡里逐字出现就否决。
 3. `top1` 必须与 `must` 中某条一字不差；`never` 与 `must` 不得相交。
-4. **这张卡是否真的支持这条边**？卡里没写的耦合不要硬凑——宁可 rejected。
+4. **这条期望可判定吗**（这是判据的核心，不是"卡里有没有逐字复述"）：
+   `q` 点名的每个取值，都要能在 `must`/`top1` 的成员里找到**同类同值**的对应
+   （可达性）——能，就 accepted。**只有**出现下面三种**矛盾**才 rejected：
+   ① `q` 与 `must` 在同一个 kind 上点了**不同的值**；② `never` 与 `must` 相交；
+   ③ 这条边与 `q` 说的东西**完全无关**（连一个取值都对不上）。
 5. `forbid_<kind>=取值` 只在 `q` 里出现同 kind 同取值时才算一次禁忌冲突；`
-   expect_movements` 要符合卡里描述的作者意图。
+   expect_movements` 要符合卡里描述的作者意图（卡里没写运镜期望时**允许为空**）。
 """ % (len(Q_KEY_TO_KIND), query_key_text(), len(EDGE_TYPES), "/".join(EDGE_TYPES))
 
 
@@ -124,6 +157,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--sheet", default="work/holdout_panel_disagreements.md")
     parser.add_argument("--scripted-a", default="")
     parser.add_argument("--scripted-b", default="")
+    parser.add_argument("--resume", default="",
+                        help="接着 <out>.decisions.jsonl 里已经判过的条目继续（缺省关闭）。"
+                             "长跑**一律**带上它——这一趟是双模型 × 小时级。")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     path = pathlib.Path(args.entries)
@@ -142,12 +178,33 @@ def main(argv: Sequence[str] | None = None) -> int:
                                models[1], args.scripted_b)
     cards = load_cards()
     picked = select(entries, args.limit)
+    #: **断点续跑**（2026-10-03 加）：这一趟要真跑两个模型 × 每一条 `needs_human`
+    #: 条目（当前 157 条 ⇒ ≥314 次调用，按实测调用耗时是**小时级**）。原实现只在
+    #: 全部跑完之后才写 `--out`，中途 429/断网/进程被杀就**整趟白跑**——
+    #: `ACCEPTANCE_STATUS.md` §34.3 已经为同一形状（Q5 标注卡在 429 退避里 50 分钟）
+    #: 付过一次代价。所以每判完一条就把**决定**追加进 `<out>.decisions.jsonl`
+    #: （逐行 flush），`--resume` 时先读它、跳过已经判过的 id。
+    decisions_path = pathlib.Path(str(args.out) + ".decisions.jsonl")
+    decided: Dict[str, Dict] = {}
+    if str(args.resume).lower() in ("1", "true", "yes"):
+        if decisions_path.is_file():
+            for line in decisions_path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    continue            # 半行：最后一次写被截断，跳过它
+                if isinstance(record, dict) and record.get("id"):
+                    decided[str(record["id"])] = record
+        picked = [item for item in picked if str(item["id"]) not in decided]
 
     #: 每条复核记录自带的**可佐证**字段（§4.1b 硬规则 2）：两个模型 id 必须互异、
     #: 面板提示指纹必须存在且整份文件只有一个（协议先冻结）。门⑦ 用
     #: `check_holdout.review_class()` 判它 —— 缺了就不算一条裁决记录。
     PANEL_SOURCE = {"models": [models[0], models[1]],
                     "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
+                    "prompt_version": PROMPT_VERSION,
                     "tool": "holdout_review_llm"}
     ran_at = datetime.datetime.now(
         datetime.timezone.utc).astimezone().isoformat(timespec="seconds")
@@ -156,6 +213,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     dropped: List[Dict] = []
     flagged: List[Dict] = []
     counts = {"selected": len(picked), "accepted": 0, "dropped": 0, "flagged": 0}
+    for ident, record in decided.items():
+        reviewed[str(ident)] = record["review"]
+        action = str(record.get("action") or "")
+        if action in counts:
+            counts[action] = counts.get(action, 0) + 1
+        if action == "drop" and isinstance(record.get("detail"), dict):
+            dropped.append(record["detail"])
+        if action == "flag" and isinstance(record.get("detail"), dict):
+            flagged.append(record["detail"])
     for entry in picked:
         card = cards.get(str(entry.get("from_card")), {})
         a = _judge(client_a, entry, card)
@@ -177,6 +243,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                             "a": a, "b": b})
         else:
             counts["accepted"] += 1
+        #: 逐条落盘（append + flush）：这一趟的进度不许因为一次超时而归零。
+        with decisions_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(
+                {"id": str(entry["id"]), "action": action, "review": review,
+                 "detail": (dropped[-1] if action == "drop"
+                            else flagged[-1] if action == "flag" else None)},
+                ensure_ascii=False) + "\n")
+            handle.flush()
 
     kept = [dict(entry, review=reviewed[str(entry["id"])]) if str(entry["id"]) in reviewed
             else entry for entry in entries
