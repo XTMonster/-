@@ -352,6 +352,31 @@ if ($authorshipExit -eq 0) {
     Write-Host ('  authorship gate exit ' + $authorshipExit + ' -> RK-13 counts as failed') -ForegroundColor Yellow
 }
 
+# Attestation (2026-10-02): how many of the shipped index's member slots can be
+# traced to a surface form of the value in the edge's OWN source cards.  It is a
+# DIAGNOSTIC, not a gate: it never fails the chain, and it must not (it measures a
+# known weakness, see ACCEPTANCE_STATUS.md SS29 - 21.19% attested on the shipped
+# index, which is the same finding the cross-family review panel reports as 92%
+# rejections).  It exists so that number is in every evidence directory instead of
+# being re-derived by hand.  `extractor.member_grounding` cannot serve this role:
+# the prompt only asks for the edge-level quote, so that ledger is a constant
+# (measured 8087/8087 `inferred`).
+python tools/knowledge/attestation.py --json (Join-Path $evidenceDir 'knowledge_attestation.json') > $null 2>&1
+if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_attestation.json'))) {
+    Fail '  FAILED: the attestation report was not written'
+} else {
+# Read it as UTF-8 explicitly: Windows PowerShell 5.1's `Get-Content -Raw` uses the
+# ANSI code page when the file has no BOM, so the Chinese `criterion` field turns into
+# mojibake and `ConvertFrom-Json` throws (measured 2026-10-02: the chain printed an
+# empty diagnostic line while still exiting 0 - a silent hole in a diagnostic).
+    $attestPath = Join-Path $evidenceDir 'knowledge_attestation.json'
+    $attested = ([System.IO.File]::ReadAllText($attestPath,
+                 [System.Text.Encoding]::UTF8) | ConvertFrom-Json)
+    Write-Host ('  attestation (diagnostic): ' + $attested.attested_share +
+                ' of checkable member slots are named by the edge''s own source cards (' +
+                $attested.edges_fully_attested + '/' + $attested.edges + ' edges fully attested)') -ForegroundColor DarkGray
+}
+
 # --------------------------------------------------------------------------- #
 # P14 / knowledge stack: Q0 and E3 live in tools/knowledge/quality.py, and the
 # chain used to run only holdout_score.py (see the NOTE above its command).

@@ -174,3 +174,24 @@ def test_shipped_manifest_records_the_backfill_ledger():
         "零原子卡的补抽过程必须可对账（见 tests/test_hypergraph_backfill.py 的说明）")
     for key in ("rounds", "cards_empty_before", "cards_empty_after", "recovered"):
         assert key in ledger, f"backfill 账缺 `{key}`"
+
+
+def test_the_ledger_stays_true_when_the_backfill_is_switched_off():
+    """`--backfill-rounds 0`（关掉补抽）**仍然是一笔正确的账**。
+
+    2026-10-02 实测到的形状：原先 `cards_empty_before` 写的是"第一轮问了多少张"，
+    轮数为 0 时那个值停在初始的 0，于是同一份报告同时写着
+    `cards_empty_before: 0`、`cards_empty_after: 2`、`recovered: -2` —— 自相矛盾，
+    而 `recovered` 是负数这件事**没有任何门会去查**。判据：这两个数都必须是
+    "进入这一层时"与"跑完之后"的**实际**零原子卡数。
+    """
+    client = _FlakyClient()
+    atoms, rejects, log = bh.extract(_cards(), {}, client, concurrency=1)
+    assert bh.cards_without_atoms(_cards(), atoms) == ["c1", "c2"]
+    _, report = bh.backfill_empty_cards(_cards(), {}, client, atoms, rejects, log,
+                                        concurrency=1, rounds=0)
+    assert report["rounds"] == [], "0 轮就什么都不该跑"
+    assert report["cards_empty_before"] == 2
+    assert report["cards_empty_after"] == 2
+    assert report["recovered"] == 0, (
+        f"关掉补抽却被记成救回了东西（或救回负数）：{report}")

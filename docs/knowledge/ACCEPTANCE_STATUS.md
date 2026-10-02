@@ -2051,3 +2051,176 @@ Q4/Q6b 差的 **5 条全部是同一条边**：`hg:30e0699ac4ab`（`AXIS_RULE`�
 （"`AXIS_RULE` 要不要加可区分槽位"）在指标上的第一次显形，**不是这一轮新造的**。
 修法（给 `axis_side`／`pair` 加查询键）属 schema 改动，要跟着一次全库重抽＋重标，
 留给下一轮或用户拍板。
+
+## 二十九、P14-19（2026-10-02 20:4x）：**模板边**——索引里有多少是真的被卡支持
+
+上一节把门⑦ 的 92% 否决记成"复核判据与 schema 的冲突"。这一节把它量到底：
+**冲突是真的，而且根源在索引自己**。
+
+### 29.1 结构证据：2909 个「卡 × 边」只有 743 个不同成员集
+
+`work/zz_p14_template_edges.py`（纯统计，不调模型）：
+
+```
+atoms 2909   distinct member-sets 743   (card, atom) pairs 2909
+  member-sets carried by >=  5 cards:  112 sets / 1937 pairs = 66.6%
+  member-sets carried by >= 10 cards:   63 sets / 1625 pairs = 55.9%
+  member-sets carried by >= 40 cards:   11 sets /  718 pairs = 24.7%
+最热的一条：173 张卡共用  STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视
+```
+
+抽四条肉眼可判的：
+
+| 卡（标题） | 卡在讲什么 | 它拿到的边 |
+|---|---|---|
+| `gen_comp_0241` 倒置画面检验构图 | 把画面倒过来看线条与重量 | `STAGING_PACK:balance,MS,平视` |
+| `gen_block_0229` 户外社区假面剧 | 大规模群体调度换场地 | `STAGING_PACK:balance,ELS,高机位` |
+| `gen_perf_0321` 服装设计需微妙 | 服装造型不能靠表面标签 | `PROP_PACK:陈设,MS,平视` |
+| `gen_anime_0351` 压稿玻璃与定位 | 玻璃压平画稿保证拍摄平整 | `PROP_PACK:陈设,MS,平视` |
+
+**这不是知识，是模板。** 卡的原文是真的，槽位是**填出来的**。
+
+### 29.2 病根：提示词与校验器自相矛盾
+
+提示词写着"**你不需要**在一张卡里凑齐整套 pack，归并阶段会把同域相邻卡并起来"，
+而 `to_edge` 一直**强制**每张卡的原子边必须写全 `REQUIRED_MEMBERS`。一张只讲构图的卡
+凑不出 `STAGING_PACK` 的 `景别`／`机位`，模型只能编。**两句话对着干，模型选了校验器。**
+
+四代"硬弃边"实测（`work/zz_v1{4,5,6,7}_build.txt`，同语料、同模型）：
+
+| 口径 | raw_edges | 结果 |
+|---|---|---|
+| v14 基线（只回查一条边级 `quote`） | 700 | 模板边泛滥（上表） |
+| v15（成员四元组 ＋ 必填槽位要有依据） | 616 | 模型照做，模板仍在 |
+| v16（＋ 依据里要出现取值本身） | **32** | 干掉 10228 条，其中大量是**蕴含式**依据（"把画面倒过来看"蕴含"检验平衡"）⇒ **判据太严，已在 `MEMBER_EVIDENCE_MUST_NAME_VALUE` 处写下否决理由** |
+| v17（原子只写本卡讲到的成员） | **25** | 归并那层同样要求整套 pack，凑不齐整组丢弃 ⇒ **索引直接空掉** |
+
+**结论**：在这个"逐卡抽取 × pack 必填"的组合下，"要求依据"只会得到两种结果——
+要么索引塌到 25 条，要么回到模板边。所以本轮**没有**把它变成硬门，而是：
+
+1. 抽取侧**逐槽位记账**（`extractor.member_grounding`：`quoted` / `inferred` /
+   `fabricated`），并把四代实测账写进 `PROMPT_VERSION` 上方的注释与
+   `tests/test_extraction_grounding.py` 的 docstring；
+2. 在**产物侧**加一个可复现的诊断（见下）。
+
+### 29.3 新的诊断：**证据支持率**（`tools/knowledge/attestation.py`）
+
+`member_grounding` 那一栏今天是**空转的**：提示词只要求边级 `quote`，成员都是三元组，
+于是每个槽位按构造就是 `inferred`（实测 **8087/8087**）——**一个只能取一个值的指标
+不是测量**。所以新增的诊断改成**从产物本身算**：拿每条边**自己的来源卡**正文回查
+每个槽位取值的 surface（取值／规范名／同义说法）。
+
+入库索引实测（693 条边）：
+
+```
+可查槽位 1805：attested 373 / unattested 1432        →  **20.7% 有依据**
+not-checkable 368（词表自己就是桶名：intensity:mid／avg_shot_len:>8s，正文里本来不会出现）
+**每个槽位都有依据的边：38 / 698（5.4%）**
+```
+
+口径写明两条，免得被当成更严或更松的东西：它是**下界**（卡可以蕴含而不写出取值），
+且 `not-checkable` 单列。跑法：`python -m tools.knowledge.attestation --json <path>`；
+链上每次都会写 `docs/evidence/<run-id>/knowledge_attestation.json` 并打印这一行
+（**诊断，不判门**——它量的是一个已知弱点，判门只会让链永远红）。
+用例 `tests/test_knowledge_attestation.py` 钉住：三桶分离、只看这条边自己的来源卡、
+可重放、以及**入库数字不得落在退化区**（不是常量）。
+
+### 29.4 顺带把"逐字节可复现"这件事**做成了**
+
+§28.1 记的"全量重建仍会重抽、两次构建不同字节"，在**原子边缓存**
+（`tools/kb_fetch/atom_cache.py`，键 = 渲染后的整段提示 ＋ 模型 ＋ 温度 ＋ 解码 ＋
+prompt 版本，指纹不匹配则整份作废）落地之后实测收敛：
+
+```
+run1 f9508568…  edges 698   （缓存冷）
+run2 39e99cbc…  edges 692   （26 个单元未命中：首轮有瞬时传输失败，失败不写缓存）
+run3 ff88f84d…  edges 696   （9 个单元未命中）
+run4 2f86f6ca…  edges 693   ← 与 run5 逐字节一致，缓存条目不再增长
+run5 2f86f6ca…  edges 693   ✅ identical
+```
+
+也就是说：**反复构建会收敛到不动点，之后逐字节一致**——这才是 oracle 能稳定重标的
+前提（此前每次重建都会让上一轮 oracle 作废，这就是 §28.1 那条"覆盖率随机漂移"的另一副面孔）。
+
+### 29.5 这一轮之后的账
+
+* 索引 **693 条边 / 原子 2838**（`extract/v14` ＋ `gate/v2`，`raw = valid = 693`、rejects 0、
+  Q0 `708/708`）；`card_scope`：`edge_backed 2285 / excluded 68 / share 97.11%`。
+* **诊断（不判门）**：证据支持率 **20.7%**、全槽位有依据的边 **5.4%**。
+* oracle 已按这份索引重标（`work/glm_v19/`），门①–⑥、⑧–⑩ 与门⑦ 的最终数字见
+  下一次链运行的 `docs/evidence/<run-id>/holdout_gates.json`。
+* **仍然红的**：门⑦（§28.4 的结构性冲突——现在有了量化解释：复核说"卡不支持这条边"，
+  证据支持率说 20.7%，两者是同一件事的两面）；Q4/Q6b 的 5 条（`AXIS_RULE` 无区分槽位，
+  待裁决第 12 条）；E1（跨语言 ＋ L3 没有逐镜分析内容）。
+
+### 29.6 **更正与收口（root，2026-10-02 20:5x，以本节为准）**
+
+§29.4／§29.5 里有**两条与收官状态不符**，按"不静默改写、只如实supersede"的规矩记在这里：
+
+**① "oracle 已按这份索引重标（`work/glm_v19/`）"——没有落地。** 实测 `work/glm_v19/`
+只有 `partial.jsonl` **54837 字节**（`pool.log` 0 字节、20:40:23 起、20:41:35 停），
+而 `fixtures/knowledge_holdout.jsonl` 仍是**上一代**那一份（2948 条）。更关键的是：
+**重标是重抽的同批动作**，而这一轮的重抽产物已经不在 `knowledge/` 里了（见 ③）。
+
+**② §29.4 的 `run1…run5 / 698→693 条边` 与 §29.5 的"693 条边 / excluded 68"描述的是
+一次**已被丢弃的抽样**。判据是"重抽会不会让 oracle 报废"——实测**会**：
+
+```
+同一份 pool（work/glm_v14idx/pool.jsonl，2948 条）打到新抽样的索引上：
+  raw 2948 → valid **1308** / unknown_values 933 / unresolvable 707
+  覆盖到的卡 1224 / 2353（旧一代是 2331）
+```
+也就是说：**索引换代 ⇒ 整份 oracle 必须同批重标**（AGENTS.md 早就写死了这条），
+而重标要一次 GLM 全池 ＋ 双模型复核（约 1.5 小时）。这一轮**没有**跑完它，所以
+**入库的索引与 oracle 仍是提交里那一对**（700 条边 / 2948 条），不是 §29.5 写的那一对。
+
+**③ 事故形状（这一轮真正该记的教训）：`work/` 不是备份。** v15→v18 四代实验把
+`work/hypergraph.atoms.jsonl` 覆盖掉了——**语料没变、索引没变，2909 条原子边没了**，
+于是"改归并口径不必重抽"（`--rematch`）这条路当场断掉，只能整库重抽一次。
+本条与前两轮的两条（`sources.yaml` 领先于产物、E1 打分与索引脱钩）是同一形状：
+**产物之间的"同代性"没有任何东西在守**。现在的守法是新的
+`--refresh-ledger`（派生账可从**已记录的批次账 ＋ 已写出去的边**现算，不依赖 `work/`）
+与 `atom_cache`（条目按**单元键**分层，四代实验各自写各自的键，**互不覆盖**——
+这正是"覆盖掉就没了"的反面）。
+
+**④ §29.3 的诊断在入库索引上复算（同一判据、另一次抽样）**：
+
+```
+python -m tools.knowledge.attestation --json <out>
+  edges 700   checkable_slots 1793   attested 380 / unattested 1413
+  attested_share **21.19%**   edges_fully_attested 41 / 700 = **5.86%**
+```
+与 §29.3 记的 20.7% / 5.4%（另一次抽样）几乎相同 ⇒ **"索引里八成槽位在卡里找不到
+依据"不是某一次抽样的偶然，是这条抽取口径的稳定性质**；门⑦ 的 92% 否决与它是同一
+件事的两面。这条诊断**不判门**（它量的是已知弱点），每次链运行都会落进
+`docs/evidence/<run-id>/knowledge_attestation.json`。
+
+**⑤ 本轮的落地清单（可逐条复算）**：
+
+* `tools/kb_fetch/atom_cache.py` ＋ `build_hypergraph.py` 的**抽取结果缓存／断点续跑**
+  （单元键 = 渲染提示摘要 ＋ 模型 ＋ 温度 ＋ prompt 版本 ＋ 解码行；只缓存成功；
+  稳定排序落盘；`--no-atom-cache` 可关）：**缓存命中时索引逐字节一致**这条
+  §2.3／§6 的回归基线第一次**做成了**（§29.4 的 run4≡run5 实测）。
+* manifest 的 **per-chunk 账** `chunks[{chunk_id, sha256, status, edges,
+  reject_reason, extractor_fingerprint}]`（§2.3 的断点续跑落点）＋
+  `--refresh-ledger`（派生账不依赖 `work/`）。
+* 补抽账修正：`--backfill-rounds 0` 不再写出 `cards_empty_before: 0 /
+  recovered: -N` 这种自相矛盾的账（`tests/test_hypergraph_backfill.py`）。
+* 逐槽位依据**记账不弃边**（`extractor.member_grounding`：`quoted`/`inferred`/
+  `fabricated`），四代实测账写进 `PROMPT_VERSION` 上方与
+  `tests/test_extraction_grounding.py`（该文件已按新口径重写，**不是删除**）。
+* 用例卫生：`tests/test_hypergraph_determinism.py` 的 `_prepare` 现在把
+  `ATOM_CACHE`/`CACHE_STATS`/`ATOM_REJECTS` 也指到 tmp——实测抓到过"测试往生产缓存里
+  写条目、另一条用例命中它"的跨用例污染。
+
+**⑥ 仍未做（写清楚，别当成已完成）**：① 同批重标整份 oracle（索引换代的前提）；
+② `member_grounding` 在 v14 提示词下**恒为 `inferred`**（提示词只要求边级 `quote`），
+所以它是"下一阶段改提示词时的落点"，今天不构成度量——度量请用 §29.3 的 attestation；
+③ 把"证据支持率"接到复核判据上（"这条边在**它的来源集**里有依据吗"）而不是改门限。
+
+**⑦ 两处证据目录，别拿错**：`docs/evidence/20261002-204932/` 是**同一个链的第一次运行**，
+那次 `knowledge_attestation.json` 是用 `Get-Content -Raw`（PowerShell 5.1 按 ANSI 解码）
+读的，中文 `criterion` 变乱码、`ConvertFrom-Json` 抛错，**诊断行打成了空值而链仍然退 0**
+——这正是"诊断也会静默失守"的形状。修法写在 `tools/run_tests.ps1` 的注释里
+（显式 `[System.IO.File]::ReadAllText(..., UTF8)`），修完重跑的那一份是
+`docs/evidence/20261002-205547/`：`attestation (diagnostic): 0.2119 … (41/700)`。

@@ -1,0 +1,77 @@
+{
+  "queries": 2948,
+  "edges": 700,
+  "selected_total": 8844,
+  "metrics": [
+    {
+      "id": "Q1",
+      "status": "pass",
+      "numerator": 2885,
+      "denominator": 2948,
+      "value": 0.9786,
+      "line": 0.7,
+      "note": "held-out query 数 2948（下界 1200）"
+    },
+    {
+      "id": "Q2",
+      "status": "pass",
+      "numerator": 2948,
+      "denominator": 2948,
+      "value": 1.0,
+      "line": 0.9,
+      "note": ""
+    },
+    {
+      "id": "Q3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 2882,
+      "value": 0.0,
+      "line": 0.1,
+      "note": ""
+    },
+    {
+      "id": "Q4",
+      "status": "fail",
+      "numerator": 3019,
+      "denominator": 3024,
+      "value": 0.9983,
+      "line": 1.0,
+      "note": "required 总数 3024（下界 200）"
+    },
+    {
+      "id": "Q6a",
+      "status": "pass",
+      "numerator": 8844,
+      "denominator": 8844,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q6b",
+      "status": "fail",
+      "numerator": 3019,
+      "denominator": 3024,
+      "value": 0.9983,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q7",
+      "status": "pass",
+      "numerator": 2309,
+      "denominator": 60,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "§4.1b 夹具覆盖门：`q` 点名了索引里被禁取值的条目数 2309（下界 60）；索引里 101 个 `forbid` 成员有 101 个至少被 1 条 `q` 点名。运行期的拦截率（按镜头）是**另一个分母**（§4.1 R52），只在真实模型运行上判。",
+      "forbid_members": 101,
+      "uncovered_forbid_members": []
+    }
+  ],
+  "must_total": 3024,
+  "required_unresolved": 0,
+  "required_unresolved_entries": 0,
+  "unresolved_examples": [],
+  "passed": false
+}

@@ -42,11 +42,13 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 try:
     from . import common, llm, vocabulary
+    from . import atom_cache
 except ImportError:  # pragma: no cover
     import sys
 
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
     from tools.kb_fetch import common, llm, vocabulary  # type: ignore
+    from tools.kb_fetch import atom_cache  # type: ignore
 
 from block_director.knowledge import grounding
 from block_director.knowledge import hypergraph as hg
@@ -63,6 +65,15 @@ REPORT = common.WORK / "hypergraph_report.json"
 VOCAB = common.KNOWLEDGE / "hypergraph.vocab.json"
 #: 第 1 段的**原子边**落盘（可只看归并口径重跑第 2 段，不必重抽）。
 ATOMS = common.WORK / "hypergraph.atoms.jsonl"
+
+#: 第 1 段抽取结果的**缓存**（§2.3 的断点续跑）。它只落在 `work/`：条目里是模型的
+#: **原样回复**，判读那一层（`to_edge`）每轮照旧重跑——"门改了只需重跑门，不必重抽"
+#: （执行文档 §6）。它**不**进六元指纹：指纹描述的是"这份索引是谁生产的"，
+#: 而缓存描述的是"这次调用拿回过什么"。
+ATOM_CACHE = common.WORK / "hypergraph.atom_cache.jsonl"
+#: 缓存命中统计的落点。它与 `REPORT` 分开放，正是因为它**逐轮不同**（第二次构建
+#: 的命中数必然不同），而 `REPORT`/`MANIFEST` 要求在缓存命中时逐字节一致。
+CACHE_STATS = common.WORK / "hypergraph.cache_stats.json"
 
 #: 版本进六元指纹：改了提示就整体重抽，不拿旧原子边冒充新口径。
 #: v5：把"每张卡至少一条边"改成**按耦合写**（实测 1241/1359 张卡只抽出一条，
@@ -144,9 +155,36 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: v14：抽取**必须**逐字给出 `quote`，机器按它回查并**改正归属**（见
 #: :func:`attribute_by_quote`）。v13 只要求 `source_card`，于是模型把边挂到同批的
 #: 另一张卡上是常态——独立复核面板实测判掉 **92%** 的期望（`work/zz_p14_review_control.py`）。
+#:
+#: **被实测否决的一代（v15/v16/v17，2026-10-02，留档免得重犯）**：这三版都在追同一件
+#: 事——"每个必填槽位都要有一句逐字出自该卡的依据"，期望把**模板边**（模型引用卡里
+#: 任意一句就交差、槽位是填出来的）挡在索引外。三次实测全部塌库：
+#:
+#:   | 版本 | 做法 | raw_edges | 失败原因（`atom_rejects`） |
+#:   |---|---|---|---|
+#:   | v14（基线） | 只回查**一条**边级 `quote` | **700** | — |
+#:   | v15 | 成员写成四元组，必填槽位要有依据 | 616 | — |
+#:   | v16 | 再加"依据里必须出现这个取值本身" | **32** | 10958 条拒收，其中 **10228 条（93%）** 是 `member_evidence_does_not_mention_value` |
+#:   | v17 | 允许原子只写本卡讲了的成员，完整性交给第 2 段 | **25** | 第 2 段仍要求整套必填槽位 ⇒ 整组丢弃 |
+#:
+#: 根因不是模型不听话：schema 的必填槽位本来就有一部分是**推断**出来的（讲"留出前方
+#: 空间"的卡被补成 `景别=LS／机位=平视`），卡里根本没有那句话可引。所以"逐槽位证据"
+#: 只能当**记账**（见 `to_edge` 的 `member_grounding`），不能当弃边的条件。
+#: 逐条账见 `docs/knowledge/ACCEPTANCE_STATUS.md` §二十九。
 PROMPT_VERSION = "extract/v14"
 #: 归属回查时 `quote` 至少要有多少字（太短的一句话会在多张卡里撞上，等同没证据）。
 QUOTE_MIN_CHARS = 6
+#: v15：**每个成员自己那句依据**的最短长度。太短的片段（"光"/"人"）在任何卡里
+#: 都能撞上，等于没有依据；必填槽位的这句回查不到就丢掉整条边。
+MEMBER_EVIDENCE_MIN_CHARS = 2
+#: v16 曾把"依据里必须**逐字出现该取值**（`node_surfaces`）"做成硬拒收——**实测否决**：
+#: 它一次干掉 8755 条原子（`member_evidence_does_not_mention_value`），而其中大量是
+#: **合法的语义依据**：卡说"把画面倒过来看"来支撑"检验构图平衡"，这句话**蕴含**平衡却
+#: 不含"平衡"二字。要求字面出现，等于把"蕴含"判成"没有依据"。
+#: 所以它降级为**诊断计数**（`extract()` 的 `evidence_not_naming_value`），
+#: **语义层面的判据交给独立复核面板**（两族模型看卡判"这条边有没有依据"）——那才是
+#: 这一层该有的判据。留下的硬判据是"依据必须逐字出自该卡"（v15，确定性）。
+MEMBER_EVIDENCE_MUST_NAME_VALUE = False
 #: §2.3 的缓存键写的是"六元指纹 ＋ **校验门代码版本**"，§6「重抽取成本」也点名建议把
 #: 它纳入——因为 `--rematch` 这条路径**只重跑第 2 段、不重抽**（第 2 段是纯函数）。
 #: 门一变、索引就变，指纹不跟着变的话，同一枚指纹会指向两份不同的索引。
@@ -155,6 +193,11 @@ QUOTE_MIN_CHARS = 6
 #: v2：新增 `contradictory_roles`（同 kind 同取值既要求又禁止 ⇒ 拒收）——v14 的提示
 #: 让这类边真的出现了（`AXIS_RULE` 的 `axis_topic` 是必填槽位），它们永远写不出合规
 #: 期望，还会把 `holdout_pool` 的 GLM 通道整轮掀翻。
+#: **不要在这里写 v3**：2026-10-02 有一版把"逐槽位依据"当校验门（v3），实测塌库
+#: （见 `PROMPT_VERSION` 上方那张表），已回退。现在 `to_edge` 对成员依据只**记账**
+#: （`extractor.member_quotes` / `member_grounding`），**不弃任何一条边**，
+#: 所以这一版的门与 v2 **逐条等价**，版本号必须留在 v2——否则 manifest 会自报一个
+#: 它没用过的门版本（`tests/test_hypergraph_precision.py` 当场对拍）。
 VALIDATION_RULES_VERSION = "gate/v2"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
@@ -591,6 +634,33 @@ def _squash(text) -> str:
     return "".join(str(text or "").split())
 
 
+def node_surfaces(node) -> List[str]:
+    """一个节点在**正文里可能怎么写**（取值／规范名／同义说法）。
+
+    为什么需要它（2026-10-02 实测）：v15 第一版只要求"依据片段逐字出现在卡里"，
+    于是模型挑一段**碰巧在卡里**的短片段就能交差，模板边一条没少
+    （`work/zz_p14_template_edges.py`：最热的一条成员集仍被 **162 张卡**共用）。
+    真正的判据是"这句话**提到了这个取值**"——词表里给得出中文形的 kind
+    （`composition_rule:balance` 的同义说法是"平衡／重心"、`shot_size:MS` 是"中景"），
+    就要求片段里出现其中之一；给不出 surface 的 kind（`intensity:mid`、
+    `avg_shot_len:>8s` 这类**词表自己就是桶名**的）不强行要求，只保留"逐字在卡里"。
+    """
+    if node is None:
+        return []
+    candidates = [str(node.value), str(node.name)] + [str(a) for a in (node.aliases or ())]
+    out: List[str] = []
+    for item in candidates:
+        item = item.strip()
+        if not item or item in out:
+            continue
+        #: 纯 ASCII 的**桶名**（`mid`／`>8s`／`MS` 自己）不算正文里会出现的话；
+        #: 只有当它同时是取值本身、且**没有任何非 ASCII 形**时才不进要求。
+        if all(ord(ch) < 128 for ch in item) and len(item) <= 4:
+            continue
+        out.append(item)
+    return out
+
+
 def attribute_by_quote(raw: Dict, batch: Sequence[Dict],
                        ) -> Tuple[Optional[str], str]:
     """按 `quote` 把一条原子边**改判到真的含这句话的卡**上。
@@ -654,13 +724,48 @@ def to_edge(raw: Dict, cards: Dict[str, Dict],
     card = cards.get(card_id)
     if card is None:
         return None, f"unknown_source_card:{card_id}"
+    #: 成员可以写成四元组 `[role, kind, node_id, evidence]`：第 4 项是**该槽位的依据**
+    #: （逐字出自被命名的那张卡）。三元组仍然接受。
+    #:
+    #: **依据是"记账"，不是"弃边的条件"**（2026-10-02 实测定下的口径）：把"必填槽位
+    #: 必须有依据"当硬规则，索引会塌——v16 那轮实测 `atoms 2682 → 50`、
+    #: `atom_rejects 10958`，其中 **10228 条（93%）** 是
+    #: `member_evidence_does_not_mention_value`。根因不是模型不听话：schema 的必填槽位
+    #: 本来就有一部分是**推断**出来的（讲"留出前方空间"的卡被补成 `景别=LS／机位=平视`），
+    #: 卡里根本没有那句话可引。所以这里只**记账**：每个成员是 `quoted`（给了逐字依据）
+    #: 还是 `inferred`（没给），交给 `extractor.member_grounding`，由复核判据去用它。
+    card_blob = _squash(card.get("content"))
     members: List[hg.Member] = []
+    member_quotes: Dict[str, str] = {}
+    member_grounding: Dict[str, str] = {}
     normalized = 0
     dropped: List[hg.Member] = []
     for item in raw.get("members") or []:
-        if not isinstance(item, (list, tuple)) or len(item) != 3:
+        if not isinstance(item, (list, tuple)) or len(item) not in (3, 4):
             return None, f"bad_member:{item}"
         member = hg.Member(role=str(item[0]), kind=str(item[1]), node_id=str(item[2]))
+        evidence = _squash(item[3]) if len(item) == 4 else ""
+        slot = f"{member.role}/{member.kind}"
+        grounded = "inferred"
+        if evidence and len(evidence) >= MEMBER_EVIDENCE_MIN_CHARS:
+            if evidence not in card_blob:
+                #: 卡里没有那句话 ⇒ 这段"依据"是现编的。**不弃边**（弃边会让索引塌，
+                #: 见 `PROMPT_VERSION` 上方那张表），但如实标成 `fabricated`：
+                #: 复核面板与人工抽检一眼就能看见它，而不是被悄悄当成依据。
+                grounded = "fabricated"
+            elif node_index is None:
+                grounded = "quoted"
+            else:
+                #: 词表给得出中文形的 kind（`shot_size:MS` → "中景"）才算"这句话确实
+                #: 提到了这个取值"；给不出 surface 的（`intensity:mid`、`avg_shot_len:>8s`
+                #: 这类词表自己就是桶名的）只认"逐字出自该卡"。
+                surfaces = node_surfaces(node_index.nodes.get(member.node_id))
+                grounded = ("quoted" if not surfaces
+                            or any(_squash(form) in evidence for form in surfaces)
+                            else "inferred")
+        member_grounding[slot] = grounded
+        if grounded == "quoted":
+            member_quotes[slot] = str(item[3])
         if node_index is not None:
             resolved = node_index.resolve(member)
             if resolved is None:
@@ -672,6 +777,9 @@ def to_edge(raw: Dict, cards: Dict[str, Dict],
         members.append(member)
     # 门④ 的必填成员在第 1 段就查：缺必填的原子边在归并期只会变成"某个槽位没有取值"，
     # 那条信息远不如这里给出的具名原因有用（而且会让归并直接崩）。
+    #: **v17 试过把这道门挪到第 2 段**（原子只写本卡讲到的成员，完整性交给归并），
+    #: 实测 `raw_edges 25`（v14 是 700）：归并那一层同样要求整套必填槽位，凑不齐就整组
+    #: 丢弃，于是索引直接空掉。详见 `PROMPT_VERSION` 上方那张表。
     present = {(m.role, m.kind) for m in members}
     missing = [f"{role}/{kind}" for role, kind in hg.REQUIRED_MEMBERS[edge_type]
                if (role, kind) not in present]
@@ -707,7 +815,14 @@ def to_edge(raw: Dict, cards: Dict[str, Dict],
         sources=(card_id,),
         source_span=span,
         extractor={"prompt_version": PROMPT_VERSION, "normalized_members": normalized,
-                   "dropped_members": len(dropped)},
+                   "dropped_members": len(dropped),
+                   #: **每个槽位各自的逐字依据**（模型给了才有）。存下来是为了让"这条边
+                   #: 凭什么成立"事后可查——复核面板、人工抽检、以及原子缓存都读它。
+                   "member_quotes": dict(sorted(member_quotes.items())),
+                   #: 每个槽位的**落地状态**：`quoted`（有逐字依据且提到了取值）还是
+                   #: `inferred`（没给依据）。这是"模板边"的可测量面——复核面板判
+                   #: "这张卡不支持这条边"时，能直接看到有多少槽位是推断出来的。
+                   "member_grounding": dict(sorted(member_grounding.items()))},
         provenance_kind=str(card.get("provenance_kind", "生成卡片")),
     ), ""
 
@@ -1167,12 +1282,23 @@ def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
             concurrency: int = 1,
             nodes: Optional[Dict[str, hg.Node]] = None,
             temperature: float = 0.0,
+            cache=None, reuse: bool = True,
+            units: Optional[List[Dict]] = None,
             ) -> Tuple[List[hg.HyperEdge], List[Dict], List[Dict]]:
     """**第 1 段**：逐批把卡片抽成原子边。
 
     `concurrency > 1` 时按批并行（§2.3 的 R51 口径：第 1 段可并发，默认取
     `rag.extract_concurrency`）。结果按**批号**重排后再吸收，因此并发不影响
     产物顺序——"同一六元指纹两次构建逐字节一致"这条回归基线仍然成立。
+
+    `cache`（见 :mod:`tools.kb_fetch.atom_cache`）非空时，先按"渲染后的提示 ＋
+    模型 ＋ 温度 ＋ 解码行"查一次；命中就**不调模型**，直接拿回上一轮的原样回复。
+    `reuse=False` 只用于**清洗**路径（`--replace-cards`）：那条路径的目的就是把
+    已经落进索引的边清掉，让它命中缓存等于原地不动；但它仍然**写**缓存，好让下一次
+    普通构建拿到的就是清洗后的结果。
+
+    `units` 是"这一轮每个抽取单元"的账（键／状态／卡片），供 `chunk_ledger()`
+    把批次投影成 §2.3 的 per-chunk manifest。
     """
     by_id = {str(c["id"]): c for c in cards}
     if nodes is None:
@@ -1181,6 +1307,7 @@ def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         except Exception:  # noqa: BLE001 - 词表不可用时退化为"不做引用完整性检查"
             nodes = None
     node_index = NodeIndex(nodes) if nodes else None
+    model = f"{client.model_id}@{getattr(client, 'model_version', '')}"
     # 同域归并：批内只放同一个 domain 的卡（§2.3 的"同一 domain"约束）
     groups: Dict[str, List[Dict]] = {}
     for card in cards:
@@ -1199,12 +1326,40 @@ def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
 
     def call(item):
         index, batch = item
+        prompt = build_prompt(batch, vocab, nodes)
+        key = ""
+        if cache is not None:
+            key = cache.key_for(SYSTEM_PROMPT, prompt, model=model,
+                                temperature=temperature,
+                                prompt_version=PROMPT_VERSION, decode=DECODE)
+            if reuse:
+                hit = cache.get(key)
+                if hit is not None and isinstance(hit.get("reply"), dict):
+                    return index, batch, hit["reply"], "", key, "done"
         try:
-            reply = client.chat_json(SYSTEM_PROMPT, build_prompt(batch, vocab, nodes),
-                                     temperature, 0, 8192, key=batch[0]["id"])
+            reply = client.chat_json(SYSTEM_PROMPT, prompt, temperature, 0, 8192,
+                                     key=batch[0]["id"])
         except Exception as exc:  # noqa: BLE001
-            return index, batch, None, f"{type(exc).__name__}: {exc}"
-        return index, batch, reply, ""
+            why = f"{type(exc).__name__}: {exc}"
+            if cache is not None:
+                #: 失败**不进**可命中的那一格（`AtomCache.get` 只认 `done`），
+                #: 但账要留下来：下一次仍然会真调模型，而"上一轮为什么没抽到"可查。
+                cache.put(key, {"status": "error", "reject_reason": why,
+                                "model": model, "temperature": temperature,
+                                "prompt_version": PROMPT_VERSION,
+                                "cards": [str(c["id"]) for c in batch]})
+            return index, batch, None, why, key, "error"
+        #: **回复必须规范化后再用**：缓存文件按 key 排序落盘（`save()`），所以"命中"
+        #: 拿回来的字典键序是排过的，而真调模型那一支是模型自己的键序。两者若不同，
+        #: 同一份输入就会产出两份不同的 `atom_rejects.jsonl`（`raw` 原样入账），
+        #: "缓存命中时逐字节一致"当场破功——这是实测抓到的，不是设想。
+        reply = _canonical(reply)
+        if cache is not None:
+            cache.put(key, {"status": "done", "reply": reply, "model": model,
+                            "temperature": temperature,
+                            "prompt_version": PROMPT_VERSION,
+                            "cards": [str(c["id"]) for c in batch]})
+        return index, batch, reply, "", key, "done"
 
     numbered = list(enumerate(batches, 1))
     if concurrency > 1 and len(numbered) > 1:
@@ -1214,15 +1369,24 @@ def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         results = [call(item) for item in numbered]
     results.sort(key=lambda row: row[0])  # 批号定序 → 产物与串行完全一致
 
-    for index, batch, reply, error in results:
+    for index, batch, reply, error, key, status in results:
+        if units is not None:
+            units.append({"key": key, "status": status,
+                          "cards": [str(c["id"]) for c in batch],
+                          "reject_reason": error or None})
         if reply is None:
             rejects.append({"batch": index, "reason": error})
-            batch_log.append({"batch": index, "status": "error"})
+            #: 失败的批次也要写下**它覆盖了哪些卡**：per-chunk 账（§2.3）要据此把
+            #: 这些 chunk 记成 `error` 而不是 `pending`，否则"这一轮没抽到"与
+            #: "这一轮根本没抽"分不开。
+            batch_log.append({"batch": index, "status": "error",
+                              "cards": [c["id"] for c in batch]})
             continue
         raw_edges = reply.get("edges") if isinstance(reply, dict) else None
         if not isinstance(raw_edges, list):
             rejects.append({"batch": index, "reason": "reply_not_a_list"})
-            batch_log.append({"batch": index, "status": "error"})
+            batch_log.append({"batch": index, "status": "error",
+                              "cards": [c["id"] for c in batch]})
             continue
         produced = 0
         per_card: Dict[str, int] = {}
@@ -1272,6 +1436,7 @@ def backfill_empty_cards(cards: Sequence[Dict], vocab: Dict[str, List[str]], cli
                          atoms: Sequence[hg.HyperEdge], rejects: List[Dict],
                          batch_log: List[Dict], *, concurrency: int = 1,
                          rounds: int = BACKFILL_ROUNDS,
+                         cache=None, units: Optional[List[Dict]] = None,
                          ) -> Tuple[List[hg.HyperEdge], Dict]:
     """给"零原子边"的卡**有界补抽**，只换取样，不改判据。
 
@@ -1286,17 +1451,19 @@ def backfill_empty_cards(cards: Sequence[Dict], vocab: Dict[str, List[str]], cli
     by_id = {str(card["id"]): card for card in cards}
     working = list(atoms)
     history: List[Dict] = []
-    first_round_asked = 0
+    #: `cards_empty_before` 必须是**进入这一层时**的零原子卡数，不是"第一轮问了
+    #: 多少张"：`--backfill-rounds 0`（关掉补抽）时前者仍然是对的，后者会写出
+    #: `before=0 / recovered=-N` 这种自相矛盾的账（实测过）。
+    before = len(cards_without_atoms(cards, working))
     for round_index in range(1, max(0, int(rounds)) + 1):
         missing = [by_id[card_id] for card_id in cards_without_atoms(cards, working)
                    if card_id in by_id]
         if not missing:
             break
-        if round_index == 1:
-            first_round_asked = len(missing)
         fresh, why, log = extract(missing, vocab, client, BATCH_CARDS, 0,
                                   concurrency=concurrency,
-                                  temperature=BACKFILL_TEMPERATURE)
+                                  temperature=BACKFILL_TEMPERATURE,
+                                  cache=cache, units=units)
         seen = {_atom_key(edge) for edge in working}
         added = [edge for edge in fresh if _atom_key(edge) not in seen]
         working.extend(added)
@@ -1311,9 +1478,9 @@ def backfill_empty_cards(cards: Sequence[Dict], vocab: Dict[str, List[str]], cli
         if still >= len(missing):
             break  # 这一轮没救回任何一张，再抽也是重复取样
     left = cards_without_atoms(cards, working)
-    report = {"rounds": history, "cards_empty_before": first_round_asked,
+    report = {"rounds": history, "cards_empty_before": before,
               "cards_empty_after": len(left), "cards_empty": left[:20],
-              "recovered": first_round_asked - len(left),
+              "recovered": before - len(left),
               "temperature": BACKFILL_TEMPERATURE}
     return working, report
 
@@ -1354,10 +1521,60 @@ def chunk_counts(cards: Sequence[Dict], batch_log: Sequence[Dict],
     return len(processed), len(all_chunks)
 
 
+def _canonical(value):
+    """把 JSON 值规范化：**字典按键排序（递归）**，列表顺序原样保留。
+
+    为什么抽取回复必须走这一道：缓存命中时拿回来的是**落盘再读回**的字典
+    （`atom_cache.AtomCache.save()` 用 `sort_keys=True`），而真调模型那一支拿到的是
+    模型自己给的键序。同一个回复的两种键序会让 `atom_rejects.jsonl` 里的 `raw`
+    字节不同——"缓存命中时索引逐字节一致"（§2.3/§6）就成了一句空话。
+    """
+    if isinstance(value, dict):
+        return {str(key): _canonical(value[key]) for key in sorted(value, key=str)}
+    if isinstance(value, (list, tuple)):
+        return [_canonical(item) for item in value]
+    return value
+
+
+def _repo_relative(path) -> str:
+    """相对**仓库根**的路径（能算出来就算，算不出来原样返回）。
+
+    manifest 会被逐字节对拍，所以里面不许出现机器相关的绝对路径；而这个仓库里
+    `knowledge/`、`work/`、`fixtures/` 都在根下，相对路径同时又是可读的。
+    """
+    text = pathlib.Path(path)
+    try:
+        return text.relative_to(common.ROOT).as_posix()
+    except ValueError:
+        return text.as_posix()
+
+
+def _write_cache_stats(cache, units: Sequence[Dict]) -> Dict:
+    """缓存命中统计**另落一个文件**（`work/`），不写进 manifest/report。
+
+    为什么必须分开：命中数逐轮不同（第一次构建全是 `written`，第二次全是 `hit`），
+    而 §2.3 要求"缓存命中时索引文件逐字节一致"——把它塞进 `REPORT`/`MANIFEST` 就会
+    让**同一份输入**产出两份不同的字节，那条回归基线当场自毁。统计是**运行记录**，
+    不是产物。
+    """
+    stats = {"cache": dict(getattr(cache, "stats", {}) or {}),
+             "fingerprint": str(getattr(cache, "fingerprint", "")),
+             "path": _repo_relative(ATOM_CACHE),
+             "units": len(units),
+             "units_done": sum(1 for unit in units
+                               if str(unit.get("status")) == "done"),
+             "units_error": sum(1 for unit in units
+                                if str(unit.get("status")) != "done")}
+    common.dump_json(CACHE_STATS, stats)
+    return stats
+
+
 def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
                  rejects: Sequence[Dict], batch_log: Sequence[Dict], *,
                  extractor: Dict[str, str], cache_key: Dict[str, str],
-                 fingerprint: str, merged, merge_report: Dict) -> Dict:
+                 fingerprint: str, merged, merge_report: Dict,
+                 units: Sequence[Dict] = (),
+                 cache_enabled: bool = True) -> Dict:
     """第 1 段产物之后的公共收尾：归并 → 9 条门 → 落盘 → manifest。"""
     processed, total = chunk_counts(cards, batch_log, atoms)
     gate_rejects: List[Dict] = []
@@ -1388,6 +1605,12 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
     common.dump_json(REPORT, {**report.to_dict(), "merge": merge_report,
                               "atoms": len(atoms), "merge_rejects": len(merge_rejects),
                               "atom_rejects": len(rejects)})
+    #: §2.3 的 per-chunk manifest（断点续跑的落点）：`chunk_id / sha256 / status /
+    #: edges / reject_reason / extractor_fingerprint`。`edges` 记的是**写出去的那份
+    #: 索引**里引用了这个 chunk 的边的 id（不是第 1 段的原子边 id）——读者要的是
+    #: "这个 chunk 最后贡献了哪些边"。它是**纯函数**（批次账 ＋ 边 ＋ 语料现算），
+    #: 所以缓存命中与否不影响它的字节。
+    chunks = atom_cache.chunk_ledger(cards, units, unique)
     common.dump_json(MANIFEST, {
         "fingerprint": fingerprint,
         "cache_key": cache_key,
@@ -1416,6 +1639,11 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
         "atoms": len(atoms),
         "merge": merge_report,
         "batches": batch_log,
+        "chunks": chunks,
+        #: 只写**相对仓库根**的位置（`common.ROOT` 的相对路径）：写绝对路径会让
+        #: 同一份产物在不同机器上不同字节，而 manifest 要能被逐字节对拍。
+        "atom_cache": {"path": _repo_relative(ATOM_CACHE),
+                       "enabled": bool(cache_enabled)},
     })
     return {"report": report.to_dict(), "edges": len(unique), "rejects": len(rejects),
             "atoms": len(atoms), "merge": merge_report,
@@ -1450,12 +1678,53 @@ def cards_with_atoms() -> set:
     return {str(source) for edge in load_atoms() for source in (edge.sources or ())}
 
 
+def units_from_batches(cards: Sequence[Dict], vocab: Dict[str, List[str]],
+                       batch_log: Sequence[Dict], *, model: str,
+                       prompt_version: str = "",
+                       nodes: Optional[Dict[str, hg.Node]] = None) -> List[Dict]:
+    """把 manifest 里的**批次账**还原成"抽取单元"（`--rematch` 路径用）。
+
+    第 2 段（`--rematch`）不重抽，所以它手里只有 `manifest["batches"]`；而 §2.3 的
+    per-chunk 账要的是每个单元**当时**的缓存键（`extractor_fingerprint` 由它算）。
+    提示是**卡片列表的纯函数**，所以这里把批次复原之后照样能算出同一个键——
+    前提是卡片顺序与当时一致（`extract()` 按 `groups[domain]` 的插入序取批，
+    而语料顺序来自 `load_cards()` 的稳定排序）。
+
+    温度：补抽轮是 `BACKFILL_TEMPERATURE`，主轮是 0.0——批次账里有 `backfill_round`
+    标记，按它还原（这是唯一能区分两者、又不用改批次账 schema 的信息）。
+    `prompt_version` 取**记录在 manifest 里的那一版**：`--rematch` 时当前代码的
+    `PROMPT_VERSION` 可能比原子边新，拿当前值会算出"这一版从来不存在"的键。
+    """
+    by_id = {str(card["id"]): card for card in cards}
+    version = str(prompt_version or PROMPT_VERSION)
+    out: List[Dict] = []
+    for entry in batch_log:
+        if not isinstance(entry, dict):
+            continue
+        batch = [by_id[str(card_id)] for card_id in (entry.get("cards") or [])
+                 if str(card_id) in by_id]
+        if not batch:
+            continue
+        temperature = (BACKFILL_TEMPERATURE if entry.get("backfill_round")
+                       else 0.0)
+        key = atom_cache.unit_key(
+            prompt_sha256=atom_cache.prompt_digest(SYSTEM_PROMPT,
+                                                   build_prompt(batch, vocab, nodes)),
+            model=model, temperature=temperature,
+            prompt_version=version, decode=DECODE)
+        out.append({"key": key, "status": str(entry.get("status") or "error"),
+                    "cards": [str(card["id"]) for card in batch],
+                    "reject_reason": entry.get("reject_reason")})
+    return out
+
+
 def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         limit: int = 0, *, concurrency: int = 1,
         extract_only: Optional[Sequence[Dict]] = None,
         keep_atoms: bool = False,
         replace_atoms_for: Optional[Sequence[str]] = None,
-        backfill_rounds: int = BACKFILL_ROUNDS) -> Dict:
+        backfill_rounds: int = BACKFILL_ROUNDS,
+        cache_enabled: bool = True) -> Dict:
     """抽第 1 段 → 落盘 → 归并 → 写索引。
 
     `extract_only` 限定**抽取哪些卡**（指纹与索引仍然按**全量** `cards` 算），
@@ -1470,8 +1739,19 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     """
     todo = list(extract_only) if extract_only is not None else list(cards)
     refresh_info: Optional[Dict] = None
+    #: 缓存对象在抽取**之前**建好（要拿它查表），但**指纹要在抽取之后**才算：
+    #: 指纹的 `model` 分量记的是服务端报的模型版本，而那个值要等第一次回复才定下来
+    #: （`llm.DeepSeekClient` 会在第一次回复后把 `model_version` 改成 `reply["model"]`）。
+    #: 提前算会让 manifest 的 `cache_key.model` 与 `extractor.model_version` 互相矛盾——
+    #: 实测过（`tests/test_hypergraph_determinism.py::test_committed_manifest_is_self_consistent`）。
+    #: 缓存**不按指纹分层**：命中判据是单元键（见 `atom_cache` 的模块说明），
+    #: 指纹在 `cache.save()` 时盖章。
+    cache = atom_cache.AtomCache(ATOM_CACHE, "", enabled=cache_enabled)
+    units: List[Dict] = []
     atoms, rejects, batch_log = extract(todo, vocab, client, BATCH_CARDS, limit,
-                                        concurrency=concurrency)
+                                        concurrency=concurrency,
+                                        cache=cache, reuse=not replace_atoms_for,
+                                        units=units)
     if keep_atoms:
         previous = load_atoms()
         seen = {_atom_key(edge) for edge in previous}
@@ -1497,7 +1777,8 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     #: 词表/判据/门限一个字都没动。账写进 `merge.backfill`。
     atoms, backfill_report = backfill_empty_cards(
         cards, vocab, client, atoms, rejects, batch_log,
-        concurrency=concurrency, rounds=backfill_rounds)
+        concurrency=concurrency, rounds=backfill_rounds,
+        cache=cache, units=units)
     # §2.3 第 1 段全部落盘**之后**才跑第 2 段，且第 2 段是纯函数（串行、确定）。
     # 落盘原子边是为了"只换归并口径"时不必重抽（改 prompt 要重抽，改归并不是）。
     common.write_jsonl(ATOMS, [edge.to_dict() for edge in atoms])
@@ -1541,12 +1822,19 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         merge_report["refresh"] = refresh_info
         merge_report["refresh_prompt_version"] = PROMPT_VERSION
     merge_report["backfill"] = backfill_report
+    #: **指纹在抽取之后才算**：它的 `model` 分量要的是服务端报的模型版本（见上面
+    #: 建缓存那段注释）；`extractor` 用的是同一个 client，两处因此逐字一致。
     components = fingerprint_components(cards, client)
+    fingerprint = fingerprint_of(components)
+    cache.fingerprint = fingerprint          # 落盘时盖章用（见 AtomCache.save）
+    cache.save()
+    _write_cache_stats(cache, units)
     return _write_index(cards, atoms, rejects, batch_log, merged=merged,
-                        merge_report=merge_report, fingerprint=fingerprint_of(components),
+                        merge_report=merge_report, fingerprint=fingerprint,
                         cache_key=components,
                         extractor={"model_id": client.model_id, "family": client.family,
-                                   "model_version": client.model_version})
+                                   "model_version": client.model_version},
+                        units=units, cache_enabled=cache.enabled)
 
 
 def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
@@ -1620,10 +1908,19 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
                  if ATOM_REJECTS.is_file() else [])
                 if line.strip()]
                if row.get("phase") != "merge"]
+    #: §2.3 的 per-chunk 账在**这条路径上同样要写**：`--rematch` 不重抽，但它重建的
+    #: 就是"当前这一份索引"，账不跟着写就等于"重归并之后 manifest 声称没跑过抽取"。
+    #: 单元从批次账还原（提示是卡片列表的纯函数，键可复算），原子边用磁盘上这一份。
+    units = units_from_batches(
+        cards, vocab, manifest.get("batches", []),
+        model=f"{extractor.get('model_id', '')}@{extractor.get('model_version', '')}",
+        prompt_version=str(manifest.get("prompt_version") or PROMPT_VERSION))
     return _write_index(cards, atoms, rejects, manifest.get("batches", []), merged=merged,
                         merge_report=merge_report,
                         fingerprint=fingerprint_of(components), cache_key=components,
-                        extractor=extractor)
+                        extractor=extractor,
+                        units=units,
+                        cache_enabled=ATOM_CACHE.is_file())
 
 
 class _ExtractorStub:
@@ -1632,6 +1929,46 @@ class _ExtractorStub:
     def __init__(self, extractor: Dict):
         self.model_id = str(extractor.get("model_id", ""))
         self.model_version = str(extractor.get("model_version", ""))
+
+
+def refresh_chunk_ledger(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
+    """**只重算派生账**：把 manifest 的 `chunks`（§2.3 的 per-chunk manifest）与
+    `atom_cache` 位置块按**已经记录在 manifest 里的批次账 ＋ 已经写出去的边**重算一遍。
+
+    不重抽、不重归并、不碰 `edges`/`rejects`/`report`——与 `rekey_manifest()` 同一类
+    操作（那份管的是指纹，这份管的是 per-chunk 账）。它存在的理由有两条，都是实测的：
+
+    1. 账是**派生**的（纯函数），口径升级（比如新增 `chunks` 这本账）不该逼人重抽一遍
+       索引——`--rematch` 也做不到，它需要 `work/hypergraph.atoms.jsonl`，而
+       `work/` 不是备份：2026-10-02 的 v15/v16/v17 三轮实验把它覆盖掉了，
+       语料没变、索引没变，原子边却没了（见 `ACCEPTANCE_STATUS.md` §二十九）；
+    2. 账必须与**入库索引**对得上：`chunks[].sha256` 来自活语料、`status` 来自批次账、
+       `extractor_fingerprint` 由批次键现算，三者都能在**不调模型**的前提下复算。
+
+    反过来说清楚它**不做**什么：它不会让 manifest 声称"这一轮重新抽过"——`batches`
+    一个字节都不动，`status` 仍是那一次运行的真实状态。
+    """
+    if not MANIFEST.is_file():
+        raise FileNotFoundError(f"没有 manifest 可改：{MANIFEST}")
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    extractor = manifest.get("extractor") or {}
+    edges = [hg.HyperEdge.from_dict(row) for row in
+             [json.loads(line) for line in EDGES.read_text(encoding="utf-8").split("\n")
+              if line.strip()]]
+    units = units_from_batches(
+        cards, vocab, manifest.get("batches", []),
+        model=f"{extractor.get('model_id', '')}@{extractor.get('model_version', '')}",
+        prompt_version=str(manifest.get("prompt_version") or PROMPT_VERSION))
+    manifest["chunks"] = atom_cache.chunk_ledger(cards, units, edges)
+    manifest["atom_cache"] = {"path": _repo_relative(ATOM_CACHE),
+                              "enabled": ATOM_CACHE.is_file()}
+    common.dump_json(MANIFEST, manifest)
+    statuses = collections.Counter(str(row["status"]) for row in manifest["chunks"])
+    return {"manifest": str(MANIFEST), "chunks": len(manifest["chunks"]),
+            "status": dict(statuses), "units": len(units),
+            "edges": len(edges), "cards": len(cards)}
+
+
 def load_cards() -> List[Dict]:
     """抽取器看到的卡片全集 = 生成卡 ＋ **手写策展卡**。
 
@@ -1700,6 +2037,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="第 1 段的并发上限；0 = 取 config 的 rag.extract_concurrency")
     parser.add_argument("--rekey-manifest", action="store_true",
                         help="只按当前卡片与 manifest 里记录的分量重算指纹，不重抽")
+    parser.add_argument("--refresh-ledger", action="store_true",
+                        help="只重算 manifest 里的派生账（§2.3 的 per-chunk `chunks` ＋ "
+                             "`atom_cache` 位置块），不重抽、不重归并。给"
+                             "「口径升级了但 `work/` 里的原子边已经没了」这种时候用——"
+                             "账是纯函数，从**已记录的批次账 ＋ 已写出去的边**现算")
     parser.add_argument("--rematch", action="store_true",
                         help="不重抽：从 work/hypergraph.atoms.jsonl 重跑第 2 段归并并重建索引")
     parser.add_argument("--only-missing", action="store_true",
@@ -1710,6 +2052,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                              "一次抽样会让门⑥ 的覆盖率随机漂移；这一层只对"
                              "「一条原子边都没拿到」的卡换一次取样，账记在 merge.backfill"
                              % BACKFILL_ROUNDS)
+    parser.add_argument("--no-atom-cache", action="store_true",
+                        help="关掉抽取结果缓存（§2.3 的断点续跑）：整篇重新问模型。"
+                             "默认开——缓存命中时索引逐字节一致，是「确定性下降」"
+                             "那条风险的回归基线；关掉只在这种时候才需要："
+                             "怀疑缓存本身被污染")
     parser.add_argument("--replace-cards", default="",
                         help="卡片 id 清单文件（每行一个）：重抽这些卡并**丢弃它们原来的"
                              "原子边**。用于清洗——`--only-missing` 只做并集，清不掉旧边。"
@@ -1721,6 +2068,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         # 七个分量是"记录下来的设置"的纯函数，第八个（词表指纹）**从代码现算**：
         # 口径升级（或别名表改动）后就地重算，不重抽语料。
         print(json.dumps(rekey_manifest(), ensure_ascii=False, indent=2))
+        return 0
+
+    if args.refresh_ledger:
+        # 派生账（per-chunk 的 `chunks`）：与 `--rekey-manifest` 同一类操作，
+        # 只是它管的是"每个 chunk 抽成没抽成、贡献了哪些边"，不是指纹。
+        vocab_payload = json.loads(VOCAB.read_text(encoding="utf-8"))
+        print(json.dumps(refresh_chunk_ledger(load_cards(), vocab_payload.get("vocab") or {}),
+                         ensure_ascii=False, indent=2))
         return 0
 
     if not VOCAB.exists():
@@ -1744,7 +2099,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         summary = run(cards, vocab, client, args.limit,
                       concurrency=_concurrency(args.concurrency),
                       extract_only=missing, keep_atoms=True,
-                      backfill_rounds=args.backfill_rounds)
+                      backfill_rounds=args.backfill_rounds,
+                      cache_enabled=not args.no_atom_cache)
     elif args.replace_cards:
         # 清洗路径：见 `run(..., replace_atoms_for=...)`。与 `--only-missing` 的区别是
         # **替换**而不是并集——只有替换才能把 `action=人物弧光` 这类边真正清出索引。
@@ -1760,11 +2116,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         summary = run(cards, vocab, client, args.limit,
                       concurrency=_concurrency(args.concurrency),
                       extract_only=todo, replace_atoms_for=wanted,
-                      backfill_rounds=args.backfill_rounds)
+                      backfill_rounds=args.backfill_rounds,
+                      cache_enabled=not args.no_atom_cache)
     else:
         summary = run(cards, vocab, client, args.limit,
                       concurrency=_concurrency(args.concurrency),
-                      backfill_rounds=args.backfill_rounds)
+                      backfill_rounds=args.backfill_rounds,
+                      cache_enabled=not args.no_atom_cache)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0 if summary["report"]["passed"] else 1
 

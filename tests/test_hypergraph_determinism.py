@@ -92,6 +92,12 @@ def _prepare(tmp_path, monkeypatch, cards) -> dict:
              ("hypergraph.edges.jsonl", "hypergraph.rejects.jsonl",
               "hypergraph.manifest.json", "report.json")}
     monkeypatch.setattr(bh, "ATOMS", tmp_path / "hypergraph.atoms.jsonl")
+    #: 抽取缓存与它两本账也必须在 tmp 里：它们是**跨进程持久**的（落在 `work/`），
+    #: 用例往里写会让另一条用例命中"为别的卡片写的回复"——实测抓到过
+    #: （`card_a` 的一条条目让 `--only-missing` 那条用例整批返回空）。
+    monkeypatch.setattr(bh, "ATOM_CACHE", tmp_path / "hypergraph.atom_cache.jsonl")
+    monkeypatch.setattr(bh, "CACHE_STATS", tmp_path / "hypergraph.cache_stats.json")
+    monkeypatch.setattr(bh, "ATOM_REJECTS", tmp_path / "hypergraph.atom_rejects.jsonl")
     monkeypatch.setattr(bh, "VOCAB", vocab_path)
     monkeypatch.setattr(bh, "EDGES", paths["hypergraph.edges.jsonl"])
     monkeypatch.setattr(bh, "REJECTS", paths["hypergraph.rejects.jsonl"])
