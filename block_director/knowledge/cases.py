@@ -20,6 +20,7 @@ L3 与 L1/L2（超图）**不是同一种东西**：超图承载"条件 → 取�
 
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 from dataclasses import dataclass, field
@@ -43,6 +44,9 @@ CONSTRAINT_KEYS: Tuple[str, ...] = ("forbid", "forbids", "constraint")
 CASES_FILE = "cases.jsonl"
 MANIFEST_FILE = "cases.manifest.json"
 LIGHTRAG_FINGERPRINT_FILE = "lightrag.fingerprint.json"
+#: 中文检索线索（`tools/kb_fetch/case_search_zh.py` 产出）。**只是检索键**：
+#: 返回给模型的仍然是作者的原文 `excerpt`，一个字都不改。
+SEARCH_ZH_FILE = "cases.search_zh.jsonl"
 
 DEGRADED_NO_ADAPTER = "lightrag_adapter_unavailable"
 DEGRADED_NO_INDEX = "lightrag_index_missing"
@@ -134,6 +138,37 @@ def read_cases(path: Any) -> List[Case]:
     return rows
 
 
+def read_search_zh(directory: Any, cases_path: Any) -> Tuple[Dict[str, str], str]:
+    """读中文检索线索，返回 ``({case_id: 中文}, 拒用原因)``。
+
+    **代际纪律**（与 §24.1 的案例层陈旧门同一条）：线索文件记着自己生成时
+    `cases.jsonl` 的**字节摘要**；对不上就整份不用（返回空 + 具名原因），
+    而不是把一批"指向上一条案例"的线索喂进 BM25——那会静默地把检索带偏。
+    """
+    path = pathlib.Path(directory) / SEARCH_ZH_FILE
+    if not path.is_file():
+        return {}, "search_zh_missing"
+    try:
+        digest = hashlib.sha256(pathlib.Path(cases_path).read_bytes()).hexdigest()
+        out: Dict[str, str] = {}
+        seen_digest = ""
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            seen_digest = str(row.get("cases_sha256") or "")
+            case_id, zh = str(row.get("case_id") or ""), str(row.get("zh") or "")
+            if case_id and zh:
+                out[case_id] = zh
+        if not out:
+            return {}, "search_zh_empty"
+        if seen_digest != digest:
+            return {}, "search_zh_stale"
+        return out, ""
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return {}, f"search_zh_unreadable:{type(exc).__name__}"
+
+
 def carries_constraint(row: Dict[str, Any]) -> bool:
     """这一行案例是否带了约束字段（E3 的机制侧判定）。"""
     return any(key in row for key in CONSTRAINT_KEYS)
@@ -159,6 +194,8 @@ class CaseIndex:
     fingerprint: str = ""
     lightrag_index_fingerprint: str = ""
     adapter: Optional[Any] = None
+    #: `case_id -> 中文检索线索`（空 = 没有可用线索，退回"只吃原文"的旧行为）。
+    search_zh: Dict[str, str] = field(default_factory=dict)
     _engine: Optional[Any] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -178,7 +215,8 @@ class CaseIndex:
             self.effective = "hybrid"
             self.reason = DEGRADED_NO_ADAPTER
         if self.effective == "hybrid" and self.cases:
-            documents = [tokenize(self._text(case)) for case in self.cases]
+            documents = [tokenize(self._text(case, self.search_zh.get(case.case_id)))
+                         for case in self.cases]
             self._engine, _name = make_bm25(documents)
 
     # --------------------------------------------------------------- 自述
@@ -203,7 +241,7 @@ class CaseIndex:
 
     # --------------------------------------------------------------- 检索
     @staticmethod
-    def _text(case: Case) -> str:
+    def _text(case: Case, extra: Optional[str] = None) -> str:
         """检索**只吃作者写的字**：`excerpt` ＋ 出处标题。
 
         为什么不能把 `case_id` 与 `title` 也算进去（2026-10-02 实测）：`title` 是我们
@@ -215,9 +253,17 @@ class CaseIndex:
         （`色彩`／`剪辑与节奏`），实测它让中文查询单字命中（查询里的 `色`／`画`／`向`
         命中标签里的同一个字），所以一并去掉。去掉之后中文查询不再有词命中
         ——**返回空是诚实的"没有参考案例"，返回噪声不是**。
+        `extra` 是这条案例的**中文检索线索**（有的话）。它不是我们编的理论——它是
+        `tools/kb_fetch/case_search_zh.py` 对**作者自己的摘录**做的中文改写，存在的
+        唯一理由是"产品的查询是中文、语料是英文"：没有它，BM25 对中文查询**恒 0 命中**
+        （实测 6/6 逐镜查询命中 0，E1 连分母都没有）。上面那条"不要把**我们的标签**喂进来"
+        的纪律不受影响：线索是**内容的翻译**，不是分类标签。
         """
         source = case.source_ref if isinstance(case.source_ref, dict) else {}
-        return "\n".join([case.excerpt, str(source.get("title", ""))])
+        parts = [case.excerpt, str(source.get("title", ""))]
+        if extra:
+            parts.append(str(extra))
+        return "\n".join(parts)
 
     def retrieve(self, query: str, top_k: int = 3) -> List[Case]:
         """取参考案例；不可用/无命中返回 ``[]``（**不抛**，也不造假数据）。"""
@@ -283,7 +329,8 @@ def load_index(knowledge_dir: Any, backend: str = "lightrag",
     return CaseIndex(cases, str(backend),
                      fingerprint=manifest_fingerprint(directory),
                      lightrag_index_fingerprint=lightrag_fingerprint(directory),
-                     adapter=chosen)
+                     adapter=chosen,
+                     search_zh=read_search_zh(directory, path)[0])
 
 
 # --------------------------------------------------------------------------- #

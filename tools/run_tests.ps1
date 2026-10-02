@@ -398,7 +398,12 @@ if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_attestation.json'))) {
 # case_ids are gone), so quality.py reports `stale_evidence: true` + the stale
 # numerator/denominator. Silently omitting them would leave the evidence directory
 # looking like nobody had tried; feeding them makes the staleness machine-visible.
-python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261002_real/e1_reviews.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+# 2026-10-03: the recorded scores now come from the run that measured E1 with the
+# Chinese search line in place (`docs/evidence/20261003-e1-zh/README.md`): 3/18 =
+# 0.1667, reproduced by two independent panel runs with the same three hits.  The
+# older file (docs/evidence/20261002_real/e1_reviews.jsonl) is kept as history; it
+# measured 0/16 on the pre-search-line index and half of its case_ids are gone.
+python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }

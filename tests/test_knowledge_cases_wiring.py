@@ -224,11 +224,19 @@ def test_the_packaged_case_index_is_assembled_when_there_is_no_sidecar():
     #: 有逐字出处（Skwigly 的故事板教程），所以第三栏出得来。
     block = retriever.case_block("cut to a close-up")
     assert block and "【参考案例（仅参考）】" in block
-    #: **反面**：纯中文查询在**英文**案例语料里没有词命中，于是拿不到案例。
-    #: 这不是"少给"，是不给噪声——2026-10-02 实测过代价：标签（我们生成的
-    #: `镜头与焦距：…摘记NNN` 与域标签 `色彩`）也曾进检索，于是中文查询能"命中"
-    #: 自己的标签，返回一堆 1900 年代散句（双模型面板 1–2 分，E1 = 0/16）。
-    assert retriever.case_block("剪辑节奏 短镜 硬切") == ""
+    #: **2026-10-03 改**：这里原来断言"纯中文查询拿不到案例"——那是"检索只吃作者写的字"
+    #: 的直接后果。现在每条案例多了一句**中文检索线索**（`tools/kb_fetch/case_search_zh.py`
+    #: 对**作者自己摘录**的中文改写，只是检索键），于是中文查询**能**召回案例：
+    #: E1 第一次量到非零（3/18 = 0.1667，两次独立面板跑出同样三条，
+    #: `docs/evidence/20261003-e1-zh/`）。
+    #:
+    #: 要守的性质**没有变**，只是判据换了个更准的写法：**我们的标签仍然不许进检索**
+    #: ——2026-10-02 的 0/16 正是标签（`镜头与焦距：…摘记NNN`、域标签 `色彩`）让中文
+    #: 查询"命中"了自己的分类词。那一条由 `tests/test_case_search_zh.py::
+    #: test_the_line_is_appended_to_the_search_text_only` 直接钉在 `_text()` 上。
+    chinese = retriever.case_block("剪辑节奏 短镜 硬切")
+    assert chinese and "【参考案例（仅参考）】" in chinese, (
+        "中文查询应当经由**检索线索**召回英文案例；拿不到说明线索没接上")
     info = retriever.cases_info()
     assert info["cases_backend"] == "hybrid"           # §2.3b 的降级路径
     assert info["cases_requested_backend"] == "lightrag"
