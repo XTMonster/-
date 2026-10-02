@@ -29,6 +29,7 @@ import json
 import pathlib
 import sys
 import threading
+import time
 from concurrent import futures
 from typing import Dict, List, Sequence, Tuple
 
@@ -113,8 +114,19 @@ def _judge(client, entry: Dict, card: Dict) -> Dict:
 
 
 def merge(a: Dict, b: Dict) -> Tuple[str, Dict]:
-    """两条判决 → (action, review)。action ∈ keep/drop/flag；error 一律按分歧处理。"""
+    """两条判决 → (action, review)。action ∈ keep/drop/flag/**retry**。
+
+    2026-10-03 修（实测）：`error` **不是判决**。旧实现把 `error` 与对面那条按
+    "分歧"处理，于是 GLM 的 `HTTP 429 code 1302`（速率限制）被写成了
+    `verdict: "amended"` ＋ `needs_human: true` 的**裁决记录**——实测一跑 177 条里
+    有 **92 条**是这么来的（`('accepted','error')` 92 条）。后果有两层：
+    ① 一份"两个模型分歧"的清单里有 78% 是基础设施问题，人类看它等于白看；
+    ② 门⑦ 会把"模型挂了"数成"已复核"。所以 `error` 现在返回 `retry`，
+    由调用方重试；重试仍失败就**不落记录**（缺证据不是通过）。
+    """
     va, vb = a.get("verdict"), b.get("verdict")
+    if va == "error" or vb == "error":
+        return "retry", {}
     if va == vb == "accepted":
         return "keep", {"reviewed_by": PANEL_TAG, "verdict": "accepted",
                         "agreement": True, "panel": {"a": a, "b": b}}
@@ -165,6 +177,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--concurrency", type=int, default=1,
                         help="同时在飞的条目数（每条 = 2 次模型调用）。实测约 3 分钟/条，"
                              "157 条顺序要 ~8 小时；4–6 是吞吐与限流之间的平衡点。")
+    parser.add_argument("--retries", type=int, default=2,
+                        help="某一侧调用**报错**时的整轮重试次数（缺省 2）。"
+                             "`error` 不是判决：不落记录、不写成分歧。")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     path = pathlib.Path(args.entries)
@@ -238,6 +253,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         a = _judge(client_a, entry, card)
         b = _judge(client_b, entry, card)
         action, review = merge(a, b)
+        if action == "retry":
+            return entry, action, {}, None
         # §4.1b 硬规则 2「禁止自证」：门⑦ 读的是**这份文件里**的判决书，
         # 所以每条记录都要自带可外部佐证的东西——两个模型 id 与面板提示指纹。
         # `check_holdout.review_class()` 不认没有这一块的 `llm-panel` 记录。
@@ -254,6 +271,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     def record(result) -> None:
         entry, action, review, detail = result
         with write_lock:
+            if action == "retry":
+                #: 一条模型没答上来 ⇒ 这一条**不落记录**，交给重试轮；重试仍失败
+                #: 就是"没复核"，不是"复核过了"。
+                return
             reviewed[str(entry["id"])] = review
             if action == "drop":
                 counts["dropped"] += 1
@@ -270,13 +291,37 @@ def main(argv: Sequence[str] | None = None) -> int:
                      "detail": detail}, ensure_ascii=False) + "\n")
                 handle.flush()
 
-    if args.concurrency > 1 and picked:
-        with futures.ThreadPoolExecutor(max_workers=args.concurrency) as pool:
-            for result in pool.map(decide, picked):
-                record(result)
-    else:
-        for entry in picked:
-            record(decide(entry))
+    unresolved: List[str] = []
+
+    def run_pass(batch: Sequence[Dict]) -> List[Dict]:
+        """跑一批并把不是 `retry` 的结果落盘；返回需要重试的那些条目。"""
+        pending: List[Dict] = []
+        if args.concurrency > 1 and len(batch) > 1:
+            with futures.ThreadPoolExecutor(max_workers=args.concurrency) as pool:
+                for outcome in pool.map(decide, batch):
+                    entry, action = outcome[0], outcome[1]
+                    if action == "retry":
+                        pending.append(entry)
+                    else:
+                        record(outcome)
+        else:
+            for entry in batch:
+                outcome = decide(entry)
+                if outcome[1] == "retry":
+                    pending.append(entry)
+                else:
+                    record(outcome)
+        return pending
+
+    todo = list(picked)
+    for attempt in range(max(1, args.retries + 1)):
+        if not todo:
+            break
+        todo = run_pass(todo)
+        if todo:
+            #: 退一步再打：429 是**速率**限制，同一瞬间重试只会再撞一次。
+            time.sleep(min(60.0, 10.0 * (attempt + 1)))
+    unresolved = [str(item["id"]) for item in todo]
 
     kept = [dict(entry, review=reviewed[str(entry["id"])]) if str(entry["id"]) in reviewed
             else entry for entry in entries
@@ -290,7 +335,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     sheet_path.parent.mkdir(parents=True, exist_ok=True)
     lines = ["# 双模型复核：分歧清单（请人只看这些）", "",
              f"- 复核条目 {counts['selected']} 条；两模型一致接受 {counts['accepted']}；"
-             f"一致否决并剔除 {counts['dropped']}；**分歧 {counts['flagged']}**。",
+             f"一致否决并剔除 {counts['dropped']}；**分歧 {counts['flagged']}**；"
+             f"**一条模型没答上来、因此没有记录 {len(unresolved)}**。",
              f"- 复核者标记为 `{PANEL_TAG}`（**不是人**）：门⑦ 只认 `reviewed_by == \"human\"`，"
              "所以它没有被这份清单满足。", ""]
     for item in flagged:
@@ -308,6 +354,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         # 用 `check_holdout.review_class()` 判它——缺了就不算裁决记录。
         "review_source": dict(PANEL_SOURCE, ran_at=ran_at),
         "counts": counts, "dropped": dropped, "disagreement_ids": [i["id"] for i in flagged],
+        #: 重试到最后一轮仍然有一条模型是 `error` 的条目：它们**没有**复核记录
+        #: （不是"复核过"）。判据方（门⑦）只数有记录的，所以这里是如实记账。
+        "unresolved": sorted(unresolved),
         "honesty": ("reviewed_by 写的是 llm-panel；门⑦ 需要 reviewed_by=human，"
                     "这份复核**不构成**人审，不得当作门⑦ 通过。每条记录另带 "
                     "source{models,prompt_sha256,ran_at}，门⑦ 只认带这一块的记录"

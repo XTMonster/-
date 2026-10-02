@@ -242,3 +242,54 @@ def test_concurrency_does_not_change_the_result(tmp_path, monkeypatch):
              (other / "reviewed.jsonl.decisions.jsonl").read_text(
                  encoding="utf-8").splitlines() if line.strip()]
     assert len(lines) == 12
+
+
+def test_a_judge_error_is_retried_and_never_becomes_a_verdict(tmp_path, monkeypatch):
+    """**模型报错不是判决**（2026-10-03 实测的真缺陷）。
+
+    现场：177 条里 **92 条**记录是 `('accepted','error')` —— GLM 的
+    `HTTP 429 code 1302`（速率限制）被旧的 `merge()` 按"分歧"处理，写成了
+    `verdict:"amended"` ＋ `needs_human:true`。后果是分歧清单里 78% 是基础设施
+    问题（人看它等于白看），而门⑦ 会把"模型挂了"数成"已复核"。
+
+    现在：`error` ⇒ `retry`（不进记录、不进分歧清单）；整轮重试用尽仍失败就
+    **没有记录**（缺证据不是通过）。这里让 B 侧第一次调用报错、重试时成功。
+    """
+    scripted = tmp_path / "a.json"
+    scripted.write_text(json.dumps({"responses": {}}), encoding="utf-8")
+    entries = _write(tmp_path, [_entry("hq_0001", "axis_180", forbid=True),
+                               _entry("hq_0002", "axis_180", forbid=True)])
+    state = {"calls": 0, "errors_left": 1}
+
+    def judge(client, entry, card):
+        state["calls"] += 1
+        if entry["id"] == "hq_0002" and state["errors_left"]:
+            state["errors_left"] -= 1
+            return {"verdict": "error", "reason": "HTTP 429 code 1302", "fix": ""}
+        return {"verdict": "accepted", "reason": "ok", "fix": ""}
+
+    monkeypatch.setattr(panel, "_judge", judge)
+    out = tmp_path / "reviewed.jsonl"
+    rc = panel.main(["--entries", str(entries), "--limit", "0", "--retries", "1",
+                     "--scripted-a", str(scripted), "--scripted-b", str(scripted),
+                     "--out", str(out), "--report", str(tmp_path / "panel.json"),
+                     "--sheet", str(tmp_path / "sheet.md")])
+    assert rc == 0
+    decisions = [json.loads(line) for line in
+                 (tmp_path / "reviewed.jsonl.decisions.jsonl").read_text(
+                     encoding="utf-8").splitlines() if line.strip()]
+    assert [item["id"] for item in decisions] == ["hq_0001", "hq_0002"]
+    assert all(item["review"]["verdict"] == "accepted" for item in decisions), (
+        "报错被重试之后应当拿到真判决，而不是被写成 amended/needs_human")
+    report = json.loads((tmp_path / "panel.json").read_text(encoding="utf-8"))
+    assert report["unresolved"] == []
+
+
+def test_merge_never_turns_an_error_into_a_disagreement():
+    """单元级：`merge` 见到 `error` 只能回 `retry`，不许回 `flag`。"""
+    for a, b in (({"verdict": "error"}, {"verdict": "accepted"}),
+                 ({"verdict": "rejected"}, {"verdict": "error"}),
+                 ({"verdict": "error"}, {"verdict": "error"})):
+        action, review = panel.merge(a, b)
+        assert action == "retry"
+        assert review == {}, "没判出来就不许留下任何裁决字段"
