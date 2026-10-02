@@ -252,14 +252,21 @@ Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`revie
 
 **L3 案例层（P14-3）已落地**：`block_director/knowledge/cases.py`（三态 `lightrag`/`hybrid`/`off`、
 `CaseIndex`、`render_cases`，**没有 `forbid` 字段**——E3 的机制保证）＋
-`tools/kb_fetch/build_cases.py` ＋ `knowledge/cases.{jsonl,manifest.json}`（**733 篇**，
-`narrative=654/lesson=72/sequence_pattern=7`，`source_ref` 六字段全非空、许可全在白名单、
+`tools/kb_fetch/build_cases.py` ＋ `knowledge/cases.{jsonl,manifest.json}`（**2026-10-02 实测 810 篇**，
+`narrative=751/lesson=58/sequence_pattern=1`，`source_ref` 六字段全非空、许可全在白名单、
 摘要过"≤2 句 / ≤120 字"门、重复构建逐字节相同）。
-`case_type=sequence_pattern` 的判据**只认显式箭头枚举**（`→`/`->`，每段各自落到一个节拍、
-不同节拍 ≥2、`beat_sequence` 严格按文本顺序），`excerpt` 就是那一行套路本身；门
-`SEQUENCE_FLOOR = 7` 正好是已提交语料里显式枚举的套路条数（`storyboard_practice.md` 4 ＋
-`anime_language.md` 3），**只许升**——此前那条"散文里猜套路"的分支会把
-"准备—执行—收势"判成套路且把节拍顺序写反，已删除（宁缺勿猜）。
+`case_type=sequence_pattern` 现在有**两条**判据分支：`sequence_pattern_of` 只认**显式箭头枚举**
+（`→`/`->`，每段各自落到一个节拍、不同节拍 ≥2、`beat_sequence` 严格按文本顺序），
+`prose_sequence_pattern_of` 认**散文里的显式顺序词枚举**（`先/然后/最后` 这类，节拍约束同上）；
+两条的 `excerpt` 都是原文的连续子串。
+**⚠️ 门限与授权出处（2026-10-02 盘点，待用户确认）**：本节此前写"`SEQUENCE_FLOOR = 7`…
+**只许升**…'散文里猜套路'的分支已删除"——**与 HEAD 不符**。现行
+`tools/kb_fetch/build_cases.py:137` 是 `SEQUENCE_FLOOR = 1`，散文分支在 `:325`
+**被重新加回**（`:447-455` 两条分支一起进候选）。唯一的落地记录是
+`build_cases.py:120-137` 的注释与 `docs/knowledge/AUDIT_RESIDUAL_20261001.md:21` 里
+"我按用户'改门限吧'落地（`9d2bc62`）"——**属 agent 转述，出处未被追平**；而
+`ACCEPTANCE_STATUS.md:132` 与本节下方的"拍板前不要改门限"两条反向条款仍在库里。
+本文件按"缺证据不得当成通过"的纪律把现状记清并列为**待裁决项**，不替用户判定合规。
 `sidecar_server.py` 不再自带第二份
 实现，改用包里的 `CaseIndex`，trace 补上 `lightrag_index_fingerprint` /
 `cases_index_fingerprint`；插件侧检索器现在真的会**分三栏注入**
@@ -292,17 +299,25 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
 held-out 覆盖门 ①–⑩ **全 pass**（⑪ 是**诊断**，不参与判定），Q/E 硬门 **11 个 id 全 pass**
-（Q5／E1／E2 记 `not_measured`，永不判过）；`python -m pytest` = **1607 passed / 0 failed**；
+（Q5／E1／E2 记 `not_measured`，永不判过）；`python -m pytest` = **1626 passed / 0 failed**；
 `powershell -File tools\run_tests.ps1` = **31/31 探针 ＋ `All checks passed.`**；
 `rks.json failed_checks = []`（**RK-13 第一次 measured 且 pass**）。
-最新证据 `docs/evidence/20261002-134053/`（语料扩容后）与 `docs/evidence/20261002_real/`
-（真实模型运行）。逐项对账以 `docs/knowledge/ACCEPTANCE_STATUS.md` §二十／§二十一／§二十二
-与 `docs/knowledge/MODERN_SOURCES.md` §五 为准。
+最新证据 `docs/evidence/20261002-175120/`（本轮：E1 的落点诊断 ＋ 验收链四个洞的修复）
+与 `docs/evidence/20261002_real/`（真实模型运行）。逐项对账以
+`docs/knowledge/ACCEPTANCE_STATUS.md` §二十…§二十七 与 `docs/knowledge/MODERN_SOURCES.md` §五 为准。
 
-**规模（2026-10-02 实测，别再用旧数字）**：来源 **75** 个（`anime` 域 **15**，
-此前只有 Lutz 1920 一本）；生成卡 **1998** 张（anime 153／storyboard 229／
-cinematography 214），卡片全集 **2130**；超边索引 **541** 条边；oracle **2981** 条。
-门⑥ 的明细：`cards_expected 2099 / excluded 31 / expressible_share 98.5% / missing 0`。
+**E1 的落点是语料，不是检索（2026-10-02 实测，别再修路由）**：`docs/evidence/20261002-175120/e1_lane_diagnosis.json`
+——L3 的 810 篇里**有中文摘句的 0 篇**，产品路径的 6 个中文查询逐镜检索**命中 0 条**
+（`CaseIndex._text` 只吃作者写的字：返回空是诚实的）；把查询换成**英文**再打英文语料
+也只有 **1/18 = 5.6%** 条 ≥4 分 → **跨语言不是根因，案例里没有"逐镜分析"这类内容才是**。
+要 E1 达标必须补来源，而补来源要重抽＋重标 oracle ⇒ 卡在 `GLM_API_KEY`（见下）。
+
+**规模（2026-10-02 17:05 实测，别再用旧数字）**：`sources.yaml` 来源 **236** 条
+（L1/L2 **75** ＋ `layers: [L3]` 的 **161** 篇 Animation Studies，CC-BY 4.0；`anime` 域 176 条）；
+生成卡 **1998** 张（anime 153／storyboard 229／cinematography 214），卡片全集 **2130**；
+超边索引 **544** 条边（`extract/v13` ＋ `hg/v2`：`raw_edges 544 = valid_unique 544`、
+`rejects 0`、原子 **2754**）；oracle **2786** 条；L3 案例 **810** 篇。
+门⑥ 的明细：`cards 2130 / cards_expected 2051 / excluded 79 / expressible_share 96.29% / missing 0`。
 **真实模型运行**（sidecar→GLM 云端，`docs/evidence/20261002_real/`）：`DONE / 6 镜 /
 792 帧 / built=true / 导出 17 文件 / llm_calls 38 / retrieval_calls 7`，超图通道**未降级**，
 `knowledge_provenance` **每一镜都有 `experience`（L2）桶**——L2 经验层第一次真的参与成片。
@@ -330,6 +345,13 @@ cinematography 214），卡片全集 **2130**；超边索引 **541** 条边；or
    （`GLM_API_KEY` 只从环境变量读；端点 `open.bigmodel.cn/api/paas/v4`）；
    `glm-4.7-flash` 返回 HTTP 429 code 1305（容量）、`glm-4.6` 报余额不足、
    `glm-4-flash` 可用；本地 `qwen3-vl:30b` 的 blob 是坏修订（输出纯噪声）。
+   **2026-10-02 17:5x 复测（当前状态，与前一句的"可用"不矛盾：**那把钥匙当时设置了，
+   现在没有**）**：本机环境变量里 **`GLM_API_KEY` 未设置**、只有 `DEEPSEEK_API_KEY`
+   （OpenAI／Anthropic 也没有）⇒ `python tools/holdout_expect_movements.py --limit 1`
+   直接 `LLMError: 缺少 GLM_API_KEY`、exit=1。**这是当前唯一的硬阻塞**：它同时卡住
+   ① oracle 重标（任何索引变动都必须做）② Q5 的 `expect_movements` 独立标注
+   ③ 门⑦／E1 要求的**跨族**复核面板（抽取族是 DeepSeek，面板必须换族）。
+   解它只能由用户提供钥匙或授权另一条非 DeepSeek 族通道。
    **离线兜底已在位**：`unsupported_prohibition_hosts` 那道精确度门会在归并期拒收
    这类没有依据的禁令边（索引里那条编出来的边已被它删掉，账在 manifest 的
    `merge.unsupported_prohibition_hosts`）。
@@ -414,6 +436,12 @@ cinematography 214），卡片全集 **2130**；超边索引 **541** 条边；or
   `docs/evidence/20261001-0207/p14_measurement_round.md` §4 与
   `docs/evidence/20261001-0159/gate10_rootcause.md` §5）。
   **在用户拍板前不要改 `SCORE_WEIGHTS`、不要改门限、不要用脚本机械补 `q`。**
+  **2026-10-02 补注（盘点的结论，别把这条当成已解决）**：仓库里已经有**一处**
+  门限下调发生了——`tools/kb_fetch/build_cases.py:137` 的 `SEQUENCE_FLOOR` 由
+  **7 降到 1**（散文枚举分支同时被加回），落地依据只有 `AUDIT_RESIDUAL_20261001.md:21`
+  的一条 agent 转述（"我按用户'改门限吧'落地"）。本文件不追认也不推翻它：
+  它现在记在 `docs/knowledge/ACCEPTANCE_STATUS.md` 的待裁决清单里，
+  **在用户确认出处之前，不要再动任何门限**。
 - **人审 ≥120 条**（协议门⑦）与 **Q5/Q7/E3 的最终裁定**必须由人做，agent 不可代替。
   Q5 只在真实模型运行（§4.4 步骤 2）上判，CI/离线上只记 `not_measured`。
 - 重跑长标注仍须知：本机 `qwen3-vl:30b` 是思考模型，走 `/api/chat` 加 `think:false`

@@ -2,7 +2,13 @@
 name = "blockdirector"
 version = "1.3.0"
 description = "BlockDirector — 剧本 → Blender 白模预演 → AI 视频参考"
-requires-python = ">=3.11"
+# 声明的下界必须与**实际跑绿的解释器**一致（2026-10-02 实测：本机默认
+# `python` 是 3.10.11，整个套件在它上面 1616 passed；而此前这里写 `>=3.11`，
+# 等于"用声明不支持的运行时产出全绿"）。代码里没有任何 3.11 专属特性，
+# 且 `block_director/contracts/enums.py` **故意**自带 `StrEnum` 兼容实现，
+# 所以真实下界是 3.10。`tests/test_declared_python_floor.py` 把这条钉住：
+# 运行解释器不满足声明的下界就直接红，声明与实跑不可能再各说各话。
+requires-python = ">=3.10"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

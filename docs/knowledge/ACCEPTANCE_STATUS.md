@@ -1710,3 +1710,137 @@ E2 仍 `not_measured`（分子要的是"知识引入的运镜"，而真实运行
 案例语料是英文 —— 见 §24.4；多语言向量索引那条路被配额挡住：GLM `embedding-3`
 实测回 **429**）；**Q5 供给 ≈9/30**（§25.4）；E2 依赖 Q5 的夹具那一半。
 这一轮的账：`docs/evidence/20261002-170515/`（门①–⑩ 全 pass、`rks.json failed_checks: []`、`pytest` 全绿）。
+
+## 二十七、P14-17（2026-10-02 17:5x）：E1 的**缺口被定位到语料**，而验收链补上四个"过期证据不得当通过"的洞
+
+本轮同时开三条 lane（验收链完整性／Q5 供给／中文来源），以下是**落地并验证过**的部分。
+
+### 27.1 E1 到底缺什么：不是跨语言检索，是案例语料本身
+
+新证据 `docs/evidence/20261002-175120/e1_lane_diagnosis.json`（只读、确定性、不调模型）：
+
+* L3 索引 **810 篇**，其中**有中文摘句的 0 篇**；`rag.cases_backend=lightrag` 在仓库里
+  **必然降级**到 `hybrid`（`lightrag_adapter_unavailable`，`lanes=2`）；
+* 产品路径的 6 个镜头查询（中文提示词）逐镜检索：**命中 0 条**（6/6 全空）。
+  这是 `CaseIndex._text` 那条"检索只吃作者写的字"的设计后果——**返回空是诚实的**，
+  不是崩溃（§24.4 之前那版拿中文标签当语料，才会返回噪声）；
+* 把查询改写成**英文**再打英文语料（`e1_english_diagnostic.jsonl`，18 条）：
+  只有 **1 条 ≥4 分 = 5.6%**。**换语言也过不了 70% 的线** —— 所以 E1 的缺口不是
+  "中文查询打英文语料"，而是**案例里没有"对具体影片的逐镜分析"这种内容**
+  （810 篇的来源里，前十位是 MIT 21L.011 讲义提纲、1900 年代电影理论书与
+  Frames Cinema Journal 论文——都不是 §2.3b 要的拉片/复盘/影评）。
+  **这一条把 §24.4/§26.4 的判断从"推测"变成了"实测"**：调检索、换路由、加向量都在
+  原地打转，要动的是**来源**。
+
+### 27.2 验收链：四个"过期证据不得当通过"的洞已堵上
+
+并行 lane 的**测试与验收**视角全量盘点（`tests/` 152 文件、`run_tests.ps1` 31 步）
+抓到四个真缺陷，本轮全部修掉（**均未放宽任何判据**）：
+
+1. **一条永远不会红的用例**（`tests/test_holdout_candidates.py:75`，自 `1130921` 起）：
+   函数体只有 `try: draft_all(...) except RuntimeError: pass`，**没有断言**，
+   异常被自己吞掉，而名字（`…without_raising`）与实现相反（`draft_all` 原样抛出）。
+   已按真实契约改成 `test_draft_all_propagates_a_transport_failure`
+   （`pytest.raises(RuntimeError, match="network down")`），并**补上缺失的另一半**：
+   `test_draft_all_records_a_parse_failure_as_an_error_draft`（解析失败落成
+   `draft["error"]`，不冒泡）——此前那句"解析失败会被记录"是零覆盖。
+2. **门自己看不见这个形状**：`tools/check_assertions.py` 只判"字面量恒真式"。
+   新增第三条规则：**`test_*` 函数自身语句里必须有"会判"的构造**
+   （`assert`／`raise`／`pytest.raises|fail|skip|xfail|warns…`／`self.assertXxx`／
+   名字带 `assert|check|verify|validate|require` 的助手／**本文件里会判的模块级助手**），
+   **嵌套函数体不算**（那正是上面那条缺陷的形状）。
+   全仓 1498 个用例扫下来只多出**一处**真 offender：`tests/test_transport.py:141`
+   `test_cancel_swallows_errors` —— 裸调用"没抛就算过"，分不清"吞掉错误"与
+   "什么都没做"；已加强为"请求确实发出（`POST /v1/cancel`）＋ 返回 None"。
+   自证在 `tests/test_assertion_hygiene.py`（负例／嵌套反例／正例／全仓扫描四向）。
+3. **E1 的打分没有绑在案例索引上**（本轮新发现）：`e1_relevance()` 读一份打分文件
+   就给结论，而 `cases.jsonl` 每次重建都会换掉一批 `case_id`。实测
+   `docs/evidence/20261002_real/e1_reviews.jsonl` **16 条里有 9 条的 `case_id`
+   已不在当前索引**、**16/16 条没有携带指纹** —— 它量的是上一代语料，却照样能被
+   算成一个 0.0 的 E1（与 §24.1"案例层漏跑一天而链路全绿"同一形状）。
+   现在 `e1_evidence_is_stale()` 要求：`--cases` 可读 ＋ 每条 `case_id` 在当前索引里 ＋
+   每条带 `cases_fingerprint`（对拍 `cases.manifest.json` 的 `fingerprint`）＋
+   每条带 `reviewed_by`；任一条不满足 ⇒ **`not_measured` ＋ `stale_evidence: true`**，
+   并把当时的分数一并报出（信息保留，**不得读成通过**）。
+   `run_tests.ps1` 现在**显式喂进那份旧打分**——链的结果不变（E1 属 SOFT_IDS），
+   但证据目录里从此写清"为什么 E1 是红的"，而不是"没人试过"。
+4. **声明的 Python 下界与实跑不符**：`pyproject.toml` 写 `requires-python >= 3.11`，
+   而跑出全绿的解释器是 **3.10.11**（且 `contracts/enums.py` **故意**自带 `StrEnum`
+   兼容实现，代码里没有任何 3.11 专属特性）。已改为 `>=3.10`，并新增
+   `tests/test_declared_python_floor.py`：**运行解释器不满足声明的下界就直接红**，
+   声明与实跑不可能再各说各话。（上界仍未验证：本机 3.11/3.12/3.13 都没装测试依赖，
+   如实记在用例 docstring 里。）
+
+### 27.3 文档与工作区
+
+* `AGENTS.md` 三处漂移按 HEAD 追平：L3 案例 **733 → 810 篇**
+  （`751/58/1`）、`SEQUENCE_FLOOR` **7 → 1**（散文分支**已加回**）、
+  oracle **2981 → 2786**、门⑥ **2099/31/98.5% → 2051/79/96.29%**、
+  索引 **541 → 544**、回归 **1607 → 1626**。
+* **`SEQUENCE_FLOOR` 的授权出处列为待裁决**：唯一落地记录是
+  `build_cases.py:120-137` 的注释与 `AUDIT_RESIDUAL_20261001.md:21` 的
+  "我按用户'改门限吧'落地（`9d2bc62`）"（**agent 转述**），而
+  `ACCEPTANCE_STATUS.md:132`／`AGENTS.md` 的两条"拍板前不要改门限"仍在库里。
+  本文件**不追认也不推翻**，只把它记成待用户确认的一项。
+* `.gitignore` 补 `/.scratch/`：实测 300+ 个未跟踪草稿脚本**不被任何规则覆盖**，
+  一次 `git add -A` 会把它们全提交（与 `/work/` 同性质）。
+
+### 27.4 本轮之后的账（`docs/evidence/20261002-175120/`）
+
+`python -m pytest` = **1626 passed / 0 failed**（原 1616）；
+`powershell -File tools\run_tests.ps1` = **31/31 探针 ＋ `All checks passed.`**；
+门①–⑩ 全 pass、`rks.json failed_checks: []`（19 条 measured）、硬门 11 id 全 pass；
+**Q5 / E1 / E2 仍 `not_measured`（永不判过）**，E1 现在带 `stale_evidence: true` 与具名因由。
+
+### 27.5 仍未做，以及**只有用户能解的两件**
+
+1. **标注／复核通道的凭证（硬阻塞）**：`GLM_API_KEY` 现在**没有设置**
+   （本机只有 `DEEPSEEK_API_KEY`）。它同时卡住三件事：`oracle` 重标（任何索引变动
+   都必须做）、Q5 的 `expect_movements` 独立标注（`tools/holdout_expect_movements.py`）、
+   以及 §4.1b 门⑦/E1 要求的**跨族**复核面板（抽取族是 DeepSeek，面板必须是别的族）。
+   本机 `qwen3-vl:30b` 是已知坏修订，OpenAI／Anthropic 钥匙也没有。
+2. **L3 的对口来源（口径待裁）**：按 §27.1，要 E1 达标得给案例层补
+   "**对具体影片的逐镜分析**"这类来源（中文更佳，因为查询是中文）。
+   Q5 供给 lane 的实测结论与此同向：唯一对口且可达的来源族是
+   StudioBinder 的镜头设计教学页（124 条 on-topic，**全版权 → 只能按
+   `PersonalStudy` 收录**，与 skwigly／framescinemajournal 同档）——
+   **这属用户裁决**；干净那一半（9 篇已入库的 **CC-BY** Animation Studies
+   文章从 `layers: [L3]` 改成 `[L1, L3]`）零授权风险，但它一动就要求重抽＋重标，
+   于是又回到第 1 条。
+3. **未做**：§22.2 的抽取提示漂移（已实测为"覆盖率交换"，必须与整库重抽＋重标
+   oracle 同批落地）；§22.3 的 Q5 基准串口径；`SHOT_PATTERN` 之外的运镜政策边型；
+   E2 需要一次"采纳了经验边"的真实运行；工作区外的 36 GB ollama 残留（用户手工）。
+
+### 27.6 本轮抓到的一次**事故形状**：`sources.yaml` 领先于产物，而链子看不见
+
+2026-10-02 17:52:51，一条并行 lane 把 **50 条 StudioBinder 来源**（`PersonalStudy`，
+44 条进 L1/L2、6 条进 L3）**直接追加进了被跟踪的 `knowledge/sources.yaml`**。
+处置与证据：
+
+* 这不是"加了几个源"那么简单：**卡片、案例、索引、oracle 里一条都没有它们**
+  （实测命令与结果见下），而把它吃进语料必须跑完整一圈，其中"重标 oracle（换族）"
+  需要 `GLM_API_KEY`（§27.5 第 1 条）。所以它当前是一个**半截改动**：
+  清单声称有、产物里没有，谁要是照着清单重建索引，就会得到一份**没重标过**的索引。
+* **链子确实看不见它**（这是本轮发现的第二个缺口）：把 50 条塞进去之后
+  `python -m pytest tests/test_cases_corpus.py tests/test_kb_pipeline.py
+  tests/test_holdout_inputs.py` **照旧全绿**——因为现有的对拍只有
+  "案例 → `sources.yaml`"这一个方向（`tests/test_cases_corpus.py:152`），
+  **没有"`sources.yaml` → 产物"**这一方向。
+* 实测（`git show HEAD:knowledge/sources.yaml` 与已提交产物对拍）：
+  HEAD 的 **236** 条里有 **235** 条能在 `cases.jsonl` 里找到出处，只有 1 条例外
+  （`skwigly.co.uk/childrens-tv-show-animation-pipeline-cinema-4d/`，既无卡也无案例）；
+  也就是说**"每条来源都要在产物里留下痕迹"这条不变量今天已经成立 235/236**，
+  加一道反向门只需要把这 1 条例外具名入账（理由待查），**不需要放宽任何判据**。
+  本轮**没有**加这道门（它会当场把上面那 50 条判红，而修它需要用户裁决），
+  建议作为下一轮的第一件事；判据写在这里，证据就是这一节。
+* 处置：**没有**把这次追加提交进库。整份文件备份在
+  `work/zz_pending_sources_with_studiobinder.yaml`；`knowledge/sources.yaml`
+  现在带一段 `⚠️ 未入库 ＋ 待裁决` 的显式抬头（说明产物里没有它们、为什么做不完、
+  以及哪两件事要用户拍板），并**保持未提交状态**。
+  回滚命令（一条，内容不丢）：`git restore -- knowledge/sources.yaml`。
+  —— 本轮由 agent 执行该命令时被工具守卫拦下（禁止 `git restore`／`git checkout --`），
+  因此**留给用户/下一轮执行**。
+* 顺带记一条**用户授权的边界**（避免误判成"越权加源"）：§2.3c 的 R30→R31 裁决
+  明确写过"**数据不够就主动采集填充**"，所以"加来源"本身是用户授权过的动作；
+  这次的问题不是"加了源"，而是**加了一半**——没有走完 `--replace-cards → 重标 oracle →
+  门复跑` 那一步，且用的是一把**要用户裁的许可口径**（`PersonalStudy` on 商业教学站）。

@@ -131,16 +131,86 @@ def test_e1_needs_human_scores_and_never_guesses():
     assert quality.e1_relevance(None)["status"] == "not_measured"
 
 
-def test_e1_uses_the_human_scores_when_present(tmp_path):
+def _case_index(tmp_path, case_ids, fingerprint="fp-current"):
+    """写一份最小的 L3 索引＋manifest：E1 的打分必须绑在**这一份**上。"""
+    cases = tmp_path / "cases.jsonl"
+    cases.write_text("\n".join(
+        json.dumps({"case_id": cid, "case_type": "narrative",
+                    "excerpt": "原文摘句", "source_ref": {}}, ensure_ascii=False)
+        for cid in case_ids), encoding="utf-8")
+    (tmp_path / "cases.manifest.json").write_text(
+        json.dumps({"fingerprint": fingerprint}), encoding="utf-8")
+    return cases
+
+
+def _reviews(tmp_path, rows, name="e1.jsonl"):
+    path = tmp_path / name
+    path.write_text("\n".join(json.dumps(row, ensure_ascii=False)
+                              for row in rows), encoding="utf-8")
+    return path
+
+
+def _review_row(case_id, score, fingerprint="fp-current", reviewer="human"):
+    row = {"case_id": case_id, "score": score, "reviewed_by": reviewer}
+    if fingerprint is not None:
+        row["cases_fingerprint"] = fingerprint
+    return row
+
+
+def test_e1_uses_the_human_scores_when_they_cover_the_current_index(tmp_path):
+    cases = _case_index(tmp_path, ["c1", "c2", "c3", "c4"])
     reviews = tmp_path / "e1.jsonl"
     reviews.write_text("\n".join(json.dumps({"score": s}) for s in (5, 4, 3, 5)),
                        encoding="utf-8")
-    out = quality.e1_relevance(reviews)
+    reviews = _reviews(tmp_path, [_review_row(f"c{i}", s) for i, s in
+                                  enumerate((5, 4, 3, 5), 1)])
+    out = quality.e1_relevance(reviews, cases_path=cases)
     assert out["status"] == "pass" and out["value"] == 0.75
+    assert "stale_evidence" not in out
 
-    reviews.write_text("\n".join(json.dumps({"score": s}) for s in (5, 3, 2)),
-                       encoding="utf-8")
-    assert quality.e1_relevance(reviews)["status"] == "fail"
+    below = _reviews(tmp_path, [_review_row(f"c{i}", s) for i, s in
+                                enumerate((5, 3, 2), 1)], name="e1_below.jsonl")
+    assert quality.e1_relevance(below, cases_path=cases)["status"] == "fail"
+
+
+def test_e1_scores_that_predate_the_index_are_not_evidence(tmp_path):
+    """**真实漏网**（2026-10-02）：仓库里那份 E1 打分有 9/16 条的 case_id 在当前
+    索引里已经不存在，却照样能被算成一个 0.0 的 E1。脱钩的打分记 `not_measured`
+    ＋ `stale_evidence`，并把当时算出来的分数一并报出来（信息保留，不许读成通过）。
+    """
+    cases = _case_index(tmp_path, ["c1", "c2", "c3", "c4"])
+    # ① 全部用例都对得上、指纹也对得上 ⇒ 不是陈旧证据（分母按好坏算）。
+    fresh = _reviews(tmp_path, [_review_row(f"c{i}", 1) for i in (1, 2, 3, 4)],
+                     name="fresh.jsonl")
+    assert quality.e1_relevance(fresh, cases_path=cases)["status"] == "fail"
+
+    # ② 有 case_id 掉出当前索引 ⇒ 陈旧。
+    gone = _reviews(tmp_path, [_review_row("c1", 1), _review_row("c_gone", 1)],
+                    name="gone.jsonl")
+    out = quality.e1_relevance(gone, cases_path=cases)
+    assert out["status"] == "not_measured" and out["stale_evidence"] is True
+    assert out["denominator"] == 2 and "c_gone" in out["note"]
+
+    # ③ 全对得上但没有携带索引指纹 ⇒ 无法证明它量的是这一份索引。
+    unbound = _reviews(tmp_path, [_review_row(f"c{i}", 5, fingerprint=None)
+                                  for i in (1, 2)], name="unbound.jsonl")
+    out = quality.e1_relevance(unbound, cases_path=cases)
+    assert out["status"] == "not_measured" and out["stale_evidence"] is True
+    assert "指纹" in out["note"]
+
+    # ④ 指纹是上一代的 ⇒ 同样不算证据（哪怕 case_id 恰好重合）。
+    old = _reviews(tmp_path, [_review_row("c1", 5, fingerprint="fp-old"),
+                              _review_row("c2", 5, fingerprint="fp-old")],
+                   name="old.jsonl")
+    assert quality.e1_relevance(old, cases_path=cases)["status"] == "not_measured"
+
+    # ⑤ 没写是谁裁的 ⇒ 记录不完整，不算证据。
+    anon = _reviews(tmp_path, [_review_row("c1", 5, reviewer="")],
+                    name="anon.jsonl")
+    assert quality.e1_relevance(anon, cases_path=cases)["status"] == "not_measured"
+
+    # ⑥ 没有给索引路径 ⇒ 无法证明覆盖，同样不许判过（缺证据不是通过）。
+    assert quality.e1_relevance(fresh)["status"] == "not_measured"
 
 
 def test_e2_counts_adopted_movements_and_is_never_a_gate(tmp_path):

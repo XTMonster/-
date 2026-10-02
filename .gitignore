@@ -48,3 +48,8 @@ Thumbs.db
 # 只保留 `source_ref.sha256` 供校验。管线可用 `python -m tools.kb_fetch.fetch`
 # 从 `knowledge/sources.yaml` 原样重建。
 /work/
+
+# 临时探针脚本（会话期间的草稿）。2026-10-02 盘点：`.scratch/` 里有 300+ 个
+# 未跟踪文件且**不被任何规则覆盖**，一次 `git add -A` 会把它们全提交进去——
+# 与 `/work/` 同一性质（中间产物、可由命令重建），因此同一处置。
+/.scratch/

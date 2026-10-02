@@ -139,8 +139,17 @@ def test_probe_returns_none_on_failure():
 
 
 def test_cancel_swallows_errors():
+    """取消是**尽力而为**的（协作式取消，§3.3）：上游 500 不许把取消本身变成异常。
+
+    2026-10-02 加强：这条用例此前只有一个裸调用，靠"没抛异常就算过"——它分不清
+    "吞掉了错误" 与 "根本什么都没做"（`cancel` 连请求都没发也会绿）。
+    `tools/check_assertions.py` 的"空测试"规则正是为这个形状加的，这里把判据补全：
+    请求**确实发出去了**（POST /v1/cancel），且失败被吞掉。
+    """
     opener = make_opener({("POST", "/v1/cancel"): (500, "boom")})
-    SidecarTransport(opener=opener).cancel("r1")   # 不应抛异常
+    assert SidecarTransport(opener=opener).cancel("r1") is None   # 不应抛异常
+    assert [(call["method"], call["path"]) for call in opener.calls] == [
+        ("POST", "/v1/cancel")], "取消请求必须真的发出去，不是静默 no-op"
 
 
 # --------------------------------------------------------------------------- #

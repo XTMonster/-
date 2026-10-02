@@ -5,6 +5,8 @@ import json
 import pathlib
 import sys
 
+import pytest
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
@@ -72,14 +74,38 @@ def test_draft_all_attaches_card_id_and_prompt_hash():
     assert all(len(d["_prompt_sha256"]) == 64 for d in drafts)
 
 
-def test_draft_all_records_transport_failure_without_raising():
+def test_draft_all_propagates_a_transport_failure():
+    """传输层异常**原样冒泡**——它的对偶（解析失败被记成 `error`）在下面一条。
+
+    2026-10-02 修正：这条用例此前叫
+    ``test_draft_all_records_transport_failure_without_raising``，函数体只有
+    ``try: hc.draft_all(...) except RuntimeError: pass``——**一个断言都没有**，
+    异常被自己吞掉，所以它从 2026-09-30 引入起**永远不可能红**，而名字描述的
+    行为与实现相反（实测 ``draft_all`` 原样抛出 ``RuntimeError``）。它躲过了
+    项目自己的 ``tools/check_assertions.py``，因为那条门只判"恒真式"，不判
+    "根本没有断言"——后者现在由同一条门的第二条规则补上（见
+    ``tests/test_assertion_hygiene.py``）。
+    """
     def boom(_prompt: str) -> str:
         raise RuntimeError("network down")
 
-    try:
+    with pytest.raises(RuntimeError, match="network down"):
         hc.draft_all(CARDS[:1], boom, family="a")
-    except RuntimeError:
-        pass  # 传输层异常原样冒泡是允许的；解析失败才被记录
+
+
+def test_draft_all_records_a_parse_failure_as_an_error_draft():
+    """另一半契约：**解析失败**不冒泡，而是落成带 ``error`` 的草稿。
+
+    传输失败与解析失败必须被分开对待（``draft_all`` 的 ``work()``：只有
+    ``ValueError`` 被记成 ``{"error": ...}``）。上面那条用例只钉住了
+    "传输失败不被吞"，这条钉住"解析失败确实被吞且被记账"——否则
+    "失败被记录"这句话在测试里是零覆盖。
+    """
+    drafts = hc.draft_all(CARDS[:1], lambda _prompt: "这里没有 JSON",
+                          family="a")
+    assert len(drafts) == 1
+    assert drafts[0]["from_card"] == "cine_shot_size"
+    assert drafts[0]["error"].startswith("没有 JSON 对象")
 
 
 # ---------------------------------------------------------------- 并发与续跑

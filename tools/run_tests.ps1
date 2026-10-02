@@ -367,7 +367,13 @@ if ($authorshipExit -eq 0) {
 # were not measured this time". tools/knowledge/hard_gates.py owns that call, and
 # it treats a MISSING id exactly like a failing one (SS4.1b rule 1).
 # --------------------------------------------------------------------------- #
-python tools/knowledge/quality.py --run-id $runId --json --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+# E1 is fed the recorded panel scores on purpose (2026-10-02). E1 is SOFT_IDS, so
+# this cannot change the exit code - but the report now says WHY it is red instead
+# of "no reviews supplied". Those scores predate the current case index (9 of 16
+# case_ids are gone), so quality.py reports `stale_evidence: true` + the stale
+# numerator/denominator. Silently omitting them would leave the evidence directory
+# looking like nobody had tried; feeding them makes the staleness machine-visible.
+python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261002_real/e1_reviews.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }

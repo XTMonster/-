@@ -37,6 +37,10 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from block_director.knowledge.cases import (  # noqa: E402
+    manifest_fingerprint,
+    read_cases,
+)
 from tools.holdout_score import load_graph, load_holdout, score_entries  # noqa: E402
 
 PASS, FAIL, NA = "pass", "fail", "not_measured"
@@ -358,8 +362,72 @@ def e2_adoption(shots_path: Optional[Path]) -> Dict[str, Any]:
             "note": f"命中人工期望的镜头数 / {len(shots)}（记录，不设门）"}
 
 
-def e1_relevance(reviews_path: Optional[Path]) -> Dict[str, Any]:
-    """E1 经验引用相关性（必须人工打分，agent 不能代替）。"""
+def e1_evidence_is_stale(rows: List[Dict[str, Any]],
+                         cases_path: Optional[Path]) -> List[str]:
+    """这批打分**能不能用来量当前案例索引**？返回不能用的具名理由。
+
+    为什么需要这一条（2026-10-02 实测）：E1 的分母是"被返回的案例"，而
+    `cases.jsonl` 每次重建都会换掉一批 `case_id`。仓库里那份
+    `docs/evidence/20261002_real/e1_reviews.jsonl` 有 **16 条**打分，其中
+    **9 条的 `case_id` 在当前索引里已经不存在**——也就是说它量的是上一代语料，
+    却照样能被算成一个 0.0 的 E1。这和 §24.1（案例层漏跑一天而链路全绿）是
+    同一个形状：**过期证据被当成现行证据**。所以 E1 的判据里必须包含
+    "这批打分说的是不是**这一份**索引"：
+
+    * `cases_path` 必须给且读得出来（否则无从证明覆盖）；
+    * 每一条打分的 `case_id` 必须在当前 `cases.jsonl` 里；
+    * 每一条打分必须带 `cases_fingerprint`，且等于 `cases.manifest.json` 的
+      `fingerprint`（单一真源：`block_director/knowledge/cases.py`）；
+    * 每一条打分必须带 `reviewed_by`（是谁裁的，必须落在记录里）。
+
+    任一条不满足 ⇒ 返回理由 ⇒ 调用方记 `not_measured`（**永不判过**）。
+    """
+    if cases_path is None:
+        return ["没有给出案例索引（--cases）：无法证明这批打分覆盖的是当前语料"]
+    cases_path = Path(cases_path)
+    if not cases_path.is_file():
+        return [f"案例索引 {cases_path} 不存在：无法证明打分覆盖的是当前语料"]
+    try:
+        live = {str(case.case_id) for case in read_cases(cases_path)}
+    except (OSError, ValueError) as exc:
+        return [f"案例索引 {cases_path} 读不出来（{exc}）：无法证明覆盖"]
+    if not live:
+        return [f"案例索引 {cases_path} 一条案例都没有：分母无意义"]
+
+    fingerprint = manifest_fingerprint(cases_path.parent)
+    reasons: List[str] = []
+    gone = [str(row.get("case_id")) for row in rows
+            if str(row.get("case_id")) not in live]
+    if gone:
+        reasons.append(
+            f"{len(gone)}/{len(rows)} 条打分指向的 case_id 已不在当前 "
+            f"cases.jsonl（例：{'、'.join(gone[:3])}）——那是上一代语料")
+    if not fingerprint:
+        reasons.append("读不到 cases.manifest.json 的 fingerprint："
+                       "无法证明打分与索引同代")
+    else:
+        unbound = [row for row in rows
+                   if str(row.get("cases_fingerprint") or "") != fingerprint]
+        if unbound:
+            reasons.append(
+                f"{len(unbound)}/{len(rows)} 条打分没有携带当前案例索引指纹 "
+                f"({fingerprint[:12]}…)：无法证明它量的是这一份索引")
+    unlabelled = [row for row in rows if not str(row.get("reviewed_by") or "")]
+    if unlabelled:
+        reasons.append(f"{len(unlabelled)}/{len(rows)} 条打分没有 reviewed_by："
+                       "谁裁的没有落在记录里")
+    return reasons
+
+
+def e1_relevance(reviews_path: Optional[Path], *,
+                 cases_path: Optional[Path] = None) -> Dict[str, Any]:
+    """E1 经验引用相关性（打分由人／已授权复核面板给出，agent 不代判）。
+
+    打分一旦**与当前案例索引脱钩**就不再是 E1 的证据，而是历史记录：那种情况下
+    记 `not_measured` ＋ `stale_evidence: true`，并把当时算出来的分数一并报出来
+    （信息量保留，**但绝不能被读成通过**）。判据见
+    :func:`e1_evidence_is_stale`。
+    """
     if reviews_path is None or not Path(reviews_path).is_file():
         return {"id": "E1", "status": NA,
                 "note": "需要人工对返回的 cases 按 >=4/5 打分（§2.3b）；"
@@ -367,13 +435,19 @@ def e1_relevance(reviews_path: Optional[Path]) -> Dict[str, Any]:
     rows = [json.loads(line) for line in Path(reviews_path).read_text(
         encoding="utf-8").split("\n") if line.strip()]
     scored = [row for row in rows if isinstance(row.get("score"), (int, float))]
-    good = [row for row in scored if float(row["score"]) >= 4]
     if not scored:
         return {"id": "E1", "status": FAIL, "note": "打分文件为空：分母为 0 判失败"}
+    good = [row for row in scored if float(row["score"]) >= 4]
     value = len(good) / len(scored)
-    return {"id": "E1", "status": PASS if value >= 0.70 else FAIL,
-            "numerator": len(good), "denominator": len(scored),
-            "value": round(value, 4), "line": 0.70}
+    payload = {"id": "E1",
+               "numerator": len(good), "denominator": len(scored),
+               "value": round(value, 4), "line": 0.70}
+    stale = e1_evidence_is_stale(scored, cases_path)
+    if stale:
+        return {**payload, "status": NA, "stale_evidence": True,
+                "note": "这批打分与当前案例索引脱钩（历史记录，不得当成通过）："
+                        + "；".join(stale)}
+    return {**payload, "status": PASS if value >= 0.70 else FAIL}
 
 
 def q4_build_gate(q_report: Dict[str, Any]) -> Dict[str, Any]:
@@ -427,7 +501,7 @@ def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
     metrics.append(e3_experience_override(graph))
     metrics.append(e3_cases(cases))
     metrics.append(q5_movement_hit(entries, shots))
-    metrics.append(e1_relevance(e1_reviews))
+    metrics.append(e1_relevance(e1_reviews, cases_path=cases))
     metrics.append(e2_adoption(shots))
 
     statuses = {m["status"] for m in metrics}
