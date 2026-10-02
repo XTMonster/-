@@ -132,3 +132,57 @@ def test_the_escalation_checker_fires_on_a_warn_only_chain():
     }
     """
     assert escalates_parse_failures(proper) is True
+
+
+# --------------------------------------------------------------------------- #
+# 三、空参数不许在 PowerShell 里消失（成功路径的最后一个 bug）
+# --------------------------------------------------------------------------- #
+def vanishing_failed_args(text: str):
+    """返回 `--failed` 写了**裸变量**的调用行。
+
+    PowerShell 5.1 调用原生命令时会**丢掉空字符串参数**。所以
+    `--failed $rksFailed`（`$rksFailed = ''`）到 argparse 手里只剩一个光秃秃的
+    `--failed` → 退出码 2 "expected one argument" → `rks.json` 没写 → 链最后那步
+    S13 检查失败。实测 2026-10-02 11:17：**第一轮"所有门都过"的运行，也是第一轮
+    无法报告自己通过运行**。判据：那条命令必须用 `--failed=` 这种单 token 写法。
+    """
+    offenders = []
+    for number, line in live_lines(text):
+        if "run_tests_rks.py" not in line:
+            continue
+        if re.search(r"--failed\s+\$", line):
+            offenders.append(f"line {number}: {line.strip()[:120]}")
+    return offenders
+
+
+def test_the_rk_hook_passes_failed_as_one_token():
+    text = chain_text()
+    assert "run_tests_rks.py" in text
+    assert not vanishing_failed_args(text), (
+        "`--failed $rksFailed` 在 $rksFailed 为空时会被 PowerShell 整个丢掉："
+        + "; ".join(vanishing_failed_args(text)))
+    assert "--failed=$rksFailed" in text
+
+
+def test_the_vanishing_argument_checker_fires_on_the_bare_variable_form():
+    """自证：裸变量那种写法必须被判出来，`=` 写法放行。"""
+    bare = "python tools/run_tests_rks.py --run-id $runId --failed $rksFailed\n"
+    assert vanishing_failed_args(bare)
+    fixed = "python tools/run_tests_rks.py --run-id $runId --failed=$rksFailed\n"
+    assert vanishing_failed_args(fixed) == []
+    # 注释里怎么写都不算（活行判据）。
+    commented = "# python tools/run_tests_rks.py --failed $rksFailed\n"
+    assert vanishing_failed_args(commented) == []
+
+
+def test_the_rk_tool_itself_accepts_an_empty_failed_list(tmp_path):
+    """工具侧要能接受空清单——修的是"参数别丢"，不是"工具改成必须给值"。"""
+    import subprocess
+
+    done = subprocess.run(
+        [sys.executable, "tools/run_tests_rks.py", "--run-id", "tolerance",
+         "--evidence-dir", str(tmp_path / "ev"), "--checks", "RK-7", "--failed="],
+        cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8",
+        errors="replace")
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert (tmp_path / "ev" / "rks.json").is_file()

@@ -385,7 +385,15 @@ if ($rk13Checks -contains 'RK-13') {
 }
 $rks = (@('RK-7', 'RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed + $rk13Checks) -join ','
 $rksFailed = $rk13Failed -join ','
-python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks --failed $rksFailed | Out-Null
+# NOTE (2026-10-02 11:17): `--failed` can legitimately be EMPTY now that RK-13 can
+# pass, and PowerShell 5.1 DROPS an empty-string argument when it invokes a native
+# command. `--failed $rksFailed` therefore reached argparse as a bare `--failed`,
+# which exits 2 with "expected one argument"; rks.json was never written and the
+# S13 check below failed the run. The first chain run in which every gate passed
+# was also the first one that could not report it. The `=` form is a single token,
+# so it cannot vanish.
+python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks=$rks --failed=$rksFailed | Out-Null
+if ($LASTEXITCODE -ne 0) { Fail '  FAILED: the RK evidence hook (rks.json)' }
 Write-Host ('Evidence: ' + $evidenceDir) -ForegroundColor Green
 
 # --------------------------------------------------------------------------- #
