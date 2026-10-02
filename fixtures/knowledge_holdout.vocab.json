@@ -1,5 +1,5 @@
 {
-"_fingerprint": "14c88441d7c0023d",
+"_fingerprint": "24efb9e800b0c08b",
 "kinds": {
 "action": [
 "上下场",
@@ -94,7 +94,6 @@
 "煽动",
 "留白",
 "转折",
-"释放",
 "铺垫"
 ],
 "lens": [
@@ -142,6 +141,7 @@
 "固定"
 ],
 "music": [
+"重音",
 "铺底",
 "静默"
 ],
@@ -168,10 +168,10 @@
 "ELS",
 "LS",
 "MCU",
-"MLS",
 "MS"
 ],
 "vfx": [
+"flame",
 "glow",
 "impact_frame",
 "smoke",

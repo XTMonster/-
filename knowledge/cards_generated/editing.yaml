@@ -5702,3 +5702,1120 @@
     start: 2050
     end: 2132
   provenance_kind: 网络语料
+- id: gen_edit_0255
+  domain: editing
+  title: 声音桥的定义
+  content: 任何在场景转换中使用声音的手法都归为声音桥；它是让场景过渡最自然的方式之一。
+  keywords:
+  - 场景转换
+  - 音频过渡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 转场
+  topic: shot_language
+  quote: |-
+    Any time audio is used in a scene transition, it falls under the umbrella term called a "sound bridge."
+  source_ref:
+    url: https://www.studiobinder.com/blog/match-cuts-creative-transitions-examples/
+    title: Match Cuts
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:38+00:00'
+    sha256: 2aca6c24bc43f1d4408d27878560fd2c026156bf82e67c00a2e55d99e09d8572
+  chunk_id: match-cuts-creative-transitions-examples#000
+  source_span:
+    chunk_id: match-cuts-creative-transitions-examples#000
+    start: 1362
+    end: 1465
+  provenance_kind: 网络语料
+- id: gen_edit_0256
+  domain: editing
+  title: 中心构图实验镜头
+  content: 做蒙太奇情绪实验时，主体镜头取中心构图、中性表演，以便与不同内容的镜头组接时不被原表演干扰。
+  keywords:
+  - 中性表演
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 蒙太奇
+  topic: shot_language
+  quote: |-
+    combine a single, center-framed shot of the popular actor Ivan Mosjoukine with three other distinct shots
+  source_ref:
+    url: https://www.studiobinder.com/blog/soviet-montage-theory/
+    title: Soviet Montage Theory
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:43+00:00'
+    sha256: 66bf0f37bf3567b46a0529f8db97db7a04dfe3834674f740abfcb4f314321c36
+  chunk_id: soviet-montage-theory#000
+  source_span:
+    chunk_id: soviet-montage-theory#000
+    start: 619
+    end: 724
+  provenance_kind: 网络语料
+- id: gen_edit_0257
+  domain: editing
+  title: 切出制造闪回
+  content: 切出可用于制造闪回效果，或加入彻底改变观众对场景理解的新信息。
+  keywords:
+  - 信息反转
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 反转
+  topic: shot_language
+  quote: |-
+    Cutaways can also be used to create a flashback effect, or to add new information to a scene which completely alters our view.
+  source_ref:
+    url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: Shot Reverse Shot
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:55+00:00'
+    sha256: a98b58529fc2ef14a8c6ac14623d5c16d824afefa3e4cf4d86b01d82390c9074
+  chunk_id: shot-reverse-shot-cutaways-coverage#000
+  source_span:
+    chunk_id: shot-reverse-shot-cutaways-coverage#000
+    start: 2083
+    end: 2209
+  provenance_kind: 网络语料
+- id: gen_edit_0258
+  domain: editing
+  title: 切出用于建立语境
+  content: 切出镜头适合建立语境、潜台词，并给剪辑师留出调整余地；它常做更大陈述，通过引入与主线稍远的信息来赋予新含义。
+  keywords:
+  - 潜台词
+  - 剪辑余地
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 剪辑
+  topic: shot_language
+  quote: |-
+    Cutaway shots are a great way to build context, subtext, and to give your editor some room to work
+  source_ref:
+    url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: Shot Reverse Shot
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:55+00:00'
+    sha256: a98b58529fc2ef14a8c6ac14623d5c16d824afefa3e4cf4d86b01d82390c9074
+  chunk_id: shot-reverse-shot-cutaways-coverage#000
+  source_span:
+    chunk_id: shot-reverse-shot-cutaways-coverage#000
+    start: 1079
+    end: 1177
+  provenance_kind: 网络语料
+- id: gen_edit_0259
+  domain: editing
+  title: 合并覆盖控制机位数
+  content: 半场戏用十四个机位看似多，但通过合并覆盖（一个机位承担多种景别/角度）可把机位压到远少于二十个，规划分镜时应优先合并而非逐句新建。
+  keywords:
+  - 机位合并
+  - 分镜规划
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 效率
+  topic: shot_language
+  quote: |-
+    it could have been twenty or more if Nolan didn’t combine his coverage.
+  source_ref:
+    url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: Shot Reverse Shot
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:55+00:00'
+    sha256: a98b58529fc2ef14a8c6ac14623d5c16d824afefa3e4cf4d86b01d82390c9074
+  chunk_id: shot-reverse-shot-cutaways-coverage#000
+  source_span:
+    chunk_id: shot-reverse-shot-cutaways-coverage#000
+    start: 801
+    end: 872
+  provenance_kind: 网络语料
+- id: gen_edit_0260
+  domain: editing
+  title: 喜剧蒙太奇做笑点
+  content: 喜剧中把蒙太奇用作笑料：既可放在搞笑场景之前做铺垫，也可直接作为整段的包袱（punchline）收尾。
+  keywords:
+  - 喜剧蒙太奇做笑点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 轻松
+  tags:
+  - 喜剧节奏
+  - 包袱
+  topic: shot_language
+  quote: |-
+    Comedies effectively use montages for comedic effect. These sequences have been used both in the build up of a funny scene or as the punchline.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-montage-definition/
+    title: The Montage
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:41+00:00'
+    sha256: 62bd9722252cd2e130dcc20ec24746e228abc7040fd9452948b113d1c41f5efd
+  chunk_id: what-is-a-montage-definition#000
+  source_span:
+    chunk_id: what-is-a-montage-definition#000
+    start: 1022
+    end: 1165
+  provenance_kind: 网络语料
+- id: gen_edit_0261
+  domain: editing
+  title: 高潮段用交叉剪辑
+  content: 在影片高潮段落集中使用交叉剪辑来构建蒙太奇，把多条线的压力汇聚到同一序列中。
+  keywords:
+  - 蒙太奇
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 蒙太奇
+  topic: shot_language
+  quote: |-
+    cross cutting is a common technique, especially during the climaxes.
+  source_ref:
+    url: https://www.studiobinder.com/blog/cross-cutting-parallel-editing-definition/
+    title: Cross-Cutting
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:46+00:00'
+    sha256: f8b22e87b62ad27f6ae690b272c5a1c4585469ce0bb11f0b83e68d70cb41c65a
+  chunk_id: cross-cutting-parallel-editing-definition#000
+  source_span:
+    chunk_id: cross-cutting-parallel-editing-definition#000
+    start: 542
+    end: 610
+  provenance_kind: 网络语料
+- id: gen_edit_0262
+  domain: editing
+  title: 蒙太奇中放大时间流逝
+  content: 在表现时间流逝的蒙太奇段落里，用动作匹配剪辑替代普通剪辑点，可在交代时间推移的同时放大段落含义。
+  keywords:
+  - 含义放大
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 匹配剪辑
+  topic: shot_language
+  quote: |-
+    The typical montage structure is designed to help show the passing of time but the match on action cuts amplify the meaning.
+  source_ref:
+    url: https://www.studiobinder.com/blog/match-cuts-creative-transitions-examples/
+    title: Match Cuts
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:38+00:00'
+    sha256: 2aca6c24bc43f1d4408d27878560fd2c026156bf82e67c00a2e55d99e09d8572
+  chunk_id: match-cuts-creative-transitions-examples#000
+  source_span:
+    chunk_id: match-cuts-creative-transitions-examples#000
+    start: 1067
+    end: 1191
+  provenance_kind: 网络语料
+- id: gen_edit_0263
+  domain: editing
+  title: 顺序切层建立因果
+  content: 多层梦境交叉剪辑时，按顺序切到下一层，观众会自动认定上层动作直接影响下层；用这种顺序切层来建立层与层之间的因果关联。
+  keywords:
+  - 多层叙事
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 交叉剪辑
+  - 层级
+  topic: shot_language
+  quote: |-
+    Because these cuts are sequential, we automatically know that the actions of the above layer are directly affecting the second dream layer.
+  source_ref:
+    url: https://www.studiobinder.com/blog/cross-cutting-parallel-editing-definition/
+    title: Cross-Cutting
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:46+00:00'
+    sha256: f8b22e87b62ad27f6ae690b272c5a1c4585469ce0bb11f0b83e68d70cb41c65a
+  chunk_id: cross-cutting-parallel-editing-definition#000
+  source_span:
+    chunk_id: cross-cutting-parallel-editing-definition#000
+    start: 2131
+    end: 2270
+  provenance_kind: 网络语料
+- id: gen_edit_0264
+  domain: editing
+  title: 跳切制造兴奋与能量
+  content: 常规用法：跳切用于制造兴奋或能量感；若用于悲伤段落则转为诗意的情绪可视化，同一手法因语境不同而取舍相反。
+  keywords:
+  - 语境
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 节奏
+  topic: shot_language
+  quote: |-
+    Jump cuts in film are usually used to create excitement or energy but, in this case, they become a poetic way to visualize sadness.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+    title: The Jump Cut
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:35+00:00'
+    sha256: d9696742076c51b114a0370f66b4e179f772e238164493b2d414a24d4f454109
+  chunk_id: what-is-a-jump-cut#000
+  source_span:
+    chunk_id: what-is-a-jump-cut#000
+    start: 0
+    end: 131
+  provenance_kind: 网络语料
+- id: gen_edit_0265
+  domain: editing
+  title: 摇镜配合视线转向
+  content: 当人物把注意力转向新对象时，用摇镜跟随，同时让该人物的视线方向随之改变（如由画面左转为画面右），使机位运动与视线转移同步。
+  keywords:
+  - 同步
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 视线匹配
+  - 运动
+  topic: shot_language
+  quote: |-
+    It’s only once Katie motions to Doug that the camera pans right, and Harry’s eyeline shifts to camera right.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-an-eyeline-match/
+    title: The Eyeline Match
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:49+00:00'
+    sha256: 43b5c9bb348707f7143e85f8b19b5a539b1a2d0f0ebcea7657fbe016ed00ab28
+  chunk_id: what-is-an-eyeline-match#000
+  source_span:
+    chunk_id: what-is-an-eyeline-match#000
+    start: 2001
+    end: 2109
+  provenance_kind: 网络语料
+- id: gen_edit_0266
+  domain: editing
+  title: 空间转移回跟拍机位
+  content: 当动作转移到房间另一侧（如有人被拦住）时，切回先前建立的跟拍机位，用既有运动镜头覆盖新区域，避免新增机位。
+  keywords:
+  - 机位复用
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  topic: shot_language
+  quote: |-
+    When Duggar restrains Dormer on the other side of the room, I believe we cut back to our tracking shot camera setup from earlier (11).
+  source_ref:
+    url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: Shot Reverse Shot
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:55+00:00'
+    sha256: a98b58529fc2ef14a8c6ac14623d5c16d824afefa3e4cf4d86b01d82390c9074
+  chunk_id: shot-reverse-shot-cutaways-coverage#000
+  source_span:
+    chunk_id: shot-reverse-shot-cutaways-coverage#000
+    start: 605
+    end: 739
+  provenance_kind: 网络语料
+- id: gen_edit_0267
+  domain: editing
+  title: 指控升级切特写
+  content: 当对白转为指控、情绪升级时，切到特写，并在对话双方及起身介入者之间做匹配特写，保持视线与景别一致。
+  keywords:
+  - 匹配剪辑
+  - 情绪升级
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 匹配
+  - 对话
+  topic: shot_language
+  quote: |-
+    When Dormer becomes more accusatory, the camera moves to a close-up shot (12) matched both on Finch (13) and on Ellie when she stands up (14).
+  source_ref:
+    url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: Shot Reverse Shot
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:55+00:00'
+    sha256: a98b58529fc2ef14a8c6ac14623d5c16d824afefa3e4cf4d86b01d82390c9074
+  chunk_id: shot-reverse-shot-cutaways-coverage#000
+  source_span:
+    chunk_id: shot-reverse-shot-cutaways-coverage#000
+    start: 423
+    end: 565
+  provenance_kind: 网络语料
+- id: gen_edit_0268
+  domain: editing
+  title: 换机位不换视线方向
+  content: 当某人物抢走另一人物的注意力时，可把机位移到说话人肩膀的另一侧，但被注视者的视线方向保持不变（仍朝原方向），以维持视线连续性而不破坏轴线。
+  keywords:
+  - 视线连续
+  - 过肩
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 轴线
+  - 机位调度
+  - 连续性
+  topic: shot_language
+  quote: |-
+    the Coens move the camera to the other side of Ozzie’s shoulders, but you’ll notice that Harry’s eyeline is still camera left.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-an-eyeline-match/
+    title: The Eyeline Match
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:49+00:00'
+    sha256: 43b5c9bb348707f7143e85f8b19b5a539b1a2d0f0ebcea7657fbe016ed00ab28
+  chunk_id: what-is-an-eyeline-match#000
+  source_span:
+    chunk_id: what-is-an-eyeline-match#000
+    start: 1841
+    end: 1967
+  provenance_kind: 网络语料
+- id: gen_edit_0269
+  domain: editing
+  title: 多视线表现注意力转移
+  content: 当第三个人物进入场景时，用多条视线分别指向不同对象，以此表现注意力区域、反应和人物间的权力关系；谁被注视、谁被忽略由视线指向直接传达。
+  keywords:
+  - 权力关系
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 调度
+  - 群戏
+  - 视线匹配
+  topic: shot_language
+  quote: |-
+    Once Katie arrives we now have multiple eyelines that the Coens use to show areas of attention, reactions, and power dynamics within the scene.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-an-eyeline-match/
+    title: The Eyeline Match
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:49+00:00'
+    sha256: 43b5c9bb348707f7143e85f8b19b5a539b1a2d0f0ebcea7657fbe016ed00ab28
+  chunk_id: what-is-an-eyeline-match#000
+  source_span:
+    chunk_id: what-is-an-eyeline-match#000
+    start: 1646
+    end: 1789
+  provenance_kind: 网络语料
+- id: gen_edit_0270
+  domain: editing
+  title: 跳切表达情绪不稳
+  content: 当要外化角色崩溃、悲伤或精神碎片化的内心时，用跳切在同一机位内跳过时间，制造断裂感；不必交代动作全过程（如剪发），直接切到结果以保留私密感。
+  keywords:
+  - 情绪外化
+  - 时间省略
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 悲伤
+  tags:
+  - 省略
+  topic: shot_language
+  quote: |-
+    The jump cuts serve as a visual representation of Ritchie's unstable and fragmented emotional state.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+    title: The Jump Cut
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:35+00:00'
+    sha256: d9696742076c51b114a0370f66b4e179f772e238164493b2d414a24d4f454109
+  chunk_id: what-is-a-jump-cut#000
+  source_span:
+    chunk_id: what-is-a-jump-cut#000
+    start: 312
+    end: 412
+  provenance_kind: 网络语料
+- id: gen_edit_0271
+  domain: editing
+  title: 推近加高强化压迫
+  content: 当角色逼近、冲突升级时，让机位同时推近并升高，放大俯角与紧张感，用机位运动而非剪辑来加压。
+  keywords:
+  - 推镜
+  - 升高机位
+  - 俯角
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 压迫
+  tags:
+  - 推镜
+  - 俯拍
+  topic: shot_language
+  quote: |-
+    camera setup (5) pushes in closer and higher, amplifying both the high angle and the tension in the scene.
+  source_ref:
+    url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: Shot Reverse Shot
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:55+00:00'
+    sha256: a98b58529fc2ef14a8c6ac14623d5c16d824afefa3e4cf4d86b01d82390c9074
+  chunk_id: shot-reverse-shot-cutaways-coverage#000
+  source_span:
+    chunk_id: shot-reverse-shot-cutaways-coverage#000
+    start: 269
+    end: 375
+  provenance_kind: 网络语料
+- id: gen_edit_0272
+  domain: editing
+  title: 让观众体验与角色同步
+  content: 当角色遭遇震惊发现时，用与情绪同等震撼的镜头语言（如轴向切逼近死亡）让观众的体验与角色对齐，而非平铺直叙。
+  keywords:
+  - 体验同步
+  - 轴向切
+  - 震惊
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 震惊
+  tags:
+  - 轴向切
+  - 情绪
+  - 调度
+  topic: shot_language
+  quote: |-
+    the shocking discovery is given an equally shocking presentation as the axial cuts bring us closer and closer to death.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+    title: The Jump Cut
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:35+00:00'
+    sha256: d9696742076c51b114a0370f66b4e179f772e238164493b2d414a24d4f454109
+  chunk_id: what-is-a-jump-cut#000
+  source_span:
+    chunk_id: what-is-a-jump-cut#000
+    start: 1919
+    end: 2038
+  provenance_kind: 网络语料
+- id: gen_edit_0273
+  domain: editing
+  title: 重复机位省搭建
+  content: 当角色重新进入先前已建立的空间关系时，直接回到原有机位（如中景、前景带人），不必为每次走位新建机位，用重复机位维持空间连续并节省搭建。
+  keywords:
+  - 机位复用
+  - 空间连续
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 连续性
+  - 调度
+  topic: shot_language
+  quote: |-
+    As Dormer gets right up in Finch’s space, we return to camera setup (7)
+  source_ref:
+    url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: Shot Reverse Shot
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:55+00:00'
+    sha256: a98b58529fc2ef14a8c6ac14623d5c16d824afefa3e4cf4d86b01d82390c9074
+  chunk_id: shot-reverse-shot-cutaways-coverage#000
+  source_span:
+    chunk_id: shot-reverse-shot-cutaways-coverage#000
+    start: 0
+    end: 71
+  provenance_kind: 网络语料
+- id: gen_edit_0274
+  domain: editing
+  title: 纯剪辑叙事
+  content: 当需要只靠剪辑与观众沟通时，用镜头并置传递含义，不依赖对白或字幕说明。
+  keywords:
+  - 并置
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 蒙太奇
+  topic: shot_language
+  quote: |-
+    The Kuleshov effect is still widely used in cinema today, as it allows a filmmaker to communicate with the audience solely through editing.
+  source_ref:
+    url: https://www.studiobinder.com/blog/soviet-montage-theory/
+    title: Soviet Montage Theory
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:43+00:00'
+    sha256: 66bf0f37bf3567b46a0529f8db97db7a04dfe3834674f740abfcb4f314321c36
+  chunk_id: soviet-montage-theory#000
+  source_span:
+    chunk_id: soviet-montage-theory#000
+    start: 1187
+    end: 1326
+  provenance_kind: 网络语料
+- id: gen_edit_0275
+  domain: editing
+  title: 动作匹配表现人物状态
+  content: 当需要外化人物游离、失焦的心理状态时，用动作匹配剪辑让角色在前一镜的动作于另一空间落地，使观众感到其不知身在何处。
+  keywords:
+  - 心理外化
+  - 空间跳转
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 疏离
+  tags:
+  - 匹配剪辑
+  topic: shot_language
+  quote: |-
+    Benjamin pulls himself up onto an inflatable raft in a swimming pool but when we cut, he lands somewhere else.
+  source_ref:
+    url: https://www.studiobinder.com/blog/match-cuts-creative-transitions-examples/
+    title: Match Cuts
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:38+00:00'
+    sha256: 2aca6c24bc43f1d4408d27878560fd2c026156bf82e67c00a2e55d99e09d8572
+  chunk_id: match-cuts-creative-transitions-examples#000
+  source_span:
+    chunk_id: match-cuts-creative-transitions-examples#000
+    start: 690
+    end: 800
+  provenance_kind: 网络语料
+- id: gen_edit_0276
+  domain: editing
+  title: 开场蒙太奇做铺垫
+  content: 影片开场可用蒙太奇把一段完整人生或长期关系浓缩成几分钟的情绪段落，同时完成背景交代与情感铺垫。
+  keywords:
+  - 开场蒙太奇做铺垫
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 感伤
+  tags:
+  - 开场段落
+  - 情绪
+  topic: shot_language
+  quote: |-
+    The opening scene condenses an entire lifetime of love into a few emotional minutes.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-montage-definition/
+    title: The Montage
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:41+00:00'
+    sha256: 62bd9722252cd2e130dcc20ec24746e228abc7040fd9452948b113d1c41f5efd
+  chunk_id: what-is-a-montage-definition#000
+  source_span:
+    chunk_id: what-is-a-montage-definition#000
+    start: 419
+    end: 503
+  provenance_kind: 网络语料
+- id: gen_edit_0277
+  domain: editing
+  title: 先做镜头表再谈覆盖
+  content: 拍摄前应先完成镜头表（shot list）与前期规划，覆盖是建立在镜头表基础上的；不要到现场才决定怎么拍。
+  keywords:
+  - 前期规划
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 前期筹备
+  topic: shot_language
+  quote: |-
+    In many ways, shot listing is the basis for coverage
+  source_ref:
+    url: https://www.studiobinder.com/blog/film-coverage/
+    title: Film Coverage
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:52+00:00'
+    sha256: 009cefe1e2d1518769a1da67898da1cd397f390e5819743e031e6ab55aae70f4
+  chunk_id: film-coverage#000
+  source_span:
+    chunk_id: film-coverage#000
+    start: 1750
+    end: 1802
+  provenance_kind: 网络语料
+- id: gen_edit_0278
+  domain: editing
+  title: 轴向切表现恐慌
+  content: 拍摄角色逃避追捕等恐慌场面时，用连续轴向切逐次逼近主体，以突兀的景别跳变强化慌乱节奏。
+  keywords:
+  - 逼近
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 恐慌
+  tags:
+  - 节奏
+  topic: shot_language
+  quote: |-
+    here's a moment of panic in E.T. when Elliott and friends are evading the authorities.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+    title: The Jump Cut
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:35+00:00'
+    sha256: d9696742076c51b114a0370f66b4e179f772e238164493b2d414a24d4f454109
+  chunk_id: what-is-a-jump-cut#000
+  source_span:
+    chunk_id: what-is-a-jump-cut#000
+    start: 1053
+    end: 1139
+  provenance_kind: 网络语料
+- id: gen_edit_0279
+  domain: editing
+  title: 切出与插入的区别
+  content: 插入镜头只能拍物体，且必须与场景处于同一物理位置；切出镜头可含人物，但人物须脱离主线动作或对情节无关紧要。
+  keywords:
+  - 插入镜头
+  - 切出镜头
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 定义
+  topic: shot_language
+  quote: |-
+    Inserts shots can only feature objects, and must occupy the same physical location as your scene.
+  source_ref:
+    url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: Shot Reverse Shot
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:55+00:00'
+    sha256: a98b58529fc2ef14a8c6ac14623d5c16d824afefa3e4cf4d86b01d82390c9074
+  chunk_id: shot-reverse-shot-cutaways-coverage#000
+  source_span:
+    chunk_id: shot-reverse-shot-cutaways-coverage#000
+    start: 1732
+    end: 1829
+  provenance_kind: 网络语料
+- id: gen_edit_0280
+  domain: editing
+  title: 动作匹配剪辑的叙事作用
+  content: 用动作匹配剪辑连接两场戏时，让前一镜的动作在后一镜以相同或相似动作接续，可制造叙事推进感并强调两场戏之间的物理关联。
+  keywords:
+  - 叙事推进
+  - 场景连接
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 转场
+  topic: shot_language
+  quote: |-
+    match on action cuts generate a narrative momentum that highlight the physical connections between two scenes
+  source_ref:
+    url: https://www.studiobinder.com/blog/match-cuts-creative-transitions-examples/
+    title: Match Cuts
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:38+00:00'
+    sha256: 2aca6c24bc43f1d4408d27878560fd2c026156bf82e67c00a2e55d99e09d8572
+  chunk_id: match-cuts-creative-transitions-examples#000
+  source_span:
+    chunk_id: match-cuts-creative-transitions-examples#000
+    start: 12
+    end: 121
+  provenance_kind: 网络语料
+- id: gen_edit_0281
+  domain: editing
+  title: J-cut与L-cut
+  content: 用声音重叠两场戏时：J-cut让场景1的声音延续进入场景2；L-cut让场景2的声音先于画面出现。
+  keywords:
+  - 声音重叠
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 声音剪辑
+  - 转场
+  topic: shot_language
+  quote: |-
+    With a J-cut, the sound of Scene 1 is continued into the Scene 2. With an L-cut, Scene 2 is heard before we see the images.
+  source_ref:
+    url: https://www.studiobinder.com/blog/match-cuts-creative-transitions-examples/
+    title: Match Cuts
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:38+00:00'
+    sha256: 2aca6c24bc43f1d4408d27878560fd2c026156bf82e67c00a2e55d99e09d8572
+  chunk_id: match-cuts-creative-transitions-examples#000
+  source_span:
+    chunk_id: match-cuts-creative-transitions-examples#000
+    start: 1923
+    end: 2046
+  provenance_kind: 网络语料
+- id: gen_edit_0282
+  domain: editing
+  title: 节奏蒙太奇与音乐
+  content: 节奏蒙太奇的剪辑间隔参照乐谱的节拍来设定，使画面切换与音乐脉动同步。
+  keywords:
+  - 乐谱
+  - 节拍
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: shot_language
+  quote: |-
+    The Metric Montage is inspired by the pacing of a musical score, AKA the meter.
+  source_ref:
+    url: https://www.studiobinder.com/blog/soviet-montage-theory/
+    title: Soviet Montage Theory
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:43+00:00'
+    sha256: 66bf0f37bf3567b46a0529f8db97db7a04dfe3834674f740abfcb4f314321c36
+  chunk_id: soviet-montage-theory#000
+  source_span:
+    chunk_id: soviet-montage-theory#000
+    start: 1550
+    end: 1629
+  provenance_kind: 网络语料
+- id: gen_edit_0283
+  domain: editing
+  title: 蒙太奇构建格式塔
+  content: 蒙太奇段落的功能是构建格式塔：单个镜头不承载完整意义，靠镜头并置让观众自行合成整体印象，从而影响影片基调。
+  keywords:
+  - 并置
+  - 基调
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 蒙太奇理论
+  - 剪辑
+  topic: shot_language
+  quote: |-
+    By building a gestalt.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-montage-definition/
+    title: The Montage
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:41+00:00'
+    sha256: 62bd9722252cd2e130dcc20ec24746e228abc7040fd9452948b113d1c41f5efd
+  chunk_id: what-is-a-montage-definition#000
+  source_span:
+    chunk_id: what-is-a-montage-definition#000
+    start: 2028
+    end: 2050
+  provenance_kind: 网络语料
+- id: gen_edit_0284
+  domain: editing
+  title: 轴向切表现惊骇
+  content: 表现极度恐惧或震惊时，用轴向切连续切近至尖叫的嘴部等局部，以越来越近的景别制造同等震撼的呈现。
+  keywords:
+  - 特写
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 恐惧
+  tags:
+  - 特写
+  - 惊悚
+  topic: shot_language
+  quote: |-
+    the shots cut closer and closer to her screaming mouth.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+    title: The Jump Cut
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:35+00:00'
+    sha256: d9696742076c51b114a0370f66b4e179f772e238164493b2d414a24d4f454109
+  chunk_id: what-is-a-jump-cut#000
+  source_span:
+    chunk_id: what-is-a-jump-cut#000
+    start: 1441
+    end: 1496
+  provenance_kind: 网络语料
+- id: gen_edit_0285
+  domain: editing
+  title: 覆盖的定义
+  content: 覆盖（coverage）指为传达一场戏的视觉语言所需的全部素材总量；若未拍够所需镜头，即视为覆盖缺失，严重时需补拍。
+  keywords:
+  - 素材总量
+  - 视觉语言
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜规划
+  topic: shot_language
+  quote: |-
+    Film coverage is the total amount of footage needed to communicate the visual purpose/language of a scene.
+  source_ref:
+    url: https://www.studiobinder.com/blog/film-coverage/
+    title: Film Coverage
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:52+00:00'
+    sha256: 009cefe1e2d1518769a1da67898da1cd397f390e5819743e031e6ab55aae70f4
+  chunk_id: film-coverage#000
+  source_span:
+    chunk_id: film-coverage#000
+    start: 1916
+    end: 2022
+  provenance_kind: 网络语料
+- id: gen_edit_0286
+  domain: editing
+  title: 镜头贴合音乐节拍
+  content: 让每个镜头的切换都贴合音乐节拍，可形成连贯、引人入胜的段落（如《爆裂鼓手》剪辑）。
+  keywords:
+  - 连贯性
+  - 剪辑
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 蒙太奇
+  - 节奏
+  topic: shot_language
+  quote: |-
+    each shot keeps to the pace of the music, which ultimately creates an engrossing continuity
+  source_ref:
+    url: https://www.studiobinder.com/blog/soviet-montage-theory/
+    title: Soviet Montage Theory
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:43+00:00'
+    sha256: 66bf0f37bf3567b46a0529f8db97db7a04dfe3834674f740abfcb4f314321c36
+  chunk_id: soviet-montage-theory#000
+  source_span:
+    chunk_id: soviet-montage-theory#000
+    start: 2199
+    end: 2290
+  provenance_kind: 网络语料
+- id: gen_edit_0287
+  domain: editing
+  title: 调性蒙太奇
+  content: 调性蒙太奇以镜头整体的情绪基调（而非帧数或节拍）为依据来组接，用于统一段落的情感色彩。
+  keywords:
+  - 情绪基调
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 情绪
+  topic: shot_language
+  quote: |-
+    Tonal Montage
+  source_ref:
+    url: https://www.studiobinder.com/blog/soviet-montage-theory/
+    title: Soviet Montage Theory
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:43+00:00'
+    sha256: 66bf0f37bf3567b46a0529f8db97db7a04dfe3834674f740abfcb4f314321c36
+  chunk_id: soviet-montage-theory#000
+  source_span:
+    chunk_id: soviet-montage-theory#000
+    start: 2311
+    end: 2324
+  provenance_kind: 网络语料
+- id: gen_edit_0288
+  domain: editing
+  title: 轴向切与变焦的区别
+  content: 轴向切效果近似变焦镜头，但变焦是渐变，轴向切是突变、突兀且具冲击力；需要突兀感时用轴向切而非平滑推拉。
+  keywords:
+  - 突变
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 突兀
+  topic: shot_language
+  quote: |-
+    Axial cuts function very similar to a zoom shot but without the gradual change — the changes here are abrupt and jarring.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+    title: The Jump Cut
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:35+00:00'
+    sha256: d9696742076c51b114a0370f66b4e179f772e238164493b2d414a24d4f454109
+  chunk_id: what-is-a-jump-cut#000
+  source_span:
+    chunk_id: what-is-a-jump-cut#000
+    start: 917
+    end: 1038
+  provenance_kind: 网络语料
+- id: gen_edit_0289
+  domain: editing
+  title: 轴向切定义
+  content: 轴向切是跳切的子类型：机位角度不变、不跳过时间，只瞬间改变焦距（更长或更短），使主体在画面中突然变大或变小。
+  keywords:
+  - 焦距
+  - 机位
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 跳切
+  topic: shot_language
+  quote: |-
+    the axial cut simply jumps the perspective of the camera without skipping time.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+    title: The Jump Cut
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:35+00:00'
+    sha256: d9696742076c51b114a0370f66b4e179f772e238164493b2d414a24d4f454109
+  chunk_id: what-is-a-jump-cut#000
+  source_span:
+    chunk_id: what-is-a-jump-cut#000
+    start: 622
+    end: 701
+  provenance_kind: 网络语料
+- id: gen_edit_0290
+  domain: editing
+  title: 训练蒙太奇写成长
+  content: 需要短时间内表现角色转变与成长时用训练蒙太奇：角色为故事中的大事件训练，起点是无望、终点是战士，以此建立后续剧情的铺垫。
+  keywords:
+  - 角色成长
+  - 转变
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 励志
+  tags:
+  - 角色弧线
+  - 段落结构
+  topic: shot_language
+  quote: |-
+    In training montages, characters train for a big event in the story.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-a-montage-definition/
+    title: The Montage
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:41+00:00'
+    sha256: 62bd9722252cd2e130dcc20ec24746e228abc7040fd9452948b113d1c41f5efd
+  chunk_id: what-is-a-montage-definition#000
+  source_span:
+    chunk_id: what-is-a-montage-definition#000
+    start: 1903
+    end: 1971
+  provenance_kind: 网络语料

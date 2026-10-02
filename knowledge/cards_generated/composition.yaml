@@ -7974,3 +7974,342 @@
     start: 1225
     end: 1308
   provenance_kind: 网络语料
+- id: gen_comp_0282
+  domain: composition
+  title: 三分法是指导非硬规则
+  content: 三分法只是可靠的构图指导原则而非硬性规则，可作为初学者入门的起点，允许按需打破。
+  keywords:
+  - 指导原则
+  - 构图
+  - 入门
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 原则
+  topic: shot_language
+  quote: |-
+    Like most other filmmaking “rules,” it’s not really a rule at all — more of a golden guideline.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-the-rule-of-thirds/
+    title: The Rule of Thirds
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:02+00:00'
+    sha256: 41c896460d94801de05cfd4fa1882674815f68ae5ad366b255ec9b86f83166ca
+  chunk_id: what-is-the-rule-of-thirds#000
+  source_span:
+    chunk_id: what-is-the-rule-of-thirds#000
+    start: 1122
+    end: 1217
+  provenance_kind: 网络语料
+- id: gen_comp_0283
+  domain: composition
+  title: 对称破格制造张力
+  content: 当需要把观众视线强行钉在画面中心、制造紧张感时，可以打破三分法，把人物放在正中做完全对称构图；这种破格只在有明确叙事理由时使用。
+  keywords:
+  - 居中
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 紧张
+  tags:
+  - 居中构图
+  topic: shot_language
+  quote: |-
+    Gilroy puts Lou in the center of the screen, ignoring the rule of thirds.
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#001
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#001
+    start: 1736
+    end: 1809
+  provenance_kind: 网络语料
+- id: gen_comp_0284
+  domain: composition
+  title: 三分法交点构图
+  content: 把画面想象成井字棋盘，两条竖线两条横线；拍摄时把主体或兴趣点放在四条线的交点上，比放在正中更悦目，同时交点位置的选择本身就在交代角色在世界中的位置。
+  keywords:
+  - 井字构图
+  - 兴趣点
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: shot_language
+  quote: |-
+    As the camera frames your shot, keep the image on the intersecting lines. It’s more pleasing to the eye.
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#001
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#001
+    start: 142
+    end: 246
+  provenance_kind: 网络语料
+- id: gen_comp_0285
+  domain: composition
+  title: 双人三分法站位
+  content: 拍两人同框时，仍画出井字格，把两个角色分别放在交点两侧，使两人各占一条竖线附近，形成平衡又保持间隔。
+  keywords:
+  - 平衡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 双人构图
+  topic: shot_language
+  quote: |-
+    Put a character on either side of the intersecting lines.
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#001
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#001
+    start: 798
+    end: 855
+  provenance_kind: 网络语料
+- id: gen_comp_0286
+  domain: composition
+  title: 地平线置于三分线
+  content: 拍摄含地平线的镜头时，把地平线放在上方或下方的水平三分线上，而不是居中。
+  keywords:
+  - 水平线
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  topic: shot_language
+  quote: |-
+    It is also suggested that any horizon is placed on either the top horizontal line or bottom horizontal line.
+  source_ref:
+    url: https://www.studiobinder.com/blog/what-is-the-rule-of-thirds/
+    title: The Rule of Thirds
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:02+00:00'
+    sha256: 41c896460d94801de05cfd4fa1882674815f68ae5ad366b255ec9b86f83166ca
+  chunk_id: what-is-the-rule-of-thirds#000
+  source_span:
+    chunk_id: what-is-the-rule-of-thirds#000
+    start: 2266
+    end: 2374
+  provenance_kind: 网络语料
+- id: gen_comp_0287
+  domain: composition
+  title: 构图维持观众投入
+  content: 掌握并善用构图规则，能让观众从开场到结尾持续保持投入。
+  keywords:
+  - 节奏
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 观众注意力
+  topic: shot_language
+  quote: |-
+    Knowing the rules of shot composition and using them well can keep your audience engaged from beginning to end.
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#000
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#000
+    start: 1358
+    end: 1469
+  provenance_kind: 网络语料
+- id: gen_comp_0288
+  domain: composition
+  title: 构图定义
+  content: 构图指场景元素在摄影机画框内的排列方式；镜头构图则是通过视觉元素的安排来传达特定信息。
+  keywords:
+  - 画框
+  - 视觉元素
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: shot_language
+  quote: |-
+    Composition refers to the way elements of a scene are arranged in a camera frame.
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#000
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#000
+    start: 2020
+    end: 2101
+  provenance_kind: 网络语料
+- id: gen_comp_0289
+  domain: composition
+  title: 规则可破
+  content: 构图规则在多数情况下可依赖，但最出彩的用法往往是反其道而行；规则是为被打破而设的。
+  keywords:
+  - 打破
+  - 反常规
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 构图
+  - 反常规
+  topic: shot_language
+  quote: |-
+    the rules of composition are made to be broken
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#000
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#000
+    start: 1688
+    end: 1734
+  provenance_kind: 网络语料
+- id: gen_comp_0290
+  domain: composition
+  title: 对称揭示权力关系
+  content: 用平衡与对称构图时，画面往往用来揭示人物性格与权力关系，例如库布里克在《全金属外壳》《2001太空漫游》中的对称镜头。
+  keywords:
+  - 性格
+  - 平衡
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: shot_language
+  quote: |-
+    They often reveal character traits and power dynamics.
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#001
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#001
+    start: 2285
+    end: 2339
+  provenance_kind: 网络语料
+- id: gen_comp_0291
+  domain: composition
+  title: 侧脸暗示不可信
+  content: 要塑造不可信、有距离感的角色，让他偏离中心，并且只露出侧脸轮廓而非正脸；观众很少看到正脸的人难以被信任。
+  keywords:
+  - 偏离中心
+  - 距离感
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 不信任
+  tags:
+  - 构图
+  - 人物塑造
+  topic: shot_language
+  quote: |-
+    In many scenes, Lou is placed off-center and only the side of his face is visible.
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#001
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#001
+    start: 930
+    end: 1012
+  provenance_kind: 网络语料
+- id: gen_comp_0292
+  domain: composition
+  title: 偏置构图孤立角色
+  content: 要表现角色被孤立、与所处世界疏离时，把人物放在画面一侧、远离三分线交点或远离画面中心，用留白把他与周围环境隔开。
+  keywords:
+  - 留白
+  - 疏离
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: 疏离
+  tags:
+  - 三分法
+  - 留白
+  topic: shot_language
+  quote: |-
+    Lou appears on the side of the frame, away from the world he exists in.
+  source_ref:
+    url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: Rules of Shot Composition in Film
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:04:58+00:00'
+    sha256: 6063057e737d8ae389e363ae702d117684a171e77f80db9f7be53c0c70376a68
+  chunk_id: rules-of-shot-composition-in-film#001
+  source_span:
+    chunk_id: rules-of-shot-composition-in-film#001
+    start: 494
+    end: 565
+  provenance_kind: 网络语料

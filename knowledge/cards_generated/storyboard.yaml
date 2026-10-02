@@ -7202,3 +7202,388 @@
     start: 0
     end: 139
   provenance_kind: 网络语料
+- id: gen_story_0291
+  domain: storyboard
+  title: 统一术语沟通镜头运动
+  content: 分镜中标注任何镜头运动时，必须使用行业标准术语（如 pan、tilt、zoom、tracking），以便准确向团队传达创作意图，避免自造词造成误读。
+  keywords:
+  - 统一术语沟通镜头运动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜标注
+  - 术语规范
+  topic: shot_language
+  quote: |-
+    No matter what camera move is in the shot, be sure to use the correct terminology to effectively communicate your vision.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-camera-movement/
+    title: Storyboard Camera Movement
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:58+00:00'
+    sha256: e0f8aba7ce5126bd5f3d0705b1ec419f05f4062a2f24e30b845ba8e0d32d321e
+  chunk_id: storyboard-camera-movement#001
+  source_span:
+    chunk_id: storyboard-camera-movement#001
+    start: 68
+    end: 189
+  provenance_kind: 网络语料
+- id: gen_story_0292
+  domain: storyboard
+  title: 基础运镜术语清单
+  content: 分镜标注运镜时优先使用基础术语：变焦、横摇（pan）、俯仰（tilt）、推轨（dolly）、跟拍（tracking）、升降（pedestal）；进阶运动如滑动变焦（dolly zoom）需另行注明。
+  keywords:
+  - 变焦
+  - 横摇
+  - 推轨
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: shot_language
+  quote: |-
+    The most fundamental camera moves are the zoom shot, camera pan, tilt shot, dolly shot, tracking shot, or pedestal.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-camera-movement/
+    title: Storyboard Camera Movement
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:58+00:00'
+    sha256: e0f8aba7ce5126bd5f3d0705b1ec419f05f4062a2f24e30b845ba8e0d32d321e
+  chunk_id: storyboard-camera-movement#000
+  source_span:
+    chunk_id: storyboard-camera-movement#000
+    start: 2027
+    end: 2142
+  provenance_kind: 网络语料
+- id: gen_story_0293
+  domain: storyboard
+  title: 每格讲一个故事节拍
+  content: 分镜每格应能独立传达一个故事节拍；若单格已能说清该节拍，就不要拆成多格，保持经济。
+  keywords:
+  - 分镜格
+  - 经济性
+  rules:
+  - '1'
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 节奏
+  topic: shot_language
+  quote: |-
+    If a single panel can communicate everything for that particular story beat, do it.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-rules/
+    title: Storyboard Rules
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:06:04+00:00'
+    sha256: af24999b7f8605e29d59c4ae5a77f4417052466ac11ce195768ddff1a406789c
+  chunk_id: storyboard-rules#000
+  source_span:
+    chunk_id: storyboard-rules#000
+    start: 1870
+    end: 1953
+  provenance_kind: 网络语料
+- id: gen_story_0294
+  domain: storyboard
+  title: 先定画幅比再构图
+  content: 分镜阶段先确定画幅比，再按构图基本规则安排角色在画面中的位置与其余景物的关系。
+  keywords:
+  - 角色位置
+  rules:
+  - '2'
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags: []
+  topic: shot_language
+  quote: |-
+    One of the benefits of storyboarding is the ability to compose your shots.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-rules/
+    title: Storyboard Rules
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:06:04+00:00'
+    sha256: af24999b7f8605e29d59c4ae5a77f4417052466ac11ce195768ddff1a406789c
+  chunk_id: storyboard-rules#000
+  source_span:
+    chunk_id: storyboard-rules#000
+    start: 2130
+    end: 2204
+  provenance_kind: 网络语料
+- id: gen_story_0295
+  domain: storyboard
+  title: 分镜构图的三要素
+  content: 在分镜中表达构图时，至少标注三项：景别（shot size）、镜头类型（shot type）、摄影机运动（camera movement）。
+  keywords:
+  - 景别
+  - 镜头类型
+  - 摄影机运动
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜格式
+  - 标注项
+  topic: shot_language
+  quote: |-
+    Elements of storyboard composition
+
+    Shot size
+
+    Shot type
+
+    Camera movement
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-composition-techniques/
+    title: Storyboard Composition Techniques
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:06:01+00:00'
+    sha256: 5ab2495a6bfd336ded21a10de481c09b588de4eae9474da1b5972dc45248fd91
+  chunk_id: storyboard-composition-techniques#000
+  source_span:
+    chunk_id: storyboard-composition-techniques#000
+    start: 2278
+    end: 2351
+  provenance_kind: 网络语料
+- id: gen_story_0296
+  domain: storyboard
+  title: 用箭头表示运动方向
+  content: 在分镜画面内绘制箭头来表示该镜头的摄影机运动方向，使读者能直观看出运动走向；箭头是镜头运动的视觉化表示。
+  keywords:
+  - 视觉化
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜符号
+  topic: shot_language
+  quote: |-
+    Arrows are a visual representation of the camera movement of a shot.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-camera-movement/
+    title: Storyboard Camera Movement
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:58+00:00'
+    sha256: e0f8aba7ce5126bd5f3d0705b1ec419f05f4062a2f24e30b845ba8e0d32d321e
+  chunk_id: storyboard-camera-movement#001
+  source_span:
+    chunk_id: storyboard-camera-movement#001
+    start: 432
+    end: 500
+  provenance_kind: 网络语料
+- id: gen_story_0297
+  domain: storyboard
+  title: 复杂调度可拆多格
+  content: 当某镜的走位与场面调度复杂时，可用多格连续面板追踪运动轨迹；但仅限确有需要，避免为简单镜头滥拆。
+  keywords:
+  - 走位
+  rules:
+  - '1'
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  topic: shot_language
+  quote: |-
+    For complicated blocking and staging in a particular shot, multiple panels can be created to track the movements.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-rules/
+    title: Storyboard Rules
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:06:04+00:00'
+    sha256: af24999b7f8605e29d59c4ae5a77f4417052466ac11ce195768ddff1a406789c
+  chunk_id: storyboard-rules#000
+  source_span:
+    chunk_id: storyboard-rules#000
+    start: 1629
+    end: 1742
+  provenance_kind: 网络语料
+- id: gen_story_0298
+  domain: storyboard
+  title: 角色运动用箭头标注
+  content: 当画面中角色有位移或动作时，用箭头标出每个角色的运动方向与路径，主角与背景群演（如舞群）都要分别标注，使静态画格能读出调度。
+  keywords:
+  - 调度
+  - 群演
+  - 方向
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 角色调度
+  - 分镜符号
+  topic: shot_language
+  quote: |-
+    Pay attention to how storyboard arrows are used for the lead characters as well as the background dancers as well.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-arrows-meaning/
+    title: Storyboard Arrows Meaning
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:06:07+00:00'
+    sha256: a3ed0f9b170fc7fd51c5f0eecfe36989d43072affdb028ace555366a4ecf1b3c
+  chunk_id: storyboard-arrows-meaning#000
+  source_span:
+    chunk_id: storyboard-arrows-meaning#000
+    start: 784
+    end: 898
+  provenance_kind: 网络语料
+- id: gen_story_0299
+  domain: storyboard
+  title: 运镜需图文双通道
+  content: 把运镜写进分镜要同时具备描述性（文字说明）与视觉性（画面/箭头）两个部分，缺一不可，才能让团队准确理解镜头运动。
+  keywords:
+  - 描述性
+  - 视觉性
+  - 沟通
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  topic: shot_language
+  quote: |-
+    Incorporating camera moves and camera movement into a storyboard requires both a descriptive and visual component.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-camera-movement/
+    title: Storyboard Camera Movement
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:58+00:00'
+    sha256: e0f8aba7ce5126bd5f3d0705b1ec419f05f4062a2f24e30b845ba8e0d32d321e
+  chunk_id: storyboard-camera-movement#000
+  source_span:
+    chunk_id: storyboard-camera-movement#000
+    start: 1597
+    end: 1711
+  provenance_kind: 网络语料
+- id: gen_story_0300
+  domain: storyboard
+  title: 构图定义与要素
+  content: 构图指场景元素在画面中的排列方式以及摄影机的调度方式；具体由机位、演员与道具陈设的布局、镜头、角度和运动共同决定，分镜需把这些要素逐项写清。
+  keywords:
+  - 机位
+  - 调度
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 术语定义
+  topic: shot_language
+  quote: |-
+    Composition refers to the way elements of a scene are arranged in a camera frame as well as how a camera is staged to frame a shot.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-composition-techniques/
+    title: Storyboard Composition Techniques
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:06:01+00:00'
+    sha256: 5ab2495a6bfd336ded21a10de481c09b588de4eae9474da1b5972dc45248fd91
+  chunk_id: storyboard-composition-techniques#000
+  source_span:
+    chunk_id: storyboard-composition-techniques#000
+    start: 1640
+    end: 1771
+  provenance_kind: 网络语料
+- id: gen_story_0301
+  domain: storyboard
+  title: 分镜须预演运动
+  content: 画分镜时要意识到静态草图最终会变成动态影像，因此必须同时标注摄影机运动与角色走位，而不是只画单帧构图。
+  keywords:
+  - 摄影机运动
+  - 走位
+  - 动态预演
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜写法
+  - 镜头运动
+  topic: shot_language
+  quote: |-
+    Knowing that your static sketches will one day become moving pictures, it is important to storyboard camera moves and character blocking.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-arrows-meaning/
+    title: Storyboard Arrows Meaning
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:06:07+00:00'
+    sha256: a3ed0f9b170fc7fd51c5f0eecfe36989d43072affdb028ace555366a4ecf1b3c
+  chunk_id: storyboard-arrows-meaning#000
+  source_span:
+    chunk_id: storyboard-arrows-meaning#000
+    start: 1390
+    end: 1527
+  provenance_kind: 网络语料
+- id: gen_story_0302
+  domain: storyboard
+  title: 箭头画法可灵活判断
+  content: 箭头画法并非唯一标准，画师可自行判断，但必须把箭头画在方向与位置上易于理解的地方，以可读性优先。
+  keywords:
+  - 可读性
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 分镜符号
+  - 可读性
+  topic: shot_language
+  quote: |-
+    Use your judgment when drawing these arrows and draw them in a direction and position that is easily understandable.
+  source_ref:
+    url: https://www.studiobinder.com/blog/storyboard-camera-movement/
+    title: Storyboard Camera Movement
+    author: StudioBinder
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T10:05:58+00:00'
+    sha256: e0f8aba7ce5126bd5f3d0705b1ec419f05f4062a2f24e30b845ba8e0d32d321e
+  chunk_id: storyboard-camera-movement#001
+  source_span:
+    chunk_id: storyboard-camera-movement#001
+    start: 905
+    end: 1021
+  provenance_kind: 网络语料

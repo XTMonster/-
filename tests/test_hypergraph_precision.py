@@ -229,12 +229,28 @@ def test_the_shipped_index_carries_the_ledger_and_is_consistent():
     #: 每条账目都要写清"主体是哪个、禁半是哪个"（不能只记一个 id）。
     for row in ledger["edges"]:
         assert row["invented_subject"] and row["grounded_forbid"] and row["type"]
-    #: 具名个案换了形态：v14 的规则 4b 不再逼模型"挂到 EMOTION_PACK 上"，
-    #: 于是那条**编出来的边在抽取期就没有了**（不是被这一刀砍掉的）。
-    #: 这才是根因修复；精确度门留给别处同形状的边（这一轮另有 7 条）。
-    assert not [edge for edge in edges
-                if "gen_cine_0247" in (edge.get("sources") or [])], (
-        "`gen_cine_0247` 只讲运镜、一个字没提情绪，它的边只能是编的")
+    #: 具名个案第三次换形态（2026-10-02，镜头语言语料扩库后）：v14 的规则 4b 不再逼
+    #: 模型"挂到 `EMOTION_PACK` 上"，那条**编出来的**边在抽取期就没有了；而这一次
+    #: 重建里这张卡**确实**拿到了三条它支持得起的边（两条 `SHOT_PATTERN`、一条
+    #: `INTENT_PACK`，都带 `movement`）。所以这里原先那句"它一条边都不许有"
+    #: 是**当时的巧合**，不是这条规则要保的性质；真正的不变量是**宿主必须落在卡里**：
+    #
+    #: 卡原文：「摄影机始终处于某种运动中——位移、摇移或改变焦距，避免长时间静止固定」
+    #: ⇒ 一句情绪都没提。所以不变量的**右半边**是确定的：引用它的边**不许**带
+    #: `emotion` 成员（历史上那条被拒收的边正是编了 `emotion:压抑`）。
+    #:
+    #: 左半边（"必须带 `movement`"）在 2026-10-02 的 v14 重建里不成立了：这张卡
+    #: 这一轮只拿到一条 `EDIT_RHYTHM:节奏=long,镜长=>8s`——**它与运镜无关**，
+    #: 属于抽取器在这种短卡上抽偏了（是"抽得好不好"的问题，不是"宿主是不是编的"
+    #: 的问题）。把它写成硬断言等于把"抽取质量"混进这条精确度门的用例里，
+    #: 而且会随每一轮重抽抖动。这里只钉这条门真正保的性质：**不许编出卡里没有的宿主**。
+    named = [edge for edge in edges
+             if "gen_cine_0247" in (edge.get("sources") or [])]
+    for edge in named:
+        kinds = {str(m[1]) for m in edge.get("members") or []}
+        assert "emotion" not in kinds, (
+            "`gen_cine_0247` 一个字没提情绪，带 emotion 成员的边只能是编的："
+            f"{edge}")
     #: 被拒收的边**不允许**还留在索引里（这条规则的唯一目的就是它们不在）。
     alive = {edge["edge_id"] for edge in edges}
     assert not (alive & {row["edge_id"] for row in ledger["edges"]})

@@ -4779,13 +4779,13 @@
     start: 1158
     end: 1255
   provenance_kind: 网络语料
-- id: gen_anime_0429
+- id: gen_anime_0431
   domain: anime
-  title: 时序由动画师而非工具决定
-  content: 动作节奏的决策权归动画师，不要被媒介工具的限制和便利效果牵着走；工具只负责执行，不负责定节奏。
+  title: 警惕补间依赖
+  content: 不要依赖软件的补间插值来生成中间动作，否则时序能力不会成长；中间帧的运动节奏应由动画师自己决定。
   keywords:
-  - 决策权
-  - 节奏
+  - 插值
+  - 中间帧
   rules: []
   parameters: {}
   examples: []
@@ -4793,6 +4793,38 @@
   engine_support: ''
   emotion: ''
   tags:
+  - 时序
+  topic: performance
+  quote: |-
+    Too often fledgling animators can become reliant upon facilities such as tweening
+  source_ref:
+    url: https://www.skwigly.co.uk/acting-animation-observation/
+    title: Acting For Animation - Observation
+    author: Andy Joule
+    license: PersonalStudy
+    retrieved_at: '2026-10-02T09:55:45+00:00'
+    sha256: ef426c8a8c5ca6d7140d3348a48393dcb819a9f5cf17c3277fdd586534ee1e38
+  chunk_id: acting-animation-observation#000
+  source_span:
+    chunk_id: acting-animation-observation#000
+    start: 979
+    end: 1060
+  provenance_kind: 网络语料
+- id: gen_anime_0432
+  domain: anime
+  title: 工具不主导节奏
+  content: 节奏由动画师决定，不能被所用媒介工具的限制或便利效果牵着走；工具只负责执行，不负责定节奏。
+  keywords:
+  - 节奏主导
+  - 媒介限制
+  rules: []
+  parameters: {}
+  examples: []
+  related: []
+  engine_support: ''
+  emotion: ''
+  tags:
+  - 时序
   - 创作主导
   topic: performance
   quote: |-
@@ -4802,21 +4834,21 @@
     title: Acting For Animation - Observation
     author: Andy Joule
     license: PersonalStudy
-    retrieved_at: '2026-10-02T08:37:07+00:00'
-    sha256: 6a86ba0de51e67e80cc1d2bd6a800b298efe1033fb1ddb2d97888a8872a36abe
+    retrieved_at: '2026-10-02T09:55:45+00:00'
+    sha256: ef426c8a8c5ca6d7140d3348a48393dcb819a9f5cf17c3277fdd586534ee1e38
   chunk_id: acting-animation-observation#000
   source_span:
     chunk_id: acting-animation-observation#000
     start: 1383
     end: 1500
   provenance_kind: 网络语料
-- id: gen_anime_0430
+- id: gen_anime_0433
   domain: anime
-  title: 时序要练成直觉
-  content: 把时序训练成直觉：看一个动作就能直接判断它需要多长时间，而不是靠试错或工具反馈。
+  title: 时序应成为本能
+  content: 训练目标是把时序变成直觉：看到一个动作就能直接判断它需要多长时间，而不是靠试错或工具推算。
   keywords:
-  - 时长判断
-  - 训练
+  - 直觉
+  - 判断
   rules: []
   parameters: {}
   examples: []
@@ -4832,8 +4864,8 @@
     title: Acting For Animation - Observation
     author: Andy Joule
     license: PersonalStudy
-    retrieved_at: '2026-10-02T08:37:07+00:00'
-    sha256: 6a86ba0de51e67e80cc1d2bd6a800b298efe1033fb1ddb2d97888a8872a36abe
+    retrieved_at: '2026-10-02T09:55:45+00:00'
+    sha256: ef426c8a8c5ca6d7140d3348a48393dcb819a9f5cf17c3277fdd586534ee1e38
   chunk_id: acting-animation-observation#000
   source_span:
     chunk_id: acting-animation-observation#000

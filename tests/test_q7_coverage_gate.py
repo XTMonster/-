@@ -55,6 +55,27 @@ def test_a_query_that_names_a_forbidden_value_counts_even_before_retrieval():
     assert HS.query_names_forbidden("情绪=平静；运镜=static", graph)
 
 
+def test_both_ways_of_naming_a_forbidden_value_count_but_only_those_two():
+    """**点名有两种合法写法，两种都算；第三种（没点名）不算。**
+
+    2026-10-02 对齐：`tools/holdout_pool.required_q_hint` 有一条硬规则——"被禁止的
+    取值**只能**挂在 `禁<主键>` 上"（修一次真实的误读事故，见那里的注释）。于是池
+    通道产出的禁忌条目**全是回避式**，而本函数原先只读主键：99/101 个 `forbid`
+    成员被算作点名，剩下 2 个（`vfx:flame`）永远算不到——因为那两个 kind 在同一条
+    边里已被必需 allow 槽位占用，而 `parse_q` 里**同一个键只能出现一次**，
+    冲突式在那两条边上结构性地写不出来。
+
+    这条用例把三向都钉住：冲突式算、回避式算、**两者都没有就一定不算**。
+    """
+    graph = _graph()
+    conflict = HS.query_names_forbidden("情绪=平静；运镜=固定", graph)
+    avoidance = HS.query_names_forbidden("情绪=平静；禁运镜=固定", graph)
+    neither = HS.query_names_forbidden("情绪=平静；禁运镜=dolly_in", graph)
+    assert conflict and avoidance, "冲突式与回避式都要算一条冲突用例"
+    assert [m["node_id"] for m in conflict] == [m["node_id"] for m in avoidance]
+    assert neither == [], "取值没被点到名就不算——这一侧绝不能变成恒真式"
+
+
 def test_the_gate_has_two_halves_and_reports_which_member_is_uncovered():
     """两半都要：① 冲突条目数 ≥ 60；② **每个** `forbid` 成员都被点名。"""
     graph = _graph()

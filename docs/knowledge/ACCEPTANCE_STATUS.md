@@ -1863,3 +1863,191 @@ E1 的落点是"补中文的逐镜分析"，所以本轮把中文候选**逐条*
   `PersonalStudy` 口径／承认该项目在中文+开放许可组合下无解）都需要用户拍板，
   逐条写在 `MODERN_SOURCES.md` §六末尾。
 * 证据：`work/zz_zh_candidates.txt`、`work/zz_zh_hunt.json`、`work/raw/`。
+
+## 二十八、P14-18（2026-10-02 18:2x–20:xx）：索引**不可复现**、出处**挂错卡**，以及门⑦ 与门⑥ 的结构性冲突
+
+这一轮的目标只有一个：给 Q5 补"讲运镜"的来源。加完语料之后连着炸出三件事，
+**没有一件是语料问题**。逐条记在下面，包括最后那件**没解决**的。
+
+### 28.1 索引构建**不可复现**：门⑥ 的覆盖率一直在掷骰子
+
+加语料后重建索引，`edge_backed` 从 **2051 掉到 1891**，而卡片总数只从 2130 涨到 2353
+——**与 StudioBinder 毫无关系的老卡也丢了边**。直接量：`work/hypergraph.atoms.jsonl`
+从 2874 条原子掉到 2527。判据是"同一份语料、同一份代码，连建两次必须一样"，
+实测（真模型，不是 scripted 替身）：
+
+```
+run1  sha256 8c41fb3f…  edges 662  atoms 2527
+run2  sha256 345234ba…  edges 667  atoms 2484        ← 同一份语料、同一份代码
+```
+
+两层原因，缺一不可：① `build_hypergraph` **没有原子边缓存**，正常构建每次都对全部
+708 个 chunk 重新调一遍模型；② 抽取器**不可复现**（`temperature=0` 不等于逐字可复现）。
+于是门⑥ 量的不是"这份语料能不能表达"，而是**这一轮抽样运气如何**——与 §4.1b
+「缺证据被当成通过」同一形状，只是方向相反：**随机失败被当成语料问题**。
+
+**修法**：`backfill_empty_cards`（有界补抽，只换取样、不改判据）。
+`BACKFILL_ROUNDS = 3`、`BACKFILL_TEMPERATURE = 0.2`（必须与主轮不同温，否则同一份失败
+被逐字重放）；每轮只喂"上一轮一条原子边都没拿到"的卡；补抽批次**仍是抽取批次**
+（status 只有 `done/error/skipped`，多一个 `backfill_round` 标记，Q0 照旧
+`processed == total`）；一轮没救回任何卡就停；账写进 `merge.backfill`，
+`--rematch` **无条件续用**这笔账；`--backfill-rounds 0` 可关但**仍留空账**。
+用例 `tests/test_hypergraph_backfill.py`（7 条）。
+
+**实测**（v14 那轮最干净）：空卡 **414 → 19**（三轮 362 / 79 / 19 救回 395 张），
+`expressible_share = 2331/2353 = 99.07%`，`excluded_with_edges = []`、Q0 `708/708`。
+
+**还没做**：按 chunk 的原子边缓存（cache_key ＋ 语料 sha 命中就不重抽）才是
+"逐字节可复现"的根治；本轮只做到"覆盖率不再由单次抽样决定"。**全量重建仍会重抽**，
+同语料两次构建仍可能不同字节——这条限制照实记，不假装已解决。
+
+### 28.2 出处**挂错卡**：抽取器写错 `source_card`，而没有任何东西校验它
+
+在诊断别的问题时撞见的：`gen_cine_0281`（正文讲"空气透视常被忽视"）被标成
+`SHOT_PATTERN:景别=LS,镜头=35mm,构图=lead_room` 的**唯一**来源卡；
+`gen_comp_0164`（讲"放射线强化焦点"）被标成 `STAGING_PACK:三分法+CU+平视`；
+`gen_prod_0070`（讲"聚光灯的三种机位"）被标成 `LIGHT_PACK:正面光+high`。
+
+根因：抽取提示原来只要 `source_card` 一个卡名字段、**不要求给出处原句**，
+而一次调用给的是 8 张卡——写错卡名是常态，且 `to_edge` 只校验"这个 id 在这批里"。
+后果不是"少几条边"，而是索引的 **provenance 整体不可信**：`card_scope.json` 的
+"这张卡有没有边"、门⑥ 的"每张卡至少派生一条"、oracle 里 `from_card` 与 `must` 的配对，
+全都建立在这个字段上。
+
+**修法（`PROMPT_VERSION` v13 → v14）**：抽取**必须**逐字给出 `quote`（6–40 字），
+机器拿它回查这一批的卡：谁含这句话就把这条边**改判给谁**；命名的卡自己也含的话
+尊重模型选择；**哪张卡都不含就丢弃**（`quote_not_in_any_card_of_the_batch`）；
+缺原句或短于 6 字则保留但记账（`quote_missing`）。全部确定性、不调模型
+（`attribute_by_quote`）。实测：24 张卡的样本里 **0 次改判、0 次缺原句**；
+全量 3250 次抽取出 **4 条**因"哪张卡都不含"被丢、**8 条**缺原句。
+
+### 28.3 归并把**不相干的卡**并成一条边（这是 28.2 之外的另一半）
+
+`STAGING_PACK:构图=lead_room,景别=LS,机位=平视` 这条边有 **29 张来源卡**，
+其中多数讲的是"群众先问来干什么""负空间""蜿蜒路径与孤树母题"。
+机制在 `merge_edges`：分组键是
+`(窗口, type, source_kind, hardness) + required_signature`，而
+**同一成员集在不同窗口的边会在 `dedupe_by_norm_key` 里合并、`sources` 取并集**
+——于是"29 张卡都支持这条边"这句话只对其中一部分成立。
+这不是新引入的：它一直如此，只是此前没有任何东西去查它。
+
+### 28.4 门⑦ 与门⑥ 的结构性冲突（**本轮没解决**，照实记）
+
+门⑦ 要"≥ 120 条条目有裁决记录"，而它的**被复核集合**是
+`needs_human`（带 `forbid_*` 或 `expect_movements` 的条目）——`min(needs, 120)`。
+本轮索引换代后 `needs_human` 从 HEAD 的 **7** 涨到 **157**（来源是 forbid 成员
+8 → 101），于是复核第一次真的被跑了一次（150 条）：
+
+```
+holdout_review_llm --limit 150 --models deepseek-chat,glm-4.7
+  → {"selected": 150, "accepted": 0, "dropped": 139, "flagged": 11}
+```
+
+两族模型一致给的否决理由是同一句：**"这张卡不支持这条边"**。我做了两个对照，
+排除了两种"看起来像"的解释：
+
+* **不是"只给一张卡、看不到全部证据"**：把被否条目改喂"这条边的全部来源卡"
+  （前 6 张、各 400 字）重判 12 条，仍然 0 条双接受（`work/zz_p14_review_union.py`）。
+* **不是"forbid 类特有"**：随机抽 12 条**非** `needs_human` 的普通条目过同一个面板，
+  仍然 11/12 被否（`work/zz_p14_review_control.py`）。
+* **也不是 28.2 的挂错卡**：v14 把归属修好之后重抽、重标，同一面板对新的普通条目
+  仍然是 11/12 否（同一脚本指向 `work/zz_v14_check/pool.jsonl`）。
+
+**剩下的解释就是那一条**：复核的判据 4 问的是"**这张卡是否支持这条边**"，
+而 schema 的**必填槽位是靠推断填满的**——例如
+`STAGING_PACK` 必填 `composition_rule + shot_size + camera_angle`，卡里只写了
+"留出前方空间"时，抽取器必须把 `景别=LS`、`机位=平视` 补上；复核看到卡里没写
+`LS`／`平视`，就判"不支持"。**这不是标注质量，是判据与 schema 的冲突**，
+而且它是**先于本轮存在的**：HEAD 那一代 `needs_human` 只有 7 条
+（当年 7/7 全过），所以从没暴露过；本轮把 forbid 成员从 8 扩到 101，
+第一次把这条判据放到 150 条上，它就当场现形。
+
+**处置（本轮的选择，写清理由）**：
+
+* **没有**把 139 条否决"应用"掉。理由不是"想让它变绿"，而是**应用它会让门⑥ 同时变红**：
+  这 139 条里有 **72 张卡的唯一条目**，其中 **71 张卡的所有边都带 forbid**
+  （`--only-cards` 补跑出来的新条目一样会被同一条判据否掉）——两门会一起红，
+  而且门⑦ 需要的 120 条在这个 8% 通过率下**结构性不可达**。
+* **没有**改任何门限、判据或复核结果；`holdout_review_llm` 的记录原样保留在
+  `work/glm_sb3/panel.json` 与 `work/glm_sb3/disagreements.md`。
+* 于是本轮终态是：**门①–⑥、⑧–⑩ 全 pass，门⑦ fail（`needs_human 157 /
+  reviewed 0`，要 ≥120）**——如实报红，不修数字。
+* 下一步的正确修法（写在建议里）：把"每个必填槽位由哪张卡贡献"记进 provenance
+  （`extractor.member_sources`），让池标注**挑一张真的支撑这条边的卡**来挂；
+  或者给复核判据一个与 schema 对齐的定义（"这条边在**它的来源集**里有依据吗"）。
+  两者都要动 schema/池，属于下一轮。
+
+### 28.5 本轮的语料与规模（StudioBinder 镜头语言族）
+
+见 `MODERN_SOURCES.md` §七。一句话：Q5 的夹具下界要 30 条"带 `expect_movements`
+的计划形状条目"，加法之前实测上限 **17 条**，且"同时出现景别词与焦段词的卡只有 4 张、
+4 张全部已用尽"——只能加来源。加入 50 页（44 页 L1/L2 ＋ 6 页逐片分析只喂 L3）之后：
+
+```
+来源 273 → 286      chunks 651 → 709     生成卡 1998 → 2221（全集 2130 → 2353）
+超边 544 → 700（v14）  SHOT_PATTERN 59 → 118，其中带 movement 成员 18 → 73
+expressible_share   96.3% → 99.07%
+```
+
+许可口径（`PersonalStudy`，与 skwigly/framescinemajournal 同档）与选片判据
+全部可复算，写在 `MODERN_SOURCES.md` §七；**这一族是否长期保留由用户复核**。
+
+### 28.6 顺带补上的一道**反向**门
+
+现有对拍只有"产物 → 清单"一个方向，于是"清单里加了来源、产物里一条都没有"
+这种**半截语料改动**没人报（2026-10-02 真的发生过一次）。新增
+`tests/test_source_traces.py`：`sources.yaml` 的每条来源都必须在"卡片 ∪ 案例"里
+留下痕迹，例外**逐条具名**（当前 1 条：`skwigly.co.uk/childrens-tv-show-animation-
+pipeline-cinema-4d/`，chunk 落选）。用例两向自证（合成一份"清单有、产物没有"的
+输入必须判红）。
+
+### 28.7 顺带修掉的三条用例（都不是放宽）
+
+* `tests/test_knowledge.py::test_queries_land_on_the_expected_card`：原先钉"落到某个
+  写死的卡 id 上"，语料一长就会红（`三分法 构图` 的 top-1 从人工卡换成了更具体的
+  生成卡——那是检索变好）。改成钉**主题标记**（"落到讲这件事的卡上"），
+  "落到一张跑题的卡上"照样红。
+* `tests/test_action_lexicon.py::test_merge_never_re_decides_a_word_that_is_already_pinned`：
+  语料一长，`candidates()` 就多出新词，用例的前提（"候选都已判定"）不再成立。
+  改成先把**当前全部候选**都钉成已判定再断言"不再发请求"。
+* `tests/test_hypergraph_precision.py`：具名个案原先断言"`gen_cine_0247` 一条边都不许有"
+  ——那是当时的巧合（那一条边当时没抽出来）。改成直接钉这条门真正保的性质：
+  **不许编出卡里没有的宿主**——引用它的边不许带 `emotion` 成员（卡里一个字没提情绪）。
+  （我一度还加了"必须带 `movement`"，v14 重建后这张卡只拿到一条
+  `EDIT_RHYTHM`，那条断言红了——可它量的是"抽得好不好"，不是"宿主是不是编的"，
+  属于把抽取质量混进精确度门，已删。）
+* `tests/test_holdout_merge.py::test_merge_intercepts_rows_whose_edges_are_not_in_the_index`：
+  原先取"第一条 ≥2 成员的边"就假定"换个取值一定不存在"——语料一长就不成立
+  （换出来的组合正好是另一条真边）。改成**逐个候选验证** `spec_to_norm_key(...) is None`，
+  判据一个字没动。
+* `tools/holdout_score.query_names_forbidden`：**两件工具的"点名"定义原来不一致**。
+  `holdout_pool.required_q_hint` 的硬规则是"被禁止的取值只能挂在 `禁<主键>` 上"
+  （为修一次真实的误读事故），于是池通道产出的禁忌条目**全是回避式**；而这个函数
+  只读主键 → 99/101 个 `forbid` 成员被算作点名，剩 2 个（`vfx:flame`）**永远算不到**，
+  因为那两个 kind 在同一条边里已被必需 allow 槽位占用，而 `parse_q` 里同一个键只能
+  出现一次——冲突式在那两条边上**结构性地写不出来**。现在用
+  `parse_query_full` 把回避式一并算进"点名"；判据没有放宽（仍要求"每个 `forbid`
+  成员至少被一条**真实查询**点到名"），只是承认回避式也是真实查询。
+  自证三向：冲突式算、回避式算、两者都没有**一定不算**
+  （`tests/test_q7_coverage_gate.py::test_both_ways_of_naming_a_forbidden_value_count_but_only_those_two`）。
+
+### 28.8 终态：门①–⑥、⑧–⑩ pass，门⑦ fail（**如实报红**），另有 Q4/Q6b 差 5 条
+
+```
+check_holdout（--reviewer-classes human,llm-panel）：
+  ① pass ② pass ③ pass ④ pass ⑤ pass ⑤b pass ⑥ pass ⑧ pass ⑨ pass ⑩ pass
+  ⑦ fail  needs_human 157 / reviewed 0（口径要 ≥ min(157, 120) = 120）      ← 见 28.4
+holdout_score：
+  Q0 pass  Q1 0.9786  Q2 1.0  Q3 0.0  Q4 **0.9983（3019/3024）**  Q6a 1.0
+  Q6b **0.9983**  Q7 pass  E3 pass
+  Q5/E1/E2 not_measured（永不判过）
+python -m pytest → 全绿；tools/run_tests.ps1 → 31/31 探针，RK-13 被判 failed
+```
+
+Q4/Q6b 差的 **5 条全部是同一条边**：`hg:30e0699ac4ab`（`AXIS_RULE`，
+`axis_topic=运动轴`）。它的 5 条条目 `q` 只能是 `轴线=运动轴`——因为 `AXIS_RULE`
+的另外两个必填槽位 `pair`／`axis_side` **没有查询键**，同一个话题下的若干条边
+在查询里**区分不开**，top-3 装不下要求的那一条。这正是待裁决清单第 12 条
+（"`AXIS_RULE` 要不要加可区分槽位"）在指标上的第一次显形，**不是这一轮新造的**。
+修法（给 `axis_side`／`pair` 加查询键）属 schema 改动，要跟着一次全库重抽＋重标，
+留给下一轮或用户拍板。

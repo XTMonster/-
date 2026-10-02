@@ -141,7 +141,12 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: SHOT_PATTERN 来源卡（`--replace-cards` 会丢掉它们的旧原子边、其余原子的字节不变），
 #: 所以"改提示 ⇒ 跨卡归并变少 ⇒ 覆盖率掉"那条路径**在这 162 张之外不可能发生**；
 #: 这 162 张自己的覆盖率由重抽前后对拍来盯。
-PROMPT_VERSION = "extract/v13"
+#: v14：抽取**必须**逐字给出 `quote`，机器按它回查并**改正归属**（见
+#: :func:`attribute_by_quote`）。v13 只要求 `source_card`，于是模型把边挂到同批的
+#: 另一张卡上是常态——独立复核面板实测判掉 **92%** 的期望（`work/zz_p14_review_control.py`）。
+PROMPT_VERSION = "extract/v14"
+#: 归属回查时 `quote` 至少要有多少字（太短的一句话会在多张卡里撞上，等同没证据）。
+QUOTE_MIN_CHARS = 6
 #: §2.3 的缓存键写的是"六元指纹 ＋ **校验门代码版本**"，§6「重抽取成本」也点名建议把
 #: 它纳入——因为 `--rematch` 这条路径**只重跑第 2 段、不重抽**（第 2 段是纯函数）。
 #: 门一变、索引就变，指纹不跟着变的话，同一枚指纹会指向两份不同的索引。
@@ -154,6 +159,21 @@ VALIDATION_RULES_VERSION = "gate/v2"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
+
+#: 零原子卡的**有界补抽**轮数（见 :func:`backfill_empty_cards`）。
+#:
+#: 为什么需要这一层（2026-10-02 实测）：抽取器是**远程模型**，即使
+#: `temperature=0` 也不可复现——同一份语料连建两次得到
+#: `edges 662 / atoms 2527` 与 `edges 667 / atoms 2484`，而"至少有一条边的卡"
+#: 占比在一次语料扩容后从 **96.3% 掉到 80.4%**（462 张卡整轮一条边都没拿到）。
+#: 一次抽样定生死，门⑥ 的 `expressible_share ≥ 95%` 就变成了**运气**：
+#: 它量的不再是语料能不能表达，而是"这一轮模型心情如何"。
+#: 所以对**一条原子边都没拿到的卡**再抽几轮（只换取样，不改判据、不改词表），
+#: 直到覆盖率不再变化；账记在 `merge.backfill`。
+BACKFILL_ROUNDS = 3
+#: 补抽的采样温度。**必须与主轮不同**：同温同提示会把同一份失败逐字重放
+#: （`tools/holdout_pool.py` 的缺口轮踩过同一个坑，那里也是 0.2）。
+BACKFILL_TEMPERATURE = 0.2
 #: 单张卡在一个批次里最多贡献几条**原子边**。旧值 2 把"一张卡讲了三条耦合"
 #: 直接记成 `too_many_edges_for_card` 丢掉——那是第 2 段归并没实现时的代偿，
 #: 不是 §2.3 的要求。放宽到 4，超出的仍逐条留痕（不静默）。
@@ -298,9 +318,15 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
 
 只输出 JSON：{"edges":[{"type":..., "members":[["role","kind","node_id"], ...],
  "source_kind":"theory|experience|lesson", "hardness":"hard|soft",
- "confidence":0.0-1.0, "source_card":"<卡片 id>"}]}
+ "confidence":0.0-1.0, "source_card":"<卡片 id>",
+ "quote":"<这句话逐字出自哪张卡>"}]}
 
 硬规则（违反的边会被机器丢弃，因此宁少勿错）：
+0. **`quote` 不可省**：从 `source_card` 那张卡的正文里**逐字**摘一句话（6–40 字，
+   不要改写、不要拼接）。一次调用给的是好几张卡，**写错卡名是最常见的错**：
+   机器会拿这句话去回查，谁含这句话就把这条边改判给谁；**哪张卡都不含它就丢弃**。
+   （实测 2026-10-02：没有这一栏时，抽出来的边里十有八九挂到了同批的**另一张卡**上，
+   独立复核面板因此判掉 92% 的期望——不是知识错，是**出处错**。）
 1. `type` 只能取下面 **13 类**之一，必填成员必须写全（v1.5 扩充：把电影制作里除灯光
    以外的强耦合元素都建模进来——动作/表演/意图/打击感/调度/声画/转场）：
    EMOTION_PACK: (allow,emotion) ＋ (qualifier,intensity)；
@@ -558,6 +584,50 @@ class NodeIndex:
             if target:
                 return hg.Member(role=member.role, kind=member.kind, node_id=target)
         return None
+
+
+def _squash(text) -> str:
+    """去掉空白再比对：模型抄原句时常改换行/多空格，那不是"不逐字"。"""
+    return "".join(str(text or "").split())
+
+
+def attribute_by_quote(raw: Dict, batch: Sequence[Dict],
+                       ) -> Tuple[Optional[str], str]:
+    """按 `quote` 把一条原子边**改判到真的含这句话的卡**上。
+
+    为什么必须做（2026-10-02 实测）：抽取是一批 8 张卡一次调用，而输出里只有
+    `source_card` 一个卡名字段——模型写错卡名是常态。实测三条：
+
+    * `gen_cine_0281`（讲"空气透视"）被标成 `SHOT_PATTERN:景别=LS,镜头=35mm,
+      构图=lead_room` 的**唯一**来源卡；
+    * `gen_comp_0164`（讲"放射线强化焦点"）被标成 `STAGING_PACK:三分法+CU+平视`；
+    * `gen_prod_0070`（讲"聚光灯的三种机位"）被标成 `LIGHT_PACK:正面光+high`。
+
+    后果不是"少几条边"，而是**索引的 provenance 整体不可信**：`card_scope.json`
+    的"这张卡有没有边"、门⑥ 的"每张卡至少派生一条"、以及 oracle 里
+    `from_card` 与 `must` 的配对，全都建立在这个字段上。独立复核面板（DeepSeek＋GLM
+    两族）拿"命名的这张卡"去判"这条期望有没有依据"，**92% 判无依据**
+    （`work/zz_p14_review_control.py`：随机 12 条非禁忌条目只有 1 条被任一模型接受）。
+
+    处置是确定性的、不调模型：
+
+    * 这句话**在这一批的某一张卡里**（逐字，忽略空白）⇒ 归属改判给那张卡；
+      若命名的卡自己也含这句话，则尊重模型的选择（多张卡都含时同理）。
+    * **哪张卡都不含** ⇒ 丢弃这条原子边（`quote_not_in_any_card_of_the_batch`）。
+    * `quote` 缺失或短于 :data:`QUOTE_MIN_CHARS` ⇒ 保留但**如实记账**
+      （`quote_missing`），因为"没有证据"与"证据矛盾"不是一回事。
+    """
+    named = str(raw.get("source_card") or "").strip()
+    quote = _squash(raw.get("quote"))
+    if len(quote) < QUOTE_MIN_CHARS:
+        return (named or None), ("quote_missing" if named else "quote_missing_no_card")
+    hits = [str(card["id"]) for card in batch if quote in _squash(card.get("content"))]
+    if not hits:
+        return None, "quote_not_in_any_card_of_the_batch"
+    if named in hits:
+        return named, ""
+    return hits[0], "source_card_repaired_by_quote" if len(hits) == 1 else \
+        "source_card_repaired_by_quote_ambiguous"
 
 
 def to_edge(raw: Dict, cards: Dict[str, Dict],
@@ -1096,6 +1166,7 @@ def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
             batch_size: int = BATCH_CARDS, limit: int = 0, *,
             concurrency: int = 1,
             nodes: Optional[Dict[str, hg.Node]] = None,
+            temperature: float = 0.0,
             ) -> Tuple[List[hg.HyperEdge], List[Dict], List[Dict]]:
     """**第 1 段**：逐批把卡片抽成原子边。
 
@@ -1130,7 +1201,7 @@ def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         index, batch = item
         try:
             reply = client.chat_json(SYSTEM_PROMPT, build_prompt(batch, vocab, nodes),
-                                     0.0, 0, 8192, key=batch[0]["id"])
+                                     temperature, 0, 8192, key=batch[0]["id"])
         except Exception as exc:  # noqa: BLE001
             return index, batch, None, f"{type(exc).__name__}: {exc}"
         return index, batch, reply, ""
@@ -1161,6 +1232,19 @@ def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
                 reject = {"batch": index, "reason": "too_many_edges_for_card", "raw": raw}
                 rejects.append(reject)
                 continue
+            #: **归属回查**（v14）：见 `attribute_by_quote`。在此之前 `source_card`
+            #: 只是一个模型写下的字符串，没有任何东西校验它；实测十有八九是错的。
+            card_id, note = attribute_by_quote(raw, batch,)
+            if note:
+                rejects.append({"batch": index, "reason": note, "raw": raw,
+                                "attributed_to": card_id})
+            if card_id is None:
+                continue
+            raw = {**raw, "source_card": card_id}
+            if per_card.get(card_id, 0) >= MAX_EDGES_PER_CARD:
+                rejects.append({"batch": index, "reason": "too_many_edges_for_card",
+                                "raw": raw})
+                continue
             edge, reason = to_edge(raw, by_id, node_index)
             if edge is None:
                 rejects.append({"batch": index, "reason": reason, "raw": raw})
@@ -1174,6 +1258,64 @@ def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         batch_log.append({"batch": index, "status": "done", "edges": produced,
                           "cards": [c["id"] for c in batch]})
     return edges, rejects, batch_log
+
+
+def cards_without_atoms(cards: Sequence[Dict],
+                        atoms: Sequence[hg.HyperEdge]) -> List[str]:
+    """一张原子边都没拿到的卡 id（**这一轮结束后的完整原子集合**说了算）。"""
+    covered = {str(source) for edge in atoms
+               for source in (getattr(edge, "sources", ()) or ())}
+    return [str(card["id"]) for card in cards if str(card["id"]) not in covered]
+
+
+def backfill_empty_cards(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
+                         atoms: Sequence[hg.HyperEdge], rejects: List[Dict],
+                         batch_log: List[Dict], *, concurrency: int = 1,
+                         rounds: int = BACKFILL_ROUNDS,
+                         ) -> Tuple[List[hg.HyperEdge], Dict]:
+    """给"零原子边"的卡**有界补抽**，只换取样，不改判据。
+
+    见 :data:`BACKFILL_ROUNDS` 的实测：远程抽取器不可复现，一次抽样决定一张卡
+    在门⑥ 里算不算"可断言"。这一层把"覆盖率"从运气变成**一个会被记账的过程**：
+    每轮只喂上一轮一条边都没拿到的卡，用 :data:`BACKFILL_TEMPERATURE` 换一次
+    取样，直到没有改善或轮数用尽。
+
+    它**不**放宽任何东西：词表、判据、门限都没动；没救回来的卡照旧进
+    `card_scope.json` 的 `excluded` 并出现在门⑥ 的账上。
+    """
+    by_id = {str(card["id"]): card for card in cards}
+    working = list(atoms)
+    history: List[Dict] = []
+    first_round_asked = 0
+    for round_index in range(1, max(0, int(rounds)) + 1):
+        missing = [by_id[card_id] for card_id in cards_without_atoms(cards, working)
+                   if card_id in by_id]
+        if not missing:
+            break
+        if round_index == 1:
+            first_round_asked = len(missing)
+        fresh, why, log = extract(missing, vocab, client, BATCH_CARDS, 0,
+                                  concurrency=concurrency,
+                                  temperature=BACKFILL_TEMPERATURE)
+        seen = {_atom_key(edge) for edge in working}
+        added = [edge for edge in fresh if _atom_key(edge) not in seen]
+        working.extend(added)
+        #: 批次账仍然是**抽取批次**（status 只有 done/error/skipped 三种），
+        #: 只多一个 `backfill_round` 标记；`chunk_counts` 因此照旧把这一轮抽过的
+        #: chunk 计入 `processed`——这正是补抽的意义。
+        batch_log.extend({**entry, "backfill_round": round_index} for entry in log)
+        rejects.extend({**item, "backfill_round": round_index} for item in why)
+        still = len(cards_without_atoms(cards, working))
+        history.append({"round": round_index, "asked": len(missing),
+                        "atoms_added": len(added), "still_empty": still})
+        if still >= len(missing):
+            break  # 这一轮没救回任何一张，再抽也是重复取样
+    left = cards_without_atoms(cards, working)
+    report = {"rounds": history, "cards_empty_before": first_round_asked,
+              "cards_empty_after": len(left), "cards_empty": left[:20],
+              "recovered": first_round_asked - len(left),
+              "temperature": BACKFILL_TEMPERATURE}
+    return working, report
 
 
 def nodes_from_vocab() -> Dict[str, hg.Node]:
@@ -1312,7 +1454,8 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         limit: int = 0, *, concurrency: int = 1,
         extract_only: Optional[Sequence[Dict]] = None,
         keep_atoms: bool = False,
-        replace_atoms_for: Optional[Sequence[str]] = None) -> Dict:
+        replace_atoms_for: Optional[Sequence[str]] = None,
+        backfill_rounds: int = BACKFILL_ROUNDS) -> Dict:
     """抽第 1 段 → 落盘 → 归并 → 写索引。
 
     `extract_only` 限定**抽取哪些卡**（指纹与索引仍然按**全量** `cards` 算），
@@ -1349,6 +1492,12 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
         # （`tests/test_knowledge_quality.py` 当场转红）。清洗的账另记在 `refresh`。
         refresh_info = {"cards": len(dropped), "atoms_dropped": replaced,
                         "atoms_kept": len(kept)}
+    #: **有界补抽**：见 `BACKFILL_ROUNDS`。抽取器不可复现，一次抽样会让门⑥ 的
+    #: 覆盖率在 80%–96% 之间随机漂移；这里只对"一条原子边都没拿到"的卡换一次取样，
+    #: 词表/判据/门限一个字都没动。账写进 `merge.backfill`。
+    atoms, backfill_report = backfill_empty_cards(
+        cards, vocab, client, atoms, rejects, batch_log,
+        concurrency=concurrency, rounds=backfill_rounds)
     # §2.3 第 1 段全部落盘**之后**才跑第 2 段，且第 2 段是纯函数（串行、确定）。
     # 落盘原子边是为了"只换归并口径"时不必重抽（改 prompt 要重抽，改归并不是）。
     common.write_jsonl(ATOMS, [edge.to_dict() for edge in atoms])
@@ -1391,6 +1540,7 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     if refresh_info is not None:
         merge_report["refresh"] = refresh_info
         merge_report["refresh_prompt_version"] = PROMPT_VERSION
+    merge_report["backfill"] = backfill_report
     components = fingerprint_components(cards, client)
     return _write_index(cards, atoms, rejects, batch_log, merged=merged,
                         merge_report=merge_report, fingerprint=fingerprint_of(components),
@@ -1439,15 +1589,29 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     #: 没有就如实造一条"重归并时发现原子边混版"的账。
     versions = collections.Counter(
         str((edge.extractor or {}).get("prompt_version") or "unknown") for edge in atoms)
+    #: 第 1 段的账（`refresh` 清洗 / `backfill` 补抽）记的是"**原子边是怎么来的**"，
+    #: 而 `--rematch` 只重跑第 2 段——不续用就会把它们丢掉，manifest 于是声称
+    #: "整库一次抽成、没补过抽"。`refresh` 的教训见上一段注释；`backfill` 同理，
+    #: 只是它既没有"混版"这个触发条件，所以必须**无条件**续用。
+    previous_report = (json.loads(REPORT.read_text(encoding="utf-8"))
+                       if REPORT.is_file() else {})
+    previous_merge = ((previous_report.get("merge") or {})
+                      if isinstance(previous_report, dict) else {})
     if len(versions) > 1:
-        previous_report = (json.loads(REPORT.read_text(encoding="utf-8"))
-                           if REPORT.is_file() else {})
-        previous_refresh = ((previous_report.get("merge") or {}).get("refresh")
-                            if isinstance(previous_report, dict) else None)
+        previous_refresh = previous_merge.get("refresh")
         merge_report["refresh"] = previous_refresh or {
             "reason": "rematch：原子边是多个 prompt 版本的混合（清洗路径的产物）",
             "atom_prompt_versions": dict(versions)}
         merge_report["refresh_prompt_version"] = PROMPT_VERSION
+    empty_now = cards_without_atoms(cards, atoms)
+    previous_backfill = previous_merge.get("backfill")
+    if not isinstance(previous_backfill, dict):
+        previous_backfill = {"rounds": [], "cards_empty_before": len(empty_now),
+                             "recovered": 0,
+                             "reason": "rematch：没有可续用的补抽账（这次重归并没跑补抽轮）"}
+    merge_report["backfill"] = {**previous_backfill,
+                               "cards_empty_after": len(empty_now),
+                               "cards_empty": empty_now[:20]}
     # 第 1 段的原子级拒收在上一次运行里已经落盘（重抽才会变），这里原样带回去；
     # 归并级拒收是本次重算出来的，所以只要 `phase != merge` 的那些。
     rejects = [row for row in
@@ -1541,6 +1705,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--only-missing", action="store_true",
                         help="只重抽「现有原子边里没有」的卡，并把新原子边并入旧文件"
                             "（给整轮抽取漏掉的卡补边）")
+    parser.add_argument("--backfill-rounds", type=int, default=BACKFILL_ROUNDS,
+                        help="零原子卡的补抽轮数（默认 %d，0 = 关）。抽取器不可复现，"
+                             "一次抽样会让门⑥ 的覆盖率随机漂移；这一层只对"
+                             "「一条原子边都没拿到」的卡换一次取样，账记在 merge.backfill"
+                             % BACKFILL_ROUNDS)
     parser.add_argument("--replace-cards", default="",
                         help="卡片 id 清单文件（每行一个）：重抽这些卡并**丢弃它们原来的"
                              "原子边**。用于清洗——`--only-missing` 只做并集，清不掉旧边。"
@@ -1574,7 +1743,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                          ensure_ascii=False))
         summary = run(cards, vocab, client, args.limit,
                       concurrency=_concurrency(args.concurrency),
-                      extract_only=missing, keep_atoms=True)
+                      extract_only=missing, keep_atoms=True,
+                      backfill_rounds=args.backfill_rounds)
     elif args.replace_cards:
         # 清洗路径：见 `run(..., replace_atoms_for=...)`。与 `--only-missing` 的区别是
         # **替换**而不是并集——只有替换才能把 `action=人物弧光` 这类边真正清出索引。
@@ -1589,10 +1759,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                          ensure_ascii=False))
         summary = run(cards, vocab, client, args.limit,
                       concurrency=_concurrency(args.concurrency),
-                      extract_only=todo, replace_atoms_for=wanted)
+                      extract_only=todo, replace_atoms_for=wanted,
+                      backfill_rounds=args.backfill_rounds)
     else:
         summary = run(cards, vocab, client, args.limit,
-                      concurrency=_concurrency(args.concurrency))
+                      concurrency=_concurrency(args.concurrency),
+                      backfill_rounds=args.backfill_rounds)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0 if summary["report"]["passed"] else 1
 

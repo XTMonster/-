@@ -128,6 +128,11 @@ def test_merge_never_re_decides_a_word_that_is_already_pinned(lexicon, cards):
 
     实测抖动：同一条判据重跑，第二次把 `肢体语言`／`情绪姿态` 从 rejected 翻成
     accepted。词表是索引的输入，抖动会让语料/索引无法复现。
+
+    语料每长一批，`candidates()` 就会多出新词（2026-10-02 加镜头语言卡之后立刻多出
+    「静态调度／视觉叙事／静态／动作戏／检验方法／视觉母题／权力／极简主义／潜台词」9 个）。
+    这条判据与"当前有哪些候选"无关，所以先把**当前全部候选**都钉成"已判定"再断言
+    ——否则语料一动，用例就红在一个与它无关的地方。
     """
     class _NeverCalled:
         model_id = "should-not-be-called"
@@ -135,6 +140,12 @@ def test_merge_never_re_decides_a_word_that_is_already_pinned(lexicon, cards):
         def chat_json(self, *args, **kwargs):  # pragma: no cover - 被调用即失败
             raise AssertionError("已判定过全部候选时不该再发请求")
 
-    merged = AL.merge(lexicon, cards, _NeverCalled(), AL.candidates(cards))
-    assert merged["accepted"] == lexicon["accepted"]
-    assert merged["rejected"] == lexicon["rejected"]
+    candidates = AL.candidates(cards)
+    assert candidates, "没有候选词，这条用例就什么都没测"
+    pinned = dict(lexicon)
+    pinned["accepted"] = sorted(set(lexicon.get("accepted") or []) - set(candidates))
+    pinned["rejected"] = sorted(set(lexicon.get("rejected") or []) | set(candidates))
+
+    merged = AL.merge(pinned, cards, _NeverCalled(), candidates)
+    assert merged["accepted"] == pinned["accepted"]
+    assert merged["rejected"] == pinned["rejected"]

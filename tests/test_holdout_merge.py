@@ -121,17 +121,36 @@ def test_merge_intercepts_rows_whose_edges_are_not_in_the_index(tmp_path):
     graph = load_graph(nodes, edges)
 
     # 拿索引里**真实存在**的一条边当"好"条目，再把它改成不存在的取值当"坏"条目。
-    spec = None
+    #
+    # 2026-10-02 修：原先只取"第一条 ≥2 成员的边"就假定"换个取值一定不存在"
+    # ——语料一长就不成立（实测：换出来的组合正好是另一条真边，于是 `valid` 变成 2，
+    # 用例红在一个与门⑩ 无关的地方）。现在**逐个候选验证**：换完之后必须真的
+    # `spec_to_norm_key(...) is None`，否则换下一个候选。判据一个字没动。
+    from tools.holdout_score import spec_to_norm_key
+
+    spec = good_key = bogus_spec = bogus_key = None
     for edge in graph.edges:
         members = [f"{m.kind}={str(m.node_id).split(':', 1)[1]}"
                    for m in edge.members if str(m.role) != "forbid"]
-        if len(members) >= 2:
-            spec = "%s:%s" % (edge.type, ",".join(members))
+        if len(members) < 2:
+            continue
+        candidate = "%s:%s" % (edge.type, ",".join(members))
+        if spec_to_norm_key(candidate, graph) is None:
+            continue
+        kind, value = members[-1].split("=", 1)
+        for node in sorted({str(n.node_id) for n in graph.nodes.values()
+                            if getattr(n, "type", "") == kind}):
+            other = node.split(":", 1)[1]
+            if other == value:
+                continue
+            swapped = "%s:%s" % (edge.type, ",".join(members[:-1] + [f"{kind}={other}"]))
+            if spec_to_norm_key(swapped, graph) is None:
+                spec, bogus_spec = candidate, swapped
+                break
+        if spec:
             break
-    assert spec, "索引里找不到一条 ≥2 成员的边"
+    assert spec and bogus_spec, "索引里找不到一对（存在／不存在）的边，造不出这条用例"
     # `q` 的形状由门⑨ 判，这里只关心门⑩，所以直接构造一条"够得着"的查询串：
-    from tools import check_holdout as CH
-
     def _q_for(spec_text: str) -> str:
         #: 查询键的真源是 schema 的 `QUERY_KEYS`（`键 -> kind`，**不含** `禁<键>`）。
         #: 这里反查 kind → 键，让 `q` 覆盖 `must` 的每个可查询槽位。
@@ -150,18 +169,6 @@ def test_merge_intercepts_rows_whose_edges_are_not_in_the_index(tmp_path):
     # 造一条"**格式合法、查询也够得着、但索引里没有这条边**"的条目：把最后一个
     # 成员换成本 kind 的**另一个合法取值**（仍在节点表里），`q` 同时写出这个新取值。
     # 这样门②（写法）与门⑨（够得着）都过，只有门⑩ 判得出来。
-    etype, body = spec.split(":", 1)
-    parts = body.split(",")
-    kind, value = parts[-1].split("=", 1)
-    others = sorted({str(node.node_id).split(":", 1)[1] for node in graph.nodes.values()
-                     if getattr(node, "type", "") == kind
-                     and str(node.node_id).split(":", 1)[1] != value})
-    if not others:
-        import pytest
-
-        pytest.skip(f"节点表里 {kind} 只有一个取值，造不出'合法但不存在'的边")
-    swapped = parts[:-1] + [f"{kind}={others[0]}"]
-    bogus_spec = "%s:%s" % (etype, ",".join(swapped))
     bogus = _entry("gen_cine_0002", _q_for(bogus_spec), [bogus_spec])
     shard = _write(tmp_path / "partial0.jsonl", [good, bogus])
     report = holdout_merge.run([str(shard)], tmp_path / "out.jsonl",

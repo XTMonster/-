@@ -298,26 +298,43 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-held-out 覆盖门 ①–⑩ **全 pass**（⑪ 是**诊断**，不参与判定），Q/E 硬门 **11 个 id 全 pass**
-（Q5／E1／E2 记 `not_measured`，永不判过）；`python -m pytest` = **1626 passed / 0 failed**；
-`powershell -File tools\run_tests.ps1` = **31/31 探针 ＋ `All checks passed.`**；
-`rks.json failed_checks = []`（**RK-13 第一次 measured 且 pass**）。
-最新证据 `docs/evidence/20261002-180124/`（本轮：E1 的落点诊断 ＋ 验收链四个洞的修复）
-与 `docs/evidence/20261002_real/`（真实模型运行）。逐项对账以
-`docs/knowledge/ACCEPTANCE_STATUS.md` §二十…§二十七 与 `docs/knowledge/MODERN_SOURCES.md` §五 为准。
+**2026-10-02 20:0x 的账：门①–⑥、⑧–⑩ pass；门⑦ fail；Q4/Q6b 差 5 条；RK-13 记 failed。**
+（⑪ 是**诊断**，不参与判定。）`python -m pytest`＝全绿；`powershell -File tools\run_tests.ps1`
+＝ 31/31 探针。**这一轮不是全绿，别照抄旧结论。**
 
-**E1 的落点是语料，不是检索（2026-10-02 实测，别再修路由）**：`docs/evidence/20261002-180124/e1_lane_diagnosis.json`
-——L3 的 810 篇里**有中文摘句的 0 篇**，产品路径的 6 个中文查询逐镜检索**命中 0 条**
-（`CaseIndex._text` 只吃作者写的字：返回空是诚实的）；把查询换成**英文**再打英文语料
-也只有 **1/18 = 5.6%** 条 ≥4 分 → **跨语言不是根因，案例里没有"逐镜分析"这类内容才是**。
-要 E1 达标必须补来源，而补来源要重抽＋重标 oracle ⇒ 卡在 `GLM_API_KEY`（见下）。
+* **门⑦ fail**：`needs_human 157 / reviewed 0`（口径要 ≥ min(157, 120)）。成因**不是**标注没做，
+  而是双模型复核（DeepSeek＋GLM 两族）对 `needs_human` 条目的通过率只有 **8%**
+  （150 条里 139 条一致否决，理由全是"这张卡不支持这条边"）。三个对照排除了"证据没给全"、
+  "forbid 类特有"、"出处挂错卡"：改喂全部来源卡仍然否、随机 12 条**非**禁忌条目 11/12 否、
+  v14 修好出处之后仍然 11/12 否。根因是**复核判据 4 与 schema 的冲突**——必填槽位是
+  推断填满的（卡里只写"留出前方空间"，抽取器必须补 `景别=LS`／`机位=平视`），
+  复核看到卡里没写就判"不支持"。**没有应用那 139 条否决**：应用它会让门⑥ 同时红
+  （72 张卡失去唯一条目，其中 71 张的边全带 forbid），而门⑦ 要的 120 条在这个通过率下
+  结构性不可达。逐条见 `ACCEPTANCE_STATUS.md` §二十八，证据在 `work/glm_sb3/`。
+* **Q4/Q6b = 3019/3024**：差的 5 条全是同一条 `AXIS_RULE`（`axis_topic=运动轴`）——
+  它的 `pair`/`axis_side` **没有查询键**，同一话题下区分不开，top-3 装不下。
+  即待裁决清单第 12 条在指标上的第一次显形。
+* **E1 的落点仍然是语料**（§二十七.7）：L3 的 810 篇里**有中文摘句的 0 篇**，
+  6 个中文查询逐镜命中 **0**；换成英文查询打英文语料也只有 **1/18**。中文来源经正面盘点
+  **整族不可达**（DNS 投毒＋TLS 阻断）。
 
-**规模（2026-10-02 17:05 实测，别再用旧数字）**：`sources.yaml` 来源 **236** 条
-（L1/L2 **75** ＋ `layers: [L3]` 的 **161** 篇 Animation Studies，CC-BY 4.0；`anime` 域 176 条）；
-生成卡 **1998** 张（anime 153／storyboard 229／cinematography 214），卡片全集 **2130**；
-超边索引 **544** 条边（`extract/v13` ＋ `hg/v2`：`raw_edges 544 = valid_unique 544`、
-`rejects 0`、原子 **2754**）；oracle **2786** 条；L3 案例 **810** 篇。
-门⑥ 的明细：`cards 2130 / cards_expected 2051 / excluded 79 / expressible_share 96.29% / missing 0`。
+**规模（2026-10-02 20:0x 实测，别再用旧数字）**：`sources.yaml` 来源 **286** 条
+（L1/L2 **106** ＋ `layers: [L3]` 的 **167** 篇，含 Animation Studies 161 篇 CC-BY 4.0；
+新增的 50 条 StudioBinder 是 `PersonalStudy`，见 `MODERN_SOURCES.md` §七）；
+生成卡 **2221** 张，卡片全集 **2353**；超边索引 **700** 条边（`extract/v14` ＋ `hg/v2`：
+`raw_edges 700 = valid_unique 700`、`rejects 0`、原子 **2909**）；oracle **2948** 条；
+L3 案例 **810** 篇。门⑥ 的明细：
+`cards 2353 / cards_expected 2331 / excluded 22 / expressible_share 99.07% / missing 0`。
+
+**两件这一轮才立起来的不变量**（都是真缺陷的修法，用例在 `tests/`）：
+
+* **零原子卡的有界补抽**（`build_hypergraph.backfill_empty_cards`）：抽取器**不可复现**
+  （同一份语料连建两次 662/667 条边），一次抽样会让门⑥ 的覆盖率在 80%–99% 之间随机漂移。
+  现在只对"一条原子边都没拿到"的卡换一次取样（温度 0.2），账写进 `merge.backfill`，
+  `--rematch` 无条件续用。**全量重建仍会重抽**，逐字节可复现要等按 chunk 的原子缓存。
+* **出处必须逐字可回查**（`PROMPT_VERSION = extract/v14`）：v13 的抽取只写 `source_card`、
+  没有任何校验，实测把"空气透视"的卡标成 `景别=LS/35mm/lead_room` 的唯一来源。
+  v14 要求逐字给出 `quote`，机器回查并**改判归属**；哪张卡都不含就丢弃。
 **真实模型运行**（sidecar→GLM 云端，`docs/evidence/20261002_real/`）：`DONE / 6 镜 /
 792 帧 / built=true / 导出 17 文件 / llm_calls 38 / retrieval_calls 7`，超图通道**未降级**，
 `knowledge_provenance` **每一镜都有 `experience`（L2）桶**——L2 经验层第一次真的参与成片。

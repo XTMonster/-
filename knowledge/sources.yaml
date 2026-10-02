@@ -843,3 +843,417 @@ sources:
   - {url: 'https://journal.animationstudies.org/article/id/97/', title: Uses of Arabic Calligraphy in Religious Animated Films, author: Tariq Alrimawi, license: CC-BY, domain: anime, mode: http, genre: anime, theme: animation_studies, layers: [L3], chunk_budget: 1, case_budget: 1}
   - {url: 'https://journal.animationstudies.org/article/id/98/', title: Reflecting on Proto-Animation Techniques in the Mandalic Forms of Persian Traditional Arts, author: Leila Honari, license: CC-BY, domain: anime, mode: http, genre: anime, theme: animation_studies, layers: [L3], chunk_budget: 1, case_budget: 1}
   - {url: 'https://journal.animationstudies.org/article/id/99/', title: 'Waterline: A documentation of process and interdisciplinary collaboration between tranSTURM and blackhole-fact', author: Rachel Walls, license: CC-BY, domain: anime, mode: http, genre: anime, theme: animation_studies, layers: [L3], chunk_budget: 1, case_budget: 1}
+  # ============================================================================
+  # 镜头语言来源族（StudioBinder，50 条）——**已入库**，只剩"许可口径"待用户复核
+  #
+  # 状态（2026-10-02 18:xx，写给下一个读这份文件的人）：这一族**已经走完整圈**，
+  # 不再是"只在清单里"：
+  #   fetch 286/286 → chunk 709 → annotate（DeepSeek，生成卡 1998→2221）
+  #   → `build_hypergraph`（索引 544→703 条边；零原子卡的**有界补抽**见
+  #     `ACCEPTANCE_STATUS.md` §二十八）→ 词表重签（155→157 个取值）
+  #   → 重标整份 oracle（GLM 池通道，换族）→ 门①–⑩ 复跑。
+  # 也就是说：这份清单与 `knowledge/`、`fixtures/` 里的产物**必须同批提交**，
+  # 单独提交清单会让 `corpus_sha256`/门⑥ 对不上（`tests/test_holdout_inputs.py`
+  # 与 `tests/test_cases_corpus.py` 会当场报出来）。
+  #
+  # **仍然需要用户复核的一件事**：许可口径。这些页自述 `copyrightYear StudioBinder`、
+  # 没有开放许可，因此按用户「我是个人学习使用的，不用担心版权问题」记
+  # `PersonalStudy`（白名单内，与 `skwigly.co.uk`、`framescinemajournal.com` 同档，
+  # 但那些是杂志/期刊，这是**教学内容站**）。**没有冒充开放许可**；
+  # 是否长期保留由用户拍板。
+  #
+  # 另一半（13 页 editing/storyboard ＋ 6 页逐片分析 `layers: [L3]`）在下面同一块里。
+  # 选片判据与全部实测数字见 `docs/knowledge/MODERN_SOURCES.md` §七。
+  # ============================================================================
+  # ------------------------------------------------ 镜头语言（StudioBinder，2026-10-02 加）
+  # 为什么要这一族：Q5 的夹具下界是「带 `expect_movements` 的条目 ≥ 30」，而它的
+  # 判据（`tools/holdout_expect_movements.py` 提示词第 5 条）要求**卡片正文里明确
+  # 出现运镜语汇**、且这条查询覆盖了景别/镜头槽位。全库实测上限只有 **17 条**
+  # （`work/zz_q5_supply.json`：63 条计划形状条目里 17 条的来源卡正文含运镜语汇），
+  # 缺口 ≥13。语料里同时出现景别词与焦段词的卡只有 4 张、且已全部用尽 —— 也就是
+  # 说这不是"重抽能解决"的问题，只能**新增讲运镜的来源**。
+  #
+  # 选片判据（可复算，不是随手搜）：
+  # 1. 站点 robots：`www.studiobinder.com/robots.txt` = `User-agent: * / Disallow:`
+  #    （只挡 `/button`、`/add`、`/ajax`），`fetch.robots_allows` 实测 True；
+  # 2. 全量枚举 sitemap（2404 条）→ 按 slug 的镜头语言词表筛（`work/zz_sb_ontopic.txt`）；
+  # 3. 逐页跑仓库自己的抓取门并量正文：12 个样本页 **12/12** 抓通，
+  #    每页 3–5 段"同一段里同时出现景别词与运镜语汇"（`work/zz_q5_hunt3.json`）；
+  # 4. 人工剔除**器材导购**（镜头购买指南）、**岗位/招聘/课程**、**模板营销**、
+  #    以及只讲某位摄影师的个人风格页 —— 它们讲的是产业与产品，不是拍法。
+  #
+  # 许可：页面自述 `copyrightYear StudioBinder`，**没有开放许可**，因此按用户
+  # 「我是个人学习使用的，不用担心版权问题」的口径记 `PersonalStudy`
+  # （白名单内，与 `skwigly.co.uk`、`framescinemajournal.com` 同档）。
+  # **不冒充开放许可**；这一族是否长期保留应由用户复核。
+  #
+  # `chunk_budget` 按"这一页里真正讲拍法的段落有多少"给（1–2），
+  # 不是按页面长度给 —— 否则这些 35 万–106 万字符的长页会把同域别的来源挤掉。
+
+  - url: https://www.studiobinder.com/blog/types-of-camera-shots-sizes-in-film/
+    title: "Types of Camera Shots and Sizes in Film"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/types-of-camera-shot-angles-in-film/
+    title: "Types of Camera Shot Angles in Film"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/different-types-of-camera-movements-in-film/
+    title: "Different Types of Camera Movements in Film"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/ultimate-guide-to-camera-shots/
+    title: "The Ultimate Guide to Camera Shots"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/close-up-shot/
+    title: "The Close-Up Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/extreme-close-up-shot-definition/
+    title: "Extreme Close-Up Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/medium-close-up-shot/
+    title: "The Medium Close-Up Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/wide-shot-camera-angles-movements-examples/
+    title: "The Wide Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/two-shot-camera-angle-movement/
+    title: "The Two Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/over-the-shoulder-shot/
+    title: "The Over-the-Shoulder Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/point-of-view-shot-camera-movement-angles/
+    title: "The Point of View Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/eye-level-camera-shot-angle/
+    title: "The Eye-Level Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/high-angle-shot-camera-movement-angle/
+    title: "The High-Angle Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/low-angle-shot-camera-movement-angle/
+    title: "The Low-Angle Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/dutch-angle-shot-camera-movement/
+    title: "The Dutch Angle Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/aerial-shot-camera-movement-angle/
+    title: "The Aerial Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/long-take-sequence-shot-camera-movement-angle/
+    title: "The Long Take"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/dolly-shot-camera-movements/
+    title: "The Dolly Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/tracking-shot-camera-movement-definition/
+    title: "The Tracking Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/tilt-shot-in-film/
+    title: "The Tilt Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/rack-focus-shot-camera-movement-angles/
+    title: "The Rack Focus Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/what-is-a-zoom-shot-definition/
+    title: "The Zoom Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/what-is-a-steadicam-shot/
+    title: "The Steadicam Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/handheld-shot-in-film-definition-examples/
+    title: "The Handheld Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/crane-shot-definition/
+    title: "The Crane Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/what-is-an-establishing-shot-definition-examples/
+    title: "The Establishing Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: cinematography
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
+    title: "Rules of Shot Composition in Film"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: composition
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/what-is-the-rule-of-thirds/
+    title: "The Rule of Thirds"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: composition
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/what-is-the-golden-ratio-definition/
+    title: "The Golden Ratio in Film"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: composition
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/film-blocking-techniques/
+    title: "Film Blocking Techniques"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: blocking
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/blocking-and-staging-scenes/
+    title: "Blocking and Staging a Scene"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: blocking
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  # 逐片工艺分析 → 只喂 L3（§2.3b 把 L3 定义成「拉片/复盘/影评」）。
+  # 这些页是对**具体影片**的镜头分析，正是 E1 缺的那一类；
+  # 影评不是镜头层硬约束，因此 `layers: [L3]` 且各限一条。
+  - {url: 'https://www.studiobinder.com/blog/blade-runner-2049-cinematography-analysis/', title: "Blade Runner 2049 Cinematography Analysis", author: "StudioBinder", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.studiobinder.com/blog/sicario-cinematography-explained/', title: "Sicario Cinematography Explained", author: "StudioBinder", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.studiobinder.com/blog/stranger-things-cinematography/', title: "Stranger Things Cinematography", author: "StudioBinder", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.studiobinder.com/blog/jurassic-park-cinematography/', title: "Jurassic Park Cinematography", author: "StudioBinder", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.studiobinder.com/blog/euphoria-cinematography-analysis/', title: "Euphoria Cinematography Analysis", author: "StudioBinder", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.studiobinder.com/blog/a24-cinematography/', title: "A24 Cinematography", author: "StudioBinder", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  # ---------------------------------------------- 剪辑 / 分镜（StudioBinder，同批）
+  # 与上一块同源、同许可口径（`PersonalStudy`）。这一半同时做两件事：
+  # 1. 让 K3 的域占比不被 31 页 `cinematography` 拉歪（`editing` 原先只有 4 条来源）；
+  # 2. 补更多**明确出现运镜语汇**的正文——`storyboard-camera-movement` 与
+  #    `storyboard-arrows-meaning` 就是讲"分镜里怎么标推拉摇移"的。
+
+  - url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+    title: "The Jump Cut"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: editing
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/match-cuts-creative-transitions-examples/
+    title: "Match Cuts"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: editing
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/what-is-a-montage-definition/
+    title: "The Montage"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: editing
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/soviet-montage-theory/
+    title: "Soviet Montage Theory"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: editing
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/cross-cutting-parallel-editing-definition/
+    title: "Cross-Cutting"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: editing
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/what-is-an-eyeline-match/
+    title: "The Eyeline Match"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: editing
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/film-coverage/
+    title: "Film Coverage"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: editing
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
+    title: "Shot Reverse Shot"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: editing
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/storyboard-camera-movement/
+    title: "Storyboard Camera Movement"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: storyboard
+    mode: http
+    theme: shot_language
+    chunk_budget: 2
+  - url: https://www.studiobinder.com/blog/storyboard-composition-techniques/
+    title: "Storyboard Composition Techniques"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: storyboard
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/storyboard-rules/
+    title: "Storyboard Rules"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: storyboard
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/storyboard-arrows-meaning/
+    title: "Storyboard Arrows Meaning"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: storyboard
+    mode: http
+    theme: shot_language
+    chunk_budget: 1
+  - url: https://www.studiobinder.com/blog/shot-list-abbreviations/
+    title: "Shot List Abbreviations"
+    author: "StudioBinder"
+    license: PersonalStudy
+    domain: storyboard
+    mode: http
+    theme: shot_language
+    chunk_budget: 1

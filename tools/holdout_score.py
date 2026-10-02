@@ -36,6 +36,7 @@ if str(ROOT) not in sys.path:
 from block_director.knowledge.hypergraph import (  # noqa: E402
     Hypergraph,
     parse_query,
+    parse_query_full,
     render_edge,
     render_edges,
     render_tokens,
@@ -470,8 +471,32 @@ def query_names_forbidden(query: str, graph) -> List[Dict[str, Any]]:
     **与 §4.1 的 R52 一条对齐**："两个分母别混"——这一侧是**夹具覆盖门**
     （`q` × 索引的机械统计，不掺检索名次）；**运行期**的拦截率是"按镜头"的另一个
     分母（该情形镜头数），由真实模型运行给出。
+
+    **点名有两种合法写法，两种都算**（2026-10-02 对齐，见下）：
+
+    * **冲突式**：主键指的是被禁的那个取值（`特效=flame`，而索引里某条边禁止
+      `vfx:flame`）——导演要的正是这条边禁止的东西；
+    * **回避式**：`禁<主键>`（`禁特效=flame`）——导演明说不要它。
+
+    为什么必须把后者也算进来：`tools/holdout_pool.required_q_hint` 有一条硬规则
+    ——"被禁止的取值**只能**挂在 `禁<主键>` 上"（那是为了修一次真实的误读事故，
+    见那里的注释）。于是池通道产出的禁忌条目**全部**是回避式，而本函数原先只读
+    主键：它把 99/101 个 `forbid` 成员算作"被点名"，剩下 2 个（`vfx:flame`）
+    永远算不到——**因为那两个 kind 在同一条边里已经被必需 allow 槽位占用，
+    同一个键在 `parse_q` 里只能出现一次**，冲突式在那两条边上结构性地写不出来。
+    也就是说：不是标注没写，是两件工具的"点名"定义不一致。
+
+    判据本身没有放宽——仍然要求"每个 `forbid` 成员至少被一条**真实查询**点到名"，
+    只是承认"回避式"也是真实查询。
     """
-    parsed = parse_query(query)
+    #: 把 `禁<主键>`（`parse_query_full` 的第二个返回值）也并进同一个 kind 的取值集合
+    #: ——见上面「两种写法都算」的说明。`parse_query` 只返回正向那半，所以这里必须用
+    #: 完整版；否则"回避式"的禁忌条目一条都算不到。
+    positive, forbidden = parse_query_full(query)
+    parsed: Dict[str, List[str]] = {kind: list(values)
+                                    for kind, values in positive.items()}
+    for kind, values in forbidden.items():
+        parsed.setdefault(kind, []).extend(values)
     hits: List[Dict[str, Any]] = []
     for member in forbid_members(graph):
         for value in parsed.get(member["kind"], ()):
