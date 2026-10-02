@@ -403,7 +403,20 @@ if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_attestation.json'))) {
 # 0.1667, reproduced by two independent panel runs with the same three hits.  The
 # older file (docs/evidence/20261002_real/e1_reviews.jsonl) is kept as history; it
 # measured 0/16 on the pre-search-line index and half of its case_ids are gone.
-python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+# 2026-10-03: Q5's run side now has a real input. SS4.1b judges Q5 only on a real
+# model run (the offline plan is written by the same batch as the held-out, so it
+# would be self-confirmation), so the chain feeds the committed shots.json of the
+# cloud-GLM run. That file also carries `knowledge.hypergraph_fingerprint`, so
+# quality.py can tell WHICH index generation produced it: a run from another
+# generation is reported as `stale_evidence: true` + not_measured instead of being
+# silently joined against today's oracle (the shape of the 20261002_real file).
+# ...and `audit_log.jsonl` (the per-run slice) is what makes the JOIN KEY honest:
+# SS4.1b rule 2 (no self-reporting) allows reading "what was actually sent" only
+# from the audit events, never from shots.json - which is a wrap-up snapshot whose
+# camera/movements differ from what the per-shot retrieval saw (measured
+# 2026-10-03: 2 of 6 shots drift).  quality.py joins on the emitted query and
+# reports the re-derived one as a drift diagnostic only.
+python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261003_real_glm/export/shots.json --audit-log docs/evidence/20261003_real_glm/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }

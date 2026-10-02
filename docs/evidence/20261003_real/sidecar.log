@@ -1,0 +1,43 @@
+{"sidecar": "listening", "host": "127.0.0.1", "port": 8765, "upstream": "https://open.bigmodel.cn/api/paas/v4", "kind": "openai", "model": "glm-4.7", "num_ctx": 32768, "think": "off", "temperature": 0.0, "seed": 0, "knowledge_dir": "knowledge", "cases_backend": "hybrid", "capabilities": ["llm", "bm25", "hypergraph"], "url": "http://127.0.0.1:8765"}
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 64807)
+Traceback (most recent call last):
+  File "E:\��ģԤ��codex\tools\sidecar_server.py", line 430, in do_POST
+    self._route(body)
+  File "E:\��ģԤ��codex\tools\sidecar_server.py", line 438, in _route
+    self._json(200, call_upstream(config, body).to_dict())
+  File "E:\��ģԤ��codex\tools\sidecar_server.py", line 399, in _json
+    self.end_headers()
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\http\server.py", line 535, in end_headers
+    self.flush_headers()
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\http\server.py", line 539, in flush_headers
+    self.wfile.write(b"".join(self._headers_buffer))
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\socketserver.py", line 826, in write
+    self._sock.sendall(b)
+ConnectionResetError: [WinError 10054] Զ������ǿ�ȹر���һ�����е����ӡ�
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\socketserver.py", line 683, in process_request_thread
+    self.finish_request(request, client_address)
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\socketserver.py", line 360, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\socketserver.py", line 747, in __init__
+    self.handle()
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\http\server.py", line 433, in handle
+    self.handle_one_request()
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\http\server.py", line 421, in handle_one_request
+    method()
+  File "E:\��ģԤ��codex\tools\sidecar_server.py", line 434, in do_POST
+    self._json(500, {"error": f"{type(exc).__name__}: {exc}"})
+  File "E:\��ģԤ��codex\tools\sidecar_server.py", line 399, in _json
+    self.end_headers()
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\http\server.py", line 535, in end_headers
+    self.flush_headers()
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\http\server.py", line 539, in flush_headers
+    self.wfile.write(b"".join(self._headers_buffer))
+  File "C:\Users\СƤ\AppData\Local\Programs\Python\Python310\lib\socketserver.py", line 826, in write
+    self._sock.sendall(b)
+ConnectionResetError: [WinError 10054] Զ������ǿ�ȹر���һ�����е����ӡ�
+----------------------------------------

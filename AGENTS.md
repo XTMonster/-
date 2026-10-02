@@ -431,6 +431,35 @@ manifest 另带 §2.3 的 per-chunk 账 `chunks`（708 条，`--refresh-ledger` 
 * 终态：索引 638 条边 / oracle 2847 条；门①–⑥、⑧–⑩ pass、⑦ fail；E1=fail；
   pytest 全绿；31/31 探针；证据 `docs/evidence/20261003-021437/`。
 
+**2026-10-03 04:xx 追加（P14-25）：Q5 的运行侧第一次按"真通道"量出来，量到的是 0——判失败。**
+
+* 真实运行（云端 `glm-4.7`，`DONE`／6 镜／792 帧／50 次 LLM 调用／7 次检索）落
+  `docs/evidence/20261003_real_glm/`：`export/shots.json` ＋ `audit_log.jsonl`
+  分片 ＋ `llm_trace.jsonl` 分片 ＋ `knowledge_trace.json` ＋ `run_manifest.json`
+  （四个 sha256 的**单一真源**，`tools/extract_run_evidence.py --check` 复算）。
+* **通道本身是判据的一部分**（§4.1b 硬规则 2）：Q5 以前从 `shots.json` **重推**
+  查询串再 join，而 `shots.json` 是**收尾快照**——逐镜检索发生在每镜 editor
+  调用**之前**，实测这一跑 **6/6 镜**重推串 ≠ 发出串（`镜头/运镜/特效` 都是后补的）。
+  现在 join 键只取 `audit_log.jsonl` 的 `retrieval_call.data.query`
+  （`tools/knowledge/run_evidence.py`；多跑混在一份日志里时**拒绝作答**），
+  重推串降级为 `drift` 诊断。判据一个字没改。
+* 量出来的数：夹具侧 70 ≥ 30 **pass**；运行侧相等命中 **0**（连子集也 0）⇒
+  按硬规则 1 **fail**（旧写法记 `not_measured`，与硬规则原文冲突，已改正＝收紧）。
+  要让它有分母，得让计划的**形状**（检索那一刻的键集）能被夹具 `q` 命中——
+  属契约/标注口径，列在待裁决里，**没动**。
+* 顺带两个真缺陷：① 分子侧 `VALUE_ALIASES.get(kind, "")` 把**不在别名表**里的
+  取值（`dolly_in`…）折成空串丢掉 ⇒ 每一镜都被当成"锁死（`固定`）"，
+  期望 `固定` 的条目会被 `dolly_in` **骗成命中**；改 `(值, 值)` 兜底。
+  ② 链上 Q5/E1 挂在 `SOFT_IDS`（"没有输入"）⇒ 输入接上之后
+  `tools/knowledge/hard_gates.py` 把它们**归位成门**，只剩 §2.3b 明写
+  "只记录、不设门"的 E2 留软项。
+* 用例：`tests/test_q5_audit_channel.py`（通道/漂移/多跑拒答/相等不放松/
+  分母 0 判失败/夹具下界/stale）、`tests/test_extract_run_evidence.py`（分片逐字节、
+  tamper/换代判红、入库证据同代）、`tests/test_chain_evidence_is_measured.py`
+  （链上活行必须真的带 `--shots/--audit-log/--e1-reviews`）。
+* 这一轮之后的账：门①–⑥、⑧–⑩ pass、⑦ fail；Q4 2878/2880（差 2 条仍是
+  `AXIS_RULE`「运动轴」）；**Q5 fail（分母 0）**；E1 fail 0.1667；E2 0/6（诊断）。
+
 **两件这一轮才立起来的不变量**（都是真缺陷的修法，用例在 `tests/`）：
 
 * **零原子卡的有界补抽**（`build_hypergraph.backfill_empty_cards`）：抽取器**不可复现**
@@ -565,7 +594,10 @@ manifest 另带 §2.3 的 per-chunk 账 `chunks`（708 条，`--refresh-ledger` 
   它现在记在 `docs/knowledge/ACCEPTANCE_STATUS.md` 的待裁决清单里，
   **在用户确认出处之前，不要再动任何门限**。
 - **人审 ≥120 条**（协议门⑦）与 **Q5/Q7/E3 的最终裁定**必须由人做，agent 不可代替。
-  Q5 只在真实模型运行（§4.4 步骤 2）上判，CI/离线上只记 `not_measured`。
+  Q5 只在真实模型运行（§4.4 步骤 2）上判：链上喂的是**入库的那一次真实运行**
+  （`docs/evidence/20261003_real_glm/` 的 `export/shots.json` ＋ `audit_log.jsonl`），
+  所以它**不再**在 CI 上记 `not_measured`——2026-10-03 起 Q5/E1 是硬门（分母 0 → fail），
+  只有 §2.3b 明写"只记录、不设门"的 E2 留在软项。
 - 重跑长标注仍须知：本机 `qwen3-vl:30b` 是思考模型，走 `/api/chat` 加 `think:false`
   也**恒无正文**（`docs/evidence/20260930-070000/knowledge_annotator_blocker.json`），
   必须走 `/v1/chat/completions` 或加 **assistant 预填**（`tools/kb_fetch/llm.py` 的
@@ -602,8 +634,11 @@ knowledge-side reports - `holdout_score.py` -> `holdout_quality.json` (Q1-Q7),
 Q1-Q7 scorer, imported rather than re-implemented), `check_holdout.py` ->
 `holdout_gates.json`, and `knowledge/authorship_report.py` -> `authorship.json`
 - and attributes RK-13 from `knowledge/hard_gates.py`, which judges the report
-**by id**: a hard id that is missing counts as failed, and Q5/E1/E2 are recorded
-as `not_measured` and never read as a pass. One name, one schema: the chain used
+**by id**: a hard id that is missing counts as failed. Since 2026-10-03 `Q5` and
+`E1` are hard ids too (the chain feeds the committed real-run evidence plus the
+recorded panel scores; a zero denominator or a missing id counts as failed), and
+only `E2` stays soft - the spec says E2 records the adoption rate and sets no
+gate. One name, one schema: the chain used
 to write holdout_score's report under the name AGENTS.md gives to quality.py, so
 Q0 and the hard gate E3 were measured by nothing. A probe whose
 `BD_TEST_RESULT` payload cannot be parsed now ends the run with `INCOMPLETE:`

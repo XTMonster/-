@@ -152,7 +152,8 @@ def export_project(plan: Plan, *,
                    timing_overrides: Optional[Sequence[Dict[str, Any]]] = None,
                    action_conflicts: Optional[Sequence[Dict[str, Any]]] = None,
                    audit_pass_rate: Optional[Dict[str, Any]] = None,
-                   knowledge_provenance: Optional[Dict[str, Any]] = None
+                   knowledge_provenance: Optional[Dict[str, Any]] = None,
+                   knowledge: Optional[Dict[str, Any]] = None
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -270,7 +271,8 @@ def export_project(plan: Plan, *,
                               timing_overrides=timing_overrides,
                               action_conflicts=action_conflicts,
                               audit_pass_rate=audit_pass_rate,
-                              knowledge_provenance=knowledge_provenance)
+                              knowledge_provenance=knowledge_provenance,
+                              knowledge=knowledge)
     manifest_path = export_dir / "shots.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
                              encoding="utf-8")

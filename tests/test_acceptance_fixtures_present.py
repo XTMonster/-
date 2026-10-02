@@ -74,6 +74,9 @@ FIXTURES = [
      "gen_golden --check / 长基线"),
     ("fixtures/script_long_61.md", "61 镜长剧本",
      "§4.4 步骤 1 的 --script / gen_golden"),
+    ("docs/evidence/20261003_real_glm/export/shots.json", "真实模型运行（云端 GLM）的逐镜产物",
+     "quality.py --shots：Q5 的运行侧 join 与 E2（§4.1b 明写 Q5 只在真实运行上判）"
+     "——缺它 Q5 退回 not_measured，链子照旧全绿"),
 ]
 
 

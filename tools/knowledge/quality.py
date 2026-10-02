@@ -21,7 +21,12 @@
 用法::
 
   python tools/knowledge/quality.py --run-id 20260930-060000
-  python tools/knowledge/quality.py --cases knowledge/cases.jsonl --shots <run>/export/shots.json
+  python tools/knowledge/quality.py --cases knowledge/cases.jsonl \
+      --shots <run>/export/shots.json --audit-log <run>/audit_log.jsonl
+
+Q5 的运行侧**只认 `audit_log.jsonl` 里真实发出的逐镜查询**（§4.1b 硬规则 2；
+见 :mod:`tools.knowledge.run_evidence`）：`shots.json` 的字段是收尾快照，
+与"这一镜检索时发的是什么串"不是同一时刻，重推出来的串只作漂移诊断。
 """
 
 from __future__ import annotations
@@ -29,7 +34,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -40,6 +44,13 @@ if str(ROOT) not in sys.path:
 from block_director.knowledge.cases import (  # noqa: E402
     manifest_fingerprint,
     read_cases,
+)
+from block_director.knowledge.hypergraph import (  # noqa: E402
+    manifest_fingerprint as hypergraph_manifest_fingerprint,
+)
+from tools.knowledge.run_evidence import (  # noqa: E402
+    normalise_query_pairs,
+    run_query_mirror,
 )
 from tools.holdout_score import load_graph, load_holdout, score_entries  # noqa: E402
 
@@ -62,20 +73,12 @@ def _normalise_query_pairs(text: str) -> frozenset:
     归一化口径与 §4.1b 的 Q5 行逐字对应：**去空格 / 全半角 / 别名**。
     `VALUE_ALIASES` 是索引侧唯一那份别名表（`static` → `固定`、`甩镜` → `whip_pan`），
     两边都用它，join 才不会因为一边写引擎名、一边写中文别名而永远错开。
-    """
-    from block_director.knowledge.hypergraph import VALUE_ALIASES  # noqa: PLC0415
 
-    pairs = set()
-    for chunk in str(text or "").replace(";", "；").split("；"):
-        if "=" not in chunk:
-            continue
-        key, _, raw = chunk.partition("=")
-        key = unicodedata.normalize("NFKC", key).strip()
-        value = unicodedata.normalize("NFKC", raw).strip().replace(" ", "")
-        if not key or not value:
-            continue
-        pairs.add((key, VALUE_ALIASES.get(value, value)))
-    return frozenset(pairs)
+    **单一真源**：实现搬到了 :mod:`tools.knowledge.run_evidence`
+    （运行侧证据的通道模块），这里保留同名入口——`work/` 下的探针与既有用例
+    都按这个名字调用，两处各写一份正是"别名表漂移"的老毛病。
+    """
+    return normalise_query_pairs(text)
 
 
 class _ShotView:
@@ -114,24 +117,124 @@ def plan_query_of_shot(record: Dict[str, Any]) -> str:
     return shot_constraint_query(_ShotView(record))
 
 
-def q5_run_join(entries: List[Dict[str, Any]], shots_path) -> Dict[str, Any]:
-    """Q5 的**第二步**：把入库计划的逐镜查询与 held-out 的 `q` join 起来。
+def run_evidence_is_stale(payload: Any, *, manifest_path=None,
+                          cases_path=None) -> List[str]:
+    """这份真实运行证据**能不能证明它量的是当前这一代索引**？返回不能的理由。
 
-    §4.1b 的 Q5 行写死了 join 判据：**键值对集合相等**。这里同时报三个数：
+    为什么需要这一条（2026-10-03 实测）：Q5 的运行侧要拿一份真实模型运行的
+    `shots.json` 与 held-out 的 `q` join。盘上那份 `docs/evidence/20261002_real/`
+    属于**旧索引那一代**（`knowledge.cases_index_fingerprint` 与现行
+    `knowledge/cases.manifest.json` 对不上），拿它 join 新 oracle 就是 §24.1
+    修掉的"过期证据被当成现行证据"的同一形状。所以判据里必须包含"这份运行是
+    哪一代索引跑的"：
 
-    * `denominator`——按**规格的相等判据**匹配到的镜头数（这是 Q5 的分母）；
-    * `subset_denominator`——把判据放宽成"本条 `q` ⊆ 本镜查询"时的镜头数
-      （**只作诊断**，不是判据：它回答"如果改 join 关系能救回多少"）；
-    * `plan_queries`——真实发出的契约串的去重清单，用来证明"不是没跑对，"
-      "是两边根本不在同一个键空间里"。
+    * `shots.json` 顶层必须有 `knowledge` 块（`driver.py` 的
+      `BLOCKDIRECTOR_RESULT.knowledge`，由 `KnowledgeRetriever.describe()` 产出）；
+    * `knowledge.hypergraph_fingerprint` 必须非空且等于
+      `knowledge/hypergraph.manifest.json` 的 `fingerprint`（Q5 的 join 只落在
+      超图索引这一侧，所以这一条是**硬要求**）；
+    * 若这次运行确实装了案例层（`knowledge.cases_backend != "off"`），
+      `knowledge.cases_index_fingerprint` 也必须非空且等于当前案例索引指纹。
+
+    任一条不满足 ⇒ 返回理由 ⇒ 调用方记 `not_measured` ＋ `stale_evidence: true`
+    （**永不判过**），并把算出来的数一并报出来。
+    """
+    if not isinstance(payload, dict):
+        return ["shots.json 不是对象：读不出运行期索引指纹，无法证明代际"]
+    info = payload.get("knowledge")
+    if not isinstance(info, dict):
+        return ["shots.json 顶层没有 knowledge 块（driver.py 的运行结果字段）："
+                "无法证明这份运行是拿哪一代索引跑的"]
+    reasons: List[str] = []
+
+    recorded = str(info.get("hypergraph_fingerprint") or "")
+    live = (hypergraph_manifest_fingerprint(Path(manifest_path).parent)
+            if manifest_path else "")
+    if not recorded:
+        reasons.append("运行证据里没有 knowledge.hypergraph_fingerprint"
+                       "（该字段 2026-10-03 才加上）：无法证明它量的是这一代超图索引")
+    elif not live:
+        reasons.append(f"读不到 {manifest_path} 的 fingerprint："
+                       f"无法证明运行证据与当前索引同代")
+    elif recorded != live:
+        reasons.append(f"运行证据的超图指纹 {recorded[:12]}… 不等于当前索引的 "
+                       f"{live[:12]}…：那是上一代索引跑出来的证据")
+
+    #: 案例层**可以**是用户显式关掉的（`cases_backend=off`，§2.3b）——那种情况
+    #: 它本来就没有指纹，不是"过期"。只要这次运行装了案例层，指纹就必须对上。
+    if str(info.get("cases_backend") or "") != "off":
+        recorded_cases = str(info.get("cases_index_fingerprint") or "")
+        live_cases = (manifest_fingerprint(Path(cases_path).parent)
+                      if cases_path else "")
+        if not recorded_cases:
+            reasons.append("运行证据里没有 knowledge.cases_index_fingerprint："
+                           "无法证明它量的是这一代案例索引")
+        elif recorded_cases != live_cases:
+            reasons.append(f"运行证据的案例指纹 {recorded_cases[:12]}… 不等于当前"
+                           f"案例索引的 {live_cases[:12]}…：那是上一代语料")
+    return reasons
+
+
+def q5_query_drift(shots: List[Dict[str, Any]],
+                   emitted: Dict[str, Any]) -> List[Dict[str, str]]:
+    """`shots.json` 重推串 vs **真实发出**串的漂移（**诊断，不是判据**）。
+
+    为什么值得单独报（2026-10-03 实测）：逐镜检索发生在这一镜 editor 调用**之前**，
+    而 `shots.json` 是收尾时的快照——`b4626c726435` 一跑 6 镜里 2 镜两条串不同
+    （`shot_001` 发出 `景别=MCU`，导出后重推带上 `镜头/运镜/特效`）。漂移本身是
+    产物的一部分：它说明"计划最终长什么样"与"这一镜检索时看到的是什么"不是同一件
+    事，而这正是不能用重推串当 join 键的理由。
+    """
+    drift: List[Dict[str, str]] = []
+    for record in shots or []:
+        if not isinstance(record, dict):
+            continue
+        shot_id = str(record.get("shot_id") or "")
+        mine = emitted.get(shot_id)
+        queries = [mine] if isinstance(mine, str) else list(mine or [])
+        if not queries:
+            continue
+        derived = plan_query_of_shot(record)
+        emitted_pairs = {_normalise_query_pairs(query) for query in queries}
+        if _normalise_query_pairs(derived) in emitted_pairs:
+            continue
+        drift.append({"shot_id": shot_id, "emitted": "；".join(queries),
+                      "derived": derived})
+    return drift
+
+
+def q5_run_join(entries: List[Dict[str, Any]], shots_path, *,
+                audit_path=None, run_id: str = "",
+                manifest_path=None, cases_path=None) -> Dict[str, Any]:
+    """Q5 的**第二步**：把这一跑**真实发出**的逐镜查询与 held-out 的 `q` join 起来。
+
+    判据（§4.1b 的 Q5 行）一个字没动：`SceneContract` 查询串与本条 `q` 的
+    **键值对集合相等**（值经去空格 / 全半角 / 别名归一）。变的是**读哪一条串**：
+
+    * `emitted`（**join 键**）＝ `audit_log.jsonl` 的 `retrieval_call.data.query`
+      ——硬规则 2（禁止自证）允许回答"运行期到底发了什么"的通道只有实际发出的
+      prompt 与 audit_log 的逐次事件；
+    * `derived`（**只作诊断**）＝ 从 `shots.json` 用 `shot_constraint_query()` 重推
+      的串。`shots.json` 是被测实现自己写的收尾快照，而且**不是同一时刻**：
+      2026-10-03 那一跑 6 镜里 2 镜两条串不同（见 :mod:`tools.knowledge.run_evidence`
+      抬头）。拿它当 join 键 = 量另一次运行。
+
+    分母为 0 时按**硬规则 1 判 fail**（夹具侧 <30 那一档仍按 §4.1b 第一步记
+    `not_measured`——两条规范原文分开执行，见 :func:`q5_movement_hit`）。
     """
     if not shots_path or not Path(shots_path).is_file():
-        return {"status": NA, "denominator": 0, "subset_denominator": 0,
-                "numerator": 0, "plan_queries": [],
+        return {"status": NA, "channel": "absent", "denominator": 0,
+                "subset_denominator": 0, "numerator": 0, "plan_queries": [],
+                "emitted_queries": {}, "drift": [], "run_ids": [],
                 "note": "没有 --shots：Q5 的运行侧 join 没有输入（§4.1b 第二步）"}
     payload = json.loads(Path(shots_path).read_text(encoding="utf-8"))
+    #: 代际判定**先于**算术：算出来的数只有在"这份运行属于当前这一代索引"时才
+    #: 是证据。过期的照样把数报出来（信息量保留），但状态记 `not_measured`。
+    stale = run_evidence_is_stale(payload, manifest_path=manifest_path,
+                                  cases_path=cases_path)
     shots = payload.get("shots") if isinstance(payload, dict) else payload
     shots = shots or []
+    mirror = run_query_mirror(audit_path, run_id=run_id)
 
     from block_director.knowledge.hypergraph import VALUE_ALIASES  # noqa: PLC0415
 
@@ -145,45 +248,89 @@ def q5_run_join(entries: List[Dict[str, Any]], shots_path) -> Dict[str, Any]:
             {VALUE_ALIASES.get(value, value) for value in values})
 
     numerator = denominator = subset_denominator = 0
-    queries: List[str] = []
     matched: List[Dict[str, Any]] = []
-    for record in shots:
-        query = plan_query_of_shot(record)
-        if query:
-            queries.append(query)
-        applied = {VALUE_ALIASES.get(str(m.get("kind") or m.get("type") or ""), "")
-                   for m in (record.get("movements") or []) if isinstance(m, dict)}
-        applied.discard("")
-        if not applied:
-            #: 一条运镜都没排 = 引擎的机位是**锁死**的。词表里这件事的说法就是
-            #: `固定`（`static` 是它的别名）。不补这一条，"这一镜没写运镜"会被
-            #: 当成"没有任何运镜产出"，于是**作者期望 `固定` 的条目永远不可能命中**
-            #: ——而那恰好是 `SHOT_PATTERN` 那批（景别×镜头）最典型的形状。
-            applied = {VALUE_ALIASES.get("固定", "固定")}
-        mine = _normalise_query_pairs(query)
-        for ident, (expected_pairs, expected_moves) in wanted.items():
-            if not expected_pairs:
+    without_query: List[str] = []
+    derived_queries = [plan_query_of_shot(record) for record in shots
+                       if isinstance(record, dict)]
+    emitted = dict(mirror.get("queries") or {})
+    drift = q5_query_drift(shots, emitted) if mirror["status"] == "ok" else []
+    if mirror["status"] == "ok":
+        for record in shots:
+            if not isinstance(record, dict):
                 continue
-            if expected_pairs == mine:
-                denominator += 1
-                if applied & expected_moves:
-                    numerator += 1
-                matched.append({"shot_id": record.get("shot_id"), "entry": ident,
-                                "query": query, "mode": "equal"})
-            elif expected_pairs <= mine:
-                subset_denominator += 1
+            shot_id = str(record.get("shot_id") or "")
+            queries = list(emitted.get(shot_id) or [])
+            if not queries:
+                without_query.append(shot_id)
+                continue
+            #: 取值侧用 `(值, 值)` 兜底，**不是** `(值, "")`：`VALUE_ALIASES` 是一张
+            #: **部分**别名表（20 条：`static`→`固定`、`中景`→`MS`…），引擎自己的
+            #: 名字（`dolly_in`／`follow_subject`…）不在表里。旧写法把不在表里的取值
+            #: 一律折成空串再丢掉，于是**每一镜都被当成"锁死"**（`固定`）——作者期望
+            #: `固定` 的条目会被 `dolly_in` 的镜头骗成命中，期望 `dolly_in` 的反而
+            #: 恒不命中。这是分子上的真实缺陷，2026-10-03 写通道用例时抓到。
+            applied = {VALUE_ALIASES.get(str(m.get("kind") or m.get("type") or ""),
+                                         str(m.get("kind") or m.get("type") or ""))
+                       for m in (record.get("movements") or [])
+                       if isinstance(m, dict)}
+            applied.discard("")
+            if not applied:
+                #: 一条运镜都没排 = 引擎的机位是**锁死**的。词表里这件事的说法就是
+                #: `固定`（`static` 是它的别名）。不补这一条，"这一镜没写运镜"会被
+                #: 当成"没有任何运镜产出"，于是**作者期望 `固定` 的条目永远不可能命中**
+                #: ——而那恰好是 `SHOT_PATTERN` 那批（景别×镜头）最典型的形状。
+                applied = {VALUE_ALIASES.get("固定", "固定")}
+            mine = [_normalise_query_pairs(query) for query in queries]
+            for ident, (expected_pairs, expected_moves) in wanted.items():
+                if not expected_pairs:
+                    continue
+                if expected_pairs in mine:
+                    denominator += 1
+                    if applied & expected_moves:
+                        numerator += 1
+                    matched.append({
+                        "shot_id": shot_id, "entry": ident, "mode": "equal",
+                        "query": queries[mine.index(expected_pairs)],
+                        "channel": "audit"})
+                elif any(expected_pairs <= pairs for pairs in mine):
+                    subset_denominator += 1
     value = round(numerator / denominator, 4) if denominator else None
     detail: Dict[str, Any] = {
         "status": NA, "numerator": numerator, "denominator": denominator,
         "subset_denominator": subset_denominator, "value": value, "line": 0.80,
-        "plan_queries": sorted(set(queries)), "matched_shots": matched[:20],
-        "fixture_entries": len(wanted)}
-    if denominator == 0:
+        "channel": "audit" if mirror["status"] == "ok" else "absent",
+        "emitted_queries": emitted,
+        "plan_queries": sorted({query for query in derived_queries if query}),
+        "drift": drift, "shots_without_emitted_query": without_query,
+        "run_ids": list(mirror.get("run_ids") or []),
+        "audit": str(audit_path or ""),
+        "audit_events": int(mirror.get("events") or 0),
+        "audit_shot_events": int(mirror.get("shot_events") or 0),
+        "audit_note": str(mirror.get("note") or ""),
+        "matched_shots": matched[:20],
+        "fixture_entries": len(wanted), "evidence": str(shots_path),
+        "evidence_fingerprints": (
+            {"hypergraph": str((payload.get("knowledge") or {}).get(
+                "hypergraph_fingerprint") or ""),
+             "cases": str((payload.get("knowledge") or {}).get(
+                 "cases_index_fingerprint") or "")}
+            if isinstance(payload, dict) else {})}
+    if stale:
+        detail["stale_evidence"] = True
+        detail["note"] = ("这份运行证据与当前索引脱钩（历史记录，不得当成通过）："
+                          + "；".join(stale))
+    elif mirror["status"] != "ok":
+        detail["note"] = ("Q5 的运行侧没有可用的**真实发出**查询（§4.1b 硬规则 2）："
+                          + (detail["audit_note"] or "审计日志缺失"))
+    elif denominator == 0:
+        detail["status"] = FAIL
         detail["note"] = (
-            f"运行侧 join 按 §4.1b 的『键值对集合相等』匹配到 0 个镜头"
-            f"（放宽成子集也只有 {subset_denominator} 个）：Q5 的分母为 0，"
-            f"按 §4.1b 硬规则 1 如实记 not_measured。真实发出的契约串见 "
-            f"plan_queries（{len(set(queries))} 条去重）")
+            f"这一跑真的发过逐镜查询（shot scope {detail['audit_shot_events']} 条），"
+            f"但按 §4.1b 的『键值对集合相等』与 held-out 的 `q` 匹配到 0 条"
+            f"（放宽成子集也只有 {subset_denominator} 条）：分母为 0，"
+            f"按 §4.1b 硬规则 1 判失败（不得记 not_measured）。"
+            f"真实发出的契约串见 emitted_queries；重推串与它的漂移见 drift"
+            f"（{len(drift)} 镜）")
     elif value is not None and value >= 0.80:
         detail["status"] = PASS
         detail["note"] = f"计划采纳率 {numerator}/{denominator}"
@@ -193,7 +340,9 @@ def q5_run_join(entries: List[Dict[str, Any]], shots_path) -> Dict[str, Any]:
     return detail
 
 
-def q5_movement_hit(entries: List[Dict[str, Any]], shots=None) -> Dict[str, Any]:
+def q5_movement_hit(entries: List[Dict[str, Any]], shots=None, *,
+                    audit_path=None, run_id: str = "",
+                    manifest_path=None, cases_path=None) -> Dict[str, Any]:
     """Q5 运镜命中（§4.1b 分两步判；本函数负责第一步与"缺什么"的如实记账）。
 
     §4.1b 原文：① 夹具侧：带 `expect_movements` 的条目 **≥ 30**（不足则 Q5 记
@@ -213,11 +362,13 @@ def q5_movement_hit(entries: List[Dict[str, Any]], shots=None) -> Dict[str, Any]
     if len(expected) < MIN_Q5_FIXTURE_ITEMS:
         return {"id": "Q5", "status": NA,
                 "numerator": len(expected), "denominator": 0, "line": 0.80,
+                "fixture_items": len(expected), "fixture_plan_shaped": 0,
                 "note": (f"夹具里带 `expect_movements` 的条目 {len(expected)} < "
                          f"{MIN_Q5_FIXTURE_ITEMS}（§4.1b 第一步）：Q5 无法判定、"
                          f"不得判通过。池通道的标注模板不产这个字段，"
                          f"补齐要走一次独立标注（判据＝卡里描述的作者意图）")}
-    run = q5_run_join(entries, shots)
+    run = q5_run_join(entries, shots, audit_path=audit_path, run_id=run_id,
+                      manifest_path=manifest_path, cases_path=cases_path)
     plan_shaped = sum(1 for entry in expected
                       if _normalise_query_pairs(entry.get("q"))
                       and {key for key, _value in _normalise_query_pairs(entry.get("q"))}
@@ -232,9 +383,20 @@ def q5_movement_hit(entries: List[Dict[str, Any]], shots=None) -> Dict[str, Any]
               "run_denominator": run["denominator"],
               "run_value": run.get("value"),
               "run_subset_denominator": run.get("subset_denominator", 0),
+              "run_stale_evidence": bool(run.get("stale_evidence")),
+              "run_evidence_fingerprints": run.get("evidence_fingerprints", {}),
+              "run_channel": run.get("channel", "absent"),
+              "run_emitted_queries": run.get("emitted_queries", {}),
+              "run_drift_shots": [item.get("shot_id")
+                                  for item in (run.get("drift") or [])],
+              "run_audit": run.get("audit", ""),
+              "run_audit_shot_events": run.get("audit_shot_events", 0),
               "plan_queries": run.get("plan_queries", []),
               "note": run.get("note", "")}
-    if run["status"] == NA and run["denominator"] == 0 and not run.get("plan_queries"):
+    if (run["status"] == NA and run["denominator"] == 0
+            and not run.get("plan_queries")
+            and not run.get("stale_evidence")
+            and run.get("channel") == "absent" and not run.get("audit")):
         metric["note"] = (
             f"夹具侧已够（{len(expected)} 条，其中计划形状 {plan_shaped} 条），"
             f"但运行侧的 join 需要一次真实模型运行的逐镜查询镜像："
@@ -342,12 +504,20 @@ def e3_cases(cases_path: Optional[Path]) -> Dict[str, Any]:
                                 else f"带约束字段的案例：{bad[:5]}")}
 
 
-def e2_adoption(shots_path: Optional[Path]) -> Dict[str, Any]:
-    """E2 经验采纳率（诊断量，不设门）。"""
+def e2_adoption(shots_path: Optional[Path], *, manifest_path=None,
+                cases_path=None) -> Dict[str, Any]:
+    """E2 经验采纳率（诊断量，不设门）。
+
+    §2.3b 的 E2 = "计划里的运镜来自经验/案例层的镜头比例"。它与 Q5 读**同一份**
+    运行证据，所以同受"同代性"约束：`knowledge` 指纹对不上就记 `stale_evidence`
+    （诊断量也不许把过期的账读成结论）。
+    """
     if shots_path is None or not Path(shots_path).is_file():
         return {"id": "E2", "status": NA,
                 "note": "没有 --shots：采纳率无法测量（诊断量，不设门）"}
     payload = json.loads(Path(shots_path).read_text(encoding="utf-8"))
+    stale = run_evidence_is_stale(payload, manifest_path=manifest_path,
+                                  cases_path=cases_path)
     shots = payload.get("shots") if isinstance(payload, dict) else payload
     shots = shots or []
     adopted = 0
@@ -356,10 +526,23 @@ def e2_adoption(shots_path: Optional[Path]) -> Dict[str, Any]:
             if str(movement.get("source") or "") in ("experience", "lesson", "case"):
                 adopted += 1
                 break
-    return {"id": "E2", "status": NA, "diagnostic": True,
-            "numerator": adopted, "denominator": len(shots),
-            "value": round(adopted / len(shots), 4) if shots else None,
-            "note": f"命中人工期望的镜头数 / {len(shots)}（记录，不设门）"}
+    detail: Dict[str, Any] = {
+        "id": "E2", "status": NA, "diagnostic": True,
+        "numerator": adopted, "denominator": len(shots),
+        "value": round(adopted / len(shots), 4) if shots else None,
+        "evidence_fingerprints": (
+            {"hypergraph": str((payload.get("knowledge") or {}).get(
+                "hypergraph_fingerprint") or ""),
+             "cases": str((payload.get("knowledge") or {}).get(
+                 "cases_index_fingerprint") or "")}
+            if isinstance(payload, dict) else {}),
+        "note": (f"计划里的运镜取自经验/案例层的镜头数 / {len(shots)}"
+                 f"（记录，不设门）")}
+    if stale:
+        detail["stale_evidence"] = True
+        detail["note"] = ("这份运行证据与当前索引脱钩（历史记录，诊断量也不许读成"
+                          "结论）：" + "；".join(stale))
+    return detail
 
 
 def e1_evidence_is_stale(rows: List[Dict[str, Any]],
@@ -480,6 +663,7 @@ def q4_build_gate(q_report: Dict[str, Any]) -> Dict[str, Any]:
 def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
                  manifest: Path, rejects: Path, cases: Optional[Path],
                  shots: Optional[Path], e1_reviews: Optional[Path],
+                 audit_log: Optional[Path] = None, audit_run_id: str = "",
                  top_k: int, token_limit: int) -> Dict[str, Any]:
     graph = load_graph(ROOT / nodes, ROOT / edges)
     entries = load_holdout(ROOT / holdout)
@@ -500,9 +684,16 @@ def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
 
     metrics.append(e3_experience_override(graph))
     metrics.append(e3_cases(cases))
-    metrics.append(q5_movement_hit(entries, shots))
+    #: 运行侧证据的**代际**由现行索引决定：`manifest` 指向
+    #: `knowledge/hypergraph.manifest.json`（`--manifest`），`cases` 指向
+    #: `knowledge/cases.jsonl`（`--cases`）。
+    metrics.append(q5_movement_hit(entries, shots,
+                                   audit_path=audit_log, run_id=audit_run_id,
+                                   manifest_path=ROOT / manifest,
+                                   cases_path=(ROOT / cases) if cases else None))
     metrics.append(e1_relevance(e1_reviews, cases_path=cases))
-    metrics.append(e2_adoption(shots))
+    metrics.append(e2_adoption(shots, manifest_path=ROOT / manifest,
+                               cases_path=(ROOT / cases) if cases else None))
 
     statuses = {m["status"] for m in metrics}
     overall = FAIL if FAIL in statuses else (NA if NA in statuses else PASS)
@@ -522,6 +713,12 @@ def main(argv=None) -> int:
     parser.add_argument("--rejects", default="knowledge/hypergraph.rejects.jsonl")
     parser.add_argument("--cases", default="knowledge/cases.jsonl")
     parser.add_argument("--shots", default="")
+    parser.add_argument("--audit-log", default="",
+                        help="这一跑的 audit_log.jsonl（分片）或累积日志；"
+                             "Q5 的 join 键只从它的 retrieval_call 事件里读"
+                             "（§4.1b 硬规则 2）")
+    parser.add_argument("--audit-run-id", default="",
+                        help="累积日志里混了多跑时用它点名（不给则记 not_measured）")
     parser.add_argument("--e1-reviews", default="")
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--token-limit", type=int, default=2000)
@@ -537,6 +734,8 @@ def main(argv=None) -> int:
         cases=Path(args.cases) if args.cases else None,
         shots=Path(args.shots) if args.shots else None,
         e1_reviews=Path(args.e1_reviews) if args.e1_reviews else None,
+        audit_log=Path(args.audit_log) if args.audit_log else None,
+        audit_run_id=args.audit_run_id,
         top_k=args.top_k, token_limit=args.token_limit)
 
     target = Path(args.out) if args.out else ROOT / "docs" / "evidence" / run_id / "knowledge_quality.json"

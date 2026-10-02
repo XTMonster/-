@@ -5,6 +5,12 @@
 `tools/knowledge/quality.py` 的 **Q0 与 E3**（"经验越权率 = 0"是一条硬门）
 因此从来没有被链量过。下面第 4 条用例喂的就是那份真实报告的 id 集合——
 它以前会被当成"没什么可判"，现在必须判失败。
+
+2026-10-03 追加：`Q5` 与 `E1` 从软项**归位为门**。它们以前只能记 `not_measured`
+（链上没有输入），而规格一直把它们写成门（§2.3b 的 `E1 ≥70%`、§4.1 的
+`Q5 ≥80%` ＋ §4.1b 的分母下界）。链上现在喂真实模型运行的
+`export/shots.json` ＋ `audit_log.jsonl` 与录档的面板评分，所以"这次量不到"
+必须算 RK-13 未通过，不能继续挂在 `SOFT_IDS` 里。
 """
 
 from __future__ import annotations
@@ -38,8 +44,8 @@ def test_all_hard_gates_passing_is_a_pass_and_the_soft_ones_are_recorded():
     assert result["passed"] is True
     assert result["missing"] == [] and result["red"] == []
     # 软项必须被如实报出来：读者要能一眼看到"这几条这次量不到"。
-    assert result["soft"] == {"Q5": "not_measured", "E1": "not_measured",
-                              "E2": "not_measured"}
+    # 2026-10-03：只剩 E2——Q5 / E1 已经归位成门（见下面两条用例）。
+    assert result["soft"] == {"E2": "not_measured"}
 
 
 def test_a_missing_hard_id_is_a_failure_not_an_absence():
@@ -66,7 +72,29 @@ def test_the_report_the_chain_used_to_produce_is_rejected():
     result = hard_gates.verdict(old)
     assert result["passed"] is False
     assert set(result["missing"]) == {"Q0", "Q4_pre_required_edges_exist",
-                                     "E3", "E3_cases"}
+                                     "E3", "E3_cases", "Q5", "E1"}
+
+
+def test_the_two_gates_the_spec_names_are_hard_not_soft():
+    """`Q5` / `E1` 是规格里的门，不许因为"以前没输入"就藏在软项里。
+
+    §2.3b 把 `E1 ≥ 70%` 写成经验层的门（`E2` 只记录、不设门），§4.1 把
+    `Q5 ≥ 80%` 写成 RK-13 的判据、§4.1b 给了它的分母下界与"分母为 0 一律
+    判失败"。链上现在两条都有真实输入（`--shots`/`--audit-log` 与
+    `--e1-reviews`），所以"这条这次量不到"不再是软项，而是 RK-13 未通过。
+    """
+    assert "Q5" in hard_gates.HARD_IDS
+    assert "E1" in hard_gates.HARD_IDS
+    assert set(hard_gates.SOFT_IDS) == {"E2"}, (
+        "§2.3b 只对 E2 写了'记录、不设门'；别的条目进软项就是把门藏起来")
+
+
+def test_a_red_or_unmeasured_gate_counts_as_rk13_failed():
+    """反例两条：E1 量到但不达标、Q5 这次量不到——两种都必须判 RK-13 未通过。"""
+    red = hard_gates.verdict(make_report(E1="fail"))
+    assert red["passed"] is False and red["red"] == ["E1"]
+    unmeasured = hard_gates.verdict(make_report(Q5="not_measured"))
+    assert unmeasured["passed"] is False and unmeasured["red"] == ["Q5"]
 
 
 def test_soft_ids_are_never_hard_and_vice_versa():

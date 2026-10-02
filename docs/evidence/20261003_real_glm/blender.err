@@ -1,0 +1,141 @@
+[BlockDirector] WARNING block_director.settings: 配置问题 [warning] character.label_font_path: 未指定中文字体，将自动探测系统 CJK 字体（§9.4） (CFG_201)
+[BlockDirector] INFO block_director.settings: 已加载配置：transport=auto rag=hypergraph backend=workbench
+[BlockDirector] INFO block_director.overlay: 视口叠加已启用
+[BlockDirector] INFO block_director: BlockDirector 1.3.0 已加载（注册模块: block_director.layer7_ui.panel_main, block_director.layer7_ui.panel_shots, block_director.layer7_ui.panel_debug, block_director.layer7_ui.panel_cast, block_director.layer7_ui.draw_overlay, block_director.layer7_ui.operator_path_draw, block_director.layer5_orchestrator.modal_operator）
+[BlockDirector] INFO block_director.tool-bindings: 已注册场景查询工具：get_scene_state, check_visibility, check_composition, check_axis, estimate_shot_duration
+[BlockDirector] INFO block_director.tool-bindings: 已注册动作工具：place_character, move_character, character_action, look_at, face_character, interact_with, setup_camera, move_camera, reframe
+[BlockDirector] INFO block_director.tool-bindings: 已注册知识工具：search_knowledge
+[BlockDirector] INFO block_director.headless: Light RAG：{'backend': 'hypergraph', 'engine': 'builtin.BM25Okapi', 'cards': 2353, 'top_k': 5, 'token_limit': 800, 'plan_token_limit': 2000, 'retrieval_calls': 0, 'degraded': False, 'degraded_reason': '', 'hypergraph_fingerprint': 'c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67', 'cases': 0, 'lanes': 2, 'cases_backend': 'hybrid', 'cases_requested_backend': 'lightrag', 'cases_degraded': True, 'cases_degraded_reason': 'lightrag_adapter_unavailable', 'lightrag_index_fingerprint': '', 'cases_index_fingerprint': '69791dbacabd3fd77e5132dea277664972a227d222b7be0c6c6841c5a7a6649e', 'warnings': []}
+[BlockDirector] INFO block_director.headless: headless 运行开始（模式=sidecar，run_id=5a18272e4a1d）
+[BlockDirector] INFO block_director.shot-builder: 清理旧对象 3 个
+[BlockDirector] INFO block_director.scene: 环境搭建完成：预设=clay_studio，物体 3 个
+[BlockDirector] INFO block_director.character: 角色已创建：米迦尔（米迦尔）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：米迦尔（米迦尔）
+[BlockDirector] INFO block_director.character: 角色已创建：伊恩（伊恩）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：伊恩（伊恩）
+[BlockDirector] INFO block_director.character: 角色已创建：偷盗者（偷盗者）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：偷盗者（偷盗者）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_001 @ (0.0, 2.8948488718603658, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-4.631859919738119, 3.1318599197381194, 1.2779310344827586)（85.0mm）
+[BlockDirector] INFO block_director.axis: 轴线已确立：米迦尔 → 伊恩，基准侧 -1
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_003 @ (-0.09298733685219984, 1.4474244359301827, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_004 @ (2.3357293746161356, 2.21455938697318, 1.2779310344827586)（85.0mm）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_005 @ (5.7112202610364795, 2.315879097488292, 0.949655172413793)（50.0mm）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_006 @ (4.2070126631478, 1.4474244359301827, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：124 帧 / 97 个关键帧（121-244）
+[BlockDirector] INFO block_director.camera-motion: 运镜 dolly_in：3 个采样点 / 6 个关键帧
+[BlockDirector] INFO block_director.shot-builder: shot_001: 运镜 dolly_in（1-120 帧）
+[BlockDirector] INFO block_director.camera-motion: 运镜 dolly_in：3 个采样点 / 6 个关键帧
+[BlockDirector] INFO block_director.shot-builder: shot_002: 运镜 dolly_in（121-250 帧）
+[BlockDirector] INFO block_director.camera-motion: 运镜 follow_subject：3 个采样点 / 6 个关键帧
+[BlockDirector] INFO block_director.shot-builder: shot_005: 运镜 follow_subject（505-624 帧）
+[BlockDirector] INFO block_director.scene: 群众代理 30 个（共享 1 份网格）
+[BlockDirector] INFO block_director.label-bake: 标签烘焙完成：3 个标签 / 612 帧采样
+[BlockDirector] INFO block_director.shot-builder: 场景构建完成：6 镜 / 3 角色 / 6 相机 / 115 关键帧 / 共 792 帧
+[BlockDirector] INFO block_director.composition: 构图评分：19.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：15.4（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：11.6（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：19.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：15.4（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：11.6（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：19.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：15.4（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：11.6（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-0.8458656861975724, 3.0103356652967794, 0.949655172413793)（35.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-2.049999952316284, 3.1959131545338444, 0.6213793103448275)（24.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-3.2369323003475863, 2.9673308700782544, 0.6213793103448275)（24.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：74.9（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：74.9（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：57.4（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_003 @ (0.20785427809296797, 1.6211153682418047, 0.949655172413793)（35.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_003 @ (0.675147723851738, 3.2751476284843064, 0.949655172413793)（50.0mm）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_003 @ (1.43629048303539, 2.330353341847594, 0.6213793103448275)（35.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：59.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：59.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：59.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.9（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_004 @ (1.7751476284843064, 3.2751476284843064, 0.949655172413793)（50.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_004 @ (1.3078541827255363, 1.6211153682418047, 0.949655172413793)（35.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：41.6（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：41.6（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：41.6（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：82.7（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：57.7（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.7（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：82.7（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：57.7（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.7（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：82.7（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：57.7（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.7（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_005 @ (-0.5563113491493046, 1.3026819923371644, 1.2779310344827586)（50.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_005 @ (1.7000000476837158, 2.6053639846743293, 1.2779310344827586)（50.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_005 @ (-2.13572932693242, 2.21455938697318, 1.2779310344827586)（85.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：82.8（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：82.8（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：57.8（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_006 @ (-0.5563113491493046, 1.3026819923371644, 1.2779310344827586)（50.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_006 @ (1.7000000476837158, 4.429118773946361, 1.2779310344827586)（85.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：0.0（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：73.3（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：73.3（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：73.3（通过）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_006 @ (-3.8677509207396064, 5.567750968423322, 0.949655172413793)（85.0mm）
+[BlockDirector] INFO block_director.composition: 构图评分：48.4（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：48.4（需调整）
+[BlockDirector] INFO block_director.composition: 构图评分：48.4（需调整）
+[BlockDirector] INFO block_director.headless: headless 运行结束：DONE（镜头 6 个）
+[BlockDirector] INFO block_director.delivery: 已导出镜头 shot_001（1-120）
+[BlockDirector] INFO block_director.delivery: 已导出镜头 shot_002（121-264）
+[BlockDirector] INFO block_director.delivery: 已导出镜头 shot_003（265-360）
+[BlockDirector] INFO block_director.delivery: 已导出镜头 shot_004（361-504）
+[BlockDirector] INFO block_director.delivery: 已导出镜头 shot_005（505-624）
+[BlockDirector] INFO block_director.delivery: 已导出镜头 shot_006（625-792）
+[BlockDirector] INFO block_director.delivery.concat: 全片拼接：6 段 → E:\白模预演codex\docs\evidence\20261003_real_glm\export\blockout_full.mp4
+[BlockDirector] INFO block_director.delivery: 交付完成：17 个文件，用时 27.7s

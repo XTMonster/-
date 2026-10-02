@@ -2593,3 +2593,98 @@ python -m pytest 全绿；run_tests.ps1 31/31；证据 docs/evidence/20261003-03
 `not_measured`）。同一次运行还会给 E2（经验采纳率）与 E1 的复核提供新鲜证据
 ——**不能用 `docs/evidence/20261002_real/` 那份**：它属于旧索引那一代，
 拿它 join 新 oracle 正是 §24.1 修掉的"过期证据被当成现行证据"。
+
+## 三十五、P14-25（2026-10-03 04:xx）：Q5 的运行侧**第一次按真通道**量出来——0 命中，判失败
+
+§34 的下一步做完了：跑了一次云端 GLM（`glm-4.7`）真实运行
+（`docs/evidence/20261003_real_glm/`，run_id `5a18272e4a1d`，`DONE`／6 镜／
+792 帧／50 次 LLM 调用／7 次检索），把 `--shots` 接进链。但接上之后先撞到的
+**不是**"Q5 是多少"，而是"Q5 之前量的根本不是同一件事"。
+
+### 35.1 通道本身是判据的一部分（硬规则 2）
+
+§4.1b 硬规则 2（禁止自证）把允许读的东西写死成四类；"运行期到底发了什么查询"
+只有一条通道——`audit_log.jsonl` 的**逐次事件**。旧实现是从 `shots.json`
+（**被测实现自己写的交付汇总**）用 `shot_constraint_query()` **重推**一个串出来
+再 join。两者在真实运行里**不是同一时刻**：逐镜检索发生在这一镜 editor 调用
+**之前**，而 `shots.json` 是收尾快照。实测这一跑 **6/6 镜两条串都不同**：
+
+```
+shot_001 发出 景别=MCU
+         重推 景别=MCU；镜头=50mm；运镜=dolly_in；特效=smoke；特效=glow
+shot_002 发出 景别=CU；运镜=dolly_in；对白=dialogue
+         重推 景别=CU；镜头=85mm；运镜=dolly_in；对白=dialogue
+…（shot_003/004/005/006 同形：镜头由取景求解器后补、运镜由工具调用后补）
+```
+
+于是新增 `tools/knowledge/run_evidence.py`（只读 audit 事件、按 `run_id` 过滤、
+多跑混合时**拒绝作答**）＋ `quality.py --audit-log/--audit-run-id`：**join 键改为
+emitted（真实发出）**，重推串降级为 `drift` **诊断**。判据一个字没改（仍是
+"键值对集合相等"，值经去空格/全半角/别名归一；subset 只报数）。
+
+### 35.2 通道换对之后，量出来的是 0（并且按硬规则 1 判失败）
+
+这一跑真实发出的 6 条逐镜查询是
+`景别=MCU` / `景别=CU；运镜=dolly_in；对白=dialogue` / `景别=MCU；对白=dialogue`
+/ `景别=CU；对白=dialogue` / `景别=MS；运镜=follow_subject` /
+`景别=MCU；对白=dialogue`；与 held-out 里 70 条带 `expect_movements` 的 `q`
+按相等判据匹配 **0 条**（连子集也是 **0** —— 旧通道会报"子集 4 条"的假数字）。
+
+* **夹具侧 pass**：70 ≥ 30（§4.1b 第一步）；
+* **运行侧 fail**：分母 0 ⇒ 按 §4.1b 硬规则 1 **判失败**。此前那条口径按
+  "如实记 not_measured" 处理，与硬规则 1 的原文（"分母为 0 一律判失败"）
+  冲突，本轮按规范改正（**收紧**）；夹具侧 <30 那一档仍按 §4.1b 第一步记
+  `not_measured`（规范原文写死），两条分开执行。
+
+### 35.3 顺带修掉的两个真缺陷
+
+1. **分子侧的别名折叠把每一镜都当成"锁死"**：`VALUE_ALIASES` 是一张**部分**
+   别名表（20 条），旧写法 `VALUE_ALIASES.get(kind, "")` 把不在表里的取值
+   （`dolly_in`／`follow_subject`…）折成空串再丢掉，于是 `applied` 退化成
+   `{固定}`——作者期望 `固定` 的条目会被 `dolly_in` 的镜头**骗成命中**。
+   改为 `(值, 值)` 兜底。用例
+   `tests/test_q5_run_join.py::test_a_movement_that_is_not_an_alias_is_never_folded_into_static`
+   两向自证。
+2. **链上缺证据会被读成"通过"的形状**：Q5 / E1 此前挂在 `SOFT_IDS`（理由是
+   "链上没有输入"）。现在两条输入都在链上（真实运行证据 ＋ 录档面板评分），
+   所以 `tools/knowledge/hard_gates.py` 把它们**归位成门**（`HARD_IDS`），
+   只剩 §2.3b 明写"只记录、不设门"的 E2 留在软项；`tests/test_hard_gates.py`
+   与 `tests/test_chain_evidence_is_measured.py` 同时钉住输入侧（`--shots` /
+   `--audit-log` / `--e1-reviews` 缺一个就判红）。
+
+### 35.4 证据与复算（sha256 的单一真源是 `run_manifest.json`）
+
+新增 `tools/extract_run_evidence.py`：按 `run_id` 从**累积**日志里**逐字节**
+挑行，落 `audit_log.jsonl` / `llm_trace.jsonl` 分片 ＋ `run_manifest.json`
+（分片自身、`shots.json`、oracle、索引指纹四个 pin）。`--check` 复算这四件事，
+链与用例都读它；`tests/test_extract_run_evidence.py` 钉住"别跑的事件混不进来、
+改一个字节就判红、oracle/索引换代就判红、入库那份证据当前同代"。
+
+```
+python tools/extract_run_evidence.py --run-id 5a18272e4a1d --out docs/evidence/20261003_real_glm --check
+python tools/knowledge/quality.py --cases knowledge/cases.jsonl \
+    --shots docs/evidence/20261003_real_glm/export/shots.json \
+    --audit-log docs/evidence/20261003_real_glm/audit_log.jsonl \
+    --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --out work/_q5.json
+```
+
+同日更早那一跑（`docs/evidence/20261003_real/`，run_id `b4626c726435`）保留为
+**历史**：它的交付清单没有 `knowledge` 块（代际指纹当天才加上），
+`run_evidence_is_stale` 会如实判 `stale_evidence`——Q5 不读它。
+
+### 35.5 这一轮之后的账
+
+```
+索引 638 条边 / oracle 2847 条（70 条带 expect_movements）
+门①–⑥、⑧–⑩ pass；⑦ fail（needs_human 157 / reviewed 0，未变）
+Q4 2878/2880 = 0.9993（差 2 条仍是 AXIS_RULE「运动轴」，待裁决第 12 条）
+Q5 夹具 70/30 pass、运行侧 0 命中 → **fail**（硬规则 1）；E2 = 0/6（诊断）
+E1 3/18 = 0.1667 → fail（未变）；attestation 诊断 ~21%
+```
+
+**待裁决（不变，但这条现在有数了）**：Q5 的运行侧要有分母，夹具里那批 `q`
+的**键集**必须能被真实计划的形状命中——现在 70 条的键集是
+`{景别,镜头[,运镜]}`，而真实计划在**逐镜检索那一刻**发的是
+`{景别[,运镜][,对白]}`（`镜头` 是取景求解器后补的）。要么给计划补"检索前就
+带上焦段/运镜"的生产者，要么让标注那一侧产出可被计划形状命中的 `q`
+（两条都要动契约/标注口径，**未经拍板不动**）。

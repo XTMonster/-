@@ -1,0 +1,458 @@
+{
+  "project": "第十四街区码头市场 - 午后",
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "style": "写实电影质感，35mm，柔和自然光",
+  "generated_at": "2026-10-03T04:31:56+08:00",
+  "scene_heading": "第十四街区码头市场 - 午后",
+  "total_frames": 792,
+  "llm_calls": 50,
+  "retrieval_calls": 0,
+  "crowd": {
+    "entries": [
+      {
+        "count": 30,
+        "mode": "walk",
+        "seed": 0,
+        "spread": 6.0,
+        "label": "背景有大量路人（约30人）在市场行走、交易"
+      }
+    ],
+    "total": 30
+  },
+  "timing_overrides": [],
+  "action_conflicts": [],
+  "dialogue_pins": [
+    {
+      "shot_number": 2,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 3,
+      "speaker_raw": "伊恩",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 4,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 1.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 4,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 4.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 6,
+      "speaker_raw": "偷盗者",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 6,
+      "speaker_raw": "偷盗者",
+      "speaker_status": "resolved",
+      "declared_s": 4.0,
+      "model_text": "",
+      "applied_s": null
+    }
+  ],
+  "audit_pass_rate": {
+    "numerator": 0,
+    "denominator": 5,
+    "rules": [],
+    "sampled_frames": 22,
+    "exempt_shots": []
+  },
+  "knowledge": {
+    "backend": "hypergraph",
+    "engine": "builtin.BM25Okapi",
+    "cards": 2353,
+    "top_k": 5,
+    "token_limit": 800,
+    "plan_token_limit": 2000,
+    "retrieval_calls": 7,
+    "degraded": false,
+    "degraded_reason": "",
+    "hypergraph_fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+    "cases": 3,
+    "lanes": 2,
+    "cases_backend": "hybrid",
+    "cases_requested_backend": "hybrid",
+    "cases_degraded": false,
+    "cases_degraded_reason": "",
+    "lightrag_index_fingerprint": "",
+    "cases_index_fingerprint": "69791dbacabd3fd77e5132dea277664972a227d222b7be0c6c6841c5a7a6649e",
+    "warnings": []
+  },
+  "shots": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "intent": "铺垫",
+      "shot_type": "MCU",
+      "start_frame": 1,
+      "end_frame": 120,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_001.mp4",
+      "first_frame": "first_frames/shot_001.png",
+      "camera": {
+        "name": "BD_Cam_shot_001",
+        "position": [
+          0.0,
+          2.895,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "机位居中偏左，建立场景空间关系，为后续角色出场定银幕方向",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 1,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "淡入",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "自然侧光，阳光从画面右侧照射，形成暖色调光影，地面阴影清晰",
+        "sfx": "微风声、远处商贩叫卖声、海浪轻拍岸边声、路人交谈的嘈杂声",
+        "declared_duration_s": 5.0
+      },
+      "labels": {},
+      "movements": [
+        {
+          "kind": "dolly_in",
+          "start_frame": 1,
+          "end_frame": 120,
+          "source": "theory"
+        }
+      ]
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "intent": "揭示",
+      "shot_type": "CU",
+      "start_frame": 121,
+      "end_frame": 264,
+      "duration_frames": 144,
+      "duration_seconds": 6.0,
+      "video_file": "blockout_shot_002.mp4",
+      "first_frame": "first_frames/shot_002.png",
+      "camera": {
+        "name": "BD_Cam_shot_002",
+        "position": [
+          -4.632,
+          3.132,
+          1.278
+        ],
+        "lens": 85.0
+      },
+      "characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "dialogue_ids": [
+        "dlg_002_michael"
+      ],
+      "action_types": [
+        "look_at",
+        "nod"
+      ],
+      "axis_note": "机位在米迦尔-伊恩轴线摄影侧，面朝右侧；从shot_001的MCU收至CU，景别变化一档+运动变化，满足30°规则",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 2,
+        "camera_number": "1",
+        "technique": "快速推镜",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "正面柔光打在米迦尔脸上，突出自信表情",
+        "sfx": "镜头推进的风声、米迦尔清脆的说话声",
+        "declared_duration_s": 6.0
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 1.7879,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        },
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.8548,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "dolly_in",
+          "start_frame": 1,
+          "end_frame": 130,
+          "source": "declared"
+        }
+      ]
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "intent": "收束",
+      "shot_type": "MCU",
+      "start_frame": 265,
+      "end_frame": 360,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_003.mp4",
+      "first_frame": "first_frames/shot_003.png",
+      "camera": {
+        "name": "BD_Cam_shot_003",
+        "position": [
+          -0.093,
+          1.447,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "伊恩"
+      ],
+      "dialogue_ids": [
+        "dlg_003_ian"
+      ],
+      "action_types": [],
+      "axis_note": "切至伊恩侧，机位仍在轴线同侧；CU→MCU景别变化一档+机位角度>30°（换角色侧），满足规则",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 3,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "侧光打在伊恩脸上，一半在光下一半在阴影中",
+        "sfx": "伊恩沉稳的说话声",
+        "declared_duration_s": 4.0
+      },
+      "labels": {
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.8548,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": []
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "intent": "推进",
+      "shot_type": "CU",
+      "start_frame": 361,
+      "end_frame": 504,
+      "duration_frames": 144,
+      "duration_seconds": 6.0,
+      "video_file": "blockout_shot_004.mp4",
+      "first_frame": "first_frames/shot_004.png",
+      "camera": {
+        "name": "BD_Cam_shot_004",
+        "position": [
+          2.336,
+          2.215,
+          1.278
+        ],
+        "lens": 85.0
+      },
+      "characters": [
+        "米迦尔"
+      ],
+      "dialogue_ids": [
+        "dlg_004_michael_a",
+        "dlg_004_michael_b"
+      ],
+      "action_types": [],
+      "axis_note": "回到米迦尔侧，MCU→CU景别收紧一档，机位角度相对shot_002略偏（>30°），保持轴线同侧",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 4,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "顶光照射手部，形成清晰的手部阴影",
+        "sfx": "米迦尔轻快的笑声、手指活动的轻微声响",
+        "declared_duration_s": 6.0
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 1.7879,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": []
+    },
+    {
+      "shot_id": "shot_005",
+      "order": 5,
+      "intent": "推进",
+      "shot_type": "MS",
+      "start_frame": 505,
+      "end_frame": 624,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_005.mp4",
+      "first_frame": "first_frames/shot_005.png",
+      "camera": {
+        "name": "BD_Cam_shot_005",
+        "position": [
+          5.711,
+          2.316,
+          0.95
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "偷盗者"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "切至偷盗者，CU→MS景别放大两档，机位转至偷盗者奔跑方向侧面，与前方镜头角度>30°",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 5,
+        "camera_number": "1",
+        "technique": "跟拍镜头",
+        "transition": "切镜，动作衔接",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "黑红色火焰自发光，照亮偷盗者的手掌和面部",
+        "sfx": "跑步脚步声、火焰燃起的\"呼\"声、金属受热的轻微滋滋声",
+        "declared_duration_s": 5.0
+      },
+      "labels": {
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 1.962,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "follow_subject",
+          "start_frame": 1,
+          "end_frame": 120,
+          "source": "declared"
+        }
+      ]
+    },
+    {
+      "shot_id": "shot_006",
+      "order": 6,
+      "intent": "揭示",
+      "shot_type": "MCU",
+      "start_frame": 625,
+      "end_frame": 792,
+      "duration_frames": 168,
+      "duration_seconds": 7.0,
+      "video_file": "blockout_shot_006.mp4",
+      "first_frame": "first_frames/shot_006.png",
+      "camera": {
+        "name": "BD_Cam_shot_006",
+        "position": [
+          4.207,
+          1.447,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "偷盗者"
+      ],
+      "dialogue_ids": [
+        "dlg_006_thief_a",
+        "dlg_006_thief_b"
+      ],
+      "action_types": [],
+      "axis_note": "MS→MCU景别收紧一档，机位角度相对shot_005偏转>30°（正面vs侧面），保持偷盗者银幕方向连续",
+      "continuity_in": "",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 6,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "金子反射的金光打在偷盗者脸上，形成明暗对比",
+        "sfx": "偷盗者激动的喘气声、狂喜的大笑声、金子碰撞的清脆声响",
+        "declared_duration_s": 7.0
+      },
+      "labels": {
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 1.962,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": []
+    }
+  ]
+}

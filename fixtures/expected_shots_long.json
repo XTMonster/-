@@ -25,6 +25,7 @@
     "sampled_frames": 0,
     "exempt_shots": []
   },
+  "knowledge": {},
   "shots": [
     {
       "shot_id": "shot_001",

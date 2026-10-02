@@ -95,6 +95,56 @@ def test_the_chain_attributes_rk13_by_hard_gate_ids_not_by_an_exit_code():
     assert "$LASTEXITCODE" in after
 
 
+def live_quality_line(text: str) -> str:
+    """链上 `quality.py` 的那条**活行**（找不到就当场红）。"""
+    calls = [line for _, line in live_lines(text) if "tools/knowledge/quality.py" in line]
+    assert calls, "链上没有调用 tools/knowledge/quality.py（活行）"
+    assert len(calls) == 1, "quality.py 被调了不止一次：输入分散在多处，判据会漂"
+    return calls[0]
+
+
+QUALITY_INPUT_FLAGS = ("--shots", "--audit-log", "--e1-reviews")
+
+
+def missing_quality_inputs(line: str):
+    """这条命令行缺了哪个输入开关（缺证据 = Q5/E1 退回 `not_measured`）。"""
+    return [flag for flag in QUALITY_INPUT_FLAGS if flag not in line]
+
+
+def test_the_quality_report_is_fed_the_real_run_and_the_audit_channel():
+    """Q5 / E1 归位成门之后，链上那一条命令必须真的把输入递进去。
+
+    2026-10-03 的门归位把 `Q5` 与 `E1` 从 `SOFT_IDS` 移进 `HARD_IDS`：它们从
+    "这次量不到"变成"缺证据即 RK-13 未通过"。这条断言钉住**输入侧**——把
+    `--shots` / `--audit-log` / `--e1-reviews` 任何一个从活行上摘掉，报告就会
+    退回 `not_measured`，而链子依旧全绿（缺证据被当成通过的老形状）。
+
+    `--audit-log` 是 §4.1b 硬规则 2 的通道：join 键只认 `audit_log.jsonl` 里
+    **真实发出**的查询，不认 `shots.json` 反推的串（后者是收尾快照）。
+    """
+    line = live_quality_line(chain_text())
+    assert missing_quality_inputs(line) == [], (
+        "链上的 quality.py 活行缺输入：" + ",".join(missing_quality_inputs(line)))
+    for flag in ("--shots", "--audit-log"):
+        match = re.search(re.escape(flag) + r"\s+(\S+)", line)
+        assert match, f"{flag} 后面看不出指向哪个文件"
+        target = ROOT / match.group(1)
+        assert target.is_file() and target.stat().st_size > 0, (
+            f"{flag} 指向的证据 {match.group(1)} 不在或为空："
+            f"Q5 的输入不许是空气（§4.1b 硬规则 1）")
+
+
+def test_the_chain_input_checker_fires_when_the_flags_are_dropped():
+    """自证：把三个开关摘掉的写法必须被判出来（否则上一条只是自我感觉良好）。"""
+    stripped = ("python tools/knowledge/quality.py --run-id $runId --json "
+                "--cases knowledge/cases.jsonl --out (Join-Path $evidenceDir "
+                "'knowledge_quality.json')")
+    assert missing_quality_inputs(stripped) == list(QUALITY_INPUT_FLAGS)
+    # 只补回一个也不算够：三个输入各管一件事，缺一个就是缺证据。
+    assert missing_quality_inputs(stripped + " --shots x/export/shots.json") == [
+        "--audit-log", "--e1-reviews"]
+
+
 # --------------------------------------------------------------------------- #
 # 二、探针结果解析失败 ⇒ INCOMPLETE（不是 WARN）
 # --------------------------------------------------------------------------- #

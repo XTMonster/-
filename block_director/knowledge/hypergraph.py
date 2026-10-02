@@ -15,16 +15,41 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import re
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ..cinema.composition import WEIGHTS as COMPOSITION_WEIGHTS
 from ..cinema.framing import SHOT_FRAME
 from .bm25 import tokenize as _bm25_tokenize
 
 SCHEMA_VERSION = "hg/v2"
+
+#: 构建期留痕的产物名（与 ``knowledge/cases.manifest.json`` 同一约定）。
+MANIFEST_FILE = "hypergraph.manifest.json"
+
+
+def manifest_fingerprint(index_dir: Any) -> str:
+    """读 ``hypergraph.manifest.json`` 的六元指纹（构建期留痕，供 trace 引用）。
+
+    为什么索引也要报指纹（2026-10-03 实测）：Q5 的运行侧判据要拿一份**真实模型
+    运行的 `shots.json`** 与 held-out 的 `q` join，而这份证据可能属于**上一代
+    索引**——`docs/evidence/20261002_real/` 那份就是这样（它的案例指纹已经对不上
+    `knowledge/cases.manifest.json`）。E1 已经因为同一形状吃过一次亏（
+    `quality.e1_evidence_is_stale`），所以运行侧证据必须能自证"我是哪一代"。
+    指纹读不出来时返回空串——**空串不算证据**，调用方据此记 `stale_evidence`。
+    """
+    path = Path(index_dir) / MANIFEST_FILE
+    if not path.is_file():
+        return ""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ""
+    return str(payload.get("fingerprint") or "") if isinstance(payload, dict) else ""
 
 #: 节点类型闭集（17 类，§2.3 是单一真源）。v1.5 起新增 `intent`（意图）：它是
 #: "角色/导演想干什么"这一层，和 `emotion`（感受）一样是**强耦合的源头**——

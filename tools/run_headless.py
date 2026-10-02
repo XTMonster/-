@@ -179,6 +179,15 @@ def main() -> int:
                                 config=config.delivery,
                                 compliance=summary.get("compliance"),
                                 llm_calls=int(summary.get("llm_calls") or 0),
+                                #: §3.3 的契约字段：`shots.json.retrieval_calls` 必须
+                                #: 是**这一次运行**的检索调用数。此前 headless 这条路
+                                #: 一个都不传（只有 `run_export.py` 与 UI 面板传），
+                                #: 于是每次真实运行写出来的都是 0——实测 2026-10-03：
+                                #: `knowledge.retrieval_calls = 7` 而顶层写着 0，
+                                #: `tests/test_manifest_fields.py` 现在有一条契约断言
+                                #: 钉住"传了 llm_calls 就必须传 retrieval_calls"。
+                                retrieval_calls=int(
+                                    summary.get("retrieval_calls") or 0),
                                 crowd=crowd,
                                 parsed=parsed,
                                 timing_overrides=summary.get(
@@ -188,6 +197,9 @@ def main() -> int:
                                 audit_pass_rate=summary.get("audit_pass_rate"),
                                 knowledge_provenance=summary.get(
                                     "knowledge_provenance"),
+                                #: 交付清单自带索引代际（§4.1b 的 Q5 只在真实运行上判，
+                                #: 而"这份运行是哪一代索引"必须能从证据文件本身读出来）。
+                                knowledge=summary.get("knowledge"),
                                 project=plan_obj.scene_heading or "BlockDirector")
         payload = report.to_dict()
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(

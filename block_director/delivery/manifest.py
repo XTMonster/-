@@ -28,7 +28,8 @@ def build_manifest(plan: Plan, *,
                    timing_overrides: Optional[Sequence[Dict[str, Any]]] = None,
                    action_conflicts: Optional[Sequence[Dict[str, Any]]] = None,
                   audit_pass_rate: Optional[Dict[str, Any]] = None,
-                  knowledge_provenance: Optional[Dict[str, Any]] = None
+                  knowledge_provenance: Optional[Dict[str, Any]] = None,
+                  knowledge: Optional[Dict[str, Any]] = None
                   ) -> Dict[str, Any]:
     """把分镜计划与构建结果拼成交付用清单。
 
@@ -115,6 +116,12 @@ def build_manifest(plan: Plan, *,
         "audit_pass_rate": dict(audit_pass_rate or {
             "numerator": 0, "denominator": 0, "rules": [],
             "sampled_frames": 0, "exempt_shots": []}),
+        #: v1.4 §4.1b 的 Q5 只在**真实模型运行**上判，而"运行证据属于哪一代
+        #: 索引"必须能从证据文件本身读出来（跨文件对日志就是 §24.1 那个"过期
+        #: 证据被当成现行证据"的形状）。这里把 `driver.py` 的运行期 knowledge
+        #: 块整块带进交付清单：纯离线通路没有它 ⇒ 空块 ⇒ Q5 记 `stale_evidence`，
+        #: 这在机制上就等于把 R46 的"离线不许判 Q5"变成了一条可执行的门。
+        "knowledge": dict(knowledge or {}),
         "shots": shots,
     }
 

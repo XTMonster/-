@@ -60,6 +60,56 @@ def test_declared_is_null_when_there_is_no_declaration():
     assert all(value is None for value in declared.values())
 
 
+def test_the_manifest_carries_which_index_generation_produced_it():
+    """§4.1b 的 Q5 只在**真实模型运行**上判：证据文件必须自带索引代际。
+
+    没有这一块时，`quality.run_evidence_is_stale()` 无从对拍——那正是
+    `docs/evidence/20261002_real/` 那份"旧索引跑出来却拿来 join 新 oracle"的
+    形状。反向的一半同样重要：**离线通路**没有运行期 knowledge 块，交付清单里
+    就是一个空块，于是离线的 `shots.json` 永远判成 `stale_evidence`——R46 的
+    "离线不许判 Q5"因此变成一条可执行的门，而不是一句约定。
+    """
+    live = {"hypergraph_fingerprint": "a" * 64,
+            "cases_index_fingerprint": "b" * 64, "cases_backend": "hybrid"}
+    manifest = build_manifest(_plan(), generated_at="t", knowledge=live)
+    assert manifest["knowledge"] == live
+    # 离线：不传 ⇒ 空块（不是缺字段——读的人不用区分"没写"与"没跑"）。
+    offline = build_manifest(_plan(), generated_at="t")
+    assert offline["knowledge"] == {}
+
+
+def test_every_export_call_that_counts_llm_calls_also_counts_retrievals():
+    """§3.3 的 `retrieval_calls` 是**契约字段**：生产它的调用点必须真的传值。
+
+    实测缺陷（2026-10-03）：`tools/run_export.py` 与 UI 面板都传了
+    `retrieval_calls`，只有 `tools/run_headless.py` 没传——于是**每一次真实
+    模型运行**（也就是 §4.4 步骤 2 那条唯一能判 Q5/E2 的通路）写出来的
+    `shots.json.retrieval_calls` 恒为 `0`，而同一份文件里
+    `knowledge.retrieval_calls` 写着 7。这是"契约字段在说假话"，不是漏一个键：
+    RK-18② 要与 `audit_log.jsonl` 的逐条 `retrieval_call` 事件**对拍**，对拍的
+    另一半永远是 0 就等于没对拍。
+
+    判据是**结构性**的（AST），所以以后再加一条导出通路也逃不掉：凡是传了
+    `llm_calls=` 的 `export_project(...)` 调用点，就必须同时传 `retrieval_calls=`。
+    """
+    import ast
+
+    offenders = []
+    for path in sorted((ROOT / "tools").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            if getattr(node.func, "id", "") != "export_project":
+                continue
+            keywords = {keyword.arg for keyword in node.keywords}
+            if "llm_calls" in keywords and "retrieval_calls" not in keywords:
+                offenders.append(f"{path.name}:{node.lineno}")
+    assert not offenders, (
+        "这些导出调用点记了 llm_calls 却没记 retrieval_calls——"
+        "它们写出的 shots.json 会在 RK-18② 的对拍里说假话：" + "、".join(offenders))
+
+
 def test_declared_reads_the_shot_list_when_available():
     script = parse_script(LONG)
     plan = Plan.from_dict({"shots": [

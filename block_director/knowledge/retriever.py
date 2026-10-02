@@ -24,6 +24,9 @@ from .cases import (CASE_COLUMN_TITLE, CaseIndex, load_index, render_cases,
                     repo_knowledge_dir)
 from .corpus import CARDS, DOMAIN_LABELS, DOMAINS, cards_by_domain, digest_cards
 from .generated import ID_PREFIX as GENERATED_ID_PREFIX
+#: 索引的**代际指纹**：运行结果里的 ``knowledge`` 块带上它，Q5 的运行侧证据
+#: 才能自证"我量的是这一代索引"（`tools/knowledge/quality.py` 会对拍）。
+from .hypergraph import manifest_fingerprint as hypergraph_fingerprint
 #: v1.4 §2.3d T5：token 估算的**单一真源**在 `tokens.py`——案例通道（`cases.py`）
 #: 用的是同一个函数对象，两条通道不可能各算一套。这里的再导出保持既有 API。
 from .tokens import (
@@ -219,6 +222,8 @@ class KnowledgeRetriever:
                 "retrieval_calls": int(self.retrieval_calls),
                 "degraded": bool(self.degraded),
                 "degraded_reason": self.degraded_reason,
+                "hypergraph_fingerprint": hypergraph_fingerprint(
+                    repo_knowledge_dir()),
                 **self.cases_info(),
                 "warnings": list(self.warnings)}
 
