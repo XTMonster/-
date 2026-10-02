@@ -58,6 +58,32 @@ def test_the_committed_cases_come_from_the_committed_corpus():
         "请重跑 `python -m tools.kb_fetch.build_cases`（P14-3）或 `build_hypergraph`（P14-2）")
 
 
+def test_scanned_illustration_captions_never_become_cases():
+    """扫描件的说明文字不许进 L3——**它会当上 `excerpt`**。
+
+    实测（2026-10-02）：拿真实运行的逐镜查询去打 L3，6 条返回里 **2 条**是
+    `[Illustration: MELTON MEADOWS. A.` 这种说明文字，双模型面板给 1–2 分，
+    E1（案例相关性 ≥70%）得 **0.0**。成因是 `pick_excerpt` 取段首那一对句子，
+    而说明句正好排在段首。判据必须在**切窗之前**丢掉这些句子。
+    """
+    caption = "[Illustration: MELTON MEADOWS. A. Lewis, phot.]"
+    assert builder.is_artifact_sentence(caption)
+    assert builder.is_artifact_sentence("ILLUSTRATION: THE FILM-MOVING MECHANISM.")
+    # 正对照：正常的工艺句子不许被误杀（它只是**提到**了图）。
+    assert not builder.is_artifact_sentence(
+        "用油斑装置做反射测光时结果不可靠，因为油膜受吸收定律支配。")
+
+    # 形态沿用 `_synthetic_docs()`（已知能产出 narrative 案例），只把说明句塞到最前面——
+    # 那正是"说明句当上段首、进而当上 excerpt"的现场。
+    doc = _synthetic_docs()[0]
+    doc["text"] = caption + " " + doc["text"]
+    cases, _rejected, report = builder.build_cases([doc], max_cases=100, per_source=10)
+    assert report["per_type"]["narrative"] >= 1, "这段散文本身是可用的语料"
+    for row in cases:
+        assert not builder.is_artifact_sentence(row["excerpt"]), row["excerpt"]
+        assert "illustration" not in row["excerpt"].lower()
+
+
 def test_the_case_corpus_meets_the_floor_and_has_unique_ids():
     rows = _rows()
     assert len(rows) >= MIN_CASES, f"L3 案例 {len(rows)} < {MIN_CASES}"

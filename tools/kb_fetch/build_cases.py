@@ -188,6 +188,29 @@ BOILERPLATE_CUES = ("project gutenberg", "gutenberg.org", "gutenberg-tm",
 #: 标题里的括注（"（自撰笔记）"这类）不进标题——它占位置但不带信息。
 BOILERPLATE_RE = re.compile(r"[（(][^）)]*[）)]")
 
+#: 扫描件里的**插图说明/OCR 残片**。它不是知识，而且会**当上 `excerpt`**：
+#: `pick_excerpt` 取的是段首那一对句子，于是 `[Illustration: MELTON MEADOWS. A.` 这种
+#: 说明文字被当成"作者写的经验"发出去。实测代价（2026-10-02）：拿真实运行的逐镜查询
+#: 去打 L3，返回的 6 条案例里有 **2 条是说明文字**，双模型面板给 1–2 分，
+#: E1（经验引用相关性 ≥70%）得 **0.0** —— 那一栏在镜头上等于噪声。
+#: 判据是**句级**的（见 `segments_of`）：说明句在切窗之前就被丢掉，
+#: 于是它既不会单独成窗，也不会当上 excerpt。
+CAPTION_MARKERS = ("[illustration", "[figure", "[diagram", "[plate", "[map",
+                   "[chart", "[sketch", "[engraving", "illustration:",
+                   "photograph by", "see illustration")
+
+#: **整段方括号**（Gutenberg 的 `[Illustration: …]` 就是这种）在**切句之前**整块去掉。
+#: 只按句滤是不够的：说明文字里带句点（`[Illustration: MELTON MEADOWS. A. Lewis…]`），
+#: 切句会把它切成 3 段，只有第一段带得出 `[illustration`，剩下两段留下并把紧随其后的
+#: **第一句正文**吞进同一个三句窗 —— 实测那样窗口整体错位、`narrative` 案例 1 → 0。
+BRACKET_SPAN_RE = re.compile(r"\[[^\]]{0,400}\]")
+
+
+def is_artifact_sentence(sentence: str) -> bool:
+    """这一句是不是扫描件的说明/残片（不是作者写的知识）。"""
+    lowered = sentence.strip().lower()
+    return any(marker in lowered for marker in CAPTION_MARKERS)
+
 
 def segments_of(text: str) -> List[str]:
     """把正文切成**不重叠**的句窗（每窗 3 句），并按可见长度过滤。
@@ -196,8 +219,11 @@ def segments_of(text: str) -> List[str]:
     一行往往只有一句，按段落切会一个窗口都组不出来——实测这样会得到 0 条案例。
     """
     out: List[str] = []
-    sentences = [s for s in common.split_sentences(common.normalize_text(text))
-                 if s.strip()]
+    #: 两步：① 方括号说明**整块**去掉（切句之前——否则它会被切成几段、只滤掉第一段）；
+    #: ② 剩下的句子再逐句滤一次（无括号的 `Illustration: …` 写法）。
+    plain = BRACKET_SPAN_RE.sub(" ", common.normalize_text(text))
+    sentences = [s for s in common.split_sentences(plain)
+                 if s.strip() and not is_artifact_sentence(s)]
     for start in range(0, len(sentences), SENTENCES_PER_SEGMENT):
         window = sentences[start:start + SENTENCES_PER_SEGMENT]
         if len(window) < SENTENCES_PER_SEGMENT:

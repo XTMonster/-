@@ -11,17 +11,17 @@
   "corpus_fingerprint": "cd1073c2fcb6f613c3c99dba7d4472d0ee73738f867e6e349abbc1f7046ade6b",
   "cards_sha256": "cb5d07812f72a44a01f308558be3dc6f9e8140988e06b59414051bc712679e11",
   "fingerprint": "3e5c60693bbced6cba91fbca9caf277542fb50ab349f6e0017c4f4eb33be33b8",
-  "segments_total": 29369,
-  "raw_segments": 2933,
+  "segments_total": 29182,
+  "raw_segments": 2910,
   "cases": 810,
-  "quota_truncated": 2108,
+  "quota_truncated": 2082,
   "duplicates": 2,
-  "rejects": 13,
-  "reject_ratio": 0.004432,
+  "rejects": 16,
+  "reject_ratio": 0.005498,
   "per_type": {
-    "narrative": 742,
+    "narrative": 749,
     "sequence_pattern": 1,
-    "lesson": 67
+    "lesson": 60
   },
   "per_domain": {
     "anime": 120,
@@ -115,7 +115,7 @@
   "min_cases": 300,
   "size_gate": {
     "sizes": {
-      "cases.jsonl": 502130,
+      "cases.jsonl": 501491,
       "cases.manifest.json": 3378
     },
     "oversize": {},
