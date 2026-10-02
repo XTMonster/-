@@ -350,6 +350,30 @@ L3 案例 **810** 篇。门⑥ 的明细：
 `cards 2353 / cards_expected 2331 / excluded 22 / expressible_share 99.07% / missing 0`。
 manifest 另带 §2.3 的 per-chunk 账 `chunks`（708 条，`--refresh-ledger` 可复算）。
 
+**2026-10-02 23:5x 追加（`c2d7b98`）：L3 补了 BFI 的 35 篇逐片分析，同语言对照仍在噪声级。**
+
+* **来源**：BFI / Sight & Sound 的 **35 篇逐片评论与制作分析**入库（robots 404 ⇒ RFC 9309
+  放行；标题与署名读页面自带元数据块，不从 slug 猜）。**许可如实记 `PersonalStudy`**，
+  `/terms-use` 2.2 那句 "you may not … copy … reproduce … any information or content
+  obtained from the Site unless expressly authorised by us" 原文逐字写在 `sources.yaml`
+  与 `MODERN_SOURCES.md` §八里，**待用户复核**。来源 286→**321**（L3 167→202）；
+  案例 810 篇里 BFI **35 篇**；`chunks` 仍 **709**（`layers: [L3]` 不进 `chunk.py`
+  ⇒ **索引与 oracle 不受影响**）。
+* **顺手修掉两个真缺陷，都在案例层的"取段"上**：① `pick_excerpt` 取段首 ⇒
+  标题/导航（"TV Writing and Development"／"MEDIUM CLOSE-UP SHOT DEFINITION"）被当成
+  参考案例（与 §24.2 的 OCR 说明文字同一形状）→ 改成**按内容打分选窗**＋子句/词边界兜底；
+  ② `segments_of` 只切固定 3 句窗 ⇒ 现代网页（句子 200–300 字、页头是一整块 515 字的
+  "句子"）**整篇 0 段**（反向门 `tests/test_source_traces.py` 抓到 6 条来源零产物）→
+  窗口改成**自适应 3→2→1 句**。`build_cases` 回到 `passed: true`
+  （`quote_gate` 拒收 798 → **117 / 9121 = 1.3%**，上限 5%）；那 6 篇从 0 段变成 8–20 段。
+  例外表因此**按设计清空**（原先唯一的例外 Skwigly 那页也产出案例了）。
+* **E1 的实测（照实报）**：同语言对照（英文查询打英文语料）**1/18 → 0/18 → 1/18 → 0/18**，
+  四个状态之间是噪声（样本 18 条）。**补现代逐片分析没有抬动它**；门限一个字没动，
+  E1 仍 `not_measured`。结论：E1 的瓶颈不止"有没有逐片分析"，还有**查询与语料对不上**
+  （产品查询是"这一镜怎么拍"的具体描述，L3 里能命中的多是定义/教学页）。
+* 终态：`python -m pytest` 全绿；`run_tests.ps1` 31/31 探针，**RK-13 仍判 failed**
+  （门⑦ ＋ Q4/Q6b，未变）；证据 `docs/evidence/20261002-235414/`。
+
 **两件这一轮才立起来的不变量**（都是真缺陷的修法，用例在 `tests/`）：
 
 * **零原子卡的有界补抽**（`build_hypergraph.backfill_empty_cards`）：抽取器**不可复现**
