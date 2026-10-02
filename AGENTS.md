@@ -457,8 +457,23 @@ manifest 另带 §2.3 的 per-chunk 账 `chunks`（708 条，`--refresh-ledger` 
   分母 0 判失败/夹具下界/stale）、`tests/test_extract_run_evidence.py`（分片逐字节、
   tamper/换代判红、入库证据同代）、`tests/test_chain_evidence_is_measured.py`
   （链上活行必须真的带 `--shots/--audit-log/--e1-reviews`）。
-* 这一轮之后的账：门①–⑥、⑧–⑩ pass、⑦ fail；Q4 2878/2880（差 2 条仍是
+* 这一轮之后的账：门①–⑥、⑧–⑩ pass、⑦ fail；**Q4 2878/2880**（差 2 条仍是
   `AXIS_RULE`「运动轴」）；**Q5 fail（分母 0）**；E1 fail 0.1667；E2 0/6（诊断）。
+
+**2026-10-03 05:1x 追加（`f146de4`）：打分缺"对靶度"，补上之后 Q4 第一次全绿。**
+
+那 2 条差的 `AXIS_RULE` 不是"没有查询键"，而是**排序里少一项**：查询 `轴线=运动轴`
+下四条边的 coverage/precision 全是 1.0/0.3333，差别只在成员与 occurrences ——
+`_edge_precision` **故意把 `forbid` 排除在分母外**，于是"同靶、只是多带一个没被问到的
+禁忌"（真实索引里是 `hg:a0561faf2b48`）一分不扣，靠 occurrences 把**精确匹配**的
+`hg:bc1080003563` 挤到第 4 名，而 held-out 的 `must` 正是按成员集完全相等解析出来的。
+新增 `Hypergraph._edge_off_target`（查询点名的 kind 里带了别的取值就扣分，[0,1] 封顶）
+与 `SCORE_WEIGHTS["specificity"] = 0.10`。权重扫参（`work/zz_rank_specificity.py`，
+同一份 2847 条 oracle ＋ 300 条标定抽样）：平台 **[0.04, 0.20]**，Q1 0.9726 → **0.9975**、
+Q4 0.9993 → **1.0000**、Q6b 1.0 → 1.0、标定 Q1 0.9067 → 0.9133、标定 Q2 0.9933 → 0.9967；
+0.30/0.60 起四项一起退化。**判据与门限一个字没动**。证据 `docs/evidence/20261003-052055/`
+（`not passing: Q5,E1`），用例 `tests/test_hypergraph_ranking.py`（含"归零该项名次就回去"
+的自证与"惩罚有界、不是过滤"的负对照）。
 
 **两件这一轮才立起来的不变量**（都是真缺陷的修法，用例在 `tests/`）：
 
@@ -503,6 +518,11 @@ manifest 另带 §2.3 的 per-chunk 账 `chunks`（708 条，`--refresh-ledger` 
    ① oracle 重标（任何索引变动都必须做）② Q5 的 `expect_movements` 独立标注
    ③ 门⑦／E1 要求的**跨族**复核面板（抽取族是 DeepSeek，面板必须换族）。
    解它只能由用户提供钥匙或授权另一条非 DeepSeek 族通道。
+   **⚠️ 2026-10-03 起这条阻塞已解除，别照抄上面那段**：用户提供了 `GLM_API_KEY`
+   （`glm-4.7` 实测可用，Q5 的独立标注与真实运行都跑通了）。**但 `embedding-3`
+   仍然不可用**——实测 `POST /api/paas/v4/embeddings` 返回
+   `429 {"code":"1113","message":"余额不足或无可用资源包，请充值"}`（`embedding-2`
+   同样）⇒"多语言向量检索"这条路当前**走不通**，E1 只能从语料/查询同层入手。
    **离线兜底已在位**：`unsupported_prohibition_hosts` 那道精确度门会在归并期拒收
    这类没有依据的禁令边（索引里那条编出来的边已被它删掉，账在 manifest 的
    `merge.unsupported_prohibition_hosts`）。
