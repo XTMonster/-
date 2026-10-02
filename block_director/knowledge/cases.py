@@ -196,6 +196,20 @@ class CaseIndex:
     adapter: Optional[Any] = None
     #: `case_id -> 中文检索线索`（空 = 没有可用线索，退回"只吃原文"的旧行为）。
     search_zh: Dict[str, str] = field(default_factory=dict)
+    #: **相关性过滤器**（可选）：`(query, cases) -> Sequence[Case]`。
+    #:
+    #: 为什么需要它（2026-10-03 实测）：E1 是**精确率**指标——"返回的案例里相关
+    #: （≥4/5）的比例"。BM25 只懂词面：查询"…表情从困惑转为狂喜"的 top-1 是 1900 年代
+    #: 一句"银幕明星在每种表情和每个角度下都应同样美丽"（只是短 + 命中"表情"）。
+    #: 离线实验（`work/zz_e1_rerank_sim.py`，用**已记录**的面板分算）：
+    #: 对 top-8 做一次"只留真的能指导这一镜怎么拍"的过滤之后，E1 从 **3/18 = 0.167**
+    #: 升到 **3/7 = 0.429**——留下的还是那三条相关的，去掉的是 11 条噪声。
+    #: 对产品也是真改进：塞给模型的"参考案例"里一半是无关噪声时，它只会误导。
+    #:
+    #: 过滤器由**调用方注入**（sidecar 用上游模型装配；进程内路径没有模型，保持不装）。
+    #: 它**只许做减法**（返回入参的子集），不许引入新案例——否则检索面就不确定了。
+    case_filter: Optional[Callable[[str, Sequence[Case]], Sequence[Case]]] = None
+    filter_reason: str = ""
     _engine: Optional[Any] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -235,6 +249,8 @@ class CaseIndex:
                 "cases_degraded": bool(self.degraded),
                 "cases_degraded_reason": self.reason,
                 "cases": len(self.cases),
+                "cases_filter": "on" if self.case_filter is not None else "off",
+                "cases_filter_reason": self.filter_reason,
                 "lanes": self.lanes,
                 "lightrag_index_fingerprint": self.lightrag_index_fingerprint,
                 "cases_index_fingerprint": self.fingerprint}
@@ -281,7 +297,7 @@ class CaseIndex:
                 documents = [tokenize(self._text(case)) for case in self.cases]
                 self._engine, _name = make_bm25(documents)
             else:
-                return self._scored(hits, limit)
+                return self._filtered(query, self._scored(hits, limit))
         if self._engine is None:
             return []
         tokens = tokenize(query)
@@ -290,7 +306,25 @@ class CaseIndex:
         scored = ranked(self._engine, tokens, 0)
         hits = [(index, score) for index, score in scored if score > 0]
         hits.sort(key=lambda item: (-item[1], self.cases[item[0]].case_id))
-        return self._scored(hits, limit)
+        return self._filtered(query, self._scored(hits, limit))
+
+    def _filtered(self, query: str, cases: List[Case]) -> List[Case]:
+        """过一遍相关性过滤器；**只许做减法**，失败就如实记账并原样返回。
+
+        `case_filter` 由 sidecar 注入（上游模型）。它抛错时**不能**把整条检索弄挂：
+        退回未过滤的结果，并把原因写进 `filter_reason`（trace 里看得到）。
+        """
+        if self.case_filter is None or not cases:
+            return cases
+        try:
+            kept = list(self.case_filter(query, cases))
+        except Exception as exc:  # noqa: BLE001 - 过滤是增强，不是关键路径
+            self.filter_reason = f"cases_filter_failed:{type(exc).__name__}"
+            return cases
+        allowed = {str(case.case_id) for case in cases}
+        kept = [case for case in kept if str(getattr(case, "case_id", "")) in allowed]
+        self.filter_reason = ""
+        return kept
 
     def _scored(self, hits: Sequence[Any], limit: int) -> List[Case]:
         out: List[Case] = []
@@ -307,7 +341,9 @@ class CaseIndex:
 
 
 def load_index(knowledge_dir: Any, backend: str = "lightrag",
-               *, adapter: Optional[Any] = None) -> CaseIndex:
+               *, adapter: Optional[Any] = None,
+               case_filter: Optional[Callable[[str, Sequence[Case]], Sequence[Case]]] = None
+               ) -> CaseIndex:
     """装配 L3 索引。缺索引/坏索引**不抛**，而是回一个带具名原因的降级对象。"""
     directory = pathlib.Path(knowledge_dir)
     if str(backend) == "off":
@@ -330,7 +366,8 @@ def load_index(knowledge_dir: Any, backend: str = "lightrag",
                      fingerprint=manifest_fingerprint(directory),
                      lightrag_index_fingerprint=lightrag_fingerprint(directory),
                      adapter=chosen,
-                     search_zh=read_search_zh(directory, path)[0])
+                     search_zh=read_search_zh(directory, path)[0],
+                     case_filter=case_filter)
 
 
 # --------------------------------------------------------------------------- #

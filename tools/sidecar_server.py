@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import threading
 import urllib.error
@@ -94,6 +95,8 @@ class SidecarConfig:
         self.timeout = args.timeout
         self.knowledge_dir = Path(args.knowledge_dir)
         self.cases_backend = args.cases_backend
+        #: L3 的相关性过滤（`off` / `llm`）；`make_case_filter` 按它装配。
+        self.cases_filter = str(getattr(args, "cases_filter", "off"))
         # 能力位**由实际加载结果决定**（见 main()）：宣告了却用不了，
         # 插件就会"以为能用"，那是 §2.3 明令禁止的静默失败。
         self.capabilities = [Capability.LLM, Capability.BM25]
@@ -300,6 +303,74 @@ def _code_for(status: int) -> ErrorCode:
 # --------------------------------------------------------------------------- #
 # HTTP 服务
 # --------------------------------------------------------------------------- #
+#: 相关性过滤器的提示词（2026-10-03）。与 `tools/kb_fetch/case_search_zh.py` 同一纪律：
+#: 只做判断、不产出内容；判据是"能不能指导**这一镜怎么拍**"，不是"气氛像不像"。
+CASE_FILTER_SYSTEM = (
+    "你是分镜预演工具的知识检索过滤员。给你一条导演的镜头查询与若干条候选参考案例，"
+    "请**剔除明显与这一镜无关的**，其余的保留。\n"
+    "判据：能沾上这一镜的拍法（景别/机位/运镜/构图/光线/剪辑节奏/表演调度）就保留——"
+    "哪怕只是同一类手法、同一类场面；**明显**是气氛描写、剧情叙述、演员轶事、"
+    "或讲的完全是另一回事的才剔除。\n"
+    "**不确定就保留**（宁可留一条弱相关的，也不要让导演拿不到参考）。"
+    "只输出 JSON：{\"keep\":[\"<保留的案例 id>\", ...]}"
+)
+
+
+def make_case_filter(config: "SidecarConfig"):
+    """按上游配置装配 L3 的**相关性过滤器**；`off` 或没有上游时返回 ``None``。
+
+    为什么装在这里而不是插件里：上游（模型、密钥、超时）是 sidecar 的职责
+    （`--upstream*` 那一组参数），插件侧保持零新依赖。过滤器**只做减法**——
+    `CaseIndex._filtered` 会把不属于入参的结果剔掉，所以它不可能"造"出案例来。
+    """
+    if getattr(config, "cases_filter", "off") != "llm":
+        return None
+    url = chat_completions_url(str(config.upstream))
+
+    def _filter(query: str, cases):
+        listing = "\n".join(f"{case.case_id}｜{str(case.excerpt)[:160]}" for case in cases)
+        payload = {
+            "model": config.model,
+            "messages": [{"role": "system", "content": CASE_FILTER_SYSTEM},
+                         {"role": "user",
+                          "content": f"查询：{query}\n\n候选：\n{listing}"}],
+            "temperature": 0.0, "seed": 0, "max_tokens": 512, "stream": False,
+        }
+        if config.kind == "ollama":
+            payload["think"] = config.think == "on"
+        else:
+            payload["thinking"] = {"type": "disabled"}
+        request = urllib.request.Request(
+            url, data=json.dumps(payload).encode("utf-8"), method="POST",
+            headers={"Content-Type": "application/json",
+                     **({"Authorization": f"Bearer {config.upstream_api_key}"}
+                        if config.upstream_api_key else {})})
+        with urllib.request.urlopen(request, timeout=float(config.timeout)) as response:
+            body = json.loads(response.read().decode("utf-8", "replace"))
+        text = str(((body.get("choices") or [{}])[0].get("message") or {}).get("content") or "")
+        match = re.search(r"\{.*\}", text, re.S)
+        keep = set(str(item) for item in (json.loads(match.group(0)).get("keep") or [])) \
+            if match else set()
+        return [case for case in cases if str(case.case_id) in keep]
+
+    return _filter
+
+
+#: 已经带版本段的上游前缀（`…/v1`、GLM 的 `…/api/paas/v4`）：直接在后面接
+#: `/chat/completions`。**实测踩过**：不判这一条就会拼出 `…/paas/v4/v1/chat/completions`，
+#: 每次调用都 404，而过滤器失败是**静默回退**到未过滤结果——E1 数字看着"没变化"，
+#: 实际是过滤器一次都没跑（`work/zz_e1_filtered_measure.py` 的第一次运行）。
+_VERSIONED = re.compile(r"/v\d+$")
+
+
+def chat_completions_url(upstream: str) -> str:
+    """上游地址 → OpenAI 兼容的 chat completions 端点（Ollama 与云端共用一条规则）。"""
+    base = str(upstream).rstrip("/")
+    if _VERSIONED.search(base):
+        return base + "/chat/completions"
+    return base + "/v1/chat/completions"
+
+
 def make_handler(config: "SidecarConfig"):
     retriever = default_retriever()
     # 索引**装配在这里**，能力位跟着实际结果走（§2.3：宣告了就必须能用）。
@@ -307,7 +378,8 @@ def make_handler(config: "SidecarConfig"):
     if hypergraph is not None and Capability.HYPERGRAPH not in config.capabilities:
         config.capabilities.append(Capability.HYPERGRAPH)
     case_lane: CaseIndex = load_case_index(config.knowledge_dir,
-                                           config.cases_backend)
+                                           config.cases_backend,
+                                           case_filter=make_case_filter(config))
     provenance = load_provenance(config.knowledge_dir)
     cancelled: set = set()
     lock = threading.Lock()
@@ -466,6 +538,13 @@ def parse_args(argv):
                         help="知识索引目录（hypergraph.*.jsonl / cases.jsonl）")
     parser.add_argument("--cases-backend", choices=CASE_LANES, default="lightrag",
                         help="L3 案例通道（§2.3b）；lightrag 不可用时降级 hybrid")
+    parser.add_argument("--cases-filter", choices=("off", "llm"), default="off",
+                        help="L3 案例的相关性过滤（2026-10-03 加）：llm 用上游模型把"
+                             "明显无关的案例剔除。**默认 off**：三次实测都不如不过滤"
+                             "（离线实验 3/7=0.429 看着好，但走真正的产品路径两次都更差——"
+                             "宽提示 1/11=0.091，严提示把 6 条查询里的 5 条清空成 0/1，"
+                             "见 ACCEPTANCE_STATUS.md §三十二）。过滤器只做减法，"
+                             "失败时退回未过滤结果并在 trace 里记账。")
     parser.add_argument("--token", default="")
     parser.add_argument("--upstream-api-key-env", default="",
                         help="上游 API 密钥所在的**环境变量名**（不传密钥本身）。"

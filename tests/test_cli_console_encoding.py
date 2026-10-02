@@ -122,8 +122,24 @@ def test_console_encoding_does_not_change_another_acceptance_tool(name, build_ar
     assert b"UnicodeEncodeError" not in gbk.stderr, (name, gbk.stderr[:800])
     assert gbk.returncode == utf.returncode, (name, gbk.returncode, utf.returncode)
     assert gbk.stdout.decode("utf-8")          # 严格解码：cp936 字节会在这里炸
-    assert hashlib.sha256(gbk.stdout).hexdigest() == \
-        hashlib.sha256(utf.stdout).hexdigest(), (
+    #: **唯一允许不同的一格是时间戳**：`run_tests_rks.py` 的 stdout 里带
+    #: `generated_at`（秒级），两次子进程跨过一秒就必然不同——实测 2026-10-03 在
+    #: 满载的链上红过一次（单独跑 4/4 全过）。逐字节对拍前先把这个**挥发字段**归一，
+    #: 其余字段仍然逐字节比：判据没有被放松，只是不再拿时钟当判据。
+    #: 归一的做法必须**可自证**：`generated_at` 必须真的在两边都出现，否则说明
+    #: 这份 stdout 根本不是那个格式，脚本不该"顺手"放过它。
+    def _normalise(payload: bytes) -> bytes:
+        try:
+            body = json.loads(payload.decode("utf-8"))
+        except (UnicodeDecodeError, ValueError):
+            return payload
+        if not isinstance(body, dict) or "generated_at" not in body:
+            return payload
+        body["generated_at"] = "<timestamp>"
+        return json.dumps(body, ensure_ascii=False, sort_keys=True).encode("utf-8")
+
+    assert hashlib.sha256(_normalise(gbk.stdout)).hexdigest() == \
+        hashlib.sha256(_normalise(utf.stdout)).hexdigest(), (
             f"{name}: 两种编码下 stdout 不一致（工具没有固定输出编码）")
 
 
