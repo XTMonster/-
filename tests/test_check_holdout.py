@@ -515,20 +515,55 @@ def test_source_gate_excludes_out_of_scope_cards_but_reports_them():
     `L1/L2` 不是装饰：范围外的卡（照相化学／绘画技法／电气施工／稿件格式）既写不成
     超边，也不该占这一门的分母。但**必须如实计数**——静默缩小分母正是硬规则 1 要堵的。
     """
+    # 分母取足够大，好让这条用例只考"缺卡"这一件事（下界另有专门用例）。
+    cards = [f"card_{index:02d}" for index in range(20)]
+    entries = [entry(index, from_card=f"card_{index:02d}")
+               for index in range(19)]                      # card_19 缺
+    entries.append(entry(19, from_card="card_00"))           # 由 card_00 再派生一条
     record = entry(1, from_card="card_a")
     status, detail = check_holdout.gate_sources(
         [record], ["card_a", "card_b", "card_c"], ["card_b"])
-    # card_b 在范围外 → 不算缺；card_c 仍在范围内 → 判 fail。
+    # card_b 在范围外 → 不算缺；card_c 仍在范围内 → 判 fail（这一门仍然会红）。
     assert status == "fail"
     assert detail["missing_cards"] == ["card_c"]
     assert detail["cards_expected"] == 2
     assert detail["cards_out_of_scope"] == ["card_b"]
 
-    # 正对照：范围外的卡**不能**被当成"已覆盖"来粉饰（缺的是范围内的那些）。
-    empty_status, empty_detail = check_holdout.gate_sources([], ["card_b"], ["card_b"])
-    assert empty_detail["missing_count"] == 0
-    assert empty_detail["ghost_count"] == 0
-    assert empty_status == "pass"
+    # 正对照 1：范围外的卡**不能**被当成"已覆盖"来粉饰——缺的永远是范围内的那些。
+    ok_status, ok_detail = check_holdout.gate_sources(entries, cards, ["card_19"])
+    assert ok_detail["missing_count"] == 0
+    assert ok_detail["ghost_count"] == 0
+    assert ok_status == "pass"
+
+
+def test_source_gate_refuses_a_denominator_that_excludes_almost_everything():
+    """`--exclude-cards` 能自己解开自己，所以这一门的分母必须有下界（§4.1b 硬规则 1）。
+
+    没有下界时，把抽取关掉就能让**所有**卡都"零条边"→ 分母空 → 门反而绿：
+    `gate_sources([], ["card_b"], ["card_b"])` 在旧实现里返回 pass。那是恒真式。
+    """
+    cards = [f"card_{index:02d}" for index in range(20)]
+    entries = [entry(index + 1, from_card=f"card_{index:02d}") for index in range(10)]
+
+    # 剔掉 10/20 = 50%（剔的全是没条目的那一半），覆盖的 10 张一条不缺 —— 仍然必须红。
+    status, detail = check_holdout.gate_sources(
+        entries, cards, cards[10:])
+    assert detail["missing_count"] == 0 and detail["ghost_count"] == 0
+    assert detail["expressible_share"] == 0.5
+    assert status == "fail", "剔掉一半的卡就把分母削没了，这一门成了恒真式"
+    assert "硬规则 1" in detail["reason"]
+
+    # 空分母（把全部都剔掉）同样必须红——这正是"分母为 0 一律判失败"。
+    empty_status, empty_detail = check_holdout.gate_sources([], cards, cards)
+    assert empty_detail["cards_expected"] == 0
+    assert empty_status == "fail"
+
+    # 正对照：只剔少数几张，这一门照常可以绿。
+    fine_status, fine_detail = check_holdout.gate_sources(
+        entries + [entry(99, from_card=f"card_{index:02d}") for index in range(10, 19)],
+        cards, ["card_19"])
+    assert fine_detail["expressible_share"] == 0.95
+    assert fine_status == "pass"
 
 
 def test_edge_type_coverage_gate_flags_short_types(tmp_path):

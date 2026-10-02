@@ -737,26 +737,44 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
     return (PASS if not missing and not unknown and not thin else FAIL), detail
 
 
+#: 门⑥ 的**分母下界**（§4.1b 硬规则 1：比率型判据的分母要带下界，分母太小/为空
+#: 一律判失败）。这条门现在允许 `--exclude-cards` 把"词表表达不出的卡"挪出分母，
+#: 而那是一条**能自己解开自己**的规则：把抽取关掉，所有卡都是"零条边"→ 分母空 →
+#: 门反而绿。没有这条下界，门⑥ 就是恒真式。实测 2084/2113 = 98.6%，下界取 95%。
+#: 它只可能把门**判得更严**：放开下界之前，任何一张被多剔的卡都会让门变红。
+MIN_EXPRESSIBLE_SHARE = 0.95
+
+
 def gate_sources(entries: Sequence[dict], cards: Sequence[str],
                  excluded: Sequence[str] = ()) -> Tuple[str, dict]:
     """Both directions: every **入库卡** has ≥1 entry, and no entry cites a ghost card.
 
     §4.1b 的原话是「**每张入库卡（L1/L2）**至少派生 1 条」，而 §2.3b 把 L1 定义成
     "镜头层面的拍摄理论/轴线/构图/运镜耦合"、L2 是"条件→取舍的经验"。所以**不是
-   每一张卡都是入库卡**：`excluded`（`knowledge/card_scope.json` 里判为范围外的）
+    每一张卡都是入库卡**：`excluded`（`knowledge/card_scope.json` 里判为范围外的）
     不进这一门的分母，但**如实计数并报出来**——不许静默缩小分母。
+
+    而且这一门的**分母本身有下界**（`MIN_EXPRESSIBLE_SHARE`）：见那里的注释，
+    没有它，"零条边的卡不进分母"这条规则会把自己变成恒真式。
     """
     excluded_set = {str(item) for item in excluded}
     expected = [str(c) for c in cards if str(c) not in excluded_set]
     used = {str(e.get("from_card", "")) for e in entries}
     gap = [c for c in expected if c not in used]
     ghost = sorted(used - set(cards))
-    return (PASS if not gap and not ghost else FAIL), {
+    share = (len(expected) / len(cards)) if cards else 0.0
+    thin = share < MIN_EXPRESSIBLE_SHARE
+    return (PASS if not gap and not ghost and not thin else FAIL), {
         "cards": len(cards), "cards_expected": len(expected),
         "cards_out_of_scope": sorted(excluded_set),
         "cards_out_of_scope_count": len(excluded_set),
+        "expressible_share": round(share, 6),
+        "min_expressible_share": MIN_EXPRESSIBLE_SHARE,
         "missing_cards": gap[:20], "missing_count": len(gap),
-        "ghost_cards": ghost[:20], "ghost_count": len(ghost)}
+        "ghost_cards": ghost[:20], "ghost_count": len(ghost),
+        "reason": ("可断言卡只占入库卡的 %.2f%%，低于下界 %.0f%%：`--exclude-cards` "
+                   "把分母削得太狠（§4.1b 硬规则 1）"
+                   % (share * 100, MIN_EXPRESSIBLE_SHARE * 100)) if thin else ""}
 
 
 def query_shortfall(entry: dict) -> List[str]:
@@ -771,6 +789,14 @@ def query_shortfall(entry: dict) -> List[str]:
     `scene_type`/`beat_type`（这两个 kind 的 `must` 槽位历史上不要求写进 `q`）。
     **这条口径的覆盖面是有限的，报告里如实写明**——不在这里偷偷放宽或收紧，
     否则"覆盖 ≥2 个成员时 Q1=0.727/Q2=0.917"这条实测标定就对不上了。
+
+    2026-10-02 记一笔**试过但撤掉**的收紧：把 `forbid_<kind>=v` 也要求"必须在 `q` 里
+    点到名"看起来是补上这里的已知缺口，但**禁忌槽位有两种合法写法**——`禁运镜=固定`
+    （回避式：我不想用固定）与 `运镜=固定`（冲突式：我想要固定，而这条边说不要）。
+    后者正是 Q7 冲突条目本身（`tests/test_check_holdout.py::q7_entry` 就是照着它写的），
+    按前者收紧会**把 Q7 的夹具判红**。所以这一门维持原口径；真正修的是**提示词**
+    （`holdout_pool.required_q_hint` 曾经给"只以 forbid 出现的 kind"发主键形式的提示，
+    见那里的注释与用例）。
     """
     try:
         pairs = parse_q(str(entry.get("q") or ""))
@@ -1057,10 +1083,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                                                    " 或 {_fingerprint, kinds:{...}}（P14-1 产出）")
     parser.add_argument("--cards", default="", help="JSON: 卡片 id 数组（来源覆盖门）")
     parser.add_argument("--exclude-cards", default="",
-                        help="范围外卡片的清单（`knowledge/card_scope.json` 那个 "
-                             "`out_of_scope` 数组，或直接一个 id 数组）：§4.1b 的门写的是"
-                             "「每张**入库卡（L1/L2）**至少派生 1 条」，范围外的卡不进分母，"
-                             "但会在门⑥ 的明细里如实计数（`cards_out_of_scope`）。")
+                        help="不进分母的卡片清单（`knowledge/card_scope.json` 的 "
+                             "`excluded` 数组，或旧键 `out_of_scope`，或直接一个 id 数组）："
+                             "§4.1b 写的是「每张**入库卡（L1/L2）**至少派生 1 条」，而"
+                             "**入库卡＝可断言卡**——冻结的 node 词表表达不出它的知识时，"
+                             "`must` 在构造上落不到任何边（门⑩），这条要求无解。判据是"
+                             "确定性的：索引对该卡零条边（`tools/kb_fetch/card_scope_audit.py`）。"
+                             "剔了几张会在门⑥ 明细里如实计数（`cards_out_of_scope`）。")
     parser.add_argument("--extractor-family", default="",
                         help="抽取器的 family（或给 --extractor-manifest）；门⑧ 用它核对换族是否属实")
     parser.add_argument("--extractor-manifest", default="",
@@ -1198,9 +1227,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps({"error": f"读不到 --exclude-cards: {exc}"},
                              ensure_ascii=False))
             return 1
-        excluded_cards = ([str(item) for item in (scope.get("out_of_scope") or [])]
-                          if isinstance(scope, dict)
-                          else [str(item) for item in scope])
+        # `excluded` 是当前口径（`tools/kb_fetch/card_scope_audit.py` 的
+        # `scope/v3`：判据是"索引对该卡零条边"，确定性）；`out_of_scope` 是旧键名，
+        # 两个都认，免得读旧产物时静默变空集。
+        if isinstance(scope, dict):
+            payload = scope.get("excluded")
+            if payload is None:
+                payload = scope.get("out_of_scope") or []
+            excluded_cards = [str(item) for item in payload]
+        else:
+            excluded_cards = [str(item) for item in scope]
     if args.cards:
         try:
             cards = json.loads(pathlib.Path(args.cards).read_text(encoding="utf-8"))
