@@ -73,18 +73,34 @@ def _robots_cache_file(cache_dir: pathlib.Path, netloc: str) -> pathlib.Path:
 
 def robots_allows(url: str, timeout: float, cache_dir: Optional[pathlib.Path] = None,
                   _seen: Optional[Sequence[str]] = None) -> Tuple[bool, str]:
-    """按 robots.txt 判定——**口径采用 RFC 9309**，不是"拿不到就拒"。
+    """按 robots.txt 判定——**基准是 RFC 9309**，但有一处**有意比它严**，写在下面。
 
-    * 取到 robots.txt → 按 `*`（或我们 UA）那一组的 `Disallow` 判；
-    * **404/410（文件确实不存在）→ 视为"没有任何规则" ⇒ 放行**。RFC 9309 §2.3.1.3
-      的原话是 "If the server responds with 4xx (except 429), the crawler MAY access
-      any resources"；doc §2.3c 禁止的也是"**robots.txt 禁止的路径**"——一个不存在
-      的 robots.txt 没有禁止任何路径。
-    * **403／5xx／网络失败／重定向循环 → 仍然拒收**：403 常常是"专门挡机器人"的
-      信号（Cloudflare 的 AI 屏蔽就是回 403），5xx 是"暂时答不了"，两者都不能读成
-      "没有规则"。
+    RFC 9309 §2.3.1.3 的原话：*"'Unavailable' means the crawler tries to fetch the
+    robots.txt file and the server responds with status codes indicating that the
+    resource in question is unavailable.  For example, in the context of HTTP, such
+    status codes are in the 400-499 range.  If a server status code indicates that the
+    robots.txt file is unavailable to the crawler, then the crawler MAY access any
+    resources on the server."* §2.3.1.4 接着说 5xx 与网络错误 ⇒ crawler **MUST**
+    视为全禁。所以**严格的 RFC 口径是"400–499 一律算没有规则"**（403 也在内）。
 
-    **2026-10-02 实测的代价**：旧实现把 404 也当"拿不到 ⇒ 拒收"，于是
+    * 取到 robots.txt（2xx）→ 按 `*`（或我们 UA）那一组的 `Disallow` 判；
+    * **404/410 ⇒ 没有规则 ⇒ 放行**（RFC §2.3.1.3），并把"这里没有 robots.txt"
+      落盘留痕（空文件 ＝ 没有规则）；
+    * **其余 4xx（含 403）⇒ 拒收——这是本仓库有意比 RFC 更严的一处**。403 常是
+      "专门挡机器人"的信号（Cloudflare 的 AI 屏蔽、CloudFront 的爬虫规则都回 403）。
+      2026-10-02 逐域实测（同一个 UA 先取 `/robots.txt`、再取一个真实正文页）：
+      `uark.pressbooks.pub`／`milnepublishing.geneseo.edu`（CloudFront）与
+      `film-philosophy.com`（Cloudflare）**两侧都是 403**——放宽这条也拿不到正文，
+      也就是说它**实测零代价**；反过来，若某站只挡 robots.txt 不挡正文，替它判定
+      "你的 403 不算数"不是本仓库该做的事。
+    * **5xx／网络失败／重定向循环 ⇒ 拒收**（RFC §2.3.1.4 的 MUST）。TLS 证书过期也
+      落在这一类：`jamsjournal.com`（*Journal of Anime and Manga Studies*）实测
+      `SSLCertVerificationError: certificate has expired` ⇒ 全禁，**不许关掉证书校验
+      绕过**。同理 `USER_AGENT` **不许伪造成浏览器**——那正是 403 挡的那种客户端，
+      用例 `tests/test_kb_pipeline.py::test_the_crawler_does_not_impersonate_a_browser`
+      把它钉住。
+
+    **2026-10-02 实测的代价（反方向）**：旧实现把 404 也当"拿不到 ⇒ 拒收"，于是
     `journal.animationstudies.org`（同行评审的动画研究期刊 *Animation Studies*，
     文章页实测 4.9 万字符的正文）整站进不来——而它正是 §2.3b 定义 L3 时写的
     "拉片/复盘/影评"那一档最对口的来源族。把 404 读成"没有规则"之后它才可用。

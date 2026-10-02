@@ -841,6 +841,9 @@ def test_missing_robots_txt_is_read_as_no_rules(tmp_path, monkeypatch):
     doc §2.3c 禁止的是"**robots.txt 禁止的路径**"，不存在的 robots.txt 没有禁止任何路径。
 
     另一侧同样要钉死：**403 不能被读成"没有规则"**——那常常就是"专门挡机器人"的信号。
+    注意这是本仓库**有意比 RFC 更严**的一处（RFC §2.3.1.3 把 400–499 整段算作
+    "Unavailable"、403 也在内）；理由与"零代价"的实测写在
+    `fetch.robots_allows` 的 docstring 里。
     """
     import urllib.error
 
@@ -873,6 +876,26 @@ def test_missing_robots_txt_is_read_as_no_rules(tmp_path, monkeypatch):
                         lambda *a, **k: (_ for _ in ()).throw(OSError("no route")))
     allowed, reason = fetch.robots_allows("https://offline.example/a", 5.0)
     assert not allowed and "robots_unavailable" in reason
+
+
+def test_the_crawler_does_not_impersonate_a_browser():
+    """爬虫必须自报家门，**不许**把 UA 换成浏览器字符串。
+
+    2026-10-02 逐域实测：`uark.pressbooks.pub` 与
+    `milnepublishing.geneseo.edu` 对任意非浏览器 UA 一律回 403（CloudFront），
+    换成 Chrome 的 UA 立刻 200。也就是说"改一行 UA"就能拿到那两本开放教材的正文——
+    但那条 403 正是站点对自动客户端的**明示拒绝**，绕过去就不是"抓取纪律"了。
+    证书校验同理（`jamsjournal.com` 的证书过期 ⇒ 按 RFC 9309 §2.3.1.4 全禁，
+    不许 `verify=False`）。这条用例把两件事一起钉住：UA 里不许出现浏览器标识，
+    也不许出现关掉校验的开关。
+    """
+    ua = fetch.USER_AGENT.lower()
+    assert "blockdirectorbot" in ua
+    for disguise in ("mozilla", "chrome", "safari", "firefox", "edge/"):
+        assert disguise not in ua, f"USER_AGENT 伪装成了浏览器：{fetch.USER_AGENT!r}"
+    source = pathlib.Path(fetch.__file__).read_text(encoding="utf-8")
+    assert "verify_mode" not in source and "CERT_NONE" not in source, (
+        "抓取层不得关掉 TLS 校验")
 
 
 def test_robots_crawl_delay_is_read_from_the_cached_robots_txt(tmp_path):
