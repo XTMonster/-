@@ -509,6 +509,28 @@ def test_gate11_classifies_why_a_spec_did_not_resolve(tmp_path):
 
 # ---------------------------------------------------------------- 门④ 边类覆盖
 
+def test_source_gate_excludes_out_of_scope_cards_but_reports_them():
+    """§4.1b 的门写的是「每张**入库卡（L1/L2）**至少派生 1 条」。
+
+    `L1/L2` 不是装饰：范围外的卡（照相化学／绘画技法／电气施工／稿件格式）既写不成
+    超边，也不该占这一门的分母。但**必须如实计数**——静默缩小分母正是硬规则 1 要堵的。
+    """
+    record = entry(1, from_card="card_a")
+    status, detail = check_holdout.gate_sources(
+        [record], ["card_a", "card_b", "card_c"], ["card_b"])
+    # card_b 在范围外 → 不算缺；card_c 仍在范围内 → 判 fail。
+    assert status == "fail"
+    assert detail["missing_cards"] == ["card_c"]
+    assert detail["cards_expected"] == 2
+    assert detail["cards_out_of_scope"] == ["card_b"]
+
+    # 正对照：范围外的卡**不能**被当成"已覆盖"来粉饰（缺的是范围内的那些）。
+    empty_status, empty_detail = check_holdout.gate_sources([], ["card_b"], ["card_b"])
+    assert empty_detail["missing_count"] == 0
+    assert empty_detail["ghost_count"] == 0
+    assert empty_status == "pass"
+
+
 def test_edge_type_coverage_gate_flags_short_types(tmp_path):
     data = report(write(tmp_path, [q7_entry()]))
     assert data["gate_4_edge_types"]["status"] == "fail"

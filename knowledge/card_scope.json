@@ -1,0 +1,356 @@
+{
+  "criterion": "你是电影白模预演工具的**知识范围审查员**。这个工具只服务**镜头层面**的预演：机位/镜头/运镜/景别/构图/调度/光线/剪辑节奏/声画/表演与动作/分镜与剧本的场面设计。\n逐张判断，只输出 JSON：{\"decisions\":[{\"id\":\"<卡片 id>\",\"in_scope\":true|false,\"reason\":\"不超过 25 字\",\"quote\":\"最相关的一句原文\"}]}。\nin_scope=false 只有这几种：照相或胶片**化学/冲洗/染色工艺**；**绘画/书法/墨法**技法；**电气/土建施工**；**印刷排版或稿件格式**规定；与影片制作无关的泛论或史料。\n除此之外一律 true——**拿不准就判 true**（宁可不剔）。",
+  "cards": 67,
+  "decisions": {
+    "gen_anime_0309": {
+      "in_scope": true,
+      "reason": "前缩姿态参考，属构图/表演预演",
+      "quote": "学习前缩人物姿态时，可参考米开朗基罗的湿壁画"
+    },
+    "gen_anime_0406": {
+      "in_scope": true,
+      "reason": "描线分工与作画台，属动画制作流程",
+      "quote": "重复性细节交给描线员按符号指示描摹"
+    },
+    "gen_axis_0300": {
+      "in_scope": true,
+      "reason": "导演依剧本执行，属导演职能",
+      "quote": "仍可仅依据作者定稿的剧本完成有艺术价值的影片"
+    },
+    "gen_axis_0308": {
+      "in_scope": true,
+      "reason": "裂缝作为生成性虚空，属场面设计",
+      "quote": "把产生的裂缝与裂隙拍成不只是障碍"
+    },
+    "gen_block_0030": {
+      "in_scope": true,
+      "reason": "舞台监督代行导演，属现场调度",
+      "quote": "由舞台监督代行导演职责，保证排练不中断"
+    },
+    "gen_block_0048": {
+      "in_scope": true,
+      "reason": "各部门与导演通气，属制作调度",
+      "quote": "任何采购未经导演许可不得进行"
+    },
+    "gen_block_0339": {
+      "in_scope": true,
+      "reason": "非职业选角与训练，属表演调度",
+      "quote": "选角可从艺术家、作家、学生、店主等非职业人群中挑选"
+    },
+    "gen_cine_0073": {
+      "in_scope": true,
+      "reason": "反射测光装置，属摄影技术",
+      "quote": "用油斑装置做反射测光时结果不可靠"
+    },
+    "gen_cine_0077": {
+      "in_scope": false,
+      "reason": "胶片染色冲洗工艺",
+      "quote": "染色前绝不要放映胶片"
+    },
+    "gen_cine_0078": {
+      "in_scope": false,
+      "reason": "胶片染色化学工艺",
+      "quote": "胶片染色时染浴温度不得超过70°F"
+    },
+    "gen_cine_0199": {
+      "in_scope": true,
+      "reason": "镜头对焦操作技法",
+      "quote": "目测被摄物距离后把调焦杆推到对应标记即可合焦"
+    },
+    "gen_cine_0247": {
+      "in_scope": true,
+      "reason": "运镜与画面流动感",
+      "quote": "摄影机始终处于某种运动中——位移、摇移或改变焦距"
+    },
+    "gen_comp_0223": {
+      "in_scope": false,
+      "reason": "绘画临摹学习泛论",
+      "quote": "学习构图应直接面对原作、照片复制品、描摹稿或石膏模"
+    },
+    "gen_comp_0262": {
+      "in_scope": false,
+      "reason": "研墨墨法技法",
+      "quote": "研墨时只用几滴水即可立刻获得浓黑墨色"
+    },
+    "gen_comp_0273": {
+      "in_scope": false,
+      "reason": "绘画线描工具技法",
+      "quote": "蚀刻针、钢笔、铅笔属于线描工具"
+    },
+    "gen_prod_0014": {
+      "in_scope": false,
+      "reason": "电气施工布线规定",
+      "quote": "同一回路或同一系统的干线、支线所有导线必须穿在同一根管内"
+    },
+    "gen_prod_0022": {
+      "in_scope": false,
+      "reason": "电气接线施工规定",
+      "quote": "小规格开关端子采用螺钉加垫圈、端子带上翘接线耳的连接方式"
+    },
+    "gen_story_0020": {
+      "in_scope": true,
+      "reason": "剧本修改流程",
+      "quote": "写剧本要慢工出细活，寄给制片人前反复通读多遍"
+    },
+    "gen_story_0033": {
+      "in_scope": true,
+      "reason": "分镜稿角色表用途",
+      "quote": "分镜稿开头附角色表，供导演快速选定演员类型"
+    },
+    "gen_story_0064": {
+      "in_scope": true,
+      "reason": "场景表内容规定",
+      "quote": "场景表只需列出外景与内景的清单"
+    },
+    "gen_story_0065": {
+      "in_scope": true,
+      "reason": "剧本与场景表编排顺序，属分镜剧本场面设计",
+      "quote": "场景表（scene-plot）应在剧本（scenario）完成后再整理成稿"
+    },
+    "gen_story_0066": {
+      "in_scope": true,
+      "reason": "导演增删场次适配节奏时长，属剪辑节奏",
+      "quote": "导演可按判断增补或删减场次，以适配成片节奏与时长"
+    },
+    "gen_story_0068": {
+      "in_scope": true,
+      "reason": "填充指为凑胶片加动作，属剧本场面设计",
+      "quote": "填充（Padding）指为凑满一整卷胶片而在故事中加入不必要的动作"
+    },
+    "gen_story_0107": {
+      "in_scope": true,
+      "reason": "剧本格式与分镜写法，属分镜剧本规定",
+      "quote": "无论单本还是多本（两本以上）影片，完整剧本的格式完全一致"
+    },
+    "gen_story_0110": {
+      "in_scope": true,
+      "reason": "剧本角色表编排，属剧本格式规定",
+      "quote": "还须在剧本中另设“角色表（Cast of Characters）”一节单独列出"
+    },
+    "gen_story_0111": {
+      "in_scope": true,
+      "reason": "梗概写法，属剧本结构设计",
+      "quote": "梗概（synopsis）是剧本的第一部分，只写故事轮廓，不展开细节"
+    },
+    "gen_story_0113": {
+      "in_scope": true,
+      "reason": "单一主线不跑题，属分镜剧本结构",
+      "quote": "每个结构良好的故事只有一条主线、一个主题"
+    },
+    "gen_block_0078": {
+      "in_scope": true,
+      "reason": "排练排动作调度，属场面调度",
+      "quote": "由导演排出动作调度"
+    },
+    "gen_edit_0244": {
+      "in_scope": true,
+      "reason": "西部片英雄双重身份，属剧本人物设计",
+      "quote": "西部片英雄常被写成\"救世主与野蛮人\"的双重身份"
+    },
+    "gen_perf_0360": {
+      "in_scope": true,
+      "reason": "上场呼叫点名，属表演与调度",
+      "quote": "呼叫按幕次与角色顺序点名"
+    },
+    "gen_comp_0152": {
+      "in_scope": true,
+      "reason": "构图视点与光源关系，属镜头构图",
+      "quote": "视点（平行透视中即灭点）不要放在画面正中"
+    },
+    "gen_cine_0262": {
+      "in_scope": true,
+      "reason": "灯箱透镜成像与光量，属摄影照明",
+      "quote": "其尺寸（即离透镜的距离）必须与可用光量匹配"
+    },
+    "gen_prod_0055": {
+      "in_scope": false,
+      "reason": "弧灯供电电压属电气施工",
+      "quote": "必须在电路中串接降压装置才能让弧灯正常工作"
+    },
+    "gen_comp_0090": {
+      "in_scope": true,
+      "reason": "构图线条与情绪基调，属构图",
+      "quote": "构图中的线条冲动在情感艺术中发挥作用"
+    },
+    "gen_edit_0173": {
+      "in_scope": true,
+      "reason": "押韵镜头建立对位，属剪辑与调度",
+      "quote": "用构图、机位、动作重复的\"押韵镜头\"在两人之间建立对位关系"
+    },
+    "gen_block_0199": {
+      "in_scope": true,
+      "reason": "三演员同框调度，属场面调度",
+      "quote": "必须安排三名演员同框"
+    },
+    "gen_axis_0243": {
+      "in_scope": true,
+      "reason": "导演与构图能力区分，涉及镜头构图",
+      "quote": "戏剧导演能力与构图能力是两种可分离的素养"
+    },
+    "gen_prod_0144": {
+      "in_scope": true,
+      "reason": "路标交代地点，属场面设计",
+      "quote": "用路牌文字直接向观众交代地点与距离"
+    },
+    "gen_cine_0266": {
+      "in_scope": true,
+      "reason": "投影正像校正，属摄影光学",
+      "quote": "须在光路中加入校正镜片，使投出的影像正立"
+    },
+    "gen_anime_0370": {
+      "in_scope": true,
+      "reason": "线条速度与叙事节奏，属动画节奏",
+      "quote": "应根据要表达的观念或要讲的故事需要来变化"
+    },
+    "gen_block_0179": {
+      "in_scope": true,
+      "reason": "舞台调度与三维运动，属镜头调度范畴",
+      "quote": "让演员沿台阶上下移动，使调度从左右与前后两个平面扩展为三维"
+    },
+    "gen_story_0228": {
+      "in_scope": false,
+      "reason": "泛论剧作学习方法，与镜头预演无关",
+      "quote": "剧作规则难以被完整口述传授"
+    },
+    "gen_cine_0054": {
+      "in_scope": false,
+      "reason": "暗房放大冲洗工艺，非镜头预演",
+      "quote": "放大屏必须明显大于所用最大相纸尺寸"
+    },
+    "gen_cine_0003": {
+      "in_scope": false,
+      "reason": "胶片闪光曝光冲洗工艺",
+      "quote": "闪光前几秒的曝光有助于整体照明"
+    },
+    "gen_story_0253": {
+      "in_scope": true,
+      "reason": "单场戏灵感记录，属剧本场面设计",
+      "quote": "平时持续记录单场戏的点子与精彩设想"
+    },
+    "gen_block_0330": {
+      "in_scope": true,
+      "reason": "台阶调度强化前后运动，属镜头调度",
+      "quote": "让演员沿台阶上下，可同时赋予朝观众与背离观众的前后移动更大意义"
+    },
+    "gen_perf_0430": {
+      "in_scope": true,
+      "reason": "逆光布光与人物出场，属光线与表演",
+      "quote": "用窗外渐暗的逆光加深色服装压暗环境"
+    },
+    "gen_block_0037": {
+      "in_scope": true,
+      "reason": "用动作掩护撤道具，属场面调度",
+      "quote": "用主要动作掩护次要的撤道具动作"
+    },
+    "gen_edit_0252": {
+      "in_scope": true,
+      "reason": "摄影机变形与超现实效果，属镜头表现",
+      "quote": "利用摄影机的变形能力让仙女、树精、守护灵等非现实元素出现在实景中"
+    },
+    "gen_cine_0079": {
+      "in_scope": true,
+      "reason": "快门与辐条倒转，属摄影机运动表现",
+      "quote": "若快门遮挡期间辐条移动角度小于相邻辐条夹角，则放映时辐条呈现与车轮前进方向相反的视觉运动"
+    },
+    "gen_anime_0298": {
+      "in_scope": true,
+      "reason": "动画表演与动作设计",
+      "quote": "把行走时躯干的左右扭转略微夸张，可产生滑稽的摇摆步态"
+    },
+    "gen_cine_0202": {
+      "in_scope": true,
+      "reason": "光线塑造被摄体，属摄影用光",
+      "quote": "其外观由光的方向、分布与性质决定"
+    },
+    "gen_comp_0213": {
+      "in_scope": true,
+      "reason": "构图线条成组原则",
+      "quote": "若与对称位置的相似线条成组出现，会因平衡或重复而变得悦目"
+    },
+    "gen_perf_0485": {
+      "in_scope": true,
+      "reason": "表演与道具的想象处理",
+      "quote": "用真实物件替代示意性道具会削弱观众与演员的想象空间"
+    },
+    "gen_prod_0192": {
+      "in_scope": true,
+      "reason": "拍摄用替代道具与特效材料",
+      "quote": "用稻草充当烟丝、蒸汽充当烟"
+    },
+    "gen_story_0072": {
+      "in_scope": true,
+      "reason": "场次安排与叙事清晰度",
+      "quote": "安排场次时以观众能清楚理解为前提"
+    },
+    "gen_anime_0375": {
+      "in_scope": true,
+      "reason": "动画装置与影像合成手法",
+      "quote": "可保留圆筒结构但改用镜面反射来呈现渐进图画"
+    },
+    "gen_perf_0366": {
+      "in_scope": true,
+      "reason": "角色表演的反差张力",
+      "quote": "用反差制造表演张力"
+    },
+    "gen_block_0211": {
+      "in_scope": true,
+      "reason": "演员与布景的调度关系",
+      "quote": "应把重点放在演员身上，而非让布景与演员竞争"
+    },
+    "gen_perf_0420": {
+      "in_scope": true,
+      "reason": "演员随身道具的表演使用",
+      "quote": "需在排练时与正式演出同样使用"
+    },
+    "gen_block_0162": {
+      "in_scope": true,
+      "reason": "舞台调度与照明关系",
+      "quote": "演员与观众处于同一吊灯照明之下"
+    },
+    "gen_story_0127": {
+      "in_scope": true,
+      "reason": "分镜以动作替代对白",
+      "quote": "分镜时以可见行为替代对白说明"
+    },
+    "gen_block_0322": {
+      "in_scope": true,
+      "reason": "舞台调度观察训练",
+      "quote": "见习检场人应坐在舞台两侧"
+    },
+    "gen_perf_0359": {
+      "in_scope": true,
+      "reason": "表演揭示内心改变观众",
+      "quote": "信息揭示能直接改变观众对角色的情感态度"
+    },
+    "gen_perf_0346": {
+      "in_scope": false,
+      "reason": "剧本稿件格式规定",
+      "quote": "每幕结束处标注“curtain”以标记落幕点"
+    },
+    "gen_cine_0281": {
+      "in_scope": true,
+      "reason": "背景绘制空气透视纵深",
+      "quote": "绘制画面背景时须处理空气透视"
+    },
+    "gen_anime_0414": {
+      "in_scope": true,
+      "reason": "高速摄影时间换算",
+      "quote": "时间放慢约八倍，便于逐相位研究"
+    }
+  },
+  "out_of_scope": [
+    "gen_cine_0003",
+    "gen_cine_0054",
+    "gen_cine_0077",
+    "gen_cine_0078",
+    "gen_comp_0223",
+    "gen_comp_0262",
+    "gen_comp_0273",
+    "gen_perf_0346",
+    "gen_prod_0014",
+    "gen_prod_0022",
+    "gen_prod_0055",
+    "gen_story_0228"
+  ],
+  "out_of_scope_count": 12
+}

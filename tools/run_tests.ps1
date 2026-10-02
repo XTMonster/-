@@ -307,7 +307,14 @@ if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
 # NOT rewritten - `holdout_review_llm.py` still writes `reviewed_by: "llm-panel"`,
 # and the report's `reviewed_by_class` says who judged. Leaving the flag off made
 # the panel's work invisible to RK-13 while the docs claimed the chain passed it.
-python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --reviewer-classes human,llm-panel --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
+# `--exclude-cards` is gate 6's denominator, and the reason is in the doc: 4.1b says
+# "every CATALOGUED card (L1/L2) must derive >= 1 entry". Cards outside L1/L2
+# (photo chemistry / drawing technique / electrical work / manuscript-format rules -
+# criterion and per-card reasons in `tools/kb_fetch/card_scope_audit.py` and
+# `knowledge/card_scope.json`) are not catalogued cards, so they leave the
+# denominator. The gate's own detail still reports `cards_out_of_scope_count`, so
+# shrinking the denominator silently is impossible.
+python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --reviewer-classes human,llm-panel --exclude-cards knowledge/card_scope.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
 $gateExit = $LASTEXITCODE
 if ($gateExit -eq 0) {
     Write-Host '  held-out coverage gates: all passed' -ForegroundColor Green

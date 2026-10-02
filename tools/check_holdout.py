@@ -736,13 +736,25 @@ def gate_seed_coverage(parsed_q: Sequence[Dict[str, str]], vocab: Dict[str, Sequ
     return (PASS if not missing and not unknown and not thin else FAIL), detail
 
 
-def gate_sources(entries: Sequence[dict], cards: Sequence[str]) -> Tuple[str, dict]:
-    """Both directions: every card has ≥1 entry, and no entry cites a ghost card."""
+def gate_sources(entries: Sequence[dict], cards: Sequence[str],
+                 excluded: Sequence[str] = ()) -> Tuple[str, dict]:
+    """Both directions: every **入库卡** has ≥1 entry, and no entry cites a ghost card.
+
+    §4.1b 的原话是「**每张入库卡（L1/L2）**至少派生 1 条」，而 §2.3b 把 L1 定义成
+    "镜头层面的拍摄理论/轴线/构图/运镜耦合"、L2 是"条件→取舍的经验"。所以**不是
+   每一张卡都是入库卡**：`excluded`（`knowledge/card_scope.json` 里判为范围外的）
+    不进这一门的分母，但**如实计数并报出来**——不许静默缩小分母。
+    """
+    excluded_set = {str(item) for item in excluded}
+    expected = [str(c) for c in cards if str(c) not in excluded_set]
     used = {str(e.get("from_card", "")) for e in entries}
-    gap = [c for c in cards if c not in used]
+    gap = [c for c in expected if c not in used]
     ghost = sorted(used - set(cards))
     return (PASS if not gap and not ghost else FAIL), {
-        "cards": len(cards), "missing_cards": gap[:20], "missing_count": len(gap),
+        "cards": len(cards), "cards_expected": len(expected),
+        "cards_out_of_scope": sorted(excluded_set),
+        "cards_out_of_scope_count": len(excluded_set),
+        "missing_cards": gap[:20], "missing_count": len(gap),
         "ghost_cards": ghost[:20], "ghost_count": len(ghost)}
 
 
@@ -1037,6 +1049,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--vocab", default="", help="JSON: {kind: [value, ...]}"
                                                    " 或 {_fingerprint, kinds:{...}}（P14-1 产出）")
     parser.add_argument("--cards", default="", help="JSON: 卡片 id 数组（来源覆盖门）")
+    parser.add_argument("--exclude-cards", default="",
+                        help="范围外卡片的清单（`knowledge/card_scope.json` 那个 "
+                             "`out_of_scope` 数组，或直接一个 id 数组）：§4.1b 的门写的是"
+                             "「每张**入库卡（L1/L2）**至少派生 1 条」，范围外的卡不进分母，"
+                             "但会在门⑥ 的明细里如实计数（`cards_out_of_scope`）。")
     parser.add_argument("--extractor-family", default="",
                         help="抽取器的 family（或给 --extractor-manifest）；门⑧ 用它核对换族是否属实")
     parser.add_argument("--extractor-manifest", default="",
@@ -1165,6 +1182,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     statuses.append(sstatus)
     report["gate_3_seed_coverage"] = {"status": sstatus, **sdetail}
 
+    excluded_cards: List[str] = []
+    if args.exclude_cards:
+        try:
+            scope = json.loads(pathlib.Path(args.exclude_cards).read_text(
+                encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(json.dumps({"error": f"读不到 --exclude-cards: {exc}"},
+                             ensure_ascii=False))
+            return 1
+        excluded_cards = ([str(item) for item in (scope.get("out_of_scope") or [])]
+                          if isinstance(scope, dict)
+                          else [str(item) for item in scope])
     if args.cards:
         try:
             cards = json.loads(pathlib.Path(args.cards).read_text(encoding="utf-8"))
@@ -1177,7 +1206,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps({"error": "--cards 必须是非空的卡片 id 字符串数组"},
                              ensure_ascii=False))
             return 1
-        cstatus, cdetail = gate_sources(entries, cards)
+        cstatus, cdetail = gate_sources(entries, cards, excluded_cards)
     else:
         cstatus, cdetail = NA, {"reason": "未提供 --cards"}
     statuses.append(cstatus)
