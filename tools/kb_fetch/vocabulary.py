@@ -28,6 +28,7 @@ except ImportError:  # pragma: no cover
     from tools.kb_fetch import common  # type: ignore
 
 from block_director.contracts.enums import VFX_TYPES
+from block_director.knowledge import grounding
 from block_director.knowledge import hypergraph as hg
 
 #: 开放型 kind 的受控词表（中文规范名 -> 别名）。只收表里认得的取值。
@@ -328,9 +329,21 @@ def vocab_fingerprint(payload: Dict[str, List[str]]) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
 
 
-#: 词表指纹里**额外**并入的索引侧表（`hypergraph.VALUE_ALIASES` 是索引侧唯一那份
-#: 别名表：`static` → `固定`、`甩镜` → `whip_pan`）。
-LEXICON_EXTRA_TABLES: Tuple[str, ...] = ("hg_value_aliases",)
+#: 词表指纹里**额外**并入的、住在本模块之外的数据表。判据是**角色，不是模块**：
+#: 凡是"阶段二的门读到的**数据表**"都算词表，住在哪儿不影响它该不该进指纹。
+#:
+#: * `hg_value_aliases` —— 索引侧唯一那份别名表（`static` → `固定`、`甩镜` → `whip_pan`），
+#:   是 `unsupported_prohibition_hosts` 与 `holdout_pool` 的**落地判据**输入；
+#: * `grounding_negation_cues` —— `block_director/knowledge/grounding.py::NEGATION_CUES`。
+#:   它住在另一个模块里，却和别名表一样是**同一道门**的输入：去掉 `避免`，那条
+#:   "禁半落地、主体是编的"的边就从**拒收**变成**保留**（索引 539 → 540，
+#:   `merge.unsupported_prohibition_hosts.dropped` 1 → 0），而七格指纹**一格都不动**。
+#:   `tests/test_lexicon_inputs.py` 用一条合成边把这条因果的两个方向都钉死了。
+#:
+#: 反面（刻意不收）：门**阈值**、门**代码**这类量仍由 `VALIDATION_RULES_VERSION` 管
+#: （"改门就换版本"是既有纪律）。**词表不是门**——改它时没有任何闸门会提醒你，
+#: 那正是 §20.4/§21.1 那次事故的形状。
+LEXICON_EXTRA_TABLES: Tuple[str, ...] = ("hg_value_aliases", "grounding_negation_cues")
 #: 名字以这个前缀开头的模块常量不参与指纹（本机制自身的常量，自指没有意义）。
 LEXICON_NAME_PREFIX = "LEXICON_"
 
@@ -385,6 +398,8 @@ def lexicon_tables() -> Dict[str, object]:
         if isinstance(value, _LEXICON_TABLE_TYPES):
             tables[name] = value
     tables["hg_value_aliases"] = dict(hg.VALUE_ALIASES)
+    #: **按角色收**：这张表住在 `grounding` 里，但它是精度门的否定词半边（不是门本身）。
+    tables["grounding_negation_cues"] = tuple(grounding.NEGATION_CUES)
     return tables
 
 
@@ -403,9 +418,14 @@ def lexicon_fingerprint() -> str:
     索引，"同一指纹 ⇒ 同一索引"这条回归基线在别名表这一维上不成立
     （`ACCEPTANCE_STATUS.md` §20.8 第 4 条）。
 
-    边界（刻意画清）：门阈值、否定词表这类**校验代码的常量**仍由
-    `VALIDATION_RULES_VERSION` 管（"改门就换版本"是既有纪律）；本分量只负责
-    **词表/别名表**——因为它是数据、不是门，改它时没有任何闸门会提醒你。
+    边界（刻意画清）：**门阈值、门代码**这类量仍由 `VALIDATION_RULES_VERSION` 管
+    （"改门就换版本"是既有纪律）；本分量负责的是**词表/别名表**——数据，不是门，
+    改它时没有任何闸门会提醒你。
+
+    这条边界是**按角色**画的，不是按模块：`grounding.NEGATION_CUES`（否定词表）
+    住在 `block_director/knowledge/grounding.py`，却与 `VALUE_ALIASES` 一样是阶段二
+    精确度门的输入，所以它在里面（`tests/test_lexicon_inputs.py` 钉住"改它 ⇒ 指纹动"
+    与"它确实是索引的输入"两边）；而门**代码**本身不在里面。
     """
     import hashlib
 

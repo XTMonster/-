@@ -147,15 +147,18 @@ def test_lexicon_discovery_covers_the_alias_tables_and_nothing_else():
         "HOLDOUT_CAP", "VFX_TYPES",
     }
     assert expected <= discovered, f"词表没被机械发现：{sorted(expected - discovered)}"
-    assert discovered - expected == {"hg_value_aliases"}, \
+    #: 本模块之外还有**两张**表按角色并进来：索引侧别名表，与 `grounding` 的否定词表
+    #: （后者是阶段二精确度门的另一半输入，`tests/test_lexicon_inputs.py` 钉住它）。
+    assert discovered - expected == {"hg_value_aliases", "grounding_negation_cues"}, \
         f"机械发现混进了非词表常量：{sorted(discovered - expected)}"
     #: 反面控制：编译好的正则不是词表，模块/导入别名也不是。
     assert "_LENS_RE" not in discovered
     assert not {"json", "re", "common", "hg"} & discovered
-    #: 这两张表都真的参与了判定：索引侧别名表必须在，而它不在本模块的 globals 里，
-    #: 是**显式**并进去的（`LEXICON_EXTRA_TABLES`）。
-    assert discovered & {"hg_value_aliases"} == {"hg_value_aliases"}
-    assert vocab.LEXICON_EXTRA_TABLES == ("hg_value_aliases",)
+    #: 这两张表都真的参与了判定，而都不在本模块的 globals 里，是**显式**并进去的
+    #: （`LEXICON_EXTRA_TABLES`）。判据是角色不是模块：门读到的数据表都要进来。
+    assert discovered & {"hg_value_aliases", "grounding_negation_cues"} == \
+        {"hg_value_aliases", "grounding_negation_cues"}
+    assert vocab.LEXICON_EXTRA_TABLES == ("hg_value_aliases", "grounding_negation_cues")
 
 
 def test_lexicon_fingerprint_moves_when_an_alias_table_changes(monkeypatch):

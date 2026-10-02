@@ -1,5 +1,5 @@
 {
-  "fingerprint": "5e8eac1ecdea79d08f841cb7dedfba97a9b9179b3e7bda0fe3efa3b0e8d640de",
+  "fingerprint": "eae0cb6fb1753325b152cc20792afe110a2cfad14c4f9d7c0809a4b728a1b4fe",
   "cache_key": {
     "corpus_sha256": "829ad2aece51b8c906b35db44cf53886e0dcd9e999975697cd80d3a6569fb07a",
     "model": "deepseek-chat@deepseek-flash",
@@ -8,7 +8,7 @@
     "decode": "temperature=0;seed=0;ctx=8192",
     "schema_version": "hg/v2",
     "validation_rules_version": "gate/v1",
-    "vocabulary_fingerprint": "3b0d8a95459e056df75053d654a0b8aebcb7688ae4e6ee8ff624561165d7e56f"
+    "vocabulary_fingerprint": "f72697eceed9e8d14dd886a85a3fe6c7e7aa2479f9c1de25dbe22d7e84b1fb0f"
   },
   "extractor": {
     "model_id": "deepseek-chat",
