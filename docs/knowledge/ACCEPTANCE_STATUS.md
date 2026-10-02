@@ -1503,3 +1503,77 @@ oracle 仍是 2981 条，`python -m pytest` 全绿。
 **没做且不该假装做过**：提示漂移本身**仍未修**——它在代码注释里被记成
 "被实测否决的一次尝试（留档，别再犯）"，连同四个变体的数字，免得下一轮有人
 以为改三行字就能白拿。
+
+## 二十四、P14-14（2026-10-02 15:12）：P14-3 漏跑了一天，而 E1 **第一次被量出来**（0）
+
+这一轮从"按计划顺序连续完成"里捡回一步，并把 §2.3b 写了两次的**两通道路由**补上；
+补上之后第一次量 E1，结果**不达标**——照实记。
+
+### 24.1 P14-3（案例层）漏跑了一天，而且**没有任何东西能发现**
+
+§二十二把语料从 59 个来源扩到 75（13:40），我随后重抽了超图（P14-2）——
+**案例层（P14-3）没有重建**。`knowledge/cases.jsonl` 的时间戳停在 **2026-10-01 19:12**，
+而它自己的 `--check` 当场判红：
+
+```
+before  cases_match: false  manifest_match: false      per_domain.anime = 13
+after   cases_match: true   manifest_match: true       per_domain.anime = 120
+```
+
+也就是说**一天里插件检索到的案例都来自旧语料**，`anime` 那一栏只有 13 篇（重建后 120 篇），
+而链路全绿。**为什么没人发现**：`test_cases_corpus.py` 的每一条都只查**形状与数量下限**；
+`--check` 依赖 `work/deduped.jsonl`，而 `work/` 不进版本库——干净克隆里连比对的东西都没有。
+
+**修法**：`build_cases` 现在记 `cards_sha256`，由**超图用的同一个函数**
+（`build_hypergraph.corpus_digest`）产出；`test_the_committed_cases_come_from_the_committed_corpus`
+拿它与 `hypergraph.manifest.json` 的 `cache_key.corpus_sha256` 对拍。L1/L2 与 L3 是同一份
+语料的两个投影，**哪一层陈旧都按名字报出来**。对旧产物验证过：它连 `cards_sha256` 这个键都没有。
+
+### 24.2 顺手抓到的第二个真缺陷：OCR 说明文字当上了 `excerpt`
+
+第一次量 E1 时，6 条返回里 **2 条**是 `[Illustration: MELTON MEADOWS. A. …]` 这种扫描件说明文字。
+`pick_excerpt` 取段首那对句子，而说明句正好排在段首。**只按句滤不够**：说明文字里带句点，
+`split_sentences` 把它切成三段，只有第一段带得出 `[illustration`，剩下两段活下来并把紧随的
+**第一句正文**吞进同一个三句窗（合成用例实测：`narrative` 1 → 0）。现在**整块方括号在切句之前
+去掉**，句级过滤降为第二道网。入库语料的效果：172 条案例被替换、残留 `illustration` excerpt 4 条、
+`per_type` narrative 742→749 / lesson 67→60。
+
+### 24.3 §2.3b 的两通道路由补上了（契约级）
+
+§2.3b 写了两次路由：`constraint_query → L1/L2`、`analogy_query → L3`，风险表再钉一遍
+"`constraint_query` 恒走 L1/L2；`analogy_query` 仅在 L3 开启时发"。实现里**两条通道共用同一个串**，
+于是 `景别=CU；运镜=dolly_in；对白=dialogue` 这种契约串也被送去查案例层。
+
+落地：`RetrieveRequest.analogy_query`（契约 ＋ openapi 同批）、sidecar 用
+`analogy_query or query` 且把 `cases_top_k=0` 当"不查"、**判据放在插件侧**
+（`_cases_request()` 没有类比查询就返回 0）、`block_for_shot(..., analogy=…)` 一路传到
+`case_block(analogy)`，编辑器喂的是这一镜自己的**散文提示词**（退回意图）。
+
+### 24.4 E1 第一次被量出来：**0**（两个口径都是 0）
+
+判据照 §4.1：返回的案例里相关（≥4/5）的比例 ≥70%。判官是**跨族双模型面板**
+（deepseek-chat ＋ glm-4.7），每条案例 1–5 分，记录写 `reviewed_by: llm-panel`
+（**不是人**），提示指纹落盘：
+
+| 口径 | 分母 | 结果 |
+|---|---|---|
+| 路由修好**之前**：契约串打 L3（真实运行的 10 条逐镜查询 × top-3） | 24 | **0 / 24 = 0.0** |
+| 路由修好**之后**：散文提示词打 L3（同一批镜头的提示词） | 16 | **0 / 16 = 0.0** |
+
+两个模型对每一条都给 1–2 分，理由一致：返回的是 1900 年代摄影书的散句
+（"Each picture is thus kept in absolute focus."），与"码头市场、推镜、银币变金"这种现代镜头无关。
+
+**根因不是路由，是语料与层的定义对不上**：§2.3b 把 L3 定义成"**拉片/复盘/影评**"，
+而现在的案例层是从**同一份 L1/L2 语料**里切出来的（Gutenberg 老书 ＋ 少量现代文章）。
+换句话说：**L3 缺的是"对具体影片的逐镜分析"这类来源**，不是排序算法。
+这一条现在如实记为**未达标**，并且**没有**去调 E1 的门限或换一个更好看的分子。
+
+顺带补了取证条件：`retrieval_call` 事件现在记 `case_ids` / `edge_ids` 与实际用的
+`analogy_query`。在那之前，**E1 连人都没法补测**——一次跑完只留下 `cases: 3`，
+谁也说不出该给哪三条打分。
+
+### 24.5 现在的账
+
+门①–⑩ 全 pass，`rks.json failed_checks: []`，`pytest` 全绿
+（`docs/evidence/20261002-151258/`）；`cases.manifest` 与语料摘要一致；
+E3/E3_cases pass；**E1 = 0.0（不达标，已量）**；Q5/E2 仍 `not_measured`。
