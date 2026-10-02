@@ -29,8 +29,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import unicodedata
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -45,8 +46,150 @@ PASS, FAIL, NA = "pass", "fail", "not_measured"
 #: 夹具没有这条标注就无从 join。
 MIN_Q5_FIXTURE_ITEMS = 30
 
+#: `ShotContract.constraint_query()` / `shot_constraint_query()` 真正会产出的键。
+#: 只有 `q` 的键**全部**落在这里的条目才可能与真实运行的计划镜头 join 上——
+#: 这是 §4.1b 的 Q5 join 判据（"键值对集合相等"）的直接推论。
+PLAN_QUERY_KEYS: Tuple[str, ...] = ("景别", "镜头", "运镜", "动作", "特效", "对白")
 
-def q5_movement_hit(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
+
+def _normalise_query_pairs(text: str) -> frozenset:
+    """`键=值；键=值` → 归一化后的 `{(键, 值)}` 集合。
+
+    归一化口径与 §4.1b 的 Q5 行逐字对应：**去空格 / 全半角 / 别名**。
+    `VALUE_ALIASES` 是索引侧唯一那份别名表（`static` → `固定`、`甩镜` → `whip_pan`），
+    两边都用它，join 才不会因为一边写引擎名、一边写中文别名而永远错开。
+    """
+    from block_director.knowledge.hypergraph import VALUE_ALIASES  # noqa: PLC0415
+
+    pairs = set()
+    for chunk in str(text or "").replace(";", "；").split("；"):
+        if "=" not in chunk:
+            continue
+        key, _, raw = chunk.partition("=")
+        key = unicodedata.normalize("NFKC", key).strip()
+        value = unicodedata.normalize("NFKC", raw).strip().replace(" ", "")
+        if not key or not value:
+            continue
+        pairs.add((key, VALUE_ALIASES.get(value, value)))
+    return frozenset(pairs)
+
+
+class _ShotView:
+    """`shots.json` 的一条记录 → `shot_constraint_query()` 吃的那个形状。
+
+    字段来源（`delivery/manifest.py::_movements_payload` 定死）：
+    `shot_type` 是景别、`camera.lens` 是计划排的焦距、`movements[].kind` 是引擎运镜名、
+    `action_types[]` 是动作类型、`dialogue_ids[]` 非空即"这一镜有对白"。
+    **不在这里重写契约串**——一律交给同一个生产者
+    （`layer5_orchestrator/scene_contract.py::shot_constraint_query`），
+    否则量的是"复刻的查询"而不是"真实发出的查询"。
+    """
+
+    def __init__(self, record: Dict[str, Any]) -> None:
+        camera = (record or {}).get("camera") or {}
+        movements = []
+        for raw in (record or {}).get("movements") or []:
+            kind = (raw.get("kind") or raw.get("type")) if isinstance(raw, dict) else raw
+            if kind:
+                movements.append({"type": str(kind)})
+        self.shot_type = str((record or {}).get("shot_type") or "")
+        self.camera: Dict[str, Any] = {"lens": camera.get("lens"),
+                                       "movements": movements}
+        self.actions = [{"action_type": str(item)}
+                        for item in ((record or {}).get("action_types") or [])]
+        self.vfx = list((record or {}).get("vfx") or [])
+        self.dialogues = [{}] if (record or {}).get("dialogue_ids") else []
+
+
+def plan_query_of_shot(record: Dict[str, Any]) -> str:
+    """一条 `shots.json` 记录 → 这一镜真实发出的契约串。"""
+    from block_director.layer5_orchestrator.scene_contract import (  # noqa: PLC0415
+        shot_constraint_query,
+    )
+
+    return shot_constraint_query(_ShotView(record))
+
+
+def q5_run_join(entries: List[Dict[str, Any]], shots_path) -> Dict[str, Any]:
+    """Q5 的**第二步**：把入库计划的逐镜查询与 held-out 的 `q` join 起来。
+
+    §4.1b 的 Q5 行写死了 join 判据：**键值对集合相等**。这里同时报三个数：
+
+    * `denominator`——按**规格的相等判据**匹配到的镜头数（这是 Q5 的分母）；
+    * `subset_denominator`——把判据放宽成"本条 `q` ⊆ 本镜查询"时的镜头数
+      （**只作诊断**，不是判据：它回答"如果改 join 关系能救回多少"）；
+    * `plan_queries`——真实发出的契约串的去重清单，用来证明"不是没跑对，"
+      "是两边根本不在同一个键空间里"。
+    """
+    if not shots_path or not Path(shots_path).is_file():
+        return {"status": NA, "denominator": 0, "subset_denominator": 0,
+                "numerator": 0, "plan_queries": [],
+                "note": "没有 --shots：Q5 的运行侧 join 没有输入（§4.1b 第二步）"}
+    payload = json.loads(Path(shots_path).read_text(encoding="utf-8"))
+    shots = payload.get("shots") if isinstance(payload, dict) else payload
+    shots = shots or []
+
+    from block_director.knowledge.hypergraph import VALUE_ALIASES  # noqa: PLC0415
+
+    wanted = {}
+    for entry in entries:
+        values = [str(v) for v in (entry.get("expect_movements") or []) if str(v)]
+        if not values:
+            continue
+        wanted[str(entry.get("id"))] = (
+            _normalise_query_pairs(entry.get("q")),
+            {VALUE_ALIASES.get(value, value) for value in values})
+
+    numerator = denominator = subset_denominator = 0
+    queries: List[str] = []
+    matched: List[Dict[str, Any]] = []
+    for record in shots:
+        query = plan_query_of_shot(record)
+        if query:
+            queries.append(query)
+        applied = {VALUE_ALIASES.get(str(m.get("kind") or m.get("type") or ""), "")
+                   for m in (record.get("movements") or []) if isinstance(m, dict)}
+        applied.discard("")
+        if not applied:
+            #: 一条运镜都没排 = 引擎的机位是**锁死**的。词表里这件事的说法就是
+            #: `固定`（`static` 是它的别名）。不补这一条，"这一镜没写运镜"会被
+            #: 当成"没有任何运镜产出"，于是**作者期望 `固定` 的条目永远不可能命中**
+            #: ——而那恰好是 `SHOT_PATTERN` 那批（景别×镜头）最典型的形状。
+            applied = {VALUE_ALIASES.get("固定", "固定")}
+        mine = _normalise_query_pairs(query)
+        for ident, (expected_pairs, expected_moves) in wanted.items():
+            if not expected_pairs:
+                continue
+            if expected_pairs == mine:
+                denominator += 1
+                if applied & expected_moves:
+                    numerator += 1
+                matched.append({"shot_id": record.get("shot_id"), "entry": ident,
+                                "query": query, "mode": "equal"})
+            elif expected_pairs <= mine:
+                subset_denominator += 1
+    value = round(numerator / denominator, 4) if denominator else None
+    detail: Dict[str, Any] = {
+        "status": NA, "numerator": numerator, "denominator": denominator,
+        "subset_denominator": subset_denominator, "value": value, "line": 0.80,
+        "plan_queries": sorted(set(queries)), "matched_shots": matched[:20],
+        "fixture_entries": len(wanted)}
+    if denominator == 0:
+        detail["note"] = (
+            f"运行侧 join 按 §4.1b 的『键值对集合相等』匹配到 0 个镜头"
+            f"（放宽成子集也只有 {subset_denominator} 个）：Q5 的分母为 0，"
+            f"按 §4.1b 硬规则 1 如实记 not_measured。真实发出的契约串见 "
+            f"plan_queries（{len(set(queries))} 条去重）")
+    elif value is not None and value >= 0.80:
+        detail["status"] = PASS
+        detail["note"] = f"计划采纳率 {numerator}/{denominator}"
+    else:
+        detail["status"] = FAIL
+        detail["note"] = f"计划采纳率 {numerator}/{denominator} < 0.80"
+    return detail
+
+
+def q5_movement_hit(entries: List[Dict[str, Any]], shots=None) -> Dict[str, Any]:
     """Q5 运镜命中（§4.1b 分两步判；本函数负责第一步与"缺什么"的如实记账）。
 
     §4.1b 原文：① 夹具侧：带 `expect_movements` 的条目 **≥ 30**（不足则 Q5 记
@@ -70,10 +213,29 @@ def q5_movement_hit(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
                          f"{MIN_Q5_FIXTURE_ITEMS}（§4.1b 第一步）：Q5 无法判定、"
                          f"不得判通过。池通道的标注模板不产这个字段，"
                          f"补齐要走一次独立标注（判据＝卡里描述的作者意图）")}
-    return {"id": "Q5", "status": NA,
-            "numerator": len(expected), "denominator": 0, "line": 0.80,
-            "note": (f"夹具侧已够（{len(expected)} 条），但运行侧的 join 需要一次"
-                     f"真实模型运行的逐镜查询镜像：本工具还没接上")}
+    run = q5_run_join(entries, shots)
+    plan_shaped = sum(1 for entry in expected
+                      if _normalise_query_pairs(entry.get("q"))
+                      and {key for key, _value in _normalise_query_pairs(entry.get("q"))}
+                      <= set(PLAN_QUERY_KEYS))
+    #: `numerator` 一直是**夹具侧**的条数（"带 `expect_movements` 的条目有多少"），
+    #: 运行侧的比值另开 `run_*` —— 这两个数是两件事，混用一个键会让"夹具够不够"
+    #: 与"计划采纳率"看起来是同一个数（这正是 R54 之前 Q4 变成恒真式的老毛病）。
+    metric = {"id": "Q5", "status": run["status"],
+              "numerator": len(expected), "denominator": 0, "line": 0.80,
+              "fixture_items": len(expected), "fixture_plan_shaped": plan_shaped,
+              "run_numerator": run["numerator"],
+              "run_denominator": run["denominator"],
+              "run_value": run.get("value"),
+              "run_subset_denominator": run.get("subset_denominator", 0),
+              "plan_queries": run.get("plan_queries", []),
+              "note": run.get("note", "")}
+    if run["status"] == NA and run["denominator"] == 0 and not run.get("plan_queries"):
+        metric["note"] = (
+            f"夹具侧已够（{len(expected)} 条，其中计划形状 {plan_shaped} 条），"
+            f"但运行侧的 join 需要一次真实模型运行的逐镜查询镜像："
+            f"本工具还没接上（没给 --shots）")
+    return metric
 
 
 def q0_build_gate(manifest_path: Path, rejects_path: Path) -> Dict[str, Any]:
@@ -264,7 +426,7 @@ def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
 
     metrics.append(e3_experience_override(graph))
     metrics.append(e3_cases(cases))
-    metrics.append(q5_movement_hit(entries))
+    metrics.append(q5_movement_hit(entries, shots))
     metrics.append(e1_relevance(e1_reviews))
     metrics.append(e2_adoption(shots))
 
