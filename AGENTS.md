@@ -364,7 +364,19 @@ which described the pre-P13 tree and contradicted the status section above.)
 
 `tools/run_tests.ps1` drives a hard-coded manifest of Blender probes plus four
 non-probe steps (spec + golden drift, pytest, the in-Blender contract smoke
-test, and one headless end-to-end run). The probe list lives in `$checks` and
+test, and one headless end-to-end run). Its evidence hook then runs the four
+knowledge-side reports - `holdout_score.py` -> `holdout_quality.json` (Q1-Q7),
+`knowledge/quality.py` -> `knowledge_quality.json` (Q0, E1-E3 and the same
+Q1-Q7 scorer, imported rather than re-implemented), `check_holdout.py` ->
+`holdout_gates.json`, and `knowledge/authorship_report.py` -> `authorship.json`
+- and attributes RK-13 from `knowledge/hard_gates.py`, which judges the report
+**by id**: a hard id that is missing counts as failed, and Q5/E1/E2 are recorded
+as `not_measured` and never read as a pass. One name, one schema: the chain used
+to write holdout_score's report under the name AGENTS.md gives to quality.py, so
+Q0 and the hard gate E3 were measured by nothing. A probe whose
+`BD_TEST_RESULT` payload cannot be parsed now ends the run with `INCOMPLETE:`
+and a non-zero exit code, instead of a WARN followed by "All checks passed".
+The probe list lives in `$checks` and
 the script asserts it **in both directions** (every listed file exists; every
 `tools/blender_tests/test_*.py` on disk is listed); `$total` derives from
 `$checks.Count` so the `[n/N]` counter follows automatically. The current

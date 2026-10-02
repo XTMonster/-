@@ -215,6 +215,8 @@ CHAIN_STEPS = [
     ("tools/gen_golden.py --check", "golden 夹具不漂移"),
     ("-m pytest", "pytest 套件"),
     ("tools/holdout_score.py", "held-out 质量指标（RK-13 的测量）"),
+    ("tools/knowledge/quality.py", "知识栈报告（Q0 ＋ E1–E3，含硬门 E3）"),
+    ("tools/knowledge/hard_gates.py", "RK-13 的硬门判定（按 id 判）"),
     ("tools/check_holdout.py", "held-out 覆盖门（RK-13 的可用性）"),
     ("tools/knowledge/authorship_report.py", "署名门"),
 ]
@@ -226,13 +228,13 @@ def dead_chain_steps(text: str) -> list:
     problems = []
     for command, what in CHAIN_STEPS:
         hits = [number for number, line in enumerate(lines, 1) if command in line]
-        if not hits:
-            problems.append(f"{command} 不在链里（{what} 没跑 = 没测）")
+        # 注释里提到命令是允许的（甚至是有用的）——判据是它必须**也**出现在活行上。
+        live = [number for number in hits
+                if not lines[number - 1].strip().startswith("#")]
+        if not live:
+            problems.append(f"{command} 不在链里的活行上（{what} 没跑 = 没测）")
             continue
-        for number in hits:
-            if lines[number - 1].strip().startswith("#"):
-                problems.append(f"{number}: {command} 落在注释里，这一行不会执行")
-                continue
+        for number in live:
             window = lines[number:number + 12]
             if not any(("$LASTEXITCODE" in item) or ("Fail " in item)
                        or ("Fail(" in item) for item in window):
@@ -265,7 +267,8 @@ def test_the_chain_checker_fires_on_the_a1fe8c4_shape():
         "$authorshipExit = $LASTEXITCODE\n"
     )
     problems = dead_chain_steps(swallowed)
-    assert any("注释" in item for item in problems), problems
+    # 命令行被吞进注释 ⇒ 它在**活行**上不存在 ⇒ 判出来（而不是靠"这行以 # 开头"分情况）。
+    assert any("活行" in item for item in problems), problems
     # 少了退出码检查的那种也要被抓到（"跑完不判"）。
     unjudged = swallowed.replace(
         "$gateExit = $LASTEXITCODE\n", "") + "\npython tools/check_holdout.py x\n"

@@ -886,3 +886,81 @@ RK-13 现在只剩**两组**：门⑥ 的 28 张卡（那 27 张讲的是胶片�
 `tools/holdout_expect_movements.py` 是换族（GLM，非抽取族）的独立标注通道，
 判据落在卡片正文：**quote 里必须带运镜语汇**，否则该取值当场丢掉（宁缺勿猜在代码里，
 不只写在提示词里）。
+
+## 十八、P14-10（2026-10-02 10:5x）：验收链自己量错了三处
+
+本轮不碰语料、不动索引，只把"链到底量到了什么"逐条复核了一遍。三处都是**链**
+的缺陷（判据没变），证据与命令都在下面。
+
+### 18.1 硬门 E3 从来没有被链量过（已修）
+
+`tools/run_tests.ps1` 只跑 `tools/holdout_score.py`，却把它的报告写在
+`knowledge_quality.json` 名下——而 AGENTS.md 把这个名字给了
+`tools/knowledge/quality.py`（Q0 ＋ E1–E3）。实测：
+
+```
+rg -n "quality\.py" tools/run_tests.ps1        -> 无命中
+python -c "…json.load(open('docs/evidence/<run-id>/knowledge_quality.json'))…"
+  -> metric ids ['Q1','Q2','Q3','Q4','Q6a','Q6b','Q7']    # 没有 Q0，没有 E3
+```
+
+于是 "E3 经验越权率 = 0"（§2.3b/§4.1b 的硬门）在链上只由离线单测碰过，
+**从没在入库的索引与产物上量过**；而 `tools/run_tests_rks.py:76` 把
+`tools/knowledge/quality.py` 写成 RK-13 的 sample_ref。
+
+修法：两个生产者各写各的文件（`holdout_quality.json` / `knowledge_quality.json`），
+RK-13 改由 `tools/knowledge/hard_gates.py` **按 id** 归属——`HARD_IDS`（Q0、
+Q1–Q4、`Q4_pre_required_edges_exist`、Q6a、Q6b、Q7、E3、E3_cases）**缺一条也算
+失败**；Q5/E1/E2 只记 `not_measured`，永不参与判过。**不取 `quality.py` 的聚合
+退出码**：它因为 Q5/E1 在 CI 上恒为 2，"硬门红了"与"人工项这次没量"会被混成
+一件事。对抗性用例 `tests/test_hard_gates.py`（含"链以前那份报告必须判失败"与
+"清单与 quality.py 真实产出的 id 必须一一对应"）。
+
+### 18.2 判据的退出码曾被控制台编码决定（已修）
+
+```
+python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab … --cards … --json
+-> UnicodeEncodeError: 'gbk' codec can't encode character '\u2286'
+   （gate_10_index_resolvable.note 写着 "must/top1 ⊆ 索引里的边"）
+-> 未捕获异常 ⇒ 退出码 1
+```
+
+而 1 在这个工具里是"**有门失败**"：也就是说"全部门通过"会被报成"门失败"。
+`run_tests.ps1` 因为先设了 `PYTHONIOENCODING=utf-8` 才没踩到，**任何直接调用**
+（人工核对门⑥、测试里的 `subprocess`）都踩得到。同族的还有
+`authorship_report` / `gap_report` / `run_tests_rks`（stdout 的字节随控制台变，
+下游按 UTF-8 解码就得到乱码）。处置收在一处：
+`block_director/utils/console.py::force_utf8_streams()`，四个 CLI 统一调用；
+`tests/test_cli_console_encoding.py` 钉住"同一条命令在 gbk 与 utf-8 下**退出码
+相同、stdout 逐字节相同**"，并带一个**反面控制**（不处置的朴素子进程在 gbk 下
+确实会死）证明判据会开火。
+
+顺带修掉 `tests/test_gap_report.py` 的 reader-thread 警告：子进程把带中文路径的
+traceback 按 cp936 写到 stderr，父进程按 utf-8 严格解码 → 线程里抛
+`UnicodeDecodeError`（实测那一字节 0xb0 就是 `白` 的 cp936 首字节）。
+
+### 18.3 解析不到探针结果 ≠ 通过（已修）
+
+`run_tests.ps1` 里探针的 `BD_TEST_RESULT` 解析失败时只打印 WARN 就继续，
+链最后照旧 `All checks passed.`——挂在那条探针上的 RK 全部静默变成
+`not_measured`（脚本自己的注释就写着这一点，但没人据此判）。现在收集这类失败，
+收尾时走 `INCOMPLETE:` ＋ 非零退出码：探针确实跑过，这不是"跳过"，是"证据没回来"。
+
+### 18.4 顺带钉住的三条不变量（都是"缺证据被当成通过"的同一个形状）
+
+* **验收夹具必须在位**：删掉 `knowledge/hypergraph.*.jsonl` 或 held-out 三件套之后，
+  pytest 只是让 ~15 条用例变 skip、链把 RK-13 从"实测失败"降级成"未量"，
+  依旧全绿。现在 pytest 直接红（`tests/test_acceptance_fixtures_present.py`）。
+* **`pytest.skip` 必须是条件调用**（静默跳过 = 套件凭空变绿）。
+* **链上每一步门命令都必须落在活行上**，且后面紧跟退出码检查——`a1fe8c4` 那次
+  事故（命令行被注释吃掉、`$LASTEXITCODE` 还留着上一条的 0）正是这个形状。
+
+### 18.5 仍未解决（口径/供给，需用户裁决）
+
+1. **Q5 的基准串没定死**：计划期 `retrieval_call.query` 与 build 后 `ShotContract`
+   在同一个真实运行里给出 0 vs 1 的不同分母（见 §十七）。
+2. **`SHOT_PATTERN.movement`**：schema 里有、索引里一条都没有；抽出来才能让
+   §4.1b 第一步的 30 条可达（要一次抽取重跑，动 `knowledge/hypergraph.*`）。
+3. **门⑥ 的分母下界**：`--exclude-cards` 是一条能自己解开自己的规则。门⑥ 那一支
+   已补上 `MIN_EXPRESSIBLE_SHARE`（工作树内，实测 2084/2113 = 98.6% ≥ 95%），
+   本条等他们的提交落库后再对上账。

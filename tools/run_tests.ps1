@@ -223,6 +223,7 @@ Write-Host ('  ' + ($exportMarker -replace 'BLOCKDIRECTOR_EXPORT ', '')) -Foregr
 # --------------------------------------------------------------------------- #
 $index = 5
 $probePassed = @()
+$probeParseFailures = @()
 foreach ($check in $checks) {
     Write-Host ("[{0}/{1}] Blender probe: {2}" -f $index, $total, $check.Label) -ForegroundColor Cyan
     $probeOut = Invoke-BlenderScript $blender (Join-Path $root $check.Script) $null
@@ -258,6 +259,7 @@ foreach ($check in $checks) {
         # from this probe is now not_measured.
         $dumpPath = Join-Path $root ('work\probe_parse_fail-' + $check.Label + '.txt')
         ($probeLine + "`n") | Out-File -Encoding utf8 $dumpPath
+        $probeParseFailures += $check.Label
     }
     $index = $index + 1
 }
@@ -281,7 +283,12 @@ python tools/evidence_fingerprint.py --out (Join-Path $evidenceDir 'config.finge
 # means the oracle is missing, and then RK-13 stays not_measured (never a pass).
 $rk13Checks = @()
 $rk13Failed = @()
-python tools/holdout_score.py --holdout fixtures/knowledge_holdout.jsonl --json (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+# NOTE (2026-10-02): this file's name says which tool wrote it. holdout_score.py
+# emits Q1..Q7 and nothing else, so writing it under `knowledge_quality.json` (the
+# name AGENTS.md gives to quality.py's report) made every evidence directory look
+# like the knowledge stack had been judged when Q0 and E3 had not been measured at
+# all. See the knowledge-stack block below.
+python tools/holdout_score.py --holdout fixtures/knowledge_holdout.jsonl --json (Join-Path $evidenceDir 'holdout_quality.json') > $null 2>&1
 $rk13Exit = $LASTEXITCODE
 if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
     $rk13Checks += 'RK-13'
@@ -344,6 +351,38 @@ if ($authorshipExit -eq 0) {
     if ($rk13Failed -notcontains 'RK-13') { $rk13Failed = @($rk13Failed) + 'RK-13' }
     Write-Host ('  authorship gate exit ' + $authorshipExit + ' -> RK-13 counts as failed') -ForegroundColor Yellow
 }
+
+# --------------------------------------------------------------------------- #
+# P14 / knowledge stack: Q0 and E3 live in tools/knowledge/quality.py, and the
+# chain used to run only holdout_score.py (see the NOTE above its command).
+#
+# Measured on 2026-10-02: every docs/evidence/<run-id>/knowledge_quality.json had
+# metric ids ['Q1','Q2','Q3','Q4','Q6a','Q6b','Q7'] - no Q0, no E3 - so the hard
+# gate "E3 experience-override rate == 0" (SS2.3b / SS4.1b) was never measured by
+# the chain. Both tools are run now, and each report keeps its own file name.
+#
+# RK-13 is attributed by ID from the quality report, never by its aggregate exit
+# code: quality.py returns 2 whenever Q5/E1 are not_measured, which is always in
+# CI, so that code cannot tell "a hard gate is red" from "the human-only items
+# were not measured this time". tools/knowledge/hard_gates.py owns that call, and
+# it treats a MISSING id exactly like a failing one (SS4.1b rule 1).
+# --------------------------------------------------------------------------- #
+python tools/knowledge/quality.py --run-id $runId --json --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
+    Fail '  FAILED: the knowledge-stack report was not written'
+}
+if ($rk13Checks -contains 'RK-13') {
+    python tools/knowledge/hard_gates.py --report (Join-Path $evidenceDir 'knowledge_quality.json')
+    $hardExit = $LASTEXITCODE
+    if ($hardExit -eq 0) {
+        Write-Host '  knowledge-stack hard gates (Q0 / Q1-Q7 / E3): all passing' -ForegroundColor Green
+    } else {
+        if ($rk13Failed -notcontains 'RK-13') { $rk13Failed = @($rk13Failed) + 'RK-13' }
+        Write-Host ('  knowledge-stack hard gates exit ' + $hardExit + ' -> RK-13 counts as failed') -ForegroundColor Yellow
+    }
+} else {
+    Write-Host '  knowledge-stack gates not judged: no usable held-out oracle' -ForegroundColor Yellow
+}
 $rks = (@('RK-7', 'RK-11', 'RK-12', 'RK-18', 'RK-19') + $probePassed + $rk13Checks) -join ','
 $rksFailed = $rk13Failed -join ','
 python tools/run_tests_rks.py --run-id $runId --evidence-dir $evidenceDir --checks $rks --failed $rksFailed | Out-Null
@@ -361,6 +400,17 @@ foreach ($name in @('rks.json', 'config.fingerprint.json')) {
 git check-ignore -q ('docs/evidence/' + $runId + '/rks.json')
 if ($LASTEXITCODE -ne 1) {
     Fail '  FAILED: docs/evidence/** is ignored by .gitignore (S13)'
+}
+
+# A probe whose BD_TEST_RESULT payload could not be reassembled measured NOTHING:
+# every RK hanging off it silently degrades to not_measured, and a WARN alone left
+# the run printing "All checks passed." with the evidence missing (SS4.1b rule 1).
+# The probes did run, so this is not a skip - it is "the evidence did not come
+# back", which is the same INCOMPLETE verdict used when Blender is absent.
+if ($probeParseFailures.Count -gt 0) {
+    Write-Host ('INCOMPLETE: ' + $probeParseFailures.Count + ' probe result(s) could not be parsed: ' + ($probeParseFailures -join ', ')) -ForegroundColor Red
+    Write-Host 'INCOMPLETE: their RKs are not_measured; this run is NOT green.' -ForegroundColor Red
+    exit 1
 }
 
 Write-Host 'All checks passed.' -ForegroundColor Green
