@@ -66,8 +66,13 @@ distinct queries:    15
 | 计划期契约串（**驱动检索的那一条**） | `audit_log.retrieval_call.query` | **0** |
 | build 后契约串（含求解器补的焦距） | `shots.json` 反推（本轮实现） | **1** |
 
-附带一条真缺陷：`retrieval_call` 事件的 `shot_id` **恒为 `null`**，运行侧没法把
-"这一条查询属于哪一镜"对上，只能从 `shots.json` 反推。
+> **更正（2026-10-02 10:05 自查）**：`retrieval_call` 的 `shot_id` **已经在代码里
+> 接好了** —— `editor.py:244-250` 传 `shot_id=`，`retriever._edges_from_client` →
+> `KnowledgeClient.retrieve_or_none` 一路带下去，并有具名用例
+> `tests/test_knowledge_client.py::test_retrieval_call_events_carry_the_shot_they_belong_to`。
+> market4 那份证据里是 `null`，因为它**早于**该修复。**这不是待修的缺陷。**
+> 运行侧仍从 `shots.json` 反推，是因为那是 **build 后**的产物（含求解器补的焦距），
+> 与计划期的检索串**不是同一个串**。
 
 ### 2.3 那 106 条的来源卡大多不讲运镜（够不到 30）
 
@@ -95,8 +100,10 @@ distinct queries:    15
 2. **定死 Q5 的基准串**：要么在计划 schema/提示里要求**每一镜给出 `camera.lens`**
    （现在常缺，计划期串因此没有 `镜头`），要么在 §4.1b 里写明基准是 build 后的
    `ShotContract`。两者都要用户点头（改的是验收口径，不是代码）。
-3. **`retrieval_call` 事件补 `shot_id`**（现在恒为 `null`）。这是一条纯实现缺陷，
-   补上之后运行侧不必再从 `shots.json` 反推。
+3. ~~`retrieval_call` 事件补 `shot_id`~~ —— **已核销：不是缺陷**。代码里已经接好
+   （`editor.py:244-250` → `retriever._edges_from_client` → `KnowledgeClient`，
+   用例 `tests/test_knowledge_client.py:91`）；market4 那份 `null` 是**修复前**的
+   证据。运行侧用 `shots.json` 反推是**故意的**：它要的是 build 后的契约串。
 
 ## 4. 本轮落地的代码与用例
 

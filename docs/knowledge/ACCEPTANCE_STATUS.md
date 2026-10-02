@@ -876,8 +876,12 @@ RK-13 现在只剩**两组**：门⑥ 的 28 张卡（那 27 张讲的是胶片�
    `shot.camera` 常为空，焦距由取景求解器后补），build 后串含。两者在同一个运行里
    给出 **0 vs 1** 的不同分母。要么在计划 schema/提示里要求每镜给焦距，
    要么在 §4.1b 里写明基准是 build 后的 `ShotContract`——**改的是验收口径，需用户点头**。
-3. **`retrieval_call` 事件的 `shot_id` 恒为 `null`**（纯实现缺陷）：运行侧因此没法
-   把"这条查询属于哪一镜"对上，只能从 `shots.json` 反推。
+3. ~~`retrieval_call` 事件的 `shot_id` 恒为 `null`~~ —— **已核销：不是缺陷**。
+   代码里已经接好（`editor.py:244-250` → `retriever._edges_from_client` →
+   `KnowledgeClient.retrieve_or_none`，用具名用例
+   `tests/test_knowledge_client.py::test_retrieval_call_events_carry_the_shot_they_belong_to`
+   钉住）；market4 证据里的 `null` 是**修复前**的产物。运行侧用 `shots.json` 反推是
+   **故意的**：它要的是 build 后（含求解器补的焦距）的契约串。
 
 `tools/holdout_expect_movements.py` 是换族（GLM，非抽取族）的独立标注通道，
 判据落在卡片正文：**quote 里必须带运镜语汇**，否则该取值当场丢掉（宁缺勿猜在代码里，
