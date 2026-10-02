@@ -1095,3 +1095,133 @@ traceback 按 cp936 写到 stderr，父进程按 utf-8 严格解码 → 线程�
 3. **门⑥ 的分母下界**：`--exclude-cards` 是一条能自己解开自己的规则。门⑥ 那一支
    已补上 `MIN_EXPRESSIBLE_SHARE`（工作树内，实测 2084/2113 = 98.6% ≥ 95%），
    本条等他们的提交落库后再对上账。
+
+## 二十、P14-11（2026-10-02 11:2x）：门⑥ 归零——那 1 张不是标注缺口，是抽取**编了个宿主**
+
+§十八.3 把门⑥ 的最后一张卡（`gen_cine_0247`）判成"抽取精确度缺陷 ＋ schema 覆盖缺口"，
+并给出三条处置。本轮把第一条做掉了，做法与建议里写的不一样——**因为建议里的那条判据
+照字面实现会清空索引**（下面 20.3 是实测）。结果：**十一门全 pass**，
+`edge_backed_without_entry_count` 由 1 → **0**。
+
+### 20.1 病因一句话：规则 4b 逼着抽取器**自己造一个宿主**
+
+`SYSTEM_PROMPT` 规则 4b 要求"卡里出现 *忌讳/避免/不要* 时，必须把那个取值写成 `forbid`"，
+并且（旧措辞）点名"**挂在 `EMOTION_PACK` 上**；如果这张卡本身不是情绪卡，就把它写成
+'该情绪下不要这样拍'的 `EMOTION_PACK`"。而 `EMOTION_PACK` 的必填槽位是 `emotion` ＋
+`intensity`——于是一张**只讲运镜**的卡被逼着补出这两个值：
+
+```
+gen_cine_0247「摄影机始终处于某种运动中，避免长时间静止固定」
+  → EMOTION_PACK:allow_emotion=平静, intensity=low, forbid_movement=固定
+```
+
+禁半（`固定`）在卡里落地；主体（`平静`／`low`）卡里一个字都没有。双模型复核也是这么判的。
+**这不是标注员偷懒，是索引里有一条卡片不支持的断言**，而门⑩ 又要求覆盖这张卡的条目必须
+引用它——标注方在构造上只能写一条**卡片不支持**的期望。
+
+### 20.2 判据：**禁令必须有宿主**（第 2 段，离线可重放）
+
+`tools/kb_fetch/build_hypergraph.py::unsupported_prohibition_hosts`，四条同时成立才拒收：
+
+1. 卡里真有否定表述（与门⑤ 共用 `block_director.knowledge.grounding.NEGATION_CUES`
+   ——**否定词表只此一份**，上次的教训就是两处各抄一份）；
+2. 至少一条 `forbid` 成员的取值/名字/别名**在卡里落地**；
+3. 这条边的**必填 `allow` 主体**一个都不落地；
+4. 出处都是**已知的卡**。
+
+位置在**去重与硬软裁决之后**：出处是"全部被引卡"的并集，所以一条另有卡片撑住主体的边
+不会因为某一张卡缺席而被拒收。`run()` 与 `rematch()` **共用同一个函数**（两条路径不许漂移）。
+`work/hypergraph.atoms.jsonl` **一个字节都没动**：归并期每次都重跑这条判据，所以"索引可以从
+语料重算"这个性质没有被破坏，**下一次重抽也不会复发**。
+
+### 20.3 爆炸半径（逐档实测，`work/zz_rule_probe.py`）
+
+| 判据 | 会拒收 | 说明 |
+|---|---|---|
+| **建议原文**：每个 `allow` 取值都要在卡里落地 | **538 / 540** | 不可用。抽取器本来就在抽象（`beat_type=coverage`／`intensity=mid`／`action=上下场` 永远没有字面）；只有 434 条边**连必填 `allow` 都**不落地 |
+| 上条 ＋ 带 `forbid` | 6 | 还是宽 |
+| 上条 ＋ 带**落地的** `forbid` | **2** | 命中"禁令宿主"这一形状 |
+| 上条 ＋ 卡里有否定表述（**采用**） | **2** | 与门⑤ 同一词表；再补别名后实收 **1** |
+
+被拒的两条**没有任何 oracle 条目引用**（指向它们那套成员集的条目 **0 条**），所以门⑨/⑩
+一动不动。这一刀**不是放宽判据**：它拒收的是"库里没有依据的断言"，而把这类边留着才是
+逼标注方写假期望。`card_scope_audit.MIN_EXPRESSIBLE_SHARE = 0.95` 那道下界同时挡住
+"把抽取关掉让分母变空"这条能自己解开自己的路径（实测 2083/2113 = **98.6%**）。
+
+### 20.4 顺手抓到一条**真缺陷**：`emotion:平静` 的别名表少了"安静"
+
+第一次跑出来的账是**删 2 条**。第二条是 `cine_move_handheld`：
+
+```
+卡：手持 … 因此纪实、混乱、紧张都用它。禁忌：**安静的**对话用手持，会让观众误以为有危险。
+边：EMOTION_PACK:allow_emotion=平静, intensity=low, forbid_movement=handheld   ← 意思完全对得上
+```
+
+**它是被误杀的**：卡里写的是"安静的对话"，而 `emotion:平静` 的别名表里只有 `安宁`／`留白`。
+也就是说**别名表是落地判据的输入**——漏一个同义词，一条正确的禁令就会被判成"主体是编的"。
+补上 `安静`（`tools/kb_fetch/vocabulary.py::EMOTIONS`）后重跑：删 **1** 条、
+`forbid` 成员 8 → **7**。两档都留在用例里
+（`tests/test_hypergraph_precision.py` 的 `test_the_handheld_prohibition_is_kept_because_…`
+与 `…_dropped_when_the_synonym_is_missing`）。顺带收益：检索的种子面按别名匹配，
+所以"情绪=安静"现在能命中 `emotion:平静` 的边。
+
+### 20.5 指纹补上第七个分量：`validation_rules_version`
+
+`--rematch` 这条路径**只重跑第 2 段、不重抽**（第 2 段是纯函数）。门一变、索引就变，
+指纹不跟着变的话同一枚指纹会指向两份不同的索引。§2.3 的表格写的本来就是
+**"六元指纹 ＋ 校验门代码版本"**，§6「重抽取成本」也点名建议把它纳入——实现里只有前六个，
+本轮补上：`CACHE_KEY_FIELDS` 加 `validation_rules_version`（当前 `gate/v1`），
+`fingerprint_components()`／`rekey_manifest()`／manifest 三处同源。
+`tests/test_hypergraph_determinism.py` 的断言从"恰好六个"改成**把七个名字写死**——用
+`CACHE_KEY_FIELDS` 自己算断言等于让实现给自己出题，加了一个分量却忘了进哈希照样绿。
+（另修：`tools/holdout_pool.grounded_conflict_pairs` 改为 import `grounding` 的原语，
+不再各留一份否定词表／别名读法。）
+
+### 20.6 现在的账
+
+```
+python tools/kb_fetch/build_hypergraph.py --rematch   # 540 → 539 条边；账在 manifest.merge.unsupported_prohibition_hosts
+python tools/kb_fetch/card_scope_audit.py             # excluded 29 → 30，edge_backed_without_entry 1 → 0
+python tools/check_holdout.py … --exclude-cards knowledge/card_scope.json
+  → ①②③④⑤⑤b⑥⑦⑧⑨⑩ 全 pass，overall: pass        ← 门⑥ 第一次绿
+python tools/holdout_score.py --json …                # Q1 0.9678 / Q2 1.0 / Q3 0.0007 / Q4 1.0 / Q6a 1.0 / Q6b 1.0 / Q7 1.0 全 pass
+python -m pytest tests/ -q                            # 1600 collected，全绿
+powershell -File tools\run_tests.ps1                  # 31/31 探针 + "All checks passed."，证据 docs/evidence/20261002-112707/
+```
+
+索引 **539 条边**（theory/experience/lesson 分层不变）、`forbid` 成员 **7**、词表 **157** 值、
+oracle **2953 条**覆盖 2085 张卡。证据 `docs/evidence/20261002-112707/`：
+`holdout_gates.json` 的 `overall = pass`（gate⑥ `cards_expected 2083`、`missing_count 0`、
+`cards_out_of_scope 30`、`expressible_share 0.9858`）、`rks.json` 的 `failed_checks = []`——
+**RK-13 第一次全绿**（下面 20.7 就是那一次没有失败项时暴露出来的链缺陷）。
+
+### 20.7 链自身也修了一处：`--failed` 为空时**参数会消失**
+
+"每一道门都过"这件事以前从未发生过，所以从没暴露过：PowerShell 5.1 调用原生程序时**会丢掉
+空字符串实参**，`--failed $rksFailed` 于是变成裸 `--failed`，argparse 退出 2、`rks.json`
+没写出来、S13 反而把这次运行判失败。**第一次全绿的链同时是第一次无法自我报告的链**。
+已改成 `--failed=$rksFailed`（单 token，不会消失），见 `3f3938f`。
+顺带：`tools/kb_fetch/card_scope_audit.py` 的 CLI 补 `force_utf8_streams()`——cp936 控制台下
+收尾 `print` 会 `UnicodeEncodeError` 退出 1，而 1 正是本仓库"门没过"的退出码，
+一次**写对了产物**的运行会自报为门失败（`0fdf5af`）。
+
+### 20.8 还没做（写清楚，别当成已完成）
+
+1. **提示本身没改**：规则 4b 仍写着"挂到 `EMOTION_PACK` 上"；规则 1／1b 仍写"13 类"；
+   规则 6b 的"逐类自问"清单仍只列 **13** 类（`extract/v8` 扩到 16 类后漏了
+   `DIALOGUE_PACK`／`MUSIC_PACK`／`PROP_PACK`——而语料里道具卡有 160 张）。改这三处要换
+   `PROMPT_VERSION`（`extract/v13`）并**整库重抽 ＋ 重标 oracle**，属独立工作项；
+   本轮的精确度门是它的**离线兜底**，不是替代。
+2. **schema 仍没有"运镜政策"的宿主**：`gen_cine_0247` 那条知识的**禁半**是真的
+   （"避免长时间静止固定"），但没有任何边型的必填槽位能诚实承载它——这张卡因此和另外
+   29 张卡一样离开门⑥ 的分母，而它的知识**没有进索引**。要真的收下它得加边型；
+   而门④ 要求每个边型 ≥30 对 ≥10 卡，所以新边型必须**跟着一次重抽**才有意义（同上）。
+3. Q5 的基准串口径（§十九.5 第 1 条）、`SHOT_PATTERN.movement` 零边（第 2 条）、
+   用户手工项的 ollama 残片——都还没做。
+4. **词表（节点/别名表）仍不在缓存键里**——本轮实测撞到：同一次工作里我先按旧别名表
+   rematch（538 条边），补上 `安静` 后再 rematch（539 条），**两次指纹相同**。也就是说
+   "同一指纹 ⇒ 同一索引"这条不变式在**别名表**这一维度上还不成立（这是六元设计里就有的
+   空洞，不是本轮引入的：`schema_version` 只在**类型/取值闭集**变时升）。现在库里那份是
+   自洽的（539 条边 ↔ `ef179c9f…`），但维护期改别名要记得重跑。要真正关掉它，得把词表指纹
+   也写进 `cache_key`（第七个分量之外再加一个），并同步 §0.1b 的"缓存指纹"那一行——
+   属独立工作项，不混在这一轮里做。

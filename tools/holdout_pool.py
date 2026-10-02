@@ -49,6 +49,7 @@ from tools.check_holdout import (  # noqa: E402
     validate_entry,
 )
 from tools.holdout_score import load_graph, spec_to_norm_key  # noqa: E402
+from block_director.knowledge import grounding  # noqa: E402
 from block_director.knowledge import hypergraph as _hg  # noqa: E402
 
 #: `kind` → `q` 里的中文键。**从 `check_holdout` 反查**，不手抄第二份。
@@ -308,9 +309,11 @@ def mechanical(graph, universe: Sequence[str], *,
 
 
 #: 否定词：卡里出现这些词，才认为"禁止某个取值"是**卡里写的**，不是抽取器编的。
-NEGATION_CUES = ("不要", "避免", "切忌", "禁忌", "禁用", "别用", "不宜", "不能", "不可",
-                 "禁止", "切勿", "杜绝", "avoid", "never", "don't", "do not",
-                 "should not", "must not")
+#: **单一真源在 `block_director.knowledge.grounding`**——阶段二的精确度门
+#: （`build_hypergraph.unsupported_prohibition_hosts`）读的是同一份词表，
+#: 两份判据对"这张卡有没有否定表述"必须给出同一个答案（否则同一条边会在
+#: 归并期被判合法、在门⑤ 又被判没有依据）。这里留一个名字，旧调用方不受影响。
+NEGATION_CUES = grounding.NEGATION_CUES
 
 
 def grounded_conflict_pairs(graph, universe: Sequence[str]) -> int:
@@ -337,17 +340,17 @@ def grounded_conflict_pairs(graph, universe: Sequence[str]) -> int:
             card = by_id.get(str(source))
             if card is None or str(source) not in card_set:
                 continue
-            text = " ".join([card.title or "", card.content or "",
-                             " ".join(card.keywords or []), " ".join(card.tags or [])])
-            if not any(cue in text for cue in NEGATION_CUES):
+            #: 文字与"名字/别名"两件事都走 `grounding` —— 与阶段二的精确度门同一份实现，
+            #: 免得两个判据对同一张卡读到不同的文本。
+            text = grounding.asserted_text({
+                "title": card.title or "", "content": card.content or "",
+                "keywords": list(card.keywords or []), "tags": list(card.tags or [])})
+            if not grounding.has_negation_cue(text):
                 continue
             for member in forbids:
                 node = graph.nodes.get(member.node_id)
-                names = {value_of(member.node_id)}
-                if node is not None:
-                    names |= {str(node.name or ""), str(node.value or "")}
-                    names |= {str(a) for a in (node.aliases or ())}
-                if {n for n in names if n and n in text}:
+                if any(name in text
+                       for name in grounding.surface_names(member.node_id, node)):
                     pairs += 1
                     break
     return pairs

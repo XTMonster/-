@@ -68,7 +68,7 @@
 {"record": "node", "node_id": "emotion:压抑", "type": "emotion", "name": "压抑", "aliases": ["憋闷", "沉闷"], "value": "压抑", "unit": "", "occurrences": 19}
 {"record": "node", "node_id": "emotion:喜悦", "type": "emotion", "name": "喜悦", "aliases": ["开心", "愉快"], "value": "喜悦", "unit": "", "occurrences": 4}
 {"record": "node", "node_id": "emotion:孤独", "type": "emotion", "name": "孤独", "aliases": ["疏离", "落寞"], "value": "孤独", "unit": "", "occurrences": 13}
-{"record": "node", "node_id": "emotion:平静", "type": "emotion", "name": "平静", "aliases": ["安宁", "留白"], "value": "平静", "unit": "", "occurrences": 20}
+{"record": "node", "node_id": "emotion:平静", "type": "emotion", "name": "平静", "aliases": ["安宁", "留白", "安静"], "value": "平静", "unit": "", "occurrences": 28}
 {"record": "node", "node_id": "emotion:庄严", "type": "emotion", "name": "庄严", "aliases": ["肃穆", "仪式感"], "value": "庄严", "unit": "", "occurrences": 13}
 {"record": "node", "node_id": "emotion:恐惧", "type": "emotion", "name": "恐惧", "aliases": ["害怕", "惊恐"], "value": "恐惧", "unit": "", "occurrences": 7}
 {"record": "node", "node_id": "emotion:悲伤", "type": "emotion", "name": "悲伤", "aliases": ["难过", "哀伤"], "value": "悲伤", "unit": "", "occurrences": 5}

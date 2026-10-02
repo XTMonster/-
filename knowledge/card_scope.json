@@ -3,7 +3,7 @@
   "criterion_version": "scope/v3",
   "rule": "excluded ⟺ 全语料抽取对该卡零条边（sources 不含该 id）",
   "catalogue": 2113,
-  "edge_backed": 2084,
+  "edge_backed": 2083,
   "excluded": [
     "gen_anime_0309",
     "gen_anime_0406",
@@ -18,6 +18,7 @@
     "gen_cine_0077",
     "gen_cine_0078",
     "gen_cine_0199",
+    "gen_cine_0247",
     "gen_comp_0223",
     "gen_comp_0262",
     "gen_comp_0273",
@@ -35,7 +36,7 @@
     "gen_story_0113",
     "perf_conflict"
   ],
-  "excluded_count": 29,
+  "excluded_count": 30,
   "out_of_scope": [
     "gen_anime_0309",
     "gen_anime_0406",
@@ -50,6 +51,7 @@
     "gen_cine_0077",
     "gen_cine_0078",
     "gen_cine_0199",
+    "gen_cine_0247",
     "gen_comp_0223",
     "gen_comp_0262",
     "gen_comp_0273",
@@ -67,16 +69,14 @@
     "gen_story_0113",
     "perf_conflict"
   ],
-  "out_of_scope_count": 29,
+  "out_of_scope_count": 30,
   "excluded_with_edges": [],
   "excluded_with_entries": [
     "gen_axis_0095",
     "gen_axis_0196"
   ],
-  "edge_backed_without_entry": [
-    "gen_cine_0247"
-  ],
-  "edge_backed_without_entry_count": 1,
+  "edge_backed_without_entry": [],
+  "edge_backed_without_entry_count": 0,
   "edges_per_card": {
     "axis_180": 4,
     "axis_30": 3,
@@ -944,7 +944,7 @@
     "gen_cine_0244": 1,
     "gen_cine_0245": 1,
     "gen_cine_0246": 1,
-    "gen_cine_0247": 1,
+    "gen_cine_0247": 0,
     "gen_cine_0248": 1,
     "gen_cine_0250": 1,
     "gen_cine_0252": 2,

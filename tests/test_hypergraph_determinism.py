@@ -98,10 +98,22 @@ def _prepare(tmp_path, monkeypatch, cards) -> dict:
 # --------------------------------------------------------------------------- 指纹
 
 
-def test_fingerprint_requires_exactly_the_six_components():
+def test_fingerprint_requires_exactly_the_declared_components():
+    """分量表**写死**在这里，不是"跟着 `CACHE_KEY_FIELDS` 走"。
+
+    写死是刻意的：分量表是 §2.3 的契约（"六元指纹 ＋ 校验门代码版本"），
+    用 `CACHE_KEY_FIELDS` 去算断言等于让实现自己给自己出题——加了一个方差
+    却忘了进哈希，这条用例照样绿。
+    """
     components = {key: key + "-value" for key in bh.CACHE_KEY_FIELDS}
-    assert len(components) == 6
+    assert tuple(bh.CACHE_KEY_FIELDS) == (
+        "corpus_sha256", "model", "prompt_version", "chunker_version",
+        "decode", "schema_version", "validation_rules_version")
+    assert len(components) == 7
     assert bh.fingerprint_of(components)
+    #: §2.3 的七元里**必须**含校验门代码版本：`--rematch` 只重跑第 2 段，
+    #: 门一变、索引就变，指纹不跟着变就会把两份不同的索引指成同一个。
+    assert "validation_rules_version" in bh.CACHE_KEY_FIELDS
     with pytest.raises(ValueError):
         bh.fingerprint_of({**components, "extra": "x"})
     with pytest.raises(ValueError):

@@ -8,12 +8,18 @@
 `knowledge/hypergraph.rejects.jsonl`；构建门是 `rejects ≤ 5%` 且没有 chunk 被跳过。
 
 断点续跑：六元指纹（语料 sha256 ＋ 抽取器 model id＋版本 ＋ prompt 版本 ＋ chunk 策略 ＋
-解码参数 ＋ schema 版本）写进 `knowledge/hypergraph.manifest.json`。
+解码参数 ＋ schema 版本）加**校验门代码版本**，写进 `knowledge/hypergraph.manifest.json`。
 
-**六元指纹必须是"记录下来的六个分量的纯函数"**（§2.3 的缓存键 / §6 的"重抽取成本"）：
-`fingerprint_of(manifest["cache_key"]) == manifest["fingerprint"]`，且六个分量任一个变了
+**指纹必须是"记录下来的分量的纯函数"**（§2.3 的缓存键 / §6 的"重抽取成本"）：
+`fingerprint_of(manifest["cache_key"]) == manifest["fingerprint"]`，且任一个分量变了
 指纹就必须变——否则"改了 prompt / 换了 chunk 策略"会复用旧索引，而 manifest 上看不出来。
-本模块只认这六个键（多一个少一个都直接报错），免得以后加了新分量却忘了进哈希。
+本模块只认 `CACHE_KEY_FIELDS` 这一组键（多一个少一个都直接报错），免得以后加了新分量
+却忘了进哈希。
+
+第七个分量是 §2.3 表格里那句"**六元指纹 ＋ 校验门代码版本**"的后半句，也是 §6「重抽取
+成本」那条缓解措施（"另建议把校验门代码版本也纳入——门改了只需重跑门，不必重抽"）。
+`--rematch` 就是"只重跑第 2 段"，所以第 2 段的判据一变，指纹**必须**跟着变：否则同一枚
+指纹会同时指向"过滤之前"和"过滤之后"两份不同的索引，而 manifest 上看不出来。
 """
 
 from __future__ import annotations
@@ -35,6 +41,7 @@ except ImportError:  # pragma: no cover
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
     from tools.kb_fetch import common, llm  # type: ignore
 
+from block_director.knowledge import grounding
 from block_director.knowledge import hypergraph as hg
 
 EDGES = common.KNOWLEDGE / "hypergraph.edges.jsonl"
@@ -84,6 +91,12 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: 并且不再给每张卡塞一句假的"来源性质：theory"——正是那句让 738 条边的
 #: `source_kind=experience` 恒为 0，L2 经验层形同不存在、`E3 经验越权率` 因分母为 0 判失败。
 PROMPT_VERSION = "extract/v12"
+#: §2.3 的缓存键写的是"六元指纹 ＋ **校验门代码版本**"，§6「重抽取成本」也点名建议把
+#: 它纳入——因为 `--rematch` 这条路径**只重跑第 2 段、不重抽**（第 2 段是纯函数）。
+#: 门一变、索引就变，指纹不跟着变的话，同一枚指纹会指向两份不同的索引。
+#: 与 `PROMPT_VERSION` 的分工：那个管**第 1 段**（提示文本），这个管**第 2 段**（归并
+#: 与精确度门）。v1：新增 `unsupported_prohibition_hosts`（禁令必须有宿主）。
+VALIDATION_RULES_VERSION = "gate/v1"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -103,9 +116,11 @@ MAX_EDGES_PER_CARD = 8
 #: 解码参数属于六元指纹的一部分：它写死在调用里（`extract()` 的 temperature=0/seed=0/ctx=8192）。
 DECODE = "temperature=0;seed=0;ctx=8192"
 
-#: 六元指纹的分量名（顺序即 `cache_key` 的键序）。
+#: 指纹的分量名（顺序即 `cache_key` 的键序）。前六个是 §2.3 的"六元"，
+#: 第七个是同一行里写的"＋ 校验门代码版本"。
 CACHE_KEY_FIELDS = ("corpus_sha256", "model", "prompt_version",
-                    "chunker_version", "decode", "schema_version")
+                    "chunker_version", "decode", "schema_version",
+                    "validation_rules_version")
 
 
 def corpus_digest(cards: Sequence[Dict]) -> str:
@@ -130,10 +145,11 @@ def corpus_digest(cards: Sequence[Dict]) -> str:
 
 def fingerprint_components(cards: Sequence[Dict], client, *,
                            prompt_version: str = PROMPT_VERSION,
+                           validation_rules_version: str = VALIDATION_RULES_VERSION,
                            decode: str = DECODE,
                            chunker_version: str = "",
                            schema_version: str = "") -> Dict[str, str]:
-    """把六元指纹的六个分量算出来（`cache_key` 的**唯一**生产者）。"""
+    """把指纹的分量算出来（`cache_key` 的**唯一**生产者）。"""
     return {
         "corpus_sha256": corpus_digest(cards),
         "model": f"{client.model_id}@{getattr(client, 'model_version', '')}",
@@ -141,6 +157,7 @@ def fingerprint_components(cards: Sequence[Dict], client, *,
         "chunker_version": str(chunker_version or common.CHUNKER_VERSION),
         "decode": str(decode),
         "schema_version": str(schema_version or hg.SCHEMA_VERSION),
+        "validation_rules_version": str(validation_rules_version),
     }
 
 
@@ -163,8 +180,10 @@ def rekey_manifest(path: pathlib.Path | None = None,
                    cards: Sequence[Dict] | None = None) -> Dict:
     """只重算 `cache_key`/`fingerprint`，**不重抽**。
 
-    指纹是"记录下来的六个分量"的纯函数，所以口径升级（例如以前只哈希 id＋model）
-    之后可以就地重算：`corpus_sha256` 用当前卡片重算，其余五个从 manifest 自己读。
+    指纹是"记录下来的分量"的纯函数，所以口径升级（例如以前只哈希 id＋model）
+    之后可以就地重算：`corpus_sha256` 用当前卡片重算，其余的量从 manifest 自己读。
+    旧的六元 manifest 没有 `validation_rules_version`，那时**读默认值**——这正是
+    "补上第七个分量"这条升级要求的动作，不是把缺失当成空串。
     """
     target = pathlib.Path(path or MANIFEST)
     manifest = json.loads(target.read_text(encoding="utf-8"))
@@ -176,6 +195,8 @@ def rekey_manifest(path: pathlib.Path | None = None,
         "chunker_version": str(manifest.get("chunker_version", common.CHUNKER_VERSION)),
         "decode": str(manifest.get("decode", DECODE)),
         "schema_version": str(manifest.get("schema_version", hg.SCHEMA_VERSION)),
+        "validation_rules_version": str(manifest.get("validation_rules_version",
+                                                     VALIDATION_RULES_VERSION)),
     }
     rekeyed = {"fingerprint": fingerprint_of(components), "cache_key": components}
     rekeyed.update({key: value for key, value in manifest.items()
@@ -881,6 +902,83 @@ def arbitrate_by_hardness(edges: Sequence[hg.HyperEdge]) -> Tuple[List[hg.HyperE
                  "dropped_by_source_kind": dict(sorted(dropped_kinds.items()))}
 
 
+def unsupported_prohibition_hosts(edges: Sequence[hg.HyperEdge],
+                                  cards_by_id: Dict[str, Dict],
+                                  nodes: Dict[str, hg.Node],
+                                  ) -> Tuple[List[hg.HyperEdge], Dict]:
+    """**禁令必须有宿主**：把"只为了挂一条 `forbid` 而编出主体"的边拒收（第 2 段）。
+
+    这一条的存在理由是提示里的规则 4b（"卡里出现 *避免/不要* 时把那个取值写成
+    `forbid`"）——它是对的，但它同时给了个**旧宿主**：`EMOTION_PACK`。于是一张
+    **只讲运镜**的卡被逼着补出 `emotion`／`intensity` 才能凑满必填槽位：
+
+    ```
+    gen_cine_0247「摄影机始终处于某种运动中，避免长时间静止固定」
+      → EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定   # 主体是编的
+    ```
+
+    这条边的**禁半**（`固定`）在卡里落地，**主体**（`平静`）不在——卡里一个字都没提。
+    双模型复核（`docs/knowledge/GATE6_LAST_CARD.panel.json`）也正是这么判的：
+    `a(deepseek-chat): 卡只讲运镜持续运动，未支持情绪=平静或强度=low的耦合`。
+
+    **为什么落地判据不能全局施加**：按"每个成员都要在卡里逐字出现"去卡，540 条边
+    里会判掉 **538** 条（`allow` 596 个、`qualifier` 701 个成员找不到字面）——抽取器
+    本来就在做抽象（`beat_type=coverage`、`intensity=mid` 这类推断永远没有字面）。
+    所以判据**只在"这条边是某条禁令的宿主"时**施加，四条同时成立才拒收：
+
+    ① 卡里真有否定表述（`grounding.NEGATION_CUES`，与门⑤ 同一份词表）；
+    ② 这条边至少有一条 `forbid` 成员的取值/名字/别名**在卡里落地**；
+    ③ 这条边的**必填 `allow` 主体**（如 `EMOTION_PACK` 的 `emotion`）一个都没落地；
+    ④ 出处是**已知的卡**（引用了不存在的卡时不做判断，那是另一个缺陷）。
+
+    实测（2026-10-02，540 条边）这一刀只落在 **2 条**上，且两条都是上面那个形状
+    （另一条是 `cine_move_handheld`：卡写"*禁忌：安静的对话用手持*"，边却把
+    **被禁的**手持写成了 `allow`——同一条规则的另一半）。落地后 `gen_cine_0247`
+    变成零条边，与另外 29 张卡同路径离开门⑥ 的分母；被剔的两条**没有任何 oracle
+    条目引用**（`work/zz_drop_blast.py` 实测 0 条孤立）。
+
+    这一刀**不是放宽**：它拒收的是"库里没有依据的断言"。把这类边留在索引里，门⑥ 就会
+    逼着标注方替它写一条**卡片不支持**的期望（面板已两次判它 rejected）。
+    `card_scope_audit.MIN_EXPRESSIBLE_SHARE` 那道下界（可断言卡 ≥ 入库卡 95%）同时
+    挡住"把抽取关掉让分母变空"这条自毁路径。
+    """
+    kept: List[hg.HyperEdge] = []
+    dropped: List[Dict] = []
+    for edge in edges:
+        sources = [str(source) for source in (edge.sources or ())]
+        known = [source for source in sources if source in cards_by_id]
+        if not sources or len(known) != len(sources):
+            kept.append(edge)
+            continue
+        text = grounding.texts_for(sources, cards_by_id)
+        if not grounding.has_negation_cue(text):
+            kept.append(edge)
+            continue
+        forbids = grounding.grounded_forbids(edge, nodes, text)
+        if not forbids:
+            kept.append(edge)
+            continue
+        required = hg.REQUIRED_MEMBERS.get(edge.type) or ()
+        ungrounded = grounding.ungrounded_required_subjects(edge, required, nodes, text)
+        if not ungrounded:
+            kept.append(edge)
+            continue
+        dropped.append({
+            "edge_id": edge.edge_id, "type": edge.type, "sources": sources,
+            "invented_subject": [member.node_id for member in ungrounded],
+            "grounded_forbid": [member.node_id for member in forbids],
+        })
+        continue
+    return kept, {
+        "rule": "unsupported_prohibition_host",
+        "rule_version": VALIDATION_RULES_VERSION,
+        "meaning": "禁令的宿主必须是卡片自己说的：禁半落地、必填 allow 主体不落地 ⇒ 拒收",
+        "dropped": len(dropped), "edges": dropped,
+        "criterion": ("① 卡里有否定表述 ② 至少一条 forbid 在卡里落地 "
+                      "③ 必填 allow 主体一个都不落地 ④ 出处都是已知的卡"),
+    }
+
+
 def extract(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
             batch_size: int = BATCH_CARDS, limit: int = 0, *,
             concurrency: int = 1,
@@ -1050,6 +1148,9 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
         "decode": DECODE,
         "chunker_version": common.CHUNKER_VERSION,
         "schema_version": hg.SCHEMA_VERSION,
+        #: §2.3："六元指纹 ＋ 校验门代码版本"。这一行是后半句的落点；`cache_key`
+        #: 里也有同名分量，所以 `fingerprint_of(manifest["cache_key"])` 仍然自洽。
+        "validation_rules_version": VALIDATION_RULES_VERSION,
         "cards": len(cards),
         "raw_edges": report.raw_edges,
         "valid_unique": report.valid_unique,
@@ -1164,6 +1265,12 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     # §2.3b 关键纪律 2：成员集相同、只有出处/软硬不同时，硬理论优先（见函数注释）。
     merged, arbitration = arbitrate_by_hardness(merged)
     merge_report["arbitrate_by_hardness"] = arbitration
+    #: 阶段二的**精确度门**：禁令必须有宿主（见 `unsupported_prohibition_hosts`）。
+    #: 位置在去重与硬软裁决**之后**——出处是"全部被引卡"的并集，所以一条另有卡片
+    #: 支持得住主体的边不会因为某一张卡缺席而被拒收。
+    merged, precision = unsupported_prohibition_hosts(
+        merged, {str(card["id"]): card for card in cards}, nodes_from_vocab())
+    merge_report["unsupported_prohibition_hosts"] = precision
     if refresh_info is not None:
         merge_report["refresh"] = refresh_info
         merge_report["refresh_prompt_version"] = PROMPT_VERSION
@@ -1178,9 +1285,9 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
 def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     """**不重抽**：从 `work/hypergraph.atoms.jsonl` 重跑第 2 段归并并重建索引。
 
-    第 2 段是纯函数，所以调归并口径（窗口、禁忌优先级、渲染预算）时不该再烧一遍
-    API。六元指纹里的 `prompt_version` 仍按**当前**口径写——否则"改了 prompt 却
-    用旧原子边"会被当成同一份索引。
+    第 2 段是纯函数，所以调归并口径（窗口、禁忌优先级、渲染预算、精确度门）时不该
+    再烧一遍 API。指纹里的 `prompt_version`／`validation_rules_version` 仍按**当前**
+    口径写——否则"改了 prompt 或改了归并门却用旧产物"会被当成同一份索引。
     """
     if not ATOMS.is_file():
         raise FileNotFoundError(f"没有第 1 段的原子边：{ATOMS}（先跑一次完整抽取）")
@@ -1201,6 +1308,10 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     merge_report["global_dedupe"] = global_dedupe
     merged, arbitration = arbitrate_by_hardness(merged)
     merge_report["arbitrate_by_hardness"] = arbitration
+    #: 第 2 段的**精确度门**与 `run()` 逐字一致（两条路径必须产出同一份东西）。
+    merged, precision = unsupported_prohibition_hosts(
+        merged, {str(card["id"]): card for card in cards}, nodes_from_vocab())
+    merge_report["unsupported_prohibition_hosts"] = precision
     #: `--rematch` 是"不重抽、只重跑第 2 段"，它建的是**全新**的 merge_report——
     #: 清洗（`--replace-cards`）留下的 `refresh` 账会就此丢掉，manifest 于是
     #: "混着多个 prompt 版本却没有任何清洗记录"（§4.1b 硬规则 2 禁止自报一个
@@ -1304,7 +1415,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--concurrency", type=int, default=0,
                         help="第 1 段的并发上限；0 = 取 config 的 rag.extract_concurrency")
     parser.add_argument("--rekey-manifest", action="store_true",
-                        help="只按当前卡片与 manifest 里记录的五个分量重算六元指纹，不重抽")
+                        help="只按当前卡片与 manifest 里记录的分量重算指纹，不重抽")
     parser.add_argument("--rematch", action="store_true",
                         help="不重抽：从 work/hypergraph.atoms.jsonl 重跑第 2 段归并并重建索引")
     parser.add_argument("--only-missing", action="store_true",
