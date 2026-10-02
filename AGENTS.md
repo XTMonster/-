@@ -289,13 +289,23 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 逐项对账与必须由用户拍板的四件事见 `docs/knowledge/ACCEPTANCE_STATUS.md`，
 裁决理由见 `docs/adr/0013-theory-must-be-authored-by-others.md`。
 
-### P14 现状（2026-10-02 —— **下面那块数字自此作废**）
+### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
 held-out 覆盖门 ①–⑩ **全 pass**（⑪ 是**诊断**，不参与判定），Q/E 硬门 **11 个 id 全 pass**
 （Q5／E1／E2 记 `not_measured`，永不判过）；`python -m pytest` = **1607 passed / 0 failed**；
-`powershell -File tools\run_tests.ps1` = **31/31 探针 ＋ `All checks passed.`**
-（证据 `docs/evidence/20261002-122249/`，独立复跑 `docs/evidence/20261002-122254/`）。
-逐项对账以 `docs/knowledge/ACCEPTANCE_STATUS.md` §二十／§二十一 为准。
+`powershell -File tools\run_tests.ps1` = **31/31 探针 ＋ `All checks passed.`**；
+`rks.json failed_checks = []`（**RK-13 第一次 measured 且 pass**）。
+最新证据 `docs/evidence/20261002-134053/`（语料扩容后）与 `docs/evidence/20261002_real/`
+（真实模型运行）。逐项对账以 `docs/knowledge/ACCEPTANCE_STATUS.md` §二十／§二十一／§二十二
+与 `docs/knowledge/MODERN_SOURCES.md` §五 为准。
+
+**规模（2026-10-02 实测，别再用旧数字）**：来源 **75** 个（`anime` 域 **15**，
+此前只有 Lutz 1920 一本）；生成卡 **1998** 张（anime 153／storyboard 229／
+cinematography 214），卡片全集 **2130**；超边索引 **541** 条边；oracle **2981** 条。
+门⑥ 的明细：`cards_expected 2099 / excluded 31 / expressible_share 98.5% / missing 0`。
+**真实模型运行**（sidecar→GLM 云端，`docs/evidence/20261002_real/`）：`DONE / 6 镜 /
+792 帧 / built=true / 导出 17 文件 / llm_calls 38 / retrieval_calls 7`，超图通道**未降级**，
+`knowledge_provenance` **每一镜都有 `experience`（L2）桶**——L2 经验层第一次真的参与成片。
 
 **仍未完成、且都不是"实现缺陷"的四项**（`ACCEPTANCE_STATUS.md` §20.8）：
 
@@ -303,9 +313,13 @@ held-out 覆盖门 ①–⑩ **全 pass**（⑪ 是**诊断**，不参与判定�
    措辞自相矛盾）、规则 1／1b 仍写"13 类"、规则 6b 的逐类自问清单只列 **13** 类
    （漏 `DIALOGUE_PACK`／`MUSIC_PACK`／`PROP_PACK`）。修它必须**换 `PROMPT_VERSION`
    ＋ 整库重抽 ＋ 重标 oracle** 同批落地——只改提示不重抽就是"拿旧原子边冒充新口径"。
-   当前**卡在标注通道**：本机 `GLM_API_KEY` 未设（`work/annotator_channels.json` 实测
-   HTTP 429 余额不足），本地只有 `qwen3-vl:30b`（已知会输出纯噪声）。**离线兜底已在位**：
-   `unsupported_prohibition_hosts` 那道精确度门会在归并期拒收这类没有依据的禁令边。
+   **标注通道的现状（2026-10-02 实测，别再照抄旧结论）**：`glm-4.7` **可用**
+   （`GLM_API_KEY` 只从环境变量读；端点 `open.bigmodel.cn/api/paas/v4`）；
+   `glm-4.7-flash` 返回 HTTP 429 code 1305（容量）、`glm-4.6` 报余额不足、
+   `glm-4-flash` 可用；本地 `qwen3-vl:30b` 的 blob 是坏修订（输出纯噪声）。
+   **离线兜底已在位**：`unsupported_prohibition_hosts` 那道精确度门会在归并期拒收
+   这类没有依据的禁令边（索引里那条编出来的边已被它删掉，账在 manifest 的
+   `merge.unsupported_prohibition_hosts`）。
 2. **schema 没有能诚实承载"运镜政策"的边型**（`gen_cine_0247` 的禁半因此进不了索引）；
    加边型要跟着一次重抽才有意义（门④ 要求每类 ≥30 对 ≥10 卡）。
 3. **Q5 的基准串口径未拍板**：计划期 `retrieval_call.query` 与 build 后 `ShotContract`
