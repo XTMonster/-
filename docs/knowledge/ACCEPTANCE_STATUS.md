@@ -2238,3 +2238,82 @@ python -m tools.knowledge.attestation --json <out>
 ——这正是"诊断也会静默失守"的形状。修法写在 `tools/run_tests.ps1` 的注释里
 （显式 `[System.IO.File]::ReadAllText(..., UTF8)`），修完重跑的那一份是
 `docs/evidence/20261002-205547/`：`attestation (diagnostic): 0.2119 … (41/700)`。
+
+## 三十、P14-20（2026-10-02 23:xx）：L3 补 BFI 逐片分析，以及**案例摘录一直在取标题**
+
+这一轮补的是 E1 缺的那一半：**对具体影片的逐片分析**。过程中又抓到两个真缺陷，
+都在案例层的**取段**上。
+
+### 30.1 BFI / Sight & Sound 的 35 篇逐片分析入库（`MODERN_SOURCES.md` §八）
+
+robots 404 ⇒ 按 RFC 9309 放行；从 `/site-map`（272 条）与 `/articles/type/{reviews,features}`
+枚举，35/35 抓通（正文 5.2k–20.9k 字符），标题与署名逐篇从页面自带元数据块读
+（`"author": "…"`，不是从 slug 猜）。**许可如实记 `PersonalStudy`**，并把 BFI 的
+ToS 2.2 原文（"The Site is for your personal and non-commercial use. You may not …
+copy … reproduce … any information or content obtained from the Site unless expressly
+authorised by us."）逐字写进 `sources.yaml` 的注释里，**留给用户复核**。
+
+结果：来源 321（L3 层 202）、案例 810 篇里 **BFI 35 篇**（`gutenberg 301 / studiobinder 205 /
+animationstudies 161 / skwigly 78 / bfi 35 / frames 18 / ocw 12`）。
+
+### 30.2 真缺陷一：`pick_excerpt` 取的是**段首**，于是标题/导航成了"参考案例"
+
+E1 的同语言对照里，返回的三条是 `TV Writing and Development / We're in a golden age of
+TV writing…` 与 `MEDIUM CLOSE-UP SHOT DEFINITION / What is a medium close-up shot?`——
+**样板文字**，双模型面板给 1–2 分。这与 §24.2 修掉的"OCR 说明文字当 excerpt"是同一形状：
+**取段首**碰上样板就必错。
+
+修法（`pick_excerpt` 从"取第一个通过引用门的窗口"改成"**按内容打分选窗**"）：
+
+* 标题式候选直接跳过（全大写行、首行短且无句末标点、"What is …"式定义问句）；
+* 40–120 字的成句加分、出现创作动词（用/让/把/使/表现…，use/show/frame/cut…）加分；
+* 整段子句都超引用预算时，退到**子句边界**、再退到**词边界**裁一条仍然逐字的短引
+  （协议要的是"短引用"，不是"必须是完整句"）；段首是小标题时先剥掉首行再兜底。
+
+用例 `tests/test_case_excerpt_picks_analysis.py`（6 条，含真实反例与被否决的写法）。
+
+### 30.3 真缺陷二：`segments_of` 只切**固定 3 句窗**，现代网页整篇 0 段
+
+加了 BFI 之后反向门 `tests/test_source_traces.py` 立刻抓到 **6 条来源零产物**。
+逐篇量：正文 5.5k–9.5k 字符，切出来 **0 段**。
+
+根因：`segments_of` 只取 3 句一窗、且要求 120–420 字，而现代网页的句子长得多
+（BFI 的正文句 200–300 字，页头那块导航在切句器眼里是**一个 515 字的"句子"**）——
+于是**每一个窗**都超过上限，整篇为零。
+
+修法：窗口**自适应 3→2→1 句**（短句来源照旧走 3 句窗，行为不变；长句来源退到 2 句 / 1 句）。
+实测这 6 篇从 0 段变成 8–20 段；`build_cases` 的门也回到 `passed: true`
+（`quote_gate` 拒收 798 → **117**，占 9121 段评估段的 **1.3%**，下界 5%）。
+附带效果：此前**唯一**那条"清单里有、产物里没有"的例外（Skwigly 的 Cinema 4D 页）
+也产出了案例，于是 `test_source_traces.py` 的例外表**按设计清空**——那张表的防腐断言
+当场要求删掉它，这正是它该有的行为。
+
+### 30.4 E1 的实测：同语言对照仍在**噪声级**（0–1 / 18）
+
+把 BFI 加进 L3 之后，同一批英文查询打英文语料的对照：
+
+| 状态 | ≥4 分的条数 |
+|---|---|
+| 加 BFI 之前 | 1 / 18 |
+| 加 BFI 之后（旧取段） | **0 / 18**（BFI 的案例挤掉了原来那条） |
+| 再加"按内容选段" | 1 / 18 |
+| 最终（自适应窗口 ＋ 35 篇 BFI 全部入选） | **0 / 18** |
+
+也就是说：**补了现代逐片分析，同语言相关性没有变好**（0 与 1 之间是噪声，样本只有 18 条）。
+这与 §二十四/§二十七 的结论一致且更硬：E1 的瓶颈不止"有没有逐片分析"，还有
+**查询与语料对不上**——产品查询是"这一镜怎么拍"的具体描述，而 L3 里能命中的多是
+定义/教学页；逐片影评的词汇（片名、导演、情节）与查询几乎不重叠。
+**这一轮没有动 E1 的门限，也没有把 E1 从 `not_measured` 里挪出来**。
+
+### 30.5 这一轮之后的账
+
+```
+来源 321（L3 202）   案例 810（BFI 35 / StudioBinder 205 / Animation Studies 161 …）
+build_cases 门：passed true，quote_gate 拒收 117 / 9121 = 1.3%（下界 5%）
+python -m pytest 全绿
+```
+
+索引与 oracle **不受影响**（`layers: [L3]` 的来源不进 `chunk.py`，实测 `chunks` 仍 709）。
+**E1 仍不达标**：中文查询 0 命中（语言）＋ 同语言对照 0–1/18（查询与语料对不上）。
+下一步的修法不在"再加来源"，而在**让查询与语料在同一侧**（跨语言检索，或把 L3 的
+检索面从"整段摘要"换成"镜头语汇可对齐的那一栏"）。

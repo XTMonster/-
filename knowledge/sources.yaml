@@ -1257,3 +1257,71 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+  # ============================================================================
+  # BFI / Sight & Sound 的**逐片分析**（2026-10-02 加，用户点名的那一半）
+  #
+  # 为什么要这一族：E1（经验引用相关性 ≥70%）的落点已经被量出来了——L3 的 810 篇里
+  # **含中文的 0 篇**（`docs/evidence/20261002-180124/e1_lane_diagnosis.json`），
+  # 而 §2.3b 把 L3 定义成"**拉片/复盘/影评**"。现有 L3 里最接近的是 Animation Studies
+  # （161 篇 CC-BY）与 StudioBinder 的 6 篇逐片分析；**对具体影片的镜头/场面分析**
+  # 这一档仍然很薄。BFI 的 Sight & Sound 是这一档最对口的英文来源。
+  #
+  # 抓取纪律（实测，逐条可复算）：
+  #   1. `www.bfi.org.uk/robots.txt` = **404** ⇒ 按 RFC 9309「没有规则 ⇒ 放行」
+  #      （`fetch.robots_allows` 返回 True）；
+  #   2. 枚举走 `/site-map`（272 条同域链接）与 `/articles/type/{reviews,features}`
+  #      （各 30 条），**不用 sitemap.xml**——它是自引用死循环；
+  #   3. 每条都过仓库自己的抓取门并抽正文：35/35 抓通，正文 5.2k–20.9k 字符；
+  #   4. 剔除讣告/影展新闻/订阅页，只留**逐片**的评论与制作分析。
+  #
+  # ⚠️ **许可：没有开放许可，而且 ToS 有一句明文保留**。原文（`/terms-use` 2.2）：
+  #     "The Site is for your personal and non-commercial use. You may not modify,
+  #      copy, distribute, transmit, display, revise, perform, reproduce, publish,
+  #      license, deep-link, create derivative works from, transfer, or sell any
+  #      information or content obtained from the Site unless expressly authorised
+  #      by us."
+  #   本仓库按用户 2026-10-01 的**长期指令**「我是个人学习使用的，不用担心版权问题」
+  #   记 `license: PersonalStudy`（白名单内，与 `skwigly.co.uk`、`framescinemajournal.com`
+  #   同档），入库的是"短引用（≤2 句）＋ 出处"，**不冒充开放许可**。
+  #   **这一族是否长期保留，应由用户复核**：它与 `blog.sakugabooru.com`（因 robots.txt
+  #   里的权利保留声明被"宁缺勿滥"拒收）的区别是——那一条是**robots 层**的信号，
+  #   而这里 robots 放行、保留写在人类可读的 ToS 里。
+  #
+  # 署名逐篇从页面自带元数据块读（`"author": "…"`，不是从 slug 猜）。
+  # ============================================================================
+
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/animol-ashley-walters-proves-instinctive-actors-director-with-tense-cell-block-drama', title: "Animol review: Hard cell", author: "Leila Latif", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/bad-apples-saoirse-ronan-this-black-comedys-secret-weapon', title: "Bad Apples review: Core subject", author: "Kate Stables", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/bucking-fastard-herzogs-tale-two-sisters-who-speak-unison-his-best-fiction-feature-years', title: "Bucking Fastard review: Sisters in synch", author: "Nicolas Rapold", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/everybody-digs-bill-evans-gentle-sonata-loss', title: "Everybody Digs Bill Evans review: Devastating rhythm", author: "Ehsan Khoshbakht", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/everytime-sandra-wollners-digital-age-fairytale-finds-light-time-grief', title: "Everytime review: a digital-age fairytale", author: "Alexander Mooney", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/ghost-song-fleshed-out-full-blooded-portrayal-youthful-amour-fou', title: "Ghost Song review: a sweet paranormal romance", author: "Neil Young", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/heart-beast-bracingly-executed-man-dog-survival-story', title: "Heart of the Beast review: One man and his dog", author: "Jonathan Romney", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/julia-set-chase-infiniti-levels-college-romance-coming-ager', title: "The Julia Set review: To Infiniti and beyond", author: "Adam  Nayman", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/let-us-through-dear-ancestors-lav-diaz-explores-horrors-inflicted-upon-philippine-islands-smart-historical-epic', title: "Let Us Through, Dear Ancestors review", author: "Travis Jeppesen", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/look-back-two-rival-manga-artists-join-forces-koreedas-sweet-story-teenage-friendship', title: "Look Back review: Drawing closer", author: "Blake Simons", license: PersonalStudy, domain: anime, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/nowhere-lay-my-eyes-hong-sang-soos-meditative-family-drama-familiar-all-right-ways', title: "Nowhere to Lay My Eyes review", author: "Josh Slater-Williams", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/possible-love-lee-chang-dongs-sober-exploration-economic-disparity-filled-with-quiet-revelations', title: "Possible Love review: Lee Chang-Dong’s marriage story", author: "Jonathan Romney", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/remake-heartbreaking-exploration-slippage-between-documentary-fiction', title: "Remake review: Loving memory", author: "Imogen Sara Smith", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/resident-evil-zach-creggers-thrilling-reboot-pares-things-back-essentials-survival-horror', title: "Resident Evil review: Zach Cregger’s thrilling reboot", author: "Matthew Taylor", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/rimbaud-patrick-wangs-wildly-unconventional-biopic-19th-century-poet', title: "A. Rimbaud review: a wildly unconventional biopic", author: "Philip Concannon", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/super-nature-ed-sayers-super-8-documentary-beautiful-ode-natures-restorative-power', title: "Super Nature review: the butterfly effect", author: "Ben Nicholson", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/wild-horse-nine-martin-mcdonagh-deploys-his-trademark-irreverence-funny-sad-1970s-spy-caper', title: "Wild Horse Nine review: McDonagh’s indecent agents", author: "Jessica Kiang", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/reviews/woman-unknown-may-el-toukhys-elegant-postwar-drama-has-little-beneath-its-surface-tension', title: "Woman Unknown review", author: "Jessica Kiang", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/features/he-was-giant-work-michal-leszczylowski-editor-sacrifice-andrei-tarkovsky', title: "“He was a giant”: Michal Leszczylowski on Tarkovsky", author: "Michal Leszczylowski", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/features/monsters-men-peter-wollen-jurassic-park', title: "Of monsters and men: Peter Wollen on Jurassic Park", author: "Peter Wollen", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/features/sick-kinky-bbfc-ken-russells-devils', title: "“Sick & kinky”: The BBFC and Ken Russell’s The Devils", author: "Linda Ruth Williams", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/features/devils-advocate-guillermo-del-toro-films-darkness-light', title: "Guillermo del Toro on Ken Russell’s The Devils", author: "Guillermo del Toro", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/features/it-earns-every-hair-it-stiffens-alejandro-amenabars-others', title: "“It earns every hair it stiffens”: The Others", author: "Nick James", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/features/misfits-zwigoff-visit-set-ghost-world', title: "The misfits of Zwigoff: a visit to Ghost World's set", author: "SF Said", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/sight-and-sound/features/dancing-revolution-cinema-sarah-maldoror', title: "Dancing at the revolution: Sarah Maldoror", author: "Rachel Pronger", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/all-out-puppet-attack-monster-puppetry-ishiro-hondas-kaiju-classics', title: "All-out puppet attack! The monster puppetry in Ishiro Honda’s kaiju classics", author: "Steven Sloss", license: PersonalStudy, domain: anime, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/on-the-beach-stanley-kramer', title: "On the Beach: Hollywood’s star-powered World War III drama", author: "Chloe Walker", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/pictures-vivid-behind-scenes-shots-from-jazz-club-l-shaped-room', title: "In pictures: Vivid behind-the-scenes shots from the jazz club in The L-shaped Room", author: "Cathi Unsworth", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/where-begin-claude-chabrol', title: "Where to begin with Claude Chabrol", author: "Adam Scovell", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/finest-hours-danny-glover-malevolent-charmer-sleep-with-anger', title: "Finest hours: Danny Glover as the malevolent charmer in To Sleep with Anger", author: "Alex Ramon", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/search-dorset-locations-nuts-may', title: "In search of the Dorset locations of Nuts in May", author: "Adam Scovell", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/watch-play-rise-video-game-adaptation', title: "Watch to play: the rise of the video game adaptation", author: "Stuart Burnside", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/how-nuclear-attack-locations-from-peter-watkins-war-game-look-today', title: "How the nuclear attack locations from Peter Watkins’ The War Game look today", author: "Adam Scovell", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/20-years-children-men-how-london-locations-look-today', title: "20 years of Children of Men: how the London locations look today", author: "Adam Scovell", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}
+  - {url: 'https://www.bfi.org.uk/features/alfred-hitchcock-london-locations', title: "A tour of Alfred Hitchcock’s London: how the locations look today", author: "Adam Scovell", license: PersonalStudy, domain: cinematography, mode: http, theme: film_analysis, layers: [L3], case_budget: 1}

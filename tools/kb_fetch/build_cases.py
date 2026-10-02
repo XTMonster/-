@@ -217,6 +217,12 @@ def segments_of(text: str) -> List[str]:
 
     句窗在**整篇**的句子流上滑（不按行切）：Gutenberg 的英文扫描件按行断句，
     一行往往只有一句，按段落切会一个窗口都组不出来——实测这样会得到 0 条案例。
+
+    **2026-10-02 补**：窗口大小**自适应 3→2→1**。现代网页的句子长得多（BFI 的
+    评测页正文句 200–300 字，页头那块导航在切句器眼里是**一个 515 字的"句子"**），
+    固定 3 句窗会让**每一个窗**都超过 `MAX_SEGMENT_CHARS` —— 实测 6 篇 BFI 正文
+    5.5k–9.5k 字符，切出来 **0 段**（反向门 `tests/test_source_traces.py` 当场抓到）。
+    自适应之后短句来源照旧走 3 句窗（行为不变），长句来源退到 2 句 / 1 句。
     """
     out: List[str] = []
     #: 两步：① 方括号说明**整块**去掉（切句之前——否则它会被切成几段、只滤掉第一段）；
@@ -224,18 +230,24 @@ def segments_of(text: str) -> List[str]:
     plain = BRACKET_SPAN_RE.sub(" ", common.normalize_text(text))
     sentences = [s for s in common.split_sentences(plain)
                  if s.strip() and not is_artifact_sentence(s)]
-    for start in range(0, len(sentences), SENTENCES_PER_SEGMENT):
-        window = sentences[start:start + SENTENCES_PER_SEGMENT]
-        if len(window) < SENTENCES_PER_SEGMENT:
-            continue
-        segment = " ".join(window).strip()
-        length = common.visible_len(segment)
-        if not MIN_SEGMENT_CHARS <= length <= MAX_SEGMENT_CHARS:
-            continue
-        lowered = segment.lower()
-        if any(cue in lowered for cue in BOILERPLATE_CUES):
-            continue
-        out.append(segment)
+    index = 0
+    while index < len(sentences):
+        for size in (SENTENCES_PER_SEGMENT, SENTENCES_PER_SEGMENT - 1, 1):
+            window = sentences[index:index + size]
+            if len(window) < size:
+                continue
+            segment = " ".join(window).strip()
+            length = common.visible_len(segment)
+            if not MIN_SEGMENT_CHARS <= length <= MAX_SEGMENT_CHARS:
+                continue
+            lowered = segment.lower()
+            if any(cue in lowered for cue in BOILERPLATE_CUES):
+                continue
+            out.append(segment)
+            index += size
+            break
+        else:
+            index += 1
     return out
 
 
@@ -372,15 +384,152 @@ def prose_sequence_pattern_of(text: str) -> List[Tuple[str, List[str]]]:
 
 
 def pick_excerpt(segment: str) -> Optional[str]:
-    """取一段**可回指原文**的短引：≤2 句且 ≤120 字；取不到就整段作废。"""
+    """取一段**可回指原文**的短引：≤2 句且 ≤120 字；取不到就整段作废。
+
+    **2026-10-02 改：按内容打分选窗，不再取"每段开头那两句"**。旧口径在网页语料上
+    会稳定地取到**标题/导航碎片**——实测同一个 E1 同语言对照里返回的摘录是
+    `TV Writing and Development / We're in a golden age of TV writing…` 与
+    `MEDIUM CLOSE-UP SHOT DEFINITION / What is a medium close-up shot?`，
+    双模型面板给 1–2 分（等于"没有参考价值"）。这与 §24.2 修掉的"OCR 说明文字当
+    excerpt"是同一形状：**取段首**碰上样板文字就必错。
+
+    打分只看候选自身，确定性、可重放：
+
+    * 标题式碎片扣分（全大写、短且无句末标点、以问句"是什么"开头）；
+    * 40–120 字的成句加分（既要有内容，又要在引用预算内）；
+    * 出现**创作动词**（用/让/把/使/表现/构成/形成…，use/show/frame/cut/move/means…）加分。
+
+    并列时取**靠前**的那个（保持确定性）。约束一条没放松：仍然是
+    `quote_check` 通过 ＋ 逐字可回指原文。
+    """
     sentences = common.split_sentences(segment)
+    best: Optional[Tuple[int, str]] = None
     for size in (2, 1):
         for start in range(0, max(len(sentences) - size + 1, 1)):
             candidate = "".join(sentences[start:start + size]).strip()
             ok, _reason = common.quote_check(candidate)
-            if ok and common.quote_is_verbatim(candidate, segment):
-                return candidate
+            if not ok or not common.quote_is_verbatim(candidate, segment):
+                continue
+            #: **跳过标题式候选、继续往下找**：一段里常常是"小标题/引用碎片 ＋ 正文"，
+            #: 整段作废会把拒收率抬到 14%（实测），而正确做法是用同段的正文句。
+            #: 只有**整段候选都是**标题式碎片时才返回 None（"宁缺勿猜"那条仍然在）。
+            if heading_like(candidate):
+                continue
+            score = excerpt_score(candidate)
+            if best is None or score > best[0]:
+                best = (score, candidate)
+    if best is not None:
+        return best[1]
+    #: **兜底**：整段的句子都超过引用预算时（学术长句，实测 438–490 字的段、每句 >120 字），
+    #: 按**子句边界**裁一条**仍然逐字**的短引。协议 §2.3d 要的是"短引用（≤2 句 / ≤120 字）"，
+    #: 不是"必须是完整句"；这类长段是 `quote_gate` 拒收的大头（10.2% 里的大部分）。
+    #: 仍然不许是标题（`heading_like` 一律不返回）。
+    #: 依次试两条兜底，**取第一条真正可用的**（不是"第一条非空"）：
+    #: `_clip_quote` 可能在"P."这种断句碎片上就成功返回了，而它正是要丢的东西。
+    #: 再补一手：段首是"Figure 16: …"/"4. …"这种小标题时，先把首行剥掉再兜底——
+    #: 剥掉之后剩下的往往就是正文（这也是 `heading_like` 判"整段是标题"时的常见误伤）。
+    body = segment.strip()
+    first_line, _, rest = body.partition("\n")
+    candidates = [_clip_quote(body), _word_clip(body)]
+    if rest.strip():
+        candidates += [_clip_quote(rest.strip()), _word_clip(rest.strip())]
+    for fallback in candidates:
+        if fallback and len(fallback) >= FALLBACK_MIN_CHARS and not heading_like(fallback):
+            return fallback
     return None
+
+
+#: 创作动词：出现它们通常意味着这句话在讲"怎么拍/怎么做"，而不是标题或导航。
+#: 兜底短引的最小长度：太短的碎片（"P." / "175)."）不算摘录。
+FALLBACK_MIN_CHARS = 40
+
+
+def _word_clip(segment: str) -> Optional[str]:
+    """按**词边界**裁一条 ≤120 字、仍然是原文子串的短引（子句兜底失败时的最后一手）。"""
+    head = segment.strip()[:MAX_FALLBACK_CHARS]
+    cut = head.rfind(" ")
+    if cut <= 40:
+        return None
+    candidate = head[:cut].strip()
+    return candidate if common.quote_check(candidate)[0] else None
+
+
+#: 词边界兜底的最大宽度（协议 §2.3d 的引用预算是 120 字）。
+MAX_FALLBACK_CHARS = 120
+
+
+CRAFT_VERBS = (
+    "用", "让", "把", "使", "表现", "构成", "形成", "决定", "避免", "强调", "保持",
+    "use", "show", "frame", "cut", "move", "mean", "create", "decide", "avoid",
+    "emphasi", "keep", "reveal", "suggests", "gives",
+)
+#: 标题式碎片的形状：全大写行、以"是什么/什么是"开头的定义问句、以及纯标签行。
+HEADING_QUESTION = re.compile(r"^\s*(what is|what are|什么是|是什么)", re.I)
+#: **导航/页脚/引用块**的语汇。网页语料里这类段落很多（实测 `journal.animationstudies.org`
+#: 每页都带 "Skip to main content / Home / Articles / Issues / Submission" 与一整块
+#: "doi: … APA-Style Citation"）。它们**不是候选段落**——2026-10-02 之前它们会被
+#: `pick_excerpt` 变成**案例**（E1 对照里返回的就是这种样板文字），现在识别出来另计，
+#: 既不进案例也不进"拒收"（`rejects ≤ 5%` 那道门量的是**真有内容的段落**）。
+NAVIGATION_CUES = (
+    "skip to main content", "skip to content", "main menu", "search", "sign in",
+    "log in", "subscribe", "newsletter", "privacy policy", "cookie", "terms of use",
+    "share this", "follow us", "back to top", "all rights reserved", "doi:",
+    "apa-style", "citation", "downloaded from", "issn", "journal homepage",
+    "home", "articles", "issues", "submission", "about us", "contact",
+)
+
+
+def navigation_like(segment: str) -> bool:
+    """这一段是不是导航/页脚/引用块（**不是候选语料**）。
+
+    判据保守：只对**短段**判定（<200 字），长散文一律当候选——
+    否则会把真正的正文段落误判掉，那才是真的降级。
+    """
+    stripped = segment.strip()
+    lowered = stripped.lower()
+    #: **首行**里的导航语汇（"Skip to main content / Home / Articles …"这种整块页头）
+    #: 不论整段多长都算导航——实测长页头能到 377 字，按长度放过它就会把页头当案例。
+    first_line = stripped.split("\n", 1)[0].strip().lower()
+    if any(cue in first_line for cue in NAVIGATION_CUES):
+        return True
+    if len(stripped) >= 200:
+        return False
+    if any(cue in lowered for cue in NAVIGATION_CUES):
+        return True
+    sentences = [s.strip() for s in common.split_sentences(stripped) if s.strip()]
+    return bool(sentences) and all(heading_like(s) for s in sentences)
+
+
+def heading_like(candidate: str) -> bool:
+    """这段文字像不像标题/导航/定义问句（**不是**正文里的分析句）。"""
+    letters = [ch for ch in candidate if ch.isalpha()]
+    if letters and sum(1 for ch in letters if ch.isupper()) / len(letters) >= 0.7:
+        return True
+    stripped = candidate.strip()
+    #: **首行**是关键：网页里"小标题\n\n正文"会被 `split_sentences` 并进同一个候选，
+    #: 整段的大小写比例会被后面的正文拉低——所以逐行判，只看第一行。
+    first_line = stripped.split("\n", 1)[0].strip()
+    if first_line and len(first_line) < 60 and not first_line.endswith(
+            ("。", "！", "？", ".", "!", "?", "”", '"')):
+        return True
+    if len(stripped) < 40 and not stripped.endswith(("。", "！", "？", ".", "!", "?")):
+        return True
+    if HEADING_QUESTION.match(stripped) or HEADING_QUESTION.match(first_line):
+        return True
+    return False
+
+
+def excerpt_score(candidate: str) -> int:
+    """候选摘录的分数（越高越像"讲拍法的正文句"）。"""
+    score = min(len(candidate), 120)
+    if 40 <= len(candidate) <= 120:
+        score += 40
+    if heading_like(candidate):
+        score -= 80
+    lowered = candidate.lower()
+    if any(verb in lowered for verb in CRAFT_VERBS):
+        score += 25
+    return score
 
 
 def topic_of(segment: str) -> str:
@@ -415,6 +564,8 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
     per_source_docs: Dict[str, int] = {}
     raw_segments = 0
     segments_total = 0
+    #: 被识别为导航/页脚/引用块而**未进入候选**的段落（见 `navigation_like`）。
+    skipped_navigation: List[Dict] = []
     #: 语料里**显式枚举**的条数（箭头行 ＋ 散文顺序枚举），**在配额/去重之前**数。
     #: 它是门限的来源：产出的 `sequence_pattern` 少于它，就说明有真的枚举被漏掉
     #: （配额截断、切分退化、或近重复误杀），而不是"语料不够多"。
@@ -482,6 +633,11 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
             head = ranked[:max(per_source * stride, per_source)]
             items = head[::stride] if stride > 1 else head
         for index, segment in items:
+            #: 导航/页脚/引用块不进候选，也**不进拒收**（它本来就不是语料段落）。
+            #: 逐条另计，报告里看得到 `skipped_navigation` 有多少。
+            if navigation_like(segment):
+                skipped_navigation.append({"source": slug, "segment": index})
+                continue
             excerpt = pick_excerpt(segment)
             if excerpt is None:
                 raw_segments += 1

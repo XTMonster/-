@@ -234,3 +234,38 @@ common.wikimedia.org                    gaierror: [Errno 11001] getaddrinfo fail
 
 证据：`work/zz_zh_candidates.txt`（候选清单与判据）、`work/zz_zh_hunt.json`（逐条实测）、
 `work/raw/`（同一批请求的原文缓存）。
+
+## 八、2026-10-02：BFI / Sight & Sound 的**逐片分析**（`PersonalStudy`）
+
+**为什么加**：E1 的落点已经量过两轮——L3 里**含中文的 0 篇**、中文查询逐镜命中 0，
+而**同语言**（英文查询打英文语料）也只有 1/18。§2.3b 把 L3 定义成"拉片/复盘/影评"，
+但库里真正的"对具体影片的镜头/场面分析"只有 StudioBinder 的 6 篇。BFI 的
+Sight & Sound 是这一档最对口的英文来源。
+
+**抓取纪律（逐条可复算）**：
+
+1. `www.bfi.org.uk/robots.txt` = **404** ⇒ 按 RFC 9309「没有规则 ⇒ 放行」
+   （`fetch.robots_allows` 返回 True）；
+2. 枚举走 `/site-map`（272 条同域链接）与 `/articles/type/{reviews,features}`（各 30 条）；
+   **不用 sitemap.xml**——它是自引用死循环（只有 page=1/page=2 且互相指）；
+3. 逐条过仓库自己的抓取门并抽正文：**35/35 抓通**，正文 5.2k–20.9k 字符；
+4. 剔除讣告/影展新闻/订阅页，只留**逐片**的评论与制作分析；标题与署名从页面自带的
+   元数据块读（`"author": "…"`），**不从 slug 猜**。
+
+**⚠️ 许可：没有开放许可，而且 ToS 有一句明文保留**。`/terms-use` 2.2 原文：
+
+> The Site is for your personal and non-commercial use. You may not modify, copy,
+> distribute, transmit, display, revise, perform, reproduce, publish, license,
+> deep-link, create derivative works from, transfer, or sell any information or
+> content obtained from the Site unless expressly authorised by us.
+
+按用户 2026-10-01 的**长期指令**「我是个人学习使用的，不用担心版权问题」记
+`license: PersonalStudy`（白名单内，与 `skwigly.co.uk`、`framescinemajournal.com` 同档），
+入库的是"短引用（≤2 句）＋ 出处"，**不冒充开放许可**。**是否长期保留应由用户复核**。
+它与 `blog.sakugabooru.com`（因 **robots.txt** 里的权利保留声明被拒收）的区别是：
+那一条是 robots 层的信号，这里 robots 放行、保留写在人类可读的 ToS 里。
+
+**实测后果**：来源 273 → **321**（L3 层 167 → 202）；案例 810 篇里 BFI **35 篇**；
+`chunks` 仍 **709**（`layers: [L3]` 不进 `chunk.py` ⇒ 索引与 oracle 不受影响）。
+**同语言对照没有变好**（0–1 / 18，样本 18 条，属噪声级）——见
+`ACCEPTANCE_STATUS.md` §三十.4：E1 的瓶颈不止"有没有逐片分析"。

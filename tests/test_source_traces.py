@@ -31,13 +31,13 @@ if str(ROOT) not in sys.path:
 from tools.kb_fetch import common  # noqa: E402
 
 #: 允许"在清单里但没有产物"的来源，逐条具名。
-NAMED_EXCEPTIONS = {
-    "https://www.skwigly.co.uk/childrens-tv-show-animation-pipeline-cinema-4d/":
-        "chunk 落选：这一页与 `chunk.py` 的 anime 域词表重叠太低，"
-        "`select_relevant` 一段都没留下（实测 2026-10-02：无卡、无案例）。"
-        "它留在清单里是因为清单**人工维护**、删一条要另跑一次语料重建；"
-        "这里把它具名入账，而不是让这条门对整类情况视而不见。",
-}
+#:
+#: **当前为空**——2026-10-02 修 `segments_of` 的自适应句窗（3→2→1 句）之后，此前
+#: 唯一那条例外（`skwigly.co.uk/childrens-tv-show-animation-pipeline-cinema-4d/`，
+#: 当时"chunk 落选、无卡无案例"）也产出了案例，于是它**不再是例外**。这条表的
+#: 防腐断言（下面 `stale` 那一行）当场要求删掉它——这正是那张表该有的行为：
+#: **例外是暂时的，必须随修法一起消失**。
+NAMED_EXCEPTIONS: dict = {}
 
 
 def normalise(url: str) -> str:
