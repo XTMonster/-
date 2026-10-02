@@ -1844,3 +1844,22 @@ E2 仍 `not_measured`（分子要的是"知识引入的运镜"，而真实运行
   明确写过"**数据不够就主动采集填充**"，所以"加来源"本身是用户授权过的动作；
   这次的问题不是"加了源"，而是**加了一半**——没有走完 `--replace-cards → 重标 oracle →
   门复跑` 那一步，且用的是一把**要用户裁的许可口径**（`PersonalStudy` on 商业教学站）。
+
+### 27.7 中文来源的正面盘点：**今天收不到，根因是网络路径，不是许可**
+
+E1 的落点是"补中文的逐镜分析"，所以本轮把中文候选**逐条**过了仓库自己的抓取门
+（UA 与生产一致、robots 按 RFC 9309、不伪造浏览器、不关 TLS 校验）。
+完整表与复测命令见 `docs/knowledge/MODERN_SOURCES.md` §六，结论：
+
+* **维基家族（中文）整族不可达**：`zh.wikipedia.org` / `en.wikipedia.org` 解析到
+  **31.13.x.x（Facebook 网段）**、`zh.wikisource.org` / `zh.wikibooks.org`
+  TLS 握手超时、`common.wikimedia.org` 解析失败 ⇒ **DNS 投毒 ＋ TLS 阻断**。
+  这正是 §五 里 `en.wikipedia.org` 那条"本机超时"的真正原因（此前只记了现象）。
+  ——它是**最大的开放许可中文语料族**（CC-BY-SA / PD），拒收的理由是网络而不是规则。
+* `zhuanlan.zhihu.com` **robots 明文拒绝**；`movie.douban.com` 与
+  `www.bilibili.com/read/…` 到达的**是反爬壳页**（缓存原文标题只有"豆瓣"、正文无文章体），
+  不是可入库正文；`www.107cine.com`、`www.animation-baike.com` **不可达**。
+* 因此：**白名单内的中文 L3 来源，当前数量 = 0**。三条出路（给网络路径／授权
+  `PersonalStudy` 口径／承认该项目在中文+开放许可组合下无解）都需要用户拍板，
+  逐条写在 `MODERN_SOURCES.md` §六末尾。
+* 证据：`work/zz_zh_candidates.txt`、`work/zz_zh_hunt.json`、`work/raw/`。

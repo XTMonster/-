@@ -119,3 +119,51 @@ RAG 硬门 Q0–Q7 ＋ E3 全 pass、`pytest 1607 passed`、31/31 探针、
 `www.awn.com` / `nofilmschool.com` / `www.bfi.org.uk`（403 或 robots 404）。
 `blog.sakugabooru.com` 的 robots.txt 写了 EU DSM 第 4 条的**权利保留**声明，
 按"宁缺勿滥"**不收录**。
+
+## 六、2026-10-02：**中文**来源的正面盘点（结论是"今天收不到"，不是"没去找"）
+
+背景：E1（经验引用相关性 ≥70%）的落点已经被量出来了——L3 的 810 篇**全英文**、
+产品查询**全中文**、6/6 逐镜查询命中 **0** 条，而把查询改写成英文再打英文语料也只有
+**1/18** 条 ≥4 分（`docs/evidence/20261002-180124/e1_lane_diagnosis.json`）。
+所以"补中文的逐镜分析（拉片/影评）"是 E1 唯一有希望的路。本 lane 的正面任务就是这个，
+下面是**实测**（每条都走仓库自己的 `tools/kb_fetch/fetch.py`，UA 与生产一致，
+robots 按 RFC 9309，不伪造浏览器、不关 TLS 校验）：
+
+| 候选 | 许可 | 实测结果 |
+|---|---|---|
+| `zh.wikipedia.org`（景别/运镜/场面调度/蒙太奇/分镜头/动画 6 条） | CC-BY-SA | **整站不可达**：`robots_unavailable:URLError` |
+| `zh.wikisource.org`（民国影戏学） | PublicDomain | **不可达**：`URLError: handshake operation timed out` |
+| `zh.wikibooks.org`（电影制作） | CC-BY-SA | **不可达**：同上 |
+| `zhuanlan.zhihu.com` | Unknown（全版权） | **robots 明文拒绝**（`robots_disallow:/`）→ 按纪律拒收 |
+| `movie.douban.com/review/…` | AllRightsReserved | 页面到达，但**返回的是反爬壳页**：缓存原文标题只有"豆瓣"、正文 2950 字符里没有文章体——**不是可入库的正文** |
+| `www.bilibili.com/read/cv…` | AllRightsReserved | 同上：3318 字符是 SPA 外壳，不是文章 |
+| `www.107cine.com`（影视工业网） | AllRightsReserved | **不可达**（`URLError`） |
+| `www.animation-baike.com`（动画学术趴） | AllRightsReserved | **不可达**（`URLError`） |
+
+**根因不是许可，是网络路径。** 对维基家族的独立复测（`socket.getaddrinfo` ＋
+`https://<host>/robots.txt`，同一 UA）：
+
+```
+zh.wikipedia.org     DNS 31.13.94.49     URLError: <urlopen error timed out>
+en.wikipedia.org     DNS 31.13.112.9     URLError: <urlopen error timed out>
+zh.wikisource.org    DNS 103.102.166.224 URLError: _ssl.c:990: The handshake operation timed out
+zh.wikibooks.org     DNS 103.102.166.224 URLError: _ssl.c:990: The handshake operation timed out
+common.wikimedia.org                    gaierror: [Errno 11001] getaddrinfo failed
+```
+
+`zh/en.wikipedia.org` 解析到 **31.13.x.x（Facebook 网段）**、其余主机 TLS 握手超时、
+`common.wikimedia.org` 直接解析失败——这是**DNS 投毒 + TLS 阻断**的形态，
+不是 robots 或 UA 的问题（这也是 §五 里 `en.wikipedia.org` 那条"本机超时"的真正原因）。
+
+**结论（三选一，都需要用户拍板）**：
+
+1. **给出网络路径**（代理/镜像/离线快照）：维基家族的 CC-BY-SA/PublicDomain 中文内容
+   立刻可收，且**不需要任何许可妥协**——这是唯一"零许可风险"的选择；
+2. **授权 `PersonalStudy` 口径用于中文影评站**：豆瓣/知乎/B站等的许可是全版权保留，
+   且其中知乎 robots 明文拒绝、豆瓣/B站还要先解决反爬（同一次实测里它们只返回壳页）——
+   这一步至少在口径之外还要额外解技术问题；
+3. **不在中文来源上投入**：那就必须承认 E1 在"中文查询 + 开放许可语料"这个组合下
+   **无解**，把 E1 长期留在 `not_measured`（`docs/knowledge/ACCEPTANCE_STATUS.md` §27.1）。
+
+证据：`work/zz_zh_candidates.txt`（候选清单与判据）、`work/zz_zh_hunt.json`（逐条实测）、
+`work/raw/`（同一批请求的原文缓存）。
