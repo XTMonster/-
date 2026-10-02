@@ -131,9 +131,15 @@ def test_the_shipped_scope_artifact_matches_the_index() -> None:
     covered = {json.loads(line).get("from_card") for line in
                (ROOT / "fixtures" / "knowledge_holdout.jsonl")
                .read_text(encoding="utf-8").splitlines() if line.strip()}
-    covered_but_excluded = sorted(ident for ident in expected if ident in covered)
-    assert covered_but_excluded, (
-        "被剔掉的卡全都是没有条目的——那对照组就没法证明判据会开火")
+    #: 这里原先断言"被剔的卡里至少有一张**已有条目**"——那是 oracle 还没跟索引对齐时的
+    #: 现象（判据只看索引，不看 oracle，所以两者一度错位）。oracle 重标到同一代索引之后
+    #: 两者对齐了，这条断言自然为空。**判据与 oracle 无关**这个性质由
+    #: `test_exclusion_follows_the_index_and_not_the_oracle` 直接钉住（同一份索引 +
+    #: 空/满 covered 给出同一张名单），所以这里改钉**对齐本身**：
+    assert not [ident for ident in expected if ident in covered], (
+        "oracle 与索引不同代：被剔的卡不该还有条目（重跑 build_cases/holdout_pool 之后"
+        "`edge_backed_without_entry` 才是真缺口）")
+    assert scope["edge_backed_without_entry_count"] >= 0
     #: `edge_backed_without_entry` 是门⑥ 的**真缺口**（可断言卡里还缺条目的）。
     #: 它必须与直接算出来的一致；空集表示这一轮覆盖率真的达标了。
     assert scope["edge_backed_without_entry"] == sorted(

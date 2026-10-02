@@ -130,7 +130,18 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: 并把"覆盖率"与"精度"一起当验收指标看。事后那道**精确度门**
 #: （`unsupported_prohibition_hosts`）已经能把编造的宿主边挡在索引外——那是本仓库
 #: 现在采用的兜底。四个变体的实测账在 `docs/knowledge/ACCEPTANCE_STATUS.md` §二十三。
-PROMPT_VERSION = "extract/v12"
+#: v13：**只加一句，而且只重抽 SHOT_PATTERN 的来源卡**（`--replace-cards`）。
+#: 规则 1 的 `SHOT_PATTERN` 行补上"可选 `(allow,movement)`"——schema 里
+#: `OPTIONAL_MEMBERS["SHOT_PATTERN"]` 一直有这个槽位，而入库索引里 **54 条
+#: SHOT_PATTERN 边一条都没写它**（实测 2026-10-02）。代价是 Q5 的"计划形状"条目
+#: 只剩两键（`景别×镜头`），106/2981 条，且其来源卡里只有 23 张讲运镜
+#: ——于是 §4.1b 第一步的"夹具侧 ≥30 条带 `expect_movements`"在这批语料上够不到。
+#:
+#: 与 §二十三 那四个变体的区别：**这次不动规则 1b／4b／6b**，而且只重抽 162 张
+#: SHOT_PATTERN 来源卡（`--replace-cards` 会丢掉它们的旧原子边、其余原子的字节不变），
+#: 所以"改提示 ⇒ 跨卡归并变少 ⇒ 覆盖率掉"那条路径**在这 162 张之外不可能发生**；
+#: 这 162 张自己的覆盖率由重抽前后对拍来盯。
+PROMPT_VERSION = "extract/v13"
 #: §2.3 的缓存键写的是"六元指纹 ＋ **校验门代码版本**"，§6「重抽取成本」也点名建议把
 #: 它纳入——因为 `--rematch` 这条路径**只重跑第 2 段、不重抽**（第 2 段是纯函数）。
 #: 门一变、索引就变，指纹不跟着变的话，同一枚指纹会指向两份不同的索引。
@@ -293,7 +304,9 @@ SYSTEM_PROMPT = """你是超图索引的抽取器。给定若干条知识卡与�
 1. `type` 只能取下面 **13 类**之一，必填成员必须写全（v1.5 扩充：把电影制作里除灯光
    以外的强耦合元素都建模进来——动作/表演/意图/打击感/调度/声画/转场）：
    EMOTION_PACK: (allow,emotion) ＋ (qualifier,intensity)；
-   SHOT_PATTERN: (allow,shot_size) ＋ (allow,lens) ＋ (qualifier,headroom_policy)；
+   SHOT_PATTERN: (allow,shot_size) ＋ (allow,lens) ＋ (qualifier,headroom_policy)
+     ＋ **可选 `(allow,movement)`**——卡里讲了"这一镜怎么动"就写上，
+     它是 `景别×镜头×运镜` 三键查询的来源（缺了它，这一类只能被两键的查询命中）；
    AXIS_RULE: (qualifier,pair) ＋ (qualifier,axis_side) ＋ **(qualifier,axis_topic)**
      —— `axis_topic` 必须写（`轴线:<中性机位|关系轴|视线轴|越轴|运动轴>`），
      否则这条边在检索里挂不上任何种子（实测：不写它时 AXIS_RULE 整类召不回）；

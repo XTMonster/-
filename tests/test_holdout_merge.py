@@ -12,6 +12,38 @@ import pathlib
 from tools import holdout_merge
 
 
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+
+def _a_real_shot_pattern() -> "tuple[str, str, dict]":
+    """从**入库索引**里挑一条 SHOT_PATTERN 边，生成 `(must 规格, 完整 q)`。
+
+    这样用例判的是"q 不够全就召不回自己"，而不是"索引里恰好有某条写死的边"。
+    """
+    from tools.check_holdout import QUERY_KEY_OF_KIND
+
+    for line in (ROOT / "knowledge" / "hypergraph.edges.jsonl").read_text(
+            encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        edge = json.loads(line)
+        if edge.get("type") != "SHOT_PATTERN":
+            continue
+        slots, query_pairs, vocab = [], [], {}
+        for role, kind, node_id in edge["members"]:
+            value = str(node_id).split(":", 1)[-1]
+            slots.append(("forbid_" if role == "forbid" else "") + f"{kind}={value}")
+            vocab.setdefault(kind, [])
+            if value not in vocab[kind]:
+                vocab[kind].append(value)
+            key = QUERY_KEY_OF_KIND.get(kind)
+            if key and role != "forbid":
+                query_pairs.append(f"{key}={value}")
+        if len(query_pairs) >= 2:
+            return "SHOT_PATTERN:" + ",".join(slots), "；".join(query_pairs), vocab
+    raise AssertionError("入库索引里没有一条带 ≥2 个可查询槽位的 SHOT_PATTERN 边")
+
+
 def _entry(card: str, q: str, must: list, ident: str = "hq_0001") -> dict:
     return {
         "id": ident, "from_card": card, "q": q,
@@ -190,19 +222,32 @@ def test_merge_drops_a_query_that_cannot_reach_its_own_must_edge(tmp_path):
 
     一条 `must` 里凡是有查询键的槽位，`q` 里就必须逐字出现，否则这条查询
     永远召不回它自己的期望边（Q1/Q2 数学不可达）。
+
+    **判据的载体从**入库索引**里取**（2026-10-02 修）：原来把
+    `SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board` 写死，而合并要拿
+    **当前索引**判"这条 must 解析得到吗"——索引一换代（v13 给 SHOT_PATTERN 补了
+    可选 `movement` 槽位与新的成员组合），写死的那条就解析不到，于是"可达的那条"
+    也变成 `unresolvable`，`valid` 从 1 掉到 0，用例红在**与判据无关的**索引换代上。
+    现在从入库索引里挑一条真实的 SHOT_PATTERN 边生成规格，用例与索引解耦。
     """
-    reachable = _entry("gen_cine_0001", "景别=MS；镜头=50mm",
-                       ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"])
-    unreachable = _entry("gen_cine_0002", "景别=MS",
-                         ["SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=board"])
+    spec, full_q, vocab = _a_real_shot_pattern()
+    #: 可达的那条：`q` 写全全部有查询键的槽位。
+    reachable = _entry("gen_cine_0001", full_q, [spec])
+    #: 不可达的那条：只留第一个键（少写的就是"召不回自己"的原因）。
+    unreachable = _entry("gen_cine_0002", full_q.split("；")[0], [spec])
     shard = _write(tmp_path / "partial0.jsonl", [reachable, unreachable])
 
+    #: 词表也**从那条边自己派生**：合并会拿词表逐值校验，写死的小词表
+    #: 与真实取值对不上（例如 `lens=85mm` 不在 `{"lens": ["50mm"]}` 里），
+    #: 于是两条都会被判 `unknown_values` —— 那同样是"红在与判据无关的地方"。
     report = holdout_merge.run([str(shard)], tmp_path / "holdout.jsonl",
                                cards=["gen_cine_0001", "gen_cine_0002"],
-                               vocab=VOCAB)
+                               vocab=vocab)
 
     assert report["valid"] == 1 and report["unreachable"] == 1
-    assert "50mm" in report["rejected_examples"][0]["reason"]
+    #: 拒收理由要点名**被漏掉的那个取值**（原来写死 `"50mm"`，那只是旧夹具的取值）。
+    omitted_value = full_q.split("；")[1].split("=", 1)[1]
+    assert omitted_value in report["rejected_examples"][0]["reason"]
     rows = [json.loads(line) for line in
             (tmp_path / "holdout.jsonl").read_text(encoding="utf-8").splitlines() if line]
     assert [row["id"] for row in rows] == ["hq_0001"]
