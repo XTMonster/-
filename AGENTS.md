@@ -289,7 +289,34 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 逐项对账与必须由用户拍板的四件事见 `docs/knowledge/ACCEPTANCE_STATUS.md`，
 裁决理由见 `docs/adr/0013-theory-must-be-authored-by-others.md`。
 
-**以下为重建前的历史数字（保留以供对照）**：**P14 未完成（不得当作通过）**（2026-10-01 02:20 复跑的准确数字，证据 `docs/evidence/20261001-0220/`；
+### P14 现状（2026-10-02 —— **下面那块数字自此作废**）
+
+held-out 覆盖门 ①–⑩ **全 pass**（⑪ 是**诊断**，不参与判定），Q/E 硬门 **11 个 id 全 pass**
+（Q5／E1／E2 记 `not_measured`，永不判过）；`python -m pytest` = **1607 passed / 0 failed**；
+`powershell -File tools\run_tests.ps1` = **31/31 探针 ＋ `All checks passed.`**
+（证据 `docs/evidence/20261002-122249/`，独立复跑 `docs/evidence/20261002-122254/`）。
+逐项对账以 `docs/knowledge/ACCEPTANCE_STATUS.md` §二十／§二十一 为准。
+
+**仍未完成、且都不是"实现缺陷"的四项**（`ACCEPTANCE_STATUS.md` §20.8）：
+
+1. **抽取提示与 schema 漂移**：规则 4b 仍写着"挂到 `EMOTION_PACK` 上"（与规则 4 的 v1.6
+   措辞自相矛盾）、规则 1／1b 仍写"13 类"、规则 6b 的逐类自问清单只列 **13** 类
+   （漏 `DIALOGUE_PACK`／`MUSIC_PACK`／`PROP_PACK`）。修它必须**换 `PROMPT_VERSION`
+   ＋ 整库重抽 ＋ 重标 oracle** 同批落地——只改提示不重抽就是"拿旧原子边冒充新口径"。
+   当前**卡在标注通道**：本机 `GLM_API_KEY` 未设（`work/annotator_channels.json` 实测
+   HTTP 429 余额不足），本地只有 `qwen3-vl:30b`（已知会输出纯噪声）。**离线兜底已在位**：
+   `unsupported_prohibition_hosts` 那道精确度门会在归并期拒收这类没有依据的禁令边。
+2. **schema 没有能诚实承载"运镜政策"的边型**（`gen_cine_0247` 的禁半因此进不了索引）；
+   加边型要跟着一次重抽才有意义（门④ 要求每类 ≥30 对 ≥10 卡）。
+3. **Q5 的基准串口径未拍板**：计划期 `retrieval_call.query` 与 build 后 `ShotContract`
+   在同一次真实运行里给出 **0 与 1** 两个分母（§十九.5）；`SHOT_PATTERN.movement` 在
+   schema 里有、索引里零条（同第 1 条，要重抽）。
+4. **用户手工项**：`%USERPROFILE%\.ollama\models\blobs` 里的旧修订
+   （`sha256-0373edb0…`，18.25 GiB）与中断下载残件——**Codex 工具策略拒绝工作区外的
+   删除**，只能用户手工执行（§9.6 给了命令）。注意该 blob **仍被 `qwen3-vl:30b` 的 tag
+   引用**，删它等于卸载这个模型（用户已据此授权）。
+
+**以下为重建前的历史数字（保留以供对照；上面的 §"P14 现状"已把它作废）**：**P14 未完成（不得当作通过）**（2026-10-01 02:20 复跑的准确数字，证据 `docs/evidence/20261001-0220/`；
 **索引与 oracle 仍在重建中，数字会动 —— 复跑上面那两条命令，以最新一次输出为准**）：
 `fixtures/knowledge_holdout.jsonl` 已落地 **4539 条**（下界 1200），但**五道门是红的**：
 
