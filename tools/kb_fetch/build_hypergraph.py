@@ -7,8 +7,9 @@
 校验：`block_director/knowledge/hypergraph.build_index` 的 9 条门。不合格的边进
 `knowledge/hypergraph.rejects.jsonl`；构建门是 `rejects ≤ 5%` 且没有 chunk 被跳过。
 
-断点续跑：六元指纹（语料 sha256 ＋ 抽取器 model id＋版本 ＋ prompt 版本 ＋ chunk 策略 ＋
-解码参数 ＋ schema 版本）加**校验门代码版本**，写进 `knowledge/hypergraph.manifest.json`。
+断点续跑：缓存指纹（语料 sha256 ＋ 抽取器 model id＋版本 ＋ prompt 版本 ＋ chunk 策略 ＋
+解码参数 ＋ schema 版本 ＋ 校验门代码版本 ＋ **词表/别名表指纹**），写进
+`knowledge/hypergraph.manifest.json`。
 
 **指纹必须是"记录下来的分量的纯函数"**（§2.3 的缓存键 / §6 的"重抽取成本"）：
 `fingerprint_of(manifest["cache_key"]) == manifest["fingerprint"]`，且任一个分量变了
@@ -20,6 +21,12 @@
 成本」那条缓解措施（"另建议把校验门代码版本也纳入——门改了只需重跑门，不必重抽"）。
 `--rematch` 就是"只重跑第 2 段"，所以第 2 段的判据一变，指纹**必须**跟着变：否则同一枚
 指纹会同时指向"过滤之前"和"过滤之后"两份不同的索引，而 manifest 上看不出来。
+
+第八个分量（`vocabulary_fingerprint`）收的是 §0.1b 缓存指纹行的**词表/别名表**：
+前七格里没有任何一格会随别名表变化，而别名表是**落地判据的输入**（实测：给 `EMOTIONS`
+补一个 `安静`，`cine_move_handheld` 那条正确的禁令边就不再被判成"宿主是编的"，索引
+540 → 539 条边）。生产者是 `vocabulary.lexicon_fingerprint()`：本模块的全大写常量
+**机械发现** ＋ 索引侧的 `hg.VALUE_ALIASES`，不手抄清单（手抄的清单会漂移）。
 """
 
 from __future__ import annotations
@@ -34,12 +41,12 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Optional, Sequence, Tuple
 
 try:
-    from . import common, llm
+    from . import common, llm, vocabulary
 except ImportError:  # pragma: no cover
     import sys
 
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
-    from tools.kb_fetch import common, llm  # type: ignore
+    from tools.kb_fetch import common, llm, vocabulary  # type: ignore
 
 from block_director.knowledge import grounding
 from block_director.knowledge import hypergraph as hg
@@ -117,10 +124,14 @@ MAX_EDGES_PER_CARD = 8
 DECODE = "temperature=0;seed=0;ctx=8192"
 
 #: 指纹的分量名（顺序即 `cache_key` 的键序）。前六个是 §2.3 的"六元"，
-#: 第七个是同一行里写的"＋ 校验门代码版本"。
+#: 第七个是同一行里写的"＋ 校验门代码版本"，第八个是**词表/别名表**本身
+#: （§0.1b 的缓存指纹行；生产者 `vocabulary.lexicon_fingerprint()`）。
+#: 第八个为什么必须存在：别名表是**落地判据的输入**，改它就会改索引，而改的人
+#: 不会想起去换版本号——实测（`ACCEPTANCE_STATUS.md` §20.4）给 `EMOTIONS` 补一个
+#: 别名就让索引从 540 变 539 条边，前七个分量**一个都不动**。
 CACHE_KEY_FIELDS = ("corpus_sha256", "model", "prompt_version",
                     "chunker_version", "decode", "schema_version",
-                    "validation_rules_version")
+                    "validation_rules_version", "vocabulary_fingerprint")
 
 
 def corpus_digest(cards: Sequence[Dict]) -> str:
@@ -148,7 +159,8 @@ def fingerprint_components(cards: Sequence[Dict], client, *,
                            validation_rules_version: str = VALIDATION_RULES_VERSION,
                            decode: str = DECODE,
                            chunker_version: str = "",
-                           schema_version: str = "") -> Dict[str, str]:
+                           schema_version: str = "",
+                           vocabulary_fingerprint: str = "") -> Dict[str, str]:
     """把指纹的分量算出来（`cache_key` 的**唯一**生产者）。"""
     return {
         "corpus_sha256": corpus_digest(cards),
@@ -158,18 +170,20 @@ def fingerprint_components(cards: Sequence[Dict], client, *,
         "decode": str(decode),
         "schema_version": str(schema_version or hg.SCHEMA_VERSION),
         "validation_rules_version": str(validation_rules_version),
+        "vocabulary_fingerprint": str(vocabulary_fingerprint
+                                      or vocabulary.lexicon_fingerprint()),
     }
 
 
 def fingerprint_of(components: Dict) -> str:
-    """六元指纹：对**恰好这六个**分量做规范化 JSON 哈希。
+    """缓存指纹：对**恰好 `CACHE_KEY_FIELDS` 这些**分量做规范化 JSON 哈希。
 
     键集不对就报错（不是忽略多余键）：这是"加了新分量却没进哈希"的机械防线。
     """
     keys = set(components)
     expected = set(CACHE_KEY_FIELDS)
     if keys != expected:
-        raise ValueError(f"六元指纹的分量不匹配：多 {sorted(keys - expected)} / "
+        raise ValueError(f"缓存指纹的分量不匹配：多 {sorted(keys - expected)} / "
                          f"少 {sorted(expected - keys)}")
     payload = json.dumps({key: str(components[key]) for key in CACHE_KEY_FIELDS},
                          ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -184,6 +198,10 @@ def rekey_manifest(path: pathlib.Path | None = None,
     之后可以就地重算：`corpus_sha256` 用当前卡片重算，其余的量从 manifest 自己读。
     旧的六元 manifest 没有 `validation_rules_version`，那时**读默认值**——这正是
     "补上第七个分量"这条升级要求的动作，不是把缺失当成空串。
+
+    第八个分量（`vocabulary_fingerprint`）与其余七格**反着来**：它**从代码现算**
+    而不是从 manifest 读回来。理由见 `fingerprint_components()` 里的注释与本模块
+    docstring——它的用途正是"别名表被改过就当场露馅"，读旧值等于把洞留在原地。
     """
     target = pathlib.Path(path or MANIFEST)
     manifest = json.loads(target.read_text(encoding="utf-8"))
@@ -197,6 +215,10 @@ def rekey_manifest(path: pathlib.Path | None = None,
         "schema_version": str(manifest.get("schema_version", hg.SCHEMA_VERSION)),
         "validation_rules_version": str(manifest.get("validation_rules_version",
                                                      VALIDATION_RULES_VERSION)),
+        #: 这一格与其余七格**反着来**：它不从 manifest 读回来，而是**从代码现算**。
+        #: 因为它的用途正是"别名表被改过就露馅"——读旧值等于把洞留在原地。
+        #: 代价是 `rekey_manifest()` 不再纯粹是"记录值的纯函数"，这一条写在这里。
+        "vocabulary_fingerprint": vocabulary.lexicon_fingerprint(),
     }
     rekeyed = {"fingerprint": fingerprint_of(components), "cache_key": components}
     rekeyed.update({key: value for key, value in manifest.items()
@@ -1429,7 +1451,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     if args.rekey_manifest:
-        # 指纹是"记录下来的六个分量"的纯函数：口径升级后就地重算，不重抽语料。
+        # 七个分量是"记录下来的设置"的纯函数，第八个（词表指纹）**从代码现算**：
+        # 口径升级（或别名表改动）后就地重算，不重抽语料。
         print(json.dumps(rekey_manifest(), ensure_ascii=False, indent=2))
         return 0
 

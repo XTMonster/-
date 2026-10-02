@@ -328,6 +328,92 @@ def vocab_fingerprint(payload: Dict[str, List[str]]) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
 
 
+#: 词表指纹里**额外**并入的索引侧表（`hypergraph.VALUE_ALIASES` 是索引侧唯一那份
+#: 别名表：`static` → `固定`、`甩镜` → `whip_pan`）。
+LEXICON_EXTRA_TABLES: Tuple[str, ...] = ("hg_value_aliases",)
+#: 名字以这个前缀开头的模块常量不参与指纹（本机制自身的常量，自指没有意义）。
+LEXICON_NAME_PREFIX = "LEXICON_"
+
+#: "全大写名字"＝词表常量。**不手抄清单**：本仓库栽过的跟头正是"各抄一份
+#: 6 类型 / 16 kind"导致的漂移（v1.5 扩类），所以这里机械发现，再用用例把
+#: "哪些名字必须被发现 / 哪些名字必须不被发现"两边都钉死。
+_LEXICON_NAME_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
+_LEXICON_TABLE_TYPES = (str, int, float, tuple, list, dict, set, frozenset)
+
+
+def _canonical_table(value):
+    """把表规范化成**可比对**的形状：字典按键排序，集合按元素排序，序列保序。
+
+    序列**保序**是刻意的：顺序在这几张表里可能承载语义（例如 `EMOTIONS` 的
+    分组顺序、`MOVEMENT_ZH` 的书写顺序），排序会掩盖一次真实改动。宁可多算
+    一次"该重抽了"，也不接受"改了表却复用旧索引"。
+    """
+    if isinstance(value, dict):
+        return {str(key): _canonical_table(item)
+                for key, item in sorted(value.items(), key=lambda kv: str(kv[0]))}
+    if isinstance(value, (set, frozenset)):
+        return [_canonical_table(item)
+                for item in sorted(value, key=lambda item: json.dumps(
+                    item, ensure_ascii=False, sort_keys=True, default=str))]
+    if isinstance(value, (tuple, list)):
+        return [_canonical_table(item) for item in value]
+    return value if isinstance(value, (int, float)) else str(value)
+
+
+def lexicon_tables() -> Dict[str, object]:
+    """**词表/别名表本身**（与卡片无关）：本模块的全大写常量 ＋ 索引侧别名表。
+
+    覆盖范围**故意取宽**："全大写名字"顺带会收进 `VFX_TYPES`（`contracts/enums`
+    的闭集，确实是 `build_nodes` 的输入——收进来是对的）与 `HOLDOUT_CAP` /
+    `HOLDOUT_KINDS` 这类**标注侧**常量（它们其实不进索引）。理由是两种错法的
+    代价完全不对称：
+
+    * **欠包含**（改了一张真影响索引的表，指纹却没动）→ 静默复用旧索引，
+      manifest 上看不出来，只有检索结果漂移时才可能被发现；
+    * **过度包含**（改了不影响索引的表，指纹动了）→ 跑一次**离线** `--rematch`
+      （数秒、零 API 调用）就重新签好，边逐字节不变。
+
+    宁可多一次离线改正，不要一次静默的陈旧索引。将来若真需要精确到"只含进索引
+    的表"，那要先把"哪些表进索引"变成可判定的量，而不是靠名字碰运气。
+    """
+    tables: Dict[str, object] = {}
+    for name, value in globals().items():
+        if name.startswith("_") or name.startswith(LEXICON_NAME_PREFIX):
+            continue
+        if not _LEXICON_NAME_RE.match(name):
+            continue
+        if isinstance(value, _LEXICON_TABLE_TYPES):
+            tables[name] = value
+    tables["hg_value_aliases"] = dict(hg.VALUE_ALIASES)
+    return tables
+
+
+def lexicon_fingerprint() -> str:
+    """**词表指纹**：`CACHE_KEY_FIELDS` 里第 8 个分量的唯一生产者（全 64 位）。
+
+    为什么 `vocab_fingerprint()` 顶不了这一格：那份哈希的是"**从卡片派生出的**
+    取值表"（`{}`→取值），而这里要覆盖的是**别名表本身**——`EMOTIONS`／
+    `MOVEMENT_ZH`／`COMPOSITION_RULES_ZH`／`VALUE_ALIASES` 这类表是**落地判据的
+    输入**，改它就会改索引，而且改的人不会想起去换版本号：
+
+    实测（`ACCEPTANCE_STATUS.md` §20.4）：给 `EMOTIONS` 补一个别名 `安静`，
+    `cine_move_handheld` 那条**正确**的禁令边的宿主就从"编的"变成"卡里写的"，
+    归并期的精确度门因此 2 → 1 条拒收（索引 540 → 539 条边）——而
+    `CACHE_KEY_FIELDS` 里**没有任何一格**会动。于是同一枚指纹指向了两份不同的
+    索引，"同一指纹 ⇒ 同一索引"这条回归基线在别名表这一维上不成立
+    （`ACCEPTANCE_STATUS.md` §20.8 第 4 条）。
+
+    边界（刻意画清）：门阈值、否定词表这类**校验代码的常量**仍由
+    `VALIDATION_RULES_VERSION` 管（"改门就换版本"是既有纪律）；本分量只负责
+    **词表/别名表**——因为它是数据、不是门，改它时没有任何闸门会提醒你。
+    """
+    import hashlib
+
+    payload = {"tables": _canonical_table(lexicon_tables())}
+    blob = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
 def run(cards) -> Tuple[List[Dict], Dict[str, List[str]]]:
     nodes = build_nodes(cards)
     vocab = vocab_payload(nodes)

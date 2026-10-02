@@ -1225,3 +1225,108 @@ oracle **2953 条**覆盖 2085 张卡。证据 `docs/evidence/20261002-112707/`�
    自洽的（539 条边 ↔ `ef179c9f…`），但维护期改别名要记得重跑。要真正关掉它，得把词表指纹
    也写进 `cache_key`（第七个分量之外再加一个），并同步 §0.1b 的"缓存指纹"那一行——
    属独立工作项，不混在这一轮里做。
+
+## 二十一、P14-12（2026-10-02）：缓存指纹补上第八格——**词表/别名表**（§20.8 第 4 条关掉）
+
+本节只做一件事：把 §20.8 第 4 条那个**不变式空洞**关掉。不动语料、不动提示、不动门限、
+不重抽、不重标 oracle——所以门与质量指标的每一个数字都与 §20.6 一模一样。
+
+### 21.1 病因一句话
+
+`CACHE_KEY_FIELDS` 原来只有七格（六元 ＋ `validation_rules_version`），**没有一格**会随
+别名表变化；而别名表是**落地判据的输入**：
+
+```
+给 vocabulary.EMOTIONS 补一个别名「安静」
+  → cine_move_handheld 那条【正确】的禁令边不再被判成"宿主是编的"
+  → 归并期精确度门 unsupported_prohibition_hosts 从"拒 2 条"变成"拒 1 条"
+  → 索引 540 → 539 条边
+  → 而七格指纹【一个字节都没动】
+```
+
+于是"同一枚指纹 ⇒ 同一份索引"这条回归基线在**别名表**这一维上不成立，而且 manifest
+上看不出来（§20.4 实测、§20.8 第 4 条自记）。
+
+### 21.2 判据：词表指纹是**分量**，不是"再抄一份清单"
+
+* 生产者：`tools/kb_fetch/vocabulary.py::lexicon_fingerprint()`（全 64 位 sha256）。
+  覆盖范围**机械发现**——本模块的"全大写名字"常量，并上索引侧唯一那份别名表
+  `hypergraph.VALUE_ALIASES`（`LEXICON_EXTRA_TABLES` 显式声明）。**不手抄清单**：
+  本仓库栽过的跟头正是"各抄一份 6 类型 / 16 kind"导致的漂移。
+  序列**保序**（顺序在这几张表里可能承载语义，排序会掩盖真实改动）；
+  字典按键排序、集合按元素排序（它们本就没有序）。
+  覆盖范围**故意取宽**（顺带收进 `VFX_TYPES`，与标注侧的 `HOLDOUT_CAP` /
+  `HOLDOUT_KINDS`）：两种错法的代价不对称——**欠包含** = 静默复用旧索引
+  （manifest 上看不出来），**过度包含** = 跑一次离线 `--rematch`（数秒、零 API、
+  边逐字节不变）。宁可多一次离线改正。
+* 边界（刻意画清，写进 docstring）：门阈值 / 否定词表这类**校验代码常量**仍归
+  `VALIDATION_RULES_VERSION` 管（"改门就换版本"是既有纪律）；本分量只负责**词表/别名表**
+  ——因为它是数据、不是门，改它时没有任何闸门会提醒你。
+* `rekey_manifest()` 对这一格**从代码现算，不读回**（其余七格仍从 manifest 读）：
+  它的用途就是"被改过就露馅"，读旧值等于把洞留在原地。
+* 文档同步：`改进执行文档v1.4.md` §0.1b 的「缓存指纹」行（真源表）＋ §2.3 缓存键那段
+  的补注；旧写法记进"已作废"列。
+
+### 21.3 实测：只动 manifest，**索引逐字节不变**
+
+```powershell
+python -m tools.kb_fetch.build_hypergraph --rematch      # 不重抽，只重跑第 2 段并重签 manifest
+```
+
+| 文件 | 重签前 sha256 | 重签后 | 说明 |
+|---|---|---|---|
+| `knowledge/hypergraph.edges.jsonl`（428910 B） | `7146CFBB…C292F1F` | **`7146CFBB…C292F1F`（不变）** | 539 条边逐字节相同 |
+| `knowledge/hypergraph.nodes.jsonl` | `EE2BF96C…23C4E5D6` | 不变 | — |
+| `knowledge/hypergraph.vocab.json` | `13B33DDD…72E4F7A7` | 不变 | — |
+| `knowledge/hypergraph.rejects.jsonl` | 空文件 | 不变 | — |
+| `knowledge/hypergraph.manifest.json` | `0BB5D508…3F27372` | `AED46EAA…5973A67` | 只有它变了 |
+
+```
+cache_key 7 → 8 格；新增 vocabulary_fingerprint = 3b0d8a95459e056df75053d654a0b8aebcb7688ae4e6ee8ff624561165d7e56f
+manifest["fingerprint"]：ef179c9f…b187f6a → 5e8eac1e…d640de
+```
+
+也就是说这一轮**没有改任何知识**，只是把"来源指纹"补全——这正是修 bug 的形状。
+
+### 21.4 对抗性用例（`tests/test_hypergraph_determinism.py`，17 条）
+
+| 用例 | 钉住的事 |
+|---|---|
+| `test_fingerprint_requires_exactly_the_declared_components`（改） | 分量表**写死 8 个名字**（不拿 `CACHE_KEY_FIELDS` 自证），多一个少一个都报错 |
+| `test_lexicon_discovery_covers_the_alias_tables_and_nothing_else`（新） | 机械发现**两边**都钉死：20 张表必须被发现、`hg_value_aliases` 必须且只多它这一项；反面控制 = `_LENS_RE`／`json`／`re`／`common`／`hg` **不得**混进来 |
+| `test_lexicon_fingerprint_moves_when_an_alias_table_changes`（新） | 改 `EMOTIONS`（与 §20.4 实测同形状）与改 `hg.VALUE_ALIASES` 各一次，指纹**必须动**；撤销后必须回到原值 |
+| `test_rekey_manifest_recomputes_the_lexicon_component_from_code`（新） | 把 manifest 的该格改成 `"stale"` 后 rekey，必须被**现算**覆盖（读回就等于把洞留着） |
+| `test_committed_manifest_vocabulary_fingerprint_matches_the_tables`（新） | 入库 manifest 的该格必须等于**现在**这份别名表算出来的值——改了别名表却没重签，当场变红 |
+
+### 21.5 现在的账
+
+```
+python -m pytest                        # 1604 passed / 0 failed（本次新增 4 条）
+powershell -File tools\run_tests.ps1    # 31/31 探针 + "All checks passed."（改动的**全量**复跑）
+  证据 docs/evidence/20261002-115529/   # rks.json failed_checks=[]；holdout_gates overall=pass；
+                                        # 硬门 11 个 id 全 pass（Q5/E1/E2 记 not_measured，不参与判过）
+```
+
+> 另有一次同源证据 `docs/evidence/20261002-114755/`（改动**之前**启动的链，收尾的四个知识
+> 报告已跑在新 manifest 上）：它的 pytest 步是改动前的树，所以**以 115529 那次为准**。
+> 两次的结论一致：门①–⑩ 全 pass、RK-13 全绿。
+
+### 21.6 §20.8 的剩余项与**实测的阻塞**（写清楚，别当成已完成）
+
+1 与 2 两条（改提示 → `extract/v13` → 整库重抽 → 重标 oracle；给"运镜政策"加边型）
+**当前在本机不可执行**，阻塞点在**标注通道**而不是实现：
+
+```
+GLM_API_KEY / ZHIPU_API_KEY            -> (unset)          # 池标注用的 glm-4.7-flash 走不了
+qwen3-vl:30b via /v1/chat/completions  -> content="" ，reasoning 为噪声
+  （实测：{"role":"assistant","content":"","reasoning":"-,+,3&\"4&#1/*20*2.\"/!!!%%+…"}）
+```
+
+即：**换族标注器两个通道都断了**（本地那份 tag 指向损坏的 blob，见 §9.6/§18.8），
+而重抽必然改索引 → oracle 必须重标 → 门③/⑥/⑨/⑩ 会整体变红。**在没有可用异构标注器之前
+做重抽，等于把一份当前全绿的验收链主动打红**，因此不碰（也不是降级：判据、门限、分母
+一律未动）。要解封只需其一：设置 `GLM_API_KEY`，或修好本地 `qwen3-vl:30b` 这个 tag。
+
+3 的三项（Q5 基准串口径 / `SHOT_PATTERN.movement` 零边 / 用户手工项的 ollama 残片）同前：
+前两项与 1、2 共用同一次重抽，第三项属用户手工操作（`work/ollama_leftover_*.bin` 共约
+53 GB 亦在此列）。

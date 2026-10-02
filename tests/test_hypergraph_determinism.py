@@ -1,12 +1,15 @@
-"""§6「重抽取成本」的取证：六元指纹 ＋ 两次构建逐字节一致（离线，不联网）。
+"""§6「重抽取成本」的取证：缓存指纹 ＋ 两次构建逐字节一致（离线，不联网）。
 
 规格点名的落点是 `tests/test_hypergraph_determinism.py`（执行文档 v1.4 §6 的
-取证表）：**同一六元指纹两次运行，索引文件逐字节一致**。这里同时钉住三件事：
+取证表）：**同一指纹两次运行，索引文件逐字节一致**。这里同时钉住四件事：
 
-1. 指纹是"**恰好六个**分量"的纯函数——多一个少一个都报错，六个里任一个变了
-   指纹就必须变（否则改了 prompt / 换了 chunk 策略会静默复用旧索引）；
+1. 指纹是"**恰好 `CACHE_KEY_FIELDS` 这些**分量"的纯函数——多一个少一个都报错，
+   任一个变了指纹就必须变（否则改了 prompt / 换了 chunk 策略 / 改了别名表
+   会静默复用旧索引）；
 2. 语料分量覆盖**正文**，不只是 id 列表（同样的 id、改过的正文也算新语料）；
 3. 同输入两次构建，`edges/rejects/report/manifest` 四个文件逐字节相同。
+4. §0.1b 缓存指纹行的第八格是**词表/别名表**：机械发现覆盖哪些名字（两边都钉死）、
+   改别名表指纹必动、入库 manifest 的该格必须等于现算值。
 """
 
 from __future__ import annotations
@@ -25,6 +28,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.kb_fetch import build_hypergraph as bh  # noqa: E402
+from tools.kb_fetch import vocabulary as vocab  # noqa: E402
 
 EDGES_FILE = ROOT / "knowledge" / "hypergraph.edges.jsonl"
 NODES_FILE = ROOT / "knowledge" / "hypergraph.nodes.jsonl"
@@ -101,23 +105,110 @@ def _prepare(tmp_path, monkeypatch, cards) -> dict:
 def test_fingerprint_requires_exactly_the_declared_components():
     """分量表**写死**在这里，不是"跟着 `CACHE_KEY_FIELDS` 走"。
 
-    写死是刻意的：分量表是 §2.3 的契约（"六元指纹 ＋ 校验门代码版本"），
+    写死是刻意的：分量表是 §0.1b 缓存指纹行的契约（"六元指纹 ＋ 校验门代码版本
+    ＋ 词表指纹"，共 8 格），
     用 `CACHE_KEY_FIELDS` 去算断言等于让实现自己给自己出题——加了一个方差
     却忘了进哈希，这条用例照样绿。
     """
     components = {key: key + "-value" for key in bh.CACHE_KEY_FIELDS}
     assert tuple(bh.CACHE_KEY_FIELDS) == (
         "corpus_sha256", "model", "prompt_version", "chunker_version",
-        "decode", "schema_version", "validation_rules_version")
-    assert len(components) == 7
+        "decode", "schema_version", "validation_rules_version",
+        "vocabulary_fingerprint")
+    assert len(components) == 8
     assert bh.fingerprint_of(components)
     #: §2.3 的七元里**必须**含校验门代码版本：`--rematch` 只重跑第 2 段，
     #: 门一变、索引就变，指纹不跟着变就会把两份不同的索引指成同一个。
     assert "validation_rules_version" in bh.CACHE_KEY_FIELDS
+    #: §0.1b 缓存指纹行的第八格：**词表/别名表**。别名表是落地判据的输入，
+    #: 改它会改索引，而改的人不会想起换版本号（§20.4 的实测）。
+    assert "vocabulary_fingerprint" in bh.CACHE_KEY_FIELDS
     with pytest.raises(ValueError):
         bh.fingerprint_of({**components, "extra": "x"})
     with pytest.raises(ValueError):
         bh.fingerprint_of({key: "v" for key in bh.CACHE_KEY_FIELDS[:-1]})
+
+
+def test_lexicon_discovery_covers_the_alias_tables_and_nothing_else():
+    """机械发现的两边都要钉死：**该进的进、不该进的不进**。
+
+    手抄一份"参与指纹的表"清单会漂移（v1.5 扩类暴露的正是"各抄一份"），
+    所以实现按"全大写名字"机械发现；但机械发现必须被用例看着，否则它自己也会
+    变成一处没人复核的隐式清单。
+    """
+    discovered = set(vocab.lexicon_tables())
+    expected = {
+        "EMOTIONS", "SHOT_SIZE_NAMES", "LIGHTING", "CAMERA_ANGLES",
+        "COMPOSITION_RULES_ZH", "PACING_ZH", "VFX_ZH", "EXTRA_VFX", "ACTIONS",
+        "SFX", "AXIS_TOPICS", "DELIVERIES", "MUSIC_STRATEGIES", "PROPS",
+        "GENRE_ZH", "MOVEMENT_ZH", "HOLDOUT_KINDS", "UNQUERYABLE_KINDS",
+        "HOLDOUT_CAP", "VFX_TYPES",
+    }
+    assert expected <= discovered, f"词表没被机械发现：{sorted(expected - discovered)}"
+    assert discovered - expected == {"hg_value_aliases"}, \
+        f"机械发现混进了非词表常量：{sorted(discovered - expected)}"
+    #: 反面控制：编译好的正则不是词表，模块/导入别名也不是。
+    assert "_LENS_RE" not in discovered
+    assert not {"json", "re", "common", "hg"} & discovered
+    #: 这两张表都真的参与了判定：索引侧别名表必须在，而它不在本模块的 globals 里，
+    #: 是**显式**并进去的（`LEXICON_EXTRA_TABLES`）。
+    assert discovered & {"hg_value_aliases"} == {"hg_value_aliases"}
+    assert vocab.LEXICON_EXTRA_TABLES == ("hg_value_aliases",)
+
+
+def test_lexicon_fingerprint_moves_when_an_alias_table_changes(monkeypatch):
+    """§20.8 第 4 条的回归：**改别名表 ⇒ 指纹必须动**（前七格一个都不动）。
+
+    两处别名表分别控制一次：`vocabulary` 侧的开放型词表，与索引侧的
+    `hg.VALUE_ALIASES`。两次都必须让指纹移动。
+    """
+    baseline = vocab.lexicon_fingerprint()
+    assert bh.fingerprint_components(
+        _real_cards(1), _ScriptedClient({}))["vocabulary_fingerprint"] == baseline
+
+    # 1) 开放型词表：与 §20.4 实测的 `安静` 同形状（给既有取值补一个别名）。
+    monkeypatch.setattr(vocab, "EMOTIONS",
+                        vocab.EMOTIONS + (("测试情绪", ("测试别名",)),))
+    with_alias = vocab.lexicon_fingerprint()
+    assert with_alias != baseline, "`EMOTIONS` 改了，词表指纹却没动"
+    monkeypatch.undo()
+    assert vocab.lexicon_fingerprint() == baseline, "撤销之后必须回到原指纹"
+
+    # 2) 索引侧别名表：`static` → `固定` 这类映射是索引侧唯一那份。
+    monkeypatch.setattr(hg, "VALUE_ALIASES", {**hg.VALUE_ALIASES, "测试": "测试"})
+    assert vocab.lexicon_fingerprint() != baseline, "`VALUE_ALIASES` 改了，词表指纹却没动"
+
+
+def test_rekey_manifest_recomputes_the_lexicon_component_from_code(tmp_path):
+    """`rekey_manifest()` 对第八格**不读旧值，而是现算**。
+
+    其余七格都能从 manifest 自己读回来（它们是"记录下来的设置"），只有这一格
+    必须现算——它的用途就是"别名表被改过就露馅"，读旧值等于把洞留在原地。
+    """
+    manifest = json.loads(MANIFEST_FILE.read_text(encoding="utf-8"))
+    stale = dict(manifest)
+    stale["cache_key"] = {**manifest["cache_key"], "vocabulary_fingerprint": "stale"}
+    stale["fingerprint"] = bh.fingerprint_of(stale["cache_key"])
+    target = tmp_path / "hypergraph.manifest.json"
+    target.write_text(json.dumps(stale, ensure_ascii=False), encoding="utf-8")
+
+    result = bh.rekey_manifest(target, cards=_real_cards(1))
+    assert result["cache_key"]["vocabulary_fingerprint"] == vocab.lexicon_fingerprint()
+    assert result["cache_key"]["vocabulary_fingerprint"] != "stale"
+    rewritten = json.loads(target.read_text(encoding="utf-8"))
+    assert bh.fingerprint_of(rewritten["cache_key"]) == rewritten["fingerprint"]
+
+
+def test_committed_manifest_vocabulary_fingerprint_matches_the_tables():
+    """入库索引的词表分量必须等于**现在**这份别名表算出来的值。
+
+    这条是"同一指纹 ⇒ 同一索引"在别名表这一维上的闸门：改了别名表却没重签
+    manifest，本用例当场变红，而不是等到某次检索结果漂移才被发现。
+    """
+    if not MANIFEST_FILE.exists():
+        pytest.skip("仓库里还没有超图 manifest")
+    manifest = json.loads(MANIFEST_FILE.read_text(encoding="utf-8"))
+    assert manifest["cache_key"]["vocabulary_fingerprint"] == vocab.lexicon_fingerprint()
 
 
 def test_every_component_changes_the_fingerprint():
@@ -223,6 +314,10 @@ def test_components_carry_the_recorded_settings():
     assert components["model"].startswith("test-model@")
     assert components["schema_version"]
     assert components["chunker_version"]
+    #: 第八格不是"记录在 manifest 里的设置"，而是**从代码现算**的词表指纹：
+    #: 它必须等于 `vocabulary.lexicon_fingerprint()`（生产者在词汇那一侧，只有一处）。
+    assert components["vocabulary_fingerprint"] == vocab.lexicon_fingerprint()
+    assert len(components["vocabulary_fingerprint"]) == 64
 
 
 # --------------------------------------------------------------------------- 逐字节
