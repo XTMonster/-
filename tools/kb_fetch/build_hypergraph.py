@@ -97,13 +97,49 @@ ATOMS = common.WORK / "hypergraph.atoms.jsonl"
 #: v12：把 `source_kind` 的判据从"来源"改成"**知识形态**"（§2.3b 的用户裁决），
 #: 并且不再给每张卡塞一句假的"来源性质：theory"——正是那句让 738 条边的
 #: `source_kind=experience` 恒为 0，L2 经验层形同不存在、`E3 经验越权率` 因分母为 0 判失败。
+#: v13：**把 v8 那次 schema 扩充在正文里补齐**（正文当时没跟上，实测后果是一条编出来的边）。
+#: 三处纯文本漂移：① 开场还写"收敛成下面**六类**"、规则 1／1b 还写"**13 类**"——而紧跟着
+#: 的清单列的是 **16** 类；② 规则 6b 的"逐类自问"清单只有 13 条，**漏了
+#: `DIALOGUE_PACK`／`MUSIC_PACK`／`PROP_PACK`**，等于让模型永远不问这三类；③ 规则 4b
+#: 仍写着"挂在 `EMOTION_PACK` 上；如果这张卡本身不是情绪卡，就把它写成'该情绪下不要这样拍'
+#: 的 `EMOTION_PACK`"——这条与规则 4 的 v1.6 措辞**自相矛盾**，而且是那条编造边的**直接成因**：
+#: `gen_cine_0247`（"摄影机始终处于某种运动中，避免长时间静止固定"）只有一条禁半、没有情绪，
+#: 于是模型为了凑 `EMOTION_PACK` 的必填槽位现编了 `emotion=平静,intensity=low`。
+#: 双模型复核（`docs/knowledge/GATE6_LAST_CARD.panel.json`）判掉了那条期望，门⑥ 因此卡住。
+#: v14：v13 的 4b 漏抄了规则 4 的**后半句**——"禁止的取值必须与这条边里同 kind 的取值
+#: **不同**"。实测后果：`AXIS_RULE` 的 `axis_topic` 是**必填**的，模型于是写出了
+#: "`axis_topic=X` ＋ `forbid_axis_topic=X`"——同一条边自己跟自己打架。门② 把这些边
+#: 拒收了（机械池那一轮 `rejects: 6`），所以索引里没有它们，但那是**知识的净损失**：
+#: 6 条边白抽。v14 把半句抄回 4b，并点名 `axis_topic` 这个反例。
+#: **被实测否决的一次尝试（留档，别再犯）**：v12 的提示里，"六类／13 类"这两处计数与
+#: 16 类 schema 不符，规则 6b 的逐类自问清单还漏了 `DIALOGUE_PACK`／`MUSIC_PACK`／
+#: `PROP_PACK`。看着像纯文本漂移，改它却**打穿了覆盖率**——三个变体一起量（同一语料、
+#: 同一模型、只改提示文本）：
+#:
+#:   | 提示文本 | 原子边 | 有边可标注的卡 | §4.1b 分母下界（≥95%） |
+#:   |---|---|---|---|
+#:   | 原文（v12，已入库） | 2846 | **2099 / 2130 = 98.5%** | 过 |
+#:   | 只改计数 ＋ 补 6b 三行 | 2528 | 1786 = 83.9% | **红** |
+#:   | 再把规则 4b 改成"没有落地主体就别写这条边" | 2160 | 1688 = 79.2% | **红** |
+#:   | 4b 加一句"这条不等于少写边" | 2213 | 1734 = 81.4% | **红** |
+#:
+#: 结论：**v12 的覆盖率有一部分正是那两处"漂移"挣来的**——逼模型为每条禁令写边，
+#: 既有编造的宿主，也有大量真实的跨卡耦合；把措辞改"对"，跨卡归并随之变少
+#: （`multi_card_edges` 191 → 129），于是大批卡没有边可标注。所以这一条**不是文本
+#: 修复**：真正的根因修复必须**改提示 ＋ 整库重抽 ＋ 重标整份 oracle 同批落地**，
+#: 并把"覆盖率"与"精度"一起当验收指标看。事后那道**精确度门**
+#: （`unsupported_prohibition_hosts`）已经能把编造的宿主边挡在索引外——那是本仓库
+#: 现在采用的兜底。四个变体的实测账在 `docs/knowledge/ACCEPTANCE_STATUS.md` §二十三。
 PROMPT_VERSION = "extract/v12"
 #: §2.3 的缓存键写的是"六元指纹 ＋ **校验门代码版本**"，§6「重抽取成本」也点名建议把
 #: 它纳入——因为 `--rematch` 这条路径**只重跑第 2 段、不重抽**（第 2 段是纯函数）。
 #: 门一变、索引就变，指纹不跟着变的话，同一枚指纹会指向两份不同的索引。
 #: 与 `PROMPT_VERSION` 的分工：那个管**第 1 段**（提示文本），这个管**第 2 段**（归并
 #: 与精确度门）。v1：新增 `unsupported_prohibition_hosts`（禁令必须有宿主）。
-VALIDATION_RULES_VERSION = "gate/v1"
+#: v2：新增 `contradictory_roles`（同 kind 同取值既要求又禁止 ⇒ 拒收）——v14 的提示
+#: 让这类边真的出现了（`AXIS_RULE` 的 `axis_topic` 是必填槽位），它们永远写不出合规
+#: 期望，还会把 `holdout_pool` 的 GLM 通道整轮掀翻。
+VALIDATION_RULES_VERSION = "gate/v2"
 BATCH_CARDS = 8
 #: 归并窗口的卡片数上限（§2.3 第 2 步写死为 8）。
 MERGE_WINDOW = 8
@@ -924,6 +960,48 @@ def arbitrate_by_hardness(edges: Sequence[hg.HyperEdge]) -> Tuple[List[hg.HyperE
                  "dropped_by_source_kind": dict(sorted(dropped_kinds.items()))}
 
 
+def contradictory_roles(edges: Sequence[hg.HyperEdge],
+                        ) -> Tuple[List[hg.HyperEdge], Dict]:
+    """**自相矛盾的边不许进索引**：同一个 `node_id` 既被要求又被禁止（第 2 段）。
+
+    判据与 oracle 侧 `check_holdout.parse_spec` **逐字同源**：冲突是"同 kind **同取值**"，
+    不是"同 kind"——`movement=crane_up ＋ forbid_movement=dolly_out` 完全合法（要一个、
+    禁另一个），`axis_topic=越轴 ＋ forbid_axis_topic=越轴` 才是自己跟自己打架。
+
+    为什么要有这一条（v14 实测）：规则 4b 让抽取器把卡里的"避免 X"写成 `forbid`，
+    而 `AXIS_RULE` 的 `axis_topic` 是**必填**槽位——模型于是写出了
+    `axis_topic=越轴` ＋ `forbid_axis_topic=越轴`。这类边**永远写不出合规的期望**
+    （`parse_spec` 当场拒收），留在索引里就是"有一条边谁都标注不了"：
+    `tools/holdout_pool.py` 的 GLM 通道正是在这种边上**直接崩掉**（实测 traceback 落在
+    `glm_pass` 的 `parse_spec(item["specs"][0])`），整轮标注因此跑不起来。
+    所以两处一起修：这里把它们挡在索引外（并留账），
+    `holdout_pool` 那边也不再让一条坏边掀翻整轮。
+    """
+    kept: List[hg.HyperEdge] = []
+    dropped: List[Dict] = []
+    for edge in edges:
+        plain = {(member.kind, member.node_id) for member in edge.members
+                 if member.role in ("allow", "qualifier")}
+        forbid = {(member.kind, member.node_id) for member in edge.members
+                  if member.role == "forbid"}
+        clash = sorted(plain & forbid)
+        if clash:
+            dropped.append({"edge_id": edge.edge_id, "type": edge.type,
+                            "sources": list(edge.sources),
+                            "clash": ["%s=%s" % (kind, node_id.split(":", 1)[-1])
+                                      for kind, node_id in clash]})
+            continue
+        kept.append(edge)
+    return kept, {
+        "rule": "contradictory_roles",
+        "rule_version": VALIDATION_RULES_VERSION,
+        "meaning": "同一个 node_id 既被要求又被禁止（同 kind 同取值）⇒ 整条拒收",
+        "criterion": "与 check_holdout.parse_spec 的自相矛盾判据逐字同源；"
+                     "同 kind 不同取值**不算**冲突",
+        "dropped": len(dropped), "edges": dropped[:20],
+    }
+
+
 def unsupported_prohibition_hosts(edges: Sequence[hg.HyperEdge],
                                   cards_by_id: Dict[str, Dict],
                                   nodes: Dict[str, hg.Node],
@@ -1293,6 +1371,10 @@ def run(cards: Sequence[Dict], vocab: Dict[str, List[str]], client,
     merged, precision = unsupported_prohibition_hosts(
         merged, {str(card["id"]): card for card in cards}, nodes_from_vocab())
     merge_report["unsupported_prohibition_hosts"] = precision
+    #: 自相矛盾的边（同 kind 同取值既要求又禁止）先一步挡在索引外——它们在 oracle
+    #: 语法里表达不出来，会让整轮标注挂掉（见 `contradictory_roles` 的注释）。
+    merged, contradictions = contradictory_roles(merged)
+    merge_report["contradictory_roles"] = contradictions
     if refresh_info is not None:
         merge_report["refresh"] = refresh_info
         merge_report["refresh_prompt_version"] = PROMPT_VERSION
@@ -1334,6 +1416,9 @@ def rematch(cards: Sequence[Dict], vocab: Dict[str, List[str]]) -> Dict:
     merged, precision = unsupported_prohibition_hosts(
         merged, {str(card["id"]): card for card in cards}, nodes_from_vocab())
     merge_report["unsupported_prohibition_hosts"] = precision
+    #: 自相矛盾的边：与 `run()` 逐字一致（两条路径必须产出同一份索引）。
+    merged, contradictions = contradictory_roles(merged)
+    merge_report["contradictory_roles"] = contradictions
     #: `--rematch` 是"不重抽、只重跑第 2 段"，它建的是**全新**的 merge_report——
     #: 清洗（`--replace-cards`）留下的 `refresh` 账会就此丢掉，manifest 于是
     #: "混着多个 prompt 版本却没有任何清洗记录"（§4.1b 硬规则 2 禁止自报一个

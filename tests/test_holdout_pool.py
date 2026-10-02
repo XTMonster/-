@@ -78,7 +78,14 @@ def test_generation_never_asserts_an_edge_outside_the_pool(pool, graph, universe
     """
     entries, _rejects, _stats = pool
     sample = dict(entries[0])
-    sample["must"] = ["EMOTION_PACK:emotion=不存在的情绪,intensity=high"]
+    #: 注入的坏边要**从这条条目自己的边**派生，否则先撞上别的检查：原实现写死成
+    #: `EMOTION_PACK:emotion=不存在的情绪,…`，靠"`entries[0]` 恰好是一条情绪边、
+    #: 它的 `q` 里恰好有 `情绪=`"才走到门⑩。换一代索引之后 `entries[0]` 变成
+    #: `ACTION_BEAT`，坏边的 `情绪=` 不在 `q` 里 → 先被 `weak_q` 拒收，
+    #: 这条用例就红了——而**它想钉的判据并没有变**。现在按自己的类型加一个
+    #: `forbid` 槽位：成员集因此不在索引里，既可能撞门⑩（可解析），
+    #: 也可能撞门②（这个类型不许带该槽位），两者都是它要的答案。
+    sample["must"] = [sample["must"][0] + ",forbid_movement=固定"]
     sample["top1"] = list(sample["must"])
     _kept, rejects = HP.finalise([sample], graph, universe, model_id="t",
                                  family="rule", model_version="t")

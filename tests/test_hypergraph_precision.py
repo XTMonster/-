@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import inspect
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -31,6 +32,7 @@ if str(ROOT) not in sys.path:
 from block_director.knowledge import grounding  # noqa: E402
 from block_director.knowledge import hypergraph as hg  # noqa: E402
 from tools.kb_fetch import build_hypergraph as bh  # noqa: E402
+from tools.holdout_score import load_graph  # noqa: E402
 
 
 def _node(node_id: str, name: str, aliases=()) -> hg.Node:
@@ -219,10 +221,20 @@ def test_the_shipped_index_carries_the_ledger_and_is_consistent():
              (ROOT / "knowledge" / "hypergraph.edges.jsonl")
              .read_text(encoding="utf-8").splitlines() if line.strip()]
     assert manifest["valid_unique"] == len(edges)
-    #: 实测（2026-10-02）：这一刀只落在**那一条**编出来的边上；`cine_move_handheld`
-    #: 的禁令因为 `安静` 是 `emotion:平静` 的别名而留下（见上面两条用例）。
-    assert ledger["dropped"] == 1
-    assert [row["sources"] for row in ledger["edges"]] == [["gen_cine_0247"]]
+    #: 这里原先是 `assert ledger["dropped"] == 1` —— **当时的索引**的实测值
+    #: （v12：540 条边里只有 `gen_cine_0247` 那一条编出来的宿主边）。v14 把 `forbid`
+    #: 从 8 个成员扩到 68 个之后，同形状的边自然不止一条，那个魔数就成了"索引一变
+    #: 就红"的噪音。换成**结构不变量**＋**具名个案的现状**：
+    assert ledger["dropped"] == len(ledger["edges"]) >= 1
+    #: 每条账目都要写清"主体是哪个、禁半是哪个"（不能只记一个 id）。
+    for row in ledger["edges"]:
+        assert row["invented_subject"] and row["grounded_forbid"] and row["type"]
+    #: 具名个案换了形态：v14 的规则 4b 不再逼模型"挂到 EMOTION_PACK 上"，
+    #: 于是那条**编出来的边在抽取期就没有了**（不是被这一刀砍掉的）。
+    #: 这才是根因修复；精确度门留给别处同形状的边（这一轮另有 7 条）。
+    assert not [edge for edge in edges
+                if "gen_cine_0247" in (edge.get("sources") or [])], (
+        "`gen_cine_0247` 只讲运镜、一个字没提情绪，它的边只能是编的")
     #: 被拒收的边**不允许**还留在索引里（这条规则的唯一目的就是它们不在）。
     alive = {edge["edge_id"] for edge in edges}
     assert not (alive & {row["edge_id"] for row in ledger["edges"]})
@@ -247,3 +259,58 @@ def test_the_vocabulary_carries_the_synonym_that_the_rule_depends_on():
             node = json.loads(line)
             nodes[node["node_id"]] = node
     assert "安静" in nodes["emotion:平静"]["aliases"]
+
+
+# ---------------------------------------------------------------- 自相矛盾的边
+
+def _edge_of(etype, members):
+    return hg.HyperEdge(type=etype, source_kind="theory", hardness="hard",
+                        members=tuple(hg.Member(*item) for item in members),
+                        sources=("c1",))
+
+
+def test_an_edge_may_not_require_and_forbid_the_same_value():
+    """`axis_topic=越轴 ＋ forbid_axis_topic=越轴`：同一个 node_id 两处出现 ⇒ 拒收。
+
+    v14 的规则 4b 让抽取器把卡里的"避免 X"写成 `forbid`，而 `AXIS_RULE` 的
+    `axis_topic` 是**必填**槽位，于是这类边真的出现了。它们在 oracle 语法里
+    表达不出来（`parse_spec` 当场拒收），留在索引里等于"有一条边谁都标注不了"——
+    实测 `tools/holdout_pool.py` 的 GLM 通道正是在这种边上**整轮崩掉**。
+    """
+    edge = _edge_of("AXIS_RULE", [("qualifier", "pair", "pair:双人"),
+                                  ("qualifier", "axis_side", "axis_side:左"),
+                                  ("qualifier", "axis_topic", "axis_topic:越轴"),
+                                  ("forbid", "axis_topic", "axis_topic:越轴")])
+    kept, report = bh.contradictory_roles([edge])
+    assert kept == []
+    assert report["dropped"] == 1
+    assert report["edges"][0]["clash"] == ["axis_topic=越轴"]
+
+
+def test_requiring_one_value_and_forbidding_another_is_legal():
+    """正对照：同 kind **不同取值**不是矛盾（要 crane_up、禁 dolly_out）。"""
+    edge = _edge_of("EMOTION_PACK", [("allow", "emotion", "emotion:荒诞"),
+                                     ("qualifier", "intensity", "intensity:mid"),
+                                     ("allow", "movement", "movement:crane_up"),
+                                     ("forbid", "movement", "movement:dolly_out")])
+    kept, report = bh.contradictory_roles([edge])
+    assert len(kept) == 1 and report["dropped"] == 0
+
+
+def test_the_shipped_index_has_no_contradictory_edge():
+    """入库索引里一条自相矛盾的边都不许有（判据与 oracle 侧同源）。"""
+    kept, report = bh.contradictory_roles(
+        load_graph(ROOT / "knowledge/hypergraph.nodes.jsonl",
+                   ROOT / "knowledge/hypergraph.edges.jsonl").edges)
+    assert report["dropped"] == 0, report["edges"][:3]
+    assert kept
+
+
+def test_the_pool_skips_an_unusable_group_instead_of_dying():
+    """`holdout_pool` 的 GLM 通道遇到读不了目标类型的组要**跳过并留痕**，不许崩。"""
+    from tools import holdout_pool
+
+    assert hasattr(holdout_pool, "glm_pass")
+    source = inspect.getsource(holdout_pool.glm_pass)
+    assert "unusable" in source, "坏组必须被跳过并记账，而不是让整轮抛异常"
+    assert "unusable_groups" in source

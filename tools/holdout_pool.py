@@ -653,10 +653,24 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
         if row["never"] and row["never"][0] not in item["negatives"]:
             item["negatives"].append(row["never"][0])
     items = list(buckets.values())
+    unusable: List[dict] = []
     for item in items:
         text = next((by_card[c] for c in item["cards"] if by_card.get(c)), "")
         item["card_text"] = text
-        item["target"] = parse_spec(item["specs"][0])[0] if item["specs"] else ""
+        # 一条**自相矛盾**的边（同 kind 同取值既要求又禁止，例如
+        # `axis_topic=越轴 ＋ forbid_axis_topic=越轴`）在 `parse_spec` 里是硬错误。
+        # 原实现让它**整轮崩掉**——实测 v14 的索引里就有 6 条，GLM 通道直接
+        # `EntryError` 退出，一整轮标注跑不起来。索引侧已由
+        # `build_hypergraph.contradictory_roles` 把它们挡在门外；这里再兜一层：
+        # 读不了目标类型的组**跳过并留痕**，不掀翻整轮。
+        try:
+            item["target"] = parse_spec(item["specs"][0])[0] if item["specs"] else ""
+        except Exception as exc:  # noqa: BLE001 - 只用于跳过坏组，原因如实记账
+            unusable.append({"cards": list(item["cards"]), "specs": list(item["specs"]),
+                             "reason": f"{type(exc).__name__}: {exc}"})
+            item["unusable"] = True
+    if unusable:
+        items = [item for item in items if not item.get("unusable")]
     if limit:
         items = items[:limit]
     if only_values:
@@ -785,7 +799,13 @@ def glm_pass(graph, universe: Sequence[str], client, *, vocab, batch_size: int =
                                         ensure_ascii=False) + "\n")
         _record_progress(progress_path, batch_index, total_batches, len(entries),
                          len(rejects))
-    return entries, rejects, {"groups": len(items), "stats": stats}
+    if unusable:
+        # 跳过坏组必须**留痕**：静默少标一批卡，门⑥ 会以"缺条目"的形式红，
+        # 而根因在这里——账要记在跑得起来的那一份里。
+        rejects.extend({"reason": "unusable_group:" + item["reason"][:120],
+                        "cards": item["cards"]} for item in unusable)
+    return entries, rejects, {"groups": len(items), "stats": stats,
+                              "unusable_groups": unusable}
 
 
 def _record_progress(path, batch_index: int, total: int, entries: int,
