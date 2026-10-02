@@ -1259,9 +1259,13 @@ oracle **2953 条**覆盖 2085 张卡。证据 `docs/evidence/20261002-112707/`�
   `HOLDOUT_KINDS`）：两种错法的代价不对称——**欠包含** = 静默复用旧索引
   （manifest 上看不出来），**过度包含** = 跑一次离线 `--rematch`（数秒、零 API、
   边逐字节不变）。宁可多一次离线改正。
-* 边界（刻意画清，写进 docstring）：门阈值 / 否定词表这类**校验代码常量**仍归
-  `VALIDATION_RULES_VERSION` 管（"改门就换版本"是既有纪律）；本分量只负责**词表/别名表**
-  ——因为它是数据、不是门，改它时没有任何闸门会提醒你。
+* 边界（刻意画清，写进 docstring）：**门阈值 / 门代码**这类量仍归
+  `VALIDATION_RULES_VERSION` 管（"改门就换版本"是既有纪律）；本分量负责的是
+  **数据表**——不是门，改它时没有任何闸门会提醒你。
+  ⚠️ **这条边界第一版是"按模块"画的，画窄了**：它漏掉了同样被门读到的
+  `grounding.NEGATION_CUES`。同一工作树的并行 lane 用只读探针把那个缺口量出来了
+  （索引 539 → 540、指纹一格不动），边界因此改成**按角色**：门读到的**数据表**都进，
+  门**代码**不进。见下面的 §21.7。
 * `rekey_manifest()` 对这一格**从代码现算，不读回**（其余七格仍从 manifest 读）：
   它的用途就是"被改过就露馅"，读旧值等于把洞留在原地。
 * 文档同步：`改进执行文档v1.4.md` §0.1b 的「缓存指纹」行（真源表）＋ §2.3 缓存键那段
@@ -1302,15 +1306,18 @@ manifest["fingerprint"]：ef179c9f…b187f6a → 5e8eac1e…d640de
 ### 21.5 现在的账
 
 ```
-python -m pytest                        # 1604 passed / 0 failed（本次新增 4 条）
-powershell -File tools\run_tests.ps1    # 31/31 探针 + "All checks passed."（改动的**全量**复跑）
-  证据 docs/evidence/20261002-115529/   # rks.json failed_checks=[]；holdout_gates overall=pass；
+python -m pytest                        # 1607 passed / 0 failed（本轮新增 7 条：本 lane 5 条 ＋ §21.7 的 2 条）
+powershell -File tools\run_tests.ps1    # 31/31 探针 + "All checks passed."（**合并后**的全量复跑）
+  证据 docs/evidence/20261002-122249/   # 同一脚本内含 pytest 1607 passed；
+                                        # rks.json failed_checks=[]；holdout_gates overall=pass；
                                         # 硬门 11 个 id 全 pass（Q5/E1/E2 记 not_measured，不参与判过）
 ```
 
-> 另有一次同源证据 `docs/evidence/20261002-114755/`（改动**之前**启动的链，收尾的四个知识
-> 报告已跑在新 manifest 上）：它的 pytest 步是改动前的树，所以**以 115529 那次为准**。
-> 两次的结论一致：门①–⑩ 全 pass、RK-13 全绿。
+> 另有两次同源证据，都**早于** §21.7 那次边界修订，留档备查：
+> `docs/evidence/20261002-115529/`（加 `PYTHONHASHSEED` 那条用例之前，1604 passed）与
+> `docs/evidence/20261002-121237/`（加它之后、边界修订之前，1605 passed）；
+> 还有 `docs/evidence/20261002-114755/`——改动**之前**启动的链，它的 pytest 步是改动前的树，
+> 但收尾的四个知识报告已跑在新 manifest 上。四次结论一致：门①–⑩ 全 pass、RK-13 全绿。
 
 ### 21.6 §20.8 的剩余项与**实测的阻塞**（写清楚，别当成已完成）
 
@@ -1331,3 +1338,37 @@ qwen3-vl:30b via /v1/chat/completions  -> content="" ，reasoning 为噪声
 3 的三项（Q5 基准串口径 / `SHOT_PATTERN.movement` 零边 / 用户手工项的 ollama 残片）同前：
 前两项与 1、2 共用同一次重抽，第三项属用户手工操作（`work/ollama_leftover_*.bin` 共约
 53 GB 亦在此列）。
+
+### 21.7 补记（同一工作树里的并行 lane）：边界从"按模块"改成"**按角色**"
+
+§21 那版把第八格画在**模块**边界上（本模块的全大写常量 ＋ `hg.VALUE_ALIASES`），
+于是漏掉了**同一道门**的另半边输入：`block_director/knowledge/grounding.py::NEGATION_CUES`
+——它是**数据表**（不是门代码），`unsupported_prohibition_hosts` 与门⑤ 共用它
+（§20.2 的"否定词表只此一份"）。并行 lane 的只读探针（`--rematch` 两遍、只写临时目录）
+把它量成了同一个形状：
+
+```
+baseline               edges=539  forbidden_dropped=1  指纹变化 = 无
++ 一个别名（反面控制）   edges=539  forbidden_dropped=1  指纹变化 = lexicon ＋ cache   ← §21 修对了
+- 否定词「避免」（待测） edges=540  forbidden_dropped=0  指纹变化 = 无                 ← 同一枚指纹又指向两份索引
+restored               edges=539  forbidden_dropped=1  指纹变化 = 无
+两次索引的对称差        ['hg:7840fbdf6555']              ← 正是 gen_cine_0247 那条边
+```
+
+也就是说：那个否定词是这道门**唯一**的依据去拒收 `hg:7840fbdf6555`（`emotion:平静`
+这个宿主没有卡片支持）；把词去掉，索引就 539 → 540，而指纹一格不动。处置（`4a3bb74`）：
+
+* `LEXICON_EXTRA_TABLES` 加 `grounding_negation_cues`，判据写死成**角色**——
+  "凡是阶段二的门读到的**数据表**都进指纹，门**代码**/阈值不进"；
+* `tests/test_lexicon_inputs.py` 两条用例各钉一边，缺一条就是空断言：
+  `test_negation_cues_are_inside_the_fingerprint`（改它 ⇒ 指纹必动）与
+  `test_the_negation_cue_really_moves_the_index`（**合成边**上跑精度门两遍：有词判拒收、
+  去词判保留——证明被收进指纹的表**真的**是索引输入，不是空转）；
+* `--rematch` 重签 manifest：`knowledge/hypergraph.edges.jsonl` 仍逐字节不变
+  （`7146CFBB…C292F1F`、539 条），`cache_key.vocabulary_fingerprint` 从 `3b0d8a95…`
+  变成 `f72697ee…`，顶层 `fingerprint` 从 `5e8eac1e…` 变成 **`eae0cb6f…`**。
+
+**这一条也是本节标题那句话的第二次验证**：漏洞的形状不是"少算了一张表"，
+而是"**边界画错了维度**"——按模块画，就会漏掉住在别处、却同样被门读到的数据。
+§21.7 的合并后全量复跑证据是 `docs/evidence/20261002-122249/`（1607 passed、
+31/31 探针、门①–⑩ 全 pass、硬门 11 个 id 全 pass）。
