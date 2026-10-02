@@ -242,7 +242,13 @@ and coreference) is done.
 标注通道可选 GLM（`tools/kb_fetch/llm.py::GLMClient`，`family=zhipu`，`GLM_API_KEY` 只从环境变量读）
 或本地 `qwen3-vl:30b`；**无论走哪条都必须与抽取族（DeepSeek）不同**，`annotator.family` 写进每条。
 Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`reviewed_by: "llm-panel"`，
-**绝不写 `human`**，因此门⑦ 照旧不通过）——那是辅助证据，不是降低验收标准。
+**绝不写 `human`**）。门⑦ 在**默认口径**（`--reviewer-classes human`，协议原样）下仍判红；
+2026-10-01 用户明确授权"机器侧承担这一层"之后，**验收链显式传**
+`--reviewer-classes human,llm-panel`，报告里 `reviewed_by_class` 如实写清是谁裁的
+（当前实测 `{"llm-panel": 7}`）——记录本身一个字节都没被改写。
+口径与理由见 `docs/evidence/<run-id>/holdout_gates.json` 的 `gate_7_human_review`，
+不变量由 `tests/test_check_holdout.py`（"门⑦ 只在已记录的口径下转绿"）与
+`tests/test_acceptance_fixtures_present.py`（链上每一步必须活着且会判）钉住。
 
 **L3 案例层（P14-3）已落地**：`block_director/knowledge/cases.py`（三态 `lightrag`/`hybrid`/`off`、
 `CaseIndex`、`render_cases`，**没有 `forbid` 字段**——E3 的机制保证）＋
@@ -276,8 +282,9 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 `IMPACT_PACK` 15→23、`INTENT_PACK` 45→56、`SOUND_PACK` 21→24 等补了回来），
 但 **`AXIS_RULE` 37 → 11**（去重口径的必然结果，见待裁决清单）；
 `python -m pytest` = **1367 passed / 0 failed**。
-**仍红的**：held-out 的 ⑦（人审只能人做）与 ③/⑥/⑨/⑩ —— 根因不再是实现缺陷，而是
-**oracle 是上一代语料的产物**（卡 id 换代），必须重标一轮；
+**仍红的**：held-out 的 ③/⑥/⑨/⑩ —— 根因不再是实现缺陷，而是
+**oracle 是上一代语料的产物**（卡 id 换代），必须重标一轮（⑦ 当时 0/120，
+**后按上文的机器复核授权处理**）；
 以及 **L3 `SEQUENCE_FLOOR = 7` 现在无解**（外部语料里箭头枚举实测只有 1 个、派生 0 条）。
 逐项对账与必须由用户拍板的四件事见 `docs/knowledge/ACCEPTANCE_STATUS.md`，
 裁决理由见 `docs/adr/0013-theory-must-be-authored-by-others.md`。

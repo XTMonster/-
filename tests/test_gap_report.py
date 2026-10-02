@@ -230,7 +230,12 @@ def test_the_cli_defaults_to_the_shipped_index_side_cap(tmp_path):
                     "--assertable", "fixtures/knowledge_holdout.assertable.json",
                     "--reviewer-classes", "human,llm-panel",
                     "--json", "--out", str(gates)],
-                   cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8")
+                   cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8",
+                   # `errors="replace"`：子进程若在 `force_utf8_streams()` 之前就
+                   # 挂了（例如 import 期错误），它的 traceback 会带中文路径、按
+                   # 控制台编码写出，严格 utf-8 解码会在 reader thread 里抛
+                   # `UnicodeDecodeError`（实测的 0xb0 就是 `白` 的 cp936 首字节）。
+                   errors="replace")
     detail = json.loads(gates.read_text(encoding="utf-8"))["gate_4_edge_types"]
     short = sorted((detail.get("short_pairs") or {}).keys())
     assert payload["types"] == short, (payload["types"], short)

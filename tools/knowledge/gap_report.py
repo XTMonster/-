@@ -51,6 +51,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools import check_holdout  # noqa: E402
+from block_director.utils.console import force_utf8_streams  # noqa: E402
 
 PASS, FAIL, NA = "pass", "fail", "not_measured"
 
@@ -137,6 +138,8 @@ def build_gaps(*, entries, cards: Sequence[str], vocab, min_support: int,
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    # 缺口清单里有中文取值；stdout 固定 UTF-8（见 block_director/utils/console.py）。
+    force_utf8_streams()
     parser = argparse.ArgumentParser(prog="gap_report")
     parser.add_argument("--holdout", default="fixtures/knowledge_holdout.jsonl")
     parser.add_argument("--cards", default="fixtures/knowledge_holdout.cards.json")

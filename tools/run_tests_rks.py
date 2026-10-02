@@ -34,6 +34,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from block_director.utils.console import force_utf8_streams  # noqa: E402
+
 
 #: rk_id -> (expected, sample_ref). "expected" is the acceptance line from the
 #: spec; sample_ref 必须**点名**度量它的探针/用例（§B.2 L5），并且这些路径
@@ -161,6 +163,9 @@ def parse_args(argv) -> argparse.Namespace:
 
 
 def main(argv=None) -> int:
+    # `rks.json` 与它的 stdout 副本都带中文；stdout 固定 UTF-8，别让它随控制台变
+    # （见 block_director/utils/console.py 的实测记录）。
+    force_utf8_streams()
     args = parse_args(argv or sys.argv)
     checks = [item.strip() for item in str(args.checks).split(",") if item.strip()]
     failed = [item.strip() for item in str(args.failed).split(",") if item.strip()]

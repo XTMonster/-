@@ -27,6 +27,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from block_director.knowledge.corpus import HANDWRITTEN_CARDS  # noqa: E402
+from block_director.utils.console import force_utf8_streams  # noqa: E402
 
 DEFAULT_CARDS_DIR = ROOT / "knowledge" / "cards_generated"
 EXTERNAL_SCHEMES = ("http://", "https://")
@@ -74,6 +75,9 @@ def run(cards_dir: pathlib.Path | str = DEFAULT_CARDS_DIR) -> dict:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    # 报告里有中文（卡 id / 出处），stdout 一律 UTF-8，免得下游按 UTF-8 解码
+    # 到 cp936 字节（见 block_director/utils/console.py 的实测记录）。
+    force_utf8_streams()
     parser = argparse.ArgumentParser(prog="authorship_report")
     parser.add_argument("--cards-dir", default=str(DEFAULT_CARDS_DIR))
     parser.add_argument("--json", default="")

@@ -53,6 +53,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from block_director.knowledge import hypergraph as _hg  # noqa: E402
+from block_director.utils.console import force_utf8_streams  # noqa: E402
 
 EDGE_TYPES = tuple(_hg.EDGE_TYPES)
 NODE_KINDS = tuple(_hg.NODE_TYPES)
@@ -1018,6 +1019,12 @@ def load_vocab(path: str, pilot: bool) -> Tuple[Dict[str, Sequence[str]] | None,
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    # **判据的退出码不许被控制台编码左右**：`--json` 打的那份报告里有 `⊆`
+    # （`gate_10_index_resolvable.note` 的 "must/top1 ⊆ …"），cp936 编不出它 →
+    # `UnicodeEncodeError` → 进程以未捕获异常退出，退出码 1 —— 而 1 在这里是
+    # "有门失败"。实测与处置见 `block_director/utils/console.py`。
+    force_utf8_streams()
+
     parser = argparse.ArgumentParser(prog="check_holdout")
     parser.add_argument("path", nargs="?", default="fixtures/knowledge_holdout.jsonl")
     parser.add_argument("--min-entries", type=int, default=1200)
