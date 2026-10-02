@@ -231,6 +231,38 @@ def test_glm_pass_writes_partials_per_batch_and_resumes(graph, universe, tmp_pat
 # --------------------------------------------------------------------------- 分隔符归一
 
 
+def test_a_forbidden_value_is_hinted_under_the_forbid_key_not_the_main_one():
+    """被禁止的取值必须由 `禁<主键>` 承载——**主键空着也不能挂主键**。
+
+    实测事故：缺口补跑轮给 `gen_cine_0247`（"摄影机始终处于某种运动中"）写出的 `q`
+    是 `情绪=平静；强度=low；运镜=固定`，而它的 `must` 是
+    `EMOTION_PACK:…,forbid_movement=固定`。`movement` 在那条边里**只以 forbid 出现**
+    （全库 540 条边里有 3 条这样，都在 `EMOTION_PACK`），于是
+    `required_q_hint()` 走了"主键还空着 → 挂主键"那一支，把"我禁止固定"写成
+    "我要固定"，模型照抄，门⑨ 又不看禁忌槽位，这条一路入库。
+    """
+    item = {"specs": ["EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定"]}
+    hint = HP.required_q_hint(item)
+    assert "禁运镜=固定" in hint
+    # 不能靠子串判断：`禁运镜=固定` 里就含着 `运镜=固定`。按键判。
+    keys = [part.split("=", 1)[0] for part in hint.split("；")]
+    assert keys == ["情绪", "强度", "禁运镜"], keys
+
+    # 正对照：主键被**允许值**占用时，两个键各写各的（这一支本来就是对的）。
+    both = {"specs": ["LIGHT_PACK:lighting=侧光,intensity=mid,forbid_lighting=正面光"]}
+    hint2 = HP.required_q_hint(both)
+    assert "光线=侧光" in hint2 and "禁光线=正面光" in hint2
+
+
+def test_the_hint_survives_the_reachability_gate_it_feeds():
+    """提示 → `must` → 门⑨ 必须闭环：照这句提示写出来的 `q` 要能过门⑨。"""
+    item = {"specs": ["EMOTION_PACK:emotion=平静,intensity=low,forbid_movement=固定"]}
+    entry = {"id": "hq_0001", "from_card": "gen_cine_0247",
+             "q": HP.required_q_hint(item),
+             "must": list(item["specs"]), "top1": list(item["specs"]), "never": []}
+    assert CH.query_shortfall(entry) == []
+
+
 def test_space_separated_q_is_folded_back_to_the_protocol_separator():
     """实测事故：`glm-4.7-flash` 把 `道具=陈设；景别=MS；机位=平视` 写成空格分隔。
 

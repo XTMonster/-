@@ -506,16 +506,15 @@ def required_q_hint(item: dict) -> str:
             if key:
                 seen[key] = value
         for kind, value in forbid.items():
-            key = KEY_FOR_KIND.get(kind)
-            if not key:
-                continue
-            if key not in seen:
-                seen[key] = value
-            else:
-                # 主键已被必填值占用 → 用 forbid 键，把"不要这个取值"也写进 q。
-                forbid_key = FORBID_KEY_FOR_KIND.get(kind)
-                if forbid_key:
-                    seen[forbid_key] = value
+            # **被禁止的取值只能挂在 `禁<主键>` 上**——不管主键空不空。
+            # 原先写成"主键空就挂主键"，后果实测：`EMOTION_PACK:…,forbid_movement=固定`
+            # （`movement` 在这一条边里**只以 forbid 出现**）给模型的提示是
+            # `运镜=固定`，于是"我禁止固定"被读成"我要固定"。全库 540 条边里
+            # 有 3 条是这样的（都在 `EMOTION_PACK`），缺口补跑轮命中的
+            # `gen_cine_0247` 正是其中一条。
+            forbid_key = FORBID_KEY_FOR_KIND.get(kind)
+            if forbid_key:
+                seen[forbid_key] = value
     return "；".join("%s=%s" % (key, value) for key, value in seen.items())
 
 
