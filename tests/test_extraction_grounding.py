@@ -133,17 +133,31 @@ def test_evidence_that_names_every_value_is_accepted_and_recorded():
     assert quotes["qualifier/composition_rule"] == "构图是否平衡"
 
 
-def test_the_rejected_generations_are_recorded_and_the_prompt_is_back_on_v14():
-    """被实测否决的三代必须**留档**，且提示词与版本号回到 v14 口径。
+def test_the_rejected_generations_stay_recorded_and_the_kill_switch_stays_off():
+    """被实测否决的三代**必须留档**；**唯一被否决的不是"要求证据"，是"拿证据弃边"**。
 
-    这一条防的是"下一个人再走一遍同一条死路"：v15/v16/v17 的实测数字写在模块里
-    （`PROMPT_VERSION` 上方那张表），提示词里**不许**再出现"每个成员都要自带出处"
-    这种逼模型填槽位的硬规则。
+    这一条防的是"下一个人再走一遍同一条死路"。被实测打死的是三件事——
+
+    * **把逐槽位依据当弃边条件**（v15/v16/v17：700 → 616 → 32 → 25 条边）；
+    * v16 那条"依据里必须逐字出现取值本身"的**硬拒收**（10958 条拒收、10228 条来自它）；
+    * v17 那条"原子只写本卡讲到的成员"（`missing_required` 从 30 涨到 2321）。
+
+    2026-10-03 的 v18 把**要求**加回来、但**只当账**（`member_grounding` 记
+    quoted／inferred／fabricated），实测索引不塌（638 条边 / expressible 96.1%），
+    而且那本账第一次**不再是常量**。所以这里钉的是"**杀开关关着**"＋"要求还在"，
+    而不是"要求不许出现"——后者会把好不容易做实的那本账又按回去。
     """
     prompt = bh.SYSTEM_PROMPT
-    assert "每个成员都要自带出处" not in prompt, "被否决的硬规则又回到提示词里了"
-    assert "必须写全" in prompt, "v14 的必填成员口径丢了"
-    assert bh.PROMPT_VERSION == "extract/v14"
+    #: 要求还在（账才是实的）。
+    assert "每个成员都要自带出处" in prompt
+    assert "只写前 3 项" in prompt, (
+        "空字符串会把模型带进坏 JSON（batch 238 在 0.0/0.2/0.4 三个温度下都失败）")
+    #: **杀开关必须关着**：这是三代塌库的那一下。
+    assert bh.MEMBER_EVIDENCE_MUST_NAME_VALUE is False, (
+        "v16 的硬拒收被打开了——那一档实测一次干掉 93% 的原子")
+    #: 必填成员口径不许被 0b 带跑（v17 就是这么塌的）。
+    assert "必须写全" in prompt or "必填槽位仍然必须写全" in prompt
+    assert bh.PROMPT_VERSION == "extract/v18"
     assert bh.VALIDATION_RULES_VERSION == "gate/v2", (
         "记账不弃边 ⇒ 门与 v2 逐条等价；换版本号会让 manifest 自报一个它没用过的门")
     module = (ROOT / "tools" / "kb_fetch" / "build_hypergraph.py").read_text(encoding="utf-8")

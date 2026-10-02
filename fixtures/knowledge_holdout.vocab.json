@@ -1,5 +1,5 @@
 {
-"_fingerprint": "24efb9e800b0c08b",
+"_fingerprint": "c1d9c11e9ac3e01a",
 "kinds": {
 "action": [
 "上下场",
@@ -168,12 +168,13 @@
 "ELS",
 "LS",
 "MCU",
+"MLS",
 "MS"
 ],
 "vfx": [
-"flame",
 "glow",
 "impact_frame",
+"petrify",
 "smoke",
 "spark"
 ],

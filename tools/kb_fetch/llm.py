@@ -165,7 +165,12 @@ class DeepSeekClient:
                          {"role": "user", "content": user}],
             "temperature": temperature,
             "seed": seed,
-            "max_tokens": 4096,
+            #: 4096 是**不够的**（2026-10-03 实测）：`extract/v18` 要求每个成员再带一句
+            #: 逐字原句，回复长度随之上涨，最大的那一批（8 张卡 × 数条边 × 中文原句）
+            #: 会被**截断**——`batch 238` 连续 5 次重试都返回非法 JSON，
+            #: Q0 的 `processed != total` 因此判红，那 8 张卡整批丢掉。
+            #: `decode` 那一行本来就写着 `ctx=8192`，这里与它对齐。
+            "max_tokens": 8192,
             "response_format": {"type": "json_object"},
         }
         last: Optional[Exception] = None
@@ -188,6 +193,15 @@ class DeepSeekClient:
                 return parse_json_content(message.get("content") or "")
             except Exception as exc:  # noqa: BLE001
                 last = exc
+                #: **解析失败要换一次取样**（2026-10-03 实测）：`extract/v18` 要求每个成员
+                #: 再带一句逐字原句之后，模型偶发把 `members` 数组写坏（`[[…]]` 少一个成员
+                #: 就闭合）。`temperature=0` 下 5 次重试会**逐字重放同一个坏回复**，
+                #: 于是整整一批卡（8 张）无谓地丢掉、Q0 的 `processed != total` 判红。
+                #: 传输错误仍然按原温度重试（那一类与"取样"无关），
+                #: 只有**解析失败**才把温度往上抬一点——与 `holdout_pool` 的缺口轮同一理由：
+                #: 只换取样，不改判据。
+                if isinstance(exc, LLMError) and "不是合法 JSON" in str(exc):
+                    payload["temperature"] = min(float(temperature) + 0.2 * (attempt + 1), 1.0)
                 #: 实测：多进程并发打 GLM 会拿到 `HTTP 429 code=1302`（并发上限）。
                 #: 429 一律**长退避**，否则整批会被限流吃掉（实测 4 个并发进程时
                 #: 单进程的产出从 18 条/批掉到 1.5 条/批）。
