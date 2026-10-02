@@ -73,9 +73,11 @@ distinct queries:    15
 
 106 条里来源卡正文出现运镜语汇的只有 **23 张**。跑一次独立标注（换族 GLM，
 `tools/holdout_expect_movements.py`，判据＝"这句作者话里有没有说镜头怎么动"）
-抽 19 条实测：**只有 3 条**拿到非空 `expect_movements`（2 条 `固定`、
-1 条 `track_left/track_right`），约 **16%**。按这个比例，106 条最多产出 ~17 条
-非空条目——**§4.1b 第一步的 30 条在这批语料上够不到**。
+实测（`work/q5_expect_movements.jsonl`，跑满 106 条之前的中途快照 **n=38**）：
+**只有 7 条**拿到非空 `expect_movements`（5 条 `固定`、1 条
+`track_left/track_right`、1 条 `dolly_in/crane_arc_up`），约 **18%**。
+按这个比例，106 条最多产出 ~19 条非空条目——**§4.1b 第一步的 30 条在这批语料上够不到**。
+（中途快照另有 n=19 → 3 条 ＝16%，比例稳定。）
 
 ## 3. 结论与建议动作
 
