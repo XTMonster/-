@@ -2532,3 +2532,64 @@ python -m pytest 全绿；run_tests.ps1 31/31 探针；证据 docs/evidence/2026
 **仍未做**：门⑦ 的判据（要么按 §33.1 那本账把复核与 schema 对齐，要么按来源集合
 判依据）；`AXIS_RULE` 的可区分槽位；E1 的语义检索或同层语料；Q5 的
 `expect_movements` 标注。
+
+## 三十四、P14-24（2026-10-03 03:xx）：Q5 的**夹具下界第一次达标**（70 ≥ 30）
+
+§二十五把 Q5 判成"**语料供给**"：夹具要 ≥30 条带 `expect_movements` 的条目，
+而当时全库上限只有 17 条、实测填出率 13.8%。§三十三 的 v18 抽取把上游抬起来了，
+这一节把它落地。
+
+### 34.1 上限：17 → **95**
+
+`work/zz_q5_supply.py`（纯统计，不调模型）在**当前索引/oracle**上：
+
+```
+oracle_rows 2847   plan_shaped 236   plan_shaped_with_movement_key 139
+plan_shaped_body_has_movement_cue **95**   shortfall_to_30 0
+```
+
+计划形状条目从 63 涨到 **236**，其中**来源卡正文里真有运镜语汇的 95 条**——
+门要 30，所以夹具侧现在**够得着**（此前是"结构性不够"）。
+
+### 34.2 独立标注：填出 **70** 条，写回 oracle
+
+```
+python tools/holdout_expect_movements.py --out work/q5_expect_v18.jsonl --resume   # GLM，换族
+  → plan_shaped_entries 236 / filled 106 / empty / 1 次 429
+python tools/holdout_expect_movements.py --out … --resume --apply
+  → {"patched": 70, "candidates": 70}
+oracle：2847 条里 **70 条带 expect_movements**（样例 `景别=CU；镜头=35mm；运镜=dolly_in`
+  → `["dolly_in"]`）
+```
+
+门①–⑥、⑧–⑩ 照旧全 pass（加字段不影响它们）；**门⑦ 照旧 fail**（§28.4 的结构性冲突）。
+`tools/knowledge/quality.py` 对 Q5 的报法**当场变了**：
+
+> 夹具侧已够（70 条，其中计划形状 70 条），但运行侧的 join 需要一次真实模型运行的
+> 逐镜查询镜像：本工具还没接上（没给 `--shots`）
+
+也就是说 Q5 从"**测不了**"变成"**差一次真实运行的镜像**"——它的第二步（§4.1b ②）
+要 `--shots`：`shots.json` 里每镜的计划字段 → `shot_constraint_query()` → 与条目的 `q`
+按"键值对集合相等"join。**链上现在还不喂它**，所以 Q5 仍记 `not_measured`。
+
+### 34.3 一条操作教训（写下来免得重犯）
+
+`--apply` **不带 `--resume` 会重标全部 236 条**：那一轮卡在 GLM 的 429 退避里，
+50 分钟只用了 1.3 秒 CPU（`work/q5_expect_v18.jsonl` 停在 02:54），只能停掉；
+带上 `--resume` 之后**不到 1 秒**就打完（`annotated_this_run 0`）。
+**长跑工具一律先 `--resume`。**
+
+### 34.4 这一轮之后的账
+
+```
+索引 638 条边 / oracle 2847 条（其中 70 条带 expect_movements）
+门①–⑥、⑧–⑩ pass；⑦ fail；链：not passing: Q4；Q5 = "夹具够、缺 --shots"；E1=fail 0.1667
+python -m pytest 全绿；run_tests.ps1 31/31；证据 docs/evidence/20261003-034837/
+```
+
+**下一步**（不需要用户裁决，但现在这轮没做完）：跑一次**真实模型运行**产出新的
+`shots.json`（以及审计日志里的逐镜 `retrieval_call` 查询），把 `--shots` 接进链——
+那样 Q5 就从"夹具够"变成**一个真实测出来的数**（可能不达标，但会是数字，不是
+`not_measured`）。同一次运行还会给 E2（经验采纳率）与 E1 的复核提供新鲜证据
+——**不能用 `docs/evidence/20261002_real/` 那份**：它属于旧索引那一代，
+拿它 join 新 oracle 正是 §24.1 修掉的"过期证据被当成现行证据"。
