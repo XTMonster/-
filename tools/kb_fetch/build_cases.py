@@ -599,6 +599,17 @@ def size_gate(cases_path: pathlib.Path, manifest_path: pathlib.Path) -> Dict:
     return {"sizes": sizes, "oversize": oversize, "passed": not oversize}
 
 
+def _cards_digest() -> str:
+    """入库卡片语料的摘要——**与超图指纹里的 `corpus_sha256` 同一函数**。
+
+    L3（案例层）与 L1/L2（超图）是同一份语料的两个投影，所以两者必须记同一枚摘要；
+    否则"L3 是不是这一份语料的产物"在干净克隆里无从判断（`work/` 不进版本库）。
+    """
+    from . import build_hypergraph
+
+    return build_hypergraph.corpus_digest(build_hypergraph.load_cards())
+
+
 def write_outputs(cases: Sequence[Dict], report: Dict, *, docs: Sequence[Dict],
                   out_cases: pathlib.Path = CASES_PATH,
                   out_manifest: pathlib.Path = MANIFEST_PATH) -> Dict:
@@ -611,6 +622,15 @@ def write_outputs(cases: Sequence[Dict], report: Dict, *, docs: Sequence[Dict],
         "generator": {"model_id": "deterministic", "family": "deterministic",
                       "model_version": "n/a"},
         "corpus_fingerprint": corpus_fingerprint(docs),
+        #: **与超图同一枚语料摘要**（`build_hypergraph.corpus_digest`）。
+        #: 为什么必须记：L3 与 L1/L2 是**同一份语料**的两个投影，而 `work/` 下的
+        #: 中间产物（`deduped.jsonl`）是被 gitignore 挡住的——只靠 `--check` 的话，
+        #: 干净克隆里根本没有可比对的东西。2026-10-02 实测的代价：语料从 59 个来源
+        #: 长到 75 之后，`cases.jsonl` **整整一天**没人重建，而它的每一道测试都只查
+        #: 形状与数量下限，**没有一条查"它是不是这一份语料的产物"**；
+        #: `tests/test_cases_corpus.py::test_the_committed_cases_come_from_the_committed_corpus`
+        #: 现在拿这一格与 `hypergraph.manifest.json` 的 `cache_key.corpus_sha256` 对拍。
+        "cards_sha256": _cards_digest(),
         "fingerprint": case_fingerprint(docs),
         **report,
     }

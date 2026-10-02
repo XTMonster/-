@@ -35,6 +35,29 @@ def _rows() -> list:
             CASES_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def test_the_committed_cases_come_from_the_committed_corpus():
+    """**L3 必须是这一份语料的产物**——这一条原来根本不存在。
+
+    2026-10-02 的代价：语料从 59 个来源长到 75 之后，`knowledge/cases.jsonl` 整整一天
+    没人重建，而本文件的每一条用例都只查**形状与数量下限**，没有一条查"它是不是当前
+    语料的产物"。于是 `anime` 域在 L3 里停在 13 篇（重建后是 **120** 篇），插件检索到
+    的仍是一天前的案例，**而链路全绿**。
+
+    现在把两层的语料摘要对拍：L3 与 L1/L2 是同一份语料的两个投影，必须记同一枚
+    `corpus_sha256`（生产者在 `build_hypergraph.corpus_digest`，两侧共用）。这一格是
+    **入库的**，所以干净克隆里也能复核；`build_cases --check` 那条路依赖 `work/` 下的
+    中间产物，在这里不作判据。
+    """
+    cases_manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    hyper = json.loads((ROOT / "knowledge" / "hypergraph.manifest.json")
+                       .read_text(encoding="utf-8"))
+    assert "cards_sha256" in cases_manifest, (
+        "L3 的 manifest 必须记下它由哪一份卡片语料产出（否则无从判断是否陈旧）")
+    assert cases_manifest["cards_sha256"] == hyper["cache_key"]["corpus_sha256"], (
+        "L3 的语料摘要与超图的不一致——两层里至少有一层是从旧语料产出的，"
+        "请重跑 `python -m tools.kb_fetch.build_cases`（P14-3）或 `build_hypergraph`（P14-2）")
+
+
 def test_the_case_corpus_meets_the_floor_and_has_unique_ids():
     rows = _rows()
     assert len(rows) >= MIN_CASES, f"L3 案例 {len(rows)} < {MIN_CASES}"
