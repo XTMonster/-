@@ -254,6 +254,40 @@ def _metric(name: str, numerator: int, denominator: int, line: float,
             "value": round(value, 4), "line": line, "note": note}
 
 
+def _q7_gate_metric(graph, conflicts: int, seen: set) -> Dict[str, Any]:
+    """§4.1b 的**禁忌覆盖门** + §4.1 R52 的"两个分母别混"。
+
+    * **夹具侧**（这里）：`q` 点名了索引里被禁取值的**条目数 ≥ `MIN_FORBID_ITEMS`**，
+      **且**索引里每个 `forbid` 成员至少被 1 条 `q` 点名。这一侧是 `q` × 索引的
+      机械统计，**不掺检索名次**。
+    * **运行侧**：拦截率 = "注入文本带上该 `forbid` 成员"的**镜头数** /
+      "查询命中某边 `forbid` 成员"的**镜头数**——只在真实模型运行上判
+      （§4.4 步骤 2）；照夹具门用镜头数会得 0（R52 原话）。
+    """
+    members = forbid_members(graph)
+    missing = [{"kind": m["kind"], "node_id": m["node_id"], "edge_id": m["edge_id"]}
+               for m in members
+               if (m["edge_id"], m["kind"], m["node_id"]) not in seen]
+    ok = conflicts >= MIN_FORBID_ITEMS and not missing
+    return {
+        "id": "Q7",
+        "status": "pass" if ok else "fail",
+        "numerator": conflicts,
+        "denominator": MIN_FORBID_ITEMS,
+        "value": round(min(1.0, conflicts / MIN_FORBID_ITEMS), 4)
+        if MIN_FORBID_ITEMS else 1.0,
+        "line": 1.0,
+        "note": (f"§4.1b 夹具覆盖门：`q` 点名了索引里被禁取值的条目数 {conflicts}"
+                 f"（下界 {MIN_FORBID_ITEMS}）；索引里 {len(members)} 个 `forbid` 成员"
+                 f"有 {len(members) - len(missing)} 个至少被 1 条 `q` 点名"
+                 + (f"；**没被点名的**：{missing[:4]}" if missing else "")
+                 + "。运行期的拦截率（按镜头）是**另一个分母**（§4.1 R52），"
+                   "只在真实模型运行上判。"),
+        "forbid_members": len(members),
+        "uncovered_forbid_members": missing[:20],
+    }
+
+
 def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
                   top_k: int = 3, token_limit: int = 2000) -> Dict[str, Any]:
     """按 §2.3 的 Q0–Q7 打分（只算超图这一侧；L3 的 E1/E3 由案例层另算）。"""
@@ -267,7 +301,8 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
     negative_pairs = negative_hits = 0
     q6a_edges = q6a_ok = 0
     q6b_required = q6b_ok = 0
-    q7_queries = q7_ok = 0
+    q7_queries = 0
+    q7_members_seen: set = set()
     queries = 0
 
     for entry in entries:
@@ -341,13 +376,18 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
                    for member in edge.members):
                 q6b_ok += 1
 
-        # Q7：查询命中某边 forbid 成员时，注入文本必须带上该 forbid 成员。
-        conflict = _query_conflicts_with_forbid(query, edges, graph)
+        # Q7：**§4.1 的 R52 把两个分母分开了，别再混**——
+        # 这里算的是**夹具覆盖门**（`q` × 索引的机械统计，不掺检索名次）：
+        # 「`q` 的某个键值与某条边的 `forbid` 成员同类同值」的**条目数**，
+        # §4.1b 要求 ≥60，且**每个 `forbid` 成员**至少被 1 条这样的 `q` 点名。
+        # **运行期**的拦截率（"该情形镜头数" 作分母、注入文本必须带上该成员）
+        # 只在真实模型运行上判（§4.4 步骤 2）。
+        conflict = query_names_forbidden(query, graph)
         if conflict:
             q7_queries += 1
-            if all(_member_present(text, member, graph.nodes)
-                   for member in conflict):
-                q7_ok += 1
+            for member in conflict:
+                q7_members_seen.add((member["edge_id"], member["kind"],
+                                     member["node_id"]))
 
     metrics = [
         _metric("Q1", top1_hits, queries, 0.70, kind="min",
@@ -358,8 +398,11 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
                 note=f"required 总数 {required_total}（下界 {MIN_REQUIRED}）"),
         _metric("Q6a", q6a_ok, q6a_edges, 1.0, kind="contract"),
         _metric("Q6b", q6b_ok, q6b_required, 1.0, kind="contract"),
-        _metric("Q7", q7_ok, q7_queries, 1.0, kind="contract",
-                note=f"冲突查询数 {q7_queries}（下界 {MIN_FORBID_ITEMS}）"),
+        #: §4.1b 的**夹具覆盖门** + §4.1 R52 的"两个分母别混"。
+        #: 这里不判"拦截率"（那要真实运行的镜头），只判**材料够不够**：
+        #: ① 冲突条目数 ≥ `MIN_FORBID_ITEMS`；② 索引里**每个 `forbid` 成员**
+        #: 至少被 1 条 `q` 点名。两条都不满足就判失败（硬规则 1：分母下界）。
+        _q7_gate_metric(graph, q7_queries, q7_members_seen),
     ]
     for item in metrics:
         if item["id"] in ("Q1", "Q2") and queries < MIN_QUERIES:
@@ -370,10 +413,6 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
             item["status"] = "fail"
             item["note"] = (f"required 总数 {required_total} < 下界 "
                             f"{MIN_REQUIRED}")
-        if item["id"] == "Q7" and q7_queries < MIN_FORBID_ITEMS:
-            item["status"] = "fail"
-            item["note"] = (f"冲突查询数 {q7_queries} < 下界 "
-                            f"{MIN_FORBID_ITEMS}")
     # §2.3 的 Q6b 前置①（构建期覆盖门）：「若某 query 的 required 边在归并后确实
     # 不存在，则**索引构建失败**（不留给 P14-4 去发现）」。也就是说，解析不到索引边的
     # `must` **不是**"这条不计"，而是 oracle 与索引不同构——它会让 required 的分母
@@ -404,6 +443,42 @@ def _node_names(node, node_id: str) -> set:
         names.add(str(node.name))
         names.update(str(alias) for alias in (node.aliases or []))
     return {name for name in names if name}
+
+
+def forbid_members(graph) -> List[Dict[str, Any]]:
+    """索引里每个 **`forbid` 成员** → `{kind, names, edge_id}`。
+
+    §4.1b 的禁忌覆盖门有一半是"**每个 `forbid` 成员**至少出现在 1 条 `q` 冲突
+    用例里"，所以这里按成员（而不是按取值）列出来，名字集含别名。
+    """
+    out: List[Dict[str, Any]] = []
+    for edge in graph.edges:
+        for member in edge.members:
+            if str(member.role) != "forbid":
+                continue
+            out.append({"kind": str(member.kind),
+                        "names": _node_names(graph.nodes.get(member.node_id),
+                                             member.node_id),
+                        "node_id": str(member.node_id),
+                        "edge_id": edge.edge_id})
+    return out
+
+
+def query_names_forbidden(query: str, graph) -> List[Dict[str, Any]]:
+    """这条 `q` 点名了哪些**索引里被某条边禁止**的取值（§4.1b 的冲突用例口径）。
+
+    **与 §4.1 的 R52 一条对齐**："两个分母别混"——这一侧是**夹具覆盖门**
+    （`q` × 索引的机械统计，不掺检索名次）；**运行期**的拦截率是"按镜头"的另一个
+    分母（该情形镜头数），由真实模型运行给出。
+    """
+    parsed = parse_query(query)
+    hits: List[Dict[str, Any]] = []
+    for member in forbid_members(graph):
+        for value in parsed.get(member["kind"], ()):
+            if str(value) in member["names"]:
+                hits.append(member)
+                break
+    return hits
 
 
 def _query_conflicts_with_forbid(query: str, edges: Iterable, graph) -> List:

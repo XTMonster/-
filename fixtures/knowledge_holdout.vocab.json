@@ -1,5 +1,5 @@
 {
-"_fingerprint": "71da1d23a43b806b",
+"_fingerprint": "14c88441d7c0023d",
 "kinds": {
 "action": [
 "上下场",
@@ -8,7 +8,9 @@
 "反应",
 "后退",
 "坐下",
+"奔跑",
 "微表情",
+"拿起",
 "挥手",
 "推门",
 "登场",
@@ -16,8 +18,10 @@
 "表情",
 "走位",
 "起身",
+"跺脚",
 "转身",
-"退场"
+"退场",
+"颤抖"
 ],
 "axis_topic": [
 "中性机位",
@@ -38,6 +42,7 @@
 "平视",
 "荷兰角",
 "过肩",
+"骑轴",
 "高机位"
 ],
 "composition_rule": [
@@ -52,6 +57,7 @@
 "喊叫",
 "平淡",
 "画外音",
+"耳语",
 "颤抖"
 ],
 "emotion": [
@@ -68,22 +74,27 @@
 "混乱",
 "温柔",
 "焦虑",
+"绝望",
 "荒诞",
 "讽刺"
 ],
 "genre": [
 "anime",
+"documentary",
 "film"
 ],
 "intent": [
+"停顿",
 "压迫",
 "回望",
+"对抗",
 "推进",
 "揭示",
 "收束",
 "煽动",
 "留白",
 "转折",
+"释放",
 "铺垫"
 ],
 "lens": [
@@ -104,6 +115,8 @@
 "高调"
 ],
 "movement": [
+"crane_arc_down",
+"crane_arc_up",
 "crane_down",
 "crane_up",
 "dolly_in",
@@ -111,10 +124,21 @@
 "dolly_zoom",
 "follow_subject",
 "handheld",
+"lead_subject",
+"orbit_ccw",
+"orbit_cw",
 "pan_left",
 "pan_right",
 "push_through",
 "steadicam",
+"tilt_down",
+"tilt_up",
+"track_left",
+"track_right",
+"whip_pan_left",
+"whip_pan_right",
+"zoom_in",
+"zoom_out",
 "固定"
 ],
 "music": [
@@ -133,6 +157,7 @@
 ],
 "sfx": [
 "低频轰鸣",
+"尖锐哨音",
 "金属撞击",
 "雨声",
 "静默"
@@ -149,7 +174,8 @@
 "vfx": [
 "glow",
 "impact_frame",
-"smoke"
+"smoke",
+"spark"
 ],
 "avg_shot_len": [
 "1-3s",
@@ -167,12 +193,14 @@
 "dialogue",
 "establish",
 "insert",
+"reaction",
 "transition"
 ],
 "transition": [
 "cut",
 "dissolve",
-"fade"
+"fade",
+"whip"
 ]
 }
 }

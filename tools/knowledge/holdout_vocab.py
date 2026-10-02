@@ -45,7 +45,22 @@ from tools.holdout_score import load_graph  # noqa: E402
 
 #: 门③ 的 `--min-seed-support` 默认值。词表口径与它**必须是同一个数**：
 #: 取值表达少于这么多次，就不可能凑出这么多个 `(卡片, 查询)` 对。
-MIN_SUPPORT_EDGES = 3
+#:
+#: **2026-10-02：由 3 改回 1 —— 回到执行文档 §4.1b 的原话。**
+#: 那一行写的是「种子覆盖 | **词表里每个 `node value` 至少出现在 1 条 `q` 里** |
+#: 否则那个词永远没人查，"种子召回"是盲区」，而 §4.1b 的表**优先级高于其余任何措辞**。
+#: 之前取 3 是"统计功效"层面的**自我加严**，代价实测很大：
+#:
+#: * 12 个运镜取值（`track_left`／`zoom_in`／`crane_arc_*`…）只被 1–2 条边表达，
+#:   被不动点剔出词表 → **含它的边整条不可标注** → 那些卡在门⑥ 里永远拿不到条目
+#:   （实测 28 张）；
+#: * 索引里有 7 个 `forbid` 成员，其中 `movement=track_left`／`movement=zoom_in`
+#:   因为不在词表里，**没有任何条目能写出它们** → §4.1b 的"每个 forbid 成员至少
+#:   出现在 1 条 `q` 冲突用例里"在构造上不可能满足。
+#:
+#: 改回 1 之后词表 129 → 157 个取值（运镜 12 → 25，即引擎支持的全部运镜），
+#: 不动点不再剔任何取值。**证据另记**：`docs/knowledge/ACCEPTANCE_STATUS.md` §16。
+MIN_SUPPORT_EDGES = 1
 
 DEFAULT_NODES = "knowledge/hypergraph.nodes.jsonl"
 DEFAULT_EDGES = "knowledge/hypergraph.edges.jsonl"

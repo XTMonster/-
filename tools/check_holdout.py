@@ -1020,8 +1020,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                              "交满 30，给不到的按它真能给的要求**（2026-10-01 用户裁决）。"
                              "不给就退回旧判据。")
     parser.add_argument("--min-forbid", type=int, default=60)
-    parser.add_argument("--min-seed-support", type=int, default=3,
-                        help="每个词表取值至少出现在多少条不同的 (卡片,查询) 里")
+    parser.add_argument("--min-seed-support", type=int, default=1,
+                        help="每个词表取值至少出现在多少条不同的 (卡片,查询) 里。"
+                             "默认 **1** ＝ §4.1b 的原话（\"词表里每个 node value 至少"
+                             "出现在 1 条 `q` 里\"）；`tools/knowledge/holdout_vocab.py`"
+                             "的 `MIN_SUPPORT_EDGES` 必须与它同一个数。"
+                             "取 3 会把只被 1–2 条边表达的取值剔出词表，那些边连带"
+                             "其来源卡一起从门⑥ 消失（实测 28 张卡），"
+                             "而且让索引里的 `forbid` 成员写不进任何 `q`。")
     parser.add_argument("--min-human-review", type=int, default=120,
                         help="Q5/Q7 条目里必须带人裁决的条数（协议 §5.5；pilot 时为 1）")
     parser.add_argument("--reviewer-classes", default="human",

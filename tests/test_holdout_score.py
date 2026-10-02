@@ -114,18 +114,24 @@ def test_q6b_fails_when_a_member_is_missing_from_the_injected_text():
 def test_q7_only_counts_queries_that_conflict_with_a_forbid_member():
     module = _load()
     graph, edge, _other = _graph(module)
-    # 「运镜=固定」正是该边 forbid 的成员 → 计入分母。
+    # **2026-10-02：Q7 的分母按 §4.1 R52 换成"夹具覆盖门"的口径**——
+    # 分母是 `MIN_FORBID_ITEMS`（§4.1b 的下界），**分子**才是
+    # 「`q` 点名了索引里被禁取值」的条目数。所以这里断言分子。
+    # 这条用例的原意不变：**只有与该边 forbid 成员冲突的查询才计入**。
     conflicting = _entry(module, edge, q="情绪=荒诞；运镜=固定")
     report = module.score_entries([conflicting], graph)
     by_id = {item["id"]: item for item in report["metrics"]}
-    assert by_id["Q7"]["denominator"] == 1
+    assert by_id["Q7"]["numerator"] == 1
+    assert by_id["Q7"]["denominator"] == module.MIN_FORBID_ITEMS
 
-    # 「情绪=荒诞；景别=中景」与该边的 forbid 无关 → 不进分母。
+    # 「情绪=荒诞；景别=中景」与该边的 forbid 无关 → 不进分子。
     unrelated = _entry(module, edge, q="情绪=荒诞；景别=中景")
     report = module.score_entries([unrelated], graph)
     by_id = {item["id"]: item for item in report["metrics"]}
-    assert by_id["Q7"]["denominator"] == 0
-    assert by_id["Q7"]["status"] == "fail"      # 分母 0 一律失败
+    assert by_id["Q7"]["numerator"] == 0
+    assert by_id["Q7"]["status"] == "fail"      # 冲突条目 0 < 下界，一律失败
+    # 而且"每个 forbid 成员至少被 1 条 q 点名"这半也要报出来。
+    assert by_id["Q7"]["uncovered_forbid_members"]
 
 
 def test_negative_samples_are_counted_for_q3():

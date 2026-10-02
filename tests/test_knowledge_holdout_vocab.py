@@ -92,7 +92,10 @@ def test_long_tail_values_are_dropped_with_a_reason(graph):
     并且**逐值复核**（比只数个数更强）。
     """
     universe = json.loads(CARDS.read_text(encoding="utf-8"))
-    payload, report = HV.build_vocab(graph, universe=universe)
+    # **门槛必须显式给**：2026-10-02 起默认值回到 §4.1b 的原话（≥1 条 `q`），
+    # 而"语料有长尾、剔除数不可能为 0"这句话只在**人为抬高门槛**时才成立。
+    # 这一条验的是**机制**（凑不出门槛个对的取值逐条记账地剔掉），所以在 3 上验。
+    payload, report = HV.build_vocab(graph, universe=universe, min_support=3)
     assert report["dropped_unreachable_count"] > 0, "语料有长尾，剔除数不可能为 0"
     assert report["dropped_unreachable_pairs"], "剔除必须按 kind 记账"
     pairs = HV.pair_support(graph, universe)
@@ -101,11 +104,11 @@ def test_long_tail_values_are_dropped_with_a_reason(graph):
                for value in values}
     # 正面：剔掉的每一个取值都确实是"凑不出 min_support 个对"的。
     for key in dropped:
-        assert len(pairs.get(key, ())) < HV.MIN_SUPPORT_EDGES, key
+        assert len(pairs.get(key, ())) < 3, key
     # 反面：留在词表里的每一个取值都必须**真的**凑得出 min_support 个对。
     for kind, values in payload.items():
         for value in values:
-            assert len(pairs.get((kind, value), ())) >= HV.MIN_SUPPORT_EDGES, (kind, value)
+            assert len(pairs.get((kind, value), ())) >= 3, (kind, value)
 
 
 def test_fixpoint_removes_values_that_cannot_reach_the_support_line(graph):
@@ -115,10 +118,22 @@ def test_fixpoint_removes_values_that_cannot_reach_the_support_line(graph):
     查询串也相同 —— 只有 1 个 `(卡片, 查询)` 对。剔掉它之后生成才可能过门③。
     """
     universe = json.loads(CARDS.read_text(encoding="utf-8"))
+    # 同 `test_long_tail_values…`：在**显式门槛 3** 上验"不动点会剔掉支撑不足的取值"
+    # 这个机制（默认门槛 1 上无物可剔），并仍然断言当前口径的不动点收敛。
+    _payload3, report3 = HV.fixpoint(graph, universe, min_support=3)
+    assert report3.get("fixpoint_converged", True) is not False
+    assert report3["fixpoint_rounds"] >= 1
     payload, report = HV.fixpoint(graph, universe)
     rows, stats = HP.mechanical(graph, universe, vocab=payload)
-    assert stats["under_supported_values"] == [], (
-        "不动点之后不该还有支撑不足的取值")
+    #: `holdout_pool.MIN_VALUE_SUPPORT`（3）与**门③ 的门槛**不是一个数，别混：
+    #: 前者是"这条取值薄不薄"的**诊断量**，后者是 §4.1b 写的下界（≥1 条 `q`）。
+    #: 所以这里断言的是"被点名的都还在词表里"（诊断的是薄，不是词表外），
+    #: 而不是"诊断表必须为空"——那只有两个门槛相等时才成立。
+    vocab_values = {(kind, value) for kind, values in payload.items() for value in values}
+    for item in stats["under_supported_values"]:
+        kind, _, value = item.partition("=")
+        assert (kind, value) in vocab_values, item
+    assert len(vocab_values) == sum(len(values) for values in payload.values())
     assert report.get("fixpoint_converged", True) is not False
     assert report["fixpoint_rounds"] >= 1
     assert rows
