@@ -1,0 +1,199 @@
+"""E1（经验引用相关性 ≥70%）的**打分通道**：把一次真实运行的逐镜查询与案例层召回的案例打分。
+
+为什么要有这个工具（而不是留在 `work/` 里）
+==========================================
+链上 `tools/run_tests.ps1` 的 `quality.py --e1-reviews <file>` 消费的是**这个工具
+产出的文件**，而在此之前那份文件是由 `work/zz_e1_panel.py` ＋ `work/zz_e1_zh_measure.py`
+两个**未跟踪**的临时脚本生成的——"链的输入来自一个不在库里的脚本"就是
+`ACCEPTANCE_STATUS.md` §24.1 那个"过期证据被当成现行证据"的同一形状：没人能复算，
+也没人能在换代之后重跑。本工具把它固化下来。
+
+判据（与 §2.3b 一致，一个字没改）
+================================
+* 单位是**逐镜**：查询取每一镜自己的散文（编辑器喂给 L3 的那段 `analogy`），
+  不是计划期那种把整段剧本塞进去的串（那种串判官只能答"不知道"）。
+* 召回 `top_k` 条案例，**两个不同族**的模型（默认 deepseek-chat ＋ glm-4.7）
+  逐条打 1–5 分；`score ≥ 4` 记为相关。
+* 每条记录写明 `reviewed_by: "llm-panel"`（**绝不冒充 `human`**）、面板模型、
+  提示指纹，以及**这一份案例索引的指纹**——`quality.py::e1_evidence_is_stale`
+  靠后者判"这批打分是不是这一代语料"，缺了只能记 `stale_evidence`。
+
+用法::
+
+  python tools/knowledge/e1_panel.py --project <run>/project/project.bdproj \
+      --out docs/evidence/<run>/e1_reviews.jsonl
+  python tools/knowledge/e1_panel.py --queries work/queries.txt --out ...      # 手给查询
+  python tools/knowledge/e1_panel.py ... --scripted work/stub.json             # 离线自测
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import pathlib
+import sys
+from typing import Any, Dict, List, Optional, Sequence
+
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from block_director.knowledge.cases import load_index  # noqa: E402
+from tools.kb_fetch import llm  # noqa: E402
+
+DEFAULT_PANEL = ("deepseek-chat", "glm-4.7")
+DEFAULT_FAMILIES = ("deepseek", "glm")
+RELEVANT = 4.0
+
+SYSTEM = (
+    "你是分镜预演工具的知识检索复核员。下面给你一条**导演查询串**和若干条被检索回来的"
+    "**参考案例**。请判断每条案例对这条查询是否**真的相关**（能不能拿来指导这一次拍摄）。\n"
+    "只输出 JSON：{\"scores\":[{\"case_id\":\"...\",\"score\":1-5,\"reason\":\"不超过 20 字\"}]}\n"
+    "5=直接相关且可照做；4=相关；3=沾边；2=几乎无关；1=完全无关。"
+)
+
+
+def queries_from_project(path: pathlib.Path) -> List[str]:
+    """每一镜的散文查询（`prompt`）——**与编辑器喂给 L3 的那段文字同源**。
+
+    `shots.json`（交付清单）不带 `prompt`，所以这里读的是工程文件 `project.bdproj`。
+    计划期那种"剧本《…》：4 场…"的串被丢掉：它把整段剧本塞进 query，
+    判官无从判断"这条案例相关吗"。
+    """
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    shots = [shot for scene in payload.get("scenes") or []
+             for shot in (scene.get("shots") or [])]
+    out: List[str] = []
+    for shot in shots:
+        text = str(shot.get("prompt") or "").strip()
+        if text and "剧本《" not in text and text not in out:
+            out.append(text)
+    return out
+
+
+def queries_from_lines(path: pathlib.Path) -> List[str]:
+    out: List[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        text = line.strip()
+        if text and text not in out:
+            out.append(text)
+    return out
+
+
+def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
+    listing = "\n".join(
+        "%s｜%s｜%s" % (case.case_id, str(getattr(case, "title", ""))[:60],
+                       str(getattr(case, "summary", "")
+                           or getattr(case, "excerpt", ""))[:220])
+        for case in cases)
+    #: `key=query` 是给 `scripted` 后端用的：离线用例按查询串取预置回答，
+    #: 测试因此**不用碰网络**（生产后端忽略这个参数）。
+    reply = client.chat_json(SYSTEM, "查询串：%s\n\n案例：\n%s" % (query, listing),
+                             0.0, 0, 2048, key=query)
+    out: Dict[str, Dict[str, Any]] = {}
+    for row in reply.get("scores") or []:
+        if isinstance(row, dict) and row.get("case_id") is not None:
+            out[str(row["case_id"])] = row
+    return out
+
+
+def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
+                  top_k: int = 3) -> List[Dict[str, Any]]:
+    """跑一遍打分。**纯函数式**：索引与客户端都由调用方注入，因此可离线测。"""
+    rows: List[Dict[str, Any]] = []
+    for query in queries:
+        cases = index.retrieve(query, top_k=top_k)
+        if not cases:
+            continue
+        verdicts: Dict[str, Dict[str, Any]] = {}
+        for name, client in clients:
+            try:
+                verdicts[name] = judge(client, query, cases)
+            except Exception as exc:  # noqa: BLE001 — 单条失败不吞掉整批
+                verdicts[name] = {"__error__": f"{type(exc).__name__}: {exc}"[:120]}
+        for case in cases:
+            scores = [verdicts.get(name, {}).get(str(case.case_id), {}).get("score")
+                      for name, _client in clients]
+            numbers = [float(s) for s in scores if isinstance(s, (int, float))]
+            if not numbers:
+                continue
+            rows.append({
+                "case_id": str(case.case_id), "query": query,
+                "zh": str(getattr(index, "search_zh", {}).get(str(case.case_id), "")),
+                "excerpt": str(getattr(case, "excerpt", "") or "")[:200],
+                "scores": scores,
+                "score": sum(numbers) / len(numbers),
+                "reviewed_by": "llm-panel",
+                #: `quality.e1_evidence_is_stale` 要求每条自带**这一份**索引的指纹。
+                "cases_fingerprint": str(getattr(index, "fingerprint", "") or ""),
+                "panel": [name for name, _client in clients],
+                "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
+            })
+    return rows
+
+
+def summarise(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    good = [row for row in rows if float(row["score"]) >= RELEVANT]
+    return {"scored": len(rows), "relevant": len(good),
+            "value": round(len(good) / len(rows), 4) if rows else None,
+            "line": 0.70}
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    parser = argparse.ArgumentParser(prog="knowledge-e1-panel")
+    parser.add_argument("--project", default="",
+                        help="真实运行的 project.bdproj（逐镜散文查询的来源）")
+    parser.add_argument("--queries", default="", help="或直接给一行一条查询的文本文件")
+    parser.add_argument("--cases-dir", default="knowledge")
+    parser.add_argument("--out", required=True)
+    parser.add_argument("--top-k", type=int, default=3)
+    parser.add_argument("--models", default=",".join(DEFAULT_PANEL))
+    parser.add_argument("--scripted", default="",
+                        help="离线桩（`llm` 的 scripted 后端）；给了就完全不碰网络")
+    parser.add_argument("--limit", type=int, default=0, help="0 = 全部")
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
+
+    if bool(args.project) == bool(args.queries):
+        print(json.dumps({"error": "必须**恰好**给一个：--project 或 --queries"},
+                         ensure_ascii=False))
+        return 2
+    queries = (queries_from_project(ROOT / args.project) if args.project
+               else queries_from_lines(ROOT / args.queries))
+    if args.limit:
+        queries = queries[:args.limit]
+    if not queries:
+        print(json.dumps({"error": "一条查询都没有：分母为 0，不许当成通过"},
+                         ensure_ascii=False))
+        return 2
+
+    index = load_index(ROOT / args.cases_dir, backend="hybrid")
+    names = [item.strip() for item in str(args.models).split(",") if item.strip()]
+    families = list(DEFAULT_FAMILIES[:len(names)]) or ["scripted"]
+    if len(set(families[:len(names)])) < 2 and not args.scripted:
+        print(json.dumps({"error": "面板必须换族（两个不同的 family）"},
+                         ensure_ascii=False))
+        return 2
+    clients = []
+    for position, name in enumerate(names):
+        if args.scripted:
+            client = llm.make_client("scripted", name, args.scripted)
+        else:
+            client = llm.make_client(families[position], name)
+        clients.append((name, client))
+
+    rows = score_queries(index, queries, clients, top_k=args.top_k)
+    out_path = ROOT / args.out
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n"
+                               for row in rows), encoding="utf-8", newline="\n")
+    summary = {"out": str(out_path), "queries": len(queries),
+               "cases_fingerprint": str(getattr(index, "fingerprint", "") or ""),
+               **summarise(rows)}
+    print(json.dumps(summary, ensure_ascii=False, indent=2 if args.json else None))
+    return 0 if rows else 1
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())
