@@ -22,6 +22,7 @@ from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
 from ..cinema.station import SubjectFrame, camera_direction, subject_frame
 from ..cinema.schedule import action_frame_window, shot_ranges, total_frames
 from ..motion.model import ActionRequest
+from ..utils.geometry import rotation_z_to_facing
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .character_system import MotionBlender, create_character, create_label
@@ -134,10 +135,42 @@ def subject_frame_for(shot: ShotPlan,
                          speaker_id=speaker_of(shot))
 
 
+def live_subject_entries(shot: ShotPlan, characters: Dict[str, Any]
+                         ) -> List[Tuple[str, Tuple[float, float, float],
+                                         Tuple[float, float, float]]]:
+    """这一镜**此刻**的（角色 id, 世界位置, 世界朝向）。
+
+    与 :func:`subject_frame_for` 的区别是**时间点**：后者读
+    ``CastMember.initial_location``（剧本开始时的站位），而角色在**前面的镜头里
+    已经走动过**。实测（2026-10-04，`work/_anchor_probe.py`，`long9` 工程）：
+    64 镜里 **20 镜**的单主体与起始站位差 > 1 m，最远 **7.7 m**（`shot_059`：
+    伊恩实际在 (8.6, −6.0)，机位却按 (0.9, 0.0) 摆）⇒ 那些镜头本来就把主体
+    拍在画框边缘/画外，构图分因此常年在 50–60。
+
+    朝向用 :func:`block_director.utils.geometry.rotation_z_to_facing` 从根节点
+    的 yaw 回读——与构图评分模型（`composition_guide._screen_facing`）**同一处
+    真源**，两边不会再互相镜像。
+    """
+    entries: List[Tuple[str, Tuple[float, float, float],
+                        Tuple[float, float, float]]] = []
+    for character_id in shot.characters:
+        character = characters.get(character_id)
+        root = getattr(character, "root", None)
+        if root is None:
+            continue
+        location = root.matrix_world.translation
+        facing = rotation_z_to_facing(root.matrix_world.to_euler().z)
+        entries.append((character_id,
+                        (float(location.x), float(location.y), float(location.z)),
+                        (float(facing[0]), float(facing[1]), 0.0)))
+    return entries
+
+
 def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
                       spec: Optional[SceneSpec] = None, *,
                       request: Optional[Dict[str, Any]] = None,
-                      axis: Optional[Any] = None):
+                      axis: Optional[Any] = None,
+                      entries: Optional[Sequence[Any]] = None):
     """**唯一的机位解算入口**：主构建与单镜再生共用。
 
     v1.2 里 :mod:`shot_regenerator` 自己又写了一遍解算，而且写死
@@ -147,7 +180,11 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
     """
     resolved = dict(request if request is not None
                     else (getattr(shot, "camera", None) or {}))
-    frame = subject_frame_for(shot, cast)
+    #: `entries` 给了就用**实时**参考系（该镜首帧人在哪、朝哪），否则退回
+    #: 剧本的起始站位（`CastMember.initial_location`）。
+    frame = (subject_frame(entries, shot_type=str(shot.shot_type),
+                           speaker_id=speaker_of(shot))
+             if entries else subject_frame_for(shot, cast))
     side = str(resolved.get("side") or "front")
     axis_dir = None
     axis_side = 0
@@ -209,6 +246,14 @@ def action_requests(shot: ShotPlan, shot_start: int,
 
         params = dict(raw.get("params") or {})
         if action_type in ("walk_to", "run_to"):
+            #: **契约一致性**（2026-10-04 真跑实测）：草案 schema
+            #: （`editor.EMIT_SHOT_DRAFT_PARAMETERS`）把 `target_position` 声明成
+            #: 动作项的**顶层**字段，而这里原来只读 `params.target_position`
+            #: ⇒ 模型按 schema 写的目的地被整条丢掉、只留一句
+            #: "walk_to 缺少 target_position，已跳过"（`long10`/`long11` 各有
+            #: 10 处）。两个合法位置都要认，优先 `params`（更细的那份）。
+            if not params.get("target_position") and raw.get("target_position"):
+                params["target_position"] = list(raw["target_position"])
             if not params.get("target_position"):
                 warnings.append(
                     f"{shot.shot_id}: {action_type} 缺少 target_position，已跳过"
@@ -295,19 +340,76 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     ranges = shot_ranges(plan)
     motion_requests: Dict[str, List[ActionRequest]] = {}
     movement_tasks: List[Tuple[str, int, int, List[Dict[str, Any]], str]] = []
+    #: 第一趟只**排片**（帧区间、动作请求、运镜任务），不摆机位：机位必须等动作
+    #: 烘焙完之后再按"这一镜首帧人在哪"来摆（v1.6，见 `live_subject_entries`）。
+    planned: Dict[str, Dict[str, Any]] = {}
     for shot in plan.shots:
         start, end = ranges[shot.shot_id]
+        context.schedule[shot.shot_id] = (start, end)
+        planned_warnings: List[str] = []
+        requests = action_requests(shot, start, cast_map, planned_warnings)
+        planned_warnings.extend(
+            thirty for thirty in conflict_warnings(requests, shot.shot_id))
+        for request in requests:
+            motion_requests.setdefault(request.character_id, []).append(request)
+        # §3.6 声明式消费：计划里写了运镜就自动生成相机关键帧（登记在第二趟之后
+        # 执行——跟拍要读主体逐帧的位置）。
+        declared_moves = [dict(item) for item in
+                          (getattr(shot, "camera", None) or {}).get("movements", [])
+                          if isinstance(item, dict)]
+        if declared_moves:
+            default_subject = (speaker_of(shot)
+                               or (shot.characters[0] if shot.characters else ""))
+            movement_tasks.append((shot.shot_id, start, end, declared_moves,
+                                   default_subject))
+        planned[shot.shot_id] = {"start": start, "end": end,
+                                 "warnings": planned_warnings,
+                                 "requests": requests}
+
+    for character_id, requests in motion_requests.items():
+        character = characters.get(character_id)
+        if character is None:
+            continue
+        blender = MotionBlender(character)
+        blender.requests.extend(requests)
+        try:
+            result = blender.bake(clear=True)
+        except ValueError as exc:
+            summary.warnings.append(f"{character_id}: 动作烘焙失败（{exc}）")
+            continue
+        summary.motions += len(requests)
+        summary.keyframes += result.keyframes
+        # v1.4 US-17：错开留痕（apply_motions 里的确定性错开）。
+        for event in getattr(result, "action_conflicts", []) or []:
+            record = dict(event)
+            # shots.json 的该字段按**镜**聚合，这里补上镜头 id：
+            # 事件本身只有"哪一层、哪两个动作"，用动作的起始帧反查排片表。
+            if not record.get("shot_id"):
+                frame = int(record.get("frame") or 0)
+                record["shot_id"] = next(
+                    (key for key, span in context.schedule.items()
+                     if int(span[0]) <= frame <= int(span[1])), "")
+            summary.action_conflicts.append(record)
+
+    #: 第二趟：摆机位。先 `frame_set(该镜首帧)` 再读角色的世界位置/朝向——
+    #: 这是"机位瞄的是这一镜人在哪"唯一成立的地方。
+    for shot in plan.shots:
+        info = planned[shot.shot_id]
+        start, end = int(info["start"]), int(info["end"])
+        scene.frame_set(start)
+        bpy.context.view_layer.update()
 
         # 阶段 B1 可以给这一镜一个"相对取景请求"（§16.1 的 CameraRequest）：
         # side 与 lens 由取景解算器消费；距离/高度仍按 §10.6/§10.5 推导。
         # v1.3：side 经 cinema.station 解析——双人镜头相对两人连线，
         # 而不是相对焦点主体的朝向（否则机位会落在轴线上）。
         bundle, solution, frame = place_shot_camera(shot, cast_map, spec,
-                                                    axis=context.axis)
+                                                    axis=context.axis,
+                                                    entries=live_subject_entries(
+                                                        shot, characters))
         marker = scene.timeline_markers.new(f"BD_Cut_{shot.shot_id}", frame=start)
         marker.camera = bundle.camera
         context.cameras[shot.shot_id] = bundle.camera
-        context.schedule[shot.shot_id] = (start, end)
 
         # §10.3：轴线由**第一个**含两名角色的镜头确立，后续镜头继承
         if context.axis is None and len(shot.characters) >= 2:
@@ -317,24 +419,8 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                 context.axis = establish_axis_from_speakers(speakers,
                                                            bundle.camera)
 
-        shot_warnings = list(solution.warnings)
-        requests = action_requests(shot, start, cast_map, shot_warnings)
-        shot_warnings.extend(
-            thirty for thirty in conflict_warnings(requests, shot.shot_id))
-        for request in requests:
-            motion_requests.setdefault(request.character_id, []).append(request)
-
-        # §3.6 声明式消费：计划里写了运镜就自动生成相机关键帧，
-        # 不再依赖模型另外调一次 move_camera。放在动作烘焙**之后**执行
-        # （跟拍要读主体逐帧的位置），所以这里只登记任务。
-        declared_moves = [dict(item) for item in
-                          (getattr(shot, "camera", None) or {}).get("movements", [])
-                          if isinstance(item, dict)]
-        if declared_moves:
-            default_subject = (speaker_of(shot)
-                               or (shot.characters[0] if shot.characters else ""))
-            movement_tasks.append((shot.shot_id, start, end, declared_moves,
-                                   default_subject))
+        shot_warnings = list(solution.warnings) + list(info["warnings"])
+        requests = info["requests"]
 
         # §3.6 特效代理：只在声明的时间窗内可见（关键帧控制 hide_render），
         # 否则火焰会一路烧到别的镜头里去。
@@ -374,31 +460,6 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             warnings=shot_warnings))
         summary.cameras += 1
         summary.warnings.extend(shot_warnings)
-
-    for character_id, requests in motion_requests.items():
-        character = characters.get(character_id)
-        if character is None:
-            continue
-        blender = MotionBlender(character)
-        blender.requests.extend(requests)
-        try:
-            result = blender.bake(clear=True)
-        except ValueError as exc:
-            summary.warnings.append(f"{character_id}: 动作烘焙失败（{exc}）")
-            continue
-        summary.motions += len(requests)
-        summary.keyframes += result.keyframes
-        # v1.4 US-17：错开留痕（apply_motions 里的确定性错开）。
-        for event in getattr(result, "action_conflicts", []) or []:
-            record = dict(event)
-            # shots.json 的该字段按**镜**聚合，这里补上镜头 id：
-            # 事件本身只有"哪一层、哪两个动作"，用动作的起始帧反查排片表。
-            if not record.get("shot_id"):
-                frame = int(record.get("frame") or 0)
-                record["shot_id"] = next(
-                    (key for key, span in context.schedule.items()
-                     if int(span[0]) <= frame <= int(span[1])), "")
-            summary.action_conflicts.append(record)
 
     for shot_id, start, end, declared_moves, default_subject in movement_tasks:
         camera = context.cameras.get(shot_id)

@@ -26,7 +26,7 @@ from .character_system import MotionBlender
 from .scene_context import SceneContext, get_context
 from .scene_sync import SceneSynchronizer, is_user_animated
 from .shot_builder import (action_requests, conflict_warnings,
-                           place_shot_camera)
+                           live_subject_entries, place_shot_camera)
 
 log = get_logger("shot-regen")
 
@@ -108,7 +108,10 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
 
     # v1.3：与主构建共用同一个机位解算入口。
     # v1.2 这里写死 side="front" 并丢掉 lens，重生成后朝向与焦距都会回退。
-    bundle, solution, _frame = place_shot_camera(shot, cast_map, spec)
+    bundle, solution, _frame = place_shot_camera(
+        shot, cast_map, spec,
+        #: 与主构建同一条口径：按**此刻**人在哪、朝哪摆机位（v1.6）。
+        entries=live_subject_entries(shot, context.characters))
     marker = scene.timeline_markers.new(f"BD_Cut_{shot_id}", frame=start)
     marker.camera = bundle.camera
     context.cameras[shot_id] = bundle.camera

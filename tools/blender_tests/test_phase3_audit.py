@@ -243,6 +243,69 @@ def t_a_dialogue_line_survives_reverse_singles():
             "warnings": summary.warnings}
 
 
+# --------------------------------------------------------------------------- #
+# 7. 机位瞄的是"这一镜人在哪"，不是"剧本开始时的站位"（v1.6）
+#
+# 现场（2026-10-04，`work/_anchor_probe.py`，`long9` 工程）：角色在**前面的镜头**
+# 里走动过，而 `place_shot_camera` 一直用 `CastMember.initial_location` 摆机位——
+# 64 镜里 **20 镜**的单主体与锚点差 > 1 m，最远 **7.7 m**（`shot_059`：伊恩实际在
+# (8.6, −6.0)，机位却按 (0.9, 0.0) 摆）。那些镜头本来就把主体拍在画框边缘/画外，
+# 是剩下的 COMPOSITION 低分的主因。
+#
+# 这条判据换了不变量：不是"某个坐标等于某个数"，而是**机位的对准点跟着角色走**。
+# 旧代码在这里必然红（对准点会停在起始位置 0.0，而角色已经走到 5.0 附近）。
+# --------------------------------------------------------------------------- #
+def _anchor_plan():
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    shots = [
+        # 第一镜把角色从起始站位走到 +X 5 米处
+        ShotPlan.from_dict({
+            "shot_id": "shot_001", "order": 1, "intent": "走过去",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_001"],
+            "actions": [{"character_id": "char_001", "action_type": "walk_to",
+                         "start_frame": 1, "end_frame": 48,
+                         "target_position": [5.0, 0.0, 0.0]}]}),
+        ShotPlan.from_dict({
+            "shot_id": "shot_002", "order": 2, "intent": "他已经不在原地了",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_001"]}),
+    ]
+    return Plan(shots=shots, scene_heading="INT. 码头 - 日")
+
+
+def t_the_camera_aims_where_the_character_is_now():
+    from block_director.contracts.cast import SceneSpec
+    from block_director.layer3_engine.scene_context import get_context
+    from block_director.layer3_engine.shot_builder import build_scene
+
+    fresh_scene()
+    plan = _anchor_plan()
+    spec = SceneSpec.from_plan(plan)
+    summary = build_scene(plan, spec, clear_scene=True)
+    context = get_context()
+    scene = bpy.context.scene
+    start = int(context.schedule["shot_002"][0])
+    scene.frame_set(start)
+    bpy.context.view_layer.update()
+    placed = context.character("char_001").root.matrix_world.translation
+    target = next(item.camera_target for item in summary.results
+                  if item.shot_id == "shot_002")
+    camera = context.cameras["shot_002"]
+    initial = next(member.initial_location for member in spec.cast
+                   if member.id == "char_001")
+    return {"ok": (placed.x > 3.0
+                   and abs(target[0] - placed.x) < 0.6
+                   and abs(target[1] - placed.y) < 0.6
+                   and abs(target[0] - initial[0]) > 3.0),
+            "character_now": [round(float(placed.x), 3), round(float(placed.y), 3)],
+            "camera_target": [round(float(v), 3) for v in target],
+            "initial_location": [round(float(v), 3) for v in initial],
+            "camera_position": [round(float(v), 3)
+                                for v in camera.matrix_world.translation]}
+
+
 def main() -> int:
     capture_main_thread()
     check("axis_established_and_enforced", t_axis_established_and_enforced)
@@ -252,6 +315,8 @@ def main() -> int:
     check("thirty_degree_rule", t_thirty_degree_rule)
     check("a_dialogue_line_survives_reverse_singles",
           t_a_dialogue_line_survives_reverse_singles)
+    check("the_camera_aims_where_the_character_is_now",
+          t_the_camera_aims_where_the_character_is_now)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
