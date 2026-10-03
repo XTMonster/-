@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence, Tuple
@@ -48,6 +49,28 @@ from tools.check_holdout import EntryError, parse_spec  # noqa: E402
 MIN_QUERIES = 1200
 MIN_REQUIRED = 200
 MIN_FORBID_ITEMS = 60
+
+#: §4.1b 的 **Q3** 行：`Σ_q |negative(q)| ≥ max(50, 0.25 × query 数)`,为 0 → 失败。
+#: 为什么这条下界必须单独有执行者（2026-10-03 审计）：Q3 是"误命中率 ≤10%"的
+#: **比率**型判据，而它的分母是"标注里声明了几条负样本"。分母小的时候
+#: （3 条里错 0 条 = 0% ≤ 10%）它是**恒真**的——"几乎不写负样本"就能拿满分，
+#: 这正是硬规则 1 要堵的那个洞（与 Q4 曾经写成 `分子=分母` 同源）。
+#: 实测 2026-10-03：现行 oracle 的 `Σ|negative|` = 2767 ≥ max(50, 0.25×2847=711.75)，
+#: 所以它今天不会变红；但**没有任何一处代码在查它**，换一代稀疏负样本的 oracle
+#: 就会以 3–4 条样本报 pass。
+MIN_NEGATIVE_PAIRS = 50
+NEGATIVE_FLOOR_SHARE = 0.25
+
+
+def negative_pair_floor(queries: int) -> int:
+    """§4.1b 给 Q3 的分母下界：``max(50, ⌈0.25 × query 数⌉)``。
+
+    取整口径：`Σ|negative|` 是整数，而 `0.25 × queries` 可能不是——`⌈·⌉`
+    与规格原文的 `pairs ≥ max(50, 0.25×queries)` **逐条等价**（整数 ≥ 实数 x
+    等价于 整数 ≥ ⌈x⌉），所以用整数形式报告，避免"711 vs 712"这种读法分歧。
+    """
+    return max(MIN_NEGATIVE_PAIRS,
+               int(math.ceil(NEGATIVE_FLOOR_SHARE * max(0, int(queries)))))
 
 
 def norm_key(edge) -> Tuple[str, frozenset]:
@@ -444,6 +467,19 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
             item["status"] = "fail"
             item["note"] = (f"required 总数 {required_total} < 下界 "
                             f"{MIN_REQUIRED}")
+        #: §4.1b 的 Q3 行有两个分量：**比率线 0.10**（上面 `_metric` 已判）与
+        #: **分母下界 `max(50, 0.25 × query 数)`**。后者此前全仓没有执行者，
+        #: 于是"几乎不写负样本"能把恒真的 0% 当成通过。下界不满足 → 判失败，
+        #: 并把下界写进报告（读者要能一眼看出"差的不是比率，是材料"）。
+        if item["id"] == "Q3":
+            floor = negative_pair_floor(queries)
+            item["floor"] = floor
+            if negative_pairs < floor:
+                item["status"] = "fail"
+                item["note"] = (
+                    f"负样本对 {negative_pairs} < §4.1b 下界 {floor}"
+                    f"（max(50, 0.25×{queries})）：按 §4.1b 判失败"
+                    + (f"。{item['note']}" if item.get("note") else ""))
     # §2.3 的 Q6b 前置①（构建期覆盖门）：「若某 query 的 required 边在归并后确实
     # 不存在，则**索引构建失败**（不留给 P14-4 去发现）」。也就是说，解析不到索引边的
     # `must` **不是**"这条不计"，而是 oracle 与索引不同构——它会让 required 的分母

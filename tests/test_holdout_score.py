@@ -145,6 +145,64 @@ def test_negative_samples_are_counted_for_q3():
     assert by_id["Q3"]["status"] in ("pass", "fail")
 
 
+def test_q3_denominator_floor_is_enforced():
+    """§4.1b 的 Q3 行：`Σ|negative| ≥ max(50, 0.25 × query 数)`，不足即判失败。
+
+    为什么单独钉这一条（2026-10-03 审计）：这条下界此前**全仓没有执行者**——
+    `_metric("Q3", hits, pairs, 0.10, kind="max")` 只判比率，而"几乎不写负样本"
+    会让 0/1 = 0% ≤ 10% **恒真地通过**。这里构造成"比率本来就是 0%（比线还漂亮）、
+    只有下界不满足"的最小样本，断言它**必须红**——红的理由必须是下界，不是比率。
+    """
+    module = _load()
+    graph, edge, other = _graph(module)
+    entry = _entry(module, edge)
+    entry["never"] = [_norm(other)]
+    report = module.score_entries([entry], graph)
+    by_id = {item["id"]: item for item in report["metrics"]}
+    q3 = by_id["Q3"]
+    # 反向对照：**比率这一半是通的**（0 命中 / 1 对 = 0.0 ≤ 0.10）。
+    assert q3["value"] == 0.0 and q3["line"] == 0.10 and q3["numerator"] == 0
+    # 判红的唯一理由是 §4.1b 的分母下界。
+    assert q3["floor"] == module.MIN_NEGATIVE_PAIRS == 50
+    assert q3["status"] == "fail"
+    assert "下界" in q3["note"] and "0.25" in q3["note"]
+    assert report["passed"] is False
+
+
+def test_q3_floor_passes_when_the_negative_pool_is_deep_enough():
+    """正对照：负样本对刚好达到下界、且比率达标 → Q3 必须**不是**因为下界变红。
+
+    50 条查询各带 1 条负样本 ⇒ `Σ|negative| = 50`、`⌈0.25×50⌉ = 13` ⇒ 下界 = 50。
+    这条同时钉住"下界是按 `max(50, …)` 取的，不是按 0.25 单算"。
+    """
+    module = _load()
+    graph, edge, other = _graph(module)
+    entries = []
+    for index in range(50):
+        item = _entry(module, edge)
+        item["id"] = f"h{index}"
+        item["q"] = "情绪=荒诞"
+        item["never"] = [_norm(other)]
+        entries.append(item)
+    report = module.score_entries(entries, graph)
+    by_id = {item["id"]: item for item in report["metrics"]}
+    q3 = by_id["Q3"]
+    assert q3["denominator"] == 50 == q3["floor"]
+    assert q3["value"] <= q3["line"]
+    assert q3["status"] == "pass"
+
+
+def test_negative_pair_floor_matches_the_written_formula():
+    """纯函数对拍：`max(50, ⌈0.25 × query 数⌉)`（§4.1b 的 Q3 行原文）。"""
+    import math
+
+    module = _load()
+    for queries in (0, 1, 199, 200, 201, 1200, 2847, 4800):
+        expected = max(50, int(math.ceil(0.25 * queries)))
+        assert module.negative_pair_floor(queries) == expected
+    assert module.negative_pair_floor(2847) == 712      # 711.75 → 712
+
+
 def test_q4_is_not_a_tautology():
     """Q4 是**按 (query, edge) 对**聚合的，不是分子恒等于分母。
 
