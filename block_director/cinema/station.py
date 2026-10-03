@@ -191,9 +191,57 @@ def _off_axis(base: Tuple[float, float], *,
     return _normalise(picked, fallback=base)
 
 
+def _honour_the_established_side(base: Tuple[float, float],
+                                 facing: Sequence[float], *,
+                                 axis_dir: Optional[Sequence[float]],
+                                 axis_side: int,
+                                 notes: Optional[list] = None
+                                 ) -> Tuple[float, float]:
+    """单人镜头也要待在**已确立的轴侧**（v1.6，2026-10-03 真跑实测）。
+
+    现场（`docs/evidence/20261003_chunked_long9/`，64 镜真跑）：**61 条 R001
+    错误、21/64 镜，全部是单人镜头**；同跑里两人镜头一条都没有。翻实现：
+    `side` 是**相对被摄主体朝向**的（§10.1/§10.5），而"两人相对而立"时两个
+    角色的朝向相反——同一个 `front_right` 在两人的单人镜头里落在**世界轴线
+    的两侧**。R001 的判据却是世界轴侧（`Axis.established_side`），于是模型
+    写"同侧机位、不越轴"，引擎却把一半的单人镜头摆到另一侧。两人镜头在
+    v1.5 已经改成按轴线法线解算（`test_axis_side_wins_over_facing.py`），
+    单人镜头这条路当时没接上。
+
+    处置：把方向关于**轴线**镜像一次——保持与轴线的夹角，只翻侧别。
+    镜像**只在不改变前/后关系时**才做：否则"正面机位"会被悄悄换成背拍，
+    那是换了一镜，不是修轴侧。真正无法同时满足的请求原样返回，留给 R001
+    如实报错，而不是在这里吞掉。
+    """
+    if not axis_side or axis_dir is None:
+        return base
+    axis = _normalise(axis_dir, fallback=(0.0, 0.0))
+    if axis == (0.0, 0.0):
+        return base
+    cross = axis[0] * base[1] - axis[1] * base[0]
+    if cross == 0.0 or (cross > 0.0) == (axis_side > 0):
+        return base                      # 已经在对的一侧（或正好在轴线上）
+    dot = base[0] * axis[0] + base[1] * axis[1]
+    mirrored = _normalise((2.0 * dot * axis[0] - base[0],
+                           2.0 * dot * axis[1] - base[1]), fallback=base)
+    front_before = facing[0] * base[0] + facing[1] * base[1]
+    front_after = facing[0] * mirrored[0] + facing[1] * mirrored[1]
+    if front_before > 0.0 >= front_after:
+        # 镜像会把"正面"变成"背面"：这是模型与轴线真的打架，不在这里改。
+        if notes is not None:
+            notes.append("该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；"
+                         "保持模型要的方向，由 R001 如实报出")
+        return base
+    if notes is not None:
+        notes.append(f"side={base} 落在已确立轴线的另一侧，"
+                     f"已关于轴线镜像为 {mirrored} 以保持银幕方向连续")
+    return mirrored
+
+
 def camera_direction(frame: SubjectFrame, side: str = "front", *,
                      axis_dir: Optional[Sequence[float]] = None,
-                     axis_side: int = 0) -> Tuple[float, float]:
+                     axis_side: int = 0,
+                     notes: Optional[list] = None) -> Tuple[float, float]:
     """解析 ``side``，返回**单位**机位方向。
 
     单人镜头沿用 §10.1 / §10.5 的语义（相对角色朝向，由
@@ -203,13 +251,22 @@ def camera_direction(frame: SubjectFrame, side: str = "front", *,
     ``axis_dir`` 是**整场**的轴线方向（由首镜确立，``Axis.direction``）。
     单人镜头落在轴线上时会按 :func:`_off_axis` 扭开一档：否则相机正好站在
     搭档的位置上，会把搭档拍进画面并挡住被摄主体。
+
+    ``notes`` 是可选的可变列表：解算过程中**真的改了模型要的角度**时，往里面
+    追加一条中文说明（目前只有"按已确立轴侧镜像"，见
+    :func:`_honour_the_established_side`）。调用方把它并进取景警告，
+    于是这段改动会进审计日志，而不是悄悄发生。
     """
     key = str(side or "front")
     if not frame.has_axis:
         base = side_vector(frame.facing, key)
         adjusted = _off_axis(base, axis_dir=axis_dir, axis_side=axis_side,
                              subject_facing=frame.facing)
-        return adjusted if adjusted is not None else base
+        if adjusted is not None:
+            return adjusted
+        return _honour_the_established_side(base, frame.facing,
+                                            axis_dir=axis_dir,
+                                            axis_side=axis_side, notes=notes)
 
     axis = frame.axis_direction()
     if axis == (0.0, 0.0):

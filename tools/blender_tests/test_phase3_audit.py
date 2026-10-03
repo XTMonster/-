@@ -167,6 +167,82 @@ def t_thirty_degree_rule():
             "allowed_by_angle": allowed_by_angle}
 
 
+# --------------------------------------------------------------------------- #
+# 6. 一段对话的多镜连续性：双人建立轴线 + 四个单人反打必须**全部**待在同一侧
+#
+# 现场（`docs/evidence/20261003_chunked_long9/`，64 镜真跑）：R001 的 61 条
+# 错误、命中 21/64 镜，**全部是单人镜头**；同跑里两人镜头一条都没有。
+# 根因是 `camera.side` 相对**被摄主体朝向**解析，而两人相对而立时两个角色的
+# 朝向相反 —— 同一个 `front_right` 落在世界轴线的两侧。v1.5 只把两人镜头
+# 改成按轴线法线解算，单人镜头那条路当时没接上。
+# 这条判据换了不变量：不是"某一次算出来等于某个数"，而是**整段对话的每一镜
+# 都不越轴**——对拍不到的那类缺陷（摆位错但两次都错得一样）才会被抓到。
+# --------------------------------------------------------------------------- #
+def _dialogue_line_plan():
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    shots = [
+        ShotPlan.from_dict({
+            "shot_id": "shot_001", "order": 1, "intent": "建立对话关系",
+            "shot_type": "MS", "duration_frames": 48,
+            "characters": ["char_001", "char_002"],
+            "camera": {"side": "front_left", "lens": 35}}),
+        # 甲的单人：`front_right` 本来就在建立侧，不需要镜像
+        ShotPlan.from_dict({
+            "shot_id": "shot_002", "order": 2, "intent": "甲的反应",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_001"], "camera": {"side": "front_right"}}),
+        # 乙的单人：同一个 `front_right` 被镜像到建立侧
+        ShotPlan.from_dict({
+            "shot_id": "shot_003", "order": 3, "intent": "乙的反打",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_002"], "camera": {"side": "front_right"}}),
+        # 甲的另一侧：同样要被镜像回来
+        ShotPlan.from_dict({
+            "shot_id": "shot_004", "order": 4, "intent": "甲换一个角度",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_001"], "camera": {"side": "front_left"}}),
+        # 乙的背侧：镜像后仍是背拍（前/后关系不变），也必须合规
+        ShotPlan.from_dict({
+            "shot_id": "shot_005", "order": 5, "intent": "乙转身离开",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_002"], "camera": {"side": "back_right"}}),
+    ]
+    return Plan(shots=shots, scene_heading="INT. 码头 - 午后")
+
+
+def t_a_dialogue_line_survives_reverse_singles():
+    from block_director.contracts.cast import SceneSpec
+    from block_director.layer3_engine.scene_context import get_context
+    from block_director.layer3_engine.shot_builder import build_scene
+
+    fresh_scene()
+    plan = _dialogue_line_plan()
+    spec = SceneSpec.from_plan(plan)
+    summary = build_scene(plan, spec, clear_scene=True)
+    context = get_context()
+    axis = context.axis
+    assert axis is not None, "双人首镜必须建立轴线"
+
+    violations = {}
+    sides = {}
+    for shot_id, camera in sorted(context.cameras.items()):
+        message = check_camera_axis(axis, camera)
+        if message:
+            violations[shot_id] = message
+        sides[shot_id] = axis.side_of(
+            (camera.matrix_world.translation.x,
+             camera.matrix_world.translation.y))
+    mirrored = [w for w in summary.warnings if "镜像" in w]
+    return {"ok": not violations
+            and set(sides.values()) == {axis.established_side}
+            and len(mirrored) == 3,
+            "established_side": axis.established_side,
+            "sides": sides, "violations": violations,
+            "mirror_notes": mirrored,
+            "warnings": summary.warnings}
+
+
 def main() -> int:
     capture_main_thread()
     check("axis_established_and_enforced", t_axis_established_and_enforced)
@@ -174,6 +250,8 @@ def main() -> int:
     check("composition_rewards_good_framing", t_composition_rewards_good_framing)
     check("occlusion_is_detected", t_occlusion_is_detected)
     check("thirty_degree_rule", t_thirty_degree_rule)
+    check("a_dialogue_line_survives_reverse_singles",
+          t_a_dialogue_line_survives_reverse_singles)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

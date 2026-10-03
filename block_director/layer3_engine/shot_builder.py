@@ -151,6 +151,7 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
     side = str(resolved.get("side") or "front")
     axis_dir = None
     axis_side = 0
+    axis_notes: List[str] = []
     if axis is not None:
         # 单人镜头落在轴线上时要把机位扭开（否则相机站在搭档的位置上）
         axis_dir = axis.direction
@@ -160,7 +161,13 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
         shot_type=str(shot.shot_type), side=side,
         lens=resolved.get("lens"), room=(spec.room if spec else None),
         direction=camera_direction(frame, side, axis_dir=axis_dir,
-                                   axis_side=axis_side))
+                                   axis_side=axis_side,
+                                   #: 解算时若真的改了模型要的方向（按已确立
+                                   #: 轴侧镜像），说明必须进这一镜的警告里——
+                                   #: 悄悄改角度会让"计划写了 side=front_right、
+                                   #: 场景里却不是"这种漂移无人发现。
+                                   notes=axis_notes))
+    solution.warnings.extend(axis_notes)
     return bundle, solution, frame
 
 
