@@ -306,9 +306,11 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 **2026-10-04 06:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
 ——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
-`python -m pytest` **1975 passed / 1 skipped**（唯一那条 skip 是
+`python -m pytest` **1976 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
-无需 refresh 记录"，不是被绕过的判据）、`run_tests.ps1` **32/32**（探针清单 28 支 ＋
+无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
+`tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
+没有那个目录就如实跳过——同样不是被绕过的判据）、`run_tests.ps1` **32/32**（探针清单 28 支 ＋
 spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探针循环里**的三步具名
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
