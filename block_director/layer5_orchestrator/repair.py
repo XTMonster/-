@@ -12,6 +12,7 @@ from typing import Optional
 from ..contracts.audit import AuditResult
 from ..contracts.enums import Purpose, ToolChoice
 from ..contracts.messages import ChatPayload, Message, MessageRole, new_request_id
+from .dialogue_budget import shot_dialogue_budget
 
 REPAIR_SYSTEM_PROMPT = """\
 你是白模预演的执行导演。当前镜头**未通过校验**，请只修复下列问题，
@@ -22,6 +23,7 @@ REPAIR_SYSTEM_PROMPT = """\
 当前场景：
 {scene_state}
 
+{dialogue_budget}
 要求：
 - **先看清每一条问题该由谁来修**（用错工具 = 修不动，白烧一次修复回合）：
   · **时间轴类**（`R003` 同角色动作重叠、`R011` 台词装不下、`R015` 时长不符）：
@@ -40,11 +42,24 @@ REPAIR_SYSTEM_PROMPT = """\
 
 def build_repair_payload(audit: AuditResult, registry, *,
                          scene_state: str = "", temperature: float = 0.2,
+                         shot=None,
                          request_id: Optional[str] = None) -> ChatPayload:
-    """构造一次修复请求。``registry`` 提供可调用的工具 schema。"""
+    """构造一次修复请求。``registry`` 提供可调用的工具 schema。
+
+    ``shot`` 给了就附上这一镜的**对白帧预算**（§4.4）。没有它时，修复
+    提示只会说"重新提交这一镜的草案、把起止帧错开"——而模型手上既没有
+    每句要几帧、也没有那 12 帧余量是多少，只能再猜一遍（实测：
+    2026-10-03 的 64 镜真跑里 26 个镜头的 S6 一直红到收尾）。
+    """
+    budget_text = ""
+    if shot is not None:
+        budget = shot_dialogue_budget(shot)
+        if budget.lines:
+            budget_text = budget.render() + "\n"
     system_text = REPAIR_SYSTEM_PROMPT.format(
         audit=audit.format_for_llm(),
-        scene_state=scene_state or "（尚未采集）")
+        scene_state=scene_state or "（尚未采集）",
+        dialogue_budget=budget_text)
     return ChatPayload(
         messages=[
             Message(role=MessageRole.SYSTEM, content=system_text),

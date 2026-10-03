@@ -782,7 +782,14 @@ def compose(requests: Iterable[ActionRequest],
             owner = CHANNEL_OWNER.get(channel)
             if owner in layer_state:
                 layer_state[owner][channel] = value
-    frozen_base: Dict[str, Dict[str, object]] = {}
+    #: 冻结基线必须**逐 (层, 动作)** 存。一个请求会展开成好几个层的 spec，
+    #: 它们共用同一个 ``action_id``（``stand`` → base + legs + body）——只按
+    #: ``action_id`` 存的话，**先被遍历到的那个层**会替其它层冻住基线，
+    #: 于是 base 层的 ``root.location`` 在别的层里查不到，``_zero_like`` 把
+    #: 角色瞬移到世界原点（实测 2026-10-03：`伊恩` 一整天站在 (0,0,0)，
+    #: 与 `米迦尔` 重叠；`stand` 还会把根节点抬到地面上方 drop —— 正是
+    #: BW-4a 修过的"悬空"从另一条路径上复发）。
+    frozen_base: Dict[Tuple[str, str], Dict[str, object]] = {}
 
     for frame in range(start, end + 1):
         frame_pose: Dict[str, object] = {}
@@ -795,7 +802,7 @@ def compose(requests: Iterable[ActionRequest],
             acc: Dict[str, object] = {}
             total: Dict[str, float] = {}
             for spec, weight in active:
-                key = spec.action_id
+                key = (spec.layer, spec.action_id)
                 if key not in frozen_base:
                     frozen_base[key] = dict(current)      # 冻结接管前的层状态
                 base = frozen_base[key]

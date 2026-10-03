@@ -83,6 +83,44 @@ for _key in HANDHELD:
     DEFAULT_AMOUNTS[_key] = 0.05
 del _key
 
+#: 每种运镜的 ``amount`` **单位**与**典型区间**——提示词与校验共用这一份真源。
+#:
+#: 为什么必须有它（2026-10-03 的 64 镜真跑实测）：`amount` 在 schema 里只有一个
+#: 0–180 的范围，**没有单位**；模型按"度数"的直觉写了
+#: ``{"type": "dolly_in", "amount": 12}`` —— 而平移类的单位是**米**，
+#: 于是机位真的往前推了 **12 米、直接穿过主体**（实测相机从 (1.15, 2.05) 飞到
+#: (-7.34, -6.44)，构图分 27.6–54.0、这一镜必判失败）。同一个数字在
+#: 摇镜里是"15 度"（合理），在跟拍里是"2 米"（合理），只有单位写着才不会撞车。
+MOVEMENT_UNITS: Dict[str, Tuple[str, float, float]] = {}
+for _key in TRANSLATIONS:
+    MOVEMENT_UNITS[_key] = ("米", 0.3, 2.0)
+for _key in DOLLY_ZOOMS:
+    MOVEMENT_UNITS[_key] = ("米", 0.5, 3.0)
+for _key in SUBJECT_TRACKING:
+    MOVEMENT_UNITS[_key] = ("米", 0.5, 3.0)
+for _key in ROTATIONS:
+    MOVEMENT_UNITS[_key] = ("度", 5.0, 45.0)
+for _key in ORBITS:
+    MOVEMENT_UNITS[_key] = ("度", 15.0, 90.0)
+for _key in ZOOMS:
+    MOVEMENT_UNITS[_key] = ("毫米", 5.0, 50.0)
+for _key in HANDHELD:
+    MOVEMENT_UNITS[_key] = ("米", 0.02, 0.1)
+del _key
+
+if set(MOVEMENT_UNITS) != frozenset(MOVEMENT_TYPES):    # pragma: no cover
+    raise RuntimeError(
+        "MOVEMENT_UNITS 与 MOVEMENT_TYPES 漂了："
+        f"{sorted(set(MOVEMENT_UNITS) ^ set(MOVEMENT_TYPES))}")
+
+
+def movement_unit_table() -> List[Tuple[str, str, float, float]]:
+    """``[(运镜, 单位, 典型下限, 典型上限), …]``——按单位分组、稳定排序。"""
+    order = {"米": 0, "度": 1, "毫米": 2}
+    rows = [(name, unit, low, high)
+            for name, (unit, low, high) in MOVEMENT_UNITS.items()]
+    return sorted(rows, key=lambda row: (order.get(row[1], 9), row[0]))
+
 #: 甩镜与手持的采样密度更高：它们靠"短时间内快速变化"表达，
 #: 只有首中尾三个采样点会把变化抹平。
 DENSE_SAMPLES = {"whip_pan_left": 5, "whip_pan_right": 5, "handheld": 7}

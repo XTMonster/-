@@ -270,6 +270,39 @@ def test_a_later_walk_keeps_the_placement_after_an_earlier_turn():
     assert trace[20][CH_ROOT_ROT_Z] == pytest.approx(math.radians(45.0), abs=1e-3)
 
 
+def test_a_multi_layer_action_freezes_every_layer_against_its_own_base():
+    """一个动作跨多层时，冻结基线必须**逐层**取，不能按 ``action_id`` 合用。
+
+    真实长剧本运行的第二处根因（2026-10-03，`work/_placement_bisect.py`：
+    修掉"层状态被整份替换"之后 `伊恩` 仍然停在 (0,0,0)）：``stand`` 会展开成
+    base + legs + body **三份 spec**，它们共用同一个 ``action_id``；而
+    ``frozen_base`` 只按 ``action_id`` 存——**先被遍历到的那个层**（这里是
+    body，因为上一镜的 `body_tilt` 把 body 层插在了 base 前面）替其余层冻住了
+    基线，于是 base 层的 ``root.location`` 查不到、退回 ``_zero_like``：
+
+    * 角色被瞬移到世界原点（两人重叠、构图门整片判红）。
+
+    （z 通道另说：`compose` 的语义是"基线 ＋（当前姿态 − 起手姿态）"，
+    所以单独一个 `stand` 的落点本来就是 `基线 z + drop`——这一点
+    `tools/blender_tests/test_phase2_motion.py` 的 `_ground_report` 已经
+    如实记过，本用例不重复断言它。这里钉的是**摆位**。）
+    """
+    base = {CH_ROOT_LOC: (0.9, 0.0, 0.0), CH_ROOT_ROT_Z: 0.0,
+            CH_BODY_ROT_X: 0.0, CH_BODY_ROT_Y: 0.0}
+    trace = compose([
+        ActionRequest("body_tilt", 1, 10, {"angle_deg": 11.0, "axis": "y"},
+                      "c", "tilt"),
+        ActionRequest("stand", 20, 30, {"drop": 0.2}, "c", "stand"),
+    ], base_pose=base)
+    # 摆位一路带着（不是 (0,0,0)）
+    assert trace[20][CH_ROOT_LOC] == pytest.approx((0.9, 0.0, 0.0))
+    # 站起段全程都留在自己的摆位上（x/y 不是被清零退回原点）
+    assert trace[30][CH_ROOT_LOC][:2] == pytest.approx((0.9, 0.0))
+    # 前一个动作自己那一层仍然照常生效（层与层之间不互相借用基线）
+    assert trace[10][CH_BODY_ROT_Y] == pytest.approx(math.radians(11.0),
+                                                     abs=1e-3)
+
+
 def test_jump_is_a_parabola():
     trace = compose([ActionRequest("jump", 1, 24, {"height": 0.3})])
     heights = [trace[f][CH_ROOT_LOC][2] for f in range(1, 25)]

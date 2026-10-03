@@ -3,6 +3,12 @@
 这是"改一镜、重出一镜"的基础：加载 SDL → 还原计划与场景设定 → 重建场景；
 加 ``--export`` 就顺带重出交付包，全程不再调用 LLM。
 
+v1.5：**校验不过的项目照样重建**。校验结果照样逐条跑、逐条带回来（`validation`
+字段 ＋ 一行 ``BLOCKDIRECTOR_REBUILD_WARN``），但它不再是一道闸门——理由是
+2026-10-03 的真跑：64 镜跑完后 `project.bdproj` 里带 26 条 S6，
+而"最容易需要修的工程"恰好就是这些带 finding 的工程。真正的交付门在
+``export_project`` 的渲染审计那一步。
+
 用法：
   blender --background --factory-startup --python tools/rebuild_project.py -- \
       --project <项目目录> [--export]
@@ -19,6 +25,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+
+def rebuild_verdict(loaded) -> dict:
+    """重建前的结论：**报告**校验结果，但不据此拒绝重建。
+
+    纯函数（``loaded`` 是 :class:`LoadedProject`），因此策略本身可以被
+    pytest 直接钉住，而不必启动 Blender。
+    """
+    from block_director.layer9_persistence import validation_report
+
+    report = validation_report(loaded)
+    return {"proceed": True,
+            "blocked_reason": "",
+            "validation": report}
 
 
 def parse_args(argv):
@@ -51,12 +71,17 @@ def main() -> int:
             ensure_ascii=False))
         return 1
 
-    if not loaded.ok:
-        print("BLOCKDIRECTOR_REBUILD " + json.dumps(
-            {"ok": False, "reason": "项目校验未通过",
-             "errors": [item.to_dict() for item in loaded.findings
-                        if item.is_error]}, ensure_ascii=False))
-        return 1
+    verdict = rebuild_verdict(loaded)
+    report = verdict["validation"]
+    if report["errors"]:
+        print("BLOCKDIRECTOR_REBUILD_WARN " + json.dumps(
+            {"validation": "failed", "errors": len(report["errors"]),
+             "rules": report["rules"],
+             "detail": [f"{item.get('rule')} {item.get('target')}: "
+                        f"{item.get('message')}"
+                        for item in report["errors"][:8]],
+             "note": "仍然重建；闸门在 export_project 的渲染审计"},
+            ensure_ascii=False))
 
     plan = sdl_to_plan(loaded.sdl)
     spec = sdl_to_spec(loaded.sdl)
@@ -67,7 +92,8 @@ def main() -> int:
                "shots": summary["shots"],
                "total_frames": summary["total_frames"],
                "characters": summary["characters"],
-               "warnings": summary["warnings"]}
+               "warnings": summary["warnings"],
+               "validation": report}
 
     if args.export:
         from block_director.layer8_delivery import export_project

@@ -25,6 +25,7 @@ from ..contracts.messages import (
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.tools import SHOT_DRAFT_TOOL
 from ..cinema.framing import CAMERA_SIDES
+from ..cinema.camera_motion import movement_unit_table
 from ..motion.model import (
     ACTION_PARAMS,
     ACTION_TYPES,
@@ -32,6 +33,7 @@ from ..motion.model import (
     action_param_problems,
     action_param_domains,
 )
+from .dialogue_budget import shot_dialogue_budget
 from .react import render_shot_memory, shot_memory
 from .scene_contract import shot_constraint_query
 
@@ -179,8 +181,12 @@ EDITOR_SYSTEM_PROMPT = """\
 - 相机用**相对描述**（side / lens），不要给坐标——距离与高度由引擎按景别推导。
   `side` **只能从下面这 {side_count} 个取值里逐个拷贝**（写中文句子会被判非法，
   这一镜就只剩计划里的内容）：{sides}
+- `camera.movements[].amount` **按类型有不同单位**（下表是唯一真源；写错单位
+  会让机位跑到画面外——实测把 `dolly_in` 的 amount 当成度数写 12，机位真的前推
+  12 米穿过主体）：
+{movement_units}
 - 角色移动必须给出目标位置与起止帧，且同一角色的动作不可时间重叠；
-- 对白必须落在镜头时长内，并留出收尾余量；
+{dialogue_budget}
 - **动作参数只能用它自己那一行的键**（下表就是唯一真源，由引擎的参数表生成）：
   写别的键、或用同义词（`toward`／`degrees`／`base_z` 之类），**整条草案会被退回**，
   这一镜就只剩计划里的内容了。实测代价（2026-10-03 的 64 镜真跑）：**62/64 条草案
@@ -221,6 +227,26 @@ def render_action_params() -> str:
             for key in ACTION_PARAMS[kind])
         lines.append(f"    - `{kind}`：{keys}")
     lines.append("  · 上表之外的动作不许带 `params`（引擎按默认值演）。")
+    return "\n".join(lines)
+
+
+def render_movement_units() -> str:
+    """运镜 `amount` 的**单位与典型区间**（**从 `cinema/camera_motion.py` 生成**）。
+
+    为什么必须进提示词（2026-10-03 的 64 镜真跑实测）：`amount` 在 schema 里只有一个
+    0–180 的范围、**没有单位**，模型按"度数"的直觉给 `dolly_in` 写了 `12`——而平移类
+    的单位是**米**，机位真的前推了 12 米、穿过主体（相机轨迹实测 (1.15, 2.05) →
+    (-7.34, -6.44)，构图分 27.6–54.0、这一镜必判失败）。同一个数字在摇镜里是
+    "15 度"（合理）、在跟拍里是"2 米"（合理），只有把单位写出来才不会撞车。
+    """
+    by_unit: Dict[str, List[str]] = {}
+    for name, unit, low, high in movement_unit_table():
+        by_unit.setdefault(unit, []).append(f"`{name}` {low:g}–{high:g}")
+    lines = []
+    for unit in ("米", "度", "毫米"):
+        names = by_unit.get(unit) or []
+        if names:
+            lines.append(f"    - 单位=**{unit}**：{'；'.join(names)}")
     return "\n".join(lines)
 
 
@@ -310,6 +336,9 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                                                  for item in CAMERA_SIDES))
                    .replace("{side_count}", str(len(CAMERA_SIDES)))
                    .replace("{action_params}", render_action_params())
+                   .replace("{movement_units}", render_movement_units())
+                   .replace("{dialogue_budget}",
+                            shot_dialogue_budget(shot).render())
                    .replace("{knowledge}", knowledge or "（本次未启用知识库）")
                    .replace("{scene_text}", scene_text or "（无）"))
     return ChatPayload(

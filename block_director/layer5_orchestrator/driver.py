@@ -1451,6 +1451,7 @@ class PrevisDriver:
         payload = build_repair_payload(
             audit, self.registry,
             scene_state=self._scene_state_text(),
+            shot=self._shot_by_id(self._current_shot_id),
             temperature=temperature)
         self._start_llm_call("repair", payload,
                              note=f"请求修复 {self._current_shot_id}"
@@ -1463,6 +1464,13 @@ class PrevisDriver:
             return str(self.scene_state_provider())
         except Exception as exc:  # noqa: BLE001 - 采集失败不该拖垮运行
             return f"（场景状态采集失败：{type(exc).__name__}: {exc}）"
+
+    def _shot_by_id(self, shot_id: str):
+        """按 id 取计划里的镜头；没有计划/找不到时返回 ``None``。"""
+        if self.plan is None:
+            return None
+        return next((item for item in self.plan.shots
+                     if item.shot_id == shot_id), None)
 
     def _step_finishing(self) -> None:
         plan = self.plan or Plan()

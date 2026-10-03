@@ -57,6 +57,31 @@ def project_exists(directory: Union[str, Path]) -> bool:
     return project_file(directory).exists()
 
 
+def validation_report(loaded: "LoadedProject") -> Dict[str, Any]:
+    """把一次加载的校验结果整理成**报告**（不是闸门）。
+
+    分两份：``ok`` 直说校验过没过，``errors`` / ``warnings`` 原样列出每条
+    finding，``rules`` 是被触发的规则 id。
+
+    为什么要单独抽出来（2026-10-03）：校验的职责是**如实报告**，而"要不要
+    继续"是调用方的策略。真跑收尾的 `project.bdproj` 里带着 26 条 S6，
+    旧写法让 `rebuild_project` 直接失败——"改一镜、重出一镜"这条工作流于是
+    对**真实运行**（恰恰是最需要修的那些跑）是断的。审查与执行分开之后，
+    报告仍然一条不少，闸门交给了真正该管交付的那一步。
+    """
+    findings = [item.to_dict() for item in loaded.findings]
+    errors = [item for item in findings if item.get("severity") == "error"]
+    return {
+        "ok": bool(loaded.ok),
+        "path": str(loaded.path),
+        "notes": list(loaded.notes),
+        "errors": errors,
+        "warnings": [item for item in findings
+                     if item.get("severity") != "error"],
+        "rules": sorted({str(item.get("rule") or "") for item in errors}),
+    }
+
+
 def save_project(directory: Union[str, Path], sdl: SDLProject, *,
                  extra: Optional[Dict[str, Any]] = None) -> Path:
     """把 SDL 写入 ``project.bdproj``，返回文件路径。"""
