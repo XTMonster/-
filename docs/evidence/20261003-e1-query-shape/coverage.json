@@ -1,0 +1,30 @@
+{
+  "candidate": "work\\e1_query_shape\\candidate\\cases.search_zh.jsonl",
+  "cases": 810,
+  "written": 429,
+  "dropped": 585,
+  "coverage": 0.5296,
+  "drop_reasons": {
+    "call-failed": 225,
+    "empty": 360
+  },
+  "per_source": {
+    "gutenberg": {
+      "kept": 139,
+      "cases": 301
+    },
+    "mit_ocw": {
+      "kept": 1,
+      "cases": 12
+    },
+    "site": {
+      "kept": 289,
+      "cases": 497
+    }
+  },
+  "with_craft_word": 327,
+  "drop_files": [
+    "work\\e1_query_shape\\candidate\\dropped.jsonl",
+    "work\\e1_query_shape\\candidate\\dropped_retry.jsonl"
+  ]
+}
