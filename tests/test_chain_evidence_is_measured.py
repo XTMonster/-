@@ -257,6 +257,59 @@ def test_the_nested_rebuild_export_is_gitignored():
 
 
 # --------------------------------------------------------------------------- #
+# 四、US-16 / §4.4 步骤 0b：缺环境必须**判无法测量**，而不是把"跑不了"记成"代码坏了"
+# --------------------------------------------------------------------------- #
+def blender_guard_is_sound(text: str) -> bool:
+    """链上那段"定位 Blender"的活行是否守法（US-16 的两半）。
+
+    判据（全部只看**活行**）：
+
+    ① **非空的 `$env:BLENDER_EXE` 必须先被 `Test-Path` 检一遍**——指向死路径时
+       不能"当作没设"直接崩在后面；
+    ② 候选都找不到时必须以 `INCOMPLETE` ＋ `exit 1` 收场（"这次没量"与"代码坏了"
+       是两件事，报告必须说清是哪一种）。
+    """
+    lines = [line for _number, line in live_lines(text)]
+    exe_at = [index for index, line in enumerate(lines)
+              if "$env:BLENDER_EXE" in line]
+    if not exe_at:
+        return False
+    window = "\n".join(lines[exe_at[0]:exe_at[0] + 4])
+    if "Test-Path" not in window:
+        return False
+    incomplete_at = [index for index, line in enumerate(lines)
+                     if "INCOMPLETE" in line]
+    if not incomplete_at:
+        return False
+    tail = "\n".join(lines[incomplete_at[0]:incomplete_at[0] + 4])
+    return "exit 1" in tail
+
+
+def test_the_chain_refuses_a_dead_blender_path_and_says_incomplete():
+    """§4.4 步骤 0b / US-16：**缺环境必须失败，而不是假装全绿**。
+
+    现场（文档 §4.4 步骤 0b 的原文）：把 `BLENDER_EXE` 指向"死路径"**不会**命中
+    `INCOMPLETE` 分支——脚本只在变量为空时才搜候选。所以这一半必须显式做
+    `Test-Path`，否则死路径会被当成"设过了"，问题推迟到几十个探针一起报
+    "blender 打不开"，而那会被读成"代码坏了"。
+
+    2026-10-03 实测：`rg BLENDER_EXE tests` **零命中**——两半都没有任何测试钉住。
+    这条静态门（带自证）补上：判据只看**活行**，把守卫摘掉的写法必须被判出来。
+    """
+    text = chain_text()
+    assert blender_guard_is_sound(text), (
+        "链上定位 Blender 的那一段必须：① 对非空的 BLENDER_EXE 做 Test-Path；"
+        "② 找不到时打印 INCOMPLETE 并 exit 1")
+
+    # 自证：把守卫改成"死路径也照用"，判据必须开火。
+    broken = text.replace("if ($blender -and -not (Test-Path $blender)) {",
+                          "if ($false) {")
+    assert broken != text, "自证需要能改动那段守卫（源码形状变了要同步这条用例）"
+    assert not blender_guard_is_sound(broken), (
+        "去掉死路径的 Test-Path 守卫之后，判据没开火——这条用例就是空的")
+
+
+# --------------------------------------------------------------------------- #
 # 二、探针结果解析失败 ⇒ INCOMPLETE（不是 WARN）
 # --------------------------------------------------------------------------- #
 def test_the_chain_escalates_a_probe_parse_failure():
