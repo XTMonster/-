@@ -32,6 +32,7 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import os
 import pathlib
@@ -67,6 +68,14 @@ ROLES: Dict[str, str] = {
         "你按**这个领域（预演/分镜/剪辑/再创作）的专业标准**看："
         "现在的判据与产物，缺哪一个专业上必须有的维度？给出可执行的最小补充。"),
 }
+
+
+class ConsultFailed(SystemExit):
+    """没有拿到正文。带上**逐档尝试**，让调用方能把证据落盘再退出。"""
+
+    def __init__(self, message: str, attempts: List[dict]) -> None:
+        super().__init__(message)
+        self.attempts = attempts
 
 SYSTEM_TEMPLATE = """\
 你是这个项目的外部顾问，当次扮演的角色是：**{role}**。
@@ -147,6 +156,14 @@ def call_once(messages: List[dict], *, model: str, max_tokens: int, level: str,
         return "", {"level": level, "error": f"HTTP {exc.code}: {detail}",
                     "elapsed_s": round(time.time() - started, 1),
                     "finish_reason": f"http_{exc.code}"}
+    except (urllib.error.URLError, OSError, http.client.HTTPException) as exc:
+        # 实测（2026-10-04）：大 bundle 跑到 ~30 分钟，对端会**直接掐断**连接
+        # （`http.client.RemoteDisconnected`）。这必须记成一条失败记录，
+        # 而不是把 traceback 抛出去——崩掉的话连"哪一档、跑了多久"都没了。
+        return "", {"level": level, "error": f"{type(exc).__name__}: {exc}",
+                    "elapsed_s": round(time.time() - started, 1),
+                    "finish_reason": "transport_error",
+                    "requested_model": model, "max_tokens": max_tokens}
     choice = (reply.get("choices") or [{}])[0]
     message = choice.get("message") or {}
     usage = {
@@ -174,7 +191,8 @@ def consult(messages: List[dict], *, model: str, max_tokens: int,
             # 限流/传输错误：换档无益，直接上报
             break
         time.sleep(1.0)
-    raise SystemExit("glm-5.3 没给出正文：" + json.dumps(tried, ensure_ascii=False))
+    raise ConsultFailed(
+        "glm-5.3 没给出正文：" + json.dumps(tried, ensure_ascii=False), tried)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -210,9 +228,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     for role in roles:
         messages = build_messages(role, question, contexts)
-        content, usage = consult(messages, model=args.model,
-                                 max_tokens=args.max_tokens, levels=ladder,
-                                 temperature=args.temperature, timeout=args.timeout)
+        try:
+            content, usage = consult(messages, model=args.model,
+                                     max_tokens=args.max_tokens, levels=ladder,
+                                     temperature=args.temperature,
+                                     timeout=args.timeout)
+        except ConsultFailed as exc:
+            # 失败也要留证：把逐档尝试写下来，读者才判断得了"这次值不值"。
+            (out_dir / f"{role}.failed.json").write_text(
+                json.dumps({"role": role, "requested_model": args.model,
+                            "attempts": exc.attempts}, ensure_ascii=False,
+                           indent=2), encoding="utf-8")
+            raise
         (out_dir / f"{role}.json").write_text(content, encoding="utf-8")
         (out_dir / f"{role}.usage.json").write_text(
             json.dumps(usage, ensure_ascii=False, indent=2), encoding="utf-8")

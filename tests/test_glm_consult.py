@@ -145,3 +145,48 @@ def test_the_usage_sidecar_is_json_serialisable():
     payload = json.dumps(usage)
     assert '"attempts"' in payload
     assert "attempts" not in usage["attempts"][0]
+
+
+def test_a_peer_disconnect_is_recorded_instead_of_crashing(monkeypatch):
+    """实测（2026-10-04）：大 bundle 跑到 ~30 分钟会被对端**直接掐断**连接。
+
+    这一刻必须落成一条可写盘的失败记录（哪一档、跑了多久、断在哪一层），
+    而不是把 traceback 抛出去——崩掉的话连 usage 都留不下，
+    "这次真的调过 glm-5.3、调到哪一档"就无从取证。
+    """
+    import http.client
+
+    def fake_urlopen(request, timeout=None):  # noqa: ARG001
+        raise http.client.RemoteDisconnected("Remote end closed connection")
+
+    monkeypatch.setattr(C.urllib.request, "urlopen", fake_urlopen)
+    content, usage = C.call_once([{"role": "user", "content": "x"}],
+                                 model="glm-5.3", max_tokens=32768, level="high",
+                                 temperature=0.2, timeout=1.0, api_key="k")
+    assert content == ""
+    assert usage["level"] == "high"
+    assert "RemoteDisconnected" in usage["error"]
+    assert usage["finish_reason"] == "transport_error"
+    assert isinstance(usage["elapsed_s"], float)
+
+
+def test_a_failed_consult_still_leaves_its_attempts_on_disk(tmp_path, monkeypatch):
+    """失败也要留证：`<role>.failed.json` 里必须能看到逐档尝试。"""
+    question = tmp_path / "q.md"
+    question.write_text("问题", encoding="utf-8")
+
+    def fake_call_once(messages, *, model, max_tokens, level, temperature,
+                       timeout, api_key=None):
+        return "", {"level": level, "elapsed_s": 1.0,
+                    "error": "RemoteDisconnected: peer closed",
+                    "finish_reason": "transport_error"}
+
+    monkeypatch.setattr(C, "call_once", fake_call_once)
+    out = tmp_path / "out"
+    with pytest.raises(SystemExit):
+        C.main(["--roles", "规格一致性", "--question", str(question),
+                "--out", str(out), "--level", "high"])
+    payload = json.loads(
+        (out / "规格一致性.failed.json").read_text(encoding="utf-8"))
+    assert payload["attempts"][0]["finish_reason"] == "transport_error"
+    assert payload["attempts"][0]["level"] == "high"

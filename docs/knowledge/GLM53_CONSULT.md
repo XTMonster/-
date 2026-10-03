@@ -19,6 +19,10 @@ python tools/glm_consult.py --roles 规格一致性,红队反方 \
 * 每个角色写两份：`<role>.json`（模型原始 JSON）与 `<role>.usage.json`
   （模型回显、`usage`、耗时、`finish_reason`、逐档尝试）——后者是"确实调了
   glm-5.3、用的哪一档"的证据。
+* **失败也留证**：一次会诊没拿到正文（含上面那条"对端断连"）时写
+   `<role>.failed.json`（`role` / `requested_model` / 逐档 `attempts`），
+   然后才退出。断连是记一条 `finish_reason: "transport_error"` 的失败记录，
+   **不是**抛 traceback 走人——否则"哪一档、跑了多久"全丢。
 * `--dry-run` 只拼提示词、不联网（`tests/test_glm_consult.py` 用这条）。
 * 角色表（`tools/glm_consult.py::ROLES`，互不重复）：
   `规格一致性` / `接口与契约` / `测试与验收` / `性能与鲁棒` / `红队反方` / `领域专家`。
@@ -37,6 +41,9 @@ python tools/glm_consult.py --roles 规格一致性,红队反方 \
 ⇒ **把 bundle 压到 ~2k token 以内、一次只问一件事**；大 bundle 先拆成几次，
 或降到 `--level low`。`level=max` 只在"只有一个问题、愿意等半小时"时用。
 空正文会自动降档（`max → high → low`）并逐档记进 usage——那是正常行为，不是失败。
+（2026-10-04 补测：`stream: true` 也救不了——对端在思考阶段**一个字节都不发**，
+~10k token 的 bundle 静默到 ~12 分钟才开始吐 delta，中途掐断时只留下半截
+`reasoning_content`。所以正解还是**把 bundle 压小**，不是换传输方式。）
 
 ## 纪律（比工具本身重要）
 
