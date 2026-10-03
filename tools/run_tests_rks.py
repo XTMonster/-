@@ -44,9 +44,10 @@ from block_director.utils.console import force_utf8_streams  # noqa: E402
 RK_TABLE = [
     ("RK-1", "每个启用标签的角色恰好 1 对 BD_Label_*，ink >= 200 px",
      "tools/blender_tests/test_label_layout.py [rk1_one_pair_per_character, "
-     "rk1_ink_stroke_and_components]"),
+     "rk1_ink_stroke_and_components, rk1_hidden_label_goes_red]"),
     ("RK-2", "标签配对交叠率 <= 5%",
-     "tools/blender_tests/test_label_layout.py [rk2_overlap_and_offsets]"),
+     "tools/blender_tests/test_label_layout.py [rk2_overlap_and_offsets, "
+     "rk2_overlapping_labels_go_red]"),
     ("RK-3", "对视夹角 <= 35 度，过肩遮挡 >= 5%",
      "tools/blender_tests/test_scene_contract.py [rk3_two_characters_face_each_other, "
      "rk3_over_the_shoulder_occludes_the_background]"),
@@ -57,7 +58,7 @@ RK_TABLE = [
      "tools/blender_tests/test_label_layout.py [rk5_label_size_is_continuous]"),
     ("RK-6", "站立 min_z in [-0.02, +0.02]，行走 >= -0.02",
      "tools/blender_tests/test_phase2_motion.py [rk6_no_floating_no_sinking, "
-     "rk6_missing_mesh_is_a_failure]"),
+     "rk6_missing_mesh_is_a_failure, rk6_floating_goes_red]"),
     ("RK-7", "声明 / pin 前原始响应 / pin 后计划三方一致",
      "tests/test_dialogue_three_way.py [RK-7]"),
     ("RK-8", "躯干主惯性轴与 +Z 夹角 = 目标倾角 +-3 度",
@@ -76,7 +77,8 @@ RK_TABLE = [
      "tools/holdout_score.py + tools/knowledge/quality.py [held-out 已落地；"
      "run_tests.ps1 按它的退出码判 measured；人审 10-15% 仍未做]"),
     ("RK-14", "头球可见比例 >= 99%；neck_gap = 0 +- 0.005",
-     "tools/blender_tests/test_character_geometry.py [rk14_head_is_not_occluded]"),
+     "tools/blender_tests/test_character_geometry.py [rk14_head_is_not_occluded, "
+     "rk14_lowered_head_goes_red]"),
     ("RK-15", "含头部景别上边距 >= 8% 画面高",
      "tools/blender_tests/test_character_geometry.py [rk15_headroom_is_at_least_eight_percent]"),
     ("RK-16", "群众/特效可见性：掩膜内 median|delta| >= 0.05，外侧 < 1/255",

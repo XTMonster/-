@@ -184,11 +184,12 @@ def t_input_contract():
 # --------------------------------------------------------------------------- #
 # 2. RK-14：头球不被躯干遮挡
 # --------------------------------------------------------------------------- #
-def t_head_is_not_occluded():
-    fresh_scene()
-    character = create_character("char_001", "小明", "#FF6B6B")
-    place_camera_for_shot("cu", (0.0, 0.0, 0.0), shot_type="CU", side="front")
+def _head_visibility(character) -> dict:
+    """量"头球可见比例"——**同一个测量**给正向判据与反向突变两边用。
 
+    §B.5 的反向突变要求"把实现做坏 → 期望变红"，所以测量必须抽出来：
+    突变只改几何，判据一个字不改，两边跑的是同一段代码。
+    """
     _show(character, head=False, body=False, eyes=False, legs=False)
     empty = render_pixels("empty")
     reference = _reference(empty)
@@ -211,6 +212,39 @@ def t_head_is_not_occluded():
     return {"ok": head_pixels >= 100 and ratio >= 0.99,
             "head_pixels": head_pixels, "visible_head_pixels": visible_pixels,
             "visible_ratio": round(ratio, 4)}
+
+
+def t_head_is_not_occluded():
+    fresh_scene()
+    character = create_character("char_001", "小明", "#FF6B6B")
+    place_camera_for_shot("cu", (0.0, 0.0, 0.0), shot_type="CU", side="front")
+    return _head_visibility(character)
+
+
+def t_rk14_lowered_head_must_go_red():
+    """§B.5 的 **RK-14 反向突变**：把头心下移 `head_r`（回到 v1.3 的旧几何——
+    头球下半埋进躯干），头球可见比例必须掉到 99% 以下。
+
+    成对跑：**正向**（现几何）必须 ≥ 0.99，**突变**（头心 −head_r）必须 < 0.99。
+    只跑突变的一半不算数——那样"判据恒红"也会绿。
+    """
+    fresh_scene()
+    character = create_character("char_001", "小明", "#FF6B6B")
+    place_camera_for_shot("cu", (0.0, 0.0, 0.0), shot_type="CU", side="front")
+    baseline = _head_visibility(character)
+
+    # v1.3 的旧几何：`head_center_z = 躯干顶`（而不是"躯干顶 ＋ 头半径"）。
+    character.head_pivot.location.z -= PROFILE.head_r
+    bpy.context.view_layer.update()
+    mutated = _head_visibility(character)
+
+    ok = (baseline["ok"] and baseline["visible_ratio"] >= 0.99
+          and not mutated["ok"] and mutated["visible_ratio"] < 0.99)
+    return {"ok": ok, "baseline": baseline, "mutated": mutated,
+            "mutation": "head_pivot.z -= head_r（回到 v1.3 的 head_center_z = 躯干顶）",
+            "head_r": round(PROFILE.head_r, 4),
+            "ratio_drop": round(baseline["visible_ratio"]
+                                - mutated["visible_ratio"], 4)}
 
 
 # --------------------------------------------------------------------------- #
@@ -271,6 +305,8 @@ def main() -> int:
     capture_main_thread()
     check("rk4_input_contract", t_input_contract)
     check("rk14_head_is_not_occluded", t_head_is_not_occluded)
+    # §B.5 的反向突变：把实现做坏，判据必须变红（成对跑，正向也要绿）。
+    check("rk14_lowered_head_goes_red", t_rk14_lowered_head_must_go_red)
     check("rk15_headroom_is_at_least_eight_percent",
           t_headroom_is_at_least_eight_percent)
     check("rk4_eyes_render_as_two_clusters", t_eyes_render_as_two_clusters)

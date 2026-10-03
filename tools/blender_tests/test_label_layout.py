@@ -274,6 +274,134 @@ def t_rk1_ink_stroke_and_components():
             "expansions": expansions, "centre_gap": centre_gap}
 
 
+def _flat_background(value: float = 0.5) -> None:
+    """中性灰底——描边是纯黑（#000000），深色底会把整条描边吃掉（RK-1 的实测）。"""
+    scene = bpy.context.scene
+    shading = getattr(scene.display, "shading", None)
+    if shading is not None:
+        shading.background_color = (value, value, value)
+    scene.world.color = (value, value, value)
+    scene.frame_set(24)
+    bpy.context.view_layer.update()
+
+
+def t_rk1_hidden_label_must_go_red():
+    """§B.5 的 **RK-1 反向突变**：让某个标签长期 `hide_render=True`（等价于标签缺失）。
+
+    期望：**对象计数侧 ＋ ink 面积**两半都要红。成对跑——先证明没突变时两半都绿
+    （ink ≥ 200 px、没有隐藏对象），再证明突变后两半都红。
+
+    顺带记一条**实测事实**：`label_pair_audit()` 只管"配对与归属"，**不看会不会入画**
+    （它的 docstring 与 `audit_renderable_objects` 的分工写得清清楚楚），所以把标签
+    藏起来时它的 `count` 仍然是 2、`problems` 仍然是空——正是因此 §B.5 才要
+    "对象计数侧**＋** ink 面积"两半一起判。
+    """
+    _build()
+    labels = _labels()
+    victim = "char_002"
+    fill = labels["fills"][f"BD_Label_{victim}_Fill"]
+    stroke = labels["strokes"][f"BD_Label_{victim}_Stroke"]
+    _flat_background()
+
+    before_mask = _render_mask("rk1_before", [fill, stroke])
+    ink_before = sum(1 for hit in before_mask if hit)
+    audit_before = label_pair_audit()
+    # `_render_mask` 会把焦点对象**解隐藏**（它就是靠这个做单对象渲染的），
+    # 所以做突变之前先把这一层复位成"都可见"。
+    for obj in labels["all"]:
+        obj.hide_render = False
+    bpy.context.view_layer.update()
+
+    # ---- 突变：把这一对标签藏起来 ----
+    fill.hide_render = True
+    stroke.hide_render = True
+    bpy.context.view_layer.update()
+    #: 先读"谁被藏起来了"，再渲染——渲染本身也会隐藏非焦点对象。
+    hidden_after = sorted(obj.name for obj in labels["all"] if obj.hide_render)
+    # 这里的渲染**必须尊重对象自己的 hide_render**——再走 `_render_mask` 会把
+    # 刚藏起来的那对又解隐藏，于是 ink 一点不掉（实测踩过：2878 → 2878）。
+    after_mask = _render_mask_keep_hidden("rk1_hidden", [fill, stroke])
+    ink_after = sum(1 for hit in after_mask if hit)
+    audit_after = label_pair_audit()
+
+    ok = (ink_before >= INK_MIN_PIXELS
+          and audit_before["count"] == 2
+          and hidden_after == sorted([fill.name, stroke.name])
+          and ink_after < INK_MIN_PIXELS)
+    return {"ok": ok, "ink_before": ink_before, "ink_after": ink_after,
+            "ink_min": INK_MIN_PIXELS, "hidden_after": hidden_after,
+            "audit_before": audit_before, "audit_after": audit_after,
+            "note": ("label_pair_audit 只管配对与归属：藏起来之后它 count 仍是 "
+                     f"{audit_after['count']}、problems {audit_after['problems']}"
+                     "——所以「标签缺失」必须由 hide_render 与 ink 两半一起判")}
+
+
+def _render_mask_keep_hidden(name: str, visible) -> list:
+    """与 :func:`_render_mask` 同形的渲染，但**不**解隐藏焦点对象。
+
+    判"藏起来的标签等于缺失"时必须用这一支：`_render_mask` 会把 targets 的
+    `hide_render` 置回 False（它要的是干净的单对象掩膜），于是"藏起来"这件事
+    被它自己抹掉，ink 一点都不掉。
+    """
+    scene = bpy.context.scene
+    targets = set(visible)
+    for obj in bpy.data.objects:
+        if obj in targets:
+            continue
+        if obj.type in ("MESH", "FONT", "CURVE", "EMPTY"):
+            obj.hide_render = True
+    path = str(OUTDIR / f"label_{name}.png")
+    scene.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+    image = bpy.data.images.load(path)
+    try:
+        pixels = list(image.pixels)
+    finally:
+        bpy.data.images.remove(image)
+    reference = (pixels[((HEIGHT - 1) * WIDTH) * 4],
+                 pixels[((HEIGHT - 1) * WIDTH) * 4 + 1],
+                 pixels[((HEIGHT - 1) * WIDTH) * 4 + 2])
+    out = []
+    for index in range(0, len(pixels), 4):
+        delta = max(abs(pixels[index] - reference[0]),
+                    abs(pixels[index + 1] - reference[1]),
+                    abs(pixels[index + 2] - reference[2]))
+        out.append(delta > 0.02)
+    return out
+
+
+def t_rk2_overlapping_labels_must_go_red():
+    """§B.5 的 **RK-2 反向突变**：把两个角色的标签锚点重合 → 交叠率必须 > 5%。
+
+    成对跑：正向最坏交叠 ≤ 5%（与 `t_rk2_overlap_and_offsets` 同一套量法），
+    把 char_002 的 Fill/Stroke 的世界矩阵搬到 char_001 那一对的位置之后，
+    同一套量法必须报出 > 5%。
+    """
+    scene, _plan, _spec, _summary, _config = _build()
+    labels = _labels()
+    camera = scene.camera
+    _flat_background()
+
+    donor_fill = labels["fills"]["BD_Label_char_001_Fill"]
+    victim_fill = labels["fills"]["BD_Label_char_002_Fill"]
+    victim_stroke = labels["strokes"]["BD_Label_char_002_Stroke"]
+
+    before = _overlap(_screen_box(scene, camera, donor_fill),
+                      _screen_box(scene, camera, victim_fill))
+
+    # ---- 突变：把 char_002 的一对标签搬到 char_001 的位置（锚点重合）----
+    donor = donor_fill.matrix_world.copy()
+    for obj in (victim_fill, victim_stroke):
+        obj.matrix_world = donor
+    bpy.context.view_layer.update()
+    after = _overlap(_screen_box(scene, camera, donor_fill),
+                     _screen_box(scene, camera, victim_fill))
+
+    ok = (before <= OVERLAP_LIMIT and after > OVERLAP_LIMIT)
+    return {"ok": ok, "overlap_before": round(before, 4),
+            "overlap_after": round(after, 4), "limit": OVERLAP_LIMIT}
+
+
 def t_rk2_overlap_and_offsets():
     """RK-2① 交叠率；RK-2② ``offset_reason`` 分档。"""
     scene, plan, _spec, summary, config = _build()
@@ -369,6 +497,10 @@ def main() -> int:
     check("rk1_ink_stroke_and_components", t_rk1_ink_stroke_and_components)
     check("rk2_overlap_and_offsets", t_rk2_overlap_and_offsets)
     check("rk5_label_size_is_continuous", t_rk5_label_size_is_continuous)
+    # §B.5 的反向突变：把实现做坏，判据必须变红（两条都成对跑）。
+    check("rk1_hidden_label_goes_red", t_rk1_hidden_label_must_go_red)
+    check("rk2_overlapping_labels_go_red",
+          t_rk2_overlapping_labels_must_go_red)
     reset_config()
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]

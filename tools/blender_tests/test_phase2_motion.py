@@ -245,6 +245,8 @@ def t_bake_keeps_the_authored_facing():
 # RK-6（v1.4 §4.1）：悬空 / 穿地的**双向**判据
 # --------------------------------------------------------------------------- #
 GROUND_EPS = 0.02
+#: RK-6 反向突变用的抬升量：明显高于 GROUND_EPS（0.02），又远小于角色身高。
+LIFT = 0.05
 #: 采样集：本镜首 / 中 / 尾 **±4 帧**（3×9 = 27 帧/镜）。
 _SAMPLE_OFFSETS = (-4, -3, -2, -1, 0, 1, 2, 3, 4)
 
@@ -323,6 +325,112 @@ def t_rk6_no_floating_no_sinking():
                                round(max(z for _, z in standing), 4)],
             "walking_range": [round(min(z for _, z in walking), 4),
                               round(max(z for _, z in walking), 4)]}
+
+
+def _ground_report(*, overshoot: bool) -> dict:
+    """建一个"坐下 → 站起 → 站定"的场景，逐采样帧量网格最低点。
+
+    **反向突变怎么做，这里踩过一次坑，记下来**（2026-10-03 实测）：§B.5 的 RK-6
+    行点名的突变是"把 `stand` 的落点从绝对地面高度改回**相对 `+drop`**"。
+    我按字面实现（把 `motion.model._root_drop` 换成旧的相对写法）之后，
+    `compose` 出来的轨迹与 `min_z` **逐位相同**——
+
+    ```
+    compose(stand 49-96) 在 96 帧：clean 0.2 ／ "旧写法" 0.2
+    sit→stand 的 min_z：clean {1:0.0, 48:-0.162, 72:-0.1098, 96:0.038}
+                        旧写法 完全相同
+    ```
+
+    原因是 `compose` 的核心语义是"**基线 ＋ (当前姿态 − 起手姿态)**"（见它的
+    docstring）：每个动作只贡献**差值**，所以 `-drop→0` 与 `0→+drop` 的差都是
+    `+drop`，两者在合成里**等价**。也就是说 §B.5 那一行的**机制**不具区分力
+    （它的**意图**——"落点抬到地面上方就必须判悬空"——是可测的）。
+
+    所以这里的突变按**意图**做：让站起段的终点落在**地面上方 `drop`**
+    （`-drop*(1-t) + drop*t`：起手仍与 sit 首尾相接，终点多抬 `drop`）。
+    它才是"角色悬空"这件事的忠实表达，也真的能把判据逼红。
+
+    正向与突变**共用这一段测量**：判据一个字不改，只改被测实现。
+    """
+    import block_director.motion.model as motion_model
+
+    original = motion_model._root_drop
+
+    #: 突变：**行走时把根节点整体抬高 `lift`**（"角色悬空"的忠实表达）。
+    #: 替换的是走路姿态函数本身——烘焙路径真的会调用它，所以这是"把实现做坏"，
+    #: 不是事后把物体挪一挪。
+    original_walk = motion_model._walk_root
+
+    def lifted(start, end, source, target, rate, bob, lean):
+        inner = original_walk(start, end, source, target, rate, bob, lean)
+
+        def pose(frame: int):
+            values = dict(inner(frame))
+            value = values.get("root.location")
+            if value is not None:
+                # **必须是斜坡，不能是常数**：`compose` 只取"当前 − 起手"的差值，
+                # 给每一帧加同一个常数会被它整个抵消（实测：常数版与 clean **逐位
+                # 相同**）。斜坡改变的是**差值**，才是"越走越高/最终悬空"。
+                t = motion_model._ease(motion_model._progress(frame, start, end))
+                values["root.location"] = (value[0], value[1],
+                                           value[2] + LIFT * t)
+            return values
+
+        return pose
+
+    if overshoot:
+        motion_model._root_drop = original
+        motion_model._walk_root = lifted
+    try:
+        scene = fresh_scene()
+        scene.frame_start, scene.frame_end = 1, 96
+        character = create_character("char_001", "小明", "#FF6B6B")
+        create_camera("shot_001", (0.0, -4.0, 1.2), look_at=(0.0, 0.0, 0.9))
+        blender = MotionBlender(character)
+        # 与 RK-6 的正向判据**同一组动作**（`t_rk6_no_floating_no_sinking`）：
+        # 站立段只有头动，行走段必须非负。sit/stand 那对不适合做这条正对照——
+        # 坐下的 0.2 下沉与折腿会让**网格**最低点落到地面以下（实测 −0.21），
+        # 那是坐姿本身的形态，不是"悬空/穿地"要量的东西。
+        blender.add("nod", 1, 48, cycles=2)
+        blender.add("walk_to", 49, 96, target_position=(1.0, 0.0, 0.0))
+        blender.bake()
+        samples = [(frame, _min_z(character, frame))
+                   for frame in _sample_frames(1, 96)]
+    finally:
+        motion_model._root_drop = original
+        motion_model._walk_root = original_walk
+    missing = [frame for frame, z in samples if z is None]
+    floating = [(frame, round(z, 4)) for frame, z in samples
+                if z is not None and z > GROUND_EPS]
+    sinking = [(frame, round(z, 4)) for frame, z in samples
+               if z is not None and z < -GROUND_EPS]
+    return {"frames": len(samples), "missing": missing,
+            "floating": floating, "sinking": sinking,
+            "z_range": [round(min(z for _, z in samples if z is not None), 4),
+                        round(max(z for _, z in samples if z is not None), 4)]}
+
+
+def t_rk6_floating_must_go_red():
+    """§B.5 的 **RK-6 反向突变**（按**意图**做，机制见 `_ground_report` 的说明）：
+    让角色在行走段被抬离地面 → 必须出现 `min_z > +0.02` 的帧。
+
+    成对跑：正向（现实现）全程**既不悬空也不穿地**；突变之后**必须**出现悬空帧。
+    只跑突变的一半不算数——"判据恒红"也能骗过那种写法。
+    """
+    baseline = _ground_report(overshoot=False)
+    mutated = _ground_report(overshoot=True)
+    ok = (baseline["frames"] > 0 and not baseline["missing"]
+          and not baseline["floating"] and not baseline["sinking"]
+          and not mutated["missing"] and bool(mutated["floating"]))
+    return {"ok": ok, "baseline": baseline, "mutated": mutated,
+            "ground_eps": GROUND_EPS, "lift": LIFT,
+            "mutation": ("行走段的根节点随进度抬升（终点离地 lift）——"
+                         "角色悬空"),
+            "doc_note": ("§B.5 原文点名的『把 stand 落点改回相对 +drop』经实测在 "
+                         "compose 下与现实现**逐位等价**（它只取『当前 − 起手』"
+                         "的差值，常数偏移会被整个抵消），不具区分力；常数版的"
+                         "walk 抬升同样被抵消。所以突变按**意图**做：让根节点"
+                         "的**差值**把它抬离地面")}
 
 
 def t_rk6_missing_mesh_is_a_failure():
@@ -418,6 +526,8 @@ def main() -> int:
     check("sit_then_stand_returns_to_ground", t_sit_then_stand_returns_to_ground)
     check("head_motion_is_isolated", t_head_motion_is_isolated)
     check("rk6_no_floating_no_sinking", t_rk6_no_floating_no_sinking)
+    # §B.5 的反向突变：把角色抬离地面，判据必须变红（成对跑）。
+    check("rk6_floating_goes_red", t_rk6_floating_must_go_red)
     check("rk6_missing_mesh_is_a_failure", t_rk6_missing_mesh_is_a_failure)
     check("rk8_body_tilt_matches_the_registered_angle",
           t_rk8_body_tilt_matches_the_registered_angle)
