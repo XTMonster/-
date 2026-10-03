@@ -298,7 +298,13 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-02 20:0x 的账：门①–⑥、⑧–⑩ pass；门⑦ fail；Q4/Q6b 差 5 条；RK-13 记 failed。**
+**2026-10-03 09:4x 的账（最新，以这行为准）：门①–⑩ 全 pass（第一次）；Q0–Q4、Q6a/Q6b/Q7、
+Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 是结构性不可达、E1 是语料
+适配度），`E2` 是诊断量。`python -m pytest` 全绿、`run_tests.ps1` 31/31。
+RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence/20261003-094528/`，
+逐条见 `ACCEPTANCE_STATUS.md` §三十五…§三十九。**
+
+**2026-10-02 20:0x 的历史账：门①–⑥、⑧–⑩ pass；门⑦ fail；Q4/Q6b 差 5 条；RK-13 记 failed。**
 （⑪ 是**诊断**，不参与判定。）`python -m pytest`＝全绿；`powershell -File tools\run_tests.ps1`
 ＝ 31/31 探针。**这一轮不是全绿，别照抄旧结论。**
 

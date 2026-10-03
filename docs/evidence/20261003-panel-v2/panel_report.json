@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-10-03T09:19:06+08:00",
+  "entries": "fixtures\\knowledge_holdout.jsonl",
+  "out": "work\\holdout_panel_v2.jsonl",
+  "sheet": "work\\holdout_panel_v2_disagree.md",
+  "panel": {
+    "a": "deepseek-chat",
+    "b": "glm-4.7",
+    "tag": "llm-panel",
+    "prompt_sha256": "7d95fbc44af177a772b2e10fea903ea7bacb106edaaca92b1b604fe76cc861e0"
+  },
+  "review_source": {
+    "models": [
+      "deepseek-chat",
+      "glm-4.7"
+    ],
+    "prompt_sha256": "7d95fbc44af177a772b2e10fea903ea7bacb106edaaca92b1b604fe76cc861e0",
+    "prompt_version": "review/v2",
+    "tool": "holdout_review_llm",
+    "ran_at": "2026-10-03T07:33:41+08:00"
+  },
+  "counts": {
+    "selected": 102,
+    "accepted": 79,
+    "dropped": 1,
+    "flagged": 16
+  },
+  "dropped": [
+    {
+      "id": "hq_1126",
+      "q": "光线=低调；强度=high；禁光线=正面光",
+      "reasons": {
+        "a": "知识卡讲恒流灯开路，与光线/低调/强度完全无关，边对不上q",
+        "b": "期望与知识卡内容完全无关，属幻觉"
+      }
+    },
+    {
+      "id": "hq_1196",
+      "q": "光线=暖光；强度=mid；禁光线=正面光",
+      "reasons": {
+        "a": "卡片讲染色前禁过放映机，与光线/强度/禁光线完全无关，边对不上q",
+        "b": "期望与知识卡内容完全无关，卡讲放映机禁忌，期望写光线"
+      }
+    }
+  ],
+  "disagreement_ids": [
+    "hq_0122",
+    "hq_0460",
+    "hq_0782",
+    "hq_1136",
+    "hq_1869",
+    "hq_1881",
+    "hq_1918",
+    "hq_1923",
+    "hq_1925",
+    "hq_1929",
+    "hq_1945",
+    "hq_1947",
+    "hq_2018",
+    "hq_2612",
+    "hq_2731",
+    "hq_2750",
+    "hq_0363",
+    "hq_0366",
+    "hq_0382",
+    "hq_0383",
+    "hq_0892",
+    "hq_1234",
+    "hq_1285",
+    "hq_1286",
+    "hq_1868",
+    "hq_1914",
+    "hq_1972",
+    "hq_1974",
+    "hq_2004",
+    "hq_2692",
+    "hq_2730",
+    "hq_1949"
+  ],
+  "unresolved": [
+    "hq_1322",
+    "hq_1810",
+    "hq_1819",
+    "hq_1882",
+    "hq_1928",
+    "hq_1948"
+  ],
+  "honesty": "reviewed_by 写的是 llm-panel；门⑦ 需要 reviewed_by=human，这份复核**不构成**人审，不得当作门⑦ 通过。每条记录另带 source{models,prompt_sha256,ran_at}，门⑦ 只认带这一块的记录（§4.1b 禁止自证）。"
+}
