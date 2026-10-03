@@ -39,6 +39,14 @@ BRIEF_TOOL_NAME = "emit_scene_brief"
 
 BRIEF_MAX_TOKENS_DEFAULT = 1200
 
+#: 注入块的**首行字面量**（单一真源）。
+#:
+#: 为什么把它提出来：计划提示里紧跟知识块的是 `{brief}`，而知识块自己的 token
+#: 上限（`rag.plan_prefetch_tokens`，§4.1b 的 Q6b 读数通道）要求把**这一段**从
+#: 渲染后的 prompt 里切出来。切法只能靠"紧随其后的下一段的字面量"，所以在
+#: `render_brief_block` 里手抄一份、在审计里再抄一份正是会漂的写法。
+BRIEF_BLOCK_HEADER = "剧本理解（阶段 S 产出；与上面的剧本声明冲突时以剧本为准）："
+
 
 def _object(keys, required, descriptions=None) -> Dict[str, Any]:
     properties: Dict[str, Any] = {}
@@ -268,7 +276,7 @@ def render_brief_block(brief: Optional[SceneBrief], *,
     """
     if brief is None or brief.is_empty:
         return ""
-    lines: List[str] = ["剧本理解（阶段 S 产出；与上面的剧本声明冲突时以剧本为准）："]
+    lines: List[str] = [BRIEF_BLOCK_HEADER]
     if brief.arc:
         arc = brief.arc
         parts = [f"{key}={arc[key]}" for key in ARC_KEYS

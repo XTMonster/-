@@ -495,6 +495,36 @@ if (-not (Test-Path (Join-Path $evidenceDir 'ab_triple.json'))) {
                 ' vs ' + $ab.Q6b.triples) -ForegroundColor DarkGray
 }
 
+# Q6b readout channel (2026-10-03): section 4.1b's Q6b row names the ONE channel
+# allowed to answer "how big was the injection" - the prompt that was ACTUALLY sent
+# (`llm_trace.jsonl`), never knowledge_trace's self-report.  Measured: the only Q6b
+# in the chain re-renders the FIXTURE's `q` (holdout_score.py), i.e. it answers a
+# different question ("what would be injected if we retrieved with this query"),
+# and nothing ever read a real prompt.  tools/knowledge/injection_audit.py does.
+# The artifact must exist for the same reason ab_triple.json and
+# edge_spotcheck.jsonl must: a named deliverable that can silently go missing is
+# the same hole as a gate that can.
+# The token half is judged HERE (measured on the committed long run: plan 775/2000,
+# shot max 785/800).  The required-edge half needs the run's per-shot queries to
+# join the oracle; when they do not, this step PRINTS not_measured instead of
+# turning it into a pass.
+python tools/knowledge/injection_audit.py --llm-trace docs/evidence/20261003_real_long/llm_trace.jsonl --audit-log docs/evidence/20261003_real_long/audit_log.jsonl --holdout fixtures/knowledge_holdout.jsonl --out (Join-Path $evidenceDir 'injection_audit.json') > $null 2>&1
+if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
+    Fail '  FAILED: the Q6b prompt-readout report was not written (SS4.1b)'
+} else {
+    $injPath = Join-Path $evidenceDir 'injection_audit.json'
+    $inj = ([System.IO.File]::ReadAllText($injPath,
+            [System.Text.Encoding]::UTF8) | ConvertFrom-Json)
+    if ($inj.token_caps.status -ne 'pass') {
+        Fail ('  FAILED: injection token caps (SS4.1b Q6b) - ' + $inj.token_caps.note)
+    }
+    Write-Host ('  injection token caps, read off the real prompt: plan ' +
+                $inj.plan_scope.max_tokens + '/' + $inj.plan_scope.cap + ', shot ' +
+                $inj.shot_scope.max_tokens + '/' + $inj.shot_scope.cap) -ForegroundColor Green
+    Write-Host ('  required-edge drop half (needs the run queries to join the oracle): ' +
+                $inj.required_edges_dropped_by_budget.status) -ForegroundColor DarkGray
+}
+
 # --------------------------------------------------------------------------- #
 # P14 / knowledge stack: Q0 and E3 live in tools/knowledge/quality.py, and the
 # chain used to run only holdout_score.py (see the NOTE above its command).
