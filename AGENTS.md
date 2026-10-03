@@ -306,7 +306,9 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 **2026-10-04 00:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
 ——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
-`python -m pytest` **1906 passed / 1 skipped**（唯一那条 skip 是
+`python -m pytest` **1906 passed / 1 skipped**（此后两条 lane 又各加了用例：
+`244de59` 的硬边界机检 ＋ `8c368f7` 的顾问工具断连处理，最新一次全量是
+**1924 passed / 1 skipped**；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据）、`run_tests.ps1` **32/32**（探针清单 28 支 ＋
 spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探针循环里**的三步具名
