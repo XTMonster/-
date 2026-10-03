@@ -102,7 +102,15 @@ def slice_jsonl(path: Path, run_id: str) -> Tuple[List[str], int]:
 
 
 def _write_lines(target: Path, lines: List[str]) -> None:
-    target.write_text("".join(line + "\n" for line in lines), encoding="utf-8")
+    """落盘成 **LF**——与 `.gitattributes` 的 `*.jsonl text eol=lf` 一致。
+
+    文本模式在 Windows 上会把 `\n` 翻成 CRLF，于是**盘上字节 ≠ 入库字节**：
+    `git status` 因为 `autocrlf` 看不见这处差异，但"逐字节可复算"这句话在
+    那一瞬间是假的（`sha256_file` 现在按归一摘要算，判据不再受它影响；
+    这里把表示本身也统一掉，免得下次再有人拿裸字节对拍时踩同一个坑）。
+    """
+    target.write_text("".join(line + "\n" for line in lines), encoding="utf-8",
+                      newline="\n")
 
 
 def _run_span(lines: List[str]) -> Dict[str, Any]:
@@ -238,7 +246,8 @@ def extract(*, run_id: str, out_dir: Path, audit_log: Path, llm_trace: Path,
         },
     }
     (out_dir / MANIFEST_NAME).write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8", newline="\n")
     return manifest
 
 

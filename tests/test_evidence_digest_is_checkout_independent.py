@@ -17,6 +17,7 @@
 2. 归一**不削弱防篡改**：内容真变了摘要就要变；
 3. `repin` 只重签"同一份内容、换行口径不同"的 pin，**不许**把换代洗成没换代。
 4. 把一份入库证据**按新检出（全 LF）重放**，`check` 必须零理由——这才是"新克隆也能过"。
+5. 新落的证据在**盘上**就是 LF（与入库形态一致，而不是"提交时才被 git 归一"）。
 """
 
 from __future__ import annotations
@@ -129,6 +130,32 @@ def test_repin_leaves_a_correct_pin_alone(tmp_path):
     #: 分片与 oracle 的 pin 都已经是对的 → 一个都不改。
     assert report["unchanged"] == ["audit_log.jsonl", "pins.holdout"]
     assert report["skipped"] == []
+
+
+def test_extract_writes_lf_to_disk(tmp_path):
+    """源日志是 CRLF（Windows 上文本模式的常态），落盘的分片与清单必须是 **LF**。
+
+    这样"盘上字节 == 入库字节"，不会出现"git status 干净、字节却不一样"的假象。
+    """
+    source = tmp_path / "audit.jsonl"
+    source.write_text('{"run_id": "r1"}\n{"run_id": "r1"}\n{"run_id": "x"}\n',
+                      encoding="utf-8")          # Windows 上这里写出 CRLF
+    assert b"\r\n" in source.read_bytes(), "前提：源日志是 CRLF"
+
+    out = tmp_path / "out"
+    X.extract(run_id="r1", out_dir=out, audit_log=source,
+              llm_trace=tmp_path / "no-such-trace.jsonl", shots=None,
+              knowledge_trace=None, holdout=HOLDOUT,
+              index_manifest=INDEX_MANIFEST)
+
+    for name in ("audit_log.jsonl", X.MANIFEST_NAME):
+        data = (out / name).read_bytes()
+        assert b"\r" not in data, f"{name} 里还有 CR，盘上字节与入库形态不一致"
+    manifest = json.loads((out / X.MANIFEST_NAME).read_text(encoding="utf-8"))
+    #: 只搬 run_id 相符的两行，且 pin 是归一摘要（等于 LF 形态的裸字节摘要）。
+    assert manifest["artifacts"]["audit_log.jsonl"]["lines"] == 2
+    assert manifest["artifacts"]["audit_log.jsonl"]["sha256"] == \
+        X.sha256_raw(out / "audit_log.jsonl")
 
 
 @pytest.mark.parametrize("run_id", ["20261003_real_glm", "20261003_real_ds",
