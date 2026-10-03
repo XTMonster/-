@@ -37,6 +37,9 @@ python tools/glm_consult.py --roles 规格一致性,红队反方 \
 | ~1.7k token | `max` ＋ `max_tokens=8192` | 217 s，**正文为空**（reasoning 8147、`length`）✗ |
 | ~10k token（4 份产物） | `high` | >30 min 后**对端断连** ✗ |
 | ~15k token（README ＋ 40k 字尾） | `high` | ~25 min 后**对端断连** ✗ |
+| ~2.6k token（Q5 出路一节全文） | `high` | **902.2 s** 后对端断连 ✗ |
+| ~2.6k token（同一份） | `low` | **903.0 s** 后对端断连 ✗（⇒ 15 分钟是硬切，与档位无关） |
+| **1179 token**（同一节的摘录） | `low` | **819.2 s**，正文正常，`stop` ✓（completion 27013、reasoning 23941） |
 
 **同一小时的补充观测（很关键）**：上面那次 363.6 s 的成功之后，我在同一小时里
 并发发起过 3 次大调用，随后的 4 次调用——10k / 15k / 2.4k（`high`）/ 2.4k（`low`）
@@ -47,6 +50,11 @@ bundle 压到最小、先用 `--level low` 拿结果（要更深再单独补一�
 ⇒ **把 bundle 压到 ~2k token 以内、一次只问一件事**；大 bundle 先拆成几次，
 或降到 `--level low`。`level=max` 只在"只有一个问题、愿意等半小时"时用。
 空正文会自动降档（`max → high → low`）并逐档记进 usage——那是正常行为，不是失败。
+上面那三行（2.6k 两连败 → 1179 token 成功）的**原始回包与失败记录**在
+`docs/evidence/20261004-q5-glm-consult/`：`glm_redteam.json`（成功那次）、
+`glm_redteam.usage.json`（1179/27013/819.2 s）、`attempt_transport_error.json`
+（断连那次的 `finish_reason: transport_error`）。那份 README 还逐条写了
+5 条 findings 的**判词**（证实/证伪），其中一条把 GLM 提的"第四条出路"算掉了。
 （2026-10-04 补测：`stream: true` 也救不了——对端在思考阶段**一个字节都不发**，
 ~10k token 的 bundle 静默到 ~12 分钟才开始吐 delta，中途掐断时只留下半截
 `reasoning_content`。所以正解还是**把 bundle 压小**，不是换传输方式。）

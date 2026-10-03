@@ -1,0 +1,14 @@
+{
+  "role": "红队反方",
+  "requested_model": "glm-5.3",
+  "attempts": [
+    {
+      "level": "low",
+      "error": "RemoteDisconnected: Remote end closed connection without response",
+      "elapsed_s": 903.0,
+      "finish_reason": "transport_error",
+      "requested_model": "glm-5.3",
+      "max_tokens": 32768
+    }
+  ]
+}
