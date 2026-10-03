@@ -169,3 +169,87 @@ def test_the_shipped_sidecar_matches_the_shipped_cases():
     for case_id, zh in list(lines.items())[:20]:
         assert any("\u4e00" <= ch <= "\u9fff" for ch in zh)
         assert not any(word in zh for word in ZH.CONSTRAINT_WORDS), (case_id, zh)
+
+
+# --------------------------------------------------------------------------- #
+# v2 的提示词形状与**具名丢弃原因**（2026-10-03）。这一段的存在理由：v1 的提示词
+# 写的是"改写成一句中文线索"，模型于是写**摘要**或**元话术**（"本段未涉及景别…"）
+# ——那等于把 `景别/运镜/剪辑` 这些**查询里的工艺词**灌进垃圾文档，BM25 因此让
+# 它们比真案例更容易被中文查询命中。判据是"检索键要长得像导演会问的那句话的答案"。
+# --------------------------------------------------------------------------- #
+
+
+def test_classify_names_every_drop_reason():
+    """丢弃必须**具名**：一个 `None` 讲不出"是长度、是约束、还是元话术"。"""
+    assert ZH.classify("推镜把观众带进主角的视线里") == ""
+    assert ZH.classify("") .startswith("empty")
+    assert ZH.classify("短").startswith("length")
+    assert ZH.classify("啊" * 200).startswith("length")
+    assert ZH.classify("镜头必须保持水平不晃").startswith("constraint")
+    assert ZH.classify("本段未涉及景别与运镜") .startswith("meta")
+    assert ZH.classify("keep the camera still") == "not-chinese"
+
+
+def test_make_line_reports_the_same_reason_classify_would():
+    """`make_line` 与 `classify` **同源**：不许各写一套丢弃规则。"""
+    case = {"case_id": "c1", "excerpt": "Keep the camera still.",
+            "source_ref": {"title": "t"}}
+    line, reason = ZH.make_line(_Stub({"zh": "本段未涉及景别与运镜"}), case)
+    assert line is None
+    assert reason == ZH.classify("本段未涉及景别与运镜")
+    #: 空串走的是 `empty` 这一支（摘录确实不含工艺信息时的**合法**回答）。
+    line, reason = ZH.make_line(_Stub({"zh": "   "}), case)
+    assert line is None and reason.startswith("empty")
+    #: 合格的一条：原因是空串，行里带 case_id。
+    line, reason = ZH.make_line(_Stub({"zh": "固定机位让表演自己说话"}), case)
+    assert reason == "" and line["case_id"] == "c1"
+
+
+def test_the_v2_prompt_forbids_meta_phrasing_and_allows_an_empty_line():
+    """提示词必须把两件事写死：**不许元话术**、**摘录没有工艺信息就给空串**。
+
+    这两条是 v2 的全部机制——没有它们，模型会继续写"本段未涉及…"，
+    而那种句子恰恰带着查询词。
+    """
+    assert "元话术" in ZH.SYSTEM
+    assert "未涉及" in ZH.SYSTEM and "不涉及" in ZH.SYSTEM
+    assert "空串" in ZH.SYSTEM
+    #: 闭集式的工艺词清单也在（否则线索与查询的词表仍然对不上）。
+    for word in ("推镜", "跟拍", "低角度", "侧光", "留白", "轴线"):
+        assert word in ZH.SYSTEM, word
+
+
+def test_dropped_out_writes_named_reasons(tmp_path, monkeypatch):
+    """`--dropped-out` 把"谁被丢、为什么"落盘——**覆盖率不是只看分子**。"""
+    cases_path = tmp_path / "cases.jsonl"
+    cases_path.write_text(
+        json.dumps({"case_id": "c1", "excerpt": "A slow dolly in.",
+                    "source_ref": {"title": "t"}}) + "\n"
+        + json.dumps({"case_id": "c2", "excerpt": "Another excerpt.",
+                      "source_ref": {"title": "t"}}) + "\n",
+        encoding="utf-8")
+
+    class _Meta:
+        family = "zhipu"
+        model_id = "stub"
+        model_version = "stub"
+
+        def chat_json(self, *args, **kwargs):
+            return {"zh": "本段未涉及景别与运镜"}
+
+    monkeypatch.setattr(ZH.llm, "make_client", lambda *a, **k: _Meta())
+    out = tmp_path / "lines.jsonl"
+    dropped = tmp_path / "dropped.jsonl"
+    code = ZH.main(["--cases", str(cases_path), "--out", str(out),
+                    "--dropped-out", str(dropped), "--workers", "1"])
+    assert code == 0
+    rows = [json.loads(line) for line in
+            dropped.read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert [row["case_id"] for row in rows] == ["c1", "c2"]     # 按 id 排序
+    assert all(row["reason"].startswith("meta") for row in rows), rows
+    assert all(row["excerpt"] for row in rows)
+    #: 没有 `--dropped-out` 时**不写**那个文件（缺省行为不变）。
+    dropped.unlink()
+    assert ZH.main(["--cases", str(cases_path), "--out", str(out),
+                    "--workers", "1"]) == 0
+    assert not dropped.exists()

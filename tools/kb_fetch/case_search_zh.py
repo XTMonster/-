@@ -51,17 +51,40 @@ MIN_CHARS = 8
 MAX_CHARS = 90
 #: 出现这些词就丢弃——L3 **不许**产出约束（E3）。机械检查，不靠模型自觉。
 CONSTRAINT_WORDS = ("禁止", "必须", "不得", "务必", "一定要")
+#: 出现这些词就丢弃——**元话术**（"本摘录未涉及景别…"）。为什么它是一条硬规则：
+#: 2026-10-03 实测，glm-5.3 在"摘要形状"的提示词下会给**没有任何内容**的碎片
+#: （`Lecture 1.` / `4.` / 版权页）写出"仅含编号，未涉及景别、运镜或剪辑"这类句子
+#: ——那等于把 `景别/运镜/剪辑` 这些**查询里的工艺词**灌进垃圾文档，BM25 于是让
+#: 它们比真案例更容易被中文查询命中（E1 的 top-3 因此被 1900 年代散句占满）。
+#: 线索是**检索键**；键里出现"我没讲什么"这种自述，只会制造假命中。
+META_WORDS = ("摘录", "本段", "本文", "文中", "书中", "这篇文章", "该文",
+              "未涉及", "不涉及", "未提及", "未包含", "不含", "未给出", "未说明")
 
+#: 提示词的形状 = **查询的形状**（v2，2026-10-03）。v1 写的是"把它改写成一句中文线索"，
+#: 模型于是写成**摘要**（"本片讲的是什么"）；而产品的查询是**导演的追问**
+#: （"这一镜要怎么拍"）。两条文本的词表因此对不上：v1 的线索里几乎不含
+#: `推镜/跟拍/低角度/视线/留白` 这类**查询一定会说的工艺词**，BM25 只能靠
+#: 单字（的/在/面/下）把 1900 年代散句顶到 top-3（实测 3/18 = 0.1667）。
+#: v2 把线索固定成"**先说'要拍什么'，再说'摘录里的做法/规律'**"这一形状，
+#: 并允许（且只允许）在摘录真的讲到时使用工艺词；摘录不含工艺信息时**给空串**。
 SYSTEM = (
     "你是分镜知识库的检索线索标注员。给你一条**英文影评/制作分析摘录**，"
-    "请把它改写成**一句中文检索线索**，用来把中文的拍摄查询和这条摘录接上。\n"
+    "请把它改写成**一句中文检索线索**——**形状要像导演会拿来问这一镜的那句话的答案**：\n"
+    "先说'要拍/要表现什么'（景别、机位、运镜、画面里发生的事、要传达的情绪或节奏），"
+    "再说'这条摘录给出的做法、规律或例子'。\n"
     "硬规则：\n"
     "1. **只搬运摘录里已有的信息**（画面、景别、机位、运镜、剪辑、节奏、声音、构图、"
     "表演、调度…），不要评论、不要补充外部知识、不要写成观后感；\n"
-    "2. 只用**陈述句**，**不要**出现'必须/禁止/不得/务必'这类要求或禁令；\n"
-    "3. " + f"{MIN_CHARS}–{MAX_CHARS} 字，一句，不要标点堆砌，不要列点；\n"
-    "4. 不要写片名之外的专有名词堆砌，重点是**可被查询命中的工艺词**。\n"
-    "只输出 JSON：{\"zh\": \"<中文线索>\"}"
+    "2. 摘录若**不含任何拍摄工艺信息**（例如只有讲次编号、目录行、人名、书名、"
+    "版权或页眉页脚），`zh` 必须给**空串**——宁可没有线索，也不许硬编；\n"
+    "3. 直接写内容本身：不许出现'摘录/本段/本文/文中/书中/这篇文章'，也不许写"
+    "'未涉及/不涉及/未提及/不含'这类**元话术**；\n"
+    "4. 只用**陈述句**，**不要**出现'必须/禁止/不得/务必/一定要'这类要求或禁令；\n"
+    "5. " + f"{MIN_CHARS}–{MAX_CHARS} 字，一句，不要标点堆砌，不要列点；\n"
+    "6. 优先用中文拍摄现场会说的**工艺词**（特写/中景/全景、推镜/拉镜/摇镜/跟拍/升降、"
+    "低角度/俯拍、侧光/逆光、构图/留白、视线匹配、轴线、节奏、剪辑…），"
+    "但**只能用在摘录真的讲到它的时候**；\n"
+    "只输出 JSON：{\"zh\": \"<中文线索；摘录不含工艺信息时给空串>\"}"
 )
 
 
@@ -81,25 +104,42 @@ def load_cases(path: pathlib.Path) -> List[dict]:
 
 def line_for(client, case: dict) -> Optional[dict]:
     """一条案例 → 一条线索（不合格返回 None，**不编**）。"""
+    return make_line(client, case)[0]
+
+
+def classify(zh: str) -> str:
+    """一条线索文本 → 被丢弃的具名原因（`""` = 合格）。**与 :func:`make_line` 同源**。"""
+    if not zh:
+        return "empty（摘录不含工艺信息，按规则给空串）"
+    if not (MIN_CHARS <= len(zh) <= MAX_CHARS):
+        return f"length（{len(zh)} 字，带宽 {MIN_CHARS}–{MAX_CHARS}）"
+    if any(word in zh for word in CONSTRAINT_WORDS):
+        return "constraint（含约束词，E3）"
+    if any(word in zh for word in META_WORDS):
+        return "meta（元话术：" + "、".join(w for w in META_WORDS if w in zh) + "）"
+    if not re.search(r"[\u4e00-\u9fff]", zh):
+        return "not-chinese"
+    return ""
+
+
+def make_line(client, case: dict) -> tuple:
+    """一条案例 → （线索行或 None, 丢弃原因）。原因用于**如实记账**（谁被丢掉、为什么）。"""
     excerpt = str(case.get("excerpt") or "").strip()
     if not excerpt:
-        return None
+        return None, "excerpt-empty"
     source = case.get("source_ref") or {}
     user = ("【摘录】\n%s\n\n【出处标题】%s\n\n【原语言】英文"
             % (excerpt[:800], str(source.get("title") or "")[:120]))
     try:
         reply = client.chat_json(SYSTEM, user, 0.0, 0, 1024)
     except Exception:  # noqa: BLE001 - 这一条的失败不该拖死整批
-        return None
+        return None, "call-failed"
     zh = str(reply.get("zh") or "").strip()
     zh = re.sub(r"\s+", "", zh)
-    if not (MIN_CHARS <= len(zh) <= MAX_CHARS):
-        return None
-    if any(word in zh for word in CONSTRAINT_WORDS):
-        return None        # E3：L3 不许产出约束
-    if not re.search(r"[\u4e00-\u9fff]", zh):
-        return None        # 必须是中文线索
-    return {"case_id": str(case.get("case_id")), "zh": zh}
+    reason = classify(zh)
+    if reason:
+        return None, reason
+    return {"case_id": str(case.get("case_id")), "zh": zh}, ""
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -111,6 +151,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--scripted", default="")
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--dropped-out", default="",
+                        help="把被丢弃的条目与**具名原因**写到这个文件（缺省不写）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     cases_path = pathlib.Path(args.cases)
@@ -132,10 +174,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     client = llm.make_client(args.provider, args.model, args.scripted)
     rows: List[dict] = list(done.values())
     dropped = 0
+    dropped_rows: List[dict] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
-        for result in pool.map(lambda case: line_for(client, case), todo):
+        for case, result, reason in pool.map(
+                lambda case: (case, *make_line(client, case)), todo):
             if result is None:
                 dropped += 1
+                dropped_rows.append({"case_id": str(case.get("case_id")),
+                                     "reason": reason,
+                                     "excerpt": str(case.get("excerpt") or "")[:200]})
                 continue
             rows.append({**result, "cases_sha256": digest, "model": client.model_id,
                          "family": client.family, "prompt_sha256": prompt_sha()})
@@ -143,6 +190,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
                         encoding="utf-8", newline="\n")
+    if args.dropped_out:
+        dropped_path = pathlib.Path(args.dropped_out)
+        dropped_path.parent.mkdir(parents=True, exist_ok=True)
+        dropped_rows.sort(key=lambda row: row["case_id"])
+        dropped_path.write_text(
+            "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in dropped_rows),
+            encoding="utf-8", newline="\n")
     print(json.dumps({"written": len(rows), "dropped": dropped,
                       "coverage": round(len(rows) / max(1, len(cases)), 4),
                       "path": str(out_path)}, ensure_ascii=False))
