@@ -14,7 +14,9 @@ AI 视频生成当参考。
 | 术语 | 含义 |
 |---|---|
 | **声明（declared）** | 剧本原文里**显式写出**的东西：镜号、机号、拍摄手法、技巧、台词、时长、角色、地点、灯光、音效。解析结果是 `ParsedScript.declared_shots`（`layer1_input/shotlist.py`）。 |
-| **规划（planned）** | LLM 产出、经 schema 校验后的 `Plan`（`contracts/plan.py`）。优先级是 **声明 > brief > draft**：剧本写死的字段由驱动器钉在计划上，模型只能补它没写的东西。 |
+| **规划（planned）** | LLM 产出、经 schema 校验后的 `Plan`（`contracts/plan.py`）。优先级是 **声明 > 理解 > 草案**（下两行）：剧本写死的字段由驱动器钉在计划上，模型只能补它没写的东西。 |
+| **理解（brief）** | 阶段 S 的一次结构化读数 `SceneBrief`（`contracts/brief.py`、`layer5_orchestrator/understand.py`）：说话人 / 注视 / 节拍 / 空间 / 弧光 / 道具。它是**理解的记录**，只在草案没给的时候兜底（`driver._pin_brief_gaze`），这样 R013 才能拿"理解"与"落实"对拍。 |
+| **草案（draft）** | 阶段 B1 的逐镜草案 `ShotDraft`（`layer5_orchestrator/editor.py`，工具 `emit_shot_draft`）：补镜别 / 角色 / 动作 / 取景 / 注视 / 特效这类**落实细节**。合并进计划时不许改写剧本已声明的字段（台词文本、时长、镜号），只借它的时间轴。 |
 | **契约（SceneContract）** | 把一镜的语义（情绪 / 意图 / 关系 / 动作 / 台词 / 特效）**收敛成可执行描述**的中间层（`layer5_orchestrator/scene_contract.py`）。它回答"谁看谁、谁在说话、哪里没落实"，是 R013/R019/F2 的共同上游。 |
 | **oracle** | **不受被测实现自身通道影响**的判定来源。渲染、网格几何、实际发出的 prompt、人工标注的 held-out、`audit_log.jsonl` 的逐次事件都算；"读被测实现自己写出的汇总字段就等于通过"**不算**。 |
 | **降级（degraded）** | 运行没能按正常路径完成，但仍有产物。**不是成功**：`snapshot()["degraded_reason"]` 里必须写明原因（例如预算触顶走 `_degrade_to_finish`）。 |
@@ -24,7 +26,7 @@ AI 视频生成当参考。
 | 目录 | 职责 | 允许 import bpy？ |
 |---|---|---|
 | `block_director/contracts/` | 契约层：配置、枚举、计划、SDL、错误码、线协议 DTO。**单一真源**，`specs/*.yaml` 与它同步。 | **否** |
-| `block_director/utils/` | 工具：AABB、几何、日志、路径、线程护栏。 | **否** |
+| `block_director/utils/` | 工具：AABB、几何、日志、路径、线程护栏、版本兼容封装。 | 部分（`blender_compat.py` 用 bpy，其余纯） |
 | `block_director/cinema/` | 纯取景/构图/轴线/排片/运动学：`framing.py`、`composition.py`、`anchor.py`（角色竖直锚点）、`schedule.py`、`camera_motion.py`。 | **否** |
 | `block_director/motion/` | 动作库与分层合成、§9.7 冲突仲裁、错开策略。 | **否** |
 | `block_director/layer1_input/` | 剧本解析：格式检测、分镜表、对白计时、共指消解。 | **否** |
@@ -40,11 +42,18 @@ AI 视频生成当参考。
 
 ## 硬边界（改代码前先看这条）
 
-**纯层清单**：`contracts/`、`utils/`、`cinema/`、`motion/`、`layer1_input/`、
-`knowledge/`、`delivery/`、`layer6_audit/`、`layer7_ui/run_settings.py`
-**不得 import bpy**——它们是纯层，pytest 直接跑。`layer3_engine/__init__.py`
-会拉起 bpy 链路，所以纯模块**不要**放进去（`cinema/anchor.py` 就是为此单独
-存在的）。
+**纯层清单**（`import bpy` 红线；由 `tests/test_context_pure_layers.py` 逐条机检）：
+
+* 整目录不得 import bpy：`contracts/`、`cinema/`、`motion/`、`layer1_input/`、
+  `knowledge/`、`layer2_sdl/`、`delivery/`、`layer6_audit/`。
+* `utils/`：除 `blender_compat.py`（版本兼容层的职责就是碰 `bpy.app.version`，
+  见 v1.2 §21.7）外不得 import bpy。
+* `layer5_orchestrator/`：除 `modal_operator.py` 外不得 import bpy。
+* 允许 bpy 的目录里，这两个文件仍必须保持纯：`layer7_ui/run_settings.py`、
+  `layer9_persistence/replay.py`。
+
+它们是纯层，pytest 直接跑。`layer3_engine/__init__.py` 会拉起 bpy 链路，所以
+纯模块**不要**放进去（`cinema/anchor.py` 就是为此单独存在的）。
 
 **主线程**：任何触碰 bpy 的入口都要过 `utils/threading_guard.py` 的
 `@main_thread_only`。
