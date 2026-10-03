@@ -1544,7 +1544,9 @@ class PrevisDriver:
             payload: ChatPayload = build_plan_payload(
                 self.script, self.config, request_id=request_id,
                 parsed=self.parsed_script, retriever=self.knowledge,
-                brief=self.brief, chunk=chunk, plan_chunks_total=len(chunks))
+                brief=self.brief, chunk=chunk, plan_chunks_total=len(chunks),
+                #: 上一次被拒的原因回灌给这一次——否则模型把同一个错误再犯一遍。
+                retry_note=self._plan_problem)
         except ValueError as exc:
             # v1.4 BW-3/E_SCRIPT_002：声明镜数超过 max_shots 时明确失败，
             # 而不是退回"其余 N 个镜号略"的静默截断。
@@ -1607,6 +1609,8 @@ class PrevisDriver:
                     merged.append(note)
             self._plan_head["continuity_notes"] = merged
         self._plan_shots.extend(chunk_plan.shots)
+        #: 这一段收下了，上一次的拒绝原因就过期了——别带进下一段的提示里。
+        self._plan_problem = ""
         if not self._plan_needs_more_chunks():
             payload = dict(self._plan_head)
             payload["shots"] = [shot.to_dict() for shot in self._plan_shots]

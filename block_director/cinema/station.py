@@ -218,9 +218,18 @@ def camera_direction(frame: SubjectFrame, side: str = "front", *,
 
     normal = right_of(axis)
     facing_xy = _normalise(frame.facing)
-    # 取"指向焦点主体正面"的那一条法线。两人正对彼此（点积≈0）时保持
-    # 确定性的右侧法线——得到标准的侧面双人构图，且机位不在轴线上。
-    if facing_xy[0] * normal[0] + facing_xy[1] * normal[1] < 0.0:
+    #: **已确立的轴侧优先**（v1.5，2026-10-03 的真跑实测）：`axis_side` 此前
+    #: 只在单人镜头的 `_off_axis` 分支被用到，两人镜头一律按"焦点主体朝向"挑
+    #: 那一条法线——于是模型要的角度与已确立的轴侧打架时**必然越轴**，而
+    #: R001 的判据恰恰就是 `Axis.established_side`（`axis_violation`）。
+    #: 实测代价：64 镜真跑里 R001 从 0 涨到 **79** 次（机位不再被静默折成 front
+    #: 之后，"摆错一侧"第一次真的发生），其中相当一部分是这里挑反了法线。
+    #: 还没有轴线基准（`axis_side == 0`）时才退回"指向焦点主体正面"的旧口径。
+    if axis_side:
+        cross = axis[0] * normal[1] - axis[1] * normal[0]
+        if (cross > 0) != (axis_side > 0):
+            normal = (-normal[0], -normal[1])
+    elif facing_xy[0] * normal[0] + facing_xy[1] * normal[1] < 0.0:
         normal = (-normal[0], -normal[1])
 
     if key == "over_shoulder":

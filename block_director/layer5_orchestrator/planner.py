@@ -171,7 +171,8 @@ def build_plan_payload(script: str, config=None,
                        parsed=None, retriever=None,
                        max_tokens: Optional[int] = None,
                        brief=None, chunk: Optional[Dict[str, Any]] = None,
-                       plan_chunks_total: int = 0) -> ChatPayload:
+                       plan_chunks_total: int = 0,
+                       retry_note: str = "") -> ChatPayload:
     """构造阶段 A 的请求。
 
     给了 ``parsed``（Layer 1 的解析结果）时，提示里放**结构化摘要 + 对白时长表**
@@ -191,6 +192,11 @@ def build_plan_payload(script: str, config=None,
     带上同一份段描述，好让离线替身与审计都能复算"这一问的是哪一段"。
     ``plan_chunks_total <= 1``（或没有 chunk）时**一个字都不加**——短剧本的提示
     与分块前逐字节相同。
+
+    v1.5：``retry_note`` 非空时把**上一次被拒的原因**写进 user 消息。为什么必须
+    （2026-10-03 实测）：重试原本用的是**同一份提示**，模型于是把同一个错误再犯一遍，
+    两次耗尽后整跑 `ERROR`（`state=ERROR`、0 镜——真跑里就是"多写了一个
+    `dialogue_ids_note` 字段"和"JSON 断在 9690 字符处"这两种一次性手滑）。
     """
     temperature = 0.7
     timing_source = "script_first"
@@ -262,13 +268,18 @@ def build_plan_payload(script: str, config=None,
             "stop": int(chunk.get("stop", 0)),
             "shot_numbers": list(chunk.get("shot_numbers") or []),
         }
+    user_text = ("请基于上述剧本，调用 emit_plan 提交**这一段**的分镜计划。"
+                 if metadata else
+                 "请基于上述剧本，调用 emit_plan 提交完整分镜计划。")
+    if retry_note:
+        user_text += (
+            f"\n\n⚠ 上一次提交被拒绝，原因：{retry_note}\n"
+            f"请**只**提交 schema 里列出的字段与结构（多写一个字段就会被当场拒绝），"
+            f"修好后重新提交。")
     return ChatPayload(
         messages=[
             Message(role=MessageRole.SYSTEM, content=system_text),
-            Message(role=MessageRole.USER,
-                    content=("请基于上述剧本，调用 emit_plan 提交**这一段**的分镜计划。"
-                             if metadata else
-                             "请基于上述剧本，调用 emit_plan 提交完整分镜计划。")),
+            Message(role=MessageRole.USER, content=user_text),
         ],
         tools=[{"type": "function",
                 "function": {"name": PLAN_TOOL_NAME,
