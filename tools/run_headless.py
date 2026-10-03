@@ -156,10 +156,12 @@ def main() -> int:
         )
 
         spec = builder.spec if builder is not None else None
-        path = save_run_project(summary, out_dir=Path(args.save), spec=spec,
-                                crowd=crowd)
+        saved = save_run_project(summary, out_dir=Path(args.save), spec=spec,
+                                 crowd=crowd)
+        #: 落盘时的校验结论随标记一起打出来——"存了个文件"与"存了个能打开的
+        #: 文件"是两件事，调用方（人/链）不该等到 rebuild 才知道。
         print("BLOCKDIRECTOR_SAVED " + json.dumps(
-            {"path": str(path)},
+            {"path": str(saved.path), "validation": saved.validation},
             ensure_ascii=False))
 
     export_failed = False

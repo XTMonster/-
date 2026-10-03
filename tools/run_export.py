@@ -123,9 +123,10 @@ def main() -> int:
         )
 
         spec = getattr(builder, "spec", None)
-        path = save_run_project(summary, out_dir=Path(args.save), spec=spec)
-        print("BLOCKDIRECTOR_SAVED " + json.dumps({"path": str(path)},
-                                                  ensure_ascii=False))
+        saved = save_run_project(summary, out_dir=Path(args.save), spec=spec)
+        print("BLOCKDIRECTOR_SAVED " + json.dumps(
+            {"path": str(saved.path), "validation": saved.validation},
+            ensure_ascii=False))
 
     from block_director.contracts.plan import Plan
     plan = Plan.from_dict(summary.get("plan") or {"shots": []})

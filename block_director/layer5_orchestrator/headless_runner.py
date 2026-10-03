@@ -6,6 +6,7 @@ Modal Operator 在 ``--background`` 下不可用（无 window），因此批处�
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -182,16 +183,22 @@ def save_run_project(
     spec=None,
     crowd=None,
     project_name: str = "",
-) -> Path:
+) -> "SavedProject":
     """把一次成功运行的分镜计划落成 ``project.bdproj``（§14）。
 
     v1.4 §4.4 步骤 1/3：``run_headless.py --save`` 与 ``run_export.py --save``
     共用这一段（此前它只内联在 ``tools/run_headless.py`` 里，步骤 3 无从复用）。
     落盘复用既有的 ``layer9_persistence.project_io.save_project``，**不重定义**。
+
+    v1.5：返回 :class:`SavedProject`（路径 ＋ **落盘那一刻**的 SDL 校验报告）。
+    此前 `validate_sdl(sdl)` 的返回值被**直接丢掉**——运行报 `DONE`、文件也写出去，
+    而"这份工程过不了自己的校验"要到 `load_project` / `rebuild_project` 或面板
+    加载时才发现（实测 2026-10-03 的 64 镜真跑：工程里 26 条 S6）。校验照跑、
+    结论照带回；要不要据此拦住什么，是调用方的策略（§14.2 的工作流不能被它挡死）。
     """
     from ..contracts.plan import Plan
     from ..layer2_sdl import build_sdl, validate_sdl
-    from ..layer9_persistence import save_project
+    from ..layer9_persistence import findings_report, save_project
 
     plan = Plan.from_dict(summary["plan"])
     sdl = build_sdl(
@@ -204,5 +211,26 @@ def save_run_project(
         # 否则"存了再打开"会丢掉那 30 个路人。
         crowd=crowd,
     )
-    validate_sdl(sdl)
-    return save_project(Path(out_dir), sdl)
+    findings = validate_sdl(sdl)
+    path = save_project(Path(out_dir), sdl)
+    report = findings_report(findings, path=str(path))
+    if not report["ok"]:
+        #: 进日志是为了让**那次运行自己的输出**就带这条事实，而不是等下一次加载。
+        log.warning(
+            "项目落盘：SDL 校验未通过 %d 条（规则 %s）——文件照写，"
+            "但交付前必须看这些 finding",
+            len(report["errors"]), "、".join(report["rules"]))
+    return SavedProject(path=path, validation=report)
+
+
+@dataclass(frozen=True)
+class SavedProject:
+    """一次落盘的产物：文件路径 ＋ 落盘时的 SDL 校验报告。
+
+    ``validation`` 的形状与 ``layer9_persistence.validation_report`` 一致
+    （``ok`` / ``errors`` / ``warnings`` / ``rules``），因此"落盘前"与"加载后"
+    量的是同一件事。
+    """
+
+    path: Path
+    validation: Dict[str, Any] = field(default_factory=dict)

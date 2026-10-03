@@ -223,6 +223,55 @@ def t_a_base_action_keeps_the_placement():
             "drift": drift}
 
 
+def t_a_multi_layer_action_keeps_the_placement():
+    """一个动作**跨多层**时，冻结基线必须逐层取，不能按 `action_id` 合用。
+
+    这是上面那条的第二个、独立的机制（2026-10-03 晚，`work/_placement_bisect.py`
+    在 `3ea5230` 之后仍然抓到 `伊恩` 停在 (0,0,0)）：``compose`` 的
+    ``frozen_base`` 曾经只按 ``spec.action_id`` 存基线，而一个请求会展开成
+    **好几层的 spec**、它们共用同一个 id（``stand`` → base + legs + body）。
+    **先被遍历到的那个层**替其它层冻住基线：上一镜的 ``body_tilt`` 把 body 层
+    排在了 base 层前面，于是 base 层的 ``root.location`` 在 body 的基线里查不到、
+    ``_zero_like`` 取到 0 —— 角色照样瞬移到原点（只是换了一条路径）。
+
+    判据与上面那条同形：**站起之后，人还在他被摆下的位置**。
+    """
+    fresh_scene()
+    plan = Plan(shots=[
+        ShotPlan.from_dict({
+            "shot_id": "shot_001", "order": 1, "intent": "侧倾",
+            "shot_type": "MS", "duration_frames": 48,
+            "characters": ["char_001", "char_002"],
+            "actions": [{"character_id": "char_002",
+                         "action_type": "body_tilt",
+                         "start_frame": 1, "end_frame": 24,
+                         "params": {"angle_deg": 11.0, "axis": "y"}}],
+        }),
+        ShotPlan.from_dict({
+            "shot_id": "shot_002", "order": 2, "intent": "站起",
+            "shot_type": "MCU", "duration_frames": 72,
+            "characters": ["char_002"],
+            "actions": [{"character_id": "char_002", "action_type": "stand",
+                         "start_frame": 1, "end_frame": 48,
+                         "params": {"drop": 0.2}}],
+        }),
+    ], scene_heading="INT. 咖啡馆 - 日")
+    spec = SceneSpec.from_plan(plan)
+    build_scene(plan, spec, clear_scene=True)
+    bpy.context.scene.frame_set(80)          # 全局第 80 帧 = 第二镜站起中段
+    placed = _placements()
+    expected = {member.id: (float(member.initial_location[0]),
+                            float(member.initial_location[1]))
+                for member in spec.cast}
+    drift = {cid: {"expected": expected[cid], "actual": placed.get(cid)}
+             for cid in expected
+             if cid in placed
+             and (abs(placed[cid][0] - expected[cid][0]) > 1e-3
+                  or abs(placed[cid][1] - expected[cid][1]) > 1e-3)}
+    return {"ok": not drift, "expected": expected, "placed": placed,
+            "drift": drift}
+
+
 def main() -> int:
     capture_main_thread()
     check("save_load_rebuild_keeps_the_timeline",
@@ -233,6 +282,8 @@ def main() -> int:
     check("invalid_project_is_refused", t_invalid_project_is_refused)
     check("a_base_action_keeps_the_placement",
           t_a_base_action_keeps_the_placement)
+    check("a_multi_layer_action_keeps_the_placement",
+          t_a_multi_layer_action_keeps_the_placement)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

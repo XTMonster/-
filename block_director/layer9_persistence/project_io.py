@@ -69,14 +69,35 @@ def validation_report(loaded: "LoadedProject") -> Dict[str, Any]:
     对**真实运行**（恰恰是最需要修的那些跑）是断的。审查与执行分开之后，
     报告仍然一条不少，闸门交给了真正该管交付的那一步。
     """
-    findings = [item.to_dict() for item in loaded.findings]
-    errors = [item for item in findings if item.get("severity") == "error"]
+    return findings_report(loaded.findings, path=str(loaded.path),
+                           notes=list(loaded.notes))
+
+
+def findings_report(findings, *, path: str = "",
+                    notes=()) -> Dict[str, Any]:
+    """把一组 finding 整理成报告——**落盘前**与**加载后**共用同一形状。
+
+    同一个形状有两处消费者，缺一处就会"算完就丢"：
+
+    * **落盘前**：``headless_runner.save_run_project`` 在写 `project.bdproj`
+      之前跑一遍 ``validate_sdl``。此前它**把返回值丢了**——于是运行报
+      `DONE`、文件写出去，而"这份工程过不了自己的校验"要到 `rebuild_project`
+      或面板加载时才发现（实测 2026-10-03：64 镜真跑的工程带 26 条 S6）。
+    * **加载后**：``load_project`` 的 finding 交给调用方（面板、重建 CLI）。
+
+    报告只**如实列出**，不决定要不要继续——那是调用方的策略（见
+    ``tools/rebuild_project.py::rebuild_verdict``）。
+    """
+    items = [item.to_dict() if hasattr(item, "to_dict") else dict(item)
+             for item in (findings or [])]
+    errors = [item for item in items if item.get("severity") == "error"]
     return {
-        "ok": bool(loaded.ok),
-        "path": str(loaded.path),
-        "notes": list(loaded.notes),
+        #: 判据与 ``LoadedProject.ok`` 同源：**没有 error** 才算过。
+        "ok": not errors,
+        "path": str(path),
+        "notes": list(notes),
         "errors": errors,
-        "warnings": [item for item in findings
+        "warnings": [item for item in items
                      if item.get("severity") != "error"],
         "rules": sorted({str(item.get("rule") or "") for item in errors}),
     }
