@@ -177,6 +177,30 @@ def license_allowed(license_name: str) -> bool:
     return str(license_name or "").strip() in LICENSE_WHITELIST
 
 
+def source_and_licence_ok(source_ref: Dict) -> Tuple[bool, str]:
+    """出处六字段 ＋ 许可白名单——**这一条判据只有一个实现**。
+
+    为什么把它抽出来（2026-10-03 实测）：同一件事此前有**三份**手抄——
+
+    * `validate_licenses.check()`（文档 §2.3c 管线的**第 4 步**，也是"许可门"的落点）
+    * `import_cards.gate()`（入库那一步）
+    * `find_arxiv_sources._licence_ok()`（**自己的 docstring 就写着**"The same two
+      checks `validate_licenses.check` makes, without its file I/O"）
+
+    三份的理由串都必须一模一样，否则同一份坏语料在不同步骤里会得到不同的账。
+    本项目对"同一事实多个真源"的处置一贯是**收成一个**：这里就是那个源头，
+    三处调用点各自只保留自己**特有**的那部分判据（如正文长度下限、卡片级字段）。
+
+    返回 ``(ok, reason)``；`reason` 为空串表示通过。
+    """
+    missing = source_ref_problems(source_ref or {})
+    if missing:
+        return False, "source_ref_missing:" + ",".join(missing)
+    if not license_allowed(str((source_ref or {}).get("license", ""))):
+        return False, f"license_not_whitelisted:{(source_ref or {}).get('license', '')}"
+    return True, ""
+
+
 _TOKEN_RE = re.compile(rf"[{_CJK}]|[A-Za-z][A-Za-z0-9_\-]*|\d+(?:\.\d+)?")
 
 

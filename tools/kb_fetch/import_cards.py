@@ -134,12 +134,11 @@ def dedupe_cards(cards: Sequence[Dict], simhash_fn=common.simhash64) -> Tuple[Li
 
 
 def gate(card: Dict) -> Tuple[bool, str]:
-    source_ref = card.get("source_ref") or {}
-    missing = common.source_ref_problems(source_ref)
-    if missing:
-        return False, "source_ref_missing:" + ",".join(missing)
-    if not common.license_allowed(str(source_ref.get("license", ""))):
-        return False, f"license_not_whitelisted:{source_ref.get('license')}"
+    #: 出处＋许可走 `common.source_and_licence_ok`（唯一实现）；卡片级的那几条
+    #: （quote 可回查、标题/正文非空、域在闭集里）才是这一步特有的判据。
+    ok, reason = common.source_and_licence_ok(card.get("source_ref"))
+    if not ok:
+        return False, reason
     ok, reason = common.quote_check(str(card.get("quote", "")))
     if not ok:
         return False, reason

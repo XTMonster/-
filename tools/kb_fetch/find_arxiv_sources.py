@@ -362,14 +362,14 @@ def verify(candidates: Sequence[Dict[str, str]], domain: str, limit: int,
 
 
 def _licence_ok(record: Dict) -> tuple:
-    """The same two checks `validate_licenses.check` makes, without its file I/O."""
-    source_ref = record.get("source_ref") or {}
-    missing = common.source_ref_problems(source_ref)
-    if missing:
-        return False, "source_ref_missing:" + ",".join(missing)
-    if not common.license_allowed(str(source_ref.get("license", ""))):
-        return False, f"license_not_whitelisted:{source_ref.get('license', '')}"
-    return True, ""
+    """出处＋许可：**调用**唯一实现，不再手抄（2026-10-03 收口）。
+
+    这里过去写着"The same two checks `validate_licenses.check` makes, without its
+    file I/O"——那正是三份手抄里的第三份；同一份坏语料在三个步骤里得到不同账目的
+    风险就是那么来的。现在它只是 `common.source_and_licence_ok` 的一个薄壳
+    （保留函数名与签名，离线用例仍按名字调用它）。
+    """
+    return common.source_and_licence_ok(record.get("source_ref"))
 
 
 def main(argv: Sequence[str] | None = None) -> int:

@@ -162,6 +162,68 @@ def test_license_gate_rejects_bad_license_and_short_text():
     assert "text_too_short" in reasons
 
 
+def test_the_licence_rule_has_exactly_one_implementation():
+    """出处＋许可那两判**只许有一个实现**（2026-10-03 收口）。
+
+    此前它有**三份手抄**：`validate_licenses.check()`（文档 §2.3c 管线的第 4 步）、
+    `import_cards.gate()`，以及 `find_arxiv_sources._licence_ok()`——后者的 docstring
+    自己就写着"The same two checks `validate_licenses.check` makes"。三份的理由串
+    必须一致，否则同一份坏语料在不同步骤里会得到不同的账目。
+
+    这条用例做两件事：
+
+    ① **行为对拍**：三个调用点对同一张真值表必须给出**逐字相同**的 `(ok, reason)`；
+    ② **静态收口**：理由串前缀在 `tools/` 与 `block_director/` 的 `.py` 里
+       **只允许出现在 `common.py`**——第四份手抄一旦出现就红。
+    """
+    from tools.kb_fetch import common as kb_common
+    from tools.kb_fetch import find_arxiv_sources
+
+    good = _source_ref()
+    table = [
+        (good, True, ""),
+        (_source_ref(sha256=""), False, "source_ref_missing:sha256"),
+        (_source_ref(license="AllRightsReserved"), False,
+         "license_not_whitelisted:AllRightsReserved"),
+        # 空许可先是**缺字段**（K1 的六字段门在许可门之前），理由串说明是哪一层拦下的。
+        (_source_ref(license=""), False, "source_ref_missing:license"),
+        # 有值但不在白名单里，才是许可门本身该报的那条。
+        (_source_ref(license="Unknown"), False, "license_not_whitelisted:Unknown"),
+    ]
+    for source_ref, ok_expected, reason_expected in table:
+        assert kb_common.source_and_licence_ok(source_ref) == (ok_expected, reason_expected)
+        # 文档管线的第 4 步：出处/许可这一层必须与唯一实现逐字一致（它只多一条长度门）。
+        checked, why = validate_licenses.check({"source_ref": source_ref,
+                                                "text": "x" * 700})
+        assert (checked, why) == (ok_expected, reason_expected)
+        # 入库那一步：同上（它只多卡片级字段）。
+        gate_ok, gate_why = import_cards.gate({
+            "source_ref": source_ref, "title": "t", "content": "c",
+            "quote": "可回查的引用", "domain": "cinematography"})
+        if ok_expected:
+            assert gate_ok or gate_why not in (
+                "source_ref_missing:sha256", "license_not_whitelisted:"), gate_why
+        else:
+            assert (gate_ok, gate_why) == (False, reason_expected)
+        # 找源那一步（此前是第三份手抄）。
+        assert find_arxiv_sources._licence_ok({"source_ref": source_ref}) == (
+            ok_expected, reason_expected)
+
+    # ② 静态收口：理由串只在 common.py 里出现。
+    offenders = []
+    for base in ("tools", "block_director"):
+        for path in (pathlib.Path(common.ROOT) / base).rglob("*.py"):
+            if path.name == "common.py":
+                continue
+            text = path.read_text(encoding="utf-8")
+            for literal in ("license_not_whitelisted", "source_ref_missing"):
+                if literal in text:
+                    offenders.append(f"{path.relative_to(common.ROOT)}: {literal}")
+    assert offenders == [], (
+        "出处/许可的理由串被抄到了别处——判据必须只有 common.py 一个实现：" +
+        "、".join(offenders))
+
+
 def _synthetic_content(domain: str, index: int) -> str:
     """彼此差异足够大的合成正文（用来验证去重计数，不验证语义）。"""
     import hashlib

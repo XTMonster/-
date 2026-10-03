@@ -28,13 +28,12 @@ MIN_DOC_CHARS = 600
 
 
 def check(record: Dict) -> Tuple[bool, str]:
-    source_ref = record.get("source_ref") or {}
-    missing = common.source_ref_problems(source_ref)
-    if missing:
-        return False, "source_ref_missing:" + ",".join(missing)
-    license_name = str(source_ref.get("license", ""))
-    if not common.license_allowed(license_name):
-        return False, f"license_not_whitelisted:{license_name}"
+    #: 出处＋许可那两判一律走 `common.source_and_licence_ok`——它是**唯一实现**
+    #: （此前 `validate_licenses` / `import_cards` / `find_arxiv_sources` 各抄一份，
+    #: 见 `common.source_and_licence_ok` 的 docstring）。这一步**特有**的是正文长度下限。
+    ok, reason = common.source_and_licence_ok(record.get("source_ref"))
+    if not ok:
+        return False, reason
     if len(str(record.get("text", ""))) < MIN_DOC_CHARS:
         return False, f"text_too_short:{len(str(record.get('text', '')))}"
     return True, ""
