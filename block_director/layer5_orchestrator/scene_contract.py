@@ -22,17 +22,19 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from ..knowledge.hypergraph import QUERY_KEYS
+
 STATUS_RESOLVED = "resolved"
 STATUS_UNRESOLVED = "unresolved"
 
-#: §2.3b 的检索路由：把契约串投给超图那一条通道。键集与
-#: `block_director/knowledge/hypergraph.py::QUERY_KEYS` 同源（那边是消费者）。
-QUERY_KEYS: Dict[str, str] = {
-    "情绪": "emotion", "动作": "action", "运镜": "movement", "景别": "shot_size",
-    "镜头": "lens", "节奏": "pacing", "特效": "vfx", "音效": "sfx",
-    "机位": "camera_angle", "光线": "lighting", "构图": "composition_rule",
-    "轴线": "axis_topic", "题材": "genre", "桥段": "beat_type", "对白": "scene_type",
-}
+#: §2.3b 的检索路由：把契约串投给超图那一条通道。
+#:
+#: **这里不再手抄一份键表**（2026-10-03 实测的漂移）：原先本模块自己写了一张
+#: 15 个键的副本，而 §50 给逐镜查询加上 `意图=` 之后，**同一个文件里的副本立刻
+#: 少了那一个键**——声明表说"发不出意图"，生产者却真的在发。这正是本项目已经
+#: 付过两次代价的"各抄一份"（v1.5 的 6 类型/16 kind、v1.6 的查询键）。
+#: 现在唯一真源是 `knowledge/hypergraph.py::QUERY_KEYS`（消费者侧），
+#: `tests/test_q5_plan_shaped_entries.py` 再拿**真正的生产者**与它对拍。
 
 
 def _first_value(item: Any, *keys: str) -> str:
@@ -179,6 +181,25 @@ def _pairs(entries) -> List[Dict[str, str]]:
     return out
 
 
+class _ContractView:
+    """`ShotContract` → :func:`shot_constraint_query` 吃的那个形状。
+
+    唯一的适配层：两个类型的字段名不同（`vfx_kinds` vs `vfx`、`movements` 是
+    字符串 vs `{"type": …}`），但只要**生产者只有一个**，这些差异就只在一处发生。
+    """
+
+    def __init__(self, contract: "ShotContract") -> None:
+        self.shot_type = contract.shot_type
+        self.intent_type = contract.intent_type
+        self.declared_camera_move = contract.declared_camera_move
+        self.camera = {"lens": contract.lens,
+                       "movements": [{"type": item}
+                                     for item in contract.movements]}
+        self.actions = [{"action_type": item} for item in contract.actions]
+        self.vfx = [{"type": item} for item in contract.vfx_kinds]
+        self.dialogues = list(contract.dialogues)
+
+
 @dataclass
 class ShotContract:
     """一镜的可执行描述（语义收敛的产物）。"""
@@ -194,6 +215,11 @@ class ShotContract:
     #: v1.5 §2.3d T3：意图的闭集取值（进契约串的 `意图=`，与 `shot_type`/`lens`
     #: 同性质——"这一镜要检索什么"收敛成对象，计划仍是唯一真源）。
     intent_type: str = ""
+    #: 剧本**声明**的拍摄手法（计划上的 `ShotPlan.declared_camera_move`）。
+    #: 契约串要它，是因为"锁机位"这种声明进不了引擎的运镜词表（引擎没有"不动"
+    #: 这个类型），但它在**查询**词表里是合法的 `固定`——§40 实测：不带上它，
+    #: 锁机位的镜头在超图那一栏一个运镜种子都没有。
+    declared_camera_move: str = ""
     movements: List[str] = field(default_factory=list)
     actions: List[str] = field(default_factory=list)
     vfx_kinds: List[str] = field(default_factory=list)
@@ -208,22 +234,24 @@ class ShotContract:
     def constraint_query(self) -> str:
         """这一镜的检索契约串（§2.3b 的 ``constraint_query``）。
 
-        与 :func:`shot_constraint_query`（吃计划里的 ``ShotPlan``）**逐字符同源**：
-        两者都由同一组"只写有值的键"的规则生成，因此同一镜的两条路径不会漂。
+        **只有一个生产者**：本方法把对象摊成 :func:`shot_constraint_query` 吃的那个
+        形状再交给它，所以两条路径**逐字符同源**——而不是"两边各写一遍规则，
+        然后指望它们不漂"。
+
+        为什么改成委托（2026-10-03 实测，写 `tests/test_q5_plan_shaped_entries.py`
+        时当场量到的）：原先这两条路径确实是**各写一遍**，于是真的漂了——
+
+        * 契约那条把 `lens` 原样发出：真实计划里是浮点 `50.0`，而索引的镜头节点是
+          `50mm` ⇒ `镜头=50.0` 是**死值**（命不中任何节点，还占掉 `q` 的一位）；
+        * 它**漏掉剧本声明的运镜**（`declared_camera_move` 不在 `ShotContract` 上），
+          于是锁机位的镜头在这一条路径上又变回"没有运镜种子"；
+        * 它也不折 `static → 固定`。
+
+        而 `tests/test_scene_contract.py` 那条"两条生产者不许漂"的用例**看不出来**：
+        它的夹具给的是已经规范化的字符串 `"85mm"`、且没有声明——两条路径在那种
+        输入下**必然**相等。夹具比生产线更友好，就是"测试恒绿"的老毛病。
         """
-        pairs: List[tuple] = []
-        for key, value in (("景别", self.shot_type), ("意图", self.intent_type),
-                           ("镜头", self.lens)):
-            if str(value or "").strip():
-                pairs.append((key, str(value).strip()))
-        for key, values in (("运镜", self.movements), ("动作", self.actions),
-                            ("特效", self.vfx_kinds)):
-            for value in values:
-                if str(value or "").strip():
-                    pairs.append((key, str(value).strip()))
-        if self.dialogues:
-            pairs.append(("对白", _canonical("对白", "有")))
-        return "；".join(f"{key}={value}" for key, value in pairs)
+        return shot_constraint_query(_ContractView(self))
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -231,6 +259,7 @@ class ShotContract:
             "intent": self.intent, "characters": list(self.characters),
             "shot_type": self.shot_type, "lens": self.lens,
             "intent_type": self.intent_type,
+            "declared_camera_move": self.declared_camera_move,
             "movements": list(self.movements), "actions": list(self.actions),
             "vfx_kinds": list(self.vfx_kinds),
             "facing_target": dict(self.facing_target),
@@ -321,6 +350,9 @@ class SceneContract:
                                 shot_type=str(getattr(shot, "shot_type", "") or ""),
                                 intent_type=str(
                                     getattr(shot, "intent_type", "") or ""),
+                                declared_camera_move=str(
+                                    getattr(shot, "declared_camera_move", "")
+                                    or ""),
                                 lens=str((getattr(shot, "camera", None) or {}).get(
                                     "lens") or ""),
                                 movements=[_first_value(entry, "type", "kind")

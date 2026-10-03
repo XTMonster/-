@@ -157,17 +157,30 @@ def test_the_contract_query_actually_seeds_the_hypergraph():
 
 def test_the_two_query_producers_agree_without_drifting():
     """`ShotContract.constraint_query()` 与 `shot_constraint_query(ShotPlan)`
-    必须逐字符一致——两条生产者漂了，检索路由就会一镜一个口径。"""
+    必须逐字符一致——两条生产者漂了，检索路由就会一镜一个口径。
+
+    **夹具必须长得像生产线**（2026-10-03 实测的教训）：这一条原先给的是
+    `{"lens": "85mm"}` + 没有声明，而两条生产者在那样的输入下**必然**相等——
+    于是"契约那条把浮点 `50.0` 原样发出（索引里是 `50mm` ⇒ 死值）、漏掉剧本
+    声明的运镜、不折 `static→固定`"这三个真缺陷一个都没被它挡住。
+    现在用的都是真实形状：`lens` 是**浮点**（`shots.json` 实测 `50.0`）、
+    `declared_camera_move` 是引擎名（`static`，查询词表里要折成 `固定`）。
+    """
     plan = Plan.from_dict({"shots": [
         {"shot_id": "shot_007", "order": 7, "intent": "逼近", "shot_type": "MS",
          "duration_frames": 48, "characters": ["char_001"],
+         "declared_camera_move": "static",
          "actions": [{"action_type": "跺脚"}],
          "dialogues": [{"character_id": "char_001", "text": "让开。"}],
          "vfx": [{"type": "flame"}],
-         "camera": {"lens": "85mm", "movements": [{"type": "dolly_in"}]}}]})
+         "camera": {"lens": 50.0, "movements": [{"type": "dolly_in"}]}}]})
     contract = SceneContract.from_plan(plan)
     assert (contract.shot("shot_007").constraint_query()
             == shot_constraint_query(plan.shots[0]))
+    # 逐字段钉住：声明先进串并折成查询词表的 `固定`、焦距折成 `50mm`（不是 `50.0`）。
+    query = shot_constraint_query(plan.shots[0])
+    assert "运镜=固定" in query and "static" not in query
+    assert "镜头=50mm" in query and "50.0" not in query
 
 
 def test_the_plan_scope_query_comes_from_the_declared_shot_list():
