@@ -277,7 +277,36 @@ def parse_chat_response(data: Dict[str, Any]) -> ChatReply:
             f"响应被截断{detail}：finish_reason=length。请提高 max_tokens"
             f"（llm.max_tokens），或改用非思维模型",
             body=json.dumps(data, ensure_ascii=False)[:2000])
+    #: **带工具调用的截断**（2026-10-03 实测，长剧本那一跑）：`emit_plan` 的参数
+    #: JSON 被 `max_tokens` 从中间切断，但 `tool_calls` 非空 ⇒ 上面那条不会触发，
+    #: 调用方只会看到"参数不是合法 JSON: Unterminated string"——**看不出是预算
+    #: 不够**，于是同一个预算白重试两次然后整跑失败（`state=ERROR`，0 镜）。
+    #: 判据写成"finish_reason=length **且**某个工具调用的参数 JSON 解析不了"：
+    #: 前者单独出现可能只是模型多说了几句，只有两者同时成立才是"计划被截断"。
+    if reply.finish_reason == "length" and tool_calls_done:
+        broken = [call for call in tool_calls
+                  if not _arguments_parse(call)]
+        if broken:
+            names = "、".join(sorted({str(call.function.name) for call in broken}))
+            raise TransportError(
+                ErrorCode.LLM_002,
+                f"响应被截断{('（思维链已占用全部预算）' if reasoning else '')}："
+                f"finish_reason=length，且工具调用 {names} 的参数 JSON 不完整。"
+                f"这不是模型写错了 JSON，是**这一次请求的输出预算不够**："
+                f"请提高 max_tokens（llm.max_tokens）或改用输出上限更大的模型；"
+                f"脚本越长越容易撞上（实测：64 镜的 `emit_plan` 参数 ≈ 16.5 KB，"
+                f"DeepSeek 的默认输出上限就卡在这里）",
+                body=json.dumps(data, ensure_ascii=False)[:2000])
     return reply
+
+
+def _arguments_parse(call) -> bool:
+    """这个工具调用的参数是不是完整 JSON 对象（判据只用于截断诊断）。"""
+    try:
+        call.function.parsed_arguments()
+    except ValueError:
+        return False
+    return True
 
 
 @dataclass
