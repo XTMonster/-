@@ -1,0 +1,1265 @@
+{
+ "project": "E:\\白模预演codex\\docs\\evidence\\20261003_chunked_long9\\project",
+ "shots": 64,
+ "r001_violations": 10,
+ "r001_shots": [
+  "shot_014",
+  "shot_020",
+  "shot_036",
+  "shot_039",
+  "shot_041",
+  "shot_047",
+  "shot_049",
+  "shot_055",
+  "shot_056",
+  "shot_060"
+ ],
+ "composition_median": 80.3,
+ "composition_gate_pass": 41,
+ "established_side": -1,
+ "mirror_notes": [
+  "side=(0.5000000766652202, 0.8660253595217486) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.5000000766652202, -0.8660253595217486) 以保持银幕方向连续",
+  "side=(-0.7071067811865475, 0.7071067811865475) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.7071067811865476, -0.7071067811865476) 以保持银幕方向连续",
+  "side=(-0.7071067811865475, 0.7071067811865475) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.7071067811865476, -0.7071067811865476) 以保持银幕方向连续",
+  "side=(-0.8660253595217486, 0.5000000766652202) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.8660253595217486, -0.5000000766652202) 以保持银幕方向连续",
+  "side=(-0.0, 1.0) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.0, -1.0) 以保持银幕方向连续",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "side=(-0.7071067811865475, 0.7071067811865475) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.7071067811865476, -0.7071067811865476) 以保持银幕方向连续",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "side=(-0.3913312400760295, 0.9202498902692446) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.39133124007602954, -0.9202498902692448) 以保持银幕方向连续",
+  "side=(-0.6161752280356362, 0.7876090961607995) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.6161752280356363, -0.7876090961607997) 以保持银幕方向连续",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "side=(-0.8483932933465659, 0.5293664324497425) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.8483932933465659, -0.5293664324497425) 以保持银幕方向连续",
+  "side=(-0.5882002378608718, 0.8087153270344355) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.5882002378608718, -0.8087153270344355) 以保持银幕方向连续",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "side=(0.6993408667480878, 0.7147883267765591) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.6993408667480879, -0.7147883267765592) 以保持银幕方向连续",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出",
+  "该镜的 side 落在已确立轴线的另一侧，且镜像会变成背拍；保持模型要的方向，由 R001 如实报出"
+ ],
+ "rows": [
+  {
+   "shot": "shot_001",
+   "side": "front",
+   "r001": false,
+   "composition": 55.8,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.051,
+    "balance": 1.0,
+    "occlusion": 0.0,
+    "framing": 1.0
+   },
+   "position": [
+    7.785,
+    0.0,
+    0.911
+   ]
+  },
+  {
+   "shot": "shot_002",
+   "side": "front_left",
+   "r001": false,
+   "composition": 90.3,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.413,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.911
+   },
+   "position": [
+    -1.72,
+    -4.3,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_003",
+   "side": "front_left",
+   "r001": false,
+   "composition": 90.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.782,
+    "rule_of_thirds": 0.665,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.935
+   },
+   "position": [
+    1.416,
+    -4.011,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_004",
+   "side": "front_right",
+   "r001": false,
+   "composition": 80.9,
+   "items": {
+    "headroom": 0.485,
+    "lead_room": 0.737,
+    "rule_of_thirds": 0.681,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.869
+   },
+   "position": [
+    1.607,
+    -1.447,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_005",
+   "side": "front_right",
+   "r001": false,
+   "composition": 86.0,
+   "items": {
+    "headroom": 0.749,
+    "lead_room": 0.777,
+    "rule_of_thirds": 0.684,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.898
+   },
+   "position": [
+    -1.147,
+    -2.047,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_006",
+   "side": "front_left",
+   "r001": false,
+   "composition": 90.4,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.435,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.891
+   },
+   "position": [
+    -1.72,
+    -4.3,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_007",
+   "side": "front_right",
+   "r001": false,
+   "composition": 76.8,
+   "items": {
+    "headroom": 0.176,
+    "lead_room": 0.786,
+    "rule_of_thirds": 0.667,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.841
+   },
+   "position": [
+    -0.942,
+    -1.842,
+    1.278
+   ]
+  },
+  {
+   "shot": "shot_008",
+   "side": "back_left",
+   "r001": false,
+   "composition": 88.7,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.63,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.925
+   },
+   "position": [
+    -4.911,
+    -2.316,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_009",
+   "side": "front",
+   "r001": false,
+   "composition": 89.9,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.357,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.951
+   },
+   "position": [
+    0.0,
+    -4.632,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_010",
+   "side": "front_left",
+   "r001": false,
+   "composition": 82.4,
+   "items": {
+    "headroom": 0.542,
+    "lead_room": 0.773,
+    "rule_of_thirds": 0.655,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.899
+   },
+   "position": [
+    -1.147,
+    -2.047,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_011",
+   "side": "front_right",
+   "r001": false,
+   "composition": 74.4,
+   "items": {
+    "headroom": 0.114,
+    "lead_room": 0.735,
+    "rule_of_thirds": 0.637,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.848
+   },
+   "position": [
+    1.868,
+    -0.846,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_012",
+   "side": "right",
+   "r001": false,
+   "composition": 82.5,
+   "items": {
+    "headroom": 0.558,
+    "lead_room": 0.776,
+    "rule_of_thirds": 0.63,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.913
+   },
+   "position": [
+    0.891,
+    -2.896,
+    1.242
+   ]
+  },
+  {
+   "shot": "shot_013",
+   "side": "front_left",
+   "r001": false,
+   "composition": 85.9,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.477,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.874
+   },
+   "position": [
+    -1.72,
+    -4.3,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_014",
+   "side": "front_left",
+   "r001": true,
+   "composition": 71.7,
+   "items": {
+    "headroom": 0.246,
+    "lead_room": 0.594,
+    "rule_of_thirds": 0.505,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.859
+   },
+   "position": [
+    -1.477,
+    2.542,
+    1.289
+   ]
+  },
+  {
+   "shot": "shot_015",
+   "side": "front_right",
+   "r001": false,
+   "composition": 87.8,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.725,
+    "rule_of_thirds": 0.598,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.932
+   },
+   "position": [
+    -2.375,
+    -3.275,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_016",
+   "side": "front_right",
+   "r001": false,
+   "composition": 92.1,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.762,
+    "rule_of_thirds": 0.794,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    5.467,
+    -1.947,
+    0.621
+   ]
+  },
+  {
+   "shot": "shot_017",
+   "side": "front_right",
+   "r001": false,
+   "composition": 88.2,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.76,
+    "rule_of_thirds": 0.536,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    7.405,
+    -2.539,
+    0.911
+   ]
+  },
+  {
+   "shot": "shot_018",
+   "side": "front",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.0,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -1.707,
+    -4.576,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_019",
+   "side": "front_right",
+   "r001": false,
+   "composition": 73.1,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 0.786,
+    "rule_of_thirds": 0.621,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.803
+   },
+   "position": [
+    -0.323,
+    -2.624,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_020",
+   "side": "front_right",
+   "r001": true,
+   "composition": 74.8,
+   "items": {
+    "headroom": 0.131,
+    "lead_room": 0.93,
+    "rule_of_thirds": 0.456,
+    "balance": 0.915,
+    "occlusion": 1.0,
+    "framing": 0.87
+   },
+   "position": [
+    -4.664,
+    2.951,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_021",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.889,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -3.419,
+    -4.207,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_022",
+   "side": "front_right",
+   "r001": false,
+   "composition": 71.6,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 0.777,
+    "rule_of_thirds": 0.586,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.726
+   },
+   "position": [
+    -0.201,
+    -2.361,
+    1.278
+   ]
+  },
+  {
+   "shot": "shot_023",
+   "side": "front_right",
+   "r001": false,
+   "composition": 72.9,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 0.845,
+    "rule_of_thirds": 0.497,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.852
+   },
+   "position": [
+    -5.139,
+    -2.285,
+    1.289
+   ]
+  },
+  {
+   "shot": "shot_024",
+   "side": "front",
+   "r001": false,
+   "composition": 74.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.0,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.403
+   },
+   "position": [
+    -1.751,
+    -6.602,
+    0.621
+   ]
+  },
+  {
+   "shot": "shot_025",
+   "side": "front_right",
+   "r001": false,
+   "composition": 88.4,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.562,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -9.461,
+    -6.73,
+    0.911
+   ]
+  },
+  {
+   "shot": "shot_026",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.862,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -3.428,
+    -4.203,
+    0.961
+   ]
+  },
+  {
+   "shot": "shot_027",
+   "side": "front_right",
+   "r001": false,
+   "composition": 69.5,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 0.965,
+    "rule_of_thirds": 0.335,
+    "balance": 0.874,
+    "occlusion": 1.0,
+    "framing": 0.704
+   },
+   "position": [
+    5.955,
+    -3.464,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_028",
+   "side": "front_left",
+   "r001": false,
+   "composition": 68.4,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 0.678,
+    "rule_of_thirds": 0.45,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.805
+   },
+   "position": [
+    -6.39,
+    -1.674,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_029",
+   "side": "front_right",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    0.749,
+    -7.631,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_030",
+   "side": "front_right",
+   "r001": false,
+   "composition": 82.7,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.177,
+    "balance": 0.707,
+    "occlusion": 1.0,
+    "framing": 0.947
+   },
+   "position": [
+    6.049,
+    -3.737,
+    1.278
+   ]
+  },
+  {
+   "shot": "shot_031",
+   "side": "front_right",
+   "r001": false,
+   "composition": 86.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.402,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -6.32,
+    -1.269,
+    1.278
+   ]
+  },
+  {
+   "shot": "shot_032",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.0,
+    "balance": 0.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -3.824,
+    -7.179,
+    0.621
+   ]
+  },
+  {
+   "shot": "shot_033",
+   "side": "left",
+   "r001": false,
+   "composition": 88.7,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.578,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -10.328,
+    -7.503,
+    0.911
+   ]
+  },
+  {
+   "shot": "shot_034",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -1.746,
+    -4.762,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_035",
+   "side": "front_right",
+   "r001": false,
+   "composition": 87.3,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.944,
+    "rule_of_thirds": 0.342,
+    "balance": 0.899,
+    "occlusion": 1.0,
+    "framing": 0.981
+   },
+   "position": [
+    9.069,
+    -8.424,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_036",
+   "side": "front_right",
+   "r001": true,
+   "composition": 88.1,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.762,
+    "rule_of_thirds": 0.524,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -3.43,
+    3.005,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_037",
+   "side": "front",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.0,
+    "rule_of_thirds": 0.0,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -0.964,
+    -7.079,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_038",
+   "side": "front_left",
+   "r001": false,
+   "composition": 63.1,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.164,
+    "balance": 0.681,
+    "occlusion": 1.0,
+    "framing": 0.543
+   },
+   "position": [
+    8.822,
+    -8.262,
+    1.278
+   ]
+  },
+  {
+   "shot": "shot_039",
+   "side": "front_right",
+   "r001": true,
+   "composition": 88.5,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.846,
+    "rule_of_thirds": 0.44,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -4.046,
+    2.82,
+    1.278
+   ]
+  },
+  {
+   "shot": "shot_040",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -3.881,
+    -7.158,
+    0.621
+   ]
+  },
+  {
+   "shot": "shot_041",
+   "side": "front_right",
+   "r001": true,
+   "composition": 90.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.779,
+    "rule_of_thirds": 0.63,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -3.639,
+    8.885,
+    0.911
+   ]
+  },
+  {
+   "shot": "shot_042",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -2.073,
+    -5.345,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_043",
+   "side": "front_right",
+   "r001": false,
+   "composition": 64.6,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.235,
+    "balance": 0.633,
+    "occlusion": 1.0,
+    "framing": 0.658
+   },
+   "position": [
+    9.069,
+    -8.424,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_044",
+   "side": "back_right",
+   "r001": false,
+   "composition": 87.3,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.74,
+    "rule_of_thirds": 0.502,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -1.842,
+    -1.607,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_045",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -2.237,
+    -5.272,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_046",
+   "side": "front_right",
+   "r001": false,
+   "composition": 61.6,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.148,
+    "balance": 0.576,
+    "occlusion": 1.0,
+    "framing": 0.578
+   },
+   "position": [
+    9.006,
+    -5.08,
+    1.289
+   ]
+  },
+  {
+   "shot": "shot_047",
+   "side": "front_right",
+   "r001": true,
+   "composition": 81.4,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.199,
+    "balance": 0.712,
+    "occlusion": 1.0,
+    "framing": 0.774
+   },
+   "position": [
+    -1.23,
+    2.229,
+    1.293
+   ]
+  },
+  {
+   "shot": "shot_048",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.041,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -3.935,
+    -6.377,
+    0.621
+   ]
+  },
+  {
+   "shot": "shot_049",
+   "side": "front_left",
+   "r001": true,
+   "composition": 87.9,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.701,
+    "rule_of_thirds": 0.595,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -8.155,
+    8.1,
+    0.911
+   ]
+  },
+  {
+   "shot": "shot_050",
+   "side": "front",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.0,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -1.021,
+    -6.533,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_051",
+   "side": "left",
+   "r001": false,
+   "composition": 68.4,
+   "items": {
+    "headroom": 0.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.303,
+    "balance": 0.786,
+    "occlusion": 1.0,
+    "framing": 0.706
+   },
+   "position": [
+    3.894,
+    -6.98,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_052",
+   "side": "right",
+   "r001": false,
+   "composition": 83.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.648,
+    "rule_of_thirds": 0.41,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.886
+   },
+   "position": [
+    -1.267,
+    -1.116,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_053",
+   "side": "front",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.0,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -1.021,
+    -6.533,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_054",
+   "side": "front_left",
+   "r001": false,
+   "composition": 87.4,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.771,
+    "rule_of_thirds": 0.518,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.918
+   },
+   "position": [
+    4.508,
+    -2.235,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_055",
+   "side": "front_right",
+   "r001": true,
+   "composition": 83.1,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.211,
+    "balance": 0.746,
+    "occlusion": 1.0,
+    "framing": 0.872
+   },
+   "position": [
+    -1.236,
+    2.24,
+    1.278
+   ]
+  },
+  {
+   "shot": "shot_056",
+   "side": "front",
+   "r001": true,
+   "composition": 88.2,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.75,
+    "rule_of_thirds": 0.544,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -2.04,
+    7.334,
+    0.621
+   ]
+  },
+  {
+   "shot": "shot_057",
+   "side": "right",
+   "r001": false,
+   "composition": 88.8,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.731,
+    "rule_of_thirds": 0.615,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    3.038,
+    -4.987,
+    0.911
+   ]
+  },
+  {
+   "shot": "shot_058",
+   "side": "front_left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -1.028,
+    -5.481,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_059",
+   "side": "right",
+   "r001": false,
+   "composition": 85.5,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.926,
+    "rule_of_thirds": 0.359,
+    "balance": 0.919,
+    "occlusion": 1.0,
+    "framing": 0.776
+   },
+   "position": [
+    10.741,
+    -7.948,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_060",
+   "side": "front_right",
+   "r001": true,
+   "composition": 85.4,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.255,
+    "balance": 0.798,
+    "occlusion": 1.0,
+    "framing": 0.958
+   },
+   "position": [
+    -0.993,
+    2.398,
+    1.231
+   ]
+  },
+  {
+   "shot": "shot_061",
+   "side": "front",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.0,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -0.028,
+    -6.476,
+    0.95
+   ]
+  },
+  {
+   "shot": "shot_062",
+   "side": "front_left",
+   "r001": false,
+   "composition": 79.8,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.522,
+    "rule_of_thirds": 0.289,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 1.0
+   },
+   "position": [
+    -3.711,
+    -1.443,
+    1.289
+   ]
+  },
+  {
+   "shot": "shot_063",
+   "side": "right",
+   "r001": false,
+   "composition": 94.5,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 0.834,
+    "rule_of_thirds": 0.894,
+    "balance": 1.0,
+    "occlusion": 1.0,
+    "framing": 0.942
+   },
+   "position": [
+    14.957,
+    -7.98,
+    0.621
+   ]
+  },
+  {
+   "shot": "shot_064",
+   "side": "left",
+   "r001": false,
+   "composition": 20.0,
+   "items": {
+    "headroom": 1.0,
+    "lead_room": 1.0,
+    "rule_of_thirds": 0.0,
+    "balance": 0.0,
+    "occlusion": 1.0,
+    "framing": 0.0
+   },
+   "position": [
+    -6.124,
+    -4.792,
+    0.911
+   ]
+  }
+ ]
+}

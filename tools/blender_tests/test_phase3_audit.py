@@ -421,6 +421,73 @@ def t_r003_is_scoped_to_the_shot_being_audited():
             "clean_passed": clean.passed}
 
 
+# --------------------------------------------------------------------------- #
+# 10. 视线留白真的接上了：单主体镜头横移 1/6 幅宽，双人镜头不动
+#
+# 现场：`cinema/station.aim_offset_for_lead_room` ＋ `solve_framing(aim_offset_x=…)`
+# 在 2026-10-04 第一次接上时是**净负**（那时机位锚点还是剧本起始站位，主体本来
+# 就在画框边缘）。锚点（§六十三）与走位接力（§六十四）落地后重测三份冻结工程
+# （`docs/evidence/20261004-leadroom-retest/`）：构图门 ≥70 的镜数
+# long9 30 → **41**、long11 17 → **21**、long12 25 → 24 ⇒ 接上。
+# 这条用例钉住"接上了"，免得哪天被顺手摘掉。
+# --------------------------------------------------------------------------- #
+def _lead_room_plan():
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    shots = [
+        ShotPlan.from_dict({
+            "shot_id": "shot_001", "order": 1, "intent": "单人镜",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_001"], "camera": {"side": "left", "lens": 50}}),
+        ShotPlan.from_dict({
+            "shot_id": "shot_002", "order": 2, "intent": "双人镜",
+            "shot_type": "MS", "duration_frames": 48,
+            "characters": ["char_001", "char_002"],
+            "camera": {"side": "front", "lens": 35}}),
+    ]
+    return Plan(shots=shots, scene_heading="INT. 码头 - 日")
+
+
+def t_lead_room_shifts_single_subject_shots_only():
+    from block_director.contracts.cast import SceneSpec
+    from block_director.layer3_engine.scene_context import get_context
+    from block_director.layer3_engine.shot_builder import build_scene
+
+    fresh_scene()
+    plan = _lead_room_plan()
+    spec = SceneSpec.from_plan(plan)
+    summary = build_scene(plan, spec, clear_scene=True)
+    context = get_context()
+    scene = bpy.context.scene
+
+    def target_of(shot_id: str):
+        return next(item.camera_target for item in summary.results
+                    if item.shot_id == shot_id)
+
+    scene.frame_set(int(context.schedule["shot_001"][0]))
+    bpy.context.view_layer.update()
+    single_now = context.character("char_001").root.matrix_world.translation
+    single_target = target_of("shot_001")
+    single_offset = ((single_target[0] - single_now.x) ** 2
+                     + (single_target[1] - single_now.y) ** 2) ** 0.5
+
+    scene.frame_set(int(context.schedule["shot_002"][0]))
+    bpy.context.view_layer.update()
+    two_target = target_of("shot_002")
+    people = [context.character("char_001").root.matrix_world.translation,
+              context.character("char_002").root.matrix_world.translation]
+    centre_x = sum(p.x for p in people) / 2.0
+    centre_y = sum(p.y for p in people) / 2.0
+    two_offset = ((two_target[0] - centre_x) ** 2
+                  + (two_target[1] - centre_y) ** 2) ** 0.5
+    notes = [w for item in summary.results for w in (item.warnings or [])
+             if "视线留白" in w]
+    return {"ok": single_offset > 0.15 and two_offset < 0.05 and bool(notes),
+            "single_offset_m": round(single_offset, 3),
+            "two_shot_offset_m": round(two_offset, 3),
+            "lead_room_notes": notes[:2]}
+
+
 def main() -> int:
     capture_main_thread()
     check("axis_established_and_enforced", t_axis_established_and_enforced)
@@ -436,6 +503,8 @@ def main() -> int:
           t_r001_says_whether_a_character_crossed_the_axis)
     check("r003_is_scoped_to_the_shot_being_audited",
           t_r003_is_scoped_to_the_shot_being_audited)
+    check("lead_room_shifts_single_subject_shots_only",
+          t_lead_room_shifts_single_subject_shots_only)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

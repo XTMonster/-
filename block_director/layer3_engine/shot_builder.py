@@ -19,7 +19,12 @@ import bpy
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
 from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
-from ..cinema.station import SubjectFrame, camera_direction, subject_frame
+from ..cinema.station import (
+    SubjectFrame,
+    aim_offset_for_lead_room,
+    camera_direction,
+    subject_frame,
+)
 from ..cinema.schedule import (
     action_frame_window,
     out_of_bounds,
@@ -206,22 +211,24 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
                                  #: 悄悄改角度会让"计划写了 side=front_right、
                                  #: 场景里却不是"这种漂移无人发现。
                                  notes=axis_notes)
-    #: **视线留白暂时不在这里开**（2026-10-04 的实测负结果）：把单主体镜头的
-    #: 对准点横移 1/6 幅宽，在 `long9` 的工程上重建复评是**净负**——构图分中位
-    #: 64.7 → 55.8、25 镜降 / 16 镜升，掉得最狠的（−48、−44、−40）全部是
-    #: **主体本来就不在画面中心**的镜头：`place_shot_camera` 用的是
-    #: `CastMember.initial_location`（计划里的起始站位），而角色在**前面的镜头里
-    #: 已经走动过**——`work/_anchor_probe.py` 量到 64 镜里 **20 镜**的单主体与
-    #: 起始站位差 >1 m，最远 **7.7 m**（`shot_059`：伊恩实际在 (8.6, −6.0)，
-    #: 机位却按 (0.9, 0.0) 摆）。那些镜头再横移 1/6 就直接把主体推出画外。
-    #: 所以顺序是**先修站位（锚点）再开留白**；机制本身已经就位并有测试：
-    #: `cinema/station.aim_offset_for_lead_room` ＋ `solve_framing(aim_offset_x=…)`，
-    #: 见 `tests/test_lead_room_aim.py`。
+    #: v1.7：单主体镜头的**视线留白**——把对准点横移 1/6 幅宽，让主体落到
+    #: 背向视线的那条三分线上（§10.4 的 `lead_room` ＋ `rule_of_thirds`）。
+    #: 2026-10-04 第一次开它是**净负**（构图分中位 64.7 → 55.8、25 镜降），
+    #: 但那时的机位锚点还是"剧本起始站位"——主体本来就在画框边缘，再横移就出画
+    #: （`docs/evidence/20261004-leadroom-finding/`）。锚点（§六十三）与走位接力
+    #: （§六十四）落地后重测：见 `docs/evidence/20261004-leadroom-retest/`。
+    aim_offset = 0.0
+    if not frame.has_axis:
+        aim_offset = aim_offset_for_lead_room(direction, frame.facing)
     bundle, solution = place_camera_for_shot(
         shot.shot_id, frame.anchor, facing=frame.facing,
         shot_type=str(shot.shot_type), side=side,
         lens=resolved.get("lens"), room=(spec.room if spec else None),
-        direction=direction)
+        direction=direction, aim_offset_x=aim_offset)
+    if aim_offset:
+        axis_notes.append(
+            f"按 §10.4 的视线留白把对准点横向偏移 {aim_offset:+.3f} 幅宽"
+            f"（主体落到背向视线的那条三分线上）")
     solution.warnings.extend(axis_notes)
     return bundle, solution, frame
 
