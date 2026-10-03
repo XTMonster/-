@@ -163,6 +163,26 @@ def test_failure_triggers_repair_then_passes():
     assert driver.audit_results[-1].passed is True
 
 
+def test_repair_payload_names_the_shot_being_repaired():
+    """驱动的修复请求必须点明**本次要修的镜头**（v1.6，long10 实测）。
+
+    场景摘要里的"当前镜头"是 `SceneContext.current_shot_id`——构建期落在第一镜，
+    与本次要修的镜头无关。long10 里模型照抄它，把 `emit_shot_draft` 的
+    `shot_id` 写成 `shot_001`，真正要修的 `shot_043` 一直没被改。
+    """
+    transport = RepairingTransport()
+    auditor = FakeAuditor([
+        AuditResult.from_findings([axis_finding()], target="shot_001"),
+        AuditResult(passed=True, target="shot_001"),
+    ])
+    driver = _driver(transport, auditor)
+    assert driver.run_to_completion() is DriverState.DONE
+    repair = [p for p in transport.payloads if p.purpose == Purpose.REPAIR]
+    assert repair, "这一跑必须产生一次修复请求"
+    system = repair[0].messages[0].content
+    assert "本次要修的镜头" in system and "shot_001" in system
+
+
 def test_repair_payload_carries_structured_findings():
     transport = RepairingTransport()
     auditor = FakeAuditor([

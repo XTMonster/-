@@ -25,6 +25,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from block_director.contracts.audit import AuditError, AuditResult  # noqa: E402
+from block_director.contracts.tools import CONTROL_TOOL_NAMES  # noqa: E402
 from block_director.layer5_orchestrator import repair as R  # noqa: E402
 from block_director.layer5_orchestrator.driver import default_registry  # noqa: E402
 
@@ -52,3 +53,100 @@ def test_the_repair_payload_really_offers_that_tool():
     system = payload.messages[0].content
     assert "emit_shot_draft" in system
     assert "动作时间重叠" in system
+
+
+# --------------------------------------------------------------------------- #
+# v1.6（2026-10-04，long10 实测）：**纯时间轴审计要收窄工具集**
+#
+# 提示词早就写着"用场景工具修不动时间轴"，可 long10 的 117 次修复调用里
+# `get_scene_state` 86 / `check_composition` 65 / `check_visibility` 40，
+# 而 `emit_shot_draft` 只有 **7** 次——模型照旧去点那些改不动的东西，
+# 于是 R003 一直红到降级（终审 49 个未过镜头里 **38 个**都有 R003）。
+# 修法：审计**全是**时间轴类时，这一次请求的工具集只留
+# `emit_shot_draft` ＋ 控制类工具；混合审计（例：R003 ＋ 构图低分）保持全量，
+# 否则会把构图那一半也一起关掉。
+# --------------------------------------------------------------------------- #
+def _timeline_audit():
+    return AuditResult(passed=False, level="rule",
+                       errors=[AuditError(rule="R003", message="动作时间重叠")])
+
+
+def _mixed_audit():
+    return AuditResult(passed=False, level="rule",
+                       errors=[AuditError(rule="R003", message="动作时间重叠"),
+                               AuditError(rule="COMPOSITION", message="构图分低")])
+
+
+def _names(payload):
+    return {tool["function"]["name"] for tool in payload.tools}
+
+
+def _registry_with_a_scene_tool():
+    """`default_registry()` 只有 emit_plan/draft/控制类工具——场景工具由
+    `register_all_scene_tools` 另装（那条路要 bpy，纯 pytest 不给）。这里手加
+    一个同名工具，用来证明"收窄"确实按规则发生、而不是因为注册表本来就小。
+    """
+    registry = default_registry()
+    registry.add(name="character_action", description="改动作",
+                 parameters={"type": "object", "additionalProperties": False,
+                             "properties": {}},
+                 handler=lambda: "已执行")
+    return registry
+
+
+def test_a_pure_timeline_audit_narrows_the_tool_set():
+    registry = _registry_with_a_scene_tool()
+    payload = R.build_repair_payload(_timeline_audit(), registry)
+    names = _names(payload)
+    assert "emit_shot_draft" in names
+    assert names <= set(CONTROL_TOOL_NAMES) | {"emit_shot_draft"}, sorted(names)
+    #: 反面对照：改不动计划表的那些工具**不摆出来**（摆出来就还会被点）。
+    assert "character_action" not in names
+    assert "get_scene_state" not in names
+    assert "check_composition" not in names
+    assert "emit_plan" not in names
+    full = {tool["function"]["name"]
+            for tool in registry.schemas_except("emit_plan")}
+    assert names < full, "收窄后必须比全量工具集真少"
+    system = payload.messages[0].content
+    assert "全部是时间轴类" in system
+
+
+def test_a_mixed_audit_keeps_the_scene_tools():
+    registry = _registry_with_a_scene_tool()
+    names = _names(R.build_repair_payload(_mixed_audit(), registry))
+    assert "emit_shot_draft" in names
+    assert "character_action" in names          # 构图那一半还要靠它
+    assert "emit_plan" not in names
+    assert names == {tool["function"]["name"]
+                     for tool in registry.schemas_except("emit_plan")}
+
+
+def test_a_spatial_audit_is_left_alone():
+    registry = _registry_with_a_scene_tool()
+    audit = AuditResult(passed=False, level="rule",
+                        errors=[AuditError(rule="R001", message="越轴")])
+    names = _names(R.build_repair_payload(audit, registry))
+    assert "character_action" in names and "emit_shot_draft" in names
+    assert names == {tool["function"]["name"]
+                     for tool in registry.schemas_except("emit_plan")}
+
+
+def test_the_prompt_names_the_shot_being_repaired():
+    """场景摘要里的"当前镜头"是 `SceneContext` 的构建期默认值（第一镜）。
+
+    long10 的 7 次 `emit_shot_draft` 里有 **2** 次把 `shot_id` 写成了
+    `shot_001`——正是那条过期摘要值，于是真正要修的 `shot_043` 一直没被改。
+    提示词里必须写死"本次要修的镜头"。
+    """
+    payload = R.build_repair_payload(_timeline_audit(), default_registry(),
+                                     shot_id="shot_043")
+    system = payload.messages[0].content
+    assert "本次要修的镜头" in system
+    assert "shot_043" in system
+
+
+def test_without_a_shot_id_nothing_is_invented():
+    system = R.build_repair_payload(_timeline_audit(),
+                                    default_registry()).messages[0].content
+    assert "本次要修的镜头" not in system

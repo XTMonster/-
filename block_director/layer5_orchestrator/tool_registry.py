@@ -86,6 +86,20 @@ class ToolRegistry:
         return [self._tools[name].openai_schema() for name in self.names()
                 if name not in excluded]
 
+    def schemas_only(self, *names: str) -> List[Dict[str, Any]]:
+        """只给这些工具的 schema（顺序与 :meth:`names` 一致，便于对拍）。
+
+        用途见 `repair.build_repair_payload`：时间轴类问题**只有**
+        `emit_shot_draft` 能改（场景工具只往场景里叠动画，不写回计划的动作表），
+        而实测（2026-10-03 的 64 镜真跑，`long3`/`long10`）模型在修复回合
+        86 次 `get_scene_state`、65 次 `check_composition`、40 次
+        `check_visibility`，`emit_shot_draft` 只有 7 次——**问题就一直红到降级**。
+        工具集里把改不动的东西拿掉，比在提示词里再劝一遍有效。
+        """
+        wanted = {str(name) for name in names}
+        return [self._tools[name].openai_schema() for name in self.names()
+                if name in wanted]
+
     def __contains__(self, name: object) -> bool:
         return name in self._tools
 
