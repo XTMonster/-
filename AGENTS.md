@@ -278,7 +278,12 @@ Q5/Q7/E3 走 `tools/holdout_review_llm.py` 的**双模型复核通道**（`revie
 `layer5_orchestrator/scene_contract.py::shot_constraint_query()` 就是那个生产者
 （`editor.py` 每镜用它取知识）。证据：`docs/evidence/20260930-071500/`。
 
-**2026-10-01 语料重建（用户裁决：理论不要自己写，要别人写的）——这一版是当前口径**：
+**2026-10-01 语料重建（用户裁决：理论不要自己写，要别人写的）——⚠️ 这一版的数字已作废，
+只保留决策与理由**：当时是 **2113 张卡 / 890 条边 / 1367 pytest / 13 类边**，
+2026-10-03 的现行口径是 **2353 张卡 / 638 条边 / 1725 pytest / 16 类边**
+（``hg/v2` ＋ `extract/v18` ＋ `gate/v2`；门①–⑩ 全 pass）。**别照抄下面那组数字**，
+现行账在文件末尾的「P14 现状」块与 `docs/knowledge/ACCEPTANCE_STATUS.md` §三十五…§四十。
+以下是那次重建的原始记录：
 `sources.yaml` 里 27 条 `mode: manual`（自撰笔记）全部移除，换成 41 条**他人著作**
 （Gutenberg 公有领域教材 ＋ MIT OCW `CC-BY-NC-SA` 讲义 ＋ Frames Cinema Journal
 `PersonalStudy` 论文）；生成卡 **1981 张、自撰 0 张**（重建前 1601 张里 671 张自撰），
