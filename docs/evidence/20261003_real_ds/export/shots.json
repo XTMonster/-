@@ -1,0 +1,452 @@
+{
+  "project": "第十四街区码头市场 - 午后（白模预演分镜计划）",
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "style": "写实电影质感，35mm，柔和自然光",
+  "generated_at": "2026-10-03T10:15:47+08:00",
+  "scene_heading": "第十四街区码头市场 - 午后（白模预演分镜计划）",
+  "total_frames": 792,
+  "llm_calls": 36,
+  "retrieval_calls": 7,
+  "crowd": {
+    "entries": [
+      {
+        "count": 30,
+        "mode": "walk",
+        "seed": 0,
+        "spread": 6.0,
+        "label": "背景有大量路人（约30人）在市场行走、交易"
+      }
+    ],
+    "total": 30
+  },
+  "timing_overrides": [],
+  "action_conflicts": [],
+  "dialogue_pins": [
+    {
+      "shot_number": 2,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 3,
+      "speaker_raw": "伊恩",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 4,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 1.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 4,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 4.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 6,
+      "speaker_raw": "偷盗者",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 6,
+      "speaker_raw": "偷盗者",
+      "speaker_status": "resolved",
+      "declared_s": 4.0,
+      "model_text": "",
+      "applied_s": null
+    }
+  ],
+  "audit_pass_rate": {
+    "numerator": 3,
+    "denominator": 5,
+    "rules": [
+      "shot_002",
+      "shot_005",
+      "shot_006"
+    ],
+    "sampled_frames": 16,
+    "exempt_shots": []
+  },
+  "knowledge": {
+    "backend": "hypergraph",
+    "engine": "builtin.BM25Okapi",
+    "cards": 2353,
+    "top_k": 5,
+    "token_limit": 800,
+    "plan_token_limit": 2000,
+    "retrieval_calls": 7,
+    "degraded": false,
+    "degraded_reason": "",
+    "hypergraph_fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+    "cases": 3,
+    "lanes": 2,
+    "cases_backend": "hybrid",
+    "cases_requested_backend": "hybrid",
+    "cases_degraded": false,
+    "cases_degraded_reason": "",
+    "lightrag_index_fingerprint": "",
+    "cases_index_fingerprint": "69791dbacabd3fd77e5132dea277664972a227d222b7be0c6c6841c5a7a6649e",
+    "warnings": []
+  },
+  "shots": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "intent": "建立场景，用微风打破宁静，铺垫即将发生的冲突",
+      "shot_type": "MCU",
+      "start_frame": 1,
+      "end_frame": 120,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_001.mp4",
+      "first_frame": "first_frames/shot_001.png",
+      "camera": {
+        "name": "BD_Cam_shot_001",
+        "position": [
+          0.0,
+          2.895,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "建立镜，机位置于市场纵深一侧，为后续米迦尔—伊恩轴线定下基准；本镜无角色，不涉及越轴。",
+      "continuity_in": "开场；确立午后暖光基调与市场空间方位。",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 1,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "淡入",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "自然侧光，阳光从画面右侧照射，形成暖色调光影，地面阴影清晰",
+        "sfx": "微风声、远处商贩叫卖声、海浪轻拍岸边声、路人交谈的嘈杂声",
+        "declared_duration_s": 5.0
+      },
+      "labels": {},
+      "movements": []
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "intent": "建立米迦尔的角色性格，引出战斗",
+      "shot_type": "CU",
+      "start_frame": 121,
+      "end_frame": 264,
+      "duration_frames": 144,
+      "duration_seconds": 6.0,
+      "video_file": "blockout_shot_002.mp4",
+      "first_frame": "first_frames/shot_002.png",
+      "camera": {
+        "name": "BD_Cam_shot_002",
+        "position": [
+          -4.429,
+          1.1,
+          1.278
+        ],
+        "lens": 85.0
+      },
+      "characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "dialogue_ids": [
+        "scene_002_dlg_001"
+      ],
+      "action_types": [],
+      "axis_note": "确立米迦尔在画左、伊恩在画右后方的轴线关系；视线由画左指向画右，为镜号3 反打留出对应方向。",
+      "continuity_in": "承接镜号1 的市场空间，切入米迦尔；运动由静转推，标示事情开始。",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 2,
+        "camera_number": "1",
+        "technique": "快速推镜",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "正面柔光打在米迦尔脸上，突出自信表情",
+        "sfx": "镜头推进的风声、米迦尔清脆的说话声",
+        "declared_duration_s": 6.0
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 1.7723,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        },
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.786,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "dolly_in",
+          "start_frame": 1,
+          "end_frame": 144,
+          "source": "declared"
+        }
+      ]
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "intent": "表现两人的搭档关系",
+      "shot_type": "MCU",
+      "start_frame": 265,
+      "end_frame": 360,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_003.mp4",
+      "first_frame": "first_frames/shot_003.png",
+      "camera": {
+        "name": "BD_Cam_shot_003",
+        "position": [
+          -1.447,
+          2.507,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "伊恩"
+      ],
+      "dialogue_ids": [
+        "scene_002_dlg_002"
+      ],
+      "action_types": [],
+      "axis_note": "反打镜头，机位越过轴线另一侧，伊恩位于画右、视线朝画左，与镜号2 视线方向相对，符合 180° 轴线规则；机位角度变化大于 30°。",
+      "continuity_in": "承接镜号2 米迦尔发话，切至听话人伊恩的应答反应。",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 3,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "侧光打在伊恩脸上，一半在光下一半在阴影中",
+        "sfx": "伊恩沉稳的说话声",
+        "declared_duration_s": 4.0
+      },
+      "labels": {
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.786,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": []
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "intent": "铺垫米迦尔即将施法，暗示魔法即将出现",
+      "shot_type": "CU",
+      "start_frame": 361,
+      "end_frame": 504,
+      "duration_frames": 144,
+      "duration_seconds": 6.0,
+      "video_file": "blockout_shot_004.mp4",
+      "first_frame": "first_frames/shot_004.png",
+      "camera": {
+        "name": "BD_Cam_shot_004",
+        "position": [
+          -2.215,
+          -2.736,
+          1.278
+        ],
+        "lens": 85.0
+      },
+      "characters": [
+        "米迦尔"
+      ],
+      "dialogue_ids": [
+        "scene_003_dlg_001",
+        "scene_003_dlg_002"
+      ],
+      "action_types": [],
+      "axis_note": "回到米迦尔一侧，机位相对镜号3 反打回原侧，保持米迦尔在画左；景别由 MCU 收紧为 CU，满足 30° 规则。",
+      "continuity_in": "承接镜号3 伊恩的应允，回到米迦尔施法前的准备。",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 4,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "顶光照射手部，形成清晰的手部阴影",
+        "sfx": "米迦尔轻快的笑声、手指活动的轻微声响",
+        "declared_duration_s": 6.0
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 1.7723,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": []
+    },
+    {
+      "shot_id": "shot_005",
+      "order": 5,
+      "intent": "展示米迦尔的魔法第一次生效，制造悬念",
+      "shot_type": "MS",
+      "start_frame": 505,
+      "end_frame": 624,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_005.mp4",
+      "first_frame": "first_frames/shot_005.png",
+      "camera": {
+        "name": "BD_Cam_shot_005",
+        "position": [
+          -2.316,
+          8.311,
+          0.95
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "偷盗者"
+      ],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "新主体与新的运动轴线，跟拍方向统一为画右→画左；与镜号4 主体不同，景别变化一档，不构成越轴。",
+      "continuity_in": "由米迦尔施法准备切至魔法生效的偷盗者，运动镜头承接转折。",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 5,
+        "camera_number": "1",
+        "technique": "跟拍镜头",
+        "transition": "切镜，动作衔接",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "黑红色火焰自发光，照亮偷盗者的手掌和面部",
+        "sfx": "跑步脚步声、火焰燃起的\"呼\"声、金属受热的轻微滋滋声",
+        "declared_duration_s": 5.0
+      },
+      "labels": {
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 1.9604,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "follow_subject",
+          "start_frame": 1,
+          "end_frame": 120,
+          "source": "declared"
+        }
+      ]
+    },
+    {
+      "shot_id": "shot_006",
+      "order": 6,
+      "intent": "制造喜剧反转",
+      "shot_type": "MCU",
+      "start_frame": 625,
+      "end_frame": 792,
+      "duration_frames": 168,
+      "duration_seconds": 7.0,
+      "video_file": "blockout_shot_006.mp4",
+      "first_frame": "first_frames/shot_006.png",
+      "camera": {
+        "name": "BD_Cam_shot_006",
+        "position": [
+          -1.447,
+          6.807,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "characters": [
+        "偷盗者"
+      ],
+      "dialogue_ids": [
+        "scene_004_dlg_001",
+        "scene_004_dlg_002"
+      ],
+      "action_types": [],
+      "axis_note": "机位回到偷盗者正面偏画左区域，保持镜号5 的银幕方向不反转；景别由 MS 收紧为 MCU，运动由跟拍转为固定，形成收束。",
+      "continuity_in": "承接镜号5 的奔跑与火焰变色，停步定格于狂喜反应，收束全段。",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 6,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "金子反射的金光打在偷盗者脸上，形成明暗对比",
+        "sfx": "偷盗者激动的喘气声、狂喜的大笑声、金子碰撞的清脆声响",
+        "declared_duration_s": 7.0
+      },
+      "labels": {
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 1.9604,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": []
+    }
+  ]
+}

@@ -265,3 +265,34 @@ def test_the_committed_real_run_drift_is_reproducible():
     assert report["channel"] == "audit"
     assert report["fixture_entries"] >= Q.MIN_Q5_FIXTURE_ITEMS
     assert report["status"] in (Q.PASS, Q.FAIL), report["note"]
+
+
+def test_the_declared_technique_is_visible_in_the_emitted_queries():
+    """端到端（读提交里的两跑证据）：**声明的手法是修复之后才进发出串的**。
+
+    现场（2026-10-03）：`fixtures/shotlist_market.md` 第 1 镜写"拍摄手法：固定镜头"，
+    `_map_camera_move` 折成 `static`，而 `_pin_declared_camera` 跳过 `static`
+    （引擎的 24 种运镜里没有"不动"）——于是这一镜真正发出的契约串只有 `景别=MCU`，
+    超图那一栏拿不到"固定机位"那族边（含禁忌）。
+
+    修法：把**声明**钉进计划（`ShotPlan.declared_camera_move`），契约串那一侧
+    折到**查询**词表（`static` → `固定`）。这一条用例拿两份真实运行的审计分片
+    对拍，所以它是**端到端**的（不是"我调了函数"）：GLM 那一跑（修复前）第 1 镜
+    没有运镜键，DeepSeek 那一跑（修复后）第 1 镜是 `景别=MCU；运镜=固定`。
+    """
+    before = ROOT / "docs" / "evidence" / "20261003_real_glm"
+    after = ROOT / "docs" / "evidence" / "20261003_real_ds"
+    old = Q.run_query_mirror(before / "audit_log.jsonl")["queries"]
+    new = Q.run_query_mirror(after / "audit_log.jsonl")["queries"]
+    assert old.get("shot_001") == ["景别=MCU"], old.get("shot_001")
+    assert new.get("shot_001") == ["景别=MCU；运镜=固定"], new.get("shot_001")
+    # 声明"跟拍"的两跑都带运镜（那一侧本来就没被 `static` 的跳过分支吃掉）。
+    assert any("运镜=follow_subject" in query for query in
+               new.get("shot_005", [])), new.get("shot_005")
+    # 而且**每一镜**都至少挂上了它声明的那个手法（修复后的那一跑）。
+    declared = {"shot_001": "固定", "shot_002": "dolly_in", "shot_003": "固定",
+                "shot_004": "固定", "shot_005": "follow_subject",
+                "shot_006": "固定"}
+    for shot_id, movement in declared.items():
+        joined = "；".join(new.get(shot_id) or [])
+        assert f"运镜={movement}" in joined, (shot_id, movement, joined)

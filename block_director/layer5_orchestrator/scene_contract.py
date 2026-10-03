@@ -112,6 +112,13 @@ def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
                 break
 
     add("景别", [getattr(shot, "shot_type", "")])
+    #: 剧本**声明**的拍摄手法是检索前已知的输入（不是结果），先挂它。
+    #: 没有它，锁机位的镜头在超图那一栏一个运镜种子都没有：实测 2026-10-03，
+    #: `shotlist_market` 第 1 镜声明"固定镜头"，而这一镜真实发出的契约串只有
+    #: `景别=MCU`——"固定机位该怎么构图"那族边（含禁忌）因此从来进不了这一镜。
+    #: `_canonical` 会把 `static` 折成查询词表的 `固定`（引擎词表里没有"不动"，
+    #: 那是**能力**问题；这里是**检索**问题，两套词表本来就不是一回事）。
+    add("运镜", [getattr(shot, "declared_camera_move", "")])
     camera = getattr(shot, "camera", None) or {}
     if isinstance(camera, dict):
         add("镜头", [camera.get("lens")])

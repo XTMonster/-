@@ -77,6 +77,11 @@ FIXTURES = [
     ("docs/evidence/20261003_real_glm/export/shots.json", "真实模型运行（云端 GLM）的逐镜产物",
      "quality.py --shots：Q5 的运行侧 join 与 E2（§4.1b 明写 Q5 只在真实运行上判）"
      "——缺它 Q5 退回 not_measured，链子照旧全绿"),
+    ("docs/evidence/20261003_real_ds/export/shots.json", "真实模型运行（DeepSeek）的逐镜产物",
+     "链上 quality.py --shots 现在喂的是这一份：它的 retrieval_calls 与审计事件一致"
+     "（7=7，没有契约警告），而且是**逐镜查询带上声明拍摄手法之后**的第一跑"),
+    ("docs/evidence/20261003_real_ds/audit_log.jsonl", "DeepSeek 那一跑的审计分片",
+     "Q5 的 join 键（真实发出的 retrieval_call）与只读逐镜查询的来源"),
 ]
 
 

@@ -2883,3 +2883,70 @@ python -m pytest 全绿；run_tests.ps1 31/31 探针 + All checks passed
 （`429 code 1113 余额不足`，本轮最后两次探测）⇒ 如实记进
 `docs/knowledge/PANEL_REJECTED_PENDING.md`，**没有**把两张卡挪出 `card_scope.json`
 的分母（那是改验收标准）。
+
+## 四十、P14-28（2026-10-03 10:xx）：**逐镜检索终于看得见剧本声明的拍摄手法**
+
+§38.3 把 Q5 的第一条出路写成"让计划在检索前带上声明的手法"。这一节把它落地了，
+并且用一个**真实运行**证明它真的改变了引擎发出的契约串——不是"我调了那个函数"。
+
+### 40.1 病：声明在检索之前就断了
+
+`fixtures/shotlist_market.md` 第 1 镜写着 `拍摄手法：固定镜头`。
+`_map_camera_move("固定镜头")` 折成 **`static`**，而 `driver._pin_declared_camera`
+明确跳过 `static`——理由是引擎的 24 种运镜里**没有"不动"**（锁机位＝没有运动），
+把 `static` 钉进 `camera.movements` 会让 `apply_camera_movement` 拿到一个不存在的类型。
+
+跳过本身是对的，**但代价没人记账**：逐镜检索发生在 B1 **之前**，那时计划里还没有
+相机，而声明又没被留在任何地方 ⇒ 这一镜的契约串只剩 `景别=MCU`，超图那一栏拿不到
+"固定机位该怎么构图"那族边（含禁忌）。同一份信息在**计划期预取**那条路上是被用的
+（`declared_constraint_query` 直接读 `camera_move`）——一条路用、另一条路丢，
+这就是缺口。
+
+### 40.2 修：把声明钉在计划上，由契约串折到**查询**词表
+
+* `contracts/plan.py`：`ShotPlan.declared_camera_move: str = ""`（＋ to_dict/from_dict）。
+  与既有的 `declared_duration_frames` / `declared_shot_number` 同一性质——
+  **声明作为证据**留在计划上。
+* `driver._apply_declared_shotlist`：按顺序从 `ParsedShotDeclaration.camera_move`
+  钉进来（`_pin_declared_camera` 的行为不变）。
+* `scene_contract.shot_constraint_query`：先挂声明的运镜，再挂计划自己排的，
+  经 `_canonical` 折到查询词表（`static` → `固定`），同一个值去重。
+
+**两套词表不是一回事**：引擎词表回答"能不能做"，查询词表回答"要不要找"。
+`static` 进不了前者，但 `运镜=固定` 是后者的合法取值——这正是必须分开处理的原因。
+
+### 40.3 证据（端到端，`docs/evidence/20261003_real_ds/`）
+
+同一份剧本、同一个索引、同一个契约串生产者，修复前后各一次真实运行，
+逐镜**真实发出**的契约串：
+
+| | 修复前（`20261003_real_glm`，GLM 上游） | 修复后（`20261003_real_ds`，DeepSeek 上游） |
+|---|---|---|
+| `shot_001` | `景别=MCU` | **`景别=MCU；运镜=固定`** |
+| `shot_003` | `景别=MCU；对白=dialogue` | **`景别=MCU；运镜=固定；对白=dialogue`** |
+| `shot_004` | `景别=CU；对白=dialogue` | **`景别=CU；运镜=固定；对白=dialogue`** |
+| `shot_006` | `景别=MCU；对白=dialogue` | **`景别=MCU；运镜=固定；对白=dialogue`** |
+| `shot_002` / `shot_005` | 本来就有 `运镜=`（声明不是 `static`） | 不变 |
+
+**为什么换上游**：本轮结束时 GLM 余额耗尽（`429 code 1113`），而这一跑量的是
+**引擎行为**（发出的契约串），不是"哪个模型更会拍片"；§4.4 步骤 2 只要求一次
+真实模型运行，没有规定上游。顺带这一跑还是**契约字段自洽**的第一份证据：
+`shots.json.retrieval_calls = 7` 与审计里的 7 条 `retrieval_call` 一致
+（`tools/run_headless.py` 的 `retrieval_calls=` 修复之后的第一跑），
+`extract_run_evidence --check` 对它是**零原因、零警告**。链上的 `--shots`
+现在喂的就是这一份（那一份 GLM 的留在库里当历史）。
+
+### 40.4 它改了什么、没改什么
+
+* **改的是检索面**：锁机位的镜头现在真的会把"固定机位"那族边（含禁忌）拉进候选。
+  这是 §38.3 选项 1 的前半段。
+* **没有改判据**：Q5 的门限、join 判据、门⑨ 口径一个字没动；`Q5` 仍是 `fail`
+  （分母 0），因为夹具那 70 条的 `q` 带 `镜头=`，而焦段在检索时还没定（§38 的
+  结构性结论不变）。这一步只是让 Q5 的入口形状有了可扩展的空间；夹具要不要跟着
+  重标，仍等 §38.3 的裁决。
+* **回归面**：`E1/Q1/Q2/Q4/Q6b` 与标定工具都不读"引擎发出的串"（它们读 held-out
+  的 `q` 与索引），所以改动碰不到它们；链上重跑后 `not passing: Q5,E1` 与门①–⑩
+  全 pass 均未变（证据 `docs/evidence/20261003-102814/`）。用例：
+  `tests/test_q5_run_join.py`（契约串本身，含"两侧相同时去重"与"没有声明不许凭空
+  加键"两条反向对照）、`tests/test_q5_audit_channel.py`（**读提交里的两份真实运行
+  分片**对拍修复前后的发出串）、`tests/test_plan_dead_fields.py`（字段进出计划）。

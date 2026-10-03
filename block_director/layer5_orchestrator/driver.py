@@ -675,6 +675,15 @@ class PrevisDriver:
             # v1.4 F4/X10：把分镜表声明的镜号钉在计划上——R015 的
             # "顺序/身份错位"就是拿它做判据的（模型自己不会写这个键）。
             shot.declared_shot_number = int(declared[index].shot_number)
+            #: v1.4 §2.3b（Q5 的入口形状）：把**声明的拍摄手法**也钉在计划上。
+            #: 引擎运镜词表里没有"固定"（锁机位＝不动），所以
+            #: `_pin_declared_camera` 会跳过 `static` —— 但**查询**词表里有
+            #: `运镜=固定`，而逐镜检索发生在 B1 之前（那时计划里还没有相机）。
+            #: 不把声明留在计划上，锁机位的镜头在超图那一栏一个运镜种子都没有：
+            #: 实测 2026-10-03，`shotlist_market` 第 1 镜声明"固定镜头"，而
+            #: 这一镜真实发出的契约串只有 `景别=MCU`。
+            shot.declared_camera_move = str(
+                getattr(declared[index], "camera_move", "") or "")
             # v1.4 §3.3：声明时长与计划时长的差异要留痕（US-4/S4）。
             declared_seconds = getattr(declared[index], "declared_seconds", None)
             if declared_seconds is not None:

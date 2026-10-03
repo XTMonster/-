@@ -68,6 +68,13 @@ class ShotPlan:
     #: 按顺序钉入；模型的 ``emit_plan`` schema 里**没有**这个键）。
     #: 消费者 = R015/F4 的镜号/顺序/身份错位核对。
     declared_shot_number: int = 0
+    #: v1.4 §2.3b（Q5 的入口形状）：分镜表声明的**拍摄手法**（生产者 =
+    #: `ParsedShotDeclaration.camera_move`，按顺序钉入）。它是**检索前已知的
+    #: 输入**，逐镜检索的契约串要拿它挂种子——引擎运镜词表里没有"固定"
+    #: （锁机位＝不动），但**查询**词表里有 `运镜=固定`；不把声明留在这里，
+    #: 锁机位的镜头在超图那一栏一个运镜种子都没有（实测 2026-10-03：
+    #: `shotlist_market` 第 1 镜声明"固定镜头"，而发出的查询只有 `景别=MCU`）。
+    declared_camera_move: str = ""
     #: v1.4：台词钉住的证据链（§3.3 的 ``dialogue_pins[]``）。元素形如
     #: ``{shot_number, speaker_raw, speaker_status, declared_s, model_text,
     #: applied_s}``。生产者 = driver，消费者 = RK-7 的三方对拍。
@@ -96,6 +103,7 @@ class ShotPlan:
             "vfx": [dict(item) for item in self.vfx],
             "declared_duration_frames": self.declared_duration_frames,
             "declared_shot_number": self.declared_shot_number,
+            "declared_camera_move": self.declared_camera_move,
             "dialogue_pins": [dict(item) for item in self.dialogue_pins],
         }
 
@@ -124,6 +132,7 @@ class ShotPlan:
             declared_duration_frames=int(data.get("declared_duration_frames")
                                          or 0),
             declared_shot_number=int(data.get("declared_shot_number") or 0),
+            declared_camera_move=str(data.get("declared_camera_move") or ""),
             dialogue_pins=[dict(item)
                            for item in (data.get("dialogue_pins") or [])
                            if isinstance(item, dict)],

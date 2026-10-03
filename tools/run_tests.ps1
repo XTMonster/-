@@ -416,7 +416,13 @@ if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_attestation.json'))) {
 # camera/movements differ from what the per-shot retrieval saw (measured
 # 2026-10-03: 6 of 6 shots drift).  quality.py joins on the emitted query and
 # reports the re-derived one as a drift diagnostic only.
-python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261003_real_glm/export/shots.json --audit-log docs/evidence/20261003_real_glm/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+# 2026-10-03: the run fed here is now the DeepSeek one (docs/evidence/20261003_real_ds).
+# Two reasons over the earlier cloud-GLM run: its shots.json carries a
+# `retrieval_calls` that AGREES with the audit events (7 = 7, so extract_run_evidence
+# reports no contract warning), and it is the first run made AFTER the per-shot query
+# started carrying the shot's DECLARED technique.  The GLM run stays in the repo as
+# history (it is what SS35 measured).
+python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261003_real_ds/export/shots.json --audit-log docs/evidence/20261003_real_ds/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }

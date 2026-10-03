@@ -160,6 +160,24 @@ def test_the_landed_real_run_evidence_is_fresh():
     assert "retrieval_call 事件 7 条" in warnings[0]
 
 
+def test_the_second_landed_run_is_fresh_and_has_no_contract_warning():
+    """第二份真实运行（DeepSeek，逐镜查询带上声明之后）也必须同代，且**没有**警告。
+
+    它存在的意义正是"干净的证据件"：`shots.json.retrieval_calls = 7` 与审计里的
+    7 条 `retrieval_call` 一致——那是 `tools/run_headless.py` 把
+    `retrieval_calls=` 传进 `export_project()` 之后的第一跑，也是逐镜契约串
+    开始带**声明拍摄手法**之后的第一跑。
+    """
+    run_dir = ROOT / "docs" / "evidence" / "20261003_real_ds"
+    assert (run_dir / "run_manifest.json").is_file(), "第二份真实运行证据还没入库"
+    reasons, warnings = X.check(
+        out_dir=run_dir, holdout=ROOT / "fixtures" / "knowledge_holdout.jsonl",
+        index_manifest=ROOT / "knowledge" / "hypergraph.manifest.json",
+        with_warnings=True)
+    assert reasons == [], reasons
+    assert warnings == [], warnings
+
+
 def test_the_retrieval_cross_check_compares_shots_with_the_audit_events():
     """契约对拍：`shots.json.retrieval_calls` 与 audit 事件数不一致时**必须报**。"""
     run_dir = ROOT / "docs" / "evidence" / "20261003_real_glm"

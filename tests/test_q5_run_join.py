@@ -63,6 +63,46 @@ def _shot(shot_id, *, shot_type="MCU", lens=50.0, movements=(), actions=(),
     }
 
 
+def test_the_declared_technique_reaches_the_query_that_gets_emitted():
+    """剧本**声明**的拍摄手法必须进逐镜契约串——它是检索前已知的输入。
+
+    实测缺陷（2026-10-03）：`shotlist_market` 第 1 镜写"拍摄手法：固定镜头"，
+    `_map_camera_move` 把它折成 `static`，而 `_pin_declared_camera` 明确跳过
+    `static`（引擎的 24 种运镜里没有"不动"）。于是这一镜真实发出的契约串只有
+    `景别=MCU`：超图那一栏拿不到"固定机位该怎么构图"那族边（含禁忌）。
+
+    修法是把**声明**钉进计划（`ShotPlan.declared_camera_move`），由契约串那一侧
+    折到**查询**词表（`static` → `固定`）；引擎词表与查询词表本来就不是一回事，
+    前者是"能不能做"，后者是"要不要找"。
+    """
+    from block_director.contracts.enums import ShotType
+    from block_director.contracts.plan import ShotPlan
+    from block_director.layer5_orchestrator.scene_contract import (
+        shot_constraint_query,
+    )
+
+    shot = ShotPlan(shot_id="shot_001", intent="建立", shot_type=ShotType.MCU,
+                    duration_frames=120, declared_camera_move="static")
+    assert shot_constraint_query(shot) == "景别=MCU；运镜=固定", (
+        "声明是 static 时必须折成查询词表的 `固定`，否则这一镜一个运镜种子都没有")
+
+    # 计划自己排的运镜**另算一个值**：声明与落实不同时两个都要挂在查询里
+    # （`per_kind=3`），因为"剧本要固定、计划改成推镜"恰恰是这一镜的真实形态。
+    shot.camera = {"lens": 50.0, "movements": [{"type": "dolly_in"}]}
+    assert shot_constraint_query(shot) == "景别=MCU；运镜=固定；镜头=50mm；运镜=dolly_in"
+
+    # 两侧相同时去重（同一个值不该在查询里出现两次）。
+    same = ShotPlan(shot_id="shot_002", intent="推进", shot_type=ShotType.MS,
+                    duration_frames=96, declared_camera_move="dolly_in",
+                    camera={"movements": [{"type": "dolly_in"}]})
+    assert shot_constraint_query(same) == "景别=MS；运镜=dolly_in"
+
+    # 负对照：没有声明就**不许**凭空加一个 `运镜=`（那会造出永不命中的种子）。
+    bare = ShotPlan(shot_id="shot_003", intent="收束", shot_type=ShotType.CU,
+                    duration_frames=72)
+    assert shot_constraint_query(bare) == "景别=CU"
+
+
 def _write(tmp_path: pathlib.Path, shots, *, knowledge="live") -> pathlib.Path:
     path = tmp_path / "shots.json"
     payload = {"shots": shots}
