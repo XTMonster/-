@@ -1,0 +1,1206 @@
+{
+  "ok": true,
+  "declared_shot_count": 64,
+  "plan_shot_count": 64,
+  "declared_total_seconds": 191.0,
+  "plan_total_seconds": 191.0,
+  "fps": 24,
+  "brief_source": "llm",
+  "rows": [
+    {
+      "declared_shot_number": 1,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_001",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 2,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_002",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 3,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_003",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 4,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_004",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 5,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_005",
+      "plan_frames": 96,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 6,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_006",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 7,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_007",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 8,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_008",
+      "plan_frames": 48,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 9,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_009",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。",
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 10,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_010",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 11,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_011",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 12,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_012",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "这一次我听你的。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 13,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_013",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "这一次我听你的。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 14,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_014",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "你也是。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 15,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_015",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 16,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_016",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [
+        "你也是。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 17,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_017",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 18,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_018",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。",
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 19,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_019",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 20,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_020",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 21,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_021",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "别拖了。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 22,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_022",
+      "plan_frames": 72,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 23,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_023",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 24,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_024",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [
+        "走吧。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 25,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_025",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 26,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_026",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。",
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 27,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_027",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 28,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_028",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "你也是。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 29,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_029",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。",
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 30,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_030",
+      "plan_frames": 72,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "这一次我听你的。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 31,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_031",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 32,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_032",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 33,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_033",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 34,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_034",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 35,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_035",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 36,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_036",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 37,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_037",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "别拖了。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 38,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_038",
+      "plan_frames": 72,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 39,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_039",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 40,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_040",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [
+        "船要开了。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 41,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_041",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 42,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_042",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。",
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 43,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_043",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 44,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_044",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 45,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_045",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 46,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_046",
+      "plan_frames": 72,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 47,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_047",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "我先上船。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 48,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_048",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 49,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_049",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 50,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_050",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "我先上船。",
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 51,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_051",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "等等我。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 52,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_052",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "别拖了。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 53,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_053",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "这一次我听你的。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 54,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_054",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "这一次我听你的。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 55,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_055",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "再见。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 56,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_056",
+      "plan_frames": 72,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 57,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_057",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 58,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_058",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "你也是。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 59,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_059",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 60,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_060",
+      "plan_frames": 72,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 61,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_061",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "再见。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 62,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_062",
+      "plan_frames": 48,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "你也是。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 63,
+      "declared_seconds": 2.0,
+      "declared_frames": 48,
+      "declared_target": null,
+      "declared_shot_type": "MLS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_063",
+      "plan_frames": 48,
+      "plan_shot_type": "MLS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 64,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [
+        "我先上船。",
+        "等等我。",
+        "别拖了。",
+        "这一次我听你的。",
+        "走吧。",
+        "照顾好自己。",
+        "你也是。",
+        "再见。",
+        "再见。",
+        "船要开了。"
+      ],
+      "plan_shot_id": "shot_064",
+      "plan_frames": 72,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [
+        "我先上船。",
+        "等等我。",
+        "别拖了。",
+        "这一次我听你的。",
+        "走吧。",
+        "照顾好自己。",
+        "你也是。",
+        "再见。",
+        "再见。",
+        "船要开了。"
+      ],
+      "frames_delta": 0
+    }
+  ],
+  "findings": [
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R013",
+      "severity": "warning",
+      "target": "shot_003",
+      "message": "shot_003 没有落实剧本理解的注视关系：伊恩→米迦尔、米迦尔→伊恩",
+      "suggestion": "让角色互相看向对方（face_character / look_at），或在 SceneBrief 里删掉这条注视"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R013",
+      "severity": "warning",
+      "target": "shot_042",
+      "message": "shot_042 没有落实剧本理解的注视关系：米迦尔→伊恩",
+      "suggestion": "让角色互相看向对方（face_character / look_at），或在 SceneBrief 里删掉这条注视"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R014",
+      "severity": "warning",
+      "target": "shot_013",
+      "message": "shot_013 声明了 steadicam，但 米迦尔 在这一镜里没有走动（没有 walk_to / run_to），镜头跟不到任何动机",
+      "suggestion": "给 米迦尔 加一个走位，或把运镜换成推/摇"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R014",
+      "severity": "warning",
+      "target": "shot_034",
+      "message": "shot_034 声明了 steadicam，但 米迦尔 在这一镜里没有走动（没有 walk_to / run_to），镜头跟不到任何动机",
+      "suggestion": "给 米迦尔 加一个走位，或把运镜换成推/摇"
+    }
+  ]
+}
