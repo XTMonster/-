@@ -326,6 +326,11 @@ RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence
 `sample_edges.py --n 30` 并要求落盘（**不替人填 `verdict`**：那是人审，脚本自己
 也不预填）。实测 30 行、覆盖全部 16 个边类、`verdict` 全为 `null`。
 
+**E1 的样本下界缺口也如实报了**：§4.1b 写「判分样本 ≥1200」，而链上是一跑的
+6 镜 × top-3 = **18 条**。`e1_relevance` 现在同时给出 `sample_floor` /
+`sample_shortfall` / `sample_floor_met`，note 里点名下界——**判定不变**（分母是 18
+不是 0，该判 fail 就判 fail；用样本量把红的说成灰的和把 18 条当结论一样不诚实）。
+
 **链上的真实运行证据换成了 `docs/evidence/20261003_real_ds/`**（DeepSeek 上游，
 run `37d8ad2294df`）：它是**逐镜契约串开始带剧本声明手法**之后的第一跑，也是
 `shots.json.retrieval_calls` 与审计事件第一次一致的一跑（7 = 7，`--check` 零警告）。

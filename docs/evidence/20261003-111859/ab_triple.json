@@ -1,0 +1,24 @@
+{
+  "queries": 2847,
+  "top_k": 3,
+  "token_limit": 2000,
+  "edges": {
+    "hypergraph": 638,
+    "triples": 995
+  },
+  "dropped_forbid_members_per_query": {
+    "hypergraph": 0,
+    "triples": 0
+  },
+  "Q2": {
+    "hypergraph": 1.0,
+    "triples": 0.6315
+  },
+  "Q6b": {
+    "hypergraph": 1.0,
+    "triples": 1.0
+  },
+  "note": "§2.3d T2：不设通过线。收益只在预算不足时体现；预算足够时三元组也能满分，Δ≈0 不说明超图无用。",
+  "delta_Q2": 0.3685,
+  "delta_Q6b": 0.0
+}

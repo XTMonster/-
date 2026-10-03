@@ -66,6 +66,12 @@ PASS, FAIL, NA = "pass", "fail", "not_measured"
 #: 夹具没有这条标注就无从 join。
 MIN_Q5_FIXTURE_ITEMS = 30
 
+#: §4.1b 的 E1 行：「判分样本 ≥ 1200（R50）」。链上喂的是**一次真实运行**的回返
+#: 案例（6 镜 × top-3 = 18），所以这个下界当前**够不到**——报告必须把差多少写出来，
+#: 让人一眼看出 3/18 不是有统计效力的 0.1667。**它不改判据、不改状态**：E1 的分母是
+#: 18 不是 0，按 §4.1b 硬规则 1 该判失败就判失败。
+E1_SAMPLE_FLOOR = 1200
+
 #: `ShotContract.constraint_query()` / `shot_constraint_query()` 真正会产出的键。
 #: 只有 `q` 的键**全部**落在这里的条目才可能与真实运行的计划镜头 join 上——
 #: 这是 §4.1b 的 Q5 join 判据（"键值对集合相等"）的直接推论。
@@ -629,13 +635,28 @@ def e1_relevance(reviews_path: Optional[Path], *,
     value = len(good) / len(scored)
     payload = {"id": "E1",
                "numerator": len(good), "denominator": len(scored),
-               "value": round(value, 4), "line": 0.70}
+               "value": round(value, 4), "line": 0.70,
+               #: §4.1b 的 E1 行写着「判分样本 ≥ 1200（R50）」，而链上这一份只有
+               #: 一次真实运行的 6 镜 × top-3 = **18 条**。判据（≥70%）与状态判定
+               #: **不因此改变**——分母是 18、不是 0，按硬规则 1 该判失败就判失败；
+               #: 但"样本离下界还差多少"必须写在报告里，否则读者会把 3/18 当成
+               #: 一个有统计效力的 0.1667。这就是本项目对"缺证据"的一贯处置：**报出来，
+               #: 而不是让它看起来像结论**。
+               "sample_floor": E1_SAMPLE_FLOOR,
+               "sample_shortfall": max(0, E1_SAMPLE_FLOOR - len(scored)),
+               "sample_floor_met": len(scored) >= E1_SAMPLE_FLOOR}
     stale = e1_evidence_is_stale(scored, cases_path)
     if stale:
         return {**payload, "status": NA, "stale_evidence": True,
                 "note": "这批打分与当前案例索引脱钩（历史记录，不得当成通过）："
                         + "；".join(stale)}
-    return {**payload, "status": PASS if value >= 0.70 else FAIL}
+    shortfall = (f"（注意：判分样本 {len(scored)} < §4.1b 下界 {E1_SAMPLE_FLOOR}，"
+                 f"差 {E1_SAMPLE_FLOOR - len(scored)} 条——这个比率还不具备"
+                 f"统计效力，判据与状态未因此改变）"
+                 if len(scored) < E1_SAMPLE_FLOOR else "")
+    return {**payload, "status": PASS if value >= 0.70 else FAIL,
+            "note": (f"相关案例 {len(good)}/{len(scored)} = {value:.4f}"
+                     f"（线 {0.70}）{shortfall}")}
 
 
 def q4_build_gate(q_report: Dict[str, Any]) -> Dict[str, Any]:

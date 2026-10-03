@@ -173,6 +173,33 @@ def test_e1_uses_the_human_scores_when_they_cover_the_current_index(tmp_path):
     assert quality.e1_relevance(below, cases_path=cases)["status"] == "fail"
 
 
+def test_e1_reports_how_far_it_is_from_the_sample_floor(tmp_path):
+    """§4.1b 给 E1 写了「判分样本 ≥ 1200」，而链上只有一次运行的 18 条。
+
+    这个缺口必须**报出来**，但不许因此改判定：E1 的分母是 18 不是 0，按 §4.1b
+    硬规则 1 该判失败就判失败。把它记成 `not_measured` 是"用样本量把红的说成灰的"，
+    跟把它当成 0.1667 的结论一样不诚实——正确的做法是**两个都写出来**。
+    """
+    cases = _case_index(tmp_path, ["c1", "c2", "c3", "c4"])
+    reviews = _reviews(tmp_path, [_review_row(f"c{i}", s) for i, s in
+                                  enumerate((5, 4, 3, 5), 1)])
+    out = quality.e1_relevance(reviews, cases_path=cases)
+    assert out["status"] == "pass", "判定不许因为样本量而改变"
+    assert out["denominator"] == 4
+    assert out["sample_floor"] == quality.E1_SAMPLE_FLOOR == 1200
+    assert out["sample_shortfall"] == 1196
+    assert out["sample_floor_met"] is False
+    assert "还不具备" in out["note"] and "1200" in out["note"]
+
+    # 正对照：样本够时不再提这条（也不会多出一个永远为假的字段）。
+    many = _reviews(tmp_path, [_review_row(f"c{i % 4 + 1}", 5)
+                               for i in range(quality.E1_SAMPLE_FLOOR)],
+                    name="e1_many.jsonl")
+    big = quality.e1_relevance(many, cases_path=cases)
+    assert big["sample_floor_met"] is True and big["sample_shortfall"] == 0
+    assert "还不具备" not in big["note"]
+
+
 def test_e1_scores_that_predate_the_index_are_not_evidence(tmp_path):
     """**真实漏网**（2026-10-02）：仓库里那份 E1 打分有 9/16 条的 case_id 在当前
     索引里已经不存在，却照样能被算成一个 0.0 的 E1。脱钩的打分记 `not_measured`
