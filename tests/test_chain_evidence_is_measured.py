@@ -186,6 +186,47 @@ def test_the_long_baseline_step_asserts_shots_and_the_budget_ceiling():
         "镜数/预算必须从 JSON 载荷读，别在单行里正则捞数字")
 
 
+def test_the_chain_also_runs_step_3_the_rebuild():
+    """§4.4 **步骤 3**（`rebuild_project.py`）必须被执行——P9.4 的验收列明写
+    "步骤 1 与步骤 3 按字面可执行"。
+
+    2026-10-03 实测：`tools/rebuild_project.py` **全仓无人调用**（`rg` 在
+    `tests/`、`tools/` 里只命中它自己），链上也没有这一步 ⇒ "改一镜、重出一镜"这条
+    路（不调 LLM 也能重建场景）**从来没有任何机器验证**。它按字面能在
+    `docs/evidence/offline_run1/project` 上跑通（实测 154 s、`ok: true`、64 镜、
+    4584 帧），产物落在 `<project>/export/`（§R44⑩ 记过的双层嵌套；`.gitignore`
+    已把这类**可重生成的嵌套导出**排除，免得每次按字面跑都脏一次工作树）。
+
+    这条用例钉住链上的**存在性**与**断言面**：必须带 `--project`/`--export`，
+    必须断言 `ok: true`、导出块 ok、且镜数与帧数与步骤 1 **相等**（重建悄悄少几镜
+    也会打印 ok）。
+    """
+    lines = [line for _number, line in live_lines(chain_text())]
+    calls = [line for line in lines if "rebuild_project.py" in line]
+    assert calls, "链上没有调用 tools/rebuild_project.py（§4.4 步骤 3）"
+    call = calls[0]
+    assert "--project" in call and "--export" in call, call
+    joined = "\n".join(lines)
+    assert "BLOCKDIRECTOR_REBUILD" in joined, "必须读重建的标记"
+    assert "rebuildJson.shots" in joined and "rebuildJson.total_frames" in joined, (
+        "重建必须断言镜数与帧数与步骤 1 相等（否则少几镜也会绿）")
+    assert "rebuildJson.export" in joined, "重建带了 --export，就必须断言导出块"
+
+
+def test_the_nested_rebuild_export_is_gitignored():
+    """按字面跑步骤 3 会在 `<project>/export/` 留一份**可重生成**的输出。
+
+    它是"重新导出一次"的产物（与 mp4/first_frames 同类），而一次运行的入库证据是
+    `<run>/export/`。不排除它，每次按文档跑一遍步骤 3 就会往工作树里丢 132 个未跟踪
+    文件——那正是"下一次 `git add -A` 把它们带进去"的前提。
+    """
+    text = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    rule = [line for line in text.splitlines()
+            if line.strip() and not line.strip().startswith("#")
+            and "project/export" in line]
+    assert rule, "`.gitignore` 必须排除重建产生的嵌套导出"
+
+
 # --------------------------------------------------------------------------- #
 # 二、探针结果解析失败 ⇒ INCOMPLETE（不是 WARN）
 # --------------------------------------------------------------------------- #

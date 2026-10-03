@@ -31,6 +31,14 @@ __pycache__/
 docs/evidence/**/*.mp4
 docs/evidence/**/first_frames/
 
+# The REBUILD command (section 4.4 step 3) hands `out_dir = <project dir>` to
+# `export_project`, which always writes `<out_dir>/export/` - so running it as
+# written against a committed run drops a second, nested export beside the project
+# file.  That is regenerable output (same class as the mp4s above), the tracked
+# evidence of a run is `<run>/export/`, and leaving it visible just meant every
+# literal step-3 run dirtied the worktree with 132 untracked files.
+docs/evidence/**/project/export/
+
 # Probe / audit output.
 # The JSON reports are committed (they are evidence referenced by the docs);
 # the regenerable media is not.

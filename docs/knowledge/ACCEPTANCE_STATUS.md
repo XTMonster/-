@@ -3174,3 +3174,59 @@ All checks passed（31/31 探针 ＋ 门①–⑩ ＋ K1–K4）
 的**活行**必须带 `script_long_61`；② 必须出现 `"state": "DONE"`、`Math]::Max(200` ＋
 `* 8 + 40`、`-lt 61`、`llm_calls`/`ceiling` 的比较，且数字从 `Get-MarkerPayload` 读。
 （静态断言不能替代真跑，但它能挡住"哪天有人把 `--script` 摘掉"——那正是这次发现的形状。）
+
+## 四十六、P14-34（2026-10-03 11:5x）：**§4.4 步骤 3（重建）也进了链**——此前它全仓无人调用
+
+### 46.1 病：P9.4 的验收写着"步骤 1 与步骤 3 按字面可执行"，而步骤 3 没人跑过
+
+§4.4 步骤 3 是：
+
+```
+blender --background --factory-startup --python tools\rebuild_project.py -- \
+    --project docs\evidence\offline_run1\project --export
+```
+
+`rg rebuild_project tests tools` **只命中它自己**——链上没有、`tests/` 里没有、
+`tools/blender_tests/` 里也没有。于是"改一镜、重出一镜"这条路（**全程不调 LLM**
+也能从 `project.bdproj` 重建场景并重出交付包）**从来没有任何机器验证**，
+而 P9.4 的验收列明写它必须可执行。
+
+### 46.2 按字面先跑一次（实测，2026-10-03）
+
+```
+exit=0 / 154 s
+BLOCKDIRECTOR_REBUILD {"ok": true, "project": "...offline_run1\\project\\project.bdproj",
+                       "notes": [], "shots": 64, "total_frames": 4584,
+                       "characters": 2, "warnings": [], "export": {"ok": true, ...
+```
+
+**能跑通**（这是正面结论，不是又一次失败），产物落在 `<project>/export/` ——那是
+§R44⑩ 记过的双层嵌套（`export_project(out_dir=<project>)` 恒写 `<out_dir>/export/`）。
+按字面跑一次会在工作树里留下 132 个未跟踪文件；它们的性质与已排除的 mp4/首帧同类
+（**可重生成**，而一次运行的入库证据是 `<run>/export/`），所以 `.gitignore` 加了
+`docs/evidence/**/project/export/` 一条——**不是**把证据藏起来，而是不让"按文档跑一遍"
+顺手把可重生成的输出变成待提交的噪声。
+
+### 46.3 修：步骤 4 带 `--save`，随即在 TEMP 里重建并断言"无 LLM 复现"
+
+链上步骤 4 现在：
+
+```powershell
+run_headless.py ... --save (Join-Path $out 'project')      # 步骤 1 的 --save 产物
+rebuild_project.py --project (Join-Path $out 'project') --export   # 步骤 3，全程在 TEMP
+# 断言：ok:true ＋ export.ok ＋ **镜数与帧数都与步骤 1 相等**
+```
+
+**为什么断言相等**：重建悄悄少几镜也会打印 `ok: true`；而"重建=原样"才是它的契约
+（同一个 `project.bdproj`，零 LLM 调用）。实测链上输出：
+
+```
+long baseline: 64 shots, 144 llm calls (ceiling 552)
+rebuild (no LLM): 64 shots / 4584 frames reproduced
+```
+
+链跑在 TEMP，所以重建的嵌套导出**不落进仓库**（工作树只剩本次的改动与新的证据目录）。
+用例：`tests/test_chain_evidence_is_measured.py` 新增两条——① 链上必须有
+`rebuild_project.py` 的活行且带 `--project`/`--export`，并断言
+`rebuildJson.shots`/`total_frames` 相等与 `export` 块；② `.gitignore` 必须排除
+那类嵌套导出。

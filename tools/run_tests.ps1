@@ -216,7 +216,7 @@ Write-Host ('  ' + $smokeLine.Line) -ForegroundColor Green
 # the cross-shot machinery meet real execution.
 Write-Host ("[4/{0}] Run the add-on headless (plan -> scene -> delivery, one command)" -f $total) -ForegroundColor Cyan
 $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
-$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--out', $out, '--export')
+$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--out', $out, '--save', (Join-Path $out 'project'), '--export')
 $marker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_RESULT' 'headless'
 if ($marker -notmatch '"success": true') { Fail ('  FAILED: ' + $marker) }
 if ($marker -notmatch '"built": true') { Fail '  FAILED: the run did not build a scene' }
@@ -239,6 +239,39 @@ if ($longCalls -gt $ceiling) {
 }
 Write-Host ('  long baseline: ' + $longShots + ' shots, ' + $longCalls +
             ' llm calls (ceiling ' + $ceiling + ')') -ForegroundColor DarkGray
+
+# Section 4.4 STEP 3: rebuild the scene from STEP 1's saved project, with no LLM
+# call at all.  Measured 2026-10-03: `tools/rebuild_project.py` was called by
+# NOTHING - not by the chain and not by any test - while P9.4's acceptance column
+# says "sections 4.4 step 1 and step 3 must be executable as written".  Running it
+# here (against the temp project the step above just saved) keeps that true; the
+# rebuild's own nested export lands under TEMP, so the repo is untouched.
+$rebuildOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\rebuild_project.py') @('--project', (Join-Path $out 'project'), '--export')
+$rebuildMarker = Assert-Marker $rebuildOut 'BLOCKDIRECTOR_REBUILD' 'rebuild'
+if ($rebuildMarker -notmatch '"ok": true') { Fail ('  FAILED: ' + $rebuildMarker) }
+$rebuildPayload = Get-MarkerPayload $rebuildOut 'BLOCKDIRECTOR_REBUILD'
+$rebuildJson = $null
+try { $rebuildJson = $rebuildPayload | ConvertFrom-Json } catch { $rebuildJson = $null }
+if (-not $rebuildJson) { Fail '  FAILED: BLOCKDIRECTOR_REBUILD is not valid JSON' }
+# The rebuilt scene must reproduce the step-1 plan exactly: same shots, same frames,
+# and an export that is ok.  A rebuild that quietly drops shots would still print ok.
+if ([int]$rebuildJson.shots -ne $longShots) {
+    Fail ('  FAILED: rebuild produced ' + [int]$rebuildJson.shots + ' shots, step 1 produced ' + $longShots)
+}
+if ([int]$rebuildJson.total_frames -ne [int]$headlessJson.total_frames) {
+    Fail ('  FAILED: rebuild total_frames ' + [int]$rebuildJson.total_frames +
+          ' != step 1 ' + [int]$headlessJson.total_frames)
+}
+# `--export` was asked for, so the export block must say so (a rebuild that skips
+# the export would otherwise pass on `ok: true` alone).
+if (-not $rebuildJson.export) {
+    Fail '  FAILED: rebuild --export produced no export block'
+}
+if (-not $rebuildJson.export.ok) {
+    Fail ('  FAILED: rebuild export not ok: ' + $rebuildJson.export.reason)
+}
+Write-Host ('  rebuild (no LLM): ' + [int]$rebuildJson.shots + ' shots / ' +
+            [int]$rebuildJson.total_frames + ' frames reproduced') -ForegroundColor DarkGray
 $exportMarker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_EXPORT' 'delivery'
 if ($exportMarker -notmatch '"ok": true') { Fail ('  FAILED: ' + $exportMarker) }
 if ($exportMarker -notmatch '"aborted": false') { Fail '  FAILED: export aborted (render audit)' }

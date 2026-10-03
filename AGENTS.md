@@ -339,6 +339,14 @@ RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence
 离线约 159 秒）。数字从 `BLOCKDIRECTOR_RESULT` 的 **JSON 载荷**读（单行里
 `"shots"` 与 `"shots_remaining"` 都在，正则会捞错）。
 
+**§4.4 步骤 3（重建）也进链了**：`tools/rebuild_project.py` 此前**全仓无人调用**
+（`rg` 只命中它自己），而 P9.4 的验收写着"步骤 1 与步骤 3 按字面可执行"。按字面实测
+**能跑通**（154 s、`ok: true`、64 镜、4584 帧，产物落在 `<project>/export/`）。
+链上步骤 4 现在带 `--save`，随即在 **TEMP** 里重建并断言
+"`ok: true` ＋ 导出 ok ＋ 镜数与帧数与步骤 1 **相等**"（重建悄悄少几镜也会打印 ok）。
+`.gitignore` 加了 `docs/evidence/**/project/export/`——那是**可重生成**的嵌套导出，
+不排除的话按字面跑一次步骤 3 就会往工作树丢 132 个未跟踪文件。
+
 **链上的真实运行证据换成了 `docs/evidence/20261003_real_ds/`**（DeepSeek 上游，
 run `37d8ad2294df`）：它是**逐镜契约串开始带剧本声明手法**之后的第一跑，也是
 `shots.json.retrieval_calls` 与审计事件第一次一致的一跑（7 = 7，`--check` 零警告）。
