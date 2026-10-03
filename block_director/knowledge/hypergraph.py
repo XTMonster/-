@@ -858,6 +858,9 @@ class RetrievalTrace:
     expansion_truncated: bool = False
     dropped_edge_ids: List[str] = field(default_factory=list)
     quality_fail: bool = False
+    #: 因为"查询点名了这条边禁止的取值"而被顶进注入的边（§4.1 的 Q7）。
+    #: 每条记 `{added, removed, kind, value}`——"这次注入了什么禁忌"永远可查。
+    forbid_promoted: List[Dict[str, str]] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
         return {
@@ -870,6 +873,7 @@ class RetrievalTrace:
             "expansion_truncated": self.expansion_truncated,
             "dropped_edge_ids": list(self.dropped_edge_ids),
             "quality_fail": self.quality_fail,
+            "forbid_promoted": [dict(item) for item in self.forbid_promoted],
         }
 
 
@@ -1008,7 +1012,86 @@ class Hypergraph:
                 off += 1
         return min(1.0, off / 3.0)
 
-    def expand(self, seed_ids: Sequence[str]) -> Tuple[List[HyperEdge], bool]:
+    def _forbid_relevance(self, edge: HyperEdge,
+                          query: Optional[Dict[str, List[str]]] = None,
+                          forbid_query: Optional[Dict[str, List[str]]] = None
+                          ) -> float:
+        """查询**点名**了某个取值、而这条边把它标成禁忌 ⇒ 它必须进候选。
+
+        为什么需要（2026-10-03 实测，长剧本真实运行）：`expand` 的候选额度是按
+        `(coverage, precision, occurrences, edge_id)` 排的，而 `_edge_coverage`
+        **故意不算 `forbid` 成员**（问"要什么"不能被"不要什么"满足）。两条合起来
+        的后果是：**只靠禁忌值挂上种子的边 coverage 恒为 0**，在 40 条额度里排最后、
+        被整批丢掉 —— 它们连打分都进不去，`score()` 里那一项 `forbid_hit`（权重
+        0.1553，全项第二大）**永远没有机会生效**。
+
+        实测现场：查询 `景别=MS；运镜=固定` 下，索引里 5 条"禁止 `运镜=固定`"的边
+        全都与种子 `movement:固定` 相邻（1 跳内），却**一条都不在 40 条候选里**；
+        长剧本那跑的 **64 次逐镜检索，`forbid_members` 全为空** —— 禁忌那一栏在真实
+        运行里从未生效过。
+
+        判据与 `score()` 的 `forbid_hit` **同源**（同一份查询、同一份禁忌半），
+        免得"候选选它、打分不认它"或反过来。
+        """
+        for member in edge.members:
+            if member.role != "forbid":
+                continue
+            value = node_value(self.nodes.get(member.node_id), member.node_id)
+            if value in (query or {}).get(member.kind, []) \
+                    or value in (forbid_query or {}).get(member.kind, []):
+                return 1.0
+        return 0.0
+
+    def _promote_forbid_conflicts(self, scored, selected, query, forbid_query):
+        """让"查询点名了它**被禁**成员"的边真的进注入（§4.1 的 Q7 = 100%）。
+
+        `score()` 的 `forbid_hit`（权重 0.1553）只把冲突边往上抬，抬不抬得进 top-k
+        仍取决于 coverage。实测：查询 `景别=MS；运镜=固定` 下 5 条冲突边全是候选，
+        分数 0.20–0.22，而 top-5 的 `INTENT_PACK` 是 0.59 —— **一条禁忌都进不去**，
+        长剧本那跑 64 次逐镜检索的 `forbid_members` 全为 0。
+
+        这里做的是**名额**，不是改权重：查询正向点名了某个取值、而某条边把它标成
+        禁忌时，若 top-k 里没有任何一条带上那个禁忌，就用**分数最高的冲突边**顶掉
+        **分数最低的非冲突边**（绝不顶掉另一条冲突边——那会把禁忌稀释掉）。
+        """
+        def conflicts_of(edge: HyperEdge) -> List[Tuple[str, str]]:
+            out: List[Tuple[str, str]] = []
+            for member in edge.members:
+                if member.role != "forbid":
+                    continue
+                value = node_value(self.nodes.get(member.node_id), member.node_id)
+                if value in (query or {}).get(member.kind, []) \
+                        or value in (forbid_query or {}).get(member.kind, []):
+                    out.append((member.kind, value))
+            return out
+
+        score_of = {edge.edge_id: value for value, edge in scored}
+        selected = list(selected)
+        present = {(kind, value) for edge in selected
+                   for kind, value in conflicts_of(edge)}
+        events: List[Dict[str, str]] = []
+        for _value, edge in scored:            # 高分优先
+            if any(item.edge_id == edge.edge_id for item in selected):
+                continue
+            missing = [item for item in conflicts_of(edge) if item not in present]
+            if not missing:
+                continue
+            plain = [item for item in selected if not conflicts_of(item)]
+            if not plain:
+                continue                        # 全是冲突边：没有可顶掉的对象
+            victim = min(plain, key=lambda item: score_of.get(item.edge_id, 0.0))
+            selected = [edge if item.edge_id == victim.edge_id else item
+                        for item in selected]
+            kind, value = missing[0]
+            events.append({"added": edge.edge_id, "removed": victim.edge_id,
+                           "kind": kind, "value": value})
+            present.update(missing)
+        return {"selected": selected, "events": events}
+
+    def expand(self, seed_ids: Sequence[str], *,
+               query: Optional[Dict[str, List[str]]] = None,
+               forbid_query: Optional[Dict[str, List[str]]] = None
+               ) -> Tuple[List[HyperEdge], bool]:
         seed_set = set(seed_ids)
         frontier = list(seed_ids)
         seen_nodes = set(seed_ids)
@@ -1024,7 +1107,33 @@ class Hypergraph:
         def rank_key(edge: HyperEdge) -> Tuple:
             return (-self._edge_coverage(edge, seed_set),
                     -self._edge_precision(edge, seed_set),
+                    #: 禁忌命中：查询点名了这条边禁掉的那个值。放在 coverage/precision
+                    #: 之后、occurrences 之前——**只在同 coverage/precision 的并列里
+                    #: 起作用**，不去挤掉"把查询解释得更全"的边；而那些只靠禁忌挂上
+                    #: 种子的边 coverage 恒为 0，正是靠这一档才进得了额度。
+                    -self._forbid_relevance(edge, query, forbid_query),
                     -edge.occurrences, edge.edge_id)
+
+        def reserve_forbid(edges: List[HyperEdge], limit: int) -> List[HyperEdge]:
+            """把"查询点名了它**被禁**成员"的边顶进前 `limit` 个名额。
+
+            额度有两层，两层都要保：
+
+            * **按节点**的枢纽额度（`HUB_EDGES_PER_NODE`）——`movement:固定` 这种
+              枢纽有 66 条邻边，只留 12 条，而禁忌边的 coverage 恒为 0、排最后；
+            * **全局**额度（`MAX_EDGES_TOTAL`）。
+
+            只做全局那一层是**不够**的（实测：5 条"禁止 `运镜=固定`"的边全部倒在
+            按节点那一层，连 `pooled` 都进不去）。保底**只借名额、不改打分**：
+            进来的边仍要按分数与其他边竞争 top-k。
+            """
+            reserved = [edge for edge in edges
+                        if self._forbid_relevance(edge, query, forbid_query)]
+            if not reserved:
+                return edges
+            head = reserved[:limit]
+            head_ids = {edge.edge_id for edge in head}
+            return head + [edge for edge in edges if edge.edge_id not in head_ids]
 
         for _hop in range(MAX_HOPS):
             next_frontier: List[str] = []
@@ -1034,6 +1143,7 @@ class Hypergraph:
                 edges = [self.by_id[eid] for eid in candidates]
                 if hub_threshold and len(candidates) > hub_threshold:
                     edges.sort(key=rank_key)
+                    edges = reserve_forbid(edges, HUB_EDGES_PER_NODE)
                     edges = edges[:HUB_EDGES_PER_NODE]
                     truncated = truncated or len(candidates) > len(edges)
                 for edge in edges:
@@ -1044,7 +1154,17 @@ class Hypergraph:
             ordered = sorted(pooled.values(), key=rank_key)
             if len(ordered) > budget:
                 truncated = True
-            for edge in ordered[:budget]:
+            #: **禁忌保底**（2026-10-03）：额度截断必须保证"查询点名了它某个**被禁**
+            #: 成员的边"不会被整批丢掉——同一条理由早在 `HUB_EDGES_PER_NODE` 的注释里
+            #: 写过（"查询里点名了它某个成员的边不许被整批丢掉"），但那一档只救
+            #: `coverage > 0` 的边，而**只靠禁忌挂上种子的边 coverage 恒为 0**
+            #: （`_edge_coverage` 故意不算 forbid），于是它们在 40 条额度里排最后、
+            #: 连打分都进不去，`score()` 里权重第二大的 `forbid_hit` 永远没机会生效。
+            #: 实测代价：长剧本那跑 **64 次逐镜检索的 `forbid_members` 全为空**。
+            #: 配额与"按成员保底"同量级（`HUB_EDGES_PER_NODE`），且**只占用额度、
+            #: 不改打分**：进来的边仍要按分数与其他边竞争 top-k。
+            selected_edges = reserve_forbid(ordered, HUB_EDGES_PER_NODE)[:budget]
+            for edge in selected_edges:
                 seen_edges[edge.edge_id] = edge
                 for member in edge.members:
                     if member.node_id in seen_nodes:
@@ -1120,7 +1240,8 @@ class Hypergraph:
                                   for kind, values in forbid_query.items()}
         trace.seeds = list(seed_ids)
         seed_set = set(seed_ids)
-        candidates, truncated = self.expand(seed_ids)
+        candidates, truncated = self.expand(seed_ids, query=query,
+                                            forbid_query=forbid_query)
         trace.expansion_truncated = truncated
         trace.expanded_edges = [e.edge_id for e in candidates]
         scored = [(self.score(edge, query, seed_set, forbid_query, per_value), edge)
@@ -1129,6 +1250,22 @@ class Hypergraph:
         for value, edge in scored:
             trace.scores[edge.edge_id] = value
         selected = [edge for _value, edge in scored[:max(1, top_k)]]
+        #: **禁忌冲突必须进注入**（§4.1 的 Q7 = 100%）。`score()` 里那一项
+        #: `forbid_hit` 只把冲突边"往上抬"，抬不抬得进 top-k 仍取决于 coverage——
+        #: 实测：查询 `景别=MS；运镜=固定` 下，索引里 5 条"禁止 `运镜=固定`"的边
+        #: 现在能进候选（见 `reserve_forbid`），却全部输给 coverage 高的
+        #: `INTENT_PACK`（0.21 vs 0.59）⇒ **注入里一条禁忌都没有**，
+        #: 长剧本那跑 **64 次逐镜检索的 `forbid_members` 全为 0**。
+        #: 所以这里做的是**名额**而不是权重：查询正向点名了某个取值、而某条边把它
+        #: 标成禁忌时，若 top-k 里没有任何一条带上那个禁忌，就用分数最高的那条
+        #: **冲突边**顶掉分数最低的**非冲突边**（绝不顶掉另一条冲突边）。
+        #: 每一次顶替都记进 `trace.forbid_promoted`——"注入了什么"永远可审计。
+        if query:
+            promoted = self._promote_forbid_conflicts(
+                scored, selected, query, forbid_query)
+            selected = promoted["selected"]
+            if promoted["events"]:
+                trace.forbid_promoted = promoted["events"]
         trace.selected = [e.edge_id for e in selected]
         text, dropped, quality_fail = render_edges(selected, self.nodes, token_limit)
         trace.dropped_edge_ids = dropped

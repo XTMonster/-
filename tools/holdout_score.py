@@ -35,6 +35,7 @@ if str(ROOT) not in sys.path:
 
 from block_director.knowledge.hypergraph import (  # noqa: E402
     Hypergraph,
+    node_value,
     parse_query,
     parse_query_full,
     render_edge,
@@ -300,6 +301,9 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
     unresolved_entries = 0
     unresolved_examples: List[Dict[str, Any]] = []
     negative_pairs = negative_hits = 0
+    #: §2.3 的 Q3 重定义：`never` 与"查询点名了它被禁取值"撞车时，那条边**该被召回**
+    #: （Q7 要求它进注入），所以不计入误命中——但跳过多少对必须报出来。
+    negative_skipped = 0
     q6a_edges = q6a_ok = 0
     q6b_required = q6b_ok = 0
     q7_queries = 0
@@ -351,7 +355,24 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
         required_total += len(required_ids)
         selected_total += len(selected_ids)
         negative_pairs += len(never_ids)
-        negative_hits += len(never_ids & set(selected_ids))
+        #: 被"禁忌冲突"豁免掉的那些 `never` 边：查询正向点名了它禁掉的取值。
+        #: 判据与检索侧 `Hypergraph._forbid_relevance` **同源**（同一份查询、同一份
+        #: `forbid` 成员），免得"检索按一套、判分按另一套"。
+        #: `query` 在这里是**契约串**，禁忌豁免要的是解析后的正向取值（与
+        #: `Hypergraph._forbid_relevance` 的 `query` 同一形状）。
+        parsed_query = parse_query(query)
+        exempt: set = set()
+        for edge_id in never_ids:
+            edge = graph.by_id.get(edge_id)
+            if edge is None:
+                continue
+            for member in edge.forbids:
+                value = node_value(graph.nodes.get(member.node_id), member.node_id)
+                if value in parsed_query.get(member.kind, []):
+                    exempt.add(edge_id)
+                    break
+        negative_skipped += len(exempt)
+        negative_hits += len((never_ids - exempt) & set(selected_ids))
 
         # Q6a（契约型）：返回的边界**就是**索引里那一条——成员一致，
         # 且 ``edge_id`` 能按冻结公式重算出来（索引键 == 重算值）。
@@ -394,7 +415,16 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
         _metric("Q1", top1_hits, queries, 0.70, kind="min",
                 note=f"held-out query 数 {queries}（下界 {MIN_QUERIES}）"),
         _metric("Q2", top3_required, queries, 0.90, kind="min"),
-        _metric("Q3", negative_hits, negative_pairs, 0.10, kind="max"),
+        #: §2.3 的 **Q3 负样本重定义**（R26 ⑦ 的原话："原定义会把『该召回的
+        #: **禁忌边**』判成误命中"）：查询**点名**了某个取值、而某条边把它标成禁忌时，
+        #: 那条边**本来就该被召回**（§4.1 的 Q7 甚至要求它必须进注入），所以它不能
+        #: 算 Q3 的误命中。实测（2026-10-03）：禁忌进注入之后新增的 **109** 条负命中
+        #: **全部**是这种"该召回的禁忌边"。跳过多少对必须**如实报出来**（不是静默
+        #: 缩分母），见 `negative_skipped_forbid_conflicts`。
+        _metric("Q3", negative_hits, negative_pairs, 0.10, kind="max",
+                note=(f"按 §2.3 的 Q3 重定义，跳过 {negative_skipped} 条"
+                      f"『查询点名了它被禁取值』的边（它们该被召回，Q7 要求进注入）"
+                      if negative_skipped else "")),
         _metric("Q4", q4_hits, required_total, 1.0, kind="contract",
                 note=f"required 总数 {required_total}（下界 {MIN_REQUIRED}）"),
         _metric("Q6a", q6a_ok, q6a_edges, 1.0, kind="contract"),
@@ -426,6 +456,9 @@ def score_entries(entries: Sequence[dict], graph: Hypergraph, *,
             "required_unresolved": unresolved_must,
             "required_unresolved_entries": unresolved_entries,
             "unresolved_examples": unresolved_examples,
+            #: §2.3 的 Q3 重定义：多少条 `never` 边因为"查询点名了它被禁的取值"
+            #: 而被豁免（它们该被召回）——**如实报数，不静默缩分母**。
+            "negative_skipped_forbid_conflicts": negative_skipped,
             "passed": unresolved_ok
             and all(item["status"] == "pass" for item in metrics)}
 
