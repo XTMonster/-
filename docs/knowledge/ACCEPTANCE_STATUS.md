@@ -3984,3 +3984,60 @@ R003/R019 减半主要是**模型这一趟写得好**（`temperature 0.2` 的逐
 2. 本轮**没有**跑第二趟 long10 级别的真跑来确认"15/64"不是这一次的运气。
 3. `Q5` / `E1` 仍是 RK-13 的仅存红项，与这轮无关（见 §五十五 与
    `docs/knowledge/Q5_DECISION_v1.md`）。
+
+## 六十、P14-60（2026-10-04 01:x）：**修复回路自己才是最大的红源**——R003 的账追到工具集与提示词
+
+§五十九 把主要矛盾点成"COMPOSITION 126 ＋ R003 173"。把 long10 的**未过镜头**
+按成因拆开（`docs/evidence/20261003_chunked_long10/audit_log.jsonl` 的终审轮）：
+
+```
+49 个未过镜头：R003 单独 21 ／ R003＋COMPOSITION 17 ／ COMPOSITION 单独 10 ／ R001 单独 1
+⇒ 有 R003 的 38 / 49 = 78%
+```
+
+再去数**修复回合到底在做什么**（`llm_trace.jsonl` 里 `purpose == "repair"` 的 117 条）：
+
+```
+get_scene_state 86 ／ check_composition 65 ／ check_visibility 40 ／ search_knowledge 27
+setup_camera 7 ／ emit_shot_draft 7 ／ check_axis 3
+```
+
+**只读工具 218 次对改动类 14 次**。而 R003 读的是**计划里的动作表**，
+能改它的只有 `emit_shot_draft`（`character_action` 只往场景里叠动画）——
+提示词从 §55.3 起就写着这件事，模型照旧去点改不动的东西。
+
+### 60.1 那 7 次 `emit_shot_draft` 也没落地
+
+逐条看参数：**5 次是语法错的 JSON**（`"camera":: ` ＋ 一整句中文，或把
+`camera` 写成字符串），**2 次把 `shot_id` 写成了 `shot_001`**——而审计报的是
+`shot_043`。`shot_001` 正是**场景摘要里那行"当前镜头"**：
+`SceneContext.current_shot_id` 在构建时落在第一镜，修复回合从没更新过它，
+模型照抄。于是 `shot_043` 的重叠从第一轮红到收尾，落盘的 `project.bdproj`
+校验也照样报同一条 S3。
+
+### 60.2 处置（`2526558`）
+
+1. **纯时间轴审计收窄工具集**：`repair.timeline_only()` 为真时，
+   这一次请求只给 `emit_shot_draft` ＋ 控制类工具
+   （`ToolRegistry.schemas_only` 新增）。混合审计（R003 ＋ 构图）**保持全量**，
+   否则会把构图那一半一起关掉；注册表里没有草案工具时不收窄
+   （免得 `tool_choice=required` 落到空工具集上）。
+2. **提示词点明本次要修的镜头**：驱动把 `shot_id` 传进 `build_repair_payload`，
+   写死"**本次要修的镜头：shot_XXX**（用 `emit_shot_draft` 时 shot_id 必须是它；
+   场景摘要里的'当前镜头'是场景默认值）"。
+
+成对复验：`git worktree add work/verify_repair 9aa7190` ＋ 新用例 → **3 failed**；
+新代码 → 全过。全量 `python -m pytest` **1906 passed / 1 skipped**。
+
+### 60.3 仍未验证 / 下一层
+
+1. **这两处改动还没有真跑验证**：要下一趟 64 镜才知道 R003 的 38 个未过镜头
+   掉多少（预期：21 个纯 R003 镜头里的大部分）。**验证之前不许把它当成已解决。**
+2. **草案被拒时的回灌**：5 次语法错的 JSON 说明"参数校验失败的**原因**"
+   没有回到模型手上（计划那条路已经用 `retry_note` 修好了，草案这条路还没有）。
+   要不要在 B1/修复回合加一次"带拒绝原因的草案重试"，与
+   "B1 草案被拒时重试这一镜还是沿用计划"是同一个循环形状裁决。
+3. **`camera` 的 schema 与模型的理解不一致**：模型反复把 `camera` 写成一句
+   中文描述（`{"type":"object","properties":{"side","lens","movements"}}`），
+   提示词里没有一处**例子**说明这三样长什么样。属提示面（`glm53_audit_prompt`
+   lane 的审核范围）。
