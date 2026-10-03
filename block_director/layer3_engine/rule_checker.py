@@ -109,11 +109,17 @@ def _action_ranges(context) -> Dict[str, List[Tuple[int, int, str]]]:
             character_id = str(raw.get("character_id") or "")
             if not character_id:
                 continue
-            local_start = int(raw.get("start_frame") or 1)
-            local_end = int(raw.get("end_frame") or shot.duration_frames)
+            #: 与构建器**同一个**折帧函数（单一真源）：动作被夹进它自己那一镜，
+            #: 否则这里会报出场景里并不存在的"跨镜重叠"（实测 run8：64/64 镜、
+            #: 487 条 R003，样例是 shot_055 的动作"溢出"到 shot_056）。
+            from ..cinema.schedule import action_frame_window
+
+            absolute_start, absolute_end = action_frame_window(
+                start, int(shot.duration_frames), int(raw.get("start_frame") or 1),
+                int(raw.get("end_frame") or shot.duration_frames))
             label = f"{shot.shot_id}#{index} {raw.get('action_type')}"
             ranges.setdefault(character_id, []).append(
-                (start + local_start - 1, start + local_end - 1, label))
+                (absolute_start, absolute_end, label))
     return ranges
 
 

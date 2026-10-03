@@ -20,7 +20,7 @@ from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
 from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
 from ..cinema.station import SubjectFrame, camera_direction, subject_frame
-from ..cinema.schedule import shot_ranges, total_frames
+from ..cinema.schedule import action_frame_window, shot_ranges, total_frames
 from ..motion.model import ActionRequest
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
@@ -181,10 +181,12 @@ def action_requests(shot: ShotPlan, shot_start: int,
         if character_id not in cast:
             warnings.append(f"{shot.shot_id}: 动作引用了不在场的角色 {character_id}，已跳过")
             continue
-        local_start = int(raw.get("start_frame") or 1)
-        local_end = int(raw.get("end_frame") or shot.duration_frames)
-        start = shot_start + max(local_start, 1) - 1
-        end = shot_start + min(max(local_end, local_start), shot.duration_frames) - 1
+        #: 折帧走**单一真源**（`cinema/schedule.py`）——规则（R003 的动作区间）
+        #: 与构建器必须问同一个函数，否则"写到时长的外面"会被规则当成跨镜重叠。
+        start, end = action_frame_window(
+            shot_start, int(shot.duration_frames),
+            int(raw.get("start_frame") or 1),
+            int(raw.get("end_frame") or shot.duration_frames))
 
         params = dict(raw.get("params") or {})
         if action_type in ("walk_to", "run_to"):
