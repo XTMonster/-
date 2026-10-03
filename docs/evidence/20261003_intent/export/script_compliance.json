@@ -1,0 +1,136 @@
+{
+  "ok": true,
+  "declared_shot_count": 6,
+  "plan_shot_count": 6,
+  "declared_total_seconds": 33.0,
+  "plan_total_seconds": 33.0,
+  "fps": 24,
+  "brief_source": "llm",
+  "rows": [
+    {
+      "declared_shot_number": 1,
+      "declared_seconds": 5.0,
+      "declared_frames": 120,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_001",
+      "plan_frames": 120,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 2,
+      "declared_seconds": 6.0,
+      "declared_frames": 144,
+      "declared_target": 3.0,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "declared_dialogues": [
+        "伊恩，这里就交给我吧！"
+      ],
+      "plan_shot_id": "shot_002",
+      "plan_frames": 144,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "伊恩，这里就交给我吧！"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 3,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": 3.0,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [
+        "好的，那你多小心一些。"
+      ],
+      "plan_shot_id": "shot_003",
+      "plan_frames": 96,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "好的，那你多小心一些。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 4,
+      "declared_seconds": 6.0,
+      "declared_frames": 144,
+      "declared_target": 5.0,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [
+        "放心吧。",
+        "看我怎么惩罚他，让他砰的一声，嘻嘻。"
+      ],
+      "plan_shot_id": "shot_004",
+      "plan_frames": 144,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "放心吧。",
+        "看我怎么惩罚他，让他砰的一声，嘻嘻。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 5,
+      "declared_seconds": 5.0,
+      "declared_frames": 120,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "偷盗者"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_005",
+      "plan_frames": 120,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 6,
+      "declared_seconds": 7.0,
+      "declared_frames": 168,
+      "declared_target": 7.0,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "偷盗者"
+      ],
+      "declared_dialogues": [
+        "怎么回事，不应该只是普通的银币么？",
+        "哈哈，一定是命运眷顾，我发财了！"
+      ],
+      "plan_shot_id": "shot_006",
+      "plan_frames": 168,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [
+        "怎么回事，不应该只是普通的银币么？",
+        "哈哈，一定是命运眷顾，我发财了！"
+      ],
+      "frames_delta": 0
+    }
+  ],
+  "findings": [
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R014",
+      "severity": "warning",
+      "target": "shot_005",
+      "message": "shot_005 声明了 follow_subject，但 偷盗者 在这一镜里没有走动（没有 walk_to / run_to），镜头跟不到任何动机",
+      "suggestion": "给 偷盗者 加一个走位，或把运镜换成推/摇"
+    }
+  ]
+}

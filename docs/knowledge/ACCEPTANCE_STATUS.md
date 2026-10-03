@@ -3368,3 +3368,87 @@ Q5 仍是 `fail`（分母 0 ⇒ §4.1b 硬规则 1），E2 仍是结构性的 `0
 用例：`tests/test_extract_run_evidence.py` 新增一条——长剧本证据必须**同代、无警告**，
 且从 `blender.log` 的标记里断言 `state == DONE`、镜数 ≥61、
 `llm_calls ≤ max(200, shots*8+40)`、`budget.exhausted` 为空、**没有降级**。
+
+## 五十、P14-41（2026-10-03 15:xx）：逐镜检索多了一条**意图轴**——用户点名的强耦合里唯一还缺、影响面最大的一条
+
+### 50.1 病：检索拿回来的是"别人的意图知识"
+
+超图里被检索最多的一类边是 `INTENT_PACK`（意图×景别×运镜）。把 64 镜真实运行
+（`docs/evidence/20261003_real_long/audit_log.jsonl`）的 shot 域 `retrieval_call`
+按**返回边的类型**统计：
+
+```
+INTENT_PACK 231 / SHOT_PATTERN 61 / STAGING_PACK 14 / IMPACT_PACK 14   （共 320 次命中）
+```
+
+而同一份日志里 **真实发出**的逐镜查询只有 7 种，全部是
+`景别=…；运镜=固定`（1 条带 `对白=dialogue`）——**`意图=` 从来不在里面**。
+两端对不上：索引按"意图×景别×运镜"组织知识，查询只能表达"景别＋运镜"，
+于是命中的那些 `INTENT_PACK` 边与这一镜**真正要做什么**无关（同一个景别＋运镜下，
+`铺垫` 与 `对抗` 的知识被同等检索回来）。这不是标注问题、不是排序问题，
+是**缺了一整个检索轴**。
+
+同一件事还有第二个后果（§38 那条死结的一半）：oracle 里有 **176 条**条目的 `q`
+恰好是 `意图=…；景别=…；运镜=…`，`must` 全是 `INTENT_PACK`：
+
+```
+176 条；goals: 铺垫 41 / 揭示 56 / 推进 29 / 留白 21 / 收束 15 …；运镜=固定 113 条
+```
+
+这是 oracle 里**唯一**与"引擎可表达空间"完全重合的一族——但前提是引擎真的会发
+`意图=`。在此之前它是死路：Q5 的分母因此结构性为 0。
+
+### 50.2 修：意图进计划、进契约串、进运行证据（**判据一个字没动**）
+
+* `contracts/plan.py`：`ShotPlan.intent_type`（`to_dict`/`from_dict` 同批）。
+  与 `declared_camera_move` / `declared_shot_number` 同类——**计划决策**留痕。
+* `layer5_orchestrator/planner.py`：`emit_plan` 的**每一镜 schema** 加
+  `intent_type`，`enum` **直接引用** `knowledge/hypergraph.py::VALUE_DOMAINS["intent"]`
+  （不抄第二份；取值域的唯一真源仍然只有一份）。提示词加一条"必须从闭集逐字选"。
+  仍是**可选**键：旧计划（没有它）照旧合法，闸门加轴不等于把历史计划判非法。
+* `layer5_orchestrator/scene_contract.py`：两条生产者（`shot_constraint_query` /
+  `ShotContract.constraint_query`）都在 `景别` 之后发 `意图=`，**逐字符同源**；
+  空值不写键（反向对照有用例）。
+* `delivery/manifest.py`：`shots.json` 落 `intent_type`。缺了它，Q5 的
+  `derived` 重推串会与真实发出的串**每一镜都漂**（那一栏就废了）。
+* 夹具：`plan_simple.json` / `plan_long.json` / 离线计划都带 `intent_type`
+  （取值由既有自由文本意图按关键词映射，确定性可复算），`tools/gen_golden.py`
+  重生成派生夹具（`expected_shots_long.json`、`tool_transcript_simple.jsonl`；
+  两份 `expected_sdl_*.json` **未变**——SDD 只描述场景，检索标签不进 SDL，
+  与 `declared_*` 那几个字段的处置一致）。
+
+**没有动的**：§4.1b 的 Q5 判据（join 键 `q`、键值对集合相等）、`Q5 ≥ 80%` 的门限、
+门⑨ 的可达性口径、oracle 本身、任何阈值。这一轮只让**引擎多发一个它本来就该发的键**。
+
+### 50.3 用例（`tests/test_plan_intent_type.py`）
+
+1. schema 的 `enum` **恒等于** `VALUE_DOMAINS["intent"]`（扩域时两边不会漂）；
+2. 闭集是**机器判据**：`intent_type=紧张`（不在 12 值里）当场被 `validate_args` 挡回，
+   合法值放行；
+3. **旧的、没有这个键的计划仍然合法**，`from_dict` 读成空串；
+4. 提示词里真的要求逐字选闭集（schema 允许 ≠ 模型会写）；
+5. 正向发 `意图=`、反向（空值）**不许凭空加键**；
+6. 两条生产者逐字符一致；
+7. 计划 `to_dict/from_dict` 往返不丢；
+8. `shots.json` 落字段，且 `plan_query_of_shot(record)` 与
+   `shot_constraint_query(plan.shots[0])` 逐字符相等；
+9. 两份 mock 计划的每一镜的 `intent_type` 都在闭集内。
+
+顺带同一批落地：`tools/holdout_expect_movements.py` 加 `--concurrency`
+（单条含思考 40–70 s，176 条顺序跑要数小时），并补一组**不联网**的编排用例
+（`tests/test_q5_expect_movements_tool.py`）：并发落盘、`--resume` 第二趟
+**一次模型调用都不发生**、卡片不存在时如实进 `failures` 而不吞。
+
+### 50.4 它改了什么、没改什么（如实记）
+
+* **改了**：计划多一个闭集字段；逐镜检索的契约串多一个键；`shots.json` 多一个字段。
+  对 176 条 `INTENT_PACK` 条目而言，Q5 的 join 从"结构性不可能"变成"可能"。
+* **没改**：Q5 现在**仍然 fail**（那 176 条还没有 `expect_movements`，分母仍是 0）。
+  要让分母真的非零，必须按协议给它们补**独立标注**的 `expect_movements`
+  （`tools/holdout_expect_movements.py`，GLM 换族：抽取是 DeepSeek），
+  再跑一次真实运行。这一步在 GLM 余额到账后做（本轮 GLM 一直在 429）。
+* **回归面**：`python -m pytest` **全绿**（1766 → 1775 条，含新用例）；
+  `gen_golden.py --check` 一致。链上的长基线是**离线**通路（`--offline`），
+  离线不带超图检索（`degraded_reason=hypergraph_unavailable`），所以链上看不见
+  这条轴——它的证据只能来自真实运行，这是"测的东西"与"跑的东西"本来就不同的两件事，
+  不拿探针全绿冒充。
