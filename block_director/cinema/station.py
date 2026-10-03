@@ -50,6 +50,11 @@ OVER_SHOULDER_AXIS = 0.35
 OFF_AXIS_DEG = 30.0
 OFF_AXIS_MIN_COS = 0.94          # ≈ 20°
 
+#: 视线留白（§10.4 的 `lead_room`）要求朝向侧占 ≥64.5% 的空白，三分线交点在
+#: 1/3 与 2/3——把**主体放到背向视线的那条三分线**上，两个分项同时满足。
+#: 1/6 幅宽正好是"画面中心 → 三分线"的距离。
+LEAD_ROOM_OFFSET = 1.0 / 6.0
+
 
 def _normalise(vec: Sequence[float],
                fallback: Tuple[float, float] = (0.0, 1.0)) -> Tuple[float, float]:
@@ -236,6 +241,38 @@ def _honour_the_established_side(base: Tuple[float, float],
         notes.append(f"side={base} 落在已确立轴线的另一侧，"
                      f"已关于轴线镜像为 {mirrored} 以保持银幕方向连续")
     return mirrored
+
+
+def aim_offset_for_lead_room(direction: Sequence[float],
+                             facing: Sequence[float]) -> float:
+    """**单主体镜头**的对准点横向偏移量（单位：幅宽），让 §10.4 得分。
+
+    背景（2026-10-04，`long10` 的账）：终审 49 个未过镜头里 **27 个**带
+    `COMPOSITION`，而两个分项的判据是：
+
+    * `lead_room`：朝向侧空白占比 ≥64.5% 才满分（主体居中时只有 ~0.29）；
+    * `rule_of_thirds`：主体要靠近 1/3 交点（居中时 ~0.05）。
+
+    而求解器一直把主体**摆在画面正中**（`solve_framing` 的 target 就是主体），
+    等于求解器不读自己的评分模型。这里给出"看哪"的偏移量：
+    把对准点朝**视线方向**推 1/6 幅宽 ⇒ 主体落在**背向视线**的那条三分线上，
+    朝向侧留白变成 2/3（>64.5%）、主体同时靠近 1/3 交点。
+
+    ``direction`` 是"主体 → 机位"的单位方向（`camera_direction` 的返回值），
+    ``facing`` 是被摄主体的世界朝向。主体正对镜头（`facing` 与视线平行）时
+    偏移为 0——正对着镜头没有"视线留白"可言。
+    """
+    dx, dy = _normalise((direction[0], direction[1]), fallback=(0.0, 0.0))
+    if (dx, dy) == (0.0, 0.0):
+        return 0.0
+    screen_right = right_of((-dx, -dy))          # 机位 → 主体 的右手边
+    fx, fy = _normalise((facing[0], facing[1]), fallback=(0.0, 0.0))
+    if (fx, fy) == (0.0, 0.0):
+        return 0.0
+    facing_screen = fx * screen_right[0] + fy * screen_right[1]
+    if abs(facing_screen) < 1e-6:
+        return 0.0
+    return LEAD_ROOM_OFFSET if facing_screen > 0 else -LEAD_ROOM_OFFSET
 
 
 def camera_direction(frame: SubjectFrame, side: str = "front", *,

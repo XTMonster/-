@@ -156,17 +156,29 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
         # 单人镜头落在轴线上时要把机位扭开（否则相机站在搭档的位置上）
         axis_dir = axis.direction
         axis_side = int(getattr(axis, "established_side", 0))
+    direction = camera_direction(frame, side, axis_dir=axis_dir,
+                                 axis_side=axis_side,
+                                 #: 解算时若真的改了模型要的方向（按已确立
+                                 #: 轴侧镜像），说明必须进这一镜的警告里——
+                                 #: 悄悄改角度会让"计划写了 side=front_right、
+                                 #: 场景里却不是"这种漂移无人发现。
+                                 notes=axis_notes)
+    #: **视线留白暂时不在这里开**（2026-10-04 的实测负结果）：把单主体镜头的
+    #: 对准点横移 1/6 幅宽，在 `long9` 的工程上重建复评是**净负**——构图分中位
+    #: 64.7 → 55.8、25 镜降 / 16 镜升，掉得最狠的（−48、−44、−40）全部是
+    #: **主体本来就不在画面中心**的镜头：`place_shot_camera` 用的是
+    #: `CastMember.initial_location`（计划里的起始站位），而角色在**前面的镜头里
+    #: 已经走动过**——`work/_anchor_probe.py` 量到 64 镜里 **20 镜**的单主体与
+    #: 起始站位差 >1 m，最远 **7.7 m**（`shot_059`：伊恩实际在 (8.6, −6.0)，
+    #: 机位却按 (0.9, 0.0) 摆）。那些镜头再横移 1/6 就直接把主体推出画外。
+    #: 所以顺序是**先修站位（锚点）再开留白**；机制本身已经就位并有测试：
+    #: `cinema/station.aim_offset_for_lead_room` ＋ `solve_framing(aim_offset_x=…)`，
+    #: 见 `tests/test_lead_room_aim.py`。
     bundle, solution = place_camera_for_shot(
         shot.shot_id, frame.anchor, facing=frame.facing,
         shot_type=str(shot.shot_type), side=side,
         lens=resolved.get("lens"), room=(spec.room if spec else None),
-        direction=camera_direction(frame, side, axis_dir=axis_dir,
-                                   axis_side=axis_side,
-                                   #: 解算时若真的改了模型要的方向（按已确立
-                                   #: 轴侧镜像），说明必须进这一镜的警告里——
-                                   #: 悄悄改角度会让"计划写了 side=front_right、
-                                   #: 场景里却不是"这种漂移无人发现。
-                                   notes=axis_notes))
+        direction=direction)
     solution.warnings.extend(axis_notes)
     return bundle, solution, frame
 

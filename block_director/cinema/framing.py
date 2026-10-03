@@ -259,7 +259,8 @@ def solve_framing(subject_pos: Sequence[float],
                   margin: float = 0.5,
                   sensor_width: float = SENSOR_WIDTH,
                   direction: Optional[Sequence[float]] = None,
-                  aspect: float = ASPECT_16_9) -> FramingResult:
+                  aspect: float = ASPECT_16_9,
+                  aim_offset_x: float = 0.0) -> FramingResult:
     """解算机位与对准点。
 
     ``room`` 形如 ``(min_x, max_x, min_y, max_y)``；给出时机位会被夹在房间内。
@@ -268,6 +269,11 @@ def solve_framing(subject_pos: Sequence[float],
     覆盖 ``side``：双人镜头的 ``side`` 必须相对两人连线而不是相对焦点主体
     的朝向解析（否则相机正好落在轴线上，R001 必报），那段语义在
     :mod:`block_director.cinema.station` 里，本函数只负责把它落到坐标上。
+
+    ``aim_offset_x`` 是**对准点的横向偏移**（单位：幅宽，正数 = 朝画面右侧偏）。
+    它让主体离开画面中心、落到三分线上（§10.4 的 `rule_of_thirds` ＋ `lead_room`），
+    见 :func:`block_director.cinema.station.aim_offset_for_lead_room`。
+    机位与焦距都不动——动的只是"看哪"，所以景别与距离不受影响。
     """
     warnings: List[str] = []
     key = str(shot_type).upper()
@@ -308,6 +314,17 @@ def solve_framing(subject_pos: Sequence[float],
             f"{key} 设定；建议改用更短焦距或扩大房间")
 
     target = (base_x, base_y, frame.target_z)
+    if aim_offset_x:
+        forward_x, forward_y = base_x - position[0], base_y - position[1]
+        norm = math.hypot(forward_x, forward_y)
+        if norm > 1e-9:
+            forward_x, forward_y = forward_x / norm, forward_y / norm
+            screen_right = (forward_y, -forward_x)
+            #: 该距离上的画面宽度：w = 2·d·tan(hfov/2) = d·sensor/lens
+            width = distance * sensor_width / effective_lens
+            target = (target[0] + aim_offset_x * width * screen_right[0],
+                      target[1] + aim_offset_x * width * screen_right[1],
+                      target[2])
     return FramingResult(shot_type=key, lens=effective_lens, distance=distance,
                          position=position, target=target,
                          camera_height=frame.camera_z,

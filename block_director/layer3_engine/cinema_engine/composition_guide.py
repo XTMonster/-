@@ -136,8 +136,15 @@ def _screen_facing(character, scene, camera) -> float:
     root = getattr(character, "root", None)
     if root is None:
         return 0.0
+    #: 朝向**必须**用 `utils/geometry.py` 的唯一真源回读：角色的正面是局部 +Y，
+    #: 绕 Z 转 θ 之后世界朝向是 ``(-sin θ, cos θ)``（`facing_to_rotation_z` 的
+    #: 逆）。这里曾经写成 ``(sin θ, cos θ)``——少了那个负号，于是**朝向被镜像**：
+    #: 声明面朝 +X 的角色在评分模型眼里面朝 −X，`lead_room` 于是奖励**错的**那一侧
+    #: （实测 2026-10-04：同一机位下把主体放到正确三分线，该分项从 0.77 掉到 0.0）。
+    from ...utils.geometry import rotation_z_to_facing
+
     yaw = root.matrix_world.to_euler().z
-    facing_world = Vector((math.sin(yaw), math.cos(yaw), 0.0))
+    facing_world = Vector(rotation_z_to_facing(yaw))
     basis = camera.matrix_world.to_3x3()
     screen_right = (basis @ Vector((1.0, 0.0, 0.0))).normalized()
     view_forward = (basis @ Vector((0.0, 0.0, -1.0))).normalized()
