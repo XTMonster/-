@@ -1,0 +1,319 @@
+{
+  "edges": 638,
+  "slots": {
+    "attested": 331,
+    "unattested": 1262,
+    "not-checkable": 345
+  },
+  "checkable_slots": 1593,
+  "attested_share": 0.2078,
+  "edges_fully_attested": 38,
+  "edges_fully_attested_share": 0.0596,
+  "by_type": {
+    "ACTION_BEAT": {
+      "attested": 47,
+      "unattested": 151,
+      "not-checkable": 97
+    },
+    "AXIS_RULE": {
+      "unattested": 49,
+      "attested": 17,
+      "not-checkable": 7
+    },
+    "DIALOGUE_PACK": {
+      "unattested": 36,
+      "not-checkable": 19,
+      "attested": 4
+    },
+    "EDIT_RHYTHM": {
+      "unattested": 10,
+      "not-checkable": 9,
+      "attested": 2
+    },
+    "EMOTION_PACK": {
+      "unattested": 54,
+      "not-checkable": 60,
+      "attested": 37
+    },
+    "IMPACT_PACK": {
+      "unattested": 45,
+      "attested": 3
+    },
+    "INTENT_PACK": {
+      "attested": 44,
+      "unattested": 145
+    },
+    "LIGHT_PACK": {
+      "unattested": 38,
+      "not-checkable": 36,
+      "attested": 11
+    },
+    "MUSIC_PACK": {
+      "unattested": 12,
+      "not-checkable": 8,
+      "attested": 5
+    },
+    "PERFORMANCE_PACK": {
+      "unattested": 224,
+      "attested": 56
+    },
+    "PROP_PACK": {
+      "attested": 14,
+      "unattested": 43
+    },
+    "SHOT_PATTERN": {
+      "unattested": 196,
+      "not-checkable": 83,
+      "attested": 37
+    },
+    "SOUND_PACK": {
+      "unattested": 16,
+      "not-checkable": 8
+    },
+    "STAGING_PACK": {
+      "attested": 40,
+      "unattested": 157
+    },
+    "TRANSITION_PACK": {
+      "not-checkable": 18,
+      "unattested": 57,
+      "attested": 3
+    },
+    "TROPE": {
+      "unattested": 29,
+      "attested": 11
+    }
+  },
+  "unattested_examples": [
+    {
+      "edge_id": "hg:6ca1114ae7ff",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:coverage"
+      ],
+      "sources": [
+        "gen_block_0026"
+      ]
+    },
+    {
+      "edge_id": "hg:d4f6b1654fe4",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:上下场",
+        "beat_type:coverage"
+      ],
+      "sources": [
+        "gen_block_0225"
+      ]
+    },
+    {
+      "edge_id": "hg:32bd0374cc39",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:establish"
+      ],
+      "sources": [
+        "gen_perf_0488"
+      ]
+    },
+    {
+      "edge_id": "hg:8eefb6683e1d",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:establish"
+      ],
+      "sources": [
+        "gen_perf_0360",
+        "gen_block_0210",
+        "gen_prod_0073"
+      ]
+    },
+    {
+      "edge_id": "hg:7c12107d9cd0",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:transition"
+      ],
+      "sources": [
+        "gen_block_0160",
+        "gen_block_0235",
+        "gen_block_0004"
+      ]
+    },
+    {
+      "edge_id": "hg:7a9b66c1a635",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:transition"
+      ],
+      "sources": [
+        "gen_block_0259",
+        "gen_block_0047"
+      ]
+    },
+    {
+      "edge_id": "hg:b3d67e7eca78",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:transition"
+      ],
+      "sources": [
+        "gen_block_0056",
+        "gen_block_0060",
+        "gen_block_0307"
+      ]
+    },
+    {
+      "edge_id": "hg:008420a2be24",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:出场",
+        "beat_type:coverage"
+      ],
+      "sources": [
+        "gen_block_0061"
+      ]
+    },
+    {
+      "edge_id": "hg:1cdb2e6680c1",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:出场",
+        "beat_type:coverage"
+      ],
+      "sources": [
+        "gen_edit_0277",
+        "gen_prod_0243",
+        "gen_prod_0138"
+      ]
+    },
+    {
+      "edge_id": "hg:a8febb272cf5",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:establish"
+      ],
+      "sources": [
+        "gen_story_0270",
+        "gen_story_0277",
+        "gen_perf_0565"
+      ]
+    },
+    {
+      "edge_id": "hg:7cf309252a75",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:establish"
+      ],
+      "sources": [
+        "gen_edit_0143",
+        "gen_story_0088",
+        "gen_block_0034"
+      ]
+    },
+    {
+      "edge_id": "hg:d8d8686f8e09",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:insert"
+      ],
+      "sources": [
+        "gen_story_0252"
+      ]
+    },
+    {
+      "edge_id": "hg:c21523eb801e",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:出场",
+        "beat_type:transition"
+      ],
+      "sources": [
+        "gen_story_0130",
+        "gen_block_0043"
+      ]
+    },
+    {
+      "edge_id": "hg:678721581f9f",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:反应",
+        "beat_type:coverage"
+      ],
+      "sources": [
+        "gen_perf_0566"
+      ]
+    },
+    {
+      "edge_id": "hg:c9d3cfdea153",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "beat_type:coverage"
+      ],
+      "sources": [
+        "gen_story_0247",
+        "gen_axis_0263",
+        "gen_anime_0324"
+      ]
+    },
+    {
+      "edge_id": "hg:13a06d982c62",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:反应",
+        "beat_type:establish"
+      ],
+      "sources": [
+        "gen_perf_0446"
+      ]
+    },
+    {
+      "edge_id": "hg:41794c94fd3f",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:反应",
+        "beat_type:establish"
+      ],
+      "sources": [
+        "gen_prod_0145"
+      ]
+    },
+    {
+      "edge_id": "hg:415add3149d7",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:反应",
+        "beat_type:establish"
+      ],
+      "sources": [
+        "gen_story_0246"
+      ]
+    },
+    {
+      "edge_id": "hg:11d6978a0b19",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:反应",
+        "beat_type:insert"
+      ],
+      "sources": [
+        "gen_block_0212"
+      ]
+    },
+    {
+      "edge_id": "hg:2bff9b3f3c7b",
+      "type": "ACTION_BEAT",
+      "unattested": [
+        "action:反应",
+        "beat_type:insert"
+      ],
+      "sources": [
+        "gen_prod_0198",
+        "gen_axis_0208",
+        "gen_perf_0441"
+      ]
+    }
+  ],
+  "criterion": "成员取值能否在**这条边自己的来源卡正文**里找到 surface（取值／规范名／同义说法）；这是**下界**——卡可以蕴含而不写出它。`not-checkable` ＝ 词表自己就是桶名（`intensity:mid`／`avg_shot_len:>8s`），正文里本来不会出现。",
+  "criterion_version": "attest/v1"
+}
