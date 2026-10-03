@@ -101,6 +101,31 @@ def axis_for_speakers(positions: Sequence[Tuple[Sequence[float], str]]
     return axis if axis.length > EPS else None
 
 
+def current_line(axis: Axis, positions: Dict[str, Sequence[float]]) -> Axis:
+    """把轴线的**线**更新到两人**此刻**的连线；侧别（`established_side`）继承。
+
+    为什么需要（2026-10-04 实测 ＋ GLM 5.3 会诊 F1/F4）：`long12` 的 27 条 R001 里
+    **26 条**的"越轴"其实是**整场走到布景的另一处**——伊恩走到 (6.9,−6.5)、
+    米迦尔走到 (−1.8,−2.4) 之后就再没动过，而轴线还是首镜那条 ⇒ 后面每一镜都被
+    判越轴。工艺上 180° 约束的是**覆盖**（机位怎么摆），不是**调度**（人怎么走）：
+    人走到哪，线跟到哪；真正要继承的不变量是**屏幕上的左右关系**（侧别）。
+
+    `positions` 按 `left_label`/`right_label` 取（少一个就原样返回）。**标签顺序保持**
+    不变：两人互换左右位置时 `side_of` 自然翻号，**真正的越轴仍然会被判出来**。
+    """
+    left = positions.get(axis.left_label)
+    right = positions.get(axis.right_label)
+    if left is None or right is None:
+        return axis
+    if math.hypot(float(left[0]) - float(right[0]),
+                  float(left[1]) - float(right[1])) < EPS:
+        return axis
+    return Axis(start=(float(left[0]), float(left[1])),
+                end=(float(right[0]), float(right[1])),
+                established_side=axis.established_side,
+                left_label=axis.left_label, right_label=axis.right_label)
+
+
 def establish_axis(axis: Axis, camera: Sequence[float]) -> Axis:
     """用**首镜机位**确立基准侧（§10.3：首镜决定整场方向感）。"""
     side = axis.side_of(camera)

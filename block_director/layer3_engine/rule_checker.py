@@ -268,6 +268,12 @@ def check_shot(shot_id: str, *, context=None,
     # R001 轴线合规 ---------------------------------------------------------
     neutral_here = False
     if context is not None and context.axis is not None:
+        #: **线仍按 §10.3 首镜确立的那条**（不跟着走位重估）。2026-10-04 试过让
+        #: 摆机位与规则都改用"两人此刻的连线"（`cinema/axis.current_line`）：摆机位
+        #: 满足约束、规则又量同一条线 ⇒ R001 **构造性不可能红**——正是 GLM 5.3 会诊
+        #: F2 事先警告的"自证"形状，连"乙走到甲的另一侧"都抓不到。所以线不动，
+        #: 要改的是**判据的内容**（量投影后的画面：剪辑点的屏幕左右顺序 ＋
+        #: 可见换位/中性镜豁免）。设计与两次负结果见 `ACCEPTANCE_STATUS.md` §七十。
         message = check_camera_axis(context.axis, camera)
         if message:
             #: 把**根因**说清楚（2026-10-04 实测）：这条错误有两种完全不同的来源——
@@ -296,6 +302,7 @@ def check_shot(shot_id: str, *, context=None,
                 "R001", "E_AXIS_001", neutral_note, target=shot_id,
                 suggestion="需要明确左右关系时把机位移离轴线；"
                            "中性机位适合作为跨轴过渡，不宜连续使用"))
+
 
     positions = _character_positions(characters)
 

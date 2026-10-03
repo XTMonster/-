@@ -1,0 +1,575 @@
+{
+ "project": "docs/evidence/20261004_chunked_long12/project",
+ "axis": {
+  "start": [
+   -1.8,
+   -2.4
+  ],
+  "end": [
+   0.9,
+   0.0
+  ],
+  "established_side": 1,
+  "left_label": "米迦尔",
+  "right_label": "伊恩"
+ },
+ "r001_shot_count": 27,
+ "with_crossing": 26,
+ "with_walk_this_shot": 5,
+ "rows": [
+  {
+   "shot": "shot_001",
+   "script_number": 1,
+   "shot_type": "LS",
+   "crossing": [],
+   "walks_this_shot": [
+    {
+     "who": "米迦尔",
+     "target": [
+      6.2,
+      -8.6,
+      4.5
+     ]
+    }
+   ],
+   "script_picture": "微风拂过地面，杂草的影子在石板路上轻轻摇晃。",
+   "script_cast": "米迦尔"
+  },
+  {
+   "shot": "shot_015",
+   "script_number": 15,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "米迦尔",
+     "xy": [
+      -1.8,
+      -2.4
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [
+    {
+     "who": "伊恩",
+     "target": [
+      0.9,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "script_picture": "伊恩转身。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_019",
+   "script_number": 19,
+   "shot_type": "MCU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.5
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩望向海面。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_021",
+   "script_number": 21,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "米迦尔",
+     "xy": [
+      -1.8,
+      -2.4
+     ],
+     "side": -1
+    },
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.5
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [
+    {
+     "who": "伊恩",
+     "target": [
+      6.9,
+      -6.6,
+      4.4
+     ]
+    }
+   ],
+   "script_picture": "两人对峙。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_022",
+   "script_number": 22,
+   "shot_type": "CU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩反驳。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_024",
+   "script_number": 24,
+   "shot_type": "MLS",
+   "crossing": [
+    {
+     "character": "米迦尔",
+     "xy": [
+      -1.8,
+      -2.4
+     ],
+     "side": -1
+    },
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "海风吹过两人。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_026",
+   "script_number": 26,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "米迦尔",
+     "xy": [
+      -1.8,
+      -2.4
+     ],
+     "side": -1
+    },
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "两人一前一后。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_027",
+   "script_number": 27,
+   "shot_type": "MCU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩停下脚步。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_029",
+   "script_number": 29,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "米迦尔",
+     "xy": [
+      -1.8,
+      -2.4
+     ],
+     "side": -1
+    },
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "两人对视。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_030",
+   "script_number": 30,
+   "shot_type": "CU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩低声说话。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_034",
+   "script_number": 34,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [
+    {
+     "who": "米迦尔",
+     "target": [
+      6.4,
+      -6.2,
+      4.5
+     ]
+    }
+   ],
+   "script_picture": "两人清点货物。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_035",
+   "script_number": 35,
+   "shot_type": "MCU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩递过账本。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_037",
+   "script_number": 37,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "两人争执。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_038",
+   "script_number": 38,
+   "shot_type": "CU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩提高音量。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_040",
+   "script_number": 40,
+   "shot_type": "MLS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "仓库门外的光。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_042",
+   "script_number": 42,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "两人坐在石阶上。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_043",
+   "script_number": 43,
+   "shot_type": "MCU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩说起往事。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_045",
+   "script_number": 45,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "两人沉默。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_046",
+   "script_number": 46,
+   "shot_type": "CU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩抬头看星。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_048",
+   "script_number": 48,
+   "shot_type": "MLS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "远处的灯塔。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_050",
+   "script_number": 50,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "两人站在船边。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_051",
+   "script_number": 51,
+   "shot_type": "MCU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩递出包裹。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_053",
+   "script_number": 53,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "两人握手。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_054",
+   "script_number": 54,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      6.9,
+      -6.6
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [
+    {
+     "who": "伊恩",
+     "target": [
+      8.2,
+      -7.6,
+      4.4
+     ]
+    }
+   ],
+   "script_picture": "伊恩转身走向船。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_058",
+   "script_number": 58,
+   "shot_type": "MS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      8.2,
+      -7.8
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "两人的影子还在。",
+   "script_cast": "米迦尔、伊恩"
+  },
+  {
+   "shot": "shot_059",
+   "script_number": 59,
+   "shot_type": "MCU",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      8.2,
+      -7.8
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩在船头回望。",
+   "script_cast": "伊恩"
+  },
+  {
+   "shot": "shot_063",
+   "script_number": 63,
+   "shot_type": "MLS",
+   "crossing": [
+    {
+     "character": "伊恩",
+     "xy": [
+      7.0,
+      -6.8
+     ],
+     "side": -1
+    }
+   ],
+   "walks_this_shot": [],
+   "script_picture": "伊恩望向远方。",
+   "script_cast": "伊恩"
+  }
+ ]
+}
