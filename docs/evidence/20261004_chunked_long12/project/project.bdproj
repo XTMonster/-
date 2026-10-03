@@ -1,0 +1,5601 @@
+{
+  "name": "第十四街区码头市场 - 午后（第 1/3 段，镜号 1–24）",
+  "version": "1.4",
+  "fps": 24,
+  "characters": [
+    {
+      "id": "米迦尔",
+      "name": "米迦尔",
+      "color": "#FF6B6B",
+      "initial_location": [
+        -0.9,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": "伊恩",
+      "name": "伊恩",
+      "color": "#6BC5FF",
+      "initial_location": [
+        0.9,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        -1.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene_001",
+      "number": 1,
+      "heading": "第十四街区码头市场 - 午后（第 1/3 段，镜号 1–24）",
+      "environment": {
+        "ground_size": [
+          120.0,
+          120.0
+        ],
+        "walls": [],
+        "props": [],
+        "lighting": "clay_studio",
+        "room": null,
+        "crowd": []
+      },
+      "shots": [
+        {
+          "id": "shot_001",
+          "intent": "建立场景，交代市场全貌",
+          "shot_type": "LS",
+          "duration_frames": 72,
+          "start_frame": 1,
+          "end_frame": 72,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_001",
+            "position": [
+              5.241,
+              -6.141,
+              0.911
+            ],
+            "target": [
+              -0.9,
+              0.0,
+              0.844
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "steadicam",
+            "movements": [
+              {
+                "type": "steadicam",
+                "amount": 1.2,
+                "start_frame": 1,
+                "end_frame": 72
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "walk_to",
+              "start_frame": 8,
+              "end_frame": 60,
+              "target_position": [
+                6.2,
+                -8.6,
+                4.5
+              ],
+              "params": {
+                "speed": "walk",
+                "from": [
+                  7.1,
+                  -6.2,
+                  4.5
+                ],
+                "to": [
+                  6.2,
+                  -8.6,
+                  4.5
+                ],
+                "bob": 0.03
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "全景建立镜头，第十四街区码头市场的午后全貌。米迦尔位于画面左侧，背对镜头稍偏侧身，正沿市场通道向画面右后方纵深走去；市场纵深向右后方延伸，两侧是成排的摊位、遮阳篷与堆叠的货箱，远处是码头水面与停靠的船只。固定机位以轻微手持稳定感呈现，50mm 焦距，自然午后侧光，暖灰调，空气中有轻微尘土与水汽。米迦尔全程无台词，只有脚步声与市场环境声，为后续对白段落留出呼吸空间。"
+        },
+        {
+          "id": "shot_002",
+          "intent": "交代两位主角的位置关系",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 73,
+          "end_frame": 168,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_002",
+            "position": [
+              -3.527,
+              2.262,
+              0.95
+            ],
+            "target": [
+              -0.45,
+              -1.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "午后码头市场，中景双人镜头。米迦尔位于画面左侧、伊恩位于画面右侧，两人相隔约一步半，侧身相对而立，构成稳定的双人轴线；机位落在轴线市场一侧，正面稍偏，视线高度与胸口齐平，50mm 焦距把两人上半身到腰际收进同一画面，背景是纵深延伸的摊位与缆绳。固定机位，无运动，作为后续推镜的静止参照系。米迦尔身体微微前倾、重心落在前脚，目光投向伊恩；伊恩略仰下颌回视米迦尔，肩线稍向后收。两人之间留出可读的负空间，交代位置关系与即将展开的对话张力。光线为午后偏暖的侧逆光，人物轮廓带一层薄边光。"
+        },
+        {
+          "id": "shot_003",
+          "intent": "推进对话",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 169,
+          "end_frame": 240,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_003",
+            "position": [
+              -6.41,
+              -1.952,
+              0.95
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 20,
+              "end_frame": 36,
+              "params": {
+                "angle_deg": 12
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 8,
+              "end_frame": 48
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右前方"
+            }
+          ],
+          "vfx": [],
+          "prompt": "码头市场午后，米迦尔单人中景（MS，画面高度约到腰）。机位从上一镜的双人 MS 切到米迦尔侧前方约 45°（side=front_left），仍在轴线市场侧，米迦尔保持朝画面右方的银幕方向。50mm 镜头，浅景深，背景是码头市场摊位的木架与帆布棚，午后侧光从画面左侧打来，在米迦尔脸侧留出柔和阴影。米迦尔站定，身体略朝右，说完一句短话后微微侧头看向画面右前方，神情克制、语速平稳，为接下来的推进对话留出停顿。固定机位，无运镜，作为运动参照系。"
+        },
+        {
+          "id": "shot_004",
+          "intent": "推进对话",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 241,
+          "end_frame": 312,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_004",
+            "position": [
+              -2.998,
+              0.235,
+              1.231
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 60,
+                "subject": "米迦尔"
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 8,
+              "end_frame": 26,
+              "params": {
+                "angle_deg": -12
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "nod",
+              "start_frame": 34,
+              "end_frame": 56,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 1,
+              "end_frame": 40
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右"
+            }
+          ],
+          "vfx": [],
+          "prompt": "第十四街区码头市场，午后。中近景（MCU），单人镜头：米迦尔位于画面左侧偏中，身体朝画面右前方，视线指向画面右（与前一镜同侧机位，视线方向保持一致，景别由中景收紧至中近景，跨一档以上）。50mm 定焦，浅景深，背景码头市场与缆绳、木桩虚化。镜头缓慢推近（dolly_in，约 0.6 米，1–60 帧），动机是随台词收紧情绪、把注意力压到米迦尔脸上；只做推近一个自由度，不叠加摇或升降。表演：米迦尔在第 8–26 帧微微转头，视线更明确地扫向画面右方的伊恩方向；第 34–56 帧轻轻点头一次，作为回应与确认。台词「我先上船。」落在第 1–40 帧，语气平稳、不拖沓，收尾留出余量，第 60 帧后镜头静止收束。光线为午后自然光，侧逆光勾出轮廓，面部保持可读；无道具、无特效。"
+        },
+        {
+          "id": "shot_005",
+          "intent": "给出反应",
+          "shot_type": "MCU",
+          "duration_frames": 96,
+          "start_frame": 313,
+          "end_frame": 408,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_005",
+            "position": [
+              -1.147,
+              2.047,
+              1.231
+            ],
+            "target": [
+              0.9,
+              0.0,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 84
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 8,
+              "end_frame": 30,
+              "params": {
+                "yaw_deg": -12,
+                "pitch_deg": -3
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 44,
+              "end_frame": 62,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "等等我。",
+              "start_frame": 20,
+              "end_frame": 60
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MCU 反打：午后码头市场侧，伊恩位于画面右侧、身体略朝左，视线越过轴线朝左看向画外的米迦尔，与前一镜米迦尔 MCU 形成不越轴的对切。50mm 近中景，浅景深，市场摊位与帆影在背景虚化。相机从伊恩前右方（front_right）以缓慢推近（dolly_in 约 0.6 米，1–84 帧）收紧景别，把注意力压到他脸上。伊恩先抬眼锁定对方（8–30 帧），随后在开口后轻轻点一下头（44–62 帧），最后 12 帧留作收尾余量，情绪从迟疑转为下定决心。自然光，柔和顶光与侧逆光勾边，色调偏暖灰。"
+        },
+        {
+          "id": "shot_006",
+          "intent": "铺垫冲突",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 409,
+          "end_frame": 480,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_006",
+            "position": [
+              -4.593,
+              0.871,
+              0.95
+            ],
+            "target": [
+              -0.45,
+              -1.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 6,
+              "end_frame": 20,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "body_tilt",
+              "start_frame": 24,
+              "end_frame": 44,
+              "params": {
+                "angle_deg": 6,
+                "axis": "y",
+                "toward": "left"
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 8,
+              "end_frame": 48
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "第十四街区码头市场，午后，海风带着咸味。中景双人镜头（MS，取景到腰），固定机位，50mm 镜头，机位回到双人轴线，米迦尔在画面左侧、伊恩在画面右侧，两人面对面站在码头木栈道上，身后是堆叠的货箱与远处停靠的货船，侧逆光把两人轮廓勾出边缘光。米迦尔微微侧头看向伊恩，先开口；伊恩身体略微前倾，像是想说什么又忍住。景别由上一镜伊恩单人 MCU 放宽一档以上，为后续冲突做铺垫。固定镜头保持静止，把运动留给后面的转折。"
+        },
+        {
+          "id": "shot_007",
+          "intent": "留白",
+          "shot_type": "CU",
+          "duration_frames": 48,
+          "start_frame": 481,
+          "end_frame": 528,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_007",
+            "position": [
+              -0.942,
+              1.842,
+              1.278
+            ],
+            "target": [
+              0.9,
+              0.0,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "伊恩单人特写，平视，50mm。他面朝画面左侧，视线越过画框外，落在已经走远的米迦尔身上。头顶留白约 5%，面部占画面主要部分，背景是午后码头市场的浅景深虚化——绳索、木箱、远处船桅的模糊轮廓。镜头完全固定，不做任何运动，让沉默本身成为内容：他刚说完话，嘴唇还微微张开，随即闭上，喉结轻轻动了一下，眼神里是没说出口的挽留。光线为柔和侧逆的午后自然光，勾勒出他脸侧轮廓，其余部分沉入半明半暗。整体保持轴线方向一致，与前一镜的双人中景形成明显景别跳跃，用于沉默留白。"
+        },
+        {
+          "id": "shot_008",
+          "intent": "段末收束",
+          "shot_type": "MS",
+          "duration_frames": 48,
+          "start_frame": 529,
+          "end_frame": 576,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_008",
+            "position": [
+              -3.527,
+              2.262,
+              0.95
+            ],
+            "target": [
+              -0.45,
+              -1.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "steadicam",
+            "movements": [
+              {
+                "type": "steadicam",
+                "amount": 6,
+                "start_frame": 1,
+                "end_frame": 48
+              }
+            ],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 10
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 12,
+              "end_frame": 22
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "body_tilt",
+              "start_frame": 24,
+              "end_frame": 34
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 6,
+              "end_frame": 18
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 20,
+              "end_frame": 30
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 18,
+              "end_frame": 34
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "front"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中景，米迦尔与伊恩相对而立。米迦尔先转头看向伊恩，随后目光锁定对方，身体微微前倾；伊恩回望并点头。镜头轻微手持跟随，气氛紧张克制。"
+        },
+        {
+          "id": "shot_009",
+          "intent": "推进主线",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 577,
+          "end_frame": 672,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_009",
+            "position": [
+              -3.527,
+              2.262,
+              0.95
+            ],
+            "target": [
+              -0.45,
+              -1.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "track_right",
+            "movements": [
+              {
+                "type": "track_right",
+                "amount": 0.8,
+                "start_frame": 1,
+                "end_frame": 40
+              }
+            ],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 20,
+              "params": {
+                "angle_deg": 18
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 20,
+              "end_frame": 48,
+              "params": {
+                "yaw_deg": -12,
+                "pitch_deg": 2
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 24,
+              "end_frame": 64
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MS 双人中景，米迦尔在画面左侧、伊恩在画面右侧，保持双人轴线。相机由米迦尔单人 MS 横向平移回到双人机位，角度变化大于 30°，正面偏侧视角，50mm 镜头，中景取到腰部。午后码头市场，背景是堆叠的货箱与缆绳，光线偏暖。米迦尔微微转头看向伊恩方向，伊恩抬眼注视米迦尔，两人之间保持一段克制的距离。镜头以缓慢的横向平移收束，最后稳定在双人构图上，为接下来伊恩的回应留出停顿。"
+        },
+        {
+          "id": "shot_010",
+          "intent": "推进主线",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 673,
+          "end_frame": 744,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_010",
+            "position": [
+              -1.896,
+              -0.749,
+              1.231
+            ],
+            "target": [
+              0.9,
+              0.0,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.8,
+                "start_frame": 1,
+                "end_frame": 60,
+                "subject": "伊恩"
+              }
+            ],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "yaw_deg": -22,
+                "pitch_deg": -3
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 30,
+              "end_frame": 48,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "等等我。",
+              "start_frame": 12,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "画面左"
+            }
+          ],
+          "vfx": [],
+          "prompt": "第十四街区码头市场，午后。伊恩单人反打的中近景（MCU），由双人中景切来，景别收紧一档以上。相机位于伊恩前左侧（front_left），50mm 镜头，视线朝画面左——他正看向画外的米迦尔。全镜一次缓推（dolly_in 0.8 米，1–60 帧），动机是随他的挽留情绪收紧景别，除此之外不做摇、不升降，保持空间关系清晰。表演：伊恩先抬眼锁住画面左（1–24 帧，头部微转约 22 度，视线略低），随后在 30–48 帧轻轻点一次头，像是把话咽下去后的妥协。台词「等等我。」落在 12–52 帧。背景是码头市场的午后光，人物肤色与衣料保持与前一镜同轴同向，视线方向一致不越轴。"
+        },
+        {
+          "id": "shot_011",
+          "intent": "推进主线",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 745,
+          "end_frame": 816,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_011",
+            "position": [
+              -2.998,
+              0.235,
+              1.231
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 60,
+                "subject": "米迦尔"
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 6,
+              "end_frame": 26,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 30,
+              "end_frame": 58,
+              "params": {
+                "yaw_deg": -8,
+                "pitch_deg": -4
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 12,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右侧"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MCU，米迦尔单人反打，四分之三右侧面，视线朝画面右（与伊恩的 MCU 对切，机位角度变化大于 30°）。午后码头市场，背景虚化的船桅与绳索，柔和顶光。镜头缓推（dolly_in 0.6 米，1–60 帧）随他开口推进，一次只做一件事，不做摇或升降叠加。米迦尔先微微转头（6–26 帧）迎向画面右方的伊恩，随后目光定住（30–58 帧），神情克制，说完「我先上船。」后保持不动，留出收尾余量。"
+        },
+        {
+          "id": "shot_012",
+          "intent": "转折",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 817,
+          "end_frame": 888,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_012",
+            "position": [
+              -1.896,
+              -0.749,
+              1.231
+            ],
+            "target": [
+              0.9,
+              0.0,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "yaw_deg": -12,
+                "pitch_deg": -3
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 30,
+              "end_frame": 54,
+              "params": {
+                "angle_deg": 6
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "画外左侧（米迦尔方向）"
+            }
+          ],
+          "vfx": [],
+          "prompt": "码头午后，伊恩单人中近景（MCU，画框至胸）。固定机位，50mm 镜头，相机位于伊恩侧前方偏左，视线朝画面左方，承接上一镜米迦尔 MCU 的反打，机位角度变化大于 30°，保持轴线不越轴。伊恩站在码头木栈边缘，身后是杂乱的缆绳、木箱与远处停靠的船身，午后侧光从他右后方打来，在脸颊左侧留下一道硬边阴影。他微微侧头，目光越过画框左缘投向画外——那是米迦尔与船的方向。表演克制：呼吸可见，下颌线绷紧，眼睑轻眨一次，随即目光略微下垂再抬起，像是把话咽了回去。全镜固定不动，只有他胸腔的起伏和极轻微的头部转动，转折的情绪全靠这一点点静止里的犹豫传达。无对白。"
+        },
+        {
+          "id": "shot_013",
+          "intent": "转折",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 889,
+          "end_frame": 960,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_013",
+            "position": [
+              -4.593,
+              0.871,
+              0.95
+            ],
+            "target": [
+              -0.45,
+              -1.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 8,
+              "end_frame": 22,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 24,
+              "end_frame": 38,
+              "params": {
+                "angle_deg": -10
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 12,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中景双人固定镜头，米迦尔在画面左、伊恩在画面右，双人轴线不变。由伊恩的近景放宽到双人中景，景别跨两档，画面纳入两人腰部以上。午后码头市场，背景是堆叠的货箱与缆绳，光线偏暖。米迦尔先微微转头看向伊恩，说出「我先上船。」，语气平静；伊恩随即转头回望米迦尔，目光相接，气氛由松弛转为紧绷。摄影机全程固定不动，作为转折前的静止参照系，50mm 焦段，构图平稳，无运镜。"
+        },
+        {
+          "id": "shot_014",
+          "intent": "反应",
+          "shot_type": "CU",
+          "duration_frames": 48,
+          "start_frame": 961,
+          "end_frame": 1008,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_014",
+            "position": [
+              -2.878,
+              -0.028,
+              1.278
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "handheld",
+            "movements": [
+              {
+                "type": "handheld",
+                "amount": 0.04,
+                "start_frame": 1,
+                "end_frame": 48
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 10,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 12,
+              "end_frame": 30,
+              "params": {
+                "yaw_deg": 6,
+                "pitch_deg": -3
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 2,
+              "end_frame": 34
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右"
+            }
+          ],
+          "vfx": [],
+          "prompt": "特写（CU），50mm，固定机位加极轻微手持呼吸感。米迦尔单人入画，面部占据画面主要区域，胸口以上不入，视线朝画面右，头微偏，眉眼下压，嘴唇紧闭，情绪克制而决绝。由双人 MS 硬切至本镜 CU，用于情绪强调。背景为第十四街区码头市场午后的虚化光斑与帆布棚影，浅景深，人物面部受侧逆光勾边。米迦尔在镜头前段微转头，随后目光定住画面右方，说出短句后保持静止，留出收尾余量。"
+        },
+        {
+          "id": "shot_015",
+          "intent": "过渡",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 1009,
+          "end_frame": 1080,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_015",
+            "position": [
+              2.627,
+              -4.662,
+              0.95
+            ],
+            "target": [
+              -0.45,
+              -1.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "steadicam",
+            "movements": [
+              {
+                "type": "steadicam",
+                "amount": 6,
+                "start_frame": 1,
+                "end_frame": 92
+              }
+            ],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩",
+            "米迦尔"
+          ],
+          "characters": [
+            "伊恩",
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 12
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "shake_head",
+              "start_frame": 14,
+              "end_frame": 26
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "body_tilt",
+              "start_frame": 28,
+              "end_frame": 40
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 42,
+              "end_frame": 54
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "walk_to",
+              "start_frame": 56,
+              "end_frame": 78,
+              "target_position": [
+                0.9,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 80,
+              "end_frame": 92
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "画面左前方（米迦尔离去的方向）"
+            }
+          ],
+          "vfx": [],
+          "prompt": "伊恩与米迦尔对峙的中景，伊恩先转头看向米迦尔，随后摇头、身体微倾，再转头，最后走向米迦尔并停步转头。动作按顺序串行，无重叠。"
+        },
+        {
+          "id": "shot_016",
+          "intent": "段末收束",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 1081,
+          "end_frame": 1152,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_016",
+            "position": [
+              -3.527,
+              2.262,
+              0.95
+            ],
+            "target": [
+              -0.45,
+              -1.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "steadicam",
+            "movements": [
+              {
+                "type": "steadicam",
+                "amount": 10,
+                "start_frame": 1,
+                "end_frame": 60
+              }
+            ],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 41,
+              "end_frame": 50
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 51,
+              "end_frame": 60
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 1,
+              "end_frame": 40
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右前方"
+            }
+          ],
+          "vfx": [],
+          "prompt": "米迦尔与伊恩的中景，米迦尔保持画面左侧（与上一镜同侧，不越轴），说出“我先上船。”后转头看向伊恩，随后视线停留；镜头轻微手持跟随，保持骑轴中性机位感。"
+        },
+        {
+          "id": "shot_017",
+          "intent": "建立环境",
+          "shot_type": "LS",
+          "duration_frames": 72,
+          "start_frame": 1153,
+          "end_frame": 1224,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_017",
+            "position": [
+              -4.316,
+              3.134,
+              0.911
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              0.844
+            ],
+            "lens": 35.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_right",
+              "lens": 35
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "远景全景，第十四街区码头市场午后。米迦尔位于画面中景偏左，背对镜头侧身，面朝画面右侧的码头栈桥方向，延续此前朝画面右的银幕方向。镜头从上一镜的中近景放宽、机位升高后撤至远景，交代整个码头空间：木质栈桥伸向水面，成排的货箱与缆桩沿码头排开，远处仓库轮廓与停靠的货船，水面反光延展至画面深处。米迦尔独自站在栈桥入口，身形在开阔环境中显得渺小，静止不动，目光投向右侧即将启航的船。光线为午后偏暖的侧逆光，水面有细碎高光，空气中有轻微水汽。固定机位，无运动，让环境信息完整呈现。"
+        },
+        {
+          "id": "shot_018",
+          "intent": "推进主线",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 1225,
+          "end_frame": 1320,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_018",
+            "position": [
+              -4.593,
+              0.871,
+              0.95
+            ],
+            "target": [
+              -0.45,
+              -1.2,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "push_through",
+            "movements": [
+              {
+                "type": "push_through",
+                "amount": 0.8,
+                "start_frame": 1,
+                "end_frame": 40
+              }
+            ],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 18
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "walk_to",
+              "start_frame": 20,
+              "end_frame": 56,
+              "params": {
+                "speed": "walk",
+                "target_position": [
+                  6.9,
+                  -6.5,
+                  4.5
+                ],
+                "bob": 0.02
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 56,
+              "end_frame": 84,
+              "params": {
+                "yaw_deg": -12,
+                "pitch_deg": 0
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 24,
+              "end_frame": 64
+            },
+            {
+              "character_id": "伊恩",
+              "text": "等等我。",
+              "start_frame": 76,
+              "end_frame": 84
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "码头岸侧，午后。中景双人镜头：米迦尔在画面左侧、伊恩在画面右侧，二人隔着一小段距离相对而立。相机从上一镜的全身景别下移靠近，收成到腰的中景，机位落在码头岸侧，视线与人物胸口齐平，50mm 镜头。固定机位，靠前段一次轻微推进把注意力从环境压回两人身上——米迦尔先开口，身体略朝船的方向，伊恩在右后方半步跟上，目光追着米迦尔。海面反光与木栈板的纹理作为背景层次，人物轮廓由侧后方的午后光勾边。整体节奏克制，为后续的告别留出静止的参照系。"
+        },
+        {
+          "id": "shot_019",
+          "intent": "情绪铺垫",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 1321,
+          "end_frame": 1392,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_019",
+            "position": [
+              7.124,
+              -3.614,
+              1.231
+            ],
+            "target": [
+              6.9,
+              -6.5,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "yaw_deg": -18,
+                "pitch_deg": 3
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "船要开了。",
+              "start_frame": 20,
+              "end_frame": 60
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "海面"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MCU 固定镜头，伊恩单人，平视，中近景收紧一档以上（由双人 MS 切来）。伊恩位于画面右侧三分线，视线朝画面左前方海面方向留出大面积 lead room，头顶留白约 8%。午后码头市场背景虚化，海面反光柔和。伊恩神情克制，眼神缓慢投向海面方向，喉头微动，欲言又止，为告别做情绪铺垫。相机 front_right 侧、50mm、完全固定不动，形成运动前的静止参照系。"
+        },
+        {
+          "id": "shot_020",
+          "intent": "推进主线",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 1393,
+          "end_frame": 1464,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_020",
+            "position": [
+              -3.754,
+              -0.264,
+              1.231
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.8,
+                "start_frame": 1,
+                "end_frame": 60,
+                "subject": "米迦尔"
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 14,
+              "params": {
+                "angle_deg": 8
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 15,
+              "end_frame": 60,
+              "params": {
+                "yaw_deg": 12,
+                "pitch_deg": -2
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 18,
+              "end_frame": 58
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MCU，米迦尔单人，中近景，50mm。机位由伊恩 MCU 反打过来，角度变化超过 30°，米迦尔位于画面左三分之一，面朝画面右，视线越过镜头轴线与伊恩对切。午后码头市场的光从右后方来，侧逆光勾出他下颌与肩线，背景是虚化的货箱与帆布棚。镜头以 dolly_in 缓慢前推 0.8 米，从第 1 帧到第 60 帧，动机是逼近他做出决定的瞬间。他在第 1–14 帧微微转头，第 15 帧起视线定住，眼神平稳而决绝。表演克制，只有呼吸与眼睑的细微变化。"
+        },
+        {
+          "id": "shot_021",
+          "intent": "冲突升级",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 1465,
+          "end_frame": 1536,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_021",
+            "position": [
+              4.525,
+              -0.26,
+              0.95
+            ],
+            "target": [
+              2.55,
+              -4.45,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 1,
+              "end_frame": 18,
+              "params": {
+                "angle_deg": 20
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "walk_to",
+              "start_frame": 20,
+              "end_frame": 48,
+              "target_position": [
+                6.9,
+                -6.6,
+                4.4
+              ],
+              "params": {
+                "speed": "walk",
+                "bob": 0.03
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 50,
+              "end_frame": 60,
+              "params": {
+                "angle_deg": 15
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "别拖了。",
+              "start_frame": 20,
+              "end_frame": 58
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中景双人镜头，固定机位，50mm 镜头，正面视角。米迦尔位于画面左侧、伊恩位于画面右侧，保持双人轴线不越轴。开场米迦尔身体向伊恩方向侧转约 20 度，姿态逼近，压迫感上升；伊恩在第 20 至 48 帧向米迦尔方向走近一小步后停住，身体微微前倾，二人目光相接。米迦尔在结尾前微微转头看向伊恩。午后码头市场背景，光线平硬，气氛紧绷，冲突升级。景别由前一镜米迦尔近景放宽至双人中景，跨一档以上。"
+        },
+        {
+          "id": "shot_022",
+          "intent": "冲突升级",
+          "shot_type": "CU",
+          "duration_frames": 72,
+          "start_frame": 1537,
+          "end_frame": 1608,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_022",
+            "position": [
+              4.302,
+              -6.398,
+              1.278
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "yaw_deg": -18,
+                "pitch_deg": -4
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "body_tilt",
+              "start_frame": 30,
+              "end_frame": 54,
+              "params": {
+                "angle_deg": 4,
+                "axis": "y",
+                "toward": "left"
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "等等我。",
+              "start_frame": 12,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "画面左"
+            }
+          ],
+          "vfx": [],
+          "prompt": "特写（CU），伊恩单人，视线朝画面左侧。固定机位，50mm 镜头，机位置于伊恩正面偏侧（front_left），景别压缩到面部与肩线，背景为码头午后环境，浅景深虚化。伊恩面部占画面主要高度，眉头紧锁、下颌线绷紧，冲突升级的情绪集中在眼神与呼吸上。第 1–72 帧保持静止不动，仅细微的呼吸起伏与眼神微颤，为接下来的转折蓄势。轴线：伊恩单人特写，视线朝画面左，与前一镜双人中景保持同侧，不越轴。"
+        },
+        {
+          "id": "shot_023",
+          "intent": "留白",
+          "shot_type": "CU",
+          "duration_frames": 48,
+          "start_frame": 1609,
+          "end_frame": 1656,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_023",
+            "position": [
+              -4.11,
+              -1.195,
+              1.278
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "handheld",
+            "movements": [
+              {
+                "type": "handheld",
+                "amount": 0.03,
+                "start_frame": 1,
+                "end_frame": 48
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 8,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 24,
+              "end_frame": 40,
+              "params": {
+                "yaw_deg": 18,
+                "pitch_deg": -3
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面外伊恩方向（右）"
+            }
+          ],
+          "vfx": [],
+          "prompt": "特写（CU），米迦尔单人，平视机位，视线朝画面右，与伊恩 CU 对切不越轴。头顶留白约 5%，主体占比符合特写。固定镜头，静止的留白处理：米迦尔沉默片刻，眼睑微垂，随后抬眼望向画面右侧，气息平稳，欲言又止。午后码头市场的自然光从右侧斜入，勾出侧脸轮廓，背景虚化为灰蓝色码头与远处船影。运动与静止对比：此镜保持完全静止，为后续转折蓄势。"
+        },
+        {
+          "id": "shot_024",
+          "intent": "段末收束",
+          "shot_type": "MLS",
+          "duration_frames": 72,
+          "start_frame": 1657,
+          "end_frame": 1728,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_024",
+            "position": [
+              5.445,
+              1.496,
+              0.621
+            ],
+            "target": [
+              2.55,
+              -4.5,
+              0.621
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_out",
+            "movements": [
+              {
+                "type": "dolly_out",
+                "amount": 1.2,
+                "start_frame": 1,
+                "end_frame": 60
+              }
+            ],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 18,
+              "params": {
+                "angle_deg": 6
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 20,
+              "end_frame": 40,
+              "params": {
+                "yaw_deg": -8,
+                "pitch_deg": -3
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "水面"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "码头午后，段落收束。中远景双人镜头，低机位，50mm。米迦尔在画面左侧、伊恩在画面右侧，两人并肩立于码头边，身后是延伸向水面的栈桥与远处将开的船。相机在双人轴线外侧，从米迦尔特写放宽两档以上，由近景后撤至中远景，缓缓拉远，把两人重新放回码头环境里——松手、疏离、收束。两人各自静立，目光一前一后投向水面方向，不做多余动作，让沉默完成这一段的落幕。"
+        },
+        {
+          "id": "shot_025",
+          "intent": "转场：从上一段切入本段空间，交代码头市场的整体环境与人物所在",
+          "shot_type": "LS",
+          "duration_frames": 72,
+          "start_frame": 1729,
+          "end_frame": 1800,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_025",
+            "position": [
+              -9.499,
+              1.618,
+              0.911
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              0.844
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "steadicam",
+            "movements": [
+              {
+                "type": "steadicam",
+                "amount": 0.5,
+                "start_frame": 1,
+                "end_frame": 72
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 8,
+              "end_frame": 40,
+              "params": {
+                "yaw_deg": 55,
+                "pitch_deg": -3
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右侧码头方向"
+            }
+          ],
+          "vfx": [],
+          "prompt": "远景固定镜头，建立第十四街区码头市场的整体空间。午后光线斜照在湿漉漉的石板码头上，成排的鱼摊、木箱与帆布棚沿着水岸向画面深处延伸，远处停靠着几艘旧货船，桅杆与缆绳在逆光中交错。米迦尔独自站在画面左三分之一处，全身入画，身形在开阔的市场环境中显得不大；他侧身朝向画面右侧，视线投向码头延伸出去的方向，姿态安静克制，像在等待什么。镜头保持固定不动，不做任何推拉摇移，让整个市场的环境信息在72帧里被完整交代清楚，人物与空间的对比关系成为这一段的基准。景深适中，前景的摊位边缘略微虚化，中景米迦尔清晰，远景码头在柔和的海雾中逐渐淡化。"
+        },
+        {
+          "id": "shot_026",
+          "intent": "推进主线：两人隔摊位对话，交代彼此位置关系",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 1801,
+          "end_frame": 1896,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_026",
+            "position": [
+              4.564,
+              -0.329,
+              0.95
+            ],
+            "target": [
+              2.55,
+              -4.5,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "push_through",
+            "movements": [
+              {
+                "type": "push_through",
+                "amount": 0.8,
+                "start_frame": 1,
+                "end_frame": 84
+              }
+            ],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 8,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 10,
+              "end_frame": 30,
+              "params": {
+                "yaw_deg": -10,
+                "pitch_deg": -2
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 20,
+              "end_frame": 60
+            },
+            {
+              "character_id": "伊恩",
+              "text": "等等我。",
+              "start_frame": 72,
+              "end_frame": 84
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MS 双人同框中景，码头市场午后，米迦尔在画面左侧、伊恩在画面右侧，两人隔着一个摊位相对而立，确立左右站位作为轴线基准。相机正面（front）平视，50mm 镜头，中景取景至腰部，缓慢 push_through 向前推进约 0.8 米，从 shot_025 的全景切进双人关系，景别变化一档以上。米迦尔头部微微转向伊恩，伊恩抬眼看向米迦尔，两人视线相接。摊位木架与货物在前景虚化，午后顶光从上方斜落，背景是码头与远处船影。固定轴线不越轴，气氛克制而迟疑。"
+        },
+        {
+          "id": "shot_027",
+          "intent": "推进主线：给伊恩的回应以独立镜头，保持对话压力",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 1897,
+          "end_frame": 1968,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_027",
+            "position": [
+              4.936,
+              -4.473,
+              1.231
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.8,
+                "start_frame": 1,
+                "end_frame": 72,
+                "subject": "伊恩"
+              }
+            ],
+            "request": {
+              "side": "right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 20,
+              "params": {
+                "yaw_deg": -8,
+                "pitch_deg": 2
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 40,
+              "end_frame": 58,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "这一次我听你的。",
+              "start_frame": 12,
+              "end_frame": 60
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中近景（MCU）单人反打镜头，机位在轴线右侧，伊恩位于画面中偏右，视线朝向画面左侧（看向画外的米迦尔）。伊恩站在码头市场午后光线中，背景是虚化的码头与船影。镜头以极缓慢的推近（dolly_in 0.8 米）持续 72 帧，给伊恩的回应施加对话压力。表演：开场他微微抬眼、视线锁定画外的米迦尔（1–20 帧），随后在说到「这一次我听你的」时轻轻点头一次（40–58 帧），面部保持克制而认真的神情。50mm 定焦，浅景深，主体始终在画内，运动单一不做叠加。"
+        },
+        {
+          "id": "shot_028",
+          "intent": "反应：米迦尔听到回应后的表情与姿态",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 1969,
+          "end_frame": 2040,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_028",
+            "position": [
+              -4.366,
+              -1.061,
+              1.231
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.4,
+                "start_frame": 24,
+                "end_frame": 60
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 14,
+              "params": {
+                "angle_deg": 22
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 14,
+              "end_frame": 34,
+              "params": {
+                "yaw_deg": 18,
+                "pitch_deg": -3
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "nod",
+              "start_frame": 44,
+              "end_frame": 60,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MCU 单人反打：米迦尔听到伊恩回应后的反应。他站在码头市场午后光线下，视线朝画面右，与画面外的伊恩保持对望关系。开场头部微转向右（约 22°），随即定住目光、屏息凝视约一秒；中后段极轻微前推，第 44 帧起一次缓慢的点头，收束于克制的回应姿态。固定起幅、后段轻推，运动与静止形成呼吸感。50mm，浅景深，背景码头绳索与货箱虚化。"
+        },
+        {
+          "id": "shot_029",
+          "intent": "情绪顶点：两人对立，沉默在画面中加重",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 2041,
+          "end_frame": 2112,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_029",
+            "position": [
+              4.564,
+              -0.329,
+              0.95
+            ],
+            "target": [
+              2.55,
+              -4.5,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "yaw_deg": 0,
+                "pitch_deg": -2
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "yaw_deg": 0,
+                "pitch_deg": -2
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 40,
+              "end_frame": 60,
+              "params": {
+                "angle_deg": 6
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 40,
+              "end_frame": 60,
+              "params": {
+                "angle_deg": -6
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "走吧。",
+              "start_frame": 12,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中景双人镜头，固定机位，回到轴线上的正面对峙构图：米迦尔在画面左侧、伊恩在画面右侧，左右位置与前一镜单人近景保持一致，景别由近景放宽一档到中景（取景至腰）。50mm 镜头，两人面对面站立、间距一臂左右，背景是码头市场午后空旷的栈桥与远处堆叠的货箱，光线偏冷、空气里有薄雾。整镜相机完全静止，不做任何运动，用静止把沉默的重量压在画面里。表演：开场两人各自凝视对方（视线锁定，轻微低头），眉眼不动、呼吸放缓；中段米迦尔低声说「走吧。」，说完两人几乎同步地把头微微偏开几度，视线从对方脸上滑向侧下方，谁都没有先转身。全场无大幅动作，只有极细的头部偏转与肩线起伏，情绪顶点靠静止与对望的沉默累积。景别中景、构图左右对称，人物占据画面中下三分之二，上方留出空旷的码头空间，加重压迫感。"
+        },
+        {
+          "id": "shot_030",
+          "intent": "情绪顶点：伊恩的沉默落在脸上",
+          "shot_type": "CU",
+          "duration_frames": 72,
+          "start_frame": 2113,
+          "end_frame": 2184,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_030",
+            "position": [
+              2.474,
+              -6.423,
+              1.278
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              1.278
+            ],
+            "lens": 85.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 60
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 85
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 8
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 25,
+              "end_frame": 60,
+              "params": {
+                "yaw_deg": -6,
+                "pitch_deg": -4
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "画面左外出画方向"
+            }
+          ],
+          "vfx": [],
+          "prompt": "CU 特写，85mm 长焦压缩，伊恩面部占据画面主体（眼到下颌），机位在轴线右侧、front_right 三分之四侧脸，视线朝画面左。接 shot_029 景别收紧至 CU。开场伊恩头部极轻微转动（约 8 度）后定格，眼睑微垂、嘴唇闭合，沉默落在脸上——所有话都咽回去，只剩呼吸的起伏与睫毛的一次颤动。相机缓慢 dolly_in 0.6 米，压迫感随距离缩短递增，背景（码头午后水面反光）被虚化成柔和光斑。固定轴线不越轴，无对白，静默为情绪顶点。收尾余量保留至第 72 帧。"
+        },
+        {
+          "id": "shot_031",
+          "intent": "留白：米迦尔转身前的最后一拍停顿",
+          "shot_type": "CU",
+          "duration_frames": 48,
+          "start_frame": 2185,
+          "end_frame": 2232,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_031",
+            "position": [
+              -4.11,
+              -1.195,
+              1.278
+            ],
+            "target": [
+              -1.8,
+              -2.4,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 25
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 36,
+              "end_frame": 48,
+              "params": {
+                "angle_deg": 40
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "特写固定镜头，平视。米迦尔单人近景特写，头顶留白约 5%，画面主体为他的面部与肩线。光线从画面左侧来，落在他的半边脸上，另半边沉入暗部。前 24 帧他微微转头，视线越过镜头一侧，方向与前一镜的正反打相对；随后停住，静止的停顿持续到第 36 帧——整场戏第一次真正的静止，像一次呼吸被按住。第 36 帧起他缓缓转身，身体从画面中带出，镜头不动，留下空出来的位置。全镜无推拉摇移，留白由他的停顿本身完成。"
+        },
+        {
+          "id": "shot_032",
+          "intent": "段末收束：米迦尔转身，两人关系暂告段落",
+          "shot_type": "MLS",
+          "duration_frames": 72,
+          "start_frame": 2233,
+          "end_frame": 2304,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_032",
+            "position": [
+              3.011,
+              2.142,
+              0.621
+            ],
+            "target": [
+              2.55,
+              -4.5,
+              0.621
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_out",
+            "movements": [
+              {
+                "type": "dolly_out",
+                "amount": 1.2,
+                "start_frame": 1,
+                "end_frame": 60
+              }
+            ],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 8,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 135
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "walk_to",
+              "start_frame": 24,
+              "end_frame": 60,
+              "target_position": [
+                4.6,
+                -7.6,
+                4.51
+              ],
+              "params": {
+                "speed": "walk",
+                "bob": 0.03
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 10,
+              "end_frame": 26,
+              "params": {
+                "angle_deg": 20
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "body_tilt",
+              "start_frame": 30,
+              "end_frame": 60,
+              "params": {
+                "angle_deg": 4,
+                "axis": "x",
+                "toward": "front"
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 4,
+              "end_frame": 44
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MLS 双人收束镜头，50mm，低机位，双人左右关系保持：伊恩在画面右侧，米迦尔在画面左侧。米迦尔先开口「我先上船。」（第4–44帧），随后在第8–24帧转身约135度、朝画面左深处走去，第24–60帧沿码头向画面左后方行进，逐渐远离；伊恩在第10–26帧转头目送他，第30–60帧身体微微前倾，重心落在左脚。相机在双人机位略退的位置，第1–60帧缓缓拉远 1.2 米，把两人重新放回码头市场的环境里，景别由中近放宽至中远景，完成段落松手式收束。最后12帧留白，人物保持静默的分离姿态，午后码头光线，背景是摊位与停泊的船影。"
+        },
+        {
+          "id": "shot_033",
+          "intent": "建立环境：进入请战段落，交代新的空间与光线",
+          "shot_type": "LS",
+          "duration_frames": 72,
+          "start_frame": 2305,
+          "end_frame": 2376,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_033",
+            "position": [
+              1.714,
+              5.619,
+              0.911
+            ],
+            "target": [
+              -3.4,
+              -1.4,
+              0.844
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 20,
+              "end_frame": 44,
+              "params": {
+                "angle_deg": 22
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右侧码头栈桥方向"
+            }
+          ],
+          "vfx": [],
+          "prompt": "【景别】LS 全景，固定机位，50mm 镜头，画面高度约 3.5 米，完整容纳米迦尔全身与码头空间。【空间】第十四街区码头市场，午后；木栈桥沿海岸线向画面右侧延伸，近景是堆叠的货箱与缆桩，中景是系泊的渔船桅杆与绳索，远景是海面与低矮仓库屋顶。【人物调度】米迦尔位于画面左侧三分之一处，全身入画，侧身站立，视线朝画面右——即栈桥与海面方向；他在第 20 至 44 帧之间缓慢转头，把脸转向画面右侧的远方，身体其余部分保持静止。【光线】午后硬光，光位与市场段落一致，从画面左上方斜射入，在米迦尔右侧脸与肩部形成亮边，左侧脸与身体处于柔和阴影中；栈桥木板上的投影朝画面右下方拉长。【色彩】暖调午后，木质栈桥的赭褐、绳索的麻黄、海面的青灰蓝，米迦尔衣物的暗蓝与亮边形成对比。【构图】三分法，人物居左留出右侧大面积空间，右侧空间由栈桥透视线与海平线共同引导，视线方向留有呼吸感。【氛围】安静、开阔、带着出发前的等待感；固定镜头作为运动的参照系，为请战段落的进入做铺垫。"
+        },
+        {
+          "id": "shot_034",
+          "intent": "推进主线：米迦尔请战，两人重新面对面",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 2377,
+          "end_frame": 2472,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_034",
+            "position": [
+              5.224,
+              -0.936,
+              0.95
+            ],
+            "target": [
+              1.75,
+              -4.0,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "handheld",
+            "movements": [
+              {
+                "type": "handheld",
+                "amount": 0.03,
+                "start_frame": 1,
+                "end_frame": 96
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 8,
+              "end_frame": 30,
+              "params": {
+                "angle_deg": 25
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "walk_to",
+              "start_frame": 32,
+              "end_frame": 62,
+              "target_position": [
+                6.4,
+                -6.2,
+                4.5
+              ],
+              "params": {
+                "speed": "walk",
+                "bob": 0.03
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_body",
+              "start_frame": 40,
+              "end_frame": 62,
+              "params": {
+                "angle_deg": -20
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 64,
+              "end_frame": 84,
+              "params": {
+                "yaw_deg": -12,
+                "pitch_deg": 2
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 12,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "码头午后，双人中景（MS），米迦尔在画面左、伊恩在画面右，延续既定的左右轴线。相机位于两人侧前方（front_right），50mm 镜头，固定机位，由 shot_033 的全景切至此刻的双人同框。米迦尔主动上前一步请战，转身正对伊恩；伊恩闻声转身回望，两人重新面对面，距离拉近。背景是码头市场的货箱与桅杆，午后侧光在两人之间留出清晰的空隙。表演克制，重心落在两人对视的静默上，为随后的对话留出节奏。"
+        },
+        {
+          "id": "shot_035",
+          "intent": "推进主线：伊恩拒绝，语气落在脸上",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 2473,
+          "end_frame": 2544,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_035",
+            "position": [
+              5.782,
+              -3.93,
+              1.231
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.6,
+                "start_frame": 8,
+                "end_frame": 52,
+                "subject": "伊恩"
+              }
+            ],
+            "request": {
+              "side": "right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 10,
+              "end_frame": 26,
+              "params": {
+                "yaw_deg": -8,
+                "pitch_deg": 2
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 30,
+              "end_frame": 46,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "shake_head",
+              "start_frame": 44,
+              "end_frame": 58,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "别拖了。",
+              "start_frame": 18,
+              "end_frame": 58
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "码头午后，中近景单人反打，机位在轴线右侧、与前一镜夹角超过 30°。伊恩独自站在画面中，半身取景，背景是码头市场的货箱与远处船身轮廓，午后侧光落在他脸的一侧。镜头以固定机位为主，配合轻微推近，把压力收在他的脸上——他抬眼看向画外（米迦尔方向），眼神先动，随即下颌一紧，头微微偏开，表示拒绝。语气落定在脸上，不靠肢体。收尾留出余量，画面静止，只有他轻微的呼吸起伏。"
+        },
+        {
+          "id": "shot_036",
+          "intent": "推进主线：米迦尔坚持，目光不退",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 2545,
+          "end_frame": 2616,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_036",
+            "position": [
+              -1.422,
+              2.889,
+              1.231
+            ],
+            "target": [
+              -1.6,
+              -0.0,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.8,
+                "start_frame": 1,
+                "end_frame": 60,
+                "subject": "米迦尔"
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "body_tilt",
+              "start_frame": 1,
+              "end_frame": 60,
+              "params": {
+                "angle_deg": 4,
+                "axis": "x",
+                "toward": "front"
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 10,
+              "end_frame": 50
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右画外（伊恩方向）"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中近景（MCU），单人反打：米迦尔占据画面左侧三分之二，身体略朝画面左，脸与视线朝向画面右，与前一镜的正反打形成交替。50mm 镜头，浅景深，背景为码头市场的木栈与缆绳，午后侧逆光勾出他的轮廓。表演：他目光不退，下颌微收，呼吸沉稳，只有极轻微的身体前倾；镜头以极缓的推近（dolly_in）压向他的面部，强调「事情开始了」的坚持与不退让。收尾时他保持凝视，画面静止余 12 帧。"
+        },
+        {
+          "id": "shot_037",
+          "intent": "冲突升级：两人言语相持，距离没有拉开",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 2617,
+          "end_frame": 2688,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_037",
+            "position": [
+              5.491,
+              0.358,
+              0.95
+            ],
+            "target": [
+              2.65,
+              -3.3,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "body_tilt",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 6,
+                "axis": "x",
+                "toward": "forward"
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "body_tilt",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 4,
+                "axis": "x",
+                "toward": "back"
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 28,
+              "end_frame": 44,
+              "params": {
+                "angle_deg": 8
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "shake_head",
+              "start_frame": 30,
+              "end_frame": 48,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "别拖了。",
+              "start_frame": 8,
+              "end_frame": 48
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "双人中景（MS，画面高度约1.88），固定机位，双人机位保持左右位置不变：米迦尔在画面左、伊恩在画面右，两人侧向相对、距离没有拉开。镜头由上一镜的 MCU 放宽一档至 MS，景别变化一档，仍以固定镜头作为运动的参照系。米迦尔略抬下颌、身体微微前倾，语气强硬；伊恩身体略后仰但脚步未动，视线锁在米迦尔脸上，言语相持、互不让步。午后码头市场光线，背景为巷口与仓库方向的开阔空间。50mm 焦距，固定不运镜，冲突在静止中升级。"
+        },
+        {
+          "id": "shot_038",
+          "intent": "冲突升级：伊恩提高音量前的紧绷",
+          "shot_type": "CU",
+          "duration_frames": 72,
+          "start_frame": 2689,
+          "end_frame": 2760,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_038",
+            "position": [
+              5.19,
+              -2.514,
+              1.278
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              1.278
+            ],
+            "lens": 85.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [
+              {
+                "type": "zoom_in",
+                "amount": 18,
+                "start_frame": 1,
+                "end_frame": 60
+              },
+              {
+                "type": "handheld",
+                "amount": 0.04,
+                "start_frame": 1,
+                "end_frame": 72
+              }
+            ],
+            "request": {
+              "side": "right",
+              "lens": 85
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "body_tilt",
+              "params": {
+                "angle_deg": 4,
+                "axis": "x",
+                "toward": "front"
+              },
+              "start_frame": 1,
+              "end_frame": 40
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "params": {
+                "angle_deg": 6
+              },
+              "start_frame": 36,
+              "end_frame": 60
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "画面左"
+            }
+          ],
+          "vfx": [],
+          "prompt": "单人特写（CU），伊恩，轴线右侧机位，视线朝画面左。85mm 长焦压缩背景，午后码头市场的杂乱背景虚化成一片暖色光斑。伊恩面部占画面主体，下颌紧绷、咬肌微微鼓起，眼睑压低，鼻翼轻张——他正在把火气压住，在开口提高音量之前的那口气里。镜头极缓地 zoom_in 推近，像逼近他的呼吸；同时带极轻微 handheld 呼吸感抖动。他上身向前倾 4 度、头部微微偏转，视线始终锁在画面左（米迦尔的方向），不肯移开。固定轴线不越轴。光线：侧后方的硬质午后阳光勾出颧骨与下颌的轮廓，另一侧落入暗部，明暗对比强化压迫感。景别保持 CU 不松，收尾留 12 帧余量，让紧绷停住不动。"
+        },
+        {
+          "id": "shot_039",
+          "intent": "反应：米迦尔被顶住后的一瞬间动摇",
+          "shot_type": "CU",
+          "duration_frames": 48,
+          "start_frame": 2761,
+          "end_frame": 2808,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_039",
+            "position": [
+              -1.44,
+              2.6,
+              1.278
+            ],
+            "target": [
+              -1.6,
+              -0.0,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.4,
+                "start_frame": 1,
+                "end_frame": 36
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 6,
+              "end_frame": 16,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "body_tilt",
+              "start_frame": 20,
+              "end_frame": 34,
+              "params": {
+                "angle_deg": 4,
+                "axis": "y",
+                "toward": "back"
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右侧画外"
+            }
+          ],
+          "vfx": [],
+          "prompt": "CU，50mm，单人特写，米迦尔面部占满画面，视线朝画面右，与 shot_038 正反打、机位角度变化超过 30°。午后码头市场的侧逆光从画面右后方擦过他的颧骨，浅景深把背景压成模糊的灰蓝色货棚与晃动的水光。开场他眼神还带着方才的强硬，第 6 到 16 帧头微微偏转 12 度，像被什么顶住般一顿；第 20 到 34 帧上身后倾 4 度，喉结轻滚，嘴唇微张又抿住——动摇只在这一瞬，随即用下颌线重新绷紧收住。相机固定机位微推 0.4 米，几乎不可察觉地贴近，让这丝裂缝被观众看清。无台词，只有远处船笛与市场人声。"
+        },
+        {
+          "id": "shot_040",
+          "intent": "段末收束：伊恩让步，两人达成一致",
+          "shot_type": "MLS",
+          "duration_frames": 72,
+          "start_frame": 2809,
+          "end_frame": 2880,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_040",
+            "position": [
+              4.488,
+              3.099,
+              0.621
+            ],
+            "target": [
+              2.65,
+              -3.3,
+              0.621
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_out",
+            "movements": [
+              {
+                "type": "dolly_out",
+                "amount": 1.0,
+                "start_frame": 1,
+                "end_frame": 72
+              }
+            ],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 10,
+              "end_frame": 34,
+              "params": {
+                "cycles": 1
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 38,
+              "end_frame": 56,
+              "params": {
+                "angle_deg": 20
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "这一次我听你的。",
+              "start_frame": 8,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            },
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            }
+          ],
+          "vfx": [],
+          "prompt": "第十四街区码头市场午后，双人中景（MLS），50mm 镜头，低机位、构图平衡。米迦尔与伊恩并排立于码头边，两人左右关系保持，视线朝向一致（略偏画面外同一方向）。伊恩微微点头，让步后低声说出「这一次我听你的。」；米迦尔随之侧转身体约二十度，准备先行上船。相机在两人前方略偏左的位置缓慢拉远（dolly_out，约 1 米），把两人重新放回码头环境中，完成本段转折的收束。海风、绳索与木栈道质感，午后侧光。"
+        },
+        {
+          "id": "shot_041",
+          "intent": "建立氛围：进入码头对峙段落，交代海与风的环境",
+          "shot_type": "LS",
+          "duration_frames": 72,
+          "start_frame": 2881,
+          "end_frame": 2952,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_041",
+            "position": [
+              1.867,
+              7.962,
+              0.911
+            ],
+            "target": [
+              -1.6,
+              -0.0,
+              0.844
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右方海面"
+            }
+          ],
+          "vfx": [],
+          "prompt": "LS 全景，固定机位，50mm。第十四街区码头市场，午后偏晚，低角度侧逆的暖光斜掠水面。米迦尔位于画面左侧，全身入画，身形在开阔的码头空间里显得不大；他背对左后方的仓库与巷口，面朝画面右侧，视线投向海面与远处的船。风从海面吹来，吹动他衣角与发丝，码头木板上的绳索与缆桩轻微晃动，水面碎光起伏。景深较深，前景码头木板、中景米迦尔与系缆桩、远景海平线与船体层次分明。固定镜头，作为码头对峙段落的氛围铺垫，为之后的运动留出参照系。无台词。"
+        },
+        {
+          "id": "shot_042",
+          "intent": "推进对话：米迦尔开口，两人在码头边对峙",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 2953,
+          "end_frame": 3048,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_042",
+            "position": [
+              3.929,
+              1.152,
+              0.95
+            ],
+            "target": [
+              2.65,
+              -3.3,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "push_through",
+            "movements": [
+              {
+                "type": "push_through",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 84
+              }
+            ],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 20,
+              "params": {
+                "angle_deg": 8
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 12,
+              "end_frame": 40,
+              "params": {
+                "yaw_deg": -6,
+                "pitch_deg": 0
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 24,
+              "end_frame": 64
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "第十四街区码头市场，午后。双人中景（MS），米迦尔在画面左侧、伊恩在画面右侧，延续同一轴线。两人在码头边对峙而立：米迦尔微微侧头，目光落在伊恩身上，先开口；伊恩抬眼回望，身体保持不动。相机在两人前左侧约 50mm 焦段，缓慢向前推进（push_through 0.6 米，1–84 帧），把张力一点点压紧。背景是码头木栈、缆柱与停靠船只的浅景深轮廓，海面反光柔和。固定轴线，不越轴，收尾留 12 帧余量。"
+        },
+        {
+          "id": "shot_043",
+          "intent": "推进对话：伊恩望向海面后回应",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 3049,
+          "end_frame": 3120,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_043",
+            "position": [
+              5.782,
+              -3.93,
+              1.231
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 60,
+                "subject": "伊恩"
+              }
+            ],
+            "request": {
+              "side": "right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 20,
+              "params": {
+                "angle_deg": 30
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 24,
+              "end_frame": 44,
+              "params": {
+                "yaw_deg": -18,
+                "pitch_deg": 4
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 46,
+              "end_frame": 58,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "船要开了。",
+              "start_frame": 20,
+              "end_frame": 60
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "海面"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MCU，单人反打，机位在轴线右侧。伊恩中近景，画面偏右构图，视线朝画面左方（朝海面方向）。开场他先转头望向海面（约30度），停顿片刻后收回视线，转向镜头左前方，轻轻点头一次。镜头以缓慢推近（dolly_in 0.6m，1–60帧）强化他开口前的沉默，50mm 焦距，浅景深，午后码头硬光，背景海面轻微过曝，人物面部保留细节。固定轴线，不越轴，不做摇镜与升降叠加。表演克制，语气平静，收尾留 12 帧余量。"
+        },
+        {
+          "id": "shot_044",
+          "intent": "反应：米迦尔听完反驳后的克制",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 3121,
+          "end_frame": 3192,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_044",
+            "position": [
+              -0.444,
+              2.654,
+              1.231
+            ],
+            "target": [
+              -1.6,
+              -0.0,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 28,
+              "end_frame": 44,
+              "params": {
+                "angle_deg": 8
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 30,
+              "end_frame": 58,
+              "params": {
+                "yaw_deg": 6,
+                "pitch_deg": -4
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画外伊恩"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中近景（MCU），单人反打。米迦尔位于画面左侧偏中，身体朝向画面右前方，视线朝画面右——承接上一镜伊恩的反驳，他在听完之后没有立刻回应。50mm 镜头，机位与上一镜的正打形成超过 30° 的角度变化，越肩轴线保持不越轴（neutral 侧）。构图：米迦尔占画面左 2/3，右侧留出呼吸空间给画外对话者。表演节奏：前段几乎静止——下颌线绷紧，嘴唇抿住，喉结轻动一次，把反驳咽回去；中段（约第 30 帧起）头部极轻微地偏转、视线从画外对话者身上向下滑开半寸又拉回，克制地不打断对方；后段保持不动的凝视，只有呼吸起伏。全镜固定机位，无运镜——静止本身就是\"克制\"的动机，任何移动都会稀释留白。光线为码头午后侧逆光，勾出面部轮廓，眼窝留一点阴影。无台词。"
+        },
+        {
+          "id": "shot_045",
+          "intent": "留白：米迦尔沉默，海风从两人之间穿过",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 3193,
+          "end_frame": 3264,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_045",
+            "position": [
+              3.929,
+              1.152,
+              0.95
+            ],
+            "target": [
+              2.65,
+              -3.3,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 20,
+              "params": {
+                "angle_deg": -8
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 20,
+              "params": {
+                "angle_deg": -6
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 24,
+              "end_frame": 60,
+              "params": {
+                "yaw_deg": 4,
+                "pitch_deg": -2
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 24,
+              "end_frame": 60,
+              "params": {
+                "yaw_deg": 4,
+                "pitch_deg": -2
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MS 中景双人，平视机位，米迦尔在左、伊恩在右，两人面朝同一方向（码头海面方向），视线一致略偏画外。由上一镜 MCU 放宽一档至 MS，构图留出前方 lead room。海风从两人之间穿过：衣角与发丝轻动，两人沉默无言，只有极轻微的头部落幅与目光游移。固定镜头，无运动，作为后续运动的参照系。午后码头市场光线，侧逆光勾出轮廓，浅景深 50mm。留白：沉默本身是台词。"
+        },
+        {
+          "id": "shot_046",
+          "intent": "留白：伊恩的沉默，眼里仍有未说完的话",
+          "shot_type": "CU",
+          "duration_frames": 72,
+          "start_frame": 3265,
+          "end_frame": 3336,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_046",
+            "position": [
+              5.894,
+              -4.197,
+              1.278
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "handheld",
+            "movements": [
+              {
+                "type": "handheld",
+                "amount": 0.03,
+                "start_frame": 1,
+                "end_frame": 72
+              }
+            ],
+            "request": {
+              "side": "right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "yaw_deg": -8,
+                "pitch_deg": -2
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "画面左外侧"
+            }
+          ],
+          "vfx": [],
+          "prompt": "单人特写（CU），伊恩位于画面右侧、轴线右侧机位，平视，视线朝画面左——他望着刚刚离开的同伴所在的方向。头顶留白约 5%，浅景深，50mm。午后码头市场的光从左侧斜入，半边脸落在柔和阴影里。表演：他嘴唇动了一下又合上，最终什么也没说；眼里仍有未说完的话，沉默本身成为这一镜的留白。固定机位，仅保留极轻微的呼吸级手持浮动，把静止作为运动的参照系。无台词。"
+        },
+        {
+          "id": "shot_047",
+          "intent": "反应：米迦尔垂眼，接受这份沉默",
+          "shot_type": "CU",
+          "duration_frames": 48,
+          "start_frame": 3337,
+          "end_frame": 3384,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_047",
+            "position": [
+              -2.353,
+              2.494,
+              1.278
+            ],
+            "target": [
+              -1.6,
+              -0.0,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 24,
+              "end_frame": 34,
+              "params": {
+                "yaw_deg": 8,
+                "pitch_deg": -12
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "body_tilt",
+              "start_frame": 30,
+              "end_frame": 40,
+              "params": {
+                "angle_deg": 3,
+                "axis": "x",
+                "toward": "front"
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右"
+            }
+          ],
+          "vfx": [],
+          "prompt": "单人特写，米迦尔面部占画面主体，视线朝画面右，与前一镜构成正反打（机位角度变化超过 30°）。50mm 定焦，固定机位，浅景深，背景码头午后光线虚化成柔和光斑。表演节奏：前 24 帧他保持静止，眼神略微游移；第 24 帧起缓缓垂眼，眼睑下沉，嘴唇轻抿，肩线随呼吸微微下沉，把未说出口的话咽回去——接受这份沉默。第 36 帧后定格在垂眼的静止状态，留 12 帧余量收尾。无台词。构图重心偏左，右侧留白给视线方向。"
+        },
+        {
+          "id": "shot_048",
+          "intent": "段末收束：两人并肩而立，本段结束",
+          "shot_type": "MLS",
+          "duration_frames": 72,
+          "start_frame": 3385,
+          "end_frame": 3456,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_048",
+            "position": [
+              6.733,
+              1.959,
+              0.621
+            ],
+            "target": [
+              2.65,
+              -3.3,
+              0.621
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_out",
+            "movements": [
+              {
+                "type": "dolly_out",
+                "amount": 1.0,
+                "start_frame": 1,
+                "end_frame": 60
+              }
+            ],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 8
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 26,
+              "end_frame": 48,
+              "params": {
+                "angle_deg": 6
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "午后码头，中远景。米迦尔与伊恩并肩而立，两人位于画面中段偏左与偏右，保持左米迦尔、右伊恩的左右关系，视线一致朝向画面外的码头方向（船的方向）。低机位、50mm，构图讲究平衡，人物在环境中被重新安放。镜头由前一镜的近景放宽至中远景，轻微拉远收束本段：相机沿光轴后退约1米，缓缓「松手」，把两人留在码头的光线与人流里。全程无台词，只有衣料被海风拂动的静默与并肩的静止姿态，作为本段落的收尾。"
+        },
+        {
+          "id": "shot_049",
+          "intent": "建立清晨码头环境，交代两人与船的空间关系",
+          "shot_type": "LS",
+          "duration_frames": 72,
+          "start_frame": 3457,
+          "end_frame": 3528,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_049",
+            "position": [
+              -4.11,
+              8.314,
+              0.911
+            ],
+            "target": [
+              -1.6,
+              -0.0,
+              0.844
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "walk_to",
+              "start_frame": 1,
+              "end_frame": 60,
+              "target_position": [
+                6.2,
+                -6.0,
+                4.5
+              ],
+              "params": {
+                "speed": "walk",
+                "from": [
+                  7.3,
+                  -6.9,
+                  4.5
+                ],
+                "to": [
+                  6.2,
+                  -6.0,
+                  4.5
+                ],
+                "bob": 0.03
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "船"
+            }
+          ],
+          "vfx": [],
+          "prompt": "清晨码头全景，固定机位，50mm。米迦尔位于画面左侧，全身入画，背对镜头略偏左前方，正沿栈桥缓步走向停靠在画面右侧的船；船身与开阔海面占据画面右侧，晨光从画面左侧低角度照亮人物轮廓与潮湿的木板地面。米迦尔步幅平稳，视线投向船的方向，与船保持明确的空间距离，交代人与船、海的关系。构图左侧留出人物行走空间，右侧留给船与海面，前景码头木桩与缆绳形成层次。整体安静克制，为后续登船动作铺垫。"
+        },
+        {
+          "id": "shot_050",
+          "intent": "推进主线：两人在船边开始告别对话",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 3529,
+          "end_frame": 3624,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_050",
+            "position": [
+              3.392,
+              1.598,
+              0.95
+            ],
+            "target": [
+              2.1,
+              -2.85,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "push_through",
+            "movements": [
+              {
+                "type": "push_through",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 84
+              }
+            ],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 60,
+              "end_frame": 84,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "我先上船。",
+              "start_frame": 1,
+              "end_frame": 44
+            },
+            {
+              "character_id": "伊恩",
+              "text": "等等我。",
+              "start_frame": 56,
+              "end_frame": 84
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "午后码头，中景。米迦尔位于画面左侧、伊恩位于画面右侧，两人侧向对立于船舷边，轴线同侧（不越轴）。相机在两人连线同侧，50mm 镜头，中景取到腰部；由上一镜全景推至中景后稳定，随后极缓推近，强调「告别」的开始。米迦尔面向伊恩，伊恩微微侧身朝向米迦尔，两人视线相交。背景是码头市场的木箱、缆绳与停靠的船身，午后侧光。表演克制：米迦尔先开口，语气平淡；伊恩回应时略顿，随后点头。整体节奏安静，为后续告别对话留出呼吸。"
+        },
+        {
+          "id": "shot_051",
+          "intent": "推进主线：伊恩回应，情绪开始升温",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 3625,
+          "end_frame": 3696,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_051",
+            "position": [
+              4.249,
+              -7.762,
+              1.231
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 60,
+                "subject": "伊恩"
+              }
+            ],
+            "request": {
+              "side": "over_shoulder",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 8,
+              "end_frame": 26,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 30,
+              "end_frame": 46,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "等等我。",
+              "start_frame": 20,
+              "end_frame": 56
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "反打机位，越过米迦尔肩侧拍伊恩的中近景（MCU），伊恩保持在画面右。午后码头市场，背景是仓库与停靠的船影，光线偏暖。伊恩先微微转头看向画面左前方的米迦尔，随后点头，神情从迟疑转向坚定——情绪开始升温。镜头以过肩视角缓慢推近（dolly_in 0.6 米，1–60 帧），景别由 MS 收紧至 MCU，一次只做推近一个自由度，主体始终在画。伊恩说「等等我。」，收尾留 12 帧余量。50mm 镜头，浅景深，米迦尔肩部作为前景虚焦。"
+        },
+        {
+          "id": "shot_052",
+          "intent": "推进主线：米迦尔催促，对话节奏加快",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 3697,
+          "end_frame": 3768,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_052",
+            "position": [
+              -1.593,
+              3.575,
+              1.231
+            ],
+            "target": [
+              -2.7,
+              0.9,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.6,
+                "start_frame": 1,
+                "end_frame": 60,
+                "subject": "米迦尔"
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 20,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "nod",
+              "start_frame": 24,
+              "end_frame": 40,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "别拖了。",
+              "start_frame": 20,
+              "end_frame": 60
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中近景（MCU），50mm 镜头，机位在米迦尔前右侧（front_right），与镜号51 反打、角度变化超过 30°，米迦尔位于画面左侧，视线朝向画面右侧的伊恩（画外）。午后码头市场，背景为仓库与船坞的浅景深虚化。镜头缓慢推近（dolly_in 0.6 米，第1–60 帧），动机是压迫式的催促、加快对话节奏。米迦尔先略微转头（第1–20 帧），随即短促点一下头（第24–40 帧），下巴收紧、眉头下压，语气不容置疑。收尾留 12 帧余量，人物保持静止，仅呼吸起伏。"
+        },
+        {
+          "id": "shot_053",
+          "intent": "情绪顶点：伊恩让步，两人达成一致",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 3769,
+          "end_frame": 3840,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_053",
+            "position": [
+              3.392,
+              1.598,
+              0.95
+            ],
+            "target": [
+              2.1,
+              -2.85,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 18,
+              "params": {
+                "angle_deg": 12
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "nod",
+              "start_frame": 20,
+              "end_frame": 44,
+              "params": {
+                "cycles": 1
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 46,
+              "end_frame": 62,
+              "params": {
+                "angle_deg": 25
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "这一次我听你的。",
+              "start_frame": 8,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MS 固定镜头，双人中景，米迦尔在画面左、伊恩在画面右，两人同处码头午后的侧逆光中。米迦尔先微微转头看向伊恩，伊恩轻轻点头应下，随后米迦尔侧身转向船的方向。背景是码头栈桥与停靠的船身，海面反光柔和，节奏沉静克制，为情绪顶点之后的让步与一致留出呼吸。"
+        },
+        {
+          "id": "shot_054",
+          "intent": "告别：伊恩示意出发，转身走向船",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 3841,
+          "end_frame": 3912,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_054",
+            "position": [
+              2.614,
+              -4.843,
+              0.95
+            ],
+            "target": [
+              6.9,
+              -6.6,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "pan_right",
+            "movements": [
+              {
+                "type": "pan_right",
+                "amount": 12,
+                "start_frame": 24,
+                "end_frame": 60,
+                "subject": "伊恩"
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_body",
+              "start_frame": 1,
+              "end_frame": 18,
+              "params": {
+                "angle_deg": 55
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "walk_to",
+              "start_frame": 20,
+              "end_frame": 60,
+              "target_position": [
+                8.2,
+                -7.6,
+                4.4
+              ],
+              "params": {
+                "speed": "walk",
+                "from": [
+                  6.9,
+                  -6.4,
+                  4.4
+                ],
+                "bob": 0.04
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 30,
+              "end_frame": 42,
+              "params": {
+                "angle_deg": -20
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "等等我。",
+              "start_frame": 8,
+              "end_frame": 48
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MS，伊恩单人，侧向机位（front_right），50mm。码头午后，逆光水面。伊恩站在画面中左，米迦尔留在画面左侧画外（不入画，仅留出他的视线方向）。开场伊恩朝画面右侧的船转身约 55 度，肩线由面向镜头转为侧向，随即迈步走向画面右的船（约 3 步），走到中景偏右时微微回头向画外左侧的米迦尔投去一眼，再转正继续朝船走去。相机固定为主，中段起极缓地向右轻摇 12 度，跟随他的行进方向，保持轴线不变、船始终在画面右。景别 MS 到腰，人物占画面高度约 1.87。表演克制：转身干脆，脚步略迟疑半拍，回头一眼短暂、不带多余手势。无道具，无 VFX。"
+        },
+        {
+          "id": "shot_055",
+          "intent": "告别：米迦尔叮嘱，情绪压到最近处",
+          "shot_type": "CU",
+          "duration_frames": 48,
+          "start_frame": 3913,
+          "end_frame": 3960,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_055",
+            "position": [
+              -2.814,
+              3.503,
+              1.278
+            ],
+            "target": [
+              -2.7,
+              0.9,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "handheld",
+            "movements": [
+              {
+                "type": "handheld",
+                "amount": 0.03,
+                "start_frame": 1,
+                "end_frame": 48
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 48,
+              "params": {
+                "yaw_deg": 18,
+                "pitch_deg": -2
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "nod",
+              "start_frame": 20,
+              "end_frame": 32,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "你也是。",
+              "start_frame": 4,
+              "end_frame": 36
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            }
+          ],
+          "vfx": [],
+          "prompt": "反打特写：米迦尔位于画面左侧，视线朝右，平视角度，50mm 镜头，头顶留白约 5%。固定机位，情绪压到最近处——他几不可察地吸一口气，下颌线绷紧，眼神在最后一瞬微微偏移又收回，把话咽回去。浅景深，午后码头侧光从画面右侧掠过面颊，眼窝与颧骨下方留出细窄阴影；背景码头缆桩与船影虚化成暖灰斑块。整镜近乎静止，只有极轻的呼吸起伏与一次眨眼，为告别留白。"
+        },
+        {
+          "id": "shot_056",
+          "intent": "段末收束：米迦尔留在原地的姿态",
+          "shot_type": "MLS",
+          "duration_frames": 72,
+          "start_frame": 3961,
+          "end_frame": 4032,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_056",
+            "position": [
+              -9.352,
+              0.609,
+              0.621
+            ],
+            "target": [
+              -2.7,
+              0.9,
+              0.621
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 18
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 36,
+              "end_frame": 60,
+              "params": {
+                "angle_deg": -12
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "body_tilt",
+              "start_frame": 48,
+              "end_frame": 66,
+              "params": {
+                "angle_deg": 4,
+                "axis": "y",
+                "toward": "left"
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "远处船影"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中远景（MLS），50mm，低机位，固定镜头。机位退回轴线同侧，米迦尔仍处于画面左侧，由上一镜的特写放宽，重新交代人物与码头的关系：午后码头市场，木质栈桥与系缆桩在画面右侧延伸，远处船影与水面反光。米迦尔站在栈桥左端，身体朝向右前方（船的方向），重心稳定，未随船移动；他微微侧头，目光越过画面向远处，随后缓缓收回视线，肩线略沉，手垂在身侧。收束感：他留在原地，被环境重新包围，海风与绳索轻响，画面保持静止不推不拉，让「留在原地」的姿态成为段落句点。光线自画面左侧照入，人物的右半身留在柔和阴影里。"
+        },
+        {
+          "id": "shot_057",
+          "intent": "收束：码头恢复平静，空间留白",
+          "shot_type": "LS",
+          "duration_frames": 72,
+          "start_frame": 4033,
+          "end_frame": 4104,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_057",
+            "position": [
+              -11.376,
+              0.52,
+              0.911
+            ],
+            "target": [
+              -2.7,
+              0.9,
+              0.844
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 1,
+              "end_frame": 72,
+              "params": {
+                "yaw_deg": 12,
+                "pitch_deg": -2
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "船"
+            }
+          ],
+          "vfx": [],
+          "prompt": "全景固定镜头，午后第十四街区码头市场。机位保持在轴线同侧，低机位平视，船与海占据画面右侧，米迦尔作为画面左侧的一小块身影，全身几乎融入栈桥与货箱的暗部。构图采用 lead_room：画面右半留给空荡的海面与泊船，左侧人物留出大量负空间，人物视线投向画面右方的船与海。景别放宽至 LS，画面高度约 3.5 米，50mm 镜头，无任何推拉摇移，让整场戏的运动在此静下来——码头恢复平静，水面微光缓慢起伏，缆绳轻晃，远处帆影静止。米迦尔身形不动，只有衣角被海风轻微带动，空间大面积留白，收束整场。无台词。"
+        },
+        {
+          "id": "shot_058",
+          "intent": "收束：两人的影子还在，呼应告别之后",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 4105,
+          "end_frame": 4200,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_058",
+            "position": [
+              5.639,
+              0.17,
+              0.95
+            ],
+            "target": [
+              2.75,
+              -3.45,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 40,
+              "end_frame": 60,
+              "params": {
+                "angle_deg": 18
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 62,
+              "end_frame": 82,
+              "params": {
+                "angle_deg": 16
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "走吧。",
+              "start_frame": 12,
+              "end_frame": 36
+            },
+            {
+              "character_id": "伊恩",
+              "text": "照顾好自己。",
+              "start_frame": 48,
+              "end_frame": 84
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "午后码头市场，中景（MS）双人同框。米迦尔在画面左侧、伊恩在画面右侧，保持双人轴线同侧。由上一镜的远景收束到中景，两人重新进入同一画面，彼此相隔半步，身体朝向对方但已不再靠近。镜头固定不动，只让两人的影子留在被阳光晒白的木栈板上，拉长、交叠又错开——告别之后的安静余韵。米迦尔先开口，语气短促；伊恩低声回应，随后两人各自微微转头看向码头尽头的方向，不再对视。空气里有海风、绳缆与旧木头的味道，远处传来船笛与人声，但两人之间的沉默比声音更响。收束感：影子还在，人已准备分开。"
+        },
+        {
+          "id": "shot_059",
+          "intent": "收束：伊恩在船头回望",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 4201,
+          "end_frame": 4272,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_059",
+            "position": [
+              8.703,
+              -4.949,
+              1.231
+            ],
+            "target": [
+              8.2,
+              -7.8,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 12,
+              "end_frame": 34,
+              "params": {
+                "angle_deg": 32
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "body_tilt",
+              "start_frame": 36,
+              "end_frame": 58,
+              "params": {
+                "angle_deg": 4,
+                "axis": "y",
+                "toward": "left"
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "船要开了。",
+              "start_frame": 20,
+              "end_frame": 52
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "码头"
+            }
+          ],
+          "vfx": [],
+          "prompt": "午后码头，MCU 反打机位，伊恩位于画面右侧，肩线朝左，视线越过水面望向左侧码头。50mm 固定镜头，无运动，留白式收束。伊恩先缓缓转头回望（第12–34帧），视线落向码头方向；随后身体轻微向左倾斜（第36–58帧），像船身离岸时的重心偏移。硬朗的午后侧光从画面左侧打来，勾勒他侧脸轮廓，背景是虚化的船桅与码头木桩。台词「船要开了。」在第20–52帧说出，语气低沉克制。整体情绪：告别后的回望与不舍，静止中收束。"
+        },
+        {
+          "id": "shot_060",
+          "intent": "收束：米迦尔转身离开",
+          "shot_type": "MCU",
+          "duration_frames": 72,
+          "start_frame": 4273,
+          "end_frame": 4344,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_060",
+            "position": [
+              -2.827,
+              3.792,
+              1.231
+            ],
+            "target": [
+              -2.7,
+              0.9,
+              1.231
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_out",
+            "movements": [
+              {
+                "type": "dolly_out",
+                "amount": 0.6,
+                "start_frame": 6,
+                "end_frame": 66
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 1,
+              "end_frame": 14,
+              "params": {
+                "angle_deg": 55
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "walk_to",
+              "start_frame": 15,
+              "end_frame": 60,
+              "target_position": [
+                -0.9,
+                -6.3,
+                4.5
+              ],
+              "params": {
+                "speed": "walk",
+                "bob": 0.03
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "text": "走吧。",
+              "start_frame": 20,
+              "end_frame": 56
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中近景（MCU），50mm，固定机位带极缓拉远。与镜号59反打，机位绕到米迦尔的右前方，米迦尔位于画面左侧，朝画面左移动。米迦尔先转身背向镜头，随即起步向画面左走出景框方向；镜头缓缓拉远，把他重新放回码头环境中，作为这场告别的收束。午后码头光线，浅景深，动作克制，情绪留白。"
+        },
+        {
+          "id": "shot_061",
+          "intent": "收束：市场重新热闹，两人各自归位",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 4345,
+          "end_frame": 4416,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_061",
+            "position": [
+              -0.54,
+              1.024,
+              0.95
+            ],
+            "target": [
+              -0.8,
+              -3.6,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_body",
+              "start_frame": 1,
+              "end_frame": 12,
+              "params": {
+                "angle_deg": 35
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "walk_to",
+              "start_frame": 13,
+              "end_frame": 40,
+              "target_position": [
+                7.9,
+                -6.0,
+                4.5
+              ],
+              "params": {
+                "speed": "walk",
+                "bob": 0.03
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 14,
+              "end_frame": 26,
+              "params": {
+                "angle_deg": 20
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "walk_to",
+              "start_frame": 30,
+              "end_frame": 56,
+              "target_position": [
+                7.0,
+                -6.6,
+                4.5
+              ],
+              "params": {
+                "speed": "walk",
+                "bob": 0.03
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "text": "船要开了。",
+              "start_frame": 20,
+              "end_frame": 58
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "MS 中景，双人轴线同侧：米迦尔在画面左、伊恩在画面右，船停在画面右侧的码头边。镜头由上一镜的 MCU 放宽至 MS，重新建立两人与午后码头市场的空间关系——摊贩的棚布、堆叠的货箱与人群在两人身后铺开，市场重新热闹起来，人流与叫卖声回到画面里。米迦尔转身朝向右侧的船，迈步走向跳板；伊恩站在原地看着他的背影，随后也提起脚步跟上。两人各自归位，一左一右分立于船与岸之间。相机固定在同侧中景机位，50mm 镜头，无运镜，收束感来自空间重新铺开而非移动。收尾留出余量，最后一句台词在第 60 帧前结束。"
+        },
+        {
+          "id": "shot_062",
+          "intent": "收束：米迦尔走远前的最后神情",
+          "shot_type": "CU",
+          "duration_frames": 48,
+          "start_frame": 4417,
+          "end_frame": 4464,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_062",
+            "position": [
+              -3.532,
+              1.513,
+              1.278
+            ],
+            "target": [
+              -1.0,
+              0.9,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in",
+                "amount": 0.4,
+                "start_frame": 1,
+                "end_frame": 36
+              }
+            ],
+            "request": {
+              "side": "front_left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 30,
+              "params": {
+                "angle_deg": 22
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "nod",
+              "start_frame": 32,
+              "end_frame": 40,
+              "params": {
+                "cycles": 1
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "画面右外侧"
+            }
+          ],
+          "vfx": [],
+          "prompt": "反打特写（CU），平视机位，50mm。米迦尔位于画面左侧，面朝画面右侧，视线越过画右边缘望向码头方向。头顶留白约 5%，构图重心压在左三分线上。全场固定基调上仅做极轻微前推（0.4 米，1-36 帧），让观众在沉默中缓缓贴近他的脸。表演：1-30 帧，他缓缓把头转向画右，目光追随已经走远的伊恩；32-40 帧，一次极轻的点头，像是把话咽下去之后的默许。情绪由沉默转为平静——没有台词，只有呼吸与眼神的收束。午后码头侧光，脸颊一侧受光、一侧落在阴影里，背景虚化的水面反光轻微晃动。"
+        },
+        {
+          "id": "shot_063",
+          "intent": "收束：伊恩望向远方",
+          "shot_type": "MLS",
+          "duration_frames": 48,
+          "start_frame": 4465,
+          "end_frame": 4512,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_063",
+            "position": [
+              7.558,
+              -0.165,
+              0.621
+            ],
+            "target": [
+              7.0,
+              -6.8,
+              0.621
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_out",
+            "movements": [
+              {
+                "type": "dolly_out",
+                "amount": 1.2,
+                "start_frame": 1,
+                "end_frame": 36,
+                "subject": "伊恩"
+              }
+            ],
+            "request": {
+              "side": "right",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 18,
+              "params": {
+                "angle_deg": 25
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "look_at",
+              "start_frame": 18,
+              "end_frame": 48,
+              "params": {
+                "yaw_deg": 12,
+                "pitch_deg": 2
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "远方海面"
+            }
+          ],
+          "vfx": [],
+          "prompt": "中远景（MLS），50mm，低机位平视，构图平衡。午后码头市场，伊恩位于画面右侧，身体朝画面右方，机位在轴线同侧，视线越过码头边缘望向右侧远方海面。镜头由近景放宽、缓缓后拉（dolly_out 1.2 米，1–36 帧），让伊恩重新落入码头空间：身后是木栈道、缆桩与停泊的船只，海风轻动衣角。伊恩先微微转头（1–18 帧），随后视线定在远方（18–48 帧），神情沉默克制。收束感：人物静止，只有海面与旗帜的细微波动。"
+        },
+        {
+          "id": "shot_064",
+          "intent": "收束：空镜头淡出，段落结束",
+          "shot_type": "LS",
+          "duration_frames": 72,
+          "start_frame": 4513,
+          "end_frame": 4584,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_064",
+            "position": [
+              2.834,
+              5.733,
+              0.911
+            ],
+            "target": [
+              3.0,
+              -2.95,
+              0.844
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_out",
+            "movements": [
+              {
+                "type": "dolly_out",
+                "amount": 1.2,
+                "start_frame": 1,
+                "end_frame": 60
+              }
+            ],
+            "request": {
+              "side": "left",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "walk_to",
+              "start_frame": 1,
+              "end_frame": 39,
+              "target_position": [
+                7.1,
+                -6.6,
+                4.5
+              ],
+              "params": {
+                "speed": "walk",
+                "bob": 0.03
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "walk_to",
+              "start_frame": 40,
+              "end_frame": 60,
+              "target_position": [
+                6.6,
+                -6.2,
+                4.5
+              ],
+              "params": {
+                "speed": "walk",
+                "bob": 0.03
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "我先上船。",
+              "start_frame": 1,
+              "end_frame": 39
+            },
+            {
+              "character_id": "伊恩",
+              "speaker_raw": "伊恩",
+              "speaker_status": "resolved",
+              "text": "等等我。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "别拖了。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "伊恩",
+              "speaker_raw": "伊恩",
+              "speaker_status": "resolved",
+              "text": "这一次我听你的。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "走吧。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "伊恩",
+              "speaker_raw": "伊恩",
+              "speaker_status": "resolved",
+              "text": "照顾好自己。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "你也是。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "伊恩",
+              "speaker_raw": "伊恩",
+              "speaker_status": "resolved",
+              "text": "再见。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "再见。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "伊恩",
+              "speaker_raw": "伊恩",
+              "speaker_status": "resolved",
+              "text": "船要开了。",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "prompt": "全景，固定机位后拉淡出。码头午后，海与船在画面右侧，市场在画面左侧，米迦尔与伊恩一前一后走向右侧船边，人物全身置于画面下三分之二，头顶留白约 8%，平视略低机位，50mm。米迦尔先迈步走向船板，伊恩随后跟上，两人之间保持一段距离。镜头缓慢后拉，景别由中景放宽至全景，画面逐渐淡出，段落收束。无对白时只有脚步声与海风，光线为午后偏暖的侧逆光，海面反光柔和。"
+        }
+      ]
+    }
+  ],
+  "continuity": {
+    "axis_note": [
+      "轴线：米迦尔与伊恩隔摊位（后为码头）对坐/对立，两人连线为轴线；本段全部机位保持在轴线同一侧（市场侧），银幕方向恒定——米迦尔在画面左、伊恩在画面右。",
+      "30° 规则：相邻镜头均满足机位角度变化 > 30° 或景别变化至少一档（如 2 MS→3 MS 为同景别，故 3 改为米迦尔单人侧机位，角度拉开；6→7 由 MS 跳至 CU 属景别变化）。",
+      "本段无对白落点（对白锚点在镜号 50–63，属第 3 段），所有镜头仅留出表演与呼吸余量，不预置台词。",
+      "群众密度按景别调整：LS 市场全貌约 20 个虚化人影，MS 约 8 人，MCU/CU 背景仅 2~3 个虚化人影。",
+      "米迦尔侧身看向摊位的姿态自镜号 2 建立后保持朝向一致，直至镜号 16 转身；伊恩位置全程不动，仅镜号 5 以 dolly_in 收紧压力。",
+      "镜号 17 为环境插入镜（市场/码头空景），不改变人物空间关系；镜号 24 收束时两人仍保持镜号 21 的对立站位。",
+      "轴线：米迦尔与伊恩保持面对面站位（米迦尔在画面左、伊恩在画面右），全段不越轴；单人与双人镜头均沿此轴线取景。",
+      "相邻镜头满足30°规则：单人与双人机位交替（MS 双人 ↔ MCU/CU 单人），景别至少变化一档。",
+      "景别节奏：建立环境用 LS，对话主力用 MS/MCU，情绪顶点用 CU，段末收束回到 MLS。",
+      "群众密度按景别调整：LS 集市约 20 人，MS 约 8 人，MCU/CU 背景仅 2~3 个虚化人影。",
+      "本段镜头全部为固定机位（static），不使用推拉，避免在未标明动机的段落里泄掉张力。",
+      "对白锚点（镜号50–63）为推测值，本段 25–48 内不挂对白，dialogue_ids 留空待人工确认。",
+      "道具连续性：账本、包裹在本段未出现，若后续段落需要追踪请人工补充。",
+      "空间连续性待确认：伊恩是否已上船（镜号54 转身走向船 / 镜号59 船头回望）需人工确认后统一处理。",
+      "轴线：米迦尔与伊恩保持 facing 站位，全段以两人连线为轴线，机位一律压在轴线同侧（米迦尔在画面左、伊恩在画面右），不越轴。",
+      "银幕方向：船与海始终位于画面右侧（伊恩一侧），米迦尔离场方向为画面左侧，全段保持一致。",
+      "相邻镜头满足 30° 规则：49(LS)→50(MS)→51(MCU)→52(MCU 反打)→53(MS)→54(MS 反打)→55(CU)→56(MLS) 景别或角度逐镜变化；51 与 52 为同一景别但机位反打超过 30°。",
+      "对白归属按剧本声明锚定：镜号50-55、58-63 共 10 句台词，逐镜装入 dialogue_ids，时长均已含 12 帧收尾余量。",
+      "待确认项（保留原样，不做改动）：镜号 54 伊恩转身走向船与镜号 59 伊恩在船头回望的空间连续性、镜号 58/64 是否含时间跳跃、谁先登船（镜号50 与「我先上船」的先后）。",
+      "本段全部镜头 movement 为 static，与意图包（铺垫/揭示/推进/收束/留白）中固定机位一致，不使用 dolly_in。",
+      "群众密度：LS（49/57/64）背景约 20 个虚化人影，MS（50/53/54/58/61）约 8 个，MCU/CU（51/52/55/59/60/62）背景 2~3 个虚化人影。",
+      "情绪走向：沉默 → 平静，镜号 53 为情绪顶点，镜号 58 起进入收束与告别。"
+    ],
+    "character_pose": {
+      "米迦尔": {
+        "position": [
+          -0.9,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          1.0,
+          0.0,
+          0.0
+        ]
+      },
+      "伊恩": {
+        "position": [
+          0.9,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          -1.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "warnings": [
+    "shot_008: head 层动作时间重叠：turn_head(529-538) 与 look_at(534-546)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_008: head 层动作时间重叠：look_at(534-546) 与 look_at(540-550)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_008: head 层动作时间重叠：look_at(540-550) 与 nod(548-558)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_018: base 层动作时间重叠：turn_body(1225-1248) 与 walk_to(1244-1280)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "side=(0.9992009677582759, -0.03996781243607133) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.07745552731790661, 0.9969958080593444) 以保持银幕方向连续",
+    "side=(-0.03996781243607133, -0.9992009677582759) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.9969958080593443, 0.07745552731790649) 以保持银幕方向连续",
+    "shot_026: head 层动作时间重叠：turn_head(1808-1824) 与 look_at(1810-1830)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_029: head 层动作时间重叠：look_at(2041-2064) 与 look_at(2041-2064)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_029: head 层动作时间重叠：turn_head(2080-2100) 与 turn_head(2080-2100)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_034: base 层动作时间重叠：walk_to(2408-2438) 与 turn_body(2416-2438)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_035: head 层动作时间重叠：turn_head(2502-2518) 与 shake_head(2516-2530)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "side=(0.9984382541390802, -0.055866382303721554) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.06157718116295508, 0.9981023247944194) 以保持银幕方向连续",
+    "shot_037: body 层动作时间重叠：body_tilt(2617-2640) 与 body_tilt(2617-2640)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_037: head 层动作时间重叠：turn_head(2644-2660) 与 shake_head(2646-2664)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "side=(0.9984382541390802, -0.055866382303721554) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.06157718116295508, 0.9981023247944194) 以保持银幕方向连续",
+    "side=(0.9573324207076366, 0.28898898986303395) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.3992349358090119, 0.9168486603739867) 以保持银幕方向连续",
+    "shot_042: head 层动作时间重叠：turn_head(2953-2972) 与 look_at(2964-2992)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "side=(0.9573324207076366, 0.28898898986303395) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.3992349358090119, 0.9168486603739867) 以保持银幕方向连续",
+    "shot_044: head 层动作时间重叠：turn_head(3148-3164) 与 look_at(3150-3178)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_045: head 层动作时间重叠：turn_head(3193-3212) 与 turn_head(3193-3212)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_045: head 层动作时间重叠：look_at(3216-3252) 与 look_at(3216-3252)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_055: head 层动作时间重叠：look_at(3913-3960) 与 nod(3932-3944)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_061: base 层动作时间重叠：walk_to(4357-4384) 与 walk_to(4374-4400)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_061: legs 层动作时间重叠：walk_to(4357-4384) 与 walk_to(4374-4400)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "side=(0.11979096013023816, -0.992799136719546) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.9719077887269005, 0.23536195574473517) 以保持银幕方向连续"
+  ],
+  "brief": {
+    "speakers": [
+      {
+        "dialogue_ref": "镜号50",
+        "speaker": "米迦尔",
+        "listener": "伊恩"
+      },
+      {
+        "dialogue_ref": "镜号51",
+        "speaker": "伊恩",
+        "listener": "米迦尔"
+      },
+      {
+        "dialogue_ref": "镜号52",
+        "speaker": "米迦尔",
+        "listener": "伊恩"
+      },
+      {
+        "dialogue_ref": "镜号53",
+        "speaker": "伊恩",
+        "listener": "米迦尔"
+      },
+      {
+        "dialogue_ref": "镜号54",
+        "speaker": "米迦尔",
+        "listener": "伊恩"
+      },
+      {
+        "dialogue_ref": "镜号55",
+        "speaker": "伊恩",
+        "listener": "米迦尔"
+      },
+      {
+        "dialogue_ref": "镜号58",
+        "speaker": "米迦尔",
+        "listener": "伊恩"
+      },
+      {
+        "dialogue_ref": "镜号59",
+        "speaker": "伊恩",
+        "listener": "米迦尔"
+      },
+      {
+        "dialogue_ref": "镜号60",
+        "speaker": "米迦尔",
+        "listener": "伊恩"
+      },
+      {
+        "dialogue_ref": "镜号63",
+        "speaker": "伊恩",
+        "listener": "米迦尔"
+      }
+    ],
+    "gaze": [
+      {
+        "from": "米迦尔",
+        "to": "伊恩",
+        "scope": [
+          "all"
+        ]
+      },
+      {
+        "from": "伊恩",
+        "to": "米迦尔",
+        "scope": [
+          "all"
+        ]
+      }
+    ],
+    "beats": [
+      {
+        "id": "beat_1",
+        "summary": "市场静场，米迦尔与伊恩隔着摊位说话，米迦尔侧身看向摊位，伊恩回应后两人对立，伊恩沉默，米迦尔转身。",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "沉默",
+        "function": "建立"
+      },
+      {
+        "id": "beat_2",
+        "summary": "米迦尔请战，伊恩拒绝，米迦尔坚持，伊恩让步，两人达成一致，米迦尔点头，伊恩转身，米迦尔留在原地。",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "坚持",
+        "function": "铺垫"
+      },
+      {
+        "id": "beat_3",
+        "summary": "两人走到码头停下，伊恩望向海面，米迦尔开口，两人对峙，伊恩反驳，米迦尔沉默，海风吹过两人。",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "对峙",
+        "function": "转折"
+      },
+      {
+        "id": "beat_4",
+        "summary": "米迦尔走进巷口，两人一前一后，伊恩停下脚步，米迦尔回头，两人对视，伊恩低声说话，米迦尔垂眼，两人并肩而立。",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "对视",
+        "function": "转折"
+      },
+      {
+        "id": "beat_5",
+        "summary": "两人进仓库清点货物，伊恩递过账本，米迦尔翻看账本，两人争执，伊恩提高音量，米迦尔合上账本，仓库门外的光。",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "争执",
+        "function": "转折"
+      },
+      {
+        "id": "beat_6",
+        "summary": "夜色中的码头，两人坐在石阶上，伊恩说起往事，米迦尔听着，两人沉默，伊恩抬头看星，米迦尔微笑，远处的灯塔。",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "沉默",
+        "function": "铺垫"
+      },
+      {
+        "id": "beat_7",
+        "summary": "清晨的码头，两人站在船边，伊恩递出包裹，米迦尔接过包裹，两人握手，伊恩转身走向船，米迦尔目送，船离岸。",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "告别",
+        "function": "收束"
+      },
+      {
+        "id": "beat_8",
+        "summary": "码头恢复平静，两人的影子还在，伊恩在船头回望，米迦尔转身离开，市场重新热闹起来，米迦尔走远，伊恩望向远方，空镜头淡出。",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "平静",
+        "function": "收束"
+      }
+    ],
+    "space": [
+      {
+        "character": "米迦尔",
+        "relative_to": "伊恩",
+        "relation": "facing",
+        "distance_class": "social"
+      },
+      {
+        "character": "伊恩",
+        "relative_to": "米迦尔",
+        "relation": "facing",
+        "distance_class": "social"
+      }
+    ],
+    "arc": {
+      "emotion_start": "沉默",
+      "emotion_end": "平静",
+      "turning_point": "镜号12 伊恩让步、两人达成一致"
+    },
+    "props": [],
+    "notes": [
+      "分镜表未标注任何台词归属镜号，10 句对白的镜号锚点（镜号50-63）为按节点顺序的推测，需人工确认。",
+      "剧本只给出 8 个场次标题（第十四街区码头市场/请战/码头/巷口/仓库/夜谈等），未写场次与镜号的对应关系，节点划分依据分镜表作用字段推断。",
+      "角色表只有米迦尔、伊恩两人，但分镜表多处单角色镜头（如镜号1、17、41、49、57）画面内容为环境或空镜，未出现第三人。",
+      "镜号58「两人的影子还在」与镜号64「空镜头」在告别之后，是否表示时间跳跃或闪回，需确认。",
+      "镜号54 伊恩转身走向船、镜号56 船离岸，与镜号59 伊恩在船头回望、镜号63 伊恩望向远方存在空间连续性矛盾，需确认伊恩是否已上船。",
+      "对白中「我先上船」与镜号50「两人站在船边」的先后关系不明，需确认谁先登船。",
+      "道具方面：镜号35 账本、镜号51 包裹有出现但无状态变化描述，未列入 props；若需追踪请人工补充。",
+      "对白时长表标注为 scene_008，与分镜表 64 镜的节点划分不一致，需确认对白实际落在哪些镜号。"
+    ],
+    "source": "llm"
+  },
+  "with_labels": true,
+  "saved_at": "2026-10-04T03:26:21+08:00"
+}
