@@ -306,6 +306,67 @@ def t_the_camera_aims_where_the_character_is_now():
                                 for v in camera.matrix_world.translation]}
 
 
+# --------------------------------------------------------------------------- #
+# 8. R001 必须说清**根因**：是机位摆错，还是"角色走位跨过了轴线"
+#
+# 现场（2026-10-04，`work/_r001_probe.py`）：锚点与接力修好之后仍会红的 10 条
+# R001 里，多数是"人已经走到轴线另一侧"——此时"拍到这张脸"与"待在轴线同侧"
+# 不可能同时满足（`station._honour_the_established_side` 的边界：镜像会把正面
+# 变成背拍，所以它保持模型要的方向、把冲突留给 R001 报）。旧文案只写"把相机移
+# 到另一侧"，修复回路就会去挪机位，白烧回合。
+# --------------------------------------------------------------------------- #
+def _crossing_plan():
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    shots = [
+        # 建立轴线：两人相对而立（char_001 在 −0.9、char_002 在 +0.9）。
+        # 同一镜里 char_001 走到 +Y 3 米——**跨过轴线**。
+        ShotPlan.from_dict({
+            "shot_id": "shot_001", "order": 1, "intent": "建立关系并走过线",
+            "shot_type": "MS", "duration_frames": 48,
+            "characters": ["char_001", "char_002"],
+            "camera": {"side": "front_left", "lens": 35},
+            "actions": [{"character_id": "char_001", "action_type": "walk_to",
+                         "start_frame": 1, "end_frame": 48,
+                         "params": {"target_position": [-0.9, 3.0, 0.0]}}]}),
+        # 单人镜：他已经在另一侧，机位要"拍到他的脸"就回不到同侧
+        ShotPlan.from_dict({
+            "shot_id": "shot_002", "order": 2, "intent": "他的反应",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_001"], "camera": {"side": "front_left"}}),
+    ]
+    return Plan(shots=shots, scene_heading="INT. 码头 - 日")
+
+
+def t_r001_says_whether_a_character_crossed_the_axis():
+    from block_director.contracts.cast import SceneSpec
+    from block_director.layer3_engine.scene_context import get_context
+    from block_director.layer3_engine.shot_auditor import BpyShotAuditor
+    from block_director.layer3_engine.shot_builder import build_scene
+
+    fresh_scene()
+    plan = _crossing_plan()
+    spec = SceneSpec.from_plan(plan)
+    build_scene(plan, spec, clear_scene=True)
+    context = get_context()
+    scene = bpy.context.scene
+    scene.frame_set(int(context.schedule["shot_002"][0]))
+    bpy.context.view_layer.update()
+    placed = context.character("char_001").root.matrix_world.translation
+    side = context.axis.side_of((float(placed.x), float(placed.y)))
+    result = BpyShotAuditor().audit("shot_002")
+    findings = list(result.errors) + list(result.warnings)
+    messages = [item.message for item in findings if item.rule == "R001"]
+    flagged = [text for text in messages if "另一侧" in text and "char_001" in text]
+    return {"ok": bool(flagged),
+            "axis": context.axis.to_dict(),
+            "character_side": side,
+            "character_now": [round(float(placed.x), 3), round(float(placed.y), 3)],
+            "r001_messages": messages,
+            "r001_suggestions": [item.suggestion for item in findings
+                                 if item.rule == "R001"]}
+
+
 def main() -> int:
     capture_main_thread()
     check("axis_established_and_enforced", t_axis_established_and_enforced)
@@ -317,6 +378,8 @@ def main() -> int:
           t_a_dialogue_line_survives_reverse_singles)
     check("the_camera_aims_where_the_character_is_now",
           t_the_camera_aims_where_the_character_is_now)
+    check("r001_says_whether_a_character_crossed_the_axis",
+          t_r001_says_whether_a_character_crossed_the_axis)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

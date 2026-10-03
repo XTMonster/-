@@ -71,6 +71,20 @@ def _character_positions(characters):
     return positions
 
 
+def _crossed_the_axis(axis, character) -> bool:
+    """这个角色是不是已经站到**轴线的另一侧**（相对已确立的基准侧）。
+
+    只看角色**自己**站在哪：轴线上（``SIDE_UNKNOWN``）不算跨线——两人相对而立
+    时单人机位本来就落在轴线上（§6.2 的 `axis_neutral`）。
+    """
+    root = getattr(character, "root", None)
+    if root is None or axis is None:
+        return False
+    side = axis.side_of((float(root.matrix_world.translation.x),
+                         float(root.matrix_world.translation.y)))
+    return side != 0 and side != int(axis.established_side)
+
+
 def _world_aabb(obj) -> AABB:
     corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
     return AABB(minimum=(min(c.x for c in corners), min(c.y for c in corners),
@@ -256,6 +270,19 @@ def check_shot(shot_id: str, *, context=None,
     if context is not None and context.axis is not None:
         message = check_camera_axis(context.axis, camera)
         if message:
+            #: 把**根因**说清楚（2026-10-04 实测）：这条错误有两种完全不同的来源——
+            #: ① 机位自己摆错（把机位移回去就行）；② **角色走位跨过了轴线**，
+            #: 于是"要拍到这张脸"与"待在轴线同侧"不可能同时满足（`station._honour_
+            #: the_established_side` 的边界就是这种情况：镜像会把正面变成背拍，
+            #: 所以它保持模型要的方向、把冲突留给 R001 如实报）。修复回路按旧文案
+            #: 只会去挪机位，白烧回合；这里点出"谁已经站到另一侧"。
+            crossed = [character.id for character in characters
+                       if _crossed_the_axis(context.axis, character)]
+            if crossed:
+                message += ("（{} 已经站到轴线的另一侧：这一镜的走位跨线，"
+                            "只挪机位修不动——请改这一镜的走位或机位角度，"
+                            "或按 §6.2 插入中性镜头过渡）"
+                            .format("、".join(crossed)))
             findings.append(_error(
                 "R001", "E_AXIS_001", message, target=shot_id,
                 suggestion="将相机移到轴线另一侧，或插入中性镜头过渡"))
