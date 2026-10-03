@@ -347,6 +347,14 @@ RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence
 `.gitignore` 加了 `docs/evidence/**/project/export/`——那是**可重生成**的嵌套导出，
 不排除的话按字面跑一次步骤 3 就会往工作树丢 132 个未跟踪文件。
 
+**§4.4 步骤 1 的 `--preset fhd16x9` 也补上了**（文档写"必给"）：链上此前没传，
+跑的是默认 hd16x9 = 1280×720，而**入库的 `docs/evidence/offline_run1/export/shots.json`
+是 `[1920,1080]`**——同一条命令在两处给出不同分辨率。现在带 `--preset fhd16x9`
+并**从产物**（`<out>/export/shots.json` 的 `resolution`）断言 `1920x1080`。
+注意 **RK-4/RK-14 的探针不会替它兜底**：`test_character_geometry.py` 用的是自己的
+`WIDTH, HEIGHT = 640, 360`。成本已实测：64 镜 fhd16x9 离线 **293 s**（默认 159 s），
+链上总时长约 19 分钟。
+
 **链上的真实运行证据换成了 `docs/evidence/20261003_real_ds/`**（DeepSeek 上游，
 run `37d8ad2294df`）：它是**逐镜契约串开始带剧本声明手法**之后的第一跑，也是
 `shots.json.retrieval_calls` 与审计事件第一次一致的一跑（7 = 7，`--check` 零警告）。

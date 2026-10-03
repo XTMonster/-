@@ -213,6 +213,35 @@ def test_the_chain_also_runs_step_3_the_rebuild():
     assert "rebuildJson.export" in joined, "重建带了 --export，就必须断言导出块"
 
 
+def test_step_1_runs_at_the_preset_the_doc_calls_mandatory():
+    """§4.4 步骤 1 的命令里 `--preset fhd16x9` 是**必给**的，链上此前没给。
+
+    文档的理由是"随分辨率变的是 RK-4 的眼簇与 RK-14 的头球直径"，而默认 preset 是
+    hd16x9 = 1280×720。实测两条硬证据：
+
+    * **入库的 `docs/evidence/offline_run1/export/shots.json` 是 `[1920, 1080]`**——
+      也就是说当初按文档跑出来的那份产物用的是 fhd16x9，而链上那条命令跑的是默认；
+    * `run_headless.py` 的 `--preset` 确实存在、也确实写进 `config.delivery.preset`
+      （`:115-118`），所以问题不在开关，而在链上没传。
+
+    这条用例钉住"传了"与"断言了产物分辨率"两件事——只传不断言，开关空转时没人会发现
+    （RK-4/RK-14 的探针有自己的 640×360 分辨率常量，所以它们**不会**替这条命令兜底）。
+    """
+    lines = [line for _number, line in live_lines(chain_text())]
+    calls = [line for line in lines if "run_headless.py" in line]
+    assert calls, "链上没有 run_headless.py 的活行"
+    assert any("fhd16x9" in line for line in calls), (
+        "§4.4 步骤 1 的命令必须显式给 --preset fhd16x9")
+    joined = "\n".join(lines)
+    assert "shots.json" in joined and "1920x1080" in joined, (
+        "只传 --preset 不够：必须从导出的 shots.json 断言分辨率真的变了")
+    # 负对照：Probe 侧的 RK-4/RK-14 用的是自己的小分辨率，不会替这条兜底。
+    geometry = (ROOT / "tools" / "blender_tests" / "test_character_geometry.py"
+                ).read_text(encoding="utf-8")
+    assert "WIDTH, HEIGHT = 640, 360" in geometry, (
+        "如果哪天 RK-4/RK-14 的探针改吃 preset，这条用例的前提要重写")
+
+
 def test_the_nested_rebuild_export_is_gitignored():
     """按字面跑步骤 3 会在 `<project>/export/` 留一份**可重生成**的输出。
 

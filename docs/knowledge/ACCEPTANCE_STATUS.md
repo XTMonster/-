@@ -3230,3 +3230,44 @@ rebuild (no LLM): 64 shots / 4584 frames reproduced
 `rebuild_project.py` 的活行且带 `--project`/`--export`，并断言
 `rebuildJson.shots`/`total_frames` 相等与 `export` 块；② `.gitignore` 必须排除
 那类嵌套导出。
+
+## 四十七、P14-35（2026-10-03 12:2x）：**§4.4 步骤 1 的 `--preset` 补上了**（链上此前跑的是默认分辨率）
+
+### 47.1 病：命令少一个"文档说必给"的参数，产物分辨率就不对
+
+§4.4 步骤 1 的命令里 `--preset fhd16x9` 带着一段明确的理由："**必须显式给
+`--preset`**：随分辨率变的是 RK-4 的眼簇与 RK-14 的头球直径……而默认 preset 是
+hd16x9 = 1280×720——不给就会按错分辨率判定"。而链上那条命令**没给**。
+
+两条硬证据说明这不是小题大做：
+
+1. **入库的 `docs/evidence/offline_run1/export/shots.json` 写着 `[1920, 1080]`**——
+   当初按文档跑出来的那份产物用的是 `fhd16x9`；链上跑的却是默认 1280×720，
+   **同一份命令在两处给出不同分辨率**。
+2. `run_headless.py` 的 `--preset` **存在且真的写进 `config.delivery.preset`**
+   （`:115-118`）——所以问题不在开关，而在链上没传：开关空转，谁也不会发现。
+
+**注意 RK-4/RK-14 的探针不会替这条兜底**：`tools/blender_tests/test_character_geometry.py`
+用的是自己的 `WIDTH, HEIGHT = 640, 360`（眼簇与头球在那个尺度上才可量）。所以
+"探针全绿"证明不了"步骤 1 跑在文档要求的分辨率上"。
+
+### 47.2 修：加上 `--preset fhd16x9`，并从**产物**断言分辨率
+
+链上步骤 4 现在带 `--preset fhd16x9`，重建之前先读 `<out>/export/shots.json` 的
+`resolution` 并断言是 `1920x1080`——只传不断言，下次有人把 preset 摘掉仍然全绿。
+实测（证据 `docs/evidence/20261003-122335/`）：
+
+```
+long baseline: 64 shots, 144 llm calls (ceiling 552)
+delivery resolution: 1920x1080 (--preset fhd16x9)
+rebuild (no LLM): 64 shots / 4584 frames reproduced
+All checks passed（31/31 探针 ＋ 门①–⑩ ＋ K1–K4）
+```
+
+**成本已实测**：64 镜在 fhd16x9 下离线 **293 秒**（默认 hd16x9 是 159 秒），
+链上总时长因此约 19 分钟。这是"按文档跑"的代价，不是可以省的。
+
+用例：`tests/test_chain_evidence_is_measured.py` 新增一条——活行必须带 `fhd16x9`，
+必须出现 `shots.json` 与 `1920x1080` 的断言，并用一条**负对照**钉住
+"RK-4/RK-14 的探针用的是自己的 640×360，不会替这条兜底"（哪天探针改吃 preset，
+这条用例的前提要重写）。

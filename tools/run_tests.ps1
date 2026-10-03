@@ -216,7 +216,13 @@ Write-Host ('  ' + $smokeLine.Line) -ForegroundColor Green
 # the cross-shot machinery meet real execution.
 Write-Host ("[4/{0}] Run the add-on headless (plan -> scene -> delivery, one command)" -f $total) -ForegroundColor Cyan
 $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
-$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--out', $out, '--save', (Join-Path $out 'project'), '--export')
+# `--preset fhd16x9` is part of section 4.4 step 1's command and the doc says it is
+# MANDATORY (RK-4's eye clusters and RK-14's head sphere scale with resolution; the
+# default preset is hd16x9 = 1280x720).  Measured: the committed
+# docs/evidence/offline_run1/export/shots.json is 1920x1080, i.e. the recorded run
+# used fhd16x9 - while this chain step was running at the default.  At fhd16x9 the
+# long baseline takes 293 s instead of 159 s and still finishes DONE with 64 shots.
+$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--preset', 'fhd16x9', '--out', $out, '--save', (Join-Path $out 'project'), '--export')
 $marker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_RESULT' 'headless'
 if ($marker -notmatch '"success": true') { Fail ('  FAILED: ' + $marker) }
 if ($marker -notmatch '"built": true') { Fail '  FAILED: the run did not build a scene' }
@@ -239,6 +245,16 @@ if ($longCalls -gt $ceiling) {
 }
 Write-Host ('  long baseline: ' + $longShots + ' shots, ' + $longCalls +
             ' llm calls (ceiling ' + $ceiling + ')') -ForegroundColor DarkGray
+# The preset is only real if it reached the delivery config - assert the artifact.
+$shotsPath = Join-Path $out 'export\shots.json'
+if (-not (Test-Path $shotsPath)) { Fail '  FAILED: step 1 wrote no export/shots.json' }
+$shotsJson = ([System.IO.File]::ReadAllText($shotsPath,
+              [System.Text.Encoding]::UTF8) | ConvertFrom-Json)
+$gotResolution = ($shotsJson.resolution -join 'x')
+if ($gotResolution -ne '1920x1080') {
+    Fail ('  FAILED: step 1 must run at --preset fhd16x9 (1920x1080), got ' + $gotResolution)
+}
+Write-Host ('  delivery resolution: ' + $gotResolution + ' (--preset fhd16x9)') -ForegroundColor DarkGray
 
 # Section 4.4 STEP 3: rebuild the scene from STEP 1's saved project, with no LLM
 # call at all.  Measured 2026-10-03: `tools/rebuild_project.py` was called by
