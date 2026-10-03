@@ -233,6 +233,43 @@ def test_base_pose_preserves_placement():
     assert trace[24][CH_ROOT_LOC] == pytest.approx((0.75, 0.0, -0.2))
 
 
+def test_a_base_action_does_not_erase_the_placement_for_a_later_one():
+    """同层里"只写一个通道"的动作不得把该层的其它通道从基线上抹掉。
+
+    真实长剧本运行暴露的缺陷（2026-10-03）：``turn_body`` 只写
+    ``root.rotation_z``，于是 `compose` 把 base 层的状态**整份替换**成
+    "只有旋转"的一份；随后 ``sit``/``stand`` 冻结接管时读到的基线里
+    **没有** ``root.location``，角色被瞬移到世界原点——两人重叠、构图
+    门整片判红。基姿态是**逐通道**累积的，不是"最后一个动作的通道集合"。
+    """
+    base = {CH_ROOT_LOC: (0.75, -1.25, 0.0), CH_ROOT_ROT_Z: 0.0}
+    trace = compose([ActionRequest("turn_body", 1, 10, {"angle_deg": 90.0},
+                                   "c", "turn"),
+                     ActionRequest("sit", 20, 30, {"drop": 0.2}, "c", "sit")],
+                    base_pose=base)
+    assert trace[20][CH_ROOT_LOC] == pytest.approx((0.75, -1.25, 0.0))
+    assert trace[25][CH_ROOT_LOC] == pytest.approx((0.75, -1.25, -0.1))
+    assert trace[30][CH_ROOT_LOC] == pytest.approx((0.75, -1.25, -0.2))
+    assert trace[10][CH_ROOT_ROT_Z] == pytest.approx(math.radians(90.0), abs=1e-3)
+
+
+def test_a_later_walk_keeps_the_placement_after_an_earlier_turn():
+    """同一缺陷的另一条通道组合：转身之后走位也不能从原点起步。"""
+    base = {CH_ROOT_LOC: (0.9, 0.0, 0.0), CH_ROOT_ROT_Z: 0.0}
+    trace = compose([ActionRequest("turn_body", 1, 10, {"angle_deg": 45.0},
+                                   "c", "turn"),
+                     ActionRequest("walk_to", 20, 44,
+                                   {"from": (0.9, 0.0, 0.0),
+                                    "target_position": (0.9, 2.0, 0.0)},
+                                   "c", "walk")],
+                    base_pose=base)
+    assert trace[20][CH_ROOT_LOC][0] == pytest.approx(0.9)
+    assert trace[44][CH_ROOT_LOC][1] == pytest.approx(2.0)
+    # 走位写的是同一个"基础层"通道，基线里必须还带着那次转身：
+    # 走位内的朝向是**叠加**在既有朝向上（接管冻结），不是从 0 重来。
+    assert trace[20][CH_ROOT_ROT_Z] == pytest.approx(math.radians(45.0), abs=1e-3)
+
+
 def test_jump_is_a_parabola():
     trace = compose([ActionRequest("jump", 1, 24, {"height": 0.3})])
     heights = [trace[f][CH_ROOT_LOC][2] for f in range(1, 25)]

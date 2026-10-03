@@ -830,7 +830,13 @@ def compose(requests: Iterable[ActionRequest],
                     composed[channel] = tuple(v / weight_sum for v in value)  # type: ignore[union-attr]
                 else:
                     composed[channel] = value / weight_sum  # type: ignore[operator]
-            layer_state[layer] = composed
+            #: **逐通道**累积，而不是"用本帧算出的通道整份替换层状态"。
+            #: v1.4 缺陷（2026-10-03 长剧本真跑暴露）：``turn_body`` 只写
+            #: ``root.rotation_z``，替换式写法会把该层的 ``root.location``
+            #: 从状态里删掉；此后 ``sit``/``stand``/``walk_to`` 冻结接管时
+            #: 读到的基线里没有摆位，于是角色被瞬移到世界原点——两人重叠、
+            #: 构图门整片判红。未被本帧任何动作写入的通道必须**原样带过**。
+            layer_state[layer] = {**current, **composed}
             frame_pose.update(composed)
         trace[frame] = frame_pose
     return trace
