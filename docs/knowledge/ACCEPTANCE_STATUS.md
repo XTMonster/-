@@ -2963,3 +2963,52 @@ python -m pytest 全绿；run_tests.ps1 31/31 探针 + All checks passed
   `tests/test_q5_run_join.py`（契约串本身，含"两侧相同时去重"与"没有声明不许凭空
   加键"两条反向对照）、`tests/test_q5_audit_channel.py`（**读提交里的两份真实运行
   分片**对拍修复前后的发出串）、`tests/test_plan_dead_fields.py`（字段进出计划）。
+
+## 四十一、P14-29（2026-10-03 10:4x）：**K1–K4 第一次进了验收链**——RK-13 的前置一直没人查
+
+### 41.1 病：文档写了"前置"，机器没查
+
+§4.1 的 RK-13 行把 **K1–K4** 写成它的**前置**（"语料合规与覆盖"）：
+K1 出处完整性 =100%、K2 许可合规率 =100%、K3 每域 ≥60 张且任一域 ≥5%、
+K4 去重有效率 ≥60%。它们的**计算**在 `tools/kb_fetch/import_cards.py` 里，
+但那只在**重跑导入**的时候发生——验收链读的是**入库产物**：
+
+```
+$ rg -n "K1|K2|K3|K4" tools/knowledge/hard_gates.py tools/run_tests.ps1
+（零命中）
+```
+
+于是"卡被重新生成、`import_report.json` 没跟上""有人手改了语料""去重其实没跑"
+这三种情况，链上**一个都不会红**。这与 Q0/E3 当初"协议写了、链上从没量过"是
+同一个形状——本项目已经为它付过两次代价。
+
+### 41.2 修：从**入库语料**重算，再与构建期账本对拍
+
+新增 `tools/knowledge/corpus_gates.py`，四门各有明确的分母与下界（§4.1b）：
+
+| 门 | 判据 | 怎么做到不读自报 |
+|---|---|---|
+| `K1_source_ref_complete` | `source_ref` 六字段全非空 = 100% | **从 `knowledge/cards_generated/*.jsonl` 逐张重算**，一个字的构建期报告都不读 |
+| `K2_license_ratio` | 许可 ∈ `common.LICENSE_WHITELIST` = 100% | 同上（白名单是代码里的唯一真源） |
+| `K3_domain_floor` | 九域每域 ≥60 张且任一域 ≥5% | 同上；**手写策展卡计入语料**（§2.3c 的"5 域 132 张"就是这个口径） |
+| `K4_dedupe_ratio` | `kept/(candidates+deduped) ≥ 60%` | 分母（被去掉的重复文档）**不在入库语料里**，只能读构建期账本——所以加了两条独立约束：① 账本的 `cards_kept` 必须**等于入库卡数**、分母 ≥540；② **入库语料里不许有完全重复的卡**（同一 `sha256` ＋ 同一 `source_span`），否则"去重"这件事本身没发生 |
+
+四门的 `status` 一律进 `quality.py` 的**同一份** `knowledge_quality.json`，
+`hard_gates.HARD_IDS` 同时加上这四个 id——按 id 读的就是那一份，分成两处等于没门。
+空语料一律判失败（§4.1b 硬规则 1：分母为 0 不是"通过"）。
+
+### 41.3 实测（证据 `docs/evidence/20261003-104455/`）
+
+```
+[pass] K1_source_ref_complete: 2221 张生成卡的 source_ref 六字段全部非空
+[pass] K2_license_ratio:       2221 张卡的许可全部在白名单内
+[pass] K3_domain_floor:        九域覆盖：2353 张，最小域 154 张，最小占比 0.0654
+[pass] K4_dedupe_ratio:        去重有效率 1.0000（kept 2221 / (2221 ＋ 0)），入库语料无完全重复卡
+链上：门①–⑩ 全 pass，`not passing: Q5,E1`——K1–K4 不在其中，说明它们真的过了
+```
+
+用例 `tests/test_corpus_gates.py`（12 条）：每条门一个**反例**（缺出处字段、
+白名单外许可、某域只有 10 张、某域整域缺席、账本说 99 张而语料 630 张、
+语料里仍有完全重复的卡、有效率 0.5、账本缺失记 `not_measured`），外加两条正对照
+（入库语料四门全过且数字非平凡；手写卡默认计入 K3 的口径）与一条"空语料不许真空
+通过"。**没有**放宽任何已有判据。

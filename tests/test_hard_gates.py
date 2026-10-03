@@ -71,8 +71,11 @@ def test_the_report_the_chain_used_to_produce_is_rejected():
                        ("Q1", "Q2", "Q3", "Q4", "Q6a", "Q6b", "Q7")]}
     result = hard_gates.verdict(old)
     assert result["passed"] is False
+    #: 2026-10-03：K1–K4（§2.3c 的语料前置）也归位成门，所以这份老报告同时缺它们。
     assert set(result["missing"]) == {"Q0", "Q4_pre_required_edges_exist",
-                                     "E3", "E3_cases", "Q5", "E1"}
+                                     "E3", "E3_cases", "Q5", "E1",
+                                     "K1_source_ref_complete", "K2_license_ratio",
+                                     "K3_domain_floor", "K4_dedupe_ratio"}
 
 
 def test_the_two_gates_the_spec_names_are_hard_not_soft():

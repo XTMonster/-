@@ -303,11 +303,17 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-03 10:2x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-03 10:4x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 是结构性不可达、E1 是语料
 适配度），`E2` 是诊断量。`python -m pytest` 全绿、`run_tests.ps1` 31/31。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence/20261003-094528/`，
-逐条见 `ACCEPTANCE_STATUS.md` §三十五…§四十。**
+逐条见 `ACCEPTANCE_STATUS.md` §三十五…§四十一。**
+
+**K1–K4（RK-13 的语料前置）已进链**：`tools/knowledge/corpus_gates.py` 从**入库语料**
+重算 K1/K2/K3（一个字都不读构建期报告），K4 的账本必须与语料对得上、且入库语料不许有
+完全重复的卡；四个 id 进 `hard_gates.HARD_IDS`，写在**同一份** `knowledge_quality.json`。
+实测全 pass（2221 张卡、九域最小 154 张 / 6.54%、去重有效率 1.0），
+证据 `docs/evidence/20261003-104455/`，用例 `tests/test_corpus_gates.py`。
 
 **链上的真实运行证据换成了 `docs/evidence/20261003_real_ds/`**（DeepSeek 上游，
 run `37d8ad2294df`）：它是**逐镜契约串开始带剧本声明手法**之后的第一跑，也是

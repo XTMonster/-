@@ -52,6 +52,11 @@ from tools.knowledge.run_evidence import (  # noqa: E402
     normalise_query_pairs,
     run_query_mirror,
 )
+from tools.knowledge.corpus_gates import (  # noqa: E402
+    DEFAULT_CARDS_DIR,
+    DEFAULT_REPORT,
+    corpus_metrics,
+)
 from tools.holdout_score import load_graph, load_holdout, score_entries  # noqa: E402
 
 PASS, FAIL, NA = "pass", "fail", "not_measured"
@@ -664,10 +669,19 @@ def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
                  manifest: Path, rejects: Path, cases: Optional[Path],
                  shots: Optional[Path], e1_reviews: Optional[Path],
                  audit_log: Optional[Path] = None, audit_run_id: str = "",
+                 cards_dir: Optional[Path] = None,
+                 import_report: Optional[Path] = None,
                  top_k: int, token_limit: int) -> Dict[str, Any]:
     graph = load_graph(ROOT / nodes, ROOT / edges)
     entries = load_holdout(ROOT / holdout)
     metrics: List[Dict[str, Any]] = [q0_build_gate(ROOT / manifest, ROOT / rejects)]
+    #: §2.3c 的 **K1–K4**（RK-13 的**前置**，文档写了、链上此前从没查过）。
+    #: 它们从**入库语料**重算（K1/K2/K3 完全不读构建期报告），K4 的账还要与语料对得上。
+    #: 放在这里而不是单开一份文件，是因为 `hard_gates.py` 按 id 读**同一份报告**：
+    #: 分成两处，某天门变空了不会有任何东西红。
+    metrics.extend(corpus_metrics(
+        cards_dir if cards_dir is not None else DEFAULT_CARDS_DIR,
+        import_report if import_report is not None else DEFAULT_REPORT))
 
     if not entries:
         metrics.append({"id": "Q1-Q7", "status": NA,
@@ -719,6 +733,10 @@ def main(argv=None) -> int:
                              "（§4.1b 硬规则 2）")
     parser.add_argument("--audit-run-id", default="",
                         help="累积日志里混了多跑时用它点名（不给则记 not_measured）")
+    parser.add_argument("--cards-dir", default=str(DEFAULT_CARDS_DIR),
+                        help="生成卡目录（K1/K2/K3 从它重算）")
+    parser.add_argument("--import-report", default=str(DEFAULT_REPORT),
+                        help="构建期账本（K4 的分母来源；与语料对不上即判失败）")
     parser.add_argument("--e1-reviews", default="")
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--token-limit", type=int, default=2000)
@@ -736,6 +754,8 @@ def main(argv=None) -> int:
         e1_reviews=Path(args.e1_reviews) if args.e1_reviews else None,
         audit_log=Path(args.audit_log) if args.audit_log else None,
         audit_run_id=args.audit_run_id,
+        cards_dir=Path(args.cards_dir),
+        import_report=Path(args.import_report),
         top_k=args.top_k, token_limit=args.token_limit)
 
     target = Path(args.out) if args.out else ROOT / "docs" / "evidence" / run_id / "knowledge_quality.json"
