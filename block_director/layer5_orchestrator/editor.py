@@ -24,7 +24,12 @@ from ..contracts.messages import (
 )
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.tools import SHOT_DRAFT_TOOL
-from ..motion.model import ACTION_TYPES, ALL_ACTION_PARAM_KEYS, unknown_action_params
+from ..motion.model import (
+    ACTION_PARAMS,
+    ACTION_TYPES,
+    ALL_ACTION_PARAM_KEYS,
+    unknown_action_params,
+)
 from .react import render_shot_memory, shot_memory
 from .scene_contract import shot_constraint_query
 
@@ -168,6 +173,11 @@ EDITOR_SYSTEM_PROMPT = """\
 - 相机用**相对描述**（side / lens），不要给坐标——距离与高度由引擎按景别推导；
 - 角色移动必须给出目标位置与起止帧，且同一角色的动作不可时间重叠；
 - 对白必须落在镜头时长内，并留出收尾余量；
+- **动作参数只能用它自己那一行的键**（下表就是唯一真源，由引擎的参数表生成）：
+  写别的键、或用同义词（`toward`／`degrees`／`base_z` 之类），**整条草案会被退回**，
+  这一镜就只剩计划里的内容了。实测代价（2026-10-03 的 64 镜真跑）：**62/64 条草案
+  因为参数名不认识被判无效**——不是模型不会拍，是没人告诉它键叫什么。
+{action_params}
 - 若下面的镜头计划里已经列出了台词，必须**逐字照抄**：只补起止帧，
   不得改写、增删，也不得把别的镜头的台词搬过来；
 - 只调用 emit_shot_draft 提交，不要输出其他内容。
@@ -180,6 +190,26 @@ EDITOR_SYSTEM_PROMPT = """\
 {scene_text}
 </untrusted_script_content>
 """
+
+
+def render_action_params() -> str:
+    """动作 → 允许的参数键（**从 `motion/model.py::ACTION_PARAMS` 生成**，不手抄）。
+
+    为什么必须进提示词（2026-10-03 的 64 镜真跑实测）：工具 schema 的 `params`
+    只声明了**全部动作的键的并集**（`ALL_ACTION_PARAM_KEYS`），于是模型合理地
+    以为"`stand` 也能写 `base_z`"——那一跑 **62/64 条草案**因为"这个动作不认识
+    这个参数"被判无效，而无效的草案是**整条丢掉**的（这一镜只剩计划内容，
+    没有动作、没有取景、没有对白时间轴）。B1 于是形同虚设。
+
+    表本身是**生成的**：`ACTION_PARAMS` 改了，提示词跟着变（同一份真源），
+    因此不需要"记得同步改提示词"这种纪律。
+    """
+    lines = ["  · 动作参数表（**只写这一行里有的键**；参数值用数字/坐标数组）："]
+    for kind in sorted(ACTION_PARAMS):
+        keys = "、".join(f"`{key}`" for key in ACTION_PARAMS[kind])
+        lines.append(f"    - `{kind}`：{keys}")
+    lines.append("  · 上表之外的动作不许带 `params`（引擎按默认值演）。")
+    return "\n".join(lines)
 
 
 @dataclass
@@ -264,6 +294,7 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                    .replace("{continuity}", continuity_text)
                    .replace("{characters}", "、".join(characters) or "（未指定）")
                    .replace("{props}", "、".join(props) or "（无）")
+                   .replace("{action_params}", render_action_params())
                    .replace("{knowledge}", knowledge or "（本次未启用知识库）")
                    .replace("{scene_text}", scene_text or "（无）"))
     return ChatPayload(

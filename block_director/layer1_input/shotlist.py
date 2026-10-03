@@ -354,7 +354,8 @@ def parse_shot_list(text: str, *, title: str = "",
 
 
 def render_declared_shots(script, *, fps: int = 24,
-                          max_shots: int = 0) -> str:
+                          max_shots: int = 0, only=None,
+                          note: str = "") -> str:
     """把分镜表的逐镜声明渲染成规划提示里的一段（**硬约束**）。
 
     这是 R015「声明一致性」在提示侧的对应物：先告诉模型约束是什么，
@@ -363,6 +364,12 @@ def render_declared_shots(script, *, fps: int = 24,
 
     v1.4 BW-3：``max_shots = 0``（默认）表示**不限**，全部声明都进提示；
     ``> 0`` 时超过上限直接报 ``E_SCRIPT_002``，不再印"（其余 N 个镜号略）"。
+
+    v1.5：``only`` 给一组镜号时**只渲染这一段**，``note`` 插在抬头之后。
+    它服务的是"长分镜表分块出计划"（`planner.plan_chunks`）：一段 16–24 个镜号
+    的计划输出能稳稳落在任何供应商的输出预算里，而全表 64 镜的输出会撞上限
+    （实测：`emit_plan` 参数 ≈16.5 KB，DeepSeek 的输出上限就卡在那里）。
+    ``max_shots`` 的上限检查仍按**全表**判——分块不是放宽声明的约束。
     """
     shots = list(getattr(script, "declared_shots", []) or [])
     if not shots:
@@ -377,7 +384,13 @@ def render_declared_shots(script, *, fps: int = 24,
         "分镜表声明（**硬约束**：镜号的数量与顺序、镜别、时长、出场角色、"
         "台词文本都不许改动；你只补它没写的东西）：",
     ]
-    for shot in (shots[:limit] if limit > 0 else shots):
+    window = shots[:limit] if limit > 0 else shots
+    if only is not None:
+        wanted = {int(item) for item in only}
+        window = [shot for shot in window if int(shot.shot_number) in wanted]
+    if note:
+        lines.append(note)
+    for shot in window:
         parts = [f"镜号{shot.shot_number}"]
         if shot.shot_type:
             parts.append(shot.shot_type)

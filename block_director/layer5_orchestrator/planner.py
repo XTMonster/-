@@ -28,6 +28,18 @@ from .scene_contract import declared_constraint_query
 #: 再抄一份：抄一份就会在扩域时漂，而 `意图=` 是逐镜检索真的会发的键。
 INTENT_VALUES: tuple = tuple(VALUE_DOMAINS["intent"])
 
+#: 阶段 A 一次 `emit_plan` 最多提交多少个镜头（**长分镜表分块出计划**）。
+#:
+#: 为什么需要它（2026-10-03 真跑实测）：`emit_plan` 的参数是**一整份**分镜计划，
+#: 64 镜的 JSON 约 **16.5 KB**，正好压在 DeepSeek 的输出上限（8k completion
+#: tokens）上——那一跑 `state=ERROR`、0 镜，两次重试都在同一列被切断。模型没错，
+#: 是"一次说这么多话"的预算不够；而这个预算**不由我们决定**（供应商给多少就是多少）。
+#: 分段之后每段的输出只有原来的 1/3 左右，任何 ≥8k 输出的模型都稳；
+#: 文档 §2.4 的调用预算 `max(200, shots*8+40)` 本来就容得下
+#: （64 镜 = 3 次计划调用 ＋ 64 次逐镜）。
+#: 24 是"段数与单段体量"之间的折中：64 镜 → 3 段，每段 24 镜 ≈ 6 KB。
+PLAN_CHUNK_SHOTS = 24
+
 PLAN_TOOL_NAME = PLAN_TOOL
 
 # emit_plan 的参数 schema：与 §7.2 的分镜计划结构一致。
@@ -83,6 +95,32 @@ def plan_parameters(max_shots: int = 0) -> Dict[str, Any]:
 }
 
 
+def plan_chunks(parsed, *, size: int = PLAN_CHUNK_SHOTS) -> List[Dict[str, Any]]:
+    """把分镜表的声明切成每段 ≤ ``size`` 镜，返回段描述（**不猜**：没有声明就不分块）。
+
+    每段是 ``{"index", "total", "start", "stop", "shot_numbers"}``：
+    ``start/stop`` 是**声明列表里的位置**（给离线替身切片用），
+    ``shot_numbers`` 是**分镜表原编号**（给提示与合并用——镜号是剧本给的，不是位置）。
+    """
+    declared = list(getattr(parsed, "declared_shots", []) or [])
+    if not declared:
+        return []
+    chunk = max(1, int(size or PLAN_CHUNK_SHOTS))
+    total = (len(declared) + chunk - 1) // chunk
+    out: List[Dict[str, Any]] = []
+    for start in range(0, len(declared), chunk):
+        window = declared[start:start + chunk]
+        out.append({
+            "index": len(out),
+            "total": total,
+            "start": start,
+            "stop": start + len(window),
+            "shot_numbers": [int(getattr(shot, "shot_number", 0) or 0)
+                             for shot in window],
+        })
+    return out
+
+
 #: 默认（``max_shots=0`` = 不限）的 schema。运行时按配置重建（见 ``plan_parameters``）。
 EMIT_PLAN_TOOL_PARAMETERS: Dict[str, Any] = plan_parameters(0)
 
@@ -132,7 +170,8 @@ def build_plan_payload(script: str, config=None,
                        request_id: Optional[str] = None,
                        parsed=None, retriever=None,
                        max_tokens: Optional[int] = None,
-                       brief=None) -> ChatPayload:
+                       brief=None, chunk: Optional[Dict[str, Any]] = None,
+                       plan_chunks_total: int = 0) -> ChatPayload:
     """构造阶段 A 的请求。
 
     给了 ``parsed``（Layer 1 的解析结果）时，提示里放**结构化摘要 + 对白时长表**
@@ -146,6 +185,12 @@ def build_plan_payload(script: str, config=None,
     时，把它渲染成一段受 ``brief.max_tokens`` 约束的说明注入 system——
     "谁对谁说、谁看谁、情绪怎么走"这三件事只有在 system 里才不会被
     ``trim_messages`` 裁掉。
+
+    v1.5：给了 ``chunk``（:func:`plan_chunks` 的一段）时，只渲染**这一段**的声明，
+    并告诉模型"这是第 k/n 段，只提交这一段里的镜号"；请求的 ``metadata`` 里
+    带上同一份段描述，好让离线替身与审计都能复算"这一问的是哪一段"。
+    ``plan_chunks_total <= 1``（或没有 chunk）时**一个字都不加**——短剧本的提示
+    与分块前逐字节相同。
     """
     temperature = 0.7
     timing_source = "script_first"
@@ -167,7 +212,19 @@ def build_plan_payload(script: str, config=None,
         if config is not None:
             max_shots = int(getattr(getattr(config, "orchestration", None),
                                     "max_shots", 0) or 0)
-        declared = render_declared_shots(parsed, max_shots=max_shots)
+        note = ""
+        if chunk is not None and int(plan_chunks_total or 0) > 1:
+            numbers = chunk.get("shot_numbers") or []
+            span = (f"镜号 {numbers[0]}–{numbers[-1]}"
+                    if len(numbers) > 1 else f"镜号 {numbers[0]}" if numbers else "（空段）")
+            note = (f"**本段是第 {int(chunk.get('index', 0)) + 1}/{int(plan_chunks_total)} 段，"
+                    f"只包含 {span}**——只提交这一段里的镜头，"
+                    f"镜号保持分镜表的原编号，不要补别的段。")
+        declared = render_declared_shots(
+            parsed, max_shots=max_shots,
+            only=(chunk.get("shot_numbers") if chunk is not None
+                  and int(plan_chunks_total or 0) > 1 else None),
+            note=note)
         if declared:
             body = f"{body}\n\n{declared}"
     else:
@@ -196,11 +253,22 @@ def build_plan_payload(script: str, config=None,
     if config is not None:
         max_shots = int(getattr(getattr(config, "orchestration", None),
                                 "max_shots", 0) or 0)
+    metadata: Dict[str, Any] = {}
+    if chunk is not None and int(plan_chunks_total or 0) > 1:
+        metadata["plan_chunk"] = {
+            "index": int(chunk.get("index", 0)),
+            "total": int(plan_chunks_total),
+            "start": int(chunk.get("start", 0)),
+            "stop": int(chunk.get("stop", 0)),
+            "shot_numbers": list(chunk.get("shot_numbers") or []),
+        }
     return ChatPayload(
         messages=[
             Message(role=MessageRole.SYSTEM, content=system_text),
             Message(role=MessageRole.USER,
-                    content="请基于上述剧本，调用 emit_plan 提交完整分镜计划。"),
+                    content=("请基于上述剧本，调用 emit_plan 提交**这一段**的分镜计划。"
+                             if metadata else
+                             "请基于上述剧本，调用 emit_plan 提交完整分镜计划。")),
         ],
         tools=[{"type": "function",
                 "function": {"name": PLAN_TOOL_NAME,
@@ -212,6 +280,7 @@ def build_plan_payload(script: str, config=None,
                                   if config is not None else None),
         purpose=Purpose.PLAN,
         request_id=request_id or new_request_id(),
+        metadata=metadata,
     )
 
 

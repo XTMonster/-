@@ -132,6 +132,13 @@ class ChatPayload:
     purpose: Purpose = Purpose.REACT
     max_tokens: Optional[int] = None
     request_id: str = field(default_factory=new_request_id)
+    #: v1.5：**厂商无关的调用元数据**（可选）。当前唯一的使用者是"长分镜表分块出
+    #: 计划"：`plan_chunk` 记录这一问覆盖分镜表的哪一段（`index/total/start/stop`
+    #: ＋原镜号）。它**不是提示词**——模型看不到，sidecar/直连会照原样忽略；
+    #: 它的消费者是离线替身（要按同一规则切片，否则离线链路与真实链路分叉）
+    #: 与审计（"这次截断发生在第几段"是排障的第一问）。
+    #: 空字典时**不进 wire**，既有调用的报文逐字节不变。
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         out: Dict[str, Any] = {
@@ -144,6 +151,8 @@ class ChatPayload:
         }
         if self.max_tokens is not None:
             out["max_tokens"] = self.max_tokens
+        if self.metadata:
+            out["metadata"] = dict(self.metadata)
         return out
 
     @classmethod
@@ -156,6 +165,7 @@ class ChatPayload:
             purpose=Purpose(data.get("purpose", "react")),
             max_tokens=data.get("max_tokens"),
             request_id=data.get("request_id", new_request_id()),
+            metadata=dict(data.get("metadata") or {}),
         )
 
 

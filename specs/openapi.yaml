@@ -202,6 +202,13 @@ components:
         max_tokens:
           type: [integer, "null"]
           minimum: 1
+        metadata:
+          type: object
+          description: |-
+            厂商无关的调用元数据（可选）。当前唯一的使用者是"长分镜表分块出计划"：
+            `plan_chunk` 记录这一问覆盖分镜表的哪一段（`index/total/start/stop`
+            ＋原镜号）。模型看不到它；sidecar / 直连照原样忽略。空对象时不出现在报文里。
+          additionalProperties: true
 
     ChatResponse:
       type: object

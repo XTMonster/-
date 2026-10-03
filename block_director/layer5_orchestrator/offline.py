@@ -228,6 +228,16 @@ class OfflineTransport:
                 break
         plan = self._plan or demo_plan_dict(script,
                                             declarations=self._declarations)
+        #: v1.5 长分镜表分块出计划：请求的 `metadata.plan_chunk` 说明这一问覆盖
+        #: 分镜表的哪一段，离线替身按**同一份段描述**切片——切成几段由
+        #: `planner.plan_chunks` 单一真源决定，替身只做"这一段的镜头"。不切片的话
+        #: 每一段都会回全表，合并后镜数翻三倍（离线链路与真实链路当场分叉）。
+        chunk = (payload.metadata or {}).get("plan_chunk") or {}
+        if chunk and int(chunk.get("total") or 0) > 1:
+            start = int(chunk.get("start") or 0)
+            stop = int(chunk.get("stop") or 0)
+            plan = dict(plan)
+            plan["shots"] = list(plan.get("shots") or [])[start:stop]
         call = ToolCall(
             id=f"call_{self.chat_calls}",
             function=FunctionCall(name=PLAN_TOOL_NAME,

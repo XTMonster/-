@@ -37,6 +37,7 @@ from .planner import (
     EMIT_PLAN_TOOL_PARAMETERS,
     PLAN_TOOL_NAME,
     build_plan_payload,
+    plan_chunks,
     plan_parameters,
 )
 from .control_tools import (
@@ -243,6 +244,17 @@ class PrevisDriver:
         self._llm_calls = 0
         self._tool_calls = 0
         self._plan_attempts = 0
+        #: v1.5：**计划失败次数**（与 `_plan_attempts` 分列）。分块时每一段都是
+        #: 一次正常调用，重试额度只能被"真正的失败"吃掉——否则 64 镜的第 3 段
+        #: 会因为前两段成功而报"已达最大尝试次数"。
+        self._plan_failures = 0
+        #: v1.5：长分镜表分块出计划的状态（`None` = 还没算；空表 = 不分块）。
+        #: `_plan_chunks` 是**段描述**，`_plan_chunk_index` 是"轮到第几段"，
+        #: `_plan_shots` 是**已合并的各段镜头**（只有全部段到齐才落成 `self.plan`）。
+        self._plan_chunks: Optional[List[Dict[str, Any]]] = None
+        self._plan_chunk_index = 0
+        self._plan_shots: List[Any] = []
+        self._plan_head: Dict[str, Any] = {}
         self._reply_q: "queue.Queue[tuple]" = queue.Queue()
         self._cancel = threading.Event()
         self._paused = False
@@ -546,7 +558,9 @@ class PrevisDriver:
             self._degrade_to_finish(self.budget.exhausted_reason()
                                     or "LLM 调用预算耗尽")
             return
-        if self._plan_attempts >= self.limits.plan_attempts:
+        #: 计的是**失败次数**（见 `_route_llm_error` 的同名注释）：分块的每一段
+        #: 都是一次正常调用，不该吃掉重试额度。
+        if self._plan_failures >= self.limits.plan_attempts:
             detail = f"：{self._plan_problem}" if self._plan_problem else ""
             self._fail(f"分镜计划生成失败（已达最大尝试次数）{detail}")
             return
@@ -631,7 +645,22 @@ class PrevisDriver:
         problem = self._dispatch_tool_calls(reply, self.messages)
         if problem:
             self._plan_problem = problem
+            self._plan_failures += 1
             self.audit.log("plan_invalid", problem, level="error")
+            #: 分块时**只重试当前这一段**（`_plan_chunk_index` 不动）；
+            #: 已收下的前几段留在 `_plan_shots` 里，不白丢。
+            self._transition(DriverState.PLANNING)
+            return
+        if self._plan_needs_more_chunks():
+            #: v1.5：长分镜表还有下一段 ⇒ 立刻问下一段，**不进** B1/门。
+            #: 审计里留一条 `plan_chunk_received`：截断排障的第一问就是"断在第几段"。
+            self._plan_chunk_index += 1
+            self.audit.log(
+                "plan_chunk_received",
+                f"分镜计划第 {self._plan_chunk_index}/"
+                f"{len(self._plan_chunk_list())} 段已收到"
+                f"（累计 {len(self._plan_shots)} 镜），继续下一段",
+                stage="plan", shots=len(self._plan_shots))
             self._transition(DriverState.PLANNING)
             return
         # 计划通过后先进阶段 B1（逐镜结构化生成），再落成场景（§7.1）。
@@ -791,7 +820,11 @@ class PrevisDriver:
         * ``review`` 失败不记入 ``_reviewed_shots`` → 同一镜被无限复核。
         """
         if purpose == "plan":
-            # 计划失败由 _step_planning 决定是否再试（消耗 plan_attempts）
+            # 计划失败由 _step_planning 决定是否再试。**计的是"失败次数"**，
+            # 不是"调用次数"：长分镜表要问 ⌈N/24⌉ 段（实测 64 镜 = 3 段），
+            # 把成功的段也计进去会让第 3 段还没问就报"已达最大尝试次数"
+            # （2026-10-03 的分块用例当场抓到这个）。
+            self._plan_failures += 1
             self._transition(DriverState.PLANNING)
             return
         if purpose == "understand":
@@ -1487,11 +1520,13 @@ class PrevisDriver:
 
     def _start_plan_call(self) -> None:
         request_id = new_request_id()
+        chunks = self._plan_chunk_list()
+        chunk = chunks[self._plan_chunk_index] if len(chunks) > 1 else None
         try:
             payload: ChatPayload = build_plan_payload(
                 self.script, self.config, request_id=request_id,
                 parsed=self.parsed_script, retriever=self.knowledge,
-                brief=self.brief)
+                brief=self.brief, chunk=chunk, plan_chunks_total=len(chunks))
         except ValueError as exc:
             # v1.4 BW-3/E_SCRIPT_002：声明镜数超过 max_shots 时明确失败，
             # 而不是退回"其余 N 个镜号略"的静默截断。
@@ -1499,7 +1534,66 @@ class PrevisDriver:
             self._fail(str(exc))
             return
         self._start_llm_call("plan", payload,
-                             note=f"请求分镜计划（第 {self._plan_attempts} 次尝试）")
+                             note=(f"请求分镜计划（第 {self._plan_attempts} 次尝试）"
+                                   + (f"；第 {chunk['index'] + 1}/{len(chunks)} 段"
+                                      f"（镜号 {chunk['shot_numbers'][0]}–"
+                                      f"{chunk['shot_numbers'][-1]}）"
+                                      if chunk else "")))
+
+    def _plan_chunk_list(self) -> List[Dict[str, Any]]:
+        """这一跑的计划分段（只算一次；没有分镜表声明时返回空表 = 不分块）。
+
+        分块规则与 `planner.plan_chunks` 同源（单一真源），驱动只负责"轮到第几段"。
+        """
+        if self._plan_chunks is None:
+            self._plan_chunks = plan_chunks(self.parsed_script)
+        return self._plan_chunks
+
+    def _plan_needs_more_chunks(self) -> bool:
+        """还有一段没收到？（不分块时恒 False ⇒ 与分块前的行为逐字一致。）"""
+        chunks = self._plan_chunk_list()
+        return len(chunks) > 1 and self._plan_chunk_index + 1 < len(chunks)
+
+    def _accept_plan_chunk(self, chunk_plan) -> None:
+        """收下一段计划（分块）或直接落成计划（不分块）。
+
+        分块时的**完整性判据**是"这一段应有的镜号数 == 收到的镜头数"：段与段的边界
+        由分镜表决定，模型只是被要求"只提交这一段"。数量对不上就当场退回重问这一段
+        （`plan_invalid` → 驱动重试**同一段**），不把半段并进累计表——否则最终计划
+        的镜数会与分镜表对不上，那是 `R015` 阶段才炸、排查成本高得多的形态。
+        顺序不是靠模型保证的：段按声明顺序串起来（`_plan_shots` 追加），
+        镜号由 `_pin_declared_dialogue` 按位置钉死。
+        """
+        chunks = self._plan_chunk_list()
+        if len(chunks) <= 1:
+            self.plan = chunk_plan
+            self._plan_shots = list(chunk_plan.shots)
+            self._apply_scene_budget(len(self.plan.shots))
+            return
+        chunk = chunks[self._plan_chunk_index]
+        expected = len(chunk.get("shot_numbers") or [])
+        got = len(chunk_plan.shots)
+        if got != expected:
+            raise ValueError(
+                f"这一段（第 {chunk['index'] + 1}/{len(chunks)} 段，"
+                f"镜号 {chunk['shot_numbers'][0]}–{chunk['shot_numbers'][-1]}）"
+                f"应有 {expected} 个镜头，收到 {got} 个")
+        if not self._plan_shots:
+            self._plan_head = {"scene_heading": chunk_plan.scene_heading,
+                               "continuity_notes": list(
+                                   chunk_plan.continuity_notes or [])}
+        else:
+            merged = list(self._plan_head.get("continuity_notes") or [])
+            for note in (chunk_plan.continuity_notes or []):
+                if note not in merged:
+                    merged.append(note)
+            self._plan_head["continuity_notes"] = merged
+        self._plan_shots.extend(chunk_plan.shots)
+        if not self._plan_needs_more_chunks():
+            payload = dict(self._plan_head)
+            payload["shots"] = [shot.to_dict() for shot in self._plan_shots]
+            self.plan = Plan.from_dict(payload)
+            self._apply_scene_budget(len(self.plan.shots))
 
     def _start_llm_call(self, purpose: str, payload: ChatPayload,
                         note: str = "") -> None:
@@ -1579,9 +1673,10 @@ class PrevisDriver:
                     errors.append("emit_plan 只在阶段 A 被接受")
                 else:
                     try:
-                        self.plan = Plan.from_dict(args)
+                        #: v1.5：分块时这一段先**单独**校验（镜号/时长/字段），
+                        #: 收进 `_plan_shots`；只有最后一段到齐才落成 `self.plan`。
+                        self._accept_plan_chunk(Plan.from_dict(args))
                         plan_seen = True
-                        self._apply_scene_budget(len(self.plan.shots))
                     except Exception as exc:  # noqa: BLE001
                         errors.append(f"计划解析失败: {exc}")
             elif result.ok and call.function.name == ABORT:
