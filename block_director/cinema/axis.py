@@ -113,7 +113,10 @@ class CrossingEvent:
     """一次配对连线的变化（纯计划推算的结果）。
 
     * `rotated_deg`：这一镜里连线转过的角度（大 = 走位把它重建了）；
-    * `flip`：转过 90° 以上 ⇒ **左右真的换了个儿**（侧别要翻）；
+    * `flip`：**左右真的换了个儿**（侧别要翻）。判据看**有没有机位**（会诊 ①）：
+      给了机位就量"机位相对 A→B 连线的叉积符号在镜内变号"——那正是 180° 规则的
+      本体；没给机位时退回 `rotated_deg ≥ 90°`，那是**计划期近似**（建场景之前
+      拿不到机位，而这张表要先喂给构建器）；
     * `visible`：这一镜里两人**同框**（观众看得见这次变化 ⇒ 合法桥接）。
     """
 
@@ -130,7 +133,27 @@ class CrossingEvent:
                 "flip": bool(self.flip)}
 
 
-def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]]
+def camera_side_of(a: Sequence[float], b: Sequence[float],
+                   point: Sequence[float]) -> int:
+    """配对连线 A→B 把 `point` 分在哪一侧：+1 / -1 / 0（落在连线上）。
+
+    与 `Axis.side_of` **同一约定**（叉积的 Z 符号）。取未归一化的 (B−A) 即可——
+    只有符号有意义。
+    """
+    fx = float(b[0]) - float(a[0])
+    fy = float(b[1]) - float(a[1])
+    tx = float(point[0]) - float(a[0])
+    ty = float(point[1]) - float(a[1])
+    cross_z = fx * ty - fy * tx
+    if cross_z > EPS:
+        return SIDE_POSITIVE
+    if cross_z < -EPS:
+        return SIDE_NEGATIVE
+    return SIDE_UNKNOWN
+
+
+def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]],
+                    cameras: Optional[Dict[str, Sequence[float]]] = None
                     ) -> Dict[str, CrossingEvent]:
     """逐镜推算：这一镜里配对连线**翻了个儿**没有、以及翻的时候看不看得见。
 
@@ -145,6 +168,15 @@ def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]]
     是否在某一镜里换了号；换号即"线翻了个儿"。`visible` 取该镜的
     `shot.characters` 里是否**两人都在**（画面的"看得见"由计划的出场声明给出，
     与 `SceneBrief.gaze` 同一层的意图数据）。
+
+    `cameras`（可选）：`{shot_id: 机位坐标}`，取**该镜切入点**的位置。给了它，
+    `flip` 改用会诊 ① 的**精确**判据——"机位相对 A→B 连线的叉积符号在镜内变号"
+    （那才是"观众看到左右序反转"的定义；连线转角只是它的间接代理，实测
+    "转 100° 不换边"与"转 50° 换边"两种反例都存在）。不给就退回计划期近似。
+
+    为什么保留两条路：这张表在**建场景之前**就得喂构建器（它要按侧别摆机位），
+    那时没有机位；相机建好之后，规则侧用真机位**重算并与计划期的表对拍**
+    （`rule_checker._axis_sides`），于是近似不会变成没人复核的暗路。
     """
     from .schedule import travelled_positions
 
@@ -172,13 +204,24 @@ def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]]
         rotated = _rotation_deg(a_start, b_start, a_end, b_end)
         #: 小于半度的差是数值噪声（走位精确停在目标上时仍会差一点点）。
         if rotated >= CROSSING_MIN_DEG:
+            cam = cameras.get(shot_id) if cameras else None
+            if cam is not None:
+                #: 精确判据（会诊 ①）：连线扫过机位 ⇒ 观众看到的左右序真的换了。
+                before_side = camera_side_of(a_start, b_start, cam)
+                after_side = camera_side_of(a_end, b_end, cam)
+                flip = (before_side != SIDE_UNKNOWN
+                        and after_side != SIDE_UNKNOWN
+                        and before_side != after_side)
+            else:
+                #: 计划期近似：没有机位时的最大似然猜测（均匀方位先验）。
+                flip = rotated >= 90.0
             out[shot_id] = CrossingEvent(
                 shot_id=shot_id,
                 visible=len([cid for cid in (shot.characters or [])
                              if str(cid) in (left, right)]) >= 2,
                 people=(left, right),
                 rotated_deg=rotated,
-                flip=rotated >= 90.0)
+                flip=flip)
     return out
 
 
@@ -213,7 +256,8 @@ def _after_own_walks(shot, positions: Dict[str, Sequence[float]]
     return out
 
 
-def axis_state(axis: Axis, plan, initial: Dict[str, Sequence[float]]
+def axis_state(axis: Axis, plan, initial: Dict[str, Sequence[float]],
+               cameras: Optional[Dict[str, Sequence[float]]] = None
                ) -> Dict[str, int]:
     """逐镜的**轴侧状态机**（纯函数）：每一镜机位该待在当前连线的哪一侧。
 
@@ -229,11 +273,15 @@ def axis_state(axis: Axis, plan, initial: Dict[str, Sequence[float]]
 
     产物 `{shot_id: ±1}` 给构建器与规则**共用**；规则另有一条独立内容
     （"规范首镜线 vs 当前派生线"的偏差），所以两边不会退化成自证。
+
+    `cameras` 直通 `crossing_events`：**建场景前**（构建器摆机位）没有机位，
+    用的是计划期近似；**相机建好之后**规则侧拿真机位重算一遍，两者不一致就报出来
+    （会诊 ① 的第 5 步：精确判据必须有触达路径，否则就是死参数）。
     """
     sides: Dict[str, int] = {}
     if not axis.left_label or not axis.right_label:
         return sides
-    events = crossing_events(axis, plan, initial)
+    events = crossing_events(axis, plan, initial, cameras)
     side = int(axis.established_side) or SIDE_POSITIVE
     for shot in getattr(plan, "shots", []) or []:
         shot_id = str(shot.shot_id)

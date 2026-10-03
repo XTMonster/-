@@ -191,7 +191,19 @@ def _screen_polarity_flip(context, camera, shot, characters) -> str:
 
 
 def _axis_sides(context) -> Dict[str, int]:
-    """逐镜的轴侧状态（纯计划推算，算一次缓存）。构建器与规则读的是同一份。"""
+    """规则用的逐镜轴侧 ＝ **构建器摆机位时用的那张表**（计划期近似），缓存一份。
+
+    两条路（会诊 ①，2026-10-04）：
+
+    * **建场景前**：没有机位，`crossing_events` 退回计划期近似（连线转角 ≥90°）——
+      构建器就是按这张表摆机位的（`shot_builder._axis_for_placement`）；
+    * **相机建好之后**：会诊 ① 第 5 步要求"拿真机位重算并 diff"。**实测后回退**：
+      两张表在 `long9` 上分歧 38 镜，若按真机位的表判，会多出 **29 条**"机位在错侧"，
+      而**独立的**画面左右序判据（`_screen_polarity_flip`）只证实其中 **2 条**——
+      那是**自指回路**（机位是照近似摆的，再用它去翻侧、又拿同一张表判机位），
+      不是更准的判据。所以真机位表只用于**报告分歧**（`_axis_sides_exact`）。
+      证据 `docs/evidence/20261004-r001-v20/`，逐条见 §七十三。
+    """
     cached = getattr(context, "_axis_sides", None)
     if cached is not None:
         return cached
@@ -199,6 +211,30 @@ def _axis_sides(context) -> Dict[str, int]:
     plan = getattr(context, "plan", None)
     if base is None or plan is None:
         return {}
+    sides = axis_state(base, plan, _initial_positions(context))
+    context._axis_sides = sides
+    return sides
+
+
+def _axis_sides_exact(context) -> Dict[str, int]:
+    """用**真机位**重算的轴侧表（会诊 ① 的精确判据）——只用来报告分歧，不当判据。"""
+    cached = getattr(context, "_axis_sides_camera", None)
+    if cached is not None:
+        return cached
+    base = getattr(context, "axis", None)
+    plan = getattr(context, "plan", None)
+    if base is None or plan is None:
+        return {}
+    initial = _initial_positions(context)
+    cameras = _built_camera_positions(context, plan)
+    sides = (axis_state(base, plan, initial, cameras) if cameras
+             else dict(_axis_sides(context)))
+    context._axis_sides_camera = sides
+    return sides
+
+
+def _initial_positions(context) -> Dict[str, Tuple[float, float, float]]:
+    """剧本起始站位，键同时给 id 与显示名（`crossing_events` 的两套键都认）。"""
     initial: Dict[str, Tuple[float, float, float]] = {}
     spec = getattr(context, "spec", None)
     for member in (getattr(spec, "cast", []) if spec is not None else []) or []:
@@ -207,9 +243,54 @@ def _axis_sides(context) -> Dict[str, int]:
         name = str(getattr(member, "name", "") or "")
         if name:
             initial[name] = location
-    sides = axis_state(base, plan, initial)
-    context._axis_sides = sides
-    return sides
+    return initial
+
+
+def _built_camera_positions(context,
+                            plan) -> Dict[str, Tuple[float, float, float]]:
+    """每一镜**切入点**的机位坐标；读不到相机（这一镜还没建）就跳过。
+
+    机位是**逐帧**的（运镜会移动它），所以逐镜换帧读一次、最后还原当前帧——
+    审核不许把副作用留给渲染。
+    """
+    scene = bpy.context.scene
+    restore = int(scene.frame_current)
+    out: Dict[str, Tuple[float, float, float]] = {}
+    try:
+        for shot in getattr(plan, "shots", []) or []:
+            shot_id = str(shot.shot_id)
+            camera = context.camera_for(shot_id)
+            if camera is None:
+                continue
+            start, _end = shot_frame_span(shot_id, context)
+            scene.frame_set(int(start))
+            bpy.context.view_layer.update()
+            position = camera.matrix_world.translation
+            out[shot_id] = (float(position.x), float(position.y), float(position.z))
+    finally:
+        scene.frame_set(restore)
+        bpy.context.view_layer.update()
+    return out
+
+
+def _axis_state_divergence(context, shot_id: str) -> str:
+    """计划期近似与真机位表从哪里开始分道扬镳——**只报第一处**（会诊 ① 第 5 步）。
+
+    逐镜都报会把修复回路淹掉（`long9` 上 38 镜都分歧），所以只写**第一个**分歧镜
+    并给出总数：分歧本身是"构建器的近似该升级了"的信号，不是这一镜的错。
+    """
+    planned = _axis_sides(context)
+    exact = _axis_sides_exact(context)
+    if not planned or not exact:
+        return ""
+    divergent = [name for name in planned if exact.get(name) != planned.get(name)]
+    if not divergent or str(shot_id) != divergent[0]:
+        return ""
+    return (f"轴侧表分歧（只报第一处）：构建器的计划期近似与**真机位**重算的表在 "
+            f"{len(divergent)} 镜上不一致，本镜是第一个（近似 {planned[str(shot_id)]:+d}"
+            f"、真机位 {exact.get(str(shot_id)):+d}）。判据仍按近似判——实测按真机位判"
+            f"会多出 29 条『机位在错侧』，而画面左右序那条独立判据只证实其中 2 条"
+            f"（2026-10-04，`docs/evidence/20261004-r001-v20/`）")
 
 
 def _camera_on_wrong_side(context, camera, shot_id: str) -> str:
@@ -552,6 +633,15 @@ def check_shot(shot_id: str, *, context=None,
             findings.append(_error(
                 "R001", "E_AXIS_001", wrong_side, target=shot_id,
                 suggestion="把相机移到当前连线的另一侧，或插入中性机位过渡"))
+        #: 计划期近似 vs 真机位：**不一致要写出来**（会诊 ① 第 5 步）。
+        #: 不写出来的话，"精确判据"就只是一条没人复核的暗路——构建器按近似的侧别
+        #: 摆了机位，规则按真机位判，两者分道扬镳时观众看不出来、日志也看不出来。
+        divergence = _axis_state_divergence(context, shot_id)
+        if divergence:
+            findings.append(_warning(
+                "R001", "E_AXIS_001", divergence, target=shot_id,
+                suggestion="这一镜两侧的表不一致：按真机位复核走位（要看得见的换位"
+                           "或中性机位），别只信建场景前的近似"))
         # 中性机位（正好落在轴线上）不是越轴：§6.2 的 axis_neutral 卡片把它
         # 定义为合法的跨轴桥梁，而且两人相对而立时单人正反打的机位必然落在
         # 轴线上。v1.2 把它判成 R001 错误，等于让这类镜头永远无法通过审核。

@@ -24,6 +24,7 @@ from block_director.cinema.axis import (  # noqa: E402
     AXIS_DRIFT_DEG,
     Axis,
     axis_state,
+    camera_side_of,
     crossing_events,
     drift_is_bridged,
 )
@@ -147,3 +148,63 @@ def test_the_threshold_drift_itself_is_free():
 def test_a_neutral_camera_bridges_by_itself():
     """§6.2 的中性机位是**逐镜成立**的交代，与漂移量无关。"""
     assert drift_is_bridged(170.0, 0.0, neutral=True)
+
+
+#: 会诊 ① 给的两个反例（坐标就是本文件那条轴线的世界坐标：甲 (−0.9,0)、乙 (0.9,0)，
+#: 绕中点转，机位半径 3.6）。两个都能证伪"用连线转角猜换边"：
+#:   ① 转 **100°**、机位方位 150° ⇒ **不换边**（旧判据 ≥90° ⇒ 误报）；
+#:   ② 转 **50°**、机位方位 30° ⇒ **换边**（旧判据 <90° ⇒ 漏报）。
+SWEEP_100 = (-1.2126, 1.7727, 0.0)
+CAMERA_150 = (-3.1177, 1.8, 0.0)
+SWEEP_50 = (0.2570, 1.3789, 0.0)
+CAMERA_30 = (3.1177, 1.8, 0.0)
+
+
+def test_camera_side_uses_the_same_convention_as_the_axis():
+    """叉积符号的约定必须与 `Axis.side_of` 一致，否则"换边"会整体反号。"""
+    axis = Axis(start=(-0.9, 0.0), end=(0.9, 0.0))
+    for point in ((0.0, 1.0), (0.0, -1.0), (2.0, 0.0)):
+        assert camera_side_of(axis.start, axis.end, point) == axis.side_of(point)
+
+
+def test_without_cameras_the_plan_phase_approximation_is_unchanged():
+    """没有机位时仍是老口径（转角 ≥90°）——构建器摆机位时只有这一份可用。"""
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲", "乙"), SWEEP_100),
+                 _shot(3, ("甲", "乙")))
+    event = crossing_events(AXIS, plan, INITIAL)["shot_002"]
+    assert round(event.rotated_deg) == 100
+    assert event.flip is True
+
+
+def test_one_hundred_degrees_need_not_flip_when_the_camera_is_not_swept():
+    """转 100° 但连线**没有扫过机位** ⇒ 观众看到的左右序没变，不该翻侧（会诊 ①）。"""
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲", "乙"), SWEEP_100),
+                 _shot(3, ("甲", "乙")))
+    event = crossing_events(AXIS, plan, INITIAL,
+                            {"shot_002": CAMERA_150})["shot_002"]
+    assert round(event.rotated_deg) == 100
+    assert event.flip is False
+
+
+def test_fifty_degrees_does_flip_when_the_line_sweeps_the_camera():
+    """只转 50° 但**扫过了机位** ⇒ 左右序真的换了（旧判据漏掉的就是它）。"""
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲", "乙"), SWEEP_50),
+                 _shot(3, ("甲", "乙")))
+    event = crossing_events(AXIS, plan, INITIAL,
+                            {"shot_002": CAMERA_30})["shot_002"]
+    assert round(event.rotated_deg) == 50
+    assert event.flip is True
+
+
+def test_the_state_machine_plumbs_the_cameras_through():
+    """精确判据必须有**触达路径**（会诊 ① 第 5 步）：不穿参就等于死参数。"""
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲", "乙"), SWEEP_50),
+                 _shot(3, ("甲", "乙")))
+    assert axis_state(AXIS, plan, INITIAL) == {
+        "shot_001": -1, "shot_002": -1, "shot_003": -1}     # 近似：50° < 90° 不翻
+    assert axis_state(AXIS, plan, INITIAL, {"shot_002": CAMERA_30}) == {
+        "shot_001": -1, "shot_002": -1, "shot_003": 1}      # 精确：扫过机位 ⇒ 翻
