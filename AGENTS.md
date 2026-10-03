@@ -303,18 +303,18 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-03 18:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-03 19:4x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
 ——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
-`python -m pytest` **1816 passed / 1 skipped**（唯一那条 skip 是
+`python -m pytest` **1829 passed / 1 skipped**（唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据）、`run_tests.ps1` **32/32**（探针清单 28 支 ＋
 spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探针循环里**的三步具名
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261003-182957/`，逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§五十二 与 `docs/knowledge/Q5_DECISION_v1.md`。**
+且 pass。证据 `docs/evidence/20261003-194540/`，逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§五十三 与 `docs/knowledge/Q5_DECISION_v1.md`。**
 
 本轮把两条"§4.1b 写了、链上没有执行者"的判据补成了真的：**Q3 的负样本下界**
 `max(50, 0.25×query 数)`（在此之前"只写 1 条负样本"能让 0% 恒真地通过）与
@@ -338,6 +338,20 @@ RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 1
 给出 **13/13**（6 镜那一跑）与 **23/31 = 0.7419**（64 镜那一跑，低于 0.80）。
 §4.1b 的判据、join 口径、门限**一个字都没动**——三条出路与建议见
 `docs/knowledge/Q5_DECISION_v1.md`。
+
+**长剧本这条真实路径第一次走到底**（`docs/evidence/20261003_chunked_long3/`，
+`run_id 05bef091c490`）：`DONE` / 64 镜 / `built=true` / `motions 136`（此前 2）/
+`llm_calls 324 ≤ 552`。到达这里用了三跑，每跑暴露更深一层的真缺陷：
+① `emit_plan` 一次说不完（64 镜参数 ≈16.5 KB 压在供应商输出上限上 ⇒ 0 镜）⇒ 修法是
+**长分镜表分块出计划**（每段 ≤24 镜，全段到齐才落成计划）；② 草案参数名没人告诉
+模型（工具 schema 只给**全部动作参数键的并集**）⇒ 62/64 条草案整条丢掉、B1 形同虚设
+⇒ 修法是把"动作→允许的键"**从 `motion/model.py` 生成**并进提示词（修后 65 有效 / 1 无效）；
+③ 取值错误（`body_tilt.axis='forward'`）一路活到构建期把整轮打成 ERROR ⇒ 修法是
+解析期 `action_param_problems`（键＋取值，判据与构建期同源）。
+草案生效之后审计通过率从 `56/56` 掉到 **29/56**——那不是变差，是**终于有东西可审**
+（此前场景几乎静止）；同批补了可诊断性（`shot_audit` 带 `rule_ids`/`findings`），
+归因出主导项是 **R003（动作时间重叠，383 次）**，其处置属"谁负责调度"的语义裁决，
+已记账等你拍板（`docs/evidence/20261003_chunked_long3/README.md`）。
 链上的 `--shots`/`--audit-log` 现在喂的就是这一份——Q5 的运行侧因此有 **64 条**发出查询
 （此前 6 条），而两边都报 **0 命中**：`ACCEPTANCE_STATUS.md` §三十八 那条
 "夹具的 `q` 带 `镜头=`、而 stage A 的计划 schema 没有 `camera` ⇒ 焦段在检索前
