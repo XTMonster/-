@@ -206,13 +206,39 @@ if (-not $smokeLine) {
 }
 Write-Host ('  ' + $smokeLine.Line) -ForegroundColor Green
 
+# The LONG script, not the default: SS4.4 step 1 names
+# `--script fixtures/script_long_61.md` and P13's acceptance is "61 shots finish
+# without degrading".  Measured 2026-10-03: this step was running WITHOUT --script,
+# i.e. the 2-shot default - so the chain never exercised the long path end to end
+# (the 61-shot plan SHAPE was covered by pytest, but not the build, the label
+# baking, the export or the budget ceiling).  The long run takes ~159 s offline
+# (64 shots, DONE) which is worth it: it is the only place the ceiling formula and
+# the cross-shot machinery meet real execution.
 Write-Host ("[4/{0}] Run the add-on headless (plan -> scene -> delivery, one command)" -f $total) -ForegroundColor Cyan
 $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
-$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--build', '--out', $out, '--export')
+$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--out', $out, '--export')
 $marker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_RESULT' 'headless'
 if ($marker -notmatch '"success": true') { Fail ('  FAILED: ' + $marker) }
 if ($marker -notmatch '"built": true') { Fail '  FAILED: the run did not build a scene' }
+if ($marker -notmatch '"state": "DONE"') { Fail '  FAILED: the long baseline did not finish (state != DONE)' }
 Write-Host ('  ' + ($marker -replace 'BLOCKDIRECTOR_RESULT ', '')) -ForegroundColor Green
+# P13 / SS2.4: declared N -> produced N, and the budget ceiling is
+# `ceiling_effective = max(200, shots * 8 + 40)` (528 for 61 shots).  Read the
+# payload rather than regexing the numbers out of the single line.
+$headlessPayload = Get-MarkerPayload $headlessOut 'BLOCKDIRECTOR_RESULT'
+if (-not $headlessPayload) { Fail '  FAILED: could not parse BLOCKDIRECTOR_RESULT' }
+$headlessJson = $null
+try { $headlessJson = $headlessPayload | ConvertFrom-Json } catch { $headlessJson = $null }
+if (-not $headlessJson) { Fail '  FAILED: BLOCKDIRECTOR_RESULT is not valid JSON' }
+$longShots = [int]$headlessJson.shots
+if ($longShots -lt 61) { Fail ('  FAILED: the long baseline produced only ' + $longShots + ' shots (< 61)') }
+$ceiling = [Math]::Max(200, $longShots * 8 + 40)
+$longCalls = [int]$headlessJson.llm_calls
+if ($longCalls -gt $ceiling) {
+    Fail ('  FAILED: llm_calls ' + $longCalls + ' > ceiling_effective ' + $ceiling)
+}
+Write-Host ('  long baseline: ' + $longShots + ' shots, ' + $longCalls +
+            ' llm calls (ceiling ' + $ceiling + ')') -ForegroundColor DarkGray
 $exportMarker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_EXPORT' 'delivery'
 if ($exportMarker -notmatch '"ok": true') { Fail ('  FAILED: ' + $exportMarker) }
 if ($exportMarker -notmatch '"aborted": false') { Fail '  FAILED: export aborted (render audit)' }

@@ -3128,3 +3128,49 @@ rows 30 / verdict 全部 null / 覆盖 16 个边类（分层抽样：每类 2 �
 （`ab_triple.json`）、§四十三（`edge_spotcheck.jsonl`）三处是真的"文档点名了产物、
 链上没有生产者"，其余（含 `run_tests.ps1` 的探针双向登记断言、`docs/adr/0007…0013`、
 `CONTEXT.md`）都在位。
+
+## 四十五、P14-33（2026-10-03 11:3x）：**§4.4 步骤 1 的长基线第一次在链上真的跑**
+
+### 45.1 病：链上那条 headless 一直在跑 2 镜
+
+`tools/run_tests.ps1` 的 `[4/31]` 是"一条命令从剧本到交付"，而它此前是：
+
+```powershell
+run_headless.py @('--offline', '--build', '--out', $out, '--export')   # 没有 --script
+```
+
+不带 `--script` ⇒ `run_headless.py` 的默认值是空串 ⇒ **跑的是 2 镜默认计划**。
+而 §4.4 **步骤 1** 点名的命令带 `--script fixtures/script_long_61.md`，
+P13 的验收写的是"**61 镜跑完不降级**（终态 `DONE`、`llm_calls ≤ 528`）"。
+
+后果不是"少跑一条命令"：61 镜的**计划形状**由 `tests/test_shotlist_render.py` 覆盖，
+但长路径的**建场、标签烘焙、导出、跨镜调度与预算上界**在链上**一次都没有执行过**。
+这与 §四十一/四十二/四十三 是同一形状的第四次显形——这次缺的不是产物，而是**执行**。
+
+### 45.2 修：换成 §4.4 步骤 1 的那条命令，并断言镜数与预算上界
+
+```powershell
+run_headless.py @('--offline', '--script', 'fixtures\script_long_61.md',
+                  '--build', '--out', $out, '--export')
+# 断言① 终态 "state": "DONE"（不许降级结束）
+# 断言② 产出镜数 ≥ 61            ← 从 BLOCKDIRECTOR_RESULT 的 **JSON 载荷**读，不在单行里正则捞
+# 断言③ llm_calls ≤ ceiling_effective = max(200, shots*8+40)   （§2.4 的唯一口径）
+```
+
+**为什么必须从 JSON 载荷读**：单行里 `"shots": 64` 与 `"shots_remaining": 0` 都在，
+正则会捞错那个数；`Get-MarkerPayload` 已经是链上现成的重组通道。
+
+### 45.3 实测（证据 `docs/evidence/20261003-113550/`）
+
+```
+long baseline: 64 shots, 144 llm calls (ceiling 552)
+All checks passed（31/31 探针 ＋ 门①–⑩ ＋ K1–K4）
+```
+
+手工先跑过一次确认成本：**离线 159 秒**（64 镜 / 4584 帧 / DONE）。这条链上现在是
+唯一一处"长剧本的建场与预算公式真的被执行"的地方。
+
+用例：`tests/test_chain_evidence_is_measured.py` 新增两条静态断言——① `run_headless.py`
+的**活行**必须带 `script_long_61`；② 必须出现 `"state": "DONE"`、`Math]::Max(200` ＋
+`* 8 + 40`、`-lt 61`、`llm_calls`/`ceiling` 的比较，且数字从 `Get-MarkerPayload` 读。
+（静态断言不能替代真跑，但它能挡住"哪天有人把 `--script` 摘掉"——那正是这次发现的形状。）

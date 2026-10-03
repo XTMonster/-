@@ -331,6 +331,14 @@ RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence
 `sample_shortfall` / `sample_floor_met`，note 里点名下界——**判定不变**（分母是 18
 不是 0，该判 fail 就判 fail；用样本量把红的说成灰的和把 18 条当结论一样不诚实）。
 
+**§4.4 步骤 1 的长基线第一次在链上真的跑**：链上 `[4/31]` 那条 headless 此前
+**不带 `--script`** ⇒ 跑的是 2 镜默认计划，而 P13 的验收是"61 镜跑完不降级"——
+长路径的建场/标签/导出/预算上界一次都没执行过。现在带
+`--script fixtures\script_long_61.md`，并断言 `state == DONE`、镜数 ≥61、
+`llm_calls ≤ max(200, shots*8+40)`（实测 64 镜 / 144 次调用 / ceiling 552，
+离线约 159 秒）。数字从 `BLOCKDIRECTOR_RESULT` 的 **JSON 载荷**读（单行里
+`"shots"` 与 `"shots_remaining"` 都在，正则会捞错）。
+
 **链上的真实运行证据换成了 `docs/evidence/20261003_real_ds/`**（DeepSeek 上游，
 run `37d8ad2294df`）：它是**逐镜契约串开始带剧本声明手法**之后的第一跑，也是
 `shots.json.retrieval_calls` 与审计事件第一次一致的一跑（7 = 7，`--check` 零警告）。

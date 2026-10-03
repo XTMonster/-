@@ -146,6 +146,47 @@ def test_the_chain_input_checker_fires_when_the_flags_are_dropped():
 
 
 # --------------------------------------------------------------------------- #
+# 三、长基线：§4.4 步骤 1 点名的那条命令必须在链上跑，并断言镜数与预算上界
+# --------------------------------------------------------------------------- #
+def test_the_headless_step_runs_the_long_baseline():
+    """链上那条 headless 必须带 `--script fixtures\\script_long_61.md`。
+
+    2026-10-03 实测：它此前**不带 `--script`** ⇒ 跑的是 2 镜默认剧本。后果不是
+    "少跑一条命令"，而是 **P13 的验收（"61 镜跑完不降级"）在链上根本没有被执行**：
+    61 镜的**计划形状**由 pytest 覆盖，但长路径的**建场、标签烘焙、导出与预算上界**
+    一次都没跑过。§4.4 步骤 1 的命令是 `... --offline --script
+    fixtures/script_long_61.md --build`。
+    """
+    calls = [line for _number, line in live_lines(chain_text())
+             if "run_headless.py" in line]
+    assert calls, "链上没有 run_headless.py 的活行"
+    assert any("script_long_61" in line for line in calls), (
+        "headless 那条活行必须带 --script fixtures\\script_long_61.md："
+        "否则 P13 的长基线在链上没有被执行")
+
+
+def test_the_long_baseline_step_asserts_shots_and_the_budget_ceiling():
+    """光"跑了"不算：必须断言**镜数**与**预算上界**，否则 2 镜也能绿。
+
+    §2.4 的唯一口径是 `ceiling_effective = max(200, shots * 8 + 40)`（61 镜 → 528）。
+    这条静态检查要求链上出现：① `state` 必须是 DONE；② 产出镜数有下界（≥61）；
+    ③ 用同一个公式算出 ceiling 并比较 `llm_calls`。数字全部从
+    `BLOCKDIRECTOR_RESULT` 的 JSON 载荷里读（不是从单行里正则捞）。
+    """
+    text = chain_text()
+    lines = [line for _number, line in live_lines(text)]
+    joined = "\n".join(lines)
+    assert '"state": "DONE"' in joined, "链上必须断言长基线终态是 DONE"
+    assert "Math]::Max(200" in joined and "* 8 + 40" in joined, (
+        "链上必须按 §2.4 的公式算 ceiling_effective = max(200, shots*8+40)")
+    assert "-lt 61" in joined, "链上必须断长基线产出镜数 ≥ 61"
+    assert "llm_calls" in joined and "ceiling" in joined, (
+        "链上必须把 llm_calls 与 ceiling 比较")
+    assert "Get-MarkerPayload" in joined, (
+        "镜数/预算必须从 JSON 载荷读，别在单行里正则捞数字")
+
+
+# --------------------------------------------------------------------------- #
 # 二、探针结果解析失败 ⇒ INCOMPLETE（不是 WARN）
 # --------------------------------------------------------------------------- #
 def test_the_chain_escalates_a_probe_parse_failure():
