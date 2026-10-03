@@ -315,6 +315,12 @@ RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence
 实测全 pass（2221 张卡、九域最小 154 张 / 6.54%、去重有效率 1.0），
 证据 `docs/evidence/20261003-104455/`，用例 `tests/test_corpus_gates.py`。
 
+**P14-5 的三元组对照也进链了**：`tools/ab_triple_baseline.py` 从 P14 起就在库里，
+而链上从没调用过 ⇒ `ab_triple.json` 一直不存在。现在链上跑它、**要求产物落盘**
+（没写就 Fail），但**不判数值**（§2.3d T2：Δ 只在注入预算不足时才有意义）。
+入库索引实测：`Q2 超图 1.0000 vs 三元组 0.6315`、`Q6b 1.0 vs 1.0`
+（两臂丢弃数都是 0 ⇒ 那一格不能当"超图没用"的证据）。
+
 **链上的真实运行证据换成了 `docs/evidence/20261003_real_ds/`**（DeepSeek 上游，
 run `37d8ad2294df`）：它是**逐镜契约串开始带剧本声明手法**之后的第一跑，也是
 `shots.json.retrieval_calls` 与审计事件第一次一致的一跑（7 = 7，`--check` 零警告）。

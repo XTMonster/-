@@ -3012,3 +3012,51 @@ $ rg -n "K1|K2|K3|K4" tools/knowledge/hard_gates.py tools/run_tests.ps1
 语料里仍有完全重复的卡、有效率 0.5、账本缺失记 `not_measured`），外加两条正对照
 （入库语料四门全过且数字非平凡；手写卡默认计入 K3 的口径）与一条"空语料不许真空
 通过"。**没有**放宽任何已有判据。
+
+## 四十二、P14-30（2026-10-03 10:5x）：**P14-5 的三元组对照第一次真的落了盘**
+
+### 42.1 病：交付物在文档里，工具在库里，链上从不调用
+
+§5 的 P14-5 写着"跑一次三元组对照并落 `docs/evidence/<run-id>/ab_triple.json`"；
+`tools/ab_triple_baseline.py` 从 P14 布局起就在库里。但链上**从来没调用过它**——
+
+```
+$ rg -n "ab_triple" tools/run_tests.ps1
+（零命中）
+```
+
+⇒ 任何一个 `docs/evidence/<run-id>/` 里都不存在这份账，"超图到底买到了什么"
+没人能复核。这和 K1–K4（§四十一）是同一个形状：**交付物可以悄悄消失，而链子全绿**。
+
+### 42.2 修：接进链并**要求产物存在**（数字不设通过线）
+
+链上新增一步（在 attestation 之后、quality 之前）：
+
+```powershell
+python tools/ab_triple_baseline.py --out (Join-Path $evidenceDir 'ab_triple.json')
+# 写了没有？没写 → Fail（"交付物不许悄悄消失"）
+# 写了 → 打印诊断行（DarkGray），**不判数值**
+```
+
+**不设通过线**是工具抬头就写明的口径（§2.3d T2）：收益只在"注入预算 < 需求"时
+体现，预算足够时三元组也能满分，`Δ≈0` 不说明超图无用。把 `Δ` 做成门等于造一条
+恒真或恒假的判据。
+
+### 42.3 实测（证据 `docs/evidence/20261003-105425/ab_triple.json`）
+
+```
+queries 2847 / top_k 3 / token_limit 2000
+edges: hypergraph 638, triples 995
+dropped_forbid_members_per_query: hypergraph 0, triples 0
+Q2 : hypergraph 1.0000  triples 0.6315   delta +0.3685
+Q6b: hypergraph 1.0000  triples 1.0000   delta  0.0000
+```
+
+**怎么读**：在同一份 held-out、同一个 top_k 与同一个 token 预算下，把超边拆成二元
+三元组之后 **Q2 掉 36.9 个百分点**（0.6315）——"查得到"这件事对超图的 n 元完整度
+敏感；而 Q6b 两臂都是 1.0，正因为注入预算这次**没有**成为瓶颈（丢弃数两臂都是 0），
+所以这一格**不能**当作"超图没用"的证据。链上现在每次运行都会把这两个数并排留档。
+
+用例：`tests/test_holdout_score.py` 新增两条——一条拿入库索引 ＋ 一条 held-out
+离线跑 `main()` 并检查两臂/两指标/差值键都在（差值允许任何值，**但不许伪造 0**）；
+一条**静态检查链上那一步真的存在**（调用 ＋ `Test-Path` 都要在活行上）。

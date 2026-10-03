@@ -377,6 +377,28 @@ if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_attestation.json'))) {
                 $attested.edges_fully_attested + '/' + $attested.edges + ' edges fully attested)') -ForegroundColor DarkGray
 }
 
+# A/B triple (2026-10-03): SS2.3d T2 / P14-5 asks for one run of the
+# hypergraph-vs-binary-triple comparison, landed as
+# `docs/evidence/<run-id>/ab_triple.json`.  The TOOL has been in the repo since the
+# P14 layout, but the chain never called it - so the deliverable simply did not
+# exist in any evidence directory, and nobody could tell whether the hypergraph was
+# buying anything.  Measured on the shipped index: Q2 1.0000 (hypergraph) vs 0.6315
+# (triples), delta_Q2 +0.3685; Q6b 1.0 vs 1.0 (the tool says why: the delta only
+# shows up when the injection budget binds, so 0 there is not evidence of anything).
+# It stays a DIAGNOSTIC - no pass line - but the artifact must be written: a
+# deliverable that can silently go missing is the same hole as a gate that can.
+python tools/ab_triple_baseline.py --out (Join-Path $evidenceDir 'ab_triple.json') > $null 2>&1
+if (-not (Test-Path (Join-Path $evidenceDir 'ab_triple.json'))) {
+    Fail '  FAILED: the A/B triple comparison was not written (SS2.3d T2 / P14-5)'
+} else {
+    $abPath = Join-Path $evidenceDir 'ab_triple.json'
+    $ab = ([System.IO.File]::ReadAllText($abPath,
+           [System.Text.Encoding]::UTF8) | ConvertFrom-Json)
+    Write-Host ('  a/b triple (diagnostic, no pass line): Q2 ' + $ab.Q2.hypergraph +
+                ' vs triples ' + $ab.Q2.triples + '; Q6b ' + $ab.Q6b.hypergraph +
+                ' vs ' + $ab.Q6b.triples) -ForegroundColor DarkGray
+}
+
 # --------------------------------------------------------------------------- #
 # P14 / knowledge stack: Q0 and E3 live in tools/knowledge/quality.py, and the
 # chain used to run only holdout_score.py (see the NOTE above its command).

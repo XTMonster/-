@@ -255,3 +255,50 @@ def test_triple_split_keeps_members_but_loses_the_pack():
             for m in item.members}
     for member in list(edge.members) + list(other.members):
         assert (member.role, member.kind, member.node_id) in seen
+
+
+def test_the_ab_triple_report_is_written_and_carries_both_arms(tmp_path):
+    """`ab_triple.json` 是 P14-5 的**交付物**，不是"跑不跑都行"的脚本。
+
+    2026-10-03 实测：工具一直在库里，而**链上从来没调用过它** ⇒ 任何
+    `docs/evidence/<run-id>/` 里都不存在这份账，"超图到底买到了什么"没人能复核。
+    所以链上现在跑它并**要求产物落盘**（数字不设通过线——工具的抬头写明：收益只在
+    注入预算不足时体现，Δ≈0 不说明超图无用）。
+
+    这条用例拿**入库索引 ＋ 一条 held-out**离线跑一遍，检查两臂、两指标与差值都在。
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "bd_ab_main", ROOT / "tools" / "ab_triple_baseline.py")
+    ab = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ab)
+
+    first = json.loads((ROOT / "fixtures" / "knowledge_holdout.jsonl")
+                       .read_text(encoding="utf-8").splitlines()[0])
+    holdout = tmp_path / "holdout.jsonl"
+    holdout.write_text(json.dumps(first, ensure_ascii=False) + "\n",
+                       encoding="utf-8")
+    out = tmp_path / "ab_triple.json"
+    assert ab.main(["prog", "--holdout", str(holdout), "--out", str(out)]) == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["queries"] == 1
+    assert set(payload["Q2"]) == {"hypergraph", "triples"}
+    assert set(payload["Q6b"]) == {"hypergraph", "triples"}
+    assert payload["edges"]["hypergraph"] > 0
+    assert payload["edges"]["triples"] >= payload["edges"]["hypergraph"]
+    # 差值可以任何值（含 None：某一臂没算出来时**不许**伪造 0），键必须在。
+    assert "delta_Q2" in payload and "delta_Q6b" in payload
+    assert "不设通过线" in payload["note"]
+
+
+def test_the_chain_runs_the_ab_triple_and_requires_the_artifact():
+    """链上必须调用它、并且**要求产物存在**——否则交付物会重演"悄悄消失"。"""
+    text = (ROOT / "tools" / "run_tests.ps1").read_text(encoding="utf-8")
+    lines = [line for line in text.splitlines() if line.strip()
+             and not line.lstrip().startswith("#")]
+    calls = [line for line in lines if "ab_triple_baseline.py" in line]
+    assert calls, "链上没有调用 tools/ab_triple_baseline.py"
+    assert any("ab_triple.json" in line for line in calls), calls
+    assert any("Test-Path" in line and "ab_triple.json" in line for line in lines), (
+        "链上必须检查 ab_triple.json 真的写出来了")
