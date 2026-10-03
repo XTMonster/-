@@ -253,3 +253,53 @@ def test_dropped_out_writes_named_reasons(tmp_path, monkeypatch):
     assert ZH.main(["--cases", str(cases_path), "--out", str(out),
                     "--workers", "1"]) == 0
     assert not dropped.exists()
+
+
+def test_a_transient_failure_is_not_written_down_as_a_rule_drop():
+    """上游抖动与"摘录真没有工艺信息"必须**分开记**——否则覆盖率被失败悄悄拉低。
+
+    2026-10-03 实测：810 条里 204 条 `call-failed`（14 并发下的上游抖动）与 273 条
+    `empty`（规则丢弃）混在同一个 `dropped` 计数里，产物覆盖率因此从应有的 ~60%
+    掉到 41%，低于下界。原因里带上异常类型才分得清两者。
+    """
+    case = {"case_id": "c1", "excerpt": "Keep the camera still.",
+            "source_ref": {"title": "t"}}
+    line, reason = ZH.make_line(_Stub(RuntimeError("boom")), case)
+    assert line is None
+    assert reason.startswith("call-failed"), reason
+    assert "RuntimeError" in reason, reason
+
+
+def test_retry_from_only_reruns_the_named_transient_failures(tmp_path, monkeypatch):
+    """`--retry-from` 只重跑点名原因的那些条目（规则丢弃不重跑）。"""
+    cases_path = tmp_path / "cases.jsonl"
+    cases_path.write_text("".join(
+        json.dumps({"case_id": case_id, "excerpt": "A slow dolly in.",
+                    "source_ref": {"title": "t"}}) + "\n"
+        for case_id in ("c1", "c2", "c3")), encoding="utf-8")
+    prior = tmp_path / "dropped.jsonl"
+    prior.write_text("".join(
+        json.dumps({"case_id": case_id, "reason": reason}) + "\n"
+        for case_id, reason in (
+            ("c1", "call-failed（LLMError：空正文）"),
+            ("c2", "empty（摘录不含工艺信息，按规则给空串）"),
+            ("c3", "call-failed（TimeoutError：读超时）"),
+        )), encoding="utf-8")
+
+    class _Ok:
+        family = "zhipu"
+        model_id = "stub"
+        model_version = "stub"
+
+        def chat_json(self, *args, **kwargs):
+            return {"zh": "要拍移动镜头时用斯坦尼康吸收震动"}
+
+    monkeypatch.setattr(ZH.llm, "make_client", lambda *a, **k: _Ok())
+    out = tmp_path / "lines.jsonl"
+    assert ZH.main(["--cases", str(cases_path), "--out", str(out),
+                    "--retry-from", str(prior), "--retry-reasons", "call-failed",
+                    "--workers", "1"]) == 0
+    rows = [json.loads(line) for line in
+            out.read_text(encoding="utf-8").splitlines() if line.strip()]
+    #: c2 是规则丢弃（`empty`），**不该**被重跑；c1/c3 是瞬时失败，重跑后落盘。
+    assert sorted(row["case_id"] for row in rows) == ["c1", "c3"]

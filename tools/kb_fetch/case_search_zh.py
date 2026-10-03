@@ -132,8 +132,12 @@ def make_line(client, case: dict) -> tuple:
             % (excerpt[:800], str(source.get("title") or "")[:120]))
     try:
         reply = client.chat_json(SYSTEM, user, 0.0, 0, 1024)
-    except Exception:  # noqa: BLE001 - 这一条的失败不该拖死整批
-        return None, "call-failed"
+    except Exception as exc:  # noqa: BLE001 - 这一条的失败不该拖死整批
+        #: **瞬时失败与规则丢弃必须分开记**（2026-10-03 实测：14 并发下 810 条里
+        #: 204 条 `call-failed`，占 25%——把它们和 273 条"摘录不含工艺信息"混在
+        #: 一个 `dropped` 里，覆盖率就被失败悄悄拉低）。带上异常类型与首句，
+        #: 才分得清"上游限流"与"模型恒空正文"。
+        return None, f"call-failed（{type(exc).__name__}：{str(exc)[:60]}）"
     zh = str(reply.get("zh") or "").strip()
     zh = re.sub(r"\s+", "", zh)
     reason = classify(zh)
@@ -153,6 +157,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--dropped-out", default="",
                         help="把被丢弃的条目与**具名原因**写到这个文件（缺省不写）")
+    #: 定向重跑：**只**重跑上一轮"瞬时失败"的那些条目。为什么需要它——空串丢弃是
+    #: 规则要求的（摘录真没有工艺信息），重跑它们只是白烧调用；而 `call-failed`
+    #: 是上游抖动，重跑就能回收（2026-10-03 实测：204 条 call-failed 把 810 条的
+    #: 覆盖率从应有的 ~60% 压到 41%，低于产物下界）。
+    parser.add_argument("--retry-from", default="",
+                        help="从这份丢弃账（--dropped-out 的产物）里挑要重跑的 case_id")
+    parser.add_argument("--retry-reasons", default="call-failed",
+                        help="配合 --retry-from：只重跑原因以这些前缀开头的条目（逗号分隔）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     cases_path = pathlib.Path(args.cases)
@@ -166,6 +178,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             if row.get("cases_sha256") == digest and row.get("zh"):
                 done[str(row["case_id"])] = row
     todo = [case for case in cases if str(case.get("case_id")) not in done]
+    if args.retry_from:
+        prefixes = tuple(part.strip() for part in str(args.retry_reasons).split(",")
+                         if part.strip())
+        prior: Dict[str, str] = {}
+        retry_path = pathlib.Path(args.retry_from)
+        if retry_path.is_file():
+            for row in load_cases(retry_path):
+                prior[str(row.get("case_id"))] = str(row.get("reason") or "")
+        todo = [case for case in todo
+                if str(case.get("case_id")) in prior
+                and prior[str(case.get("case_id"))].startswith(prefixes)]
+        print(json.dumps({"retry_from": str(retry_path), "reasons": list(prefixes),
+                          "retry_todo": len(todo)}, ensure_ascii=False))
     if args.limit:
         todo = todo[:args.limit]
     print(json.dumps({"cases": len(cases), "resumed": len(done), "todo": len(todo),
