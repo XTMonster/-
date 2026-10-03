@@ -125,7 +125,7 @@ class LoopingTransport(RepairingTransport):
         self.chat_calls += 1
         self.payloads.append(payload)
         call = ToolCall(id=f"loop_{self.chat_calls}",
-                        function=FunctionCall(name="fix_camera",
+                        function=FunctionCall(name="setup_camera",
                                               arguments="{}"))
         return ChatReply(tool_calls=[call])
 
@@ -146,7 +146,7 @@ def test_repeated_identical_tool_calls_raise_a_loop_warning():
 def test_loop_warning_is_injected_into_the_conversation():
     """警告要真的进到对话里，模型下一轮才看得见。"""
     detector = LoopDetector(repeat_threshold=1)
-    detector.record("fix_camera", {})
+    detector.record("setup_camera", {})
     report = detector.detect()
     assert report is not None and report.kind == "repeat"
 

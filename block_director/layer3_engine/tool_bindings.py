@@ -13,7 +13,7 @@ from mathutils import Vector
 
 from ..motion.model import ACTION_TYPES, head_track_angles
 from ..cinema.camera_motion import MOVEMENT_TYPES, TRANSLATIONS, describe
-from ..cinema.framing import solve_framing
+from ..cinema.framing import CAMERA_SIDES, solve_framing
 from ..cinema.station import camera_direction, subject_frame
 from ..contracts.enums import SHOT_TYPES
 from ..knowledge.tool import SEARCH_KNOWLEDGE, register_knowledge_tools
@@ -34,12 +34,13 @@ from .shot_builder import speaker_of
 
 log = get_logger("tool-bindings")
 
-QUERY_TOOLS = ("get_scene_state", "check_visibility", "check_composition",
-               "check_axis", "estimate_shot_duration")
-ACTION_TOOLS = ("place_character", "move_character", "character_action",
-                "look_at", "face_character", "interact_with", "setup_camera",
-                "move_camera", "reframe")
-KNOWLEDGE_TOOLS = (SEARCH_KNOWLEDGE,)
+#: v1.5：这三份名单搬去了 `contracts/tools.py`（单一真源）——驱动器要判断
+#: "这一轮动没动手"，而它**不许 import bpy**（本模块会 import bpy）。
+from ..contracts.tools import (  # noqa: E402
+    ACTION_TOOLS,
+    KNOWLEDGE_TOOL_NAMES as KNOWLEDGE_TOOLS,
+    QUERY_TOOLS,
+)
 
 #: §9.8 道具交互（代理模式）：交互类型 → 复用哪一个动作层
 INTERACTION_ACTIONS = {"sit": "sit", "stand": "stand",
@@ -551,11 +552,12 @@ def register_action_tools(registry) -> None:
                         "shot_id": {"type": "string"},
                         "shot_type": {"type": "string",
                                       "enum": list(SHOT_TYPES)},
+                        #: 取值表**从 cinema/framing.py 取**（单一真源）——此前这里是
+                        #: 一份手抄的枚举，而同一个值在 B1 草案 schema 里根本没声明，
+                        #: 于是模型在草案里写中文句子、求解器静默折成 `front`（实测
+                        #: 64 镜构图分中位 82.7 → 58.4）。两处各写一份就是这种漂的温床。
                         "side": {"type": "string",
-                                 "enum": ["front", "back", "left", "right",
-                                          "front_left", "front_right",
-                                          "back_left", "back_right",
-                                          "over_shoulder"]},
+                                 "enum": list(CAMERA_SIDES)},
                         "lens": {"type": "number", "minimum": 8,
                                  "maximum": 300}}},
         handler=_tool_setup_camera,

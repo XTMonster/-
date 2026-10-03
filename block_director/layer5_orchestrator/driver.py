@@ -30,6 +30,7 @@ from ..contracts.messages import (
 from ..contracts.plan import Plan
 from ..contracts.brief import SOURCE_DETERMINISTIC, SceneBrief
 from ..contracts.enums import ErrorCode
+from ..contracts.tools import MUTATING_TOOLS
 from ..layer6_audit.audit_logger import AuditLogger
 from ..utils.logger import get_logger
 from ..utils.threading_guard import assert_main_thread
@@ -1657,11 +1658,13 @@ class PrevisDriver:
             self.audit.log("tool_call",
                            f"{call.function.name} -> {'ok' if result.ok else result.error}",
                            tool=call.function.name, ok=result.ok, args=args)
-            if result.ok and call.function.name != PLAN_TOOL_NAME:
-                # v1.4 §3.3：修复回合里**真的执行成功**的场景工具 = 这一镜被
-                # 实际修过。不能用"本轮没有 problem"当判据——修复回合只调
-                # 场景工具（不重提计划）时，`_dispatch_tool_calls` 会因为
-                # "没有收到 emit_plan" 而返回 problem。
+            if result.ok and call.function.name in MUTATING_TOOLS:
+                # v1.4 §3.3：修复回合里**真的执行成功**的**改动类**工具 = 这一镜
+                # 被实际修过。不能用"本轮没有 problem"当判据（修复回合不重提计划时
+                # `_dispatch_tool_calls` 会因为"没有收到 emit_plan"而返回 problem），
+                # 也不能用"任何成功的工具调用"当判据——**只读查询不是动手**：
+                # 实测（2026-10-03 的 64 镜真跑）模型只调 `get_scene_state` +
+                # `check_composition`，而 `repair_applied` 照写"已实施定向修复"。
                 self._repair_tools_ok += 1
             conversation.append(tool_message(call, result.content))
             self._emit("tool_call", f"{call.function.name}",

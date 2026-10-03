@@ -124,7 +124,7 @@ def test_repair_and_react_payloads_do_not_offer_emit_plan():
     registry = ToolRegistry()
     registry.add(name=PLAN_TOOL_NAME, description="plan",
                  parameters={"type": "object"}, handler=lambda **kw: "ok")
-    registry.add(name="fix_camera", description="fix",
+    registry.add(name="setup_camera", description="fix",
                  parameters={"type": "object"}, handler=lambda **kw: "ok")
     audit = AuditResult(passed=False, target="shot_001")
     shot = ShotPlan.from_dict({"shot_id": "shot_001", "intent": "x",
@@ -135,14 +135,14 @@ def test_repair_and_react_payloads_do_not_offer_emit_plan():
                    build_react_payload(shot, audit, registry=registry).tools]
     assert PLAN_TOOL_NAME not in repair_names
     assert PLAN_TOOL_NAME not in react_names
-    assert "fix_camera" in repair_names
+    assert "setup_camera" in repair_names
 
 
 def test_schemas_except_keeps_the_other_tools():
     registry = ToolRegistry()
-    for name in ("emit_plan", "fix_camera", "check_axis"):
+    for name in ("emit_plan", "setup_camera", "check_axis"):
         registry.add(name=name, description=name,
                      parameters={"type": "object"}, handler=lambda **kw: "ok")
     names = [item["function"]["name"]
              for item in registry.schemas_except("emit_plan")]
-    assert names == ["check_axis", "fix_camera"]
+    assert names == ["check_axis", "setup_camera"]

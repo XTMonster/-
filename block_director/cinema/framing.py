@@ -186,6 +186,22 @@ def required_distance(frame_height: float, lens: float,
     return frame_height / (2.0 * math.tan(vertical_fov(lens, sensor_width, aspect) / 2.0))
 
 
+#: 机位相对主体的**合法方位**（9 个 token，闭集）。
+#:
+#: 为什么它必须是闭集（2026-10-03 的 64 镜真跑实测）：B1 草案 schema 里
+#: `camera.side` 只声明了 `type: string`（场景工具那侧**另有一份手抄的枚举**），
+#: 于是模型写了整句中文——"轴线同侧，米迦尔侧前方，较前一镜角度变化大于 30°…"
+#: ——而 `side_vector` 对未知取值**静默折成 `front`**（`table.get(side, table["front"])`）。
+#: 结果：64 个镜头的机位全被折成"正面"，构图分中位从 **82.7 掉到 58.4**、
+#: 64/64 镜判失败。修法就是把两处各写一份的取值表收成这一份真源：
+#: 草案 schema 与场景工具都从这里取枚举，提示词也从这里生成。
+CAMERA_SIDES: Tuple[str, ...] = (
+    "front", "back", "left", "right",
+    "front_left", "front_right", "back_left", "back_right",
+    "over_shoulder",
+)
+
+
 def side_vector(facing: Sequence[float], side: str) -> Tuple[float, float]:
     """相对**被摄主体朝向**计算机位方向（不是世界轴）。
 
@@ -210,6 +226,10 @@ def side_vector(facing: Sequence[float], side: str) -> Tuple[float, float]:
         "back_right": (-fx + right_x, -fy + right_y),
         "over_shoulder": (fx - 0.6 * right_x, fy - 0.6 * right_y),
     }
+    #: 表就是 `CAMERA_SIDES` 的唯一真源：两边不一致时**当场炸**，而不是悄悄多认/少认一个。
+    if set(table) != set(CAMERA_SIDES):  # pragma: no cover - 漂移即构建期错误
+        raise AssertionError(
+            f"side 取值表与 CAMERA_SIDES 漂了：{sorted(table)} vs {list(CAMERA_SIDES)}")
     dx, dy = table.get(side, table["front"])
     norm = math.hypot(dx, dy)
     if norm < 1e-9:

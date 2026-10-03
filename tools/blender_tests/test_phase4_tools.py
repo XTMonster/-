@@ -111,6 +111,21 @@ def t_query_tools_are_callable():
     registry = ToolRegistry()
     register_scene_tools(registry)
 
+    #: v1.5 反漂移：**每一个注册进来的工具都必须被分类**（改动类 / 只读 / 控制类 /
+    #: 计划）。驱动器靠 `MUTATING_TOOLS` 判断"这一轮到底动没动手"（`repair_applied`
+    #: 曾经把只读的 `get_scene_state` 也算成动手，写出一条假记录）；新工具没分类
+    #: 就会被当成只读，而这件事**没有任何别的地方会红**。
+    from block_director.contracts.tools import (
+        CONTROL_TOOL_NAMES, MUTATING_TOOLS, PLAN_TOOL, SHOT_DRAFT_TOOL,
+        READ_ONLY_TOOLS,
+    )
+    known = (set(MUTATING_TOOLS) | set(READ_ONLY_TOOLS)
+             | set(CONTROL_TOOL_NAMES) | {PLAN_TOOL, SHOT_DRAFT_TOOL})
+    unclassified = set(registry.names()) - known
+    if unclassified:
+        return {"ok": False,
+                "why": f"这些工具没有分类（改动/只读）：{sorted(unclassified)}"}
+
     state = registry.execute("get_scene_state", {})
     visibility = registry.execute("check_visibility", {})
     composition = registry.execute("check_composition", {})

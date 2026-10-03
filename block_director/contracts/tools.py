@@ -32,3 +32,29 @@ CONTROL_TOOL_NAMES: Tuple[str, ...] = (
 
 #: 重放时应当跳过的工具：控制类 + 计划提交（计划由 plan_received 事件还原）
 REPLAY_SKIPPED_TOOLS = frozenset({PLAN_TOOL, *CONTROL_TOOL_NAMES})
+
+#: 各阶段的工具**名单**。v1.5 从 `layer3_engine/tool_bindings.py` 搬来这里，
+#: 因为它要同时被两侧消费：bpy 侧注册工具、驱动器（**不许 import bpy**）判断
+#: "这一轮到底动没动手"。
+QUERY_TOOLS: Tuple[str, ...] = (
+    "get_scene_state", "check_visibility", "check_composition",
+    "check_axis", "estimate_shot_duration",
+)
+ACTION_TOOLS: Tuple[str, ...] = (
+    "place_character", "move_character", "character_action",
+    "look_at", "face_character", "interact_with", "setup_camera",
+    "move_camera", "reframe",
+)
+KNOWLEDGE_TOOL_NAMES: Tuple[str, ...] = ("search_knowledge",)
+
+#: **只读**：调了它们什么都不会变，因此**不算"已实施修复"**。
+#:
+#: 实测代价（2026-10-03 的 64 镜真跑）：模型在修复回合只调 `get_scene_state` 与
+#: `check_composition`，而 `repair_applied` 照写"shot_001 已实施定向修复
+#: （COMPOSITION/R003）"——一份**假记录**。根因是驱动器把"任何成功的工具调用"
+#: 都算成动手了（`_repair_tools_ok += 1` 只排除了 `emit_plan`）。
+READ_ONLY_TOOLS: frozenset = frozenset(
+    {*QUERY_TOOLS, *KNOWLEDGE_TOOL_NAMES})
+
+#: **会改动场景或计划**：只有它们能让"修复"名实相符。
+MUTATING_TOOLS: frozenset = frozenset({*ACTION_TOOLS, SHOT_DRAFT_TOOL})

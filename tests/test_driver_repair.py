@@ -53,7 +53,10 @@ class FakeAuditor:
 class RepairingTransport:
     """按阶段回放：计划 → 单镜草案（B1）→ 修复工具调用。"""
 
-    def __init__(self, tool_name="fix_camera"):
+    #: 用**真实**的改动类工具名：驱动器按引擎自己的工具表（`ACTION_TOOLS`/
+    #: `QUERY_TOOLS`）判断"这一轮动没动手"，合成名字不在表里就会被当成只读
+    #: （那正是 v1.5 要修的假记录问题的另一面）。
+    def __init__(self, tool_name="setup_camera"):
         self.tool_name = tool_name
         self.payloads = []
         self.chat_calls = 0
@@ -109,7 +112,7 @@ def _registry() -> ToolRegistry:
         name="emit_plan", description="plan",
         parameters=EMIT_PLAN_TOOL_PARAMETERS,
         handler=lambda **kwargs: "计划已接收")
-    registry.add(name="fix_camera", description="fix",
+    registry.add(name="setup_camera", description="fix",
                  parameters={"type": "object", "additionalProperties": False,
                              "properties": {}},
                  handler=lambda: "相机已重设")
@@ -176,7 +179,7 @@ def test_repair_payload_carries_structured_findings():
     assert "建议：将相机移到轴线另一侧" in system_text
     assert "评分 61.9" in system_text
     assert repair_payload.tool_choice.value == "required"
-    assert {t["function"]["name"] for t in repair_payload.tools} >= {"fix_camera"}
+    assert {t["function"]["name"] for t in repair_payload.tools} >= {"setup_camera"}
 
 
 def test_repair_uses_the_repair_temperature():
@@ -210,7 +213,7 @@ def test_repeated_failure_degrades_instead_of_erroring():
 
 def test_repair_tool_calls_are_executed():
     """修复不是"说说而已"：工具必须真的被调用。"""
-    transport = RepairingTransport(tool_name="fix_camera")
+    transport = RepairingTransport(tool_name="setup_camera")
     auditor = FakeAuditor([
         AuditResult.from_findings([axis_finding()], target="shot_001"),
         AuditResult(passed=True, target="shot_001")])
@@ -218,7 +221,7 @@ def test_repair_tool_calls_are_executed():
     driver.run_to_completion()
     tools_used = [e.data.get("tool") for e in driver.audit.recent()
                   if e.kind == "tool_call"]
-    assert "fix_camera" in tools_used
+    assert "setup_camera" in tools_used
     assert driver.snapshot()["repairs"] == 1
 
 

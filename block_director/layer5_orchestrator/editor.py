@@ -24,6 +24,7 @@ from ..contracts.messages import (
 )
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.tools import SHOT_DRAFT_TOOL
+from ..cinema.framing import CAMERA_SIDES
 from ..motion.model import (
     ACTION_PARAMS,
     ACTION_TYPES,
@@ -91,7 +92,11 @@ EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
             "type": "object",
             "additionalProperties": False,
             "properties": {
-                "side": {"type": "string"},
+                #: v1.5：`side` 是**闭集**（单一真源 = `cinema/framing.py::CAMERA_SIDES`）。
+                #: 此前这里只写 `type: string`，模型于是写了一整句中文
+                #: （"轴线同侧，米迦尔侧前方…"），而求解器对未知取值**静默折成 `front`**
+                #: ——64 镜真跑的构图分中位从 82.7 掉到 58.4、64/64 判失败。
+                "side": {"type": "string", "enum": list(CAMERA_SIDES)},
                 "lens": {"type": "number", "minimum": 8, "maximum": 300},
                 #: v1.3 P7：声明式运镜——写了就在构建时自动生成相机关键帧，
                 #: 不再依赖模型另外调一次 move_camera。
@@ -171,7 +176,9 @@ EDITOR_SYSTEM_PROMPT = """\
 可用道具：{props}
 
 约束：
-- 相机用**相对描述**（side / lens），不要给坐标——距离与高度由引擎按景别推导；
+- 相机用**相对描述**（side / lens），不要给坐标——距离与高度由引擎按景别推导。
+  `side` **只能从下面这 {side_count} 个取值里逐个拷贝**（写中文句子会被判非法，
+  这一镜就只剩计划里的内容）：{sides}
 - 角色移动必须给出目标位置与起止帧，且同一角色的动作不可时间重叠；
 - 对白必须落在镜头时长内，并留出收尾余量；
 - **动作参数只能用它自己那一行的键**（下表就是唯一真源，由引擎的参数表生成）：
@@ -299,6 +306,9 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                    .replace("{continuity}", continuity_text)
                    .replace("{characters}", "、".join(characters) or "（未指定）")
                    .replace("{props}", "、".join(props) or "（无）")
+                   .replace("{sides}", "、".join(f"`{item}`"
+                                                 for item in CAMERA_SIDES))
+                   .replace("{side_count}", str(len(CAMERA_SIDES)))
                    .replace("{action_params}", render_action_params())
                    .replace("{knowledge}", knowledge or "（本次未启用知识库）")
                    .replace("{scene_text}", scene_text or "（无）"))
