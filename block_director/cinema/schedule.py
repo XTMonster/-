@@ -8,7 +8,7 @@ SDL 回填都读同一份结果，避免"两个真源互相覆盖"。
 
 from __future__ import annotations
 
-from typing import Dict, Tuple
+from typing import Dict, Mapping, Sequence, Tuple
 
 from ..contracts.plan import Plan
 
@@ -30,6 +30,55 @@ def total_frames(plan: Plan) -> int:
     if not ranges:
         return 0
     return max(end for _start, end in ranges.values())
+
+
+def travelled_positions(plan: Plan,
+                        initial: Mapping[str, Sequence[float]]
+                        ) -> Dict[str, Dict[str, Tuple[float, float, float]]]:
+    """每一镜**开始时**各角色站在哪——把计划里的行走终点接力起来。
+
+    为什么需要它（2026-10-04 实测，`work/_walk_once_probe.py` +
+    `work/_drift_probe.py`）：`motion/model.py` 的 `walk_to`/`run_to` 在
+    **没有 `from`** 时把 `target_position` 当成**相对位移**（`base + target`）。
+    规划器几乎从不写 `from`，于是构建器一直拿 `CastMember.initial_location`
+    当缺省起点 ⇒ 同一角色的一串行走**累加**：`long9` 重建里伊恩从起始站位
+    一路加到了 (13.0, −12.6)，而计划里每一个目的地都在 9.5 m 以内。
+
+    这里按**计划顺序**推算"到这一镜开始时人在哪"：上一次行走的终点就是下一次
+    的起点（`target_position` 是**绝对**目的地），没有行走过的角色就是剧本的
+    起始站位。纯计算，可单测；构建器把它当作 `walk_to` 的缺省 `from`。
+
+    注意：只跟踪**位置**。`sit`/`stand`/`turn_*` 这类动作不改平面位置，
+    所以不必参与接力（也不该参与，否则一次"坐下"会把坐标带到错误的地方）。
+    """
+    current: Dict[str, Tuple[float, float, float]] = {}
+    for character_id, location in initial.items():
+        values = [float(value) for value in location][:3]
+        while len(values) < 3:
+            values.append(0.0)
+        current[str(character_id)] = (values[0], values[1], values[2])
+
+    per_shot: Dict[str, Dict[str, Tuple[float, float, float]]] = {}
+    for shot in plan.shots:
+        per_shot[str(shot.shot_id)] = dict(current)
+        for raw in getattr(shot, "actions", None) or []:
+            if not isinstance(raw, dict):
+                continue
+            action_type = str(raw.get("action_type") or "")
+            if action_type not in ("walk_to", "run_to"):
+                continue
+            character_id = str(raw.get("character_id") or "")
+            params = dict(raw.get("params") or {})
+            target = params.get("target_position") or raw.get("target_position")
+            if not character_id or not isinstance(target, (list, tuple)):
+                continue
+            if len(target) < 2:
+                continue
+            values = [float(value) for value in target][:3]
+            while len(values) < 3:
+                values.append(0.0)
+            current[character_id] = (values[0], values[1], values[2])
+    return per_shot
 
 
 def action_frame_window(shot_start: int, duration_frames: int,

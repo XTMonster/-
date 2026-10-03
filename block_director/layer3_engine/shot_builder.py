@@ -20,7 +20,12 @@ from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
 from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
 from ..cinema.station import SubjectFrame, camera_direction, subject_frame
-from ..cinema.schedule import action_frame_window, shot_ranges, total_frames
+from ..cinema.schedule import (
+    action_frame_window,
+    shot_ranges,
+    total_frames,
+    travelled_positions,
+)
 from ..motion.model import ActionRequest
 from ..utils.geometry import rotation_z_to_facing
 from ..utils.logger import get_logger
@@ -222,8 +227,18 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
 
 def action_requests(shot: ShotPlan, shot_start: int,
                      cast: Dict[str, CastMember],
-                     warnings: List[str]) -> List[ActionRequest]:
-    """把计划里的动作转成全局帧号的动作请求。"""
+                     warnings: List[str],
+                     live_from: Optional[Dict[str, Tuple[float, float, float]]] = None
+                     ) -> List[ActionRequest]:
+    """把计划里的动作转成全局帧号的动作请求。
+
+    ``live_from`` 给 ``walk_to``/``run_to`` 提供**缺省起点**：角色在**这一镜
+    开始时实际站在哪**（读它的世界坐标），而不是剧本开始时的站位。实测
+    （2026-10-04，`work/_walk_once_probe.py`）：`from` 缺省时运动模型把
+    `target_position` 当成**相对位移**（`base + target`），于是一串缺省 `from`
+    的行走会**累加**——`long9` 重建里伊恩从起始站位一路累到 (13.0, −12.6)。
+    给了实时起点之后，每一次行走都是"从他现在的位置走到计划写的位置"。
+    """
     requests: List[ActionRequest] = []
     for index, raw in enumerate(shot.actions or [], start=1):
         if not isinstance(raw, dict):
@@ -259,7 +274,9 @@ def action_requests(shot: ShotPlan, shot_start: int,
                     f"{shot.shot_id}: {action_type} 缺少 target_position，已跳过"
                     "（不替 LLM 猜目的地）")
                 continue
-            params.setdefault("from", cast[character_id].initial_location)
+            default_from = (live_from or {}).get(character_id)
+            params.setdefault("from", default_from
+                              or cast[character_id].initial_location)
         requests.append(ActionRequest(action_type=action_type,
                                       start_frame=start, end_frame=end,
                                       params=params, character_id=character_id,
@@ -343,11 +360,19 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     #: 第一趟只**排片**（帧区间、动作请求、运镜任务），不摆机位：机位必须等动作
     #: 烘焙完之后再按"这一镜首帧人在哪"来摆（v1.6，见 `live_subject_entries`）。
     planned: Dict[str, Dict[str, Any]] = {}
+    #: 每一镜开始时各角色站在哪（把计划的行走终点接力起来）——`walk_to` 的缺省
+    #: 起点用它，而不是剧本的起始站位（否则一串缺省 `from` 的行走会累加，见
+    #: `cinema/schedule.travelled_positions` 的说明）。
+    place_before_shot = travelled_positions(
+        plan, {character_id: member.initial_location
+               for character_id, member in cast_map.items()})
     for shot in plan.shots:
         start, end = ranges[shot.shot_id]
         context.schedule[shot.shot_id] = (start, end)
         planned_warnings: List[str] = []
-        requests = action_requests(shot, start, cast_map, planned_warnings)
+        requests = action_requests(
+            shot, start, cast_map, planned_warnings,
+            live_from=place_before_shot.get(shot.shot_id))
         planned_warnings.extend(
             thirty for thirty in conflict_warnings(requests, shot.shot_id))
         for request in requests:
