@@ -1,0 +1,731 @@
+{
+  "run_id": "20261003-213335",
+  "overall": "fail",
+  "holdout_entries": 2847,
+  "index_edges": 638,
+  "metrics": [
+    {
+      "id": "Q0",
+      "status": "pass",
+      "note": "rejects/raw <= 5% 且 processed == total",
+      "source": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
+      "raw_edges": 638,
+      "valid_unique": 638,
+      "duplicates": 0,
+      "rejects": 0,
+      "rejects_file_lines": 0,
+      "processed_chunks": 418,
+      "total_chunks": 418,
+      "reject_ratio": 0.0
+    },
+    {
+      "id": "K1_source_ref_complete",
+      "line": 1.0,
+      "candidates_floor": 540,
+      "status": "pass",
+      "numerator": 2221,
+      "denominator": 2221,
+      "value": 1.0,
+      "examples": [],
+      "note": "2221 张生成卡的 source_ref 六字段全部非空"
+    },
+    {
+      "id": "K2_license_ratio",
+      "line": 1.0,
+      "candidates_floor": 540,
+      "status": "pass",
+      "numerator": 2221,
+      "denominator": 2221,
+      "value": 1.0,
+      "examples": [],
+      "whitelist": [
+        "CC-BY",
+        "CC-BY-NC-SA",
+        "CC-BY-SA",
+        "CC0",
+        "ExplicitPermission",
+        "OwnWork",
+        "PersonalStudy",
+        "PublicDomain"
+      ],
+      "note": "2221 张卡的许可全部在白名单内"
+    },
+    {
+      "id": "K3_domain_floor",
+      "line": 1.0,
+      "total": 2353,
+      "min_per_domain": 60,
+      "min_share": 0.0654,
+      "declared_domains": [
+        "cinematography",
+        "axis_theory",
+        "composition",
+        "blocking",
+        "performance",
+        "storyboard",
+        "editing",
+        "anime",
+        "production"
+      ],
+      "status": "pass",
+      "numerator": 9,
+      "denominator": 9,
+      "per_domain": {
+        "cinematography": 406,
+        "axis_theory": 201,
+        "composition": 292,
+        "blocking": 337,
+        "performance": 292,
+        "storyboard": 241,
+        "editing": 218,
+        "anime": 154,
+        "production": 212
+      },
+      "per_domain_share": {
+        "cinematography": 0.1725,
+        "axis_theory": 0.0854,
+        "composition": 0.1241,
+        "blocking": 0.1432,
+        "performance": 0.1241,
+        "storyboard": 0.1024,
+        "editing": 0.0926,
+        "anime": 0.0654,
+        "production": 0.0901
+      },
+      "min_domain": 154,
+      "missing_domains": [],
+      "thin_domains": [],
+      "under_share": [],
+      "note": "九域覆盖：2353 张，最小域 154 张，最小占比 0.0654"
+    },
+    {
+      "id": "K4_dedupe_ratio",
+      "line": 0.6,
+      "candidates_floor": 540,
+      "kept_in_corpus": 2221,
+      "status": "pass",
+      "numerator": 2221,
+      "denominator": 2221,
+      "value": 1.0,
+      "cards_candidates": 2221,
+      "cards_deduped": 0,
+      "cards_rejected": 0,
+      "exact_duplicates_in_corpus": 0,
+      "problems": [],
+      "note": "去重有效率 1.0000（kept 2221 / (2221 ＋ 0)），入库语料无完全重复卡"
+    },
+    {
+      "id": "Q1",
+      "status": "pass",
+      "numerator": 2840,
+      "denominator": 2847,
+      "value": 0.9975,
+      "line": 0.7,
+      "note": "held-out query 数 2847（下界 1200）"
+    },
+    {
+      "id": "Q2",
+      "status": "pass",
+      "numerator": 2847,
+      "denominator": 2847,
+      "value": 1.0,
+      "line": 0.9,
+      "note": ""
+    },
+    {
+      "id": "Q3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 2767,
+      "value": 0.0,
+      "line": 0.1,
+      "note": "按 §2.3 的 Q3 重定义，跳过 228 条『查询点名了它被禁取值』的边（它们该被召回，Q7 要求进注入）",
+      "floor": 712
+    },
+    {
+      "id": "Q4",
+      "status": "pass",
+      "numerator": 2880,
+      "denominator": 2880,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "required 总数 2880（下界 200）"
+    },
+    {
+      "id": "Q6a",
+      "status": "pass",
+      "numerator": 8541,
+      "denominator": 8541,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q6b",
+      "status": "pass",
+      "numerator": 2880,
+      "denominator": 2880,
+      "value": 1.0,
+      "line": 1.0,
+      "note": ""
+    },
+    {
+      "id": "Q7",
+      "status": "pass",
+      "numerator": 1735,
+      "denominator": 60,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "§4.1b 夹具覆盖门：`q` 点名了索引里被禁取值的条目数 1735（下界 60）；索引里 70 个 `forbid` 成员有 70 个至少被 1 条 `q` 点名。运行期的拦截率（按镜头）是**另一个分母**（§4.1 R52），只在真实模型运行上判。",
+      "forbid_members": 70,
+      "uncovered_forbid_members": []
+    },
+    {
+      "id": "Q4_pre_required_edges_exist",
+      "status": "pass",
+      "numerator": 2880,
+      "denominator": 2880,
+      "value": 1.0,
+      "line": 1.0,
+      "note": "§2.3 Q6b 前置①：2880 条 must 全部能在索引里找到对应边",
+      "examples": []
+    },
+    {
+      "id": "E3",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 90,
+      "value": 0,
+      "line": 0,
+      "note": "经验边（source_kind=experience）单独产生的 forbid 条数必须为 0"
+    },
+    {
+      "id": "E3_cases",
+      "status": "pass",
+      "numerator": 0,
+      "denominator": 810,
+      "line": 0,
+      "note": "L3 案例永不产出约束"
+    },
+    {
+      "id": "Q5",
+      "status": "fail",
+      "numerator": 105,
+      "denominator": 0,
+      "line": 0.8,
+      "fixture_items": 105,
+      "fixture_plan_shaped": 105,
+      "run_numerator": 0,
+      "run_denominator": 0,
+      "run_value": null,
+      "run_subset_denominator": 0,
+      "run_retrieval_join": {
+        "id": "Q5_retrieval_join",
+        "status": "not_measured",
+        "numerator": 23,
+        "denominator": 31,
+        "value": 0.7419,
+        "line": 0.8,
+        "matched_pairs": 31,
+        "by_entry": {
+          "hq_0947": {
+            "shots": 1,
+            "hits": 1
+          },
+          "hq_0951": {
+            "shots": 1,
+            "hits": 1
+          },
+          "hq_0952": {
+            "shots": 1,
+            "hits": 1
+          },
+          "hq_1057": {
+            "shots": 8,
+            "hits": 0
+          },
+          "hq_1094": {
+            "shots": 20,
+            "hits": 20
+          }
+        },
+        "examples": [
+          {
+            "shot_id": "shot_001",
+            "entry": "hq_1057",
+            "edge_id": "hg:f6fd8f040745",
+            "expected": [
+              "pan_left",
+              "pan_right",
+              "track_left",
+              "track_right",
+              "zoom_in",
+              "zoom_out"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": false
+          },
+          {
+            "shot_id": "shot_002",
+            "entry": "hq_1094",
+            "edge_id": "hg:fa491b55632b",
+            "expected": [
+              "固定"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_003",
+            "entry": "hq_1094",
+            "edge_id": "hg:fa491b55632b",
+            "expected": [
+              "固定"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_005",
+            "entry": "hq_0947",
+            "edge_id": "hg:c573c323062e",
+            "expected": [
+              "crane_up",
+              "dolly_in"
+            ],
+            "applied": [
+              "dolly_in"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_005",
+            "entry": "hq_0951",
+            "edge_id": "hg:afc6ae05ea5f",
+            "expected": [
+              "dolly_in"
+            ],
+            "applied": [
+              "dolly_in"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_005",
+            "entry": "hq_0952",
+            "edge_id": "hg:afc6ae05ea5f",
+            "expected": [
+              "dolly_in"
+            ],
+            "applied": [
+              "dolly_in"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_006",
+            "entry": "hq_1094",
+            "edge_id": "hg:fa491b55632b",
+            "expected": [
+              "固定"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_008",
+            "entry": "hq_1094",
+            "edge_id": "hg:fa491b55632b",
+            "expected": [
+              "固定"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_009",
+            "entry": "hq_1094",
+            "edge_id": "hg:fa491b55632b",
+            "expected": [
+              "固定"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_013",
+            "entry": "hq_1094",
+            "edge_id": "hg:fa491b55632b",
+            "expected": [
+              "固定"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_015",
+            "entry": "hq_1094",
+            "edge_id": "hg:fa491b55632b",
+            "expected": [
+              "固定"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": true
+          },
+          {
+            "shot_id": "shot_017",
+            "entry": "hq_1057",
+            "edge_id": "hg:f6fd8f040745",
+            "expected": [
+              "pan_left",
+              "pan_right",
+              "track_left",
+              "track_right",
+              "zoom_in",
+              "zoom_out"
+            ],
+            "applied": [
+              "固定"
+            ],
+            "hit": false
+          }
+        ],
+        "note": "按『这一镜检索到了该条目的 `must[0]` 边』对齐的实读数；**不参与门**。§4.1b 的 Q5 join（逐字相等）另见同一份 detail 的 numerator/denominator",
+        "entries_with_expectations": 105
+      },
+      "run_stale_evidence": false,
+      "run_evidence_fingerprints": {
+        "hypergraph": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "cases": "69791dbacabd3fd77e5132dea277664972a227d222b7be0c6c6841c5a7a6649e"
+      },
+      "run_channel": "audit",
+      "run_emitted_queries": {
+        "shot_001": [
+          "景别=LS；运镜=固定"
+        ],
+        "shot_002": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_003": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_004": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_005": [
+          "景别=MCU；运镜=dolly_in"
+        ],
+        "shot_006": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_007": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_008": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_009": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_010": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_011": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_012": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_013": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_014": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_015": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_016": [
+          "景别=MLS；运镜=固定"
+        ],
+        "shot_017": [
+          "景别=LS；运镜=固定"
+        ],
+        "shot_018": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_019": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_020": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_021": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_022": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_023": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_024": [
+          "景别=MLS；运镜=固定"
+        ],
+        "shot_025": [
+          "景别=LS；运镜=固定"
+        ],
+        "shot_026": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_027": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_028": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_029": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_030": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_031": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_032": [
+          "景别=MLS；运镜=固定"
+        ],
+        "shot_033": [
+          "景别=LS；运镜=固定"
+        ],
+        "shot_034": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_035": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_036": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_037": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_038": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_039": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_040": [
+          "景别=MLS；运镜=固定"
+        ],
+        "shot_041": [
+          "景别=LS；运镜=固定"
+        ],
+        "shot_042": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_043": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_044": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_045": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_046": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_047": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_048": [
+          "景别=MLS；运镜=固定"
+        ],
+        "shot_049": [
+          "景别=LS；运镜=固定"
+        ],
+        "shot_050": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_051": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_052": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_053": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_054": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_055": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_056": [
+          "景别=MLS；运镜=固定"
+        ],
+        "shot_057": [
+          "景别=LS；运镜=固定"
+        ],
+        "shot_058": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_059": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_060": [
+          "景别=MCU；运镜=固定"
+        ],
+        "shot_061": [
+          "景别=MS；运镜=固定"
+        ],
+        "shot_062": [
+          "景别=CU；运镜=固定"
+        ],
+        "shot_063": [
+          "景别=MLS；运镜=固定"
+        ],
+        "shot_064": [
+          "景别=LS；运镜=固定；对白=dialogue"
+        ]
+      },
+      "run_drift_shots": [
+        "shot_001",
+        "shot_002",
+        "shot_003",
+        "shot_004",
+        "shot_005",
+        "shot_006",
+        "shot_007",
+        "shot_008",
+        "shot_009",
+        "shot_010",
+        "shot_011",
+        "shot_012",
+        "shot_013",
+        "shot_014",
+        "shot_015",
+        "shot_016",
+        "shot_017",
+        "shot_018",
+        "shot_019",
+        "shot_020",
+        "shot_021",
+        "shot_022",
+        "shot_023",
+        "shot_024",
+        "shot_025",
+        "shot_026",
+        "shot_027",
+        "shot_028",
+        "shot_029",
+        "shot_030",
+        "shot_031",
+        "shot_032",
+        "shot_033",
+        "shot_034",
+        "shot_035",
+        "shot_036",
+        "shot_037",
+        "shot_038",
+        "shot_039",
+        "shot_040",
+        "shot_041",
+        "shot_042",
+        "shot_043",
+        "shot_044",
+        "shot_045",
+        "shot_046",
+        "shot_047",
+        "shot_048",
+        "shot_049",
+        "shot_050",
+        "shot_051",
+        "shot_052",
+        "shot_053",
+        "shot_054",
+        "shot_055",
+        "shot_056",
+        "shot_057",
+        "shot_058",
+        "shot_059",
+        "shot_060",
+        "shot_061",
+        "shot_062",
+        "shot_063",
+        "shot_064"
+      ],
+      "run_audit": "docs\\evidence\\20261003_real_long\\audit_log.jsonl",
+      "run_audit_shot_events": 64,
+      "plan_queries": [
+        "景别=CU；镜头=85mm",
+        "景别=CU；镜头=85mm；对白=dialogue",
+        "景别=LS；镜头=35mm",
+        "景别=LS；镜头=35mm；动作=walk_to",
+        "景别=MCU；镜头=50mm",
+        "景别=MCU；镜头=50mm；对白=dialogue",
+        "景别=MCU；镜头=50mm；运镜=dolly_in",
+        "景别=MLS；镜头=35mm",
+        "景别=MS；镜头=50mm",
+        "景别=MS；镜头=50mm；对白=dialogue"
+      ],
+      "note": "这一跑真的发过逐镜查询（shot scope 64 条），但按 §4.1b 的『键值对集合相等』与 held-out 的 `q` 匹配到 0 条（放宽成子集也只有 0 条）：分母为 0，按 §4.1b 硬规则 1 判失败（不得记 not_measured）。真实发出的契约串见 emitted_queries；重推串与它的漂移见 drift（64 镜）"
+    },
+    {
+      "id": "E1",
+      "numerator": 3,
+      "denominator": 18,
+      "value": 0.1667,
+      "line": 0.7,
+      "sample_floor": 1200,
+      "sample_shortfall": 1182,
+      "sample_floor_met": false,
+      "status": "fail",
+      "note": "相关案例 3/18 = 0.1667（线 0.7）（注意：判分样本 18 < §4.1b 下界 1200，差 1182 条——这个比率还不具备统计效力，判据与状态未因此改变）"
+    },
+    {
+      "id": "E2",
+      "status": "not_measured",
+      "diagnostic": true,
+      "numerator": 0,
+      "denominator": 64,
+      "value": 0.0,
+      "evidence_fingerprints": {
+        "hypergraph": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "cases": "69791dbacabd3fd77e5132dea277664972a227d222b7be0c6c6841c5a7a6649e"
+      },
+      "note": "计划里的运镜取自经验/案例层的镜头数 / 64（记录，不设门）"
+    }
+  ],
+  "q_summary": {
+    "queries": 2847,
+    "edges": 638,
+    "selected_total": 8541,
+    "must_total": 2880,
+    "required_unresolved": 0,
+    "required_unresolved_entries": 0,
+    "unresolved_examples": [],
+    "negative_skipped_forbid_conflicts": 228,
+    "passed": true
+  }
+}
