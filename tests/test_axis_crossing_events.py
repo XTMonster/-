@@ -20,7 +20,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from block_director.cinema.axis import Axis, crossing_events  # noqa: E402
+from block_director.cinema.axis import (  # noqa: E402
+    Axis,
+    axis_state,
+    crossing_events,
+)
 from block_director.contracts.plan import Plan, ShotPlan  # noqa: E402
 
 AXIS = Axis(start=(-0.9, 0.0), end=(0.9, 0.0),
@@ -69,14 +73,48 @@ def test_a_crossing_hidden_in_a_single_shows_up_as_not_visible():
     assert events["shot_002"].visible is False
 
 
-def test_walking_away_without_swapping_sides_is_not_a_crossing():
+def test_walking_away_rotates_the_line_but_does_not_flip_it():
+    """走开会让连线**转**（事件照记，`rotated_deg` 有值），但**不掉头**
+    （`flip=False`）——所以它是一次"看得见的重建"而不是"左右换位"。"""
     plan = _plan(_shot(1, ("甲", "乙")),
                  _shot(2, ("甲", "乙"), AWAY),
                  _shot(3, ("甲", "乙")))
-    assert crossing_events(AXIS, plan, INITIAL) == {}
+    events = crossing_events(AXIS, plan, INITIAL)
+    assert list(events) == ["shot_002"]
+    assert events["shot_002"].flip is False
+    assert events["shot_002"].rotated_deg > 30.0
+    assert events["shot_002"].visible is True
 
 
 def test_a_plan_without_both_labels_yields_nothing():
     unlabeled = Axis(start=(-0.9, 0.0), end=(0.9, 0.0), established_side=-1)
     plan = _plan(_shot(1, ("甲", "乙")), _shot(2, ("甲", "乙"), FLIP))
     assert crossing_events(unlabeled, plan, INITIAL) == {}
+
+
+# --------------------------------------------------------------------------- #
+# 轴侧状态机：侧别继承，只在**合法桥接**（看得见的换位）处翻转
+# --------------------------------------------------------------------------- #
+def test_the_side_is_inherited_until_a_visible_crossing_flips_it():
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲", "乙"), FLIP),     # 两人同框：换位看得见 ⇒ 合法
+                 _shot(3, ("甲", "乙")),
+                 _shot(4, ("甲",)))
+    assert axis_state(AXIS, plan, INITIAL) == {
+        "shot_001": -1, "shot_002": -1, "shot_003": +1, "shot_004": +1}
+
+
+def test_an_unseen_crossing_does_not_flip_the_state():
+    """看不见的换位**不合法** ⇒ 侧别照旧——于是后续机位仍按原侧，交给规则报违规。"""
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲",), FLIP),          # 只拍甲：换位看不见
+                 _shot(3, ("甲", "乙")))
+    assert axis_state(AXIS, plan, INITIAL) == {
+        "shot_001": -1, "shot_002": -1, "shot_003": -1}
+
+
+def test_walking_away_never_flips_the_state():
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲", "乙"), AWAY),
+                 _shot(3, ("甲", "乙")))
+    assert set(axis_state(AXIS, plan, INITIAL).values()) == {-1}

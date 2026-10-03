@@ -103,15 +103,24 @@ def axis_for_speakers(positions: Sequence[Tuple[Sequence[float], str]]
 
 @dataclass(frozen=True)
 class CrossingEvent:
-    """一次"配对连线翻了个儿"的换位（纯计划推算的结果）。"""
+    """一次配对连线的变化（纯计划推算的结果）。
+
+    * `rotated_deg`：这一镜里连线转过的角度（大 = 走位把它重建了）；
+    * `flip`：转过 90° 以上 ⇒ **左右真的换了个儿**（侧别要翻）；
+    * `visible`：这一镜里两人**同框**（观众看得见这次变化 ⇒ 合法桥接）。
+    """
 
     shot_id: str
-    visible: bool          # 换位是不是发生在**两人同框**的那一镜里
+    visible: bool          # 变化是不是发生在**两人同框**的那一镜里
     people: Tuple[str, str]
+    rotated_deg: float = 0.0
+    flip: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         return {"shot_id": self.shot_id, "visible": bool(self.visible),
-                "people": list(self.people)}
+                "people": list(self.people),
+                "rotated_deg": round(float(self.rotated_deg), 1),
+                "flip": bool(self.flip)}
 
 
 def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]]
@@ -152,31 +161,32 @@ def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]]
         a_end, b_end = end.get(left), end.get(right)
         if not (a_start and b_start and a_end and b_end):
             continue
-        #: "线翻了个儿" = 这一镜**结束时**的配对连线相对**首镜那条**转了超过 90°
-        #: （点积为负）。用点积而不是叉积：配对两点自己就是线，叉积恒为 0。
-        if _flipped(direction, a_start, b_start, a_end, b_end):
+        #: 连线在这一镜里转了多少度（配对两点自己就是线，所以只能比**方向**）。
+        rotated = _rotation_deg(a_start, b_start, a_end, b_end)
+        #: 小于半度的差是数值噪声（走位精确停在目标上时仍会差一点点）。
+        if rotated >= 0.5:
             out[shot_id] = CrossingEvent(
                 shot_id=shot_id,
                 visible=len([cid for cid in (shot.characters or [])
                              if str(cid) in (left, right)]) >= 2,
-                people=(left, right))
+                people=(left, right),
+                rotated_deg=rotated,
+                flip=rotated >= 90.0)
     return out
 
 
-def _flipped(direction: Sequence[float],
-             a_start: Sequence[float], b_start: Sequence[float],
-             a_end: Sequence[float], b_end: Sequence[float]) -> bool:
-    """这一镜里配对连线是不是**掉了个头**（相对首镜那条 > 90°）。"""
-    dx, dy = float(direction[0]), float(direction[1])
+def _rotation_deg(a_start: Sequence[float], b_start: Sequence[float],
+                  a_end: Sequence[float], b_end: Sequence[float]) -> float:
+    """配对连线在这一镜里转过多少度（0–180）。"""
     fx0, fy0 = float(b_start[0]) - float(a_start[0]), float(b_start[1]) - float(a_start[1])
     fx1, fy1 = float(b_end[0]) - float(a_end[0]), float(b_end[1]) - float(a_end[1])
     n0 = math.hypot(fx0, fy0)
     n1 = math.hypot(fx1, fy1)
     if n0 < EPS or n1 < EPS:
-        return False
-    before = (fx0 / n0) * dx + (fy0 / n0) * dy
-    after = (fx1 / n1) * dx + (fy1 / n1) * dy
-    return before > 0.0 and after < 0.0
+        return 0.0
+    cosine = max(-1.0, min(1.0,
+                           (fx0 / n0) * (fx1 / n1) + (fy0 / n0) * (fy1 / n1)))
+    return math.degrees(math.acos(cosine))
 
 
 def _after_own_walks(shot, positions: Dict[str, Sequence[float]]
@@ -194,6 +204,38 @@ def _after_own_walks(shot, positions: Dict[str, Sequence[float]]
         if character_id and isinstance(target, (list, tuple)) and len(target) >= 2:
             out[character_id] = (float(target[0]), float(target[1]))
     return out
+
+
+def axis_state(axis: Axis, plan, initial: Dict[str, Sequence[float]]
+               ) -> Dict[str, int]:
+    """逐镜的**轴侧状态机**（纯函数）：每一镜机位该待在当前连线的哪一侧。
+
+    第一原理（GLM 5.3 会诊 A3，2026-10-04）：**合法的状态机只能建立在可观测量上**；
+    冻结线是"会失真的隐藏状态"——走位一动就与真实锚点脱钩。所以：
+
+    * **线**每镜从两人**当前**坐标派生（`current_line`）；
+    * **侧**继承，只在**合法桥接**处翻转——首版只认一种：**看得见的换位**
+      （`crossing_events` 里 `visible=True`，即两人同框时走过去）。会诊 A1 还列了
+      另外三种（摄影机自身跨轴、主体转向形成新轴、插入无方向镜头）；它们需要
+      画面/机位信息，由规则侧用**已经建好的相机**补判（那仍然是可观测量），
+      不在这个纯函数里假装知道。
+
+    产物 `{shot_id: ±1}` 给构建器与规则**共用**；规则另有一条独立内容
+    （"规范首镜线 vs 当前派生线"的偏差），所以两边不会退化成自证。
+    """
+    sides: Dict[str, int] = {}
+    if not axis.left_label or not axis.right_label:
+        return sides
+    events = crossing_events(axis, plan, initial)
+    side = int(axis.established_side) or SIDE_POSITIVE
+    for shot in getattr(plan, "shots", []) or []:
+        shot_id = str(shot.shot_id)
+        sides[shot_id] = side
+        event = events.get(shot_id)
+        if event is not None and event.visible and event.flip:
+            #: 看得见的换位 ⇒ 观众看到并接受这次重建：此后从另一侧继续。
+            side = -side
+    return sides
 
 
 def current_line(axis: Axis, positions: Dict[str, Sequence[float]]) -> Axis:

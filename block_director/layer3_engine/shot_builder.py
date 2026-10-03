@@ -19,6 +19,7 @@ import bpy
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
 from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
+from ..cinema.axis import Axis, axis_state, current_line
 from ..cinema.station import (
     HEAD_ROOM_AIM_M,
     SubjectFrame,
@@ -145,6 +146,50 @@ def subject_frame_for(shot: ShotPlan,
                         tuple(member.initial_facing)))
     return subject_frame(entries, shot_type=str(shot.shot_type),
                          speaker_id=speaker_of(shot))
+
+
+def live_positions_by_label(characters: Dict[str, Any]
+                            ) -> Dict[str, Tuple[float, float]]:
+    """场景里每个角色**此刻**的 XY，键同时给 id 与显示名（轴线标签两种都可能用）。"""
+    spots: Dict[str, Tuple[float, float]] = {}
+    for character_id, character in (characters or {}).items():
+        root = getattr(character, "root", None)
+        if root is None:
+            continue
+        xy = (float(root.matrix_world.translation.x),
+              float(root.matrix_world.translation.y))
+        spots[str(character_id)] = xy
+        name = str(getattr(character, "name", "") or "")
+        if name:
+            spots[name] = xy
+    return spots
+
+
+def _axis_for_placement(context, plan, cast_map, characters, shot):
+    """这一镜摆机位该用的轴线：**线**取两人此刻连线，**侧**取状态机给的侧别。
+
+    状态机只在第一镜（含两名角色的那镜）确立轴线**之后**才算得出来；那之前的镜头
+    仍用 `context.axis`（那时它还是 None，求解器会走"相对焦点朝向"的兜底路径）。
+    """
+    base = getattr(context, "axis", None)
+    if base is None:
+        return None
+    sides = getattr(context, "_axis_sides", None)
+    if sides is None:
+        initial = {str(member.id): tuple(member.initial_location)
+                   for member in (getattr(context, "spec", None).cast
+                                  if getattr(context, "spec", None) else [])}
+        for member in (getattr(context, "spec", None).cast
+                       if getattr(context, "spec", None) else []):
+            name = str(getattr(member, "name", "") or "")
+            if name:
+                initial[name] = tuple(member.initial_location)
+        sides = axis_state(base, plan, initial)
+        context._axis_sides = sides
+    live = current_line(base, live_positions_by_label(characters))
+    side = int(sides.get(str(shot.shot_id), live.established_side))
+    return Axis(start=live.start, end=live.end, established_side=side,
+                left_label=live.left_label, right_label=live.right_label)
 
 
 def live_subject_entries(shot: ShotPlan, characters: Dict[str, Any]
@@ -450,8 +495,13 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         # side 与 lens 由取景解算器消费；距离/高度仍按 §10.6/§10.5 推导。
         # v1.3：side 经 cinema.station 解析——双人镜头相对两人连线，
         # 而不是相对焦点主体的朝向（否则机位会落在轴线上）。
+        #: 轴线**跟着走位走**（GLM 5.3 会诊 A3）：线取两人此刻的连线，侧别由
+        #: `axis_state` 这份纯函数给出（继承，只在**看得见的换位**处翻转）。
+        #: 规则侧另有一条独立内容（"规范首镜线 vs 当前派生线"的偏差），
+        #: 所以两边共用状态不等于自证。
+        placed_axis = _axis_for_placement(context, plan, cast_map, characters, shot)
         bundle, solution, frame = place_shot_camera(shot, cast_map, spec,
-                                                    axis=context.axis,
+                                                    axis=placed_axis,
                                                     entries=live_subject_entries(
                                                         shot, characters))
         marker = scene.timeline_markers.new(f"BD_Cut_{shot.shot_id}", frame=start)

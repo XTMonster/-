@@ -13,14 +13,17 @@ R002 空间碰撞、R003 动作时间轴、R008 地面、R009 景别距离、R01
 
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
+import math
+from typing import Any, Dict, List, Sequence, Tuple
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
 from ..cinema.axis import (
+    axis_state,
     crossing_events,
+    current_line,
     flipped_screen_directions,
     shared_characters,
     thirty_degree_violation,
@@ -31,6 +34,9 @@ from ..contracts.audit import AuditError, AuditResult
 from ..contracts.enums import Severity
 from ..utils.aabb import AABB, union
 from ..utils.logger import get_logger
+
+#: 规范首镜线与当前派生线相差多少度就提示"轴线已被走位重建"（会诊 A2）。
+AXIS_DRIFT_DEG = 30.0
 from ..utils.threading_guard import main_thread_only
 
 log = get_logger("rules")
@@ -70,6 +76,208 @@ def _character_positions(characters):
         if root is not None:
             positions.append(root.matrix_world.translation.copy())
     return positions
+
+
+#: 判定"机位是否落在轴线上"（§6.2 的中性桥梁）。放在模块层：`check_shot` 里的
+#: 同款导入是函数内的局部导入，本文件的模块级辅助函数看不到它。
+def _camera_is_neutral(axis, camera) -> bool:
+    from .cinema_engine.axis_controller import check_camera_neutral
+
+    return check_camera_neutral(axis, camera) is not None
+
+
+def _crossing_map(context) -> Dict[str, Any]:
+    """配对换位表（纯计划推算），算一次缓存在 context 上。"""
+    cached = getattr(context, "_crossing_map", None)
+    if cached is not None:
+        return cached
+    spec = getattr(context, "spec", None)
+    plan = getattr(context, "plan", None)
+    axis = getattr(context, "axis", None)
+    if spec is None or plan is None or axis is None:
+        return {}
+    initial: Dict[str, Tuple[float, float, float]] = {}
+    for member in getattr(spec, "cast", []) or []:
+        location = tuple(getattr(member, "initial_location", (0.0, 0.0, 0.0)))
+        initial[str(getattr(member, "id", ""))] = location
+        name = str(getattr(member, "name", "") or "")
+        if name:
+            initial[name] = location
+    events = crossing_events(axis, plan, initial)
+    context._crossing_map = events
+    return events
+
+
+def _pair_screen_order(context, camera, characters) -> List[Tuple[str, float]]:
+    """这两个角色在**当前帧**的屏幕 X（归一化视口，0=左、1=右）。"""
+    scene = bpy.context.scene
+    out: List[Tuple[str, float]] = []
+    for character in characters[:2]:
+        root = getattr(character, "root", None)
+        if root is None:
+            continue
+        point = world_to_camera_view(scene, camera,
+                                     root.matrix_world.translation)
+        out.append((str(character.id), float(point.x)))
+    return out
+
+
+def _order_of(order: Sequence[Tuple[str, float]]) -> Tuple[str, ...]:
+    return tuple(name for name, _x in sorted(order, key=lambda item: item[1]))
+
+
+def _screen_polarity_flip(context, camera, shot, characters) -> str:
+    """相邻两人镜：这一对的**屏幕左右顺序**有没有在没人看见时翻转。"""
+    if context is None or context.plan is None or context.axis is None:
+        return ""
+    if len(characters) < 2:
+        return ""                      # 单人镜的方向连续性归 R019；中性机位另有告警
+    order = [str(item.shot_id) for item in context.plan.shots]
+    if shot.shot_id not in order:
+        return ""
+    index = order.index(shot.shot_id)
+    previous = None
+    previous_index = -1
+    for position in range(index - 1, -1, -1):
+        candidate = context.plan.shots[position]
+        if len([cid for cid in candidate.characters
+                if cid in {character.id for character in characters}]) >= 2:
+            previous, previous_index = candidate, position
+            break
+    if previous is None:
+        return ""
+    scene = bpy.context.scene
+    restore = scene.frame_current
+    previous_camera = context.camera_for(previous.shot_id)
+    if previous_camera is None:
+        return ""
+    previous_characters = [context.character(cid) for cid in previous.characters]
+    previous_start, _end = shot_frame_span(previous.shot_id, context)
+    scene.frame_set(int(previous_start))
+    bpy.context.view_layer.update()
+    before = _pair_screen_order(context, previous_camera, previous_characters)
+    scene.frame_set(int(restore))
+    bpy.context.view_layer.update()
+    after = _pair_screen_order(context, camera, characters)
+    if len(before) != 2 or len(after) != 2:
+        return ""
+    if {name for name, _x in before} != {name for name, _x in after}:
+        return ""
+    if _order_of(before) == _order_of(after):
+        return ""
+    #: 翻转了——看中间有没有**合法桥接**：看得见的换位，或中性机位（§6.2）。
+    events = _crossing_map(context)
+    live = current_line(context.axis, _character_xy_by_label(context))
+    for position in range(previous_index + 1, index + 1):
+        bridge = context.plan.shots[position]
+        bridge_id = str(bridge.shot_id)
+        event = events.get(bridge_id)
+        if event is not None and event.visible:
+            return ""
+        bridge_camera = context.camera_for(bridge_id)
+        if bridge_camera is None:
+            continue
+        bridge_start, _bridge_end = shot_frame_span(bridge_id, context)
+        scene.frame_set(int(bridge_start))
+        bpy.context.view_layer.update()
+        neutral = _camera_is_neutral(live, bridge_camera)
+        scene.frame_set(int(restore))
+        bpy.context.view_layer.update()
+        if neutral:
+            return ""
+    return (f"银幕左右关系在 {previous.shot_id} → {shot.shot_id} 的剪辑点上翻转"
+            f"（{'、'.join(_order_of(before))} → {'、'.join(_order_of(after))}），"
+            f"而中间没有任何镜头把这次换位拍出来")
+
+
+def _axis_sides(context) -> Dict[str, int]:
+    """逐镜的轴侧状态（纯计划推算，算一次缓存）。构建器与规则读的是同一份。"""
+    cached = getattr(context, "_axis_sides", None)
+    if cached is not None:
+        return cached
+    base = getattr(context, "axis", None)
+    plan = getattr(context, "plan", None)
+    if base is None or plan is None:
+        return {}
+    initial: Dict[str, Tuple[float, float, float]] = {}
+    spec = getattr(context, "spec", None)
+    for member in (getattr(spec, "cast", []) if spec is not None else []) or []:
+        location = tuple(getattr(member, "initial_location", (0.0, 0.0, 0.0)))
+        initial[str(getattr(member, "id", ""))] = location
+        name = str(getattr(member, "name", "") or "")
+        if name:
+            initial[name] = location
+    sides = axis_state(base, plan, initial)
+    context._axis_sides = sides
+    return sides
+
+
+def _camera_on_wrong_side(context, camera, shot_id: str) -> str:
+    """机位是不是跑到**当前连线**的另一侧去了（相对这一镜该待的侧别）。"""
+    base = getattr(context, "axis", None)
+    if base is None:
+        return ""
+    live = current_line(base, _character_xy_by_label(context))
+    expected = int(_axis_sides(context).get(str(shot_id), live.established_side))
+    position = camera.matrix_world.translation
+    side = live.side_of((float(position.x), float(position.y)))
+    if side == 0 or side == expected:
+        return ""
+    return (f"机位在**当前**两人连线的另一侧（连线 {live.start}→{live.end}，"
+            f"该待在第 {expected:+d} 侧、实际在第 {side:+d} 侧）："
+            "这是机位自己摆错，把相机移回该侧即可")
+
+
+def _axis_rebuild(context, camera) -> Dict[str, Any]:
+    """轴线被走位重建了多少度、以及这次重建**有没有被拍出来**（会诊 A2/A3）。
+
+    * `angle`：**规范首镜线** 与 **当前派生线** 的夹角（两条线都由几何给出，
+      与被检的"构建器挑了哪条法线"无关）；
+    * `bridged`：这次重建有没有合法交代——① 到此为止有**看得见的换位**
+      （`crossing_events.visible`），或 ② **本镜机位中性**（落在线上，§6.2 的桥梁）。
+
+    会诊 A1 还列了另外两种重建（摄影机自身跨轴、主体转向形成新轴），它们需要
+    逐镜机位/朝向的历史，本条先按上面两种判；更细的桥接集合留给下一阶段。
+    """
+    base = getattr(context, "axis", None)
+    if base is None:
+        return {"angle": 0.0, "bridged": True, "note": ""}
+    live = current_line(base, _character_xy_by_label(context))
+    if live.length < 1e-6 or base.length < 1e-6:
+        return {"angle": 0.0, "bridged": True, "note": ""}
+    dx0, dy0 = base.direction
+    dx1, dy1 = live.direction
+    if (dx0, dy0) == (0.0, 0.0) or (dx1, dy1) == (0.0, 0.0):
+        return {"angle": 0.0, "bridged": True, "note": ""}
+    cosine = max(-1.0, min(1.0, dx0 * dx1 + dy0 * dy1))
+    angle = math.degrees(math.acos(cosine))
+    bridged = _camera_is_neutral(live, camera)
+    if not bridged:
+        for event in _crossing_map(context).values():
+            #: 观众**看得见**这次重建（两人同框、连线确实转了）⇒ 合法。
+            if event.visible and event.rotated_deg >= 5.0:
+                bridged = True
+                break
+    note = (f"轴线已被走位重建：规范首镜线 {base.start}→{base.end} 与当前派生线 "
+            f"{live.start}→{live.end} 相差 {angle:.0f}°"
+            f"（≥{AXIS_DRIFT_DEG:.0f}°）")
+    return {"angle": angle, "bridged": bridged, "note": note}
+
+
+def _character_xy_by_label(context) -> Dict[str, Tuple[float, float]]:
+    """场景里每个角色**此刻**的 XY，键同时给 id 与显示名。"""
+    spots: Dict[str, Tuple[float, float]] = {}
+    for character_id, character in (getattr(context, "characters", {}) or {}).items():
+        root = getattr(character, "root", None)
+        if root is None:
+            continue
+        xy = (float(root.matrix_world.translation.x),
+              float(root.matrix_world.translation.y))
+        spots[str(character_id)] = xy
+        name = str(getattr(character, "name", "") or "")
+        if name:
+            spots[name] = xy
+    return spots
 
 
 def _unseen_crossing_note(context, shot_id: str) -> str:
@@ -305,37 +513,44 @@ def check_shot(shot_id: str, *, context=None,
     # R001 轴线合规 ---------------------------------------------------------
     neutral_here = False
     if context is not None and context.axis is not None:
-        #: **线仍按 §10.3 首镜确立的那条**（不跟着走位重估）。2026-10-04 试过让
-        #: 摆机位与规则都改用"两人此刻的连线"（`cinema/axis.current_line`）：摆机位
-        #: 满足约束、规则又量同一条线 ⇒ R001 **构造性不可能红**——正是 GLM 5.3 会诊
-        #: F2 事先警告的"自证"形状，连"乙走到甲的另一侧"都抓不到。所以线不动，
-        #: 要改的是**判据的内容**（量投影后的画面：剪辑点的屏幕左右顺序 ＋
-        #: 可见换位/中性镜豁免）。设计与两次负结果见 `ACCEPTANCE_STATUS.md` §七十。
-        message = check_camera_axis(context.axis, camera)
-        if message:
-            #: 把**根因**说清楚（2026-10-04 实测）：这条错误有两种完全不同的来源——
-            #: ① 机位自己摆错（把机位移回去就行）；② **角色走位跨过了轴线**，
-            #: 于是"要拍到这张脸"与"待在轴线同侧"不可能同时满足（`station._honour_
-            #: the_established_side` 的边界就是这种情况：镜像会把正面变成背拍，
-            #: 所以它保持模型要的方向、把冲突留给 R001 如实报）。修复回路按旧文案
-            #: 只会去挪机位，白烧回合；这里点出"谁已经站到另一侧"。
-            crossed = [character.id for character in characters
-                       if _crossed_the_axis(context.axis, character)]
-            if crossed:
-                message += ("（{} 已经站到轴线的另一侧：这一镜的走位跨线，"
-                            "只挪机位修不动——请改这一镜的走位或机位角度，"
-                            "或按 §6.2 插入中性镜头过渡）"
-                            .format("、".join(crossed)))
-            #: **看不出换位**的越轴要点名（2026-10-04，GLM 5.3 会诊 F2/F4 ＋
-            #: `cinema/axis.crossing_events`）：换位发生在**只拍一个人**的镜头里，
-            #: 观众看到的是"两人突然左右互换"。修法不是动机位，而是**把这次换位
-            #: 放进一个两人同框的镜头**（或在中间插 §6.2 的中性机位）。
-            unseen = _unseen_crossing_note(context, shot_id)
-            if unseen:
-                message += unseen
+        #: **R001 = 观众看到的东西**（v1.9，GLM 5.3 会诊 A2/A3 的落地）：
+        #: 判据从"相机在冻结线的哪一侧"换成"**相邻切点上两人的屏幕左右顺序有没有
+        #: 在没人看见的情况下翻转**"。理由：前者会随走位脱钩（`long12` 里 26 条
+        #: 都是"整场挪到布景另一处、线跟着转"），而后者正是观众真正感知到的量。
+        #: 换位若是**看得见**的（两人同框走过去）或中间有 §6.2 的**中性机位**，
+        #: 就是合法的轴线重建，不报。
+        flip = _screen_polarity_flip(context, camera, shot, characters)
+        if flip:
             findings.append(_error(
-                "R001", "E_AXIS_001", message, target=shot_id,
-                suggestion="将相机移到轴线另一侧，或插入中性镜头过渡"))
+                "R001", "E_AXIS_001", flip, target=shot_id,
+                suggestion="把这次左右互换拍成**看得见的换位**（两人同框时走过去），"
+                           "或在中间插一个 §6.2 的中性机位；只挪机位修不动"))
+        #: **轴线被重建而没人看见 ⇒ 越轴**（v1.9，会诊 A2 的独立性要求：
+        #: 判据不能与被检实现同源）。量的是"**规范首镜线** vs **走位后的派生线**"
+        #: 的偏差：构建器可以按派生线摆机位，但"这条重建有没有被拍出来"是它
+        #: 无法自证的——桥接事件来自**计划里的走位编排**与**画面上是否中性**。
+        rebuild = _axis_rebuild(context, camera)
+        if rebuild["angle"] >= AXIS_DRIFT_DEG:
+            if rebuild["bridged"]:
+                findings.append(_warning(
+                    "R001", "E_AXIS_001", rebuild["note"] + "（这次重建是**合法**的："
+                    "画面里有换位或中性机位把它交代过去）", target=shot_id,
+                    suggestion="确认这是一次有意的轴线重建；不需要改动"))
+            else:
+                findings.append(_error(
+                    "R001", "E_AXIS_001", rebuild["note"] + "，而没有任何镜头把"
+                    "这次重建拍出来", target=shot_id,
+                    suggestion="把这次重建拍成**看得见的换位**（两人同框时走过去），"
+                               "或在中间插一个 §6.2 的中性机位；只挪机位修不动"))
+        #: 机位**自己**摆错了也要报（会诊 ②：判据是"机位相对**当前**连线的侧向符号"）。
+        #: 这条盯的是求解器兜底、修复工具挪机位、用户手改机位这类**与被检实现无关**
+        #: 的越轴——`tests/test_phase4_repair` 的 `setup_camera_fixes_the_violation`
+        #: 就是它（相机摆错了，`setup_camera` 得能修好）。
+        wrong_side = _camera_on_wrong_side(context, camera, shot_id)
+        if wrong_side:
+            findings.append(_error(
+                "R001", "E_AXIS_001", wrong_side, target=shot_id,
+                suggestion="把相机移到当前连线的另一侧，或插入中性机位过渡"))
         # 中性机位（正好落在轴线上）不是越轴：§6.2 的 axis_neutral 卡片把它
         # 定义为合法的跨轴桥梁，而且两人相对而立时单人正反打的机位必然落在
         # 轴线上。v1.2 把它判成 R001 错误，等于让这类镜头永远无法通过审核。
