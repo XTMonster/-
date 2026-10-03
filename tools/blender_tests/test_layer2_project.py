@@ -21,6 +21,7 @@ import bpy  # noqa: E402
 
 from _fixtures import two_shot_plan  # noqa: E402
 from block_director.contracts.cast import SceneSpec  # noqa: E402
+from block_director.contracts.plan import Plan, ShotPlan  # noqa: E402
 from block_director.contracts.sdl import SDL_VERSION  # noqa: E402
 from block_director.layer2_sdl import (  # noqa: E402
     build_sdl,
@@ -29,6 +30,7 @@ from block_director.layer2_sdl import (  # noqa: E402
 )
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.layer3_engine.shot_builder import build_scene  # noqa: E402
+from block_director.layer3_engine.scene_context import get_context  # noqa: E402
 from block_director.layer9_persistence import (  # noqa: E402
     load_project,
     project_file,
@@ -157,6 +159,70 @@ def t_invalid_project_is_refused():
                        if item.is_error]}
 
 
+def _placements():
+    """场景里每个角色根节点的世界 x/y（按 id）。"""
+    context = get_context()
+    out = {}
+    for cid, character in (getattr(context, "characters", {}) or {}).items():
+        root = getattr(character, "root", None)
+        if root is not None:
+            out[cid] = (float(root.location.x), float(root.location.y))
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# 5. 摆位不因"同层另一个动作只写了别的通道"而丢（场景层不变量）
+# --------------------------------------------------------------------------- #
+def t_a_base_action_keeps_the_placement():
+    """一个只写单通道的同层动作，不得把角色的**摆位**从基线上抹掉。
+
+    背景（2026-10-03 长剧本真跑）：``motion/model.py::compose`` 曾经把 base 层
+    的状态**整份替换**成"本帧算出来的通道集合"。``turn_body`` 只写
+    ``root.rotation_z``，于是 base 层的 ``root.location`` 从层状态里消失；
+    此后 ``sit``/``stand``/``walk_to`` 冻结接管时基线里没有摆位，
+    ``baseline = base.get(channel, 0)`` 取到 0 —— **角色被瞬移到世界原点**，
+    两人重叠、构图整片判红（occlusion 42/64 镜失败）。
+
+    这条判据守的是**场景层**的不变量（"坐着的那位还在他被摆下的地方"）。
+    镜数 / 帧数 / 相机名的对拍**抓不到它**——长跑的重建检查当时就是绿的；
+    纯层用例在 ``tests/test_motion_model.py``，这里钉住它真的落到了场景里。
+    """
+    fresh_scene()
+    plan = Plan(shots=[
+        ShotPlan.from_dict({
+            "shot_id": "shot_001", "order": 1, "intent": "转身",
+            "shot_type": "MLS", "duration_frames": 48,
+            "characters": ["char_001", "char_002"],
+            "actions": [{"character_id": "char_002",
+                         "action_type": "turn_body",
+                         "start_frame": 1, "end_frame": 24,
+                         "params": {"angle_deg": 45.0}}],
+        }),
+        ShotPlan.from_dict({
+            "shot_id": "shot_002", "order": 2, "intent": "坐下",
+            "shot_type": "MCU", "duration_frames": 72,
+            "characters": ["char_002"],
+            "actions": [{"character_id": "char_002", "action_type": "sit",
+                         "start_frame": 1, "end_frame": 48,
+                         "params": {"drop": 0.2}}],
+        }),
+    ], scene_heading="INT. 咖啡馆 - 日")
+    spec = SceneSpec.from_plan(plan)
+    build_scene(plan, spec, clear_scene=True)
+    bpy.context.scene.frame_set(80)          # 全局第 80 帧 = 第二镜坐下中段
+    placed = _placements()
+    expected = {member.id: (float(member.initial_location[0]),
+                            float(member.initial_location[1]))
+                for member in spec.cast}
+    drift = {cid: {"expected": expected[cid], "actual": placed.get(cid)}
+             for cid in expected
+             if cid in placed
+             and (abs(placed[cid][0] - expected[cid][0]) > 1e-3
+                  or abs(placed[cid][1] - expected[cid][1]) > 1e-3)}
+    return {"ok": not drift, "expected": expected, "placed": placed,
+            "drift": drift}
+
+
 def main() -> int:
     capture_main_thread()
     check("save_load_rebuild_keeps_the_timeline",
@@ -165,6 +231,8 @@ def main() -> int:
     check("legacy_project_migrates_and_rebuilds",
           t_legacy_project_migrates_and_rebuilds)
     check("invalid_project_is_refused", t_invalid_project_is_refused)
+    check("a_base_action_keeps_the_placement",
+          t_a_base_action_keeps_the_placement)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
