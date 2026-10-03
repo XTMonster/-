@@ -303,14 +303,23 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-03 16:0x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-03 16:2x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**，
-但机制已经通了——见下；E1 是语料适配度），`E2` 是诊断量。`python -m pytest` 全绿、
+但机制已经通了——见下；E1 是语料适配度），`E2` 是诊断量。`python -m pytest`
+**1806 passed / 1 skipped**（唯一那条 skip 是 `tests/test_build_ledger.py:68` 的
+条件守卫："这份索引只由单一 prompt 版本产出，无需 refresh 记录"，不是被绕过的判据）、
 `run_tests.ps1` **32/32**（探针清单 28 支 ＋ spec/golden 漂移、pytest、契约冒烟、
-headless 四步；另有一条**不在探针循环里**的 Q6b 直读通道步骤，链规模由
-`tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
-RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence/20261003-160730/`，
-逐条见 `ACCEPTANCE_STATUS.md` §三十五…§五十。**
+headless 四步；另有**不在探针循环里**的三步具名交付物：Q6b 直读通道、A/B 三元组对照、
+人审抽查表；链规模由 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得
+跟着改）。RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
+且 pass。证据 `docs/evidence/20261003-161136/`，逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§五十。**
+
+本轮把两条"§4.1b 写了、链上没有执行者"的判据补成了真的：**Q3 的负样本下界**
+`max(50, 0.25×query 数)`（在此之前"只写 1 条负样本"能让 0% 恒真地通过）与
+**Q6b 的直读通道** `tools/knowledge/injection_audit.py`（从**真正发出去的 prompt**
+里量注入体积，两个 scope 两个键）。实测：plan 775/2000、shot 最大 785/800；
+`required_edges_dropped_by_budget` 因 join 不到而如实记 `not_measured`，**不**读成 0。
 
 **真实模型路径第一次跑到文档口径的长剧本规模**（`docs/evidence/20261003_real_long/`，
 `run_id 926a717a2861`）：64 镜 / `DONE` / `llm_calls 213 ≤ ceiling 552` /
