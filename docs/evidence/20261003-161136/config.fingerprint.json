@@ -1,0 +1,9 @@
+{
+  "package_version": "1.3.0",
+  "config_version": "1.3.0",
+  "spec_file": "specs/config.default.yaml",
+  "spec_sha256": "1ba38a82b0c34ef4e386d797a352c96fe698fa9dcffd09f18c15344b777d0dad",
+  "generated_config_sha256": "1ba38a82b0c34ef4e386d797a352c96fe698fa9dcffd09f18c15344b777d0dad",
+  "golden_expected_sdl_sha256": "cce9e7f2de12ee2d44d66cff9445d3c1eda17b650bee8e263689f14781111495",
+  "golden_transcript_sha256": "d756f22c27ef37a1f37c8cd1fdb5b024cad4426fe62461a03206b4a1f5e67679"
+}
