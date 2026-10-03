@@ -17,6 +17,8 @@ from .framing import (
     vertical_fov,
 )
 from .axis import (
+    AXIS_DRIFT_DEG,
+    CROSSING_MIN_DEG,
     MIN_ANGLE_DEG,
     SIDE_NEGATIVE,
     SIDE_POSITIVE,
@@ -29,6 +31,7 @@ from .axis import (
     axis_state,
     axis_violation,
     current_line,
+    drift_is_bridged,
     camera_angle_deg,
     establish_axis,
     shot_size_changed,
@@ -57,6 +60,7 @@ __all__ = [
     "Axis", "axis_from_points", "axis_for_speakers", "establish_axis",
     "current_line",
     "axis_state",
+    "drift_is_bridged", "AXIS_DRIFT_DEG", "CROSSING_MIN_DEG",
     "axis_violation", "axis_status", "axis_neutral_note", "camera_angle_deg",
     "shot_size_index",
     "shot_size_changed", "thirty_degree_violation",

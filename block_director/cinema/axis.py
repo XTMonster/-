@@ -29,6 +29,13 @@ SHOT_SIZE_ORDER: Tuple[str, ...] = ("ECU", "CU", "MCU", "MS", "MLS", "LS", "ELS"
 # R010：相邻镜头机位角差小于该值时，必须有景别变化
 MIN_ANGLE_DEG = 30.0
 
+#: 规范首镜线与走位派生线相差多少度就认为"轴线被走位重建了"（R001，v1.9）。
+#: 放在这里而不是规则里：它是**判据本身的参数**，纯函数与规则共用同一个数。
+AXIS_DRIFT_DEG = 30.0
+
+#: 配对连线在某一镜里转过小于这个角度时当作数值噪声（不产生换位事件）。
+CROSSING_MIN_DEG = 0.5
+
 
 @dataclass(frozen=True)
 class Axis:
@@ -164,7 +171,7 @@ def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]]
         #: 连线在这一镜里转了多少度（配对两点自己就是线，所以只能比**方向**）。
         rotated = _rotation_deg(a_start, b_start, a_end, b_end)
         #: 小于半度的差是数值噪声（走位精确停在目标上时仍会差一点点）。
-        if rotated >= 0.5:
+        if rotated >= CROSSING_MIN_DEG:
             out[shot_id] = CrossingEvent(
                 shot_id=shot_id,
                 visible=len([cid for cid in (shot.characters or [])
@@ -236,6 +243,26 @@ def axis_state(axis: Axis, plan, initial: Dict[str, Sequence[float]]
             #: 看得见的换位 ⇒ 观众看到并接受这次重建：此后从另一侧继续。
             side = -side
     return sides
+
+
+def drift_is_bridged(angle_deg: float, visible_deg: float, neutral: bool) -> bool:
+    """轴线被走位重建了 `angle_deg` 度——这次重建**有没有被交代过去**。
+
+    会诊 F1（GLM 5.3，2026-10-04，`docs/evidence/20261004-glm-consult-v19b/`）挑的是
+    **记账**：原来写成"历史上**有过一次**看得见且转过 ≥5° 的事件就赦免"，那是存在性
+    判定，与本次漂移的量级完全脱钩——
+
+    * **放过**：一次 6° 的可见换位，洗白后来 53° 的暗重建（观众只见过 6°）；
+    * **误判**：全程同框、每步 4°、累计 100° 的**可见**慢漂移，一条 ≥5° 的事件都
+      没有，于是被判越轴——尽管观众全程看着这条线转。
+
+    正确形状是"**赦免额对得上欠账额**"：阈值内（≤ `AXIS_DRIFT_DEG`）的漂移本来就
+    免费，超出阈值的部分要由**看得见的旋转累计**偿付。本镜机位中性（§6.2 的桥梁）
+    是逐镜成立的交代，直接算数。
+    """
+    if neutral:
+        return True
+    return visible_deg >= max(0.0, angle_deg - AXIS_DRIFT_DEG)
 
 
 def current_line(axis: Axis, positions: Dict[str, Sequence[float]]) -> Axis:

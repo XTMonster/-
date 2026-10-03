@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-10-04T05:56:29",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "a4f7048",
+    "head_subject": "docs(P14-73): status line points at the 32/32 chain and records the explanatory consultation",
+    "recent": [
+      "a4f7048 docs(P14-73): status line points at the 32/32 chain and records the explanatory consultation",
+      "b9297f8 feat(P14-73): 会诊改成**解释型**（用户裁决）＋ 把\"看不见的换位\"接进 R001 消息",
+      "42f4d3a docs(P14-72): status line + the chain evidence for the reverted axis experiments",
+      "26e8e36 docs(P14-72): R001\"跟着走位重估\"两版都不成立——保留积木、写清正确形状（判据未动）",
+      "c908ac3 docs(P14-71): status line ratio wording + the previous chain evidence"
+    ],
+    "uncommitted": [
+      "M block_director/cinema/__init__.py",
+      " M block_director/cinema/axis.py",
+      " M block_director/layer3_engine/rule_checker.py",
+      " M block_director/layer3_engine/shot_builder.py",
+      " M tests/test_axis_crossing_events.py",
+      " M tests/test_glm_consult.py",
+      " M tools/blender_tests/test_phase3_audit.py",
+      " M tools/glm_consult.py",
+      "?? docs/evidence/20261004-055158/",
+      "?? docs/evidence/20261004-glm-consult-code/",
+      "?? docs/evidence/20261004-r001-v19/"
+    ]
+  },
+  "question": {
+    "path": "work/_q_v19_a.md",
+    "sha256": "928d7e5e91c6d1c21adfaf3ba2ea493617fea2a5a433a63f02794080a4cd4250",
+    "chars": 142
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "block_director/cinema/axis.py",
+      "spec": "block_director/cinema/axis.py:174-243",
+      "range": [
+        174,
+        243
+      ],
+      "file_sha256": "38065141591bc9c74fb1591af1503b0323b6accec9a2e9a7de2cc1512c38e2da",
+      "chunk_sha256": "e3ea001ce4dddd33d45598f7d5fdd1aec02fb9953ea19c00579714d5835123a1",
+      "lines": 70,
+      "chars": 3158
+    }
+  ],
+  "contexts": [],
+  "status": {
+    "sent_chars": 1268,
+    "sent_sha256": "c9c6e850caaeeda8f8c7867084b982512f9760943d08c590e0b233d6ef006fdd",
+    "full_chars": 5434,
+    "full_sha256": "5e410b1d2248845c03ff8ba0ee049fef7b47f7981c1e03f2f60734a676d255b2",
+    "truncated": true
+  },
+  "bundles": {
+    "实现顾问": {
+      "system": {
+        "chars": 1015,
+        "sha256": "e2d196dd979912603ed1dcf47ae216901c05be9c12662dee6a622097aa72216e"
+      },
+      "user": {
+        "chars": 4648,
+        "sha256": "91d2d868c2338220c8b5cfb7891e58dc5a454248a6f17038840aa0fd063203af"
+      }
+    }
+  }
+}

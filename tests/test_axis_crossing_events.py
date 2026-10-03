@@ -21,9 +21,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from block_director.cinema.axis import (  # noqa: E402
+    AXIS_DRIFT_DEG,
     Axis,
     axis_state,
     crossing_events,
+    drift_is_bridged,
 )
 from block_director.contracts.plan import Plan, ShotPlan  # noqa: E402
 
@@ -118,3 +120,30 @@ def test_walking_away_never_flips_the_state():
                  _shot(2, ("甲", "乙"), AWAY),
                  _shot(3, ("甲", "乙")))
     assert set(axis_state(AXIS, plan, INITIAL).values()) == {-1}
+
+
+def test_the_exemption_must_be_paid_for_not_merely_mentioned():
+    """**赦免额要对得上欠账额**（会诊 F1，2026-10-04，`...-glm-consult-v19b/`）。
+
+    原判据是存在性的："历史上**有过一次**看得见、转过 ≥5° 的事件 ⇒ 全赦免"。
+    它同时错在两个方向，这里各钉一条：
+
+    * 一次 **6°** 的可见换位，不能洗白后来 **53°** 的暗重建（观众只见过 6°）；
+    * 全程同框、每步 **4°**、累计 **100°** 的可见慢漂移，不该被判越轴。
+    """
+    assert not drift_is_bridged(53.0, 6.0, neutral=False)      # 放过 → 现在要报
+    assert drift_is_bridged(100.0, 100.0, neutral=False)       # 误判 → 现在要放
+
+
+def test_the_threshold_drift_itself_is_free():
+    """阈值内（≤ `AXIS_DRIFT_DEG`）的漂移本来就免费：没超账，不需要谁来偿付。"""
+    assert drift_is_bridged(AXIS_DRIFT_DEG, 0.0, neutral=False)
+    assert drift_is_bridged(10.0, 0.0, neutral=False)
+    #: 刚好超出阈值一点点，就得有等量的可见旋转垫上。
+    assert not drift_is_bridged(AXIS_DRIFT_DEG + 5.0, 4.0, neutral=False)
+    assert drift_is_bridged(AXIS_DRIFT_DEG + 5.0, 5.0, neutral=False)
+
+
+def test_a_neutral_camera_bridges_by_itself():
+    """§6.2 的中性机位是**逐镜成立**的交代，与漂移量无关。"""
+    assert drift_is_bridged(170.0, 0.0, neutral=True)

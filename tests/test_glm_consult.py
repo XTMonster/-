@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import sys
@@ -137,12 +138,125 @@ def test_dry_run_needs_no_api_key(tmp_path, capsys, monkeypatch):
     ctx = tmp_path / "c.md"
     ctx.write_text("产物", encoding="utf-8")
     code = C.main(["--roles", "规格一致性,红队反方", "--question", str(question),
-                   "--context", str(ctx), "--out", str(tmp_path / "out"),
-                   "--dry-run"])
+                   "--context", str(ctx), "--question-only", "--no-status",
+                   "--out", str(tmp_path / "out"), "--dry-run"])
     assert code == 0
     out = capsys.readouterr().out
     assert "dry-run 规格一致性" in out and "dry-run 红队反方" in out
     assert not (tmp_path / "out").exists()
+
+
+def test_the_bundle_always_carries_the_project_state():
+    """用户 2026-10-04："会诊 AI 有先看目前落实的情况与源码么？"
+
+    所以"现状"不许由提问的人转述——每一份包都自动带 HEAD 与 `AGENTS.md` 的
+    状态块（真源逐字），顾问于是能自己判断我们落在哪一步。
+    """
+    status = C.status_digest(ROOT)
+    messages = C.build_messages("实现顾问", "问题", [], (), status)
+    user = messages[1]["content"]
+    head = C.git_snapshot(ROOT)["head"]
+    assert "项目现状" in user
+    assert head and head in user
+    assert C.STATUS_MARKER in user
+    assert "未提交改动" in user
+
+
+def test_source_files_are_embedded_verbatim_with_line_numbers(tmp_path):
+    """源码必须**逐字带行号**进包：否则顾问只能对着我们的转述评论。"""
+    path = tmp_path / "m.py"
+    path.write_text("a = 1\nb = 2\nc = 3\n", encoding="utf-8")
+    source = C.read_source(f"{path}:2-3")
+    assert source["range"] == [2, 3]
+    assert source["lines"] == 2
+    assert "    2| b = 2" in source["text"]
+    assert "a = 1" not in source["text"]
+    user = C.build_messages("实现顾问", "问题", [], [source], None)[1]["content"]
+    assert "源码：" in user and "    3| c = 3" in user
+
+
+def test_a_consultation_without_any_source_is_refused(tmp_path):
+    """没有源码就不许调用——"了解项目才能提出想法"必须由工具兜底。"""
+    question = tmp_path / "q.md"
+    question.write_text("问题", encoding="utf-8")
+    with pytest.raises(SystemExit) as excinfo:
+        C.main(["--question", str(question), "--out", str(tmp_path / "out"),
+                "--dry-run"])
+    assert "--source" in str(excinfo.value)
+
+
+def test_question_only_is_an_explicit_admission_it_saw_no_source(tmp_path, capsys):
+    question = tmp_path / "q.md"
+    question.write_text("问题", encoding="utf-8")
+    code = C.main(["--question", str(question), "--question-only", "--no-status",
+                   "--out", str(tmp_path / "out"), "--dry-run"])
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert payload["source_seen"] is False
+
+
+def test_a_windows_drive_letter_is_not_mistaken_for_a_line_range():
+    """`E:\\...\\a.py` 里的冒号是盘符；只有**尾部**的 `12` / `12-40` 才是行段。"""
+    assert C.parse_source_spec(r"E:\白模预演codex\tools\glm_consult.py") == (
+        r"E:\白模预演codex\tools\glm_consult.py", None, None)
+    assert C.parse_source_spec("a.py:12-40") == ("a.py", 12, 40)
+    assert C.parse_source_spec("a.py:12") == ("a.py", 12, None)
+
+
+def test_the_manifest_pins_what_was_sent_with_hashes(tmp_path):
+    """取证要有指纹：问题、源码、产物、现状，各一份 sha256 ＋ 字数。"""
+    path = tmp_path / "m.py"
+    path.write_text("a = 1\n", encoding="utf-8")
+    source = C.read_source(str(path))
+    manifest = C.bundle_manifest("q.md", "问题", [("c.md", "产物")], [source], "现状")
+    assert manifest["source_seen"] is True
+    assert manifest["question"]["sha256"] == hashlib.sha256(
+        "问题".encode("utf-8")).hexdigest()
+    assert manifest["sources"][0]["chunk_sha256"] == source["chunk_sha256"]
+    assert manifest["sources"][0]["file_sha256"] == source["file_sha256"]
+    assert "text" not in manifest["sources"][0]        # 摘要里不留正文
+    assert manifest["contexts"][0]["chars"] == 2
+    assert manifest["status"]["sent_chars"] == 2
+    assert manifest["status"]["truncated"] is False
+
+
+def test_a_truncated_status_digest_says_so_and_stays_traceable():
+    """现状摘要可以截断（`glm-5.3` 包不起），但**不许静默**：包里留痕、manifest 记全量。"""
+    full = "现" * 100
+    sent = C.cap_status(full, 30)
+    assert sent.startswith("现" * 30) and C.STATUS_TRUNCATED in sent
+    manifest = C.bundle_manifest("q.md", "问题", [], [], sent, full)
+    assert manifest["status"]["truncated"] is True
+    assert manifest["status"]["full_sha256"] == hashlib.sha256(
+        full.encode("utf-8")).hexdigest()
+    assert manifest["status"]["sent_chars"] == len(sent)
+    assert C.cap_status(full, 0) == full            # 0 = 不截断
+
+
+def test_the_written_bundle_is_provably_the_one_that_was_sent(tmp_path, monkeypatch):
+    """`bundle.manifest.json` 的指纹必须与**真的送进模型**的那条消息逐字一致。"""
+    question = tmp_path / "q.md"
+    question.write_text("问题", encoding="utf-8")
+    source = tmp_path / "s.py"
+    source.write_text("x = 1\n", encoding="utf-8")
+    out = tmp_path / "out"
+    seen = {}
+
+    def fake_consult(messages, **kwargs):  # noqa: ARG001
+        seen["messages"] = messages
+        return '{"summary": "ok"}', {"level": "high", "finish_reason": "stop"}
+
+    monkeypatch.setattr(C, "consult", fake_consult)
+    code = C.main(["--roles", "实现顾问", "--question", str(question),
+                   "--source", str(source), "--no-status", "--out", str(out)])
+    assert code == 0
+    manifest = json.loads(
+        (out / "bundle.manifest.json").read_text(encoding="utf-8"))
+    fingerprint = manifest["bundles"]["实现顾问"]["user"]
+    user = seen["messages"][1]["content"]
+    assert fingerprint["sha256"] == hashlib.sha256(user.encode("utf-8")).hexdigest()
+    assert fingerprint["chars"] == len(user)
+    assert user.rstrip() in (out / "bundle.md").read_text(encoding="utf-8")
 
 
 def test_the_usage_sidecar_is_json_serialisable():
@@ -198,7 +312,8 @@ def test_a_failed_consult_still_leaves_its_attempts_on_disk(tmp_path, monkeypatc
     out = tmp_path / "out"
     with pytest.raises(SystemExit):
         C.main(["--roles", "规格一致性", "--question", str(question),
-                "--out", str(out), "--level", "high"])
+                "--question-only", "--no-status", "--out", str(out),
+                "--level", "high"])
     payload = json.loads(
         (out / "规格一致性.failed.json").read_text(encoding="utf-8"))
     assert payload["attempts"][0]["finish_reason"] == "transport_error"

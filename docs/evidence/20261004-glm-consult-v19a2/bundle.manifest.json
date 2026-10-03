@@ -1,0 +1,82 @@
+{
+  "created_at": "2026-10-04T06:03:34",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "e6351f4",
+    "head_subject": "fix(P14): 证据摘要与检出形态无关（换行归一）＋ repin 重签入库清单",
+    "recent": [
+      "e6351f4 fix(P14): 证据摘要与检出形态无关（换行归一）＋ repin 重签入库清单",
+      "a4f7048 docs(P14-73): status line points at the 32/32 chain and records the explanatory consultation",
+      "b9297f8 feat(P14-73): 会诊改成**解释型**（用户裁决）＋ 把\"看不见的换位\"接进 R001 消息",
+      "42f4d3a docs(P14-72): status line + the chain evidence for the reverted axis experiments",
+      "26e8e36 docs(P14-72): R001\"跟着走位重估\"两版都不成立——保留积木、写清正确形状（判据未动）"
+    ],
+    "uncommitted": [
+      "M block_director/cinema/__init__.py",
+      " M block_director/cinema/axis.py",
+      " M block_director/layer3_engine/rule_checker.py",
+      " M block_director/layer3_engine/shot_builder.py",
+      " M tests/test_axis_crossing_events.py",
+      " M tests/test_glm_consult.py",
+      " M tools/blender_tests/test_phase3_audit.py",
+      " M tools/glm_consult.py",
+      "?? docs/evidence/20261004-055158/",
+      "?? docs/evidence/20261004-glm-consult-code/",
+      "?? docs/evidence/20261004-glm-consult-v19a/",
+      "?? docs/evidence/20261004-glm-consult-v19b/",
+      "?? docs/evidence/20261004-r001-v19/"
+    ]
+  },
+  "question": {
+    "path": "work/_q_v19_a2.md",
+    "sha256": "bfcc02c0fb6d98d4a666fc046d44087d337228ab641040b8a942edf2147f612a",
+    "chars": 206
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "block_director/cinema/axis.py",
+      "spec": "block_director/cinema/axis.py:158-175",
+      "range": [
+        158,
+        175
+      ],
+      "file_sha256": "38065141591bc9c74fb1591af1503b0323b6accec9a2e9a7de2cc1512c38e2da",
+      "chunk_sha256": "bdb1ce3120965c7dbc63793b7d6806c9006d6a3d62e8600b33fdfeaa01f9504d",
+      "lines": 18,
+      "chars": 991
+    },
+    {
+      "name": "block_director/cinema/axis.py",
+      "spec": "block_director/cinema/axis.py:209-238",
+      "range": [
+        209,
+        238
+      ],
+      "file_sha256": "38065141591bc9c74fb1591af1503b0323b6accec9a2e9a7de2cc1512c38e2da",
+      "chunk_sha256": "e8afe880e95284113cd62f74ba8e01fe07ccef08749de133fa9027ff0e9db348",
+      "lines": 30,
+      "chars": 1321
+    }
+  ],
+  "contexts": [],
+  "status": {
+    "sent_chars": 468,
+    "sent_sha256": "b6b8129dd0b3d34f08b532acbff91ea96eda0977910f9d8a2fb6adc6e71ee3e8",
+    "full_chars": 5451,
+    "full_sha256": "d1b3a5c3cdf566492cd112f12888118228218991d1dfe76154cdf202351305e1",
+    "truncated": true
+  },
+  "bundles": {
+    "实现顾问": {
+      "system": {
+        "chars": 1015,
+        "sha256": "e2d196dd979912603ed1dcf47ae216901c05be9c12662dee6a622097aa72216e"
+      },
+      "user": {
+        "chars": 3133,
+        "sha256": "bd5cebba7c68232adb725078166d5acc62b2711081d68d6e862a83f320fdf164"
+      }
+    }
+  }
+}

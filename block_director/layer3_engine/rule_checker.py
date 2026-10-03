@@ -21,9 +21,11 @@ from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
 from ..cinema.axis import (
+    AXIS_DRIFT_DEG,
     axis_state,
     crossing_events,
     current_line,
+    drift_is_bridged,
     flipped_screen_directions,
     shared_characters,
     thirty_degree_violation,
@@ -35,8 +37,6 @@ from ..contracts.enums import Severity
 from ..utils.aabb import AABB, union
 from ..utils.logger import get_logger
 
-#: 规范首镜线与当前派生线相差多少度就提示"轴线已被走位重建"（会诊 A2）。
-AXIS_DRIFT_DEG = 30.0
 from ..utils.threading_guard import main_thread_only
 
 log = get_logger("rules")
@@ -233,8 +233,10 @@ def _axis_rebuild(context, camera) -> Dict[str, Any]:
 
     * `angle`：**规范首镜线** 与 **当前派生线** 的夹角（两条线都由几何给出，
       与被检的"构建器挑了哪条法线"无关）；
-    * `bridged`：这次重建有没有合法交代——① 到此为止有**看得见的换位**
-      （`crossing_events.visible`），或 ② **本镜机位中性**（落在线上，§6.2 的桥梁）。
+    * `bridged`：这次重建有没有合法交代——① **本镜机位中性**（落在线上，§6.2 的
+      桥梁，逐镜成立），或 ② **看得见的旋转累计**覆盖了超出阈值的漂移
+      （`cinema/axis.drift_is_bridged` 的记账；原来那条"有**过一次**可见换位就赦免"
+      的存在性判定被会诊 F1 证伪：它同时放过暗重建与误判可见慢漂移）。
 
     会诊 A1 还列了另外两种重建（摄影机自身跨轴、主体转向形成新轴），它们需要
     逐镜机位/朝向的历史，本条先按上面两种判；更细的桥接集合留给下一阶段。
@@ -251,13 +253,13 @@ def _axis_rebuild(context, camera) -> Dict[str, Any]:
         return {"angle": 0.0, "bridged": True, "note": ""}
     cosine = max(-1.0, min(1.0, dx0 * dx1 + dy0 * dy1))
     angle = math.degrees(math.acos(cosine))
-    bridged = _camera_is_neutral(live, camera)
-    if not bridged:
-        for event in _crossing_map(context).values():
-            #: 观众**看得见**这次重建（两人同框、连线确实转了）⇒ 合法。
-            if event.visible and event.rotated_deg >= 5.0:
-                bridged = True
-                break
+    #: **记账**（会诊 F1）：不是"曾经有过一次可见换位就赦免"，而是"看得见的旋转
+    #: 累计"要覆盖**超出阈值**的那部分漂移。存在性判定既会放过（一次 6° 的可见
+    #: 换位洗白后来 53° 的暗重建），也会误判（每步 4°、累计 100° 的可见慢漂移）。
+    visible_deg = sum(event.rotated_deg
+                      for event in _crossing_map(context).values()
+                      if event.visible)
+    bridged = drift_is_bridged(angle, visible_deg, _camera_is_neutral(live, camera))
     note = (f"轴线已被走位重建：规范首镜线 {base.start}→{base.end} 与当前派生线 "
             f"{live.start}→{live.end} 相差 {angle:.0f}°"
             f"（≥{AXIS_DRIFT_DEG:.0f}°）")
@@ -454,7 +456,6 @@ def check_shot(shot_id: str, *, context=None,
                strict: bool = False) -> AuditResult:
     """对单个镜头跑全部已实现的 Level 1 规则。"""
     from .cinema_engine import (
-        check_camera_axis,
         check_camera_neutral,
         evaluate_camera_composition,
     )
