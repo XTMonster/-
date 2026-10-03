@@ -71,6 +71,10 @@ class ShotDialogueBudget:
     latest_allowed_end: int = 0
     #: 按声明顺序**最多**能装下几句（0 = 一句都排不下）。
     max_lines: int = 0
+    #: 这一镜的台词是**剧本钉死的**（`dialogue_pins` 一一对应）还是 B1 自己
+    #: 挑的。两者的可行修法不同：钉死的不能删（R016 会红），只能排紧；
+    #: 自己挑的可以挪到别的镜头去。
+    dialogue_is_declared: bool = False
 
     @property
     def fits(self) -> bool:
@@ -139,22 +143,30 @@ class ShotDialogueBudget:
             for index, line in enumerate(self.lines, start=1))
         head = (f"  · 本镜帧预算（引擎按台词长度算的，**照它排帧**）：\n"
                 f"    - 镜头时长 {self.duration_frames} 帧，收尾余量 "
-                f"{self.tail_frames} 帧 ⇒ 最后一句最晚结束在第 "
-                f"{self.latest_allowed_end} 帧；\n"
+                f"{self.tail_frames} 帧 ⇒ 最后一句必须结束在第 "
+                f"{self.latest_allowed_end} 帧以内；\n"
                 f"    - 句间最小间隔 {self.gap_frames} 帧；\n"
                 f"    - 台词与估算帧数：{rows}；\n"
                 f"    - 按上面的顺序全排下需要 {self.required_frames} 帧。")
         if self.fits:
             return head + (f" 本镜装得下（余 {self.spare_frames} 帧）。"
                            f"起止帧必须落在 1–{self.latest_allowed_end} 内。")
+        if self.dialogue_is_declared:
+            advice = (
+                f"**不要删台词**：本镜的台词由剧本钉死（删/改写会让 R016 当场红）。"
+                f"你能做的是把现有台词**按最小间隔排紧**（每句按上面的估算帧数、"
+                f"句间只用 {self.gap_frames} 帧），让真实占用尽可能小；"
+                f"剩下的超时是**脚本自身的时长不足**（镜头时长由阶段 A 与剧本声明"
+                f"拥有，B1/B4 改不了），审计会如实记 R011 —— 那不是你的排帧错误。")
+        else:
+            advice = (
+                f"这些台词是**你自己分配给这一镜的**：把多出来的台词"
+                f"**挪到别的镜头**（或换成更短的台词），不要在这一镜里硬挤——"
+                f"硬挤必然被 R011 判红，而这一镜的时长 B1/B4 改不了。")
         return head + (
             f"\n    - ⚠ **装不下**：超出 {self.overflow_frames} 帧，"
             f"本镜最多只排得下前 {self.max_lines} 句。"
-            f"**不要删台词**：本镜的台词由剧本钉死（删/改写会让 R016 当场红）。"
-            f"你能做的是把现有台词**按最小间隔排紧**（每句按上面的估算帧数、"
-            f"句间只用 {self.gap_frames} 帧），让真实占用尽可能小；"
-            f"剩下的超时是**脚本自身的时长不足**（镜头时长由阶段 A 与剧本声明拥有，"
-            f"B1/B4 改不了），审计会如实记 R011 —— 那不是你的排帧错误。")
+            + advice)
 
 
 def _declared_seconds_for(shot) -> List[Optional[float]]:
@@ -205,6 +217,9 @@ def shot_dialogue_budget(shot, *, fps: int = FPS,
     result = estimate_shot_duration(payload, (), fps=int(fps),
                                     timing_source=timing_source)
     required = int(result["frames"])
+    all_dialogues = list(getattr(shot, "dialogues", None) or [])
+    pinned = list(getattr(shot, "dialogue_pins", None) or [])
+    declared = bool(pinned) and len(pinned) == len(all_dialogues)
 
     #: 按**声明顺序**贪心：前 k 句排得下就收下（顺序是硬约束——剧本里
     #: 先说的那句不能因为"短"被挪到后面）。
@@ -227,4 +242,5 @@ def shot_dialogue_budget(shot, *, fps: int = FPS,
         required_frames=required,
         latest_allowed_end=max(duration - DIALOGUE_TAIL_FRAMES, 0),
         max_lines=max_lines,
+        dialogue_is_declared=declared,
     )
