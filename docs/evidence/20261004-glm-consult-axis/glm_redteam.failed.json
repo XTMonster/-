@@ -1,0 +1,25 @@
+{
+  "role": "红队反方",
+  "requested_model": "glm-5.3",
+  "attempts": [
+    {
+      "model": "glm-5.3",
+      "requested_model": "glm-5.3",
+      "level": "low",
+      "max_tokens": 32768,
+      "elapsed_s": 413.7,
+      "usage": {
+        "completion_tokens": 32768,
+        "completion_tokens_details": {
+          "reasoning_tokens": 32710
+        },
+        "prompt_tokens": 1872,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 34640
+      },
+      "finish_reason": "length"
+    }
+  ]
+}

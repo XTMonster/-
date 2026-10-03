@@ -27,7 +27,8 @@ def place_camera_for_shot(shot_id: str,
                           use_constraint: bool = True,
                           make_scene_camera: bool = True,
                           direction: Optional[Sequence[float]] = None,
-                          aim_offset_x: float = 0.0):
+                          aim_offset_x: float = 0.0,
+                          aim_offset_y: float = 0.0):
     """解算机位并创建相机。返回 ``(CameraBundle, FramingResult)``。
 
     ``direction`` 由 :mod:`block_director.cinema.station` 解算（双人镜头相对
@@ -39,7 +40,7 @@ def place_camera_for_shot(shot_id: str,
     solution: FramingResult = solve_framing(
         subject_pos=subject_pos, facing=facing, shot_type=shot_type, side=side,
         lens=lens, room=room, margin=margin, direction=direction,
-        aim_offset_x=aim_offset_x)
+        aim_offset_x=aim_offset_x, aim_offset_y=aim_offset_y)
     for warning in solution.warnings:
         log.warning("取景 %s: %s", shot_id, warning)
 

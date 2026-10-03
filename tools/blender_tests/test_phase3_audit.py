@@ -482,9 +482,20 @@ def t_lead_room_shifts_single_subject_shots_only():
                   + (two_target[1] - centre_y) ** 2) ** 0.5
     notes = [w for item in summary.results for w in (item.warnings or [])
              if "视线留白" in w]
-    return {"ok": single_offset > 0.15 and two_offset < 0.05 and bool(notes),
+    #: 竖直：单主体抬 `HEAD_ROOM_AIM_M`，双人不动（`SHOT_FRAME.target_z` 是冻结常量）。
+    from block_director.cinema.framing import SHOT_FRAME
+    from block_director.cinema.station import HEAD_ROOM_AIM_M
+
+    single_expected_z = SHOT_FRAME["MCU"].target_z + HEAD_ROOM_AIM_M
+    two_expected_z = SHOT_FRAME["MS"].target_z
+    single_dz = abs(single_target[2] - single_expected_z)
+    two_dz = abs(two_target[2] - two_expected_z)
+    return {"ok": single_offset > 0.15 and two_offset < 0.05 and bool(notes)
+            and single_dz < 1e-6 and two_dz < 1e-6,
             "single_offset_m": round(single_offset, 3),
             "two_shot_offset_m": round(two_offset, 3),
+            "single_target_z": round(single_target[2], 3),
+            "two_target_z": round(two_target[2], 3),
             "lead_room_notes": notes[:2]}
 
 

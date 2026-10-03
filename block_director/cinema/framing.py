@@ -260,7 +260,8 @@ def solve_framing(subject_pos: Sequence[float],
                   sensor_width: float = SENSOR_WIDTH,
                   direction: Optional[Sequence[float]] = None,
                   aspect: float = ASPECT_16_9,
-                  aim_offset_x: float = 0.0) -> FramingResult:
+                  aim_offset_x: float = 0.0,
+                  aim_offset_y: float = 0.0) -> FramingResult:
     """解算机位与对准点。
 
     ``room`` 形如 ``(min_x, max_x, min_y, max_y)``；给出时机位会被夹在房间内。
@@ -274,6 +275,11 @@ def solve_framing(subject_pos: Sequence[float],
     它让主体离开画面中心、落到三分线上（§10.4 的 `rule_of_thirds` ＋ `lead_room`），
     见 :func:`block_director.cinema.station.aim_offset_for_lead_room`。
     机位与焦距都不动——动的只是"看哪"，所以景别与距离不受影响。
+
+    ``aim_offset_y`` 是对准点的**竖直抬升**（单位：米，正数 = 看向更高处 ⇒ 主体
+    在画面里更靠下）。`SHOT_FRAME` 的 `target_z` 是 §2.2 D2 的冻结常量，不动它；
+    这里只做一层可测的取景偏移——实测依据见
+    `docs/evidence/20261004-aim-retest/`（对准点抬高后构图分与构图门的对照）。
     """
     warnings: List[str] = []
     key = str(shot_type).upper()
@@ -314,6 +320,8 @@ def solve_framing(subject_pos: Sequence[float],
             f"{key} 设定；建议改用更短焦距或扩大房间")
 
     target = (base_x, base_y, frame.target_z)
+    if aim_offset_y:
+        target = (target[0], target[1], target[2] + float(aim_offset_y))
     if aim_offset_x:
         forward_x, forward_y = base_x - position[0], base_y - position[1]
         norm = math.hypot(forward_x, forward_y)

@@ -55,6 +55,18 @@ OFF_AXIS_MIN_COS = 0.94          # ≈ 20°
 #: 1/6 幅宽正好是"画面中心 → 三分线"的距离。
 LEAD_ROOM_OFFSET = 1.0 / 6.0
 
+#: 单主体镜头把**对准点抬高**的米数（v1.8，2026-10-04 实测）。
+#: `composition.py::_thirds` 要主体盒中心靠近 1/3 或 2/3 交点，而实测
+#: （`work/_box_center_probe.py`，三份冻结工程）主体盒中心的**中位纵向偏差**是
+#: 0.13（≈ 停在画面正中），于是`rule_of_thirds` 在 **61–63/64** 镜里都是弱项，
+#: 也是红镜头里出现最多的那一项。`work/_aim_sweep_probe.py` 把对准点按
+#: −0.4…+0.4 m 扫了一遍（long12 的 40 个单主体镜）：抬高 +0.1 / +0.2 m 的
+#: 合计增益分别是 **+130 / +214 分**，而压低是 +34 / +38 ⇒ 取 +0.15 m
+#: （介于两个最优步长之间，避免贴着扫描点选参）。
+#: **不动 §2.2 D2 的 `SHOT_FRAME.target_z`**（那是冻结常量），只加这一层
+#: 可测的取景偏移。
+HEAD_ROOM_AIM_M = 0.15
+
 
 def _normalise(vec: Sequence[float],
                fallback: Tuple[float, float] = (0.0, 1.0)) -> Tuple[float, float]:

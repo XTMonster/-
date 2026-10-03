@@ -20,6 +20,7 @@ from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
 from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
 from ..cinema.station import (
+    HEAD_ROOM_AIM_M,
     SubjectFrame,
     aim_offset_for_lead_room,
     camera_direction,
@@ -220,11 +221,14 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
     aim_offset = 0.0
     if not frame.has_axis:
         aim_offset = aim_offset_for_lead_room(direction, frame.facing)
+    #: 竖直方向：单主体镜头把对准点抬高 `HEAD_ROOM_AIM_M`（见那个常量的实测依据）。
+    aim_offset_y = HEAD_ROOM_AIM_M if not frame.has_axis else 0.0
     bundle, solution = place_camera_for_shot(
         shot.shot_id, frame.anchor, facing=frame.facing,
         shot_type=str(shot.shot_type), side=side,
         lens=resolved.get("lens"), room=(spec.room if spec else None),
-        direction=direction, aim_offset_x=aim_offset)
+        direction=direction, aim_offset_x=aim_offset,
+        aim_offset_y=aim_offset_y)
     if aim_offset:
         axis_notes.append(
             f"按 §10.4 的视线留白把对准点横向偏移 {aim_offset:+.3f} 幅宽"

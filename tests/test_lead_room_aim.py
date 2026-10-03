@@ -94,3 +94,24 @@ def test_without_an_offset_the_target_stays_on_the_subject():
                            shot_type="MS", lens=35.0, direction=(0.0, 1.0))
     assert result.target[0] == pytest.approx(0.3)
     assert result.target[1] == pytest.approx(-0.2)
+
+
+# --------------------------------------------------------------------------- #
+# v1.8：竖直方向——单主体镜头把**对准点抬高**（`HEAD_ROOM_AIM_M`）。
+#
+# 实测依据：`work/_box_center_probe.py` 量到三份冻结工程里主体盒中心的**中位纵向
+# 偏差**是 0.13（≈ 停在画面正中），于是 `_thirds` 在 61–63/64 镜里都是弱项；
+# `work/_aim_sweep_probe.py` 把对准点按 −0.4…+0.4 m 扫了一遍（long12 的 40 个
+# 单主体镜），抬高 +0.1 / +0.2 m 的合计增益是 **+130 / +214 分**，压低只有
+# +34 / +38 ⇒ 取 +0.15 m。`SHOT_FRAME.target_z`（§2.2 D2 的冻结常量）一个字没动。
+# --------------------------------------------------------------------------- #
+def test_the_vertical_aim_can_be_raised_without_moving_the_camera():
+    base = solve_framing(subject_pos=(0.0, 0.0, 0.0), facing=(1.0, 0.0, 0.0),
+                         shot_type="MCU", lens=50.0, direction=(0.0, 1.0))
+    raised = solve_framing(subject_pos=(0.0, 0.0, 0.0), facing=(1.0, 0.0, 0.0),
+                           shot_type="MCU", lens=50.0, direction=(0.0, 1.0),
+                           aim_offset_y=0.15)
+    assert raised.target[2] == pytest.approx(base.target[2] + 0.15, abs=1e-9)
+    assert raised.target[0] == pytest.approx(base.target[0])
+    assert raised.position == pytest.approx(base.position)
+    assert raised.lens == base.lens
