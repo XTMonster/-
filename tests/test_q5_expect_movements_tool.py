@@ -108,3 +108,25 @@ def test_a_missing_card_is_reported_not_swallowed(tmp_path, monkeypatch, capsys)
                     out.read_text(encoding="utf-8").splitlines() if line.strip()]
     assert len(failure_rows) == 1
     assert failure_rows[0]["id"] == "t_001"
+
+
+def test_edge_type_filter_keeps_only_the_requested_family(tmp_path, monkeypatch):
+    """`--edge-type` 只留指定边类：`SHOT_PATTERN` 那一族的 `q` 带 `镜头=`，
+    而焦段在逐镜检索那一刻还不存在——把额度花在它身上是结构性的浪费。"""
+    monkeypatch.setattr(H, "GLMClient", StubClient)
+    holdout = _holdout(tmp_path, 3)
+    lines = holdout.read_text(encoding="utf-8").splitlines()
+    third = json.loads(lines[2])
+    third["must"] = ["INTENT_PACK:intent=铺垫,shot_size=MS,movement=固定"]
+    third["q"] = "意图=铺垫；景别=MS；运镜=固定"
+    lines[2] = json.dumps(third, ensure_ascii=False)
+    holdout.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    out = tmp_path / "intent.jsonl"
+    assert H.main(["--holdout", str(holdout), "--out", str(out),
+                   "--edge-type", "INTENT_PACK"]) == 0
+    rows = [json.loads(line) for line in
+            out.read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert [row["id"] for row in rows] == ["t_002"]
+    #: 不带开关时三条都在候选里（开关只过滤，不放宽 plan_shape 判据）。
+    assert H.plan_shape(third) is True

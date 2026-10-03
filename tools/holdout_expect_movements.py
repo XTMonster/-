@@ -252,6 +252,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="并发条数（1 = 顺序）。实测单条含思考约 40-70 s，"
                              "顺序跑 176 条要数小时；结果 append + flush，"
                              "任何中断都能 --resume 续跑")
+    parser.add_argument("--edge-type", action="append", default=None,
+                        metavar="TYPE",
+                        help="只标注 `must[0]` 属于这些边类的条目（可重复）。"
+                             "为什么要这个开关：候选里 `SHOT_PATTERN` 那一族"
+                             "（236 条）的 `q` 带 `镜头=`，而焦段在**逐镜检索那一刻**"
+                             "还不存在（剧本没声明就不可能有），它的运行侧分母取决于"
+                             "剧本；`INTENT_PACK` 那一族（176 条）三个键全部可表达，"
+                             "是唯一真能 join 上的。不给开关就只能整批跑，"
+                             "把额度花在结构上不可能 join 的条目上。")
     parser.add_argument("--apply", action="store_true",
                         help="把结果写回 --holdout（入库前的最后一步）")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
@@ -260,6 +269,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         else pathlib.Path(args.holdout)
     entries = load_entries(holdout)
     selected = [entry for entry in entries if plan_shape(entry)]
+    wanted_types = {str(name).upper() for name in (args.edge_type or [])}
+    if wanted_types:
+        selected = [entry for entry in selected
+                    if (entry.get("must") or [""])[0].split(":", 1)[0].upper()
+                    in wanted_types]
 
     from block_director.knowledge.corpus import CARDS  # noqa: PLC0415
 

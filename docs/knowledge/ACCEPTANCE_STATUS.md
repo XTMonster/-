@@ -3452,3 +3452,26 @@ INTENT_PACK 231 / SHOT_PATTERN 61 / STAGING_PACK 14 / IMPACT_PACK 14   （共 32
   离线不带超图检索（`degraded_reason=hypergraph_unavailable`），所以链上看不见
   这条轴——它的证据只能来自真实运行，这是"测的东西"与"跑的东西"本来就不同的两件事，
   不拿探针全绿冒充。
+
+### 50.5 加测（同日 15:3x）：join **真的活了**，Q5 只差那一次独立标注
+
+拿 `docs/evidence/20261003_intent/` 的 6 条**真实发出**的查询去 join oracle
+（判据就是 §4.1b 的"键值对集合相等"，一个字没改）：
+
+```
+shot_001 景别=MCU；意图=铺垫；运镜=固定            == hq_1090（must = INTENT_PACK:…,…,固定）
+shot_004 景别=CU；意图=铺垫；运镜=固定；对白=dialogue  ⊃ hq_1079（子集命中）
+其余 4 镜：equal 0 / subset 0
+```
+
+**这是这条判据历史上第一次真的有镜头 join 上**（此前 6 条与 64 条都是 0）。
+Q5 仍然是 fail，原因现在只剩一个、而且是很具体的一个：`hq_1090` 这类条目
+**没有 `expect_movements`**，而 Q5 的运行侧只对带该字段的条目计分母
+（`quality.py::q5_run_join` 的 `wanted`）。补它必须走协议允许的**独立标注**
+（`tools/holdout_expect_movements.py`，GLM 换族）＋面板复核，不能把索引的
+`movement` 成员抄一遍（那是自证，§4.1b 硬规则 2）。
+
+顺带量了这条轴对**注入预算**的影响（`tools/knowledge/injection_audit.py`，
+读的是真实发出去的 prompt）：这一跑 plan 614/2000、shot 最大 772/800，
+**没有因为多带一个键而顶到 800 上限**（长剧本那一跑是 785/800，本来就只剩 15 个
+token 的余量，所以这条要一起看）。
