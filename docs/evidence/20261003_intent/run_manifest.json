@@ -2,24 +2,24 @@
   "run_id": "291d91046ae8",
   "artifacts": {
     "audit_log.jsonl": {
-      "sha256": "451a79bb37cba7a84106d9f711a5563fab1fcce7f686fcb7f1f9fb71b7caffd3",
+      "sha256": "fdff87a353c9e9059232363386968defbcca13d79dd747c3063b00dfe1945fb2",
       "lines": 309,
       "source": "docs\\evidence\\20261003_intent\\audit_log.jsonl",
       "source_lines": 309
     },
     "llm_trace.jsonl": {
-      "sha256": "60a78fb52edb5ad3762b4af8748967da9e3bfddac622007c8da10549b58ea493",
+      "sha256": "90ab2d2e715267f18165b77a197e087e747e04107208037601ea412ccd5fc2b3",
       "lines": 44,
       "source": "docs\\evidence\\20261003_intent\\llm_trace.jsonl",
       "source_lines": 44
     },
     "knowledge_trace.json": {
-      "sha256": "a0d853b811ded1f1404c4499f1d2924489baeb33052a8d93a360f75ad87d2571",
+      "sha256": "72d321ab5929e85bb504a9e09de9b6cc117b25bbf8963ba726737b39f52ae4f2",
       "source": "docs\\evidence\\20261003_intent\\knowledge_trace.json"
     },
     "shots.json": {
       "path": "export/shots.json",
-      "sha256": "0e5ca41a55602a938d70e0e5f9b14a5bbe7a5e88b16749456ba070f1b5eed3c4"
+      "sha256": "a78d6dc2f89a96a3e64b6ec3f97625473a1e3ab52a73afa152907c291d4dcea1"
     }
   },
   "run_span": {
@@ -30,7 +30,7 @@
   "pins": {
     "holdout": {
       "path": "E:\\白模预演codex\\fixtures\\knowledge_holdout.jsonl",
-      "sha256": "bbd9bfb9579e571252fc11fcef066d1a330cda310d90107781c3bcaeb8fcb22e"
+      "sha256": "e3e6bac24d9efcfea8c5f1b5f1f7fd65a8c9869551df52ef0fe327cb74ef8571"
     },
     "index": {
       "path": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",

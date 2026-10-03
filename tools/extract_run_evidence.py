@@ -44,6 +44,30 @@ DEFAULT_TRACE = Path.home() / "Documents" / "BlockDirector Projects" / "runs" / 
 
 
 def sha256_file(path: Path) -> str:
+    """文件的摘要——**换行归一之后**再算，因此与检出形态无关。
+
+    为什么必须归一（2026-10-04 实测的真缺陷）：本工具用文本模式写分片，
+    在 Windows 上写出的是 CRLF；而 `.gitattributes` 明确把 `*.json` / `*.jsonl`
+    存成 **LF**（"Store LF in the repo for source and docs, so diffs are clean on
+    every platform"）。于是此前那版**裸字节**哈希只在那棵**产它的工作树**上对得上：
+    `git worktree add` 或新克隆拿到的 LF 副本一律被判 STALE——
+    `tests/test_extract_run_evidence.py` 有 3 条因此在任何新检出上必红，
+    也就是"验收链只在产它的那台机器上绿"。归一之后两边算出同一个摘要。
+
+    这不削弱防篡改：任何**内容**改动（多一个字段、改一个值、删一行）
+    都会改变摘要；只有纯粹的 CRLF↔LF 表示差异被视作等价——而那本来就不是
+    内容。要按裸字节对拍时用 :func:`sha256_raw`。
+    """
+    data = Path(path).read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
+def sha256_raw(path: Path) -> str:
+    """**裸字节**的 sha256（不做任何归一）。
+
+    只给 :func:`repin` 的安全规则用：判断一条旧 pin 是不是"同一份内容、
+    只是换行口径不同"，必须拿它和盘上的**实际字节**比——归一口径比不了。
+    """
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
@@ -218,6 +242,70 @@ def extract(*, run_id: str, out_dir: Path, audit_log: Path, llm_trace: Path,
     return manifest
 
 
+def repin(*, out_dir: Path, holdout: Path) -> Dict[str, Any]:
+    """按当前口径**重签**一份已入库清单的摘要（运行数据一个字节都不动）。
+
+    为什么需要它（2026-10-04 实测）：`sha256_file` 曾经是裸字节哈希，而
+    `.gitattributes` 把 `*.json` / `*.jsonl` 存成 LF——Windows 上文本模式写出的
+    证据是 CRLF，于是 **pin 只在那棵产它的工作树里对得上**，`git worktree` /
+    新克隆一律 STALE（`tests/test_extract_run_evidence.py` 3 条必红）。摘要换成
+    "换行归一后再哈希"之后，旧 pin 要按新口径重签一次。
+
+    **安全规则（不许把"换代"洗成"没换代"）**：只有旧 pin 恰好等于该文件**现在的
+    裸字节**哈希时，才认定它是"同一份内容、只是换行口径不同"并改写；否则跳过并
+    如实记进 `skipped`——那说明内容真的变了，重签会掩盖它。
+    索引/案例的**指纹**一律不动（它们不是文件字节哈希，换行归一与它们无关）。
+    """
+    out_dir = Path(out_dir)
+    manifest_path = out_dir / MANIFEST_NAME
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"没有 {manifest_path}：先跑一次 --run-id 提出证据")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    report: Dict[str, Any] = {"updated": [], "unchanged": [], "skipped": []}
+
+    def _resign(where: str, target: Path, old: str) -> Optional[str]:
+        """返回**该写回的新摘要**；`None` = 不动（已正确或内容真变了）。"""
+        if not target.is_file():
+            report["skipped"].append(f"{where}：分片不在（{target}）")
+            return None
+        new = sha256_file(target)
+        if old == new:
+            report["unchanged"].append(where)
+            return None
+        if old == sha256_raw(target):
+            report["updated"].append(f"{where}: {old[:12]}… → {new[:12]}…")
+            return new
+        report["skipped"].append(
+            f"{where}：旧 pin 既不是归一摘要也不是裸字节摘要——"
+            f"内容是**真的**变了，不重签（由 --check 如实报 STALE）")
+        return None
+
+    for name, item in (manifest.get("artifacts") or {}).items():
+        if not item.get("sha256"):
+            continue
+        resigned = _resign(str(name), out_dir / str(item.get("path") or name),
+                           str(item["sha256"]))
+        if resigned:
+            item["sha256"] = resigned
+
+    pins = manifest.get("pins") or {}
+    holdout_pin = pins.get("holdout") or {}
+    if holdout_pin.get("sha256"):
+        resigned = _resign("pins.holdout", Path(holdout),
+                           str(holdout_pin["sha256"]))
+        if resigned:
+            holdout_pin["sha256"] = resigned
+            pins["holdout"] = holdout_pin
+            manifest["pins"] = pins
+
+    # 每次 --repin 都写：清单里没有东西要改时，这也是一次幂等的"落盘成 LF"。
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8", newline="\n")
+    report["manifest"] = str(manifest_path)
+    return report
+
+
 def check(*, out_dir: Path, holdout: Path, index_manifest: Path,
           with_warnings: bool = False):
     """复算分片与 pins；返回**不能用的理由**（空列表 = 证据齐且同代）。
@@ -262,7 +350,7 @@ def check(*, out_dir: Path, holdout: Path, index_manifest: Path,
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="extract-run-evidence")
-    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--run-id", default="")
     parser.add_argument("--out", required=True)
     parser.add_argument("--audit-log", default=str(DEFAULT_AUDIT))
     parser.add_argument("--llm-trace", default=str(DEFAULT_TRACE))
@@ -271,12 +359,32 @@ def main(argv=None) -> int:
     parser.add_argument("--holdout", default="fixtures/knowledge_holdout.jsonl")
     parser.add_argument("--index-manifest", default="knowledge/hypergraph.manifest.json")
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--repin", action="store_true",
+                        help="按当前摘要口径重签已入库清单（只改 sha256，"
+                             "不动运行数据；内容真变了的一律跳过）")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
     out_dir = Path(args.out)
     holdout = ROOT / args.holdout
     index_manifest = ROOT / args.index_manifest
+    if args.repin:
+        if args.check:
+            print("--repin 与 --check 互斥：先重签、再用 --check 复核")
+            return 2
+        report = repin(out_dir=out_dir, holdout=holdout)
+        for line in report["updated"]:
+            print(f"REPINNED: {line}")
+        for line in report["skipped"]:
+            print(f"SKIPPED: {line}")
+        print(json.dumps({"ok": not report["skipped"],
+                          "updated": len(report["updated"]),
+                          "unchanged": len(report["unchanged"]),
+                          "skipped": report["skipped"]},
+                         ensure_ascii=False))
+        return 0 if not report["skipped"] else 1
     if args.check:
+        #: `--check` 只读 `--out` 里的清单，**不需要** `--run-id`（它只用于提炼
+        #: 分片）。历史命令一直带着它，这里保持兼容：给了不用，没给也不报错。
         reasons, warnings = check(out_dir=out_dir, holdout=holdout,
                                   index_manifest=index_manifest,
                                   with_warnings=True)
@@ -289,6 +397,9 @@ def main(argv=None) -> int:
                          ensure_ascii=False))
         return 0 if not reasons else 1
 
+    if not args.run_id:
+        print("--run-id 是提出证据的必填项（或用 --check / --repin）")
+        return 2
     manifest = extract(
         run_id=args.run_id, out_dir=out_dir,
         audit_log=Path(args.audit_log), llm_trace=Path(args.llm_trace),

@@ -2,14 +2,14 @@
   "run_id": "b4626c726435",
   "artifacts": {
     "audit_log.jsonl": {
-      "sha256": "5408b06c0eb813bb25ba5e20f758c42c2c1749c2882ba62dbd6b36cf3c27623b",
+      "sha256": "7d0ba189984c01155aca8edd554b95e4d525dee8d9af6474a388b0c2aa1c11ea",
       "lines": 207,
       "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\runs\\audit_log.jsonl",
       "source_lines": 7186
     },
     "shots.json": {
       "path": "export/shots.json",
-      "sha256": "adcc1fac3a8c7d35d7c68ce80cb1d24fa3bdbafb9dfa06590a6eed2c62db15c2"
+      "sha256": "1a480a2ae77c891415a482fcf1a3a645d99b98c769fcc0a876fdf3b4e4daabc2"
     }
   },
   "run_span": {
