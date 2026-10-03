@@ -46,6 +46,8 @@ budget:
 brief:
   enabled: true
   max_tokens: 1200
+scene:
+  extent_m: 12.0
 crowd:
   enabled: null
   max_instances: 40

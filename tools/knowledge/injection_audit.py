@@ -115,7 +115,20 @@ def scope_markers() -> Dict[str, Dict[str, Any]]:
     from block_director.layer5_orchestrator.understand import BRIEF_BLOCK_HEADER
 
     plan_after = PLAN_SYSTEM_PROMPT.split("{knowledge}")[1]
-    plan_tail = _literal_until_placeholder(plan_after.split("{brief}")[1])
+    tail_source = plan_after.split("{brief}")[1]
+    #: `{brief}` 后面**可能还跟着别的占位符**（v1.6 加了 `{space}`）——
+    #: 只取"占位符之后的第一个固定段落"当终止符。不退这一步时会取到
+    #: 两个占位符之间的 `"\n\n"`，而那个字面量在知识块里到处都是
+    #: ⇒ 定位器会在知识块**中间**收尾（实测：块被截成只有"硬约束"那一栏）。
+    while True:
+        stripped = tail_source.lstrip()
+        if not stripped.startswith("{"):
+            break
+        _placeholder, _, rest = stripped[1:].partition("}")
+        if not _:
+            break
+        tail_source = rest
+    plan_tail = _literal_until_placeholder(tail_source)
     editor_after = EDITOR_SYSTEM_PROMPT.split("{knowledge}")[1]
     editor_tail = _literal_until_placeholder(editor_after)
     return {

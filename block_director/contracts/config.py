@@ -149,6 +149,26 @@ class BriefConfig:
 
 
 @dataclass
+class SceneConfig:
+    """场景空间：模型能看到的**可用范围**（v1.6，2026-10-04）。
+
+    为什么需要它（真跑实测）：`walk_to` 的 `target_position` 是**绝对**位置，
+    而计划提示里从来没有"这场戏有多大"这件事 ⇒ 模型把目的地写到 8–9.5 m，
+    再经一串接力把角色带到 25 m 之外（`docs/evidence/20261004-walk-handover/`）。
+    这个值有两个消费者：
+
+    * 计划提示里的一条**硬约束**（走位目的地必须落在范围内）；
+    * 构建期对越界走位的**告警**（`shot_builder.action_requests`）。
+
+    它**不**夹取机位——`SceneSpec.room` 仍然只在场景显式给出房间时才生效
+    （把默认范围当房间用会让所有远机位被悄悄夹回来）。
+    """
+
+    #: 场地半径（米）：可用范围 = X ∈ [−extent, +extent]、Y ∈ [−extent, +extent]。
+    extent_m: float = 12.0
+
+
+@dataclass
 class CrowdConfig:
     """群众代理（v1.3 §3.6）。
 
@@ -273,6 +293,7 @@ class AppConfig:
     audit: AuditConfig = field(default_factory=AuditConfig)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     brief: BriefConfig = field(default_factory=BriefConfig)
+    scene: SceneConfig = field(default_factory=SceneConfig)
     crowd: CrowdConfig = field(default_factory=CrowdConfig)
     vfx: VfxConfig = field(default_factory=VfxConfig)
     character: CharacterConfig = field(default_factory=CharacterConfig)
@@ -299,6 +320,10 @@ class AppConfig:
                 f"过渡帧数必须在 [0, fps) 内（当前 {self.animation.blend_frames}）")
         if self.dialogue.chinese_cps <= 0:
             err("CFG_003", "dialogue.chinese_cps", "中文字/秒必须为正数")
+        #: v1.6：场景可用范围。0 或负数等于"哪儿都不能站"，必须当场拦下。
+        if float(self.scene.extent_m) <= 0.0:
+            err("CFG_214", "scene.extent_m",
+                f"场景范围半径必须为正数（当前 {self.scene.extent_m}）")
         if self.dialogue.english_wps <= 0:
             err("CFG_004", "dialogue.english_wps", "英文词/秒必须为正数")
         for emotion, rate in self.dialogue.speech_rate.items():

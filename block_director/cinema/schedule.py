@@ -32,6 +32,23 @@ def total_frames(plan: Plan) -> int:
     return max(end for _start, end in ranges.values())
 
 
+def out_of_bounds(target: Sequence[float], extent_m: float) -> bool:
+    """走位目的地是否落在**场景可用范围**之外（只看 X/Y）。
+
+    范围由 `config.scene.extent_m` 给（计划提示里也写着同一条），
+    构建期用它把越界的走位**如实告警**——不夹取、不静默改写（夹取会把
+    "模型把整场带出场地"这件事藏起来）。实测依据：`long9` 重建里角色被一串
+    缺省 `from` 的行走带到 25 m 之外，而计划里每个目的地都在 9.5 m 以内
+    （`docs/evidence/20261004-walk-handover/`）。
+    """
+    if len(target) < 2:
+        return False
+    limit = abs(float(extent_m))
+    if limit <= 0.0:
+        return False
+    return abs(float(target[0])) > limit or abs(float(target[1])) > limit
+
+
 def travelled_positions(plan: Plan,
                         initial: Mapping[str, Sequence[float]]
                         ) -> Dict[str, Dict[str, Tuple[float, float, float]]]:

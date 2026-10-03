@@ -22,6 +22,7 @@ from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
 from ..cinema.station import SubjectFrame, camera_direction, subject_frame
 from ..cinema.schedule import (
     action_frame_window,
+    out_of_bounds,
     shot_ranges,
     total_frames,
     travelled_positions,
@@ -228,7 +229,8 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
 def action_requests(shot: ShotPlan, shot_start: int,
                      cast: Dict[str, CastMember],
                      warnings: List[str],
-                     live_from: Optional[Dict[str, Tuple[float, float, float]]] = None
+                     live_from: Optional[Dict[str, Tuple[float, float, float]]] = None,
+                     extent_m: Optional[float] = None
                      ) -> List[ActionRequest]:
     """把计划里的动作转成全局帧号的动作请求。
 
@@ -274,6 +276,14 @@ def action_requests(shot: ShotPlan, shot_start: int,
                     f"{shot.shot_id}: {action_type} 缺少 target_position，已跳过"
                     "（不替 LLM 猜目的地）")
                 continue
+            #: 越界**如实告警**（`config.scene.extent_m`；计划提示里是同一条硬约束）。
+            #: 不夹取：夹取会把"整场被带出场地"这件事藏起来。
+            if extent_m and out_of_bounds(params["target_position"], extent_m):
+                warnings.append(
+                    f"{shot.shot_id}: {action_type} 的目的地 "
+                    f"{list(params['target_position'])[:2]} 超出场景范围 "
+                    f"±{float(extent_m):g} 米（config.scene.extent_m）；"
+                    "目的地是**绝对位置**，请改到范围内")
             default_from = (live_from or {}).get(character_id)
             params.setdefault("from", default_from
                               or cast[character_id].initial_location)
@@ -372,7 +382,8 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         planned_warnings: List[str] = []
         requests = action_requests(
             shot, start, cast_map, planned_warnings,
-            live_from=place_before_shot.get(shot.shot_id))
+            live_from=place_before_shot.get(shot.shot_id),
+            extent_m=float(getattr(app_config.scene, "extent_m", 0.0) or 0.0))
         planned_warnings.extend(
             thirty for thirty in conflict_warnings(requests, shot.shot_id))
         for request in requests:
