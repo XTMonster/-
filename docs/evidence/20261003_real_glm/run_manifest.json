@@ -4,14 +4,14 @@
     "audit_log.jsonl": {
       "sha256": "5274494a97b6ef5d52af59de9cd9b697d17a7bd3ac40841bbe513b12a6cfba24",
       "lines": 338,
-      "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\runs\\audit_log.jsonl",
-      "source_lines": 7506
+      "source": "docs\\evidence\\20261003_real_glm\\audit_log.jsonl",
+      "source_lines": 338
     },
     "llm_trace.jsonl": {
       "sha256": "f447284eb2e96d62353605272e11b45bbe24f91791fea4433363463c78f9f4a8",
       "lines": 50,
-      "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\runs\\llm_trace.jsonl",
-      "source_lines": 1117
+      "source": "docs\\evidence\\20261003_real_glm\\llm_trace.jsonl",
+      "source_lines": 50
     },
     "knowledge_trace.json": {
       "sha256": "c1fb42326d092b2b3c551b182689ef02f0e15b116ee1b56099f12507a16bbe2f",
@@ -30,7 +30,7 @@
   "pins": {
     "holdout": {
       "path": "E:\\白模预演codex\\fixtures\\knowledge_holdout.jsonl",
-      "sha256": "c94bb389cfaff44adbe3484950193e3bdf7664124a81d2e3395a7f14e281c3e8"
+      "sha256": "bbd9bfb9579e571252fc11fcef066d1a330cda310d90107781c3bcaeb8fcb22e"
     },
     "index": {
       "path": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",

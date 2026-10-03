@@ -65,3 +65,9 @@ after ：返回的 INTENT_PACK 22 条，其中**承载这一镜自己意图**的
   补它要走 `tools/holdout_expect_movements.py`（GLM 换族标注）＋面板复核，
   本轮 GLM 一直在 429（额度到账后做）。
 * 6 镜样本只说明"轴通到了发出的串"，样本量不支持对 40.9% 做统计推断。
+
+> **2026-10-03 17:0x 的 pins 重签（运行数据一字未改）**：oracle 当天在 16:5x
+> 重标过一次（给 `INTENT_PACK` 那一族补了 176 条独立标注），`--check` 因此报
+> "held-out oracle 已换代"。本目录的运行分片逐字节未动，只按当前 oracle 重跑了
+> `tools/extract_run_evidence.py`。同一轮的 Q5 实读数（诊断）在这跑上是
+> **13/13 = 1.0000**；同一份 oracle 下 64 镜那一跑是 0.7419，见 `Q5_DECISION_v1.md`。

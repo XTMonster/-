@@ -76,7 +76,8 @@ def run_query_mirror(audit_path: Any, *, run_id: str = "") -> Dict[str, Any]:
     "读不出来"一律记 `not_measured`，**永不判过**——这与
     `quality.e1_evidence_is_stale` 的处置同形（缺证据不是通过）。
     """
-    detail: Dict[str, Any] = {"status": NA, "queries": {}, "run_ids": [],
+    detail: Dict[str, Any] = {"status": NA, "queries": {}, "edges": {},
+                              "run_ids": [],
                               "events": 0, "shot_events": 0, "unparsed": 0,
                               "path": str(audit_path or ""), "note": ""}
     if not audit_path:
@@ -97,6 +98,10 @@ def run_query_mirror(audit_path: Any, *, run_id: str = "") -> Dict[str, Any]:
 
     seen_runs: List[str] = []
     queries: Dict[str, List[str]] = {}
+    #: 2026-10-03：这一镜**真的召回**了哪些超边。Q5 的实读数（诊断）要按
+    #: "这条条目的期望边有没有被这一镜检索到"对齐——它比"发出的查询串与标注的
+    #: `q` 逐字相等"可达得多（见 `quality.q5_retrieval_join` 的抬头）。
+    recalled: Dict[str, List[str]] = {}
     events = shot_events = unparsed = 0
     for line in lines:
         if not line.strip():
@@ -129,6 +134,11 @@ def run_query_mirror(audit_path: Any, *, run_id: str = "") -> Dict[str, Any]:
         bucket = queries.setdefault(shot_id, [])
         if query not in bucket:
             bucket.append(query)
+        edge_bucket = recalled.setdefault(shot_id, [])
+        for edge_id in (data.get("edge_ids") or []):
+            text = str(edge_id or "").strip()
+            if text and text not in edge_bucket:
+                edge_bucket.append(text)
 
     detail["run_ids"] = sorted(seen_runs)
     detail["events"] = events
@@ -156,6 +166,7 @@ def run_query_mirror(audit_path: Any, *, run_id: str = "") -> Dict[str, Any]:
         return detail
     detail["status"] = "ok"
     detail["queries"] = {key: list(value) for key, value in sorted(queries.items())}
+    detail["edges"] = {key: list(value) for key, value in sorted(recalled.items())}
     if unparsed:
         detail["note"] = f"解析不了的行 {unparsed} 条（已跳过，未计入证据）"
     return detail

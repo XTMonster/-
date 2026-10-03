@@ -45,3 +45,9 @@ budget.exhausted = null                    运行时长约 18 分钟（含 FHD �
 
 **没证明的事**：E2（经验采纳率）仍是 `0/64`——那是 `declared` 优先级造成的结构性 0
 （§2.3b 只要求记录、不设门）；这一跑也没有覆盖 GUI 手工交互。
+
+> **2026-10-03 17:0x 的 pins 重签（运行数据一字未改）**：oracle 当天在 16:5x
+> 重标过一次（给 `INTENT_PACK` 那一族补了 176 条独立标注），`--check` 因此报
+> "held-out oracle 已换代"。本目录的运行分片逐字节未动，只按当前 oracle 重跑了
+> `tools/extract_run_evidence.py`（重算 pins、重写 `run_manifest.json`）。
+> 同一轮的 Q5 实读数（诊断）在这跑上是 **23/31 = 0.7419**，见 `Q5_DECISION_v1.md`。

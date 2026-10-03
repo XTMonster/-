@@ -317,9 +317,19 @@ def test_the_shipped_movement_entries_decompose_into_tautological_and_usable():
 
     三分类（口径与 `docs/knowledge/ACCEPTANCE_STATUS.md` §35.6 一字不差）：
 
-    * `q` 带 `运镜=X` 且期望与 `X` 有交集 ⇒ **52 条**（近似恒真）；
-    * `q` 带 `运镜=X` 而期望是**另一个**运镜 ⇒ **10 条**（反向样本，最有价值）；
+    * `q` 带 `运镜=X` 且期望与 `X` 有交集 ⇒ **86 条**（近似恒真）；
+    * `q` 带 `运镜=X` 而期望是**另一个**运镜 ⇒ **11 条**（反向样本，最有价值）；
     * `q` 不带 `运镜` ⇒ **8 条**（真正的预测）。
+
+    **2026-10-03 16:5x 的第二轮标注**把数字从 `(52, 10, 8)` 推到 `(86, 11, 8)`：
+    意图轴落地后，`INTENT_PACK`（意图×景别×运镜）第一次成为**可 join** 的一族，
+    于是按协议给它补了 176 条独立标注（GLM 换族），其中 35 条拿到期望、140 条
+    如实记空。**新增的 35 条里 34 条是恒真的**（`q` 里点了名的那条运镜就是期望），
+    有鉴别力的只从 18 增到 19——这不是标注没做好，而是这条通道**构造上**就先给了
+    答案（见 §35.6）：`q` 的 `运镜` 来自边、边的 `movement` 来自卡，于是"作者期望"
+    与"查询里写的"天然同源。所以 Q5 的这条通道即便分母非零，也基本测不出
+    "计划采纳了理论"——把它当绿的依据必须谨慎，这正是 `docs/knowledge/Q5_DECISION_v1.md`
+    要请你裁决的那件事。
 
     数字变了就说明 oracle 的入口形状被改过（重标 / 换标注口径 / 扩表），那时
     §35.6 与待裁决清单必须同批更新——不能让"有鉴别力的样本还剩几条"这件事
@@ -342,7 +352,7 @@ def test_the_shipped_movement_entries_decompose_into_tautological_and_usable():
         else:
             discriminating += 1
 
-    assert (tautological, discriminating, predictive) == (52, 10, 8), (
+    assert (tautological, discriminating, predictive) == (86, 11, 8), (
         "带 expect_movements 的条目形状变了："
         f"恒真 {tautological} / 反向 {discriminating} / 预测 {predictive}。"
         "改 oracle 或改标注口径时，请同批更新 ACCEPTANCE_STATUS §35.6 与"

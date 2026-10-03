@@ -107,3 +107,10 @@ shot_002 发出 景别=CU；运镜=dolly_in；对白=dialogue
   而真实发生的是 7 次检索。**要消掉它需要一次修复后的真实运行**（同样要模型额度，
   并且会换掉这里所有分片的 sha256），因此本轮**没有**假装修好：`--check` 每次都会
   把这条警告打出来，`tests/test_extract_run_evidence.py` 也逐跑钉住这个数字。
+
+> **2026-10-03 17:0x 的 pins 重签（运行数据一字未改）**：oracle 当天在 16:5x
+> 重标过一次（意图轴落地后给 `INTENT_PACK` 那一族补了 176 条独立标注，
+> 见 `ACCEPTANCE_STATUS.md` §50.5 与 `Q5_DECISION_v1.md`），`--check` 因此报
+> "held-out oracle 已换代"。本目录的 `audit_log.jsonl` / `llm_trace.jsonl` /
+> `knowledge_trace.json` / `export/shots.json` **逐字节未动**，只按当前 oracle
+> 重跑了 `tools/extract_run_evidence.py`（它重算 pins 并重写 `run_manifest.json`）。

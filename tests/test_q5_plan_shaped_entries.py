@@ -169,6 +169,14 @@ def test_which_joinable_entries_still_lack_expect_movements_is_recorded():
     }
     assert facts["joinable_entries"] > 0
     assert facts["annotated_keys"], facts
-    # 带标注的那一族**必须**与发出串不同——相同就说明这条用例的前提过期了，
-    # 那时 Q5 的运行侧应当已经有非零分母（去 `knowledge_quality.json` 里对）。
-    assert tuple(sorted(emitted)) not in facts["annotated_keys"], facts
+    #: **2026-10-03 16:5x：这条 tripwire 到期了，按它自己的说明改成更严的断言。**
+    #: 第二轮标注（§五十 的意图轴落地之后）第一次让**可 join 的那一族**拿到期望：
+    #: `{意图,景别,运镜}` 34 → **35 条带 `expect_movements`**，也就是说
+    #: §4.1b 第一步的夹具下界（≥30 条）现在能被**可 join 的那一族**自己满足。
+    #: 但"形状重叠 ≠ 有分母"：运行侧的等价还要求**取值逐对相同**，而实测四份入库
+    #: 运行里一条都没撞上（`knowledge_quality.json` 的 Q5 仍是 `run_denominator 0`）。
+    #: 所以这里断言两件事：① 可 join 且已标注的那一族真的够厚；② 另一族
+    #: （`{景别,运镜,镜头}`）与它**不相交**——那是 §38/§50"两族互斥"的直接证据。
+    assert facts["joinable_annotated"] >= 30, facts
+    assert tuple(sorted(emitted)) in facts["annotated_keys"], facts
+    assert ("景别", "运镜", "镜头") in facts["annotated_keys"], facts

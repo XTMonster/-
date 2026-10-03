@@ -220,9 +220,121 @@ def q5_query_drift(shots: List[Dict[str, Any]],
     return drift
 
 
+def _applied_movements(record: Dict[str, Any]) -> set:
+    """这一镜**最后排上的**运镜（别名已归一）。
+
+    一条运镜都没排 = 机位锁死，词表里的说法就是 `固定`（`static` 是它的别名）——
+    不补这一条，"这一镜没写运镜"会被当成"没有任何运镜产出"，于是作者期望
+    `固定` 的条目永远不可能命中。
+    """
+    from block_director.knowledge.hypergraph import VALUE_ALIASES  # noqa: PLC0415
+
+    applied = {VALUE_ALIASES.get(str(item.get("kind") or item.get("type") or ""),
+                                 str(item.get("kind") or item.get("type") or ""))
+               for item in (record.get("movements") or []) if isinstance(item, dict)}
+    applied.discard("")
+    if not applied:
+        applied = {VALUE_ALIASES.get("固定", "固定")}
+    return applied
+
+
+def q5_retrieval_join(entries: List[Dict[str, Any]], mirror: Dict[str, Any],
+                      shots, graph) -> Dict[str, Any]:
+    """Q5 的**实读数**（诊断，不参与门）：按"这一镜真的召回了哪条边"对齐。
+
+    为什么单列这一条（2026-10-03 实测）：§4.1b 的 Q5 join 是"发出的查询串与本条
+    `q` 的**键值对集合相等**"。而真实发出的串的键集由**计划**决定、标注者的 `q`
+    由**卡片**决定，两边几乎不可能相等——64 镜那一跑的 64 条发出串与 4539 条 `q`
+    一条都不相等（分母 0），于是这条判据**量不到任何东西**，只剩"结构性不可达"。
+
+    这一条把对齐键换成"本条目的 `must[0]` 边**真的被这一镜检索到了**"：分子/分母
+    的**语义一个字没改**（这一镜的运镜是否落在作者期望集合里），门限也没动
+    （0.80），换的只是**对齐键**。实测可达性：6 镜那一跑 13 对、64 镜那一跑 31 对。
+
+    **只作诊断**，因为样本会被单条条目主导（实测 64 镜那跑的 31 对里 8 对来自
+    同一条 `hq_1057`）——所以 `by_entry` 一并报出来，谁都不许把那个比值读成
+    有代表性的总体比例。`status` 恒为 `not_measured`：它还不是门。
+    """
+    from tools.holdout_score import spec_to_norm_key  # noqa: PLC0415
+
+    detail: Dict[str, Any] = {
+        "id": "Q5_retrieval_join", "status": NA, "numerator": 0,
+        "denominator": 0, "value": None, "line": 0.80, "matched_pairs": 0,
+        "by_entry": {}, "examples": [],
+        "note": ("按『这一镜检索到了该条目的 `must[0]` 边』对齐的实读数；"
+                 "**不参与门**。§4.1b 的 Q5 join（逐字相等）另见同一份 detail "
+                 "的 numerator/denominator"),
+    }
+    if graph is None:
+        detail["note"] = "没有索引图：实读数无法把 `must[0]` 解析成边 id"
+        return detail
+    if str(mirror.get("status")) != "ok":
+        detail["note"] = ("审计日志里没有可用的逐镜检索事件：实读数没有输入"
+                          "（与 Q5 join 的 not_measured 同源）")
+        return detail
+    by_norm = {edge.norm_key: edge for edge in graph.edges}
+    expected: Dict[str, set] = {}
+    edge_of: Dict[str, str] = {}
+    for entry in entries:
+        values = {str(value) for value in (entry.get("expect_movements") or [])
+                  if str(value)}
+        if not values:
+            continue
+        spec = (entry.get("must") or [None])[0]
+        edge = by_norm.get(spec_to_norm_key(spec, graph)) if spec else None
+        if edge is None:
+            continue
+        ident = str(entry.get("id"))
+        expected[ident] = values
+        edge_of[ident] = edge.edge_id
+    if not edge_of:
+        detail["note"] = ("夹具里没有『带 expect_movements 且 must[0] 能在索引里解析』"
+                          "的条目：实读数没有可对齐的对象")
+        return detail
+    recalled = mirror.get("edges") or {}
+    records = shots if isinstance(shots, list) else []
+    applied = {str(record.get("shot_id") or ""): _applied_movements(record)
+               for record in records if isinstance(record, dict)}
+    numerator = denominator = 0
+    by_entry: Dict[str, List[int]] = {}
+    examples: List[Dict[str, Any]] = []
+    for shot_id, record in applied.items():
+        hit_edges = set(recalled.get(shot_id) or [])
+        if not hit_edges:
+            continue
+        for ident, edge_id in edge_of.items():
+            if edge_id not in hit_edges:
+                continue
+            denominator += 1
+            hit = bool(applied[shot_id] & expected[ident])
+            numerator += int(hit)
+            bucket = by_entry.setdefault(ident, [0, 0])
+            bucket[0] += 1
+            bucket[1] += int(hit)
+            if len(examples) < 12:
+                examples.append({"shot_id": shot_id, "entry": ident,
+                                 "edge_id": edge_id,
+                                 "expected": sorted(expected[ident]),
+                                 "applied": sorted(applied[shot_id]),
+                                 "hit": hit})
+    detail.update({
+        "status": NA, "numerator": numerator, "denominator": denominator,
+        "value": round(numerator / denominator, 4) if denominator else None,
+        "matched_pairs": denominator, "examples": examples,
+        "by_entry": {key: {"shots": value[0], "hits": value[1]}
+                     for key, value in sorted(by_entry.items())},
+        "entries_with_expectations": len(edge_of),
+    })
+    if not denominator:
+        detail["note"] = ("这一跑没有任何一镜检索到带期望的那几条边：实读数为 0/0"
+                          "（**不得**读成 0% 采纳率）")
+    return detail
+
+
 def q5_run_join(entries: List[Dict[str, Any]], shots_path, *,
                 audit_path=None, run_id: str = "",
-                manifest_path=None, cases_path=None) -> Dict[str, Any]:
+                manifest_path=None, cases_path=None,
+                graph=None) -> Dict[str, Any]:
     """Q5 的**第二步**：把这一跑**真实发出**的逐镜查询与 held-out 的 `q` join 起来。
 
     判据（§4.1b 的 Q5 行）一个字没动：`SceneContract` 查询串与本条 `q` 的
@@ -235,6 +347,11 @@ def q5_run_join(entries: List[Dict[str, Any]], shots_path, *,
       的串。`shots.json` 是被测实现自己写的收尾快照，而且**不是同一时刻**：
       2026-10-03 那一跑 6 镜里 2 镜两条串不同（见 :mod:`tools.knowledge.run_evidence`
       抬头）。拿它当 join 键 = 量另一次运行。
+
+    另外报一份**实读数**（诊断，不参与门）：:func:`q5_retrieval_join` ——
+    把对齐键从"发出的查询串"换成"这一镜真的召回的那条边"。为什么必须有一条
+    这样的读数见那个函数的抬头（一句话：按字符串相等对齐时，分母**结构性**为 0，
+    判据量不到任何东西）。
 
     分母为 0 时按**硬规则 1 判 fail**（夹具侧 <30 那一档仍按 §4.1b 第一步记
     `not_measured`——两条规范原文分开执行，见 :func:`q5_movement_hit`）。
@@ -286,17 +403,9 @@ def q5_run_join(entries: List[Dict[str, Any]], shots_path, *,
             #: 一律折成空串再丢掉，于是**每一镜都被当成"锁死"**（`固定`）——作者期望
             #: `固定` 的条目会被 `dolly_in` 的镜头骗成命中，期望 `dolly_in` 的反而
             #: 恒不命中。这是分子上的真实缺陷，2026-10-03 写通道用例时抓到。
-            applied = {VALUE_ALIASES.get(str(m.get("kind") or m.get("type") or ""),
-                                         str(m.get("kind") or m.get("type") or ""))
-                       for m in (record.get("movements") or [])
-                       if isinstance(m, dict)}
-            applied.discard("")
-            if not applied:
-                #: 一条运镜都没排 = 引擎的机位是**锁死**的。词表里这件事的说法就是
-                #: `固定`（`static` 是它的别名）。不补这一条，"这一镜没写运镜"会被
-                #: 当成"没有任何运镜产出"，于是**作者期望 `固定` 的条目永远不可能命中**
-                #: ——而那恰好是 `SHOT_PATTERN` 那批（景别×镜头）最典型的形状。
-                applied = {VALUE_ALIASES.get("固定", "固定")}
+            #: 一条运镜都没排 = 引擎的机位是**锁死**的（`固定`）——判据与
+            #: `_applied_movements` 同源，实读数用的是同一个函数，两处不许漂。
+            applied = _applied_movements(record)
             mine = [_normalise_query_pairs(query) for query in queries]
             for ident, (expected_pairs, expected_moves) in wanted.items():
                 if not expected_pairs:
@@ -312,9 +421,12 @@ def q5_run_join(entries: List[Dict[str, Any]], shots_path, *,
                 elif any(expected_pairs <= pairs for pairs in mine):
                     subset_denominator += 1
     value = round(numerator / denominator, 4) if denominator else None
+    retrieval = q5_retrieval_join(entries, mirror, shots, graph)
     detail: Dict[str, Any] = {
         "status": NA, "numerator": numerator, "denominator": denominator,
         "subset_denominator": subset_denominator, "value": value, "line": 0.80,
+        #: 诊断：按"检索结果"对齐的实读数（不参与 status）。
+        "retrieval_join": retrieval,
         "channel": "audit" if mirror["status"] == "ok" else "absent",
         "emitted_queries": emitted,
         "plan_queries": sorted({query for query in derived_queries if query}),
@@ -359,7 +471,8 @@ def q5_run_join(entries: List[Dict[str, Any]], shots_path, *,
 
 def q5_movement_hit(entries: List[Dict[str, Any]], shots=None, *,
                     audit_path=None, run_id: str = "",
-                    manifest_path=None, cases_path=None) -> Dict[str, Any]:
+                    manifest_path=None, cases_path=None,
+                    graph=None) -> Dict[str, Any]:
     """Q5 运镜命中（§4.1b 分两步判；本函数负责第一步与"缺什么"的如实记账）。
 
     §4.1b 原文：① 夹具侧：带 `expect_movements` 的条目 **≥ 30**（不足则 Q5 记
@@ -385,7 +498,8 @@ def q5_movement_hit(entries: List[Dict[str, Any]], shots=None, *,
                          f"不得判通过。池通道的标注模板不产这个字段，"
                          f"补齐要走一次独立标注（判据＝卡里描述的作者意图）")}
     run = q5_run_join(entries, shots, audit_path=audit_path, run_id=run_id,
-                      manifest_path=manifest_path, cases_path=cases_path)
+                      manifest_path=manifest_path, cases_path=cases_path,
+                      graph=graph)
     plan_shaped = sum(1 for entry in expected
                       if _normalise_query_pairs(entry.get("q"))
                       and {key for key, _value in _normalise_query_pairs(entry.get("q"))}
@@ -400,6 +514,9 @@ def q5_movement_hit(entries: List[Dict[str, Any]], shots=None, *,
               "run_denominator": run["denominator"],
               "run_value": run.get("value"),
               "run_subset_denominator": run.get("subset_denominator", 0),
+              #: 诊断（不参与 status）：按"这一镜真的召回了哪条边"对齐的实读数。
+              #: 它比逐字相等的 join 可达得多，但样本会被单条条目主导 ⇒ 只报。
+              "run_retrieval_join": run.get("retrieval_join", {}),
               "run_stale_evidence": bool(run.get("stale_evidence")),
               "run_evidence_fingerprints": run.get("evidence_fingerprints", {}),
               "run_channel": run.get("channel", "absent"),
@@ -731,7 +848,8 @@ def build_report(*, run_id: str, holdout: Path, nodes: Path, edges: Path,
     metrics.append(q5_movement_hit(entries, shots,
                                    audit_path=audit_log, run_id=audit_run_id,
                                    manifest_path=ROOT / manifest,
-                                   cases_path=(ROOT / cases) if cases else None))
+                                   cases_path=(ROOT / cases) if cases else None,
+                                   graph=graph))
     metrics.append(e1_relevance(e1_reviews, cases_path=cases))
     metrics.append(e2_adoption(shots, manifest_path=ROOT / manifest,
                                cases_path=(ROOT / cases) if cases else None))

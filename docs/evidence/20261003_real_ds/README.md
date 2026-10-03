@@ -55,3 +55,8 @@ shot_006 景别=MCU；运镜=固定；对白=dialogue
   `ACCEPTANCE_STATUS.md` §三十八 记的**结构性**问题，不是这一跑能改的。
 * **不代表构图质量**：`audit_pass_rate` 与交付件只是副产品；这一跑的目的是
   "契约串里到底有什么"。
+
+> **2026-10-03 17:0x 的 pins 重签（运行数据一字未改）**：oracle 当天在 16:5x
+> 重标过一次（给 `INTENT_PACK` 那一族补了 176 条独立标注），`--check` 因此报
+> "held-out oracle 已换代"。本目录的运行分片逐字节未动，只按当前 oracle 重跑了
+> `tools/extract_run_evidence.py`（重算 pins、重写 `run_manifest.json`）。
