@@ -315,7 +315,8 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-062537/`，逐条见 `ACCEPTANCE_STATUS.md`
+且 pass。证据 `docs/evidence/20261004-064625/`（链在 `dd5609f` 上重跑：探针 32 支全过、
+`python -m pytest` 1976 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
 §三十五…§七十二 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增十五节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
