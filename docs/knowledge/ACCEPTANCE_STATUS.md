@@ -3060,3 +3060,42 @@ Q6b: hypergraph 1.0000  triples 1.0000   delta  0.0000
 用例：`tests/test_holdout_score.py` 新增两条——一条拿入库索引 ＋ 一条 held-out
 离线跑 `main()` 并检查两臂/两指标/差值键都在（差值允许任何值，**但不许伪造 0**）；
 一条**静态检查链上那一步真的存在**（调用 ＋ `Test-Path` 都要在活行上）。
+
+## 四十三、P14-31（2026-10-03 11:0x）：**§6 取证表的第 1 行也回来了**（人审抽查表）
+
+### 43.1 病：同一形状的第三处
+
+§6 的「抽取噪声」一行把取证写得很具体：
+
+```
+tools/knowledge/sample_edges.py --n 30 → docs/evidence/<run-id>/edge_spotcheck.jsonl
+（人工复核记录）
+```
+
+实测：**只有 `2026-09-30` 的三个证据目录里有它**——此后每一跑都缺这一份具名交付物，
+而链子全绿。加上 §四十一（K1–K4）与 §四十二（`ab_triple.json`），本轮一共补上三处
+"文档点名了产物、链上没有生产者"。
+
+### 43.2 修：链上产出这张表（**判据仍归人**）
+
+链上新增一步：`sample_edges.py --n 30 --out <evidence>/edge_spotcheck.jsonl`，
+**要求产物落盘**（没写就 Fail），然后打印行数。链**不替人填 `verdict`**——
+那是人审；`sample_edges.py` 自己也不预填（`verdict` 恒为 `null`，预填即 §4.1b
+硬规则 2 的自证）。
+
+### 43.3 实测（`docs/evidence/20261003-110609/edge_spotcheck.jsonl`）
+
+```
+rows 30 / verdict 全部 null / 覆盖 16 个边类（分层抽样：每类 2 条，最后两类各 1 条）
+字段：edge_id, type, members, forbid_members, rendered, tokens, source_kind,
+      hardness, occurrences, confidence, weight, sources, source_span,
+      verdict, reviewer, notes
+```
+
+抽样**不过滤 `forbid` 成员**（禁忌恰是最该被人看一眼的东西），且渲染用的是
+**真正注入模型的那一套 `render_edge`**——所以人在这张表上判"这条边像不像真的
+从那张卡里抽出来的"，判的就是入库后实际会发生的事。
+
+用例：`tests/test_holdout_score.py` 新增一条——静态检查链上那一步存在（调用 ＋
+`Test-Path` 都在活行上）。**这条链上唯一的"人审"就是它**：`verdict` 留空，
+等有空的`人`来填；门⑦（held-out 裁决）用的是另一套（`--reviewer-classes`）。

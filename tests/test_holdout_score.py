@@ -302,3 +302,21 @@ def test_the_chain_runs_the_ab_triple_and_requires_the_artifact():
     assert any("ab_triple.json" in line for line in calls), calls
     assert any("Test-Path" in line and "ab_triple.json" in line for line in lines), (
         "链上必须检查 ab_triple.json 真的写出来了")
+
+
+def test_the_chain_produces_the_human_edge_spotcheck_sheet():
+    """§6 的"抽取噪声"一行把取证写成 `edge_spotcheck.jsonl`（人填 verdict）。
+
+    2026-10-03 实测：只有 **2026-09-30 的三个**证据目录里有它——此后的每一跑都缺
+    这一份具名交付物，而链子全绿。链**不能**替人填 verdict（那是人审），但必须
+    **产出这张表**；`sample_edges.py` 本身拒绝预填（`verdict` 恒为 `null`，
+    预填就是 §4.1b 硬规则 2 说的自证）。
+    """
+    text = (ROOT / "tools" / "run_tests.ps1").read_text(encoding="utf-8")
+    lines = [line for line in text.splitlines() if line.strip()
+             and not line.lstrip().startswith("#")]
+    calls = [line for line in lines if "sample_edges.py" in line]
+    assert calls, "链上没有调用 tools/knowledge/sample_edges.py"
+    assert any("edge_spotcheck.jsonl" in line for line in calls), calls
+    assert any("Test-Path" in line and "edge_spotcheck.jsonl" in line
+               for line in lines), "链上必须检查那张表真的写出来了"

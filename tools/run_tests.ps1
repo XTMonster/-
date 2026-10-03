@@ -377,6 +377,26 @@ if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_attestation.json'))) {
                 $attested.edges_fully_attested + '/' + $attested.edges + ' edges fully attested)') -ForegroundColor DarkGray
 }
 
+# Human spot-check sample (2026-10-03): the evidence table in section 6 names the
+# "extraction noise" row's evidence as sample_edges.py --n 30 ->
+# docs/evidence/<run-id>/edge_spotcheck.jsonl - a stratified, RENDERED sample of 30
+# edges with verdict/reviewer/notes left blank for a human.  Measured: only three
+# evidence directories have it (2026-09-30), i.e. every run since then has been
+# missing a named deliverable while the chain stayed green.  The chain cannot fill
+# the verdicts (that is the human's job) - but it must produce the sheet, and the
+# script refuses to pre-fill (verdict is always null; pre-filling would be
+# self-confirmation under SS4.1b rule 2).
+python tools/knowledge/sample_edges.py --n 30 --out (Join-Path $evidenceDir 'edge_spotcheck.jsonl') > $null 2>&1
+if (-not (Test-Path (Join-Path $evidenceDir 'edge_spotcheck.jsonl'))) {
+    Fail '  FAILED: the SS6 edge spot-check sheet was not written'
+} else {
+    $spotPath = Join-Path $evidenceDir 'edge_spotcheck.jsonl'
+    $spot = ([System.IO.File]::ReadAllText($spotPath,
+             [System.Text.Encoding]::UTF8) -split "`n" | Where-Object { $_.Trim() })
+    Write-Host ('  edge spot-check sheet (for a human; verdicts blank): ' +
+                $spot.Count + ' edges') -ForegroundColor DarkGray
+}
+
 # A/B triple (2026-10-03): SS2.3d T2 / P14-5 asks for one run of the
 # hypergraph-vs-binary-triple comparison, landed as
 # `docs/evidence/<run-id>/ab_triple.json`.  The TOOL has been in the repo since the
