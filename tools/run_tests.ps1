@@ -107,6 +107,7 @@ function Get-MarkerPayload([object]$output, [string]$marker) {
 $checks = @(
     @{ Script = 'tools\blender_tests\test_operator_end_to_end.py'; Marker = 'BD_TEST_RESULT'; Label = 'operator-e2e' },
     @{ Script = 'tools\blender_tests\test_character_geometry.py';  Marker = 'BD_TEST_RESULT'; Label = 'character-geometry' },
+    @{ Script = 'tools\blender_tests\test_character_body_ab.py';    Marker = 'BD_TEST_RESULT'; Label = 'body-ab' },
     @{ Script = 'tools\blender_tests\test_scene_contract.py';      Marker = 'BD_TEST_RESULT'; Label = 'scene-contract' },
     @{ Script = 'tools\blender_tests\test_label_toggles.py';       Marker = 'BD_TEST_RESULT'; Label = 'label-toggles' },
     @{ Script = 'tools\blender_tests\test_label_layout.py';        Marker = 'BD_TEST_RESULT'; Label = 'label-layout' },
