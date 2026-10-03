@@ -21,7 +21,12 @@ from ..contracts.tools import PLAN_TOOL
 from ..motion.model import ACTION_TYPES
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES, render_timing_table
 from ..layer1_input.shotlist import render_declared_shots
+from ..knowledge.hypergraph import VALUE_DOMAINS
 from .scene_contract import declared_constraint_query
+
+#: 意图闭集（12 个中文值）。**唯一真源**是超图 schema 的取值域表——不在这里
+#: 再抄一份：抄一份就会在扩域时漂，而 `意图=` 是逐镜检索真的会发的键。
+INTENT_VALUES: tuple = tuple(VALUE_DOMAINS["intent"])
 
 PLAN_TOOL_NAME = PLAN_TOOL
 
@@ -34,6 +39,11 @@ _SHOT_ITEM_SCHEMA: Dict[str, Any] = {
         "shot_id": {"type": "string"},
         "order": {"type": "integer", "minimum": 1},
         "intent": {"type": "string"},
+        #: v1.5 §2.3d T3：**意图闭集**。它是逐镜检索的 `意图=` 种子的来源，
+        #: 而 `INTENT_PACK`（意图×景别×运镜）是超图里被检索最多的一类边
+        #: （实测 64 镜那一跑 shot 域 231/320 次命中都是它）。自由文本的
+        #: `intent` 仍然要写（人读的展示字段），这一条是机器用的闭集标签。
+        "intent_type": {"type": "string", "enum": list(INTENT_VALUES)},
         "shot_type": {"type": "string", "enum": list(SHOT_TYPES)},
         "duration_frames": {"type": "integer", "minimum": 1,
                             "maximum": 3600},
@@ -83,6 +93,8 @@ PLAN_SYSTEM_PROMPT = """\
 
 要求：
 - 这是**拍摄清单**：每个镜头给出镜号、顺序、意图、景别、时长预算与出场角色
+- `intent_type` 必须从给定闭集里**逐字**选一个（意图决定镜头语言；超图里
+  "意图×景别×运镜"那一族边就靠它命中，选错等于检索回来的是别人的知识）
 - **不要在计划里写动作与对白细节**——那是下一阶段（单镜结构化生成）逐镜完成的，
   这里写进去只会让计划过长且互相打架；对白归属用 dialogue_ids 标注即可
 - prompt 写一句"画面描述"，供后续生成参考视频的提示词使用

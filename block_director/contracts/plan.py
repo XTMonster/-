@@ -75,6 +75,16 @@ class ShotPlan:
     #: 锁机位的镜头在超图那一栏一个运镜种子都没有（实测 2026-10-03：
     #: `shotlist_market` 第 1 镜声明"固定镜头"，而发出的查询只有 `景别=MCU`）。
     declared_camera_move: str = ""
+    #: v1.5 §2.3d T3（**意图轴**）：这一镜"导演/角色想干什么"的**闭集取值**
+    #: （12 个中文值，唯一真源 = `knowledge/hypergraph.py::VALUE_DOMAINS["intent"]`）。
+    #: 生产者 = 阶段 A 的 `emit_plan`（schema 里带 enum）；消费者 = 逐镜检索的
+    #: 契约串（`shot_constraint_query` 的 `意图=` 键）。
+    #: 为什么它是**计划决策**而不是自由文本：`INTENT_PACK`（意图×镜头语言）是
+    #: 超图里被检索最多的一类边（实测 64 镜那一跑，shot 域 231/320 次命中的是它），
+    #: 而 `意图=` 此前**从来不在发出的查询里**——检索只能靠"景别＋运镜"猜意图，
+    #: 拿回来的"意图知识"与这一镜真正要做什么无关。闭集才能被机器对拍，
+    #: 自由文本的 `intent` 仍然是人读的展示字段，两者不互相取代。
+    intent_type: str = ""
     #: v1.4：台词钉住的证据链（§3.3 的 ``dialogue_pins[]``）。元素形如
     #: ``{shot_number, speaker_raw, speaker_status, declared_s, model_text,
     #: applied_s}``。生产者 = driver，消费者 = RK-7 的三方对拍。
@@ -104,6 +114,7 @@ class ShotPlan:
             "declared_duration_frames": self.declared_duration_frames,
             "declared_shot_number": self.declared_shot_number,
             "declared_camera_move": self.declared_camera_move,
+            "intent_type": self.intent_type,
             "dialogue_pins": [dict(item) for item in self.dialogue_pins],
         }
 
@@ -133,6 +144,7 @@ class ShotPlan:
                                          or 0),
             declared_shot_number=int(data.get("declared_shot_number") or 0),
             declared_camera_move=str(data.get("declared_camera_move") or ""),
+            intent_type=str(data.get("intent_type") or ""),
             dialogue_pins=[dict(item)
                            for item in (data.get("dialogue_pins") or [])
                            if isinstance(item, dict)],

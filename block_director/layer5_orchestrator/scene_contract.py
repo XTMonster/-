@@ -112,6 +112,12 @@ def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
                 break
 
     add("景别", [getattr(shot, "shot_type", "")])
+    #: v1.5 §2.3d T3 的**意图轴**：这一镜"想干什么"的闭集取值。它必须进搜索串，
+    #: 否则 `INTENT_PACK`（意图×景别×运镜）只能靠"景别＋运镜"猜意图——实测 64 镜
+    #: 那一跑 shot 域 231/320 次命中的都是 INTENT_PACK，而拿回来的"意图知识"
+    #: 与这一镜真正要做什么无关。键名 `意图` 是 `hypergraph.QUERY_KEYS` 的既有键，
+    #: 取值由 `emit_plan` 的 enum 保证落在闭集内（`VALUE_DOMAINS["intent"]`）。
+    add("意图", [getattr(shot, "intent_type", "")])
     #: 剧本**声明**的拍摄手法是检索前已知的输入（不是结果），先挂它。
     #: 没有它，锁机位的镜头在超图那一栏一个运镜种子都没有：实测 2026-10-03，
     #: `shotlist_market` 第 1 镜声明"固定镜头"，而这一镜真实发出的契约串只有
@@ -185,6 +191,9 @@ class ShotContract:
     #: 把"这一镜要检索什么"收敛成一个对象，供 `constraint_query()` 消费）。
     shot_type: str = ""
     lens: str = ""
+    #: v1.5 §2.3d T3：意图的闭集取值（进契约串的 `意图=`，与 `shot_type`/`lens`
+    #: 同性质——"这一镜要检索什么"收敛成对象，计划仍是唯一真源）。
+    intent_type: str = ""
     movements: List[str] = field(default_factory=list)
     actions: List[str] = field(default_factory=list)
     vfx_kinds: List[str] = field(default_factory=list)
@@ -203,7 +212,8 @@ class ShotContract:
         两者都由同一组"只写有值的键"的规则生成，因此同一镜的两条路径不会漂。
         """
         pairs: List[tuple] = []
-        for key, value in (("景别", self.shot_type), ("镜头", self.lens)):
+        for key, value in (("景别", self.shot_type), ("意图", self.intent_type),
+                           ("镜头", self.lens)):
             if str(value or "").strip():
                 pairs.append((key, str(value).strip()))
         for key, values in (("运镜", self.movements), ("动作", self.actions),
@@ -220,6 +230,7 @@ class ShotContract:
             "shot_id": self.shot_id, "order": self.order,
             "intent": self.intent, "characters": list(self.characters),
             "shot_type": self.shot_type, "lens": self.lens,
+            "intent_type": self.intent_type,
             "movements": list(self.movements), "actions": list(self.actions),
             "vfx_kinds": list(self.vfx_kinds),
             "facing_target": dict(self.facing_target),
@@ -308,6 +319,8 @@ class SceneContract:
                                 order=int(getattr(shot, "order", 0) or index),
                                 intent=str(getattr(shot, "intent", "") or ""),
                                 shot_type=str(getattr(shot, "shot_type", "") or ""),
+                                intent_type=str(
+                                    getattr(shot, "intent_type", "") or ""),
                                 lens=str((getattr(shot, "camera", None) or {}).get(
                                     "lens") or ""),
                                 movements=[_first_value(entry, "type", "kind")

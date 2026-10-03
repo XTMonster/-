@@ -41,6 +41,7 @@ def _default_two_shots() -> list:
         "shot_id": "shot_001",
         "order": 1,
         "intent": "建立场景与人物关系",
+        "intent_type": "铺垫",
         "shot_type": "MLS",
         "duration_frames": 96,
         "characters": ["char_001", "char_002"],
@@ -52,6 +53,7 @@ def _default_two_shots() -> list:
         "shot_id": "shot_002",
         "order": 2,
         "intent": "推进对话，给出反应",
+        "intent_type": "推进",
         "shot_type": "MCU",
         "duration_frames": 120,
         "characters": ["char_002"],
@@ -87,6 +89,10 @@ def shots_from_declarations(declarations, *, fps: int = 24) -> list:
             "order": index,
             "intent": (f"镜号{getattr(declared, 'shot_number', index)}："
                        f"{getattr(declared, 'field', lambda *_: '')('作用') or '推进叙事'}"),
+            #: 离线链路也要走 `意图=` 这条路，否则"契约串含意图"这件事
+            #: 在链上**从来没有被跑过**（探针全绿也可能全是没接线）。
+            #: 取值按声明镜号在闭集里轮转：确定性、可复算、不猜导演意图。
+            "intent_type": ("铺垫", "推进", "揭示", "收束")[index % 4],
             "shot_type": str(getattr(declared, "shot_type", "") or "MS"),
             "duration_frames": int(frames),
             "characters": [mapping[name] for name in names],

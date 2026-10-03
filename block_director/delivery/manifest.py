@@ -66,6 +66,10 @@ def build_manifest(plan: Plan, *,
             "shot_id": shot.shot_id,
             "order": shot.order or order,
             "intent": shot.intent,
+            #: v1.5 §2.3d T3：意图闭集取值。必须落盘——Q5 的 `derived` 诊断串
+            #: 由 `shots.json` 重推（`quality.plan_query_of_shot`），缺了它，
+            #: 重推串与真实发出的串会**每一镜都漂**（那一栏就废了）。
+            "intent_type": str(getattr(shot, "intent_type", "") or ""),
             "shot_type": str(shot.shot_type),
             "start_frame": start,
             "end_frame": end,

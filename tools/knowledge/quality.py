@@ -75,7 +75,12 @@ E1_SAMPLE_FLOOR = 1200
 #: `ShotContract.constraint_query()` / `shot_constraint_query()` 真正会产出的键。
 #: 只有 `q` 的键**全部**落在这里的条目才可能与真实运行的计划镜头 join 上——
 #: 这是 §4.1b 的 Q5 join 判据（"键值对集合相等"）的直接推论。
-PLAN_QUERY_KEYS: Tuple[str, ...] = ("景别", "镜头", "运镜", "动作", "特效", "对白")
+#: v1.5 §2.3d T3 加入 `意图`：它是**计划决策**（`ShotPlan.intent_type`，12 值闭集
+#: 由 `emit_plan` 的 enum 保证），因此逐镜检索真的会发出 `意图=`。这一条同时
+#: 让 Q5 的 join 空间从"只含 SHOT_PATTERN"扩到 **INTENT_PACK**——实测 oracle 里
+#: 有 176 条条目的 `q` 正好是 `意图/景别/运镜`，那是唯一与引擎可表达空间重合的一族。
+PLAN_QUERY_KEYS: Tuple[str, ...] = ("景别", "意图", "镜头", "运镜", "动作", "特效",
+                                    "对白")
 
 
 def _normalise_query_pairs(text: str) -> frozenset:
@@ -111,6 +116,7 @@ class _ShotView:
             if kind:
                 movements.append({"type": str(kind)})
         self.shot_type = str((record or {}).get("shot_type") or "")
+        self.intent_type = str((record or {}).get("intent_type") or "")
         self.camera: Dict[str, Any] = {"lens": camera.get("lens"),
                                        "movements": movements}
         self.actions = [{"action_type": str(item)}

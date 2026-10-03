@@ -8,9 +8,15 @@
   `q/must/top1/never`，从来没有这个字段。
 * Q5 的 join 键是 `q`，判据是「`SceneContract` 查询串与本条 `q` 的**键值对集合
   相等**」。所以能进这份标注的只有**计划形状**的条目——`q` 的键必须落在
-  `shot_constraint_query()` 真正会产出的那六个键里（`景别/镜头/运镜/动作/特效/对白`）。
-  索引里天然只有 **`SHOT_PATTERN`** 一类的可查询成员完全落在这个键集里
-  （`shot_size + lens`；`headroom_policy` 没有查询键），所以入选的就是那 106 条。
+  `shot_constraint_query()` 真正会产出的键里（v1.5 起：`景别/意图/镜头/运镜/动作/特效/对白`）。
+  两族入选：
+  * **`SHOT_PATTERN`**（`shot_size + lens`；`headroom_policy` 没有查询键）——
+    但 `镜头` 只在剧本**声明了焦段**或计划**已解算**时才在发出的串里，
+    所以这一族的运行侧分母取决于剧本；
+  * **`INTENT_PACK`**（`intent + shot_size + movement`）——三个键 2026-10-03 起
+    全部可表达（意图闭集进计划、景别与运镜本来就有），实测 oracle 里 **176 条**
+    的 `q` 就是 `意图=…；景别=…；运镜=…`，这是**唯一**与引擎可表达空间完全重合
+    的一族。
 * 判据是「**这张卡的作者**在这条查询下期望什么运镜」，必须**落在卡片正文里**：
   每个取值都要给出正文原句。这不是把索引的 `movement` 成员抄一遍（那是自证，
   §4.1b 硬规则 2 禁止），也不是模型自己的审美偏好。
@@ -39,6 +45,8 @@ import json
 import pathlib
 import re
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Iterable, List, Sequence, Tuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -52,7 +60,8 @@ from tools.kb_fetch.llm import GLMClient, LLMError  # noqa: E402
 #: scene_contract.py`）。**从那里读不到**（那个模块要 bpy 侧的兄弟依赖才 import
 #: 得动），所以在这一处**显式钉住**，并由 `tests/test_q5_plan_shaped_entries.py`
 #: 拿真实生产者对拍——两处不一致时测试当场红。
-PLAN_QUERY_KEYS: Tuple[str, ...] = ("景别", "镜头", "运镜", "动作", "特效", "对白")
+PLAN_QUERY_KEYS: Tuple[str, ...] = ("景别", "意图", "镜头", "运镜", "动作", "特效",
+                                    "对白")
 
 DEFAULT_HOLDOUT = "fixtures/knowledge_holdout.jsonl"
 DEFAULT_VOCAB = "fixtures/knowledge_holdout.vocab.json"
@@ -239,6 +248,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="0 = 全部（默认）")
     parser.add_argument("--resume", action="store_true",
                         help="跳过 --out 里已经有的 id（断点续跑）")
+    parser.add_argument("--concurrency", type=int, default=1,
+                        help="并发条数（1 = 顺序）。实测单条含思考约 40-70 s，"
+                             "顺序跑 176 条要数小时；结果 append + flush，"
+                             "任何中断都能 --resume 续跑")
     parser.add_argument("--apply", action="store_true",
                         help="把结果写回 --holdout（入库前的最后一步）")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
@@ -274,23 +287,38 @@ def main(argv: Sequence[str] | None = None) -> int:
         todo = todo[:args.limit]
     failures: List[dict] = []
     counts: collections.Counter = collections.Counter()
-    with out_path.open("a", encoding="utf-8") as handle:
-        for index, entry in enumerate(todo, 1):
-            card = by_id.get(str(entry.get("from_card")))
-            if card is None:
+    write_lock = threading.Lock()
+
+    def work(index: int, entry: dict) -> None:
+        """标注一条并追加落盘。**每条独立**：一条失败不影响别的条。"""
+        card = by_id.get(str(entry.get("from_card")))
+        if card is None:
+            with write_lock:
                 failures.append({"id": entry.get("id"),
                                  "reason": f"卡片不存在：{entry.get('from_card')}"})
-                continue
-            try:
-                row = annotate_entry(client, entry, card, movements)
-            except (LLMError, ValueError, json.JSONDecodeError) as exc:  # noqa: BLE001
-                failures.append({"id": entry.get("id"), "reason": f"{type(exc).__name__}: {exc}"})
-                continue
+            return
+        try:
+            row = annotate_entry(client, entry, card, movements)
+        except (LLMError, ValueError, json.JSONDecodeError) as exc:  # noqa: BLE001
+            with write_lock:
+                failures.append({"id": entry.get("id"),
+                                 "reason": f"{type(exc).__name__}: {exc}"})
+            return
+        with write_lock:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
             handle.flush()
             counts["empty" if not row["expect_movements"] else "filled"] += 1
             print(f"[{index}/{len(todo)}] {row['id']} {row['q']} -> "
-                  f"{row['expect_movements'] or '（空）'}")
+                  f"{row['expect_movements'] or '（空）'}", flush=True)
+
+    with out_path.open("a", encoding="utf-8") as handle:
+        workers = max(1, int(args.concurrency))
+        if workers == 1:
+            for index, entry in enumerate(todo, 1):
+                work(index, entry)
+        else:
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                list(pool.map(lambda pair: work(*pair), enumerate(todo, 1)))
 
     summary = {
         "holdout": str(holdout), "plan_shaped_entries": len(selected),
