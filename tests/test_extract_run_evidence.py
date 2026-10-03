@@ -178,6 +178,41 @@ def test_the_second_landed_run_is_fresh_and_has_no_contract_warning():
     assert warnings == [], warnings
 
 
+def test_the_long_real_run_is_fresh_and_stayed_within_the_ceiling():
+    """长剧本（64 镜）的真实运行：证据同代，且**没有触顶降级**。
+
+    2026-10-03 实测：真实模型路径此前只跑过 6 镜；这一跑第一次到文档口径的长剧本
+    规模。它同时给 Q5 的运行侧一个有 64 条发出查询的样本（此前 6 条）——
+    判据一个字没动，两边都报**0 命中**，是 §三十八 那条"结构性不可达"的第二个、
+    更大的独立证据。这条用例只钉**证据本身**：同代、无警告、DONE、预算未触顶。
+    """
+    run_dir = ROOT / "docs" / "evidence" / "20261003_real_long"
+    assert (run_dir / "run_manifest.json").is_file(), "长剧本运行证据还没入库"
+    reasons, warnings = X.check(
+        out_dir=run_dir, holdout=ROOT / "fixtures" / "knowledge_holdout.jsonl",
+        index_manifest=ROOT / "knowledge" / "hypergraph.manifest.json",
+        with_warnings=True)
+    assert reasons == [], reasons
+    assert warnings == [], warnings
+
+    marker = [line for line in
+              (run_dir / "blender.log").read_text(encoding="utf-8",
+                                                  errors="replace").splitlines()
+              if "BLOCKDIRECTOR_RESULT" in line]
+    assert marker, "blender.log 里没有运行结果标记"
+    #: 标记行尾部还跟着 Blender 自己的横幅 → 用 raw_decode 只吃第一个完整对象。
+    payload, _end = json.JSONDecoder().raw_decode(
+        marker[0].split("BLOCKDIRECTOR_RESULT ", 1)[1])
+    shots = int(payload["shots"])
+    ceiling = max(200, shots * 8 + 40)
+    assert payload["state"] == "DONE", payload["state"]
+    assert shots >= 61, shots
+    assert int(payload["llm_calls"]) <= ceiling, (payload["llm_calls"], ceiling)
+    assert not payload["budget"]["exhausted"], payload["budget"]["exhausted"]
+    assert (payload.get("knowledge") or {}).get("degraded") is False, (
+        "长剧本那一跑必须走超图通道，不能降级")
+
+
 def test_the_retrieval_cross_check_compares_shots_with_the_audit_events():
     """契约对拍：`shots.json.retrieval_calls` 与 audit 事件数不一致时**必须报**。"""
     run_dir = ROOT / "docs" / "evidence" / "20261003_real_glm"

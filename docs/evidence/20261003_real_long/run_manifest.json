@@ -1,0 +1,43 @@
+{
+  "run_id": "926a717a2861",
+  "artifacts": {
+    "audit_log.jsonl": {
+      "sha256": "e3f461292f9aedc06c330ab136039222055449bac961069b0ff6c3f05924c3ff",
+      "lines": 1430,
+      "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\runs\\audit_log.jsonl",
+      "source_lines": 10444
+    },
+    "llm_trace.jsonl": {
+      "sha256": "2c325d0838174da00954b62c392beddc3b4bcb9862798dee00ea18362b800f04",
+      "lines": 213,
+      "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\runs\\llm_trace.jsonl",
+      "source_lines": 1552
+    },
+    "knowledge_trace.json": {
+      "sha256": "93807720c267ded9097bd6878ed4144eb883584cb0ea594d6c2be64aef7c73a0",
+      "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\knowledge_trace.json"
+    },
+    "shots.json": {
+      "path": "export/shots.json",
+      "sha256": "1624ba3957728316fb3ea82307bdc4f1e4cc6ad987bbbd4d034569967a75c020"
+    }
+  },
+  "run_span": {
+    "events": 1430,
+    "first_ts": 1791007038.104,
+    "last_ts": 1791007577.471
+  },
+  "pins": {
+    "holdout": {
+      "path": "E:\\白模预演codex\\fixtures\\knowledge_holdout.jsonl",
+      "sha256": "c94bb389cfaff44adbe3484950193e3bdf7664124a81d2e3395a7f14e281c3e8"
+    },
+    "index": {
+      "path": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
+      "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67"
+    },
+    "cases": {
+      "fingerprint": "69791dbacabd3fd77e5132dea277664972a227d222b7be0c6c6841c5a7a6649e"
+    }
+  }
+}

@@ -82,6 +82,13 @@ FIXTURES = [
      "（7=7，没有契约警告），而且是**逐镜查询带上声明拍摄手法之后**的第一跑"),
     ("docs/evidence/20261003_real_ds/audit_log.jsonl", "DeepSeek 那一跑的审计分片",
      "Q5 的 join 键（真实发出的 retrieval_call）与只读逐镜查询的来源"),
+    ("docs/evidence/20261003_real_long/export/shots.json",
+     "长剧本（64 镜）真实模型运行的逐镜产物",
+     "链上 quality.py --shots 现在喂的是这一份：真实模型路径第一次跑到文档口径的"
+     "长剧本规模（DONE / 213 次调用 / ceiling 552），Q5 的运行侧因此有 64 条而非 6 条"),
+    ("docs/evidence/20261003_real_long/audit_log.jsonl",
+     "长剧本那一跑的审计分片（1430 事件）",
+     "Q5 的 join 键与 RK-18 的独立计数（1430 条事件里含 65 条 retrieval_call）"),
 ]
 
 

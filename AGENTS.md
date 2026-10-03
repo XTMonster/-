@@ -303,13 +303,21 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-03 13:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-03 14:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 是结构性不可达、E1 是语料
 适配度），`E2` 是诊断量。`python -m pytest` 全绿、`run_tests.ps1` **32/32**（探针清单
 28 支 ＋ spec/golden 漂移、pytest、契约冒烟、headless 四步；由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
-RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence/20261003-132954/`，
-逐条见 `ACCEPTANCE_STATUS.md` §三十五…§四十一。**
+RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence/20261003-142954/`，
+逐条见 `ACCEPTANCE_STATUS.md` §三十五…§四十九。**
+
+**真实模型路径第一次跑到文档口径的长剧本规模**（`docs/evidence/20261003_real_long/`，
+`run_id 926a717a2861`）：64 镜 / `DONE` / `llm_calls 213 ≤ ceiling 552` /
+`retrieval_calls 65`（未降级）/ 审计 **56/56** 全过 / 墙钟约 18 分钟。
+链上的 `--shots`/`--audit-log` 现在喂的就是这一份——Q5 的运行侧因此有 **64 条**发出查询
+（此前 6 条），而两边都报 **0 命中**：`ACCEPTANCE_STATUS.md` §三十八 那条
+"夹具的 `q` 带 `镜头=`、而 stage A 的计划 schema 没有 `camera` ⇒ 焦段在检索前
+结构上不存在"因此有了第二个、更大的独立证据。
 
 **K1–K4（RK-13 的语料前置）已进链**：`tools/knowledge/corpus_gates.py` 从**入库语料**
 重算 K1/K2/K3（一个字都不读构建期报告），K4 的账本必须与语料对得上、且入库语料不许有

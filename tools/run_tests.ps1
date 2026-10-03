@@ -534,13 +534,20 @@ if (-not (Test-Path (Join-Path $evidenceDir 'ab_triple.json'))) {
 # camera/movements differ from what the per-shot retrieval saw (measured
 # 2026-10-03: 6 of 6 shots drift).  quality.py joins on the emitted query and
 # reports the re-derived one as a drift diagnostic only.
-# 2026-10-03: the run fed here is now the DeepSeek one (docs/evidence/20261003_real_ds).
+# 2026-10-03: the run fed here is the LONG one (docs/evidence/20261003_real_long).
+# It is the first real-model run at the documented long-script scale (64 shots, DONE,
+# 213 llm calls against a 552 ceiling, 65 retrievals, audit 56/56), so Q5's run side
+# is judged on 64 emitted queries rather than 6 - and it is still 0, which is the
+# second, larger piece of evidence for SS38's structural argument.
+# The earlier 6-shot DeepSeek run (20261003_real_ds) stays in the repo: it is the run
+# whose shots.json first agreed with the audit events, and the GLM one before it is
+# what SS35 measured.
 # Two reasons over the earlier cloud-GLM run: its shots.json carries a
 # `retrieval_calls` that AGREES with the audit events (7 = 7, so extract_run_evidence
 # reports no contract warning), and it is the first run made AFTER the per-shot query
 # started carrying the shot's DECLARED technique.  The GLM run stays in the repo as
 # history (it is what SS35 measured).
-python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261003_real_ds/export/shots.json --audit-log docs/evidence/20261003_real_ds/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+python tools/knowledge/quality.py --run-id $runId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261003_real_long/export/shots.json --audit-log docs/evidence/20261003_real_long/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }
