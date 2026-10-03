@@ -303,10 +303,12 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-03 10:4x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-03 13:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 是结构性不可达、E1 是语料
-适配度），`E2` 是诊断量。`python -m pytest` 全绿、`run_tests.ps1` 31/31。
-RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence/20261003-094528/`，
+适配度），`E2` 是诊断量。`python -m pytest` 全绿、`run_tests.ps1` **32/32**（探针清单
+28 支 ＋ spec/golden 漂移、pytest、契约冒烟、headless 四步；由
+`tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
+RK-13 仍记 failed——因为 Q5/E1 已归位成硬门。证据 `docs/evidence/20261003-132954/`，
 逐条见 `ACCEPTANCE_STATUS.md` §三十五…§四十一。**
 
 **K1–K4（RK-13 的语料前置）已进链**：`tools/knowledge/corpus_gates.py` 从**入库语料**
