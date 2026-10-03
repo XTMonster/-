@@ -427,6 +427,18 @@ def check_shot(shot_id: str, *, context=None,
                 and character_id not in shot.characters:
             continue
         for label_a, label_b in _overlapping_pairs(items):
+            #: **按镜收口**（2026-10-04 实测）：`_action_ranges` 读的是**整份
+            #: 计划**，而这里原来只按角色过滤——于是一个镜头里的重叠会被**广播**
+            #: 到每一张含该角色的镜头审计里。`long12` 里全片只有 **7 处**重叠，
+            #: 却被记成 **312 条 / 64 镜全红**（同一条消息出现在 48 张审计里），
+            #: 逐镜通过率直接塌成 0/64，修复回路也被同一句话灌满。
+            #: 重叠的两个动作**都在同一镜里**（窗口已被 `action_frame_window`
+            #: 夹进各自那一镜，跨镜重叠在构造上不可能），所以只要有一端
+            #: 不属于当前镜，这条就不该由这一镜背。
+            if shot_id and not any(
+                    label.startswith(f"{shot_id}#")
+                    for label in (label_a, label_b)):
+                continue
             findings.append(_error(
                 "R003", "E_SDL_001",
                 f"角色 {character_id} 的动作时间重叠：{label_a} 与 {label_b}",

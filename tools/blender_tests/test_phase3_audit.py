@@ -367,6 +367,60 @@ def t_r001_says_whether_a_character_crossed_the_axis():
                                  if item.rule == "R001"]}
 
 
+# --------------------------------------------------------------------------- #
+# 9. R003 必须**按镜收口**：别的镜头里的重叠不许算在干净的镜头上
+#
+# 现场（2026-10-04，`long12`）：全片只有 **7 处**同角色动作重叠，却被记成
+# **312 条 / 64 镜全红**——`_action_ranges` 读的是整份计划，审计只按角色过滤，
+# 于是一处重叠被**广播**到每一张含该角色的镜头审计里（同一条消息出现 48 次），
+# 逐镜通过率塌成 0/64，修复回路也被同一句话灌满。
+# --------------------------------------------------------------------------- #
+def _overlap_scope_plan():
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    shots = [
+        ShotPlan.from_dict({
+            "shot_id": "shot_001", "order": 1, "intent": "有重叠的那一镜",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_001"],
+            "actions": [{"character_id": "char_001", "action_type": "turn_head",
+                         "start_frame": 1, "end_frame": 30, "params": {}},
+                        {"character_id": "char_001", "action_type": "look_at",
+                         "start_frame": 10, "end_frame": 40,
+                         "params": {"yaw_deg": 10}}]}),
+        ShotPlan.from_dict({
+            "shot_id": "shot_002", "order": 2, "intent": "干净的那一镜",
+            "shot_type": "MCU", "duration_frames": 48,
+            "characters": ["char_001"],
+            "actions": [{"character_id": "char_001", "action_type": "nod",
+                         "start_frame": 1, "end_frame": 20,
+                         "params": {"cycles": 1}}]}),
+    ]
+    return Plan(shots=shots, scene_heading="INT. 码头 - 日")
+
+
+def t_r003_is_scoped_to_the_shot_being_audited():
+    from block_director.contracts.cast import SceneSpec
+    from block_director.layer3_engine.shot_auditor import BpyShotAuditor
+    from block_director.layer3_engine.shot_builder import build_scene
+
+    fresh_scene()
+    plan = _overlap_scope_plan()
+    spec = SceneSpec.from_plan(plan)
+    build_scene(plan, spec, clear_scene=True)
+    auditor = BpyShotAuditor()
+    dirty = auditor.audit("shot_001")
+    clean = auditor.audit("shot_002")
+    dirty_rules = [item.rule for item in dirty.errors]
+    clean_rules = [item.rule for item in clean.errors]
+    clean_msgs = [item.message for item in clean.errors if item.rule == "R003"]
+    return {"ok": "R003" in dirty_rules and "R003" not in clean_rules
+            and not clean_msgs,
+            "dirty_rules": dirty_rules, "clean_rules": clean_rules,
+            "clean_errors": [item.message for item in clean.errors],
+            "clean_passed": clean.passed}
+
+
 def main() -> int:
     capture_main_thread()
     check("axis_established_and_enforced", t_axis_established_and_enforced)
@@ -380,6 +434,8 @@ def main() -> int:
           t_the_camera_aims_where_the_character_is_now)
     check("r001_says_whether_a_character_crossed_the_axis",
           t_r001_says_whether_a_character_crossed_the_axis)
+    check("r003_is_scoped_to_the_shot_being_audited",
+          t_r003_is_scoped_to_the_shot_being_audited)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
