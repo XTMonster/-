@@ -26,6 +26,19 @@ def test_the_role_table_covers_the_review_angles_the_agents_md_asks_for():
             "红队反方"} <= set(C.ROLES)
 
 
+def test_the_consultation_is_explanatory_not_just_adversarial():
+    """用户 2026-10-04 的裁决：**会诊不是对抗性审查，而且需要他们解释**。
+
+    所以① 角色表里有"讲原理/讲落地"这两个非对抗角色；② 系统提示明确写"这是会诊，
+    不是对抗性审查"；③ 输出 schema 里每条 finding 都要带 `explanation` 与
+    `step_by_step`，并且整体要有一段 `teaching`——只有结论没有解释的回复不合规。
+    """
+    assert {"领域讲解", "实现顾问"} <= set(C.ROLES)
+    assert "会诊" in C.SYSTEM_TEMPLATE and "不是对抗性审查" in C.SYSTEM_TEMPLATE
+    for field in ("explanation", "step_by_step", "teaching"):
+        assert field in C.SYSTEM_TEMPLATE, field
+
+
 def test_every_role_gets_a_distinct_instruction():
     """多 agent 会诊的意义在"角度不重复"——两组同义词不算两组。"""
     texts = list(C.ROLES.values())

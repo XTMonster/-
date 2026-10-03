@@ -20,6 +20,7 @@ from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
 from ..cinema.axis import (
+    crossing_events,
     flipped_screen_directions,
     shared_characters,
     thirty_degree_violation,
@@ -69,6 +70,42 @@ def _character_positions(characters):
         if root is not None:
             positions.append(root.matrix_world.translation.copy())
     return positions
+
+
+def _unseen_crossing_note(context, shot_id: str) -> str:
+    """这一镜之前有没有**看不出来**的换位（只拍一个人的镜头里绕过去）。
+
+    `cinema/axis.crossing_events` 是纯计划推算（不读机位），所以这条说明
+    **不会**变成"构建器自己出题自己判"：它讲的是计划里的走位编排，
+    由修复回路去改**走位**（或补一个中性机位），而不是动机位。
+    """
+    if context is None or context.plan is None or context.axis is None:
+        return ""
+    spec = getattr(context, "spec", None)
+    if spec is None:
+        return ""
+    initial = {}
+    for member in getattr(spec, "cast", []) or []:
+        location = tuple(getattr(member, "initial_location", (0.0, 0.0, 0.0)))
+        initial[str(getattr(member, "id", ""))] = location
+        name = str(getattr(member, "name", "") or "")
+        if name:
+            initial[name] = location
+    events = crossing_events(context.axis, context.plan, initial)
+    if not events:
+        return ""
+    order = [str(item.shot_id) for item in context.plan.shots]
+    if shot_id not in order:
+        return ""
+    index = order.index(shot_id)
+    for candidate in reversed(order[: index + 1]):
+        event = events.get(candidate)
+        if event is None or event.visible:
+            continue
+        return (f"（换位是**看不见**的：{event.people[0]} 与 {event.people[1]} 的连线"
+                f"在 {candidate} 翻了头，而那一镜没有让两人同框——把这次换位放进"
+                f"一个两人同框的镜头，或在中间插一个 §6.2 的中性机位）")
+    return ""
 
 
 def _crossed_the_axis(axis, character) -> bool:
@@ -289,6 +326,13 @@ def check_shot(shot_id: str, *, context=None,
                             "只挪机位修不动——请改这一镜的走位或机位角度，"
                             "或按 §6.2 插入中性镜头过渡）"
                             .format("、".join(crossed)))
+            #: **看不出换位**的越轴要点名（2026-10-04，GLM 5.3 会诊 F2/F4 ＋
+            #: `cinema/axis.crossing_events`）：换位发生在**只拍一个人**的镜头里，
+            #: 观众看到的是"两人突然左右互换"。修法不是动机位，而是**把这次换位
+            #: 放进一个两人同框的镜头**（或在中间插 §6.2 的中性机位）。
+            unseen = _unseen_crossing_note(context, shot_id)
+            if unseen:
+                message += unseen
             findings.append(_error(
                 "R001", "E_AXIS_001", message, target=shot_id,
                 suggestion="将相机移到轴线另一侧，或插入中性镜头过渡"))

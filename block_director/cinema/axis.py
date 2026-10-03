@@ -101,6 +101,101 @@ def axis_for_speakers(positions: Sequence[Tuple[Sequence[float], str]]
     return axis if axis.length > EPS else None
 
 
+@dataclass(frozen=True)
+class CrossingEvent:
+    """一次"配对连线翻了个儿"的换位（纯计划推算的结果）。"""
+
+    shot_id: str
+    visible: bool          # 换位是不是发生在**两人同框**的那一镜里
+    people: Tuple[str, str]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"shot_id": self.shot_id, "visible": bool(self.visible),
+                "people": list(self.people)}
+
+
+def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]]
+                    ) -> Dict[str, CrossingEvent]:
+    """逐镜推算：这一镜里配对连线**翻了个儿**没有、以及翻的时候看不看得见。
+
+    为什么（2026-10-04，GLM 5.3 会诊 F2/F4 ＋ `work/_r001_classify_probe.py`）：
+    R001 的假阳性/真阳性都要说清"换位是**看得见的**（两人同框时走过去 ⇒ 合法重建）
+    还是**看不见的**（在只拍一个人的镜头里绕过去 ⇒ 越轴）。判据本身不动，
+    但修复回路必须知道该改什么：前者不用改，后者要把换位放进两人同框的镜头、
+    或按 §6.2 插一个中性机位。
+
+    算法（纯计划＋接力位置，**不读机位**——读了就成"构建器自己出题自己判"）：
+    以轴线的方向 `d` 为参考，看配对两点在 `d` 的**法线**上的差 `cross(d, B−A)`
+    是否在某一镜里换了号；换号即"线翻了个儿"。`visible` 取该镜的
+    `shot.characters` 里是否**两人都在**（画面的"看得见"由计划的出场声明给出，
+    与 `SceneBrief.gaze` 同一层的意图数据）。
+    """
+    from .schedule import travelled_positions
+
+    left, right = axis.left_label, axis.right_label
+    if not left or not right:
+        return {}
+    before = travelled_positions(plan, dict(initial))
+    direction = axis.direction
+    if direction == (0.0, 0.0):
+        return {}
+    out: Dict[str, CrossingEvent] = {}
+    previous_sign = 0
+    shots = list(getattr(plan, "shots", []) or [])
+    for index, shot in enumerate(shots):
+        shot_id = str(shot.shot_id)
+        start = before.get(shot_id) or {}
+        #: 这一镜**结束时**的位置 ≈ 下一镜开始时（接力函数的口径）。
+        following = before.get(str(shots[index + 1].shot_id)) if index + 1 < len(shots) else None
+        end = following or _after_own_walks(shot, start)
+        a_start, b_start = start.get(left), start.get(right)
+        a_end, b_end = end.get(left), end.get(right)
+        if not (a_start and b_start and a_end and b_end):
+            continue
+        #: "线翻了个儿" = 这一镜**结束时**的配对连线相对**首镜那条**转了超过 90°
+        #: （点积为负）。用点积而不是叉积：配对两点自己就是线，叉积恒为 0。
+        if _flipped(direction, a_start, b_start, a_end, b_end):
+            out[shot_id] = CrossingEvent(
+                shot_id=shot_id,
+                visible=len([cid for cid in (shot.characters or [])
+                             if str(cid) in (left, right)]) >= 2,
+                people=(left, right))
+    return out
+
+
+def _flipped(direction: Sequence[float],
+             a_start: Sequence[float], b_start: Sequence[float],
+             a_end: Sequence[float], b_end: Sequence[float]) -> bool:
+    """这一镜里配对连线是不是**掉了个头**（相对首镜那条 > 90°）。"""
+    dx, dy = float(direction[0]), float(direction[1])
+    fx0, fy0 = float(b_start[0]) - float(a_start[0]), float(b_start[1]) - float(a_start[1])
+    fx1, fy1 = float(b_end[0]) - float(a_end[0]), float(b_end[1]) - float(a_end[1])
+    n0 = math.hypot(fx0, fy0)
+    n1 = math.hypot(fx1, fy1)
+    if n0 < EPS or n1 < EPS:
+        return False
+    before = (fx0 / n0) * dx + (fy0 / n0) * dy
+    after = (fx1 / n1) * dx + (fy1 / n1) * dy
+    return before > 0.0 and after < 0.0
+
+
+def _after_own_walks(shot, positions: Dict[str, Sequence[float]]
+                     ) -> Dict[str, Sequence[float]]:
+    """最后一镜没有"下一镜"可用时：把这一镜自己的行走终点算进去。"""
+    out = dict(positions)
+    for raw in getattr(shot, "actions", None) or []:
+        if not isinstance(raw, dict):
+            continue
+        if str(raw.get("action_type") or "") not in ("walk_to", "run_to"):
+            continue
+        character_id = str(raw.get("character_id") or "")
+        params = dict(raw.get("params") or {})
+        target = params.get("target_position") or raw.get("target_position")
+        if character_id and isinstance(target, (list, tuple)) and len(target) >= 2:
+            out[character_id] = (float(target[0]), float(target[1]))
+    return out
+
+
 def current_line(axis: Axis, positions: Dict[str, Sequence[float]]) -> Axis:
     """把轴线的**线**更新到两人**此刻**的连线；侧别（`established_side`）继承。
 
