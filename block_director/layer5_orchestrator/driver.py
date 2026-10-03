@@ -1164,10 +1164,19 @@ class PrevisDriver:
         # v1.4 §3.3（R45）：shot_audit 增写构图分与阈值——两者是同一次审核里
         # 已经算好的量（``AuditResult.score`` 与审核器的门限），阈值只有一个来源。
         threshold = getattr(self.auditor, "composition_threshold", None)
+        #: v1.5：**记下是哪几条规则红的**。此前事件里只有 `errors=2` 这样的计数，
+        #: 于是"通过率掉了"这件事根本没法归因——2026-10-03 的 64 镜真跑就是
+        #: 29/56、而没人知道红的是构图、R002 还是 R011。规则名、码与严重度都在
+        #: `AuditResult` 里现成，落盘不额外花钱；`rule_ids` 只列 ERROR 级。
+        findings = [item.to_dict() for item in
+                    (list(result.errors) + list(result.warnings))[:12]]
         self.audit.log("shot_audit", f"{shot_id}: {result.format_for_llm().splitlines()[0]}",
                        level="info" if result.passed else "warning",
                        shot=shot_id, passed=result.passed,
                        errors=len(result.errors), warnings=len(result.warnings),
+                       rule_ids=[item["rule"] for item in findings
+                                 if item.get("severity") == "error"],
+                       findings=findings,
                        composition_score=result.score,
                        composition_threshold=threshold)
         self._emit("shot_audit",

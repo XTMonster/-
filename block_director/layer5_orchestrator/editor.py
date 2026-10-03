@@ -28,7 +28,8 @@ from ..motion.model import (
     ACTION_PARAMS,
     ACTION_TYPES,
     ALL_ACTION_PARAM_KEYS,
-    unknown_action_params,
+    action_param_problems,
+    action_param_domains,
 )
 from .react import render_shot_memory, shot_memory
 from .scene_contract import shot_constraint_query
@@ -204,9 +205,13 @@ def render_action_params() -> str:
     表本身是**生成的**：`ACTION_PARAMS` 改了，提示词跟着变（同一份真源），
     因此不需要"记得同步改提示词"这种纪律。
     """
+    domains = action_param_domains()
     lines = ["  · 动作参数表（**只写这一行里有的键**；参数值用数字/坐标数组）："]
     for kind in sorted(ACTION_PARAMS):
-        keys = "、".join(f"`{key}`" for key in ACTION_PARAMS[kind])
+        keys = "、".join(
+            (f"`{key}`（只能是 {'/'.join(domains[key])}）"
+             if key in domains else f"`{key}`")
+            for key in ACTION_PARAMS[kind])
         lines.append(f"    - `{kind}`：{keys}")
     lines.append("  · 上表之外的动作不许带 `params`（引擎按默认值演）。")
     return "\n".join(lines)
@@ -366,12 +371,12 @@ def extract_draft(reply: ChatReply, shot_id: str) -> ShotDraft:
     bad = []
     for item in draft.actions:
         kind = str((item or {}).get("action_type") or "")
-        unknown = unknown_action_params(kind, (item or {}).get("params"))
-        if unknown:
-            from ..motion.model import ACTION_PARAMS
-
-            bad.append(f"{kind} 不认识的参数 {unknown}；允许的是 "
-                       f"{list(ACTION_PARAMS.get(kind, ()))}")
+        #: v1.5：**键与取值一起查**。只查键会漏掉 `body_tilt.axis='forward'`
+        #: 这类闭集错误——它一路活到构建期，把整轮打成 ERROR（实测 2026-10-03）。
+        for problem in action_param_problems(kind, (item or {}).get("params")):
+            allowed = list(ACTION_PARAMS.get(kind, ()))
+            bad.append(f"{problem}；允许的键是 {allowed}" if "不认识的参数" in problem
+                       else problem)
     if bad:
         raise ValueError("；".join(bad))
     return draft

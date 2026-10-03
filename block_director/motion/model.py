@@ -108,6 +108,68 @@ def unknown_action_params(kind: str, params) -> List[str]:
         return []
     return sorted(set(params or {}) - set(allowed))
 
+
+#: 取值是坐标（数字数组）或自由字符串的键：数值检查对它们不适用。
+_NON_NUMERIC_KEYS = frozenset(
+    {"speed", "axis", "toward", "from", "from_", "target_position", "to"})
+#: 取值是**闭集**的键（在函数里拼，因为这些表定义在本模块后半段）。
+_CLOSED_VALUE_KEYS = frozenset({"speed", "axis"})
+
+
+def action_param_domains() -> Dict[str, Tuple[str, ...]]:
+    """闭集取值的键 → 允许的取值。
+
+    **一份真源，两处消费**：解析期的 `action_param_problems` 用它判合法，
+    逐镜提示词用它告诉模型能写什么（否则模型写 `axis='forward'` 这种合理同义词，
+    到构建期才炸——实测把 64 镜的一整轮打成 ERROR）。
+    """
+    return {"speed": tuple(sorted(_SPEED_RATE)), "axis": ("x", "y")}
+
+
+def action_param_problems(kind: str, params) -> List[str]:
+    """这个动作的 `params` 有什么问题（**键与取值**都查）；空列表 = 合法。
+
+    为什么要有它（2026-10-03 的 64 镜真跑）：`unknown_action_params` 只挡"键不
+    认识"。把动作参数表写进提示词之后，草案**从 2 条有效变成 61 条有效**——然后
+    整轮死在构建期：
+
+        MotionParamError: E_MOTION_001：body_tilt 的 axis 只能是 x / y（当前 'forward'）
+
+    `axis` 是闭集、`angle_deg` 必须是数字，这些**在解析期就能问**，不该留到构建期
+    把 64 镜的计划与 64 条草案一起作废（与本项目已经付过两次代价的"键不认识"
+    完全同一个形状）。判据与构建期**同源**：`body_tilt` 直接调它自己的正规化函数，
+    `speed` 直接读 `_SPEED_RATE`。
+    """
+    kind = str(kind or "").strip()
+    params = dict(params or {})
+    problems: List[str] = []
+    unknown = unknown_action_params(kind, params)
+    if unknown:
+        problems.append(f"{kind} 不认识的参数 {unknown}")
+        return problems
+    if kind == "body_tilt":
+        try:
+            body_tilt_params(params)
+        except MotionParamError as exc:
+            problems.append(str(exc))
+        return problems
+    #: 闭集取值表：`speed` 的取值域直接读构建期用的那张表（单一真源）。
+    domains = action_param_domains()
+    for key, value in params.items():
+        domain = domains.get(key) if key in _CLOSED_VALUE_KEYS else None
+        if domain is not None:
+            if str(value).strip().lower() not in domain:
+                problems.append(
+                    f"{kind} 的 {key} 只能是 {'/'.join(domain)}（当前 {value!r}）")
+            continue
+        if key in _NON_NUMERIC_KEYS:
+            continue
+        try:
+            float(value)
+        except (TypeError, ValueError):
+            problems.append(f"{kind} 的 {key} 必须是数字（当前 {value!r}）")
+    return problems
+
 # §9.7 冲突仲裁表：语义矛盾的动作组合一律拒绝，而不是算出怪动作
 FORBIDDEN_PAIRS = frozenset({
     frozenset({"walk_to", "fall_down"}),
