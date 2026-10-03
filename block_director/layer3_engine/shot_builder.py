@@ -19,7 +19,8 @@ import bpy
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
 from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
-from ..cinema.axis import Axis, axis_state, current_line
+from ..cinema.axis import (Axis, axis_state, camera_side_of, current_line,
+                           pair_spans)
 from ..cinema.station import (
     HEAD_ROOM_AIM_M,
     SubjectFrame,
@@ -165,31 +166,48 @@ def live_positions_by_label(characters: Dict[str, Any]
     return spots
 
 
-def _axis_for_placement(context, plan, cast_map, characters, shot):
+def _axis_for_placement(context, plan, cast_map, characters, shot, live_side=None):
     """这一镜摆机位该用的轴线：**线**取两人此刻连线，**侧**取状态机给的侧别。
 
     状态机只在第一镜（含两名角色的那镜）确立轴线**之后**才算得出来；那之前的镜头
     仍用 `context.axis`（那时它还是 None，求解器会走"相对焦点朝向"的兜底路径）。
+
+    `live_side`（可选）：**顺序状态机**给出的侧别——摆完上一镜、量过"连线扫没扫过
+    刚摆好的那台机位"之后，`build_scene` 会把它传进来（§七十三 的收尾）。不传就
+    退回"计划期近似"的那张表，这是给别处直接调用本函数时的兼容路径。
     """
     base = getattr(context, "axis", None)
     if base is None:
         return None
-    sides = getattr(context, "_axis_sides", None)
-    if sides is None:
-        initial = {str(member.id): tuple(member.initial_location)
-                   for member in (getattr(context, "spec", None).cast
-                                  if getattr(context, "spec", None) else [])}
-        for member in (getattr(context, "spec", None).cast
-                       if getattr(context, "spec", None) else []):
-            name = str(getattr(member, "name", "") or "")
-            if name:
-                initial[name] = tuple(member.initial_location)
-        sides = axis_state(base, plan, initial)
-        context._axis_sides = sides
     live = current_line(base, live_positions_by_label(characters))
-    side = int(sides.get(str(shot.shot_id), live.established_side))
+    if live_side is None:
+        #: 键名带 `_plan`：**规则自己也用 `_axis_sides`**，构建器往同一个键里写
+        #: 计划期的表会把规则算出来的实际表顶掉（2026-10-04 踩过）。
+        sides = getattr(context, "_axis_sides_plan", None)
+        if sides is None:
+            sides = axis_state(base, plan, _initial_cast_positions(context))
+            context._axis_sides_plan = sides
+        side = int(sides.get(str(shot.shot_id), live.established_side))
+    else:
+        side = int(live_side)
+    #: 记下这一镜**实际**用的侧别：规则读它（`rule_checker._axis_sides`）。
+    used = dict(getattr(context, "_axis_sides_used", None) or {})
+    used[str(shot.shot_id)] = side
+    context._axis_sides_used = used
     return Axis(start=live.start, end=live.end, established_side=side,
                 left_label=live.left_label, right_label=live.right_label)
+
+
+def _initial_cast_positions(context) -> Dict[str, Tuple[float, float, float]]:
+    """剧本起始站位（id 与显示名两套键）。`pair_spans` 与计划期近似表都读它。"""
+    initial: Dict[str, Tuple[float, float, float]] = {}
+    for member in (getattr(getattr(context, "spec", None), "cast", None) or []):
+        location = tuple(member.initial_location)
+        initial[str(member.id)] = location
+        name = str(getattr(member, "name", "") or "")
+        if name:
+            initial[name] = location
+    return initial
 
 
 def live_subject_entries(shot: ShotPlan, characters: Dict[str, Any]
@@ -485,6 +503,14 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
 
     #: 第二趟：摆机位。先 `frame_set(该镜首帧)` 再读角色的世界位置/朝向——
     #: 这是"机位瞄的是这一镜人在哪"唯一成立的地方。
+    #:
+    #: **顺序的状态机**（§七十三）：摆完一镜的机位，就量一次"这一镜的连线有没有
+    #: 扫过这台机位"——扫过且两人同框，观众就是**看见**了换位，之后的镜头换到另一侧。
+    #: 为什么要顺序（而不是像以前那样先算一张计划期的表）："换位看不看得见"的定义里
+    #: 有机位，而机位正是这里摆出来的；先摆再量，**一次走完就自洽**，不需要迭代
+    #: （会诊警告的固定点不收敛问题因此不存在）。
+    live_side: Optional[int] = None
+    spans: Dict[str, Any] = {}
     for shot in plan.shots:
         info = planned[shot.shot_id]
         start, end = int(info["start"]), int(info["end"])
@@ -499,7 +525,8 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         #: `axis_state` 这份纯函数给出（继承，只在**看得见的换位**处翻转）。
         #: 规则侧另有一条独立内容（"规范首镜线 vs 当前派生线"的偏差），
         #: 所以两边共用状态不等于自证。
-        placed_axis = _axis_for_placement(context, plan, cast_map, characters, shot)
+        placed_axis = _axis_for_placement(context, plan, cast_map, characters, shot,
+                                          live_side=live_side)
         bundle, solution, frame = place_shot_camera(shot, cast_map, spec,
                                                     axis=placed_axis,
                                                     entries=live_subject_entries(
@@ -515,6 +542,36 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             if len(speakers) == 2:
                 context.axis = establish_axis_from_speakers(speakers,
                                                            bundle.camera)
+                #: 轴线刚确立 ⇒ 顺序状态机从**它自己**的基准侧起步。
+                #: （实测教训：不初始化的话，第一次测到"扫过机位"之前会继续用计划期
+                #: 近似表，而那张表在 `long9` 的第 27 镜多翻了一次——两次翻转互相抵消，
+                #: 看着"没差别"，实际把 27–34 镜摆在了观众没看见过的另一侧。）
+                if live_side is None:
+                    live_side = int(context.axis.established_side)
+
+        #: 摆完了 ⇒ 量"这一镜的连线扫没扫过这台机位"（判定后续镜头待在哪一侧）。
+        if context.axis is not None:
+            if not spans:
+                spans = pair_spans(context.axis, plan,
+                                   _initial_cast_positions(context))
+            span = spans.get(str(shot.shot_id))
+            if span is not None:
+                camera_position = bundle.camera.matrix_world.translation
+                before_side = camera_side_of(span[0], span[1], camera_position)
+                after_side = camera_side_of(span[2], span[3], camera_position)
+                both_in_frame = len(
+                    [cid for cid in (shot.characters or [])
+                     if str(cid) in (context.axis.left_label,
+                                     context.axis.right_label)]) >= 2
+                if (both_in_frame and before_side != 0 and after_side != 0
+                        and before_side != after_side):
+                    current_side = (int(placed_axis.established_side)
+                                    if placed_axis is not None
+                                    else int(context.axis.established_side))
+                    live_side = -current_side
+                    shot_warnings.append(
+                        f"{shot.shot_id}: 连线扫过机位 ⇒ 观众看得见这次换位，"
+                        f"从下一镜起改到第 {live_side:+d} 侧")
 
         shot_warnings = list(solution.warnings) + list(info["warnings"])
         requests = info["requests"]

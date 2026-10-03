@@ -204,16 +204,30 @@ def _axis_sides(context) -> Dict[str, int]:
       不是更准的判据。所以真机位表只用于**报告分歧**（`_axis_sides_exact`）。
       证据 `docs/evidence/20261004-r001-v20/`，逐条见 §七十三。
     """
-    cached = getattr(context, "_axis_sides", None)
-    if cached is not None:
-        return cached
     base = getattr(context, "axis", None)
     plan = getattr(context, "plan", None)
     if base is None or plan is None:
         return {}
-    sides = axis_state(base, plan, _initial_positions(context))
-    context._axis_sides = sides
-    return sides
+    shots = list(getattr(plan, "shots", []) or [])
+    #: 构建器**实际用过**的表（顺序状态机，`shot_builder._axis_for_placement` 边摆边写）。
+    #: 相机是照它摆的，规则就该照它判——这才是"两张表"的正当关系。
+    used = dict(getattr(context, "_axis_sides_used", None) or {})
+    if used and len(used) >= len(shots):
+        cached = getattr(context, "_axis_sides", None)
+        if cached is not None:
+            return cached
+        sides = {name: int(side) for name, side in used.items()}
+        context._axis_sides = sides
+        return sides
+    planned = axis_state(base, plan, _initial_positions(context))
+    if not used:
+        context._axis_sides = planned
+        return planned
+    #: 还在建（只摆了前几镜）：用"已摆过的实际侧别 ＋ 其余的计划期近似"拼一份，
+    #: **不缓存**——否则第一镜的审核会把不完整的表钉死给后面所有镜头。
+    merged = dict(planned)
+    merged.update({name: int(side) for name, side in used.items()})
+    return merged
 
 
 def _axis_sides_exact(context) -> Dict[str, int]:

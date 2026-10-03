@@ -178,28 +178,18 @@ def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]],
     那时没有机位；相机建好之后，规则侧用真机位**重算并与计划期的表对拍**
     （`rule_checker._axis_sides`），于是近似不会变成没人复核的暗路。
     """
-    from .schedule import travelled_positions
-
     left, right = axis.left_label, axis.right_label
     if not left or not right:
         return {}
-    before = travelled_positions(plan, dict(initial))
-    direction = axis.direction
-    if direction == (0.0, 0.0):
+    if axis.direction == (0.0, 0.0):
         return {}
+    by_id = {str(shot.shot_id): shot for shot in (getattr(plan, "shots", []) or [])}
     out: Dict[str, CrossingEvent] = {}
-    previous_sign = 0
-    shots = list(getattr(plan, "shots", []) or [])
-    for index, shot in enumerate(shots):
-        shot_id = str(shot.shot_id)
-        start = before.get(shot_id) or {}
-        #: 这一镜**结束时**的位置 ≈ 下一镜开始时（接力函数的口径）。
-        following = before.get(str(shots[index + 1].shot_id)) if index + 1 < len(shots) else None
-        end = following or _after_own_walks(shot, start)
-        a_start, b_start = start.get(left), start.get(right)
-        a_end, b_end = end.get(left), end.get(right)
-        if not (a_start and b_start and a_end and b_end):
+    for shot_id, span in pair_spans(axis, plan, initial).items():
+        shot = by_id.get(shot_id)
+        if shot is None:
             continue
+        a_start, b_start, a_end, b_end = span
         #: 连线在这一镜里转了多少度（配对两点自己就是线，所以只能比**方向**）。
         rotated = _rotation_deg(a_start, b_start, a_end, b_end)
         #: 小于半度的差是数值噪声（走位精确停在目标上时仍会差一点点）。
@@ -222,6 +212,41 @@ def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]],
                 people=(left, right),
                 rotated_deg=rotated,
                 flip=flip)
+    return out
+
+
+def pair_spans(axis: Axis, plan,
+               initial: Dict[str, Sequence[float]]
+               ) -> Dict[str, Tuple[Sequence[float], Sequence[float],
+                                   Sequence[float], Sequence[float]]]:
+    """逐镜：配对两点在**这一镜开始/结束**时的位置（换位判据的原料）。
+
+    谁需要它（2026-10-04，§七十三的收尾）：构建器要**顺序**地判"这一镜的连线扫没
+    扫过刚摆好的机位"——那是决定后续镜头待在哪一侧的唯一正确依据（`rotated ≥ 90°`
+    是 50% 的猜）。放在这里而不是各写一遍，是因为"结束位置 ≈ 下一镜开始"这条接力
+    口径（`travelled_positions` ＋ `_after_own_walks`）只该有**一份**。
+    """
+    from .schedule import travelled_positions
+
+    left, right = axis.left_label, axis.right_label
+    if not left or not right:
+        return {}
+    before = travelled_positions(plan, dict(initial))
+    out: Dict[str, Tuple[Sequence[float], Sequence[float],
+                         Sequence[float], Sequence[float]]] = {}
+    shots = list(getattr(plan, "shots", []) or [])
+    for index, shot in enumerate(shots):
+        shot_id = str(shot.shot_id)
+        start = before.get(shot_id) or {}
+        #: 这一镜**结束时**的位置 ≈ 下一镜开始时（接力函数的口径）。
+        following = (before.get(str(shots[index + 1].shot_id))
+                     if index + 1 < len(shots) else None)
+        end = following or _after_own_walks(shot, start)
+        a_start, b_start = start.get(left), start.get(right)
+        a_end, b_end = end.get(left), end.get(right)
+        if not (a_start and b_start and a_end and b_end):
+            continue
+        out[shot_id] = (a_start, b_start, a_end, b_end)
     return out
 
 

@@ -303,10 +303,10 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-04 07:1x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-04 07:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
 ——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
-`python -m pytest` **1981 passed / 1 skipped**（主树；唯一那条 skip 是
+`python -m pytest` **1982 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
 `tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
@@ -315,9 +315,9 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-071137/`（探针 32 支全过、`python -m pytest`
-1981 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§七十三 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增十六节：
+且 pass。证据 `docs/evidence/20261004-073155/`（探针 32 支全过、`python -m pytest`
+1982 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§七十四 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增十七节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对
@@ -376,7 +376,16 @@ R001 由 13 条到 33 条，而**独立**的画面左右序判据只证实多报
 自指回路）。⇒ 判据仍按构建器的近似表（三个数一字不动），真机位表只用于**只报
 第一处**的分歧诊断（long9 38 镜、long11 3 镜、long12 0 镜）；**下一刀在构建器**
 （消掉分歧要"两遍法"固定点，先解决收敛性）。证据
-`docs/evidence/20261004-r001-v20/`。**
+`docs/evidence/20261004-r001-v20/`。§七十四 **把那把刀落了**：`cinema/axis.pair_spans`
+把"接力位置"收成一份，`shot_builder` 的摆机位循环改成**顺序状态机**——摆完一镜就量
+"连线扫没扫过这台机位"（两人同框才算看见），据此决定后续镜头待在哪一侧；规则改读
+构建器**实际用过**的表。**不变量**：构建器表 ＝ 真机位表，long9 的分歧由 38 镜归 **0**
+（long11 3 → 0、long12 0 → 0）；顺带 long9 逐镜通过由 28 到 **29**、R001 由 13 条到
+**11** 条、构图中位 78.55 → **79.6**（long11/long12 一个数没动）。差一点又错一次：
+第一版在"测到第一次扫过机位"前仍用近似表，而那张表在 long9 第 27 镜多翻一次、第 35
+镜翻回来，**两次抵消**——把 27–34 镜摆在了观众没看见过的另一侧；守门
+`the_builder_state_machine_is_camera_truthful` 的夹具会真的翻，不是空绿。证据
+`docs/evidence/20261004-r001-v21/`。**
 
 本轮把两条"§4.1b 写了、链上没有执行者"的判据补成了真的：**Q3 的负样本下界**
 `max(50, 0.25×query 数)`（在此之前"只写 1 条负样本"能让 0% 恒真地通过）与

@@ -27,6 +27,7 @@ from block_director.cinema.axis import (  # noqa: E402
     camera_side_of,
     crossing_events,
     drift_is_bridged,
+    pair_spans,
 )
 from block_director.contracts.plan import Plan, ShotPlan  # noqa: E402
 
@@ -64,6 +65,27 @@ def test_a_crossing_between_two_people_in_frame_is_marked_visible():
     assert list(events) == ["shot_002"]
     assert events["shot_002"].visible is True
     assert events["shot_002"].people == ("甲", "乙")
+
+
+def test_pair_spans_is_the_single_source_of_the_relay_positions():
+    """「接力位置」只有一份（§七十三 抽出来的 `pair_spans`）。
+
+    构建器要**顺序**地判"这一镜的连线扫没扫过刚摆好的机位"，它读的必须是事件表读的
+    同一份原料——"结束位置 ≈ 下一镜开始"这条口径各写一遍就一定会漂。
+    """
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲", "乙"), FLIP),
+                 _shot(3, ("甲", "乙")))
+    spans = pair_spans(AXIS, plan, INITIAL)
+    assert set(spans) == {"shot_001", "shot_002", "shot_003"}
+    a_start, b_start, _a_end, b_end = spans["shot_002"]
+    assert (float(a_start[0]), float(a_start[1])) == INITIAL["甲"][:2]
+    assert (float(b_start[0]), float(b_start[1])) == INITIAL["乙"][:2]
+    #: 这一镜结束时乙已经走到 FLIP 的目标点（接力口径）。
+    assert (round(float(b_end[0]), 3), round(float(b_end[1]), 3)) == (
+        round(FLIP[0], 3), round(FLIP[1], 3))
+    #: 事件表的键是它的子集（重构后仍然如此）。
+    assert set(crossing_events(AXIS, plan, INITIAL)) <= set(spans)
 
 
 def test_a_crossing_hidden_in_a_single_shows_up_as_not_visible():

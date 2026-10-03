@@ -508,6 +508,82 @@ def t_lead_room_shifts_single_subject_shots_only():
             "lead_room_notes": notes[:2]}
 
 
+def _sequential_axis_plan():
+    """三镜：第一镜确立轴线，第二镜里乙绕到另一侧并且**两人同框**（观众看得见）。"""
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    shots = [
+        ShotPlan.from_dict({
+            "shot_id": "shot_001", "order": 1, "intent": "确立轴线",
+            "shot_type": "MS", "duration_frames": 48,
+            "characters": ["char_001", "char_002"]}),
+        ShotPlan.from_dict({
+            "shot_id": "shot_002", "order": 2, "intent": "绕到另一侧",
+            "shot_type": "MS", "duration_frames": 48,
+            "characters": ["char_001", "char_002"],
+            "actions": [{"character_id": "char_002", "action_type": "walk_to",
+                         "start_frame": 1, "end_frame": 48,
+                         "target_position": [-1.6, 1.6, 0.0]}]}),
+        ShotPlan.from_dict({
+            "shot_id": "shot_003", "order": 3, "intent": "换位之后",
+            "shot_type": "MS", "duration_frames": 48,
+            "characters": ["char_001", "char_002"]}),
+    ]
+    return Plan(shots=shots, scene_heading="INT. 码头 - 日")
+
+
+def t_the_builder_state_machine_is_camera_truthful():
+    """**构建器摆完之后的侧别表，必须等于"用真机位算出来"的那张表**（§七十三 收尾）。
+
+    现场（2026-10-04）：构建器原来用"连线转角 ≥90°"**猜**换位，`long9` 上它猜出的表
+    与真机位表在 **38 镜**上不一致（其中 27 镜是画面左右序判据都证实不了的自指错误）。
+    修法是**顺序**：摆完一镜就量"连线扫没扫过这台机位"，再决定后续镜头待在哪一侧。
+    这条不变量正是那个修法：`_axis_sides_used`（构建器实际用的） == `axis_state(cameras=…)`
+    （真机位算的）。
+    """
+    from block_director.cinema.axis import axis_state
+    from block_director.contracts.cast import SceneSpec
+    from block_director.layer3_engine.scene_context import get_context
+    from block_director.layer3_engine.shot_builder import build_scene
+
+    fresh_scene()
+    plan = _sequential_axis_plan()
+    spec = SceneSpec.from_plan(plan)
+    build_scene(plan, spec, clear_scene=True)
+    context = get_context()
+    scene = bpy.context.scene
+    axis = context.axis
+    used = {name: int(side)
+            for name, side in (getattr(context, "_axis_sides_used", None) or {}).items()}
+    initial = {}
+    for member in spec.cast:
+        initial[str(member.id)] = tuple(member.initial_location)
+        if member.name:
+            initial[str(member.name)] = tuple(member.initial_location)
+    cameras = {}
+    restore = int(scene.frame_current)
+    for shot in plan.shots:
+        camera = context.camera_for(shot.shot_id)
+        if camera is None:
+            continue
+        start = int(context.schedule[shot.shot_id][0])
+        scene.frame_set(start)
+        bpy.context.view_layer.update()
+        position = camera.matrix_world.translation
+        cameras[str(shot.shot_id)] = (float(position.x), float(position.y),
+                                      float(position.z))
+    scene.frame_set(restore)
+    bpy.context.view_layer.update()
+    truthful = axis_state(axis, plan, initial, cameras) if axis is not None else {}
+    common = sorted(set(used) & set(truthful))
+    mismatched = [name for name in common if used[name] != truthful[name]]
+    return {"ok": bool(common) and not mismatched,
+            "shots_with_a_side": len(common),
+            "mismatched": mismatched,
+            "used": used,
+            "camera_truth": {name: truthful[name] for name in common}}
+
+
 def main() -> int:
     capture_main_thread()
     check("axis_established_and_enforced", t_axis_established_and_enforced)
@@ -525,6 +601,8 @@ def main() -> int:
           t_r003_is_scoped_to_the_shot_being_audited)
     check("lead_room_shifts_single_subject_shots_only",
           t_lead_room_shifts_single_subject_shots_only)
+    check("the_builder_state_machine_is_camera_truthful",
+          t_the_builder_state_machine_is_camera_truthful)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
