@@ -53,6 +53,7 @@ from block_director.knowledge.cases import (  # noqa: E402
     CASE_TYPES,
     CONSTRAINT_KEYS,
 )
+from block_director.knowledge import cases as block_cases  # noqa: E402
 from tools.kb_fetch import common  # noqa: E402
 
 INPUT = common.WORK / "licensed.jsonl"
@@ -77,6 +78,18 @@ SENTENCES_PER_SEGMENT = 3
 #: 被裁掉的条数进 `quota_truncated`（实测 1710），账目照记。
 DEFAULT_MAX_CASES = 810
 DEFAULT_PER_SOURCE = 40
+
+#: **分片**（2026-10-04）：体积门是"**单文件** ≤ 512 KB、**总量** ≤ 20 MB"，
+#: 不是"整库只有一份文件"——`knowledge/cards_generated/` 本来就是"一域一份"。
+#: 案例层把它读成"整库塞一份 `cases.jsonl`"，于是配额被迫按单文件反推
+#: （`DEFAULT_MAX_CASES = 810`）⇒ 供给被掐掉九成（`raw_segments = 10463` 只收 810），
+#: 而那 810 条里只有**一个**来源产出过面板判 ≥4 的案例
+#: （`docs/evidence/20261004-e1-vocab/`）。分片之后每片仍 ≤ 512 KB、总量仍 ≤ 20 MB，
+#: **一个字都没放宽**，只是把"一份文件"换成"一份索引"。
+#: 每片目标取门的 93%，给"最后一行还塞得进"留余量（硬判据仍是 512 KB）。
+SHARD_TARGET_BYTES = int(MAX_CASE_FILE_BYTES * 0.93)
+#: 总量门（与卡片同口径，§2.3c）。
+MAX_INDEX_TOTAL_BYTES = 20 * 1024 * 1024
 
 #: 有序镜序套路的节拍词 → §2.3d T3 的 ``beat_type`` 取值（**不得自造**）。
 #: 词表按**领域同义词**放宽（"正反打/过肩/对切"都是 coverage，"淡出/叠化"都是
@@ -800,12 +813,61 @@ def evaluate(cases: Sequence[Dict], report: Dict) -> Dict:
     return {"passed": not problems, "problems": problems[:20]}
 
 
-def size_gate(cases_path: pathlib.Path, manifest_path: pathlib.Path) -> Dict:
-    sizes = {path.name: path.stat().st_size
-             for path in (cases_path, manifest_path) if path.is_file()}
+def size_gate(paths: Sequence[pathlib.Path]) -> Dict:
+    """§2.3c 的入库体积门：**每一份** ≤ 512 KB、**总量** ≤ 20 MB。
+
+    分片之后判据是逐片判（`oversize` 里点名哪一片超了），不再是"整库只有一份文件"。
+    """
+    files = [pathlib.Path(path) for path in paths if pathlib.Path(path).is_file()]
+    sizes = {path.name: path.stat().st_size for path in files}
     oversize = {name: size for name, size in sizes.items()
-                if name == cases_path.name and size > MAX_CASE_FILE_BYTES}
-    return {"sizes": sizes, "oversize": oversize, "passed": not oversize}
+                if size > MAX_CASE_FILE_BYTES}
+    total = sum(sizes.values())
+    return {"sizes": sizes, "oversize": oversize, "total_bytes": total,
+            "total_gate": MAX_INDEX_TOTAL_BYTES,
+            "passed": not oversize and total <= MAX_INDEX_TOTAL_BYTES}
+
+
+def plan_shards(cases: Sequence[Dict], *,
+                target_bytes: int = SHARD_TARGET_BYTES) -> List[List[Dict]]:
+    """把案例切成**有序的若干片**：贪心装片，装不下就换片。
+
+    **确定性**：同一个 `cases` 序列永远得到同一组分片（顺序固定、切点固定）。
+    切点只在**行边界**上，所以"把各片按序拼起来" 与 "整整一份单文件" 的**字节
+    逐字相同**（守门见 `tests/test_cases_corpus.py` 的分片用例）——分片只是同一份
+    索引的切法，不是另一种编码。
+    """
+    shards: List[List[Dict]] = []
+    current: List[Dict] = []
+    used = 0
+    for row in cases:
+        size = len((json.dumps(row, ensure_ascii=False) + "\n").encode("utf-8"))
+        if current and used + size > int(target_bytes):
+            shards.append(current)
+            current, used = [], 0
+        current.append(row)
+        used += size
+    if current:
+        shards.append(current)
+    return shards
+
+
+def write_shards(cases: Sequence[Dict], out_dir: pathlib.Path, *,
+                 target_bytes: int = SHARD_TARGET_BYTES) -> Dict:
+    """把案例写成分片 `<out_dir>/cases/part-NNN.jsonl`，返回分片账目。"""
+    shard_dir = pathlib.Path(out_dir) / "cases"
+    shard_dir.mkdir(parents=True, exist_ok=True)
+    #: 先清掉旧分片：`--max-cases` 调小之后，残留的高号分片会让索引**多出**案例。
+    for stale in shard_dir.glob("part-*.jsonl"):
+        stale.unlink()
+    info: List[Dict] = []
+    for index, shard in enumerate(plan_shards(cases, target_bytes=target_bytes)):
+        path = shard_dir / f"part-{index:03d}.jsonl"
+        common.write_jsonl(path, shard)
+        info.append({"name": f"cases/{path.name}", "bytes": path.stat().st_size,
+                     "cases": len(shard)})
+    return {"shards": info, "cases": sum(item["cases"] for item in info),
+            "shard_target_bytes": int(target_bytes)}
 
 
 def _cards_digest() -> str:
@@ -820,9 +882,25 @@ def _cards_digest() -> str:
 
 
 def write_outputs(cases: Sequence[Dict], report: Dict, *, docs: Sequence[Dict],
-                  out_cases: pathlib.Path = CASES_PATH,
-                  out_manifest: pathlib.Path = MANIFEST_PATH) -> Dict:
-    common.write_jsonl(out_cases, cases)
+                  out_dir: pathlib.Path = common.KNOWLEDGE,
+                  out_manifest: Optional[pathlib.Path] = None,
+                  single_file: Optional[pathlib.Path] = None) -> Dict:
+    """写产物。默认写**分片**（`<out_dir>/cases/part-*.jsonl` ＋ manifest）。
+
+    `single_file` 是**旧布局的显式逃生门**（给"就想要一份 jsonl"的调用方）：
+    给了它就不再分片，体积门照旧逐文件判。
+    """
+    out_dir = pathlib.Path(out_dir)
+    if single_file is not None:
+        common.write_jsonl(pathlib.Path(single_file), cases)
+        artifacts = [pathlib.Path(single_file)]
+        shard_report: Dict = {}
+    else:
+        shard_report = write_shards(cases, out_dir)
+        artifacts = [out_dir / "cases" / pathlib.Path(item["name"]).name
+                     for item in shard_report["shards"]]
+    manifest_path = pathlib.Path(out_manifest) if out_manifest is not None \
+        else out_dir / "cases.manifest.json"
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "template_version": TEMPLATE_VERSION,
@@ -842,18 +920,23 @@ def write_outputs(cases: Sequence[Dict], report: Dict, *, docs: Sequence[Dict],
         "cards_sha256": _cards_digest(),
         "fingerprint": case_fingerprint(docs),
         **report,
+        **shard_report,
     }
-    common.dump_json(out_manifest, manifest)
-    manifest["size_gate"] = size_gate(out_cases, out_manifest)
-    common.dump_json(out_manifest, {**manifest})
+    common.dump_json(manifest_path, manifest)
+    manifest["size_gate"] = size_gate([*artifacts, manifest_path])
+    common.dump_json(manifest_path, {**manifest})
     return manifest
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="kb_fetch.build_cases")
     parser.add_argument("--input", default=str(INPUT))
-    parser.add_argument("--out-cases", default=str(CASES_PATH))
-    parser.add_argument("--out-manifest", default=str(MANIFEST_PATH))
+    parser.add_argument("--out-dir", default=str(common.KNOWLEDGE),
+                        help="索引目录：分片写进 <out-dir>/cases/part-*.jsonl，"
+                             "manifest 写进 <out-dir>/cases.manifest.json")
+    parser.add_argument("--out-cases", default="",
+                        help="旧布局的显式逃生门：给一份 jsonl 路径就不再分片")
+    parser.add_argument("--out-manifest", default="")
     parser.add_argument("--max-cases", type=int, default=DEFAULT_MAX_CASES)
     parser.add_argument("--per-source", type=int, default=DEFAULT_PER_SOURCE)
     parser.add_argument("--check", action="store_true",
@@ -865,6 +948,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(json.dumps({"error": f"缺许可语料 {source}（先跑 tools/kb_fetch 的前六步）"},
                          ensure_ascii=False))
         return 1
+    out_dir = pathlib.Path(args.out_dir)
+    single = pathlib.Path(args.out_cases) if args.out_cases else None
+    manifest_path = pathlib.Path(args.out_manifest) if args.out_manifest else \
+        out_dir / "cases.manifest.json"
     docs = common.read_jsonl(source)
     cases, rejected, report = build_cases(docs, max_cases=args.max_cases,
                                           per_source=args.per_source)
@@ -874,9 +961,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                "passed": verdict["passed"], "problems": verdict["problems"]}
 
     if args.check:
-        current = common.read_jsonl(pathlib.Path(args.out_cases))
+        target = single if single is not None else out_dir
+        current = [row.to_dict() for row in
+                   block_cases.read_cases(target)] if single is None else \
+            common.read_jsonl(single)
         same_cases = current == cases
-        manifest_path = pathlib.Path(args.out_manifest)
         same_manifest = (manifest_path.is_file()
                          and json.loads(manifest_path.read_text(encoding="utf-8"))
                          .get("fingerprint") == case_fingerprint(docs))
@@ -884,9 +973,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(json.dumps(payload, ensure_ascii=False))
         return 0 if (verdict["passed"] and same_cases and same_manifest) else 1
 
-    manifest = write_outputs(cases, report, docs=docs,
-                             out_cases=pathlib.Path(args.out_cases),
-                             out_manifest=pathlib.Path(args.out_manifest))
+    manifest = write_outputs(cases, report, docs=docs, out_dir=out_dir,
+                             out_manifest=manifest_path, single_file=single)
     payload["size_gate"] = manifest["size_gate"]
     payload["passed"] = bool(verdict["passed"] and manifest["size_gate"]["passed"])
     if not payload["passed"]:

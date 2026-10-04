@@ -359,12 +359,28 @@
   },
   "enumerations_in_corpus": 2,
   "min_cases": 300,
+  "shards": [
+    {
+      "name": "cases/part-000.jsonl",
+      "bytes": 487482,
+      "cases": 791
+    },
+    {
+      "name": "cases/part-001.jsonl",
+      "bytes": 11507,
+      "cases": 19
+    }
+  ],
+  "shard_target_bytes": 487587,
   "size_gate": {
     "sizes": {
-      "cases.jsonl": 498989,
-      "cases.manifest.json": 9457
+      "part-000.jsonl": 487482,
+      "part-001.jsonl": 11507,
+      "cases.manifest.json": 9691
     },
     "oversize": {},
+    "total_bytes": 508680,
+    "total_gate": 20971520,
     "passed": true
   }
 }

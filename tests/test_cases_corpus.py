@@ -18,11 +18,15 @@ from block_director.knowledge.cases import (
     CASE_TYPES,
     CONSTRAINT_KEYS,
 )
+from block_director.knowledge import cases as case_index
 from tools.kb_fetch import build_cases as builder
 from tools.kb_fetch import common
 
 ROOT = Path(__file__).resolve().parents[1]
-CASES_PATH = ROOT / "knowledge" / "cases.jsonl"
+#: 案例索引是**分片**布局（`knowledge/cases/part-*.jsonl`）：判据读的是**索引目录**，
+#: 由 `read_cases()` 认分片（也认旧的单文件）。页面上仍写 `knowledge/cases.jsonl`
+#: 的地方都在说"这一份索引"，不是"这一份文件"。
+CASES_PATH = ROOT / "knowledge"
 MANIFEST_PATH = ROOT / "knowledge" / "cases.manifest.json"
 NOTES_DIR = ROOT / "knowledge" / "source_notes"
 
@@ -31,8 +35,7 @@ MIN_CASES = 300
 
 
 def _rows() -> list:
-    return [json.loads(line) for line in
-            CASES_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return [row.to_dict() for row in case_index.read_cases(CASES_PATH)]
 
 
 def test_the_committed_cases_come_from_the_committed_corpus():
@@ -388,3 +391,111 @@ def test_prose_sequence_pattern_rejects_order_free_enumeration():
     # 同理：只提到一个节拍不算。
     single = "First, the director opens on an establishing shot of the whole street."
     assert bc.prose_sequence_pattern_of(single) == []
+
+
+# --------------------------------------------------------------------------- #
+# **分片布局**（2026-10-04）。为什么这一组必须存在：体积门是"**单文件** ≤ 512 KB、
+# **总量** ≤ 20 MB"，不是"整库只有一份文件"——`knowledge/cards_generated/` 本来就是
+# "一域一份"。案例层把整库塞进一份 `cases.jsonl`，于是配额被迫按单文件反推
+# （`DEFAULT_MAX_CASES = 810`，实测 499 KB），供给被掐掉九成
+# （`raw_segments = 10463` 只收 810，`quota_truncated = 9376`）。
+# 分片解掉的是那个**隐含**约束，一个门都没放宽：每片 ≤ 512 KB、总量 ≤ 20 MB。
+# --------------------------------------------------------------------------- #
+
+
+def _probe_rows(count: int = 8) -> list:
+    """合成案例行：分片用例只关心"整库有多大、切点落在哪"，不必跑语料构建。
+
+    直接用行（而不是 `build_cases()`）是刻意的：语料层有 SimHash 近重复门，
+    为它造"内容真的不同"的正文会把这条用例变成语料层的测试。这里要测的是**切法**。
+    """
+    rows = []
+    for index in range(count):
+        rows.append({
+            "case_id": f"case_probe_{index:03d}", "case_type": "narrative",
+            "title": f"标题 {index}",
+            #: 每行 ~300 B，8 行 ≈ 2.4 KB —— 用 `target_bytes=900` 就能切出多片。
+            "excerpt": f"第 {index} 条：逆光勾边与浅景深在同一个镜头里互相打架。"
+                       "轮廓光要压在背景上方两档，对焦点落在近眼。",
+            "beat_sequence": [],
+            "source_ref": {
+                "url": f"https://example.org/probe-{index}", "title": f"来源 {index}",
+                "author": "作者", "license": "PublicDomain",
+                "retrieved_at": "2026-01-01",
+                "sha256": f"{index:064d}",
+            },
+            "score": 0.0,
+        })
+    return rows
+
+
+def _probe_report(rows: list) -> dict:
+    return {"cases": len(rows), "raw_segments": len(rows), "quota_truncated": 0,
+            "duplicates": 0, "rejects": 0, "reject_ratio": 0.0,
+            "per_type": {"narrative": len(rows)}, "per_domain": {"storyboard": len(rows)},
+            "per_source": {f"probe-{index}": 1 for index in range(len(rows))},
+            "segments_total": len(rows), "enumerations_in_corpus": 1, "min_cases": 1}
+
+
+def test_the_sharded_layout_is_a_byte_faithful_split(tmp_path):
+    """分片**只是同一份索引的切法**：各片按序拼接 == 一份单文件的字节。"""
+    from block_director.knowledge import cases as C
+
+    cases = _probe_rows()
+    report = _probe_report(cases)
+    assert len(cases) >= 4, "夹具太小，量不出切点"
+    #: 切点必须**只落在行边界**，且同一个输入得到同一组分片。
+    assert builder.plan_shards(cases, target_bytes=900) == \
+        builder.plan_shards(cases, target_bytes=900)
+    assert len(builder.plan_shards(cases, target_bytes=900)) >= 2
+
+    out = tmp_path / "knowledge"
+    manifest = builder.write_outputs(cases, report, docs=[], out_dir=out,
+                                     out_manifest=out / "cases.manifest.json",
+                                     )
+    shards = C.case_paths(out)
+    assert shards, "分片布局没落地"
+    for path in shards:
+        assert path.stat().st_size <= builder.MAX_CASE_FILE_BYTES, path
+    joined = b"".join(path.read_bytes() for path in shards)
+    reference = "".join(json.dumps(row, ensure_ascii=False) + "\n"
+                        for row in cases).encode("utf-8")
+    assert joined == reference, "分片拼接后与单文件不是同一份字节"
+    assert [row.to_dict() for row in C.read_cases(out)] == cases
+    assert manifest["size_gate"]["passed"], manifest["size_gate"]
+    sizes = manifest["size_gate"]["sizes"]
+    assert sum(size for name, size in sizes.items()
+               if name != "cases.manifest.json") == len(joined)
+    #: 分片账目与目录里真实的文件一一对应（否则"入库了几片"没人对得上）。
+    assert sorted(item["name"] for item in manifest["shards"]) == \
+        sorted(f"cases/{path.name}" for path in shards)
+
+
+def test_the_clue_shards_round_trip_through_the_consumer(tmp_path):
+    """线索也分片，且**消费者按同一口径**读得回来（代际摘要不因分片而变）。"""
+    from block_director.knowledge import cases as C
+    from tools.kb_fetch import case_search_zh as ZH
+
+    cases = _probe_rows()
+    report = _probe_report(cases)
+    out = tmp_path / "knowledge"
+    builder.write_outputs(cases, report, docs=[], out_dir=out,
+                          out_manifest=out / "cases.manifest.json")
+    digest = ZH.cases_digest(out)
+    rows = [{"case_id": row["case_id"], "zh": "镜头缓缓推近市场摊位的货物细节",
+             "cases_sha256": digest, "model": "stub", "family": "zhipu",
+             "prompt_sha256": "0" * 64} for row in cases]
+    assert ZH.write_lines(out / "cases", rows)["files"]
+    lines, reason = C.read_search_zh(out, out)
+    assert reason == "", reason
+    assert set(lines) == {row["case_id"] for row in cases}
+    #: 分片线索与旧布局的单文件线索**同代**（摘要口径相同）。
+    assert digest == C.cases_digest(C.case_paths(out))
+    #: 拿旧布局的入参（一份 jsonl）也读得回来。
+    single = tmp_path / "legacy.jsonl"
+    single.write_text(joined_text := "".join(
+        json.dumps(row, ensure_ascii=False) + "\n" for row in cases), encoding="utf-8")
+    (tmp_path / "knowledge2").mkdir()
+    (tmp_path / "knowledge2" / "cases.jsonl").write_text(joined_text, encoding="utf-8")
+    legacy_digest = ZH.cases_digest(tmp_path / "knowledge2" / "cases.jsonl")
+    assert legacy_digest == C.cases_digest(C.case_paths(tmp_path / "knowledge2"))

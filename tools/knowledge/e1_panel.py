@@ -30,6 +30,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import pathlib
@@ -49,6 +50,10 @@ from tools.kb_fetch import llm  # noqa: E402
 DEFAULT_PANEL = ("deepseek-chat", "glm-5.3")
 DEFAULT_FAMILIES = ("deepseek", "glm")
 RELEVANT = 4.0
+#: 判分是**逐查询独立**的，所以并发只改吞吐、不改产物（行序仍按查询序）。
+#: 默认 4：实测串行跑一次 64 查询 × 2 模型要一小时以上，通道就没法复算了；
+#: 4 是"比串行快得多、又不至于把上游打成 429"的折中（429 由客户端长退避兜底）。
+DEFAULT_WORKERS = 4
 
 SYSTEM = (
     "你是分镜预演工具的知识检索复核员。下面给你一条**导演查询串**和若干条被检索回来的"
@@ -102,39 +107,59 @@ def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
     return out
 
 
-def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
-                  top_k: int = 3) -> List[Dict[str, Any]]:
-    """跑一遍打分。**纯函数式**：索引与客户端都由调用方注入，因此可离线测。"""
+def _score_one(index, query: str, clients: Sequence[tuple],
+               top_k: int) -> List[Dict[str, Any]]:
+    """一条查询的打分行（逐镜）。失败侧在 `scores` 里留 ``None``，不写成 1 分。"""
     rows: List[Dict[str, Any]] = []
-    for query in queries:
-        cases = index.retrieve(query, top_k=top_k)
-        if not cases:
+    cases = index.retrieve(query, top_k=top_k)
+    if not cases:
+        return rows
+    verdicts: Dict[str, Dict[str, Any]] = {}
+    for name, client in clients:
+        try:
+            verdicts[name] = judge(client, query, cases)
+        except Exception as exc:  # noqa: BLE001 — 单条失败不吞掉整批
+            verdicts[name] = {"__error__": f"{type(exc).__name__}: {exc}"[:120]}
+    for case in cases:
+        scores = [verdicts.get(name, {}).get(str(case.case_id), {}).get("score")
+                  for name, _client in clients]
+        numbers = [float(s) for s in scores if isinstance(s, (int, float))]
+        if not numbers:
             continue
-        verdicts: Dict[str, Dict[str, Any]] = {}
-        for name, client in clients:
-            try:
-                verdicts[name] = judge(client, query, cases)
-            except Exception as exc:  # noqa: BLE001 — 单条失败不吞掉整批
-                verdicts[name] = {"__error__": f"{type(exc).__name__}: {exc}"[:120]}
-        for case in cases:
-            scores = [verdicts.get(name, {}).get(str(case.case_id), {}).get("score")
-                      for name, _client in clients]
-            numbers = [float(s) for s in scores if isinstance(s, (int, float))]
-            if not numbers:
-                continue
-            rows.append({
-                "case_id": str(case.case_id), "query": query,
-                "zh": str(getattr(index, "search_zh", {}).get(str(case.case_id), "")),
-                "excerpt": str(getattr(case, "excerpt", "") or "")[:200],
-                "scores": scores,
-                "score": sum(numbers) / len(numbers),
-                "reviewed_by": "llm-panel",
-                #: `quality.e1_evidence_is_stale` 要求每条自带**这一份**索引的指纹。
-                "cases_fingerprint": str(getattr(index, "fingerprint", "") or ""),
-                "panel": [name for name, _client in clients],
-                "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
-            })
+        rows.append({
+            "case_id": str(case.case_id), "query": query,
+            "zh": str(getattr(index, "search_zh", {}).get(str(case.case_id), "")),
+            "excerpt": str(getattr(case, "excerpt", "") or "")[:200],
+            "scores": scores,
+            "score": sum(numbers) / len(numbers),
+            "reviewed_by": "llm-panel",
+            #: `quality.e1_evidence_is_stale` 要求每条自带**这一份**索引的指纹。
+            "cases_fingerprint": str(getattr(index, "fingerprint", "") or ""),
+            "panel": [name for name, _client in clients],
+            "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
+        })
     return rows
+
+
+def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
+                  top_k: int = 3, workers: int = DEFAULT_WORKERS
+                  ) -> List[Dict[str, Any]]:
+    """跑一遍打分。**纯函数式**：索引与客户端都由调用方注入，因此可离线测。
+
+    `workers` 只改**吞吐**，不改判据、不改产物形状：判分是**逐查询独立**的，
+    汇总仍是"查询序 × 该查询的案例序"，所以并发与否得到**同序同内容的行**。
+    为什么需要它（2026-10-04 实测）：一次 64 条查询 × 两条模型 = 128 次调用，
+    串行跑（其中一条是"始终思考"的 `glm-5.3`）实测要一小时以上——那种通道既没法
+    迭代，也没法在换代之后重测。守门见 `tests/test_e1_panel.py` 的
+    "串行与并发产出逐行相同"。
+    """
+    if int(workers) > 1 and len(queries) > 1:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=int(workers)) as pool:
+            batches = list(pool.map(
+                lambda query: _score_one(index, query, clients, top_k), queries))
+        return [row for batch in batches for row in batch]
+    return [row for query in queries
+            for row in _score_one(index, query, clients, top_k)]
 
 
 def summarise(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
@@ -156,6 +181,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--scripted", default="",
                         help="离线桩（`llm` 的 scripted 后端）；给了就完全不碰网络")
     parser.add_argument("--limit", type=int, default=0, help="0 = 全部")
+    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS,
+                        help="并发判分的查询条数（只改吞吐，不改判据与产物形状）")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
@@ -187,7 +214,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             client = llm.make_client(families[position], name)
         clients.append((name, client))
 
-    rows = score_queries(index, queries, clients, top_k=args.top_k)
+    rows = score_queries(index, queries, clients, top_k=args.top_k,
+                         workers=args.workers)
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n"

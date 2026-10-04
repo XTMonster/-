@@ -1,0 +1,197 @@
+{
+  "cases_dir": "E:\\白模预演codex\\knowledge",
+  "cases": 810,
+  "clues": 739,
+  "queries": 64,
+  "mentions": 309,
+  "mentions_without_any_clue_word": 153,
+  "coverage": {
+    "景别/远景": {
+      "queries": 12,
+      "clues": 1
+    },
+    "景别/全景": {
+      "queries": 7,
+      "clues": 4
+    },
+    "景别/中远景": {
+      "queries": 8,
+      "clues": 0
+    },
+    "景别/中景": {
+      "queries": 32,
+      "clues": 4
+    },
+    "景别/中近景": {
+      "queries": 16,
+      "clues": 4
+    },
+    "景别/近景": {
+      "queries": 19,
+      "clues": 5
+    },
+    "景别/特写": {
+      "queries": 17,
+      "clues": 16
+    },
+    "景别/过肩": {
+      "queries": 1,
+      "clues": 5
+    },
+    "运镜/推镜": {
+      "queries": 2,
+      "clues": 1
+    },
+    "运镜/拉镜": {
+      "queries": 1,
+      "clues": 2
+    },
+    "运镜/升降": {
+      "queries": 2,
+      "clues": 0
+    },
+    "运镜/手持": {
+      "queries": 5,
+      "clues": 4
+    },
+    "运镜/固定机位": {
+      "queries": 31,
+      "clues": 0
+    },
+    "运镜/稳定器": {
+      "queries": 1,
+      "clues": 1
+    },
+    "运镜/空镜": {
+      "queries": 1,
+      "clues": 0
+    },
+    "光线/侧光": {
+      "queries": 11,
+      "clues": 0
+    },
+    "光线/逆光": {
+      "queries": 15,
+      "clues": 0
+    },
+    "光线/顶光": {
+      "queries": 1,
+      "clues": 0
+    },
+    "光线/硬光": {
+      "queries": 5,
+      "clues": 0
+    },
+    "光线/轮廓光": {
+      "queries": 1,
+      "clues": 0
+    },
+    "构图/三分": {
+      "queries": 5,
+      "clues": 6
+    },
+    "构图/居中": {
+      "queries": 1,
+      "clues": 0
+    },
+    "构图/留白": {
+      "queries": 11,
+      "clues": 0
+    },
+    "构图/前景": {
+      "queries": 5,
+      "clues": 3
+    },
+    "构图/后景": {
+      "queries": 1,
+      "clues": 0
+    },
+    "构图/景深": {
+      "queries": 23,
+      "clues": 0
+    },
+    "构图/浅景深": {
+      "queries": 19,
+      "clues": 0
+    },
+    "轴线/轴线": {
+      "queries": 20,
+      "clues": 1
+    },
+    "轴线/越轴": {
+      "queries": 15,
+      "clues": 0
+    },
+    "轴线/银幕方向": {
+      "queries": 4,
+      "clues": 0
+    },
+    "轴线/180 度": {
+      "queries": 1,
+      "clues": 0
+    },
+    "剪辑/跳切": {
+      "queries": 2,
+      "clues": 2
+    },
+    "剪辑/切出": {
+      "queries": 1,
+      "clues": 2
+    },
+    "剪辑/切入": {
+      "queries": 2,
+      "clues": 0
+    },
+    "走位/走位": {
+      "queries": 1,
+      "clues": 2
+    },
+    "走位/调度": {
+      "queries": 1,
+      "clues": 54
+    },
+    "走位/交错": {
+      "queries": 1,
+      "clues": 0
+    },
+    "走位/入画": {
+      "queries": 8,
+      "clues": 1
+    }
+  },
+  "missing_by_group": {
+    "景别": [
+      "中远景(8)"
+    ],
+    "运镜": [
+      "升降(2)",
+      "固定机位(31)",
+      "空镜(1)"
+    ],
+    "光线": [
+      "侧光(11)",
+      "逆光(15)",
+      "顶光(1)",
+      "硬光(5)",
+      "轮廓光(1)"
+    ],
+    "构图": [
+      "居中(1)",
+      "留白(11)",
+      "后景(1)",
+      "景深(23)",
+      "浅景深(19)"
+    ],
+    "轴线": [
+      "越轴(15)",
+      "银幕方向(4)",
+      "180 度(1)"
+    ],
+    "剪辑": [
+      "切入(2)"
+    ],
+    "走位": [
+      "交错(1)"
+    ]
+  }
+}

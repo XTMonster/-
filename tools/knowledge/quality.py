@@ -21,7 +21,7 @@
 用法::
 
   python tools/knowledge/quality.py --run-id 20260930-060000
-  python tools/knowledge/quality.py --cases knowledge/cases.jsonl \
+python tools/knowledge/quality.py --cases knowledge \
       --shots <run>/export/shots.json --audit-log <run>/audit_log.jsonl
 
 Q5 的运行侧**只认 `audit_log.jsonl` 里真实发出的逐镜查询**（§4.1b 硬规则 2；
@@ -42,6 +42,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from block_director.knowledge.cases import (  # noqa: E402
+    case_paths,
     manifest_fingerprint,
     read_cases,
 )
@@ -181,7 +182,7 @@ def run_evidence_is_stale(payload: Any, *, manifest_path=None,
     #: 它本来就没有指纹，不是"过期"。只要这次运行装了案例层，指纹就必须对上。
     if str(info.get("cases_backend") or "") != "off":
         recorded_cases = str(info.get("cases_index_fingerprint") or "")
-        live_cases = (manifest_fingerprint(Path(cases_path).parent)
+        live_cases = (manifest_fingerprint(_cases_index_dir(cases_path))
                       if cases_path else "")
         if not recorded_cases:
             reasons.append("运行证据里没有 knowledge.cases_index_fingerprint："
@@ -620,15 +621,15 @@ def e3_cases(cases_path: Optional[Path]) -> Dict[str, Any]:
     `bad` 为空 → 旧实现判 PASS，而它的分母正是 0 —— 和 L2 侧的 E3 是同一种
     空集通过（§4.1b 硬规则 1）。"没有越权案例"与"没有案例可查"必须分开。
     """
-    if cases_path is None or not Path(cases_path).is_file():
+    if cases_path is None or not (Path(cases_path).is_file()
+                                 or Path(cases_path).is_dir()):
         return {"id": "E3_cases", "status": NA,
-                "note": "没有 knowledge/cases.jsonl：L3 侧无证据"}
-    rows = [json.loads(line) for line in Path(cases_path).read_text(
-        encoding="utf-8").split("\n") if line.strip()]
+                "note": "没有 knowledge/cases（分片）或 cases.jsonl：L3 侧无证据"}
+    rows = _raw_case_rows(Path(cases_path))
     if not rows:
         return {"id": "E3_cases", "status": FAIL,
                 "numerator": 0, "denominator": 0, "line": 0,
-                "note": "cases.jsonl 存在但为空：分母为 0，按 §4.1b 判失败"
+                "note": "案例索引存在但为空：分母为 0，按 §4.1b 判失败"
                         "（不得当成'没有越权案例'）"}
     bad = [row.get("case_id") for row in rows
            if any(key in row for key in ("forbid", "forbids", "constraint"))]
@@ -679,6 +680,35 @@ def e2_adoption(shots_path: Optional[Path], *, manifest_path=None,
     return detail
 
 
+def _cases_index_dir(cases_path: Any) -> Path:
+    """`--cases` 的**索引目录**：入参是目录（分片布局）就是它自己，是一份 jsonl 就是它的父目录。
+
+    为什么需要这一条（2026-10-04）：案例索引改成**分片**之后，`--cases` 的自然写法
+    是索引目录（`knowledge/`）。而旧实现一路用 `Path(cases_path).parent` 找
+    `cases.manifest.json` —— 传目录时那个 `parent` 会指到**仓库根**，于是
+    "同代性"检查会静默读不到指纹（进而把现行证据误判成 stale）。
+    """
+    path = Path(cases_path)
+    return path if path.is_dir() else path.parent
+
+
+def _raw_case_rows(cases_path: Path) -> List[Dict[str, Any]]:
+    """案例的**原始行**（不经过 `Case` DTO）。
+
+    `E3_cases` 扫的是"这一行里有没有 `forbid`/`constraint` 这类约束字段"——
+    过一遍 DTO 会**把未知键丢掉**，而那正是它要抓的东西（`Case` 本来就没有
+    `forbid` 字段，这是 E3 的机制保证）。所以这条判据必须读原始行；
+    分片布局下按 `case_paths` 逐片读。
+    """
+    paths = case_paths(cases_path) if cases_path.is_dir() else [cases_path]
+    rows: List[Dict[str, Any]] = []
+    for path in paths:
+        for line in path.read_text(encoding="utf-8").split("\n"):
+            if line.strip():
+                rows.append(json.loads(line))
+    return rows
+
+
 def e1_evidence_is_stale(rows: List[Dict[str, Any]],
                          cases_path: Optional[Path]) -> List[str]:
     """这批打分**能不能用来量当前案例索引**？返回不能用的具名理由。
@@ -702,7 +732,7 @@ def e1_evidence_is_stale(rows: List[Dict[str, Any]],
     if cases_path is None:
         return ["没有给出案例索引（--cases）：无法证明这批打分覆盖的是当前语料"]
     cases_path = Path(cases_path)
-    if not cases_path.is_file():
+    if not (cases_path.is_file() or cases_path.is_dir()):
         return [f"案例索引 {cases_path} 不存在：无法证明打分覆盖的是当前语料"]
     try:
         live = {str(case.case_id) for case in read_cases(cases_path)}
@@ -711,7 +741,7 @@ def e1_evidence_is_stale(rows: List[Dict[str, Any]],
     if not live:
         return [f"案例索引 {cases_path} 一条案例都没有：分母无意义"]
 
-    fingerprint = manifest_fingerprint(cases_path.parent)
+    fingerprint = manifest_fingerprint(_cases_index_dir(cases_path))
     reasons: List[str] = []
     gone = [str(row.get("case_id")) for row in rows
             if str(row.get("case_id")) not in live]
@@ -870,7 +900,9 @@ def main(argv=None) -> int:
     parser.add_argument("--edges", default="knowledge/hypergraph.edges.jsonl")
     parser.add_argument("--manifest", default="knowledge/hypergraph.manifest.json")
     parser.add_argument("--rejects", default="knowledge/hypergraph.rejects.jsonl")
-    parser.add_argument("--cases", default="knowledge/cases.jsonl")
+    parser.add_argument("--cases", default="knowledge",
+                        help="案例索引：目录（分片布局 `knowledge/cases/`）"
+                             "或旧的单文件 `knowledge/cases.jsonl`")
     parser.add_argument("--shots", default="")
     parser.add_argument("--audit-log", default="",
                         help="这一跑的 audit_log.jsonl（分片）或累积日志；"

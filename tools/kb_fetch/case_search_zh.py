@@ -22,7 +22,7 @@
 用法::
 
     python -m tools.kb_fetch.case_search_zh --provider glm --model glm-5.3 \\
-        --out knowledge/cases.search_zh.jsonl --workers 6
+        --workers 6            # 默认：读 knowledge/ 的分片，写 knowledge/cases/ 的分片
 """
 
 from __future__ import annotations
@@ -39,12 +39,19 @@ from typing import Dict, List, Optional, Sequence
 try:
     from . import common
     from . import llm
+    from . import vocabulary
 except ImportError:  # pragma: no cover
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
     from tools.kb_fetch import common, llm  # type: ignore
+    from tools.kb_fetch import vocabulary  # type: ignore
 
-CASES = common.KNOWLEDGE / "cases.jsonl"
-OUT = common.KNOWLEDGE / "cases.search_zh.jsonl"
+#: 案例索引：**目录**（分片布局 `knowledge/cases/part-*.jsonl`）或旧布局的单文件。
+CASES = common.KNOWLEDGE
+#: 线索的落点：**目录**时写分片（`knowledge/cases/search_zh.part-*.jsonl`，每片 ≤512 KB），
+#: 给一份 `.jsonl` 路径时写旧布局的单文件。
+OUT = common.KNOWLEDGE / "cases"
+#: 分片目标（与 `build_cases.SHARD_TARGET_BYTES` 同一口径：门的 93%）。
+SHARD_TARGET_BYTES = int(common.MAX_CARD_FILE_BYTES * 0.93)
 
 #: 线索的长度带宽（太短没有信息量、太长会盖过原文摘录）。
 MIN_CHARS = 8
@@ -59,6 +66,64 @@ CONSTRAINT_WORDS = ("禁止", "必须", "不得", "务必", "一定要")
 #: 线索是**检索键**；键里出现"我没讲什么"这种自述，只会制造假命中。
 META_WORDS = ("摘录", "本段", "本文", "文中", "书中", "这篇文章", "该文",
               "未涉及", "不涉及", "未提及", "未包含", "不含", "未给出", "未说明")
+
+#: 查询侧词表里**没有**、而真实查询一定会用的几个说法（2026-10-04 实测）。
+#:
+#: 为什么需要这一条：检索是**词面**匹配。拿一次真实运行的 64 条逐镜查询与入库线索
+#: 对拍，查询里点名的 309 处工艺词有 **153 处（49.5%）在整个线索库里一次都不存在**
+#: ——`固定机位` 31、`景深` 23、`浅景深` 19、`越轴` 15、`逆光` 15、`侧光` 11、
+#: `留白` 11、`中远景` 8、`硬光` 5。那些概念**数学上不可能**被这条查询召回，
+#: 与排序好坏无关（复算：`python work/e1_vocab_probe.py --cases-dir knowledge …`）。
+#:
+#: 这里只补"词"，不改判据：`SYSTEM` 第 6 条原样保留——**摘录没讲到就不许用**。
+#: 补词不是"编理论"，是把产品的**查询真用到的说法**告诉标注员。
+QUERY_SIDE_WORDS_EXTRA = ("轴线", "景深", "浅景深", "深景深", "硬光", "柔光",
+                          "反打", "正反打")
+
+
+def query_side_vocabulary() -> Tuple[str, ...]:
+    """查询侧（产品侧）的中文工艺词表——**从 `tools.kb_fetch.vocabulary` 同源派生**。
+
+    为什么必须派生而不是在这里再抄一份（2026-10-04）：`tools/kb_fetch/vocabulary.py`
+    的那几张表（`SHOT_SIZE_NAMES` / `MOVEMENT_ZH` / `LIGHTING` / `CAMERA_ANGLES` /
+    `COMPOSITION_RULES_ZH` / `AXIS_TOPICS` / `PACING_ZH`）已经是**查询词表的单一真源**
+    ——它们被 `vocab_payload()` 铺成超图节点、被 `check_holdout.py` 当作门③ 的词表。
+    线索是**检索键**，它的词表必须与查询词表同源；各抄一份正是本仓库付过三次代价的
+    那类漂移（v1.5 的 6 类型 / 16 kind、v1.6 的查询键、P9.4 的 `SUFFIX_HELP`）。
+
+    返回值保序去重：同一份输入永远得到同一份列表——它进 `prompt_sha256`，
+    所以这份列表**必须**是确定性的。
+    """
+    words: List[str] = []
+
+    def add(values) -> None:
+        for value in values:
+            text = str(value or "").strip()
+            if text and text not in words:
+                words.append(text)
+
+    for aliases in vocabulary.SHOT_SIZE_NAMES.values():
+        add(aliases)
+    for aliases in vocabulary.MOVEMENT_ZH.values():
+        add(aliases)
+    for canonical, aliases in vocabulary.LIGHTING:
+        add((canonical, *aliases))
+    for canonical, aliases in vocabulary.CAMERA_ANGLES:
+        add((canonical, *aliases))
+    for aliases in vocabulary.COMPOSITION_RULES_ZH.values():
+        add(aliases)
+    for canonical, aliases in vocabulary.AXIS_TOPICS:
+        add((canonical, *aliases))
+    for aliases in vocabulary.PACING_ZH.values():
+        add(aliases)
+    add(QUERY_SIDE_WORDS_EXTRA)
+    return tuple(words)
+
+
+def craft_words_sentence() -> str:
+    """给提示词用的"闭集词表"一句（**由 :func:`query_side_vocabulary` 生成**）。"""
+    return "、".join(query_side_vocabulary())
+
 
 #: 提示词的形状 = **查询的形状**（v2，2026-10-03）。v1 写的是"把它改写成一句中文线索"，
 #: 模型于是写成**摘要**（"本片讲的是什么"）；而产品的查询是**导演的追问**
@@ -81,24 +146,113 @@ SYSTEM = (
     "'未涉及/不涉及/未提及/不含'这类**元话术**；\n"
     "4. 只用**陈述句**，**不要**出现'必须/禁止/不得/务必/一定要'这类要求或禁令；\n"
     "5. " + f"{MIN_CHARS}–{MAX_CHARS} 字，一句，不要标点堆砌，不要列点；\n"
-    "6. 优先用中文拍摄现场会说的**工艺词**（特写/中景/全景、推镜/拉镜/摇镜/跟拍/升降、"
-    "低角度/俯拍、侧光/逆光、构图/留白、视线匹配、轴线、节奏、剪辑…），"
-    "但**只能用在摘录真的讲到它的时候**；\n"
+    "6. 优先用中文拍摄现场会说的**工艺词**：下面这一串就是产品查询用的那一份词表"
+    "（`tools/kb_fetch/vocabulary.py` 同源派生，不另抄一份）——{craft_words}。"
+    "**只能用在摘录真的讲到它的时候**：摘录没讲到的概念，一个都不许写；\n"
     "只输出 JSON：{\"zh\": \"<中文线索；摘录不含工艺信息时给空串>\"}"
-)
+).replace("{craft_words}", craft_words_sentence())
 
 
-def cases_digest(path: pathlib.Path) -> str:
-    """`cases.jsonl` 的**字节**摘要——案例一变，旧线索文件就作废。"""
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def cases_digest(source: pathlib.Path) -> str:
+    """案例索引的**字节**摘要——案例一变，旧线索文件就作废。
+
+    **口径与 `block_director.knowledge.cases` 同一份**（那是消费者）：
+    分片按序拼接后取摘要；只有一片时等于 `sha256(那一份文件的字节)`，
+    所以旧的单文件线索不用换口径。
+    """
+    from block_director.knowledge import cases as block_cases
+
+    paths = block_cases.case_paths(source) if pathlib.Path(source).is_dir() \
+        else [pathlib.Path(source)]
+    return block_cases.cases_digest(paths)
+
+
+def write_dropped(dropped_out: str, dropped_rows: List[dict]) -> None:
+    """把丢弃账落盘（`--dropped-out` 为空就什么都不做）。
+
+    它**跟着检查点一起写**：0 覆盖率的成因（"摘录真没有工艺信息"还是"上游抖动"）
+    是这一轮的核心读数，跑了几小时之后才看得到就太晚了。
+    """
+    out = str(dropped_out or "").strip()
+    if not out:
+        return
+    path = pathlib.Path(out)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rows = sorted(dropped_rows, key=lambda row: str(row.get("case_id")))
+    path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
+                    encoding="utf-8", newline="\n")
+
+
+def load_lines(target: pathlib.Path) -> List[dict]:
+    """读线索（**目录**＝分片；文件＝旧布局的那一份）。缺文件返回空。"""
+    from block_director.knowledge import cases as block_cases
+
+    if pathlib.Path(target).is_dir():
+        paths = [path for path in sorted(
+            pathlib.Path(target).glob(block_cases.SEARCH_ZH_SHARD_GLOB))
+            if path.is_file()]
+    else:
+        paths = [pathlib.Path(target)] if pathlib.Path(target).is_file() else []
+    rows: List[dict] = []
+    for path in paths:
+        rows.extend(json.loads(line) for line
+                    in path.read_text(encoding="utf-8").split("\n") if line.strip())
+    return rows
+
+
+def write_lines(target: pathlib.Path, rows: Sequence[dict]) -> Dict:
+    """写线索。**目录** → 分片（每片 ≤512 KB）；文件 → 旧布局的那一份。
+
+    分片**不放松体积门**：每片仍 ≤ 512 KB、总量仍 ≤ 20 MB（§2.3c，与卡片同口径）。
+    切点只在行边界，所以"各片按序拼接"与"一份单文件"逐字节相同。
+    """
+    target = pathlib.Path(target)
+    if not target.is_dir() and target.suffix == ".jsonl":
+        common.write_jsonl(target, rows)
+        return {"path": str(target), "files": [
+            {"name": target.name, "bytes": target.stat().st_size, "rows": len(rows)}]}
+    target.mkdir(parents=True, exist_ok=True)
+    from block_director.knowledge import cases as block_cases
+
+    for stale in target.glob(block_cases.SEARCH_ZH_SHARD_GLOB):
+        stale.unlink()
+    info: List[Dict] = []
+    shard: List[dict] = []
+    used = 0
+    def flush(index: int) -> None:
+        nonlocal shard, used
+        if not shard:
+            return
+        path = target / f"search_zh.part-{index:03d}.jsonl"
+        common.write_jsonl(path, shard)
+        info.append({"name": str(path), "bytes": path.stat().st_size,
+                     "rows": len(shard)})
+        shard, used = [], 0
+
+    for row in rows:
+        size = len((json.dumps(row, ensure_ascii=False) + "\n").encode("utf-8"))
+        if shard and used + size > SHARD_TARGET_BYTES:
+            flush(len(info))
+        shard.append(row)
+        used += size
+    flush(len(info))
+    return {"path": str(target), "files": info,
+            "rows": sum(item["rows"] for item in info),
+            "shard_target_bytes": SHARD_TARGET_BYTES}
 
 
 def prompt_sha() -> str:
     return hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest()
 
 
-def load_cases(path: pathlib.Path) -> List[dict]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+def load_cases(source: pathlib.Path) -> List[dict]:
+    """读案例：**目录**（分片布局）或一份 jsonl（旧布局 / 单片的线索账也用这条）。"""
+    path = pathlib.Path(source)
+    if path.is_dir():
+        from block_director.knowledge import cases as block_cases
+
+        return [row.to_dict() for row in block_cases.read_cases(path)]
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").split("\n")
             if line.strip()]
 
 
@@ -156,6 +310,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--scripted", default="")
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--limit", type=int, default=0)
+    #: 断点落盘：每完成这么多条就把产物写一次。**为什么必须有它**（2026-10-04）：
+    #: 一次全量生成要几千次调用、跑几个小时，而"只在结束时写盘"意味着进程一挂
+    #: 就丢掉**全部**已完成的工作（包括已经花掉的额度）。节流写盘的代价只是
+    #: 几百 KB 的重复 I/O。
+    parser.add_argument("--checkpoint-every", type=int, default=200,
+                        help="每完成这么多条落盘一次（0 = 只在结束时写）")
     parser.add_argument("--dropped-out", default="",
                         help="把被丢弃的条目与**具名原因**写到这个文件（缺省不写）")
     #: 定向重跑：**只**重跑上一轮"瞬时失败"的那些条目。为什么需要它——空串丢弃是
@@ -174,10 +334,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     digest = cases_digest(cases_path)
 
     done: Dict[str, dict] = {}
-    if out_path.is_file():                       # 断点续跑：同代文件里已有的直接复用
-        for row in load_cases(out_path):
-            if row.get("cases_sha256") == digest and row.get("zh"):
-                done[str(row["case_id"])] = row
+    #: 断点续跑：同代文件里已有的直接复用。**两份指纹都要对上**——
+    #: 只看 `cases_sha256` 会把"上一代提示词"写出来的线索当成已完成复用，
+    #: 于是同一份文件里混着两代提示词的键，而 `prompt_sha256` 记的是最后一批。
+    #: 2026-10-04 实测：同一份 `cases.search_zh.jsonl` 里 436 行是一枚 sha、
+    #: 739 行是另一枚，正是这个洞造成的（当时判据只有案例摘要）。
+    for row in load_lines(out_path):
+        if (row.get("cases_sha256") == digest
+                and row.get("prompt_sha256") == prompt_sha()
+                and row.get("zh")):
+            done[str(row["case_id"])] = row
     todo = [case for case in cases if str(case.get("case_id")) not in done]
     if args.retry_from:
         prefixes = tuple(part.strip() for part in str(args.retry_reasons).split(",")
@@ -201,31 +367,37 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     rows: List[dict] = list(done.values())
     dropped = 0
     dropped_rows: List[dict] = []
+    checkpoint_every = max(0, int(args.checkpoint_every))
+    finished = 0
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
         for case, result, reason in pool.map(
                 lambda case: (case, *make_line(client, case)), todo):
+            finished += 1
             if result is None:
                 dropped += 1
                 dropped_rows.append({"case_id": str(case.get("case_id")),
                                      "reason": reason,
                                      "excerpt": str(case.get("excerpt") or "")[:200]})
-                continue
-            rows.append({**result, "cases_sha256": digest, "model": client.model_id,
-                         "family": client.family, "prompt_sha256": prompt_sha()})
+            else:
+                rows.append({**result, "cases_sha256": digest,
+                             "model": client.model_id, "family": client.family,
+                             "prompt_sha256": prompt_sha()})
+            #: 断点落盘：几千次调用要跑几小时，"只在结束时写盘"= 一挂就全丢。
+            if checkpoint_every and finished % checkpoint_every == 0:
+                rows.sort(key=lambda row: str(row["case_id"]))
+                write_lines(out_path, rows)
+                write_dropped(args.dropped_out, dropped_rows)
+                print(json.dumps({"progress": finished, "of": len(todo),
+                                  "written": len(rows), "dropped": dropped},
+                                 ensure_ascii=False), flush=True)
     rows.sort(key=lambda row: str(row["case_id"]))
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
-                        encoding="utf-8", newline="\n")
-    if args.dropped_out:
-        dropped_path = pathlib.Path(args.dropped_out)
-        dropped_path.parent.mkdir(parents=True, exist_ok=True)
-        dropped_rows.sort(key=lambda row: row["case_id"])
-        dropped_path.write_text(
-            "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in dropped_rows),
-            encoding="utf-8", newline="\n")
+    written = write_lines(out_path, rows)
+    write_dropped(args.dropped_out, dropped_rows)
     print(json.dumps({"written": len(rows), "dropped": dropped,
                       "coverage": round(len(rows) / max(1, len(cases)), 4),
-                      "path": str(out_path)}, ensure_ascii=False))
+                      "path": str(out_path),
+                      "shards": [item["name"] for item in written["files"]]},
+                     ensure_ascii=False))
     return 0
 
 

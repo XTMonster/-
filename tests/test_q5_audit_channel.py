@@ -33,7 +33,9 @@ if str(ROOT) not in sys.path:
 from tools.knowledge import quality as Q  # noqa: E402
 
 LIVE_MANIFEST = ROOT / "knowledge" / "hypergraph.manifest.json"
-LIVE_CASES = ROOT / "knowledge" / "cases.jsonl"
+#: 案例索引是**分片**布局（`knowledge/cases/part-*.jsonl`）——传索引目录，
+#: 读者按 `case_paths()` 认分片、也认旧的单文件（2026-10-04）。
+LIVE_CASES = ROOT / "knowledge"
 
 
 def _live_knowledge() -> dict:
@@ -41,7 +43,8 @@ def _live_knowledge() -> dict:
     from block_director.knowledge.hypergraph import manifest_fingerprint as hg_fp
 
     return {"hypergraph_fingerprint": hg_fp(LIVE_MANIFEST.parent),
-            "cases_index_fingerprint": cases_fp(LIVE_CASES.parent),
+            #: `LIVE_CASES` 是**索引目录**（分片布局），所以指纹取它自己。
+            "cases_index_fingerprint": cases_fp(LIVE_CASES),
             "cases_backend": "hybrid"}
 
 

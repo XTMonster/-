@@ -137,7 +137,7 @@ def test_the_quality_report_is_fed_the_real_run_and_the_audit_channel():
 def test_the_chain_input_checker_fires_when_the_flags_are_dropped():
     """自证：把三个开关摘掉的写法必须被判出来（否则上一条只是自我感觉良好）。"""
     stripped = ("python tools/knowledge/quality.py --run-id $runId --json "
-                "--cases knowledge/cases.jsonl --out (Join-Path $evidenceDir "
+                "--cases knowledge --out (Join-Path $evidenceDir "
                 "'knowledge_quality.json')")
     assert missing_quality_inputs(stripped) == list(QUALITY_INPUT_FLAGS)
     # 只补回一个也不算够：三个输入各管一件事，缺一个就是缺证据。

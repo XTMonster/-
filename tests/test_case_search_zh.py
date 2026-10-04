@@ -155,9 +155,11 @@ def test_the_generator_refuses_constraints_long_lines_and_non_chinese():
 
 def test_the_shipped_sidecar_matches_the_shipped_cases():
     """入库的那对产物必须同代（否则检索会静默走偏）。"""
-    cases_path = ROOT / "knowledge" / "cases.jsonl"
-    sidecar = ROOT / "knowledge" / C.SEARCH_ZH_FILE
-    if not sidecar.is_file():
+    #: 索引是**分片**布局：案例在 `knowledge/cases/part-*.jsonl`，
+    #: 线索在 `knowledge/cases/search_zh.part-*.jsonl`（读者按索引目录认）。
+    cases_path = ROOT / "knowledge"
+    sidecar = C.search_zh_paths(cases_path)
+    if not sidecar:
         import pytest
 
         pytest.skip("线索文件未入库")
@@ -216,6 +218,44 @@ def test_the_v2_prompt_forbids_meta_phrasing_and_allows_an_empty_line():
     assert "空串" in ZH.SYSTEM
     #: 闭集式的工艺词清单也在（否则线索与查询的词表仍然对不上）。
     for word in ("推镜", "跟拍", "低角度", "侧光", "留白", "轴线"):
+        assert word in ZH.SYSTEM, word
+
+
+def test_the_craft_word_list_is_derived_from_the_query_side_vocabulary():
+    """线索的词表**必须与查询词表同源派生**——不是在这里再抄一份。
+
+    为什么这条值得单独钉（2026-10-04 实测，`work/e1_vocab_probe.py` 可复算）：
+    拿一次真实运行的 64 条逐镜查询与入库线索对拍，查询里点名的 **309 处**工艺词有
+    **153 处（49.5%）**在整个线索库里**一次都不存在**——`固定机位` 31、`景深` 23、
+    `浅景深` 19、`越轴` 15、`逆光` 15、`侧光` 11、`留白` 11。检索是词面匹配，
+    那些概念对这条查询**数学上不可达**，与排序好坏无关。
+
+    真源是 `tools/kb_fetch/vocabulary.py` 的那几张表（它们同时铺成超图节点、
+    又被 `check_holdout.py` 当作门③ 的词表），所以这里**逐条对拍**：表里出现的
+    每一个取值/别名都必须出现在提示词里。各抄一份正是本仓库付过三次代价的那类漂移。
+    """
+    from tools.kb_fetch import vocabulary
+
+    source = []
+    for aliases in vocabulary.SHOT_SIZE_NAMES.values():
+        source.extend(aliases)
+    for aliases in vocabulary.MOVEMENT_ZH.values():
+        source.extend(aliases)
+    for canonical, aliases in vocabulary.LIGHTING:
+        source.extend((canonical, *aliases))
+    for canonical, aliases in vocabulary.CAMERA_ANGLES:
+        source.extend((canonical, *aliases))
+    for aliases in vocabulary.COMPOSITION_RULES_ZH.values():
+        source.extend(aliases)
+    for canonical, aliases in vocabulary.AXIS_TOPICS:
+        source.extend((canonical, *aliases))
+    assert source, "真源表读不到——那这条用例就是空绿"
+    missing = [word for word in source if word not in ZH.SYSTEM]
+    assert not missing, f"查询词表里的这些说法没进提示词：{missing[:8]}"
+    #: 补词**不改**判据：摘录没讲到就不许用。
+    assert "只能用在摘录真的讲到它的时候" in ZH.SYSTEM
+    #: 实测里被点名最多、而真源表里没有的那几个词，靠显式补词进来。
+    for word in ("景深", "浅景深", "硬光", "轴线"):
         assert word in ZH.SYSTEM, word
 
 
@@ -303,3 +343,101 @@ def test_retry_from_only_reruns_the_named_transient_failures(tmp_path, monkeypat
             out.read_text(encoding="utf-8").splitlines() if line.strip()]
     #: c2 是规则丢弃（`empty`），**不该**被重跑；c1/c3 是瞬时失败，重跑后落盘。
     assert sorted(row["case_id"] for row in rows) == ["c1", "c3"]
+
+
+def test_the_generator_checkpoints_so_a_crash_cannot_lose_everything(tmp_path,
+                                                                     monkeypatch):
+    """**断点落盘**：几千次调用要跑几小时，"只在结束时写盘"= 一挂就全丢。
+
+    为什么这条是必要的（2026-10-04 实测）：一次全量生成 3804 条要 8 并发跑几小时；
+    进程一旦挂在半路，已经花掉的额度与已完成的条目**一条都留不下**（旧实现只在
+    `pool` 收完之后写一次文件）。判据不是"文件在不在"，而是**写盘发生了不止一次**
+    ——直接数 `write_lines` 的调用次数，避免"看起来有文件"这种空绿。
+    """
+    cases_path = tmp_path / "cases.jsonl"
+    cases_path.write_text("".join(
+        json.dumps({"case_id": f"c{index}", "excerpt": "A slow dolly in.",
+                    "source_ref": {"title": "t"}}) + "\n"
+        for index in range(1, 6)), encoding="utf-8")
+
+    class _Ok:
+        family = "zhipu"
+        model_id = "stub"
+        model_version = "stub"
+
+        def chat_json(self, *args, **kwargs):
+            return {"zh": "要拍移动镜头时用斯坦尼康吸收震动"}
+
+    calls = []
+    real = ZH.write_lines
+
+    def counting(out, rows):
+        calls.append(len(rows))
+        return real(out, rows)
+
+    monkeypatch.setattr(ZH, "write_lines", counting)
+    monkeypatch.setattr(ZH.llm, "make_client", lambda *a, **k: _Ok())
+    out = tmp_path / "lines.jsonl"
+    assert ZH.main(["--cases", str(cases_path), "--out", str(out),
+                    "--workers", "1", "--checkpoint-every", "2"]) == 0
+    assert len(calls) >= 3, f"只写了一次盘（{calls}）：断点没生效"
+    rows = [json.loads(line) for line in
+            out.read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert len(rows) == 5, "落盘内容必须是全部 5 条"
+
+
+def test_resume_needs_the_current_prompt_not_just_the_current_cases(tmp_path,
+                                                                   monkeypatch):
+    """断点续跑必须**两枚指纹都对**：只看案例摘要会把上一代提示词的线索当"已完成"。
+
+    现场（2026-10-04 实测）：同一份 `cases.search_zh.jsonl` 里 **436 行**记着一枚
+    `prompt_sha256`、**739 行**记着另一枚——旧的续跑判据只比 `cases_sha256`，
+    于是"改了提示词再跑一遍"会把整批旧提示词的键原样复用，产出一份**混代**的
+    线索文件，而每一行都自称是当前代。检索面因此既不等于旧代也不等于新代，
+    E1 的 A/B 会被这个洞污染。
+
+    判据：① 案例摘要对、提示词是上一代 ⇒ **必须重算**（进 `todo`，真的调上游）；
+    ② 两枚都对 ⇒ **必须复用**（不调上游，原样留用）。
+    """
+    cases_path = tmp_path / "cases.jsonl"
+    cases_path.write_text("".join(
+        json.dumps({"case_id": case_id, "excerpt": excerpt,
+                    "source_ref": {"title": "t"}}) + "\n"
+        for case_id, excerpt in (("c1", "A slow dolly in on the market."),
+                                 ("c2", "Cut on the eyeline to the listener."))),
+        encoding="utf-8")
+    digest = ZH.cases_digest(cases_path)
+    out = tmp_path / "lines.jsonl"
+    out.write_text("".join(
+        json.dumps({"case_id": case_id, "zh": zh, "cases_sha256": digest,
+                    "prompt_sha256": prompt_sha}) + "\n"
+        for case_id, zh, prompt_sha in (
+            #: c1：案例摘要**对**，提示词是**上一代**。
+            ("c1", "旧的线索（上一代提示词）", "0" * 64),
+            #: c2：两枚都**对**。
+            ("c2", "切到听者的视线完成一次反打", ZH.prompt_sha()))),
+        encoding="utf-8")
+
+    seen = []
+
+    class _Ok:
+        family = "zhipu"
+        model_id = "stub"
+        model_version = "stub"
+
+        def chat_json(self, _system, user, *args, **kwargs):
+            seen.append(user)
+            return {"zh": "要拍移动镜头时用斯坦尼康吸收震动"}
+
+    monkeypatch.setattr(ZH.llm, "make_client", lambda *a, **k: _Ok())
+    assert ZH.main(["--cases", str(cases_path), "--out", str(out),
+                    "--workers", "1"]) == 0
+
+    #: 只有 c1 该被重算：c2 是当前代，复用（上游一次都不该被它的摘录打到）。
+    assert len(seen) == 1, f"混合代际的续跑判据没生效（调了 {len(seen)} 次）"
+    assert "market" in seen[0], seen[0]
+    rows = {json.loads(line)["case_id"]: json.loads(line) for line in
+            out.read_text(encoding="utf-8").splitlines() if line.strip()}
+    assert rows["c2"]["zh"] == "切到听者的视线完成一次反打", rows["c2"]
+    assert rows["c1"]["zh"] == "要拍移动镜头时用斯坦尼康吸收震动", rows["c1"]
+    assert rows["c1"]["prompt_sha256"] == ZH.prompt_sha(), rows["c1"]

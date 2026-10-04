@@ -98,6 +98,27 @@ def test_summary_reports_the_line_and_the_zero_denominator():
     assert e1_panel.summarise([])["value"] is None, "分母 0 不许算成 1.0"
 
 
+def test_concurrency_changes_throughput_not_the_rows():
+    """并发**只许改吞吐**：行序（查询序 × 案例序）与每一行的内容都要一模一样。
+
+    为什么这条必须存在（2026-10-04 实测）：一次 64 查询 × 2 模型的判分串行要跑
+    一小时以上，"换代之后重测 E1"在工程上就做不了。把并发打开是唯一的出路，
+    但它**不能**顺手改掉判据或产物——否则两次测量不可对拍。
+    """
+    mapping = {f"q{number}": _cases("c1", "c2", "c3") for number in range(1, 9)}
+    index = _Index(mapping, fingerprint="b" * 64)
+    verdicts = {"c1": 5, "c2": 2, "c3": 4}
+    clients = [("m-a", _Client(dict(verdicts))), ("m-b", _Client(dict(verdicts)))]
+    serial = e1_panel.score_queries(index, list(mapping), clients, top_k=3,
+                                    workers=1)
+    parallel = e1_panel.score_queries(index, list(mapping), clients, top_k=3,
+                                      workers=4)
+    assert serial, "夹具必须真的产出打分，否则这条用例是空绿"
+    assert serial == parallel
+    assert [row["query"] for row in parallel] == [
+        query for query in mapping for _ in range(3)], "并发不许打乱行序"
+
+
 def test_project_queries_drop_the_plan_scope_blob_in_order(tmp_path):
     """查询的单位是**逐镜散文**；计划期那种把整段剧本塞进去的串必须丢掉。"""
     project = tmp_path / "project.bdproj"

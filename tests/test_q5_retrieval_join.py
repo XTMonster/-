@@ -28,7 +28,8 @@ from tools.holdout_score import load_graph  # noqa: E402
 from tools.knowledge import quality as Q  # noqa: E402
 
 LIVE_MANIFEST = ROOT / "knowledge" / "hypergraph.manifest.json"
-LIVE_CASES = ROOT / "knowledge" / "cases.jsonl"
+#: 案例索引是**分片**布局（`knowledge/cases/part-*.jsonl`）——传索引目录。
+LIVE_CASES = ROOT / "knowledge"
 
 
 def _live_graph():
@@ -134,7 +135,7 @@ def test_the_chain_shaped_call_carries_the_readout(tmp_path):
     shots_path.write_text(json.dumps({
         "shots": [_shot("shot_001", movement)],
         "knowledge": {"hypergraph_fingerprint": hg_fp(LIVE_MANIFEST.parent),
-                      "cases_index_fingerprint": cases_fp(LIVE_CASES.parent),
+                      "cases_index_fingerprint": cases_fp(LIVE_CASES),
                       "cases_backend": "hybrid"}}, ensure_ascii=False),
         encoding="utf-8")
     audit = tmp_path / "audit_log.jsonl"

@@ -28,6 +28,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from block_director.knowledge.cases import read_cases  # noqa: E402
+
 from tools.kb_fetch import common  # noqa: E402
 
 #: 允许"在清单里但没有产物"的来源，逐条具名。
@@ -62,12 +64,10 @@ def _traced_urls() -> set:
                 url = (json.loads(line).get("source_ref") or {}).get("url")
                 if url:
                     out.add(url)
-    for line in (ROOT / "knowledge" / "cases.jsonl").read_text(
-            encoding="utf-8").splitlines():
-        if line.strip():
-            url = (json.loads(line).get("source_ref") or {}).get("url")
-            if url:
-                out.add(url)
+    for case in read_cases(ROOT / "knowledge"):     # 分片布局，读者按索引目录认
+        url = (case.source_ref or {}).get("url")
+        if url:
+            out.add(url)
     return out
 
 

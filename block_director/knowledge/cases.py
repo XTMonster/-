@@ -48,6 +48,23 @@ LIGHTRAG_FINGERPRINT_FILE = "lightrag.fingerprint.json"
 #: 返回给模型的仍然是作者的原文 `excerpt`，一个字都不改。
 SEARCH_ZH_FILE = "cases.search_zh.jsonl"
 
+#: **分片布局**（2026-10-04）。为什么需要它：§2.3c 的入库体积门写着
+#: "单文件 ≤ 512 KB、总量 ≤ 20 MB"（`tools/kb_fetch/common.py::MAX_CARD_FILE_BYTES`），
+#: 卡片层靠"一域一个文件"天然满足它，而案例层把整库塞进一份 `cases.jsonl`
+#: ——于是**配额被迫按单文件反推**：`build_cases.DEFAULT_MAX_CASES = 810`
+#: （实测：810 条 = 499 KB；`--max-cases 3804` 写出来 2.34 MB，`size_gate.passed=false`）。
+#: 后果不是"文件大了点"，而是**供给被掐掉九成**：许可语料里的候选段
+#: `raw_segments = 10463`，入库只有 810（`quota_truncated = 9376`），而那 810 条里
+#: 只有**一个**来源产出过"面板判 ≥4"的案例（见 `docs/evidence/20261004-e1-vocab/`）。
+#:
+#: 分片**不放松任何门**：每片仍 ≤ 512 KB、总量仍 ≤ 20 MB，只是把"一份文件"
+#: 换成"一份索引"——与 `knowledge/cards_generated/` 同一口径。
+CASES_DIRNAME = "cases"
+#: 案例分片的命名（有序，`part-000.jsonl`、`part-001.jsonl`…）。
+CASE_SHARD_GLOB = "part-*.jsonl"
+#: 中文线索的分片（与案例分片同住 `cases/`，名字带 `search_zh.` 前缀以便区分）。
+SEARCH_ZH_SHARD_GLOB = "search_zh.part-*.jsonl"
+
 DEGRADED_NO_ADAPTER = "lightrag_adapter_unavailable"
 DEGRADED_NO_INDEX = "lightrag_index_missing"
 
@@ -121,45 +138,111 @@ def manifest_fingerprint(index_dir: Any) -> str:
     return str(payload.get("fingerprint") or "") if isinstance(payload, dict) else ""
 
 
-def read_cases(path: Any) -> List[Case]:
-    """读 ``cases.jsonl``（逐行一个 :class:`Case`）。坏行**抛错**，不静默跳过。"""
+def case_paths(index_dir: Any) -> List[pathlib.Path]:
+    """案例分片的路径（**有序**）。**单一入口**——调用方不许各自 glob。
+
+    认三种形状，**同一套读取代码**（所以旧检出仍然读得动，分片是换代不是迁移）：
+
+    * `<index_dir>/cases/part-*.jsonl` —— 现在发货的布局（`index_dir` = `knowledge/`）；
+    * `<index_dir>/part-*.jsonl` —— 直接把分片目录本身传进来时；
+    * `<index_dir>/cases.jsonl` —— 旧的单文件布局。
+    """
+    directory = pathlib.Path(index_dir)
+    shards = [path for path in sorted(directory.glob(CASE_SHARD_GLOB))
+              if path.is_file()]
+    if not shards:
+        shards = [path for path in sorted((directory / CASES_DIRNAME)
+                                          .glob(CASE_SHARD_GLOB)) if path.is_file()]
+    if shards:
+        return shards
+    legacy = directory / CASES_FILE
+    return [legacy] if legacy.is_file() else []
+
+
+def search_zh_paths(index_dir: Any) -> List[pathlib.Path]:
+    """中文线索的分片路径（**有序**）；没有分片时回落旧的单文件。"""
+    directory = pathlib.Path(index_dir)
+    shards = [path for path in sorted(directory.glob(SEARCH_ZH_SHARD_GLOB))
+              if path.is_file()]
+    if not shards:
+        shards = [path for path in sorted((directory / CASES_DIRNAME)
+                                          .glob(SEARCH_ZH_SHARD_GLOB))
+                  if path.is_file()]
+    if shards:
+        return shards
+    legacy = directory / SEARCH_ZH_FILE
+    return [legacy] if legacy.is_file() else []
+
+
+def cases_digest(paths: Sequence[Any]) -> str:
+    """一组分片的**字节摘要**：按序把每片的字节拼起来再哈希。
+
+    与旧布局**逐字节兼容**：只有一片时它等于 `sha256(那一份文件的字节)`
+    ——中文线索文件里记的 `cases_sha256` 因此不用换口径。
+    """
+    digest = hashlib.sha256()
+    for path in paths:
+        digest.update(pathlib.Path(path).read_bytes())
+    return digest.hexdigest()
+
+
+def _sources(source: Any) -> List[pathlib.Path]:
+    """`read_cases` 的入参规整：目录 → 分片；文件 → 它自己。"""
+    path = pathlib.Path(source)
+    if path.is_dir():
+        return case_paths(path)
+    return [path]
+
+
+def read_cases(source: Any) -> List[Case]:
+    """读案例（逐行一个 :class:`Case`）。坏行**抛错**，不静默跳过。
+
+    `source` 可以是**目录**（`knowledge/`）或**任意一份文件**（旧布局的单文件、
+    或单独一片）。分片按文件名排序拼接，顺序稳定。
+    """
     rows: List[Case] = []
-    text = pathlib.Path(path).read_text(encoding="utf-8")
-    for number, line in enumerate(text.splitlines(), 1):
-        if not line.strip():
-            continue
-        try:
-            payload = json.loads(line)
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"{path}:{number} 不是合法 JSON：{exc.msg}") from exc
-        if not isinstance(payload, dict):
-            raise ValueError(f"{path}:{number} 不是对象：{type(payload).__name__}")
-        rows.append(Case.from_dict(payload))
+    for path in _sources(source):
+        text = path.read_text(encoding="utf-8")
+        for number, line in enumerate(text.splitlines(), 1):
+            if not line.strip():
+                continue
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"{path}:{number} 不是合法 JSON：{exc.msg}") from exc
+            if not isinstance(payload, dict):
+                raise ValueError(f"{path}:{number} 不是对象：{type(payload).__name__}")
+            rows.append(Case.from_dict(payload))
     return rows
 
 
-def read_search_zh(directory: Any, cases_path: Any) -> Tuple[Dict[str, str], str]:
+def read_search_zh(directory: Any, cases_source: Any) -> Tuple[Dict[str, str], str]:
     """读中文检索线索，返回 ``({case_id: 中文}, 拒用原因)``。
 
     **代际纪律**（与 §24.1 的案例层陈旧门同一条）：线索文件记着自己生成时
-    `cases.jsonl` 的**字节摘要**；对不上就整份不用（返回空 + 具名原因），
+    案例索引的**字节摘要**；对不上就整份不用（返回空 + 具名原因），
     而不是把一批"指向上一条案例"的线索喂进 BM25——那会静默地把检索带偏。
+
+    `cases_source` 可以是 `knowledge/`（目录，走 :func:`case_paths` 的分片），
+    也可以是旧的单文件路径——摘要口径见 :func:`cases_digest`（单片时与旧值逐字节相同）。
+    线索本身也支持分片（`cases/search_zh.part-*.jsonl`）。
     """
-    path = pathlib.Path(directory) / SEARCH_ZH_FILE
-    if not path.is_file():
+    paths = search_zh_paths(directory)
+    if not paths:
         return {}, "search_zh_missing"
     try:
-        digest = hashlib.sha256(pathlib.Path(cases_path).read_bytes()).hexdigest()
+        digest = cases_digest(_sources(cases_source))
         out: Dict[str, str] = {}
         seen_digest = ""
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            seen_digest = str(row.get("cases_sha256") or "")
-            case_id, zh = str(row.get("case_id") or ""), str(row.get("zh") or "")
-            if case_id and zh:
-                out[case_id] = zh
+        for path in paths:
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                seen_digest = str(row.get("cases_sha256") or "")
+                case_id, zh = str(row.get("case_id") or ""), str(row.get("zh") or "")
+                if case_id and zh:
+                    out[case_id] = zh
         if not out:
             return {}, "search_zh_empty"
         if seen_digest != digest:
@@ -348,11 +431,11 @@ def load_index(knowledge_dir: Any, backend: str = "lightrag",
     directory = pathlib.Path(knowledge_dir)
     if str(backend) == "off":
         return CaseIndex([], "off")
-    path = directory / CASES_FILE
-    if not path.is_file():
+    paths = case_paths(directory)
+    if not paths:
         return CaseIndex([], str(backend), reason="cases_index_missing")
     try:
-        cases = read_cases(path)
+        cases = read_cases(directory)
     except (OSError, ValueError, KeyError, TypeError) as exc:
         return CaseIndex([], str(backend),
                          reason=f"cases_index_unreadable:{type(exc).__name__}")
@@ -366,7 +449,7 @@ def load_index(knowledge_dir: Any, backend: str = "lightrag",
                      fingerprint=manifest_fingerprint(directory),
                      lightrag_index_fingerprint=lightrag_fingerprint(directory),
                      adapter=chosen,
-                     search_zh=read_search_zh(directory, path)[0],
+                     search_zh=read_search_zh(directory, directory)[0],
                      case_filter=case_filter)
 
 

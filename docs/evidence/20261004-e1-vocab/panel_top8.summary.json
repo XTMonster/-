@@ -1,0 +1,9 @@
+{
+  "out": "E:\\白模预演codex\\work\\e1_diag\\top8.jsonl",
+  "queries": 64,
+  "cases_fingerprint": "69791dbacabd3fd77e5132dea277664972a227d222b7be0c6c6841c5a7a6649e",
+  "scored": 512,
+  "relevant": 48,
+  "value": 0.0938,
+  "line": 0.7
+}

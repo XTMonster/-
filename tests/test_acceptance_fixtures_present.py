@@ -54,7 +54,7 @@ FIXTURES = [
      "test_knowledge_holdout_vocab / 门③"),
     ("knowledge/action_lexicon.json", "动作词表",
      "test_action_lexicon（缺 ⇒ 整文件 skip）"),
-    ("knowledge/cases.jsonl", "L3 案例层",
+    ("knowledge/cases", "L3 案例层（分片：`cases/part-*.jsonl`）",
      "case_block / E1-E3 / 三栏注入"),
     ("knowledge/card_scope.json", "卡片范围裁决（门⑥ 的分母）",
      "check_holdout --exclude-cards"),
@@ -93,10 +93,19 @@ FIXTURES = [
 
 
 def require_fixture(path, rel: str, what: str, who: str) -> None:
-    """夹具判据本体（抽出来是为了能对**不存在的路径**自证它会开火）。"""
-    assert path.is_file(), (
+    """夹具判据本体（抽出来是为了能对**不存在的路径**自证它会开火）。
+
+    **目录也算夹具**（2026-10-04）：L3 案例索引是分片布局（`knowledge/cases/`），
+    它是一组文件而不是一份文件——但判据不变：必须在位、且**非空**
+    （空目录与空文件一样，会让依赖它的门在分母为 0 时悄悄通过）。
+    """
+    assert path.is_file() or path.is_dir(), (
         f"{rel}（{what}）不在仓库里。依赖它的检查会退化成 skip / not_measured，"
         f"而链子依旧全绿——缺证据不是通过（§4.1b 硬规则 1）。消费者：{who}")
+    if path.is_dir():
+        assert any(child.stat().st_size > 0 for child in path.iterdir() if child.is_file()), (
+            f"{rel}（{what}）是个空目录。消费者：{who}")
+        return
     assert path.stat().st_size > 0, f"{rel}（{what}）是空文件。消费者：{who}"
 
 
@@ -130,6 +139,30 @@ def test_the_generated_card_corpus_is_committed():
     assert directory.is_dir(), "knowledge/cards_generated/ 不在仓库里"
     cards = sorted(directory.glob("*.jsonl"))
     assert cards, "knowledge/cards_generated/ 里没有 .jsonl 语料"
+
+
+def test_every_case_shard_parses_line_by_line():
+    """分片布局的**每一片**都要逐行可解析、且都至少一行。
+
+    这条原来由上面那条 `.jsonl` 参数化用例覆盖；索引改成目录（`knowledge/cases/`）
+    之后它不再匹配那个参数表，所以在这里补回来——否则"片里有没有坏行"就没人查了。
+
+    为什么它不是形式主义：片是**按字节**切出来的，一次坏写只会让某一篇的末行
+    断在半路，而 `read_cases` 要读到那里才会抛错（也就是在检索路径上才发现）。
+    """
+    from block_director.knowledge.cases import case_paths
+
+    shards = case_paths(ROOT / "knowledge")
+    assert shards, "案例索引一片都没有"
+    for path in shards:
+        lines = [line for line in path.read_text(encoding="utf-8").split("\n")
+                 if line.strip()]
+        assert lines, f"{path.name} 一行都没有"
+        for number, line in enumerate(lines, 1):
+            try:
+                json.loads(line)
+            except json.JSONDecodeError as exc:
+                pytest.fail(f"{path.name}:{number} 不是合法 JSON：{exc.msg}")
 
 
 def test_an_absent_fixture_makes_the_guard_fire(tmp_path):
