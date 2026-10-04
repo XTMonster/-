@@ -33,7 +33,13 @@ llm:
 
 rag:
   enabled: true
-  backend: bm25
+  # v1.4 §2.3：**默认后端 = 超图**（跑在 sidecar 的 `/v1/retrieve` 上）。
+  # 这里曾经写 `bm25`——那是插件进程里的内置卡片检索，**根本不发 `/v1/retrieve`**，
+  # 于是 ① L1/L2 的 `forbid` 禁忌一栏从来没进过提示词、② 审计里一条
+  # `retrieval_call` 都没有（long14 六十四镜实测 `retrieval_calls: 0`），
+  # §4.1b 的 Q5 因此**结构性**没有分母。sidecar 不可用/没有索引时会**自己**降级为
+  # bm25 并在 `knowledge_trace.json` 里标 `degraded`——降级可以，静默不行。
+  backend: hypergraph
 
 budget:
   max_llm_calls_per_scene_formula: "shots * 8"

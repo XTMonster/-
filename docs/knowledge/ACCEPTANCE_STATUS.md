@@ -4765,3 +4765,55 @@ LLM **291** 次调用（上限 512）、1 266 113 token、LLM 墙上时间 471.9
 warning 说明 `_axis_rebuild` 的**参照系**仍待换；COMPOSITION 24 条低分仍等"三分线
 交点 vs 三分线"的口径裁决（不得靠调 `PASS_SCORE`）。证据
 `docs/evidence/20261004_chunked_long14/`。
+
+## 七十六、真跑样例一直请求的是 `bm25`——Q5 因此**结构性**没有分母（已修）
+
+long14 的账里有一条当时没看懂的读数：`knowledge.retrieval_calls: 0`。这一轮查清了：
+**`fixtures/local_sidecar.config.yaml`（真跑样例）把 `rag.backend` 写死成 `bm25`**，
+而 v1.4 §2.3 与出厂默认（`contracts/config.py`、`specs/config.default.yaml`）要的是
+**超图**。两者差的不是速度，是**两条链一起断**：
+
+* `bm25` 走插件进程里的内置卡片检索，**不发 `/v1/retrieve`** ⇒ L1/L2 的 `forbid`
+  禁忌栏与三栏注入里的超图那一栏**从来没进过提示词**；
+* 审计里因此一条 `retrieval_call` 都没有 ⇒ §4.1b 的 Q5 join **分母结构性为 0**，
+  E2 也恒为 0——两条指标从来没有量过真东西。
+
+### 76.1 修法与守门
+
+`fixtures/local_sidecar.config.yaml` 与 `fixtures/local_model.config.yaml` 改为
+请求 `hypergraph`（sidecar 不可用/没有索引时**自己**降级为 bm25 并在
+`knowledge_trace.json` 标 `degraded`——降级可以，静默不行）。
+守门 `tests/test_real_run_sample_configs.py`：两条样例必须请求超图，且与
+`AppConfig().rag.backend` 一致（样例与出厂默认不许各说一套）。
+
+### 76.2 换后端之后第一次**量出真数**（long15，同一份剧本、同一条命令）
+
+| | long14（`bm25`） | **long15（`hypergraph`）** |
+|---|---|---|
+| `retrieval_calls` | **0** | **68**（上限 `(2+64)×2 = 132`） |
+| 审计 `retrieval_call` 事件 | **0** | **68**（5 次整场预取 ＋ 63 次逐镜） |
+| 逐镜查询 | 不发 | `景别=LS；意图=揭示；运镜=固定` |
+| **Q5** | `not_measured`（分母 0、`channel: absent`） | **`fail` 3/9 = 0.3333**（线 0.80，`channel: audit`） |
+| **E2**（诊断） | 恒 0 | **4/64 = 0.0625** |
+
+**Q5 从"量不到"变成"量得到，而且不好看"**：判据、join 口径、门限**一个字没动**，
+变的是"运行期到底发过什么"第一次有了真值。那 9 对是"发出的串与 held-out 的 `q`
+键值对集合完全相等"的镜头（54 条恒真的旧标注不算）——9 次里只有 3 次真的采纳了边。
+
+long15 本身：`run_id d4eccc5efc7b`、`DONE`、交付 133 个文件、LLM 272 次、478.8 s、
+终审逐镜通过 29（COMPOSITION 25、R001 25、R003 6、R011 1）、构图分中位 74.3、
+R001 warning 63 → **31**。
+
+> **别拿 long14 ↔ long15 互比"哪个修更值"**：长跑方差很大（模型每跑写不同草案），
+> 这两趟 R001 13 → 25、构图门 40 → 39 的反向动就是它。这一节的结论只关于
+> **知识栈有没有真的接上**——0 与 68 的差别，不是 29 与 29 的差别。
+
+### 76.3 仍未解决
+
+1. **Q5 运行侧分母只有 9**：根因是 join 要求**逐字相等**，而 `q` 自己点名了被量的
+   字段（`运镜=`）——`Q5_DECISION_v1.md` 的出路②（重标，别让 `q` 点名被量字段）仍待裁决；
+2. **E1 = 3/18 = 0.1667**（线 0.7），且判分样本 18 < §4.1b 下界 1200；
+3. `cases_backend` 实走 `hybrid`（LightRAG 不可用时的**允许**降级）但
+   `cases_degraded=false`——口径值得下一轮单独核。
+
+证据 `docs/evidence/20261004_chunked_long15/`。

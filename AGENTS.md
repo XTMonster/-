@@ -303,10 +303,10 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-04 07:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-04 08:2x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
 ——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
-`python -m pytest` **1982 passed / 1 skipped**（主树；唯一那条 skip 是
+`python -m pytest` **1984 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
 `tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
@@ -315,9 +315,9 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-073155/`（探针 32 支全过、`python -m pytest`
-1982 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§七十五 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增十八节：
+且 pass。证据 `docs/evidence/20261004-082040/`（探针 32 支全过、`python -m pytest`
+1984 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§七十六 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增十九节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对
@@ -392,7 +392,18 @@ R001 由 13 条到 33 条，而**独立**的画面左右序判据只证实多报
 **别把这次成绩算到 §七十四 头上**：跑与跑方差很大，那条修的证据是结构性的。
 同目录还留了一条**负对照**：漏 `--build` 的那趟被导出安全闸拦下
 （"以下对象会出现在参考视频中：Cube"）——正是 §15 要的行为。证据
-`docs/evidence/20261004_chunked_long14/`。**
+`docs/evidence/20261004_chunked_long14/`。§七十六 **真跑样例一直请求的是 bm25**
+（`fixtures/*.config.yaml` 覆盖了出厂默认的超图）：`bm25` 走插件进程里的内置卡片
+检索、**不发 `/v1/retrieve`**，于是 L1/L2 的 `forbid` 栏从没进过提示词、审计里一条
+`retrieval_call` 都没有（long14 实测 `retrieval_calls: 0`）⇒ **Q5 结构性没有分母**、
+E2 恒 0。两条样例改为请求 `hypergraph`（不可用时由检索器自己降级并留痕），守门
+`tests/test_real_run_sample_configs.py`。重跑（long15，同一份剧本）：`retrieval_calls`
+由 **0 变 68**、`retrieval_call` 事件 68 条、逐镜查询长成
+`景别=LS；意图=揭示；运镜=固定`；**Q5 第一次量出真数：`fail`，九对里三对**
+（线 0.80，`channel: audit`），E2 也第一次非零（六十四镜里四镜取了经验/案例层的
+运镜）。判据、join 口径、门限**一个字没动**——变的是"运行期到底发过什么"第一次
+有真值。长跑方差很大，**别拿 long14 与 long15 的逐镜通过互比**。证据
+`docs/evidence/20261004_chunked_long15/`。**
 
 本轮把两条"§4.1b 写了、链上没有执行者"的判据补成了真的：**Q3 的负样本下界**
 `max(50, 0.25×query 数)`（在此之前"只写 1 条负样本"能让 0% 恒真地通过）与

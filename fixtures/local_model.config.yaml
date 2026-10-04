@@ -30,7 +30,10 @@ llm:
 
 rag:
   enabled: true
-  backend: bm25
+  # 与 `fixtures/local_sidecar.config.yaml` 同一口径（v1.4 §2.3）：默认请求**超图**；
+  # 不可用时由检索器自己降级为 bm25 并在 `knowledge_trace.json` 标 `degraded`。
+  # 写死 bm25 会让 `/v1/retrieve` 永不发生 ⇒ `retrieval_call` 事件为空 ⇒ Q5 没分母。
+  backend: hypergraph
 
 budget:
   max_llm_calls_per_scene_formula: "shots * 6"
