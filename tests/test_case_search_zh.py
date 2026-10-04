@@ -153,24 +153,55 @@ def test_the_generator_refuses_constraints_long_lines_and_non_chinese():
     assert ZH.line_for(_Stub(RuntimeError("boom")), case) is None
 
 
+def shipped_clue_problems(lines) -> list:
+    """把**每一条**入库线索过一遍生成期那同一套判据（``ZH.classify``）。
+
+    为什么要整份扫、而不是抽 20 条（2026-10-04 的 glm-5.3 会诊指出）：原来那条
+    "抽 20 条逐条核对"的写法，**第 21 条之后无论多脏都验不出来**；而"入库的线索
+    不许带约束词 / 不许是元话术 / 不许不是中文"本来就有**唯一真源**
+    （生成侧 `case_search_zh.make_line` 用的就是 `classify`）。这里只是把它
+    按**全量**再跑一遍——判据不放宽，只把覆盖面从 20 条补到全部。
+    """
+    return [(case_id, ZH.classify(zh)) for case_id, zh in lines.items()
+            if ZH.classify(zh)]
+
+
 def test_the_shipped_sidecar_matches_the_shipped_cases():
-    """入库的那对产物必须同代（否则检索会静默走偏）。"""
+    """入库的那对产物必须同代、覆盖够、**且每一条都过生成期判据**。"""
     #: 索引是**分片**布局：案例在 `knowledge/cases/part-*.jsonl`，
     #: 线索在 `knowledge/cases/search_zh.part-*.jsonl`（读者按索引目录认）。
     cases_path = ROOT / "knowledge"
     sidecar = C.search_zh_paths(cases_path)
-    if not sidecar:
-        import pytest
-
-        pytest.skip("线索文件未入库")
+    #: **缺证据 != 通过**：线索文件是检索面的一半，它不在就是这一条红，
+    #: 不许 `pytest.skip` 把"没验"写成"没失败"（§4.1b 硬规则 1 的同一形状）。
+    assert sidecar, ("入库的中文线索文件不见了（`knowledge/cases/search_zh.part-*.jsonl`）："
+                     "缺它检索面对中文查询恒 0 命中")
+    cases = C.read_cases(cases_path)
     lines, reason = C.read_search_zh(ROOT / "knowledge", cases_path)
     assert reason == "", reason
-    assert len(lines) >= 0.5 * len(C.read_cases(cases_path)), (
-        f"线索覆盖太低：{len(lines)}/{len(C.read_cases(cases_path))}")
-    #: 抽 20 条逐条核对"确实是中文 / 没有约束词"。
-    for case_id, zh in list(lines.items())[:20]:
-        assert any("\u4e00" <= ch <= "\u9fff" for ch in zh)
-        assert not any(word in zh for word in ZH.CONSTRAINT_WORDS), (case_id, zh)
+    assert len(lines) >= 0.5 * len(cases), f"线索覆盖太低：{len(lines)}/{len(cases)}"
+    problems = shipped_clue_problems(lines)
+    assert not problems, (
+        f"入库线索里有 {len(problems)}/{len(lines)} 条不过生成期判据"
+        f"（例：{problems[:3]}）")
+
+
+def test_the_shipped_sidecar_checker_fires_anywhere_in_the_file():
+    """自证：整份扫的判据必须能开火，**包括第 20 条之后**。
+
+    抽 20 条的旧写法在下面第二半会**静默通过**——那正是它名不副实的地方。
+    """
+    good = {f"c{index}": "要拍固定机位时把相机锁死，让演员在画面里走" for index in range(40)}
+    assert shipped_clue_problems(good) == []
+    bad = dict(good)
+    bad["c39"] = "镜头必须保持水平"                     # 约束词（E3）
+    bad["c3"] = "本段未涉及景别与运镜"                  # 元话术
+    bad["c17"] = "keep the camera still"                # 不是中文
+    problems = dict(shipped_clue_problems(bad))
+    assert problems["c39"].startswith("constraint"), problems
+    assert problems["c3"].startswith("meta"), problems
+    assert problems["c17"].startswith("not-chinese"), problems
+    assert set(problems) == {"c3", "c17", "c39"}, problems
 
 
 # --------------------------------------------------------------------------- #

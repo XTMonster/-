@@ -748,8 +748,59 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
         #: 门限的**来源**：语料里显式枚举了几条（配额/去重之前）。产出少于它 = 漏抽。
         "enumerations_in_corpus": enumerations_in_corpus,
         "min_cases": 300,
+        #: 线索闸门丢掉的条数（没有中文检索键的案例）。**关闸门时恒为 0**，
+        #: 但它必须一直在账上：`cases + duplicates + quota + rejects +
+        #: clue_gate_dropped == raw_segments` 这条恒等式才闭合，账目也才看得出
+        #: "少掉的条数是去哪了"。
+        "clue_gate_dropped": 0,
     }
     return cases, rejects + duplicates + quota, report
+
+
+def apply_clue_gate(cases: Sequence[Dict], clues_path: pathlib.Path, *,
+                    after: int = 0) -> Tuple[List[Dict], List[str], Dict]:
+    """**入库闸门**：第 ``after`` 条之后的案例，没有中文检索键就不许进索引。
+
+    为什么需要它（2026-10-04 的 glm-5.3 会诊 F1，本项目实测）：L3 是给**中文**
+    逐镜查询用的，而案例正文是英文——没有 `zh` 线索的案例对产品**恒 0 命中**
+    （实测：只喂英文原文时 676 条里只剩 1 条假命中）。而"线索"是**产出后**才知道的
+    东西，所以正确的顺序是**先注线索、非空才入库**：否则扩库只会把
+    `线索数 / 案例数` 这条守门比例往下拉（把 202 个 `case_budget: 1` 的钉子直接
+    拔掉，覆盖从 44.8% 掉到 22.9%）。
+
+    ``after`` 是**保护带**：已经入库的那批案例（`index < after`）不因为这条新规则
+    被删——它们是历史，删它们属于另一件事。``after=0`` 表示对全部案例生效。
+    """
+    rows = common.read_jsonl(pathlib.Path(clues_path))
+    keyed = {str(row.get("case_id")) for row in rows
+             if str(row.get("zh") or "").strip()}
+    kept: List[Dict] = []
+    dropped: List[str] = []
+    for index, case in enumerate(cases):
+        case_id = str(case.get("case_id"))
+        if index < int(after) or case_id in keyed:
+            kept.append(case)
+        else:
+            dropped.append(case_id)
+    return kept, dropped, {"required_after": int(after), "keyed": len(keyed),
+                           "kept": len(kept), "dropped": len(dropped)}
+
+
+def recount(cases: Sequence[Dict], report: Dict) -> Dict:
+    """按**过滤之后**的案例重算 manifest 里与案例集合绑定的那几格。
+
+    不重算就会留下"`cases` 少了、`per_type` 还是老的"这种自相矛盾的账
+    （`tests/test_cases_corpus.py::test_the_manifest_accounting_adds_up` 会红）。
+    """
+    per_type: Dict[str, int] = {}
+    per_domain: Dict[str, int] = {}
+    for case in cases:
+        key = str(case.get("case_type"))
+        per_type[key] = per_type.get(key, 0) + 1
+        domain = str((case.get("source_ref") or {}).get("domain") or "")
+        per_domain[domain] = per_domain.get(domain, 0) + 1
+    return {**report, "cases": len(cases), "per_type": per_type,
+            "per_domain": dict(sorted(per_domain.items()))}
 
 
 def beat_positions(excerpt: str, beats: Sequence[str]) -> List[int]:
@@ -939,6 +990,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--out-manifest", default="")
     parser.add_argument("--max-cases", type=int, default=DEFAULT_MAX_CASES)
     parser.add_argument("--per-source", type=int, default=DEFAULT_PER_SOURCE)
+    #: 入库闸门（见 `apply_clue_gate`）：给了 `--require-clue` 就按"有没有中文检索键"
+    #: 过滤；`--require-clue-after N` 把豁免留给已经入库的前 N 条。
+    parser.add_argument("--require-clue", default="",
+                        help="中文线索文件（jsonl）：其中的案例才许入库")
+    parser.add_argument("--require-clue-after", type=int, default=0,
+                        help="只对第 N 条之后的案例要求线索（0 = 全部）")
     parser.add_argument("--check", action="store_true",
                         help="只校验：重算后与已落盘产物逐字节比对，不写盘")
     args = parser.parse_args(list(argv) if argv is not None else None)
@@ -955,6 +1012,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     docs = common.read_jsonl(source)
     cases, rejected, report = build_cases(docs, max_cases=args.max_cases,
                                           per_source=args.per_source)
+    if args.require_clue:
+        clues_path = pathlib.Path(args.require_clue)
+        if not clues_path.is_file():
+            print(json.dumps({"error": f"缺线索文件 {clues_path}（闸门的输入）"},
+                             ensure_ascii=False))
+            return 1
+        cases, dropped_ids, gate = apply_clue_gate(
+            cases, clues_path, after=args.require_clue_after)
+        report = {**recount(cases, report),
+                  "clue_gate_dropped": len(dropped_ids), "clue_gate": gate}
     verdict = evaluate(cases, report)
     payload = {"cases": len(cases), "rejects": len(rejected),
                "per_type": report["per_type"], "per_domain": report["per_domain"],

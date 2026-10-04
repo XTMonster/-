@@ -137,8 +137,47 @@ def test_the_manifest_accounting_adds_up():
     assert sum(manifest["per_type"].values()) == len(rows)
     assert sum(manifest["per_domain"].values()) == len(rows)
     assert (manifest["cases"] + manifest["duplicates"] + manifest["quota_truncated"]
-            + manifest["rejects"]) == manifest["raw_segments"]
+            + manifest["rejects"] + manifest["clue_gate_dropped"]
+            ) == manifest["raw_segments"], (
+        "账目必须闭合：案例 + 重复 + 配额 + 拒收 + **线索闸门丢弃** == 参评候选数"
+        "（闸门关着时最后一格恒为 0）")
     assert manifest["reject_ratio"] <= builder.BUILD_REJECT_RATIO
+
+
+def _clue_file(tmp_path, mapping):
+    path = tmp_path / "clues.jsonl"
+    path.write_text("".join(
+        json.dumps({"case_id": case_id, "zh": zh}, ensure_ascii=False) + "\n"
+        for case_id, zh in mapping.items()), encoding="utf-8")
+    return path
+
+
+def test_the_clue_gate_drops_only_cases_without_a_key(tmp_path):
+    """入库闸门：`after` 之前豁免、之后必须**有中文检索键**才许进（glm-5.3 会诊 F1）。
+
+    为什么这条是必要的：L3 服务的是**中文**逐镜查询，而没有 `zh` 键的英文案例对产品
+    恒 0 命中（实测：只喂英文原文时 676 条里只剩 1 条假命中）。所以扩库的正确顺序是
+    **先注线索、非空才入库**——否则 `线索数 / 案例数` 这条守门比例只会被稀释。
+    """
+    cases = [{"case_id": f"c{index}", "case_type": "narrative"} for index in range(5)]
+    path = _clue_file(tmp_path, {"c2": "要拍固定机位时把相机锁死", "c4": ""})
+
+    kept, dropped, report = builder.apply_clue_gate(cases, path)
+    assert [case["case_id"] for case in kept] == ["c2"]
+    assert dropped == ["c0", "c1", "c3", "c4"], dropped   # 空串不算键
+    assert report == {"required_after": 0, "keyed": 1, "kept": 1, "dropped": 4}
+
+    #: `after=3`：前三条豁免（历史不因新规则被删），后两条仍要有键。
+    kept, dropped, report = builder.apply_clue_gate(cases, path, after=3)
+    assert [case["case_id"] for case in kept] == ["c0", "c1", "c2"]
+    assert dropped == ["c3", "c4"], dropped
+
+
+def test_the_clue_gate_is_off_by_default_in_the_shipped_manifest():
+    """没给 `--require-clue` 时那一格恒为 0——否则"丢弃数"会是个无出处的数。"""
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    assert manifest["clue_gate_dropped"] == 0
+    assert "clue_gate" not in manifest, "没开闸门就不该有闸门的账"
     assert manifest["segments_total"] >= manifest["raw_segments"] >= 1
     assert manifest["fingerprint"] and manifest["corpus_fingerprint"]
     assert manifest["size_gate"]["passed"] is True

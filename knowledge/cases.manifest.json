@@ -359,6 +359,7 @@
   },
   "enumerations_in_corpus": 2,
   "min_cases": 300,
+  "clue_gate_dropped": 0,
   "shards": [
     {
       "name": "cases/part-000.jsonl",
@@ -376,10 +377,10 @@
     "sizes": {
       "part-000.jsonl": 487482,
       "part-001.jsonl": 11507,
-      "cases.manifest.json": 9691
+      "cases.manifest.json": 9717
     },
     "oversize": {},
-    "total_bytes": 508680,
+    "total_bytes": 508706,
     "total_gate": 20971520,
     "passed": true
   }
