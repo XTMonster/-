@@ -803,14 +803,23 @@ def apply_clue_gate(cases: Sequence[Dict], clues_path: pathlib.Path, *,
     protect = {str(case_id) for case_id in protect_ids}
     kept: List[Dict] = []
     dropped: List[str] = []
+    keyed_kept = 0
     for index, case in enumerate(cases):
         case_id = str(case.get("case_id"))
         if index < int(after) or case_id in protect or case_id in keyed:
             kept.append(case)
+            if case_id in keyed:
+                keyed_kept += 1
         else:
             dropped.append(case_id)
     return kept, dropped, {"required_after": int(after), "protected": len(protect),
-                           "keyed": len(keyed), "kept": len(kept),
+                           "keyed": len(keyed),
+                           #: `keyed` 是**输入文件**里带键的条数（可能指向已经不在候选集里
+                           #: 的案例——活站点漂移会让段号变，2026-10-06 实测 77/500）；
+                           #: `keyed_kept` 才是"留下的案例里有多少条真的带键"，
+                           #: 它必须**等于写出去的线索行数**（那是同一条不变量）。
+                           "keyed_kept": keyed_kept,
+                           "kept": len(kept),
                            "dropped": len(dropped)}
 
 

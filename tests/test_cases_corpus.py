@@ -170,8 +170,12 @@ def test_the_clue_gate_drops_only_cases_without_a_key(tmp_path):
     kept, dropped, report = builder.apply_clue_gate(cases, path)
     assert [case["case_id"] for case in kept] == ["c2"]
     assert dropped == ["c0", "c1", "c3", "c4"], dropped   # 空串不算键
-    assert report == {"required_after": 0, "protected": 0, "keyed": 1,
-                      "kept": 1, "dropped": 4}
+    #: 只钉这条用例要管的几格（**不**整个字典对拍：闸门的账还会长，
+    #: 整字典比会把"加了新格"读成"判据坏了"）。
+    assert {key: report[key] for key in ("required_after", "protected", "keyed",
+                                         "keyed_kept", "kept", "dropped")} == {
+        "required_after": 0, "protected": 0, "keyed": 1, "keyed_kept": 1,
+        "kept": 1, "dropped": 4}
 
     #: `after=3`：前三条豁免（历史不因新规则被删），后两条仍要有键。
     kept, dropped, report = builder.apply_clue_gate(cases, path, after=3)
@@ -201,8 +205,10 @@ def test_the_protect_band_is_by_id_not_by_position(tmp_path):
         cases, path, protect_ids=["c002"])
     assert [case["case_id"] for case in kept_by_id] == ["c003", "c002"]
     assert dropped_by_id == ["c005", "c004", "c001", "c000"]
-    assert report == {"required_after": 0, "protected": 1, "keyed": 1,
-                      "kept": 2, "dropped": 4}
+    assert {key: report[key] for key in ("required_after", "protected", "keyed",
+                                         "keyed_kept", "kept", "dropped")} == {
+        "required_after": 0, "protected": 1, "keyed": 1, "keyed_kept": 1,
+        "kept": 2, "dropped": 4}
     assert "c002" not in {case["case_id"] for case in kept_by_index}, \
         "这条用例的前提是「按下标会把历史案例换出去」——形状变了"
 
@@ -231,8 +237,12 @@ def test_the_shipped_manifest_accounts_for_the_clue_gate_without_inventing_numbe
     assert gate["kept"] == manifest["cases"], (
         "`clue_gate.kept` 必须等于最终案例数（闸门之后就是索引）")
     #: **先注线索、非空才入库**：带中文检索键的案例一条都不许被闸门丢掉。
-    assert gate["keyed"] == manifest["clue_attached"]["clues"], (
+    #: 判据是 `keyed_kept`（候选中带键且留下）而不是 `keyed`（输入文件里带键的总数）
+    #: ——活站点内容漂移会让旧案例的段号变，输入文件里总有指向"已不在候选集"案例的行
+    #: （2026-10-06 实测 77/500）。拿 `keyed` 比会把漂移读成"闸门丢键"。
+    assert gate["keyed_kept"] == manifest["clue_attached"]["clues"], (
         "闸门丢掉了带中文检索键的案例——那正是这条闸门要保住的东西")
+    assert gate["keyed_kept"] <= gate["keyed"], gate
     #: 闸门只删不加 ⇒ 闸门前的接受数 = 现案例数 ＋ 丢掉数，且它落在参评候选之内。
     accepted_before_gate = manifest["cases"] + gate["dropped"]
     assert accepted_before_gate <= manifest["raw_segments"], (
@@ -705,7 +715,9 @@ def test_the_shipped_manifest_records_how_to_rebuild_itself():
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     args = manifest.get("build_args")
     assert args, "manifest 没记 build_args：`--check` 只能靠命令行猜"
-    assert args["max_cases"] == 810 and args["require_clue"], args
+    #: 不写死 810：发货索引的规模随 `--max-cases` 变（§九十五 就抬到了 4000）。
+    #: 判据是"记下来的参数**能**造出这份产物"——上限小于案例数是不可能的。
+    assert args["max_cases"] >= manifest["cases"] and args["require_clue"], args
 
     root = ROOT
     clues = root / args["require_clue"]

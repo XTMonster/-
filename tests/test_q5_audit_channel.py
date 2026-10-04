@@ -248,8 +248,13 @@ def test_the_committed_real_run_drift_is_reproducible():
     §4.1a 要求真实运行的证据入库（`tests/test_acceptance_fixtures_present.py`
     同一口径）。
     """
-    run_dir = ROOT / "docs" / "evidence" / "20261003_real_glm"
-    shots = run_dir / "export" / "shots.json"
+    #: **换到最近一次真跑**（2026-10-06 long21）。为什么必须换：这条用例要求
+    #: "盘上那一跑的重推/发出漂移还能复算"，而 Q5 的 join 是**按代际钥匙**判的——
+    #: 语料随活站点漂移之后（`69791dbacd…` → `48df4a53c2c9…`），旧跑的 `shots.json`
+    #: 会被如实判成 `not_measured`（那是判据在干活，不是用例坏了）。
+    #: 结论：**证据跟着最近一次真跑走**，判据一个字不动。
+    run_dir = ROOT / "docs" / "evidence" / "20261006-long21"
+    shots = run_dir / "export" / "export" / "shots.json"
     audit = run_dir / "audit_log.jsonl"
     assert shots.is_file(), f"真实运行的 shots.json 不在库里：{shots}"
     assert audit.is_file(), f"真实运行的 audit_log.jsonl 分片不在库里：{audit}"

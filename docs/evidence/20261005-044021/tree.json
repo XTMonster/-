@@ -1,0 +1,23 @@
+﻿{
+    "head":  "29b332bd08e4648b421321b1c46a4cc5ff5f4ecc",
+    "digest_before":  "8538846b7707b1ba00e79dfe2a47fb604956a0bceb8a6d9d4995eee77676fd9e",
+    "digest_after":  "8538846b7707b1ba00e79dfe2a47fb604956a0bceb8a6d9d4995eee77676fd9e",
+    "stable":  true,
+    "dirty_before":  [
+                         " M docs/knowledge/ACCEPTANCE_STATUS.md",
+                         " M knowledge/cases.manifest.json",
+                         " M knowledge/cases/part-000.jsonl",
+                         " M knowledge/cases/search_zh.part-000.jsonl",
+                         " M knowledge/sources.yaml",
+                         " M tests/test_cases_corpus.py",
+                         " M tests/test_q5_audit_channel.py",
+                         " M tools/kb_fetch/build_cases.py",
+                         " M tools/run_tests.ps1",
+                         "?? docs/adr/0014-hypergraph-rag-reuse-check.md",
+                         "?? docs/knowledge/UPSTREAM_HYPERGRAPHRAG.md",
+                         "?? knowledge/cases.clue_source.jsonl",
+                         "?? knowledge/cases.protect_shipped.jsonl",
+                         "?? knowledge/cases/part-001.jsonl"
+                     ],
+    "captured_at":  "2026-10-05T04:42:28.3054505+08:00"
+}

@@ -84,6 +84,11 @@ foreach ($required in @('SessionStart', 'UserPromptSubmit', 'SubagentStart', 'Pr
     Assert-True ("hooks.json declares " + $required) ($commands.ContainsKey($required)) 'missing event'
 }
 
+#: Keep the whole selftest hermetic: the semantic classifier is stubbed to "no
+#: kinds" so every assertion below exercises the *keyword* path only.  The
+#: semantic path gets its own stubs in the dedicated section further down.
+$env:CODEX_CLASSIFY_STUB = '{"kinds":[]}'
+
 $contractFirstLine = First-Line (Join-Path $root 'workflow-contract.md')
 $subagentMarker = First-Line (Join-Path $root 'subagent-protocol.md')
 $sessionMarker = First-Line (Join-Path $root 'session-start.md')
@@ -175,6 +180,122 @@ if ($ideaOk) {
     $ctx = $ideaJson.hookSpecificOutput.additionalContext
     Assert-True 'trigger: idea bucket' ($ctx -and $ctx.Contains('_panel_idea')) $ctx
 }
+
+Write-Host 'GitHub reuse check trigger (UserPromptSubmit)'
+
+#: A design / planning / execution-doc prompt must pull **both** blocks: the joint
+#: consultation (bucket `idea`) and the GitHub reuse checklist (user ruling 2026-10-05).
+$designWord = From-CodePoints @(0x8bbe, 0x8ba1)        # "design"
+$planWord = From-CodePoints @(0x89c4, 0x5212)          # "plan"
+$licenceGate = From-CodePoints @(0x4e0d, 0x5f97, 0x5f15, 0x5165, 0x672c, 0x4ed3, 0x5e93)  # "must not be brought into this repo"
+$remixWord = From-CodePoints @(0x9b54, 0x6539)        # "remix / modify-then-adopt"
+$derivativeRule = From-CodePoints @(0x884d, 0x751f, 0x8bb8, 0x53ef)  # "derivative licence"
+$projectCheck = From-CodePoints @(0x672c, 0x9879, 0x76ee, 0x5f53, 0x524d, 0x7684, 0x5b9e, 0x9645, 0x60c5, 0x51b5)  # "this project's actual situation"
+$perCandidate = From-CodePoints @(0x9b54, 0x6539, 0x540e, 0x80fd, 0x5426, 0x7528)  # "can a remix work" column
+$sameAction = From-CodePoints @(0x540c, 0x4e00, 0x4e2a, 0x52a8, 0x4f5c)              # "the same act"
+$reuseMarker = First-Line (Join-Path $root 'github-reuse.md')
+
+$designEvent = '{"hook_event_name":"UserPromptSubmit","prompt":"' + $designWord +
+    ' a new module, then ' + $planWord + ' docs/plan.md","session_id":"s1"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $designEvent
+Assert-True 'reuse: design prompt exit 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode + " err=" + $r.Stderr)
+$designOk = $false
+try { $designJson = $r.Stdout | ConvertFrom-Json; $designOk = $true } catch { }
+Assert-True 'reuse: design prompt stdout is json' $designOk $r.Stdout
+if ($designOk) {
+    $ctx = $designJson.hookSpecificOutput.additionalContext
+    Assert-True 'reuse: design prompt pulls the GitHub checklist' `
+        ($ctx -and $ctx.Contains($reuseMarker)) 'missing github-reuse block'
+    Assert-True 'reuse: design prompt also pulls the panel' `
+        ($ctx -and $ctx.Contains('--out work/_panel_idea')) 'design prompt did not trigger the idea bucket'
+    Assert-True 'reuse: checklist keeps the licence gate' `
+        ($ctx -and $ctx.Contains($licenceGate)) 'licence gate missing'
+    Assert-True 'reuse: checklist offers the remix option' `
+        ($ctx -and $ctx.Contains($remixWord)) 'the modify-then-adopt option is missing'
+    Assert-True 'reuse: checklist states the derivative-licence rule' `
+        ($ctx -and $ctx.Contains($derivativeRule)) 'derivative licence rule missing'
+    Assert-True 'reuse: judge remixes against this project reality' `
+        ($ctx -and $ctx.Contains($projectCheck)) 'project-specific constraint table missing'
+    Assert-True 'reuse: the remix verdict is a column of the candidate table' `
+        ($ctx -and $ctx.Contains($perCandidate)) 'the per-candidate remix column is missing'
+    Assert-True 'reuse: surveying and remix-judging are one act' `
+        ($ctx -and $ctx.Contains($sameAction)) 'the one-act rule is missing'
+}
+
+#: A prompt that asks about remixing an upstream project must pull the checklist too.
+$remixEvent = '{"hook_event_name":"UserPromptSubmit","prompt":"' + $remixWord +
+    ' upstream repo ok? ' + $designWord + '","session_id":"s1"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $remixEvent
+$remixOk = $false
+try { $remixJson = $r.Stdout | ConvertFrom-Json; $remixOk = $true } catch { }
+Assert-True 'reuse: remix prompt stdout is json' $remixOk $r.Stdout
+if ($remixOk) {
+    $ctx = $remixJson.hookSpecificOutput.additionalContext
+    Assert-True 'reuse: remix prompt pulls the checklist' `
+        ($ctx -and $ctx.Contains($reuseMarker)) 'remix prompt did not trigger the checklist'
+}
+
+$r = Invoke-HookCommand $commands.UserPromptSubmit '{"hook_event_name":"UserPromptSubmit","prompt":"hi","session_id":"s1"}'
+$plainOk = $false
+try { $plainJson = $r.Stdout | ConvertFrom-Json; $plainOk = $true } catch { }
+Assert-True 'reuse: plain prompt stdout is json' $plainOk $r.Stdout
+if ($plainOk) {
+    $ctx = $plainJson.hookSpecificOutput.additionalContext
+    Assert-True 'reuse: plain prompt stays free of the checklist' `
+        ($ctx -and (-not $ctx.Contains($reuseMarker))) 'reuse block leaked into a plain prompt'
+}
+
+Write-Host 'Semantic classifier (stubbed - the selftest never calls the network)'
+
+#: The keyword tables cannot see "just redo this thing" as a design request; the
+#: semantic verdict must be able to add it on its own.
+$plainRewrite = From-CodePoints @(0x628a, 0x8fd9, 0x4e1c, 0x897f, 0x91cd, 0x505a, 0x4e00, 0x904d)  # "just redo this thing"
+$semanticEvent = '{"hook_event_name":"UserPromptSubmit","prompt":"' + $plainRewrite + '","session_id":"s1"}'
+
+$env:CODEX_CLASSIFY_STUB = '{"kinds":["design","idea"]}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $semanticEvent
+$semanticOk = $false
+try { $semanticJson = $r.Stdout | ConvertFrom-Json; $semanticOk = $true } catch { }
+Assert-True 'semantic: keyword-less prompt stdout is json' $semanticOk $r.Stdout
+if ($semanticOk) {
+    $ctx = $semanticJson.hookSpecificOutput.additionalContext
+    Assert-True 'semantic: verdict alone pulls the GitHub checklist' `
+        ($ctx -and $ctx.Contains($reuseMarker)) 'design verdict did not inject the checklist'
+    Assert-True 'semantic: verdict alone pulls the panel' `
+        ($ctx -and $ctx.Contains('--out work/_panel_idea')) 'idea verdict did not inject the panel'
+    Assert-True 'semantic: the block shows where the verdict came from' `
+        ($ctx -and $ctx.Contains('semantic:design')) 'missing the per-kind provenance note'
+}
+
+#: Keyword and semantic are a UNION: an empty semantic verdict must not cancel a
+#: keyword hit (this is the case that a semantic-only design would have broken).
+$env:CODEX_CLASSIFY_STUB = '{"kinds":[]}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $designEvent
+$unionOk = $false
+try { $unionJson = $r.Stdout | ConvertFrom-Json; $unionOk = $true } catch { }
+if ($unionOk) {
+    $ctx = $unionJson.hookSpecificOutput.additionalContext
+    Assert-True 'semantic: an empty verdict keeps the keyword hit' `
+        ($ctx -and $ctx.Contains($reuseMarker)) 'keyword hit was cancelled by an empty verdict'
+    Assert-True 'semantic: the empty verdict is visible in the note' `
+        ($ctx -and $ctx.Contains('semantic: none')) 'the empty verdict is not disclosed'
+}
+
+#: Fail-open: a broken/unreachable classifier must still let the keyword path run,
+#: and the injected text must say the semantic half was unavailable.
+$env:CODEX_CLASSIFY_STUB = (Join-Path $env:TEMP ('codex-hook-stub-missing-' + [guid]::NewGuid().ToString('N') + '.json'))
+$r = Invoke-HookCommand $commands.UserPromptSubmit $designEvent
+$fallbackOk = $false
+try { $fallbackJson = $r.Stdout | ConvertFrom-Json; $fallbackOk = $true } catch { }
+Assert-True 'semantic: classifier failure still exits 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode)
+if ($fallbackOk) {
+    $ctx = $fallbackJson.hookSpecificOutput.additionalContext
+    Assert-True 'semantic: failure falls back to the keyword path' `
+        ($ctx -and $ctx.Contains($reuseMarker)) 'keyword path lost when the classifier failed'
+    Assert-True 'semantic: the failure is disclosed in the note' `
+        ($ctx -and $ctx.Contains('semantic unavailable')) 'classifier failure is not disclosed'
+}
+$env:CODEX_CLASSIFY_STUB = '{"kinds":[]}'
 
 $r = Invoke-HookCommand $commands.SubagentStart '{"hook_event_name":"SubagentStart","agent_id":"a1","agent_type":"reviewer"}'
 Assert-True 'subagent-start exit 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode + " err=" + $r.Stderr)

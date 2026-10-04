@@ -1,0 +1,43 @@
+{
+  "run_id": "5c7b92d738c0",
+  "artifacts": {
+    "audit_log.jsonl": {
+      "sha256": "9010fef0ba7225176388f6f56841705566d16c0a9a5669eb0015fb42aa5f63c8",
+      "lines": 2287,
+      "source": "docs\\evidence\\20261006-long21\\runs\\runs\\audit_log.jsonl",
+      "source_lines": 2287
+    },
+    "llm_trace.jsonl": {
+      "sha256": "c337422c50574af043178915af77addbc14a7a701a7391e90c2c3b48727572dd",
+      "lines": 354,
+      "source": "docs\\evidence\\20261006-long21\\runs\\runs\\llm_trace.jsonl",
+      "source_lines": 354
+    },
+    "knowledge_trace.json": {
+      "sha256": "d6b4d5f8a3544a1f491a7b41104ab5d01e5b078149ef02c78e715de14b3768d2",
+      "source": "docs\\evidence\\20261006-long21\\runs\\knowledge_trace.json"
+    },
+    "shots.json": {
+      "path": "export/export/shots.json",
+      "sha256": "02b078d7d5edccd98c6484c687e83e5bc1047549a53c054abc8a67fc798e9ec5"
+    }
+  },
+  "run_span": {
+    "events": 2287,
+    "first_ts": 1791144084.011,
+    "last_ts": 1791144763.079
+  },
+  "pins": {
+    "holdout": {
+      "path": "E:\\白模预演codex\\fixtures\\knowledge_holdout.jsonl",
+      "sha256": "e3e6bac24d9efcfea8c5f1b5f1f7fd65a8c9869551df52ef0fe327cb74ef8571"
+    },
+    "index": {
+      "path": "E:\\白模预演codex\\knowledge\\hypergraph.manifest.json",
+      "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67"
+    },
+    "cases": {
+      "fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86"
+    }
+  }
+}

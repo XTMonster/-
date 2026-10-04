@@ -618,19 +618,24 @@ if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
 # joins on.  So the chain now feeds the newest committed REAL run that has the
 # hypergraph channel; its run_id is DERIVED from the run manifest (never typed
 # here) because the audit mirror must filter by the run that produced the log.
-$knowledgeRun = 'docs/evidence/20261004_chunked_long19'
+$knowledgeRun = 'docs/evidence/20261006-long21'
 $knowledgeRunId = (Get-Content (Join-Path $knowledgeRun 'run_manifest.json') -Raw | ConvertFrom-Json).run_id
+# 2026-10-06 (SS95/SS96): a fresh real run (long21) replaced long19 as the Q5 / audit
+# channel input.  Why it had to be re-run: re-running the corpus pipeline re-fetched the
+# live sources, the text drifted, so the CORPUS fingerprint moved
+# (69791dbacd... -> 48df4a53c2c9...) and long19's shots.json was (correctly) judged
+# "decoupled from the current index" by quality.py.  Only a new run carries the new key.
 # 2026-10-04 (SS87): E1's review file moved up to a 10x bigger sample.  The panel
 # could never run while only glm-4.7 was configured (this account has quota only
 # for glm-5.3, see SS78); with glm-5.3 it scored 64 queries x top-3 = 192 cases
 # in one pass, and the honest estimate came out LOWER than the 18-case one
 # (17/192 = 0.089 vs 3/18 = 0.167).  The old file stays in the repo as history.
-# 2026-10-05 (SS91): L3 was re-cut to the 500-case index (every case in it carries a
-# Chinese retrieval key, and every source keeps one trace).  The E1 review file now
-# holds three independent cross-family panel runs on THAT index (27/29/27 -> 83/576),
-# so the chain reports the shipped index instead of the previous one's 17/192.
-# Coverage and the 0.70 line are untouched.  See docs/evidence/20261005-e1-c2/.
-python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge --e1-reviews docs/evidence/20261005-e1-c2/reviews.jsonl --shots docs/evidence/20261004_chunked_long19/shots.json --audit-log docs/evidence/20261004_chunked_long19/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+# 2026-10-06 (SS95): the craft source (StudioBinder, the only source family that
+# actually explains shot craft) was expanded from 157 to ~900 cases while every other
+# source stayed at its shipped share -- 1140 cases / 1012 clues, and E1 went
+# 0.1441 -> 0.1979 on a fresh cross-family panel run over THAT index.
+# Coverage and the 0.70 line are untouched.  See docs/evidence/20261006-e1-craft/.
+python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge --e1-reviews docs/evidence/20261006-e1-craft/reviews.jsonl --shots docs/evidence/20261006-long21/export/export/shots.json --audit-log docs/evidence/20261006-long21/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }

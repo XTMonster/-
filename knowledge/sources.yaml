@@ -29,6 +29,7 @@ sources:
     genre: film
     theme: camera_angle
     chunk_budget: 5
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/78373/pg78373.txt
     title: "Photography at home"
     author: "John A. Tennant"
@@ -37,6 +38,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 5
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/24637/pg24637.txt
     title: "Bromide Printing and Enlarging"
     author: "John A. Tennant"
@@ -45,6 +47,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 5
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/57335/pg57335.txt
     title: "Light and Colour Theories, and their relation to light and colour standardization"
     author: "Joseph W. Lovibond"
@@ -54,6 +57,7 @@ sources:
     genre: film
     theme: lighting
     chunk_budget: 5
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/70417/pg70417.txt
     title: "Tinting and toning of Eastman positive motion picture film"
     author: "Eastman Kodak Company"
@@ -63,6 +67,7 @@ sources:
     genre: film
     theme: color
     chunk_budget: 5
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/42982/pg42982.txt
     title: "Photography in the studio and in the field"
     author: "Estabrooke, Edward M., 1838-1903"
@@ -72,6 +77,7 @@ sources:
     genre: film
     theme: camera_angle
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/40468/pg40468.txt
     title: "The Barnet Book of Photography: A Collection of Practical Articles"
     author: "Various"
@@ -80,6 +86,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 6
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/56833/pg56833.txt
     title: "Naturalistic Photography for Students of the Art."
     author: "Emerson, P. H. (Peter Henry), 1856-1936"
@@ -88,6 +95,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 6
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/17625/pg17625.txt
     title: "Artificial Light: Its Influence upon Civilization"
     author: "Luckiesh, Matthew, 1883-1967"
@@ -97,6 +105,7 @@ sources:
     genre: film
     theme: lighting
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/39998/pg39998.txt
     title: "The Science of Animal Locomotion (Zoopraxography) An Electro-Photographic Investigation of Consecutive Phases of Animal Movements"
     author: "Muybridge, Eadweard, 1830-1904"
@@ -106,6 +115,7 @@ sources:
     genre: film
     theme: camera_angle
     chunk_budget: 7
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/33899/pg33899.txt
     title: "Optical Projection. Part 1: The Projection of Lantern Slides"
     author: "Wright, Lewis, 1838-1905; Wright, Russell Stuart"
@@ -115,6 +125,7 @@ sources:
     genre: film
     theme: lighting
     chunk_budget: 6
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/75890/pg75890.txt
     title: "The magic lantern and its management"
     author: "Hepworth, Thomas Cradock, -1905"
@@ -123,6 +134,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 6
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/33447/pg33447.txt
     title: "The Pencil of Nature"
     author: "Talbot, William Henry Fox, 1800-1877"
@@ -131,6 +143,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 6
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/38866/pg38866.txt
     title: "The Evolution of Photography With a Chronological Record of Discoveries, Inventions, Etc., Contributions to Photographic Literature, and Personal Reminescences Extending over Forty Years"
     author: "Werge, John, active 1854-1890"
@@ -139,6 +152,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 6
+    case_budget: 2
   - url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/c7c1a8f078c559256fbe9ed93ba9e5b8_MIT21L_011F13_2006_Notes.pdf
     title: "MIT 21L.011 The Film Experience - 2006 lecture notes"
     author: "MIT OpenCourseWare (David Thorburn)"
@@ -148,6 +162,7 @@ sources:
     genre: film
     theme: camera_angle
     chunk_budget: 6
+    case_budget: 2
   # ---------------------------------------------------------------- composition
   - url: https://www.gutenberg.org/cache/epub/26638/pg26638.txt
     title: "Pictorial Composition and the Critical Judgment of Pictures"
@@ -157,6 +172,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/55346/pg55346.txt
     title: "Lectures on Painting, Delivered to the Students of the Royal Academy"
     author: "Edward Armitage"
@@ -165,6 +181,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/20165/pg20165.txt
     title: "The Theory and Practice of Perspective"
     author: "G. A. Storey"
@@ -173,6 +190,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/32681/pg32681.txt
     title: "The Use of a Box of Colours, in a Practical Demonstration on Composition"
     author: "Harry Willson"
@@ -182,6 +200,7 @@ sources:
     genre: film
     theme: color
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/45410/pg45410.txt
     title: "Composition"
     author: "Dow, Arthur W. (Arthur Wesley), 1857-1922"
@@ -191,6 +210,7 @@ sources:
     genre: film
     theme: color
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/60816/pg60816.txt
     title: "The Elements of Perspective arranged for the use of schools and intended to be read in connection with the first three books of Euclid"
     author: "Ruskin, John, 1819-1900"
@@ -199,6 +219,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/66049/pg66049.txt
     title: "Pictorial Beauty on the Screen"
     author: "Freeburg, Victor Oscar, 1882-1953; Ingram, Rex, 1892-1950 [Author of introduction, etc.]"
@@ -207,6 +228,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   # ---------------------------------------------------------------- editing
   - url: https://www.gutenberg.org/cache/epub/15383/pg15383.txt
     title: "The Photoplay: A Psychological Study"
@@ -217,6 +239,7 @@ sources:
     genre: film
     theme: editing
     chunk_budget: 20
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/13029/pg13029.txt
     title: "The Art of the Moving Picture"
     author: "Lindsay, Vachel, 1879-1931"
@@ -226,6 +249,7 @@ sources:
     genre: film
     theme: editing
     chunk_budget: 14
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/73028/pg73028.txt
     title: "The soul of the moving picture"
     author: "Bloem, Walter Julius, 1898-1945; Porterfield, Allen Wilson, 1877-1952 [Translator]"
@@ -235,6 +259,7 @@ sources:
     genre: film
     theme: editing
     chunk_budget: 12
+    case_budget: 2
   - url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
     title: "MIT 21L.011 The Film Experience - lecture outlines"
     author: "MIT OpenCourseWare (David Thorburn)"
@@ -244,6 +269,7 @@ sources:
     genre: film
     theme: editing
     chunk_budget: 6
+    case_budget: 2
   # ---------------------------------------------------------------- storyboard
   - url: https://www.gutenberg.org/cache/epub/17903/pg17903.txt
     title: "Writing the Photoplay"
@@ -254,6 +280,7 @@ sources:
     genre: film
     theme: storyboard
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/76829/pg76829.txt
     title: "How to write photoplays"
     author: "Embrie Zuver"
@@ -263,6 +290,7 @@ sources:
     genre: film
     theme: storyboard
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/70937/pg70937.txt
     title: "The photodrama: the philosophy of its principles"
     author: "Henry Albert Phillips"
@@ -272,6 +300,7 @@ sources:
     genre: film
     theme: storyboard
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/10865/pg10865.txt
     title: "Play-Making: A Manual of Craftsmanship"
     author: "Archer, William, 1856-1924"
@@ -281,6 +310,7 @@ sources:
     genre: film
     theme: storyboard
     chunk_budget: 12
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/18230/pg18230.txt
     title: "How to Write a Play Letters from Augier, Banville, Dennery, Dumas, Gondinet, Labiche, Legouvé, Pailleron, Sardou and Zola"
     author: "Miles, Dudley H. (Dudley Howe), 1881- [Translator]; Gillette, William, 1853-1937 [Author of introduction, etc.]"
@@ -289,6 +319,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/76719/pg76719.txt
     title: "The new art of writing plays"
     author: "Vega, Lope de, 1562-1635; Matthews, Brander, 1852-1929 [Author of introduction, etc.]; Brewster, W. T. (William Tenney), 1869-1961 [Translator]"
@@ -297,6 +328,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   # ---------------------------------------------------------------- anime
   - url: https://www.gutenberg.org/cache/epub/73455/pg73455.txt
     title: "Animated cartoons — How they are made, their origin and development"
@@ -307,6 +339,7 @@ sources:
     genre: anime
     theme: anime
     chunk_budget: 45
+    case_budget: 2
   # ---------------------------------------------------------------- blocking
   - url: https://www.gutenberg.org/cache/epub/39973/pg39973.txt
     title: "How to Produce Amateur Plays: A Practical Manual"
@@ -316,6 +349,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 20
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/72655/pg72655.txt
     title: "Continental stagecraft"
     author: "Macgowan, Kenneth, 1888-1963; Jones, Robert Edmond, 1887-1954 [Illustrator]"
@@ -324,6 +358,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 12
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/76304/pg76304.txt
     title: "Secrets of scene painting and stage effects"
     author: "Goldston, Will, 1877-1948"
@@ -332,6 +367,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/70471/pg70471.txt
     title: "Kabuki"
     author: "Kincaid, Zoë, 1878-1944"
@@ -340,6 +376,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/57239/pg57239.txt
     title: "Japanese Plays and Playfellows"
     author: "Edwards, Osman, 1864-1936"
@@ -348,6 +385,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/69095/pg69095.txt
     title: "The Greek theater and its drama"
     author: "Flickinger, Roy C. (Roy Caston), 1876-1942"
@@ -356,6 +394,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/66391/pg66391.txt
     title: "A Book of Marionettes"
     author: "Joseph, Helen Haiman"
@@ -364,6 +403,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/74969/pg74969.txt
     title: "Marionettes, masks and shadows"
     author: "Mills, Winifred H."
@@ -372,6 +412,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   # ---------------------------------------------------------------- performance
   - url: https://www.gutenberg.org/cache/epub/36580/pg36580.txt
     title: "Dramatic Technique"
@@ -381,6 +422,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 20
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/57611/pg57611.txt
     title: "Heroines of the Modern Stage"
     author: "Forrest Izard"
@@ -389,6 +431,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 20
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/77829/pg77829.txt
     title: "Screen acting"
     author: "Marsh, Mae, 1894-1968"
@@ -397,6 +440,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/13483/pg13483.txt
     title: "The Drama"
     author: "Irving, Henry, Sir, 1838-1905"
@@ -405,6 +449,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/13928/pg13928.txt
     title: "Plays, Acting and Music: A Book Of Theory"
     author: "Symons, Arthur, 1865-1945"
@@ -413,6 +458,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/51658/pg51658.txt
     title: "How to become an actor"
     author: "Warford, Aaron A."
@@ -421,6 +467,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   # ---------------------------------------------------------------- production
   - url: https://www.gutenberg.org/cache/epub/45231/pg45231.txt
     title: "Motion Picture Operation, Stage Electrics and Illusions"
@@ -431,6 +478,7 @@ sources:
     genre: film
     theme: lighting
     chunk_budget: 20
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/67972/pg67972.txt
     title: "Moving Pictures: How They Are Made and Worked"
     author: "Talbot, Frederick Arthur Ambrose, 1880-1924"
@@ -439,6 +487,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 10
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/74971/pg74971.txt
     title: "A-B-C of motion pictures"
     author: "Welsh, Robert E. (Robert Emmet), 1893-1964; Frohman, Daniel, 1851-1940 [Author of introduction, etc.]"
@@ -447,6 +496,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/56570/pg56570.txt
     title: "Breaking into the movies"
     author: "Emerson, John, 1874-1956; Loos, Anita, 1893-1981"
@@ -455,6 +505,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/59730/pg59730.txt
     title: "Behind the Screen"
     author: "Goldwyn, Samuel, 1879-1974"
@@ -463,6 +514,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/64578/pg64578.txt
     title: "Magic Shadows: The Story of the Origin of Motion Pictures"
     author: "Quigley, Martin, 1917-2011; Curtis, Edward Peck, 1897-1987 [Author of introduction, etc.]"
@@ -471,6 +523,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/66368/pg66368.txt
     title: "That Marvel—The Movie A Glance at Its Past, Its Promising Present and Its Significant Future"
     author: "Van Zile, Edward S. (Edward Sims), 1863-1931; Hays, Will H. (Will Harrison), 1879-1954 [Author of introduction, etc.]; Pyle, Howard, 1853-1911 [Illustrator]"
@@ -479,6 +532,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://www.gutenberg.org/cache/epub/68850/pg68850.txt
     title: "When the movies were young"
     author: "Arvidson, Linda, 1884-1949"
@@ -487,6 +541,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   # ---------------------------------------------------------------- axis_theory
   - url: https://www.gutenberg.org/cache/epub/53117/pg53117.txt
     title: "Motion Picture Directing: The Facts and Theories of the Newest Art"
@@ -496,6 +551,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 58
+    case_budget: 2
   # Frames Cinema Journal（BAFTSS，同行评审开放获取，ISSN 2053-8812）里**讨论
   # 空间/方位/连续性的**文章。逐篇找不到具名的 CC 声明，所以按 §2.3c 的
   # `PersonalStudy` 记名（个人学习，不对外分发），不冒充开放许可。
@@ -507,6 +563,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://framescinemajournal.com/article/geology-of-ideas-hydrology-of-matter-nature-and-space-in-abbas-kiarostamis-cinema/
     title: "Geology of Ideas, Hydrology of Matter: Nature and Space in Abbas Kiarostami's Cinema"
     author: "Frames Cinema Journal"
@@ -515,6 +572,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   - url: https://framescinemajournal.com/article/blurring-space-across-film-theatre-and-virtual-reality-zero-calorie-restaurant-2023/
     title: "Blurring Space Across Film, Theatre and Virtual Reality: Zero Calorie Restaurant (2023)"
     author: "Frames Cinema Journal"
@@ -523,6 +581,7 @@ sources:
     mode: http
     genre: film
     chunk_budget: 8
+    case_budget: 2
   # ------------------------------------------------ anime / 现代动画制作（2026-10-02 加）
   # 用户裁决：「补一些动漫设计理论」「**不是角色设计，是动漫那些视频制作理论**」
   # 「动漫电影，围绕着动漫视频制作展开」「理论不要自己写，要别人写的」。
@@ -542,6 +601,7 @@ sources:
     genre: anime
     theme: performance
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/acting-for-animation-character-performance/
     title: "Acting For Animation & Character Performance"
     author: "Andy Joule"
@@ -551,6 +611,7 @@ sources:
     genre: anime
     theme: performance
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/acting-animation-character-animation-working-dialogue/
     title: "Acting For Animation: Character Animation – Working With Dialogue"
     author: "Andy Joule"
@@ -560,6 +621,7 @@ sources:
     genre: anime
     theme: performance
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/acting-animation-character-animation-character-development/
     title: "Acting For Animation: Character Development"
     author: "Andy Joule"
@@ -569,6 +631,7 @@ sources:
     genre: anime
     theme: performance
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/storyboarding-tutorial-pt-1-the-dos-and-donts/
     title: "Storyboarding Tutorial - \"The Do's and Don'ts\""
     author: "Wade Konowalchuk"
@@ -578,6 +641,7 @@ sources:
     genre: anime
     theme: storyboard
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/cartoon-character-animation-maya-book-review/
     title: "\"Cartoon Character Animation with Maya\" book review"
     author: "Gareth Cavanagh"
@@ -587,6 +651,7 @@ sources:
     genre: anime
     theme: character_animation
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/illuminated-pixels-digital-lighting-book-review/
     title: "Illuminated Pixels: The Why, What, and How of Digital Lighting - Book Review"
     author: "Harvey Deneroff"
@@ -596,6 +661,7 @@ sources:
     genre: anime
     theme: lighting
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/tony-white-book-2d-animation-career/
     title: "Veteran Traditional 2D Animator Tony White Releases Book Giving Insight into his Career & Life"
     author: "Aaron Wood"
@@ -605,6 +671,7 @@ sources:
     genre: anime
     theme: character_animation
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/character-animation-in-3d-cgi/
     title: "Character Animation In 3D - New Book"
     author: "Skwigly"
@@ -614,6 +681,7 @@ sources:
     genre: anime
     theme: character_animation
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/inbetweens-jessica-meier/
     title: "INBETWEENS Filmmaker Focus: Jessica Meier"
     author: "Luzie Lilie"
@@ -623,6 +691,7 @@ sources:
     genre: anime
     theme: anime_production
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/inbetweens-steven-fraser/
     title: "INBETWEENS Filmmaker Focus: Steven Fraser"
     author: "Luzie Lilie"
@@ -632,6 +701,7 @@ sources:
     genre: anime
     theme: anime_production
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/colourbang-getting-noticed-on-youtube/
     title: "ColourBANG! Getting noticed on YouTube"
     author: "Steve Henderson"
@@ -641,6 +711,7 @@ sources:
     genre: anime
     theme: anime_production
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/corporate-animation-showcase-character-design/
     title: "Corporate Animation Showcase 2 - Character Design"
     author: "Tom Sanders"
@@ -650,6 +721,7 @@ sources:
     genre: anime
     theme: character_design
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/piripenguins-unreal-pipeline/
     title: "Wild Child Animation’s Unreal pipeline behind Piripenguins’ hybrid 2D/3D style"
     author: "Skwigly"
@@ -659,6 +731,7 @@ sources:
     genre: anime
     theme: pipeline
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/cheatin-in-colour/
     title: "Bill Plympton's Cheatin' In Colour"
     author: "Ben Mitchell"
@@ -668,6 +741,7 @@ sources:
     genre: anime
     theme: technique
     chunk_budget: 1
+    case_budget: 2
   - url: https://www.skwigly.co.uk/childrens-tv-show-animation-pipeline-cinema-4d/
     title: "Walk-through of a Children's TV Show Animation Pipeline in Cinema 4D: Animatic to Render"
     author: "Skwigly"
@@ -677,6 +751,7 @@ sources:
     genre: anime
     theme: pipeline
     chunk_budget: 1
+    case_budget: 2
   # ------------------------------ Animation Studies（同行评审、CC-BY 4.0，2026-10-02 加）
   # §2.3b 把 L3 定义成"拉片/复盘/影评"，而案例层此前是从 L1/L2 的同一批书里切出来的。
   # 这是第一家**有明确开放许可**的现代来源族（全部 161 篇，2010s–2020s），
@@ -898,6 +973,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/types-of-camera-shot-angles-in-film/
     title: "Types of Camera Shot Angles in Film"
     author: "StudioBinder"
@@ -906,6 +982,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/different-types-of-camera-movements-in-film/
     title: "Different Types of Camera Movements in Film"
     author: "StudioBinder"
@@ -914,6 +991,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/ultimate-guide-to-camera-shots/
     title: "The Ultimate Guide to Camera Shots"
     author: "StudioBinder"
@@ -922,6 +1000,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/close-up-shot/
     title: "The Close-Up Shot"
     author: "StudioBinder"
@@ -930,6 +1009,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/extreme-close-up-shot-definition/
     title: "Extreme Close-Up Shot"
     author: "StudioBinder"
@@ -938,6 +1018,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/medium-close-up-shot/
     title: "The Medium Close-Up Shot"
     author: "StudioBinder"
@@ -946,6 +1027,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/wide-shot-camera-angles-movements-examples/
     title: "The Wide Shot"
     author: "StudioBinder"
@@ -954,6 +1036,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/two-shot-camera-angle-movement/
     title: "The Two Shot"
     author: "StudioBinder"
@@ -962,6 +1045,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/over-the-shoulder-shot/
     title: "The Over-the-Shoulder Shot"
     author: "StudioBinder"
@@ -970,6 +1054,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/point-of-view-shot-camera-movement-angles/
     title: "The Point of View Shot"
     author: "StudioBinder"
@@ -978,6 +1063,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/eye-level-camera-shot-angle/
     title: "The Eye-Level Shot"
     author: "StudioBinder"
@@ -986,6 +1072,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/high-angle-shot-camera-movement-angle/
     title: "The High-Angle Shot"
     author: "StudioBinder"
@@ -994,6 +1081,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/low-angle-shot-camera-movement-angle/
     title: "The Low-Angle Shot"
     author: "StudioBinder"
@@ -1002,6 +1090,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/dutch-angle-shot-camera-movement/
     title: "The Dutch Angle Shot"
     author: "StudioBinder"
@@ -1010,6 +1099,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/aerial-shot-camera-movement-angle/
     title: "The Aerial Shot"
     author: "StudioBinder"
@@ -1018,6 +1108,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/long-take-sequence-shot-camera-movement-angle/
     title: "The Long Take"
     author: "StudioBinder"
@@ -1026,6 +1117,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/dolly-shot-camera-movements/
     title: "The Dolly Shot"
     author: "StudioBinder"
@@ -1034,6 +1126,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/tracking-shot-camera-movement-definition/
     title: "The Tracking Shot"
     author: "StudioBinder"
@@ -1042,6 +1135,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/tilt-shot-in-film/
     title: "The Tilt Shot"
     author: "StudioBinder"
@@ -1050,6 +1144,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/rack-focus-shot-camera-movement-angles/
     title: "The Rack Focus Shot"
     author: "StudioBinder"
@@ -1058,6 +1153,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/what-is-a-zoom-shot-definition/
     title: "The Zoom Shot"
     author: "StudioBinder"
@@ -1066,6 +1162,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/what-is-a-steadicam-shot/
     title: "The Steadicam Shot"
     author: "StudioBinder"
@@ -1074,6 +1171,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/handheld-shot-in-film-definition-examples/
     title: "The Handheld Shot"
     author: "StudioBinder"
@@ -1082,6 +1180,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/crane-shot-definition/
     title: "The Crane Shot"
     author: "StudioBinder"
@@ -1090,6 +1189,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/what-is-an-establishing-shot-definition-examples/
     title: "The Establishing Shot"
     author: "StudioBinder"
@@ -1098,6 +1198,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/rules-of-shot-composition-in-film/
     title: "Rules of Shot Composition in Film"
     author: "StudioBinder"
@@ -1106,6 +1207,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/what-is-the-rule-of-thirds/
     title: "The Rule of Thirds"
     author: "StudioBinder"
@@ -1114,6 +1216,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/what-is-the-golden-ratio-definition/
     title: "The Golden Ratio in Film"
     author: "StudioBinder"
@@ -1122,6 +1225,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/film-blocking-techniques/
     title: "Film Blocking Techniques"
     author: "StudioBinder"
@@ -1130,6 +1234,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/blocking-and-staging-scenes/
     title: "Blocking and Staging a Scene"
     author: "StudioBinder"
@@ -1138,6 +1243,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   # 逐片工艺分析 → 只喂 L3（§2.3b 把 L3 定义成「拉片/复盘/影评」）。
   # 这些页是对**具体影片**的镜头分析，正是 E1 缺的那一类；
   # 影评不是镜头层硬约束，因此 `layers: [L3]` 且各限一条。
@@ -1161,6 +1267,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/match-cuts-creative-transitions-examples/
     title: "Match Cuts"
     author: "StudioBinder"
@@ -1169,6 +1276,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/what-is-a-montage-definition/
     title: "The Montage"
     author: "StudioBinder"
@@ -1177,6 +1285,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/soviet-montage-theory/
     title: "Soviet Montage Theory"
     author: "StudioBinder"
@@ -1185,6 +1294,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/cross-cutting-parallel-editing-definition/
     title: "Cross-Cutting"
     author: "StudioBinder"
@@ -1193,6 +1303,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/what-is-an-eyeline-match/
     title: "The Eyeline Match"
     author: "StudioBinder"
@@ -1201,6 +1312,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/film-coverage/
     title: "Film Coverage"
     author: "StudioBinder"
@@ -1209,6 +1321,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/shot-reverse-shot-cutaways-coverage/
     title: "Shot Reverse Shot"
     author: "StudioBinder"
@@ -1217,6 +1330,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/storyboard-camera-movement/
     title: "Storyboard Camera Movement"
     author: "StudioBinder"
@@ -1225,6 +1339,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 2
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/storyboard-composition-techniques/
     title: "Storyboard Composition Techniques"
     author: "StudioBinder"
@@ -1233,6 +1348,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/storyboard-rules/
     title: "Storyboard Rules"
     author: "StudioBinder"
@@ -1241,6 +1357,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/storyboard-arrows-meaning/
     title: "Storyboard Arrows Meaning"
     author: "StudioBinder"
@@ -1249,6 +1366,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   - url: https://www.studiobinder.com/blog/shot-list-abbreviations/
     title: "Shot List Abbreviations"
     author: "StudioBinder"
@@ -1257,6 +1375,7 @@ sources:
     mode: http
     theme: shot_language
     chunk_budget: 1
+    case_budget: 40
   # ============================================================================
   # BFI / Sight & Sound 的**逐片分析**（2026-10-02 加，用户点名的那一半）
   #

@@ -77,7 +77,7 @@ $CONSULT_TRIGGERS = @(
     @{ Kind = 'review'; Roles = '\u6d4b\u8bd5\u4e0e\u9a8c\u6536,\u89c4\u683c\u4e00\u81f4\u6027'
        Pattern = '(\u5ba1\u67e5|\u5ba1\u6838|\u590d\u6838|\u9a8c\u6536|\u5bf9\u6297|\u590d\u7b97|\u6821\u9a8c|review|audit|verify|cross-check)' },
     @{ Kind = 'idea';   Roles = '\u9886\u57df\u8bb2\u89e3,\u5b9e\u73b0\u987e\u95ee'
-       Pattern = '(\u65b9\u6848|\u53d6\u820d|\u6743\u8861|\u601d\u8def|\u67b6\u6784|\u600e\u4e48\u505a|design|approach|tradeoff)' }
+       Pattern = '(\u65b9\u6848|\u53d6\u820d|\u6743\u8861|\u601d\u8def|\u67b6\u6784|\u600e\u4e48\u505a|\u8bbe\u8ba1|\u89c4\u5212|\u8ba1\u5212|\u6267\u884c\u6587\u6863|\u91cd\u6784|\u9009\u578b|design|approach|tradeoff)' }
 )
 
 $promptText = ''
@@ -85,28 +85,190 @@ if ($raw) {
     try { $promptText = Get-EventText $evt } catch { $promptText = '' }
 }
 
-$trigger = $null
-if ($promptText -and $promptText.Length -ge 8) {
-    foreach ($candidate in $CONSULT_TRIGGERS) {
-        $found = [regex]::Matches($promptText, $candidate.Pattern, 'IgnoreCase')
-        if ($found.Count -gt 0) {
-            $hits = (($found | ForEach-Object { $_.Value }) |
-                     Select-Object -Unique) -join '/'
-            $trigger = [pscustomobject]@{ Kind = $candidate.Kind
-                                          Roles = $candidate.Roles
-                                          Hits = $hits
-                                          Prompt = $promptText }
-            break
+$REUSE_PATTERN = '(\u8bbe\u8ba1|\u89c4\u5212|\u8ba1\u5212|\u6267\u884c\u6587\u6863|\u67b6\u6784|\u7a0b\u5e8f|\u5b9e\u73b0|\u91cd\u6784|\u9009\u578b|\u6846\u67b6|\u4f9d\u8d56|\u590d\u7528|\u73b0\u6210|\u5f00\u6e90|\u7b2c\u4e09\u65b9|\u8f6e\u5b50|\u9b54\u6539|\u79fb\u690d|\u6539\u9020|\u4e8c\u6b21\u5f00\u53d1|design|plan|architect|refactor|library|framework|dependency|upstream|github|fork|vendor|patch)'
+
+# --------------------------------------------------------------------------- #
+# Request classification: keywords (fast, deterministic, no network) UNION one
+# DeepSeek call (semantic; measured ~1 s here).  The semantic call is strictly
+# budgeted: 8 s socket timeout inside a 20 s hook budget, and on ANY failure the
+# hook falls back to keywords alone -- a classifier must never break a turn.
+# CODEX_CLASSIFY_STUB=<file with {"kinds":[...]}> replaces the network call, so
+# the offline selftest can drive both paths without a key.
+# ASCII-only (PowerShell 5.1 reads a BOM-less UTF-8 .ps1 as ANSI): the Chinese
+# side of the classifier lives in classify-prompt.md (read as UTF-8).
+# --------------------------------------------------------------------------- #
+function Get-KeywordKinds([string]$text) {
+    $found = @()
+    $hits = @()
+    if ($text) {
+        foreach ($candidate in $CONSULT_TRIGGERS) {
+            $match = [regex]::Matches($text, $candidate.Pattern, 'IgnoreCase')
+            if ($match.Count -gt 0) {
+                $found += $candidate.Kind
+                $hits += (($match | ForEach-Object { $_.Value }) | Select-Object -Unique)
+            }
         }
+        $reuse = [regex]::Matches($text, $REUSE_PATTERN, 'IgnoreCase')
+        if ($reuse.Count -gt 0) {
+            $found += 'design'
+            $hits += (($reuse | ForEach-Object { $_.Value }) | Select-Object -Unique)
+        }
+    }
+    return @{ Kinds = @($found | Select-Object -Unique)
+              Hits  = @($hits | Select-Object -Unique) }
+}
+
+function Get-ClassifyKey {
+    #: env first (never logged); the app's own provider token is the fallback so
+    #: the hook works from a shell that the user never exported the key into.
+    if ($env:DEEPSEEK_API_KEY) { return [string]$env:DEEPSEEK_API_KEY }
+    $config = Join-Path $env:USERPROFILE '.codex\config.toml'
+    if (Test-Path -LiteralPath $config) {
+        $text = [System.IO.File]::ReadAllText($config, [System.Text.Encoding]::UTF8)
+        $match = [regex]::Match($text, 'experimental_bearer_token\s*=\s*"([^"]+)"')
+        if ($match.Success) { return $match.Groups[1].Value }
+    }
+    return ''
+}
+
+function Invoke-PromptClassify([string]$text) {
+    $watch = [System.Diagnostics.Stopwatch]::StartNew()
+    if (-not $text -or $text.Trim().Length -lt 4) {
+        return @{ Ok = $false; Kinds = @(); Ms = 0; Error = 'prompt too short' }
+    }
+    if ($env:CODEX_CLASSIFY_STUB) {
+        try {
+            #: The stub is either inline JSON (starts with "{", keeps the selftest
+            #: hermetic with no temp files) or a path to a JSON file.
+            $rawStub = [string]$env:CODEX_CLASSIFY_STUB
+            if ($rawStub.TrimStart().StartsWith('{')) {
+                $stub = $rawStub | ConvertFrom-Json
+            } else {
+                #: $ErrorActionPreference is 'Continue', so a missing file is a
+                #: NON-terminating error: without this guard the pipe yields $null
+                #: and the stub silently looks like "no kinds" (a false success).
+                if (-not (Test-Path -LiteralPath $rawStub)) { throw 'stub file missing' }
+                $stub = (Get-Content -LiteralPath $rawStub -Raw -ErrorAction Stop) |
+                        ConvertFrom-Json
+            }
+            if (-not $stub) { throw 'stub empty' }
+            return @{ Ok = $true; Kinds = @($stub.kinds | ForEach-Object { [string]$_ })
+                      Ms = 0; Error = '' }
+        } catch {
+            return @{ Ok = $false; Kinds = @(); Ms = 0; Error = 'stub unreadable' }
+        }
+    }
+    $key = Get-ClassifyKey
+    if (-not $key) { return @{ Ok = $false; Kinds = @(); Ms = 0; Error = 'no key' } }
+    $instructions = Get-ContractText 'classify-prompt.md'
+    if (-not $instructions) {
+        return @{ Ok = $false; Kinds = @(); Ms = 0; Error = 'classify-prompt.md missing' }
+    }
+    $url = 'https://api.deepseek.com/v1/chat/completions'
+    if ($env:CODEX_CLASSIFY_URL) { $url = [string]$env:CODEX_CLASSIFY_URL }
+    $body = @{
+        model       = 'deepseek-chat'
+        messages    = @(@{ role = 'system'; content = $instructions },
+                        @{ role = 'user'; content = $text })
+        temperature = 0
+        max_tokens  = 256
+        #: JSON mode: without it the model occasionally answers with a tool-call
+        #: flourish ("||DSML|| parameter>") and the verdict is unparsable.
+        response_format = @{ type = 'json_object' }
+    } | ConvertTo-Json -Depth 6 -Compress
+    try {
+        #: Do NOT use Invoke-RestMethod here: PowerShell 5.1 decodes the body with
+        #: the charset from Content-Type, and this endpoint omits it -> Latin-1 ->
+        #: Chinese turns into mojibake and ConvertFrom-Json dies with
+        #: "Invalid JSON primitive".  Read the raw bytes and decode UTF-8 ourselves.
+        Add-Type -AssemblyName System.Net.Http -ErrorAction SilentlyContinue
+        $handler = New-Object System.Net.Http.HttpClientHandler
+        $client = New-Object System.Net.Http.HttpClient($handler)
+        $client.Timeout = [System.TimeSpan]::FromSeconds(8)
+        $client.DefaultRequestHeaders.TryAddWithoutValidation(
+            'Authorization', "Bearer $key") | Out-Null
+        $payload = New-Object System.Net.Http.StringContent(
+            $body, [System.Text.Encoding]::UTF8, 'application/json')
+        $response = $client.PostAsync($url, $payload).GetAwaiter().GetResult()
+        $bytes = $response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult()
+        $text = [System.Text.Encoding]::UTF8.GetString($bytes)
+        $client.Dispose()
+        if (-not $response.IsSuccessStatusCode) {
+            return @{ Ok = $false; Kinds = @()
+                      Ms = [int]$watch.Elapsed.TotalMilliseconds
+                      Error = ('HTTP ' + [int]$response.StatusCode + ': ' +
+                               ($text -replace '\s+', ' ')) }
+        }
+        $reply = $text | ConvertFrom-Json
+        $content = [string]$reply.choices[0].message.content
+        $content = ($content -replace '(?s)^\s*```(json)?', '' -replace '(?s)```\s*$', '').Trim()
+        #: Belt and braces: take the first balanced-looking {...} even if the model
+        #: wrapped it in prose.  (JSON mode makes this rare, not impossible.)
+        if ($content -notmatch '^\s*\{') {
+            $open = $content.IndexOf('{')
+            $close = $content.LastIndexOf('}')
+            if ($open -ge 0 -and $close -gt $open) {
+                $content = $content.Substring($open, $close - $open + 1)
+            }
+        }
+        $verdict = $content | ConvertFrom-Json
+        return @{ Ok = $true; Kinds = @($verdict.kinds | ForEach-Object { [string]$_ })
+                  Ms = [int]$watch.Elapsed.TotalMilliseconds; Error = '' }
+    } catch {
+        return @{ Ok = $false; Kinds = @()
+                  Ms = [int]$watch.Elapsed.TotalMilliseconds
+                  Error = ($_.Exception.Message -replace '\s+', ' ') }
     }
 }
 
-if ($trigger) {
+function Write-ClassifyLog($record) {
+    #: One JSONL line per prompt; NO prompt text (only length) -- it is a hook log.
+    try {
+        $path = Join-Path $root 'classify.log'
+        $line = ($record | ConvertTo-Json -Compress -Depth 5)
+        [System.IO.File]::AppendAllText($path, $line + "`n", $utf8)
+    } catch {
+        #: logging must never break the hook
+    }
+}
+
+$keyword = Get-KeywordKinds $promptText
+$semantic = Invoke-PromptClassify $promptText
+
+$kinds = @($keyword.Kinds)
+if ($semantic.Ok) { $kinds += $semantic.Kinds }
+$kinds = @($kinds | Where-Object { $_ } | Select-Object -Unique)
+
+$sourceNote = 'keyword'
+if ($semantic.Ok) {
+    $sourceNote = 'keyword+semantic'
+    if (-not $keyword.Kinds -and -not $semantic.Kinds) { $sourceNote = 'both: none' }
+    elseif (-not $keyword.Kinds) { $sourceNote = 'semantic' }
+    elseif (-not $semantic.Kinds) { $sourceNote = 'keyword (semantic: none)' }
+} else {
+    $why = [string]$semantic.Error
+    if ($why.Length -gt 40) { $why = $why.Substring(0, 40) }
+    $sourceNote = 'keyword (semantic unavailable: ' + $why + ')'
+}
+
+$hits = @($keyword.Hits)
+if ($semantic.Ok) { $hits += @($semantic.Kinds | ForEach-Object { 'semantic:' + $_ }) }
+$hitsText = (($hits | Where-Object { $_ } | Select-Object -Unique |
+              Select-Object -First 8) -join '/')
+if (-not $hitsText) { $hitsText = 'none' }
+$hitsText = $hitsText + ' [source=' + $sourceNote + '; semantic_ms=' + $semantic.Ms + ']'
+
+$consultKind = $null
+foreach ($kind in @('hard', 'review', 'idea')) {
+    if ($kinds -contains $kind) { $consultKind = $kind; break }
+}
+if ($consultKind) {
     $template = Get-ContractText 'consult-trigger.md'
     if ($template) {
+        $roles = ($CONSULT_TRIGGERS | Where-Object { $_.Kind -eq $consultKind }).Roles
         $tick = [char]96
         $paths = @([regex]::Matches(
-            $trigger.Prompt,
+            $promptText,
             '[A-Za-z0-9_\-./\\]+\.(py|md|json|jsonl|ps1|ya?ml|toml)') |
             ForEach-Object { $_.Value } | Select-Object -Unique | Select-Object -First 6)
         $sourceLines = ''
@@ -116,13 +278,32 @@ if ($trigger) {
         if (-not $sourceLines) {
             $sourceLines = '    --source <file:start-end> ' + $tick + "`n"
         }
-        $parts += $template.Replace('{{KIND}}', $trigger.Kind).
-                            Replace('{{HITS}}', $trigger.Hits).
-                            Replace('{{ROLES}}', $trigger.Roles).
+        $parts += $template.Replace('{{KIND}}', $consultKind).
+                            Replace('{{HITS}}', $hitsText).
+                            Replace('{{ROLES}}', [string]$roles).
                             Replace('{{SOURCES}}', $sourceLines).
-                            Replace('{{SLUG}}', $trigger.Kind)
+                            Replace('{{SLUG}}', $consultKind)
     }
 }
+
+if ($kinds -contains 'design') {
+    $reuseTemplate = Get-ContractText 'github-reuse.md'
+    if ($reuseTemplate) {
+        $parts += $reuseTemplate.Replace('{{HITS}}', $hitsText)
+    }
+}
+
+Write-ClassifyLog ([ordered]@{
+    ts           = (Get-Date).ToString('s')
+    prompt_chars = $promptText.Length
+    source       = $sourceNote
+    kinds        = @($kinds)
+    keyword      = @($keyword.Kinds)
+    semantic     = @($semantic.Kinds)
+    semantic_ms  = $semantic.Ms
+    semantic_ok  = [bool]$semantic.Ok
+    error        = [string]$semantic.Error
+})
 
 if ($event -eq 'SessionStart') {
     $extra = Get-ContractText 'session-start.md'
