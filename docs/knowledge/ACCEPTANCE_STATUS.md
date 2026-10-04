@@ -6062,3 +6062,38 @@ python work/_retrieve_ab.py --out work/_retrieve_ab.<tree>.json
 `python -m pytest` ＝ **2077 passed / 1 skipped**；证据
 `docs/evidence/20261005-063234/`（`holdout_gates.json` 的 `overall = pass`）。
 RK-13 仍记 failed（Q5/E1 是硬门，与 S1a 无关）。
+
+## 一百、S2 **停在动手前**：上游"抽取层"里没有槽位超边（待裁决）
+
+做完 S1a 就按计划进 S2（"移植上游抽取层"）。**开工前的原理复核把前提否掉了**，
+所以这一节记的是"没做，以及为什么没做"，不是"做了但没效果"。
+
+* 抓取（只读、可重跑）：`LHRLAB/HyperGraphRAG@d587cdf8c3fe2be7719557f845324cb3a321f5e2`
+  的 `LICENSE`／`prompt.py`（351 行）／`operate.py`（1,124 行），sha256 与命令逐字记在
+  `docs/knowledge/S2_UPSTREAM_PREMISE.md` §0。
+* **实测**：`prompt.py:18-21` 的 Step 1 让模型先切"完整知识片段"，产出的记录是
+  `("hyper-relation"<|><一句话><|><完整度 0–10>)`；`operate.py:119-131` 把**那句话**
+  当超边（`"<hyperedge>" + 句子`）；实体按**记录流先后**挂到最近那句话上
+  （`operate.py:92/103-110/364`，位置分组、`entity_type` 是开放字符串）；
+  合并按**字符串相等**（`operate.py:134-164`）。
+* **后果**：上游没有 `type`／`role(allow·forbid·qualifier)`／闭集 `kind`／
+  `source_kind`·`hardness`／成员级依据。⇒ ①S2 的两条谓词（填充率 `0<r<1`、
+  "无时序语义的边必须缺 `seq_phase`"）**在自由文本片段上没有指称**，无法求值；
+  ②"片段→槽位超边"那层翻译按 ADR-0014 是**自研**，照现文执行会把账记错；
+  ③反过来照用上游表示是**降级**（R011／Q6b／Q7／E3 全依赖 role 与闭集 kind，
+  在自由文本上一条都判不了）。
+* **真正可借鉴的**（另立一栏，不与上面混账）：①**先分段、再归属**的两趟结构
+  （本仓 v18 是一趟原子事实 ＋ 成员级 quote，这一步确实没有）；
+  ②`completeness_score` 作为置信度输入；③记录协议解析那一小段（可原样复用，
+  但本仓已有自己的解析器，所以它本身不构成做 S2 的理由）。
+* **请裁决**（三选一，后果写在 `S2_UPSTREAM_PREMISE.md` §6）：
+  **A** 改 S2 的立法（按本仓 schema 自实现两趟结构，上游只作算法参考；需换
+  `PROMPT_VERSION` 与重述对照臂）／**B** 先做影子语料的现代语料当冻结评测集、
+  S2 押后／**C** 放弃 S2，力气放到 S4＋S3。我倾向 **A 或 B**，但 A 是**改立法**，
+  不由我单方决定。
+* **未验证**：没有跑任何试点抽取（谓词无法求值就不产出读数）；上游**论文正文**
+  未读，结论只针对仓库实现；`hypergraphrag.py` 与 `kg/` 未逐行读（抽取与合并都落在
+  点名的两处，但这条如实记着）。
+
+`python -m pytest` ＝ **2077 passed / 1 skipped**（本批只加文档，代码未动；
+链 `tools/run_tests.ps1` 的 32/32 见 §九十九 与 `docs/evidence/20261005-063234/`）。

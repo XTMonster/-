@@ -324,7 +324,10 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
 且 pass。证据 `docs/evidence/20261005-063234/`（探针 32 支全过、`python -m pytest`
 2077 passed / 1 skipped、`tree.json` 记 `stable: true`），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§九十九 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增：
+§三十五…§一百 与 `docs/knowledge/Q5_DECISION_v1.md`。**§一百 是待裁决项**：
+计划 v3 的 S2（移植上游抽取层）**停在动手前**——复核发现上游那一层产出的是
+自由文本片段、不是槽位超边（`docs/knowledge/S2_UPSTREAM_PREMISE.md`），
+照现文执行会把自研翻译层记成"移植"且两条谓词无法求值。这一轮新增：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对
