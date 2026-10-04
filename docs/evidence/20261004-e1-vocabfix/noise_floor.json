@@ -1,0 +1,77 @@
+{
+  "reps": {
+    "A": [
+      {
+        "rep": 1,
+        "relevant": 18,
+        "scored": 192,
+        "value": 0.0938
+      },
+      {
+        "rep": 2,
+        "relevant": 16,
+        "scored": 192,
+        "value": 0.0833
+      },
+      {
+        "rep": 3,
+        "relevant": 19,
+        "scored": 192,
+        "value": 0.099
+      }
+    ],
+    "B": [
+      {
+        "rep": 1,
+        "relevant": 22,
+        "scored": 192,
+        "value": 0.1146
+      },
+      {
+        "rep": 2,
+        "relevant": 25,
+        "scored": 192,
+        "value": 0.1302
+      },
+      {
+        "rep": 3,
+        "relevant": 22,
+        "scored": 192,
+        "value": 0.1146
+      }
+    ]
+  },
+  "pooled": {
+    "A": {
+      "relevant": 53,
+      "scored": 576,
+      "value": 0.092
+    },
+    "B": {
+      "relevant": 69,
+      "scored": 576,
+      "value": 0.1198
+    }
+  },
+  "pooled_test": {
+    "z": 1.53,
+    "diff": 0.0278,
+    "ci95": [
+      -0.0078,
+      0.0633
+    ],
+    "note": "池化后未达 5% 显著"
+  },
+  "paired": {
+    "B_better": 35,
+    "B_worse": 14,
+    "same": 15,
+    "n": 64,
+    "note": "按查询配对（各臂三次取最高分），符号检验 p≈0.004"
+  },
+  "arms": {
+    "A": "旧提示词 739 条线索",
+    "B": "词表同源 363 条线索"
+  },
+  "design": "同一份 810 条案例语料、同一批 64 条查询、同一面板（deepseek-chat ＋ glm-5.3）；A/B 交替跑，每次 192 条判分"
+}
