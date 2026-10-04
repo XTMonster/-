@@ -201,6 +201,35 @@ def test_retrieve_without_index_degrades_to_bm25_without_pretending(tmp_path):
     assert body["trace"]["cases_degraded_reason"] == "cases_index_missing"
 
 
+def test_the_degraded_trace_has_the_same_shape_as_the_real_one(tmp_path):
+    """没有索引那条路的 trace，必须与"有索引那条路"**同一个形状**。
+
+    实测（S1a 的收尾）：sidecar 在 `hypergraph is None` 那条分支上**手写了一份**
+    trace 字面量（`tools/sidecar_server.py::_retrieve_payload`），于是它当场就漂了——
+    S1a 给 `RetrievalTrace` 加的 `qualifiers` 惰性键表**没有**出现在降级路上；
+    更早的 `forbid_promoted` 也从来没出现过（查 `RetrievalTrace.to_dict()` 即知）。
+
+    判据取**形状**（dataclass 的键集 ⊆ 线上 trace 的键集），不取"某两个键名"：
+    这样以后任何新增字段都自动被覆盖，不用回来补字面量——本仓在"手抄第二份
+    枚举/词表"上已经栽过三次（`camera.side`、`MOVEMENT_TYPES`、`QUALIFIER_KINDS`）。
+    """
+    from block_director.knowledge.hypergraph import RetrievalTrace
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    with _Sidecar(["--knowledge-dir", str(empty)]) as server:
+        trace = server.retrieve(QUERY)["trace"]
+    expected = set(RetrievalTrace(query=QUERY).to_dict()) | {
+        # sidecar 在 trace 上追加的"后端 / 通道"字段
+        "backend", "lanes", "cases_backend", "cases_requested_backend",
+        "cases_degraded", "cases_degraded_reason", "lightrag_index_fingerprint",
+        "cases_index_fingerprint", "provenance",
+    }
+    missing = sorted(expected - set(trace))
+    assert not missing, f"降级路的 trace 少了这些键：{missing}"
+    #: S1a 的谓词在这条路上也要成立（键在、值可 null）。
+    assert "seq_phase" in trace["qualifiers"] and "carry_shots" in trace["qualifiers"]
+
+
 def test_seed_miss_falls_back_to_the_domain_digest(knowledge_dir):
     """§2.3 第 1 步：种子全空时必须 digest 兜底并留痕，不得静默返回空。"""
     with _Sidecar(["--knowledge-dir", str(knowledge_dir),

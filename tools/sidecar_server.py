@@ -62,6 +62,7 @@ from block_director.knowledge.hypergraph import (  # noqa: E402
     HyperEdge,
     Hypergraph,
     Node,
+    RetrievalTrace,
 )
 
 CONTRACT_VERSION = "1.3.0"
@@ -476,11 +477,13 @@ def make_handler(config: "SidecarConfig"):
         top_k = int(body.get("top_k", 5) or 5)
         cards = retriever.retrieve(query, domain, top_k)
         edges: List[HyperEdgeDTO] = []
-        trace: Dict[str, Any] = {
-            "query": query, "seeds": [], "expanded_edges": [], "scores": {},
-            "selected": [], "seed_miss": True, "expansion_truncated": False,
-            "dropped_edge_ids": [], "quality_fail": False,
-        }
+        #: **唯一生产者**：降级路的 trace 也走 `RetrievalTrace`，不许手抄一份。
+        #: 手抄那份当场漂过——S1a 给 dataclass 加 `qualifiers` 惰性键表时，
+        #: 降级路没有它；`forbid_promoted` 更是从来没抄进去过。两份字面量
+        #: 迟早漂（本仓在 `camera.side`／`MOVEMENT_TYPES`／`QUALIFIER_KINDS`
+        #: 上已经栽过三次）。守门见
+        #: `tests/test_sidecar_retrieve.py::test_the_degraded_trace_has_the_same_shape_as_the_real_one`。
+        trace: Dict[str, Any] = RetrievalTrace(query=query, seed_miss=True).to_dict()
         backend = "bm25"
         if hypergraph is not None:
             selected, _text, hg_trace = hypergraph.retrieve(query, top_k=top_k)
