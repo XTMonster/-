@@ -590,7 +590,12 @@ if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
 # here) because the audit mirror must filter by the run that produced the log.
 $knowledgeRun = 'docs/evidence/20261004_chunked_long19'
 $knowledgeRunId = (Get-Content (Join-Path $knowledgeRun 'run_manifest.json') -Raw | ConvertFrom-Json).run_id
-python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261004_chunked_long19/shots.json --audit-log docs/evidence/20261004_chunked_long19/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+# 2026-10-04 (SS87): E1's review file moved up to a 10x bigger sample.  The panel
+# could never run while only glm-4.7 was configured (this account has quota only
+# for glm-5.3, see SS78); with glm-5.3 it scored 64 queries x top-3 = 192 cases
+# in one pass, and the honest estimate came out LOWER than the 18-case one
+# (17/192 = 0.089 vs 3/18 = 0.167).  The old file stays in the repo as history.
+python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261004-e1-long19/reviews.jsonl --shots docs/evidence/20261004_chunked_long19/shots.json --audit-log docs/evidence/20261004_chunked_long19/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }

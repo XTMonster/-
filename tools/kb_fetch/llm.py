@@ -207,7 +207,7 @@ class DeepSeekClient:
                 #: 单进程的产出从 18 条/批掉到 1.5 条/批）。
                 throttled = "429" in str(exc)
                 time.sleep((20.0 if throttled else 1.5) * (attempt + 1))
-        raise LLMError(f"deepseek 调用失败：{last}")
+        raise LLMError(f"deepseek({self.model_id}) 调用失败：{last}")
 
 
 class GLMClient:
@@ -220,7 +220,8 @@ class GLMClient:
 
     family = "zhipu"
 
-    def __init__(self, model_id: str = "glm-4.7", api_key: str = ""):
+    #: 用户裁决（2026-10-04）：GLM 只用 `glm-5.3`（智谱按模型分别计费，只有它还有额度）。
+    def __init__(self, model_id: str = "glm-5.3", api_key: str = ""):
         self.model_id = model_id
         self.model_version = model_id
         self.api_key = api_key or GLM_API_KEY
@@ -289,7 +290,11 @@ class GLMClient:
                     continue
                 #: 并发打 GLM 会拿到 `HTTP 429`（1302 速率 / 1305 模型忙）：长退避。
                 time.sleep((20.0 if "429" in str(exc) else 1.5) * (attempt + 1))
-        raise LLMError(f"glm 调用失败：{last}")
+        #: 错误串必须带型号：`1113` 的字面是「余额不足 **或** 无可用资源包」，而智谱的
+        #: 资源包**按模型分别计费**——不带型号的日志会被读成"整个账户没钱"。
+        #: 2026-10-04 就是这么误判过一次（把 `glm-4.7` 的 429 当成了这条 key 耗尽，
+        #: 而本账号的包其实是 `glm-5.3` 的），见 `docs/knowledge/ACCEPTANCE_STATUS.md` §七十八。
+        raise LLMError(f"glm({self.model_id}) 调用失败：{last}")
 
 
 class OllamaClient:
@@ -360,7 +365,7 @@ class OllamaClient:
             except Exception as exc:  # noqa: BLE001
                 last = exc
                 time.sleep(2.0 * (attempt + 1))
-        raise LLMError(f"ollama 调用失败：{last}")
+        raise LLMError(f"ollama({self.model_id}) 调用失败：{last}")
 
 
 def make_client(provider: str, model: str = "", scripted: str = ""):
@@ -374,5 +379,5 @@ def make_client(provider: str, model: str = "", scripted: str = ""):
     if provider == "ollama":
         return OllamaClient(model or "qwen3-vl:30b")
     if provider == "glm":
-        return GLMClient(model or "glm-4.7")
+        return GLMClient(model or "glm-5.3")
     raise LLMError(f"未知 provider: {provider!r}")

@@ -5378,3 +5378,104 @@ knowledge 块的输入随之换到 long19（`--audit-run-id` 仍从该跑 manife
 `tests/test_compliance.py::test_a_declared_static_shot_loses_the_drafts_invented_movement`
 （含反面：声明了具体手法的两镜仍必须有运动）。证据
 `docs/evidence/20261004-declaration-binding/`。
+
+## 八十七、GLM 只用 `glm-5.3`；E1 样本 18 → 192；修复提示补参数表
+
+用户裁决（2026-10-04）：**"用 glm 模型只用 glm-5.3，只有 glm-5.3 有额度"**。
+这一条把 §七十八 的外部阻塞解掉了（`glm-4.7` 会 429「余额不足或无可用资源包」，
+`glm-5.3` 实测 1.8 s 返回）。
+
+### 87.1 默认模型全部换成 `glm-5.3`
+
+`tools/knowledge/e1_panel.py::DEFAULT_PANEL`、`tools/holdout_review_llm.py::DEFAULT_PANEL`、
+`tools/kb_fetch/llm.py`（`GLMClient` 默认与 `make_client` 兜底）、
+`tools/holdout_pool.py::GLM_MODEL`、`tools/kb_fetch/card_scope_audit.py`、
+`kernel/kb_fetch/case_search_zh.py`、`tools/holdout_expect_movements.py`、
+`tools/kb_fetch/probe_annotator.py` 的通道表——全部改成 `glm-5.3`（历史条目留作记录）。
+守门：`python -m pytest tests/test_llm_glm.py tests/test_holdout_review_llm.py
+tests/test_holdout_pool.py` 31 条全过（它们都自报模型名，不依赖默认值）。
+
+### 87.2 E1 的判分样本 18 → **192**
+
+面板终于能跑：64 个查询 × top-3 = **192** 条，跨族（deepseek-chat ＋ glm-5.3），
+一次跑完（`docs/evidence/20261004-e1-long19/reviews.jsonl`）。
+
+| | 旧样本 | **新样本** |
+|---|---|---|
+| 判分条数 | 18 | **192** |
+| 相关（≥4） | 3 | **17** |
+| **E1** | 0.1667 | **0.0885** |
+| 距下界 1200 | 差 1182 | **差 1008** |
+
+**样本变大之后数字变差**（小样本乐观）。分布：`1.0×36 1.5×30 2.0×52 2.5×27 3.0×18
+3.5×12 4.0×8 4.5×6 5.0×3`——**64 个查询里 47 个连一条"≥4"都没有**。
+⇒ E1 的下一层是**语料适配度**（现有案例语料对这套片子的覆盖面），不是检索开关。
+链上 `--e1-reviews` 已换到这份（字面路径，守卫照验），判据/门限/oracle 一个字没动。
+
+### 87.3 修复提示补上两张表（参数名那一类报错整类消失）
+
+long19 的逐条日志显示：修复回合**确实**调了 `emit_shot_draft`，但草案被
+`extract_draft` 判非法——`body_tilt 不认识的参数 ['lean_deg']`、
+`turn_head ['direction_deg']`——因为**修复提示没有那两张由代码生成的表**
+（`editor.render_action_params()` / `render_movement_units()`），模型只能自己发明键名。
+计划因此一个字没改、R003 一直红到降级，而 `repair_applied` 还照写（假留痕）。
+
+修法：`REPAIR_SYSTEM_PROMPT` 补 `{action_params}` / `{movement_units}` 两个占位，
+用**编辑器同一份**渲染函数填（不许各抄）。守门
+`tests/test_repair_prompt_picks_the_right_tool.py::test_the_repair_prompt_carries_the_action_and_movement_tables`。
+
+long20（同剧本、同命令、同后端）实测：**参数名报错由 11 条降到 0**、
+**R003 由 5 降到 3**、构图分中位 88.0 → **88.6**；逐镜通过与构图门在噪声范围内
+（长跑方差，§八十一），所以这里只主张"模型不再被自己的键名绊倒"。
+证据 `docs/evidence/20261004-repair-prompt-tables/` 与
+`docs/evidence/20261004-e1-long19/`。
+
+## 八十八、§八十七 换代的**文档/命令**收尾（自查发现的波及面）
+
+§八十七 把默认型号统一到 `glm-5.3`，但**只改了代码里的默认值**，留下四处"文档说
+4.7、代码跑 5.3"的自相矛盾。这类漂移正是本节开头那次 1113 误判的同一形状：照着
+文档/命令行事的人会被指到一个**没有资源包**的型号上。逐条列出并修掉：
+
+### 88.1 模块 docstring 里点名的"默认型号"
+
+* `tools/knowledge/e1_panel.py` 的模块 docstring 写"默认 deepseek-chat ＋ glm-4.7"，
+  而 `DEFAULT_PANEL` 已是 `glm-5.3`；
+* `tools/kb_fetch/probe_annotator.py` 的模块 docstring 写"同一账号下 `glm-4.7` 仍有
+  额度可跑"，而同一个文件里 `CHANNELS` 的注释已经写着"`glm-4.7`/`glm-4.7-flash`
+  都会 429"——**同一份文件里两句话互相矛盾**。
+
+守门 `tests/test_glm_model_scoping.py::test_module_docs_name_the_current_default_model`
+（判据：两个模块的 docstring 必须出现 `GLMClient()` 的当前默认型号）。
+
+### 88.2 工具**打印出来**的补跑命令（会 429 的那种）
+
+`tools/knowledge/gap_report.py` 把 `--model glm-4.7-flash` 写死在自己的建议命令里，
+而它的用途就是"一条命令跑补跑轮"——指错型号 = 那一轮白烧。改成从
+`holdout_pool.GLM_MODEL` 取（**同一份真源**）。守门
+`tests/test_gap_report.py::test_the_printed_commands_name_the_current_glm_model`
+（从**产物**推：打印的每一行都要带当前型号，且不含 `glm-4.` 字面）。
+
+### 88.3 用法样例与真跑样例配置
+
+`tools/probe_local_model.py` 与 `tools/kb_fetch/case_search_zh.py` 的用法样例、
+`fixtures/local_sidecar.config.yaml` 的 `model:` 一行（该行注释自称是"当前可跑的
+写法"）——全部换成 `glm-5.3`。
+
+**不改的两处**（有意保留为历史记录，不是遗漏）：
+`fixtures/local_model.config.yaml` 明写"本文件是 §21.10 那次运行的**历史记录**，
+要重跑请把 `model`/`base_url` 换成云端端点"；`tools/holdout_pool.py:470-471` 与
+`tools/kb_fetch/llm.py:47/54/259` 的实测注记（都是"当时测到什么"）。
+
+### 88.4 长跑 long20 的证据分片补全
+
+`docs/evidence/20261004_chunked_long20/` 此前只有 harness 的原始产物
+（`runs/runs/{audit_log,llm_trace}.jsonl` ＋ `export/`），**缺** `run_manifest.json`
+与根级分片——库里其余每一次长跑（long3…long19）都带齐（
+`tools/extract_run_evidence.py` 的产物）。已按同一口径补跑分片：
+`--run-id d5683d65483c`，`--check` → `{"ok": true, "reasons": [], "warnings": []}`
+（同代、无警告）。
+
+### 88.5 账目
+
+`python -m pytest` = **2017 passed / 1 skipped**（新增 2 条守门用例：88.1 一条、
+88.2 一条）。判据、门限、oracle、`SCORE_WEIGHTS` **一个字没动**。

@@ -55,6 +55,36 @@ def test_the_repair_payload_really_offers_that_tool():
     assert "动作时间重叠" in system
 
 
+def test_the_repair_prompt_carries_the_action_and_movement_tables():
+    """参数表与运镜单位表必须进修复提示——否则"重提草案"必然被退回（long19 实测）。
+
+    现场（2026-10-04 的 64 镜真跑 `docs/evidence/20261004_chunked_long19/`）：
+    修复回合**确实**调了 `emit_shot_draft`（工具集没有错），但草案被拒——
+    `body_tilt 不认识的参数 ['lean_deg']`、`turn_head ['direction_deg']`：
+    模型手上没有那张表，只能自己发明键名。结果 R003 一直红到收尾
+    （shot_052 / shot_053 的修复回合审计结论**逐字相同**，最后按上限降级）。
+
+    编辑器提示早就带着这两张表（`editor.render_action_params` /
+    `render_movement_units`，都由 `motion/model.py` 与 `cinema/camera_motion.py`
+    生成），修复提示却漏了——这一条钉住"两边用的是同一份"。
+    """
+    from block_director.layer5_orchestrator.editor import (
+        render_action_params,
+        render_movement_units,
+    )
+
+    payload = R.build_repair_payload(_result(), default_registry())
+    system = payload.messages[0].content
+    assert "action_params" not in system and "movement_units" not in system, (
+        "占位符必须被真的替换掉")
+    #: 两份表逐字进提示（与编辑器同一份实现，不是各抄一遍）。
+    assert render_action_params() in system
+    assert render_movement_units() in system
+    #: 反面对照：`body_tilt` 那一行必须带着**它自己的允许键**（long19 里模型
+    #: 恰恰在这一行上写了表外的键名，整条草案被退回）。
+    assert "`body_tilt`：`angle_deg`" in system
+
+
 # --------------------------------------------------------------------------- #
 # v1.6（2026-10-04，long10 实测）：**纯时间轴审计要收窄工具集**
 #

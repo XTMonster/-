@@ -12,7 +12,8 @@
 ================================
 * 单位是**逐镜**：查询取每一镜自己的散文（编辑器喂给 L3 的那段 `analogy`），
   不是计划期那种把整段剧本塞进去的串（那种串判官只能答"不知道"）。
-* 召回 `top_k` 条案例，**两个不同族**的模型（默认 deepseek-chat ＋ glm-4.7）
+* 召回 `top_k` 条案例，**两个不同族**的模型（默认 deepseek-chat ＋ glm-5.3，
+  见 `DEFAULT_PANEL`——本账号的智谱资源包只覆盖 `glm-5.3`）
   逐条打 1–5 分；`score ≥ 4` 记为相关。
 * 每条记录写明 `reviewed_by: "llm-panel"`（**绝不冒充 `human`**）、面板模型、
   提示指纹，以及**这一份案例索引的指纹**——`quality.py::e1_evidence_is_stale`
@@ -42,7 +43,10 @@ if str(ROOT) not in sys.path:
 from block_director.knowledge.cases import load_index  # noqa: E402
 from tools.kb_fetch import llm  # noqa: E402
 
-DEFAULT_PANEL = ("deepseek-chat", "glm-4.7")
+#: 用户裁决（2026-10-04）：**GLM 只用 `glm-5.3`**——智谱的资源包按模型分开计费，
+#: 这个账号下只有 `glm-5.3` 还有额度（`glm-4.7` 会 429「余额不足或无可用资源包」，
+#: 实测见 `docs/knowledge/ACCEPTANCE_STATUS.md` §七十八）。
+DEFAULT_PANEL = ("deepseek-chat", "glm-5.3")
 DEFAULT_FAMILIES = ("deepseek", "glm")
 RELEVANT = 4.0
 

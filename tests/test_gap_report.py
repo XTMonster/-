@@ -193,6 +193,41 @@ def test_printed_commands_match_what_each_filter_actually_accepts(tmp_path, monk
     assert (tmp_path / "gaps" / "gap_types.txt").read_text(encoding="utf-8").strip()
 
 
+def test_the_printed_commands_name_the_current_glm_model(tmp_path):
+    """补跑命令里的型号必须与 `holdout_pool.GLM_MODEL` **同源**，不许写死。
+
+    现场（2026-10-04）：工具把型号字面写成 `glm-4.7-flash`，而智谱的资源包
+    **按模型分开计费**——本账号只有 `glm-5.3` 还有额度，照抄打印出来的那条命令
+    只会拿到 `HTTP 429 code 1113 余额不足或无可用资源包`。工具是"一条命令跑补跑轮"
+    的入口，它指错型号 = 那一轮白烧。
+
+    判据从**产物**推：打印出来的每一行都要带**当前**型号，且不含任何 `glm-4.x`
+    字面（历史记录可以留在注释/文档里，但不能进这条命令）。
+    """
+    from tools import holdout_pool
+
+    entries = [entry(1), entry(2)]
+    records = tmp_path / "holdout.jsonl"
+    records.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in entries),
+                       encoding="utf-8")
+    cards = tmp_path / "cards.json"
+    # card_1 有条目、card_3 没有 → 门⑥ 有一条缺口，卡片轮才会被点出来。
+    cards.write_text(json.dumps([entries[0]["from_card"], "card_3"]), encoding="utf-8")
+    vocab = tmp_path / "vocab.json"
+    vocab.write_text(json.dumps({"_fingerprint": "x", "kinds": vocab_for()},
+                                ensure_ascii=False), encoding="utf-8")
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        gap_report.main(["--holdout", str(records), "--cards", str(cards),
+                         "--vocab", str(vocab), "--out-dir", str(tmp_path / "gaps")])
+    lines = [line for line in buf.getvalue().splitlines()
+             if line.startswith("python -m tools.holdout_pool")]
+    assert lines, "有缺口却没打印任何补跑命令"
+    for line in lines:
+        assert f"--model {holdout_pool.GLM_MODEL} " in line, line
+        assert "glm-4." not in line, line
+
+
 def test_a_clean_oracle_reports_no_gap(tmp_path):
     entries = [entry(n) for n in range(1, 13)]
     cards = [e["from_card"] for e in entries]

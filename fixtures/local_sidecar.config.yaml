@@ -8,7 +8,7 @@
 # 先用 tools/sidecar_server.py 起服务，再让插件按 sidecar 模式调用：
 #   云端上游（推荐）：把插件指向 sidecar，sidecar 转发到智谱：
 #   python tools/sidecar_server.py --port 8899 \
-#       --upstream https://open.bigmodel.cn/api/paas/v4 --model glm-4.7-flash
+#       --upstream https://open.bigmodel.cn/api/paas/v4 --model glm-5.3
 #   历史（已停用）：--upstream http://127.0.0.1:11434 --model qwen3-vl:30b
 #   $env:BLOCKDIRECTOR_CONFIG="<repo>\fixtures\local_sidecar.config.yaml"
 #   blender --background --factory-startup --python tools/run_headless.py -- \
@@ -25,8 +25,10 @@ llm:
   sidecar_timeout_s: 900
   provider: local
   # 本地 qwen3-vl:30b 已停用（加载即 `HTTP 500 token repeat limit`）；
-  # 这条通道现在的上游是云端 GLM（用户裁决：用智谱 glm-4.7 一路的模型）。
-  model: "glm-4.7-flash"
+  # 这条通道现在的上游是云端 GLM（2026-10-04 用户裁决：**用 glm 只用 `glm-5.3`**，
+  # 智谱的资源包按模型分开计费，本账号只有 `glm-5.3` 还有额度；`glm-4.7` /
+  # `glm-4.7-flash` 实测 429「余额不足或无可用资源包」）。
+  model: "glm-5.3"
   base_url: ""
   api_key: ""
   max_tokens: 8192

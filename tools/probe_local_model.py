@@ -14,7 +14,7 @@
 所以这里不给默认值——要跑什么端点，自己写清楚。
 
 用法：
-  python tools/probe_local_model.py --model glm-4.7-flash \
+  python tools/probe_local_model.py --model glm-5.3 \
       --base-url https://open.bigmodel.cn/api/paas/v4 \
       [--script fixtures/script_simple.fountain] [--out <json>]
 """

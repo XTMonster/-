@@ -42,7 +42,8 @@ from tools.kb_fetch import llm  # noqa: E402
 from tools.check_holdout import EDGE_TYPES, Q_KEY_TO_KIND, query_key_text  # noqa: E402
 
 PANEL_TAG = "llm-panel"
-DEFAULT_PANEL = ("deepseek-chat", "glm-4.7")
+#: 用户裁决（2026-10-04）：**GLM 只用 `glm-5.3`**（只有它还有额度；`glm-4.7` 会 429）。
+DEFAULT_PANEL = ("deepseek-chat", "glm-5.3")
 
 #: 复核提示词的版本号。**改一个字就要升它**：它进 `prompt_sha256`，而门⑦ 只认
 #: 带当前 sha256 的裁决记录——这是"改过判据之后旧记录整批作废"的机器保证。

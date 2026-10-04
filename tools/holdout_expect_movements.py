@@ -243,7 +243,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--holdout", default=DEFAULT_HOLDOUT)
     parser.add_argument("--vocab", default=DEFAULT_VOCAB)
     parser.add_argument("--out", default=DEFAULT_OUT)
-    parser.add_argument("--model", default="glm-4.7-flash")
+    #: 用户裁决（2026-10-04）：GLM 只用 `glm-5.3`（只有它还有额度）。
+    parser.add_argument("--model", default="glm-5.3")
     parser.add_argument("--limit", type=int, default=0,
                         help="0 = 全部（默认）")
     parser.add_argument("--resume", action="store_true",

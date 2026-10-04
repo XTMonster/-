@@ -21,7 +21,7 @@
 
 用法::
 
-    python -m tools.kb_fetch.case_search_zh --provider glm --model glm-4.7 \\
+    python -m tools.kb_fetch.case_search_zh --provider glm --model glm-5.3 \\
         --out knowledge/cases.search_zh.jsonl --workers 6
 """
 
@@ -151,7 +151,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--cases", default=str(CASES))
     parser.add_argument("--out", default=str(OUT))
     parser.add_argument("--provider", default="glm")
-    parser.add_argument("--model", default="glm-4.7")
+    #: 用户裁决（2026-10-04）：GLM 只用 `glm-5.3`（只有它还有额度）。
+    parser.add_argument("--model", default="glm-5.3")
     parser.add_argument("--scripted", default="")
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--limit", type=int, default=0)

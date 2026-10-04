@@ -207,8 +207,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         if gaps["unknown"]:
             print("门③ 词表外取值（补跑修不了，必须重标或按 merge 过滤）："
                   f"{json.dumps(gaps['unknown'], ensure_ascii=False)}")
-        base = ("python -m tools.holdout_pool --provider glm --model glm-4.7-flash "
-                "--cards %s --vocab %s" % (args.cards, args.vocab))
+        #: 模型名从 `holdout_pool.GLM_MODEL` 取（**同一份真源**）：写死一个型号
+        #: 会在换包之后点出一条**注定 429** 的补跑命令（2026-10-04：本账号只有
+        #: `glm-5.3` 还有额度，旧字面 `glm-4.7-flash` 已经打不通）。
+        from tools import holdout_pool
+        base = ("python -m tools.holdout_pool --provider glm --model %s "
+                "--cards %s --vocab %s"
+                % (holdout_pool.GLM_MODEL, args.cards, args.vocab))
         for flag, name in (("--only-values", "gap_values.txt"),
                            ("--only-cards", "gap_cards.txt")):
             target = out_dir / name

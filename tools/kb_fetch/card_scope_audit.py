@@ -259,7 +259,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="面板只判这些 id（`@文件` 或逗号分隔），默认判全部被剔的卡。"
                              "**不影响判据与产物**：用来在固定的一份名单上重复跑，"
                              "把「同一批卡不可复现」这件事本身留成证据。")
-    parser.add_argument("--models", default="deepseek-chat,glm-4.7-flash")
+    #: 用户裁决（2026-10-04）：GLM 只用 `glm-5.3`（只有它还有额度）。
+    parser.add_argument("--models", default="deepseek-chat,glm-5.3")
     parser.add_argument("--batch-size", type=int, default=10)
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--seed", type=int, default=20261002)

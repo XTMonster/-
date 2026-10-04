@@ -3,10 +3,11 @@
 为什么需要它：held-out 的标注方**必须与抽取器换族**（§2.3c），也就是不能用
 DeepSeek。可用通道会随外部状态变化——2026-10-01 实测：
 
-* `glm-4.6` / `glm-4.5`：`HTTP 429 / code 1113 账户余额不足或没有资源包`
-  —— **智谱的资源包按模型分开计费**：同一账号下 `glm-4.7` 仍有额度可跑，
-  换成 4.6/4.5 就会 1113。查"有没有额度"必须**逐模型**试，不能拿一个模型的下场
-  推断账号状态（这一条让我们白等了几小时）；
+* `glm-4.6` / `glm-4.5` / `glm-4.7` / `glm-4.7-flash`：`HTTP 429 / code 1113
+  账户余额不足或没有资源包` —— **智谱的资源包按模型分开计费**，本账号的包是
+  `glm-5.3` 的（2026-10-04 用户裁决："用 glm 模型只用 glm-5.3，只有 glm-5.3
+  有额度"）。查"有没有额度"必须**逐模型**试，不能拿一个模型的下场推断账号状态
+  （这一条让我们白等了几小时；`CHANNELS` 里那两条 glm-4.x 只作历史记录）；
 * `ollama`（本机 `qwen3-vl:30b`）：`HTTP 500 prediction aborted, token repeat limit
   reached`。**模型文件是好的**（安装 blob 的 sha256 与 manifest 摘要逐位相同），
   失败发生在加载/推理期；反重复参数与 assistant 预填都试过，仍然瞬间 500。
@@ -16,7 +17,7 @@ DeepSeek。可用通道会随外部状态变化——2026-10-01 实测：
 用法（每条都真发一次请求，用 3 张卡的最小批）：
 
     python tools/kb_fetch/probe_annotator.py --cards work/glm_v14/shard0.jsonl
-    python tools/kb_fetch/probe_annotator.py --only glm --model glm-4.6
+    python tools/kb_fetch/probe_annotator.py --only glm --model glm-5.3
 """
 
 from __future__ import annotations
@@ -36,15 +37,12 @@ from tools.kb_fetch import common, holdout_gen, llm  # noqa: E402
 
 #: 默认体检的通道（intent = 能不能当 held-out 标注方；deepseek 只能当抽取器）。
 CHANNELS = (
-    #: 顺序即优先级：先试还在额度内的 glm-4.7，再试 4.6/4.5（同为 zhipu 族）。
-    ("glm", "glm-4.7", "annotator"),
-    #: glm-4.7-flash 同样有额度，而且**快两个数量级**（关思考时 12 卡/批 ≈ 30 秒，
-    #: 实测 3 张卡 4.7 秒出 4 条）。它与 glm-4.7 同族但有额度，是重标时最划算的
-    #: 第二路：机器门（必填槽位、q 与 must 一致、弱查询拒收）一视同仁，
-    #: 所以用它加速**不等于**放宽标准。实测产出的 `must`/`q` 完全合规
-    #: （`ACTION_BEAT:action=转身,beat_type=coverage,intensity=high` ↔
-    #: `q: 动作=转身；强度=high`；`AXIS_RULE` 也带上了 `axis_topic`）。
-    ("glm", "glm-4.7-flash", "annotator(fast: 本机实测 12 卡/批 ≈ 30 秒)"),
+    #: 用户裁决（2026-10-04）：**GLM 只用 `glm-5.3`**——智谱按模型分别计费，
+    #: 这个账号下只有它还有额度（`glm-4.7`/`glm-4.7-flash` 都会 429
+    #: 「余额不足或无可用资源包」）。下面的历史条目留着当记录，不再默认使用。
+    ("glm", "glm-5.3", "annotator"),
+    ("glm", "glm-4.7", "annotator(历史：本账号已无额度)"),
+    ("glm", "glm-4.7-flash", "annotator(历史：本账号已无额度)"),
     ("glm", "glm-4.6", "annotator(本机实测 1113：该模型无资源包)"),
     ("ollama", "qwen3-vl:30b", "record-only(用户裁决停用本地模型)"),
     ("deepseek", "deepseek-chat", "extractor-only(换族规则禁止当标注方)"),

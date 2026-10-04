@@ -469,7 +469,9 @@ def write_jsonl(path: pathlib.Path, rows: Sequence[dict]) -> None:
 #: 换族纪律（协议 §5.1）：抽取器是 `deepseek`，所以标注必须换族。
 #: 用户裁决：用智谱 GLM（`glm-4.7-flash` —— 同一套门，实测比 `glm-4.7` 快两个
 #: 数量级；`glm-4.6`/`glm-4.5` 的资源包按模型计费，实测 429）。
-GLM_MODEL = "glm-4.7-flash"
+#: 用户裁决（2026-10-04）：**GLM 只用 `glm-5.3`**——智谱按模型分别计费，这个账号下
+#: 只有它还有额度（`glm-4.7`/`glm-4.7-flash` 都会 429「余额不足或无可用资源包」）。
+GLM_MODEL = "glm-5.3"
 
 GLM_SYSTEM = (
     "你是分镜知识库的**独立标注员**。给你若干条**已抽取好的知识边**，每条边附一段"

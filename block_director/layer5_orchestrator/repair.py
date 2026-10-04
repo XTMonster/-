@@ -69,6 +69,16 @@ REPAIR_SYSTEM_PROMPT = """\
 {scene_state}
 
 {dialogue_budget}
+**动作参数只能用它自己那一行的键**（下表就是唯一真源，由引擎的参数表生成）。
+写别的键、或用同义词，**整条草案会被退回**，这一镜就只剩计划里的内容了——
+实测（2026-10-04 的 64 镜真跑 `long19`）：修复回合为了错开 R003 重提草案，
+因为表不在手上而给 `body_tilt`/`turn_head` 写了表外的键名，整条被退回、
+R003 一直红到收尾。
+{action_params}
+
+**运镜 `amount` 的单位**（下表同样唯一真源；写错会让机位跑出画面）：
+{movement_units}
+
 要求：
 - **先看清每一条问题该由谁来修**（用错工具 = 修不动，白烧一次修复回合）：
   · **时间轴类**（`R003` 同角色动作重叠、`R011` 台词装不下、`R015` 时长不符）：
@@ -124,11 +134,19 @@ def build_repair_payload(audit: AuditResult, registry, *,
         focus += ("\n\n这条审计**全部是时间轴类**问题 ⇒ 本次请求的工具集**只有**"
                   f" `{SHOT_DRAFT_TOOL}` 与控制类工具：请直接重新提交这一镜的草案，"
                   "把错开的起止帧写进去。")
+    #: 参数表与运镜单位表**必须和编辑器用的是同一份**（`editor.render_action_params`
+    #: / `render_movement_units`）：修复回合最常见的动作就是"重提这一镜的草案"，
+    #: 表不在手上时模型会自己发明键名，整条草案被退回、原来的问题一直红到收尾
+    #: （实测 2026-10-04：`body_tilt(lean_deg)`、`turn_head(direction_deg)`）。
+    from .editor import render_action_params, render_movement_units
+
     system_text = REPAIR_SYSTEM_PROMPT.format(
         focus=focus,
         audit=audit.format_for_llm(),
         scene_state=scene_state or "（尚未采集）",
-        dialogue_budget=budget_text)
+        dialogue_budget=budget_text,
+        action_params=render_action_params(),
+        movement_units=render_movement_units())
     tools = (registry.schemas_only(SHOT_DRAFT_TOOL, *CONTROL_TOOL_NAMES)
              if narrow else registry.schemas_except("emit_plan"))
     return ChatPayload(
