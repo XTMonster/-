@@ -303,9 +303,10 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-04 12:4x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
-Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
-——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
+**2026-10-04 12:5x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**运行侧**现在
+量的是本代超图长跑：**9 对 12 ＝ 0.75**、线 0.80，§八十四；E1 是语料适配度，
+3 对 18 卡在 GLM 额度，§七十八），`E2` 是诊断量（**3 镜对 64 镜**）。
 `python -m pytest` **2006 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
@@ -315,9 +316,9 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-123803/`（探针 32 支全过、`python -m pytest`
+且 pass。证据 `docs/evidence/20261004-125750/`（探针 32 支全过、`python -m pytest`
 2006 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§八十三 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十五节：
+§三十五…§八十四 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十六节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对
@@ -467,7 +468,13 @@ long15 有 6 镜、long16 有 16 镜、long17（工具/构建器统一之后）*
 中招（新违规绝大多数是 R001：修构图挪机位顺手踩了轴线）。回滚不新造机制：计划退回
 快照 ＋ 走已有的"计划变了 ⇒ 重建"通路（bpy 侧一次，零 LLM、零 token），并记
 `repair_rolled_back` 与回滚后那次审核的 `restored: true`。守门 5 条含两条反面对照
-（修好了不回滚、集合不变不算改坏）。证据 `docs/evidence/20261004-repair-rollback/`。**
+（修好了不回滚、集合不变不算改坏）。证据 `docs/evidence/20261004-repair-rollback/`。
+§八十四 **链上的 Q5 读的是上一代真跑**：knowledge 块原来喂 `20261003_real_long`
+（bm25 时代，逐镜检索从未发生），Q5 运行侧**结构上**只能是 0 对 0；换成本代超图长跑
+（`20261004_chunked_long17`，`--audit-run-id` 从该跑 manifest 现读、路径仍写字面值以便
+守卫验文件）之后，Q5 运行侧 **9 对 12 ＝ 0.75**（线 0.80）、E2 **3 镜对 64 镜**。
+**验收口径一个字没改**（Q5 仍 fail、E1 仍 fail、裁决仍是 `not passing: Q5,E1`），
+变的只是"这条账量的是哪个系统"。证据 `docs/evidence/20261004-knowledge-run-input/`。**
 
 §八十 **修复工具与主构建器解出的不是同一台相机**（§79.3 的答案）：long16 的
 104 个修复回合里改动类工具只有 9 次、真的动了手的 7 个回合**0 个通过**；把
