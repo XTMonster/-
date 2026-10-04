@@ -6153,3 +6153,23 @@ S0 的第二半要求"基线命令 ＋ 种子写进证据目录，**两条命令
 （`docs/evidence/20261005-061044/`，`tree.json` 的 `stable: false`、
 `digest_before ≠ digest_after`）移出 `docs/evidence/`、退到 `work/_superseded/`
 （它从来没有资格当证据；`20261005-063234/` 才是 S1a 那一代的有效产物）。
+
+## 一百零二、S2 立法裁决（联合会诊判 **A**）＋ 同形洞 P14-106
+
+`S2_UPSTREAM_PREMISE.md` 把 S2 停在动手前后，按《模型分工契约》开了**联合会诊**
+（`实现顾问`，两侧同一份包）：**GLM-5.3 判 A**（按本仓 schema 自实现「分段→归属
+两趟 ＋ completeness 置信度」，上游只作算法参考），DeepSeek 侧给的是同一结论的约束面
+——两侧实质一致，**没有分歧要人裁**。第一次发问 `max_tokens=32768` 时 GLM
+`finish_reason=length`、正文为空（全烧在 reasoning 上），压小包并提到 65,536 后重问，
+两次都留证。**我的复核摘要被 GLM 挑出三处**（其中"`seq_phase` 取值域可以誊录自
+计划 S4 节"经 `rg` 实测**证伪**：全仓没有那份枚举，S2 必须自己定义并写明依据）。
+逐条证实/证伪、四栏记账与 A1–A5 阶段表见 `docs/knowledge/S2_DECISION_v1.md`。
+
+同一批落掉判词 ⑥ 指出的**同形洞**（S0 修的是"闭集没进指纹"，这次深一层）：
+`VALUE_DOMAINS`／`REQUIRED_MEMBERS`／`OPTIONAL_MEMBERS` 同样决定"收不收"
+（门⑨ 的取值面、必填成员、`forbid` 槽位白名单），却都不在 `schema_fingerprint()`
+的载荷里 ⇒ **S2 要做的第一件事（给 `seq_phase` 填取值域）会静默命中旧批次**。
+补齐后指纹换代：`hg/v2+e70870ea3034` → **`hg/v2+1a90c089bb8f`**（闭集一个字没动，
+动的只是覆盖面）。守门 4 条：三组**各自**有鉴别力（改任一组指纹必变、撤回必复原）
+＋"填空取值域当场换代"的用途证明；`test_qualifier_lazy_keys.py` 的代际字面量
+按约定同步签字。**判据/门限/阈值一个字没动**；发货索引仍**故意**没重签（§98.3）。

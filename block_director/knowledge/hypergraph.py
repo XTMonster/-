@@ -33,7 +33,7 @@ MANIFEST_FILE = "hypergraph.manifest.json"
 
 
 def schema_fingerprint() -> str:
-    """**schema 常量**的指纹：`SCHEMA_VERSION` ＋ 节点/限定/角色/边型的闭集。
+    """**schema 常量**的指纹：`SCHEMA_VERSION` ＋ 本模块**决定"收不收"的每一个闭集**。
 
     为什么需要它（S0 / `PLAN_HYPERGRAPH_v3.md`）：缓存指纹的第八格
     （`vocabulary_fingerprint`）已经是"**从代码现算**"，所以改别名表会当场让索引
@@ -41,6 +41,15 @@ def schema_fingerprint() -> str:
     都不动）。**第六格 `schema_version` 却是手写常量**——于是往 `QUALIFIER_KINDS`
     里加一个 qualifier（计划里的 `seq_phase`／`carry_shots`）**不会**让缓存失效：
     断点续跑直接命中旧批次，新槽位**从未被抽取**而一切照绿。
+
+    2026-10-05 扩围（联合会诊判词 ⑥，「把 `test_qualifier_lazy_keys.py` 的可见性
+    哲学延伸到**取值域**」）：原来的载荷只有
+    `SCHEMA_VERSION ＋ NODE_TYPES ＋ QUALIFIER_KINDS ＋ ROLES ＋ EDGE_TYPES`，
+    而**同样决定收不收**的 `VALUE_DOMAINS`（门⑨：取值必须落在覆盖面里）、
+    `REQUIRED_MEMBERS`／`OPTIONAL_MEMBERS`（门：必填缺一即拒收、`forbid` 槽位白名单）
+    都不在里面——于是**给 `seq_phase` 填上取值域**（S2 要做的第一件事）会静默命中旧
+    批次：模型从未被要求产出那些取值，而一切照绿。这与 S0 修的是**同一个洞**，
+    只是深一层。现在载荷覆盖"这个 schema 接受什么"的全部闭集。
 
     这一格与词表那一格**同一纪律**：不从产物读回来，**从代码现算**。值形如
     `hg/v2+<digest12>`，所以：
@@ -57,6 +66,15 @@ def schema_fingerprint() -> str:
             "qualifier_kinds": list(QUALIFIER_KINDS),
             "roles": sorted(ROLES),
             "edge_types": list(EDGE_TYPES),
+            #: 下面三格是 2026-10-05 补进来的（见 docstring 的"扩围"一段）。
+            #: `None` 是"**故意**不设枚举"的显式状态（`example_shot`／S1a 的两个
+            #: 时序键），必须与"这一格不存在"区分开——所以照原样序列化。
+            "value_domains": {kind: (None if domain is None else list(domain))
+                              for kind, domain in VALUE_DOMAINS.items()},
+            "required_members": {etype: [list(pair) for pair in pairs]
+                                 for etype, pairs in REQUIRED_MEMBERS.items()},
+            "optional_members": {etype: [list(pair) for pair in pairs]
+                                 for etype, pairs in OPTIONAL_MEMBERS.items()},
         },
         ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -111,7 +129,11 @@ QUALIFIER_KINDS: Tuple[str, ...] = (
     #: 历时耦合在这套"槽位超边"里表达不了（轴线＝相邻机位几何；节奏/打击感＝随拍序
     #: 累积-衰减），红队的裁决是"两个 qualifier 是**标签不是约束**"。这里先把两个键
     #: 放进闭集（让 schema 指纹换代、让 trace 上看得见），**判据一个字不动**；
-    #: 值的生产者是 S2 的上游抽取层。键本身的生产者＝这个闭集，所以 trace 上
+    #: 值的生产者是 S2。**S2 不是"上游抽取层"**（2026-10-05 复核改口）：
+    #: `LHRLAB/HyperGraphRAG@d587cdf8c3fe` 那一层的载荷是自由文本片段＋开放
+    #: `entity_type`，**供不出任何槽位取值**——"上游"这两个字是错的前提，见
+    #: `docs/knowledge/S2_DECISION_v1.md`（会诊判 A：按本仓 schema **自实现**，
+    #: 上游只作算法参考）。键本身的生产者＝这个闭集，所以 trace 上
     #: 永远看得见"这一代 schema 声明了哪些 qualifier"——删掉这里，trace 里跟着消失
     #: （`tests/test_qualifier_lazy_keys.py` 钉住这条，防止"加了常量没人看得见"）。
     "seq_phase", "carry_shots",

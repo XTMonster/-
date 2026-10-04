@@ -559,3 +559,51 @@ def test_rekey_manifest_recomputes_the_schema_cell_from_code(tmp_path):
     assert result["cache_key"]["schema_version"] != "hg/v0"
     rewritten = json.loads(target.read_text(encoding="utf-8"))
     assert bh.fingerprint_of(rewritten["cache_key"]) == rewritten["fingerprint"]
+
+
+# --------------------------------------------------------------------------- #
+# P14-106：S0 修的是"闭集没进指纹"，这一批修的是**同一形状、深一层**——
+# `VALUE_DOMAINS`／`REQUIRED_MEMBERS`／`OPTIONAL_MEMBERS` 同样决定"收不收"
+# （门⑨ 的取值面、必填成员、`forbid` 槽位白名单），却都不在第六格的载荷里。
+# 于是 S2 要做的第一件事（给 `seq_phase` 填取值域）会静默命中旧批次。
+# 判据按"做坏必须红"写：**改这三组里的任何一组，指纹都必须变**；
+# 而闭集本身**一个字没动**——所以旧值不同**只能**来自覆盖面变大。
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize("attr,mutate", [
+    ("VALUE_DOMAINS", lambda table: {**table, "seq_phase": ("setup", "peak")}),
+    ("REQUIRED_MEMBERS",
+     lambda table: {**table, "EMOTION_PACK": table["EMOTION_PACK"] + (("allow", "genre"),)}),
+    ("OPTIONAL_MEMBERS",
+     lambda table: {**table, "TROPE": table["TROPE"] + (("forbid", "pacing"),)}),
+])
+def test_every_closed_set_that_decides_acceptance_moves_the_schema_key(attr, mutate):
+    """三组"决定收不收"的闭集各自都必须有**鉴别力**（缺一组就是一个静默 no-op 洞）。"""
+    baseline = hg.schema_version_with_fingerprint()
+    original = getattr(hg, attr)
+    try:
+        setattr(hg, attr, mutate(original))
+        assert hg.schema_version_with_fingerprint() != baseline, (
+            f"改了 hg.{attr} 而 schema 指纹没变：这一组不在覆盖面上，"
+            "缓存会把新判据当成旧代产物")
+    finally:
+        setattr(hg, attr, original)
+    assert hg.schema_version_with_fingerprint() == baseline, "撤回后没有复原（不可复算）"
+
+
+def test_filling_a_deferred_value_domain_is_not_a_silent_no_op():
+    """S2 的第一步（把 `seq_phase` 的取值域填上）必须**当场**让第六格换代。
+
+    这是本批扩围的**用途**证明：不是"多算了几格"，而是"S2 落地时不再静默"。
+    用 S1a 那代与 S0 那代的字面量做锚（`tests/test_qualifier_lazy_keys.py` 记账）：
+    `hg/v2+1a90c089bb8f` 是**含覆盖面**的这一代。
+    """
+    baseline = hg.schema_version_with_fingerprint()
+    assert baseline == "hg/v2+1a90c089bb8f"
+    original = hg.VALUE_DOMAINS
+    try:
+        hg.VALUE_DOMAINS = {**original, "seq_phase": ("setup", "escalation", "release")}
+        assert hg.schema_version_with_fingerprint() != baseline
+    finally:
+        hg.VALUE_DOMAINS = original
+    assert hg.VALUE_DOMAINS["seq_phase"] is None, "这组应当仍是「延后」状态"
+    assert hg.schema_version_with_fingerprint() == baseline

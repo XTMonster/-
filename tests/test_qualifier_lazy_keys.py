@@ -158,5 +158,10 @@ def test_the_schema_generation_key_moved_with_the_two_keys():
     """代际钥匙：S0 那代是 `hg/v2+02fb5b9fe343`，加了两个键必须换成新的。
 
     闭集再改时**同步更新这个字面量**（这是有意的：换代词条要有人签字）。
+    本次签字：`e70870ea3034`（S1a）→ **`1a90c089bb8f`**（P14-106）——**闭集一个字
+    没动**，动的是**指纹的覆盖面**：`VALUE_DOMAINS`／`REQUIRED_MEMBERS`／
+    `OPTIONAL_MEMBERS` 这三组"决定收不收"的闭集以前不在载荷里，于是给
+    `seq_phase` 填取值域时会静默命中旧批次（与 S0 修的洞同形，深一层）。
+    证据与守门见 `tests/test_hypergraph_determinism.py` 的"覆盖"一节。
     """
-    assert hg.schema_version_with_fingerprint() == "hg/v2+e70870ea3034"
+    assert hg.schema_version_with_fingerprint() == "hg/v2+1a90c089bb8f"
