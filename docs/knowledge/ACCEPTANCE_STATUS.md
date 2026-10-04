@@ -4891,7 +4891,7 @@ E1 记为 fail（3 对 18，线 0.7）时，代码自己也标了"判分样本 1
 所以用仓库自带的 `tools/knowledge/e1_panel.py`（同一套跨族面板、同一提示、同一
 `top_k`）把 **64 镜的查询全部**跑一遍，样本量应当从 18 涨到约 190。
 
-**跑不动**：面板的第二个族（`glm-4.7`）现在**没有额度**——
+**跑不动**：面板的第二个族（`glm-4.7`）**不在资源包范围内**——
 
 ```
 python tools/knowledge/e1_panel.py --project docs/evidence/20261004_chunked_long15/project/project.bdproj \
@@ -4900,13 +4900,37 @@ python tools/knowledge/e1_panel.py --project docs/evidence/20261004_chunked_long
     {"error":{"code":"1113","message":"余额不足或无可用资源包,请充值。"}}
 ```
 
-（同一条 key 今天早些时候还能跑 glm-5.3 的会诊；现在 429 是**账户侧**的，
-`tools/kb_fetch/llm.py` 的客户端按 3 次重试、每次最长 120 s 退避，于是 64 个查询
-会拖成数小时——进程已手动停下，不留半成品文件。）
+**归因更正（2026-10-04，用户确认）**：1113 的字面是「余额不足 **或** 无可用资源包」，
+而**智谱的资源包按模型分别计费**。用户确认：本账号的包是 **`glm-5.3`** 的，
+**余额并未耗尽**；这条 429 出在**默认面板型号 `glm-4.7`**（不在包内）。
+所以旧结论「429 是账户侧的 / **需要用户侧充值**」**作废**——正确处置是把面板的
+glm 族换成**包内型号**：
 
-**这不是判据问题，也不是代码问题**：面板必须**跨族**（`deepseek` ＋ `glm`），
-拿单族凑一个"面板"就等于换掉判据，属禁止的降级。**需要用户侧充值**（与
-`docs/knowledge/GLM53_CONSULT.md` 里那条"给 GLM 充值"同类）。
+```
+python tools/knowledge/e1_panel.py --models deepseek-chat,glm-5.3 \
+    --project docs/evidence/20261004_chunked_long15/project/project.bdproj \
+    --out docs/evidence/20261004_chunked_long15/e1_reviews.jsonl --top-k 3 --limit 0
+```
+
+面板仍然**跨族**（`deepseek` ＋ `glm`；`e1_panel.py` 的族按位置取
+`("deepseek", "glm")`），提示、`top_k`、判据**一字未动** ⇒ 这不是放宽标准，
+只是换成包里有额度的那个型号；`e1_panel.py` 的 `DEFAULT_PANEL` 已随之由
+`glm-4.7` 改为 `glm-5.3`。`glm-5.3` 可用有 usage 为证：
+`work/_glm53_smoke_high.json.usage.json`（`requested_model=glm-5.3`、
+`thinking=high`、completion 16174／reasoning 14232、`finish_reason=stop`、363.6 s）。
+
+**代价要知道**：`glm-5.3` 是"始终思考"模型，单次调用是分钟级（上面那次 1.7k 输入的
+会诊就用了 363.6 s、烧 16k completion token），64 个查询会是**小时级**——建议分批
+`--limit` 或后台跑；`level=max` 在 ~10k bundle 上会 >30 分钟甚至被对端断连
+（包线表见 `docs/knowledge/GLM53_CONSULT.md`）。
+
+**这次误判的根因（两处待收口）**：① 错误串 `LLMError: glm 调用失败：…` **不带
+模型名**，所以任何一份日志都看不出"是哪一个型号报的 1113"——本次就是拿
+`glm-4.7` 的 429 去推断了整条 key 的账户状态；②
+`tools/kb_fetch/probe_annotator.py` 的 `CHANNELS` 当时**没有 `glm-5.3` 这一条**，
+那个"专门查有没有额度"的探针恰好漏掉了账户里**真正有额度**的型号。修法：
+错误串带上 `model_id`（`glm`/`deepseek`/`ollama` 三处），探针通道表补
+`glm-5.3` / `glm-5.3-flash`（本轮已随默认型号切换一起改）。
 
 未受影响的替代口径（**不替代 E1**，只是同期可复算的对照）：
 `reviews_run1.jsonl` 那次独立运行的 18 条同样是 3 对 18、命中的是**同样三条**
