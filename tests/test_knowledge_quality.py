@@ -140,7 +140,17 @@ def _case_index(tmp_path, case_ids, fingerprint="fp-current"):
         for cid in case_ids), encoding="utf-8")
     (tmp_path / "cases.manifest.json").write_text(
         json.dumps({"fingerprint": fingerprint}), encoding="utf-8")
+    #: 打分行要自带**案例集合**摘要（会诊 D1）；夹具在这里把"当前这一份"记下来，
+    #: `_review_row` 默认就用它——于是"同一份索引"的用例天然同代，而想造
+    #: "只换案例集合"的场景时，另建一份索引并把 `_CURRENT['digest']` 指过去即可。
+    from block_director.knowledge.cases import case_paths, cases_digest
+
+    _CURRENT["digest"] = cases_digest(case_paths(tmp_path))
     return cases
+
+
+#: 当前夹具索引的案例集合摘要（`_case_index` 写，`_review_row` 读）。
+_CURRENT: dict = {"digest": ""}
 
 
 def _reviews(tmp_path, rows, name="e1.jsonl"):
@@ -150,10 +160,14 @@ def _reviews(tmp_path, rows, name="e1.jsonl"):
     return path
 
 
-def _review_row(case_id, score, fingerprint="fp-current", reviewer="human"):
+def _review_row(case_id, score, fingerprint="fp-current", reviewer="human",
+                digest=None):
     row = {"case_id": case_id, "score": score, "reviewed_by": reviewer}
     if fingerprint is not None:
         row["cases_fingerprint"] = fingerprint
+    stamp = _CURRENT["digest"] if digest is None else digest
+    if stamp:
+        row["cases_digest"] = stamp
     return row
 
 
@@ -238,6 +252,38 @@ def test_e1_scores_that_predate_the_index_are_not_evidence(tmp_path):
 
     # ⑥ 没有给索引路径 ⇒ 无法证明覆盖，同样不许判过（缺证据不是通过）。
     assert quality.e1_relevance(fresh)["status"] == "not_measured"
+
+
+def test_e1_evidence_dies_when_only_the_case_set_changes(tmp_path):
+    """**只换案例集合**（语料一个字没动）也必须判陈旧——语料指纹对此不敏感（D1）。
+
+    现场（2026-10-05）：案例 810 → 1097 那一版把 `cases_digest` 从 `e1148200…`
+    改成 `227869414e0e014b…`，而 `cases.manifest.json` 的 `fingerprint`（**语料**
+    指纹）仍是 `69791dbacd…`——于是链上拿着**上一代索引**的打分继续报 0.0885，
+    既不报 `stale_evidence`，也没人看得出换代。`cases_digest` 只有"案例集合"能改，
+    它才是代际的真钥匙。
+    """
+    same_corpus = "fp-current"          # 两份索引的**语料**指纹故意相同
+    tmp_path.joinpath("a").mkdir()
+    before = _case_index(tmp_path / "a", ["c1", "c2"])
+    rows = [_review_row("c1", 5), _review_row("c2", 5)]
+    reviews = _reviews(tmp_path, rows, name="d1.jsonl")
+    assert quality.e1_relevance(reviews, cases_path=before)["status"] == "pass"
+
+    tmp_path.joinpath("b").mkdir()
+    after = _case_index(tmp_path / "b", ["c1", "c2", "c3"], fingerprint=same_corpus)
+    _CURRENT["digest"] = ""             # 别让后面的用例继承
+    out = quality.e1_relevance(reviews, cases_path=after)
+    assert out["status"] == "not_measured" and out["stale_evidence"] is True, out
+    assert "案例集合" in out["note"], out["note"]
+
+    #: 自证：把 `cases_digest` 从打分行里拿掉（旧产物）同样不算证据——缺证据 != 通过。
+    unstamped = _reviews(tmp_path, [{"case_id": "c1", "score": 5,
+                                     "reviewed_by": "human",
+                                     "cases_fingerprint": same_corpus}],
+                         name="d1_unstamped.jsonl")
+    out = quality.e1_relevance(unstamped, cases_path=after)
+    assert out["status"] == "not_measured" and out["stale_evidence"] is True, out
 
 
 def test_e2_counts_adopted_movements_and_is_never_a_gate(tmp_path):

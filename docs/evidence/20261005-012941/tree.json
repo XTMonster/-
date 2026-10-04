@@ -1,0 +1,13 @@
+﻿{
+    "head":  "5898e80f1da447c9be7ce6e93a5e0122bc59abd0",
+    "digest_before":  "bfc6316bc22cbace384d2bde4853becaaa42c40a1aad8dbad5c40c123d9a966b",
+    "digest_after":  "bfc6316bc22cbace384d2bde4853becaaa42c40a1aad8dbad5c40c123d9a966b",
+    "stable":  true,
+    "dirty_before":  [
+                         " M docs/knowledge/ACCEPTANCE_STATUS.md",
+                         " M tests/test_knowledge_quality.py",
+                         " M tools/knowledge/e1_panel.py",
+                         " M tools/knowledge/quality.py"
+                     ],
+    "captured_at":  "2026-10-05T01:31:48.7681971+08:00"
+}

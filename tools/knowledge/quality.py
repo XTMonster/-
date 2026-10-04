@@ -725,6 +725,13 @@ def e1_evidence_is_stale(rows: List[Dict[str, Any]],
     * 每一条打分的 `case_id` 必须在当前 `cases.jsonl` 里；
     * 每一条打分必须带 `cases_fingerprint`，且等于 `cases.manifest.json` 的
       `fingerprint`（单一真源：`block_director/knowledge/cases.py`）；
+    * 每一条打分还必须带 `cases_digest`，且等于**当前案例集合**的摘要
+      （`cases.cases_digest(case_paths(...))`）。为什么加这一条（2026-10-05 会诊 D1）：
+      `cases_fingerprint` 是**语料**指纹，只换案例集合它一个字都不变——实测案例
+      810→1097 时 `cases_digest` 由 `e1148200…` 变 `227869414e0e014b…`，而
+      `manifest.fingerprint` 仍是 `69791dbacd…`，于是上一代索引上的打分**照样**
+      被算成现行 E1（链上就是这么报出旧读数的 0.0885）。摘要只有"案例集合"能改，
+      所以它才是代际的真钥匙；缺它 = 无法证明 ⇒ `not_measured`。
     * 每一条打分必须带 `reviewed_by`（是谁裁的，必须落在记录里）。
 
     任一条不满足 ⇒ 返回理由 ⇒ 调用方记 `not_measured`（**永不判过**）。
@@ -742,6 +749,14 @@ def e1_evidence_is_stale(rows: List[Dict[str, Any]],
         return [f"案例索引 {cases_path} 一条案例都没有：分母无意义"]
 
     fingerprint = manifest_fingerprint(_cases_index_dir(cases_path))
+    try:
+        from block_director.knowledge.cases import case_paths, cases_digest
+
+        digest = cases_digest(case_paths(_cases_index_dir(cases_path)
+                                         if cases_path.is_dir() else
+                                         cases_path.parent))
+    except (OSError, ValueError):
+        digest = ""
     reasons: List[str] = []
     gone = [str(row.get("case_id")) for row in rows
             if str(row.get("case_id")) not in live]
@@ -759,6 +774,16 @@ def e1_evidence_is_stale(rows: List[Dict[str, Any]],
             reasons.append(
                 f"{len(unbound)}/{len(rows)} 条打分没有携带当前案例索引指纹 "
                 f"({fingerprint[:12]}…)：无法证明它量的是这一份索引")
+    if not digest:
+        reasons.append("算不出当前案例集合的摘要：无法证明打分与这一份索引同代")
+    else:
+        drifted = [row for row in rows
+                   if str(row.get("cases_digest") or "") != digest]
+        if drifted:
+            reasons.append(
+                f"{len(drifted)}/{len(rows)} 条打分没有携带当前**案例集合**摘要 "
+                f"({digest[:12]}…)：只换案例集合（`--max-cases`/闸门/线索）时语料指纹"
+                f"不变，靠它判不出换代——这些打分可能量的是上一代索引")
     unlabelled = [row for row in rows if not str(row.get("reviewed_by") or "")]
     if unlabelled:
         reasons.append(f"{len(unlabelled)}/{len(rows)} 条打分没有 reviewed_by："

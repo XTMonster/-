@@ -5730,12 +5730,10 @@ A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **
 
 ### 91.6 并行审查 lane 另外三条 finding（**未修，如实挂着**）
 
-同一次审查还给了三条真问题。**D2 与 D3 已在 §九十三 修掉**，D1 仍挂着：
+同一次审查还给了三条真问题。**D1、D2、D3 都已修**（D1 见 §九十四）：
 
-* **D1 代际门选错键**：`tools/knowledge/quality.py` 的 E1 与 `shots.json` 代际都用
-  `manifest_fingerprint`，而它是**语料**指纹（`case_fingerprint(docs)`）——只换案例
-  集合它**不会红**（实测 `cases_digest` 由 `e1148200…` 变 `227869414e0e014b…` 而
-  `fingerprint` 仍是 `69791dbacd…`）。这正是 §24.1"过期证据被当成现行证据"的形状。
+* **D1 代际门选错键** ⇒ **§九十四 已修**（E1 打分改带 `cases_digest`；`shots.json`
+  那一路仍用旧键，原因与计划写在该节里）。
 * **D2 读线索不看生成代际** ⇒ **§93.1 已修**（manifest 记基准 ＋ 同文件混代即拒）。
 * **D3 链不能把结果归因到一棵树** ⇒ **§93.2 已修**（HEAD＋脏清单＋diff 取摘要，
   前后不一致就 INCOMPLETE ＋ 非零退出，并把 `tree.json` 写进证据）。
@@ -5828,3 +5826,47 @@ A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **
 **0.1441**、`RK-13` 仍 failed、门①–⑩ 全 pass。**仍未修**：D1（代际门选错键：
 `manifest_fingerprint` 是语料指纹，只换案例集合不会红）与 D5（`E1_SAMPLE_FLOOR`
 只报不管）——各自是独立批次，D5 属用户裁决。
+
+## 九十四、D1：E1 的代际钥匙换成**案例集合摘要**（语料指纹对它不敏感）
+
+§91.6 里那条最贵：`e1_evidence_is_stale` 判"这批打分是不是量的**这一份**索引"时，
+用的是 `cases.manifest.json` 的 `fingerprint`——而那枚指纹是**语料**指纹
+（`case_fingerprint(docs)`：来源 sha256 ＋ 规范化正文），**只换案例集合它一个字都不变**。
+
+实测的形状（2026-10-05）：案例 810 → 1097 那一版把
+`cases_digest` 从 `e1148200c529ddbe…` 改成 `227869414e0e014b…`，而
+`manifest.fingerprint` 仍是 `69791dbacd…`——于是链上**拿着上一代索引的打分**
+继续报 `E1 = 17/192 = 0.0885`，既不报 `stale_evidence`，也没有任何一格看得出换代。
+这正是 §24.1「过期证据被当成现行证据」的同族形状，只是**钥匙选错了**。
+
+### 94.1 修法
+
+* `tools/knowledge/e1_panel.py`：每条打分新增 **`cases_digest`**，取的是打分当时那份
+  索引的 `cases.cases_digest(case_paths(...))`（`load_index` 之后就地记一次）。
+* `tools/knowledge/quality.py::e1_evidence_is_stale`：**必须**逐条对上当前案例集合摘要；
+  缺它 ⇒ `not_measured`（"缺证据 != 通过"），对不上 ⇒ `not_measured ＋ stale_evidence`。
+  语料指纹那一条**保留**（两枚一起看：语料换代与案例集合换代是两件事）。
+* 发货的那份 E1 证据（`docs/evidence/20261005-e1-c2/reviews.jsonl`，576 行）**重贴**
+  `cases_digest`。这一贴**不是**事后找补：三次面板确实都跑在 `work/shipped_C2` 上，
+  而它与现盘 `knowledge/` 的**案例分片与线索文件逐字节相同**
+  （`cases_digest` 两边都是 `a46a64ccdfd2cc8a…`，线索 141074 B 逐字节相等）——
+  贴的是"它当初量的那一份"。
+
+### 94.2 守门
+
+`tests/test_knowledge_quality.py::test_e1_evidence_dies_when_only_the_case_set_changes`：
+两份索引的**语料指纹故意相同**，只让案例集合不同 ⇒ 第二份必须判
+`not_measured ＋ stale_evidence`，且理由里点名"案例集合"；自证半条：把
+`cases_digest` 从打分行里拿掉（旧产物）同样不算证据。夹具
+（`_case_index` / `_review_row`）跟着升级——打分行默认自带**当前这一份**的摘要，
+于是既有那 6 条 E1 用例仍在测它们各自要测的东西，而不是被新判据一律判红。
+
+### 94.3 什么**没有**改（如实记）
+
+`shots.json` 那条代际（`tools/knowledge/quality.py` 的 Q5 代际比对
+`knowledge.cases_index_fingerprint`）**仍用旧键**。为什么不一起换：那枚指纹写在
+**已入库的历史运行产物**里（`docs/evidence/20261004_chunked_long19/…/shots.json`），
+换成案例集合摘要就得**改写一次真实运行的记录**——那是篡改历史，比缺陷本身更糟。
+正确做法是**下一次真跑**把新键写进 `shots.json`，届时把比对也换过去；
+这一条挂在 §91.6 的 D1 尾巴上，Plan 写在 `tools/knowledge/quality.py` 的注释里。
+**D5**（`E1_SAMPLE_FLOOR = 1200` 只报不管）仍属用户裁决，未动。

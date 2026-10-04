@@ -135,6 +135,13 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             "reviewed_by": "llm-panel",
             #: `quality.e1_evidence_is_stale` 要求每条自带**这一份**索引的指纹。
             "cases_fingerprint": str(getattr(index, "fingerprint", "") or ""),
+            #: **案例集合**的摘要（2026-10-05 会诊 D1）。`cases_fingerprint` 是
+            #: **语料**指纹：只换案例集合（`--max-cases`/闸门/线索）它一个字都不变，
+            #: 于是"上一代索引上的打分"会被当成现行证据（实测：案例 810→1097 时
+            #: `cases_digest` 由 `e1148200…` 变 `227869414e0e014b…`，而
+            #: `manifest.fingerprint` 仍是 `69791dbacd…`，E1 照报旧读数的 0.0885）。
+            #: 这枚摘要只有"案例集合"能改，所以它才是代际的真钥匙。
+            "cases_digest": str(getattr(index, "cases_digest", "") or ""),
             "panel": [name for name, _client in clients],
             "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
         })
@@ -200,6 +207,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 2
 
     index = load_index(ROOT / args.cases_dir, backend="hybrid")
+    #: 把**案例集合摘要**挂到索引上，供每条打分自带（`e1_evidence_is_stale` 用它判代际）。
+    #: `load_index` 自己不记它（那是案例层的事），而这里正是"这份索引被拿去打分"的现场，
+    #: 所以在这一处取一次、跟着行落盘。
+    from block_director.knowledge import cases as _cases
+
+    index.cases_digest = _cases.cases_digest(
+        _cases.case_paths(ROOT / args.cases_dir))       # type: ignore[attr-defined]
     names = [item.strip() for item in str(args.models).split(",") if item.strip()]
     families = list(DEFAULT_FAMILIES[:len(names)]) or ["scripted"]
     if len(set(families[:len(names)])) < 2 and not args.scripted:
