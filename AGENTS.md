@@ -303,7 +303,7 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-04 14:4x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-04 15:2x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；**Q5 pass**（运行侧读本代超图长跑 long19：**11 对 11
 ＝ 1.0**，线 0.80——§八十六 把"分镜表声明的拍摄手法"变成**锚**，交付不再自创运动）；
 链上只剩 `not passing: E1`（语料适配度，**样本已由 18 扩到 192**：17 对 192 ＝ 0.0885，
@@ -317,7 +317,7 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-144437/`（探针 32 支全过、`python -m pytest`
+且 pass。证据 `docs/evidence/20261004-151846/`（探针 32 支全过、`python -m pytest`
 2017 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
 §三十五…§八十八 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增三十节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
