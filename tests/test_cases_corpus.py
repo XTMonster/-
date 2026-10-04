@@ -142,6 +142,11 @@ def test_the_manifest_accounting_adds_up():
         "账目必须闭合：案例 + 重复 + 配额 + 拒收 + **线索闸门丢弃** == 参评候选数"
         "（闸门关着时最后一格恒为 0）")
     assert manifest["reject_ratio"] <= builder.BUILD_REJECT_RATIO
+    assert manifest["segments_total"] >= manifest["raw_segments"] >= 1
+    assert manifest["fingerprint"] and manifest["corpus_fingerprint"]
+    assert manifest["size_gate"]["passed"] is True
+    # §2.3d T1 的消费对象：门是**已提交语料里显式枚举的套路条数**（只许升）。
+    assert manifest["per_type"]["sequence_pattern"] >= builder.SEQUENCE_FLOOR
 
 
 def _clue_file(tmp_path, mapping):
@@ -178,11 +183,56 @@ def test_the_clue_gate_is_off_by_default_in_the_shipped_manifest():
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     assert manifest["clue_gate_dropped"] == 0
     assert "clue_gate" not in manifest, "没开闸门就不该有闸门的账"
-    assert manifest["segments_total"] >= manifest["raw_segments"] >= 1
-    assert manifest["fingerprint"] and manifest["corpus_fingerprint"]
-    assert manifest["size_gate"]["passed"] is True
-    # §2.3d T1 的消费对象：门是**已提交语料里显式枚举的套路条数**（只许升）。
-    assert manifest["per_type"]["sequence_pattern"] >= builder.SEQUENCE_FLOOR
+
+
+def test_the_gate_re_signs_the_clues_so_the_pair_stays_consistent(tmp_path):
+    """过滤之后**必须重签**线索：不重签，读者会因为摘要对不上整份拒用（中文恒 0 命中）。
+
+    这一条走的是真读者（`case_index.read_search_zh`）：它自己按案例分片算摘要，
+    所以"重签对没对"不是我说了算。
+    """
+    out_dir = tmp_path / "index"
+    (out_dir / "cases").mkdir(parents=True)
+    cases = [{"case_id": "c1", "case_type": "narrative", "title": "t1",
+              "excerpt": "A slow dolly in.", "beat_sequence": [],
+              "source_ref": {"title": "s", "url": "https://example.invalid/a",
+                             "author": "a", "license": "PublicDomain",
+                             "retrieved_at": "2026-10-02T00:00:00+00:00",
+                             "sha256": "0" * 64}, "score": 0.0},
+             {"case_id": "c2", "case_type": "narrative", "title": "t2",
+              "excerpt": "Cut on the eyeline.", "beat_sequence": [],
+              "source_ref": {"title": "s", "url": "https://example.invalid/a",
+                             "author": "a", "license": "PublicDomain",
+                             "retrieved_at": "2026-10-02T00:00:00+00:00",
+                             "sha256": "0" * 64}, "score": 0.0}]
+    common.write_jsonl(out_dir / "cases" / "part-000.jsonl", cases)
+    digest = case_index.cases_digest(case_index.case_paths(out_dir))
+
+    clues = _clue_file(tmp_path, {
+        "c1": "要拍缓推镜头时让镜头慢慢靠近",
+        "c2": "",                       # 空串不算键：不许进线索文件
+        "c9": "这条指向一条不在索引里的案例",  # 不在保留集合里：不许进
+    })
+    info = builder.attach_clues(clues, ["c1", "c2"], digest, out_dir)
+    assert info["clues"] == 1, info
+    #: 真读者：摘要对得上才算同代。
+    lines, reason = case_index.read_search_zh(out_dir, out_dir)
+    assert reason == "", reason
+    assert list(lines) == ["c1"], lines
+
+
+def test_attach_clues_refuses_a_digest_the_reader_would_reject(tmp_path):
+    """自证：摘要写错时，读者必须**整份拒用**（否则上面那条只是自我感觉良好）。"""
+    out_dir = tmp_path / "index"
+    (out_dir / "cases").mkdir(parents=True)
+    common.write_jsonl(out_dir / "cases" / "part-000.jsonl",
+                       [{"case_id": "c1", "case_type": "narrative", "title": "t",
+                         "excerpt": "x", "beat_sequence": [], "source_ref": {},
+                         "score": 0.0}])
+    clues = _clue_file(tmp_path, {"c1": "要拍缓推镜头时让镜头慢慢靠近"})
+    builder.attach_clues(clues, ["c1"], "0" * 64, out_dir)     # 故意写错摘要
+    lines, reason = case_index.read_search_zh(out_dir, out_dir)
+    assert lines == {} and reason == "search_zh_stale"
 
 
 def test_every_sequence_pattern_is_re_derivable_and_comes_from_a_licensed_source():

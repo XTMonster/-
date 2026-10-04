@@ -803,6 +803,29 @@ def recount(cases: Sequence[Dict], report: Dict) -> Dict:
             "per_domain": dict(sorted(per_domain.items()))}
 
 
+def attach_clues(clues_path: pathlib.Path, keep_ids: Sequence[str],
+                 digest: str, out_dir: pathlib.Path) -> Dict:
+    """把线索按**最终案例集合**重签并落盘（`<out_dir>/cases/search_zh.part-*.jsonl`）。
+
+    为什么必须重签：线索行里记着生成时那份案例索引的**摘要**，而 `read_search_zh`
+    对不上就整份拒用（代际纪律）。过滤之后案例集合变了 ⇒ 摘要变了 ⇒ 不重签，
+    新索引会**一条线索都用不上**，中文查询恒 0 命中。
+
+    重签只改 `cases_sha256` 这一个字段：行的内容（`zh`）仍来自它当初那条案例，
+    而"这条案例还在不在最终集合里"由 `keep_ids` 决定——**不是**让旧线索指向新案例。
+    """
+    from .case_search_zh import write_lines
+
+    keep = {str(case_id) for case_id in keep_ids}
+    rows = [row for row in common.read_jsonl(pathlib.Path(clues_path))
+            if str(row.get("case_id")) in keep and str(row.get("zh") or "").strip()]
+    for row in rows:
+        row["cases_sha256"] = digest
+    rows.sort(key=lambda row: str(row.get("case_id")))
+    info = write_lines(pathlib.Path(out_dir) / "cases", rows)
+    return {"clues": len(rows), "digest": digest, **info}
+
+
 def beat_positions(excerpt: str, beats: Sequence[str]) -> List[int]:
     """``excerpt`` 里每个节拍**首次**出现的位置；找不到给 ``-1``。"""
     positions: List[int] = []
@@ -1042,6 +1065,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     manifest = write_outputs(cases, report, docs=docs, out_dir=out_dir,
                              out_manifest=manifest_path, single_file=single)
+    if args.require_clue:
+        #: 案例分片落盘之后才知道最终摘要，所以线索**在案例之后**重签
+        #: ——顺序反了会写进一枚对不上的摘要，读者会整份拒用。
+        shards = block_cases.case_paths(out_dir)
+        digest = block_cases.cases_digest(shards)
+        attached = attach_clues(pathlib.Path(args.require_clue),
+                                [str(case["case_id"]) for case in cases],
+                                digest, out_dir)
+        manifest["clue_attached"] = attached
+        #: 线索也是索引的一部分，体积门要连它一起算。
+        manifest["size_gate"] = size_gate(
+            [*shards, manifest_path,
+             *block_cases.search_zh_paths(out_dir)])
+        common.dump_json(manifest_path, {**manifest})
+        payload["clue_attached"] = attached
     payload["size_gate"] = manifest["size_gate"]
     payload["passed"] = bool(verdict["passed"] and manifest["size_gate"]["passed"])
     if not payload["passed"]:
