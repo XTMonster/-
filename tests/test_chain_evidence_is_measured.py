@@ -400,3 +400,61 @@ def test_the_rk_tool_itself_accepts_an_empty_failed_list(tmp_path):
         errors="replace")
     assert done.returncode == 0, done.stdout + done.stderr
     assert (tmp_path / "ev" / "rks.json").is_file()
+
+
+# --------------------------------------------------------------------------- #
+# 四、链的读数必须能归因到**一棵树**（2026-10-05 联合会诊 D3）
+# --------------------------------------------------------------------------- #
+def tree_guard_is_sound(text: str) -> bool:
+    """链是否① 取树摘要、② 写进证据、③ 树动了就 INCOMPLETE ＋ 非零退出。
+
+    "记下来"不算：只有**判定**了才算。生成物（`docs/evidence/`）必须排除在摘要外
+    ——链自己会往那里写盘，不排除就会把每一次运行都判成"树动了"。
+    """
+    if "function Get-TreeDigest" not in text or "$treeBefore = Get-TreeDigest" not in text:
+        return False
+    body = text[text.index("function Get-TreeDigest"):text.index("$treeBefore = Get-TreeDigest")]
+    #: 判据是**谓词**本身（注释里提到 `docs/evidence/` 不算数——自证用例会因此恒真）。
+    if "-notmatch 'docs/evidence/'" not in body:
+        return False                      # 生成物进了摘要 ⇒ 自己写盘就把自己判红
+    if "$treeAfter = Get-TreeDigest" not in text:
+        return False
+    tail = text[text.index("$treeAfter = Get-TreeDigest"):]
+    if "tree.json" not in tail:
+        return False
+    if "$treeBefore -ne $treeAfter" not in tail:
+        return False
+    return "INCOMPLETE" in tail and "exit 1" in tail
+
+
+def test_the_chain_pins_its_numbers_to_one_tree():
+    """链必须证明"这些数字来自同一棵树"（HEAD ＋ 脏清单 ＋ diff）。
+
+    现场（2026-10-05 实测）：并发 lane 正在改同一工作树时，链第 2 步红
+    （2 failed / 2037 passed），几分钟后同一套用例在**稳定的**树上 2041/0 failed
+    ——而链自己说不出来"那次红是中间态"。于是读数归因只能靠人复述，正是
+    §24.1「过期证据被当成现行证据」的同族形状。
+    """
+    text = chain_text()
+    assert tree_guard_is_sound(text), (
+        "链上没有『取树摘要 ⇒ 写证据 ⇒ 树动了判 INCOMPLETE』这条守卫："
+        "绿色可能是在说一棵已经不存在的树")
+
+
+def test_the_tree_guard_checker_fires_on_each_missing_half():
+    """自证：三种残法都必须判 False（只取不判 ／ 不排除生成物 ／ 判了不退出）。"""
+    text = chain_text()
+
+    recorded_only = text.replace("$treeBefore -ne $treeAfter", "$false")
+    assert recorded_only != text, "自证需要能改动那段判定（源码形状变了要同步这条用例）"
+    assert not tree_guard_is_sound(recorded_only)
+
+    no_exclude = text.replace("$_ -notmatch 'docs/evidence/'", "$true")
+    assert no_exclude != text
+    assert not tree_guard_is_sound(no_exclude)
+
+    no_exit = text.replace("""    Write-Host ('INCOMPLETE: before=' + $treeBefore + ' after=' + $treeAfter) -ForegroundColor Red
+    Write-Host 'INCOMPLETE: these numbers are NOT attributable to one tree; rerun on a frozen tree.' -ForegroundColor Red
+    exit 1""", "")
+    assert no_exit != text
+    assert not tree_guard_is_sound(no_exit)

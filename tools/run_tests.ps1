@@ -46,6 +46,36 @@ function Fail([string]$message) {
     exit 1
 }
 
+# --------------------------------------------------------------------------- #
+# S13 / US-16 (2026-10-05, joint-review finding D3): a run's numbers must be
+# attributable to ONE tree.
+#
+# Why: this repo has repeatedly had more than one lane writing the same worktree.
+# On 2026-10-05 a chain run's step 2 went red because a *concurrent* lane was
+# mid-edit, while the same suite was green minutes later on the settled tree --
+# and the chain itself could not say which tree its numbers came from.  So the
+# digest (HEAD + porcelain + diff) is taken before the first check and again
+# before the verdict; if it moved, the run is INCOMPLETE, not green.
+# --------------------------------------------------------------------------- #
+function Get-TreeDigest {
+    $parts = @()
+    $parts += ((& git rev-parse HEAD 2>$null) -join "`n")
+    #: Generated evidence is an OUTPUT, not an input: the chain writes into
+    #: docs/evidence/<run-id>/ itself, and a concurrent lane writing its own run
+    #: dir must not make this run look "moved". So only the input side is digested
+    #: (HEAD + tracked diff + dirty paths outside docs/evidence/).
+    $dirty = @((& git status --porcelain 2>$null) | Where-Object {
+        $_ -notmatch 'docs/evidence/' })
+    $parts += ($dirty -join "`n")
+    $parts += ((& git diff 2>$null) -join "`n")
+    $text = ($parts -join "`n")
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($text)
+    return (($sha.ComputeHash($bytes) | ForEach-Object { $_.ToString('x2') }) -join '')
+}
+
+$treeBefore = Get-TreeDigest
+
 function Invoke-BlenderScript([string]$blender, [string]$script, [string[]]$extra) {
     $blenderArgs = @('--background', '--factory-startup', '--python', $script)
     if ($extra) { $blenderArgs += '--'; $blenderArgs += $extra }
@@ -651,6 +681,26 @@ if ($LASTEXITCODE -ne 1) {
 if ($probeParseFailures.Count -gt 0) {
     Write-Host ('INCOMPLETE: ' + $probeParseFailures.Count + ' probe result(s) could not be parsed: ' + ($probeParseFailures -join ', ')) -ForegroundColor Red
     Write-Host 'INCOMPLETE: their RKs are not_measured; this run is NOT green.' -ForegroundColor Red
+    exit 1
+}
+
+# D3: the tree must not have moved while the checks ran -- otherwise "green" is a
+# claim about a state that no longer exists (and the numbers cannot be cited).
+$treeAfter = Get-TreeDigest
+$treePayload = [ordered]@{
+    head             = ((& git rev-parse HEAD 2>$null) -join '')
+    digest_before    = $treeBefore
+    digest_after     = $treeAfter
+    stable           = ($treeBefore -eq $treeAfter)
+    dirty_before     = @((& git status --porcelain 2>$null) | Where-Object {
+        $_ -notmatch 'docs/evidence/' })
+    captured_at      = (Get-Date).ToString('o')
+}
+$treePayload | ConvertTo-Json -Depth 4 | Out-File -Encoding utf8 (Join-Path $evidenceDir 'tree.json')
+if ($treeBefore -ne $treeAfter) {
+    Write-Host 'INCOMPLETE: the worktree changed while the chain ran.' -ForegroundColor Red
+    Write-Host ('INCOMPLETE: before=' + $treeBefore + ' after=' + $treeAfter) -ForegroundColor Red
+    Write-Host 'INCOMPLETE: these numbers are NOT attributable to one tree; rerun on a frozen tree.' -ForegroundColor Red
     exit 1
 }
 

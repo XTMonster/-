@@ -5730,18 +5730,15 @@ A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **
 
 ### 91.6 并行审查 lane 另外三条 finding（**未修，如实挂着**）
 
-同一次审查还给了三条真问题，这一轮**没有**动它们（都属"改判据/改链"的独立批次）：
+同一次审查还给了三条真问题。**D2 与 D3 已在 §九十三 修掉**，D1 仍挂着：
 
 * **D1 代际门选错键**：`tools/knowledge/quality.py` 的 E1 与 `shots.json` 代际都用
   `manifest_fingerprint`，而它是**语料**指纹（`case_fingerprint(docs)`）——只换案例
   集合它**不会红**（实测 `cases_digest` 由 `e1148200…` 变 `227869414e0e014b…` 而
   `fingerprint` 仍是 `69791dbacd…`）。这正是 §24.1"过期证据被当成现行证据"的形状。
-* **D2 读线索不看生成代际**：`read_search_zh` 只校验 `cases_sha256`，每行都写着的
-  `prompt_sha256` **没有读者**（实测 HEAD 的 731 行全是 `glm-4.7`/`c2f49178…`，
-  而生成器已是 `glm-5.3`/`36069623…`）。现在发货的那份已同代，
-  **但这枚守门仍缺**——下次改提示词会静默重演。
-* **D3 链不能把结果归因到一棵树**：`tools/run_tests.ps1` 只记 spec/golden 摘要，
-  不记 HEAD 与工作区脏摘要；实测并发写入期间链第 2 步红，而链自己说不出"那是中间态"。
+* **D2 读线索不看生成代际** ⇒ **§93.1 已修**（manifest 记基准 ＋ 同文件混代即拒）。
+* **D3 链不能把结果归因到一棵树** ⇒ **§93.2 已修**（HEAD＋脏清单＋diff 取摘要，
+  前后不一致就 INCOMPLETE ＋ 非零退出，并把 `tree.json` 写进证据）。
 * **D5（口径，需人裁）**：`E1_SAMPLE_FLOOR = 1200` 只报不管——192 条样本也能判 pass。
 
 ## 九十二、把"会诊"从契约文本变成**自动触发**（hook）
@@ -5776,3 +5773,58 @@ A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **
 `--source` 抽取、普通请求**不**触发、契约仍在），跑出来
 `checks: 82  failures: 0  HOOK SELFTEST PASS`。hook 包在仓库里留了**可复原副本**
 （`docs/agents/hooks/`，含安装命令与上面两个坑的说明）。
+
+## 九十三、把两条"看不见的漂移"堵上：线索代际（D2）与树的归因（D3）
+
+§91.6 挂着的 D2 与 D3 是**同一个形状**：读数"看起来对"，但它其实不在说自己以为的
+那件事。两条都修了，判据都变**更严**，门限一个字没动。
+
+### 93.1 D2：线索的生成代际以前**没有读者**（已修）
+
+每一行线索都写着 `prompt_sha256`，但 `read_search_zh` 只校验 `cases_sha256`
+——于是"改了提示词之后接着写"会留下一份**混代**文件而读者照用不误。实测过那份
+文件：**436 行**记着一枚 sha、**739 行**记着另一枚（§八十九 记过）。修法两层：
+
+1. **同文件不许混代**（`block_director/knowledge/cases.py::read_search_zh`）：
+   不同行的 `prompt_sha256` 一旦不一致 ⇒ `search_zh_mixed_prompt`，**整份拒用**。
+   混代的键既不等于旧代也不等于新代，用它算出来的 E1 说不清是哪套口径。
+2. **代际基准由产物自己带**：`block_director` 不许 import `tools/`（分层纪律），
+   所以生成器把 `prompt_sha256` 写进 manifest（`clue_attached.prompt_sha256`，
+   `build_cases.attach_clues`），读者只做比对：对不上 ⇒ `search_zh_prompt_stale`；
+   manifest 记了而行里**根本没写** ⇒ `search_zh_prompt_unverified`（缺证据 != 通过）。
+   manifest 没记（旧产物）⇒ 不做那一步比对，判据既不从严也不放松。
+
+守门 `tests/test_case_search_zh.py::test_a_mixed_prompt_file_is_refused_as_a_whole`
+与 `::test_the_manifest_prompt_sha_gates_the_whole_file`（正例 ＋ 三种拒用，
+其中 `search_zh_prompt_unverified` 这一格此前**没有任何判据**在管）。
+
+### 93.2 D3：链的数字必须能**归因到一棵树**（已修）
+
+`tools/run_tests.ps1` 原来只记 spec/golden 摘要，不记 HEAD 与脏清单。实测代价：
+并发 lane 正改同一工作树时，链第 2 步红（2 failed / 2037 passed），几分钟后同一套
+用例在**稳定的**树上 2041 通过——而链自己说不出"那次红是中间态"。
+
+现在链在**第一条检查之前**与**下结论之前**各取一次树摘要
+（`git rev-parse HEAD` ＋ `git status --porcelain` ＋ `git diff` 的 sha256），
+落 `docs/evidence/<run-id>/tree.json`；两次不一致就
+`INCOMPLETE: the worktree changed while the chain ran` ＋ **非零退出**——
+"绿色"于是只在"这棵树没动过"时才成立。
+
+**一个必须避开的自伤**：链自己往 `docs/evidence/<run-id>/` 写盘，若把生成物算进
+摘要，每次运行都会把自己判红。所以摘要只覆盖**输入侧**（脏清单里排除
+`docs/evidence/`）——自证用例里专门有一条把这条排除改掉、要求判 False。
+
+守门 `tests/test_chain_evidence_is_measured.py::test_the_chain_pins_its_numbers_to_one_tree`
+＋ `::test_the_tree_guard_checker_fires_on_each_missing_half`（只记不判 ／ 不排除生成物
+／ 判了不退出——三种残法都必须开火）。实测这一轮链的 `tree.json`：
+`stable: true`、`digest_before == digest_after == 130a62e714bb8673…`，脏清单是本次
+改动的 6 个文件（不含任何证据目录）。
+
+### 93.3 账目
+
+`python -m pytest` ＝ **2045 passed / 1 skipped**（比上一代 ＋4：D2 三条 ＋ D3 三条里
+新增的判据与自证）；`tools/run_tests.ps1` ＝ **32/32 `All checks passed`**，
+证据 `docs/evidence/20261005-011036/`（含 `tree.json`），链上 E1 仍读发货索引的
+**0.1441**、`RK-13` 仍 failed、门①–⑩ 全 pass。**仍未修**：D1（代际门选错键：
+`manifest_fingerprint` 是语料指纹，只换案例集合不会红）与 D5（`E1_SAMPLE_FLOOR`
+只报不管）——各自是独立批次，D5 属用户裁决。

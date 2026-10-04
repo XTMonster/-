@@ -234,12 +234,21 @@ def read_search_zh(directory: Any, cases_source: Any) -> Tuple[Dict[str, str], s
         digest = cases_digest(_sources(cases_source))
         out: Dict[str, str] = {}
         seen_digest = ""
+        seen_prompt = ""
         for path in paths:
             for line in path.read_text(encoding="utf-8").splitlines():
                 if not line.strip():
                     continue
                 row = json.loads(line)
                 seen_digest = str(row.get("cases_sha256") or "")
+                prompt = str(row.get("prompt_sha256") or "")
+                #: **同文件里不许混代**：不同行记着不同 `prompt_sha256` 就说明
+                #: 这份文件是"跑了一半又改了提示词"的产物。整份拒用，不当成"各代
+                #: 都算数"——混代的键既不等于旧代也不等于新代，检索面会静默偏掉。
+                if prompt:
+                    if seen_prompt and prompt != seen_prompt:
+                        return {}, "search_zh_mixed_prompt"
+                    seen_prompt = prompt
                 case_id, zh = str(row.get("case_id") or ""), str(row.get("zh") or "")
                 if case_id and zh:
                     out[case_id] = zh
@@ -247,9 +256,36 @@ def read_search_zh(directory: Any, cases_source: Any) -> Tuple[Dict[str, str], s
             return {}, "search_zh_empty"
         if seen_digest != digest:
             return {}, "search_zh_stale"
+        #: **代际基准在 manifest 上**（`clue_attached.prompt_sha256`）。`block_director`
+        #: 不许 import `tools/`，所以基准只能由产物自己带；manifest 记了就**必须**
+        #: 对上，否则这次读数用的是别的提示词产出的键，E1 会静默地不是当前口径。
+        expected_prompt = clue_prompt_sha(index_dir=directory)
+        if expected_prompt and seen_prompt and seen_prompt != expected_prompt:
+            return {}, "search_zh_prompt_stale"
+        if expected_prompt and not seen_prompt:
+            return {}, "search_zh_prompt_unverified"
         return out, ""
     except (OSError, ValueError, KeyError, TypeError) as exc:
         return {}, f"search_zh_unreadable:{type(exc).__name__}"
+
+
+def clue_prompt_sha(index_dir: Any) -> str:
+    """manifest 里记的**线索生成代际**（`clue_attached.prompt_sha256`）。
+
+    没记就返回空串（旧产物）：调用方据此**不做**那一步比对——判据不变严也不放松，
+    只是"没记就没有可比的东西"。
+    """
+    path = pathlib.Path(index_dir) / MANIFEST_FILE
+    if not path.is_file():
+        return ""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ""
+    attached = payload.get("clue_attached") if isinstance(payload, dict) else None
+    if not isinstance(attached, dict):
+        return ""
+    return str(attached.get("prompt_sha256") or "")
 
 
 def carries_constraint(row: Dict[str, Any]) -> bool:

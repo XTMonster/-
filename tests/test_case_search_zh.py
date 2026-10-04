@@ -76,6 +76,66 @@ def test_missing_and_unreadable_files_are_named_not_silent(tmp_path):
     assert lines == {} and reason.startswith("search_zh_unreadable:")
 
 
+def _manifest_with_prompt(directory: pathlib.Path, prompt_sha: str) -> None:
+    (directory / C.MANIFEST_FILE).write_text(
+        json.dumps({"clue_attached": {"prompt_sha256": prompt_sha}}),
+        encoding="utf-8")
+
+
+def test_a_mixed_prompt_file_is_refused_as_a_whole(tmp_path):
+    """**同一份线索文件里不许混代**（会诊 D2）。
+
+    现场（2026-10-04 实测）：一份 `cases.search_zh.jsonl` 里 **436 行**记着
+    `prompt_sha256 = b3d565ea`、**739 行**记着 `c2f49178`——那是"换了提示词之后
+    接着写"的产物。混代的键既不等于旧代也不等于新代：用它量的 E1 说不清是哪一套
+    口径。判据是**整份拒用**，不是"各代都算数"。
+    """
+    cases_path = tmp_path / "cases.jsonl"
+    cases_path.write_text('{"case_id": "a"}\n{"case_id": "b"}\n', encoding="utf-8")
+    digest = C.hashlib.sha256(cases_path.read_bytes()).hexdigest()
+    _write_sidecar(tmp_path, cases_path, digest, [
+        {"case_id": "a", "zh": "镜头缓缓推近市场摊位", "prompt_sha256": "a" * 64},
+        {"case_id": "b", "zh": "切到听者的视线完成反打", "prompt_sha256": "b" * 64},
+    ])
+    lines, reason = C.read_search_zh(tmp_path, cases_path)
+    assert lines == {} and reason == "search_zh_mixed_prompt", reason
+
+
+def test_the_manifest_prompt_sha_gates_the_whole_file(tmp_path):
+    """manifest 记了生成代际 ⇒ 逐行必须对上；对不上/没写都**不许当通过**。
+
+    为什么基准在 manifest 上而不是"读者去问生成器"：`block_director` 不许 import
+    `tools/`（分层纪律）。所以产物自己带"我是哪一代生成的"，读者只做比对。
+    """
+    cases_path = tmp_path / "cases.jsonl"
+    cases_path.write_text('{"case_id": "a"}\n', encoding="utf-8")
+    digest = C.hashlib.sha256(cases_path.read_bytes()).hexdigest()
+    _manifest_with_prompt(tmp_path, "a" * 64)
+
+    #: ① 行里的代际与 manifest 一致 ⇒ 正常装载。
+    _write_sidecar(tmp_path, cases_path, digest,
+                   [{"case_id": "a", "zh": "镜头缓缓推近市场摊位",
+                     "prompt_sha256": "a" * 64}])
+    assert C.read_search_zh(tmp_path, cases_path) == (
+        {"a": "镜头缓缓推近市场摊位"}, "")
+
+    #: ② 行里是**上一代** ⇒ 整份拒用（不许拿旧键当现行口径）。
+    _write_sidecar(tmp_path, cases_path, digest,
+                   [{"case_id": "a", "zh": "镜头缓缓推近市场摊位",
+                     "prompt_sha256": "b" * 64}])
+    assert C.read_search_zh(tmp_path, cases_path)[1] == "search_zh_prompt_stale"
+
+    #: ③ 行里**根本没写**代际、而 manifest 说有 ⇒ 无法证明 ⇒ 拒用（缺证据 != 通过）。
+    _write_sidecar(tmp_path, cases_path, digest,
+                   [{"case_id": "a", "zh": "镜头缓缓推近市场摊位"}])
+    assert C.read_search_zh(tmp_path, cases_path)[1] == "search_zh_prompt_unverified"
+
+    #: ④ manifest 没记（旧产物）⇒ 不做那一步比对，判据既不从严也不放松。
+    (tmp_path / C.MANIFEST_FILE).unlink()
+    lines, reason = C.read_search_zh(tmp_path, cases_path)
+    assert reason == "" and lines == {"a": "镜头缓缓推近市场摊位"}
+
+
 def test_the_line_only_feeds_the_index_and_never_the_rendered_case():
     """`render_case` 的输出与有没有线索**逐字相同**（作者原文一个字不动）。"""
     case = _case()

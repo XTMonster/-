@@ -867,6 +867,15 @@ def attach_clues(clues_path: pathlib.Path, keep_ids: Sequence[str],
         row["cases_sha256"] = digest
     rows.sort(key=lambda row: str(row.get("case_id")))
     info = write_lines(pathlib.Path(out_dir) / "cases", rows)
+    #: **生成代际落盘**（2026-10-05 会诊 D2）：每一行本来就写着 `prompt_sha256`，
+    #: 但此前**没有任何读者**去用它——于是"换了提示词之后重跑一半"会留下一份
+    #: 混代（甚至整份旧代）的线索文件，而读者照用不误（实测同一份文件里 436 行
+    #: 一枚 sha、739 行另一枚）。产物把"我是哪一代生成的"记在 manifest 上，
+    #: `read_search_zh` 才有东西可比——`block_director` 不许 import `tools/`，
+    #: 所以基准必须来自 manifest，而不是让读者去调生成器。
+    from .case_search_zh import prompt_sha as _prompt_sha
+
+    info["prompt_sha256"] = _prompt_sha()
     return {"clues": len(rows), "digest": digest, "rejected": len(rejected),
             "rejected_examples": rejected[:3], **info}
 

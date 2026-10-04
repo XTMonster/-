@@ -408,6 +408,7 @@
       }
     ],
     "rows": 363,
-    "shard_target_bytes": 487587
+    "shard_target_bytes": 487587,
+    "prompt_sha256": "36069623ca30fda2987b3f99b018c2b282ca4890c41b8869b68a092b626d9fcb"
   }
 }

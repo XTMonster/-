@@ -1,0 +1,15 @@
+﻿{
+    "head":  "52f7dbaa9fd1d1462501f8f1334cc05be81c156e",
+    "digest_before":  "130a62e714bb8673abcc2b8144c13662b09932ac1ec1092032ca2a222d89e445",
+    "digest_after":  "130a62e714bb8673abcc2b8144c13662b09932ac1ec1092032ca2a222d89e445",
+    "stable":  true,
+    "dirty_before":  [
+                         " M block_director/knowledge/cases.py",
+                         " M knowledge/cases.manifest.json",
+                         " M tests/test_case_search_zh.py",
+                         " M tests/test_chain_evidence_is_measured.py",
+                         " M tools/kb_fetch/build_cases.py",
+                         " M tools/run_tests.ps1"
+                     ],
+    "captured_at":  "2026-10-05T01:12:39.9878104+08:00"
+}

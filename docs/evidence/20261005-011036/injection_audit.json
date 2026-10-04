@@ -1,0 +1,58 @@
+{
+  "calls_with_knowledge": 65,
+  "calls_without_knowledge": 148,
+  "plan_scope": {
+    "scope": "plan",
+    "cap_key": "rag.plan_prefetch_tokens",
+    "cap": 2000,
+    "calls": 1,
+    "max_tokens": 775,
+    "max_request_id": "bbdeb4cb18da4288aba6b4fcbbcd9f59",
+    "over": [],
+    "locators": {
+      "terminator": 1
+    },
+    "status": "pass",
+    "note": "1 个注入块，最大 775 tokens ≤ 2000（rag.plan_prefetch_tokens）"
+  },
+  "shot_scope": {
+    "scope": "shot",
+    "cap_key": "rag.max_tokens_per_call",
+    "cap": 800,
+    "calls": 64,
+    "max_tokens": 785,
+    "max_request_id": "7a145215e297426d847149be24a31b93",
+    "over": [],
+    "locators": {
+      "terminator": 64
+    },
+    "status": "pass",
+    "note": "64 个注入块，最大 785 tokens ≤ 800（rag.max_tokens_per_call）"
+  },
+  "token_caps": {
+    "status": "pass",
+    "note": "1 个注入块，最大 775 tokens ≤ 2000（rag.plan_prefetch_tokens）；64 个注入块，最大 785 tokens ≤ 800（rag.max_tokens_per_call）"
+  },
+  "required_edges_dropped_by_budget": {
+    "id": "Q6b_required_edges_dropped_by_budget",
+    "status": "not_measured",
+    "matched_shots": 0,
+    "required_edges": 0,
+    "dropped": 0,
+    "note": "这一跑发出的逐镜查询与 held-out 的 `q` 一条都对不上：required 边无法归属到镜头，`required_edges_dropped_by_budget` 记 not_measured（**不得**读成 0 条丢弃）。原因与 Q5 的运行侧同源；见 knowledge_quality.json 的 Q5 行"
+  },
+  "status": "pass",
+  "complete": false,
+  "note": "token 半边判硬；required 半边 not_measured",
+  "llm_trace": "docs\\evidence\\20261003_real_long\\llm_trace.jsonl",
+  "audit_log": "docs/evidence/20261003_real_long/audit_log.jsonl",
+  "run_id": "",
+  "caps": {
+    "plan": 2000,
+    "shot": 800,
+    "keys": {
+      "plan": "rag.plan_prefetch_tokens",
+      "shot": "rag.max_tokens_per_call"
+    }
+  }
+}
