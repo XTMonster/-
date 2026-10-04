@@ -32,6 +32,41 @@ SCHEMA_VERSION = "hg/v2"
 MANIFEST_FILE = "hypergraph.manifest.json"
 
 
+def schema_fingerprint() -> str:
+    """**schema 常量**的指纹：`SCHEMA_VERSION` ＋ 节点/限定/角色/边型的闭集。
+
+    为什么需要它（S0 / `PLAN_HYPERGRAPH_v3.md`）：缓存指纹的第八格
+    （`vocabulary_fingerprint`）已经是"**从代码现算**"，所以改别名表会当场让索引
+    换代（§20.4 的实测：补一个 `EMOTIONS` 别名，边数 540 → 539，而前七个分量一个
+    都不动）。**第六格 `schema_version` 却是手写常量**——于是往 `QUALIFIER_KINDS`
+    里加一个 qualifier（计划里的 `seq_phase`／`carry_shots`）**不会**让缓存失效：
+    断点续跑直接命中旧批次，新槽位**从未被抽取**而一切照绿。
+
+    这一格与词表那一格**同一纪律**：不从产物读回来，**从代码现算**。值形如
+    `hg/v2+<digest12>`，所以：
+
+    * 只改常量不改 `SCHEMA_VERSION` ⇒ 指纹**仍然**会变（这正是要修的那个洞）；
+    * 显式升 `SCHEMA_VERSION` ⇒ 指纹也变（保留原语义）。
+
+    顺序敏感：常量元组的**顺序**变了也算换代（表是闭集，顺序是它的一部分契约）。
+    """
+    payload = json.dumps(
+        {
+            "schema_version": SCHEMA_VERSION,
+            "node_types": list(NODE_TYPES),
+            "qualifier_kinds": list(QUALIFIER_KINDS),
+            "roles": sorted(ROLES),
+            "edge_types": list(EDGE_TYPES),
+        },
+        ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def schema_version_with_fingerprint() -> str:
+    """缓存指纹第六格的**取值**：`hg/v2+<schema_fingerprint 前 12 位>`。"""
+    return f"{SCHEMA_VERSION}+{schema_fingerprint()[:12]}"
+
+
 def manifest_fingerprint(index_dir: Any) -> str:
     """读 ``hypergraph.manifest.json`` 的六元指纹（构建期留痕，供 trace 引用）。
 

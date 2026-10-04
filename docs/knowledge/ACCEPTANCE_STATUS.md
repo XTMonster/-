@@ -5944,3 +5944,49 @@ A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **
 * `python -m pytest` ＝ **2053 passed / 1 skipped**（比上一代 ＋7：适配器 6 条 ＋
   面板的检索路径 1 条）。判据、门限（0.70）、oracle、`SCORE_WEIGHTS` 一个字没动；
   E1 仍 fail、RK-13 仍 failed。
+
+## 九十八、S0 落地：**schema 闭集进缓存指纹**（`PLAN_HYPERGRAPH_v3.md` 的第一步）
+
+开工前先把循环③那条 blocker 在仓库里**验证**了一遍，结论与它**不完全一致**，如实记：
+
+* **不成立的那半**：它说"语料分量没人补"。实测 `cache_key` **已经有**
+  `corpus_sha256`（卡 id ＋ chunk ＋ 源文档 sha256 ＋ 正文 sha256，`corpus_digest()`）
+  与 `vocabulary_fingerprint`（词表/别名表，`vocabulary.lexicon_fingerprint()`）。
+* **成立的那半（真洞）**：第六格 `schema_version` 是**手写常量** `"hg/v2"`，
+  所以往 `QUALIFIER_KINDS` 里加一个 qualifier（计划里的 `seq_phase`／`carry_shots`）
+  **不会**让缓存失效——断点续跑直接命中旧批次，**新槽位从未被抽取而一切照绿**。
+  这与 §20.4 那次事故（补一个别名让边数 540→539，前七个分量一个都不动）是同一形状，
+  只不过那次被第八格兜住了，这次没有。
+
+### 98.1 改法（照第八格的先例）
+
+* `block_director/knowledge/hypergraph.py` 新增
+  `schema_fingerprint()`（对 `SCHEMA_VERSION` ＋ `NODE_TYPES` ＋ `QUALIFIER_KINDS`
+  ＋ `ROLES` ＋ `EDGE_TYPES` 的**有序**闭集取 sha256）与
+  `schema_version_with_fingerprint()`（`hg/v2+<digest12>`）。
+* `tools/kb_fetch/build_hypergraph.py` 的 `fingerprint_components()` 与
+  `rekey_manifest()` 都改成**从代码现算**这一格（与第八格同一纪律：不从产物读回来）。
+
+实测：当前值 `hg/v2+02fb5b9fe343`；**把 `seq_phase` 加进闭集 ⇒ `hg/v2+0e08f7bd65f9`**
+（缓存自动失效）、撤回后逐字回到原值。
+
+### 98.2 守门（三条）
+
+`tests/test_hypergraph_determinism.py`：
+① `test_adding_a_schema_constant_moves_the_cache_key`——加一个 qualifier ⇒
+第六格与**整枚指纹**都必须变（对"静默 no-op"开火）；
+② `test_the_schema_fingerprint_is_order_sensitive_and_deterministic`——闭集**调序**也算换代，
+同一状态可复算；③ `test_rekey_manifest_recomputes_the_schema_cell_from_code`——
+`rekey_manifest()` 对第六格**不读旧值**（自证：写一个假的 `hg/v0` 进去，重签后必须被覆盖）。
+
+### 98.3 发货产物**故意**没有重签（如实记）
+
+`knowledge/hypergraph.manifest.json` 的第六格仍是旧口径 `hg/v2`。**为什么不现在重签**：
+重签会改 `fingerprint`，而那份指纹被 long21 的 `shots.json` 与 `run_manifest.json` 引用
+——一改，Q5 又会判 `stale_evidence`，得再跑一次真跑才恢复。
+**正确时机是下一次故意重建**（`S1a`＋`S2` 同批换代：加两个 qualifier ＋ 移植上游抽取层
+＋ 双跑 2,221 卡）；那时缓存**本来就该**整体失效，指纹随新产物一起换。
+在此之前**任何人跑一次 `build_hypergraph` 都会触发全量冷抽**（这正是这条改动的意义），
+所以这条写在这里当警示。
+
+`python -m pytest` ＝ **2066 passed / 1 skipped**（＋13：本批 3 条 ＋ 并行 lane 的 10 条）。

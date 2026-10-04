@@ -508,3 +508,54 @@ def test_index_cards_include_the_curated_handwritten_ones():
     assert sample["source_span"]["end"] == len(sample["content"]) > 0
     assert sample["provenance_kind"] == "权威文档"
     assert sample["source_ref"]["license"] == "OwnWork"
+
+
+# --------------------------------------------------------------------------- #
+# S0（PLAN_HYPERGRAPH_v3.md）：**schema 闭集**也必须进缓存指纹
+#
+# 现场：缓存指纹的第八格（词表/别名表）早已是"从代码现算"（§20.4 实测：补一个别名
+# 让边数 540→539，而前七个分量一个都不动），**第六格 `schema_version` 却是手写常量**。
+# 于是往 `QUALIFIER_KINDS` 里加一个 qualifier（计划里的 `seq_phase`／`carry_shots`）
+# **不会**让缓存失效 ⇒ 断点续跑命中旧批次、新槽位从未被抽取，而一切照绿。
+# --------------------------------------------------------------------------- #
+def test_adding_a_schema_constant_moves_the_cache_key(monkeypatch):
+    """往 schema 闭集里加一个键 ⇒ 第六格与整枚指纹**都必须变**（静默 no-op 的洞）。"""
+    before = bh.fingerprint_components(_real_cards(1), _ScriptedClient({}))
+    assert before["schema_version"].startswith(hg.SCHEMA_VERSION + "+"), before
+
+    monkeypatch.setattr(hg, "QUALIFIER_KINDS", tuple(hg.QUALIFIER_KINDS) + ("seq_phase",),
+                        raising=False)
+    after = bh.fingerprint_components(_real_cards(1), _ScriptedClient({}))
+    assert after["schema_version"] != before["schema_version"], (
+        "加了 qualifier 而 schema 版本格没变：缓存会把新槽位当成旧代产物")
+    assert bh.fingerprint_of(after) != bh.fingerprint_of(before), (
+        "schema 变了而整枚指纹没变：旧 key 仍会被命中")
+
+
+def test_the_schema_fingerprint_is_order_sensitive_and_deterministic():
+    """闭集的**顺序**也是契约（表是闭集）：调序要换代；同一状态必须可复算。"""
+    baseline = hg.schema_version_with_fingerprint()
+    assert baseline == hg.schema_version_with_fingerprint()
+    original = hg.QUALIFIER_KINDS
+    try:
+        hg.QUALIFIER_KINDS = tuple(reversed(original))
+        assert hg.schema_version_with_fingerprint() != baseline, "调序没有换代"
+    finally:
+        hg.QUALIFIER_KINDS = original
+    assert hg.schema_version_with_fingerprint() == baseline
+
+
+def test_rekey_manifest_recomputes_the_schema_cell_from_code(tmp_path):
+    """`rekey_manifest()` 对第六格**不读旧值，而是现算**（与第八格同一纪律）。"""
+    manifest = json.loads(MANIFEST_FILE.read_text(encoding="utf-8"))
+    stale = {**manifest, "cache_key": {**manifest["cache_key"],
+                                       "schema_version": "hg/v0"}}
+    stale["fingerprint"] = bh.fingerprint_of(stale["cache_key"])
+    target = tmp_path / "hypergraph.manifest.json"
+    target.write_text(json.dumps(stale, ensure_ascii=False), encoding="utf-8")
+
+    result = bh.rekey_manifest(target, cards=_real_cards(1))
+    assert result["cache_key"]["schema_version"] == hg.schema_version_with_fingerprint()
+    assert result["cache_key"]["schema_version"] != "hg/v0"
+    rewritten = json.loads(target.read_text(encoding="utf-8"))
+    assert bh.fingerprint_of(rewritten["cache_key"]) == rewritten["fingerprint"]

@@ -286,7 +286,10 @@ def fingerprint_components(cards: Sequence[Dict], client, *,
         "prompt_version": str(prompt_version),
         "chunker_version": str(chunker_version or common.CHUNKER_VERSION),
         "decode": str(decode),
-        "schema_version": str(schema_version or hg.SCHEMA_VERSION),
+        #: **现算**，不从调用方/manifest 读回来——与第八格（词表指纹）同一纪律：
+        #: 往闭集里加一个 qualifier（`seq_phase`／`carry_shots` 那一类）必须**自动**
+        #: 让指纹变，否则断点续跑命中旧批次、新槽位从未被抽取而一切照绿。
+        "schema_version": str(schema_version or hg.schema_version_with_fingerprint()),
         "validation_rules_version": str(validation_rules_version),
         "vocabulary_fingerprint": str(vocabulary_fingerprint
                                       or vocabulary.lexicon_fingerprint()),
@@ -330,7 +333,11 @@ def rekey_manifest(path: pathlib.Path | None = None,
         "prompt_version": str(manifest.get("prompt_version", PROMPT_VERSION)),
         "chunker_version": str(manifest.get("chunker_version", common.CHUNKER_VERSION)),
         "decode": str(manifest.get("decode", DECODE)),
-        "schema_version": str(manifest.get("schema_version", hg.SCHEMA_VERSION)),
+        #: 与第八格同一纪律：**从代码现算**（`hg.schema_version_with_fingerprint()`），
+        #: 不读 manifest 里的旧值——往 schema 闭集里加一个 qualifier 必须当场露馅。
+        #: 显式写了 `schema_version` 的旧 manifest 会被这一格覆盖，这是有意的：
+        #: "口径升级后重签"正是 `rekey_manifest()` 的用途（见它的 docstring）。
+        "schema_version": hg.schema_version_with_fingerprint(),
         "validation_rules_version": str(manifest.get("validation_rules_version",
                                                      VALIDATION_RULES_VERSION)),
         #: 这一格与其余七格**反着来**：它不从 manifest 读回来，而是**从代码现算**。
