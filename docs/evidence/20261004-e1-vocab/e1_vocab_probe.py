@@ -25,7 +25,11 @@ import re
 import sys
 from typing import Dict, List
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+#: `docs/evidence/<run-id>/probe.py` ⇒ **三级**才是仓库根（`parents[0]` 是本目录）。
+#: 原先写的是 `parents[1]`（= `docs/evidence`），于是 README 里那条复算命令会把
+#: `--project docs/evidence/...` 拼成 `docs/evidence/docs/evidence/...` 而当场报
+#: `FileNotFoundError`——一份跑不起来的证据脚本等于没有证据。
+ROOT = pathlib.Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
