@@ -86,6 +86,21 @@ class DriverLimits:
     max_repairs_per_shot: int = 2      # §7.1 B4：每镜定向修复次数上限
 
 
+def tool_call_budget(effective_llm_calls: int, floor: int) -> int:
+    """工具调用上限：**静态下限**与**本场 LLM 回合上限**取大（2026-10-04 实测）。
+
+    为什么不能再是一个固定常量：`DriverLimits.max_tool_calls` 原来是 200，与场景规模
+    无关。64 镜那趟真跑（`docs/evidence/20261004_chunked_long15/`）里它在第 **362 s**
+    就被用光，此后 **57 次修复回合全部被拒**（`repair_invalid: 工具调用次数超限`），
+    占整跑最后 117 s（24%），37 镜撞上修复上限被降级——**片子后四分之一一次也没修**。
+
+    口径：工具调用是 **LLM 回合的动作**，所以它的上限不该低于 LLM 回合的上限；
+    真正的节流仍然来自 LLM 预算（`budget.max_llm_calls_*`）与墙上时间，
+    这里只是保证"预算还没花完，工具却不许用"这种自相矛盾不会发生。
+    """
+    return max(int(floor), int(effective_llm_calls))
+
+
 @dataclass
 class DriverEvent:
     """给 UI / 日志的事件。"""
@@ -1534,11 +1549,16 @@ class PrevisDriver:
             hard = int(self._caller_budget_cap)
         effective = min(ceiling_effective, hard) if hard > 0 else ceiling_effective
         self.budget.limits.max_llm_calls = effective
+        #: 工具预算跟着场景走（见 `tool_call_budget` 的抬头）：固定 200 在 64 镜那跑
+        #: 第 362 s 就耗光，之后 57 次修复回合全被拒、后四分之一一次也没修。
+        tool_calls_effective = tool_call_budget(effective,
+                                                self.limits.max_tool_calls)
+        self.limits.max_tool_calls = tool_calls_effective
         self.audit.log(
             "budget_scoped", describe_budget_formula(formula, shots),
             shots=shots, formula_value=value, ceiling=ceiling,
             ceiling_effective=ceiling_effective, hard_cap=hard,
-            effective=effective)
+            effective=effective, tool_calls_effective=tool_calls_effective)
 
     def _start_plan_call(self) -> None:
         request_id = new_request_id()
@@ -1768,7 +1788,15 @@ class PrevisDriver:
         if errors:
             return "；".join(errors)
         if not plan_seen:
-            return f"没有收到 {PLAN_TOOL_NAME} 调用"
+            #: **只有阶段 A 才要求 emit_plan**（§7.1：计划的唯一入口）。修复/精修/
+            #: 反应回合在上面**明确拒绝** `emit_plan`（"emit_plan 只在阶段 A 被接受"），
+            #: 所以它们在这里必然 `plan_seen=False`——原来那条不分阶段的收尾判据于是
+            #: 让**每一轮修复**都返回"没有收到 emit_plan 调用"。实测（2026-10-04，
+            #: `docs/evidence/20261004_chunked_long16/`）：104 条 `repair_invalid` 里
+            #: **89 条**是这条假问题，真错与假错混在同一个事件名里，"这一轮到底错没错"
+            #: 就判不出来了。
+            if self._call_purpose == "plan":
+                return f"没有收到 {PLAN_TOOL_NAME} 调用"
         return ""
 
     def _transition(self, new_state: DriverState) -> None:

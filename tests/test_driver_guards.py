@@ -8,7 +8,8 @@ from block_director.contracts.audit import AuditResult
 from block_director.contracts.enums import Purpose
 from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall, Usage
 from block_director.layer5_orchestrator.budget import Budget, BudgetLimits
-from block_director.layer5_orchestrator.driver import DriverLimits, PrevisDriver
+from block_director.layer5_orchestrator.driver import (DriverLimits, PrevisDriver,
+                                                       tool_call_budget)
 from block_director.layer5_orchestrator.loop_detector import LoopDetector
 from block_director.layer5_orchestrator.states import DriverState
 from block_director.layer5_orchestrator.tool_registry import ToolRegistry
@@ -65,6 +66,35 @@ def test_budget_allows_the_normal_run_and_reports_usage():
     # + 自我审核 1
     assert summary["llm_calls"] == 5
     assert summary["exhausted"] is None
+
+
+def test_the_tool_budget_scales_with_the_scene_instead_of_a_fixed_200():
+    """工具预算**必须跟着场景规模走**（2026-10-04 实测，long15 六十四镜真跑）。
+
+    现场：`DriverLimits.max_tool_calls` 原来是与场景无关的固定 200。那一跑在第 **362 s**
+    就用光了工具额度，此后 **57 次修复回合全部被拒**（`repair_invalid`：
+    `工具调用次数超限`），占整跑最后 117 s（24%）——**片子后四分之一一次也没修**，
+    37 镜撞上修复上限被降级。口径：工具调用是 LLM 回合的动作，所以它的上限不该低于
+    LLM 回合的上限；真正的节流仍在 LLM 预算与墙上时间。
+    """
+    assert tool_call_budget(512, 200) == 512          # 大场景：跟着 LLM 回合走
+    assert tool_call_budget(56, 200) == 200           # 小场景：静态下限仍然兜底
+    assert tool_call_budget(0, 200) == 200            # 0 = 不限 ⇒ 不把下限压成 0
+
+
+def test_the_driver_raises_the_tool_budget_once_the_plan_is_known():
+    """`_apply_scene_budget` 要在算出 LLM 额度之后同步抬工具额度，并留痕。"""
+    transport = RepairingTransport()
+    driver = _driver(transport)
+    assert driver.limits.max_tool_calls == 200         # 静态下限
+    driver._apply_scene_budget(64)
+    assert driver.limits.max_tool_calls >= driver.budget.limits.max_llm_calls
+    assert driver.limits.max_tool_calls > 200
+    scoped = [entry for entry in driver.audit._recent
+              if getattr(entry, "kind", "") == "budget_scoped"]
+    assert scoped, "预算定档必须留痕（否则事后无法复算工具额度从哪来）"
+    assert (scoped[-1].data.get("tool_calls_effective")
+            == driver.limits.max_tool_calls)
 
 
 def test_budget_blocks_repair_but_keeps_the_built_scene():

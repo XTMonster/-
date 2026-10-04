@@ -4913,3 +4913,55 @@ python tools/knowledge/e1_panel.py --project docs/evidence/20261004_chunked_long
 （`case_what-is-a-steadicam-shot_005`、`case_what-is-an-eyeline-match_008`、
 `case_what-is-an-eyeline-match_023`）；`en_control.jsonl` 的同语言对照是 0 对 18。
 三条都在 `docs/evidence/20261003-e1-zh/README.md` 里。
+
+## 七十九、工具预算**饿死修复回路**（固定 200）＋ 一条把真错假错混在一起的判据
+
+这一轮从 long15 的日志里读出一条当时没看见的事实：`DriverLimits.max_tool_calls`
+是**与场景无关的固定 200**。
+
+```
+200th tool call at +362s        ← 额度用光
+first 超限 repair at +367s      ← 此后每一次修复都被拒
+超限 repairs: 57, last +479s    ← 占整跑最后 117 s（24%）
+```
+
+**片子后四分之一一次也没被修过**，37 镜撞上修复上限被降级——而 LLM 预算（512）与墙上
+时间都还剩着。修法：`tool_call_budget()` = `max(静态下限, 本场 LLM 回合上限)`
+（工具调用是 LLM 回合的**动作**，上限不该低于回合上限；真正的节流仍在 LLM 预算与墙上
+时间），`_apply_scene_budget` 里同步、`budget_scoped` 事件留痕。守门
+`tests/test_driver_guards.py`（含"0 = 不限时不许把下限压成 0"）。
+
+### 79.1 实测：饥饿消失了，**结果并没有变好**（如实记）
+
+| | long15（固定 200） | **long16（512）** |
+|---|---|---|
+| `tool_calls_effective` / 实际工具调用 | 200 / **撞顶** | 512 / **442** |
+| `repair_invalid: 工具调用次数超限` | **57** | **0** |
+| LLM 调用 | 272 | 319 |
+| 终审逐镜通过 | **29** | **23** |
+| 错误 | COMPOSITION 25、R001 25、R003 6、R011 1 | COMPOSITION 28、R001 41、R003 7 |
+
+额度放开后修复回合**跑得更多**、终审却更差 ⇒ **真正的杠杆是"修复是否有用"，不是
+"允不允许修"**。n=1 对 n=1、长跑方差本来就大（long14 与 long15 的对照就是例子），
+所以这一节只主张"饥饿消失了"，**不主张**结果变好。
+
+### 79.2 顺带修掉一条**假问题**——真错假错混在同一个事件名里
+
+`_dispatch_tool_calls` 的收尾判据 `if not plan_seen: return "没有收到 emit_plan 调用"`
+**与阶段无关**；而修复回合本来就拒绝 `emit_plan`（"emit_plan 只在阶段 A 被接受"）
+⇒ **每一轮修复**都必然返回这条问题、被记成 `repair_invalid`：
+
+| `repair_invalid` 的构成 | long15 | long16 |
+|---|---|---|
+| 工具调用次数超限（真错） | 57 | **0** |
+| 没有收到 emit_plan 调用（**假问题**） | 39 | **89** |
+
+89 条假错把"这一轮到底错没错"的唯一信号污染了。已改成**只有阶段 A** 才要求
+`emit_plan`，守门用例含反面对照（阶段 A 的判据一个字不放宽）。long16 跑在这次修复
+之前，日志里那 89 条仍是旧的假问题。
+
+### 79.3 下一刀
+
+修复回路的**有效性**：long16 里 442 次工具调用（其中 `get_scene_state` 与
+`check_*` 占大头）换来 319 次 LLM 调用，终审仍只过 23——下一步该量"修复回合里
+**改动类**工具的比例与它的收益"，而不是继续加额度。
