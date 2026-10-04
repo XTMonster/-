@@ -5990,3 +5990,75 @@ A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **
 所以这条写在这里当警示。
 
 `python -m pytest` ＝ **2066 passed / 1 skipped**（＋13：本批 3 条 ＋ 并行 lane 的 10 条）。
+
+## 九十九、S1a 落地：qualifier 闭集的**惰性键**（`PLAN_HYPERGRAPH_v3.md` 的第二步）
+
+S1a 只做一件事：往 `QUALIFIER_KINDS` 里加 `seq_phase`／`carry_shots`，
+**判据一个字不动**。正因为它不动判据，"门①–⑩ 原样过"就是**恒真式**——
+红队第 ③ 轮正是拿这一条把 v2 的谓词打掉的。所以这一节的账分三块写：
+**可判的谓词**、**鉴别力证明**、**不动检索的证明**。
+
+### 99.1 改了哪四处
+
+* `block_director/knowledge/hypergraph.py`：闭集 10 → 12；新增
+  `qualifier_table()`——**闭集里的每个名字都在 trace 里占一个键**，值＝本次
+  **注入**的边里真的出现过的取值（没有则 `null`）；`RetrievalTrace` 增
+  `qualifiers` 字段并在 `retrieve()` 里从选中边摊值。
+  **键的生产者＝闭集本身，值的生产者＝S2 的上游抽取层**——这条分工写进了 docstring。
+* `VALUE_DOMAINS`：两个新键填 **`None`（不设枚举）**。门⑨ 要求每个 qualifier
+  都在覆盖面里，`None` 是既有先例（`example_shot`）。**这是有意的延后，不是漏项**：
+  取值域由 S2 的"冻结词表"决定；先填一个**没有语料依据的猜的闭集**，会把 S2 抽出
+  的合法取值判成非法（门⑨ 当场拒收）。用例把"延后是写下来的"钉住，S2 落地时它会红。
+* `specs/openapi.yaml`：`trace` 的描述补上 `qualifiers` 惰性键表（契约同步）。
+* `tests/test_hypergraph_schema.py`：`len(QUALIFIER_KINDS) == 10` → **逐字名字清单**。
+  只写个数拦得住"多一个少一个"，**拦不住"换掉一个"**——而闭集里换掉一个
+  qualifier 会让所有依赖它的边静默失效。这是把一条弱判据换成强判据，不是让步。
+
+### 99.2 可判的谓词与它的**鉴别力**（`tests/test_qualifier_lazy_keys.py`，9 条）
+
+* **正面**：真跑一次 `retrieve()`，`trace.to_dict()["qualifiers"]` 里必须
+  **出现** `seq_phase`／`carry_shots` 两个键名，且此刻值为 `null`
+  （S1a 阶段确实没有生产者）；查不到种子的 `seed_miss` 分支**也要**带全键表。
+* **鉴别力**（这条是关键）：`monkeypatch` 把两个键从闭集里撤掉 ⇒ trace 里
+  **必须跟着消失**。没有它，"trace 里有两个键"可能只是 `qualifier_table()`
+  自己写了两个字面量、与闭集无关——那又是一条恒真式。
+* **值的通路**：注入的边真的带了 `intensity` ⇒ 值必须是 `["high"]`；
+  没出现的分项必须是 `null`（不许凭空给值）。
+* **不变性**：旧契约串 `景别=MCU；运镜=固定；对白=dialogue` 与
+  `禁运镜=固定` 仍**逐字**解成同一对字典。
+
+### 99.3 不动检索的**证明**（不是论证）
+
+并行的基线 lane 的 rep1/rep2 正好**跨过**这次改动（rep1 06:05、rep2 06:16），
+所以"检索不受影响"必须给出可复算的读数，而不是一句"`QUALIFIER_KINDS` 只喂
+`validate_edge`"。做法与读数（`work/_retrieve_ab.py`，两棵树各跑一次）：
+
+```
+python work/_retrieve_ab.py --out work/_retrieve_ab.<tree>.json
+  before（worktree @ HEAD 8f1e2a4）: queries 300 / edges 638 / nodes 180
+  after （本代）                   : queries 300 / edges 638 / nodes 180
+  both: sha256 = 5532558e71d9685b9049b18e1bc05abcfee6be403d8d197a4872c5e57a059bad
+```
+
+固定查询集＝`fixtures/knowledge_holdout.jsonl` 去重后的前 300 条 `q`；对拍的是
+**选中边 id ＋ 注入文本的 sha256 ＋ 除 `qualifiers` 外的整份 trace**
+（`qualifiers` 就是这次换代要加的东西，预期里只有它会变）。两棵树**逐字节一致**
+（同 sha256、同 782,809 字节）⇒ S1a **不可能**影响那一对基线的可比性。
+
+### 99.4 代际钥匙与仍未动的东西
+
+* `schema_version_with_fingerprint()`：`hg/v2+02fb5b9fe343`（S0 那代）→
+  **`hg/v2+e70870ea3034`**。用例把这个字面量钉住：闭集再改时必须有人同步签字。
+* **发货索引仍旧一代**（§98.3 的警示原样有效）：`knowledge/hypergraph.manifest.json`
+  的第六格仍是 `hg/v2`。**本批没有跑 `build_hypergraph`**、没有重签 manifest
+  ——重签要等 S1a＋S2 同批的**故意重建**，那时缓存本来就该整体失效。
+  核对过验收链**不含** `build_hypergraph`（否则这一步会触发全量冷抽）。
+* 两个新 qualifier **只标记、不降权**（降权会动 `TYPE_PRIORITY`，与"门原样过"冲突）；
+  历时耦合的求解侧仍留给 **S4**。
+
+### 99.5 验收
+
+`tools/run_tests.ps1` ＝ **32/32 全过**（`All checks passed.`），
+`python -m pytest` ＝ **2077 passed / 1 skipped**；证据
+`docs/evidence/20261005-063234/`（`holdout_gates.json` 的 `overall = pass`）。
+RK-13 仍记 failed（Q5/E1 是硬门，与 S1a 无关）。

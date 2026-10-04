@@ -61,7 +61,15 @@ def test_vocabularies_match_the_spec():
     # 声明了却没人用的类留在闭集里只会让"闭集"看起来比实际宽，而 `object` 的角色
     # 已被新增的 `prop` 取代。20 → 18。
     assert len(hg.NODE_TYPES) == 18
-    assert len(hg.QUALIFIER_KINDS) == 10
+    # v3/S1a：qualifier 闭集 **10 → 12**（`seq_phase`／`carry_shots`）。
+    # 这里写**逐字的名字清单**而不是只写个数：个数只拦得住"多一个少一个"，
+    # 拦不住"换掉一个"——而闭集里换掉一个 qualifier 会让所有依赖它的边静默失效。
+    assert set(hg.QUALIFIER_KINDS) == {
+        "pair", "axis_side", "intensity", "applies_to_genre", "applies_to_shot_size",
+        "headroom_policy", "avg_shot_len", "transition", "scene_type", "example_shot",
+        "seq_phase", "carry_shots",
+    }
+    assert len(hg.QUALIFIER_KINDS) == len(set(hg.QUALIFIER_KINDS))
     assert set(hg.EDGE_TYPES) == {
         "EMOTION_PACK", "SHOT_PATTERN", "AXIS_RULE", "TROPE", "EDIT_RHYTHM", "LIGHT_PACK",
         "ACTION_BEAT", "PERFORMANCE_PACK", "INTENT_PACK", "IMPACT_PACK",

@@ -1,0 +1,13 @@
+﻿{
+    "head":  "8f1e2a48e839e0ae0bc49b6ee3c31096334d01d1",
+    "digest_before":  "a59f91d37218a43bd28abe21c837233aee8d0de0b7b50dbaa0e07dd405b9936c",
+    "digest_after":  "a59f91d37218a43bd28abe21c837233aee8d0de0b7b50dbaa0e07dd405b9936c",
+    "stable":  true,
+    "dirty_before":  [
+                         " M block_director/knowledge/hypergraph.py",
+                         " M specs/openapi.yaml",
+                         " M tests/test_hypergraph_schema.py",
+                         "?? tests/test_qualifier_lazy_keys.py"
+                     ],
+    "captured_at":  "2026-10-05T06:34:48.6793918+08:00"
+}

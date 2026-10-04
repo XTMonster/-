@@ -303,7 +303,7 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-05 04:4x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-05 06:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；**Q5 pass**（**最近一次真跑 long21**：计划采纳率
 **10 对 11**，线 0.80；long19 那份已因语料漂移被判脱钩，见 §九十五/§九十六）；
 链上只剩 `not passing: E1`（**L3 定版 1,143 条案例 / 1,012 条线索**，覆盖 88.5%：
@@ -313,7 +313,7 @@ craft 来源 StudioBinder 由 157 条扩到约 900 条，其余来源保持发�
 **§九十一 还记着一个反例**：把语料扩到 1097 条那一版覆盖升到 59.9%、结构门全绿，
 E1 却掉到 **0.0469**——覆盖门是行数占比、不是命中率，**选型必须逐臂跑 E1**。
 GLM 只用 `glm-5.3`，§七十八 的额度阻塞已解。
-`python -m pytest` **2046 passed / 1 skipped**（主树；唯一那条 skip 是
+`python -m pytest` **2077 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
 `tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
@@ -322,9 +322,9 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261005-044021/`（探针 32 支全过、`python -m pytest`
-2046 passed / 1 skipped、`tree.json` 记 `stable: true`），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§九十四 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增：
+且 pass。证据 `docs/evidence/20261005-063234/`（探针 32 支全过、`python -m pytest`
+2077 passed / 1 skipped、`tree.json` 记 `stable: true`），逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§九十九 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对

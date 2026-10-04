@@ -330,7 +330,10 @@ components:
           description: >-
             v1.4 §2.3：knowledge_trace.json 的数据源（种子 / 扩展 / 逐条打分 /
             注入集合 / 后端 / 降级留痕 / 语料指纹）。只有 sidecar 算得出来，
-            所以随响应一起返回。
+            所以随响应一起返回。v3/S1a 起另带 `qualifiers`：**qualifier 闭集的
+            惰性键表**——闭集里的每个名字都占一个键，值＝本次注入的边里真的用到
+            的取值（没有则 null）。它是"这一代 schema 声明了哪些 qualifier"的
+            唯一可观测面，也是 S1a 的验收谓词（键必须出现）。
 
     HyperEdge:
       type: object

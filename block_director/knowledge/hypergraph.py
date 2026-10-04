@@ -4,7 +4,7 @@
 索引本身（LLM 抽取）在 `tools/kb_fetch/` 与 sidecar 侧构建；这里只放
 **可判定的规则**：
 
-* 节点 16 类 / qualifier 10 类 / 超边 6 类的闭集；
+* 节点 18 类 / qualifier 12 类 / 超边 16 类的闭集；
 * `edge_id = "hg:" + sha1(type + sorted(members) + source_kind + hardness + schema_version)[:12]`；
 * 9 条校验门（§2.3 第 3 步）与 `raw = valid_unique + duplicates + rejects`；
 * 去重键 `(type, frozenset(members), source_kind, hardness)`，合并时保留
@@ -102,11 +102,19 @@ NODE_TYPES: Tuple[str, ...] = (
     #: 要重新引入 `character`，正确做法是**先有边类型用它、再有语料填它**，而不是先占位。
 )
 
-#: qualifier 类型闭集（10 类）。`axis_side` 必须在表里——否则最高优先级的
+#: qualifier 类型闭集（12 类）。`axis_side` 必须在表里——否则最高优先级的
 #: `AXIS_RULE` 会被自己的校验门 ③ 全部拒收。
 QUALIFIER_KINDS: Tuple[str, ...] = (
     "pair", "axis_side", "intensity", "applies_to_genre", "applies_to_shot_size",
     "headroom_policy", "avg_shot_len", "transition", "scene_type", "example_shot",
+    #: v3/S1a（`docs/knowledge/PLAN_HYPERGRAPH_v3.md`）：**惰性加键**。
+    #: 历时耦合在这套"槽位超边"里表达不了（轴线＝相邻机位几何；节奏/打击感＝随拍序
+    #: 累积-衰减），红队的裁决是"两个 qualifier 是**标签不是约束**"。这里先把两个键
+    #: 放进闭集（让 schema 指纹换代、让 trace 上看得见），**判据一个字不动**；
+    #: 值的生产者是 S2 的上游抽取层。键本身的生产者＝这个闭集，所以 trace 上
+    #: 永远看得见"这一代 schema 声明了哪些 qualifier"——删掉这里，trace 里跟着消失
+    #: （`tests/test_qualifier_lazy_keys.py` 钉住这条，防止"加了常量没人看得见"）。
+    "seq_phase", "carry_shots",
 )
 
 ALLOWED_KINDS = frozenset(NODE_TYPES) | frozenset(QUALIFIER_KINDS)
@@ -258,6 +266,16 @@ VALUE_DOMAINS: Dict[str, Optional[Tuple[str, ...]]] = {
     "applies_to_shot_size": tuple(SHOT_FRAME.keys()),
     "composition_rule": tuple(sorted(COMPOSITION_WEIGHTS.keys())),
     "example_shot": None,  # 自由文本：参考资料引用，不参与判定
+    #: v3/S1a：**键先进闭集、词表留给 S2**。这两个是历时耦合的标签
+    #: （`seq_phase`＝这一镜在段落推进里的位置；`carry_shots`＝效果还要带几镜），
+    #: 而它们的**取值域由上游抽取层冻结**（计划 S2 的"冻结词表"就是这一步）。
+    #: 现在显式写 `None`（不设枚举）是**有意的延后**，不是漏项——
+    #: `tests/test_qualifier_lazy_keys.py::test_the_lazy_value_domains_are_explicitly_deferred`
+    #: 把它钉住：S2 落地时这条会红，逼着人把词表写进来。
+    #: **不许**为了"看起来更严"先填一个猜的闭集：猜的域会把 S2 抽出的合法取值
+    #: 判成非法（门⑨ 拒收），而它没有任何语料依据。
+    "seq_phase": None,
+    "carry_shots": None,
     #: v1.5：意图的闭集——"角色想要什么/导演在铺什么"。闭集才能被机器判对错；
     #: 中文取值，避免与 `must` 里的写法不一致（这正是本地模型最常翻车的地方）。
     "intent": ("铺垫", "推进", "揭示", "转折", "停顿", "压迫", "释放", "回望",
@@ -617,6 +635,30 @@ def _values_for(edge: HyperEdge, kind: str, roles: Sequence[str],
     return out
 
 
+def qualifier_table(seen: Optional[Dict[str, Sequence[str]]] = None
+                    ) -> Dict[str, Optional[List[str]]]:
+    """v3/S1a：trace 里的 **qualifier 惰性键表**。
+
+    闭集里的每个 qualifier 名字都在表里**占一个键**；值 = 本次检索**注入**的边里
+    真的出现过的取值（排序去重），没有任何一条用到时是 ``None``。
+
+    为什么非有这张表：S1a 只往闭集里加两个键、**判据一个字不动**，于是任何
+    "门①–⑩ 原样过"式的谓词都是**恒真式**（红队第 ③ 轮的判词）。可判的谓词得是
+    "trace 上必须看得见这两个键"。但键是死的、值没人生产——所以把**键的生产者
+    明确成这个闭集**：加了常量 ⇒ 指纹换代（S0 那半）＋ trace 上多两个键（这一半）。
+    两半合起来，"静默 no-op"才真的堵死。
+
+    （``seen`` 里出现闭集之外的 kind 时**照样收进来**——如实显示比静默丢弃好；
+    真要拦住非法 kind，那是 :func:`validate_edge` 的门 ③ 的职责。）
+    """
+    table: Dict[str, Optional[List[str]]] = {kind: None for kind in QUALIFIER_KINDS}
+    for kind, values in (seen or {}).items():
+        cleaned = sorted({str(value) for value in (values or []) if str(value)})
+        if cleaned:
+            table[kind] = cleaned
+    return table
+
+
 def validate_edge(edge: HyperEdge, nodes: Dict[str, Node]) -> None:
     """9 条校验门（§2.3 第 3 步）。不过门即抛 `GateError`，调用方计入 rejects。"""
     # (1) 边类型闭集
@@ -896,6 +938,9 @@ class RetrievalTrace:
     #: 因为"查询点名了这条边禁止的取值"而被顶进注入的边（§4.1 的 Q7）。
     #: 每条记 `{added, removed, kind, value}`——"这次注入了什么禁忌"永远可查。
     forbid_promoted: List[Dict[str, str]] = field(default_factory=list)
+    #: v3/S1a：qualifier 闭集的**惰性键**（见 :func:`qualifier_table`）。值是本次
+    #: **注入**的边里真的出现过的取值；S1a 阶段恒为空（值的生产者是 S2）。
+    qualifiers: Dict[str, Optional[List[str]]] = field(default_factory=dict)
 
     def to_dict(self) -> Dict:
         return {
@@ -909,6 +954,7 @@ class RetrievalTrace:
             "dropped_edge_ids": list(self.dropped_edge_ids),
             "quality_fail": self.quality_fail,
             "forbid_promoted": [dict(item) for item in self.forbid_promoted],
+            "qualifiers": qualifier_table(self.qualifiers),
         }
 
 
@@ -1302,6 +1348,14 @@ class Hypergraph:
             if promoted["events"]:
                 trace.forbid_promoted = promoted["events"]
         trace.selected = [e.edge_id for e in selected]
+        #: v3/S1a：把**注入**的那几条边用到的 qualifier 取值摊到 trace 上。
+        #: 闭集里的其它名字仍然在表里（值 None）——见 `qualifier_table()`。
+        for edge in selected:
+            for member in edge.members:
+                if member.role != "qualifier":
+                    continue
+                trace.qualifiers.setdefault(member.kind, []).append(
+                    node_value(self.nodes.get(member.node_id), member.node_id))
         text, dropped, quality_fail = render_edges(selected, self.nodes, token_limit)
         trace.dropped_edge_ids = dropped
         trace.quality_fail = quality_fail
