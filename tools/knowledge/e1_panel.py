@@ -142,6 +142,9 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             #: `manifest.fingerprint` 仍是 `69791dbacd…`，E1 照报旧读数的 0.0885）。
             #: 这枚摘要只有"案例集合"能改，所以它才是代际的真钥匙。
             "cases_digest": str(getattr(index, "cases_digest", "") or ""),
+            #: 这次检索走的是哪条路（`hybrid` = 产品现行的 BM25；`lexical` = 零依赖适配器）。
+            #: 判分必须能自证"测的是哪条路"，否则两条路的读数会混在一份证据里。
+            "retrieval_path": str(getattr(index, "path_label", "") or ""),
             "panel": [name for name, _client in clients],
             "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
         })
@@ -190,6 +193,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--limit", type=int, default=0, help="0 = 全部")
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS,
                         help="并发判分的查询条数（只改吞吐，不改判据与产物形状）")
+    parser.add_argument("--adapter", default="none", choices=("none", "lexical"),
+                        help="检索路径：none = 产品现行的 hybrid(BM25)；"
+                             "lexical = 零依赖适配器（精确取值 → BM25 → 可注入重排）")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
@@ -206,7 +212,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                          ensure_ascii=False))
         return 2
 
-    index = load_index(ROOT / args.cases_dir, backend="hybrid")
+    if args.adapter == "lexical":
+        from block_director.knowledge.lexical_adapter import make_lexical_adapter
+
+        index = load_index(ROOT / args.cases_dir, backend="lightrag",
+                           adapter=make_lexical_adapter(ROOT / args.cases_dir))
+        index.path_label = "lexical"          # type: ignore[attr-defined]
+    else:
+        index = load_index(ROOT / args.cases_dir, backend="hybrid")
+        index.path_label = "hybrid"           # type: ignore[attr-defined]
     #: 把**案例集合摘要**挂到索引上，供每条打分自带（`e1_evidence_is_stale` 用它判代际）。
     #: `load_index` 自己不记它（那是案例层的事），而这里正是"这份索引被拿去打分"的现场，
     #: 所以在这一处取一次、跟着行落盘。

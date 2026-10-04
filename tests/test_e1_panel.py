@@ -133,3 +133,19 @@ def test_project_queries_drop_the_plan_scope_blob_in_order(tmp_path):
         "米迦尔自信面朝画面左侧，推镜缓入",
         "留白镜头：伊恩望向偷盗者离去的方向",
     ]
+
+
+def test_every_scored_row_says_which_retrieval_path_produced_it(tmp_path):
+    """每行都要自带**检索路径**（`hybrid` / `lexical`）——否则两条路的读数会混账。
+
+    为什么值得一条判据：`--adapter lexical` 换的是**替谁做检索**（零依赖适配器
+    vs 产品现行的 BM25），而 E1 的分母是"返回的案例"。一份证据里如果分不清
+    哪些行来自哪条路，"适配器有没有用"就说不清——这正是本项目反复吃过的
+    "同一事实两个口径"的形状。
+    """
+    index = _Index({"q1": _cases("c1")})
+    index.path_label = "hybrid"
+    rows = e1_panel.score_queries(index, ["q1"], [("stub", _Client({"c1": 5}))],
+                                 top_k=1, workers=1)
+    assert rows, "夹具必须真的产出打分，否则这条用例是空绿"
+    assert {row["retrieval_path"] for row in rows} == {"hybrid"}, rows

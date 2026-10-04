@@ -5922,3 +5922,25 @@ A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **
   （`69791dbacd…` → `48df4a53c2c9…`），`tests/test_q5_audit_channel.py` 如实判
   `not_measured`。修复只有一条正路：**跑一趟新真跑**（long21）让产物带上当前指纹；
   这一条同时也是 §94.3 说的"下一次真跑把新键写进 `shots.json`"。
+
+## 九十七、L3 零依赖适配器（ADR-0014 的 ② 魔改第一块）：E1 0.1823 → **0.2135**
+
+会诊两侧给的路线是"**不必解 embedding**"：`键=值` 查询要的是**谓词匹配**，召回面
+＝"精确取值 ＋ BM25 ＋ 重排"。这一节把它落成**可测的代码**，并量出读数：
+
+* `block_director/knowledge/lexical_adapter.py`（**零依赖**，AST 守门）挂在
+  **已经声明好的**适配器接缝上（`cases.py:88`，契约 `retrieve(query, *, top_k, cases)`）：
+  ① 查询点名的**取值**（含 `禁<键>=值` 的取值）命中者排前；② 其余用仓库自带的 Okapi
+  BM25；③ 可选注入重排器（抛错/空 ⇒ 退回词法序 ＋ 具名记账）。
+* **读数**（同索引、同 long21 查询、同面板，两臂只差 `--adapter`）：
+  `hybrid` **35/192 ＝ 0.1823** → `lexical` **41/192 ＝ 0.2135**。
+  证据 `docs/evidence/20261006-e1-lexical/`（两臂各一份 `reviews`）。
+* **每行自带 `retrieval_path`**：一份证据里两条路的读数不会混账（守门
+  `tests/test_e1_panel.py::test_every_scored_row_says_which_retrieval_path_produced_it`）。
+* **它是候选，不是已发货**：产品默认路径仍是 `hybrid`。启用前要先补两件事——
+  ① **重复测量**（每臂现在只有 1 次；+0.031 ≈ 4 倍噪声底 ±0.008，但 n=1）；
+  ② **一次新真跑**让 Q5／审计证据与新的检索路径同代（现在那份 long21 证据跑在
+  `hybrid` 上）。这两条没做之前不改产品行为。
+* `python -m pytest` ＝ **2053 passed / 1 skipped**（比上一代 ＋7：适配器 6 条 ＋
+  面板的检索路径 1 条）。判据、门限（0.70）、oracle、`SCORE_WEIGHTS` 一个字没动；
+  E1 仍 fail、RK-13 仍 failed。
