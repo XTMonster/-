@@ -24,10 +24,21 @@ def movements(shot: dict) -> list:
             for item in (shot.get("movements") or [])]
 
 
+def _first(run: pathlib.Path, *candidates: str) -> pathlib.Path:
+    """交付产物的落点因 `--out` 用法而异（`<run>/`、`<run>/runs/`、`<run>/export/export/`）。"""
+    for name in candidates:
+        path = run / name
+        if path.is_file():
+            return path
+    raise SystemExit(f"在 {run} 下找不到：{' / '.join(candidates)}")
+
+
 def emitted_techniques(run: pathlib.Path) -> dict:
     """逐镜检索串里的 `运镜=` —— 它是**计划声明**的直接派生，用来交叉验证声明侧。"""
     out = {}
-    for line in (run / "audit_log.jsonl").read_text(encoding="utf-8").splitlines():
+    for line in _first(run, "audit_log.jsonl", "runs/audit_log.jsonl",
+                       "runs/runs/audit_log.jsonl").read_text(
+                           encoding="utf-8").splitlines():
         if not line.strip():
             continue
         record = json.loads(line)
@@ -43,7 +54,8 @@ def emitted_techniques(run: pathlib.Path) -> dict:
 
 def main(argv) -> int:
     run = pathlib.Path(argv[1] if len(argv) > 1 else "docs/evidence/20261004_chunked_long17")
-    shots = json.loads((run / "export/shots.json").read_text(encoding="utf-8"))["shots"]
+    shots = json.loads(_first(run, "export/shots.json", "export/export/shots.json")
+                       .read_text(encoding="utf-8"))["shots"]
     declared = emitted_techniques(run)
     declared_values = collections.Counter(declared.values())
     sources = collections.Counter()

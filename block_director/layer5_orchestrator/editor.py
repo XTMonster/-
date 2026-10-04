@@ -441,17 +441,14 @@ def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
                                             draft.dialogues)
         if draft.prompt:
             shot["prompt"] = draft.prompt
-        if draft.camera:
-            # 草案的取景请求是**局部**的：它只说 side/lens，几乎不会提运镜。
-            # 直接整份替换会把"分镜表拍摄手法"钉上去的 movements 冲掉
-            # （实测：剧本写"快速推镜"，落到场景里 movement=0，镜头是死的）。
-            # 因此只覆盖它真正声明了的字段。
-            merged_camera = dict(shot.get("camera") or {})
-            for key, value in dict(draft.camera).items():
-                if key == "movements" and not value:
-                    continue
-                merged_camera[key] = value
-            shot["camera"] = merged_camera
+        if draft.camera or shot.get("declared_camera_move"):
+            #: 相机字段的合并有**一条纪律**：分镜表声明的手法是锚（见 `merge_camera`）。
+            #: 草案的取景请求是**局部**的（只说 side/lens，几乎不提运镜），
+            #: 整份替换会把钉上去的 movements 冲掉（实测：剧本写"快速推镜"，
+            #: 落到场景里 movement=0，镜头是死的）；反过来，声明了"固定镜头"时
+            #: 草案自创的运动也必须被挡掉（§八十五）。
+            shot["camera"] = merge_camera(shot.get("declared_camera_move"),
+                                          shot.get("camera"), draft.camera)
         if draft.gaze:
             # 注视关系由 B1 落实。阶段 S 的理解只在 B1 没给的时候兜底
             # （见 driver._pin_brief_gaze）：先记下 B1 自己说的，
@@ -461,6 +458,46 @@ def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
             shot["vfx"] = [dict(item) for item in draft.vfx]
         break
     return Plan.from_dict(payload)
+
+
+def merge_camera(declared_move: Any, planned: Any,
+                 drafted: Any) -> Dict[str, Any]:
+    """相机字段的合并：**分镜表声明的手法是锚**，草案只在它许可的范围内改。
+
+    这是 `merge_dialogues` 的相机版，同一条纪律（v1.3 台词 pin ⇒ v1.4 §八十五）：
+
+    * **没声明手法** ⇒ 草案自由：整份按覆盖（老行为；空 `movements` 不覆盖，
+      否则会把钉上去的声明冲掉）；
+    * 声明 **`static`（固定镜头）** ⇒ 草案**不许**给这一镜加运动：只借 side/lens
+      等字段，`movements` 一律丢掉。实测（2026-10-04，三份冻结工程、零 LLM）：
+      把草案自创的运动去掉后重建，逐镜通过与构图门**都更好**——long17 29 → **35**
+      / 44 → **55**、long15 27 → **29** / 35 → **39**、long18 中位 66.5 → **72.5**
+      （证据 `docs/evidence/20261004-declared-vs-delivered/`）；
+    * 声明了**具体手法** ⇒ 以**声明**为准：草案若给了别的运动也不换。
+    """
+    merged = dict(planned or {})
+    incoming = dict(drafted or {})
+    if not declared_move:
+        for key, value in incoming.items():
+            if key == "movements" and not value:
+                continue
+            merged[key] = value
+        return merged
+    if declared_move == "static":
+        incoming.pop("movements", None)
+        incoming.pop("movement", None)
+        for key, value in incoming.items():
+            merged[key] = value
+        merged.pop("movements", None)
+        merged.pop("movement", None)
+        return merged
+    pinned = merged.get("movements") or [{"type": str(declared_move)}]
+    for key, value in incoming.items():
+        if key in ("movements", "movement"):
+            continue
+        merged[key] = value
+    merged["movements"] = pinned
+    return merged
 
 
 def merge_dialogues(declared: Sequence[dict],

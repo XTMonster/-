@@ -588,9 +588,9 @@ if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
 # joins on.  So the chain now feeds the newest committed REAL run that has the
 # hypergraph channel; its run_id is DERIVED from the run manifest (never typed
 # here) because the audit mirror must filter by the run that produced the log.
-$knowledgeRun = 'docs/evidence/20261004_chunked_long17'
+$knowledgeRun = 'docs/evidence/20261004_chunked_long19'
 $knowledgeRunId = (Get-Content (Join-Path $knowledgeRun 'run_manifest.json') -Raw | ConvertFrom-Json).run_id
-python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261004_chunked_long17/export/shots.json --audit-log docs/evidence/20261004_chunked_long17/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge/cases.jsonl --e1-reviews docs/evidence/20261003-e1-zh/reviews.jsonl --shots docs/evidence/20261004_chunked_long19/shots.json --audit-log docs/evidence/20261004_chunked_long19/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }

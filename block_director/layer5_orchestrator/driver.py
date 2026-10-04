@@ -824,11 +824,25 @@ class PrevisDriver:
         self._pin_declared_camera(declared)
 
     def _pin_declared_camera(self, declared) -> None:
-        """把分镜表的「拍摄手法」钉成声明式运镜（v1.3 §3.6）。
+        """把分镜表的「拍摄手法」**落实**成运镜（v1.3 §3.6 ＋ v1.4 §八十五）。
 
-        剧本写了"快速推镜"却没有任何环节把它变成相机运动，交付的视频里
-        镜头就是死的——这正是 v1.2 的运镜"不可声明"缺口的最后一段。
-        B1 已经给了运镜时不覆盖：那才是落实侧。
+        两件事，方向相反、纪律同一条（"声明的必须落实"）：
+
+        * 声明了**非固定**手法而草案没给 ⇒ 钉上（v1.3 起的老行为）；
+        * 声明了**固定镜头**而草案自己加了运动 ⇒ **去掉**（这一轮新增）。
+
+        后半段为什么是必须的（2026-10-04 实测，§八十五）：分镜表为 **63 镜**声明
+        "固定镜头"，交付里 **40 镜**在这条声明之外自己动了相机（`movements[].source`
+        只有 1 次归给 `declared`）。把那些未声明的运动去掉后重建、逐镜复评（零 LLM）：
+
+        | 工程 | 逐镜通过 | 构图门（≥70） | 构图分中位 |
+        |---|---|---|---|
+        | long17 | 29 → **35** | 44 → **55** | 85.6 → **89.5** |
+        | long15 | 27 → **29** | 35 → **39** | 71.4 → **77.4** |
+        | long18 | 22 → 22 | 31 → **33** | 66.5 → **72.5** |
+
+        ⇒ **忠于分镜表同时更好**；而且它正是链上 Q5 差的那 0.05 的根因——
+        检索串与标注都期望 `固定`、交付却是 `push_through`（§八十五 三条不通过）。
         """
         pinned = 0
         for index, shot in enumerate(self.plan.shots):
@@ -836,6 +850,9 @@ class PrevisDriver:
                 break
             movement = str(getattr(declared[index], "camera_move", "") or "")
             camera = dict(getattr(shot, "camera", None) or {})
+            #: `static` 在这里没有可钉的东西（引擎词表里没有"固定"＝不动），
+            #: 但**它不是不管**：草案往后想给这一镜加运动时，
+            #: `editor.merge_camera` 会按声明把它挡掉（§八十五）。
             if not movement or movement == "static" or camera.get("movements"):
                 continue
             camera["movements"] = [{"type": movement}]

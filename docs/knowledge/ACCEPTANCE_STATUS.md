@@ -5310,3 +5310,47 @@ E1 的 3/18 没动（要扩样，卡在 GLM 额度，§七十八）；Q5 仍差 
 两条都不做也**不是降级**——只是把"合不合规"继续留给读者判断；但那样 Q5 会一直停在
 0.75，而**原因不在检索、也不在修复回路**。证据
 `docs/evidence/20261004-declared-vs-delivered/`（`probe.py` ＋ 本节数字）。
+
+## 八十六、**声明的手法是锚**：`merge_camera` 落地——Q5 第一次 pass，交付同时更好
+
+§八十五 留的两条出路里，**出路①（声明绑定）**这一轮做了——理由是它先被量过。
+
+### 86.1 离线模拟（零 LLM，三份冻结工程）
+
+`docs/evidence/20261004-declaration-binding/binding_probe.py` 在同一趟 Blender 里跑两臂：
+交付原样 vs **去掉未声明运动后重建**。
+
+| 工程 | 去掉的镜 | 逐镜通过 | 构图门（≥70） | 构图分中位 |
+|---|---|---|---|---|
+| long17 | 40 | 29 → **35** | 44 → **55** | 85.6 → **89.5** |
+| long15 | 39 | 27 → **29** | 35 → **39** | 71.4 → **77.4** |
+| long18 | 41 | 22 → 22 | 31 → **33** | 66.5 → **72.5** |
+
+### 86.2 落地（一处入口）
+
+`editor.merge_camera(declared_move, planned, drafted)`——`merge_dialogues` 的相机版：
+没声明 ⇒ 草案自由；声明 `static` ⇒ 草案不许加运动；声明具体手法 ⇒ 以声明为准。
+（`_pin_declared_camera` 只管"声明了非固定而草案没给 ⇒ 钉上"，`static` 仍交给这里挡。）
+
+### 86.3 真跑（long19）——每一项都更好
+
+| | long17（改前） | **long19（改后）** |
+|---|---|---|
+| 终审逐镜通过 | 33 | **45** |
+| 错误分布 | R001 27、COMPOSITION 16、R003 1 | **COMPOSITION 10、R001 8、R003 5** |
+| 构图分中位 / 构图门 | 85.6 / 48 | **88.0 / 54** |
+| **声明固定却有运动** | **40** | **0** |
+| **Q5（链上口径）** | 9 对 12 ＝ 0.75（fail） | **11 对 11 ＝ 1.0（pass）** |
+
+**Q5 为什么现在 pass**：本版剧本为 63 镜声明固定，而标注对这几组 `景别×意图` 的期望
+也正是 `固定`——交付忠于声明，于是落进标注的期望。join 键仍取自 `audit_log.jsonl`
+的逐镜 `retrieval_call`（§4.1b 硬规则 2），标注独立，**判据/门限/oracle 一个字没动**。
+
+### 86.4 链上的后果
+
+knowledge 块的输入随之换到 long19（`--audit-run-id` 仍从该跑 manifest 现读），
+硬门汇总由 `not passing: Q5,E1` 变成 **`not passing: E1`**——**Q5 第一次 pass**，
+链上只剩 E1（3 对 18，卡在 GLM 额度，§七十八）。守门
+`tests/test_compliance.py::test_a_declared_static_shot_loses_the_drafts_invented_movement`
+（含反面：声明了具体手法的两镜仍必须有运动）。证据
+`docs/evidence/20261004-declaration-binding/`。

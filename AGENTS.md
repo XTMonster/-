@@ -303,11 +303,12 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-04 12:5x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
-Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**运行侧**现在
-量的是本代超图长跑：**9 对 12 ＝ 0.75**、线 0.80，§八十四；E1 是语料适配度，
-3 对 18 卡在 GLM 额度，§七十八），`E2` 是诊断量（**3 镜对 64 镜**）。
-`python -m pytest` **2006 passed / 1 skipped**（主树；唯一那条 skip 是
+**2026-10-04 13:5x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+Q4_pre、E3、E3_cases 全 pass；**Q5 第一次 pass**（运行侧读本代超图长跑 long19：
+**11 对 11 ＝ 1.0**，线 0.80——因为 §八十六 把"分镜表声明的拍摄手法"变成**锚**，
+交付不再自创运动）；链上只剩 `not passing: E1`（语料适配度，3 对 18 卡在 GLM 额度，
+§七十八），`E2` 是诊断量。
+`python -m pytest` **2007 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
 `tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
@@ -316,9 +317,9 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-125750/`（探针 32 支全过、`python -m pytest`
-2006 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§八十五 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十七节：
+且 pass。证据 `docs/evidence/20261004-135244/`（探针 32 支全过、`python -m pytest`
+2007 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§八十六 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十八节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对
@@ -483,6 +484,15 @@ long15 有 6 镜、long16 有 16 镜、long17（工具/构建器统一之后）*
 `固定`、交付却 `push_through`（`shot_009`、`shot_034`、`shot_042`）。
 两条出路（声明绑定／计划决定运镜）都要你拍板，
 **都不许调门限**。证据 `docs/evidence/20261004-declared-vs-delivered/`。**
+§八十六 **出路①落地**：`editor.merge_camera` 让分镜表声明的手法成为**锚**（没声明⇒
+草案自由；声明 `static`⇒不许加运动；声明具体手法⇒以声明为准）。先离线模拟（三份冻结
+工程，去掉未声明运动后重建：long17 逐镜通过 29→**35**、构图门 44→**55**、中位
+85.6→**89.5**；long15 / long18 同向），再真跑 long19：终审逐镜通过 **33 → 45**、
+错误由 R001 27 ＋ COMPOSITION 16 降到 **COMPOSITION 10 ＋ R001 8**、中位 85.6 → **88.0**、
+门 48 → **54**、**声明固定却有运动 40 → 0**、**Q5 由 9 对 12 变 11 对 11 ＝ 1.0（pass）**。
+链上 knowledge 块随之换到 long19，硬门汇总变成 **`not passing: E1`**。守门含反面
+（声明了具体手法的两镜仍必须有运动）。证据
+`docs/evidence/20261004-declaration-binding/`。**
 
 §八十 **修复工具与主构建器解出的不是同一台相机**（§79.3 的答案）：long16 的
 104 个修复回合里改动类工具只有 9 次、真的动了手的 7 个回合**0 个通过**；把

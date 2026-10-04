@@ -547,8 +547,10 @@ MARKET_PLAN = {"scene_heading": "第十四街区码头市场 - 午后", "shots":
 class _RewritingTransport:
     """故意让草案改写台词，看计划侧的钉子守不守得住。"""
 
-    def __init__(self, plan_dict):
+    def __init__(self, plan_dict, camera=None):
         self.plan_dict = plan_dict
+        #: 给了就让每一镜的草案带上**这套相机请求**（§八十五 的"草案自己加运动"）。
+        self.camera = camera
         self.editor_calls = 0
 
     def chat(self, payload, timeout=120.0):
@@ -570,6 +572,8 @@ class _RewritingTransport:
                     "dialogues": [{"character_id": "米迦尔",
                                    "text": "我是米迦尔。",
                                    "start_frame": 1, "end_frame": 40}]}
+            if self.camera is not None:
+                args["camera"] = self.camera
         else:                                   # review / repair / react
             name = "abort"
             args = {"reason": "测试不需要后续回合"}
@@ -610,3 +614,45 @@ def test_declared_dialogue_is_pinned_and_survives_a_rewriting_draft():
     # 剧本没声明台词的镜头（镜号 1/5）会被草案塞进一句，这是 WARNING；
     # ERROR 必须为 0——那才是"剧本声明的台词没有被落实"。
     assert errors == [], [item.message for item in errors]
+
+
+def test_a_declared_static_shot_loses_the_drafts_invented_movement():
+    """分镜表写"固定镜头"就**不许**给这一镜加相机运动（v1.4 §八十五）。
+
+    实测（2026-10-04，`docs/evidence/20261004-declared-vs-delivered/`）：分镜表为
+    **63 镜**声明"固定镜头"，交付里 **40 镜**在这条声明之外自己动了相机
+    （`movements[].source` 只有 1 次归给 `declared`）。把那些未声明的运动去掉后
+    重建、逐镜复评（零 LLM）：long17 逐镜通过 **29 → 35**、构图门 **44 → 55**、
+    中位 85.6 → **89.5**；long15 27 → **29** / 35 → **39**；long18 中位
+    66.5 → **72.5**。⇒ **忠于分镜表同时更好**。
+
+    反面：**没声明**手法的镜头（`camera_move == ""`）草案仍然自由——这一条与
+    "声明了就必须落实"是同一枚硬币的两面，缺一条都会走偏。
+    """
+    from block_director.layer5_orchestrator.driver import PrevisDriver
+    from block_director.layer6_audit.audit_logger import AuditLogger
+
+    script = _script()
+    camera = {"side": "front", "movements": [
+        {"type": "dolly_in", "amount": 1.0, "start_frame": 1, "end_frame": 40}]}
+    driver = PrevisDriver(
+        transport=_RewritingTransport(MARKET_PLAN, camera=camera),
+        audit=AuditLogger(), script=MARKET.read_text(encoding="utf-8"),
+        parsed_script=script, builder=_StubBuilder(),
+        thread_factory=_InlineThread)
+    driver.run_to_completion()
+
+    declared_static = 0
+    for index, item in enumerate(script.declared_shots):
+        shot = driver.plan.shots[index]
+        movements = list((shot.camera or {}).get("movements") or [])
+        if item.camera_move == "static":
+            declared_static += 1
+            assert movements == [], (
+                f"镜号{item.shot_number} 声明固定镜头，却被草案塞了 {movements}")
+        elif item.camera_move:
+            #: 声明了**非固定**手法：钉上去（老行为），不能丢。
+            assert movements, f"镜号{item.shot_number} 的声明没落实"
+    assert declared_static == 4, "market 夹具里应有 4 镜声明固定镜头"
+    kinds = [entry.kind for entry in driver.audit.recent()]
+    assert "plan_declared_camera_pinned" in kinds
