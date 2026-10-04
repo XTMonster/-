@@ -255,7 +255,9 @@ class GLMClient:
             "temperature": temperature,
             #: 每张卡 4 条 × 一批 12 张 ≈ 48 条，32k 预算给思考＋正文都留足。
             "max_tokens": self.max_tokens,
-            #: 用户裁决"思考强度拉满"→ 默认 `max`（`{"type":"enabled","level":"max"}`）。
+            #: 默认档是 `GLM_THINKING` 的缺省值 `enabled`（`{"type":"enabled"}`）——
+            #: 实测 `level=max` 在 `glm-5.3-flash` 上 3 卡小批思考 12.4 分钟、
+            #: 正文一个字都没有（`finish_reason=length`），所以取"能跑完的最高档"。
             #: `glm-4.7` 实测：开思考时 reasoning 6.5k–6.9k token、正文 12–14k 字符、
             #: `finish_reason=stop`；关思考（`{"type":"disabled"}`）~40 秒出结果、
             #: 通过率 0.94–1.0。
