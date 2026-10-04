@@ -22,6 +22,22 @@ from .dialogue_budget import shot_dialogue_budget
 #: `tests/test_repair_prompt_picks_the_right_tool.py` 的文件头）。
 TIMELINE_RULES = frozenset({"R003", "R011", "R015"})
 
+#: 修复尝试里的**延续轮**提示。它存在的理由是可测量的：真跑（2026-10-04，
+#: `long17`）的 104 个修复回合里 **72 个**恰好是 `search_knowledge` ＋
+#: `get_scene_state` 两次只读调用——模型把唯一一轮花在"查资料 + 看场景"上，
+#: 然后这一轮就结束了。给了下一轮还不够：那些观测此前也**没有被发回**。
+REPAIR_FOLLOWUP_NUDGE = """\
+上一轮你只做了查询（场景/知识/复核），**没有改动任何东西**，所以问题依旧存在。
+现在请**直接调用改动类工具**动手修正，并把要改的部分一次改到位：
+
+- 时间轴类（R003 / R011 / R015）：用 `emit_shot_draft` 重提这一镜的草案；
+- 空间/构图类（R001 / R002 / R005 / 构图分低）：用 `place_character`、
+  `move_character`、`face_character`、`setup_camera`、`reframe`、
+  `move_camera` 之一真的把场景挪到位；
+
+不要再只是查询。如果确实已经无需修改，请明确说明是哪一条审计已经不再成立。
+"""
+
 
 def timeline_only(audit: AuditResult) -> bool:
     """这条审计的 error 是否**全部**属于时间轴类。

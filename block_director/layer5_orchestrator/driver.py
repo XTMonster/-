@@ -30,7 +30,7 @@ from ..contracts.messages import (
 from ..contracts.plan import Plan
 from ..contracts.brief import SOURCE_DETERMINISTIC, SceneBrief
 from ..contracts.enums import ErrorCode
-from ..contracts.tools import MUTATING_TOOLS
+from ..contracts.tools import MUTATING_TOOLS, READ_ONLY_TOOLS
 from ..layer6_audit.audit_logger import AuditLogger
 from ..utils.logger import get_logger
 from ..utils.threading_guard import assert_main_thread
@@ -47,7 +47,7 @@ from .control_tools import (
     REQUEST_SELF_REVIEW,
     register_control_tools,
 )
-from .repair import build_repair_payload
+from .repair import REPAIR_FOLLOWUP_NUDGE, build_repair_payload
 from .budget import Budget, BudgetLimits
 from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
@@ -84,6 +84,10 @@ class DriverLimits:
     brief_attempts: int = 2      # §3.2：两次不理解就降级为确定性抽取
     max_tool_calls: int = 200
     max_repairs_per_shot: int = 2      # §7.1 B4：每镜定向修复次数上限
+    #: 一次定向修复允许几轮 LLM（``1`` = 老行为）。见
+    #: `orchestration.repair_max_turns`——真跑里 104 个修复回合有 72 个
+    #: 死在"查资料 + 看场景就用光唯一一轮"。
+    repair_turns: int = 3
 
 
 def tool_call_budget(effective_llm_calls: int, floor: int) -> int:
@@ -294,7 +298,17 @@ class PrevisDriver:
         self._repair_rule: str = ""
         self._repair_before_score: Optional[float] = None
         self._repair_tools_ok: int = 0
+        #: 这一**轮**修复里成功的**只读**查询数。续轮的判据要用它：
+        #: 只有"看了却没动手"才值得再给一轮。
+        self._repair_queries_ok: int = 0
         self.repair_messages: List[Message] = []
+        #: 本轮**尝试**已经用掉几轮 LLM（``repair_max_turns`` 是上限）。
+        #: 它与 `_repair_attempts` 不是一回事：尝试是"这一镜修了几次"
+        #: （§7.1 B4 的上限 2），轮次是"一次尝试里模型回了几次"。
+        self._repair_turns: int = 0
+        #: 这次尝试可用的工具 schema（延续轮必须与原轮**同一套**，
+        #: 包括"纯时间轴审计只给 emit_shot_draft"那条收窄）。
+        self._repair_tools: List[Dict[str, Any]] = []
 
     # ------------------------------------------------------------ 对外接口
     def add_observer(self, observer: Callable[[DriverEvent], None]) -> None:
@@ -617,10 +631,28 @@ class PrevisDriver:
             problem = self._dispatch_tool_calls(reply, self.repair_messages)
             if problem:
                 self.audit.log("repair_invalid", problem, level="warning")
+            mutated = bool(self._repair_tools_ok) or self._needs_rebuild
+            #: 这一轮**没动手**（只读查询）而额度还有：把**工具观测真的回灌**，
+            #: 再来一轮。老行为是"一次回复就收尾"，而真跑（2026-10-04，long17）
+            #: 里 104 个修复回合有 72 个恰好是 `search_knowledge` ＋
+            #: `get_scene_state`——"查资料 + 看场景"就用光了唯一一轮；更糟的是
+            #: 那些观测此前写进 `repair_messages` 后**从没被发回**，模型连自己
+            #: 刚查到的东西都看不见。
+            if not mutated and self._can_continue_repair():
+                self._repair_turns += 1
+                self.audit.log(
+                    "repair_turn",
+                    f"{self._current_shot_id} 修复回合未动手，继续第 "
+                    f"{self._repair_turns + 1} 轮", level="warning",
+                    shot=self._current_shot_id, turns=self._repair_turns)
+                self._emit("repair_turn", "修复回合未动手，继续一轮",
+                           shot=self._current_shot_id,
+                           turns=self._repair_turns)
+                self._continue_repair()
+                return
             self._repair_attempts += 1
             self._repairs_total += 1
-            self._mark_repair_applied(
-                applied=bool(self._repair_tools_ok) or self._needs_rebuild)
+            self._mark_repair_applied(applied=mutated)
             # 修复只改了计划（重提草案）时必须先重建场景再复核：审核器看的是
             # 场景，否则"改好了"根本不会被看见，只会在同一处反复修。
             if self._needs_rebuild and self.builder is not None:
@@ -1247,6 +1279,7 @@ class PrevisDriver:
         if self._shot_queue:
             self._finished_shots.append(self._shot_queue.pop(0))
         self._repair_attempts = 0
+        self._repair_turns = 0
         self.repair_messages = []
         if self._shot_queue:
             self._current_shot_id = self._shot_queue[0]
@@ -1460,6 +1493,9 @@ class PrevisDriver:
         self._repair_rule = "/".join(rules)
         self._repair_before_score = getattr(audit, "score", None)
         self._repair_tools_ok = 0
+        self._repair_queries_ok = 0
+        #: 新的一次**尝试**：轮次归零，对话以这次的修复提示词开头。
+        self._repair_turns = 0
         temperature = 0.2
         if self.config is not None:
             temperature = float(self.config.llm.temperature_repair)
@@ -1472,10 +1508,92 @@ class PrevisDriver:
             #: 里模型照抄它，把 `emit_shot_draft` 的 shot_id 写成 shot_001。
             shot_id=str(self._current_shot_id),
             temperature=temperature)
+        #: 工具集与对话都要留住：延续轮必须用**同一套**工具（含收窄），
+        #: 并且把这一轮的工具观测带回模型。
+        self._repair_tools = list(payload.tools)
+        if self._repair_attempts:
+            #: 第 2 次尝试接着上一轮的修复对话往下谈（同一镜内），不推倒重来：
+            #: 上一轮模型查到的观测、看过的审计、收到的循环警告，都是它这一轮
+            #: 判断的依据；丢掉它们等于让它重新踩一遍同一个坑。镜头换了
+            #: （`_advance_shot`）才会清空。
+            self.repair_messages.extend(payload.messages)
+            kept, dropped = trim_messages(
+                self.repair_messages,
+                int(getattr(self.config.orchestration,
+                            "context_window_tokens", 32000))
+                if self.config is not None else 32000)
+            if dropped:
+                self.audit.log("context_trimmed",
+                               f"修复对话裁剪 {len(dropped)} 条旧观察",
+                               level="warning")
+            self.repair_messages = kept
+        else:
+            self.repair_messages = list(payload.messages)
+        #: 发出去的必须是**累积**的那份对话（否则上面那段就是白写的）。
+        payload.messages = list(self.repair_messages)
         self._start_llm_call("repair", payload,
                              note=f"请求修复 {self._current_shot_id}"
                                   f"（第 {self._repair_attempts + 1} 次）")
 
+    def _repair_turn_limit(self) -> int:
+        """一次修复尝试里允许几轮 LLM（``1`` = v1.4 之前的老行为）。"""
+        if self.config is None:
+            return max(1, int(self.limits.repair_turns))
+        return max(1, int(getattr(self.config.orchestration,
+                                  "repair_max_turns", self.limits.repair_turns)))
+
+    def _can_continue_repair(self) -> bool:
+        """还能再给这一镜一轮吗？（观测、轮次、工具额度、LLM 预算四关）
+
+        "观测"这一关是关键：只有这一轮**真的看到了东西却没动手**
+        （`_repair_queries_ok > 0` 且没有改动类工具成功）才值得再给一轮。
+        整轮全失败（例：没建场景时 `setup_camera` 必然失败）再给几轮也只是把
+        同一次失败重放——`test_sidecar_mode_runs_the_whole_chain` 的夹具正是
+        这种形态：那里的 7 次调用不许因为这条改动变成 9 次。
+        """
+        if not self._repair_queries_ok:
+            return False
+        if self._repair_turns + 1 >= self._repair_turn_limit():
+            return False
+        if self._tool_calls >= self.limits.max_tool_calls:
+            return False
+        return self.budget.allow_llm_call("repair")
+
+    def _continue_repair(self) -> None:
+        """同一**次**修复尝试里的下一轮：把上一轮的工具观测真的发回给模型。
+
+        `self.repair_messages` 此前是一张**从来不发回**的草稿单
+        （`_dispatch_tool_calls` 往里写、没人读）⇒ 模型在修复回合里调
+        `get_scene_state` / `check_composition` 拿到的观测全部丢掉，它只能
+        凭审计原文猜，然后这一轮就结束了。
+        """
+        limit = 32000
+        if self.config is not None:
+            limit = int(getattr(self.config.orchestration,
+                                "context_window_tokens", 32000))
+        kept, dropped = trim_messages(self.repair_messages, limit)
+        if dropped:
+            self.audit.log("context_trimmed",
+                           f"修复对话裁剪 {len(dropped)} 条旧观察",
+                           level="warning", **budget_report(kept, limit))
+        self.repair_messages = kept
+        self.repair_messages.append(Message(role=MessageRole.SYSTEM,
+                                            content=REPAIR_FOLLOWUP_NUDGE))
+        #: 新一轮的计数器归零：`_can_continue_repair` 读的必须是**这一轮**的观测。
+        self._repair_tools_ok = 0
+        self._repair_queries_ok = 0
+        temperature = 0.2
+        if self.config is not None:
+            temperature = float(self.config.llm.temperature_repair)
+        payload = ChatPayload(messages=list(self.repair_messages),
+                              tools=list(self._repair_tools),
+                              tool_choice=ToolChoice.REQUIRED,
+                              temperature=temperature,
+                              purpose=Purpose.REPAIR,
+                              request_id=new_request_id())
+        self._start_llm_call("repair", payload,
+                             note=f"继续修复 {self._current_shot_id}"
+                                  f"（第 {self._repair_turns + 1} 轮）")
     def _scene_state_text(self) -> str:
         if self.scene_state_provider is None:
             return ""
@@ -1702,6 +1820,13 @@ class PrevisDriver:
                 # 实测（2026-10-03 的 64 镜真跑）模型只调 `get_scene_state` +
                 # `check_composition`，而 `repair_applied` 照写"已实施定向修复"。
                 self._repair_tools_ok += 1
+            elif result.ok and call.function.name in READ_ONLY_TOOLS:
+                #: "这一轮**拿到了观测**"（只读查询成功）。它与"动手"是两件事：
+                #: 前者是模型判断的依据，后者才是修复本身。修复回合的**续轮**
+                #: 判据要用它——只有"看了却没动"才值得再给一轮；整轮全失败
+                #: （例：没有场景上下文时 `setup_camera` 必然失败）再给几轮也
+                #: 只是把同一次失败重放，白烧预算。
+                self._repair_queries_ok += 1
             conversation.append(tool_message(call, result.content))
             self._emit("tool_call", f"{call.function.name}",
                        tool=call.function.name, ok=result.ok)

@@ -5015,6 +5015,114 @@ first 超限 repair at +367s      ← 此后每一次修复都被拒
 逐字节一致，且 `reframe` 不许换对象）。证据
 `docs/evidence/20261004-tool-vs-builder/`。
 
-**仍未做**：这一轮**没有**重跑真模型——验的是**结构性不变量**，不主张
-"通过率因此变高"。修复回路里只读工具仍占 95%（195/204），"工具集与提示词该不该
-更硬地约束"是下一步。
+**真模型已补跑**（2026-10-04，`long17`，`run_id 2ac8f25023c9`）：同一份剧本、
+同一条命令、同一后端，`state=DONE`、交付 133 个文件、终审逐镜通过 **33/64**
+（long14 29 / long15 29 / long16 23），构图中位 **85.6**。主证据是修复回合的
+产出结构：两跑的"动手"回合都是 7 个，**通过数由 0 变 6**；只读回合的平均构图分
+变化由 **−2.65 收窄到 −0.39**。证据 `docs/evidence/20261004_chunked_long17/`。
+同一跑也如实记下了长跑方差（long14→long16 同码三跑 29/29/23），所以只主张
+"修复不再把镜头改坏"，不主张"总分是它的功劳"。
+
+**仍未做**：修复回路里只读工具仍占大头（long17：204/211 次调用是只读），
+"工具集与提示词该不该更硬地约束"是下一步 —— 见 §八十一，那里已把根因定位到
+**修复回合只有一轮 LLM** ＋ **工具观测从不回灌**。
+
+## 八十一、修复回合**只有一轮 LLM**，而且工具观测**从来不回灌**（long17 的下一刀）
+
+§七十九 把"修复有没有用"定为下一刀。long17 的两份日志把答案直接摆出来了。
+
+### 81.1 账：104 个修复回合，97 个一个改动类工具都没调
+
+`work/_repair_yield.py docs/evidence/20261004_chunked_long17/runs/audit_log.jsonl`：
+
+```
+修复回合数: 104          回合里工具调用总数: 211
+  get_scene_state            102  [只读]
+  search_knowledge            74  [只读]
+  check_composition           19  [只读]
+  setup_camera                 6  [改动]
+  check_visibility             5  [只读]
+  check_axis                   4  [只读]
+  reframe                      1  [改动]
+  有改动类工具成功: 7 回合      一次改动都没有: 97 回合
+```
+
+逐条看这 104 个回合的**工具组合**，形态集中得刺眼：
+
+| 组合 | 回合数 |
+|---|---|
+| `search_knowledge` → `get_scene_state` | **52** |
+| `get_scene_state` → `search_knowledge` | **20** |
+| `get_scene_state` → `check_composition` | 9 |
+| `check_composition` → `get_scene_state` | 7 |
+| `setup_camera` → `get_scene_state` | 6 |
+
+**72 个回合就是"查资料 ＋ 看场景"**——两次只读调用，然后这一轮结束。
+
+### 81.2 根因不是模型懒，是**机制上它没有下一轮**
+
+两件事叠在一起：
+
+1. `driver._step_repairing()` 发的是**一次** LLM 请求，`tool_choice=required` 只
+   要求"调一个工具"，不要求"改一处"；回复一到，`_step_calling_llm()` 直接转
+   CHECKING。模型把这一轮花在"查资料 + 看场景"上，就再也没有机会动手了。
+2. `self.repair_messages` 是一张**只写不读的草稿单**：`_dispatch_tool_calls(reply,
+   self.repair_messages)` 把 assistant 与每一条 `tool_message` 观测**写进去**，
+   而**没有任何一处把它当 payload 发出去**（`grep repair_messages driver.py`
+   在修改前只有三行：初始化、写入、清空）。⇒ 模型连自己刚查到的观测都看不见。
+
+下游症状就是 long17 的 `loop_warning` **174** 条、`shot_degraded` **43** 镜：
+模型在只读工具上打转，系统只是**警告**（`LoopDetector` 的判词被追加进对话），
+而那句话同样躺在没人读的列表里。
+
+### 81.3 修法：有界多轮 ＋ 观测回灌（`orchestration.repair_max_turns`）
+
+沿用 ReAct 回路已经验证过的形状（那是唯一"模型真的会动手"的回合：long17 的
+react 回合 235 次调用里改动类有 54 次），但有两点不同：
+
+* **一次尝试 = 最多 `repair_max_turns` 轮**（新配置键，默认 3）。`1` 就是老行为，
+  用于对拍。`_repair_attempts`（§7.1 B4 的"每镜修几次"，上限 2）数的是**尝试**，
+  不数轮次；所以 `repair_applied` 仍然"每个失败镜一条"（US-12② 的口径不动）。
+* **续轮判据是"看了却没动"**：`_can_continue_repair()` 要求
+  `_repair_queries_ok > 0`（这一轮**成功执行过**只读工具）且没有改动类工具成功。
+  整轮全失败时**不续轮**——那只是把同一次失败重放。这条判据不是拍脑袋：它正好
+  让 `tests/test_protocol_end_to_end.py::test_sidecar_mode_runs_the_whole_chain`
+  那份**没有场景**的夹具（`setup_camera` 必然失败）保持 **7** 次调用，而不是涨到
+  9 次。换句话说，"不浪费轮次"这件事本身是被钉住的。
+* **对话跨尝试保留**（同一镜内）：第 2 次尝试接着上一轮谈，而不是推倒重来——
+  上一轮查到的观测、看过的审计、收到的循环警告都是它这一轮的判断依据。
+  镜头换了（`_advance_shot`）才清空。
+
+续轮的提示词（`repair.REPAIR_FOLLOWUP_NUDGE`）直说"上一轮你只做了查询、没有改动
+任何东西"，并按规则类别点名该用哪个改动类工具；工具集**沿用原轮那一套**（包括
+"纯时间轴审计只给 `emit_shot_draft`"的收窄），仍然**不含 `emit_plan`**。
+
+### 81.4 守门
+
+`tests/test_repair_round_gets_a_second_turn.py`（6 条）：
+
+1. 只查不改 ⇒ 续一轮，且**上一轮的工具观测逐字出现在新请求里**；
+2. 动了手 ⇒ 不再续轮；
+3. 整轮全失败 ⇒ 不续轮（并写明它就是协议夹具的形态）；
+4. 轮数上限严格等于 `repair_max_turns`；`1` 恢复老行为；
+5. 第 2 次尝试**接着谈**（观测仍在）；
+6. 续轮仍是 `Purpose.REPAIR`、工具集里仍没有 `emit_plan`。
+
+另外两条**既有**判据在这一轮里起了反作用力的作用：`test_driver_guards.py::`
+`test_loop_warning_is_injected_into_the_conversation`（循环警告必须真的进到修复
+对话里）与 `test_repair_applied_means_something_changed.py`
+（只读回合不许写 `repair_applied`）——前者正是在这一步才**第一次真正成立**：
+在此之前警告写进的是一张没人读的单子。
+
+### 81.5 验证与仍未做
+
+`python -m pytest` **2000 passed / 1 skipped**；
+`powershell -File tools/run_tests.ps1` **32/32**，证据
+`docs/evidence/20261004-114213/`（RK-13 仍因 Q5/E1 记 failed，与 §七十六/§七十八
+同一口径）。
+
+**仍未做**：这一轮的证据是**结构性 + 单测**，**没有**真跑验证"修复回合的通过数
+会不会因此上升"——长跑之间方差大（long14→long16 同码三跑 29/29/23），需要
+long17 的同命令对照跑。它的判据是现成的：`work/_repair_yield.py` 的
+"有改动类工具成功 / 一次改动都没有"两行，以及 `loop_warning` 与 `shot_degraded`
+的条数。**不得**用总分单跑下结论。

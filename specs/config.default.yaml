@@ -31,6 +31,7 @@ orchestration:
   mode: plan_structured
   max_repair_attempts: 2
   react_max_steps: 6
+  repair_max_turns: 3
   context_window_tokens: 32000
   max_shots: 0
   self_review: true

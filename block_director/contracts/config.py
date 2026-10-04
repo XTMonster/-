@@ -109,6 +109,12 @@ class OrchestrationConfig:
     mode: OrchestrationMode = OrchestrationMode.PLAN_STRUCTURED
     max_repair_attempts: int = 2
     react_max_steps: int = 6
+    #: 一次**定向修复**里允许几轮 LLM（v1.4 §7.1 B4）。``1`` = 老行为：
+    #: 模型回一次就收尾。默认 3 的理由是实测出来的——2026-10-04 的 64 镜真跑
+    #: (`long17`) 里 104 个修复回合有 **72 个**恰好是 `search_knowledge` ＋
+    #: `get_scene_state` 两次**只读**调用："查资料 + 看场景"把唯一一轮用光了，
+    #: 模型连动手的机会都没有（工具观测此前也没有回灌，见 `driver._continue_repair`）。
+    repair_max_turns: int = 3
     context_window_tokens: int = 32000
     #: v1.4 §2.4：单次运行的镜数上限。``0`` = 不限（**省略 ``maxItems`` 键**，
     #: 不是写 0——``tool_schema.py`` 会真的执行 ``maxItems``）。

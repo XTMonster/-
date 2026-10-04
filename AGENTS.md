@@ -303,10 +303,10 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-04 10:5x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-04 12:0x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
 ——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
-`python -m pytest` **1994 passed / 1 skipped**（主树；唯一那条 skip 是
+`python -m pytest` **2000 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
 `tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
@@ -315,9 +315,9 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-104930/`（探针 32 支全过、`python -m pytest`
-1994 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§八十 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十二节：
+且 pass。证据 `docs/evidence/20261004-114213/`（探针 32 支全过、`python -m pytest`
+2000 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§八十一 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十三节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对
@@ -429,7 +429,24 @@ long15 六十三次逐镜检索里的 **6 个查询**（18 条），用仓库自
 顺带修掉一条**假问题**：收尾判据 `if not plan_seen` 不分阶段，而修复回合本来就拒绝
 `emit_plan` ⇒ 每一轮修复都被记成 `repair_invalid`（long16 里 104 条中 **89 条**是假错，
 真错假错混在同一事件名里）。现在只有阶段 A 才要求 `emit_plan`，守门含反面对照。
-证据 `docs/evidence/20261004_chunked_long16/`。**
+证据 `docs/evidence/20261004_chunked_long16/`。§八十 **修复工具与主构建器解出的不是同一台
+相机**：`setup_camera`/`reframe` 各抄了一份机位解算，丢了视线留白、头顶留白、房间钳制、
+逐镜轴侧、时间点与声明式运镜——拿计划自己的参数重设一次，64 镜里 34 镜构图更差、10 镜由
+通过变不通过（`reframe` 是 9 与 3）。两个工具改走 `place_shot_camera` 后，四份冻结工程 ×
+两个工具 × 64 镜 = 512 次重设**全部零差**；同一份剧本的真跑（long17）随之给出主证据：两跑
+"动手"的修复回合都是 7 个，**通过数由 0 到 6**，只读回合的平均构图分变化由 −2.65 收窄到
+−0.39（总分也由 23 到 33、构图中位 72.0 到 85.6，但**长跑方差大，不拿它当因果**）。
+证据 `docs/evidence/20261004-tool-vs-builder/` 与 `docs/evidence/20261004_chunked_long17/`。
+§八十一 **修复回合只有一轮 LLM，而且工具观测从来不回灌**：long17 的 104 个修复回合里
+**97 个**一个改动类工具都没调，其中 **72 个**恰好是 `search_knowledge` ＋ `get_scene_state`
+——`driver.repair_messages` 是一张**只写不读**的草稿单（`_dispatch_tool_calls` 往里写观测、
+没有任何一处把它当 payload 发出去），于是"查资料 + 看场景"用光唯一一轮、模型连自己刚查到
+的东西都看不见。改成**有界多轮**（新配置键 `orchestration.repair_max_turns`，默认 3；`1`
+即老行为）＋**观测真的回灌**；续轮判据是"看了却没动"（整轮全失败不续轮，这条正好让协议
+夹具的 7 次调用**保持不变**）；同一镜的第二次尝试接着上一轮谈。守门 6 条
+（`tests/test_repair_round_gets_a_second_turn.py`），并且让 `test_driver_guards` 的
+"循环警告必须真的进到修复对话里"**第一次真正成立**。**仍未做**：这一轮是结构性 ＋ 单测，
+还没真跑对照。**
 
 §八十 **修复工具与主构建器解出的不是同一台相机**（§79.3 的答案）：long16 的
 104 个修复回合里改动类工具只有 9 次、真的动了手的 7 个回合**0 个通过**；把
