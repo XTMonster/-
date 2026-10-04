@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Dict, List, Optional
 
 import bpy
@@ -15,7 +16,7 @@ from ..motion.model import ACTION_TYPES, head_track_angles
 from ..cinema.camera_motion import MOVEMENT_TYPES, TRANSLATIONS, describe
 from ..cinema.framing import CAMERA_SIDES, solve_framing
 from ..cinema.station import camera_direction, subject_frame
-from ..contracts.enums import SHOT_TYPES
+from ..contracts.enums import SHOT_TYPES, ShotType
 from ..knowledge.tool import SEARCH_KNOWLEDGE, register_knowledge_tools
 from ..observation.state import format_scene_state
 from ..layer5_orchestrator.tool_registry import ToolResult
@@ -23,6 +24,7 @@ from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .character_system import MotionBlender, get_facing
 from .cinema_engine import (
+    CameraBundle,
     apply_camera_movement,
     check_camera_axis,
     evaluate_camera_composition,
@@ -30,7 +32,14 @@ from .cinema_engine import (
 )
 from .scene_context import get_context
 from .scene_state import collect_scene_state
-from .shot_builder import speaker_of
+from .shot_builder import (
+    apply_declared_movements,
+    axis_for_shot,
+    live_subject_entries,
+    place_shot_camera,
+    release_shot_camera,
+    speaker_of,
+)
 
 log = get_logger("tool-bindings")
 
@@ -377,6 +386,24 @@ def _tool_interact_with(character_id: str, prop_id: str, interaction_type: str,
 @main_thread_only("tool_setup_camera")
 def _tool_setup_camera(shot_id: str = "", shot_type: str = "MS",
                        side: str = "front", lens: Optional[float] = None):
+    """按取景解算重设某一镜的机位。
+
+    **机位解算只有一个入口**：本工具走 `shot_builder.place_shot_camera`，与主
+    构建、单镜再生同一份实现。2026-10-04 的实测（`work/_tool_vs_builder_probe.py`，
+    long16 工程）证明以前这条捷径走了样：它自己拼 `axis_dir/axis_side` 再直接调
+    `place_camera_for_shot`，于是**丢了三样构建器有的东西**——
+
+    * 视线留白与头顶留白的对准点偏移（§10.4 / §六十九）；
+    * `spec.room` 的房间钳制；
+    * **逐镜**轴侧（顺序状态机 `_axis_sides_used`），它读的是全片一个常数的
+      `context.axis.established_side`。
+
+    还有时间点：`live_subject_entries` 读的是**当前帧**的角色站位，而本工具的
+    契约是"这一镜"的机位 ⇒ 必须先把帧拨到该镜首帧（构建器就是这么做的）。
+    代价实测：拿**计划自己的**参数重设一次，64 镜里 34 镜构图更差、10 镜由
+    通过变不通过（最差 `shot_027` 83.2 → 20.0）。修复回路"改了却更糟"的
+    主因就在这里。
+    """
     context = get_context()
     if context is None:
         return _fail("场景上下文为空：请先构建场景")
@@ -393,39 +420,58 @@ def _tool_setup_camera(shot_id: str = "", shot_type: str = "MS",
     if not characters:
         return _fail(f"镜头 {shot_id} 没有在场角色，无法解算机位")
 
-    # 与主构建共用同一套取景参考系：单主体镜头若落在整场轴线上，
-    # 相机会正好站在搭档的位置上（把搭档拍进画面并挡住被摄主体）。
-    bpy.context.view_layer.update()
-    entries = [(cid, tuple(c.root.matrix_world.translation), get_facing(c))
-               for cid, c in ((cid, context.character(cid))
-                              for cid in shot.characters)
-               if c is not None]
-    frame = subject_frame(entries, shot_type=str(shot_type),
-                          speaker_id=speaker_of(shot))
-    direction = camera_direction(
-        frame, str(side),
-        axis_dir=(context.axis.direction if context.axis else None),
-        axis_side=(int(context.axis.established_side)
-                   if context.axis else 0))
+    resolved_type = str(shot_type or shot.shot_type).upper()
+    if resolved_type not in SHOT_TYPES:
+        return _fail(f"不认识的景别 {shot_type}；允许的取值："
+                     f"{'、'.join(SHOT_TYPES)}")
 
+    request: Dict[str, Any] = {"side": str(side or "front")}
+    if lens is not None:
+        request["lens"] = float(lens)
+    #: 机位瞄的是**这一镜首帧**人在哪，所以先把帧拨过去；工具不该把时间轴留在
+    #: 别处，摆完还原（与 `check_shot` 的"审核不改场景状态"同一口径）。
     scene = bpy.context.scene
-    previous = context.cameras.get(shot_id)
-    if previous is not None:
-        bpy.data.objects.remove(previous, do_unlink=True)
-    bundle, solution = place_camera_for_shot(
-        shot_id, frame.anchor, facing=frame.facing, shot_type=shot_type,
-        side=side, lens=lens, make_scene_camera=False, direction=direction)
-    context.cameras[shot_id] = bundle.camera
-    context.shot_types[shot_id] = str(shot_type).upper()
-    if shot_id == context.current_shot_id or scene.camera is previous:
-        scene.camera = bundle.camera
+    original_frame = int(scene.frame_current)
+    start = int((context.schedule.get(shot_id) or (0, 0))[0] or 0)
+    if start:
+        scene.frame_set(start)
+        bpy.context.view_layer.update()
+    try:
+        axis = axis_for_shot(context, shot)
+        #: 对象、**数据**与对准 Empty 一起放掉：只删对象会留下同名残留，
+        #: 下一次建的相机就只能叫 `…​.001`，而按名字找对准点的地方拿的是旧的
+        #: （见 `shot_builder.release_shot_camera` 的抬头）。
+        release_shot_camera(shot_id)
+        bundle, solution, _frame = place_shot_camera(
+            replace(shot, shot_type=ShotType(resolved_type)),
+            {}, context.spec, request=request, axis=axis,
+            entries=live_subject_entries(shot, context.characters))
+        #: 先把新相机登记进上下文——`apply_declared_movements` 是**按上下文**取
+        #: 相机对象的，登记晚一步它就会去动那台已经删掉的旧对象。
+        context.cameras[shot_id] = bundle.camera
+        context.shot_types[shot_id] = solution.shot_type
+        #: 重建相机对象会连**关键帧**一起丢；这一镜声明的运镜必须重放，
+        #: 否则"修复"顺手把镜头运动删了（构图门取首/中/尾最小值，运动一没
+        #: 结论就变）。与主构建共用 `apply_declared_movements`。
+        applied, _keyframes, warnings = apply_declared_movements(
+            replace(shot, shot_type=ShotType(resolved_type)),
+            context.characters, start or 1,
+            int((context.schedule.get(shot_id) or (0, 1))[1] or 1),
+            camera=bundle.camera, target=bundle.target)
+    finally:
+        if start and int(bpy.context.scene.frame_current) != original_frame:
+            bpy.context.scene.frame_set(original_frame)
+            bpy.context.view_layer.update()
+
     marker = scene.timeline_markers.get(f"BD_Cut_{shot_id}")
     if marker is not None:
         marker.camera = bundle.camera
     bpy.context.view_layer.update()
-    return (f"镜头 {shot_id} 机位已重设：{shot_type} / {side}，"
+    return (f"镜头 {shot_id} 机位已重设：{solution.shot_type} / {side}，"
             f"位置 {tuple(round(v, 3) for v in solution.position)}，"
-            f"距离 {solution.distance:.2f}，焦距 {solution.lens:g}mm")
+            f"距离 {solution.distance:.2f}，焦距 {solution.lens:g}mm"
+            + (f"，重放运镜 {applied} 段" if applied else "")
+            + ("；" + "；".join(warnings) if warnings else ""))
 
 
 def _shot_target_object(shot_id: str):
@@ -462,7 +508,13 @@ def _tool_move_camera(movement_type: str, start_frame: int, end_frame: int,
 @main_thread_only("tool_reframe")
 def _tool_reframe(shot_id: str = "", shot_type: Optional[str] = None,
                   lens: Optional[float] = None):
-    """只调取景：复用同一台相机与同一个对准 Empty，重建位置/焦距。"""
+    """只调取景：复用同一台相机与同一个对准 Empty，重建位置/焦距。
+
+    **解算与主构建是同一份**（`place_shot_camera` ＋ `reuse=`）。抬头自称"与主
+    构建共用同一套参考系与同一套 side 解析"、代码却写死 `side="front"` 并绕开
+    留白与 room 钳制——2026-10-04 实测（`work/_tool_vs_builder_probe.py --tool
+    reframe`，long16 工程）：64 镜里 9 镜构图更差、3 镜由通过变不通过。
+    """
     context = get_context()
     if context is None:
         return _fail("场景上下文为空：请先构建场景")
@@ -475,36 +527,41 @@ def _tool_reframe(shot_id: str = "", shot_type: Optional[str] = None,
 
     resolved_type = str(shot_type or context.shot_types.get(
         shot_id, shot.shot_type))
+    if resolved_type not in SHOT_TYPES:
+        return _fail(f"不认识的景别 {shot_type}；允许的取值："
+                     f"{'、'.join(SHOT_TYPES)}")
     characters = [context.character(cid) for cid in shot.characters]
     characters = [item for item in characters if item is not None]
     if not characters:
         return _fail(f"镜头 {shot_id} 没有在场角色，无法重解取景")
-    # 与主构建、setup_camera 共用同一套参考系与同一套 side 解析。
-    bpy.context.view_layer.update()
-    entries = [(cid, tuple(item.root.matrix_world.translation),
-                get_facing(item))
-               for cid, item in ((cid, context.character(cid))
-                                 for cid in shot.characters)
-               if item is not None]
-    frame = subject_frame(entries, shot_type=resolved_type,
-                          speaker_id=speaker_of(shot))
-    direction = camera_direction(
-        frame, "front",
-        axis_dir=(context.axis.direction if context.axis else None),
-        axis_side=(int(context.axis.established_side)
-                   if context.axis else 0))
-    solution = solve_framing(subject_pos=frame.anchor, facing=frame.facing,
-                             shot_type=resolved_type, side="front",
-                             lens=lens, room=None, direction=direction)
-    camera.location = solution.position
-    camera.data.lens = float(solution.lens)
-    target = _shot_target_object(shot_id)
-    if target is not None:
-        target.location = solution.target
-    camera["bd_shot_type"] = solution.shot_type
-    camera["bd_frame_height"] = solution.frame_height
+
+    #: 重解取景瞄的是**这一镜首帧**人在哪（与 `setup_camera` 同一口径）。
+    scene = bpy.context.scene
+    original_frame = int(scene.frame_current)
+    start = int((context.schedule.get(shot_id) or (0, 0))[0] or 0)
+    if start:
+        scene.frame_set(start)
+        bpy.context.view_layer.update()
+    #: side 用**计划自己声明的**那一个（以前写死 "front"）：`reframe` 的契约是
+    #: "只调取景"，那就没有理由把机位挪到另一侧去。
+    plan_side = str((getattr(shot, "camera", None) or {}).get("side") or "front")
+    request: Dict[str, Any] = {"side": plan_side}
+    if lens is not None:
+        request["lens"] = float(lens)
+    try:
+        bundle, solution, _frame = place_shot_camera(
+            replace(shot, shot_type=ShotType(resolved_type)),
+            {}, context.spec, request=request,
+            axis=axis_for_shot(context, shot),
+            entries=live_subject_entries(shot, context.characters),
+            #: 复用同一台相机与同一个对准 Empty（对象不重建）。
+            reuse=CameraBundle(camera=camera,
+                               target=_shot_target_object(shot_id)))
+    finally:
+        if start and int(bpy.context.scene.frame_current) != original_frame:
+            bpy.context.scene.frame_set(original_frame)
+            bpy.context.view_layer.update()
     context.shot_types[shot_id] = solution.shot_type
-    bpy.context.view_layer.update()
     return (f"镜头 {shot_id} 取景已调整：{solution.shot_type}，"
             f"位置 {tuple(round(v, 3) for v in solution.position)}，"
             f"焦距 {solution.lens:g}mm（相机对象未重建）")

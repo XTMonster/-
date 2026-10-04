@@ -1,0 +1,1455 @@
+{
+ "project": "docs/evidence/20261004_chunked_long16/project",
+ "shots": 64,
+ "moved_down": 0,
+ "passed_to_failed": 0,
+ "worst": [
+  {
+   "shot": "shot_001",
+   "params": {
+    "shot_id": "shot_001",
+    "shot_type": "LS",
+    "side": "front_right",
+    "lens": 35
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 74.6
+   },
+   "after": {
+    "passed": false,
+    "score": 74.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_002",
+   "params": {
+    "shot_id": "shot_002",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_003",
+   "params": {
+    "shot_id": "shot_003",
+    "shot_type": "MS",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 92.9
+   },
+   "after": {
+    "passed": true,
+    "score": 92.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_004",
+   "params": {
+    "shot_id": "shot_004",
+    "shot_type": "MCU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 87.5
+   },
+   "after": {
+    "passed": true,
+    "score": 87.5
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_005",
+   "params": {
+    "shot_id": "shot_005",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 82.0
+   },
+   "after": {
+    "passed": true,
+    "score": 82.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_006",
+   "params": {
+    "shot_id": "shot_006",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_007",
+   "params": {
+    "shot_id": "shot_007",
+    "shot_type": "CU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 89.7
+   },
+   "after": {
+    "passed": true,
+    "score": 89.7
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_008",
+   "params": {
+    "shot_id": "shot_008",
+    "shot_type": "MS",
+    "side": "back_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 92.1
+   },
+   "after": {
+    "passed": true,
+    "score": 92.1
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_009",
+   "params": {
+    "shot_id": "shot_009",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_010",
+   "params": {
+    "shot_id": "shot_010",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 85.2
+   },
+   "after": {
+    "passed": true,
+    "score": 85.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_011",
+   "params": {
+    "shot_id": "shot_011",
+    "shot_type": "MCU",
+    "side": "right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 65.6
+   },
+   "after": {
+    "passed": false,
+    "score": 65.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_012",
+   "params": {
+    "shot_id": "shot_012",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 90.2
+   },
+   "after": {
+    "passed": true,
+    "score": 90.2
+   },
+   "delta": 0.0
+  }
+ ],
+ "passed_to_failed_shots": [],
+ "rows": [
+  {
+   "shot": "shot_001",
+   "params": {
+    "shot_id": "shot_001",
+    "shot_type": "LS",
+    "side": "front_right",
+    "lens": 35
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 74.6
+   },
+   "after": {
+    "passed": false,
+    "score": 74.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_002",
+   "params": {
+    "shot_id": "shot_002",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_003",
+   "params": {
+    "shot_id": "shot_003",
+    "shot_type": "MS",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 92.9
+   },
+   "after": {
+    "passed": true,
+    "score": 92.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_004",
+   "params": {
+    "shot_id": "shot_004",
+    "shot_type": "MCU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 87.5
+   },
+   "after": {
+    "passed": true,
+    "score": 87.5
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_005",
+   "params": {
+    "shot_id": "shot_005",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 82.0
+   },
+   "after": {
+    "passed": true,
+    "score": 82.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_006",
+   "params": {
+    "shot_id": "shot_006",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_007",
+   "params": {
+    "shot_id": "shot_007",
+    "shot_type": "CU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 89.7
+   },
+   "after": {
+    "passed": true,
+    "score": 89.7
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_008",
+   "params": {
+    "shot_id": "shot_008",
+    "shot_type": "MS",
+    "side": "back_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 92.1
+   },
+   "after": {
+    "passed": true,
+    "score": 92.1
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_009",
+   "params": {
+    "shot_id": "shot_009",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_010",
+   "params": {
+    "shot_id": "shot_010",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 85.2
+   },
+   "after": {
+    "passed": true,
+    "score": 85.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_011",
+   "params": {
+    "shot_id": "shot_011",
+    "shot_type": "MCU",
+    "side": "right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 65.6
+   },
+   "after": {
+    "passed": false,
+    "score": 65.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_012",
+   "params": {
+    "shot_id": "shot_012",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 90.2
+   },
+   "after": {
+    "passed": true,
+    "score": 90.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_013",
+   "params": {
+    "shot_id": "shot_013",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_014",
+   "params": {
+    "shot_id": "shot_014",
+    "shot_type": "CU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 88.3
+   },
+   "after": {
+    "passed": true,
+    "score": 88.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_015",
+   "params": {
+    "shot_id": "shot_015",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 66.2
+   },
+   "after": {
+    "passed": false,
+    "score": 66.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_016",
+   "params": {
+    "shot_id": "shot_016",
+    "shot_type": "MLS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 86.9
+   },
+   "after": {
+    "passed": true,
+    "score": 86.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_017",
+   "params": {
+    "shot_id": "shot_017",
+    "shot_type": "LS",
+    "side": "back_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 89.6
+   },
+   "after": {
+    "passed": true,
+    "score": 89.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_018",
+   "params": {
+    "shot_id": "shot_018",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_019",
+   "params": {
+    "shot_id": "shot_019",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 91.9
+   },
+   "after": {
+    "passed": false,
+    "score": 91.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_020",
+   "params": {
+    "shot_id": "shot_020",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 66.7
+   },
+   "after": {
+    "passed": false,
+    "score": 66.7
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_021",
+   "params": {
+    "shot_id": "shot_021",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_022",
+   "params": {
+    "shot_id": "shot_022",
+    "shot_type": "CU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 67.2
+   },
+   "after": {
+    "passed": false,
+    "score": 67.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_023",
+   "params": {
+    "shot_id": "shot_023",
+    "shot_type": "CU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 76.4
+   },
+   "after": {
+    "passed": true,
+    "score": 76.4
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_024",
+   "params": {
+    "shot_id": "shot_024",
+    "shot_type": "MLS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_025",
+   "params": {
+    "shot_id": "shot_025",
+    "shot_type": "LS",
+    "side": "left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 88.8
+   },
+   "after": {
+    "passed": true,
+    "score": 88.8
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_026",
+   "params": {
+    "shot_id": "shot_026",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_027",
+   "params": {
+    "shot_id": "shot_027",
+    "shot_type": "MCU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 83.2
+   },
+   "after": {
+    "passed": true,
+    "score": 83.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_028",
+   "params": {
+    "shot_id": "shot_028",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 85.3
+   },
+   "after": {
+    "passed": true,
+    "score": 85.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_029",
+   "params": {
+    "shot_id": "shot_029",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_030",
+   "params": {
+    "shot_id": "shot_030",
+    "shot_type": "CU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 69.2
+   },
+   "after": {
+    "passed": false,
+    "score": 69.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_031",
+   "params": {
+    "shot_id": "shot_031",
+    "shot_type": "CU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 78.3
+   },
+   "after": {
+    "passed": true,
+    "score": 78.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_032",
+   "params": {
+    "shot_id": "shot_032",
+    "shot_type": "MLS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_033",
+   "params": {
+    "shot_id": "shot_033",
+    "shot_type": "LS",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 89.9
+   },
+   "after": {
+    "passed": true,
+    "score": 89.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_034",
+   "params": {
+    "shot_id": "shot_034",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_035",
+   "params": {
+    "shot_id": "shot_035",
+    "shot_type": "MCU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 74.1
+   },
+   "after": {
+    "passed": false,
+    "score": 74.1
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_036",
+   "params": {
+    "shot_id": "shot_036",
+    "shot_type": "MCU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 77.2
+   },
+   "after": {
+    "passed": true,
+    "score": 77.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_037",
+   "params": {
+    "shot_id": "shot_037",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_038",
+   "params": {
+    "shot_id": "shot_038",
+    "shot_type": "CU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 71.3
+   },
+   "after": {
+    "passed": false,
+    "score": 71.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_039",
+   "params": {
+    "shot_id": "shot_039",
+    "shot_type": "CU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 80.8
+   },
+   "after": {
+    "passed": true,
+    "score": 80.8
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_040",
+   "params": {
+    "shot_id": "shot_040",
+    "shot_type": "MLS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_041",
+   "params": {
+    "shot_id": "shot_041",
+    "shot_type": "LS",
+    "side": "left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 88.2
+   },
+   "after": {
+    "passed": true,
+    "score": 88.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_042",
+   "params": {
+    "shot_id": "shot_042",
+    "shot_type": "MS",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_043",
+   "params": {
+    "shot_id": "shot_043",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 51.6
+   },
+   "after": {
+    "passed": false,
+    "score": 51.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_044",
+   "params": {
+    "shot_id": "shot_044",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 58.9
+   },
+   "after": {
+    "passed": false,
+    "score": 58.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_045",
+   "params": {
+    "shot_id": "shot_045",
+    "shot_type": "MS",
+    "side": "front",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_046",
+   "params": {
+    "shot_id": "shot_046",
+    "shot_type": "CU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 90.6
+   },
+   "after": {
+    "passed": true,
+    "score": 90.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_047",
+   "params": {
+    "shot_id": "shot_047",
+    "shot_type": "CU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 73.9
+   },
+   "after": {
+    "passed": false,
+    "score": 73.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_048",
+   "params": {
+    "shot_id": "shot_048",
+    "shot_type": "MLS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_049",
+   "params": {
+    "shot_id": "shot_049",
+    "shot_type": "LS",
+    "side": "left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 89.2
+   },
+   "after": {
+    "passed": true,
+    "score": 89.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_050",
+   "params": {
+    "shot_id": "shot_050",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_051",
+   "params": {
+    "shot_id": "shot_051",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 48.7
+   },
+   "after": {
+    "passed": false,
+    "score": 48.7
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_052",
+   "params": {
+    "shot_id": "shot_052",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 71.5
+   },
+   "after": {
+    "passed": false,
+    "score": 71.5
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_053",
+   "params": {
+    "shot_id": "shot_053",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_054",
+   "params": {
+    "shot_id": "shot_054",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 80.3
+   },
+   "after": {
+    "passed": true,
+    "score": 80.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_055",
+   "params": {
+    "shot_id": "shot_055",
+    "shot_type": "CU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 92.0
+   },
+   "after": {
+    "passed": false,
+    "score": 92.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_056",
+   "params": {
+    "shot_id": "shot_056",
+    "shot_type": "MLS",
+    "side": "back_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 90.9
+   },
+   "after": {
+    "passed": true,
+    "score": 90.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_057",
+   "params": {
+    "shot_id": "shot_057",
+    "shot_type": "LS",
+    "side": "left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 72.9
+   },
+   "after": {
+    "passed": true,
+    "score": 72.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_058",
+   "params": {
+    "shot_id": "shot_058",
+    "shot_type": "MS",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_059",
+   "params": {
+    "shot_id": "shot_059",
+    "shot_type": "MCU",
+    "side": "front_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 80.4
+   },
+   "after": {
+    "passed": false,
+    "score": 80.4
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_060",
+   "params": {
+    "shot_id": "shot_060",
+    "shot_type": "MCU",
+    "side": "back_right",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 92.2
+   },
+   "after": {
+    "passed": true,
+    "score": 92.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_061",
+   "params": {
+    "shot_id": "shot_061",
+    "shot_type": "MS",
+    "side": "left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_062",
+   "params": {
+    "shot_id": "shot_062",
+    "shot_type": "CU",
+    "side": "front_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": true,
+    "score": 90.8
+   },
+   "after": {
+    "passed": true,
+    "score": 90.8
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_063",
+   "params": {
+    "shot_id": "shot_063",
+    "shot_type": "MLS",
+    "side": "back_left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 91.0
+   },
+   "after": {
+    "passed": false,
+    "score": 91.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_064",
+   "params": {
+    "shot_id": "shot_064",
+    "shot_type": "LS",
+    "side": "left",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "before": {
+    "passed": false,
+    "score": 66.2
+   },
+   "after": {
+    "passed": false,
+    "score": 66.2
+   },
+   "delta": 0.0
+  }
+ ]
+}

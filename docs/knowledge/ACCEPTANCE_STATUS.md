@@ -4965,3 +4965,56 @@ first 超限 repair at +367s      ← 此后每一次修复都被拒
 修复回路的**有效性**：long16 里 442 次工具调用（其中 `get_scene_state` 与
 `check_*` 占大头）换来 319 次 LLM 调用，终审仍只过 23——下一步该量"修复回合里
 **改动类**工具的比例与它的收益"，而不是继续加额度。
+
+## 八十、修复工具与主构建器**解出的不是同一台相机**（§79.3 的答案）
+
+先把 §79.3 记的那笔账量准（`docs/evidence/20261004-tool-vs-builder/repair_yield.py`
+读 long16 的 `audit_log.jsonl`）：**104 个修复回合 / 204 次工具调用**，其中
+**改动类只有 9 次**——`get_scene_state` 100、`search_knowledge` 45、
+`check_composition` 29、`check_axis` 21。而在**真的动了手**的 7 个回合里，
+复核结果 **0 个通过**；4 次 `setup_camera` 之后构图分一律掉到 **20.0**。
+
+于是问一句更基本的：**按计划自己的参数把同一镜的机位重设一次，本该什么都不变。**
+它变了，而且是系统性的（`work/_tool_vs_builder_probe.py`，四份 64 镜冻结工程，
+零 LLM）：
+
+| 工程 | 工具 | 构图变差 | 由通过变不通过 | 最差一镜 |
+|---|---|---|---|---|
+| long16 | `setup_camera` | **34 / 64** | **10** | `shot_027` 83.2 → 20.0 |
+| long16 | `reframe` | **9 / 64** | **3** | `shot_019` 91.9 → 57.1 |
+
+**根因**：工具层自己抄了一份解算。`setup_camera` 以前拼 `axis_dir/axis_side`
+直调 `place_camera_for_shot`，主构建走 `place_shot_camera`；两者差的正是
+§10.4 的视线留白、§六十九 的头顶留白、`spec.room` 的钳制、**逐镜**轴侧
+（顺序状态机 `_axis_sides_used`，它读的是全片一个常数）、时间点（先
+`frame_set` 到该镜首帧）以及 §3.6 的声明式运镜。`reframe` 是同一类：抬头写着
+"共用同一套参考系与同一套 side 解析"，代码写死 `side="front"` 并直调
+`solve_framing`。
+
+**修法**（一处入口、一份实现）：两个工具都走 `place_shot_camera`
+（`reframe` 传 `reuse=` 复用同一台相机与同一个对准 Empty）；新增
+`shot_builder.axis_for_shot` 让工具读构建器**当时用过**的那张轴侧表（轴还没
+确立的镜头另记在 `_axis_absent_shots`——把 `None` 塞进 `_axis_sides_used` 会把
+`rule_checker._axis_sides` 的 `int()` 打崩，这条踩过）；新增共用的
+`apply_declared_movements`（重建相机会连关键帧一起丢）；新增
+`release_shot_camera` 连相机**数据块**与对准 **Empty** 一起放掉（只删对象会留下
+同名残留，下一次建的相机只能叫 `….001`，而按名字查对准点的地方拿的还是旧的）。
+
+**修后**：long11/12/15/16 四份工程 × 两个工具 × 64 镜 = **512 次重设全部零差**
+（`after_*.json`）。
+
+**过程中被自己的测量抓住的一个错**（如实记）：把运镜抽成共用函数时，第一版在
+函数里 `get_context()` 取相机——而 `build_scene` 直到**收尾**才 `set_context`，
+构建期间那个全局上下文是**上一次**的场景（新检出上是 None）⇒ 整场 64 镜的运镜
+被静默跳过、相机 0 关键帧。抓它的是 `kf_probe.py`（数 `bpy.data.actions`），
+不是任何断言。现在 `camera=`/`target=` 是必传参数，有守门钉住。
+
+守门：`tests/test_repair_tool_matches_builder.py`（4 条源码级反漂移）＋
+`tools/blender_tests/test_phase4_repair.py::repair_tools_reproduce_the_builder`
+（运行时不变量：两个工具各跑一遍，位置/焦距/对准点/关键帧数/对象与数据块名必须
+逐字节一致，且 `reframe` 不许换对象）。证据
+`docs/evidence/20261004-tool-vs-builder/`。
+
+**仍未做**：这一轮**没有**重跑真模型——验的是**结构性不变量**，不主张
+"通过率因此变高"。修复回路里只读工具仍占 95%（195/204），"工具集与提示词该不该
+更硬地约束"是下一步。

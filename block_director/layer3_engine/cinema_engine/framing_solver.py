@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import Optional, Sequence
 
+import bpy
+
 from ...cinema.framing import ASPECT_16_9, SENSOR_WIDTH, FramingResult, solve_framing
 from ...utils.logger import get_logger
 from ...utils.threading_guard import main_thread_only
@@ -28,7 +30,8 @@ def place_camera_for_shot(shot_id: str,
                           make_scene_camera: bool = True,
                           direction: Optional[Sequence[float]] = None,
                           aim_offset_x: float = 0.0,
-                          aim_offset_y: float = 0.0):
+                          aim_offset_y: float = 0.0,
+                          reuse: Optional[CameraBundle] = None):
     """解算机位并创建相机。返回 ``(CameraBundle, FramingResult)``。
 
     ``direction`` 由 :mod:`block_director.cinema.station` 解算（双人镜头相对
@@ -36,6 +39,12 @@ def place_camera_for_shot(shot_id: str,
 
     ``aim_offset_x`` 由同一处解算（单主体镜头的视线留白，§10.4）：只把对准点
     横向挪到三分线，机位与焦距不动。
+
+    ``reuse``（可选）给一个**已有的** ``CameraBundle``：解算照旧，但把结果写到
+    那台相机与那个对准 Empty 上，不新建对象（`reframe` 的契约是"复用同一台
+    相机"）。它走的仍然是**这一份**解算——另写一条"只调取景"的捷径正是
+    `reframe` 曾经丢掉轴侧与留白的原因（2026-10-04 实测：long16 里 9 镜构图
+    更差、3 镜由通过变不通过）。
     """
     solution: FramingResult = solve_framing(
         subject_pos=subject_pos, facing=facing, shot_type=shot_type, side=side,
@@ -43,6 +52,20 @@ def place_camera_for_shot(shot_id: str,
         aim_offset_x=aim_offset_x, aim_offset_y=aim_offset_y)
     for warning in solution.warnings:
         log.warning("取景 %s: %s", shot_id, warning)
+
+    if reuse is not None:
+        bundle = reuse
+        bundle.camera.location = tuple(solution.position)
+        bundle.camera.data.lens = float(solution.lens)
+        bundle.lens = float(solution.lens)
+        if bundle.target is not None:
+            bundle.target.location = tuple(solution.target)
+        if make_scene_camera or bpy.context.scene.camera is None:
+            bpy.context.scene.camera = bundle.camera
+        bpy.context.view_layer.update()
+        bundle.camera["bd_shot_type"] = solution.shot_type
+        bundle.camera["bd_frame_height"] = solution.frame_height
+        return bundle, solution
 
     bundle: CameraBundle = create_camera(
         camera_id=shot_id, location=solution.position, look_at=solution.target,

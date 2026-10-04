@@ -114,6 +114,141 @@ def t_setup_camera_fixes_the_violation():
 
 
 # --------------------------------------------------------------------------- #
+# 2b. 不变量：修复工具解出的相机与主构建器**逐字节一致**
+# --------------------------------------------------------------------------- #
+def _camera_movement_plan():
+    """三镜夹具：**建立轴线的**双人镜（带运镜）／单人镜／双人镜（带运镜）。
+
+    三个位置分别盖住 `setup_camera` 以前走样的地方：轴线尚未确立的那一镜
+    （不能被"后来才确立的轴"镜像过去）、单主体（视线留白 ＋ 头顶留白）、
+    以及带声明式运镜的镜头（重建相机对象会把关键帧一起丢掉）。
+    """
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    first = ShotPlan.from_dict({
+        "shot_id": "shot_001", "order": 1, "intent": "建立场景与人物关系",
+        "shot_type": "MLS", "duration_frames": 96,
+        "characters": ["char_001", "char_002"],
+        "camera": {"side": "front_right", "lens": 35,
+                   "movements": [{"type": "dolly_in", "amount": 0.6,
+                                  "start_frame": 1, "end_frame": 60}]},
+    })
+    second = ShotPlan.from_dict({
+        "shot_id": "shot_002", "order": 2, "intent": "推进对话，给出反应",
+        "shot_type": "MCU", "duration_frames": 120,
+        "characters": ["char_002"],
+        "camera": {"side": "front_left", "lens": 50},
+    })
+    third = ShotPlan.from_dict({
+        "shot_id": "shot_003", "order": 3, "intent": "翻转关系",
+        "shot_type": "MS", "duration_frames": 96,
+        "characters": ["char_001", "char_002"],
+        "camera": {"side": "front", "lens": 40,
+                   "movements": [{"type": "track_right", "amount": 0.5,
+                                  "start_frame": 1, "end_frame": 48}]},
+    })
+    return Plan(shots=[first, second, third], scene_heading="INT. 咖啡馆 - 日")
+
+
+def _camera_snapshot(context, shot_id):
+    """这一镜相机的**可观测量**：位置/焦距/对准点/关键帧数/对象与数据块名。"""
+    from block_director.utils.blender_compat import action_fcurves
+
+    camera = context.cameras.get(shot_id)
+    constraint = camera.constraints[0] if camera.constraints else None
+    target = constraint.target if constraint is not None else None
+    curves = 0
+    if camera.animation_data and camera.animation_data.action:
+        curves = len(action_fcurves(camera.animation_data.action))
+    return {
+        "location": tuple(round(float(v), 6)
+                          for v in camera.matrix_world.translation),
+        "lens": round(float(camera.data.lens), 6),
+        "target": (tuple(round(float(v), 6)
+                         for v in target.matrix_world.translation)
+                   if target is not None else None),
+        "target_name": getattr(target, "name", None),
+        "fcurves": curves,
+        "camera_name": camera.name,
+        "data_name": camera.data.name,
+    }
+
+
+def t_repair_tools_reproduce_the_builder():
+    """**不变量**：按计划自己的参数调 `setup_camera` / `reframe`，结果必须与构建器一致。
+
+    判据就是"按原样重设一次不该改变任何东西"——这条如果红，说明修复工具与主
+    构建器解出的不是同一台相机，而修复回路会拿它去"修"已经合格的镜头。
+    实测依据（2026-10-04，四份 64 镜冻结工程）：`setup_camera` 修前 34 镜构图
+    更差、10 镜由通过变不通过（最长一跑"真的动了手"的 7 个修复回合 0 个通过）；
+    `reframe` 修前 9 镜更差、3 镜由通过变不通过。修后 256 镜**全部零差**。
+    """
+    fresh_scene()
+    build_scene(_camera_movement_plan())
+    context = get_context()
+    registry = ToolRegistry()
+    register_all_scene_tools(registry)
+    auditor = BpyShotAuditor()
+    scene = bpy.context.scene
+
+    def audit(shot_id):
+        start, _end = context.schedule.get(shot_id, (1, 1))
+        scene.frame_set(int(start))
+        bpy.context.view_layer.update()
+        result = auditor.audit(shot_id)
+        return {"passed": bool(result.passed), "score": result.score}
+
+    problems = []
+    evidence = {}
+    for tool in ("setup_camera", "reframe"):
+        for shot in context.plan.shots:
+            request = dict(shot.camera or {})
+            params = {"shot_id": shot.shot_id, "shot_type": str(shot.shot_type)}
+            if tool == "setup_camera":
+                params["side"] = str(request.get("side") or "front")
+            if request.get("lens"):
+                params["lens"] = request["lens"]
+            before = {"audit": audit(shot.shot_id),
+                      "camera": _camera_snapshot(context, shot.shot_id),
+                      "pointer": context.cameras[shot.shot_id].as_pointer()}
+            evidence.setdefault(tool, {})[shot.shot_id] = dict(
+                before["camera"], audit=before["audit"])
+            result = registry.execute(tool, params)
+            if not result.ok:
+                problems.append(f"{tool} {shot.shot_id}: 失败：{result.content}")
+                continue
+            after = {"audit": audit(shot.shot_id),
+                     "camera": _camera_snapshot(context, shot.shot_id),
+                     "pointer": context.cameras[shot.shot_id].as_pointer()}
+            if after["audit"] != before["audit"]:
+                problems.append(f"{tool} {shot.shot_id}: 审核结果变了 "
+                                f"{before['audit']} → {after['audit']}")
+            for key in ("location", "lens", "target", "target_name", "fcurves",
+                        "camera_name", "data_name"):
+                if after["camera"][key] != before["camera"][key]:
+                    problems.append(
+                        f"{tool} {shot.shot_id}.{key}: "
+                        f"{before['camera'][key]} → {after['camera'][key]}")
+            #: `reframe` 的契约是"相机对象未重建"：同一台对象必须还是同一台。
+            if tool == "reframe" and after["pointer"] != before["pointer"]:
+                problems.append(f"reframe {shot.shot_id}: 相机对象被重建了")
+
+    #: 轴线账本必须**覆盖每一镜**（`setup_camera` 靠它复现当时的侧别）——
+    #: 漏一镜就退化成"重新猜"，那正是把机位镜像到另一侧的入口。
+    used = set(getattr(context, "_axis_sides_used", None) or ())
+    absent = set(getattr(context, "_axis_absent_shots", None) or ())
+    for shot in context.plan.shots:
+        if shot.shot_id not in used | absent:
+            problems.append(f"{shot.shot_id}: 轴线账本里没有它（侧别会被重新猜）")
+
+    leftovers = sorted(data.name for data in bpy.data.cameras if "." in data.name)
+    if leftovers:
+        problems.append(f"相机数据块留下了重名残留：{leftovers}")
+
+    return {"ok": not problems, "problems": problems, "evidence": evidence}
+
+
+# --------------------------------------------------------------------------- #
 # 3. 移动角色会改变可见性（LLM 的手能改场景）
 # --------------------------------------------------------------------------- #
 def t_place_character_changes_visibility():
@@ -285,6 +420,7 @@ def main() -> int:
     capture_main_thread()
     check("auditor_reports_axis_violation", t_auditor_reports_axis_violation)
     check("setup_camera_fixes_the_violation", t_setup_camera_fixes_the_violation)
+    check("repair_tools_reproduce_the_builder", t_repair_tools_reproduce_the_builder)
     check("place_character_changes_visibility", t_place_character_changes_visibility)
     check("character_action_adds_keyframes", t_character_action_adds_keyframes)
     check("rule_r007_missing_character", t_rule_r007_missing_character)

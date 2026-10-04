@@ -1,0 +1,1456 @@
+{
+ "project": "docs/evidence/20261004_chunked_long16/project",
+ "tool": "reframe",
+ "shots": 64,
+ "moved_down": 0,
+ "passed_to_failed": 0,
+ "worst": [
+  {
+   "shot": "shot_001",
+   "params": {
+    "shot_id": "shot_001",
+    "shot_type": "LS",
+    "lens": 35
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_001 取景已调整：LS，位置 (3.399, -4.299, 0.911)，焦距 35mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 74.6
+   },
+   "after": {
+    "passed": false,
+    "score": 74.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_002",
+   "params": {
+    "shot_id": "shot_002",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_002 取景已调整：MS，位置 (0.186, -5.984, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_003",
+   "params": {
+    "shot_id": "shot_003",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_003 取景已调整：MS，位置 (1.6, -6.143, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 92.9
+   },
+   "after": {
+    "passed": true,
+    "score": 92.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_004",
+   "params": {
+    "shot_id": "shot_004",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_004 取景已调整：MCU，位置 (6.54, -8.475, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 87.5
+   },
+   "after": {
+    "passed": true,
+    "score": 87.5
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_005",
+   "params": {
+    "shot_id": "shot_005",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_005 取景已调整：MCU，位置 (-1.896, 0.749, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 82.0
+   },
+   "after": {
+    "passed": true,
+    "score": 82.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_006",
+   "params": {
+    "shot_id": "shot_006",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_006 取景已调整：MS，位置 (0.186, -5.984, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_007",
+   "params": {
+    "shot_id": "shot_007",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_007 取景已调整：CU，位置 (-1.617, 0.674, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 89.7
+   },
+   "after": {
+    "passed": true,
+    "score": 89.7
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_008",
+   "params": {
+    "shot_id": "shot_008",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_008 取景已调整：MS，位置 (1.637, -4.805, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 92.1
+   },
+   "after": {
+    "passed": true,
+    "score": 92.1
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_009",
+   "params": {
+    "shot_id": "shot_009",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_009 取景已调整：MS，位置 (0.186, -5.984, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_010",
+   "params": {
+    "shot_id": "shot_010",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_010 取景已调整：MCU，位置 (-1.896, 0.749, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 85.2
+   },
+   "after": {
+    "passed": true,
+    "score": 85.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_011",
+   "params": {
+    "shot_id": "shot_011",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_011 取景已调整：MCU，位置 (4.407, -7.873, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 65.6
+   },
+   "after": {
+    "passed": false,
+    "score": 65.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_012",
+   "params": {
+    "shot_id": "shot_012",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_012 取景已调整：MCU，位置 (-1.896, 0.749, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 90.2
+   },
+   "after": {
+    "passed": true,
+    "score": 90.2
+   },
+   "delta": 0.0
+  }
+ ],
+ "passed_to_failed_shots": [],
+ "rows": [
+  {
+   "shot": "shot_001",
+   "params": {
+    "shot_id": "shot_001",
+    "shot_type": "LS",
+    "lens": 35
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_001 取景已调整：LS，位置 (3.399, -4.299, 0.911)，焦距 35mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 74.6
+   },
+   "after": {
+    "passed": false,
+    "score": 74.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_002",
+   "params": {
+    "shot_id": "shot_002",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_002 取景已调整：MS，位置 (0.186, -5.984, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_003",
+   "params": {
+    "shot_id": "shot_003",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_003 取景已调整：MS，位置 (1.6, -6.143, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 92.9
+   },
+   "after": {
+    "passed": true,
+    "score": 92.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_004",
+   "params": {
+    "shot_id": "shot_004",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_004 取景已调整：MCU，位置 (6.54, -8.475, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 87.5
+   },
+   "after": {
+    "passed": true,
+    "score": 87.5
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_005",
+   "params": {
+    "shot_id": "shot_005",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_005 取景已调整：MCU，位置 (-1.896, 0.749, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 82.0
+   },
+   "after": {
+    "passed": true,
+    "score": 82.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_006",
+   "params": {
+    "shot_id": "shot_006",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_006 取景已调整：MS，位置 (0.186, -5.984, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_007",
+   "params": {
+    "shot_id": "shot_007",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_007 取景已调整：CU，位置 (-1.617, 0.674, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 89.7
+   },
+   "after": {
+    "passed": true,
+    "score": 89.7
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_008",
+   "params": {
+    "shot_id": "shot_008",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_008 取景已调整：MS，位置 (1.637, -4.805, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 92.1
+   },
+   "after": {
+    "passed": true,
+    "score": 92.1
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_009",
+   "params": {
+    "shot_id": "shot_009",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_009 取景已调整：MS，位置 (0.186, -5.984, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_010",
+   "params": {
+    "shot_id": "shot_010",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_010 取景已调整：MCU，位置 (-1.896, 0.749, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 85.2
+   },
+   "after": {
+    "passed": true,
+    "score": 85.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_011",
+   "params": {
+    "shot_id": "shot_011",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_011 取景已调整：MCU，位置 (4.407, -7.873, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 65.6
+   },
+   "after": {
+    "passed": false,
+    "score": 65.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_012",
+   "params": {
+    "shot_id": "shot_012",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_012 取景已调整：MCU，位置 (-1.896, 0.749, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 90.2
+   },
+   "after": {
+    "passed": true,
+    "score": 90.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_013",
+   "params": {
+    "shot_id": "shot_013",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_013 取景已调整：MS，位置 (1.609, -7.005, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_014",
+   "params": {
+    "shot_id": "shot_014",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_014 取景已调整：CU，位置 (5.753, -8.167, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 88.3
+   },
+   "after": {
+    "passed": true,
+    "score": 88.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_015",
+   "params": {
+    "shot_id": "shot_015",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_015 取景已调整：MS，位置 (-2.375, -3.275, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 66.2
+   },
+   "after": {
+    "passed": false,
+    "score": 66.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_016",
+   "params": {
+    "shot_id": "shot_016",
+    "shot_type": "MLS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_016 取景已调整：MLS，位置 (2.601, -11.201, 0.621)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 86.9
+   },
+   "after": {
+    "passed": true,
+    "score": 86.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_017",
+   "params": {
+    "shot_id": "shot_017",
+    "shot_type": "LS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_017 取景已调整：LS，位置 (-1.106, -0.905, 0.911)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 89.6
+   },
+   "after": {
+    "passed": true,
+    "score": 89.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_018",
+   "params": {
+    "shot_id": "shot_018",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_018 取景已调整：MS，位置 (1.715, -6.538, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_019",
+   "params": {
+    "shot_id": "shot_019",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_019 取景已调整：MCU，位置 (4.747, 2.047, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 91.9
+   },
+   "after": {
+    "passed": false,
+    "score": 91.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_020",
+   "params": {
+    "shot_id": "shot_020",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_020 取景已调整：MCU，位置 (6.54, -8.475, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 66.7
+   },
+   "after": {
+    "passed": false,
+    "score": 66.7
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_021",
+   "params": {
+    "shot_id": "shot_021",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_021 取景已调整：MS，位置 (0.522, -5.255, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_022",
+   "params": {
+    "shot_id": "shot_022",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_022 取景已调整：CU，位置 (4.542, 1.842, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 67.2
+   },
+   "after": {
+    "passed": false,
+    "score": 67.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_023",
+   "params": {
+    "shot_id": "shot_023",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_023 取景已调整：CU，位置 (5.514, -8.113, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 76.4
+   },
+   "after": {
+    "passed": true,
+    "score": 76.4
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_024",
+   "params": {
+    "shot_id": "shot_024",
+    "shot_type": "MLS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_024 取景已调整：MLS，位置 (-1.196, -6.329, 0.621)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_025",
+   "params": {
+    "shot_id": "shot_025",
+    "shot_type": "LS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_025 取景已调整：LS，位置 (-2.46, -6.247, 0.911)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 88.8
+   },
+   "after": {
+    "passed": true,
+    "score": 88.8
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_026",
+   "params": {
+    "shot_id": "shot_026",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_026 取景已调整：MS，位置 (0.522, -5.255, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_027",
+   "params": {
+    "shot_id": "shot_027",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_027 取景已调整：MCU，位置 (-1.805, -1.452, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 83.2
+   },
+   "after": {
+    "passed": true,
+    "score": 83.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_028",
+   "params": {
+    "shot_id": "shot_028",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_028 取景已调整：MCU，位置 (6.936, -8.4, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 85.3
+   },
+   "after": {
+    "passed": true,
+    "score": 85.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_029",
+   "params": {
+    "shot_id": "shot_029",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_029 取景已调整：MS，位置 (0.019, -5.868, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_030",
+   "params": {
+    "shot_id": "shot_030",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_030 取景已调整：CU，位置 (-1.574, -1.276, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 69.2
+   },
+   "after": {
+    "passed": false,
+    "score": 69.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_031",
+   "params": {
+    "shot_id": "shot_031",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_031 取景已调整：CU，位置 (6.863, -8.12, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 78.3
+   },
+   "after": {
+    "passed": true,
+    "score": 78.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_032",
+   "params": {
+    "shot_id": "shot_032",
+    "shot_type": "MLS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_032 取景已调整：MLS，位置 (0.622, -8.724, 0.621)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_033",
+   "params": {
+    "shot_id": "shot_033",
+    "shot_type": "LS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_033 取景已调整：LS，位置 (8.409, -13.999, 0.911)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 89.9
+   },
+   "after": {
+    "passed": true,
+    "score": 89.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_034",
+   "params": {
+    "shot_id": "shot_034",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_034 取景已调整：MS，位置 (1.452, -6.875, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_035",
+   "params": {
+    "shot_id": "shot_035",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_035 取景已调整：MCU，位置 (1.114, 2.694, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 74.1
+   },
+   "after": {
+    "passed": false,
+    "score": 74.1
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_036",
+   "params": {
+    "shot_id": "shot_036",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_036 取景已调整：MCU，位置 (5.251, -8.335, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 77.2
+   },
+   "after": {
+    "passed": true,
+    "score": 77.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_037",
+   "params": {
+    "shot_id": "shot_037",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_037 取景已调整：MS，位置 (1.713, -7.084, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_038",
+   "params": {
+    "shot_id": "shot_038",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_038 取景已调整：CU，位置 (1.486, 2.39, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 71.3
+   },
+   "after": {
+    "passed": false,
+    "score": 71.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_039",
+   "params": {
+    "shot_id": "shot_039",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_039 取景已调整：CU，位置 (7.207, -8.003, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 80.8
+   },
+   "after": {
+    "passed": true,
+    "score": 80.8
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_040",
+   "params": {
+    "shot_id": "shot_040",
+    "shot_type": "MLS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_040 取景已调整：MLS，位置 (-1.185, -7.424, 0.621)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_041",
+   "params": {
+    "shot_id": "shot_041",
+    "shot_type": "LS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_041 取景已调整：LS，位置 (-2.066, -8.263, 0.911)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 88.2
+   },
+   "after": {
+    "passed": true,
+    "score": 88.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_042",
+   "params": {
+    "shot_id": "shot_042",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_042 取景已调整：MS，位置 (-0.624, -4.56, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_043",
+   "params": {
+    "shot_id": "shot_043",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_043 取景已调整：MCU，位置 (3.739, 1.19, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 51.6
+   },
+   "after": {
+    "passed": false,
+    "score": 51.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_044",
+   "params": {
+    "shot_id": "shot_044",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_044 取景已调整：MCU，位置 (7.319, -8.27, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 58.9
+   },
+   "after": {
+    "passed": false,
+    "score": 58.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_045",
+   "params": {
+    "shot_id": "shot_045",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_045 取景已调整：MS，位置 (0.301, -6.047, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_046",
+   "params": {
+    "shot_id": "shot_046",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_046 取景已调整：CU，位置 (-1.119, 0.987, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 90.6
+   },
+   "after": {
+    "passed": true,
+    "score": 90.6
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_047",
+   "params": {
+    "shot_id": "shot_047",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_047 取景已调整：CU，位置 (8.484, -4.347, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 73.9
+   },
+   "after": {
+    "passed": false,
+    "score": 73.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_048",
+   "params": {
+    "shot_id": "shot_048",
+    "shot_type": "MLS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_048 取景已调整：MLS，位置 (0.844, -8.914, 0.621)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_049",
+   "params": {
+    "shot_id": "shot_049",
+    "shot_type": "LS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_049 取景已调整：LS，位置 (-2.247, -1.075, 0.911)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 89.2
+   },
+   "after": {
+    "passed": true,
+    "score": 89.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_050",
+   "params": {
+    "shot_id": "shot_050",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_050 取景已调整：MS，位置 (1.295, -6.751, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_051",
+   "params": {
+    "shot_id": "shot_051",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_051 取景已调整：MCU，位置 (2.747, 2.247, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 48.7
+   },
+   "after": {
+    "passed": false,
+    "score": 48.7
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_052",
+   "params": {
+    "shot_id": "shot_052",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_052 取景已调整：MCU，位置 (8.333, -5.595, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 71.5
+   },
+   "after": {
+    "passed": false,
+    "score": 71.5
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_053",
+   "params": {
+    "shot_id": "shot_053",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_053 取景已调整：MS，位置 (1.295, -6.751, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_054",
+   "params": {
+    "shot_id": "shot_054",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_054 取景已调整：MS，位置 (-3.428, -0.014, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 80.3
+   },
+   "after": {
+    "passed": true,
+    "score": 80.3
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_055",
+   "params": {
+    "shot_id": "shot_055",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_055 取景已调整：CU，位置 (8.05, -5.536, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 92.0
+   },
+   "after": {
+    "passed": false,
+    "score": 92.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_056",
+   "params": {
+    "shot_id": "shot_056",
+    "shot_type": "MLS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_056 取景已调整：MLS，位置 (-1.016, -3.631, 0.621)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 90.9
+   },
+   "after": {
+    "passed": true,
+    "score": 90.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_057",
+   "params": {
+    "shot_id": "shot_057",
+    "shot_type": "LS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_057 取景已调整：LS，位置 (-2.247, -1.075, 0.911)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 72.9
+   },
+   "after": {
+    "passed": true,
+    "score": 72.9
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_058",
+   "params": {
+    "shot_id": "shot_058",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_058 取景已调整：MS，位置 (1.29, -6.193, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_059",
+   "params": {
+    "shot_id": "shot_059",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_059 取景已调整：MCU，位置 (4.601, 2.291, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 80.4
+   },
+   "after": {
+    "passed": false,
+    "score": 80.4
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_060",
+   "params": {
+    "shot_id": "shot_060",
+    "shot_type": "MCU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_060 取景已调整：MCU，位置 (3.429, -3.74, 1.231)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 92.2
+   },
+   "after": {
+    "passed": true,
+    "score": 92.2
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_061",
+   "params": {
+    "shot_id": "shot_061",
+    "shot_type": "MS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_061 取景已调整：MS，位置 (2.957, -7.025, 0.95)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 20.0
+   },
+   "after": {
+    "passed": false,
+    "score": 20.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_062",
+   "params": {
+    "shot_id": "shot_062",
+    "shot_type": "CU",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_062 取景已调整：CU，位置 (5.573, -7.995, 1.278)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": true,
+    "score": 90.8
+   },
+   "after": {
+    "passed": true,
+    "score": 90.8
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_063",
+   "params": {
+    "shot_id": "shot_063",
+    "shot_type": "MLS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_063 取景已调整：MLS，位置 (-2.333, -4.279, 0.621)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 91.0
+   },
+   "after": {
+    "passed": false,
+    "score": 91.0
+   },
+   "delta": 0.0
+  },
+  {
+   "shot": "shot_064",
+   "params": {
+    "shot_id": "shot_064",
+    "shot_type": "LS",
+    "lens": 50
+   },
+   "tool_ok": true,
+   "tool_content": "<tool_observation>镜头 shot_064 取景已调整：LS，位置 (1.912, -10.941, 0.911)，焦距 50mm（相机对象未重建）</tool_observation>",
+   "before": {
+    "passed": false,
+    "score": 66.2
+   },
+   "after": {
+    "passed": false,
+    "score": 66.2
+   },
+   "delta": 0.0
+  }
+ ]
+}

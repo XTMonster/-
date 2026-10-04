@@ -53,7 +53,7 @@ from .collection_router import (
     purge_orphan_data,
 )
 from .scene_executor import build_crowd, build_environment, create_vfx
-from .scene_context import SceneContext, set_context
+from .scene_context import SceneContext, get_context, set_context
 
 log = get_logger("shot-builder")
 
@@ -177,7 +177,15 @@ def _axis_for_placement(context, plan, cast_map, characters, shot, live_side=Non
     退回"计划期近似"的那张表，这是给别处直接调用本函数时的兼容路径。
     """
     base = getattr(context, "axis", None)
+    #: 轴还没确立的镜头**也要留一条记录**：工具层重设同一镜的机位时必须复现
+    #: "当时就没有轴线可用"，否则会拿**后来才确立**的轴把相机镜像到另一侧
+    #: （实测 `shot_001`：位置 y 由 -4.30 翻成 +4.30、构图 74.6 → 20.0）。
+    #: 记在**单独一张集合**里而不是 `_axis_sides_used` 里塞 None——后者被
+    #: `rule_checker._axis_sides` 按 int 消费，塞 None 会直接把它打崩。
     if base is None:
+        absent = set(getattr(context, "_axis_absent_shots", None) or ())
+        absent.add(str(shot.shot_id))
+        context._axis_absent_shots = absent
         return None
     live = current_line(base, live_positions_by_label(characters))
     if live_side is None:
@@ -208,6 +216,35 @@ def _initial_cast_positions(context) -> Dict[str, Tuple[float, float, float]]:
         if name:
             initial[name] = location
     return initial
+
+
+def axis_for_shot(context, shot) -> Optional[Axis]:
+    """**这一镜此刻**该用的轴线：线取两人此刻连线，侧取顺序状态机记下的侧别。
+
+    这是主构建与工具层（`setup_camera`）**唯一的轴线入口**。两处各算一份必然
+    漂移，而且漂得不是一点：工具层以前读 `context.axis.established_side`（全片
+    一个常数），构建器读的是**逐镜**的 `_axis_sides_used`（换位之后会翻侧）——
+    于是"修复"会把机位摆回观众没看见过的那一侧。
+
+    状态机还没跑过（手工搭的场景、轴尚未确立）时返回 ``None``，由
+    `place_shot_camera` 走"相对焦点朝向"的同一兜底路径。
+    """
+    plan = getattr(context, "plan", None)
+    if plan is None or getattr(context, "axis", None) is None:
+        return None
+    cast_map = {member.id: member
+                for member in (getattr(getattr(context, "spec", None), "cast", None)
+                               or [])}
+    #: 构建这一镜时**有没有**轴、用的是哪一侧，两张表里都记着；照着复现，
+    #: 不重新猜（重新猜就会用"后来才确立的轴"把相机摆到观众没看见的一侧）。
+    if str(shot.shot_id) in set(getattr(context, "_axis_absent_shots", None) or ()):
+        return None
+    used = getattr(context, "_axis_sides_used", None)
+    if used is not None and str(shot.shot_id) in used:
+        return _axis_for_placement(context, plan, cast_map, context.characters,
+                                   shot, live_side=int(used[str(shot.shot_id)]))
+    return _axis_for_placement(context, plan, cast_map, context.characters, shot,
+                               live_side=None)
 
 
 def live_subject_entries(shot: ShotPlan, characters: Dict[str, Any]
@@ -245,13 +282,17 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
                       spec: Optional[SceneSpec] = None, *,
                       request: Optional[Dict[str, Any]] = None,
                       axis: Optional[Any] = None,
-                      entries: Optional[Sequence[Any]] = None):
+                      entries: Optional[Sequence[Any]] = None,
+                      reuse: Optional[Any] = None):
     """**唯一的机位解算入口**：主构建与单镜再生共用。
 
     v1.2 里 :mod:`shot_regenerator` 自己又写了一遍解算，而且写死
     ``side="front"``、丢掉 ``lens``——两条路径必然漂移。v1.3 收敛到这里，
     并让 ``side`` 经 :func:`cinema.station.camera_direction` 解析
     （双人镜头相对两人连线，而不是相对焦点主体的朝向）。
+
+    ``reuse`` 给一个已有的 ``CameraBundle`` 时，结果写到那台相机上而不新建对象
+    （`reframe` 用）。
     """
     resolved = dict(request if request is not None
                     else (getattr(shot, "camera", None) or {}))
@@ -291,13 +332,98 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
         shot_type=str(shot.shot_type), side=side,
         lens=resolved.get("lens"), room=(spec.room if spec else None),
         direction=direction, aim_offset_x=aim_offset,
-        aim_offset_y=aim_offset_y)
+        aim_offset_y=aim_offset_y, reuse=reuse)
     if aim_offset:
         axis_notes.append(
             f"按 §10.4 的视线留白把对准点横向偏移 {aim_offset:+.3f} 幅宽"
             f"（主体落到背向视线的那条三分线上）")
     solution.warnings.extend(axis_notes)
     return bundle, solution, frame
+
+
+def release_shot_camera(shot_id: str) -> None:
+    """彻底放掉某镜的相机**对象＋数据＋对准 Empty**。
+
+    只删相机对象会留下两样东西：孤立的相机**数据**与对准 **Empty**。它们都占着
+    `BD_Cam_<shot_id>` / `BD_CamTarget_<shot_id>` 这两个名字，于是下一次
+    `create_camera` 只能拿到 `…​.001`——而按名字找对准点的地方
+    （`_shot_target_object`、主构建的运镜段）拿到的还是**旧的那一只**。
+    实测（`work/_tool_delta_probe.py`）：同一镜重设一次机位就留下
+    `BD_Cam_shot_001.001` 与 `BD_CamTarget_shot_001.001`。
+    """
+    target = bpy.data.objects.get(f"BD_CamTarget_{shot_id}")
+    if target is not None:
+        bpy.data.objects.remove(target, do_unlink=True)
+    camera = bpy.data.objects.get(f"BD_Cam_{shot_id}")
+    if camera is not None:
+        data = camera.data
+        bpy.data.objects.remove(camera, do_unlink=True)
+        if data is not None and getattr(data, "users", 0) == 0:
+            bpy.data.cameras.remove(data)
+
+
+def apply_declared_movements(shot: ShotPlan, characters: Dict[str, Any],
+                             start: int, end: int, *, camera: Any = None,
+                             target: Any = None
+                             ) -> Tuple[int, int, List[str]]:
+    """把这一镜**声明的**运镜落到它自己的相机上（§3.6 声明式消费）。
+
+    主构建与 `setup_camera` 共用。理由与 `axis_for_shot` 同源：`setup_camera`
+    会**重建相机对象**，不重放运镜就等于把这个镜头的运动静默删掉——而构图门取
+    首/中/尾的**最小值**，运动一没，这个门的结论就跟着变（实测 `shot_055` 的
+    `dolly_out` 消失后 92.0 → 89.6）。
+
+    返回 ``(落地的段数, 关键帧数, 告警)``。
+
+    ``camera``/``target`` **必须由调用方给**：`build_scene` 直到收尾才
+    `set_context(context)`，所以构建期间 `get_context()` 拿到的是**上一次**
+    的场景（新检出上干脆是 None）——本函数第一版就踩了这个坑，于是整场
+    运镜被静默跳过（实测 `work/_kf_probe.py`：64 镜全部 0 关键帧）。
+    没给时才回退到全局上下文，那条路只留给"场景已经建好、正在跑工具"的场合。
+    """
+    context = get_context()
+    if camera is None:
+        camera = (context.cameras.get(shot.shot_id)
+                  if context is not None else None)
+    warnings: List[str] = []
+    if camera is None:
+        return 0, 0, [f"{shot.shot_id}: 没有相机，运镜声明已跳过"]
+    declared = [dict(item) for item in
+                (getattr(shot, "camera", None) or {}).get("movements", [])
+                if isinstance(item, dict)]
+    if not declared:
+        return 0, 0, []
+    if target is None:
+        target = bpy.data.objects.get(f"BD_CamTarget_{shot.shot_id}")
+    default_subject = (speaker_of(shot)
+                       or (shot.characters[0] if shot.characters else ""))
+    applied = 0
+    keyframes = 0
+    for raw in declared:
+        try:
+            move = movement_spec(raw, shot_start=start, shot_end=end,
+                                 default_subject=default_subject)
+        except ValueError as exc:
+            warnings.append(f"{shot.shot_id}: 运镜声明无效（{exc}），已跳过")
+            continue
+        subject = characters.get(str(move["subject"]))
+        if move["type"] in SUBJECT_TRACKING and subject is None:
+            warnings.append(f"{shot.shot_id}: {move['type']} 找不到被摄主体"
+                            f"（{move['subject'] or '未指定'}），已跳过")
+            continue
+        try:
+            report = apply_camera_movement(
+                camera, target, str(move["type"]), float(move["amount"]),
+                int(move["start_frame"]), int(move["end_frame"]),
+                subject=subject, seed=int(move["seed"]))
+        except ValueError as exc:
+            warnings.append(f"{shot.shot_id}: {exc}")
+            continue
+        applied += 1
+        keyframes += int(report["keyframes"])
+        log.info("%s: 运镜 %s（%s 帧）", shot.shot_id, move["type"],
+                 f"{move['start_frame']}-{move['end_frame']}")
+    return applied, keyframes, warnings
 
 
 def action_requests(shot: ShotPlan, shot_start: int,
@@ -440,7 +566,7 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
 
     ranges = shot_ranges(plan)
     motion_requests: Dict[str, List[ActionRequest]] = {}
-    movement_tasks: List[Tuple[str, int, int, List[Dict[str, Any]], str]] = []
+    movement_tasks: List[Tuple[str, int, int]] = []
     #: 第一趟只**排片**（帧区间、动作请求、运镜任务），不摆机位：机位必须等动作
     #: 烘焙完之后再按"这一镜首帧人在哪"来摆（v1.6，见 `live_subject_entries`）。
     planned: Dict[str, Dict[str, Any]] = {}
@@ -468,10 +594,9 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                           (getattr(shot, "camera", None) or {}).get("movements", [])
                           if isinstance(item, dict)]
         if declared_moves:
-            default_subject = (speaker_of(shot)
-                               or (shot.characters[0] if shot.characters else ""))
-            movement_tasks.append((shot.shot_id, start, end, declared_moves,
-                                   default_subject))
+            #: 只登记"这一镜要放运镜"；具体怎么放由 `apply_declared_movements`
+            #: 统一负责（与 `setup_camera` 共用），这里不再复制一份参数。
+            movement_tasks.append((shot.shot_id, start, end))
         planned[shot.shot_id] = {"start": start, "end": end,
                                  "warnings": planned_warnings,
                                  "requests": requests}
@@ -615,39 +740,19 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
         summary.cameras += 1
         summary.warnings.extend(shot_warnings)
 
-    for shot_id, start, end, declared_moves, default_subject in movement_tasks:
-        camera = context.cameras.get(shot_id)
-        target = bpy.data.objects.get(f"BD_CamTarget_{shot_id}")
-        if camera is None:
-            summary.warnings.append(f"{shot_id}: 没有相机，运镜声明已跳过")
+    for shot_id, start, end in movement_tasks:
+        #: 落地逻辑与 `setup_camera` **共用一份**（`apply_declared_movements`）：
+        #: 两处各写一遍，工具侧重设机位时就会把这镜的运动静默丢掉（见该函数抬头）。
+        shot = next((item for item in plan.shots if item.shot_id == shot_id), None)
+        if shot is None:
             continue
-        for raw in declared_moves:
-            try:
-                # 变量名不能叫 spec——那会盖住上面的 SceneSpec（函数后面还要用）
-                move = movement_spec(raw, shot_start=start, shot_end=end,
-                                     default_subject=default_subject)
-            except ValueError as exc:
-                summary.warnings.append(
-                    f"{shot_id}: 运镜声明无效（{exc}），已跳过")
-                continue
-            subject = characters.get(str(move["subject"]))
-            if move["type"] in SUBJECT_TRACKING and subject is None:
-                summary.warnings.append(
-                    f"{shot_id}: {move['type']} 找不到被摄主体"
-                    f"（{move['subject'] or '未指定'}），已跳过")
-                continue
-            try:
-                report = apply_camera_movement(
-                    camera, target, str(move["type"]), float(move["amount"]),
-                    int(move["start_frame"]), int(move["end_frame"]),
-                    subject=subject, seed=int(move["seed"]))
-            except ValueError as exc:
-                summary.warnings.append(f"{shot_id}: {exc}")
-                continue
-            summary.movements += 1
-            summary.keyframes += int(report["keyframes"])
-            log.info("%s: 运镜 %s（%s 帧）", shot_id, move["type"],
-                     f"{move['start_frame']}-{move['end_frame']}")
+        applied, keyframes, warnings = apply_declared_movements(
+            shot, characters, start, end,
+            camera=context.cameras.get(shot_id),
+            target=bpy.data.objects.get(f"BD_CamTarget_{shot_id}"))
+        summary.movements += applied
+        summary.keyframes += keyframes
+        summary.warnings.extend(warnings)
 
     # §3.6 群众：声明式代理，独立于 cast（不进角色面板、构图与场景状态）。
     if spec.crowd:
