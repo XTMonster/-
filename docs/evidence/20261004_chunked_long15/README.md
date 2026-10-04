@@ -57,5 +57,10 @@ python tools/knowledge/quality.py --run-id d4eccc5efc7b --json \
 * **E1 = 3/18 = 0.1667**（线 0.7），且判分样本 18 < §4.1b 下界 1200（差 1182 条）；
 * `project.bdproj` 落盘校验报 7 条（S3 动作重叠 6、S6 对白装不下 1）——`save_run_project`
   如实带回结论、文件照写；
-* `cases_backend` 实际走的 `hybrid`（LightRAG 不可用时的**允许**降级），
-  但 `cases_degraded=false`——这一处口径值得下一轮单独核。
+* `cases_backend` 实际走的 `hybrid` 且 `cases_degraded=false`——**这一条查清了、
+  不是缺陷**：本机 sidecar 是别人在 2026-10-03 18:51 起的，启动参数里就写着
+  `--cases-backend hybrid`（`tools/sidecar_server.py` 的 `--cases-backend` 默认才是
+  `lightrag`），于是 `cases_requested_backend` **如实地**是 `hybrid`、
+  `degraded=false`——trace 没在说假话。**偏离在部署侧**：v1.4 R30 规定 `hybrid` 只在
+  LightRAG 不可用时作降级，规范部署应当是 `--cases-backend lightrag` ＋ 自动降级留痕。
+  插件侧的降级路径已有守门（`tests/test_knowledge_trace.py` 的负例）。

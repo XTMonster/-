@@ -4813,7 +4813,11 @@ R001 warning 63 → **31**。
 1. **Q5 运行侧分母只有 9**：根因是 join 要求**逐字相等**，而 `q` 自己点名了被量的
    字段（`运镜=`）——`Q5_DECISION_v1.md` 的出路②（重标，别让 `q` 点名被量字段）仍待裁决；
 2. **E1 = 3/18 = 0.1667**（线 0.7），且判分样本 18 < §4.1b 下界 1200；
-3. `cases_backend` 实走 `hybrid`（LightRAG 不可用时的**允许**降级）但
-   `cases_degraded=false`——口径值得下一轮单独核。
+3. `cases_backend` 实走 `hybrid` 且 `cases_degraded=false`——**查清：不是缺陷**。
+   本机 sidecar 是别人在 2026-10-03 18:51 起的，启动参数里就写着
+   `--cases-backend hybrid`（`tools/sidecar_server.py` 的该参数默认是 `lightrag`），
+   所以 `cases_requested_backend` 如实是 `hybrid`、`degraded=false`，trace 没说假话。
+   **偏离在部署侧**：按 R30，`hybrid` 只该作"LightRAG 不可用"时的降级；规范部署是
+   `--cases-backend lightrag` ＋ 自动降级留痕（插件侧的降级路径有守门用例）。
 
 证据 `docs/evidence/20261004_chunked_long15/`。
