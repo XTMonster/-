@@ -5707,6 +5707,43 @@ A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **
   `tests/test_cases_corpus.py::test_the_gate_and_the_writer_share_one_predicate`；
 * manifest 要按**过滤后**集合重算 ⇒ `recount()`（`_case_domains` 是私有账、不进 manifest）。
 
+### 91.5 发货索引必须**能按产物自己记的参数复算**（会诊 D4，已修）
+
+并行审查 lane 实测：发货索引走闸门落地（`--require-clue` ＋ `--require-clue-keep`
+＋ `--max-cases 810`），而 `python -m tools.kb_fetch.build_cases --check` 用**默认参数**
+重算 ⇒ `cases_match: false`、exit 1——"这份产物是怎么来的"读不出来，那条检查
+等于空话。修法两条：
+
+1. manifest 新增 **`build_args`**（`input` / `max_cases` / `per_source` /
+   `require_clue` / `require_clue_keep` / `require_clue_after`），`--check` 在调用方
+   没给闸门参数时**以它为准**；`--check` 的输出也改成打印**闸门之后**的账
+   （原来打印闸门之前的 810，与产物对不上）；
+2. 闸门的两个输入**固定进仓库**：线索 `knowledge/cases/search_zh.part-000.jsonl`、
+   保护表 `knowledge/cases.protect_traces.jsonl`（213 条，`work/protect_traces.py`
+   生成）——原来指向 gitignore 的草稿区，换台机器就复算不了。
+
+守门 `tests/test_cases_corpus.py::test_the_shipped_manifest_records_how_to_rebuild_itself`
+（manifest 记了参数 ／ 两个输入在仓库里存在 ／ 保护表的 case_id 必须是**这份索引里的**、
+且 `clue_gate.protected` 与它逐条对上）。复算：`build_cases --check` 无参数 →
+`cases_match: true, manifest_match: true`（exit 0）；且带闸门重跑**逐字节幂等**
+（线索文件 sha `74dc7f504a20dea0` 前后不变）。
+
+### 91.6 并行审查 lane 另外三条 finding（**未修，如实挂着**）
+
+同一次审查还给了三条真问题，这一轮**没有**动它们（都属"改判据/改链"的独立批次）：
+
+* **D1 代际门选错键**：`tools/knowledge/quality.py` 的 E1 与 `shots.json` 代际都用
+  `manifest_fingerprint`，而它是**语料**指纹（`case_fingerprint(docs)`）——只换案例
+  集合它**不会红**（实测 `cases_digest` 由 `e1148200…` 变 `227869414e0e014b…` 而
+  `fingerprint` 仍是 `69791dbacd…`）。这正是 §24.1"过期证据被当成现行证据"的形状。
+* **D2 读线索不看生成代际**：`read_search_zh` 只校验 `cases_sha256`，每行都写着的
+  `prompt_sha256` **没有读者**（实测 HEAD 的 731 行全是 `glm-4.7`/`c2f49178…`，
+  而生成器已是 `glm-5.3`/`36069623…`）。现在发货的那份已同代，
+  **但这枚守门仍缺**——下次改提示词会静默重演。
+* **D3 链不能把结果归因到一棵树**：`tools/run_tests.ps1` 只记 spec/golden 摘要，
+  不记 HEAD 与工作区脏摘要；实测并发写入期间链第 2 步红，而链自己说不出"那是中间态"。
+* **D5（口径，需人裁）**：`E1_SAMPLE_FLOOR = 1200` 只报不管——192 条样本也能判 pass。
+
 ## 九十二、把"会诊"从契约文本变成**自动触发**（hook）
 
 用户裁决（2026-10-05）："**hook 的会诊制度要自动触发，特别是分析问题与遇到难题时**"。

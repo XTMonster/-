@@ -688,3 +688,36 @@ def test_the_clue_shards_round_trip_through_the_consumer(tmp_path):
     (tmp_path / "knowledge2" / "cases.jsonl").write_text(joined_text, encoding="utf-8")
     legacy_digest = ZH.cases_digest(tmp_path / "knowledge2" / "cases.jsonl")
     assert legacy_digest == C.cases_digest(C.case_paths(tmp_path / "knowledge2"))
+
+
+def test_the_shipped_manifest_records_how_to_rebuild_itself():
+    """`--check` 必须能**按产物自己记的参数**复算（会诊 D4）。
+
+    现场（2026-10-05）：发货索引是走闸门落地的（`--require-clue` ＋
+    `--require-clue-keep` ＋ `--max-cases 810`），而 `--check` 原来只按**命令行**
+    重算 ⇒ 默认参数一跑就是另一份索引（实测 `cases_match: false`、exit 1）。
+    "这份产物是怎么来的"必须能从产物本身读出来，否则那条检查只是一句空话。
+
+    判据分三段：① manifest 记了 `build_args`；② 闸门那两个输入**在仓库里存在**
+    （不能指向 gitignore 的草稿区，否则换台机器就复算不了）；③ 保护表里的
+    case_id 必须是**这份索引里的**（点错表等于没设保护带）。
+    """
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    args = manifest.get("build_args")
+    assert args, "manifest 没记 build_args：`--check` 只能靠命令行猜"
+    assert args["max_cases"] == 810 and args["require_clue"], args
+
+    root = ROOT
+    clues = root / args["require_clue"]
+    protect = root / args["require_clue_keep"]
+    assert clues.is_file(), f"线索输入不在仓库里：{clues}"
+    assert protect.is_file(), f"保护表不在仓库里：{protect}"
+
+    live = {str(case.case_id) for case in case_index.read_cases(CASES_PATH)}
+    protected = {str(row.get("case_id")) for row in common.read_jsonl(protect)}
+    assert protected, "保护表是空的"
+    assert protected <= live, (
+        f"保护表里有 {len(protected - live)} 个 case_id 不在发货索引里——保护带点错了表"
+    )
+    #: 保护带的意义是**来源痕迹**：每个这样的来源至少留一条。
+    assert manifest["clue_gate"]["protected"] == len(protected)

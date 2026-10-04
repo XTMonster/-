@@ -313,7 +313,7 @@ Q4_pre、E3、E3_cases 全 pass；**Q5 pass**（运行侧读本代超图长跑 l
 `glm-5.3`，§七十八 的额度阻塞已解），`E2` 是诊断量。**§九十一 同时记了一个反例**：
 把语料扩到 1097 条那一版覆盖升到 59.9%、结构门全绿，E1 却掉到 **0.0469**——
 覆盖门是行数占比、不是命中率，**选型必须逐臂跑 E1**。
-`python -m pytest` **2040 passed / 1 skipped**（主树；唯一那条 skip 是
+`python -m pytest` **2041 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
 `tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
@@ -322,8 +322,8 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261005-003156/`（探针 32 支全过、`python -m pytest`
-2040 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
+且 pass。证据 `docs/evidence/20261005-005334/`（探针 32 支全过、`python -m pytest`
+2041 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
 §三十五…§九十二 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；

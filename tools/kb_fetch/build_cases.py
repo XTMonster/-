@@ -1112,12 +1112,49 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             protect_ids=protect_ids)
         report = {**recount(cases, report),
                   "clue_gate_dropped": len(dropped_ids), "clue_gate": gate}
+    #: **生效参数落盘**。为什么必须记（2026-10-05 的会诊 D4）：发货索引是走闸门落地的
+    #: （`--require-clue` ＋ `--require-clue-keep` ＋ `--max-cases 810`），
+    #: 而 `--check` 原来只按**命令行**重算——默认参数一跑就是另一份索引
+    #: （实测 `cases_match: false`）。"这份产物是怎么来的"必须能从产物本身读出来，
+    #: 否则 `--check` 只是一句空话。输入路径按**仓库相对**记（发货的那份保护表与线索
+    #: 都在 `knowledge/` 里，不在 gitignore 的草稿区）。
+    build_args: Dict[str, Any] = {
+        "input": str(source),
+        "max_cases": int(args.max_cases),
+        "per_source": int(args.per_source),
+        "require_clue": str(args.require_clue or ""),
+        "require_clue_keep": str(args.require_clue_keep or ""),
+        "require_clue_after": int(args.require_clue_after),
+    }
+    if args.require_clue:
+        report = {**report, "build_args": build_args}
     verdict = evaluate(cases, report)
     payload = {"cases": len(cases), "rejects": len(rejected),
                "per_type": report["per_type"], "per_domain": report["per_domain"],
                "passed": verdict["passed"], "problems": verdict["problems"]}
 
     if args.check:
+        #: 调用方没给闸门参数时，**以 manifest 记的为准**——否则 `--check` 会拿
+        #: 一份"另一代"的索引去比，然后报一个与产物无关的 false。
+        if not args.require_clue and manifest_path.is_file():
+            recorded = (json.loads(manifest_path.read_text(encoding="utf-8"))
+                        .get("build_args") or {})
+            if recorded.get("require_clue"):
+                cases, _dropped, gate = apply_clue_gate(
+                    cases, pathlib.Path(recorded["require_clue"]),
+                    after=int(recorded.get("require_clue_after") or 0),
+                    protect_ids=[str(row.get("case_id")) for row in
+                                 common.read_jsonl(pathlib.Path(
+                                     recorded["require_clue_keep"]))]
+                    if recorded.get("require_clue_keep") else [])
+                report = {**recount(cases, report),
+                          "clue_gate_dropped": len(_dropped), "clue_gate": gate}
+                verdict = evaluate(cases, report)
+                payload.update({"cases": len(cases),
+                                "per_type": report["per_type"],
+                                "per_domain": report["per_domain"],
+                                "passed": verdict["passed"],
+                                "problems": verdict["problems"]})
         target = single if single is not None else out_dir
         current = [row.to_dict() for row in
                    block_cases.read_cases(target)] if single is None else \

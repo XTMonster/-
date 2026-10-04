@@ -367,6 +367,14 @@
     "kept": 500,
     "dropped": 310
   },
+  "build_args": {
+    "input": "E:\\白模预演codex\\work\\licensed.jsonl",
+    "max_cases": 810,
+    "per_source": 40,
+    "require_clue": "knowledge/cases/search_zh.part-000.jsonl",
+    "require_clue_keep": "knowledge/cases.protect_traces.jsonl",
+    "require_clue_after": 0
+  },
   "shards": [
     {
       "name": "cases/part-000.jsonl",
@@ -378,11 +386,11 @@
   "size_gate": {
     "sizes": {
       "part-000.jsonl": 307835,
-      "cases.manifest.json": 9954,
+      "cases.manifest.json": 10239,
       "search_zh.part-000.jsonl": 141074
     },
     "oversize": {},
-    "total_bytes": 458863,
+    "total_bytes": 459148,
     "total_gate": 20971520,
     "passed": true
   },
