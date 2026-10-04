@@ -4859,3 +4859,34 @@ R001 warning 63 → **31**。
 * **下一刀的形状**：换参照系之前，先给"锚口径下多报的那些镜头"找一条**独立**的
   画面判据（`_screen_polarity_flip` 之类的投影量），证实它们是真的——否则就是把
   噪声换成另一种噪声。
+
+## 七十八、E1 的样本扩张**被 GLM 余额挡住**（外部阻塞，附原始错误）
+
+E1 记为 fail（3 对 18，线 0.7）时，代码自己也标了"判分样本 18 < §4.1b 下界 1200，
+差 1182 条"。这一轮想把它**按同一口径扩张**：E1 的分母是"这一跑**实际返回**的案例"，
+而 long15 有 **63 次逐镜检索**、每次返回 3 条——旧评审只覆盖了其中 **6 个查询**，
+所以用仓库自带的 `tools/knowledge/e1_panel.py`（同一套跨族面板、同一提示、同一
+`top_k`）把 **64 镜的查询全部**跑一遍，样本量应当从 18 涨到约 190。
+
+**跑不动**：面板的第二个族（`glm-4.7`）现在**没有额度**——
+
+```
+python tools/knowledge/e1_panel.py --project docs/evidence/20261004_chunked_long15/project/project.bdproj \
+    --out docs/evidence/20261004_chunked_long15/e1_reviews.jsonl --top-k 3 --limit 0
+  → LLMError: glm 调用失败：HTTP 429:
+    {"error":{"code":"1113","message":"余额不足或无可用资源包,请充值。"}}
+```
+
+（同一条 key 今天早些时候还能跑 glm-5.3 的会诊；现在 429 是**账户侧**的，
+`tools/kb_fetch/llm.py` 的客户端按 3 次重试、每次最长 120 s 退避，于是 64 个查询
+会拖成数小时——进程已手动停下，不留半成品文件。）
+
+**这不是判据问题，也不是代码问题**：面板必须**跨族**（`deepseek` ＋ `glm`），
+拿单族凑一个"面板"就等于换掉判据，属禁止的降级。**需要用户侧充值**（与
+`docs/knowledge/GLM53_CONSULT.md` 里那条"给 GLM 充值"同类）。
+
+未受影响的替代口径（**不替代 E1**，只是同期可复算的对照）：
+`reviews_run1.jsonl` 那次独立运行的 18 条同样是 3 对 18、命中的是**同样三条**
+（`case_what-is-a-steadicam-shot_005`、`case_what-is-an-eyeline-match_008`、
+`case_what-is-an-eyeline-match_023`）；`en_control.jsonl` 的同语言对照是 0 对 18。
+三条都在 `docs/evidence/20261003-e1-zh/README.md` 里。
