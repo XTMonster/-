@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import copy
 import queue
 import threading
 import time
@@ -309,6 +310,12 @@ class PrevisDriver:
         #: 这次尝试可用的工具 schema（延续轮必须与原轮**同一套**，
         #: 包括"纯时间轴审计只给 emit_shot_draft"那条收窄）。
         self._repair_tools: List[Dict[str, Any]] = []
+        #: 逐镜的**修复前基线**（`{shot_id: {"rules": frozenset, "plan": Plan}}`）：
+        #: 用来判"这次修复有没有把片子改坏"。见 `_rollback_repair_if_worse`。
+        self._repair_baseline: Dict[str, Dict[str, Any]] = {}
+        #: 刚回滚过：下一次审核事件要标 `restored: true`（只影响那一条事件）。
+        self._just_rolled_back: bool = False
+        self.rollback_events: List[Dict[str, Any]] = []
 
     # ------------------------------------------------------------ 对外接口
     def add_observer(self, observer: Callable[[DriverEvent], None]) -> None:
@@ -1192,7 +1199,57 @@ class PrevisDriver:
                 return DriverState.CHECKING
         return DriverState.FINISHING
 
-    def _audit_shot(self, shot_id: str, *, degraded: bool = False
+    def _rollback_repair_if_worse(self, shot_id: str,
+                                  result: AuditResult) -> bool:
+        """这次修复**把片子改坏了**吗？坏就把计划与场景退回修复前的基线。
+
+        现场（2026-10-04，真跑复算）：long16 有 **12** 镜、long15 有 **4** 镜在修复
+        之后**多出**了原本没有的违规（典型：为了让构图合格去挪机位，顺手把 R001
+        轴线踩了）。long18 里"构图触底（≤20.0）"的镜头由 8 涨到 16。系统此前对
+        这种退化**没有任何动作**——`repair_applied` 照写，改坏的那一版留在交付里。
+
+        判据刻意取**严格变多**（`new - baseline` 非空）而不是"没变好"：
+        - 清掉一条规则 ⇒ 改善，留；
+        - 规则集不变 ⇒ 修没修成是另一回事（`shot_degraded` 会记账），不回滚；
+        - **多出一条** ⇒ 这次修复引入了观众看得见的新毛病 ⇒ 回滚。
+
+        回滚用**已有**的机制，不新造一套：计划换成基线快照，然后走"计划变了 ⇒ 重建"
+        那条现成通路（`_needs_rebuild` ＋ `_rebuild_in_place`），场景由构建器按计划
+        重建（bpy 侧一次，**不花 token**）。审核照旧在重建后跑，那条事件带
+        `restored: true`，账上分得清"审的是哪一版"。
+        """
+        shot_id = str(shot_id)
+        baseline = self._repair_baseline.get(shot_id)
+        if baseline is None or self.plan is None or self.builder is None:
+            return False
+        if self._repair_attempts <= 0:
+            #: 还没修过 —— 这是**首次**审计，没有"改坏"可言。
+            return False
+        after = frozenset(str(item.rule) for item in (result.errors or []))
+        introduced = sorted(after - frozenset(baseline["rules"]))
+        if not introduced:
+            return False
+        self.plan = copy.deepcopy(baseline["plan"])
+        #: 回滚即认输：这一镜不再修（否则下一次修复又会踩同一个坑，白烧回合）。
+        self._repair_attempts = int(self.limits.max_repairs_per_shot)
+        event = {"shot_id": shot_id, "before": sorted(baseline["rules"]),
+                 "after": sorted(after), "introduced": introduced}
+        self.rollback_events.append(event)
+        self.audit.log(
+            "repair_rolled_back",
+            f"{shot_id} 的修复引入了新的违规 {introduced}，已回滚到修复前",
+            level="warning", shot=shot_id, before=event["before"],
+            after=event["after"], introduced=introduced)
+        self._emit("repair_rolled_back",
+                   f"{shot_id} 修复回滚（引入 {introduced}）", shot=shot_id)
+        self._just_rolled_back = True
+        self._needs_rebuild = True
+        self._rebuild_in_place = True
+        self._transition(DriverState.BUILDING)
+        return True
+
+    def _audit_shot(self, shot_id: str, *, degraded: bool = False,
+                    restored: bool = False
                     ) -> Optional[AuditResult]:
         """跑一次审核并把结论**逐字**记进 `audit_log.jsonl`（零 LLM、零工具）。
 
@@ -1232,6 +1289,7 @@ class PrevisDriver:
                        findings=findings,
                        composition_score=result.score,
                        composition_threshold=threshold,
+                       **({"restored": True} if restored else {}),
                        **({"degraded": True} if degraded else {}))
         self._emit("shot_audit",
                    f"{shot_id} {'通过' if result.passed else '未通过'}",
@@ -1245,9 +1303,13 @@ class PrevisDriver:
             return
         shot_id = self._shot_queue[0]
         self._current_shot_id = shot_id
-        result = self._audit_shot(shot_id)
+        restored = self._just_rolled_back
+        self._just_rolled_back = False
+        result = self._audit_shot(shot_id, restored=restored)
         if result is None:
             self._advance_shot()
+            return
+        if self._rollback_repair_if_worse(shot_id, result):
             return
         self._record_repair_verification(shot_id, result)
 
@@ -1296,7 +1358,11 @@ class PrevisDriver:
 
     def _advance_shot(self) -> None:
         if self._shot_queue:
-            self._finished_shots.append(self._shot_queue.pop(0))
+            done = self._shot_queue.pop(0)
+            #: 这一镜结束了：它的修复基线（含一份计划快照）不再需要，
+            #: 留着只会让 64 镜的跑里堆 64 份计划副本。
+            self._repair_baseline.pop(str(done), None)
+            self._finished_shots.append(done)
         self._repair_attempts = 0
         self._repair_turns = 0
         self.repair_messages = []
@@ -1509,6 +1575,15 @@ class PrevisDriver:
         self._pending_audit = None
         # v1.4 §3.3：记下这条留痕的"规则 + 修前分"，等复核后再补 after_score。
         rules = sorted({str(item.rule) for item in audit.errors}) or ["COMPOSITION"]
+        #: **修复前基线**：只在这一镜的**第一次**修复前拍（`deepcopy` 计划 + 红着的
+        #: 规则集）。修完如果**多出**了新规则，就说明这次修复把片子改坏了，
+        #: `_rollback_repair_if_worse` 会把计划与场景一起退回这个基线。
+        shot_id = str(self._current_shot_id)
+        if shot_id and shot_id not in self._repair_baseline and self.plan is not None:
+            self._repair_baseline[shot_id] = {
+                "rules": frozenset(str(item.rule) for item in audit.errors),
+                "plan": copy.deepcopy(self.plan),
+            }
         self._repair_rule = "/".join(rules)
         self._repair_before_score = getattr(audit, "score", None)
         self._repair_tools_ok = 0
