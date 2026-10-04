@@ -338,6 +338,83 @@ def drift_is_bridged(angle_deg: float, visible_deg: float, neutral: bool) -> boo
     return visible_deg >= max(0.0, angle_deg - AXIS_DRIFT_DEG)
 
 
+def _unit(a: Sequence[float], b: Sequence[float]) -> Tuple[float, float]:
+    """由两点得到单位方向；退化（长度≈0）返回 `(0, 0)`。"""
+    dx = float(b[0]) - float(a[0])
+    dy = float(b[1]) - float(a[1])
+    norm = math.hypot(dx, dy)
+    if norm < EPS:
+        return (0.0, 0.0)
+    return (dx / norm, dy / norm)
+
+
+def _angle_between(u: Tuple[float, float], v: Tuple[float, float]) -> float:
+    cosine = max(-1.0, min(1.0, u[0] * v[0] + u[1] * v[1]))
+    return math.degrees(math.acos(cosine))
+
+
+def drift_report(axis: Axis, plan,
+                 initial: Dict[str, Sequence[float]],
+                 neutral: Optional[Dict[str, bool]] = None,
+                 threshold: float = AXIS_DRIFT_DEG
+                 ) -> Dict[str, Dict[str, Any]]:
+    """逐镜：**相对上一个"已交代的锚"**的漂移，以及自那个锚以来的可见旋转累计。
+
+    为什么要换参照系（会诊 A2 给的"长期形状"，2026-10-04 实测落地）：原来的判据量的是
+    "**规范首镜线** vs 当前派生线"。一趟 64 镜真跑里，角色在中段把整场挪到布景另一处
+    之后，**后面每一镜都**拿着那条首镜线比（long15 实测：31 条"轴线被重建（合法）"
+    告警 + 25 条越轴错误），可那些镜头其实早就被一次**看得见的**重建交代过去了。
+    正确的记账是：重建一旦被交代，就**从那一镜重新起锚**，之后的漂移相对新锚来量。
+
+    规则：
+
+    * `anchor` 初值 = 规范首镜线的方向；
+    * 逐镜 `angle` = 锚方向与**这一镜开始时**两人连线方向的夹角；
+    * `bridged` = 本镜机位中性（§6.2 的桥梁，逐镜成立）**或**自锚以来"看得见的旋转
+      累计"覆盖了超阈值的漂移（`drift_is_bridged` 的记账）；
+    * `angle ≥ threshold` 且 `bridged` ⇒ **这一镜就是新锚**（记 `acknowledged`），
+      可见旋转累计清零；不算交代的话什么都不动（漂移继续相对老锚累积）。
+
+    与机位无关的部分全在这里（纯函数）；`neutral` 由规则侧用**已经建好的相机**算好
+    传进来——那是可观测量，但需要 bpy。
+    """
+    left, right = axis.left_label, axis.right_label
+    if not left or not right or axis.direction == (0.0, 0.0):
+        return {}
+    spans = pair_spans(axis, plan, initial)
+    flags = dict(neutral or {})
+    anchor = axis.direction
+    visible_since = 0.0
+    out: Dict[str, Dict[str, Any]] = {}
+    for shot in getattr(plan, "shots", []) or []:
+        shot_id = str(shot.shot_id)
+        span = spans.get(shot_id)
+        if span is None:
+            continue
+        a_start, b_start, a_end, b_end = span
+        start_dir = _unit(a_start, b_start)
+        if start_dir == (0.0, 0.0):
+            continue
+        angle = _angle_between(anchor, start_dir)
+        bridged = drift_is_bridged(angle, visible_since,
+                                   bool(flags.get(shot_id, False)))
+        both = len([cid for cid in (shot.characters or [])
+                    if str(cid) in (left, right)]) >= 2
+        end_dir = _unit(a_end, b_end)
+        rotation = (_angle_between(start_dir, end_dir)
+                    if both and end_dir != (0.0, 0.0) else 0.0)
+        out[shot_id] = {"angle": angle, "visible_since": visible_since,
+                        "bridged": bridged, "acknowledged": False,
+                        "rotation": rotation}
+        if angle >= threshold and bridged:
+            #: 这次重建被交代过去了 ⇒ **重新起锚**，之后的漂移相对它量。
+            anchor = start_dir
+            visible_since = 0.0
+            out[shot_id]["acknowledged"] = True
+        visible_since += rotation
+    return out
+
+
 def current_line(axis: Axis, positions: Dict[str, Sequence[float]]) -> Axis:
     """把轴线的**线**更新到两人**此刻**的连线；侧别（`established_side`）继承。
 

@@ -303,10 +303,10 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-04 08:2x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-04 09:0x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
 ——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
-`python -m pytest` **1984 passed / 1 skipped**（主树；唯一那条 skip 是
+`python -m pytest` **1987 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
 `tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
@@ -315,9 +315,9 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-082040/`（探针 32 支全过、`python -m pytest`
-1984 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§七十六 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增十九节：
+且 pass。证据 `docs/evidence/20261004-090747/`（探针 32 支全过、`python -m pytest`
+1987 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§七十七 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对
@@ -403,7 +403,14 @@ E2 恒 0。两条样例改为请求 `hypergraph`（不可用时由检索器自�
 （线 0.80，`channel: audit`），E2 也第一次非零（六十四镜里四镜取了经验/案例层的
 运镜）。判据、join 口径、门限**一个字没动**——变的是"运行期到底发过什么"第一次
 有真值。长跑方差很大，**别拿 long14 与 long15 的逐镜通过互比**。证据
-`docs/evidence/20261004_chunked_long15/`。**
+`docs/evidence/20261004_chunked_long15/`。§七十七 **轴线漂移的参照系**：会诊给的
+"自上次已交代状态以来"实现成 `cinema/axis.drift_report`（纯函数、3 条守门：看得见的
+重建**重新起锚**、看不见的继续相对老锚累计、中性机位自己起锚），但接到规则侧后
+三份冻结工程的 R001 由三条数变成 **33、41、26**、逐镜通过由三条数变成 **22、9、12**
+（long9/long11/long12 的顺序），
+而**没有任何独立判据**证实多出来的是真越轴——按 §七十三 的同一条纪律**回退**
+（判据一个字没变，积木留下）。下一刀：先给"锚口径多报的镜头"找一条独立的画面判据。
+**
 
 本轮把两条"§4.1b 写了、链上没有执行者"的判据补成了真的：**Q3 的负样本下界**
 `max(50, 0.25×query 数)`（在此之前"只写 1 条负样本"能让 0% 恒真地通过）与

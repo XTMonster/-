@@ -27,6 +27,7 @@ from block_director.cinema.axis import (  # noqa: E402
     camera_side_of,
     crossing_events,
     drift_is_bridged,
+    drift_report,
     pair_spans,
 )
 from block_director.contracts.plan import Plan, ShotPlan  # noqa: E402
@@ -230,3 +231,49 @@ def test_the_state_machine_plumbs_the_cameras_through():
         "shot_001": -1, "shot_002": -1, "shot_003": -1}     # 近似：50° < 90° 不翻
     assert axis_state(AXIS, plan, INITIAL, {"shot_002": CAMERA_30}) == {
         "shot_001": -1, "shot_002": -1, "shot_003": 1}      # 精确：扫过机位 ⇒ 翻
+
+
+def test_a_visible_rebuild_re_anchors_the_drift():
+    """**一次被交代过去的重建要从那一镜重新起锚**（`drift_report` 的长期形状）。
+
+    现场（2026-10-04，long15 六十四镜真跑）：角色在中段把整场挪到布景另一处之后，
+    后面每一镜都还在拿**首镜那条线**比——31 条"轴线被重建（合法）"告警 + 25 条越轴
+    错误挂在早就交代过的镜头上。这里钉住新口径：第 2 镜两人同框走过去（旋转 147°、
+    看得见），第 3 镜据此**起锚**，第 4 镜的漂移相对新锚 ⇒ 接近 0。
+    """
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲", "乙"), FLIP),
+                 _shot(3, ("甲", "乙")),
+                 _shot(4, ("甲", "乙")))
+    report = drift_report(AXIS, plan, INITIAL)
+    assert report["shot_002"]["angle"] < 1.0            # 旋转发生在这一镜里
+    assert round(report["shot_003"]["angle"]) == 147    # 镜开始时已经是新线
+    assert report["shot_003"]["bridged"] is True        # 看得见的旋转累计覆盖得住
+    assert report["shot_003"]["acknowledged"] is True   # ⇒ 这一镜重新起锚
+    assert report["shot_004"]["angle"] < 1.0            # 相对**新**锚，不再累计
+
+
+def test_an_unseen_rebuild_keeps_accruing_against_the_old_anchor():
+    """看不见的重建**不许**起锚：漂移继续相对老锚累计（这是越轴的定义）。"""
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲",), FLIP),               # 只拍甲：换位看不见
+                 _shot(3, ("甲", "乙")),
+                 _shot(4, ("甲", "乙")))
+    report = drift_report(AXIS, plan, INITIAL)
+    assert round(report["shot_003"]["angle"]) == 147
+    assert report["shot_003"]["visible_since"] == 0.0
+    assert report["shot_003"]["bridged"] is False
+    assert report["shot_003"]["acknowledged"] is False
+    assert round(report["shot_004"]["angle"]) == 147    # 仍在相对老锚累计
+
+
+def test_a_neutral_camera_re_anchors_by_itself():
+    """§6.2 的中性机位逐镜成立：它自己就能把重建交代过去并起锚。"""
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲",), FLIP),
+                 _shot(3, ("甲", "乙")),
+                 _shot(4, ("甲", "乙")))
+    report = drift_report(AXIS, plan, INITIAL, {"shot_003": True})
+    assert report["shot_003"]["bridged"] is True
+    assert report["shot_003"]["acknowledged"] is True
+    assert report["shot_004"]["angle"] < 1.0
