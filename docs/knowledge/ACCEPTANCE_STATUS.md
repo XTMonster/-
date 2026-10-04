@@ -6098,6 +6098,54 @@ RK-13 仍记 failed（Q5/E1 是硬门，与 S1a 无关）。
 `python -m pytest` ＝ **2077 passed / 1 skipped**（本批只加文档，代码未动；
 链 `tools/run_tests.ps1` 的 32/32 见 §九十九 与 `docs/evidence/20261005-063234/`）。
 
+## 一百零一、降级路的 trace 走**同一个生产者**（S1a 收尾时抓到的真缺陷）
+
+S1a 落地后做"契约同步"复查（生产者/消费者逐条对）时抓到：`tools/sidecar_server.py`
+的 `_retrieve_payload` 在 `hypergraph is None` 那条分支上**手写了一份** trace 字面量。
+于是它当场就漂——
+
+* S1a 刚给 `RetrievalTrace` 加的 `qualifiers` 惰性键表**没有**出现在降级路上，
+  即"trace 上必须看得见这两个键"这条谓词在**没有索引**的部署里根本不成立；
+* 更早的 `forbid_promoted` 也**从来没抄进去过**（`RetrievalTrace.to_dict()` 里有）。
+
+这与本仓已经栽过三次的形状**完全同源**（`camera.side` 的两份枚举、
+`MOVEMENT_TYPES`、`QUALIFIER_KINDS`）：**同一个东西写两份，迟早漂**。
+所以修法不是"把漏的两个键补上"，而是**删掉那份字面量**——降级路也走
+`RetrievalTrace(query=query, seed_miss=True).to_dict()`，一个生产者、零漂移面。
+
+### 101.1 守门（先红后绿）
+
+`tests/test_sidecar_retrieve.py::test_the_degraded_trace_has_the_same_shape_as_the_real_one`：
+判据取**形状**（`RetrievalTrace` 的键集 ⊆ 线上 trace 的键集，再加 sidecar 追加的
+九个"后端/通道"字段），**不是**某两个键名——这样以后任何新增字段都自动被覆盖，
+不用回来补字面量。
+
+```
+修前：AssertionError: 降级路的 trace 少了这些键：['forbid_promoted', 'qualifiers']
+修后：tests/test_sidecar_retrieve.py 14/14 绿
+```
+
+### 101.2 可引用性：**主树那次跑出来的数字不采信**（工具自己判的）
+
+我在主树上跑过一次整链，步骤 1–32 全 OK，但仓库自己的 D3 守门把它判成了
+`INCOMPLETE: the worktree changed while the chain ran`（并行 lane 在那一轮里
+提交了 `ca152fb`，HEAD 变了）⇒ **那次数字不引用**。可引用的读数来自**冻结提交**上的重跑：
+
+```
+git worktree add work/freeze_53d3e3f 53d3e3f && 在该树内跑 tools\run_tests.ps1
+  结果：All checks passed.        （32/32）
+  pytest：2085 passed / 2 skipped  （第 2 条 skip 就是"新检出"那条：
+                                    tests/test_holdout_inputs.py 需要 /work/）
+  tree.json：head 53d3e3fb6092…、stable true、dirty 只有 "?? chain.log"（输出，不是输入）
+```
+
+证据入 `docs/evidence/20261005-071520/`（`holdout_gates.json` 的 `overall = pass`）。
+RK-13 仍记 failed（E1 硬门，与本批无关）。
+
+**如实挂一条**：主树那次非归因的运行目录 `docs/evidence/20261005-065944/`
+**没有被删除**——本环境的策略**拒绝递归删除**（`Remove-Item -Recurse` 被拦）。
+它**未入库**，也不得被引用；清理由用户或下一条 lane 做。
+
 ## 一百零一、E1 的**成对重复基线**（S0 的谓词 ②）：两臂分不开，评委噪声 6%
 
 S0 的第二半要求"基线命令 ＋ 种子写进证据目录，**两条命令各跑一次并入库**"。
