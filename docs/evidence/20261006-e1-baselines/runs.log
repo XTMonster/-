@@ -1,0 +1,9 @@
+﻿05:57:00 hybrid rep1 start
+{"out": "E:\\��ģԤ��codex\\docs\\evidence\\20261006-e1-baselines\\reviews.hybrid.rep1.jsonl", "queries": 64, "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86", "scored": 192, "relevant": 39, "value": 0.2031, "line": 0.7}
+06:05:27 lexical rep1 start
+{"out": "E:\\��ģԤ��codex\\docs\\evidence\\20261006-e1-baselines\\reviews.lexical.rep1.jsonl", "queries": 64, "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86", "scored": 192, "relevant": 37, "value": 0.1927, "line": 0.7}
+06:16:49 hybrid rep2 start
+{"out": "E:\\��ģԤ��codex\\docs\\evidence\\20261006-e1-baselines\\reviews.hybrid.rep2.jsonl", "queries": 64, "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86", "scored": 192, "relevant": 39, "value": 0.2031, "line": 0.7}
+06:27:02 lexical rep2 start
+{"out": "E:\\��ģԤ��codex\\docs\\evidence\\20261006-e1-baselines\\reviews.lexical.rep2.jsonl", "queries": 64, "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86", "scored": 192, "relevant": 44, "value": 0.2292, "line": 0.7}
+06:37:30 baseline repeats done

@@ -1,0 +1,112 @@
+{
+  "generated_by": "tools/knowledge/e1_baseline_summary.py",
+  "relevant_threshold": 4.0,
+  "panel": [
+    "deepseek-chat",
+    "glm-5.3"
+  ],
+  "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+  "cases_digest": "937a04e052e675483cbe37dd13a00fbbf84659c2cadedce7e336a55cca7ed4f7",
+  "arms": {
+    "hybrid": {
+      "reps": [
+        {
+          "file": "reviews.hybrid.rep1.jsonl",
+          "retrieval_path": "hybrid",
+          "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+          "cases_digest": "937a04e052e675483cbe37dd13a00fbbf84659c2cadedce7e336a55cca7ed4f7",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 39,
+          "value": 0.203125
+        },
+        {
+          "file": "reviews.hybrid.rep2.jsonl",
+          "retrieval_path": "hybrid",
+          "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+          "cases_digest": "937a04e052e675483cbe37dd13a00fbbf84659c2cadedce7e336a55cca7ed4f7",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 39,
+          "value": 0.203125
+        }
+      ],
+      "mean": 0.203125,
+      "range": 0.0,
+      "queries": 64,
+      "cases": 41,
+      "rows": 192,
+      "verdict_flips": [
+        "case_blocking-and-staging-scenes_025",
+        "case_blocking-and-staging-scenes_025",
+        "case_shot-reverse-shot-cutaways-coverage_033",
+        "case_what-is-an-eyeline-match_022",
+        "case_what-is-an-eyeline-match_022",
+        "case_what-is-an-eyeline-match_023",
+        "case_what-is-an-eyeline-match_023",
+        "case_what-is-an-eyeline-match_023",
+        "case_what-is-an-eyeline-match_023",
+        "case_what-is-an-eyeline-match_023",
+        "case_what-is-an-eyeline-match_024",
+        "case_what-is-an-eyeline-match_025"
+      ]
+    },
+    "lexical": {
+      "reps": [
+        {
+          "file": "reviews.lexical.rep1.jsonl",
+          "retrieval_path": "lexical",
+          "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+          "cases_digest": "937a04e052e675483cbe37dd13a00fbbf84659c2cadedce7e336a55cca7ed4f7",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 37,
+          "value": 0.192708
+        },
+        {
+          "file": "reviews.lexical.rep2.jsonl",
+          "retrieval_path": "lexical",
+          "cases_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+          "cases_digest": "937a04e052e675483cbe37dd13a00fbbf84659c2cadedce7e336a55cca7ed4f7",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 44,
+          "value": 0.229167
+        }
+      ],
+      "mean": 0.210938,
+      "range": 0.036459,
+      "queries": 64,
+      "cases": 41,
+      "rows": 192,
+      "verdict_flips": [
+        "case_blocking-and-staging-scenes_025",
+        "case_blocking-and-staging-scenes_025",
+        "case_blocking-and-staging-scenes_025",
+        "case_storyboard-rules_008",
+        "case_storyboard-rules_012",
+        "case_two-shot-camera-angle-movement_029",
+        "case_ultimate-guide-to-camera-shots_038",
+        "case_what-is-an-eyeline-match_022",
+        "case_what-is-an-eyeline-match_022",
+        "case_what-is-an-eyeline-match_023",
+        "case_what-is-an-eyeline-match_025"
+      ]
+    }
+  },
+  "delta_lexical_minus_hybrid": 0.007813,
+  "max_arm_range": 0.036459,
+  "separation_measured": false
+}
