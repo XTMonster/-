@@ -573,6 +573,10 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
     seen_excerpts: List[int] = []            # SimHash 近重复
     seen_keys: set = set()
     counters: Dict[str, int] = {name: 0 for name in CASE_TYPES}
+    #: `case_id -> domain`：线索闸门过滤之后要按**剩下的**案例重算 `per_domain`，
+    #: 而案例行上**没有** domain 字段（domain 是计划期的概念，不属案例契约）。
+    #: 不留这张表，`recount()` 只能把每一格算成空串（2026-10-04 实测踩过）。
+    case_domains: Dict[str, str] = {}
     per_domain: Dict[str, int] = {}
     per_source_docs: Dict[str, int] = {}
     raw_segments = 0
@@ -723,6 +727,7 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
             seen_keys.add(digest)
             seen_excerpts.append(signature)
             cases.append(row)
+            case_domains[row["case_id"]] = plan["domain"]
             plan["accepted"] += 1
             counters[case_type] += 1
             per_domain[plan["domain"]] = per_domain.get(plan["domain"], 0) + 1
@@ -753,12 +758,18 @@ def build_cases(docs: Sequence[Dict], *, max_cases: int = DEFAULT_MAX_CASES,
         #: clue_gate_dropped == raw_segments` 这条恒等式才闭合，账目也才看得出
         #: "少掉的条数是去哪了"。
         "clue_gate_dropped": 0,
+        #: `case_id -> domain`（下划线前缀 = **私有账**，不进 manifest）：
+        #: 过滤掉一批案例之后要按剩下的重算 `per_domain`，而案例行上**没有** domain
+        #: 字段（它是计划期的概念）。不留这张表，`recount()` 只能把每一格算成空串。
+        "_case_domains": case_domains,
     }
     return cases, rejects + duplicates + quota, report
 
 
 def apply_clue_gate(cases: Sequence[Dict], clues_path: pathlib.Path, *,
-                    after: int = 0) -> Tuple[List[Dict], List[str], Dict]:
+                    after: int = 0,
+                    protect_ids: Sequence[str] = ()
+                    ) -> Tuple[List[Dict], List[str], Dict]:
     """**入库闸门**：第 ``after`` 条之后的案例，没有中文检索键就不许进索引。
 
     为什么需要它（2026-10-04 的 glm-5.3 会诊 F1，本项目实测）：L3 是给**中文**
@@ -768,22 +779,39 @@ def apply_clue_gate(cases: Sequence[Dict], clues_path: pathlib.Path, *,
     `线索数 / 案例数` 这条守门比例往下拉（把 202 个 `case_budget: 1` 的钉子直接
     拔掉，覆盖从 44.8% 掉到 22.9%）。
 
-    ``after`` 是**保护带**：已经入库的那批案例（`index < after`）不因为这条新规则
-    被删——它们是历史，删它们属于另一件事。``after=0`` 表示对全部案例生效。
+    **保护带有两种，别用错**：
+
+    * ``protect_ids``（**按 id**，推荐）——这批 ``case_id`` 不论有没有线索都保留。
+      它表达的才是"已经入库的那批不因为新规则被删"这个语义；
+    * ``after``（**按下标**）——前 N 条保留。⚠️ 它只在"这份列表排序后的前 N 条
+      **恰好就是**上一版发货的那 N 条"时才对。``cases`` 是**按 ``case_id`` 排序**的，
+      一旦 `--max-cases` 变了，"排序后的前 N 条"**不再是**上一版那 N 条：2026-10-04
+      实测 `--require-clue-after 810` 把上一版 810 条里的 **149 条悄悄换掉**，
+      `tests/test_source_traces.py` 当场抓到 **9 条来源**没了产物。扩库时请用
+      ``protect_ids``。
+
+    两者可以叠加；``after=0`` 且 ``protect_ids=()`` 表示对全部案例生效。
     """
+    #: 判据与 `attach_clues` **同一份**（`classify`）：两边不一致就会出现
+    #: "案例因为有一条线索被留下、那条线索却因为不合判据没写进去"的悬空案例。
+    #: 会诊（DeepSeek 侧）点出的 blocker 正是这条不变量。
+    from .case_search_zh import classify
+
     rows = common.read_jsonl(pathlib.Path(clues_path))
     keyed = {str(row.get("case_id")) for row in rows
-             if str(row.get("zh") or "").strip()}
+             if not classify(str(row.get("zh") or ""))}
+    protect = {str(case_id) for case_id in protect_ids}
     kept: List[Dict] = []
     dropped: List[str] = []
     for index, case in enumerate(cases):
         case_id = str(case.get("case_id"))
-        if index < int(after) or case_id in keyed:
+        if index < int(after) or case_id in protect or case_id in keyed:
             kept.append(case)
         else:
             dropped.append(case_id)
-    return kept, dropped, {"required_after": int(after), "keyed": len(keyed),
-                           "kept": len(kept), "dropped": len(dropped)}
+    return kept, dropped, {"required_after": int(after), "protected": len(protect),
+                           "keyed": len(keyed), "kept": len(kept),
+                           "dropped": len(dropped)}
 
 
 def recount(cases: Sequence[Dict], report: Dict) -> Dict:
@@ -797,7 +825,8 @@ def recount(cases: Sequence[Dict], report: Dict) -> Dict:
     for case in cases:
         key = str(case.get("case_type"))
         per_type[key] = per_type.get(key, 0) + 1
-        domain = str((case.get("source_ref") or {}).get("domain") or "")
+        domain = str(report.get("_case_domains", {}).get(str(case.get("case_id")))
+                     or (case.get("source_ref") or {}).get("domain") or "")
         per_domain[domain] = per_domain.get(domain, 0) + 1
     return {**report, "cases": len(cases), "per_type": per_type,
             "per_domain": dict(sorted(per_domain.items()))}
@@ -816,14 +845,30 @@ def attach_clues(clues_path: pathlib.Path, keep_ids: Sequence[str],
     """
     from .case_search_zh import write_lines
 
+    from .case_search_zh import classify
+
     keep = {str(case_id) for case_id in keep_ids}
-    rows = [row for row in common.read_jsonl(pathlib.Path(clues_path))
-            if str(row.get("case_id")) in keep and str(row.get("zh") or "").strip()]
+    #: **入库行必须过现行判据**（不只"非空"）。为什么：`--require-clue` 的入参可以是
+    #: 任一代的线索文件（比如换代前产出的那一份），而判据是会长的——2026-10-04 实测
+    #: 入库的 739 行里就有 8 行按现行 `classify` 该丢（元话术），
+    #: `tests/test_case_search_zh.py` 的全量扫描会因此开火。
+    #: 会诊（DeepSeek 侧）把这一条点成 blocker：闸门不重跑判据 = 把旧代的脏行原样放进新索引。
+    rows: List[Dict] = []
+    rejected: List[Dict] = []
+    for row in common.read_jsonl(pathlib.Path(clues_path)):
+        if str(row.get("case_id")) not in keep:
+            continue
+        reason = classify(str(row.get("zh") or ""))
+        if reason:
+            rejected.append({"case_id": str(row.get("case_id")), "reason": reason})
+            continue
+        rows.append(row)
     for row in rows:
         row["cases_sha256"] = digest
     rows.sort(key=lambda row: str(row.get("case_id")))
     info = write_lines(pathlib.Path(out_dir) / "cases", rows)
-    return {"clues": len(rows), "digest": digest, **info}
+    return {"clues": len(rows), "digest": digest, "rejected": len(rejected),
+            "rejected_examples": rejected[:3], **info}
 
 
 def beat_positions(excerpt: str, beats: Sequence[str]) -> List[int]:
@@ -993,7 +1038,8 @@ def write_outputs(cases: Sequence[Dict], report: Dict, *, docs: Sequence[Dict],
         #: 现在拿这一格与 `hypergraph.manifest.json` 的 `cache_key.corpus_sha256` 对拍。
         "cards_sha256": _cards_digest(),
         "fingerprint": case_fingerprint(docs),
-        **report,
+        #: 下划线前缀的键是**私有账**（如 `_case_domains`），不进 manifest。
+        **{key: value for key, value in report.items() if not key.startswith("_")},
         **shard_report,
     }
     common.dump_json(manifest_path, manifest)
@@ -1018,7 +1064,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--require-clue", default="",
                         help="中文线索文件（jsonl）：其中的案例才许入库")
     parser.add_argument("--require-clue-after", type=int, default=0,
-                        help="只对第 N 条之后的案例要求线索（0 = 全部）")
+                        help="只对**排序后**第 N 条之后的案例要求线索（0 = 全部）；"
+                             "扩库时优先用 --require-clue-keep，见 apply_clue_gate")
+    #: **按 id** 的保护带（推荐）：已经在库里的那批案例不许因为新规则被删。
+    #: `--require-clue-after` 是**按下标**的，扩了 `--max-cases` 之后"排序后的前 N 条"
+    #: 不再是上一版那 N 条（2026-10-04 实测换掉了 149 条）。
+    parser.add_argument("--require-clue-keep", default="",
+                        help="已经在库的案例索引（目录或 jsonl）：其中的 case_id 一律保留")
     parser.add_argument("--check", action="store_true",
                         help="只校验：重算后与已落盘产物逐字节比对，不写盘")
     args = parser.parse_args(list(argv) if argv is not None else None)
@@ -1041,8 +1093,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             print(json.dumps({"error": f"缺线索文件 {clues_path}（闸门的输入）"},
                              ensure_ascii=False))
             return 1
+        protect_ids: List[str] = []
+        if args.require_clue_keep:
+            keep_path = pathlib.Path(args.require_clue_keep)
+            if not keep_path.exists():
+                print(json.dumps({"error": f"缺保护索引 {keep_path}（闸门的保护带）"},
+                                 ensure_ascii=False))
+                return 1
+            #: 目录走真读者（分片 / 旧单文件都认）；一份 jsonl 直接读行。
+            if keep_path.is_dir():
+                protect_ids = [str(case.case_id)
+                               for case in block_cases.read_cases(keep_path)]
+            else:
+                protect_ids = [str(row.get("case_id"))
+                               for row in common.read_jsonl(keep_path)]
         cases, dropped_ids, gate = apply_clue_gate(
-            cases, clues_path, after=args.require_clue_after)
+            cases, clues_path, after=args.require_clue_after,
+            protect_ids=protect_ids)
         report = {**recount(cases, report),
                   "clue_gate_dropped": len(dropped_ids), "clue_gate": gate}
     verdict = evaluate(cases, report)

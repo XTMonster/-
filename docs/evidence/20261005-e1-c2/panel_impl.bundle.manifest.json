@@ -1,0 +1,56 @@
+{
+  "created_at": "2026-10-04T23:08:55",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "c6b660f",
+    "head_subject": "feat(P14): DeepSeek × GLM-5.3 联合会诊（四栏记账，一侧缺席不算同意）",
+    "recent": [
+      "c6b660f feat(P14): DeepSeek × GLM-5.3 联合会诊（四栏记账，一侧缺席不算同意）",
+      "26f17a0 feat(P14-94): 过滤之后把线索按最终案例集合**重签**（否则读者整份拒用）",
+      "128b642 docs(P14-94): E1 词表同源的**噪声底**（A/B 各 3 次）——幅度只有 +0.03，但方向稳",
+      "0a34dda docs(P14-94): E1 词表同源那一次实验的落地记录（**未发货**，附负结果）",
+      "4c72fed feat(P14-94): 案例入库闸门（先注线索、非空才入库）＋ 把入库线索里 8 条不合判据的行去掉"
+    ],
+    "uncommitted": []
+  },
+  "question": {
+    "path": "work/_q_batch.md",
+    "sha256": "17a50c17c8defde6d56d4828f7dc8ed7f9f88afe2343f4a39ddc901da6b3fea3",
+    "chars": 700
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "tools/kb_fetch/build_cases.py",
+      "spec": "tools/kb_fetch/build_cases.py:760-840",
+      "range": [
+        760,
+        840
+      ],
+      "file_sha256": "af7828967ff0b88bf68250a935edad9eb45d042d495a024d3151df778078dacd",
+      "chunk_sha256": "5b1be106ce35b7a1b5978008bd3f97ef292a431d73fdf1a807d4ee3ae2b69090",
+      "lines": 81,
+      "chars": 3799
+    },
+    {
+      "name": "tests/test_case_search_zh.py",
+      "spec": "tests/test_case_search_zh.py:156-190",
+      "range": [
+        156,
+        190
+      ],
+      "file_sha256": "f17505c46db8807f99725fff36d22481415028c4cac332deb4c499aa2954c0da",
+      "chunk_sha256": "c5affdc4bc375a74e70588e22e05aa46b556b5a31a88aa92526f5a25ac654818",
+      "lines": 35,
+      "chars": 1699
+    }
+  ],
+  "contexts": [],
+  "status": {
+    "sent_chars": 418,
+    "sent_sha256": "b24c347b1529c9fb13405ee1db6809b1f6acf3e3f165687339703a1c5663e4dd",
+    "full_chars": 418,
+    "full_sha256": "b24c347b1529c9fb13405ee1db6809b1f6acf3e3f165687339703a1c5663e4dd",
+    "truncated": false
+  }
+}

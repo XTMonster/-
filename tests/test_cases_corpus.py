@@ -170,7 +170,8 @@ def test_the_clue_gate_drops_only_cases_without_a_key(tmp_path):
     kept, dropped, report = builder.apply_clue_gate(cases, path)
     assert [case["case_id"] for case in kept] == ["c2"]
     assert dropped == ["c0", "c1", "c3", "c4"], dropped   # 空串不算键
-    assert report == {"required_after": 0, "keyed": 1, "kept": 1, "dropped": 4}
+    assert report == {"required_after": 0, "protected": 0, "keyed": 1,
+                      "kept": 1, "dropped": 4}
 
     #: `after=3`：前三条豁免（历史不因新规则被删），后两条仍要有键。
     kept, dropped, report = builder.apply_clue_gate(cases, path, after=3)
@@ -178,11 +179,65 @@ def test_the_clue_gate_drops_only_cases_without_a_key(tmp_path):
     assert dropped == ["c3", "c4"], dropped
 
 
-def test_the_clue_gate_is_off_by_default_in_the_shipped_manifest():
-    """没给 `--require-clue` 时那一格恒为 0——否则"丢弃数"会是个无出处的数。"""
+def test_the_protect_band_is_by_id_not_by_position(tmp_path):
+    """保护带必须**按 id**——按下标那条路在"扩了 `--max-cases`"之后会**换掉**历史案例。
+
+    2026-10-04 实测的形状：上一版发货 810 条，把 `--max-cases` 从 810 抬到 1400 之后，
+    `--require-clue-after 810` 保住的是"**按 `case_id` 排序后**的前 810 条"，它与上一版
+    那 810 条**不是同一批**——实测换掉了 **149 条**，`tests/test_source_traces.py`
+    当场抓到 **9 条来源**没了任何产物（它们的案例全被换出去，卡片里也没有）。
+    这条用例把那个形状钉死：按下标豁免的是**位置**，按 `protect_ids` 豁免的才是**案例**。
+    """
+    cases = [{"case_id": f"c{index:03d}", "case_type": "narrative"}
+             for index in reversed(range(6))]
+    path = _clue_file(tmp_path, {"c003": "要拍缓推镜头时让镜头慢慢靠近"})
+
+    #: 按下标：前 3 条（`c005/c004/c003`）豁免——豁免的是**位置**。
+    kept_by_index, _dropped, _report = builder.apply_clue_gate(cases, path, after=3)
+    assert [case["case_id"] for case in kept_by_index] == ["c005", "c004", "c003"]
+
+    #: 按 id：`c002` 是"历史"，按下标那条路会把它丢掉，按 id 这条路保住它。
+    kept_by_id, dropped_by_id, report = builder.apply_clue_gate(
+        cases, path, protect_ids=["c002"])
+    assert [case["case_id"] for case in kept_by_id] == ["c003", "c002"]
+    assert dropped_by_id == ["c005", "c004", "c001", "c000"]
+    assert report == {"required_after": 0, "protected": 1, "keyed": 1,
+                      "kept": 2, "dropped": 4}
+    assert "c002" not in {case["case_id"] for case in kept_by_index}, \
+        "这条用例的前提是「按下标会把历史案例换出去」——形状变了"
+
+
+def test_the_shipped_manifest_accounts_for_the_clue_gate_without_inventing_numbers():
+    """发货的 manifest 必须把"线索闸门"**如实、自洽**地记账。
+
+    这条原叫 `..._is_off_by_default_in_the_shipped_manifest`，判据是"那一格恒为 0、
+    且不许有 `clue_gate` 键"——钉的是"闸门关着"这**一种**形态。2026-10-04 起发货的
+    索引**本来就是走闸门落地的**（会诊 F1：先注线索、非空才入库；
+    `build_cases --require-clue … --require-clue-after 810`），于是判据从"闸门永远关"
+    演进成"**开没开都要自洽，且数字不许凭空来**"——比原判据**更严**：原判据只挡一种
+    写法，这条把两种写法都钉住，并加了对账。
+
+    "先注线索、非空才入库"在账上的**直接表达式**是 `keyed == clue_attached.clues`：
+    闸门只许丢掉**没有键**的案例，丢一条带键的就是把检索面白送出去。
+    """
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    assert manifest["clue_gate_dropped"] == 0
-    assert "clue_gate" not in manifest, "没开闸门就不该有闸门的账"
+    gate = manifest.get("clue_gate")
+    if gate is None:
+        assert manifest["clue_gate_dropped"] == 0, (
+            "没有 `clue_gate` 账时那一格必须是 0——否则'丢弃数'是个无出处的数")
+        return
+    assert manifest["clue_gate_dropped"] == gate["dropped"], (
+        "`clue_gate_dropped` 与 `clue_gate.dropped` 对不上")
+    assert gate["kept"] == manifest["cases"], (
+        "`clue_gate.kept` 必须等于最终案例数（闸门之后就是索引）")
+    #: **先注线索、非空才入库**：带中文检索键的案例一条都不许被闸门丢掉。
+    assert gate["keyed"] == manifest["clue_attached"]["clues"], (
+        "闸门丢掉了带中文检索键的案例——那正是这条闸门要保住的东西")
+    #: 闸门只删不加 ⇒ 闸门前的接受数 = 现案例数 ＋ 丢掉数，且它落在参评候选之内。
+    accepted_before_gate = manifest["cases"] + gate["dropped"]
+    assert accepted_before_gate <= manifest["raw_segments"], (
+        accepted_before_gate, manifest["raw_segments"])
+    assert gate["required_after"] <= manifest["cases"], gate
 
 
 def test_the_gate_re_signs_the_clues_so_the_pair_stays_consistent(tmp_path):
@@ -233,6 +288,51 @@ def test_attach_clues_refuses_a_digest_the_reader_would_reject(tmp_path):
     builder.attach_clues(clues, ["c1"], "0" * 64, out_dir)     # 故意写错摘要
     lines, reason = case_index.read_search_zh(out_dir, out_dir)
     assert lines == {} and reason == "search_zh_stale"
+
+
+def test_recount_keeps_the_domain_breakdown_after_cases_are_filtered(tmp_path):
+    """闸门/过滤丢掉一批案例之后，`recount()` 必须按**剩下的**案例重算 `per_domain`。
+
+    案例行上**没有** `domain` 字段（domain 是**计划期**的概念，不属案例契约），
+    所以 `recount()` 只能靠 `build_cases()` 留下的私有账 `report["_case_domains"]`
+    （`case_id -> domain`）。不留这张表，每一格都会算成空串 ⇒
+    `per_domain == {"": n}`：分域账当场失真，**而和数仍然对**——所以
+    `test_the_manifest_accounting_adds_up` 那条"和数"判据**抓不到它**。
+    这正是 2026-10-04 落地 `--require-clue` 时实测踩到的形状。
+    """
+    docs = _synthetic_docs()
+    second = json.loads(json.dumps(docs[0]))
+    second["domain"] = "cinematography"
+    second["source_ref"] = {**second["source_ref"], "url": "https://example.org/book2"}
+    second["text"] = (
+        "用长焦镜头压缩空间的时候，前后景几乎贴在一起，人物像从背景里浮出来，"
+        "背景被虚化成一块柔光，纵深感因此被削平。"
+        "手持跟拍会让画面带着呼吸感，但也把构图交给运气，肩扛镜头想要走长还得靠"
+        "稳定器压住抖动，否则观众先看到的是晃。"
+        "顺光会让脸显得扁平，暗调反而能靠轮廓把注意力收拢到眼睛上，侧逆光是常用的"
+        "折中，但要当心鼻影把半个脸吃掉。"
+        "大光圈把焦点压得极薄，两个演员只要前后差半步就有一个虚掉，走位必须事先在"
+        "地面上标好点位，否则对焦只有一次机会。"
+    )
+    cases, _rejected, report = builder.build_cases([*docs, second], max_cases=10_000,
+                                                   per_source=40)
+    assert set(report["per_domain"]) >= {"storyboard", "cinematography"}, \
+        report["per_domain"]
+
+    #: 只留第二个域的那批，`recount()` 必须给出一本**只含该域**的账（不是 `{"": n}`）。
+    kept = [row for row in cases
+            if str((row.get("source_ref") or {}).get("url") or "").endswith("book2")]
+    assert kept, "第二个域的正文没有产出任何案例，这条用例量不到东西"
+    after = builder.recount(kept, report)
+    assert set(after["per_domain"]) == {"cinematography"}, after["per_domain"]
+    assert sum(after["per_domain"].values()) == len(kept) == after["cases"]
+
+    #: 私有账（下划线前缀）**不许**进 manifest——它只是 `recount()` 的输入。
+    out = tmp_path / "knowledge"
+    manifest = builder.write_outputs(kept, after, docs=[], out_dir=out,
+                                     out_manifest=out / "cases.manifest.json")
+    assert not [key for key in manifest if str(key).startswith("_")], \
+        sorted(manifest.keys())
 
 
 def test_every_sequence_pattern_is_re_derivable_and_comes_from_a_licensed_source():

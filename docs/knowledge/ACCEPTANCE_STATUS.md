@@ -5548,3 +5548,194 @@ long20（同剧本、同命令、同后端）实测：**参数名报错由 11 �
 * `knowledge/sources.yaml` 里 **202 个来源被钉成 `case_budget: 1`**（当初为"稠密的
   技术书不被 161 篇现代影评摊薄"设的），要不要抬是**改变检索面形状**的规格决定，
   这一轮**没动它**。
+
+## 九十、L3 索引换代落地（810 → 1097）＋ 一个被**全量测试**抓出来的"保护带"缺陷
+
+> **⚠️ 并发冲突（2026-10-04 23:46 记）**：本节描述的 810 → 1097 条落地，写完之后
+> **数分钟内**就被**同一工作树上的另一条 lane** 覆盖（那条 lane 在 `work/shipped_363`、
+> `work/shipped_C2` 上跑候选与 E1 复测）。节里的命令与数字**可复算、也确实跑绿过**
+> （`run_tests.ps1` 32/32，证据 `docs/evidence/20261004-234218/`），但**盘上的
+> `knowledge/` 已经不是那一版**——一律以 `knowledge/cases.manifest.json` 的**现盘**
+> 为准。90.2 / 90.3 记的缺陷与 90.4 的守门与「哪一版落地」**无关**，仍然成立。
+
+§八十九 把 E1 的根因拆成两半（检索面 / 语料面），并把"**先注线索、非空才入库**"
+（`build_cases --require-clue`，P14-94）立成正确的落地形状。这一节把它**落地**，
+并记下落地途中被 `python -m pytest`（全量）抓出来的一个真缺陷。
+
+### 90.1 落地的是什么（可复算）
+
+```powershell
+python -m tools.kb_fetch.build_cases --input work/licensed.jsonl --out-dir knowledge `
+    --max-cases 1400 --per-source 40 `
+    --require-clue work/armD/cases/search_zh.part-000.jsonl `
+    --require-clue-keep work/_prev_index_ids.jsonl        # 上一版发货的 810 个 case_id
+```
+
+| 量 | 落地前（HEAD） | 落地后 |
+|---|---|---|
+| 案例 | 810 | **1097**（narrative 1038 / lesson 57 / sequence_pattern 2） |
+| 旧 810 条还在不在 | — | **逐条都在**（`old - new == 0`，`new - old == 287`） |
+| 中文线索 | 731（`glm-4.7`，旧提示词 `c2f49178`） | **657**（`glm-5.3`，当前提示词 `36069623`） |
+| 覆盖（守门 ≥ 50%） | 731/810 ＝ 90.2% | **657/1097 ＝ 59.89%** |
+| 索引体积 | — | 942,783 B（单片 ≤512 KB / 总量 ≤20 MB，`size_gate.passed: true`） |
+| 线索摘要 | `e1148200…` | `227869414e0e014b…` |
+
+新增的 287 条全部**带中文线索**（这正是"先注线索、非空才入库"的意思）：闸门丢掉的
+303 条是**没有键**的深层候选。线索源头是 `work/armD/`（`_armD_loop.ps1` 用
+`glm-5.3` 对 1400 条候选生成，657 条有键），其 `prompt_sha256 == 36069623…`
+**等于**当前 `case_search_zh.prompt_sha()`——所以换代的是"产物与生成器同代"，
+不是又混进一代旧键。
+
+### 90.2 被全量测试抓出来的缺陷：**按下标**的保护带 ≠ **按 id** 的保护带
+
+第一次落地用的是 `--require-clue-after 810`（"第 810 条之后才要求线索"）。它的实现是
+`enumerate(cases)` 的**下标**——而 `cases` 是**按 `case_id` 排序**的。`--max-cases`
+从 810 抬到 1400 之后，"排序后的前 810 条"**不再是**上一版那 810 条：
+
+| 读法 | 结果 |
+|---|---|
+| 落地的索引 | 1097 条，`size_gate` passed，**所有 L3 自己的判据全绿** |
+| `git show HEAD:knowledge/cases/…` 与落地产物求差 | **旧 810 条里有 149 条被换掉** |
+| `python -m pytest tests/test_source_traces.py` | **红**：**9 条来源**在 `sources.yaml` 里，却**没有任何**卡片或案例出自它们（7 条 BFI 的案例恰好全在那 149 条里；那 2 条其余来源的记录也一并消失） |
+
+那条测试是**反向门**（"清单里的每条来源都要在产物里留痕"），它的提示语写得很准：
+"典型的半截语料改动"。这里不是半截语料，是**保护带按错了维度**——所以修的是实现，
+不是那张 `NAMED_EXCEPTIONS` 表（表仍是空的，也没有放宽任何东西）。
+
+### 90.3 修法：保护带按 id（新增两条守门）
+
+* `tools/kb_fetch/build_cases.py::apply_clue_gate` 增 `protect_ids`（**按 id** 保留），
+  `after`（按下标）保留但**在文档里点名它会在扩 `--max-cases` 时换掉历史案例**；
+  返回账多一格 `protected`。CLI 新增 `--require-clue-keep <目录或 jsonl>`，
+  目录走真读者 `block_cases.read_cases`（分片/旧单文件都认）。
+* 守门：`tests/test_cases_corpus.py::test_the_protect_band_is_by_id_not_by_position`
+  ——同一个 `cases` 列表，按下标豁免 `c005/c004/c003`，按 id 豁免 `c002`；
+  断言**按下标那条路会把 `c002` 丢出去**（这条用例存在的意义就是钉住那个形状）。
+* 守门：`tests/test_cases_corpus.py::test_recount_keeps_the_domain_breakdown_after_cases_are_filtered`
+  ——补上"未提交改动"（`recount()` 的 `_case_domains`）此前**没有任何测试**的洞。
+  复算：旧实现给 `{"": 1}`，修后给 `{"cinematography": 1}`；`test_..._adds_up` 那条
+  "和数"判据**抓不到**它（空串格的和也是对的），所以必须单列一条。
+* 私有账 `_case_domains` 不进 manifest：`write_outputs` 过滤下划线前缀，用例里也断言了。
+
+### 90.4 一条既有判据的**前提**变了（判据替换成更严的，不是放宽）
+
+`test_the_clue_gate_is_off_by_default_in_the_shipped_manifest` 钉的是"发货 manifest
+那一格恒为 0、且**不许**有 `clue_gate` 键"——它成立的前提是"发货索引不走闸门"。
+这一版发货索引**就是**走闸门落地的（而且必须走：不走闸门，覆盖 657/1400 ＝ 46.9%
+撞上 ≥50%，而把门从 50% 调低才是红线）。于是换成
+`test_the_shipped_manifest_accounts_for_the_clue_gate_without_inventing_numbers`：
+没有闸门账时那一格必须为 0；有闸门账时**逐条对账**（`dropped` 与
+`clue_gate_dropped` 一致、`kept == cases`、`keyed == clue_attached.clues`
+——即"闸门一条带键的案例都没丢"、闸门前接受数 ≤ 参评候选数、`required_after ≤ cases`）。
+**覆盖的形态比原判据多一种，判据整体更严。**
+
+### 90.5 账目与未验证项
+
+* `python -m pytest` ＝ **2040 passed / 1 skipped**（较上代 +17：`test_panel_consult.py`
+  12 条 ＋ 本轮新增 2 条 ＋ 其余同批；唯一那条 skip 仍是 `test_build_ledger.py:68`
+  的条件守卫）。
+* `run_tests.ps1` ＝ **32/32 `All checks passed`**（`EXIT=0`），证据
+  `docs/evidence/20261004-234218/`；`holdout_gates.json.overall == "pass"`。
+  链上仍 `not passing: E1`、`RK-13 failed`——与 §八十九 同一口径。
+* **未验证（明确记下）**：**新索引上的 E1 没有重测**。跨族面板要 `GLM_API_KEY`
+  （`tools/knowledge/e1_panel.py` 的 glm 族），而本机**未设置**
+  （`$env:GLM_API_KEY` 为空，只有 `DEEPSEEK_API_KEY`）。因此：
+  - 链上那个 `E1 ＝ 17/192 ＝ 0.0885` 是**上一版索引**的读数。它没被判 `stale`，
+    是因为代际判据比的是 `cases_fingerprint`（＝**语料**指纹 `69791dbacabd3fd7`），
+    而这一版只换了 `max-cases`/闸门/线索，**语料指纹不变**——`e1_evidence_is_stale`
+    因此看不见这次换代。这条"判据看不取代际"的洞**如实记在这里**，没有改判据。
+  - 落地带来的 E1 变化**没有数字**，不许拿 §八十九 的 A/B（+0.03 量级、符号检验
+    p≈0.004）当结论：那是 810 条语料、363 条线索上的实验，不是这一版索引的读数。
+* **GLM 会诊缺席**：本轮改动**没有**拿到联合会诊的 GLM 侧判词。上一轮已在
+  `work/_panel_batch/` 写好了逐字 bundle（`bundle.md` / `bundle.manifest.json`，
+  含源码 sha256 与 `source_seen: true`），但 GLM 侧因缺 key 没跑起来，**只有空目录**。
+  按契约"**一侧缺席永远不算同意**"，这一轮的所有判词都只能记 `deepseek_only`
+  （主线自审 ＋ 全量测试），**不构成**联合会诊通过。
+
+## 九十一、L3 定版 **500 条**：五臂实测选型，其中"扩库"那臂被判**回退**
+
+§九十 落地了 810 → 1097（"先注线索、非空才入库"），但**没测新索引上的 E1**
+（那一节如实标了"未验证"）。补测的结果是：**那一版是回退**。于是把选型做成一次
+**多臂对照**——同一部片子、同一批 64 条逐镜查询、同一个跨族面板
+（`deepseek-chat` × `glm-5.3`，`top-k=3`）：
+
+| 臂 | 案例 | 线索 | 覆盖（守门 ≥50%） | 来源痕迹 | E1 | 重复 |
+|---|---|---|---|---|---|---|
+| A 发货原状（旧提示词线索） | 810 | 731 | 90.2% | ✓ | **0.0920**（53/576） | 3 次 |
+| B 810 ＋ **词表同源**新线索 | 810 | 363 | **44.8% ✗** | ✓ | 0.1198（69/576） | 3 次 |
+| C 只留有线索的案例 | 363 | 363 | 100% | **✗ 213 源失痕** | 0.1597（92/576） | 3 次 |
+| **C2（定版）** 只留有线索 ＋ **每源保一条痕迹** | **500** | **363** | **72.6%** | **✓** | **0.1441**（83/576） | 3 次 |
+| D 扩库到 1,097 条 | 1,097 | 657 | 59.9% | ✓ | **0.0469**（9/192） | 1 次 |
+
+### 91.1 教训：**覆盖门 ↑ ≠ 检索变好**
+
+D 臂把"先注线索、非空才入库"完整落地：覆盖 44.8% → 59.9%、`size_gate` 过、
+`test_source_traces` 过、**所有结构门全绿**——而 E1 从 0.0920 掉到 **0.0469**。
+原因是 E1 是**精确率**（分母是返回的 top-3）：加进来的深层候选没把相关材料顶上去，
+反而把位置挤走了。联合会诊（DeepSeek 侧）一句判词说中了：
+"**覆盖门量的是行数占比，不是检索命中率**——59.5% 可能是假覆盖"。
+⇒ 覆盖门只能证明"索引与线索同代且不残缺"，**不许**拿它推断检索质量；
+任何扩库都必须用**同一批查询**跑一次 E1 才准说话。
+
+### 91.2 C 臂为什么不能直接发货：**反向门**拦住了
+
+C 臂 E1 最高（0.1597），但它让 **213 个来源**在 `sources.yaml` 里、而
+"卡片 ∪ 案例"里一条都没有——`tests/test_source_traces.py`（反向门：清单里每条来源
+都要留痕）当场红。这些来源是**只喂 L3 的现代影评**（Animation Studies 等），
+没有卡片，痕迹全靠案例。修法不是往 `NAMED_EXCEPTIONS` 塞例外，而是给闸门加
+**保护带**：每个这样的来源保**一条**（字母序第一条）——这就是 C2 的 500 条。
+保护带必须**按 id**（`--require-clue-keep`）：按下标（`--require-clue-after 810`）
+在 `--max-cases` 变了之后会换掉历史案例（§90.2 实测 149 条）。
+
+### 91.3 显著性（这次不是噪声）
+
+A 与 C2 各 3 次、各 576 条判分：**0.0920 → 0.1441**，合并检验 **z ＝ 2.74**
+（p ≈ 0.006）。同一臂的重复散布约 ±0.008（A：0.0833–0.0990），所以这个差
+（+0.052）远在噪声之外。**判据、门限（0.70）、oracle、`SCORE_WEIGHTS` 一个字没动**；
+`E1` 仍 `fail`、`RK-13` 仍 `failed`——**这一节只主张"选型选对了"，不主张 E1 过了**。
+
+### 91.4 联合会诊账（`reviewed_by: llm-panel`，四栏）
+
+`docs/evidence/20261005-e1-c2/panel_impl.md` 是原始纪要（同一份包、同一个角色
+"实现顾问"，DeepSeek × GLM-5.3）。**GLM 侧正文为空**（`finish_reason=length`、
+`reasoning_tokens=31301`、`completion_tokens=32768`），按契约记
+**`unparsed` / `complete=false`**——**一侧缺席不算同意**。DeepSeek 侧 5 条 findings
+逐条在仓库里证过，其中两条是**真缺陷**并已修：
+
+* 闸门与写盘必须**同一份判据**（否则留下"无键却留在索引里"的悬空案例）⇒
+  `apply_clue_gate` 与 `attach_clues` 都走 `classify`，守门
+  `tests/test_cases_corpus.py::test_the_gate_and_the_writer_share_one_predicate`；
+* manifest 要按**过滤后**集合重算 ⇒ `recount()`（`_case_domains` 是私有账、不进 manifest）。
+
+## 九十二、把"会诊"从契约文本变成**自动触发**（hook）
+
+用户裁决（2026-10-05）："**hook 的会诊制度要自动触发，特别是分析问题与遇到难题时**"。
+原来《模型分工契约》是**被动文本**——说不说、做不做全靠自觉。现在
+`~/.codex/hooks/inject-context.ps1` 在 `UserPromptSubmit` / `SubagentStart` 时
+**读本次请求**并按关键词判定，命中就注入一整段**可执行指令**
+（模板 `~/.codex/hooks/consult-trigger.md`）：
+
+| 判定 | 触发词（中／英） | 建议角色 |
+|---|---|---|
+| `hard`（优先） | 难题 / 卡住 / 阻塞 / 为什么 / 诊断 / 排查 / 死结 / 根因 / 报错 / 崩溃 / 疑难 ／ stuck · blocker · root cause · diagnose | 领域讲解,红队反方,实现顾问 |
+| `review` | 审查 / 审核 / 复核 / 验收 / 对抗 / 复算 / 校验 ／ review · audit · verify | 测试与验收,规格一致性 |
+| `idea` | 方案 / 取舍 / 权衡 / 思路 / 架构 / 怎么做 ／ design · approach · tradeoff | 领域讲解,实现顾问 |
+
+注入内容含**可直接粘贴的 `panel_consult.py` 命令**，并把请求里出现的文件路径
+自动抽成 `--source` 候选（上限 6 个）；没有候选时明确写
+`--source <file:start-end>`，提醒"不给源码，工具会拒调用"。三条硬纪律一并注入：
+两侧同包同角色、**一侧缺席不算同意**、判词不改判据/门限且落地仍在主线。
+
+**两个设计坑（都留下了守门）**：
+
+1. `.ps1` 必须**纯 ASCII**（PowerShell 5.1 把无 BOM UTF-8 当 ANSI 读，中文字面量会
+   把脚本解析成语法错误）⇒ 脚本里的中文一律写成 `\uXXXX` 正则转义，成句的中文放
+   `.md` 里由脚本显式按 UTF-8 读。
+2. 判定标记必须挑"**只有触发块才有**"的串：`panel_consult.py` 本来就在每次都注入的
+   路由契约里，拿它当"触发了"的判据会**恒真**——自检当场抓到这个假阳性，改用
+   触发块独有的 `--out work/_panel_*`。
+
+`~/.codex/hooks/selftest.ps1` 从 **73 项扩到 82 项**（新增 9 项：三类触发的桶与
+`--source` 抽取、普通请求**不**触发、契约仍在），跑出来
+`checks: 82  failures: 0  HOOK SELFTEST PASS`。hook 包在仓库里留了**可复原副本**
+（`docs/agents/hooks/`，含安装命令与上面两个坑的说明）。

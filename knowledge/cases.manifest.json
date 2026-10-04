@@ -13,26 +13,26 @@
   "fingerprint": "69791dbacabd3fd77e5132dea277664972a227d222b7be0c6c6841c5a7a6649e",
   "segments_total": 64589,
   "raw_segments": 10463,
-  "cases": 810,
+  "cases": 500,
   "quota_truncated": 9376,
   "duplicates": 21,
   "rejects": 256,
   "reject_ratio": 0.024467,
   "per_type": {
-    "narrative": 768,
-    "sequence_pattern": 2,
-    "lesson": 40
+    "narrative": 476,
+    "lesson": 22,
+    "sequence_pattern": 2
   },
   "per_domain": {
-    "anime": 236,
-    "axis_theory": 24,
-    "blocking": 52,
-    "cinematography": 241,
-    "composition": 55,
-    "editing": 63,
-    "performance": 35,
-    "production": 42,
-    "storyboard": 62
+    "anime": 196,
+    "axis_theory": 8,
+    "blocking": 19,
+    "cinematography": 154,
+    "composition": 34,
+    "editing": 42,
+    "performance": 12,
+    "production": 13,
+    "storyboard": 22
   },
   "per_source": {
     "08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l": 6,
@@ -359,29 +359,47 @@
   },
   "enumerations_in_corpus": 2,
   "min_cases": 300,
-  "clue_gate_dropped": 0,
+  "clue_gate_dropped": 310,
+  "clue_gate": {
+    "required_after": 0,
+    "protected": 213,
+    "keyed": 363,
+    "kept": 500,
+    "dropped": 310
+  },
   "shards": [
     {
       "name": "cases/part-000.jsonl",
-      "bytes": 487482,
-      "cases": 791
-    },
-    {
-      "name": "cases/part-001.jsonl",
-      "bytes": 11507,
-      "cases": 19
+      "bytes": 307835,
+      "cases": 500
     }
   ],
   "shard_target_bytes": 487587,
   "size_gate": {
     "sizes": {
-      "part-000.jsonl": 487482,
-      "part-001.jsonl": 11507,
-      "cases.manifest.json": 9717
+      "part-000.jsonl": 307835,
+      "cases.manifest.json": 9954,
+      "search_zh.part-000.jsonl": 141074
     },
     "oversize": {},
-    "total_bytes": 508706,
+    "total_bytes": 458863,
     "total_gate": 20971520,
     "passed": true
+  },
+  "clue_attached": {
+    "clues": 363,
+    "digest": "a46a64ccdfd2cc8ac30f5db1d8d2a4f6bb9d9347ccd7e4a7810579e97f9d35cf",
+    "rejected": 0,
+    "rejected_examples": [],
+    "path": "knowledge\\cases",
+    "files": [
+      {
+        "name": "knowledge\\cases\\search_zh.part-000.jsonl",
+        "bytes": 141074,
+        "rows": 363
+      }
+    ],
+    "rows": 363,
+    "shard_target_bytes": 487587
   }
 }

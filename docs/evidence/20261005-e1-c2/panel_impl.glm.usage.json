@@ -1,0 +1,40 @@
+{
+  "model": "glm-5.3",
+  "requested_model": "glm-5.3",
+  "level": "low",
+  "max_tokens": 32768,
+  "elapsed_s": 372.2,
+  "usage": {
+    "completion_tokens": 32768,
+    "completion_tokens_details": {
+      "reasoning_tokens": 31301
+    },
+    "prompt_tokens": 3466,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 36234
+  },
+  "finish_reason": "length",
+  "attempts": [
+    {
+      "model": "glm-5.3",
+      "requested_model": "glm-5.3",
+      "level": "low",
+      "max_tokens": 32768,
+      "elapsed_s": 372.2,
+      "usage": {
+        "completion_tokens": 32768,
+        "completion_tokens_details": {
+          "reasoning_tokens": 31301
+        },
+        "prompt_tokens": 3466,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 36234
+      },
+      "finish_reason": "length"
+    }
+  ]
+}

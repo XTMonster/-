@@ -1,0 +1,30 @@
+{
+  "design": "同一份发货索引（500 案例 / 363 线索）上跑 3 次跨族面板，合并记分",
+  "reps": [
+    {
+      "file": "reviews.jsonl",
+      "scored": 192,
+      "relevant": 27,
+      "value": 0.1406
+    },
+    {
+      "file": "reviews.rep2.jsonl",
+      "scored": 192,
+      "relevant": 29,
+      "value": 0.151
+    },
+    {
+      "file": "reviews.rep3.jsonl",
+      "scored": 192,
+      "relevant": 27,
+      "value": 0.1406
+    }
+  ],
+  "pooled": {
+    "scored": 576,
+    "relevant": 83,
+    "value": 0.1441,
+    "line": 0.7,
+    "note": "合并是 3 次独立运行的均值口径，不是一次跑出 576 条"
+  }
+}
