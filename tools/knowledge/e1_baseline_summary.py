@@ -103,18 +103,37 @@ def verdicts(path: pathlib.Path) -> Dict[tuple, bool]:
     return out
 
 
+def scores(path: pathlib.Path) -> Dict[tuple, float]:
+    """逐 **（查询, 案例）行**的两个评委均分——用来量**只重判**那一下的散布。"""
+    return {key: float(row["score"]) for key, row in (
+        ((str(row["query"]), str(row["case_id"])), row) for row in read_rows(path))}
+
+
 def build_summary(directory: pathlib.Path) -> dict:
     arms: Dict[str, dict] = {}
+    judge_noise: Dict[str, dict] = {}
     for arm, _adapter in ARMS:
         reps = [summarise_rep(directory / ("reviews.%s.rep%d.jsonl" % (arm, rep)))
                 for rep in REPS]
         values = [rep["value"] for rep in reps]
         votes = [verdicts(directory / rep["file"]) for rep in reps]
+        graded = [scores(directory / rep["file"]) for rep in reps]
         keysets = [set(vote) for vote in votes]
         if any(keys != keysets[0] for keys in keysets[1:]):
             raise InputError("%s 的两次重复判的不是同一批（查询, 案例）行" % arm)
         flips = sorted(case_id for (query, case_id) in keysets[0]
                        if votes[0][(query, case_id)] != votes[1][(query, case_id)])
+        #: **两次重复喂给评委的是同一份候选集**（检索是确定性的；上面那条键相等
+        #: 就是这条的机器证据）⇒ 下面这几格量的**只能是评委噪声**，不是检索噪声。
+        deltas = [abs(graded[0][key] - graded[1][key]) for key in keysets[0]]
+        judge_noise[arm] = {
+            "rows": len(keysets[0]),
+            "score_delta_mean": round(statistics.fmean(deltas), 6),
+            "score_delta_max": round(max(deltas), 6),
+            "rows_whose_score_moved": sum(1 for value in deltas if value > 0),
+            "verdict_flips": len(flips),
+            "verdict_flip_rate": round(len(flips) / len(keysets[0]), 6),
+        }
         arms[arm] = {
             "reps": reps,
             "mean": round(statistics.fmean(values), 6),
@@ -149,6 +168,16 @@ def build_summary(directory: pathlib.Path) -> dict:
         #: **读数纪律**（§九十七）：Δ 只有大于同臂重复的极差才算量到差别。
         #: 这一格是**结论**，不是门限——E1 的 0.70 线一个字没动。
         "separation_measured": abs(delta) > spread,
+        #: §6(b) 的**第一半**（固定候选集、只重跑评委）：两次重复的候选集逐行相同
+        #: （检索确定性 ⇒ 键集相等已经在上面断言过），所以这里的散布＝**评委噪声**。
+        #: 第二半（固定评委、只重跑检索）本批没有做，如实挂着。
+        "judge_noise": judge_noise,
+        "judge_noise_note": ("候选集跨重复逐行相同（检索确定性）；这些散布是**只重判**"
+                             "那一下的噪声。E1 的整臂差 Δ 只有 "
+                             "%.4f，而单行分数的平均位移是 %.4f。"
+                             % (abs(delta), statistics.fmean(
+                                 [item["score_delta_mean"]
+                                  for item in judge_noise.values()]))),
     }
 
 

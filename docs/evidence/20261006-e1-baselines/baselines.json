@@ -108,5 +108,24 @@
   },
   "delta_lexical_minus_hybrid": 0.007813,
   "max_arm_range": 0.036459,
-  "separation_measured": false
+  "separation_measured": false,
+  "judge_noise": {
+    "hybrid": {
+      "rows": 192,
+      "score_delta_mean": 0.190104,
+      "score_delta_max": 1.0,
+      "rows_whose_score_moved": 68,
+      "verdict_flips": 12,
+      "verdict_flip_rate": 0.0625
+    },
+    "lexical": {
+      "rows": 192,
+      "score_delta_mean": 0.166667,
+      "score_delta_max": 1.5,
+      "rows_whose_score_moved": 59,
+      "verdict_flips": 11,
+      "verdict_flip_rate": 0.057292
+    }
+  },
+  "judge_noise_note": "候选集跨重复逐行相同（检索确定性）；这些散布是**只重判**那一下的噪声。E1 的整臂差 Δ 只有 0.0078，而单行分数的平均位移是 0.1784。"
 }

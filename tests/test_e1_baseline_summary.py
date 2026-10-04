@@ -130,6 +130,31 @@ def test_clearly_separated_arms_do_report_a_measured_separation(tmp_path):
     assert summary["delta_lexical_minus_hybrid"] == -1.0
     assert summary["max_arm_range"] == 0.0
     assert summary["separation_measured"] is True
+    #: 两次重复的行**逐字相同** ⇒ 评委噪声必须是 0（差点把这条也算成"量到了差别"）。
+    assert {arm: block["score_delta_mean"]
+            for arm, block in summary["judge_noise"].items()} == \
+        {"hybrid": 0.0, "lexical": 0.0}
+
+
+def test_the_judge_noise_block_explains_why_the_arms_are_not_separated():
+    """§6(b) 的第一半：候选集跨重复相同 ⇒ 那些散布**只可能**来自判分。
+
+    这条是"分不开"的**机制**证据，不是换个说法重述"分不开"：它把
+    **单行的分数位移**与**整臂差**放在同一把尺子上比。
+    """
+    summary = ebs.build_summary(EVIDENCE)
+    noise = summary["judge_noise"]
+    assert set(noise) == {"hybrid", "lexical"}
+    for arm, block in noise.items():
+        assert block["rows"] == 192
+        assert block["verdict_flip_rate"] == pytest.approx(
+            block["verdict_flips"] / block["rows"], abs=1e-6)
+        assert block["verdict_flips"] > 0
+        assert 0 < block["score_delta_mean"] < block["score_delta_max"] <= 4.0
+        assert block["rows_whose_score_moved"] >= block["verdict_flips"]
+    mean_shift = sum(block["score_delta_mean"] for block in noise.values()) / len(noise)
+    assert mean_shift > 10 * abs(summary["delta_lexical_minus_hybrid"]), (
+        "单行分数的平均位移必须远大于整臂差——否则『分不开』的机制不成立")
 
 
 def test_arms_on_different_indexes_are_rejected(tmp_path):
