@@ -303,10 +303,10 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-04 12:0x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-04 12:2x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；链上只剩 `not passing: Q5,E1`（Q5 的**分母仍是 0**
 ——机制已经通了、**实读数 0.7419** 另报，见下；E1 是语料适配度），`E2` 是诊断量。
-`python -m pytest` **2000 passed / 1 skipped**（主树；唯一那条 skip 是
+`python -m pytest` **2001 passed / 1 skipped**（主树；唯一那条 skip 是
 `tests/test_build_ledger.py:68` 的条件守卫："这份索引只由单一 prompt 版本产出，
 无需 refresh 记录"，不是被绕过的判据。**新检出上是 2 条**：多出的
 `tests/test_holdout_inputs.py:55` 依赖 `/work/`（gitignore 的草稿区），
@@ -315,9 +315,9 @@ spec/golden 漂移、pytest、契约冒烟、headless 四步；另有**不在探
 交付物：Q6b 直读通道、A/B 三元组对照、人审抽查表；链规模由
 `tests/test_agents_status_is_current.py` 对拍，加了探针这里就得跟着改）。
 RK-13 仍记 failed——因为 Q5/E1 已归位成硬门；19 条 RK 里其余 18 条全 measured
-且 pass。证据 `docs/evidence/20261004-114213/`（探针 32 支全过、`python -m pytest`
-2000 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
-§三十五…§八十一 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十三节：
+且 pass。证据 `docs/evidence/20261004-121921/`（探针 32 支全过、`python -m pytest`
+2001 passed / 1 skipped），逐条见 `ACCEPTANCE_STATUS.md`
+§三十五…§八十二 与 `docs/knowledge/Q5_DECISION_v1.md`。这一轮新增二十四节：
 §五十八 **轴侧修复**（同一份 `long9` 工程重建，越轴镜数由 20 降到 0）；
 §五十九 **第一次真跑**（越轴 64 → 3、终审逐镜通过 5 → 15）；
 §六十 **修复回路自己才是最大红源**（117 次修复调用里只读工具 218 次对
@@ -455,7 +455,13 @@ prompt token 由 **500,381 涨到 966,821**，全跑 **2,000,256** 顶到 `budge
 两跑的修复都在小幅改善，差别来自起草阶段。**新的主矛盾**是"每一次改动可不可信"
 （构图触底镜头由 8 涨到 16）。仍未做且要先量再定两条：① token 额度跟着场景走
 （与 §七十九 同形状，但要花真金白银）；② 让续轮便宜下来。证据
-`docs/evidence/20261004_chunked_long18/`。**
+`docs/evidence/20261004_chunked_long18/`。§八十二 **预算触顶不许丢掉没审过的镜头**：
+long18 因 token 触顶只审了 64 镜里的 55 镜，缺的 9 镜零 LLM 复评后是 **3 通过 6 不通过**
+（占全片 9.4%）——"没审过"与"审过没过"在账上长得一样。现在 `_audit_shot()` 是
+**一份**零 LLM 实现（`_step_checking` 与降级路径共用），`_degrade_to_finish()` 先
+把没审过的镜头补审（事件带 `degraded: true`、另写 `audit_after_budget` 汇总、
+**只审不修**）再收尾。守门含"补审不许写 `repair_applied`"。证据
+`docs/evidence/20261004-audit-after-budget/`。**
 
 §八十 **修复工具与主构建器解出的不是同一台相机**（§79.3 的答案）：long16 的
 104 个修复回合里改动类工具只有 9 次、真的动了手的 7 个回合**0 个通过**；把

@@ -1192,13 +1192,19 @@ class PrevisDriver:
                 return DriverState.CHECKING
         return DriverState.FINISHING
 
-    def _step_checking(self) -> None:
-        """§7.1 B3：逐镜头校验；不通过就进入定向修复。"""
-        if self.auditor is None or not self._shot_queue:
-            self._transition(DriverState.FINISHING)
-            return
-        shot_id = self._shot_queue[0]
-        self._current_shot_id = shot_id
+    def _audit_shot(self, shot_id: str, *, degraded: bool = False
+                    ) -> Optional[AuditResult]:
+        """跑一次审核并把结论**逐字**记进 `audit_log.jsonl`（零 LLM、零工具）。
+
+        `degraded=True` 专指"预算触顶之后补审的那一批"：结论照记，事件里多一个
+        `degraded` 标记，读账的人一眼能分清"审过、没过"与"根本没过审"。
+        （正常路径**不加**这个键，历史事件的形状因此一个字节都没变。）
+
+        审核器自身抛异常时返回 `None` 并记 `audit_failed`——注意它与"这一镜没过"
+        是两回事，两种都在账上分得开。
+        """
+        if self.auditor is None:
+            return None
         try:
             result = self.auditor.audit(shot_id)
         except Exception as exc:  # noqa: BLE001 - 审核器自身出错不该拖垮整场
@@ -1206,8 +1212,7 @@ class PrevisDriver:
                            f"{shot_id} 审核器异常：{type(exc).__name__}: {exc}",
                            level="error", shot=shot_id)
             self._emit("audit_failed", f"{shot_id} 审核异常", shot=shot_id)
-            self._advance_shot()
-            return
+            return None
         self.audit_results.append(result)
         # v1.4 §3.3（R45）：shot_audit 增写构图分与阈值——两者是同一次审核里
         # 已经算好的量（``AuditResult.score`` 与审核器的门限），阈值只有一个来源。
@@ -1226,10 +1231,24 @@ class PrevisDriver:
                                  if item.get("severity") == "error"],
                        findings=findings,
                        composition_score=result.score,
-                       composition_threshold=threshold)
+                       composition_threshold=threshold,
+                       **({"degraded": True} if degraded else {}))
         self._emit("shot_audit",
                    f"{shot_id} {'通过' if result.passed else '未通过'}",
                    shot=shot_id, passed=result.passed)
+        return result
+
+    def _step_checking(self) -> None:
+        """§7.1 B3：逐镜头校验；不通过就进入定向修复。"""
+        if self.auditor is None or not self._shot_queue:
+            self._transition(DriverState.FINISHING)
+            return
+        shot_id = self._shot_queue[0]
+        self._current_shot_id = shot_id
+        result = self._audit_shot(shot_id)
+        if result is None:
+            self._advance_shot()
+            return
         self._record_repair_verification(shot_id, result)
 
         if self._pending_finish:
@@ -1940,10 +1959,36 @@ class PrevisDriver:
         self._transition(DriverState.ERROR)
 
     def _degrade_to_finish(self, reason: str) -> None:
-        """§12.6：预算触顶按降级收尾并如实标注，已建成的成果不丢。"""
+        """§12.6：预算触顶按降级收尾并如实标注，已建成的成果不丢。
+
+        **审核不受预算约束**（2026-10-04 实测，long18）：审核是 bpy 侧的纯规则计算，
+        既不调用模型也不花钱；而原来这里直接跳 FINISHING，把 `_shot_queue` 里剩下的
+        镜头**整段丢掉**——long18 因此只审了 **55/64**，最后 9 镜在交付证据里连一条
+        `shot_audit` 都没有。"没审过"与"审过没过"在账上长得一样，这是最坏的一种：
+        读者会把缺失当成通过。所以降级收尾前先把剩下的镜头**只审不修**地补完，
+        并给这些事件打上 `degraded: true` 与一条 `audit_after_budget` 汇总。
+        """
         self.degraded_reason = reason
         self.audit.log("budget_exhausted", reason, level="warning")
         self._emit("budget_exhausted", reason)
+        #: 只补**还没审过**的：队列头部那一镜通常正是"刚审完、卡在修复上"的那一镜，
+        #: 再审一次只是把同一条结论重写一遍，还会把"补审了几镜"报大。
+        already = {str(getattr(item, "target", "") or "")
+                   for item in self.audit_results}
+        pending = [str(shot_id) for shot_id in self._shot_queue
+                   if str(shot_id) not in already]
+        audited = 0
+        for shot_id in pending:
+            if self._audit_shot(shot_id, degraded=True) is not None:
+                audited += 1
+        if pending:
+            self.audit.log(
+                "audit_after_budget",
+                f"预算触顶后补审 {audited}/{len(pending)} 镜（只审不修）",
+                level="warning", shots=len(pending), audited=audited,
+                reason=reason)
+            self._emit("audit_after_budget",
+                       f"补审 {audited}/{len(pending)} 镜", shots=len(pending))
         self._transition(DriverState.FINISHING)
 
     def _emit(self, kind: str, message: str, /, **data: Any) -> None:

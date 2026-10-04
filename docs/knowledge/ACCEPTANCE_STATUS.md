@@ -5151,3 +5151,44 @@ long17 是 73.9 → 74.9（净 ＋0.9），long18 是 62.5 → 63.7（净 ＋1.2
 ② 让续轮便宜下来（只带最新观测，或把 `repair_max_turns` 降到 2）。
 **不得**把 `max_tokens` 直接抬到能跑完的数就当没事——那是把守卫当装饰。
 证据 `docs/evidence/20261004_chunked_long18/`。
+
+## 八十二、预算触顶**不许**把没审过的镜头丢掉（§81.6 那条"9 镜从未审计"）
+
+§81.6 把 long18 的代价记账为"token 触顶 → `_degrade_to_finish` → shot_056…064
+**从未被审计**"。这一轮把它当缺陷修掉——**审核不花模型的钱**，用预算去拦它方向就错了。
+
+### 82.1 账：缺的不是日志，是**6 条失败**
+
+long18 里 55 镜有 `shot_audit`，缺的 9 镜是 `shot_056…shot_064`。把那趟保存的工程
+**零 LLM 复评**（`docs/evidence/20261004-audit-after-budget/long18_reaudit.json`）：
+
+| 镜 | 终审 | 构图分 | 红的规则 |
+|---|---|---|---|
+| shot_056 / 057 / 063 | 通过 | 91.2 / 89.7 / 92.3 | — |
+| shot_058 / 061 / 064 | **不通过** | 20.0 | COMPOSITION（064 另有 R001×2） |
+| shot_059 / 060 | **不通过** | 60.2 / 58.5 | COMPOSITION |
+| shot_062 | **不通过** | 53.1 | R001、R003、COMPOSITION |
+
+⇒ 那 9 镜里 **6 镜本来就不通过**（全片 9.4%）。"没审过"与"审过没过"在账上长得一样，
+读者会把缺失当成通过——这是最坏的一种。
+
+### 82.2 修法
+
+`driver._audit_shot(shot_id, *, degraded=False)`：把"跑审核 ＋ 逐字落 `shot_audit`"
+抽成**一份**零 LLM 实现，`_step_checking` 与降级路径共用。`_degrade_to_finish()`
+在转 `FINISHING` **之前**把 `_shot_queue` 里**还没审过**的镜头补审：
+
+* 补审事件带 `degraded: true`（正常路径的事件形状**一个字节没变**，历史事件不受影响）；
+* 写一条 `audit_after_budget` 汇总（`{shots, audited, reason}`）；
+* **只审不修**：不调模型、不触发修复、不写 `repair_applied`；
+* 已经审过的队头那一镜不重复审（否则"补审了几镜"会报大）。
+
+守门 `tests/test_driver_guards.py::test_budget_exhaustion_still_audits_every_remaining_shot`
+（三镜夹具 + 只够"理解＋计划"的预算：三镜都有 `shot_audit`、只有补审的那些带标记、
+有 `audit_after_budget`、且没有 `repair_applied`）。
+
+### 82.3 仍未做
+
+§81.6 的两条**都还没做**，且都要先量再定、都要花真金白银：
+① token 额度跟着场景走（与 §七十九 同形状）；② 让续轮便宜下来（只带最新观测，
+或把 `repair_max_turns` 降到 2）。这一节只保证"**预算再怎么紧，审核不缺席**"。

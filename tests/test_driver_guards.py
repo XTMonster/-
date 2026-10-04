@@ -126,6 +126,48 @@ def test_budget_exhausted_before_planning_degrades_immediately():
     assert transport.chat_calls == 0     # 一次都没打出去
 
 
+def test_budget_exhaustion_still_audits_every_remaining_shot():
+    """预算触顶**不许**把没审过的镜头丢掉（2026-10-04 实测，long18 六十四镜真跑）。
+
+    现场：多轮修复把 token 用量顶到硬编码的 `BudgetLimits.max_tokens`（2 000 000），
+    于是 `budget_exhausted` → `_degrade_to_finish` → 直接跳收尾，`_shot_queue` 里
+    剩下的 **9 镜连一条 `shot_audit` 都没有**——"没审过"与"审过没过"在账上长得一样，
+    读者会把缺失当成通过。
+
+    审核是 bpy 侧的纯规则计算：不调模型、不花钱，所以预算只该拦住**模型回合**，
+    不该拦住审核。这条用例钉住：降级收尾前把没审过的镜头补完，并且这些事件带
+    `degraded: true`（正常路径的事件形状一个字节都不变）。
+    """
+    shots = ("shot_001", "shot_002", "shot_003")
+    transport = RepairingTransport()
+    auditor = FakeAuditor([AuditResult(passed=False, target="shot_001", level="rule")],
+                          shots=shots)
+    # 2 = 阶段 S 的理解 + 阶段 A 的计划：对 shot_001 的修复是第三次，必然被拦下
+    budget = Budget(BudgetLimits(max_llm_calls=2, max_tokens=0,
+                                 max_cost_usd=0, max_wall_seconds=0))
+    driver = _driver(transport, auditor=auditor, budget=budget)
+
+    assert driver.run_to_completion() is DriverState.DONE
+    assert driver.degraded_reason and "调用次数" in driver.degraded_reason
+
+    audits = [entry for entry in driver.audit.recent()
+              if getattr(entry, "kind", "") == "shot_audit"]
+    audited = [str(entry.data.get("shot")) for entry in audits]
+    assert sorted(audited) == sorted(shots), (
+        f"预算触顶后仍有镜头没被审过：审了 {audited}")
+    #: 卡在修复上的那一镜走的是**正常**路径，它的补审事件不该带标记；
+    #: 其余两镜是补审出来的，必须带，否则读账的人分不清来源。
+    first = next(e for e in audits if e.data.get("shot") == "shot_001")
+    assert "degraded" not in first.data
+    later = [e for e in audits if e.data.get("shot") != "shot_001"]
+    assert later and all(e.data.get("degraded") is True for e in later)
+    kinds = [entry.kind for entry in driver.audit.recent()]
+    assert "audit_after_budget" in kinds
+    assert not [entry for entry in driver.audit.recent()
+                if getattr(entry, "kind", "") == "repair_applied"], (
+        "补审只审不修：不许因此写出 repair_applied")
+
+
 def test_token_usage_is_accounted_from_replies():
     class UsageTransport(RepairingTransport):
         def chat(self, payload, timeout=120.0):
