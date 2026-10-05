@@ -110,3 +110,45 @@ model or set enable_rerank=False in query parameters.` ⇒ 上游 1.5.7 的查�
 * **没有建 L3 的正式索引**（那要等 P6 的案例层）；本 spike 只验"能装、能跑、能检索"。
 * 上游对 `llm_model_func`（此处是占位桩）在 `hybrid` 模式下关键词抽取的真实行为，
   仍以第二节的逐行定位为准；**没有在 spike 里跑通 hybrid**。
+
+---
+
+## 六、**端到端实跑**（2026-10-05）：案例层 → 索引 → sidecar → 插件适配器
+
+第五节验的是"LightRAG 能装能跑"；这一节验的是**我们这条链**真的接起来了。
+
+### 6.1 命令与产物
+
+```powershell
+$env:HF_ENDPOINT = "https://hf-mirror.com"
+$env:DEEPSEEK_API_KEY = "<从环境变量读>"
+work\_venv_lr\Scripts\python.exe -m tools.lightrag_service.build_index `
+    --cases work/knowledge_v4_cases/cases --out work/lightrag_v4_pilot --limit 20
+work\_venv_lr\Scripts\python.exe work/_e2e_lightrag.py
+```
+
+索引产物：`work/lightrag_v4_pilot/lightrag/`（`vdb_chunks.json` 20 条向量、
+`kv_store_*`、graph），指纹
+`1ea77414d87e949cdaf9ef9b2aa23cf291a19507ce33b7f653c2dc62822074ce`。
+
+### 6.2 结果（`work/_e2e_lightrag.py` 的输出，逐字）
+
+```json
+{"index_fingerprint": "1ea77414d87e949c", "lightrag_version": "1.5.7",
+ "health": {"status": "ok", "index_fingerprint": "1ea77414…", "lightrag_version": "1.5.7"},
+ "adapter_ids": ["case_103_032", "case_08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_l_017",
+                 "case_114_144", "case_112_022", "case_116_016"],
+ "adapter_reason": ""}
+```
+
+⇒ **整条链通了**：案例层 → LightRAG 索引 → sidecar `/health`＋`/query` →
+插件适配器 `retrieve()` 返回 5 个 `Case`，`last_reason` 为空（**没有走降级分支**）。
+全程本地 GPU 嵌入、无云端 embedding、无第三方 key（除 DeepSeek）。
+
+### 6.3 现场印证的第三条硬要求
+
+`LightRAGIndex` 最初只传了 `embedding_func`，构造时报
+`ValueError: llm_model_func must be provided`（上游 `lightrag.py:1512`）。
+**检索侧的构造也要 `llm_model_func`**——这正是第二节逐行读出来的那条
+（`hybrid`/`local`/`global` 都先抽关键词），现在有了运行期实锤。所以它进了
+`build_requirements` 那类清单：sidecar 启动脚本必须同时给 embedding 与 LLM 两条通道。
