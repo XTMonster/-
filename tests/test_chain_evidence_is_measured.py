@@ -424,7 +424,17 @@ def tree_guard_is_sound(text: str) -> bool:
         return False
     if "$treeBefore -ne $treeAfter" not in tail:
         return False
-    return "INCOMPLETE" in tail and "exit 1" in tail
+    #: **"INCOMPLETE" 与"非零退出"必须挨着**（2026-10-05 收紧）：链子在更后面
+    #: 还有别的 `exit 1`（RK-13 升格之后，红线未达也非零退出）。只要按"tail 里
+    #: 同时出现过这两个串"来判，那条无关的 exit 1 就把这枚判据**变成恒真**——
+    #: 把树守卫的整段删掉、用例仍然说"健全"。所以窗口必须小：同一条裁决里
+    #: 打印 INCOMPLETE 并退出。
+    index = tail.find("INCOMPLETE")
+    while index != -1:
+        if "exit 1" in tail[index:index + 400]:
+            return True
+        index = tail.find("INCOMPLETE", index + 1)
+    return False
 
 
 def test_the_chain_pins_its_numbers_to_one_tree():

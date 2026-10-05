@@ -96,3 +96,39 @@ python -m tools.knowledge.e1_panel --queries work/eval_sets/heldout_v4_long21.js
 ② 下一个该试的是**把"候选面"与"重排器"一起放大**（retrieve-k 20→50、
   重排失败重试、以及重排提示词的形状），以及**查询侧对齐**（把中文指令先译成
   语料的英文工艺说法再检索）——两条都在"语料/查询同层"这一族里。
+
+## 补三：**查询侧对齐**（把中文指令改写成英文工艺词检索串）——**也降**
+
+命令（判分查询仍是冻结的 64 条原文；只有**检索串**换成「原文 ＋ 英文改写」）：
+
+```powershell
+python -m tools.knowledge.e1_panel --queries work/eval_sets/heldout_v4_long21.jsonl `
+    --cases-dir work/knowledge_v4_cases --out work/ab_e1_expand/hybrid.expand_union.rep1.jsonl `
+    --top-k 3 --workers 3 --adapter none `
+    --query-expand llm --expand-provider deepseek --expand-model deepseek-chat --expand-mode union
+```
+
+改写本身是**干净的**（样例：`extreme long shot, establishing shot, static tripod shot, 50mm,
+dock market, Block 14, afternoon sunlight, diagonal light, row of stalls, …`），但
+
+| 杠杆 | E1 | deepseek 评委 | glm 评委 |
+|---|---|---|---|
+| 基准 | **0.1927** | 0.172 | 0.318 |
+| 查询侧对齐（union） | **0.1719** ✗ | 0.161 | 0.323 |
+
+⇒ **把英文工艺词加进检索串反而稀释了**已有的中文线索面**（BM25 因此多召回了"英文词面像、
+但讲的是另一回事"的案例）。**五条杠杆的账**（同一批 64 条冻结查询、同一批评委）：
+
+| # | 杠杆 | E1 | 判定 |
+|---|---|---|---|
+| 0 | 基准（BM25 ＋ 中文线索） | 0.1927 | — |
+| 1 | 产品自带 LLM 过滤 | 0.1720 | ✗ |
+| 2 | cross-encoder 重排（top-20） | 0.1302 | ✗ |
+| 3 | **第三方 LLM 重排（top-20→3）** | **0.2812** | ✓ **唯一有效** |
+| 4 | 查询侧对齐（union） | 0.1719 | ✗ |
+
+**可读的结论**：这条链上，"**让一个强模型读懂中文指令↔英文摘录的关系并重排**"是唯一有效的
+杠杆；**任何"加更多词面"或"按问答相关性筛"的做法都降**。R3 的下一步只剩两件：
+①把重排的**失败率**压下去（第三方额度已恢复）+ 把候选面放大（top-20→50）看上限；
+②判 **top-20 的"完美重排"上限**（正在跑：`work/ab_e1_candidates/hybrid.top20.rep1.jsonl`）——
+它一条就能判定"0.70 是否**结构上**可达"。
