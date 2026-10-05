@@ -45,6 +45,10 @@ SUMMARY_NAME = "baselines.json"
 ARMS = (("hybrid", "none"), ("lexical", "lexical"))
 REPS = (1, 2)
 
+#: 一般化入口（计划 v4 · P9 要跑三臂）用的默认臂名。
+#: 与 `ARMS` 同源：臂名就是 `reviews.<arm>.rep<N>.jsonl` 里的那个词。
+DEFAULT_ARM_NAMES = tuple(arm for arm, _adapter in ARMS)
+
 
 class InputError(RuntimeError):
     """输入缺失或行不自洽（退出码 2 的那一类）。"""
@@ -185,6 +189,99 @@ def render(summary: dict) -> str:
     return json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
 
 
+def paired_report(directory: pathlib.Path, *, arms: Sequence[str] = DEFAULT_ARM_NAMES,
+                  reps: Sequence[int] = REPS) -> dict:
+    """**任意臂集合 × 任意重复次数**的成对读数（计划 v4 的 B.1／R13）。
+
+    与 :func:`build_summary` 的关系：那个是**两臂两重复**的专用版（它的字段名与
+    入库产物 `baselines.json` 绑死，动它就等于改写已发货的证据）；本函数是同一条
+    读数纪律的一般形式，给 P9 的三臂消融用。**不重复实现**判分、复算与唯一性检查——
+    每一臂的读数仍走 :func:`summarise_rep`，与专用版同一份代码。
+
+    三条不变量（都有反面用例）：
+
+    1. **噪声带 R ＝ 参与比较的那些臂的同臂极差的最大值**（`|Δ| > R` 才算量到差别）。
+       这条来自实测：同臂极差 hybrid 4/192＝0.0208、lexical 7/192＝0.0365，
+       所以循环 2 的处置稿把写死的 0.02 换成"从数据推出来的 R"。
+    2. **同一份索引**：所有臂的 `cases_fingerprint` 与 `cases_digest` 必须唯一，
+       否则这不是对照（与专用版同一条检查）。
+    3. **少一次重复 = 输入错误**，不许当成"就这些读数"放过去。
+
+    返回里 `pairs` 覆盖**所有**两两组合，每对带 `delta` / `separation_measured` /
+    `verdict`。注意 `delta` 的方向是 `b − a`（按 `arms` 的给出顺序），
+    `verdict` 只有两种取值：`separated` 或 `inconclusive`——后者**不是**"相等"。
+    """
+    arm_names = tuple(arms)
+    rep_ids = tuple(int(rep) for rep in reps)
+    if len(arm_names) < 2:
+        raise InputError("至少要两条臂才能做对照，收到 %d" % len(arm_names))
+    if not rep_ids:
+        raise InputError("至少要一次重复")
+
+    blocks: Dict[str, dict] = {}
+    for arm in arm_names:
+        entries = []
+        for rep in rep_ids:
+            path = directory / ("reviews.%s.rep%d.jsonl" % (arm, rep))
+            if not path.is_file():
+                raise InputError("找不到 %s" % path.name)
+            entries.append(summarise_rep(path))
+        rows = read_rows(directory / ("reviews.%s.rep%d.jsonl" % (arm, rep_ids[0])))
+        counts = [entry["scored"] for entry in entries]
+        if len(set(counts)) != 1:
+            #: 同一臂的两次重复判的行数不同 ⇒ 候选集变了，R 就不是"只重判"的散布。
+            raise InputError("%s 的几次重复行数不同：%s" % (arm, sorted(set(counts))))
+        values = [entry["value"] for entry in entries]
+        blocks[arm] = {
+            "reps": entries,
+            "mean": round(statistics.fmean(values), 6),
+            "range": round(max(values) - min(values), 6),
+            "rows": counts[0],
+            "queries": len({str(row.get("query") or "") for row in rows}),
+            "cases": len({str(row.get("case_id") or "") for row in rows}),
+        }
+
+    fingerprints = {entry["cases_fingerprint"] for block in blocks.values()
+                    for entry in block["reps"]}
+    digests = {entry["cases_digest"] for block in blocks.values()
+               for entry in block["reps"]}
+    if len(fingerprints) != 1 or len(digests) != 1:
+        raise InputError("各臂的索引不是同一份：%s / %s" % (fingerprints, digests))
+    panels = {tuple(entry["panel"]) for block in blocks.values()
+              for entry in block["reps"]}
+    if len(panels) != 1:
+        raise InputError("各臂的面板不是同一个：%s" % panels)
+
+    noise_band = round(max(block["range"] for block in blocks.values()), 6)
+    pairs: List[dict] = []
+    for index, first in enumerate(arm_names):
+        for second in arm_names[index + 1:]:
+            delta = round(blocks[second]["mean"] - blocks[first]["mean"], 6)
+            measured = abs(delta) > noise_band
+            pairs.append({
+                "a": first, "b": second, "delta": delta,
+                "noise_band": noise_band,
+                "separation_measured": measured,
+                "verdict": "separated" if measured else "inconclusive",
+            })
+
+    return {
+        "generated_by": "tools/knowledge/e1_baseline_summary.py::paired_report",
+        "relevant_threshold": RELEVANT,
+        "panel": sorted(next(iter(panels))),
+        "cases_fingerprint": next(iter(fingerprints)),
+        "cases_digest": next(iter(digests)),
+        "arms_order": list(arm_names),
+        "reps": list(rep_ids),
+        "arms": blocks,
+        "noise_band": noise_band,
+        "pairs": pairs,
+        #: 读数纪律：噪声带以下是 **inconclusive**，不是"两臂相等"。
+        "inconclusive_pairs": [pair for pair in pairs
+                               if not pair["separation_measured"]],
+    }
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     force_utf8_streams()
     parser = argparse.ArgumentParser(prog="knowledge-e1-baseline-summary")
@@ -194,17 +291,47 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="写到哪（默认 <dir>/%s）" % SUMMARY_NAME)
     parser.add_argument("--check", action="store_true",
                         help="只对拍，不写盘；漂移 ⇒ 退出码 1")
+    parser.add_argument("--arms", default="",
+                        help="逗号分隔的臂名（给了一般化成对报告模式；"
+                             "不给＝跑入库那份两臂两重复的专用版）")
+    parser.add_argument("--reps", default="",
+                        help="逗号分隔的重复号，例如 1,2,3（配合 --arms）")
     args = parser.parse_args(argv)
 
     directory = pathlib.Path(args.dir)
     target = pathlib.Path(args.out) if args.out else directory / SUMMARY_NAME
+    general = bool(args.arms or args.reps)
     try:
-        summary = build_summary(directory)
+        if general:
+            arm_names = tuple(name.strip() for name in (args.arms or "").split(",")
+                              if name.strip()) or DEFAULT_ARM_NAMES
+            rep_ids = tuple(int(item) for item in (args.reps or "").split(",")
+                            if item.strip()) or REPS
+            summary = paired_report(directory, arms=arm_names, reps=rep_ids)
+        else:
+            summary = build_summary(directory)
     except InputError as exc:
         print(json.dumps({"overall": "not_measured", "error": str(exc)},
                          ensure_ascii=False))
         return 2
     text = render(summary)
+
+    if general:
+        #: 一般化模式是一份**新**报告，不写进入库那份 `baselines.json` 的位置；
+        #: 没给 `--out` 就写到 `<dir>/paired_report.json`，免得覆盖专用版产物。
+        if not args.out:
+            target = directory / "paired_report.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding="utf-8")
+        print(json.dumps({"overall": "pass", "path": str(target),
+                          "arms_order": summary["arms_order"],
+                          "reps": summary["reps"],
+                          "noise_band": summary["noise_band"],
+                          "pairs": [{k: pair[k] for k in
+                                     ("a", "b", "delta", "verdict")}
+                                    for pair in summary["pairs"]]},
+                         ensure_ascii=False))
+        return 0
 
     if args.check:
         if not target.is_file():
