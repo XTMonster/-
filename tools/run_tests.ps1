@@ -414,12 +414,17 @@ if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
 # `min(30, assertable pairs for that type)`. The JSON is a property of
 # (index, vocabulary) - produced by `holdout_pool --assertable-out` and committed -
 # so using it here is not the oracle grading itself.
-# `--reviewer-classes human,llm-panel` is gate 7's recorded scope: the user
+# `--reviewer-classes human,llm-panel,third-party` is gate 7's recorded scope: the user
 # delegated Q5/Q7/E3 to the DeepSeek + GLM panel ("I have no experience") and
-# then authorised the machine pass outright. The review records themselves are
-# NOT rewritten - `holdout_review_llm.py` still writes `reviewed_by: "llm-panel"`,
-# and the report's `reviewed_by_class` says who judged. Leaving the flag off made
-# the panel's work invisible to RK-13 while the docs claimed the chain passed it.
+# then authorised the machine pass outright; on 2026-10-06 the user went further and
+# said the third-party adjudication *stands in for their own human review*
+# (their words: "this adjudication means standing in for me to make the human-review
+# call") on the relay GPT-6A channel. `third-party` is
+# therefore an accepted class - named explicitly, never by default. The review records
+# themselves are NOT rewritten: `holdout_review_llm.py` writes `reviewed_by: "llm-panel"`
+# and `holdout_review_third_party.py` writes `reviewed_by: "third-party"`, and the
+# report's `reviewed_by_class` says who judged. Leaving the flag off made the panel's
+# work invisible to RK-13 while the docs claimed the chain passed it.
 # `--exclude-cards` is gate 6's denominator, and the reason is in the doc: 4.1b says
 # "every CATALOGUED card (L1/L2) must derive >= 1 entry". Cards outside L1/L2
 # (photo chemistry / drawing technique / electrical work / manuscript-format rules -
@@ -427,7 +432,7 @@ if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
 # `knowledge/card_scope.json`) are not catalogued cards, so they leave the
 # denominator. The gate's own detail still reports `cards_out_of_scope_count`, so
 # shrinking the denominator silently is impossible.
-python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --reviewer-classes human,llm-panel --exclude-cards knowledge/card_scope.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
+python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --reviewer-classes human,llm-panel,third-party --exclude-cards knowledge/card_scope.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
 $gateExit = $LASTEXITCODE
 if ($gateExit -eq 0) {
     Write-Host '  held-out coverage gates: all passed' -ForegroundColor Green
@@ -460,8 +465,16 @@ if (Test-Path $gatesJsonPath) {
         $humanProperty = $gate7.reviewed_by_class.PSObject.Properties['human']
         if ($humanProperty -and $humanProperty.Value) { $humanOnly = [int]$humanProperty.Value }
     }
+    # The third-party caliber is named too (user 2026-10-06: the adjudication stands in
+    # for their own human review; channel = relay GPT-6A). Never merged into "human".
+    $thirdPartyCount = 0
+    if ($gate7 -and $gate7.reviewed_by_class) {
+        $thirdProperty = $gate7.reviewed_by_class.PSObject.Properties['third-party']
+        if ($thirdProperty -and $thirdProperty.Value) { $thirdPartyCount = [int]$thirdProperty.Value }
+    }
     Write-Host ('  reviewer calibers (D12): accepted-class reviewed ' + $gate7.human_reviewed +
-                ' = llm-panel ' + $panelCount + ' + human-only ' + $humanOnly +
+                ' = llm-panel ' + $panelCount + ' + third-party ' + $thirdPartyCount +
+                ' + human-only ' + $humanOnly +
                 '; the strict human-only reading needs ' + $gate7.min_human_review)
 }
 if (-not (Test-Path (Join-Path $evidenceDir 'holdout_gates.json'))) {
