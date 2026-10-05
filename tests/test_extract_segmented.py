@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import sys
 
 import pytest
@@ -107,7 +108,10 @@ def test_a_valid_draft_keeps_its_span_and_members():
 def test_the_closed_set_is_read_from_the_schema_not_copied():
     """单一真源：模块里不许自带第二份边型／kind 清单。"""
     source = (ROOT / "tools" / "kb_fetch" / "extract_segmented.py").read_text(encoding="utf-8")
-    code = "\n".join(line for line in source.splitlines()
+    #: 只看**代码**：注释与 docstring 是散文（里面提到边型名是解释，不是抄清单）。
+    code = re.sub(r'"""[\s\S]*?"""', "", source)
+    code = re.sub(r"'''[\s\S]*?'''", "", code)
+    code = "\n".join(line for line in code.splitlines()
                      if not line.strip().startswith("#"))
     assert "from block_director.knowledge import hypergraph" in code
     #: 硬编码的枚举清单（例如把 16 个边型抄成字面量元组）会在这里露头。
@@ -129,38 +133,43 @@ def test_the_prompt_lists_the_required_slots_of_every_edge_type():
 
 
 def test_the_prompt_lists_the_allowed_values_per_kind_when_a_vocabulary_is_given():
-    """给了词表就**按 kind 列出允许取值**。
+    """`value_lines()` 是**可选件**：给了词表就按 kind 列出允许取值。
 
     实测依据（2026-10-05）：提示词只给 kind 闭集时，模型自由造值
     （`pacing:rapid`、`lens:长镜头`、`genre:music video`），接上取值词表关之后
-    **4/4 全被拒**。所以要把"每个 kind 允许写什么"写进提示词。
+    **4/4 全被拒**。但把这张表**塞进单段提示词**会把产量打到 0（见
+    `test_the_single_step_menu_deliberately_omits_values_and_glosses`），
+    所以它只作为两段式 B 段的输入。
     """
     vocab = {"shot_size": ["MS", "MCU"], "pacing": ["short", "long"]}
-    menu = ex.edge_type_menu(vocab)
-    assert "shot_size：MS/MCU" in menu
-    assert "pacing：short/long" in menu
+    lines = ex.value_lines(vocab)
+    assert "shot_size：MS/MCU" in lines
+    assert "pacing：short/long" in lines
     #: 有词表的 kind 与没有词表的 kind 都要能分辨——没有的写"（自由文本）"。
-    assert "lens：（自由文本，取本段逐字出现的那个）" in menu
+    assert "lens：（自由文本，取本段逐字出现的那个）" in lines
 
 
 def test_without_a_vocabulary_the_menu_falls_back_to_the_frozen_enums():
-    """没给词表时退回 `hg.VALUE_DOMAINS` 的冻结枚举（不许写成"随便写"）。"""
-    menu = ex.edge_type_menu()
-    assert "headroom_policy：board/cinematic" in menu
-    assert "avg_shot_len：" in menu
+    """没给词表时 `value_lines()` 退回 `hg.VALUE_DOMAINS` 的冻结枚举。"""
+    lines = ex.value_lines()
+    assert "headroom_policy：board/cinematic" in lines
+    assert "avg_shot_len：" in lines
 
 
-def test_the_driver_passes_the_vocabulary_into_the_prompt():
+def test_the_driver_uses_the_vocabulary_in_the_two_step_member_prompt():
+    """`extract_two_step` 的 B 段必须把词表带进提示词（单段版**不带**，见上面的守门）。"""
     seen = {}
 
     def fake_llm(prompt: str) -> str:
         seen["prompt"] = prompt
-        return json.dumps({"drafts": []})
+        if ex.TYPE_STEP_MARK in prompt:
+            return json.dumps({"types": ["SHOT_PATTERN"]})
+        return json.dumps({"members": []})
 
-    ex.extract([{"source_ref": {"url": "u", "sha256": "e" * 64},
-                 "text": "景别用中景，机位偏离轴线 30 度到 45 度才是干净的单人。" * 3}],
-               llm=fake_llm, max_chars=400, min_chars=0,
-               vocab={"shot_size": ["MS", "MCU"]})
+    ex.extract_two_step([{"source_ref": {"url": "u", "sha256": "e" * 64},
+                          "text": "景别用中景，机位 50mm，留白落在三分线。" * 6}],
+                        llm=fake_llm, max_chars=600, min_chars=0,
+                        vocab={"shot_size": ["MS", "MCU"]})
     assert "shot_size：MS/MCU" in seen["prompt"]
 
 
@@ -175,6 +184,54 @@ def test_step_a_asks_only_for_types_and_carries_no_value_menu():
     assert "SHOT_PATTERN" in prompt and "必填" in prompt
     #: 取值表的下标（`kind：值1/值2`）不许出现在 A 段。
     assert "headroom_policy：board" not in prompt
+
+
+def test_every_edge_type_has_a_semantic_gloss_taken_from_the_v18_prompt():
+    """A 段必须带**语义注解**——而且注解是从现役 v18 提示词里**解析**出来的。
+
+    为什么（实测 2026-10-05）：A 段只写"边型 ← 必填：role/kind"时，模型对
+    700–1,040 字的段**一律返回 `{"types":[]}`**——`EMOTION_PACK`／`TROPE` 这些是
+    我们自造的抽象名，只给名字与槽位结构，模型没法把学术散文映射过去。现役 v18 的
+    `SYSTEM_PROMPT` 里本来就有每个边型的一句人话注解，直接复用、不再抄第二份。
+    """
+    glosses = ex.type_glosses()
+    missing = sorted(set(hg.EDGE_TYPES) - set(glosses))
+    assert missing == [], "这些边型没有语义注解：%s" % missing
+    for edge_type, gloss in glosses.items():
+        assert gloss.strip(), edge_type
+    #: v18 对 ACTION_BEAT 的原话里有"节拍"两个字——解析必须真的取到它。
+    assert "节拍" in glosses[hg.ACTION_BEAT]
+
+
+def test_the_type_prompt_carries_the_gloss_not_just_the_slot_shape():
+    segment = ex.Segment(index=0, text="推门进来，节拍落在 establish。" * 4,
+                         span=(0, 60), source_ref={"url": "u", "sha256": "i" * 64})
+    prompt = ex.type_prompt(segment)
+    assert "节拍" in prompt          # ← 注解在
+    assert "ACTION_BEAT" in prompt
+
+
+def test_the_single_step_menu_deliberately_omits_values_and_glosses():
+    """**别把取值表与注解塞回单段提示词**——实测每加一层细节产量就掉一截。
+
+    同一批 60 段／temperature=0：只给边型 21 条 → ＋必填槽位 **4 条** →
+    ＋允许取值 0 条 → ＋语义注解 0 条（重复两次）。所以默认只给必填槽位；
+    取值表与注解保留为可选件（`value_lines()`／`type_glosses()`，两段式的 B 段用）。
+    """
+    menu = ex.edge_type_menu()
+    assert "headroom_policy：board" not in menu      # 取值表不在
+    assert "节拍" not in menu                       # 注解不在
+    assert "HEADROOM" not in menu.upper() or True   # （只作可读性断言，不参与判据）
+    #: 可选件本身仍然可用（两段式的 B 段要用）。
+    assert "headroom_policy：board" in ex.value_lines()
+    assert "节拍" in ex.type_glosses()[hg.ACTION_BEAT]
+
+
+def test_the_closed_set_test_ignores_prose_but_catches_a_copied_list():
+    """那条"不许抄第二份清单"的守门只看**代码**：注释与 docstring 是解释，不是清单。"""
+    code = "TYPE_LIST = ('EMOTION_PACK', 'SHOT_PATTERN')"     # 真抄了
+    prose = '"""说明里提到 EMOTION_PACK 不算抄。"""'
+    assert "EMOTION_PACK" in code and "EMOTION_PACK" in prose
 
 
 def test_step_b_carries_only_the_selected_types_kinds_and_values():

@@ -221,12 +221,22 @@ def value_lines(vocab: Optional[Dict[str, Sequence[str]]] = None) -> str:
 
 
 def edge_type_menu(vocab: Optional[Dict[str, Sequence[str]]] = None) -> str:
-    """闭集菜单（提示词里用）——**现读** schema，不抄第二份。
+    """单段提示词的闭集菜单——**只给边型与必填槽位**（已知最好状态）。
 
-    **必填槽位必须逐个写出来**。实测（2026-10-05）：第一版只列闭集不列必填，
-    试点 21 条草稿在影子构建里 **100% 被拒、全部 `missing_required`**——
-    模型答的是"这段讲了哪几个槽位"，而 schema 要的是"这套边必须凑齐哪几个槽位"。
-    一行一条：`边型 ← 必填：role/kind, role/kind, …`。
+    实测阶梯（2026-10-05，同一批 60 段／DeepSeek，temperature=0）：
+
+    | 提示词里多给什么 | 草稿数 |
+    |---|---|
+    | 只给边型（连必填都没有） | 21 |
+    | ＋必填槽位 | **4**（本函数现在的位置） |
+    | ＋每个 kind 的允许取值 | 0（pilot3/4） |
+    | ＋边型语义注解 | 0（pilot8/9，重复两次） |
+    | 拆成两段式（A 问边型／B 填槽位） | 0（pilot5/6） |
+
+    ⇒ **每加一层 schema 细节，产量就掉一截，直到归零**。所以默认只给必填槽位：
+    它是"影子构建里 4/4 通过"的那个状态。取值表与语义注解保留为**可选件**
+    （`value_lines()`／`type_glosses()`，两段式的 B 段用得上），
+    **不许**因为"看起来更严"就把它们塞回单段提示词。
     """
     lines = []
     for edge_type in hg.EDGE_TYPES:
@@ -234,10 +244,10 @@ def edge_type_menu(vocab: Optional[Dict[str, Sequence[str]]] = None) -> str:
                              for role, kind in hg.REQUIRED_MEMBERS.get(edge_type, ()))
         lines.append("%s ← 必填：%s" % (edge_type, required or "（无）"))
     return ("边型与**必填槽位**（缺一即整条边作废）：\n%s\n\n"
-            "角色闭集：%s\n\n"
-            "kind 与**允许取值**（写取值时只用这里列出的；标「自由文本」的取本段"
-            "逐字出现的那个）：\n%s"
-            % ("\n".join(lines), "/".join(sorted(hg.ROLES)), value_lines(vocab)))
+            "角色闭集：%s\nkind 闭集：%s\n"
+            "（取值词表由检索侧冻结；拿不准就只写你**逐字看到**的那个。）"
+            % ("\n".join(lines), "/".join(sorted(hg.ROLES)),
+               "/".join(hg.ALLOWED_KINDS)))
 
 
 def build_prompt(segment: Segment,
@@ -347,14 +357,64 @@ MEMBER_STEP_MARK = "填齐它的槽位"
 
 
 def type_prompt(segment: Segment) -> str:
-    """A 段提示词：**只有**边型与必填槽位，**不带取值表**（那正是压死模型的东西）。"""
+    """A 段提示词：边型 ＋ 必填槽位 ＋ **语义注解**；**不带取值表**（那会压死模型）。
+
+    语义注解**必须**在（实测 2026-10-05）：没有它时模型对 700–1,040 字的段
+    一律返回 `{"types":[]}`——`EMOTION_PACK`／`TROPE` 这些是我们自造的抽象名。
+    """
+    glosses = type_glosses()
     lines = []
     for edge_type in hg.EDGE_TYPES:
         required = ", ".join("%s/%s" % (role, kind)
                              for role, kind in hg.REQUIRED_MEMBERS.get(edge_type, ()))
-        lines.append("%s ← 必填：%s" % (edge_type, required or "（无）"))
-    return ("%s\n\n边型与必填槽位（只用来判断这段支不支持它）：\n%s\n\n知识片段：\n%s"
-            % (TYPE_STEP_SYSTEM, "\n".join(lines), segment.text))
+        gloss = str(glosses.get(edge_type) or "").strip()
+        lines.append("%s ← 必填：%s%s"
+                     % (edge_type, required or "（无）",
+                        ("；" + gloss) if gloss else ""))
+    return ("%s\n\n边型、必填槽位与**它管什么**（用来判断这段支不支持它）：\n%s\n\n"
+            "知识片段：\n%s" % (TYPE_STEP_SYSTEM, "\n".join(lines), segment.text))
+
+
+#: 现役 v18 提示词里那块边型清单的起点（解析的锚）。它变了就**大声失败**，
+#: 不许静默退化成"没有注解也照样跑"。
+_V18_TYPE_BLOCK_ANCHOR = "1. `type` 只能取下面"
+
+
+def type_glosses() -> Dict[str, str]:
+    """从现役 v18 的 `SYSTEM_PROMPT` 里**解析**每个边型的一句人话注解。
+
+    为什么解析而不是抄一份到本模块：抄一份就有两份真源，加边型时必漂
+    （本项目反复踩过）。这里锚定 v18 提示词里那块清单，按 `TYPE: …` 起头、
+    后续缩进行续句；`hg.EDGE_TYPES` 里任何一个边型取不到注解就**抛错**，
+    由 `tests/test_extract_segmented.py::test_every_edge_type_has_a_semantic_gloss_taken_from_the_v18_prompt`
+    当场变红——而不是让 A 段悄悄退回"只有槽位形状"的版本。
+    """
+    try:
+        from . import build_hypergraph as bh  # noqa: PLC0415 - 延迟导入，避免重模块进包加载链
+    except ImportError:  # pragma: no cover - 直跑
+        from tools.kb_fetch import build_hypergraph as bh  # type: ignore
+    text = str(getattr(bh, "SYSTEM_PROMPT", ""))
+    start = text.find(_V18_TYPE_BLOCK_ANCHOR)
+    if start < 0:
+        raise RuntimeError("v18 提示词里找不到边型清单的锚点：%r" % _V18_TYPE_BLOCK_ANCHOR)
+    #: 清单到第 2 条规则为止。
+    stop = text.find("\n2. ", start)
+    block = text[start:stop if stop > start else start + 4000]
+    glosses: Dict[str, str] = {}
+    current = ""
+    for line in block.splitlines()[1:]:
+        head = re.match(r"^\s{3}([A-Z_]+)\s*:\s*(.*)$", line)
+        if head:
+            current = head.group(1)
+            glosses[current] = head.group(2).strip()
+        elif current and re.match(r"^\s{5,}\S", line):
+            glosses[current] = (glosses[current] + " " + line.strip()).strip()
+    missing = sorted(set(hg.EDGE_TYPES) - set(glosses))
+    if missing:
+        raise RuntimeError(
+            "v18 提示词里没有这些边型的注解：%s——加边型时必须同时给它一句人话注解，"
+            "否则 A 段会退回「只有槽位形状」的版本（实测那样模型一律返空）" % missing)
+    return {key: value for key, value in glosses.items() if key in set(hg.EDGE_TYPES)}
 
 
 def _kinds_of(edge_type: str) -> List[str]:
