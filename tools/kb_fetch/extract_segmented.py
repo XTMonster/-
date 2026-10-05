@@ -133,6 +133,33 @@ def segment_text(text: str, *, source_ref: Dict, max_chars: int = DEFAULT_MAX_CH
     return segments
 
 
+def segments_of(record: Dict, *, max_chars: int = DEFAULT_MAX_CHARS) -> List[Segment]:
+    """一条记录的片段。**自带出处指针时就当原子段**，不再重新分段。
+
+    台账 ⑪ 的修法。为什么必须这样（实测 2026-10-05）：A 路把蒸馏出的短陈述当记录喂回来，
+    而 `extract()` 会把它**又分一次段**——草稿的 `span` 于是相对**陈述串**，
+    丢了指向原语料段的指针，影子构建里 3/3 全判 `no_segment_for_span`。
+
+    判据：记录里 `source = {url, sha256, span:[start,end]}` 且 `start < end` ⇒
+    整条文本就是那个 span，`Segment.span` 原样用它（P5 的卡片按原 span 建，能对上）。
+    """
+    pointer = record.get("source")
+    span = (pointer or {}).get("span") if isinstance(pointer, dict) else None
+    if isinstance(span, (list, tuple)) and len(span) == 2:
+        try:
+            start, end = int(span[0]), int(span[1])
+        except (TypeError, ValueError):
+            start = end = -1
+        if 0 <= start < end:
+            text = str(record.get("text") or "").strip()
+            if text:
+                return [Segment(index=0, text=text, span=(start, end),
+                                source_ref=dict(record.get("source_ref") or {}))]
+    return segment_text(str(record.get("text") or ""),
+                        source_ref=dict(record.get("source_ref") or {}),
+                        max_chars=max_chars)
+
+
 def validate_draft(draft: Dict) -> Tuple[bool, str]:
     """**粗闭集 ＋ 出处**检查。返回 ``(ok, reason)``；reason 是**具名**的。
 
@@ -290,8 +317,7 @@ def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
     drafts_seen = 0
     for record in records:
         source_ref = dict(record.get("source_ref") or {})
-        segments = segment_text(str(record.get("text") or ""),
-                                source_ref=source_ref, max_chars=max_chars)
+        segments = segments_of(record, max_chars=max_chars)
         for segment in segments:
             if limit_segments and segments_seen >= limit_segments:
                 break
@@ -514,8 +540,7 @@ def extract_two_step(records: Iterable[Dict], *, llm: Callable[[str], str],
     calls = 0
     for record in records:
         source_ref = dict(record.get("source_ref") or {})
-        for segment in segment_text(str(record.get("text") or ""),
-                                    source_ref=source_ref, max_chars=max_chars):
+        for segment in segments_of(record, max_chars=max_chars):
             if limit_segments and segments_seen >= limit_segments:
                 break
             segments_seen += 1

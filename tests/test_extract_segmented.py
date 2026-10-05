@@ -234,6 +234,47 @@ def test_the_closed_set_test_ignores_prose_but_catches_a_copied_list():
     assert "EMOTION_PACK" in code and "EMOTION_PACK" in prose
 
 
+# --- A 路：陈述自带出处指针 ⇒ 当**原子段**，不许重新分段 ------------------------
+
+def test_a_record_with_a_provenance_pointer_is_treated_as_one_atomic_segment():
+    """A 路修法（台账 ⑪）：记录自带 `source.span` 时，抽取必须**原样用那个 span**。
+
+    实测的缺陷（2026-10-05）：蒸馏出的 165 条陈述喂回抽取器时被**又分了一次段**，
+    草稿的 span 于是相对**陈述串**，丢了指向原语料段的指针——
+    影子构建里 3/3 全判 `no_segment_for_span`。
+    """
+    record = {"source_ref": {"url": "u", "sha256": "k" * 64},
+              "text": "正反打最容易越轴。",                # 短陈述
+              "source": {"url": "u", "sha256": "k" * 64, "span": [120, 480]}}
+    segments = ex.segments_of(record, max_chars=100)
+    assert len(segments) == 1
+    assert segments[0].span == (120, 480)          # ← 原语料段的 span，不是 0-9
+    assert segments[0].text == "正反打最容易越轴。"
+
+
+def test_a_record_without_a_pointer_is_still_segmented_normally():
+    record = {"source_ref": {"url": "u", "sha256": "l" * 64},
+              "text": "一段讲正反打。\n\n另一段讲中性镜头。"}
+    segments = ex.segments_of(record, max_chars=200)
+    assert len(segments) == 2
+
+
+def test_the_driver_keeps_the_pointer_span_on_the_draft():
+    def fake_llm(prompt: str) -> str:
+        return json.dumps({"drafts": [{"type": hg.SHOT_PATTERN,
+                                       "members": [["allow", "shot_size", "shot_size:MS"],
+                                                   ["allow", "lens", "lens:50mm"],
+                                                   ["qualifier", "headroom_policy",
+                                                    "headroom_policy:board"]]}]},
+                          ensure_ascii=False)
+
+    record = {"source_ref": {"url": "u", "sha256": "m" * 64},
+              "text": "正反打最容易越轴，机位要偏离轴线 30 到 45 度。",
+              "source": {"url": "u", "sha256": "m" * 64, "span": [200, 260]}}
+    drafts, _rejects, _stats = ex.extract([record], llm=fake_llm, min_chars=0)
+    assert drafts[0]["source"]["span"] == [200, 260]
+
+
 def test_step_b_carries_only_the_selected_types_kinds_and_values():
     """B 段只带**被选中那一个边型**的 kind 与允许取值。"""
     prompt = ex.member_prompt(SegmentLike("文本"), hg.SHOT_PATTERN,
