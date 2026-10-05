@@ -43,6 +43,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import pathlib
 import sys
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -155,8 +156,40 @@ def sha256_file(path: pathlib.Path) -> str:
     return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
 
 
+def count_queries(path: pathlib.Path) -> int:
+    """冻结查询集的条数（一行一条；空行不算）。"""
+    return sum(1 for line in pathlib.Path(path).read_text(encoding="utf-8").split("\n")
+               if line.strip())
+
+
+def round_usage(path: pathlib.Path, expected_queries: Optional[int]) -> Dict[str, object]:
+    """这一轮**到底是不是这条路由答的**——两种坏法都要看得见。
+
+    1. **降级**：`cases_degrade_reason` 非空 ⇒ `CaseIndex` 已经退回 BM25，行里的
+       `retrieval_path` 仍写着请求的臂（2026-10-05 实测：客户端 10 秒超时把 lightrag
+       臂打回 BM25，读数量的其实是超时）。**这是报告，不是门**——"看得见的降级要不要
+       升格成'该臂无效'"是判据级问题，单列在 `ADJUDICATIONS_v4.md` 的 D11，等用户拍板。
+    2. **静默空**：查询有行数少于查询集条数 ⇒ 那些查询一条都没召回（适配器返回空、
+       上层也就没有行可记）——分母会因此无声变小。
+    """
+    rows = ebs.read_rows(path)
+    queries = {str(row.get("query") or "") for row in rows}
+    degraded = sum(1 for row in rows
+                   if str(row.get("cases_degrade_reason") or "").strip())
+    missing = (None if expected_queries is None
+               else max(0, int(expected_queries) - len(queries)))
+    return {"queries_expected": expected_queries,
+            "queries_with_rows": len(queries),
+            "queries_missing": missing,
+            "backends_effective": sorted({str(row.get("cases_backend_effective") or "")
+                                          for row in rows}),
+            "degraded_rows": degraded,
+            "used_the_route": bool(degraded == 0 and (missing in (None, 0)))}
+
+
 def build_report(reviews_dir: pathlib.Path, routes: Sequence[str], runs: int,
-                 *, provenance: Optional[Dict] = None) -> Dict:
+                 *, provenance: Optional[Dict] = None,
+                 expected_queries: Optional[int] = None) -> Dict:
     """把逐行录档读成计划 P9① 要的那份 JSON（判词全走 `paired_report`）。"""
     report = ebs.paired_report(pathlib.Path(reviews_dir), arms=list(routes),
                                reps=list(range(1, int(runs) + 1)))
@@ -169,6 +202,14 @@ def build_report(reviews_dir: pathlib.Path, routes: Sequence[str], runs: int,
     #: **有效轮**：两位评委都回了分的行必须覆盖**每一轮**。有一条不齐就说明这一轮
     #: 有"一侧缺席"，按 V1 的纪律它不算有效轮——据它下的判词要打折扣。
     report["all_rounds_complete"] = all(entry["complete"] for entry in coverage.values())
+    report["route_usage"] = {rep_name(route, rep):
+                             round_usage(pathlib.Path(reviews_dir) / rep_name(route, rep),
+                                         expected_queries)
+                             for route, rep in plan_runs(routes, runs)}
+    #: **报告**不是**门**：这一条只说明"这一轮是不是这条路由答的"。把它当成
+    #: "该臂无效"是判据级的改动，单列 D11（须用户点头），本工具不擅自升级。
+    report["all_rounds_used_the_route"] = all(
+        entry["used_the_route"] for entry in report["route_usage"].values())
     #: **一次重复算不出噪声带**：`noise_band` 由"同臂极差"推出来，只有 1 轮时它恒为 0，
     #: 于是任何非零 Δ 都会被机械地判成 `separated`——那条判词**恒真、无信息量**。
     #: 这不是 `paired_report` 的缺陷（它只报它算得出的东西），而是本工具必须写明的
@@ -244,17 +285,25 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "heldout": str(heldout),
         "heldout_sha256": sha256_file(heldout),
         "lightrag_fingerprint": fingerprint,
+        #: 这一轮 lightrag 路由用的读超时（产品默认 10 秒对**测量**太短；见
+        #: `block_director/knowledge/lightrag_adapter.py:TIMEOUT_ENV` 那段）。
+        "lightrag_timeout": os.environ.get("BLOCK_DIRECTOR_LIGHTRAG_TIMEOUT", ""),
         "reviews_dir": str(reviews_dir),
         "review_files": {rep_name(route, rep): sha256_file(reviews_dir / rep_name(route, rep))
                          for route, rep in plan_runs(routes, args.runs)},
-    })
+    }, expected_queries=count_queries(heldout))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                         encoding="utf-8", newline="\n")
     print(json.dumps({"out": str(out_path), "routes": routes, "runs": args.runs,
                       "noise_band": report["noise_band"],
                       "all_rounds_complete": report["all_rounds_complete"],
+                      "all_rounds_used_the_route": report["all_rounds_used_the_route"],
                       "pairs": report["pairs"]}, ensure_ascii=False, indent=2))
+    if not report["all_rounds_used_the_route"]:
+        #: 只**喊一声**（不拦、不判）：这是 D11 要裁的那件事，本工具不擅自升级。
+        print(json.dumps({"warning": "有轮次不是这条路由答的（降级或静默空）",
+                          "route_usage": report["route_usage"]}, ensure_ascii=False))
     return 0
 
 

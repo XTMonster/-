@@ -27,6 +27,16 @@ DEFAULT_URL = "http://127.0.0.1:8765"
 #: 注册开关：**默认关**。产品现行的默认路径是 `hybrid`（BM25），而 LightRAG 那条路
 #: 依赖 sidecar——不显式打开就不该让默认检索依赖一个可能不在的服务。
 ENABLE_ENV = "BLOCK_DIRECTOR_RETRIEVAL_LIGHTRAG"
+#: 单次 `/health`／`/query` 的读超时（秒）的**环境变量覆盖**。
+#:
+#: 为什么需要它（2026-10-05 实测）：默认 10 秒是"sidecar 已经热着"的预算，而
+#: LightRAG 的**第一次**查询要把 storages 装进来（还要加载本地嵌入模型），实测
+#: 远超 10 秒——于是每条查询都在客户端超时、`CaseIndex` 静默退回 BM25，
+#: 那条臂量到的是**超时**而不是检索质量（`work/_dryrun.lightrag.jsonl` 里那行
+#: `cases_degrade_reason: lightrag_query_failed:TimeoutError` 就是它）。
+#: 生产默认**不动**（10 秒是产品侧的延迟预算；退回 BM25 是 §2.3b 的设计内降级），
+#: 但**测量**必须能把超时放宽到"量得到检索"的量级——那是这条环境变量的用途。
+TIMEOUT_ENV = "BLOCK_DIRECTOR_LIGHTRAG_TIMEOUT"
 _TRUTHY = ("1", "true", "yes", "on")
 
 
@@ -84,11 +94,24 @@ class LightRAGAdapter:
 
 def make_lightrag_adapter(index_dir: Any = None, *, base_url: str = "",
                           expected_fingerprint: str = "",
-                          timeout: float = 10.0) -> LightRAGAdapter:
-    """工厂：签名与 `cases.py:88` 的契约一致（`(index_dir) -> adapter`）。"""
+                          timeout: Optional[float] = None) -> LightRAGAdapter:
+    """工厂：签名与 `cases.py:88` 的契约一致（`(index_dir) -> adapter`）。
+
+    `timeout` 留空则看 `BLOCK_DIRECTOR_LIGHTRAG_TIMEOUT`，再留空才回默认 10 秒。
+    给不出数（不是正数）就**具名报错**——不许把"超时预算写错了"变成"检索没命中"。
+    """
     import os
     url = base_url or os.environ.get("BLOCK_DIRECTOR_LIGHTRAG_URL") or DEFAULT_URL
-    return LightRAGAdapter(base_url=url, timeout=timeout,
+    if timeout is None:
+        raw = str(os.environ.get(TIMEOUT_ENV) or "").strip()
+        if raw:
+            try:
+                timeout = float(raw)
+            except ValueError as exc:
+                raise ValueError("%s 不是数：%r" % (TIMEOUT_ENV, raw)) from exc
+    if timeout is not None and float(timeout) <= 0:
+        raise ValueError("lightrag 超时必须为正数，收到 %r" % (timeout,))
+    return LightRAGAdapter(base_url=url, timeout=float(timeout or 10.0),
                            expected_fingerprint=expected_fingerprint)
 
 

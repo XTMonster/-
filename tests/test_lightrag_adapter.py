@@ -108,3 +108,37 @@ def test_the_manifest_mismatch_fails_closed_with_its_own_reason():
         assert adapter.last_reason.startswith("index_fingerprint_mismatch")
     finally:
         server.shutdown()
+
+
+def test_the_measurement_timeout_can_be_raised_by_env(monkeypatch):
+    """**2026-10-05 实测**：默认 10 秒是"sidecar 已经热着"的预算，而 LightRAG 的
+    第一次查询要把 storages 装进来（实测远超 10 秒）——于是每条查询都在客户端超时、
+    `CaseIndex` 退回 BM25，那条臂量到的是**超时**而不是检索质量
+    （`work/_dryrun.lightrag.jsonl` 里就有一行 `lightrag_query_failed:TimeoutError`）。
+
+    生产默认**不动**（10 秒是产品侧的延迟预算，退回 BM25 是 §2.3b 的设计内降级）；
+    这里钉的是"**测量**能把超时放开"这条缝：显式入参 > 环境变量 > 默认 10 秒，
+    而且写错（不是数／非正数）要**具名报错**，不许被当成"检索没命中"。
+    """
+    from block_director.knowledge import lightrag_adapter as la
+
+    monkeypatch.delenv(la.TIMEOUT_ENV, raising=False)
+    assert la.make_lightrag_adapter().timeout == 10.0
+    monkeypatch.setenv(la.TIMEOUT_ENV, "180")
+    assert la.make_lightrag_adapter().timeout == 180.0
+    assert la.make_lightrag_adapter(timeout=7).timeout == 7.0     # 显式入参优先
+
+    monkeypatch.setenv(la.TIMEOUT_ENV, "soon")
+    try:
+        la.make_lightrag_adapter()
+    except ValueError as exc:
+        assert la.TIMEOUT_ENV in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("超时预算写错了竟然被收下")
+    monkeypatch.setenv(la.TIMEOUT_ENV, "-1")
+    try:
+        la.make_lightrag_adapter()
+    except ValueError:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("负数超时竟然被收下")

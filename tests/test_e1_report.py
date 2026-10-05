@@ -92,6 +92,9 @@ def _write_reviews(path: pathlib.Path, *, route: str, relevant: int, rows: int =
             "scores": scores, "score": 5.0 if index < relevant else 1.0,
             "retrieval_path": route, "cases_fingerprint": FP, "cases_digest": DG,
             "panel": ["deepseek-chat", "glm-5.3"], "zh": "", "excerpt": "x",
+            #: 与真实行同形：实际干活的后端 + 降级原因（后者非空 ⇒ 已退回 BM25）。
+            "cases_backend_effective": "hybrid" if route == "hybrid" else "lightrag",
+            "cases_degrade_reason": "",
         }, ensure_ascii=False))
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -142,3 +145,43 @@ def test_a_round_with_a_missing_judge_side_is_not_a_complete_round(tmp_path):
     entry = report["judge_coverage"]["reviews.a.rep1.jsonl"]
     assert entry["single_judge_rows"] == 1 and entry["two_judge_rows"] == 9
     assert entry["complete"] is False
+
+
+def test_a_round_that_degraded_or_lost_queries_is_reported_not_silent(tmp_path):
+    """**2026-10-05 实测**：lightrag 臂的客户端 10 秒超时把它打回 BM25，行里
+    `retrieval_path` 仍写着 `lightrag`——读数量的其实是超时。
+
+    本工具把这件事**报出来**（`route_usage`），但**不当门**：把"看得见的降级"
+    升格成"该臂无效"是判据级改动，单列 D11（须用户点头）。
+    """
+    reviews = tmp_path / "reviews"
+    reviews.mkdir()
+    for route in ("hybrid", "lightrag"):
+        for rep in (1, 2):
+            _write_reviews(reviews / er.rep_name(route, rep), route=route, relevant=3)
+    #: 让 lightrag 的第 2 轮里出现一行"退回 BM25"的记录。
+    lines = (reviews / er.rep_name("lightrag", 2)).read_text(encoding="utf-8").split("\n")
+    row = json.loads(lines[0])
+    row["cases_backend_effective"] = "hybrid"
+    row["cases_degrade_reason"] = "lightrag_query_failed:TimeoutError"
+    lines[0] = json.dumps(row, ensure_ascii=False)
+    (reviews / er.rep_name("lightrag", 2)).write_text("\n".join(lines), encoding="utf-8")
+
+    report = er.build_report(reviews, ["hybrid", "lightrag"], 2, expected_queries=10)
+    entry = report["route_usage"][er.rep_name("lightrag", 2)]
+    assert entry["degraded_rows"] == 1
+    assert entry["used_the_route"] is False
+    assert entry["backends_effective"] == ["hybrid", "lightrag"]
+    assert report["all_rounds_used_the_route"] is False
+    assert report["route_usage"][er.rep_name("hybrid", 1)]["used_the_route"] is True
+    assert report["route_usage"][er.rep_name("hybrid", 1)]["queries_missing"] == 0
+    #: 静默空：查询集比这一轮实际有行的查询多 ⇒ 那几条一条都没召回，也要看得见。
+    thin = er.build_report(reviews, ["hybrid", "lightrag"], 2, expected_queries=11)
+    assert thin["route_usage"][er.rep_name("hybrid", 1)]["queries_missing"] == 1
+    assert thin["route_usage"][er.rep_name("hybrid", 1)]["used_the_route"] is False
+
+
+def test_count_queries_ignores_blank_lines(tmp_path):
+    path = tmp_path / "heldout.txt"
+    path.write_text("一\n\n二\n三\n", encoding="utf-8")
+    assert er.count_queries(path) == 3
