@@ -326,6 +326,189 @@ def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
     return drafts_out, rejects, stats
 
 
+TYPE_STEP_SYSTEM = (
+    "你是分镜/表演知识的抽取器。第一步只做一件事：判断给你的**知识片段支持哪些边型**。\n"
+    "只输出 JSON：{\"types\":[\"<边型>\",...]}。\n"
+    "规则：①只写下面列出过的边型；②一段可以支持 0 个边型，那就返回空数组——"
+    "**宁可空手，也不许硬凑**；③只判断边型，不要写成员、不要写取值。"
+)
+
+MEMBER_STEP_SYSTEM = (
+    "你是分镜/表演知识的抽取器。第二步只做一件事：为**指定的那一个边型**填齐它的槽位。\n"
+    "只输出 JSON：{\"members\":[[\"<角色>\",\"<kind>\",\"<kind>:<取值>\"(,\"<依据>\")],...],"
+    "\"confidence\":0-10}。\n"
+    "规则：①**必填槽位一个都不能少**，缺一即整条边作废；②取值只用下面列出的；"
+    "③成员第 4 项（可选）写**逐字出自本段**的依据短语；④填不齐就返回空数组，不许编。"
+)
+
+#: A 段用的标记（测试与排障都靠它区分两段）。
+TYPE_STEP_MARK = "支持哪些边型"
+MEMBER_STEP_MARK = "填齐它的槽位"
+
+
+def type_prompt(segment: Segment) -> str:
+    """A 段提示词：**只有**边型与必填槽位，**不带取值表**（那正是压死模型的东西）。"""
+    lines = []
+    for edge_type in hg.EDGE_TYPES:
+        required = ", ".join("%s/%s" % (role, kind)
+                             for role, kind in hg.REQUIRED_MEMBERS.get(edge_type, ()))
+        lines.append("%s ← 必填：%s" % (edge_type, required or "（无）"))
+    return ("%s\n\n边型与必填槽位（只用来判断这段支不支持它）：\n%s\n\n知识片段：\n%s"
+            % (TYPE_STEP_SYSTEM, "\n".join(lines), segment.text))
+
+
+def _kinds_of(edge_type: str) -> List[str]:
+    kinds = [kind for _role, kind in hg.REQUIRED_MEMBERS.get(edge_type, ())]
+    return sorted(dict.fromkeys(kinds))
+
+
+def member_prompt(segment, edge_type: str,
+                  vocab: Optional[Dict[str, Sequence[str]]] = None) -> str:
+    """B 段提示词：**只**带这一个边型的 kind 与其允许取值。
+
+    这是"两段式"的全部意义：每次调用的枚举面从 26 kind／374 取值缩到"一个边型的
+    那几个 kind"（实测：平铺全表时模型对 1,040 字的段也返回空）。
+    """
+    kinds = _kinds_of(edge_type)
+    table = {}
+    for kind, values in (hg.VALUE_DOMAINS or {}).items():
+        if values:
+            table[kind] = tuple(values)
+    for kind, values in (vocab or {}).items():
+        cleaned = tuple(str(value) for value in (values or ()) if str(value))
+        if cleaned:
+            table[kind] = cleaned
+    lines = []
+    for kind in kinds:
+        values = table.get(kind)
+        lines.append("%s：%s" % (kind, "/".join(values)) if values
+                     else "%s：（自由文本，取本段逐字出现的那个）" % kind)
+    required = ", ".join("%s/%s" % (role, kind)
+                         for role, kind in hg.REQUIRED_MEMBERS.get(edge_type, ()))
+    return ("%s\n\n边型：%s\n必填槽位：%s\n这个边型用到的 kind 与允许取值：\n%s\n\n知识片段：\n%s"
+            % (MEMBER_STEP_SYSTEM, edge_type, required, "\n".join(lines),
+               getattr(segment, "text", "")))
+
+
+def parse_types(reply: str) -> Tuple[List[str], Optional[str]]:
+    """解 A 段回包：只认闭集里的边型。"""
+    text = str(reply or "").strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1] if "\n" in text else ""
+        if text.rstrip().endswith("```"):
+            text = text.rstrip()[:-3]
+    try:
+        payload = json.loads(text.strip() or "{}")
+    except ValueError as exc:
+        return [], "parse_fault:%s" % exc
+    raw = payload.get("types") if isinstance(payload, dict) else payload
+    if not isinstance(raw, list):
+        return [], "parse_fault:no_types_array"
+    return [str(item) for item in raw if str(item) in hg.EDGE_TYPES], None
+
+
+def parse_members(reply: str) -> Tuple[List, Optional[int], Optional[str]]:
+    """解 B 段回包：返回 ``(members, confidence, fault)``。"""
+    text = str(reply or "").strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1] if "\n" in text else ""
+        if text.rstrip().endswith("```"):
+            text = text.rstrip()[:-3]
+    try:
+        payload = json.loads(text.strip() or "{}")
+    except ValueError as exc:
+        return [], None, "parse_fault:%s" % exc
+    if not isinstance(payload, dict):
+        return [], None, "parse_fault:not_object"
+    members = payload.get("members")
+    if not isinstance(members, list):
+        return [], None, "parse_fault:no_members_array"
+    confidence = payload.get("confidence")
+    try:
+        confidence = int(confidence) if confidence is not None else None
+    except (TypeError, ValueError):
+        confidence = None
+    return members, confidence, None
+
+
+def extract_two_step(records: Iterable[Dict], *, llm: Callable[[str], str],
+                     max_chars: int = DEFAULT_MAX_CHARS,
+                     limit_segments: int = 0,
+                     min_chars: int = DEFAULT_MIN_CHARS,
+                     vocab: Optional[Dict[str, Sequence[str]]] = None
+                     ) -> Tuple[List[Dict], List[Dict], Dict]:
+    """**两段式**驱动：A 问边型 → B 填槽位。
+
+    为什么要拆（实测 2026-10-05 的负结果）：把 374 个取值平铺进一次调用，模型对
+    96 字与 1,040 字的段**都返回空**；约束越加越严的曲线是 21 → 4 → **0** 条。
+    拆开之后每次调用的枚举面从 26 kind 缩到"一个边型的那几个 kind"。
+
+    调用数记在 `stats["calls"]`（A 每段 1 次；B 只在 A 选中边型时才有）。
+    """
+    drafts_out: List[Dict] = []
+    rejects: List[Dict] = []
+    segments_seen = 0
+    skipped_short = 0
+    drafts_seen = 0
+    segments_failed = 0
+    calls = 0
+    for record in records:
+        source_ref = dict(record.get("source_ref") or {})
+        for segment in segment_text(str(record.get("text") or ""),
+                                    source_ref=source_ref, max_chars=max_chars):
+            if limit_segments and segments_seen >= limit_segments:
+                break
+            segments_seen += 1
+            if len(segment.text) < min_chars:
+                skipped_short += 1
+                continue
+            where = {"url": source_ref.get("url"), "sha256": source_ref.get("sha256"),
+                     "span": list(segment.span)}
+            # ---- A 段：只问边型 ----
+            try:
+                calls += 1
+                types, fault = parse_types(llm(type_prompt(segment)))
+            except Exception as exc:  # noqa: BLE001
+                types, fault = [], "llm_error:%s: %s" % (type(exc).__name__, exc)
+            if fault is not None:
+                segments_failed += 1
+                rejects.append({"reason": fault, "source": where, "step": "types"})
+                continue
+            if not types:
+                #: A 段空手是**合法**结果（这段确实没有强耦合），不是失败。
+                continue
+            # ---- B 段：逐个边型填槽位 ----
+            for edge_type in types:
+                try:
+                    calls += 1
+                    members, confidence, fault = parse_members(
+                        llm(member_prompt(segment, edge_type, vocab)))
+                except Exception as exc:  # noqa: BLE001
+                    members, confidence, fault = [], None, (
+                        "llm_error:%s: %s" % (type(exc).__name__, exc))
+                if fault is not None:
+                    drafts_seen += 1
+                    rejects.append({"reason": fault, "source": where, "step": "members",
+                                    "type": edge_type})
+                    continue
+                if not members:
+                    #: B 段空手同样合法（填不齐就不写）。
+                    continue
+                drafts_seen += 1
+                candidate = {"type": edge_type, "members": members,
+                             "confidence": confidence, "source": where}
+                ok, reason = validate_draft(candidate)
+                if ok:
+                    drafts_out.append(candidate)
+                else:
+                    rejects.append({"reason": reason, "draft": candidate, "step": "validate"})
+    stats = {"segments": segments_seen, "skipped_short": skipped_short,
+             "drafts_seen": drafts_seen, "kept": len(drafts_out),
+             "rejected": len(rejects), "segments_failed": segments_failed,
+             "calls": calls}
+    return drafts_out, rejects, stats
+
+
 class DeepSeekClient:
     """构建期抽取用的 LLM 通道（用户 U10：沿用别家方案处的内部 LLM 用 DeepSeek）。
 
@@ -419,6 +602,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="先在这份语料上现建 v4 词表，把**每个 kind 的允许取值**"
                              "写进提示词（实测：不写它模型会自由造值，接上取值词表关后"
                              "4/4 被拒）")
+    parser.add_argument("--mode", default="single", choices=["single", "two-step"],
+                        help="single＝一次调用给全部约束（实测会把模型压死）；"
+                             "two-step＝A 问边型、B 只带那一个边型的 kind 与取值")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     records = load_records(pathlib.Path(args.corpus))
@@ -448,12 +634,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             from tools.kb_fetch import build_shadow as bs  # type: ignore
         _nodes, vocab = bs.build_vocab(
             bs.segment_cards(pathlib.Path(args.corpus), max_chars=args.max_chars))
-    drafts, rejects, stats = extract(records, llm=client, max_chars=args.max_chars,
-                                     limit_segments=args.limit_segments,
-                                     min_chars=args.min_chars, vocab=vocab)
+    runner = extract_two_step if args.mode == "two-step" else extract
+    drafts, rejects, stats = runner(records, llm=client, max_chars=args.max_chars,
+                                    limit_segments=args.limit_segments,
+                                    min_chars=args.min_chars, vocab=vocab)
     common.write_jsonl(out_dir / EXTRACT_NAME, drafts)
     common.write_jsonl(out_dir / REJECTS_NAME, rejects)
     print(json.dumps({"overall": "pass", "prompt_version": PROMPT_VERSION,
+                      "mode": args.mode,
                       "model": args.model, **stats,
                       "out": str(out_dir)}, ensure_ascii=False))
     return 0 if drafts else 1

@@ -164,6 +164,76 @@ def test_the_driver_passes_the_vocabulary_into_the_prompt():
     assert "shot_size：MS/MCU" in seen["prompt"]
 
 
+# --- 两段式（P4/P5⑥：平铺取值表把模型压死之后的唯一出路）---------------------------
+
+def test_step_a_asks_only_for_types_and_carries_no_value_menu():
+    """A 段只问"这段支持哪些边型"——**不带**取值表（那是压死模型的东西）。"""
+    segment = ex.Segment(index=0, text="景别用中景，机位偏离轴线 30 度。" * 6,
+                         span=(0, 120), source_ref={"url": "u", "sha256": "f" * 64})
+    prompt = ex.type_prompt(segment)
+    assert "支持哪些边型" in prompt
+    assert "SHOT_PATTERN" in prompt and "必填" in prompt
+    #: 取值表的下标（`kind：值1/值2`）不许出现在 A 段。
+    assert "headroom_policy：board" not in prompt
+
+
+def test_step_b_carries_only_the_selected_types_kinds_and_values():
+    """B 段只带**被选中那一个边型**的 kind 与允许取值。"""
+    prompt = ex.member_prompt(SegmentLike("文本"), hg.SHOT_PATTERN,
+                              {"shot_size": ["MS"], "lens": ["50mm"],
+                               "headroom_policy": ["board"], "pacing": ["short"]})
+    assert "SHOT_PATTERN" in prompt
+    assert "shot_size：MS" in prompt and "lens：50mm" in prompt
+    #: 不属于这个边型的 kind 不许出现（枚举面从 26 个缩到 3 个）。
+    assert "pacing：" not in prompt
+    assert "EDIT_RHYTHM" not in prompt
+
+
+class SegmentLike:
+    """给 B 段用的最小片段替身（只带 `text` 与 `span`）。"""
+
+    def __init__(self, text: str):
+        self.text = text
+        self.span = (0, len(text))
+
+
+def test_two_step_combines_into_a_draft_with_provenance():
+    text = "机位偏离轴线 30 度到 45 度，景别用中景，镜头 50mm。" * 4
+
+    def fake_llm(prompt: str) -> str:
+        if "支持哪些边型" in prompt:
+            return json.dumps({"types": ["SHOT_PATTERN"]})
+        return json.dumps({"members": [["allow", "shot_size", "shot_size:MS"],
+                                       ["allow", "lens", "lens:50mm"],
+                                       ["qualifier", "headroom_policy",
+                                        "headroom_policy:board"]],
+                           "confidence": 8})
+
+    drafts, rejects, stats = ex.extract_two_step(
+        [{"source_ref": {"url": "u", "sha256": "g" * 64}, "text": text}],
+        llm=fake_llm, max_chars=600, min_chars=0,
+        vocab={"shot_size": ["MS"], "lens": ["50mm"], "headroom_policy": ["board"]})
+    assert rejects == []
+    assert len(drafts) == 1
+    draft = drafts[0]
+    assert draft["type"] == hg.SHOT_PATTERN
+    assert draft["source"]["url"] == "u" and draft["source"]["span"][1] > 0
+    assert [member[0] for member in draft["members"]] == ["allow", "allow", "qualifier"]
+    assert stats["calls"] == 2
+
+
+def test_two_step_records_a_named_reject_when_the_type_step_is_unparseable():
+    def fake_llm(prompt: str) -> str:
+        return "not json at all"
+
+    drafts, rejects, stats = ex.extract_two_step(
+        [{"source_ref": {"url": "u", "sha256": "h" * 64}, "text": "x" * 200}],
+        llm=fake_llm, max_chars=600, min_chars=0, vocab={})
+    assert drafts == []
+    assert rejects[0]["reason"].startswith("parse_fault")
+    assert stats["kept"] + stats["rejected"] == stats["drafts_seen"] + stats["segments_failed"]
+
+
 # --- 4. 驱动器与账目 ----------------------------------------------------------
 
 def test_the_driver_closes_the_books_on_kept_and_rejected():
