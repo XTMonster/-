@@ -167,6 +167,31 @@ def test_with_the_index_an_out_of_vocabulary_required_value_is_rejected(tmp_path
     assert "dropped=" in why
 
 
+def test_building_the_shadow_vocab_does_not_touch_the_shipped_artifacts(tmp_path):
+    """**回归守门**：影子构建绝不许写现役知识产物。
+
+    2026-10-05 实测踩过一次：`vocabulary.run()` 有副作用（写
+    `knowledge/hypergraph.vocab.json`、`knowledge/hypergraph.nodes.jsonl`、
+    `fixtures/knowledge_holdout.vocab.json`），影子构建把它调起来之后，
+    现役词表被覆盖、全量 pytest 三条红。重建期间现役产物必须逐字节不动。
+    """
+    import hashlib
+
+    shipped = [bs.common.KNOWLEDGE / "hypergraph.vocab.json",
+               bs.common.KNOWLEDGE / "hypergraph.nodes.jsonl",
+               bs.common.ROOT / "fixtures" / "knowledge_holdout.vocab.json"]
+    before = {str(path): (hashlib.sha256(path.read_bytes()).hexdigest()
+                          if path.is_file() else "")
+              for path in shipped}
+    cards = bs.segment_cards(_corpus(tmp_path), max_chars=2400)
+    bs.build_vocab(cards)
+    after = {str(path): (hashlib.sha256(path.read_bytes()).hexdigest()
+                         if path.is_file() else "")
+             for path in shipped}
+    assert before == after, "影子构建动了现役产物：%s" % [
+        name for name in before if before[name] != after[name]]
+
+
 def test_the_required_value_domain_is_known_to_the_schema():
     """反面参考：`headroom_policy` 的闭集是 `("board","cinematic")`——词表是有的，
     只是当前这条路径没把 `NodeIndex` 传进去（见上一条）。"""

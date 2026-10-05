@@ -126,13 +126,22 @@ def card_objects(cards: Dict[str, Dict]) -> List:
 
 
 def build_vocab(cards: Dict[str, Dict]) -> Tuple[List[Dict], Dict[str, List[str]]]:
-    """在**新语料**上建 v4 词表（现役 `vocabulary.run` 的单一真源）。
+    """在**新语料**上建 v4 词表。**只调纯函数，不调 `vocabulary.run()`。**
 
     注意 `lens` 一类的开放值是从**卡片正文**里汇出来的（`vocabulary._LENS_RE`），
     所以这里必须把片段正文喂进去——只跑受控表会少掉这些取值（实测：只跑受控表
     176 个节点、带正文 180 个）。
+
+    为什么不用 `vocabulary.run()`：它**有副作用**——会把结果写进
+    `knowledge/hypergraph.vocab.json`、`knowledge/hypergraph.nodes.jsonl` 与
+    `fixtures/knowledge_holdout.vocab.json` 三处**现役**产物。2026-10-05 实测踩过一次：
+    影子构建把现役词表覆盖了，全量 pytest 当场三条红。重建期间现役知识产物必须
+    逐字节不动（计划 §3.1 的"保留 3 项"），所以这里只调 `build_nodes()` ＋
+    `vocab_payload()` 两个纯函数，写盘只写影子目录。
+    （守门：`tests/test_build_shadow.py::test_building_the_shadow_vocab_does_not_touch_the_shipped_artifacts`。）
     """
-    return vocab_mod.run(card_objects(cards))
+    nodes = vocab_mod.build_nodes(card_objects(cards))
+    return nodes, vocab_mod.vocab_payload(nodes)
 
 
 def node_index(nodes: Sequence[Dict]):
