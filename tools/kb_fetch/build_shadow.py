@@ -167,9 +167,9 @@ def build_shadow(drafts_path: pathlib.Path, *, corpus_dir: pathlib.Path,
         vocab = {}
     drafts: List[Dict] = []
     if pathlib.Path(drafts_path).is_file():
-        for line in pathlib.Path(drafts_path).read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                drafts.append(json.loads(line))
+        #: 用 `common.read_jsonl`（只按 `\n` 切）——`splitlines()` 会按 Unicode 行边界
+        #: 切开 JSON 字符串（`\u2028` 一类），把一份好文件读成"坏行"。
+        drafts = common.read_jsonl(pathlib.Path(drafts_path))
 
     edges: List[Dict] = []
     rejects: List[Dict] = []

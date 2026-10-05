@@ -62,11 +62,9 @@ DIMENSIONS_OF_TYPE: Dict[str, Tuple[str, ...]] = {
 
 
 def load_edges(path: pathlib.Path) -> List[Dict]:
-    out: List[Dict] = []
-    for line in pathlib.Path(path).read_text(encoding="utf-8").splitlines():
-        if line.strip():
-            out.append(json.loads(line))
-    return out
+    """读 JSONL。**只按 `\\n` 切**（`str.splitlines()` 会按 Unicode 行边界切开字符串）。"""
+    from tools.kb_fetch import common  # noqa: PLC0415 - 避免把构建期依赖拉到模块级
+    return common.read_jsonl(pathlib.Path(path))
 
 
 def coverage(edges: Iterable[Dict], card_domain: Dict[str, str], *,
