@@ -36,6 +36,16 @@ work\_venv_lr\Scripts\python.exe -m tools.knowledge.e1_panel `
 
 ## 还没试的（都要留档，别再重复本目录这条路）
 
+### 追加（同日）：**零样本交叉编码器在深池上也是负结果** `0.1094`
+
+`BAAI/bge-reranker-v2-m3`（`--cases-rerank cross-encoder --rerank-retrieve-k 50 --top-k 3`，
+侧车 venv）：官方口径 **0.1094（21/192）**，只 deepseek 0.1211、只 glm 0.2448
+（原件 `reviews.cross_encoder_deep.rep1.jsonl`）。
+
+⇒ 与早先 k=20 那次（**0.1302**）一致：**零样本 cross-encoder 在"中文镜头指令 ↔ 英文摘录"
+这件事上就是不行**（它是按"问答式段落相关"训的）。**但"微调过的" cross-encoder 还没试过**——
+这正是 GPT-6A 会诊给的下一步（`docs/evidence/20261006-gpt6a-consult/`）。
+
 * **换更强的嵌入器**：智谱 `embedding-3`（用户已有资源包）——D3 实测过"同一路由换云端嵌入器
   E1 提高约 **5.6 倍**"，但那是在 LightRAG 路由上测的，**没在"重排"这个位置上测过**。
 * 被编码的文本换成 **摘录＋线索**（而不是只用线索）。

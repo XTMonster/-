@@ -97,3 +97,82 @@ def test_the_base_and_model_are_overridable(monkeypatch):
     client.chat("s", "u")
     assert captured["url"] == "https://example.test/v1/chat/completions"
     assert captured["model"] == "gpt-6.1-sol"
+
+
+class _FakeStream:
+    """假 SSE 响应：逐行给出 `data: {...}`（含正文分块与 `[DONE]`）。"""
+
+    def __init__(self, lines):
+        self._lines = [line.encode("utf-8") for line in lines]
+        self.status = 200
+
+    def __iter__(self):
+        return iter(self._lines)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def test_the_relay_streams_by_default_so_long_generations_survive_cloudflare(monkeypatch):
+    """**流式是默认**——这是绕开 Cloudflare `524` 的唯一实测有效的办法。
+
+    实测（`work/_probe_linkai_stream.py`）：同一条"要想一会儿"的问题，非流式**三次全 524**
+    （边缘 ~100 s 等不到源站）；流式 **HTTP 200、`text/event-stream`、132.7 s 拿到完整正文**。
+    所以"gpt6A 生成很慢"不再是限制——**给它多少时间都行**。
+    """
+    import json as _json
+
+    captured = {}
+    lines = [
+        "data: " + _json.dumps({"model": "gpt-6-astra",
+                                "choices": [{"delta": {"reasoning_content": "想…"}}]}),
+        "data: " + _json.dumps({"choices": [{"delta": {"content": "第一段"}}]}),
+        "data: " + _json.dumps({"choices": [{"delta": {"content": "第二段"}}],
+                                "usage": {"prompt_tokens": 5, "completion_tokens": 9}}),
+        "data: [DONE]",
+    ]
+
+    def fake_urlopen(request, timeout=None):
+        captured["url"] = request.full_url
+        captured["accept"] = request.headers.get("Accept")
+        captured["body"] = _json.loads(request.data.decode("utf-8"))
+        return _FakeStream(lines)
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", fake_urlopen)
+    client = llm.RelayClient("gpt-6-astra", api_key="k")
+    assert client.chat("SYS", "USER") == "第一段第二段"
+    assert captured["body"]["stream"] is True, "必须请求流式"
+    assert captured["accept"] == "text/event-stream"
+    assert client.last_usage == {"prompt_tokens": 5, "completion_tokens": 9}
+    assert client.model_version == "gpt-6-astra"
+    assert "stream=true" in client.decode_tag
+
+
+def test_streaming_json_goes_through_the_same_parser(monkeypatch):
+    import json as _json
+
+    lines = [
+        "data: " + _json.dumps({"choices": [{"delta": {"content": '{"ok":'}}]}),
+        "data: " + _json.dumps({"choices": [{"delta": {"content": "true}"}}]}),
+        "data: [DONE]",
+    ]
+    monkeypatch.setattr(llm.urllib.request, "urlopen",
+                        lambda request, timeout=None: _FakeStream(lines))
+    client = llm.RelayClient("gpt-6-astra", api_key="k")
+    assert client.chat_json("SYS", "USER", 0.0, 0, 256) == {"ok": True}
+
+
+def test_a_broken_stream_falls_back_to_the_non_streaming_path(monkeypatch):
+    """流式挂了要**退回**非流式，不许直接把一次调用判死。"""
+    def boom(request, timeout=None):
+        raise llm.LLMError("stream broken")
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", boom)
+    monkeypatch.setattr(llm, "_post_json", lambda *a, **k: {
+        "model": "gpt-6-astra",
+        "choices": [{"message": {"content": "退回来的正文"}}], "usage": {}})
+    client = llm.RelayClient("gpt-6-astra", api_key="k")
+    assert client.chat("s", "u", retries=1) == "退回来的正文"

@@ -516,7 +516,7 @@ class RelayClient:
     def decode_tag(self) -> str:
         """如实写：中转站没有 GLM 那种档位，思考强度走 OpenAI 兼容的 `reasoning_effort`。"""
         return ("relay=openai-compatible;ua=browser(required by cloudflare);"
-                "reasoning_effort=%s" % self.reasoning_effort)
+                "reasoning_effort=%s;stream=true(绕过 Cloudflare 524)" % self.reasoning_effort)
 
     def _post(self, payload: Dict) -> Dict:
         if not self.api_key:
@@ -527,6 +527,55 @@ class RelayClient:
                            "User-Agent": BROWSER_UA,
                            "Accept": "application/json"},
                           self.timeout)
+
+    def _stream(self, payload: Dict) -> str:
+        """**流式**拿正文（`stream:true`）——这是绕开 Cloudflare `524` 的唯一办法。
+
+        实测（`work/_probe_linkai_stream.py`，2026-10-06）：同一条"要想一会儿"的问题，
+        非流式**三次全是 524**（边缘 ~100 s 等不到源站）；换成流式**HTTP 200、
+        `text/event-stream`、132.7 s 拿到完整正文**。机制：流式下**响应头立刻回来**，
+        之后分块持续流动 ⇒ 边缘不会判"源站没响应"。
+
+        所以"gpt6A 生成很慢"不再是限制——**给它多少时间都行**，只要走这条流。
+        """
+        if not self.api_key:
+            raise LLMError("缺少 LINKAI_API_KEY（只从环境变量读，绝不写进仓库）")
+        body = dict(payload, stream=True)
+        request = urllib.request.Request(
+            f"{self.base}/chat/completions", data=json.dumps(body).encode("utf-8"),
+            method="POST",
+            headers={"Content-Type": "application/json",
+                     "Authorization": f"Bearer {self.api_key}",
+                     "User-Agent": BROWSER_UA,
+                     "Accept": "text/event-stream"})
+        parts: List[str] = []
+        self.last_usage = {}
+        with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            for raw in response:
+                line = raw.decode("utf-8", "replace").strip()
+                if not line.startswith("data:"):
+                    continue
+                chunk = line[5:].strip()
+                if chunk == "[DONE]":
+                    break
+                try:
+                    packet = json.loads(chunk)
+                except ValueError:
+                    continue
+                if packet.get("model"):
+                    self.model_version = str(packet["model"])
+                usage = packet.get("usage") or {}
+                if usage:
+                    self.last_usage = {
+                        "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+                        "completion_tokens": int(usage.get("completion_tokens") or 0)}
+                choices = packet.get("choices") or []
+                if choices:
+                    delta = choices[0].get("delta") or {}
+                    text = delta.get("content")
+                    if text:
+                        parts.append(str(text))
+        return "".join(parts)
 
     def _record(self, reply: Dict) -> Dict:
         choices = reply.get("choices") or []
@@ -553,8 +602,12 @@ class RelayClient:
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:
-                choice = self._record(self._post(payload))
-                content = (choice.get("message") or {}).get("content") or ""
+                #: 先走流式（长生成也不会 524）；流式这条路挂了才退回非流式。
+                try:
+                    content = self._stream(payload)
+                except Exception:  # noqa: BLE001 - 退回非流式
+                    choice = self._record(self._post(payload))
+                    content = (choice.get("message") or {}).get("content") or ""
                 if not content.strip():
                     raise LLMError("模型返回的空正文（endpoint trap）")
                 return content
@@ -576,8 +629,12 @@ class RelayClient:
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:
-                choice = self._record(self._post(payload))
-                return parse_json_content((choice.get("message") or {}).get("content") or "")
+                try:
+                    content = self._stream(payload)
+                except Exception:  # noqa: BLE001 - 退回非流式
+                    choice = self._record(self._post(payload))
+                    content = (choice.get("message") or {}).get("content") or ""
+                return parse_json_content(content)
             except Exception as exc:  # noqa: BLE001
                 last = exc
                 time.sleep((20.0 if "429" in str(exc) else 1.5) * (attempt + 1))
