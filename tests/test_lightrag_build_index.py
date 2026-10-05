@@ -142,3 +142,13 @@ def test_the_index_can_be_queried_in_any_upstream_mode(tmp_path):
     index = bi.LightRAGIndex(tmp_path, mode="hybrid")
     assert index.mode == "hybrid"
     assert bi.LightRAGIndex(tmp_path).mode == "naive"   # 默认不变，保持可比
+
+
+def test_documents_are_inserted_in_batches_not_one_by_one():
+    """批量插入：`ainsert` 收 `str | list[str]`，列表走内部并发（默认
+    `max_parallel_insert=3`）。逐篇 `await` 会把它压回串行——实测 49 篇要 30 分钟。
+    """
+    items = list(range(7))
+    assert list(bi.batches(items, 3)) == [[0, 1, 2], [3, 4, 5], [6]]
+    assert list(bi.batches(items, 0)) == [items]      # 0/负数 ⇒ 不分批
+    assert list(bi.batches([], 3)) == []

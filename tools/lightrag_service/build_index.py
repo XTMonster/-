@@ -127,6 +127,15 @@ def embedding_cell(route: str, model: str, dim: int) -> str:
     return "%s:%s:%d" % (str(route), str(model), int(dim))
 
 
+def batches(items: Sequence, size: int):
+    """把序列按 `size` 切批。`size <= 0` ⇒ 整批一次（不分批）。"""
+    data = list(items)
+    if size is None or int(size) <= 0:
+        return [data] if data else []
+    step = int(size)
+    return [data[index:index + step] for index in range(0, len(data), step)]
+
+
 def _load_cloud_embedding(model: str = "embedding-3"):
     """智谱云端嵌入（OpenAI 兼容的 `/embeddings`）。key 只从环境变量读。"""
     import os
@@ -224,7 +233,8 @@ def build(cases_path: pathlib.Path, out_dir: pathlib.Path, *,
           llm_model_func: Optional[Callable] = None,
           embedding_model: str = "BAAI/bge-small-zh-v1.5",
           embedding_route: str = "local",
-          mode: str = "naive", limit: int = 0) -> Dict:
+          mode: str = "naive", limit: int = 0,
+          batch_size: int = 40, max_parallel_insert: int = 8) -> Dict:
     """真建索引。`out_dir/lightrag/` 是 LightRAG 的 working_dir。"""
     import asyncio
     import lightrag as lightrag_pkg
@@ -248,15 +258,20 @@ def build(cases_path: pathlib.Path, out_dir: pathlib.Path, *,
     if llm_model_func is None:
         llm_model_func = _deepseek_model_func()
     rag = LightRAG(working_dir=str(working), llm_model_func=llm_model_func,
+                   #: **批量并发**：默认 `max_parallel_insert=3`，而逐篇 `await`
+                   #: 把它压回串行（实测 49 篇要 30 分钟）。
+                   max_parallel_insert=int(max_parallel_insert),
                    embedding_func=EmbeddingFunc(embedding_dim=dim,
                                                 max_token_size=512, func=embed))
 
     async def _run():
         await rag.initialize_storages()
-        for index, (_case_id, text) in enumerate(docs, 1):
-            await rag.ainsert(text)
-            if index % 50 == 0:
-                print(json.dumps({"inserted": index, "of": len(docs)}), flush=True)
+        inserted = 0
+        for group in batches([text for _case_id, text in docs], int(batch_size)):
+            #: `ainsert` 收列表 ⇒ 走内部并发（比逐篇 await 快数倍）。
+            await rag.ainsert(group)
+            inserted += len(group)
+            print(json.dumps({"inserted": inserted, "of": len(docs)}), flush=True)
         await rag.finalize_storages()
 
     asyncio.run(_run())
@@ -327,9 +342,13 @@ if __name__ == "__main__":  # pragma: no cover
     parser.add_argument("--embedding-model", default="",
                         help="留空时按路由取默认（local→BAAI/bge-small-zh-v1.5；cloud→embedding-3）")
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--batch-size", type=int, default=40,
+                        help="每次 ainsert 塞几篇（列表走内部并发；逐篇 await 会串行）")
+    parser.add_argument("--max-parallel-insert", type=int, default=8)
     cli = parser.parse_args()
     model = cli.embedding_model or ("embedding-3" if cli.embedding_route == "cloud"
                                     else "BAAI/bge-small-zh-v1.5")
     build(pathlib.Path(cli.cases), pathlib.Path(cli.out),
           embedding_route=cli.embedding_route, embedding_model=model,
-          limit=cli.limit)
+          limit=cli.limit, batch_size=cli.batch_size,
+          max_parallel_insert=cli.max_parallel_insert)
