@@ -215,6 +215,14 @@ def normalise_members(members, edge_type: str = "") -> List[List]:
             if first in hg.ROLES and second in hg.ALLOWED_KINDS:
                 out.append([first, second, *row[2:]])
                 continue
+            #: 模型有时把**边型名**写在首格：`["TROPE","genre","genre:日式动画"]`
+            #: （实测占 178 条 bad_role 里的 ~137 条）。首格是边型 ⇒ 丢掉它，
+            #: 角色从 schema 里查（`(边型, kind)` → role）。
+            if first in hg.EDGE_TYPES and len(row) == 3 and second in hg.ALLOWED_KINDS:
+                role = _role_for_kind(edge_type, second)
+                if role:
+                    out.append([role, second, third])
+                    continue
             if "/" in first:
                 role, _sep, kind = first.partition("/")
                 if role in hg.ROLES and kind:

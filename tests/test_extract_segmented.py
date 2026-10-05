@@ -556,3 +556,14 @@ def test_the_draft_that_reaches_the_writer_is_already_normalised():
         for member in draft["members"]:
             assert member[0] in hg.ROLES, member
             assert "/" not in member[0], member
+
+
+def test_a_leading_edge_type_field_is_dropped():
+    """模型有时把**边型名**写在成员首格（实测占 178 条 bad_role 里的 ~137 条）。
+
+    形状：`["TROPE","genre","genre:日式动画"]` —— 首格是边型、后面才是三元组。
+    """
+    case = ex.normalise_members([["TROPE", "genre", "genre:日式动画"],
+                                 ["TROPE", "emotion", "emotion:怪诞"]], hg.TROPE)
+    assert case == [["allow", "genre", "genre:日式动画"],
+                    ["allow", "emotion", "emotion:怪诞"]]
