@@ -392,3 +392,18 @@ sha256 `37dea0ea…`）。3 跑极差：
 **在跑**：同一套 Kimi 重排（含 8192 预算）跑在**发货代**池子上
 （`work/ab_e1_rerank/kimi.current.rerank.rep{1,2,3}.jsonl`）——发货代 C=3 上限 **0.67**，
 那才是产品口径下最有希望的一格。
+
+### P14-215：通道路由改道（用户 2026-10-06）＋ 发货代 Kimi 重排**作废**
+
+用户三条指示：①"**kimi 那部分用不了就用 gpt6A**"；②"**gpt6A 只能用于人工裁决和执行计划书写，
+其他的用 glm 和 DeepSeek**"；③"**使用 gpt6A 时思考强度拉到最大**"；并"**这部分写入 hooks 里**（自动触发）"。
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **路由** | GPT-6A 的**用途边界**＋**思考拉满**写进 hooks（自动触发） | 绿 | `~/.codex/hooks/model-routing.md`：路由表加"**人工裁决 → 中转站 GPT-6A**"（Kimi 降为回退）＋§2c 写明"**只许两件事**"；`plan-contract.md` §7 改"由中转站 GPT-6A（思考拉满）起草"。**自动触发**：`inject-context.ps1` 加 `verdict` 触发类（裁决／裁定／人工审核／人审／终审／verdict／adjudicat）→ 注入新模板 `verdict-rule.md`；`plan` 触发类照旧注入 `plan-contract.md`。**hook 自测 121 项全过**（`selftest.ps1`） | 2026-10-06 | 本批 |
+| **通道** | 思考强度拉到最大（**可实测**的那条路） | 绿 | `work/_probe_linkai_thinking.py`：同一问题、同一 `max_tokens=2048` —— 裸调用 reasoning **40** → `reasoning_effort=high` **137** → **`=max` 1034**（墙钟 11.1→37.7 s）。**两个坑**：`thinking={"type":"enabled","level":"max"}`（45）与 `extra_body.reasoning_effort`（35）**都被忽略**＝静默降级。`RelayClient` 默认 `reasoning_effort=max`（`LINKAI_REASONING_EFFORT` 可改） | 2026-10-06 | 本批 |
+| **门⑦** | 人工裁决的默认通道换成 GPT-6A | 绿（代码）／**待重跑** | `holdout_review_third_party.py` 默认 `--provider relay --model gpt-6-astra`（`--provider kimi` 仍可，历史 212 条判词写着 `kimi-k3`）。**未做**：用 GPT-6A 重跑那 212 条 | 2026-10-06 | 本批 |
+| **R3-第1步** | 发货代池子上的重排读数 | **作废（不是读数）** | `work/ab_e1_rerank/kimi.current.rerank.rep{1,2,3}.jsonl`：**失败行 165/159/162（约 85% 降级）** ⇒ 那些"E1 0.2135/0.2188/0.2083"其实是**退回未重排的前 3 条**的基准，**不是重排读数**。**预算不是原因**（失败行与成功行同标 `@8192`，且 v4 池同预算 0 失败）；原因**未定**。⇒ 这条**不许引用**，要重跑 | 2026-10-06 | 本批 |
+
+**结论没变**：P14-212 的战略结论（发货代 C=3 上限 0.6615/0.6719 ⇒ **换更好的重排器过不了 0.70**）
+不依赖上面这条作废读数。

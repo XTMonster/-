@@ -143,3 +143,19 @@ def test_merging_writes_the_review_back_and_drops_only_the_rejected():
     assert by_id["a"]["review"]["verdict"] == "accepted"
     assert by_id["c"]["panel_disagreement"] is True
     assert "review" not in by_id["d"]
+
+
+def test_the_default_adjudication_channel_is_gpt6a_with_thinking_maxed(monkeypatch):
+    """用户 2026-10-06：“**gpt6A 只能用于人工裁决和执行计划书写**”＋“**思考强度拉到最大**”。
+
+    人工裁决正是那两条允许用途之一 ⇒ 默认通道从 `kimi-k3` 换成中转站 `gpt-6-astra`；
+    `RelayClient` 默认带 `reasoning_effort=max`（实测同一问题 reasoning 40 → 1034 token）。
+    """
+    from tools.kb_fetch import llm
+
+    client = llm.make_client("relay", "gpt-6-astra")
+    assert isinstance(client, llm.RelayClient)
+    assert client.reasoning_effort == "max"
+    assert "reasoning_effort=max" in client.decode_tag
+    # 显式关掉也能关（万一某天要对照）。
+    assert llm.RelayClient("gpt-6-astra", reasoning_effort="low").reasoning_effort == "low"

@@ -156,8 +156,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="holdout_review_third_party")
     parser.add_argument("--entries", default="fixtures/knowledge_holdout.jsonl")
     parser.add_argument("--limit", type=int, default=0, help="0 = 不限")
-    parser.add_argument("--model", default="kimi-k3")
-    parser.add_argument("--provider", default="kimi")
+    #: 用户 2026-10-06："**gpt6A 只能用于人工裁决和执行计划书写，其他的用 glm 和 DeepSeek**"
+    #: ＋"**使用 gpt6A 时思考强度拉到最大**"。人工裁决正是这两条允许用途之一，
+    #: 所以这里的默认通道改成中转站 GPT-6A（`reasoning_effort=max` 由 `RelayClient` 默认带上；
+    #: 实测同一问题 reasoning 40 → 1034 token，见 `work/_probe_linkai_thinking.py`）。
+    #: `--provider kimi` 仍可用（历史上那 212 条判词就是 `kimi-k3` 产出的，记录里写着型号）。
+    parser.add_argument("--model", default="")
+    parser.add_argument("--provider", default="relay")
     parser.add_argument("--out", default="work/holdout_third_party.reviewed.jsonl")
     parser.add_argument("--report", default="work/holdout_third_party.json")
     parser.add_argument("--sheet", default="work/holdout_third_party_disagreements.md")
@@ -199,7 +204,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                                 include_reviewed=not args.only_unreviewed)
 
     source = {
-        "model": str(args.model),
+        "model": str(args.model or ("gpt-6-astra" if args.provider != "kimi" else "kimi-k3")),
         "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
         "prompt_version": PROMPT_VERSION,
         "tool": "holdout_review_third_party",
@@ -210,9 +215,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     }
 
     if args.scripted:
-        client = llm.make_client("scripted", args.model, args.scripted)
+        client = llm.make_client("scripted", source["model"], args.scripted)
     else:
-        client = llm.make_client(args.provider, args.model)
+        client = llm.make_client(args.provider, source["model"])
 
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)

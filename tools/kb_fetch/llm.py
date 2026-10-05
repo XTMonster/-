@@ -104,6 +104,14 @@ LINKAI_API_KEY = os.environ.get("LINKAI_API_KEY", "")
 LINKAI_TIMEOUT = float(os.environ.get("LINKAI_TIMEOUT", "900"))
 LINKAI_MODEL = os.environ.get("LINKAI_MODEL", "gpt-6-astra")
 
+#: 思考强度：用户 2026-10-06"**并且使用 gpt6A 时思考强度拉到最大**"。
+#: 实测（`work/_probe_linkai_thinking.py`，同一问题、同一 `max_tokens=2048`）：
+#: 裸调用 reasoning **40** token；`reasoning_effort=high` → **137**；
+#: **`reasoning_effort=max` → 1034**（墙钟 11.1 s → 37.7 s）。
+#: 另外两种拼法（`thinking={type,level}` 与 `extra_body.reasoning_effort`）**被忽略**
+#: （reasoning 分别 45 / 35）⇒ 这条路**只能**用 `reasoning_effort`，别的写法是静默降级。
+LINKAI_REASONING_EFFORT = os.environ.get("LINKAI_REASONING_EFFORT", "max")
+
 #: Cloudflare 按 UA 签名拦人：这不是可选项（见上面的实测）。
 BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
@@ -494,18 +502,21 @@ class RelayClient:
     family = "relay"
 
     def __init__(self, model_id: str = "", api_key: str = "", base: str = "",
-                 timeout: float = 0.0):
+                 timeout: float = 0.0, reasoning_effort: str = ""):
         self.model_id = str(model_id or LINKAI_MODEL or "gpt-6-astra")
         self.model_version = self.model_id
         self.api_key = api_key or LINKAI_API_KEY
         self.base = str(base or LINKAI_BASE).rstrip("/")
         self.timeout = float(timeout or LINKAI_TIMEOUT)
+        #: 用户 2026-10-06"使用 gpt6A 时思考强度拉到最大"⇒ 默认 `max`（实测 reasoning 1034）。
+        self.reasoning_effort = str(reasoning_effort or LINKAI_REASONING_EFFORT or "max")
         self.last_usage: Dict[str, int] = {}
 
     @property
     def decode_tag(self) -> str:
-        """中转站没有档位开关，如实写。"""
-        return "relay=openai-compatible;ua=browser(required by cloudflare)"
+        """如实写：中转站没有 GLM 那种档位，思考强度走 OpenAI 兼容的 `reasoning_effort`。"""
+        return ("relay=openai-compatible;ua=browser(required by cloudflare);"
+                "reasoning_effort=%s" % self.reasoning_effort)
 
     def _post(self, payload: Dict) -> Dict:
         if not self.api_key:
@@ -537,6 +548,8 @@ class RelayClient:
                          {"role": "user", "content": user}],
             "temperature": temperature, "max_tokens": int(num_ctx),
         }
+        if self.reasoning_effort:
+            payload["reasoning_effort"] = self.reasoning_effort
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:
@@ -558,6 +571,8 @@ class RelayClient:
                          {"role": "user", "content": user}],
             "temperature": temperature, "max_tokens": int(num_ctx),
         }
+        if self.reasoning_effort:
+            payload["reasoning_effort"] = self.reasoning_effort
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:
