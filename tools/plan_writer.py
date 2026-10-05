@@ -62,6 +62,10 @@ DEFAULT_MAX_TOKENS = 32768
 #: 而不是烧掉十分钟再失败。
 DEFAULT_MAX_PROMPT_CHARS = 3000
 
+#: 起草通道的默认值。用户 2026-10-06：GPT-6A **只用于人工裁决与执行计划书写** ⇒
+#: 写计划默认走中转站；`glm` 仍可显式选（历次计划都是 GLM-5.3 起草的，留作对拍与回退）。
+DEFAULT_PROVIDER = "relay"
+
 
 def choose_channel(provider: str, model: str = ""):
     """`(model_id, consult_fn)`：选起草通道。
@@ -296,10 +300,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--model", default="",
                         help="模型 id（不写则按 --provider 取默认：glm→glm-5.3、"
                              "relay→`LINKAI_MODEL`／gpt-6-astra）")
-    parser.add_argument("--provider", default="glm", choices=("glm", "relay"),
-                        help="起草通道：`glm`（默认，GLM-5.3 档位阶梯）／"
-                             "`relay`（中转站 linkai.pics，用户 2026-10-06 指定用来写计划；"
-                             "型号默认 `gpt-6-astra`，可用 `LINKAI_MODEL` 切）。"
+    parser.add_argument("--provider", default=DEFAULT_PROVIDER, choices=("glm", "relay"),
+                        help="起草通道：`relay`（**默认**：中转站 linkai.pics 的 GPT-6A——"
+                             "用户 2026-10-06 指定 GPT-6A 只用于人工裁决与执行计划书写，"
+                             "所以写计划走它；型号默认 `gpt-6-astra`，可用 `LINKAI_MODEL` 切，"
+                             "思考默认拉满）／`glm`（GLM-5.3 的档位阶梯，留作对拍与回退）。"
                              "`--model` 不写时按 provider 取默认。")
     parser.add_argument("--rounds", type=int, default=DEFAULT_ROUNDS,
                         help="自我精炼轮数（默认 %d，用户裁决）" % DEFAULT_ROUNDS)
