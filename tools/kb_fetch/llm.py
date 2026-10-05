@@ -65,8 +65,10 @@ GLM_TIMEOUT = float(os.environ.get("GLM_TIMEOUT", "1800"))
 
 #: **第三方裁决通道**：阿里云百炼（DashScope）的 OpenAI 兼容端点。
 #: 用户 2026-10-05 指示："如果需要人工裁决，这边我想用第三方的ai进行裁决"，
-#: 并指定 `qwen3.8-max-0902`（实测：端点 `dashscope.aliyuncs.com/compatible-mode/v1`，
-#: key 有**按模型的白名单**（`qwen3-max` 会被 403 拒），见 `work/_probe_qwen_endpoint.py`／
+#: 并指定 **`qwen3.8-max`**（2026-10-06 用户更正："qwen 用 3.8max，不是 0902"——
+#: 实测：`qwen3.8-max` 200、`qwen3.8-max-0902` **403**，所以带日期的 snapshot 不是这条
+#: 通道该用的型号）。端点 `dashscope.aliyuncs.com/compatible-mode/v1`，
+#: key 有**按模型的白名单**（`qwen3-max` 也会被 403 拒），见 `work/_probe_qwen_endpoint.py`／
 #: `work/_list_qwen_models.py`）。它既不是抽取器（deepseek）也不是标注器（zhipu），
 #: 所以拿它做复核／裁决时 `independence` 是**真·第三方**。密钥只从 `QWEN_API_KEY` 读。
 QWEN_BASE = os.environ.get("QWEN_BASE_URL",
@@ -319,15 +321,16 @@ class QwenClient:
 
     * 端点是 OpenAI 兼容的 `/chat/completions`，但**key 有按模型的白名单**——
       不在包内的型号会被 `403 access_denied`（实测 `qwen3-max` 如此，
-      `qwen3.8-max-0902` 可用）；所以这条通道**不许静默换型号**，失败就具名抛。
+      `qwen3.8-max` 可用、`qwen3.8-max-0902` 会 403）；所以这条通道
+      **不许静默换型号**，失败就具名抛。
     * 它是**思考模型**（`reasoning_tokens` 与正文分开），所以 `num_ctx` 只当
       `max_tokens` 用，正文仍走 `parse_json_content`（空正文立刻判失败）。
     """
 
     family = "qwen"
 
-    def __init__(self, model_id: str = "qwen3.8-max-0902", api_key: str = ""):
-        self.model_id = str(model_id or "qwen3.8-max-0902")
+    def __init__(self, model_id: str = "qwen3.8-max", api_key: str = ""):
+        self.model_id = str(model_id or "qwen3.8-max")
         self.model_version = self.model_id
         self.api_key = api_key or QWEN_API_KEY
         self.last_usage: Dict[str, int] = {}
@@ -454,5 +457,5 @@ def make_client(provider: str, model: str = "", scripted: str = ""):
     if provider == "glm":
         return GLMClient(model or "glm-5.3")
     if provider == "qwen":
-        return QwenClient(model or "qwen3.8-max-0902")
+        return QwenClient(model or "qwen3.8-max")
     raise LLMError(f"未知 provider: {provider!r}")

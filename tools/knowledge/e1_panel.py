@@ -219,7 +219,7 @@ def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
     （"能不能指导这一镜怎么拍"），但**形状不同**（有序列表 vs keep 集合）——
     所以这里是一份独立的、可对拍的提示词，而不是把那份改掉。
 
-    族别：默认走 `qwen`（阿里云百炼 `qwen3.8-max-0902`）——它**既不是评委**
+    族别：默认走 `qwen`（阿里云百炼 **`qwen3.8-max`**）——它**既不是评委**
     （deepseek-chat／glm-5.3）也不是抽取器（deepseek），所以"重排把 E1 抬上去"
     不可能是"重排者和评委同族"造出来的假象。
     """
@@ -498,7 +498,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="留空＝cuda 可用就用 cuda")
     parser.add_argument("--rerank-llm-provider", default="qwen",
                         help="`--cases-rerank llm` 的通道（默认 qwen ＝ 第三方裁决通道）")
-    parser.add_argument("--rerank-llm-model", default="qwen3.8-max-0902")
+    parser.add_argument("--rerank-llm-model", default="qwen3.8-max")
     parser.add_argument("--rerank-llm-prompt", default="order",
                         choices=("order", "select", "score"),
                         help="重排提示词的形状：`order` 全序排序／`select` 只挑最该看的 3 条／"

@@ -313,7 +313,7 @@ class _OrderClient:
 def test_the_llm_reranker_turns_an_order_into_scores_and_keeps_missing_ids_last():
     """重排器只输出**次序**；漏写的 id 必须**垫底而不是丢掉**（裁到 top-k 是下游的事）。"""
     client = _OrderClient(["c3", "c1"])
-    scorer = e1_panel.make_llm_reranker(model="qwen3.8-max-0902", client=client)
+    scorer = e1_panel.make_llm_reranker(model="qwen3.8-max", client=client)
     cases = _cases("c1", "c2", "c3")
     scores = scorer("q", cases)
     assert len(scores) == 3
