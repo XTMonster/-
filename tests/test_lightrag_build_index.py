@@ -130,3 +130,15 @@ def test_the_llm_func_passes_the_system_prompt_through():
     assert messages[-1] == {"role": "user", "content": "正文"}
     #: 没给 system 时不硬塞一个空 system。
     assert [m["role"] for m in bi.chat_messages("正文")] == ["user"]
+
+
+def test_the_index_can_be_queried_in_any_upstream_mode(tmp_path):
+    """检索模式必须是**可选的**：`naive` 只用向量，`hybrid`/`local`/`global` 用图谱。
+
+    为什么（实测 2026-10-05）：第一版硬编码 `mode="naive"`，而当时图谱是空的
+    （`llm_model_func` 丢 system_prompt 那个 bug），于是"LightRAG 弱"这个结论
+    **只反映了 naive 模式**。修好图谱之后必须能把模式当变量比。
+    """
+    index = bi.LightRAGIndex(tmp_path, mode="hybrid")
+    assert index.mode == "hybrid"
+    assert bi.LightRAGIndex(tmp_path).mode == "naive"   # 默认不变，保持可比

@@ -111,14 +111,18 @@ def main(argv: Optional[list] = None) -> int:
     parser.add_argument("--index-dir", required=True)
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--expected-fingerprint", default="")
+    parser.add_argument("--mode", default="naive",
+                        choices=("naive", "local", "global", "hybrid", "mix"),
+                        help="上游检索模式；non-naive 需要**非空图谱**")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     from . import build_index as bi  # noqa: PLC0415 - 重模块（要 lightrag）延后导入
-    index = bi.LightRAGIndex(pathlib.Path(args.index_dir))
+    index = bi.LightRAGIndex(pathlib.Path(args.index_dir), mode=args.mode)
     server = make_server(index, port=args.port,
                          expected_fingerprint=args.expected_fingerprint)
     print(json.dumps({"status": "serving", "host": HOST, "port": args.port,
-                      "index_fingerprint": index.fingerprint}, ensure_ascii=False))
+                      "mode": index.mode, "index_fingerprint": index.fingerprint},
+                     ensure_ascii=False))
     try:
         server.serve_forever()
     except KeyboardInterrupt:  # pragma: no cover

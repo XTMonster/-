@@ -273,11 +273,14 @@ def build(cases_path: pathlib.Path, out_dir: pathlib.Path, *,
 class LightRAGIndex:
     """服务层要的索引接口：`fingerprint` / `version` / `search(query, top_k)`。"""
 
-    def __init__(self, index_dir: pathlib.Path) -> None:
+    def __init__(self, index_dir: pathlib.Path, *, mode: str = "naive") -> None:
         self.index_dir = pathlib.Path(index_dir)
         shipped = lm.read(self.index_dir) or {}
         self.fingerprint = str(shipped.get("fingerprint") or "")
         self.version = str((shipped.get("cells") or {}).get("lightrag_version") or "")
+        #: 检索模式**必须可变量化**：`naive` 只用向量，而 `hybrid`/`local`/`global`
+        #: 需要**非空图谱**（图谱由构建期的实体抽取填，见 `chat_messages` 那段）。
+        self.mode = str(mode or "naive")
         self._rag = None
 
     async def _ensure(self):
@@ -304,7 +307,7 @@ class LightRAGIndex:
         async def _run():
             rag = await self._ensure()
             context = await rag.aquery(query, param=QueryParam(
-                mode="naive", only_need_context=True))
+                mode=self.mode, only_need_context=True))
             ids = case_ids_in_context(str(context or ""))
             return [(case_id, 1.0 - index * 0.01)
                     for index, case_id in enumerate(ids[:top_k])]
