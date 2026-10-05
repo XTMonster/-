@@ -1,0 +1,316 @@
+{
+  "generated_by": "tools/knowledge/e1_baseline_summary.py::paired_report",
+  "relevant_threshold": 4.0,
+  "panel": [
+    "deepseek-chat",
+    "glm-5.3"
+  ],
+  "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+  "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+  "arms_order": [
+    "hybrid",
+    "lexical",
+    "lightrag"
+  ],
+  "reps": [
+    1,
+    2
+  ],
+  "round_records": {
+    "hybrid.rep1": "round.hybrid.1.json",
+    "hybrid.rep2": "round.hybrid.2.json",
+    "lexical.rep1": "round.lexical.1.json",
+    "lexical.rep2": "round.lexical.2.json",
+    "lightrag.rep1": "round.lightrag.1.json",
+    "lightrag.rep2": "round.lightrag.2.json"
+  },
+  "round_identity": {
+    "seed": 20261005,
+    "rows": 64,
+    "rows_digest": "e02161be89eef4ab9fc8809caf46fd16419fa35de58209ce0849116558691ad1",
+    "panel": [
+      "deepseek-chat",
+      "glm-5.3"
+    ],
+    "panel_digest": "72eddecbc5e8ee151f4080cfee33fea643ee1428fd7f30253b59c8811f11b2f2",
+    "corpus_manifest_digest": "a162c41cc23b47742e0deb019438821da0903ff8f8548ff9e0e84af11f230301",
+    "hypergraph_manifest_digest": "missing"
+  },
+  "identity_mismatched_fields": [],
+  "terminal_states": {
+    "valid": 6
+  },
+  "invalid_parse_fault": 0,
+  "invalid_empty_intersection": 0,
+  "arms": {
+    "hybrid": {
+      "reps": [
+        {
+          "file": "reviews.hybrid.rep1.jsonl",
+          "retrieval_path": "hybrid",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 37,
+          "value": 0.192708
+        },
+        {
+          "file": "reviews.hybrid.rep2.jsonl",
+          "retrieval_path": "hybrid",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 37,
+          "value": 0.192708
+        }
+      ],
+      "mean": 0.192708,
+      "range": 0.0,
+      "rows": 192,
+      "queries": 64,
+      "cases": 33
+    },
+    "lexical": {
+      "reps": [
+        {
+          "file": "reviews.lexical.rep1.jsonl",
+          "retrieval_path": "lexical",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 38,
+          "value": 0.197917
+        },
+        {
+          "file": "reviews.lexical.rep2.jsonl",
+          "retrieval_path": "lexical",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 35,
+          "value": 0.182292
+        }
+      ],
+      "mean": 0.190105,
+      "range": 0.015625,
+      "rows": 192,
+      "queries": 64,
+      "cases": 33
+    },
+    "lightrag": {
+      "reps": [
+        {
+          "file": "reviews.lightrag.rep1.jsonl",
+          "retrieval_path": "lightrag",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 5,
+          "value": 0.026042
+        },
+        {
+          "file": "reviews.lightrag.rep2.jsonl",
+          "retrieval_path": "lightrag",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 5,
+          "value": 0.026042
+        }
+      ],
+      "mean": 0.026042,
+      "range": 0.0,
+      "rows": 192,
+      "queries": 64,
+      "cases": 50
+    }
+  },
+  "noise_band": 0.015625,
+  "pairs": [
+    {
+      "a": "hybrid",
+      "b": "lexical",
+      "delta": -0.002603,
+      "noise_band": 0.015625,
+      "separation_measured": false,
+      "verdict": "inconclusive"
+    },
+    {
+      "a": "hybrid",
+      "b": "lightrag",
+      "delta": -0.166666,
+      "noise_band": 0.015625,
+      "separation_measured": true,
+      "verdict": "separated"
+    },
+    {
+      "a": "lexical",
+      "b": "lightrag",
+      "delta": -0.164063,
+      "noise_band": 0.015625,
+      "separation_measured": true,
+      "verdict": "separated"
+    }
+  ],
+  "inconclusive_pairs": [
+    {
+      "a": "hybrid",
+      "b": "lexical",
+      "delta": -0.002603,
+      "noise_band": 0.015625,
+      "separation_measured": false,
+      "verdict": "inconclusive"
+    }
+  ],
+  "judge_coverage": {
+    "reviews.hybrid.rep1.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 179,
+      "single_judge_rows": 13,
+      "panel_size": 2,
+      "complete": false
+    },
+    "reviews.hybrid.rep2.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 185,
+      "single_judge_rows": 7,
+      "panel_size": 2,
+      "complete": false
+    },
+    "reviews.lexical.rep1.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 181,
+      "single_judge_rows": 11,
+      "panel_size": 2,
+      "complete": false
+    },
+    "reviews.lexical.rep2.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 178,
+      "single_judge_rows": 14,
+      "panel_size": 2,
+      "complete": false
+    },
+    "reviews.lightrag.rep1.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 192,
+      "single_judge_rows": 0,
+      "panel_size": 2,
+      "complete": true
+    },
+    "reviews.lightrag.rep2.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 192,
+      "single_judge_rows": 0,
+      "panel_size": 2,
+      "complete": true
+    }
+  },
+  "all_rounds_complete": false,
+  "route_usage": {
+    "reviews.hybrid.rep1.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "hybrid"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    },
+    "reviews.hybrid.rep2.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "hybrid"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    },
+    "reviews.lexical.rep1.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "lightrag"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    },
+    "reviews.lexical.rep2.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "lightrag"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    },
+    "reviews.lightrag.rep1.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "lightrag"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    },
+    "reviews.lightrag.rep2.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "lightrag"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    }
+  },
+  "all_rounds_used_the_route": true,
+  "repetition_sufficient": true,
+  "separation_verdicts_valid": true,
+  "provenance": {
+    "generated_by": "tools/knowledge/e1_report.py",
+    "cases_dir": "work\\knowledge_v4_cases",
+    "heldout": "work\\eval_sets\\heldout_v4_long21.jsonl",
+    "heldout_sha256": "e02161be89eef4ab9fc8809caf46fd16419fa35de58209ce0849116558691ad1",
+    "lightrag_fingerprint": "c1cd106e558af216274f170676de99a0f00ab3ca9ba7ee48e9c10d88b6ca8596",
+    "lightrag_timeout": "",
+    "reviews_dir": "work\\e1_v4pop_ab.json.reviews",
+    "review_files": {
+      "reviews.hybrid.rep1.jsonl": "8151f0889d478eab39375a7ee7fbfa5adc23a9ff0bb7417071cb2025a0a0538f",
+      "reviews.hybrid.rep2.jsonl": "19db57f91c9ec27da742a8a7ffb953d9adf14ca622288ea129674a6cddf00484",
+      "reviews.lexical.rep1.jsonl": "9a42d6522ad0f0c8135d16e153ab2c66c09b85d0be08951e07bc91e7bcc66076",
+      "reviews.lexical.rep2.jsonl": "885592657e33022bd6907eb0f931c411db6d13ea8050ac02207e597f7ef0c331",
+      "reviews.lightrag.rep1.jsonl": "93aa55e296948e95c27890714a8a8157e64fe630e8e38274a011b02e3a6820ea",
+      "reviews.lightrag.rep2.jsonl": "d78e12fdb1751bd4d65ae5965f4be7820aebb3bb1302f406d3f9caf7aca970d1"
+    }
+  }
+}

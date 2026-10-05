@@ -1,0 +1,72 @@
+{
+  "generated_by": "tools/knowledge/e3_report.py",
+  "e3_definition": "L3 案例层永不产出约束（§2.3b）",
+  "constraint_keys": [
+    "forbid",
+    "forbids",
+    "constraint"
+  ],
+  "constraint_words": [
+    "禁止",
+    "必须",
+    "不得",
+    "务必",
+    "一定要"
+  ],
+  "index_dir": "work\\knowledge_v4_cases",
+  "reviews_dir": "work\\e1_v4pop_ab.json.reviews",
+  "layer": {
+    "id": "E3_cases",
+    "status": "pass",
+    "numerator": 0,
+    "denominator": 783,
+    "line": 0,
+    "note": "L3 案例永不产出约束"
+  },
+  "arms": {
+    "reviews.hybrid.rep1.jsonl": {
+      "rows": 192,
+      "cases": 33,
+      "constraint_fields": [],
+      "constraint_clues": [],
+      "status": "pass"
+    },
+    "reviews.hybrid.rep2.jsonl": {
+      "rows": 192,
+      "cases": 33,
+      "constraint_fields": [],
+      "constraint_clues": [],
+      "status": "pass"
+    },
+    "reviews.lexical.rep1.jsonl": {
+      "rows": 192,
+      "cases": 33,
+      "constraint_fields": [],
+      "constraint_clues": [],
+      "status": "pass"
+    },
+    "reviews.lexical.rep2.jsonl": {
+      "rows": 192,
+      "cases": 33,
+      "constraint_fields": [],
+      "constraint_clues": [],
+      "status": "pass"
+    },
+    "reviews.lightrag.rep1.jsonl": {
+      "rows": 192,
+      "cases": 50,
+      "constraint_fields": [],
+      "constraint_clues": [],
+      "status": "pass"
+    },
+    "reviews.lightrag.rep2.jsonl": {
+      "rows": 192,
+      "cases": 50,
+      "constraint_fields": [],
+      "constraint_clues": [],
+      "status": "pass"
+    }
+  },
+  "status": "pass",
+  "failing_rounds": []
+}

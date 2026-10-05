@@ -1,0 +1,18 @@
+{
+  "seed": 20261005,
+  "rows": 64,
+  "rows_digest": "e02161be89eef4ab9fc8809caf46fd16419fa35de58209ce0849116558691ad1",
+  "panel": [
+    "deepseek-chat",
+    "glm-5.3"
+  ],
+  "panel_digest": "72eddecbc5e8ee151f4080cfee33fea643ee1428fd7f30253b59c8811f11b2f2",
+  "corpus_manifest_digest": "a162c41cc23b47742e0deb019438821da0903ff8f8548ff9e0e84af11f230301",
+  "hypergraph_manifest_digest": "missing",
+  "route": "lightrag",
+  "rep": 2,
+  "terminal_state": "valid",
+  "identity_written_at": "2026-10-05T11:02:09+00:00",
+  "state_written_at": "2026-10-05T11:11:26+00:00",
+  "written_by": "tools/knowledge/e1_report.py"
+}
