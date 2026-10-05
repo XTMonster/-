@@ -21,6 +21,7 @@ python -m tools.knowledge.e1_panel --queries work/eval_sets/heldout_v4_long21.js
 | **现役代**（`knowledge/`） | `48df4a53…` | `reviews.current.top20.rep1.jsonl`（本目录，sha256 `08746037…`） | 219 | 0.1711 | **3.422** | 3.0 | 42 | 1 |
 | v4（`work/knowledge_v4_cases`） | `4b1b44bb…` | `docs/evidence/20261006-e1-ceiling/…rep1.jsonl` | 178 | 0.1391 | **2.781** | 3.0 | 38 | 4 |
 | v4（同一命令第 2 跑） | `4b1b44bb…` | `docs/evidence/20261006-e1-ceiling-noise/…rep2.jsonl` | 176 | 0.1375 | **2.750** | 2.5 | 32 | 5 |
+| v4（同一命令第 3 跑） | `4b1b44bb…` | `docs/evidence/20261006-e1-ceiling-noise/…rep3.jsonl` | 189 | 0.1477 | **2.953** | 3.0 | 38 | 5 |
 
 复算入口：`python tools/knowledge/e1_ceiling_report.py --top-k 20 <上面三个文件>`
 
@@ -31,6 +32,10 @@ python -m tools.knowledge.e1_panel --queries work/eval_sets/heldout_v4_long21.js
 
 ⇒ **触发器不响，D13 = A 维持原判**：P10 **不切换**，门①–⑩ 继续按现役代验收，
 v4 只作影子对照。（第二个条件"能回填 oracle"因此无需再测。）
+
+**重复跑加固**：v4 侧现已 3 跑（2.781 / 2.750 / 2.953，极差 0.203）。取 v4 的**最高**一跑
+（2.953）与现役的 **3.422** 比，仍低 **0.469** ⇒ 即便按对 v4 最有利的一跑读，
+触发器（`v4 ≥ 现役 + 0.30`）**也不响**。这条结论**不依赖**现役侧有没有重复跑。
 
 **顺带一个值得记账的事实**：v4 的**边**是现役的 7.8 倍（5,000 / 638），
 但它的**案例层更小**（783 vs 1143），在这批查询上的 top-20 召回**反而更低**。
