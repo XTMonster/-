@@ -1,0 +1,28 @@
+Loading weights:   0%|          | 0/71 [00:00<?, ?it/s]Loading weights: 100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 71/71 [00:00<00:00, 35204.58it/s]
+INFO: [] Loaded graph from work\lightrag_v4\lightrag\graph_chunk_entity_relation.graphml with 0 nodes, 0 edges
+INFO:nano-vectordb:Load (0, 512) data
+INFO:nano-vectordb:Init {'embedding_dim': 512, 'metric': 'cosine', 'storage_file': 'work\\lightrag_v4\\lightrag\\vdb_entities.json'} 0 data
+INFO:nano-vectordb:Load (0, 512) data
+INFO:nano-vectordb:Init {'embedding_dim': 512, 'metric': 'cosine', 'storage_file': 'work\\lightrag_v4\\lightrag\\vdb_relationships.json'} 0 data
+INFO:nano-vectordb:Load (783, 512) data
+INFO:nano-vectordb:Init {'embedding_dim': 512, 'metric': 'cosine', 'storage_file': 'work\\lightrag_v4\\lightrag\\vdb_chunks.json'} 783 data
+INFO: Role LLM Configuration (initialized):
+INFO:  - extract: None/None, host=None, max_async=4, timeout=240
+INFO:  - keyword: None/None, host=None, max_async=4, timeout=240
+INFO:  - query: None/None, host=None, max_async=4, timeout=240
+INFO:  - vlm: None/None, host=None, max_async=4, timeout=240
+INFO: [] Process 15760 KV load full_docs with 783 records
+INFO: [] Process 15760 KV load text_chunks with 783 records
+INFO: [] Process 15760 KV load full_entities with 783 records
+INFO: [] Process 15760 KV load full_relations with 783 records
+INFO: [] Process 15760 KV load entity_chunks with 0 records
+INFO: [] Process 15760 KV load relation_chunks with 0 records
+INFO: [] Process 15760 KV load llm_response_cache with 1566 records
+INFO: [] Process 15760 doc status load doc_status with 783 records
+INFO: Embedding func: 8 new workers initialized (Timeouts: Func: 30s, Worker: 60s, Health Check: 75s)
+INFO: Naive query: 20 chunks (chunk_top_k:20 cosine:0.2)
+WARNING: Rerank is enabled but no rerank model is configured. Please set up a rerank model or set enable_rerank=False in query parameters.
+INFO: Final context: 20 chunks
+INFO: Naive query: 20 chunks (chunk_top_k:20 cosine:0.2)
+WARNING: Rerank is enabled but no rerank model is configured. Please set up a rerank model or set enable_rerank=False in query parameters.
+INFO: Final context: 20 chunks
