@@ -161,8 +161,14 @@ def _reviews(tmp_path, rows, name="e1.jsonl"):
 
 
 def _review_row(case_id, score, fingerprint="fp-current", reviewer="human",
-                digest=None):
-    row = {"case_id": case_id, "score": score, "reviewed_by": reviewer}
+                digest=None, judge_batch=None, prompt_sha256="p" * 64):
+    #: 2026-10-06：E1 的证书必须在**产品口径的判分语境**里发
+    #: （`rag.cases_top_k`，第三方 RK-13 补充裁决）。默认让夹具有语境，
+    #: 专测"缺语境/错语境"的用例显式传 `judge_batch=`。
+    row = {"case_id": case_id, "score": score, "reviewed_by": reviewer,
+           "judge_batch": (quality.PRODUCT_CONTEXT if judge_batch is None
+                           else judge_batch),
+           "prompt_sha256": prompt_sha256}
     if fingerprint is not None:
         row["cases_fingerprint"] = fingerprint
     stamp = _CURRENT["digest"] if digest is None else digest
@@ -381,3 +387,45 @@ def test_shipped_index_ledger_is_never_silently_passed():
     else:
         assert out["status"] == "fail", f"账对不上却判成了 {out['status']}：{out}"
         assert "账不对" in out["note"], out
+
+
+def test_the_product_context_is_the_single_source_of_the_case_count():
+    """产品口径的判分语境 ＝ 导演实际拿到的案例条数，单一真源是 `rag.cases_top_k`。
+
+    为什么这条重要（2026-10-06 第三方 RK-13 补充裁决）：E1 随判分语境**单调漂移**
+    （同检索、同内容、同提示词：k=3 → 0.177～0.193、k=20 → 0.271～0.302、
+    k=50 → 0.3177）。只要不钉语境，任何人都能靠"换尺"把红灯翻绿。
+    """
+    from block_director.contracts.config import RagConfig
+
+    assert quality.PRODUCT_CONTEXT == RagConfig().cases_top_k == 3
+
+
+def test_e1_evidence_without_a_judging_context_is_not_evidence(tmp_path):
+    """没有 `judge_batch` 的打分 = 不知道是哪把尺子量的 ⇒ 不得当证据。"""
+    cases = _case_index(tmp_path, ["c1", "c2"])
+    rows = [_review_row("c1", 5, judge_batch=0), _review_row("c2", 5, judge_batch=0)]
+    reviews = _reviews(tmp_path, rows, name="nocontext.jsonl")
+    out = quality.e1_relevance(reviews, cases_path=cases)
+    assert out["status"] == "not_measured", out
+    assert "判分语境" in out["note"], out
+
+
+def test_e1_evidence_judged_off_the_product_ruler_is_not_evidence(tmp_path):
+    """在 k=20 语境里量的读数**不可比**——只能标 exploratory，不许当 E1 证书。"""
+    cases = _case_index(tmp_path, ["c1", "c2"])
+    rows = [_review_row("c1", 5, judge_batch=20), _review_row("c2", 5, judge_batch=20)]
+    reviews = _reviews(tmp_path, rows, name="offruler.jsonl")
+    out = quality.e1_relevance(reviews, cases_path=cases)
+    assert out["status"] == "not_measured", out
+    assert "不在产品口径上" in out["note"], out
+
+
+def test_e1_evidence_without_a_prompt_hash_is_not_evidence(tmp_path):
+    """判分提示词 sha 缺失 ⇒ 换过判据也无人能事后发现。"""
+    cases = _case_index(tmp_path, ["c1", "c2"])
+    rows = [_review_row("c1", 5, prompt_sha256=""), _review_row("c2", 5)]
+    reviews = _reviews(tmp_path, rows, name="nohash.jsonl")
+    out = quality.e1_relevance(reviews, cases_path=cases)
+    assert out["status"] == "not_measured", out
+    assert "提示词 sha" in out["note"], out

@@ -46,6 +46,7 @@ from block_director.knowledge.cases import (  # noqa: E402
     manifest_fingerprint,
     read_cases,
 )
+from block_director.contracts.config import RagConfig  # noqa: E402
 from block_director.knowledge.hypergraph import (  # noqa: E402
     manifest_fingerprint as hypergraph_manifest_fingerprint,
 )
@@ -59,6 +60,12 @@ from tools.knowledge.corpus_gates import (  # noqa: E402
     corpus_metrics,
 )
 from tools.holdout_score import load_graph, load_holdout, score_entries  # noqa: E402
+
+#: 产品口径的判分语境 ＝ 导演实际拿到的参考案例条数。**单一真源**：
+#: `block_director/contracts/config.py` 的 `cases_top_k`（v1.4 §2.3b 的
+#: `rag.cases_top_k`，默认 3）。E1 的证书必须在**这个**语境里发，
+#: 否则"跨语境不可比"（见 `e1_evidence_is_stale` 的最后一段）。
+PRODUCT_CONTEXT = RagConfig().cases_top_k
 
 PASS, FAIL, NA = "pass", "fail", "not_measured"
 
@@ -788,6 +795,30 @@ def e1_evidence_is_stale(rows: List[Dict[str, Any]],
     if unlabelled:
         reasons.append(f"{len(unlabelled)}/{len(rows)} 条打分没有 reviewed_by："
                        "谁裁的没有落在记录里")
+    #: **判分语境**（第三方 2026-10-06 的 RK-13 补充裁决："RK-13 只接受钉死语境的 E1，
+    #: 其它 `--top-k` 读数一律标 exploratory，不得用于翻绿"）。
+    #: 为什么必须有这一条（`docs/evidence/20261006-e1-judge-context/` 实测）：同一检索、
+    #: 同内容、同提示词，只因**一次判分调用里喂了几条候选**，E1 就单调漂移
+    #: （k=3 → 0.177～0.193、k=20 → 0.271～0.302、k=50 → 0.3177，两位评委同向）。
+    #: 不钉语境，未来任何人都可以靠"换尺"把红灯翻绿——这正是要防的那件事。
+    #: 产品语境 ＝ `rag.cases_top_k`（导演实际拿到的参考案例条数，默认 3）。
+    contexts = {int(row.get("judge_batch") or 0) for row in rows}
+    if contexts == {0}:
+        reasons.append(
+            "所有打分都没有携带判分语境 judge_batch（这次判分调用喂了几条候选）："
+            "E1 随语境单调漂移，没有语境就无法证明这条读数与产品语境同尺")
+    else:
+        off_ruler = sorted(value for value in contexts if value != PRODUCT_CONTEXT)
+        if off_ruler:
+            reasons.append(
+                f"{sum(1 for row in rows if int(row.get('judge_batch') or 0) != PRODUCT_CONTEXT)}"
+                f"/{len(rows)} 条打分的判分语境不在产品口径上"
+                f"（产品 `rag.cases_top_k` ＝ {PRODUCT_CONTEXT}；实测其它语境："
+                f"{off_ruler}）——跨语境不可比，这些读数只能标 exploratory")
+    unhashed = [row for row in rows if not str(row.get("prompt_sha256") or "")]
+    if unhashed:
+        reasons.append(f"{len(unhashed)}/{len(rows)} 条打分没有判分提示词 sha："
+                       "判据换成另一份提示词也无人能事后发现")
     return reasons
 
 
