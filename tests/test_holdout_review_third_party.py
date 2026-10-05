@@ -1,0 +1,124 @@
+"""第三方裁定（Kimi K3）代替用户做人工审核 —— 用户 2026-10-06 的授权在机器上的形态。
+
+钉住四件事：
+
+1. **不冒充 human**：记录写 `reviewed_by: "third-party"`，并且 `source` 里带
+   `authorized_by` —— "凭什么是它来裁"可追；
+2. **`error` 不是判决**：不落记录（`holdout_review_llm` 上有实测先例：把 429 写成 amended）；
+3. **门⑦ 认它要带佐证**：`check_holdout.review_class()` 只认带 `source.model` 与
+   `source.prompt_sha256` 的 `third-party` 记录；缺了就不算一条裁决记录；
+4. **对拍表只列分歧**：与既有 llm-panel 记录同 verdict 的不进表。
+"""
+
+from __future__ import annotations
+
+import pathlib
+import sys
+
+import pytest
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools import check_holdout  # noqa: E402
+from tools import holdout_review_third_party as tp  # noqa: E402
+
+
+def _source():
+    return {"model": "kimi-k3", "prompt_sha256": "deadbeef",
+            "authorized_by": tp.AUTHORIZED_BY, "tool": "holdout_review_third_party"}
+
+
+def _entry(ident, *, movements=True, review=None):
+    entry = {"id": ident, "from_card": "card_1", "q": {}, "must": []}
+    if movements:
+        entry["expect_movements"] = ["static"]
+    if review is not None:
+        entry["review"] = review
+    return entry
+
+
+def test_the_tag_is_not_human_and_the_authorisation_travels_with_every_record():
+    assert tp.THIRD_PARTY_TAG == "third-party" != "human"
+    assert "user-2026-10-06" in tp.AUTHORIZED_BY
+    record = tp.build_record(_entry("hq_1"), {"verdict": "accepted", "reason": "ok"},
+                             _source())
+    assert record["review"]["reviewed_by"] == "third-party"
+    assert record["review"]["source"]["authorized_by"] == tp.AUTHORIZED_BY
+    assert record["action"] == "keep"
+
+
+def test_the_action_map_matches_the_panel_reviewer():
+    for verdict, action in (("accepted", "keep"), ("rejected", "drop"),
+                            ("amended", "flag")):
+        record = tp.build_record(_entry("hq_2"), {"verdict": verdict}, _source())
+        assert record["action"] == action
+
+
+def test_an_error_is_not_a_verdict_so_no_record_is_written():
+    for decision in ({"verdict": "error", "reason": "TimeoutError"}, {"reason": "x"}):
+        record = tp.build_record(_entry("hq_3"), decision, _source())
+        assert record["action"] == "retry"
+        assert "review" not in record
+
+
+def test_only_entries_that_need_a_verdict_are_selected():
+    entries = [_entry("a"), _entry("b", movements=False), _entry("c")]
+    picked = [str(e["id"]) for e in tp.select_third_party(entries)]
+    assert picked == ["a", "c"], "b 不需要裁决（没有 expect_movements / forbid_*）"
+
+
+def test_a_second_run_does_not_re_judge_what_third_party_already_signed():
+    entries = [_entry("a"), _entry("b", review={"reviewed_by": "third-party",
+                                                "verdict": "accepted"})]
+    assert [e["id"] for e in tp.select_third_party(entries)] == ["a"]
+    # 但 llm-panel 的记录**不**阻止第三方去裁——人审那一层要覆盖完整的一批。
+    entries = [_entry("a", review={"reviewed_by": "llm-panel", "verdict": "accepted"})]
+    assert [e["id"] for e in tp.select_third_party(entries)] == ["a"]
+    assert tp.select_third_party(entries, include_reviewed=False) == []
+
+
+def test_the_gate_accepts_third_party_only_with_corroboration():
+    who, why = check_holdout.review_class(
+        {"reviewed_by": "third-party", "verdict": "accepted", "source": _source()})
+    assert who == "third-party" and why == ""
+    # 没佐证、或佐证不全 ⇒ 不算一条裁决记录，并把原因如实报出来。
+    who, why = check_holdout.review_class({"reviewed_by": "third-party",
+                                           "verdict": "accepted"})
+    assert who is None and "source.model" in why
+    who, why = check_holdout.review_class(
+        {"reviewed_by": "third-party", "verdict": "accepted",
+         "source": {"model": "kimi-k3"}})
+    assert who is None and "prompt_sha256" in why
+
+
+def test_the_gate_still_refuses_an_unknown_reviewer():
+    who, why = check_holdout.review_class({"reviewed_by": "vibes",
+                                           "verdict": "accepted"})
+    assert who is None and "third-party" in why
+
+
+def test_the_gate_counts_only_the_classes_it_is_told_to_accept():
+    classes = {"human": 0, "llm-panel": 210, "third-party": 212}
+    status, detail = check_holdout.gate_human_review(
+        212, classes, 120, classes=("human", "llm-panel", "third-party"))
+    assert status == check_holdout.PASS
+    assert detail["human_reviewed"] == 422
+    assert detail["reviewed_by_class"]["third-party"] == 212
+    # 默认口径（只认 human）不变——它照旧不通，这条是协议原样。
+    status, _ = check_holdout.gate_human_review(212, classes, 120)
+    assert status == check_holdout.FAIL
+
+
+def test_the_disagreement_sheet_lists_only_real_disagreements():
+    entries = {"hq_1": _entry("hq_1", review={"reviewed_by": "llm-panel",
+                                              "verdict": "accepted",
+                                              "reason": "r"}),
+               "hq_2": _entry("hq_2", review={"reviewed_by": "llm-panel",
+                                              "verdict": "rejected",
+                                              "reason": "r"})}
+    rows = [{"id": "hq_1", "review": {"verdict": "accepted"}},
+            {"id": "hq_2", "review": {"verdict": "amended"}}]
+    lines = tp.compare_sheet(rows, entries)
+    assert len(lines) == 1 and "hq_2" in lines[0]

@@ -76,6 +76,20 @@ QWEN_BASE = os.environ.get("QWEN_BASE_URL",
 QWEN_API_KEY = os.environ.get("QWEN_API_KEY", "")
 QWEN_TIMEOUT = float(os.environ.get("QWEN_TIMEOUT", "900"))
 
+#: **第三方裁决 / 难题攻坚通道**：月之暗面 Kimi（Moonshot）的 OpenAI 兼容端点。
+#: 用户 2026-10-06 指示："qwen 不方便，改成用 kimi k3 做第三方裁定和难题攻坚"。
+#: 实测（`work/_probe_kimi.py`）：`https://api.moonshot.cn/v1` 上 `GET /models` 返回
+#: `kimi-k2.6`/`kimi-k3`/`kimi-k2.7-code`/`kimi-k2.7-code-highspeed`；`kimi-k3` 一次
+#: 小调用 **5.3 s**、带 `reasoning_content`（思考与正文分开），与 qwen/glm 同形状。
+#: **两条硬约束**：① 型号只认 `kimi-k3`（用户指定）；② **`kimi-k3` 只接受
+#: `temperature=1`**——传 0 会 `HTTP 400 invalid temperature: only 1 is allowed`，
+#: 所以本客户端**强制** temperature=1 并把这个决定写进 `decode_tag`（不许静默降级成
+#: "传 0 被拒就重试"）。密钥只从 `KIMI_API_KEY` 读，**绝不写进仓库**。
+KIMI_BASE = os.environ.get("KIMI_BASE_URL", "https://api.moonshot.cn/v1")
+KIMI_API_KEY = os.environ.get("KIMI_API_KEY", "")
+KIMI_TIMEOUT = float(os.environ.get("KIMI_TIMEOUT", "900"))
+KIMI_MODEL = os.environ.get("KIMI_MODEL", "kimi-k3")
+
 #: 本地思考模型的**思考税**实测（v1.4 §6 那条风险）没法用官方开关关掉：
 #: `/no_think`（写进 user 或 system）、`think: false`、精简词表都试过，`num_predict`
 #: 2048 时一律 `content_len=0 / thinking_len≈3400 / done_reason=length`；把预算加到
@@ -92,6 +106,8 @@ FAMILIES = {
     "ollama": "qwen",
     "glm": "zhipu",
     "qwen": "qwen",
+    "kimi": "kimi",
+    "moonshot": "kimi",
     "scripted": "scripted",
 }
 
@@ -373,6 +389,74 @@ class QwenClient:
         raise LLMError(f"qwen({self.model_id}) 调用失败：{last}")
 
 
+class KimiClient:
+    """月之暗面 Kimi（Moonshot）—— **第三方裁决 / 难题攻坚通道**（`family = "kimi"`）。
+
+    接口形状与 `QwenClient` 一致（`chat_json` ＋ `last_usage` ＋ `decode_tag`），
+    调用方不必写第二套。与 qwen/glm 的三处差别（都是**实测**得来的，不是猜的）：
+
+    * **只认 `temperature=1`**：`kimi-k3` 传 0 直接 `HTTP 400 invalid temperature`。
+      本类**强制** 1（并把请求的 temperature 记进 `decode_tag` 的说明里）——
+      这是上游的硬约束，不是我们放宽了什么判据。
+    * **思考与正文分开**：响应里 `reasoning_content` 是思考、`content` 是正文；
+      `max_tokens` 同时兜住两者，所以正文被思考吃光时会 `parse_json_content("")`
+      立刻具名失败（**不许**把空正文当"模型没意见"）。
+    * **不许静默换型号**：型号只从 `KIMI_MODEL`（默认 `kimi-k3`）或显式参数取，
+      失败就带型号抛。
+    """
+
+    family = "kimi"
+
+    def __init__(self, model_id: str = "", api_key: str = "", base: str = "",
+                 timeout: float = 0.0):
+        self.model_id = str(model_id or KIMI_MODEL or "kimi-k3")
+        self.model_version = self.model_id
+        self.api_key = api_key or KIMI_API_KEY
+        self.base = str(base or KIMI_BASE).rstrip("/")
+        self.timeout = float(timeout or KIMI_TIMEOUT)
+        self.last_usage: Dict[str, int] = {}
+        self.last_temperature = 1
+
+    @property
+    def decode_tag(self) -> str:
+        """解码条件的可读指纹。`temperature=1` 是上游强制的，如实写。"""
+        return "thinking=always;temperature=1(only 1 allowed);max_tokens=num_ctx"
+
+    def chat_json(self, system: str, user: str, temperature: float, seed: int,
+                  num_ctx: int, key: str = "", retries: int = 3) -> Dict:
+        #: 上游只认 1——这里**显式**盖掉调用方给的 0/0.2，并把实际值留在 self 上。
+        self.last_temperature = 1
+        if not self.api_key:
+            raise LLMError("缺少 KIMI_API_KEY（只从环境变量读，绝不写进仓库）")
+        payload = {
+            "model": self.model_id, "stream": False,
+            "messages": [{"role": "system", "content": system},
+                         {"role": "user", "content": user}],
+            "temperature": 1, "max_tokens": int(num_ctx),
+        }
+        last: Optional[Exception] = None
+        for attempt in range(retries):
+            try:
+                reply = _post_json(f"{self.base}/chat/completions", payload,
+                                   {"Content-Type": "application/json",
+                                    "Authorization": f"Bearer {self.api_key}"},
+                                   self.timeout)
+                choices = reply.get("choices") or []
+                if not choices:
+                    raise LLMError("上游没有返回 choices")
+                usage = reply.get("usage") or {}
+                self.last_usage = {
+                    "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+                    "completion_tokens": int(usage.get("completion_tokens") or 0)}
+                self.model_version = str(reply.get("model") or self.model_id)
+                message = choices[0].get("message") or {}
+                return parse_json_content(message.get("content") or "")
+            except Exception as exc:  # noqa: BLE001 - 失败要具名，且不许静默换型号
+                last = exc
+                time.sleep((20.0 if "429" in str(exc) else 1.5) * (attempt + 1))
+        raise LLMError(f"kimi({self.model_id}) 调用失败：{last}")
+
+
 class OllamaClient:
     """本地标注器。走 `/api/chat` ＋ 显式 `num_ctx`（见模块 docstring 的实测结论）。"""
 
@@ -458,4 +542,6 @@ def make_client(provider: str, model: str = "", scripted: str = ""):
         return GLMClient(model or "glm-5.3")
     if provider == "qwen":
         return QwenClient(model or "qwen3.8-max")
+    if provider in ("kimi", "moonshot"):
+        return KimiClient(model or "kimi-k3")
     raise LLMError(f"未知 provider: {provider!r}")

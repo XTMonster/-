@@ -250,3 +250,31 @@ sha256 `37dea0ea…`）。3 跑极差：
 
 **仍未完成**：`--top-k 50` 的扩召回跑（第 3 步"上限 ≥0.85？"）仍在后台
 （`work/ab_e1_candidates/hybrid.top50.v4.rep1.jsonl`）。
+
+### P14-203：扩召回上限 **0.8542 ≥ 0.85**（第 3 步判据过）；第三方通道**改用 Kimi K3**
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **R3** | 第三方第 3 步：扩召回能不能把上限抬到 ≥0.85 | **绿（判据过）** | `docs/evidence/20261006-top50-recall/`（`reviews.hybrid.top50.rep1.jsonl`，sha256 `abd5e204…`）：`--top-k 50` → 3,200 行／相关 300／**上限 0.8542**／≥3 相关查询 **46**／候选面相关均值 **4.688**。判据是"**或**"关系（≥48 **或** 上限 ≥0.85），**上限这条过了** ⇒ 这条扩召回**不判放弃** | 2026-10-06 | 本批 |
+| **R3** | 上限口径的第 3 个点（单调性） | 绿（并进 P14-199 的结论） | E1@前 3 行：**k=3 0.177～0.193 → k=20 0.271～0.302 → k=50 0.3177**——同批查询、同检索、同评委 ⇒ 清单越长给分越高，**单调**。所以 0.8542 是**最乐观**的一格 | 2026-10-06 | 本批 |
+| **通道** | 第三方裁定／难题攻坚**改用 Kimi K3**（用户 2026-10-06："qwen 不方便"） | 绿（客户端 + 测试） | `tools/kb_fetch/llm.py::KimiClient`（`family="kimi"`，端点 `api.moonshot.cn/v1`，型号 `kimi-k3`）+ `make_client("kimi"/"moonshot")`；守门 `tests/test_llm_kimi.py`（7 条）。**一条硬约束如实写进类里**：`kimi-k3` 只接受 `temperature=1`（传 0 ⇒ HTTP 400），客户端**显式**盖成 1 并把该决定写进 `decode_tag`——不是"被拒再重试" | 2026-10-06 | 本批 |
+
+**在跑**：R3 第 1 步的可靠性三跑（`--cases-rerank llm --rerank-llm-provider kimi --rerank-llm-model kimi-k3 --rerank-llm-prompt select --rerank-retrieve-k 20 --top-k 3` × 3，
+落 `work/ab_e1_rerank/kimi.rerank_select.rep{1,2,3}.jsonl`）。跑完才有"0/192 失败 + 极差 ≤0.02"的判词。
+
+### P14-204：第三方裁定**改为代替用户做人工审核**（Kimi K3）——ADR-0015
+
+用户 2026-10-06 两条指示：「qwen 不方便，改成用 kimi k3 做第三方裁定和难题攻坚」＋
+「**这个裁定是指代替我做人工审核判断**」。qwen 通道当时已掉出 good standing
+（`docs/evidence/20261006-qwen-account/`）。
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **通道** | Kimi K3 客户端 | 绿 | `tools/kb_fetch/llm.py::KimiClient`（`family="kimi"`，端点 `api.moonshot.cn/v1`，型号 `kimi-k3`，`make_client("kimi"/"moonshot")`）；守门 `tests/test_llm_kimi.py`（7 条）。硬约束如实写进类里：`kimi-k3` **只接受 `temperature=1`**（传 0 ⇒ HTTP 400），客户端显式盖成 1 并写进 `decode_tag` | 2026-10-06 | 本批 |
+| **门⑦** | 用户的"人工审核"由第三方裁定承担 | 绿（判据未动） | `tools/holdout_review_third_party.py`（复用 `holdout_review_llm.SYSTEM` v2 与 `_judge()`，所以逐字可比；产出 `reviewed_by: "third-party"` ＋ `source{model,prompt_sha256,authorized_by}`）＋守门 `tests/test_holdout_review_third_party.py`（9 条）。`tools/check_holdout.py::review_class()` 认 `third-party`（须带 `source.model` ＋ `source.prompt_sha256`，否则具名拒收）——**第十二次显式重新冻结**；默认口径仍是 `("human",)`，链子要显式点名才计数 | 2026-10-06 | 本批 |
+| **文档** | 授权与代价入库 | 绿 | `docs/adr/0015-third-party-adjudication-stands-in-for-human-review.md`（含"它仍然不是人""不得把 third-party ≥120 读成人审通过""共同盲区未验证"三条代价）；`~/.codex/hooks/model-routing.md` 路由表改为**第三方裁定／难题攻坚 → Kimi K3**、想法生成／质量审核仍走 GLM-5.3 | 2026-10-06 | 本批 |
+
+**在跑**：覆盖**全部 212 条 `needs_human`** 的第三方裁定
+（`work/_run_third_party_review.ps1` → `work/holdout_third_party.reviewed.jsonl` ＋
+`work/holdout_third_party_disagreements.md`）；Kimi 侧的重排三跑；Kimi 的四问重裁
+（`work/_adjudicate_kimi.py`）。

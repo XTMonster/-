@@ -411,6 +411,12 @@ def validate_entry(record: dict) -> Tuple[Dict[str, str], int]:
 #: 而 §4.1b 硬规则 2 明写判据不得自证。
 PANEL_TAG = "llm-panel"
 
+#: **第三方裁定**类别（2026-10-06 用户授权："这个裁定是指代替我做人工审核判断"）。
+#: 由 `tools/holdout_review_third_party.py`（Kimi K3）产出，**绝不冒充 `human`**：
+#: 门⑦ 要不要把它算进"已裁"由显式的 `--reviewer-classes` 决定，报告里
+#: `reviewed_by_class` 永远把"谁裁的"分开写。
+THIRD_PARTY_TAG = "third-party"
+
 
 def review_class(review: dict) -> Tuple[Optional[str], str]:
     """一条复核记录 → ``(被承认的裁决者类别, 不承认的原因)``。
@@ -418,6 +424,10 @@ def review_class(review: dict) -> Tuple[Optional[str], str]:
     * ``human``：协议原文的裁决者，**不需要**佐证字段（人审本来就没有工具指纹）。
     * ``llm-panel``：必须有 ``source.models``（≥2 个且互不相同）与
       ``source.prompt_sha256``；缺了就当**没有裁决记录**并把原因如实报出来。
+    * ``third-party``：2026-10-06 起由**第三方裁定通道**（Kimi K3，
+      `tools/holdout_review_third_party.py`）承担"人审那一层"；必须自带
+      ``source.model`` 与 ``source.prompt_sha256``。它**不是** ``human``——
+      要不要计入由显式的 ``--reviewer-classes`` 决定。
     * 其它字符串：一律不认（此前是"写什么算什么"）。
     """
     who = str((review or {}).get("reviewed_by") or "").strip().lower()
@@ -425,8 +435,16 @@ def review_class(review: dict) -> Tuple[Optional[str], str]:
         return None, ""
     if who == "human":
         return "human", ""
+    if who == THIRD_PARTY_TAG:
+        source = review.get("source") or {}
+        model = str(source.get("model") or "").strip()
+        if not model:
+            return None, "third-party 缺 source.model"
+        if not str(source.get("prompt_sha256") or "").strip():
+            return None, "third-party 缺 source.prompt_sha256"
+        return THIRD_PARTY_TAG, ""
     if who != PANEL_TAG:
-        return None, f"reviewed_by={who!r} 不是 human/llm-panel"
+        return None, f"reviewed_by={who!r} 不是 human/llm-panel/third-party"
     source = review.get("source") or {}
     models = [str(item).strip() for item in (source.get("models") or []) if str(item).strip()]
     if len(models) < 2:
