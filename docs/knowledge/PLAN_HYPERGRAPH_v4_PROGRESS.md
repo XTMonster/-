@@ -343,3 +343,21 @@ sha256 `37dea0ea…`）。3 跑极差：
 "抬高池子就能过线"这句话**必须先补一次重复跑**；② 212 条 `third-party` 判词**尚未合并**
 进 `fixtures/knowledge_holdout.jsonl`（门⑦ 读的是夹具里的 `review` 字段），
 合并（含 2 条 `drop` 的剔除）后才能谈"门⑦ 在 third-party 口径下 pass"。
+
+### P14-210：第三方判词的**合并试算**——门⑦ 过（third-party 210/210），但甩出 1 张孤儿卡
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **门⑦** | 把 212 条第三方判词并进 oracle（离线合并，不联网） | **半过→不换夹具** | 新入口 `holdout_review_third_party.py --merge-from … --merged …`（纯函数 `merge_entries()`，keep/flag 写回 review、drop 剔除、retry 不动；守门 1 条）。合并：2847 → **2845**（剔 `hq_0495`、`hq_1057`）。canonical 门在**合并件**上：**门⑦ pass**（`needs 210`／已裁 **210**，`reviewed_by_class {third-party: 210}`），**但门⑥ 由 pass 变 fail**（`missing_cards ["gen_cine_0247"]`） | 2026-10-06 | 本批 |
+
+**根因**：`hq_1057` 是卡 `gen_cine_0247` 的**唯一**一条期望（`hq_0495` 覆盖的
+`gen_story_0289` 另有 1 条，剔掉不伤覆盖）。两条驳回本身都站得住（原文见
+`docs/evidence/20261006-third-party-review/README.md`）。
+
+⇒ **不能就这么换夹具**：按本仓纪律，正确顺序是**先给 `gen_cine_0247` 补一条合格期望**
+（＝ `holdout_review_llm` 当初"剔一条 ⇒ 支撑掉线 ⇒ 补跑一轮"的同一条路），再整体换。
+**`fixtures/knowledge_holdout.jsonl` 一个字没动**；合并件与门读数留在证据目录。
+
+**在跑**：发货代 C=3 上限的**第 2 跑**（`work/ab_e1_relabel/current.batch3.top20.rep2.jsonl`）
+——用来判 0.6615 离 0.70 的 0.0385 是"真差一点"还是噪声；以及 Kimi 重排失败根因的
+顺序探针（已看到 ~12.5% 失败率，**不是**纯并发所致）。

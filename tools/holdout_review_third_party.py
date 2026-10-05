@@ -102,6 +102,37 @@ def build_record(entry: Dict, decision: Dict, source: Dict) -> Dict:
     return record
 
 
+def merge_entries(entries: Sequence[Dict],
+                  rows: Sequence[Dict]) -> "tuple[List[Dict], List[str]]":
+    """把第三方判决**并进条目**（与 `holdout_review_llm` 同一套语义）。
+
+    * `keep` / `flag` ⇒ 把 `review` 写进该条目（`flag` 额外打 `panel_disagreement`，
+      因为它与 `llm-panel` 不一致的会在对拍表里）；
+    * `drop` ⇒ **从 held-out 里剔除**（第三方判"这条期望不成立"，留着会污染 oracle）；
+    * `retry` ⇒ 原样保留、**不写 review**（缺证据不是通过）。
+
+    返回 `(新条目表, 被剔除的 id)`。**纯函数**：不碰网络、不写盘，所以可离线测。
+    """
+    by_id = {str(row.get("id", "")): row for row in rows if row.get("id")}
+    kept: List[Dict] = []
+    dropped: List[str] = []
+    for entry in entries:
+        ident = str(entry.get("id", ""))
+        row = by_id.get(ident)
+        review = (row or {}).get("review")
+        action = str((row or {}).get("action") or "")
+        if row is not None and action == "drop":
+            dropped.append(ident)
+            continue
+        merged = dict(entry)
+        if review:
+            merged["review"] = review
+            if action == "flag":
+                merged["panel_disagreement"] = True
+        kept.append(merged)
+    return kept, dropped
+
+
 def compare_sheet(rows: Sequence[Dict], entries_by_id: Dict[str, Dict]) -> List[str]:
     """与既有 llm-panel 记录对拍，只列分歧（人只需看这一份）。"""
     lines: List[str] = []
@@ -134,11 +165,34 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--only-unreviewed", action="store_true",
                         help="只补没有 llm-panel 记录的那些（默认：全量）")
+    parser.add_argument("--merge-from", default="",
+                        help="只做合并（不联网）：读一份本次工具产出的判决 jsonl，"
+                             "把 review 写进条目、剔掉 drop，落 --merged")
+    parser.add_argument("--merged", default="",
+                        help="合并结果写到哪里（配 --merge-from；不写就不合并）")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
     entries = [json.loads(line) for line in
                pathlib.Path(args.entries).read_text(encoding="utf-8").splitlines()
                if line.strip()]
+
+    if args.merge_from:
+        if not args.merged:
+            raise SystemExit("--merge-from 必须配 --merged")
+        rows = [json.loads(line) for line in
+                pathlib.Path(args.merge_from).read_text(encoding="utf-8").splitlines()
+                if line.strip()]
+        kept, dropped = merge_entries(entries, rows)
+        out = ROOT / args.merged
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text("".join(json.dumps(item, ensure_ascii=False) + "\n"
+                               for item in kept),
+                       encoding="utf-8", newline="\n")
+        print(json.dumps({"merged_into": str(out), "entries_in": len(entries),
+                          "entries_out": len(kept), "dropped": dropped},
+                         ensure_ascii=False))
+        return 0
+
     entries_by_id = {str(entry.get("id", "")): entry for entry in entries}
     cards = load_cards()
     picked = select_third_party(entries, args.limit,

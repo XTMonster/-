@@ -122,3 +122,24 @@ def test_the_disagreement_sheet_lists_only_real_disagreements():
             {"id": "hq_2", "review": {"verdict": "amended"}}]
     lines = tp.compare_sheet(rows, entries)
     assert len(lines) == 1 and "hq_2" in lines[0]
+
+
+def test_merging_writes_the_review_back_and_drops_only_the_rejected():
+    """合并语义与 `holdout_review_llm` 一致：keep/flag 写回 review，drop 剔除，retry 不动。"""
+    entries = [_entry("a"), _entry("b"), _entry("c"), _entry("d")]
+    rows = [
+        {"id": "a", "action": "keep", "review": {"reviewed_by": "third-party",
+                                                 "verdict": "accepted"}},
+        {"id": "b", "action": "drop", "review": {"reviewed_by": "third-party",
+                                                 "verdict": "rejected"}},
+        {"id": "c", "action": "flag", "review": {"reviewed_by": "third-party",
+                                                 "verdict": "amended"}},
+        {"id": "d", "action": "retry"},          # 缺证据 ⇒ 不写 review
+    ]
+    kept, dropped = tp.merge_entries(entries, rows)
+    assert [item["id"] for item in kept] == ["a", "c", "d"]
+    assert dropped == ["b"]
+    by_id = {item["id"]: item for item in kept}
+    assert by_id["a"]["review"]["verdict"] == "accepted"
+    assert by_id["c"]["panel_disagreement"] is True
+    assert "review" not in by_id["d"]
