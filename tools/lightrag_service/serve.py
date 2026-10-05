@@ -114,10 +114,16 @@ def main(argv: Optional[list] = None) -> int:
     parser.add_argument("--mode", default="naive",
                         choices=("naive", "local", "global", "hybrid", "mix"),
                         help="上游检索模式；non-naive 需要**非空图谱**")
+    parser.add_argument("--query-timeout", type=float, default=None,
+                        help="单次 /query 的超时秒数（默认取索引的 DEFAULT_QUERY_TIMEOUT）；"
+                             "超时 ⇒ 500 index_error:TimeoutError，绝不伪装成空列表")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     from . import build_index as bi  # noqa: PLC0415 - 重模块（要 lightrag）延后导入
-    index = bi.LightRAGIndex(pathlib.Path(args.index_dir), mode=args.mode)
+    kwargs = {"mode": args.mode}
+    if args.query_timeout is not None:
+        kwargs["query_timeout"] = float(args.query_timeout)
+    index = bi.LightRAGIndex(pathlib.Path(args.index_dir), **kwargs)
     server = make_server(index, port=args.port,
                          expected_fingerprint=args.expected_fingerprint)
     print(json.dumps({"status": "serving", "host": HOST, "port": args.port,
@@ -127,6 +133,11 @@ def main(argv: Optional[list] = None) -> int:
         server.serve_forever()
     except KeyboardInterrupt:  # pragma: no cover
         pass
+    finally:
+        #: 停掉索引自持的常驻事件循环（没有它也只是留下一条守护线程，但退出要干净）。
+        close = getattr(index, "close", None)
+        if callable(close):
+            close()
     return 0
 
 

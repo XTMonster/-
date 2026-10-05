@@ -119,3 +119,24 @@ def test_an_index_error_becomes_a_named_500_not_a_silent_empty_list():
         assert payload["reason"].startswith("index_error:")
     finally:
         server.shutdown()
+
+
+def test_a_query_timeout_becomes_a_named_500_not_a_silent_empty_list():
+    """2026-10-05：`LightRAGIndex.search` 现在因超时抛 `TimeoutError`（常驻循环 ＋
+    `query_timeout`）。服务层必须把它翻成具名的 `index_error:TimeoutError`——
+    "卡死"与"没结果"是两件不同的事，绝不能都变成 `{"hits":[]}`。"""
+
+    class _SlowIndex:
+        fingerprint = "fp-1"
+        version = "1.5.7"
+
+        def search(self, query: str, top_k: int):
+            raise TimeoutError("lightrag 检索超时（2 s）")
+
+    server, base = _start(_SlowIndex())
+    try:
+        status, payload = _post(base + "/query", {"query": "x", "top_k": 1})
+        assert status == 500
+        assert payload["reason"] == "index_error:TimeoutError"
+    finally:
+        server.shutdown()
