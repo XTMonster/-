@@ -12,6 +12,8 @@ import json
 import pathlib
 import sys
 
+import pytest
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -525,3 +527,54 @@ def test_a_failed_chunk_does_not_wipe_the_chunks_that_succeeded():
                                   judge_batch=3)
     assert [row["case_id"] for row in rows] == ["c01", "c02", "c03"], (
         "第二批发不出分 ⇒ c04..c06 不进样本；第一批照旧在")
+
+
+class _BudgetClient:
+    """把每次调用拿到的 `num_ctx` 记下来的桩。"""
+
+    def __init__(self, reply=None, fail_without_budget=False):
+        self.budgets = []
+        self.reply = reply if reply is not None else {"best": ["c1"]}
+        self.fail_without_budget = fail_without_budget
+
+    def chat_json(self, system, user, temperature, seed, num_ctx, key="", retries=1):
+        self.budgets.append(int(num_ctx))
+        if self.fail_without_budget and int(num_ctx) <= 1024:
+            #: 模拟 "始终思考" 的模型把预算全烧进 reasoning ⇒ 正文为空。
+            raise e1_panel.llm.LLMError("模型返回的空正文（endpoint trap）")
+        return self.reply
+
+
+def test_the_rerank_completion_budget_is_configurable():
+    """重排调用的 completion 预算可配（默认 1024 ＝ 历次口径）。
+
+    为什么需要（2026-10-06 实测，`work/_probe_kimi_rerank_quiet.py`）：顺序跑 64 条查询，
+    `kimi-k3` 有 **8 条**重排失败，其中 **7 条**是"正文为空"——1024 的预算被思考吃光。
+    `--rerank-llm-max-tokens` 就是给这条的；默认值不变，所以历次读数逐字照旧。
+    """
+    cases = _cases("c1", "c2", "c3")
+    client = _BudgetClient()
+    scorer = e1_panel.make_llm_reranker(model="m", provider="x", client=client,
+                                        prompt="select", max_tokens=8192)
+    scorer("q", cases)
+    assert client.budgets == [8192]
+    # 不传 = 历次口径。
+    client = _BudgetClient()
+    e1_panel.make_llm_reranker(model="m", provider="x", client=client,
+                               prompt="select")("q", cases)
+    assert client.budgets == [1024]
+
+
+def test_a_thinking_model_that_needs_a_bigger_budget_stops_failing():
+    """同一批候选：1024 会空正文失败，抬到 8192 就答得出来。"""
+    cases = _cases("c1", "c2", "c3")
+    small = e1_panel.make_llm_reranker(
+        model="m", provider="x", client=_BudgetClient(fail_without_budget=True),
+        prompt="select")
+    with pytest.raises(e1_panel.llm.LLMError):
+        small("q", cases)
+    big = e1_panel.make_llm_reranker(
+        model="m", provider="x", client=_BudgetClient(fail_without_budget=True),
+        prompt="select", max_tokens=8192)
+    kept = e1_panel.rerank_cases(big, "q", cases, 1)
+    assert [case.case_id for case in kept] == ["c1"]

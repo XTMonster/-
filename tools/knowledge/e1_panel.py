@@ -210,7 +210,7 @@ RERANK_PROMPTS = {"order": LLM_RERANK_SYSTEM, "select": LLM_RERANK_SELECT_SYSTEM
 
 
 def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
-                      prompt: str = "order"):
+                      prompt: str = "order", max_tokens: int = 1024):
     """用 LLM 给宽候选**排序**（`--cases-rerank llm`），返回打分可调用对象。
 
     为什么是"排序"而不是产品那个"过滤"：R3 的算术说明**删行**改变不了"哪 3 条被返回"
@@ -234,7 +234,7 @@ def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
         listing = "\n".join("%s｜%s" % (case.case_id, str(case.excerpt)[:160])
                             for case in items)
         reply = judge_client.chat_json(system, "查询：%s\n\n候选：\n%s" % (query, listing),
-                                       0.0, 0, 1024)
+                                       0.0, 0, int(max_tokens))
         if prompt == "score":
             raw = reply.get("scores") or {}
             if not isinstance(raw, dict) or not raw:
@@ -544,6 +544,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--rerank-llm-provider", default="qwen",
                         help="`--cases-rerank llm` 的通道（默认 qwen ＝ 第三方裁决通道）")
     parser.add_argument("--rerank-llm-model", default="qwen3.8-max")
+    parser.add_argument("--rerank-llm-max-tokens", type=int, default=1024,
+                        help="重排调用给模型的 completion 预算（默认 1024 ＝ 历次口径）。"
+                             "**始终思考**的模型（`kimi-k3`）在长候选清单上会把 1024 全烧进"
+                             " reasoning，正文变空 ⇒ 那一查询具名降级成 `failed:LLMError`。"
+                             "实测（`work/_probe_kimi_rerank_quiet.py`）：顺序跑 64 条有 **8 条**"
+                             "失败，其中 **7 条**就是这个空正文陷阱 ⇒ 这条缝就是给它的。")
     parser.add_argument("--rerank-llm-prompt", default="order",
                         choices=("order", "select", "score"),
                         help="重排提示词的形状：`order` 全序排序／`select` 只挑最该看的 3 条／"
@@ -627,8 +633,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         reranker, rerank_label = make_llm_reranker(
             model=args.rerank_llm_model,
             provider=args.rerank_llm_provider,
-            prompt=args.rerank_llm_prompt), "%s/%s" % (args.rerank_llm_model,
-                                                       args.rerank_llm_prompt)
+            prompt=args.rerank_llm_prompt,
+            max_tokens=args.rerank_llm_max_tokens), \
+            ("%s/%s" % (args.rerank_llm_model, args.rerank_llm_prompt)
+             if int(args.rerank_llm_max_tokens) == 1024 else
+             "%s/%s@%d" % (args.rerank_llm_model, args.rerank_llm_prompt,
+                           int(args.rerank_llm_max_tokens)))
     else:
         reranker, rerank_label = None, ""
     rows = score_queries(index, queries, clients, top_k=args.top_k,
