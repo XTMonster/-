@@ -209,6 +209,26 @@ RERANK_PROMPTS = {"order": LLM_RERANK_SYSTEM, "select": LLM_RERANK_SELECT_SYSTEM
                   "score": LLM_RERANK_SCORE_SYSTEM}
 
 
+def _case_fields(case, *, with_title: bool) -> str:
+    """候选清单里"这条案例长什么样"的那一段。
+
+    `with_title=False`（默认）＝ `excerpt[:160]`，与历次重排读数逐字同口径。
+    `with_title=True` ＝ `title[:60]｜excerpt[:220]`——**与 E1 的评委看到的一模一样**
+    （见 `judge()`；注意 `Case` **没有** `summary` 字段，所以评委那边那个
+    `getattr(case,"summary","")` 永远拿到空串、退回 `excerpt`——这里照它的**实际行为**对齐）。
+
+    为什么要有它（2026-10-06 实测出来的第二处信息缺口）：重排器原先只拿到 160 字符的英文摘录，
+    而**评委看得到标题与 220 字符**。也就是说"挑哪 3 条"的那个组件，**手里的信息比打分的那个更少**——
+    这没有任何理由，只会把重排器人为削弱。
+    """
+    if not with_title:
+        return str(getattr(case, "excerpt", "") or "")[:160]
+    title = str(getattr(case, "title", "") or "")[:60]
+    #: 照 `judge()` 的**实际行为**对齐：`Case` 没有 `summary` 字段 ⇒ 那边永远退回 `excerpt`。
+    body = str(getattr(case, "summary", "") or getattr(case, "excerpt", "") or "")[:220]
+    return "%s｜%s" % (title, body)
+
+
 def _clue_suffix(clue_of, case) -> str:
     """给出"中文线索"那一格（没有就返回空串）。
 
@@ -231,7 +251,7 @@ def _clue_suffix(clue_of, case) -> str:
 
 def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
                       prompt: str = "order", max_tokens: int = 1024,
-                      clue_of=None):
+                      clue_of=None, with_title: bool = False):
     """用 LLM 给宽候选**排序**（`--cases-rerank llm`），返回打分可调用对象。
 
     为什么是"排序"而不是产品那个"过滤"：R3 的算术说明**删行**改变不了"哪 3 条被返回"
@@ -252,7 +272,8 @@ def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
 
     def scorer(query: str, cases):
         items = list(cases)
-        listing = "\n".join("%s｜%s%s" % (case.case_id, str(case.excerpt)[:160],
+        listing = "\n".join("%s｜%s%s" % (case.case_id,
+                                          _case_fields(case, with_title=with_title),
                                           _clue_suffix(clue_of, case))
                             for case in items)
         reply = judge_client.chat_json(system, "查询：%s\n\n候选：\n%s" % (query, listing),
@@ -578,7 +599,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                              "而查询是**中文**——重排器被要求跨语种判断，却看不到案例层"
                              "**本来就有**的中文对齐面（`search_zh`）。这不是放宽判据，"
                              "是把已经存在于检索侧的信息补到重排侧。证据见 "
-                             "docs/evidence/20261006-rerank-clue/")
+                             "docs/evidence/20261006-rerank-shapes/")
+    parser.add_argument("--rerank-title", default="off", choices=("off", "on"),
+                        help="重排的候选清单里给出 `title[:60]｜(summary|excerpt)[:220]`"
+                             "——**与 E1 评委看到的一模一样**（默认 off ＝ `excerpt[:160]`）。"
+                             "为什么该开：重排器原来**手里的信息比评委更少**，那是人为削弱。"
+                             "它与 `--rerank-clue` 是**两处独立的信息缺口**，分两个开关以便分别取证。")
     parser.add_argument("--rerank-llm-prompt", default="order",
                         choices=("order", "select", "score"),
                         help="重排提示词的形状：`order` 全序排序／`select` 只挑最该看的 3 条／"
@@ -665,13 +691,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             prompt=args.rerank_llm_prompt,
             max_tokens=args.rerank_llm_max_tokens,
             clue_of=((lambda cid: (getattr(index, "search_zh", None) or {}).get(cid, ""))
-                     if args.rerank_clue == "on" else None)), \
+                     if args.rerank_clue == "on" else None),
+            with_title=(args.rerank_title == "on")), \
             ("%s/%s%s%s" % (args.rerank_llm_model, args.rerank_llm_prompt,
                             #: 非默认预算才写进标签 ⇒ 默认路径逐字节不变。
                             ("" if int(args.rerank_llm_max_tokens) == 1024
                              else "@%d" % int(args.rerank_llm_max_tokens)),
                             #: 开了中文线索才写（同上，默认路径不变）。
-                            "+clue" if args.rerank_clue == "on" else ""))
+                            (("+clue" if args.rerank_clue == "on" else "")
+                             + ("+title" if args.rerank_title == "on" else ""))))
     else:
         reranker, rerank_label = None, ""
     rows = score_queries(index, queries, clients, top_k=args.top_k,

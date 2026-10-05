@@ -618,3 +618,35 @@ def test_the_reranker_can_be_given_the_chinese_clue():
         model="m", provider="x", client=client, prompt="select",
         clue_of=lambda cid: (_ for _ in ()).throw(RuntimeError("boom")))
     assert scorer("q", cases) is not None
+
+
+def test_the_reranker_can_be_given_the_judges_view_of_a_case():
+    """`--rerank-title on` ⇒ 候选清单给 `title[:60]｜(summary|excerpt)[:220]`——**与评委看到的一样**。
+
+    为什么该有（2026-10-06 第二处信息缺口）：重排器原来只拿到 `excerpt[:160]`，
+    而评委看得到标题与 220 字符 ⇒ **挑哪 3 条的那个组件，手里的信息比打分的那个更少**，
+    这没有任何理由，只会把重排器人为削弱。默认 off ＝ 历次口径逐字不变。
+    """
+    #: `Case` **没有** `summary` 字段（只有 case_id/title/excerpt/…）⇒ `judge()` 里那个
+    #: `getattr(case,"summary","")` 永远拿到空串，评委实际看到的就是 `title｜excerpt[:220]`。
+    cases = [Case(case_id="c1", title="T-one", excerpt="E-one"),
+             Case(case_id="c2", title="T-two", excerpt="E-two")]
+
+    class _Best:
+        def __init__(self):
+            self.users = []
+
+        def chat_json(self, system, user, temperature, seed, num_ctx, key="",
+                      retries=1):
+            self.users.append(user)
+            return {"best": ["c1"]}
+
+    client = _Best()
+    e1_panel.make_llm_reranker(model="m", provider="x", client=client,
+                               prompt="select")("q", cases)
+    assert "T-one" not in client.users[0], "默认口径不许带标题"
+    client = _Best()
+    e1_panel.make_llm_reranker(model="m", provider="x", client=client,
+                               prompt="select", with_title=True)("q", cases)
+    assert "T-one" in client.users[0] and "E-one" in client.users[0]
+    assert "T-two" in client.users[0] and "E-two" in client.users[0]
