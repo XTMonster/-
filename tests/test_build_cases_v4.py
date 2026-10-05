@@ -59,6 +59,23 @@ def test_the_stages_run_in_order_chunk_then_license(tmp_path):
     assert stats["chunks"] == 2 and stats["kept"] == 2
 
 
+def test_the_case_layer_input_is_the_licensed_documents_not_the_chunked_stream(tmp_path):
+    """**案例层的输入是许可门后的"整篇来源"**，不是 `chunk.run` 的产物。
+
+    实测抓到的缺陷（2026-10-05）：我最初把 `chunk.run` 接在这里，而它是 **L1/L2 那条路**
+    的分段器——它**跳过全部 `layers: [L3]` 来源**（`chunk.py:181` 起：L3 只喂案例层，
+    不进 chunks）。于是 v4 案例层只看到 43 个来源（810 条案例），
+    而 **202 条 L3 来源**（StudioBinder／Animation Studies 那一批，正是现役 1143 条案例的
+    主力）**整批没进去**。现役 `build_cases.INPUT` 指的是 `licensed.jsonl`（整篇来源），
+    它自己会 `segments_of(text)` 再切——所以这里默认必须是**直通**。
+    """
+    kept, _rejects, stats = bv.prepare_case_inputs(_records(),
+                                                   out_dir=tmp_path / "shadow")
+    #: 直通 ⇒ 段数 == 输入来源数（没有经过任何按段裁剪）。
+    assert stats["chunks"] == len(_records())
+    assert len(kept) == len(_records())
+
+
 def test_a_licence_reject_is_named_and_kept_out_of_the_output(tmp_path):
     def chunker(records):
         return [{"source_ref": r["source_ref"], "domain": r["domain"],

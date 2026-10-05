@@ -1,9 +1,15 @@
-"""P6：把影子语料按**现役管线**喂成案例层的输入（分段 → 许可门）。
+"""P6：把影子语料按**现役管线**喂成案例层的输入（许可门）。
 
-为什么是"编排"而不是"重写"：`chunk.py`（分段与预算）与 `build_cases.py`（线索门、
-体积门、按源配额）加起来一百多 KB，都是**已被门检验过**的；重写等于把那些门
+为什么是"编排"而不是"重写"：`validate_licenses.py`（出处/许可/长度）与
+`build_cases.py`（线索门、体积门、按源配额）都是**已被门检验过**的；重写等于把那些门
 再实现一遍，而且一定会漂。所以本模块只做三件事：按顺序调用、把中间产物落在
 **影子目录**、把拒绝具名记下来。
+
+**默认是直通，不是 `chunk.run`**（2026-10-05 实测抓到的缺陷）：`chunk.py` 是 **L1/L2
+那条路**的分段器，它会**跳过全部 `layers: [L3]` 来源**（L3 只喂案例层，不进 chunks）。
+而现役 `build_cases.INPUT` 指的是 `licensed.jsonl`（**整篇来源**），它自己会
+`segments_of(text)` 再切。我最初把 `chunk.run` 接在这里，结果 v4 案例层只看到
+43 个来源、**202 条 L3 来源整批没进去**（那正是现役 1143 条案例的主力）。
 
 **一条纪律**（本项目踩过两次的同一类坑）：`validate_licenses.run()` 会写现役的
 `work/licensed.jsonl`——本模块只用它的**纯函数** `check()` 逐条判，绝不调 `run()`。
@@ -40,7 +46,9 @@ def prepare_case_inputs(records: Sequence[Dict], *, out_dir: pathlib.Path,
                         check_fn: Optional[Callable] = None,
                         **chunk_kwargs) -> Tuple[List[Dict], List[Dict], Dict]:
     """分段 → 许可门 → 落 `<out_dir>/licensed.jsonl`。返回 `(kept, rejects, stats)`。"""
-    chunker = chunk_fn or chunk_mod.run
+    #: **默认直通**：案例层的输入是许可门后的"整篇来源"，`build_cases` 自己会切段。
+    #: 接 `chunk.run` 会**丢掉全部 `layers: [L3]` 来源**（那是 L1/L2 那条路的分段器）。
+    chunker = chunk_fn or (lambda rows, **kwargs: list(rows))
     checker = check_fn or licences.check
     chunks = list(chunker(list(records), **chunk_kwargs))
     kept: List[Dict] = []
