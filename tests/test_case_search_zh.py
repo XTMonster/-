@@ -588,3 +588,112 @@ def test_resume_needs_the_current_prompt_not_just_the_current_cases(tmp_path,
     assert rows["c2"]["zh"] == "切到听者的视线完成一次反打", rows["c2"]
     assert rows["c1"]["zh"] == "要拍移动镜头时用斯坦尼康吸收震动", rows["c1"]
     assert rows["c1"]["prompt_sha256"] == ZH.prompt_sha(), rows["c1"]
+
+
+def _case_layer(directory: pathlib.Path, rows) -> pathlib.Path:
+    """写一份分片案例层（`<dir>/cases/part-000.jsonl`）并返回分片目录。"""
+    shards = directory / "cases"
+    shards.mkdir(parents=True, exist_ok=True)
+    (shards / "part-000.jsonl").write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
+        encoding="utf-8")
+    return shards
+
+
+def _seed_case(excerpt: str, title: str, case_id: str = "case_old") -> dict:
+    row = _case(case_id=case_id, excerpt=excerpt).to_dict()
+    row["source_ref"] = {**row["source_ref"], "title": title}
+    return row
+
+
+class _CountingClient:
+    """每次调用都记一笔并回一句新线索——用来判"到底有没有花调用"。"""
+
+    family = "zhipu"
+    model_id = "stub"
+    model_version = "stub"
+
+    def __init__(self, zh: str = "新生成的线索：镜头缓缓推近") -> None:
+        self.calls = 0
+        self.zh = zh
+
+    def chat_json(self, *args, **kwargs):
+        self.calls += 1
+        return {"zh": self.zh}
+
+
+def test_the_same_input_from_another_layer_is_reused_instead_of_regenerated(tmp_path,
+                                                                           monkeypatch):
+    """线索是**输入的纯函数**：提示词里只有 `摘录` 与 `出处标题` 两项。
+
+    两项逐字节相同的案例，让模型把同一句话再"改写"一遍只会引入一次非确定性
+    （`temperature=0` 也不保证逐字节相同），不会提高质量。重建 v4 案例层时
+    783 条里有 521 条与现役层逐字节相同，而现役那份**已过审**——所以同代同输入
+    一律沿用（见 `seed_index` 的三条硬门）。
+    """
+    excerpt, title = "A slow dolly in on the market stalls.", "Practical Cinema"
+    seed = tmp_path / "seed"
+    _case_layer(seed, [_seed_case(excerpt, title)])
+    _write_sidecar(seed, seed / "cases", C.cases_digest(C.case_paths(seed)),
+                   [{"case_id": "case_old", "zh": "镜头缓缓推近市场摊位的货物",
+                     "model": "glm-5.3", "family": "zhipu",
+                     "prompt_sha256": ZH.prompt_sha()}])
+
+    target = tmp_path / "target"
+    _case_layer(target, [_seed_case(excerpt, title, case_id="case_new"),
+                         _seed_case("A hard cut on the beat.", "Editing Notes",
+                                    case_id="case_fresh")])
+    client = _CountingClient()
+    monkeypatch.setattr(ZH.llm, "make_client", lambda *a, **k: client)
+    assert ZH.main(["--cases", str(target / "cases"), "--out", str(target / "cases"),
+                    "--seed", str(seed), "--workers", "1"]) == 0
+
+    out = target / "cases" / "search_zh.part-000.jsonl"
+    rows = {json.loads(line)["case_id"]: json.loads(line) for line in
+            out.read_text(encoding="utf-8").splitlines() if line.strip()}
+    assert rows["case_new"]["zh"] == "镜头缓缓推近市场摊位的货物", "同输入没有沿用"
+    assert rows["case_fresh"]["zh"] == client.zh, "不同输入必须重生成"
+    assert client.calls == 1, f"只有 case_fresh 该花调用，实际 {client.calls} 次"
+    #: 复用来的行要**按当前案例集合重签**（否则读者整份拒用）。
+    assert rows["case_new"]["cases_sha256"] == C.cases_digest(C.case_paths(target))
+    loaded, reason = C.read_search_zh(target, target)
+    assert reason == "", reason
+    assert loaded["case_new"] == "镜头缓缓推近市场摊位的货物"
+
+
+def _seed_and_run(tmp_path, monkeypatch, seed_row: dict, excerpt: str, title: str):
+    seed = tmp_path / "seed"
+    _case_layer(seed, [_seed_case(excerpt, title)])
+    _write_sidecar(seed, seed / "cases", C.cases_digest(C.case_paths(seed)),
+                   [{**seed_row, "case_id": "case_old"}])
+    target = tmp_path / "target"
+    _case_layer(target, [_seed_case(excerpt, title, case_id="case_new")])
+    client = _CountingClient()
+    monkeypatch.setattr(ZH.llm, "make_client", lambda *a, **k: client)
+    assert ZH.main(["--cases", str(target / "cases"), "--out", str(target / "cases"),
+                    "--seed", str(seed), "--workers", "1"]) == 0
+    out = target / "cases" / "search_zh.part-000.jsonl"
+    return {json.loads(line)["case_id"]: json.loads(line) for line in
+            out.read_text(encoding="utf-8").splitlines() if line.strip()}, client
+
+
+def test_a_seed_row_from_another_prompt_is_not_reused(tmp_path, monkeypatch):
+    """跨代不许复用：`prompt_sha256` 不同 = 那不是同一个提示词产出的键。"""
+    rows, client = _seed_and_run(
+        tmp_path, monkeypatch,
+        {"zh": "镜头缓缓推近市场摊位的货物", "model": "glm-5.3", "family": "zhipu",
+         "prompt_sha256": "0" * 64},
+        "A slow dolly in on the market stalls.", "Practical Cinema")
+    assert client.calls == 1, "跨代的行竟然被沿用了"
+    assert rows["case_new"]["zh"] == client.zh
+
+
+def test_a_seed_row_that_fails_the_current_rules_is_not_reused(tmp_path, monkeypatch):
+    """判据会长：沿用前必须按**现行** `classify` 重查（元话术那句现该丢）。"""
+    rows, client = _seed_and_run(
+        tmp_path, monkeypatch,
+        {"zh": "本摘录未涉及景别与运镜", "model": "glm-5.3", "family": "zhipu",
+         "prompt_sha256": ZH.prompt_sha()},
+        "A slow dolly in on the market stalls.", "Practical Cinema")
+    assert client.calls == 1, "按现行判据该丢的行竟然被沿用了"
+    assert rows["case_new"]["zh"] == client.zh

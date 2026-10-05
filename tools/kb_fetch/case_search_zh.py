@@ -23,6 +23,8 @@
 
     python -m tools.kb_fetch.case_search_zh --provider glm --model glm-5.3 \\
         --workers 6            # 默认：读 knowledge/ 的分片，写 knowledge/cases/ 的分片
+    python -m tools.kb_fetch.case_search_zh --cases <新层>/cases --out <新层>/cases \\
+        --seed knowledge       # 换代重建：同代同输入的条目直接沿用（见 seed_index）
 """
 
 from __future__ import annotations
@@ -276,6 +278,59 @@ def classify(zh: str) -> str:
     return ""
 
 
+def case_key(case: dict) -> tuple:
+    """一条案例的**线索输入**：`(摘录, 出处标题)`。
+
+    为什么就是这两项（2026-10-05）：`make_line` 拼给模型的 user 模板只有
+    `【摘录】` 与 `【出处标题】`——没有 case_id、没有邻居、没有顺序。所以
+    **这两项逐字节相同**的案例，就是同一次生成的输入。据此，"同代复用"不是近似，
+    是同一份产物（见 :func:`seed_index`）。
+    """
+    source = case.get("source_ref") if isinstance(case.get("source_ref"), dict) else {}
+    return (str(case.get("excerpt") or "").strip(),
+            str(source.get("title") or "").strip())
+
+
+def seed_index(seed_dir: pathlib.Path, expected_prompt: str) -> Dict[tuple, dict]:
+    """从**同代**的另一份案例层里取回线索行，键是 `(摘录, 出处标题)`。
+
+    为什么允许这样复用（2026-10-05）：线索是**输入的纯函数**——提示词里只有摘录与
+    出处标题两项。两项都逐字节相同的案例，让模型把同一句话再"改写"一遍，只会引入
+    一次非确定性（`temperature=0` 也不保证逐字节相同），不会提高质量。
+    重建 v4 案例层时 783 条里有 **521** 条的 `(摘录, 标题)` 与现役层逐字节相同，
+    而现役层的线索已过审（`test_the_shipped_sidecar_matches_the_shipped_cases`
+    全量扫过），当场重跑等于把已审过的键换成一批没审过的同义句。
+
+    三条硬门（任一不满足就**不用**，当场重生成）：
+
+    1. `prompt_sha256` 必须与**当前**提示词相同——跨代复用等于把过期的键塞进新索引
+       （与断点续跑那条纪律同一份理由）；
+    2. 摘录与出处标题都要逐字节相同（见 :func:`case_key`）；
+    3. 沿用文本必须过得了**现行** `classify`——判据是会长的，旧行不一定按今天的
+       规则合格（元话术／约束词／长度都重查一遍）。
+    """
+    from block_director.knowledge import cases as block_cases
+
+    rows_by_id: Dict[str, dict] = {}
+    for path in block_cases.search_zh_paths(seed_dir):
+        for row in common.read_jsonl(path):
+            if str(row.get("prompt_sha256") or "") != str(expected_prompt):
+                continue
+            if classify(str(row.get("zh") or "")):
+                continue
+            rows_by_id[str(row.get("case_id") or "")] = row
+    out: Dict[tuple, dict] = {}
+    for seed_case in block_cases.read_cases(seed_dir):
+        payload = seed_case.to_dict()
+        row = rows_by_id.get(str(seed_case.case_id))
+        if row:
+            out.setdefault(case_key(payload), {
+                "zh": str(row.get("zh") or ""),
+                "model": str(row.get("model") or ""),
+                "family": str(row.get("family") or "")})
+    return out
+
+
 def make_line(client, case: dict) -> tuple:
     """一条案例 → （线索行或 None, 丢弃原因）。原因用于**如实记账**（谁被丢掉、为什么）。"""
     excerpt = str(case.get("excerpt") or "").strip()
@@ -326,6 +381,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="从这份丢弃账（--dropped-out 的产物）里挑要重跑的 case_id")
     parser.add_argument("--retry-reasons", default="call-failed",
                         help="配合 --retry-from：只重跑原因以这些前缀开头的条目（逗号分隔）")
+    #: 同代复用：另一份案例层里 `(摘录, 出处标题)` 逐字节相同的线索直接沿用，
+    #: 不再花一次调用（见 `seed_index` 的三条硬门）。
+    parser.add_argument("--seed", default="",
+                        help="另一份**同代**案例层目录：摘录与出处标题逐字节相同的条目"
+                             "直接沿用它的线索（不花调用）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     cases_path = pathlib.Path(args.cases)
@@ -358,13 +418,29 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 and prior[str(case.get("case_id"))].startswith(prefixes)]
         print(json.dumps({"retry_from": str(retry_path), "reasons": list(prefixes),
                           "retry_todo": len(todo)}, ensure_ascii=False))
+    #: 同代复用放在**取 todo 之后**：它只影响"哪些案例还要花调用"。
+    seeded: Dict[str, dict] = {}
+    if args.seed:
+        seed_map = seed_index(pathlib.Path(args.seed), prompt_sha())
+        for case in todo:
+            row = seed_map.get(case_key(case))
+            if row:
+                seeded[str(case.get("case_id"))] = row
+        todo = [case for case in todo if str(case.get("case_id")) not in seeded]
     if args.limit:
         todo = todo[:args.limit]
     print(json.dumps({"cases": len(cases), "resumed": len(done), "todo": len(todo),
-                      "cases_sha256": digest[:16]}, ensure_ascii=False))
+                      "seeded": len(seeded), "cases_sha256": digest[:16]},
+                     ensure_ascii=False))
 
     client = llm.make_client(args.provider, args.model, args.scripted)
     rows: List[dict] = list(done.values())
+    #: 复用来的行按**当前**案例集合重签（`cases_sha256` 是这一层自己的摘要）。
+    for case_id, row in seeded.items():
+        rows.append({"case_id": case_id, "zh": row["zh"], "cases_sha256": digest,
+                     "model": row["model"], "family": row["family"],
+                     "prompt_sha256": prompt_sha()})
+    rows.sort(key=lambda row: str(row["case_id"]))
     dropped = 0
     dropped_rows: List[dict] = []
     checkpoint_every = max(0, int(args.checkpoint_every))
