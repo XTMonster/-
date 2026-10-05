@@ -1,0 +1,331 @@
+{
+  "created_at": "2026-10-05T16:21:38",
+  "reviewed_by": "llm-panel",
+  "models": {
+    "deepseek": "deepseek-chat",
+    "glm": "glm-5.3"
+  },
+  "families": {
+    "deepseek": "deepseek",
+    "glm": "zhipu"
+  },
+  "source_seen": true,
+  "sources": [
+    "tools/lightrag_service/build_index.py",
+    "block_director/knowledge/cases.py"
+  ],
+  "complete": true,
+  "roles": [
+    {
+      "role": "实现顾问",
+      "status": {
+        "deepseek": "main-answer",
+        "glm": "ok"
+      },
+      "complete": true,
+      "usage": {
+        "deepseek": {
+          "model": "main-thread(deepseek)",
+          "source": "main-answer"
+        },
+        "glm": {
+          "model": "glm-5.3",
+          "requested_model": "glm-5.3",
+          "level": "high",
+          "max_tokens": 65536,
+          "elapsed_s": 623.2,
+          "usage": {
+            "completion_tokens": 40643,
+            "completion_tokens_details": {
+              "reasoning_tokens": 33156
+            },
+            "prompt_tokens": 5459,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "total_tokens": 46102
+          },
+          "finish_reason": "stop",
+          "attempts": [
+            {
+              "model": "glm-5.3",
+              "requested_model": "glm-5.3",
+              "level": "high",
+              "max_tokens": 65536,
+              "elapsed_s": 623.2,
+              "usage": {
+                "completion_tokens": 40643,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 33156
+                },
+                "prompt_tokens": 5459,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "total_tokens": 46102
+              },
+              "finish_reason": "stop"
+            }
+          ]
+        }
+      },
+      "pairs": {
+        "both": [],
+        "severity_conflict": [],
+        "glm_only": [
+          {
+            "id": "F1",
+            "title": "每请求 asyncio.run ＋ 复用 self._rag 是确定性必炸，不是偶发",
+            "claim": "缺陷 B 的根因是事件循环寿命违约：asyncio.run 每次新建并关闭循环，而 self._rag 的 asyncio 原语（嵌入批处理的 PriorityQueue、锁）绑定在第一个循环上；从第二次调用起每次必然抛 bound to a different event loop。lightrag 臂 E1=0 是崩溃伪影。最小正确修法：专用循环线程 + run_coroutine_threadsafe，且初始化必须跑在同一循环上。",
+            "severity": "blocker",
+            "confidence": "high",
+            "where": "题面：『LightRAGIndex.search() 每次调用都 asyncio.run(_run())——每次新建一个事件循环，而 self._rag 是跨调用复用的对象，它的异步原语建在第一次的那个循环上』；『work/_sidecar4.err 里 5826 行、其中 5771 行是同一条 ERROR: Embedding func: Critical error in worker: <PriorityQueue at 0x…> is bound to a different event loop』；产物 two_denominators.json：lightrag A.value = 0.0、queries_with_no_rows = 6。"
+          },
+          {
+            "id": "F2",
+            "title": "ThreadingHTTPServer 是第二个独立的坑：它规定修法必须是单循环",
+            "claim": "线程与循环是两个独立维度。当前代码里线程坑被循环坑掩盖；若用『每线程缓存一个循环』的直觉修法，多请求线程会并发从多个循环碰同一个 self._rag，构成数据竞争（asyncio 原语非线程安全）。run_coroutine_threadsafe 提交到唯一循环的修法同时消解两个维度，ThreadingHTTPServer 本身可原样保留。",
+            "severity": "major",
+            "confidence": "high",
+            "where": "题面：『tools/lightrag_service/serve.py 用 ThreadingHTTPServer，每个请求一个 OS 线程』；『self._rag 是跨调用复用的对象』。"
+          },
+          {
+            "id": "F3",
+            "title": "缺陷 A 使 hybrid/lexical 的 E1≈0 成为构造性结果",
+            "claim": "v4 案例目录缺 search_zh 文件时，BM25 文档只含英文 excerpt ＋ 出处标题，中文散文查询近似零命中，top-3 退化为噪声、双评委 1–2 分，E1 塌到 0.0065/0.0104——与发货集 0.2083 的差全部是仪器差，不是臂差。",
+            "severity": "blocker",
+            "confidence": "high",
+            "where": "题面：『work/knowledge_v4_cases/cases/ 只有 part-000.jsonl（783 条），没有 search_zh.part-*.jsonl』；『read_search_zh 在没有线索文件时返回 ({}, \"search_zh_missing\")』；cases.py 第 405–406 行 docstring：『没有它，BM25 对中文查询恒 0 命中（实测 6/6 逐镜查询命中 0，E1 连分母都没有）』；two_denominators.json：hybrid A.value=0.006536（1/153）、lexical A.value=0.010417（2/192）。"
+          },
+          {
+            "id": "F4",
+            "title": "lightrag 失败回退的 BM25 丢 search_zh：缺陷 A 从后门回炉",
+            "claim": "cases.py 里 lightrag 查询失败分支重建 BM25 语料时用 tokenize(self._text(case))（不带线索），与第 359 行正常路径 self._text(case, self.search_zh.get(case.case_id)) 不一致；即使 A 修好，任何一次 lightrag 故障都会静默退回『缺陷 A 的失效模式』。",
+            "severity": "major",
+            "confidence": "high",
+            "where": "题面引用：『documents = [tokenize(self._text(case)) for case in self.cases]』；cases.py 第 359–360 行：『documents = [tokenize(self._text(case, self.search_zh.get(case.case_id))) for case in self.cases]』。"
+          },
+          {
+            "id": "F5",
+            "title": "缺陷 A 的落地形状：同代复用 521 ＋ 同代补生成 262，绝不混代",
+            "claim": "正确形状是『excerpt 字节级 join 复用 521 条 + 用同代工具补生成剩余 262 条』产出单一 sha 的 search_zh.part-000.jsonl，并把 reused/generated/mismatch/missing 记进 manifest。复用不算降级 iff（excerpt 逐字节相同 ∧ 同 prompt_sha256 ∧ 同模型）∧ 记账可见；算降级：excerpt 不同硬贴、混代拼装、静默替换。",
+            "severity": "major",
+            "confidence": "high",
+            "where": "题面：『650 条的 case_id 与发货集重合，且 excerpt 逐字节相同，其中 521 条在发货线索里有非空 zh』；『prompt_sha256=36069623ca…，与当前 case_search_zh.prompt_sha() 逐字节相同，模型 glm-5.3』；硬规则：『同一份线索文件里所有行的 prompt_sha256 必须一致，且要与 manifest 的 clue_attached.prompt_sha256（若有）一致，否则整份拒用』；git status：tools/kb_fetch/case_search_zh.py 与 tests/test_case_search_zh.py 均有未提交改动。"
+          },
+          {
+            "id": "F6",
+            "title": "A 修好后 lightrag 索引必须重建（或先核对它以哪个目录构建）",
+            "claim": "build_index.py 在建索引时消费 <案例目录>/search_zh.part-*.jsonl；v4 目录当时没有线索，索引的 clue_state 落在 clues_off。事后往目录放线索文件不会回填已建索引——不重建，lightrag 臂即使修好 B 也仍在测一张没有中文面的索引。另一可能：索引若以发货目录（1143 条）构建，则三臂语料根本未对齐——两种情况都必须从索引 manifest 读出来再定动作。",
+            "severity": "major",
+            "confidence": "medium",
+            "where": "build_index.py 第 325–330 行：『中文线索（与案例分片同住 <案例目录>/search_zh.part-*.jsonl）。缺/陈旧不抛——那是设计内的降级（退回\"只吃原文\"），但状态会如实写进 manifest』；第 330 行：clue_state = \"clues_off\"。"
+          },
+          {
+            "id": "F7",
+            "title": "修完后的读数纪律：同查询、逐臂、分母与 confound 写明",
+            "claim": "当前 two_denominators.json 显示三臂 judge 覆盖不齐（rows 153/192/137、rows_missing 36/0/52、lightrag queries_with_no_rows=6），E1-A 分母各异。修复重跑后应：同一份冻结查询、三臂 queries_with_no_rows 全 0、逐臂报 E1，并把 783 vs 1143 语料差与线索覆盖差作为 confound 明写。",
+            "severity": "minor",
+            "confidence": "high",
+            "where": "two_denominators.json：hybrid \"rows\": 153、\"rows_missing\": 36；lexical \"rows\": 192、\"rows_missing\": 0；lightrag \"rows\": 137、\"rows_missing\": 52、\"queries_with_no_rows\": 6；AGENTS.md：『覆盖门是行数占比、不是命中率，选型必须逐臂跑 E1』。"
+          }
+        ],
+        "deepseek_only": [
+          {
+            "id": "A1",
+            "title": "v4 案例层缺中文线索，必须先补线索再评 E1",
+            "claim": "work/knowledge_v4_cases/cases/ 只有 part-000.jsonl，无 search_zh.part-*.jsonl；read_search_zh 返回 search_zh_missing，CaseIndex 用空 clue 建 BM25，中文查询对英文 excerpt 近似 0 命中。修法：先在 v4 案例层上生成同代线索文件（cases_sha256=v4 digest、prompt_sha256=当前 prompt_sha），再跑三臂；E1 的判据一个字不动。",
+            "severity": "blocker",
+            "confidence": "high",
+            "where": "block_director/knowledge/cases.py:219-272,340-355; tools/kb_fetch/case_search_zh.py:303-370"
+          },
+          {
+            "id": "A2",
+            "title": "650/783 的 v4 案例与发货集 case_id+excerpt 逐字节相同，可复用同代线索",
+            "claim": "prompt_sha256 与 excerpt 都相同 ⇒ 同一条提示词作用在同一段摘录上，复用 zh 文本不是降级；但必须由库内脚本重建（写工具，不手改 jsonl），并把 cases_sha256 重新盖成 v4 digest。剩余 v4_only 133 条 + 无线索的重合条目需要用 glm-5.3 现生成。",
+            "severity": "major",
+            "confidence": "high",
+            "where": "work/knowledge_v4_cases/cases/part-000.jsonl; knowledge/cases/search_zh.part-000.jsonl"
+          },
+          {
+            "id": "B1",
+            "title": "LightRAGIndex 每次 search 都 asyncio.run，跨循环复用 _rag ⇒ 必然崩",
+            "claim": "asyncio.run 每次新建事件循环；_rag 的异步队列/锁建在首个循环上，第二次调用即 bound to a different event loop。修法：LightRAGIndex 自持一个常驻事件循环（单线程后台 loop，run_coroutine_threadsafe 提交），或在同一循环上跑全部查询。",
+            "severity": "blocker",
+            "confidence": "high",
+            "where": "tools/lightrag_service/build_index.py:288-331"
+          },
+          {
+            "id": "B2",
+            "title": "ThreadingHTTPServer 让请求落在不同线程，加重跨循环/跨线程问题",
+            "claim": "serve.py 用 ThreadingHTTPServer，每次请求一个新线程；即使修了 asyncio.run，也必须在固定线程上跑常驻循环，否则 loop 与线程绑定会把问题换个样子复现。",
+            "severity": "major",
+            "confidence": "medium",
+            "where": "tools/lightrag_service/serve.py:31-103"
+          },
+          {
+            "id": "B3",
+            "title": "lightrag 查询失败的 BM25 回退丢了 search_zh",
+            "claim": "cases.py:416 的 fallback 用 self._text(case) 建文档，而正常路径 cases.py:351 用 self._text(case, search_zh.get(case_id))；两条路不一致，回退后中文查询同样 0 命中。",
+            "severity": "major",
+            "confidence": "high",
+            "where": "block_director/knowledge/cases.py:410-418"
+          }
+        ]
+      },
+      "not_checked": {
+        "glm": [
+          "tools/lightrag_service/serve.py 的完整源码与行号（含 LightRAGIndex.search/_run 的实现）——题面只给行为描述，故修法给到文件与形状、未给行号",
+          "cases.py 第 420 行之后 retrieve() 的 lightrag 分支与 BM25 回退的完整代码及行号（题面只引用了一行）",
+          "build_index.py 第 331 行之后的插入循环——若它分批多次 asyncio.run 复用同一 rag，构建面存在同型缺陷；bundle 截断于 331 行无法判定",
+          "work/knowledge_v4_cases/ 与 lightrag 索引侧 manifest 的实际 schema（clue_attached 现值、索引构建所用案例数——决定 F6 走哪个分支）",
+          "发货集线索行的完整字段清单与 36069623ca… 的完整哈希（题面截断为 36069623ca…）",
+          "未提交改动的 diff（tools/kb_fetch/case_search_zh.py、tests/test_case_search_zh.py、docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md）——无法判断其中是否已实现本判词建议的 join/守卫",
+          "tests/plan_v4_instruments.sha256.json 的实际内容（仅凭题面得知冻结四件）",
+          "既有测试对 serve.py / lightrag 臂 / cases.py 回退路径的覆盖情况——『哪些既有测试会红』无法从 bundle 枚举，只能给出新增测试的红绿设计",
+          "LightRAG 的版本号与其 PriorityQueue/锁的具体归属代码——错误串只能证明它是 asyncio _LoopBoundMixin 的消息",
+          "e1_panel.py 等冻结仪器的实现与 work/ab_v4_aligned/reviews.*.jsonl 的行级判分明细"
+        ],
+        "deepseek": [
+          "尚未在真索引上验证修好事件循环后 hybrid 模式能返回非空 hits"
+        ]
+      },
+      "reviewed_by": "llm-panel"
+    },
+    {
+      "role": "性能与鲁棒",
+      "status": {
+        "deepseek": "main-answer",
+        "glm": "ok"
+      },
+      "complete": true,
+      "usage": {
+        "deepseek": {
+          "model": "main-thread(deepseek)",
+          "source": "main-answer"
+        },
+        "glm": {
+          "model": "glm-5.3",
+          "requested_model": "glm-5.3",
+          "level": "high",
+          "max_tokens": 65536,
+          "elapsed_s": 534.5,
+          "usage": {
+            "completion_tokens": 34838,
+            "completion_tokens_details": {
+              "reasoning_tokens": 28844
+            },
+            "prompt_tokens": 5468,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "total_tokens": 40306
+          },
+          "finish_reason": "stop",
+          "attempts": [
+            {
+              "model": "glm-5.3",
+              "requested_model": "glm-5.3",
+              "level": "high",
+              "max_tokens": 65536,
+              "elapsed_s": 534.5,
+              "usage": {
+                "completion_tokens": 34838,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 28844
+                },
+                "prompt_tokens": 5468,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "total_tokens": 40306
+              },
+              "finish_reason": "stop"
+            }
+          ]
+        }
+      },
+      "pairs": {
+        "both": [],
+        "severity_conflict": [],
+        "glm_only": [
+          {
+            "id": "F1",
+            "title": "每请求 asyncio.run() × 跨调用复用 _rag：第二次调用起必然炸；ThreadingHTTPServer 是正交的第二坑",
+            "claim": "LightRAGIndex.search() 的『每次 asyncio.run(_run()) ＋ 复用 self._rag』在第二次及以后的调用上必然抛 bound to a different event loop，与负载、并发、输入内容无关；ThreadingHTTPServer 带来的是独立于循环绑定的第二个问题（多线程并发触碰共享可变状态），只修其一都不算修好。lightrag 臂的 E1=0.0（relevant 0／分母 137／6 条空查询）度量的是『服务崩了』，不是检索质量。",
+            "severity": "blocker",
+            "confidence": "high",
+            "where": "题面：\"LightRAGIndex.search() 每次调用都 asyncio.run(_run())——**每次新建一个事件循环**，而 self._rag 是**跨调用复用**的对象，它的异步原语建在**第一次**的那个循环上\"；\"tools/lightrag_service/serve.py 用 ThreadingHTTPServer，每个请求一个 OS 线程\"；work/_sidecar4.err：\"5771 行是同一条 ERROR: Embedding func: Critical error in worker: <PriorityQueue at 0x…> is bound to a different event loop\"、\"ERROR: Query failed: __aenter__ ×4\"；two_denominators.json lightrag 臂：\"relevant\": 0、\"queries_with_no_rows\": 6、\"value\": 0.0"
+          },
+          {
+            "id": "F2",
+            "title": "缺陷 A 判词：对齐跑的 hybrid/lexical 测的是『没有中文线索层』；落地＝按身份复用同代线索＋增量重生成＋覆盖上账",
+            "claim": "v4 案例目录缺 search_z 文件使 BM25 语料退成英文原文、中文查询近 0 命中，hybrid 1/153、lexical 2/192 不是臂间差异，是同一台坏仪器的两次读数。正确落地是混合：650 条 case_id 重合且 excerpt 逐字节相同、发货线索 prompt_sha256=36069623ca… 与当前 prompt_sha() 逐字节相同、模型 glm-5.3——满足这些身份条件时复用不是降级（线索是 (prompt, model, 原文) 的纯函数，复用＝同代备忘录）；excerpt 变了、prompt/模型变了、或 262/783≈33.5% 的无线索缺口不上账，才算降级。全量重生成浪费 650 个未变输入并给重合子集引入不必要的采样方差。",
+            "severity": "blocker",
+            "confidence": "high",
+            "where": "题面：\"work/knowledge_v4_cases/cases/ 只有 part-000.jsonl（783 条），**没有** search_zh.part-*.jsonl\"；\"read_search_zh 在没有线索文件时返回 ({}, \\\"search_zh_missing\\\")\"；\"650 条的 case_id 与发货集重合，且 excerpt 逐字节相同，其中 521 条在发货线索里有非空 zh\"；\"prompt_sha256=36069623ca…，与当前 case_search_zh.prompt_sha() **逐字节相同**，模型 glm-5.3\"；two_denominators.json：hybrid \"value\": 0.006536、lexical \"value\": 0.010417；对照锚：\"跑出的 hybrid 是 40/192=0.2083\""
+          },
+          {
+            "id": "F3",
+            "title": "lightrag 失败回退的 BM25 丢了 search_zh：失败路径与正常路径的语料不一致",
+            "claim": "cases.py 里 lightrag 查询失败后的 BM25 回退用 documents = [tokenize(self._text(case)) for case in self.cases]（不带 search_zh），与正常建索引的 self._text(case, self.search_zh.get(case.case_id)) 不一致——lightrag 一失败，回退检索在中文查询上立刻退化成缺陷 A 的形态；若该 documents 列表每次失败查询都现场构建，还叠加每次 O(783) 的全量重 tokenize 性能税。",
+            "severity": "major",
+            "confidence": "medium",
+            "where": "题面：\"cases.py 里 lightrag 查询失败时的 BM25 回退（documents = [tokenize(self._text(case)) for case in self.cases]）**丢了 search_zh**\"；cases.py 359–360 正常路径原文：\"documents = [tokenize(self._text(case, self.search_zh.get(case.case_id)))\"；two_denominators.json lightrag：\"rows\": 137、\"relevant\": 0"
+          },
+          {
+            "id": "F4",
+            "title": "跑批缺『仪器门』：6 条空查询与 5771 行 ERROR 仍产出格式完整的三臂数",
+            "claim": "two_denominators.json 如实记了 queries_with_no_rows: 6，cases.py 也早有 cases_clue_state/cases_clues 字段，但没有任何门消费它们——lightrag 臂照常出对照值 0.0，对齐跑产物头部也没有 clue_state。『看得见的降级』没有被升格为『该臂无效』，是缺陷 A、B 能以合法产物形态存在的共同根因；服务侧同时缺熔断：同一类不可自愈的错误打了 5771 遍还在继续跑。",
+            "severity": "major",
+            "confidence": "high",
+            "where": "two_denominators.json lightrag：\"queries_with_no_rows\": 6 且 \"value\": 0.0；题面：work/_sidecar4.err \"5826 行、其中 5771 行是同一条 ERROR\"；cases.py 381–382：\"cases_clue_state\": self.search_zh_reason、\"cases_clues\": len(self.search_zh)"
+          },
+          {
+            "id": "F5",
+            "title": "复用 precondition 锚在 prompt_sha() 上，而 case_search_zh.py 正带着未提交改动",
+            "claim": "判词引用的身份条件『发货线索 prompt_sha256=36069623ca… 与当前 case_search_zh.prompt_sha() 逐字节相同』锚在活代码上；git status 显示 tools/kb_fetch/case_search_zh.py 与 tests/test_case_search_zh.py 均有未提交修改，且该文件不在冻结仪器清单里。若改动触及 prompt 文案，prompt_sha() 不再等于 36069623ca…，F2 的复用条件失效，read_search_zh 的『整份拒用』会把线索文件整体判死，跑批退回缺陷 A 形态。",
+            "severity": "minor",
+            "confidence": "medium",
+            "where": "git status 未提交改动：\"M tools/kb_fetch/case_search_zh.py\"、\"M tests/test_case_search_zh.py\"；题面约束：\"case_search_zh.py / cases.py **不在**冻结仪器清单（tests/plan_v4_instruments.sha256.json 只冻结 e1_panel.py、hypergraph.py、e1_baseline_summary.py、check_holdout.py）\""
+          }
+        ],
+        "deepseek_only": [
+          {
+            "id": "R1",
+            "title": "常驻事件循环需要显式超时与失败具名，否则单查询会挂住整个 sidecar",
+            "claim": "把 asyncio.run 改成常驻循环后，一次查询卡死会阻塞后续；应给 run_coroutine_threadsafe 加 timeout，超时抛具名错误，由 serve.py 映射成 500 index_error 而不是静默空列表。",
+            "severity": "major",
+            "confidence": "medium",
+            "where": "tools/lightrag_service/build_index.py:317-330; tools/lightrag_service/serve.py:75-90"
+          },
+          {
+            "id": "R2",
+            "title": "回归用例应能离线跑：注入一个会二次 await 的假 rag，断言两次 search 不抛",
+            "claim": "不依赖 lightrag 也能钉住这个缺陷：把循环管理抽成一个可注入的 runner（或让 _rag 可注入），用纯 asyncio 假对象调用两次 search，第二次必须成功——当前实现必红。",
+            "severity": "major",
+            "confidence": "high",
+            "where": "tools/lightrag_service/build_index.py:317-330"
+          }
+        ]
+      },
+      "not_checked": {
+        "glm": [
+          "serve.py 与 LightRAGIndex 的源码不在 bundle（只有题面转述），无法给到行号级改点、无法确认 _rag 的原语绑定发生在构建期还是首查惰性创建",
+          "cases.py 第 420 行之后 retrieve() 的 lightrag 分支/回退块原文（回退是否每次重建 BM25 未确证，引文来自题面）",
+          "_sidecar4.err 只有统计（5826/5771/4），无时间分布，无法判断是否含重试退避、首查是否侥幸通过",
+          "lightrag 臂 57 条非空查询的 137 行来自 lightrag 成功还是 BM25 回退、以及 6 条空查询与 4 条 Query failed 的差额（2 条）成因，产物无法区分",
+          "650−521=129 条『重合但无 zh』里，发货线索是缺行还是 zh 为空，题面未区分",
+          "tokenize/make_bm25 的实现（中文切分方式、零分时是否仍返回 top-3）不在 bundle——缺陷 A 下 hybrid 仍产出 153 行（queries_with_no_rows=0）与 _text 文档串『返回空是诚实的』之间的张力无法裁定",
+          "lexical rows=192 > 63×3=189 的口径，以及三臂 judge_coverage complete:false、hybrid rows_missing 36 的成因",
+          "_run_ab3.ps1 与 work/ab_v4_aligned/ 其余文件未给全，无法核对跑批脚本是否读过 describe() 的自述字段",
+          "真实 lightrag 端到端验证依赖 lightrag 包，本次离线评审无法执行"
+        ],
+        "deepseek": [
+          "未测常驻循环方案在 63 条查询并发下的实际吞吐"
+        ]
+      },
+      "reviewed_by": "llm-panel"
+    }
+  ]
+}

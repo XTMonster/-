@@ -51,17 +51,45 @@
 | **P6** | ④那 117 条的**归因**（把"7.5%"拆开） | 绿（诊断） | `work/_case_reject_diag.py`（复用 `build_cases()` 的返回值，不动门限）：三种拒收分开记——**`quote_gate` 117**（进 `reject_ratio`）／`near_duplicate` 56／`quota` 570（后两者**不进**比例）。`quote_gate` 的分布**高度集中**：**两份 MIT OCW 讲义 PDF 占 34 条**（`08e30130…` 23 ＋ `c7c1a8f0…` 11），其余是若干来源各 4 条。<br>归因：讲义多是标题/条目，**没有可引用的句子**。⇒ 这是**语料配额**问题（我生成 `sources.v4.yaml` 时给所有来源统一 `chunk_budget: 20`，没按"可引用内容"区分），**不是门的问题**。对照：现役发货那次 2.45%（分母 10461），v4 是 7.53%（分母 1553）——分母小 6 倍会让同样的绝对拒收放大成高比例 | 2026-10-05 | 本批 |
 | **P6** | ⑤配额工具（A 路，按实测可引用量） | 绿（工具）／**已不必再动语料** | `tools/kb_fetch/allocate_budgets_v4.py`：配额 ＝ 该来源的**实测可引用段数**（`pick_excerpt` 过得去的段数），下端 `min_budget` 兜底、上端 `max_budget` 封顶、每条配额带 `budget_basis`；守门 4 条（比例、封顶兜底、依据、确定性）。<br>**实测**：43 个来源有量测值、**0 个"完全不可引用"**——所以问题不在"某来源全废"，而在来源内部有段落过不了引用门。<br>**但 ② 修好之后，这条已经不必要**：`reject_ratio` 从 7.5% 掉到 1.96% 的原因是"把该进的来源放进去了"（分母从 1553 涨到 7544），**不是**配额不匹配。工具留着（下次换语料时仍可按实测配），**本轮不改 `sources.v4.yaml` 的配额**——避免在没有必要的时候动语料面 | 2026-10-05 | 本批 |
 | **P6** | ⑥教训（同一类坑的第三次） | 记录 | 这一个缺陷与早前两次同形：**把"某一层的工具"接到了"另一层的输入"上**（`chunk.run` 是 L1/L2 的；案例层的输入是整篇来源）。三次的共同点是**管线里有一道"按层分流"的约定，而它只写在代码注释里、没有机器判据**。已补的判据：`test_the_case_layer_input_is_the_licensed_documents_not_the_chunked_stream` | 2026-10-05 | 本批 |
-| **P6** | ③冻结评测集（`freeze_eval.py`） | 待 | 依赖 ① 的评测集口径与 ② 的案例层定版 | — | — |
+| **P6** | ③冻结评测集（`freeze_eval.py`） | 绿 | `tools/knowledge/freeze_eval.py` ＋守门 `tests/test_freeze_eval.py`：把 long21 的查询冻成 v4 的**共享输入**（`work/eval_sets/heldout_v4_long21.jsonl`，64 条，摘要 `2e0add31…`）。**台账漏记**：产物 15:04 就落地，本行直到现在才回写 | 2026-10-05 | `a8ff545` |
 | **P7** | ①索引指纹 / 客户端＋适配器 / 服务层 | 绿 | 三块都落地并有守门：`manifest.py`（四格指纹、缺格拒收、fail closed）、`lightrag_client.py`（stdlib，**住插件包内**）、`lightrag_adapter.py`（返回必须是传入 `cases` 的子序列、降级具名）、`serve.py`（只绑环回、503/500 都具名）。**顺带抓到并修掉一个分层违规**：适配器曾从 `tools.` 导入 → 客户端搬进 `block_director/knowledge/` ＋ 架构守门 `tests/test_plugin_layering.py` | 2026-10-05 | `718d6bf`／`51c35f3` |
 | **P7** | ②**全量索引**（783 条案例）＋ 端到端复核 | 绿 | `build_index --cases work/knowledge_v4_cases/cases --out work/lightrag_v4` → **783 篇文档**，指纹 `35f09d48f16642bb…`。端到端（`work/_e2e_lightrag.py work/lightrag_v4 "轴线规则怎么用"`）：`/health` ok ＋ 指纹；适配器返回 4 个 `Case`，`last_reason: unknown_id_dropped:1`（**设计在工作**——不在传入 `cases` 里的 id 被丢弃并具名记账）。<br>**检索语义是对的**：查"轴线"top 命中全是 `what-is-an-eyeline-match`（eye-line＝视线轴）；但**只是一个查询的观察，不当质量结论** | 2026-10-05 | 本批 |
 | **P7** | ③A/B 第一轮（三路由 × 1 次） | **红（不能据此裁 D8）** | 三臂各跑一次（同一 long21 面板、`--top-k 3`、两位评委）：<br>· **hybrid 40/192 ＝ 0.2083**（181/192 行两位评委齐）<br>· **lexical 43/192 ＝ 0.2240**（182/192）<br>· **lightrag 3/142 ＝ 0.0211**（142/142）<br>两处**必须先说清**的口径问题（这也是为什么**不许**拿它裁 D8）：<br>① **只有 1 次重复** ⇒ 噪声带 R＝0，"separated"是**恒真**（任何非零 Δ 都会被判分得开）；<br>② **分母不对称**：lightrag 只产出 **142 行**（另 ~50 条查询它**一条都没召回**），而 E1 的分母是"面板条目数"——**返回空列表的查询不是记 0 分，而是整行消失**，于是它的分母比另两臂小 26%。这不是同一把尺子 | 2026-10-05 | 本批 |
 | **P7** | ④lightrag 臂为什么这么低 | **红（根因已定位并修复）** | ① **图谱是空的**（真缺陷）⇒ `hybrid`/`local`/`global` 三模式全废、只剩 `naive`。根因是我写的 `llm_model_func` **丢了 `system_prompt`**，而 LightRAG 的**格式规范写在 system 里**；修好后 12 篇试点出 **376 节点/153 边**（`90e3809`）。<br>② 检索模式已做成可选（`naive`/`local`/`global`/`hybrid`/`mix`，`dec8037`）。<br>③ **分母口径**是判据级问题，已按红线单列成 **D10**（`ADJUDICATIONS_v4.md`）：三臂实测 hybrid／lexical 各 **64/64** 条查询有行，lightrag 只有 **59/64**、平均 2.4 行/查询（另两臂 3.0）——召回为空**不是记 0 分而是整行消失**，于是弱臂分母更小、每行更值钱。选项 A 维持／B 固定分母（动判据）／**C 两者并报**（主线建议），**须用户拍板** | 2026-10-05 | 本批 |
-| **P7** | ⑤修复后的全量索引重建 | 进行中 | `work/lightrag_v4_fixed`（后台）。建完跑 `naive` vs `hybrid` 两档、各 ≥2 次，那才是"LightRAG 到底行不行"的第一个可信读数 | — | — |
+| **P7** | ⑤修复后的全量索引重建 | **红→作废（已定位）** | `work/lightrag_v4_fixed2` 跑到 **440/783** 时主动停止：它的入库文档是 `title+excerpt`（**不含中文线索**），而三臂必须同一检索面（见 P7⑧）。留作"有图谱、无中文面"的对照物，**不作为交付代** | 2026-10-05 | 本批 |
 | **P7** | ⑥**第二轮更正**：A/B 第一轮还犯了**代际不一致** | 红（已定位） | lightrag 臂的索引建在 **v4 案例层（783 条）**上，而面板传进去的是**发货案例集（1143 条）**——适配器的纪律是"返回必须是传入 `cases` 的子序列"（ADR-0014 的陈旧化陷阱防御），于是**大部分返回 id 被当"不在集合里"丢掉**（第一轮 142 行里 `unknown_id_dropped` 就是这么来的）。<br>⇒ 这不是"LightRAG 检索差"，是**拿 A 代的索引去评 B 代的案例集**。**三条臂必须跑在同一代案例上**（计划 P9 本来就说 A/B 在 `v4pop` 上做）。<br>正确跑法：`e1_panel --cases-dir work/knowledge_v4_cases`（v4 案例层，布局与发货一致：`cases/part-*.jsonl` ＋ `cases.manifest.json`），三臂同用 | 2026-10-05 | 本批 |
-| **P8** | 插件侧适配器（门控默认关） | 绿（适配器本身）／待（注册进路由表） | `block_director/knowledge/lightrag_adapter.py` 已实现并有 4 条守门（子序列、降级具名、fail closed、真走 HTTP）。**还没注册进 `cases.py` 的路由表**（那要等 A/B 决定默认路由；注册时按计划用环境变量门控、默认关） | 2026-10-05 | `718d6bf` |
+| **P7** | ⑦**"三臂全塌到 ~0"的根因：v4 案例层整份缺中文检索线索** | 红→已修（`ba34e06`） | 对齐后的三臂（`work/ab_v4_aligned`，同一 v4 案例层、同一冻结查询集、`--top-k 3`）：hybrid **0.0065**／lexical **0.0104**／lightrag **0.0000**。逐行查：hybrid 153 行里 **zh 非空 0 行**（现役那份是 192/192）；score≥4 的行 **1**（现役 39）。<br>**排除了"excerpt 质量"这个假设**：现役 1143 条与 v4 783 条的摘录长度分布几乎同形（mean 105 vs 102、<40 字 1% vs 4%、句末标点 87% vs 86%）；**655 条 v4 案例的 excerpt 与现役逐字节相同**，其中 526 条在现役层拿得到非空线索，而 v4 层一条都没有。<br>⇒ 根因是**线索层整份缺失**：v4 案例层只"生成"了线索，没做"**重签 ＋ 记账**"（`read_search_zh` 对不上 `cases_sha256` 就整份拒用），而 manifest 里没有 `clue_attached` 可查 ⇒ 每一步单独看都"绿" | 2026-10-05 | `ba34e06`／`d1d05d3` |
+| **P7** | ⑧**检索面必须同一把尺子**：LightRAG 的入库文档也要并入中文线索 | 红→已修（`0d40976`） | 另两条臂的检索面是"案例文本 ＋ 中文线索"（`CaseIndex._text`），只有 LightRAG 臂是 `title+excerpt`——产品查询是中文散文、案例原文是英文，"LightRAG 更差"里于是混着"它的文档少了中文面"这个与算法无关的差别。`case_documents(cases, clues)` ＋ `--clues local|none`；顺带补代际洞：`cases_digest` 只摘案例分片，**只改一条线索的文案（条数不变）第一格不动** ⇒ `clues_digest` 进 `build_args` | 2026-10-05 | `0d40976` |
+| **P7** | ⑨**侧车"每次查询新建事件循环"（真缺陷，5773 行证据）** | 红→已修（`0d40976`） | `work/_sidecar4.err` 5826 行里 **5773** 行 `is bound to a different event loop`：`LightRAGIndex.search` 每次 `asyncio.run()`（新建循环）而 `_rag` 跨调用复用；`serve.py` 是 `ThreadingHTTPServer`（每请求新线程），只会更早复现。后果：LightRAG 查询失败 ⇒ `CaseIndex` **退回 BM25**，而那些行的 `retrieval_path` 仍写着 `lightrag`——**请求的臂被当成了实际干的活**。修：常驻事件循环＋`run_coroutine_threadsafe`＋`query_timeout`（`serve.py --query-timeout`）；取证字段 `cases_backend_effective`/`cases_degrade_reason` 进每行（`ba34e06`） | 2026-10-05 | `0d40976`／`ba34e06` |
+| **P7** | ⑩**中文线索补齐**（glm-5.3，779 条待跑） | 进行中 | `case_search_zh --cases work/knowledge_v4_cases/cases --workers 16`（用户 2026-10-05 买下智谱 embedding-3 资源包后 GLM 通道可用；线索生成仍走 `glm-5.3`，与现役那份**同一条提示词**：`prompt_sha256=36069623…` 逐字节相同）。前三批实测 **0 条 `call-failed`**（丢掉的全是规则内的 `empty`——摘录确实不含工艺信息），与现役逐字节相同的 655 条里 526 条在现役拿得到线索 | 2026-10-05 | 本批 |
+| **P8** | 插件侧适配器（门控默认关） | 绿 | `block_director/knowledge/lightrag_adapter.py` 已实现并有 4 条守门（子序列、降级具名、fail closed、真走 HTTP）；**门控注册**（`BLOCK_DIRECTOR_RETRIEVAL_LIGHTRAG`，默认关）也已完成：`block_director/__init__.py` ＋守门 `tests/test_lightrag_registration.py`。默认路由**不切换**——那要等 P9 的读数 | 2026-10-05 | `718d6bf`／`440ca38` |
 | **P9** | A/B 双报告（三路由） | 待 | — | — | — |
 | **P10** | 指针切换与归档 | 待 | — | — | — |
 | **P11** | 长跑与收尾 | 待 | — | — | — |
+
+## 2026-10-05 晚：P6③／P7／P8 的补账（P14-150…154）
+
+这一段是**在原有表之后追加**的，不覆盖上面的历史行。触发：对齐跑（`work/ab_v4_aligned/`）
+三臂塌到 ~0，会诊（`docs/evidence/20261005-p9-consult/`）与主线各自独立定位到两个缺陷。
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **P6③** | 冻结评测集（`freeze_eval`）＋ 把 long21 查询冻成 v4 的共享输入 | 绿 | `work/eval_sets/heldout_v4_long21.jsonl`＋`heldout.manifest.json`（seed 记录在 manifest） | 2026-10-05 | `a8ff545` |
+| **P8** | 插件侧适配器**注册进路由表**（环境变量门控、默认关） | 绿 | `block_director/knowledge/cases.py` 的注册行；不设 `BLOCK_DIRECTOR_RETRIEVAL_LIGHTRAG` 时行为与 P8 前一致 | 2026-10-05 | `440ca38` |
+| **P7⑤/⑥** | 缺陷 **B**：`LightRAGIndex` 每请求 `asyncio.run()` × 复用 `_rag` ⇒ 5771 行 `bound to a different event loop` | 绿（修复） | `tools/lightrag_service/build_index.py` 改自持常驻事件循环 ＋ `run_coroutine_threadsafe` ＋ 超时；`serve.py` 传 `--query-timeout` 并在退出时 `close()`；守门 `tests/test_lightrag_build_index.py`、`tests/test_lightrag_service_http.py` | 2026-10-05 | `0d40976` |
+| **P7④** | 顺带修：检索端按**索引指纹第三格**装嵌入器（`cloud:embedding-3:2048` vs `local:bge-small-zh-v1.5:512`），换嵌入器必须 fail closed | 绿 | `embedding_route_of` / `load_embedding_for`；维度不符即抛 | 2026-10-05 | `0d40976` |
+| **P7④** | 顺带修：LightRAG 的**文档面**并入中文线索（与 hybrid/lexical 同一把尺子），并把 `clues_digest` 纳入指纹 | 绿 | `case_documents(cases, clues)`；`build_args.clues_digest` | 2026-10-05 | `0d40976` |
+| **P6②** | 缺陷 **A**：v4 案例层**缺中文线索**（`search_zh_missing`）⇒ 中文查询对英文 excerpt 近 0 命中 | 绿（补生成） | `work/knowledge_v4_cases/cases/search_zh.part-000.jsonl`：783 条处理完、**542 条出线索／241 条按规则空串**；`cases_sha256=d916cd78…`、`prompt_sha256=36069623ca…`、glm-5.3 | 2026-10-05 | 本批 |
+| **P6②** | 缺陷 A 从后门回炉：lightrag 失败回退的 BM25 丢了 `search_zh` | 绿 | `block_director/knowledge/cases.py` 回退分支改用 `self._text(case, self.search_zh.get(...))`；守门在 `tests/test_*` | 2026-10-05 | `ba34e06` |
+| **P6②** | 影子案例层补上「线索重签 ＋ 记账」（`--attach-clues`） | 绿 | `tools/kb_fetch/build_cases_v4.py::attach_clues_to_layer`；`tests/test_build_cases_v4.py` | 2026-10-05 | `d1d05d3` |
+| **P6②** | 两处静默降级变成产物里读得到的字段（`cases_clue_state`/`cases_clues`、每行 `clue_state`/`clues`） | 绿（含第三次显式重新冻结） | `tests/plan_v4_instruments.sha256.json` 的 `_reason` 记明「只加诊断字段、判据零改动」；守门 `tests/test_plan_v4_instruments_frozen.py` 绿 | 2026-10-05 | `ba34e06` |
+| **P9** | 三臂 A/B | **部分**（两臂有读数，lightrag 缺） | 见 `docs/evidence/20261005-p9-clued/`：补线索后 **hybrid 36/192=0.1875、lexical 40/192=0.2083**（补线索前 0.0065／0.0104）；lightrag 臂待索引重建（`work/lightrag_v4_clues_local`，16:26 时 163/783） | 2026-10-05 | 本批 |
+
+**仍未完成的**：① lightrag 臂的索引重建（含线索的文档面）跑完后才有三臂同代读数，
+在那之前 **D8 不可裁**；② 本轮两臂 `judge_coverage.complete=false`
+（180/192、174/192），按 V1 还不算**有效轮**；③ 会诊另提的「把
+`queries_with_no_rows`/`clue_state` 升格成机器门」是**新的判据**，本批不动，见
+`ADJUDICATIONS_v4.md` 的 D11。
 
 ## 路径口径的落地偏差（如实记）
 

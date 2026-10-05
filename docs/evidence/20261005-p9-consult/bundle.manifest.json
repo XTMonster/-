@@ -1,0 +1,66 @@
+{
+  "created_at": "2026-10-05T16:02:20",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "d1d05d3",
+    "head_subject": "feat(P14-154): 影子案例层补上\"线索重签 ＋ 记账\"这一步（P6 漏掉的那一步）",
+    "recent": [
+      "d1d05d3 feat(P14-154): 影子案例层补上\"线索重签 ＋ 记账\"这一步（P6 漏掉的那一步）",
+      "0d40976 fix(P14-153): LightRAG 的构建面与检索面各修一处（中文面同一把尺子 ＋ 嵌入器同代）",
+      "ba34e06 fix(P14-152): 把两处\"静默降级\"变成产物里读得到的字段（消费侧自述）",
+      "440ca38 feat(P14-151): P8 把 LightRAG 适配器**门控注册**进路由表（默认关）",
+      "a8ff545 feat(P14-150): P6③ 评测集冻结（freeze_eval）＋ 把 long21 查询冻成 v4 的共享输入"
+    ],
+    "uncommitted": [
+      "M docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md",
+      " M tests/test_case_search_zh.py",
+      " M tools/kb_fetch/case_search_zh.py"
+    ]
+  },
+  "question": {
+    "path": "work/_q_p9.md",
+    "sha256": "6a3d38591374953053cdf2845aa9cd73d3ab56b566b3fb71f1c0d772d2e57af7",
+    "chars": 2200
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "tools/lightrag_service/build_index.py",
+      "spec": "tools/lightrag_service/build_index.py:288-331",
+      "range": [
+        288,
+        331
+      ],
+      "file_sha256": "145fcbb6444f7ef66fe37949bf1b0d3c91bc2a82fe7f01eaf3fd837d3c487e35",
+      "chunk_sha256": "6fe91e634cfdf779d0de393edb77cc6f91f9bc6db96302e391bca3d9bb25e77e",
+      "lines": 44,
+      "chars": 2183
+    },
+    {
+      "name": "block_director/knowledge/cases.py",
+      "spec": "block_director/knowledge/cases.py:340-420",
+      "range": [
+        340,
+        420
+      ],
+      "file_sha256": "840b32613be62e278258a4eaaa9fe3e7a2cba23cd9e564ecf3f10b72e82acf5b",
+      "chunk_sha256": "567b0b62262b091e068ba5297be8233cd49443f99c17dc6a0d1bba598d343c85",
+      "lines": 81,
+      "chars": 4155
+    }
+  ],
+  "contexts": [
+    {
+      "path": "work/ab_v4_aligned/two_denominators.json",
+      "sha256": "aed5354f432db5d75ab2a703859710b6ce2af10c19bf693d93c385df1194b381",
+      "chars": 1410
+    }
+  ],
+  "status": {
+    "sent_chars": 2068,
+    "sent_sha256": "d747556a9b9c9bb65b936bcb90206484c91caa44db1303ad7a1ebbb61fadd177",
+    "full_chars": 2068,
+    "full_sha256": "d747556a9b9c9bb65b936bcb90206484c91caa44db1303ad7a1ebbb61fadd177",
+    "truncated": false
+  }
+}
