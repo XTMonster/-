@@ -99,6 +99,13 @@ def report(rows: Sequence[Dict[str, Any]], top_k: int = 3) -> Dict[str, Any]:
         per_query[query] = count
 
     denom = top_k * queries
+    counts = list(per_query.values())
+    counts_sorted = sorted(counts)
+    median = 0.0
+    if counts_sorted:
+        middle = len(counts_sorted) // 2
+        median = (counts_sorted[middle] if len(counts_sorted) % 2
+                  else (counts_sorted[middle - 1] + counts_sorted[middle]) / 2.0)
     return {
         "queries": queries,
         "rows": rows_total,
@@ -108,6 +115,9 @@ def report(rows: Sequence[Dict[str, Any]], top_k: int = 3) -> Dict[str, Any]:
         "queries_with_k_or_more": reach_k,
         "queries_with_none": none_at_all,
         "ceiling": round(capped / denom, 6) if denom else 0.0,
+        #: 第三方给 D13 的**可证伪触发器**用的就是这一格：候选面里每条查询的平均相关行数。
+        "mean_relevant_per_query": round(relevant / queries, 6) if queries else 0.0,
+        "median_relevant_per_query": median,
         "relevant_threshold": RELEVANT,
         "top_k": top_k,
         "per_query_relevant": per_query,
@@ -145,6 +155,7 @@ def main(argv: Sequence[str]) -> int:
             "ceiling": _range_of(reports, "ceiling"),
             "e1_top_k_rows": _range_of(reports, "e1_top_k_rows"),
             "queries_with_k_or_more": _range_of(reports, "queries_with_k_or_more"),
+            "mean_relevant_per_query": _range_of(reports, "mean_relevant_per_query"),
         }
 
     if args.json:
@@ -158,6 +169,8 @@ def main(argv: Sequence[str]) -> int:
         print("  E1@前%d行=%.4f；≥%d 条相关的查询 %d；0 条相关的查询 %d；**上限=%.4f**"
               % (page["top_k"], page["e1_top_k_rows"], page["top_k"],
                  page["queries_with_k_or_more"], page["queries_with_none"], page["ceiling"]))
+        print("  候选面相关行数/查询：均值 %.3f、中位数 %.1f"
+              % (page["mean_relevant_per_query"], page["median_relevant_per_query"]))
     if "range" in summary:
         band = summary["range"]
         print("跨 %d 跑的极差：" % len(reports))
@@ -166,6 +179,10 @@ def main(argv: Sequence[str]) -> int:
                  "%s..%s" % (band["ceiling"]["min"], band["ceiling"]["max"]),
                  args.top_k, band["e1_top_k_rows"]["range"], args.top_k,
                  band["queries_with_k_or_more"]["range"]))
+        print("  每查询相关行数均值极差 %.3f（%s..%s）"
+              % (band["mean_relevant_per_query"]["range"],
+                 band["mean_relevant_per_query"]["min"],
+                 band["mean_relevant_per_query"]["max"]))
     return 0
 
 

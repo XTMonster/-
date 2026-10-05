@@ -56,6 +56,9 @@ def test_ceiling_is_the_mean_of_min_top_k_over_relevant_counts():
     # (min(3,4) + min(3,1) + min(3,0)) / (3*3) = (3+1+0)/9
     assert page["ceiling"] == pytest.approx(4 / 9, abs=1e-6)
     assert page["per_query_relevant"] == {"A": 4, "B": 1, "C": 0}
+    # 第三方给 D13 的触发器用的那一格：候选面里每条查询的平均相关行数。
+    assert page["mean_relevant_per_query"] == pytest.approx(5 / 3, abs=1e-6)
+    assert page["median_relevant_per_query"] == 1
 
 
 def test_three_point_five_is_not_relevant_and_four_is():
@@ -116,3 +119,5 @@ def test_range_across_repeats_is_reported(tmp_path, monkeypatch):
     payload = json.loads(captured.getvalue())
     assert payload["range"]["ceiling"]["range"] == pytest.approx(1 / 3, abs=1e-6)
     assert payload["range"]["queries_with_k_or_more"]["range"] == 1
+    # run1 的候选面平均相关行数 4.0；run2 是 2.0 ⇒ 极差 2.0。
+    assert payload["range"]["mean_relevant_per_query"]["range"] == pytest.approx(2.0, abs=1e-6)
