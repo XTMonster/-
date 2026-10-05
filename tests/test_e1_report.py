@@ -206,3 +206,46 @@ def test_count_queries_ignores_blank_lines(tmp_path):
     path = tmp_path / "heldout.txt"
     path.write_text("一\n\n二\n三\n", encoding="utf-8")
     assert er.count_queries(path) == 3
+
+
+def test_rounds_only_runs_one_route_without_building_a_report(tmp_path, monkeypatch):
+    """分次跑三臂时用：先落全部轮次（逐行录档 ＋ 轮记录），最后再一起判读。
+
+    为什么需要这条缝：`paired_report` **至少两臂**才成立，而 P9 的第三臂要等 sidecar
+    起来才能跑——若中途就出报告，会以"只有一臂"整批失败。
+    """
+    heldout = tmp_path / "heldout.txt"
+    heldout.write_text("查询一\n查询二\n", encoding="utf-8")
+    cases = tmp_path / "cases"
+    (cases / "cases").mkdir(parents=True)
+    (cases / "cases" / "part-000.jsonl").write_text(
+        json.dumps({"case_id": "c1", "case_type": "narrative", "title": "t",
+                    "excerpt": "e", "beat_sequence": [], "source_ref": {},
+                    "score": 0.0}, ensure_ascii=False) + "\n", encoding="utf-8")
+    calls = []
+
+    def fake_main(argv):
+        calls.append(list(argv))
+        out = pathlib.Path(argv[argv.index("--out") + 1])
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps({"case_id": "c1", "query": "查询一", "score": 5.0,
+                                   "scores": [5, 5], "retrieval_path": "hybrid",
+                                   "cases_fingerprint": "f" * 64, "cases_digest": "d" * 64,
+                                   "panel": ["a", "b"]}, ensure_ascii=False) + "\n",
+                       encoding="utf-8")
+        return 0
+
+    monkeypatch.setattr(er.e1_panel, "main", fake_main)
+    out = tmp_path / "ab.json"
+    assert er.main(["--index-dir", str(cases), "--heldout", str(heldout),
+                    "--routes", "hybrid", "--runs", "2", "--rounds-only",
+                    "--out", str(out)]) == 0
+    assert not out.exists(), "rounds-only 不许出报告（一臂还汇总不了）"
+    assert len(calls) == 2
+    reviews = er.reviews_dir_for(out)
+    for rep in (1, 2):
+        assert (reviews / er.rep_name("hybrid", rep)).is_file()
+        record = json.loads((reviews / er.round_record_path(reviews, "hybrid", rep))
+                            .read_text(encoding="utf-8"))
+        assert record["terminal_state"] == "valid"
+        assert record["identity_written_at"] and record["state_written_at"]

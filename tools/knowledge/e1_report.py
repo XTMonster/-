@@ -349,6 +349,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="已有逐行录档就直接判读（不重跑判分）")
     parser.add_argument("--reviews-dir", default="",
                         help="逐行录档目录（默认 <out>.reviews/；给 `--reuse` 时常用）")
+    parser.add_argument("--rounds-only", action="store_true",
+                        help="只跑轮次（写逐行录档＋轮记录），**不**出报告——"
+                             "分次跑不同路由时用（最后再用 `--reuse` 汇总三臂）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     routes = parse_routes(args.routes)
@@ -394,6 +397,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             #: 最后 `paired_report` 会因为"有非 valid 轮"整批拒读。
             print(json.dumps({"round_invalid": target.name, "terminal_state": state,
                               "e1_panel_exit": code}, ensure_ascii=False))
+
+    if args.rounds_only:
+        #: 分次跑不同路由（例如先把两臂跑完，等 sidecar 起来再跑第三臂），
+        #: 最后用 `--reuse` 把所有轮次一起判读——`paired_report` 至少两臂才成立。
+        print(json.dumps({"rounds_written": [rep_name(route, rep)
+                                             for route, rep in plan_runs(routes, args.runs)],
+                          "reviews_dir": str(reviews_dir)}, ensure_ascii=False))
+        return 0
 
     report = build_report(reviews_dir, routes, args.runs, provenance={
         "generated_by": "tools/knowledge/e1_report.py",
