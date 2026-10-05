@@ -45,6 +45,14 @@ PROMPT_VERSION = "extract/v19-seg"
 #: `common.CHUNKER_VERSION = "para-2400/v1"` 同量级，便于与现役产物对拍。
 DEFAULT_MAX_CHARS = 2400
 
+#: v4 分段的**算法身份**（进 manifest 的 `chunker_version` 分量）。
+#:
+#: 它**不是** `common.CHUNKER_VERSION`：现役那个是 `chunk.py` 的段落切分器，
+#: 本模块的 `segment_text()` 是另一套实现（覆盖**全部正文**、超长先按句再硬切）。
+#: 两者目标尺寸相同（所以名字里都带 2400），但**换了实现就得换身份**——
+#: 否则 manifest 的指纹会声称"切法没变"，而实际上喂进抽取的片段已经换了。
+CHUNKER_VERSION = "seg-para-2400/v1"
+
 #: 短于这个长度的段**不送模型**（站点样板与残句）。实测依据：抽掉 HTML 之后，
 #: 文章页开头仍是 "Skip to main content"／标题一类的碎片，模型对它们返空是对的。
 DEFAULT_MIN_CHARS = 80

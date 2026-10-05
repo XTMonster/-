@@ -22,6 +22,7 @@ import hashlib
 import json
 import pathlib
 import sys
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
 if __package__ in (None, ""):
@@ -43,6 +44,26 @@ from block_director.knowledge import hypergraph as hg  # noqa: E402
 
 EDGES_NAME = "hypergraph.edges.jsonl"
 REPORT_NAME = "build_report.json"
+#: 计划 P5 要的**五件产物**里，影子构建以前只落了三件（边／节点／词表）。
+#: 这两件是补上的：manifest（六元指纹 ＋ 计数 ＋ 抽取通道身份）与 rejects（拒收账）。
+MANIFEST_NAME = "hypergraph.manifest.json"
+REJECTS_NAME = "hypergraph.rejects.jsonl"
+
+#: 抽取通道的**实际**身份：v4 的构建期 LLM 是 `extract_segmented.DeepSeekClient`
+#: （`model="deepseek-chat"`、`temperature=0.0`、`max_tokens=4096`）。
+#: 解码条件照实写——**不抄**现役那份 `temperature=0;seed=0;ctx=8192`：
+#: 云端 DeepSeek 没有 `seed`／`ctx` 这两个旋钮，把没发生的事写进指纹就是伪造留痕。
+EXTRACTOR_MODEL = "deepseek-chat"
+EXTRACTOR_FAMILY = "deepseek"
+EXTRACTOR_DECODE = "temperature=0;max_tokens=4096"
+
+
+@dataclass(frozen=True)
+class _Extractor:
+    """`fingerprint_components` 只要 `model_id` 与 `model_version` 两个属性。"""
+
+    model_id: str = EXTRACTOR_MODEL
+    model_version: str = EXTRACTOR_MODEL
 
 
 def _card_id(source_ref: Dict, span: Tuple[int, int]) -> str:
@@ -150,6 +171,77 @@ def node_index(nodes: Sequence[Dict]):
     return bh.NodeIndex(table)
 
 
+def shadow_manifest(*, cards: Dict[str, Dict], edges: Sequence[Dict],
+                    rejects: Sequence[Dict], drafts: Sequence[Dict],
+                    vocab: Optional[Dict[str, List[str]]] = None,
+                    corpus_dir: Optional[pathlib.Path] = None,
+                    prompt_version: str = ex.PROMPT_VERSION,
+                    chunker_version: str = ex.CHUNKER_VERSION,
+                    decode: str = EXTRACTOR_DECODE,
+                    model_id: str = EXTRACTOR_MODEL) -> Dict:
+    """v4 影子的 **manifest**（计划 P5 的第五件产物）。**纯函数**，可离线测。
+
+    为什么必须有它（2026-10-05 实测的缺口）：影子构建以前只落三件（边／节点／词表），
+    而计划 P5 的 DoD 写着"`knowledge_v4/` **五件产物**生成"、P5③ 还点名
+    "manifest 记 `PROMPT_VERSION=="extract/v19-seg"`＋corpus digest"。
+    缺 manifest 的后果不是文档问题：`quality.q0_build_gate`（构建门）读它拿
+    `raw_edges/valid_unique/duplicates/rejects` 四个计数，`sidecar_server.load_provenance`
+    读它的 `fingerprint`／`extractor.model_id`／`schema_version`，门⑧ 读它的
+    `extractor.family`（换族判据），插件的 `hypergraph.manifest_fingerprint` 也读它——
+    **没有它，P10 的切换根本没法做**。
+
+    指纹的生产者**不重复实现**：分量走 `build_hypergraph.fingerprint_components`
+    （八元，`CACHE_KEY_FIELDS` 是它的机械防线），封盖走 `fingerprint_of`——
+    与现役产物同一套代码，只是把语料／提示词／解码条件换成本代的**实际值**。
+    """
+    components = bh.fingerprint_components(
+        list(cards.values()), _Extractor(model_id=model_id, model_version=model_id),
+        prompt_version=str(prompt_version), chunker_version=str(chunker_version),
+        decode=str(decode),
+        vocabulary_fingerprint=(vocab_mod.vocab_fingerprint(vocab)
+                                if vocab else ""))
+    sealed = bh.fingerprint_of(components)
+    #: 语料**自己的**摘要（`work/corpus_v4/MANIFEST.json` 的 `corpus_digest`）与
+    #: 指纹里的 `corpus_sha256`（卡片级、`build_hypergraph.corpus_digest` 现算）**不是一回事**：
+    #: 前者认的是"抓下来的那份语料"，后者认的是"喂进抽取的那些片段"。两个都记，别互相冒充。
+    corpus_id = ""
+    if corpus_dir is not None:
+        path = pathlib.Path(corpus_dir) / "MANIFEST.json"
+        if path.is_file():
+            try:
+                corpus_id = str(json.loads(path.read_text(encoding="utf-8"))
+                                .get("corpus_digest") or "")
+            except (OSError, ValueError):
+                corpus_id = ""
+    return {
+        "generated_by": "tools/kb_fetch/build_shadow.py::shadow_manifest",
+        "fingerprint": sealed,
+        "cache_key": components,
+        "extractor": {"model_id": str(model_id), "family": EXTRACTOR_FAMILY,
+                      "model_version": str(model_id)},
+        "prompt_version": str(prompt_version),
+        "decode": str(decode),
+        "chunker_version": str(chunker_version),
+        "schema_version": str(hg.schema_version_with_fingerprint()),
+        "validation_rules_version": str(bh.VALIDATION_RULES_VERSION),
+        "corpus_digest": corpus_id,
+        "corpus_dir": str(corpus_dir) if corpus_dir is not None else "",
+        "cards": len(cards),
+        #: 计数口径与 `quality.q0_build_gate` 对齐：`raw_edges` ＝ 进过 `to_edge` 的**草稿**数，
+        #: `valid_unique` ＝ 落盘边数，`rejects` ＝ 被拒草稿数。
+        "raw_edges": len(drafts),
+        "valid_unique": len(edges),
+        #: 影子管线里**没有去重阶段**：`closes` 是逐条对上的（见 `build_report.json`）。
+        #: 写 0 是"这条路没做去重"，不是"去重后一条都没丢"——`unit` 一并说明。
+        "duplicates": 0,
+        "rejects": len(rejects),
+        "total_chunks": len(drafts),
+        "processed_chunks": len(edges) + len(rejects),
+        "unit": "draft（v4 影子的构建单位是「分段 → 草稿」，不是现役的卡）",
+        "closes": (len(edges) + len(rejects)) == len(drafts),
+    }
+
+
 def build_shadow(drafts_path: pathlib.Path, *, corpus_dir: pathlib.Path,
                  out_dir: pathlib.Path,
                  max_chars: int = ex.DEFAULT_MAX_CHARS,
@@ -210,6 +302,15 @@ def build_shadow(drafts_path: pathlib.Path, *, corpus_dir: pathlib.Path,
             "_generated_by": "tools/kb_fetch/build_shadow.py",
             "_corpus_dir": str(corpus_dir),
         })
+    #: **五件里的另外两件**（2026-10-05 补）：manifest 与拒收账。
+    #: 落盘顺序无所谓，但 `rejects.jsonl` 的行数必须与 manifest 的 `rejects` 相等——
+    #: `quality.q0_build_gate` 拿这两处对拍，对不上就判 FAIL（账不对）。
+    manifest = shadow_manifest(cards=cards, edges=edges, rejects=rejects, drafts=drafts,
+                               vocab=(vocab if with_vocab else None), corpus_dir=corpus_dir)
+    common.dump_json(out_dir / MANIFEST_NAME, manifest)
+    common.write_jsonl(out_dir / REJECTS_NAME, rejects)
+    report["manifest_fingerprint"] = manifest["fingerprint"]
+    report["corpus_digest"] = manifest["corpus_digest"]
     common.dump_json(out_dir / REPORT_NAME, report)
     return report
 

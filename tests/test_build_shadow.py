@@ -224,3 +224,88 @@ def test_the_evidence_must_come_from_the_segment_it_cites(tmp_path):
     #: 逐字依据落在 `extractor.member_grounding`（`to_edge` 的落地状态面）。
     assert edge.extractor["member_grounding"]["allow/shot_size"] == "quoted"
     assert edge.extractor["member_quotes"]["allow/lens"] == quote
+
+
+# --- P5 的"五件产物"：manifest 与 rejects（2026-10-05 补） ---------------------------
+
+
+def _build(tmp_path: pathlib.Path, members=None):
+    drafts = tmp_path / "drafts.jsonl"
+    draft = _draft(tmp_path, members or [["allow", "shot_size", "shot_size:MS"],
+                                         ["allow", "lens", "lens:50mm"],
+                                         ["qualifier", "headroom_policy",
+                                          "headroom_policy:board"]])
+    drafts.write_text(json.dumps(draft, ensure_ascii=False) + "\n", encoding="utf-8")
+    out = tmp_path / "shadow"
+    report = bs.build_shadow(drafts, corpus_dir=_corpus(tmp_path), out_dir=out)
+    return out, report
+
+
+def test_the_build_writes_the_five_products_including_a_manifest_and_rejects(tmp_path):
+    """计划 P5 的 DoD 逐字："`knowledge_v4/` **五件产物**生成"。
+
+    影子构建以前只落三件（边／节点／词表）——缺 manifest 不是文档问题：
+    `quality.q0_build_gate`（构建门）、`sidecar_server.load_provenance`、门⑧（换族）
+    与插件的 `hypergraph.manifest_fingerprint` **都读它**，没有它 P10 的切换没法做。
+    """
+    out, report = _build(tmp_path)
+    for name in ("hypergraph.edges.jsonl", "hypergraph.nodes.jsonl",
+                 "hypergraph.vocab.json", "hypergraph.manifest.json",
+                 "hypergraph.rejects.jsonl", "build_report.json"):
+        assert (out / name).is_file(), name
+    manifest = json.loads((out / "hypergraph.manifest.json").read_text(encoding="utf-8"))
+    #: 计划 P5③ 点名要记的两件。
+    assert manifest["prompt_version"] == ex.PROMPT_VERSION == "extract/v19-seg"
+    assert manifest["chunker_version"] == ex.CHUNKER_VERSION
+    #: 三个消费者各自要的字段（换族／溯源／指纹）。
+    assert manifest["extractor"]["family"] == "deepseek"
+    assert manifest["extractor"]["model_id"] == "deepseek-chat"
+    assert manifest["schema_version"] == hg.schema_version_with_fingerprint()
+    assert len(manifest["fingerprint"]) == 64
+    assert manifest["cache_key"]["prompt_version"] == "extract/v19-seg"
+    #: 计数与报告对得上，且**账目闭合**。
+    assert manifest["cards"] == report["cards"]
+    assert manifest["raw_edges"] == report["drafts_seen"]
+    assert manifest["valid_unique"] == report["kept"]
+    assert manifest["rejects"] == report["rejected"]
+    assert manifest["processed_chunks"] == manifest["total_chunks"] == manifest["raw_edges"]
+    assert manifest["closes"] is True
+    #: `rejects.jsonl` 的行数必须与 manifest 相等（Q0 拿这两处对拍）。
+    lines = [line for line in (out / "hypergraph.rejects.jsonl").read_text(
+        encoding="utf-8").split("\n") if line.strip()]
+    assert len(lines) == manifest["rejects"]
+
+
+def test_the_build_gate_q0_accepts_the_shadow_manifest(tmp_path):
+    """拿**真的消费者**过一遍：`quality.q0_build_gate` 必须判 PASS。
+
+    这一条比"字段都在"强：它证明 manifest 的形状够现役构建门用，
+    而不是只够我自己写的那几个断言。
+    """
+    from tools.knowledge import quality
+
+    out, _report = _build(tmp_path)
+    verdict = quality.q0_build_gate(out / "hypergraph.manifest.json",
+                                    out / "hypergraph.rejects.jsonl")
+    assert verdict["status"] == quality.PASS, verdict
+
+
+def test_the_manifest_fingerprint_moves_with_the_prompt_and_the_vocab(tmp_path):
+    """八元指纹的纪律：**换了提示词／词表就必须换代**（否则缓存拿旧索引当新语料）。
+
+    与现役同一套生产者（`build_hypergraph.fingerprint_components` ＋ `fingerprint_of`），
+    所以这里验的是"v4 把本代的实际值喂进去了"，不是另写一套哈希。
+    """
+    cards = bs.segment_cards(_corpus(tmp_path), max_chars=2400)
+    edges = [{"type": hg.SHOT_PATTERN}]
+    base = bs.shadow_manifest(cards=cards, edges=edges, rejects=[], drafts=edges,
+                              vocab={"a": ["b"]})
+    again = bs.shadow_manifest(cards=cards, edges=edges, rejects=[], drafts=edges,
+                               vocab={"a": ["b"]})
+    assert base["fingerprint"] == again["fingerprint"], "同输入必须同指纹"
+    moved_prompt = bs.shadow_manifest(cards=cards, edges=edges, rejects=[], drafts=edges,
+                                      vocab={"a": ["b"]}, prompt_version="extract/v20")
+    assert moved_prompt["fingerprint"] != base["fingerprint"]
+    moved_vocab = bs.shadow_manifest(cards=cards, edges=edges, rejects=[], drafts=edges,
+                                     vocab={"a": ["b", "c"]})
+    assert moved_vocab["fingerprint"] != base["fingerprint"]
