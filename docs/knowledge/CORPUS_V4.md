@@ -37,8 +37,8 @@ L1/L2 的 2221 张卡里 1856 张（83.6%）来自那 **54 本 Gutenberg 旧书*
 | `www.bfi.org.uk` | 已在库（35 条，PersonalStudy） | 电影理论/影评 |
 | `www.skwigly.co.uk` | 已在库（16 条，PersonalStudy） | 动画行业访谈/管线 |
 | `ocw.mit.edu` | **新探针实测：25 门课 / 298 页 / 209 个 PDF / 188 条通过既有门**（含抽出字符数），见 `work/ocw_v4_candidates.json` | 电影课讲义（21L.011 已在库） |
-| `export.arxiv.org`（API） | 可查（已用 11 个新词条查询，178 命中 / 14 通过主题词过滤） | 动画/分镜/构图/动作的**学术**面 |
-| `arxiv.org`（`/abs/` 页） | **实测超时**（`WinError 10060`，逐条重试仍失败） | ⇒ 只能用 API ＋ `/pdf/`（后者在本仓历史记录里可达） |
+| `export.arxiv.org`（API） | **可查**：11 个新词条 → `found=178`、`on_topic=14`、`dropped_by_relevance=164`（`work/_arxiv_v4.log`） | 动画/分镜/构图/动作的**学术**面 |
+| `arxiv.org`（`/abs/` 页） | **实测不可达**：许可只写在摘要页上（`find_arxiv_sources.py:48` 原文："the Atom feed has no `rel=\"license\"`"），而当晚该域名 **7/7 逐条超时**（`WinError 10060`）⇒ `--licences 0` 那一跑 `licence_clean=0`、`candidates: []` | ⇒ **arXiv 当晚产不出可用来源**（不是"没有相关论文"，是"许可读不到"） |
 | `huggingface.co` | **超时**（`hf-mirror.com` 通） | 模型权重（与语料无关，见 D3） |
 | `www.gutenberg.org` | 可达，但**正是要减少的部分**（54 本 1900–1920） | 只保留跨年代仍成立的基础原理 |
 
@@ -69,15 +69,20 @@ L1/L2 的 2221 张卡里 1856 张（83.6%）来自那 **54 本 Gutenberg 旧书*
    逐条过 `tools/kb_fetch/fetch.py` 的 robots 门后进 `sources.yaml`。
    注意：OCW 的 `license: CC-BY-NC-SA` 是**课程**的许可，个别 PDF 可能是第三方读物，
    按用户"个人学习、版权不设门"的裁决可用，但 `LICENSES.md` 要如实记来源。
-3. **补"震动与打击感"**：arXiv 的 14 条主题命中改走 `/pdf/`（`/abs/` 不可达）；
-   若仍不足，**换馆藏属于换语料面，单列待裁决**。
+3. **补"震动与打击感"**：arXiv 那 14 条主题命中**当晚不可用**（许可页超时，见第二节）。
+   三条出路按优先级：①换时段重跑 `find_arxiv_sources.py --licences N`（许可页有时可达，
+   工具自己的 docstring 记着"单次摘要页抓取成功过一次、15.5 s"）；②改抓 `/pdf/` 并把许可
+   记为 `PersonalStudy`（用户已裁决个人学习、版权不设门，且白名单本就含 `PersonalStudy`）；
+   ③换馆藏——**换馆藏属于换语料面，单列待裁决**。
 4. **补"动漫制作教材级来源"**：优先找开放获取的动画课程讲义（与第 2 步同一管线），
    而不是再抓评论。
 
 ## 五、未核验（如实挂账）
 
-* arXiv 那条探针**仍在跑**（`work/modern/arxiv_v4_candidates.json` / `_verified.json`）；
-  本文的"178 命中 / 14 主题命中"是它跑到一半时的**过程输出**，不是终值。
+* arXiv 那条探针**已跑完**（`--per-term 20 --licences 0 --verify 0`，退出码 0）：
+  `work/modern/arxiv_v4_candidates.json` 里 `candidates: []`、`licence_clean=0`。
+  **"14 条主题命中"只记在日志里，没有落成候选条目**——因为工具只在通过许可门后才写条目。
+  换时段重跑才会拿到条目；本条如实挂着，不当成"已经找到 14 条来源"。
 * 第一节的域分布是**按 `sources.yaml` 的 `domain` 字段**统计的，不是按卡片数——
   卡片数按域分布要用 `tools/knowledge/authorship_report.py`，本文没有重复测。
 * 没有实际跑一次"重配预算后的构建"：那属于 P5，本文只给配比与依据。
