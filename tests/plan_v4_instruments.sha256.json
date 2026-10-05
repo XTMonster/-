@@ -1,0 +1,24 @@
+{
+  "_why": "计划 v4 的 R9：判据执行环境（测量仪器）在重建期间必须逐字节不动。任何改动都要走一次显式的重新冻结提交，并在注释里写明理由——否则'红线零改动'只是一句口头承诺。",
+  "_refresh": "重算：python -c \"import hashlib,pathlib,json; print(...)\"（见 tests/test_plan_v4_instruments_frozen.py 的 _hash 函数）；重新冻结必须单独提交并把原因写进本文件的 _frozen_at / _reason。",
+  "_frozen_at": "2026-10-05",
+  "_reason": "计划 v4 三循环收口时的基线（循环 1-3 走完，HEAD=effbe88）",
+  "instruments": {
+    "tools/knowledge/e1_panel.py": {
+      "sha256": "4c941c77a8becfb9ded6aa7ab0c4fa7c828a9a76704d5c8628e04e50b0904f77",
+      "guards": "E1 的分子定义（两位 LLM 评委 1-5 分均值 >= 4.0）与分母来源"
+    },
+    "block_director/knowledge/hypergraph.py": {
+      "sha256": "c353217361fa62e2f72df435598da18c25c5b78b8e04039ff02073818b3c2d73",
+      "guards": "槽位闭集（NODE_TYPES/QUALIFIER_KINDS/EDGE_TYPES）、validate_edge、schema_fingerprint"
+    },
+    "tools/knowledge/e1_baseline_summary.py": {
+      "sha256": "e863c2f14e44e52e693e505cec5e9a2b5c706e8238f13eebe733c892918d81d6",
+      "guards": "E1 成对读数的判读规则（噪声带 = 参与比较各臂极差的最大值）"
+    },
+    "tools/check_holdout.py": {
+      "sha256": "adb933737fd4173a8de48521639dcb3d48dca8513750bb0854add31ebc54c529",
+      "guards": "机器门 1-11 的判据与阈值"
+    }
+  }
+}
