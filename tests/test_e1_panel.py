@@ -297,16 +297,17 @@ def test_rerank_off_keeps_the_historical_call_shape():
 class _OrderClient:
     """只回 `{"order": [...]}` 的重排器桩。"""
 
-    def __init__(self, order, *, boom=False):
+    def __init__(self, order, *, boom=False, key="order"):
         self.order = list(order)
         self.boom = boom
+        self.key = key
         self.systems = []
 
     def chat_json(self, system, user, temperature, seed, num_ctx):
         self.systems.append(system)
         if self.boom:
             raise RuntimeError("reranker down")
-        return {"order": self.order}
+        return {self.key: self.order}
 
 
 def test_the_llm_reranker_turns_an_order_into_scores_and_keeps_missing_ids_last():
@@ -385,3 +386,56 @@ def test_a_broken_expander_degrades_by_name_to_the_original_query():
         expand=expander, expand_mode="union")
     assert rows[0]["query_retrieval"] == "q1"
     assert rows[0]["query_expand"] == "failed:RuntimeError"
+
+
+def test_the_reranker_can_be_asked_to_select_or_to_score():
+    """两种更稳的提示词形状（对照用）：**只挑 3 条**与**逐条打分**。
+
+    起因：全序排序那版只拿到上限的 36%（`docs/evidence/20261006-e1-ceiling/`），
+    而"一次把 20 条排全序"是模型最容易出错的形状。
+    """
+    cases = _cases("c1", "c2", "c3", "c4")
+
+    selected = e1_panel.make_llm_reranker(
+        model="m", prompt="select", client=_OrderClient(["c3", "c4", "c1"], key="best"))
+    kept = e1_panel.rerank_cases(selected, "q", cases, 3)
+    assert [case.case_id for case in kept] == ["c3", "c4", "c1"]
+
+    scored = e1_panel.make_llm_reranker(model="m", prompt="score", client=_ScoredClient(
+        {"c2": 9.0, "c4": 7.0}))          # c1/c3 漏写 ⇒ 垫底，不丢
+    kept = e1_panel.rerank_cases(scored, "q", cases, 2)
+    assert [case.case_id for case in kept] == ["c2", "c4"]
+
+    try:
+        e1_panel.make_llm_reranker(model="m", prompt="turbo", client=_OrderClient([]))
+    except ValueError:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("未知的提示词形状竟然被收下了")
+
+
+class _ScoredClient:
+    """只回 `{"scores": {...}}` 的打分器桩。"""
+
+    def __init__(self, scores, *, boom=False):
+        self.scores = dict(scores)
+        self.boom = boom
+
+    def chat_json(self, system, user, temperature, seed, num_ctx):
+        if self.boom:
+            raise RuntimeError("scorer down")
+        return {"scores": self.scores}
+
+
+def test_an_empty_selection_or_score_set_fails_by_name():
+    empty_select = e1_panel.make_llm_reranker(
+        model="m", prompt="select", client=_OrderClient([], key="best"))
+    empty_score = e1_panel.make_llm_reranker(
+        model="m", prompt="score", client=_ScoredClient({}))
+    for scorer, label in ((empty_select, "best"), (empty_score, "scores")):
+        try:
+            scorer("q", _cases("c1"))
+        except Exception as exc:  # noqa: BLE001 - 空回包必须具名失败
+            assert label in str(exc), str(exc)
+        else:  # pragma: no cover
+            raise AssertionError("空回包竟然被当成有效重排")

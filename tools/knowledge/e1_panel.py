@@ -185,8 +185,32 @@ LLM_RERANK_SYSTEM = (
     "{\"order\":[\"<id>\", ...]}（按你的排序，最有用在前）。"
 )
 
+#: 另两种**重排提示词形状**（2026-10-06 要对照的变量）：`select` ＝ 只挑最该看的 3 条；
+#: `score` ＝ 逐条打 0–10 分。为什么要试：已测的"全序排序"只拿到**上限的 36%**
+#: （0.2812 / 0.7760，见 `docs/evidence/20261006-e1-ceiling/`），而让一个模型把 20 条
+#: 一次排全序是它最容易出错的任务形状——挑选/打分都比全序稳。
+LLM_RERANK_SELECT_SYSTEM = (
+    "你是分镜预演工具的参考案例挑选员。给你一条**导演的镜头查询**与若干条候选案例，"
+    "请**只挑出最该给这位导演看的 3 条**（按有用程度从高到低），其余不要列。\n"
+    "判据：能拿来指导**这一镜怎么拍**（景别／机位／运镜／构图／光线／剪辑节奏／表演调度）"
+    "的才挑；只是气氛像、剧情叙述、演员轶事、或讲的完全是另一回事的不要挑。\n"
+    "只输出 JSON：{\"best\":[\"<id>\",\"<id>\",\"<id>\"]}"
+)
 
-def make_llm_reranker(*, model: str, provider: str = "qwen", client=None):
+LLM_RERANK_SCORE_SYSTEM = (
+    "你是分镜预演工具的参考案例评分员。给你一条**导演的镜头查询**与若干条候选案例，"
+    "请给**每一条**打 0–10 分（10 ＝ 直接能指导这一镜怎么拍；0 ＝ 完全无关）。\n"
+    "判据：能对上景别／机位／运镜／构图／光线／剪辑节奏／表演调度的给高分；"
+    "只是气氛像、剧情叙述、演员轶事的给低分。\n"
+    "只输出 JSON：{\"scores\":{\"<id>\":<0-10>, ...}}——**每一条候选都要有分**。"
+)
+
+RERANK_PROMPTS = {"order": LLM_RERANK_SYSTEM, "select": LLM_RERANK_SELECT_SYSTEM,
+                  "score": LLM_RERANK_SCORE_SYSTEM}
+
+
+def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
+                      prompt: str = "order"):
     """用 LLM 给宽候选**排序**（`--cases-rerank llm`），返回打分可调用对象。
 
     为什么是"排序"而不是产品那个"过滤"：R3 的算术说明**删行**改变不了"哪 3 条被返回"
@@ -199,18 +223,36 @@ def make_llm_reranker(*, model: str, provider: str = "qwen", client=None):
     （deepseek-chat／glm-5.3）也不是抽取器（deepseek），所以"重排把 E1 抬上去"
     不可能是"重排者和评委同族"造出来的假象。
     """
+    if prompt not in RERANK_PROMPTS:
+        raise ValueError("未知重排提示词形状：%r（只认 %s）"
+                         % (prompt, sorted(RERANK_PROMPTS)))
     judge_client = client or llm.make_client(provider, model)
+    system = RERANK_PROMPTS[prompt]
 
     def scorer(query: str, cases):
         items = list(cases)
         listing = "\n".join("%s｜%s" % (case.case_id, str(case.excerpt)[:160])
                             for case in items)
-        reply = judge_client.chat_json(LLM_RERANK_SYSTEM,
-                                       "查询：%s\n\n候选：\n%s" % (query, listing),
+        reply = judge_client.chat_json(system, "查询：%s\n\n候选：\n%s" % (query, listing),
                                        0.0, 0, 1024)
-        order = [str(item) for item in (reply.get("order") or [])]
-        if not order:
-            raise llm.LLMError("重排器没有给出 order")
+        if prompt == "score":
+            raw = reply.get("scores") or {}
+            if not isinstance(raw, dict) or not raw:
+                raise llm.LLMError("重排器没有给出 scores")
+            out = []
+            for position, case in enumerate(items):
+                value = raw.get(case.case_id)
+                out.append(float(value) if isinstance(value, (int, float))
+                           else -1.0 - position / 1000.0)   # 漏写 = 垫底（不丢）
+            return out
+        if prompt == "select":
+            order = [str(item) for item in (reply.get("best") or [])]
+            if not order:
+                raise llm.LLMError("重排器没有给出 best")
+        else:
+            order = [str(item) for item in (reply.get("order") or [])]
+            if not order:
+                raise llm.LLMError("重排器没有给出 order")
         rank = {case_id: index for index, case_id in enumerate(order)}
         total = len(order)
         scores = []
@@ -457,6 +499,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--rerank-llm-provider", default="qwen",
                         help="`--cases-rerank llm` 的通道（默认 qwen ＝ 第三方裁决通道）")
     parser.add_argument("--rerank-llm-model", default="qwen3.8-max-0902")
+    parser.add_argument("--rerank-llm-prompt", default="order",
+                        choices=("order", "select", "score"),
+                        help="重排提示词的形状：`order` 全序排序／`select` 只挑最该看的 3 条／"
+                             "`score` 逐条 0–10 分（对照用）")
     parser.add_argument("--query-expand", default="off", choices=("off", "llm"),
                         help="查询侧对齐：`llm` ＝ 把中文指令改写成英文工艺词检索串"
                              "（判分仍用冻结的原文；默认 off ＝ 历次口径）")
@@ -535,7 +581,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     elif args.cases_rerank == "llm":
         reranker, rerank_label = make_llm_reranker(
             model=args.rerank_llm_model,
-            provider=args.rerank_llm_provider), args.rerank_llm_model
+            provider=args.rerank_llm_provider,
+            prompt=args.rerank_llm_prompt), "%s/%s" % (args.rerank_llm_model,
+                                                       args.rerank_llm_prompt)
     else:
         reranker, rerank_label = None, ""
     rows = score_queries(index, queries, clients, top_k=args.top_k,
