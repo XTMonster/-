@@ -1,0 +1,217 @@
+{
+  "generated_by": "tools/knowledge/e1_baseline_summary.py::paired_report",
+  "relevant_threshold": 4.0,
+  "panel": [
+    "deepseek-chat",
+    "glm-5.3"
+  ],
+  "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+  "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+  "arms_order": [
+    "lightrag+local",
+    "lightrag+cloud"
+  ],
+  "reps": [
+    1,
+    2
+  ],
+  "round_records": {
+    "lightrag+local.rep1": "round.lightrag+local.1.json",
+    "lightrag+local.rep2": "round.lightrag+local.2.json",
+    "lightrag+cloud.rep1": "round.lightrag+cloud.1.json",
+    "lightrag+cloud.rep2": "round.lightrag+cloud.2.json"
+  },
+  "round_identity": {
+    "seed": 20261005,
+    "rows": 64,
+    "rows_digest": "e02161be89eef4ab9fc8809caf46fd16419fa35de58209ce0849116558691ad1",
+    "panel": [
+      "deepseek-chat",
+      "glm-5.3"
+    ],
+    "panel_digest": "72eddecbc5e8ee151f4080cfee33fea643ee1428fd7f30253b59c8811f11b2f2",
+    "corpus_manifest_digest": "a162c41cc23b47742e0deb019438821da0903ff8f8548ff9e0e84af11f230301",
+    "hypergraph_manifest_digest": "missing"
+  },
+  "identity_mismatched_fields": [],
+  "terminal_states": {
+    "valid": 4
+  },
+  "invalid_parse_fault": 0,
+  "invalid_empty_intersection": 0,
+  "arms": {
+    "lightrag+local": {
+      "reps": [
+        {
+          "file": "reviews.lightrag+local.rep1.jsonl",
+          "retrieval_path": "lightrag",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 5,
+          "value": 0.026042
+        },
+        {
+          "file": "reviews.lightrag+local.rep2.jsonl",
+          "retrieval_path": "lightrag",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 3,
+          "value": 0.015625
+        }
+      ],
+      "mean": 0.020833,
+      "range": 0.010417,
+      "rows": 192,
+      "queries": 64,
+      "cases": 43
+    },
+    "lightrag+cloud": {
+      "reps": [
+        {
+          "file": "reviews.lightrag+cloud.rep1.jsonl",
+          "retrieval_path": "lightrag",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 23,
+          "value": 0.119792
+        },
+        {
+          "file": "reviews.lightrag+cloud.rep2.jsonl",
+          "retrieval_path": "lightrag",
+          "cases_fingerprint": "4b1b44bb22e013e7c58af1c30094dce58c3022cabdbce636ee5f4fb790ca25b5",
+          "cases_digest": "d916cd78a3c865fbeace203c67d124e52a9a4caff8e1794ca3db88d8610a874a",
+          "panel": [
+            "deepseek-chat",
+            "glm-5.3"
+          ],
+          "scored": 192,
+          "relevant": 22,
+          "value": 0.114583
+        }
+      ],
+      "mean": 0.117188,
+      "range": 0.005209,
+      "rows": 192,
+      "queries": 64,
+      "cases": 41
+    }
+  },
+  "noise_band": 0.010417,
+  "pairs": [
+    {
+      "a": "lightrag+local",
+      "b": "lightrag+cloud",
+      "delta": 0.096355,
+      "noise_band": 0.010417,
+      "separation_measured": true,
+      "verdict": "separated"
+    }
+  ],
+  "inconclusive_pairs": [],
+  "judge_coverage": {
+    "reviews.lightrag+local.rep1.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 189,
+      "single_judge_rows": 3,
+      "panel_size": 2,
+      "complete": false
+    },
+    "reviews.lightrag+local.rep2.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 190,
+      "single_judge_rows": 2,
+      "panel_size": 2,
+      "complete": false
+    },
+    "reviews.lightrag+cloud.rep1.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 188,
+      "single_judge_rows": 4,
+      "panel_size": 2,
+      "complete": false
+    },
+    "reviews.lightrag+cloud.rep2.jsonl": {
+      "rows": 192,
+      "two_judge_rows": 186,
+      "single_judge_rows": 6,
+      "panel_size": 2,
+      "complete": false
+    }
+  },
+  "all_rounds_complete": false,
+  "route_usage": {
+    "reviews.lightrag+local.rep1.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "lightrag"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    },
+    "reviews.lightrag+local.rep2.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "lightrag"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    },
+    "reviews.lightrag+cloud.rep1.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "lightrag"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    },
+    "reviews.lightrag+cloud.rep2.jsonl": {
+      "queries_expected": 64,
+      "queries_with_rows": 64,
+      "queries_missing": 0,
+      "backends_effective": [
+        "lightrag"
+      ],
+      "degraded_rows": 0,
+      "used_the_route": true
+    }
+  },
+  "all_rounds_used_the_route": true,
+  "repetition_sufficient": true,
+  "separation_verdicts_valid": true,
+  "provenance": {
+    "generated_by": "tools/knowledge/e1_report.py",
+    "cases_dir": "work\\knowledge_v4_cases",
+    "heldout": "work\\eval_sets\\heldout_v4_long21.jsonl",
+    "heldout_sha256": "e02161be89eef4ab9fc8809caf46fd16419fa35de58209ce0849116558691ad1",
+    "lightrag_fingerprint": "",
+    "lightrag_timeout": "",
+    "reviews_dir": "work\\e1_d3_embedding.json.reviews",
+    "review_files": {
+      "reviews.lightrag+local.rep1.jsonl": "21c706b0f76bae01d10cbc9c80fb80539e71ff13e118026c941159cc934564a8",
+      "reviews.lightrag+local.rep2.jsonl": "5b83d3e7ed5b2ca95e931dfc2fe78f683cb170a6c5b756bb921afd91c9a44460",
+      "reviews.lightrag+cloud.rep1.jsonl": "fbddf69afa4be5b079679c96ba58559f9f0aa4a5b15abd822956074d83c0ce09",
+      "reviews.lightrag+cloud.rep2.jsonl": "b7ca59a08ea5da7dabc4ade8dac9e976ece768005ef6f2c8e7b2aeaf3abec1af"
+    }
+  }
+}
