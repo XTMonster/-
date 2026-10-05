@@ -64,3 +64,35 @@ work\_venv_lr\Scripts\python.exe -m tools.knowledge.e1_panel `
 它排出来的序**不如**BM25 在中文线索面上的序。⇒ 换重排器（多语/LLM 排序）
 **值得再试一轮**（LLM 排序那一轮已在进行：`--cases-rerank llm` 走第三方 `qwen3.8-max-0902`，
 与两位评委都不同族，见第七次冻结）。
+
+## 补二：**第三方 LLM 重排实测**——三条杠杆里唯一**把 E1 抬起来**的那条
+
+命令（主环境；重排器＝第三方裁决通道 `qwen3.8-max-0902`，与两位评委**都不同族**）：
+
+```powershell
+python -m tools.knowledge.e1_panel --queries work/eval_sets/heldout_v4_long21.jsonl `
+    --cases-dir work/knowledge_v4_cases --out work/ab_e1_rerank/hybrid.rerank_llm.rep1.jsonl `
+    --top-k 3 --workers 3 --adapter none `
+    --cases-rerank llm --rerank-retrieve-k 20 --rerank-llm-model qwen3.8-max-0902
+```
+
+| 杠杆 | E1 | deepseek 评委 | glm 评委 |
+|---|---|---|---|
+| 基准（BM25 ＋ 中文线索） | **0.1927**（37/192） | 0.172 | 0.318 |
+| 产品自带 LLM 过滤 | 0.1720（27/157） ✗ | 0.140 | 0.376 |
+| cross-encoder（bge-reranker-v2-m3，top-20） | 0.1302（25/192） ✗ | 0.135 | 0.240 |
+| **第三方 LLM 重排（qwen3.8-max-0902，top-20→3）** | **0.2812（54/192）** ✓ | **0.240** | **0.542** |
+
+* **相对基准 +46%**（0.1927 → 0.2812）；**两位评委同向上升**（deepseek +0.068、glm +0.224）
+  ⇒ 不是评委偏好：重排器（qwen）**与两位评委都不是同一族**，它不可能"抬自己人"；
+* 27 行的重排调用失败（`cases_rerank: failed:LLMError`，第三方通道的限流/超时）——
+  那些行**具名降级**回未重排的前 3 条；只用**重排成功的那 165 行**算，
+  E1 = **0.2970** ⇒ 把失败率压下去还能再高一点；
+* 三条杠杆的次序因此很清楚：**"让模型读懂中文指令↔英文摘录的关系"有效，"
+  问答式 cross-encoder"与"在 top-3 上删行"都无效**。
+
+**仍未达线**：0.2812 对 0.70 还差 2.5 倍。R3 的可达性结论写成两句：
+① **后处理能抬 E1（+46%），但单靠它到不了 0.70**；
+② 下一个该试的是**把"候选面"与"重排器"一起放大**（retrieve-k 20→50、
+  重排失败重试、以及重排提示词的形状），以及**查询侧对齐**（把中文指令先译成
+  语料的英文工艺说法再检索）——两条都在"语料/查询同层"这一族里。
