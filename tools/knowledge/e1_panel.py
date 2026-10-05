@@ -176,6 +176,57 @@ def load_cross_encoder(model_name: str = "BAAI/bge-reranker-v2-m3",
     return score
 
 
+LLM_RERANK_SYSTEM = (
+    "你是分镜预演工具的参考案例排序员。给你一条**导演的镜头查询**与若干条候选案例，"
+    "请按「**能不能拿来指导这一镜怎么拍**」从最有用到最没用排序。\n"
+    "判据：景别／机位／运镜／构图／光线／剪辑节奏／表演调度上对得上就排前面；"
+    "只是气氛像、剧情叙述、演员轶事、或讲的完全是另一回事的排后面。\n"
+    "**必须把给出的 id 一个不漏地排完**，只输出 JSON："
+    "{\"order\":[\"<id>\", ...]}（按你的排序，最有用在前）。"
+)
+
+
+def make_llm_reranker(*, model: str, provider: str = "qwen", client=None):
+    """用 LLM 给宽候选**排序**（`--cases-rerank llm`），返回打分可调用对象。
+
+    为什么是"排序"而不是产品那个"过滤"：R3 的算术说明**删行**改变不了"哪 3 条被返回"
+    这一步（要 91% 无关行识别率＋100% 相关行召回）；把 20 条候选**整体排序**再取前 3，
+    才是能动结论的那一步。判据提示词与产品的 `CASE_FILTER_SYSTEM` 同源精神
+    （"能不能指导这一镜怎么拍"），但**形状不同**（有序列表 vs keep 集合）——
+    所以这里是一份独立的、可对拍的提示词，而不是把那份改掉。
+
+    族别：默认走 `qwen`（阿里云百炼 `qwen3.8-max-0902`）——它**既不是评委**
+    （deepseek-chat／glm-5.3）也不是抽取器（deepseek），所以"重排把 E1 抬上去"
+    不可能是"重排者和评委同族"造出来的假象。
+    """
+    judge_client = client or llm.make_client(provider, model)
+
+    def scorer(query: str, cases):
+        items = list(cases)
+        listing = "\n".join("%s｜%s" % (case.case_id, str(case.excerpt)[:160])
+                            for case in items)
+        reply = judge_client.chat_json(LLM_RERANK_SYSTEM,
+                                       "查询：%s\n\n候选：\n%s" % (query, listing),
+                                       0.0, 0, 1024)
+        order = [str(item) for item in (reply.get("order") or [])]
+        if not order:
+            raise llm.LLMError("重排器没有给出 order")
+        rank = {case_id: index for index, case_id in enumerate(order)}
+        total = len(order)
+        scores = []
+        for position, case in enumerate(items):
+            if case.case_id in rank:
+                #: 名次越靠前分越高（`rerank_cases` 按分数降序取前 k）。
+                scores.append(float(total - rank[case.case_id]))
+            else:
+                #: 模型漏写的 id **垫底而不是丢掉**（垫到所有已排名的下面，序仍确定）——
+                #: 重排只许改变次序；裁到 top-k 是 `rerank_cases` 的事。
+                scores.append(-1.0 - position / 1000.0)
+        return scores
+
+    return scorer
+
+
 def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
     listing = "\n".join(
         "%s｜%s｜%s" % (case.case_id, str(getattr(case, "title", ""))[:60],
@@ -205,7 +256,12 @@ def _score_one(index, query: str, clients: Sequence[tuple],
     wide = int(retrieve_k) if (rerank is not None and int(retrieve_k) > 0) else int(top_k)
     cases = index.retrieve(query, top_k=wide)
     if rerank is not None:
-        cases = rerank_cases(rerank, query, cases, top_k)
+        try:
+            cases = rerank_cases(rerank, query, cases, top_k)
+        except Exception as exc:  # noqa: BLE001 - 重排是增强，失败要具名且不吞掉检索
+            #: 具名降级：退回**未重排**的前 `top_k`（不是空列表），原因写进每行。
+            rerank_label = "failed:%s" % type(exc).__name__
+            cases = list(cases)[:int(top_k)]
     if not cases:
         return rows
     verdicts: Dict[str, Dict[str, Any]] = {}
@@ -329,14 +385,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="过滤器的 LLM 通道（判据提示词与产品同一份）")
     parser.add_argument("--filter-model", default="deepseek-chat")
     parser.add_argument("--cases-rerank", default="off",
-                        choices=("off", "cross-encoder"),
+                        choices=("off", "cross-encoder", "llm"),
                         help="retrieve-then-rerank：`cross-encoder` ＝ 先取宽候选"
-                             "（`--rerank-retrieve-k`）再重排取 `--top-k`。默认 off ＝ 历次口径")
+                             "（`--rerank-retrieve-k`）再重排取 `--top-k`；`llm` ＝ 用 LLM 排序。"
+                             "默认 off ＝ 历次口径")
     parser.add_argument("--rerank-model", default="BAAI/bge-reranker-v2-m3")
     parser.add_argument("--rerank-retrieve-k", type=int, default=20,
                         help="重排前的候选条数（只会被减法裁到 `--top-k`）")
     parser.add_argument("--rerank-device", default="",
                         help="留空＝cuda 可用就用 cuda")
+    parser.add_argument("--rerank-llm-provider", default="qwen",
+                        help="`--cases-rerank llm` 的通道（默认 qwen ＝ 第三方裁决通道）")
+    parser.add_argument("--rerank-llm-model", default="qwen3.8-max-0902")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
@@ -401,15 +461,20 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             client = llm.make_client(families[position], name)
         clients.append((name, client))
 
+    if args.cases_rerank == "cross-encoder":
+        reranker, rerank_label = load_cross_encoder(args.rerank_model,
+                                                   device=args.rerank_device), \
+            args.rerank_model
+    elif args.cases_rerank == "llm":
+        reranker, rerank_label = make_llm_reranker(
+            model=args.rerank_llm_model,
+            provider=args.rerank_llm_provider), args.rerank_llm_model
+    else:
+        reranker, rerank_label = None, ""
     rows = score_queries(index, queries, clients, top_k=args.top_k,
-                         workers=args.workers,
-                         rerank=(load_cross_encoder(args.rerank_model,
-                                                    device=args.rerank_device)
-                                 if args.cases_rerank == "cross-encoder" else None),
-                         retrieve_k=(args.rerank_retrieve_k
-                                     if args.cases_rerank == "cross-encoder" else 0),
-                         rerank_label=(args.rerank_model
-                                       if args.cases_rerank == "cross-encoder" else ""))
+                         workers=args.workers, rerank=reranker,
+                         retrieve_k=(args.rerank_retrieve_k if reranker else 0),
+                         rerank_label=rerank_label)
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n"

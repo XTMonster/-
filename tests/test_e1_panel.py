@@ -292,3 +292,43 @@ def test_rerank_off_keeps_the_historical_call_shape():
     assert index.requested == [3]        # 与历次读数逐字同口径
     assert rows[0]["cases_rerank"] == "off"
     assert rows[0]["cases_retrieve_k"] == 3
+
+
+class _OrderClient:
+    """只回 `{"order": [...]}` 的重排器桩。"""
+
+    def __init__(self, order, *, boom=False):
+        self.order = list(order)
+        self.boom = boom
+        self.systems = []
+
+    def chat_json(self, system, user, temperature, seed, num_ctx):
+        self.systems.append(system)
+        if self.boom:
+            raise RuntimeError("reranker down")
+        return {"order": self.order}
+
+
+def test_the_llm_reranker_turns_an_order_into_scores_and_keeps_missing_ids_last():
+    """重排器只输出**次序**；漏写的 id 必须**垫底而不是丢掉**（裁到 top-k 是下游的事）。"""
+    client = _OrderClient(["c3", "c1"])
+    scorer = e1_panel.make_llm_reranker(model="qwen3.8-max-0902", client=client)
+    cases = _cases("c1", "c2", "c3")
+    scores = scorer("q", cases)
+    assert len(scores) == 3
+    assert scores[2] > scores[0] > scores[1]        # c3 第一、c1 第二、c2 未排到垫底
+    assert "最有用在前" in client.systems[0]
+    kept = e1_panel.rerank_cases(scorer, "q", cases, 2)
+    assert [case.case_id for case in kept] == ["c3", "c1"]
+
+
+def test_a_broken_reranker_degrades_by_name_and_keeps_the_unreranked_top_k():
+    """重排是增强：它挂了要**具名**退回未重排的前 k 条，不许变成空列表、也不许静默。"""
+    index = _RecordingIndex({"q1": _cases("c1", "c2", "c3", "c4")})
+    scorer = e1_panel.make_llm_reranker(model="m", client=_OrderClient([], boom=True))
+    rows = e1_panel.score_queries(
+        index, ["q1"], [("stub", _Client({"c1": 5, "c2": 4, "c3": 1}))],
+        top_k=3, workers=1, rerank=scorer, retrieve_k=20, rerank_label="m")
+    assert index.requested == [20]
+    assert [row["case_id"] for row in rows] == ["c1", "c2", "c3"]   # 未重排的前 3 条
+    assert rows[0]["cases_rerank"] == "failed:RuntimeError"
