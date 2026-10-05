@@ -37,9 +37,11 @@ if __package__ in (None, ""):  # 直跑时把仓库根挂上（与 build_hypergr
 
 try:
     from . import common  # type: ignore
+    from . import extract_text as kb_extract  # type: ignore
     from . import fetch as kb_fetch  # type: ignore
 except ImportError:  # pragma: no cover - 直跑
     from tools.kb_fetch import common  # type: ignore
+    from tools.kb_fetch import extract_text as kb_extract  # type: ignore
     from tools.kb_fetch import fetch as kb_fetch  # type: ignore
 
 #: 年份门槛（`ADJUDICATIONS_v4.md` 的 D1 裁决：cutoff = 1980）。
@@ -121,15 +123,22 @@ def _entry_from_record(source: Dict, record: Dict) -> Dict:
 
 
 def ingest(sources_path: pathlib.Path, out_dir: pathlib.Path, *,
-           cutoff: int = DEFAULT_CUTOFF, fetch_one=None,
+           cutoff: int = DEFAULT_CUTOFF, fetch_one=None, extract_one=None,
            timeout: float = 30.0, rate_seconds: float = 1.0) -> Dict:
     """跑一次入库：选料 → 抓取（走 `fetch.py` 的门）→ 落三份产物。
 
-    `fetch_one` 只在测试里注入（替身）；生产路径用 `fetch.fetch_source`。
+    `fetch_one` / `extract_one` 只在测试里注入（替身）；生产路径分别用
+    `fetch.fetch_source` 与 `extract_text.extract_record`。
+
+    **管线第 2 步不许跳**：`fetch` 交回来的是**原始 HTML**（实证：P4 试点时
+    `work/corpus_v4/fetched.jsonl` 里的 `text` 是 `<!DOCTYPE html>…`，抽取器看到
+    样板代码、一条草稿都产不出）。所以这里一定要过 `extract_text`，抽不出正文的
+    **按具名原因拒收**，绝不把 HTML 当正文存进语料。
     """
     if cutoff <= 0:
         raise ValueError("cutoff 必须是正的年份，收到 %r" % (cutoff,))
     fetcher = fetch_one or kb_fetch.fetch_source
+    extractor = extract_one or kb_extract.extract_record
     sources = common.load_sources(pathlib.Path(sources_path))
     kept, excluded = select_sources(sources, cutoff=cutoff)
 
@@ -149,6 +158,20 @@ def ingest(sources_path: pathlib.Path, out_dir: pathlib.Path, *,
             rejects.append({"url": source.get("url"), "domain": source.get("domain"),
                             "reason": "%s: %s" % (type(exc).__name__, exc)})
             continue
+        try:
+            text, why = extractor(record)
+        except Exception as exc:  # noqa: BLE001 - 抽正文失败同样留痕
+            rejects.append({"url": source.get("url"), "domain": source.get("domain"),
+                            "reason": "extract_failed:%s: %s" % (type(exc).__name__, exc)})
+            continue
+        if not str(text or "").strip():
+            rejects.append({"url": source.get("url"), "domain": source.get("domain"),
+                            "reason": "extract_failed:%s" % (why or "empty")})
+            continue
+        #: 落进语料的是**正文**，不是抓回来的 HTML。
+        record = dict(record)
+        record["text"] = str(text)
+        record["extract_reason"] = why
         entries.append(_entry_from_record(source, record))
         fetched.append(record)
 

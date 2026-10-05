@@ -60,6 +60,18 @@ def _fake_fetch(record: dict):
     return _fetch
 
 
+def _fake_extract(record: dict):
+    """替身：把抓来的原文当 HTML 抽正文（与 `extract_text.extract_record` 同形）。"""
+    def _extract(fetched):
+        raw = str(fetched.get("text") or "")
+        if "<html" in raw.lower() or "<!doctype" in raw.lower():
+            return "抽出来的正文", ""
+        if not raw.strip():
+            return "", "empty_text"
+        return raw, ""
+    return _extract
+
+
 def _write_sources(tmp_path: pathlib.Path, rows) -> pathlib.Path:
     import yaml
     path = tmp_path / "sources.v4.yaml"
@@ -72,7 +84,7 @@ def test_modern_sources_land_in_the_manifest_with_the_four_fields(tmp_path):
             _source("https://example.org/b", year=1995)]
     out = tmp_path / "corpus_v4"
     report = ingest.ingest(_write_sources(tmp_path, rows), out, cutoff=CUTOFF,
-                           fetch_one=_fake_fetch({}))
+                           fetch_one=_fake_fetch({}), extract_one=_fake_extract({}))
     manifest = json.loads((out / "MANIFEST.json").read_text(encoding="utf-8"))
     assert len(manifest["entries"]) == 2
     for entry in manifest["entries"]:
@@ -87,7 +99,7 @@ def test_sources_below_the_cutoff_or_without_a_year_are_excluded(tmp_path):
             _source("https://example.org/new", year=2021)]
     out = tmp_path / "corpus_v4"
     report = ingest.ingest(_write_sources(tmp_path, rows), out, cutoff=CUTOFF,
-                           fetch_one=_fake_fetch({}))
+                           fetch_one=_fake_fetch({}), extract_one=_fake_extract({}))
     excluded = [json.loads(line) for line in
                 (out / "excluded.jsonl").read_text(encoding="utf-8").splitlines() if line]
     reasons = sorted(item["reason"] for item in excluded)
@@ -103,7 +115,7 @@ def test_a_source_rejected_by_the_fetch_gate_is_recorded_not_swallowed(tmp_path)
             _source("https://example.org/ok", year=2020)]
     out = tmp_path / "corpus_v4"
     report = ingest.ingest(_write_sources(tmp_path, rows), out, cutoff=CUTOFF,
-                           fetch_one=_fake_fetch({}))
+                           fetch_one=_fake_fetch({}), extract_one=_fake_extract({}))
     assert report["rejects"] == 1
     manifest = json.loads((out / "MANIFEST.json").read_text(encoding="utf-8"))
     assert manifest["rejects"][0]["reason"].startswith("robots_denied")
@@ -115,7 +127,7 @@ def test_everything_lands_under_the_given_out_dir(tmp_path):
     rows = [_source("https://example.org/a", year=2019)]
     out = tmp_path / "corpus_v4"
     ingest.ingest(_write_sources(tmp_path, rows), out, cutoff=CUTOFF,
-                  fetch_one=_fake_fetch({}))
+                  fetch_one=_fake_fetch({}), extract_one=_fake_extract({}))
     for name in ("MANIFEST.json", "excluded.jsonl", "fetched.jsonl"):
         assert (out / name).is_file(), name
     assert not (ingest.common.WORK / "corpus_v4_probe_should_not_exist").exists()
@@ -127,7 +139,7 @@ def test_the_manifest_digest_is_recomputable_from_its_own_entries(tmp_path):
             _source("https://example.org/b", year=2020)]
     out = tmp_path / "corpus_v4"
     ingest.ingest(_write_sources(tmp_path, rows), out, cutoff=CUTOFF,
-                  fetch_one=_fake_fetch({}))
+                  fetch_one=_fake_fetch({}), extract_one=_fake_extract({}))
     manifest = json.loads((out / "MANIFEST.json").read_text(encoding="utf-8"))
     assert manifest["corpus_digest"] == ingest.corpus_digest(manifest["entries"])
     #: 反面控制：改一条 ⇒ 摘要必须变。
@@ -139,4 +151,47 @@ def test_the_manifest_digest_is_recomputable_from_its_own_entries(tmp_path):
 def test_a_negative_cutoff_is_refused(tmp_path):
     with pytest.raises(ValueError):
         ingest.ingest(_write_sources(tmp_path, []), tmp_path / "o", cutoff=0,
-                      fetch_one=_fake_fetch({}))
+                      fetch_one=_fake_fetch({}), extract_one=_fake_extract({}))
+
+
+def test_html_boilerplate_is_extracted_before_it_reaches_the_corpus(tmp_path):
+    """管线第 2 步不许被跳过。
+
+    实测（2026-10-05 的 P4 试点）暴露的缺陷：`work/corpus_v4/fetched.jsonl` 里存的
+    是**原始 HTML**（`<!DOCTYPE html>…`），于是抽取器看到的是样板代码、一条草稿都
+    产不出来。管线本来是 `fetch → extract_text → …`，P3 的入库漏了中间那步。
+    """
+    rows = [_source("https://example.org/a", year=2019)]
+    out = tmp_path / "corpus_v4"
+
+    def html_fetch(source, timeout=30.0, rate_seconds=1.0):
+        return {"source_ref": {"url": source["url"], "title": "t", "author": "a",
+                              "license": "CC-BY", "year": source.get("year"),
+                              "sha256": "0" * 64, "retrieved_at": "x"},
+                "domain": source.get("domain"),
+                "text": "<!DOCTYPE html><html><head><title>x</title></head>"
+                        "<body><p>真正的正文</p></body></html>"}
+
+    ingest.ingest(_write_sources(tmp_path, rows), out, cutoff=CUTOFF,
+                  fetch_one=html_fetch, extract_one=_fake_extract({}))
+    fetched = [json.loads(line) for line in
+               (out / "fetched.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    assert fetched and fetched[0]["text"] == "抽出来的正文"
+    assert "<html" not in fetched[0]["text"]
+
+
+def test_an_extraction_failure_is_a_named_reject_not_silent_html(tmp_path):
+    rows = [_source("https://example.org/empty", year=2019)]
+    out = tmp_path / "corpus_v4"
+
+    def empty_fetch(source, timeout=30.0, rate_seconds=1.0):
+        return {"source_ref": {"url": source["url"], "title": "t", "author": "a",
+                              "license": "CC-BY", "year": source.get("year"),
+                              "sha256": "0" * 64, "retrieved_at": "x"},
+                "domain": source.get("domain"), "text": "   "}
+
+    report = ingest.ingest(_write_sources(tmp_path, rows), out, cutoff=CUTOFF,
+                           fetch_one=empty_fetch, extract_one=_fake_extract({}))
+    assert report["kept"] == 0 and report["rejects"] == 1
+    manifest = json.loads((out / "MANIFEST.json").read_text(encoding="utf-8"))
+    assert manifest["rejects"][0]["reason"].startswith("extract_failed:")
