@@ -99,7 +99,11 @@ def test_a_broken_judge_is_recorded_as_missing_not_as_a_low_score():
 def test_summary_reports_the_line_and_the_zero_denominator():
     rows = [{"score": 5.0}, {"score": 3.0}, {"score": 4.0}]
     summary = e1_panel.summarise(rows)
-    assert summary == {"scored": 3, "relevant": 2, "value": 0.6667, "line": 0.70}
+    #: `judge_batch`/`partial_batch_dropped` 是 P14-205 加的**语境自述**：
+    #: 报 E1 必须连同"这次调用喂了几条候选"一起报（见
+    #: `docs/evidence/20261006-e1-judge-context/`）。判据本身一个字没动。
+    assert summary == {"scored": 3, "relevant": 2, "value": 0.6667, "line": 0.70,
+                       "judge_batch": 0, "partial_batch_dropped": 0}
     assert e1_panel.summarise([])["value"] is None, "分母 0 不许算成 1.0"
 
 
@@ -455,3 +459,69 @@ def test_the_reranker_cannot_inject_a_case_that_was_never_retrieved():
     kept = e1_panel.rerank_cases(scored, "q", cases, 3)
     assert ghost.case_id not in [case.case_id for case in kept]
     assert [case.case_id for case in kept] == ["c2", "c1", "c3"]
+
+
+class _RecordingClient:
+    """按**实际收到的那一批**回分的桩，并把每一批的 id 记下来。
+
+    与 `_Client` 的差别：`_Client` 不管收到几条都按自己的字典全量回（测"哪一格缺"），
+    这里必须**只回收到的那几条**，否则测不出"判分语境被切开了"。
+    """
+
+    def __init__(self, scores, *, fail_on=0):
+        self.scores = scores
+        self.fail_on = fail_on
+        self.chunks = []
+
+    def chat_json(self, system, user, temperature, seed, num_ctx, key="", retries=1):
+        ids = [line.split("｜")[0].strip() for line in user.splitlines()
+               if "｜" in line]
+        self.chunks.append(ids)
+        if self.fail_on and len(self.chunks) == self.fail_on:
+            raise RuntimeError("network down")
+        return {"scores": [{"case_id": case_id, "score": self.scores.get(case_id, 1)}
+                           for case_id in ids]}
+
+
+def test_judge_batch_splits_the_judging_context_and_reports_it():
+    """**判分语境 C 可以被固定住**——这是把"上限"与红线放到同一把尺子上的唯一办法。
+
+    为什么要这条（2026-10-06 实测，`docs/evidence/20261006-e1-judge-context/`）：
+    同一检索、同内容、同提示词，只因一次调用里塞了几条候选，E1 就从 0.18（k=3）
+    漂到 0.28（k=20）。所以"完美重排上限"（20 条语境）与红线（3 条语境）不同尺，
+    要同尺就得固定 C=3 把池子按连续三元组重判。
+    """
+    ids = ["c%02d" % i for i in range(1, 21)]
+    index = _Index({"q1": _cases(*ids)})
+    client = _RecordingClient({case_id: 5 for case_id in ids})
+    rows = e1_panel.score_queries(index, ["q1"], [("m-a", client)], top_k=20,
+                                  judge_batch=3)
+    assert [len(chunk) for chunk in client.chunks] == [3] * 6, (
+        "20 条按连续三元组切 ⇒ 满 6 批（尾部 2 条不满一批，不入证）")
+    assert [row["case_id"] for row in rows] == ids[:18]
+    assert all(row["judge_batch"] == 3 for row in rows)
+    assert all(row["partial_batch_dropped"] == 2 for row in rows)
+    summary = e1_panel.summarise(rows)
+    assert summary["judge_batch"] == 3
+    assert summary["partial_batch_dropped"] == 2, "尾部丢弃是逐查询的，不许按行重复计数"
+
+
+def test_the_default_judging_context_is_the_whole_batch():
+    """默认（`--judge-batch 0`）＝ C 跟 `--top-k`，与历次读数逐字同口径。"""
+    index = _Index({"q1": _cases("c1", "c2", "c3")})
+    client = _RecordingClient({"c1": 5, "c2": 1, "c3": 1})
+    rows = e1_panel.score_queries(index, ["q1"], [("m-a", client)], top_k=3)
+    assert client.chunks == [["c1", "c2", "c3"]], "默认只发一次调用"
+    assert all(row["judge_batch"] == 3 for row in rows)
+    assert all(row["partial_batch_dropped"] == 0 for row in rows)
+
+
+def test_a_failed_chunk_does_not_wipe_the_chunks_that_succeeded():
+    """一批挂了只让**那几条**没有分；其他批次的判决不许被抹掉。"""
+    ids = ["c%02d" % i for i in range(1, 7)]
+    index = _Index({"q1": _cases(*ids)})
+    client = _RecordingClient({case_id: 5 for case_id in ids}, fail_on=2)
+    rows = e1_panel.score_queries(index, ["q1"], [("m-a", client)], top_k=6,
+                                  judge_batch=3)
+    assert [row["case_id"] for row in rows] == ["c01", "c02", "c03"], (
+        "第二批发不出分 ⇒ c04..c06 不进样本；第一批照旧在")

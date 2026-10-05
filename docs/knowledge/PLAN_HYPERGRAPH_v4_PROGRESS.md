@@ -278,3 +278,19 @@ sha256 `37dea0ea…`）。3 跑极差：
 （`work/_run_third_party_review.ps1` → `work/holdout_third_party.reviewed.jsonl` ＋
 `work/holdout_third_party_disagreements.md`）；Kimi 侧的重排三跑；Kimi 的四问重裁
 （`work/_adjudicate_kimi.py`）。
+
+### P14-205：把判分语境 C 从 `--top-k` 里拆出来——**"上限"与红线终于能同尺**
+
+触发：`docs/evidence/20261006-e1-judge-context/` 实测（评委给分随候选清单长度上漂、单调）
+＋ GLM-5.3 联合会诊（`docs/evidence/20261006-r3-ceiling-scale-consult/`，commit `f0d018f`）指出的
+"GLM 那个测量需要一个新判分模式，属仪器改动，要单独冻结"。
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **R3** | 判分语境 C 可独立于 `--top-k` | 绿（实现＋守门） | `e1_panel.py` 新增 `--judge-batch N`：把候选按**连续 N 元组**切开分别判，尾部不满一批的**不入证**（条数记进 `partial_batch_dropped`）；默认 0 ＝ C 跟 `--top-k`（**历次读数逐字同口径**）。每条打分记录加两枚自述字段 `judge_batch` / `partial_batch_dropped`，汇总同加——这就是 GLM 第 5 条要求的"把被固定的那个旋钮写进产物"。守门新增 3 条（切开＋尾部丢弃只算一次、默认单批、**一批挂掉不抹掉别的批次**）。**第十三次显式重新冻结**；判据一字未动（阈值 4.0／两位取均值／分母） | 2026-10-06 | 本批 |
+
+**在跑（决定性测量）**：`--top-k 20 --judge-batch 3` → `work/ab_e1_relabel/hybrid.batch3.top20.jsonl`。
+它把 K=20 池子的 ranks 1–18 按**连续三元组**在 **C=3 语境**下重判（每查询 6 组 × 2 评委
+＝ 12 次调用，64 查询 ⇒ 768 次），再用 `e1_ceiling_report.py --top-k 3` 读 `ceiling`。
+**判据**（沿用会诊的判据）：`ceiling ≥ 0.70` ⇒ 该池可达；`< 0.70` ⇒ 该池不可达；
+`|ceiling − 0.70| ≤ 0.016` ⇒ 原样重复一次再判。

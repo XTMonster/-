@@ -325,11 +325,21 @@ def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
 def _score_one(index, query: str, clients: Sequence[tuple],
                top_k: int, rerank=None, retrieve_k: int = 0,
                rerank_label: str = "", expand=None,
-               expand_mode: str = "union") -> List[Dict[str, Any]]:
+               expand_mode: str = "union", judge_batch: int = 0
+               ) -> List[Dict[str, Any]]:
     """一条查询的打分行（逐镜）。失败侧在 `scores` 里留 ``None``，不写成 1 分。
 
     `rerank` 给了就**先取宽候选**（`retrieve_k` 条）再重排取 `top_k` 条——
     retrieve-then-rerank；没给就与历次读数逐字同口径（`index.retrieve(query, top_k)`）。
+
+    **`judge_batch`（判分语境 C，2026-10-06 新增）**：把"**每次判分调用喂几条候选**"
+    从 `--top-k` 里拆出来。为什么要拆：`docs/evidence/20261006-e1-judge-context/` 实测
+    评委的给分**随这次调用看到的候选条数上漂**（同一检索、同内容、同提示词：
+    k=3 → E1 0.177～0.193、k=20 → 0.271～0.302、k=50 → 0.3177，**单调**），
+    于是"完美重排上限"（在 20 条语境里量的）与红线 E1（在 3 条语境里量的）
+    **不是一把尺子**。固定 C、把池子按连续 C 元组重判，两者才同尺。
+    尾部**不满一批**的那些**不入证**（它们是另一种语境），条数记在每行的
+    `partial_batch_dropped` 里。默认 0 ⇒ C ＝ `len(cases)`，与历次读数逐字同口径。
     """
     rows: List[Dict[str, Any]] = []
     #: **查询侧对齐**：判分用的 `query` 一个字不动；只把**检索串**换成"原文 ＋ 英文改写"
@@ -358,12 +368,27 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             cases = list(cases)[:int(top_k)]
     if not cases:
         return rows
+    #: 判分语境：`judge_batch>0` 时按连续 N 元组切；否则整批一次判（历次口径）。
+    requested = int(judge_batch or 0)
+    batch = requested if requested > 0 else len(cases)
+    if requested > 0:
+        chunks = [list(cases)[i:i + batch] for i in range(0, len(cases), batch)]
+        full = [chunk for chunk in chunks if len(chunk) == batch]
+        partial_batch_dropped = sum(len(chunk) for chunk in chunks if len(chunk) != batch)
+        cases = [case for chunk in full for case in chunk]
+    else:
+        full = [list(cases)]
+        partial_batch_dropped = 0
     verdicts: Dict[str, Dict[str, Any]] = {}
-    for name, client in clients:
-        try:
-            verdicts[name] = judge(client, query, cases)
-        except Exception as exc:  # noqa: BLE001 — 单条失败不吞掉整批
-            verdicts[name] = {"__error__": f"{type(exc).__name__}: {exc}"[:120]}
+    for chunk in full:
+        for name, client in clients:
+            try:
+                verdicts.setdefault(name, {}).update(judge(client, query, chunk))
+            except Exception as exc:  # noqa: BLE001 — 单条失败不吞掉整批
+                #: 失败的那一批**只让那几条没有分**（行被跳过），不抹掉其他批次的判决。
+                #: 单批时（默认口径）这条路与旧实现逐字等价：verdicts[name] 就是错误标记。
+                verdicts.setdefault(name, {})["__error__"] = \
+                    f"{type(exc).__name__}: {exc}"[:120]
     for case in cases:
         scores = [verdicts.get(name, {}).get(str(case.case_id), {}).get("score")
                   for name, _client in clients]
@@ -417,6 +442,10 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             "query_expansion": expansion,
             "panel": [name for name, _client in clients],
             "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
+            #: **判分语境自述**（P14-205）：这次调用喂了几条候选（C）与尾部被丢了几条。
+            #: 为什么要写进产物：不写的话"这把尺子是哪一把"事后只能靠重做配对实验才知道。
+            "judge_batch": int(batch),
+            "partial_batch_dropped": int(partial_batch_dropped),
         })
     return rows
 
@@ -424,7 +453,7 @@ def _score_one(index, query: str, clients: Sequence[tuple],
 def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
                   top_k: int = 3, workers: int = DEFAULT_WORKERS,
                   rerank=None, retrieve_k: int = 0, rerank_label: str = "",
-                  expand=None, expand_mode: str = "union"
+                  expand=None, expand_mode: str = "union", judge_batch: int = 0
                   ) -> List[Dict[str, Any]]:
     """跑一遍打分。**纯函数式**：索引与客户端都由调用方注入，因此可离线测。
 
@@ -441,21 +470,31 @@ def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
                 lambda query: _score_one(index, query, clients, top_k,
                                          rerank=rerank, retrieve_k=retrieve_k,
                                          rerank_label=rerank_label,
-                                         expand=expand, expand_mode=expand_mode),
+                                         expand=expand, expand_mode=expand_mode,
+                                         judge_batch=judge_batch),
                 queries))
         return [row for batch in batches for row in batch]
     return [row for query in queries
             for row in _score_one(index, query, clients, top_k,
                                   rerank=rerank, retrieve_k=retrieve_k,
                                   rerank_label=rerank_label,
-                                  expand=expand, expand_mode=expand_mode)]
+                                  expand=expand, expand_mode=expand_mode,
+                                  judge_batch=judge_batch)]
 
 
 def summarise(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     good = [row for row in rows if float(row["score"]) >= RELEVANT]
+    #: 尾部丢弃数是**逐查询**的，所以按查询去重后相加（同一查询的每条行都带同一个值）。
+    seen: Dict[str, int] = {}
+    for row in rows:
+        seen.setdefault(str(row.get("query", "")),
+                        int(row.get("partial_batch_dropped") or 0))
     return {"scored": len(rows), "relevant": len(good),
             "value": round(len(good) / len(rows), 4) if rows else None,
-            "line": 0.70}
+            "line": 0.70,
+            #: 判分语境（C）：报 E1 必须连同"这次调用喂了几条候选"一起报。
+            "judge_batch": int(rows[0].get("judge_batch") or 0) if rows else 0,
+            "partial_batch_dropped": sum(seen.values())}
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -483,6 +522,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--cases-filter", default="off", choices=("off", "llm"),
                         help="L3 相关性过滤器：`llm` ＝ 产品那条（`--cases-filter llm`）。"
                              "默认 off ＝ 与历次读数同一口径")
+    parser.add_argument("--judge-batch", type=int, default=0,
+                        help="判分语境 C：每次判分调用喂几条候选。0（默认）＝ C 跟 "
+                             "`--top-k`（历次口径，逐字不变）。>0 时把候选按**连续 N 元组**"
+                             "切开分别判，尾部不满一批的不入证（条数记进 partial_batch_dropped）——"
+                             "这是把\"上限\"与红线放到同一把尺子上的唯一办法，见 "
+                             "docs/evidence/20261006-e1-judge-context/")
     parser.add_argument("--filter-provider", default="deepseek",
                         help="过滤器的 LLM 通道（判据提示词与产品同一份）")
     parser.add_argument("--filter-model", default="deepseek-chat")
@@ -593,7 +638,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                          expand=(make_query_expander(model=args.expand_model,
                                                      provider=args.expand_provider)
                                  if args.query_expand == "llm" else None),
-                         expand_mode=args.expand_mode)
+                         expand_mode=args.expand_mode,
+                         judge_batch=args.judge_batch)
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n"
