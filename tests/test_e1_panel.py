@@ -240,3 +240,55 @@ def test_every_row_says_whether_the_case_filter_was_on():
                                   top_k=1, workers=1)
     assert rows[0]["cases_filter"] == "on"
     assert rows[0]["cases_filter_reason"].startswith("cases_filter_failed")
+
+
+class _RecordingIndex(_Index):
+    """把"被问了多少条"记下来的索引桩（rerank 的取宽行为靠它钉住）。"""
+
+    def __init__(self, mapping, fingerprint="f" * 64):
+        super().__init__(mapping, fingerprint)
+        self.requested = []
+
+    def retrieve(self, query, top_k=3):
+        self.requested.append(int(top_k))
+        return self.mapping.get(query, [])[:top_k]
+
+
+def test_rerank_keeps_the_top_n_by_score_with_a_deterministic_tie_break():
+    """纯函数：按分取前 keep 条；并列按 `case_id` 定序 ⇒ 同输入同输出。"""
+    cases = _cases("c1", "c2", "c3", "c4")
+    scorer = lambda query, items: [0.5, 0.9, 0.5, 0.1]      # noqa: E731 - 测试桩
+    kept = e1_panel.rerank_cases(scorer, "q", cases, 3)
+    assert [case.case_id for case in kept] == ["c2", "c1", "c3"]
+    assert [case.case_id for case in e1_panel.rerank_cases(scorer, "q", cases, 2)] == \
+        ["c2", "c1"]
+    try:                       # 分数条数对不上 ⇒ 当场报错（不许悄悄配平）
+        e1_panel.rerank_cases(lambda query, items: [0.1], "q", cases, 3)
+    except ValueError:
+        pass
+    else:                      # pragma: no cover
+        raise AssertionError("重排分与候选数不匹配竟然被收下了")
+
+
+def test_rerank_asks_for_a_wider_candidate_set_and_records_it():
+    """retrieve-then-rerank：**先取宽候选**（20）再重排取 3——R3 的算术说这才是
+    能改变"哪 3 条被返回"的那一步（在 top-3 上再过滤到不了 0.70）。"""
+    index = _RecordingIndex({"q1": _cases("c1", "c2", "c3", "c4", "c5")})
+    scorer = lambda query, items: [0.1, 0.2, 0.9, 0.3, 0.4]   # noqa: E731 - 测试桩
+    rows = e1_panel.score_queries(
+        index, ["q1"], [("stub", _Client({"c3": 5, "c5": 4, "c4": 1}))],
+        top_k=3, workers=1, rerank=scorer, retrieve_k=20,
+        rerank_label="BAAI/bge-reranker-v2-m3")
+    assert index.requested == [20], "必须先取宽候选再重排"
+    assert [row["case_id"] for row in rows] == ["c3", "c5", "c4"]   # 重排后的前三
+    assert rows[0]["cases_rerank"] == "BAAI/bge-reranker-v2-m3"
+    assert rows[0]["cases_retrieve_k"] == 20
+
+
+def test_rerank_off_keeps_the_historical_call_shape():
+    index = _RecordingIndex({"q1": _cases("c1", "c2", "c3", "c4")})
+    rows = e1_panel.score_queries(index, ["q1"], [("stub", _Client({"c1": 5}))],
+                                  top_k=3, workers=1)
+    assert index.requested == [3]        # 与历次读数逐字同口径
+    assert rows[0]["cases_rerank"] == "off"
+    assert rows[0]["cases_retrieve_k"] == 3

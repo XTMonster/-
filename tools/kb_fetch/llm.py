@@ -63,6 +63,17 @@ GLM_MAX_TOKENS = int(os.environ.get("GLM_MAX_TOKENS", "32768"))
 #: 可以把 `GLM_TIMEOUT` 调小，让坏调用快速失败并被记成一条 reject 而不是拖死整轮。
 GLM_TIMEOUT = float(os.environ.get("GLM_TIMEOUT", "1800"))
 
+#: **第三方裁决通道**：阿里云百炼（DashScope）的 OpenAI 兼容端点。
+#: 用户 2026-10-05 指示："如果需要人工裁决，这边我想用第三方的ai进行裁决"，
+#: 并指定 `qwen3.8-max-0902`（实测：端点 `dashscope.aliyuncs.com/compatible-mode/v1`，
+#: key 有**按模型的白名单**（`qwen3-max` 会被 403 拒），见 `work/_probe_qwen_endpoint.py`／
+#: `work/_list_qwen_models.py`）。它既不是抽取器（deepseek）也不是标注器（zhipu），
+#: 所以拿它做复核／裁决时 `independence` 是**真·第三方**。密钥只从 `QWEN_API_KEY` 读。
+QWEN_BASE = os.environ.get("QWEN_BASE_URL",
+                           "https://dashscope.aliyuncs.com/compatible-mode/v1")
+QWEN_API_KEY = os.environ.get("QWEN_API_KEY", "")
+QWEN_TIMEOUT = float(os.environ.get("QWEN_TIMEOUT", "900"))
+
 #: 本地思考模型的**思考税**实测（v1.4 §6 那条风险）没法用官方开关关掉：
 #: `/no_think`（写进 user 或 system）、`think: false`、精简词表都试过，`num_predict`
 #: 2048 时一律 `content_len=0 / thinking_len≈3400 / done_reason=length`；把预算加到
@@ -78,6 +89,7 @@ FAMILIES = {
     "deepseek": "deepseek",
     "ollama": "qwen",
     "glm": "zhipu",
+    "qwen": "qwen",
     "scripted": "scripted",
 }
 
@@ -299,6 +311,65 @@ class GLMClient:
         raise LLMError(f"glm({self.model_id}) 调用失败：{last}")
 
 
+class QwenClient:
+    """阿里云百炼（DashScope）兼容模式 —— **第三方裁决通道**（`family = "qwen"`）。
+
+    接口形状与 `GLMClient` 一致（`chat_json` ＋ `last_usage` ＋ `decode_tag`），
+    所以调用方不必为它写第二套。与 GLM 的两处差别：
+
+    * 端点是 OpenAI 兼容的 `/chat/completions`，但**key 有按模型的白名单**——
+      不在包内的型号会被 `403 access_denied`（实测 `qwen3-max` 如此，
+      `qwen3.8-max-0902` 可用）；所以这条通道**不许静默换型号**，失败就具名抛。
+    * 它是**思考模型**（`reasoning_tokens` 与正文分开），所以 `num_ctx` 只当
+      `max_tokens` 用，正文仍走 `parse_json_content`（空正文立刻判失败）。
+    """
+
+    family = "qwen"
+
+    def __init__(self, model_id: str = "qwen3.8-max-0902", api_key: str = ""):
+        self.model_id = str(model_id or "qwen3.8-max-0902")
+        self.model_version = self.model_id
+        self.api_key = api_key or QWEN_API_KEY
+        self.last_usage: Dict[str, int] = {}
+
+    @property
+    def decode_tag(self) -> str:
+        """解码条件的可读指纹（这条通道没有档位开关，如实写）。"""
+        return "thinking=default;max_tokens=num_ctx"
+
+    def chat_json(self, system: str, user: str, temperature: float, seed: int,
+                  num_ctx: int, key: str = "", retries: int = 3) -> Dict:
+        if not self.api_key:
+            raise LLMError("缺少 QWEN_API_KEY（只从环境变量读，绝不写进仓库）")
+        payload = {
+            "model": self.model_id, "stream": False,
+            "messages": [{"role": "system", "content": system},
+                         {"role": "user", "content": user}],
+            "temperature": temperature, "max_tokens": int(num_ctx),
+        }
+        last: Optional[Exception] = None
+        for attempt in range(retries):
+            try:
+                reply = _post_json(f"{QWEN_BASE}/chat/completions", payload,
+                                   {"Content-Type": "application/json",
+                                    "Authorization": f"Bearer {self.api_key}"},
+                                   QWEN_TIMEOUT)
+                choices = reply.get("choices") or []
+                if not choices:
+                    raise LLMError("上游没有返回 choices")
+                usage = reply.get("usage") or {}
+                self.last_usage = {
+                    "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+                    "completion_tokens": int(usage.get("completion_tokens") or 0)}
+                self.model_version = str(reply.get("model") or self.model_id)
+                message = choices[0].get("message") or {}
+                return parse_json_content(message.get("content") or "")
+            except Exception as exc:  # noqa: BLE001 - 失败要具名，且不许静默换型号
+                last = exc
+                time.sleep((20.0 if "429" in str(exc) else 1.5) * (attempt + 1))
+        raise LLMError(f"qwen({self.model_id}) 调用失败：{last}")
+
+
 class OllamaClient:
     """本地标注器。走 `/api/chat` ＋ 显式 `num_ctx`（见模块 docstring 的实测结论）。"""
 
@@ -382,4 +453,6 @@ def make_client(provider: str, model: str = "", scripted: str = ""):
         return OllamaClient(model or "qwen3-vl:30b")
     if provider == "glm":
         return GLMClient(model or "glm-5.3")
+    if provider == "qwen":
+        return QwenClient(model or "qwen3.8-max-0902")
     raise LLMError(f"未知 provider: {provider!r}")

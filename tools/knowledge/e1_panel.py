@@ -123,6 +123,59 @@ def make_llm_case_filter(*, model: str, provider: str = "deepseek",
     return _filter
 
 
+def rerank_cases(scorer, query: str, cases, keep: int):
+    """按重排分取前 `keep` 条——**只做减法**，并列按 `case_id` 定序（确定性）。
+
+    为什么是"取前 keep"而不是"过滤"：R3 的算术（`docs/evidence/20261005-e1-filter/`）
+    说明在 top-3 上再过滤到不了 0.70；能改变结论的是"**哪 3 条被返回**"——
+    先取宽候选（如 20 条）再重排取 3，才是成熟做法（retrieve-then-rerank）。
+    本函数是纯函数：scorer 由调用方注入，离线可测。
+    """
+    items = list(cases)
+    if not items:
+        return []
+    scores = list(scorer(query, items))
+    if len(scores) != len(items):
+        raise ValueError("重排分与候选数不匹配：%d != %d" % (len(scores), len(items)))
+    order = sorted(range(len(items)),
+                   key=lambda index: (-float(scores[index]),
+                                      str(items[index].case_id)))
+    return [items[index] for index in order[:max(1, int(keep))]]
+
+
+def load_cross_encoder(model_name: str = "BAAI/bge-reranker-v2-m3",
+                       device: str = ""):
+    """加载 cross-encoder 重排器。**延迟 import**：主环境零依赖，只有 venv 里跑得动。
+
+    实测约束（本机）：`huggingface.co` 不可达、`hf-mirror.com` 通 ⇒ 先设 `HF_ENDPOINT`；
+    sidecar 的 venv 里已有 `torch 2.5.1+cu121`（`cuda.is_available()==True`）与
+    transformers ⇒ 重排器是**跑得动**的（放进 sidecar 或构建期，插件进程依旧零依赖）。
+    确定性：`model.eval()` ＋ `torch.no_grad()` ＋ 不采样 ⇒ 同一输入同一分数。
+    """
+    import os
+
+    os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+    import torch
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+    chosen = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name).to(chosen)
+    model.eval()
+
+    def score(query: str, cases):
+        pairs = [(str(query), str(case.excerpt)) for case in cases]
+        batch = tokenizer([left for left, _ in pairs], [right for _, right in pairs],
+                          padding=True, truncation=True, max_length=512,
+                          return_tensors="pt")
+        batch = {key: value.to(chosen) for key, value in batch.items()}
+        with torch.no_grad():
+            logits = model(**batch).logits.view(-1)
+        return [float(value) for value in logits]
+
+    return score
+
+
 def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
     listing = "\n".join(
         "%s｜%s｜%s" % (case.case_id, str(getattr(case, "title", ""))[:60],
@@ -141,10 +194,18 @@ def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
 
 
 def _score_one(index, query: str, clients: Sequence[tuple],
-               top_k: int) -> List[Dict[str, Any]]:
-    """一条查询的打分行（逐镜）。失败侧在 `scores` 里留 ``None``，不写成 1 分。"""
+               top_k: int, rerank=None, retrieve_k: int = 0,
+               rerank_label: str = "") -> List[Dict[str, Any]]:
+    """一条查询的打分行（逐镜）。失败侧在 `scores` 里留 ``None``，不写成 1 分。
+
+    `rerank` 给了就**先取宽候选**（`retrieve_k` 条）再重排取 `top_k` 条——
+    retrieve-then-rerank；没给就与历次读数逐字同口径（`index.retrieve(query, top_k)`）。
+    """
     rows: List[Dict[str, Any]] = []
-    cases = index.retrieve(query, top_k=top_k)
+    wide = int(retrieve_k) if (rerank is not None and int(retrieve_k) > 0) else int(top_k)
+    cases = index.retrieve(query, top_k=wide)
+    if rerank is not None:
+        cases = rerank_cases(rerank, query, cases, top_k)
     if not cases:
         return rows
     verdicts: Dict[str, Dict[str, Any]] = {}
@@ -197,6 +258,9 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             #: （`CaseIndex._filtered` 在过滤器抛错时退回未过滤并具名记账）。
             "cases_filter": "on" if getattr(index, "case_filter", None) else "off",
             "cases_filter_reason": str(getattr(index, "filter_reason", "") or ""),
+            #: 重排的自述：用的什么模型、取了多少条候选（`off` 就是历次口径）。
+            "cases_rerank": str(rerank_label or "off"),
+            "cases_retrieve_k": int(wide),
             "panel": [name for name, _client in clients],
             "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
         })
@@ -204,7 +268,8 @@ def _score_one(index, query: str, clients: Sequence[tuple],
 
 
 def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
-                  top_k: int = 3, workers: int = DEFAULT_WORKERS
+                  top_k: int = 3, workers: int = DEFAULT_WORKERS,
+                  rerank=None, retrieve_k: int = 0, rerank_label: str = ""
                   ) -> List[Dict[str, Any]]:
     """跑一遍打分。**纯函数式**：索引与客户端都由调用方注入，因此可离线测。
 
@@ -218,10 +283,14 @@ def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
     if int(workers) > 1 and len(queries) > 1:
         with concurrent.futures.ThreadPoolExecutor(max_workers=int(workers)) as pool:
             batches = list(pool.map(
-                lambda query: _score_one(index, query, clients, top_k), queries))
+                lambda query: _score_one(index, query, clients, top_k,
+                                         rerank=rerank, retrieve_k=retrieve_k,
+                                         rerank_label=rerank_label), queries))
         return [row for batch in batches for row in batch]
     return [row for query in queries
-            for row in _score_one(index, query, clients, top_k)]
+            for row in _score_one(index, query, clients, top_k,
+                                  rerank=rerank, retrieve_k=retrieve_k,
+                                  rerank_label=rerank_label)]
 
 
 def summarise(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
@@ -259,6 +328,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--filter-provider", default="deepseek",
                         help="过滤器的 LLM 通道（判据提示词与产品同一份）")
     parser.add_argument("--filter-model", default="deepseek-chat")
+    parser.add_argument("--cases-rerank", default="off",
+                        choices=("off", "cross-encoder"),
+                        help="retrieve-then-rerank：`cross-encoder` ＝ 先取宽候选"
+                             "（`--rerank-retrieve-k`）再重排取 `--top-k`。默认 off ＝ 历次口径")
+    parser.add_argument("--rerank-model", default="BAAI/bge-reranker-v2-m3")
+    parser.add_argument("--rerank-retrieve-k", type=int, default=20,
+                        help="重排前的候选条数（只会被减法裁到 `--top-k`）")
+    parser.add_argument("--rerank-device", default="",
+                        help="留空＝cuda 可用就用 cuda")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
@@ -324,7 +402,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         clients.append((name, client))
 
     rows = score_queries(index, queries, clients, top_k=args.top_k,
-                         workers=args.workers)
+                         workers=args.workers,
+                         rerank=(load_cross_encoder(args.rerank_model,
+                                                    device=args.rerank_device)
+                                 if args.cases_rerank == "cross-encoder" else None),
+                         retrieve_k=(args.rerank_retrieve_k
+                                     if args.cases_rerank == "cross-encoder" else 0),
+                         rerank_label=(args.rerank_model
+                                       if args.cases_rerank == "cross-encoder" else ""))
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n"
