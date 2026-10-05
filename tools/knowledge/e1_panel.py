@@ -227,6 +227,42 @@ def make_llm_reranker(*, model: str, provider: str = "qwen", client=None):
     return scorer
 
 
+QUERY_EXPAND_SYSTEM = (
+    "你是电影/动画分镜检索的查询改写员。给你一条**中文的镜头指令**（导演要拍什么），"
+    "把它改写成**一段英文检索串**，用来在**英文学术／教程摘录**里做词面检索。\n"
+    "要求：\n"
+    "1. 只搬运这条指令里已有的信息（景别／机位／运镜／构图／光线／剪辑节奏／表演调度／"
+    "画面里发生的事），**不要解释、不要评论、不要补充指令里没有的内容**；\n"
+    "2. 用这些工艺词在英文影评／教程里的通行说法（例如 固定机位→static tripod shot、"
+    "越轴→crossing the line、反打→reverse shot、浅景深→shallow depth of field）；\n"
+    "3. 不要写完整句子，写成一串**检索词／短语**（逗号或空格分隔）；\n"
+    "4. 别丢掉专有名词与数字（镜头号、毫米数、时间）。\n"
+    "只输出 JSON：{\"en\": \"<英文检索串>\"}"
+)
+
+
+def make_query_expander(*, model: str, provider: str = "deepseek", client=None):
+    """把中文镜头指令改写成**英文学术摘录能词面命中的检索串**（查询侧对齐）。
+
+    为什么这条值得试（三条杠杆的实测）：产品自带的 LLM 过滤与 `ms-marco` 系
+    cross-encoder 都让 E1 **下降**，而"让模型读懂中文指令↔英文摘录的关系"那一条
+    （第三方 LLM 重排）把 E1 从 0.1927 抬到 0.2812 ⇒ 真正稀缺的是**两边的对齐**。
+    案例侧已经有一条（中文线索：把英文摘录改写成中文），**查询侧还没有**——
+    这条缝补的就是它：把中文指令改写成英文工艺词，让 BM25 直接命中**摘录自己的词**。
+
+    只改**检索串**：判分用的查询仍是冻结的那 64 条原文（行里两条都记，
+    `query` 与 `query_retrieval`），提示词要求只搬运、不解释、不编造。
+    """
+    expander = client or llm.make_client(provider, model)
+
+    def expand(query: str) -> str:
+        reply = expander.chat_json(QUERY_EXPAND_SYSTEM,
+                                   "中文镜头指令：%s" % query, 0.0, 0, 512)
+        return str(reply.get("en") or "").strip()
+
+    return expand
+
+
 def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
     listing = "\n".join(
         "%s｜%s｜%s" % (case.case_id, str(getattr(case, "title", ""))[:60],
@@ -246,15 +282,31 @@ def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
 
 def _score_one(index, query: str, clients: Sequence[tuple],
                top_k: int, rerank=None, retrieve_k: int = 0,
-               rerank_label: str = "") -> List[Dict[str, Any]]:
+               rerank_label: str = "", expand=None,
+               expand_mode: str = "union") -> List[Dict[str, Any]]:
     """一条查询的打分行（逐镜）。失败侧在 `scores` 里留 ``None``，不写成 1 分。
 
     `rerank` 给了就**先取宽候选**（`retrieve_k` 条）再重排取 `top_k` 条——
     retrieve-then-rerank；没给就与历次读数逐字同口径（`index.retrieve(query, top_k)`）。
     """
     rows: List[Dict[str, Any]] = []
+    #: **查询侧对齐**：判分用的 `query` 一个字不动；只把**检索串**换成"原文 ＋ 英文改写"
+    #: （`replace` 档只留改写）。失败具名降级回原文。
+    retrieval_query = str(query)
+    expansion = ""
+    expand_label = "off"
+    if expand is not None:
+        expand_label = "on"
+        try:
+            expansion = str(expand(query) or "").strip()
+        except Exception as exc:  # noqa: BLE001 - 增强失败不吞检索
+            expansion = ""
+            expand_label = "failed:%s" % type(exc).__name__
+        if expansion:
+            retrieval_query = (expansion if str(expand_mode) == "replace"
+                               else "%s %s" % (query, expansion))
     wide = int(retrieve_k) if (rerank is not None and int(retrieve_k) > 0) else int(top_k)
-    cases = index.retrieve(query, top_k=wide)
+    cases = index.retrieve(retrieval_query, top_k=wide)
     if rerank is not None:
         try:
             cases = rerank_cases(rerank, query, cases, top_k)
@@ -317,6 +369,10 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             #: 重排的自述：用的什么模型、取了多少条候选（`off` 就是历次口径）。
             "cases_rerank": str(rerank_label or "off"),
             "cases_retrieve_k": int(wide),
+            #: 查询侧对齐的自述：判分查询、实际检索串、改写文本、以及它是开着的还是挂了。
+            "query_expand": expand_label,
+            "query_retrieval": retrieval_query,
+            "query_expansion": expansion,
             "panel": [name for name, _client in clients],
             "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
         })
@@ -325,7 +381,8 @@ def _score_one(index, query: str, clients: Sequence[tuple],
 
 def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
                   top_k: int = 3, workers: int = DEFAULT_WORKERS,
-                  rerank=None, retrieve_k: int = 0, rerank_label: str = ""
+                  rerank=None, retrieve_k: int = 0, rerank_label: str = "",
+                  expand=None, expand_mode: str = "union"
                   ) -> List[Dict[str, Any]]:
     """跑一遍打分。**纯函数式**：索引与客户端都由调用方注入，因此可离线测。
 
@@ -341,12 +398,15 @@ def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
             batches = list(pool.map(
                 lambda query: _score_one(index, query, clients, top_k,
                                          rerank=rerank, retrieve_k=retrieve_k,
-                                         rerank_label=rerank_label), queries))
+                                         rerank_label=rerank_label,
+                                         expand=expand, expand_mode=expand_mode),
+                queries))
         return [row for batch in batches for row in batch]
     return [row for query in queries
             for row in _score_one(index, query, clients, top_k,
                                   rerank=rerank, retrieve_k=retrieve_k,
-                                  rerank_label=rerank_label)]
+                                  rerank_label=rerank_label,
+                                  expand=expand, expand_mode=expand_mode)]
 
 
 def summarise(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
@@ -397,6 +457,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--rerank-llm-provider", default="qwen",
                         help="`--cases-rerank llm` 的通道（默认 qwen ＝ 第三方裁决通道）")
     parser.add_argument("--rerank-llm-model", default="qwen3.8-max-0902")
+    parser.add_argument("--query-expand", default="off", choices=("off", "llm"),
+                        help="查询侧对齐：`llm` ＝ 把中文指令改写成英文工艺词检索串"
+                             "（判分仍用冻结的原文；默认 off ＝ 历次口径）")
+    parser.add_argument("--expand-provider", default="deepseek")
+    parser.add_argument("--expand-model", default="deepseek-chat")
+    parser.add_argument("--expand-mode", default="union", choices=("union", "replace"),
+                        help="`union` ＝ 原文 ＋ 英文改写一起检索；`replace` ＝ 只用改写")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
@@ -474,7 +541,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     rows = score_queries(index, queries, clients, top_k=args.top_k,
                          workers=args.workers, rerank=reranker,
                          retrieve_k=(args.rerank_retrieve_k if reranker else 0),
-                         rerank_label=rerank_label)
+                         rerank_label=rerank_label,
+                         expand=(make_query_expander(model=args.expand_model,
+                                                     provider=args.expand_provider)
+                                 if args.query_expand == "llm" else None),
+                         expand_mode=args.expand_mode)
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n"

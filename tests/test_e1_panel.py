@@ -332,3 +332,56 @@ def test_a_broken_reranker_degrades_by_name_and_keeps_the_unreranked_top_k():
     assert index.requested == [20]
     assert [row["case_id"] for row in rows] == ["c1", "c2", "c3"]   # 未重排的前 3 条
     assert rows[0]["cases_rerank"] == "failed:RuntimeError"
+
+
+class _ExpandClient:
+    """只回 `{"en": "..."}` 的改写器桩。"""
+
+    def __init__(self, en, *, boom=False):
+        self.en = en
+        self.boom = boom
+        self.systems = []
+
+    def chat_json(self, system, user, temperature, seed, num_ctx):
+        self.systems.append(system)
+        if self.boom:
+            raise RuntimeError("expander down")
+        return {"en": self.en}
+
+
+def test_query_expansion_changes_only_the_retrieval_string():
+    """**判据一个字不动**：判分查询仍是冻结原文；只有检索串换成「原文 ＋ 英文改写」。"""
+    index = _RecordingIndex({"q1 static tripod shot reverse shot": _cases("c9"),
+                             "q1": _cases("c1", "c2")})
+    expander = e1_panel.make_query_expander(
+        model="deepseek-chat", client=_ExpandClient("static tripod shot reverse shot"))
+    rows = e1_panel.score_queries(
+        index, ["q1"], [("stub", _Client({"c9": 5}))], top_k=1, workers=1,
+        expand=expander, expand_mode="union")
+    assert rows, "夹具必须真的产出打分，否则这条用例是空绿"
+    assert [row["case_id"] for row in rows] == ["c9"]      # 用改写串检索到了
+    assert rows[0]["query"] == "q1"                        # 判分查询＝冻结原文
+    assert rows[0]["query_retrieval"] == "q1 static tripod shot reverse shot"
+    assert rows[0]["query_expansion"] == "static tripod shot reverse shot"
+    assert rows[0]["query_expand"] == "on"
+
+
+def test_replace_mode_uses_only_the_expansion():
+    index = _RecordingIndex({"static tripod shot": _cases("c9")})
+    expander = e1_panel.make_query_expander(
+        model="m", client=_ExpandClient("static tripod shot"))
+    rows = e1_panel.score_queries(
+        index, ["q1"], [("stub", _Client({"c9": 5}))], top_k=1, workers=1,
+        expand=expander, expand_mode="replace")
+    assert rows[0]["query_retrieval"] == "static tripod shot"
+
+
+def test_a_broken_expander_degrades_by_name_to_the_original_query():
+    index = _RecordingIndex({"q1": _cases("c1")})
+    expander = e1_panel.make_query_expander(
+        model="m", client=_ExpandClient("", boom=True))
+    rows = e1_panel.score_queries(
+        index, ["q1"], [("stub", _Client({"c1": 5}))], top_k=1, workers=1,
+        expand=expander, expand_mode="union")
+    assert rows[0]["query_retrieval"] == "q1"
+    assert rows[0]["query_expand"] == "failed:RuntimeError"
