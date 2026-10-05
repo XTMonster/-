@@ -451,9 +451,18 @@ if (Test-Path $gatesJsonPath) {
         $panelProperty = $gate7.reviewed_by_class.PSObject.Properties['llm-panel']
         if ($panelProperty -and $panelProperty.Value) { $panelCount = [int]$panelProperty.Value }
     }
-    Write-Host ('  reviewer calibers: llm-panel ' + $panelCount + ' / human ' +
-                $gate7.human_reviewed + ' (strict human-only reading needs ' +
-                $gate7.min_human_review + ')')
+    # `gate_human_review.human_reviewed` counts reviewers from the ACCEPTED classes --
+    # it is NOT the human-only count (that lives in reviewed_by_class['human']). Printing
+    # one number under the "human" label is exactly the confusion D12 = C rules out, so
+    # both calibers are printed by name.
+    $humanOnly = 0
+    if ($gate7 -and $gate7.reviewed_by_class) {
+        $humanProperty = $gate7.reviewed_by_class.PSObject.Properties['human']
+        if ($humanProperty -and $humanProperty.Value) { $humanOnly = [int]$humanProperty.Value }
+    }
+    Write-Host ('  reviewer calibers (D12): accepted-class reviewed ' + $gate7.human_reviewed +
+                ' = llm-panel ' + $panelCount + ' + human-only ' + $humanOnly +
+                '; the strict human-only reading needs ' + $gate7.min_human_review)
 }
 if (-not (Test-Path (Join-Path $evidenceDir 'holdout_gates.json'))) {
     Fail '  FAILED: the held-out gate report was not written'
