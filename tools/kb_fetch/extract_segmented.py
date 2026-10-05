@@ -45,6 +45,10 @@ PROMPT_VERSION = "extract/v19-seg"
 #: `common.CHUNKER_VERSION = "para-2400/v1"` 同量级，便于与现役产物对拍。
 DEFAULT_MAX_CHARS = 2400
 
+#: 短于这个长度的段**不送模型**（站点样板与残句）。实测依据：抽掉 HTML 之后，
+#: 文章页开头仍是 "Skip to main content"／标题一类的碎片，模型对它们返空是对的。
+DEFAULT_MIN_CHARS = 80
+
 
 @dataclass(frozen=True)
 class Segment:
@@ -130,7 +134,23 @@ def segment_text(text: str, *, source_ref: Dict, max_chars: int = DEFAULT_MAX_CH
 
 
 def validate_draft(draft: Dict) -> Tuple[bool, str]:
-    """闭集 ＋ 出处检查。返回 ``(ok, reason)``；reason 是**具名**的。"""
+    """**粗闭集 ＋ 出处**检查。返回 ``(ok, reason)``；reason 是**具名**的。
+
+    它查的是三样：边型 ∈ `EDGE_TYPES`、角色 ∈ `ROLES`、kind ∈ `ALLOWED_KINDS`，
+    外加"草稿必须带出处（url ＋ span）"。
+
+    **它不查什么**（P5 的门负责，别把这一层当成完整校验）：
+
+    * **取值词表**：`kind:取值` 里的取值是否在 `VALUE_DOMAINS` 内。实测（2026-10-05
+      的 P4 试点）模型会写 `pacing:followed the singer`、`vfx:video feedback` 这类
+      **自由文本**——它们过得了这一层，过不了 `hypergraph.validate_edge` 的词表关；
+    * **必填槽位结构**：`REQUIRED_MEMBERS`（例如某类边必须带哪个 qualifier）——
+      试点里出现过 `allow/applies_to_genre` 这种**角色与 kind 不搭**的写法；
+    * **禁忌宿主**与**成员级依据是否逐字出自原文**。
+
+    所以本函数的"通过"只说明"形状像一条本仓边"，**不说明它会被索引收下**。
+    P5 的拒绝率与填充率才是那些门的读数。
+    """
     if not isinstance(draft, dict):
         return False, "draft_not_object"
     edge_type = str(draft.get("type") or "").strip()
@@ -201,7 +221,8 @@ def parse_reply(reply: str) -> Tuple[List[Dict], Optional[str]]:
 
 def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
             max_chars: int = DEFAULT_MAX_CHARS,
-            limit_segments: int = 0) -> Tuple[List[Dict], List[Dict], Dict]:
+            limit_segments: int = 0,
+            min_chars: int = DEFAULT_MIN_CHARS) -> Tuple[List[Dict], List[Dict], Dict]:
     """两趟驱动：分段 → 逐段归属 → 闭集校验 → 分账。
 
     `llm` 是注入的（生产用 :class:`DeepSeekClient`，测试用替身），
@@ -210,6 +231,7 @@ def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
     drafts_out: List[Dict] = []
     rejects: List[Dict] = []
     segments_seen = 0
+    skipped_short = 0
     drafts_seen = 0
     for record in records:
         source_ref = dict(record.get("source_ref") or {})
@@ -219,6 +241,11 @@ def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
             if limit_segments and segments_seen >= limit_segments:
                 break
             segments_seen += 1
+            #: 站点样板（"Skip to main content"）不值得一次 LLM 调用。跳过**不算拒收**：
+            #: 账上单列 `skipped_short`，免得把"没内容"记成"抽取失败"。
+            if len(segment.text) < min_chars:
+                skipped_short += 1
+                continue
             try:
                 reply = llm(build_prompt(segment))
             except Exception as exc:  # noqa: BLE001 - 单段失败不吞掉整批
@@ -248,7 +275,8 @@ def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
                 else:
                     rejects.append({"reason": reason, "draft": draft,
                                     "source": candidate["source"]})
-    stats = {"segments": segments_seen, "drafts_seen": drafts_seen,
+    stats = {"segments": segments_seen, "skipped_short": skipped_short,
+             "drafts_seen": drafts_seen,
              "kept": len(drafts_out), "rejected": len(rejects)}
     return drafts_out, rejects, stats
 
@@ -336,6 +364,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--out", required=True, help="抽取产物目录，例如 work/extracted_v4")
     parser.add_argument("--model", default="deepseek-chat")
     parser.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
+    parser.add_argument("--min-chars", type=int, default=DEFAULT_MIN_CHARS,
+                        help="短于它的段不送模型（站点样板）")
     parser.add_argument("--limit-records", type=int, default=0, help="0 = 全部")
     parser.add_argument("--limit-segments", type=int, default=0, help="0 = 全部")
     parser.add_argument("--dry-run", action="store_true",
@@ -360,7 +390,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     client = DeepSeekClient(model=args.model)
     drafts, rejects, stats = extract(records, llm=client, max_chars=args.max_chars,
-                                     limit_segments=args.limit_segments)
+                                     limit_segments=args.limit_segments,
+                                     min_chars=args.min_chars)
     common.write_jsonl(out_dir / EXTRACT_NAME, drafts)
     common.write_jsonl(out_dir / REJECTS_NAME, rejects)
     print(json.dumps({"overall": "pass", "prompt_version": PROMPT_VERSION,

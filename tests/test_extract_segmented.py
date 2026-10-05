@@ -135,7 +135,9 @@ def test_the_driver_closes_the_books_on_kept_and_rejected():
                 return json.dumps(payload, ensure_ascii=False)
         return json.dumps({"drafts": []})
 
-    drafts, rejects, stats = ex.extract([_record()], llm=fake_llm, max_chars=400)
+    #: 这一段用短夹具，所以关掉"过短跳过"的过滤（那条另有专门的用例）。
+    drafts, rejects, stats = ex.extract([_record()], llm=fake_llm, max_chars=400,
+                                        min_chars=0)
     assert stats["segments"] == 3
     assert len(drafts) == 2 and len(rejects) == 1
     assert rejects[0]["reason"] == "bad_type:BOGUS"
@@ -144,3 +146,26 @@ def test_the_driver_closes_the_books_on_kept_and_rejected():
         assert draft["source"]["span"][0] < draft["source"]["span"][1]
         assert draft["source"]["url"] == "https://example.org/a"
     assert stats["kept"] + stats["rejected"] == stats["drafts_seen"]
+
+
+def test_short_chrome_segments_are_skipped_not_sent_to_the_model():
+    """过短的段落（站点样板："Skip to main content"）不送模型——**也不算拒收**。
+
+    实测（2026-10-05 的 P4 试点）：抽掉 HTML 之后，文章页前面几段仍是站点导航，
+    模型对它们返空是**对的**；把它们算进"抽取失败"会把账记错地方。
+    分段本身仍然**无损**（那是 `segment_text` 的不变量），过滤只发生在驱动这一层。
+    """
+    text = "Skip to main content\n\n" + ("讲正反打：机位要偏离轴线 30 度，否则会越轴。" * 6)
+
+    def fake_llm(prompt: str) -> str:
+        assert "Skip to main content" not in prompt, "样板段不该被送进模型"
+        return json.dumps({"drafts": [{"type": hg.SHOT_PATTERN,
+                                       "members": [["allow", "shot_size", "shot_size:MS"]]}]},
+                          ensure_ascii=False)
+
+    drafts, rejects, stats = ex.extract([{"source_ref": {"url": "u", "sha256": "d" * 64},
+                                          "text": text}],
+                                        llm=fake_llm, max_chars=400, min_chars=60)
+    assert stats["skipped_short"] == 1
+    assert stats["segments"] == 2
+    assert len(drafts) == 1 and rejects == []
