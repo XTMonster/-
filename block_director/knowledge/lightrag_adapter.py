@@ -1,0 +1,88 @@
+"""插件侧的 LightRAG 适配器：挂在**已经声明好的**接缝上（`cases.py:88`）。
+
+契约与词法适配器完全一样：`retrieve(query, *, top_k, cases) -> Sequence[Case]`，
+工厂 `(index_dir) -> adapter`。区别只在"检索在哪发生"——它在 sidecar（独立进程，
+住着 `lightrag` 与本地 GPU 嵌入），插件这边只用 stdlib `urllib` 说话。
+
+三条纪律：
+
+1. **返回的必须是 `cases` 的子序列**：sidecar 给的 id 不在传入集合里就丢弃并具名记账
+   （ADR-0014 说的"陈旧化陷阱"）；上层据此知道索引是不是脏的。
+2. **不可达/指纹不匹配 ⇒ 空列表 ＋ 具名 `last_reason`**：由上层回落默认路由，
+   绝不把"降级"伪装成"成功的空结果"。
+3. **fail closed**：`expected_fingerprint` 给了就先比 `/health` 回的指纹，不一致
+   **连查都不查**（不拿脏索引出数）。
+"""
+
+from __future__ import annotations
+
+import pathlib
+from typing import Any, Dict, List, Optional, Sequence
+
+from ..contracts.knowledge import Case
+from . import lightrag_client as lc
+
+#: 默认端口（与 sidecar 的约定；环境变量可覆盖）。
+DEFAULT_URL = "http://127.0.0.1:8765"
+
+
+class LightRAGAdapter:
+    """把 sidecar 的 `/query` 结果翻译成本仓的 `Case`。"""
+
+    def __init__(self, *, base_url: str = DEFAULT_URL, timeout: float = 10.0,
+                 expected_fingerprint: str = "") -> None:
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+        self.expected_fingerprint = expected_fingerprint
+        self.last_reason = ""
+
+    #: 与词法适配器同名的探测面（`CaseIndex` 读它做记账）。
+    path_label = "lightrag"
+
+    def _check_health(self) -> Optional[str]:
+        """返回失败原因；`None` 表示可以继续。"""
+        try:
+            info = lc.health(self.base_url, timeout=self.timeout)
+        except lc.SidecarError as exc:
+            return str(exc)
+        if self.expected_fingerprint:
+            got = str(info.get("index_fingerprint") or "")
+            if got != self.expected_fingerprint:
+                return "index_fingerprint_mismatch:%s!=%s" % (got, self.expected_fingerprint)
+        return None
+
+    def retrieve(self, query: str, *, top_k: int = 3,
+                 cases: Sequence[Case] = ()) -> List[Case]:
+        self.last_reason = ""
+        why = self._check_health()
+        if why:
+            self.last_reason = why
+            return []
+        try:
+            hits = lc.query(self.base_url, query, top_k=top_k, timeout=self.timeout)
+        except lc.SidecarError as exc:
+            self.last_reason = str(exc)
+            return []
+        by_id = {str(case.case_id): case for case in cases}
+        out: List[Case] = []
+        dropped = 0
+        for hit in hits:
+            case = by_id.get(str(hit["case_id"]))
+            if case is None:
+                dropped += 1
+                continue
+            out.append(case)
+        if dropped:
+            #: **具名记账**：上层据此判断索引是不是指向了别的案例集合。
+            self.last_reason = "unknown_id_dropped:%d" % dropped
+        return out[: max(0, int(top_k))]
+
+
+def make_lightrag_adapter(index_dir: Any = None, *, base_url: str = "",
+                          expected_fingerprint: str = "",
+                          timeout: float = 10.0) -> LightRAGAdapter:
+    """工厂：签名与 `cases.py:88` 的契约一致（`(index_dir) -> adapter`）。"""
+    import os
+    url = base_url or os.environ.get("BLOCK_DIRECTOR_LIGHTRAG_URL") or DEFAULT_URL
+    return LightRAGAdapter(base_url=url, timeout=timeout,
+                           expected_fingerprint=expected_fingerprint)
