@@ -10,7 +10,7 @@
 | **P0** | ①三循环的草案/审查/修订证据齐 | 绿 | 循环 2：`PLAN_V4_REVIEW_LOOP2.md`（37 条，双侧 complete）＋`PLAN_V4_LOOP2_DISPOSITION.md`；循环 3：`PLAN_V4_REVIEW_LOOP3.md`（36 条，双侧 complete）＋`PLAN_V4_LOOP3_REVISIONS.md`（处置稿截断已记账）；守门 `tests/test_plan_v4_freeze.py`（6 条） | 2026-10-05 | `effbe88` |
 | **P0** | ②用户明示"开始执行" | 绿 | 用户 2026-10-05 授权："人工部分尽可能你解决"、"你尽管围着高质量方向做，我有很长一段时间不在家"；据此主线自行裁定 D1–D9/R1–R5（`ADJUDICATIONS_v4.md`） | 2026-10-05 | `9e6803e` |
 | **P1** | ①D1–D9 各"已裁决＋日期＋选项" | 绿 | `ADJUDICATIONS_v4.md` 一张表 14 行（D1–D9＋R1–R5），动判据的三条标 `须用户点头` | 2026-10-05 | `9e6803e` |
-| **P1** | ②`CORPUS_V4.md` 冻结（每源 url/title/author/license/year；四维各≥1 源） | **红** | 已产出实测版（321 条来源清点＋OCW 188 条候选＋arXiv 0 条可用），但**书单还没冻结**：D1 的"预算重配"尚未落到 `sources.yaml`。见该文件 §三 的两个缺口 | 2026-10-05 | `e813600` |
+| **P1** | ②`CORPUS_V4.md` 冻结（每源 url/title/author/license/year；四维各≥1 源；sha256 记入 ADJUDICATIONS_v4） | **绿**（本批） | 三条子句都用实测补齐（此前记红的原因是「书单没冻结」）：<br>①**书单身份**：`knowledge/sources.v4.yaml` `sha256=8f968a141f986b34…`（240 源、`cutoff=1980`）；入库 `work/corpus_v4` 240 源、五字段（url/title/author/license/year）**缺项 0/240**、`corpus_digest=3dc686db…`（修掉 HTML 入库之后那枚）；<br>②**四维各≥1 源**（按**内容**实测，`work/_dim_sources3.py`，0 条解析不到）：行为动作情绪意图 **236**／镜头语言 **219**／**构图 15**／**震动与打击感 133**（另：声音对白配乐 167、光 79）⇒ **成立**；<br>③**sha256 已记入** `ADJUDICATIONS_v4.md` 第七节（连同 corpus_digest）。<br>**顺带纠正一条误判**：`CORPUS_V4.md` 曾把「震动与打击感」记成「没有任何已验证来源」——那句只在**关键词层**成立（hit-stop／impact frame／game feel 0 命中），内容层有 **133 个来源／412 条边**；真正最薄的是**构图**（15 源／26 边）。已回写 CORPUS_V4.md §三之一 | 2026-10-05 | 本批 |
 | **P1** | ③`tests/plan_v4/instruments.sha256.json` 冻结仪器哈希 | 绿 | 落成 `tests/plan_v4_instruments.sha256.json`（4 个仪器）＋守门 `tests/test_plan_v4_instruments_frozen.py`（7 条，含反面对照）；与 `PLAN_HYPERGRAPH_v4_ANNEX.md` 一起 | 2026-10-05 | 本批 |
 | **P1** | ④V1–V9 写进计划（本仓形态：有约束力的附件） | 绿 | `PLAN_HYPERGRAPH_v4_ANNEX.md`："与正文冲突时以本附件为准"，V1–V9 逐条给"覆盖哪里/改成什么/怎么验"；守门 `tests/test_plan_v4_freeze.py::test_the_binding_annex_exists_and_declares_precedence` | 2026-10-05 | 本批 |
 | **P2** | ①成对基线（v3pop，只读） | 绿（机制）/待（N≥3） | 两臂各 2 次已在库：`docs/evidence/20261006-e1-baselines/`（hybrid 0.2031/0.2031、lexical 0.1927/0.2292）；判读机制 `tools/knowledge/e1_baseline_summary.py::paired_report`（本批一般化）＋`tests/test_e1_paired_report.py`（8 条）。**N≥3 的补测未做** | 2026-10-05 | `d472e41` |
@@ -114,10 +114,13 @@
 
 ## 当前阻塞与下一步
 
-1. **P1② 是红的**：D1 的书单还没冻结。它的实测底座已经齐（321 条来源清点、
-   OCW 188 条候选、arXiv 当晚 0 条），缺的是"把预算从 54 本旧书挪到那 267 条现代来源"
-   这一步落到 `sources.yaml`——那是 P3 的第一个动作。
-2. **P2②（轮记录文件）** 是 V1 的落地，属于 P2 的剩余项。
+1. ~~**P1② 是红的**~~ **→ 已转绿**（本批）：书单身份（`knowledge/sources.v4.yaml`
+   `sha256=8f968a14…`）＋ 入库语料（240 源、五字段缺项 0/240、`corpus_digest=3dc686db…`）
+   ＋ **四维各≥1 源**（按内容实测：236／219／15／133）都记进了 `ADJUDICATIONS_v4.md` 第七节。
+   **顺带纠正**：`CORPUS_V4.md` 曾把"震动与打击感"记成"没有任何已验证来源"——
+   内容层实测有 133 源／412 边（关键词层 0 命中 ≠ 这一维没有料）。真正最薄的是构图。
+2. ~~**P2②（轮记录文件）**~~ **→ 已转绿**（本批）：附件 V1 的轮记录落地
+   （执行器先写身份、检查器只读），并走了一次显式重新冻结。
 3. 数值留白 N1–N5 仍挂着（见 `PLAN_HYPERGRAPH_v4_ANNEX.md` §3），**不影响开工**。
 4. **P10 的落地形状有一处必须先解决的偏差（本轮新发现）**：计划 §3.1 写着影子产物
    落在**仓库根**的 `knowledge_v4/`（`git mv` 一次性切成 `knowledge/`，可 `git revert`），

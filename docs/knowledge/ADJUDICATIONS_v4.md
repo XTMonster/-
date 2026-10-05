@@ -158,3 +158,21 @@ ADR-0014 原写"本机能否跑轻量本地 embedding **未验证**"。2026-10-0
 
 在你就此拍板之前，本仓的立场是：**继续推进能自动化的门④（标注供给）与门⑥
 （卡片可表达性），门⑦ 如实红着**。
+
+## 七、D1／P1② 的**冻结记录**（书单与语料从此有名字）
+
+P1② 的 DoD 逐字要求："`docs/knowledge/CORPUS_v4.md` 冻结（每源 url/title/author/license/year；
+四维各≥1 源；sha256 记入 `ADJUDICATIONS_v4`）"。本节的三个数字即那条 DoD 的证据
+（全部可复算，命令写在 `CORPUS_V4.md` §三）：
+
+| 冻的是什么 | 值 | 怎么复算 |
+|---|---|---|
+| 影子书单 | `knowledge/sources.v4.yaml`<br>`sha256 = 8f968a141f986b3461c62cac4b5822865d8c1a0a65236c1ab9325675b420a73c` | `python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('knowledge/sources.v4.yaml').read_bytes()).hexdigest())"` |
+| 入库语料 | `work/corpus_v4`，240 源、`cutoff=1980`<br>`corpus_digest = 3dc686db432e2cd7727b70684f7cc88efe15dd8d29aef5264ce310e5c5861eb9`（**修掉 HTML 入库之后**的那一枚） | `work/corpus_v4/MANIFEST.json` 的 `corpus_digest`；五个字段（url/title/author/license/year）**缺项 0/240** |
+| 四维 ≥1 源 | 行为动作情绪意图 **236**／镜头语言 **219**／**构图 15**／**震动与打击感 133**（另有 声音对白配乐 167、光 79） | 见 `CORPUS_V4.md` §三 的 `work/_dim_sources3.py`——维度←边型的映射取 `tools/knowledge/coverage_matrix.py`（唯一映射），段的 `seg:<digest>` 里的 digest ＝ `sha256(source_ref.sha256)[:12]`，对 240 条语料 **0 条解析不到** |
+
+**顺带纠正一条此前的误判（本批实测推翻）**：`CORPUS_V4.md` 曾把"震动与打击感"记成
+**"没有任何已验证来源／缺口"**。那句在**关键词层**成立（hit-stop／impact frame／
+game feel 在 321 条来源的题名里 0 命中），但被**推广**成了"这一维没有来源"——
+v4 实测**这一维有 133 个来源、412 条边**（分布在 anime 98／cinematography 26 等）。
+⇒ 该维不是洞；真正最薄的是**构图**（15 来源，边 26 条）。这条已回写 `CORPUS_V4.md`。
