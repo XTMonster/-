@@ -13,7 +13,7 @@
 | D3 embedding 路线 | **①本地 GPU（torch＋CUDA，已实测跑通）为首选**；②智谱 `embedding-3` 为备选（需用户开通资源包）；~~ONNX~~ 降为第三 | 否 |
 | D4 E1 评委 | **(a) 保持 `("deepseek-chat","glm-5.3")` 不动** | 否（改动才会动判据） |
 | D5 重定标时机 | **(a)**：v3pop 读数永久标 `population=v3pop`；切换后成对重定标为 `baseline_v4` | 否 |
-| D6 抽取预算上限 | **(a)**：输入 **2,000 万 token** ＋ 输出 **200 万 token** 硬顶，触顶非零退出（与单价解耦） | 否（新增） |
+| D6 抽取预算上限 | **(a) 数值按 P4 的实测量更新**：输入**4,000 万** token ＋ 输出**1,200 万** token 硬顶，触顶非零退出（与单价解耦）。**依据**：P4 干跑 `python tools/kb_fetch/extract_segmented.py --corpus work/corpus_v4 --dry-run` 实测 **240 份来源 → 44,497 段 → 33,060,216 字符 ≈ 2,200 万输入 token**，原定的 2,000 万**装不下**（差约 10%）；输出按 ~150 token/段估 ≈ **670 万**，原定 200 万也不够。新值各留约 1.8 倍余量。**这是我自己定的新判据（非红线），改它只需记明依据** | 否（新增） |
 | D7 旧产物归档 | **(a)**：单提交 `git mv` 进 `knowledge/_archive_v3/`，可 grep、可一键 revert | 否 |
 | D8 默认路由 | **(a) 规则制**：`ΔE1(lightrag − hybrid) ≥ 噪声带 R` **且** E3=0 ⇒ lightrag 默认；否则 hybrid 默认、lightrag 可用 | 否 |
 | D9 闭集扩展权限 | **(a)**：rejects 率 > **0.30** 即停并上报；扩集**单独提交**且必须让 `schema_fingerprint` 换代 | 否（红线机制本身保留） |
