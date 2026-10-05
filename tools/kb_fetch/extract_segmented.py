@@ -191,7 +191,36 @@ SEGMENT_SYSTEM = (
 )
 
 
-def edge_type_menu() -> str:
+def value_lines(vocab: Optional[Dict[str, Sequence[str]]] = None) -> str:
+    """**每个 kind 允许写什么**。
+
+    给了词表（v4 语料上现建的）就按它列；没给就退回 `hg.VALUE_DOMAINS` 的冻结枚举。
+    有词表的 kind 与没有的 kind 都要能分辨——没有的**明写**"自由文本，取本段逐字
+    出现的那个"，而不是留空让模型去猜。
+
+    为什么要写这一节（实测 2026-10-05）：只给 kind 闭集时模型自由造值
+    （`pacing:rapid`、`lens:长镜头`、`genre:music video`），接上取值词表关之后
+    **4/4 全被拒**。
+    """
+    table: Dict[str, Sequence[str]] = {}
+    for kind, values in (hg.VALUE_DOMAINS or {}).items():
+        if values:
+            table[kind] = tuple(values)
+    for kind, values in (vocab or {}).items():
+        values = tuple(str(value) for value in (values or ()) if str(value))
+        if values:
+            table[kind] = values
+    lines = []
+    for kind in sorted(hg.ALLOWED_KINDS):
+        values = table.get(kind)
+        if values:
+            lines.append("%s：%s" % (kind, "/".join(values)))
+        else:
+            lines.append("%s：（自由文本，取本段逐字出现的那个）" % kind)
+    return "\n".join(lines)
+
+
+def edge_type_menu(vocab: Optional[Dict[str, Sequence[str]]] = None) -> str:
     """闭集菜单（提示词里用）——**现读** schema，不抄第二份。
 
     **必填槽位必须逐个写出来**。实测（2026-10-05）：第一版只列闭集不列必填，
@@ -204,16 +233,16 @@ def edge_type_menu() -> str:
         required = ", ".join("%s/%s" % (role, kind)
                              for role, kind in hg.REQUIRED_MEMBERS.get(edge_type, ()))
         lines.append("%s ← 必填：%s" % (edge_type, required or "（无）"))
-    return ("边型与**必填槽位**（缺一即整条边作废）：\n%s\n"
-            "角色闭集：%s\nkind 闭集：%s\n"
-            "（同一 kind 的取值词表由检索侧冻结；写取值时用词表里的中文/枚举形，"
-            "拿不准就只写你**逐字看到**的那个。）"
-            % ("\n".join(lines), "/".join(sorted(hg.ROLES)),
-               "/".join(hg.ALLOWED_KINDS)))
+    return ("边型与**必填槽位**（缺一即整条边作废）：\n%s\n\n"
+            "角色闭集：%s\n\n"
+            "kind 与**允许取值**（写取值时只用这里列出的；标「自由文本」的取本段"
+            "逐字出现的那个）：\n%s"
+            % ("\n".join(lines), "/".join(sorted(hg.ROLES)), value_lines(vocab)))
 
 
-def build_prompt(segment: Segment) -> str:
-    return "%s\n\n知识片段：\n%s" % (edge_type_menu(), segment.text)
+def build_prompt(segment: Segment,
+                 vocab: Optional[Dict[str, Sequence[str]]] = None) -> str:
+    return "%s\n\n知识片段：\n%s" % (edge_type_menu(vocab), segment.text)
 
 
 def parse_reply(reply: str) -> Tuple[List[Dict], Optional[str]]:
@@ -236,7 +265,9 @@ def parse_reply(reply: str) -> Tuple[List[Dict], Optional[str]]:
 def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
             max_chars: int = DEFAULT_MAX_CHARS,
             limit_segments: int = 0,
-            min_chars: int = DEFAULT_MIN_CHARS) -> Tuple[List[Dict], List[Dict], Dict]:
+            min_chars: int = DEFAULT_MIN_CHARS,
+            vocab: Optional[Dict[str, Sequence[str]]] = None
+            ) -> Tuple[List[Dict], List[Dict], Dict]:
     """两趟驱动：分段 → 逐段归属 → 闭集校验 → 分账。
 
     `llm` 是注入的（生产用 :class:`DeepSeekClient`，测试用替身），
@@ -261,7 +292,7 @@ def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
                 skipped_short += 1
                 continue
             try:
-                reply = llm(build_prompt(segment))
+                reply = llm(build_prompt(segment, vocab))
             except Exception as exc:  # noqa: BLE001 - 单段失败不吞掉整批
                 drafts_seen += 1
                 rejects.append({"reason": "llm_error:%s: %s" % (type(exc).__name__, exc),
@@ -384,6 +415,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--limit-segments", type=int, default=0, help="0 = 全部")
     parser.add_argument("--dry-run", action="store_true",
                         help="只分段、不调 LLM（用来量一次要花多少段）")
+    parser.add_argument("--vocab-from-corpus", action="store_true",
+                        help="先在这份语料上现建 v4 词表，把**每个 kind 的允许取值**"
+                             "写进提示词（实测：不写它模型会自由造值，接上取值词表关后"
+                             "4/4 被拒）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     records = load_records(pathlib.Path(args.corpus))
@@ -403,9 +438,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 0
 
     client = DeepSeekClient(model=args.model)
+    vocab = None
+    if args.vocab_from_corpus:
+        #: **延迟导入**：`build_shadow` 依赖本模块，模块级互相 import 会成环。
+        #: 两种入口都要认：当包导入（`relative`）与当脚本直跑（绝对路径）。
+        try:  # noqa: PLC0415
+            from . import build_shadow as bs  # type: ignore
+        except ImportError:
+            from tools.kb_fetch import build_shadow as bs  # type: ignore
+        _nodes, vocab = bs.build_vocab(
+            bs.segment_cards(pathlib.Path(args.corpus), max_chars=args.max_chars))
     drafts, rejects, stats = extract(records, llm=client, max_chars=args.max_chars,
                                      limit_segments=args.limit_segments,
-                                     min_chars=args.min_chars)
+                                     min_chars=args.min_chars, vocab=vocab)
     common.write_jsonl(out_dir / EXTRACT_NAME, drafts)
     common.write_jsonl(out_dir / REJECTS_NAME, rejects)
     print(json.dumps({"overall": "pass", "prompt_version": PROMPT_VERSION,

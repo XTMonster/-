@@ -128,6 +128,42 @@ def test_the_prompt_lists_the_required_slots_of_every_edge_type():
             assert ("%s/%s" % (role, kind)) in menu, (edge_type, role, kind)
 
 
+def test_the_prompt_lists_the_allowed_values_per_kind_when_a_vocabulary_is_given():
+    """给了词表就**按 kind 列出允许取值**。
+
+    实测依据（2026-10-05）：提示词只给 kind 闭集时，模型自由造值
+    （`pacing:rapid`、`lens:长镜头`、`genre:music video`），接上取值词表关之后
+    **4/4 全被拒**。所以要把"每个 kind 允许写什么"写进提示词。
+    """
+    vocab = {"shot_size": ["MS", "MCU"], "pacing": ["short", "long"]}
+    menu = ex.edge_type_menu(vocab)
+    assert "shot_size：MS/MCU" in menu
+    assert "pacing：short/long" in menu
+    #: 有词表的 kind 与没有词表的 kind 都要能分辨——没有的写"（自由文本）"。
+    assert "lens：（自由文本，取本段逐字出现的那个）" in menu
+
+
+def test_without_a_vocabulary_the_menu_falls_back_to_the_frozen_enums():
+    """没给词表时退回 `hg.VALUE_DOMAINS` 的冻结枚举（不许写成"随便写"）。"""
+    menu = ex.edge_type_menu()
+    assert "headroom_policy：board/cinematic" in menu
+    assert "avg_shot_len：" in menu
+
+
+def test_the_driver_passes_the_vocabulary_into_the_prompt():
+    seen = {}
+
+    def fake_llm(prompt: str) -> str:
+        seen["prompt"] = prompt
+        return json.dumps({"drafts": []})
+
+    ex.extract([{"source_ref": {"url": "u", "sha256": "e" * 64},
+                 "text": "景别用中景，机位偏离轴线 30 度到 45 度才是干净的单人。" * 3}],
+               llm=fake_llm, max_chars=400, min_chars=0,
+               vocab={"shot_size": ["MS", "MCU"]})
+    assert "shot_size：MS/MCU" in seen["prompt"]
+
+
 # --- 4. 驱动器与账目 ----------------------------------------------------------
 
 def test_the_driver_closes_the_books_on_kept_and_rejected():
