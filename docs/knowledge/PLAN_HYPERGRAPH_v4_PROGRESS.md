@@ -69,7 +69,7 @@
 | **P9** | ③PROGRESS 记检查器调用点 ＋ 查询集来源 ＋ 结果表 | 绿 | 调用点：`tools/knowledge/e3_report.py:112`（层一级）、`:97`（字段越权）、`:100`（线索越权）；查询集：`work/eval_sets/heldout_v4_long21.jsonl`（**64 条**，`sha256=e02161be89eef4ab…`，来自真跑 `docs/evidence/20261006-long21/project/project.bdproj` 的逐镜散文；64 × top_k 3 ＝ **192 行/臂**——台账里那个"192 行"就是行数，不是查询数）；结果表见本表 ① ② 两行 | 2026-10-05 | `b11fc21` |
 | **P9** | ④**两臂 × 2 次重复的真读数**（lightrag 仍缺） | 绿（两臂部分） | `work/e1_v4pop_ab.partial2.json`（逐行录档 `work/ab_v4_clued/reviews.{hybrid,lexical}.rep{1,2}.jsonl`，同一 v4 案例层 `4b1b44bb…` / `d916cd78…`、同一 64 条冻结查询、两位评委、`top-k 3`）：<br>· hybrid **0.1875 / 0.1927**（36、37 行；mean 0.190104，极差 **0.005208**）<br>· lexical **0.2083 / 0.1927**（40、37 行；mean 0.200520，极差 **0.015625**）<br>· Δ(lexical−hybrid) = **0.010416**、噪声带 R = **0.015625** ⇒ **`inconclusive`**。<br>**这条与 v3pop 的已入库结论一致**（"BM25 与词法适配器之间的差别没有量到"，`docs/evidence/20261006-e1-baselines/README.md`：Δ 0.0078 < 极差 0.0365）——即**v4 重建没有把检索质量做坏**。<br>两条如实记账的折扣：① 评委覆盖 174–180/192（每轮 12–18 行只有一位评委回了分）⇒ `all_rounds_complete=false`，严格说不是有效轮；② `all_rounds_used_the_route=true`（这四轮都真是各臂自己答的，没有退回 BM25） | 2026-10-05 | 本批 |
 | **P10** | 指针切换与归档 | 待 | — | — | — |
-| **P11** | 长跑与收尾 | 待 | — | — | — |
+| **P11** | 长跑与收尾 | **待（依赖 P10）／⑤ 门①–⑩ 现状已实测记账** | ⑤ 现状（命令逐字：`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --json`，录档 `work/_gates_full.json`）：<br>**pass 8 条** —— ①总量 2847≥1200、②格式 2847/2847、③种子覆盖（`vocab_fingerprint=true`，22 个 kind；`unreachable_kinds=["axis_topic"]`）、⑤禁忌 107≥60、⑤b 成员 40、⑧换族（抽取 deepseek／标注 zhipu）、⑨可达性 `short=0`、⑩可解析（`must/top1/never` 未解析各 0）。<br>**fail 3 条** —— ④边类 `IMPACT_PACK 24`／`SOUND_PACK 11`／`MUSIC_PACK 21`（线 30，**标注供给**缺口，不是索引缺口）；⑥来源覆盖 `missing_cards`（卡片可表达性，**切换后要按 v4 索引重测**——v4 有 5,000 条边／16 个边型）；⑦人审 `human_reviewed=0`（需 212 条、线 120；库里那 210 条是 `llm-panel`，而门只认 `human`——**这条是红线，不许伪造**，见 D12/待你裁决）。<br>①–④ 其余项（长跑证据链、RK-13、探针清单、终态文档）都要等 P10 之后 | 2026-10-05 | 本批 |
 
 ## 2026-10-05 晚：P6③／P7／P8 的补账（P14-150…154）
 
@@ -135,3 +135,12 @@
    余下 9 条全在 `tests/`（`tmp_path / "knowledge_v4"` 这类**测试夹具注入**——§3.3 的原文
    本来就允许"或测试夹具注入"）。⇒ 那条门按**字面 grep ＝ 0** 与约束原文自相矛盾，
    落地口径建议改成 `-- tools block_director`（生产代码）＝ 0，并把这条偏差记在这里。
+6. **门①–⑩ 现状：8 绿 3 红**（命令与逐条数字见 P11 行）。三条红里：
+   * **门⑦ 人审 0/212** —— 需要**真人**（红线不许伪造），已单列 **D12** 等你裁决
+     （A 你填 120 条 verdict／B 显式把口径扩到 `llm-panel`／C 维持红）。
+   * **门④ 边类** `IMPACT_PACK 24`／`SOUND_PACK 11`／`MUSIC_PACK 21`（线 30）——
+     **标注供给**缺口（oracle 侧），可以用同一条 glm-5.3 标注通道补到 30+，
+     不涉判据；但它属于 P11 的收尾工作，**排在 P9/P10 之后**。
+   * **门⑥ 来源覆盖**（卡片可表达性）——**要在 P10 切换后用 v4 索引重测**
+     （v4 有 5,000 条边／16 个边型，表达力比现役 638 条强得多），现在这条读数
+     量的是旧索引。
