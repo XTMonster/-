@@ -83,6 +83,14 @@ python -m tools.knowledge.e1_panel --queries work/eval_sets/heldout_v4_long21.js
 | cross-encoder（bge-reranker-v2-m3，top-20） | 0.1302（25/192） ✗ | 0.135 | 0.240 |
 | **第三方 LLM 重排（qwen3.8-max-0902，top-20→3）** | **0.2812（54/192）** ✓ | **0.240** | **0.542** |
 
+> **⚠️ 型号更正与作废说明（2026-10-06）**：上表第 4 行用的型号 `qwen3.8-max-0902`
+> 是**带日期的 snapshot**，用户 2026-10-06 更正为 **`qwen3.8-max`**（实测 0902 现在
+> **403**、`qwen3.8-max` 200）。那一跑里有 **78/192 行**的重排调用失败并**具名降级**
+> 回未重排的前 3 条（当时记的 27 行是只数了 `LLMError` 的一种写法）⇒ **0.2812 是"部分降级"
+> 的读数**；同目录 `reviews.hybrid.rerank_select/score`（0:30 那两份）失败 **144/192 行**，
+> **整份作废**。干净读数在 `hybrid.rerank_{order38,select38,score38}.rep1.jsonl`
+> （同一型号 `qwen3.8-max`、同一批查询与评委）里重跑。
+
 * **相对基准 +46%**（0.1927 → 0.2812）；**两位评委同向上升**（deepseek +0.068、glm +0.224）
   ⇒ 不是评委偏好：重排器（qwen）**与两位评委都不是同一族**，它不可能"抬自己人"；
 * 27 行的重排调用失败（`cases_rerank: failed:LLMError`，第三方通道的限流/超时）——
