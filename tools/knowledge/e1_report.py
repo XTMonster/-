@@ -23,14 +23,19 @@
 lightrag 路由的**代际**从哪来
 ============================
 `--lightrag-fingerprint` 没给时，从 `<index-dir>/lightrag/INDEX_MANIFEST.json` 现读
-（计划 v4 的布局：影子目录 `knowledge_v4/` 下挂 `lightrag/`）。读不到就**具名报错**，
+（计划 v4 的布局：影子**层目录**下挂 `lightrag/`）。读不到就**具名报错**，
 不许"没有指纹也照查"——那是 ADR-0014 的陈旧化陷阱。
 
-用法（与计划 P9 的验收命令逐字一致）::
+用法（与计划 P9 的验收命令逐字一致；`<影子层>` 就是当时的影子案例目录）::
 
-    python tools/knowledge/e1_report.py --index-dir knowledge_v4 \\
-        --heldout knowledge_v4/eval/heldout_v4.jsonl \\
+    python tools/knowledge/e1_report.py --index-dir <影子层> \\
+        --heldout <影子层>/eval/heldout_v4.jsonl \\
         --routes lexical,hybrid,lightrag --runs 2 --out work/e1_v4pop_ab.json
+
+**为什么这里要写占位符而不是字面路径**（§3.3 的 P10 门可达性）：`tools/` 与
+`block_director/` 下的代码不得硬编码影子目录的字面量——指针切换之后那个目录就
+不存在了，而 `git grep` 的门要在切换前就是 0。路径一律由 CLI 给（`--index-dir`
+因此没有默认值：**必须**点名量的是哪一代）。
 """
 
 from __future__ import annotations
@@ -183,8 +188,8 @@ def build_report(reviews_dir: pathlib.Path, routes: Sequence[str], runs: int,
 def main(argv: Optional[Sequence[str]] = None) -> int:
     force_utf8_streams()
     parser = argparse.ArgumentParser(prog="knowledge-e1-report")
-    parser.add_argument("--index-dir", default="knowledge_v4",
-                        help="案例层目录（计划 v4 的影子目录）")
+    #: 没有默认值：**必须**点名量的是哪一代案例层（见模块 docstring 的 P10 门理由）。
+    parser.add_argument("--index-dir", required=True, help="案例层目录（当时的影子层）")
     parser.add_argument("--heldout", required=True,
                         help="冻结查询集（一行一条；`freeze_eval.py` 的产物）")
     parser.add_argument("--routes", default="lexical,hybrid",

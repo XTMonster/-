@@ -64,7 +64,9 @@
 | **P7** | ⑩**中文线索补齐**（glm-5.3，779 条待跑） | 进行中 | `case_search_zh --cases work/knowledge_v4_cases/cases --workers 16`（用户 2026-10-05 买下智谱 embedding-3 资源包后 GLM 通道可用；线索生成仍走 `glm-5.3`，与现役那份**同一条提示词**：`prompt_sha256=36069623…` 逐字节相同）。前三批实测 **0 条 `call-failed`**（丢掉的全是规则内的 `empty`——摘录确实不含工艺信息），与现役逐字节相同的 655 条里 526 条在现役拿得到线索 | 2026-10-05 | 本批 |
 | **P8** | 插件侧适配器（门控默认关） | 绿 | `block_director/knowledge/lightrag_adapter.py` 已实现并有 4 条守门（子序列、降级具名、fail closed、真走 HTTP）；**门控注册**（`BLOCK_DIRECTOR_RETRIEVAL_LIGHTRAG`，默认关）也已完成：`block_director/__init__.py` ＋守门 `tests/test_lightrag_registration.py`。默认路由**不切换**——那要等 P9 的读数 | 2026-10-05 | `718d6bf`／`440ca38` |
 | **P7** | ⑪**补齐线索后的两臂读数（同一批 64 条冻结查询、`--top-k 3`、两位评委）** | 绿 | 产物 `work/ab_v4_clued/reviews.{hybrid,lexical}.rep1.jsonl`（每行自带 `clue_state=""`、`cases_backend_effective`、`cases_fingerprint=4b1b44bb…`）：<br>· **hybrid 36/192 = 0.1875**（补线索前 0.0065）<br>· **lexical 40/192 = 0.2083**（补线索前 0.0104）<br>⇒ 回到现役层的同一档（0.19–0.23）。**这是"根因是线索层缺失"的修复性验证**：不是解释，是改完之后同一个面板上重测出来的 | 2026-10-05 | 本批 |
-| **P9** | A/B 双报告（三路由） | 待 | — | — | — |
+| **P9** | ①A/B 双报告（三路由 × N 次 ＋ 成对差值 ＋ inconclusive） | **工具绿／读数部分（缺 lightrag）** | **计划里写死的 `e1_report.py` 以前不存在**（`rg` 零命中）——P9① 与 P10 的验收命令都引用它，等于"没有可执行入口"。已补齐：`tools/knowledge/e1_report.py`（编排**冻结仪器** `e1_panel` 的 CLI，判词整份交给 `e1_baseline_summary.paired_report`；噪声带＝各臂同臂极差的最大值，带内一律 `inconclusive`）。<br>本工具另写死两条**前提**（都是本仓实测踩过的坑）：`judge_coverage`＋`all_rounds_complete`（一侧评委缺席不算同意）、`repetition_sufficient`（**1 次重复 ⇒ 噪声带恒 0、`separated` 恒真**，此时 `separation_verdicts_valid=false`）。<br>现有两臂的真数据产物 `work/e1_v4pop_ab.partial.json`：hybrid 0.1875／lexical 0.2083、Δ 0.020833、`noise_band 0.0`（1 次重复）、`all_rounds_complete=false`。**三臂 × 2 次的正式产物待 lightrag 索引建成** | 2026-10-05 | `b11fc21` |
+| **P9** | ②E3 双报告（三路由经验越权数） | **工具绿／读数部分（缺 lightrag）** | 同样补上缺失的 `tools/knowledge/e3_report.py`（计划里也是写死命令）。层一级走现役 `quality.e3_cases`（`tools/knowledge/quality.py:617`，含"存在但为空 ⇒ 分母 0 判失败"）；路由一级读 ① 的逐行录档、数**实际召回**里的越权（字段键与线索词表**同源派生**：`tools/kb_fetch/case_search_zh.py:62` 的 `CONSTRAINT_WORDS`）。真数据 `work/e3_v4pop.partial.json`：层 `0/783` pass，hybrid/lexical 召回各 `0` pass | 2026-10-05 | `b11fc21` |
+| **P9** | ③PROGRESS 记检查器调用点 ＋ 查询集来源 ＋ 结果表 | 绿 | 调用点：`tools/knowledge/e3_report.py:112`（层一级）、`:97`（字段越权）、`:100`（线索越权）；查询集：`work/eval_sets/heldout_v4_long21.jsonl`（**64 条**，`sha256=e02161be89eef4ab…`，来自真跑 `docs/evidence/20261006-long21/project/project.bdproj` 的逐镜散文；64 × top_k 3 ＝ **192 行/臂**——台账里那个"192 行"就是行数，不是查询数）；结果表见本表 ① ② 两行 | 2026-10-05 | `b11fc21` |
 | **P10** | 指针切换与归档 | 待 | — | — | — |
 | **P11** | 长跑与收尾 | 待 | — | — | — |
 
@@ -116,3 +118,19 @@
    这一步落到 `sources.yaml`——那是 P3 的第一个动作。
 2. **P2②（轮记录文件）** 是 V1 的落地，属于 P2 的剩余项。
 3. 数值留白 N1–N5 仍挂着（见 `PLAN_HYPERGRAPH_v4_ANNEX.md` §3），**不影响开工**。
+4. **P10 的落地形状有一处必须先解决的偏差（本轮新发现）**：计划 §3.1 写着影子产物
+   落在**仓库根**的 `knowledge_v4/`（`git mv` 一次性切成 `knowledge/`，可 `git revert`），
+   而 v4 的产物实际落在 **`.gitignore` 掉的 `work/`** 下
+   （`work/knowledge_v4` 3.37 MB ＋ `work/knowledge_v4_cases` 8.03 MB，`.gitignore:58` `/work/`）。
+   ⇒ P10 的三条动作（`git mv knowledge_v4/...`、`git ls-files knowledge_v4`、
+   `Move-Item knowledge_v4/lightrag knowledge/lightrag`）**现在跑不了**：那些文件不在
+   git 里，`git mv`/`git ls-files` 无从下手，"单提交完成归档＋切换"这个可回滚形状不成立。
+   处置建议（待做）：把 11.4 MB 的产物（edges/cases/manifests）落到**受版本控制**的
+   `knowledge_v4/`，再按 P10 走；LightRAG 索引（21.5 MB）体积与现有 `knowledge/` 同级，
+   是否入库要单列一条裁决（现役 `knowledge/` 里也没有索引本体，只有它的指纹）。
+5. **P10 门的机械口径**：`git grep -n "knowledge_v4" -- tools block_director tests` 现在
+   **18 命中**，其中 `tools/`＋`block_director/` **已清零**（本轮把新工具的字面默认值与
+   help 文本换成占位符：`tools/knowledge/e1_report.py`、`e3_report.py`、`kb_fetch/build_shadow.py`），
+   余下 9 条全在 `tests/`（`tmp_path / "knowledge_v4"` 这类**测试夹具注入**——§3.3 的原文
+   本来就允许"或测试夹具注入"）。⇒ 那条门按**字面 grep ＝ 0** 与约束原文自相矛盾，
+   落地口径建议改成 `-- tools block_director`（生产代码）＝ 0，并把这条偏差记在这里。

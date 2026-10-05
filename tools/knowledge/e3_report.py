@@ -19,13 +19,15 @@ E3 是什么
     - `constraint_clues`：这条案例的**中文线索**里出现约束词（产出侧
       `case_search_zh.CONSTRAINT_WORDS` 同源派生，**不另抄一份表**）。
 
-用法（与计划 P9 的验收命令逐字一致；**先跑 ①**）::
+用法（与计划 P9 的验收命令逐字一致；`<影子层>` ＝ 当时的影子案例目录，**先跑 ①**）::
 
-    python tools/knowledge/e1_report.py --index-dir knowledge_v4 \\
-        --heldout knowledge_v4/eval/heldout_v4.jsonl \\
+    python tools/knowledge/e1_report.py --index-dir <影子层> \\
+        --heldout <影子层>/eval/heldout_v4.jsonl \\
         --routes lexical,hybrid,lightrag --runs 2 --out work/e1_v4pop_ab.json
-    python tools/knowledge/e3_report.py --index-dir knowledge_v4 \\
+    python tools/knowledge/e3_report.py --index-dir <影子层> \\
         --routes lexical,hybrid,lightrag --out work/e3_v4pop.json
+
+（与 ① 同一条理由：`tools/` 下不许硬编码影子目录的字面量，路径一律由 CLI 给。）
 """
 
 from __future__ import annotations
@@ -134,7 +136,7 @@ def build_report(index_dir: pathlib.Path, reviews_dir: pathlib.Path,
 def main(argv: Optional[Sequence[str]] = None) -> int:
     force_utf8_streams()
     parser = argparse.ArgumentParser(prog="knowledge-e3-report")
-    parser.add_argument("--index-dir", default="knowledge_v4")
+    parser.add_argument("--index-dir", required=True, help="案例层目录（当时的影子层）")
     parser.add_argument("--routes", default="lexical,hybrid")
     parser.add_argument("--runs", type=int, default=2)
     parser.add_argument("--reviews-dir", default="",

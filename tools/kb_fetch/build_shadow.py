@@ -227,7 +227,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="kb_fetch.build_shadow")
     parser.add_argument("--drafts", required=True, help="P4 的 extract_segmented.jsonl")
     parser.add_argument("--corpus", default=str(common.WORK / "corpus_v4"))
-    parser.add_argument("--out", required=True, help="影子构建目录，例如 work/knowledge_v4")
+    parser.add_argument("--out", required=True,
+                        help="影子构建目录（由调用方点名；见 §3.3 的 P10 门）")
     parser.add_argument("--max-chars", type=int, default=ex.DEFAULT_MAX_CHARS)
     args = parser.parse_args(list(argv) if argv is not None else None)
 
