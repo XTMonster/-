@@ -194,3 +194,49 @@ def test_every_scored_row_says_which_backend_actually_did_the_retrieval():
     assert rows[0]["retrieval_path"] == "lightrag"          # 请求的臂
     assert rows[0]["cases_backend_effective"] == "hybrid"   # 实际干的活
     assert rows[0]["cases_degrade_reason"].startswith("lightrag_query_failed")
+
+
+class _FilterClient:
+    """只回 `{"keep": [...]}` 的过滤器桩；记下它收到的 system 文本。"""
+
+    def __init__(self, keep):
+        self.keep = list(keep)
+        self.systems = []
+        self.calls = 0
+
+    def chat_json(self, system, user, temperature, seed, num_ctx):
+        self.calls += 1
+        self.systems.append(system)
+        return {"keep": self.keep}
+
+
+def test_the_case_filter_uses_the_products_own_prompt_and_only_subtracts():
+    """`--cases-filter llm` 必须用**产品那条提示词**（单一真源 import），且只做减法。
+
+    为什么单独钉一条：E1 是精确率指标，而产品在注入前会过滤；如果这里另写一份提示词，
+    "E1 带过滤"量的就不是产品会做的事。`CaseIndex._filtered` 还会把不属于入参的
+    id 剔掉——所以过滤器**造不出**案例（这条在 `tests/test_case_filter.py` 里另有反面用例）。
+    """
+    client = _FilterClient(keep=["c2", "c9"])          # c9 不在候选里：不许凭空加案例
+    case_filter = e1_panel.make_llm_case_filter(model="deepseek-chat", client=client)
+    cases = _cases("c1", "c2", "c3")
+    kept = case_filter("q1", cases)
+    assert [case.case_id for case in kept] == ["c2"]
+    assert client.systems == [e1_panel.CASE_FILTER_SYSTEM]
+    assert "不确定就保留" in client.systems[0]
+
+
+def test_every_row_says_whether_the_case_filter_was_on():
+    """自述字段：这一跑开没开过滤器、以及过滤器自己报的降级原因。"""
+    plain = _Index({"q1": _cases("c1")})
+    rows = e1_panel.score_queries(plain, ["q1"], [("stub", _Client({"c1": 5}))],
+                                  top_k=1, workers=1)
+    assert rows[0]["cases_filter"] == "off" and rows[0]["cases_filter_reason"] == ""
+
+    filtered = _Index({"q1": _cases("c1")})
+    filtered.case_filter = lambda query, cases: list(cases)
+    filtered.filter_reason = "cases_filter_failed:RuntimeError"
+    rows = e1_panel.score_queries(filtered, ["q1"], [("stub", _Client({"c1": 5}))],
+                                  top_k=1, workers=1)
+    assert rows[0]["cases_filter"] == "on"
+    assert rows[0]["cases_filter_reason"].startswith("cases_filter_failed")

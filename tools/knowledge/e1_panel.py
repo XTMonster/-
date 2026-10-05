@@ -44,6 +44,11 @@ if str(ROOT) not in sys.path:
 from block_director.knowledge.cases import load_index  # noqa: E402
 from tools.kb_fetch import llm  # noqa: E402
 
+#: L3 相关性过滤器的**判据提示词**（单一真源：产品 sidecar 的那一份）。
+#: 这里只 import 文本，**不重写一份**——过滤器的判据与产品必须逐字相同，
+#: 否则"E1 带过滤"量的就不是产品会做的事。
+from tools.sidecar_server import CASE_FILTER_SYSTEM  # noqa: E402
+
 #: 用户裁决（2026-10-04）：**GLM 只用 `glm-5.3`**——智谱的资源包按模型分开计费，
 #: 这个账号下只有 `glm-5.3` 还有额度（`glm-4.7` 会 429「余额不足或无可用资源包」，
 #: 实测见 `docs/knowledge/ACCEPTANCE_STATUS.md` §七十八）。
@@ -88,6 +93,34 @@ def queries_from_lines(path: pathlib.Path) -> List[str]:
         if text and text not in out:
             out.append(text)
     return out
+
+
+def make_llm_case_filter(*, model: str, provider: str = "deepseek",
+                         client=None) -> Callable[[str, Sequence[Any]], List[Any]]:
+    """装配 L3 的**相关性过滤器**（`--cases-filter llm`），判据用产品那条提示词。
+
+    为什么要有这条缝（2026-10-05）：E1 是**精确率**指标，而产品在把参考案例塞给模型前
+    会走一遍"只留能沾上这一镜拍法的"过滤（`tools/sidecar_server.py::make_case_filter`，
+    `--cases-filter llm`）。可**E1 面板一直没装过滤器**——也就是说：
+    红线 0.70 到底够不够得着，我们量的从来是"未过滤"的那一路。
+    过滤器**只许做减法**（`CaseIndex._filtered` 会把不属于入参的结果剔掉），
+    所以它不可能"造"案例；失败的具名降级也在那里（`filter_reason`）。
+
+    诚实提醒（写进报告，不写进代码）：过滤器的模型若与**评委**同族，
+    评委就会倾向于同意过滤器的取舍——所以本工具每行都留着**逐评委分数**
+    （`scores`），报告里可以只用"与过滤器不同族的那位评委"复核。
+    """
+    judge_client = client or llm.make_client(provider, model)
+
+    def _filter(query: str, cases):
+        listing = "\n".join("%s｜%s" % (case.case_id, str(case.excerpt)[:160])
+                            for case in cases)
+        reply = judge_client.chat_json(
+            CASE_FILTER_SYSTEM, "查询：%s\n\n候选：\n%s" % (query, listing), 0.0, 0, 512)
+        keep = {str(item) for item in (reply.get("keep") or [])}
+        return [case for case in cases if str(case.case_id) in keep]
+
+    return _filter
 
 
 def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
@@ -160,6 +193,10 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             #: 同一个结论（这正是 D8 要判的那件事）。
             "cases_backend_effective": str(getattr(index, "effective", "") or ""),
             "cases_degrade_reason": str(getattr(index, "reason", "") or ""),
+            #: 这一跑的 L3 相关性过滤器**开着没有**、以及它自己报的降级原因
+            #: （`CaseIndex._filtered` 在过滤器抛错时退回未过滤并具名记账）。
+            "cases_filter": "on" if getattr(index, "case_filter", None) else "off",
+            "cases_filter_reason": str(getattr(index, "filter_reason", "") or ""),
             "panel": [name for name, _client in clients],
             "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
         })
@@ -216,6 +253,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="lightrag 臂的 sidecar 地址（默认走适配器的环境变量/默认值）")
     parser.add_argument("--lightrag-fingerprint", default="",
                         help="lightrag 臂要求的索引指纹（给了就 fail closed）")
+    parser.add_argument("--cases-filter", default="off", choices=("off", "llm"),
+                        help="L3 相关性过滤器：`llm` ＝ 产品那条（`--cases-filter llm`）。"
+                             "默认 off ＝ 与历次读数同一口径")
+    parser.add_argument("--filter-provider", default="deepseek",
+                        help="过滤器的 LLM 通道（判据提示词与产品同一份）")
+    parser.add_argument("--filter-model", default="deepseek-chat")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
@@ -232,11 +275,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                          ensure_ascii=False))
         return 2
 
+    #: L3 相关性过滤器（`off` ＝ 现行行为；`llm` ＝ 产品那条 `--cases-filter llm`）。
+    #: 判据提示词 import 自 sidecar（单一真源），这里只装配调用。
+    case_filter = (make_llm_case_filter(model=args.filter_model,
+                                       provider=args.filter_provider)
+                   if args.cases_filter == "llm" else None)
     if args.adapter == "lexical":
         from block_director.knowledge.lexical_adapter import make_lexical_adapter
 
         index = load_index(ROOT / args.cases_dir, backend="lightrag",
-                           adapter=make_lexical_adapter(ROOT / args.cases_dir))
+                           adapter=make_lexical_adapter(ROOT / args.cases_dir),
+                           case_filter=case_filter)
         index.path_label = "lexical"          # type: ignore[attr-defined]
     elif args.adapter == "lightrag":
         #: 第三条臂（D8 的判定对象）：走 sidecar 上的**真** LightRAG 索引。
@@ -246,10 +295,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         index = load_index(
             ROOT / args.cases_dir, backend="lightrag",
             adapter=make_lightrag_adapter(base_url=args.lightrag_url,
-                                          expected_fingerprint=args.lightrag_fingerprint))
+                                          expected_fingerprint=args.lightrag_fingerprint),
+            case_filter=case_filter)
         index.path_label = "lightrag"         # type: ignore[attr-defined]
     else:
-        index = load_index(ROOT / args.cases_dir, backend="hybrid")
+        index = load_index(ROOT / args.cases_dir, backend="hybrid",
+                           case_filter=case_filter)
         index.path_label = "hybrid"           # type: ignore[attr-defined]
     #: 把**案例集合摘要**挂到索引上，供每条打分自带（`e1_evidence_is_stale` 用它判代际）。
     #: `load_index` 自己不记它（那是案例层的事），而这里正是"这份索引被拿去打分"的现场，
