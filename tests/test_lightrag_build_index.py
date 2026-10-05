@@ -92,3 +92,23 @@ def test_the_case_source_can_be_a_directory_of_shards(tmp_path):
     assert [case["case_id"] for case in cases] == ["case_1", "case_2"]
     #: 摘要必须**跨分片**算——只看一片会把"换了另一个分片"当成没变。
     assert len(bi.cases_digest(shards)) == 64
+
+
+def test_the_embedding_cell_names_the_route_model_and_dimension(tmp_path):
+    """指纹的第三格必须**指名道姓**：换嵌入路由／模型／维度都要换指纹。
+
+    实测（2026-10-05）：用户购买了智谱 `embedding-3` 资源包后该模型可用
+    （`dim 2048`，0.4 s；`embedding-2` 仍是 1113——资源包只覆盖 embedding-3）。
+    于是"本地 bge（512 维）"与"云端 embedding-3（2048 维）"是**两代索引**，
+    指纹必须把它们分开，否则换了嵌入器还能命中旧索引。
+    """
+    local = bi.embedding_cell("local", "bge-small-zh-v1.5", 512)
+    cloud = bi.embedding_cell("cloud", "embedding-3", 2048)
+    assert local == "local:bge-small-zh-v1.5:512"
+    assert cloud == "cloud:embedding-3:2048"
+    assert local != cloud
+    sample = tmp_path / "cases.jsonl"
+    sample.write_text(json.dumps(_case("case_1")) + "\n", encoding="utf-8")
+    cells = bi.index_cells(sample, lightrag_version="1.5.7",
+                           embedding=cloud, build_args={})
+    assert cells["embedding"] == "cloud:embedding-3:2048"

@@ -10,7 +10,7 @@
 |---|---|---|
 | D1 新语料来源与书单 | cutoff = **1980**；清单由**实测探针**产出，见 `docs/knowledge/CORPUS_V4.md` | 否（新增判据，见 D9） |
 | D2 旧卡与自撰策展卡 | **(a) 全部归档**：旧五件产物 ＋ `block_director/knowledge/cards_*.py` 的自撰策展卡一律不进新总体 | 否 |
-| D3 embedding 路线 | **①本地 GPU（torch＋CUDA，已实测跑通）为首选**；②智谱 `embedding-3` 为备选（需用户开通资源包）；~~ONNX~~ 降为第三 | 否 |
+| D3 embedding 路线 | **用户 2026-10-05 购买智谱 `embedding-3` 资源包后该路线已可用**（实测 `dim 2048`、单条 0.4 s；`embedding-2` 仍 1113）。⇒ 现状是**两条都已跑通**，可按质量对照后选：**①云端 `embedding-3`（2048 维）／②本地 torch＋CUDA（bge-small-zh，512 维）**；~~ONNX~~ 第三 | 否（但**换路线＝换一代索引**，见下） |
 | D4 E1 评委 | **(a) 保持 `("deepseek-chat","glm-5.3")` 不动** | 否（改动才会动判据） |
 | D5 重定标时机 | **(a)**：v3pop 读数永久标 `population=v3pop`；切换后成对重定标为 `baseline_v4` | 否 |
 | D6 抽取预算上限 | **(a) 数值按 P4 的实测量更新**：输入**4,000 万** token ＋ 输出**1,200 万** token 硬顶，触顶非零退出（与单价解耦）。**依据**：P4 干跑 `python tools/kb_fetch/extract_segmented.py --corpus work/corpus_v4 --dry-run` 实测 **240 份来源 → 44,497 段 → 33,060,216 字符 ≈ 2,200 万输入 token**，原定的 2,000 万**装不下**（差约 10%）；输出按 ~150 token/段估 ≈ **670 万**，原定 200 万也不够。新值各留约 1.8 倍余量。**这是我自己定的新判据（非红线），改它只需记明依据** | 否（新增） |
@@ -50,6 +50,11 @@ ADR-0014 原写"本机能否跑轻量本地 embedding **未验证**"。2026-10-0
 | DeepSeek | `/v1/embeddings`、`/embeddings`、`/beta/embeddings` 皆 404；`GET /models` 405 | **没有 embedding 端点**，此路不通 |
 | **本地 torch ＋ CUDA** | sidecar 解释器：`torch 2.5.1+cu121`、`cuda True`、`RTX 4070 Ti SUPER 16 GB`、`transformers 5.15.0`；`BAAI/bge-small-zh-v1.5` 已在 CUDA 上完成编码（`dim 512`、`ok: true`） | **已跑通，首选** |
 | 本地 ONNX | `onnxruntime` **未安装**（PyPI 可达） | 降为第三，仅在前两条都不可用时考虑 |
+
+**两条路线是两代索引**：指纹第三格写成 `<路由>:<模型>:<维度>`
+（`local:bge-small-zh-v1.5:512` vs `cloud:embedding-3:2048`），换路线必然换代、
+旧索引不可能被误用。`tools/lightrag_service/build_index.py::embedding_cell()` 是它的
+唯一实现，守门 `tests/test_lightrag_build_index.py::test_the_embedding_cell_names_the_route_model_and_dimension`。
 
 附录：`work/_facts_embed.md`、`work/_probe_embed.py`。
 
