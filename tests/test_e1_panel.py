@@ -439,3 +439,19 @@ def test_an_empty_selection_or_score_set_fails_by_name():
             assert label in str(exc), str(exc)
         else:  # pragma: no cover
             raise AssertionError("空回包竟然被当成有效重排")
+
+
+def test_the_reranker_cannot_inject_a_case_that_was_never_retrieved():
+    """**只许重排，不许注入**：模型在回包里点名一个没被召回过的 id 时，那条**不许出现**。
+
+    这条与 `CaseIndex._filtered` 的"只做减法"是同一族不变量（那里管过滤器，这里管重排）：
+    检索面由 BM25／适配器决定，模型只能改变**顺序**。
+    """
+    cases = _cases("c1", "c2", "c3")
+    ghost = _cases("c9")[0]                      # 从没被召回过的案例
+    scored = e1_panel.make_llm_reranker(
+        model="m", prompt="score",
+        client=_ScoredClient({"c9": 99.0, "c2": 5.0, "c1": 1.0, "c3": 0.5}))
+    kept = e1_panel.rerank_cases(scored, "q", cases, 3)
+    assert ghost.case_id not in [case.case_id for case in kept]
+    assert [case.case_id for case in kept] == ["c2", "c1", "c3"]
