@@ -112,3 +112,21 @@ def test_the_embedding_cell_names_the_route_model_and_dimension(tmp_path):
     cells = bi.index_cells(sample, lightrag_version="1.5.7",
                            embedding=cloud, build_args={})
     assert cells["embedding"] == "cloud:embedding-3:2048"
+
+
+def test_the_llm_func_passes_the_system_prompt_through():
+    """**上游把格式规范放在 system prompt 里**，丢弃它就等于丢弃格式。
+
+    实测（2026-10-05）：索引建完 `graphml` 里 **0 节点 0 边**、每篇文档
+    `entity_names: []`。查缓存发现 DeepSeek 回的是自己编的 `A | rel | B`，
+    而 LightRAG 1.5.7 要的是
+    `entity<|#|><name><|#|><type><|#|><desc>`（分隔符 `DEFAULT_TUPLE_DELIMITER =
+    "<|#|>"`、收尾 `<|COMPLETE|>`）。根因：`llm_model_func` 只发了 user 消息，
+    **没把 `system_prompt` 带过去**——而格式规范正是写在 system 里的。
+    """
+    messages = bi.chat_messages("正文", system_prompt="格式规范：entity<|#|>…")
+    assert messages[0]["role"] == "system"
+    assert "entity" in messages[0]["content"]
+    assert messages[-1] == {"role": "user", "content": "正文"}
+    #: 没给 system 时不硬塞一个空 system。
+    assert [m["role"] for m in bi.chat_messages("正文")] == ["user"]

@@ -178,18 +178,35 @@ def _load_embedding(model_name: str = "BAAI/bge-small-zh-v1.5"):
     return embed, 512
 
 
+def chat_messages(prompt, system_prompt="") -> List[Dict]:
+    """把 `llm_model_func` 收到的两段拼成 OpenAI 的 messages。
+
+    **`system_prompt` 必须带过去**（实测 2026-10-05 抓到的根因）：LightRAG 的
+    **格式规范写在 system prompt 里**（`entity<|#|>name<|#|>type<|#|>desc`，
+    收尾 `<|COMPLETE|>`）。第一版实现只发了 user 消息，模型于是自己编了个
+    `A | rel | B` 的写法 —— 索引建完 `graphml` 里 **0 节点 0 边**、每篇文档
+    `entity_names: []`，`hybrid`/`local`/`global` 三种模式全废，只剩 `naive`。
+    """
+    messages: List[Dict] = []
+    if str(system_prompt or "").strip():
+        messages.append({"role": "system", "content": str(system_prompt)})
+    messages.append({"role": "user", "content": str(prompt)})
+    return messages
+
+
 def _deepseek_model_func():
-    """检索路径的 LLM（用户 U10：沿用别家方案处的内部 LLM 用 DeepSeek）。"""
+    """检索/构建路径的 LLM（用户 U10：沿用别家方案处的内部 LLM 用 DeepSeek）。"""
     import os
     import urllib.request
     key = os.environ.get("DEEPSEEK_API_KEY", "")
 
-    async def call(prompt, **kwargs):
+    async def call(prompt, system_prompt="", **kwargs):
         if not key:
             raise RuntimeError("缺少 DEEPSEEK_API_KEY（只从环境变量读）")
         body = json.dumps({
             "model": "deepseek-chat", "temperature": 0,
-            "messages": [{"role": "user", "content": str(prompt)}],
+            #: **`system_prompt` 一定要传**（格式规范在它里面，见 `chat_messages`）。
+            "messages": chat_messages(prompt, system_prompt),
         }).encode("utf-8")
         request = urllib.request.Request(  # noqa: S310 - 固定 https 端点
             "https://api.deepseek.com/chat/completions", data=body, method="POST",
