@@ -771,7 +771,9 @@ def extract_scoped(records: Iterable[Dict], *, llm: Callable[[str], str],
                    limit_segments: int = 0,
                    min_chars: int = DEFAULT_MIN_CHARS,
                    vocab: Optional[Dict[str, Sequence[str]]] = None,
-                   max_types_per_segment: int = 3
+                   max_types_per_segment: int = 3,
+                   on_progress: Optional[Callable[[List[Dict], List[Dict], Dict], None]] = None,
+                   progress_every: int = 50
                    ) -> Tuple[List[Dict], List[Dict], Dict]:
     """**查表选边型 ＋ 逐边型填槽位**的驱动（⑬）。
 
@@ -787,12 +789,31 @@ def extract_scoped(records: Iterable[Dict], *, llm: Callable[[str], str],
     skipped_no_candidate = 0
     drafts_seen = 0
     calls = 0
+
+    def _stats() -> Dict:
+        return {"segments": segments_seen, "skipped_short": skipped_short,
+                "segments_skipped_no_candidate": skipped_no_candidate,
+                "drafts_seen": drafts_seen, "kept": len(drafts_out),
+                "rejected": len(rejects), "calls": calls}
+
+    def _tick(force: bool = False) -> None:
+        """把**当时的累计值**交给调用方（长跑要能增量落盘）。回调抛错不打断抽取。"""
+        if on_progress is None:
+            return
+        if not force and progress_every > 0 and segments_seen % progress_every:
+            return
+        try:
+            on_progress(drafts_out, rejects, _stats())
+        except Exception:  # noqa: BLE001 - 落盘失败不该吃掉整批抽取结果
+            pass
+
     for record in records:
         source_ref = dict(record.get("source_ref") or {})
         for segment in segments_of(record, max_chars=max_chars):
             if limit_segments and segments_seen >= limit_segments:
                 break
             segments_seen += 1
+            _tick()
             if len(segment.text) < min_chars:
                 skipped_short += 1
                 continue
@@ -827,11 +848,8 @@ def extract_scoped(records: Iterable[Dict], *, llm: Callable[[str], str],
                 else:
                     rejects.append({"reason": reason, "draft": candidate,
                                     "step": "validate"})
-    stats = {"segments": segments_seen, "skipped_short": skipped_short,
-             "segments_skipped_no_candidate": skipped_no_candidate,
-             "drafts_seen": drafts_seen, "kept": len(drafts_out),
-             "rejected": len(rejects), "calls": calls}
-    return drafts_out, rejects, stats
+    _tick(force=True)
+    return drafts_out, rejects, _stats()
 
 
 class DeepSeekClient:
@@ -922,6 +940,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--limit-records", type=int, default=0, help="0 = 全部")
     parser.add_argument("--sample-every", type=int, default=0,
                         help="隔 N 份取 1 份（分层抽样：前缀抽样会全落在同一个域）")
+    parser.add_argument("--flush-every", type=int, default=200,
+                        help="每 N 段把累计成果落一次盘（长跑挂掉不至于全丢）")
     parser.add_argument("--limit-segments", type=int, default=0, help="0 = 全部")
     parser.add_argument("--dry-run", action="store_true",
                         help="只分段、不调 LLM（用来量一次要花多少段）")
@@ -973,10 +993,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             from tools.kb_fetch import build_shadow as bs  # type: ignore
         nodes, built = bs.build_vocab(
             bs.segment_cards(pathlib.Path(args.corpus), max_chars=args.max_chars))
+
+        def _flush(drafts: List[Dict], rejects: List[Dict], stats: Dict) -> None:
+            """周期性把**累计**成果落盘——1.6 小时的长跑挂在中途不能全丢。"""
+            common.write_jsonl(out_dir / EXTRACT_NAME, drafts)
+            common.write_jsonl(out_dir / REJECTS_NAME, rejects)
+            common.dump_json(out_dir / "progress.json", stats)
+
         drafts, rejects, stats = extract_scoped(
             records, llm=client, nodes=nodes,
             max_chars=args.max_chars, limit_segments=args.limit_segments,
-            min_chars=args.min_chars, vocab=vocab or built)
+            min_chars=args.min_chars, vocab=vocab or built,
+            on_progress=_flush, progress_every=args.flush_every)
     else:
         runner = extract_two_step if args.mode == "two-step" else extract
         drafts, rejects, stats = runner(records, llm=client, max_chars=args.max_chars,
