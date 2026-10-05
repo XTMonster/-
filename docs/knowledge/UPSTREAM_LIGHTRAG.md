@@ -152,3 +152,49 @@ work\_venv_lr\Scripts\python.exe work/_e2e_lightrag.py
 **检索侧的构造也要 `llm_model_func`**——这正是第二节逐行读出来的那条
 （`hybrid`/`local`/`global` 都先抽关键词），现在有了运行期实锤。所以它进了
 `build_requirements` 那类清单：sidecar 启动脚本必须同时给 embedding 与 LLM 两条通道。
+
+---
+
+## 七、**全量索引**（2026-10-05）：783 条案例，端到端可用
+
+第六节那 20 条是试跑；这一节是**正式产物**。
+
+### 7.1 产物
+
+```powershell
+work\_venv_lr\Scripts\python.exe -m tools.lightrag_service.build_index `
+    --cases work/knowledge_v4_cases/cases --out work/lightrag_v4
+```
+
+```
+{"overall": "pass", "documents": 783,
+ "fingerprint": "35f09d48f16642bb4fcbac4404191e285dc10418eb76a39187f2b7fcd6949b36",
+ "out": "work\\lightrag_v4\\lightrag"}
+```
+
+### 7.2 端到端复核（`work/_e2e_lightrag.py work/lightrag_v4 "轴线规则怎么用"`）
+
+```json
+{"health": {"status": "ok", "index_fingerprint": "35f09d48f16642bb…",
+            "lightrag_version": "1.5.7"},
+ "adapter_ids": ["case_what-is-an-eyeline-match_023",
+                 "case_what-is-an-eyeline-match_010",
+                 "case_what-is-an-eyeline-match_013",
+                 "case_what-is-an-eyeline-match_004"],
+ "adapter_reason": "unknown_id_dropped:1"}
+```
+
+两点值得记：
+
+* **检索是语义对的**：查"轴线规则怎么用"，top 命中全是 `what-is-an-eyeline-match`
+  （eye-line ＝ 视线轴）。这只是**一个查询**的观察，不当成质量结论——
+  正式读数要等 E1 面板。
+* `adapter_reason: unknown_id_dropped:1` **是设计在工作**：那个 id 不在调用方传入的
+  `cases` 里，适配器丢弃并具名记账（ADR-0014 的"陈旧化陷阱"防御），
+  而不是把它当成有效结果返回。
+
+### 7.3 还差什么
+
+* 索引建在 `work/` 下（影子路径）；正式上线要等 P10 的指针切换。
+* **A/B 还没跑**：D8 的判定（`ΔE1 ≥ R 且 E3=0 ⇒ lightrag 默认`）需要 E1 面板
+  在三条路上各跑 ≥2 次——那要等 L1/L2 全量抽取收口之后。

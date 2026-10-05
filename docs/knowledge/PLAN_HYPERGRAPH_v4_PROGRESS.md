@@ -50,8 +50,10 @@
 | **P6** | ⑤配额工具（A 路，按实测可引用量） | 绿（工具）／**已不必再动语料** | `tools/kb_fetch/allocate_budgets_v4.py`：配额 ＝ 该来源的**实测可引用段数**（`pick_excerpt` 过得去的段数），下端 `min_budget` 兜底、上端 `max_budget` 封顶、每条配额带 `budget_basis`；守门 4 条（比例、封顶兜底、依据、确定性）。<br>**实测**：43 个来源有量测值、**0 个"完全不可引用"**——所以问题不在"某来源全废"，而在来源内部有段落过不了引用门。<br>**但 ② 修好之后，这条已经不必要**：`reject_ratio` 从 7.5% 掉到 1.96% 的原因是"把该进的来源放进去了"（分母从 1553 涨到 7544），**不是**配额不匹配。工具留着（下次换语料时仍可按实测配），**本轮不改 `sources.v4.yaml` 的配额**——避免在没有必要的时候动语料面 | 2026-10-05 | 本批 |
 | **P6** | ⑥教训（同一类坑的第三次） | 记录 | 这一个缺陷与早前两次同形：**把"某一层的工具"接到了"另一层的输入"上**（`chunk.run` 是 L1/L2 的；案例层的输入是整篇来源）。三次的共同点是**管线里有一道"按层分流"的约定，而它只写在代码注释里、没有机器判据**。已补的判据：`test_the_case_layer_input_is_the_licensed_documents_not_the_chunked_stream` | 2026-10-05 | 本批 |
 | **P6** | ③冻结评测集（`freeze_eval.py`） | 待 | 依赖 ① 的评测集口径与 ② 的案例层定版 | — | — |
-| **P7** | LightRAG 索引与 sidecar 服务 | 待 | — | — | — |
-| **P8** | 插件侧适配器（门控默认关） | 待 | — | — | — |
+| **P7** | ①索引指纹 / 客户端＋适配器 / 服务层 | 绿 | 三块都落地并有守门：`manifest.py`（四格指纹、缺格拒收、fail closed）、`lightrag_client.py`（stdlib，**住插件包内**）、`lightrag_adapter.py`（返回必须是传入 `cases` 的子序列、降级具名）、`serve.py`（只绑环回、503/500 都具名）。**顺带抓到并修掉一个分层违规**：适配器曾从 `tools.` 导入 → 客户端搬进 `block_director/knowledge/` ＋ 架构守门 `tests/test_plugin_layering.py` | 2026-10-05 | `718d6bf`／`51c35f3` |
+| **P7** | ②**全量索引**（783 条案例）＋ 端到端复核 | 绿 | `build_index --cases work/knowledge_v4_cases/cases --out work/lightrag_v4` → **783 篇文档**，指纹 `35f09d48f16642bb…`。端到端（`work/_e2e_lightrag.py work/lightrag_v4 "轴线规则怎么用"`）：`/health` ok ＋ 指纹；适配器返回 4 个 `Case`，`last_reason: unknown_id_dropped:1`（**设计在工作**——不在传入 `cases` 里的 id 被丢弃并具名记账）。<br>**检索语义是对的**：查"轴线"top 命中全是 `what-is-an-eyeline-match`（eye-line＝视线轴）；但**只是一个查询的观察，不当质量结论** | 2026-10-05 | 本批 |
+| **P7** | ③A/B（D8 的判定依据） | 待 | `ΔE1 ≥ R 且 E3=0 ⇒ lightrag 默认` 需要 E1 面板在三路由上各跑 ≥2 次——等全量抽取收口 | — | — |
+| **P8** | 插件侧适配器（门控默认关） | 绿（适配器本身）／待（注册进路由表） | `block_director/knowledge/lightrag_adapter.py` 已实现并有 4 条守门（子序列、降级具名、fail closed、真走 HTTP）。**还没注册进 `cases.py` 的路由表**（那要等 A/B 决定默认路由；注册时按计划用环境变量门控、默认关） | 2026-10-05 | `718d6bf` |
 | **P9** | A/B 双报告（三路由） | 待 | — | — | — |
 | **P10** | 指针切换与归档 | 待 | — | — | — |
 | **P11** | 长跑与收尾 | 待 | — | — | — |
