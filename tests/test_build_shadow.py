@@ -138,6 +138,35 @@ def test_without_a_node_index_the_value_vocabulary_is_NOT_checked(tmp_path):
     assert (edge is not None, why) == (True, "")   # ← 词表外的取值**没有被拦**
 
 
+def test_the_v4_vocabulary_harvests_lens_values_from_the_corpus_text(tmp_path):
+    """`lens` 一类的开放值只能从**正文**里汇出来（现役 `vocabulary._LENS_RE`）。
+
+    实测：只跑受控表得 176 个节点、把片段正文喂进去得 180——差的正是 4 个镜头焦距。
+    夹具的正文里写了 "50mm"，所以 v4 词表里必须出现 `lens:50mm`。
+    """
+    cards = bs.segment_cards(_corpus(tmp_path), max_chars=2400)
+    nodes, _vocab = bs.build_vocab(cards)
+    ids = {str(node["node_id"]) for node in nodes}
+    assert "lens:50mm" in ids
+    assert "shot_size:MS" in ids
+    assert "headroom_policy:board" in ids
+
+
+def test_with_the_index_an_out_of_vocabulary_required_value_is_rejected(tmp_path):
+    """接上 `NodeIndex` 之后，词表外的**必填**取值被丢掉 ⇒ 整条边具名拒收。"""
+    cards = bs.segment_cards(_corpus(tmp_path), max_chars=2400)
+    draft = _draft(tmp_path, [["allow", "shot_size", "shot_size:MS"],
+                              ["allow", "lens", "lens:not-a-lens"],
+                              ["qualifier", "headroom_policy", "headroom_policy:board"]])
+    raw, reason = bs.draft_to_raw(draft, cards=cards)
+    assert reason == ""
+    nodes, _vocab = bs.build_vocab(cards)
+    edge, why = bs.hg_to_edge(raw, cards, bs.node_index(nodes))
+    assert edge is None
+    assert why.startswith("missing_required:SHOT_PATTERN")
+    assert "dropped=" in why
+
+
 def test_the_required_value_domain_is_known_to_the_schema():
     """反面参考：`headroom_policy` 的闭集是 `("board","cinematic")`——词表是有的，
     只是当前这条路径没把 `NodeIndex` 传进去（见上一条）。"""

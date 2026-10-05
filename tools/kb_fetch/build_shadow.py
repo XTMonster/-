@@ -31,10 +31,15 @@ try:
     from . import common  # type: ignore
     from . import extract_segmented as ex  # type: ignore
     from . import build_hypergraph as bh  # type: ignore
+    from . import vocabulary as vocab_mod  # type: ignore
 except ImportError:  # pragma: no cover - 直跑
     from tools.kb_fetch import common  # type: ignore
     from tools.kb_fetch import extract_segmented as ex  # type: ignore
     from tools.kb_fetch import build_hypergraph as bh  # type: ignore
+    from tools.kb_fetch import vocabulary as vocab_mod  # type: ignore
+
+from block_director.knowledge import card_factory  # noqa: E402
+from block_director.knowledge import hypergraph as hg  # noqa: E402
 
 EDGES_NAME = "hypergraph.edges.jsonl"
 REPORT_NAME = "build_report.json"
@@ -94,16 +99,63 @@ def draft_to_raw(draft: Dict, *, cards: Dict[str, Dict]
     return raw, ""
 
 
-def hg_to_edge(raw: Dict, cards: Dict[str, Dict]):
-    """薄壳：直接调现役 `to_edge`（闭集＋词表的**单一真源**），不改它。"""
-    return bh.to_edge(raw, cards, None)
+def hg_to_edge(raw: Dict, cards: Dict[str, Dict], node_index=None):
+    """薄壳：直接调现役 `to_edge`（闭集＋词表的**单一真源**），不改它。
+
+    `node_index` 给了才做**取值词表**解析：词表外的成员被丢掉，必填被丢 ⇒
+    整条边判 `missing_required` 并在原因里带 `dropped=`。不给就只查闭集与必填结构
+    （`tests/test_build_shadow.py::test_without_a_node_index_the_value_vocabulary_is_NOT_checked`
+    把这个差别钉住）。
+    """
+    return bh.to_edge(raw, cards, node_index)
+
+
+def card_objects(cards: Dict[str, Dict]) -> List:
+    """片段卡 → 现役 `Card` 对象（`vocabulary.build_nodes` 要**属性**访问）。
+
+    用仓库自己的 `card_factory.make_card`，不另造一种卡片形状。
+    """
+    out = []
+    for card_id, card in cards.items():
+        text = str(card.get("content") or "")
+        title = next((line.strip() for line in text.splitlines() if line.strip()), "")[:60]
+        out.append(card_factory.make_card(
+            str(card_id), str(card.get("domain") or "unspecified"),
+            title or str(card_id), text, []))
+    return out
+
+
+def build_vocab(cards: Dict[str, Dict]) -> Tuple[List[Dict], Dict[str, List[str]]]:
+    """在**新语料**上建 v4 词表（现役 `vocabulary.run` 的单一真源）。
+
+    注意 `lens` 一类的开放值是从**卡片正文**里汇出来的（`vocabulary._LENS_RE`），
+    所以这里必须把片段正文喂进去——只跑受控表会少掉这些取值（实测：只跑受控表
+    176 个节点、带正文 180 个）。
+    """
+    return vocab_mod.run(card_objects(cards))
+
+
+def node_index(nodes: Sequence[Dict]):
+    """现役 `NodeIndex`：把模型写的成员解析到真实节点上。"""
+    table = {str(node["node_id"]): hg.Node.from_dict(dict(node)) for node in nodes}
+    return bh.NodeIndex(table)
 
 
 def build_shadow(drafts_path: pathlib.Path, *, corpus_dir: pathlib.Path,
                  out_dir: pathlib.Path,
-                 max_chars: int = ex.DEFAULT_MAX_CHARS) -> Dict:
+                 max_chars: int = ex.DEFAULT_MAX_CHARS,
+                 with_vocab: bool = True) -> Dict:
     """跑一次影子构建：读草稿 → 建片段卡 → 逐条过 `to_edge` → 落影子目录。"""
     cards = segment_cards(corpus_dir, max_chars=max_chars)
+    nodes: List[Dict] = []
+    index = None
+    if with_vocab:
+        #: 在**新语料**上建 v4 词表，并把 `NodeIndex` 交给 `to_edge`——取值词表关
+        #: 到这一步才是活的（不接它的时候那条关根本不跑，见测试里钉住的那条）。
+        nodes, vocab = build_vocab(cards)
+        index = node_index(nodes)
+    else:
+        vocab = {}
     drafts: List[Dict] = []
     if pathlib.Path(drafts_path).is_file():
         for line in pathlib.Path(drafts_path).read_text(encoding="utf-8").splitlines():
@@ -117,7 +169,7 @@ def build_shadow(drafts_path: pathlib.Path, *, corpus_dir: pathlib.Path,
         if raw is None:
             rejects.append({"reason": reason, "draft": draft})
             continue
-        edge, why = hg_to_edge(raw, cards)
+        edge, why = hg_to_edge(raw, cards, index)
         if edge is None:
             rejects.append({"reason": why, "draft": draft, "source_card": raw["source_card"]})
             continue
@@ -128,6 +180,7 @@ def build_shadow(drafts_path: pathlib.Path, *, corpus_dir: pathlib.Path,
         "drafts_path": str(drafts_path),
         "corpus_dir": str(corpus_dir),
         "cards": len(cards),
+        "vocab_nodes": len(nodes),
         "drafts_seen": len(drafts),
         "kept": len(edges),
         "rejected": len(rejects),
@@ -139,6 +192,15 @@ def build_shadow(drafts_path: pathlib.Path, *, corpus_dir: pathlib.Path,
     out_dir = pathlib.Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     common.write_jsonl(out_dir / EDGES_NAME, edges)
+    if with_vocab:
+        #: 影子词表也落盘：它是"换了语料就整体换代"的钥匙之一。
+        common.write_jsonl(out_dir / "hypergraph.nodes.jsonl", nodes)
+        common.dump_json(out_dir / "hypergraph.vocab.json", {
+            "nodes": nodes, "vocab": vocab,
+            "_fingerprint": vocab_mod.vocab_fingerprint(vocab),
+            "_generated_by": "tools/kb_fetch/build_shadow.py",
+            "_corpus_dir": str(corpus_dir),
+        })
     common.dump_json(out_dir / REPORT_NAME, report)
     return report
 
