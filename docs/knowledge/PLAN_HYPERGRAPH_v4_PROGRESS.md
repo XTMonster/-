@@ -70,7 +70,7 @@
 | **P9** | ⑤**三臂 × 2 轮的正式读数（D8 的判定证据）** | **绿** | `work/e1_v4pop_ab.json` ＋ `docs/evidence/20261005-p9-v4pop/README.md`：<br>· `hybrid` **0.192708 / 0.192708**（37、37 行；mean 0.192708，极差 0）<br>· `lexical` **0.197917 / 0.182292**（38、35；mean 0.190105，极差 0.015625）<br>· `lightrag`（真索引、`hybrid` 模式、本地嵌入、含线索、指纹 `c1cd106e…`）**0.026042 / 0.026042**（5、5；mean 0.026042，极差 0）<br>· 噪声带 R＝**0.015625**：hybrid↔lexical Δ −0.002603 ⇒ `inconclusive`；**hybrid↔lightrag Δ −0.166666／lexical↔lightrag Δ −0.164063 ⇒ 双双 `separated`**<br>⇒ 按 D8（「ΔE1 ≥ R 且 E3=0 ⇒ lightrag 默认」）**LightRAG 不满足切换条件**，默认路由维持 `hybrid`（`BLOCK_DIRECTOR_RETRIEVAL_LIGHTRAG` 仍默认关）。<br>**可信度**：`all_rounds_used_the_route=true`（6 轮全无降级、lightrag 两轮 64/64 查询有行）、身份字段不一致 0、`terminal_states={"valid":6}`、`seed=20261005`、`rows=64`。<br>**折扣**：hybrid/lexical 各轮 7–14 行只有一位评委（`all_rounds_complete=false`）；lightrag 只测了 `hybrid` 检索模式（`naive` 档与云端那一代走 D3） | 2026-10-05 | 本批 |
 | **D3** | 嵌入路线（本地 `bge-small-zh` 512 ↔ 智谱 `embedding-3` 2048） | **绿（实测对照）** | `docs/evidence/20261005-d3-embedding/`（`e1_d3_embedding.json` ＋ 4 轮录档 ＋ 4 份轮记录）：**同一条 lightrag 路由、同一案例层、同一批 64 条冻结查询、同一面板、同为 `naive` 模式**，只差嵌入器——local **0.026042 / 0.015625**（mean **0.020833**，极差 0.010417）、cloud **0.119792 / 0.114583**（mean **0.117188**，极差 0.005209）；**Δ = +0.096355 ＞ 噪声带 0.010417 ⇒ `separated`**（云端嵌入器把这条路提高约 **5.6×**）。`all_rounds_used_the_route=true`、`terminal_states={"valid":4}`。<br>**与 D8 并存不矛盾**：嵌入器层面云端更好；路由层面即便换云端，LightRAG（0.117）仍低于 hybrid 0.193／lexical 0.190 ⇒ **默认路由仍 `hybrid`**。<br>**小混杂如实记**：拷缓存时本地那代还在收尾 ⇒ 云端那代重抽 2 篇（图谱 6385/6205 vs 6386/6243 节点/边，差 ≈0.6%）；**未核验**：云端那代的 `hybrid` 模式、云端嵌入的联网依赖与成本 | 2026-10-05 | 本批 |
 | **P10** | 指针切换与归档 | 待 | — | — | — |
-| **P11** | 长跑与收尾 | **待（依赖 P10）／⑤ 门①–⑩ 现状已实测记账** | ⑤ 现状（命令逐字：`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --json`，录档 `work/_gates_full.json`）：<br>**pass 8 条** —— ①总量 2847≥1200、②格式 2847/2847、③种子覆盖（`vocab_fingerprint=true`，22 个 kind；`unreachable_kinds=["axis_topic"]`）、⑤禁忌 107≥60、⑤b 成员 40、⑧换族（抽取 deepseek／标注 zhipu）、⑨可达性 `short=0`、⑩可解析（`must/top1/never` 未解析各 0）。<br>**fail 3 条** —— ④边类 `IMPACT_PACK 24`／`SOUND_PACK 11`／`MUSIC_PACK 21`（线 30，**标注供给**缺口，不是索引缺口）；⑥来源覆盖 `missing_cards`（卡片可表达性，**切换后要按 v4 索引重测**——v4 有 5,000 条边／16 个边型）；⑦人审 `human_reviewed=0`（需 212 条、线 120；库里那 210 条是 `llm-panel`，而门只认 `human`——**这条是红线，不许伪造**，见 D12/待你裁决）。<br>①–④ 其余项（长跑证据链、RK-13、探针清单、终态文档）都要等 P10 之后 | 2026-10-05 | 本批 |
+| **P11** | 长跑与收尾 | **待（依赖 P10）／⑤ 门①–⑩ 现状已实测记账** | ⑤ 现状（canonical 命令逐字：`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --exclude-cards knowledge/card_scope.json --json`；录档 `work/_gates_canonical.json`）：**10 绿 1 红**——①总量 2847≥1200、②格式 2847/2847、③种子覆盖、④边类（`--assertable` 补齐后 `short_pairs={}`）、⑤禁忌、⑤b 成员、⑥来源覆盖（`--exclude-cards` 补齐后 `missing 0／ghost 0／share 0.961≥0.95`）、⑧换族、⑨可达、⑩可解析；唯一红的是 **⑦人审 `human_reviewed=0`**（需 212、线 120，门只认 `human`）——**红线不许伪造**，单列 **D12**（见上一步的更正说明：上一版把 ④⑥ 记成红是**漏传了两个已裁决的输入**） | 2026-10-05 | 本批 |
 
 ## 2026-10-05 晚：P6③／P7／P8 的补账（P14-150…154）
 
@@ -115,36 +115,37 @@
 
 ## 当前阻塞与下一步
 
-1. ~~**P1② 是红的**~~ **→ 已转绿**（本批）：书单身份（`knowledge/sources.v4.yaml`
-   `sha256=8f968a14…`）＋ 入库语料（240 源、五字段缺项 0/240、`corpus_digest=3dc686db…`）
-   ＋ **四维各≥1 源**（按内容实测：236／219／15／133）都记进了 `ADJUDICATIONS_v4.md` 第七节。
-   **顺带纠正**：`CORPUS_V4.md` 曾把"震动与打击感"记成"没有任何已验证来源"——
-   内容层实测有 133 源／412 边（关键词层 0 命中 ≠ 这一维没有料）。真正最薄的是构图。
-2. ~~**P2②（轮记录文件）**~~ **→ 已转绿**（本批）：附件 V1 的轮记录落地
-   （执行器先写身份、检查器只读），并走了一次显式重新冻结。
-3. 数值留白 N1–N5 仍挂着（见 `PLAN_HYPERGRAPH_v4_ANNEX.md` §3），**不影响开工**。
-4. **P10 的落地形状有一处必须先解决的偏差（本轮新发现）**：计划 §3.1 写着影子产物
-   落在**仓库根**的 `knowledge_v4/`（`git mv` 一次性切成 `knowledge/`，可 `git revert`），
-   而 v4 的产物实际落在 **`.gitignore` 掉的 `work/`** 下
-   （`work/knowledge_v4` 3.37 MB ＋ `work/knowledge_v4_cases` 8.03 MB，`.gitignore:58` `/work/`）。
-   ⇒ P10 的三条动作（`git mv knowledge_v4/...`、`git ls-files knowledge_v4`、
-   `Move-Item knowledge_v4/lightrag knowledge/lightrag`）**现在跑不了**：那些文件不在
-   git 里，`git mv`/`git ls-files` 无从下手，"单提交完成归档＋切换"这个可回滚形状不成立。
-   处置建议（待做）：把 11.4 MB 的产物（edges/cases/manifests）落到**受版本控制**的
-   `knowledge_v4/`，再按 P10 走；LightRAG 索引（21.5 MB）体积与现有 `knowledge/` 同级，
-   是否入库要单列一条裁决（现役 `knowledge/` 里也没有索引本体，只有它的指纹）。
-5. **P10 门的机械口径**：`git grep -n "knowledge_v4" -- tools block_director tests` 现在
-   **18 命中**，其中 `tools/`＋`block_director/` **已清零**（本轮把新工具的字面默认值与
-   help 文本换成占位符：`tools/knowledge/e1_report.py`、`e3_report.py`、`kb_fetch/build_shadow.py`），
-   余下 9 条全在 `tests/`（`tmp_path / "knowledge_v4"` 这类**测试夹具注入**——§3.3 的原文
-   本来就允许"或测试夹具注入"）。⇒ 那条门按**字面 grep ＝ 0** 与约束原文自相矛盾，
-   落地口径建议改成 `-- tools block_director`（生产代码）＝ 0，并把这条偏差记在这里。
-6. **门①–⑩ 现状：8 绿 3 红**（命令与逐条数字见 P11 行）。三条红里：
-   * **门⑦ 人审 0/212** —— 需要**真人**（红线不许伪造），已单列 **D12** 等你裁决
-     （A 你填 120 条 verdict／B 显式把口径扩到 `llm-panel`／C 维持红）。
-   * **门④ 边类** `IMPACT_PACK 24`／`SOUND_PACK 11`／`MUSIC_PACK 21`（线 30）——
-     **标注供给**缺口（oracle 侧），可以用同一条 glm-5.3 标注通道补到 30+，
-     不涉判据；但它属于 P11 的收尾工作，**排在 P9/P10 之后**。
-   * **门⑥ 来源覆盖**（卡片可表达性）——**要在 P10 切换后用 v4 索引重测**
-     （v4 有 5,000 条边／16 个边型，表达力比现役 638 条强得多），现在这条读数
-     量的是旧索引。
+1. **P1② / P2② 已转绿**（本批；证据见 P1／P2 行）——**P0–P2 三个阶段不再有红项**。
+2. 数值留白 N1–N5 仍挂着（见 `PLAN_HYPERGRAPH_v4_ANNEX.md` §3），**不影响开工**。
+3. **P10 的落地形状有一处必须先解决的偏差**：计划 §3.1 要求影子产物落在**仓库根**的
+   `knowledge_v4/`（`git mv` 一次性切成 `knowledge/`，可 `git revert`），而 v4 的产物实际
+   落在 **`.gitignore` 掉的 `work/`** 下（`work/knowledge_v4` 3.37 MB ＋
+   `work/knowledge_v4_cases` 8.03 MB；`.gitignore:58` `/work/`）⇒ P10 的三条动作
+   （`git mv knowledge_v4/...`、`git ls-files knowledge_v4`、`Move-Item .../lightrag ...`）
+   **现在跑不了**。处置建议（待做）：先把产物落到**受版本控制**的 `knowledge_v4/`，再按 P10 走；
+   LightRAG 索引（本地那代 90 MB／云端那代 263 MB）是否入库要**单列裁决**
+   （现役 `knowledge/` 里也没有索引本体，只有它的指纹）。
+4. **P10 门的机械口径**：`git grep -n "knowledge_v4" -- tools block_director tests` 现共 9 命中，
+   **全在 `tests/`**（`tmp_path / "knowledge_v4"` 这类**测试夹具注入**——§3.3 原文允许
+   "或测试夹具注入"）；`tools/`＋`block_director/` **已清零**。⇒ 那条门按**字面 grep＝0**
+   与约束原文自相矛盾，落地口径建议改成 `-- tools block_director`（生产代码）＝0。
+5. **门①–⑩ 现状：10 绿 1 红**（**更正上一版"8 绿 3 红"**——那是我漏传了两个**已裁决**的输入，
+   不是真红）。canonical 命令逐字：
+
+   ```powershell
+   python tools/check_holdout.py fixtures/knowledge_holdout.jsonl `
+       --vocab fixtures/knowledge_holdout.vocab.json `
+       --cards fixtures/knowledge_holdout.cards.json `
+       --assertable fixtures/knowledge_holdout.assertable.json `
+       --exclude-cards knowledge/card_scope.json --json
+   ```
+
+   * 漏传 `--assertable` ⇒ 门④按**旧判据**（每类硬要 30 对）报红；补上后按 2026-10-01
+     用户裁定的 `required = min(30, 该类真能断言的对数)`：IMPACT 24／SOUND 11／MUSIC 21
+     **全部交满** ⇒ pass（`short_pairs={}`、`thin_cards={}`）。
+   * 漏传 `--exclude-cards` ⇒ 门⑥把 91 张"**索引对该卡零条边**"的卡算进分母，报 20 张缺条目；
+     补上后 `missing 0／ghost 0／share 0.9613≥0.95` ⇒ pass——而
+     `card_scope.json` 的 `edge_backed_without_entry: 0` 说明**每一张有边的卡都有条目**。
+   * 唯一还红的是 **门⑦ 人审**：`needs_human 212／human_reviewed 0／线 120`，门的
+     `accepted_reviewers` 只有 `["human"]`——**这条是红线，不许伪造**，单列 **D12** 等你裁决。
+6. **P11 的其余四件**（①长跑证据链、②RK-13、③既有探针清单、④终态文档）都排在 **P10 之后**。
