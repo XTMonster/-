@@ -51,6 +51,17 @@ def register() -> None:
     """Blender 插件入口。"""
     _bootstrap()
     registered = register_all()
+    #: **门控注册**（P8）：只有显式设了 `BLOCK_DIRECTOR_RETRIEVAL_LIGHTRAG=1` 才把
+    #: LightRAG 适配器工厂登记进路由表——默认关，产品现行默认路径仍是 `hybrid`。
+    #: 任何失败都只记日志：检索臂注册不该拖垮插件加载。
+    try:
+        from .knowledge import lightrag_adapter
+
+        if lightrag_adapter.register_if_enabled():
+            get_logger().info("LightRAG 检索臂已注册（%s）",
+                              lightrag_adapter.ENABLE_ENV)
+    except Exception as exc:  # noqa: BLE001
+        get_logger().error("LightRAG 检索臂注册失败: %s: %s", type(exc).__name__, exc)
     get_logger().info("BlockDirector %s 已加载（注册模块: %s）",
                       __version__, ", ".join(registered) or "无")
 

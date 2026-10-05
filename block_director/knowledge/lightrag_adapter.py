@@ -24,6 +24,10 @@ from . import lightrag_client as lc
 
 #: 默认端口（与 sidecar 的约定；环境变量可覆盖）。
 DEFAULT_URL = "http://127.0.0.1:8765"
+#: 注册开关：**默认关**。产品现行的默认路径是 `hybrid`（BM25），而 LightRAG 那条路
+#: 依赖 sidecar——不显式打开就不该让默认检索依赖一个可能不在的服务。
+ENABLE_ENV = "BLOCK_DIRECTOR_RETRIEVAL_LIGHTRAG"
+_TRUTHY = ("1", "true", "yes", "on")
 
 
 class LightRAGAdapter:
@@ -86,3 +90,36 @@ def make_lightrag_adapter(index_dir: Any = None, *, base_url: str = "",
     url = base_url or os.environ.get("BLOCK_DIRECTOR_LIGHTRAG_URL") or DEFAULT_URL
     return LightRAGAdapter(base_url=url, timeout=timeout,
                            expected_fingerprint=expected_fingerprint)
+
+
+def attach_to_index(index: Any, *, base_url: str = "",
+                    expected_fingerprint: str = "",
+                    timeout: float = 10.0) -> LightRAGAdapter:
+    """把适配器装到**已装配**的索引上（与词法适配器的 `attach_to_index` 同形）。
+
+    `CaseIndex.retrieve` 只在 `backend="lightrag"` **且** `adapter is not None` 时
+    走适配器；这个函数只做"装上"这一件事，不碰取值、不碰留痕。
+    """
+    adapter = make_lightrag_adapter(base_url=base_url,
+                                    expected_fingerprint=expected_fingerprint,
+                                    timeout=timeout)
+    index.adapter = adapter
+    return adapter
+
+
+def register_if_enabled(*, env: str = "") -> bool:
+    """环境变量门控注册。返回**这次有没有注册**。
+
+    * 变量不设／为空／`0`／`false`／`no`／`off` ⇒ **不注册**（返回 False）；
+    * 变量为 `1`／`true`／`yes`／`on` ⇒ 注册**工厂**（不是实例——惰性构造，
+      import 期不连 sidecar）；重复调用不会重复注册。
+    """
+    import os
+    from . import cases as kb_cases
+    value = str(os.environ.get(env or ENABLE_ENV, "")).strip().lower()
+    if value not in _TRUTHY:
+        return False
+    factory = make_lightrag_adapter
+    if factory not in kb_cases._ADAPTER_FACTORIES:
+        kb_cases.register_lightrag_adapter(factory)
+    return True
