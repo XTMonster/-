@@ -679,6 +679,19 @@ def extract_two_step(records: Iterable[Dict], *, llm: Callable[[str], str],
     return drafts_out, rejects, stats
 
 
+def sample_records(records: Sequence[Dict], *, every: int = 0) -> Sequence[Dict]:
+    """等距抽样：隔 `every` 份取 1 份。`every <= 1` 表示不抽样。
+
+    为什么不用前缀（`--limit-records`）：语料按 `(domain, url)` 排序，前缀只会拿到
+    排序最前的那个域（实测前 30 份**全部**是 Animation Studies/anime）。等距抽样
+    让每个域都进样本，而且**可复算**——同输入必得同样本（不是随机抽样）。
+    """
+    stride = int(every or 0)
+    if stride <= 1:
+        return list(records)
+    return list(records)[::stride]
+
+
 # --------------------------------------------------------------------------- #
 # ⑬ 候选边型由**查词表**决定（不问模型）
 # --------------------------------------------------------------------------- #
@@ -899,6 +912,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--min-chars", type=int, default=DEFAULT_MIN_CHARS,
                         help="短于它的段不送模型（站点样板）")
     parser.add_argument("--limit-records", type=int, default=0, help="0 = 全部")
+    parser.add_argument("--sample-every", type=int, default=0,
+                        help="隔 N 份取 1 份（分层抽样：前缀抽样会全落在同一个域）")
     parser.add_argument("--limit-segments", type=int, default=0, help="0 = 全部")
     parser.add_argument("--dry-run", action="store_true",
                         help="只分段、不调 LLM（用来量一次要花多少段）")
@@ -917,6 +932,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     records = load_records(pathlib.Path(args.corpus))
     if args.limit_records:
         records = records[:args.limit_records]
+    records = sample_records(records, every=args.sample_every)
     out_dir = pathlib.Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
