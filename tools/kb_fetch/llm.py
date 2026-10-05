@@ -90,6 +90,23 @@ KIMI_API_KEY = os.environ.get("KIMI_API_KEY", "")
 KIMI_TIMEOUT = float(os.environ.get("KIMI_TIMEOUT", "900"))
 KIMI_MODEL = os.environ.get("KIMI_MODEL", "kimi-k3")
 
+#: **中转站通道**（用户 2026-10-06："中转站有可以使用 gpt6A，我希望用于写执行计划"）。
+#: 端点 `https://linkai.pics/v1`（OpenAI 兼容）。一条硬约束：这个域在 Cloudflare 后面，
+#: **裸 urllib 的默认 UA 会被 `HTTP 403 error code: 1010` 挡掉**（"banned your access
+#: based on your browser's signature"）——必须带浏览器 UA。实测（`work/_probe_linkai.py`）：
+#: `/v1/models` 列出 `codex-auto-review`／`gpt-5.5`／`gpt-5.6-{luna,sol,terra}`／
+#: **`gpt-6-astra`**／`gpt-6-luna`／`gpt-6-sol`／`gpt-6.1-sol`，四个 `gpt-6*` 都能答。
+#: 用户说的"gpt6A"在型号表里没有同名字面量 ⇒ 默认取 `gpt-6-astra`（唯一以 A 起名的
+#: `gpt-6*`），可用 `LINKAI_MODEL` 一行切换；这是按现有证据做的最接近解释，
+#: 已写进 `model-routing.md`，用户可点名覆盖。密钥只从 `LINKAI_API_KEY` 读，绝不进仓库。
+LINKAI_BASE = os.environ.get("LINKAI_BASE_URL", "https://linkai.pics/v1")
+LINKAI_API_KEY = os.environ.get("LINKAI_API_KEY", "")
+LINKAI_TIMEOUT = float(os.environ.get("LINKAI_TIMEOUT", "900"))
+LINKAI_MODEL = os.environ.get("LINKAI_MODEL", "gpt-6-astra")
+
+#: Cloudflare 按 UA 签名拦人：这不是可选项（见上面的实测）。
+BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+
 #: 本地思考模型的**思考税**实测（v1.4 §6 那条风险）没法用官方开关关掉：
 #: `/no_think`（写进 user 或 system）、`think: false`、精简词表都试过，`num_predict`
 #: 2048 时一律 `content_len=0 / thinking_len≈3400 / done_reason=length`；把预算加到
@@ -108,6 +125,8 @@ FAMILIES = {
     "qwen": "qwen",
     "kimi": "kimi",
     "moonshot": "kimi",
+    "linkai": "relay",
+    "relay": "relay",
     "scripted": "scripted",
 }
 
@@ -457,6 +476,99 @@ class KimiClient:
         raise LLMError(f"kimi({self.model_id}) 调用失败：{last}")
 
 
+class RelayClient:
+    """**中转站通道**（OpenAI 兼容）——用户 2026-10-06 指定它来**写执行计划**。
+
+    接口形状与 `QwenClient` / `KimiClient` 一致（`chat_json` ＋ `last_usage` ＋
+    `decode_tag`），另外多一个 `chat()` 拿**原始正文**（写计划要的是 markdown，不是 JSON）。
+    与另外三条通道的两处差别：
+
+    * **必须发浏览器 UA**：`linkai.pics` 在 Cloudflare 后面，裸 urllib 的默认 UA
+      会被 `HTTP 403 error code: 1010` 直接挡掉（"banned your access based on your
+      browser's signature"）。这一条是实测出来的，不是可选项。
+    * **没有档位/思考开关**：`glm_consult` 那套 `max→high→low` 阶梯在这里无意义，
+      所以 `chat()` 只做"带退避的重试"，不需要也不许假装有档位。
+    * 型号默认 `gpt-6-astra`；`LINKAI_MODEL` 可一行切换（见模块顶部的实测型号表）。
+    """
+
+    family = "relay"
+
+    def __init__(self, model_id: str = "", api_key: str = "", base: str = "",
+                 timeout: float = 0.0):
+        self.model_id = str(model_id or LINKAI_MODEL or "gpt-6-astra")
+        self.model_version = self.model_id
+        self.api_key = api_key or LINKAI_API_KEY
+        self.base = str(base or LINKAI_BASE).rstrip("/")
+        self.timeout = float(timeout or LINKAI_TIMEOUT)
+        self.last_usage: Dict[str, int] = {}
+
+    @property
+    def decode_tag(self) -> str:
+        """中转站没有档位开关，如实写。"""
+        return "relay=openai-compatible;ua=browser(required by cloudflare)"
+
+    def _post(self, payload: Dict) -> Dict:
+        if not self.api_key:
+            raise LLMError("缺少 LINKAI_API_KEY（只从环境变量读，绝不写进仓库）")
+        return _post_json(f"{self.base}/chat/completions", payload,
+                          {"Content-Type": "application/json",
+                           "Authorization": f"Bearer {self.api_key}",
+                           "User-Agent": BROWSER_UA,
+                           "Accept": "application/json"},
+                          self.timeout)
+
+    def _record(self, reply: Dict) -> Dict:
+        choices = reply.get("choices") or []
+        if not choices:
+            raise LLMError("上游没有返回 choices")
+        usage = reply.get("usage") or {}
+        self.last_usage = {
+            "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+            "completion_tokens": int(usage.get("completion_tokens") or 0)}
+        self.model_version = str(reply.get("model") or self.model_id)
+        return choices[0]
+
+    def chat(self, system: str, user: str, temperature: float = 0.2,
+             num_ctx: int = 32768, retries: int = 3) -> str:
+        """拿**原始正文**（写计划用）。空正文＝具名失败，不许当"模型没意见"。"""
+        payload = {
+            "model": self.model_id, "stream": False,
+            "messages": [{"role": "system", "content": system},
+                         {"role": "user", "content": user}],
+            "temperature": temperature, "max_tokens": int(num_ctx),
+        }
+        last: Optional[Exception] = None
+        for attempt in range(retries):
+            try:
+                choice = self._record(self._post(payload))
+                content = (choice.get("message") or {}).get("content") or ""
+                if not content.strip():
+                    raise LLMError("模型返回的空正文（endpoint trap）")
+                return content
+            except Exception as exc:  # noqa: BLE001
+                last = exc
+                time.sleep((20.0 if "429" in str(exc) else 1.5) * (attempt + 1))
+        raise LLMError(f"relay({self.model_id}) 调用失败：{last}")
+
+    def chat_json(self, system: str, user: str, temperature: float, seed: int,
+                  num_ctx: int, key: str = "", retries: int = 3) -> Dict:
+        payload = {
+            "model": self.model_id, "stream": False,
+            "messages": [{"role": "system", "content": system},
+                         {"role": "user", "content": user}],
+            "temperature": temperature, "max_tokens": int(num_ctx),
+        }
+        last: Optional[Exception] = None
+        for attempt in range(retries):
+            try:
+                choice = self._record(self._post(payload))
+                return parse_json_content((choice.get("message") or {}).get("content") or "")
+            except Exception as exc:  # noqa: BLE001
+                last = exc
+                time.sleep((20.0 if "429" in str(exc) else 1.5) * (attempt + 1))
+        raise LLMError(f"relay({self.model_id}) 调用失败：{last}")
+
+
 class OllamaClient:
     """本地标注器。走 `/api/chat` ＋ 显式 `num_ctx`（见模块 docstring 的实测结论）。"""
 
@@ -544,4 +656,6 @@ def make_client(provider: str, model: str = "", scripted: str = ""):
         return QwenClient(model or "qwen3.8-max")
     if provider in ("kimi", "moonshot"):
         return KimiClient(model or "kimi-k3")
+    if provider in ("linkai", "relay"):
+        return RelayClient(model or "gpt-6-astra")
     raise LLMError(f"未知 provider: {provider!r}")

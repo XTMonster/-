@@ -62,6 +62,26 @@ DEFAULT_MAX_TOKENS = 32768
 #: 而不是烧掉十分钟再失败。
 DEFAULT_MAX_PROMPT_CHARS = 3000
 
+
+def choose_channel(provider: str, model: str = ""):
+    """`(model_id, consult_fn)`：选起草通道。
+
+    * `glm`（默认）⇒ `consult_fn=None`，`write_plan` 会用 `glm_consult.consult`
+      （GLM-5.3 的 `max→high→low` 档位阶梯）。历次计划都是它起草的，所以默认不动。
+    * `relay` ⇒ 中转站（`linkai.pics`，用户 2026-10-06 指定用来写执行计划），
+      型号默认 `LINKAI_MODEL`／`gpt-6-astra`。中转站**没有档位**，所以那条 `consult`
+      只做带退避的重试（`levels` 原样记账、不被使用）。
+
+    抽成纯函数是为了**可离线测**：`main()` 里那段选择逻辑否则只能靠联网才能验。
+    """
+    name = str(provider or "glm").strip().lower()
+    if name == "relay":
+        from tools import relay_consult as rc  # noqa: PLC0415
+        return (str(model).strip() or rc.DEFAULT_MODEL), rc.consult
+    if name != "glm":
+        raise SystemExit("未知起草通道 %r：只认 glm／relay" % (provider,))
+    return (str(model).strip() or gc.DEFAULT_MODEL), None
+
 #: 写作契约的默认位置：hooks 里的那一份（单一真源），可 `--contract` 覆盖。
 DEFAULT_CONTRACT = pathlib.Path.home() / ".codex" / "hooks" / "plan-contract.md"
 
@@ -273,7 +293,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--repo", default=str(gc.REPO_ROOT))
     parser.add_argument("--out", required=True)
     parser.add_argument("--contract", default=str(DEFAULT_CONTRACT))
-    parser.add_argument("--model", default=gc.DEFAULT_MODEL)
+    parser.add_argument("--model", default="",
+                        help="模型 id（不写则按 --provider 取默认：glm→glm-5.3、"
+                             "relay→`LINKAI_MODEL`／gpt-6-astra）")
+    parser.add_argument("--provider", default="glm", choices=("glm", "relay"),
+                        help="起草通道：`glm`（默认，GLM-5.3 档位阶梯）／"
+                             "`relay`（中转站 linkai.pics，用户 2026-10-06 指定用来写计划；"
+                             "型号默认 `gpt-6-astra`，可用 `LINKAI_MODEL` 切）。"
+                             "`--model` 不写时按 provider 取默认。")
     parser.add_argument("--rounds", type=int, default=DEFAULT_ROUNDS,
                         help="自我精炼轮数（默认 %d，用户裁决）" % DEFAULT_ROUNDS)
     parser.add_argument("--level", default="high", choices=["low", "high", "max"])
@@ -302,14 +329,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                  for item in args.critique]
     levels = {"max": ["max", "high", "low"], "high": ["high", "low"],
               "low": ["low"]}[args.level]
+    #: 通道与型号：用户 2026-10-06 指定"中转站有可以使用 gpt6A，我希望用于写执行计划"。
+    #: `glm` 仍是默认（历次计划都是它起草的，逐字可比）；换通道要显式写 `--provider relay`。
+    model, consult_fn = choose_channel(args.provider, args.model)
     out_dir = pathlib.Path(args.out)
 
     if args.dry_run:
         result = write_plan(contract, question, contexts, sources, status_text, None,
-                            model=args.model, rounds=args.rounds, levels=levels,
+                            model=model, rounds=args.rounds, levels=levels,
                             max_tokens=args.max_tokens, temperature=args.temperature,
                             timeout=args.timeout,
-                            max_prompt_chars=args.max_prompt_chars, critiques=critiques)
+                            max_prompt_chars=args.max_prompt_chars, critiques=critiques,
+                            consult_fn=consult_fn)
         manifest = gc.bundle_manifest(args.question, question, contexts, sources,
                                       status_text, None, repo)
         print(json.dumps({**result, "source_seen": manifest["source_seen"],
@@ -328,10 +359,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                                                         sources, status_text))]),
         encoding="utf-8")
     result = write_plan(contract, question, contexts, sources, status_text, out_dir,
-                        model=args.model, rounds=args.rounds, levels=levels,
+                        model=model, rounds=args.rounds, levels=levels,
                         max_tokens=args.max_tokens, temperature=args.temperature,
                         timeout=args.timeout,
-                        max_prompt_chars=args.max_prompt_chars, critiques=critiques)
+                        max_prompt_chars=args.max_prompt_chars, critiques=critiques,
+                        consult_fn=consult_fn)
     print(json.dumps(result["provenance"], ensure_ascii=False))
     return 0
 

@@ -219,3 +219,22 @@ def test_a_big_shrink_is_flagged(tmp_path):
                            max_tokens=10, temperature=0.2, timeout=1, consult_fn=call)
     assert result["history"][1]["shrink"] is True
     assert result["history"][0].get("shrink", False) is False
+
+
+def test_the_plan_writing_channel_is_switchable_and_the_default_is_unchanged():
+    """用户 2026-10-06："中转站有可以使用 gpt6A，我希望用于写执行计划"。
+
+    * 默认仍走 **GLM-5.3**（历次计划都是它起草的，逐字可比）；
+    * `--provider relay` 才切到中转站，型号默认 `gpt-6-astra`；
+    * 两条通道的 `consult_fn` 不同：GLM 那条是**档位阶梯**，中转站**没有档位**。
+    """
+    model, fn = pw.choose_channel("glm")
+    assert model == "glm-5.3" and fn is None, "None ⇒ write_plan 用 glm_consult.consult"
+    relay_model, relay_fn = pw.choose_channel("relay")
+    assert relay_model == "gpt-6-astra"
+    assert relay_fn is not None and relay_fn is not fn
+    # 显式给型号就听显式的。
+    assert pw.choose_channel("relay", "gpt-6.1-sol")[0] == "gpt-6.1-sol"
+    assert pw.choose_channel("glm", "glm-5.3")[0] == "glm-5.3"
+    with pytest.raises(SystemExit):
+        pw.choose_channel("anthropic")
