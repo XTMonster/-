@@ -1,0 +1,3323 @@
+sources:
+- url: https://journal.animationstudies.org/article/id/10/
+  title: The Two Golden Ages of Animated Music Video
+  author: Gunnar Strøm
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/100/
+  title: 'Animating Indianness: A study of assimilating Indian images in a western
+    narrative'
+  author: Paritosh Singh
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2018
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/101/
+  title: 'Narrative Space: From Ozu to Paul Driessen and Raimund Krumme'
+  author: Pedro Serrazina
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2018
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/102/
+  title: 'Queer Proteus: Towards a Theory of the Animated Child'
+  author: Eli Boonin Vail
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/103/
+  title: 'Good Robot, Bad Robot: Design for Social Robots Based on the Animation Principle
+    of ''Appeal'''
+  author: Steve Weymouth
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/104/
+  title: 'The Animated Will: Intelligent Movement and Embodied Intentionality in Character
+    Animation'
+  author: Eric Herhuth
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/105/
+  title: 'The Introspective Merlion: Transculturalism in Singaporean Animation'
+  author: Qing Sheng Ang
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/106/
+  title: 'Metamorphic Identity Over Time: interpreting Priit Pärn’s Some Exercises
+    in Preparation for Independent Life'
+  author: Carmen Hannibal
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/107/
+  title: 'Liberated worlds: Construction of meaning in the universes of Hayao Miyazaki'
+  author: Cátia Peres
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/108/
+  title: The Long Path of a Co-Produced Animated Short Film
+  author: Adriana Navarro
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/109/
+  title: A painting-inspired approach to develop exploration in 3D animation visual
+    style
+  author: Qing Sheng Ang
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/11/
+  title: 'Half-breed Dog, Half-breed Film: Balto as Animelodrama'
+  author: Amy Ratelle
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/110/
+  title: 'The Good Hearts Model (GHM): an investigation into the extension of animation
+    therapy; the GHM method with Dig'
+  author: Melanie Hani
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/111/
+  title: 'In Search of a "New Wind": Experimental, Labour Intensive and Intermedial
+    Animation in 1950s and 60s Japan (wi'
+  author: Jason Douglass
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/112/
+  title: 'The Glass Canvas: Approaching Digital Direct Under Camera Animation (runner-up)'
+  author: Gary Wilson
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/113/
+  title: Rotoscoping Design for Bodily Technique and Interdisciplinary Research on
+    Animation as Embodied Practice (runn
+  author: Iveta Karpathyova
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/114/
+  title: The Destino Animatic, and the Fate of Assembling Artistic Truths into a Greater
+    Whole
+  author: Ron Barbagallo
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/115/
+  title: 'Introducing Transnational Animation: A Special Issue of Animation Studies'
+  author: Francis M. Agnoli
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/116/
+  title: 'Playing Around with Studio Ghibli: Understanding the Remediated Meaning
+    of Ni no Kuni: Wrath of the White Witc'
+  author: Dean Bowman
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/117/
+  title: How does a Transnational Audience Factor in Character Design for Professional
+    Broadcast Animation
+  author: Ian Friend
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/118/
+  title: 'Transmutation and Recolonization in Japanese Animation: Battle of the Planets
+    and Anime’s Growth in the West'
+  author: James Mclean
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/119/
+  title: 'Re-creating Anime History: The Development of British Anime Fandom and the
+    Developing Comprehension of Anime H'
+  author: Helen McCarthy
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/12/
+  title: The Newly Developed Form of Ganime and its Relation to Selective Animation1
+    for Adults in Japan
+  author: Sheuo Hui Gan
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/120/
+  title: 'Bedrock Behind the Iron Curtain: Transcultural Shifts in the Hungarian Dubbed
+    Version of The Flintstones (1960'
+  author: Anna Martonfi
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/121/
+  title: Building the Transcultural Fantasy World of Avatar
+  author: Francis M. Agnoli
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/122/
+  title: '“Make it more invisible”: Hollywood VFX Training Crosstalk on the Transatlantic
+    Fiber Optic'
+  author: Ian Murphy
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2019
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/123/
+  title: 'Back to Front: Animating Melodrama in Makoto Shinkai’s Garden of Words (winner)'
+  author: Grace Han
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/124/
+  title: 'Race and Identity and the Celebration of Black Excellence: An Analysis of
+    Animated Representations of Blacknes'
+  author: Goolam Hassen
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/125/
+  title: '‘To become rich without limit’: Positioning the Miyazaki Antagonist within
+    Technological Contexts of the Japan'
+  author: Robert Jones
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/126/
+  title: 'Reinvention and Reimagination Brought to Life in Children’s Animation Adapted
+    from Literature – A Comparative '
+  author: Zilia Zara Papp
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/127/
+  title: Grief, Myth, and Music in Tomm Moore’s Song of the Sea
+  author: Lisa Scoggin
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/128/
+  title: 'Beauty and The Beast: A Dynamic Relationship Between 3D animation and Adaption
+    to Change'
+  author: Henry Melki
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/129/
+  title: 'Challenges surrounding participatory practice research in Animation: The
+    case of FASD affected participants'
+  author: Jessica Rutherford
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/13/
+  title: '"Steadier, happier, and quicker at the work"? Women in Canadian Animation'
+  author: Lynne Perras
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/130/
+  title: 'Slowing Down with Fast Films: The Animated Work of Sally Cruikshank'
+  author: Vanessa Cambier
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/131/
+  title: 'Quebec Animation Cinema and Women’s Agentivity: an exploration of sexuality
+    and desire through the works of th'
+  author: Marie Josée
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/132/
+  title: 'The Mental Abuse Matters Project: Creative Practice in Animation and Live
+    Action VR'
+  author: Lucy Baxter
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/133/
+  title: 'Animation is a refuge: ‘arrivants’ dwell in the stories of the mind'
+  author: Joan Ashworth
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/134/
+  title: 'Czech(oslovak) Animated Documentary on the Holocaust: The Visual Testimony
+    of Helga Hošková-Weissová 1958/2011'
+  author: Jana Rogoff
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/135/
+  title: 'The Odd Ones Out: The Rise of YouTube Storytime Animation'
+  author: Konstantinos Pappis
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/136/
+  title: 'Unanimated Voices: The Spanish Civil War as an emergent subject in Spanish
+    animated short films'
+  author: María Lorenzo Hernández
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/137/
+  title: Dancing into Acoustic Space
+  author: Dirk De Bruyn
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/138/
+  title: Irish Women Modernists and Animation Practice as a Reclamation of Cultural
+    and Artistic Space
+  author: Yvonne Hennessy
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/139/
+  title: Animated Documentary as a Social Tool
+  author: Debjani Mukherjee
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/14/
+  title: TV 2.0
+  author: Birgitta Hosea
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/140/
+  title: '‘Like Tears in Rain’: The Crypt, the Haunted House, of Animation and Memory
+    in the Era of Hyperreality'
+  author: Alan Cholodenko
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/141/
+  title: 'Another Planet: Animation and Documentary Aesthetics in Mixed Realities'
+  author: Nea Ehrlich
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/142/
+  title: 'Parameterization: On Animation and Future Corporealities'
+  author: Elizaveta Shneyderman
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2021
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/143/
+  title: 'Innocent and Invisible: Women Behind Bars in Animated Documentaries'
+  author: Sara Álvarez Sarrat
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2021
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/144/
+  title: Film Style in Cinematic VR
+  author: Ole Christoffer Haga
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2021
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/145/
+  title: Animation, Gentrification and Social Experience
+  author: Pedro Serrazina
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2021
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/146/
+  title: 'Between a “Rock” and a Hard Place: The Hybridization of Analog and Digital
+    in The Iron Giant'
+  author: Kristian Jared Robinson
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2021
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/147/
+  title: Notes on Transnational Animation and the Pokémon Culture in South Park’s
+    “Chinpokomon”
+  author: Giuseppe Gatti
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2022
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/148/
+  title: Mythical Past, Animated Present
+  author: Sandeep Ashwath
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2022
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/149/
+  title: 'From Zeman to Gilliam: The Evolution of Mystimation'
+  author: Emmett Redding
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2022
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/15/
+  title: Visions of a Future Past
+  author: María Lorenzo Hernández
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/150/
+  title: 'The Legend of Prince Rama and the Emergence of an Indian Animé: A Japanese
+    Mediation of the Sanskrit Epic'
+  author: Rea Amit
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2022
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/151/
+  title: 'Adventure Time’s World-Building: Analyzing Its Opening Title Sequence and
+    the Mobile Map'
+  author: Elena Altheman
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2022
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/152/
+  title: 'Toward a New Media Ecology: Aesthetic Experiments in Post-Socialist Chinese
+    Animated Documentaries'
+  author: Li Guo
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2023
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/153/
+  title: 'Hogan’s Alley in the Enchanted Forest: R. F. Outcault’s The Yellow Kid and
+    Walt Disney’s Dopey'
+  author: Michelle Ann Abate
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2023
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/154/
+  title: Towards a Materialist Theory of Animated Documentary
+  author: Anastasiia Gushchina
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2023
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/155/
+  title: 'Hand of Artist, Voice of Griot: A Poetics of African Animation in the Films
+    of Jean-Michel Kibushi'
+  author: JS Wu
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2023
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/156/
+  title: Animating in British Communities During the Lockdown
+  author: Myria Christophini
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2023
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/157/
+  title: 'Re-inventing Shakespeare’s Pericles, Prince of Tyre for Immersive Animation:
+    A Practice-oriented Case Study'
+  author: Hannes Rall
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2023
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/158/
+  title: '“The Emotions that Get Stuck in Your Throat”: Expressivity in Speech, Script,
+    and Sound in Japanese Animation'
+  author: Daniel Johnson
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2024
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/159/
+  title: 'Yefim Gamburg’s Passion of Spies: Parody in Soviet Animation'
+  author: Sergei Glotov
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2024
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/16/
+  title: The Spectre in the Screen
+  author: Alan Cholodenko
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/160/
+  title: 'Expanded Memories: Artistic Experiments into Hybrid Analogue-Digital Animation'
+  author: Steven Malliet
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2024
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/17/
+  title: Why animation historiography?
+  author: Timo Linsenmaier
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/170/
+  title: 'Finding the voice: Tensions and complexities of animating anonymous queer
+    Hongkongers'
+  author: Tim Pattinson
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2026
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/171/
+  title: 'Beyond Representation: Reimagining Shahnameh in Abstracted Forms of Animation'
+  author: Monireh Astani
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2026
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/172/
+  title: Towards a Theory of Player Character Animation Performativity in Video Game
+    Narratives
+  author: Philip Adrian L. Gungab
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2026
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/174/
+  title: 'Performances of Animative Embodiment: Unbound Bodies Upon an Everyday Stage'
+  author: Greg Langner
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2026
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/18/
+  title: The Ontology of Performance in Stop Animation
+  author: Laura Ivins Hulley
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/19/
+  title: Taking an Appropriate Line
+  author: Van Norris
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/2/
+  title: Cinematic Motion by Hand
+  author: Marina Estela Graça
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2006
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/20/
+  title: Animation (Theory) as the Poematic
+  author: Alan Cholodenko
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/21/
+  title: 'An Animated Dialogue: Moving Into the Local'
+  author: Amanda Third
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/22/
+  title: Battlefields for the Undead
+  author: Paul Wells
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/23/
+  title: In the Sand a Line is Drawn
+  author: Adrian Martin
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/24/
+  title: '(The) Death (of) the Animator, or: the Felicity of Felix, Part I'
+  author: Alan Cholodenko
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/25/
+  title: Performing a Traumatic Effect
+  author: Dirk de Bruyn
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/26/
+  title: Superflat Eschatology
+  author: Michael Broderick
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/27/
+  title: The Uncanny and the Robot in the Astro Boy Episode “Franken”
+  author: Katharine Buljan
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/28/
+  title: Final Fantasy or The Incredibles
+  author: Matthew Butler
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/29/
+  title: Flowerpot Men
+  author: Cordelia Brown
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/3/
+  title: What is (not) so French in Les Triplettes de Belleville
+  author: Pierre Floquet
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2006
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/30/
+  title: Facial Expressions for Empathic Communication of Emotion in Animated Characters
+  author: Andrew Buchanan
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/31/
+  title: Behind the Flash Exterior
+  author: Peter Moyes
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/32/
+  title: The Svankmajer Touch
+  author: Cathryn Vasseleu
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/33/
+  title: How Michaela Pavlatova both incorporates and rebels against the Czech animation
+    tradition
+  author: Miriam Harris
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/34/
+  title: Reaching Out to Touch
+  author: Zhi-Ming Su
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/35/
+  title: Recording Australian Animation History
+  author: Dan & Lienors Torre
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/36/
+  title: Using chronophotography to replace Persistence of Vision as a theory for
+    explaining how animation and cinema p
+  author: Paul St. George
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/37/
+  title: 'Revolutionary cels: The Sydney waterfront, Harry Reade and Cuban animation'
+  author: Max Bannah
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2009
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/38/
+  title: 'Kinesic constructions: An aesthetic analysis of movement and performance
+    in 3D animation'
+  author: Adam de Beer
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2010
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/39/
+  title: 'To Be or Not to Be - Anime: The Controversy in Japan over the “Anime” Label'
+  author: Sheuo Hui Gan
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2010
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/4/
+  title: 'Animated Appeal: A Survey of Production Methods in Children’s Software'
+  author: Tom Klein
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2007
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/41/
+  title: '“Touching Cloth...”: Considering Satire and the Clergy in Popular Contemporary
+    British Animation'
+  author: Van Norris
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2010
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/42/
+  title: We're Asian, More Expected of Us
+  author: Alison Loader
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/43/
+  title: Uncanny breaches, flimsy borders
+  author: Meg Rickards
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/44/
+  title: Through the Looking Glass
+  author: María Lorenzo Hernández
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/45/
+  title: Subversive or Submissive?
+  author: Michael S. Daubs
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/46/
+  title: 'Actors in Sin City’s Animated Fantasy: Avatars, Aliens, or Cinematic Dead-ends?'
+  author: Animation Studies
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/48/
+  title: 'Woody’s Roundup and Wall-E’s Wunderkammer: Technophilia and Nostalgia in
+    Pixar Animation'
+  author: Colleen Montgomery
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/49/
+  title: 'Tradigital Mythmaking: New Asian Design Ideas for Animation'
+  author: Hannes Rall
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/5/
+  title: '(The) Death (of) the Animator, or: The Felicity of Felix, Part II'
+  author: Alan Cholodenko
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2007
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/50/
+  title: The Secret of Kells (2009), a film for a post Celtic Tiger Ireland?
+  author: Maria O’Brien
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/51/
+  title: '"An Experiment in Pure Design:" The Minimalist Aesthetic in the Line Films
+    of Norman McLaren'
+  author: Aimee Mollaghan
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/52/
+  title: Masculinity Between Animation and Live Action, or, SpongeBob v. Hasselhoff
+  author: Shannon Brownlee
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/53/
+  title: 'Decoding the Real: A Multimodal Social Semiotic Analysis of Reality in Animated
+    Documentary'
+  author: Javad Khajavi
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/54/
+  title: Animating unique brain states
+  author: Samantha Moore
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/55/
+  title: The Transformation of the Teenage Image in Oshii Mamoru’s The Sky Crawlers
+  author: Sheuo Hui Gan
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/56/
+  title: Animated Documentaries as Masking
+  author: Nea Ehrlich
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/57/
+  title: Strategies for a Reduction to 2D Graphical Styles in 3D Computer Graphics
+    with Hybrid Aesthetics
+  author: Yen Jung Chang
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2011
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/58/
+  title: How Computers Re-Animated Hand-Made Processes and Aesthetics for Artistic
+    Animation
+  author: Sara Álvarez Sarrat
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2013
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/59/
+  title: 'Parallel Synchronized Randomness: Stop-motion Animation in Live Action Feature
+    Films'
+  author: Jane Shadbolt
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2013
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/6/
+  title: 'Breaking Boundaries: The Representation of Split Identity in Anime'
+  author: Caroline Ruddell
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2007
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/60/
+  title: Art, Animation and the Collaborative Process
+  author: Heather L. Holian
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2013
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/61/
+  title: 'Animation in the street: The seductive silence of Blu'
+  author: Brad Yarhouse
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2013
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/62/
+  title: '“Space: The Final Fun‐tier” – Returning Home to the Frontier in Pixar’s
+    WALL‐E'
+  author: Dietmar Meinel
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2013
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/63/
+  title: '"Quick--Like a Bunny!" The Ink and Paint Machine, Female Labor and Color
+    Production'
+  author: Kirsten Thompson
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2014
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/64/
+  title: 'Digital Beings: An Opportunity for Australian Visual Effects'
+  author: Chris Carter
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2014
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/65/
+  title: Waliczky in Wonderland
+  author: Steve Fore
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2014
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/66/
+  title: 'A Pig, the State, and War: Porco Rosso (Kurenai no Buta)'
+  author: Daisuke Akimoto
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2014
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/67/
+  title: Animating, Ani-Morphing and Un-ani-morphing of the Evolutionary Process in
+    Carl Sagan’s Cosmos
+  author: Animation Studies
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2014
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/68/
+  title: Re:Animating Moths
+  author: Alison Loader
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2014
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/69/
+  title: 'Animation: Textural Difference and the Materiality of Holocaust Memory'
+  author: Victoria Grace Walden
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2014
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/7/
+  title: The Uses and Abuses of Cartoon Style in Animation
+  author: Leslie Bishko
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2007
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/70/
+  title: 'Dancing to rhythm of the music: Norman McLaren, the body and performance'
+  author: Nichola Dobson
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2015
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/71/
+  title: Norman McLaren Beyond 100
+  author: Terence Dobson
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2015
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/72/
+  title: Nature and Technological Innovation in the Films of Iurii Norshtein
+  author: Samantha Haggart
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2015
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/73/
+  title: 'Dot: Animation in theatre for children'
+  author: Beatriz Herráiz Zornoza
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2015
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/74/
+  title: Motion Graphics and Animation
+  author: João Paulo Schlittler
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2015
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/75/
+  title: 'Animation as Conservation: Classical Values in Contemporary Practice'
+  author: Kay Kane
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2015
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/76/
+  title: The Animator as Artist, The Artist as Animator
+  author: Alan Cholodenko
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2015
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/77/
+  title: Rethinking the Rabbit
+  author: Jane Batkin
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/78/
+  title: 'Spatial constructions: A practitioner’s view of animated space'
+  author: Pedro Serrazina
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/79/
+  title: Abstract Inclusion
+  author: Rachel Walls
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/8/
+  title: The Double Sense of Animated Images. A View on the Paradoxes of Animation
+    as a Visual Language
+  author: María Lorenzo Hernández
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/80/
+  title: The Expanding Universe of Animation (Studies)
+  author: Alan Cholodenko
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/81/
+  title: The Orchestration of Emotions in Jerzy Kucia’s Animation
+  author: Cinzia Bottini
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/82/
+  title: 'Intimate Scrutiny: Using Rotoscoping to Unravel the Auteur-Animator Beneath
+    the Theory'
+  author: Sophie Mobbs
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/83/
+  title: 'Rhythm to Reliance: The Globalized Discourse of Indian Animation'
+  author: Timothy Jones
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/84/
+  title: Tactility and the Changing Close-up
+  author: Karen Kriss
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/85/
+  title: 'Pursuing the Animatrix: Musings on Defining a Term to Describe Woman-Centered
+    Animation'
+  author: Andi Spark
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/86/
+  title: 'Jan Švankmajer: Film as Puppet Theatre'
+  author: James Frost
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/87/
+  title: Re-processing The Mystical Rose
+  author: Dirk de Bruyn
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/88/
+  title: 'Recreating Reality: Waltz With Bashir, Persepolis, and the Documentary Genre'
+  author: Jacqueline Ristola
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/89/
+  title: 'Beyond Materiality in Animation: Sensuous Perception and Touch in the Tactile
+    Existence of "Would a Heart Die?'
+  author: Ellen Rocha
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/9/
+  title: Early Connections Between Film and Emerging Media as Evidenced in the Animated
+    Worlds of Adam Beckett
+  author: Pamela Turner
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2008
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/90/
+  title: 'She’s Not There: When New Illusions Meet Ol’ Time RealTtime; Mo-cap, Virtuality
+    and Live Music Performance'
+  author: Peter Moyes
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2016
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/91/
+  title: 'Out of Gravity: Physics in animation and in the films of Hayao Miyazaki'
+  author: Cátia Peres
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2017
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/92/
+  title: Persona, Celebrity, and the Animated Object
+  author: Lienors Torre
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2017
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/93/
+  title: Animation as a Transmedia Interface
+  author: João Paulo Schlittler
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2017
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/94/
+  title: 'Realist Film Theory and Flowers of Evil: Exploring the Philosophical Possibilities
+    of Rotoscoped Animation (wi'
+  author: Jacqueline Ristola
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2017
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/96/
+  title: 'Poetics and Public Projection: Layered History, Redrawn Memory'
+  author: Rose Bond
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2017
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/97/
+  title: Uses of Arabic Calligraphy in Religious Animated Films
+  author: Tariq Alrimawi
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2017
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/98/
+  title: Reflecting on Proto-Animation Techniques in the Mandalic Forms of Persian
+    Traditional Arts
+  author: Leila Honari
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2018
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://journal.animationstudies.org/article/id/99/
+  title: 'Waterline: A documentation of process and interdisciplinary collaboration
+    between tranSTURM and blackhole-fact'
+  author: Rachel Walls
+  license: CC-BY
+  domain: anime
+  mode: http
+  genre: anime
+  theme: animation_studies
+  layers:
+  - L3
+  year: 2018
+  year_basis: meta:citation_publication_date
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/all-out-puppet-attack-monster-puppetry-ishiro-hondas-kaiju-classics
+  title: All-out puppet attack! The monster puppetry in Ishiro Honda’s kaiju classics
+  author: Steven Sloss
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/look-back-two-rival-manga-artists-join-forces-koreedas-sweet-story-teenage-friendship
+  title: 'Look Back review: Drawing closer'
+  author: Blake Simons
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.skwigly.co.uk/acting-animation-character-animation-character-development/
+  title: 'Acting For Animation: Character Development'
+  author: Andy Joule
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: performance
+  layers: []
+  year: 2014
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/acting-animation-character-animation-working-dialogue/
+  title: 'Acting For Animation: Character Animation – Working With Dialogue'
+  author: Andy Joule
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: performance
+  layers: []
+  year: 2014
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/acting-animation-observation/
+  title: Acting For Animation - Observation
+  author: Andy Joule
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: performance
+  layers: []
+  year: 2014
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/acting-for-animation-character-performance/
+  title: Acting For Animation & Character Performance
+  author: Andy Joule
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: performance
+  layers: []
+  year: 2014
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/cartoon-character-animation-maya-book-review/
+  title: '"Cartoon Character Animation with Maya" book review'
+  author: Gareth Cavanagh
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: character_animation
+  layers: []
+  year: 2015
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/character-animation-in-3d-cgi/
+  title: Character Animation In 3D - New Book
+  author: Skwigly
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: character_animation
+  layers: []
+  year: 2004
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/cheatin-in-colour/
+  title: Bill Plympton's Cheatin' In Colour
+  author: Ben Mitchell
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: technique
+  layers: []
+  year: 2013
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/childrens-tv-show-animation-pipeline-cinema-4d/
+  title: 'Walk-through of a Children''s TV Show Animation Pipeline in Cinema 4D: Animatic
+    to Render'
+  author: Skwigly
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: pipeline
+  layers: []
+  year: 2024
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/colourbang-getting-noticed-on-youtube/
+  title: ColourBANG! Getting noticed on YouTube
+  author: Steve Henderson
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: anime_production
+  layers: []
+  year: 2015
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/corporate-animation-showcase-character-design/
+  title: Corporate Animation Showcase 2 - Character Design
+  author: Tom Sanders
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: character_design
+  layers: []
+  year: 2014
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/inbetweens-jessica-meier/
+  title: 'INBETWEENS Filmmaker Focus: Jessica Meier'
+  author: Luzie Lilie
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: anime_production
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/inbetweens-steven-fraser/
+  title: 'INBETWEENS Filmmaker Focus: Steven Fraser'
+  author: Luzie Lilie
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: anime_production
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/piripenguins-unreal-pipeline/
+  title: Wild Child Animation’s Unreal pipeline behind Piripenguins’ hybrid 2D/3D
+    style
+  author: Skwigly
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: pipeline
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.skwigly.co.uk/tony-white-book-2d-animation-career/
+  title: Veteran Traditional 2D Animator Tony White Releases Book Giving Insight into
+    his Career & Life
+  author: Aaron Wood
+  license: PersonalStudy
+  domain: anime
+  mode: http
+  genre: anime
+  theme: character_animation
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://framescinemajournal.com/article/blurring-space-across-film-theatre-and-virtual-reality-zero-calorie-restaurant-2023/
+  title: 'Blurring Space Across Film, Theatre and Virtual Reality: Zero Calorie Restaurant
+    (2023)'
+  author: Frames Cinema Journal
+  license: PersonalStudy
+  domain: axis_theory
+  mode: http
+  genre: film
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://framescinemajournal.com/article/geology-of-ideas-hydrology-of-matter-nature-and-space-in-abbas-kiarostamis-cinema/
+  title: 'Geology of Ideas, Hydrology of Matter: Nature and Space in Abbas Kiarostami''s
+    Cinema'
+  author: Frames Cinema Journal
+  license: PersonalStudy
+  domain: axis_theory
+  mode: http
+  genre: film
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://framescinemajournal.com/article/the-logic-of-disorientation-exploring-space-in-albert-serras-afternoons-of-solitude/
+  title: 'The Logic of Disorientation: Exploring Space in Albert Serra''s Afternoons
+    of Solitude'
+  author: Frames Cinema Journal
+  license: PersonalStudy
+  domain: axis_theory
+  mode: http
+  genre: film
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.studiobinder.com/blog/film-blocking-techniques/
+  title: Film Blocking Techniques
+  author: StudioBinder
+  license: PersonalStudy
+  domain: blocking
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2026
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/c7c1a8f078c559256fbe9ed93ba9e5b8_MIT21L_011F13_2006_Notes.pdf
+  title: MIT 21L.011 The Film Experience - 2006 lecture notes
+  author: MIT OpenCourseWare (David Thorburn)
+  license: CC-BY-NC-SA
+  domain: cinematography
+  mode: http
+  genre: film
+  theme: camera_angle
+  layers: []
+  year: 2013
+  year_basis: url:course_slug
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.bfi.org.uk/features/20-years-children-men-how-london-locations-look-today
+  title: '20 years of Children of Men: how the London locations look today'
+  author: Adam Scovell
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/alfred-hitchcock-london-locations
+  title: 'A tour of Alfred Hitchcock’s London: how the locations look today'
+  author: Adam Scovell
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/finest-hours-danny-glover-malevolent-charmer-sleep-with-anger
+  title: 'Finest hours: Danny Glover as the malevolent charmer in To Sleep with Anger'
+  author: Alex Ramon
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/how-nuclear-attack-locations-from-peter-watkins-war-game-look-today
+  title: How the nuclear attack locations from Peter Watkins’ The War Game look today
+  author: Adam Scovell
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/on-the-beach-stanley-kramer
+  title: 'On the Beach: Hollywood’s star-powered World War III drama'
+  author: Chloe Walker
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/pictures-vivid-behind-scenes-shots-from-jazz-club-l-shaped-room
+  title: 'In pictures: Vivid behind-the-scenes shots from the jazz club in The L-shaped
+    Room'
+  author: Cathi Unsworth
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/search-dorset-locations-nuts-may
+  title: In search of the Dorset locations of Nuts in May
+  author: Adam Scovell
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/watch-play-rise-video-game-adaptation
+  title: 'Watch to play: the rise of the video game adaptation'
+  author: Stuart Burnside
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/features/where-begin-claude-chabrol
+  title: Where to begin with Claude Chabrol
+  author: Adam Scovell
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2019
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/features/dancing-revolution-cinema-sarah-maldoror
+  title: 'Dancing at the revolution: Sarah Maldoror'
+  author: Rachel Pronger
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/features/devils-advocate-guillermo-del-toro-films-darkness-light
+  title: Guillermo del Toro on Ken Russell’s The Devils
+  author: Guillermo del Toro
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/features/he-was-giant-work-michal-leszczylowski-editor-sacrifice-andrei-tarkovsky
+  title: '“He was a giant”: Michal Leszczylowski on Tarkovsky'
+  author: Michal Leszczylowski
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2024
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/features/it-earns-every-hair-it-stiffens-alejandro-amenabars-others
+  title: '“It earns every hair it stiffens”: The Others'
+  author: Nick James
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/features/misfits-zwigoff-visit-set-ghost-world
+  title: 'The misfits of Zwigoff: a visit to Ghost World''s set'
+  author: SF Said
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/features/monsters-men-peter-wollen-jurassic-park
+  title: 'Of monsters and men: Peter Wollen on Jurassic Park'
+  author: Peter Wollen
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/features/sick-kinky-bbfc-ken-russells-devils
+  title: '“Sick & kinky”: The BBFC and Ken Russell’s The Devils'
+  author: Linda Ruth Williams
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/animol-ashley-walters-proves-instinctive-actors-director-with-tense-cell-block-drama
+  title: 'Animol review: Hard cell'
+  author: Leila Latif
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/bad-apples-saoirse-ronan-this-black-comedys-secret-weapon
+  title: 'Bad Apples review: Core subject'
+  author: Kate Stables
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/bucking-fastard-herzogs-tale-two-sisters-who-speak-unison-his-best-fiction-feature-years
+  title: 'Bucking Fastard review: Sisters in synch'
+  author: Nicolas Rapold
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/everybody-digs-bill-evans-gentle-sonata-loss
+  title: 'Everybody Digs Bill Evans review: Devastating rhythm'
+  author: Ehsan Khoshbakht
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/everytime-sandra-wollners-digital-age-fairytale-finds-light-time-grief
+  title: 'Everytime review: a digital-age fairytale'
+  author: Alexander Mooney
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/ghost-song-fleshed-out-full-blooded-portrayal-youthful-amour-fou
+  title: 'Ghost Song review: a sweet paranormal romance'
+  author: Neil Young
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/heart-beast-bracingly-executed-man-dog-survival-story
+  title: 'Heart of the Beast review: One man and his dog'
+  author: Jonathan Romney
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/julia-set-chase-infiniti-levels-college-romance-coming-ager
+  title: 'The Julia Set review: To Infiniti and beyond'
+  author: Adam  Nayman
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/let-us-through-dear-ancestors-lav-diaz-explores-horrors-inflicted-upon-philippine-islands-smart-historical-epic
+  title: Let Us Through, Dear Ancestors review
+  author: Travis Jeppesen
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/nowhere-lay-my-eyes-hong-sang-soos-meditative-family-drama-familiar-all-right-ways
+  title: Nowhere to Lay My Eyes review
+  author: Josh Slater-Williams
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/possible-love-lee-chang-dongs-sober-exploration-economic-disparity-filled-with-quiet-revelations
+  title: 'Possible Love review: Lee Chang-Dong’s marriage story'
+  author: Jonathan Romney
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/remake-heartbreaking-exploration-slippage-between-documentary-fiction
+  title: 'Remake review: Loving memory'
+  author: Imogen Sara Smith
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/resident-evil-zach-creggers-thrilling-reboot-pares-things-back-essentials-survival-horror
+  title: 'Resident Evil review: Zach Cregger’s thrilling reboot'
+  author: Matthew Taylor
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/rimbaud-patrick-wangs-wildly-unconventional-biopic-19th-century-poet
+  title: 'A. Rimbaud review: a wildly unconventional biopic'
+  author: Philip Concannon
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/super-nature-ed-sayers-super-8-documentary-beautiful-ode-natures-restorative-power
+  title: 'Super Nature review: the butterfly effect'
+  author: Ben Nicholson
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/wild-horse-nine-martin-mcdonagh-deploys-his-trademark-irreverence-funny-sad-1970s-spy-caper
+  title: 'Wild Horse Nine review: McDonagh’s indecent agents'
+  author: Jessica Kiang
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.bfi.org.uk/sight-and-sound/reviews/woman-unknown-may-el-toukhys-elegant-postwar-drama-has-little-beneath-its-surface-tension
+  title: Woman Unknown review
+  author: Jessica Kiang
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.skwigly.co.uk/illuminated-pixels-digital-lighting-book-review/
+  title: 'Illuminated Pixels: The Why, What, and How of Digital Lighting - Book Review'
+  author: Harvey Deneroff
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  genre: anime
+  theme: lighting
+  layers: []
+  year: 2013
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.studiobinder.com/blog/a24-cinematography/
+  title: A24 Cinematography
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2026
+  year_basis: jsonld:datePublished
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.studiobinder.com/blog/close-up-shot/
+  title: The Close-Up Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/different-types-of-camera-movements-in-film/
+  title: Different Types of Camera Movements in Film
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/extreme-close-up-shot-definition/
+  title: Extreme Close-Up Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/eye-level-camera-shot-angle/
+  title: The Eye-Level Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2019
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/handheld-shot-in-film-definition-examples/
+  title: The Handheld Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2020
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/jurassic-park-cinematography/
+  title: Jurassic Park Cinematography
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: film_analysis
+  layers:
+  - L3
+  year: 2020
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 1
+- url: https://www.studiobinder.com/blog/medium-close-up-shot/
+  title: The Medium Close-Up Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/point-of-view-shot-camera-movement-angles/
+  title: The Point of View Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/rack-focus-shot-camera-movement-angles/
+  title: The Rack Focus Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/tilt-shot-in-film/
+  title: The Tilt Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2019
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/tracking-shot-camera-movement-definition/
+  title: The Tracking Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/types-of-camera-shots-sizes-in-film/
+  title: Types of Camera Shots and Sizes in Film
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/wide-shot-camera-angles-movements-examples/
+  title: The Wide Shot
+  author: StudioBinder
+  license: PersonalStudy
+  domain: cinematography
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/what-is-the-golden-ratio-definition/
+  title: The Golden Ratio in Film
+  author: StudioBinder
+  license: PersonalStudy
+  domain: composition
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2022
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/what-is-the-rule-of-thirds/
+  title: The Rule of Thirds
+  author: StudioBinder
+  license: PersonalStudy
+  domain: composition
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2024
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://ocw.mit.edu/courses/21l-011-the-film-experience-fall-2013/08e30130958be2b4eb2a68042cb4750b_MIT21L_011F13_lec_outlines.pdf
+  title: MIT 21L.011 The Film Experience - lecture outlines
+  author: MIT OpenCourseWare (David Thorburn)
+  license: CC-BY-NC-SA
+  domain: editing
+  mode: http
+  genre: film
+  theme: editing
+  layers: []
+  year: 2013
+  year_basis: url:course_slug
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.studiobinder.com/blog/match-cuts-creative-transitions-examples/
+  title: Match Cuts
+  author: StudioBinder
+  license: PersonalStudy
+  domain: editing
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2024
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/soviet-montage-theory/
+  title: Soviet Montage Theory
+  author: StudioBinder
+  license: PersonalStudy
+  domain: editing
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2020
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/what-is-a-jump-cut/
+  title: The Jump Cut
+  author: StudioBinder
+  license: PersonalStudy
+  domain: editing
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2021
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/what-is-a-montage-definition/
+  title: The Montage
+  author: StudioBinder
+  license: PersonalStudy
+  domain: editing
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2024
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/what-is-an-eyeline-match/
+  title: The Eyeline Match
+  author: StudioBinder
+  license: PersonalStudy
+  domain: editing
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2025
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.skwigly.co.uk/storyboarding-tutorial-pt-1-the-dos-and-donts/
+  title: Storyboarding Tutorial - "The Do's and Don'ts"
+  author: Wade Konowalchuk
+  license: PersonalStudy
+  domain: storyboard
+  mode: http
+  genre: anime
+  theme: storyboard
+  layers: []
+  year: 2011
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 2
+- url: https://www.studiobinder.com/blog/shot-list-abbreviations/
+  title: Shot List Abbreviations
+  author: StudioBinder
+  license: PersonalStudy
+  domain: storyboard
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2021
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
+- url: https://www.studiobinder.com/blog/storyboard-composition-techniques/
+  title: Storyboard Composition Techniques
+  author: StudioBinder
+  license: PersonalStudy
+  domain: storyboard
+  mode: http
+  theme: shot_language
+  layers: []
+  year: 2024
+  year_basis: meta:published_time
+  chunk_budget: 20
+  case_budget: 40
