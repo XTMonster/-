@@ -69,6 +69,7 @@
 | **P9** | ③PROGRESS 记检查器调用点 ＋ 查询集来源 ＋ 结果表 | 绿 | 调用点：`tools/knowledge/e3_report.py:112`（层一级）、`:97`（字段越权）、`:100`（线索越权）；查询集：`work/eval_sets/heldout_v4_long21.jsonl`（**64 条**，`sha256=e02161be89eef4ab…`，来自真跑 `docs/evidence/20261006-long21/project/project.bdproj` 的逐镜散文；64 × top_k 3 ＝ **192 行/臂**——台账里那个"192 行"就是行数，不是查询数）；结果表见本表 ① ② 两行 | 2026-10-05 | `b11fc21` |
 | **P9** | ⑤**三臂 × 2 轮的正式读数（D8 的判定证据）** | **绿** | `work/e1_v4pop_ab.json` ＋ `docs/evidence/20261005-p9-v4pop/README.md`：<br>· `hybrid` **0.192708 / 0.192708**（37、37 行；mean 0.192708，极差 0）<br>· `lexical` **0.197917 / 0.182292**（38、35；mean 0.190105，极差 0.015625）<br>· `lightrag`（真索引、`hybrid` 模式、本地嵌入、含线索、指纹 `c1cd106e…`）**0.026042 / 0.026042**（5、5；mean 0.026042，极差 0）<br>· 噪声带 R＝**0.015625**：hybrid↔lexical Δ −0.002603 ⇒ `inconclusive`；**hybrid↔lightrag Δ −0.166666／lexical↔lightrag Δ −0.164063 ⇒ 双双 `separated`**<br>⇒ 按 D8（「ΔE1 ≥ R 且 E3=0 ⇒ lightrag 默认」）**LightRAG 不满足切换条件**，默认路由维持 `hybrid`（`BLOCK_DIRECTOR_RETRIEVAL_LIGHTRAG` 仍默认关）。<br>**可信度**：`all_rounds_used_the_route=true`（6 轮全无降级、lightrag 两轮 64/64 查询有行）、身份字段不一致 0、`terminal_states={"valid":6}`、`seed=20261005`、`rows=64`。<br>**折扣**：hybrid/lexical 各轮 7–14 行只有一位评委（`all_rounds_complete=false`）；lightrag 只测了 `hybrid` 检索模式（`naive` 档与云端那一代走 D3） | 2026-10-05 | 本批 |
 | **D3** | 嵌入路线（本地 `bge-small-zh` 512 ↔ 智谱 `embedding-3` 2048） | **绿（实测对照）** | `docs/evidence/20261005-d3-embedding/`（`e1_d3_embedding.json` ＋ 4 轮录档 ＋ 4 份轮记录）：**同一条 lightrag 路由、同一案例层、同一批 64 条冻结查询、同一面板、同为 `naive` 模式**，只差嵌入器——local **0.026042 / 0.015625**（mean **0.020833**，极差 0.010417）、cloud **0.119792 / 0.114583**（mean **0.117188**，极差 0.005209）；**Δ = +0.096355 ＞ 噪声带 0.010417 ⇒ `separated`**（云端嵌入器把这条路提高约 **5.6×**）。`all_rounds_used_the_route=true`、`terminal_states={"valid":4}`。<br>**与 D8 并存不矛盾**：嵌入器层面云端更好；路由层面即便换云端，LightRAG（0.117）仍低于 hybrid 0.193／lexical 0.190 ⇒ **默认路由仍 `hybrid`**。<br>**小混杂如实记**：拷缓存时本地那代还在收尾 ⇒ 云端那代重抽 2 篇（图谱 6385/6205 vs 6386/6243 节点/边，差 ≈0.6%）；**未核验**：云端那代的 `hybrid` 模式、云端嵌入的联网依赖与成本 | 2026-10-05 | 本批 |
+| **P11** | ①③ 长跑证据链 ＋ 门①–⑩（canonical 入口） | **绿（本批）** | `tools/run_tests.ps1` 32/32 步全绿（Blender 5.2.0 LTS；pytest 2286 passed／1 skipped、`SMOKE_OK`、headless `state=DONE`、11 探针全 `OK`、`tree.json` `stable: true`）；`holdout_gates.json` 门①–⑩ **全 pass**（canonical 带 `--assertable`／`--exclude-cards`／`--reviewer-classes human,llm-panel`）。录档 `docs/evidence/20261005-213820/`。**唯一未达的是那条红线**：`rks.json` 的 `failed_checks: ['RK-13']`（＝ E1 ≥ 0.70，现读数 0.19–0.21）——R3 已如实挂着"不承诺可达、不降线"，但链子仍 `exit 0`，这条口径问题列在阻塞清单第 8 条 | 2026-10-05 | 本批 |
 | **P10** | 指针切换与归档 | 待 | — | — | — |
 | **P11** | 长跑与收尾 | **待（依赖 P10）／⑤ 门①–⑩ 现状已实测记账** | ⑤ 现状（canonical 命令逐字：`python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --exclude-cards knowledge/card_scope.json --json`；录档 `work/_gates_canonical.json`）：**10 绿 1 红**——①总量 2847≥1200、②格式 2847/2847、③种子覆盖、④边类（`--assertable` 补齐后 `short_pairs={}`）、⑤禁忌、⑤b 成员、⑥来源覆盖（`--exclude-cards` 补齐后 `missing 0／ghost 0／share 0.961≥0.95`）、⑧换族、⑨可达、⑩可解析；唯一红的是 **⑦人审 `human_reviewed=0`**（需 212、线 120，门只认 `human`）——**红线不许伪造**，单列 **D12**（见上一步的更正说明：上一版把 ④⑥ 记成红是**漏传了两个已裁决的输入**） | 2026-10-05 | 本批 |
 
@@ -149,3 +150,18 @@
    * 唯一还红的是 **门⑦ 人审**：`needs_human 212／human_reviewed 0／线 120`，门的
      `accepted_reviewers` 只有 `["human"]`——**这条是红线，不许伪造**，单列 **D12** 等你裁决。
 6. **P11 的其余四件**（①长跑证据链、②RK-13、③既有探针清单、④终态文档）都排在 **P10 之后**。
+7. **更正（本批实测）：门①–⑩ 在 canonical 入口下 11/11 全 pass，且长跑证据链已跑绿。**
+   ① `tools/run_tests.ps1` 在 **Blender 5.2.0 LTS**（`D:\Blender 5.2\blender.exe`，经 `BLENDER_EXE`）
+   上原样跑完 **32/32 步**：pytest 2286 passed／1 skipped、in-Blender `SMOKE_OK`、
+   headless 全链 `state=DONE`（355 步／146 LLM／19 工具／64 镜）、11 个 Blender 探针全 `OK`、
+   **树稳定性通过**（`tree.json` 的 `stable: true`）。录档 `docs/evidence/20261005-213820/`。
+   ③ 同一份录档里的 `holdout_gates.json`：**门①–⑩ 全 pass**——链子的 canonical 调用带
+   `--assertable`＋`--exclude-cards`＋`--reviewer-classes human,llm-panel`（`run_tests.ps1:430`），
+   门⑦ 的 `accepted_reviewers=['human','llm-panel']`。⇒ 前面第 5 条那句「10 绿 1 红」
+   是**更严的单类读法**（只认 `human`），canonical 口径下**没有红门**；两种读法都留在
+   `ADJUDICATIONS_v4.md` 的 D12（A 维持 canonical／B 收紧回 human／C 两口径并报）。
+8. **一条链子自身的口径问题（判据级，须你点头）**：`rks.json` 的 `failed_checks: ['RK-13']`
+   （RK-13 ＝ **E1 ≥ 0.70 那条红线**，现读数 0.19–0.21，R3 早已如实挂着：不承诺可达、不降线），
+   而链子打印 `RK-13 counts as failed` 之后**仍然** `All checks passed.` 并 `exit 0`。
+   也就是说「链子绿」**不包含** RK-13。要么把这一栏写进验收状态，要么让链子非零退出——
+   两条都不该靠默认沉默。
