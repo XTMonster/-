@@ -474,8 +474,10 @@ class _RecordingClient:
         self.scores = scores
         self.fail_on = fail_on
         self.chunks = []
+        self.users = []
 
     def chat_json(self, system, user, temperature, seed, num_ctx, key="", retries=1):
+        self.users.append(user)
         ids = [line.split("｜")[0].strip() for line in user.splitlines()
                if "｜" in line]
         self.chunks.append(ids)
@@ -578,3 +580,41 @@ def test_a_thinking_model_that_needs_a_bigger_budget_stops_failing():
         prompt="select", max_tokens=8192)
     kept = e1_panel.rerank_cases(big, "q", cases, 1)
     assert [case.case_id for case in kept] == ["c1"]
+
+
+def test_the_reranker_can_be_given_the_chinese_clue():
+    """重排器的候选清单可以带上**案例层本来就有的中文线索**（默认 off＝历次口径）。
+
+    为什么该有这条（2026-10-06）：原来的清单只有 `case_id｜英文摘录[:160]`，而**查询是中文**——
+    重排器被要求跨语种判断相关性，却看不到 `search_zh` 这个**已经在检索侧使用的对齐面**。
+    这不是放宽判据，是把信息补到重排侧。
+    """
+    cases = _cases("c1", "c2")
+
+    class _Best:
+        def __init__(self):
+            self.users = []
+
+        def chat_json(self, system, user, temperature, seed, num_ctx, key="",
+                      retries=1):
+            self.users.append(user)
+            return {"best": ["c1"]}
+
+    client = _Best()
+    e1_panel.make_llm_reranker(model="m", provider="x", client=client,
+                               prompt="select")("q", cases)
+    assert "中文线索-c1" not in client.users[0], "默认口径不许带线索"
+
+    client = _Best()
+    e1_panel.make_llm_reranker(
+        model="m", provider="x", client=client, prompt="select",
+        clue_of=lambda cid: "" if cid == "c2" else "中文线索-" + cid)("q", cases)
+    assert "中文线索-c1" in client.users[0], "开了就要把线索写进清单"
+    assert "中文线索-c2" not in client.users[0], "没有线索的案例不许凭空造"
+
+    # 取不到线索（抛错）时退回无线索，不许把重排吞掉。
+    client = _Best()
+    scorer = e1_panel.make_llm_reranker(
+        model="m", provider="x", client=client, prompt="select",
+        clue_of=lambda cid: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert scorer("q", cases) is not None

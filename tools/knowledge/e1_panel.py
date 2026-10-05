@@ -209,8 +209,29 @@ RERANK_PROMPTS = {"order": LLM_RERANK_SYSTEM, "select": LLM_RERANK_SELECT_SYSTEM
                   "score": LLM_RERANK_SCORE_SYSTEM}
 
 
+def _clue_suffix(clue_of, case) -> str:
+    """给出"中文线索"那一格（没有就返回空串）。
+
+    为什么需要它（2026-10-06，本轮最大的一处"信息没给到"）：重排器原来的候选清单只有
+    `case_id｜excerpt[:160]`——**摘录是英文，而导演的查询是中文**。也就是说重排器被要求
+    在**看不到中文线索**的情况下跨越语种判断相关性；而案例层的 `search_zh`（英文摘录的
+    中文蒸馏）**本来就是 BM25 那一侧在用的对齐面**。把它一并交给重排器，就是把这个
+    已经存在的对齐面从"检索侧"延伸到"重排侧"——不是放宽判据，是把**信息补齐**。
+
+    `clue_of=None` ⇒ 返回空串 ⇒ 与历次读数逐字同口径。
+    """
+    if clue_of is None:
+        return ""
+    try:
+        clue = str(clue_of(str(case.case_id)) or "").strip()
+    except Exception:  # noqa: BLE001 - 线索取不到就退回无线索，不许吞掉重排
+        return ""
+    return ("｜" + clue) if clue else ""
+
+
 def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
-                      prompt: str = "order", max_tokens: int = 1024):
+                      prompt: str = "order", max_tokens: int = 1024,
+                      clue_of=None):
     """用 LLM 给宽候选**排序**（`--cases-rerank llm`），返回打分可调用对象。
 
     为什么是"排序"而不是产品那个"过滤"：R3 的算术说明**删行**改变不了"哪 3 条被返回"
@@ -231,7 +252,8 @@ def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
 
     def scorer(query: str, cases):
         items = list(cases)
-        listing = "\n".join("%s｜%s" % (case.case_id, str(case.excerpt)[:160])
+        listing = "\n".join("%s｜%s%s" % (case.case_id, str(case.excerpt)[:160],
+                                          _clue_suffix(clue_of, case))
                             for case in items)
         reply = judge_client.chat_json(system, "查询：%s\n\n候选：\n%s" % (query, listing),
                                        0.0, 0, int(max_tokens))
@@ -550,6 +572,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                              " reasoning，正文变空 ⇒ 那一查询具名降级成 `failed:LLMError`。"
                              "实测（`work/_probe_kimi_rerank_quiet.py`）：顺序跑 64 条有 **8 条**"
                              "失败，其中 **7 条**就是这个空正文陷阱 ⇒ 这条缝就是给它的。")
+    parser.add_argument("--rerank-clue", default="off", choices=("off", "on"),
+                        help="重排时**把案例的中文线索一并交给重排器**（默认 off ＝ 历次口径）。"
+                             "为什么该开：候选清单原来只有 `case_id｜英文摘录[:160]`，"
+                             "而查询是**中文**——重排器被要求跨语种判断，却看不到案例层"
+                             "**本来就有**的中文对齐面（`search_zh`）。这不是放宽判据，"
+                             "是把已经存在于检索侧的信息补到重排侧。证据见 "
+                             "docs/evidence/20261006-rerank-clue/")
     parser.add_argument("--rerank-llm-prompt", default="order",
                         choices=("order", "select", "score"),
                         help="重排提示词的形状：`order` 全序排序／`select` 只挑最该看的 3 条／"
@@ -634,11 +663,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             model=args.rerank_llm_model,
             provider=args.rerank_llm_provider,
             prompt=args.rerank_llm_prompt,
-            max_tokens=args.rerank_llm_max_tokens), \
-            ("%s/%s" % (args.rerank_llm_model, args.rerank_llm_prompt)
-             if int(args.rerank_llm_max_tokens) == 1024 else
-             "%s/%s@%d" % (args.rerank_llm_model, args.rerank_llm_prompt,
-                           int(args.rerank_llm_max_tokens)))
+            max_tokens=args.rerank_llm_max_tokens,
+            clue_of=((lambda cid: (getattr(index, "search_zh", None) or {}).get(cid, ""))
+                     if args.rerank_clue == "on" else None)), \
+            ("%s/%s%s%s" % (args.rerank_llm_model, args.rerank_llm_prompt,
+                            #: 非默认预算才写进标签 ⇒ 默认路径逐字节不变。
+                            ("" if int(args.rerank_llm_max_tokens) == 1024
+                             else "@%d" % int(args.rerank_llm_max_tokens)),
+                            #: 开了中文线索才写（同上，默认路径不变）。
+                            "+clue" if args.rerank_clue == "on" else ""))
     else:
         reranker, rerank_label = None, ""
     rows = score_queries(index, queries, clients, top_k=args.top_k,
