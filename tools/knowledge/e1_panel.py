@@ -193,9 +193,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--limit", type=int, default=0, help="0 = 全部")
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS,
                         help="并发判分的查询条数（只改吞吐，不改判据与产物形状）")
-    parser.add_argument("--adapter", default="none", choices=("none", "lexical"),
-                        help="检索路径：none = 产品现行的 hybrid(BM25)；"
-                             "lexical = 零依赖适配器（精确取值 → BM25 → 可注入重排）")
+    parser.add_argument("--adapter", default="none",
+                        choices=("none", "lexical", "lightrag"),
+                        help="检索臂：none=产品现行 hybrid；lexical=零依赖适配器；"
+                             "lightrag=sidecar 上的真索引（需要先起服务）")
+    parser.add_argument("--lightrag-url", default="",
+                        help="lightrag 臂的 sidecar 地址（默认走适配器的环境变量/默认值）")
+    parser.add_argument("--lightrag-fingerprint", default="",
+                        help="lightrag 臂要求的索引指纹（给了就 fail closed）")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
 
@@ -218,6 +223,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         index = load_index(ROOT / args.cases_dir, backend="lightrag",
                            adapter=make_lexical_adapter(ROOT / args.cases_dir))
         index.path_label = "lexical"          # type: ignore[attr-defined]
+    elif args.adapter == "lightrag":
+        #: 第三条臂（D8 的判定对象）：走 sidecar 上的**真** LightRAG 索引。
+        #: `expected_fingerprint` 给了就 fail closed——不匹配连查都不查。
+        from block_director.knowledge.lightrag_adapter import make_lightrag_adapter
+
+        index = load_index(
+            ROOT / args.cases_dir, backend="lightrag",
+            adapter=make_lightrag_adapter(base_url=args.lightrag_url,
+                                          expected_fingerprint=args.lightrag_fingerprint))
+        index.path_label = "lightrag"         # type: ignore[attr-defined]
     else:
         index = load_index(ROOT / args.cases_dir, backend="hybrid")
         index.path_label = "hybrid"           # type: ignore[attr-defined]

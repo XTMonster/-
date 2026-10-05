@@ -1,11 +1,11 @@
 {
   "_why": "计划 v4 的 R9：判据执行环境（测量仪器）在重建期间必须逐字节不动。任何改动都要走一次显式的重新冻结提交，并在注释里写明理由——否则'红线零改动'只是一句口头承诺。",
   "_refresh": "重算：python -c \"import hashlib,pathlib,json; print(...)\"（见 tests/test_plan_v4_instruments_frozen.py 的 _hash 函数）；重新冻结必须单独提交并把原因写进本文件的 _frozen_at / _reason。",
-  "_frozen_at": "2026-10-05",
-  "_reason": "计划 v4 三循环收口时的基线（循环 1-3 走完，HEAD=effbe88）",
+  "_frozen_at": "2026-10-05（第二次冻结）",
+  "_reason": "第一次：计划 v4 三循环收口时的基线（HEAD=effbe88）。第二次：`e1_panel.py` 新增第三条检索臂 `--adapter lightrag`（D8 的判定需要它）——**判据一个字没动**（分数阈值仍 4.0、评委仍是两位取均值、分母仍是面板条目数），改的只是「能选哪条检索路」。按本文件自己的规矩：有意改动要单独提交一次显式重新冻结并写明理由。",
   "instruments": {
     "tools/knowledge/e1_panel.py": {
-      "sha256": "4c941c77a8becfb9ded6aa7ab0c4fa7c828a9a76704d5c8628e04e50b0904f77",
+      "sha256": "c51df84be838f2bbb805100abd0d3d621993fa096b3c8d14c6e8459afe3c7aef",
       "guards": "E1 的分子定义（两位 LLM 评委 1-5 分均值 >= 4.0）与分母来源"
     },
     "block_director/knowledge/hypergraph.py": {
