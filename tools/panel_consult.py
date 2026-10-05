@@ -267,6 +267,24 @@ def glm_caller(model: str, level: str, max_tokens: int,
     return call
 
 
+def relay_caller(model: str, max_tokens: int,
+                 timeout: float) -> Callable[[List[dict]], Tuple[str, dict]]:
+    """**中转站 GPT-6A** 侧：用户 2026-10-06 把"难题攻关／会诊／提出方案"也划给了它
+    （原话："难题攻关和会诊gpt6A吧"＋"提出方案类用gpt6A，执行交给DeepSeek"）。
+
+    与 GLM 侧的形状差别：**没有档位阶梯**（中转站没有那个开关），所以只做带退避的一次性调用；
+    思考强度由 `RelayClient` 的 `reasoning_effort`（默认 `max`）保证——实测同一问题
+    reasoning 40 → 1034 token（`work/_probe_linkai_thinking.py`）。
+    """
+    from tools import relay_consult as rc
+
+    def call(messages: List[dict]) -> Tuple[str, dict]:
+        return rc.consult(messages, model=model, max_tokens=max_tokens,
+                          levels=["max"], temperature=0.2, timeout=timeout)
+
+    return call
+
+
 def run_role(role: str, question: str, contexts, sources, status_text: str,
              out_dir: Optional[pathlib.Path], *, glm_model: str, deepseek_model: str,
              glm_call: Callable, deepseek_call: Optional[Callable],
@@ -348,6 +366,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--repo", default=str(gc.REPO_ROOT))
     parser.add_argument("--out", required=True)
     parser.add_argument("--glm-model", default=gc.DEFAULT_MODEL)
+    parser.add_argument("--partner", default="relay", choices=("glm", "relay"),
+                        help="会诊的**第二侧**走哪条通道：`relay`（默认，中转站 GPT-6A——"
+                             "用户 2026-10-06：\"难题攻关和会诊gpt6A吧\"、"
+                             "\"提出方案类用gpt6A，执行交给DeepSeek\"）／"
+                             "`glm`（GLM-5.3 档位阶梯，留作对拍与回退）。"
+                             "**执行**永远只在主线的 DeepSeek 上做。")
+    parser.add_argument("--partner-model", default="",
+                        help="第二侧的型号（留空＝按 --partner 取：relay→gpt-6-astra、glm→glm-5.3）")
     parser.add_argument("--deepseek-model", default="deepseek-chat")
     parser.add_argument("--main-answer", default="",
                         help="主线程（DeepSeek）自己的判词文件；给了就不走 DeepSeek API")
@@ -394,13 +420,26 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         encoding="utf-8")
 
     main_answers = load_main_answer(args.main_answer) if args.main_answer else {}
-    glm_call = glm_caller(args.glm_model, args.level, args.max_tokens, args.timeout)
+    #: 第二侧的通道与型号：用户 2026-10-06 把"难题攻关／会诊／提出方案"划给中转站 GPT-6A
+    #: （`--partner relay`，默认），GLM-5.3 留作对拍与回退（`--partner glm`）。
+    #: 显式给了 `--partner-model` 就听显式的；再显式给了 `--glm-model` 也听显式的（老调用方兼容）。
+    if args.partner_model:
+        partner_model = args.partner_model
+    elif args.partner == "glm":
+        partner_model = args.glm_model
+    else:
+        from tools import relay_consult as rc
+        partner_model = rc.DEFAULT_MODEL
+    if args.partner == "glm":
+        glm_call = glm_caller(partner_model, args.level, args.max_tokens, args.timeout)
+    else:
+        glm_call = relay_caller(partner_model, args.max_tokens, args.timeout)
     deepseek_call = None if args.main_answer else deepseek_caller(args.deepseek_model)
 
     reports: List[dict] = []
     for role in roles:
         report = run_role(role, question, contexts, sources, status_text, out_dir,
-                          glm_model=args.glm_model, deepseek_model=args.deepseek_model,
+                          glm_model=partner_model, deepseek_model=args.deepseek_model,
                           glm_call=glm_call, deepseek_call=deepseek_call,
                           main_answer=main_answers.get(role))
         reports.append(report)
@@ -415,7 +454,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "reviewed_by": PANEL_TAG,
         "models": {"deepseek": args.deepseek_model, "glm": args.glm_model},
-        "families": {"deepseek": "deepseek", "glm": "zhipu"},
+        "partner": {"channel": args.partner, "model": partner_model},
+        "families": {"deepseek": "deepseek",
+                     "partner": ("zhipu" if args.partner == "glm" else "relay")},
         "source_seen": manifest["source_seen"],
         "sources": [item["name"] for item in manifest["sources"]],
         "complete": all(item["complete"] for item in reports),
@@ -424,7 +465,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     (out_dir / "panel.json").write_text(
         json.dumps(panel, ensure_ascii=False, indent=2), encoding="utf-8")
     (out_dir / "panel.md").write_text(
-        render_panel(reports, glm_model=args.glm_model,
+        render_panel(reports, glm_model=partner_model,
                      deepseek_model=args.deepseek_model,
                      sources=sources, contexts=contexts),
         encoding="utf-8")

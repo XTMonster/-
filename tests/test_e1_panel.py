@@ -686,3 +686,30 @@ def test_the_two_stage_rerank_splits_a_long_list_and_keeps_only_ranked_ids():
     e1_panel.make_llm_reranker(model="m", provider="x", client=one,
                                prompt="select")("q", cases)
     assert one.calls == 1
+
+
+def test_the_embedding_reranker_ranks_by_cosine_on_the_chinese_face():
+    """嵌入重排：按**余弦**排序，被编码的是候选的**中文线索**（没有线索退回英文摘录）。
+
+    为什么走这条（2026-10-06 P14-226 的结论）：`deepseek-chat` 那条"大模型读清单挑 3 条"
+    六种配置全试过、见顶在 ~0.44（上限 0.8438 的 52~55%）。嵌入这一侧没被压榨过，
+    而且它**确定性**、便宜、**与两位评委不同族**（不带"同族自证"折扣）。
+    """
+    cases = [Case(case_id="c1", title="t", excerpt="E-one"),
+             Case(case_id="c2", title="t", excerpt="E-two"),
+             Case(case_id="c3", title="t", excerpt="E-three")]
+    table = {"查": [1.0, 0.0], "线-c1": [1.0, 0.0], "线-c2": [0.0, 1.0],
+             "线-c3": [0.7, 0.7]}
+
+    def encoder(texts):
+        return [table.get(str(text), [0.0, 1.0]) for text in texts]
+
+    scorer = e1_panel.make_embedding_reranker(
+        encoder=encoder, clue_of=lambda cid: "" if cid == "c3" else "线-" + cid)
+    kept = e1_panel.rerank_cases(scorer, "查", cases, 2)
+    assert [case.case_id for case in kept] == ["c1", "c2"], (
+        "c1 余弦 1.0 排第一；c2 与 c3 都是 0.0（c3 没线索 ⇒ 退回英文摘录 E-three、"
+        "不在表里 ⇒ 兜底向量），并列按 case_id 定序 ⇒ c2 在前")
+    scores = scorer("查", cases)
+    assert len(scores) == len(cases)
+    assert scores[0] == 1.0 and scores[1] == 0.0 and scores[2] == 0.0

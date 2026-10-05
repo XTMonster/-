@@ -240,13 +240,82 @@ def _clue_suffix(clue_of, case) -> str:
 
     `clue_of=None` ⇒ 返回空串 ⇒ 与历次读数逐字同口径。
     """
+    clue = _clue_text(clue_of, case)
+    return ("｜" + clue) if clue else ""
+
+
+def _clue_text(clue_of, case) -> str:
+    """取该案例的**中文线索原文**（没有就空串）。"""
     if clue_of is None:
         return ""
     try:
-        clue = str(clue_of(str(case.case_id)) or "").strip()
+        return str(clue_of(str(case.case_id)) or "").strip()
     except Exception:  # noqa: BLE001 - 线索取不到就退回无线索，不许吞掉重排
         return ""
-    return ("｜" + clue) if clue else ""
+
+
+def load_embedder(model_name: str = "BAAI/bge-small-zh-v1.5", device: str = ""):
+    """加载**中文嵌入器**（延迟 import；主环境零依赖，只有 venv 里跑得动）。
+
+    为什么走这条路（2026-10-06，P14-226 的结论）：`deepseek-chat` 那条"大模型读清单挑 3 条"
+    的重排**六种配置全试过、见顶在 ~0.44**（上限 0.8438 的 52～55%），换形状/补信息/拆批次
+    都推不动。而 D3 实测过：**同一路由换更好的嵌入器，E1 提高约 5.6 倍** ⇒ 嵌入这一侧
+    才是没被压榨过的地方。它还有两个附带好处：**确定性**（同输入同分数，可复现）与
+    **与两位评委不同族**（把"同族自证"那条折扣也去掉）。
+
+    `bge` 系列的推荐池化是取 `[CLS]`（`last_hidden_state[:, 0]`），本函数照它做。
+    """
+    import os
+
+    os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+    import torch
+    from transformers import AutoModel, AutoTokenizer
+
+    chosen = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name).to(chosen)
+    model.eval()
+
+    def encode(texts):
+        batch = tokenizer(list(texts), padding=True, truncation=True,
+                          max_length=512, return_tensors="pt")
+        batch = {key: value.to(chosen) for key, value in batch.items()}
+        with torch.no_grad():
+            hidden = model(**batch).last_hidden_state
+        return [[float(value) for value in row] for row in hidden[:, 0]]
+
+    return encode
+
+
+def make_embedding_reranker(*, model_name: str = "BAAI/bge-small-zh-v1.5",
+                            device: str = "", clue_of=None, encoder=None):
+    """**嵌入重排**：查询与候选各编码一次，按余弦排序（确定性、便宜、与评委不同族）。
+
+    被编码的候选文本＝**该案例的中文线索**（`search_zh`）；没有线索的案例退回英文摘录。
+    查询是中文 ⇒ 与中文线索在同一语种面上比，绕开"中文查询 vs 英文摘录"那道跨语种鸿沟。
+    """
+    encode = encoder or load_embedder(model_name, device=device)
+
+    def scorer(query: str, cases):
+        items = list(cases)
+        texts = [(_clue_text(clue_of, case) or str(getattr(case, "excerpt", "") or ""))
+                 for case in items]
+        vectors = encode([str(query)] + texts)
+        query_vector = _unit(vectors[0])
+        return [_dot(query_vector, _unit(vector)) for vector in vectors[1:]]
+
+    return scorer
+
+
+def _unit(vector):
+    norm = sum(float(value) * float(value) for value in vector) ** 0.5
+    if norm <= 0:
+        return [0.0 for _ in vector]
+    return [float(value) / norm for value in vector]
+
+
+def _dot(left, right) -> float:
+    return float(sum(a * b for a, b in zip(left, right)))
 
 
 def _llm_rerank_label(args) -> str:
@@ -637,7 +706,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="过滤器的 LLM 通道（判据提示词与产品同一份）")
     parser.add_argument("--filter-model", default="deepseek-chat")
     parser.add_argument("--cases-rerank", default="off",
-                        choices=("off", "cross-encoder", "llm"),
+                        choices=("off", "cross-encoder", "llm", "embedding"),
                         help="retrieve-then-rerank：`cross-encoder` ＝ 先取宽候选"
                              "（`--rerank-retrieve-k`）再重排取 `--top-k`；`llm` ＝ 用 LLM 排序。"
                              "默认 off ＝ 历次口径")
@@ -646,6 +715,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="重排前的候选条数（只会被减法裁到 `--top-k`）")
     parser.add_argument("--rerank-device", default="",
                         help="留空＝cuda 可用就用 cuda")
+    parser.add_argument("--rerank-embed-model", default="BAAI/bge-small-zh-v1.5",
+                        help="`--cases-rerank embedding` 用的中文嵌入器（默认 "
+                             "bge-small-zh-v1.5：本机已缓存、CUDA 可用。D3 实测："
+                             "同一路由换更好的嵌入器，E1 提高约 5.6 倍 ⇒ 嵌入这一侧值得压榨）")
     parser.add_argument("--rerank-llm-provider", default="qwen",
                         help="`--cases-rerank llm` 的通道（默认 qwen ＝ 第三方裁决通道）")
     parser.add_argument("--rerank-llm-model", default="qwen3.8-max")
@@ -769,6 +842,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             chunk=int(args.rerank_llm_chunk),
             keep_per_chunk=int(args.rerank_llm_keep)), \
             _llm_rerank_label(args)
+    elif args.cases_rerank == "embedding":
+        #: 嵌入重排：编码查询与各候选的**中文线索**，按余弦排序。与两位评委**不同族**，
+        #: 所以它的读数**不带**"同族自证"那条折扣（P14-226 定的方向）。
+        #: 线索**无条件**给它（没有线索的案例退回英文摘录）：对嵌入来说线索不是"额外信息"，
+        #: 而是让"中文查询 ↔ 中文线索"落在同一语种面上的**被编码文本本身**。
+        reranker, rerank_label = make_embedding_reranker(
+            model_name=args.rerank_embed_model, device=args.rerank_device,
+            clue_of=(lambda cid: (getattr(index, "search_zh", None) or {}).get(cid, ""))), \
+            "embed:%s+clue(fallback=excerpt)" % args.rerank_embed_model
     else:
         reranker, rerank_label = None, ""
     rows = score_queries(index, queries, clients, top_k=args.top_k,
