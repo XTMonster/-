@@ -60,3 +60,17 @@ def test_the_query_set_can_be_inferred_from_a_reference_arm(tmp_path):
     path.write_text("\n".join(json.dumps(_row("q%d" % index, 5.0))
                               for index in range(3)) + "\n", encoding="utf-8")
     assert td.queries_in(path) == ["q0", "q1", "q2"]
+
+
+def test_judge_coverage_exposes_silently_missing_judges():
+    """**评委缺席必须看得见**：第一轮 A/B 的启动脚本漏设 GLM key，187 行全是
+    `scores: [1, None]` —— 静默变成"单评委"，而面板照样报一个像样的数。
+    这条把它变成一个可查的字段（`two_judge_rows` / `single_judge_rows`）。
+    """
+    rows = [{"query": "q1", "score": 5.0, "scores": [5, 5]},
+            {"query": "q1", "score": 1.0, "scores": [1, None]},
+            {"query": "q2", "score": 5.0, "scores": [None, 5]}]
+    report = td.two_denominators(rows, queries=["q1", "q2"], top_k=2)
+    assert report["judge_coverage"]["two_judge_rows"] == 1
+    assert report["judge_coverage"]["single_judge_rows"] == 2
+    assert report["judge_coverage"]["complete"] is False

@@ -64,10 +64,22 @@ def two_denominators(rows: Sequence[Dict], *, queries: Sequence[str], top_k: int
             per_query[query] += 1
     missing = sum(1 for query in query_list if per_query[query] == 0)
     fixed = max(1, len(query_list) * int(top_k))
+    #: **评委覆盖**：第一轮 A/B 的启动脚本漏设 GLM key ⇒ 187 行全是
+    #: `scores: [1, None]`，静默变成"单评委"，而面板照样报一个像样的数。
+    #: 把它变成可查字段——任何读数在引用之前先看这一格。
+    two_judge = sum(1 for row in rows
+                    if (row.get("scores") or []) and
+                    all(value is not None for value in (row.get("scores") or [])))
     return {
         "relevant": relevant,
         "queries": len(query_list),
         "top_k": int(top_k),
+        "judge_coverage": {
+            "rows": scored,
+            "two_judge_rows": two_judge,
+            "single_judge_rows": scored - two_judge,
+            "complete": scored > 0 and two_judge == scored,
+        },
         "queries_with_no_rows": missing,
         "rows_missing": sum(max(0, int(top_k) - per_query[query]) for query in query_list),
         #: A：现行口径（分母＝实际打出来的行数）——与历史读数可比。
