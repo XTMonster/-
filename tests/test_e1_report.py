@@ -42,6 +42,30 @@ def test_an_unknown_route_is_refused_and_duplicates_collapse():
         raise AssertionError("路由 %r 竟然被收下了" % bad)
 
 
+def test_one_route_can_carry_two_configs_under_distinct_arm_names():
+    """D3 的用法：同一条 `lightrag` 路由，本地嵌入 vs 云端嵌入各算一个臂。
+
+    臂名进文件名，所以冒号/斜杠（Windows 非法）必须当场拒收；标签不能空。
+    """
+    assert er.parse_routes("lightrag+local,lightrag+cloud") == ["lightrag+local",
+                                                               "lightrag+cloud"]
+    assert er.adapter_of("lightrag+cloud") == "lightrag"
+    assert er.adapter_of("hybrid") == "hybrid"
+    argv = er.panel_argv("lightrag+cloud", heldout=pathlib.Path("h.txt"),
+                         cases_dir=pathlib.Path("cases"), out_path=pathlib.Path("o.jsonl"),
+                         top_k=3, workers=3, lightrag_url="http://127.0.0.1:8812",
+                         lightrag_fingerprint="fp")
+    assert argv[argv.index("--adapter") + 1] == "lightrag"
+    assert argv[argv.index("--out") + 1].endswith("o.jsonl")
+    #: 臂名进文件名 ⇒ 非法字符与空标签都要拒。
+    for bad in ("lightrag:", "lightrag+c loud", "lightrag+", "light/rag+cloud"):
+        try:
+            er.parse_routes(bad)
+        except er.InputError:
+            continue
+        raise AssertionError("臂名 %r 竟然被收下了" % bad)
+
+
 def test_the_panel_argv_is_the_frozen_instruments_cli():
     """本工具**只按 CLI 调** `e1_panel`（冻结仪器），不改它一行。"""
     argv = er.panel_argv("hybrid", heldout=pathlib.Path("h.txt"),

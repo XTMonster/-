@@ -77,20 +77,38 @@ class InputError(RuntimeError):
 
 
 def parse_routes(text: str) -> List[str]:
-    """`"lexical,hybrid,lightrag"` → 有序去重的路由名；不认识的**当场报错**。"""
+    """`"lexical,hybrid,lightrag"` → 有序去重的路由名；不认识的**当场报错**。
+
+    允许 `<路由>+<标签>` 给**同一路由的不同配置**各起一个臂名（D3 的用途：同一条
+    `lightrag` 路由，本地嵌入 `lightrag+local` vs 云端嵌入 `lightrag+cloud`）。
+    臂名进文件名（`reviews.<臂名>.rep<N>.jsonl`），所以只许用文件系统安全的字符——
+    冒号、斜杠、反斜杠一律拒收（Windows 上 `:` 是非法文件名字符，写盘会当场炸）。
+    """
     out: List[str] = []
     for part in str(text or "").split(","):
         name = part.strip()
         if not name:
             continue
-        if name not in ROUTE_ADAPTERS:
+        adapter = adapter_of(name)
+        if adapter not in ROUTE_ADAPTERS:
             raise InputError("未知检索路由 %r（只认 %s）"
-                             % (name, sorted(ROUTE_ADAPTERS)))
+                             % (adapter, sorted(ROUTE_ADAPTERS)))
+        if any(character in name for character in (":", "/", "\\")):
+            raise InputError("臂名不许含冒号或斜杠（要进文件名）：%r" % name)
+        if any(character.isspace() for character in name):
+            raise InputError("臂名不许含空白（要进文件名与 JSON 键）：%r" % name)
+        if not name.split("+", 1)[-1].strip():
+            raise InputError("`<路由>+<标签>` 的标签不能为空：%r" % name)
         if name not in out:
             out.append(name)
     if not out:
         raise InputError("一条路由都没给")
     return out
+
+
+def adapter_of(route: str) -> str:
+    """臂名 → `e1_panel --adapter` 的取值（`lightrag+cloud` → `lightrag`）。纯函数。"""
+    return str(route).split("+", 1)[0]
 
 
 def plan_runs(routes: Sequence[str], runs: int) -> List[Tuple[str, int]]:
@@ -127,11 +145,11 @@ def panel_argv(route: str, *, heldout: pathlib.Path, cases_dir: pathlib.Path,
                out_path: pathlib.Path, top_k: int, workers: int,
                lightrag_url: str = "", lightrag_fingerprint: str = "") -> List[str]:
     """一条读数 → `e1_panel` 的 argv（**冻结仪器的 CLI 就是这条缝**）。纯函数。"""
-    adapter = ROUTE_ADAPTERS[route]
+    adapter = ROUTE_ADAPTERS[adapter_of(route)]
     argv = ["--queries", str(heldout), "--cases-dir", str(cases_dir),
             "--out", str(out_path), "--top-k", str(int(top_k)),
             "--workers", str(int(workers)), "--adapter", adapter]
-    if route in SIDECAR_ROUTES:
+    if adapter_of(route) in SIDECAR_ROUTES:
         if lightrag_url:
             argv += ["--lightrag-url", str(lightrag_url)]
         if not lightrag_fingerprint:
