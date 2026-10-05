@@ -122,6 +122,21 @@ def merge_entries(entries: Sequence[Dict],
         review = (row or {}).get("review")
         action = str((row or {}).get("action") or "")
         if row is not None and action == "drop":
+            #: **分歧不静默剔除**（2026-10-06 实测出来的口径）：第三方判 rejected，但如果
+            #: 该条目上原本挂着 `llm-panel` 的 accepted/amended，那就是**两位裁决者分歧**，
+            #: 按本仓纪律（"分歧单独成表，人只裁分歧"）应当**保留并标记**，而不是按一方
+            #: 的意见把它删掉。删掉还有第二重代价：`gen_cine_0247` 那条是它所属卡片的
+            #: **唯一**一条期望，剔除它会让门⑥ 的 `missing_cards` 直接变红——一条 1:1 的
+            #: 分歧不该有这种后果。只有"两边都判 rejected"（或对面没有记录）才真剔除。
+            prior = entry.get("review") or {}
+            prior_by = str(prior.get("reviewed_by") or "").strip().lower()
+            prior_verdict = str(prior.get("verdict") or "").strip().lower()
+            if prior_by and prior_by != "human" and prior_verdict != "rejected":
+                merged = dict(entry)
+                merged["review"] = review
+                merged["panel_disagreement"] = True
+                kept.append(merged)
+                continue
             dropped.append(ident)
             continue
         merged = dict(entry)

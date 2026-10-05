@@ -145,6 +145,30 @@ def test_merging_writes_the_review_back_and_drops_only_the_rejected():
     assert "review" not in by_id["d"]
 
 
+def test_a_one_to_one_dispute_is_kept_and_flagged_not_silently_dropped():
+    """第三方判 rejected、但条目上原本是 llm-panel 的 accepted ⇒ **分歧**，保留并标记。
+
+    为什么这条重要（2026-10-06 实测）：那 2 条第三方 rejected 的条目**都**挂着 llm-panel 的
+    accepted/amended；其中 `hq_1057` 还是卡 `gen_cine_0247` 的**唯一**一条期望——按一方意见
+    删掉，门⑥ 的 `missing_cards` 立刻变红。1:1 的分歧不该有这种后果。
+    只有"两边都判 rejected"（或对面没有记录）才真剔除。
+    """
+    disputed = _entry("a", review={"reviewed_by": "llm-panel", "verdict": "accepted"})
+    agreed = _entry("b", review={"reviewed_by": "llm-panel", "verdict": "rejected"})
+    fresh = _entry("c")                      # 对面本来就没有记录
+    rows = [{"id": "a", "action": "drop", "review": {"reviewed_by": "third-party",
+                                                     "verdict": "rejected"}},
+            {"id": "b", "action": "drop", "review": {"reviewed_by": "third-party",
+                                                     "verdict": "rejected"}},
+            {"id": "c", "action": "drop", "review": {"reviewed_by": "third-party",
+                                                     "verdict": "rejected"}}]
+    kept, dropped = tp.merge_entries([disputed, agreed, fresh], rows)
+    assert [item["id"] for item in kept] == ["a"], "只有 1:1 的那条被保留"
+    assert kept[0]["panel_disagreement"] is True
+    assert kept[0]["review"]["reviewed_by"] == "third-party"
+    assert dropped == ["b", "c"], "两边一致 reject、或对面没记录 ⇒ 真剔除"
+
+
 def test_the_default_adjudication_channel_is_gpt6a_with_thinking_maxed(monkeypatch):
     """用户 2026-10-06：“**gpt6A 只能用于人工裁决和执行计划书写**”＋“**思考强度拉到最大**”。
 
