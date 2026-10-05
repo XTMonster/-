@@ -1,0 +1,35 @@
+{
+  "实现顾问": {
+    "role": "实现顾问",
+    "summary": "主线（DeepSeek）自答：上限与红线不在同一把尺子上，K 与判分语境必须分开写。",
+    "findings": [
+      {
+        "id": "G1",
+        "title": "K 与判分语境必须写成两个独立旋钮",
+        "claim": "上限(K, ctx)=mean(min(3, 在 K 条候选里判为相关的行数)/3)，其中“相关”由 ctx 语境下的评委给出。现有 0.7760 是 K=20、ctx=20；红线量的是 K=3、ctx=3。两者不可互换，必须同时报。",
+        "severity": "high",
+        "confidence": "high",
+        "where": "tools/knowledge/e1_ceiling_report.py"
+      },
+      {
+        "id": "G2",
+        "title": "现有产物不能判定“大 K 时上限>=0.70”",
+        "claim": "缺的量是“在 ctx=3 语境下、对 K>3 的候选集判分后的相关行数”。K=20 的行是在 ctx=20 语境下打的分（P14-199 已证该语境会把均分抬高），所以不能拿它当 ctx=3 的上限。",
+        "severity": "high",
+        "confidence": "high",
+        "where": "docs/evidence/20261006-e1-judge-context/README.md"
+      },
+      {
+        "id": "G3",
+        "title": "最小新测量：扩大 K、判分语境固定在前 3 行",
+        "claim": "用 e1_panel 以 --top-k K（如 50）取候选，但判分提示词只喂前 3 行，其余 K-3 行只作为“完美重排器可挑选的池子”；再算 mean(min(3, 池中相关数)/3)。判据：存在 K 使该值>=0.70 则结构可达，否则不可达。不降线、不换分母、阈值 4.0 不动。",
+        "severity": "high",
+        "confidence": "medium",
+        "where": "tools/knowledge/e1_panel.py"
+      }
+    ],
+    "not_checked": [
+      "未实跑 K>3 且判分语境固定为 3 行的那次测量"
+    ]
+  }
+}

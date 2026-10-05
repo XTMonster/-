@@ -1,0 +1,44 @@
+{
+  "created_at": "2026-10-06T02:27:38",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "d4c290c",
+    "head_subject": "docs(P14-202): 重复 3 次齐了——\"极差<=0.02\"分语境成立（k=3 成立、k=20 不成立）；D13 触发器再加固",
+    "recent": [
+      "d4c290c docs(P14-202): 重复 3 次齐了——\"极差<=0.02\"分语境成立（k=3 成立、k=20 不成立）；D13 触发器再加固",
+      "bf08f72 docs(P14-201): 控制实验坐实\"跨 --top-k 不可比\"；重排装置 0/192 失败（问题在 qwen 侧）",
+      "065c906 feat(P14-200): 第三方 D13 触发器实测不响（v4 3.42->2.78 vs 现役 3.42）⇒ D13=A 维持；复算入口补\"每查询相关行数\"格",
+      "98525da docs(P14-199): 跨 --top-k 的 E1 不可比（评委给分随候选清单长度漂移）——上限证书的第二处缺口",
+      "8ce228c fix(P14-198): R3 上限不可复现（0.7760<->0.7188）+ 补记 P14-190 漏做的第十次重新冻结"
+    ],
+    "uncommitted": []
+  },
+  "question": {
+    "path": "work/_r3_q.md",
+    "sha256": "148348183a1c0194babb16cd95c87ea3e253982fc403c8a1f3602cbf4eea8a2c",
+    "chars": 995
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "tools/knowledge/e1_ceiling_report.py",
+      "spec": "tools/knowledge/e1_ceiling_report.py:44-125",
+      "range": [
+        44,
+        125
+      ],
+      "file_sha256": "df67bb4fbc4d1c5129d1e1a8058a2b96d721445677d0e410fe5d830642865cd7",
+      "chunk_sha256": "23cc55bb4038cf5f21e2cf4760453e304824569108af4c67405b3d8251d14415",
+      "lines": 82,
+      "chars": 3424
+    }
+  ],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  }
+}
