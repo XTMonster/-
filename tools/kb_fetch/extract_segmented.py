@@ -160,6 +160,81 @@ def segments_of(record: Dict, *, max_chars: int = DEFAULT_MAX_CHARS) -> List[Seg
                         max_chars=max_chars)
 
 
+def _role_for_kind(edge_type: str, kind: str) -> str:
+    """在 schema 里查 `(边型, kind)` 对应的角色（必填优先，其次可选）。查不到给空串。"""
+    for table in (hg.REQUIRED_MEMBERS, getattr(hg, "OPTIONAL_MEMBERS", {})):
+        for role, candidate in table.get(edge_type, ()):
+            if candidate == kind:
+                return role
+    return ""
+
+
+def normalise_members(members, edge_type: str = "") -> List[List]:
+    """把成员**形状**归一成 `[role, kind, node_id(, evidence)]`。**只改形状，不造内容。**
+
+    实测（2026-10-05 的 scoped 试点）：21 条草稿里 **19 条**是同一种滑倒——
+    模型把角色与 kind 合成一格写成 `["allow/emotion", "emotion:喜悦"]`（两段），
+    拒收原因清一色 `bad_role:allow/emotion`。有的模型则给
+    `{"role":…,"kind":…,"node_id":…}`。
+
+    这两类都归一化；**归一化不是放宽判据**：闭集（边型／角色／kind）与必填槽位照样
+    由 `validate_draft` 与现役 `to_edge` 把关，归一化只是把"同一件事的另一种写法"
+    还原成契约形状（与 `to_edge` 里既有别名归一同一性质）。
+    """
+    out: List[List] = []
+    for item in members or []:
+        if isinstance(item, dict):
+            role = item.get("role")
+            kind = item.get("kind")
+            node_id = item.get("node_id") or item.get("node") or item.get("value")
+            evidence = item.get("evidence") or item.get("quote")
+            if role is not None and kind is not None and node_id is not None:
+                row = [str(role), str(kind), str(node_id)]
+                if evidence:
+                    row.append(str(evidence))
+                out.append(row)
+                continue
+            out.append(item)
+            continue
+        if not isinstance(item, (list, tuple)):
+            out.append(item)
+            continue
+        row = [str(part) for part in item]
+        if len(row) == 2:
+            #: `["allow/emotion", "emotion:喜悦"]`：角色与 kind 合成一格。
+            head = row[0]
+            if "/" in head:
+                role, _sep, kind = head.partition("/")
+                if role in hg.ROLES and kind:
+                    out.append([role, kind, row[1]])
+                    continue
+            out.append(row)
+            continue
+        if len(row) >= 3:
+            first, second, third = row[0], row[1], row[2]
+            if first in hg.ROLES and second in hg.ALLOWED_KINDS:
+                out.append([first, second, *row[2:]])
+                continue
+            if "/" in first:
+                role, _sep, kind = first.partition("/")
+                if role in hg.ROLES and kind:
+                    out.append([role, kind, *row[2:]])
+                    continue
+            #: `["beat_type","qualifier","beat_type:establish"]`：角色与 kind **互换**了。
+            if second in hg.ROLES and first in hg.ALLOWED_KINDS:
+                out.append([second, first, *row[2:]])
+                continue
+            #: `["action","action","action:出场"]`：首格是 kind，角色要从 schema 里查。
+            if first in hg.ALLOWED_KINDS and (second == first
+                                              or second not in hg.ROLES):
+                role = _role_for_kind(edge_type, first)
+                if role:
+                    out.append([role, first, *row[2:]])
+                    continue
+        out.append(row)
+    return out
+
+
 def validate_draft(draft: Dict) -> Tuple[bool, str]:
     """**粗闭集 ＋ 出处**检查。返回 ``(ok, reason)``；reason 是**具名**的。
 
@@ -183,7 +258,7 @@ def validate_draft(draft: Dict) -> Tuple[bool, str]:
     edge_type = str(draft.get("type") or "").strip()
     if edge_type not in hg.EDGE_TYPES:
         return False, "bad_type:%s" % edge_type
-    members = draft.get("members")
+    members = normalise_members(draft.get("members"), str(draft.get("type") or ""))
     if not isinstance(members, (list, tuple)) or not members:
         return False, "no_members"
     for item in members:
@@ -213,8 +288,9 @@ SEGMENT_SYSTEM = (
     "只输出 JSON：{\"drafts\":[{\"type\":\"<边型>\",\"members\":[[\"<角色>\",\"<kind>\","
     "\"<kind>:<取值>\"],...],\"confidence\":0-10}]}。\n"
     "规则：①边型、角色、kind 只能用上面列出的闭集，闭集外的**不要写**；"
-    "②成员的第 4 项（可选）写**逐字出自本段**的依据短语；"
-    "③本段没有的耦合就不要写，宁可少一条，也不许编。"
+    "②**必填槽位一个都不能少**；③**原文明说**的槽位，第 4 项写逐字依据；"
+    "④**没明说但能推出的**槽位照样写上、**不写第 4 项**（机器记成 `inferred`，"
+    "本仓设计如此）；⑤只有连推都推不出时才不写这条边。"
 )
 
 
@@ -272,7 +348,8 @@ def edge_type_menu(vocab: Optional[Dict[str, Sequence[str]]] = None) -> str:
         lines.append("%s ← 必填：%s" % (edge_type, required or "（无）"))
     return ("边型与**必填槽位**（缺一即整条边作废）：\n%s\n\n"
             "角色闭集：%s\nkind 闭集：%s\n"
-            "（取值词表由检索侧冻结；拿不准就只写你**逐字看到**的那个。）"
+            "（取值词表由检索侧冻结。原文明说的槽位写逐字依据；**没明说但能推出的**"
+            "照样写上、**不写依据**——机器记成 `inferred`，本仓设计如此。）"
             % ("\n".join(lines), "/".join(sorted(hg.ROLES)),
                "/".join(hg.ALLOWED_KINDS)))
 
@@ -347,6 +424,10 @@ def extract(records: Iterable[Dict], *, llm: Callable[[str], str],
             for draft in parsed:
                 drafts_seen += 1
                 candidate = dict(draft)
+                #: **归一化放在写进草稿之前**：下游 `to_edge` 看到的是契约形状，
+                #: 而不是模型这次的写法（否则归一化只在校验里生效、下游照样被拒）。
+                candidate["members"] = normalise_members(
+                    candidate.get("members"), str(candidate.get("type") or ""))
                 candidate["source"] = {"url": source_ref.get("url"),
                                        "sha256": source_ref.get("sha256"),
                                        "span": list(segment.span)}
@@ -374,7 +455,10 @@ MEMBER_STEP_SYSTEM = (
     "只输出 JSON：{\"members\":[[\"<角色>\",\"<kind>\",\"<kind>:<取值>\"(,\"<依据>\")],...],"
     "\"confidence\":0-10}。\n"
     "规则：①**必填槽位一个都不能少**，缺一即整条边作废；②取值只用下面列出的；"
-    "③成员第 4 项（可选）写**逐字出自本段**的依据短语；④填不齐就返回空数组，不许编。"
+    "③**原文明说**的槽位：第 4 项写一句**逐字出自本段**的依据；"
+    "④**原文没明说但按本段的规则可以推出的**槽位：照样写上，**不要写第 4 项**"
+    "（机器会把它记成 `inferred`，这是本仓设计的一部分，不丢人）；"
+    "⑤只有**连推都推不出**时才返回空数组。"
 )
 
 #: A 段用的标记（测试与排障都靠它区分两段）。
@@ -580,7 +664,8 @@ def extract_two_step(records: Iterable[Dict], *, llm: Callable[[str], str],
                     #: B 段空手同样合法（填不齐就不写）。
                     continue
                 drafts_seen += 1
-                candidate = {"type": edge_type, "members": members,
+                candidate = {"type": edge_type,
+                             "members": normalise_members(members, edge_type),
                              "confidence": confidence, "source": where}
                 ok, reason = validate_draft(candidate)
                 if ok:
@@ -591,6 +676,140 @@ def extract_two_step(records: Iterable[Dict], *, llm: Callable[[str], str],
              "drafts_seen": drafts_seen, "kept": len(drafts_out),
              "rejected": len(rejects), "segments_failed": segments_failed,
              "calls": calls}
+    return drafts_out, rejects, stats
+
+
+# --------------------------------------------------------------------------- #
+# ⑬ 候选边型由**查词表**决定（不问模型）
+# --------------------------------------------------------------------------- #
+
+def node_surfaces(node: Dict) -> List[str]:
+    """一个节点在**正文里可能怎么写**：取值／规范名／同义说法／node_id 的取值段。
+
+    与 `build_hypergraph.node_surfaces()` 同一口径（那边是给"成员依据"回查用的）：
+    中文词表里 `shot_size:MS` 的写法是"中景"，光比对 `MS` 会漏掉绝大多数散文。
+    """
+    out: List[str] = []
+    for key in ("name", "value"):
+        text = str(node.get(key) or "").strip()
+        if text:
+            out.append(text)
+    for alias in node.get("aliases") or ():
+        text = str(alias).strip()
+        if text:
+            out.append(text)
+    node_id = str(node.get("node_id") or "")
+    if ":" in node_id:
+        tail = node_id.split(":", 1)[1].strip()
+        if tail:
+            out.append(tail)
+    return list(dict.fromkeys(out))
+
+
+def candidate_types(text: str, nodes: Sequence[Dict]) -> List[str]:
+    """**确定性**地选出候选边型：正文里出现了它必填 kind 的词表取值就算候选。
+
+    为什么不让模型分类（台账 ⑬）：A 段那种"先问支持哪些边型"实测对 700–1,040 字的
+    段**一律返回空**；而"这段里出现了哪些取值"是**词表在手就能判**的事。
+
+    排序：命中必填 kind 数多的在前；并列时按 `hg.EDGE_TYPES` 的顺序（稳定）。
+    """
+    haystack = str(text or "")
+    matched_kinds = set()
+    for node in nodes or ():
+        kind = str(node.get("type") or "")
+        if not kind or kind not in hg.ALLOWED_KINDS:
+            continue
+        if any(surface and surface in haystack for surface in node_surfaces(node)):
+            matched_kinds.add(kind)
+    scored = []
+    for order, edge_type in enumerate(hg.EDGE_TYPES):
+        required = {kind for _role, kind in hg.REQUIRED_MEMBERS.get(edge_type, ())}
+        hits = len(required & matched_kinds)
+        if hits:
+            scored.append((-hits, order, edge_type))
+    return [edge_type for _hits, _order, edge_type in sorted(scored)]
+
+
+def vocab_from_nodes(nodes: Sequence[Dict]) -> Dict[str, List[str]]:
+    """把节点表收成 `kind -> [取值]`（`member_prompt` 要的形状）。"""
+    table: Dict[str, List[str]] = {}
+    for node in nodes or ():
+        kind = str(node.get("type") or "")
+        value = str(node.get("value") or node.get("name") or "").strip()
+        if kind and value:
+            table.setdefault(kind, [])
+            if value not in table[kind]:
+                table[kind].append(value)
+    return {kind: sorted(values) for kind, values in table.items()}
+
+
+def extract_scoped(records: Iterable[Dict], *, llm: Callable[[str], str],
+                   nodes: Sequence[Dict],
+                   max_chars: int = DEFAULT_MAX_CHARS,
+                   limit_segments: int = 0,
+                   min_chars: int = DEFAULT_MIN_CHARS,
+                   vocab: Optional[Dict[str, Sequence[str]]] = None,
+                   max_types_per_segment: int = 3
+                   ) -> Tuple[List[Dict], List[Dict], Dict]:
+    """**查表选边型 ＋ 逐边型填槽位**的驱动（⑬）。
+
+    与 `extract_two_step` 的唯一区别：**候选边型不看模型**，由
+    :func:`candidate_types` 用词表在正文里查出来；只有这样才绕开"A 段返空"那个失败。
+    没命中的段**一次调用都不花**（记 `segments_skipped_no_candidate`）。
+    """
+    table = dict(vocab) if vocab is not None else vocab_from_nodes(nodes)
+    drafts_out: List[Dict] = []
+    rejects: List[Dict] = []
+    segments_seen = 0
+    skipped_short = 0
+    skipped_no_candidate = 0
+    drafts_seen = 0
+    calls = 0
+    for record in records:
+        source_ref = dict(record.get("source_ref") or {})
+        for segment in segments_of(record, max_chars=max_chars):
+            if limit_segments and segments_seen >= limit_segments:
+                break
+            segments_seen += 1
+            if len(segment.text) < min_chars:
+                skipped_short += 1
+                continue
+            candidates = candidate_types(segment.text, nodes)[:max_types_per_segment]
+            if not candidates:
+                skipped_no_candidate += 1
+                continue
+            where = {"url": source_ref.get("url"), "sha256": source_ref.get("sha256"),
+                     "span": list(segment.span)}
+            for edge_type in candidates:
+                try:
+                    calls += 1
+                    members, confidence, fault = parse_members(
+                        llm(member_prompt(segment, edge_type, table)))
+                except Exception as exc:  # noqa: BLE001
+                    members, confidence, fault = [], None, (
+                        "llm_error:%s: %s" % (type(exc).__name__, exc))
+                if fault is not None:
+                    drafts_seen += 1
+                    rejects.append({"reason": fault, "source": where, "step": "members",
+                                    "type": edge_type})
+                    continue
+                if not members:
+                    continue          # 空手合法
+                drafts_seen += 1
+                candidate = {"type": edge_type,
+                             "members": normalise_members(members, edge_type),
+                             "confidence": confidence, "source": where}
+                ok, reason = validate_draft(candidate)
+                if ok:
+                    drafts_out.append(candidate)
+                else:
+                    rejects.append({"reason": reason, "draft": candidate,
+                                    "step": "validate"})
+    stats = {"segments": segments_seen, "skipped_short": skipped_short,
+             "segments_skipped_no_candidate": skipped_no_candidate,
+             "drafts_seen": drafts_seen, "kept": len(drafts_out),
+             "rejected": len(rejects), "calls": calls}
     return drafts_out, rejects, stats
 
 
@@ -687,9 +906,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         help="先在这份语料上现建 v4 词表，把**每个 kind 的允许取值**"
                              "写进提示词（实测：不写它模型会自由造值，接上取值词表关后"
                              "4/4 被拒）")
-    parser.add_argument("--mode", default="single", choices=["single", "two-step"],
+    parser.add_argument("--mode", default="single",
+                        choices=["single", "two-step", "scoped"],
                         help="single＝一次调用给全部约束（实测会把模型压死）；"
-                             "two-step＝A 问边型、B 只带那一个边型的 kind 与取值")
+                             "two-step＝A 问边型、B 只带那一个边型的 kind 与取值"
+                             "（A 实测返空）；"
+                             "scoped＝**查词表**选候选边型、再逐个填槽位（不看模型分类）")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     records = load_records(pathlib.Path(args.corpus))
@@ -719,10 +941,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             from tools.kb_fetch import build_shadow as bs  # type: ignore
         _nodes, vocab = bs.build_vocab(
             bs.segment_cards(pathlib.Path(args.corpus), max_chars=args.max_chars))
-    runner = extract_two_step if args.mode == "two-step" else extract
-    drafts, rejects, stats = runner(records, llm=client, max_chars=args.max_chars,
-                                    limit_segments=args.limit_segments,
-                                    min_chars=args.min_chars, vocab=vocab)
+    if args.mode == "scoped":
+        #: 查表选边型要节点表（取值 ＋ 中文写法），走影子构建同一份建表逻辑。
+        try:  # noqa: PLC0415
+            from . import build_shadow as bs  # type: ignore
+        except ImportError:
+            from tools.kb_fetch import build_shadow as bs  # type: ignore
+        nodes, built = bs.build_vocab(
+            bs.segment_cards(pathlib.Path(args.corpus), max_chars=args.max_chars))
+        drafts, rejects, stats = extract_scoped(
+            records, llm=client, nodes=nodes,
+            max_chars=args.max_chars, limit_segments=args.limit_segments,
+            min_chars=args.min_chars, vocab=vocab or built)
+    else:
+        runner = extract_two_step if args.mode == "two-step" else extract
+        drafts, rejects, stats = runner(records, llm=client, max_chars=args.max_chars,
+                                        limit_segments=args.limit_segments,
+                                        min_chars=args.min_chars, vocab=vocab)
     common.write_jsonl(out_dir / EXTRACT_NAME, drafts)
     common.write_jsonl(out_dir / REJECTS_NAME, rejects)
     print(json.dumps({"overall": "pass", "prompt_version": PROMPT_VERSION,

@@ -387,3 +387,172 @@ def test_short_chrome_segments_are_skipped_not_sent_to_the_model():
     assert stats["skipped_short"] == 1
     assert stats["segments"] == 2
     assert len(drafts) == 1 and rejects == []
+
+
+# --- ⑬ 候选边型由**查词表**决定，不问模型 -------------------------------------
+
+def _nodes():
+    """最小节点表：`name`/`aliases` 用来在正文里做匹配。"""
+    return [
+        {"node_id": "shot_size:MS", "type": "shot_size", "name": "中景",
+         "value": "MS", "aliases": ["MS", "中景镜头"]},
+        {"node_id": "lens:50mm", "type": "lens", "name": "50mm",
+         "value": "50mm", "aliases": []},
+        {"node_id": "headroom_policy:board", "type": "headroom_policy",
+         "name": "board", "value": "board", "aliases": []},
+        {"node_id": "pacing:short", "type": "pacing", "name": "短镜",
+         "value": "short", "aliases": ["快剪"]},
+        {"node_id": "avg_shot_len:>8s", "type": "avg_shot_len", "name": ">8s",
+         "value": ">8s", "aliases": []},
+    ]
+
+
+def test_candidate_types_come_from_a_vocabulary_lookup_not_from_the_model():
+    """正文里出现某边型**必填 kind** 的词表取值 ⇒ 它就是一个候选边型。
+
+    为什么要这样（台账 ⑬）：让模型"先分类"（A 段）实测对 700–1,040 字的段
+    **一律返回空**；而"这段里出现了哪些取值"是**词表在手就能判**的事，不该花一次调用。
+    """
+    text = "这一镜用中景，镜头 50mm，剪辑上是快剪。"
+    candidates = ex.candidate_types(text, _nodes())
+    assert "SHOT_PATTERN" in candidates          # 中景 ＋ 50mm 命中它的两个必填 kind
+    assert "EDIT_RHYTHM" in candidates           # 快剪（pacing 的别名）命中一个
+    assert "AXIS_RULE" not in candidates         # 正文里没有它的 kind 取值
+
+
+def test_candidate_types_are_ranked_and_deterministic():
+    text = "用中景，镜头 50mm，剪辑上是快剪。"
+    first = ex.candidate_types(text, _nodes())
+    second = ex.candidate_types(text, _nodes())
+    assert first == second, "同输入必须同输出"
+    #: 命中更多必填 kind 的排前面（SHOT_PATTERN 命中 2 个，EDIT_RHYTHM 命中 1 个）。
+    assert first.index("SHOT_PATTERN") < first.index("EDIT_RHYTHM")
+
+
+def test_scoped_extraction_only_calls_the_model_for_candidate_types():
+    seen = []
+
+    def fake_llm(prompt: str) -> str:
+        seen.append(prompt)
+        return json.dumps({"members": [["allow", "shot_size", "shot_size:MS"],
+                                       ["allow", "lens", "lens:50mm"],
+                                       ["qualifier", "headroom_policy",
+                                        "headroom_policy:board"]],
+                           "confidence": 8})
+
+    record = {"source_ref": {"url": "u", "sha256": "n" * 64},
+              "text": "这一镜用中景，镜头 50mm。",
+              "source": {"url": "u", "sha256": "n" * 64, "span": [0, 40]}}
+    drafts, _rejects, stats = ex.extract_scoped(
+        [record], llm=fake_llm, nodes=_nodes(), vocab=ex.vocab_from_nodes(_nodes()),
+        min_chars=0)
+    assert len(seen) == stats["calls"], "每次调用都要记进 calls"
+    expected = ex.candidate_types("这一镜用中景，镜头 50mm。", _nodes())[:3]
+    asked = [edge for edge in ex.hg.EDGE_TYPES
+             if any(("边型：%s\n" % edge) in prompt for prompt in seen)]
+    assert asked == expected, "问的边型必须正好是查表得到的候选（不多不少）"
+    assert "SHOT_PATTERN" in asked
+    assert drafts and all(draft["type"] in asked for draft in drafts)
+
+
+def test_scoped_extraction_skips_a_segment_with_no_candidate_type():
+    called = []
+
+    def fake_llm(prompt: str) -> str:
+        called.append(prompt)
+        return json.dumps({"members": []})
+
+    record = {"source_ref": {"url": "u", "sha256": "o" * 64},
+              "text": "这段讲的是影史分期，没有任何取值词表里的词。"}
+    drafts, _rejects, stats = ex.extract_scoped(
+        [record], llm=fake_llm, nodes=_nodes(), vocab={}, min_chars=0)
+    assert called == [] and drafts == []
+    assert stats["calls"] == 0 and stats["segments_skipped_no_candidate"] == 1
+
+
+def test_the_member_prompt_allows_inference_the_way_the_repo_records_it():
+    """提示词必须**允许推断**，并且与 `to_edge` 的记账机制对齐。
+
+    实测依据：我的第一版 B 段写着"填不齐就返回空数组，不许编"，结果 76 次调用
+    **全部返空**；而本仓的设计本来就允许推断——`build_hypergraph.py:178` 记着
+    "284 个槽位里 86 个 quoted（30.3%）／198 个 inferred"，即**多数成员是推断来的**。
+    机制上：`to_edge` 里**给了依据但原文没有** ⇒ `fabricated`；**不给依据** ⇒ `inferred`。
+    所以正确写法是"原文没明说的槽位**不写第 4 项**"。
+    """
+    prompt = ex.member_prompt(SegmentLike("文本"), hg.SHOT_PATTERN, {})
+    assert "inferred" in prompt
+    assert "不要写第 4 项" in prompt
+    #: 反面：不许再出现"填不齐就返回空数组"那种把推断堵死的措辞。
+    assert "填不齐就返回空数组" not in prompt
+    #: 单段提示词同样允许推断。
+    assert "inferred" in ex.edge_type_menu()
+
+
+def test_a_member_that_merges_role_and_kind_is_normalised():
+    """模型常把角色与 kind 写成一格（`["allow/emotion", "emotion:joy"]`）⇒ 归一化。
+
+    实测（2026-10-05 的 scoped 试点）：21 条草稿里 **19 条**全是这一种滑倒，
+    拒收原因清一色 `bad_role:allow/emotion`／`bad_role:qualifier/transition`。
+    形状归一化不是放宽判据——闭集与必填槽位照样由 `to_edge` 把关。
+    """
+    draft = {"type": hg.EMOTION_PACK,
+             "members": [["allow/emotion", "emotion:喜悦"],
+                         ["qualifier/intensity", "intensity:high"]],
+             "source": {"url": "u", "sha256": "p" * 64, "span": [0, 10]}}
+    ok, reason = ex.validate_draft(draft)
+    assert (ok, reason) == (True, "")
+    members = ex.normalise_members(draft["members"])
+    assert members[0] == ["allow", "emotion", "emotion:喜悦"]
+    assert members[1] == ["qualifier", "intensity", "intensity:high"]
+
+
+def test_a_member_with_a_js_object_shape_is_also_normalised():
+    """有的模型给的是 `{"role":…,"kind":…,"node_id":…}`——同样归一化成三元组。"""
+    members = ex.normalise_members([{"role": "allow", "kind": "shot_size",
+                                     "node_id": "shot_size:MS"}])
+    assert members == [["allow", "shot_size", "shot_size:MS"]]
+
+
+def test_normalisation_does_not_invent_anything():
+    """归一化只改形状：合不出来的原样留着，交给闭集判据去拒。"""
+    members = ex.normalise_members([["这不是角色", "也不是 kind"]])
+    assert members == [["这不是角色", "也不是 kind"]]
+
+
+def test_the_three_real_shapes_from_the_scoped_pilot_are_normalised():
+    """scoped 试点里那 19 条 `bad_role` 的**三种真实形状**（逐条照抄自产物）。
+
+    形状归一化不是放宽判据：闭集与必填槽位照样由 `validate_draft` 与 `to_edge` 把关；
+    这里只是把"同一件事的另一种写法"还原成契约形状。
+    """
+    #: ① 3 段、首格含斜杠：`["allow/genre", "genre", "genre:动画"]`
+    case1 = ex.normalise_members([["allow/genre", "genre", "genre:动画"]],
+                                 hg.TROPE)
+    assert case1 == [["allow", "genre", "genre:动画"]]
+    #: ② 首格是 kind、第二格也是 kind：`["action", "action", "action:出场"]`
+    case2 = ex.normalise_members([["action", "action", "action:出场"]],
+                                 hg.ACTION_BEAT)
+    assert case2 == [["allow", "action", "action:出场"]]
+    #: ③ 角色与 kind 互换：`["beat_type", "qualifier", "beat_type:establish"]`
+    case3 = ex.normalise_members([["beat_type", "qualifier", "beat_type:establish"]],
+                                 hg.ACTION_BEAT)
+    assert case3 == [["qualifier", "beat_type", "beat_type:establish"]]
+
+
+def test_the_draft_that_reaches_the_writer_is_already_normalised():
+    """驱动**写进草稿**的成员就得是契约形状——否则下游 `to_edge` 照样被拒。"""
+    def fake_llm(prompt: str) -> str:
+        return json.dumps({"members": [["allow/genre", "genre", "genre:动画"],
+                                       ["allow/emotion", "emotion", "emotion:愉快"]]},
+                          ensure_ascii=False)
+
+    record = {"source_ref": {"url": "u", "sha256": "q" * 64},
+              "text": "这是讲题材与情绪的段落，用中景。",
+              "source": {"url": "u", "sha256": "q" * 64, "span": [0, 30]}}
+    drafts, _rejects, _stats = ex.extract_scoped(
+        [record], llm=fake_llm, nodes=_nodes(), vocab={}, min_chars=0)
+    assert drafts, "应该有草稿产出"
+    for draft in drafts:
+        for member in draft["members"]:
+            assert member[0] in hg.ROLES, member
+            assert "/" not in member[0], member
