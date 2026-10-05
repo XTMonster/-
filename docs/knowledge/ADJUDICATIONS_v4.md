@@ -193,8 +193,13 @@ mean E1 = 0.117188**，Δ = +0.096355 ＞ 噪声带 0.010417 ⇒ **`separated`�
 
 ### 8.1 **裁决已落**（2026-10-05，**第三方 AI**：用户指示"用第三方的ai进行裁决"）
 
-用户指定第三方裁决通道＝阿里云百炼 `qwen3.8-max-0902`（key 只在环境变量里，
-**未进仓库**；端点/型号/白名单实测见 `docs/evidence/20261005-adjudication/README.md`）。
+用户指定第三方裁决通道＝阿里云百炼的 `qwen3.8` **max** 档。**型号口径以用户 2026-10-06 的
+更正为准：用 `qwen3.8-max`，不是 `qwen3.8-max-0902`**——实测前者 200、后者 **403**
+（带日期的 snapshot 不在该 key 的可用集里；同一条纪律：这条通道**不许静默换型号**）。
+两轮判词都留了证：第一轮（`qwen3.8-max-0902`，当时该 snapshot 还能调）与第二轮
+（**`qwen3.8-max`**，用正确的型号重跑）**结论完全一致**（下表）。
+key 只在环境变量里、**未进仓库**；端点/型号/白名单实测见
+`docs/evidence/20261005-adjudication/README.md`。
 三件待裁决与判词（`docs/evidence/20261005-adjudication/verdict.json` ＋
 `verdict_rk13_followup.json`，`reviewed_by: "third-party"`）：
 

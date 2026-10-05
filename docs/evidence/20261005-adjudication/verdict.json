@@ -1,16 +1,16 @@
 {
   "reviewed_by": "third-party",
-  "model": "qwen3.8-max-0902",
-  "model_version": "qwen3.8-max-0902",
+  "model": "qwen3.8-max",
+  "model_version": "qwen3.8-max",
   "usage": {
     "prompt_tokens": 838,
-    "completion_tokens": 1664
+    "completion_tokens": 1435
   },
   "question": "【D13：v4 那一代与门①–⑩ 不同代，P10 指针切换怎么走】\n证据：把 v4 产物喂进门线，门①–⑨ 仍 pass，**门⑩ fail**（must 1636／top1 1603／\nnever 2255 条期望指向 v4 索引里不存在的边）；v4 的可断言面比现役薄一个量级\n（STAGING 16 vs 592、SHOT_PATTERN 6 vs 247），AXIS_RULE 为 0；计划 P5 那条命令\n（`build_hypergraph.py --target-dir … --extractor segmented`）**从来没有可执行入口**，\n落地的 v4 影子把\"卡\"换成了语料片段（33,045 张）。另：D8 已判定**默认路由维持 hybrid**，\n所以切换本身不改产品行为。\nA 承认 v4 是检索侧改进、P10 暂不切换（门①–⑩ 继续按现役那一代验收）\nB 为 v4 重标 oracle（≈1–4 h，按 v4 自己的词表/排除表/可断言面重跑门），\n  风险：可能过不了门①（≥1200 条）⇒ 等于换验收面（红线）\nC 按计划原意重做 P5（同卡层、换抽取器），让 v4 与门①–⑩ 同代；工作量最大、验收线一字不动\n\n【D12：门⑦\"人审\"的口径】\n证据：链子 canonical 入口（`tools/run_tests.ps1:430`）本来就带\n`--reviewer-classes human,llm-panel`，门⑦ 因此 **pass**（`accepted_reviewers=['human','llm-panel']`、\n`reviewed_by_class={'llm-panel': 210}`）；只认 `human` 单类时会 fail（needs_human 212／0）。\n现又新增**第三方通道** `qwen`（与抽取器 deepseek、标注器 zhipu 都不同族）。\nA 维持 canonical（llm-panel 计入）——门全绿，已被链子确认\nB 收紧回 human 单类（更严）——那需要用户补 120 条 verdict\nC 两条口径并报（一格 llm-panel 计数、一格 human 计数），让\"谁裁的\"永远显式\n\n【RK13：链子要不要因为 E1 红线未达而非零退出】\n证据：`rks.json` 的 `failed_checks: ['RK-13']`（RK-13 ＝ E1 ≥ 0.70 那条红线；\n现读数 0.19–0.28，R3 已定\"不降线、不换分母\"），而链子在打印\n`RK-13 counts as failed` 之后仍 `All checks passed.` 且 `exit 0`。\n选项：升格（链子非零退出）／维持（把这一栏写进验收状态即可）。\n",
   "verdict": {
     "D13": "A",
     "D12": "C",
     "RK13": "升格",
-    "why": "v4未达同代验收面且默认路由不变，故不切P10；人审/模型审需双口径显式以防混淆；红线失败必须非零退出以免误报全绿。"
+    "why": "D13按现役代验收避免换面；D12双口径显式区分LLM与人审；RK13红线失败应非零阻断。"
   }
 }
