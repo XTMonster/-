@@ -97,6 +97,27 @@ def _write_reviews(path: pathlib.Path, *, route: str, relevant: int, rows: int =
             "cases_degrade_reason": "",
         }, ensure_ascii=False))
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    #: 同轮的 **V1 轮记录**（执行器在判分前写身份、之后补终态；检查器只读）。
+    _write_round(path.parent, route, _rep_of(path), state="valid", rows=rows)
+
+
+def _rep_of(path: pathlib.Path) -> int:
+    """`reviews.<route>.repN.jsonl` → N（测试夹具用）。"""
+    return int(path.name.rsplit(".rep", 1)[1].split(".")[0])
+
+
+def _write_round(directory: pathlib.Path, route: str, rep: int, *, state: str,
+                 rows: int = 10, **identity) -> pathlib.Path:
+    payload = {"route": route, "rep": rep, "terminal_state": state,
+               "seed": 20261005, "rows": rows, "rows_digest": "r" * 64,
+               "panel": ["deepseek-chat", "glm-5.3"], "panel_digest": "p" * 64,
+               "corpus_manifest_digest": "c" * 64,
+               "hypergraph_manifest_digest": "h" * 64,
+               "identity_written_at": "2026-10-05T00:00:00+00:00",
+               "state_written_at": "2026-10-05T00:00:00+00:00", **identity}
+    path = directory / er.round_record_path(directory, route, rep).name
+    path.write_text(json.dumps(payload, ensure_ascii=False) + "\n", encoding="utf-8")
+    return path
 
 
 def test_the_report_marks_pairs_inside_the_noise_band_as_inconclusive(tmp_path):

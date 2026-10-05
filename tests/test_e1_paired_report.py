@@ -56,6 +56,16 @@ def _write(directory: pathlib.Path, arm: str, rep: int, relevant: int,
              for index in range(total)]
     (directory / ("reviews.%s.rep%d.jsonl" % (arm, rep))).write_text(
         "\n".join(lines) + "\n", encoding="utf-8")
+    #: **V1 的轮记录**（附件 §0／§1）：执行器在判分之前写身份、之后补终态。
+    #: 检查器（`paired_report`）硬依赖它——缺了就只能重跑那一轮。
+    (directory / (ebs.ROUND_RECORD % (arm, rep))).write_text(json.dumps({
+        "route": arm, "rep": rep, "terminal_state": "valid",
+        "seed": 20261005, "rows": total, "rows_digest": "r" * 64,
+        "panel": PANEL, "panel_digest": "p" * 64,
+        "corpus_manifest_digest": "c" * 64, "hypergraph_manifest_digest": "h" * 64,
+        "identity_written_at": "2026-10-05T00:00:00+00:00",
+        "state_written_at": "2026-10-05T00:00:00+00:00",
+    }, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def _build(directory: pathlib.Path, table: dict, reps) -> pathlib.Path:
@@ -174,3 +184,82 @@ def test_cli_general_mode_writes_a_paired_report(tmp_path):
     assert payload["arms_order"] == ["hybrid", "lexical"]
     assert payload["noise_band"] == pytest.approx(0.0)
     assert [pair["verdict"] for pair in payload["pairs"]] == ["inconclusive"]
+
+
+# --- V1／V2（附件 PLAN_HYPERGRAPH_v4_ANNEX.md §0／§1；有约束力）----------------------
+
+
+def test_the_batch_identity_must_match_across_rounds(tmp_path):
+    """**V1 的判据逐字**：同批两臂的轮记录做身份字段 diff，**不一致字段数＝0**。
+
+    为什么值得一条判据：`reviews.*.rep*.jsonl` 只记"判了什么"，不记"这一轮是在**什么
+    身份**下跑的"。两臂若不是同一个 seed／行清单／评委配置／语料构建，ΔE1 就不是对照
+    ——而那种错**在看分数时完全看不出来**。
+    """
+    table = {"hybrid": {1: 2, 2: 2}, "lexical": {1: 2, 2: 2}}
+    directory = _build(tmp_path / "ev", table, (1, 2))
+    report = ebs.paired_report(directory, arms=("hybrid", "lexical"), reps=(1, 2))
+    assert report["identity_mismatched_fields"] == []
+    assert report["round_identity"]["seed"] == 20261005
+    assert set(report["round_records"]) == {"hybrid.rep1", "hybrid.rep2",
+                                            "lexical.rep1", "lexical.rep2"}
+
+    #: 把 lexical.rep2 的**行清单摘要**改掉 ⇒ 这一批不是成对的了。
+    record = directory / (ebs.ROUND_RECORD % ("lexical", 2))
+    payload = json.loads(record.read_text(encoding="utf-8"))
+    payload["rows_digest"] = "x" * 64
+    record.write_text(json.dumps(payload, ensure_ascii=False) + "\n", encoding="utf-8")
+    with pytest.raises(ebs.InputError) as excinfo:
+        ebs.paired_report(directory, arms=("hybrid", "lexical"), reps=(1, 2))
+    assert "rows_digest" in str(excinfo.value), str(excinfo.value)
+
+
+def test_a_missing_round_record_is_refused_by_name(tmp_path):
+    """V1：执行器是唯一写入方、检查器只读——**没有轮记录就只能重跑那一轮**。"""
+    table = {"hybrid": {1: 2, 2: 2}, "lexical": {1: 2, 2: 2}}
+    directory = _build(tmp_path / "ev", table, (1, 2))
+    (directory / (ebs.ROUND_RECORD % ("lexical", 2))).unlink()
+    with pytest.raises(ebs.InputError) as excinfo:
+        ebs.paired_report(directory, arms=("hybrid", "lexical"), reps=(1, 2))
+    assert "round.lexical.2.json" in str(excinfo.value), str(excinfo.value)
+
+
+def test_the_terminal_state_enum_is_closed_and_both_invalid_codes_count(tmp_path):
+    """**V2**：终态取值来自封闭枚举（集外取值数＝0），两个作废码**分开**计数。
+
+    作废只写进轮记录，**没有**第二条入账通道；有作废轮的一批不允许被当成读数。
+    """
+    table = {"hybrid": {1: 2, 2: 2}, "lexical": {1: 2, 2: 2}}
+    directory = _build(tmp_path / "ev", table, (1, 2))
+    record = directory / (ebs.ROUND_RECORD % ("hybrid", 2))
+    payload = json.loads(record.read_text(encoding="utf-8"))
+    payload["terminal_state"] = "pending"            # 集外取值
+    record.write_text(json.dumps(payload, ensure_ascii=False) + "\n", encoding="utf-8")
+    with pytest.raises(ebs.InputError) as excinfo:
+        ebs.paired_report(directory, arms=("hybrid", "lexical"), reps=(1, 2))
+    assert "枚举" in str(excinfo.value), str(excinfo.value)
+
+    #: 两个作废码分开记：一批里同时出现两码时，两条计数各 1。
+    table_states = {("hybrid", 2): "invalid_parse_fault",
+                    ("lexical", 2): "invalid_empty_intersection"}
+    for (arm, rep), state in table_states.items():
+        record = directory / (ebs.ROUND_RECORD % (arm, rep))
+        payload = json.loads(record.read_text(encoding="utf-8"))
+        payload["terminal_state"] = state
+        record.write_text(json.dumps(payload, ensure_ascii=False) + "\n",
+                          encoding="utf-8")
+    with pytest.raises(ebs.InputError) as excinfo:
+        ebs.paired_report(directory, arms=("hybrid", "lexical"), reps=(1, 2))
+    assert "作废轮" in str(excinfo.value), str(excinfo.value)
+
+    #: 终态全 valid 时，报告里两条作废计数都是 0。
+    for (arm, rep) in table_states:
+        record = directory / (ebs.ROUND_RECORD % (arm, rep))
+        payload = json.loads(record.read_text(encoding="utf-8"))
+        payload["terminal_state"] = "valid"
+        record.write_text(json.dumps(payload, ensure_ascii=False) + "\n",
+                          encoding="utf-8")
+    report = ebs.paired_report(directory, arms=("hybrid", "lexical"), reps=(1, 2))
+    assert report["invalid_parse_fault"] == 0
+    assert report["invalid_empty_intersection"] == 0
+    assert report["terminal_states"] == {"valid": 4}

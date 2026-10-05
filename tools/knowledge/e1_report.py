@@ -46,6 +46,7 @@ import json
 import os
 import pathlib
 import sys
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Sequence, Tuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -63,6 +64,12 @@ ROUTE_ADAPTERS: Dict[str, str] = {"hybrid": "none", "lexical": "lexical",
 #: 走 sidecar 的路由（需要指纹；见 `lightrag_fingerprint_from`）。
 SIDECAR_ROUTES = ("lightrag",)
 LIGHTRAG_MANIFEST = pathlib.Path("lightrag") / "INDEX_MANIFEST.json"
+
+#: **轮记录文件**（V1）的终态取值——封闭枚举。V2：集外取值数＝0，两码分开计数。
+#: `invalid_parse_fault` ＝ 判分通道没产出（e1_panel 非零退出／文件读不出：解析/基础设施故障）；
+#: `invalid_empty_intersection` ＝ 文件合法但**零行**（那一轮没有一条查询产出可判分的行——
+#: 合法空交集）。两者都在轮记录里各记各的，**没有第二条入账通道**。
+ROUND_STATES = ("valid", "invalid_parse_fault", "invalid_empty_intersection")
 
 
 class InputError(RuntimeError):
@@ -154,6 +161,101 @@ def judge_coverage(path: pathlib.Path) -> Dict[str, object]:
 
 def sha256_file(path: pathlib.Path) -> str:
     return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
+
+
+def _digest_or(path: pathlib.Path, missing: str = "missing") -> str:
+    """文件摘要；没有就返回 `missing`（**具名**，不返回空串——空串会被读成"摘要是空的"）。"""
+    return sha256_file(path) if pathlib.Path(path).is_file() else missing
+
+
+def round_record_path(reviews_dir: pathlib.Path, route: str, rep: int) -> pathlib.Path:
+    """V1 的轮记录文件：`round.<route>.<n>.json`（与逐行录档同住证据目录）。"""
+    return pathlib.Path(reviews_dir) / ("round.%s.%d.json" % (route, int(rep)))
+
+
+def heldout_seed(heldout: pathlib.Path) -> int:
+    """冻结查询集的抽样种子（同目录的 `heldout.manifest.json`）；没有就 0 并如实记。"""
+    manifest = pathlib.Path(heldout).parent / "heldout.manifest.json"
+    if not manifest.is_file():
+        return 0
+    try:
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return 0
+    try:
+        return int(payload.get("seed") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def identity_fields(*, heldout: pathlib.Path, cases_dir: pathlib.Path,
+                    panel: Sequence[str]) -> Dict[str, object]:
+    """V1 的**身份字段**：同批各轮这些字段必须逐字相同（diff 不一致字段数＝0）。
+
+    五项分别对应 V1 点名的：`seed`（抽样种子）、行清单摘要（`rows_digest`/`rows`）、
+    评委配置摘要（`panel`/`panel_digest`）、语料 manifest 摘要、超图 manifest 摘要。
+    评委配置摘要里带上**判分提示词的 sha**（`e1_panel.SYSTEM`）——换了提示词就是换了
+    评委配置，两轮不能算成对的（读一次冻结仪器里的常量，不改它）。
+    """
+    prompt_sha = hashlib.sha256(str(e1_panel.SYSTEM).encode("utf-8")).hexdigest()
+    return {
+        "seed": heldout_seed(heldout),
+        "rows": count_queries(heldout),
+        "rows_digest": sha256_file(heldout),
+        "panel": list(panel),
+        "panel_digest": hashlib.sha256(
+            ("\n".join(panel) + "|" + prompt_sha).encode("utf-8")).hexdigest(),
+        "corpus_manifest_digest": _digest_or(pathlib.Path(cases_dir) / "cases.manifest.json"),
+        "hypergraph_manifest_digest": _digest_or(
+            pathlib.Path(cases_dir) / "hypergraph.manifest.json"),
+    }
+
+
+def round_state(review_path: pathlib.Path, exit_code: int) -> str:
+    """这一轮的**终态**（V2 的两码分开）。纯函数：判据只看产物与退出码。"""
+    rows = None
+    if pathlib.Path(review_path).is_file():
+        try:
+            rows = ebs.read_rows(pathlib.Path(review_path))
+        except ebs.InputError:
+            rows = None
+    if rows is None:
+        return "invalid_parse_fault"
+    if int(exit_code) != 0 and not rows:
+        return "invalid_parse_fault"
+    return "valid" if rows else "invalid_empty_intersection"
+
+
+def write_round_record(path: pathlib.Path, *, route: str, rep: int,
+                       identity: Dict[str, object], state: str,
+                       identity_written_at: str = "") -> Dict:
+    """写/更新轮记录（**唯一写入方＝执行器**，V1）。
+
+    判分**之前**先写一次（身份字段就此冻结，带 `identity_written_at` 与空终态），
+    判分之后再更新终态（带 `state_written_at`）——于是"身份先冻结、终态后落"两件事
+    在产物里各自有时间戳，而不是事后补一份看起来完整的记录。
+    """
+    if state and state not in ROUND_STATES:
+        raise InputError("轮记录的终态不在封闭枚举里：%r（只认 %s）"
+                         % (state, list(ROUND_STATES)))
+    path = pathlib.Path(path)
+    previous: Dict = {}
+    if path.is_file():
+        try:
+            previous = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            previous = {}
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    payload = {**identity, "route": str(route), "rep": int(rep),
+               "terminal_state": str(state),
+               "identity_written_at": (identity_written_at
+                                       or previous.get("identity_written_at") or now),
+               "state_written_at": now if state else "",
+               "written_by": "tools/knowledge/e1_report.py"}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8", newline="\n")
+    return payload
 
 
 def count_queries(path: pathlib.Path) -> int:
@@ -265,19 +367,33 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     reviews_dir = (pathlib.Path(args.reviews_dir) if args.reviews_dir
                    else reviews_dir_for(out_path))
     reviews_dir.mkdir(parents=True, exist_ok=True)
+    #: 评委配置取**冻结仪器**的默认面板（本工具不另设 `--models`：判据里"两位换族评委"
+    #: 是写死的；要换评委就是换仪器，得走重新冻结）。
+    panel = list(e1_panel.DEFAULT_PANEL)
+    identity = identity_fields(heldout=heldout, cases_dir=cases_dir, panel=panel)
     for route, rep in plan_runs(routes, args.runs):
         target = reviews_dir / rep_name(route, rep)
-        if args.reuse and target.is_file():
+        record = round_record_path(reviews_dir, route, rep)
+        #: `--reuse` 只认**V1 合规**的旧读数（逐行录档 ＋ 轮记录都在）。少了轮记录的
+        #: 那是 V1 之前的产物——重跑它，而不是给它补一份事后写出来的身份记录。
+        if args.reuse and target.is_file() and record.is_file():
             print(json.dumps({"skip": target.name, "reason": "reuse"}, ensure_ascii=False))
             continue
+        #: **先写身份、再判分**（V1）：身份字段在跑之前就冻结，终态之后补。
+        write_round_record(record, route=route, rep=rep, identity=identity, state="")
         argv_next = panel_argv(route, heldout=heldout, cases_dir=cases_dir,
                                out_path=target, top_k=args.top_k, workers=args.workers,
                                lightrag_url=args.lightrag_url,
                                lightrag_fingerprint=fingerprint)
         print(json.dumps({"run": target.name, "argv": argv_next}, ensure_ascii=False))
         code = e1_panel.main(argv_next)
-        if code != 0:
-            raise InputError("%s 没跑出读数（e1_panel 退出码 %s）" % (route, code))
+        state = round_state(target, code)
+        write_round_record(record, route=route, rep=rep, identity=identity, state=state)
+        if state != "valid":
+            #: 作废轮**照记**（V2：只写进轮记录，没有第二条通道），但喊出来——
+            #: 最后 `paired_report` 会因为"有非 valid 轮"整批拒读。
+            print(json.dumps({"round_invalid": target.name, "terminal_state": state,
+                              "e1_panel_exit": code}, ensure_ascii=False))
 
     report = build_report(reviews_dir, routes, args.runs, provenance={
         "generated_by": "tools/knowledge/e1_report.py",

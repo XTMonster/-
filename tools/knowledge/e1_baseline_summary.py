@@ -49,6 +49,15 @@ REPS = (1, 2)
 #: 与 `ARMS` 同源：臂名就是 `reviews.<arm>.rep<N>.jsonl` 里的那个词。
 DEFAULT_ARM_NAMES = tuple(arm for arm, _adapter in ARMS)
 
+#: **V1 的轮记录文件**（附件 `PLAN_HYPERGRAPH_v4_ANNEX.md` §0／§1 的 V1，有约束力）：
+#: 每跑一轮 E1 落一份 `round.<route>.<n>.json`，**执行器是唯一写入方、检查器只读**。
+ROUND_RECORD = "round.%s.%d.json"
+#: 轮记录里属于**身份**的字段（同批各轮必须逐字相同 ⇒ 不一致字段数＝0）。
+ROUND_IDENTITY_FIELDS = ("seed", "rows", "rows_digest", "panel", "panel_digest",
+                         "corpus_manifest_digest", "hypergraph_manifest_digest")
+#: 轮记录**终态**的封闭枚举（V2：集外取值数＝0；两个作废码分开计数）。
+ROUND_STATES = ("valid", "invalid_parse_fault", "invalid_empty_intersection")
+
 
 class InputError(RuntimeError):
     """输入缺失或行不自洽（退出码 2 的那一类）。"""
@@ -189,6 +198,29 @@ def render(summary: dict) -> str:
     return json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
 
 
+def read_round_record(directory: pathlib.Path, arm: str, rep: int) -> dict:
+    """读一轮的**轮记录**（V1：执行器写、检查器只读）。缺文件／终态集外 ⇒ 拒读。
+
+    为什么检查器要硬依赖它（V1 的理由）：`reviews.*.rep*.jsonl` 只记"判了什么"，
+    不记"这一轮是在**什么身份**下跑的"——同一批两臂如果不是同一个 seed／行清单／
+    评委配置／语料构建，那 ΔE1 就不是对照。把身份写在**跑之前**（执行器唯一写入）
+    且由检查器 diff，才挡得住"事后配平"。
+    """
+    path = pathlib.Path(directory) / (ROUND_RECORD % (arm, int(rep)))
+    if not path.is_file():
+        raise InputError("缺轮记录 %s（V1：每轮先写它再判分；没有就只能重跑那一轮）"
+                         % path.name)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise InputError("%s 读不出：%s" % (path.name, exc)) from exc
+    state = str(payload.get("terminal_state") or "")
+    if state not in ROUND_STATES:
+        raise InputError("%s 的终态不在封闭枚举里：%r（V2：集外取值数必须为 0）"
+                         % (path.name, state))
+    return payload
+
+
 def paired_report(directory: pathlib.Path, *, arms: Sequence[str] = DEFAULT_ARM_NAMES,
                   reps: Sequence[int] = REPS) -> dict:
     """**任意臂集合 × 任意重复次数**的成对读数（计划 v4 的 B.1／R13）。
@@ -252,6 +284,25 @@ def paired_report(directory: pathlib.Path, *, arms: Sequence[str] = DEFAULT_ARM_
     if len(panels) != 1:
         raise InputError("各臂的面板不是同一个：%s" % panels)
 
+    #: **V1 的轮记录**：身份字段由检查器 diff（不一致字段数必须为 0），终态按 V2 读。
+    records = {(arm, rep): read_round_record(directory, arm, rep)
+               for arm in arm_names for rep in rep_ids}
+    identity_diff: Dict[str, List[str]] = {}
+    for field in ROUND_IDENTITY_FIELDS:
+        seen = {json.dumps(record.get(field), ensure_ascii=False, sort_keys=True)
+                for record in records.values()}
+        if len(seen) != 1:
+            identity_diff[field] = sorted(seen)
+    if identity_diff:
+        raise InputError("同批各轮的**身份字段**不一致（V1：不一致字段数＝0）：%s"
+                         % sorted(identity_diff))
+    states = [str(record["terminal_state"]) for record in records.values()]
+    invalid = {(arm, rep): record["terminal_state"]
+               for (arm, rep), record in records.items()
+               if record["terminal_state"] != "valid"}
+    if invalid:
+        raise InputError("有**作废轮**（V2：作废只记在轮记录里、不计入统计）：%s" % invalid)
+
     noise_band = round(max(block["range"] for block in blocks.values()), 6)
     pairs: List[dict] = []
     for index, first in enumerate(arm_names):
@@ -273,6 +324,16 @@ def paired_report(directory: pathlib.Path, *, arms: Sequence[str] = DEFAULT_ARM_
         "cases_digest": next(iter(digests)),
         "arms_order": list(arm_names),
         "reps": list(rep_ids),
+        #: V1／V2 的轮记录账：身份字段（同批一致）、终态计数、以及"不一致字段数"。
+        "round_records": {("%s.rep%d" % (arm, rep)): (ROUND_RECORD % (arm, rep))
+                          for arm in arm_names for rep in rep_ids},
+        "round_identity": {field: records[(arm_names[0], rep_ids[0])].get(field)
+                           for field in ROUND_IDENTITY_FIELDS},
+        "identity_mismatched_fields": [],
+        "terminal_states": {state: states.count(state) for state in ROUND_STATES
+                            if states.count(state)},
+        "invalid_parse_fault": states.count("invalid_parse_fault"),
+        "invalid_empty_intersection": states.count("invalid_empty_intersection"),
         "arms": blocks,
         "noise_band": noise_band,
         "pairs": pairs,
