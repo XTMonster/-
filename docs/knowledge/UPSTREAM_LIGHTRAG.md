@@ -198,3 +198,45 @@ work\_venv_lr\Scripts\python.exe -m tools.lightrag_service.build_index `
 * 索引建在 `work/` 下（影子路径）；正式上线要等 P10 的指针切换。
 * **A/B 还没跑**：D8 的判定（`ΔE1 ≥ R 且 E3=0 ⇒ lightrag 默认`）需要 E1 面板
   在三条路上各跑 ≥2 次——那要等 L1/L2 全量抽取收口之后。
+
+## 八、**测量前置**（2026-10-05 实测两条，缺一条读数就是假的）
+
+这两条不是"锦上添花"，是 P9 那条 arm 能不能**量到检索**的前提。两次都是先看到
+产物里的痕迹、再顺回去定位的（不是猜）。
+
+### 8.1 客户端读超时必须放开：默认 10 秒量到的是超时
+
+现场：用真 sidecar 跑 1 条冻结查询，产物那行写着
+`cases_backend_effective: "hybrid"` ＋ `cases_degrade_reason: "lightrag_query_failed:TimeoutError"`
+——**请求的臂 = lightrag，实际干活的是 BM25 回退**。根因：`LightRAGAdapter` 的读超时
+默认 **10 秒**（`block_director/knowledge/lightrag_adapter.py`），那是"sidecar 已经热着"
+的预算；而 LightRAG 的**第一次**查询要把 storages 装进来（还要加载本地嵌入），
+实测冷启动就是 9 秒级（`work/_probe_adapter_timeout.py`：call 1 = 9.4 s、call 2/3 = 0.0 s）。
+
+修法：`BLOCK_DIRECTOR_LIGHTRAG_TIMEOUT`（秒）覆盖——优先级
+**显式入参 > 环境变量 > 默认 10 秒**；生产默认**不动**（退回 BM25 是 §2.3b 的设计内
+降级），但**测量**必须把它放到 180 秒。写错（不是数／非正数）**具名报错**。
+
+```powershell
+$env:BLOCK_DIRECTOR_LIGHTRAG_TIMEOUT = '180'
+```
+
+### 8.2 起服务后必须**预热并验证**，否则第一次查询撞冷启动
+
+现场：一次 runner 里的预热**静默地什么都没输出**，于是被测的第一次查询撞上冷启动、
+在客户端超时里退成 BM25——那一轮读数量的是超时，而产物看着是完整的
+（`work/_p9_dryrun/reviews.lightrag.rep1.jsonl` 里 12 行全带同一枚
+`lightrag_query_failed:TimeoutError`，因为 `CaseIndex` 一旦降级就把原因带到该轮的每一行）。
+
+规矩：预热（两条查询）之后**要验** `"status": 200`，不 200 就**中止**，不拿半截读数
+出数（`work/_run_lightrag_arms.ps1` 就是这么写的，`work/_diag_timeout.ps1` 是那条
+"诊断→修复→复验"的留档：修后 `cases_backend_effective=lightrag`、
+`cases_degrade_reason=""`）。
+
+### 8.3 这一轮到底是不是这条路由答的——产物要自己说
+
+`tools/knowledge/e1_report.py` 的 `route_usage` 每轮报三件事：
+`degraded_rows`（`cases_degrade_reason` 非空＝已退回 BM25）、
+`queries_with_rows` vs `queries_expected`（**静默空**：适配器返回空、那条查询整条没有行，
+分母会无声变小）、`backends_effective`。⇒ 上面 8.1／8.2 那两种坏法现在**看得见**。
+注意它是**报告不是门**：把"看得见的降级"升格成"该臂无效"是判据级改动（D11，须用户拍板）。
