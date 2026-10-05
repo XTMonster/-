@@ -650,3 +650,39 @@ def test_the_reranker_can_be_given_the_judges_view_of_a_case():
                                prompt="select", with_title=True)("q", cases)
     assert "T-one" in client.users[0] and "E-one" in client.users[0]
     assert "T-two" in client.users[0] and "E-two" in client.users[0]
+
+
+def test_the_two_stage_rerank_splits_a_long_list_and_keeps_only_ranked_ids():
+    """两段式：先分块各挑 1 条，再到幸存者里挑；**没进第二段的垫底、不许丢**。
+
+    为什么试它（2026-10-06 实测）：`order`（一次排 50 条）只有 0.2760，说明"一次看太长的
+    清单"本身就是重排器的弱点；而**线索与标题都补过、都没再涨** ⇒ 缺口在"单次挑选"上。
+    """
+    cases = _cases("c1", "c2", "c3", "c4", "c5", "c6")
+
+    class _Pick:
+        def __init__(self):
+            self.calls = 0
+
+        def chat_json(self, system, user, temperature, seed, num_ctx, key="",
+                      retries=1):
+            self.calls += 1
+            ids = [line.split("｜")[0].strip() for line in user.splitlines()
+                   if "｜" in line]
+            #: 每批挑第一条；第二段（候选只剩 2 条）也挑第一条。
+            return {"best": ids[:1]}
+
+    client = _Pick()
+    scorer = e1_panel.make_llm_reranker(
+        model="m", provider="x", client=client, prompt="select",
+        stages=2, chunk=3, keep_per_chunk=1)
+    scores = scorer("q", cases)
+    assert client.calls == 3, "6 条按 3 分两块 ⇒ 2 次第一段 + 1 次第二段"
+    assert len(scores) == len(cases), "返回的分数必须与原列表一一对应"
+    kept = e1_panel.rerank_cases(scorer, "q", cases, 2)
+    assert [c.case_id for c in kept], "两段式必须给得出前 k 条"
+    # 单段口径不受影响（默认 stages=1）。
+    one = _Pick()
+    e1_panel.make_llm_reranker(model="m", provider="x", client=one,
+                               prompt="select")("q", cases)
+    assert one.calls == 1

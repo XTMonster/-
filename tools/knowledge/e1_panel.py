@@ -249,9 +249,24 @@ def _clue_suffix(clue_of, case) -> str:
     return ("｜" + clue) if clue else ""
 
 
+def _llm_rerank_label(args) -> str:
+    """重排的自述标签：**默认路径逐字节不变**，只有开了非默认开关才往后缀加记号。"""
+    label = "%s/%s" % (args.rerank_llm_model, args.rerank_llm_prompt)
+    if int(args.rerank_llm_max_tokens) != 1024:
+        label += "@%d" % int(args.rerank_llm_max_tokens)
+    if args.rerank_clue == "on":
+        label += "+clue"
+    if args.rerank_title == "on":
+        label += "+title"
+    if int(args.rerank_llm_stages) >= 2:
+        label += "+2stage%d/%d" % (int(args.rerank_llm_chunk), int(args.rerank_llm_keep))
+    return label
+
+
 def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
                       prompt: str = "order", max_tokens: int = 1024,
-                      clue_of=None, with_title: bool = False):
+                      clue_of=None, with_title: bool = False,
+                      stages: int = 1, chunk: int = 10, keep_per_chunk: int = 3):
     """用 LLM 给宽候选**排序**（`--cases-rerank llm`），返回打分可调用对象。
 
     为什么是"排序"而不是产品那个"过滤"：R3 的算术说明**删行**改变不了"哪 3 条被返回"
@@ -270,8 +285,55 @@ def make_llm_reranker(*, model: str, provider: str = "qwen", client=None,
     judge_client = client or llm.make_client(provider, model)
     system = RERANK_PROMPTS[prompt]
 
+    def _listing(query: str, items) -> str:
+        return "查询：%s\n\n候选：\n%s" % (
+            query, "\n".join("%s｜%s%s" % (case.case_id,
+                                           _case_fields(case, with_title=with_title),
+                                           _clue_suffix(clue_of, case))
+                             for case in items))
+
+    def _ask_select(query: str, items):
+        """`select` 那一问：返回模型点名的 id 序列（漏写的 id 由调用方垫底）。"""
+        reply = judge_client.chat_json(system, _listing(query, items), 0.0, 0,
+                                       int(max_tokens))
+        order = [str(item) for item in (reply.get("best") or [])]
+        if not order:
+            raise llm.LLMError("重排器没有给出 best")
+        return order
+
     def scorer(query: str, cases):
         items = list(cases)
+        #: **两段式**（`--rerank-llm-stages 2`）：把"一次从 50 条里挑 3 条"拆成
+        #: "每次看 `chunk` 条各挑 `keep_per_chunk` 条，再到幸存者里挑 3 条"。
+        #: 为什么试它（2026-10-06 实测）：`order`（全序）在 50 条上只有 0.2760，
+        #: 说明"一次看太长的清单"本身就是重排器的弱点；而**线索与标题都补过了、没有再涨**
+        #: ⇒ 缺口在"单次挑"这件事上，不在"少看了什么"。所以拆小。
+        if int(stages) >= 2 and prompt == "select" and int(chunk) > 0 \
+                and len(items) > int(chunk):
+            survivors = []
+            seen = set()
+            for start in range(0, len(items), int(chunk)):
+                group = items[start:start + int(chunk)]
+                for case_id in _ask_select(query, group)[:int(keep_per_chunk)]:
+                    if case_id in seen:
+                        continue
+                    for case in group:
+                        if str(case.case_id) == case_id:
+                            seen.add(case_id)
+                            survivors.append(case)
+                            break
+            pool = survivors or items[:int(chunk)]
+            order = _ask_select(query, pool)
+            rank = {case_id: index for index, case_id in enumerate(order)}
+            scores = []
+            for position, case in enumerate(items):
+                case_id = str(case.case_id)
+                if case_id in rank:
+                    scores.append(float(len(order) - rank[case_id]))
+                else:
+                    #: 没进第二段的**垫底**（与单段那套同一约定：只改序，不丢）。
+                    scores.append(-1.0 - position / 1000.0)
+            return scores
         listing = "\n".join("%s｜%s%s" % (case.case_id,
                                           _case_fields(case, with_title=with_title),
                                           _clue_suffix(clue_of, case))
@@ -605,6 +667,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                              "——**与 E1 评委看到的一模一样**（默认 off ＝ `excerpt[:160]`）。"
                              "为什么该开：重排器原来**手里的信息比评委更少**，那是人为削弱。"
                              "它与 `--rerank-clue` 是**两处独立的信息缺口**，分两个开关以便分别取证。")
+    parser.add_argument("--rerank-llm-stages", type=int, default=1, choices=(1, 2),
+                        help="重排的段数：`1`（默认，历次口径）＝一次从宽候选里挑；"
+                             "`2` ＝**两段式**：先按 `--rerank-llm-chunk` 分块各挑 "
+                             "`--rerank-llm-keep` 条，再到幸存者里挑。只对 `select` 生效。"
+                             "为什么试：`order` 在 50 条上只有 0.2760，说明**一次看太长的清单**"
+                             "本身就是弱点；而线索与标题都补过且没再涨 ⇒ 缺口在**单次挑选**上。")
+    parser.add_argument("--rerank-llm-chunk", type=int, default=10,
+                        help="两段式的第一段每批看几条（默认 10）")
+    parser.add_argument("--rerank-llm-keep", type=int, default=3,
+                        help="两段式的第一段每批留几条（默认 3）")
     parser.add_argument("--rerank-llm-prompt", default="order",
                         choices=("order", "select", "score"),
                         help="重排提示词的形状：`order` 全序排序／`select` 只挑最该看的 3 条／"
@@ -692,14 +764,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             max_tokens=args.rerank_llm_max_tokens,
             clue_of=((lambda cid: (getattr(index, "search_zh", None) or {}).get(cid, ""))
                      if args.rerank_clue == "on" else None),
-            with_title=(args.rerank_title == "on")), \
-            ("%s/%s%s%s" % (args.rerank_llm_model, args.rerank_llm_prompt,
-                            #: 非默认预算才写进标签 ⇒ 默认路径逐字节不变。
-                            ("" if int(args.rerank_llm_max_tokens) == 1024
-                             else "@%d" % int(args.rerank_llm_max_tokens)),
-                            #: 开了中文线索才写（同上，默认路径不变）。
-                            (("+clue" if args.rerank_clue == "on" else "")
-                             + ("+title" if args.rerank_title == "on" else ""))))
+            with_title=(args.rerank_title == "on"),
+            stages=int(args.rerank_llm_stages),
+            chunk=int(args.rerank_llm_chunk),
+            keep_per_chunk=int(args.rerank_llm_keep)), \
+            _llm_rerank_label(args)
     else:
         reranker, rerank_label = None, ""
     rows = score_queries(index, queries, clients, top_k=args.top_k,
