@@ -114,6 +114,20 @@ def test_the_closed_set_is_read_from_the_schema_not_copied():
     assert "EMOTION_PACK" not in code, "边型清单被抄进了本模块"
 
 
+def test_the_prompt_lists_the_required_slots_of_every_edge_type():
+    """提示词必须带**每种边型的必填槽位**。
+
+    实测依据（2026-10-05）：第一版提示词只列了闭集、没列必填，试点 21 条草稿
+    在影子构建里 **100% 被拒，全部 `missing_required`**——模型给的是"这条边讲了
+    哪几个槽位"，而 schema 要的是"这套边必须凑齐哪几个槽位"。
+    """
+    menu = ex.edge_type_menu()
+    for edge_type, required in hg.REQUIRED_MEMBERS.items():
+        assert edge_type in menu
+        for role, kind in required:
+            assert ("%s/%s" % (role, kind)) in menu, (edge_type, role, kind)
+
+
 # --- 4. 驱动器与账目 ----------------------------------------------------------
 
 def test_the_driver_closes_the_books_on_kept_and_rejected():

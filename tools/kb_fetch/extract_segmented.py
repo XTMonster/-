@@ -192,9 +192,23 @@ SEGMENT_SYSTEM = (
 
 
 def edge_type_menu() -> str:
-    """闭集菜单（提示词里用）——**现读** schema，不抄第二份。"""
-    return ("边型闭集：%s\n角色闭集：%s\nkind 闭集：%s"
-            % ("/".join(hg.EDGE_TYPES), "/".join(sorted(hg.ROLES)),
+    """闭集菜单（提示词里用）——**现读** schema，不抄第二份。
+
+    **必填槽位必须逐个写出来**。实测（2026-10-05）：第一版只列闭集不列必填，
+    试点 21 条草稿在影子构建里 **100% 被拒、全部 `missing_required`**——
+    模型答的是"这段讲了哪几个槽位"，而 schema 要的是"这套边必须凑齐哪几个槽位"。
+    一行一条：`边型 ← 必填：role/kind, role/kind, …`。
+    """
+    lines = []
+    for edge_type in hg.EDGE_TYPES:
+        required = ", ".join("%s/%s" % (role, kind)
+                             for role, kind in hg.REQUIRED_MEMBERS.get(edge_type, ()))
+        lines.append("%s ← 必填：%s" % (edge_type, required or "（无）"))
+    return ("边型与**必填槽位**（缺一即整条边作废）：\n%s\n"
+            "角色闭集：%s\nkind 闭集：%s\n"
+            "（同一 kind 的取值词表由检索侧冻结；写取值时用词表里的中文/枚举形，"
+            "拿不准就只写你**逐字看到**的那个。）"
+            % ("\n".join(lines), "/".join(sorted(hg.ROLES)),
                "/".join(hg.ALLOWED_KINDS)))
 
 
