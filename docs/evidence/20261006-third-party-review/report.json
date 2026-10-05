@@ -1,0 +1,24 @@
+{
+ "tool": "holdout_review_third_party",
+ "reviewer_class": "third-party",
+ "source": {
+  "model": "kimi-k3",
+  "prompt_sha256": "7d95fbc44af177a772b2e10fea903ea7bacb106edaaca92b1b604fe76cc861e0",
+  "prompt_version": "review/v2",
+  "tool": "holdout_review_third_party",
+  "adjudicator_provider": "kimi",
+  "authorized_by": "user-2026-10-06:third-party adjudication stands in for my human review",
+  "ran_at": "2026-10-06T02:44:42+08:00"
+ },
+ "counts": {
+  "selected": 212,
+  "keep": 194,
+  "drop": 2,
+  "flag": 16,
+  "retry": 0
+ },
+ "records": 212,
+ "disagreements_with_llm_panel": 27,
+ "out": "E:\\白模预演codex\\work\\holdout_third_party.reviewed.jsonl",
+ "sheet": "E:\\白模预演codex\\work\\holdout_third_party_disagreements.md"
+}
