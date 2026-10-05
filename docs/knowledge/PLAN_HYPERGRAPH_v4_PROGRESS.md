@@ -16,8 +16,9 @@
 | **P2** | ①成对基线（v3pop，只读） | 绿（机制）/待（N≥3） | 两臂各 2 次已在库：`docs/evidence/20261006-e1-baselines/`（hybrid 0.2031/0.2031、lexical 0.1927/0.2292）；判读机制 `tools/knowledge/e1_baseline_summary.py::paired_report`（本批一般化）＋`tests/test_e1_paired_report.py`（8 条）。**N≥3 的补测未做** | 2026-10-05 | `d472e41` |
 | **P2** | ②轮记录文件（V1）接到 `e1_panel` 输出旁 | 待 | — | — | — |
 | **P3** | ①入口工具（按年门槛选料 ＋ 影子语料分账） | 绿 | `tools/kb_fetch/ingest_corpus.py`（复用 `fetch.py` 的门：scheme／robots／限速／sha256 幂等；新增按 `cutoff=1980` 选料、`excluded.jsonl` 具名原因、`MANIFEST.json` 四字段、`corpus_digest()`、账目闭合断言）；守门 `tests/test_ingest_corpus.py`（6 条，含反面对照） | 2026-10-05 | `c66ca96` |
-| **P3** | ②`knowledge/sources.v4.yaml`（带 `year` 的影子来源清单） | 待 | 缺的正是**年份**：那 267 条现代来源里，OCW 那一批可从课程 slug 解析出年份（如 `…-fall-2012`），而 Animation Studies／StudioBinder／BFI 那一批要逐条读页面元数据才能落年份——`ingest_corpus.py` 会把没年份的**一律排除**，所以这一步不能跳过 | — | — |
-| **P3** | ③跑一次入库（`--out work/corpus_v4/`） | 待 | 依赖 ② | — | — |
+| **P3** | ②`knowledge/sources.v4.yaml`（带 `year` 的影子来源清单） | 绿 | 新增 `tools/kb_fetch/year_probe.py`（**离线**从 `work/raw/` 的 1201 份已抓正文定年份，纯函数、7 条用例、每条留 `year_basis`）：命中率 **89 → 247/321**（`citation_publication_date` 160／`published_time` 42／JSON-LD 36／版权年 7／课程 slug 2）。据此生成 240 条 `year >= 1980` 的影子清单（Animation Studies 160／BFI 35／StudioBinder 24／Skwigly 16／Frames 3／OCW 2，**旧书 0 条**） | 2026-10-05 | `9b74012` |
+| **P3** | ③跑一次入库（`--out work/corpus_v4/`） | 绿 | 真跑 240 条，**kept 240 / excluded 0 / rejects 0**（每条都过了 scheme ＋ robots 门）；产物 `work/corpus_v4/{MANIFEST.json(100KB), fetched.jsonl(36.5MB), excluded.jsonl}`；五字段齐（无缺项）；`corpus_digest = 8179ac69fd881a80da46a622f34f1db0050579f85f74b03db05f57f9a639740e` | 2026-10-05 | 本批 |
+| **P3** | ④覆盖偏斜的如实记账 | 红（已知缺口） | v4 的域分布：anime 176／cinematography 49／editing 6／axis_theory 3／storyboard 3／**composition 2／blocking 1**；另有 74 条因缺年份被排除（Gutenberg 47／StudioBinder 26／Animation Studies 1）。`composition`/`blocking` 偏薄是 v4 的既知缺口，P5 的覆盖矩阵要盯它 | 2026-10-05 | 本批 |
 | **P4** | 抽取实现重建（两趟"分段→归属"，DeepSeek） | 待 | — | — | — |
 | **P5** | L1/L2 影子构建（`knowledge_v4/`） | 待 | — | — | — |
 | **P6** | L3 案例与冻结评测集 | 待 | — | — | — |

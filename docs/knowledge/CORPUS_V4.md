@@ -79,6 +79,26 @@ L1/L2 的 2221 张卡里 1856 张（83.6%）来自那 **54 本 Gutenberg 旧书*
 
 ## 五、未核验（如实挂账）
 
+### 5.1 影子入库的实测结果（2026-10-05，本批新增）
+
+`knowledge/sources.v4.yaml`（240 条 `year >= 1980`）真跑了一次
+`python tools/kb_fetch/ingest_corpus.py --sources knowledge/sources.v4.yaml --out work/corpus_v4`：
+
+```
+{"overall": "pass", "kept": 240, "excluded": 0, "rejects": 0, "input": 240,
+ "corpus_digest": "8179ac69fd881a80da46a622f34f1db0050579f85f74b03db05f57f9a639740e"}
+```
+
+**240 条全部过了 scheme ＋ robots 门**（0 拒绝）——这是"这些馆藏可用"的第一次端到端证据，
+不再是文档里的断言。域分布与年份分布如实记在
+`docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md` 的 P3②/④ 两行。
+
+**年份字段的 caveat（必须知道）**：`year` 只当 **cutoff 的地板**用，不是精确发表日期。
+实测年份直方图里 **2026 有 39 条**（2004–2026 的其余年份分布平滑）——多出来的那一块
+多半来自站点的**动态页脚版权年**。这不影响 cutoff 判定（一个显示 2026 的页面必定是现代页面，
+**只会正确地纳入、不会错误地纳入旧料**），但**不许**把它当成"这篇是 2026 年发表的"。
+要精确年份，得在 P5 之前按站点补一次逐条元数据核对。
+
 * arXiv 那条探针**已跑完**（`--per-term 20 --licences 0 --verify 0`，退出码 0）：
   `work/modern/arxiv_v4_candidates.json` 里 `candidates: []`、`licence_clean=0`。
   **"14 条主题命中"只记在日志里，没有落成候选条目**——因为工具只在通过许可门后才写条目。
@@ -86,3 +106,4 @@ L1/L2 的 2221 张卡里 1856 张（83.6%）来自那 **54 本 Gutenberg 旧书*
 * 第一节的域分布是**按 `sources.yaml` 的 `domain` 字段**统计的，不是按卡片数——
   卡片数按域分布要用 `tools/knowledge/authorship_report.py`，本文没有重复测。
 * 没有实际跑一次"重配预算后的构建"：那属于 P5，本文只给配比与依据。
+  （**已部分销账**：`ingest_corpus.py` 那一步跑通了，见 §5.1；"构建"指 P5 的 L1/L2 影子构建，仍未跑。）
