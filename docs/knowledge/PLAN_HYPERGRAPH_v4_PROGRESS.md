@@ -15,7 +15,9 @@
 | **P1** | ④V1–V9 写进计划（本仓形态：有约束力的附件） | 绿 | `PLAN_HYPERGRAPH_v4_ANNEX.md`："与正文冲突时以本附件为准"，V1–V9 逐条给"覆盖哪里/改成什么/怎么验"；守门 `tests/test_plan_v4_freeze.py::test_the_binding_annex_exists_and_declares_precedence` | 2026-10-05 | 本批 |
 | **P2** | ①成对基线（v3pop，只读） | 绿（机制）/待（N≥3） | 两臂各 2 次已在库：`docs/evidence/20261006-e1-baselines/`（hybrid 0.2031/0.2031、lexical 0.1927/0.2292）；判读机制 `tools/knowledge/e1_baseline_summary.py::paired_report`（本批一般化）＋`tests/test_e1_paired_report.py`（8 条）。**N≥3 的补测未做** | 2026-10-05 | `d472e41` |
 | **P2** | ②轮记录文件（V1）接到 `e1_panel` 输出旁 | 待 | — | — | — |
-| **P3** | 新语料入库（`work/corpus_v4/`） | 待 | — | — | — |
+| **P3** | ①入口工具（按年门槛选料 ＋ 影子语料分账） | 绿 | `tools/kb_fetch/ingest_corpus.py`（复用 `fetch.py` 的门：scheme／robots／限速／sha256 幂等；新增按 `cutoff=1980` 选料、`excluded.jsonl` 具名原因、`MANIFEST.json` 四字段、`corpus_digest()`、账目闭合断言）；守门 `tests/test_ingest_corpus.py`（6 条，含反面对照） | 2026-10-05 | `c66ca96` |
+| **P3** | ②`knowledge/sources.v4.yaml`（带 `year` 的影子来源清单） | 待 | 缺的正是**年份**：那 267 条现代来源里，OCW 那一批可从课程 slug 解析出年份（如 `…-fall-2012`），而 Animation Studies／StudioBinder／BFI 那一批要逐条读页面元数据才能落年份——`ingest_corpus.py` 会把没年份的**一律排除**，所以这一步不能跳过 | — | — |
+| **P3** | ③跑一次入库（`--out work/corpus_v4/`） | 待 | 依赖 ② | — | — |
 | **P4** | 抽取实现重建（两趟"分段→归属"，DeepSeek） | 待 | — | — | — |
 | **P5** | L1/L2 影子构建（`knowledge_v4/`） | 待 | — | — | — |
 | **P6** | L3 案例与冻结评测集 | 待 | — | — | — |
