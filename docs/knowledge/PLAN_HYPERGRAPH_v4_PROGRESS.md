@@ -92,6 +92,15 @@
 `queries_with_no_rows`/`clue_state` 升格成机器门」是**新的判据**，本批不动，见
 `ADJUDICATIONS_v4.md` 的 D11。
 
+**本批的全量测试**（在 `6a438b4` 上重跑）：`python -m pytest -o addopts="" -q` →
+**2261 passed / 1 skipped**（唯一那条 skip 是 `tests/test_build_ledger.py:68` 的条件守卫
+「这份索引只由单一 prompt 版本产出，无需 refresh 记录」——**不是被绕过的判据**）。
+此前状态块里「2085 passed / 2 skipped」是冻结提交 `53d3e3f` 上的数；
+另一条 `/work/` 依赖的 skip（`tests/test_holdout_inputs.py:55`）现在不再触发。
+顺带记录：`tests/plan_v4_instruments.sha256.json` 已在 `ba34e06` 里做过**第三次显式重新冻结**
+（理由：只往每条判分记录加 `clue_state`/`clues` 两个**诊断字段**，判据零改动），
+`tests/test_plan_v4_instruments_frozen.py` 绿。
+
 ## 路径口径的落地偏差（如实记）
 
 计划正文写的测试路径是 `tests/plan_v4/…`、`tests/kb_fetch/…`。本仓的既有约定是
