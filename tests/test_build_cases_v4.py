@@ -23,6 +23,7 @@ if str(ROOT) not in sys.path:
 
 from tools.kb_fetch import build_cases_v4 as bv  # noqa: E402
 from tools.kb_fetch import common  # noqa: E402
+from tools.kb_fetch import case_search_zh as ZH  # noqa: E402
 
 
 def _records():
@@ -119,3 +120,44 @@ def test_the_shadow_build_does_not_touch_the_shipped_work_inputs(tmp_path):
              for path in watched}
     assert before == after, "影子构建动了现役输入：%s" % [
         name for name in before if before[name] != after[name]]
+
+
+def test_attach_clues_records_the_generation_without_touching_the_case_set(tmp_path):
+    """**2026-10-05 的实缺陷**：v4 案例层只做了"生成线索"，没做"重签 ＋ 记账"。
+
+    线索行记着生成时案例集合的 `cases_sha256`，对不上就**整份拒用**（代际纪律）；
+    于是读者看到的是 `search_zh_missing`（中文面整份消失），而 manifest 里既没有
+    `clue_attached` 可查、台账上也看不出任何异常——三臂 E1 就是这么从 0.20 塌到
+    0.0065 的。这一步只写线索与 manifest，**案例集合一个字节都不许动**。
+    """
+    out = tmp_path / "shadow"
+    shards = out / "cases"
+    shards.mkdir(parents=True)
+    case = {"case_id": "case_a", "case_type": "narrative", "title": "t",
+            "excerpt": "A slow dolly in on the market stalls.",
+            "beat_sequence": [], "source_ref": {}, "score": 0.0}
+    (shards / "part-000.jsonl").write_text(json.dumps(case, ensure_ascii=False) + "\n",
+                                           encoding="utf-8")
+    (out / "cases.manifest.json").write_text(json.dumps({"cases": 1}), encoding="utf-8")
+    #: 线索分片带着**另一代的摘要**签名（这正是 v4 的现场：生成时的案例集合与
+    #: 最终落盘的案例集合不是同一枚摘要）⇒ 重签前它整份不可用。
+    (shards / "search_zh.part-000.jsonl").write_text(json.dumps(
+        {"case_id": "case_a", "zh": "镜头缓缓推近市场摊位的货物",
+         "cases_sha256": "0" * 64, "prompt_sha256": ZH.prompt_sha()},
+        ensure_ascii=False) + "\n", encoding="utf-8")
+
+    from block_director.knowledge import cases as block_cases
+
+    assert block_cases.read_search_zh(out, out)[1] == "search_zh_stale"
+    before = (shards / "part-000.jsonl").read_bytes()
+
+    stats = bv.attach_clues_to_layer(out)
+
+    assert stats["clue_attached"]["clues"] == 1
+    loaded, reason = block_cases.read_search_zh(out, out)
+    assert reason == "", reason
+    assert loaded == {"case_a": "镜头缓缓推近市场摊位的货物"}
+    assert (shards / "part-000.jsonl").read_bytes() == before, "案例集合被改动了"
+    manifest = json.loads((out / "cases.manifest.json").read_text(encoding="utf-8"))
+    assert manifest["clue_attached"]["clues"] == 1
+    assert manifest["size_gate"]["passed"] is True

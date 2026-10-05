@@ -72,6 +72,44 @@ def prepare_case_inputs(records: Sequence[Dict], *, out_dir: pathlib.Path,
     return kept, rejects, stats
 
 
+def attach_clues_to_layer(out_dir: pathlib.Path) -> Dict:
+    """把**已经生成好的**中文线索重签给最终案例集合，并把 `clue_attached` 记进 manifest。
+
+    为什么需要单独一步（2026-10-05 的实缺陷）：线索是构建期生成的
+    （`case_search_zh`），但它必须**按最终案例集合重签**才有用——`read_search_zh`
+    拿行里的 `cases_sha256` 与当前案例集合的字节摘要比对，对不上就整份拒用
+    （代际纪律，见 `block_director/knowledge/cases.py`）。v4 案例层只做了"生成"、
+    没做"重签 ＋ 记账"，于是：读者看到的是 `search_zh_missing`（整份中文面消失），
+    而台账上**什么都看不出来**（没有 `clue_attached` 可查）。
+
+    现役 `build_cases --require-clue` 会顺手做掉这件事，但它同时是**闸门**
+    （没有线索的案例会被丢掉）。这一步**不动案例集合**，所以拆出来单独做——
+    复用现役 `attach_clues`（同一个 `classify` 判据、同一种分片写法、同一套体积门）。
+    """
+    from . import build_cases as bc
+
+    from block_director.knowledge import cases as block_cases
+
+    out_dir = pathlib.Path(out_dir)
+    shards = block_cases.case_paths(out_dir)
+    if not shards:
+        raise FileNotFoundError("案例集合不存在：%s" % (out_dir / "cases"))
+    digest = block_cases.cases_digest(shards)
+    keep_ids = [str(case.case_id) for case in block_cases.read_cases(out_dir)]
+    attached = bc.attach_clues(out_dir / "cases", keep_ids, digest, out_dir)
+    manifest_path = out_dir / "cases.manifest.json"
+    manifest = (json.loads(manifest_path.read_text(encoding="utf-8"))
+                if manifest_path.is_file() else {})
+    manifest["clue_attached"] = attached
+    #: 线索也是索引的一部分，体积门要连它一起算（与现役那条路同一口径）。
+    manifest["size_gate"] = bc.size_gate(
+        [*shards, manifest_path, *block_cases.search_zh_paths(out_dir)])
+    common.dump_json(manifest_path, {**manifest})
+    return {"stage": "attach_clues", "digest": digest,
+            "clue_attached": attached, "size_gate": manifest["size_gate"],
+            "out": str(out_dir)}
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="kb_fetch.build_cases_v4")
     parser.add_argument("--corpus", default=str(common.WORK / "corpus_v4"),
@@ -80,11 +118,24 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--max-cases", type=int, default=0,
                         help="0 = 用 build_cases 的默认")
     parser.add_argument("--per-source", type=int, default=0)
+    parser.add_argument("--attach-clues", action="store_true",
+                        help="只做一件事：把**已经生成好的**中文线索（`<out>/cases/"
+                             "search_zh.part-*.jsonl`）重签给最终案例集合，并把 "
+                             "`clue_attached` 记进 manifest——**不动案例集合**")
     parser.add_argument("--prepare-only", action="store_true",
                         help="只做到 licensed.jsonl，不跑 build_cases")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     corpus = pathlib.Path(args.corpus)
+    if args.attach_clues:
+        #: 2026-10-05：v4 案例层建完之后**漏了这一步**（只生成、没重签也没记账），
+        #: 于是整份中文线索对读者不可见（`search_zh_missing`），三臂 E1 因此从
+        #: 0.20 塌到 0.0065 而台账上看不出任何异常。这一步补的就是那个洞：
+        #: 复用现役 `attach_clues`（同一个 `classify` 判据、同一种分片写法），
+        #: 只写线索与 manifest，**不碰** `cases/part-*.jsonl`。
+        print(json.dumps(attach_clues_to_layer(pathlib.Path(args.out)),
+                         ensure_ascii=False))
+        return 0
     #: **必须**用 `common.read_jsonl`（只按 `\n` 切）。`read_text().splitlines()` 会按
     #: Unicode 行边界（`\u0085`/`\u2028`/`\u2029`）切开 JSON 字符串——实测在
     #: `work/corpus_v4/fetched.jsonl` 上直接抛 `JSONDecodeError: Unterminated string`。

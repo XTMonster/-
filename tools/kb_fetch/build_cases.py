@@ -855,6 +855,7 @@ def attach_clues(clues_path: pathlib.Path, keep_ids: Sequence[str],
     from .case_search_zh import write_lines
 
     from .case_search_zh import classify
+    from .case_search_zh import load_lines as _load_clue_lines
 
     keep = {str(case_id) for case_id in keep_ids}
     #: **入库行必须过现行判据**（不只"非空"）。为什么：`--require-clue` 的入参可以是
@@ -864,7 +865,10 @@ def attach_clues(clues_path: pathlib.Path, keep_ids: Sequence[str],
     #: 会诊（DeepSeek 侧）把这一条点成 blocker：闸门不重跑判据 = 把旧代的脏行原样放进新索引。
     rows: List[Dict] = []
     rejected: List[Dict] = []
-    for row in common.read_jsonl(pathlib.Path(clues_path)):
+    #: 入参可以是**一份 jsonl**（`--require-clue` 那条路传的就是它）或**一个目录**
+    #: （分片布局：`<dir>/search_zh.part-*.jsonl`）。后者是 2026-10-05 补的：给 v4
+    #: 案例层补线索时线索本身就是分片，先拼成一份再传只是把同一件事写两遍。
+    for row in _load_clue_lines(pathlib.Path(clues_path)):
         if str(row.get("case_id")) not in keep:
             continue
         reason = classify(str(row.get("zh") or ""))
