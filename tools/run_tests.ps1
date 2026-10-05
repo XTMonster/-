@@ -438,6 +438,23 @@ if ($gateExit -eq 0) {
     # No usable oracle: RK-13 stays not_measured - running a gate is not a measurement.
     Write-Host ('  held-out coverage gates exit ' + $gateExit + ' (no usable oracle: RK-13 stays not_measured)') -ForegroundColor Yellow
 }
+# D12 (third-party adjudication 2026-10-05, qwen3.8-max-0902): report BOTH reviewer
+# calibers in the run log. The gate accepts `human` and `llm-panel`; printing only one
+# of them is how "who judged it" gets confused with "it was judged". Evidence:
+# docs/evidence/20261005-adjudication/verdict.json.
+$gatesJsonPath = Join-Path $evidenceDir 'holdout_gates.json'
+if (Test-Path $gatesJsonPath) {
+    $gatePayload = Get-Content -Raw -Encoding UTF8 $gatesJsonPath | ConvertFrom-Json
+    $gate7 = $gatePayload.gate_7_human_review
+    $panelCount = 0
+    if ($gate7 -and $gate7.reviewed_by_class) {
+        $panelProperty = $gate7.reviewed_by_class.PSObject.Properties['llm-panel']
+        if ($panelProperty -and $panelProperty.Value) { $panelCount = [int]$panelProperty.Value }
+    }
+    Write-Host ('  reviewer calibers: llm-panel ' + $panelCount + ' / human ' +
+                $gate7.human_reviewed + ' (strict human-only reading needs ' +
+                $gate7.min_human_review + ')')
+}
 if (-not (Test-Path (Join-Path $evidenceDir 'holdout_gates.json'))) {
     Fail '  FAILED: the held-out gate report was not written'
 }
@@ -706,6 +723,21 @@ if ($treeBefore -ne $treeAfter) {
     Write-Host 'INCOMPLETE: the worktree changed while the chain ran.' -ForegroundColor Red
     Write-Host ('INCOMPLETE: before=' + $treeBefore + ' after=' + $treeAfter) -ForegroundColor Red
     Write-Host 'INCOMPLETE: these numbers are NOT attributable to one tree; rerun on a frozen tree.' -ForegroundColor Red
+    exit 1
+}
+
+# RK-13 adjudication (third-party 2026-10-05, verdict_rk13_followup.json = ESCALATE):
+# RK-13 IS the E1 >= 0.70 red line (R3: do not lower the line, do not swap the
+# denominator). While it fails, this chain
+# must NOT print "All checks passed." and exit 0 -- that is how a red line gets
+# misreported as an all-green run. The tree-stability guard above still runs first, so
+# a moved-tree run keeps its own INCOMPLETE verdict.
+if ($rk13Failed.Count -gt 0) {
+    Write-Host ('FAILED: ' + ($rk13Failed -join ',') +
+                ' -- the knowledge-stack red line is not met (E1 >= 0.70 / R3).') -ForegroundColor Red
+    Write-Host 'This run is NOT green. The acceptance status must carry this verbatim;' -ForegroundColor Red
+    Write-Host 'the criteria were not lowered (see docs/knowledge/ADJUDICATIONS_v4.md).' -ForegroundColor Red
+    Write-Host ('Evidence: ' + $evidenceDir) -ForegroundColor Yellow
     exit 1
 }
 
