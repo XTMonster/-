@@ -18,8 +18,12 @@ lexical 43/192 = 0.2240。⇒ **0.0065 那一跑量的是仪器坏掉，不是�
 ## 证据是怎么来的
 
 * 线索：`tools/kb_fetch/case_search_zh` 在 v4 案例层上跑完 —— 783 条处理完，
-  **542 条出线索、241 条按规则给空串**（摘录确实不含工艺信息），
-  产物 `work/knowledge_v4_cases/cases/search_zh.part-000.jsonl`
+  **542 条出线索、241 条按规则给空串**（摘录确实不含工艺信息）。542 条里
+  **488 条是同代沿用**（`--seed`：`(摘录, 出处标题)` 逐字节相同且
+  `prompt_sha256` 与当前提示词相同——提示词的 user 模板只有这两项，所以那是同一次
+  生成的输入）、**54 条现生成**；0 条 `call-failed`。产物：
+  `work/knowledge_v4_cases/cases/search_zh.part-000.jsonl`，
+  `cases.manifest.json` 记 `clue_attached`（体积门 699 KB / 20 MB，pass）。
   （`cases_sha256 = d916cd78…` = v4 案例集合的字节摘要；`prompt_sha256 = 36069623ca…`，
   与 `case_search_zh.prompt_sha()` 逐字节相同；模型 glm-5.3）。
 * 面板：`tools/knowledge/e1_panel.py --queries work/eval_sets/heldout_v4_long21.jsonl \
