@@ -315,6 +315,14 @@ class CaseIndex:
     adapter: Optional[Any] = None
     #: `case_id -> 中文检索线索`（空 = 没有可用线索，退回"只吃原文"的旧行为）。
     search_zh: Dict[str, str] = field(default_factory=dict)
+    #: **线索层的状态**（`read_search_zh` 的第二个返回值）。空串 = 线索可用；
+    #: 其余是具名原因（`search_zh_missing` / `search_zh_stale` / …）。
+    #:
+    #: 为什么必须带着它（2026-10-05 实测）：`load_index` 只取了 `[0]`，把原因丢掉了，
+    #: 于是"整份线索层缺失"在产物里**不留任何痕迹**——v4 案例层的三臂 E1 因此从
+    #: 0.20 塌到 0.0065 而没有任何一行写着为什么（每行只是一个空的 `zh`）。
+    #: 缺线索不是错（退回"只吃原文"是设计内的降级），**不说**才是。
+    search_zh_reason: str = ""
     #: **相关性过滤器**（可选）：`(query, cases) -> Sequence[Case]`。
     #:
     #: 为什么需要它（2026-10-03 实测）：E1 是**精确率**指标——"返回的案例里相关
@@ -368,6 +376,10 @@ class CaseIndex:
                 "cases_degraded": bool(self.degraded),
                 "cases_degraded_reason": self.reason,
                 "cases": len(self.cases),
+                #: 线索层的自述（缺/陈旧/可用）＋ 实际挂在索引上的条数。
+                #: 没有这两个字段，"索引缺了中文线索"只能靠人去看每行的 `zh` 是空的。
+                "cases_clue_state": self.search_zh_reason,
+                "cases_clues": len(self.search_zh),
                 "cases_filter": "on" if self.case_filter is not None else "off",
                 "cases_filter_reason": self.filter_reason,
                 "lanes": self.lanes,
@@ -413,7 +425,11 @@ class CaseIndex:
                 self.degraded = True
                 self.effective = "hybrid"
                 self.reason = f"lightrag_query_failed:{type(exc).__name__}"
-                documents = [tokenize(self._text(case)) for case in self.cases]
+                #: 退回 BM25 时**必须与 `__post_init__` 建的同一条面**（带中文线索）。
+                #: 少了它，同一个索引"LightRAG 挂了"与"LightRAG 没挂"会拿两把不同的尺子，
+                #: 而 E1 的读数会因此悄悄变化——降级不是换判据。
+                documents = [tokenize(self._text(case, self.search_zh.get(case.case_id)))
+                             for case in self.cases]
                 self._engine, _name = make_bm25(documents)
             else:
                 return self._filtered(query, self._scored(hits, limit))
@@ -481,11 +497,13 @@ def load_index(knowledge_dir: Any, backend: str = "lightrag",
     if chosen is None and str(backend) == "lightrag":
         if (directory / LIGHTRAG_FINGERPRINT_FILE).is_file():
             chosen = _find_lightrag_adapter(directory)
+    #: 线索层的**状态与内容一起**取出来（以前只取了内容，原因被丢掉 ⇒ 静默）。
+    clues, clue_reason = read_search_zh(directory, directory)
     return CaseIndex(cases, str(backend),
                      fingerprint=manifest_fingerprint(directory),
                      lightrag_index_fingerprint=lightrag_fingerprint(directory),
                      adapter=chosen,
-                     search_zh=read_search_zh(directory, directory)[0],
+                     search_zh=clues, search_zh_reason=clue_reason,
                      case_filter=case_filter)
 
 

@@ -169,6 +169,62 @@ def test_the_line_is_appended_to_the_search_text_only():
     assert "镜头缓缓推近" in enriched
 
 
+def test_load_index_records_the_clue_state_and_how_many_lines_it_loaded(tmp_path):
+    """**2026-10-05 的实缺陷**：`load_index` 只取 `read_search_zh(...)[0]`，把**原因**
+    丢掉了。于是"整份线索层缺失"在产物里不留痕迹——v4 案例层的三臂 E1 因此从
+    0.20 塌到 0.0065，而每行只是一个空的 `zh`：读的人只看到"分数很低"，看不到
+    "中文面整份没了"。状态与条数现在都挂在索引上（`describe()` 里也报）。
+    """
+    cases_path = tmp_path / "cases.jsonl"
+    cases_path.write_text(json.dumps(_case("case_a").to_dict(), ensure_ascii=False) + "\n",
+                          encoding="utf-8")
+    digest = C.cases_digest(C.case_paths(tmp_path))
+
+    bare = C.load_index(tmp_path, backend="hybrid")
+    assert bare.search_zh == {}
+    assert bare.search_zh_reason == "search_zh_missing"
+    assert bare.describe()["cases_clue_state"] == "search_zh_missing"
+    assert bare.describe()["cases_clues"] == 0
+
+    _write_sidecar(tmp_path, cases_path, digest,
+                   [{"case_id": "case_a", "zh": "镜头缓缓推近市场摊位的货物"}])
+    loaded = C.load_index(tmp_path, backend="hybrid")
+    assert loaded.search_zh_reason == ""
+    assert loaded.describe()["cases_clue_state"] == ""
+    assert loaded.describe()["cases_clues"] == 1
+
+
+class _BoomAdapter:
+    """检索必失败的适配器（模拟 sidecar 挂了 ⇒ 走 §2.3b 的降级路径）。"""
+
+    def retrieve(self, query, top_k=3, cases=()):
+        raise RuntimeError("sidecar down")
+
+
+def test_the_lightrag_fallback_keeps_the_same_chinese_surface():
+    """LightRAG 挂了退回 BM25 时，**必须与开局建的那条面相同**（带中文线索）。
+
+    实测缺口（2026-10-05）：`__post_init__` 建的 BM25 带线索，而 `retrieve()` 里
+    "lightrag_query_failed" 那条降级路径建的是**不带线索**的 BM25——同一个索引
+    "LightRAG 挂了"与"没挂"于是拿两把不同的尺子，E1 的读数会因此悄悄变化。
+    """
+    case = _case(case_id="case_market", excerpt="A slow dolly in on the market stalls.")
+    #: 合成语料给到 6 篇：BM25 的 IDF 在 N=n 时是负的、N=2/n=1 时正好 0，
+    #: 两者都会被 `score > 0` 滤掉（那是 BM25 的性质，不是判据）。
+    others = [_case(case_id=f"case_filler_{i}", excerpt=f"A static wide shot number {i}.")
+              for i in range(5)]
+    query = "市场摊位，推镜缓入"
+    index = C.CaseIndex([case] + others, "lightrag", adapter=_BoomAdapter(),
+                        search_zh={case.case_id: "镜头缓缓推近市场摊位的货物"})
+    hits = index.retrieve(query, top_k=3)
+    assert [hit.case_id for hit in hits] == ["case_market"], hits
+    assert index.reason.startswith("lightrag_query_failed")
+
+    #: 没有线索时退回 BM25 也只是"只吃原文"——中文查询本就召不回（旧行为，不是 bug）。
+    blind = C.CaseIndex([case] + others, "lightrag", adapter=_BoomAdapter())
+    assert blind.retrieve(query, top_k=3) == []
+
+
 def test_a_chinese_query_reaches_a_case_only_through_the_line():
     """中文查询能命中 ⇒ 全靠这条线索；没有它就该是空（旧行为）。"""
     case = _case(case_id="case_market", excerpt="A slow dolly in on the market stalls.")

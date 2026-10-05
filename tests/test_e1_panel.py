@@ -28,6 +28,11 @@ class _Index:
         self.search_zh = {case.case_id: f"线索 {case.case_id}"
                           for cases in mapping.values() for case in cases}
         self.fingerprint = fingerprint
+        #: `read_search_zh` 的第二个返回值：空串 = 线索可用。
+        self.search_zh_reason = ""
+        #: `CaseIndex` 的自述：请求的臂（`path_label`）与**实际干活**的后端（`effective`）。
+        self.effective = "hybrid"
+        self.reason = ""
 
     def retrieve(self, query, top_k=3):
         return self.mapping.get(query, [])[:top_k]
@@ -149,3 +154,43 @@ def test_every_scored_row_says_which_retrieval_path_produced_it(tmp_path):
                                  top_k=1, workers=1)
     assert rows, "夹具必须真的产出打分，否则这条用例是空绿"
     assert {row["retrieval_path"] for row in rows} == {"hybrid"}, rows
+
+
+def test_every_scored_row_says_what_state_the_clue_layer_was_in():
+    """**2026-10-05 的实缺陷**：v4 案例层整份缺中文线索时，三臂 E1 从 0.20 塌到
+    0.0065，而产物里**没有一行**写着原因——每行只有一个空的 `zh`，读的人只看到
+    "分数很低"。`read_search_zh` 本来就把原因算出来了（`search_zh_missing`），
+    是消费侧把它丢掉的。判分记录现在必须自证"这一代索引的线索层是什么状态"。
+    """
+    index = _Index({"q1": _cases("c1", "c2")})
+    index.search_zh_reason = "search_zh_missing"
+    rows = e1_panel.score_queries(index, ["q1"], [("stub", _Client({"c1": 5, "c2": 1}))],
+                                  top_k=2, workers=1)
+    assert rows, "夹具必须真的产出打分，否则这条用例是空绿"
+    assert {row["clue_state"] for row in rows} == {"search_zh_missing"}, rows
+    assert {row["clues"] for row in rows} == {len(index.search_zh)}
+
+    #: 线索可用时它就是空串——别把"正常"也写成某个具名原因。
+    healthy = _Index({"q1": _cases("c1")})
+    rows = e1_panel.score_queries(healthy, ["q1"], [("stub", _Client({"c1": 5}))],
+                                  top_k=1, workers=1)
+    assert {row["clue_state"] for row in rows} == {""}
+
+
+def test_every_scored_row_says_which_backend_actually_did_the_retrieval():
+    """请求的臂 ≠ 实际干的活。**2026-10-05 实测**：`LightRAGIndex.search` 每次
+    `asyncio.run()`（新建一条事件循环），而 `_rag` 跨调用复用 ⇒ 第二次起必抛
+    `bound to a different event loop`（`work/_sidecar4.err` 里 5773 行）。
+    `CaseIndex.retrieve` 遇到它就**退回 BM25**，而那些行当时仍被标成 `lightrag`
+    ——"这条臂不行"与"这条臂根本没跑到"于是混成一个结论，正是 D8 要判的那件事。
+    """
+    index = _Index({"q1": _cases("c1")})
+    index.path_label = "lightrag"
+    index.effective = "hybrid"
+    index.reason = "lightrag_query_failed:TimeoutError"
+    rows = e1_panel.score_queries(index, ["q1"], [("stub", _Client({"c1": 5}))],
+                                  top_k=1, workers=1)
+    assert rows, "夹具必须真的产出打分，否则这条用例是空绿"
+    assert rows[0]["retrieval_path"] == "lightrag"          # 请求的臂
+    assert rows[0]["cases_backend_effective"] == "hybrid"   # 实际干的活
+    assert rows[0]["cases_degrade_reason"].startswith("lightrag_query_failed")

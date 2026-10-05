@@ -142,9 +142,24 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             #: `manifest.fingerprint` 仍是 `69791dbacd…`，E1 照报旧读数的 0.0885）。
             #: 这枚摘要只有"案例集合"能改，所以它才是代际的真钥匙。
             "cases_digest": str(getattr(index, "cases_digest", "") or ""),
+            #: **线索层的状态**（`read_search_zh` 的第二个返回值）。空串 = 线索可用；
+            #: 其余是具名原因（`search_zh_missing` / `search_zh_stale` / …）。
+            #: 为什么每条都要带（2026-10-05 实测）：v4 案例层整份缺中文线索时，
+            #: 三臂 E1 从 0.20 塌到 0.0065，而产物里**没有一行**写着原因——
+            #: 每行只有一个空的 `zh`。判分记录必须自证"这一代索引的线索层是什么状态"。
+            "clue_state": str(getattr(index, "search_zh_reason", "") or ""),
+            "clues": len(getattr(index, "search_zh", None) or {}),
             #: 这次检索走的是哪条路（`hybrid` = 产品现行的 BM25；`lexical` = 零依赖适配器）。
             #: 判分必须能自证"测的是哪条路"，否则两条路的读数会混在一份证据里。
             "retrieval_path": str(getattr(index, "path_label", "") or ""),
+            #: **实际干活的后端**与降级原因。`retrieval_path` 是"请求的臂"，而
+            #: LightRAG 一失败 `CaseIndex.retrieve` 就退回 BM25——2026-10-05 实测：
+            #: sidecar 的常驻事件循环缺陷让 5773 次查询抛 `bound to a different
+            #: event loop`，**退回 BM25 的那些行仍被标成 `lightrag`**。请求的臂与
+            #: 实际干的活必须分开写，否则"这条臂不行"与"这条臂根本没跑到"会混成
+            #: 同一个结论（这正是 D8 要判的那件事）。
+            "cases_backend_effective": str(getattr(index, "effective", "") or ""),
+            "cases_degrade_reason": str(getattr(index, "reason", "") or ""),
             "panel": [name for name, _client in clients],
             "prompt_sha256": hashlib.sha256(SYSTEM.encode("utf-8")).hexdigest(),
         })
@@ -265,6 +280,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                                for row in rows), encoding="utf-8", newline="\n")
     summary = {"out": str(out_path), "queries": len(queries),
                "cases_fingerprint": str(getattr(index, "fingerprint", "") or ""),
+               #: 汇总也要自述线索层：空串 = 可用；否则这一跑的数**不是**可比读数。
+               "clue_state": str(getattr(index, "search_zh_reason", "") or ""),
+               "cases_backend_effective": str(getattr(index, "effective", "") or ""),
+               "cases_degrade_reason": str(getattr(index, "reason", "") or ""),
                **summarise(rows)}
     print(json.dumps(summary, ensure_ascii=False, indent=2 if args.json else None))
     return 0 if rows else 1
