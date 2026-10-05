@@ -418,3 +418,12 @@ sha256 `37dea0ea…`）。3 跑极差：
 其余（评委／重排器）→ **只许 GLM／DeepSeek** ⇒ 重排通道接下来要用
 `--rerank-llm-provider deepseek|glm`，**但这两个族同时是评委**，所以它们的重排读数
 带"同族自证"的折扣——这一条必须写进证据。Kimi 客户端与守门保留（余额恢复后可用）。
+
+### P14-220：GPT-6A 人工裁决 212/212（**零剔除**）；夹具**备好但暂不换**；全量红的根因是 C 盘写满
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **门⑦** | 人工裁决改走 GPT-6A（思考拉满） | 绿 | `docs/evidence/20261006-adjudication-gpt6a/`：212 条 → **keep 201 / flag 11 / drop 0 / retry 0**；与 llm-panel 分歧 **33**；通道 `relay`／`gpt-6-astra`／`reasoning_effort=max`，判据 sha 与 llm-panel **逐字同源**（`7d95fbc4…`、`review/v2`） | 2026-10-06 | 本批 |
+| **门⑦** | 合并试算（不落） | **备好不换** | 合并件 `work/knowledge_holdout.gpt6a.jsonl`：2847 → 2847、**dropped []**；逐条比对证明**除 `review`／`panel_disagreement` 外零变化**；门①–⑩ 在它上面**全 pass**（门⑥ missing 0、门⑦ third-party 212/212）。**但没换夹具**——见下面那条耦合 | 2026-10-06 | 本批 |
+| **链** | oracle 的 pin 耦合 | **红（已具名，代价已量化）** | 每份已入库真实运行把 oracle **整文件 sha256** 钉进 `run_manifest.json.pins.holdout`（`tools/extract_run_evidence.py:343`）；`docs/evidence/` 有 **20 个**这样的目录 ⇒ 换夹具让全部 STALE，**6 条测试必红**（实测）。`repin()` 的安全规则**明确拒绝**把换代洗成没换代（旧 pin 既非归一摘要也非裸字节摘要 ⇒ 跳过并报 STALE）。⇒ 要换就得**重跑 20 份真实运行**（巨量、且会产出新数字） | 2026-10-06 | 本批 |
+| **环境** | 全量 pytest 那些"莫名其妙的批量红" | 绿（具名根因） | **C 盘写满**：`OSError: [Errno 28] No space left on device`（pytest 的 tmp_path 在 `%TEMP%`＝C:）。清掉 pip 缓存（`python -m pip cache purge`，释放 ~2.6 GB，C: 0.15 GB → 2.73 GB）后，**同一套代码 2347 passed / 1 skipped 全绿**。⇒ 前面记的"最像机器负载"那两次（101 failed/34 errors、29 failed/62 errors）**应改判为磁盘写满**。**未清理**：`~/.cache/huggingface` 19.2 GB（HF 只有镜像可达，删了会重下，**故意不动**） | 2026-10-06 | 本批 |

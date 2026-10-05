@@ -260,8 +260,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     sheet = ROOT / args.sheet
     sheet.parent.mkdir(parents=True, exist_ok=True)
     sheet.write_text(
-        "# 第三方（Kimi K3）与 llm-panel 的分歧清单\n\n"
-        "授权：`%s`。裁决者写的是 `third-party`，不是 `human`。\n\n" % AUTHORIZED_BY
+        "# 第三方裁定（`%s`）与 llm-panel 的分歧清单\n\n"
+        "授权：`%s`。裁决者写的是 `third-party`，不是 `human`。\n\n"
+        % (source["model"], AUTHORIZED_BY)
         + ("\n".join(lines) if lines else "（无分歧）") + "\n",
         encoding="utf-8", newline="\n")
 

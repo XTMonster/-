@@ -1,0 +1,24 @@
+{
+ "tool": "holdout_review_third_party",
+ "reviewer_class": "third-party",
+ "source": {
+  "model": "gpt-6-astra",
+  "prompt_sha256": "7d95fbc44af177a772b2e10fea903ea7bacb106edaaca92b1b604fe76cc861e0",
+  "prompt_version": "review/v2",
+  "tool": "holdout_review_third_party",
+  "adjudicator_provider": "relay",
+  "authorized_by": "user-2026-10-06:third-party adjudication stands in for my human review",
+  "ran_at": "2026-10-06T05:11:16+08:00"
+ },
+ "counts": {
+  "selected": 212,
+  "keep": 201,
+  "drop": 0,
+  "flag": 11,
+  "retry": 0
+ },
+ "records": 212,
+ "disagreements_with_llm_panel": 33,
+ "out": "E:\\白模预演codex\\work\\holdout_gpt6a.reviewed.jsonl",
+ "sheet": "E:\\白模预演codex\\work\\holdout_gpt6a_disagreements.md"
+}
