@@ -54,7 +54,8 @@ def fresh_scene():
     return scene
 
 
-def render_luma(name: str, frame: int) -> float:
+def render_pixels(name: str, frame: int) -> list:
+    """渲一帧并回像素数组（RGBA，行优先）。"""
     scene = bpy.context.scene
     os.makedirs(OUTDIR, exist_ok=True)
     path = str(OUTDIR / f"phase2_{name}.png")
@@ -62,14 +63,35 @@ def render_luma(name: str, frame: int) -> float:
     scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
     if not os.path.exists(path):
-        return -1.0
+        return []
     image = bpy.data.images.load(path)
     try:
-        pixels = list(image.pixels)
+        return list(image.pixels)
     finally:
         bpy.data.images.remove(image)
+
+
+def _luma(pixels: list) -> float:
     rgb = [v for i, v in enumerate(pixels) if i % 4 != 3]
     return round(sum(rgb) / max(len(rgb), 1), 5)
+
+
+def render_luma(name: str, frame: int) -> float:
+    pixels = render_pixels(name, frame)
+    if not pixels:
+        return -1.0
+    return _luma(pixels)
+
+
+def _changed_pixels(before: list, after: list, *, tol: float = 0.02) -> int:
+    """两帧之间**有多少像素变了**（任一分量差 > tol 就算变）。"""
+    changed = 0
+    for index in range(0, min(len(before), len(after)), 4):
+        if max(abs(before[index] - after[index]),
+               abs(before[index + 1] - after[index + 1]),
+               abs(before[index + 2] - after[index + 2])) > tol:
+            changed += 1
+    return changed
 
 
 def check(name, fn):
@@ -142,12 +164,23 @@ def t_render_frames_differ():
     blender.add("shake_head", 1, 48)
     blender.bake()
 
-    luma_start = render_luma("frame_01", 1)
+    pixels_start = render_pixels("frame_01", 1)
+    luma_start = _luma(pixels_start)
     luma_mid = render_luma("frame_24", 24)
-    luma_end = render_luma("frame_48", 48)
-    moved = abs(luma_end - luma_start) > 0.005
+    pixels_end = render_pixels("frame_48", 48)
+    luma_end = _luma(pixels_end)
+    total = 160 * 90
+    changed = _changed_pixels(pixels_start, pixels_end)
+    #: **"画面随动画变了"要直接数**：均值亮度是个脆弱代理（2026-10-06 换躯干形状后
+    #: 落在 0.0048 对阈值 0.005 一线之隔）。判据的意图是"这一帧和那一帧不是同一张图"，
+    #: 所以改成数**变了的像素**：下界 1% 画面（14 400 px ⇒ ≥144），上界 60%
+    #: （超了就说明整幅都换了 ⇒ 更可能是相机/背景被动过，不是角色在动）。
+    #: 亮度三个值仍原样打出来，便于与历史读数对照。
+    floor, ceiling = int(total * 0.01), int(total * 0.60)
+    moved = floor <= changed <= ceiling
     distinct = len({luma_start, luma_mid, luma_end}) == 3
-    return {"ok": moved and distinct,
+    return {"ok": moved and distinct, "changed_pixels": changed,
+            "total": total, "floor": floor, "ceiling": ceiling,
             "luma": {"f01": luma_start, "f24": luma_mid, "f48": luma_end}}
 
 
@@ -453,18 +486,16 @@ def t_rk6_missing_mesh_is_a_failure():
 # --------------------------------------------------------------------------- #
 # RK-8（v1.4 §4.1）：躯干主惯性轴与 +Z 的夹角 = 登记倾角 ±3°
 # --------------------------------------------------------------------------- #
-def _principal_axis(obj, *, iterations: int = 64):
-    """用世界空间顶点的协方差矩阵做幂迭代，取主特征向量（确定性）。"""
+def _world_covariance(obj):
+    """躯干世界空间顶点云的协方差（返回 `(点数, 3x3 矩阵)`；点数不足回 `None`）。"""
     from mathutils import Vector as _V
 
-    scene = bpy.context.scene
     bpy.context.view_layer.update()
     depsgraph = bpy.context.evaluated_depsgraph_get()
     evaluated = obj.evaluated_get(depsgraph)
     mesh = evaluated.to_mesh()
     try:
-        points = [evaluated.matrix_world @ vertex.co
-                  for vertex in mesh.vertices]
+        points = [evaluated.matrix_world @ vertex.co for vertex in mesh.vertices]
     finally:
         evaluated.to_mesh_clear()
     if len(points) < 8:
@@ -476,15 +507,91 @@ def _principal_axis(obj, *, iterations: int = 64):
         for i in range(3):
             for j in range(3):
                 covariance[i][j] += delta[i] * delta[j]
-    vector = _V((1.0, 0.0, 0.0))
-    for _ in range(max(int(iterations), 1)):
-        updated = _V((sum(covariance[i][j] * vector[j] for j in range(3))
-                      for i in range(3)))
-        if updated.length < 1e-12:
-            return None
-        vector = updated.normalized()
+    return len(points), covariance
+
+
+def _principal_axis(obj, *, iterations: int = 64):
+    """用世界空间顶点的协方差矩阵做幂迭代，取主特征向量（确定性）。
+
+    **种子必须避开"恰好与主轴正交"的那个点**（2026-10-06 实测踩到）：幂迭代只会放大
+    初始向量沿哪个特征向量的分量——若种子与主轴**正交**，它永远走不到主轴上去。
+
+    * 旧写法种子是 `+X`，而**圆角方体**的顶点云在倾斜时关于 X 轴**精确对称**
+      （协方差的 `cov_xy = cov_xz` 在浮点里恰好为 0）⇒ 迭代被锁在 X 上，
+      量的"主惯性轴"变成 X 轴、夹角报 **90°**（RK-8 当场红）；
+    * 同一套场景、同一动作，只把躯干换成**旧形状（圆柱）**时，n 边形顶点的 cos/sin
+      留下 ±1e-17 级残差，迭代反而能爬到主轴上 ⇒ 报 **12.0°**（正确）。
+
+    ⇒ 改成**四种子（±X/±Y/±Z 的三个代表轴 ＋ 归一化的 (1,1,1)）各跑一遍，
+    取 Rayleigh 商最大的那个**。`(1,1,1)` 与任何特征向量都不正交，因此结果不再依赖
+    "顶点云恰好对称"这种偶然。**判据（±3°）一个字没动**，改的只是"能不能量到主轴"。
+    """
+    from mathutils import Vector as _V
+
+    scene = bpy.context.scene
+    measured = _world_covariance(obj)
+    if measured is None:
+        return None
+    _count, covariance = measured
+
+    def rayleigh(candidate) -> float:
+        return sum(candidate[i] * sum(covariance[i][j] * candidate[j]
+                                      for j in range(3)) for i in range(3))
+
+    best_vector, best_value = None, None
+    third = 1.0 / (3.0 ** 0.5)
+    for seed in ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0),
+                 (third, third, third)):
+        vector = _V(seed).normalized()
+        for _ in range(max(int(iterations), 1)):
+            updated = _V((sum(covariance[i][j] * vector[j] for j in range(3))
+                          for i in range(3)))
+            if updated.length < 1e-12:
+                break
+            vector = updated.normalized()
+        value = rayleigh(vector)
+        if best_value is None or value > best_value:
+            best_vector, best_value = vector, value
     _ = scene
-    return vector
+    return best_vector
+
+
+def t_the_principal_axis_is_the_dominant_one() -> dict:
+    """数值后置条件：返回的轴必须是 **Rayleigh 商最大**的那一个。
+
+    这条钉的是 2026-10-06 那个**种子陷阱**：旧实现从 `+X` 起做幂迭代，一旦顶点云关于 X 轴
+    **精确对称**（圆角方体就是），迭代被锁在 X 上，报出来的"主惯性轴"其实是 X 轴（夹角 90°）。
+    这里直接比 Rayleigh 商 ⇒ 旧实现当场红、正确实现恒绿，而**判据（±3°）一个字没动**。
+    """
+    from mathutils import Vector as _V
+
+    scene = fresh_scene()
+    scene.frame_start, scene.frame_end = 1, 48
+    character = create_character("char_001", "小明", "#FF6B6B")
+    blender = MotionBlender(character)
+    blender.add("body_tilt", 1, 48, **{"degrees": 12.0})
+    blender.bake()
+    scene.frame_set(48)
+    torso = character.parts.get("body")
+    measured = _world_covariance(torso)
+    principal = _principal_axis(torso)
+    if measured is None or principal is None:
+        return {"ok": False, "error": "躯干网格不可用或主轴算不出来"}
+    _count, covariance = measured
+
+    def rayleigh(candidate) -> float:
+        vector = _V(candidate).normalized()
+        return sum(vector[i] * sum(covariance[i][j] * vector[j] for j in range(3))
+                   for i in range(3))
+
+    value = rayleigh(tuple(principal))
+    axes = {"x": rayleigh((1.0, 0.0, 0.0)), "y": rayleigh((0.0, 1.0, 0.0)),
+            "z": rayleigh((0.0, 0.0, 1.0))}
+    best_axis = max(axes, key=axes.get)
+    return {"ok": value >= axes[best_axis] - 1e-9,
+            "principal_rayleigh": round(value, 6),
+            "axis_rayleigh": {key: round(item, 6) for key, item in axes.items()},
+            "principal": [round(x, 4) for x in principal]}
 
 
 def t_rk8_body_tilt_matches_the_registered_angle():
@@ -529,6 +636,9 @@ def main() -> int:
     # §B.5 的反向突变：把角色抬离地面，判据必须变红（成对跑）。
     check("rk6_floating_goes_red", t_rk6_floating_must_go_red)
     check("rk6_missing_mesh_is_a_failure", t_rk6_missing_mesh_is_a_failure)
+    #: 先钉"主轴算得对"这条**数值后置条件**，再谈倾角（否则 90° 那种假读数会被当成形状回归）。
+    check("rk8_principal_axis_is_the_dominant_one",
+          t_the_principal_axis_is_the_dominant_one)
     check("rk8_body_tilt_matches_the_registered_angle",
           t_rk8_body_tilt_matches_the_registered_angle)
 

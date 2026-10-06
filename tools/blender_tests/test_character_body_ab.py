@@ -1,14 +1,20 @@
-"""v1.4 §7 的 **D1b 躯干形状 A/B**：圆柱（现状）vs 圆角方体（参考图的"块面感"）。
+"""v1.4 §7 的 **D1b 躯干形状 A/B**：圆柱（**已退役的旧形状**）vs 圆角方体（**现在生产的形状**）。
 
-§7 只剩这一项待用户拍板，文档给的裁决方式是"**P10 内以 A/B 截图裁决**"。这一支就是
-那张 A/B 的机器部分：
+§7 的裁决方式是"**P10 内以 A/B 截图裁决**"。**裁决已做**：人工裁决通道（GLM-5.3）
+判 **② 圆角方体**，`character_factory.py` 的生产路径**已改**（提交见
+`docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md` 的 D1b 那条），两张图在
+`docs/evidence/d1b_body_shape/`（`A_cylinder.png` / `B_rounded_box.png`）。
 
-* **A（现状）**：`character_factory.create_character()`，躯干是
+⇒ 这一支的**语义随之改成"回归对拍"**（否则它会退化成自己跟自己比）：
+
+* **A（旧，显式建）**：`_cylinder_body()`——把躯干**显式**换成
   `primitive_cylinder_add(radius=BODY_RADIUS, depth=BODY_HEIGHT)`；
-* **B（候选）**：**同一条工厂路径**建出来的角色，只把躯干网格换成"等外接盒的圆角方体"
-  （cube ＋ Bevel），层级、枢轴、材质、锚点全不动。
+* **B（新，显式建）**：`_rounded_box_body()`——等外接盒的圆角方体（cube ＋ Bevel），
+  与生产路径 `character_factory._add_rounded_box_body()` **逐字同序**。
+* **另加一条**：`d1b_shipped_torso_is_the_rounded_box` —— 直接量**生产默认**建出来的躯干，
+  钉住"真的换了形状"，免得它被谁悄悄改回圆柱。
 
-它回答的不是"哪个好看"（那是用户的），而是**换形状会不会牵动别的东西**——文档写
+它回答的不是"哪个好看"，而是**换形状会不会牵动别的东西**——文档写
 选项 ② "需改 `character_factory.py` 的 `primitive_cylinder_add` 与相应 bbox/构图常量"。
 所以这一支量三件事：
 
@@ -181,12 +187,40 @@ def _rounded_box_body(name: str) -> None:
         cube.data.materials.append(material)
 
 
+def _cylinder_body(name: str) -> None:
+    """把躯干换成**旧形状**的圆柱（A）——显式建，不看工厂的默认值。
+
+    为什么要显式：生产默认**已经改成圆角方体**了。若 A 还走工厂默认，A/B 就变成
+    "圆角方体 vs 圆角方体"，`d1b_silhouette_differs` 会当场红（差分恒 0）——
+    那不是"形状没差"，是**对拍对象写错了**。
+    """
+    body = bpy.data.objects[f"BD_Char_{name}_Body"]
+    parent = body.parent
+    local = tuple(body.location)
+    materials = [slot.material for slot in body.material_slots if slot.material]
+    radius = character_factory.BODY_RADIUS
+    height = character_factory.BODY_HEIGHT
+    bpy.data.objects.remove(body, do_unlink=True)
+    bpy.ops.mesh.primitive_cylinder_add(radius=radius, depth=height,
+                                        location=(0.0, 0.0, 0.0))
+    cylinder = bpy.context.active_object
+    cylinder.name = f"BD_Char_{name}_Body"
+    cylinder.location = local
+    if parent is not None:
+        cylinder.parent = parent
+    for material in materials:
+        cylinder.data.materials.append(material)
+
+
 def build_and_render(name: str, *, rounded: bool, save_dir: str = ""):
     """建角色 → 用产品的取景求解器逐机位渲一张（A/B 必须是**同一个机位**）。"""
     fresh_scene()
     character = create_character(f"char_{name.lower()}", name, "#C8C8D0")
     if rounded:
         _rounded_box_body(name)
+    else:
+        #: A 是**旧形状**：显式建圆柱（生产默认现在是圆角方体，见模块 docstring）。
+        _cylinder_body(name)
     frames = {}
     for shot_type, side in SHOTS:
         place_camera_for_shot(f"d1b_{name}_{shot_type}", (0.0, 0.0, 0.0),
@@ -265,6 +299,34 @@ def t_the_silhouette_really_differs() -> dict:
             "floor": int(total * 0.002), "ceiling": int(total * 0.30)}
 
 
+def t_the_shipped_torso_is_the_rounded_box() -> dict:
+    """**生产默认**必须真的换成了圆角方体（不是"加了个开关但还是圆柱"）。
+
+    判据（都不依赖硬编码顶点数）：生产建出来的躯干与**显式圆角方体**的
+    （顶点数、AABB）**逐位相同**，且与**显式圆柱**的顶点数**不同**——后者正是"换了形状"
+    这件事本身。外接盒三项必须仍等于 `(2r, 2r, h)`（⇒ bbox／构图常量不动）。
+    """
+    fresh_scene()
+    create_character("char_ship", "Ship", "#C8C8D0")
+    shipped = _body_bounds("Ship")
+    fresh_scene()
+    create_character("char_ref", "Ref", "#C8C8D0")
+    _rounded_box_body("Ref")
+    rounded = _body_bounds("Ref")
+    fresh_scene()
+    create_character("char_old", "Old", "#C8C8D0")
+    _cylinder_body("Old")
+    cylinder = _body_bounds("Old")
+    expected = [round(character_factory.BODY_RADIUS * 2, 4),
+                round(character_factory.BODY_RADIUS * 2, 4),
+                round(character_factory.BODY_HEIGHT, 4)]
+    ok = (shipped["vertices"] == rounded["vertices"]
+          and shipped["size"] == rounded["size"] == expected
+          and shipped["vertices"] != cylinder["vertices"])
+    return {"ok": ok, "shipped": shipped, "rounded_ref": rounded,
+            "cylinder_ref": cylinder, "expected": expected}
+
+
 def main() -> int:
     capture_main_thread()
     args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -275,6 +337,7 @@ def main() -> int:
     check("d1b_torso_footprint_unchanged", t_the_torso_footprint_does_not_change)
     check("d1b_anchor_contract_unchanged", t_the_anchor_contract_survives_the_swap)
     check("d1b_silhouette_differs", t_the_silhouette_really_differs)
+    check("d1b_shipped_torso_is_the_rounded_box", t_the_shipped_torso_is_the_rounded_box)
 
     if save_dir:
         for label in (f"{name}_{shot_type}_{side}"
@@ -299,7 +362,9 @@ def main() -> int:
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
     print("BD_TEST_RESULT " + json.dumps(
         {"passed": passed, "failed": failed, "checks": RESULTS,
-         "note": "D1b 的 A/B：数字是机器部分，选哪个由人看两张图决定"},
+         "note": "D1b 已裁决为 ② 圆角方体并合入生产（`character_factory` 已改）："
+                 "本支现在是对拍——A 是退役的圆柱（显式建），B 是生产的圆角方体，"
+                 "外加一条 `d1b_shipped_torso_is_the_rounded_box` 钉住生产默认"},
         ensure_ascii=False))
     return 0 if not failed else 1
 
