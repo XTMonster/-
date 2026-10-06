@@ -2321,3 +2321,31 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 **未验证／边界**：① 校准只用了 1 份运行（23 镜带 R001 数字）；② `note_side` 是**粗分类器**
 （"左"字面命中即算），它把"角色站位"与"机位侧"混在一起——**这恰是结论的一部分**，但也说明这张表不精确；
 ③ **`axis_side` 仍未绑定**：本条只把"要绑需要什么"钉死，没声称它已经能判。
+
+### P14-313：轴族**落字段已实施并在真跑里验证**——`shots[].axis{pair, side_sign, status}`
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R53-D7 | 按裁决把"生成器原生值"落成字段（照抄、不改名） | **绿（单测＋真跑＋全链）** | `docs/evidence/20261007-axis-field-landing/`；全链 `docs/evidence/20261007-013420/` | 2026-10-07 | `277b8e3`＋本批 |
+
+**落地三处**：① `shot_builder.py` 的 `ShotBuildResult` 增 `axis_pair`/`axis_side_sign`/`axis_status`，
+在建镜循环里**从已有的 `context.axis` ＋ 已摆好的机位**取值（`camera_side_of(span[0],span[1],cam)`、
+`axis_status(axis, cam_xy)`、`pair = axis.left_label/right_label` **原样**）；
+② `delivery/manifest.py` 写进每镜 `shots[].axis{pair, side_sign, status}`（没算过时 `[]/0/""`，**不猜**）；
+③ 守门 `test_the_axis_field_carries_the_generators_native_values_only`（键名不含 `axis_side`、
+**不许出现翻译后的 `left/right`**、没算过时是空值）。
+
+**真跑读数**（`tools/run_export.py --offline` 的导出产物，不是单测）：
+`"axis": {"pair": ["char_001", "char_002"], "side_sign": -1, "status": "correct"}`
+——**pair 是角色 id 的有序对**，`side_sign` 是**相对这个次序**的叉积符号（换人次序就翻，
+所以必须一起落盘），`status` 是 `correct`/`neutral`/`crossed` 之一；**没有** `left/right`。
+
+**golden 派生夹具**按仓库流程用 `tools/gen_golden.py` 重新生成（**不是改断言**），只有
+`fixtures/expected_shots_long.json` 变了。**全链**：HEAD `277b8e3`、`tree.json` `stable=true`、
+32/32 全过、`failed_checks=['RK-13']`。
+
+**未验证／边界**：① **`axis_side` 仍没进绑定表**——字段落下了，但索引侧还是 `left/right/neutral`，
+而校准已证明它跟 `±1` **对不上**；按裁定下一步是**弃 `left/right`、索引改用符号域**（＝换代，本轮没做）；
+② `pair` 给角色 id 这点只看了 2 镜离线导出（`long21` 是旧产物、没这一栏），**没逐份核**；
+③ `status` 只在双人轴线存在时非空，单人镜沿用已确立那条轴（`shot_002` 即如此）——
+继承行为，**不是本轮新引入的**。
