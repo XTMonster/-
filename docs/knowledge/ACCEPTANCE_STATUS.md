@@ -5,8 +5,8 @@
 > **这一节是唯一的现行读数板；下面各节是历史快照**（最早一份写于 2026-10-01 语料重建之后），
 > 那里的数字**不要**当成现状引用。证据目录 `docs/evidence/20261006-220213/`：
 > 32 步链 **32/32 全过**、树守卫 `stable=true`（`tree.json` 的 `digest_before == digest_after`）、
-> 链内那次全量 `python -m pytest` = **2388 passed / 1 skipped**（链跑在 22:02；
-> 本地最近一次 = **2449 passed / 1 skipped**，这个数**每次改动都会变**，别把它当判据）。
+> 链内那次全量 `python -m pytest` = **2388 passed / 1 skipped**（链跑在 22:02；**它随每次改动变化，
+> 别把它当判据**，要最新数就自己跑一次，链每次都会打印）。
 > 现行台账＝
 > `docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md`。
 >
