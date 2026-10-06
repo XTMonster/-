@@ -415,12 +415,49 @@ def call_once(messages: List[dict], *, model: str, max_tokens: int, level: str,
     return (message.get("content") or ""), usage
 
 
+#: 换档**无益**的错误：同一个模型、同一份资源包，降档照样被拒。
+#: 智谱按模型分别计费 ⇒ `1113`（无可用资源包）与 `429`（限流/余额）都属于这一类。
+_QUOTA_MARKERS = ("429", "1113", "余额", "资源包", "quota", "rate limit",
+                  "insufficient", "suspended")
+
+
+def why_not_step_down(error: object) -> str:
+    """这一档失败之后，**该不该换下一档**？
+
+    返回空串＝换档有益（继续降级）；非空＝换档无益（直接上报），返回的是原因。
+
+    为什么要把"传输/超时"与"配额"分开（2026-10-06 实测倒逼）：
+
+    * 旧实现把 `usage.get("error")` 一律当成"换档无益"⇒ `break`。于是
+      `level=max` ＋ `max_tokens=32768` 撞上**零字节超时**时，整次调用直接死掉，
+      **根本不会去试 `high`**——而"降一档"恰恰就是这种失败的解药。
+      实测原件：`work/_glm53_decide23/规格一致性.failed.json`
+      （`{"level": "max", "error": "TimeoutError: The read operation timed out",
+      "elapsed_s": 900.1, "finish_reason": "transport_error"}`，`attempts` 只有这一档）；
+      对照：同一账号 `glm-5.3` 的 `high` 档在 1.7k 输入的包上 **363.6 s** 就能拿到正文
+      （`docs/evidence/20261004-glm-consult-explain/`）。
+    * `429`／`1113` 则相反：模型是同一个，降档不会换来额度，重试只是白等
+      ⇒ 保住原来那条纪律（`tests/test_glm_consult.py` 的
+      `test_a_transport_error_is_not_retried_through_the_ladder` 钉的就是它）。
+    """
+    text = str(error or "")
+    for marker in _QUOTA_MARKERS:
+        if marker.lower() in text.lower():
+            return "换档无益（%s）：同一个模型，降档换不来额度" % marker
+    return ""
+
+
 def consult(messages: List[dict], *, model: str, max_tokens: int,
             levels: Sequence[str], temperature: float, timeout: float,
             api_key: Optional[str] = None) -> Tuple[str, dict]:
-    """按档位阶梯要一次**有正文**的答复；每一档都记进 usage。"""
+    """按档位阶梯要一次**有正文**的答复；每一档都记进 usage。
+
+    阶梯的形状是 `max → high → low`：**思考越少 ⇒ 越快 ⇒ 越不容易撞超时**，
+    所以"没拿到正文"或"死在传输上"都要**继续往下降**，只有配额类才停手
+    （判据见 `why_not_step_down`）。
+    """
     tried: List[dict] = []
-    for level in levels:
+    for index, level in enumerate(levels):
         content, usage = call_once(messages, model=model, max_tokens=max_tokens,
                                    level=level, temperature=temperature,
                                    timeout=timeout, api_key=api_key)
@@ -428,9 +465,15 @@ def consult(messages: List[dict], *, model: str, max_tokens: int,
         if content.strip():
             usage["attempts"] = tried
             return content, usage
-        if "429" in str(usage.get("error", "")) or usage.get("error"):
-            # 限流/传输错误：换档无益，直接上报
+        blocked = why_not_step_down(usage.get("error"))
+        if blocked:
+            usage["step_down_refused"] = blocked
+            tried[-1]["step_down_refused"] = blocked
+            usage["attempts"] = tried
             break
+        if index + 1 < len(levels):
+            #: 留痕：这一档为什么没被采信、下一档是谁——失败与降级都要可对拍。
+            tried[-1]["stepped_down_to"] = levels[index + 1]
         time.sleep(1.0)
     raise ConsultFailed(
         "glm-5.3 没给出正文：" + json.dumps(tried, ensure_ascii=False), tried)

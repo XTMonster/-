@@ -167,3 +167,56 @@ def test_default_max_tokens_matches_the_glm_channel():
     match = re.search(r'"--max-tokens",\s*type=int,\s*default=(\d+)', text)
     assert match, "glm_consult 的 --max-tokens 默认值找不到了（口径漂了）"
     assert int(match.group(1)) == pc.DEFAULT_MAX_TOKENS
+
+
+def test_the_relay_channel_hands_over_to_glm_when_gpt6a_dies(monkeypatch):
+    """用户 2026-10-06："如果现在还是用不了 gpt6A，就改用 glm5.3 吧"。
+
+    实测依据：GPT-6A 一次裁定**被掐两次**（928.9 s 的 SSL 握手超时、2281.6 s 的 HTTP 524）
+    才在第三次回来，正文还被截断（467 字符、第二问没答）
+    ——见 `work/_gpt6a_adjudicate.log` 与 `docs/evidence/20261006-rk13-ruling/README.md`。
+
+    ⇒ relay 侧三次重试**全废**之后必须**自动改走 GLM-5.3**，并把"换过通道"逐字写进
+    判词的 usage（`fallback_from`）。**换通道不是换标准**：这里只记录"谁答的"，
+    判据/门限一个字都不动。
+    """
+    from tools import relay_consult as rc
+
+    def boom(*_args, **_kwargs):
+        raise rc.ConsultFailed("中转站没给出正文：[...]",
+                               [{"elapsed_s": 928.9}, {"elapsed_s": 2281.6}])
+
+    seen = {}
+
+    def fake_glm(messages, *, model, max_tokens, levels, temperature, timeout,
+                 api_key=None):  # noqa: ARG001
+        seen["model"] = model
+        seen["levels"] = list(levels)
+        return '{"summary": "s", "teaching": "t", "findings": []}', {"level": "high"}
+
+    monkeypatch.setattr(rc, "consult", boom)
+    monkeypatch.setattr(pc.gc, "consult", fake_glm)
+
+    call = pc.relay_caller("gpt-6-astra", 32768, 900.0,
+                           fallback_model="glm-5.3", fallback_level="high")
+    content, usage = call([{"role": "system", "content": "s"},
+                           {"role": "user", "content": "u"}])
+    assert seen["model"] == "glm-5.3"
+    assert seen["levels"] == ["high", "low"], "回退要守 GLM 的档位阶梯"
+    assert usage["fallback_from"]["channel"] == "linkai-relay"
+    assert usage["fallback_from"]["model"] == "gpt-6-astra"
+    assert "ConsultFailed" in usage["fallback_from"]["error"]
+    assert content.startswith("{")
+
+
+def test_without_a_fallback_model_a_relay_failure_still_surfaces(monkeypatch):
+    """没给回退通道时**不许**把失败吞掉——"一侧缺席永远不算同意"。"""
+    from tools import relay_consult as rc
+
+    def boom(*_args, **_kwargs):
+        raise rc.ConsultFailed("中转站没给出正文：[...]", [{"elapsed_s": 1.0}])
+
+    monkeypatch.setattr(rc, "consult", boom)
+    call = pc.relay_caller("gpt-6-astra", 32768, 900.0)
+    with pytest.raises(rc.ConsultFailed):
+        call([{"role": "system", "content": "s"}, {"role": "user", "content": "u"}])

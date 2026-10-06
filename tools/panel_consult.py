@@ -267,20 +267,45 @@ def glm_caller(model: str, level: str, max_tokens: int,
     return call
 
 
-def relay_caller(model: str, max_tokens: int,
-                 timeout: float) -> Callable[[List[dict]], Tuple[str, dict]]:
+def relay_caller(model: str, max_tokens: int, timeout: float, *,
+                 fallback_model: str = "",
+                 fallback_level: str = "high") -> Callable[[List[dict]], Tuple[str, dict]]:
     """**中转站 GPT-6A** 侧：用户 2026-10-06 把"难题攻关／会诊／提出方案"也划给了它
     （原话："难题攻关和会诊gpt6A吧"＋"提出方案类用gpt6A，执行交给DeepSeek"）。
 
     与 GLM 侧的形状差别：**没有档位阶梯**（中转站没有那个开关），所以只做带退避的一次性调用；
     思考强度由 `RelayClient` 的 `reasoning_effort`（默认 `max`）保证——实测同一问题
     reasoning 40 → 1034 token（`work/_probe_linkai_thinking.py`）。
+
+    **通道级回退**（用户 2026-10-06："如果现在还是用不了 gpt6A，就改用 glm5.3 吧"）：
+    这条通道会"出正文"，但**慢且脆**——实测 `work/_gpt6a_adjudicate.log` 里
+    一次裁定两次尝试被掐（928.9 s 的 SSL 握手超时、2281.6 s 的 HTTP 524），
+    第三次才回来；而且**回来的正文可能被截断**（467 字符，第二问没答）。
+    ⇒ relay 侧的 3 次重试全用完之后，**自动改走 GLM-5.3**，并把"换过通道"
+    逐字写进 usage（`fallback_from`），绝不让一个通道抖一下就把整次会诊打死。
+    **换通道≠换标准**：判据/门限/口径一个字都不动，这里换的只是"谁来想"。
     """
     from tools import relay_consult as rc
 
     def call(messages: List[dict]) -> Tuple[str, dict]:
-        return rc.consult(messages, model=model, max_tokens=max_tokens,
-                          levels=["max"], temperature=0.2, timeout=timeout)
+        try:
+            return rc.consult(messages, model=model, max_tokens=max_tokens,
+                              levels=["max"], temperature=0.2, timeout=timeout)
+        #: `SystemExit` 也要接住：本仓的通道用 `SystemExit` 报"缺 key / 没正文"
+        #: （`ConsultFailed` 就是它的子类），只接 `Exception` 会让回退形同虚设。
+        except (Exception, SystemExit) as exc:  # noqa: BLE001 - 失败要留证，然后换通道
+            if not fallback_model:
+                raise
+            ladder = {"max": ["max", "high", "low"], "high": ["high", "low"],
+                      "low": ["low"]}[fallback_level]
+            content, usage = gc.consult(messages, model=fallback_model,
+                                        max_tokens=max_tokens, levels=ladder,
+                                        temperature=0.2, timeout=timeout)
+            usage["fallback_from"] = {
+                "channel": "linkai-relay", "model": model,
+                "error": "%s: %s" % (type(exc).__name__, str(exc)[:300]),
+            }
+            return content, usage
 
     return call
 
@@ -433,7 +458,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.partner == "glm":
         glm_call = glm_caller(partner_model, args.level, args.max_tokens, args.timeout)
     else:
-        glm_call = relay_caller(partner_model, args.max_tokens, args.timeout)
+        #: 通道级回退：relay（GPT-6A）三次尝试全废之后改走 GLM-5.3，
+        #: 判词里记 `fallback_from`（用户 2026-10-06："如果现在还是用不了
+        #: gpt6A，就改用 glm5.3 吧"）。
+        glm_call = relay_caller(partner_model, args.max_tokens, args.timeout,
+                                fallback_model=args.glm_model,
+                                fallback_level=args.level)
     deepseek_call = None if args.main_answer else deepseek_caller(args.deepseek_model)
 
     reports: List[dict] = []

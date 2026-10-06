@@ -131,6 +131,64 @@ def test_a_transport_error_is_not_retried_through_the_ladder(monkeypatch):
     assert "429" in str(excinfo.value)
 
 
+def test_a_zero_byte_timeout_does_step_down_the_ladder(monkeypatch):
+    """实测倒逼（2026-10-06 22:09）：`max` 档 **900.1 s 零字节超时**。
+
+    原件 `work/_glm53_decide23/规格一致性.failed.json` 的 `attempts` 里**只有 max 一档**
+    ——旧实现把"有 error"一律当成"换档无益"，于是整次调用死掉，
+    **根本没去试 `high`**。而"降一档、想得少一点、更快"恰恰就是这种失败的解药
+    （同账号 `high` 档在 1.7k 包上实测 363.6 s 出正文）。这条钉住：**传输类失败必须降级**。
+    """
+    calls = []
+
+    def fake_call_once(messages, *, model, max_tokens, level, temperature,
+                       timeout, api_key=None):
+        calls.append(level)
+        if level == "max":
+            return "", {"level": level, "elapsed_s": 900.1,
+                        "error": "TimeoutError: The read operation timed out",
+                        "finish_reason": "transport_error"}
+        return '{"summary": "ok"}', {"level": level, "finish_reason": "stop"}
+
+    monkeypatch.setattr(C, "call_once", fake_call_once)
+    monkeypatch.setattr(C.time, "sleep", lambda _s: None)
+    content, usage = C.consult([{"role": "user", "content": "x"}], model="glm-5.3",
+                               max_tokens=32768, levels=["max", "high", "low"],
+                               temperature=0.2, timeout=1.0, api_key="k")
+    assert content == '{"summary": "ok"}'
+    assert calls == ["max", "high"]
+    assert usage["attempts"][0]["finish_reason"] == "transport_error"
+    assert usage["attempts"][0]["stepped_down_to"] == "high"
+
+
+def test_the_step_down_rule_separates_quota_from_transport():
+    """换档的判据只要一句话：**同模型换档换不来额度 ⇒ 只有额度类才停手**。"""
+    # 额度/鉴权类：停手
+    assert C.why_not_step_down("HTTP 429: rate limited")
+    assert C.why_not_step_down('HTTP 400: {"error":{"code":"1113"}}')
+    assert C.why_not_step_down("余额不足或无可用资源包")
+    # 传输/超时/空正文类：降级
+    assert C.why_not_step_down("TimeoutError: The read operation timed out") == ""
+    assert C.why_not_step_down("RemoteDisconnected: peer closed") == ""
+    assert C.why_not_step_down("") == ""
+
+
+def test_a_quota_failure_says_why_it_did_not_step_down(monkeypatch):
+    """停手也要留因：`step_down_refused` 让"为什么没降级"可对拍。"""
+    def fake_call_once(messages, *, model, max_tokens, level, temperature,
+                       timeout, api_key=None):
+        return "", {"level": level, "error": "HTTP 429: rate limited"}
+
+    monkeypatch.setattr(C, "call_once", fake_call_once)
+    with pytest.raises(C.ConsultFailed) as excinfo:
+        C.consult([{"role": "user", "content": "x"}], model="glm-5.3",
+                  max_tokens=32768, levels=["max", "high", "low"],
+                  temperature=0.2, timeout=1.0, api_key="k")
+    assert len(excinfo.value.attempts) == 1
+    assert "换档无益" in excinfo.value.attempts[0]["step_down_refused"]
+    assert "stepped_down_to" not in excinfo.value.attempts[0]
+
+
 def test_dry_run_needs_no_api_key(tmp_path, capsys, monkeypatch):
     monkeypatch.delenv("GLM_API_KEY", raising=False)
     question = tmp_path / "q.md"
