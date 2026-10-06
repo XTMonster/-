@@ -220,6 +220,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     clients = [(name, llm.make_client("scripted", name, args.scripted) if args.scripted
                 else llm.make_client(families[i], name))
                for i, name in enumerate(names)]
+    #: 开跑前握手（`e1_panel.preflight`）：2026-10-06 那次"1,280 行全没判到、四分钟跑完"
+    #: 的根因就是子进程缺 `GLM_API_KEY`。这条搜索**一轮 1h50m**，更不能等到跑完才发现评委不在。
+    #: `--scripted` 是离线桩（测试专用），没有真通道可握，显式跳过。
+    if not args.scripted:
+        failures = e1_panel.preflight(clients)
+        if failures:
+            print(json.dumps({"error": "judge_preflight_failed", "failures": failures,
+                              "hint": "不开始这场搜索：先修通道（key／限额／端点）再跑"},
+                             ensure_ascii=False))
+            return 3
     payload = search(rows, cases=cases, clients=clients,
                      pool_per_query=args.pool_per_query,
                      max_triples=args.max_triples, workers=args.workers)

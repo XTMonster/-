@@ -42,6 +42,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from block_director.knowledge.cases import load_index  # noqa: E402
+from block_director.contracts.knowledge import Case  # noqa: E402
 from tools.kb_fetch import llm  # noqa: E402
 
 #: L3 相关性过滤器的**判据提示词**（单一真源：产品 sidecar 的那一份）。
@@ -496,6 +497,43 @@ def judge(client, query: str, cases) -> Dict[str, Dict[str, Any]]:
     return out
 
 
+#: 开跑前自检用的查询（只为握手，**不进任何产物、不进任何分母**）。
+PREFLIGHT_QUERY = "自检：这一镜用中景还是近景，为什么？"
+
+
+def preflight(clients: Sequence[tuple]) -> List[Dict[str, str]]:
+    """开跑前先确认**每一位评委都能答题**；返回失败清单（空 ＝ 全通过）。
+
+    为什么要有它（2026-10-06 的实测事故）：`tools/knowledge/e1_labelfree_pool.py` 第一次跑
+    64 条时，那个子进程里**没有 `GLM_API_KEY`** ⇒ `GLMClient` 每次**立刻**抛
+    `LLMError: 缺少 GLM_API_KEY`，于是 1,280 行全是"没判到"（`values:[null,null,null]`），
+    **四分钟就"跑完"**，汇总行写着 `labelfree_oracle 0.0` —— 一个**看起来像灾难性读数、
+    其实是仪器坏了**的数。
+
+    判分侧没错（P14-249 的"少一位评委不发分"就是这么定义的、不许改）；
+    错的是**没人先问一句"评委在不在"**。所以：开跑前拿**同一个 `judge()`** 走一次小自检，
+    任何一位评委抛错、或回不出可解析的分 ⇒ 调用方**应当不开始**那场长跑（怎么退由调用方定，
+    本函数只如实报告）。自检**不写进产物**、**不进分母**、**不参与任何计算**——它是一次握手，
+    不是一条读数。
+    """
+    probe_cases = [Case(case_id="preflight_%d" % i, title="preflight", excerpt="preflight")
+                   for i in (1, 2, 3)]
+    failures: List[Dict[str, str]] = []
+    for name, client in clients:
+        try:
+            got = judge(client, PREFLIGHT_QUERY, probe_cases) or {}
+        except Exception as exc:  # noqa: BLE001 - 失败要具名，绝不吞
+            failures.append({"judge": str(name),
+                             "error": "%s: %s" % (type(exc).__name__, str(exc)[:160])})
+            continue
+        scored = [cid for cid, row in got.items()
+                  if isinstance(row, dict) and isinstance(row.get("score"), (int, float))]
+        if not scored:
+            failures.append({"judge": str(name),
+                             "error": "reply carried no parsable score (empty body?)"})
+    return failures
+
+
 def _score_one(index, query: str, clients: Sequence[tuple],
                top_k: int, rerank=None, retrieve_k: int = 0,
                rerank_label: str = "", expand=None,
@@ -838,6 +876,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         else:
             client = llm.make_client(families[position], name)
         clients.append((name, client))
+
+    #: 开跑前握手（`preflight` 的 docstring）：两位评委有一个不在，这一轮**一小时以上**
+    #: 只会产出"没判到"的行（2026-10-06 实测事故）。`--scripted` 是离线桩（测试专用），
+    #: 没有真通道可握，显式跳过；其余一律先握手再干活。
+    if not args.scripted:
+        failures = preflight(clients)
+        if failures:
+            print(json.dumps({"error": "judge_preflight_failed", "failures": failures,
+                              "hint": "面板不开始：先修通道（key／限额／端点）再跑"},
+                             ensure_ascii=False))
+            return 3
 
     if args.cases_rerank == "cross-encoder":
         reranker, rerank_label = load_cross_encoder(args.rerank_model,

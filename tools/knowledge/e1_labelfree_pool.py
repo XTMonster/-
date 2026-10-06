@@ -191,6 +191,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     clients = [(name, llm.make_client("scripted", name, args.scripted) if args.scripted
                 else llm.make_client(families[i], name))
                for i, name in enumerate(names)]
+    #: 开跑前握手（见 `e1_panel.preflight` 的 docstring）：`--scripted` 是离线桩，
+    #: 那条路**本来就是测试**、没有真通道可握，所以显式跳过（不是"悄悄跳过"）。
+    if not args.scripted:
+        failures = e1_panel.preflight(clients)
+        if failures:
+            print(json.dumps({"error": "judge_preflight_failed", "failures": failures,
+                              "hint": "不开始这场长跑：先修通道（key／限额／端点）再跑；"
+                                      "跑起来也只会得到 1280 行'没判到'"},
+                             ensure_ascii=False))
+            return 3
     payload = search(index, queries, clients=clients, pool_size=args.pool,
                      workers=args.workers)
     payload["queries_file"] = args.queries
