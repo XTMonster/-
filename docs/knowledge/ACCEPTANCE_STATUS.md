@@ -1,5 +1,37 @@
 # RK-13 / P14 验收现状（逐项对账 · 2026-10-01 语料重建之后）
 
+> ## 当前读数（2026-10-06 22:04 全链 · HEAD `c328e91`）
+>
+> **这一节是唯一的现行读数板；下面各节是历史快照**（最早一份写于 2026-10-01 语料重建之后），
+> 那里的数字**不要**当成现状引用。证据目录 `docs/evidence/20261006-220213/`：
+> 32 步链 **32/32 全过**、树守卫 `stable=true`（`tree.json` 的 `digest_before == digest_after`）、
+> 全量 `python -m pytest` = **2446 passed / 1 skipped**。现行台账＝
+> `docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md`。
+>
+> | 指标 | 现行读数 | 状态 | 与下方旧表的差别（**为什么旧表不能再用**） |
+> |---|---|---|---|
+> | Q0 构建门 | `entries 2847` / `edges 638` | pass | — |
+> | `K1_source_ref_complete`（出处完整性） | 1.0 | pass | — |
+> | `K2_license_ratio`（许可合规率） | 1.0 | pass | — |
+> | `K3_domain_floor`（每域下限） | —（门用条目数判，不给标量） | pass | — |
+> | `K4_dedupe_ratio`（去重有效率） | 1.0 | pass | — |
+> | Q1 | **0.9975** | pass | 旧表写 0.265——那是"**旧 oracle × 新索引**"，oracle 重标后不再成立 |
+> | Q2 | **1.0** | pass | 同上（旧表把它写成 0.281 的天花板） |
+> | Q3 | 0.0 | pass | — |
+> | Q4 | **1.0** | pass | 旧表 0.7555，同属"旧 oracle × 新索引" |
+> | Q6a / Q6b | 1.0 / **1.0** | pass | Q6b 旧表 0.8230，同上 |
+> | Q7 | 1.0（502 条冲突查询） | pass | — |
+> | `Q4_pre_required_edges_exist` | 1.0 | pass | oracle 与索引同构的前置（不同构时不许把 `overall` 记 pass） |
+> | **E1 经验引用相关性** | **0.1771（34/192）** | **fail** | 旧表写 `not_measured（人评）`——**已经量到了**，而且是**全仓唯一的那一格红** |
+> | E2 经验采纳率 | **0.0（0/64 镜）** | not_measured（诊断量，不设门） | 旧表的解释"**结构性**：`_movements_payload` 不记知识来源"**已过时**——provenance 通路早在库里（`tests/test_knowledge_provenance.py`）；那 0/64 是**真读数**：那次真实运行 64 镜里**只声明了 1 条运镜**（`declared`），**没有一条**来自经验／案例层 |
+> | E3 经验越权率 | 0 | pass | — |
+> | `E3_cases`（案例层越权） | —（案例结构上无 `forbid` 字段，门恒 0 条） | pass | — |
+> | Q5 运镜命中 | not_measured | — | 需真实模型运行上的人评 |
+>
+> **唯一的红线是 E1**（判据 `E1 ≥ 0.70` 一个字没动）；它的现行分析与下一步见
+> `docs/knowledge/E1_LEVERS_v1.md` ＋ `docs/knowledge/SELECTOR_PIPELINE_v1.md`。
+> 判词通道自 2026-10-06 起由 **GLM-5.3** 承担（用户改判：不再用 GPT-6A）。
+
 这份文件是**完成度审计**，不是计划：每一项都给出当前真实数字、证据文件、
 以及"要让它变绿还缺什么"。数字取自语料重建之后的重跑：
 
