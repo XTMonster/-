@@ -1,16 +1,16 @@
 {
-  "runs": 21,
-  "runs_with_injections": 20,
-  "runs_with_zero_violations": 21,
+  "runs": 23,
+  "runs_with_injections": 22,
+  "runs_with_zero_violations": 23,
   "undecidable_edges": {
     "min": 0,
-    "median": 36.0,
+    "median": 35.5,
     "max": 89
   },
   "active_edges": {
     "min": 0,
     "median": 7.5,
-    "max": 20
+    "max": 30
   },
   "per_run": [
     {
@@ -317,6 +317,36 @@
         "headroom_policy": 19,
         "composition_rule": 13,
         "camera_angle": 13
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261007-real-axis",
+      "shots": 64,
+      "undecidable": 34,
+      "inactive": 232,
+      "active": 1,
+      "violations": 0,
+      "covered_members": 874,
+      "not_covered_members": 49,
+      "not_covered_kinds": {
+        "headroom_policy": 19,
+        "composition_rule": 15,
+        "camera_angle": 15
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261007-real-closure",
+      "shots": 64,
+      "undecidable": 33,
+      "inactive": 256,
+      "active": 30,
+      "violations": 0,
+      "covered_members": 876,
+      "not_covered_members": 47,
+      "not_covered_kinds": {
+        "headroom_policy": 19,
+        "composition_rule": 14,
+        "camera_angle": 14
       }
     }
   ],
