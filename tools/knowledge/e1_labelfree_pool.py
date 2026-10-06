@@ -23,7 +23,14 @@
   顺序＝`(查询序, 枚举序)`；选择器的评估集就是它；
 * `labelfree_oracle`——每条查询**挑中最好那一组**的行相关率（这是这条池子的上界）；
 * `delivered_first_triple`——不做选择、直接用检索器前 3 条（＝产品的交付形状）的读数；
-* `three_of_three`——3/3 的组数。
+* `perfect_groups`——**3/3 的组数**；`queries_with_a_perfect_group`——**最好的那组就是 3/3 的
+  查询条数**。两个都要，而且**不许再叫 `three_of_three`**：`e1_triple_search.py` 里同名的那个键
+  数的是**组**，两个仪器用一个名字数两种量纲，正是本仓"两个数不许互换引用"那条纪律要防的事。
+* `unscored_rows`——**一行都没拿到两位评委分**的组数。它存在的唯一理由是 2026-10-06 的
+  那次事故：第一次跑 64 条时子进程**没有 `GLM_API_KEY`**，于是 1,280 行全是 `values=[null,null,null]`、
+  `hits=0`，**四分钟就"跑完了"**，而汇总行写着 `labelfree_oracle 0.0` ——
+  一个**看起来像灾难性读数、其实是仪器坏了**的数。所以：`unscored_rows == triples_judged`
+  ⇒ 当作**仪器故障**（`instrument_looks_broken()`），CLI **非零退出**并打印原因。
 
 用法：
 
@@ -134,11 +141,17 @@ def search(index: Any, queries: Sequence[str], *, clients: Sequence[tuple],
         "queries_requested": len(per_query),
         "queries_without_a_triple": len(per_query) - len(judged_rows),
         "triples_judged": len(records),
+        #: 见模块 docstring：全 None 的行**不是 0 分**，是"没判到"。
+        "unscored_rows": sum(1 for r in records
+                             if all(v is None for v in r["values"])),
         "pool": int(pool_size),
         "labelfree_oracle": (round(sum(best) / len(best) / 3.0, 4) if best else None),
         "delivered_first_triple": (round(sum(first) / len(first) / 3.0, 4)
                                    if first else None),
-        "three_of_three": sum(1 for value in best if value == 3),
+        #: 见模块 docstring：这两个键**故意不叫** `three_of_three`（那个名字在
+        #: `e1_triple_search` 里数的是"组"，这里数的是"查询"——同名的两种量纲）。
+        "perfect_groups": sum(1 for r in records if int(r["hits"]) == 3),
+        "queries_with_a_perfect_group": sum(1 for value in best if value == 3),
         #: 自述：这个数是在哪一代索引上量的（换语料/换路由必须能看出来）。
         "cases_backend": describe.get("cases_backend"),
         "cases_index_fingerprint": describe.get("cases_index_fingerprint"),
@@ -147,6 +160,12 @@ def search(index: Any, queries: Sequence[str], *, clients: Sequence[tuple],
         "pools": pools,
         "triples": records,
     }
+
+
+def instrument_looks_broken(payload: Dict[str, Any]) -> bool:
+    """**一条都没判到分** ⇒ 这是仪器故障，不是读数（不许把它当 `0.0` 汇报）。"""
+    judged = int(payload.get("triples_judged") or 0)
+    return judged > 0 and int(payload.get("unscored_rows") or 0) == judged
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -180,6 +199,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                                       encoding="utf-8", newline="\n")
     print(json.dumps({k: v for k, v in payload.items()
                       if k not in ("triples", "pools")}, ensure_ascii=False))
+    if instrument_looks_broken(payload):
+        print(json.dumps({
+            "error": "instrument_broken: every row is unscored (0/0 judges)",
+            "hint": "两位评委里至少一位不可用（缺 API key／限额／端点不通）；"
+                    "产物已落盘供取证，但这个 0.0 **不是**读数",
+            "unscored_rows": payload["unscored_rows"],
+            "triples_judged": payload["triples_judged"]}, ensure_ascii=False))
+        return 2
     return 0
 
 

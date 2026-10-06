@@ -99,7 +99,7 @@ def test_one_missing_judge_means_no_score_and_not_relevant():
     out = probe.search(index, ["q1"], clients=_clients(boom_b=True), pool_size=3)
     assert out["triples"][0]["values"] == [None, None, None]
     assert out["triples"][0]["hits"] == 0
-    assert out["labelfree_oracle"] == 0.0 and out["three_of_three"] == 0
+    assert out["labelfree_oracle"] == 0.0 and out["perfect_groups"] == 0
 
 
 def test_the_oracle_is_the_best_group_and_the_delivered_shape_is_the_first_one():
@@ -108,7 +108,7 @@ def test_the_oracle_is_the_best_group_and_the_delivered_shape_is_the_first_one()
     #: 造出"最好 1 条"与"最好的那组"不同 —— 这里直接比的是**同一组**的两个读数口径。
     out = probe.search(index, ["q1"], clients=_clients(4, 4), pool_size=3)
     assert out["labelfree_oracle"] == out["delivered_first_triple"] == 1.0
-    assert out["three_of_three"] == 1
+    assert out["queries_with_a_perfect_group"] == 1
 
 
 def test_the_payload_says_which_index_generation_it_measured():
@@ -129,7 +129,10 @@ def test_cli_writes_the_evidence_shape_offline(tmp_path):
                     "case_type": "narrative", "source_ref": {}})
         for i in range(1, 11)), encoding="utf-8")
     stub = tmp_path / "stub.json"
-    stub.write_text("{}", encoding="utf-8")
+    #: `e1_panel.judge` 用 `key=query` 取预置回答，所以桩按查询串写。
+    stub.write_text(json.dumps({"zebra": {"scores": [
+        {"case_id": "c%d" % i, "score": 5} for i in (1, 2, 3, 4)]}},
+        ensure_ascii=False), encoding="utf-8")
     out = tmp_path / "out.json"
     code = probe.main(["--queries", str(queries), "--cases", str(cases_dir),
                        "--scripted", str(stub), "--pool", "6",
@@ -138,11 +141,33 @@ def test_cli_writes_the_evidence_shape_offline(tmp_path):
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["queries"] == 1 and payload["panel"]
     assert set(payload) >= {"triples", "pools", "labelfree_oracle",
-                            "delivered_first_triple", "three_of_three"}
+                            "delivered_first_triple", "queries_with_a_perfect_group"}
     assert payload["pools"]["zebra"] == ["c1", "c2", "c3", "c4"], (
         "池子＝检索名次（BM25 只回命中项，序按分数、并列按 case_id）")
     assert payload["triples_judged"] == 4, "C(4,3)=4 组，逐组判"
-    assert payload["labelfree_oracle"] is not None
+    assert payload["unscored_rows"] == 0, "桩给了分 ⇒ 一行都不该是'没判到'"
+    assert payload["labelfree_oracle"] == 1.0 and payload["perfect_groups"] == 4 and payload["queries_with_a_perfect_group"] == 1
+
+
+def test_cli_exits_nonzero_when_no_row_could_be_scored(tmp_path):
+    """空桩 ⇒ 一行都判不到分 ⇒ CLI **非零退出**（不许把 0.0 当读数交出去）。"""
+    queries = tmp_path / "q.jsonl"
+    queries.write_text(json.dumps({"query": "zebra"}) + "\n", encoding="utf-8")
+    cases_dir = tmp_path / "cases"
+    cases_dir.mkdir()
+    (cases_dir / "cases.jsonl").write_text("\n".join(
+        json.dumps({"case_id": "c%d" % i, "title": "t",
+                    "excerpt": ("zebra crossing %d" % i) if i <= 4 else ("beta %d" % i),
+                    "case_type": "narrative", "source_ref": {}})
+        for i in range(1, 11)), encoding="utf-8")
+    stub = tmp_path / "stub.json"
+    stub.write_text("{}", encoding="utf-8")
+    out = tmp_path / "out.json"
+    code = probe.main(["--queries", str(queries), "--cases", str(cases_dir),
+                       "--scripted", str(stub), "--pool", "6", "--out", str(out)])
+    assert code == 2, "全 None ⇒ 仪器故障（不是 0 分）"
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["unscored_rows"] == payload["triples_judged"] > 0
 
 
 def test_a_query_whose_pool_is_too_small_is_counted_not_silently_zero():
@@ -152,3 +177,21 @@ def test_a_query_whose_pool_is_too_small_is_counted_not_silently_zero():
     assert out["queries_requested"] == 2 and out["queries"] == 1
     assert out["queries_without_a_triple"] == 1
     assert out["pools"]["q1"] == ["c1", "c2"] and out["triples_judged"] == 1
+
+
+def test_all_rows_unscored_is_an_instrument_failure_not_a_zero():
+    """2026-10-06 事故：子进程没有 `GLM_API_KEY` ⇒ 1,280 行全 None、四分钟"跑完"、
+    汇总写着 `labelfree_oracle 0.0`。**那个 0.0 不是读数**——必须被当成仪器故障。"""
+    index = _Index({"q1": ["c1", "c2", "c3"], "q2": ["d1", "d2", "d3"]})
+    out = probe.search(index, ["q1", "q2"], clients=_clients(boom_b=True), pool_size=3)
+    assert out["unscored_rows"] == out["triples_judged"] == 2
+    assert probe.instrument_looks_broken(out) is True
+
+
+def test_a_partially_unscored_payload_is_not_flagged_as_broken():
+    """少数行判不到分是**正常**的（P14-249 的 `judge_incomplete`），不许因此判仪器坏。"""
+    index = _Index({"q1": ["c1", "c2", "c3"], "q2": ["d1", "d2", "d3"]})
+    out = probe.search(index, ["q1"], clients=_clients(), pool_size=3)
+    assert out["unscored_rows"] == 0
+    assert probe.instrument_looks_broken(out) is False
+    assert probe.instrument_looks_broken({"triples_judged": 0, "unscored_rows": 0}) is False
