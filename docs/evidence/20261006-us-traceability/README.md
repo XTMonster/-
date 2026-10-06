@@ -115,3 +115,65 @@
   所以这一格我说的是"**在执行、没被跳过**"，不是"**等强**"。
 * §A.4 只到"指标有读数"；指标本身的**噪声带**这一类问题（如 P14-263 量到的 E1 上界 ±0.04）
   **不在本表的范围内**。
+
+---
+
+## 七、追加：**§1.6 的 34 条**——⚠"会量错"那一类逐条查完，抓到**一条真的没闭合**
+
+§1.6 把最危险的一类单独标了 ⚠：**"不会红、只会继续量旧几何"**。这一类可以直接用
+grep 查（旧数字 1.45 / 1.10 / 0.95 / 1.60 还在不在），所以先查它。
+
+### 1. ⚠ 类（几何"量错"）：**已全部收敛到 profile**
+
+§3.1 点名的"**十个硬编码位置 ＋ 三个必改消费者**"逐个查：
+
+| 位置 | 现在是什么 |
+|---|---|
+| `cinema/framing.py:24-31`（`SUBJECT_HEIGHT/EYE_Z/CHEST_Z`，**#1/#34**） | `_PROFILE.total_height` / `_PROFILE.eye_z` / `_PROFILE.chest_z`（注释明写"1.45/1.10/0.95 是旧几何"） |
+| `cinema/composition.py:31` | `SUBJECT_HEIGHT_FOR_HEADROOM = _PROFILE.total_height` |
+| `layer2_sdl/sdl_validator.py:17` | 注释明写"v1.3 写死的 1.45 会让穿模判定整条偏移（§1.6 量错项）" |
+| `cinema_engine/composition_guide.py:213/216`（**#18**） | 改为 `from ...cinema.framing import SUBJECT_HEIGHT`（不再是自己的常量） |
+| `knowledge/corpus.py:43-45 / :90-91`（digest 与卡正文） | 改为 `EYE_Z`/`CHEST_Z` **插值进正文**（`from ..cinema.framing import CHEST_Z, EYE_Z, SHOT_FRAME`）——文档点名"**必须新增对拍断言**"的那两处，现在实现层面已无法漂 |
+| `motion/model.py:306`（`EYE_Z_DEFAULT`，**#17**） | `_PROFILE.eye_z`（注释明写"旧值 1.10 是 v1.3 的几何"） |
+| `knowledge/cards_cinematography.py:368`（`cine_eye_level`，**文档说它"没有任何测试对拍、最隐蔽"**） | `parameters={"eye_z": EYE_Z}`——**也改成派生了** |
+| `character_factory.py:29-36/44-51`（**#22/#23** 的 `PIVOT_Z`/`EXPECTED_TOTAL_HEIGHT`） | `EXPECTED_TOTAL_HEIGHT = _PROFILE.head_top_z`；`PIVOT_Z` 由 profile 派生（注释明写旧表让头球埋进躯干） |
+
+**唯一剩下的字面数字**是 `cinema/framing.py:88-96` 的 `_FRAME_HEIGHT_RATIO`
+（`"CU": 0.90 / 1.45` 这类）——**它不是漏网的硬编码**：注释写明那是
+"v1.3 那张表按 1.45 归一后的**比例**"，随 profile 身高缩放（`:116`），
+并对含头部景别加下限 `_MIN_HEAD_FRAME`（`:99`）保证 §2.2 的"头顶不切"。
+⇒ 与 RK-7（头球可见 ≥99%）`pass` 一致。**这一格是设计选择，不是缺陷。**
+
+### 2. "会变红"类抽样复核（不逐条，见下方的边界）
+
+| # | 它要求改成 | 现在 |
+|---|---|---|
+| 6 | `full_concat` 默认 | `specs/config.default.yaml:106 full_concat: true` ✅ |
+| 15 / 25 | 新公式 ＋ `max_wall_minutes` 120 | `tests/test_run_settings.py:71-72`：`max_wall_minutes == 120.0`、`formula == "shots * 8 + 40"` ✅（**改期望值，不是删断言**）；`contracts/config.py:143 = 120.0` ✅ |
+| 21 | `AGENTS.md` 的 37 卡 / `shots * 6` / Phase 5 | `AGENTS.md:132` 已写 `"shots * 8 + 40"`；`:215` 已写 "Phase 5 is done" ✅ |
+| 26 | `rag.backend` 默认 | `tests/test_config.py:34`：`is RagBackend.HYPERGRAPH` ✅ |
+| 27–33 | SDL 版本串组（7 处） | 六处改为 `== SDL_VERSION`（`test_sdl.py:231/242`、`test_project_io.py:38/65`、`test_layer2_project.py:138`、`test_ui_panels.py:176`），golden 快照 `expected_sdl_simple.json:3 = "1.4"` ✅ |
+
+### 3. **抓到的那一条：§1.6 #20 真的没闭合**（本提交修掉）
+
+§3.1 的模块表里明写："`budget_formula.py` | 改 | …；**注释里的 `"shots * 6"` 同步改（§1.6 #20）**"。
+实测两条都还在：
+
+* `block_director/layer5_orchestrator/budget_formula.py:4` 的 docstring 举例仍是 ``"shots * 6"``；
+* `tests/test_budget_formula.py::test_documented_default_formula` —— **名字说"文档里的默认公式"，
+  断言的却是 `evaluate("shots * 6", …)`**，也就是 **v1.3 的旧默认**。这是 F7"同源文档漂移"里
+  最难发现的一种：**测试是绿的**，名字还在替一个已经不存在的默认值作证。
+  （这正是 §1.6 把这一类单列的原因。）
+
+**修法（加强，不是替换）**：docstring 改成真默认；那格测试**从配置读真源**
+（`AppConfig().budget.max_llm_calls_per_scene_formula`）再算，**同时保留** `shots * N` 形状的覆盖。
+守门：全量 `pytest` **2376 passed / 1 skipped**；`tools/check_assertions.py` **[OK] 272 文件**。
+
+### 4. 未验证 / 观察（如实挂）
+
+* **我只逐条查了 ⚠ 类 ＋ 抽样 6 条"会变红"类，不是全部 34 条**。剩下的（如 #2/#3/#5/#7/#9/#11/#12/#19/#24/#35）
+  **没有**逐条比对今天的断言是否仍**等强**——那需要按 §1.6 的 `文件:行号` 逐行走一遍，本轮没做。
+* 两处**未定性**的观察：`fixtures/local_model.config.yaml:39` 仍写 `"shots * 6"`、
+  `fixtures/local_sidecar.config.yaml:47` 仍写 `"shots * 8"`（§3.2 记作"原值"）。
+  它们是**探针用的显式配置**、不是默认值，**看不出是否故意**；§1.6 也没列它们。
+  **本轮不改**，只记下来备查。

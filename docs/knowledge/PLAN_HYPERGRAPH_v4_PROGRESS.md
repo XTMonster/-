@@ -1034,3 +1034,35 @@ Q6b `1.0` / Q7 `1.0` / E3 `0` 全 pass，`E1 = fail 0.1771`**；回归那一行�
 
 **未验证（如实挂）**："33 条断言不得被**弱化**"这一格，我核的是**"在执行、没被跳过"＋"没有空断言"**，
 **没有**逐条拿 §1.6 的 `文件:行号` 去比对今天的断言是否仍**等强**——那是一次**独立的逐条审计**，本轮没做。
+
+### P14-267：**§1.6 的 ⚠"会量错"类逐条查完**——全收敛到 profile；抓到一条**真的没闭合**（#20，已修）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **§1.6** | ⚠ 类"不会红、只会量旧几何"必须闭合 | **绿（全收敛）＋ 抓到 #20 未闭合（已修）** | `docs/evidence/20261006-us-traceability/README.md` 第七节 | 2026-10-06 | 本批 |
+
+**⚠ 类（最危险的一类）**：§3.1 点名的"十个硬编码位置 ＋ 三个必改消费者"逐个查——
+`cinema/framing.py`（`_PROFILE.total_height/eye_z/chest_z`）、`cinema/composition.py`、
+`sdl_validator.py`、`composition_guide.py`（改为 import `SUBJECT_HEIGHT`）、
+`knowledge/corpus.py`（digest 与卡正文改为**插值** `EYE_Z`/`CHEST_Z`）、`motion/model.py:306`、
+**`cards_cinematography.py`（文档说它"没有任何测试对拍、最隐蔽"的那处）**、
+`character_factory.py`（`EXPECTED_TOTAL_HEIGHT = _PROFILE.head_top_z`）——**全部改成了 profile 派生**。
+唯一剩下的字面数字是 `framing.py` 的 `_FRAME_HEIGHT_RATIO`（`"CU": 0.90 / 1.45`），
+但注释写明那是"**v1.3 比例**、随 profile 身高缩放"（`:116`）并对含头景别加下限 `_MIN_HEAD_FRAME`（`:99`）
+⇒ 与 RK-7 `pass` 一致，**是设计选择不是漏网**。
+
+**抽样复核的"会变红"类**：#6 `full_concat: true` ✅；#15/#25 `max_wall_minutes == 120.0`
+＋ `formula == "shots * 8 + 40"`（**改期望值，不是删断言**）✅；#21 `AGENTS.md` 已对齐 ✅；
+#26 `rag.backend is HYPERGRAPH` ✅；#27–33 六处改 `== SDL_VERSION`、golden 快照 `"1.4"` ✅。
+
+**抓到的那一条（§1.6 #20，本提交修掉）**：§3.1 的模块表明写"`budget_formula.py` 的注释里
+`"shots * 6"` 同步改（§1.6 #20）"，实测**两条都还在**：`budget_formula.py:4` 的 docstring 举例、
+以及 `tests/test_budget_formula.py::test_documented_default_formula`——**名字说"文档里的默认公式"，
+断言的却是 v1.3 的旧默认 `shots * 6`**。这是 F7"同源文档漂移"里最难发现的一种：**测试是绿的**，
+名字还在替一个**已经不存在的默认值**作证。修法是**加强不是替换**：docstring 改真默认；
+那一格**从配置读真源**再算，**同时保留** `shots * N` 形状的覆盖。
+守门：全量 **2376 passed / 1 skipped**；`check_assertions.py` **[OK] 272 文件**。
+
+**未验证 / 观察**：**只逐条查了 ⚠ 类 ＋ 抽样 6 条**，**不是全部 34 条**（#2/#3/#5/#7/#9/#11/#12/#19/#24/#35
+的"是否等强"没逐条比）；两处**未定性**观察：`fixtures/local_model.config.yaml:39` 仍写 `"shots * 6"`、
+`fixtures/local_sidecar.config.yaml:47` 仍写 `"shots * 8"`（探针用的显式配置、非默认值，§1.6 未列，**本轮不改**）。

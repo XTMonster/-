@@ -4,10 +4,24 @@ from __future__ import annotations
 
 import pytest
 
+from block_director.contracts.config import AppConfig
 from block_director.layer5_orchestrator.budget_formula import describe, evaluate
 
 
 def test_documented_default_formula():
+    """§1.6 #20：这一格的名字说"**文档里的默认公式**"，但一直断言的是 ``shots * 6``
+    ——那是 **v1.3 的旧默认**，§2.4 之后默认是 ``shots * 8 + 40``。
+    名字与内容对不上，是"同名文档漂移"（F7）里最容易被忽略的一种：**测试还是绿的**。
+
+    现在**从配置读真源**（``AppConfig().budget.max_llm_calls_per_scene_formula``），
+    名字才成立；同时**保留** ``shots * N`` 这个形状的覆盖（别的配置仍可能这么写），
+    所以这一条是**加强，不是替换**。
+    """
+    formula = AppConfig().budget.max_llm_calls_per_scene_formula
+    assert formula == "shots * 8 + 40", formula
+    assert evaluate(formula, 1) == 48
+    assert evaluate(formula, 61) == 528
+    #: 形状覆盖（旧默认就是 `shots * N`，用户仍可这么配）。
     assert evaluate("shots * 6", 1) == 6
     assert evaluate("shots * 6", 5) == 30
 
