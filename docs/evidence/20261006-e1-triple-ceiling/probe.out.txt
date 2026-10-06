@@ -1,0 +1,70 @@
+[
+  {
+    "strict_two_judge": {
+      "file": "docs\\evidence\\20261006-c3-deep-pool\\reviews.current.batch3.top120.jsonl",
+      "queries": 64,
+      "triples_judged": 2559,
+      "per_triple_relevant_distribution": {
+        "0": 2159,
+        "1": 379,
+        "2": 21,
+        "3": 0
+      },
+      "E1_all_triples": 0.0548,
+      "E1_delivered_triple": 0.1719,
+      "E1_best_of_judged_groupings": 0.4219,
+      "three_of_three_triples": 0,
+      "queries_with_a_3of3": 0
+    },
+    "as_reported_before": {
+      "file": "docs\\evidence\\20261006-c3-deep-pool\\reviews.current.batch3.top120.jsonl",
+      "queries": 64,
+      "triples_judged": 2559,
+      "per_triple_relevant_distribution": {
+        "0": 2117,
+        "1": 415,
+        "2": 27,
+        "3": 0
+      },
+      "E1_all_triples": 0.0611,
+      "E1_delivered_triple": 0.2135,
+      "E1_best_of_judged_groupings": 0.4427,
+      "three_of_three_triples": 0,
+      "queries_with_a_3of3": 0
+    }
+  },
+  {
+    "strict_two_judge": {
+      "file": "docs\\evidence\\20261006-c3-ceiling\\reviews.current.batch3.top20.jsonl",
+      "queries": 64,
+      "triples_judged": 384,
+      "per_triple_relevant_distribution": {
+        "0": 258,
+        "1": 118,
+        "2": 8,
+        "3": 0
+      },
+      "E1_all_triples": 0.1163,
+      "E1_delivered_triple": 0.1875,
+      "E1_best_of_judged_groupings": 0.349,
+      "three_of_three_triples": 0,
+      "queries_with_a_3of3": 0
+    },
+    "as_reported_before": {
+      "file": "docs\\evidence\\20261006-c3-ceiling\\reviews.current.batch3.top20.jsonl",
+      "queries": 64,
+      "triples_judged": 384,
+      "per_triple_relevant_distribution": {
+        "0": 247,
+        "1": 128,
+        "2": 9,
+        "3": 0
+      },
+      "E1_all_triples": 0.1267,
+      "E1_delivered_triple": 0.2135,
+      "E1_best_of_judged_groupings": 0.3542,
+      "three_of_three_triples": 0,
+      "queries_with_a_3of3": 0
+    }
+  }
+]
