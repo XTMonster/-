@@ -1,0 +1,1 @@
+{"queries": 64, "judge_calls": 128, "distribution": {"0": 11, "1": 26, "2": 23, "3": 4}, "three_of_three": 4, "E1_best_single_assembled_triple": 0.4375, "queries_with_3_labelled_relevant_rows": 57}
