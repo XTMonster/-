@@ -1,0 +1,1 @@
+{"labels": "docs/evidence/20261006-c3-deep-pool/reviews.current.batch3.top50.jsonl", "queries": 64, "panel": ["deepseek-chat", "glm-5.3"], "strict": {"numerator": 77, "denominator": 192, "served": 187, "value": 0.401}, "loose": {"numerator": 81, "denominator": 192, "served": 192, "value": 0.4219}}
