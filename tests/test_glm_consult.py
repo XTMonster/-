@@ -376,3 +376,43 @@ def test_a_failed_consult_still_leaves_its_attempts_on_disk(tmp_path, monkeypatc
         (out / "规格一致性.failed.json").read_text(encoding="utf-8"))
     assert payload["attempts"][0]["finish_reason"] == "transport_error"
     assert payload["attempts"][0]["level"] == "high"
+
+
+def _run_with_replies(tmp_path, monkeypatch, replies):
+    """跑一次 `main`，`consult` 按角色顺序回 `replies` 里的字符串。"""
+    question = tmp_path / "q.md"
+    question.write_text("问题", encoding="utf-8")
+    out = tmp_path / "out"
+    queue = list(replies)
+
+    def fake_consult(messages, **kwargs):  # noqa: ARG001
+        return queue.pop(0), {"model": "glm-5.3", "level": "max",
+                              "finish_reason": "stop", "elapsed_s": 1.0}
+
+    monkeypatch.setattr(C, "consult", fake_consult)
+    code = C.main(["--roles", "测试与验收,规格一致性", "--question", str(question),
+                   "--question-only", "--no-status", "--out", str(out)])
+    return code, out
+
+
+def test_a_reply_that_is_not_json_is_unparsed_not_a_bogus_json_answer(tmp_path, monkeypatch):
+    """**文件名不许撒谎**：解析不了的回包 ⇒ `<role>.unparsed.txt` ＋ `.unparsed.json`，
+    **不写** `<role>.json`，并**非零退出**（2026-10-06 门⑦ 那一轮实测：模型在字符串值里
+    用了未转义的 ASCII 双引号，`<role>.json` 根本不是 JSON，而没人看得出来）。"""
+    bad = '{"summary": "1) 要：与"判词一律 GLM-5.3 出"已经口径分裂"}'
+    good = '{"summary": "ok"}'
+    code, out = _run_with_replies(tmp_path, monkeypatch, [bad, good])
+    assert code == 3, "解析失败要非零退出（不是 0）"
+    assert not (out / "测试与验收.json").exists(), "解析不了就不许写 .json"
+    assert (out / "测试与验收.unparsed.txt").read_text(encoding="utf-8") == bad
+    detail = json.loads((out / "测试与验收.unparsed.json").read_text(encoding="utf-8"))
+    assert detail["status"] == "unparsed" and detail["chars"] == len(bad)
+    assert len(detail["sha256"]) == 64 and "JSONDecodeError" in detail["error"]
+
+
+def test_one_unparsed_role_does_not_stop_the_next_role(tmp_path, monkeypatch):
+    """一个角色解析失败**不许**把另一个角色的判词吞掉（"一侧缺席永远不算同意"，但到场的那侧要留证）。"""
+    code, out = _run_with_replies(tmp_path, monkeypatch, ["不是 JSON 的旁白", '{"summary": "ok"}'])
+    assert code == 3
+    assert (out / "测试与验收.unparsed.txt").is_file()
+    assert json.loads((out / "规格一致性.json").read_text(encoding="utf-8"))["summary"] == "ok"

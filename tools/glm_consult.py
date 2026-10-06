@@ -549,6 +549,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     (out_dir / "bundle.manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     (out_dir / "bundle.md").write_text(render_bundle(bundles), encoding="utf-8")
+    unparsed: List[str] = []
     for role, messages in bundles:
         try:
             content, usage = consult(messages, model=args.model,
@@ -562,15 +563,38 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                             "attempts": exc.attempts}, ensure_ascii=False,
                            indent=2), encoding="utf-8")
             raise
-        (out_dir / f"{role}.json").write_text(content, encoding="utf-8")
         (out_dir / f"{role}.usage.json").write_text(
             json.dumps(usage, ensure_ascii=False, indent=2), encoding="utf-8")
+        #: **写 `<role>.json` 之前先证明它是 JSON**（2026-10-06 实测踩到）：门⑦ 那一轮
+        #: 模型的回包里在字符串值里用了**未转义的 ASCII 双引号**，于是 `<role>.json`
+        #: 根本不是 JSON，而文件名在说"这是判词 JSON"；下游 `json.loads` 会当场炸，
+        #: 读的人也可能把"解析失败"当成"没有 finding"。契约要求失败路径**具名**，
+        #: 所以：解析不了就写 `<role>.unparsed.txt`（原文照存）＋ `<role>.unparsed.json`
+        #: （原因＋字数＋sha256），**不写** `<role>.json`，并在最后非零退出。
+        try:
+            json.loads(content)
+        except (ValueError, TypeError) as exc:
+            (out_dir / f"{role}.unparsed.txt").write_text(content, encoding="utf-8")
+            (out_dir / f"{role}.unparsed.json").write_text(json.dumps(
+                {"role": role, "status": "unparsed",
+                 "error": "%s: %s" % (type(exc).__name__, str(exc)[:200]),
+                 "chars": len(content),
+                 "sha256": hashlib.sha256(content.encode("utf-8")).hexdigest()},
+                ensure_ascii=False, indent=2), encoding="utf-8")
+            unparsed.append(role)
+            print(json.dumps({"role": role, "status": "unparsed",
+                              "model": usage.get("model"),
+                              "elapsed_s": usage.get("elapsed_s"),
+                              "finish_reason": usage.get("finish_reason"),
+                              "chars": len(content)}, ensure_ascii=False))
+            continue
+        (out_dir / f"{role}.json").write_text(content, encoding="utf-8")
         print(json.dumps({"role": role, "model": usage.get("model"),
                           "level": usage.get("level"),
                           "elapsed_s": usage.get("elapsed_s"),
                           "finish_reason": usage.get("finish_reason")},
                          ensure_ascii=False))
-    return 0
+    return 3 if unparsed else 0
 
 
 if __name__ == "__main__":
