@@ -1,0 +1,118 @@
+{
+ "queries": 64,
+ "table": [
+  {
+   "arm": "prior+zh(z)",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.2396,
+   "ceiling_proxy": 0.3125,
+   "queries_at_3of3": 3
+  },
+  {
+   "arm": "retrieval_order",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.1719,
+   "ceiling_proxy": 0.3125,
+   "queries_at_3of3": 3
+  },
+  {
+   "arm": "title+zh",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.224,
+   "ceiling_proxy": 0.3125,
+   "queries_at_3of3": 3
+  },
+  {
+   "arm": "zh_only",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.2396,
+   "ceiling_proxy": 0.3125,
+   "queries_at_3of3": 3
+  },
+  {
+   "arm": "prior+zh(z)",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.2708,
+   "ceiling_proxy": 0.5365,
+   "queries_at_3of3": 15
+  },
+  {
+   "arm": "retrieval_order",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.1719,
+   "ceiling_proxy": 0.5365,
+   "queries_at_3of3": 15
+  },
+  {
+   "arm": "title+zh",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.2552,
+   "ceiling_proxy": 0.5365,
+   "queries_at_3of3": 15
+  },
+  {
+   "arm": "zh_only",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.2604,
+   "ceiling_proxy": 0.5365,
+   "queries_at_3of3": 15
+  },
+  {
+   "arm": "prior+zh(z)",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.2448,
+   "ceiling_proxy": 0.6563,
+   "queries_at_3of3": 26
+  },
+  {
+   "arm": "retrieval_order",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.1719,
+   "ceiling_proxy": 0.6563,
+   "queries_at_3of3": 26
+  },
+  {
+   "arm": "title+zh",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.25,
+   "ceiling_proxy": 0.6563,
+   "queries_at_3of3": 26
+  },
+  {
+   "arm": "zh_only",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.2135,
+   "ceiling_proxy": 0.6563,
+   "queries_at_3of3": 26
+  },
+  {
+   "arm": "prior+zh(z)",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.224,
+   "ceiling_proxy": 0.8125,
+   "queries_at_3of3": 44
+  },
+  {
+   "arm": "retrieval_order",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.1719,
+   "ceiling_proxy": 0.8125,
+   "queries_at_3of3": 44
+  },
+  {
+   "arm": "title+zh",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.2135,
+   "ceiling_proxy": 0.8125,
+   "queries_at_3of3": 44
+  },
+  {
+   "arm": "zh_only",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.1875,
+   "ceiling_proxy": 0.8125,
+   "queries_at_3of3": 44
+  }
+ ],
+ "anchor_delivered_at_depth6": 0.1719
+}
