@@ -2378,3 +2378,39 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 结果离线通路的 `audit_log` 里**一条 `retrieval_call` 都没有**（`retrieval_call: 0`）
 ⇒ **离线跑验不了这件事**，必须用真模型运行（那也顺带喂 Q5/E2）；③ CLI 现在认**两种**审计日志落点
 （交付目录根／`runs/`），第三种不猜。
+
+### P14-315：**落地后的第一次真跑**——轴族从"判不了"变成"能判"，而且立刻判出"**两套词表不相交**"
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R53-D7 | 轴字段落地之后，轴族到底能不能判 | **绿（真跑验证；结论清楚）** | `docs/evidence/20261007-real-axis/`（`run_id c0b5300954dd`、64 镜、`llm_calls 294`、`retrieval_call 68`、`generation: gen2`） | 2026-07-07 | 本批 |
+
+**先记一条该记住的事实**：**离线通路不做知识检索**——实测离线跑（64 镜）的 `audit_log` 里
+`retrieval_call = 0`、`edge_ids` 一次都没出现 ⇒ **"注入→成片"这类读数只能在真跑上量**
+（链上那份 `injection_audit.json` 读的一直是真跑 long21，不是链里那次离线）。
+
+**字段生效的证据**（对 P14-313 刚落的那一栏）：
+
+| 量 | `long21`（落字段前） | `20261007-real-axis`（落字段后） |
+|---|---|---|
+| `axis_side` 在 `covered_kinds` | 否 | **是（63）** |
+| `axis_side` 的 `field_absent` | **63** | **1** |
+| `axis_side` 成员三分 | （整条边判不了） | **unmatched 62 ／ film_side_empty 1** |
+| 全部 `edge_field_absent` | **112** | **53**（只剩 movement 52 ＋ axis_side 1） |
+
+**解锁之后立刻判出的结论**：本跑注入的 **63 条 `axis_side` 全是 `neutral`**，
+而成片侧 `axis.status` 只有 **`correct 33 ＋ crossed 29`**（**一次 `neutral` 都没有**——
+没有哪台机位正好落在轴线上）⇒ `vocabulary_gap.axis_side` **`state = disjoint`**、
+62 条前提**不成立**（"当机位中性时…"的规则在这部片子里**根本没被触发**）。
+**这不是缺陷，是"规则不适用"**——但它现在被记成 `unmatched`（以前是**整条边判不了**），
+读者才分得清"不适用"与"不知道"。**值级绑定（`neutral ↔ neutral`）在本跑 0 次行使**，
+所以它仍是**待验证**的绑定，不是已验证的。
+
+**本跑整体读数**：注入边 352（`indecidable 34`／`inactive 232`／`unbound 0`／`field_absent 53`／
+`active 1`／镜头没建成 32 ⇒ **口径闭合**）；③ 类忽略 `pair 63`＋`axis_topic 63`；
+未纳入 `headroom_policy 19`／`composite_rule 15`／`camera_angle 15`；违规 **0**（照限定读＝**无物可违**）；
+`movement` 仍 **294/300 `film_side_empty`**。
+
+**未验证／边界**：① **两次真跑不能当分布**；② 值级绑定只在**中性机位**上成立、本跑 0 次中性
+⇒ **没被行使**；③ 这一份是**新的 gen2 产物**（指纹当前），可当 Q5／E2 的新载体，
+但**本轮没有**去更新那两个指标的读数（要按代走）。

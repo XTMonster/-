@@ -1,0 +1,309 @@
+{
+  "shots_with_injection": 64,
+  "counts": {
+    "events_without_a_built_shot": 4,
+    "edges_in_events_without_a_built_shot": 32,
+    "premise_members_seen": 444,
+    "premise_field_absent": 53,
+    "edge_field_absent": 53,
+    "edge_inactive": 232,
+    "edge_active": 1,
+    "no_match": 1,
+    "edge_indecidable": 34
+  },
+  "ledger": {
+    "injected_edges": 352,
+    "edge_indecidable": 34,
+    "edge_inactive": 232,
+    "edge_unbound": 0,
+    "edge_field_absent": 53,
+    "edge_active": 1,
+    "injected_edge_missing_from_index": 0,
+    "edges_in_events_without_a_built_shot": 32
+  },
+  "covered_kinds": {
+    "movement": 300,
+    "shot_size": 269,
+    "intent": 223,
+    "axis_side": 63,
+    "lens": 19
+  },
+  "not_covered_kinds": {
+    "headroom_policy": 19,
+    "composition_rule": 15,
+    "camera_angle": 15
+  },
+  "ignored_kinds": {
+    "pair": 63,
+    "axis_topic": 63
+  },
+  "member_kinds_seen": {
+    "movement": 300,
+    "shot_size": 269,
+    "intent": 223,
+    "pair": 63,
+    "axis_side": 63,
+    "axis_topic": 63,
+    "lens": 19,
+    "headroom_policy": 19,
+    "composition_rule": 15,
+    "camera_angle": 15
+  },
+  "not_a_condition_kinds": {
+    "pair": 63,
+    "axis_topic": 63
+  },
+  "value_bindings": {
+    "axis_side": {
+      "neutral": "neutral"
+    }
+  },
+  "unbound_values": {},
+  "field_absent_kinds": {
+    "movement": 52,
+    "axis_side": 1
+  },
+  "member_outcomes_by_kind": {
+    "intent": {
+      "matched": 105,
+      "unmatched": 118
+    },
+    "shot_size": {
+      "matched": 197,
+      "unmatched": 72
+    },
+    "movement": {
+      "film_side_empty": 294,
+      "matched": 5,
+      "unmatched": 1
+    },
+    "axis_side": {
+      "film_side_empty": 1,
+      "unmatched": 62
+    },
+    "lens": {
+      "unmatched": 3,
+      "matched": 16
+    }
+  },
+  "value_aliases": {
+    "version": 1,
+    "movement": {
+      "固定": "static",
+      "固定机位": "static"
+    }
+  },
+  "vocab_miss": {
+    "movement": {
+      "push_through": 7,
+      "zoom_in": 14,
+      "dolly_out": 1
+    }
+  },
+  "judgeable_forbid_members": 0,
+  "unmapped_forbid_kinds": {
+    "headroom_policy": 19,
+    "composition_rule": 15,
+    "camera_angle": 15
+  },
+  "bindings": {
+    "shot_size": [
+      "shot_type"
+    ],
+    "intent": [
+      "intent_type"
+    ],
+    "lens": [
+      "camera.lens"
+    ],
+    "movement": [
+      "movements[].kind",
+      "declared_camera_move"
+    ],
+    "action": [
+      "action_types[]"
+    ],
+    "transition": [
+      "declared.transition",
+      "transition_in",
+      "transition_out"
+    ],
+    "vfx": [
+      "vfx[].type"
+    ],
+    "axis_side": [
+      "axis.status"
+    ]
+  },
+  "vocabulary_gap": {
+    "shot_size": {
+      "knowledge_values": [
+        "CU",
+        "ECU",
+        "ELS",
+        "LS",
+        "MCU",
+        "MLS",
+        "MS"
+      ],
+      "film_values": [
+        "CU",
+        "LS",
+        "MCU",
+        "MLS",
+        "MS"
+      ],
+      "overlap": [
+        "CU",
+        "LS",
+        "MCU",
+        "MLS",
+        "MS"
+      ],
+      "state": "overlapping",
+      "disjoint": false
+    },
+    "intent": {
+      "knowledge_values": [
+        "停顿",
+        "压迫",
+        "回望",
+        "对抗",
+        "推进",
+        "揭示",
+        "收束",
+        "留白",
+        "转折",
+        "铺垫"
+      ],
+      "film_values": [
+        "停顿",
+        "压迫",
+        "回望",
+        "对抗",
+        "推进",
+        "揭示",
+        "收束",
+        "留白",
+        "转折",
+        "释放",
+        "铺垫"
+      ],
+      "overlap": [
+        "停顿",
+        "压迫",
+        "回望",
+        "对抗",
+        "推进",
+        "揭示",
+        "收束",
+        "留白",
+        "转折",
+        "铺垫"
+      ],
+      "state": "overlapping",
+      "disjoint": false
+    },
+    "lens": {
+      "knowledge_values": [
+        "35.0",
+        "50.0"
+      ],
+      "film_values": [
+        "50.0",
+        "85.0"
+      ],
+      "overlap": [
+        "50.0"
+      ],
+      "state": "overlapping",
+      "disjoint": false
+    },
+    "movement": {
+      "knowledge_values": [
+        "dolly_in",
+        "dolly_out",
+        "push_through",
+        "static",
+        "zoom_in"
+      ],
+      "film_values": [
+        "dolly_in"
+      ],
+      "overlap": [
+        "dolly_in"
+      ],
+      "state": "overlapping",
+      "disjoint": false
+    },
+    "action": {
+      "knowledge_values": [],
+      "film_values": [],
+      "overlap": [],
+      "state": "no_data",
+      "disjoint": false
+    },
+    "transition": {
+      "knowledge_values": [],
+      "film_values": [],
+      "overlap": [],
+      "state": "no_data",
+      "disjoint": false
+    },
+    "vfx": {
+      "knowledge_values": [],
+      "film_values": [],
+      "overlap": [],
+      "state": "no_data",
+      "disjoint": false
+    },
+    "axis_side": {
+      "knowledge_values": [
+        "neutral"
+      ],
+      "film_values": [
+        "correct",
+        "crossed"
+      ],
+      "overlap": [],
+      "state": "disjoint",
+      "disjoint": true
+    }
+  },
+  "forbid_values_by_kind": {},
+  "observed_field_domain": {
+    "intent_type": {
+      "推进": 72,
+      "收束": 44,
+      "铺垫": 32,
+      "停顿": 18,
+      "留白": 16,
+      "对抗": 15,
+      "转折": 12,
+      "压迫": 6,
+      "揭示": 4,
+      "释放": 3,
+      "回望": 1
+    },
+    "shot_type": {
+      "MS": 90,
+      "MCU": 60,
+      "LS": 29,
+      "CU": 29,
+      "MLS": 15
+    },
+    "movements[].kind": {
+      "dolly_in": 4
+    },
+    "declared_camera_move": {},
+    "axis.status": {
+      "correct": 33,
+      "crossed": 29
+    }
+  },
+  "violations": [],
+  "note": "诊断，不设门：没有 pass line，也不接进 run_tests.ps1 的通过与否",
+  "run": "docs\\evidence\\20261007-real-axis",
+  "shots_file": "work\\_real_axis\\export\\shots.json",
+  "audit_log": "docs\\evidence\\20261007-real-axis\\audit_log.jsonl"
+}
