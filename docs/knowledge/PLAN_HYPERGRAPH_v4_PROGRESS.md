@@ -1528,6 +1528,41 @@ DEFAULT_MAX_PROMPT_CHARS_BY_PROVIDER = {"glm": 3000, "relay": 6000}
   去标签池 oracle **< 135/192 就带实测回 GPT-6A**，≥135 才走选择器）。
 
 **未验证**：① 三个探针脚本**仍在 `work/`**（未入库）⇒ §1 那张表目前**不能从库里复算**，
-  提升进 `tools/knowledge/` 是紧随其后的待办；② 去标签池 64 条的 oracle **尚无读数**；
-  ③ "云端嵌入重排"（`docs/knowledge/OPEN_PROBLEMS.md` P3）**没试**——它天然不看判分，
-  是候选池侧的合法杠杆。
+ 提升进 `tools/knowledge/` 是紧随其后的待办；② 去标签池 64 条的 oracle **尚无读数**；
+ ③ "云端嵌入重排"（`docs/knowledge/OPEN_PROBLEMS.md` P3）**没试**——它天然不看判分，
+ 是候选池侧的合法杠杆。
+
+### P14-287：**步骤 0 落地**——三元组搜索器把"判过的每一个三元组"落盘（第二十二次重新冻结）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R3 | 让"整组三条联合打分"的选择器**有评估集可用** | **绿（先红后绿，离线）** | `tools/knowledge/e1_triple_search.py`＋`tests/test_e1_triple_search.py`（新增 3 条）＋`tests/plan_v4_instruments.sha256.json`（第二十二次冻结） | 2026-10-06 | 本批 |
+
+**改了什么（只增不改）**：`search()` 的产物除原有 6 个键外新增
+`triples[]`（`{query, triple[3], values[3], hits}`，顺序＝`jobs` 枚举序）与
+`pools{}`（每条查询当时的候选池，**按检索名次**）；
+`candidate_triples()` 里原本内联的那三行排序**提成** `candidate_pool()` 给两处共用
+（`candidate_triples()` 的枚举序、`E1_best_of_search`／`three_of_three`／`distribution`／
+`best_per_query` 的算法逐字未动；`judge_triple()` 未动）。
+
+**证据归属（不许混）**：这三条新守门是**子 agent 写的**，"先红"（实现前 `KeyError: 'triples'`）
+是它的报告、**主线没有复演那一步**；主线**实测**的是实现后
+`python -m pytest -o addopts="" -q tests/test_e1_triple_search.py tests/test_plan_v4_instruments_frozen.py`
+⇒ **`18 passed in 0.21s`**（8 条工具守门 ＋ 10 条冻结守门）。已按该读数改写（子 agent 报的
+"20 passed"与主线的 18 对不上，以主线实测为准）。第三条守门钉的是"每条查询 C(5,3)=10、
+截断到 5 ⇒ 2×5=10 个三元组**逐个**都要在产物里"，第二条钉"只有一位评委 ⇒ `values` 全 `None`、
+`hits=0`（P14-249 口径）"，第一条钉"同输入两次运行逐条同序同值"。
+
+**为什么要它**：上一版 `full_search.json` 把 1,280 个被判三元组只落盘了 64 个
+（`best_per_query`）⇒ 选择器**无法被评分**（回答不了"它挑的那组比最好那组差多少"），
+而重判一轮是 **1h50m**。这条把"实验过程"变成可复算的产物。
+
+**判据一个字没动**：相关阈值 4.0、两位评委取均值、分母与判分语境仍与 `e1_panel` 同源；
+新增字段只被**写入**，不参与任何计算或筛选。第二十二次重新冻结的理由已写进
+`tests/plan_v4_instruments.sha256.json::_reason_22`（含"先改完、先跑守门、再冻结、
+最后才重跑"的顺序纪律，照 `_reason_21` 的教训）。
+
+**未验证／边界**：① 重跑那 1,280 次判分**尚未开始**（本节只落"仪器＋守门＋冻结"）；
+② 去标签池（每查询 20 组）的 64 条**仍无读数** ⇒ 135/192 这个门槛是否建立在标签池上
+**仍未被量**；③ 选择器要的"检索名次/检索分数、逐人评委分、`judge_batch` 语境、标签池标识"
+四项是否够用，正在由审核侧逐条对拍（缺项会单列成下一批的补丁）。

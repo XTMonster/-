@@ -18,6 +18,10 @@ top-120 那份里 **2,559 个三元组没有一个到 3/3**，按分组取最好
 * `E1_best_of_search`——每条查询**搜到的最好三元组**的相关行率均值（这是这次搜索能到达的上界）；
 * `three_of_three`——搜出来的 3/3 三元组条数（**>0 就直接推翻"不可达"**）；
 * `distribution`——所有被判三元组的 0/1/2/3 相关分布。
+* `triples`——**判过的每一个三元组**（`query`／三条 `case_id`／逐行均值 `values`／命中数
+  `hits`，顺序＝枚举序）：给"整组三条联合打分"的选择器留的**评估集**。只留每组最好的
+  那一组（上一版的做法）会让事后无法回答"选择器挑的那组比最好那组差多少"；
+* `pools`——每条查询当时的**候选池**（按检索名次排好），选择器只许看池内名次这类去标签线索。
 
 用法：
 
@@ -67,15 +71,24 @@ def load_cases(cases_dir: pathlib.Path) -> Dict[str, Dict[str, Any]]:
     return out
 
 
+def candidate_pool(rows: Sequence[Dict[str, Any]], *, pool_per_query: int) -> List[str]:
+    """这条查询的候选池：**按标签分降序**（并列按 `case_id`）取前 `pool_per_query` 条。
+
+    池子与三元组都要落盘（见 `test_e1_triple_search.py` 的步骤 0 守门），所以这条
+    排序规则**只准有一份**——`candidate_triples()` 与 `search()` 都从这里取。
+    """
+    ranked = sorted(rows, key=lambda r: (-(r.get("score") or 0), str(r["case_id"])))
+    return [str(r["case_id"]) for r in ranked[:int(pool_per_query)]]
+
+
 def candidate_triples(rows: Sequence[Dict[str, Any]], *, pool_per_query: int,
                       max_triples: int) -> List[Tuple[str, ...]]:
     """一条查询的候选三元组。
 
-    池子＝这一查询的行**按标签分降序**（并列按 `case_id`）取前 `pool_per_query` 条；
-    三元组＝该池子的**全部组合**，超过 `max_triples` 时**按枚举序取前 N**（确定、可复现）。
+    池子＝`candidate_pool(...)`；三元组＝该池子的**全部组合**，超过 `max_triples` 时
+    **按枚举序取前 N**（确定、可复现）。
     """
-    ranked = sorted(rows, key=lambda r: (-(r.get("score") or 0), str(r["case_id"])))
-    ids = [str(r["case_id"]) for r in ranked[:int(pool_per_query)]]
+    ids = candidate_pool(rows, pool_per_query=pool_per_query)
     combos = list(itertools.combinations(ids, 3))
     if max_triples and len(combos) > int(max_triples):
         combos = combos[:int(max_triples)]
@@ -115,7 +128,9 @@ def search(rows: Sequence[Dict[str, Any]], *, cases: Dict[str, Dict[str, Any]],
         grouped.setdefault(str(row["query"]), []).append(row)
 
     jobs = []
+    pools: Dict[str, List[str]] = {}
     for query, items in grouped.items():
+        pools[query] = candidate_pool(items, pool_per_query=pool_per_query)
         #: 判分清单必须与真实判分**逐字同源**：`CaseIndex.retrieve` 返回的是
         #: `Case`（**没有 `summary` 字段**），`e1_panel.judge` 于是用
         #: `title[:60] ｜ excerpt[:220]`。所以这里也从**案例索引**取 title/excerpt，
@@ -163,6 +178,19 @@ def search(rows: Sequence[Dict[str, Any]], *, cases: Dict[str, Dict[str, Any]],
         "E1_best_of_search": (round(sum(hits_list) / len(hits_list) / 3.0, 4)
                               if hits_list else None),
         "best_per_query": best,
+        #: 步骤 0（`work/_selector_pipeline_plan.md`）：**判过的每一个三元组**都要落盘，
+        #: 否则事后无法给"整组三条联合打分"的选择器评分（只剩每组最好的那一组＝
+        #: 答案在手里、过程丢了）。顺序＝`jobs` 的枚举序，确定、可复算。
+        "triples": [
+            {"query": query, "triple": list(combo),
+             "values": [None if value is None else round(float(value), 2)
+                        for value in values],
+             "hits": sum(1 for value in values
+                         if value is not None and value >= RELEVANT)}
+            for query, combo, values in results
+        ],
+        #: 这条查询当时可选的池子（检索名次序）——选择器只许看池内名次这类"去标签"线索。
+        "pools": pools,
     }
 
 

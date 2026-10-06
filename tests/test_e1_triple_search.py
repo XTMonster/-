@@ -114,3 +114,54 @@ def test_cli_writes_the_evidence_shape_offline(tmp_path):
     assert code == 0 and out.is_file()
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["labels"] == str(labels) and payload["panel"]
+
+
+def test_every_judged_triple_is_written_down_not_only_the_best_one():
+    """步骤 0 的硬前提：**判过的每一个三元组**都要落盘。
+
+    为什么（`work/_selector_pipeline_plan.md` 步骤 0）：上一版产物只留了
+    `best_per_query`——1,280 个三元组里其余 1,216 个的标签没落盘 ⇒ 事后**没法给
+    选择器打分**（无法回答"它挑的那组"比"最好那组"差多少），只能整批重判。
+    这条守门让"只留最好那一组"这种删减当场红。
+    """
+    rows = (_rows("q1", ["c%d" % i for i in range(1, 7)])
+            + _rows("q2", ["d%d" % i for i in range(1, 7)]))
+    cases = {cid: {"title": "t", "excerpt": "e"} for cid in
+             ["c%d" % i for i in range(1, 7)] + ["d%d" % i for i in range(1, 7)]}
+    out = probe.search(rows, cases=cases,
+                       clients=[("m-a", _Client(5)), ("m-b", _Client(4))],
+                       pool_per_query=5, max_triples=5)
+    triples = out["triples"]
+    assert len(triples) == out["triples_judged"] == 10, (
+        "每条查询 C(5,3)=10 个、截断到 5 ⇒ 2×5=10 个，逐个都要在产物里")
+    assert sorted({str(t["query"]) for t in triples}) == ["q1", "q2"]
+    for entry in triples:
+        assert len(entry["triple"]) == 3 and len(entry["values"]) == 3
+        assert entry["hits"] == sum(1 for v in entry["values"]
+                                    if v is not None and v >= probe.RELEVANT)
+
+
+def test_the_recorded_rows_keep_the_two_judge_convention_and_the_pool():
+    """落盘的每一组也要**同样**守两位评委口径，并把候选池记下来。"""
+    rows = _rows("q1", ["c1", "c2", "c3", "c4"])
+    cases = {cid: {"title": "t", "excerpt": "e"} for cid in ("c1", "c2", "c3", "c4")}
+    out = probe.search(rows, cases=cases,
+                       clients=[("m-a", _Client(5)), ("m-b", _Client(5, boom=True))],
+                       pool_per_query=4, max_triples=0)
+    assert out["pools"]["q1"] == ["c1", "c2", "c3", "c4"], "候选池（按检索名次）要落盘"
+    assert len(out["triples"]) == 4
+    for entry in out["triples"]:
+        assert entry["values"] == [None, None, None], "只有一位评委 ⇒ 不发分（P14-249）"
+        assert entry["hits"] == 0
+
+
+def test_the_recorded_order_is_deterministic():
+    """同输入两次运行 ⇒ 逐条同序同值（选择器的评估集必须可复算）。"""
+    rows = _rows("q1", ["c%d" % i for i in range(1, 7)])
+    cases = {cid: {"title": "t", "excerpt": "e"} for cid in
+             ["c%d" % i for i in range(1, 7)]}
+    kwargs = dict(cases=cases, clients=[("m-a", _Client(4)), ("m-b", _Client(4))],
+                  pool_per_query=5, max_triples=6)
+    first = probe.search(rows, **kwargs)
+    second = probe.search(rows, **kwargs)
+    assert first["triples"] == second["triples"]
