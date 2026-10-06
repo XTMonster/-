@@ -1,0 +1,62 @@
+[
+  {
+    "file": "docs\\evidence\\20261006-e1-craft\\reviews.jsonl",
+    "rows": 192,
+    "rows_two_judges": 175,
+    "rows_one_judge": 17,
+    "rows_zero_judges": 0,
+    "E1_reported": 0.1823,
+    "E1_two_judge_only": 0.1486,
+    "E1_single_as_irrelevant": 0.1354,
+    "single_rows_that_count_relevant_today": 9,
+    "has_judge_batch_on_every_row": false,
+    "judge_batch_values": [
+      0
+    ]
+  },
+  {
+    "file": "docs\\evidence\\20261006-c3-ceiling\\reviews.current.batch3.top20.jsonl",
+    "rows": 1152,
+    "rows_two_judges": 1115,
+    "rows_one_judge": 37,
+    "rows_zero_judges": 0,
+    "E1_reported": 0.1267,
+    "E1_two_judge_only": 0.1202,
+    "E1_single_as_irrelevant": 0.1163,
+    "single_rows_that_count_relevant_today": 12,
+    "has_judge_batch_on_every_row": true,
+    "judge_batch_values": [
+      3
+    ]
+  },
+  {
+    "file": "docs\\evidence\\20261006-c3-deep-pool\\reviews.current.batch3.top50.jsonl",
+    "rows": 3072,
+    "rows_two_judges": 2980,
+    "rows_one_judge": 92,
+    "rows_zero_judges": 0,
+    "E1_reported": 0.0908,
+    "E1_two_judge_only": 0.0862,
+    "E1_single_as_irrelevant": 0.0837,
+    "single_rows_that_count_relevant_today": 22,
+    "has_judge_batch_on_every_row": true,
+    "judge_batch_values": [
+      3
+    ]
+  },
+  {
+    "file": "docs\\evidence\\20261006-c3-deep-pool\\reviews.current.batch3.top120.jsonl",
+    "rows": 7679,
+    "rows_two_judges": 7507,
+    "rows_one_judge": 172,
+    "rows_zero_judges": 0,
+    "E1_reported": 0.0611,
+    "E1_two_judge_only": 0.0561,
+    "E1_single_as_irrelevant": 0.0548,
+    "single_rows_that_count_relevant_today": 48,
+    "has_judge_batch_on_every_row": true,
+    "judge_batch_values": [
+      3
+    ]
+  }
+]

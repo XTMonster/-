@@ -91,6 +91,11 @@ def test_a_broken_judge_is_recorded_as_missing_not_as_a_low_score():
     assert all(row["scores"][0] is None for row in rows)
     assert all(row["score"] == 5.0 for row in rows), (
         "分数只由答上来的那条模型给；失败侧留 None，不是 1 分")
+    #: 但**这一行判不出相关性**：E1 的冻结定义是"**两位**评委各打分、取均值 >= 4.0"
+    #: （见 `tests/plan_v4_instruments.sha256.json` 里本文件的 guards）。少一位的行
+    #: 必须被标出来，`summarise` 才不会把它算成相关（见下一条用例）。
+    assert all(row["judge_incomplete"] is True for row in rows), (
+        "只有一位评委给分 ⇒ 这一行判不出相关性，必须被标记")
     assert clients[1][1].calls == 2, "另一条模型照旧被调用（失败是逐条的）"
 
     # 两条都挂：没有分数 ⇒ 不进样本（分母不靠"猜"）。
@@ -105,8 +110,33 @@ def test_summary_reports_the_line_and_the_zero_denominator():
     #: 报 E1 必须连同"这次调用喂了几条候选"一起报（见
     #: `docs/evidence/20261006-e1-judge-context/`）。判据本身一个字没动。
     assert summary == {"scored": 3, "relevant": 2, "value": 0.6667, "line": 0.70,
-                       "judge_batch": 0, "partial_batch_dropped": 0}
+                       "judge_batch": 0, "partial_batch_dropped": 0,
+                       "judge_incomplete_rows": 0}
     assert e1_panel.summarise([])["value"] is None, "分母 0 不许算成 1.0"
+
+
+def test_a_single_judge_row_stays_in_the_denominator_but_is_never_relevant():
+    """E1 的冻结定义是"**两位** LLM 评委各打 1-5 分、取均值 >= 4.0 记相关"。
+
+    某位评委挂掉时，行里留 `scores: [5, None]`，`score` 仍是 5.0（失败不许记成低分）。
+    但**"相关"这个判定需要两位评委**：拿一位的分数当成"这条案例被两位评委判成相关"
+    是测量失真——实测它**只会抬高** E1（链上真正消费的那份 `reviews.jsonl` 由 0.1486
+    被抬成 0.1823，17/192 行只有一位评委；见
+    `docs/evidence/20261006-e1-judge-coverage/`）。
+
+    **分母不动**：分母是"面板条目数／交给导演的那 3 条"，由检索决定，不是"我们侥幸
+    判成了几条"。所以这些行留在分母、绝不算相关 ⇒ 这个方向只会让红线更难过。
+    """
+    rows = [
+        {"case_id": "c1", "score": 4.5, "scores": [5, 4], "judge_incomplete": False},
+        {"case_id": "c2", "score": 5.0, "scores": [5, None], "judge_incomplete": True},
+        {"case_id": "c3", "score": 2.0, "scores": [2, 2], "judge_incomplete": False},
+    ]
+    summary = e1_panel.summarise(rows)
+    assert summary["scored"] == 3, "判不了的行不许被踢出分母"
+    assert summary["relevant"] == 1
+    assert summary["value"] == round(1 / 3, 4)
+    assert summary["judge_incomplete_rows"] == 1
 
 
 def test_concurrency_changes_throughput_not_the_rows():

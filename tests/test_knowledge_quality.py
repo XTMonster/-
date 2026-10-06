@@ -161,7 +161,8 @@ def _reviews(tmp_path, rows, name="e1.jsonl"):
 
 
 def _review_row(case_id, score, fingerprint="fp-current", reviewer="human",
-                digest=None, judge_batch=None, prompt_sha256="p" * 64):
+                digest=None, judge_batch=None, prompt_sha256="p" * 64,
+                scores=None):
     #: 2026-10-06：E1 的证书必须在**产品口径的判分语境**里发
     #: （`rag.cases_top_k`，第三方 RK-13 补充裁决）。默认让夹具有语境，
     #: 专测"缺语境/错语境"的用例显式传 `judge_batch=`。
@@ -169,6 +170,8 @@ def _review_row(case_id, score, fingerprint="fp-current", reviewer="human",
            "judge_batch": (quality.PRODUCT_CONTEXT if judge_batch is None
                            else judge_batch),
            "prompt_sha256": prompt_sha256}
+    if scores is not None:
+        row["scores"] = scores
     if fingerprint is not None:
         row["cases_fingerprint"] = fingerprint
     stamp = _CURRENT["digest"] if digest is None else digest
@@ -191,6 +194,42 @@ def test_e1_uses_the_human_scores_when_they_cover_the_current_index(tmp_path):
     below = _reviews(tmp_path, [_review_row(f"c{i}", s) for i, s in
                                 enumerate((5, 3, 2), 1)], name="e1_below.jsonl")
     assert quality.e1_relevance(below, cases_path=cases)["status"] == "fail"
+
+
+def test_e1_never_counts_a_row_that_only_one_judge_scored(tmp_path):
+    """E1 的冻结定义是"**两位** LLM 评委各打 1-5 分、取均值 >= 4.0 记相关"。
+
+    实测缺陷（2026-10-06，`tools/knowledge/e1_panel.py:566-577`）：某位评委调用失败时，
+    行里留 `scores: [x, None]`，而汇总**按"回答了的那位"取均值**——于是这一行照样被判
+    "相关"，并且照样进分母。实测这份偏离**只会抬高** E1：链上真正消费的那份
+    `docs/evidence/20261006-e1-craft/reviews.jsonl` 报 0.1823，另有 17/192 行只有一位
+    评委（占 8.9%），按定义重算只有 0.1486；其余三份 C=3 证据同样被抬高
+    （0.1267→0.1202、0.0908→0.0862、0.0611→0.0561）。
+
+    **分母不变**：E1 的分母是"交给导演的那 3 条"（由检索决定），不是"我们侥幸判成了几条"。
+    所以判不了的那些行**留在分母里、但绝不算相关**——这个方向只会让红线更难过，
+    不可能被用来"靠剔除行把 E1 抬上去"。缺了多少条必须**报出来**（§4.1b 硬规则 1）。
+    """
+    cases = _case_index(tmp_path, ["c1", "c2", "c3"])
+    rows = [
+        _review_row("c1", 4.5, scores=[5, 4]),      # 两位评委：均值 4.5 → 相关
+        _review_row("c2", 5.0, scores=[5, None]),   # 只有一位评委 → 不是 E1 的有效相关
+        _review_row("c3", 2.0, scores=[2, 2]),      # 两位评委：均值 2.0 → 不相关
+    ]
+    out = quality.e1_relevance(_reviews(tmp_path, rows), cases_path=cases)
+    assert out["denominator"] == 3, "判不了的行不许被剔除出分母"
+    assert out["numerator"] == 1
+    assert out["value"] == round(1 / 3, 4)
+    assert out["judge_incomplete_rows"] == 1
+    assert "judge_incomplete" in out["note"]
+
+    #: 反例守住"不许靠剔除行抬分"：把那条单评委的行**改成**两位都给 5（真相关）,
+    #: 分子才该变成 2；只把缺失的那位"当没事"是不允许的。
+    rows[1] = _review_row("c2", 5.0, scores=[5, 5])
+    out2 = quality.e1_relevance(_reviews(tmp_path, rows, name="e1_ok.jsonl"),
+                                cases_path=cases)
+    assert out2["numerator"] == 2 and out2["judge_incomplete_rows"] == 0
+    assert "judge_incomplete" not in out2["note"]
 
 
 def test_e1_reports_how_far_it_is_from_the_sample_floor(tmp_path):

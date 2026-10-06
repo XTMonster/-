@@ -575,6 +575,13 @@ def _score_one(index, query: str, clients: Sequence[tuple],
             "excerpt": str(getattr(case, "excerpt", "") or "")[:200],
             "scores": scores,
             "score": sum(numbers) / len(numbers),
+            #: **两位评委**这条冻结定义（见 `tests/plan_v4_instruments.sha256.json` 里
+            #: 本文件的 guards："两位 LLM 评委 1-5 分均值 >= 4.0"）要求这一行确实凑够了
+            #: 两位评委。少一位时 `score` 仍按"答上来的那位"写（失败**不许**记成低分，
+            #: 见 `tests/test_e1_panel.py` 的 `分数只由答上来的那条模型给`），但**这一行
+            #: 判不出相关性**——`summarise` 会把它留在分母里、排除出 `good`。
+            #: 实测该偏离**只会抬高** E1（`docs/evidence/20261006-e1-judge-coverage/`）。
+            "judge_incomplete": len(numbers) < 2,
             "reviewed_by": "llm-panel",
             #: `quality.e1_evidence_is_stale` 要求每条自带**这一份**索引的指纹。
             "cases_fingerprint": str(getattr(index, "fingerprint", "") or ""),
@@ -657,7 +664,12 @@ def score_queries(index, queries: Sequence[str], clients: Sequence[tuple], *,
 
 
 def summarise(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
-    good = [row for row in rows if float(row["score"]) >= RELEVANT]
+    #: **两位评委**这条冻结定义在汇总处同样成立：只有一位评委给了分的行**留在分母里**
+    #: （分母是"交给导演的那 3 条"／面板条目数，由检索决定），但**绝不算相关**。
+    #: 这个方向只会让红线更难过，不可能被用来"靠剔除行把 E1 抬上去"。
+    incomplete = [row for row in rows if row.get("judge_incomplete")]
+    good = [row for row in rows
+            if float(row["score"]) >= RELEVANT and not row.get("judge_incomplete")]
     #: 尾部丢弃数是**逐查询**的，所以按查询去重后相加（同一查询的每条行都带同一个值）。
     seen: Dict[str, int] = {}
     for row in rows:
@@ -668,7 +680,9 @@ def summarise(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
             "line": 0.70,
             #: 判分语境（C）：报 E1 必须连同"这次调用喂了几条候选"一起报。
             "judge_batch": int(rows[0].get("judge_batch") or 0) if rows else 0,
-            "partial_batch_dropped": sum(seen.values())}
+            "partial_batch_dropped": sum(seen.values()),
+            #: 只有一位评委给出分数的行数（只报数，分母不变）。
+            "judge_incomplete_rows": len(incomplete)}
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:

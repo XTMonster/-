@@ -822,6 +822,24 @@ def e1_evidence_is_stale(rows: List[Dict[str, Any]],
     return reasons
 
 
+def _judge_incomplete(row: Dict[str, Any]) -> bool:
+    """这一行的 `scores` 说明它**没凑够两位评委**吗？
+
+    E1 的冻结定义（`tests/plan_v4_instruments.sha256.json` 里 `e1_panel.py` 的 guards）
+    是"**两位** LLM 评委各打 1-5 分、取均值 >= 4.0 记相关"。而某位评委调用失败时，
+    `e1_panel._score_one` 在行里留 `scores: [x, None]`，**仍按"回答了的那位"写一个
+    `score` 出来**——那一行其实是判不出相关性的。
+
+    只对**带了 `scores` 数组**的行生效（LLM 面板的产物一律带，见
+    `tools/knowledge/e1_panel.py:566-577`）。没带 `scores` 的行（人工打分、历史夹具）
+    维持原口径：它们的 `score` 就是那次裁定的结果。
+    """
+    scores = row.get("scores")
+    if not isinstance(scores, list):
+        return False
+    return len([s for s in scores if isinstance(s, (int, float))]) < 2
+
+
 def e1_relevance(reviews_path: Optional[Path], *,
                  cases_path: Optional[Path] = None) -> Dict[str, Any]:
     """E1 经验引用相关性（打分由人／已授权复核面板给出，agent 不代判）。
@@ -840,11 +858,23 @@ def e1_relevance(reviews_path: Optional[Path], *,
     scored = [row for row in rows if isinstance(row.get("score"), (int, float))]
     if not scored:
         return {"id": "E1", "status": FAIL, "note": "打分文件为空：分母为 0 判失败"}
-    good = [row for row in scored if float(row["score"]) >= 4]
+    #: **两位评委**这条定义必须在这里也成立。判不出相关性的那些行**留在分母里**
+    #: （分母是"交给导演的那 3 条"，由检索决定，不是"侥幸判成了几条"），但**绝不算相关**
+    #: ——这个方向只会让红线更难过，不可能被用来"靠剔除行把 E1 抬上去"。
+    #: 实测（`docs/evidence/20261006-e1-judge-coverage/`）：此前它把链上那份
+    #: 0.1486 抬成 0.1823（17/192 行只有一位评委），三份 C=3 证据同样被抬高。
+    incomplete = [row for row in scored if _judge_incomplete(row)]
+    incomplete_ids = {id(row) for row in incomplete}
+    good = [row for row in scored
+            if id(row) not in incomplete_ids and float(row["score"]) >= 4]
     value = len(good) / len(scored)
     payload = {"id": "E1",
                "numerator": len(good), "denominator": len(scored),
                "value": round(value, 4), "line": 0.70,
+               #: 判不出相关性的行数（只报数，不改分母）——缺多少条必须看得出来。
+               "judge_incomplete_rows": len(incomplete),
+               "judge_incomplete_examples": [str(row.get("case_id", ""))
+                                             for row in incomplete[:5]],
                #: §4.1b 的 E1 行写着「判分样本 ≥ 1200（R50）」，而链上这一份只有
                #: 一次真实运行的 6 镜 × top-3 = **18 条**。判据（≥70%）与状态判定
                #: **不因此改变**——分母是 18、不是 0，按硬规则 1 该判失败就判失败；
@@ -863,9 +893,14 @@ def e1_relevance(reviews_path: Optional[Path], *,
                  f"差 {E1_SAMPLE_FLOOR - len(scored)} 条——这个比率还不具备"
                  f"统计效力，判据与状态未因此改变）"
                  if len(scored) < E1_SAMPLE_FLOOR else "")
+    judge_incomplete_note = (
+        f"（judge_incomplete: {len(incomplete)}/{len(scored)} 行只有一位评委给出分数，"
+        f"按「两位评委」的冻结定义一律**不算相关**、但**留在分母**——"
+        f"这个方向只会让 E1 更低，不会被用来抬分）"
+        if incomplete else "")
     return {**payload, "status": PASS if value >= 0.70 else FAIL,
             "note": (f"相关案例 {len(good)}/{len(scored)} = {value:.4f}"
-                     f"（线 {0.70}）{shortfall}")}
+                     f"（线 {0.70}）{shortfall}{judge_incomplete_note}")}
 
 
 def q4_build_gate(q_report: Dict[str, Any]) -> Dict[str, Any]:
