@@ -1,0 +1,24 @@
+{
+  "tool": "build_third_party_layer",
+  "layer": "E:\\白模预演codex\\fixtures\\knowledge_holdout.third_party.jsonl",
+  "records": 212,
+  "counts": {
+    "selected": 212,
+    "keep": 194,
+    "drop": 2,
+    "flag": 16,
+    "retry": 0
+  },
+  "reviewer_class": "third-party",
+  "source": {
+    "model": "kimi-k3",
+    "prompt_sha256": "7d95fbc44af177a772b2e10fea903ea7bacb106edaaca92b1b604fe76cc861e0",
+    "prompt_version": "review/v2",
+    "tool": "holdout_review_third_party",
+    "adjudicator_provider": "kimi",
+    "authorized_by": "user-2026-10-06:third-party adjudication stands in for my human review",
+    "ran_at": "2026-10-06T02:44:42+08:00"
+  },
+  "disagreements_with_llm_panel": 27,
+  "note": "**这一层是 gate 的输入之一**：pin 它 = pin 这一代；旧夹具的字节不动。"
+}

@@ -2131,3 +2131,31 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 得先把 `APPLICABILITY_SEMANTICS_v1.md` 那份逐 kind 适用域表落成可执行的东西；
 ③ `axis_side` 等**该绑到哪个成片字段**本轮没回答，只诚实记成"判不了"；
 ④ 违规判定是字面相等（剥 `kind:` 前缀），**没做中英词表对齐**——`movement` 一侧已经能看到词表落差。
+
+### P14-306：门⑦ 换代 **gen1→gen2 的输入工件已具名/已 pin/夹具字节未动**（落地第一步）＋ 纠正"drop 0"
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R3 | 裁决要求"增量层必须具名为被 pin 的独立输入工件并登记 gen1→gen2" | **绿（三份工件＋可复算生成器＋4 条守门）** | `fixtures/knowledge_holdout.third_party.jsonl`／`.manifest.json`／`fixtures/knowledge_holdout.generations.json`；生成器 `tools/knowledge/build_third_party_layer.py`；`tests/test_third_party_layer.py` | 2026-10-06 | 本批 |
+
+**做了什么**：把第三方代裁做成**具名、被 pin 的独立输入工件**（212 行，只带裁决与溯源），
+写**换代登记** gen1→gen2——**两代 pin 的 `holdout` 是同一枚 sha256**（`e3e6bac2…`，
+"夹具字节未动"可验证），gen2 只多一个 `inputs.third_party`。生成器有 `--check`：
+从源重算并与入库工件逐位比对，漂移即非零退出。守门 4 条（含"**绝不冒充 `human`**"）。
+
+**口径纠正（重要）**：台账与上一轮判词引的是"keep 201／flag 11／**drop 0**"。
+**实物不是那样**：`work/holdout_third_party.json` 的 counts 是
+**`{"selected": 212, "keep": 194, "drop": 2, "flag": 16}`** —— **`drop` 是 2 不是 0**。
+⇒ "`drop 0` ⇒ 标签零变化"这个前提**不成立**（那 2 条 rejected 是实质改动）；
+早先那组 201/11/0 属于**另一轮**第三方代裁，不许混用。
+**这不改变裁决**：最终取的是 B 的原则——"输入集合的同一性"定义"代"，与"某文件字节是否变动"无关；
+受影响的只是"层不是纯增量"这一点，已写进 `diff_note` 与未验证清单。
+
+**还没做（裁决点名的后三步，按顺序）**：① `check_holdout.py` 加 `--third-party` 并按代计数
+（事前锁定新期望数）；② 那 6 条按"pin == 夹具 sha"断言的测试改成**按代断言**；
+③ **新开一次 gate 运行**（它是 gen2 的第一份证据，不是"对 gen1 的重跑"）。
+在这三步落地前，夹具／`check_holdout.py`／那 6 条测试／20 份历史 pin **一个字节都没改**。
+
+**未验证／边界**：① 19 份 `superseded` 是否让 Q1/Q2/Q4/Q6b 失据——裁定说**不能定案**；
+② 层里 16 条 `amended` 的 `fix` 文本**没有**拿去改夹具（那是第 1 步之后的事）；
+③ 生成器读的源在 **gitignore 区**（可重建、未入库）⇒ 没有那份源就跑不了 `--check`。
