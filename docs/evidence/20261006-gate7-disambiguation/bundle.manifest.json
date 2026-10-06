@@ -1,0 +1,43 @@
+{
+  "created_at": "2026-10-06T23:26:44",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "8a9af8a",
+    "head_subject": "docs(P14-303): 门⑦ 212 条第三方代裁——两侧都答 要升 但方法冲突(增量层 vs 显式换代+6条测试改按代断言)，交回裁定人；附修 glm_consult 不校验 JSON 的缺陷",
+    "recent": [
+      "8a9af8a docs(P14-303): 门⑦ 212 条第三方代裁——两侧都答 要升 但方法冲突(增量层 vs 显式换代+6条测试改按代断言)，交回裁定人；附修 glm_consult 不校验 JSON 的缺陷",
+      "1631c25 feat(P14-302): §7 D1b 落地——躯干换成圆角方体(等外接盒，常量不动)；换形状当场抓出并修掉两个探针缺陷",
+      "fcfbee8 docs(P14-297): 读数板别再写会立刻过期的 pytest 计数——只保留链内那次(2388)并写明要最新数就自己跑",
+      "d959123 docs(P14-301): 给深度-12 预登记加状态更新——身份从 待执行计划 改成 重开(B)才用的配方(裁定人 23:03 已明确选(A)不开跑)",
+      "fb71bc4 docs(P14-301): RK-13 结案——GLM-5.3 裁定 现在按(a)结案，判据一字不动、红如实记作 不可达(链上照旧报红)"
+    ],
+    "uncommitted": []
+  },
+  "question": {
+    "path": "work/_q_gate7_disambiguate.md",
+    "sha256": "dc83fe234561969cd461fd7ddfd1f988a35988aeec3ddbae909a84b6ef00c0c7",
+    "chars": 983
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "规格一致性": {
+      "system": {
+        "chars": 1032,
+        "sha256": "3c3279e0f38e8ef60af8366c247d99e97a2cc8862f9cabba87cac05f81980603"
+      },
+      "user": {
+        "chars": 994,
+        "sha256": "6e7f61ada3492671a565e57b3b8854a40802d34773ba8ea1578a301cc43622d9"
+      }
+    }
+  }
+}
