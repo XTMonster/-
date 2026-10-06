@@ -229,3 +229,52 @@ grep 查（旧数字 1.45 / 1.10 / 0.95 / 1.60 还在不在），所以先查它
 （构造"条数相同、集合不同"的换名，证明旁边那格抓不住、这一格抓得住）。
 `git diff --stat` = **27 insertions / 0 deletions**；全量 **2378 passed / 1 skipped**（+2 就是这两格）；
 `check_assertions.py` **[OK] 272 文件**。
+
+---
+
+## 九、追加：**§B（TDD）与 §7** —— 把文档剩下的可核对部分也走完
+
+到这里 §A.3 / §A.4 / §1.6 / §6 都对过了；剩下 §B.3–§B.5 与 §7。结果：
+
+### §B.3「每阶段的先红测试清单」——**约 30 个具名文件全部存在，且用例名与其"预期红的原因"对得上**
+
+逐条查过（含两处容易漏的）：`tests/test_script_inline_dialogue.py`（P11，4 条，含"行内台词带时长被记下""行内说话人成为已知说话人"）、
+`tests/test_shotlist_render.py`（P13，6 条，含 `test_the_fixture_really_crosses_the_old_cutoff`——
+正是文档要的"**跨过旧 60 闸**"）都在。`tools/blender_tests/` 侧的
+`test_operator_end_to_end.py`／`test_scene_contract.py`／`test_label_layout.py`／`test_label_toggles.py`
+也**都已登记进链的 32 步清单**（`run_tests.ps1:138-143`）。
+
+### §B.4「夹具与派生生成」——**6 个文件全部入库，生成器也吃长夹具**
+
+`script_node5_8_lines.md`、`script_long_61.md`、`mock_llm_responses/plan_long.json`、
+`expected_sdl_long.json`、`expected_shots_long.json`、`knowledge_holdout.jsonl` **六个都在**；
+`tools/gen_golden.py:41` 有 `LONG_PLAN_FILE = fixtures/mock_llm_responses/plan_long.json`
+⇒ §B.4 第 2 条要求的"**先扩展该脚本吃长夹具**"确实做了。
+
+### §B.5「对抗性测试要求」——**六条反向突变逐条在，P16 的静态检查也在**
+
+| RK | 要求的反向突变 | 实测（探针内的具名 check） |
+|---|---|---|
+| RK-1 | 标签长期 `hide_render=True` | `test_label_layout.py:288/501` `rk1_hidden_label_goes_red` ✅ |
+| RK-2 | 两个角色标签锚点重合 | `test_label_layout.py:373/502` `rk2_overlapping_labels_go_red` ✅ |
+| RK-6 | `stand` 落点改回相对 `+drop` | `test_phase2_motion.py:427/530` `rk6_floating_goes_red`（带 `mutation` 说明） ✅ |
+| RK-9 | 从 operator 路径去掉 `builder=` | `test_operator_end_to_end.py:221` `operator_refuses_without_a_builder` ✅ |
+| RK-10 | 把 ⌈0.3×分母⌉+1 个通过镜搞坏 | `test_composition_gate.py:182` `rk10_breaking_the_framing_drops_the_rate` ✅ |
+| RK-14 | 头球中心下移 `head_r` | `test_character_geometry.py:224/309` `rk14_lowered_head_goes_red` ✅ |
+
+**P16 的静态检查**：`tools/check_assertions.py` 在（**不依赖 bpy**，符合 §B.5 对落点的要求），
+且 `tests/test_assertion_hygiene.py` 专门守"它存在、并且**能红**"。
+
+### §7「待用户拍板（1 项）」——**仍是那 1 项，实现走的是默认值**
+
+唯一一条是 **D1b 躯干形状**（① 保持圆柱 / ② 圆角方体），文档定的默认是 **①圆柱**、并写明
+"**P10 内以 A/B 截图裁决**"。当前实现是圆柱 ⇒ **与默认一致、不阻塞**；
+**②那个 A/B 裁决有没有做过，我没有查到证据**（本轮没深入），所以把它**如实列为未验证**，
+而不是替它下结论。
+
+### 小结（文档级审计到此为止）
+
+**§A.3 / §A.4 / §B.3 / §B.4 / §B.5 / §1.6 / §6 全部走完**；两条真缺陷（§1.6 **#20**、**#8/T7**）
+已修并有守门。整份 v1.4 的验收面收窄到**一格**：`US-11⑥ = §A.4 知识行 E1 = RK-13 = E1`（量到的 fail，0.1771）。
+**仍未验证的只剩**：① 那一格的 A／C 裁决（**用户**）；② §7 的 D1b A/B 截图裁决有没有做过；
+③ 大搜索与 GPT-6A 的 `b_closeout` 两条长跑的结果。

@@ -1094,3 +1094,30 @@ P14-267 只查了 ⚠ 类 ＋ 抽样 6 条，把其余挂在"未验证"里。本
 
 **仍未验证**：`fixtures/local_model.config.yaml:39`（`"shots * 6"`）与 `local_sidecar.config.yaml:47`
 （`"shots * 8"`）两处**未定性**观察（探针用显式配置、非默认值，§1.6 未列，**本轮不改**）。
+
+### P14-269：**§B（TDD）与 §7 也走完**——文档级审计到此结束，只剩一格 ＋ 两处未验证
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **§B / §7** | §B.3–§B.5 的具名测试与突变用例、§7 的待拍板项 | **绿（可核对部分全过）** | `docs/evidence/20261006-us-traceability/README.md` 第九节 | 2026-10-06 | 本批 |
+
+**§B.3**：约 30 个具名文件**全部存在**，且用例名与其"预期红的原因"对得上——含两处易漏的
+`tests/test_script_inline_dialogue.py`（P11）与 `tests/test_shotlist_render.py`（P13，其中的
+`test_the_fixture_really_crosses_the_old_cutoff` 正是"跨过旧 60 闸"）；四个 Blender 探针**都已登记进链**。
+**§B.4**：6 个夹具**全部入库**，且 `tools/gen_golden.py:41 LONG_PLAN_FILE` 证明"生成器吃长夹具"确实做了。
+**§B.5**：六条反向突变**逐条在**（`rk1_hidden_label_goes_red`／`rk2_overlapping_labels_go_red`／
+`rk6_floating_goes_red`／`operator_refuses_without_a_builder`／`rk10_breaking_the_framing_drops_the_rate`／
+`rk14_lowered_head_goes_red`）；P16 的静态检查 `tools/check_assertions.py` **不依赖 bpy**，
+且 `tests/test_assertion_hygiene.py` 专守"它存在、并且**能红**"。
+
+**§7**：唯一一条是 **D1b 躯干形状**（默认 ①圆柱），当前实现是圆柱 ⇒ **与默认一致、不阻塞**；
+但**"P10 内以 A/B 截图裁决"有没有做过，我没查到证据** ⇒ 如实列为**未验证**，不替它下结论。
+
+### 文档级审计总账（到此为止）
+
+**§A.3 / §A.4 / §B.3 / §B.4 / §B.5 / §1.6 / §6 全部走完**；途中抓到并修掉**两条真缺陷**
+（§1.6 **#20**、**#8/T7**），两条都有守门。整份 v1.4 的验收面收窄到**一格**：
+`US-11⑥ = §A.4 知识行 E1 = RK-13 = E1`（**量到的** fail，0.1771）。
+
+**仍未验证只剩三件**：① 那一格的 A／C 裁决（**用户**）；② §7 的 D1b A/B 截图裁决**有没有做过**；
+③ 大搜索（pid 49548）与 GPT-6A `b_closeout`（pid 4484）两条长跑的结果。
