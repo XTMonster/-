@@ -808,3 +808,29 @@ U+0085（NEL）／U+2028／U+2029 都是**合法的 JSON 字符串内容**、`js
 **顺序教训（第三次，同类）**：P14-257 改完只跑了定向用例、没跑全量，所以这条既有断言
 **是在链上跑到第 2 步才暴露**的。⇒ 任何改动之后都先跑全量 `pytest`，再谈跑链。
 全量：**2375 passed / 1 skipped**（+1：本批新增的两条守门）。
+
+### P14-259：**冻结树上重跑 32 步验收链**——Q6b 的 required 半边第一次**量到且 pass**
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **全链** | 冻结树 32 步 ＋ 门①–⑩ ＋ RK-1…RK-19 | **绿（除 RK-13）** | `docs/evidence/20261006-192508/`：`tree.json.stable = true`（before == after）；`rks.json` 的 `measured_rks` = **19 条全量**、`failed_checks = ['RK-13']`；`holdout_gates` all passed（queries 2847、must_total 2880） | 2026-10-06 | 本批 |
+
+**链上原话（逐字）**：`injection token caps, read off the real prompt: plan 778/2000, shot 788/800`
+＋ `required-edge drop half (needs the run queries to join the oracle): **pass**`
+——**改前这一行印的是 `not_measured`**。
+
+**A/B 对照（同一套 32 步，只有这一格不同）**：
+
+| | 上一跑 `20261006-133244` | 本跑 `20261006-192508` |
+|---|---|---|
+| `measured_rks` / `failed_checks` | 19 / `['RK-13']` | 19 / `['RK-13']` |
+| `injection_audit.complete` | **false** | **true** |
+| `required_edges_dropped_by_budget` | **not_measured** | **pass**（167 镜头 join、丢 0） |
+| 读数喂的那一跑 | `20261003_real_long`（bm25 时代） | `20261006-long21`（当前代） |
+
+**结论**：P14-257／P14-258 两处改动**只动了一格**——把"半边永远量不到"变成"量到且通过"；
+RK 的判定结果**一条没变**（仍只有 RK-13 红），链仍按裁决**非零退出**并打印
+`FAILED: RK-13 …` ＋ `This run is NOT green.`。
+
+**未验证**：这次只跑了一遍（没有做同臂重复跑）；`20261006-long21` 的"当前代"身份仍由
+链里那一个显式值承担（守门只保证两处不会各读各的）。
