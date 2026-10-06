@@ -69,7 +69,16 @@ BINDINGS: Dict[str, Tuple[Tuple[str, ...], Any]] = {
     "action": (("action_types[]",), _identity),
     "transition": (("declared.transition", "transition_in", "transition_out"), _identity),
     "vfx": (("vfx[].type",), _identity),
+    #: `axis_side` 是**值的绑定**（只绑 `neutral` 一个取值）：两边对"中性机位"的定义是同一个
+    #: ——产品侧 `axis.py:455` 原文"``neutral`` = 机位恰好落在轴线上，画面没有左右信息"，
+    #: 而索引侧的取值就叫 `neutral`。`left`/`right` **不绑**（校准已证明它们跟 ±1 对不上，
+    #: 见 `docs/evidence/20261007-axis-family-ruling/axis_convention_calibration.json`），
+    #: 它们会落进 `premise_value_unbound` 并**逐条列出**，**绝不当成"通过了"**。
+    "axis_side": (("axis.status",), _identity),
 }
+
+#: 值的绑定表：只有列在这里的取值才算"绑上了"。**不在表里的值 ⇒ `value_unbound`**。
+VALUE_BINDINGS: Dict[str, Dict[str, str]] = {"axis_side": {"neutral": "neutral"}}
 
 #: 向后兼容的名字（老读法：`MAPPING[kind]` 就是字段元组）。
 MAPPING: Dict[str, Tuple[str, ...]] = {kind: fields for kind, (fields, _norm) in BINDINGS.items()}
@@ -82,6 +91,20 @@ VALUE_ALIASES: Dict[str, Dict[str, str]] = {
     "movement": {"固定": "static", "固定机位": "static"},
 }
 VALUE_ALIASES_VERSION = 1
+
+#: **不是条件**的 kind（提案 ③ 类）：忽略，不参与"判不判得了"，也不参与前提匹配。
+#:
+#: * `pair`：`AXIS_RULE` 的**必填槽**（`knowledge/hypergraph.py:190`），可它**只有一个取值
+#:   `pair:any_two`**——一个恒真的前提。当条件用等于没条件，所以**显式忽略**（不是"判不了"）。
+#: * `axis_topic`：**话题**（视线轴／越轴／中性机位／关系轴／运动轴），表达"这条边在说哪条轴"，
+#:   不是"这一镜必须满足什么"。
+#:
+#: 为什么要单列一张表：把它们算进"判不了"会让 `AXIS_RULE` 那 66 条**整体**被判不了，
+#: 而它们真正需要判的**只有 `axis_side` 一个槽**。
+NOT_A_CONDITION: Dict[str, str] = {
+    "pair": "恒真前提（唯一取值 pair:any_two）",
+    "axis_topic": "话题（不是条件）",
+}
 
 
 def load_edges(path: pathlib.Path) -> Dict[str, Dict[str, Any]]:
@@ -112,6 +135,10 @@ def injections(path: pathlib.Path) -> List[Dict[str, Any]]:
 
 def shot_values(shot: Dict[str, Any], field: str) -> List[str]:
     """成片侧某个字段的**取值集合**（字段不在／为空 ⇒ 空列表，不编默认值）。"""
+    if field == "axis.status":
+        axis = shot.get("axis") or {}
+        value = axis.get("status")
+        return [str(value)] if value else []
     if field == "shot_type":
         return [str(shot.get("shot_type"))] if shot.get("shot_type") else []
     if field == "intent_type":
@@ -200,6 +227,11 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
     judgeable_forbid_members = 0
     vocab_miss: Dict[str, collections.Counter] = collections.defaultdict(
         collections.Counter)
+    #: 值没绑定的前提（例如 `axis_side:left/right`）逐条列出——**判不了 ≠ 通过**。
+    unbound_values: Dict[str, collections.Counter] = collections.defaultdict(
+        collections.Counter)
+    #: 成片侧**整个字段缺席**的前提（老产物没有这一栏）——按 kind 计数。
+    field_absent_values: collections.Counter = collections.Counter()
 
     for event in injected:
         shot_id = str(event.get("shot_id") or "")
@@ -249,7 +281,8 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                     member_outcomes[kind]["unmatched"] += 1
             #: ① 有未映射的 kind（任何角色）⇒ 整条边判不了
             unmapped_here = [str(member[1]) for member in members
-                             if str(member[1]) not in MAPPING]
+                             if str(member[1]) not in MAPPING
+                             and str(member[1]) not in NOT_A_CONDITION]
             if unmapped_here:
                 counts["edge_indecidable"] += 1
                 for kind in unmapped_here:
@@ -257,6 +290,8 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 continue
             observed: List[str] = []
             for member in members:
+                if str(member[1]) in NOT_A_CONDITION:
+                    continue
                 fields, _normalizer = BINDINGS[str(member[1])]
                 for field in fields:
                     observed.extend(shot_values(shot, field))
@@ -277,16 +312,45 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
 
             #: ② 前提（非 forbid）必须全中；`no value` 与 `值不等` 都算"不适用"
             premise_ok = True
+            value_unbound = False
+            field_absent = False
             for member in members:
                 role, kind = str(member[0]), str(member[1])
-                if role == "forbid":
+                if role == "forbid" or kind in NOT_A_CONDITION:
                     continue
                 counts["premise_members_seen"] += 1
+                fields, _norm = BINDINGS[kind]
+                if not any(shot_values(shot, field) for field in fields):
+                    #: **成片侧这个字段整个不存在**（例如老产物没有 `axis` 那一栏）⇒
+                    #: 这不是"前提不成立"，是**这一代产物还没有这个字段**。分开记，
+                    #: 免得把"没得比"读成"不适用"。
+                    counts["premise_field_absent"] += 1
+                    field_absent_values[kind] += 1
+                    field_absent = True
+                    premise_ok = False
+                    break
+                bound_values = VALUE_BINDINGS.get(kind)
+                if bound_values is not None:
+                    _mapped, known = knowledge_side_value(kind, str(member[2]))
+                    if not known and member_value(str(member[2]), kind) not in bound_values:
+                        #: 这个**取值**没绑定（`left`/`right`）：判不了 ≠ 适用 ≠ 通过。
+                        counts["premise_value_unbound"] += 1
+                        unbound_values[kind][member_value(str(member[2]), kind)] += 1
+                        value_unbound = True
+                        premise_ok = False
+                        break
                 if not matched(kind, str(member[2])):
                     premise_ok = False
                     break
             if not premise_ok:
-                counts["edge_inactive"] += 1
+                #: `edge_unbound`（值没绑定）与 `edge_inactive`（前提不成立）**分开记**——
+                #: 混在一起会把"不知道怎么判"读成"不适用"。
+                if value_unbound:
+                    counts["edge_unbound"] += 1
+                elif field_absent:
+                    counts["edge_field_absent"] += 1
+                else:
+                    counts["edge_inactive"] += 1
                 continue
             counts["edge_active"] += 1
             #: ③ 前提全中：再看 forbid
@@ -348,6 +412,8 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
             "injected_edges": sum(len(event.get("edge_ids") or []) for event in injected),
             "edge_indecidable": counts.get("edge_indecidable", 0),
             "edge_inactive": counts.get("edge_inactive", 0),
+            "edge_unbound": counts.get("edge_unbound", 0),
+            "edge_field_absent": counts.get("edge_field_absent", 0),
             "edge_active": counts.get("edge_active", 0),
             "injected_edge_missing_from_index": counts.get("injected_edge_missing_from_index", 0),
             "edges_in_events_without_a_built_shot":
@@ -357,8 +423,18 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
         "covered_kinds": {kind: count for kind, count in member_kinds.most_common()
                           if kind in BINDINGS},
         "not_covered_kinds": {kind: count for kind, count in member_kinds.most_common()
-                              if kind not in BINDINGS},
+                              if kind not in BINDINGS and kind not in NOT_A_CONDITION},
+        #: ③ 类（**故意忽略**）与"没绑定"分开列——它们不是"没覆盖"，是"按规矩不算条件"。
+        "ignored_kinds": {kind: count for kind, count in member_kinds.most_common()
+                          if kind in NOT_A_CONDITION},
         "member_kinds_seen": dict(member_kinds.most_common()),
+        #: ③ 类（不是条件）与"取值没绑定"两张表明着列出来。
+        "not_a_condition_kinds": {kind: member_kinds[kind] for kind in NOT_A_CONDITION
+                                  if member_kinds.get(kind)},
+        "value_bindings": {kind: dict(values) for kind, values in VALUE_BINDINGS.items()},
+        "unbound_values": {kind: dict(counter) for kind, counter in unbound_values.items()
+                           if counter},
+        "field_absent_kinds": dict(field_absent_values.most_common()),
         "member_outcomes_by_kind": {kind: dict(counter) for kind, counter
                                     in member_outcomes.items()},
         #: 裁决 F3 的 `vocab_miss`（别名表命中不了的知识侧取值，逐条列出）＋
@@ -399,13 +475,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps({"error": "找不到 shots.json", "tried": [str(p) for p in candidates]},
                          ensure_ascii=False))
         return 2
+    #: 审计日志也有已知的两种落点（交付目录根／`runs/`）——同样只认这两种，不猜第三种。
+    audit_candidates = [run / "audit_log.jsonl", run / "runs" / "audit_log.jsonl"]
+    audit_path = next((path for path in audit_candidates if path.is_file()), None)
+    if audit_path is None:
+        print(json.dumps({"error": "找不到 audit_log.jsonl",
+                          "tried": [str(p) for p in audit_candidates]}, ensure_ascii=False))
+        return 2
     payload = json.loads(shots_path.read_text(encoding="utf-8"))
     shots_rows = payload.get("shots") if isinstance(payload, dict) else payload
     shots = {str(row.get("shot_id")): row for row in (shots_rows or [])}
-    result = analyze(injections(run / "audit_log.jsonl"), load_edges(pathlib.Path(args.edges)),
+    result = analyze(injections(audit_path), load_edges(pathlib.Path(args.edges)),
                      shots)
     result["run"] = str(run)
     result["shots_file"] = str(shots_path)
+    result["audit_log"] = str(audit_path)
     pathlib.Path(args.out).write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8", newline="\n")

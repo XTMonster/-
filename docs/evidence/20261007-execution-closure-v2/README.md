@@ -132,6 +132,24 @@ injected_edges = edge_indecidable + edge_inactive + edge_active
 
 ## 十、轴族（判不了的最大一块）追到底：**不是"没实现"，是"没落字段"**
 
+### 10.1 ③ 类落地之后，读数动了多少（2026-10-07 补）
+
+裁定确认 `pair`（唯一取值 `pair:any_two` ⇒ **恒真前提**）与 `axis_topic`（**话题**）**不是条件** ⇒
+本工具新增 `NOT_A_CONDITION` 把它们**忽略**（既不进"判不了"，也不参与前提匹配），
+并把三种"判不了"**拆成三个桶**：`edge_indecidable`（kind 没绑定）、`edge_unbound`（**取值**没绑定）、
+`edge_field_absent`（**成片侧整个字段缺席**，例如老产物没有 `axis` 那一栏）。
+
+| 量（`20261006-long21`） | ③ 类之前 | ③ 类之后 |
+|---|---|---|
+| `edge_indecidable` | 95 | **32** |
+| `edge_inactive` | 224 | 175 |
+| `edge_field_absent` | — | **112**（`axis_side 63` ＋ `movement 49`） |
+| `edge_unbound` | — | 0（本轮注入的 `axis_side` **全是 `neutral`**，而 `neutral` 是绑定的） |
+| 21 次全扫的 `edge_indecidable` 中位数／最大 | 98.5 / 107 | **36.0 / 89** |
+
+**`not_covered_kinds` 从 6 个 kind 缩到 3 个**：`headroom_policy 19`、`composition_rule 13`、
+`camera_angle 13` ——正好都是裁定说"**要先有规则原文的区间**"的那一类。
+
 `pair`/`axis_side`/`axis_topic` 各 63 个成员、对应 `AXIS_RULE` **66 条边**——是"判不了"里最大的一块。
 逐条查完（`work/_peek_axis_fields.py`）：
 

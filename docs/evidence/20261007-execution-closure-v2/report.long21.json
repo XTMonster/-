@@ -3,16 +3,20 @@
   "counts": {
     "events_without_a_built_shot": 3,
     "edges_in_events_without_a_built_shot": 24,
-    "premise_members_seen": 380,
-    "edge_inactive": 224,
-    "edge_indecidable": 95,
+    "premise_members_seen": 443,
+    "premise_field_absent": 112,
+    "edge_field_absent": 112,
+    "edge_inactive": 175,
     "edge_active": 1,
-    "no_match": 1
+    "no_match": 1,
+    "edge_indecidable": 32
   },
   "ledger": {
     "injected_edges": 344,
-    "edge_indecidable": 95,
-    "edge_inactive": 224,
+    "edge_indecidable": 32,
+    "edge_inactive": 175,
+    "edge_unbound": 0,
+    "edge_field_absent": 112,
     "edge_active": 1,
     "injected_edge_missing_from_index": 0,
     "edges_in_events_without_a_built_shot": 24
@@ -21,15 +25,17 @@
     "movement": 302,
     "shot_size": 269,
     "intent": 225,
+    "axis_side": 63,
     "lens": 19
   },
   "not_covered_kinds": {
-    "pair": 63,
-    "axis_side": 63,
-    "axis_topic": 63,
     "headroom_policy": 19,
     "composition_rule": 13,
     "camera_angle": 13
+  },
+  "ignored_kinds": {
+    "pair": 63,
+    "axis_topic": 63
   },
   "member_kinds_seen": {
     "movement": 302,
@@ -42,6 +48,20 @@
     "headroom_policy": 19,
     "composition_rule": 13,
     "camera_angle": 13
+  },
+  "not_a_condition_kinds": {
+    "pair": 63,
+    "axis_topic": 63
+  },
+  "value_bindings": {
+    "axis_side": {
+      "neutral": "neutral"
+    }
+  },
+  "unbound_values": {},
+  "field_absent_kinds": {
+    "axis_side": 63,
+    "movement": 49
   },
   "member_outcomes_by_kind": {
     "intent": {
@@ -56,6 +76,9 @@
       "film_side_empty": 296,
       "matched": 5,
       "unmatched": 1
+    },
+    "axis_side": {
+      "film_side_empty": 63
     },
     "lens": {
       "unmatched": 2,
@@ -78,9 +101,6 @@
   },
   "judgeable_forbid_members": 0,
   "unmapped_forbid_kinds": {
-    "pair": 63,
-    "axis_side": 63,
-    "axis_topic": 63,
     "headroom_policy": 19,
     "composition_rule": 13,
     "camera_angle": 13
@@ -109,6 +129,9 @@
     ],
     "vfx": [
       "vfx[].type"
+    ],
+    "axis_side": [
+      "axis.status"
     ]
   },
   "vocabulary_gap": {
@@ -231,6 +254,15 @@
       "overlap": [],
       "state": "no_data",
       "disjoint": false
+    },
+    "axis_side": {
+      "knowledge_values": [
+        "neutral"
+      ],
+      "film_values": [],
+      "overlap": [],
+      "state": "film_side_missing",
+      "disjoint": false
     }
   },
   "forbid_values_by_kind": {},
@@ -257,7 +289,8 @@
     "movements[].kind": {
       "dolly_in": 4
     },
-    "declared_camera_move": {}
+    "declared_camera_move": {},
+    "axis.status": {}
   },
   "violations": [],
   "note": "诊断，不设门：没有 pass line，也不接进 run_tests.ps1 的通过与否",

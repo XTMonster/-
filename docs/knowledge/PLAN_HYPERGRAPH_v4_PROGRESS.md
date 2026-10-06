@@ -2349,3 +2349,32 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 ② `pair` 给角色 id 这点只看了 2 镜离线导出（`long21` 是旧产物、没这一栏），**没逐份核**；
 ③ `status` 只在双人轴线存在时非空，单人镜沿用已确立那条轴（`shot_002` 即如此）——
 继承行为，**不是本轮新引入的**。
+
+### P14-314：**③ 类落地**——`pair`/`axis_topic` 忽略之后，"判不了"从 95 条降到 **32 条**（全扫中位数 98.5 → 36）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R53-D7 | 按提案 ③ 类把"不是条件"的 kind 排除出判定 | **绿（三桶拆分＋全扫＋守门）** | `docs/evidence/20261007-execution-closure-v2/README.md` §10.1；工具＋守门 `tests/test_execution_closure_report.py`（20 条） | 2026-10-07 | 本批 |
+
+**做了什么**：`NOT_A_CONDITION = {pair, axis_topic}`（前者是 `AXIS_RULE` 的**必填槽**、可它**唯一取值**
+`pair:any_two` 是**恒真前提**；后者是**话题**）⇒ 既不进"判不了"，也不参与前提匹配。
+同时把"判不了"**拆成三个桶**（此前混在一起会被读成"不适用"）：
+`edge_indecidable`（kind 没绑定）／`edge_unbound`（**取值**没绑定，例如 `axis_side:left/right`）／
+`edge_field_absent`（**成片侧整个字段缺席**）。
+
+**读数变化（`20261006-long21`）**：`edge_indecidable` **95 → 32**；`edge_inactive` 224 → 175；
+新增 `edge_field_absent` **112**（`axis_side 63`（那跑早于落字段）＋ `movement 49`）；
+`edge_unbound` 0（本轮注入的 `axis_side` **全是 `neutral`**，而 `neutral` 是绑定的）。
+**21 次全扫**：`edge_indecidable` 中位数 **98.5 → 36.0**、最大 107 → 89。
+**`not_covered_kinds` 从 6 个缩到 3 个**：`headroom_policy`／`composition_rule`／`camera_angle`
+——正好都是裁定说"要先有**规则原文的区间**"的那一类。
+
+**顺带**：`axis_side` 进绑定表但**只绑 `neutral` 一个取值**（两边对"中性机位"的定义是同一个：
+产品侧 `axis.py:455` 原文"neutral = 机位恰好落在轴线上"）；`left`/`right` 落进
+`edge_unbound` ＋ `unbound_values` 逐条列出，**绝不当成通过**。
+
+**未验证／边界**：① **`axis_side` 的收益在现有运行上还看不到**——21 份老产物都**没有 `axis` 这一栏**
+（所以是 `edge_field_absent`），要等**新的一次真跑**；② 我试了**离线**跑一遍想验，
+结果离线通路的 `audit_log` 里**一条 `retrieval_call` 都没有**（`retrieval_call: 0`）
+⇒ **离线跑验不了这件事**，必须用真模型运行（那也顺带喂 Q5/E2）；③ CLI 现在认**两种**审计日志落点
+（交付目录根／`runs/`），第三种不猜。

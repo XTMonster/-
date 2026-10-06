@@ -51,25 +51,61 @@ def test_a_forbid_is_checked_only_after_every_premise_matches():
 
 
 def test_an_unmapped_kind_makes_the_whole_edge_undecidable():
-    """`axis_side` 绑不到成片字段 ⇒ **整条边**进未映射桶，`forbid` 不许当违规报。"""
-    edges = {"e1": _edge("e1", [["qualifier", "axis_side", "axis_side:neutral"],
+    """**没有任何绑定的** kind（例如 `headroom_policy`）⇒ **整条边**进未映射桶，
+    `forbid` 不许当违规报。"""
+    edges = {"e1": _edge("e1", [["qualifier", "headroom_policy", "headroom_policy:tight"],
                                 ["forbid", "shot_size", "shot_size:CU"]])}
     shots = {"s1": {"shot_id": "s1", "shot_type": "CU"}}
     out = ecr.analyze([_inject("s1", "e1")], edges, shots)
     assert out["counts"]["edge_indecidable"] == 1
     assert out["counts"].get("violations", 0) == 0
-    assert out["unmapped_forbid_kinds"] == {"axis_side": 1}
+    assert out["unmapped_forbid_kinds"] == {"headroom_policy": 1}
     assert out["counts"].get("forbid_members_seen", 0) == 0
 
 
-def test_premise_missing_from_the_film_is_inactive_not_a_violation():
-    """成片侧根本没有这个字段（本例 `movement`）⇒ 前提不成立 ⇒ 不适用，**不是违规**。"""
+def test_a_not_a_condition_kind_is_ignored_rather_than_making_the_edge_undecidable():
+    """提案 ③ 类（`pair` 恒真前提 / `axis_topic` 话题）**忽略**——它们不是条件。
+
+    为什么重要：`AXIS_RULE` 的必填槽就是 `pair`/`axis_side`，若把 `pair` 算进"判不了"，
+    那 66 条**整体**都判不了；忽略之后它们真正要判的**只剩 `axis_side` 一个槽**。
+    """
+    edges = {"e1": _edge("e1", [["qualifier", "pair", "pair:any_two"],
+                                ["qualifier", "axis_topic", "axis_topic:越轴"],
+                                ["qualifier", "axis_side", "axis_side:neutral"]],
+                         edge_type="AXIS_RULE")}
+    shots = {"s1": {"shot_id": "s1", "axis": {"status": "neutral"}}}
+    out = ecr.analyze([_inject("s1", "e1")], edges, shots)
+    assert out["counts"].get("edge_indecidable", 0) == 0, "③ 类不该让边判不了"
+    assert out["counts"]["edge_active"] == 1, "`axis_side:neutral` 撞上 status=neutral ⇒ 生效"
+    assert out["not_a_condition_kinds"] == {"pair": 1, "axis_topic": 1}
+    assert out["counts"]["premise_members_seen"] == 1, "只有 axis_side 算前提"
+
+
+def test_an_unbound_value_is_reported_separately_from_inactive():
+    """`axis_side:left/right` **没绑定** ⇒ 记 `edge_unbound` ＋ 逐条列出取值，
+    **不是**"不适用"、更不是"通过"。"""
+    edges = {"e1": _edge("e1", [["qualifier", "axis_side", "axis_side:left"]],
+                         edge_type="AXIS_RULE")}
+    shots = {"s1": {"shot_id": "s1", "axis": {"status": "correct", "side_sign": -1}}}
+    out = ecr.analyze([_inject("s1", "e1")], edges, shots)
+    assert out["counts"]["edge_unbound"] == 1
+    assert out["counts"].get("edge_inactive", 0) == 0, "不许混进'不适用'"
+    assert out["counts"].get("violations", 0) == 0
+    assert out["unbound_values"] == {"axis_side": {"left": 1}}
+    assert out["value_bindings"] == {"axis_side": {"neutral": "neutral"}}
+
+
+def test_a_missing_film_field_is_its_own_bucket_not_inactive():
+    """成片侧**整个字段不存在**（老产物没有 `axis` 那一栏）⇒ 记 `edge_field_absent`：
+    **不是"前提不成立"，更不是违规**——那是"这一代产物还没有这个字段"。"""
     edges = {"e1": _edge("e1", [["qualifier", "movement", "movement:dolly_in"],
                                 ["forbid", "shot_size", "shot_size:CU"]])}
     shots = {"s1": {"shot_id": "s1", "shot_type": "CU", "movements": []}}
     out = ecr.analyze([_inject("s1", "e1")], edges, shots)
-    assert out["counts"]["edge_inactive"] == 1
+    assert out["counts"]["edge_field_absent"] == 1
+    assert out["counts"].get("edge_inactive", 0) == 0, "不许混进'不适用'"
     assert out["counts"].get("violations", 0) == 0
+    assert out["field_absent_kinds"] == {"movement": 1}
     assert out["observed_field_domain"].get("movements[].kind", {}) == {}
 
 
@@ -94,9 +130,11 @@ def test_the_bindings_table_is_the_documented_seven_kinds():
     （实测就有 4 个"看着能绑"的 kind 词表对不上，见 `vocabulary_gap`。）
     """
     assert set(ecr.BINDINGS) == {"shot_size", "intent", "lens", "movement",
-                                 "action", "transition", "vfx"}
+                                 "action", "transition", "vfx", "axis_side"}
     assert ecr.BINDINGS["lens"][0] == ("camera.lens",)
     assert ecr.BINDINGS["movement"][0] == ("movements[].kind", "declared_camera_move")
+    assert ecr.BINDINGS["axis_side"][0] == ("axis.status",)
+    assert ecr.VALUE_BINDINGS["axis_side"] == {"neutral": "neutral"}
 
 
 def test_lens_values_are_normalised_before_comparison():
@@ -132,7 +170,7 @@ def test_one_side_missing_is_not_a_vocabulary_gap():
 def test_the_vocabulary_counters_cover_every_injected_edge_not_just_active_ones():
     """踩过的坑：词表统计写在判定的 `continue` 之后 ⇒ 只有"生效"的边被记，
     其它 kind 一起变成空集合、看着像"没问题"。这条钉住"注入了就记"。"""
-    edges = {"e1": _edge("e1", [["qualifier", "axis_side", "axis_side:neutral"]]),
+    edges = {"e1": _edge("e1", [["qualifier", "headroom_policy", "headroom_policy:tight"]]),
              "e2": _edge("e2", [["qualifier", "shot_size", "shot_size:CU"]])}
     shots = {"s1": {"shot_id": "s1", "shot_type": "MS"}}
     out = ecr.analyze([_inject("s1", "e1", "e2")], edges, shots)
@@ -185,7 +223,8 @@ def test_the_edge_ledger_closes_so_every_injected_edge_is_accounted_for():
               _inject("no_such_shot", "e1", "e2")]  # 一个**没有对应镜头**的
     out = ecr.analyze(events, edges, shots)
     ledger = out["ledger"]
-    total = (ledger["edge_indecidable"] + ledger["edge_inactive"] + ledger["edge_active"]
+    total = (ledger["edge_indecidable"] + ledger["edge_inactive"] + ledger["edge_unbound"]
+             + ledger["edge_field_absent"] + ledger["edge_active"]
              + ledger["injected_edge_missing_from_index"]
              + ledger["edges_in_events_without_a_built_shot"])
     assert ledger["injected_edges"] == 4
@@ -197,12 +236,12 @@ def test_the_edge_ledger_closes_so_every_injected_edge_is_accounted_for():
 def test_uncovered_kinds_are_listed_not_silently_dropped():
     """判决书**不许只报"能算的那部分"**：没纳入的 kind 也要逐条列出来（带条数）。"""
     edges = {"e1": _edge("e1", [["qualifier", "shot_size", "shot_size:CU"]]),
-             "e2": _edge("e2", [["qualifier", "axis_side", "axis_side:neutral"]]),
+             "e2": _edge("e2", [["qualifier", "headroom_policy", "headroom_policy:tight"]]),
              "e3": _edge("e3", [["qualifier", "emotion", "emotion:愤怒"]])}
     shots = {"s1": {"shot_id": "s1", "shot_type": "CU"}}
     out = ecr.analyze([_inject("s1", "e1", "e2", "e3")], edges, shots)
     assert out["covered_kinds"] == {"shot_size": 1}
-    assert out["not_covered_kinds"] == {"axis_side": 1, "emotion": 1}, (
+    assert out["not_covered_kinds"] == {"headroom_policy": 1, "emotion": 1}, (
         "没纳入的 kind 必须逐条出现——`emotion` 属于②类（成片里没有这个字段）")
     assert sum(out["member_kinds_seen"].values()) == 3
 
