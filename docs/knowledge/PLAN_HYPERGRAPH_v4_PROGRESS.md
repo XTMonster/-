@@ -1486,3 +1486,48 @@ DEFAULT_MAX_PROMPT_CHARS_BY_PROVIDER = {"glm": 3000, "relay": 6000}
 ② 那个选择器**没实现、也没验证过能否到 135/192**——裁定给的是方向＋预先登记＋判据，不是成绩；
 ③ 训练/调参要的**"另取查询"数据集本轮没准备**（而裁定恰恰说这 64 条不能再当留出集）；
 ④ `HTTP 524` 那次为何耗时 2281.6 s（而非 ~100 s）**没查**。
+
+### P14-285：HEAD 终于被**一条完整 32 步链**覆盖——树守卫 `stable=true`，唯一红仍是 RK-13/E1
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| 验收 | HEAD `c328e91` 上跑满 32/32 | **绿（覆盖）＋1 红（RK-13＝E1）** | `docs/evidence/20261006-220213/tree.json`（`head=c328e914…`、`digest_before == digest_after`、`stable=true`）；同目录 11 份产物 | 2026-10-06 | 本批 |
+
+* `python -m pytest -o addopts="" -q` → **2388 passed, 1 skipped**（205.10 s）。
+* 链：32 个 check **全 `OK`**；`held-out coverage gates: all passed`；
+  `authorship: every generated card comes from an external work`；
+  `RK-13 measured from the held-out (exit 0)` 但**判红** ⇒ `not passing: E1; not measured: E2=not_measured`，
+  `chain exit=1`。
+* **这不是新红**：红的仍是此前就挂着的那一格 E1（认证版读数 **0.1771 < 0.70**），
+  **判据/分母/阈值一个字没动**；链的结论原话就是 "the criteria were not lowered"。
+* 与 19:55 那次（`20261006-195300`）的差别：这次 HEAD 把 P14-257…284 全部提交一起覆盖了，
+  而 19:55 之后**没有任何证据目录**——那份缺口由本条补上。
+
+**未验证／边界**：① 本链**不量 E2**（结构性 `not_measured`，manifest 不记知识来源）；
+② 链里那份 30 条 `edge_spotcheck.jsonl` 的判词格**依旧空白**（那是人填的，脚本拒绝预填）；
+③ **门⑦ 的校口径**：`reviewer calibers (D12): accepted-class reviewed 210 = llm-panel 210 +
+  third-party 0 + human-only 0`——**third-party 这一格是 0**，因为那 212 条代裁产物
+  **还没并进夹具**（换夹具会让 20 份已入库运行整文件 sha 全 STALE）。
+
+### P14-286：**特征信号探针：负结果**——"像元数据"的那些特征解释不了命中条数（三份草案同时入库）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R3 | 选择器**动手前**先问："手里这些不看判分的特征有没有解释力" | **绿（负结果，可复算）** | `docs/knowledge/E1_LEVERS_v1.md` §1；脚本 `work/_probe_feature_signal.py` | 2026-10-06 | 本批 |
+
+* 用 **192 条未见查询**（`docs/evidence/20261006-unseen192/reviews.unseen192.norerank.jsonl`，
+  `judge_batch=3`）算"去标签特征 ↔ 命中条数"的相关：
+  `hits` 分布 `{0:111, 1:61, 2:20, 3:0}`（均值 /3 ＝ **0.1754**，与链上现役 **0.1771** 同量级
+  ⇒ 口径互证）；**最强的 `mean_clue_len` 只有 r=0.1333**，其余 |r| ≤ 0.08。
+* **怎么读（不许读过头）**：它证伪的是"**跨查询**预测命中条数"，**没有**证伪裁定要的
+  "**同查询内**给 20 组排序"——这 192 条**每条只有 1 组**，组间方差没被采到。
+  真正的 go/no-go 要等去标签池（每查询 20 组）的读数。
+* 同批入库三份：`docs/knowledge/SELECTOR_PIPELINE_v1.md`（步骤 0-5 流水线）、
+  `docs/knowledge/RULING_CHECK_RK13.md`（对裁定的逐条核对）、
+  `docs/knowledge/E1_LEVERS_v1.md`（三根杠杆＋**预登记决策规则**：
+  去标签池 oracle **< 135/192 就带实测回 GPT-6A**，≥135 才走选择器）。
+
+**未验证**：① 三个探针脚本**仍在 `work/`**（未入库）⇒ §1 那张表目前**不能从库里复算**，
+  提升进 `tools/knowledge/` 是紧随其后的待办；② 去标签池 64 条的 oracle **尚无读数**；
+  ③ "云端嵌入重排"（`docs/knowledge/OPEN_PROBLEMS.md` P3）**没试**——它天然不看判分，
+  是候选池侧的合法杠杆。
