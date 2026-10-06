@@ -362,5 +362,15 @@
       }
     }
   ],
-  "note": "诊断，不设门：没有 pass line，也不接进 run_tests.ps1 的通过与否"
+  "note": "诊断，不设门：没有 pass line，也不接进 run_tests.ps1 的通过与否",
+  "gate_ready": {
+    "a_judgeable_forbid_members_gt_0": false,
+    "b_active_edges_median_ge_10": false,
+    "c_at_least_one_run_with_a_violation": false,
+    "judgeable_forbid_members_max": 0,
+    "active_edges_median": 7.5,
+    "violations_max": 0,
+    "all_three": false,
+    "conclusion": "判据集为空 ⇒ 回补判据（F1/F2/F3），**不设门**"
+  }
 }

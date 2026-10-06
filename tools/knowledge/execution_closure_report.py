@@ -74,6 +74,15 @@ BINDINGS: Dict[str, Tuple[Tuple[str, ...], Any]] = {
 #: 向后兼容的名字（老读法：`MAPPING[kind]` 就是字段元组）。
 MAPPING: Dict[str, Tuple[str, ...]] = {kind: fields for kind, (fields, _norm) in BINDINGS.items()}
 
+#: **别名表**（裁决 F3：这也算**新判据**，所以必须具名、版本化、可复核）：
+#: 规范侧＝**成片侧的英文枚举**；一个知识侧串**只许**映射到一个枚举；
+#: 映射不中的知识侧取值**必须显式计入 `vocab_miss`**，**绝不默认通过**。
+#: 本表只收"两边都观察到过、且语义等价"的对；没把握的不许编。
+VALUE_ALIASES: Dict[str, Dict[str, str]] = {
+    "movement": {"固定": "static", "固定机位": "static"},
+}
+VALUE_ALIASES_VERSION = 1
+
 
 def load_edges(path: pathlib.Path) -> Dict[str, Dict[str, Any]]:
     """`edge_id -> 边记录`（只走全仓唯一的 JSONL 读入口）。"""
@@ -137,6 +146,20 @@ def member_value(raw: str, kind: str) -> str:
     return text[len(prefix):] if text.startswith(prefix) else text
 
 
+def knowledge_side_value(kind: str, raw: str) -> Tuple[str, bool]:
+    """知识侧的取值 → （规范化后的串, 是否**命中别名表**）。
+
+    裁决 F3：别名表也是**新判据**——所以：① 只映射到**成片侧的枚举**（规范侧）；
+    ② 没命中的**原样返回并标 `False`**，由调用方记进 `vocab_miss` 并逐条列出，
+    **绝不默认通过**（"一条错别名就静默吞掉一条潜在违规"）。
+    """
+    value = member_value(raw, kind)
+    aliases = VALUE_ALIASES.get(kind) or {}
+    if value in aliases:
+        return aliases[value], True
+    return value, False
+
+
 def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]],
             shots: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
     """纯函数：注入集 × 边成员 × 成片字段 ⇒ 逐边判定。**不设门**。
@@ -172,6 +195,11 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
     #: 为什么必须有：只看"违规 0"会把"**无物可违**"读成"查了通过"。
     member_outcomes: Dict[str, collections.Counter] = collections.defaultdict(
         collections.Counter)
+    #: 判决书要能回答"**可判的 forbid 成员**有多少"（裁决 F4 的设门前置条件 (a)），
+    #: 以及"知识侧有多少取值**连别名表都命中不了**"（F3 的 `vocab_miss`）。
+    judgeable_forbid_members = 0
+    vocab_miss: Dict[str, collections.Counter] = collections.defaultdict(
+        collections.Counter)
 
     for event in injected:
         shot_id = str(event.get("shot_id") or "")
@@ -202,12 +230,17 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 if kind not in BINDINGS:
                     continue
                 fields, normalizer = BINDINGS[kind]
-                knowledge_values[kind][normalizer(member_value(str(member[2]), kind))] += 1
+                normalized, aliased = knowledge_side_value(kind, str(member[2]))
+                if kind in VALUE_ALIASES and not aliased:
+                    #: 知识侧写了个**别名表里没有**的取值 ⇒ 记 `vocab_miss`，逐条列出来
+                    #: （裁决 F3：**绝不默认通过**）。
+                    vocab_miss[kind][normalizer(normalized)] += 1
+                knowledge_values[kind][normalizer(normalized)] += 1
                 have = {normalizer(raw) for field in fields
                         for raw in shot_values(shot, field)}
                 for raw in [raw for field in fields for raw in shot_values(shot, field)]:
                     film_values[kind][normalizer(raw)] += 1
-                want = normalizer(member_value(str(member[2]), kind))
+                want = normalizer(normalized)
                 if not have:
                     member_outcomes[kind]["film_side_empty"] += 1
                 elif want in have:
@@ -236,7 +269,8 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 真违规被记成 `no_match`——那是**漏判**，比假阳性更隐蔽。
                 """
                 fields, normalizer = BINDINGS[kind]
-                want = normalizer(member_value(raw, kind))
+                aliased_value, _used_alias = knowledge_side_value(kind, raw)
+                want = normalizer(aliased_value)
                 have = {normalizer(value) for field in fields
                         for value in shot_values(shot, field)}
                 return want in have
@@ -261,6 +295,8 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 if role != "forbid":
                     continue
                 counts["forbid_members_seen"] += 1
+                if kind in BINDINGS:
+                    judgeable_forbid_members += 1
                 value = member_value(str(member[2]), kind)
                 forbid_values[kind][value] += 1
                 if matched(kind, str(member[2])):
@@ -295,6 +331,13 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
             "disjoint": state == "disjoint",
         }
 
+    #: `vocab_miss` 的最终定义：**既不在别名表里、又不是成片侧已经在用的取值**
+    #: ⇒ 这个映射不出去。（已经是成片枚举的（例如 `dolly_in`）不算 miss——它本来就能直接比。）
+    vocab_miss = {kind: {value: count for value, count in counter.items()
+                         if value not in film_values[kind]}
+                  for kind, counter in vocab_miss.items()}
+    vocab_miss = {kind: counter for kind, counter in vocab_miss.items() if counter}
+
     return {
         "shots_with_injection": len(shots_seen),
         "counts": dict(counts),
@@ -318,6 +361,11 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
         "member_kinds_seen": dict(member_kinds.most_common()),
         "member_outcomes_by_kind": {kind: dict(counter) for kind, counter
                                     in member_outcomes.items()},
+        #: 裁决 F3 的 `vocab_miss`（别名表命中不了的知识侧取值，逐条列出）＋
+        #: 裁决 F4 的设门前置条件 (a)：**可判的 forbid 成员**有多少。
+        "value_aliases": {"version": VALUE_ALIASES_VERSION, **VALUE_ALIASES},
+        "vocab_miss": {kind: dict(counter) for kind, counter in vocab_miss.items()},
+        "judgeable_forbid_members": judgeable_forbid_members,
         "unmapped_forbid_kinds": dict(unmapped.most_common()),
         "bindings": {kind: list(fields) for kind, (fields, _norm) in BINDINGS.items()},
         "vocabulary_gap": vocabulary_gap,

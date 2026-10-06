@@ -1,0 +1,53 @@
+{
+  "created_at": "2026-10-07T00:29:56",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "a530402",
+    "head_subject": "feat(P14-309): 执行闭环诊断 v2——相等式 kind 3->7 + 第一次量出词表落差(vocabulary_gap)；真跑：判不了95/不适用224/生效1/违规0",
+    "recent": [
+      "a530402 feat(P14-309): 执行闭环诊断 v2——相等式 kind 3->7 + 第一次量出词表落差(vocabulary_gap)；真跑：判不了95/不适用224/生效1/违规0",
+      "0694640 docs(P14-308): gen2 的第一份全链证据(20261007-001857)——门⑦ 链上口径 210 llm-panel -> 212 third-party(阈值一字未动)，树守卫 stable，唯一红仍是已结案的 RK-13",
+      "bd74e4a feat(P14-308): 门⑦ 按代消费第三方层——check_holdout 加 --third-party/--generations(判据一字未动)；运行必须解析到已登记代(第二十七次重新冻结)",
+      "8936313 docs(P14-307): 去标签池全量盲判(64条)落地——oracle 0.4375(84/192)；按裁定F3复议：更高的确更高，结论不变，余量据实从1.87倍/63行改读作1.61倍/51行",
+      "f32e87b feat(P14-306): 门⑦ 换代 gen1->gen2 第一步——第三方层做成具名/被pin的独立输入工件+换代登记(夹具字节未动)；纠正 drop 0 这句"
+    ],
+    "uncommitted": []
+  },
+  "question": {
+    "path": "work/_q_closure_next_glm.md",
+    "sha256": "ce13992a2957fb5cb250fac033f19713575f8c5c7234464de55832af460985e7",
+    "chars": 1434
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "规格一致性": {
+      "system": {
+        "chars": 1032,
+        "sha256": "3c3279e0f38e8ef60af8366c247d99e97a2cc8862f9cabba87cac05f81980603"
+      },
+      "user": {
+        "chars": 1445,
+        "sha256": "e9f44a86aee66ef7845cc3c281263aba17cebf76a753e9b2977ba589347fad45"
+      }
+    },
+    "实现顾问": {
+      "system": {
+        "chars": 1015,
+        "sha256": "e2d196dd979912603ed1dcf47ae216901c05be9c12662dee6a622097aa72216e"
+      },
+      "user": {
+        "chars": 1445,
+        "sha256": "e9f44a86aee66ef7845cc3c281263aba17cebf76a753e9b2977ba589347fad45"
+      }
+    }
+  }
+}

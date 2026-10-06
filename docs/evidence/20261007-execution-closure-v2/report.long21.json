@@ -62,6 +62,21 @@
       "matched": 17
     }
   },
+  "value_aliases": {
+    "version": 1,
+    "movement": {
+      "固定": "static",
+      "固定机位": "static"
+    }
+  },
+  "vocab_miss": {
+    "movement": {
+      "push_through": 7,
+      "zoom_in": 13,
+      "dolly_out": 1
+    }
+  },
+  "judgeable_forbid_members": 0,
   "unmapped_forbid_kinds": {
     "pair": 63,
     "axis_side": 63,
@@ -184,8 +199,8 @@
         "dolly_in",
         "dolly_out",
         "push_through",
-        "zoom_in",
-        "固定"
+        "static",
+        "zoom_in"
       ],
       "film_values": [
         "dolly_in"

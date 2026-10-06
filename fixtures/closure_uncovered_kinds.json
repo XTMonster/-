@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "recorded_at": "2026-10-07",
+  "authority": "GLM-5.3 裁决 F1（docs/evidence/20261007-closure-next-ruling/实现顾问.json）：「②类本轮不给成片加字段，先把『不校验』落成**带版本的显式清单**（kind＋原因＋数据源状态），取代永久『未定义』。加字段属新功能，前置＝成片生成器当下**已内部产出**该值；按注入规则量排序，axis 族优先。」",
+  "kinds": {
+    "pair": {
+      "members_in_long21": 63,
+      "class": "B",
+      "reason": "成片侧没有对应字段：它描述的是「轴线的两端是谁」（角色对），而 shots.json 只记 characters[]，没有轴线关系",
+      "data_source": "none",
+      "priority": "axis"
+    },
+    "axis_side": {
+      "members_in_long21": 63,
+      "class": "B",
+      "reason": "成片侧没有对应字段：轴线哪一侧要由机位与轴线反推，shots.json 只记相机位置/朝向",
+      "data_source": "derivable-from-camera（**但没有机械可推的实现**）",
+      "priority": "axis"
+    },
+    "axis_topic": {
+      "members_in_long21": 63,
+      "class": "B",
+      "reason": "它是**话题**（这条边在谈哪条轴），不是条件——按提案 ③ 类本就不该参与判定",
+      "data_source": "none",
+      "priority": "axis"
+    },
+    "headroom_policy": {
+      "members_in_long21": 19,
+      "class": "B",
+      "reason": "成片侧没有对应字段：头顶留白策略要由构图分/头球像素反推，属于「阈值/区间型」判据（见 F2）",
+      "data_source": "derivable-from-composition",
+      "priority": "composition"
+    },
+    "composition_rule": {
+      "members_in_long21": 13,
+      "class": "B",
+      "reason": "成片侧没有对应字段：它要对构图打分（RK-10 的 composition_score），属「阈值/区间型」判据（见 F2）",
+      "data_source": "derivable-from-composition",
+      "priority": "composition"
+    },
+    "camera_angle": {
+      "members_in_long21": 13,
+      "class": "B",
+      "reason": "成片侧没有对应字段：机位角要由 camera.position/target 反推，属「阈值/区间型」判据（见 F2）",
+      "data_source": "derivable-from-camera",
+      "priority": "camera"
+    },
+    "emotion": {
+      "members_in_long21": 0,
+      "class": "B",
+      "reason": "成片侧没有对应字段（镜头的情绪标签）——**在 21 次全扫里有运行注入过它**，所以它属于「判不了」而不是「没出现」",
+      "data_source": "none",
+      "priority": "performance"
+    },
+    "intensity": {
+      "members_in_long21": 0,
+      "class": "B",
+      "reason": "成片侧没有对应字段（强度）——同样在别次运行里被注入过",
+      "data_source": "none",
+      "priority": "performance"
+    },
+    "sfx": {
+      "members_in_long21": 0,
+      "class": "B",
+      "reason": "白模预演本身不产出声音（用户已明说灯光不在本次范围；声音同理）⇒ **要么不做、要么只校验「计划里有没有声明」**——所以它不是「成片没有这个字段」而是「这事不该由成片校验」",
+      "data_source": "planned-only（只在计划里声明）",
+      "priority": "sound"
+    }
+  },
+  "not_listed_here": {
+    "C 类（**至今没在任何一次运行里被注入过**）": "action / transition / vfx / beat_type / lighting / music / delivery / pacing / genre / prop / scene_type / seq_phase 等——它们既没被判不了、也没被判过；**一旦出现且有绑定就会进判定**",
+    "A 类（已纳入）": "shot_size / intent / lens / movement"
+  },
+  "note": "这份清单是**数据**（机器可读）：诊断报告里 `not_covered_kinds` 出现的新 kind，必须先登记到这里（守门会当场红）。它**不设门、不改判据**——只是把「我们没校验什么」写清楚。"
+}

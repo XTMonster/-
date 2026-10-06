@@ -141,6 +141,37 @@ def test_the_vocabulary_counters_cover_every_injected_edge_not_just_active_ones(
         "即使 e2 那一条**不适用**（前提 shot_size:CU 对不上 MS），它的取值也要进词表统计")
 
 
+def test_the_alias_table_maps_the_knowledge_side_onto_the_film_enum():
+    """裁决 F3：别名表的**规范侧是成片侧的英文枚举**。`固定` ⇒ `static`，
+    所以 `forbid movement:固定` 撞上成片的 `static` 时必须判出来。"""
+    edges = {"e1": _edge("e1", [["qualifier", "intent", "intent:推进"],
+                                ["forbid", "movement", "movement:固定"]])}
+    shots = {"s1": {"shot_id": "s1", "intent_type": "推进",
+                    "declared_camera_move": "static"}}
+    out = ecr.analyze([_inject("s1", "e1")], edges, shots)
+    assert out["counts"]["violations"] == 1
+    assert out["value_aliases"]["version"] == ecr.VALUE_ALIASES_VERSION
+
+
+def test_a_value_the_film_never_uses_is_a_vocab_miss_not_a_silent_pass():
+    """`zoom_in` 既不在别名表里、成片侧也从没用过 ⇒ 必须**逐条记进 `vocab_miss`**。"""
+    edges = {"e1": _edge("e1", [["qualifier", "movement", "movement:zoom_in"],
+                                ["forbid", "shot_size", "shot_size:CU"]])}
+    shots = {"s1": {"shot_id": "s1", "shot_type": "CU", "movements": [{"kind": "dolly_in"}]}}
+    out = ecr.analyze([_inject("s1", "e1")], edges, shots)
+    assert out["vocab_miss"] == {"movement": {"zoom_in": 1}}
+    assert out["counts"].get("violations", 0) == 0
+
+
+def test_a_value_that_is_already_the_film_enum_is_not_a_miss():
+    """`dolly_in` 本来就是成片侧的枚举 ⇒ **不算 miss**（它直接可比）。"""
+    edges = {"e1": _edge("e1", [["qualifier", "movement", "movement:dolly_in"]])}
+    shots = {"s1": {"shot_id": "s1", "movements": [{"kind": "dolly_in"}]}}
+    out = ecr.analyze([_inject("s1", "e1")], edges, shots)
+    assert out["vocab_miss"] == {}
+    assert out["member_outcomes_by_kind"]["movement"]["matched"] == 1
+
+
 def test_the_edge_ledger_closes_so_every_injected_edge_is_accounted_for():
     """**边口径必须闭合**：`injected_edges` ＝ 各种判定之和，**一条都不许下落不明**。
 
