@@ -48,7 +48,7 @@ if str(ROOT) not in sys.path:
 
 from block_director.contracts.knowledge import Case  # noqa: E402
 from block_director.knowledge.cases import case_paths  # noqa: E402
-from tools.kb_fetch import llm  # noqa: E402
+from tools.kb_fetch import common, llm  # noqa: E402
 from tools.knowledge import e1_panel  # noqa: E402
 
 #: 与 `e1_panel` 同一份定义，不另立一份。
@@ -59,10 +59,11 @@ def load_cases(cases_dir: pathlib.Path) -> Dict[str, Dict[str, Any]]:
     """`case_id -> 原行`，给 `Case(...)` 补 title／excerpt 用。"""
     out: Dict[str, Dict[str, Any]] = {}
     for path in case_paths(cases_dir):
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                row = json.loads(line)
-                out[str(row["case_id"])] = row
+        #: 走全仓**唯一**的 JSONL 读入口：它只按 `\n` 切，`str.splitlines()` 会按
+        #: Unicode 行边界切，而 U+0085/U+2028/U+2029 是合法的 JSON 字符串内容
+        #: （守门 `tests/test_jsonl_reading_convention.py`）。
+        for row in common.read_jsonl(path):
+            out[str(row["case_id"])] = row
     return out
 
 
@@ -180,9 +181,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--models", default=",".join(e1_panel.DEFAULT_PANEL))
     args = parser.parse_args(argv)
 
-    rows = [json.loads(line) for line in
-            pathlib.Path(args.labels).read_text(encoding="utf-8").splitlines()
-            if line.strip()]
+    #: 同上：只走 `common.read_jsonl`，不自己切行。
+    rows = common.read_jsonl(pathlib.Path(args.labels))
     if args.limit:
         keep = list(collections.OrderedDict.fromkeys(str(r["query"]) for r in rows))[:args.limit]
         rows = [r for r in rows if str(r["query"]) in set(keep)]

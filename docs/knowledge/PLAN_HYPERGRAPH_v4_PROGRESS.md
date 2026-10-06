@@ -728,3 +728,20 @@ GPT-6A 那条挑战，只把它收窄成：**"在候选池的连续分组里最�
 （是 R3 那条红线的判词依据）——不冻就等于"搜出来的上界"这个数可以被事后悄悄改掉。
 **判据一个字未动**：阈值 4.0、两位评委取均值（P14-249 口径）、分母与判分语境均与
 `e1_panel` **同源**；新仪器只**读数**。
+
+### P14-255：新工具**违反本仓自己的 JSONL 读入口约定**——全量当场抓到，已改并重跑
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **R9** | "读 JSONL 只按换行符切" | **缺陷（已修）＋ 已重跑** | 全量 `python -m pytest -o addopts="" -q` ⇒ **1 failed / 2373 passed**：`tests/test_jsonl_reading_convention.py::test_no_new_splitlines_on_read_text_in_the_pipeline_modules` → `['tools/knowledge/e1_triple_search.py']` | 2026-10-06 | 本批 |
+
+**这是真缺陷不是形式主义**：`str.splitlines()` 按 **Unicode 行边界**切，而
+U+0085（NEL）／U+2028／U+2029 都是**合法的 JSON 字符串内容**、`json.dumps` 也不转义它们
+——本仓实测在 `work/corpus_v4/fetched.jsonl` 上直接抛 `Unterminated string`。
+
+**修法**：`load_cases` 与 `main` 都改走全仓唯一的 `tools.kb_fetch.common.read_jsonl`（只按 `\n` 切）。
+**没有**把文件加进守门的 `WHITELIST`——那是"改守门让我的代码过"，明令禁止。
+
+**代价（如实记）**：上一提交（P14-254）先冻后跑全量，是**顺序错了**；而且**先开跑的那次搜索
+用的就是违规版本**，所以把它**停掉重跑**——为了产物的出处与冻结哈希对得上。
+本提交按设计让 `test_plan_v4_instruments_frozen.py` 判红（哈希换代），由下一次单独重新冻结收口。
