@@ -993,3 +993,27 @@ RK 的判定结果**一条没变**（仍只有 RK-13 红），链仍按裁决**�
 ⇒ 本表证明"**每格都有已登记的测量**"，**不等于**"逐字核过每条 AC"。
 另外 **US-16 的负例链里不跑**（`INCOMPLETE` 分支读了代码，但"清空变量"是 §4.4 的手工步骤）；
 **§A.4 的成功指标表与 §6 的风险取证表未在本轮逐条对账**。
+
+### P14-265：**§6 的"取证落点表"逐条对账**——没有"写了却没做"的格子
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **§6** | 每条风险的"取证"必须是具名产物/测试/阶段 | **绿（逐条有实物）** | `docs/evidence/20261006-us-traceability/README.md` 第五节 | 2026-10-06 | 本批 |
+
+§6 自己写着"不得写'报告/CI'这类不存在的东西"，所以这张表**可以被机械核对**。逐条结果：
+
+| 风险 | 点名要有的东西 | 结论 |
+|---|---|---|
+| 抽取噪声 | `tools/knowledge/sample_edges.py` → `edge_spotcheck.jsonl`；`rejects ≤ 5%` | ✅ 脚本在；本跑 28,759 B；**`rejects = 0`** |
+| 超边重复与爆炸 | `hypergraph.manifest.json` 的四计数 | ✅ **638 / 638 / 0 / 0** |
+| 检索"半条边" | Q6b = 100%（读**实际 prompt**）＋ Q7 = 100% | ✅ 两者 `pass`（含 required 半边） |
+| 评测无公开基准 | `fixtures/knowledge_holdout.jsonl`（≥1200）＋ `check_holdout.py` | ✅ 门①–⑩ 全 pass（queries 2847） |
+| 重抽取成本／确定性 | `tests/test_hypergraph_determinism.py` | ✅ **文件在**（只核存在，未读断言） |
+| 通用·预算 | `shots.json` 与 `audit_log` 独立对拍 | ✅ **RK-18 `pass`** |
+| 通用·依赖 | `tests/test_knowledge_trace.py`；trace 的 `lanes`/`cases_degraded` | ✅ 文件在；long21 trace 六个键全在 |
+
+**一条如实记的观察（未定性为缺陷）**：链上那次**离线** headless 跑的 `knowledge_trace.json`
+写在**临时目录**（逐字 `C:\Users\…\Temp\bd_run_194204\knowledge_trace.json`），
+**没进 `docs/evidence/<run-id>/`** ⇒ 那次运行的证据目录里没有 trace，能引用的是**真实模型跑 long21** 那份。
+产品行为合格（trace 确实被写、内容齐），但按本仓那句"能悄悄消失的具名产物＝能悄悄消失的门"值得记一笔；
+**未定性为缺陷**——§6 只要求"必写"，**没要求落在证据目录**，要不要收紧是**新的选择题**，本轮不擅自改。

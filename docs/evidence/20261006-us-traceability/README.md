@@ -55,3 +55,36 @@
 * **US-16 的负例没有被链每次执行**：`INCOMPLETE` 那条分支我**读了代码**，但
   "清空变量 ＋ 两个候选路径都不存在"这个**负例跑**是 §4.4 的手工步骤，链里不跑。
 * 本审计只覆盖 **§A.3 的 17 条**；§A.4 的成功指标表与 §6 的风险取证表**未在本轮逐条对账**。
+
+---
+
+## 五、追加：**§6 的"取证落点表"逐条对账**（R39 收口的那张表）
+
+§6 自己写着："每条风险的'取证'必须是**具名产物/测试/阶段**，不得写'报告/CI'这类不存在的东西"。
+所以这张表**可以被机械核对**——本轮逐条查了：
+
+| 风险 | 它点名要有的东西 | 存在？ | 当前读数 |
+|---|---|---|---|
+| 抽取噪声 | `tools/knowledge/sample_edges.py` → `docs/evidence/<run-id>/edge_spotcheck.jsonl`；＋`rejects ≤ 5%` | ✅ ✅ | 脚本在；`20261006-195300/edge_spotcheck.jsonl` 28,759 B；**`rejects = 0`** |
+| 超边重复与爆炸 | `knowledge/hypergraph.manifest.json` 的 `raw_edges / valid_unique / duplicates / rejects` | ✅ | **638 / 638 / 0 / 0** |
+| 检索"半条边" | Q6b = 100%（读**实际 prompt**）＋ Q7 = 100% | ✅ | Q6b `pass`（plan 778/2000、shot 788/800，required 半边 **pass**）；Q7 `pass` |
+| 评测无公开基准 | `fixtures/knowledge_holdout.jsonl`（≥1200 条）＋ `tools/check_holdout.py` | ✅ | 门①–⑩ 全 pass（queries 2847） |
+| 重抽取成本／通用·确定性 | `tests/test_hypergraph_determinism.py`（新） | ✅ | **文件在**（本轮只核存在，**未读它的断言**） |
+| 通用·预算 | `shots.json.llm_calls/retrieval_calls` 与 `audit_log.jsonl` **独立对拍** | ✅ | **RK-18 `pass`** |
+| 通用·依赖 | `tests/test_knowledge_trace.py` 断言 `degraded/cases_degraded` 与 `lanes` | ✅ | 文件在；`20261006-long21/knowledge_trace.json` 的键含 `lanes`／`cases_backend`／`cases_degraded`／`lightrag_index_fingerprint`／`degraded` |
+| 混合架构（两套索引／路由／小语料） | trace 里的 `lanes` 与两路计数、`cases_degraded` | ✅ | 同上（六个键全在） |
+
+⇒ **§6 的取证落点表逐条都有实物**，没有"写了却没做"的格子。
+
+### 一条如实记的观察（**未定性为缺陷**）
+
+链上那次 **离线** headless 跑，`knowledge_trace.json` 写在**临时目录**
+（链的输出里逐字是 `"knowledge_trace": "C:\\Users\\…\\Temp\\bd_run_194204\\knowledge_trace.json"`），
+**没有进 `docs/evidence/<run-id>/`**；所以那次运行的证据目录里**没有 trace**，
+能引用的 trace 是**真实模型跑 `20261006-long21/`** 那一份。
+
+* **产品行为是合格的**（trace 确实被写了，内容也齐）；
+* 但按本仓自己那句"**一个能悄悄消失的具名产物，和一道能悄悄消失的门是同一个洞**"，
+  **链的证据目录里少这一件**值得记一笔。
+* **没有定性为缺陷**：§6 的表要求的是"`knowledge_trace.json` 必写"，**没有**要求它必须落在证据目录；
+  要不要收紧这条口径是**新的选择题**，不在本轮擅自改动。
