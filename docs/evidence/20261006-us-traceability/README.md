@@ -177,3 +177,55 @@ grep 查（旧数字 1.45 / 1.10 / 0.95 / 1.60 还在不在），所以先查它
   `fixtures/local_sidecar.config.yaml:47` 仍写 `"shots * 8"`（§3.2 记作"原值"）。
   它们是**探针用的显式配置**、不是默认值，**看不出是否故意**；§1.6 也没列它们。
   **本轮不改**，只记下来备查。
+
+---
+
+## 八、追加：**§1.6 剩下那些也逐条查完了**——又抓到一条真的没闭合（#8 / T7）
+
+第七节我只查了 ⚠ 类 ＋ 抽样 6 条。这一节把**剩下的补完**，于是 §1.6 的 **34 行现在全部有结论**。
+
+| # | 它要求 | 现在 | 结论 |
+|---|---|---|---|
+| 2 | `test_compliance.py:147` 恢复 `== []` | `:153 assert check_compliance(None, _script()) == []`（行号漂了，断言是恢复后的强写法） | ✅ |
+| 3 | R014 空镜用例重写 | `:343` 注释"v1.4 X6：删掉 R014 的空镜分支，空镜统一由 R017 负责"；`:430` "意图已说明的空镜：一条都不报" | ✅ |
+| 4 | 白名单改到 `collection_router.audit_renderable_objects` | 该函数在 `:163-164`，且**不再读对象自报的 `bd_element_type`**（`:30/:125/:179` 明写"那等于让被检查者给自己发通行证"）；探针 `test_phase6_delivery.py:214/221` 改为调用它 | ✅ |
+| 5 | 非零退出 ＋ `INCOMPLETE` ＋ **执行集合断言** | `:185-199` 对**非空但不存在**的 `BLENDER_EXE` 也走"找不到"；`:333` 的探针循环**直接 `foreach` 清单** ⇒"执行集合 == 清单"是**构造保证**，缺 marker 会被 `Assert-Marker` 判失败（**不是**显式 count 相等断言——如实说明） | ✅（结构性） |
+| 7 | 不许写死 `== 7` | `expected_calls(shots, repairs)`（`:306-312`）按链路形状算，注释明写"**不得写死 7**" | ✅ |
+| 9 | 随 root 落地重写 | `test_motion_model.py:146-147`：`pose_fn(1)[CH_ROOT_LOC][2] ≈ -0.2`、`(25) ≈ 0.0` | ✅ |
+| 11 | 补 `declared/labels/movements/timing_overrides/dialogue_pins` | `tests/test_manifest_fields.py` 通篇覆盖（含 `action_conflicts[]`、`audit_pass_rate{}`、`movements[].source` 的六词表） | ✅ |
+| 12 | 随中文数字词表重算 | `tests/test_crowd.py`：30 / 20 / 12（12 = `max_instances` 封顶） | ✅ |
+| 13 | `frame_height`/`target_z`/`lens` 改由 profile 推导 | `tests/test_knowledge.py:8/79/88` 改为遍历 `SHOT_FRAME`，**不再有 1.10/1.45 字面** | ✅ |
+| 16 | `spec == dump_default_yaml()` | `tests/test_config.py:139` 原样在 | ✅ |
+| 19 | 只改 `create_render_label` 的去向（条件项） | `tools/blender_tests/test_phase1_scene.py:134-136` 仍用 `label_in_guides and label_hidden` 的条件合取 | ✅ |
+| 24 | `gen_golden` 重生成（transcript 不再带 `screen_direction`） | `rg screen_direction fixtures/tool_transcript_simple.jsonl` → **0 命中** | ✅ |
+| 35 | `openapi` 版本保持 `1.3.0`；`RetrieveResponse` 增 `edges[]/cases[]` | `specs/openapi.yaml:9 version: 1.3.0`；`contracts/operations.py:85-90`：`cards/edges/cases/trace` 全部 `default_factory=list` | ✅ |
+
+### **抓到的那一条：§1.6 #8 / §2.3d T7 真的没闭合**（本提交修掉）
+
+文档三处（§1.6 #8、§3.1 的 P14 行、§2.3d T7）都要求：扩域时同步补 `DOMAIN_DIGESTS` 与
+`DOMAIN_LABELS`，并**新增一条显式断言 `set(DOMAINS) == set(DOMAIN_DIGESTS)`**。实测：
+
+> `rg -l DOMAIN_DIGESTS tests/` → **空**。**没有任何测试引用过它。**
+
+即那条被点名的断言**从来没有写出来**；它旁边那格 `len(cards) == len(DOMAINS)` 还在
+（现在在 `tests/test_knowledge.py` 的 digest 后端用例里）。
+
+### 顺带把文档自己说的**机制**修准（药方对，病因只对一半）
+
+文档原话是"只扩 `DOMAINS` 而漏配 digest **不会'红'，会直接 `KeyError`**"。按实现读，
+`digest_cards()` 是按 `DOMAIN_DIGESTS.items()` 遍历（`corpus.py:522-526`），所以**单纯加一个域会少一张卡**
+⇒ 条数不等 ⇒ 旁边那格**会红**。真正"不红"的形状是：
+
+* **换名**（加一个域、删一个域）⇒ **条数相等、集合不同**，旁边那格**看不见**；
+* digest 有、`DOMAIN_LABELS` 没有 ⇒ `DOMAIN_LABELS[domain]` 直接 **`KeyError`**（读不懂的失败）。
+
+⇒ **文档开的药方（集合相等）是对的，而且比它说的理由更必要**——它抓的是**换名**这个形状。
+
+### 修法（纯增不改）
+
+`tests/test_knowledge.py` 新增两格：
+`test_every_domain_has_a_digest_and_a_label`（三个集合两两相等）＋ 一条**负例**
+`test_negative_a_rename_that_keeps_the_count_is_only_caught_by_set_equality`
+（构造"条数相同、集合不同"的换名，证明旁边那格抓不住、这一格抓得住）。
+`git diff --stat` = **27 insertions / 0 deletions**；全量 **2378 passed / 1 skipped**（+2 就是这两格）；
+`check_assertions.py` **[OK] 272 文件**。

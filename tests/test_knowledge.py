@@ -10,6 +10,8 @@ from block_director.contracts.config import AppConfig
 from block_director.contracts.enums import RagBackend
 from block_director.knowledge import (
     CARDS,
+    DOMAIN_DIGESTS,
+    DOMAIN_LABELS,
     DOMAINS,
     TOKEN_LIMIT_TOOL,
     BM25,
@@ -305,6 +307,31 @@ def test_digest_backend_returns_summary_cards():
     cards = engine.retrieve("任意查询")
     assert len(cards) == len(DOMAINS)
     assert engine.block_for_plan("任意") == engine.digest_block()
+
+
+def test_every_domain_has_a_digest_and_a_label():
+    """§1.6 #8 / §2.3d T7：扩域时必须**同步**补 `DOMAIN_DIGESTS` 与 `DOMAIN_LABELS`。
+
+    为什么单列这一条，而不是靠上面那条 `len(cards) == len(DOMAINS)`：
+    那一条比的是**条数**。三种扩域写法里，它只抓得住第一种：
+
+    * 只往 `DOMAINS` 加一个域 —— 条数不等 ⇒ 会红；
+    * **换名**（加一个、删一个）—— **条数相等、集合不同** ⇒ 那一条**看不见**，
+      而 `digest_cards()` 是按 `DOMAIN_DIGESTS.items()` 遍历、再取 `DOMAIN_LABELS[domain]`，
+      于是要么少一张卡、要么直接 `KeyError`——**都是读不懂的失败**，不是一条能读懂的断言。
+
+    所以这里把"**三个集合必须相等**"显式写出来：它把隐式的 `KeyError`/少卡变成
+    **一条指名道姓的断言失败**。
+    """
+    assert set(DOMAINS) == set(DOMAIN_DIGESTS)
+    assert set(DOMAINS) == set(DOMAIN_LABELS)
+
+
+def test_negative_a_rename_that_keeps_the_count_is_only_caught_by_set_equality():
+    """负例：**换名**让条数不变 ⇒ 只有集合相等能抓（这是上一条存在的理由）。"""
+    renamed = (set(DOMAINS) - {DOMAINS[0]}) | {"__renamed_domain__"}
+    assert len(renamed) == len(DOMAINS), "换名：条数是一样的"
+    assert renamed != set(DOMAINS), "换名：集合不一样——上一条必须抓得住这个形状"
 
 
 def test_plan_block_is_larger_than_tool_block():

@@ -1066,3 +1066,31 @@ Q6b `1.0` / Q7 `1.0` / E3 `0` 全 pass，`E1 = fail 0.1771`**；回归那一行�
 **未验证 / 观察**：**只逐条查了 ⚠ 类 ＋ 抽样 6 条**，**不是全部 34 条**（#2/#3/#5/#7/#9/#11/#12/#19/#24/#35
 的"是否等强"没逐条比）；两处**未定性**观察：`fixtures/local_model.config.yaml:39` 仍写 `"shots * 6"`、
 `fixtures/local_sidecar.config.yaml:47` 仍写 `"shots * 8"`（探针用的显式配置、非默认值，§1.6 未列，**本轮不改**）。
+
+### P14-268：**§1.6 剩下的补完**——34 行全部有结论；又抓到一条没闭合（**#8 / T7**，已修）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **§1.6** | 34 行逐条有结论 | **绿（补完）＋ 抓到 #8 未闭合（已修）** | `docs/evidence/20261006-us-traceability/README.md` 第八节 | 2026-10-06 | 本批 |
+
+P14-267 只查了 ⚠ 类 ＋ 抽样 6 条，把其余挂在"未验证"里。本轮**补完**：**§1.6 的 34 行现在全部有结论**。
+补查的 13 行全部闭合（#2 `== []` 已恢复；#3 R014 空镜分支已删、归 R017；#4 白名单改到
+`collection_router.audit_renderable_objects` 且**不再读对象自报的 `bd_element_type`**；
+#5 `INCOMPLETE` ＋**"执行集合 == 清单"是构造保证**（探针循环直接 `foreach` 清单）＋缺 marker 判失败；
+#7 `expected_calls()` 不许写死 7；#9 `CH_ROOT_LOC` 随 root 落地重写；#11 `test_manifest_fields` 全覆盖；
+#12 30/20/12；#13 改遍历 `SHOT_FRAME`；#16 原样在；#19 条件项原样；#24 transcript **0 命中**
+`screen_direction`；#35 `RetrieveResponse` 三字段全 `default_factory=list`、openapi 版本仍 1.3.0）。
+
+**抓到的那一条（#8 / §2.3d T7）**：文档三处都要求新增显式断言
+`set(DOMAINS) == set(DOMAIN_DIGESTS)`，实测 **`rg -l DOMAIN_DIGESTS tests/` 为空——从没写出来过**。
+
+**顺带修准文档自己说的病因**：原话是"漏配 digest **不会红、会直接 `KeyError`**"。按实现读，
+`digest_cards()` 按 `DOMAIN_DIGESTS.items()` 遍历 ⇒ **单纯加域会少一张卡、条数不等 ⇒ 旁边那格会红**；
+真正不红的是 ① **换名**（条数相等、集合不同）② digest 有而 `DOMAIN_LABELS` 没有 ⇒ `KeyError`。
+⇒ **药方（集合相等）对，而且比它说的理由更必要**（它抓的是换名）。
+
+**修法（纯增不改）**：新增两格——三个集合两两相等 ＋ 一条"换名"负例（证明旁边那格抓不住、这格抓得住）。
+`git diff --stat` = **27 insertions / 0 deletions**；全量 **2378 passed / 1 skipped**；`check_assertions.py` **[OK] 272 文件**。
+
+**仍未验证**：`fixtures/local_model.config.yaml:39`（`"shots * 6"`）与 `local_sidecar.config.yaml:47`
+（`"shots * 8"`）两处**未定性**观察（探针用显式配置、非默认值，§1.6 未列，**本轮不改**）。
