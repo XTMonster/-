@@ -41,6 +41,20 @@ DEFAULTS = {
     "generations": "fixtures/knowledge_holdout.generations.json",
 }
 
+#: **已知的历史代（显式列出，不许自动吸收）**：`docs/evidence/<run>/run_manifest.json` 里
+#: 出现过、而**不是** gen1 那份夹具的 holdout pin。这里逐条写清"哪一份运行在用、
+#: 内容还在不在"——自动化把陌生 pin 收成"新一代"就等于**静默洗白**，所以必须显式。
+#:
+#: 实测（`work/_peek_run_pins.py`）：20 份已入库运行里 **19 份** pin 现行夹具、
+#: **1 份**（`20261003_real`）pin 下面这枚更早的指纹。
+LEGACY_PINS = (
+    {"id": "gen0-20261003",
+     "holdout": "78708edfc03f5510",
+     "runs": ["20261003_real"],
+     "note": "那一代的夹具内容**没有保留**，只有 pin 指纹；因此它只能作为"
+             "「可解析但已退役」的一代出现，**不许**被当成 gen1 或 gen2。"},
+)
+
 
 def sha256_file(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -81,9 +95,28 @@ def build(paths: Dict[str, pathlib.Path]) -> Dict[str, Any]:
         "note": "**这一层是 gate 的输入之一**：pin 它 = pin 这一代；旧夹具的字节不动。",
     }
     holdout_sha = sha256_file(paths["fixture"])
+    #: 历史代显式入表（见 `LEGACY_PINS`）：**只写已知的、把来路写清**，
+    #: 不许把陌生 pin 自动收编成"新一代"——那就是静默洗白。
+    legacy = []
+    live_sha = None
+    for pin in LEGACY_PINS:
+        for path in sorted((ROOT / "docs" / "evidence").glob("*/run_manifest.json")):
+            #: 变量名**不许**叫 `manifest`：那会把上面刚写好的层 manifest 顶掉
+            #: （实测：`built["manifest"]["records"]` 直接 KeyError 'records'）。
+            run_manifest = json.loads(path.read_text(encoding="utf-8"))
+            observed = str(((run_manifest.get("pins") or {}).get("holdout") or {})
+                           .get("sha256") or "")
+            if observed.startswith(pin["holdout"]):
+                live_sha = observed
+        if live_sha is None:
+            continue
+        legacy.append({"id": pin["id"], "retired": True,
+                       "inputs": {"holdout": live_sha},
+                       "note": pin["note"],
+                       "runs": list(pin["runs"])})
     generations = {
         "current": "gen2",
-        "generations": [
+        "generations": legacy + [
             {"id": "gen1",
              "inputs": {"holdout": holdout_sha},
              "note": "P14 那一代：只有夹具，没有第三方层。"},

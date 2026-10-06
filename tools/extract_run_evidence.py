@@ -39,6 +39,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 MANIFEST_NAME = "run_manifest.json"
+
+#: 换代登记表（`build_third_party_layer.py` 生成）。**每份运行都必须解析到其中一个已登记代**——
+#: 这是门⑦ gen1→gen2 那次裁决给的最小跳："断言每份运行解析到**已登记代**、
+#: 链头 pin 覆盖旧夹具＋增量层"。
+GENERATIONS_NAME = "fixtures/knowledge_holdout.generations.json"
 DEFAULT_AUDIT = Path.home() / "Documents" / "BlockDirector Projects" / "runs" / "audit_log.jsonl"
 DEFAULT_TRACE = Path.home() / "Documents" / "BlockDirector Projects" / "runs" / "llm_trace.jsonl"
 
@@ -195,7 +200,9 @@ def retrieval_cross_checks(out_dir: Path) -> List[str]:
 
 def extract(*, run_id: str, out_dir: Path, audit_log: Path, llm_trace: Path,
             shots: Optional[Path], knowledge_trace: Optional[Path],
-            holdout: Path, index_manifest: Path) -> Dict[str, Any]:
+            holdout: Path, index_manifest: Path,
+            third_party: Optional[Path] = None,
+            generations: Optional[Path] = None) -> Dict[str, Any]:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     if not Path(audit_log).is_file():
@@ -245,10 +252,47 @@ def extract(*, run_id: str, out_dir: Path, audit_log: Path, llm_trace: Path,
             "cases": {"fingerprint": cases_fp(ROOT / "knowledge")},
         },
     }
+    if third_party is not None:
+        #: 门⑦ 的第三方层是 gate 的**输入之一**（裁决：pin 它 = pin 这一代）。
+        manifest["pins"]["third_party"] = {
+            "path": str(third_party), "sha256": sha256_file(Path(third_party))}
+    generation, why = resolve_generation(
+        manifest["pins"], Path(generations) if generations else ROOT / GENERATIONS_NAME)
+    manifest["generation"] = generation
+    if generation is None:
+        #: 解析不到就**如实记**（不编一个代名）：`check()` 会把它当失败理由报出来。
+        manifest["generation_unresolved"] = why
     (out_dir / MANIFEST_NAME).write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8", newline="\n")
     return manifest
+
+
+def resolve_generation(pins: Dict[str, Any],
+                       generations: Path) -> Tuple[Optional[str], str]:
+    """这份运行 pin 的**输入集合**对应哪一个「已登记代」？（空 = 解析不到，附原因）
+
+    裁决原话（`docs/evidence/20261006-gate7-disambiguation/规格一致性.json`）：
+    "**断言每份运行解析到已登记代**、链头 pin 覆盖旧夹具＋增量层"。
+
+    匹配规则：那一代声明的 `inputs` 必须与本清单的 pins **逐项相等、且不多不少**——
+    多 pin 了没登记过的输入 ⇒ 解析不到，**不许**"看着像这一代"就算。
+    """
+    registry = {}
+    path = Path(generations)
+    if path.is_file():
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        registry = {str(item.get("id")): item
+                    for item in (payload.get("generations") or [])}
+    observed = {"holdout": str((pins.get("holdout") or {}).get("sha256") or "")}
+    third_party_sha = str((pins.get("third_party") or {}).get("sha256") or "")
+    if third_party_sha:
+        observed["third_party"] = third_party_sha
+    for generation_id, item in registry.items():
+        if dict(item.get("inputs") or {}) == observed:
+            return generation_id, ""
+    return None, ("这份运行 pin 的输入集合 %s 不在登记表的任何一代里（登记表：%s）"
+                  % (sorted(observed), sorted(registry)))
 
 
 def repin(*, out_dir: Path, holdout: Path) -> Dict[str, Any]:
@@ -352,6 +396,12 @@ def check(*, out_dir: Path, holdout: Path, index_manifest: Path,
     if not pinned_index or pinned_index != live_index:
         reasons.append(f"索引指纹不符（证据 {pinned_index[:12]}… vs 现行 "
                        f"{live_index[:12]}…）：这份运行不是这一代索引跑的")
+    #: 换代登记：**每份运行都要解析到已登记代**（裁决给的最小跳）。历史运行 pin 的
+    #: 只是夹具 ⇒ 落在 gen1；新运行 pin 了夹具＋第三方层 ⇒ 落在 gen2。
+    #: 解析不到（例如 pin 了没登记过的输入）就如实报，**不猜**。
+    generation, why = resolve_generation(pins, ROOT / GENERATIONS_NAME)
+    if generation is None:
+        reasons.append("这份运行没有对应的已登记代：" + why)
     if not with_warnings:
         return reasons
     return reasons, retrieval_cross_checks(out_dir)
@@ -366,6 +416,11 @@ def main(argv=None) -> int:
     parser.add_argument("--knowledge-trace", default="")
     parser.add_argument("--shots", default="")
     parser.add_argument("--holdout", default="fixtures/knowledge_holdout.jsonl")
+    parser.add_argument("--third-party", default="",
+                        help="门⑦ 的第三方代裁层（`fixtures/knowledge_holdout.third_party.jsonl`）。"
+                             "给了就进 pins（pin 它 = pin 这一代）")
+    parser.add_argument("--generations", default=GENERATIONS_NAME,
+                        help="换代登记表（每份运行必须解析到其中一代）")
     parser.add_argument("--index-manifest", default="knowledge/hypergraph.manifest.json")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--repin", action="store_true",
@@ -414,10 +469,13 @@ def main(argv=None) -> int:
         audit_log=Path(args.audit_log), llm_trace=Path(args.llm_trace),
         shots=Path(args.shots) if args.shots else None,
         knowledge_trace=Path(args.knowledge_trace) if args.knowledge_trace else None,
-        holdout=holdout, index_manifest=index_manifest)
+        holdout=holdout, index_manifest=index_manifest,
+        third_party=Path(args.third_party) if args.third_party else None,
+        generations=ROOT / args.generations)
     print(json.dumps({"ok": True, "out": str(out_dir),
                       "events": manifest["run_span"]["events"],
-                      "artifacts": sorted(manifest["artifacts"])},
+                      "artifacts": sorted(manifest["artifacts"]),
+                      "generation": manifest.get("generation")},
                      ensure_ascii=False))
     return 0
 

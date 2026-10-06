@@ -432,7 +432,12 @@ if (($rk13Exit -eq 0) -or ($rk13Exit -eq 1)) {
 # `knowledge/card_scope.json`) are not catalogued cards, so they leave the
 # denominator. The gate's own detail still reports `cards_out_of_scope_count`, so
 # shrinking the denominator silently is impossible.
-python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --reviewer-classes human,llm-panel,third-party --exclude-cards knowledge/card_scope.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
+# 2026-10-06 (P14-308): the gate now consumes the NAMED third-party layer as an INPUT
+# (gen1 -> gen2). The fixture's bytes are untouched -- that is the adjudicated mechanism
+# (adjudicated mechanism): the old 20 runs keep matching their pins, while the input set
+# is explicitly a new generation, registered in fixtures/knowledge_holdout.generations.json.
+# The layer is a data artifact, not a criterion: no threshold was touched.
+python tools/check_holdout.py fixtures/knowledge_holdout.jsonl --vocab fixtures/knowledge_holdout.vocab.json --cards fixtures/knowledge_holdout.cards.json --assertable fixtures/knowledge_holdout.assertable.json --reviewer-classes human,llm-panel,third-party --exclude-cards knowledge/card_scope.json --third-party fixtures/knowledge_holdout.third_party.jsonl --generations fixtures/knowledge_holdout.generations.json --out (Join-Path $evidenceDir 'holdout_gates.json') > $null 2>&1
 $gateExit = $LASTEXITCODE
 if ($gateExit -eq 0) {
     Write-Host '  held-out coverage gates: all passed' -ForegroundColor Green

@@ -42,7 +42,7 @@ import json
 import pathlib
 import re
 import sys
-from typing import Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 #: **单一真源**：边类型/节点 kind/必填槽位一律从超图 schema 读。
 #: 这里原先各抄了一份（六类型、16 个 kind 硬编码），新增边类型时两边会漂——
@@ -55,6 +55,7 @@ if str(_ROOT) not in sys.path:
 
 from block_director.knowledge import hypergraph as _hg  # noqa: E402
 from block_director.utils.console import force_utf8_streams  # noqa: E402
+from tools.kb_fetch import common  # noqa: E402
 
 EDGE_TYPES = tuple(_hg.EDGE_TYPES)
 NODE_KINDS = tuple(_hg.NODE_TYPES)
@@ -454,6 +455,58 @@ def review_class(review: dict) -> Tuple[Optional[str], str]:
     if not str(source.get("prompt_sha256") or "").strip():
         return None, "llm-panel 缺 source.prompt_sha256"
     return PANEL_TAG, ""
+
+
+def apply_third_party_layer(entries: Sequence[dict], layer_path: pathlib.Path) -> Dict[str, Any]:
+    """把**第三方代裁层**贴到条目上——**只改内存里的 `review`，夹具文件一个字节不动**。
+
+    为什么这么切（裁决 `docs/evidence/20261006-gate7-disambiguation/规格一致性.json`）：
+    pin 绑的是"运行↔输入"，gate 的输入一旦含这一层就是**另一代**；而**用 A 的机制**
+    允许"旧夹具字节不动"，于是既有的 20 份运行 pin 仍然逐位命中。
+
+    **只贴裁决本身**：层里 `amended` 的 `fix` 文本**不在这里生效**（那会改 oracle 的内容，
+    是另一件事，必须单独留证）。`fixes_applied=False` 会如实写进报告。
+    """
+    layer: Dict[str, dict] = {}
+    for row in common.read_jsonl(layer_path):
+        if isinstance(row, dict) and row.get("entry_id"):
+            layer[str(row["entry_id"])] = row
+    applied = 0
+    for record in entries:
+        row = layer.get(str(record.get("id")))
+        if row is None:
+            continue
+        record["review"] = {
+            "reviewed_by": str(row.get("reviewed_by") or ""),
+            "verdict": str(row.get("verdict") or ""),
+            "reason": str(row.get("reason") or ""),
+            "fix": str(row.get("fix") or ""),
+            "agreement": row.get("agreement"),
+            "source": row.get("source") or {},
+        }
+        applied += 1
+    known = {str(record.get("id")) for record in entries}
+    return {"layer": str(layer_path), "layer_records": len(layer), "applied": applied,
+            "layer_ids_not_in_fixture": [key for key in layer if key not in known][:10],
+            "fixes_applied": False}
+
+
+def resolve_generation_id(inputs: Dict[str, str], registry_path: pathlib.Path) -> str:
+    """`inputs` → 登记表里的代名；解析不到就回 `"none"`（**不猜**）。
+
+    与 `tools/extract_run_evidence.py::resolve_generation` **同一套语义**：那一代声明的 `inputs`
+    必须与本轮实际的输入**逐项相等且不多不少**。
+    """
+    if not registry_path.is_file():
+        return "none"
+    try:
+        payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return "none"
+    for item in payload.get("generations") or []:
+        if dict(item.get("inputs") or {}) == dict(inputs):
+            return str(item.get("id"))
+    return "none"
 
 
 def gate_entries(entries: Sequence[dict]) -> Tuple[str, dict]:
@@ -1132,6 +1185,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                              "subset／card_edge。另两档永远是诊断量，改口径必须显式选")
     parser.add_argument("--pilot", action="store_true",
                         help="试点模式：门限放宽到 1，便于在语料落地前跑通管道")
+    parser.add_argument("--third-party", default="",
+                        help="门⑦ 的第三方代裁层（`fixtures/knowledge_holdout.third_party.jsonl`）："
+                             "**只把裁决贴到条目上**（夹具文件一个字节不动），并把这层写进 `inputs`；"
+                             "按裁决，gate 的输入一旦含这一层就是**另一代**（gen1→gen2）。")
+    parser.add_argument("--generations",
+                        default="fixtures/knowledge_holdout.generations.json",
+                        help="换代登记表：报告里如实写这一轮跑的是哪一代（解析不到就记 none）")
     parser.add_argument("--json", action="store_true", help="只打印 JSON 报告")
     parser.add_argument("--out", default="",
                         help="把 JSON 报告写到这个路径（UTF-8，由 Python 写——"
@@ -1158,6 +1218,20 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     report: Dict[str, object] = {"path": str(path), "pilot": bool(args.pilot)}
     statuses: List[str] = []
+
+    #: **输入集合 = 代**（裁决）：这一轮到底吃进了哪些输入，先在报告里写死；
+    #: 解析不到登记表里的任何一代就如实记 `none`（不许编）。夹具字节不动 ⇒ 旧运行 pin 仍命中。
+    inputs = {"holdout": hashlib.sha256(path.read_bytes()).hexdigest()}
+    if args.third_party:
+        layer_path = pathlib.Path(args.third_party)
+        if not layer_path.is_file():
+            print(json.dumps({"error": f"{layer_path} 不存在"}, ensure_ascii=False))
+            return 1
+        report["third_party_layer"] = apply_third_party_layer(entries, layer_path)
+        inputs["third_party"] = hashlib.sha256(layer_path.read_bytes()).hexdigest()
+    report["inputs"] = inputs
+    report["generation"] = resolve_generation_id(
+        inputs, pathlib.Path(args.generations))
 
     status, detail = gate_total(entries, min_entries)
     statuses.append(status)

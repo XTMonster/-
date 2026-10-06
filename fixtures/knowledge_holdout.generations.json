@@ -2,6 +2,17 @@
   "current": "gen2",
   "generations": [
     {
+      "id": "gen0-20261003",
+      "retired": true,
+      "inputs": {
+        "holdout": "78708edfc03f55106d818fa1083eefd808e139c0c624293bf5db241aaa9c90ef"
+      },
+      "note": "那一代的夹具内容**没有保留**，只有 pin 指纹；因此它只能作为「可解析但已退役」的一代出现，**不许**被当成 gen1 或 gen2。",
+      "runs": [
+        "20261003_real"
+      ]
+    },
+    {
       "id": "gen1",
       "inputs": {
         "holdout": "e3e6bac24d9efcfea8c5f1b5f1f7fd65a8c9869551df52ef0fe327cb74ef8571"
