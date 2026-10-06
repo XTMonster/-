@@ -20,7 +20,7 @@ from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
 from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
 from ..cinema.axis import (Axis, axis_state, camera_side_of, current_line,
-                           pair_spans)
+                           axis_status, pair_spans)
 from ..cinema.station import (
     HEAD_ROOM_AIM_M,
     SubjectFrame,
@@ -70,6 +70,12 @@ class ShotBuildResult:
     characters: List[str] = field(default_factory=list)
     motions: int = 0
     warnings: List[str] = field(default_factory=list)
+    #: v1.5（P14-313，轴族裁决）：**生成器自己算的那两个值**，原样落成字段。
+    #: 裁决原话："字段必须写生成器原生值——**有序 pair ＋ Z 符号**（±1/0，可选 status）"；
+    #: **刻意不叫 `axis_side`**（那个名字已被索引的 `left/right` 域占用，同名会让人以为两边同域）。
+    axis_pair: List[str] = field(default_factory=list)
+    axis_side_sign: int = 0
+    axis_status: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -81,6 +87,10 @@ class ShotBuildResult:
             "lens": round(self.lens, 2),
             "characters": list(self.characters), "motions": self.motions,
             "warnings": list(self.warnings),
+            #: 只抄不改：不加工、不换名（`left/right` 在约定定案前**不进成片**）。
+            "axis_pair": list(self.axis_pair),
+            "axis_side_sign": int(self.axis_side_sign),
+            "axis_status": str(self.axis_status),
         }
 
 
@@ -675,7 +685,15 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                     live_side = int(context.axis.established_side)
 
         #: 摆完了 ⇒ 量"这一镜的连线扫没扫过这台机位"（判定后续镜头待在哪一侧）。
+        #: 同一处把这**三个原生值**落下来（P14-313 轴族裁决）：有序 pair ＋ 叉积符号 ＋ 状态。
+        axis_pair: List[str] = []
+        axis_side_sign = 0
+        axis_status_value = ""
         if context.axis is not None:
+            axis_pair = [str(context.axis.left_label), str(context.axis.right_label)]
+            camera_xy = (round(bundle.camera.matrix_world.translation.x, 4),
+                         round(bundle.camera.matrix_world.translation.y, 4))
+            axis_status_value = str(axis_status(context.axis, camera_xy))
             if not spans:
                 spans = pair_spans(context.axis, plan,
                                    _initial_cast_positions(context))
@@ -684,6 +702,8 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                 camera_position = bundle.camera.matrix_world.translation
                 before_side = camera_side_of(span[0], span[1], camera_position)
                 after_side = camera_side_of(span[2], span[3], camera_position)
+                #: 这一条就是"相对**有序 pair** 的叉积符号"——原样记，不做左右翻译。
+                axis_side_sign = int(before_side)
                 both_in_frame = len(
                     [cid for cid in (shot.characters or [])
                      if str(cid) in (context.axis.left_label,
@@ -736,7 +756,9 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             camera_target=tuple(solution.target),
             lens=float(bundle.lens),
             characters=list(shot.characters), motions=len(requests),
-            warnings=shot_warnings))
+            warnings=shot_warnings,
+            axis_pair=axis_pair, axis_side_sign=axis_side_sign,
+            axis_status=axis_status_value))
         summary.cameras += 1
         summary.warnings.extend(shot_warnings)
 

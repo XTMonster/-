@@ -44,6 +44,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -83,6 +88,11 @@
         "name": "BD_Cam_shot_002",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -125,6 +135,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -164,6 +179,11 @@
         "name": "BD_Cam_shot_004",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001"
@@ -205,6 +225,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -244,6 +269,11 @@
         "name": "BD_Cam_shot_006",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -286,6 +316,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -326,6 +361,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -365,6 +405,11 @@
         "name": "BD_Cam_shot_009",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -407,6 +452,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -446,6 +496,11 @@
         "name": "BD_Cam_shot_011",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001"
@@ -487,6 +542,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -526,6 +586,11 @@
         "name": "BD_Cam_shot_013",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -568,6 +633,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -607,6 +677,11 @@
         "name": "BD_Cam_shot_015",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_002"
@@ -648,6 +723,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -688,6 +768,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -727,6 +812,11 @@
         "name": "BD_Cam_shot_018",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -769,6 +859,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -809,6 +904,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -848,6 +948,11 @@
         "name": "BD_Cam_shot_021",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -890,6 +995,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -930,6 +1040,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -969,6 +1084,11 @@
         "name": "BD_Cam_shot_024",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1011,6 +1131,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1050,6 +1175,11 @@
         "name": "BD_Cam_shot_026",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1092,6 +1222,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -1132,6 +1267,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1171,6 +1311,11 @@
         "name": "BD_Cam_shot_029",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1213,6 +1358,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -1253,6 +1403,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1292,6 +1447,11 @@
         "name": "BD_Cam_shot_032",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1334,6 +1494,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1373,6 +1538,11 @@
         "name": "BD_Cam_shot_034",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1415,6 +1585,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -1455,6 +1630,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1494,6 +1674,11 @@
         "name": "BD_Cam_shot_037",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1536,6 +1721,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -1576,6 +1766,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1615,6 +1810,11 @@
         "name": "BD_Cam_shot_040",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1657,6 +1857,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1696,6 +1901,11 @@
         "name": "BD_Cam_shot_042",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1738,6 +1948,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -1778,6 +1993,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1817,6 +2037,11 @@
         "name": "BD_Cam_shot_045",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1859,6 +2084,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -1899,6 +2129,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -1938,6 +2173,11 @@
         "name": "BD_Cam_shot_048",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -1980,6 +2220,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -2019,6 +2264,11 @@
         "name": "BD_Cam_shot_050",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -2061,6 +2311,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -2101,6 +2356,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -2140,6 +2400,11 @@
         "name": "BD_Cam_shot_053",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -2182,6 +2447,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -2221,6 +2491,11 @@
         "name": "BD_Cam_shot_055",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001"
@@ -2262,6 +2537,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -2302,6 +2582,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -2341,6 +2626,11 @@
         "name": "BD_Cam_shot_058",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -2383,6 +2673,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -2423,6 +2718,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -2462,6 +2762,11 @@
         "name": "BD_Cam_shot_061",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",
@@ -2504,6 +2809,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_001"
       ],
@@ -2544,6 +2854,11 @@
         "position": null,
         "lens": null
       },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
       "characters": [
         "char_002"
       ],
@@ -2583,6 +2898,11 @@
         "name": "BD_Cam_shot_064",
         "position": null,
         "lens": null
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
       },
       "characters": [
         "char_001",

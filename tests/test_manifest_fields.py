@@ -40,8 +40,8 @@ def test_top_level_schema_is_present():
                               retrieval_calls=2, crowd=[{"count": 30}])
     for key in ("declared", "labels", "movements", "crowd",
                 "timing_overrides", "action_conflicts", "dialogue_pins",
-                "audit_pass_rate", "llm_calls", "retrieval_calls"):
-        if key in ("declared", "labels", "movements"):
+                "audit_pass_rate", "llm_calls", "retrieval_calls", "axis"):
+        if key in ("declared", "labels", "movements", "axis"):
             assert key in manifest["shots"][0], key
         else:
             assert key in manifest, key
@@ -49,6 +49,28 @@ def test_top_level_schema_is_present():
     assert manifest["llm_calls"] == 5 and manifest["retrieval_calls"] == 2
     assert manifest["dialogue_pins"][0]["speaker_raw"] == "米迦尔"
     assert manifest["audit_pass_rate"]["exempt_shots"] == []
+
+
+def test_the_axis_field_carries_the_generators_native_values_only():
+    """P14-313（轴族裁决）：`axis{}` 只抄**生成器原生值**——有序 pair ＋ 叉积符号 ＋ 状态。
+
+    三条硬规矩：① 键名**不叫** `axis_side`（那名字已被索引的 `left/right` 域占用）；
+    ② 生成器没算过时是 `pair=[]`／`sign=0`／`status=""`，**不补默认、不猜**；
+    ③ 不许出现 `left`/`right` 这种"翻译后的"取值（约定定案前不进成片）。
+    """
+    plan = _plan()
+    #: 生成器**算过**的样子：把 `ShotBuildResult` 的三个值原样塞进 results。
+    with_axis = build_manifest(plan, generated_at="t", build_summary={"results": [
+        {"shot_id": "shot_001", "axis_pair": ["米迦尔", "伊恩"],
+         "axis_side_sign": -1, "axis_status": "correct"}]})
+    axis = with_axis["shots"][0]["axis"]
+    assert axis == {"pair": ["米迦尔", "伊恩"], "side_sign": -1, "status": "correct"}
+    assert set(axis) == {"pair", "side_sign", "status"}
+    assert "left" not in str(axis) and "right" not in str(axis), (
+        "`left/right` 是翻译后的取值，约定定案前不许进成片")
+    #: 生成器**没算过**的样子：空着，不许编。
+    without = build_manifest(plan, generated_at="t")["shots"][0]["axis"]
+    assert without == {"pair": [], "side_sign": 0, "status": ""}
 
 
 def test_declared_is_null_when_there_is_no_declaration():

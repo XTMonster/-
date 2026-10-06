@@ -82,6 +82,15 @@ def build_manifest(plan: Plan, *,
                 "position": result.get("camera_position"),
                 "lens": result.get("lens"),
             },
+            #: v1.5（P14-313，轴族裁决）：**生成器原生值**——有序 pair ＋ 叉积符号 ＋ 状态。
+            #: 只有生成器真的算过它们才有值（`shot_builder` 的 `ShotBuildResult`），
+            #: 所以老运行/老结果里这三个键是空的（`pair=[]`、`sign=0`、`status=""`）——
+            #: **不补默认值、不猜**。`left/right` 在约定定案前**不进成片**。
+            "axis": {
+                "pair": list(result.get("axis_pair", [])),
+                "side_sign": int(result.get("axis_side_sign", 0)),
+                "status": str(result.get("axis_status", "")),
+            },
             "characters": list(shot.characters),
             "dialogue_ids": list(shot.dialogue_ids),
             "action_types": [str(a.get("action_type")) for a in shot.actions],
