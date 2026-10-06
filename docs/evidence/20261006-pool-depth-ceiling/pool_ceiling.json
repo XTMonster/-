@@ -1,0 +1,8190 @@
+{
+ "queries": 64,
+ "bank": "docs/evidence/20261006-c3-deep-pool/reviews.current.batch3.top120.jsonl",
+ "bank_order_equals_shipped_top6": true,
+ "threshold_135_of_192": 0.703125,
+ "table": [
+  {
+   "pool": "embed3:excerpt+zh@3",
+   "ceiling": 0.1198,
+   "queries_at_3of3": 0,
+   "mean_triple": 0.1198
+  },
+  {
+   "pool": "embed3:excerpt@3",
+   "ceiling": 0.1198,
+   "queries_at_3of3": 0,
+   "mean_triple": 0.1198
+  },
+  {
+   "pool": "embed3:title+excerpt+zh@3",
+   "ceiling": 0.1875,
+   "queries_at_3of3": 1,
+   "mean_triple": 0.1875
+  },
+  {
+   "pool": "label_top@3",
+   "ceiling": 0.9531,
+   "queries_at_3of3": 57,
+   "mean_triple": 0.9531
+  },
+  {
+   "pool": "retrieval_order@3",
+   "ceiling": 0.1719,
+   "queries_at_3of3": 0,
+   "mean_triple": 0.1719
+  },
+  {
+   "pool": "embed3:excerpt+zh@6",
+   "ceiling": 0.2708,
+   "queries_at_3of3": 6,
+   "mean_triple": 0.138
+  },
+  {
+   "pool": "embed3:excerpt@6",
+   "ceiling": 0.25,
+   "queries_at_3of3": 4,
+   "mean_triple": 0.1276
+  },
+  {
+   "pool": "embed3:title+excerpt+zh@6",
+   "ceiling": 0.3281,
+   "queries_at_3of3": 8,
+   "mean_triple": 0.1667
+  },
+  {
+   "pool": "label_top@6",
+   "ceiling": 0.9531,
+   "queries_at_3of3": 57,
+   "mean_triple": 0.8177
+  },
+  {
+   "pool": "retrieval_order@6",
+   "ceiling": 0.3125,
+   "queries_at_3of3": 3,
+   "mean_triple": 0.1562
+  },
+  {
+   "pool": "embed3:excerpt+zh@9",
+   "ceiling": 0.4062,
+   "queries_at_3of3": 10,
+   "mean_triple": 0.1458
+  },
+  {
+   "pool": "embed3:excerpt@9",
+   "ceiling": 0.3698,
+   "queries_at_3of3": 6,
+   "mean_triple": 0.1285
+  },
+  {
+   "pool": "embed3:title+excerpt+zh@9",
+   "ceiling": 0.4635,
+   "queries_at_3of3": 16,
+   "mean_triple": 0.1632
+  },
+  {
+   "pool": "label_top@9",
+   "ceiling": 0.9531,
+   "queries_at_3of3": 57,
+   "mean_triple": 0.6632
+  },
+  {
+   "pool": "retrieval_order@9",
+   "ceiling": 0.4219,
+   "queries_at_3of3": 8,
+   "mean_triple": 0.1441
+  },
+  {
+   "pool": "embed3:excerpt+zh@12",
+   "ceiling": 0.526,
+   "queries_at_3of3": 16,
+   "mean_triple": 0.1458
+  },
+  {
+   "pool": "embed3:excerpt@12",
+   "ceiling": 0.4896,
+   "queries_at_3of3": 15,
+   "mean_triple": 0.1341
+  },
+  {
+   "pool": "embed3:title+excerpt+zh@12",
+   "ceiling": 0.5312,
+   "queries_at_3of3": 21,
+   "mean_triple": 0.151
+  },
+  {
+   "pool": "label_top@12",
+   "ceiling": 0.9531,
+   "queries_at_3of3": 57,
+   "mean_triple": 0.5352
+  },
+  {
+   "pool": "retrieval_order@12",
+   "ceiling": 0.5365,
+   "queries_at_3of3": 15,
+   "mean_triple": 0.1406
+  },
+  {
+   "pool": "embed3:excerpt+zh@20",
+   "ceiling": 0.6979,
+   "queries_at_3of3": 30,
+   "mean_triple": 0.1297
+  },
+  {
+   "pool": "embed3:excerpt@20",
+   "ceiling": 0.6458,
+   "queries_at_3of3": 25,
+   "mean_triple": 0.1172
+  },
+  {
+   "pool": "embed3:title+excerpt+zh@20",
+   "ceiling": 0.7031,
+   "queries_at_3of3": 30,
+   "mean_triple": 0.1352
+  },
+  {
+   "pool": "label_top@20",
+   "ceiling": 0.9531,
+   "queries_at_3of3": 57,
+   "mean_triple": 0.3289
+  },
+  {
+   "pool": "retrieval_order@20",
+   "ceiling": 0.6563,
+   "queries_at_3of3": 26,
+   "mean_triple": 0.1141
+  },
+  {
+   "pool": "embed3:excerpt+zh@40",
+   "ceiling": 0.8594,
+   "queries_at_3of3": 44,
+   "mean_triple": 0.1051
+  },
+  {
+   "pool": "embed3:excerpt@40",
+   "ceiling": 0.8125,
+   "queries_at_3of3": 42,
+   "mean_triple": 0.0926
+  },
+  {
+   "pool": "embed3:title+excerpt+zh@40",
+   "ceiling": 0.8594,
+   "queries_at_3of3": 46,
+   "mean_triple": 0.1059
+  },
+  {
+   "pool": "label_top@40",
+   "ceiling": 0.9531,
+   "queries_at_3of3": 57,
+   "mean_triple": 0.1645
+  },
+  {
+   "pool": "retrieval_order@40",
+   "ceiling": 0.8125,
+   "queries_at_3of3": 44,
+   "mean_triple": 0.0883
+  }
+ ],
+ "per_query": [
+  {
+   "query": "远景建立镜头，固定机位，50mm。第十四街区码头市场，午后阳光斜切过成排的货棚与摊位，鱼筐、木箱、缆绳堆在湿漉漉的石板地上，远处是停靠的船桅与灰蓝色水面。米迦尔独自站在市场中央偏左的通路上，全身入画、在环境中只占一小块，面朝画面深处（船的方向），身形静止，只有衣角被海风轻轻掀起。机位置于米迦尔与后续对手机位连线中轴偏左，视线大致与人物胸口同高，为下一镜的正反打定下基准；前景摊位与走动的人影构成层次，画面留出上方空旷的天光，气氛是暴风雨前的平静。无镜头运动，全片以静止铺垫，为后面的推镜蓄势。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    }
+   }
+  },
+  {
+   "query": "第十四街区码头市场，午后。中景固定镜头，机位由场地中轴移近至两人连线侧面，从侧前方（front_left）以 50mm 拍摄。确立 180° 轴线：米迦尔在画面左侧、伊恩在画面右侧，两人并肩立于码头边，中间留出可见的间距，交代位置关系与彼此距离。米迦尔略微侧头看向右侧的伊恩，伊恩随即回望，视线在两人之间形成一条清晰的连线。背景是码头市场摊架与泊船，午后侧光。固定机位，不做任何推拉摇移，表演克制，保持两人左右关系不变，为后续镜头守住轴线。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "retrieval_order@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "retrieval_order@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.75
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.27499999999999997
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.375
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.25
+    }
+   }
+  },
+  {
+   "query": "中景 MS，50mm，固定机位后缓慢推进（push_through 0.8 米，1-60 帧）。米迦尔保持在画面左侧，机位移至他这一侧、仍在轴线同侧，不越轴。午后第十四街区码头市场，他微微转头看向画面右侧的同伴方向，随后开口说话，神情平静而决断。背景为码头栈桥与停泊船只，浅景深虚化。收尾留 12 帧余量，画面稳定。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "午后码头市场，中近景（MCU）单人对米迦尔。相机位于他前左侧、与上一镜同侧但角度变化超过 30°，50mm 镜头，视线方向延续指向画面外的伊恩。米迦尔半身入画，面部占画面主体，下颌微收，语气短促笃定。镜头以缓慢推近（dolly_in）压向他的面部，强化「我先上船」这句断然台词的分量；背景码头绳索与货箱轻微失焦。表演克制，仅一次极小的头部偏转与视线锁定，无其他动作。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.75
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.45
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.225
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    }
+   }
+  },
+  {
+   "query": "MCU 反打机位，伊恩位于画面右侧、视线指向画面左侧（与上一镜保持轴线不越）。午后码头市场，背景浅景深虚化的船桅与缆绳。伊恩中近景，肩部以上构图，cinematic 头room。相机 50mm，位于轴线另一侧对应位置，缓慢推近（约 0.8 米），景别由 MCU 略微收紧，压力随台词上升。表演：伊恩先抬眼看向画面左侧的米迦尔，随即轻轻点头，说出「这一次我听你的。」，说完后头部微转向船的方向，眼神里带着决意与不舍。光线为午后侧逆光，皮肤有柔和轮廓光。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "MS 中景双人同框，固定机位，轴线中段，米迦尔在画面左、伊恩在画面右，两人相对而立，午后码头市场的侧逆光。米迦尔先开口，语气急迫，身体微微前倾；伊恩迟疑半拍才回应，肩线略收。背景是码头栈桥与停靠的船影，浅景深把两人从杂乱市集中分离出来。整镜不动机位，只靠两人细微的头部与身体角度变化制造压迫感，为下一镜的冲突铺垫。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "特写反打，伊恩面部近景，平视机位，头顶留白约5%。机位较前一双人镜角度变化超过30°，落在伊恩的侧前方，视线保持指向画面左侧。固定机位，无运动，50mm 定焦，浅景深，背景码头虚化。伊恩沉默不语，只有极轻微的呼吸起伏，眼神望向画面左侧（米迦尔离去的方向），留白式收束，无台词。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.8888888888888888
+    },
+    "embed3:excerpt@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.39999999999999997
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    }
+   }
+  },
+  {
+   "query": "中景，米迦尔转身背向摊位，35mm 固定机位，市场背景。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@40": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt@40": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 0,
+     "mean": 0.0
+    }
+   }
+  },
+  {
+   "query": "中景双人同框，码头午后。米迦尔在画面左侧、伊恩在画面右侧，机位回到轴线中段不越轴，正面平视 50mm。开场米迦尔转头看向伊恩说出「我先上船。」，伊恩随之轻轻点头，在第 52 帧回应「等等我。」。整镜相机以 push_through 缓慢前推 0.8 米，从两人中段空间向主体推进，营造出发前最后一刻的压迫感与不舍。背景为码头木栈与停靠船只的虚化轮廓，自然光偏暖，人物保持在画幅中段，收尾留 12 帧余量。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.6
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    }
+   }
+  },
+  {
+   "query": "午后码头市场，伊恩的中近景反打。镜头从伊恩右前方（front_right）以 50mm 固定焦距缓慢推近 0.8 米，持续到第 60 帧，把注意力压到他脸上。伊恩延续上一镜的位置与视线方向，先微微转头、抬眼看向画面外的米迦尔（越肩反打，机位角度变化超过 30°），随后轻轻点一次头。背景是码头市场的绳索、木箱与远处船桅，午后硬光从侧后方擦过脸颊，浅景深把背景虚成暖灰。表演克制：眼神先动，呼吸再落，嘴唇开合说出一句短台词，收尾留 12 帧静止余量。无叠加摇移，只有单一推镜动机——逼近他的迟疑。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.225
+    }
+   }
+  },
+  {
+   "query": "MCU，正打机位，位于轴线同侧，与上一镜形成正反打。米迦尔胸口以上入画，正对镜头略偏，午后码头侧光从画面右侧打来，背景是虚化的码头市场木栈与桅杆。镜头以缓慢的 dolly_in 轻推 0.8 米，从第 1 帧到第 60 帧，把米迦尔的表情从平静推到下定决心的坚定；他先微微转头（约 8 度）看向伊恩所在的方向，随后目光收回、直视前方。写实动画演出，表演克制，呼吸与肩线起伏可见，无字幕、无文字覆盖。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.225
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    }
+   }
+  },
+  {
+   "query": "MCU，反打机位，与上一镜夹角超过 30°。伊恩位于画面右侧，胸部以上取景，视线指向画面左侧（画面外米迦尔方向）。固定镜头，50mm，浅景深，码头午后侧逆光，背景为虚化的码头仓库与木栈。伊恩神情由犹豫转为决断，作为本场转折点。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.75
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.45
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.225
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    }
+   }
+  },
+  {
+   "query": "中景双人同框，机位回到轴线中段，正面平视，50mm。两人相对而立，对立姿态明显缓和：米迦尔微微侧头看向伊恩，随后肩线朝伊恩方向轻缓倾了少许；伊恩轻轻点头应下，目光始终落在米迦尔脸上。午后码头市场的光线从侧面铺来，背景是虚化的摊位与绳索。镜头以极轻微的手持稳定感停留，是全片转折处的一次静观。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    }
+   }
+  },
+  {
+   "query": "特写（CU），米迦尔单人居中偏左，头部与肩部充满画面，视线方向延续指向画面右侧。机位在角色右前方（front_right），与上一镜相比角度变化超过 30°，形成正打特写；50mm 定焦，浅景深，背景码头木桩与水面虚化成柔和光斑。微弱手持呼吸感（幅度 0.04 米），几乎静态，让表演成为焦点。表演节奏：起始 8 帧保持沉默凝视，第 8–22 帧头部缓缓向右回转约 12°，眼神从远处收回；第 24–36 帧微微低头、视线落定，随后静止至镜头结束，留出呼吸余量。午后侧逆光勾出下颌与发丝轮廓，情绪克制、决绝，暗示告别的重量。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "中景（MS，取景到腰）。午后码头市场，木栈道与缆绳桩之间，伊恩独自站在画面右侧，背对镜头侧身。他先停顿，随后由右肩方向转身（第6–22帧），身体转向画面左侧，银幕方向向左，接着迈步向画面左前方走去（第24–60帧），步伐不快，肩线随走动轻微起伏。相机固定不动机位，位于轴线同侧、偏右的观察角度，50mm 镜头，景别比上一镜放宽一档，保持人物在画面中偏右起、向左移动的调度。环境为码头午后侧光，背景有帆船桅杆与货箱，海面反光柔和。整体为过渡性节奏，动作前静后动，收尾留出余量。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    }
+   }
+  },
+  {
+   "query": "午后码头，米迦尔站在画面左侧，身体朝向右侧（伊恩离去的方向），目光追随。低机位中远景，50mm，平衡构图。镜头沿轴线缓缓后撤，景别由中景放宽到中远景，把米迦尔重新放回空阔的码头环境中——段落收束，松手。米迦尔保持原位不动，仅头部微转、目送。无台词。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.75
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.45
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.225
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    }
+   }
+  },
+  {
+   "query": "LS 全景固定镜头，建立环境。午后第十四街区码头市场通往码头方向的街道：米迦尔自画面左侧市场一侧向画面右侧码头方向行进，全身入画，人物在画面中只占较小的比例，身后是摊棚与货箱的纵深排列，远处码头水光与停泊的船桅形成透视消失点。50mm 焦距，机位略高、侧向观察，米迦尔的行进方向由画面左向右，与上一镜的市场出发方向一致。固定机位，不推不摇，作为运动的参照系，为后续的转折留出静默的铺垫。光线为午后偏暖的侧光，地面有拉长的阴影，空气中有轻微的尘埃感。无台词。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "中景双人同框。午后码头市场，米迦尔在画面左侧、伊恩在画面右侧，两人并肩朝同一方向行进。摄影机置于行进方向的侧面，与新轴线垂直，确立两人同行的空间关系。镜头以 push_through 缓慢向前穿过两人之间的空隙，50mm 定焦，景别保持中景（到腰）。米迦尔略微领先半步，伊恩紧跟其后；两人步频一致，身体随步伐轻微起伏，偶尔侧头互看。背景是码头市场的货箱与缆绳，午后侧光从画面右后方打来，人物边缘有暖色轮廓光。整体节奏沉稳，不抢戏，为后续的告别段落留出呼吸空间。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "中近景（MCU），固定机位，50mm 镜头。反打机位，位于行进轴线同侧，不越轴。伊恩位于画面右侧，身体朝画面左侧，视线越过画面左缘望向远方（码头方向），神情克制、若有所思——为随后的告别做情绪铺垫。镜头全程静止，只有海风轻微扰动他的头发与衣角，背景是午后的码头市场，远处停泊的船只与桅杆虚化在景深之外，光线柔和偏暖。画面保持稳定，不做任何推拉摇移，把运动留给后面的转折镜头。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "中近景（MCU），50mm，正打机位：米迦尔位于画面左侧，身体朝画面右侧，视线指向画外右侧的伊恩，与上一镜形成正反打，机位角度变化超过 30°。午后码头市场，硬质侧光从画面右后方打来，米迦尔面部半侧受光，眼神坚定而克制。镜头自第一帧起以极缓速度向前推近（dolly_in 0.6 米，至第 60 帧停住），随他开口说出「我先上船」逐渐收紧到面部，强化他率先迈出这一步的决心；推镜动机明确——逼近人物内心的决断，不做摇与升降的叠加。米迦尔在第 1 至 30 帧微微抬颌、视线扫向右侧画外，随后保持不动，把余下帧数留给这句台词与沉默的收尾（第 60 帧后留 12 帧余量）。背景为码头市场的绳索、木箱与远处船影，浅景深虚化，仅保留他肩线以上的主体。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.75
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.45
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.225
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    }
+   }
+  },
+  {
+   "query": "MS 双人中景，米迦尔在画面左、伊恩在画面右，机位回到轴线中段正面对峙。午后码头市场，两人相距约一步，背景是堆叠的货箱与缆绳。米迦尔先侧转身体半身朝向伊恩，肩线压过来，压迫感增强；伊恩稍后转头迎上视线，下颌绷紧。米迦尔随后上身前倾，重心压向对方。半手持轻微晃动，强化对峙的呼吸感。50mm 镜头，浅景深，两人同框，冲突升级。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "retrieval_order@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    }
+   }
+  },
+  {
+   "query": "反打特写。伊恩面部近景，占据画面主要高度（特写占比），视线延续指向画面左侧——即他看向画面外的米迦尔方向，但机位已绕到轴线另一侧，与前一镜的机位角度差超过 30°，形成越轴反打，冲突感由此升级。50mm 焦距，浅景深，背景码头货箱与绳索被虚化成柔和的光斑（bokeh），把伊恩从周遭环境里孤立出来。午后侧光从他脸的另一侧打来，半张脸沉入阴影，眉骨与下颌线被硬光勾出轮廓。固定机位，不推不摇，让这份静止成为冲突的参照系：他先是极短地屏住呼吸，喉头微动，随后下颌绷紧、头缓缓偏向画面左侧，眼神从迟疑转为决意，最后定住不动——他认了这次要听对方的。表演克制，只有一次细微的停顿与一次视线落定，收尾留白。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    }
+   }
+  },
+  {
+   "query": "固定特写，正面平视米迦尔。头顶留白约 5%，面部占画面主体。米迦尔视线延续指向画面右侧，微微侧头后停住，眼神平静而克制，落在画外右侧的伊恩方向。背景是码头午后虚化的货箱与水面反光，浅景深。全镜无摄影机运动，以静止留白收束这一组正反打。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.6
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    }
+   }
+  },
+  {
+   "query": "午后码头市场，中远景（MLS），50mm 固定低机位，沿轴线缓缓后撤放宽：米迦尔在画面左、伊恩在画面右，两人并肩站位不变，保持左右关系与平衡构图。镜头匀速拉远，把两人重新放回码头环境之中，背景的船与货箱逐渐进入画面，形成段落收束的疏离感。米迦尔微微转头看向伊恩，伊恩轻轻点头回应；两人目光相接。环境光线为柔和午后自然光，轻微空气感，无对白以外的声音强调。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "全景固定镜头，第十四街区码头市场的午后。米迦尔独自一人在市场中的通道里，由画面左侧向右侧行进，脚步不快，肩背微沉。镜头保持静止，作为整场对话段落的参照系：摊架、缆绳、木箱与远处停靠的船影铺满纵深，人物在画面中只占中等比例，行进方向明确为左→右，为后续对话轴线定下基准。光线为午后的硬顶光，地面投下短促的影子，空气里浮着细尘。无台词，只有脚步声与环境底噪。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@40": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "中景双人对话镜头：午后码头市场，米迦尔从画面左侧行进至摊位前停下，位于画面左半侧、面朝右；伊恩位于画面右半侧、面朝左，微微转身正对米迦尔。两人隔着摊位面对面，确立米迦尔左、伊恩右的双人轴线。相机在双人轴线正面（front），50mm 镜头，缓慢 push_through 前推 0.6 米，由固定感过渡到轻微推进，暗示对话正式开始、主线推进。景别 MS 取到腰部，背景是摊位与码头市场的杂乱货架、远处停靠的船只。光线为午后自然光，暖调。米迦尔开口说出台词，目光锁定伊恩；伊恩回望，姿态克制。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "MCU，中近景，伊恩单人，轴线右侧正打，视线朝画面左，接双人镜切出。码头市场午后，背景是潮湿的木板栈道与远处船桅，空气里有水汽和薄雾。伊恩站在画面右三分线偏中，肩线微侧向画面左，面部朝向画面左前方的米迦尔方向。50mm 镜头，浅景深，背景虚化。镜头从第 1 帧到第 60 帧缓慢推近（dolly_in 0.6 米），把注意力压到他的脸和眼神上，推镜动机是强化他挽留的情绪。表演：第 6–22 帧他微微转头望向画左，第 30–46 帧轻轻点一下头，像在给自己下决心。第 20–56 帧他开口说「等等我。」，语速平缓，尾音略沉。收尾留 12 帧余量，情绪停在他等待回应的凝视上。固定轴线，不越轴，不叠加摇镜。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    }
+   }
+  },
+  {
+   "query": "中近景（MCU），固定机位带极轻微手持呼吸感，50mm。轴线左侧反打，与镜号27 正反打对切：米迦尔位于画面左三分之二，面朝画面右，视线朝画面右方（朝伊恩的方向），视线略低于水平线，肩线微侧。午后码头市场的光线从画面右后方斜入，在他侧脸勾出边缘光，背景是模糊的船坞木桩与水面反光。表演节奏：前段他保持静止，只有极轻的呼吸起伏（约第8–26帧头部微转向画面右，幅度约12度，像在确认对方是否还在听）；随后一个短促的点头（第34–50帧，一次），下颌收紧，嘴角几乎不动；末段（第54–68帧）上身极轻微向画面右倾约4度，重心前移，像是把话交出去后准备转身离开。整体克制、留白，动作集中在中后段，收尾12帧保持静止余量。不要字幕、不要额外人物入画。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "中景双人镜头。码头午后，米迦尔与伊恩面对面站立，相距一步半，构成正面对峙的双人关系镜。机位从双人轴线前左侧约 40° 处平视取景（较镜号 26 侧移超过 30°），50mm 固定镜头，画面高度约 1.88 米，取到两人腰部以上，两人一前一后错落：米迦尔稍靠画面右前，伊恩稍靠画面左后，形成轻微的前后叠压关系。米迦尔先侧转身体半面朝向伊恩，下颌微抬，目光钉在伊恩脸上；伊恩头部微转、视线回顶，随后米迦尔上身极轻微前倾逼近，伊恩肩膀绷紧、微微后仰抗衡，两人之间的空气被压到最紧。背景是码头货箱与缆绳的纵深，光线为午后侧逆光，人物轮廓清晰。整镜固定机位，不对运动做任何推拉，让静止的构图承载对立情绪的顶点；台词由米迦尔在第 12 帧到第 52 帧间说出，收尾留出余量。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    }
+   }
+  },
+  {
+   "query": "特写（CU）：伊恩面部占满画面，轴线右侧机位、85mm 长焦压缩，视线方向与镜号 27 一致（朝画面左前方）；由双人镜切来，景别跳跃一档以上。码头市场午后的侧逆光在脸颊边缘留一道暖边，背景虚化成晃动的货箱与帆影。镜头自 1 帧起缓慢 zoom_in（18mm 当量）持续到 60 帧，把情绪顶点一点点压到他的眼睛上：开场他微微抬眼望向左前方（米迦尔的方向），眼神从犹豫转为笃定，随后一次极轻的点头，像是把话咽下去又认了下来。表演克制，不要夸张表情，重量全在眼睑与呼吸的细微起伏上。收尾 12 帧留白，画面静止在他定住的目光上。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    }
+   }
+  },
+  {
+   "query": "特写，米迦尔，轴线左侧（与镜号30反向）。平视，头顶留白约5%。码头午后光线，浅景深虚化背景。米迦尔沉默不语，只有极轻微的呼吸起伏，目光朝向画面右侧（对切伊恩的反方向）。固定机位，无运动——把静止留作呼吸的参照系。50mm。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.8888888888888888
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.39999999999999997
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    }
+   }
+  },
+  {
+   "query": "中远景（MLS）双人镜头，50mm 镜头，低机位、略偏左前方的侧前方视角，机位较前一镜后移并抬高，与镜号29 形成大于 30° 的角度变化，重新把两人放回码头环境中。米迦尔与伊恩分立画面两侧，保持对立站位与视线对峙，构图平衡，收束整段关系。镜头自第 1 帧起缓缓拉远（dolly_out 约 1.2 米），至第 60 帧停稳，把刚从特写收回的紧张感松开，作为段落收尾的「松手」。米迦尔在第 1–24 帧侧转身体约 20°，伊恩在第 20–44 帧微微转头约 15°，两人目光始终彼此锁定。午后码头市场光线，写实动画质感。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "label_top@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "LS 固定镜头，50mm，机位在米迦尔前右方（front_right），平视略低。午后码头市场：木栈桥向画面深处延伸，系缆桩与缆绳、成排货箱与遮阳篷、远处泊船桅杆与水面反光。米迦尔先行到达，独自沿栈桥由画面右后方走向码头前沿（第1—48帧，行走，轻微上下起伏），停在前沿，身体朝向水面（画面深处），背对镜头约四分之三。第48—72帧静止留白，只余水面波动与远处船影。人物全身，占画面高度约五分之一，环境为主体。无台词。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "第十四街区码头市场，午后。中景双人镜头：米迦尔位于画面左侧、面朝右方，伊恩自画面右侧入画，走到米迦尔身旁停步，两人并肩、身体略侧向对方，形成对峙又并肩的构图。相机在双人轴线侧前方，50mm，画面高度约到两人腰部。伊恩入画停步后，两人同时转头对视，短暂沉默，气氛紧绷。背景是码头栈桥与停泊的船影，海风轻动衣角。镜头保持固定，只在伊恩停步的瞬间以极轻微的手持呼吸感维持张力。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.9166666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.5499999999999999
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.27499999999999997
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    }
+   }
+  },
+  {
+   "query": "MCU，伊恩单人，轴线右侧正打，视线朝画面左。午后码头市场，背景是开阔海面与远处船影。伊恩半身入画，先缓缓转头望向画面左侧的海面，随后目光定住，嘴唇微动开口说话，神情克制。相机在右侧正打位置以 50mm 焦距缓慢推近，从第 1 帧到第 60 帧小幅前推，逐渐收紧到面部，强化他望向海面后开口的推进感。一次只做推镜，不做摇或升降。接上一镜双人切单人，视线方向与轴线保持一致。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "MCU，中近景，米迦尔单人反打镜头，位于码头市场午后光线下。相机在轴线左侧、角色前右侧机位，50mm 镜头，视线朝画面右，与上一镜正反打对切。米迦尔微微抬眼看向画面右外（对话对象方向），神情克制而坚定，随即开口说出「我先上船。」。镜头自第 1 帧起以缓慢推近（dolly_in 0.6 米）持续到第 60 帧，收紧景别强化决意，收尾 12 帧保持静止余量。背景为码头市场的松散纵深，柔和自然光，浅景深将米迦尔与背景分离。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.65
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.325
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    }
+   }
+  },
+  {
+   "query": "码头午后，中景双人关系镜。米迦尔与伊恩并肩对峙，机位较镜号34侧移超过30°，从正反打切回双人同框。米迦尔在画面左侧略靠前，伊恩在右侧半步之后，两人间距约一米，身体朝向彼此但都微微绷紧——米迦尔下巴微抬、重心前压，伊恩肩线后撤、视线越过米迦尔望向画外码头方向。背景是仓库铁皮与码头缆桩，海风把两人的衣角吹向同一侧。固定机位50mm，浅景深让背景虚化，压迫感来自两人之间那段无法缩短的距离。米迦尔开口，语气短促；伊恩沉默半拍后回应，声音压低。整镜维持双人轴线不越轴，为下一镜的爆发留出静止的参照系。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.7000000000000001
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.225
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.25
+    }
+   }
+  },
+  {
+   "query": "特写，50mm，固定机位带轻微推近。伊恩位于画面右侧，轴线右侧，面朝画面左，视线朝画面左。午后码头市场，背景是虚化的船帆与木栈桥，海面反光在颧骨上跳动。他先是微微转头，眉骨压低，随即上身前倾，下颌收紧，缓慢而坚决地摇头两下——反驳的姿态，冲突在沉默中升级。浅景深，主体占画面高度约七成，头顶留出电影感余量。自然硬光，侧逆光勾出轮廓。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "label_top@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "特写镜头，米迦尔面部占据画面主体，轴线左侧机位，与镜号38构成正反打对切。50mm 镜头，浅景深，背景码头货箱与水面虚化成柔和光斑，突出人物孤立感。米迦尔沉默不语，目光投向画面右侧（对应伊恩所在方向），眼睑微微压低，嘴唇闭合，下颌线绷紧，仅有极轻微的呼吸起伏与一次缓慢的眨眼。整体保持固定机位，不推不摇，让沉默本身成为反应。光线为午后侧逆光，面部一侧留出阴影，情绪克制内敛。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.9166666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.5499999999999999
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.27499999999999997
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    }
+   }
+  },
+  {
+   "query": "中远景（MLS），50mm，低机位双人关系镜。码头午后，米迦尔与伊恩并肩立于栈桥边，海风持续吹动两人的衣摆与发梢。机位较前镜（镜号37）后移并抬高，角度变化大于30°，由特写拉回双人关系，把两人重新放回码头与海面的环境中。镜头固定不运动，仅靠海风与衣物的飘动制造画面内的呼吸感——这是本段的收束：不说一句话，让风把两人之间最后的距离吹平。两人面朝海面方向，视线各自投向远处的船，偶尔低头、侧头，动作缓慢克制。光线为午后偏暖的侧逆光，海面反光在画面下方形成亮带。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "LS，第十四街区码头市场午后，巷口。固定机位后撤跟移（steadicam 轻微跟随），50mm。米迦尔自画面深处先行步入巷口，背对镜头偏左，沿窄巷向里走去，身形约占画面高度三分之一，两侧是斑驳的砖墙与晾晒的绳索、堆叠的木箱，午后斜光从巷口切进来，在地面拉出长长的影子；他步伐不快但不停，头也不回，为后续同伴跟上留出空间。整体氛围安静、略带潮湿的市井气，作为新场景的建立镜。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "中景（MS），固定机位仅做极轻微前推。午后码头巷口，米迦尔在画面左前方、伊恩在画面右后方，两人一前一后沿巷道向纵深走去，保持约一步半的间距。相机位于两人后侧偏左（back_left），50mm 镜头，双人轴线稳定：米迦尔左前、伊恩右后，视线可互及。米迦尔边走边低声开口，脚步未停；伊恩自画面右侧跟进，略微加快步伐追赶，头部微转向米迦尔的方向。巷道两侧是斑驳的砖墙与堆叠的货箱，午后硬光从巷口斜切进来，在地面拉出两道交错的影子。运动与静止形成参照：机位近乎固定，只有人物的行走推进叙事，为后续的转折镜头留出运动空间。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "第十四街区码头市场，午后。中近景（MCU）单人中景，轴线右侧正打：伊恩位于画面右侧偏中，身体朝画面左，视线朝画面左方（朝向码头方向）。开场他脚步停下，头微转向左下方压低声音说话，肩线保持朝向画面左，重心略前。镜头以固定机位为基准做一次克制的 dolly_in（约 0.6 米，第 1 至 60 帧），缓慢推近他的面部，强化低语时的情绪压迫感；推镜过程中不做摇、不做升降，保持空间关系清晰。景深略浅，背景码头市场人流与货摊虚化，午后硬光从画面右后方落在他的侧脸与肩上，形成明暗分界。表演克制：低声、短促，说完后嘴唇闭合，视线仍停留在画面左方，留出收尾余量。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    }
+   }
+  },
+  {
+   "query": "码头午后，中近景。米迦尔位于画面左侧，身体朝向画面右方，与镜号43 构成正反打对切。镜头从轴线左侧反打，视线朝画面右。米迦尔先是背对镜头侧立，随后在第 8 帧至第 30 帧之间缓缓回头——头部先转动，肩颈随之带过，目光越过自己右肩投向画面右方（即镜号43 中对话对象的方向），眼神由紧绷转为短暂停顿。回头的关键动作放在镜头中段，前段留出静止的呼吸感，回头后停住不动，留出余白。相机固定，50mm 中近景，浅景深，背景码头木栈与远处船桅虚化，午后侧逆光在人物轮廓上勾出细边。整体节奏：静止 → 回头 → 静止，不加入任何无动机的运镜。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    }
+   }
+  },
+  {
+   "query": "中景双人镜（MS，画面高度约到两人腰部），平视机位，落在双人轴线的侧前方约 30° 以外（front_right），与镜号 42 的正反打形成明显的角度侧移，由正反打切回双人关系镜。米迦尔与伊恩并排立于午后码头市场，两人间距约一步，背景是码头栈桥与停靠的船身轮廓，午后侧光从画面左侧落下，在脸颊上留下柔和过渡。两人在第 8 帧同时缓缓转头，视线在画面中段相接，随后完全静止——米迦尔微微侧脸看向伊恩，伊恩回望，目光锁定彼此。镜头固定不动，无推拉摇移，只靠两人的对视与呼吸的细微起伏撑住画面。构图遵循 lead_room，视线方向一侧留出较多空间。第 24 帧之后两人保持对视，不再有任何动作或台词，沉默留白直至镜头结束（第 72 帧），把情绪交给静止与眼神。整镜无台词。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    }
+   }
+  },
+  {
+   "query": "特写，伊恩，平视，轴线右侧机位，视线朝画面左。50mm 固定镜头，头顶留白约 5%。伊恩在画面中低声说话，声音压得很低，说完后目光停留在画面左外侧，留白——他不看镜头，也不看对话者，只有呼吸和极轻微的下颌动作。背景为码头午后的浅景深散焦，无其他人物入画。由双人镜切至本镜，机位保持轴线右侧，视线方向与前一镜一致（朝画面左），为下一镜的剪辑留出视线匹配的落点。整镜固定不动，作为运动的参照系。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "retrieval_order@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.65
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.325
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    }
+   }
+  },
+  {
+   "query": "特写，米迦尔单人，轴线左侧（与镜号46反向的正反打）。50mm镜头，固定机位，浅景深，背景码头市场与水面虚化成柔和光斑，突出人物孤立感。米迦尔垂眼，目光落向画面下方，睫毛压住视线；呼吸极浅，肩线几乎不动，只有喉结一次轻微吞咽。前24帧保持静止的沉默，第24帧起头部微微下沉、眼睑再压低一档，形成一个几乎不可察觉的停顿式反应，随后停住不动直到镜尾。整体节奏：静 → 一次极小的低头 → 静止，情绪压在眼底不外放。光线为午后侧逆光，脸部半明半暗，皮肤质感与眼角湿润感清晰可见。无台词。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "午后码头市场，低机位中远景固定收束镜：米迦尔与伊恩并肩而立，面朝船的方向，两人身体近乎平行。相机位于两人前方偏左（front_left），50mm 镜头，机位较前镜后移抬高，缓慢拉远 1.2 米，把两人重新放回码头的环境中——木栈道、货箱、远处停靠的船与海面反光逐渐入画，景别由中景放宽为远景。米迦尔微微侧身转向伊恩，伊恩转头回望，两人视线相接；米迦尔轻轻点头，说出「走吧」。镜头在拉远中松手，本段收束，画面停留于两人并肩的背影与船影之间，海风与光影静止。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "清晨的码头，薄雾未散，水面泛着冷青色微光。一艘旧木船停靠在画面右侧的栈桥边，船身随水轻轻起伏。米迦尔位于画面左侧的码头木板上，全身入镜，背对镜头稍偏，面朝画面右侧的船，肩上挎着简单的行囊，重心前移，一只脚已踏向栈桥方向，姿态是即将登船的准备动作。画面右侧栈桥尽头留出空白，等待伊恩入画。相机固定于轴线中立侧、前右方，50mm 标准镜头，LS 全景，视线高度接近平视略低，把米迦尔、栈桥与船的空间关系一并交代清楚：人与船之间隔着几步距离，暗示即将发生的登船与告别。光线为清晨的侧逆光，米迦尔在木板上投下长影，远处码头市场的棚架与缆绳桩作为背景纵深。整体氛围安静、克制，是这场告别戏的铺垫镜头。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "retrieval_order@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "MS 双人同框中景，码头午后。米迦尔位于画面左侧、伊恩位于画面右侧，两人面对面站立，机位落在两人连线的一侧，不越轴。伊恩自画面右侧入画后停步，与米迦尔保持面对面站位；米迦尔略微侧身面向伊恩，两人目光相接。50mm 固定机位，收尾前极缓推近，压住告别的沉默感。背景为午后码头市场的木栈与缆桩，海面反光柔和，景深稍浅。表演克制，节奏缓慢，为告别前的最后一次交谈留出呼吸。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "MCU，过轴至伊恩一侧（与上一镜机位角度差大于 30°），中近景框住伊恩胸部以上。伊恩位于画面右侧偏中，面部朝画面左，视线越过画面左缘与画外的米迦尔对视，延续第 50 镜的面对面关系。50mm 定焦，浅景深，码头市场午后的侧逆光在伊恩脸侧勾出轮廓，背景码头货箱与帆影轻微虚化。镜头自第 1 帧起对伊恩做缓慢推近（dolly_in 0.6 米），至第 60 帧停稳，推镜动机是逼近他的情绪转折。表演：伊恩先微微抬眼看向画面左（第 1–24 帧），第 26–44 帧轻轻点头一次，下颌收紧，眼神从抗拒转为接受。第 60 帧后保持静止收尾余量，无额外运动，不叠加摇与升降。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "retrieval_order@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "【第十四街区码头市场 - 午后】【码头】中近景（MCU），50mm。机位切至米迦尔一侧，与上一镜同景别但过轴到对面，角度变化大于 30°，不越轴。米迦尔单人入画，视线朝画面右，延续与伊恩面对面的关系。镜头缓慢推近（dolly_in 0.8 米，1–60 帧），动机是强化米迦尔反问的语气，一次只做一个自由度。米迦尔头部轻微转动，目光锁定画面右方的伊恩。午后码头侧光，背景是仓库与停靠船只的浅景深虚化。收尾留 12 帧余量。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.75
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.375
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.25
+    }
+   }
+  },
+  {
+   "query": "MS 双人中景，机位回到轴线中立侧，米迦尔在画面左、伊恩在画面右，两人距离比先前略近，同框对视。镜头固定不动，50mm，浅景深压住码头市场午后的背景人流与桅杆。米迦尔微微侧头看向伊恩，伊恩回望，视线在两人之间形成一条安静的水平线——这是情绪顶点：他们终于达成一致。两人身体几乎静止，只有呼吸带来的极小起伏，把静止留给铺垫，让这次对视本身成为转折。光线为午后侧逆光，暖调，尘埃在光柱中浮动。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.8888888888888888
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.39999999999999997
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "MS 中景，伊恩在画面右位，身体朝左，面向船的方向。机位在伊恩一侧，与上一镜双人机位角度差大于 30°，保持伊恩朝左的视线方向。镜头固定，50mm。伊恩先沉默片刻，随后头部微微转向船侧，说出嘱托，说完停顿，身体开始朝船侧转去，为转身离去做准备。码头午后光线，背景是船与水面。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "label_top@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    }
+   }
+  },
+  {
+   "query": "特写（CU）：米迦尔面部，午后码头侧逆光。机位过轴至米迦尔一侧（front_right 侧前方略偏），50mm 固定机位，视线朝画面右，与伊恩保持面对面关系但不越轴。米迦尔情绪收在脸上——眼神短暂停留、下颌微收，一句极短的回应后不再多言，留出收尾余量。背景为虚化的码头与船身，浅景深突出面部。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.3
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "中远景（MLS），50mm 固定低机位，构图平衡：米迦尔单人立于画面偏左，面向画面右方，目光越过画外水面望向正在离岸的船。机位沿光轴缓缓后退（dolly_out，约 1.2 米，1–60 帧），景别由中景逐步放宽为中远景，把米迦尔重新放回码头环境中——这是段末的「松手」。米迦尔保持位置不变，只有头部极轻微地随船转向（turn_head 约 8 度），视线始终锁定画面右方；身体几乎静止，与镜头的缓慢后拉形成运动与静止的对比。背景是午后码头市场：木栈道、系缆桩、远处桅杆与水面反光，海风轻动衣角。无其他人入画，气氛安静、克制、带着目送的余韵。画面在第 60 帧后静止收束，留 12 帧余量。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "全景，第十四街区码头市场午后。相机承接上一镜方向，继续沿光轴向后拉（dolly_out 1.6 米），米迦尔留在画面左侧，人物随景别放大而缩小为全身小影。平视偏低的机位，50mm 镜头，前景是码头的木栈桥与系缆桩，中景是斑驳的货箱、渔网与摊架，远景是灰蓝色的水面与停靠的船体，天光把整片码头铺满。构图上给米迦尔留出左侧的 lead room，右侧与上方由环境接管，人物不再占据画面重心，只剩一个安静的背影轮廓，海风让水面与缆绳轻微晃动。固定感之后的一次缓慢后拉，把空间与告别一并交给码头。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.8888888888888888
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.39999999999999997
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.19999999999999998
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.15
+    }
+   }
+  },
+  {
+   "query": "第十四街区码头市场，午后。中景（MS）双人同框，机位回到轴线中立侧，米迦尔在画面左、伊恩在画面右——延续此前 53 镜确立的左右关系。固定机位，50mm 镜头，不做任何推拉摇移，让这一镜成为整场告别的收束与留白：两人都还留在码头上，谁也没有离开。米迦尔先极轻微地转头看向伊恩，伊恩随后回望，两人目光相接，没有说话，只有海风与远处市场的低鸣。背景是码头栈桥、系船柱与停靠的船只，午后光线从侧后方打来，把两人的影子长长地留在脚下的木板上——影子还在，双人同框留在码头。最后米迦尔轻声说出「再见。」，声音落下后画面继续静置，留出余韵。整体克制、安静，不煽情，只让沉默与影子说话。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "MCU，伊恩位于船头，机位过轴至其右前方（与上一镜角度差大于 30°），伊恩身体仍朝画面左。午后码头市场的光线从画面左侧打来，海面反光在他脸侧。他先缓缓把头转向画面左（回望码头方向），眼神落向远处，眉眼下压、嘴唇轻抿，透出克制的留恋；随后上身极轻微地向左侧倾斜，像船身随浪起伏带出的重心偏移。镜头保持固定景别，仅有极轻的手持呼吸感，不推不摇，让静止成为情绪的参照系。背景是虚化的船舷、缆绳与水面波光，景深浅，人物占据画面右位对应的船头方向。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "label_top@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    }
+   }
+  },
+  {
+   "query": "MCU，米迦尔单人，中近景。机位过轴至米迦尔一侧（front_right），与上一镜同景别但角度变化超过 30°，不越轴。米迦尔仍在画面左位，视线朝画面右。开场他保持原朝向，随后缓缓转头，将最后一眼投向画面右——收束、留白的一瞥；接着他转体，朝画面右后方向转身准备离开。镜头以极缓的 dolly_out 轻微拉远（约 1 米，1–60 帧），把人物重新放回码头环境，作为段落「松手」的收尾，不破坏建立起来的紧张。50mm 焦距，浅景深，午后码头市场自然光，背景虚化的船与货箱。整体节奏克制，运动与静止对比，情绪是告别的沉静。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.5
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    }
+   }
+  },
+  {
+   "query": "MS 中景，机位回到轴线中立侧（front），保持米迦尔在画面左、伊恩在画面右，两人被中间的水面分开。延续 58 的站位，两人隔水相望，做最后告别。50mm 镜头，固定机位，收尾时极缓拉远（dolly_out 0.6 米，第 40–72 帧），把两人重新放回码头环境中，松手收束。表演克制：米迦尔先开口，说完后微微低头；伊恩回应后轻点头。水面反光微弱，无多余道具。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    }
+   }
+  },
+  {
+   "query": "特写（CU），50mm，固定机位微推。米迦尔位于画面左位，面部朝向画面右，视线越过镜头轴线望向画外的伊恩方向，保持不越轴。镜头从第 1 帧到第 36 帧缓慢前推 0.4 米，把落点收在他沉静的眼神上：眼睑微垂、下颌线绷住、呼吸极浅，风把额发吹起一缕又落下。背景是午后码头市场的虚化光斑与远处船桅，浅景深只留他的面部轮廓清晰。第 20 帧起他极轻微地转正头部（约 6°），视线随之定住不再游移，情绪从告别转为定格般的收束。全镜无台词，只用面部微动与缓慢推近完成收束。光影为午后侧逆光，眼窝与颧骨形成柔和的明暗过渡，肤色偏暖，画面右缘留出一点空白承接画外的伊恩。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "retrieval_order@9": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.7777777777777778
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 1,
+     "mean": 0.1111111111111111
+    },
+    "retrieval_order@12": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.5833333333333334
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.35000000000000003
+    },
+    "embed3:excerpt@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.17500000000000002
+    },
+    "embed3:excerpt@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.09999999999999999
+    }
+   }
+  },
+  {
+   "query": "MLS，中远景固定镜头，机位过轴到伊恩一侧（front_right），与上一镜 CU 跳两档、角度变化超过 30°。伊恩站在船头（画面右位对应位置），先低头看着船板，随后缓缓转头望向画面左前方的远方海面，视线越过水面，一动不动地收束整场。码头午后的暖光从侧后方打来，海面反光在画面左侧铺开，头顶留白约 8%。镜头全程固定，不推不摇，让静止成为情绪的落点。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@3": {
+     "best": 2,
+     "mean": 0.6666666666666666
+    },
+    "embed3:excerpt@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "label_top@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@12": {
+     "best": 1,
+     "mean": 0.08333333333333333
+    },
+    "label_top@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "label_top@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt@20": {
+     "best": 1,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 0,
+     "mean": 0.0
+    },
+    "retrieval_order@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "label_top@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 1,
+     "mean": 0.024999999999999998
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 0,
+     "mean": 0.0
+    }
+   }
+  },
+  {
+   "query": "全景（LS），固定机位回到轴线中立侧并缓缓后拉。午后码头市场恢复平静，海面泛着碎光，木栈桥与缆绳在画面中构成横向层次。米迦尔在画面左侧、伊恩在画面右侧，两人距离拉到最大，各自独立地站着，中间空出大片空间——这段距离本身就是告别的形状。米迦尔先转身朝栈桥尽头的船走去，伊恩在原地停了一拍才跟上，脚步慢，最终两人一前一后走向画面深处，身影随镜头后拉而缩小，同框淡出。整体气氛安静、克制，风的动感只留在衣角与水面。50mm 焦段，固定后拉，收束留白。",
+   "pools": {
+    "retrieval_order@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "label_top@3": {
+     "best": 3,
+     "mean": 1.0
+    },
+    "embed3:excerpt@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "embed3:title+excerpt+zh@3": {
+     "best": 1,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "label_top@6": {
+     "best": 3,
+     "mean": 0.8333333333333334
+    },
+    "embed3:excerpt@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "embed3:excerpt+zh@6": {
+     "best": 1,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@6": {
+     "best": 2,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "label_top@9": {
+     "best": 3,
+     "mean": 0.5555555555555556
+    },
+    "embed3:excerpt@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:excerpt+zh@9": {
+     "best": 2,
+     "mean": 0.2222222222222222
+    },
+    "embed3:title+excerpt+zh@9": {
+     "best": 3,
+     "mean": 0.4444444444444444
+    },
+    "retrieval_order@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "label_top@12": {
+     "best": 3,
+     "mean": 0.4166666666666667
+    },
+    "embed3:excerpt@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:excerpt+zh@12": {
+     "best": 2,
+     "mean": 0.16666666666666666
+    },
+    "embed3:title+excerpt+zh@12": {
+     "best": 3,
+     "mean": 0.3333333333333333
+    },
+    "retrieval_order@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "label_top@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "embed3:excerpt@20": {
+     "best": 2,
+     "mean": 0.09999999999999999
+    },
+    "embed3:excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.15
+    },
+    "embed3:title+excerpt+zh@20": {
+     "best": 3,
+     "mean": 0.25
+    },
+    "retrieval_order@40": {
+     "best": 3,
+     "mean": 0.075
+    },
+    "label_top@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:excerpt@40": {
+     "best": 2,
+     "mean": 0.049999999999999996
+    },
+    "embed3:excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    },
+    "embed3:title+excerpt+zh@40": {
+     "best": 3,
+     "mean": 0.125
+    }
+   }
+  }
+ ]
+}
