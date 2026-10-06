@@ -19,7 +19,12 @@
 
 用法::
 
-  python tools/holdout_fill.py --provider ollama --model qwen3-vl:30b --batch 6 --rounds 6
+  python tools/holdout_fill.py --provider glm --model glm-5.3 --batch 6 --rounds 6
+
+**默认通道是 `glm`（GLM-5.3）**，不是本地模型：用户 2026-10-05／2026-10-06 两次裁决
+（"别用本地模型了"；且本机那份 `qwen3-vl:30b` 的 blob 是坏修订、输出纯噪声），
+标注族的现行选择就是 GLM-5.3（`family=zhipu`，与抽取族 DeepSeek 天然换族）。
+`--provider ollama` 仍然能用，只是**不再默认**。
 """
 
 from __future__ import annotations
@@ -493,7 +498,9 @@ def coverage_rounds(cards, vocab, client, entries, rejects, done, fingerprint,
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="holdout_fill")
-    parser.add_argument("--provider", default="ollama")
+    #: 默认 **glm**（GLM-5.3）：本地 `qwen3-vl:30b` 已被用户裁决弃用（且那份 blob 是坏修订），
+    #: 而标注族本来就该与抽取族（DeepSeek）不同族。`--provider ollama` 仍可显式选。
+    parser.add_argument("--provider", default="glm")
     parser.add_argument("--model", default="qwen3-vl:30b")
     parser.add_argument("--scripted", default="")
     parser.add_argument("--batch", type=int, default=6)

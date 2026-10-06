@@ -427,7 +427,10 @@ def sweep_unused(entries: List[Dict], cards: Sequence[Dict],
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="kb_fetch.holdout_gen")
-    parser.add_argument("--provider", default="ollama")
+    #: 默认 **glm**（GLM-5.3）：Route B 要的是"第二族"（第一族＝抽取族 DeepSeek），
+    #: 而本地 `qwen3-vl:30b` 已被用户裁决弃用（且那份 blob 是坏修订、输出纯噪声）。
+    #: `--provider ollama` 仍可显式选。
+    parser.add_argument("--provider", default="glm")
     parser.add_argument("--model", default="")
     parser.add_argument("--scripted", default="")
     parser.add_argument("--batch-size", type=int, default=8)

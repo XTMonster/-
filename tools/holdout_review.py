@@ -1,16 +1,17 @@
 """Route B: two families draft the held-out set, only the disagreements go to a human.
 
 The generator (`tools.kb_fetch.holdout_gen`) writes one family per run, so the
-operational recipe is:
+operational recipe is (第二族 = GLM-5.3，第一族 = DeepSeek；本地 `qwen3-vl:30b`
+已被裁决弃用——用户 2026-10-05／06"别用本地模型了"，且那份 blob 是坏修订):
 
-    python -m tools.kb_fetch.holdout_gen --provider ollama --model qwen3-vl:30b
-    cp fixtures/knowledge_holdout.jsonl work/holdout.qwen.jsonl
+    python -m tools.kb_fetch.holdout_gen --provider glm --model glm-5.3
+    cp fixtures/knowledge_holdout.jsonl work/holdout.glm.jsonl
     python -m tools.kb_fetch.holdout_gen --provider deepseek --model deepseek-chat
     cp fixtures/knowledge_holdout.jsonl work/holdout.deepseek.jsonl
-    python tools/holdout_review.py diff  --a work/holdout.qwen.jsonl \
+    python tools/holdout_review.py diff  --a work/holdout.glm.jsonl \
                                          --b work/holdout.deepseek.jsonl --out-dir work/holdout
     #   人只勾 work/holdout/review.md
-    python tools/holdout_review.py apply --entries work/holdout.qwen.jsonl \
+    python tools/holdout_review.py apply --entries work/holdout.glm.jsonl \
                                          --sheet work/holdout/review.md \
                                          --out fixtures/knowledge_holdout.jsonl
 
