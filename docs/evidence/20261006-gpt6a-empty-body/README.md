@@ -24,8 +24,31 @@
 
 **操作失误（如实记）**：重发这四件时 `Start-Process -RedirectStandardError` **截断**了
 原来那三个 `.err`，所以上面这段是我从当时的控制台读到的原文，**不是可再打开的原件**。
-作为替代，本目录保留一份**同条件复现**：`probe_budget4096.*`（同 `a_metric` 包、
-同 4096 预算）——它给出的是同一个失败的**可引用原件**。
+
+**同条件复现（已做）**：`probe_budget4096.*` = 同 `a_metric` 包、同 `--max-tokens 4096`，
+18:35 发、**18:41:20 失败**，三次 `elapsed_s` = **120.8 / 242.5 / 362.1**，
+与原来那三份（119.6/244.8/370.1、122.5/239.7/360.6、120.0/243.6/366.3）**同形**，
+且 `.err` 字节数与原来三份**逐字节同长（341 B）**。
+
+**但那份原件本身是"花"的（必须写清）**：`Start-Process` 的重定向抓的是 Python 在
+**本机控制台代码页**下写出的字节，中文在写出的那一刻就已被替换 ⇒ 存下来的
+`probe_budget4096.err` **不是可读的原文**（实测：UTF-8 与 GBK 两种标记都不在里面）。
+它**只配当"发生过的痕迹"**，不配当"读了就能引用的原件"。
+
+**不失真的原件 = `probe_budget4096b.err`**（同一复现 ＋ `PYTHONIOENCODING=utf-8`，
+18:41 发、**18:46:51 失败**，394 B），逐字：
+
+```
+中转站没给出正文：[{"error": "LLMError: relay(gpt-6-astra) 调用失败：模型返回的空正文（endpoint trap）", "elapsed_s": 79.4},
+                  {"error": "LLMError: relay(gpt-6-astra) 调用失败：模型返回的空正文（endpoint trap）", "elapsed_s": 183.9},
+                  {"error": "LLMError: relay(gpt-6-astra) 调用失败：模型返回的空正文（endpoint trap）", "elapsed_s": 295.5}]
+```
+
+**产生处（逐字可核，两行）**：
+`tools/kb_fetch/llm.py:612` 抛 `模型返回的空正文（endpoint trap）`，
+由 `tools/kb_fetch/llm.py:617` 的 `relay({model}) 调用失败：…` 包成外层的那个字符串。
+（`tools/kb_fetch/llm.py:158` 是**另一条路**——`parse_json_content` 给 `chat_json` 用的同名判据；
+本批走的是 `chat()` 那条原始正文的路，所以引 612/617。）
 
 ## 二、根因（代码路径，逐条可核）
 
