@@ -51,6 +51,22 @@ def test_top_level_schema_is_present():
     assert manifest["audit_pass_rate"]["exempt_shots"] == []
 
 
+def test_the_delivery_records_the_plans_normalised_camera_move():
+    """P14-316：成片记录里要有**计划已经算好的**归一化运镜枚举（`camera_move`）。
+
+    为什么：`declared.technique` 是剧本原话（"固定镜头"），而知识侧 `movement` 的取值域是
+    英文枚举（`static`/`dolly_in`）——两边词表对不上，成片侧此前**一个可比的运镜值都没有**
+    （实测 300 个 `movement` 成员里 294 个落进 `film_side_empty`）。这里只抄不改名。
+    """
+    plan = _plan()
+    plan.shots[0].declared_camera_move = "dolly_in"
+    manifest = build_manifest(plan, generated_at="t")
+    assert manifest["shots"][0]["declared"]["camera_move"] == "dolly_in"
+    #: 计划里没有 ⇒ `None`（这个 payload 的规矩是**全部可空**），不许编一个默认值。
+    plan.shots[0].declared_camera_move = ""
+    assert build_manifest(plan, generated_at="t")["shots"][0]["declared"]["camera_move"] is None
+
+
 def test_the_axis_field_carries_the_generators_native_values_only():
     """P14-313（轴族裁决）：`axis{}` 只抄**生成器原生值**——有序 pair ＋ 叉积符号 ＋ 状态。
 
@@ -78,7 +94,7 @@ def test_declared_is_null_when_there_is_no_declaration():
     declared = manifest["shots"][0]["declared"]
     assert set(declared) == {"shot_number", "camera_number", "technique",
                              "transition", "location", "time", "lighting",
-                             "sfx", "declared_duration_s"}
+                             "sfx", "declared_duration_s", "camera_move"}
     assert all(value is None for value in declared.values())
 
 

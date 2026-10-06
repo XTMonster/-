@@ -65,7 +65,10 @@ BINDINGS: Dict[str, Tuple[Tuple[str, ...], Any]] = {
     "shot_size": (("shot_type",), _identity),
     "intent": (("intent_type",), _identity),
     "lens": (("camera.lens",), _lens_mm),
-    "movement": (("movements[].kind", "declared_camera_move"), _identity),
+    #: `declared.camera_move` 是 P14-316 落进成片记录的**归一化运镜枚举**
+    #: （此前只读 `declared_camera_move`——那个键在成片里**根本不存在**，
+    #: 于是 300 个 `movement` 成员里 294 个落进 `film_side_empty`）。
+    "movement": (("movements[].kind", "declared.camera_move"), _identity),
     "action": (("action_types[]",), _identity),
     "transition": (("declared.transition", "transition_in", "transition_out"), _identity),
     "vfx": (("vfx[].type",), _identity),
@@ -145,6 +148,9 @@ def shot_values(shot: Dict[str, Any], field: str) -> List[str]:
         return [str(shot.get("intent_type"))] if shot.get("intent_type") else []
     if field == "declared_camera_move":
         value = shot.get("declared_camera_move")
+        return [str(value)] if value else []
+    if field == "declared.camera_move":
+        value = (shot.get("declared") or {}).get("camera_move")
         return [str(value)] if value else []
     if field == "camera.lens":
         lens = (shot.get("camera") or {}).get("lens")

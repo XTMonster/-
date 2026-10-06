@@ -132,7 +132,8 @@ def test_the_bindings_table_is_the_documented_seven_kinds():
     assert set(ecr.BINDINGS) == {"shot_size", "intent", "lens", "movement",
                                  "action", "transition", "vfx", "axis_side"}
     assert ecr.BINDINGS["lens"][0] == ("camera.lens",)
-    assert ecr.BINDINGS["movement"][0] == ("movements[].kind", "declared_camera_move")
+    assert ecr.BINDINGS["movement"][0] == ("movements[].kind", "declared.camera_move"), (
+        "`declared_camera_move` 那个键在成片里根本不存在（P14-316 才落成 `declared.camera_move`）")
     assert ecr.BINDINGS["axis_side"][0] == ("axis.status",)
     assert ecr.VALUE_BINDINGS["axis_side"] == {"neutral": "neutral"}
 
@@ -185,7 +186,7 @@ def test_the_alias_table_maps_the_knowledge_side_onto_the_film_enum():
     edges = {"e1": _edge("e1", [["qualifier", "intent", "intent:推进"],
                                 ["forbid", "movement", "movement:固定"]])}
     shots = {"s1": {"shot_id": "s1", "intent_type": "推进",
-                    "declared_camera_move": "static"}}
+                    "declared": {"camera_move": "static"}}}
     out = ecr.analyze([_inject("s1", "e1")], edges, shots)
     assert out["counts"]["violations"] == 1
     assert out["value_aliases"]["version"] == ecr.VALUE_ALIASES_VERSION

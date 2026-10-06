@@ -2414,3 +2414,30 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 **未验证／边界**：① **两次真跑不能当分布**；② 值级绑定只在**中性机位**上成立、本跑 0 次中性
 ⇒ **没被行使**；③ 这一份是**新的 gen2 产物**（指纹当前），可当 Q5／E2 的新载体，
 但**本轮没有**去更新那两个指标的读数（要按代走）。
+
+### P14-316：`declared.camera_move` 落字段——`movement` 一族从"**没得比**"变成"**能比**"
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R53-D7 | 同一裁决原则的直接应用（成员最多的 kind，第一批） | **绿（改一处＋真实数据验证＋影子预览）** | `docs/evidence/20261007-declared-move-landing/`；复算 `work/_probe_declared_move.py` | 2026-10-07 | 本批 |
+
+**缺口**（真跑产物上量的）：成片 `camera{}` 只有 `lens/name/position`、`declared{}` 有 `technique`
+（剧本原话"固定镜头"）却没有归一化枚举、`movements[]` 全片**只有 1 条** ⇒ 诊断里 `movement` 的
+**294/300** 个成员落进 `film_side_empty`。而**计划里那个值一直在**：
+`declared_camera_move` ∈ {`static` 63, `dolly_in` 1}（`plan_received` 事件里带着整份计划）。
+
+**改一处**：`delivery/manifest.py::_declared_payload` 增 `camera_move`，**原样抄**
+`shot.declared_camera_move`（没有就是 `None`）；诊断绑定从**不存在的** `declared_camera_move`
+改成 `declared.camera_move`。守门 1 条＋golden 用 `tools/gen_golden.py` 重生成（不是改断言）。
+
+**真实数据验证**（`work/_probe_declared_move.py`，不必再跑一次真跑）：拿 `20261007-real-axis`
+`plan_received` 里的**真计划**建 manifest ⇒ `plan {static 63, dolly_in 1}` 与
+`manifest {static 63, dolly_in 1}` **逐项相等**。
+
+**影子分析**（补进**真** `shots.json`，只预览、**不更新任何指标**）：
+`movement` 的 `film_side_empty` **294/300 → 0**、`matched/unmatched` 5/1 → **267/33**；
+全部 `edge_field_absent` **53 → 1**（只剩 `axis_side` 那条）。正式读数要等**下一次真跑**。
+
+**未验证／边界**：① 影子分析不是读数；② 这一栏是**计划声明**的运镜，不是"实际动没动"
+（`movements[]` 才是写进关键帧的那一份，本次仍只有 1 条）——两者不是同一个量，别混用；
+③ 只抄不改名、不翻译；需要"约定"的东西仍然不碰。

@@ -153,10 +153,17 @@ def _declared_payload(declaration, shot) -> Dict[str, Any]:
         "shot_number": None, "camera_number": None, "technique": None,
         "transition": None, "location": None, "time": None, "lighting": None,
         "sfx": None, "declared_duration_s": None,
+        #: v1.5（P14-316）：**计划里已经算好的**归一化运镜枚举（`static`/`dolly_in`/…），
+        #: 原样抄进成片记录。为什么必须有：`technique` 是剧本原话（"固定镜头"），
+        #: 而知识侧的 `movement` 取值域是**英文枚举**——两边词表对不上，成片侧此前
+        #: **一个可比的运镜值都没有**（实测 294/300 个 `movement` 成员落进 `film_side_empty`）。
+        #: 只抄不改名、不翻译：计划里没有就是 `None`（本 payload 的规矩是**全部可空**）。
+        "camera_move": None,
     }
     if declaration is None:
         pinned = int(getattr(shot, "declared_shot_number", 0) or 0)
         payload["shot_number"] = pinned or None
+        payload["camera_move"] = str(getattr(shot, "declared_camera_move", "") or "") or None
         return payload
     payload.update({
         "shot_number": int(getattr(declaration, "shot_number", 0) or 0) or None,
@@ -168,6 +175,7 @@ def _declared_payload(declaration, shot) -> Dict[str, Any]:
         "lighting": declaration.field("灯光") or None,
         "sfx": declaration.field("音效") or None,
         "declared_duration_s": getattr(declaration, "declared_seconds", None),
+        "camera_move": str(getattr(shot, "declared_camera_move", "") or "") or None,
     })
     return payload
 
