@@ -1,0 +1,14 @@
+{
+  "role": "规格一致性",
+  "requested_model": "glm-5.3",
+  "attempts": [
+    {
+      "level": "max",
+      "error": "TimeoutError: The read operation timed out",
+      "elapsed_s": 900.1,
+      "finish_reason": "transport_error",
+      "requested_model": "glm-5.3",
+      "max_tokens": 32768
+    }
+  ]
+}
