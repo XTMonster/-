@@ -1,0 +1,45 @@
+{
+  "created_at": "2026-10-06T22:57:11",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "586424a",
+    "head_subject": "fix(P14-298): 恢复被主线误覆盖的 lane README(逐字)，只补两条(启动器与 key 继承/原始读数出处)＋记下教训",
+    "recent": [
+      "586424a fix(P14-298): 恢复被主线误覆盖的 lane README(逐字)，只补两条(启动器与 key 继承/原始读数出处)＋记下教训",
+      "a558455 docs(P14-298): 补齐两条证据目录的 README——云端嵌入在交付位更差(杠杆A被否)；另一个目录是一次没发出去的会诊包(GBK 吃中文角色名)",
+      "df768c6 docs(P14-297): 勘误——读数板里的 pytest 计数要分两个时点写(链内 2388 / 本地最近 2449)，并写明这个数每次改动都会变、不许当判据",
+      "686c908 docs(P14-297): ACCEPTANCE_STATUS 顶上补现行读数板(2026-10-06 全链)并把两处过时陈述改正 + 守门",
+      "63a2fee fix(P14-298): 自适应分块两侧提示词补'你没有工具/不许演旁白'(plan_writer 同一处教训) + 2条守门(含反面控制)"
+    ],
+    "uncommitted": [
+      "?? docs/evidence/20261006-e1-gate-glm/"
+    ]
+  },
+  "question": {
+    "path": "work/_q_e1_gate_glm2.md",
+    "sha256": "034ab597077bdec7c933836b61f8d0d4042bd32c89bf4e718eaed0e5bb19afba",
+    "chars": 729
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "测试与验收": {
+      "system": {
+        "chars": 1012,
+        "sha256": "bce8c5dc94fe6033947bc445ffdbe047bad80fc72104e9a02421b3af8d628061"
+      },
+      "user": {
+        "chars": 740,
+        "sha256": "3448ddfd4d972bb5c93edade976565c1d9dedadc60406a0aad5351b3fb63699d"
+      }
+    }
+  }
+}

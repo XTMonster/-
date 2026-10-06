@@ -1,0 +1,59 @@
+{
+  "created_at": "2026-10-06T22:45:49",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "318672f",
+    "head_subject": "fix(P14-294): held-out 两条通路的 --provider 默认值从已弃用的本地模型改成 glm(GLM-5.3) + 守门",
+    "recent": [
+      "318672f fix(P14-294): held-out 两条通路的 --provider 默认值从已弃用的本地模型改成 glm(GLM-5.3) + 守门",
+      "702d34a docs(P14-295): 中文线索单独当语义桥——最强的无判分单臂(prior+zh(z)深12=0.2708, 比现役+0.10)但同深度上界一行未动(再次印证深度主导)",
+      "ebb37fe feat(P14-293): 云端嵌入客户端入库(智谱 embedding-3，确定性+缓存+具名抛错)；去标签池的 嵌入重排 杠杆在 proxy 上被否",
+      "f0e58ea feat(P14-292): 通道改判——不再默认 GPT-6A，改用 GLM-5.3（代码默认 + hooks 契约 + 守门三处同源）",
+      "82ded48 fix(P14-294): relay_adaptive 漏接 SystemExit(ConsultFailed 是它的子类)导致通道失败时静默退出、answer.md/calls.json 全不写——补 except 并加2条守门(含端到端落盘+非零退出)"
+    ],
+    "uncommitted": [
+      "M tests/plan_v4_instruments.sha256.json",
+      "?? docs/evidence/20261006-e1-cloud-embed/",
+      "?? docs/evidence/20261006-ruling-leverA/",
+      "?? tests/test_e1_pool_ceiling.py",
+      "?? tools/knowledge/e1_pool_ceiling.py"
+    ]
+  },
+  "question": {
+    "path": "work/_q_e1_gate_glm.md",
+    "sha256": "e8839f5f713915f31dc1ebea197a450b3f19224969065f3689779a8b0c384a56",
+    "chars": 1549
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "测试与验收": {
+      "system": {
+        "chars": 1012,
+        "sha256": "bce8c5dc94fe6033947bc445ffdbe047bad80fc72104e9a02421b3af8d628061"
+      },
+      "user": {
+        "chars": 1560,
+        "sha256": "a3d6167d6e610d8f0422ce23d7aceb669e0c5899892131b38a85ccef07aad21d"
+      }
+    },
+    "红队反方": {
+      "system": {
+        "chars": 1029,
+        "sha256": "368783b064b0bbdeef436d1f239b26ccf1eba5d17c5c65af6b084f73e6f58b19"
+      },
+      "user": {
+        "chars": 1560,
+        "sha256": "a3d6167d6e610d8f0422ce23d7aceb669e0c5899892131b38a85ccef07aad21d"
+      }
+    }
+  }
+}

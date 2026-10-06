@@ -1,0 +1,57 @@
+{
+  "input": "work\\_labelfree_pool.jsonl",
+  "queries": 8,
+  "triples": 160,
+  "pairs": 48,
+  "appearances_per_pair": {
+    "10": 48
+  },
+  "consistent_pairs": 7,
+  "inconsistent_pairs": 41,
+  "inconsistent_examples": [
+    {
+      "case_id": "case_aerial-shot-camera-movement-angle_011",
+      "distinct_scores": [
+        1.0,
+        1.5
+      ],
+      "appearances": 10
+    },
+    {
+      "case_id": "case_tilt-shot-in-film_003",
+      "distinct_scores": [
+        1.0,
+        1.5,
+        2.0
+      ],
+      "appearances": 10
+    },
+    {
+      "case_id": "case_75_075",
+      "distinct_scores": [
+        2.5,
+        3.0
+      ],
+      "appearances": 10
+    },
+    {
+      "case_id": "case_handheld-shot-in-film-definition-examples_022",
+      "distinct_scores": [
+        2.0,
+        2.5,
+        3.0,
+        3.5
+      ],
+      "appearances": 10
+    },
+    {
+      "case_id": "case_wide-shot-camera-angles-movements-examples_025",
+      "distinct_scores": [
+        3.5,
+        4.0
+      ],
+      "appearances": 10
+    }
+  ],
+  "verdict": "row scores are NOT context-independent"
+}
