@@ -129,3 +129,25 @@ injected_edges = edge_indecidable + edge_inactive + edge_active
 3. `movement` 的中英词表**只量了落差、没编别名**（编了就是新判据）。
 4. `composition_rule`/`pacing`/`camera_angle` 的"区间/阈值"判据**没做**（要动先得裁定）。
 5. 21 次里有 1 次（`20261004_chunked_long14`）**shots 与检索事件对不上**——原因**没查**。
+
+## 十、轴族（判不了的最大一块）追到底：**不是"没实现"，是"没落字段"**
+
+`pair`/`axis_side`/`axis_topic` 各 63 个成员、对应 `AXIS_RULE` **66 条边**——是"判不了"里最大的一块。
+逐条查完（`work/_peek_axis_fields.py`）：
+
+1. **`pair` 只有一个取值 `pair:any_two`**（＝"任意两人"）——它是**作用域**，不是条件；
+   **`axis_topic` 是话题**（视线轴／越轴／中性机位／关系轴／运动轴）。
+   ⇒ 这两者按提案 **③ 类**处理：**不该参与判定**（第一版把它们的 `class` 写成 `B`（成片缺字段）是错的，
+   已改成 `C-topic`；守门 `test_topics_are_not_counted_as_missing_film_fields`）。
+2. **`axis_side` 才是真的缺字段，而"实现"早就在库里**：
+   `block_director/cinema/axis.py::camera_side_of`（`:136`，叉积 Z 符号 → `±1/0`）与
+   `axis_status`（`:452`，→ `correct`/`neutral`/`crossed`）**就是 R001 在用的那套**；
+   `20261006-long21` 的审计日志里有 **120 条 R001 判词带逐镜数字**
+   （"…该待在第 **-1** 侧、实际在第 **+1** 侧"）。
+   缺的只有两件：① `shots.json` 里**没有机器可读字段**（只有散文 `axis_note`，64 镜全非空）；
+   ② 索引的 `left`/`right`/`neutral` 与产品的 `±1/0` 之间**命名约定未定**。
+   ⇒ 这两件都属"要不要动"（加字段＝新功能；定约定＝新判据），**已提交裁定**
+   （`docs/evidence/20261007-axis-family-ruling/`）。
+
+**现在这一版清单里的口径**（`fixtures/closure_uncovered_kinds.json`）：
+`B` ＝ 已注入＋成片无字段（要判就得先加字段）；`C-topic` ＝ 已注入但**它不是条件**。

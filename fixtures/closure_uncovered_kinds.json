@@ -5,24 +5,24 @@
   "kinds": {
     "pair": {
       "members_in_long21": 63,
-      "class": "B",
-      "reason": "成片侧没有对应字段：它描述的是「轴线的两端是谁」（角色对），而 shots.json 只记 characters[]，没有轴线关系",
-      "data_source": "none",
-      "priority": "axis"
+      "class": "C-topic",
+      "reason": "**它不是条件，是作用域**：索引里只有一个取值 `pair:any_two`（＝「任意两人」），表达的是「这条边在说谁」而不是「这一镜必须满足什么」⇒ 按提案 ③ 类，**不该参与判定**（第一版把它归进 B 类是错的：不是成片缺字段，是它本来就不该当条件）",
+      "data_source": "not-a-condition",
+      "priority": "topic"
     },
     "axis_side": {
       "members_in_long21": 63,
       "class": "B",
-      "reason": "成片侧没有对应字段：轴线哪一侧要由机位与轴线反推，shots.json 只记相机位置/朝向",
-      "data_source": "derivable-from-camera（**但没有机械可推的实现**）",
+      "reason": "**几何上可推、而且本仓已经推了**：`block_director/cinema/axis.py::camera_side_of`（:136，叉积 Z 符号）＋ `axis_status`（:452，`correct`/`neutral`/`crossed`）就是 R001 在用的那套。缺的是**两件**：① 成片产物里没有**机器可读字段**（`shots.json` 只有散文 `axis_note`，例如「轴线右侧正打」）；② 索引的 `left`/`right` 与产品的 `±1` 之间的**命名约定没定**。⇒ 要绑定就得先加字段（新功能）＋ 定约定（新判据）",
+      "data_source": "derivable-from-camera（**实现已在库**：`cinema/axis.py:136` / `:452`，但**成片不落这个值**）",
       "priority": "axis"
     },
     "axis_topic": {
       "members_in_long21": 63,
-      "class": "B",
-      "reason": "它是**话题**（这条边在谈哪条轴），不是条件——按提案 ③ 类本就不该参与判定",
-      "data_source": "none",
-      "priority": "axis"
+      "class": "C-topic",
+      "reason": "它是**话题**（这条边在谈哪条轴：视线轴／越轴／中性机位／关系轴／运动轴），不是条件——按提案 ③ 类本就不该参与判定（第一版把它归进 B 类同样是错的）",
+      "data_source": "not-a-condition",
+      "priority": "topic"
     },
     "headroom_policy": {
       "members_in_long21": 19,
@@ -69,7 +69,8 @@
   },
   "not_listed_here": {
     "C 类（**至今没在任何一次运行里被注入过**）": "action / transition / vfx / beat_type / lighting / music / delivery / pacing / genre / prop / scene_type / seq_phase 等——它们既没被判不了、也没被判过；**一旦出现且有绑定就会进判定**",
-    "A 类（已纳入）": "shot_size / intent / lens / movement"
+    "A 类（已纳入）": "shot_size / intent / lens / movement",
+    "class 的取值": "`B` = 已注入＋成片无字段（要判就得先加字段）；`C-topic` = 已注入但**它不是条件**（作用域／话题，按提案 ③ 类不该参与判定）；未列出的见上面两条"
   },
   "note": "这份清单是**数据**（机器可读）：诊断报告里 `not_covered_kinds` 出现的新 kind，必须先登记到这里（守门会当场红）。它**不设门、不改判据**——只是把「我们没校验什么」写清楚。"
 }
