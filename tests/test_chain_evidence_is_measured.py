@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import json
 import pathlib
 import re
 import sys
@@ -28,6 +29,8 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+from tools.knowledge import quality  # noqa: E402
 
 
 def chain_text() -> str:
@@ -506,3 +509,37 @@ def test_q6b_reads_the_same_real_run_as_the_rest_of_the_knowledge_block():
     assert definitions[0][0] < number, (
         "定义必须在调用之前（PowerShell 自上而下执行）：定义在第 %d 行、调用在第 %d 行"
         % (definitions[0][0], number))
+
+
+def test_the_chain_feeds_e1_a_review_file_the_metric_can_certify():
+    """链喂给 E1 的打分文件必须**能被 E1 认证**——否则红线读的是"量不到"，不是"量到了、很低"。
+
+    实测（2026-10-06，P14-260）：链一直喂 `docs/evidence/20261006-e1-craft/reviews.jsonl`。
+    它**与当前索引同代**（`cases_digest` 与 live 逐字相同）、面板也对（deepseek-chat ＋ glm-5.3），
+    但它是在 `--judge-batch` 存在**之前**产出的 ⇒ **没有一行带判分语境** ⇒
+    `quality.e1_relevance` 按规矩**拒绝认证**、记 `not_measured`（`stale_evidence: true`）。
+    于是 RK-13 那条红线的措辞是"**我们量不到**"，而不是"量到了、远低于 0.70"——对一条要
+    "能可信地判成败"的红线来说，这两句话不是一回事。
+
+    换成同一次测量的**认证版**（同索引、**同一批 64 条 long21 查询**、同两位评委、同 C=3
+    产品口径 `rag.cases_top_k=3`）后，E1 变成 `fail`（**0.1771** < 0.70）。
+    **判据一个字没动**（阈值 4.0、分母＝面板行数、线 0.70），而且它**不可能把红线翻绿**——
+    它只是把"量不到的"变成"量到的"。
+
+    这条守门钉的就是那个前提：**每一行都必须带产品口径的 `judge_batch`**。
+    （"是不是当前代"由链自己的 `e1_evidence_is_stale` 负责，它记 `not_measured`＋
+    `stale_evidence` 而不是静默判过——所以这里不重复它。）
+    """
+    lines = [line for _number, line in live_lines(chain_text()) if "--e1-reviews" in line]
+    assert len(lines) == 1, "链上只该有一处给 E1 喂打分文件：%s" % lines
+    match = re.search(r"--e1-reviews\s+(\S+)", lines[0])
+    assert match, lines[0]
+    path = ROOT / match.group(1)
+    assert path.is_file(), "喂的打分文件必须存在：%s" % path
+    rows = [json.loads(line) for line in
+            path.read_text(encoding="utf-8").split("\n") if line.strip()]
+    assert rows, "打分文件为空：%s" % path
+    contexts = sorted({int(row.get("judge_batch") or 0) for row in rows})
+    assert contexts == [quality.PRODUCT_CONTEXT], (
+        "每一行都必须带**产品口径的判分语境**（rag.cases_top_k = %d），实得 %s；"
+        "没有它，E1 只能记 not_measured（P14-260）" % (quality.PRODUCT_CONTEXT, contexts))

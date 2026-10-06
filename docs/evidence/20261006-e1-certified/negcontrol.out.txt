@@ -1,0 +1,2 @@
+OLD: {'file': 'docs/evidence/20261006-e1-craft/reviews.jsonl', 'rows': 192, 'contexts': [0], 'product_context': 3, 'guard_fails': True}
+NEW: {'file': 'docs/evidence/20261006-e1-certified/reviews.jsonl', 'rows': 192, 'contexts': [3], 'product_context': 3, 'guard_fails': False}

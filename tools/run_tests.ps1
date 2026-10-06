@@ -688,7 +688,17 @@ if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
 # source stayed at its shipped share -- 1140 cases / 1012 clues, and E1 went
 # 0.1441 -> 0.1979 on a fresh cross-family panel run over THAT index.
 # Coverage and the 0.70 line are untouched.  See docs/evidence/20261006-e1-craft/.
-python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge --e1-reviews docs/evidence/20261006-e1-craft/reviews.jsonl --shots docs/evidence/20261006-long21/export/export/shots.json --audit-log docs/evidence/20261006-long21/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+# 2026-10-06 (P14-260): E1's review file must be one the metric can actually CERTIFY.
+# The craft file matches the live index and uses the right panel, but it predates
+# `--judge-batch`, so no row carries the judging context - `e1_relevance` therefore
+# refuses to certify it and the chain reported E1 not_measured.  That made the red
+# line read "we cannot measure it" instead of "we measured it and it is far below
+# 0.70".  The replacement is the SAME measurement (same index, the SAME 64 long21
+# queries - verified byte-identical -, same two judges, same C=3 product context),
+# re-run so the context marker is written.  Criteria untouched: threshold 4.0,
+# denominator = panel rows, line 0.70.  It cannot turn the line green - it reads
+# 0.1771 < 0.70 - it only turns an unmeasurable red into a measured one.
+python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge --e1-reviews docs/evidence/20261006-e1-certified/reviews.jsonl --shots docs/evidence/20261006-long21/export/export/shots.json --audit-log docs/evidence/20261006-long21/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }
