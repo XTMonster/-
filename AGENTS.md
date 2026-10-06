@@ -49,9 +49,14 @@ Phases 0-4 and 6 are done:
   `project.bdproj`, load it back (migrate -> deserialise -> validate), and
   rebuild the scene from it without any LLM call. Character fields serialise
   as `initial_location` / `initial_facing` to match the spec.
-- **Light RAG** (`block_director/knowledge/`, no `bpy`): a hand-written card
-  corpus in `knowledge/corpus.py` (132 cards across the five v1.3 domains;
-  P14 expands it to nine domains), a built-in Okapi BM25 (same algorithm and
+- **Light RAG** (`block_director/knowledge/`, no `bpy`): the card corpus in
+  `knowledge/corpus.py` — **9 domains / 2,353 cards** (`132` of them
+  hand-curated; the v1.3 "five domains / 132 cards" line below in this file's
+  history was pre-P14 — **P14's nine-domain expansion is DONE**). The hypergraph
+  index covers **2,221** of those cards (`K1_source_ref_complete` in
+  `docs/evidence/20261006-195300/knowledge_quality.json`); the 132 hand-curated
+  ones are **not in the index yet** (known gap, see `OPEN_PROBLEMS` (19)).
+  Also here: a built-in Okapi BM25 (same algorithm and
   parameters as `rank_bm25`, which Blender's Python does not ship) with a
   `rank_bm25` preference when present, and a retriever with bm25 / vector (RRF)
   / digest modes plus the 800- and 2000-token injection caps. Exposed to the

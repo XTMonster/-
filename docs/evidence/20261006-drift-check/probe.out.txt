@@ -1,0 +1,12 @@
+table             counted  claimed  verdict
+phases   ��5             9        9  OK
+BW rows  ��1.1           7        7  OK
+D        ��1.2           5        5  OK
+F/S rows ��1.3          19       19  OK
+X        ��1.4          17       17  OK
+asserts  ��1.6          34       34  OK
+oracles  ��4.1          19       19  OK
+stories  ��A.3          17       17  OK
+
+mismatches: 0
+fixtures named by ��B.4: 6 | missing on disk: []
