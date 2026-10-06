@@ -91,3 +91,59 @@ def test_the_final_call_sees_every_chunks_notes():
     body = seen_final.get("body", "")
     assert body, "必须真的发过 final 调用"
     assert body.count("要点") >= 2, "各块的要点都要进去（这里两块 ⇒ 至少 2 次出现）"
+
+
+class _ChannelDead(SystemExit):
+    """模拟本仓通道的报错方式：`glm_consult.ConsultFailed` 就是 `SystemExit` 的子类。"""
+
+
+def test_a_systemexit_from_the_channel_is_recorded_not_swallowed():
+    """`SystemExit` 必须被**接住并记账**——漏掉它，`answer.md` / `calls.json` 一个都不会落盘。
+
+    这是 2026-10-06 的现场（`docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md` P14-294）：
+    一次"直接喂大包"的裁决请求跑了 ~70 分钟，**进程没了、产物 0 字节、stdout 也 0 字节**，
+    谁都不知道它为什么停。同仓的 `plan_writer.py` / `panel_consult.py` 早就改成
+    `except (Exception, SystemExit)`，`relay_adaptive.py` 这一处是漏网的。
+    """
+    attempts = []
+
+    def call(messages, *, model, max_tokens, levels, temperature, timeout):
+        attempts.append(len(messages[-1]["content"]))
+        raise _ChannelDead("中转站没给出正文：通道挂了")
+
+    result = ra.adaptive_consult("问题？", ["己" * 900], budget=600,
+                                 consult_fn=call, model="m", max_tokens=64,
+                                 temperature=0.2, timeout=1.0)
+    assert result["failures"], "通道报错必须进 failures（不许穿出去、不许当成成功）"
+    assert result["answer"] == "", "没拿到正文就不许编一个答复"
+    assert result["calls"], "每一次尝试都要留在 calls 里（含错误原文）"
+    assert "_ChannelDead" in result["calls"][0]["error"], (
+        "错误类型要具名写出来（这里记的是**具体子类名**，不是笼统的 SystemExit）")
+    assert attempts, "确实调用过通道"
+
+
+def test_main_writes_artifacts_even_when_the_channel_is_dead(tmp_path):
+    """同上的**端到端**形态：通道全死时 `main()` 仍要落 `answer.md` / `calls.json` 并以非零退出。"""
+    question = tmp_path / "q.md"
+    question.write_text("问题？", encoding="utf-8")
+    material = tmp_path / "m.md"
+    material.write_text("庚" * 3000, encoding="utf-8")
+    out = tmp_path / "out"
+
+    def dead(*args, **kwargs):
+        raise _ChannelDead("中转站没给出正文：通道挂了")
+
+    import tools.plan_writer as pw
+
+    original = pw.choose_channel
+    pw.choose_channel = lambda provider, model: ("fake-model", dead)
+    try:
+        code = ra.main(["--question", str(question), "--material", str(material),
+                        "--provider", "relay", "--out", str(out),
+                        "--max-prompt-chars", "400", "--timeout", "1"])
+    finally:
+        pw.choose_channel = original
+    assert code == 1, "有失败就必须非零退出"
+    assert (out / "calls.json").is_file(), "就算通道全死，现场也要留下 calls.json"
+    assert (out / "answer.md").is_file(), "answer.md 也要落（内容为空是如实的）"
+    assert (out / "answer.md").read_text(encoding="utf-8") == ""

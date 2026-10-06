@@ -1775,6 +1775,29 @@ GPT-6A 不可用时改 GLM-5.3），**主线不自行改门槛、不改判据**�
   而它导入的是**当时的**模块 ⇒ **没有** P14-290 的 `unscored_rows` 守卫。
   ⇒ 它落地后**必须先查** `unscored_rows` 与 `values` 是否全空，**再**决定要不要当读数（不许直接读汇总行）。
 
+### P14-294：**裁决通道静默退出**——`relay_adaptive.py` 漏接 `SystemExit`，一次 70 分钟的裁决请求"人没了、产物 0 字节"
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R3 | 通道失败必须**留证**（不许"进程没了但没人知道为什么"） | **绿（根因已定位、修复＋守门已落）** | `tools/relay_adaptive.py`（两处 `except` 补 `SystemExit`）＋ `tests/test_relay_adaptive.py` 新增 2 条（含**端到端**：`main()` 在通道全死时仍写 `answer.md`/`calls.json` 并非零退出）；`python -m pytest tests/test_relay_adaptive.py` ⇒ **7 passed**，同族 `panel_consult/glm_consult/plan_writer` ⇒ **53 passed** | 2026-10-06 | 本批 |
+
+**现场**：pid **56348**（`work/_gpt6a_ask.py --question work/_q_big_feed.md`，44 KB 材料一次喂）
+21:27:09 起、**21:27 之后什么都没写**，22:34:53 还在、22:37 前后**消失**；
+`work/_big_feed.out`/`.log`/`.err` **全是 0 字节**、`work/_big_feed_answer.md` **不存在**。
+⇒ 与 P14-289 ② 的"50 分钟零输出"合起来看，这条路线是**双重失败**：喂不动**而且**不留痕。
+
+**根因（可复现的那一半）**：`tools/glm_consult.py:108` 是 `class ConsultFailed(SystemExit)`——
+**本仓通道用 `SystemExit` 报"缺 key／没正文"**。`plan_writer.py:258` 与 `panel_consult.py:296/344/356`
+**早就**改成 `except (Exception, SystemExit)`（P14-289 那批），而
+`tools/relay_adaptive.py` 的**两处**（抽取块 :120、最终答复 :151）**仍只接 `Exception`**
+⇒ `ConsultFailed` 直接穿出 `main()`，**`answer.md` / `calls.json` 一个都不写**，
+只剩"进程不见了"。`work/_gpt6a_ask.py`（裁决通道在用的那个草稿）**同一形状的洞**，
+本批一并补（它不属仓库文件，不入库，只在台账记明）。
+
+**未验证／边界**：① 那条 70 分钟到底是"三次 900 s 上限没生效"还是"服务器间歇吐字节把
+每读计时器一直重置"，**根因仍未查**（与 P14-289 ① 同一条挂账）；
+② 修复只保证"**失败一定留证**"，不保证"喂得动大包"——大包仍然是负面结果。
+
 ### P14-292：**通道改判**——不再默认 GPT-6A，改用 GLM-5.3（代码默认 ＋ hooks 契约同批改）
 
 | 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |

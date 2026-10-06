@@ -117,7 +117,11 @@ def adaptive_consult(question: str, materials: Sequence[str], *,
             text, usage = consult_fn(messages, model=model, max_tokens=max_tokens,
                                      levels=list(levels), temperature=temperature,
                                      timeout=timeout)
-        except Exception as exc:                     # noqa: BLE001 - 失败要留证并缩块
+        #: `SystemExit` 也要接住：本仓的通道用 `SystemExit` 报"缺 key／没正文"
+        #: （`glm_consult.ConsultFailed` 就是它的子类）。漏掉它 ⇒ 异常直接穿出 `main()`，
+        #: **`answer.md` / `calls.json` 一个都不会写**，现场只剩下"进程没了"。
+        #: 与 `plan_writer.py` / `panel_consult.py` 的同一处修复同规（2026-10-06，P14-294）。
+        except (Exception, SystemExit) as exc:       # noqa: BLE001 - 失败要留证并缩块
             calls.append({"index": index, "kind": "extract", "chars": len(block),
                           "ok": False, "error": "%s: %s" % (type(exc).__name__,
                                                             str(exc)[:160]),
@@ -148,7 +152,8 @@ def adaptive_consult(question: str, materials: Sequence[str], *,
                                    timeout=timeout)
         calls.append({"index": 0, "kind": "final", "chars": len(final_prompt), "ok": True,
                       "elapsed_s": round(time.time() - started, 1), "usage": usage})
-    except Exception as exc:                         # noqa: BLE001
+    #: 同上：final 那一次失败也要**记进 calls/failures 并让产物落盘**，不许静默退出。
+    except (Exception, SystemExit) as exc:           # noqa: BLE001
         calls.append({"index": 0, "kind": "final", "chars": len(final_prompt), "ok": False,
                       "error": "%s: %s" % (type(exc).__name__, str(exc)[:160]),
                       "elapsed_s": round(time.time() - started, 1)})
