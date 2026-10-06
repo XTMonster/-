@@ -1,0 +1,260 @@
+{
+ "queries": 64,
+ "threshold": 0.703125,
+ "anchor_official_delivered": 0.1771,
+ "anchor_proxy_retrieval_top3": 0.1719,
+ "table": [
+  {
+   "scorer": "clue_len",
+   "pool_depth": 3,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt",
+   "pool_depth": 3,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt+zh",
+   "pool_depth": 3,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:title+excerpt+zh",
+   "pool_depth": 3,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "has_clue",
+   "pool_depth": 3,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "prior+embed3(z)",
+   "pool_depth": 3,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "retrieval_order",
+   "pool_depth": 3,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "clue_len",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.1562,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.2135,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt+zh",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.2292,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:title+excerpt+zh",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.2292,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "has_clue",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.1042,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "prior+embed3(z)",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.2292,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "retrieval_order",
+   "pool_depth": 6,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "clue_len",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.0833,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.2292,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt+zh",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.2396,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:title+excerpt+zh",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.2396,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "has_clue",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.099,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "prior+embed3(z)",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.25,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "retrieval_order",
+   "pool_depth": 12,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "clue_len",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.0469,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.2292,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "embed3:excerpt+zh",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.2292,
+   "queries_at_3of3": 2
+  },
+  {
+   "scorer": "embed3:title+excerpt+zh",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.2344,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "has_clue",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.0781,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "prior+embed3(z)",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.2344,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "retrieval_order",
+   "pool_depth": 20,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "clue_len",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.0156,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.1927,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "embed3:excerpt+zh",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.1927,
+   "queries_at_3of3": 2
+  },
+  {
+   "scorer": "embed3:title+excerpt+zh",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.2031,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "has_clue",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.0365,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "prior+embed3(z)",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.2188,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "retrieval_order",
+   "pool_depth": 40,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "clue_len",
+   "pool_depth": 120,
+   "delivered_E1_proxy": 0.0208,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt",
+   "pool_depth": 120,
+   "delivered_E1_proxy": 0.1198,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:excerpt+zh",
+   "pool_depth": 120,
+   "delivered_E1_proxy": 0.1198,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "embed3:title+excerpt+zh",
+   "pool_depth": 120,
+   "delivered_E1_proxy": 0.1875,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "has_clue",
+   "pool_depth": 120,
+   "delivered_E1_proxy": 0.0,
+   "queries_at_3of3": 0
+  },
+  {
+   "scorer": "prior+embed3(z)",
+   "pool_depth": 120,
+   "delivered_E1_proxy": 0.2188,
+   "queries_at_3of3": 1
+  },
+  {
+   "scorer": "retrieval_order",
+   "pool_depth": 120,
+   "delivered_E1_proxy": 0.1719,
+   "queries_at_3of3": 0
+  }
+ ]
+}
