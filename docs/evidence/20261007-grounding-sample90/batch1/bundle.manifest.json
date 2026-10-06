@@ -1,0 +1,43 @@
+{
+  "created_at": "2026-10-07T03:00:51",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "013d516",
+    "head_subject": "docs(P14-318): 出处缺口的裁定——转入修复但只做局部手术(先修闭环那几条边、不按体量排 pack)；机械判据：9 条边/15 槽位里 topic_mismatch 14；并写清删边=索引换代(23 份运行 pin 全失配)",
+    "recent": [
+      "013d516 docs(P14-318): 出处缺口的裁定——转入修复但只做局部手术(先修闭环那几条边、不按体量排 pack)；机械判据：9 条边/15 槽位里 topic_mismatch 14；并写清删边=索引换代(23 份运行 pin 全失配)",
+      "7a73ef7 docs(P14-317): 把更新后的全扫产物(23 次运行，含两次真跑)一并入库——上一条提交只带了 README 与台账",
+      "6e1bf52 feat(P14-317): 第二次真跑(两栏都落地)——movement 真的在比了(空 294->0，matched 268)、生效边 1->30；另修工具里 for...else 误用导致的 no_match 假计数",
+      "fd499c9 feat(P14-316): declared.camera_move 落字段——movement 一族从 没得比 变成 能比(空 294/300 -> 0，matched 267)",
+      "4ae4c2b docs(P14-315): 落地后的第一次真跑——轴族从判不了变成能判(axis_side field_absent 63->1)，并立刻判出 两套词表不相交(知识侧只有 neutral，成片侧只有 correct/crossed)"
+    ],
+    "uncommitted": []
+  },
+  "question": {
+    "path": "E:\\白模预演codex\\work\\_q_grounding_batch1.md",
+    "sha256": "8a61cbd7f7af9a56b8e14556ff7fdfff7cc5768e5d124462a374f8b65f7e16cf",
+    "chars": 3377
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "测试与验收": {
+      "system": {
+        "chars": 1012,
+        "sha256": "bce8c5dc94fe6033947bc445ffdbe047bad80fc72104e9a02421b3af8d628061"
+      },
+      "user": {
+        "chars": 3388,
+        "sha256": "57ed0df474500d4614621f521778d3604b32e556ba488ffe0f425ebcacc3b33e"
+      }
+    }
+  }
+}

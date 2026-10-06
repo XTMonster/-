@@ -1,0 +1,1802 @@
+{
+ "universe": 1262,
+ "sample": 90,
+ "by_stratum": {
+  "closed_loop_kind": 30,
+  "pack:PERFORMANCE_PACK": 20,
+  "pack:SHOT_PATTERN": 20,
+  "pack:STAGING_PACK": 20
+ },
+ "closed_loop_available": 292,
+ "mechanical_pre_read": {
+  "surface_in_card": 0,
+  "topic_mismatch": 88,
+  "topic_ok_or_unknown": 2
+ },
+ "rows": [
+  {
+   "edge_id": "hg:02f85ddd6d24",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_axis_0321"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "快慢场景的表演速度 该快节奏的场景在棚内按正常速度演；为强调某个强烈戏剧点而放慢的场景，通常要比正常呈现速度再慢一点演。 节奏 戏剧点 节奏",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:03fd3a9f91eb",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_anime_0417",
+    "gen_anime_0420",
+    "gen_perf_0415",
+    "gen_perf_0459",
+    "gen_perf_0479",
+    "gen_perf_0527",
+    "gen_perf_0536",
+    "gen_perf_0548",
+    "perf_emotion",
+    "gen_prod_0176",
+    "gen_prod_0241",
+    "gen_axis_0203",
+    "gen_perf_0361",
+    "gen_perf_0401",
+    "gen_perf_0471",
+    "gen_prod_0179"
+   ],
+   "card_topics": [
+    "",
+    "character_design",
+    "performance"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "动画表演更近舞台 动画表演与实拍电影表演有本质区别，更接近舞台表演：需靠夸张、可读性强的外部动作传达内心，而非依赖镜头前的细微自然主义。 舞台表演 实拍差异 夸张 风格",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:03fd45465d41",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:board",
+   "sources": [
+    "gen_cine_0364"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "手持与跳切并用 在法国新浪潮式段落中，可将手持镜头与跳切结合使用，以制造断裂、躁动的节奏，这种组合当时被视为非正统。 新浪潮 节奏 剪辑",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:04baa311f000",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_anime_0413"
+   ],
+   "card_topics": [
+    "anime"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "螺旋桨分层连续换位 飞机剪纸模型上，螺旋桨做成独立剪出的小片，按顺序连续安放在机头位置，同时模型在摄影机下横移过天空。 循环 剪纸动画 循环动作",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:05c36cb730e7",
+   "type": "PROP_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_perf_0420",
+    "gen_perf_0422",
+    "gen_perf_0532",
+    "gen_perf_0539",
+    "gen_block_0096",
+    "gen_block_0097",
+    "gen_anime_0265",
+    "gen_cine_0294",
+    "gen_cine_0392",
+    "gen_edit_0241",
+    "gen_prod_0220",
+    "gen_story_0119",
+    "gen_story_0128",
+    "gen_anime_0301",
+    "gen_block_0073",
+    "gen_block_0260",
+    "gen_block_0325",
+    "gen_perf_0563",
+    "gen_axis_0183",
+    "gen_perf_0497",
+    "gen_perf_0498",
+    "gen_cine_0065",
+    "gen_perf_0450",
+    "gen_perf_0484",
+    "gen_perf_0575",
+    "gen_prod_0023",
+    "gen_prod_0136",
+    "gen_axis_0222",
+    "gen_block_0035",
+    "gen_block_0262",
+    "gen_block_0300",
+    "gen_block_0353"
+   ],
+   "card_topics": [
+    "",
+    "anime",
+    "camera_angle",
+    "editing",
+    "lighting",
+    "shot_language",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "道具随身上场 戒指、药瓶、匕首、信件等舞台上没有的道具由演员随身携带上场（side-props），需在排练时与正式演出同样使用，确保演员熟悉携带与交接。 随身道具 排练 道具管理 表演准备",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:069c51b68414",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_cine_0081",
+    "gen_cine_0088",
+    "gen_cine_0261",
+    "gen_cine_0262",
+    "gen_cine_0399",
+    "gen_cine_0400",
+    "gen_cine_0355",
+    "gen_cine_0390",
+    "gen_cine_0392",
+    "gen_cine_0438",
+    "gen_edit_0029",
+    "gen_edit_0182",
+    "gen_edit_0284",
+    "gen_perf_0434",
+    "gen_perf_0476",
+    "gen_prod_0140",
+    "gen_prod_0245",
+    "gen_prod_0210",
+    "gen_prod_0212",
+    "gen_edit_0179",
+    "gen_perf_0413",
+    "gen_perf_0556",
+    "cine_depth_of_field",
+    "cine_lens"
+   ],
+   "card_topics": [
+    "",
+    "editing",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "附加镜缩短焦距 若既无长皮腔也无短焦镜头，可在原镜头遮光罩上加装附加翻拍镜（如Ideal Copying Lens），通过缩短组合焦距来获得所需放大倍率与清晰度。 近摄镜 翻拍 翻拍 近摄 光学",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:0957b1746e03",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_perf_0525"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "迟缓如蜗牛的肢体动作 表现伪善或压抑的角色时，肢体动作应像大蛞蝓或蜗牛：伸出头又缩回壳中，面部以昏睡的静止等待和谋划，掩盖坚硬不屈的意志。 静止 意志 肢体语言 节奏",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:09bd54e4dba1",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_comp_0020",
+    "gen_axis_0234",
+    "gen_anime_0327",
+    "gen_block_0047",
+    "gen_anime_0316",
+    "gen_block_0322"
+   ],
+   "card_topics": [
+    "",
+    "anime",
+    "color"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "前景硬线引眼远景放松 前景用切割感强的硬边线条吸引视线，同时让远景保持柔和松弛，形成前紧后松的对比，使眼睛被前景抓住后能在远处休息。 硬边 虚实对比 视觉引导",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:09bd54e4dba1",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:occlusion",
+   "sources": [
+    "gen_comp_0020",
+    "gen_axis_0234",
+    "gen_anime_0327",
+    "gen_block_0047",
+    "gen_anime_0316",
+    "gen_block_0322"
+   ],
+   "card_topics": [
+    "",
+    "anime",
+    "color"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "前景硬线引眼远景放松 前景用切割感强的硬边线条吸引视线，同时让远景保持柔和松弛，形成前紧后松的对比，使眼睛被前景抓住后能在远处休息。 硬边 虚实对比 视觉引导",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:0b172db53a68",
+   "type": "PROP_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:高机位",
+   "sources": [
+    "gen_edit_0141",
+    "gen_prod_0215",
+    "gen_axis_0210",
+    "gen_block_0184",
+    "gen_axis_0196"
+   ],
+   "card_topics": [
+    "",
+    "editing"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "四类壮丽皆由背景承载 仙灵、人群、爱国、宗教四类壮丽段落，其表现力都来自背景的选择与呈现，而非情节本身。 四类壮丽皆由背景承载 段落结构 环境",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:0c3fc09441cd",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_cine_0362"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "过肩推进亲密感 在传统过肩正反打基础上，通过缩短机位距离或增加切换频率，让对话戏在常规构图中叠加一层亲密感，并推动场景情绪递进。 过肩镜头 正反打 对话",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:0d90d3bce736",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_prod_0147"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "运动车厢内的特写 在行驶的车厢内拍写字特写时，让字迹因车身晃动而显得潦草，以强化运动感与真实感。 晃动 运动感",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:0f0045af7504",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:高机位",
+   "sources": [
+    "gen_edit_0180",
+    "gen_story_0017",
+    "gen_block_0243",
+    "gen_block_0255",
+    "gen_prod_0226"
+   ],
+   "card_topics": [
+    "",
+    "editing",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "悬念与布景无关 悬念不取决于装饰或布景；宏大的战争场面极少成为戏剧悬念的来源，战略部署在电影里也很少奏效。 战争 美术",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:0f0045af7504",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:framing",
+   "sources": [
+    "gen_edit_0180",
+    "gen_story_0017",
+    "gen_block_0243",
+    "gen_block_0255",
+    "gen_prod_0226"
+   ],
+   "card_topics": [
+    "",
+    "editing",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "悬念与布景无关 悬念不取决于装饰或布景；宏大的战争场面极少成为戏剧悬念的来源，战略部署在电影里也很少奏效。 战争 美术",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:0fb718650667",
+   "type": "PROP_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:高机位",
+   "sources": [
+    "gen_anime_0331"
+   ],
+   "card_topics": [
+    "anime"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "赛璐珞片固定静止部分 拍摄时用透明赛璐珞片承载画面中静止不动的部分，只让需要动的部分逐张更换，从而省去重复绘制整幅画面的劳动。 静止层 分层拍摄 分层 作画效率",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:111b34cb5494",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_cine_0339",
+    "gen_perf_0574"
+   ],
+   "card_topics": [
+    "",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "中近景的取景范围 中近景（MCU）取景从人物头顶上方一点到躯干中部，既保留面部表情与情绪，又保留部分背景信息。 MCU 景别 构图",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:1154bc974e9d",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_cine_0442"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "移动车镜头的定义 移动车镜头指摄影机架在带轮轨道车上做平滑位移的镜头，区别于变焦（zoom）——前者改变机位与透视关系，后者只改变焦距与取景范围。 dolly 变焦 透视 运动",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:127b4ab7c2a5",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_cine_0416",
+    "gen_cine_0417",
+    "gen_cine_0418",
+    "gen_anime_0337",
+    "gen_anime_0341"
+   ],
+   "card_topics": [
+    "anime",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "推轨与变焦效果差异 推轨与变焦不只是操作流程不同，二者在画面效果上产生两类截然不同的镜头观感，选型时须按所需观感取舍。 画面效果 取舍 运动镜头 视觉风格",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:14114090e1d0",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:过肩",
+   "sources": [
+    "perf_listen"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "倾听也是表演 对话里最有信息量的是**听的人**。听者的反应（眼神、点头、停下手上的事）告诉观众这句话造成了什么影响。只拍说话的人，对话就变成朗读。 倾听 反应 对话 正反打",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:1657ecdea8cf",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:低机位",
+   "sources": [
+    "gen_block_0279"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "环形台阶与光柱布景 用环形台阶、高耸柱体和灯光构成固定布景，以层次和垂直体量组织大型场面的调度与视线引导。 柱体 灯光 固定布景 调度",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:1657ecdea8cf",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:lead_room",
+   "sources": [
+    "gen_block_0279"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "环形台阶与光柱布景 用环形台阶、高耸柱体和灯光构成固定布景，以层次和垂直体量组织大型场面的调度与视线引导。 柱体 灯光 固定布景 调度",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:18f3cef05a69",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_anime_0387",
+    "gen_edit_0161",
+    "gen_perf_0353",
+    "gen_block_0367",
+    "gen_perf_0489",
+    "gen_perf_0567",
+    "gen_block_0042",
+    "gen_block_0290"
+   ],
+   "card_topics": [
+    "",
+    "anime",
+    "editing",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "关节弯曲的动画表现 表现机械式运动时关节不弯曲；表现自然运动时关节需呈现不同程度的屈曲。 屈曲 机械运动 运动规律 表演",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:1953fa522d0c",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_cine_0257",
+    "gen_cine_0305",
+    "gen_cine_0428",
+    "gen_comp_0062",
+    "gen_comp_0072",
+    "gen_comp_0141",
+    "gen_comp_0219",
+    "gen_edit_0184",
+    "gen_edit_0242",
+    "gen_perf_0436",
+    "gen_prod_0120",
+    "gen_prod_0150",
+    "gen_prod_0162",
+    "gen_prod_0181",
+    "gen_story_0069",
+    "gen_axis_0194",
+    "gen_story_0118",
+    "gen_story_0273",
+    "gen_axis_0261",
+    "gen_axis_0277",
+    "gen_block_0018",
+    "gen_block_0039",
+    "gen_block_0231",
+    "gen_block_0280",
+    "gen_block_0327",
+    "gen_prod_0061",
+    "gen_prod_0208",
+    "gen_prod_0210",
+    "gen_cine_0256",
+    "gen_cine_0307",
+    "gen_comp_0134",
+    "gen_prod_0182",
+    "gen_story_0022",
+    "gen_story_0054",
+    "gen_block_0010"
+   ],
+   "card_topics": [
+    "",
+    "camera_angle",
+    "editing",
+    "lighting",
+    "shot_language",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "画外延续的世界 构图时只把世界的一小块纳入画框，并让观众意识到画框之外生活仍在继续；用这种取舍营造诗意现实主义风格。 画外空间 画框 诗意现实主义 画外空间 构图 现实主义",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:1953fa522d0c",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:framing",
+   "sources": [
+    "gen_cine_0257",
+    "gen_cine_0305",
+    "gen_cine_0428",
+    "gen_comp_0062",
+    "gen_comp_0072",
+    "gen_comp_0141",
+    "gen_comp_0219",
+    "gen_edit_0184",
+    "gen_edit_0242",
+    "gen_perf_0436",
+    "gen_prod_0120",
+    "gen_prod_0150",
+    "gen_prod_0162",
+    "gen_prod_0181",
+    "gen_story_0069",
+    "gen_axis_0194",
+    "gen_story_0118",
+    "gen_story_0273",
+    "gen_axis_0261",
+    "gen_axis_0277",
+    "gen_block_0018",
+    "gen_block_0039",
+    "gen_block_0231",
+    "gen_block_0280",
+    "gen_block_0327",
+    "gen_prod_0061",
+    "gen_prod_0208",
+    "gen_prod_0210",
+    "gen_cine_0256",
+    "gen_cine_0307",
+    "gen_comp_0134",
+    "gen_prod_0182",
+    "gen_story_0022",
+    "gen_story_0054",
+    "gen_block_0010"
+   ],
+   "card_topics": [
+    "",
+    "camera_angle",
+    "editing",
+    "lighting",
+    "shot_language",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "画外延续的世界 构图时只把世界的一小块纳入画框，并让观众意识到画框之外生活仍在继续；用这种取舍营造诗意现实主义风格。 画外空间 画框 诗意现实主义 画外空间 构图 现实主义",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:1d0f7c66af29",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:balance",
+   "sources": [
+    "gen_block_0164"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "升降倾斜台面的用法 升降台可让任一端升起或下沉约六英尺，从而形成倾斜地板，用于制造斜面调度。 升降台 倾斜地板 六英尺 升降台 调度",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:20e166f5189a",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_anime_0294"
+   ],
+   "card_topics": [
+    "anime"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "单侧动作时另一人静止 只让一个角色做手势动作时，另一角色在所有张中按初稿逐线重复保持静止；待第二人动作时，第一人同样回到被动姿势。 静止角色 逐线重复 交替动作 表演 角色调度",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:21d9ec74ac92",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "perf_objective"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "用行动动词代替情绪词 \\「他很生气\\」不是可执行的指令；\\「他把杯子推开\\」才是。把情绪翻译成**动作**：想说服、想赶走、想藏起来、想试探。动作动词能被解算成姿态与节奏，情绪词不能。 行动动词 目标 表演 可执行",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:23350e69d1ef",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "cine_pov"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "主观镜头（POV） POV 把机位放在角色的眼睛位置，观众看到角色所看。使用前必须先交代「谁在看」（前一个镜头给出角色与视线方向），否则观众会迷失。POV 之后通常需要回到客观机位确认角色的反应。 主观 POV 视点 视线",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:24471433ccc5",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:framing",
+   "sources": [
+    "gen_cine_0414"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "垂直视点高度 拍荷兰角时需确定视点的垂直高度（vertical level of your view），即机位高低，它与倾斜角共同决定画面的压迫或俯视关系。 机位 荷兰角 机位",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:256e60805830",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_story_0295",
+    "gen_story_0299",
+    "gen_story_0301",
+    "gen_cine_0346",
+    "gen_cine_0361",
+    "gen_cine_0461",
+    "gen_anime_0384",
+    "gen_story_0005",
+    "cine_coverage",
+    "cine_low_angle",
+    "gen_cine_0270",
+    "gen_cine_0441",
+    "gen_prod_0256"
+   ],
+   "card_topics": [
+    "",
+    "anime",
+    "shot_language",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "分镜构图的三要素 在分镜中表达构图时，至少标注三项：景别（shot size）、镜头类型（shot type）、摄影机运动（camera movement）。 景别 镜头类型 摄影机运动 分镜格式 标注项",
+   "stratum": "closed_loop_kind"
+  },
+  {
+   "edge_id": "hg:02f85ddd6d24",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "action",
+   "value": "action:走位",
+   "sources": [
+    "gen_axis_0321"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "快慢场景的表演速度 该快节奏的场景在棚内按正常速度演；为强调某个强烈戏剧点而放慢的场景，通常要比正常呈现速度再慢一点演。 节奏 戏剧点 节奏",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:02f85ddd6d24",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:压抑",
+   "sources": [
+    "gen_axis_0321"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "快慢场景的表演速度 该快节奏的场景在棚内按正常速度演；为强调某个强烈戏剧点而放慢的场景，通常要比正常呈现速度再慢一点演。 节奏 戏剧点 节奏",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:0957b1746e03",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "action",
+   "value": "action:低头",
+   "sources": [
+    "gen_perf_0525"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "迟缓如蜗牛的肢体动作 表现伪善或压抑的角色时，肢体动作应像大蛞蝓或蜗牛：伸出头又缩回壳中，面部以昏睡的静止等待和谋划，掩盖坚硬不屈的意志。 静止 意志 肢体语言 节奏",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:14114090e1d0",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:平静",
+   "sources": [
+    "perf_listen"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "倾听也是表演 对话里最有信息量的是**听的人**。听者的反应（眼神、点头、停下手上的事）告诉观众这句话造成了什么影响。只拍说话的人，对话就变成朗读。 倾听 反应 对话 正反打",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:18f3cef05a69",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:平静",
+   "sources": [
+    "gen_anime_0387",
+    "gen_edit_0161",
+    "gen_perf_0353",
+    "gen_block_0367",
+    "gen_perf_0489",
+    "gen_perf_0567",
+    "gen_block_0042",
+    "gen_block_0290"
+   ],
+   "card_topics": [
+    "",
+    "anime",
+    "editing",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "关节弯曲的动画表现 表现机械式运动时关节不弯曲；表现自然运动时关节需呈现不同程度的屈曲。 屈曲 机械运动 运动规律 表演",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:20e166f5189a",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "action",
+   "value": "action:挥手",
+   "sources": [
+    "gen_anime_0294"
+   ],
+   "card_topics": [
+    "anime"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "单侧动作时另一人静止 只让一个角色做手势动作时，另一角色在所有张中按初稿逐线重复保持静止；待第二人动作时，第一人同样回到被动姿势。 静止角色 逐线重复 交替动作 表演 角色调度",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:20e166f5189a",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:平静",
+   "sources": [
+    "gen_anime_0294"
+   ],
+   "card_topics": [
+    "anime"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "单侧动作时另一人静止 只让一个角色做手势动作时，另一角色在所有张中按初稿逐线重复保持静止；待第二人动作时，第一人同样回到被动姿势。 静止角色 逐线重复 交替动作 表演 角色调度",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:21d9ec74ac92",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "action",
+   "value": "action:拿起",
+   "sources": [
+    "perf_objective"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "用行动动词代替情绪词 \\「他很生气\\」不是可执行的指令；\\「他把杯子推开\\」才是。把情绪翻译成**动作**：想说服、想赶走、想藏起来、想试探。动作动词能被解算成姿态与节奏，情绪词不能。 行动动词 目标 表演 可执行",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:21d9ec74ac92",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:愤怒",
+   "sources": [
+    "perf_objective"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "用行动动词代替情绪词 \\「他很生气\\」不是可执行的指令；\\「他把杯子推开\\」才是。把情绪翻译成**动作**：想说服、想赶走、想藏起来、想试探。动作动词能被解算成姿态与节奏，情绪词不能。 行动动词 目标 表演 可执行",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:23353fbf7090",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "action",
+   "value": "action:出场",
+   "sources": [
+    "gen_cine_0451"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "高角度与荷兰角的情绪后果 若把有争议言论的父亲用高角度或荷兰角拍摄，观众会先被镜头语言引导去评判、产生敌意或迷失，场景的复杂处境会被削弱；因此需要细腻处理争议题材时应避免这类强动态角度。 评判 机位高度 倾斜 情绪引导",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:23353fbf7090",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:混乱",
+   "sources": [
+    "gen_cine_0451"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "高角度与荷兰角的情绪后果 若把有争议言论的父亲用高角度或荷兰角拍摄，观众会先被镜头语言引导去评判、产生敌意或迷失，场景的复杂处境会被削弱；因此需要细腻处理争议题材时应避免这类强动态角度。 评判 机位高度 倾斜 情绪引导",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:2ce22a9464cd",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:压抑",
+   "sources": [
+    "gen_cine_0465"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "低角度过肩强化屈服 过肩镜头可叠加低角度机位，用来表现角色向新恋人/强者低头屈服的姿态，机位低于视线即可放大这种服从感。 过肩镜头 权力关系",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:2dc3c281f9bc",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "action",
+   "value": "action:坐下",
+   "sources": [
+    "gen_edit_0206"
+   ],
+   "card_topics": [
+    "editing"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "宗教场面的表演取舍 拍祈祷等宗教场面时，可用孩童式的模仿手势（跪下、合掌）获得虔诚感，但不要试图表现超验的神性——银幕上的神圣只会显得空洞。 祈祷",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:2dc3c281f9bc",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_edit_0206"
+   ],
+   "card_topics": [
+    "editing"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "宗教场面的表演取舍 拍祈祷等宗教场面时，可用孩童式的模仿手势（跪下、合掌）获得虔诚感，但不要试图表现超验的神性——银幕上的神圣只会显得空洞。 祈祷",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:2dc3c281f9bc",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:庄严",
+   "sources": [
+    "gen_edit_0206"
+   ],
+   "card_topics": [
+    "editing"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "宗教场面的表演取舍 拍祈祷等宗教场面时，可用孩童式的模仿手势（跪下、合掌）获得虔诚感，但不要试图表现超验的神性——银幕上的神圣只会显得空洞。 祈祷",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:2fc178248ddf",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "action",
+   "value": "action:反应",
+   "sources": [
+    "gen_perf_0404"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "旁白揭示内心 当角色内心受到冲击时，用旁白（Aside）直接说出其未出口的念头，同时让另一角色继续无察觉地做自己的动作，形成信息落差。 信息落差 内心独白",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:2fc178248ddf",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_perf_0404"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "旁白揭示内心 当角色内心受到冲击时，用旁白（Aside）直接说出其未出口的念头，同时让另一角色继续无察觉地做自己的动作，形成信息落差。 信息落差 内心独白",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:2fc178248ddf",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:压抑",
+   "sources": [
+    "gen_perf_0404"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "旁白揭示内心 当角色内心受到冲击时，用旁白（Aside）直接说出其未出口的念头，同时让另一角色继续无察觉地做自己的动作，形成信息落差。 信息落差 内心独白",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:30ad79d5c0ac",
+   "type": "PERFORMANCE_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:低机位",
+   "sources": [
+    "perf_status"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "地位博弈 两个人的相对地位会通过姿态持续交换：谁先移开视线、谁先低头、谁站着谁坐着、谁的身体更占空间。地位是可以**反转**的，反转的那一刻就是这场戏的高潮。 地位 权力 博弈 反转",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:30ad79d5c0ac",
+   "type": "PERFORMANCE_PACK",
+   "role": "allow",
+   "kind": "emotion",
+   "value": "emotion:冷漠",
+   "sources": [
+    "perf_status"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "地位博弈 两个人的相对地位会通过姿态持续交换：谁先移开视线、谁先低头、谁站着谁坐着、谁的身体更占空间。地位是可以**反转**的，反转的那一刻就是这场戏的高潮。 地位 权力 博弈 反转",
+   "stratum": "pack:PERFORMANCE_PACK"
+  },
+  {
+   "edge_id": "hg:03fd45465d41",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MS",
+   "sources": [
+    "gen_cine_0364"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "手持与跳切并用 在法国新浪潮式段落中，可将手持镜头与跳切结合使用，以制造断裂、躁动的节奏，这种组合当时被视为非正统。 新浪潮 节奏 剪辑",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:04baa311f000",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:track_right",
+   "sources": [
+    "gen_anime_0413"
+   ],
+   "card_topics": [
+    "anime"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "螺旋桨分层连续换位 飞机剪纸模型上，螺旋桨做成独立剪出的小片，按顺序连续安放在机头位置，同时模型在摄影机下横移过天空。 循环 剪纸动画 循环动作",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:04baa311f000",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MS",
+   "sources": [
+    "gen_anime_0413"
+   ],
+   "card_topics": [
+    "anime"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "螺旋桨分层连续换位 飞机剪纸模型上，螺旋桨做成独立剪出的小片，按顺序连续安放在机头位置，同时模型在摄影机下横移过天空。 循环 剪纸动画 循环动作",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:0c3fc09441cd",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:dolly_in",
+   "sources": [
+    "gen_cine_0362"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "过肩推进亲密感 在传统过肩正反打基础上，通过缩短机位距离或增加切换频率，让对话戏在常规构图中叠加一层亲密感，并推动场景情绪递进。 过肩镜头 正反打 对话",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:0c3fc09441cd",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MCU",
+   "sources": [
+    "gen_cine_0362"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "过肩推进亲密感 在传统过肩正反打基础上，通过缩短机位距离或增加切换频率，让对话戏在常规构图中叠加一层亲密感，并推动场景情绪递进。 过肩镜头 正反打 对话",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:0d90d3bce736",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:handheld",
+   "sources": [
+    "gen_prod_0147"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "运动车厢内的特写 在行驶的车厢内拍写字特写时，让字迹因车身晃动而显得潦草，以强化运动感与真实感。 晃动 运动感",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:1154bc974e9d",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:track_right",
+   "sources": [
+    "gen_cine_0442"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "移动车镜头的定义 移动车镜头指摄影机架在带轮轨道车上做平滑位移的镜头，区别于变焦（zoom）——前者改变机位与透视关系，后者只改变焦距与取景范围。 dolly 变焦 透视 运动",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:1154bc974e9d",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MS",
+   "sources": [
+    "gen_cine_0442"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "移动车镜头的定义 移动车镜头指摄影机架在带轮轨道车上做平滑位移的镜头，区别于变焦（zoom）——前者改变机位与透视关系，后者只改变焦距与取景范围。 dolly 变焦 透视 运动",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:127b4ab7c2a5",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:track_left",
+   "sources": [
+    "gen_cine_0416",
+    "gen_cine_0417",
+    "gen_cine_0418",
+    "gen_anime_0337",
+    "gen_anime_0341"
+   ],
+   "card_topics": [
+    "anime",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "推轨与变焦效果差异 推轨与变焦不只是操作流程不同，二者在画面效果上产生两类截然不同的镜头观感，选型时须按所需观感取舍。 画面效果 取舍 运动镜头 视觉风格",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:127b4ab7c2a5",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MS",
+   "sources": [
+    "gen_cine_0416",
+    "gen_cine_0417",
+    "gen_cine_0418",
+    "gen_anime_0337",
+    "gen_anime_0341"
+   ],
+   "card_topics": [
+    "anime",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "推轨与变焦效果差异 推轨与变焦不只是操作流程不同，二者在画面效果上产生两类截然不同的镜头观感，选型时须按所需观感取舍。 画面效果 取舍 运动镜头 视觉风格",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:23350e69d1ef",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:固定",
+   "sources": [
+    "cine_pov"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "主观镜头（POV） POV 把机位放在角色的眼睛位置，观众看到角色所看。使用前必须先交代「谁在看」（前一个镜头给出角色与视线方向），否则观众会迷失。POV 之后通常需要回到客观机位确认角色的反应。 主观 POV 视点 视线",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:23350e69d1ef",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MCU",
+   "sources": [
+    "cine_pov"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "主观镜头（POV） POV 把机位放在角色的眼睛位置，观众看到角色所看。使用前必须先交代「谁在看」（前一个镜头给出角色与视线方向），否则观众会迷失。POV 之后通常需要回到客观机位确认角色的反应。 主观 POV 视点 视线",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:256e60805830",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MS",
+   "sources": [
+    "gen_story_0295",
+    "gen_story_0299",
+    "gen_story_0301",
+    "gen_cine_0346",
+    "gen_cine_0361",
+    "gen_cine_0461",
+    "gen_anime_0384",
+    "gen_story_0005",
+    "cine_coverage",
+    "cine_low_angle",
+    "gen_cine_0270",
+    "gen_cine_0441",
+    "gen_prod_0256"
+   ],
+   "card_topics": [
+    "",
+    "anime",
+    "shot_language",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "分镜构图的三要素 在分镜中表达构图时，至少标注三项：景别（shot size）、镜头类型（shot type）、摄影机运动（camera movement）。 景别 镜头类型 摄影机运动 分镜格式 标注项",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:25817abdfca0",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_cine_0235",
+    "gen_cine_0236",
+    "gen_cine_0338",
+    "gen_cine_0366"
+   ],
+   "card_topics": [
+    "",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "镜头即眼、感光纸即视网膜 把物镜理解为仪器的眼睛、感光纸理解为视网膜，据此判断取景与曝光：眼睛看什么，画面就记录什么。 取景 类比 取景 曝光",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:25817abdfca0",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:dolly_in",
+   "sources": [
+    "gen_cine_0235",
+    "gen_cine_0236",
+    "gen_cine_0338",
+    "gen_cine_0366"
+   ],
+   "card_topics": [
+    "",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "镜头即眼、感光纸即视网膜 把物镜理解为仪器的眼睛、感光纸理解为视网膜，据此判断取景与曝光：眼睛看什么，画面就记录什么。 取景 类比 取景 曝光",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:2aa3e9f26881",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_axis_0153",
+    "gen_axis_0316",
+    "gen_story_0154",
+    "gen_axis_0222"
+   ],
+   "card_topics": [
+    "",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "特写机藏于布景后 用于拍特写的摄影机应隐蔽在合适的布景片后方（遮黑处理），使演员不被额外机位干扰，保持长场戏的表演连贯。 特写机位 隐蔽 机位",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:2aa3e9f26881",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:固定",
+   "sources": [
+    "gen_axis_0153",
+    "gen_axis_0316",
+    "gen_story_0154",
+    "gen_axis_0222"
+   ],
+   "card_topics": [
+    "",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "特写机藏于布景后 用于拍特写的摄影机应隐蔽在合适的布景片后方（遮黑处理），使演员不被额外机位干扰，保持长场戏的表演连贯。 特写机位 隐蔽 机位",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:2f4130d554ae",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_cine_0290"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "免毛玻璃的距离标定 若拍摄对象多为近景，可省去毛玻璃对焦屏，改在尾板上标出若干胶片合焦距离刻度，按距离估焦即可，适合艺术性近距抓拍。 估焦 距离刻度 近景 对焦 近景",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:2f4130d554ae",
+   "type": "SHOT_PATTERN",
+   "role": "allow",
+   "kind": "movement",
+   "value": "movement:固定",
+   "sources": [
+    "gen_cine_0290"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "免毛玻璃的距离标定 若拍摄对象多为近景，可省去毛玻璃对焦屏，改在尾板上标出若干胶片合焦距离刻度，按距离估焦即可，适合艺术性近距抓拍。 估焦 距离刻度 近景 对焦 近景",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:333d39d0d5e3",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "value": "headroom_policy:cinematic",
+   "sources": [
+    "gen_cine_0423"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "极特写的定义与取景 极特写只呈现主体的局部而非整体，取景依据被摄物的尺度决定：拍茶壶这类静物时，可只框住壶嘴或壶底，让观众被迫聚焦于某一局部以达成预期效果。 局部取景 静物 尺度 构图",
+   "stratum": "pack:SHOT_PATTERN"
+  },
+  {
+   "edge_id": "hg:09bd54e4dba1",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:LS",
+   "sources": [
+    "gen_comp_0020",
+    "gen_axis_0234",
+    "gen_anime_0327",
+    "gen_block_0047",
+    "gen_anime_0316",
+    "gen_block_0322"
+   ],
+   "card_topics": [
+    "",
+    "anime",
+    "color"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "前景硬线引眼远景放松 前景用切割感强的硬边线条吸引视线，同时让远景保持柔和松弛，形成前紧后松的对比，使眼睛被前景抓住后能在远处休息。 硬边 虚实对比 视觉引导",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:0b8be9a9aac6",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:ELS",
+   "sources": [
+    "gen_cine_0449",
+    "gen_comp_0142",
+    "gen_edit_0165",
+    "gen_prod_0215",
+    "gen_block_0234",
+    "gen_block_0323",
+    "gen_axis_0196"
+   ],
+   "card_topics": [
+    "",
+    "editing",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "航拍子类型区分 航拍按俯视程度分为鸟瞰镜头、上帝视角镜头与正俯拍（overhead）三类，拍摄前需明确选用哪一种。 鸟瞰 上帝视角 正俯拍 镜头类型",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:0f0045af7504",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:LS",
+   "sources": [
+    "gen_edit_0180",
+    "gen_story_0017",
+    "gen_block_0243",
+    "gen_block_0255",
+    "gen_prod_0226"
+   ],
+   "card_topics": [
+    "",
+    "editing",
+    "storyboard"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "悬念与布景无关 悬念不取决于装饰或布景；宏大的战争场面极少成为戏剧悬念的来源，战略部署在电影里也很少奏效。 战争 美术",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:1657ecdea8cf",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:ELS",
+   "sources": [
+    "gen_block_0279"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "环形台阶与光柱布景 用环形台阶、高耸柱体和灯光构成固定布景，以层次和垂直体量组织大型场面的调度与视线引导。 柱体 灯光 固定布景 调度",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:1d0f7c66af29",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:LS",
+   "sources": [
+    "gen_block_0164"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "升降倾斜台面的用法 升降台可让任一端升起或下沉约六英尺，从而形成倾斜地板，用于制造斜面调度。 升降台 倾斜地板 六英尺 升降台 调度",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:24471433ccc5",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MS",
+   "sources": [
+    "gen_cine_0414"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "垂直视点高度 拍荷兰角时需确定视点的垂直高度（vertical level of your view），即机位高低，它与倾斜角共同决定画面的压迫或俯视关系。 机位 荷兰角 机位",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:2720c49b1bf5",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:高机位",
+   "sources": [
+    "gen_axis_0248",
+    "gen_block_0062",
+    "gen_block_0351",
+    "gen_block_0229"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "内外空间的叠加 把外部景观与人物内心叠加：风景作为路线图，村庄作为迷宫与镜像场所，用空间映射人物灵魂。 内外叠加 风景 镜像 隐喻",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:2720c49b1bf5",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:balance",
+   "sources": [
+    "gen_axis_0248",
+    "gen_block_0062",
+    "gen_block_0351",
+    "gen_block_0229"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "内外空间的叠加 把外部景观与人物内心叠加：风景作为路线图，村庄作为迷宫与镜像场所，用空间映射人物灵魂。 内外叠加 风景 镜像 隐喻",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:2720c49b1bf5",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:ELS",
+   "sources": [
+    "gen_axis_0248",
+    "gen_block_0062",
+    "gen_block_0351",
+    "gen_block_0229"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "内外空间的叠加 把外部景观与人物内心叠加：风景作为路线图，村庄作为迷宫与镜像场所，用空间映射人物灵魂。 内外叠加 风景 镜像 隐喻",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:27da82f59f17",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:高机位",
+   "sources": [
+    "gen_axis_0210",
+    "gen_axis_0289",
+    "gen_axis_0309",
+    "gen_block_0236"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "孤树作空间锚点 在蜿蜒道路的段落里，把一棵孤树放在山丘顶点或道路尽头作为空间标记，用它同时标示起点与终点，使反复出现的旅程在画面上有可辨认的参照物。 空间标记 道路尽头 构图 景观",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:27da82f59f17",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:lead_room",
+   "sources": [
+    "gen_axis_0210",
+    "gen_axis_0289",
+    "gen_axis_0309",
+    "gen_block_0236"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "孤树作空间锚点 在蜿蜒道路的段落里，把一棵孤树放在山丘顶点或道路尽头作为空间标记，用它同时标示起点与终点，使反复出现的旅程在画面上有可辨认的参照物。 空间标记 道路尽头 构图 景观",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:27da82f59f17",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:ELS",
+   "sources": [
+    "gen_axis_0210",
+    "gen_axis_0289",
+    "gen_axis_0309",
+    "gen_block_0236"
+   ],
+   "card_topics": [
+    ""
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "孤树作空间锚点 在蜿蜒道路的段落里，把一棵孤树放在山丘顶点或道路尽头作为空间标记，用它同时标示起点与终点，使反复出现的旅程在画面上有可辨认的参照物。 空间标记 道路尽头 构图 景观",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:29215d24c2c6",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:低机位",
+   "sources": [
+    "gen_cine_0344",
+    "gen_block_0371"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "仰角拍权力关系 仰角镜头从角色视线下方取景，用于强调角色间的权力关系：对一方用仰角时，常对另一方配以俯角，形成权力对比。 对切 视角",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:29215d24c2c6",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:balance",
+   "sources": [
+    "gen_cine_0344",
+    "gen_block_0371"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "仰角拍权力关系 仰角镜头从角色视线下方取景，用于强调角色间的权力关系：对一方用仰角时，常对另一方配以俯角，形成权力对比。 对切 视角",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:29215d24c2c6",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MS",
+   "sources": [
+    "gen_cine_0344",
+    "gen_block_0371"
+   ],
+   "card_topics": [
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "仰角拍权力关系 仰角镜头从角色视线下方取景，用于强调角色间的权力关系：对一方用仰角时，常对另一方配以俯角，形成权力对比。 对切 视角",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:299c9a2e2e88",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:occlusion",
+   "sources": [
+    "cine_ots",
+    "gen_cine_0362"
+   ],
+   "card_topics": [
+    "",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "过肩镜头（OTS） OTS 让前景角色的肩部占据画面一角，焦点落在对手的脸上。它同时给出两个人的空间关系与一方的视角态度，是正反打的标准构件。机位应略高于目标肩部、靠近前景角色的后侧，避免肩部挡住对方的脸。 过肩 OTS 正反打 肩部",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:299c9a2e2e88",
+   "type": "STAGING_PACK",
+   "role": "allow",
+   "kind": "shot_size",
+   "value": "shot_size:MCU",
+   "sources": [
+    "cine_ots",
+    "gen_cine_0362"
+   ],
+   "card_topics": [
+    "",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "过肩镜头（OTS） OTS 让前景角色的肩部占据画面一角，焦点落在对手的脸上。它同时给出两个人的空间关系与一方的视角态度，是正反打的标准构件。机位应略高于目标肩部、靠近前景角色的后侧，避免肩部挡住对方的脸。 过肩 OTS 正反打 肩部",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:2ac99a9d9cf5",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_cine_0474",
+    "gen_comp_0021",
+    "gen_comp_0076",
+    "gen_comp_0252",
+    "gen_edit_0029",
+    "gen_comp_0273",
+    "gen_comp_0291",
+    "gen_perf_0444",
+    "block_crowd_density"
+   ],
+   "card_topics": [
+    "",
+    "color",
+    "editing",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "特写展示面部表情 需要让观众读到角色的情绪变化时，用特写框住面部，让表情成为画面主体。 特写展示面部表情 表演",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:2ac99a9d9cf5",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "composition_rule",
+   "value": "composition_rule:framing",
+   "sources": [
+    "gen_cine_0474",
+    "gen_comp_0021",
+    "gen_comp_0076",
+    "gen_comp_0252",
+    "gen_edit_0029",
+    "gen_comp_0273",
+    "gen_comp_0291",
+    "gen_perf_0444",
+    "block_crowd_density"
+   ],
+   "card_topics": [
+    "",
+    "color",
+    "editing",
+    "shot_language"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "特写展示面部表情 需要让观众读到角色的情绪变化时，用特写框住面部，让表情成为画面主体。 特写展示面部表情 表演",
+   "stratum": "pack:STAGING_PACK"
+  },
+  {
+   "edge_id": "hg:31e448445a0a",
+   "type": "STAGING_PACK",
+   "role": "qualifier",
+   "kind": "camera_angle",
+   "value": "camera_angle:平视",
+   "sources": [
+    "gen_comp_0147",
+    "gen_edit_0031",
+    "gen_axis_0153",
+    "gen_comp_0166"
+   ],
+   "card_topics": [
+    "",
+    "color",
+    "editing"
+   ],
+   "surface_in_card": false,
+   "card_excerpt": "前景物体轮廓要切割 要突出的物体，其轮廓应从周围阴影中锐利、强烈地切出；其余块面则按密度对比的减弱程度依次后退。 后退 空间层次",
+   "stratum": "pack:STAGING_PACK"
+  }
+ ]
+}
