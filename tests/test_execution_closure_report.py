@@ -141,6 +141,28 @@ def test_the_vocabulary_counters_cover_every_injected_edge_not_just_active_ones(
         "即使 e2 那一条**不适用**（前提 shot_size:CU 对不上 MS），它的取值也要进词表统计")
 
 
+def test_the_edge_ledger_closes_so_every_injected_edge_is_accounted_for():
+    """**边口径必须闭合**：`injected_edges` ＝ 各种判定之和，**一条都不许下落不明**。
+
+    这条是审查当场逼出来的：第一版把"镜头没建成"的那些边静默 `continue` 掉，
+    于是 `95 + 224 + 1 = 320 ≠ 344`，差 24 条**没人解释**。
+    """
+    edges = {"e1": _edge("e1", [["qualifier", "shot_size", "shot_size:CU"]]),
+             "e2": _edge("e2", [["qualifier", "axis_side", "axis_side:neutral"]])}
+    shots = {"s1": {"shot_id": "s1", "shot_type": "MS"}}
+    events = [_inject("s1", "e1", "e2"),            # 一个建成镜头的
+              _inject("no_such_shot", "e1", "e2")]  # 一个**没有对应镜头**的
+    out = ecr.analyze(events, edges, shots)
+    ledger = out["ledger"]
+    total = (ledger["edge_indecidable"] + ledger["edge_inactive"] + ledger["edge_active"]
+             + ledger["injected_edge_missing_from_index"]
+             + ledger["edges_in_events_without_a_built_shot"])
+    assert ledger["injected_edges"] == 4
+    assert total == ledger["injected_edges"], "差 %d 条没有去向" % (
+        ledger["injected_edges"] - total)
+    assert ledger["edges_in_events_without_a_built_shot"] == 2
+
+
 def test_uncovered_kinds_are_listed_not_silently_dropped():
     """判决书**不许只报"能算的那部分"**：没纳入的 kind 也要逐条列出来（带条数）。"""
     edges = {"e1": _edge("e1", [["qualifier", "shot_size", "shot_size:CU"]]),

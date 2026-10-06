@@ -2,11 +2,20 @@
   "shots_with_injection": 64,
   "counts": {
     "events_without_a_built_shot": 3,
+    "edges_in_events_without_a_built_shot": 24,
     "premise_members_seen": 380,
     "edge_inactive": 224,
     "edge_indecidable": 95,
     "edge_active": 1,
     "no_match": 1
+  },
+  "ledger": {
+    "injected_edges": 344,
+    "edge_indecidable": 95,
+    "edge_inactive": 224,
+    "edge_active": 1,
+    "injected_edge_missing_from_index": 0,
+    "edges_in_events_without_a_built_shot": 24
   },
   "covered_kinds": {
     "movement": 302,
@@ -33,6 +42,25 @@
     "headroom_policy": 19,
     "composition_rule": 13,
     "camera_angle": 13
+  },
+  "member_outcomes_by_kind": {
+    "intent": {
+      "matched": 105,
+      "unmatched": 120
+    },
+    "shot_size": {
+      "matched": 201,
+      "unmatched": 68
+    },
+    "movement": {
+      "film_side_empty": 296,
+      "matched": 5,
+      "unmatched": 1
+    },
+    "lens": {
+      "unmatched": 2,
+      "matched": 17
+    }
   },
   "unmapped_forbid_kinds": {
     "pair": 63,

@@ -2241,6 +2241,20 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 未映射 kind 六种（`pair`/`axis_side`/`axis_topic`/`headroom_policy`/`composition_rule`/`camera_angle`），
 **`lens` 已从"判不了"里移出**。
 
+> **【2026-10-07 勘误，审查逼出来的】** 上面这段第一版有四处**口径不全**，已按
+> `docs/evidence/20261007-execution-closure-v2/README.md`（重写版）改正：
+> ① **边口径必须闭合**：`344 = 95 + 224 + 1 + 0 + 24`，那个 **24** 是"`shot_id` 没有对应成片镜头"的边
+> ——第一版**静默跳过**了它们，于是"三分之和 320 ≠ 344"没人解释；
+> ② 说"能判的只有 3 种"是**错的**：`movement` 也在绑定表里，但它的成员 **296/302 落进
+> `film_side_empty`**（成片侧那两个字段几乎是空的）⇒ 准确说法是"**没得比**"；
+> ③ **①/② 分类混用**：`composition_rule`/`camera_angle` 在提案里属"区间/阈值型（①）"，
+> 在本轮属"**成片无字段 ⇒ 判不了**"，两张表不是一张表；重写版按
+> **A 已注入＋有字段 / B 已注入＋无字段 / C 本轮未注入** 重划；
+> ④ **"违规 0"必须带限定**：它出自**仅 1 条生效边、且该边 `forbid` 成员为 0** ⇒ 是
+> "**无物可违**"，**不是**"查了通过"。工具已新增 `ledger`（口径表）与
+> `member_outcomes_by_kind`（逐 kind 的 matched/unmatched/film_side_empty 三分），
+> 守门加一条 `test_the_edge_ledger_closes_so_every_injected_edge_is_accounted_for`。
+
 **新量出来的：`vocabulary_gap`（词表落差）**——`shot_size` 与 `intent` **重叠**
 （成片的 5 个景别全在知识词表里；intent 10/10）、`lens` **重叠**（`50.0`，归一化生效）、
 `movement` **只部分重叠**（知识侧还有 `固定` 这种中文取值，成片侧是 `dolly_in` 这类英文枚举）。

@@ -168,12 +168,20 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
         collections.Counter)
     film_values: Dict[str, collections.Counter] = collections.defaultdict(
         collections.Counter)
+    #: 每个 kind 的**成员三分**（审查点名要的）：`matched` / `unmatched` / `film_side_empty`。
+    #: 为什么必须有：只看"违规 0"会把"**无物可违**"读成"查了通过"。
+    member_outcomes: Dict[str, collections.Counter] = collections.defaultdict(
+        collections.Counter)
 
     for event in injected:
         shot_id = str(event.get("shot_id") or "")
         shot = shots.get(shot_id)
         if shot is None:
             counts["events_without_a_built_shot"] += 1
+            #: **这些边不能被静默丢掉**：口径表里"边总数 = 各种判定之和"必须闭合。
+            #: （踩过的坑：这里只 `continue`，于是 344 = 95+224+1 差 24 条没人解释——
+            #: 被审查当场抓住："三分之和与分母差 24 条去向未说明"。）
+            counts["edges_in_events_without_a_built_shot"] += len(event.get("edge_ids") or [])
             continue
         shots_seen[shot_id] += 1
         for edge_id in event.get("edge_ids") or []:
@@ -195,9 +203,17 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                     continue
                 fields, normalizer = BINDINGS[kind]
                 knowledge_values[kind][normalizer(member_value(str(member[2]), kind))] += 1
-                for field in fields:
-                    for raw in shot_values(shot, field):
-                        film_values[kind][normalizer(raw)] += 1
+                have = {normalizer(raw) for field in fields
+                        for raw in shot_values(shot, field)}
+                for raw in [raw for field in fields for raw in shot_values(shot, field)]:
+                    film_values[kind][normalizer(raw)] += 1
+                want = normalizer(member_value(str(member[2]), kind))
+                if not have:
+                    member_outcomes[kind]["film_side_empty"] += 1
+                elif want in have:
+                    member_outcomes[kind]["matched"] += 1
+                else:
+                    member_outcomes[kind]["unmatched"] += 1
             #: ① 有未映射的 kind（任何角色）⇒ 整条边判不了
             unmapped_here = [str(member[1]) for member in members
                              if str(member[1]) not in MAPPING]
@@ -282,12 +298,26 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
     return {
         "shots_with_injection": len(shots_seen),
         "counts": dict(counts),
+        #: **口径表**：每个聚合数都能由下面的原子量唯一重算（这是审查要的那张表）。
+        #: 边口径：`injected_edges = indecidable + inactive + active ＋ missing_from_index
+        #: ＋ edges_in_events_without_a_built_shot`；**缺一不可**。
+        "ledger": {
+            "injected_edges": sum(len(event.get("edge_ids") or []) for event in injected),
+            "edge_indecidable": counts.get("edge_indecidable", 0),
+            "edge_inactive": counts.get("edge_inactive", 0),
+            "edge_active": counts.get("edge_active", 0),
+            "injected_edge_missing_from_index": counts.get("injected_edge_missing_from_index", 0),
+            "edges_in_events_without_a_built_shot":
+                counts.get("edges_in_events_without_a_built_shot", 0),
+        },
         #: 覆盖与否**分两张表**列出来（判决书不许只报"能算的那部分"）。
         "covered_kinds": {kind: count for kind, count in member_kinds.most_common()
                           if kind in BINDINGS},
         "not_covered_kinds": {kind: count for kind, count in member_kinds.most_common()
                               if kind not in BINDINGS},
         "member_kinds_seen": dict(member_kinds.most_common()),
+        "member_outcomes_by_kind": {kind: dict(counter) for kind, counter
+                                    in member_outcomes.items()},
         "unmapped_forbid_kinds": dict(unmapped.most_common()),
         "bindings": {kind: list(fields) for kind, (fields, _norm) in BINDINGS.items()},
         "vocabulary_gap": vocabulary_gap,
