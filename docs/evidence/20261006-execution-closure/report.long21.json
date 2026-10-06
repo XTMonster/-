@@ -1,0 +1,49 @@
+{
+  "shots_with_injection": 64,
+  "counts": {
+    "events_without_a_built_shot": 3,
+    "premise_members_seen": 380,
+    "edge_inactive": 224,
+    "edge_indecidable": 95,
+    "edge_active": 1
+  },
+  "unmapped_forbid_kinds": {
+    "pair": 63,
+    "axis_side": 63,
+    "axis_topic": 63,
+    "lens": 19,
+    "headroom_policy": 19,
+    "composition_rule": 13,
+    "camera_angle": 13
+  },
+  "forbid_values_by_kind": {},
+  "observed_field_domain": {
+    "intent_type": {
+      "推进": 72,
+      "铺垫": 32,
+      "收束": 31,
+      "停顿": 28,
+      "对抗": 18,
+      "留白": 17,
+      "转折": 12,
+      "回望": 8,
+      "揭示": 4,
+      "压迫": 3
+    },
+    "shot_type": {
+      "MS": 79,
+      "MCU": 68,
+      "CU": 32,
+      "LS": 30,
+      "MLS": 16
+    },
+    "declared_camera_move": {},
+    "movements[].kind": {
+      "dolly_in": 4
+    }
+  },
+  "violations": [],
+  "note": "诊断，不设门：没有 pass line，也不接进 run_tests.ps1 的通过与否",
+  "run": "docs\\evidence\\20261006-long21",
+  "shots_file": "docs\\evidence\\20261006-long21\\export\\export\\shots.json"
+}

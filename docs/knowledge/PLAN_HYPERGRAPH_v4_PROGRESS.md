@@ -2104,3 +2104,30 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 **未验证／边界**：① 门⑦ 的 gen2 落地**还没做**（本轮只拿到裁定与设计）；
 ② 那次咨询**第二角色没跑**（只问了 `规格一致性` 一个角色，因为要判的是"方法分歧"本身，
 而分歧的两侧已经在上一轮各留了一份判词）——**如实记**，不当作"两侧都同意"。
+
+### P14-305：**执行闭环诊断 v1** 落地——"违规 0"的真相是**可判定性极低**（95 条判不了／224 条不适用／生效 1 条）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R53-D7 | 被注入的知识到底有没有在成片上被违反（**先诊断、不设门**） | **绿（诊断落地＋真跑读数）** | `tools/knowledge/execution_closure_report.py`＋`tests/test_execution_closure_report.py`（5 条）＋`docs/evidence/20261006-execution-closure/` | 2026-10-06 | 本批 |
+
+**判定顺序照裁决写死**（防的就是那 66 条假阳性）：① 边里**任一**成员 kind 映射不到成片字段
+⇒ **整条边判不了**（`edge_indecidable`），记未映射桶、**不当违规**；② 否则**全部前提**（非 forbid 成员）
+必须与成片取值**精确匹配**，不匹配 ⇒ 这一镜**不适用**；③ 前提全中才查 `forbid`。
+映射表 v1 只收三个 kind：`shot_size→shot_type`、`movement→declared_camera_move＋movements[].kind`、
+`intent→intent_type`。"注入了什么"**只从 `audit_log.jsonl` 的 `retrieval_call` 读**（不读 `shots.json` 自述）。
+
+**真实运行读数（`20261006-long21`，64 镜）**：有注入 64 镜；前提成员 380 个；
+**不适用 224 / 判不了 95 / 生效 1**；生效边上被检查的 `forbid` 成员 **0** ⇒ **违规 0**。
+未映射 kind：`pair 63`、`axis_side 63`、`axis_topic 63`、`lens 19`、`headroom_policy 19`、
+`composition_rule 13`、`camera_angle 13`。成片侧取值域：`declared_camera_move` **全空**、
+`movements[].kind` 只有 **4** 处（`dolly_in`）。
+
+**怎么读（写进证据）**：**"违规 0"≠"成片守规矩"**——生效的边只有 1 条且它没有 forbid 成员；
+本次读数支持的唯一结论是"**这套语料与成片字段之间的可判定性极低**"，这与 **E2 = 0/64** 是同一件事的两面。
+**诊断、不设门**：没有 pass line、**没接进** `run_tests.ps1` 的通过与否，判据一个字没动。
+
+**未验证／边界**：① 只跑了 1 次运行；② 映射表只有 3 个 kind，其余 21 个要成为可判定，
+得先把 `APPLICABILITY_SEMANTICS_v1.md` 那份逐 kind 适用域表落成可执行的东西；
+③ `axis_side` 等**该绑到哪个成片字段**本轮没回答，只诚实记成"判不了"；
+④ 违规判定是字面相等（剥 `kind:` 前缀），**没做中英词表对齐**——`movement` 一侧已经能看到词表落差。
