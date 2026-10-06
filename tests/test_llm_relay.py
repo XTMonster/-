@@ -25,6 +25,65 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.kb_fetch import llm  # noqa: E402
+from tools import relay_consult  # noqa: E402
+
+
+def test_consult_bounds_each_attempt_so_a_silent_relay_cannot_hold_the_slot(monkeypatch):
+    """2026-10-06 实测：中转站**没有 keepalive** ⇒ "正在思考却不出字"与"请求被丢掉、
+    永远不出字"在客户端**无法区分**；而 socket 超时是**每次读**的超时，所以它实际就是
+    "多久没收到任何字节就放弃这次尝试"。
+
+    同一秒发出、同样 1.8 KB 的包、同样 `max_tokens`/`reasoning_effort` 的三个请求：
+    两个 **3.4 / 5.1 分钟**就回来了，第三个 **137 分钟零字节**（`dRead=0/40s`、`dCpu=0/40s`）。
+    没有这个上限，那个静默请求会一直占着位置到**总超时**——那曾经是 **6 小时**（最坏 3 次 = 18 h）。
+
+    这一条钉三件事：① 每次尝试按 `min(timeout, attempt_timeout)` 建客户端；
+    ② **每次尝试一个新客户端**（把超时留下的 socket 丢掉，不复用）；③ 上限写进 usage（可审计）。
+    """
+    seen = []
+
+    class _FakeClient:
+        model_version = "fake-model"
+        last_usage = {}
+
+        def __init__(self, model, api_key="", timeout=0.0, **kwargs):
+            seen.append(timeout)
+
+        def chat(self, *args, **kwargs):
+            return "正文"
+
+    monkeypatch.setattr(relay_consult.llm, "RelayClient", _FakeClient)
+    text, usage = relay_consult.consult(
+        [{"role": "system", "content": "s"}, {"role": "user", "content": "u"}],
+        model="gpt-6-astra", max_tokens=32768, levels=["max"], temperature=0.2,
+        timeout=21600.0, attempt_timeout=1800.0)
+    assert text == "正文"
+    assert seen == [1800.0], "单次尝试必须取 min(总预算, 上限)"
+    assert usage["attempt_timeout_s"] == 1800.0
+    assert usage["channel"] == "linkai-relay"
+
+
+def test_consult_can_still_be_asked_for_the_unbounded_old_behaviour(monkeypatch):
+    """`attempt_timeout=0` 时**退回旧行为**（只受总预算约束）——给长文生成留的出口，
+    但那是调用方显式选的，不是默认。"""
+    seen = []
+
+    class _FakeClient:
+        model_version = "fake-model"
+        last_usage = {}
+
+        def __init__(self, model, api_key="", timeout=0.0, **kwargs):
+            seen.append(timeout)
+
+        def chat(self, *args, **kwargs):
+            return "正文"
+
+    monkeypatch.setattr(relay_consult.llm, "RelayClient", _FakeClient)
+    relay_consult.consult(
+        [{"role": "system", "content": "s"}, {"role": "user", "content": "u"}],
+        model="gpt-6-astra", max_tokens=8192, levels=["max"], temperature=0.2,
+        timeout=3600.0, attempt_timeout=0)
+    assert seen == [3600.0]
 
 
 def _no_stream(monkeypatch):

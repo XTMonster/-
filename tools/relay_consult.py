@@ -28,28 +28,48 @@ from tools.kb_fetch import llm  # noqa: E402
 
 DEFAULT_MODEL = llm.LINKAI_MODEL
 
+#: **单次尝试的"无数据上限"**（秒）——它不是"总时长上限"，而是"socket 每次读的上限"。
+#: 为什么必须有（2026-10-06 实测）：中转站的流式响应**没有 keepalive**，所以
+#: "正在思考但没出字"与"请求被丢掉、永远不出字"在客户端**完全无法区分**。而 socket 超时是
+#: **每次读**的超时 ⇒ 它实际上就是"多久没收到任何字节就放弃这次尝试"。
+#: 实测（同一秒发出、同样 1.8 KB 的包、同样 `max_tokens`/`reasoning_effort`）：
+#: 两个兄弟 **3.4 / 5.1 分钟**就回来了，第三个 **137 分钟零字节**（`dRead=0/40s`、`dCpu=0/40s`）。
+#: 没有这个上限，那个静默请求会一直占着位置，直到调用方给的总超时——那曾经是 **6 小时**。
+DEFAULT_ATTEMPT_TIMEOUT = 1800.0
+
 
 def consult(messages: List[dict], *, model: str, max_tokens: int,
             levels: Sequence[str], temperature: float, timeout: float,
-            api_key: Optional[str] = None) -> Tuple[str, dict]:
-    """要一次**有正文**的答复。**没有档位**：`levels` 原样记进 usage 只为对拍。"""
-    client = llm.RelayClient(model, api_key=api_key or "", timeout=timeout)
+            api_key: Optional[str] = None,
+            attempt_timeout: float = DEFAULT_ATTEMPT_TIMEOUT) -> Tuple[str, dict]:
+    """要一次**有正文**的答复。**没有档位**：`levels` 原样记进 usage 只为对拍。
+
+    `attempt_timeout` 是**每次尝试**的"无数据上限"（见上）。`timeout` 仍是**总预算**；
+    两者取小：`min(timeout, attempt_timeout)`（`timeout=0` 时只看 `attempt_timeout`）。
+    传 `attempt_timeout=0` 可退回"只受总预算约束"的旧行为（调用方自负其责）。
+    """
     started = time.time()
     tried = []
+    per_attempt = (float(attempt_timeout) if not timeout
+                   else min(float(timeout), float(attempt_timeout))) if attempt_timeout \
+        else float(timeout)
     for attempt in range(3):
+        #: **每次尝试一个新客户端**：把上一次超时留下的 socket 彻底丢掉，不复用。
+        client = llm.RelayClient(model, api_key=api_key or "", timeout=per_attempt)
         try:
             content = client.chat(messages[0]["content"], messages[1]["content"],
                                   temperature=temperature, num_ctx=max_tokens,
                                   retries=1)
         except Exception as exc:  # noqa: BLE001 - 失败要留证
             tried.append({"error": "%s: %s" % (type(exc).__name__, str(exc)[:160]),
-                          "elapsed_s": round(time.time() - started, 1)})
+                          "elapsed_s": round(time.time() - started, 1),
+                          "attempt_timeout_s": per_attempt})
             time.sleep(2.0 * (attempt + 1))
             continue
         usage = {"model": client.model_version, "requested_model": model,
                  "max_tokens": max_tokens, "elapsed_s": round(time.time() - started, 1),
                  "usage": dict(client.last_usage), "finish_reason": "stop",
                  "levels_ignored": list(levels), "channel": "linkai-relay",
-                 "attempts": tried}
+                 "attempt_timeout_s": per_attempt, "attempts": tried}
         return content, usage
     raise ConsultFailed("中转站没给出正文：" + json.dumps(tried, ensure_ascii=False), tried)
