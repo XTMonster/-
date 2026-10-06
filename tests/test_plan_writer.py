@@ -121,6 +121,12 @@ def test_draft_failure_is_fatal_but_evidence_is_written_first(tmp_path, monkeypa
         raise SystemExit("no key in this test")
 
     monkeypatch.setattr(gc, "consult", boom)
+    #: **两条通道都要打桩**（2026-10-06 修）：`--provider` 的默认值已改成 `relay`
+    #: （用户："提出方案类用 gpt6A"），所以只桩 `gc.consult` 不够——那条路现在根本不走，
+    #: 测试会**真的去连中转站**并挂住。这条同时守住"改默认值不许让测试偷偷联网"。
+    from tools import relay_consult as rc
+
+    monkeypatch.setattr(rc, "consult", boom)
     with pytest.raises(SystemExit):
         pw.main(["--question", str(question), "--source", "axis.py",
                  "--repo", str(tmp_path), "--contract", str(contract),

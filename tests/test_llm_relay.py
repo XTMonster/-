@@ -27,6 +27,20 @@ if str(ROOT) not in sys.path:
 from tools.kb_fetch import llm  # noqa: E402
 
 
+def _no_stream(monkeypatch):
+    """把这些用例**按原意**钉在非流式那条路上。
+
+    为什么必须补（2026-10-06 自查抓到）：`RelayClient.chat()/chat_json()` 已改成
+    **默认先走流式**，而流式走的是 `urllib.request.urlopen`。这些用例只桩了 `_post_json`，
+    于是改完之后它们会**真的去连中转站**——测试挂住（实测一次跑了 17 分钟没完）。
+    把 `urlopen` 打断 ⇒ 客户端按设计**退回非流式** ⇒ 用例恢复成"只测非流式形状"。
+    """
+    def boom(request, timeout=None):
+        raise llm.LLMError("stream is disabled in this test")
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", boom)
+
+
 def test_the_relay_is_its_own_family_and_reachable_by_two_names():
     client = llm.RelayClient(api_key="test-key")
     assert client.family == "relay"
@@ -46,6 +60,7 @@ def test_the_browser_user_agent_is_sent_because_cloudflare_requires_it(monkeypat
                 "choices": [{"message": {"content": "{\"ok\": true}"}}],
                 "usage": {"prompt_tokens": 3, "completion_tokens": 4}}
 
+    _no_stream(monkeypatch)
     monkeypatch.setattr(llm, "_post_json", fake_post)
     client = llm.RelayClient("gpt-6-astra", api_key="test-key")
     assert client.chat_json("SYS", "USER", 0.0, 0, 256) == {"ok": True}
@@ -59,6 +74,7 @@ def test_the_browser_user_agent_is_sent_because_cloudflare_requires_it(monkeypat
 
 def test_chat_returns_raw_markdown_for_plan_writing(monkeypatch):
     """写计划要的是 markdown 正文，不是 JSON —— `chat()` 就是给这条的。"""
+    _no_stream(monkeypatch)
     monkeypatch.setattr(llm, "_post_json", lambda *a, **k: {
         "model": "gpt-6-astra",
         "choices": [{"message": {"content": "# 计划\n\n- 阶段 1"}}],
@@ -68,6 +84,7 @@ def test_chat_returns_raw_markdown_for_plan_writing(monkeypatch):
 
 
 def test_an_empty_body_is_a_failure_not_an_empty_string(monkeypatch):
+    _no_stream(monkeypatch)
     monkeypatch.setattr(llm, "_post_json", lambda *a, **k: {
         "choices": [{"message": {"content": ""}}], "usage": {}})
     monkeypatch.setattr(llm.time, "sleep", lambda *_: None)
@@ -92,6 +109,7 @@ def test_the_base_and_model_are_overridable(monkeypatch):
         captured.update({"url": url, "model": payload["model"]})
         return {"choices": [{"message": {"content": "x"}}], "usage": {}}
 
+    _no_stream(monkeypatch)
     monkeypatch.setattr(llm, "_post_json", fake_post)
     client = llm.RelayClient("gpt-6.1-sol", api_key="k", base="https://example.test/v1/")
     client.chat("s", "u")
