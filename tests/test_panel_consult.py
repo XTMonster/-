@@ -220,3 +220,15 @@ def test_without_a_fallback_model_a_relay_failure_still_surfaces(monkeypatch):
     call = pc.relay_caller("gpt-6-astra", 32768, 900.0)
     with pytest.raises(rc.ConsultFailed):
         call([{"role": "system", "content": "s"}, {"role": "user", "content": "u"}])
+
+
+def test_the_default_partner_channel_is_glm53_not_the_relay():
+    """默认第二侧 = **GLM-5.3**（用户 2026-10-06 改判：「不用 gpt6A 了，改用 glm5.3 吧，
+    不然太耗时间了」）。GPT-6A 实测能出正文但慢且脆（一次裁定 2900 s、正文被截断；
+    大包 50 分钟零输出，见 P14-289/P14-290）⇒ 它**不再默认**，但仍是可用通道（显式 `--partner relay`）。
+
+    这条钉的是**路由**，不是判据：换通道**不等于**换标准。
+    """
+    assert pc.DEFAULT_PARTNER == "glm"
+    args = pc.build_parser().parse_args(["--question", "q.md", "--out", "o"])
+    assert args.partner == "glm", "命令行默认必须与常量同源"

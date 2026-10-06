@@ -282,9 +282,11 @@ def test_the_plan_writing_channel_is_switchable_and_the_default_is_unchanged():
     relay_model, relay_fn = pw.choose_channel("relay")
     assert relay_model == "gpt-6-astra"
     assert relay_fn is not None and relay_fn is not fn
-    # 命令行默认通道就是中转站（用户裁决），不是 GLM。
-    assert pw.DEFAULT_PROVIDER == "relay"
-    assert pw.choose_channel(pw.DEFAULT_PROVIDER)[0] == "gpt-6-astra"
+    # 命令行默认通道**改判**（用户 2026-10-06 原话："不用 gpt6A 了，改用 glm5.3 吧，
+    # 不然太耗时间了"）——GPT-6A 实测能出正文但慢且脆（一次裁定 2900 s、正文被截断；
+    # 大包 50 分钟零输出，P14-289/P14-290），所以默认换成 GLM-5.3，relay 仍可**显式**选。
+    assert pw.DEFAULT_PROVIDER == "glm"
+    assert pw.choose_channel(pw.DEFAULT_PROVIDER)[0] == "glm-5.3"
     # 显式给型号就听显式的。
     assert pw.choose_channel("relay", "gpt-6.1-sol")[0] == "gpt-6.1-sol"
     assert pw.choose_channel("glm", "glm-5.3")[0] == "glm-5.3"

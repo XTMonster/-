@@ -310,6 +310,12 @@ def relay_caller(model: str, max_tokens: int, timeout: float, *,
     return call
 
 
+#: 会诊的**第二侧**默认通道。用户 2026-10-06 改判：「**不用 gpt6A 了，改用 glm5.3 吧，
+#: 不然太耗时间了**」——所以默认是 `glm`（GLM-5.3）；`relay`（GPT-6A）仍可**显式**选
+#: （`--partner relay`），它的通道级回退到 GLM-5.3 也照旧保留（那条回退只对显式走 relay 的调用生效）。
+DEFAULT_PARTNER = "glm"
+
+
 def run_role(role: str, question: str, contexts, sources, status_text: str,
              out_dir: Optional[pathlib.Path], *, glm_model: str, deepseek_model: str,
              glm_call: Callable, deepseek_call: Optional[Callable],
@@ -376,7 +382,9 @@ def run_role(role: str, question: str, contexts, sources, status_text: str,
     return report
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
+    """命令行解析器。**抽出来**是为了让"默认第二侧是谁"这条路由能被守门钉住
+    （`tests/test_panel_consult.py`：默认必须是 GLM-5.3，不是中转站）。"""
     parser = argparse.ArgumentParser(prog="panel_consult")
     parser.add_argument("--roles", default="规格一致性",
                         help="逗号分隔；可用：" + ",".join(gc.ROLES))
@@ -391,11 +399,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--repo", default=str(gc.REPO_ROOT))
     parser.add_argument("--out", required=True)
     parser.add_argument("--glm-model", default=gc.DEFAULT_MODEL)
-    parser.add_argument("--partner", default="relay", choices=("glm", "relay"),
-                        help="会诊的**第二侧**走哪条通道：`relay`（默认，中转站 GPT-6A——"
-                             "用户 2026-10-06：\"难题攻关和会诊gpt6A吧\"、"
-                             "\"提出方案类用gpt6A，执行交给DeepSeek\"）／"
-                             "`glm`（GLM-5.3 档位阶梯，留作对拍与回退）。"
+    parser.add_argument("--partner", default=DEFAULT_PARTNER, choices=("glm", "relay"),
+                        help="会诊的**第二侧**走哪条通道：`glm`（**默认**＝GLM-5.3 的档位阶梯；"
+                             "用户 2026-10-06 改判「不用 gpt6A 了，改用 glm5.3，不然太耗时间」）／"
+                             "`relay`（显式中转站 GPT-6A；慢且脆，实测一次裁定 2900 s、"
+                             "大包 50 分钟零输出——**仍是可用通道**，只是不再默认）。"
                              "**执行**永远只在主线的 DeepSeek 上做。")
     parser.add_argument("--partner-model", default="",
                         help="第二侧的型号（留空＝按 --partner 取：relay→gpt-6-astra、glm→glm-5.3）")
@@ -407,7 +415,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--timeout", type=float, default=1500.0)
     parser.add_argument("--match-threshold", type=float, default=MATCH_THRESHOLD)
     parser.add_argument("--dry-run", action="store_true")
-    args = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
+    return parser
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    args = build_parser().parse_args(list(argv) if argv is not None else sys.argv[1:])
 
     repo = pathlib.Path(args.repo)
     question = pathlib.Path(args.question).read_text(encoding="utf-8")
