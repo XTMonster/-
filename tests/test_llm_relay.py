@@ -28,6 +28,50 @@ from tools.kb_fetch import llm  # noqa: E402
 from tools import relay_consult  # noqa: E402
 
 
+def test_a_silent_endpoint_is_cut_off_by_the_socket_timeout(monkeypatch):
+    """P14-276 的**实测补证**：光"把上限传进去"不等于"它真的会放弃"。
+
+    起一个**只接受连接、永不回应**的本地服务（模拟"请求被丢掉"的中转站），把客户端指向它、
+    超时设 3 s：必须在**远小于"永远"**的时间里抛错。这就是
+    "**静默请求不会占位到总预算**"的机器证明——实测那次占位了 **137 分钟**。
+
+    注：`chat()` 先走流式、失败后退回非流式，所以两条路各超时一次 ≈ 6–8 s；
+    阈值给 15 s，留足余量但远小于"挂住"。
+    """
+    import socket
+    import threading
+    import time
+
+    server = socket.socket()
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind(("127.0.0.1", 0))
+    server.listen(4)
+    port = server.getsockname()[1]
+    held = []
+
+    def accept_and_hold():
+        try:
+            conn, _addr = server.accept()
+        except OSError:                      # 测试结束时 server 被关掉
+            return
+        held.append(conn)                    # 收下连接，**一个字节都不发**
+        time.sleep(20)
+
+    threading.Thread(target=accept_and_hold, daemon=True).start()
+    try:
+        client = llm.RelayClient("gpt-6-astra", api_key="k", timeout=3.0,
+                                 base="http://127.0.0.1:%d/v1/" % port)
+        started = time.time()
+        with pytest.raises(Exception):
+            client.chat("system", "user", temperature=0.2, num_ctx=64, retries=1)
+        elapsed = time.time() - started
+        assert elapsed < 15.0, (
+            "静默端点必须被超时切断，而不是一直等下去（实测 %.1f s）" % elapsed)
+        assert held, "服务端应当真的收到过连接（否则这条用例没测到东西）"
+    finally:
+        server.close()
+
+
 def test_consult_bounds_each_attempt_so_a_silent_relay_cannot_hold_the_slot(monkeypatch):
     """2026-10-06 实测：中转站**没有 keepalive** ⇒ "正在思考却不出字"与"请求被丢掉、
     永远不出字"在客户端**无法区分**；而 socket 超时是**每次读**的超时，所以它实际就是

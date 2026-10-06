@@ -182,6 +182,29 @@ def test_prompt_budget_is_a_pure_function():
     assert pw.prompt_budget_error(9999, 0) is None, "0 = 不限"
 
 
+def test_the_prompt_budget_is_per_channel_and_grounded_in_measurements():
+    """包线**按通道**定，不是一刀切（2026-10-06 用户问"能不能加到四五万字符／或者自适应"）。
+
+    两档的差别是**实测出来的**：
+
+    * `glm-5.3`：5164 token 的输入在 `low` 档把 32768 个 completion token 全烧在 reasoning、
+      正文为空 ⇒ 安全区 ≈**3,000 字符**；
+    * `relay`（`gpt-6-astra`）：**5,309 B** 的包 6 分钟内返回正文；
+      而 **17.5 KB** 的包 **64 分钟零输出** ⇒ 安全区在两者之间。
+
+    所以中转站那一档**必须比 GLM 高**（否则白扔了实测出来的余量），
+    又**必须明显低于 17.5 KB**（否则直接踩实测的死亡点）。**"四五万字符"没有实测支持。**
+    """
+    glm_budget = pw.default_max_prompt_chars("glm")
+    relay_budget = pw.default_max_prompt_chars("relay")
+    assert glm_budget == 3000
+    assert relay_budget > glm_budget, "中转站的实测包线比 GLM 宽，预算不许一刀切"
+    assert relay_budget >= 5309, "至少要覆盖实测可用的 5,309 B 那个包"
+    assert relay_budget <= 17500 // 2, "要离实测死亡的 17.5 KB 有安全距离"
+    assert pw.default_max_prompt_chars("unknown-channel") == glm_budget, (
+        "未知通道取**最保守**那一档，不猜")
+
+
 def test_a_truncated_round_is_not_promoted(tmp_path):
     """`finish_reason=length` 的一轮是半截稿，**不算成功、不许当最终稿**。
 

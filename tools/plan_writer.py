@@ -55,12 +55,31 @@ DEFAULT_ROUNDS = 5
 #: `tests/test_plan_writer.py` 会读它的源码断言两处一致，漂了当场红。
 DEFAULT_MAX_TOKENS = 32768
 
-#: **prompt 预算**（字符）：GLM-5.3 是"始终思考"模型，输入越长、reasoning 越长；
-#: 实测 2026-10-05：5164 token 的输入（≈7600 字符）在 `low` 档把 32768 个 completion
-#: token 全烧在 reasoning 上（32532），`finish_reason=length`、**正文为空**，白等 460 s。
-#: 文档实测的安全区是"~2k token（≈3000 字符）以内"。超预算时**拒绝调用**并给出调法，
-#: 而不是烧掉十分钟再失败。
-DEFAULT_MAX_PROMPT_CHARS = 3000
+#: **prompt 预算**（字符）——**按通道给，不是一刀切**。
+#:
+#: 2026-10-06 用户问"能不能加到四五万字符／或者自适应"，答案要落在**实测包线**上：
+#:
+#: | 通道 | 实测 | 结论 |
+#: |---|---|---|
+#: | `glm-5.3` | 5164 token 的输入（≈7600 字符）在 `low` 档把 32768 个 completion token 全烧在 reasoning（32532）、`finish_reason=length`、**正文为空**、白等 460 s | 安全区 **≈3,000 字符** |
+#: | `relay`（`gpt-6-astra`） | **5,309 B** 的包 **6 分钟内**返回正文（`docs/evidence/20261006-gpt6a-round2/`） | ≥5.3 KB **可以** |
+#: | `relay`（`gpt-6-astra`） | **17.5 KB** 的包 **64 分钟零输出**；~6k token 的包同样 64 分钟零输出（`docs/evidence/20261006-gpt6a-consult-liveness/`） | **远小于 17.5 KB** |
+#:
+#: ⇒ **"四五万字符"没有实测支持**（实测的死亡点在 17.5 KB，不是 40 KB）。
+#: 中转站这一档取 **6,000**：比**实测可用**的 5.3 KB 留一点余量，又离**实测死亡**的 17.5 KB
+#: 有 2.9× 的安全距离。**要把它继续往上抬，唯一正当的办法是实测包线**
+#: （拿不同尺寸的包扫一遍），不是拍脑袋改常数。
+#: 超预算时**拒绝调用**并给出调法——**不静默截断**（截断＝降级）。
+DEFAULT_MAX_PROMPT_CHARS_BY_PROVIDER = {"glm": 3000, "relay": 6000}
+
+#: 旧名保留：等于 **GLM 那一档**（历次文档引用的就是它）。
+DEFAULT_MAX_PROMPT_CHARS = DEFAULT_MAX_PROMPT_CHARS_BY_PROVIDER["glm"]
+
+
+def default_max_prompt_chars(provider: str) -> int:
+    """这一档通道的默认预算。未知通道**取最保守那一档**（不猜）。"""
+    return DEFAULT_MAX_PROMPT_CHARS_BY_PROVIDER.get(str(provider),
+                                                    DEFAULT_MAX_PROMPT_CHARS)
 
 #: 起草通道的默认值。用户 2026-10-06：GPT-6A **只用于人工裁决与执行计划书写** ⇒
 #: 写计划默认走中转站；`glm` 仍可显式选（历次计划都是 GLM-5.3 起草的，留作对拍与回退）。
@@ -312,8 +331,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--temperature", type=float, default=0.2)
     parser.add_argument("--timeout", type=float, default=1500.0)
-    parser.add_argument("--max-prompt-chars", type=int, default=DEFAULT_MAX_PROMPT_CHARS,
-                        help="prompt 字符预算（0=不限）；超了直接拒绝，不烧 reasoning")
+    parser.add_argument("--max-prompt-chars", type=int, default=None,
+                        help="prompt 字符预算（0=不限；**不填 = 按通道自动**，见 "
+                             "DEFAULT_MAX_PROMPT_CHARS_BY_PROVIDER：glm 3000 / relay 6000）；"
+                             "超了直接拒绝，不烧 reasoning")
     parser.add_argument("--critique", action="append", default=[],
                         help="主线意见（第 r 轮用第 r-1 个文件）")
     parser.add_argument("--dry-run", action="store_true")
@@ -338,13 +359,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     #: `glm` 仍是默认（历次计划都是它起草的，逐字可比）；换通道要显式写 `--provider relay`。
     model, consult_fn = choose_channel(args.provider, args.model)
     out_dir = pathlib.Path(args.out)
+    #: 预算**按通道**定：不填 `--max-prompt-chars` 就用这一档的实测包线（见常量处的表）。
+    budget = (default_max_prompt_chars(args.provider) if args.max_prompt_chars is None
+              else int(args.max_prompt_chars))
 
     if args.dry_run:
         result = write_plan(contract, question, contexts, sources, status_text, None,
                             model=model, rounds=args.rounds, levels=levels,
                             max_tokens=args.max_tokens, temperature=args.temperature,
                             timeout=args.timeout,
-                            max_prompt_chars=args.max_prompt_chars, critiques=critiques,
+                            max_prompt_chars=budget, critiques=critiques,
                             consult_fn=consult_fn)
         manifest = gc.bundle_manifest(args.question, question, contexts, sources,
                                       status_text, None, repo)
@@ -367,7 +391,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         model=model, rounds=args.rounds, levels=levels,
                         max_tokens=args.max_tokens, temperature=args.temperature,
                         timeout=args.timeout,
-                        max_prompt_chars=args.max_prompt_chars, critiques=critiques,
+                        max_prompt_chars=budget, critiques=critiques,
                         consult_fn=consult_fn)
     print(json.dumps(result["provenance"], ensure_ascii=False))
     return 0
