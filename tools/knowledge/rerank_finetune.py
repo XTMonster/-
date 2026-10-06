@@ -35,11 +35,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from block_director.utils.console import force_utf8_streams  # noqa: E402
+from tools.kb_fetch.common import read_jsonl  # noqa: E402
 
 
 def _read_jsonl(path: pathlib.Path) -> List[Dict[str, Any]]:
-    return [json.loads(line) for line in
-            path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    #: 走全仓唯一的 JSONL 读入口（`tests/test_jsonl_reading_convention.py` 守这条）。
+    return list(read_jsonl(path))
 
 
 def group_by_query(items: Sequence[Dict[str, Any]]
