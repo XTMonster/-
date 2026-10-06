@@ -1,0 +1,24 @@
+{
+ "base": "BAAI/bge-reranker-v2-m3",
+ "device": "cuda",
+ "seed": 0,
+ "train_rows": 2304,
+ "test_rows": 768,
+ "zero_shot": {
+  "queries": 16,
+  "proxy_e1": 0.0625,
+  "perfect_ceiling": 0.8125,
+  "hits": 3,
+  "ceiling_hits": 39
+ },
+ "fine_tuned": {
+  "queries": 16,
+  "proxy_e1": 0.5625,
+  "perfect_ceiling": 0.8125,
+  "hits": 27,
+  "ceiling_hits": 39
+ },
+ "train_seconds": 241.6,
+ "steps": 1152,
+ "pos_weight": 9.378377914428711
+}
