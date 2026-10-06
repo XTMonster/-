@@ -1,0 +1,7 @@
+{
+ "queries": 64,
+ "exact": 64,
+ "mismatched": 0,
+ "verdict": "bank file order == shipped retrieve(top_k=6) for every query",
+ "mismatches": []
+}

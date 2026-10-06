@@ -25,8 +25,11 @@
   而 `tools/knowledge/e1_triple_search.py` 的 0.7448 与 `tools/knowledge/e1_labelfree_pool.py`
   的数都是"**整组三条重判**"。两者**不许互相引用**；本表只用于**方向筛选**与"够不够得着"的量级判断。
 * **池子怎么来**：
-  * `retrieval_order`＝产品检索器原序（**已验证**：银行文件序的前 6 **逐条等于**
-    `CaseIndex.retrieve(query, top_k=6)`，见 `pool_ceiling.json::bank_order_equals_shipped_top6 = true`）；
+  * `retrieval_order`＝产品检索器原序。**全量验证过**（`bank_order_check.json`）：
+    64 条查询里 **64/64** 的"银行文件序前 6"**逐条等于** `CaseIndex.retrieve(query, top_k=6)`
+    （`probe_bank_order.py` ⇒ `{"exact": 64, "mismatched": 0}`）。
+    这条是**承重墙**：它保证 `retrieval_order` 那一列真的就是"**去标签池**"，而不是某个别的排序；
+    初版只在**第一条查询**上验过（`pool_ceiling.json::bank_order_equals_shipped_top6`），本批补成全量；
   * `label_top`＝**按标签分**取前 N（**阳性对照**：它是选择器不许用的那种池子）；
   * `embed3:*`＝智谱 `embedding-3`（2048 维）**原样余弦**重排 top-120 后取前 N
     （三种文本面：`excerpt` ／ `excerpt+zh` ／ `title+excerpt+zh`）。
