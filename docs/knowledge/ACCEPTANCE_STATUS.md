@@ -1,14 +1,20 @@
 # RK-13 / P14 验收现状（逐项对账 · 2026-10-01 语料重建之后）
 
-> ## 当前读数（2026-10-06 23:44 全链 · HEAD `8a9af8a`）
+> ## 当前读数（2026-10-07 00:18 全链 · HEAD `bd74e4a` · **门⑦ 已是 gen2**）
 >
 > **这一节是唯一的现行读数板；下面各节是历史快照**（最早一份写于 2026-10-01 语料重建之后），
-> 那里的数字**不要**当成现状引用。证据目录 `docs/evidence/20261006-233958/`：
+> 那里的数字**不要**当成现状引用。证据目录 `docs/evidence/20261007-001857/`：
 > 32 步链 **32/32 全过**、树守卫 `stable=true`（`tree.json` 的 `digest_before == digest_after`）、
-> 链内那次全量 `python -m pytest` = **2451 passed / 1 skipped**（链跑在 23:40；**它随每次改动变化，
+> 链内那次全量 `python -m pytest` = **2470 passed / 1 skipped**（链跑在 00:05；**它随每次改动变化，
 > 别把它当判据**，要最新数就自己跑一次，链每次都会打印）。
 > 现行台账＝
 > `docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md`。
+>
+> **换代（gen1→gen2，2026-10-07）**：门⑦ 现在消费**具名、被 pin 的第三方代裁层**
+> （`fixtures/knowledge_holdout.third_party.jsonl`，**夹具字节未动**）。同一次链上的口径变化：
+> `accepted-class reviewed 212 = llm-panel **0** + third-party **212** + human-only 0`
+> （上一代是 `210 = llm-panel 210 + third-party 0`）——**阈值一个字没动**，变的是**输入集合**，
+> 换代登记在 `fixtures/knowledge_holdout.generations.json`。
 >
 > | 指标 | 现行读数 | 状态 | 与下方旧表的差别（**为什么旧表不能再用**） |
 > |---|---|---|---|

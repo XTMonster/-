@@ -2160,6 +2160,40 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 ② 层里 16 条 `amended` 的 `fix` 文本**没有**拿去改夹具（那是第 1 步之后的事）；
 ③ 生成器读的源在 **gitignore 区**（可重建、未入库）⇒ 没有那份源就跑不了 `--check`。
 
+### P14-308：门⑦ **gen2 落地并跑出第一份证据**——链上口径从 `llm-panel 210` 变成 `third-party 212`（阈值一字未动）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R3 | 裁决点名的后三步：`--third-party` 按代计数 → 测试按代断言 → 新开一次 gate 运行 | **绿（三步全做完，全链覆盖）** | `tools/check_holdout.py`（`--third-party`／`--generations`）＋`tools/extract_run_evidence.py`（`pins.third_party`／`generation`／"必须解析到已登记代"）＋`tests/test_gate7_generation.py`（5）＋`tests/test_run_generation_registry.py`（3）；链 `docs/evidence/20261007-001857/` | 2026-10-07 | `bd74e4a`＋本批 |
+
+**三步**：① `check_holdout` 新增 `--third-party <层>`：把层里的裁决**贴到条目上**
+（`apply_third_party_layer`，**夹具文件一个字节不动**；层的 `fix` **不生效**，报告里 `fixes_applied=False`），
+并把本轮 `inputs`／`generation` 写进报告；② `extract_run_evidence` 记 `pins.third_party` 与 `generation`，
+`check()` 新增"**每份运行必须解析到已登记代**"；③ 新开一次全链——它是 **gen2 的第一份证据**
+（不是"对 gen1 的重跑"）。
+
+**口径变化（同一次链上，逐字）**：上一代 `accepted-class reviewed 210 = llm-panel 210 + third-party 0`；
+**gen2 `212 = llm-panel 0 + third-party 212`**。**阈值、`--min-human-review`（120）、
+`--reviewer-classes` 的语义一个字没动**；门⑦ 两代都 pass。这是"**验收过的产物被计账**"的口径闭合，
+**不是**把红洗绿——RK-13 仍是那一条已结案为"不可达"的红。
+
+**链（`docs/evidence/20261007-001857/`）**：HEAD `bd74e4a`、`tree.json` `stable=true`、
+32/32 全过、`failed_checks=['RK-13']`；`holdout_gates.json` 自述 `generation: gen2`、
+`inputs={holdout: e3e6bac2…, third_party: eda380e4…}`、`third_party_layer={applied: 212, fixes_applied: false}`。
+
+**守门**：`test_gate7_generation`（层取代原复核／夹具字节不动／`fix` 不生效／
+`inputs→代名` 必须**逐项相等**／入库工件真的构成 gen2）＋ `test_run_generation_registry`
+（每份已入库运行都要解析到**已登记代**）。**后者当场抓到一个真事实**：`20261003_real` pin 的
+**不是**现行夹具，而是更早的一代 ⇒ 已在登记表里**显式登记为 retired 的 `gen0-20261003`**
+（内容未保留、只有指纹），而不是把它混进 gen1。
+
+**第二十七次重新冻结**（`_reason_27`）：`tools/check_holdout.py` 换代，理由与"判据一字未动"写全。
+
+**未验证／边界**：① 层里 **16 条 `amended` 的 `fix` 文本仍未生效**（本轮的层是**输入工件**、
+不是"已生效的标签改写"）；② 那 2 条 `rejected` 也**没有**从条目集里拿掉——
+要动就要再写一次换代登记与重跑；③ 19 份 pin 现行夹具的运行仍解析为 **gen1**（它们消费的是旧输入集合），
+**不**因为"夹具字节没变"就自动升级。
+
 ### P14-307：去标签池**全量盲判（64 条）**落地——oracle **0.4375**；按裁定 `F3` 复议一次：**更高的确更高，结论不变**
 
 | 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
