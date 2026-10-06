@@ -1,4 +1,10 @@
-# ADR-0015 第三方裁定（Kimi K3）代替用户做人工审核判断；第三方通道由 qwen 换成 kimi
+# ADR-0015 第三方裁定代替用户做人工审核判断（**通道已换代，见文末"更新"**）
+
+> **2026-10-06 更新（读这一条再看下文）**：本 ADR 的**决定没有变**（第三方裁定代替人审、
+> 记录如实写 `reviewed_by: "third-party"`、绝不冒充 `human`、门⑦ 要不要认它由
+> `--reviewer-classes` 显式点名）——**变的是"第三方走哪条通道"**：
+> qwen → **Kimi K3**（本 ADR 当时）→ **中转站 GPT-6A `gpt-6-astra`**（现行）。
+> 下文凡是写"Kimi K3"的地方，**通道**应读作 **GPT-6A**；见文末「通道换代」一节。
 
 状态：Accepted（2026-10-06）。触发：用户 2026-10-06 两条指示
 「qwen 不方便，改成用 kimi k3 做第三方裁定和难题攻坚」与
@@ -58,3 +64,38 @@
 * `tools/check_holdout.py::review_class()` 认 `third-party`（第十二次重新冻结）。
 * `~/.codex/hooks/model-routing.md`：第三方裁定／难题攻坚改走 Kimi K3
   （想法生成／质量审核仍走 GLM-5.3）。
+
+---
+
+## 通道换代（2026-10-06，追加；**决定未变**）
+
+上面那条"走 Kimi K3"**已经过时**，两次换道都发生在同一天：
+
+1. **Kimi 被额度挂起**：`docs/evidence/20261006-kimi-quota/` 记着
+   `429 exceeded_current_quota_error`；同批把"发货代重排 85% 降级"的具名根因也定到它身上。
+2. **改用中转站 GPT-6A**：用户 2026-10-06 原话"**难题攻关和会诊 gpt6A 吧**"＋
+   "**提出方案类用 gpt6A，执行交给 DeepSeek**"；落地型号 **`gpt-6-astra`**
+   （用户确认"就是这个了"），**`reasoning_effort=max`**，走 `linkai.pics`（Cloudflare 后面，
+   必须浏览器 UA ＋ 流式，否则 524）。
+
+**由此定下的现行口径**（与 `~/.codex/hooks/model-routing.md` 一致）：
+
+| 工作类型 | 现行通道 |
+|---|---|
+| 人工裁决／写执行计划／难题攻关／会诊／提出方案 | **中转站 GPT-6A（`gpt-6-astra`，思考拉满）** |
+| 改代码／跑测试／构建／导出／提交 | 主线 DeepSeek |
+| 对拍与回退 | GLM-5.3（`--partner glm`）／Kimi（额度问题，仍不可用） |
+
+**并且（用户 2026-10-06 原话"**我说过，GPT6A 代替我做决定**"）**：
+凡是"**要不要动**"这一类——动判据／动测量协议／换 oracle 夹具／红线怎么处置／要不要另立协议版本——
+**由 GPT-6A 裁定**，主线按其结论执行并留证；证据与台账里旧的"须用户拍板／须用户批准"
+**视为过时口径**。
+
+**这一节只改"通道与授权"的事实陈述**：本 ADR 的三条决定（不冒充 `human`、记录必须自带
+`source{model, prompt_sha256, authorized_by}`、门⑦ 认哪些类别由 `--reviewer-classes` 显式点名）
+**一个字没动**；门①–⑩ 的阈值、E1 的 4.0 与分母也一个字没动。
+
+**落地物（现行）**：`tools/relay_consult.py::consult`（单次尝试已有"无数据上限"，
+见 `docs/evidence/20261006-gpt6a-silent-hang/`）；第三方裁定的记录格式与守门仍用
+`tools/holdout_review_third_party.py` 与 `tests/test_holdout_review_third_party.py`，
+只是 `--provider relay --model gpt-6-astra`。
