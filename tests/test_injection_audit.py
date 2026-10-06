@@ -17,6 +17,7 @@ Q6b 是对**夹具的 `q`** 重渲染——量的是"按这条查询检索会注
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -263,8 +264,21 @@ def test_the_chain_runs_the_injection_audit_and_requires_the_artifact():
     calls = [line for line in lines if "injection_audit.py" in line]
     assert calls, "链上没有调用 tools/knowledge/injection_audit.py"
     assert any("injection_audit.json" in line for line in calls), calls
-    assert any("--llm-trace" in line and "20261003_real_long" in line
-               for line in calls), "链上喂的必须是那一份真实长跑的 prompt"
+    #: **2026-10-06（P14-257）**：这一格此前**写死** `20261003_real_long`——那是 bm25 时代的跑
+    #: （SS84：`/v1/retrieve` 从没被调用过、逐镜查询是旧形状），于是 Q6b 的 required 半边
+    #: **永远 join 不上 oracle、永远 `not_measured`**。现在不再点名日期，而是要求它走
+    #: **与 knowledge 块同一个 `$knowledgeRun`**（守门：
+    #: `test_chain_evidence_is_measured.py::test_q6b_reads_the_same_real_run_as_the_rest_of_the_knowledge_block`）。
+    #: 这一条**保留原意并加强**：仍要求"喂的是真跑的 prompt"，而且**那一跑必须真的在库里**。
+    assert any("--llm-trace" in line and "$knowledgeRun" in line for line in calls), (
+        "链上喂的必须是一份真跑的 prompt：走 `$knowledgeRun`，不许写死某个日期路径")
+    defined = re.search(r"\$knowledgeRun\s*=\s*'([^']+)'", text)
+    assert defined, "链上必须定义 `$knowledgeRun`"
+    run_dir = ROOT / defined.group(1)
+    assert (run_dir / "llm_trace.jsonl").is_file(), (
+        "喂的那一跑必须带 llm_trace.jsonl（真跑的 prompt）：%s" % run_dir)
+    assert (run_dir / "audit_log.jsonl").is_file(), (
+        "喂的那一跑必须带 audit_log.jsonl（逐次事件）：%s" % run_dir)
     assert any("Test-Path" in line and "injection_audit.json" in line
                for line in lines), "链上必须检查产物真的写出来了"
     assert any("token_caps.status" in line for line in lines), (
