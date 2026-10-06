@@ -52,3 +52,20 @@ attestation (diagnostic): 0.2078 of checkable member slots are named by the edge
 2. `headroom_policy:cinematic` 的来源卡 `cine_move_crane_arc_down` 在卡库里**取不到文本**
    （探针回的是空串）——那是**卡 id 对不上**还是**卡缺文本**，**没查**。
 3. 本目录**没有**改任何代码、判据或 `fixtures/closure_uncovered_kinds.json`；只记事实。
+
+## 六、想做但**做不了**的第二把尺子：拿**语料原文**复核（2026-10-07 补）
+
+我原想再问一句"这些取值**在原文里**有没有"（佐证判据只比**卡正文**，而卡可能只是改写）。
+拿 `probe_span_grounding.py` 去查——**整库 1,938 个槽位全部回 `corpus_not_found`**。查下来原因是**结构性的**：
+
+* 索引里的 `source_span.chunk_id` 形如 `pg39973_txt#002`（Project Gutenberg 那一代语料），
+  而 `work/corpus_v4/fetched.jsonl` 是**另一代语料**——它的行里 **没有 chunk id**
+  （只有 `source_ref` ＋ `text`）；
+* `knowledge/cases/*.jsonl` 里虽然出现 `pg39973_txt`，但那只是**摘录**，不是可用于 span 对齐的全文。
+
+⇒ **"原文复核"在库内做不了**（除非把那一代语料的全文找回来）。所以这 1,262 个未佐证槽位
+**只能**用"卡正文"这一把尺子量——而判据本身已经写明那是**下界**（"卡可以蕴含而不写出它"）。
+**这条如实挂着，不许拿它当"79% 都是编的"。**
+
+（两个探针都已随本目录入库：`probe_uncovered_rules.py`／`probe_span_grounding.py`，
+免得引用的脚本躺在 gitignore 区里。）

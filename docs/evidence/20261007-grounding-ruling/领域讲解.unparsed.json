@@ -1,0 +1,7 @@
+{
+  "role": "领域讲解",
+  "status": "unparsed",
+  "error": "JSONDecodeError: Expecting ',' delimiter: line 4 column 535 (char 1453)",
+  "chars": 4966,
+  "sha256": "3a2a9656f765721bd418e913e0291723c25bb6405b3a5c505bd195200e49e86d"
+}

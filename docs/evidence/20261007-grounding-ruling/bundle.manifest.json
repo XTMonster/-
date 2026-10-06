@@ -1,0 +1,53 @@
+{
+  "created_at": "2026-10-07T02:41:05",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "7a73ef7",
+    "head_subject": "docs(P14-317): 把更新后的全扫产物(23 次运行，含两次真跑)一并入库——上一条提交只带了 README 与台账",
+    "recent": [
+      "7a73ef7 docs(P14-317): 把更新后的全扫产物(23 次运行，含两次真跑)一并入库——上一条提交只带了 README 与台账",
+      "6e1bf52 feat(P14-317): 第二次真跑(两栏都落地)——movement 真的在比了(空 294->0，matched 268)、生效边 1->30；另修工具里 for...else 误用导致的 no_match 假计数",
+      "fd499c9 feat(P14-316): declared.camera_move 落字段——movement 一族从 没得比 变成 能比(空 294/300 -> 0，matched 267)",
+      "4ae4c2b docs(P14-315): 落地后的第一次真跑——轴族从判不了变成能判(axis_side field_absent 63->1)，并立刻判出 两套词表不相交(知识侧只有 neutral，成片侧只有 correct/crossed)",
+      "8f568e6 feat(P14-314): ③类落地——pair(恒真前提)/axis_topic(话题) 排除出判定；判不了 95->32(全扫中位数 98.5->36)；顺带把判不了拆成三个桶"
+    ],
+    "uncommitted": []
+  },
+  "question": {
+    "path": "work/_q_grounding_glm.md",
+    "sha256": "a4cd60d0378571281fe0111dae8556c04506a35baa5c738029ad9a74528dd3b6",
+    "chars": 1129
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "规格一致性": {
+      "system": {
+        "chars": 1032,
+        "sha256": "3c3279e0f38e8ef60af8366c247d99e97a2cc8862f9cabba87cac05f81980603"
+      },
+      "user": {
+        "chars": 1140,
+        "sha256": "b83f492a07a814065d8a595d29920bd6fe7db6a9bcaa781d3b4ceb6dcc169a23"
+      }
+    },
+    "领域讲解": {
+      "system": {
+        "chars": 1032,
+        "sha256": "cd854264794d23eacbfdd56fcbcddd185bde8ff07dd9b030aae23edeae3d5d39"
+      },
+      "user": {
+        "chars": 1140,
+        "sha256": "b83f492a07a814065d8a595d29920bd6fe7db6a9bcaa781d3b4ceb6dcc169a23"
+      }
+    }
+  }
+}
