@@ -1,0 +1,2 @@
+{"queries": 64, "triples_judged": 1280, "distribution": {"0": 308, "1": 547, "2": 376, "3": 49}, "three_of_three": 49, "E1_best_of_search": 0.7448, "labels": "docs/evidence/20261006-c3-deep-pool/reviews.current.batch3.top120.jsonl", "panel": ["deepseek-chat", "glm-5.3"]}
+exit=0
