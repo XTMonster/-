@@ -2441,3 +2441,34 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 **未验证／边界**：① 影子分析不是读数；② 这一栏是**计划声明**的运镜，不是"实际动没动"
 （`movements[]` 才是写进关键帧的那一份，本次仍只有 1 条）——两者不是同一个量，别混用；
 ③ 只抄不改名、不翻译；需要"约定"的东西仍然不碰。
+
+### P14-317：**第二次真跑**（两栏都落地）——`movement` 真的在比了，生效边 **1 → 30**；另修工具里一个"让报告更好看"的 bug
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R53-D7 | 两栏落地后的正式读数 | **绿（真跑；口径更紧）** | `docs/evidence/20261007-real-closure/`（`run_id 65df857a3bb5`、64 镜、`llm_calls 352`、`retrieval_call 67`、`generation: gen2`） | 2026-10-07 | 本批 |
+
+**对照**（同一把尺子）：`movement` 的 `film_side_empty` **294 → 0**、`matched` 5 → **268**、
+`unmatched` 1 → 33；`edge_field_absent` **53 → 1**；**`edge_active` 1 → 30**；
+`edge_indecidable` 34 → 33；注入边 344、口径闭合 ✓
+（`33+256+0+1+30+24`）。成片侧现在有 `declared.camera_move ∈ {static 283, dolly_in 4}`，
+与知识侧取值域**重叠**（`dolly_in`＋`static`）⇒ **"没得比"消失了**。
+
+**"0 违规"的限定比上一轮更紧**：`edge_active = 30`（有 30 条边的前提真被满足）但**这 30 条一条
+`forbid` 成员都没有** ⇒ `forbid_members_seen = 0`、`judgeable_forbid_members = 0` ⇒ 违规 0 **仍是
+"无物可违"**；这一轮的改进是"**池子里终于有能判的边了**"，**不是**"查出/排除了违规"。
+裁定 F4 的设门条件 (a) 仍是 0。
+
+**顺带修掉我自己工具里的一个 bug**（同一族：**让报告更好看**）：forbid 判定里的 `else`
+被写成 **`for...else`**——循环无 `break` ⇒ **每条生效的边都**给 `no_match` +1，
+哪怕那条边**没有 forbid 成员**；实测一度报 `no_match 30` 与 `forbid_members_seen 0` **自相矛盾**。
+修法：`else` 挪回 `if matched(...)` 分支；守门
+`test_no_match_counts_unmatched_forbids_not_active_edges`（无 forbid ⇒ 0；撞不上 ⇒ 恰好 1）。
+
+**全扫更新（23 次，含这两次真跑）**：判不了中位数 **35.5**、最大 89；生效边中位数 7.5、**最大 30**；
+`gate_ready` 三条仍全 false ⇒ 结论仍是"**判据集为空 ⇒ 回补判据，不设门**"。
+
+**未验证／边界**：① `axis_side` 仍是值级部分绑定，62 条 `unmatched`＝"前提不成立"
+（成片侧只有 `correct`/`crossed`）；② 剩下 33 条判不了的边全来自 `headroom_policy`／
+`composition_rule`／`camera_angle`，它们**缺的不是区间**（见 `20261007-uncovered-kinds-grounding`）；
+③ 两次真跑不能当分布；本目录**没有**用影子结果，也**没有**更新 Q5/E2。

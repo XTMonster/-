@@ -211,6 +211,31 @@ def test_a_value_that_is_already_the_film_enum_is_not_a_miss():
     assert out["member_outcomes_by_kind"]["movement"]["matched"] == 1
 
 
+def test_no_match_counts_unmatched_forbids_not_active_edges():
+    """`no_match` 必须数**没撞上的 forbid 成员**，不许数"生效的边"。
+
+    踩过的坑（本文件自己的 bug）：那个 `else` 写成了 **`for...else`**——循环里没有 `break`，
+    于是**每条生效的边都会**给它 +1，哪怕那条边**一个 forbid 成员都没有**。实测后果：
+    一次真跑报 `no_match 30` 而 `forbid_members_seen 0`（自相矛盾），"0 违规"因此被读得比实际更"干净"。
+    """
+    #: 生效、但**没有 forbid 成员** ⇒ `no_match` 必须是 0。
+    no_forbid = {"e1": _edge("e1", [["qualifier", "intent", "intent:推进"]])}
+    shot = {"s1": {"shot_id": "s1", "intent_type": "推进"}}
+    out = ecr.analyze([_inject("s1", "e1")], no_forbid, shot)
+    assert out["counts"]["edge_active"] == 1
+    assert out["counts"].get("no_match", 0) == 0, "没有 forbid 成员就谈不上 no_match"
+    assert out["counts"].get("forbid_members_seen", 0) == 0
+
+    #: 生效、有一个**撞不上**的 forbid ⇒ 恰好 1 个 no_match。
+    with_forbid = {"e1": _edge("e1", [["qualifier", "intent", "intent:推进"],
+                                      ["forbid", "shot_size", "shot_size:CU"]])}
+    shot_ms = {"s1": {"shot_id": "s1", "intent_type": "推进", "shot_type": "MS"}}
+    out2 = ecr.analyze([_inject("s1", "e1")], with_forbid, shot_ms)
+    assert out2["counts"]["forbid_members_seen"] == 1
+    assert out2["counts"]["no_match"] == 1
+    assert out2["counts"].get("violations", 0) == 0
+
+
 def test_the_edge_ledger_closes_so_every_injected_edge_is_accounted_for():
     """**边口径必须闭合**：`injected_edges` ＝ 各种判定之和，**一条都不许下落不明**。
 

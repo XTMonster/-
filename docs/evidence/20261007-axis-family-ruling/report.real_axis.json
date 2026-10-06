@@ -8,7 +8,6 @@
     "edge_field_absent": 53,
     "edge_inactive": 232,
     "edge_active": 1,
-    "no_match": 1,
     "edge_indecidable": 34
   },
   "ledger": {
@@ -118,7 +117,7 @@
     ],
     "movement": [
       "movements[].kind",
-      "declared_camera_move"
+      "declared.camera_move"
     ],
     "action": [
       "action_types[]"
@@ -295,7 +294,7 @@
     "movements[].kind": {
       "dolly_in": 4
     },
-    "declared_camera_move": {},
+    "declared.camera_move": {},
     "axis.status": {
       "correct": 33,
       "crossed": 29

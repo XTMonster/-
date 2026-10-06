@@ -374,8 +374,8 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                     violations.append({"shot_id": shot_id, "edge_id": edge_id,
                                        "kind": kind, "forbid": value,
                                        "observed": observed})
-            else:
-                counts["no_match"] += 1
+                else:
+                    counts["no_match"] += 1
 
     vocabulary_gap = {}
     for kind in BINDINGS:
