@@ -93,6 +93,39 @@ def test_the_final_call_sees_every_chunks_notes():
     assert body.count("要点") >= 2, "各块的要点都要进去（这里两块 ⇒ 至少 2 次出现）"
 
 
+def test_both_prompts_tell_the_model_it_has_no_tools():
+    """**"你没有工具"必须出现在两侧**（`plan_writer.py` 的同一处教训）。
+
+    实测（`tools/plan_writer.py:167-177`）：契约读起来像"给有工具的 agent 的指令"时，
+    GPT-6A 会**演旁白**（"我正在调用只读检查命令…"），一次调用烧 903 s 并只落半成品。
+    分块这里同形 —— 抽取块会看到"逐条摘出来"，最终答复会看到"据此回答"，
+    都可能被读成"你要去查"。所以两条 system/用户提示里都要有这句，并被本守门钉住。
+    """
+    seen = []
+
+    def call(messages, *, model, max_tokens, levels, temperature, timeout):
+        seen.append(messages[0]["content"] + "\n" + messages[-1]["content"])
+        return "要点", {"model": model, "usage": {}}
+
+    ra.adaptive_consult("问题？", ["辛" * 1200], budget=500,
+                        consult_fn=call, model="m", max_tokens=64,
+                        temperature=0.2, timeout=1.0)
+    assert len(seen) >= 2, "至少一次抽取 + 一次 final"
+    for body in seen:
+        assert "你没有工具" in body, "两侧都要写明：模型没有工具、不许演旁白"
+
+
+def test_the_headers_are_the_only_place_that_says_it():
+    """反面控制：把它从模板里去掉，守门必须能红（证明上面的断言不是恒真式）。"""
+    original = ra.FINAL_HEADER
+    try:
+        ra.FINAL_HEADER = original.replace("**你没有工具**", "（此处本应有那句话）")
+        assert "你没有工具" not in ra.FINAL_HEADER
+    finally:
+        ra.FINAL_HEADER = original
+    assert "你没有工具" in ra.FINAL_HEADER
+
+
 class _ChannelDead(SystemExit):
     """模拟本仓通道的报错方式：`glm_consult.ConsultFailed` 就是 `SystemExit` 的子类。"""
 
