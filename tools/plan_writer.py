@@ -159,21 +159,42 @@ def prompt_budget_error(prompt_chars: int, budget: int) -> Optional[str]:
             n=prompt_chars, b=budget, n2=max(prompt_chars, budget)))
 
 
+#: **你不是一个能动手的 agent** —— 这句必须放在 system 最前面（2026-10-06 实测的真实缺陷）：
+#: 一次真实运行里，`gpt-6-astra` 收到 5 KB 的写作契约后**没有写计划**，而是回了 524 字符的
+#: **行动旁白**（"我正在调用只读检查命令；如果当前会话没有暴露终端工具…"），
+#: 一次调用烧掉 **903 s**、`finish_reason=stop`，工具因此只落了半成品并**非零退出**
+#: （证据 `docs/evidence/20261006-plan-writer-narration/`）。
+#: 根因是**契约本身读起来像"给有工具的 agent 的指令"**（"先去检索／逐行核对／落证…"），
+#: 通道只认它能看见的那点上下文，于是把"指令"演成了"动作"。
+NO_TOOLS_NOTICE = """\
+**你没有工具**：不能执行命令、不能读写文件、不能上网、也看不到任何仓库。
+你**唯一**能做的是：读完这条消息里的内容，**直接把成品文本写出来**。
+因此——
+
+* **不要**写"我正在运行／我读取了／我先去核对／如果会话没有暴露终端工具"这类**旁白**；
+* **不要**描述你打算怎么做，直接**做**（也就是直接输出成品）；
+* 看不到的东西写"**材料未覆盖**"，**不要猜**、也不要假装你看过仓库。
+
+---
+
+"""
+
+
 def build_plan_messages(contract: str, question: str,
                         contexts: Sequence[Tuple[str, str]],
                         sources: Sequence[Dict[str, object]],
                         status_text: Optional[str]) -> List[dict]:
     """第 0 轮（起草）：契约当 system，现状＋需求＋源码＋产物当 user。"""
     user = gc.compose_user_message(question, contexts, sources, status_text)
-    return [{"role": "system", "content": contract},
+    return [{"role": "system", "content": NO_TOOLS_NOTICE + contract},
             {"role": "user", "content": user}]
 
 
 def build_refine_messages(contract: str, previous: str, round_index: int,
                           rounds: int, critique: str = "") -> List[dict]:
     """第 r 轮（精炼）：契约 ＋ 精炼规则当 system，上一轮全文（＋主线意见）当 user。"""
-    system = contract + "\n\n---\n\n" + REFINE_HEADER.format(round=round_index,
-                                                             rounds=rounds)
+    system = (NO_TOOLS_NOTICE + contract + "\n\n---\n\n"
+              + REFINE_HEADER.format(round=round_index, rounds=rounds))
     parts = []
     if critique:
         parts.append(CRITIQUE_HEADER.format(critique=critique.strip()))

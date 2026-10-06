@@ -182,6 +182,25 @@ def test_prompt_budget_is_a_pure_function():
     assert pw.prompt_budget_error(9999, 0) is None, "0 = 不限"
 
 
+def test_the_system_prompt_says_the_model_has_no_tools():
+    """2026-10-06 实测的真实缺陷：一次真跑里 `gpt-6-astra` **没有写计划**，而是回了
+    **524 字符的行动旁白**（"我正在调用只读检查命令；如果当前会话没有暴露终端工具…"），
+    一次调用烧掉 **903 s**、`finish_reason=stop`，工具只落了半成品并**非零退出**。
+    根因：写作契约本身读起来像"给**有工具的 agent** 的指令"，模型于是把指令演成了动作。
+
+    这一条钉住：**起草与精炼两侧的 system 最前面**都必须有"你没有工具、直接把成品写出来"。
+    """
+    draft = pw.build_plan_messages("契约正文", "问题", [], [], None)
+    assert draft[0]["role"] == "system"
+    assert draft[0]["content"].startswith(pw.NO_TOOLS_NOTICE)
+    for phrase in ("你没有工具", "旁白", "材料未覆盖"):
+        assert phrase in draft[0]["content"], phrase
+    refine = pw.build_refine_messages("契约正文", "上一轮全文", 1, 5)
+    assert refine[0]["role"] == "system"
+    assert refine[0]["content"].startswith(pw.NO_TOOLS_NOTICE), (
+        "精炼轮同样会被演成旁白，所以那一侧也要有这句")
+
+
 def test_the_prompt_budget_is_per_channel_and_grounded_in_measurements():
     """包线**按通道**定，不是一刀切（2026-10-06 用户问"能不能加到四五万字符／或者自适应"）。
 
