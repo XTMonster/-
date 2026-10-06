@@ -2216,3 +2216,41 @@ Q1/Q2/Q4/Q6b 失据 —— 裁定说**bundle 里没有判据原文、不能定�
 ② 只跑了 1 次、没有跑间极差；③ 产物里没有 `unscored_rows` 字段（P14-290 之后才有），
 本轮的 26 行是**事后复算**的；④ proxy 这把尺子在"逐查询取最好"这个量上**偏低**
 （深度-6 区间 0.31～0.38 < 实测 0.4375）——以后引用 proxy 上界要带上这条实测修正。
+
+### P14-309：执行闭环诊断 **v2**——相等式 kind **3 → 7**，并第一次量出**词表落差**
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R53-D7 | 把 `APPLICABILITY_SEMANTICS_v1.md` 第四节的"第一步"做成可跑的东西 | **绿（7 个 kind 绑定＋词表落差＋10 条守门）** | `tools/knowledge/execution_closure_report.py`；`docs/evidence/20261007-execution-closure-v2/` | 2026-10-07 | 本批 |
+
+**编号说明（如实记）**：本节写在文件末尾，但 `P14-308`（门⑦ gen2）落在 `P14-307` **之前**——
+那是我上一轮用锚点插入造成的顺序错位，编号以各自正文为准。
+
+**绑定表**（只收相等式）：`shot_size→shot_type`、`intent→intent_type`、
+`lens→camera.lens`（`35mm`/`35`/`35.0` **归一后**比）、
+`movement→movements[].kind ＋ declared_camera_move`、`action→action_types[]`、
+`transition→declared.transition ＋ transition_in/out`、`vfx→vfx[].type`。
+
+**先把这轮语料摊开**：long21 一共注入 **344 条边**，只有 4 种类型
+（`INTENT_PACK 243`、`AXIS_RULE 66`、`SHOT_PATTERN 22`、`STAGING_PACK 13`）；
+成员 kind 只有 10 种（`movement 329`、`shot_size 290`、`intent 243`、`pair`/`axis_side`/`axis_topic` 各 66、
+`lens 22`、`headroom_policy 22`、`composition_rule 13`、`camera_angle 13`）
+⇒ **`action`/`transition`/`vfx` 一次都没被注入**，它们在这份证据里是 `no_data`，**不是**"没有违规"。
+
+**读数（v2）**：判不了 **95**、不适用 **224**、生效 **1**、生效边上 `forbid` 成员 **0** ⇒ **违规 0**；
+未映射 kind 六种（`pair`/`axis_side`/`axis_topic`/`headroom_policy`/`composition_rule`/`camera_angle`），
+**`lens` 已从"判不了"里移出**。
+
+**新量出来的：`vocabulary_gap`（词表落差）**——`shot_size` 与 `intent` **重叠**
+（成片的 5 个景别全在知识词表里；intent 10/10）、`lens` **重叠**（`50.0`，归一化生效）、
+`movement` **只部分重叠**（知识侧还有 `固定` 这种中文取值，成片侧是 `dolly_in` 这类英文枚举）。
+⇒ 同一条"执行闭环"缺口的**第二种形态**：不只是"成片缺字段"，还有"**两边词表不是同一种话**"。
+
+**顺手抓出并修掉本工具自己的两个 bug**（都写成守门）：① 只归一了一边 ⇒ `lens:35mm` 撞不上 `35.0`，
+**真违规被记成 `no_match`（漏判比假阳性更隐蔽）**；② 词表统计写在判定的 `continue` 之后 ⇒
+只有"生效"的边被统计，`action`/`transition`/`vfx` 一起变成空集合、**看着像没问题**。
+两条的错误方向都是"让报告更干净"，所以必须由守门钉住。
+
+**未验证／边界**：① 只有 1 次运行（64 镜）；② ②类（成片无字段）与③类（话题/标注）**仍未纳入**；
+③ `movement` 的中英词表**只量了落差、没编别名**（编了就是新判据）；④ `composition_rule`/`pacing`/
+`camera_angle` 是"区间/阈值"型，**要动先得裁定**。

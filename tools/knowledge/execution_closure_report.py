@@ -39,12 +39,40 @@ if str(ROOT) not in sys.path:
 
 from tools.kb_fetch import common  # noqa: E402
 
-#: kind → 成片侧字段名（**只收能精确对上的**；加进来之前先问：这个字段真的等价吗？）
-MAPPING: Dict[str, Tuple[str, ...]] = {
-    "shot_size": ("shot_type",),
-    "movement": ("declared_camera_move", "movements[].kind"),
-    "intent": ("intent_type",),
+def _identity(value: str) -> str:
+    return value
+
+
+def _lens_mm(value: str) -> str:
+    """`35mm` / `35` / `35.0` 归一成同一个串（**只做单位与尾零归一，不做近似**）。"""
+    text = str(value).strip().lower().removesuffix("mm")
+    try:
+        return str(float(text))
+    except ValueError:
+        return str(value).strip().lower()
+
+
+#: kind → （成片侧字段, 取值归一化）。**只收"能精确判等"的 kind**；
+#: 加进来之前先问两句：① 成片里**真的有**这个字段吗？② 两边的**取值词表**是同一个吗？
+#:
+#: 7 个"相等式"kind 是 `docs/knowledge/APPLICABILITY_SEMANTICS_v1.md` 第一步点名的；
+#: 但**实测**（`work/_peek_kind_domains.py`）发现其中 4 个的**词表对不上**——
+#: `action` 索引里是中文动作（上下场/推门…）、成片记的是 `action_types`（`walk_to`/`nod`…）；
+#: `vfx` 成片根本没有这个字段；`transition` 一边是 `cut/dissolve/whip`、一边是 `declared.transition`（"淡入"）；
+#: `movement` 只**部分**同词表（`dolly_in` 两边都有，`固定` 对不上）。这些不是"没违规"，
+#: 是**比不了**——所以本工具除了判等，还要单独报 **词表落差**（`vocabulary_gap`）。
+BINDINGS: Dict[str, Tuple[Tuple[str, ...], Any]] = {
+    "shot_size": (("shot_type",), _identity),
+    "intent": (("intent_type",), _identity),
+    "lens": (("camera.lens",), _lens_mm),
+    "movement": (("movements[].kind", "declared_camera_move"), _identity),
+    "action": (("action_types[]",), _identity),
+    "transition": (("declared.transition", "transition_in", "transition_out"), _identity),
+    "vfx": (("vfx[].type",), _identity),
 }
+
+#: 向后兼容的名字（老读法：`MAPPING[kind]` 就是字段元组）。
+MAPPING: Dict[str, Tuple[str, ...]] = {kind: fields for kind, (fields, _norm) in BINDINGS.items()}
 
 
 def load_edges(path: pathlib.Path) -> Dict[str, Dict[str, Any]]:
@@ -82,6 +110,20 @@ def shot_values(shot: Dict[str, Any], field: str) -> List[str]:
     if field == "declared_camera_move":
         value = shot.get("declared_camera_move")
         return [str(value)] if value else []
+    if field == "camera.lens":
+        lens = (shot.get("camera") or {}).get("lens")
+        return [str(lens)] if lens not in (None, "") else []
+    if field == "action_types[]":
+        return [str(item) for item in (shot.get("action_types") or [])]
+    if field == "vfx[].type":
+        return [str((item or {}).get("type")) for item in (shot.get("vfx") or [])
+                if isinstance(item, dict) and item.get("type")]
+    if field in ("declared.transition", "transition_in", "transition_out"):
+        if field == "declared.transition":
+            value = (shot.get("declared") or {}).get("transition")
+        else:
+            value = shot.get(field)
+        return [str(value)] if value else []
     if field == "movements[].kind":
         return [str(item.get("kind")) for item in (shot.get("movements") or [])
                 if isinstance(item, dict) and item.get("kind")]
@@ -117,6 +159,11 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
     field_domain: Dict[str, collections.Counter] = collections.defaultdict(
         collections.Counter)
     shots_seen = collections.Counter()
+    #: 词表落差：同一边的两侧取值集合，用来回答"这次判等**有没有意义**"。
+    knowledge_values: Dict[str, collections.Counter] = collections.defaultdict(
+        collections.Counter)
+    film_values: Dict[str, collections.Counter] = collections.defaultdict(
+        collections.Counter)
 
     for event in injected:
         shot_id = str(event.get("shot_id") or "")
@@ -132,6 +179,19 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 continue
             members = [member for member in (edge.get("members") or [])
                        if isinstance(member, (list, tuple)) and len(member) == 3]
+            #: **词表落差先记**：对**所有**被注入的边都记（不看能不能判、也不看前提成不成立）——
+            #: 它回答的是"这两套词表是不是同一个"，与"这一镜有没有被违反"是两件事。
+            #: （踩过的坑：把它写在判定的 `continue` 之后，就只有"生效"的那条边被统计到，
+            #: `action`/`transition`/`vfx` 一起变成空集合，看着像"没问题"。）
+            for member in members:
+                kind = str(member[1])
+                if kind not in BINDINGS:
+                    continue
+                fields, normalizer = BINDINGS[kind]
+                knowledge_values[kind][normalizer(member_value(str(member[2]), kind))] += 1
+                for field in fields:
+                    for raw in shot_values(shot, field):
+                        film_values[kind][normalizer(raw)] += 1
             #: ① 有未映射的 kind（任何角色）⇒ 整条边判不了
             unmapped_here = [str(member[1]) for member in members
                              if str(member[1]) not in MAPPING]
@@ -142,9 +202,23 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 continue
             observed: List[str] = []
             for member in members:
-                for field in MAPPING[str(member[1])]:
+                fields, _normalizer = BINDINGS[str(member[1])]
+                for field in fields:
                     observed.extend(shot_values(shot, field))
                     field_domain[field].update(shot_values(shot, field))
+
+            def matched(kind: str, raw: str) -> bool:
+                """这一条成员的值，和成片侧**对应字段**的取值**归一之后**比。（两边都要归一！）
+
+                踩过的坑：只归一了一边 ⇒ `lens:35mm` 撞不上成片的 `35.0`，
+                真违规被记成 `no_match`——那是**漏判**，比假阳性更隐蔽。
+                """
+                fields, normalizer = BINDINGS[kind]
+                want = normalizer(member_value(raw, kind))
+                have = {normalizer(value) for field in fields
+                        for value in shot_values(shot, field)}
+                return want in have
+
             #: ② 前提（非 forbid）必须全中；`no value` 与 `值不等` 都算"不适用"
             premise_ok = True
             for member in members:
@@ -152,7 +226,7 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 if role == "forbid":
                     continue
                 counts["premise_members_seen"] += 1
-                if member_value(str(member[2]), kind) not in observed:
+                if not matched(kind, str(member[2])):
                     premise_ok = False
                     break
             if not premise_ok:
@@ -167,18 +241,44 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 counts["forbid_members_seen"] += 1
                 value = member_value(str(member[2]), kind)
                 forbid_values[kind][value] += 1
-                if value in observed:
+                if matched(kind, str(member[2])):
                     counts["violations"] += 1
                     violations.append({"shot_id": shot_id, "edge_id": edge_id,
                                        "kind": kind, "forbid": value,
                                        "observed": observed})
-                else:
-                    counts["no_match"] += 1
+            else:
+                counts["no_match"] += 1
+
+    vocabulary_gap = {}
+    for kind in BINDINGS:
+        know = set(knowledge_values[kind])
+        film = set(film_values[kind])
+        if not know and not film:
+            state = "no_data"
+        elif not film:
+            state = "film_side_missing"
+        elif not know:
+            state = "knowledge_side_missing"
+        elif know & film:
+            state = "overlapping"
+        else:
+            state = "disjoint"
+        vocabulary_gap[kind] = {
+            "knowledge_values": sorted(know)[:12],
+            "film_values": sorted(film)[:12],
+            "overlap": sorted(know & film)[:12],
+            #: `disjoint=True` 才是"**两边都有值、但一个都对不上**"——那才是词表落差；
+            #: 单边为空是"这条臂这次没数据"，不是落差。
+            "state": state,
+            "disjoint": state == "disjoint",
+        }
 
     return {
         "shots_with_injection": len(shots_seen),
         "counts": dict(counts),
         "unmapped_forbid_kinds": dict(unmapped.most_common()),
+        "bindings": {kind: list(fields) for kind, (fields, _norm) in BINDINGS.items()},
+        "vocabulary_gap": vocabulary_gap,
         "forbid_values_by_kind": {kind: dict(counter.most_common())
                                   for kind, counter in forbid_values.items()},
         "observed_field_domain": {field: dict(counter.most_common())

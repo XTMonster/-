@@ -87,6 +87,60 @@ def test_injection_comes_from_the_audit_events_not_from_shots_json(tmp_path):
     assert events[0]["scope"] == "shot"
 
 
+def test_the_bindings_table_is_the_documented_seven_kinds():
+    """绑定表 = `APPLICABILITY_SEMANTICS_v1.md` 第一步点名的**7 个相等式 kind**。
+
+    加一个 kind 进来之前先问两句：① 成片里**真的有**这个字段吗？② 两边**词表**是同一个吗？
+    （实测就有 4 个"看着能绑"的 kind 词表对不上，见 `vocabulary_gap`。）
+    """
+    assert set(ecr.BINDINGS) == {"shot_size", "intent", "lens", "movement",
+                                 "action", "transition", "vfx"}
+    assert ecr.BINDINGS["lens"][0] == ("camera.lens",)
+    assert ecr.BINDINGS["movement"][0] == ("movements[].kind", "declared_camera_move")
+
+
+def test_lens_values_are_normalised_before_comparison():
+    """`35mm`（索引）与 `35.0`（成片）是**同一个**焦距——不归一就会漏判违规。"""
+    assert ecr._lens_mm("35mm") == ecr._lens_mm("35") == ecr._lens_mm("35.0")
+    edges = {"e1": _edge("e1", [["qualifier", "intent", "intent:推进"],
+                                ["forbid", "lens", "lens:35mm"]])}
+    shots = {"s1": {"shot_id": "s1", "intent_type": "推进",
+                    "camera": {"lens": 35.0}}}
+    out = ecr.analyze([_inject("s1", "e1")], edges, shots)
+    assert out["counts"]["violations"] == 1, "35mm 撞 35.0 必须判出来"
+
+
+def test_a_disjoint_vocabulary_is_reported_as_such():
+    """两边都有值、但**一个都对不上** ⇒ `disjoint`（词表落差），而不是"没违规"。"""
+    edges = {"e1": _edge("e1", [["qualifier", "action", "action:推门"]])}
+    shots = {"s1": {"shot_id": "s1", "action_types": ["walk_to"]}}
+    out = ecr.analyze([_inject("s1", "e1")], edges, shots)
+    gap = out["vocabulary_gap"]["action"]
+    assert gap["state"] == "disjoint" and gap["disjoint"] is True
+    assert gap["overlap"] == []
+
+
+def test_one_side_missing_is_not_a_vocabulary_gap():
+    """成片侧根本没有这个字段 ⇒ `film_side_missing`（**没数据**），不是词表落差。"""
+    edges = {"e1": _edge("e1", [["qualifier", "vfx", "vfx:flame"]])}
+    shots = {"s1": {"shot_id": "s1"}}
+    out = ecr.analyze([_inject("s1", "e1")], edges, shots)
+    gap = out["vocabulary_gap"]["vfx"]
+    assert gap["state"] == "film_side_missing" and gap["disjoint"] is False
+
+
+def test_the_vocabulary_counters_cover_every_injected_edge_not_just_active_ones():
+    """踩过的坑：词表统计写在判定的 `continue` 之后 ⇒ 只有"生效"的边被记，
+    其它 kind 一起变成空集合、看着像"没问题"。这条钉住"注入了就记"。"""
+    edges = {"e1": _edge("e1", [["qualifier", "axis_side", "axis_side:neutral"]]),
+             "e2": _edge("e2", [["qualifier", "shot_size", "shot_size:CU"]])}
+    shots = {"s1": {"shot_id": "s1", "shot_type": "MS"}}
+    out = ecr.analyze([_inject("s1", "e1", "e2")], edges, shots)
+    assert out["counts"]["edge_indecidable"] == 1, "e1 判不了"
+    assert out["vocabulary_gap"]["shot_size"]["knowledge_values"] == ["CU"], (
+        "即使 e2 那一条**不适用**（前提 shot_size:CU 对不上 MS），它的取值也要进词表统计")
+
+
 def test_cli_writes_the_diagnostic_payload_offline(tmp_path):
     run = tmp_path / "run"
     (run / "export" / "export").mkdir(parents=True)
