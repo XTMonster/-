@@ -1,0 +1,998 @@
+{
+  "run": "docs\\evidence\\20261006-long21",
+  "edges_applying": 135,
+  "violations": 66,
+  "unbound_members": 0,
+  "details": [
+    {
+      "shot_id": "shot_001",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_001",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_001",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_001",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_002",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_003",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_004",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_006",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_007",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_008",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_009",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_010",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_011",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_012",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_013",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_014",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_015",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_016",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_017",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_018",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_019",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_020",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_021",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_022",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_023",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_024",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_025",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_026",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_027",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_028",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_029",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_030",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_031",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_032",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_033",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_034",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_035",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_036",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_037",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_038",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_039",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_040",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_041",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_042",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_043",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_044",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_045",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_046",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_047",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_048",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_049",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_050",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_051",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_052",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_053",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_054",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_055",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_056",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_057",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_058",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_059",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_060",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_061",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_062",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_063",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    },
+    {
+      "shot_id": "shot_064",
+      "type": "AXIS_RULE",
+      "plain": [],
+      "forbid": [
+        [
+          "movement",
+          "固定"
+        ]
+      ],
+      "shot_attr": [
+        "movement",
+        "固定"
+      ]
+    }
+  ]
+}

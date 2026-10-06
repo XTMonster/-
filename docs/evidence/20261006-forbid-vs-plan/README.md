@@ -72,3 +72,58 @@ shot: shot_005 | purpose: editor
 * 我**没有**去实现那条闭环（**这是超出 v1.4 的范围的**：文档的规则集是 R001–R019，
   没有一条说"要校验超边约束的执行"）。要不要把它做成 **诊断**（不设门）还是 **新规则 R0xx**（设门），
   是**新的选择题**——按本仓纪律应当先单列待裁，不在本轮擅自加。
+
+---
+
+## 六、追加：把适用域**绑上一半**之后——违规数从 **1** 跳到 **66**，而且**全来自同一条边**
+
+第三节的假阳性说明"不绑适用域不行"。那就**绑一半试试**：`probe_forbid_apply.py`
+——把**能对上的那些 kind**（`shot_size` / `movement` / `intent` ↔ 镜的 `shot_type` /
+运镜 / `intent_type`）当作适用条件，并且**两边都过 `hypergraph.VALUE_ALIASES` 折到同一个规范写法**
+（索引自己的别名表：`static → 固定`），然后只比对**适用**的边。原始产物 `domain_bound_check.json`：
+
+```
+{"edges_applying": 135, "violations": 66, "unbound_members": 0}
+violating edge shapes: {('AXIS_RULE', ()): 66}      ← 全部是 AXIS_RULE，且 plain 成员**空**
+distinct shots flagged: 63
+```
+
+**66 条**看起来像个大发现，但形状一眼就露馅：**全是 `AXIS_RULE`、而且它们的 `plain` 是空的**——
+也就是说我的绑定器**没读到它们的适用条件**，于是把它们当成"无条件适用"。
+原因在**渲染形式**上：`AXIS_RULE` 的成员是**质词风格**的，不是 `kind:value` 风格：
+
+```
+[SHOT_PATTERN] shot_size=shot_size:MS lens=lens:35mm movement=movement:… 禁={movement:dolly_in}
+[AXIS_RULE]    pair=any_two axis_side=neutral axis_topic=…              禁={movement:…}
+               └────────── 质词：我的解析器读不出"这是不是适用条件" ──────────┘
+```
+
+回到**结构化索引**（唯一真源 `knowledge/hypergraph.edges.jsonl`，638 条边）数了一下，
+`AXIS_RULE` 里 forbid 在 `movement` 上的**只有 3 条**，其中真正在响的是这一条：
+
+| edge_id | hardness / source | 成员 |
+|---|---|---|
+| `hg:6982a3446c7f` | **hard / theory** | `pair=any_two`、`axis_side=neutral`、`axis_topic=越轴` → **`forbid movement:固定`** |
+| `hg:5f1cb7bb402c` | hard / lesson | `axis_side=right` → `forbid movement:track_left` |
+| `hg:6ec001aacfd2` | hard / lesson | `axis_side=left` → `forbid movement:whip_pan_left` |
+
+而**全片 63/64 镜都是 `static`（＝规范写法的 `固定`）** ⇒ 那条规则一旦被当成"无条件"，就会在**几乎每一镜**上响
+——这正是那 66 条（跨 63 个镜）的来源。
+
+### 这一节真正的结论（比前两节更硬）
+
+1. **违规数完全取决于你实现了多少"适用域"**：0 层 → **1** 条（假阳性）；1 层 → **66** 条
+   （仍全部来自一条**绑不上**的边）。两个数**都不是可信的违规率**。
+2. 缺的不是一个 `if`，而是**一套 per-kind 的适用域语义表**：**哪些 kind 是适用条件、各自映射到成片的哪个属性**
+   （`axis_side` 绑到什么？`pair=any_two` 算什么？`axis_topic` 是话题还是条件？）。
+   **本仓现在没有这张表**——`REQUIRED_MEMBERS`/`OPTIONAL_MEMBERS` 只说"哪些槽位必填"，
+   不说"这个槽位是不是适用条件、对着场景的哪个字段"。这就是 GPT-6A 说的"**适用域／对象-时间绑定**"
+   在代码里的确切形态。
+3. 另外那两条（`axis_side=right → 禁 track_left`、`axis_side=left → 禁 whip_pan_left`）**语义上完全合理**，
+   只是**同样无法评估**——因为 `axis_side` 的绑定也不存在。
+
+### 仍未验证
+
+* 这一节只覆盖 `movement` / `shot_size` / `intent` 三类可绑定的 kind；`axis_side` 等质词的绑定**没做**，
+  所以**"66 条里有几条是真违规"我答不出**——按上面第 2 条，**在语义表落地之前，这个数不可答**。
+* 仍然只跑了一份真跑（long21）。

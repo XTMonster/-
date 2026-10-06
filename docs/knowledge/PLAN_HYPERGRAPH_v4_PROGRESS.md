@@ -1183,3 +1183,36 @@ E1 **0.1458**，**比三元组的 0.4583 还差**）。它还写着"可达上界
 并把"要用户回答的"从**一个**问题改成**两个**（E1 的 A/C；执行闭环要不要做成诊断）。
 
 **判据一个字没动**：这一段只改"摆在桌面上的选项与其代价"，**没有**替用户做任何裁决。
+
+### P14-273：把适用域**绑一半**——违规数从 **1** 跳到 **66**，而且全来自同一条边
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **越界项（非 v1.4）** | "执行闭环"到底缺什么 | **绿（三层测下来，缺的是语义层不是 `if`）** | `docs/evidence/20261006-forbid-vs-plan/`（`probe_forbid_apply.py` ＋ `domain_bound_check.json` ＋ README 第六节） | 2026-10-06 | 本批 |
+
+P14-270 的假阳性说明"不绑适用域不行"。那就**绑一半**：把能对上的 kind
+（`shot_size`/`movement`/`intent` ↔ 镜的 `shot_type`/运镜/`intent_type`）当适用条件，
+**两边都过 `hypergraph.VALUE_ALIASES`** 折到同一规范写法（`static → 固定`），只比适用边：
+
+```
+{"edges_applying": 135, "violations": 66, "unbound_members": 0}
+violating edge shapes: {('AXIS_RULE', ()): 66}     ← 全是 AXIS_RULE，plain 成员**空**
+distinct shots flagged: 63
+```
+
+**原因在渲染形式上**：`[SHOT_PATTERN]` 用 `kind:value` 风格（`shot_size=shot_size:MS`），
+而 `[AXIS_RULE]` 用**质词风格**（`pair=any_two axis_side=neutral axis_topic=…`）——
+我的绑定器读不出"质词是不是适用条件"，于是把它当**无条件**。
+回**结构化索引**（唯一真源）数：`AXIS_RULE` 里 forbid 落在 `movement` 上的只有 **3 条**，
+真正在响的是 **`hg:6982a3446c7f`**（**hard/theory**）：`axis_side=neutral` ＋ `axis_topic=越轴`
+→ **`forbid movement:固定`**；而**全片 63/64 镜都是 `static`（＝`固定`）** ⇒ 一旦被当成无条件就在几乎每一镜上响。
+
+**结论（比前两节更硬）**：**违规数完全取决于你实现了多少"适用域"**——0 层 → **1**（假阳性）、
+1 层 → **66**（仍全来自一条**绑不上**的边），**两个数都不是可信的违规率**。
+缺的不是一个 `if`，而是**一套 per-kind 的适用域语义表**（哪些 kind 是条件、各自映射到成片的哪个属性：
+`axis_side` 绑什么？`pair=any_two` 算什么？`axis_topic` 是话题还是条件？）。
+本仓没有这张表——`REQUIRED_MEMBERS`/`OPTIONAL_MEMBERS` 只说"哪些槽位必填"，
+不说"它是不是适用条件、对着场景哪个字段"。**这就是 GPT-6A 说的"适用域／对象-时间绑定"在代码里的确切形态。**
+
+**未验证**：只覆盖 `movement`/`shot_size`/`intent` 三类可绑定 kind；`axis_side` 等质词的绑定没做
+⇒ **"66 条里有几条是真违规"在语义表落地之前不可答**；仍只跑一份真跑。
