@@ -1,0 +1,81 @@
+{
+  "created_at": "2026-10-06T22:41:16",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "ebb37fe",
+    "head_subject": "feat(P14-293): 云端嵌入客户端入库(智谱 embedding-3，确定性+缓存+具名抛错)；去标签池的 嵌入重排 杠杆在 proxy 上被否",
+    "recent": [
+      "ebb37fe feat(P14-293): 云端嵌入客户端入库(智谱 embedding-3，确定性+缓存+具名抛错)；去标签池的 嵌入重排 杠杆在 proxy 上被否",
+      "f0e58ea feat(P14-292): 通道改判——不再默认 GPT-6A，改用 GLM-5.3（代码默认 + hooks 契约 + 守门三处同源）",
+      "82ded48 fix(P14-294): relay_adaptive 漏接 SystemExit(ConsultFailed 是它的子类)导致通道失败时静默退出、answer.md/calls.json 全不写——补 except 并加2条守门(含端到端落盘+非零退出)",
+      "4c191a7 docs(P14-292): 承重墙补成全量——64/64 查询的银行文件序前6逐条等于产品检索器 retrieve(top_k=6)（初版只验了1条）",
+      "e57d112 docs(P14-292): 补第二个探针——交付形状的可达工作点(简单去标签选择器上沿0.25；云端嵌入放进交付位+0.06~0.08；锚点0.1719 vs 官方0.1771)"
+    ],
+    "uncommitted": [
+      "?? docs/evidence/20261006-ruling-leverA/"
+    ]
+  },
+  "question": {
+    "path": "work/_q_ruling_leverA.md",
+    "sha256": "059dd23657374e80695847b181216509c6f77dab9c515f89b2c6e699d3bc11c8",
+    "chars": 1659
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "docs/knowledge/E1_LEVERS_v1.md",
+      "spec": "docs/knowledge/E1_LEVERS_v1.md:1-60",
+      "range": [
+        1,
+        60
+      ],
+      "file_sha256": "00bd58acde180d697b1b968c91827ec479b07db4f270d4348da332e9fe51f75c",
+      "chunk_sha256": "bd605138b3e823a18c51271adaa6dcc424085d46482c839b6b80833463eb2880",
+      "lines": 60,
+      "chars": 2508
+    },
+    {
+      "name": "docs/knowledge/RULING_CHECK_RK13.md",
+      "spec": "docs/knowledge/RULING_CHECK_RK13.md:1-40",
+      "range": [
+        1,
+        40
+      ],
+      "file_sha256": "b5a0eb6e79c0c544ec7974eb529f037b750bdc8fa7d05a5a0a8e533c7346f929",
+      "chunk_sha256": "8ef62d6e57e0c245d439975326324efe970be84f76c5ebfd3fdcab42a85ceff9",
+      "lines": 40,
+      "chars": 1679
+    },
+    {
+      "name": "tools/knowledge/e1_panel.py",
+      "spec": "tools/knowledge/e1_panel.py:54-62",
+      "range": [
+        54,
+        62
+      ],
+      "file_sha256": "6746f657192459ef26fc90e00160e8a0a90b222451f6ccd51fee703142fc921d",
+      "chunk_sha256": "8c4f426bb16eb1ceecd70d94d18d952d12aec1481e3fe1831580a15d7fece1c8",
+      "lines": 9,
+      "chars": 423
+    }
+  ],
+  "contexts": [
+    {
+      "path": "docs/evidence/20261006-pool-depth-ceiling/README.md",
+      "sha256": "02effc8316311153f8b5d56f4d98e0d5b0aa165d6f055fe38e145888a8ae0c4e",
+      "chars": 61
+    },
+    {
+      "path": "docs/evidence/20261006-unseen192/README.md",
+      "sha256": "1034b381df893e330d4ac02f7f5307b8bb5ae06796986013572a69ac5799ee74",
+      "chars": 61
+    }
+  ],
+  "status": {
+    "sent_chars": 2068,
+    "sent_sha256": "0b568f2992ded5d33f02443620b075f1f8a807a5ef815fd1eda6817623c6d689",
+    "full_chars": 2068,
+    "full_sha256": "0b568f2992ded5d33f02443620b075f1f8a807a5ef815fd1eda6817623c6d689",
+    "truncated": false
+  }
+}
