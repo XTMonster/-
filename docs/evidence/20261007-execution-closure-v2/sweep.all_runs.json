@@ -1,0 +1,366 @@
+{
+  "runs": 21,
+  "runs_with_injections": 20,
+  "runs_with_zero_violations": 21,
+  "undecidable_edges": {
+    "min": 0,
+    "median": 98.5,
+    "max": 107
+  },
+  "active_edges": {
+    "min": 0,
+    "median": 7.5,
+    "max": 20
+  },
+  "per_run": [
+    {
+      "run": "docs\\evidence\\20261002_real",
+      "shots": 6,
+      "undecidable": 0,
+      "inactive": 0,
+      "active": 0,
+      "violations": 0,
+      "covered_members": 0,
+      "not_covered_members": 0,
+      "not_covered_kinds": {}
+    },
+    {
+      "run": "docs\\evidence\\20261003_chunked_long",
+      "shots": 64,
+      "undecidable": 99,
+      "inactive": 221,
+      "active": 0,
+      "violations": 0,
+      "covered_members": 808,
+      "not_covered_members": 241,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 15,
+        "camera_angle": 15,
+        "emotion": 1,
+        "intensity": 1
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_chunked_long10",
+      "shots": 64,
+      "undecidable": 98,
+      "inactive": 205,
+      "active": 17,
+      "violations": 0,
+      "covered_members": 810,
+      "not_covered_members": 239,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 15,
+        "camera_angle": 15
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_chunked_long3",
+      "shots": 64,
+      "undecidable": 105,
+      "inactive": 201,
+      "active": 14,
+      "violations": 0,
+      "covered_members": 796,
+      "not_covered_members": 253,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "composition_rule": 22,
+        "camera_angle": 22,
+        "headroom_policy": 20
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_chunked_long6",
+      "shots": 64,
+      "undecidable": 99,
+      "inactive": 205,
+      "active": 16,
+      "violations": 0,
+      "covered_members": 808,
+      "not_covered_members": 241,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 16,
+        "camera_angle": 16
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_chunked_long9",
+      "shots": 64,
+      "undecidable": 107,
+      "inactive": 199,
+      "active": 14,
+      "violations": 0,
+      "covered_members": 792,
+      "not_covered_members": 257,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "composition_rule": 24,
+        "camera_angle": 24,
+        "headroom_policy": 20
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_intent",
+      "shots": 6,
+      "undecidable": 4,
+      "inactive": 26,
+      "active": 0,
+      "violations": 0,
+      "covered_members": 90,
+      "not_covered_members": 4,
+      "not_covered_kinds": {
+        "headroom_policy": 4
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_real",
+      "shots": 6,
+      "undecidable": 11,
+      "inactive": 19,
+      "active": 0,
+      "violations": 0,
+      "covered_members": 79,
+      "not_covered_members": 14,
+      "not_covered_kinds": {
+        "headroom_policy": 8,
+        "emotion": 3,
+        "intensity": 3
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_real_ds",
+      "shots": 6,
+      "undecidable": 12,
+      "inactive": 18,
+      "active": 0,
+      "violations": 0,
+      "covered_members": 88,
+      "not_covered_members": 12,
+      "not_covered_kinds": {
+        "headroom_policy": 12
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_real_glm",
+      "shots": 6,
+      "undecidable": 11,
+      "inactive": 19,
+      "active": 0,
+      "violations": 0,
+      "covered_members": 79,
+      "not_covered_members": 14,
+      "not_covered_kinds": {
+        "headroom_policy": 8,
+        "emotion": 3,
+        "intensity": 3
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261003_real_long",
+      "shots": 64,
+      "undecidable": 89,
+      "inactive": 231,
+      "active": 0,
+      "violations": 0,
+      "covered_members": 910,
+      "not_covered_members": 103,
+      "not_covered_kinds": {
+        "headroom_policy": 61,
+        "composition_rule": 14,
+        "camera_angle": 14,
+        "sfx": 14
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long11",
+      "shots": 64,
+      "undecidable": 101,
+      "inactive": 200,
+      "active": 19,
+      "violations": 0,
+      "covered_members": 804,
+      "not_covered_members": 245,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 18,
+        "camera_angle": 18
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long12",
+      "shots": 64,
+      "undecidable": 104,
+      "inactive": 200,
+      "active": 16,
+      "violations": 0,
+      "covered_members": 798,
+      "not_covered_members": 251,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "composition_rule": 21,
+        "camera_angle": 21,
+        "headroom_policy": 20
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long14",
+      "shots": 0,
+      "undecidable": 0,
+      "inactive": 0,
+      "active": 0,
+      "violations": 0,
+      "covered_members": 0,
+      "not_covered_members": 0,
+      "not_covered_kinds": {}
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long15",
+      "shots": 64,
+      "undecidable": 101,
+      "inactive": 203,
+      "active": 16,
+      "violations": 0,
+      "covered_members": 804,
+      "not_covered_members": 245,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 18,
+        "camera_angle": 18
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long16",
+      "shots": 64,
+      "undecidable": 100,
+      "inactive": 200,
+      "active": 20,
+      "violations": 0,
+      "covered_members": 806,
+      "not_covered_members": 243,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 17,
+        "camera_angle": 17
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long17",
+      "shots": 64,
+      "undecidable": 97,
+      "inactive": 206,
+      "active": 17,
+      "violations": 0,
+      "covered_members": 812,
+      "not_covered_members": 237,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 14,
+        "camera_angle": 14
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long18",
+      "shots": 64,
+      "undecidable": 100,
+      "inactive": 204,
+      "active": 16,
+      "violations": 0,
+      "covered_members": 806,
+      "not_covered_members": 243,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 17,
+        "camera_angle": 17
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long19",
+      "shots": 64,
+      "undecidable": 98,
+      "inactive": 221,
+      "active": 1,
+      "violations": 0,
+      "covered_members": 810,
+      "not_covered_members": 239,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 15,
+        "camera_angle": 15
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261004_chunked_long20",
+      "shots": 64,
+      "undecidable": 99,
+      "inactive": 220,
+      "active": 1,
+      "violations": 0,
+      "covered_members": 808,
+      "not_covered_members": 241,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 20,
+        "composition_rule": 16,
+        "camera_angle": 16
+      }
+    },
+    {
+      "run": "docs\\evidence\\20261006-long21",
+      "shots": 64,
+      "undecidable": 95,
+      "inactive": 224,
+      "active": 1,
+      "violations": 0,
+      "covered_members": 815,
+      "not_covered_members": 234,
+      "not_covered_kinds": {
+        "pair": 63,
+        "axis_side": 63,
+        "axis_topic": 63,
+        "headroom_policy": 19,
+        "composition_rule": 13,
+        "camera_angle": 13
+      }
+    }
+  ],
+  "note": "诊断，不设门：没有 pass line，也不接进 run_tests.ps1 的通过与否"
+}

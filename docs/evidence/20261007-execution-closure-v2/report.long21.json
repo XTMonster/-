@@ -8,6 +8,32 @@
     "edge_active": 1,
     "no_match": 1
   },
+  "covered_kinds": {
+    "movement": 302,
+    "shot_size": 269,
+    "intent": 225,
+    "lens": 19
+  },
+  "not_covered_kinds": {
+    "pair": 63,
+    "axis_side": 63,
+    "axis_topic": 63,
+    "headroom_policy": 19,
+    "composition_rule": 13,
+    "camera_angle": 13
+  },
+  "member_kinds_seen": {
+    "movement": 302,
+    "shot_size": 269,
+    "intent": 225,
+    "pair": 63,
+    "axis_side": 63,
+    "axis_topic": 63,
+    "lens": 19,
+    "headroom_policy": 19,
+    "composition_rule": 13,
+    "camera_angle": 13
+  },
   "unmapped_forbid_kinds": {
     "pair": 63,
     "axis_side": 63,

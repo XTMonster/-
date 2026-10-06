@@ -154,6 +154,10 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
     violations: List[Dict[str, Any]] = []
     unmapped = collections.Counter()
     counts = collections.Counter()
+    #: **所有**被注入成员按 kind 计数（不看角色、不看能不能判）——用来把"**没纳入**"写出来。
+    #: 提案（`APPLICABILITY_SEMANTICS_v1.md` §4）那句"未纳入要写出来，不能因为没算就当没有"，
+    #: 靠的就是这张表：**覆盖的**是哪些 kind、**没覆盖的**是哪些 kind、各多少条。
+    member_kinds = collections.Counter()
     forbid_values: Dict[str, collections.Counter] = collections.defaultdict(
         collections.Counter)
     field_domain: Dict[str, collections.Counter] = collections.defaultdict(
@@ -179,6 +183,8 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
                 continue
             members = [member for member in (edge.get("members") or [])
                        if isinstance(member, (list, tuple)) and len(member) == 3]
+            for member in members:
+                member_kinds[str(member[1])] += 1
             #: **词表落差先记**：对**所有**被注入的边都记（不看能不能判、也不看前提成不成立）——
             #: 它回答的是"这两套词表是不是同一个"，与"这一镜有没有被违反"是两件事。
             #: （踩过的坑：把它写在判定的 `continue` 之后，就只有"生效"的那条边被统计到，
@@ -276,6 +282,12 @@ def analyze(injected: Sequence[Dict[str, Any]], edges: Dict[str, Dict[str, Any]]
     return {
         "shots_with_injection": len(shots_seen),
         "counts": dict(counts),
+        #: 覆盖与否**分两张表**列出来（判决书不许只报"能算的那部分"）。
+        "covered_kinds": {kind: count for kind, count in member_kinds.most_common()
+                          if kind in BINDINGS},
+        "not_covered_kinds": {kind: count for kind, count in member_kinds.most_common()
+                              if kind not in BINDINGS},
+        "member_kinds_seen": dict(member_kinds.most_common()),
         "unmapped_forbid_kinds": dict(unmapped.most_common()),
         "bindings": {kind: list(fields) for kind, (fields, _norm) in BINDINGS.items()},
         "vocabulary_gap": vocabulary_gap,
@@ -298,9 +310,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     run = pathlib.Path(args.run)
-    shots_path = pathlib.Path(args.shots) if args.shots else run / "export" / "export" / "shots.json"
-    if not shots_path.is_file():
-        shots_path = run / "shots.json"
+    #: 成片产物在不同世代落在不同层（`export/export/`、`export/`、根）：按**已知的三种位置**
+    #: 依次找，找到就停——不猜第四种，也不因为"没找到"就静默算成空集。
+    candidates = ([pathlib.Path(args.shots)] if args.shots else
+                  [run / "export" / "export" / "shots.json",
+                   run / "export" / "shots.json",
+                   run / "shots.json"])
+    shots_path = next((path for path in candidates if path.is_file()), None)
+    if shots_path is None:
+        print(json.dumps({"error": "找不到 shots.json", "tried": [str(p) for p in candidates]},
+                         ensure_ascii=False))
+        return 2
     payload = json.loads(shots_path.read_text(encoding="utf-8"))
     shots_rows = payload.get("shots") if isinstance(payload, dict) else payload
     shots = {str(row.get("shot_id")): row for row in (shots_rows or [])}

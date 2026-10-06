@@ -141,6 +141,19 @@ def test_the_vocabulary_counters_cover_every_injected_edge_not_just_active_ones(
         "即使 e2 那一条**不适用**（前提 shot_size:CU 对不上 MS），它的取值也要进词表统计")
 
 
+def test_uncovered_kinds_are_listed_not_silently_dropped():
+    """判决书**不许只报"能算的那部分"**：没纳入的 kind 也要逐条列出来（带条数）。"""
+    edges = {"e1": _edge("e1", [["qualifier", "shot_size", "shot_size:CU"]]),
+             "e2": _edge("e2", [["qualifier", "axis_side", "axis_side:neutral"]]),
+             "e3": _edge("e3", [["qualifier", "emotion", "emotion:愤怒"]])}
+    shots = {"s1": {"shot_id": "s1", "shot_type": "CU"}}
+    out = ecr.analyze([_inject("s1", "e1", "e2", "e3")], edges, shots)
+    assert out["covered_kinds"] == {"shot_size": 1}
+    assert out["not_covered_kinds"] == {"axis_side": 1, "emotion": 1}, (
+        "没纳入的 kind 必须逐条出现——`emotion` 属于②类（成片里没有这个字段）")
+    assert sum(out["member_kinds_seen"].values()) == 3
+
+
 def test_cli_writes_the_diagnostic_payload_offline(tmp_path):
     run = tmp_path / "run"
     (run / "export" / "export").mkdir(parents=True)
