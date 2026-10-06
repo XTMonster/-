@@ -96,3 +96,28 @@ fixtures named by §B.4: 6 | missing on disk: []
 
 * `docs/evidence/*/README.md`（约几十份）的陈述**没有逐条对**；
 * `ADR-0007…0014` **只核了标题**，没核正文的事实陈述。
+
+---
+
+## 六、追加：`ADR-0007…0014` 的**正文**也核了——**没有更多漂移**
+
+第五节的"未验证"里挂着"0015 之外只核了标题"。这一节把 **0007–0014 的决策陈述**逐条对回当前事实：
+
+| ADR | 它声称的 | 当前事实 | 判定 |
+|---|---|---|---|
+| **0007** 角色几何冻结 **1.70** ＋ 头球相切 | 旧值 1.45/1.10 是 v1.3 历史；八处硬编码收敛 | 实测全部改为 `_PROFILE` 派生；**RK-14/RK-7 `pass`**（P14-267 已逐条核过那八个位置） | ✅ 无漂移 |
+| **0008** 预算门禁 **`max(ceiling, formula)`** ＋ CLI 才是硬顶 | 三套口径取小是 v1.3 的问题 | `driver` 按 §2.4 建预算；`tests/test_budget_gate.py` 有 `test_long_script_ceiling_is_the_max_not_the_min`；**RK-18 `pass`** | ✅ |
+| **0009** **SDL 文件格式 1.4** ＋ `with_labels`；**包/协议版本不动** | 两套版本号要分开 | §1.6 #27–33 的 7 处已改 `== SDL_VERSION`／golden `"1.4"`；`specs/openapi.yaml:9` 仍是 **1.3.0** | ✅ |
+| **0010** SceneContract **不许伪造 `character_id`** | 空 id 看不出非法 | `speaker_status` 在 `tests/test_scene_contract.py` 等被断言；R013 拿 brief 与落实对拍 | ✅ |
+| **0011** 两个标签开关**各有生效域** | `ui.show_labels` 曾完全无效 | `tests/test_label_toggles.py`（链上 `label-toggles` 步骤）＋ `tests/test_sdl_labels.py` | ✅ |
+| **0012** 构图门 ＋ **断言卫生**的防自证 | 出画也能得 60 分；`assert True` 无人抓 | `tools/check_assertions.py` **[OK] 272 文件**（本轮又跑过一次）；`tests/test_assertion_hygiene.py` 专守"它能红" | ✅ |
+| **0013** 理论**必须来自他人著作** | 曾 671/1601 ＝ 42% 自撰 | 现行 **自撰 0 张**；`authorship.json` 进链、失败归属 RK-13 | ✅ |
+| **0014** 超图/GraphRAG：**不替换自研超边索引**；L3 走已留适配器接缝 | 用户"现成的方案比自己写的成熟" | 与现行实现一致（`hypergraph.py` 自研 ＋ L3 适配器接缝、`cases_backend`/`cases_degraded` 进 trace） | ✅ |
+
+⇒ **ADS 0007–0015 里，只有 0015 有漂移（通道身份，已在第五节修掉）**；其余八份的决策陈述与当前事实一致。
+
+### 这一轴的边界（不改上一节的"未验证"）
+
+* 只核了每份 ADR 的**背景与决策陈述**（共 ~130 行），**没有**逐条核它们引用的 `文件:行号`；
+* `docs/evidence/*/README.md`（约几十份）**仍未逐条对**——**但那类文件按本仓惯例是"某一刻的记录"**，
+  过期属于正常（真正危险的是像 `DECISION_BRIEF_RK13.md` 那样**断言当前状态**的文档，那一份早前已换代）。
