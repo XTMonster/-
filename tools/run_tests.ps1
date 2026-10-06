@@ -577,7 +577,18 @@ if (-not (Test-Path (Join-Path $evidenceDir 'ab_triple.json'))) {
 # shot max 785/800).  The required-edge half needs the run's per-shot queries to
 # join the oracle; when they do not, this step PRINTS not_measured instead of
 # turning it into a pass.
-python tools/knowledge/injection_audit.py --llm-trace docs/evidence/20261003_real_long/llm_trace.jsonl --audit-log docs/evidence/20261003_real_long/audit_log.jsonl --holdout fixtures/knowledge_holdout.jsonl --out (Join-Path $evidenceDir 'injection_audit.json') > $null 2>&1
+# 2026-10-06: Q6b must read the SAME real run as the rest of the knowledge block.
+# SS84 fixed Q5's side of this (it used to read the bm25-era `20261003_real_long`,
+# whose per-shot queries cannot join the current oracle); Q6b was left behind and
+# kept reading that retired run, so its required-edge half could only ever come out
+# not_measured.  Measured on `20261006-long21` instead: token caps pass
+# (plan 778/2000, shot 788/800) AND the required half becomes MEASURED and passing
+# (167 shots joined the oracle, 167 required edges, 0 dropped) - i.e. `complete: true`
+# instead of `complete: false`.  One source of truth for "which run", defined BEFORE
+# this call because PowerShell executes top-down.
+$knowledgeRun = 'docs/evidence/20261006-long21'
+$knowledgeRunId = (Get-Content (Join-Path $knowledgeRun 'run_manifest.json') -Raw | ConvertFrom-Json).run_id
+python tools/knowledge/injection_audit.py --llm-trace (Join-Path $knowledgeRun 'llm_trace.jsonl') --audit-log (Join-Path $knowledgeRun 'audit_log.jsonl') --holdout fixtures/knowledge_holdout.jsonl --out (Join-Path $evidenceDir 'injection_audit.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
     Fail '  FAILED: the Q6b prompt-readout report was not written (SS4.1b)'
 } else {
@@ -648,6 +659,9 @@ if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
 # history (it is what SS35 measured).
 #
 # 2026-10-04 (SS84): the run fed here moved up to the CURRENT generation.
+# (Its assignment now lives ABOVE the Q6b readout channel, because that channel
+#  must read the same run - see the 2026-10-06 note next to it.  Do not redefine
+#  it here: two definitions is how Q6b stayed on the retired run for two days.)
 # `20261003_real_long` was made while the real-run samples still asked for the
 # `bm25` backend, so `/v1/retrieve` was never called and its per-shot queries came
 # from the older query shape - Q5's run side could only ever be 0/0 (red by the
@@ -657,8 +671,8 @@ if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
 # joins on.  So the chain now feeds the newest committed REAL run that has the
 # hypergraph channel; its run_id is DERIVED from the run manifest (never typed
 # here) because the audit mirror must filter by the run that produced the log.
-$knowledgeRun = 'docs/evidence/20261006-long21'
-$knowledgeRunId = (Get-Content (Join-Path $knowledgeRun 'run_manifest.json') -Raw | ConvertFrom-Json).run_id
+# (The assignment itself is ABOVE, next to the Q6b readout channel - see the
+#  2026-10-06 note there.  `$knowledgeRun` / `$knowledgeRunId` are already set.)
 # 2026-10-06 (SS95/SS96): a fresh real run (long21) replaced long19 as the Q5 / audit
 # channel input.  Why it had to be re-run: re-running the corpus pipeline re-fetched the
 # live sources, the text drifted, so the CORPUS fingerprint moved

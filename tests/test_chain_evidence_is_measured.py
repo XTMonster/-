@@ -468,3 +468,41 @@ def test_the_tree_guard_checker_fires_on_each_missing_half():
     exit 1""", "")
     assert no_exit != text
     assert not tree_guard_is_sound(no_exit)
+
+
+def _live(text):
+    """活行（命令行；注释会被 PowerShell 忽略，但它们不算"链在做什么"）。"""
+    return [(number, line) for number, line in enumerate(text.splitlines(), 1)
+            if line.strip() and not line.lstrip().startswith("#")]
+
+
+def test_q6b_reads_the_same_real_run_as_the_rest_of_the_knowledge_block():
+    """Q6b 的读数通道必须读**与 knowledge 块同一跑**——这是 SS84 那条的同形洞。
+
+    实测（2026-10-06）：链上 Q5 那一侧早在 SS84 就修成"喂当前代真跑"，而
+    `tools/knowledge/injection_audit.py` 那一行**一直写死** `docs/evidence/20261003_real_long`
+    ——那是**bm25 时代**的跑（SS84 的原话：它的逐镜查询 join 不上现在的 oracle）。
+    后果不是"数字难看"，是**半边指标永远量不到**：旧跑的 required 半边 `not_measured`
+    （`complete: false`），换成本代真跑 `20261006-long21` 后**当场变成 measured 且 pass**
+    （167 个镜头 join 上 oracle、167 条 required 边、丢 0 条）。
+
+    所以这条守门钉三件事：① 只允许**一处**调用；② 那一处必须走 `$knowledgeRun`，
+    **不许再写死日期路径**（否则下一个人换跑时又会漏掉这一处）；③ 定义必须在该调用
+    **之前**——PowerShell 自上而下执行，把变量挪到后面会让这行拿到空路径。
+    """
+    text = chain_text()
+    calls = [(n, line) for n, line in _live(text) if "injection_audit.py" in line]
+    assert len(calls) == 1, "链上只该有一处调用 injection_audit.py：%s" % calls
+    number, line = calls[0]
+    assert "$knowledgeRun" in line, (
+        "Q6b 必须读与 knowledge 块**同一跑**（SS84 修的是 Q5 那一侧，Q6b 被漏下了）：%s" % line)
+    assert not re.search(r"docs/evidence/\d{8}", line), (
+        "不许把日期路径写死在链里——换跑时一定漏改：%s" % line)
+
+    definitions = [(n, line) for n, line in _live(text)
+                   if re.match(r"\s*\$knowledgeRun\s*=", line)]
+    assert len(definitions) == 1, (
+        "`$knowledgeRun` 只许有**一处**定义（两处定义就是这个洞的成因）：%s" % definitions)
+    assert definitions[0][0] < number, (
+        "定义必须在调用之前（PowerShell 自上而下执行）：定义在第 %d 行、调用在第 %d 行"
+        % (definitions[0][0], number))

@@ -753,3 +753,41 @@ U+0085（NEL）／U+2028／U+2029 都是**合法的 JSON 字符串内容**、`js
 | **R9** | 判据执行环境逐字节不动 | **绿（重新冻结）** | `tests/plan_v4_instruments.sha256.json`：`e1_triple_search.py` → `cc7bea0e6c1b…`；`_frozen_at` → **第二十一次冻结**；理由进 `_reason_21`（含"第二十次先冻后跑全量是错的"这条顺序教训）。守门 10 passed | 2026-10-06 | 本批 |
 
 **判据一个字未动**：阈值 4.0、两位评委、分母与判分语境仍与 `e1_panel` 同源。
+
+### P14-257：链上 **Q6b 读的是上一代真跑**——半边指标因此**永远量不到**（SS84 的同形洞，已修）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **Q6b** | 读数通道必须读**真正发出去的那份 prompt**，而且必须是**当前代**的真跑 | **缺陷（已修 ＋ 反例守门）** | `docs/evidence/20261006-q6b-stale-run/`（两份原件 ＋ 反例脚本与逐字输出） | 2026-10-06 | 本批 |
+
+**事实**：`tools/run_tests.ps1` 里两处喂真跑——knowledge 块（`quality.py` 的 `--shots`/`--audit-log`）
+读 `$knowledgeRun = 'docs/evidence/20261006-long21'`（**当前代**，链自己的注释写着
+*"the chain now feeds the newest committed REAL run that has the hypergraph channel"*），
+而 **Q6b 那一行一直写死 `docs/evidence/20261003_real_long`**——那是 **bm25 时代**的跑
+（SS84 的原话：`/v1/retrieve` 从没被调用过、逐镜查询是旧形状）。⇒ **SS84 修的是 Q5 那一侧，Q6b 被漏下了。**
+
+**后果不是"数字难看"，是半边指标永远量不到**（同一份 `injection_audit.py`）：
+
+| 读数 | 喂旧跑 | 喂当前代 |
+|---|---|---|
+| `token_caps` | pass（775/2000、785/800） | pass（**778**/2000、**788**/800） |
+| `required_edges_dropped_by_budget` | **`not_measured`**（join 不上 oracle） | **pass：167 镜头 join 上、167 条 required 边、丢 0** |
+| `complete` | **false** | **true** |
+
+**修法（一个真源，而不是换一个日期）**：把 Q6b 也接到**同一个 `$knowledgeRun`**，并把定义
+**上移到 Q6b 之前**——PowerShell **自上而下执行**，定义留在下面会让这行拿到空路径
+（已用同形状脚本在 **Windows PowerShell 5.1** 下实跑：`run_id=5c7b92d738c0`、`exit=0`、
+`status pass / complete true`）。原位置只留一行注释指向上面，**不留两处定义**。
+
+**守门**：`tests/test_chain_evidence_is_measured.py::test_q6b_reads_the_same_real_run_as_the_rest_of_the_knowledge_block`
+钉三条——只允许**一处**调用 `injection_audit.py`／那一处必须走 `$knowledgeRun` 且**不许出现
+`docs/evidence/<8位日期>` 写死路径**／`$knowledgeRun` **只许一处定义且在该调用之前**。
+**反例**：`negcontrol_q6b.py` 拿改前的文件跑同一套判据 ⇒ `guard_fails: True`（三处违规），
+改后 `False` ⇒ 这条守门**本来就会红在旧文件上**，不是写给已正确的代码看的。
+
+**判据一个字没动**：两个 token 上限（2000／800）、分母规则、`not_measured` 的处置全部原样，
+改的只是"**读哪一跑**"。
+
+**未验证**：只验证了这一个真跑与这一个旧跑；`20261006-long21` 是不是"最新"**没有写进代码断言**
+（链仍是显式点名一跑，与本仓既有做法一致）⇒ 守门只能保证"**两处不会各读各的**"，
+换语料后仍需人记得换那一个值。

@@ -1,0 +1,2 @@
+OLD: {'calls': 1, 'uses_knowledgeRun': False, 'has_dated_path': True, 'definitions': 1, 'def_before_call': False, 'guard_fails': True}
+NEW: {'calls': 1, 'uses_knowledgeRun': True, 'has_dated_path': False, 'definitions': 1, 'def_before_call': True, 'guard_fails': False}
