@@ -1216,3 +1216,31 @@ distinct shots flagged: 63
 
 **未验证**：只覆盖 `movement`/`shot_size`/`intent` 三类可绑定 kind；`axis_side` 等质词的绑定没做
 ⇒ **"66 条里有几条是真违规"在语义表落地之前不可答**；仍只跑一份真跑。
+
+### P14-274：把 P14-273 的结论做成**提案**——per-kind 适用域语义表（**未实施**）
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **越界项（非 v1.4）** | "执行闭环"要落地，先要什么 | **绿（提案成文，只提设计）** | `docs/knowledge/APPLICABILITY_SEMANTICS_v1.md` | 2026-10-06 | 本批 |
+
+P14-273 证明"缺的是 per-kind 语义表"。本批把那张表**写成提案**（**不改代码、不改判据、不设门**）：
+
+* **现状盘点**（从唯一真源 `knowledge/hypergraph.edges.jsonl` 638 条边统计）：
+  索引里实际出现 **24 个 kind**；其中 `camera_angle`(175)／`intensity`(228)／`beat_type`(97)／
+  `headroom_policy`(83) 等**只出现在质词位**，而 `emotion`(173 allow/9 forbid)／`lighting`(36/13)／
+  `pacing`(42/4) 等出现在 allow/forbid 位。schema 只说"哪些槽位必填"，
+  **不说"它是不是适用条件、对着成片的哪个字段"**。
+* **三类分法**：① **可绑定**（`shot_size`/`movement`/`intent`/`lens`/`vfx`/`action`/`transition`/`pacing`/
+  `composition_rule`/`camera_angle`——都能对到 `SDLShot`/`SDLCamera` 的实测字段）；
+  ② **成片里没有字段**（`emotion`/`intensity`/`beat_type`/`genre`/`music`/`sfx`/`lighting`…——
+  要落地得**先加字段**，那是扩范围）；③ **不是条件、只是话题/标注**（`axis_topic`/`example_shot`/
+  `applies_to_*`，以及**所有只出现在质词位的 kind**）。
+* **必须由用户拍板的三件**：②那批**要不要扩范围**（不做就写明"不校验"，别留未定义）；
+  ①里的**区间/阈值型**（`pacing`/`composition_rule`/`camera_angle`）判据怎么定（定阈值＝新判据，须批准）；
+  报出来的数是先做**诊断**还是直接**设门/R0xx**（我建议**先诊断**）。
+* **建议的第一步（最小可回退）**：只做①类里**相等式**的那几个，产 `forbid_vs_plan.json` 诊断，
+  **不设门、不改链的退出码**；②③类在报告里**显式列为"未纳入"**（依 §4.1b 的精神，未纳入要写出来）。
+
+**未验证**：分类是**人工判断**（基于 schema＋索引实测＋成片字段清单），**没有**逐条核对每个 kind × 每条边；
+`pair`/`prop`/`axis_side` 标"待定"正是因为它们**看名字像能绑、但没有机械可推的字段**；
+只统计一份索引与一份真跑。**本文只是一份 markdown，没动任何代码或判据。**
