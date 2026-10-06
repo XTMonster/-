@@ -1,0 +1,193 @@
+{
+  "run": "20261006-long21",
+  "shots_with_an_r001_number": 23,
+  "cross_tab": {
+    "+1 | left": 5,
+    "+1 | mixed": 2,
+    "+1 | other": 8,
+    "+1 | right": 1,
+    "-1 | left": 2,
+    "-1 | other": 5
+  },
+  "samples_with_a_note": [
+    {
+      "shot_id": "shot_001",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "left",
+      "note": "建立镜头，机位置于两人连线中轴偏左，为后续正反打定基准"
+    },
+    {
+      "shot_id": "shot_025",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "left",
+      "note": "建立镜头，确定米迦尔行进方向为画面左→右，为后续轴线定基准"
+    },
+    {
+      "shot_id": "shot_027",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "mixed",
+      "note": "轴线右侧正打，视线朝画面左"
+    },
+    {
+      "shot_id": "shot_030",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "right",
+      "note": "轴线右侧特写，视线方向与镜号27 一致"
+    },
+    {
+      "shot_id": "shot_031",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "left",
+      "note": "轴线左侧特写，与镜号30 反向"
+    },
+    {
+      "shot_id": "shot_036",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "left",
+      "note": "轴线左侧反打，视线朝画面右"
+    },
+    {
+      "shot_id": "shot_038",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "mixed",
+      "note": "轴线右侧特写，视线朝画面左"
+    },
+    {
+      "shot_id": "shot_042",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "left",
+      "note": "重建双人轴线：米迦尔左前、伊恩右后"
+    },
+    {
+      "shot_id": "shot_047",
+      "actual_signs": [
+        -1
+      ],
+      "expected_signs": [
+        1
+      ],
+      "note_side": "left",
+      "note": "轴线左侧特写，与镜号46 反向"
+    },
+    {
+      "shot_id": "shot_049",
+      "actual_signs": [
+        -1
+      ],
+      "expected_signs": [
+        1
+      ],
+      "note_side": "left",
+      "note": "建立轴线：米迦尔在左、伊恩将入画于右，机位置于轴线中立侧。"
+    }
+  ],
+  "samples_without_a_usable_note": [
+    {
+      "shot_id": "shot_016",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "other",
+      "note": "机位沿轴线后撤，景别放宽"
+    },
+    {
+      "shot_id": "shot_017",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "other",
+      "note": "新场景建立镜头，重新交代米迦尔与伊恩的行进方向"
+    },
+    {
+      "shot_id": "shot_020",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "other",
+      "note": "正打机位，与上一镜形成正反打，角度变化超过 30°"
+    },
+    {
+      "shot_id": "shot_022",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "other",
+      "note": "反打特写，机位角度变化超过 30°"
+    },
+    {
+      "shot_id": "shot_023",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "other",
+      "note": "正打特写，与上一镜形成正反打"
+    },
+    {
+      "shot_id": "shot_033",
+      "actual_signs": [
+        1
+      ],
+      "expected_signs": [
+        -1
+      ],
+      "note_side": "other",
+      "note": "新场景建立镜，重新交代米迦尔位置与朝向"
+    }
+  ],
+  "note": "校准用：只在**同一镜**上比'判词里的 ±1'与'散文里的左右/中立'。"
+}

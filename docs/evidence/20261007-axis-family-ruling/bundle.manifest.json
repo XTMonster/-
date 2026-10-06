@@ -1,0 +1,56 @@
+{
+  "created_at": "2026-10-07T00:57:23",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "912cce4",
+    "head_subject": "feat(P14-310): 执行闭环按裁决落地——F1 显式不校验清单(version 1)、F3 别名表+vocab_miss、F4 设门条件写成布尔式(结论:判据集为空,不设门)",
+    "recent": [
+      "912cce4 feat(P14-310): 执行闭环按裁决落地——F1 显式不校验清单(version 1)、F3 别名表+vocab_miss、F4 设门条件写成布尔式(结论:判据集为空,不设门)",
+      "ae0c81e fix(P14-309): 按审查改正执行闭环报告的口径——边口径闭合(344=95+224+1+0+24)、movement 三分(film_side_empty 296/302)、A/B/C 重分类、违规0 写成 无物可违",
+      "2df2910 feat(P14-309): 执行闭环诊断补两块——(a) 未纳入的 kind 逐条列出来(covered/not_covered 两张表)；(b) 全扫 21 次真实运行：违规 0 是 21/21，每次都有约 90~107 条边在构造上判不了",
+      "a530402 feat(P14-309): 执行闭环诊断 v2——相等式 kind 3->7 + 第一次量出词表落差(vocabulary_gap)；真跑：判不了95/不适用224/生效1/违规0",
+      "0694640 docs(P14-308): gen2 的第一份全链证据(20261007-001857)——门⑦ 链上口径 210 llm-panel -> 212 third-party(阈值一字未动)，树守卫 stable，唯一红仍是已结案的 RK-13"
+    ],
+    "uncommitted": [
+      "M fixtures/closure_uncovered_kinds.json",
+      " M tests/test_closure_uncovered_list.py"
+    ]
+  },
+  "question": {
+    "path": "work/_q_axis_family_glm.md",
+    "sha256": "992f2551b684cf4f5d7c9e5b402b1987f75c6dd5b5ad4e9e0137389cc3f267eb",
+    "chars": 1258
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "领域专家": {
+      "system": {
+        "chars": 1008,
+        "sha256": "fc2e05372c1604d435db33dcf5a22255587b2f3231eeddbd3d16dd8309dde003"
+      },
+      "user": {
+        "chars": 1269,
+        "sha256": "373c04fdac12d300f66fe810b2d0600b7b3b811c46f50c1cec7b603de6e23887"
+      }
+    },
+    "实现顾问": {
+      "system": {
+        "chars": 1015,
+        "sha256": "e2d196dd979912603ed1dcf47ae216901c05be9c12662dee6a622097aa72216e"
+      },
+      "user": {
+        "chars": 1269,
+        "sha256": "373c04fdac12d300f66fe810b2d0600b7b3b811c46f50c1cec7b603de6e23887"
+      }
+    }
+  }
+}
