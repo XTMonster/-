@@ -1994,3 +1994,26 @@ GPT-6A 会**演旁白**（"我正在调用只读检查命令…"），一次调�
 ④ 0.375/0.125/0/160 都来自**同一组 8 条查询的单跑**；64 条盲判（pid 57312）**仍在跑**，
 落地后要拿它按 F3 的口径复议一次；
 ⑤ **(a) 的结案文书还没写**——等第二轮答复（买不买那份终局证据）之后再落笔，免得写两遍。
+
+### P14-300：主线**独立复跑**冻结尺子：它可信（64/64 锚点全中），但判决书里"挖深≈0 行"这句要改口径
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| R3 | 决定级证据要能**被别人复跑**（不是"lane 说它跑过"） | **绿（复跑一致）＋一句口径纠正** | `work/_audit_pool_ceiling2.json`（主线命令见下）；对照 `docs/evidence/20261006-pool-depth-ceiling/` | 2026-10-06 | 本批 |
+
+```powershell
+python tools/knowledge/e1_pool_ceiling.py --bank docs/evidence/20261006-c3-deep-pool/reviews.current.batch3.top120.jsonl --cases knowledge --depths 3,6,12 --modes order,ceiling,delivered --out work/_audit_pool_ceiling2.json
+```
+
+**复跑结果（与 lane 的数字逐位一致）**：`bank_order` **64/64 exact**（承重墙成立：
+银行文件序就是产品检索器 `retrieve(top_k=6)` 的顺序）；锚点 `proxy_retrieval_order_at_depth3 = 0.1719`
+vs `official_delivered_E1 = 0.1771`（差 0.005）；`proxy_retrieval_order_ceiling_at_depth6 = 0.3125`。
+⇒ **那把尺子可信**（这本身就是一次独立验算）。
+
+**口径纠正**：P14-299 引的判词里那句"全部实测杠杆（…、**挖深≈0 行**）"——**前半句成立、后半句不成立**。
+同一把尺子上 `retrieval_order` 的 ceiling 随深度**抬**：
+深度 3 **0.1719** → 深度 6 **0.3125** → 深度 12 **0.5365**（3/3 的查询条数 0 → 3 → 15）。
+"挖深不涨上界"只在**固定深度、只换排序臂**时成立（那些臂不换池子内容，所以同深度 ceiling 逐位相同）。
+⇒ 裁定 `F2` 的软肋因此更尖：**深度-12 的真判 oracle 是唯一可能撤销 (a) 的量**。
+按这把尺子自己的注记（重组三元组会被整组重判"抬 ~0.06 / 压 ~0.21"）平移，深度-12 的真判 oracle
+大概落在 **0.33～0.48**——仍低于 0.703125，但**这是推断不是测量**，如实标着，不许当结论引用。
