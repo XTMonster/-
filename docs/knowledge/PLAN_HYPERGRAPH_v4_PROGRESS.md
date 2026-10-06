@@ -610,3 +610,18 @@ sha256 `37dea0ea…`）。3 跑极差：
 **未验证**：**没有重跑面板**（改的是"怎么汇总已有的分"，四位评委的原始分数一条没动）；
 链上那份仍因缺 `judge_batch` 记 `not_measured`（**另一件事**）；历史台账里引用的
 `e1_panel.summarise` 读数（0.4583／0.4740 这类）含同类偏差，**未逐条重算**。
+
+### P14-250：**第十九次显式重新冻结**——`e1_panel.py` 哈希换代 ＋ `quality.py` 新增进清单
+
+| 阶段 | DoD 条目 | 状态 | 证据 | 日期 | commit |
+|---|---|---|---|---|---|
+| **R9** | 判据执行环境逐字节不动 | **绿（重新冻结）** | `tests/plan_v4_instruments.sha256.json`：`e1_panel.py` → `e0844bfa3795…`；**新增** `tools/knowledge/quality.py` → `0db3aaf86cbb…`；`_frozen_at` → **第十九次冻结**，理由写进新增的 `_reason_19`（历史 `_reason` 逐字保留，不改）。守门**先红后绿**：改完代码时 `assert 'e0844bfa3795…' == '85a88eb9ec1b…'`，重新冻结后 9 passed | 2026-10-06 | 本批 |
+
+**为什么要新增 `quality.py`（本轮第二个发现）**：链上**真正报出的那个 E1** 是
+`tools/knowledge/quality.py` 算的（`tools/run_tests.ps1:677` 用 `--e1-reviews` 调它写
+`knowledge_quality.json`），而它**不在**冻结清单里 ⇒ **E1 这个数的产出方可以被静默改掉**，
+"改了要红"的守门覆盖不到。这与本仓已记的两个前例**同形**：S0 的 `QUALIFIER_KINDS` 洞、
+S1a 的 `tools/sidecar_server.py` 手抄字面量洞；也与清单里**已经冻结**的
+`e1_baseline_summary.py`（同样只是个汇总器）同形。
+
+**一个字没动**：阈值 4.0、两位评委、分母口径、红线 0.70。
