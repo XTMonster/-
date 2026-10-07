@@ -1,0 +1,41 @@
+{
+ "edges": 638,
+ "index_fingerprint": "e5213e1b64781c24",
+ "vocab_values": 180,
+ "values_without_any_edge": {
+  "applies_to_genre": [
+   "anime",
+   "documentary",
+   "film"
+  ],
+  "applies_to_shot_size": [
+   "CU",
+   "ECU",
+   "ELS",
+   "LS",
+   "MCU",
+   "MLS",
+   "MS",
+   "OTS",
+   "POV"
+  ],
+  "intent": [
+   "释放"
+  ],
+  "music": [
+   "环境底噪"
+  ],
+  "sfx": [
+   "心跳"
+  ],
+  "vfx": [
+   "flame"
+  ]
+ },
+ "count_without_any_edge": 16,
+ "watched": {
+  "movement:dolly_zoom": 1,
+  "sfx:尖锐哨音": 2,
+  "sfx:雨声": 1
+ }
+}

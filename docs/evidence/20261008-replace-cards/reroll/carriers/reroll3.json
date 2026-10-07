@@ -1,0 +1,31 @@
+{
+  "_note": [
+    "掷骰子 #3（2026-10-07 23:18，从与 HEAD 逐字节相同的状态起步）的现场读数，",
+    "用 work/_carrier_support.py 量的：它只读 knowledge/hypergraph.{edges,vocab}.jsonl，",
+    "数的是「词表里每个取值，在索引里到底有几条边在支撑它」。",
+    "那份索引随后已被回滚覆盖，所以这里是转录而不是可重跑的文件——重跑一次 = 再掷一次骰子。",
+    "manifest 的 fingerprint 字段是构建收尾才落盘的，所以这次读数里读到的那个值是**上一代**的，不作依据。"
+  ],
+  "edges": 634,
+  "watched": {
+    "movement:dolly_zoom": 0,
+    "sfx:尖锐哨音": 1,
+    "sfx:雨声": 2
+  },
+  "carriers_of_尖锐哨音": [
+    {
+      "edge_id": "hg:aa8e84235044",
+      "type": "SOUND_PACK",
+      "sources": ["gen_edit_0191", "gen_story_0132"]
+    }
+  ],
+  "values_without_any_edge": {
+    "applies_to_genre": ["anime", "documentary", "film"],
+    "applies_to_shot_size": ["CU", "ECU", "ELS", "LS", "MCU", "MLS", "MS", "OTS", "POV"],
+    "intent": ["释放"],
+    "movement": ["dolly_zoom"],
+    "sfx": ["心跳"],
+    "vfx": ["flame"]
+  },
+  "roll2": "掷骰子 #2 的 stdout 见 reroll2.stdout.txt（636 条边 / 2851 原子）；那一份索引同样已被回滚覆盖，没有在它上面量过载体"
+}

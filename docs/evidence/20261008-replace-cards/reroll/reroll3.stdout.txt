@@ -1,0 +1,416 @@
+{"replace_cards": true, "requested": 52, "matched": 52, "unknown": []}
+{
+  "report": {
+    "raw_edges": 634,
+    "valid_unique": 634,
+    "duplicates": 0,
+    "rejects": 0,
+    "reject_reasons": {},
+    "reject_ratio": 0.0,
+    "processed_chunks": 708,
+    "total_chunks": 708,
+    "passed": true
+  },
+  "edges": 634,
+  "rejects": 106,
+  "atoms": 2861,
+  "merge": {
+    "windows": 300,
+    "groups": 2597,
+    "merged_edges": 634,
+    "multi_card_edges": 195,
+    "forbid_wins": 0,
+    "dropped_optional": 31,
+    "over_budget_dropped": 0,
+    "forbid_members": 69,
+    "max_arity": 5,
+    "dropped_groups": [],
+    "alternatives": 18,
+    "global_dedupe": {
+      "keys": 892,
+      "duplicate_groups": 357,
+      "dropped": 1723
+    },
+    "arbitrate_by_hardness": {
+      "groups": 202,
+      "dropped": 236,
+      "dropped_by_source_kind": {
+        "experience/soft": 198,
+        "lesson/hard": 37,
+        "lesson/soft": 1
+      }
+    },
+    "unsupported_prohibition_hosts": {
+      "rule": "unsupported_prohibition_host",
+      "rule_version": "gate/v2",
+      "meaning": "禁令的宿主必须是卡片自己说的：禁半落地、必填 allow 主体不落地 ⇒ 拒收",
+      "dropped": 15,
+      "edges": [
+        {
+          "edge_id": "hg:959d5edd99f9",
+          "type": "ACTION_BEAT",
+          "sources": [
+            "gen_perf_0388"
+          ],
+          "invented_subject": [
+            "action:站位"
+          ],
+          "grounded_forbid": [
+            "action:走位"
+          ]
+        },
+        {
+          "edge_id": "hg:00ab603b05f7",
+          "type": "ACTION_BEAT",
+          "sources": [
+            "cine_move_follow_subject"
+          ],
+          "invented_subject": [
+            "action:走位"
+          ],
+          "grounded_forbid": [
+            "movement:follow_subject"
+          ]
+        },
+        {
+          "edge_id": "hg:f1d9f0b53407",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_crane_down"
+          ],
+          "invented_subject": [
+            "emotion:压抑"
+          ],
+          "grounded_forbid": [
+            "movement:crane_down"
+          ]
+        },
+        {
+          "edge_id": "hg:a9f0241b9043",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_dolly_in"
+          ],
+          "invented_subject": [
+            "emotion:压抑"
+          ],
+          "grounded_forbid": [
+            "movement:dolly_in"
+          ]
+        },
+        {
+          "edge_id": "hg:66ee89dc37f6",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_zoom_out"
+          ],
+          "invented_subject": [
+            "emotion:喜悦"
+          ],
+          "grounded_forbid": [
+            "movement:zoom_out"
+          ]
+        },
+        {
+          "edge_id": "hg:8f6e13de3bbd",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "gen_perf_0382"
+          ],
+          "invented_subject": [
+            "emotion:平静"
+          ],
+          "grounded_forbid": [
+            "shot_size:CU"
+          ]
+        },
+        {
+          "edge_id": "hg:1ff926754f60",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_tilt_down"
+          ],
+          "invented_subject": [
+            "emotion:悲伤"
+          ],
+          "grounded_forbid": [
+            "movement:tilt_down"
+          ]
+        },
+        {
+          "edge_id": "hg:aba184f9686a",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_pan_left"
+          ],
+          "invented_subject": [
+            "emotion:期待"
+          ],
+          "grounded_forbid": [
+            "movement:pan_left"
+          ]
+        },
+        {
+          "edge_id": "hg:b20f7a8a374b",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_pan_right"
+          ],
+          "invented_subject": [
+            "emotion:期待"
+          ],
+          "grounded_forbid": [
+            "movement:pan_right"
+          ]
+        },
+        {
+          "edge_id": "hg:80dc553ada21",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_orbit_ccw"
+          ],
+          "invented_subject": [
+            "emotion:混乱"
+          ],
+          "grounded_forbid": [
+            "movement:orbit_ccw"
+          ]
+        },
+        {
+          "edge_id": "hg:06356aab493e",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_track_left"
+          ],
+          "invented_subject": [
+            "emotion:温柔"
+          ],
+          "grounded_forbid": [
+            "movement:track_left"
+          ]
+        },
+        {
+          "edge_id": "hg:9ceb2ff268de",
+          "type": "EMOTION_PACK",
+          "sources": [
+            "cine_move_whip_pan_left"
+          ],
+          "invented_subject": [
+            "emotion:荒诞"
+          ],
+          "grounded_forbid": [
+            "movement:whip_pan_left"
+          ]
+        },
+        {
+          "edge_id": "hg:b51a68aca524",
+          "type": "INTENT_PACK",
+          "sources": [
+            "cine_move_index"
+          ],
+          "invented_subject": [
+            "shot_size:MS"
+          ],
+          "grounded_forbid": [
+            "movement:zoom_in"
+          ]
+        },
+        {
+          "edge_id": "hg:068e9a921c1f",
+          "type": "LIGHT_PACK",
+          "sources": [
+            "gen_block_0005"
+          ],
+          "invented_subject": [
+            "lighting:正面光"
+          ],
+          "grounded_forbid": [
+            "lighting:侧光"
+          ]
+        },
+        {
+          "edge_id": "hg:b5ed17adba49",
+          "type": "SHOT_PATTERN",
+          "sources": [
+            "gen_edit_0189"
+          ],
+          "invented_subject": [
+            "shot_size:MS",
+            "lens:50mm"
+          ],
+          "grounded_forbid": [
+            "movement:固定"
+          ]
+        }
+      ],
+      "criterion": "① 卡里有否定表述 ② 至少一条 forbid 在卡里落地 ③ 必填 allow 主体一个都不落地 ④ 出处都是已知的卡"
+    },
+    "contradictory_roles": {
+      "rule": "contradictory_roles",
+      "rule_version": "gate/v2",
+      "meaning": "同一个 node_id 既被要求又被禁止（同 kind 同取值）⇒ 整条拒收",
+      "criterion": "与 check_holdout.parse_spec 的自相矛盾判据逐字同源；同 kind 不同取值**不算**冲突",
+      "dropped": 7,
+      "edges": [
+        {
+          "edge_id": "hg:1f0f01cd6a8c",
+          "type": "AXIS_RULE",
+          "sources": [
+            "axis_30",
+            "axis_cross",
+            "axis_cross_cost"
+          ],
+          "clash": [
+            "axis_topic=越轴"
+          ]
+        },
+        {
+          "edge_id": "hg:d9a1cf853e91",
+          "type": "AXIS_RULE",
+          "sources": [
+            "axis_eyeline_height",
+            "axis_insert_shot",
+            "axis_neutral",
+            "axis_neutral_chain",
+            "axis_ots_stays_on_side"
+          ],
+          "clash": [
+            "axis_topic=越轴"
+          ]
+        },
+        {
+          "edge_id": "hg:010b08621585",
+          "type": "INTENT_PACK",
+          "sources": [
+            "gen_cine_0452"
+          ],
+          "clash": [
+            "movement=zoom_out"
+          ]
+        },
+        {
+          "edge_id": "hg:7d7dfe2cbd23",
+          "type": "STAGING_PACK",
+          "sources": [
+            "gen_comp_0144"
+          ],
+          "clash": [
+            "composition_rule=framing"
+          ]
+        },
+        {
+          "edge_id": "hg:07166dc33c03",
+          "type": "STAGING_PACK",
+          "sources": [
+            "gen_comp_0063",
+            "gen_comp_0152",
+            "gen_comp_0216"
+          ],
+          "clash": [
+            "composition_rule=balance"
+          ]
+        },
+        {
+          "edge_id": "hg:9dbd9f4fe3a1",
+          "type": "STAGING_PACK",
+          "sources": [
+            "gen_comp_0051"
+          ],
+          "clash": [
+            "composition_rule=headroom"
+          ]
+        },
+        {
+          "edge_id": "hg:76bf3a26831b",
+          "type": "STAGING_PACK",
+          "sources": [
+            "gen_edit_0172"
+          ],
+          "clash": [
+            "composition_rule=occlusion"
+          ]
+        }
+      ]
+    },
+    "refresh": {
+      "cards": 52,
+      "atoms_dropped": 68,
+      "atoms_kept": 2762
+    },
+    "refresh_prompt_version": "extract/v18",
+    "backfill": {
+      "rounds": [
+        {
+          "round": 1,
+          "asked": 84,
+          "atoms_added": 23,
+          "still_empty": 64
+        },
+        {
+          "round": 2,
+          "asked": 64,
+          "atoms_added": 7,
+          "still_empty": 59
+        },
+        {
+          "round": 3,
+          "asked": 59,
+          "atoms_added": 0,
+          "still_empty": 59
+        }
+      ],
+      "cards_empty_before": 84,
+      "cards_empty_after": 59,
+      "cards_empty": [
+        "gen_block_0024",
+        "gen_block_0033",
+        "gen_block_0075",
+        "gen_block_0154",
+        "gen_block_0163",
+        "gen_block_0240",
+        "gen_block_0261",
+        "gen_block_0297",
+        "gen_block_0302",
+        "gen_block_0346",
+        "gen_block_0347",
+        "gen_cine_0024",
+        "gen_cine_0030",
+        "gen_cine_0033",
+        "gen_cine_0036",
+        "gen_cine_0043",
+        "gen_cine_0046",
+        "gen_cine_0047",
+        "gen_cine_0054",
+        "gen_cine_0055"
+      ],
+      "recovered": 25,
+      "temperature": 0.2
+    },
+    "rebind": {
+      "rebind_version": "rebind/v2",
+      "edges": 634,
+      "edges_touched": 555,
+      "sources_added": 2861,
+      "members_without_candidate": 194,
+      "candidate_pool": 2279,
+      "edge_backed_before": 2279,
+      "edge_backed_after": 2279,
+      "prune": {
+        "prune_version": "prune/v1",
+        "verdicts": 0,
+        "edges": 634,
+        "edges_touched": 0,
+        "members_removed": 0,
+        "edges_removed": 0,
+        "edges_schema_incomplete": 0
+      }
+    },
+    "before_dedupe": {
+      "merged_edges": 2615,
+      "forbid_members": 103,
+      "max_arity": 5
+    },
+    "dangling_members_dropped": 0
+  },
+  "merge_rejects": 0
+}

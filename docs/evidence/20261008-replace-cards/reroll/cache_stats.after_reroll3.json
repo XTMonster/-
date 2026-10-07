@@ -1,0 +1,14 @@
+{
+  "cache": {
+    "hit": 39,
+    "miss": 1,
+    "written": 13,
+    "dropped_version": 0,
+    "enabled": true
+  },
+  "fingerprint": "e5213e1b64781c24103eecae15a4921b5766f75c4709672fa48997de692cdf89",
+  "path": "work/hypergraph.atom_cache.jsonl",
+  "units": 52,
+  "units_done": 52,
+  "units_error": 0
+}

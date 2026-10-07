@@ -1,0 +1,10 @@
+# corpus scan: which card texts literally contain the token (2353 cards = 2221 generated + 132 handwritten)
+推拉变焦        2  ['cine_move_dolly_zoom', 'cine_move_index']
+变焦推拉        0  []
+希区柯克        0  []
+移焦          7  ['gen_cine_0366', 'gen_cine_0378', 'gen_cine_0384', 'gen_cine_0445', 'gen_cine_0446', 'gen_cine_0457']
+眩晕          4  ['cine_move_dolly_zoom', 'cine_move_index', 'cine_move_track_left', 'gen_cine_0325']
+尖锐哨音        0  []
+哨音          0  []
+耳鸣          0  []
+雨声          1  ['gen_block_0347']
