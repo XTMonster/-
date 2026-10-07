@@ -1,0 +1,531 @@
+{
+  "_why": "执行文档 v1.5 的机器可读派发图（DAG）。hooks/dispatch-board.ps1 每轮读它，算出『现在能安全并行派发的任务卡』并把 spawn 指令注入上下文。判据：①依赖已满足 ②与在飞卡的文件集不相交 ③不是 ⚖️/须用户点头 ④并发未到顶。图与 EXECUTION_PLAN.md 的附录 A/B 同源；改计划必须同步改这里。",
+  "_conventions": {
+    "mode_auto": "可派发给子 agent 执行（文件互斥时并行）",
+    "mode_serial": "必须主线串行执行（同文件双写或语义依赖，派发会伤质量）",
+    "mode_user": "⚖️ 须用户裁决：只准备材料，不派发实现",
+    "mode_gate": "阶段门：主线自己跑验收命令，不派发",
+    "files": "该卡的写集（相对仓库根、小写、正斜杠）。写集相交的卡不得同时派发。",
+    "marker": "完成后写 docs/evidence/_v15_dispatch/done/<id>.done；在飞写 inflight/<id>.claim"
+  },
+  "max_parallel": 6,
+  "cards": [
+    {
+      "id": "P0-T1",
+      "phase": 0,
+      "title": "环境体检与基线读数",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_dispatch/"
+      ]
+    },
+    {
+      "id": "P0-T2",
+      "phase": 0,
+      "title": "在跑工作树清点（不提交）",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_dispatch/"
+      ]
+    },
+    {
+      "id": "P1-T1",
+      "phase": 1,
+      "title": "OPEN_PROBLEMS 抬头 + 悬空引用",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "docs/knowledge/open_problems.md",
+        "agents.md",
+        "docs/knowledge/plan_hypergraph_v4_progress.md"
+      ]
+    },
+    {
+      "id": "P1-T2",
+      "phase": 1,
+      "title": "台账过期块与编号注记",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "docs/knowledge/plan_hypergraph_v4_progress.md"
+      ]
+    },
+    {
+      "id": "P1-T3",
+      "phase": 1,
+      "title": "AGENTS.md 状态块读数刷新",
+      "mode": "auto",
+      "depends_on": [
+        "P1-T1"
+      ],
+      "files": [
+        "agents.md"
+      ]
+    },
+    {
+      "id": "P2-T1",
+      "phase": 2,
+      "title": "contracts/beats.py 拍点与三个规格类",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "block_director/contracts/beats.py",
+        "block_director/motion/model.py",
+        "tests/test_beats.py"
+      ]
+    },
+    {
+      "id": "P2-T2",
+      "phase": 2,
+      "title": "ShotPlan 与 Plan 字段扩展",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "block_director/contracts/plan.py",
+        "fixtures/tool_transcript_simple.jsonl"
+      ]
+    },
+    {
+      "id": "P2-T3",
+      "phase": 2,
+      "title": "SDL 1.5 与迁移器",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "block_director/contracts/sdl.py",
+        "block_director/layer2_sdl/sdl_builder.py",
+        "block_director/layer2_sdl/sdl_migrate.py",
+        "fixtures/expected_sdl_simple.json",
+        "fixtures/expected_sdl_long.json"
+      ]
+    },
+    {
+      "id": "P2-T4",
+      "phase": 2,
+      "title": "emit_plan / emit_shot_draft schema 升级",
+      "mode": "auto",
+      "depends_on": [
+        "P2-T1",
+        "P2-T2"
+      ],
+      "files": [
+        "block_director/layer5_orchestrator/planner.py",
+        "block_director/layer5_orchestrator/editor.py",
+        "block_director/layer5_orchestrator/driver.py"
+      ]
+    },
+    {
+      "id": "P2-T5",
+      "phase": 2,
+      "title": "配置项与 gen_specs",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "block_director/contracts/config.py",
+        "specs/config.default.yaml"
+      ]
+    },
+    {
+      "id": "P3-T1",
+      "phase": 3,
+      "title": "beat_compiler：拍点→actions",
+      "mode": "auto",
+      "depends_on": [
+        "P2-T1"
+      ],
+      "files": [
+        "block_director/layer5_orchestrator/beat_compiler.py",
+        "tests/test_beat_compiler.py"
+      ]
+    },
+    {
+      "id": "P3-T2",
+      "phase": 3,
+      "title": "锚点摆位求解",
+      "mode": "auto",
+      "depends_on": [
+        "P2-T3",
+        "P2-T2"
+      ],
+      "files": [
+        "block_director/cinema/anchors_solve.py",
+        "block_director/layer3_engine/scene_executor.py",
+        "block_director/layer3_engine/shot_builder.py"
+      ]
+    },
+    {
+      "id": "P3-T3",
+      "phase": 3,
+      "title": "灯光矩阵与道具交互事件",
+      "mode": "serial",
+      "depends_on": [
+        "P3-T2"
+      ],
+      "files": [
+        "block_director/cinema/lighting.py",
+        "block_director/layer3_engine/scene_executor.py",
+        "block_director/layer3_engine/shot_builder.py"
+      ]
+    },
+    {
+      "id": "P3-T4",
+      "phase": 3,
+      "title": "构图声明消费",
+      "mode": "auto",
+      "depends_on": [
+        "P2-T2"
+      ],
+      "files": [
+        "block_director/cinema/framing.py"
+      ]
+    },
+    {
+      "id": "P4-T1",
+      "phase": 4,
+      "title": "rulepack：强度渲染与规则预算",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "block_director/knowledge/rulepack.py",
+        "block_director/knowledge/client.py",
+        "block_director/knowledge/retriever.py",
+        "tests/test_rulepack.py"
+      ]
+    },
+    {
+      "id": "P4-T2",
+      "phase": 4,
+      "title": "冲突并陈与自由度声明",
+      "mode": "serial",
+      "depends_on": [
+        "P4-T1"
+      ],
+      "files": [
+        "block_director/knowledge/rulepack.py"
+      ]
+    },
+    {
+      "id": "P4-T3",
+      "phase": 4,
+      "title": "forbid 反查补挂（守门激活）",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "block_director/knowledge/hypergraph.py",
+        "block_director/knowledge/retriever.py",
+        "block_director/knowledge/client.py",
+        "tests/plan_v4_instruments.sha256.json"
+      ]
+    },
+    {
+      "id": "P4-T5",
+      "phase": 4,
+      "title": "检索种子接线（构图/光线入契约串）",
+      "mode": "auto",
+      "depends_on": [
+        "P2-T2"
+      ],
+      "files": [
+        "block_director/layer5_orchestrator/scene_contract.py"
+      ]
+    },
+    {
+      "id": "P4-T4",
+      "phase": 4,
+      "title": "破例辩护字段与审计对拍",
+      "mode": "auto",
+      "depends_on": [
+        "P2-T4"
+      ],
+      "files": [
+        "block_director/layer5_orchestrator/editor.py",
+        "block_director/layer3_engine/rule_checker.py",
+        "block_director/layer3_engine/shot_auditor.py",
+        "block_director/layer8_delivery/export_director.py"
+      ]
+    },
+    {
+      "id": "P5-T1",
+      "phase": 5,
+      "title": "换代登记模板 + B5 零成员 kind 诊断",
+      "mode": "auto",
+      "depends_on": [],
+      "files": [
+        "docs/knowledge/regen_log_template.md"
+      ]
+    },
+    {
+      "id": "P5-T2",
+      "phase": 5,
+      "title": "B1：132 张手写策展卡入索引（换代）",
+      "mode": "user",
+      "note": "前提已被证伪（2026-10-07 实测）：抽取器早已纳入 132 张手写卡，116/132 已被索引引用，零边者只有 16 张手写卡（+75 生成卡）。卡要求的动作已在 HEAD 上完成 ⇒ 本卡退化为『纠正 AGENTS.md 的失实陈述 + 由用户决定要不要为零边卡换代』，**不许自行换代**（R-8）。",
+      "depends_on": [],
+      "files": [
+        "knowledge/hypergraph.edges.jsonl"
+      ]
+    },
+    {
+      "id": "P5-T3",
+      "phase": 5,
+      "title": "B4+G9 别名备料（不动手）",
+      "mode": "auto",
+      "note": "本卡是 ⚖️ 卡，但它的交付物**就是备料文档**（不实现）——可以派发；派发的硬约束是绝不改代码/判据。",
+      "depends_on": [],
+      "files": []
+    },
+    {
+      "id": "P5-T4",
+      "phase": 5,
+      "title": "B2 双路线 + A3 评委口径 + A5 裁决包",
+      "mode": "auto",
+      "note": "同 P5-T3：交付物是备料件；B2 的落地、A3 的复测、A5 的裁决都**不许**由执行方拍板。",
+      "depends_on": [],
+      "files": [
+        "docs/knowledge/judge_alignment_v1.md"
+      ]
+    },
+    {
+      "id": "P6-T1",
+      "phase": 6,
+      "title": "VLM 评审外回路（可选、默认关）",
+      "mode": "auto",
+      "depends_on": [
+        "P4-T4"
+      ],
+      "files": [
+        "block_director/layer3_engine/shot_auditor.py"
+      ]
+    },
+    {
+      "id": "P6-T2",
+      "phase": 6,
+      "title": "多样性度量与 Best-of-N 骨架",
+      "mode": "auto",
+      "depends_on": [
+        "P2-T5",
+        "P2-T4"
+      ],
+      "files": [
+        "tools/diversity_score.py",
+        "block_director/contracts/config.py",
+        "block_director/layer5_orchestrator/editor.py"
+      ]
+    },
+    {
+      "id": "P7-T1",
+      "phase": 7,
+      "title": "全量回归与证据收口",
+      "mode": "gate",
+      "depends_on": [
+        "P1-T3",
+        "P2-T4",
+        "P2-T5",
+        "P3-T3",
+        "P3-T4",
+        "P4-T2",
+        "P4-T3",
+        "P4-T4",
+        "P4-T5",
+        "P5-T1"
+      ],
+      "files": [
+        "docs/evidence/"
+      ]
+    },
+    {
+      "id": "P7-T2",
+      "phase": 7,
+      "title": "文档同步与提交",
+      "mode": "user",
+      "depends_on": [
+        "P7-T1"
+      ],
+      "files": [
+        "agents.md",
+        "context.md",
+        "docs/knowledge/acceptance_status.md"
+      ]
+    },
+    {
+      "id": "P8-T1",
+      "phase": 8,
+      "title": "C4 记账纪律：措辞统一 + 口径校验脚本",
+      "mode": "auto",
+      "note": "TECH_SOLUTIONS §三 C4（✅ 本版直接做，但 EXECUTION_PLAN 没有卡——计划缺口，本卡补上）：措辞一律『未被来源佐证』（≠编造）；两个分母（可检 1593 / 全 1938）并列；not-checkable ≤ 345 钉住；写一个约 30 行的口径校验脚本防回退。",
+      "depends_on": [],
+      "files": [
+        "tools/knowledge/attestation_ledger.py",
+        "tests/test_attestation_ledger.py",
+        "docs/evidence/_v15_stage8/c4_ledger/"
+      ]
+    },
+    {
+      "id": "P8-T2",
+      "phase": 8,
+      "title": "C3 topic 字段准确率诊断（只诊断）",
+      "mode": "auto",
+      "note": "TECH_SOLUTIONS §三 C3（✅ 本版直接做）：从 90 槽位样本里抽 topic 字段与原卡对拍，出准确率读数；只诊断、不改生成器。GLM 交叉对拍因本机缺 GLM_API_KEY 未跑，须如实标注。",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_stage8/c3_topic/"
+      ]
+    },
+    {
+      "id": "P8-T3",
+      "phase": 8,
+      "title": "C6 层里 16 条 amended 的 fix 文本落地",
+      "mode": "serial",
+      "note": "TECH_SOLUTIONS §三 C6（✅ 机械）：层是**输入工件**，把 16 条 fix 文本应用到对应层文件、重跑该层校验、前后 diff 落证据。**红线 R-8**：若该动作会改变已发货索引的字节 ⇒ 属于换代，必须停手升级给用户。本卡归主线（风险高）。",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_stage8/c6_layer_fix/"
+      ]
+    },
+    {
+      "id": "P8-T4",
+      "phase": 8,
+      "title": "C2 9 边/15 槽位局部手术备料",
+      "mode": "auto",
+      "note": "TECH_SOLUTIONS §三 C2（⚖️ 须裁决）：每条边给『换卡 vs 删边』两案 + 换代影响面（23 份运行 pin）+ 按 A6 模板预填的登记表。删边=换代，**一个字都不许改索引**。",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_stage8/c2_edge_surgery/"
+      ]
+    },
+    {
+      "id": "P8-T5",
+      "phase": 8,
+      "title": "C5 19 份 superseded 的失据清单",
+      "mode": "auto",
+      "note": "TECH_SOLUTIONS §三 C5（⚖️ 未定案）：逐份列『该份 supersede 了哪次运行/哪条读数』，标失据/不失据/待定，交用户。",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_stage8/c5_superseded/"
+      ]
+    },
+    {
+      "id": "P8-T6",
+      "phase": 8,
+      "title": "A4 深度-12 真判清单（备料）",
+      "mode": "auto",
+      "note": "TECH_SOLUTIONS §一 A4（⚖️）：列出 12 条的逐条真判清单（判什么、用什么评委、预计 token 成本），交用户决定是否执行；执行前 proxy-only 标注保持原样。",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_stage8/a4_depth12/"
+      ]
+    },
+    {
+      "id": "P8-T7",
+      "phase": 8,
+      "title": "B3 提案 × 33 条边覆盖矩阵（备料）",
+      "mode": "auto",
+      "note": "TECH_SOLUTIONS §二 B3（⚖️）：把 APPLICABILITY_SEMANTICS_v1.md 提案与 33 条『判不了』的边逐条对照，标提案覆盖/不覆盖，交用户裁决是否实施。不改判据、不设门。",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_stage8/b3_coverage/"
+      ]
+    },
+    {
+      "id": "P8-T8",
+      "phase": 8,
+      "title": "G1–G9 历史点名逐条核查（只核不改）",
+      "mode": "auto",
+      "note": "TECH_SOLUTIONS §六：G1…G9 逐条核查『历史点名但现行台账未见收口』；若属实只出提案（涉判据/换代的一律标『须裁决』），**一处代码都不改**。",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_stage8/g1_g9_recheck/"
+      ]
+    },
+    {
+      "id": "P8-T9",
+      "phase": 8,
+      "title": "C1 第二半：90 槽位三分类汇总",
+      "mode": "user",
+      "note": "TECH_SOLUTIONS §三 C1：12 批作业目前只完成 2 批（batch1/batch12）；其余需 GLM 通道，而本机 **GLM_API_KEY 缺失** ⇒ 如实记『未完成，等通道』。且提交口径须用户确认（F5）。不许伪造结论。",
+      "depends_on": [],
+      "files": [
+        "docs/evidence/_v15_stage8/c1_recap/"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "G0",
+      "after": [
+        "P0-T1",
+        "P0-T2"
+      ],
+      "command": "见 P0-T1 落盘读数"
+    },
+    {
+      "id": "G1",
+      "after": [
+        "P1-T1",
+        "P1-T2",
+        "P1-T3"
+      ],
+      "command": "python -m pytest -q ; powershell -File tools/run_tests.ps1"
+    },
+    {
+      "id": "G2",
+      "after": [
+        "P2-T1",
+        "P2-T2",
+        "P2-T3",
+        "P2-T4",
+        "P2-T5"
+      ],
+      "command": "python -m pytest ; python tools/gen_golden.py --check ; python tools/gen_specs.py --check"
+    },
+    {
+      "id": "G3",
+      "after": [
+        "P3-T1",
+        "P3-T2",
+        "P3-T3",
+        "P3-T4"
+      ],
+      "command": "tools/rebuild_project.py --project docs/evidence/2026100?_chunked_long9|long11|long12/project --export"
+    },
+    {
+      "id": "G4",
+      "after": [
+        "P4-T1",
+        "P4-T2",
+        "P4-T3",
+        "P4-T4",
+        "P4-T5"
+      ],
+      "command": "三份冻结工程同代重建 + forbid_members_seen>0 + Q1/Q2/Q5/E1 对照"
+    },
+    {
+      "id": "G5",
+      "after": [
+        "P5-T1",
+        "P5-T2",
+        "P5-T3",
+        "P5-T4"
+      ],
+      "command": "备料件齐 + 换代登记合规"
+    },
+    {
+      "id": "G6",
+      "after": [
+        "P6-T1",
+        "P6-T2"
+      ],
+      "command": "默认关配置下全链路零回归"
+    },
+    {
+      "id": "G7",
+      "after": [
+        "P7-T1",
+        "P7-T2"
+      ],
+      "command": "全绿 + 证据齐 + 文档同步"
+    }
+  ]
+}
