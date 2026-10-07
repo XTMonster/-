@@ -21,8 +21,8 @@ rag:
   enabled: true
   backend: hypergraph
   embedder: bge-small-zh-v1.5
-  top_k: 5
-  rule_top_k: 5
+  top_k: 15
+  rule_top_k: 8
   max_tokens_per_call: 50000
   plan_prefetch_tokens: 60000
   cases_backend: lightrag
