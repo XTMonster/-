@@ -1,0 +1,5 @@
+{"totals": {"queries": 103, "with_backfill": 66, "forbid_members_seen": 217, "backfilled_edges": 91, "top1_preserved": 103, "top1_is_backfilled": 0}, "gate_g4": {"forbid_members_seen_gt_0": true, "ranking_preserved": true}}
+  20261003_chunked_long9     queries= 25 with_backfill= 17 forbid_members_seen= 53 top1_preserved= 25 top1_is_backfilled=0
+  20261004_chunked_long11    queries= 23 with_backfill= 14 forbid_members_seen= 49 top1_preserved= 23 top1_is_backfilled=0
+  20261004_chunked_long12    queries= 28 with_backfill= 18 forbid_members_seen= 58 top1_preserved= 28 top1_is_backfilled=0
+  20261006-long21            queries= 27 with_backfill= 17 forbid_members_seen= 57 top1_preserved= 27 top1_is_backfilled=0

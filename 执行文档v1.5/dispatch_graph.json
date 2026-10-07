@@ -150,10 +150,11 @@
         "P2-T2"
       ],
       "files": [
-        "block_director/cinema/anchors_solve.py",
+        "block_director/cinema/staging.py",
         "block_director/layer3_engine/scene_executor.py",
         "block_director/layer3_engine/shot_builder.py"
-      ]
+      ],
+      "_note": "实现落在 block_director/cinema/staging.py（solve_anchor_positions）；计划期写的 anchors_solve.py 未使用——2026-10-07 收尾核对时按事实更正路径。"
     },
     {
       "id": "P3-T3",
