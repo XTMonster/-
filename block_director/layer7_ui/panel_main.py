@@ -83,7 +83,10 @@ class BLOCKDIRECTOR_OT_export_delivery(Operator):
                                 roster=(driver._cast_roster()
                                         if driver is not None
                                         and hasattr(driver, "_cast_roster")
-                                        else None))
+                                        else None),
+                                review_requests=(driver.review_requests
+                                                 if driver is not None
+                                                 else None))
         if not report.ok:
             self.report({'ERROR'}, report.reason or "导出未完成")
             return {'CANCELLED'}

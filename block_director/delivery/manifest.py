@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -27,9 +28,10 @@ def build_manifest(plan: Plan, *,
                    parsed=None,
                    timing_overrides: Optional[Sequence[Dict[str, Any]]] = None,
                    action_conflicts: Optional[Sequence[Dict[str, Any]]] = None,
-                  audit_pass_rate: Optional[Dict[str, Any]] = None,
-                  knowledge_provenance: Optional[Dict[str, Any]] = None,
-                  knowledge: Optional[Dict[str, Any]] = None
+                   audit_pass_rate: Optional[Dict[str, Any]] = None,
+                   knowledge_provenance: Optional[Dict[str, Any]] = None,
+                   knowledge: Optional[Dict[str, Any]] = None,
+                   review_requests: Optional[Sequence[Dict[str, Any]]] = None,
                   ) -> Dict[str, Any]:
     """把分镜计划与构建结果拼成交付用清单。
 
@@ -53,6 +55,8 @@ def build_manifest(plan: Plan, *,
     label_offsets = dict(((build_summary or {}).get("label_report") or {})
                          .get("offsets") or {})
     declarations = _declarations(parsed)
+    review_counts = Counter(str(item.get("shot_id") or "")
+                            for item in (review_requests or []))
 
     shots: List[Dict[str, Any]] = []
     cursor = 1
@@ -96,6 +100,8 @@ def build_manifest(plan: Plan, *,
             "action_types": [str(a.get("action_type")) for a in shot.actions],
             "axis_note": shot.axis_note,
             "continuity_in": shot.continuity_in,
+            "needs_review": review_counts[shot.shot_id] > 0,
+            "review_request_count": review_counts[shot.shot_id],
             "degraded": bool(result.get("warnings")),
             "warnings": list(result.get("warnings", [])),
             # ---- v1.4 P15（§3.3）的逐镜字段 ----

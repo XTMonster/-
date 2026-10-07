@@ -141,6 +141,7 @@ def main() -> int:
                             retrieval_calls=int(summary.get("retrieval_calls") or 0),
                             knowledge_provenance=summary.get(
                                 "knowledge_provenance"),
+                            review_requests=summary.get("self_review_requests"),
                             project="BlockDirector")
     payload = report.to_dict()
     payload["summary"] = {"state": summary.get("state"),

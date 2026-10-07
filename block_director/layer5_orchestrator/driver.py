@@ -392,6 +392,9 @@ class PrevisDriver:
             "paused": self._paused,
             "finished_shots": len(self.finish_history),
             "review_requests": len(self.review_requests),
+            # The count stays compatible with UI/debug consumers; unattended
+            # export also needs a detached, JSON-safe per-shot record list.
+            "self_review_requests": copy.deepcopy(self.review_requests),
             "react_rounds": len(self.react_history),
             "brief": (self.brief.to_dict() if self.brief is not None
                       else None),

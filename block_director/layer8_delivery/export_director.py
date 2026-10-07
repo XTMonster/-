@@ -22,6 +22,7 @@ from ..contracts.plan import Plan, unknown_cast_ids
 from ..delivery.depth import depth_range_note
 from ..delivery.manifest import build_manifest
 from ..delivery.prompts import DEFAULT_STYLE, render_prompt_sheet
+from ..delivery.readme import render_readme
 from ..layer3_engine.collection_router import (
     audit_renderable_objects,
     labels_collection,
@@ -95,47 +96,8 @@ def _shot_ranges(plan: Plan,
 
 
 def _readme(manifest: Dict[str, Any], report: DeliveryReport) -> str:
-    width, height = manifest["resolution"]
-    lines = [
-        f"# {manifest['project']} — 白模预演交付包",
-        "",
-        f"- 分辨率：{width}×{height} @ {manifest['fps']}fps",
-        f"- 镜头数：{len(manifest['shots'])}，总时长 "
-        f"{round(manifest['total_frames'] / manifest['fps'], 2)} 秒",
-        f"- 生成时间：{manifest['generated_at']}",
-        "",
-        "## 怎么用",
-        "",
-        "1. 取 `blockout_<shot>.mp4` 作为**参考视频**（结构 / 机位 / 节奏）；",
-        "2. 取 `first_frames/<shot>.png` 作为**输入图**（图生视频）；",
-        "3. 取 `prompts.md` 里对应镜头的 Prompt 作为**提示词**。",
-        "",
-        "> 参考视频里带白字黑描边的角色标签，便于审阅；"
-        "`first_frames/` 与 depth 序列**刻意不带标签**，"
-        "避免标签被下游视频模型当成画面内容学走。",
-        "",
-    ]
-    if os.path.exists(os.path.join(report.out_dir, "camera_traj.json")):
-        lines.insert(-1, "4. `camera_traj.json` 提供逐帧相机内外参，"
-                         "可喂给相机可控的视频生成模型。")
-        lines.append("")
-    if os.path.exists(os.path.join(report.out_dir, "blockout_full.mp4")):
-        lines.insert(-1, "5. `blockout_full.mp4` 是各镜按顺序接成的全片，"
-                         "适合一次性喂给视频模型。")
-        lines.append("")
-    if any(name.startswith("depth_shot_") for name in
-           os.listdir(report.out_dir) if os.path.isdir(
-               os.path.join(report.out_dir, name))):
-        lines.append("## 深度序列")
-        lines.append("")
-        lines.append(depth_range_note())
-        lines.append("")
-    if report.warnings:
-        lines.append("## 告警")
-        lines.append("")
-        lines.extend(f"- {w}" for w in report.warnings)
-        lines.append("")
-    return "\n".join(lines)
+    return render_readme(manifest, out_dir=Path(report.out_dir),
+                         warnings=report.warnings)
 
 
 def _cast_id_errors(plan: Plan,
@@ -168,7 +130,8 @@ def export_project(plan: Plan, *,
                    audit_pass_rate: Optional[Dict[str, Any]] = None,
                    knowledge_provenance: Optional[Dict[str, Any]] = None,
                    knowledge: Optional[Dict[str, Any]] = None,
-                   roster: Optional[Sequence[str]] = None
+                   roster: Optional[Sequence[str]] = None,
+                   review_requests: Optional[Sequence[Dict[str, Any]]] = None,
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -294,7 +257,8 @@ def export_project(plan: Plan, *,
                               action_conflicts=action_conflicts,
                               audit_pass_rate=audit_pass_rate,
                               knowledge_provenance=knowledge_provenance,
-                              knowledge=knowledge)
+                              knowledge=knowledge,
+                              review_requests=review_requests)
     manifest_path = export_dir / "shots.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
                              encoding="utf-8")

@@ -218,7 +218,8 @@ def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
                             knowledge_provenance=driver.knowledge_provenance(),
                             crowd=crowd,
                             project=driver.plan.scene_heading or "BlockDirector",
-                            roster=driver._cast_roster())
+                            roster=driver._cast_roster(),
+                            review_requests=driver.review_requests)
     payload = report.to_dict()
     driver.audit.log("export_finished",
                      f"交付包导出结束：{'ok' if report.ok else '失败'}",

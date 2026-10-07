@@ -203,6 +203,7 @@ def main() -> int:
                                 #: 交付清单自带索引代际（§4.1b 的 Q5 只在真实运行上判，
                                 #: 而"这份运行是哪一代索引"必须能从证据文件本身读出来）。
                                 knowledge=summary.get("knowledge"),
+                                review_requests=summary.get("self_review_requests"),
                                 project=plan_obj.scene_heading or "BlockDirector")
         payload = report.to_dict()
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(

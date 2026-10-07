@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="10" time="0.274" timestamp="2026-10-08T05:16:33.432839+08:00" hostname="DESKTOP-1NEQU8H"><testcase classname="tests.test_needs_review" name="test_manifest_flags_reviewed_shots" time="0.001" /><testcase classname="tests.test_needs_review" name="test_manifest_defaults_to_no_review" time="0.001" /><testcase classname="tests.test_needs_review" name="test_review_requests_without_shot_id_are_ignored" time="0.000" /><testcase classname="tests.test_needs_review" name="test_manifest_keeps_registration_counts_without_inflating_shot_count" time="0.000"><failure message="KeyError: 'review_request_count'">def test_manifest_keeps_registration_counts_without_inflating_shot_count():
+        manifest = build_manifest(
+            _minimal_plan(), review_requests=[
+                {"shot_id": "shot_001", "intent": "看构图"},
+                {"shot_id": "shot_001", "intent": "再看构图"},
+                {"shot_id": "shot_002", "intent": "看连续性"},
+            ])
+&gt;       counts = {shot["shot_id"]: shot["review_request_count"]
+                  for shot in manifest["shots"]}
+
+tests\test_needs_review.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+.0 = &lt;list_iterator object at 0x000001E96EB54460&gt;
+
+&gt;   counts = {shot["shot_id"]: shot["review_request_count"]
+              for shot in manifest["shots"]}
+E   KeyError: 'review_request_count'
+
+tests\test_needs_review.py:46: KeyError</failure></testcase><testcase classname="tests.test_needs_review" name="test_manifest_default_registration_counts_are_zero" time="0.001"><failure message="KeyError: 'review_request_count'">def test_manifest_default_registration_counts_are_zero():
+        manifest = build_manifest(_minimal_plan())
+&gt;       assert [shot["review_request_count"] for shot in manifest["shots"]] == [0, 0]
+
+tests\test_needs_review.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+.0 = &lt;list_iterator object at 0x000001E96E8B48E0&gt;
+
+&gt;   assert [shot["review_request_count"] for shot in manifest["shots"]] == [0, 0]
+E   KeyError: 'review_request_count'
+
+tests\test_needs_review.py:54: KeyError</failure></testcase><testcase classname="tests.test_needs_review" name="test_public_readme_renders_counts_from_the_manifest" time="0.004"><failure message="ModuleNotFoundError: No module named 'block_director.delivery.readme'">tmp_path = WindowsPath('C:/Users/小皮/AppData/Local/Temp/pytest-of-小皮/pytest-386/test_public_readme_renders_cou0')
+
+    def test_public_readme_renders_counts_from_the_manifest(tmp_path):
+&gt;       from block_director.delivery.readme import render_readme
+E       ModuleNotFoundError: No module named 'block_director.delivery.readme'
+
+tests\test_needs_review.py:58: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_needs_review" name="test_runtime_snapshot_keeps_review_records_for_unattended_export" time="0.072"><failure message="AssertionError: assert &lt;DriverState.ERROR: 'ERROR'&gt; is &lt;DriverState.DONE: 'DONE'&gt;&#10; +  where &lt;DriverState.ERROR: 'ERROR'&gt; = run_to_completion()&#10; +    where run_to_completion = &lt;block_director.layer5_orchestrator.driver.PrevisDriver object at 0x000001E96E7D5F90&gt;.run_to_completion&#10; +  and   &lt;DriverState.DONE: 'DONE'&gt; = &lt;enum 'DriverState'&gt;.DONE">def test_runtime_snapshot_keeps_review_records_for_unattended_export():
+        import json
+    
+        from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall
+        from block_director.layer5_orchestrator.driver import PrevisDriver
+        from block_director.layer5_orchestrator.states import DriverState
+        from block_director.layer6_audit.audit_logger import AuditLogger
+        from stage_helpers import is_understand, understand_reply
+        from test_driver import InlineThread
+    
+        class ReviewThenPlanTransport:
+            def chat(self, payload, timeout):
+                if is_understand(payload):
+                    return understand_reply(payload.request_id)
+                # The real dispatch path processes every tool call, in order.
+                calls = [
+                    ToolCall(id=f"review-{i}", function=FunctionCall(
+                        name="request_self_review",
+                        arguments=json.dumps({"shot_id": "shot_001"})))
+                    for i in range(2)
+                ]
+                calls.append(ToolCall(id="plan", function=FunctionCall(
+                    name="emit_plan",
+                    arguments=json.dumps(_minimal_plan().to_dict()))))
+                return ChatReply(tool_calls=calls)
+    
+        driver = PrevisDriver(transport=ReviewThenPlanTransport(), audit=AuditLogger(),
+                              thread_factory=InlineThread)
+&gt;       assert driver.run_to_completion() is DriverState.DONE
+E       AssertionError: assert &lt;DriverState.ERROR: 'ERROR'&gt; is &lt;DriverState.DONE: 'DONE'&gt;
+E        +  where &lt;DriverState.ERROR: 'ERROR'&gt; = run_to_completion()
+E        +    where run_to_completion = &lt;block_director.layer5_orchestrator.driver.PrevisDriver object at 0x000001E96E7D5F90&gt;.run_to_completion
+E        +  and   &lt;DriverState.DONE: 'DONE'&gt; = &lt;enum 'DriverState'&gt;.DONE
+
+tests\test_needs_review.py:98: AssertionError</failure></testcase><testcase classname="tests.test_needs_review" name="test_live_run_export_entrypoints_forward_review_records" time="0.002"><failure message="AssertionError: WindowsPath('E:/白模预演codex/tools/run_headless.py')&#10;assert 'review_requests' in {'action_conflicts', 'audit_pass_rate', 'build_summary', 'compliance', 'config', 'crowd', ...}">def test_live_run_export_entrypoints_forward_review_records():
+        import ast
+        from pathlib import Path
+    
+        root = Path(__file__).resolve().parents[1]
+        paths = [
+            root / "tools/run_headless.py",
+            root / "tools/run_export.py",
+            root / "block_director/layer5_orchestrator/modal_operator.py",
+            root / "block_director/layer7_ui/panel_main.py",
+        ]
+        seen = []
+        for path in paths:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call) and getattr(node.func, "id", "") == "export_project":
+                    seen.append(path.name)
+&gt;                   assert "review_requests" in {kw.arg for kw in node.keywords}, path
+E                   AssertionError: WindowsPath('E:/白模预演codex/tools/run_headless.py')
+E                   assert 'review_requests' in {'action_conflicts', 'audit_pass_rate', 'build_summary', 'compliance', 'config', 'crowd', ...}
+
+tests\test_needs_review.py:131: AssertionError</failure></testcase><testcase classname="tests.test_needs_review" name="test_readme_has_review_section" time="0.002"><failure message="ModuleNotFoundError: No module named 'bpy'">def test_readme_has_review_section():
+&gt;       from block_director.layer8_delivery.export_director import _readme
+
+tests\test_needs_review.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+block_director\layer8_delivery\__init__.py:5: in &lt;module&gt;
+    from .export_director import DeliveryReport, export_project
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """交付编排（执行文档 v1.2 §15）。
+    
+    一条命令从场景产出：分镜 mp4 + 首帧 PNG + shots.json + prompts.md
+    （可选相机轨迹）+ README。**导出前先做画面审计**——辅助物一旦会入画就
+    直接中止，而不是产出一段带文字标签的"脏"参考视频。
+    """
+    
+    from __future__ import annotations
+    
+    import json
+    import os
+    import time
+    from dataclasses import dataclass, field
+    from pathlib import Path
+    from typing import Any, Dict, List, Optional, Sequence, Tuple
+    
+&gt;   import bpy
+E   ModuleNotFoundError: No module named 'bpy'
+
+block_director\layer8_delivery\export_director.py:17: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_needs_review" name="test_readme_omits_review_section_when_none" time="0.002"><failure message="ModuleNotFoundError: No module named 'bpy'">def test_readme_omits_review_section_when_none():
+&gt;       from block_director.layer8_delivery.export_director import _readme
+
+tests\test_needs_review.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+block_director\layer8_delivery\__init__.py:5: in &lt;module&gt;
+    from .export_director import DeliveryReport, export_project
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """交付编排（执行文档 v1.2 §15）。
+    
+    一条命令从场景产出：分镜 mp4 + 首帧 PNG + shots.json + prompts.md
+    （可选相机轨迹）+ README。**导出前先做画面审计**——辅助物一旦会入画就
+    直接中止，而不是产出一段带文字标签的"脏"参考视频。
+    """
+    
+    from __future__ import annotations
+    
+    import json
+    import os
+    import time
+    from dataclasses import dataclass, field
+    from pathlib import Path
+    from typing import Any, Dict, List, Optional, Sequence, Tuple
+    
+&gt;   import bpy
+E   ModuleNotFoundError: No module named 'bpy'
+
+block_director\layer8_delivery\export_director.py:17: ModuleNotFoundError</failure></testcase></testsuite></testsuites>

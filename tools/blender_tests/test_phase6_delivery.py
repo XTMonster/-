@@ -405,6 +405,72 @@ def t_prompt_sheet_covers_every_shot():
             "has_style": "写实电影质感" in sheet}
 
 
+def t_review_requests_survive_real_driver_build_and_export():
+    """A5: actual control dispatch -> JSON runner boundary -> actual rendered package."""
+    from block_director.contracts.config import AppConfig
+    from block_director.contracts.enums import Purpose
+    from block_director.contracts.messages import FunctionCall, ToolCall
+    from block_director.layer3_engine.shot_builder import BpySceneBuilder
+    from block_director.layer5_orchestrator.driver import PrevisDriver
+    from block_director.layer5_orchestrator.offline import OfflineTransport
+    from block_director.layer5_orchestrator.states import DriverState
+    from block_director.layer6_audit.audit_logger import AuditLogger
+
+    class InlineThread:
+        def __init__(self, target, name=""):
+            self.target = target
+
+        def start(self):
+            self.target()
+
+    class ReviewTransport(OfflineTransport):
+        def chat(self, payload, timeout=120.0):
+            reply = super().chat(payload, timeout=timeout)
+            if payload.purpose is Purpose.PLAN:
+                requests = [
+                    ToolCall(id=f"review_{i}", function=FunctionCall(
+                        name="request_self_review",
+                        arguments=json.dumps({"shot_id": "shot_001",
+                                              "shot_intent": "检查构图"})))
+                    for i in range(2)
+                ]
+                reply.tool_calls = requests + list(reply.tool_calls)
+            return reply
+
+    fresh_scene()
+    with tempfile.TemporaryDirectory(prefix="bd_a5_review_") as tmp:
+        audit = AuditLogger(directory=Path(tmp) / "runs")
+        driver = PrevisDriver(
+            transport=ReviewTransport(), audit=audit, config=AppConfig(),
+            builder=BpySceneBuilder(clear_scene=True), thread_factory=InlineThread)
+        assert driver.run_to_completion() is DriverState.DONE, driver.error
+        summary = json.loads(json.dumps(driver.snapshot()))
+        report = export_project(
+            driver.plan, build_summary=driver.build_summary,
+            out_dir=Path(tmp), config=fresh_config(),
+            review_requests=summary["self_review_requests"])
+        manifest = json.loads((Path(report.out_dir) / "shots.json").read_text(
+            encoding="utf-8"))
+        readme = (Path(report.out_dir) / "README.md").read_text(encoding="utf-8")
+        events = [json.loads(line) for line in audit.audit_path.read_text(
+            encoding="utf-8").splitlines() if line.strip()]
+        requested = [event for event in events
+                     if event.get("kind") == "self_review_requested"]
+        rows = {shot["shot_id"]: shot for shot in manifest["shots"]}
+        assert report.ok, report.to_dict()
+        assert len(requested) == 2, requested
+        assert rows["shot_001"]["needs_review"] is True
+        assert rows["shot_001"]["review_request_count"] == 2
+        assert rows["shot_002"]["needs_review"] is False
+        assert rows["shot_002"]["review_request_count"] == 0
+        assert "shot_001：登记 2 次" in readme
+        assert "shot_002：登记" not in readme
+        return {"ok": True, "registered": 2,
+                "rendered_shots": len(report.shots),
+                "review_counts": {key: row["review_request_count"]
+                                  for key, row in rows.items()}}
+
+
 def main() -> int:
     capture_main_thread()
     check("export_produces_all_deliverables", t_export_produces_all_deliverables)
@@ -420,6 +486,8 @@ def main() -> int:
     check("export_aborts_on_leak", t_export_aborts_on_leak)
     check("camera_trajectory_is_per_frame", t_camera_trajectory_is_per_frame)
     check("prompt_sheet_covers_every_shot", t_prompt_sheet_covers_every_shot)
+    check("review_requests_survive_real_driver_build_and_export",
+          t_review_requests_survive_real_driver_build_and_export)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
