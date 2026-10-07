@@ -1,0 +1,143 @@
+  PASS  hooks.json declares SessionStart
+  PASS  hooks.json declares UserPromptSubmit
+  PASS  hooks.json declares SubagentStart
+  PASS  hooks.json declares PreToolUse
+Inject hook (SessionStart / UserPromptSubmit / SubagentStart)
+  PASS  session-start exit 0
+  PASS  session-start stdout is valid utf-8
+  PASS  session-start stdout is json
+  PASS  session-start event name
+  PASS  session-start injects contract
+  PASS  session-start injects checklist
+  PASS  session-start injects model routing
+  PASS  prompt-submit exit 0
+  PASS  prompt-submit stdout is json
+  PASS  prompt-submit event name
+  PASS  prompt-submit injects contract
+  PASS  prompt-submit omits checklist
+  PASS  prompt-submit injects model routing
+  PASS  prompt-submit does not trigger the panel on a plain prompt
+Auto joint-consultation trigger (UserPromptSubmit)
+  PASS  trigger: hard prompt exit 0
+  PASS  trigger: hard prompt stdout is json
+  PASS  trigger: hard prompt pulls the panel
+  PASS  trigger: hard prompt picks the hard bucket
+  PASS  trigger: hard prompt offers the file from the prompt
+  PASS  trigger: hard prompt keeps the routing contract
+  PASS  trigger: review bucket
+  PASS  trigger: idea bucket
+GitHub reuse check trigger (UserPromptSubmit)
+  PASS  reuse: design prompt exit 0
+  PASS  reuse: design prompt stdout is json
+  PASS  reuse: design prompt pulls the GitHub checklist
+  PASS  reuse: design prompt also pulls the panel
+  PASS  reuse: checklist keeps the licence gate
+  PASS  reuse: checklist offers the remix option
+  PASS  reuse: checklist states the derivative-licence rule
+  PASS  reuse: judge remixes against this project reality
+  PASS  reuse: the remix verdict is a column of the candidate table
+  PASS  reuse: surveying and remix-judging are one act
+  PASS  reuse: remix is requirement-driven
+  PASS  reuse: the four buckets say which side gets modified
+  PASS  reuse: the ambiguous bucket label is gone
+  PASS  reuse: remix prompt stdout is json
+  PASS  reuse: remix prompt pulls the checklist
+  PASS  reuse: plain prompt stdout is json
+  PASS  reuse: plain prompt stays free of the checklist
+Semantic classifier (stubbed - the selftest never calls the network)
+  PASS  semantic: keyword-less prompt stdout is json
+  PASS  semantic: verdict alone pulls the GitHub checklist
+  PASS  semantic: verdict alone pulls the panel
+  PASS  semantic: the block shows where the verdict came from
+  PASS  semantic: an empty verdict keeps the keyword hit
+  PASS  semantic: the empty verdict is visible in the note
+  PASS  semantic: classifier failure still exits 0
+  PASS  semantic: failure falls back to the keyword path
+  PASS  semantic: the failure is disclosed in the note
+Execution-plan contract (PRD + TDD + design doc)
+  PASS  plan: request stdout is json
+  PASS  plan: request pulls the plan contract
+  PASS  plan: a plan is also a design act (reuse check fires)
+  PASS  plan: a plan also pulls the panel
+  PASS  plan: contract demands the user requirement
+  PASS  plan: contract demands the execution order
+  PASS  plan: contract demands PRD
+  PASS  plan: contract demands TDD
+  PASS  plan: contract demands ambiguity control
+  PASS  plan: contract demands sources
+  PASS  plan: contract routes drafting through GLM-5.3
+  PASS  plan: contract demands five self-refinement rounds
+  PASS  plan: a plain prompt stays free of the plan contract
+  PASS  subagent-start exit 0
+  PASS  subagent-start stdout is json
+  PASS  subagent-start event name
+  PASS  subagent-start injects role protocol
+  PASS  subagent-start injects model routing
+  PASS  inject hook ignores empty stdin
+Guard hook (PreToolUse)
+  PASS  allows plain pytest run
+  PASS  allows pytest with -k selector
+  PASS  allows git status
+  PASS  allows git commit
+  PASS  allows reading test files
+  PASS  allows patch of source file
+  PASS  allows empty tool_input
+  PASS  blocks Remove-Item tests
+  PASS  blocks Remove-Item tests denies PreToolUse
+  PASS  blocks Remove-Item tests is silent on stderr
+  PASS  blocks rm of test file
+  PASS  blocks rm of test file denies PreToolUse
+  PASS  blocks rm of test file is silent on stderr
+  PASS  blocks git rm of tests
+  PASS  blocks git rm of tests denies PreToolUse
+  PASS  blocks git rm of tests is silent on stderr
+  PASS  blocks pytest --deselect
+  PASS  blocks pytest --deselect denies PreToolUse
+  PASS  blocks pytest --deselect is silent on stderr
+  PASS  blocks pytest -k not
+  PASS  blocks pytest -k not denies PreToolUse
+  PASS  blocks pytest -k not is silent on stderr
+  PASS  blocks pytest --ignore
+  PASS  blocks pytest --ignore denies PreToolUse
+  PASS  blocks pytest --ignore is silent on stderr
+  PASS  blocks git reset --hard
+  PASS  blocks git reset --hard denies PreToolUse
+  PASS  blocks git reset --hard is silent on stderr
+  PASS  blocks git checkout --
+  PASS  blocks git checkout -- denies PreToolUse
+  PASS  blocks git checkout -- is silent on stderr
+  PASS  blocks git clean -fd
+  PASS  blocks git clean -fd denies PreToolUse
+  PASS  blocks git clean -fd is silent on stderr
+  PASS  blocks git stash drop
+  PASS  blocks git stash drop denies PreToolUse
+  PASS  blocks git stash drop is silent on stderr
+  PASS  blocks git push --force
+  PASS  blocks git push --force denies PreToolUse
+  PASS  blocks git push --force is silent on stderr
+  PASS  blocks git branch -D
+  PASS  blocks git branch -D denies PreToolUse
+  PASS  blocks git branch -D is silent on stderr
+  PASS  blocks git commit --no-verify
+  PASS  blocks git commit --no-verify denies PreToolUse
+  PASS  blocks git commit --no-verify is silent on stderr
+  PASS  blocks patch deleting a test
+  PASS  blocks patch deleting a test denies PreToolUse
+  PASS  blocks patch deleting a test is silent on stderr
+  PASS  guard ignores empty stdin
+Guard hook: sub-agents may not dispatch agents
+  PASS  sub-agent may not call spawn_agent
+  PASS  sub-agent may not call followup_task
+  PASS  sub-agent may not call collaboration.spawn_agent
+  PASS  sub-agent may not call collaborationspawn_agent (real name)
+  PASS  sub-agent may not call collaborationfollowup_task (real name)
+  PASS  sub-agent may call collaborationinterrupt_agent
+  PASS  sub-agent may call collaborationlist_agents
+  PASS  sub-agent may not call spawn_agent (agent_type only)
+  PASS  sub-agent may still run Bash
+  PASS  sub-agent may still apply_patch
+  PASS  root thread may call spawn_agent
+  PASS  root thread may call followup_task
+
+checks: 133  failures: 0
+HOOK SELFTEST PASS

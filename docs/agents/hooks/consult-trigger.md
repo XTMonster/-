@@ -6,25 +6,39 @@
 本次请求被判定为：**{{KIND}}**（触发词：`{{HITS}}`）。按《模型分工契约》，
 这一类**不许直接开干**——先拿两侧判词，再执行。
 
-**要跑的命令**（`--source` 换成你真正要审的文件与行段；bundle 压到 ~2k token）：
+**主线侧使用当前会话选择的模型**（不固定型号）；先按本角色和同一份包留下主线判词。
+**独立 GLM 侧命令**（`--source` 换成真正要审的文件与行段；bundle 约 2k token）：
 
 ```powershell
-python tools/panel_consult.py --roles {{ROLES}} `
+python tools/glm_consult.py --roles {{ROLES}} `
     --question work/_q.md `
 {{SOURCES}}    --context <产物，可多份> `
-    --out work/_panel_{{SLUG}}/ --level low --max-tokens 32768
+    --out work/_panel_{{SLUG}}/ --max-tokens 32768 --level low
 ```
+
+> **第二侧默认是 GLM-5.3**（用户 2026-10-06 改判："不用 gpt6A 了，改用 glm5.3 吧，
+> 不然太耗时间了"；**2026-10-08 用户再次纠正："哪来的 gpt6，我不是已经说不用了么"**）。
+> 命令按上面那条写，守 GLM 的 ~2k token 包线。
+> **中转站 GPT-6A 是显式可选项**：只有用户当场点名要它时才写 `--partner relay`
+> （无档位、思考拉满，实测一次裁定 2900 s、大包 50 分钟零输出）。
+> 谁把它当默认，谁就是**违背用户裁决**——这一轮就是这么错的，别再犯。
+
+只有当前会话本来就选择了 DeepSeek，才可用 `python tools/panel_consult.py`
+配合 `--main-answer` 跑旧的双侧包装器；其他当前模型不能被记成该工具的
+`deepseek` 侧，也不能为运行包装器另起 DeepSeek。客户端当前模型的选择不受
+独立会诊通道限制。用户当轮要求仅用当前模型时，遵循该要求，明确记录同模型审查。
 
 **纪律（缺一条就算没会诊）**：
 
 1. `--source` **逐字带行号**（`文件:起-止`）；不给源码，工具会拒调用。
 2. **两侧同一份包、同一个角色提示**；结果落
-   `both` / `severity_conflict` / `glm_only` / `deepseek_only` **四栏**。
+   `both` / `severity_conflict` / `glm_only` / `main_only` **四栏**。
    **一侧缺席（空正文/超时/`unparsed`）永远不算同意**——`panel.md` 会记 `complete=false`。
 3. **GLM 的判词不是验收**：不改判据 / 门限 / 阈值，也不用"再跑一次"充当新证据。
 4. 判词里每条断言都要在仓库里**证实或证伪**（`文件:行号` / 命令 / 真实输出）；
    落地、跑测试、提交仍**只在主线上做**。
-5. 跑完把 `<role>.{glm,deepseek}.json`、`panel.md` 与各自的 `usage` 一并留证。
+5. 跑完把 `<role>.{glm,main}.json`、`panel.md` 与各自真实型号及可用 `usage` 留证；
+   历史 `deepseek_only` 字段仅保留在原通道的旧证据里。
 6. 若 `glm` 侧 `finish_reason=length` 且正文为空：**先把 bundle 拆小再重问**，
    别把它读成"GLM 同意"。
 

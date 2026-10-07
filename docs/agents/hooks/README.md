@@ -4,11 +4,18 @@
 但它的行为直接决定这个项目怎么被推进，所以在这里留一份可审、可复原的副本。
 `README-upstream.md` 是这套 hook 原本的说明；本文件说明**本轮新增的自动触发**。
 
+2026-10-08：执行角色改为**当前会话选择的模型（不固定）**，普通子代理省略
+`model` 以继承当前选择。语义分类同样使用事件 `model` 与对应 provider；
+`selected-model.ps1` 负责精确选表、协议和凭据，禁止拿第一个 token 配另一个地址；
+事件没有给出有效 provider 时明确记不可用，不用全局默认猜测 CLI/profile 的覆盖结果。
+`model-routing-history.md` 保留旧通道记录，但不自动注入。当前职责以
+`model-routing.md` 为准；GLM 独立评审与产品内部模型规则不因执行模型改变而改写。
+
 ## 装到哪儿
 
 ```powershell
-Copy-Item docs/agents/hooks/*.ps1  $env:USERPROFILE\.codex\hooks\ -Force
-Copy-Item docs/agents/hooks/*.md   $env:USERPROFILE\.codex\hooks\ -Force
+# Review the diff against the installed hooks first. Do not overwrite all files.
+# Sync only the files belonging to the reviewed change.
 powershell -NoProfile -ExecutionPolicy Bypass -File $env:USERPROFILE\.codex\hooks\selftest.ps1
 ```
 
@@ -38,9 +45,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File $env:USERPROFILE\.codex\hook
 三条纪律写在注入文本里，且**不是建议**：
 
 1. 两侧同一份包、同一个角色提示；结果落 `both` / `severity_conflict` /
-   `glm_only` / `deepseek_only` 四栏；
+   `glm_only` / `main_only` 四栏，并记录两侧真实型号；
 2. **一侧缺席（空正文 / 超时 / `unparsed`）永远不算同意**；
-3. 判词不改判据/门限/阈值，落地与提交仍在主线（DeepSeek）做。
+3. 判词不改判据/门限/阈值，落地与提交由当前模型主线完成。
 
 ## 设计上踩过的两个坑（写在这里，免得下次再踩）
 

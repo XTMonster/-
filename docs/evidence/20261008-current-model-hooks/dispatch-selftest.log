@@ -1,0 +1,28 @@
+dispatch-board selftest
+  ok   hook script is ASCII-only (PS 5.1 safe)
+  ok   dry-run exits 0
+  ok   board header present
+  ok   progress line present
+  ok   cap respected (max 2 offered from phase 0)
+  ok   write-set clash C-1 not offered
+  ok   dependency-gated B-1 not offered
+  ok   serial S-1 blocked with mode:serial
+  ok   user U-1 blocked with mode:user
+  ok   gate G-1 blocked with mode:gate
+  ok   claim exits 0
+  ok   claimed card shows as in-flight
+  ok   marking A-1 clears the depends gate on B-1
+  ok   unclaim exits 0
+  ok   conflict reason surfaces when cap is lifted
+  ok   dependency reason surfaces when cap is lifted
+  ok   analysis lists a coupling figure per card
+  ok   analysis lists dependency depth
+  ok   analysis marks the frozen-instrument column
+  ok   analysis gives a HOLD verdict for the clashing card
+  ok   batch decision names how many agents to dispatch
+  ok   batch decision explains the guardrail
+  ok   machine-readable snapshot is written
+  ok   snapshot records the dispatch set
+  ok   snapshot records the clash reason
+
+passed 25 / failed 0
