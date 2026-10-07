@@ -38,16 +38,16 @@ import hashlib
 import json
 import pathlib
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 try:
-    from . import common, llm, vocabulary
+    from . import common, llm, rebind, vocabulary
     from . import atom_cache
 except ImportError:  # pragma: no cover
     import sys
 
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
-    from tools.kb_fetch import common, llm, vocabulary  # type: ignore
+    from tools.kb_fetch import common, llm, rebind, vocabulary  # type: ignore
     from tools.kb_fetch import atom_cache  # type: ignore
 
 from block_director.knowledge import grounding
@@ -249,7 +249,13 @@ DECODE = "temperature=0;seed=0;ctx=8192"
 #: 别名就让索引从 540 变 539 条边，前七个分量**一个都不动**。
 CACHE_KEY_FIELDS = ("corpus_sha256", "model", "prompt_version",
                     "chunker_version", "decode", "schema_version",
-                    "validation_rules_version", "vocabulary_fingerprint")
+                    "validation_rules_version", "vocabulary_fingerprint",
+                    #: **第九格（2026-10-07 加）**：机械重绑（`rebind/v1` → `v2`）的版本。
+                    #: 重绑**改的是边的内容**（`sources[]`），但**不改任何输入**——
+                    #: 没有这一格，"重绑前"与"重绑后"两份不同的索引会共用同一枚指纹
+                    #: （正是本模块 docstring 里点名要防的那个洞）。加它之后，
+                    #: 22 份已入库运行的 `pins.index` 会**如实**变成"异代"。
+                    "rebind_version")
 
 
 def corpus_digest(cards: Sequence[Dict]) -> str:
@@ -293,6 +299,12 @@ def fingerprint_components(cards: Sequence[Dict], client, *,
         "validation_rules_version": str(validation_rules_version),
         "vocabulary_fingerprint": str(vocabulary_fingerprint
                                       or vocabulary.lexicon_fingerprint()),
+        #: 第九格：**卡↔槽位绑定的全部规则**版本（`rebind/v1` → `rebind/v2` →
+        #: `rebind/v2+prune/v1`）。语义见 `CACHE_KEY_FIELDS` 与 `binding_rules_version()`。
+        #: `applied` 由**裁决记录自己**说了算（`apply: true` 才生效）——没生效的规则
+        #: 不许改指纹，否则已入库运行会因为一条没执行的决定白白失配。
+        "rebind_version": str(rebind.binding_rules_version(
+            bool(rebind.load_prune_verdicts()))),
     }
 
 
@@ -344,6 +356,10 @@ def rekey_manifest(path: pathlib.Path | None = None,
         #: 因为它的用途正是"别名表被改过就露馅"——读旧值等于把洞留在原地。
         #: 代价是 `rekey_manifest()` 不再纯粹是"记录值的纯函数"，这一条写在这里。
         "vocabulary_fingerprint": vocabulary.lexicon_fingerprint(),
+        #: 第九格：卡↔槽位绑定的规则版本。与第八格同一纪律——**从代码现算**，
+        #: 所以改了重绑/剪枝规则（`rebind.binding_rules_version()`）指纹当场就变。
+        "rebind_version": str(rebind.binding_rules_version(
+            bool(rebind.load_prune_verdicts()))),
     }
     rekeyed = {"fingerprint": fingerprint_of(components), "cache_key": components}
     rekeyed.update({key: value for key, value in manifest.items()
@@ -1598,6 +1614,73 @@ def _write_cache_stats(cache, units: Sequence[Dict]) -> Dict:
     return stats
 
 
+def _apply_rebind(edges: Sequence[hg.HyperEdge], cards: Sequence[Dict],
+                  node_index: Dict[str, Any]):
+    """机械重绑的接线层：dict 形状交给 `rebind.rebind_edges`，再变回 `HyperEdge`。
+
+    为什么参数化 `labels`/`surfaces`：`rebind.py` 不依赖 `attestation`（避免与判据成环），
+    判据与 surface 一律由这里注入——**判据只有一个**（`attestation.label_for`）。
+
+    **候选池（`rebind/v2`）**：池＝**输入边里已经出现过**的卡 id（`edge_backed_cards`），
+    也就是"重绑前就已经有边"的那批卡。为什么必须收窄：`v1` 让 11 张零边卡变成了
+    "有边"（门⑥ 的 `edge_backed_without_entry` 由 0 变 11，`overall: fail`），而
+    `card_scope_audit` 的模块文档早写明"**补边是有害的**"。收窄之后重绑**保范围**：
+    只改"谁为已有成员担保"，不改"哪些卡有边"。守这条不变量的是下面的断言——
+    它把"规则悄悄扩大了可断言面"变成一次**当场失败**，而不是一条后来才发现的欠账。
+    """
+    from tools.knowledge import attestation as att
+    from tools.kb_fetch import rebind as _rebind
+
+    #: 重绑前的可断言面：候选池（也是不变量对拍的左值）。
+    pool = _rebind.edge_backed_cards([edge.to_dict() for edge in edges])
+    card_map = {str(card.get("id")): card for card in cards}
+    #: 手写卡也在语料里（它们本来就该为取值担保）。
+    try:
+        from block_director.knowledge.corpus import HANDWRITTEN_CARDS
+
+        for card in HANDWRITTEN_CARDS:
+            payload = card if isinstance(card, dict) else card.__dict__
+            cid = str(payload.get("id") or "")
+            if cid and cid not in card_map:
+                card_map[cid] = payload
+    except Exception:  # noqa: BLE001 - 手写卡不可用时不放大改动面
+        pass
+    blobs = {cid: att.card_blob(card) for cid, card in card_map.items()}
+
+    def labels(edge, member):
+        own = "".join(" " + blobs[str(s)] for s in (edge.get("sources") or [])
+                      if str(s) in blobs)
+        return att.label_for(node_index.get(str(member[2])), own)
+
+    def surfaces(node_id):
+        node = node_index.get(str(node_id))
+        return node_surfaces(node) if node is not None else []
+
+    rebound, stats = _rebind.rebind_edges(
+        [edge.to_dict() for edge in edges], blobs, labels, surfaces,
+        candidate_pool=pool)
+    #: **保范围不变量**：重绑不得让任何一张卡**新获得**边（那正是门⑥ 的
+    #: `edge_backed_without_entry` 的来源）。`rebind/v2` 的候选池在构造上保证了
+    #: 这一条；这里再机械地对拍一次，规则被改坏时当场炸，不留给验收链去发现。
+    after = _rebind.edge_backed_cards(rebound)
+    if after - pool:
+        raise AssertionError(
+            "重绑把 %d 张本来零边的卡变成了有边：%s（门⑥ 会因此判红）"
+            % (len(after - pool), sorted(after - pool)[:8]))
+    #: **裁决剪枝**（`prune/v1`）：零候选槽位由判官（qwen3.8-max-0902 @ 阿里云百炼）逐条
+    #: 裁过，判成 `wrong_card`/`wrong_value` 的成员在这里被摘掉。判决是**入库的记录**
+    #: （`rebind.PRUNE_VERDICT_PATH`），不是这里的临时判断——所以索引可复算、可对拍。
+    verdicts = _rebind.load_prune_verdicts()
+    rebound, prune_report = _rebind.prune_members(rebound, verdicts)
+    after_prune = _rebind.edge_backed_cards(rebound)
+    if after_prune - after:
+        raise AssertionError("剪枝不该让任何卡**新获得**边（只摘不挂）")
+    stats["edge_backed_before"] = len(pool)
+    stats["edge_backed_after"] = len(after)
+    stats["prune"] = prune_report
+    return [hg.HyperEdge.from_dict(item) for item in rebound], stats
+
+
 def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
                  rejects: Sequence[Dict], batch_log: Sequence[Dict], *,
                  extractor: Dict[str, str], cache_key: Dict[str, str],
@@ -1607,9 +1690,19 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
     """第 1 段产物之后的公共收尾：归并 → 9 条门 → 落盘 → manifest。"""
     processed, total = chunk_counts(cards, batch_log, atoms)
     gate_rejects: List[Dict] = []
-    unique, report = hg.build_index(merged, nodes_from_vocab(),
+    node_index = nodes_from_vocab()
+    unique, report = hg.build_index(merged, node_index,
                                     processed_chunks=processed, total_chunks=total,
                                     reject_sink=gate_rejects)
+    #: **机械重绑（rebind/v2，user 2026-10-07 批准代号「换卡」）**：把"未被来源佐证"的
+    #: 成员补上**正文真的写了**该取值的候选卡（union-add，不删原来源）。理由与实测见
+    #: `tools/kb_fetch/rebind.py`：1,262 个未佐证槽位里 84.2% 是**绑错卡**而不是卡里没知识；
+    #: 同一抽取器重抽是"重新掷骰子"（qwen3.8-max-0902 三角色会诊一致结论）。
+    #: 效果以 **C1 同口径复判**为准（实测 corrupt 67/90 → 37/90），不以 attestation 为准。
+    #: `v2` 把候选池收窄到"重绑前就已经有边"的卡（保范围），并把这次改动的账写进
+    #: `merge.rebind`——否则 manifest 会声称索引是纯抽取的产物，而它其实被后处理过
+    #: （§4.1b 硬规则 2 禁止自报一个对不上的汇总）。
+    unique, rebind_report = _apply_rebind(unique, cards, node_index)
     merge_rejects = [{"phase": "merge", "reason": item["reason"],
                       "edge_ids": item["edge_ids"]}
                      for item in merge_report["dropped_groups"]]
@@ -1617,6 +1710,7 @@ def _write_index(cards: Sequence[Dict], atoms: Sequence[hg.HyperEdge],
     # 不是去重校验之前的候选（否则 manifest 与 `hypergraph.edges.jsonl` 对不上，
     # 而 §4.1b 硬规则 2 禁止自报一个对不上的汇总）。候选口径另存 `before_dedupe`。
     merge_report = dict(merge_report)
+    merge_report["rebind"] = rebind_report
     merge_report["before_dedupe"] = {
         "merged_edges": merge_report["merged_edges"],
         "forbid_members": merge_report["forbid_members"],
