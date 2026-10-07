@@ -1,0 +1,302 @@
+{
+  "ok": true,
+  "declared_shot_count": 13,
+  "plan_shot_count": 13,
+  "declared_total_seconds": 69.0,
+  "plan_total_seconds": 69.0,
+  "fps": 24,
+  "brief_source": "llm",
+  "rows": [
+    {
+      "declared_shot_number": 1,
+      "declared_seconds": 5.0,
+      "declared_frames": 120,
+      "declared_target": null,
+      "declared_shot_type": "LS",
+      "declared_characters": [],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_001",
+      "plan_frames": 120,
+      "plan_shot_type": "LS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 2,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [
+        "伊恩，这里就交给我吧！"
+      ],
+      "plan_shot_id": "shot_002",
+      "plan_frames": 96,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "伊恩，这里就交给我吧！"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 3,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [
+        "好的，那你多小心一些。"
+      ],
+      "plan_shot_id": "shot_003",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "好的，那你多小心一些。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 4,
+      "declared_seconds": 5.0,
+      "declared_frames": 120,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [
+        "放心吧。",
+        "看我怎么惩罚他，让他砰的一声，嘻嘻。"
+      ],
+      "plan_shot_id": "shot_004",
+      "plan_frames": 120,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [
+        "放心吧。",
+        "看我怎么惩罚他，让他砰的一声，嘻嘻。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 5,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_005",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 6,
+      "declared_seconds": 9.0,
+      "declared_frames": 216,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "偷盗者"
+      ],
+      "declared_dialogues": [
+        "怎么回事，不应该只是普通的银币么？哈哈，一定是命运眷顾，我发财了！"
+      ],
+      "plan_shot_id": "shot_006",
+      "plan_frames": 216,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "怎么回事，不应该只是普通的银币么？哈哈，一定是命运眷顾，我发财了！"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 7,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "CU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_007",
+      "plan_frames": 96,
+      "plan_shot_type": "CU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 8,
+      "declared_seconds": 8.0,
+      "declared_frames": 192,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [
+        "什么乱七八糟的，不应该是让钱出错然后爆炸么？怎么反而更贵了？"
+      ],
+      "plan_shot_id": "shot_008",
+      "plan_frames": 192,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "什么乱七八糟的，不应该是让钱出错然后爆炸么？怎么反而更贵了？"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 9,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_009",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 10,
+      "declared_seconds": 6.0,
+      "declared_frames": 144,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [
+        "米迦尔"
+      ],
+      "declared_dialogues": [
+        "不许笑！这是我第一次用于战斗嘛，出错很正常！"
+      ],
+      "plan_shot_id": "shot_010",
+      "plan_frames": 144,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "不许笑！这是我第一次用于战斗嘛，出错很正常！"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 11,
+      "declared_seconds": 6.0,
+      "declared_frames": 144,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "莉莉安娜"
+      ],
+      "declared_dialogues": [
+        "怎么回事？我可带了不少赤羽币，怎么没了？"
+      ],
+      "plan_shot_id": "shot_011",
+      "plan_frames": 144,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "怎么回事？我可带了不少赤羽币，怎么没了？"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 12,
+      "declared_seconds": 8.0,
+      "declared_frames": 192,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "伊恩"
+      ],
+      "declared_dialogues": [
+        "这位小姐，别担心，米迦尔已经在帮您抢回来了，甚至某种意义上已经升值了。"
+      ],
+      "plan_shot_id": "shot_012",
+      "plan_frames": 192,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [
+        "这位小姐，别担心，米迦尔已经在帮您抢回来了，甚至某种意义上已经升值了。"
+      ],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 13,
+      "declared_seconds": 3.0,
+      "declared_frames": 72,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [
+        "莉莉安娜",
+        "伊恩"
+      ],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_013",
+      "plan_frames": 72,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    }
+  ],
+  "findings": [
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R014",
+      "severity": "warning",
+      "target": "shot_008",
+      "message": "shot_008 声明了 follow_subject，但 米迦尔 在这一镜里没有走动（没有 walk_to / run_to），镜头跟不到任何动机",
+      "suggestion": "给 米迦尔 加一个走位，或把运镜换成推/摇"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R014",
+      "severity": "warning",
+      "target": "shot_012",
+      "message": "shot_012 声明了 follow_subject，但 伊恩 在这一镜里没有走动（没有 walk_to / run_to），镜头跟不到任何动机",
+      "suggestion": "给 伊恩 加一个走位，或把运镜换成推/摇"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_010",
+      "message": "镜号10 声明的出场角色是米迦尔，计划里却是char_a、char_b（身份错位）",
+      "suggestion": "镜头必须拍剧本声明的那些人"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_005",
+      "message": "镜号5 声明的拍摄距离是「近景→特写（急推从近景推至特写）。」（对应 CU），计划给的是 MS",
+      "suggestion": "景别以剧本声明为准；确有理由改变时请说明"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_008",
+      "message": "镜号8 声明的拍摄距离是「近景→中景（手持跟拍）。」（对应 MCU），计划给的是 MS",
+      "suggestion": "景别以剧本声明为准；确有理由改变时请说明"
+    },
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R015",
+      "severity": "warning",
+      "target": "shot_010",
+      "message": "镜号10 声明的拍摄距离是「近景（甩镜头后定格近景）。」（对应 MCU），计划给的是 MS",
+      "suggestion": "景别以剧本声明为准；确有理由改变时请说明"
+    }
+  ]
+}
