@@ -20,6 +20,9 @@ AI 视频生成当参考。
 | **契约（SceneContract）** | 把一镜的语义（情绪 / 意图 / 关系 / 动作 / 台词 / 特效）**收敛成可执行描述**的中间层（`layer5_orchestrator/scene_contract.py`）。它回答"谁看谁、谁在说话、哪里没落实"，是 R013/R019/F2 的共同上游。 |
 | **oracle** | **不受被测实现自身通道影响**的判定来源。渲染、网格几何、实际发出的 prompt、人工标注的 held-out、`audit_log.jsonl` 的逐次事件都算；"读被测实现自己写出的汇总字段就等于通过"**不算**。 |
 | **降级（degraded）** | 运行没能按正常路径完成，但仍有产物。**不是成功**：`snapshot()["degraded_reason"]` 里必须写明原因（例如预算触顶走 `_degrade_to_finish`）。 |
+| **执行拍点（ShotBeat）** | **一镜内的动作时刻表**（`contracts/beats.py`）：`t∈[0,1]` ＋ 动词闭集 ＋ 目标 ＋ 节奏；帧号由 `layer5_orchestrator/beat_compiler.py` 从 `t` 换算。**它与 `SceneBrief.beats`（叙事节拍）不是一回事**——后者是阶段 S 对剧本的理解（`{id, summary, participants, emotion, function}`），生产者／消费者都不同，**不得互相喂入**（类名刻意叫 `ShotBeat` 防混淆）。 |
+| **staging 锚点（SDLAnchor）** | **场级物件锚点**（门/桌/窗）：LLM 只写 `name`/`depth`/`relation`（如 `behind 甲`），坐标由 `cinema/staging.py::solve_anchor_positions` 解算后回填。它与 `cinema/anchor.py` 的**角色竖直锚点**（头球/肩高、冻结几何 1.70）**只共享中文词**，语义不同。 |
+| **规则包（rule pack）** | 三栏注入里"软引导"那栏的装配器（`knowledge/rulepack.py`）：按 `hardness` 加**强度标**（`[必须（除非声明破例）]`／`[通常]`）、按 `rag.rule_top_k` 限条数、冲突对**并陈**、末尾给**自由度声明**。**禁忌补挂**的边由它负责"渲染排最前"（**检索名次不动**）。 |
 
 ## 目录地图
 
@@ -28,12 +31,15 @@ AI 视频生成当参考。
 | `block_director/contracts/` | 契约层：配置、枚举、计划、SDL、错误码、线协议 DTO。**单一真源**，`specs/*.yaml` 与它同步。 | **否** |
 | `block_director/utils/` | 工具：AABB、几何、日志、路径、线程护栏、版本兼容封装。 | 部分（`blender_compat.py` 用 bpy，其余纯） |
 | `block_director/cinema/` | 纯取景/构图/轴线/排片/运动学：`framing.py`、`composition.py`、`anchor.py`（角色竖直锚点）、`schedule.py`、`camera_motion.py`。 | **否** |
+| ↳ v1.5 新增 | 同目录另加：`staging.py`（场级锚点求解）、`lighting.py`（灯光语义→预设矩阵）、`props.py`（道具交互事件）；`station.py` 增构图偏置纯函数。 | **否** |
 | `block_director/motion/` | 动作库与分层合成、§9.7 冲突仲裁、错开策略。 | **否** |
 | `block_director/layer1_input/` | 剧本解析：格式检测、分镜表、对白计时、共指消解。 | **否** |
 | `block_director/knowledge/` | Light RAG 卡片（BM25 兜底）与（P14 起）超图/案例层。 | **否** |
+| ↳ v1.5 新增 | 同目录另加 `rulepack.py`（规则包装配）；**检索期**新增「禁忌补挂」（在 `hypergraph.py`；仪器重签见 `tests/plan_v4_instruments.sha256.json` 的 `_reason_28`）。 | **否** |
 | `block_director/layer2_sdl/` | SDL 组装、校验、迁移。 | **否** |
 | `block_director/layer3_engine/` | 唯一"动手改场景"的层：角色工厂、取景落地、动作烘焙、标签烘焙、规则校验、事务、检查点。 | 是 |
 | `block_director/layer5_orchestrator/` | 状态机、阶段 S/A/B1/B4/B5、预算、合规、SceneContract、GUI 与 headless 两个入口。 | 部分（`modal_operator.py` 用 bpy；`driver.py` 等不得用） |
+| ↳ v1.5 新增 | 同目录另加 `beat_compiler.py`（拍点表 → 现有 `actions[]` 的确定性编译与合并）。 | **否** |
 | `block_director/layer6_audit/` | 审计日志与 LLM trace。 | **否** |
 | `block_director/layer7_ui/` | 面板与视图叠加。 | 是（`run_settings.py` 例外，它刻意保持无 bpy 以便纯层单测） |
 | `block_director/layer8_delivery/` | 导出：逐镜渲染、首帧、合片、深度、相机轨迹。 | 是 |

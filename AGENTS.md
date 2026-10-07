@@ -53,9 +53,16 @@ Phases 0-4 and 6 are done:
   `knowledge/corpus.py` — **9 domains / 2,353 cards** (`132` of them
   hand-curated; the v1.3 "five domains / 132 cards" line below in this file's
   history was pre-P14 — **P14's nine-domain expansion is DONE**). The hypergraph
-  index covers **2,221** of those cards (`K1_source_ref_complete` in
-  `docs/evidence/20261006-195300/knowledge_quality.json`); the 132 hand-curated
-  ones are **not in the index yet** (known gap, see `OPEN_PROBLEMS` (19)).
+  index (638 edges) references **2,262** distinct cards; the `2,221` figure that
+  used to be quoted here is `K1_source_ref_complete`'s **source-ref completeness
+  over the generated cards**, not an index-coverage count (measured 2026-10-07:
+  `knowledge/hypergraph.edges.jsonl` -> 2262 referenced / 2353 corpus). The 132
+  hand-curated cards ARE in the extractor's input
+  (`tools/kb_fetch/build_hypergraph.py::load_cards()`, committed) and **116 of
+  them are referenced by >=1 edge**; the residual gap is **16 hand-curated cards
+  with zero edges** (+75 generated), which is an index-generation question, not
+  a "cards missing from the pipeline" one. Full analysis + evidence:
+  `docs/evidence/20261007-v15-closeout/adjudication_p5t2_index_regen.md`.
   Also here: a built-in Okapi BM25 (same algorithm and
   parameters as `rank_bm25`, which Blender's Python does not ship) with a
   `rank_bm25` preference when present, and a retriever with bm25 / vector (RRF)
@@ -308,7 +315,31 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-05 06:3x 的账（最新，以这行为准）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
+**2026-10-07 的账（最新，以这行为准）**：执行文档 **v1.5 已落地**（27 张卡完成 25 张，
+另补计划漏掉的阶段 8 共 9 张：8 完成 / 1 阻塞）。链读数见
+`docs/evidence/20261007-204326/`：**35/35 步全部跑到**（探针 31 支全 OK、
+门①–⑩ 全 pass、`holdout_gates.overall == "pass"`、**Q1 0.9975**（线 0.70）、
+attestation 诊断 **0.8682**（换代前 0.2078）、`not passing: E1`）。
+知识索引当天走了 `rebind/v1 → rebind/v2`（登记
+`docs/knowledge/REGEN_LOG_20261007_rotation.md` §7：v1 把 11 张零边卡追进 `sources[]`
+⇒ 门⑥ 孤儿 11 ⇒ 收窄候选池修掉）；索引指纹 **`e5213e1b…`**，
+门⑥ `edge_backed 2262 / excluded 91 / 孤儿 0`。**22 份已入库运行的 pin 一律如实标异代、
+不 repin**；本代重新落了三份真跑：`docs/evidence/20261007-v15-6shot-ds/`、
+`docs/evidence/20261007-v15-long/`、`docs/evidence/20261007-v15-6shot-bailian/`
+（后者走**阿里云百炼**的 `qwen3.8-max-0902`）。本轮 `python -m pytest` = **2808 passed /
+1 skipped / 0 failed**（那 1 条 skip 仍是 `tests/test_build_ledger.py:68` 的条件守卫，
+**不是被绕过的判据**）；链上**唯一红是已结案的 `RK-13`**（E1 ≥ 0.70）——判据一个字没动。
+**已落地并留证**：① 长剧本 token 上限随场景缩放（`budget.tokens_per_call_allowance=7000`
+＋ `max_tokens_ceiling=4000000`，用户"你看着来"；64 镜真跑 2.76 M / 3.864 M 未触顶）；
+② 百炼通道根因与修法（思考模式拒收 `tool_choice=required` ⇒ sidecar 新增
+`--tool-choice-mode`，见 `docs/evidence/20261007-v15-bailian/`）。
+**等你一句话的一件事**：199 个零候选槽位的裁决已出
+（`docs/evidence/20261007-v15-zerocand-verdict/`：keep 177 / wrong_card 20 /
+wrong_value 2），但**执行它要换 oracle 一代**（22 条逐条试过都会让门⑩ 判红），
+所以记录里 `apply: false`（见 `docs/knowledge/ACCEPTANCE_STATUS.md` §五）。
+环境：C 盘可用约 **26.8 GB**（README 的 2.7 GB 已过期）。
+
+**2026-10-05 06:3x 的账（历史，只作存档）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；**Q5 pass**（**最近一次真跑 long21**：计划采纳率
 **10 对 11**，线 0.80；long19 那份已因语料漂移被判脱钩，见 §九十五/§九十六）；
 链上只剩 `not passing: E1`（**L3 定版 1,143 条案例 / 1,012 条线索**，覆盖 88.5%：

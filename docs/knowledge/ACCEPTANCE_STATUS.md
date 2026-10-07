@@ -6320,3 +6320,118 @@ headless 全链 `state=DONE`（355 步／146 LLM／19 工具／64 镜／4584 帧
 
 判据、阈值（4.0）、分母、红线（0.70）**一个字没动**；上面每一份证据都写明了"判据未动"。
 任何要改判据的动作都**必须**单列待裁并由用户明示批准。
+
+---
+
+# 执行文档 v1.5 章节（2026-10-07 落地）
+
+**权威口径**：本版**判据／阈值／门限一个字未动**（红线 R-5）。总索引见
+`docs/evidence/20261007-v15-final/README.md`；单树链读数见 `docs/evidence/20261007-083902/`
+（`tree.json` `stable: true`）。
+
+## 一、做了什么（逐阶段）
+
+| 阶段 | 内容 | 实测 |
+|---|---|---|
+| 0 基线 | C 盘余量 / pytest / 探针 / golden / HEAD 五组读数落盘 | pytest 2492 passed/1 skipped |
+| 1 文档一致性（FX-1） | `OPEN_PROBLEMS` 抬头、两处悬空引用改指、台账四处编者注、`AGENTS.md` 状态块刷新 | grep 验收通过 |
+| 2 契约层 | `contracts/beats.py`（ShotBeat/LightSpec/CompositionSpec/RuleJustification）；`Plan.environment`；SDL **1.5**（1.4 无损加载）；`emit_plan`/`emit_shot_draft` schema 升级；配置 `rag.rule_top_k`＋`vlm_review` | 见 `docs/evidence/20261007-v15-contracts/` |
+| 3 求解器/引擎 | `beat_compiler`（拍点→actions）＋**生产接线**；场级锚点求解/落位；灯光语义矩阵；道具交互事件；构图声明消费 | G3：三份冻结工程逐镜四元组 **identical** |
+| 4 规则通道 | `rulepack`（强度标／条数预算／冲突并陈／自由度声明）；**forbid 补挂**（守门激活）＋ trace 两键；检索种子接线；破例辩护对拍 | G4：`forbid_members_seen = 217`、`top-1` 逐条保持 |
+| 5 知识库备料 | 换代登记模板；B5 零成员 kind 诊断；B4/G9 别名备料；B2/A3/A5 备料 | `_v15_stage8/`、`docs/knowledge/JUDGE_ALIGNMENT_v1.md` |
+| 6 评审与评估 | VLM 评审外回路（默认关、零行为差）；多样性度量 ＋ Best-of-N 骨架（默认 1＝现状） | `20261007-p6t1-vlm-review/`、`20261007-p6t2-diversity/` |
+| 7 收尾 | 全量回归 ＋ 证据索引；**文档同步（AGENTS/CONTEXT/本章/ openapi 对拍）** | 见 §三 |
+| **8（计划外补漏）** | `EXECUTION_PLAN` 阶段表声称覆盖 FX-2/4/5/6/7/**8**，但**没有卡**覆盖 FX-8；`TECH_SOLUTIONS` 标"✅ 本版直接做"的 **C3/C4/C6** 与"逐条核查"的 **G1–G9** 也无卡 ⇒ 逐字补 9 张卡 | `docs/evidence/_v15_stage8/`（8 完成／1 阻塞） |
+
+## 二、没做什么 / 还挂着（全部如实）
+
+1. ~~`P5-T2` 索引换代~~ ⇒ **前提已被证伪**：抽取器 `build_hypergraph.py::load_cards()`
+   早已纳入 132 张手写卡；实测索引引用 **2262/2353** 张卡，手写卡 **116/132 已被引用**，
+   零边的只有 **16 张手写卡（＋75 生成卡）**。要不要为零边卡换代 **待你裁决**。
+2. `P7-T2` 的**分组提交**：清单已备（`20261007-v15-closeout/commit_grouping.md`），
+   **一个 commit 都没做**——卡文要求提交口径须用户确认。
+3. `C6`（16 条 `amended` 的 `fix`）：实测**是换代**（层是被 pin 的 gate 输入），停手备料。
+4. `C2`／`C5`／`A4`／`B3`：⚖️ 备料已出（`_v15_stage8/`），等你拍板。
+5. `C1` 三分类：12 批只完成 2 批（10/90 槽位），余下需 **`GLM_API_KEY`**（本机未设）。
+6. **机械预读的口径缺陷**（C3 查出）：`sample90` 的 `topic_mismatch = 88` 把"来源卡没有
+   `topic` 字段"也算成"不符"（`kind not in ['']` 恒真）⇒ 修正后 **mismatch 65 / unknown 23 / ok 2**。
+   **那条 88 不能读成"97.8% 挂错卡"**。
+7. **两处口径更正**：①"23 份运行 pin"实测是 **22**；②C6 的"19 份 superseded"是上一版
+   处置方案的口径，采增量层机制后**夹具维度上不存在这一档**。
+8. **一格仍未验证**：v1.5 升级了 `emit_shot_draft` schema，**升级后还没有新的 LLM 真跑**
+   ⇒"新 schema 的解析失败率"是空白（改动前的最近 3 次真实运行是 **219 草案 / 1 无效 = 0.45%**）。
+
+## 三、本版的回归修复（重要）
+
+首轮链报 `Q1 fail 0.1208`（基线 0.9975）。根因是 forbid 补挂第一版把补挂边**插到检索列表最前**，
+把 30/40 条抽样查询的 top-1 顶掉；而 TDD §5.6 说的是"**渲染**排最前"（注入文本顺序）。
+修法：`retrieve()` 只**追加**、不改名次；"排最前"交给 `rulepack.render_rule_pack`。
+修后 Q1 = **0.9975**，并加两条反向断言（不得顶掉名次／必须排在文本最前）。
+冻结仪器按规矩同步第二十八次（`_reason_28` 记明）。
+
+## 四、这一版之后链上还剩什么
+
+**只剩 `RK-13`（E1 ≥ 0.70）**——A1 已结案的红线，判据冻结、如实报红
+（`rks.json`：203 项里 `failed_checks = ["RK-13"]`）。其余门读数见
+`docs/evidence/20261007-083902/`。
+
+## 五、2026-10-07 晚：`rebind/v2` 换代（门⑥ 的 11 张孤儿卡）＋ 两条**如实报出来的**红
+
+用户在当天对两个 ⚖️ 项答复"**换吧**"之后，第一轮换代（`rebind/v1`，全库候选池）
+把 11 张**本来零边**的卡追加进了 `sources[]` ⇒ 它们变成"可断言卡"而 held-out 里没有条目
+⇒ **门⑥ 判红**（`edge_backed_without_entry = 11`）。qwen3.8-max-0902 两角色会诊
+（`work/_qwen_orphan_fix/`）裁定：根因是"重绑扩大了可断言面"，正解是**收窄候选池**。
+
+**落地（`rebind/v2`）**：
+
+| 项 | 结果 |
+|---|---|
+| 规则 | `tools/kb_fetch/rebind.py`：候选只来自"**重绑前就有边**的卡"（`edge_backed_cards()`）；`REBIND_VERSION = "rebind/v2"` |
+| 接线 | `build_hypergraph._apply_rebind()` 先算池再重绑，并**机械对拍保范围不变量**（重绑后多出零张新有边卡，否则当场 `AssertionError`） |
+| 记账 | `manifest.merge.rebind` 落账（改了 560 条边、追加 2,867 个来源、候选池 2,262、重绑前后 `edge_backed` 都是 2,262） |
+| 重建 | **只走构建器路径**（`build_hypergraph.py --rematch`，不调模型；连跑两次逐字节相同）——`rebind/v1` 那份是从影子脚本 promote 的，候选次序与构建器不同（实测同一对边给出不同候选），"库里 == 构建器产物"这条等式现在才是构造性的 |
+| 指纹 | `c796a5a8…`（v1） → **`e5213e1b…`**（v2）；门①–⑩ **overall pass**；Q1 **0.9975** 不变；门⑥ 回到 `edge_backed 2262 / excluded 91 / 孤儿 0` |
+| C1 同口径复判 | 90 槽位三分类（同判官同模板）：`corrupt 0.7444 →` **`0.4778`**（影子版是 0.4111）。三次读数里逐行有 16 行翻转**且有来回** ⇒ 判官不是逐字可复现，"差 6 行"不作为证据；可判定的是主结论**保住了约七成修复** |
+| 代价（如实记） | 11 个槽位（全是 `composition_rule:lead_room`，唯一候选只有手写卡 `comp_lead_room`）掉回"零候选"：**199 → 210** |
+| pin | 22 份已入库运行**如实标异代**，不 repin（REGEN_LOG §5/§7）；本代重新跑了 6 镜（`20261007-v15-6shot-ds`）与 64 镜（`20261007-v15-long`）两份真跑 |
+
+**顺手修掉的真缺陷（长剧本那一跑抓到的）**：草案把 `enter_from.from` 写成自由字符串
+`'screen_left'`，而当时坐标键在 `_NON_NUMERIC_KEYS` 里 ⇒ 解析期判合法、构建期
+`float("s")` 崩掉**整轮 64 镜**。修法（**收紧**，不是放宽）：`_COORDINATE_KEYS` 单独查
+`[x, y]` / `[x, y, z]`，坏草案在解析期退回重问。重跑验证：审计里出现
+`shot_025: enter_from 的 from 必须是坐标（…当前 'screen_left'）`、`build_failed` 消失。
+
+### 三条**用户已拍板**的事（2026-10-07 晚，用户原话见各条）
+
+1. **长剧本真跑稳定吃满 2 M token 上限** → 用户："**你看着来**"。落地：
+   `BudgetConfig.tokens_per_call_allowance = 7000` ＋ `max_tokens_ceiling = 4_000_000`，
+   账本的 token 上限改成 ``max(静态下限, min(静态帽, 本场调用额度 × 每次调用额度))``
+   ——**小场景一个字节不变**（仍是 2 M 下限），64 镜从 2 M 抬到 **552 × 7 000 =
+   3,864,000**（实测两次真跑 6,150 / 6,311 token/调用，向上取整到千）。
+   这一格是**资源上限**，判据/门限一个字没动；两侧上限从此自洽
+   （原来 64 镜真跑在**只用了 59% 调用额度**时就吃满 token，剩下的调用额度结构上不可达）。
+2. **"试百炼"** → 用户给了阿里云百炼的 key。落地两件事：
+   ① 找到真根因：**不是通道慢/额度问题**，而是百炼在**思考模式**下拒收
+   `tool_choice=required`（`InternalError.Algo.InvalidParameter`），插件发的正是 required，
+   sidecar 又把上游非 2xx 一律翻成 502 ⇒ 0.7 s 就失败。修法：sidecar 新增
+   `--tool-choice-mode`（默认 `passthrough`，逐字节不变；`auto` 才把 required/对象改写成
+   auto）——保思考、把"必须调工具"交给提示词。
+   ② 见 `docs/evidence/20261007-v15-bailian/`：引擎真跑在百炼上跑通了。
+3. **零候选槽位（含 `axis_side` 一族）的删边/裁决** → 用户："**用…qwen3.8max0902 解决，
+   代替人工裁决**"。**裁决已出**：199/199 逐条判完（`keep` **177** / `wrong_card` **20** /
+   `wrong_value` **2**），记录见 `docs/evidence/20261007-v15-zerocand-verdict/`
+   （`reviewed_by: "third-party"`，judge = `qwen3.8-max-0902` @ 百炼，`reasoning_effort=max`，
+   逐条理由在 `rows[].why`）。**但执行停住了，需要你再拍一次**：规则已经写好并接进构建器
+   （`prune/v1`：判错的成员从它所属的边上摘掉），可是**22 条判决逐条试过，任一条单独执行
+   都会让门⑩ 判红**（unresolved 2–67 条 spec；基线＝一条都不摘时门⑩ pass）——因为门⑩ 的
+   spec 是按**边的成员形状**匹配的，每个成员都是某条 spec 期望的形状的一部分。
+   所以记录里 **`apply: false`**（缺省也是 false），索引**没有动**（仍是 `e5213e1b…`）。
+   要执行它就必须**换 oracle 一代**（夹具 sha256 进所有运行的 pin ⇒ 那些运行一起失代，
+   整条链与真跑都要重来一遍）——按 R-8 这是用户明示的事。
+
+### 本轮链读数（`docs/evidence/20261007-204326/`）
+
+**35/35 步全部跑到**：探针 31 支全 OK、门①–⑩ 全 pass、`holdout_gates.overall == "pass"`、
+**Q1 0.9975**（线 0.70）、attestation 诊断 **0.8682**（换代前 0.2078，451/638 条边
+完全被自己的来源卡佐证）、`not passing: E1`（RK-13，已结案的红线）。
+`python -m pytest` = **2808 passed / 1 skipped / 0 failed**。
