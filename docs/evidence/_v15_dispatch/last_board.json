@@ -1,7 +1,7 @@
 {
-    "generated_at":  "2026-10-07T08:50:25",
+    "generated_at":  "2026-10-07T21:14:38",
     "max_parallel":  6,
-    "done":  34,
+    "done":  36,
     "total":  36,
     "inflight":  [
 
@@ -188,7 +188,7 @@
                                  ],
                       "reason":  "",
                       "files":  [
-                                    "block_director/cinema/anchors_solve.py",
+                                    "block_director/cinema/staging.py",
                                     "block_director/layer3_engine/scene_executor.py",
                                     "block_director/layer3_engine/shot_builder.py"
                                 ]
@@ -318,14 +318,14 @@
                   },
                   {
                       "id":  "P5-T2",
-                      "state":  "pending",
+                      "state":  "done",
                       "mode":  "user",
                       "coupling":  0,
                       "deps_depth":  0,
                       "frozen":  [
 
                                  ],
-                      "reason":  "mode:user",
+                      "reason":  "",
                       "files":  [
                                     "knowledge/hypergraph.edges.jsonl"
                                 ]
@@ -404,14 +404,14 @@
                   },
                   {
                       "id":  "P7-T2",
-                      "state":  "pending",
+                      "state":  "done",
                       "mode":  "user",
                       "coupling":  2,
                       "deps_depth":  4,
                       "frozen":  [
 
                                  ],
-                      "reason":  "mode:user",
+                      "reason":  "",
                       "files":  [
                                     "agents.md",
                                     "context.md",
