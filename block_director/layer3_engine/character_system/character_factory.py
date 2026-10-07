@@ -111,27 +111,14 @@ def _adopt_last_object(name: str, parent: Object,
     return obj
 
 
-def _add_rounded_box_body(radius: float, depth: float) -> None:
-    """建**等外接盒**的圆角方体躯干（v1.4 §7 D1b 的裁决 ②）。
+def _add_cylinder_body(radius: float, depth: float) -> None:
+    """建**等外接盒**的圆柱躯干（v1.6 用户裁决：圆柱）。
 
-    * **为什么不是圆柱**：参考图的躯干是"块面感"，而等外接盒的圆角方体与圆柱
-      世界 AABB **逐位相同**（`docs/evidence/d1b_body_shape/`：`max_delta = 0.0`）
-      ⇒ bbox／构图／锚点常量**一个都不用动**，换的只是网格构造。
-    * **顺序有讲究**：先 `transform_apply(scale=True)`**再**加倒角。反过来的话倒角宽度会被
-      非等比缩放拉扁——这里与 `tools/blender_tests/test_character_body_ab.py::_rounded_box_body`
-      **逐字同序**，免得"合进生产的"和"量过图的那个"其实不是一个形状。
-    * 圆角半径 ＝ `radius × BODY_BEVEL_RATIO`（那两个常量是唯一真源）。
+    v1.4 §7 D1b 已实测：等外接盒的圆角方体与圆柱世界 AABB **逐位相同**
+    （`docs/evidence/d1b_body_shape/`：`max_delta = 0.0`）
+    ⇒ bbox／构图／锚点常量**一个都不用动**，换的只是网格构造。
     """
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.0, 0.0, 0.0))
-    cube = bpy.context.object
-    #: `primitive_cube_add(size=1.0)` 边长 1.0 ⇒ 缩放到"直径 × 直径 × 高"＝圆柱的外接盒。
-    cube.scale = (radius * 2.0, radius * 2.0, depth)
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    bevel = cube.modifiers.new("BD_Body_Bevel", "BEVEL")
-    bevel.width = radius * BODY_BEVEL_RATIO
-    bevel.segments = BODY_BEVEL_SEGMENTS
-    bpy.context.view_layer.objects.active = cube
-    bpy.ops.object.modifier_apply(modifier=bevel.name)
+    bpy.ops.mesh.primitive_cylinder_add(radius=radius, depth=depth, vertices=32)
 
 
 def _character_material(color: str, character_id: str):
@@ -200,8 +187,8 @@ def create_character(character_id: str, name: str, color: str = "#FFFFFF",
                             (0.0, 0.0, PIVOT_Z["body"]))
         character.body_pivot = route_to_content(body_pivot)
 
-        #: v1.4 §7 D1b 裁决 ②：躯干是**圆角方体**（等外接盒，见 `_add_rounded_box_body`）。
-        _add_rounded_box_body(BODY_RADIUS, BODY_HEIGHT)
+        #: v1.6 用户裁决：躯干是**圆柱**（等外接盒，见 `_add_cylinder_body`）。
+        _add_cylinder_body(BODY_RADIUS, BODY_HEIGHT)
         body = _adopt_last_object(f"BD_Char_{name}_Body", character.body_pivot,
                                   (0.0, 0.0, BODY_CENTER_LOCAL), material)
         character.parts["body"] = route_to_content(body)
