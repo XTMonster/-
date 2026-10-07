@@ -1,0 +1,59 @@
+{
+  "calls_with_knowledge": 68,
+  "calls_without_knowledge": 351,
+  "plan_scope": {
+    "scope": "plan",
+    "cap_key": "rag.plan_prefetch_tokens",
+    "cap": 2000,
+    "calls": 4,
+    "max_tokens": 1799,
+    "max_request_id": "7f03d38fb5bd401295682e65ca701bfb",
+    "over": [],
+    "locators": {
+      "terminator": 4
+    },
+    "status": "pass",
+    "note": "4 个注入块，最大 1799 tokens ≤ 2000（rag.plan_prefetch_tokens）"
+  },
+  "shot_scope": {
+    "scope": "shot",
+    "cap_key": "rag.max_tokens_per_call",
+    "cap": 800,
+    "calls": 64,
+    "max_tokens": 795,
+    "max_request_id": "d0bbad0bd0a246a29f521d330ab4b264",
+    "over": [],
+    "locators": {
+      "terminator": 64
+    },
+    "status": "pass",
+    "note": "64 个注入块，最大 795 tokens ≤ 800（rag.max_tokens_per_call）"
+  },
+  "token_caps": {
+    "status": "pass",
+    "note": "4 个注入块，最大 1799 tokens ≤ 2000（rag.plan_prefetch_tokens）；64 个注入块，最大 795 tokens ≤ 800（rag.max_tokens_per_call）"
+  },
+  "required_edges_dropped_by_budget": {
+    "id": "Q6b_required_edges_dropped_by_budget",
+    "status": "pass",
+    "matched_shots": 195,
+    "required_edges": 195,
+    "dropped": 0,
+    "examples": [],
+    "note": "195 个镜头的查询 join 上了 held-out：195 条 required 边里 0 条在真的发出的 prompt 里找不到（成员不全）"
+  },
+  "status": "pass",
+  "complete": true,
+  "note": "token 半边判硬；required 半边 pass",
+  "llm_trace": "docs\\evidence\\20261007-v15-long\\llm_trace.jsonl",
+  "audit_log": "docs\\evidence\\20261007-v15-long\\audit_log.jsonl",
+  "run_id": "",
+  "caps": {
+    "plan": 2000,
+    "shot": 800,
+    "keys": {
+      "plan": "rag.plan_prefetch_tokens",
+      "shot": "rag.max_tokens_per_call"
+    }
+  }
+}
