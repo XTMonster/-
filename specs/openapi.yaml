@@ -154,7 +154,26 @@ components:
           type: string
           enum: [system, user, assistant, tool]
         content:
-          type: [string, "null"]
+          #: v1.5 §5.5（P6-T1）：与 contracts/messages.py::Message.content 同源。
+          #: 纯文本是 string；vision 请求体是分片数组（text / image_url）。
+          type: [string, array, "null"]
+          items:
+            type: object
+            required: [type]
+            properties:
+              type:
+                type: string
+                enum: [text, image_url]
+              text:
+                type: string
+              image_url:
+                type: object
+                required: [url]
+                properties:
+                  url:
+                    type: string
+                    description: >
+                      图片地址；离线评审用 data:image/png;base64,… 内联。
         tool_calls:
           type: [array, "null"]
           items:

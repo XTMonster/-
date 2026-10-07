@@ -15,7 +15,10 @@ from ..contracts.sdl import SDL_VERSION
 #: 显式列出每一个**曾经的**版本，而不是只写"1.0/1.1/当前"：
 #: v1.4 升级时若把 1.3 漏掉，v1.3 的项目会被当成未知版本"尽力读取"，
 #: 迁移说明里就会多出一条误导性的告警（ADR-0005）。
-KNOWN_VERSIONS = ("1.0", "1.1", "1.2", "1.3", SDL_VERSION)
+#: v1.5：**历史版本必须逐条写出来**——旧写法把 SDL_VERSION 当成"上一个版本"，
+#: 升到 1.5 时会把 "1.4" 悄悄挤出去，于是刚刚落盘的 1.4 工程反而成了"未知
+#: 版本"。这里把 "1.4" 显式钉死，再追加当前版本。
+KNOWN_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", SDL_VERSION)
 
 #: 写入器从 1.2 起就会把完整的 ``characters`` 名册写进文件。比这更老的文件
 #: 才需要"补名册"这种结构修复；1.2 及以后引用了不存在的角色，那是**真错误**，
@@ -133,6 +136,10 @@ def _migrate_shot(shot: Dict[str, Any], notes: List[str]) -> None:
     shot.setdefault("transition_in", "cut")
     shot.setdefault("transition_out", "cut")
     shot.setdefault("camera", {})
+    # v1.5 §3.7：纯增字段的缺省填充（无删除、无改名）。
+    shot.setdefault("beats", [])
+    shot.setdefault("composition", {})
+    shot.setdefault("rule_justifications", [])
 
 
 def migrate_sdl(data: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
@@ -156,6 +163,11 @@ def migrate_sdl(data: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
         scene.setdefault("number", index)
         scene.setdefault("heading", "")
         scene.setdefault("environment", {})
+        # v1.5 §3.3/§3.4：环境新增的可选字段同样只做缺省填充。
+        environment = scene.get("environment")
+        if isinstance(environment, dict):
+            environment.setdefault("anchors", [])
+            environment.setdefault("light", {})
         for shot in scene.setdefault("shots", []):
             _migrate_shot(shot, notes)
 

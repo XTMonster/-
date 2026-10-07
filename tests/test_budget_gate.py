@@ -74,6 +74,61 @@ def test_cli_hard_cap_still_wins():
     assert driver.budget.limits.max_llm_calls == 1
 
 
+# --------------------------------------------------- token 上限随场景缩放（2026-10-07）
+#
+# 现场：v15 管线下 64 镜真跑**两次**都在只用了 59% 调用额度时就吃满写死的 2 M token
+# （`docs/evidence/20261007-v15-long/`、`…-long-topped-out/`：2,000,574 / 2,004,960），
+# 于是 `test_the_long_real_run_is_fresh_and_stayed_within_the_ceiling` 永久判红。
+# 修法（用户 2026-10-07 "你看着来"）：token 上限＝`本场调用额度 × 每次调用额度`
+# （7,000，来自那两次实测的 6,150 / 6,311 向上取整），再与静态帽、静态下限取大。
+# 判据/门限一个字没动——这一格只决定"账本允不允许继续调用"。
+
+
+def test_a_short_scene_keeps_the_static_token_floor():
+    """小场景**一个字节都不变**：6 镜的公式值远低于 2 M ⇒ 仍是 2 M。"""
+    driver = _driver_with(6, cli=0)
+    assert driver.budget.limits.max_tokens == 2_000_000
+
+
+def test_a_long_scene_raises_the_token_budget_with_the_call_budget():
+    """64 镜：552 次调用 × 7,000 = 3,864,000 ⇒ token 上限必须够它烧完调用额度。"""
+    driver = _driver_with(64, cli=0)
+    assert driver.budget.limits.max_llm_calls == 552
+    assert driver.budget.limits.max_tokens == 552 * 7_000
+
+
+def test_the_static_token_ceiling_caps_a_monster_scene():
+    """再长也不许无限增长：100 镜的公式值 5.88 M 被 4 M 的静态帽截住。"""
+    driver = _driver_with(100, cli=0)
+    assert driver.budget.limits.max_tokens == 4_000_000
+
+
+def test_the_caller_hard_cap_shrinks_the_token_budget_but_never_below_the_floor():
+    """`--max-llm-calls` 是**硬顶**：它压小调用额度时 token 上限跟着下来，但不低于 2 M。"""
+    driver = _driver_with(64, cli=100)
+    assert driver.budget.limits.max_llm_calls == 100
+    assert driver.budget.limits.max_tokens == 2_000_000      # 100×7000 = 700 k < 下限
+
+
+def test_the_scene_budget_step_is_idempotent_and_leaves_a_trace():
+    """同一条公式重复应用结果不变（下限取自**静态**值），并把 token 额度写进审计。"""
+    driver = _driver_with(64, cli=0)
+    first = driver.budget.limits.max_tokens
+    driver._apply_scene_budget(64)
+    assert driver.budget.limits.max_tokens == first
+    scoped = [entry for entry in driver.audit._recent
+              if getattr(entry, "kind", "") == "budget_scoped"]
+    assert scoped and scoped[-1].data.get("max_tokens_effective") == first
+
+
+def test_zero_allowance_keeps_the_ledger_default():
+    """配置里把额度关掉（0 = 不限）⇒ 沿用账本静态值，不引入新口径。"""
+    driver = _driver_with(64, cli=0)
+    driver.config.budget.tokens_per_call_allowance = 0
+    driver.budget.limits.max_tokens = 2_000_000
+    assert driver._scene_token_budget(552) == 2_000_000
+
+
 def test_zero_never_enters_the_min():
     driver = _driver_with(2, cli=0)
     assert driver.budget.limits.max_llm_calls != 0

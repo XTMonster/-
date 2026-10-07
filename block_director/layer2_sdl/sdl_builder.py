@@ -11,8 +11,10 @@ from typing import Any, Dict, List, Optional
 
 from ..contracts.cast import CastMember, SceneSpec
 from ..contracts.plan import Plan, ShotPlan
+from ..contracts.serde import to_plain
 from ..contracts.sdl import (
     SDL_VERSION,
+    SDLAnchor,
     SDLCamera,
     SDLEnvironment,
     SDLProject,
@@ -58,7 +60,29 @@ def _camera_request(camera: SDLCamera) -> Dict[str, Any]:
     return request
 
 
-def _environment(spec: SceneSpec) -> SDLEnvironment:
+def _anchors(raw: Any) -> List[SDLAnchor]:
+    """计划里的场级锚点（dict 表）→ ``SDLAnchor`` 表。
+
+    ``position`` 是求解器回填的结果（可能缺席 = 未求解），这里原样搬运，
+    不替它编坐标。
+    """
+    anchors: List[SDLAnchor] = []
+    for item in raw or []:
+        if not isinstance(item, dict):
+            continue
+        anchors.append(SDLAnchor(
+            name=str(item.get("name") or ""),
+            depth=str(item.get("depth") or "mid"),
+            relation=str(item.get("relation") or ""),
+            position=[float(v) for v in (item.get("position") or [])],
+        ))
+    return anchors
+
+
+def _environment(spec: SceneSpec, plan: Optional[Plan] = None
+                 ) -> SDLEnvironment:
+    environment = dict(getattr(plan, "environment", None) or {}) \
+        if plan is not None else {}
     return SDLEnvironment(
         ground_size=[float(spec.ground_size[0]), float(spec.ground_size[1])],
         walls=[dict(wall) for wall in spec.walls],
@@ -66,6 +90,8 @@ def _environment(spec: SceneSpec) -> SDLEnvironment:
         lighting=spec.lighting,
         room=list(spec.room) if spec.room else None,
         crowd=[dict(item) for item in (getattr(spec, "crowd", None) or [])],
+        anchors=_anchors(environment.get("anchors")),
+        light=dict(environment.get("light") or {}),
     )
 
 
@@ -113,11 +139,15 @@ def build_sdl(plan: Plan, *,
             dialogues=[dict(item) for item in planned.dialogues],
             gaze=[dict(item) for item in (getattr(planned, "gaze", []) or [])],
             vfx=[dict(item) for item in (getattr(planned, "vfx", []) or [])],
+            beats=[dict(item) for item in (planned.beats or [])],
+            composition=dict(planned.composition or {}),
+            rule_justifications=[dict(item)
+                                 for item in (planned.rule_justifications or [])],
             prompt=planned.prompt,
         ))
 
     scene = SDLScene(id=scene_id, number=1, heading=plan.scene_heading,
-                     environment=_environment(spec), shots=shots)
+                     environment=_environment(spec, plan), shots=shots)
     continuity: Dict[str, Any] = {
         "axis_note": list(plan.continuity_notes),
         "character_pose": {member.id: {"position": list(member.initial_location),
@@ -151,11 +181,27 @@ def sdl_to_plan(sdl: SDLProject) -> Plan:
                 "camera": _camera_request(shot.camera),
                 "gaze": [dict(item) for item in shot.gaze],
                 "vfx": [dict(item) for item in shot.vfx],
+                "beats": [dict(item) for item in (shot.beats or [])],
+                "composition": dict(shot.composition or {}),
+                "rule_justifications": [dict(item)
+                                        for item in (shot.rule_justifications
+                                                     or [])],
                 "prompt": shot.prompt,
             }))
     heading = sdl.scenes[0].heading if sdl.scenes else ""
+    # v1.5 §3.2：场级环境（anchors/light）必须跟着项目文件回来，否则
+    # "存了再打开"会丢掉锚点与灯光声明，重建场景就没有摆位依据。
+    environment: Dict[str, Any] = {}
+    if sdl.scenes:
+        source = sdl.scenes[0].environment
+        environment = {
+            "anchors": [to_plain(anchor)
+                        for anchor in (getattr(source, "anchors", None) or [])],
+            "light": dict(getattr(source, "light", None) or {}),
+        }
     return Plan(shots=shots, scene_heading=heading,
-                continuity_notes=list(sdl.continuity.get("axis_note", [])))
+                continuity_notes=list(sdl.continuity.get("axis_note", [])),
+                environment=environment)
 
 
 def sdl_to_spec(sdl: SDLProject) -> SceneSpec:

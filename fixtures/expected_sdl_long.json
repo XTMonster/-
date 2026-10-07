@@ -1,6 +1,6 @@
 {
   "name": "# 节点1：市场静场（总时长：24秒）",
-  "version": "1.4",
+  "version": "1.5",
   "fps": 24,
   "characters": [
     {
@@ -48,7 +48,9 @@
         "props": [],
         "lighting": "clay_studio",
         "room": null,
-        "crowd": []
+        "crowd": [],
+        "anchors": [],
+        "light": {}
       },
       "shots": [
         {
@@ -89,6 +91,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -131,6 +136,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -171,6 +179,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -211,6 +222,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -251,6 +265,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -293,6 +310,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -333,6 +353,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -373,6 +396,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -415,6 +441,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -455,6 +484,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -495,6 +527,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -535,6 +570,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -577,6 +615,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -617,6 +658,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -657,6 +701,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -697,6 +744,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -737,6 +787,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -779,6 +832,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -819,6 +875,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -859,6 +918,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -901,6 +963,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -941,6 +1006,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -981,6 +1049,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1023,6 +1094,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1063,6 +1137,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1105,6 +1182,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1145,6 +1225,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1185,6 +1268,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1227,6 +1313,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1267,6 +1356,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1307,6 +1399,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1349,6 +1444,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1389,6 +1487,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1431,6 +1532,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1471,6 +1575,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1511,6 +1618,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1553,6 +1663,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1593,6 +1706,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1633,6 +1749,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1675,6 +1794,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1715,6 +1837,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1757,6 +1882,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1797,6 +1925,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1837,6 +1968,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1879,6 +2013,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1919,6 +2056,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -1959,6 +2099,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2001,6 +2144,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2041,6 +2187,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2083,6 +2232,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2123,6 +2275,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2163,6 +2318,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2205,6 +2363,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2245,6 +2406,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2285,6 +2449,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2325,6 +2492,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2365,6 +2535,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2407,6 +2580,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2447,6 +2623,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2487,6 +2666,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2529,6 +2711,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2569,6 +2754,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2609,6 +2797,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         },
         {
@@ -2651,6 +2842,9 @@
           "dialogues": [],
           "gaze": [],
           "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
           "prompt": ""
         }
       ]

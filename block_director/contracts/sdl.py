@@ -14,9 +14,27 @@ from typing import Any, Dict, List, Optional
 
 from .cast import CastMember
 
-#: v1.4 §0.1b：**SDL 文件格式版本单独升到 1.4**（软件包/协议版本仍是 1.3.0，
-#: 不在本次改动范围）。迁移器必须同时认识 "1.3"（见 sdl_migrate.KNOWN_VERSIONS）。
-SDL_VERSION = "1.4"
+#: v1.5：**SDL 文件格式版本升到 1.5**（软件包/协议版本仍是 1.3.0，不在本次
+#: 改动范围）。1.5 只**增字段**：``SDLEnvironment.anchors`` / ``light``、
+#: ``SDLShot.beats`` / ``composition`` / ``rule_justifications``——无删除、
+#: 无改名，所以 1.4 工程加载后行为逐字节不变（见 sdl_migrate.KNOWN_VERSIONS）。
+SDL_VERSION = "1.5"
+
+
+@dataclass
+class SDLAnchor:
+    """场级摆位锚点（执行文档 v1.5 §3.3）。
+
+    ``relation`` 是**自然语言方位**（"behind 甲" / "between 甲 and 乙"），
+    由摆位求解器解析成 ``position``；LLM 只写 ``name`` / ``depth`` /
+    ``relation``，坐标由求解器回填，契约层不猜。
+    """
+    name: str = ""
+    #: 纵深分层：fg / mid / bg（相对相机视角）。自由字符串，由提示词约束。
+    depth: str = "mid"
+    relation: str = ""
+    #: 求解器回填的坐标；LLM 不写，缺省空表 = 未求解。
+    position: List[float] = field(default_factory=list)
 
 
 @dataclass
@@ -55,6 +73,14 @@ class SDLShot:
     gaze: List[Dict[str, Any]] = field(default_factory=list)
     #: v1.3：特效代理（``{id, type, position, size, start_frame, end_frame}``）。
     vfx: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.5 §3.1：执行拍点（``contracts/beats.py::ShotBeat`` 的 dict 形）。
+    #: **命名消歧**：这里与 ``contracts/plan.py::ShotPlan.beats`` 同义（执行
+    #: 拍点），**不是** ``contracts/brief.py::SceneBrief.beats``（叙事节拍）。
+    beats: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.5 §3.5：构图声明（``{rule, subject_position}``），缺省空 = 求解器默认。
+    composition: Dict[str, Any] = field(default_factory=dict)
+    #: v1.5 §3.6：破例辩护（``{rule, action, reason, precedent}``）。
+    rule_justifications: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""
 
 
@@ -67,6 +93,11 @@ class SDLEnvironment:
     room: Optional[List[float]] = None
     #: v1.3：群众代理（``{count, mode, seed, area, ...}``），独立于 characters。
     crowd: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.5 §3.3：场级摆位锚点，缺省空表（1.4 工程迁移后即为空表）。
+    anchors: List[SDLAnchor] = field(default_factory=list)
+    #: v1.5 §3.4：灯光语义（``{time_of_day, mood, key_direction}``）。
+    #: 从不含灯具参数（energy/color/size）——语义到预设的映射在引擎侧。
+    light: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

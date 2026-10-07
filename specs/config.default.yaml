@@ -22,6 +22,7 @@ rag:
   backend: hypergraph
   embedder: bge-small-zh-v1.5
   top_k: 5
+  rule_top_k: 5
   max_tokens_per_call: 800
   plan_prefetch_tokens: 2000
   cases_backend: lightrag
@@ -35,6 +36,7 @@ orchestration:
   context_window_tokens: 32000
   max_shots: 0
   self_review: true
+  draft_candidates: 1
 audit:
   level: standard
   human_gate_on_plan: true
@@ -44,6 +46,8 @@ budget:
   max_llm_calls_ceiling: 200
   max_cost_usd: 5.0
   max_wall_minutes: 120.0
+  tokens_per_call_allowance: 7000
+  max_tokens_ceiling: 4000000
 brief:
   enabled: true
   max_tokens: 1200
@@ -112,3 +116,6 @@ ui:
   show_labels: true
 framing:
   headroom_policy: board
+vlm_review:
+  enabled: false
+  max_shots: 0

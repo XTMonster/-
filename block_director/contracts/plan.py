@@ -89,6 +89,21 @@ class ShotPlan:
     #: ``{shot_number, speaker_raw, speaker_status, declared_s, model_text,
     #: applied_s}``。生产者 = driver，消费者 = RK-7 的三方对拍。
     dialogue_pins: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.5 §3.7（P2-T2 / FR-1）：**执行拍点表**（一镜内的动作时刻表）。
+    #: 元素形如 ``{t, subject, verb, target, face_to, pace, react}``，
+    #: 数据类真源 = ``contracts/beats.py::ShotBeat``。**命名消歧**：这里的
+    #: ``beats`` 是**执行拍点**，不是 ``contracts/brief.py::SceneBrief.beats``
+    #: 的**叙事节拍**（概念／生产者／消费者都不同，不得互相喂入）。帧号由
+    #: ``layer5_orchestrator/beat_compiler.py`` 从 ``t`` 换算，契约里不写帧号。
+    beats: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.5 §3.5（P2-T2 / FR-10）：构图声明，数据类真源 =
+    #: ``contracts/beats.py::CompositionSpec``（``{rule, subject_position}``）。
+    #: 空 = 求解器默认（**零行为差**）。
+    composition: Dict[str, Any] = field(default_factory=dict)
+    #: v1.5 §3.6（P2-T2 / FR-8）：破例辩护，数据类真源 =
+    #: ``contracts/beats.py::RuleJustification``（``{rule, action, reason,
+    #: precedent}``）。审计对拍见 §5.4。
+    rule_justifications: List[Dict[str, Any]] = field(default_factory=list)
 
     @property
     def duration_seconds(self) -> float:
@@ -116,6 +131,10 @@ class ShotPlan:
             "declared_camera_move": self.declared_camera_move,
             "intent_type": self.intent_type,
             "dialogue_pins": [dict(item) for item in self.dialogue_pins],
+            "beats": [dict(item) for item in self.beats],
+            "composition": dict(self.composition),
+            "rule_justifications": [dict(item)
+                                    for item in self.rule_justifications],
         }
 
     @classmethod
@@ -148,6 +167,12 @@ class ShotPlan:
             dialogue_pins=[dict(item)
                            for item in (data.get("dialogue_pins") or [])
                            if isinstance(item, dict)],
+            beats=[dict(item) for item in (data.get("beats") or [])
+                   if isinstance(item, dict)],
+            composition=dict(data.get("composition") or {}),
+            rule_justifications=[dict(item)
+                                 for item in (data.get("rule_justifications") or [])
+                                 if isinstance(item, dict)],
         )
 
 
@@ -158,6 +183,12 @@ class Plan:
     shots: List[ShotPlan] = field(default_factory=list)
     continuity_notes: List[str] = field(default_factory=list)
     scene_heading: str = ""
+    #: v1.5 §3.2（P2-T2 / FR-2/FR-3）：**场级环境的契约宿主**。此前场级
+    #: 环境（锚点、灯光语义）没有契约宿主，道具摆位只能靠坐标直写。
+    #: 形状：``{"anchors": [SDLAnchor 的 dict 形...], "light": LightSpec 的
+    #: dict 形}``。生产者 = 阶段 A 的 ``emit_plan``（场级信息密度低、一次生成
+    #: 全场共用）；阶段 B1 **不得改写**它。缺省空 dict = 与 v1.4 逐字同行为。
+    environment: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def total_frames(self) -> int:
@@ -168,6 +199,7 @@ class Plan:
             "scene_heading": self.scene_heading,
             "continuity_notes": list(self.continuity_notes),
             "shots": [s.to_dict() for s in self.shots],
+            "environment": dict(self.environment),
         }
 
     @classmethod
@@ -180,4 +212,5 @@ class Plan:
             shots=shots,
             continuity_notes=list(data.get("continuity_notes", []) or []),
             scene_heading=str(data.get("scene_heading", "")),
+            environment=dict(data.get("environment") or {}),
         )

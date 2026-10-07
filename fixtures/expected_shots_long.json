@@ -71,7 +71,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_002",
@@ -118,7 +129,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_003",
@@ -164,7 +186,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_004",
@@ -210,7 +243,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_005",
@@ -256,7 +300,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_006",
@@ -303,7 +358,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_007",
@@ -349,7 +415,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_008",
@@ -395,7 +472,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_009",
@@ -442,7 +530,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_010",
@@ -488,7 +587,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_011",
@@ -534,7 +644,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_012",
@@ -580,7 +701,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_013",
@@ -627,7 +759,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_014",
@@ -673,7 +816,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_015",
@@ -719,7 +873,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_016",
@@ -765,7 +930,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_017",
@@ -811,7 +987,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_018",
@@ -858,7 +1045,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_019",
@@ -904,7 +1102,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_020",
@@ -950,7 +1159,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_021",
@@ -997,7 +1217,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_022",
@@ -1043,7 +1274,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_023",
@@ -1089,7 +1331,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_024",
@@ -1136,7 +1389,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_025",
@@ -1182,7 +1446,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_026",
@@ -1229,7 +1504,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_027",
@@ -1275,7 +1561,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_028",
@@ -1321,7 +1618,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_029",
@@ -1368,7 +1676,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_030",
@@ -1414,7 +1733,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_031",
@@ -1460,7 +1790,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_032",
@@ -1507,7 +1848,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_033",
@@ -1553,7 +1905,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_034",
@@ -1600,7 +1963,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_035",
@@ -1646,7 +2020,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_036",
@@ -1692,7 +2077,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_037",
@@ -1739,7 +2135,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_038",
@@ -1785,7 +2192,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_039",
@@ -1831,7 +2249,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_040",
@@ -1878,7 +2307,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_041",
@@ -1924,7 +2364,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_042",
@@ -1971,7 +2422,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_043",
@@ -2017,7 +2479,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_044",
@@ -2063,7 +2536,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_045",
@@ -2110,7 +2594,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_046",
@@ -2156,7 +2651,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_047",
@@ -2202,7 +2708,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_048",
@@ -2249,7 +2766,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_049",
@@ -2295,7 +2823,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_050",
@@ -2342,7 +2881,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_051",
@@ -2388,7 +2938,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_052",
@@ -2434,7 +2995,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_053",
@@ -2481,7 +3053,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_054",
@@ -2527,7 +3110,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_055",
@@ -2573,7 +3167,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_056",
@@ -2619,7 +3224,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_057",
@@ -2665,7 +3281,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_058",
@@ -2712,7 +3339,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_059",
@@ -2758,7 +3396,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_060",
@@ -2804,7 +3453,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_061",
@@ -2851,7 +3511,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_062",
@@ -2897,7 +3568,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_063",
@@ -2943,7 +3625,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     },
     {
       "shot_id": "shot_064",
@@ -2990,7 +3683,18 @@
         "camera_move": null
       },
       "labels": {},
-      "movements": []
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
     }
   ]
 }

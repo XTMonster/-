@@ -89,6 +89,9 @@ class RagConfig:
     backend: RagBackend = RagBackend.HYPERGRAPH
     embedder: str = "bge-small-zh-v1.5"
     top_k: int = 5
+    #: v1.5 §7（P2-T5）：规则包（P4-T1 ``rulepack``）每镜注入的规则条数上限。
+    #: 校验 3–8——太少约束不足，太多会把候选挤掉。消费者在 P4-T1 落地。
+    rule_top_k: int = 5
     max_tokens_per_call: int = 800
     #: v1.4 §2.3：整场预取（``block_for_plan``）的 token 上限。此前是
     #: ``knowledge/retriever.py`` 里的硬编码常量，现在有真正的消费者。
@@ -122,6 +125,11 @@ class OrchestrationConfig:
     #: Level 2 自我审核（§11.1）：每镜通过规则校验后再让模型反思一次。
     #: 它每镜多一次 LLM 调用，长片请按预算（§12.6）自行取舍。
     self_review: bool = True
+    #: v1.5 §7（P6-T2）：同一镜生成几个候选草案（Best-of-N 探索模式）。
+    #: ``1`` = 现状（每镜一次调用、零行为差）；``2–5`` 时同镜多要 N 个候选，
+    #: 规则评分只做 **rerank 不作过滤**——低分候选进 ``shots.json`` 的
+    #: ``alternates[]``，不丢。默认关。
+    draft_candidates: int = 1
 
 
 @dataclass
@@ -129,6 +137,19 @@ class AuditConfig:
     level: AuditLevel = AuditLevel.STANDARD
     human_gate_on_plan: bool = True
     human_gate_on_axis_violation: bool = True
+
+
+@dataclass
+class VlmReviewConfig:
+    """v1.5 §5.5（P6-T1）：可选的 VLM 评审**外回路**。
+
+    评审结果只写进 ``shots.json`` 与面板展示，**不参与任何门**（红线：评委
+    不作唯一裁决）。默认关——``enabled=False`` 时全链路零行为差。
+    ``max_shots=0`` 表示不限制被评审的镜数。
+    """
+
+    enabled: bool = False
+    max_shots: int = 0
 
 
 @dataclass
@@ -141,6 +162,21 @@ class BudgetConfig:
     max_llm_calls_ceiling: int = 200
     max_cost_usd: float = 5.0
     max_wall_minutes: float = 120.0
+    #: **每次调用允许多少 token**（2026-10-07 用户"你看着来"授权后加）：账本的
+    #: token 上限＝``本场调用额度 × 这一格``，再与 ``max_tokens_ceiling``、以及
+    #: ``BudgetLimits.max_tokens`` 的静态下限取**大**。
+    #:
+    #: 为什么必须让它随场景走（实测）：`BudgetLimits.max_tokens` 是**写死的 2 M**，
+    #: 而调用额度是"shots * 8 + 40"——两个上限互相矛盾：v15 管线下 64 镜真跑两次
+    #: 都**在只用了 59% 调用额度时**就吃满 2 M（`prompt 1,886,634 + completion 118,326`，
+    #: 见 `docs/evidence/20261007-v15-long/` 与 `…-long-topped-out/`），
+    #: 于是"没用完的调用额度"结构上不可达，长剧本验收恒红。
+    #: 7,000 来自实测：那两次真跑 **6,150 / 6,311 token/调用**，向上取整到千。
+    #: 这一格只影响**资源上限**，不改任何判据/门限。
+    tokens_per_call_allowance: int = 7000
+    #: token 上限的**静态帽**（0 = 不设帽）：再长的戏也不让它无限增长。
+    #: 60 镜（520 次调用 × 7,000 = 3.64 M）不触帽；100 镜以上按 4 M 封顶。
+    max_tokens_ceiling: int = 4_000_000
 
 
 @dataclass
@@ -308,6 +344,7 @@ class AppConfig:
     delivery: DeliveryConfig = field(default_factory=DeliveryConfig)
     ui: UIConfig = field(default_factory=UIConfig)
     framing: FramingConfig = field(default_factory=FramingConfig)
+    vlm_review: VlmReviewConfig = field(default_factory=VlmReviewConfig)
 
     # ----------------------------------------------------------------- 校验
     def validate(self) -> List[Issue]:
@@ -384,6 +421,29 @@ class AppConfig:
             err("CFG_019", "rag.extract_concurrency",
                 f"抽取并发必须 ≥ 1（当前 {self.rag.extract_concurrency}）；"
                 f"1 = 完全串行")
+
+        # --- v1.5 §7（P2-T5）：规则包条数上限与可选 VLM 评审外回路 ---
+        rule_top_k = self.rag.rule_top_k
+        if (isinstance(rule_top_k, bool)
+                or not isinstance(rule_top_k, int)
+                or not (3 <= rule_top_k <= 8)):
+            err("CFG_020", "rag.rule_top_k",
+                f"规则包条数上限必须是 3–8 的整数（当前 {rule_top_k!r}）")
+        vlm_max_shots = self.vlm_review.max_shots
+        if (isinstance(vlm_max_shots, bool)
+                or not isinstance(vlm_max_shots, int)
+                or vlm_max_shots < 0):
+            err("CFG_021", "vlm_review.max_shots",
+                f"VLM 评审镜数上限必须是 ≥ 0 的整数"
+                f"（当前 {vlm_max_shots!r}）；0 表示不限")
+        # --- v1.5 §7（P6-T2）：Best-of-N 的候选数 ---
+        draft_candidates = self.orchestration.draft_candidates
+        if (isinstance(draft_candidates, bool)
+                or not isinstance(draft_candidates, int)
+                or not (1 <= draft_candidates <= 5)):
+            err("CFG_022", "orchestration.draft_candidates",
+                f"每镜候选数必须是 1–5 的整数（当前 {draft_candidates!r}）；"
+                f"1 = 现状（每镜一次调用）")
 
         # --- 决策 1（§6.1）：向量检索只能由 sidecar 提供 ---
         if self.rag.enabled and self.rag.backend is RagBackend.VECTOR \
