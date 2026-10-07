@@ -42,6 +42,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import json
+import os
 import pathlib
 import re
 import sys
@@ -189,10 +190,12 @@ def pair_findings(glm: Sequence[dict], deepseek: Sequence[dict],
 
 def render_panel(role_reports: Sequence[dict], *, glm_model: str,
                  deepseek_model: str, sources: Sequence[dict],
-                 contexts: Sequence[Tuple[str, str]]) -> str:
+                 contexts: Sequence[Tuple[str, str]],
+                 partner_family: str = "zhipu") -> str:
     """人可读的会诊纪要（证据先写：哪一版、看了什么、两侧各说了什么、哪里分歧）。"""
-    lines = ["# 联合会诊纪要（DeepSeek × GLM-5.3）", "",
-             f"- 模型：`{deepseek_model}`（deepseek 族） × `{glm_model}`（zhipu 族）——**天然换族**",
+    lines = [f"# 联合会诊纪要（DeepSeek × {glm_model}）", "",
+             f"- 模型：`{deepseek_model}`（deepseek 族） × `{glm_model}`（{partner_family} 族）"
+             "——**天然换族**",
              f"- 判词归属：`reviewed_by: {PANEL_TAG}`（**不是** human，也不冒充 human）",
              f"- 输入：{len(sources)} 份源码、{len(contexts)} 份产物；逐份 sha256 见 `bundle.manifest.json`",
              "- 纪律：**一侧缺席不算同意**；会诊结论不改判据/门限/阈值。", ""]
@@ -206,7 +209,7 @@ def render_panel(role_reports: Sequence[dict], *, glm_model: str,
         lines.append("")
         for key, title in (("both", "两侧都提（严重度一致）"),
                            ("severity_conflict", "两侧都提但**严重度不同**"),
-                           ("glm_only", "只有 GLM-5.3 提"),
+                           ("glm_only", f"只有第二侧（{glm_model}）提"),
                            ("deepseek_only", "只有 DeepSeek 提")):
             items = report["pairs"].get(key) or []
             lines.append(f"### {title}（{len(items)}）")
@@ -263,6 +266,38 @@ def glm_caller(model: str, level: str, max_tokens: int,
     def call(messages: List[dict]) -> Tuple[str, dict]:
         return gc.consult(messages, model=model, max_tokens=max_tokens,
                           levels=ladder, temperature=0.2, timeout=timeout)
+
+    return call
+
+
+def qwen_caller(model: str, max_tokens: int, timeout: float
+                ) -> Callable[[List[dict]], Tuple[str, dict]]:
+    """**qwen 侧（阿里云百炼）**：用户 2026-10-08 看到 GLM 侧连续三次不出正文之后
+    （"用qwen吧"）——第二侧不再只有 GLM／中转站两条路。
+
+    为什么它值得单列一条：这条通道**既不是抽取族（deepseek）也不是标注族（zhipu）**，
+    所以判词按第三方记账时 `families.partner` 写 `qwen`，独立性是真·第三方。
+    形状与其它两侧一致（`(正文, usage)`），正文仍是 JSON 字符串——面板自己的
+    `collect_side` 负责解析与 `unparsed` 判定。
+
+    密钥只从 `QWEN_API_KEY` 读（**绝不入库**）；型号默认 `qwen3.8-max-0902`
+    （实测这一枚可用；同族 `qwen3.8-max` 会被 key 白名单 403），可用 `QWEN_MODEL` 覆盖。
+    """
+    from tools.kb_fetch.llm import QwenClient
+
+    def call(messages: List[dict]) -> Tuple[str, dict]:
+        system = "\n".join(str(m.get("content") or "") for m in messages
+                           if m.get("role") == "system")
+        user = "\n".join(str(m.get("content") or "") for m in messages
+                         if m.get("role") != "system")
+        client = QwenClient(model_id=model)
+        payload = client.chat_json(system, user, temperature=0.2, seed=0,
+                                   num_ctx=int(max_tokens))
+        usage = dict(client.last_usage)
+        usage.update({"model": client.model_version,
+                      "decode": client.decode_tag,
+                      "channel": "qwen"})
+        return json.dumps(payload, ensure_ascii=False), usage
 
     return call
 
@@ -399,7 +434,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo", default=str(gc.REPO_ROOT))
     parser.add_argument("--out", required=True)
     parser.add_argument("--glm-model", default=gc.DEFAULT_MODEL)
-    parser.add_argument("--partner", default=DEFAULT_PARTNER, choices=("glm", "relay"),
+    parser.add_argument("--partner", default=DEFAULT_PARTNER,
+                        choices=("glm", "relay", "qwen"),
                         help="会诊的**第二侧**走哪条通道：`glm`（**默认**＝GLM-5.3 的档位阶梯；"
                              "用户 2026-10-06 改判「不用 gpt6A 了，改用 glm5.3，不然太耗时间」）／"
                              "`relay`（显式中转站 GPT-6A；慢且脆，实测一次裁定 2900 s、"
@@ -457,18 +493,24 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         encoding="utf-8")
 
     main_answers = load_main_answer(args.main_answer) if args.main_answer else {}
-    #: 第二侧的通道与型号：用户 2026-10-06 把"难题攻关／会诊／提出方案"划给中转站 GPT-6A
-    #: （`--partner relay`，默认），GLM-5.3 留作对拍与回退（`--partner glm`）。
+    #: 第二侧的通道与型号：**默认 GLM-5.3**（用户 2026-10-06 改判"不用 gpt6A 了，
+    #: 改用 glm5.3"，2026-10-08 又当面纠正过一次）；中转站 GPT-6A 只在用户当场点名时
+    #: 用（`--partner relay`）；**`--partner qwen`** 是 2026-10-08 用户看到 GLM 侧
+    #: 连续不出正文之后点名的第三条（阿里云百炼 `qwen3.8-max-0902`，`QWEN_API_KEY`）。
     #: 显式给了 `--partner-model` 就听显式的；再显式给了 `--glm-model` 也听显式的（老调用方兼容）。
     if args.partner_model:
         partner_model = args.partner_model
     elif args.partner == "glm":
         partner_model = args.glm_model
+    elif args.partner == "qwen":
+        partner_model = os.environ.get("QWEN_MODEL", "qwen3.8-max-0902")
     else:
         from tools import relay_consult as rc
         partner_model = rc.DEFAULT_MODEL
     if args.partner == "glm":
         glm_call = glm_caller(partner_model, args.level, args.max_tokens, args.timeout)
+    elif args.partner == "qwen":
+        glm_call = qwen_caller(partner_model, args.max_tokens, args.timeout)
     else:
         #: 通道级回退：relay（GPT-6A）三次尝试全废之后改走 GLM-5.3，
         #: 判词里记 `fallback_from`（用户 2026-10-06："如果现在还是用不了
@@ -498,7 +540,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "models": {"deepseek": args.deepseek_model, "glm": args.glm_model},
         "partner": {"channel": args.partner, "model": partner_model},
         "families": {"deepseek": "deepseek",
-                     "partner": ("zhipu" if args.partner == "glm" else "relay")},
+                     "partner": {"glm": "zhipu", "relay": "relay",
+                                 "qwen": "qwen"}[args.partner]},
         "source_seen": manifest["source_seen"],
         "sources": [item["name"] for item in manifest["sources"]],
         "complete": all(item["complete"] for item in reports),
