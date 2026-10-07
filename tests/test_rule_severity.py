@@ -54,8 +54,8 @@ def test_new_dialogue_is_an_error_in_strict_mode():
     assert [item.severity for item in _r016(findings)] == [Severity.ERROR]
 
 
-def test_shot_type_mismatch_stays_a_warning_in_strict_mode():
-    """景别映射是有损启发式，strict 也不升档（§3.4）。"""
+def test_shot_type_mismatch_is_an_error_without_justification():
+    """v1.6 A3：无破例辩护时，声明景别被改写按 ERROR 处理（与 strict 无关）。"""
     from block_director.contracts.plan import Plan
 
     script = parse_script(MARKET)
@@ -67,6 +67,29 @@ def test_shot_type_mismatch_stays_a_warning_in_strict_mode():
                       "duration_frames": int(round((item.declared_seconds or 4)
                                                    * 24)),
                       "characters": list(item.characters)})
+    findings = check_compliance(Plan.from_dict({"shots": shots}), script,
+                                audit_level=AuditLevel.STRICT)
+    shot_type = [item for item in findings if "拍摄距离" in item.message]
+    assert shot_type and all(item.severity is Severity.ERROR
+                             for item in shot_type)
+
+
+def test_shot_type_mismatch_stays_a_warning_with_break_justification():
+    """v1.6 A3：有显式破例辩护时，景别改写保持 WARNING。"""
+    from block_director.contracts.plan import Plan
+
+    script = parse_script(MARKET)
+    shots = []
+    for index, item in enumerate(script.declared_shots, start=1):
+        shots.append({"shot_id": f"shot_{index:03d}", "order": index,
+                      "intent": "推进",
+                      "shot_type": "ELS" if item.shot_type else "MS",
+                      "duration_frames": int(round((item.declared_seconds or 4)
+                                                   * 24)),
+                      "characters": list(item.characters),
+                      "rule_justifications": [
+                          {"rule": "R015", "action": "break",
+                           "reason": "需要交代环境", "precedet": ""}]})
     findings = check_compliance(Plan.from_dict({"shots": shots}), script,
                                 audit_level=AuditLevel.STRICT)
     shot_type = [item for item in findings if "拍摄距离" in item.message]

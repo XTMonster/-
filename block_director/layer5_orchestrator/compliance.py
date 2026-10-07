@@ -262,16 +262,23 @@ def check_compliance(plan: Plan, script, *, fps: int = FPS,
                 target=shot.shot_id,
                 suggestion="时长以剧本声明为准"))
 
-    # R015 —— 景别提示（映射是有损启发式，因此只告警并附上原文）
+    # R015 —— 景别提示（映射是有损启发式，因此只告警并附上原文）。
+    # v1.6 A3：无破例辩护（declared_breaks 为空）时从 warning 升 error。
     for index, item in enumerate(declared):
         if index >= len(planned) or not item.shot_type:
             continue
         shot = planned[index]
         actual_type = str(shot.shot_type)
         if actual_type.upper() != item.shot_type:
+            justifications = list(getattr(shot, "rule_justifications", None) or [])
+            has_break = any(
+                str(j.get("rule") or "") == RULE_SHOT_TYPE
+                and str(j.get("action") or "").lower() == "break"
+                for j in justifications)
             distance_text = item.field("拍摄距离") or item.shot_type
+            severity = Severity.WARNING if has_break else Severity.ERROR
             findings.append(_finding(
-                Severity.WARNING, RULE_SHOT_TYPE,
+                severity, RULE_SHOT_TYPE,
                 f"镜号{item.shot_number} 声明的拍摄距离是「{distance_text}」"
                 f"（对应 {item.shot_type}），计划给的是 {actual_type}",
                 target=shot.shot_id,

@@ -117,11 +117,26 @@ def test_rewritten_dialogue_is_an_error():
                if not item.is_error)
 
 
-def test_shot_type_difference_is_only_a_warning():
-    """景别是从「拍摄距离」映射来的，映射本身有损，因此只告警。"""
+def test_shot_type_difference_is_an_error_without_justification():
+    """v1.6 A3：无破例辩护时，声明景别被改写按 ERROR 处理。"""
     script = _script()
     plan = _plan_from_declarations(script).to_dict()
     plan["shots"][0]["shot_type"] = "LS"           # 声明是近景（MCU）
+    findings = check_compliance(Plan.from_dict(plan), script)
+    type_errors = [item for item in findings
+                   if item.is_error and item.rule == "R015"
+                   and "拍摄距离" in item.message]
+    assert type_errors and "近景" in type_errors[0].message
+
+
+def test_shot_type_difference_stays_warning_with_break_justification():
+    """v1.6 A3：有显式破例辩护时，保持 WARNING 以兼容导演意图。"""
+    script = _script()
+    plan = _plan_from_declarations(script).to_dict()
+    plan["shots"][0]["shot_type"] = "LS"
+    plan["shots"][0]["rule_justifications"] = [
+        {"rule": "R015", "action": "break", "reason": "需要交代环境",
+         "precedet": ""}]
     findings = check_compliance(Plan.from_dict(plan), script)
     assert not [item for item in findings if item.is_error]
     warnings = [item for item in findings if not item.is_error]

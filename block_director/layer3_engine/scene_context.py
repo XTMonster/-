@@ -54,6 +54,22 @@ class SceneContext:
                 return shot
         return None
 
+    def require_character_in_shot(self, character_id: str) -> Optional[str]:
+        """v1.6 A3（D-17）：检查角色是否在本镜出场角色中。
+
+        对不在场的主体做动作是环境/氛围节拍的常见误用（如把"干鱼串飘动"
+        当成角色动画）。返回错误信息；``None`` 表示通过。
+        """
+        shot = self.shot()
+        if shot is None:
+            return "没有当前活动镜头"
+        present = set(str(cid) for cid in (getattr(shot, "characters", None) or []))
+        if str(character_id) not in present:
+            roster = ", ".join(sorted(present)) or "（无）"
+            return (f"{character_id} 不在本镜在场角色 {{{roster}}} 里。"
+                    f"环境/氛围节拍请用 vfx 字段（vfx_type 闭集见 create_vfx）。")
+        return None
+
     def subjects_for(self, shot_id: str = "") -> List[Any]:
         """本镜的**被摄主体**：镜头自己声明的角色。
 

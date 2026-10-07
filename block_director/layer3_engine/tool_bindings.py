@@ -79,6 +79,17 @@ def _require_character(character_id: str):
     return character, ""
 
 
+def _require_character_in_shot(character_id: str):
+    """v1.6 A3（D-17）：动作工具的前置校验，失败返回 ``(None, ToolResult)``。"""
+    context = get_context()
+    if context is None:
+        return None, _fail("场景上下文为空：请先构建场景")
+    message = context.require_character_in_shot(character_id)
+    if message:
+        return None, _fail(message)
+    return context.shot(), ""
+
+
 def _resolve_camera(args: Dict[str, Any]):
     """按 camera_id / 当前镜头找相机；找不到返回 ``(None, 错误文本)``。"""
     context = get_context()
@@ -235,6 +246,9 @@ def _tool_character_action(character_id: str, action_type: str,
     character, problem = _require_character(character_id)
     if character is None:
         return problem
+    shot, problem = _require_character_in_shot(character_id)
+    if shot is None:
+        return problem
     if action_type not in ACTION_TYPES:
         return _fail(f"未知动作类型 {action_type}。可用: "
                      f"{', '.join(ACTION_TYPES)}")
@@ -262,6 +276,9 @@ def _tool_move_character(character_id: str, target_position: List[float],
     character, problem = _require_character(character_id)
     if character is None:
         return problem
+    shot, problem = _require_character_in_shot(character_id)
+    if shot is None:
+        return problem
     action_type = "run_to" if str(speed) == "run" else "walk_to"
     params: Dict[str, Any] = {"target_position": [float(v)
                                                  for v in target_position],
@@ -287,6 +304,9 @@ def _tool_look_at(character_id: str, start_frame: int, end_frame: int,
     """
     character, problem = _require_character(character_id)
     if character is None:
+        return problem
+    shot, problem = _require_character_in_shot(character_id)
+    if shot is None:
         return problem
     position: Optional[List[float]] = None
     if target_position is not None:
@@ -326,6 +346,9 @@ def _tool_face_character(character_id: str, target: str = "",
     """
     character, problem = _require_character(character_id)
     if character is None:
+        return problem
+    shot, problem = _require_character_in_shot(character_id)
+    if shot is None:
         return problem
     position: Optional[List[float]] = None
     if target_position is not None:
