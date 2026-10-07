@@ -1,0 +1,4 @@
+{
+  "_why": "dispatch-board hook 的工作区定位：优先用本文件；没有就退回 hook 事件里的 cwd。",
+  "workspace": "E:\\白模预演codex"
+}

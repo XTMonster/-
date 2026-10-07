@@ -60,8 +60,13 @@ from tools.kb_fetch.llm import GLMClient, LLMError  # noqa: E402
 #: scene_contract.py`）。**从那里读不到**（那个模块要 bpy 侧的兄弟依赖才 import
 #: 得动），所以在这一处**显式钉住**，并由 `tests/test_q5_plan_shaped_entries.py`
 #: 拿真实生产者对拍——两处不一致时测试当场红。
+#: v1.5 §5.7（P4-T5）加 `构图`：`shot.composition.rule` 真的会发出这一档种子
+#: （只在该取值落进知识侧 `VALUE_DOMAINS["composition_rule"]` 闭集时）。
+#: `光线` 不在这里——`VALUE_DOMAINS["lighting"]` 是 `None`，生产者**发不出来**，
+#: 而本表的口径是"声明 == 真实生产者"，`tests/test_q5_plan_shaped_entries.py`
+#: 两边都掐（多发要红，多写也要红）。
 PLAN_QUERY_KEYS: Tuple[str, ...] = ("景别", "意图", "镜头", "运镜", "动作", "特效",
-                                    "对白")
+                                    "对白", "构图")
 
 DEFAULT_HOLDOUT = "fixtures/knowledge_holdout.jsonl"
 DEFAULT_VOCAB = "fixtures/knowledge_holdout.vocab.json"

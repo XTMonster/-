@@ -158,12 +158,16 @@ def test_extract_writes_lf_to_disk(tmp_path):
         X.sha256_raw(out / "audit_log.jsonl")
 
 
-@pytest.mark.parametrize("run_id", ["20261003_real_glm", "20261003_real_ds",
-                                    "20261003_real_long"])
+@pytest.mark.parametrize("run_id", ["20261007-v15-6shot-ds", "20261007-v15-long"])
 def test_a_landed_run_still_checks_out_after_an_lf_checkout(tmp_path, run_id):
     """把入库证据**按新检出重放**（每个文本文件都变成 LF），`check` 必须零理由。
 
     这就是原缺陷的判据：此前那四条 pin 是从 CRLF 字节算的，LF 副本一律 STALE。
+
+    **2026-10-07（`rebind/v2` 换代）**：参数表从
+    `20261003_real_glm / _ds / _long` 换成本代的两份真跑——`check()` 里那条
+    "索引指纹必须与现行一致"是**同代性**判据，上一代的证据件会被（正确地）判红。
+    旧那三份**留在库里当历史**，不再被这条用例读。判据与断言强度一个字没动。
     """
     source = ROOT / "docs" / "evidence" / run_id
     if not (source / X.MANIFEST_NAME).is_file():

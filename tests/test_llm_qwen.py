@@ -91,3 +91,35 @@ def test_a_restricted_model_is_reported_by_name(monkeypatch):
         client.chat_json("s", "u", 0.0, 0, 64, retries=1)
     assert "qwen3-max" in str(excinfo.value)
     assert "access_denied" in str(excinfo.value)
+
+
+def test_reasoning_effort_is_opt_in_and_lands_in_the_decode_tag(monkeypatch):
+    """思考强度只走 `QWEN_REASONING_EFFORT`；默认逐字不变，开了就必须**进指纹**。
+
+    为什么必须进 `decode_tag`：`decode` 是 `build_hypergraph.CACHE_KEY_FIELDS`
+    的一个分量，不进指纹的话同一条缓存键会同时指向"加档之前"和"加档之后"
+    两份不同的抽取（manifest 上看不出来）。
+    """
+    captured = {}
+
+    def fake_post(url, payload, headers, timeout):  # noqa: ARG001
+        captured["payload"] = payload
+        return {"choices": [{"message": {"content": '{"ok": 1}'}}],
+                "usage": {"prompt_tokens": 1, "completion_tokens": 1},
+                "model": "qwen3.8-max-0902"}
+
+    monkeypatch.setattr(llm, "_post_json", fake_post)
+
+    monkeypatch.delenv("QWEN_REASONING_EFFORT", raising=False)
+    client = llm.QwenClient("qwen3.8-max-0902", api_key="test-key")
+    client.chat_json("s", "u", 0.0, 0, 64, retries=1)
+    assert "reasoning_effort" not in captured["payload"], "默认不许加这个键"
+    assert client.decode_tag == "thinking=default;max_tokens=num_ctx"
+
+    monkeypatch.setenv("QWEN_REASONING_EFFORT", "max")
+    loud = llm.QwenClient("qwen3.8-max-0902", api_key="test-key")
+    loud.chat_json("s", "u", 0.0, 0, 64, retries=1)
+    assert captured["payload"]["reasoning_effort"] == "max"
+    assert loud.decode_tag.endswith(";reasoning_effort=max"), loud.decode_tag
+    assert llm.QwenClient("qwen3.8-max-0902", api_key="k").decode_tag != \
+        "thinking=default;max_tokens=num_ctx"

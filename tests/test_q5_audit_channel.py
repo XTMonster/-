@@ -248,12 +248,15 @@ def test_the_committed_real_run_drift_is_reproducible():
     §4.1a 要求真实运行的证据入库（`tests/test_acceptance_fixtures_present.py`
     同一口径）。
     """
-    #: **换到最近一次真跑**（2026-10-06 long21）。为什么必须换：这条用例要求
+    #: **换到最近一次真跑**（2026-10-07，`rebind/v2` 换代后的 6 镜真跑）。
+    #: 为什么必须换：这条用例要求
     #: "盘上那一跑的重推/发出漂移还能复算"，而 Q5 的 join 是**按代际钥匙**判的——
-    #: 语料随活站点漂移之后（`69791dbacd…` → `48df4a53c2c9…`），旧跑的 `shots.json`
-    #: 会被如实判成 `not_measured`（那是判据在干活，不是用例坏了）。
+    #: 语料/索引换代之后（2026-10-07 的 `rebind/v2`：`c796a5a8…` → `e5213e1b…`），
+    #: 旧跑的 `shots.json` 会被如实判成 `not_measured`（那是判据在干活，不是用例坏了）。
     #: 结论：**证据跟着最近一次真跑走**，判据一个字不动。
-    run_dir = ROOT / "docs" / "evidence" / "20261006-long21"
+    #: 旧代的两份（`20261006-long21`、更早的 `20261003_real_*`）**留在库里当历史**，
+    #: 不再被这条用例读——它们的 pin 是另一代索引的，repin 会把换代洗掉（§R-8）。
+    run_dir = ROOT / "docs" / "evidence" / "20261007-v15-6shot-ds"
     shots = run_dir / "export" / "export" / "shots.json"
     audit = run_dir / "audit_log.jsonl"
     assert shots.is_file(), f"真实运行的 shots.json 不在库里：{shots}"

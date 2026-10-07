@@ -24,6 +24,13 @@
   `level=high` 在 ~10k token 的 bundle 上也要十几分钟 ⇒ 默认 `high`，
   `--level max` 留给"只有一个问题、值得等"的场合；
 * 输出必须是**单一 JSON 对象**（便于入库与逐条对拍），正文为空**判失败**；
+* **标注类任务走 `--plain`**（2026-10-07 实测倒逼）：`SYSTEM_TEMPLATE` 要求
+  "只输出一个 JSON 对象 {summary, role, teaching, findings[], not_checked}"，
+  而有些问题的输出契约是别的形状（例：三分类要"只输出一个 JSON 数组"）。两份
+  契约互斥时模型把预算全花在调和上——实测同一份 2 条分类问题，
+  **带角色模板 170.4 s 回一个 `findings` 对象（形状不对）**，**去掉 system 后
+  32.9 s 回正确的 `list[2]`**。所以"标注类"任务显式走这条缝，且**不许**顺手改
+  `build_messages`（会诊包的角色模板是另一件事，两者互不替代）。
 * 用法：
 
   ```
@@ -299,19 +306,53 @@ def build_messages(role: str, question: str,
             {"role": "user", "content": user}]
 
 
+def plain_messages(question: str,
+                   contexts: Sequence[Tuple[str, str]],
+                   sources: Sequence[Dict[str, object]] = (),
+                   status_text: Optional[str] = None) -> List[dict]:
+    """**机械标注包**：只有一条 user 消息——问题的输出契约就是唯一契约。
+
+    为什么需要它（2026-10-07 实测，`docs/evidence/20261007-grounding-probe/`）：
+    角色 system 模板自带"只输出一个 JSON 对象 {summary, findings[]}"的硬契约；
+    当问题本身要求"只输出一个 JSON 数组，长度=N"时，模型服从了 **system**、
+    忽略了问题。同一份 2 条分类问题两种形状的对照：
+
+    * `role`  （带 system）：170.4 s，回 `{"role":…,"findings":[…],"not_checked":[…]}`，
+      **不是**要的那个数组（形状不对 ⇒ 下游解析不了）；
+    * `plain` （无 system）：32.9 s，回 `[{"i":1,…},{"i":2,…}]`，形状正确。
+
+    所以"标注/抽取类"任务走这条缝。这不放宽任何判据：问题、源码、产物、现状
+    的注入方式与取证（`bundle.manifest.json` ＋ `bundle.md`）全部沿用，只是
+    **不再**往包里塞一份会与问题抢输出形状的角色提示词。
+    """
+    return [{"role": "user",
+             "content": compose_user_message(question, contexts, sources,
+                                             status_text)}]
+
+
 def bundle_manifest(question_path: str, question: str,
                     contexts: Sequence[Tuple[str, str]],
                     sources: Sequence[Dict[str, object]],
                     status_text: Optional[str],
                     status_full: Optional[str] = None,
-                    repo: pathlib.Path = REPO_ROOT) -> Dict[str, object]:
-    """"它看到了什么"的取证：现状锚点 ＋ 每份输入的字数与 sha256。"""
+                    repo: pathlib.Path = REPO_ROOT,
+                    mode: str = "role") -> Dict[str, object]:
+    """"它看到了什么"的取证：现状锚点 ＋ 每份输入的字数与 sha256。
+
+    `repo` 必须排在 `mode` **前面**：`panel_consult.py` / `plan_writer.py` 用
+    **位置参数**把 `repo` 传在第 7 项（`..., status_text, None, repo`）。把
+    `mode` 插到它前面会让那两处**静默**把 `repo` 喂给 `mode`、`repo` 退回默认值
+    （2026-10-07 实测：`test_manifest_is_written_before_any_call_and_outlives_a_failure`
+    报 `TypeError: Object of type WindowsPath is not JSON serializable`）。
+    """
     stripped = [{key: value for key, value in item.items() if key != "text"}
                 for item in sources]
     full = status_text if status_full is None else status_full
     return {
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "repo": git_snapshot(repo),
+        #: 语义开关：这一次是"会诊包"（带角色 system）还是"机械标注包"（`--plain`）。
+        "mode": mode,
         "question": {"path": str(question_path),
                      "sha256": hashlib.sha256(question.encode("utf-8")).hexdigest(),
                      "chars": len(question)},
@@ -335,22 +376,32 @@ def bundle_manifest(question_path: str, question: str,
 
 
 def bundle_fingerprints(messages: Sequence[dict]) -> Dict[str, object]:
-    """某一份包的指纹：写进 manifest，`bundle.md` 与之一对拍即为"逐字送过"。"""
+    """某一份包的指纹：写进 manifest，`bundle.md` 与之一对拍即为"逐字送过"。
+
+    两种形状：会诊包是 `[system, user]`；机械标注包（`--plain`）只有 `[user]`
+    ——没有 system 就**不写**一枚冒充它的空指纹（名字要说真话）。
+    """
+    layout = ((0, "system"), (1, "user")) if len(messages) > 1 else ((0, "user"),)
     return {key: {"chars": len(messages[index]["content"]),
                   "sha256": hashlib.sha256(
                       messages[index]["content"].encode("utf-8")).hexdigest()}
-            for index, key in ((0, "system"), (1, "user"))}
+            for index, key in layout}
 
 
 def render_bundle(bundles: Sequence[Tuple[str, List[dict]]]) -> str:
     """把**实际送进模型**的逐字内容落成一份人可读的证据文件。"""
     out = ["# 会诊包（实际送进模型的逐字内容）", ""]
     for role, messages in bundles:
-        out += [f"## system（角色：{role}）", "", "```text",
-                messages[0]["content"].rstrip(), "```", ""]
+        if messages[0]["role"] == "system":
+            out += [f"## system（角色：{role}）", "", "```text",
+                    messages[0]["content"].rstrip(), "```", ""]
+        else:
+            out += [f"## system（角色：{role}）：本次**没有** system 提示词"
+                    "（`--plain` 机械标注包，问题自带输出契约）", ""]
     for role, messages in bundles[:1]:
+        user = messages[-1]["content"]
         out += [f"## user（所有角色共用；角色 {role} 的包逐字如下）", "", "```text",
-                messages[1]["content"].rstrip(), "```", ""]
+                user.rstrip(), "```", ""]
     return "\n".join(out)
 
 
@@ -367,6 +418,44 @@ def read_contexts(paths: Sequence[str], tail: int = 0,
     return out
 
 
+def _read_stream(response, started: float) -> dict:
+    """把 SSE 流收成与**非流式**同形的 reply 字典（`choices[0].message.content` ＋ usage）。
+
+    只认 OpenAI 兼容的 `data: {...}` 行；`[DONE]` 结束。`usage` 若对端不发就是空字典
+    ——**不猜**：`finish_reason` 与正文字符数照样能当证据（正文为空仍判失败）。
+    """
+    parts: List[str] = []
+    usage: Dict = {}
+    finish = ""
+    chunks = 0
+    first_chunk_s: Optional[float] = None
+    for raw in response:
+        line = raw.decode("utf-8", "replace").strip()
+        if not line.startswith("data:"):
+            continue
+        payload = line[5:].strip()
+        if payload == "[DONE]":
+            break
+        try:
+            item = json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+        if first_chunk_s is None:
+            first_chunk_s = round(time.time() - started, 1)
+        chunks += 1
+        if item.get("usage"):
+            usage = dict(item["usage"])
+        choice = (item.get("choices") or [{}])[0]
+        delta = choice.get("delta") or {}
+        parts.append(str(delta.get("content") or ""))
+        if choice.get("finish_reason"):
+            finish = str(choice["finish_reason"])
+    return {"choices": [{"message": {"content": "".join(parts)},
+                         "finish_reason": finish or "stop"}],
+            "usage": usage,
+            "_stream": {"chunks": chunks, "first_chunk_s": first_chunk_s}}
+
+
 def call_once(messages: List[dict], *, model: str, max_tokens: int, level: str,
               temperature: float, timeout: float,
               api_key: Optional[str] = None) -> Tuple[str, dict]:
@@ -374,14 +463,39 @@ def call_once(messages: List[dict], *, model: str, max_tokens: int, level: str,
     key = api_key if api_key is not None else os.environ.get("GLM_API_KEY", "")
     if not key:
         raise SystemExit("缺少 GLM_API_KEY（只从环境变量读，绝不入库）")
+    #: **流式**（opt-in，默认关）：`GLM_STREAM=1` 时改发 `stream:true` 并按 SSE 收正文。
+    #:
+    #: 为什么需要（2026-10-07 实测，阿里云百炼 ＋ `qwen3.8-max-0902`）：同一份 10 k 字符的
+    #: 裁决题包，**非流式 26 分钟没有返回**（进程 CPU 0.1 s，一直挂在 read 上），
+    #: 而**流式 1.0 s 回第一个 chunk、605 s 拿到完整正文**
+    #: （`work/_probe_bailian_stream.py`）。这与本仓为 GPT-6A 踩过的坑同形
+    #: （`docs/evidence/20261006-linkai-streaming/`：非流式大包 50 分钟零输出、改流式
+    #: 132.7 s 拿到正文）——机制都是"响应头要立刻回来，否则中途会被掐"。
+    #: 默认**不发** `stream`（payload 逐字不变），所以智谱/中继的历史行为不受影响。
+    stream = os.environ.get("GLM_STREAM", "").strip().lower() not in ("", "0", "false")
     payload = {
         "model": model,
-        "stream": False,
+        "stream": bool(stream),
         "messages": messages,
         "temperature": temperature,
         "max_tokens": max_tokens,
         "thinking": {"type": "enabled", "level": level},
     }
+    #: **思考强度**（opt-in，默认不发）：`GLM_REASONING_EFFORT` 非空时把它原样带进 payload。
+    #:
+    #: 为什么需要这条缝（2026-10-07 实测，`work/_probe_qwen_thinking.py`，同一通道
+    #: `llm.goaichat.top` ＋ `qwen3.8-max-0902`，每条 3 次采样）：
+    #:
+    #:   `thinking.level`        low 23/61/38　high 51/52/187　**max 42/53/41**  ← max 并不比 high 想得多
+    #:   `reasoning_effort=high` 59/48/58
+    #:   **`reasoning_effort=max`　305/46/229**  ← 真正把思考拉满的是这一项
+    #:
+    #: 这与 `model-routing.md` 记的 relay 行为一致（`thinking={"type":"enabled","level":"max"}`
+    #: 被忽略、`reasoning_effort` 生效）。**不设这个环境变量时 payload 逐字不变**，
+    #: 所以智谱自己的 GLM 路径不受影响；也**不许**为了省时间把它调低（静默降级）。
+    effort = os.environ.get("GLM_REASONING_EFFORT", "").strip()
+    if effort:
+        payload["reasoning_effort"] = effort
     request = urllib.request.Request(
         f"{GLM_BASE}/chat/completions",
         data=json.dumps(payload).encode("utf-8"),
@@ -391,7 +505,10 @@ def call_once(messages: List[dict], *, model: str, max_tokens: int, level: str,
     started = time.time()
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
-            reply = json.loads(response.read().decode("utf-8"))
+            if stream:
+                reply = _read_stream(response, started)
+            else:
+                reply = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", "replace")[:400]
         return "", {"level": level, "error": f"HTTP {exc.code}: {detail}",
@@ -409,6 +526,8 @@ def call_once(messages: List[dict], *, model: str, max_tokens: int, level: str,
     message = choice.get("message") or {}
     usage = {
         "model": reply.get("model"), "requested_model": model, "level": level,
+        "reasoning_effort": (os.environ.get("GLM_REASONING_EFFORT", "").strip()
+                             or None),
         "max_tokens": max_tokens, "elapsed_s": round(time.time() - started, 1),
         "usage": reply.get("usage"), "finish_reason": choice.get("finish_reason"),
     }
@@ -494,6 +613,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                              "source_seen=false）")
     parser.add_argument("--no-status", action="store_true",
                         help="不自动注入项目现状（默认注入；只在现状本身不相关时用）")
+    parser.add_argument("--plain", action="store_true",
+                        help="**机械标注包**：不发角色 system 提示词，只发一个问题消息"
+                             "（＋源码/产物/现状）。用在「问题的输出契约不是会诊 schema」"
+                             "的场合（三分类、抽取、打标签）。起因（2026-10-07 实测）："
+                             "角色模板自带「只输出一个 JSON 对象 {summary,findings}」契约，"
+                             "会和问题要求的输出形状**抢**——同一份 2 条分类问题，带模板"
+                             "170.4 s 回 findings 对象（形状不对），不带模板 32.9 s 回 list[2]。")
     parser.add_argument("--status-chars", type=int, default=STATUS_MAX_CHARS,
                         help="现状摘要的字数上限（0 = 不截断）；截断会在包里留痕，"
                              "完整文本的 sha256 记在 manifest")
@@ -524,11 +650,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
               "low": ["low"]}[args.level]
     out_dir = pathlib.Path(args.out)
     manifest = bundle_manifest(args.question, question, contexts, sources,
-                               status_text, status_full, repo)
+                               status_text, status_full,
+                               mode=("plain" if args.plain else "role"), repo=repo)
+
+    def _messages(role: str) -> List[dict]:
+        """这一轮每个"角色"用哪种包——`--plain` 时角色名只是产物的标签。"""
+        if args.plain:
+            return plain_messages(question, contexts, sources, status_text)
+        return build_messages(role, question, contexts, sources, status_text)
 
     if args.dry_run:
         for role in roles:
-            messages = build_messages(role, question, contexts, sources, status_text)
+            messages = _messages(role)
             manifest.setdefault("bundles", {})[role] = bundle_fingerprints(messages)
             print(f"dry-run {role}: {len(sources)} sources, {len(contexts)} artefacts, "
                   f"{sum(len(m['content']) for m in messages)} chars")
@@ -542,7 +675,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     bundles: List[Tuple[str, List[dict]]] = []
     for role in roles:
-        messages = build_messages(role, question, contexts, sources, status_text)
+        messages = _messages(role)
         bundles.append((role, messages))
         manifest.setdefault("bundles", {})[role] = bundle_fingerprints(messages)
     #: **先留证、再联网**：这样即使这一轮失败（空正文/断连），"它看到了什么"仍在。

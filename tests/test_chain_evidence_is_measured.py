@@ -114,6 +114,37 @@ def missing_quality_inputs(line: str):
     return [flag for flag in QUALITY_INPUT_FLAGS if flag not in line]
 
 
+def resolve_chain_target(token: str, text: str) -> pathlib.Path:
+    """把活行上的一个取值解析成仓库里的路径。
+
+    两种写法都认：
+
+    * **字面量**（`docs/evidence/<run>/export/shots.json`）——照旧；
+    * **`(Join-Path $knowledgeRun '<相对路径>')`**——先按链上**那一处**定义
+      （`$knowledgeRun = '...'`）解出运行目录，再拼相对路径。
+
+    为什么加第二种（2026-10-07，`rebind/v2` 换代）：链上从前把运行目录**写死两遍**
+    （Q6b 的 `injection_audit` 那一行 ＋ 这里的 `--shots`/`--audit-log`），
+    换代时漏改一处就会读上一代的证据——`test_q6b_reads_the_same_real_run_as_...`
+    已经在治这个洞。现在链只留**一处**真源，这条守门跟着解引用，
+    **判据不变**（仍然要求 token 指向**存在且非空**的证据文件），而且多钉了一条：
+    值必须能从链上唯一的 `$knowledgeRun` 定义解出来。
+    """
+    match = re.match(r"^\(Join-Path\s+\$(\w+)\s+'([^']+)'\)$", token)
+    if not match:
+        return ROOT / token
+    variable, relative = match.group(1), match.group(2)
+    definitions = [line for _number, line in live_lines(text)
+                   if re.match(r"\s*\$%s\s*=" % variable, line)]
+    assert len(definitions) == 1, (
+        "`$%s` 只许有**一处**定义（两处定义就是这个洞的成因）：%s"
+        % (variable, definitions))
+    literal = re.search(r"=\s*'([^']+)'", definitions[0])
+    assert literal, "`$%s` 的定义必须是一个可解析的字符串：%s" % (
+        variable, definitions[0])
+    return ROOT / literal.group(1) / relative
+
+
 def test_the_quality_report_is_fed_the_real_run_and_the_audit_channel():
     """Q5 / E1 归位成门之后，链上那一条命令必须真的把输入递进去。
 
@@ -125,13 +156,14 @@ def test_the_quality_report_is_fed_the_real_run_and_the_audit_channel():
     `--audit-log` 是 §4.1b 硬规则 2 的通道：join 键只认 `audit_log.jsonl` 里
     **真实发出**的查询，不认 `shots.json` 反推的串（后者是收尾快照）。
     """
-    line = live_quality_line(chain_text())
+    text = chain_text()
+    line = live_quality_line(text)
     assert missing_quality_inputs(line) == [], (
         "链上的 quality.py 活行缺输入：" + ",".join(missing_quality_inputs(line)))
     for flag in ("--shots", "--audit-log"):
-        match = re.search(re.escape(flag) + r"\s+(\S+)", line)
+        match = re.search(re.escape(flag) + r"\s+((?:\(Join-Path[^)]*\))|(?:\S+))", line)
         assert match, f"{flag} 后面看不出指向哪个文件"
-        target = ROOT / match.group(1)
+        target = resolve_chain_target(match.group(1), text)
         assert target.is_file() and target.stat().st_size > 0, (
             f"{flag} 指向的证据 {match.group(1)} 不在或为空："
             f"Q5 的输入不许是空气（§4.1b 硬规则 1）")

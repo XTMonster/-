@@ -142,8 +142,23 @@ def test_check_fires_when_the_oracle_or_the_index_moved_on(tmp_path):
 
 
 def test_the_landed_real_run_evidence_is_fresh():
-    """入库的那份真实运行证据必须**同代**（否则链上 Q5 读的就是过期证据）。"""
-    run_dir = ROOT / "docs" / "evidence" / "20261003_real_glm"
+    """入库的那份真实运行证据必须**同代**（否则链上 Q5 读的就是过期证据）。
+
+    **2026-10-07（`rebind/v2` 换代）**：这条用例读的那份运行从
+    `20261003_real_glm` 换成 **`20261007-v15-6shot-ds`**。为什么必须换：
+    Q5/E2 的 join 是**按代际钥匙**判的（索引指纹 `c796a5a8…` → `e5213e1b…`），
+    上一代的 `shots.json` 会被如实判成 `not_measured`——那是判据在干活，不是用例坏了。
+    换代口径见 `docs/knowledge/REGEN_LOG_20261007_rotation.md` §7：**不许 repin**
+    （`extract_run_evidence.repin` 也会拒），"证据跟着最近一次真跑走"。
+
+    两条**判据一个字都没动**：`check()` 仍然要求 held-out sha256、索引指纹、
+    已登记代三者全对；`retrieval_calls` 的契约对拍仍然逐跑钉住——只是这一份
+    （修复之后才落的）本来就是**干净**的，所以警告数为 0。历史那份"警告形状"的
+    证据件（`20261003_real_glm`）**留在库里**，仍然由
+    `test_the_retrieval_cross_check_compares_shots_with_the_audit_events`
+    逐字节钉住（它不调 `check()`，所以不受换代影响）。
+    """
+    run_dir = ROOT / "docs" / "evidence" / "20261007-v15-6shot-ds"
     assert (run_dir / "run_manifest.json").is_file(), (
         "真实运行的证据还没入库：缺 run_manifest.json")
     reasons, warnings = X.check(
@@ -151,24 +166,24 @@ def test_the_landed_real_run_evidence_is_fresh():
         index_manifest=ROOT / "knowledge" / "hypergraph.manifest.json",
         with_warnings=True)
     assert reasons == [], reasons
-    # §3.3 的契约字段在**这一份**证据里是修复前的产物：顶层 `retrieval_calls=0`，
-    # 而审计日志里 7 条 `retrieval_call`（`knowledge.retrieval_calls` 也写 7）。
-    # `--check` 把它当**警告**如实报出来（不影响同代性判定），并逐跑钉住——数字
-    # 变了就说明证据被换过（或有人把这份改成了"干净"的，那要一跑覆盖）。
-    assert len(warnings) == 1, warnings
-    assert "retrieval_calls=0" in warnings[0]
-    assert "retrieval_call 事件 7 条" in warnings[0]
+    # §3.3 的契约字段在**这一份**证据里是自洽的：顶层 `retrieval_calls=7` 与审计里的
+    # 7 条 `retrieval_call` 一致 ⇒ `--check` 零警告。数字变了就说明证据被换过
+    # （那就得按同一条口径重新提出证据，而不是把断言调松）。
+    assert warnings == [], warnings
 
 
 def test_the_second_landed_run_is_fresh_and_has_no_contract_warning():
-    """第二份真实运行（DeepSeek，逐镜查询带上声明之后）也必须同代，且**没有**警告。
+    """第二份真实运行（长剧本，DeepSeek）也必须同代，且**没有**警告。
 
     它存在的意义正是"干净的证据件"：`shots.json.retrieval_calls = 7` 与审计里的
     7 条 `retrieval_call` 一致——那是 `tools/run_headless.py` 把
     `retrieval_calls=` 传进 `export_project()` 之后的第一跑，也是逐镜契约串
     开始带**声明拍摄手法**之后的第一跑。
+
+    **2026-10-07（`rebind/v2` 换代）**：`20261003_real_ds` → `20261007-v15-long`
+    （同一套判据、同一句"必须同代且零警告"，换的只是**哪一份运行**是本代证据）。
     """
-    run_dir = ROOT / "docs" / "evidence" / "20261003_real_ds"
+    run_dir = ROOT / "docs" / "evidence" / "20261007-v15-long"
     assert (run_dir / "run_manifest.json").is_file(), "第二份真实运行证据还没入库"
     reasons, warnings = X.check(
         out_dir=run_dir, holdout=ROOT / "fixtures" / "knowledge_holdout.jsonl",
@@ -179,14 +194,16 @@ def test_the_second_landed_run_is_fresh_and_has_no_contract_warning():
 
 
 def test_the_long_real_run_is_fresh_and_stayed_within_the_ceiling():
-    """长剧本（64 镜）的真实运行：证据同代，且**没有触顶降级**。
+    """长剧本（61+ 镜）的真实运行：证据同代，且**没有触顶降级**。
 
     2026-10-03 实测：真实模型路径此前只跑过 6 镜；这一跑第一次到文档口径的长剧本
     规模。它同时给 Q5 的运行侧一个有 64 条发出查询的样本（此前 6 条）——
     判据一个字没动，两边都报**0 命中**，是 §三十八 那条"结构性不可达"的第二个、
     更大的独立证据。这条用例只钉**证据本身**：同代、无警告、DONE、预算未触顶。
+
+    **2026-10-07（`rebind/v2` 换代）**：`20261003_real_long` → `20261007-v15-long`。
     """
-    run_dir = ROOT / "docs" / "evidence" / "20261003_real_long"
+    run_dir = ROOT / "docs" / "evidence" / "20261007-v15-long"
     assert (run_dir / "run_manifest.json").is_file(), "长剧本运行证据还没入库"
     reasons, warnings = X.check(
         out_dir=run_dir, holdout=ROOT / "fixtures" / "knowledge_holdout.jsonl",

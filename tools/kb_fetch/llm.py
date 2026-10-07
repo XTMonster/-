@@ -377,11 +377,21 @@ class QwenClient:
         self.model_version = self.model_id
         self.api_key = api_key or QWEN_API_KEY
         self.last_usage: Dict[str, int] = {}
+        #: **思考强度**（opt-in，默认不发）：用户 2026-10-07 指示"新模型思考强度拉到最大"。
+        #: 实测（`work/_probe_qwen_thinking.py`，同一通道 3 次采样）：`thinking.level`
+        #: 只有 low<high 有区分、**max 并不比 high 想得多**（42/53/41 vs 51/52/187），
+        #: 真正生效的是 OpenAI 兼容的 **`reasoning_effort`**（max 305/46/229）。
+        #: 它**必须进 `decode_tag`**——否则同一条 `CACHE_KEY_FIELDS` 会同时指向
+        #: "加档之前"和"加档之后"两份不同的抽取，而 manifest 上看不出来。
+        self.reasoning_effort = os.environ.get("QWEN_REASONING_EFFORT", "").strip()
 
     @property
     def decode_tag(self) -> str:
         """解码条件的可读指纹（这条通道没有档位开关，如实写）。"""
-        return "thinking=default;max_tokens=num_ctx"
+        tag = "thinking=default;max_tokens=num_ctx"
+        if self.reasoning_effort:
+            tag += f";reasoning_effort={self.reasoning_effort}"
+        return tag
 
     def chat_json(self, system: str, user: str, temperature: float, seed: int,
                   num_ctx: int, key: str = "", retries: int = 3) -> Dict:
@@ -393,6 +403,8 @@ class QwenClient:
                          {"role": "user", "content": user}],
             "temperature": temperature, "max_tokens": int(num_ctx),
         }
+        if self.reasoning_effort:
+            payload["reasoning_effort"] = self.reasoning_effort
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:

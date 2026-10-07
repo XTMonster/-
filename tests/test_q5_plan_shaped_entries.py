@@ -52,6 +52,9 @@ def _probe_shot(**overrides):
         actions = [{"action_type": "walk"}]
         vfx = [{"type": "flame"}]
         dialogues = [{"text": "走。", "character_id": "char_001"}]
+        #: v1.5 §5.7：构图声明的种子只在取值落进知识侧闭集时才写 ——
+        #: `lead_room` 是那一侧词表里的值，用它把 `构图=` 这一档撑出来。
+        composition = {"rule": "lead_room"}
 
     for key, value in overrides.items():
         setattr(Shot, key, value)
@@ -91,6 +94,24 @@ def test_the_declared_key_set_equals_what_the_producer_really_emits():
         SC.shot_constraint_query(_probe_shot())
 
 
+def test_a_composition_declaration_adds_exactly_one_new_seed():
+    """P4-T5：构图声明只该**加一档** `构图=`，且只在取值落进知识侧闭集时。
+
+    计划侧 `COMPOSITION_RULES` 的六个取值里只有 `lead_room` 在
+    `VALUE_DOMAINS["composition_rule"]` 里——其余（`thirds`/`center`/`symmetry`/
+    `diagonal`/`frame_within_frame`）是**另一套词表**，写出去就是死值。
+    """
+    without = _keys(SC.shot_constraint_query(_probe_shot(composition={})))
+    with_lead_room = SC.shot_constraint_query(_probe_shot())
+    assert _keys(with_lead_room) == without | {"构图"}
+    assert "构图=lead_room" in with_lead_room
+    #: 词表外的取值 ⇒ 一个字都不发（死值不许占位）。
+    outside = SC.shot_constraint_query(
+        _probe_shot(composition={"rule": "thirds"}))
+    assert _keys(outside) == without
+    assert "构图" not in outside
+
+
 def _plan_with(shot):
     from block_director.contracts.plan import Plan, ShotPlan
 
@@ -101,7 +122,8 @@ def _plan_with(shot):
                                 camera=dict(shot.camera),
                                 actions=[dict(item) for item in shot.actions],
                                 vfx=[dict(item) for item in shot.vfx],
-                                dialogues=[dict(item) for item in shot.dialogues])])
+                                dialogues=[dict(item) for item in shot.dialogues],
+                                composition=dict(shot.composition))])
 
 
 def test_a_key_the_producer_cannot_emit_is_not_declared():
@@ -111,7 +133,8 @@ def test_a_key_the_producer_cannot_emit_is_not_declared():
     却证明不了"空值不写键"（空值凭空加键会把 `seed_miss` 伪装成"知识库里没有"）。
     """
     bare = _probe_shot(shot_type="CU", intent_type="", declared_camera_move="",
-                       camera={}, actions=[], vfx=[], dialogues=[])
+                       camera={}, actions=[], vfx=[], dialogues=[],
+                       composition={})
     assert SC.shot_constraint_query(bare) == "景别=CU"
 
 
@@ -121,6 +144,18 @@ def test_every_annotated_entry_is_plan_shaped():
     assert len(annotated) >= 30, "§4.1b 第一步：带 expect_movements 的条目 ≥ 30"
     bad = [entry["id"] for entry in annotated if not plan_shape(entry)]
     assert not bad, f"这些条目的 q 键集不在计划可表达空间里：{bad[:5]}"
+
+
+def _plan_shape_probe():
+    """**夹具族代表的那种计划形状**：景别＋意图＋（声明/实际）运镜，**不声明构图**。
+
+    v1.5 §5.7（P4-T5）之后，构图声明会多发出一档 `构图=` 种子；而 held-out 夹具里
+    的 `q` 是**没有**这一档的。两条"能不能 join"的用例要问的是"**夹具那一族**在
+    结构上还够不够得着"，所以这里的探针按夹具形状搭（不声明构图）——构图那一档
+    由 `test_a_composition_declaration_adds_exactly_one_new_seed` 单独钉。
+    """
+    return _probe_shot(camera={}, actions=[], vfx=[], dialogues=[],
+                       composition={})
 
 
 def test_at_least_one_annotatable_family_can_join_the_emitted_query():
@@ -136,8 +171,7 @@ def test_at_least_one_annotatable_family_can_join_the_emitted_query():
     （⇒ 可以用 `holdout_expect_movements.py` 补标注）。至于**那一族标了没有**，
     由下面那条用例如实报出来 —— 本文件不替 `quality.py` 判 Q5 的绿红。
     """
-    emitted = _keys(SC.shot_constraint_query(
-        _probe_shot(camera={}, actions=[], vfx=[], dialogues=[])))
+    emitted = _keys(SC.shot_constraint_query(_plan_shape_probe()))
     entries = _entries()
     joinable = [entry for entry in entries if _keys(entry.get("q")) == emitted]
     assert joinable, (
@@ -154,8 +188,7 @@ def test_which_joinable_entries_still_lack_expect_movements_is_recorded():
     计划形状**但不**可 join 的族（`{景别,运镜,镜头}`，带 `expect_movements` 的 70 条）
     也一并数出来：它们是 §38/§50 那条"两族互斥"的直接证据。
     """
-    emitted = _keys(SC.shot_constraint_query(
-        _probe_shot(camera={}, actions=[], vfx=[], dialogues=[])))
+    emitted = _keys(SC.shot_constraint_query(_plan_shape_probe()))
     entries = _entries()
     joinable = [entry for entry in entries if _keys(entry.get("q")) == emitted]
     annotated = [entry for entry in entries if entry.get("expect_movements")]

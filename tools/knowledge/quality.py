@@ -87,8 +87,11 @@ E1_SAMPLE_FLOOR = 1200
 #: 由 `emit_plan` 的 enum 保证），因此逐镜检索真的会发出 `意图=`。这一条同时
 #: 让 Q5 的 join 空间从"只含 SHOT_PATTERN"扩到 **INTENT_PACK**——实测 oracle 里
 #: 有 176 条条目的 `q` 正好是 `意图/景别/运镜`，那是唯一与引擎可表达空间重合的一族。
+#: v1.5 §5.7（P4-T5）加 `构图`（与 `tools/holdout_expect_movements.py` 的同名表
+#: 逐字一致，`tests/test_q5_plan_shaped_entries.py` 对拍）。`光线` 不在表里：
+#: `VALUE_DOMAINS["lighting"]` 是 `None` ⇒ 生产者一个候选都写不出去。
 PLAN_QUERY_KEYS: Tuple[str, ...] = ("景别", "意图", "镜头", "运镜", "动作", "特效",
-                                    "对白")
+                                    "对白", "构图")
 
 
 def _normalise_query_pairs(text: str) -> frozenset:

@@ -162,7 +162,10 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_cast_panel.py';        Marker = 'BD_TEST_RESULT'; Label = 'cast-panel' },
     @{ Script = 'tools\blender_tests\test_llm_trace.py';         Marker = 'BD_TEST_RESULT'; Label = 'llm-trace' },
     @{ Script = 'tools\blender_tests\test_camera_motion.py';     Marker = 'BD_TEST_RESULT'; Label = 'camera-motion' },
-    @{ Script = 'tools\blender_tests\test_crowd_vfx.py';         Marker = 'BD_TEST_RESULT'; Label = 'crowd-vfx' }
+    @{ Script = 'tools\blender_tests\test_crowd_vfx.py';         Marker = 'BD_TEST_RESULT'; Label = 'crowd-vfx' },
+    @{ Script = 'tools\blender_tests\test_anchor_staging.py';    Marker = 'BD_TEST_RESULT'; Label = 'anchor-staging' },
+    @{ Script = 'tools\blender_tests\test_prop_interaction.py';  Marker = 'BD_TEST_RESULT'; Label = 'prop-interaction' },
+    @{ Script = 'tools\blender_tests\test_vlm_review.py';        Marker = 'BD_TEST_RESULT'; Label = 'vlm-review' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.
@@ -591,7 +594,7 @@ if (-not (Test-Path (Join-Path $evidenceDir 'ab_triple.json'))) {
 # (167 shots joined the oracle, 167 required edges, 0 dropped) - i.e. `complete: true`
 # instead of `complete: false`.  One source of truth for "which run", defined BEFORE
 # this call because PowerShell executes top-down.
-$knowledgeRun = 'docs/evidence/20261006-long21'
+$knowledgeRun = 'docs/evidence/20261007-v15-long'
 $knowledgeRunId = (Get-Content (Join-Path $knowledgeRun 'run_manifest.json') -Raw | ConvertFrom-Json).run_id
 python tools/knowledge/injection_audit.py --llm-trace (Join-Path $knowledgeRun 'llm_trace.jsonl') --audit-log (Join-Path $knowledgeRun 'audit_log.jsonl') --holdout fixtures/knowledge_holdout.jsonl --out (Join-Path $evidenceDir 'injection_audit.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
@@ -683,6 +686,10 @@ if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
 # live sources, the text drifted, so the CORPUS fingerprint moved
 # (69791dbacd... -> 48df4a53c2c9...) and long19's shots.json was (correctly) judged
 # "decoupled from the current index" by quality.py.  Only a new run carries the new key.
+# 2026-10-07 (v15 rotation, rebind/v2): the same move again, to 20261007-v15-long -
+# the index fingerprint moved (c796a5a8... -> e5213e1b...), so long21 is now (correctly)
+# judged "not this generation".  repin() refuses to hide a generation change; see
+# docs/knowledge/REGEN_LOG_20261007_rotation.md SS5 and SS7.
 # 2026-10-04 (SS87): E1's review file moved up to a 10x bigger sample.  The panel
 # could never run while only glm-4.7 was configured (this account has quota only
 # for glm-5.3, see SS78); with glm-5.3 it scored 64 queries x top-3 = 192 cases
@@ -703,7 +710,7 @@ if (-not (Test-Path (Join-Path $evidenceDir 'injection_audit.json'))) {
 # re-run so the context marker is written.  Criteria untouched: threshold 4.0,
 # denominator = panel rows, line 0.70.  It cannot turn the line green - it reads
 # 0.1771 < 0.70 - it only turns an unmeasurable red into a measured one.
-python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge --e1-reviews docs/evidence/20261006-e1-certified/reviews.jsonl --shots docs/evidence/20261006-long21/export/export/shots.json --audit-log docs/evidence/20261006-long21/audit_log.jsonl --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
+python tools/knowledge/quality.py --run-id $runId --audit-run-id $knowledgeRunId --json --cases knowledge --e1-reviews docs/evidence/20261006-e1-certified/reviews.jsonl --shots (Join-Path $knowledgeRun 'export/export/shots.json') --audit-log (Join-Path $knowledgeRun 'audit_log.jsonl') --out (Join-Path $evidenceDir 'knowledge_quality.json') > $null 2>&1
 if (-not (Test-Path (Join-Path $evidenceDir 'knowledge_quality.json'))) {
     Fail '  FAILED: the knowledge-stack report was not written'
 }

@@ -11,6 +11,7 @@ import hashlib
 import json
 import pathlib
 import sys
+import time
 
 import pytest
 
@@ -65,6 +66,68 @@ def test_the_question_and_every_artefact_reach_the_prompt():
     assert "x.md" in user and "y.md" in user
 
 
+def test_plain_mode_drops_the_role_schema_that_would_outrank_the_question():
+    """**标注类任务不许被角色模板抢走输出形状**（2026-10-07 实测倒逼）。
+
+    角色模板里写着"只输出一个 JSON 对象 {summary, findings[], not_checked}"；
+    当问题要求"只输出一个 JSON 数组"时，模型服从了 system、忽略了问题——
+    同一份 2 条分类问题：带模板 170.4 s 回 findings 对象（形状不对），
+    不带模板 32.9 s 回 `list[2]`。所以 `--plain` 必须**只有一条 user 消息**，
+    且**不含**会诊 schema 的任何字段名。
+    """
+    messages = C.plain_messages("只输出一个 JSON 数组", [("a.md", "产物")])
+    assert len(messages) == 1
+    assert messages[0]["role"] == "user"
+    assert "只输出一个 JSON 数组" in messages[0]["content"]
+    assert "产物" in messages[0]["content"]
+    for leaked in ("not_checked", "findings", "teaching", "severity"):
+        assert leaked not in messages[0]["content"], leaked
+
+
+def test_plain_mode_keeps_the_question_only_admission_and_writes_its_mode(tmp_path,
+                                                                        monkeypatch):
+    """`--plain` 只是**去掉 system**：源码门槛、取证、指纹一律照旧。"""
+    question = tmp_path / "q.md"
+    question.write_text("问题", encoding="utf-8")
+    out = tmp_path / "out"
+    seen = {}
+
+    def fake_consult(messages, **kwargs):  # noqa: ARG001
+        seen["messages"] = messages
+        return '[{"i": 1, "class": "hidden"}]', {"level": "high",
+                                                 "finish_reason": "stop"}
+
+    monkeypatch.setattr(C, "consult", fake_consult)
+    code = C.main(["--roles", "测试与验收", "--question", str(question),
+                   "--question-only", "--no-status", "--plain", "--out", str(out)])
+    assert code == 0
+    assert [m["role"] for m in seen["messages"]] == ["user"]
+    manifest = json.loads((out / "bundle.manifest.json").read_text(encoding="utf-8"))
+    assert manifest["mode"] == "plain"
+    assert manifest["source_seen"] is False
+    assert set(manifest["bundles"]["测试与验收"]) == {"user"}, "没有 system 就别写它的指纹"
+    user = seen["messages"][0]["content"]
+    fingerprint = manifest["bundles"]["测试与验收"]["user"]
+    assert fingerprint["sha256"] == hashlib.sha256(user.encode("utf-8")).hexdigest()
+    assert "没有** system 提示词" in (out / "bundle.md").read_text(encoding="utf-8")
+    assert json.loads((out / "测试与验收.json").read_text(encoding="utf-8")) == [
+        {"i": 1, "class": "hidden"}]
+
+
+def test_the_role_mode_manifest_still_says_role(tmp_path, monkeypatch):
+    """默认路径的 manifest 要能被区分出来（不许把两种包混成一种）。"""
+    question = tmp_path / "q.md"
+    question.write_text("问题", encoding="utf-8")
+    out = tmp_path / "out"
+    monkeypatch.setattr(C, "consult", lambda messages, **kw: (
+        '{"summary": "ok"}', {"level": "high", "finish_reason": "stop"}))
+    assert C.main(["--roles", "规格一致性", "--question", str(question),
+                   "--question-only", "--no-status", "--out", str(out)]) == 0
+    manifest = json.loads((out / "bundle.manifest.json").read_text(encoding="utf-8"))
+    assert manifest["mode"] == "role"
+    assert set(manifest["bundles"]["规格一致性"]) == {"system", "user"}
+
+
 def test_an_unknown_role_is_refused_by_name():
     with pytest.raises(SystemExit) as excinfo:
         C.build_messages("查水表的", "问题", [])
@@ -111,6 +174,51 @@ def test_the_ladder_steps_down_when_the_model_gives_no_text(monkeypatch):
     assert seen == ["max", "high"], "应当降一档就拿到正文"
     assert [item["level"] for item in usage["attempts"]] == ["max", "high"]
     assert usage["attempts"][0]["finish_reason"] == "length"
+
+
+def test_reasoning_effort_is_opt_in_and_off_by_default(monkeypatch):
+    """思考强度只走 `GLM_REASONING_EFFORT`，**默认不加这个键**。
+
+    实测（2026-10-07，`work/_probe_qwen_thinking.py`，同一通道 3 次采样）：
+    `thinking.level=max` 想得并不比 `high` 多（42/53/41 vs 51/52/187），真正把
+    思考拉满的是 `reasoning_effort=max`（305/46/229）。所以这条缝必须存在，
+    而且必须**默认不改变 payload**——否则智谱 GLM 路径的请求体就被悄悄改了。
+    """
+    captured = {}
+
+    class FakeResponse:
+        def read(self):
+            return json.dumps({
+                "model": "qwen3.8-max-0902",
+                "choices": [{"message": {"content": "ok"}, "finish_reason": "stop"}],
+                "usage": {},
+            }).encode("utf-8")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_exc):
+            return False
+
+    def fake_urlopen(request, timeout=None):  # noqa: ARG001
+        captured["payload"] = json.loads(request.data.decode("utf-8"))
+        return FakeResponse()
+
+    monkeypatch.setattr(C.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setenv("GLM_API_KEY", "k")
+
+    monkeypatch.delenv("GLM_REASONING_EFFORT", raising=False)
+    C.call_once([{"role": "user", "content": "x"}], model="glm-5.3",
+                max_tokens=64, level="high", temperature=0.0, timeout=1.0)
+    assert "reasoning_effort" not in captured["payload"], "默认不许加这个键"
+    assert captured["payload"]["thinking"] == {"type": "enabled", "level": "high"}
+
+    monkeypatch.setenv("GLM_REASONING_EFFORT", "max")
+    _content, usage = C.call_once([{"role": "user", "content": "x"}],
+                                  model="qwen3.8-max-0902", max_tokens=64,
+                                  level="high", temperature=0.0, timeout=1.0)
+    assert captured["payload"]["reasoning_effort"] == "max"
+    assert usage["reasoning_effort"] == "max", "读数为证：写进 usage"
 
 
 def test_a_transport_error_is_not_retried_through_the_ladder(monkeypatch):
@@ -278,6 +386,24 @@ def test_the_manifest_pins_what_was_sent_with_hashes(tmp_path):
     assert manifest["status"]["truncated"] is False
 
 
+def test_bundle_manifest_keeps_repo_before_mode_in_the_positional_order(tmp_path):
+    """`repo` 必须仍是第 7 个**位置**参数——`panel_consult` / `plan_writer` 就这么调。
+
+    2026-10-07 实测：把 `mode` 插到 `repo` 前面，那两处调用**静默**把 repo 喂给 mode、
+    repo 退回默认根，落盘时炸 `TypeError: Object of type WindowsPath is not JSON
+    serializable`（`test_panel_consult.py::test_manifest_is_written_before_any_call_and_outlives_a_failure`）。
+    这条按**位置**把顺序钉死，别让"看起来只是多了个默认参数"再绕过测试。
+    """
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    manifest = C.bundle_manifest("q.md", "问题", [], [], None, None, repo)
+    assert manifest["repo"]["repo"] == str(repo)
+    assert manifest["mode"] == "role"
+    #: 关键字也照样能用（`glm_consult` 自己是关键字调用），两处调用点继续只给位置参数。
+    assert C.bundle_manifest("q.md", "问题", [], [], None, None, repo,
+                             mode="plain")["mode"] == "plain"
+
+
 def test_a_truncated_status_digest_says_so_and_stays_traceable():
     """现状摘要可以截断（`glm-5.3` 包不起），但**不许静默**：包里留痕、manifest 记全量。"""
     full = "现" * 100
@@ -416,3 +542,41 @@ def test_one_unparsed_role_does_not_stop_the_next_role(tmp_path, monkeypatch):
     assert code == 3
     assert (out / "测试与验收.unparsed.txt").is_file()
     assert json.loads((out / "规格一致性.json").read_text(encoding="utf-8"))["summary"] == "ok"
+def test_the_streaming_reader_assembles_sse_into_the_same_reply_shape():
+    """`GLM_STREAM=1` 那条路：SSE 分片要拼成与非流式**同形**的 reply。
+
+    为什么需要（2026-10-07 实测，阿里云百炼 ＋ `qwen3.8-max-0902`）：同一份裁决题包
+    **非流式 26 分钟不返回**，流式 1.0 s 回第一个 chunk、605 s 拿完整正文
+    （`work/_probe_bailian_stream.py`）。解析器写错的话，正文会**静默变短**——
+    那比超时更坏，所以这里逐片对拍。
+    """
+    chunks = [
+        b'data: {"choices":[{"delta":{"content":"["},"finish_reason":null}]}\n',
+        b'data: {"choices":[{"delta":{"content":"{\\"i\\": 1}"},"finish_reason":null}]}\n',
+        b": keep-alive comment\n",
+        b'data: {"choices":[{"delta":{"content":"]"},"finish_reason":"stop"}],'
+        b'"usage":{"prompt_tokens":10,"completion_tokens":3}}\n',
+        b"data: [DONE]\n",
+    ]
+
+    class _FakeResponse:
+        def __iter__(self):
+            return iter(chunks)
+
+    reply = C._read_stream(_FakeResponse(), time.time())
+    assert reply["choices"][0]["message"]["content"] == '[{"i": 1}]'
+    assert reply["choices"][0]["finish_reason"] == "stop"
+    assert reply["usage"] == {"prompt_tokens": 10, "completion_tokens": 3}
+    assert reply["_stream"]["chunks"] == 3, "注释行与 [DONE] 不该算成 chunk"
+
+
+def test_the_streaming_switch_is_opt_in():
+    """默认（不设 `GLM_STREAM`）走非流式：历史运行的请求体逐字不变。"""
+    import os
+
+    saved = os.environ.pop("GLM_STREAM", None)
+    try:
+        assert os.environ.get("GLM_STREAM", "").strip().lower() in ("",)
+    finally:
+        if saved is not None:
+            os.environ["GLM_STREAM"] = saved

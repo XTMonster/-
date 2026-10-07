@@ -296,6 +296,65 @@ def test_cli_defaults_are_deterministic():
     assert args.seed == 0
     assert args.cases_backend == "lightrag"
     assert args.knowledge_dir == str(sidecar.DEFAULT_KNOWLEDGE_DIR)
+    #: 思考强度默认**不发**（空串）：历史运行的请求体一个字节都不变。
+    assert args.reasoning_effort == ""
+
+
+def test_reasoning_effort_reaches_the_openai_body_only_when_asked():
+    """用户 2026-10-07「新模型思考强度拉到最大」：`--reasoning-effort max` 原样进请求体。
+
+    这条是**opt-in**：不给开关时 `_openai_body` 里连这个键都不该出现——否则
+    "默认档位"会被悄悄改掉，而档位是实测得出的（`thinking.level` 在新模型上被忽略，
+    只有 `reasoning_effort` 真的把 reasoning token 从 42 拉到 305）。
+    Ollama 那一侧**不许**收到这个键：它的原生接口没有这一格。
+    """
+    plain = sidecar.SidecarConfig(sidecar.parse_args([]))
+    assert "reasoning_effort" not in sidecar._openai_body(plain, {"messages": []})
+    assert "reasoning_effort" not in sidecar._ollama_body(plain, {"messages": []})
+
+    loud = sidecar.SidecarConfig(sidecar.parse_args(
+        ["--upstream-kind", "openai", "--reasoning-effort", "max"]))
+    assert sidecar._openai_body(loud, {"messages": []})["reasoning_effort"] == "max"
+    assert "reasoning_effort" not in sidecar._ollama_body(loud, {"messages": []})
+
+
+def test_tool_choice_translation_is_opt_in_and_provider_local():
+    """百炼（DashScope 兼容口）在**思考模式**下拒收 `tool_choice=required`：
+
+        <400> InternalError.Algo.InvalidParameter: The tool_choice parameter does
+        not support being set to required or object in thinking mode
+
+    插件发的就是 `required`，而 sidecar 把上游非 2xx 一律翻成 502 ⇒ 计划调用 0.7 s
+    失败（现场 `docs/evidence/20261007-v15-bailian/`）。这条守门钉两件事：
+    ① 默认 `passthrough` —— 请求体逐字节不变（历史运行的形状不许被动过）；
+    ② `auto` 只改"会被上游拒收"的那两种取值，别的原样透传。
+    """
+    plain = sidecar.SidecarConfig(sidecar.parse_args([]))
+    assert plain.tool_choice_mode == "passthrough"
+    assert sidecar._openai_body(
+        plain, {"messages": [], "tool_choice": "required"})["tool_choice"] == "required"
+    assert sidecar._openai_body(
+        plain, {"messages": [], "tool_choice": {"type": "function"}}
+    )["tool_choice"] == {"type": "function"}
+
+    translated = sidecar.SidecarConfig(sidecar.parse_args(
+        ["--upstream-kind", "openai", "--tool-choice-mode", "auto"]))
+    assert sidecar._openai_body(
+        translated, {"messages": [], "tool_choice": "required"}
+    )["tool_choice"] == "auto"
+    assert sidecar._openai_body(
+        translated, {"messages": [], "tool_choice": {"type": "function"}}
+    )["tool_choice"] == "auto"
+    #: 本来就合法的取值**一个都不改**（auto / none / 具体函数名）。
+    for choice in ("auto", "none"):
+        assert sidecar._openai_body(
+            translated, {"messages": [], "tool_choice": choice}
+        )["tool_choice"] == choice
+
+    dropped = sidecar.SidecarConfig(sidecar.parse_args(
+        ["--upstream-kind", "openai", "--tool-choice-mode", "drop"]))
+    assert "tool_choice" not in sidecar._openai_body(
+        dropped, {"messages": [], "tool_choice": "required"})
 
 
 def test_seed_and_temperature_reach_the_upstream_body():

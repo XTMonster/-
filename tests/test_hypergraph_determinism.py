@@ -114,7 +114,7 @@ def test_fingerprint_requires_exactly_the_declared_components():
     """分量表**写死**在这里，不是"跟着 `CACHE_KEY_FIELDS` 走"。
 
     写死是刻意的：分量表是 §0.1b 缓存指纹行的契约（"六元指纹 ＋ 校验门代码版本
-    ＋ 词表指纹"，共 8 格），
+    ＋ 词表指纹 ＋ **重绑规则版本**"，共 9 格），
     用 `CACHE_KEY_FIELDS` 去算断言等于让实现自己给自己出题——加了一个方差
     却忘了进哈希，这条用例照样绿。
     """
@@ -122,8 +122,8 @@ def test_fingerprint_requires_exactly_the_declared_components():
     assert tuple(bh.CACHE_KEY_FIELDS) == (
         "corpus_sha256", "model", "prompt_version", "chunker_version",
         "decode", "schema_version", "validation_rules_version",
-        "vocabulary_fingerprint")
-    assert len(components) == 8
+        "vocabulary_fingerprint", "rebind_version")
+    assert len(components) == 9
     assert bh.fingerprint_of(components)
     #: §2.3 的七元里**必须**含校验门代码版本：`--rematch` 只重跑第 2 段，
     #: 门一变、索引就变，指纹不跟着变就会把两份不同的索引指成同一个。
@@ -131,6 +131,11 @@ def test_fingerprint_requires_exactly_the_declared_components():
     #: §0.1b 缓存指纹行的第八格：**词表/别名表**。别名表是落地判据的输入，
     #: 改它会改索引，而改的人不会想起换版本号（§20.4 的实测）。
     assert "vocabulary_fingerprint" in bh.CACHE_KEY_FIELDS
+    #: **第九格（2026-10-07 加）**：机械重绑（`rebind/v1`）的规则版本。
+    #: 重绑**改边的内容**（`sources[]`）却**不改任何输入** ⇒ 没有这一格，
+    #: "重绑前／后"两份不同的索引会共用同一枚指纹——正是本模块 docstring
+    #: 点名要防的那个洞（与第八格同一形状的教训）。
+    assert "rebind_version" in bh.CACHE_KEY_FIELDS
     with pytest.raises(ValueError):
         bh.fingerprint_of({**components, "extra": "x"})
     with pytest.raises(ValueError):
@@ -236,7 +241,8 @@ def test_lexicon_fingerprint_is_stable_across_processes_and_hash_seeds():
     for seed in ("0", "12345", "random"):
         env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONIOENCODING": "utf-8"}
         out = subprocess.run([sys.executable, "-c", script], cwd=ROOT, env=env,
-                             capture_output=True, text=True, check=True)
+                             capture_output=True, text=True, check=True,
+                             encoding="utf-8", errors="replace")
         digests.append(out.stdout.strip())
     assert len(set(digests)) == 1, digests
     assert digests[0] == vocab.lexicon_fingerprint()
@@ -403,7 +409,23 @@ def test_committed_manifest_is_self_consistent():
     assert cache_key["prompt_version"] == manifest["prompt_version"]
     assert cache_key["chunker_version"] == manifest["chunker_version"]
     assert cache_key["decode"] == manifest["decode"]
-    assert cache_key["schema_version"] == manifest["schema_version"]
+    #: **两个 `schema_version` 不是同一个量**（2026-10-07 重签时浮现的既有缺陷）：
+    #:
+    #: * `manifest["schema_version"]` 是**盖在边上的**那个版本（`hg.SCHEMA_VERSION`），
+    #:   它进 `edge_id` 的公式（`hypergraph.edge_id`），所以它必须**逐字等于**
+    #:   `hg.SCHEMA_VERSION`，否则边的 id 与自述互相矛盾（门⑩/⑥ 的自洽判据会红）；
+    #: * `cache_key["schema_version"]` 是**缓存键的形态**：`hg.schema_version_with_fingerprint()`
+    #:   （`hg/v2+<schema_fingerprint 前 12>`），用途是"闭集一改、指纹当场变"。
+    #:
+    #: 旧断言写的是"两者相等"——它在入库 manifest 上一直绿，只因为那份 manifest 是
+    #: **旧代码**的产物（那时两处都写 `hg/v2`）；**任何一次真重建都会红**。
+    #: 这里改成各自对**自己的生产者**断言（更严）：两格都要有出处，且**不再假装它们同义**。
+    assert cache_key["schema_version"] == hg.schema_version_with_fingerprint()
+    assert manifest["schema_version"] == hg.SCHEMA_VERSION
+    #: 边上的自述必须与 manifest 顶层一致（两者都是"盖章的版本"）。
+    edges_first = json.loads(
+        (bh.EDGES).read_text(encoding="utf-8").split("\n")[0])
+    assert edges_first["schema_version"] == manifest["schema_version"]
 
 
 def test_committed_manifest_corpus_digest_matches_the_cards_on_disk():

@@ -79,6 +79,15 @@ class SidecarConfig:
         self.kind = args.upstream_kind
         self.num_ctx = args.num_ctx
         self.think = args.think
+        #: 思考强度（`--reasoning-effort`，默认空 ⇒ **不发这个键**）。只对
+        #: `--upstream-kind openai` 的 `_openai_body` 生效；实测新模型认它、
+        #: 不认 `thinking.level`（`work/_probe_qwen_thinking.py`）。
+        self.reasoning_effort = str(getattr(args, "reasoning_effort", "") or "")
+        #: `tool_choice` 的翻译策略（见 `_openai_body` 的注释）：
+        #: `passthrough`（默认，逐字节透传）/ `auto`（把 required 与对象改写成 auto）/
+        #: `drop`（整格不发）。之所以要它：**思考模式**的上游拒收 `required`。
+        self.tool_choice_mode = str(getattr(args, "tool_choice_mode", "passthrough")
+                                    or "passthrough")
         self.max_tokens = args.max_tokens
         self.temperature = args.temperature
         self.seed = args.seed
@@ -290,10 +299,40 @@ def _openai_body(config: "SidecarConfig", payload: Dict[str, Any]
     if payload.get("tools"):
         body["tools"] = payload["tools"]
     if payload.get("tool_choice"):
-        body["tool_choice"] = payload["tool_choice"]
+        #: **供应商差异（2026-10-07 实测）**：阿里云百炼（DashScope 兼容口）在
+        #: **思考模式**下拒收 `tool_choice=required`／对象：
+        #:
+        #:     <400> InternalError.Algo.InvalidParameter: The tool_choice parameter
+        #:     does not support being set to required or object in thinking mode
+        #:
+        #: 插件发的正是 `required`（`contracts/transport.py:229`），而 sidecar 把上游
+        #: 任何非 2xx 都翻译成 502 ⇒ 计划调用 0.7 s 就失败（现场见
+        #: `docs/evidence/20261007-v15-bailian/`）。这一格就是那条翻译：
+        #: **默认 `passthrough`**（一个字节都不改），只有显式 `--tool-choice-mode auto`
+        #: 才把 `required`／对象改写成 `auto`——"思考模式"与"强制工具调用"在这家上游
+        #: 互斥；用户 2026-10-07 的指令是"思考强度拉到最大"，所以这里保思考、
+        #: 把"必须调工具"交给提示词（驱动的 `plan_attempts`/`draft_invalid` 仍然守着
+        #: "没调工具就重问"）。
+        mode = str(getattr(config, "tool_choice_mode", "passthrough")
+                   or "passthrough")
+        choice = payload["tool_choice"]
+        if mode == "auto" and (choice == "required" or isinstance(choice, dict)):
+            body["tool_choice"] = "auto"
+        elif mode == "drop":
+            body.pop("tool_choice", None)
+        else:
+            body["tool_choice"] = choice
     limit = payload.get("max_tokens") or config.max_tokens
     if limit:
         body["max_tokens"] = int(limit)
+    #: **思考强度**（opt-in，默认不发）：用户 2026-10-07「新模型思考强度拉到最大」。
+    #: 这一格属于**供应商差异**，所以归 sidecar（插件侧保持零新依赖）——
+    #: 实测在 `qwen3.8-max-0902` 上，`reasoning_effort` 才是真旋钮
+    #: （`thinking.level` 会被忽略：`work/_probe_qwen_thinking.py`）。
+    #: 默认空串 ⇒ **一个字节都不加**，历史运行不受影响。
+    effort = str(getattr(config, "reasoning_effort", "") or "").strip()
+    if effort:
+        body["reasoning_effort"] = effort
     return body
 
 
@@ -532,6 +571,16 @@ def parse_args(argv):
     parser.add_argument("--think", choices=("off", "on", "default"),
                         default="off",
                         help="思维链：结构化工具调用任务关掉更省预算")
+    parser.add_argument("--reasoning-effort", default="",
+                        help="OpenAI 兼容上游的 `reasoning_effort`（如 `max`，用户 2026-10-07"
+                             "「新模型思考强度拉到最大」）；默认空 = 不发这个键，"
+                             "历史行为一字不变（`thinking.level` 在新模型上会被忽略："
+                             "work/_probe_qwen_thinking.py）")
+    parser.add_argument("--tool-choice-mode", choices=("passthrough", "auto", "drop"),
+                        default="passthrough",
+                        help="`tool_choice` 的供应商翻译：passthrough（默认，逐字节透传）/"
+                             "auto（把 required 与对象改写成 auto——百炼等上游在**思考模式**"
+                             "下拒收 required，见 _openai_body 的注释）/ drop（整格不发）")
     parser.add_argument("--max-tokens", type=int, default=8192)
     parser.add_argument("--temperature", type=float, default=0.0,
                         help="抽取/规划要求确定性，默认 0（v1.4 §2.3d T6）")

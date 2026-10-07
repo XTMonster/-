@@ -284,7 +284,8 @@ def _pip_target():
 
     try:
         res = subprocess.run([sys.executable, "-m", "pip", "--version"],
-                             capture_output=True, text=True, timeout=60)
+                             capture_output=True, text=True, timeout=60,
+                             encoding="utf-8", errors="replace")
         return {"exe": sys.executable, "rc": res.returncode,
                 "stdout": res.stdout.strip(), "stderr": res.stderr.strip()[:300]}
     except Exception as exc:  # noqa: BLE001
