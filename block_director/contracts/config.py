@@ -73,6 +73,8 @@ class LLMConfig:
     model: str = "gpt-4o"
     api_key: str = ""                 # 见 §14.3，不写入 .blend
     base_url: str = ""
+    #: v1.6 A4：LLM 单次调用墙钟超时（秒）。慢思考通道建议 ≥600。
+    timeout_s: float = 300.0
     max_tokens: int = 0               # 0 = 不发送；思维模型需放大（实测 qwen3 需 8k+）
     temperature_plan: float = 0.7
     temperature_repair: float = 0.2
@@ -393,6 +395,9 @@ class AppConfig:
         if self.llm.max_tokens < 0:
             err("CFG_014", "llm.max_tokens",
                 f"max_tokens 不能为负（当前 {self.llm.max_tokens}）；0 表示不限制")
+        if self.llm.timeout_s <= 0:
+            err("CFG_023", "llm.timeout_s",
+                f"LLM 超时时间必须为正数（当前 {self.llm.timeout_s}）")
         if self.rag.top_k <= 0:
             err("CFG_007", "rag.top_k", "检索条数必须为正整数")
         if self.orchestration.max_repair_attempts < 0:

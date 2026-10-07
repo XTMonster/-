@@ -93,6 +93,18 @@ def apply_scene_settings(config: AppConfig,
             continue
         setattr(config.budget, key, number)
 
+    timeout = settings.get("llm_timeout_s")
+    if timeout is not None:
+        try:
+            number = float(timeout)
+        except (TypeError, ValueError):
+            problems.append(f"llm_timeout_s 必须是数字，实际 {timeout!r}")
+        else:
+            if number <= 0:
+                problems.append(f"llm_timeout_s 必须为正数（{number}）")
+            else:
+                config.llm.timeout_s = number
+
     call_cap = settings.get("max_llm_calls")
     if call_cap is not None:
         try:
@@ -114,5 +126,5 @@ def collect_settings(scene) -> Dict[str, Any]:
     """从 scene 上读面板字段（缺字段时给 None，表示"不覆盖"）。"""
     keys = ("bd_provider", "bd_model", "bd_audit_level", "bd_preset",
             "bd_appearance", "bd_render_backend", "bd_max_cost_usd",
-            "bd_max_wall_minutes", "bd_max_llm_calls")
+            "bd_max_wall_minutes", "bd_max_llm_calls", "bd_llm_timeout_s")
     return {key[3:]: getattr(scene, key, None) for key in keys}

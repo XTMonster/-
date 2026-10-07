@@ -203,6 +203,10 @@ class PrevisDriver:
         self.parsed_script = parsed_script
         self.config = config
         self.limits = limits or DriverLimits()
+        # v1.6 A4：未显式传 limits 时，LLM 超时从配置读取；显式传参仍覆盖。
+        if limits is None and config is not None:
+            self.limits.llm_timeout_s = float(
+                getattr(config.llm, "timeout_s", 120.0))
         self.registry = registry or default_registry()
         self.builder = builder
         self.auditor = auditor

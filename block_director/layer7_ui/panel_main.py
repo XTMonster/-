@@ -124,6 +124,7 @@ class BLOCKDIRECTOR_PT_main(Panel):
         row = control.row(align=True)
         row.prop(scene, "bd_max_cost_usd", text="费用$")
         row.prop(scene, "bd_max_wall_minutes", text="分钟")
+        control.prop(scene, "bd_llm_timeout_s", text="LLM 超时(秒)")
 
         row = layout.row(align=True)
         row.scale_y = 1.4
@@ -220,6 +221,9 @@ _scene_props = {
         name="费用上限", default=5.0, min=0.0, max=1000.0),
     "bd_max_wall_minutes": FloatProperty(
         name="时间上限", default=120.0, min=0.0, max=1440.0),
+    "bd_llm_timeout_s": FloatProperty(
+        name="LLM 超时", default=300.0, min=1.0, max=86400.0,
+        description="单次 LLM 调用墙钟超时（秒）；慢思考通道建议 ≥600"),
     "bd_preset": EnumProperty(name="分辨率", items=_enum_items(PRESETS),
                               default=PRESETS[0]),
     "bd_appearance": EnumProperty(name="外观", items=_enum_items(APPEARANCES),
