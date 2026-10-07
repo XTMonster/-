@@ -1,0 +1,85 @@
+trace rows: 16
+
+#2 purpose=plan duration=107.936s truncated=True
+   【硬约束（禁/许）】: 19 行 / 2627 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 缺席
+   例: [必须（除非声明破例）] [AXIS_RULE] pair=any_two axis_side=neutral axis_topic=越轴 禁={movement:固定}
+
+#3 purpose=editor duration=54.907s truncated=True
+   【硬约束（禁/许）】: 7 行 / 781 字符
+   【经验建议（软）】: 1 行 / 74 字符
+   参考案例（仅参考）: 12 行 / 793 字符
+   例: [必须（除非声明破例）] [AXIS_RULE] pair=any_two axis_side=neutral axis_topic=越轴 禁={movement:固定}
+
+#4 purpose=editor duration=128.629s truncated=True
+   【硬约束（禁/许）】: 6 行 / 858 字符
+   【经验建议（软）】: 1 行 / 79 字符
+   参考案例（仅参考）: 11 行 / 705 字符
+   例: [必须（除非声明破例）] [INTENT_PACK] intent=intent:揭示 shot_size=shot_size:CU movement=dolly_in
+
+#5 purpose=editor duration=151.468s truncated=True
+   【硬约束（禁/许）】: 12 行 / 1451 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 10 行 / 627 字符
+   例: [必须（除非声明破例）] [SHOT_PATTERN] shot_size=shot_size:MS lens=lens:35mm movement=movement:固定 headroom_policy=cinematic 禁={movement:dolly_in}
+
+#6 purpose=editor duration=116.858s truncated=True
+   【硬约束（禁/许）】: 8 行 / 916 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 11 行 / 772 字符
+   例: [必须（除非声明破例）] [AXIS_RULE] pair=any_two axis_side=neutral axis_topic=越轴 禁={movement:固定}
+
+#7 purpose=editor duration=98.934s truncated=True
+   【硬约束（禁/许）】: 9 行 / 1286 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 10 行 / 682 字符
+   例: [必须（除非声明破例）] [INTENT_PACK] intent=intent:推进 shot_size=shot_size:MS movement=dolly_in
+
+#8 purpose=editor duration=175.62s truncated=True
+   【硬约束（禁/许）】: 12 行 / 1455 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 10 行 / 735 字符
+   例: [必须（除非声明破例）] [SHOT_PATTERN] shot_size=shot_size:MS lens=lens:35mm movement=movement:固定 headroom_policy=cinematic 禁={movement:dolly_in}
+
+#9 purpose=editor duration=123.443s truncated=True
+   【硬约束（禁/许）】: 7 行 / 1236 字符
+   【经验建议（软）】: 1 行 / 113 字符
+   参考案例（仅参考）: 10 行 / 615 字符
+   例: [必须（除非声明破例）] [INTENT_PACK] intent=intent:揭示 shot_size=shot_size:CU movement=dolly_in
+
+#10 purpose=editor duration=139.762s truncated=True
+   【硬约束（禁/许）】: 6 行 / 874 字符
+   【经验建议（软）】: 4 行 / 568 字符
+   参考案例（仅参考）: 11 行 / 742 字符
+   例: [必须（除非声明破例）] [SHOT_PATTERN] shot_size=shot_size:MCU lens=lens:85mm movement=movement:固定 headroom_policy=cinematic 禁={shot_size:ECU}
+
+#11 purpose=editor duration=115.124s truncated=True
+   【硬约束（禁/许）】: 12 行 / 1451 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 10 行 / 636 字符
+   例: [必须（除非声明破例）] [SHOT_PATTERN] shot_size=shot_size:MS lens=lens:35mm movement=movement:固定 headroom_policy=cinematic 禁={movement:dolly_in}
+
+#12 purpose=editor duration=97.641s truncated=True
+   【硬约束（禁/许）】: 13 行 / 2030 字符
+   【经验建议（软）】: 1 行 / 87 字符
+   参考案例（仅参考）: 6 行 / 338 字符
+   例: [必须（除非声明破例）] [SHOT_PATTERN] shot_size=shot_size:MCU lens=lens:85mm movement=movement:固定 headroom_policy=cinematic 禁={shot_size:ECU}
+
+#13 purpose=editor duration=77.661s truncated=True
+   【硬约束（禁/许）】: 12 行 / 1455 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 10 行 / 659 字符
+   例: [必须（除非声明破例）] [SHOT_PATTERN] shot_size=shot_size:MS lens=lens:35mm movement=movement:固定 headroom_policy=cinematic 禁={movement:dolly_in}
+
+#14 purpose=editor duration=158.723s truncated=True
+   【硬约束（禁/许）】: 16 行 / 2262 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 缺席
+   例: [必须（除非声明破例）] [SHOT_PATTERN] shot_size=shot_size:MS lens=lens:35mm movement=movement:push_through headroom_policy=cinematic 禁={movement:orbit_cw}
+
+#15 purpose=editor duration=80.866s truncated=True
+   【硬约束（禁/许）】: 12 行 / 1451 字符
+   【经验建议（软）】: 缺席
+   参考案例（仅参考）: 10 行 / 640 字符
+   例: [必须（除非声明破例）] [SHOT_PATTERN] shot_size=shot_size:MS lens=lens:35mm movement=movement:固定 headroom_policy=cinematic 禁={movement:dolly_in}

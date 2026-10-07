@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-10-08T00:35:52",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "4892dc9",
+    "head_subject": "feat(v1.5): 结案（裁决=现状）＋ 分镜表解析器认下真实剧本的另一种排版",
+    "recent": [
+      "4892dc9 feat(v1.5): 结案（裁决=现状）＋ 分镜表解析器认下真实剧本的另一种排版",
+      "7bae402 docs(v1.5): 用户点名的「再抽一次」也穷尽——dolly_zoom 是词表漏了别名，尖锐哨音 是抽取器发明的",
+      "7a6042c docs(v1.5): (A) 清洗式重抽取 52 张卡的质量对比——小幅变好，但门③ 红，已回滚",
+      "10066a6 docs(evidence): 执行尝试+回滚之后的完整链读数（35/35 步，唯一红 RK-13）",
+      "0d8b123 docs(v1.5): 22 条裁决的**执行尝试**与实测结论——两条路都撞门，回滚到已验证状态"
+    ],
+    "uncommitted": []
+  },
+  "mode": "role",
+  "question": {
+    "path": "work/_q_rag.md",
+    "sha256": "a7d699575895f889bc98a95670b754a3d79910b2e3ebb99e04617ebe7b5c5d58",
+    "chars": 859
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "block_director/knowledge/retriever.py",
+      "spec": "block_director/knowledge/retriever.py:844-884",
+      "range": [
+        844,
+        884
+      ],
+      "file_sha256": "3cebd3941d97db54df70cf981f46ed142c07b5abf02bd2cdbaf2dbb3184953e3",
+      "chunk_sha256": "023e21fd2f67d81ac2e34cd5ecf5883bf7e6dae88e33a60eb9cc20e967b0a85b",
+      "lines": 41,
+      "chars": 2298
+    },
+    {
+      "name": "block_director/layer5_orchestrator/scene_contract.py",
+      "spec": "block_director/layer5_orchestrator/scene_contract.py:135-170",
+      "range": [
+        135,
+        170
+      ],
+      "file_sha256": "e8029f883dc49ffb347033bdcfa49fd94632136d96a256fa16b4273a532047b1",
+      "chunk_sha256": "7cd07a68455eebb9af15ea1e51203f2ce0f9494af94d6602128acbd4423dce89",
+      "lines": 36,
+      "chars": 1508
+    }
+  ],
+  "contexts": [
+    {
+      "path": "work/_rag_lanes.txt",
+      "sha256": "b90263511bd5b5be2766e7200c15ce3e66446dd626634fe187830eaf3209f25b",
+      "chars": 3486
+    },
+    {
+      "path": "work/_rag_adoption.txt",
+      "sha256": "586a33a29737d1cc9c704824bb041a4a51b9022a4adf266a1d318a0821ec7be9",
+      "chars": 1291
+    }
+  ],
+  "status": {
+    "sent_chars": 2068,
+    "sent_sha256": "87a7bed7fabcc265f0d9e3e9729cf6a5829d7acf86fb2bfd934a0d2804d402f4",
+    "full_chars": 2068,
+    "full_sha256": "87a7bed7fabcc265f0d9e3e9729cf6a5829d7acf86fb2bfd934a0d2804d402f4",
+    "truncated": false
+  }
+}

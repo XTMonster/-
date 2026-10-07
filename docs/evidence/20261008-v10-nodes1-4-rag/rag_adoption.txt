@@ -1,0 +1,15 @@
+shot_001  type=LS   moves=-                禁=['movement:固定'] OK
+shot_002  type=CU   moves=dolly_in,handheld 禁=['movement:dolly_in', 'shot_size:CU'] 违反=['movement:dolly_in', 'shot_size:CU']
+shot_003  type=MS   moves=-                禁=['movement:dolly_in', 'movement:固定'] OK
+shot_004  type=CU   moves=-                禁=['movement:固定', 'shot_size:CU'] 违反=['shot_size:CU']
+shot_005  type=CU   moves=dolly_in,handheld 禁=['movement:dolly_in', 'shot_size:CU'] 违反=['movement:dolly_in', 'shot_size:CU']
+shot_006  type=MS   moves=-                禁=['movement:dolly_in', 'movement:固定'] OK
+shot_007  type=CU   moves=dolly_in         禁=['movement:dolly_in', 'shot_size:CU'] 违反=['movement:dolly_in', 'shot_size:CU']
+shot_008  type=MCU  moves=orbit_ccw,follow_subject,handheld 禁=['composition_rule:framing', 'shot_size:ECU'] OK
+shot_009  type=MS   moves=-                禁=['movement:dolly_in', 'movement:固定'] OK
+shot_010  type=MCU  moves=pan_right,whip_pan_right,dolly_in 禁=['composition_rule:framing', 'shot_size:ECU'] OK
+shot_011  type=MS   moves=-                禁=['movement:dolly_in', 'movement:固定'] OK
+shot_012  type=MS   moves=follow_subject,push_through 禁=['movement:orbit_cw'] OK
+shot_013  type=MS   moves=-                禁=['movement:dolly_in', 'movement:固定'] OK
+
+带禁项的镜：13　未违反 9　违反(记在审计里) 4
