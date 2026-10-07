@@ -1,0 +1,5 @@
+understand n=1 min=96.6 median=96.6 max=96.6 sum=96.6
+plan n=1 min=107.9 median=107.9 max=107.9 sum=107.9
+editor n=13 min=54.9 median=116.9 max=175.6 sum=1519.6
+repair n=5 min=90.4 median=186.3 max=900.2 sum=2212.8
+react n=6 min=3.5 median=39.0 max=900.2 sum=1074.4
