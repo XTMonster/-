@@ -49,6 +49,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from block_director.contracts.config import AppConfig  # noqa: E402
 from block_director.knowledge.tokens import estimate_tokens  # noqa: E402
 from tools.holdout_score import (  # noqa: E402
     build_norm_index,
@@ -70,8 +71,13 @@ CAP_KEYS: Dict[str, str] = {
     "shot": "rag.max_tokens_per_call",
 }
 
-DEFAULT_PLAN_CAP = 2000
-DEFAULT_SHOT_CAP = 800
+#: 两个上限的**单一真源**是 `AppConfig().rag`（2026-10-08 用户把发货值抬到
+#: 计划 60000 / 每镜 50000）。此前这里是**抄了一份字面量**——配置改了、
+#: 审计还在拿旧数判"超限"，属于本仓栽过多次的"各抄一份"。改成从配置派生，
+#: 并保留字面量式的**函数默认参数**给显式传参的用例（见 `audit_trace`）。
+_RAG_DEFAULTS = AppConfig().rag
+DEFAULT_PLAN_CAP = int(_RAG_DEFAULTS.plan_prefetch_tokens)
+DEFAULT_SHOT_CAP = int(_RAG_DEFAULTS.max_tokens_per_call)
 
 #: 剧本正文的起点标记。**所有字面量检索都必须止步于它**：剧本是不可信内容，
 #: 里面的字面量不许影响"注入块到哪儿结束"这件事（否则一次剧本注入就能把

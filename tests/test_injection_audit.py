@@ -246,8 +246,11 @@ def test_the_committed_long_run_measures_both_caps():
     assert report["shot_scope"]["status"] == "pass"
     assert report["plan_scope"]["calls"] >= 1
     assert report["shot_scope"]["calls"] >= 60
-    assert report["plan_scope"]["cap"] == 2000
-    assert report["shot_scope"]["cap"] == 800
+    #: 2026-10-08 用户裁决把两个**预算**抬到 5 万 / 6 万（`rag.max_tokens_per_call`
+    #: / `rag.plan_prefetch_tokens`）。这条断言钉的是"审计读的是**当前**配置里的
+    #: 那一格"，不是"历史上那一跑的上限"——所以跟着配置走；判据（=不超过上限）没动。
+    assert report["plan_scope"]["cap"] == 60000
+    assert report["shot_scope"]["cap"] == 50000
     assert report["shot_scope"]["max_tokens"] > 0
     assert set(report["shot_scope"]["locators"]) == {"terminator"}
 

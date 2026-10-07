@@ -92,10 +92,14 @@ class RagConfig:
     #: v1.5 §7（P2-T5）：规则包（P4-T1 ``rulepack``）每镜注入的规则条数上限。
     #: 校验 3–8——太少约束不足，太多会把候选挤掉。消费者在 P4-T1 落地。
     rule_top_k: int = 5
-    max_tokens_per_call: int = 800
+    #: 2026-10-08 用户裁决："把这个调高到五六万这样子"——三栏注入的**每镜**上限。
+    #: 改的是**预算**（上限），不是判据；实际注入多少仍由检索宽度决定
+    #: （`top_k` / `rule_top_k` / `cases_top_k`），**上限抬了不等于注入变多**。
+    max_tokens_per_call: int = 50000
     #: v1.4 §2.3：整场预取（``block_for_plan``）的 token 上限。此前是
     #: ``knowledge/retriever.py`` 里的硬编码常量，现在有真正的消费者。
-    plan_prefetch_tokens: int = 2000
+    #: 同上：整场预取（`block_for_plan`）的 token 上限，2026-10-08 抬到 60000。
+    plan_prefetch_tokens: int = 60000
     #: v1.4 §2.3b：L3 案例层的载体。``lightrag``（默认）／``hybrid``（仅
     #: LightRAG 不可用时降级，须记 ``cases_degraded``）／``off``（显式关闭）。
     cases_backend: str = "lightrag"
