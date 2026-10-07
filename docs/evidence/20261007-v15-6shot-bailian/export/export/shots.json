@@ -1,0 +1,1284 @@
+{
+  "project": "第十四街区码头市场 - 午后",
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "style": "写实电影质感，35mm，柔和自然光",
+  "generated_at": "2026-10-07T19:45:16+08:00",
+  "scene_heading": "第十四街区码头市场 - 午后",
+  "total_frames": 792,
+  "llm_calls": 42,
+  "retrieval_calls": 7,
+  "crowd": {
+    "entries": [
+      {
+        "count": 30,
+        "mode": "walk",
+        "seed": 0,
+        "spread": 6.0,
+        "label": "背景有大量路人（约30人）在市场行走、交易"
+      }
+    ],
+    "total": 30
+  },
+  "timing_overrides": [],
+  "action_conflicts": [
+    {
+      "layer": "head",
+      "character_id": "伊恩",
+      "pair": [
+        "look_at",
+        "nod"
+      ],
+      "overlap_frames": 6,
+      "applied_shift": 12,
+      "frame": 324,
+      "shot_id": "shot_003"
+    },
+    {
+      "layer": "head",
+      "character_id": "伊恩",
+      "pair": [
+        "nod",
+        "nod"
+      ],
+      "overlap_frames": 15,
+      "applied_shift": 21,
+      "frame": 331,
+      "shot_id": "shot_003"
+    },
+    {
+      "layer": "head",
+      "character_id": "伊恩",
+      "pair": [
+        "nod",
+        "look_at"
+      ],
+      "overlap_frames": 20,
+      "applied_shift": 26,
+      "frame": 343,
+      "shot_id": "shot_003"
+    },
+    {
+      "layer": "head",
+      "character_id": "伊恩",
+      "pair": [
+        "look_at",
+        "look_at"
+      ],
+      "overlap_frames": 26,
+      "applied_shift": 32,
+      "frame": 354,
+      "shot_id": "shot_003"
+    },
+    {
+      "layer": "head",
+      "character_id": "伊恩",
+      "pair": [
+        "look_at",
+        "look_at"
+      ],
+      "overlap_frames": 37,
+      "applied_shift": 43,
+      "frame": 355,
+      "shot_id": "shot_003"
+    },
+    {
+      "layer": "head",
+      "character_id": "米迦尔",
+      "pair": [
+        "look_at",
+        "nod"
+      ],
+      "overlap_frames": 8,
+      "applied_shift": 14,
+      "frame": 490,
+      "shot_id": "shot_004"
+    },
+    {
+      "layer": "head",
+      "character_id": "米迦尔",
+      "pair": [
+        "nod",
+        "look_at"
+      ],
+      "overlap_frames": 13,
+      "applied_shift": 19,
+      "frame": 502,
+      "shot_id": "shot_004"
+    },
+    {
+      "layer": "body",
+      "character_id": "米迦尔",
+      "pair": [
+        "hand_to",
+        "hand_to"
+      ],
+      "overlap_frames": 6,
+      "applied_shift": 12,
+      "frame": 384,
+      "shot_id": "shot_004"
+    },
+    {
+      "layer": "body",
+      "character_id": "米迦尔",
+      "pair": [
+        "hand_to",
+        "body_tilt"
+      ],
+      "overlap_frames": 4,
+      "applied_shift": 10,
+      "frame": 446,
+      "shot_id": "shot_004"
+    },
+    {
+      "layer": "body",
+      "character_id": "米迦尔",
+      "pair": [
+        "body_tilt",
+        "body_tilt"
+      ],
+      "overlap_frames": 8,
+      "applied_shift": 14,
+      "frame": 466,
+      "shot_id": "shot_004"
+    },
+    {
+      "layer": "body",
+      "character_id": "米迦尔",
+      "pair": [
+        "body_tilt",
+        "hand_to"
+      ],
+      "overlap_frames": 26,
+      "applied_shift": 32,
+      "frame": 468,
+      "shot_id": "shot_004"
+    },
+    {
+      "layer": "body",
+      "character_id": "米迦尔",
+      "pair": [
+        "hand_to",
+        "hand_to"
+      ],
+      "overlap_frames": 21,
+      "applied_shift": 27,
+      "frame": 499,
+      "shot_id": "shot_004"
+    }
+  ],
+  "dialogue_pins": [
+    {
+      "shot_number": 2,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 3,
+      "speaker_raw": "伊恩",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 4,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 1.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 4,
+      "speaker_raw": "米迦尔",
+      "speaker_status": "resolved",
+      "declared_s": 4.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 6,
+      "speaker_raw": "偷盗者",
+      "speaker_status": "resolved",
+      "declared_s": 3.0,
+      "model_text": "",
+      "applied_s": null
+    },
+    {
+      "shot_number": 6,
+      "speaker_raw": "偷盗者",
+      "speaker_status": "resolved",
+      "declared_s": 4.0,
+      "model_text": "",
+      "applied_s": null
+    }
+  ],
+  "audit_pass_rate": {
+    "numerator": 3,
+    "denominator": 5,
+    "rules": [
+      "shot_003",
+      "shot_005",
+      "shot_006"
+    ],
+    "sampled_frames": 19,
+    "exempt_shots": []
+  },
+  "knowledge": {
+    "backend": "hypergraph",
+    "engine": "builtin.BM25Okapi",
+    "cards": 2353,
+    "top_k": 5,
+    "token_limit": 800,
+    "plan_token_limit": 2000,
+    "retrieval_calls": 7,
+    "degraded": false,
+    "degraded_reason": "",
+    "hypergraph_fingerprint": "e5213e1b64781c24103eecae15a4921b5766f75c4709672fa48997de692cdf89",
+    "cases": 3,
+    "lanes": 2,
+    "cases_backend": "hybrid",
+    "cases_requested_backend": "hybrid",
+    "cases_degraded": false,
+    "cases_degraded_reason": "",
+    "lightrag_index_fingerprint": "",
+    "cases_index_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+    "warnings": []
+  },
+  "shots": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "intent": "空镜建立码头市场午后环境，用微风打破宁静，铺垫即将发生的冲突",
+      "intent_type": "铺垫",
+      "shot_type": "MCU",
+      "start_frame": 1,
+      "end_frame": 120,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_001.mp4",
+      "first_frame": "first_frames/shot_001.png",
+      "camera": {
+        "name": "BD_Cam_shot_001",
+        "position": [
+          0.0,
+          4.921,
+          1.231
+        ],
+        "lens": 85.0
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
+      "characters": [],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "本场轴线：米迦尔（画面左，面朝画右）—伊恩（其身后偏右）；偷盗者一线独立于画面深处，运动方向统一为画左→画右",
+      "continuity_in": "开场镜头，无入点承接；确立暖侧光方向为画面右侧（海面反光）",
+      "degraded": true,
+      "warnings": [
+        "按构图声明（rule=thirds、subject_position=left_third）把对准点横向偏移 +0.167 幅宽",
+        "shot_001：远处叫卖的摊贩与人流 的同层动作已排满整镜，第 121 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_001: 动作引用了不在场的角色 随风摆动的草丛与散落干草，已跳过",
+        "shot_001: 动作引用了不在场的角色 午后海面反光，已跳过",
+        "shot_001: 动作引用了不在场的角色 帆布篷与市集摊位，已跳过",
+        "shot_001: 动作引用了不在场的角色 停泊渔船的桅杆与缆绳，已跳过",
+        "shot_001: 动作引用了不在场的角色 远处叫卖的摊贩与人流，已跳过",
+        "shot_001: 动作引用了不在场的角色 远处叫卖的摊贩与人流，已跳过"
+      ],
+      "declared": {
+        "shot_number": 1,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "淡入",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "自然侧光，阳光从画面右侧照射，形成暖色调光影，地面阴影清晰",
+        "sfx": "微风声、远处商贩叫卖声、海浪轻拍岸边声、路人交谈的嘈杂声",
+        "declared_duration_s": 5.0,
+        "camera_move": "static"
+      },
+      "labels": {},
+      "movements": [],
+      "beats": [
+        {
+          "t": 0.0,
+          "subject": "随风摆动的草丛与散落干草",
+          "verb": "body_tilt",
+          "target": "码头木栈道地面",
+          "pace": "slow",
+          "react": "第一阵微风掠过，草叶与散落干草统一向画面右侧倒伏又回弹，几缕干草屑被卷离木栈道地面"
+        },
+        {
+          "t": 0.2,
+          "subject": "午后海面反光",
+          "verb": "body_tilt",
+          "pace": "slow",
+          "react": "画面右侧海面光斑跳动，暖侧光扫过木栈道与货袋表面，确立本场唯一光源方向"
+        },
+        {
+          "t": 0.4,
+          "subject": "帆布篷与市集摊位",
+          "verb": "body_tilt",
+          "pace": "slow",
+          "react": "帆布被风鼓起又塌下，摊篷边缘翻动，篷影在堆叠木箱上晃动"
+        },
+        {
+          "t": 0.6,
+          "subject": "停泊渔船的桅杆与缆绳",
+          "verb": "body_tilt",
+          "pace": "slow",
+          "react": "桅杆随浪轻晃，缆绳绷紧又松弛，木栈道传来闷响"
+        },
+        {
+          "t": 0.8,
+          "subject": "远处叫卖的摊贩与人流",
+          "verb": "walk_to",
+          "target": "偷盗者的逃跑路线",
+          "pace": "normal",
+          "face_to": "screen_right",
+          "react": "深处人流被虚化成光斑，整体由画左向画右缓慢流动，预先声明本场运动方向"
+        }
+      ],
+      "composition": {
+        "rule": "thirds",
+        "subject_position": "left_third"
+      },
+      "rule_justifications": [
+        {
+          "rule": "SHOT_PATTERN",
+          "action": "follow",
+          "reason": "严格按 shot_size=MCU + lens=85mm 执行，未触碰被禁的 ECU；空镜也用 MCU 而非大远景，是为了让草丛、帆布、木箱的材质细节可读，把'码头市场'落实成具体质感而不是概念图",
+          "precedent": "case_ultimate-guide-to-camera-shots_024"
+        },
+        {
+          "rule": "STAGING_PACK",
+          "action": "follow",
+          "reason": "平视机位、三分法平衡构图：主体在左三分线，右侧留给海面暖光与深处人流，画面左右重量相当；未使用被禁的 framing/frame_within_frame（不用篷布或木箱做前景框）",
+          "precedent": "case_rules-of-shot-composition-in-film_044"
+        },
+        {
+          "rule": "INTENT_PACK",
+          "action": "follow",
+          "reason": "本镜 intent=铺垫。三条 INTENT_PACK 存在冲突（铺垫+MCU+固定 / 铺垫+MS+固定 / 揭示+MCU+固定），按'更具体者优先'裁决：镜头计划已把 shot_type 定为 MCU 且 intent 明确为铺垫而非揭示，故取『铺垫+MCU+固定』，机位全程零运动",
+          "precedent": "case_medium-close-up-shot_011"
+        },
+        {
+          "rule": "AXIS_RULE",
+          "action": "break",
+          "reason": "本镜为空镜，画面内不存在任何角色，也就没有可越轴的角色对，'固定=禁'这条边在此没有作用对象。轴线信息改由构图与运动方向预先声明：主体压在画左三分线（米迦尔未来的位置）、右侧留出通往海面反光的引导空间、深处人流统一画左→画右流动，与偷盗者逃跑路线同向。若此处加入摇移，反而会提前消耗掉节点2快速推镜的冲击力",
+          "precedent": "case_ultimate-guide-to-camera-shots_024"
+        },
+        {
+          "rule": "cine_static_contrast",
+          "action": "follow",
+          "reason": "把固定镜头留给铺垫：120 帧内机位完全静止，只有风造成的草叶/帆布/桅杆/光斑微动，使整场戏的第一次摄影机运动（节点2的快速推镜）成为唯一的'事情开始了'信号",
+          "precedent": "case_ultimate-guide-to-camera-shots_024"
+        }
+      ],
+      "justification_audit": {
+        "declared_breaks": [
+          "AXIS_RULE"
+        ],
+        "declared_follows": [
+          "SHOT_PATTERN",
+          "STAGING_PACK",
+          "INTENT_PACK",
+          "cine_static_contrast"
+        ],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": [
+          "AXIS_RULE"
+        ]
+      },
+      "alternates": []
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "intent": "建立米迦尔自信意气的性格，主动请战引出冲突",
+      "intent_type": "推进",
+      "shot_type": "CU",
+      "start_frame": 121,
+      "end_frame": 264,
+      "duration_frames": 144,
+      "duration_seconds": 6.0,
+      "video_file": "blockout_shot_002.mp4",
+      "first_frame": "first_frames/shot_002.png",
+      "camera": {
+        "name": "BD_Cam_shot_002",
+        "position": [
+          -1.5,
+          4.429,
+          1.278
+        ],
+        "lens": 85.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": -1,
+        "status": "correct"
+      },
+      "characters": [
+        "米迦尔",
+        "伊恩"
+      ],
+      "dialogue_ids": [
+        "scene_002_michael_01"
+      ],
+      "action_types": [],
+      "axis_note": "机位在轴线米迦尔一侧、偏其正前方约 20°，米迦尔面朝画右；伊恩在其身后偏右虚化入画，不越轴",
+      "continuity_in": "承接镜1同一空间与光向；相对镜1机位角度变化约 45°，景别 MCU→CU 变化一档",
+      "degraded": false,
+      "warnings": [],
+      "declared": {
+        "shot_number": 2,
+        "camera_number": "1",
+        "technique": "快速推镜",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "正面柔光打在米迦尔脸上，突出自信表情",
+        "sfx": "镜头推进的风声、米迦尔清脆的说话声",
+        "declared_duration_s": 6.0,
+        "camera_move": "dolly_in"
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 1.7723,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        },
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.8647,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "dolly_in",
+          "start_frame": 1,
+          "end_frame": 144,
+          "source": "declared"
+        }
+      ],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [
+          "COMPOSITION"
+        ],
+        "undeclared_violations": [
+          "COMPOSITION"
+        ],
+        "declared_but_clean": []
+      },
+      "alternates": []
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "intent": "以伊恩的平静应允表现两人搭档间的信任关系",
+      "intent_type": "停顿",
+      "shot_type": "MCU",
+      "start_frame": 265,
+      "end_frame": 360,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_003.mp4",
+      "first_frame": "first_frames/shot_003.png",
+      "camera": {
+        "name": "BD_Cam_shot_003",
+        "position": [
+          0.88,
+          3.48,
+          1.231
+        ],
+        "lens": 85.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": -1,
+        "status": "correct"
+      },
+      "characters": [
+        "伊恩"
+      ],
+      "dialogue_ids": [
+        "scene_002_ian_01"
+      ],
+      "action_types": [
+        "look_at",
+        "nod",
+        "turn_head",
+        "nod",
+        "look_at"
+      ],
+      "axis_note": "反打机位越过伊恩肩线方向但仍保持在轴线同一侧，伊恩面朝画左，与镜2构成标准正反打，银幕方向一致",
+      "continuity_in": "承接镜2的注视关系（米迦尔→伊恩 / 伊恩→米迦尔）；相对镜2机位角度变化约 150°（反打），景别 CU→MCU 变化一档",
+      "degraded": true,
+      "warnings": [
+        "按构图声明（rule=lead_room、subject_position=right_third）把对准点横向偏移 -0.167 幅宽",
+        "shot_003：伊恩 的同层动作时间重叠，已把 62–73 后移到 67–78（§9.7 串行）",
+        "shot_003：伊恩 的同层动作时间重叠，已把 74–85 后移到 79–90（§9.7 串行）",
+        "shot_003：伊恩 的同层动作时间重叠，已把 77–88 后移到 91–102（§9.7 串行）",
+        "shot_003：伊恩 的同层动作已排满整镜，第 97 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_003: head 层动作时间重叠：look_at(319-330) 与 nod(324-334)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_003: head 层动作时间重叠：nod(324-334) 与 nod(331-342)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_003: head 层动作时间重叠：look_at(354-360) 与 look_at(355-360)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管"
+      ],
+      "declared": {
+        "shot_number": 3,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "侧光打在伊恩脸上，一半在光下一半在阴影中",
+        "sfx": "伊恩沉稳的说话声",
+        "declared_duration_s": 4.0,
+        "camera_move": "static"
+      },
+      "labels": {
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.8647,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [],
+      "beats": [
+        {
+          "t": 0.01,
+          "subject": "伊恩",
+          "verb": "look_at",
+          "target": "米迦尔与伊恩的交谈位",
+          "face_to": "screen_left",
+          "pace": "normal",
+          "react": "承接镜2的注视关系，视线落在画左的米迦尔身上，银幕方向与镜2一致"
+        },
+        {
+          "t": 0.15,
+          "subject": "伊恩",
+          "verb": "nod",
+          "face_to": "screen_left",
+          "pace": "slow",
+          "react": "轻轻点头应下，幅度小而沉稳"
+        },
+        {
+          "t": 0.45,
+          "subject": "伊恩",
+          "verb": "turn_head",
+          "target": "米迦尔与伊恩的交谈位",
+          "face_to": "screen_left",
+          "pace": "slow",
+          "react": "头部微幅回正，保持正视米迦尔，不飘移视线"
+        },
+        {
+          "t": 0.65,
+          "subject": "伊恩",
+          "verb": "nod",
+          "face_to": "screen_left",
+          "pace": "slow",
+          "react": "说到关切处再点一次头，把信任交给搭档"
+        },
+        {
+          "t": 0.8,
+          "subject": "伊恩",
+          "verb": "look_at",
+          "target": "米迦尔与伊恩的交谈位",
+          "face_to": "screen_left",
+          "pace": "normal",
+          "react": "台词收束，眼神平静不带担忧"
+        },
+        {
+          "t": 0.94,
+          "subject": "伊恩",
+          "verb": "look_at",
+          "target": "米迦尔与伊恩的交谈位",
+          "face_to": "screen_left",
+          "pace": "slow",
+          "react": "视线保持不动，静默留白收尾，交回给米迦尔的反应"
+        }
+      ],
+      "composition": {
+        "rule": "lead_room",
+        "subject_position": "right_third"
+      },
+      "rule_justifications": [
+        {
+          "rule": "SHOT_PATTERN",
+          "action": "follow",
+          "reason": "严格按 MCU + 85mm + 固定机位 + cinematic headroom 执行：反打侧需要看清伊恩的眉眼与点头幅度，85mm 中长焦压缩码头市集背景（帆布篷、木箱、草丛）为柔和层次，不出现 ECU。",
+          "precedent": "case_rules-of-shot-composition-in-film_029"
+        },
+        {
+          "rule": "STAGING_PACK",
+          "action": "follow",
+          "reason": "平视机位、balance 构图：伊恩置于画面右三分之一，画左留出通往画外米迦尔的呼吸空间形成视觉重量平衡；未使用任何 framing/frame_within_frame 前景框。",
+          "precedent": "case_rules-of-shot-composition-in-film_029"
+        },
+        {
+          "rule": "AXIS_RULE",
+          "action": "break",
+          "reason": "该边禁止固定机位，但本镜有意保持完全静止：这是与镜2构成标准正反打的反打侧，axis_side=neutral，机位虽相对镜2变化约150°仍留在轴线同一侧，伊恩面朝画左与镜2的银幕方向严格一致；任何推拉摇移都会在剪辑点上造成轴线漂移与方向感错位，破坏两人注视关系的连续性。静止+视线匹配才是此处守住轴线的手段。",
+          "precedent": "case_blocking-and-staging-scenes_025"
+        },
+        {
+          "rule": "INTENT_PACK",
+          "action": "follow",
+          "reason": "在 INTENT_PACK 的冲突项中裁决采用 intent=铺垫 / shot_size=MCU / movement=固定 这一支：本镜的任务是为米迦尔随后的施法（镜3之后）铺垫搭档信任关系，需要 MCU 容纳点头与肩部松弛的表演；intent=停顿 要求的 CU 与 SHOT_PATTERN 的 MCU 及 continuity_in 的 CU→MCU 变档相冲突，故不采纳。",
+          "precedent": "case_blocking-and-staging-scenes_025"
+        }
+      ],
+      "justification_audit": {
+        "declared_breaks": [
+          "AXIS_RULE"
+        ],
+        "declared_follows": [
+          "SHOT_PATTERN",
+          "STAGING_PACK",
+          "INTENT_PACK"
+        ],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": [
+          "AXIS_RULE"
+        ]
+      },
+      "alternates": []
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "intent": "以手部特写铺垫米迦尔施法前的准备，暗示魔法即将出现",
+      "intent_type": "铺垫",
+      "shot_type": "CU",
+      "start_frame": 361,
+      "end_frame": 504,
+      "duration_frames": 144,
+      "duration_seconds": 6.0,
+      "video_file": "blockout_shot_004.mp4",
+      "first_frame": "first_frames/shot_004.png",
+      "camera": {
+        "name": "BD_Cam_shot_004",
+        "position": [
+          1.632,
+          3.132,
+          1.278
+        ],
+        "lens": 85.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": -1,
+        "status": "correct"
+      },
+      "characters": [
+        "米迦尔"
+      ],
+      "dialogue_ids": [
+        "scene_003_michael_01",
+        "scene_003_michael_02"
+      ],
+      "action_types": [
+        "hand_to",
+        "look_at",
+        "hand_to",
+        "body_tilt",
+        "hand_to",
+        "nod"
+      ],
+      "axis_note": "机位仍在米迦尔轴线一侧，俯角约 35° 对准其身前双手，保持米迦尔身体朝向画右的银幕方向",
+      "continuity_in": "承接镜3的对话延续（听者仍为伊恩）；相对镜3机位角度变化约 90°（由人物面部转为手部俯角），景别 MCU→CU 变化一档",
+      "degraded": true,
+      "warnings": [
+        "side=(0.7071067811865475, -0.7071067811865475) 落在已确立轴线的另一侧，已关于轴线镜像为 (0.7071067811865476, 0.7071067811865476) 以保持银幕方向连续",
+        "按构图声明（rule=lead_room、subject_position=left_third）把对准点横向偏移 +0.167 幅宽",
+        "shot_004：米迦尔 的同层动作时间重叠，已把 6–23 后移到 24–41（§9.7 串行）",
+        "shot_004：米迦尔 的同层动作时间重叠，已把 29–40 后移到 42–53（§9.7 串行）",
+        "shot_004：米迦尔 的同层动作时间重叠，已把 55–72 后移到 73–90（§9.7 串行）",
+        "shot_004：米迦尔 的同层动作时间重叠，已把 84–98 后移到 91–105（§9.7 串行）",
+        "shot_004：米迦尔 的同层动作时间重叠，已把 84–98 后移到 106–120（§9.7 串行）",
+        "shot_004：米迦尔 的同层动作时间重叠，已把 109–126 后移到 121–138（§9.7 串行）",
+        "shot_004：米迦尔 的同层动作时间重叠，已把 109–126 后移到 139–156（§9.7 串行）",
+        "shot_004：米迦尔 的同层动作已排满整镜，第 145 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_004: head 层动作时间重叠：look_at(481-498) 与 nod(490-501)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_004: body 层动作时间重叠：hand_to(366-390) 与 hand_to(384-401)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_004: body 层动作时间重叠：hand_to(433-450) 与 body_tilt(446-464)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_004: body 层动作时间重叠：body_tilt(466-480) 与 hand_to(468-488)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管"
+      ],
+      "declared": {
+        "shot_number": 4,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "顶光照射手部，形成清晰的手部阴影",
+        "sfx": "米迦尔轻快的笑声、手指活动的轻微声响",
+        "declared_duration_s": 6.0,
+        "camera_move": "static"
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 1.7723,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [],
+      "beats": [
+        {
+          "t": 0.04,
+          "subject": "米迦尔",
+          "verb": "hand_to",
+          "target": "米迦尔",
+          "face_to": "screen_right",
+          "pace": "slow",
+          "react": "双手自体侧抬到胸前，指尖相抵、掌心朝上，动作轻而自信"
+        },
+        {
+          "t": 0.2,
+          "subject": "米迦尔",
+          "verb": "look_at",
+          "target": "偷盗者的逃跑路线",
+          "face_to": "screen_right",
+          "pace": "normal",
+          "react": "视线自手背抬起扫向画右远处，带笑的得意"
+        },
+        {
+          "t": 0.38,
+          "subject": "米迦尔",
+          "verb": "hand_to",
+          "target": "米迦尔",
+          "face_to": "screen_right",
+          "pace": "normal",
+          "react": "右手覆上左手背，指节一节节收紧"
+        },
+        {
+          "t": 0.58,
+          "subject": "米迦尔",
+          "verb": "body_tilt",
+          "target": "码头木栈道地面",
+          "face_to": "screen_right",
+          "pace": "slow",
+          "react": "上身微微前倾，重心压向画右"
+        },
+        {
+          "t": 0.76,
+          "subject": "米迦尔",
+          "verb": "hand_to",
+          "target": "米迦尔",
+          "face_to": "screen_right",
+          "pace": "brisk",
+          "react": "五指骤然收拢成拳，拳心浮起一点微光"
+        },
+        {
+          "t": 0.9,
+          "subject": "米迦尔",
+          "verb": "nod",
+          "target": "米迦尔与伊恩的交谈位",
+          "face_to": "screen_right",
+          "pace": "slow",
+          "react": "轻轻点头收住台词，拳头停在胸前画左三分位"
+        }
+      ],
+      "composition": {
+        "rule": "lead_room",
+        "subject_position": "left_third"
+      },
+      "rule_justifications": [
+        {
+          "rule": "INTENT_PACK",
+          "action": "follow",
+          "reason": "本镜 intent=铺垫、shot_size=CU，按该 pack 采用固定机位：camera.movements 为空，不加任何推/摇/跟，让手部微动作本身承担信息量。与 [INTENT_PACK] intent=揭示 的冲突按「本镜计划声明的 intent 为铺垫」裁决，揭示留给镜5魔法生效。",
+          "precedent": "INTENT_PACK intent=铺垫 shot_size=CU movement=固定"
+        },
+        {
+          "rule": "AXIS_RULE",
+          "action": "follow",
+          "reason": "机位取 front_right，仍在镜3所在的米迦尔轴线同侧，只把俯角下压约 35° 从面部转到身前双手（景别 MCU→CU 一档），米迦尔身体朝向保持画右，不产生越轴。",
+          "precedent": "AXIS_RULE pair=any_two axis_side=neutral axis_topic=越轴"
+        },
+        {
+          "rule": "cine_static_contrast",
+          "action": "follow",
+          "reason": "把固定镜头留给铺垫：本镜完全静止，紧接的镜5（跟拍+魔法生效）才第一次出现明显运动，观众会把它读成「事情开始了」。",
+          "precedent": "cine_static_contrast"
+        },
+        {
+          "rule": "SHOT_PATTERN",
+          "action": "follow",
+          "reason": "该 pattern 禁的是「MS + 50mm + zoom_in」组合里出现 CU；本镜是 CU + 85mm + 固定（无 zoom_in），不落入被禁组合，长焦只用于压缩手部特写的背景散景。",
+          "precedent": "SHOT_PATTERN shot_size=MS lens=50mm movement=zoom_in"
+        },
+        {
+          "rule": "gen_perf_0351",
+          "action": "follow",
+          "reason": "用「指尖相抵→覆手背→骤然握拳」这组递进的手部微动作做性格与情节铺垫：自信、爱炫、带点顽皮的施法前仪式，比直接出魔法更能立住米迦尔。",
+          "precedent": "gen_perf_0351"
+        }
+      ],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [
+          "INTENT_PACK",
+          "AXIS_RULE",
+          "cine_static_contrast",
+          "SHOT_PATTERN",
+          "gen_perf_0351"
+        ],
+        "detected_violations": [
+          "COMPOSITION",
+          "R005",
+          "R004"
+        ],
+        "undeclared_violations": [
+          "COMPOSITION",
+          "R005",
+          "R004"
+        ],
+        "declared_but_clean": []
+      },
+      "alternates": []
+    },
+    {
+      "shot_id": "shot_005",
+      "order": 5,
+      "intent": "跟拍逃跑中的偷盗者，展示米迦尔的魔法第一次生效，制造悬念（本场转折点）",
+      "intent_type": "转折",
+      "shot_type": "MS",
+      "start_frame": 505,
+      "end_frame": 624,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_005.mp4",
+      "first_frame": "first_frames/shot_005.png",
+      "camera": {
+        "name": "BD_Cam_shot_005",
+        "position": [
+          -5.8,
+          3.705,
+          0.95
+        ],
+        "lens": 40.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": -1,
+        "status": "correct"
+      },
+      "characters": [
+        "偷盗者"
+      ],
+      "dialogue_ids": [],
+      "action_types": [
+        "run_to",
+        "body_tilt",
+        "fall_down",
+        "stand",
+        "turn_head",
+        "run_to"
+      ],
+      "axis_note": "偷盗者一线独立轴线：运动方向画左→画右，跟拍机位与其同向平移，不与米迦尔/伊恩轴线交叉，全片两者不同框",
+      "continuity_in": "由镜4的手部动作切至魔法作用结果（因果衔接）；相对镜4机位角度变化约 120°，景别 CU→MS 变化两档；光向仍为画面右侧暖侧光",
+      "degraded": true,
+      "warnings": [
+        "按构图声明（rule=lead_room、subject_position=left_third）把对准点横向偏移 +0.167 幅宽",
+        "shot_005：偷盗者 的同层动作已排满整镜，第 121 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_005：偷盗者 的同层动作已排满整镜，第 121 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_005：偷盗者 的同层动作时间重叠，已把 43–57 后移到 58–72（§9.7 串行）",
+        "shot_005：偷盗者 的同层动作时间重叠，已把 62–91 后移到 73–102（§9.7 串行）",
+        "shot_005：偷盗者 的同层动作时间重叠，已把 62–91 后移到 103–132（§9.7 串行）",
+        "shot_005：偷盗者 的同层动作已排满整镜，第 121 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_005：偷盗者 的同层动作时间重叠，已把 82–105 后移到 106–129（§9.7 串行）",
+        "shot_005：偷盗者 的同层动作已排满整镜，第 121 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_005：偷盗者 的同层动作时间重叠，已把 109–120 后移到 120–131（§9.7 串行）",
+        "shot_005：偷盗者 的同层动作已排满整镜，第 121 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_005: run_to(506-624) 与 fall_down(607-624) 语义冲突：请先结束其中一个动作，或改用兼容动作",
+        "shot_005: run_to(506-624) 与 fall_down(567-584) 语义冲突：请先结束其中一个动作，或改用兼容动作",
+        "shot_005: fall_down(607-624) 与 run_to(613-624) 语义冲突：请先结束其中一个动作，或改用兼容动作",
+        "shot_005: head 层动作时间重叠：look_at(506-624) 与 look_at(547-561)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: head 层动作时间重叠：look_at(577-606) 与 look_at(586-609)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: head 层动作时间重叠：look_at(586-609) 与 turn_head(600-611)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: base 层动作时间重叠：run_to(506-624) 与 fall_down(567-584)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: base 层动作时间重叠：fall_down(607-624) 与 stand(610-624)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: base 层动作时间重叠：stand(610-624) 与 run_to(613-624)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: legs 层动作时间重叠：run_to(506-624) 与 stand(585-600)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: legs 层动作时间重叠：stand(610-624) 与 run_to(613-624)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: body 层动作时间重叠：run_to(506-624) 与 body_tilt(549-566)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: body 层动作时间重叠：body_tilt(549-566) 与 body_tilt(562-576)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: body 层动作时间重叠：body_tilt(562-576) 与 fall_down(567-584)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: body 层动作时间重叠：fall_down(607-624) 与 stand(610-624)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_005: body 层动作时间重叠：stand(610-624) 与 run_to(613-624)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管"
+      ],
+      "declared": {
+        "shot_number": 5,
+        "camera_number": "1",
+        "technique": "跟拍镜头",
+        "transition": "切镜，动作衔接",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "黑红色火焰自发光，照亮偷盗者的手掌和面部",
+        "sfx": "跑步脚步声、火焰燃起的\"呼\"声、金属受热的轻微滋滋声",
+        "declared_duration_s": 5.0,
+        "camera_move": "follow_subject"
+      },
+      "labels": {
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 1.9674,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [
+        {
+          "kind": "follow_subject",
+          "start_frame": 1,
+          "end_frame": 120,
+          "source": "declared"
+        }
+      ],
+      "beats": [
+        {
+          "t": 0.02,
+          "subject": "偷盗者",
+          "verb": "run_to",
+          "target": "偷盗者的逃跑路线",
+          "face_to": "screen_right",
+          "pace": "brisk",
+          "react": "捂着怀里的赃物埋头狂奔，肩膀发紧"
+        },
+        {
+          "t": 0.36,
+          "subject": "偷盗者",
+          "verb": "body_tilt",
+          "target": "码头木栈道地面",
+          "face_to": "screen_right",
+          "pace": "brisk",
+          "react": "银币突然发烫发光，他重心一晃、脚步乱了半拍"
+        },
+        {
+          "t": 0.52,
+          "subject": "偷盗者",
+          "verb": "fall_down",
+          "target": "码头木栈道地面",
+          "face_to": "screen_right",
+          "pace": "brisk",
+          "react": "前扑摔在木栈道上，扬起灰尘，木箱货袋在背景掠过"
+        },
+        {
+          "t": 0.68,
+          "subject": "偷盗者",
+          "verb": "stand",
+          "target": "偷盗者的逃跑路线",
+          "face_to": "screen_right",
+          "pace": "normal",
+          "react": "撑地爬起，身体前倾仍想逃"
+        },
+        {
+          "t": 0.8,
+          "subject": "偷盗者",
+          "verb": "turn_head",
+          "target": "米迦尔与伊恩的交谈位",
+          "face_to": "screen_left",
+          "pace": "slow",
+          "react": "回头朝画左后方瞥一眼——那边空无一人入画，只有叫卖的摊贩与人流"
+        },
+        {
+          "t": 0.91,
+          "subject": "偷盗者",
+          "verb": "run_to",
+          "target": "偷盗者的逃跑路线",
+          "face_to": "screen_right",
+          "pace": "brisk",
+          "react": "咬牙再次向画右窜出，草丛与干草被带得乱飞"
+        }
+      ],
+      "composition": {
+        "rule": "lead_room",
+        "subject_position": "left_third"
+      },
+      "rule_justifications": [
+        {
+          "rule": "[INTENT_PACK] intent=intent:推进 shot_size=shot_size:MS movement=follow_subject",
+          "action": "follow",
+          "reason": "本镜同时承担推进与揭示：用 follow_subject(2.2m) + track_right(1.8m) 与偷盗者同向平移，锁定画左→画右的运动方向，机位始终贴在他的独立轴线上，不与米迦尔/伊恩轴线交叉。"
+        },
+        {
+          "rule": "[INTENT_PACK] intent=intent:转折 shot_size=shot_size:MS movement=固定",
+          "action": "break",
+          "reason": "这一镜的转折点是'米迦尔的魔法第一次生效'，观众必须先被跟拍建立起逃跑动能，再在同一运动中被银币辉光—失衡—摔倒打断，因果才咬得住镜4的手部特写；若改为固定机位，动能会在切点前泄掉，且偷盗者会直接跑出画框，转折变成'人不见了'而不是'魔法生效了'。悬念由镜头继续同向平移+轻微推近来托住，而非停住。",
+          "precedent": "《疯狂的石头》码头/巷道追逐跟拍段落（转折拍仍用同向跟拍而非固定机位）"
+        },
+        {
+          "rule": "[STAGING_PACK] shot_size=shot_size:MS composition_rule=balance camera_angle=平视 禁={composition_rule:rule_of_thirds}",
+          "action": "follow",
+          "reason": "构图声明用 lead_room 而非三分法：主体压在画左，画右整片留给他要逃向的方向，平视机位，画面左右重量由运动留白与背景木箱货袋平衡。"
+        },
+        {
+          "rule": "[STAGING_PACK] shot_size=shot_size:MS composition_rule=balance camera_angle=平视 禁={composition_rule:framing}",
+          "action": "follow",
+          "reason": "不使用框中框/前景遮挡：帆布篷、木箱与桅杆缆绳只作背景层次，避免在跟拍中反复切割主体轮廓，保持平视平衡构图与暖侧光的连续性。"
+        }
+      ],
+      "justification_audit": {
+        "declared_breaks": [
+          "[INTENT_PACK] intent=intent:转折 shot_size=shot_size:MS movement=固定"
+        ],
+        "declared_follows": [
+          "[INTENT_PACK] intent=intent:推进 shot_size=shot_size:MS movement=follow_subject",
+          "[STAGING_PACK] shot_size=shot_size:MS composition_rule=balance camera_angle=平视 禁={composition_rule:rule_of_thirds}",
+          "[STAGING_PACK] shot_size=shot_size:MS composition_rule=balance camera_angle=平视 禁={composition_rule:framing}"
+        ],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": [
+          "[INTENT_PACK] intent=intent:转折 shot_size=shot_size:MS movement=固定"
+        ]
+      },
+      "alternates": []
+    },
+    {
+      "shot_id": "shot_006",
+      "order": 6,
+      "intent": "偷盗者由惊疑转为狂喜大笑的喜剧反转，收束本场",
+      "intent_type": "释放",
+      "shot_type": "MCU",
+      "start_frame": 625,
+      "end_frame": 792,
+      "duration_frames": 168,
+      "duration_seconds": 7.0,
+      "video_file": "blockout_shot_006.mp4",
+      "first_frame": "first_frames/shot_006.png",
+      "camera": {
+        "name": "BD_Cam_shot_006",
+        "position": [
+          -9.28,
+          3.48,
+          1.231
+        ],
+        "lens": 85.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": -1,
+        "status": "correct"
+      },
+      "characters": [
+        "偷盗者"
+      ],
+      "dialogue_ids": [
+        "scene_004_thief_01",
+        "scene_004_thief_02"
+      ],
+      "action_types": [
+        "look_at",
+        "hand_to",
+        "turn_head",
+        "body_tilt",
+        "turn_body",
+        "nod"
+      ],
+      "axis_note": "机位保持在偷盗者运动轴线的同一侧、正前方约 25°，其身体仍朝画右，手心道具位于画面下三分之一处",
+      "continuity_in": "承接镜5的奔跑停步与手心火焰变色；相对镜5机位角度变化约 60°，景别 MS→MCU 变化一档",
+      "degraded": true,
+      "warnings": [
+        "按构图声明（rule=lead_room、subject_position=left_third）把对准点横向偏移 +0.167 幅宽",
+        "shot_006：偷盗者 的同层动作时间重叠，已把 30–47 后移到 48–65（§9.7 串行）",
+        "shot_006：偷盗者 的同层动作时间重叠，已把 60–71 后移到 66–77（§9.7 串行）",
+        "shot_006：偷盗者 的同层动作时间重叠，已把 72–83 后移到 78–89（§9.7 串行）",
+        "shot_006：偷盗者 的同层动作时间重叠，已把 87–101 后移到 90–104（§9.7 串行）",
+        "shot_006：偷盗者 的同层动作时间重叠，已把 87–101 后移到 105–119（§9.7 串行）",
+        "shot_006：偷盗者 的同层动作时间重叠，已把 121–138 后移到 139–156（§9.7 串行）",
+        "shot_006：偷盗者 的同层动作时间重叠，已把 148–159 后移到 157–168（§9.7 串行）",
+        "shot_006：偷盗者 的同层动作已排满整镜，第 169 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_006: head 层动作时间重叠：nod(781-792) 与 look_at(784-792)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+        "shot_006: base 层动作时间重叠：turn_body(738-768) 与 turn_body(763-780)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管"
+      ],
+      "declared": {
+        "shot_number": 6,
+        "camera_number": "1",
+        "technique": "固定镜头",
+        "transition": "切镜",
+        "location": "第十四街区码头市场",
+        "time": "午后",
+        "lighting": "金子反射的金光打在偷盗者脸上，形成明暗对比",
+        "sfx": "偷盗者激动的喘气声、狂喜的大笑声、金子碰撞的清脆声响",
+        "declared_duration_s": 7.0,
+        "camera_move": "static"
+      },
+      "labels": {
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 1.9674,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [],
+      "beats": [
+        {
+          "t": 0.0,
+          "subject": "偷盗者",
+          "verb": "look_at",
+          "target": "码头木栈道地面",
+          "face_to": "screen_right",
+          "pace": "slow",
+          "react": "急停后低头盯住手心，呼吸一滞，肩膀绷紧"
+        },
+        {
+          "t": 0.18,
+          "subject": "偷盗者",
+          "verb": "hand_to",
+          "face_to": "screen_right",
+          "pace": "slow",
+          "react": "把变色的火焰手心抬到胸前下三分之一处，指节发颤"
+        },
+        {
+          "t": 0.36,
+          "subject": "偷盗者",
+          "verb": "turn_head",
+          "target": "米迦尔与伊恩的交谈位",
+          "face_to": "screen_left",
+          "pace": "brisk",
+          "react": "惊疑回望，嘴角抽动，眉毛拧起"
+        },
+        {
+          "t": 0.52,
+          "subject": "偷盗者",
+          "verb": "body_tilt",
+          "face_to": "camera",
+          "pace": "normal",
+          "react": "表情翻转成狂喜，仰头大笑，肩膀连续起伏"
+        },
+        {
+          "t": 0.72,
+          "subject": "偷盗者",
+          "verb": "turn_body",
+          "face_to": "camera",
+          "pace": "normal",
+          "react": "身体略转向镜头，笑声放大，重心前倾"
+        },
+        {
+          "t": 0.88,
+          "subject": "偷盗者",
+          "verb": "nod",
+          "face_to": "screen_right",
+          "pace": "slow",
+          "react": "得意点头，把握着火焰的手心收紧贴在胸口"
+        }
+      ],
+      "composition": {
+        "rule": "lead_room",
+        "subject_position": "left_third"
+      },
+      "rule_justifications": [
+        {
+          "rule": "[SHOT_PATTERN] shot_size=shot_size:MCU lens=lens:85mm movement=movement:固定 headroom_policy=cinematic 禁={shot_size:ECU}",
+          "action": "follow",
+          "reason": "MCU + 85mm + 全程固定机位，头部留白按 cinematic；本镜不切 ECU，变色火焰与面部表情始终同框，反转靠表演而非景别跳跃完成。",
+          "precedent": "case_medium-close-up-shot_017"
+        },
+        {
+          "rule": "[SHOT_PATTERN] shot_size=shot_size:MCU lens=lens:35mm movement=movement:固定 headroom_policy=cinematic",
+          "action": "break",
+          "reason": "两条 MCU SHOT_PATTERN 在焦段上互斥，按“更具体者优先”裁决取 85mm：本镜是单人由惊疑转狂喜的面部喜剧反转，需要中长焦压缩背景（帆布篷、木箱、人流虚化）并把注意力锁在眉眼与嘴角，35mm 会把过多市集环境信息带进画面、稀释笑点；同时 85mm 能在不推镜的前提下保持手心道具在画面下三分之一可读。",
+          "precedent": "case_medium-close-up-shot_017"
+        },
+        {
+          "rule": "[INTENT_PACK] intent=intent:揭示 shot_size=shot_size:MCU movement=固定",
+          "action": "follow",
+          "reason": "本镜的叙事任务就是“揭示”——银币化为异火的真相被偷盗者自己看懂，因此采用 MCU + 固定机位，让揭示发生在角色脸上而不是镜头运动上；三条 INTENT_PACK 冲突中取“揭示”而非“留白/铺垫”，因为本场在此收束、信息在此落地。",
+          "precedent": "case_medium-close-up-shot_011"
+        },
+        {
+          "rule": "[AXIS_RULE] pair=any_two axis_side=neutral axis_topic=越轴 禁={movement:固定}",
+          "action": "break",
+          "reason": "该边针对 pair=any_two 的两人轴线，本镜画面内只有偷盗者一人，不存在可越的双人轴线；且机位严格保持在镜5建立的逃跑运动轴线同一侧、正前方约25°，身体朝向仍为画右，与镜5的 MS 相比只做了约60°的同侧角度变化与一档景别收紧，银幕方向连续。此处保留 SHOT_PATTERN/INTENT_PACK 要求的固定机位，是因为任何运动都会打断“惊疑→狂喜”这一拍的面部读秒，并让下三分之一的手心火焰在画面里漂移、丢失道具可读性。",
+          "precedent": "case_medium-close-up-shot_007"
+        },
+        {
+          "rule": "[STAGING_PACK] shot_size=shot_size:MCU composition_rule=balance camera_angle=平视 禁={composition_rule:framing}",
+          "action": "follow",
+          "reason": "平视机位；构图声明取闭集内可用的 lead_room + left_third 来实现 balance——人物实体压在左三分之一，画右留出与其身体朝向一致的呼吸空间，左重右空形成视觉配重；不使用 frame_within_frame 类的 framing 手法（禁用项），前景不加门框/篷布遮挡。"
+        }
+      ],
+      "justification_audit": {
+        "declared_breaks": [
+          "[SHOT_PATTERN] shot_size=shot_size:MCU lens=lens:35mm movement=movement:固定 headroom_policy=cinematic",
+          "[AXIS_RULE] pair=any_two axis_side=neutral axis_topic=越轴 禁={movement:固定}"
+        ],
+        "declared_follows": [
+          "[SHOT_PATTERN] shot_size=shot_size:MCU lens=lens:85mm movement=movement:固定 headroom_policy=cinematic 禁={shot_size:ECU}",
+          "[INTENT_PACK] intent=intent:揭示 shot_size=shot_size:MCU movement=固定",
+          "[STAGING_PACK] shot_size=shot_size:MCU composition_rule=balance camera_angle=平视 禁={composition_rule:framing}"
+        ],
+        "detected_violations": [
+          "R011"
+        ],
+        "undeclared_violations": [
+          "R011"
+        ],
+        "declared_but_clean": [
+          "[SHOT_PATTERN] shot_size=shot_size:MCU lens=lens:35mm movement=movement:固定 headroom_policy=cinematic",
+          "[AXIS_RULE] pair=any_two axis_side=neutral axis_topic=越轴 禁={movement:固定}"
+        ]
+      },
+      "alternates": []
+    }
+  ]
+}

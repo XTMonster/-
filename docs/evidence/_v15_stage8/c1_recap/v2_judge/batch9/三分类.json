@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "卡讲推轨，dolly_in即推轨，蕴含"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲机位/动画，无headroom内容"},
+  {"i": 3, "class": "wrong_card", "why": "卡主题是画幅尺寸，非摄影机运动"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲对焦/动画，无headroom"},
+  {"i": 5, "class": "wrong_card", "why": "卡讲对焦/画幅尺寸，非机位运动"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲极特写/动画，无headroom"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲构图/动画/机位，无LS景别"},
+  {"i": 8, "class": "wrong_card", "why": "卡讲航拍/背景/调度，无ELS"}
+]

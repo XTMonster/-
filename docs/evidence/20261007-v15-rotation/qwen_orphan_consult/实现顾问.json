@@ -1,0 +1,125 @@
+{
+  "summary": "根因判定成立：rebind/v1 在全库选候选卡并追加进 sources[]，把 11 张零边卡提升为“有边”而 held-out 无条目，门⑥ 的 gap 从 0 变 11。正解是 A 的收窄版——候选池限定为 held-out 的 from_card 覆盖集（当前与 pre-rebind edge-backed 等价），同时必须把 REBIND_VERSION 升为 v2，并在新索引上重跑 C1 逐槽位对比。7 条异代测试不能 repin、不能放宽断言，应生成当前代真实运行证据并把测试数据路径指向新运行。主要缺口是：若忘记 bump 版本号、其他门读数变化、或新运行自身不满足断言，都会翻车。",
+  "role": "实现顾问",
+  "teaching": "第一原理：一个知识卡片是否“可断言”不是由它正文里有没有知识决定，而是由证据链状态决定——索引里至少一条边的 sources 包含它（可被断言），且冻结 held-out 夹具里有一条 from_card 指向它（oracle 覆盖）。门⑥ 的不变式是这两个集合的差为空：所有被索引提升为可断言的卡都必须已经有 oracle 条目。重绑通过改边的 sources 直接改变第一个集合，所以它必须被限制在第二个集合内，否则就会制造出“有边无 oracle”的孤儿。本项目里，rebind/v1 的候选池是“全库”（rebind.py 第 12 行），它把词面匹配当作候选资格的唯一标准，忽略了 oracle 覆盖；于是 11 张零边卡被加进 sources，门⑥ 从 0 gap 变 11 gap。正确做法是把候选池收窄为 held-out 的 from_card 覆盖集，让重绑只修复已可断言卡之间的担保关系；同时必须 bump REBIND_VERSION（第九格缓存键）使新旧索引指纹分离，并在新索引上重跑 C1 同口径复判（逐槽位对比，ok→corrupt 即回退）与全套门。这样知识没有减少，判据没有放宽，冻结夹具没有动，只是把“谁有资格被加进边的 sources”重新交给 oracle 定义。",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "blocker",
+      "title": "根因成立：重绑改变 sources 使 11 张零边卡变为有边，门⑥红",
+      "claim": "门⑥红不是判据误报，而是 rebind/v1 在“全库”选候选卡（rebind.py 第 12 行）并把候选卡追加进 sources[]（rebind.py 第 80 行），导致 11 张卡从 edge_counts=0 变成 >0；card_scope_audit.audit 将“有边但不在 covered”计入 gap（第 225、239 行），gap 从 0 变 11，overall=fail。",
+      "explanation": "门⑥ 测的是“可断言卡是否都有 oracle 条目”，可断言性由边的 sources 决定。重绑本应只修担保关系，不应改变可断言面；但当前规则全库搜索，把未覆盖卡也提升为可断言卡。",
+      "where": "tools/kb_fetch/rebind.py 第 12 行 '在**全库**（`cards_generated/*.jsonl` ＋ `HANDWRITTEN_CARDS`，按加载顺序）里找**正文真的写了**该 surface 的卡'；第 80 行 'record[\"sources\"] = sources + extra'；tools/kb_fetch/card_scope_audit.py 第 221-225、239 行；work/_ctx_orphan_fix.json 的 gate_six_numbers",
+      "why_it_matters": "门⑥红使当前索引状态不满足冻结判据，整条换代无法验收。",
+      "suggested_check": "运行 `python tools/kb_fetch/card_scope_audit.py` 对 HEAD 与现行索引审计，确认 orphan_cards 都在某些边的 sources 中且 HEAD 中为 0。",
+      "step_by_step": [
+        "写一个脚本从 hypergraph.edges.jsonl 统计每张卡在 sources 中出现的次数，分别对 HEAD 与现行索引运行。",
+        "筛选从 0 变 >0 的卡，与 work/_ctx_orphan_fix.json 的 orphan_cards 逐一比对。"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "F2",
+      "severity": "blocker",
+      "title": "正解是 A 的收窄版：候选池 = held-out 的 from_card 覆盖集",
+      "claim": "不选 B（改冻结夹具）与 C（改判据）。把 rebind 的候选池从全库收窄为 fixtures/knowledge_holdout.jsonl 的 from_card 集合；这样任何新获得边的卡都已经有 oracle 条目，门⑥ gap 保持 0，且知识语料与冻结夹具都不动。",
+      "explanation": "held-out 是人工标注的 oracle；“可断言卡” 应当是“索引里有边且 held-out 有条目”。收窄候选池只是让重绑不把未覆盖卡提升为可断言卡，不是删除知识或降低标准；这不是静默降级，因为可断言面的边界重新与 oracle 对齐。当前 HEAD 的 edge_backed=2262 与覆盖集等价，但应直接使用覆盖集，因为它不随索引变动、更稳定。",
+      "where": "tools/kb_fetch/rebind.py 第 12-15 行；tools/kb_fetch/card_scope_audit.py 第 224-225、239 行；docs/knowledge/REGEN_LOG_20261007_rotation.md 第 29 行 '不动 **held-out 夹具**与第三方层'",
+      "why_it_matters": "不改则门⑥红；改 holdout 违反冻结；改判据违反 R-5。",
+      "suggested_check": "实现后重跑 audit，确认 edge_backed_without_entry_count == 0 且 excluded_with_entries == 0；再跑最小重跑集。",
+      "step_by_step": [
+        "在 tools/kb_fetch/rebind.py 的 rebind_edges 增加候选池参数（如 candidate_pool: Optional[Set[str]]），在 picked 过滤 `cid in candidate_pool`。",
+        "在 tools/kb_fetch/build_hypergraph.py 的 _apply_rebind 中读取 fixtures/knowledge_holdout.jsonl 的 from_card 集合作为候选池传入。",
+        "将 REBIND_VERSION 升为 \"rebind/v2\"，重建索引并跑 audit 与最小重跑集。"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "title": "收窄后必须重测 C1 并逐槽位对比，ok→corrupt 即回退",
+      "claim": "不能假定收窄对 C1 无影响；要在新索引上重跑同一 90 槽位三分类（同判官、同 effort），并把每个槽位与影子实验的 37/90 结果逐槽位对比；任何 ok→corrupt 的槽位都说明收窄削弱了修复效果。",
+      "explanation": "rebind.py 的 docstring 明确效果以 C1 同口径复判为准，不是 attestation（第 19-20 行）；候选池收窄可能让某些槽位失去唯一候选卡，修复效果可能回退。逐槽位对比是最强的可证伪判据。",
+      "where": "tools/kb_fetch/rebind.py 第 19-20 行 '效果以 **C1 同口径复判** 为准（实测 corrupt 67/90 → 37/90），不是以 attestation 为准'；docs/knowledge/REGEN_LOG_20261007_rotation.md 第 55 行；work/_ctx_orphan_fix.json 的 c1_same_yardstick",
+      "why_it_matters": "若不重测，无法知道收窄是否让 corrupt_share 回升，验收不成立。",
+      "suggested_check": "写脚本比对 docs/evidence/_v15_stage8/c1_recap/shadow_judge/ 与新版复跑的逐槽位标签矩阵。",
+      "step_by_step": [
+        "从影子实验目录读取 90 槽位三分类结果（ok/corrupt）。",
+        "在新索引下用相同判官与 effort 重跑这 90 槽位。",
+        "输出 ok→corrupt 与 corrupt→ok 的槽位集合；若 ok→corrupt 非空，则收窄造成回退。"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "F4",
+      "severity": "blocker",
+      "title": "7 条异代测试：生成当前代真实运行证据并更新测试路径，严禁 repin/放宽断言",
+      "claim": "正确落法是按 REGEN_LOG §5 与既有先例“证据跟着最近一次真跑走”：在当前索引代下重新产生真实运行证据，用 extract_run_evidence.check() 验证 reasons 为空后，把失败测试引用的旧目录改为新运行目录；check() 第 396 行指纹判据与测试断言强度一字不动。",
+      "explanation": "换代后旧运行 pin 的指纹不同于现行索引，check() 必然返回“不是这一代索引跑的”；该判据是硬约束，不能改。R-8 禁止 repin，所以只能让测试指向同代的新运行。resolve_generation 的职责是“每份运行都要解析到已登记代”（extract_run_evidence.py:399-404），但它不替代指纹判据；即使 resolve_generation 返回非 None，check() 仍会比较 pinned_index 与 live_index。因此修复测试的唯一路径是让运行真正在当前代指纹下产生，并让测试指向它；不能靠登记代来跳过指纹判据。",
+      "where": "tools/extract_run_evidence.py 第 394-398 行；docs/knowledge/REGEN_LOG_20261007_rotation.md 第 57-63 行 '换代后这些 pin **会失配** ⇒ 一律**如实标「异代」**，**不** `repin()`（它会拒）'；失败测试名单",
+      "why_it_matters": "7 条测试红是当前换代没有完成最小重跑集的一部分；不改判据就只能换证据。",
+      "suggested_check": "对每个新运行目录执行 `python tools/extract_run_evidence.py --check --out-dir <dir>`，确认 reasons 为空；再运行 pytest 清单。",
+      "step_by_step": [
+        "先读三个测试文件，列出每个失败用例引用的目录与期望语义（fresh/no-contract-warning/ceiling/checkout-independent/drift）。",
+        "用当前代索引跑真实运行，至少覆盖这些语义；建议用 headless_runner 并记录 run_manifest.json。确认新运行的 pin 能被 resolve_generation 解析到已登记代；若不能，按 R-8 登记对应代或调整运行输入。",
+        "用 check() 验证新运行。",
+        "将测试参数/路径改为新运行目录，提交新证据与测试改动。"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "F5",
+      "severity": "blocker",
+      "title": "风险：改候选池必须 bump REBIND_VERSION，否则缓存指纹不变",
+      "claim": "任何对重绑规则的修改都必须把 REBIND_VERSION 从 'rebind/v1' 升为 'rebind/v2'，因为 CACHE_KEY_FIELDS 第九格是 rebind_version；否则新旧规则会共用同一指纹，产生“同一缓存键指向两份不同索引”的洞。",
+      "explanation": "rebind.py 第 27-29 行说明版本号进缓存键；若不 bump，重建会命中旧缓存。",
+      "where": "tools/kb_fetch/rebind.py 第 27-29 行；tools/kb_fetch/build_hypergraph.py 第 253-258、302-303 行",
+      "why_it_matters": "违反缓存键纪律，可能让后续运行使用错误索引而不自知。",
+      "suggested_check": "对同一输入分别用 v1 与 v2 规则构建并比较 fingerprint；若相同则失败。",
+      "step_by_step": [
+        "在改候选池的同时编辑 REBIND_VERSION = 'rebind/v2'。",
+        "运行任何校验指纹的测试或手动调用 fingerprint_of 断言变化。"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "F6",
+      "severity": "major",
+      "title": "风险：covered set 中若存在“有条目但零边”的卡，收窄仍会提升它们，影响其他门读数",
+      "claim": "候选池=from_card 覆盖集可能包含当前 excluded 的卡（excluded_with_entries>0 时）；重绑会把它们提升进 edge_backed。这不产生门⑥ gap，但会改变 excluded 计数，可能影响门①-⑩ 的其他门与 Q 系列读数。",
+      "explanation": "card_scope_audit.py 第 236-237 行明确存在 excluded_with_entries 的情况；当前为 0，但候选池定义应考虑到它。",
+      "where": "tools/kb_fetch/card_scope_audit.py 第 236-237 行；work/_ctx_orphan_fix.json gate_six_numbers 中 excluded 80/91",
+      "why_it_matters": "换代的最小重跑集要求所有门都重跑，任何读数变化都必须解释；否则可能引入未登记的变化。",
+      "suggested_check": "重建后运行 tools/check_holdout.py 全套；对比 HEAD 与新的各门读数。",
+      "step_by_step": [
+        "重建索引前记录 HEAD 的门①-⑩与 Q1-Q7 读数。",
+        "重建后重跑同一命令集合，diff 输出；对任何变化逐项归因。"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "F7",
+      "severity": "major",
+      "title": "风险：新真实运行证据自身不合格（有契约警告或超 ceiling），测试更新后仍红",
+      "claim": "如果新生成的运行在 check() 下返回任何 reason 或 warning（如 retrieval_calls 契约警告），或超过 ceiling，则更新测试路径后 pytest 仍会红；问题不再是异代而是运行质量。",
+      "explanation": "失败测试名包含 'has_no_contract_warning' 与 'stayed_within_the_ceiling'，说明它们对运行质量有额外断言；check() 的 with_warnings 模式会返回 retrieval_cross_checks。",
+      "where": "失败测试名单；tools/extract_run_evidence.py 第 366-368 行、407 行",
+      "why_it_matters": "如果新运行不满足质量断言，必须先修运行，不能靠换路径绕过。",
+      "suggested_check": "运行 `python tools/extract_run_evidence.py --check --with-warnings --out-dir <new-dir>`，检查 reasons 与 warnings。",
+      "step_by_step": [
+        "用 with_warnings 模式检查新运行。",
+        "若 warnings 含 retrieval_calls 不符或 reasons 非空，调整真实运行参数并重跑。",
+        "全部干净后再更新测试路径。"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "not_checked": [
+    "三个失败测试文件的具体断言代码与数据路径（bundle 只给了测试名与失败原因，未给源码）",
+    "fixtures/knowledge_holdout.jsonl 的完整内容，无法确认 from_card 集合是否包含零边卡、能否直接作为候选池",
+    "docs/evidence/_v15_stage8/c1_recap/shadow_judge/ 的逐槽位三分类结果，无法确认 90 槽位是否依赖那 11 张卡的 93 条来源",
+    "docs/knowledge/REGEN_LOG_20261007_rotation.md 第 69 行之后的内容",
+    "resolve_generation 与 fixtures/knowledge_holdout.generations.json 的完整实现，无法确认四份旧运行在新代登记下会解析到什么代",
+    "work/_audit_rebind_diff.py 的具体实现与输出原始文件，无法进一步验证 added sources 分布"
+  ]
+}

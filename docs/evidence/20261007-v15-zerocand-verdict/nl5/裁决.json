@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"keep","why":"有卡谈手势动作，蕴含挥手。"},
+  {"i":2,"verdict":"keep","why":"有卡谈手势动作控制，蕴含挥手。"},
+  {"i":3,"verdict":"keep","why":"闭集词元，声音悬念蕴含节奏。"},
+  {"i":4,"verdict":"wrong_value","why":"木石敲击模拟马蹄，非金属撞击。"},
+  {"i":5,"verdict":"wrong_card","why":"卡谈音效距离，与常规节奏无关。"},
+  {"i":6,"verdict":"wrong_card","why":"卡谈风雨特效，与常规节奏无关。"},
+  {"i":7,"verdict":"keep","why":"闭集词元，静默声音主题可蕴含。"},
+  {"i":8,"verdict":"keep","why":"有卡谈声音节奏，蕴含常规节奏。"},
+  {"i":9,"verdict":"wrong_card","why":"卡谈电铃与音效时机，非哨音。"},
+  {"i":10,"verdict":"keep","why":"闭集词元，过渡循环蕴含节奏。"},
+  {"i":11,"verdict":"keep","why":"有转场与重复节奏，可蕴含。"},
+  {"i":12,"verdict":"keep","why":"动作段落主题，可蕴含常规节奏。"}
+]

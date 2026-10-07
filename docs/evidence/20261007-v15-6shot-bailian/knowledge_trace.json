@@ -1,0 +1,206 @@
+{
+  "backend": "hypergraph",
+  "requested_backend": "hypergraph",
+  "degraded": false,
+  "degraded_reason": "",
+  "cards": 2353,
+  "top_k": 5,
+  "token_limits": {
+    "shot": 800,
+    "plan": 2000
+  },
+  "retrieval_calls": 7,
+  "warnings": [],
+  "query": "景别=MCU；意图=释放；运镜=固定；对白=dialogue",
+  "seeds": [
+    "scene_type:dialogue",
+    "intent:释放",
+    "applies_to_shot_size:MCU",
+    "shot_size:MCU",
+    "movement:固定"
+  ],
+  "expanded_edges": [
+    "hg:f1a07ed0619a",
+    "hg:6472224d1594",
+    "hg:6982a3446c7f",
+    "hg:d2a9bb8a8693",
+    "hg:e937744abec4",
+    "hg:81edacc017be",
+    "hg:0b026d20ebde",
+    "hg:bde531d8cf67",
+    "hg:23350e69d1ef",
+    "hg:2f4130d554ae",
+    "hg:f5bbb29d26ef",
+    "hg:fa491b55632b",
+    "hg:7245047500f2",
+    "hg:111b34cb5494",
+    "hg:299c9a2e2e88",
+    "hg:66b438ead43a",
+    "hg:afc6ae05ea5f",
+    "hg:02fa67f0727a",
+    "hg:0989c0169a8d",
+    "hg:3317dc51dc3c",
+    "hg:4710d0aff28d",
+    "hg:5601643c4239",
+    "hg:9120d4d96f4e",
+    "hg:b5a8c3686ba7",
+    "hg:c573c323062e",
+    "hg:f1292d65fee2",
+    "hg:0c3fc09441cd",
+    "hg:cd67199dce33",
+    "hg:de57d8fba20b",
+    "hg:fdd4a8734832",
+    "hg:356ba471c7ae",
+    "hg:4ebde95fc2e9",
+    "hg:8a9867132566",
+    "hg:e7342b4cbad3",
+    "hg:ad2735be0914",
+    "hg:6a74a366dc96",
+    "hg:f7fc2b68889a",
+    "hg:572877ea5486",
+    "hg:f6fd8f040745",
+    "hg:74d9eb05c0de"
+  ],
+  "scores": {
+    "hg:81edacc017be": 0.442354,
+    "hg:0b026d20ebde": 0.440416,
+    "hg:bde531d8cf67": 0.436937,
+    "hg:23350e69d1ef": 0.405068,
+    "hg:2f4130d554ae": 0.403128,
+    "hg:f5bbb29d26ef": 0.373675,
+    "hg:7245047500f2": 0.270932,
+    "hg:299c9a2e2e88": 0.263937,
+    "hg:5601643c4239": 0.262883,
+    "hg:b5a8c3686ba7": 0.262398,
+    "hg:111b34cb5494": 0.261997,
+    "hg:3317dc51dc3c": 0.260458,
+    "hg:9120d4d96f4e": 0.260458,
+    "hg:4710d0aff28d": 0.251728,
+    "hg:66b438ead43a": 0.250357,
+    "hg:0989c0169a8d": 0.248818,
+    "hg:6982a3446c7f": 0.21807,
+    "hg:e937744abec4": 0.21419,
+    "hg:d2a9bb8a8693": 0.21225,
+    "hg:fa491b55632b": 0.210458,
+    "hg:356ba471c7ae": 0.20698,
+    "hg:e7342b4cbad3": 0.206289,
+    "hg:f7fc2b68889a": 0.205998,
+    "hg:8a9867132566": 0.205111,
+    "hg:afc6ae05ea5f": 0.20406,
+    "hg:4ebde95fc2e9": 0.203805,
+    "hg:c573c323062e": 0.202521,
+    "hg:572877ea5486": 0.201272,
+    "hg:f6fd8f040745": 0.201272,
+    "hg:de57d8fba20b": 0.201071,
+    "hg:ad2735be0914": 0.200992,
+    "hg:02fa67f0727a": 0.200581,
+    "hg:6a74a366dc96": 0.200178,
+    "hg:0c3fc09441cd": 0.199131,
+    "hg:cd67199dce33": 0.197191,
+    "hg:74d9eb05c0de": 0.1963,
+    "hg:fdd4a8734832": 0.195251,
+    "hg:f1292d65fee2": 0.194761,
+    "hg:6472224d1594": 0.169702,
+    "hg:f1a07ed0619a": 0.165421
+  },
+  "selected": [
+    "hg:81edacc017be",
+    "hg:0b026d20ebde",
+    "hg:bde531d8cf67",
+    "hg:23350e69d1ef",
+    "hg:6982a3446c7f",
+    "hg:f5bbb29d26ef",
+    "hg:9120d4d96f4e"
+  ],
+  "seed_miss": false,
+  "expansion_truncated": true,
+  "dropped_edge_ids": [],
+  "quality_fail": false,
+  "forbid_promoted": [
+    {
+      "added": "hg:6982a3446c7f",
+      "removed": "hg:2f4130d554ae",
+      "kind": "movement",
+      "value": "固定"
+    }
+  ],
+  "forbid_backfilled": [
+    "hg:f5bbb29d26ef",
+    "hg:9120d4d96f4e"
+  ],
+  "forbid_members_seen": 3,
+  "qualifiers": {
+    "pair": [
+      "any_two"
+    ],
+    "axis_side": [
+      "neutral"
+    ],
+    "intensity": null,
+    "applies_to_genre": null,
+    "applies_to_shot_size": null,
+    "headroom_policy": [
+      "cinematic"
+    ],
+    "avg_shot_len": null,
+    "transition": null,
+    "scene_type": null,
+    "example_shot": null,
+    "seq_phase": null,
+    "carry_shots": null,
+    "movement": [
+      "固定"
+    ],
+    "axis_topic": [
+      "越轴"
+    ],
+    "composition_rule": [
+      "balance"
+    ],
+    "camera_angle": [
+      "平视"
+    ]
+  },
+  "lanes": 2,
+  "cases_backend": "hybrid",
+  "cases_requested_backend": "hybrid",
+  "cases_degraded": false,
+  "cases_degraded_reason": "",
+  "lightrag_index_fingerprint": "",
+  "cases_index_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+  "provenance": {
+    "corpus_fingerprint": "e5213e1b64781c24103eecae15a4921b5766f75c4709672fa48997de692cdf89",
+    "extractor_model_id": "deepseek-chat",
+    "schema_version": "hg/v2"
+  },
+  "shot_scope": {
+    "dropped_edge_ids": [],
+    "quality_fail": false,
+    "rule_top_k": 5,
+    "conflict_pairs": 4,
+    "conflict_edge_ids": [
+      "hg:0b026d20ebde",
+      "hg:23350e69d1ef",
+      "hg:81edacc017be",
+      "hg:bde531d8cf67",
+      "hg:f5bbb29d26ef"
+    ],
+    "count_dropped_edge_ids": [],
+    "columns": {
+      "hard_edges": 7,
+      "soft_edges": 0,
+      "suppressed_soft_edges": 0,
+      "hard_tokens": 474,
+      "soft_tokens": 0,
+      "hard_softness": 0,
+      "soft_softness": 0,
+      "budget": 800,
+      "cases": 3,
+      "case_tokens": 185
+    },
+    "dropped_case_ids": []
+  },
+  "cases": 3,
+  "plan_scope": {},
+  "written_at": "2026-10-07T19:44:49+08:00"
+}

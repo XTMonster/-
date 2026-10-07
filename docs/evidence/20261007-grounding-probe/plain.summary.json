@@ -1,0 +1,8 @@
+{
+  "variant": "plain",
+  "status": "ok",
+  "elapsed_s": 32.9,
+  "max_tokens": 32768,
+  "chars": 130,
+  "shape": "list[2]"
+}

@@ -1,0 +1,109 @@
+[BlockDirector] INFO block_director.scene: 环境搭建完成：预设=clay_studio，物体 3 个
+[BlockDirector] WARNING block_director.settings: 配置问题 [warning] character.label_font_path: 未指定中文字体，将自动探测系统 CJK 字体（§9.4） (CFG_201)
+[BlockDirector] INFO block_director.settings: 已加载配置：transport=auto rag=hypergraph backend=workbench
+[BlockDirector] INFO block_director.character: 角色已创建：char_001（char_001）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_001（char_001）
+[BlockDirector] INFO block_director.character: 角色已创建：char_002（char_002）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_002（char_002）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：102 帧 / 102 个关键帧（1-102）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：66 帧 / 264 个关键帧（97-162）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_001 @ (0.0, -4.660706683695189, 0.6213793103448275)（35.0mm）
+[BlockDirector] INFO block_director.axis: 轴线已确立：char_001 → char_002，基准侧 -1
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-1.6070126869896582, -1.4474244359301827, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.label-bake: 标签烘焙完成：2 个标签 / 112 帧采样
+[BlockDirector] INFO block_director.shot-builder: 场景构建完成：2 镜 / 2 角色 / 2 相机 / 366 关键帧 / 共 216 帧
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.scene: 环境搭建完成：预设=clay_studio，物体 3 个
+[BlockDirector] INFO block_director.character: 角色已创建：char_001（char_001）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_001（char_001）
+[BlockDirector] INFO block_director.character: 角色已创建：char_002（char_002）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_002（char_002）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：102 帧 / 102 个关键帧（1-102）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：66 帧 / 264 个关键帧（97-162）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_001 @ (0.0, -4.660706683695189, 0.6213793103448275)（35.0mm）
+[BlockDirector] INFO block_director.axis: 轴线已确立：char_001 → char_002，基准侧 -1
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-1.6070126869896582, -1.4474244359301827, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.label-bake: 标签烘焙完成：2 个标签 / 112 帧采样
+[BlockDirector] INFO block_director.shot-builder: 场景构建完成：2 镜 / 2 角色 / 2 相机 / 366 关键帧 / 共 216 帧
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+00:02.891  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmpt163d_tx\vlm_review\shot_001_first.png'
+00:02.906  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmpt163d_tx\vlm_review\shot_001_middle.png'
+00:02.922  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmpt163d_tx\vlm_review\shot_001_last.png'
+[BlockDirector] INFO block_director.scene: 环境搭建完成：预设=clay_studio，物体 3 个
+[BlockDirector] INFO block_director.character: 角色已创建：char_001（char_001）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_001（char_001）
+[BlockDirector] INFO block_director.character: 角色已创建：char_002（char_002）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_002（char_002）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：102 帧 / 102 个关键帧（1-102）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：66 帧 / 264 个关键帧（97-162）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_001 @ (0.0, -4.660706683695189, 0.6213793103448275)（35.0mm）
+[BlockDirector] INFO block_director.axis: 轴线已确立：char_001 → char_002，基准侧 -1
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-1.6070126869896582, -1.4474244359301827, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.label-bake: 标签烘焙完成：2 个标签 / 112 帧采样
+[BlockDirector] INFO block_director.shot-builder: 场景构建完成：2 镜 / 2 角色 / 2 相机 / 366 关键帧 / 共 216 帧
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.scene: 环境搭建完成：预设=clay_studio，物体 3 个
+[BlockDirector] INFO block_director.character: 角色已创建：char_001（char_001）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_001（char_001）
+[BlockDirector] INFO block_director.character: 角色已创建：char_002（char_002）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_002（char_002）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：102 帧 / 102 个关键帧（1-102）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：66 帧 / 264 个关键帧（97-162）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_001 @ (0.0, -4.660706683695189, 0.6213793103448275)（35.0mm）
+[BlockDirector] INFO block_director.axis: 轴线已确立：char_001 → char_002，基准侧 -1
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-1.6070126869896582, -1.4474244359301827, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.label-bake: 标签烘焙完成：2 个标签 / 112 帧采样
+[BlockDirector] INFO block_director.shot-builder: 场景构建完成：2 镜 / 2 角色 / 2 相机 / 366 关键帧 / 共 216 帧
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+00:03.235  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmph9t_3w6e\vlm_review\shot_001_first.png'
+00:03.250  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmph9t_3w6e\vlm_review\shot_001_middle.png'
+00:03.281  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmph9t_3w6e\vlm_review\shot_001_last.png'
+[BlockDirector] INFO block_director.scene: 环境搭建完成：预设=clay_studio，物体 3 个
+[BlockDirector] INFO block_director.character: 角色已创建：char_001（char_001）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_001（char_001）
+[BlockDirector] INFO block_director.character: 角色已创建：char_002（char_002）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_002（char_002）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：102 帧 / 102 个关键帧（1-102）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：66 帧 / 264 个关键帧（97-162）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_001 @ (0.0, -4.660706683695189, 0.6213793103448275)（35.0mm）
+[BlockDirector] INFO block_director.axis: 轴线已确立：char_001 → char_002，基准侧 -1
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-1.6070126869896582, -1.4474244359301827, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.label-bake: 标签烘焙完成：2 个标签 / 112 帧采样
+[BlockDirector] INFO block_director.shot-builder: 场景构建完成：2 镜 / 2 角色 / 2 相机 / 366 关键帧 / 共 216 帧
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+00:03.453  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmp5idaozh7\vlm_review\shot_001_first.png'
+00:03.469  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmp5idaozh7\vlm_review\shot_001_middle.png'
+00:03.485  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmp5idaozh7\vlm_review\shot_001_last.png'
+[BlockDirector] INFO block_director.scene: 环境搭建完成：预设=clay_studio，物体 3 个
+[BlockDirector] INFO block_director.character: 角色已创建：char_001（char_001）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_001（char_001）
+[BlockDirector] INFO block_director.character: 角色已创建：char_002（char_002）
+[BlockDirector] INFO block_director.label: 渲染标签已创建：char_002（char_002）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：102 帧 / 102 个关键帧（1-102）
+[BlockDirector] INFO block_director.motion: 动作烘焙完成：66 帧 / 264 个关键帧（97-162）
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_001 @ (0.0, -4.660706683695189, 0.6213793103448275)（35.0mm）
+[BlockDirector] INFO block_director.axis: 轴线已确立：char_001 → char_002，基准侧 -1
+[BlockDirector] INFO block_director.camera: 相机已创建：shot_002 @ (-1.6070126869896582, -1.4474244359301827, 1.2310344827586206)（50.0mm）
+[BlockDirector] INFO block_director.label-bake: 标签烘焙完成：2 个标签 / 112 帧采样
+[BlockDirector] INFO block_director.shot-builder: 场景构建完成：2 镜 / 2 角色 / 2 相机 / 366 关键帧 / 共 216 帧
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：92.4（通过）
+00:03.735  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmp_epn6b_3\vlm_review\shot_001_first.png'
+00:03.766  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmp_epn6b_3\vlm_review\shot_001_middle.png'
+00:03.797  render           | Saved: 'C:\Users\小皮\AppData\Local\Temp\tmp_epn6b_3\vlm_review\shot_001_last.png'
+[BlockDirector] INFO block_director.composition: 构图评分：90.2（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：78.8（通过）
+[BlockDirector] INFO block_director.composition: 构图评分：78.8（通过）
+Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:35:40)
+BD_TEST_RESULT {"passed": ["disabled_review_is_byte_identical", "enabled_review_renders_three_frames", "the_review_never_moves_the_gate", "unavailable_judge_is_recorded_as_a_skip", "max_shots_caps_the_review_but_records_it"], "failed": [], "checks": {"disabled_review_is_byte_identical": {"ok": true, "keys": ["errors", "justification_audit", "level", "passed", "score", "suggestions", "target", "warnings"], "judge_calls": 0, "enabled": false}, "enabled_review_renders_three_frames": {"ok": true, "record": {"status": "ok", "score": 4, "reason": "留白合适", "attempts": 1, "schema": "vlm-review/v1", "frames": ["first", "middle", "last"]}, "image_parts": 3, "files": ["shot_001_first.png", "shot_001_last.png", "shot_001_middle.png"], "scene_restored": true, "purpose": "review"}, "the_review_never_moves_the_gate": {"ok": true, "off": {"passed": true, "score": 92.4, "errors": [], "warnings": [], "justification_audit": {"declared_breaks": [], "declared_follows": [], "detected_violations": [], "undeclared_violations": [], "declared_but_clean": []}}, "on": {"passed": true, "score": 92.4, "errors": [], "warnings": [], "justification_audit": {"declared_breaks": [], "declared_follows": [], "detected_violations": [], "undeclared_violations": [], "declared_but_clean": []}}, "review": {"status": "ok", "score": 1, "reason": "很差", "attempts": 1, "schema": "vlm-review/v1", "frames": ["first", "middle", "last"]}}, "unavailable_judge_is_recorded_as_a_skip": {"ok": true, "record": {"status": "skipped", "reason": "评委不可用（重试一次后放弃）", "error": "TransportError: [E_LLM_001] 连接失败: 429", "attempts": 2, "schema": "vlm-review/v1", "frames": ["first", "middle", "last"]}, "judge_calls": 2}, "max_shots_caps_the_review_but_records_it": {"ok": true, "first": {"status": "ok", "score": 5, "reason": "很好", "attempts": 1, "schema": "vlm-review/v1", "frames": ["first", "middle", "last"]}, "second": {"status": "skipped", "reason": "超出 vlm_review.max_shots 上限", "error": "", "attempts": 0, "schema": "vlm-review/v1"}, "summary": {"reviewed": 1, "skipped": 1, "skipped_shots": ["shot_002"], "mean_score": 5.0, "schema": "vlm-review/v1"}, "judge_calls": 1}}}

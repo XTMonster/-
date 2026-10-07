@@ -1,0 +1,10 @@
+[
+  {"i":1,"class":"wrong_card","why":"卡讲动画身体平衡/调度，非构图平衡"},
+  {"i":2,"class":"hidden","why":"有平视机位卡，但未直接作为取值"},
+  {"i":3,"class":"hidden","why":"含平视相关卡，非直证槽位"},
+  {"i":4,"class":"wrong_card","why":"卡讲POV/机位/动画，无头顶留白"},
+  {"i":5,"class":"hidden","why":"多卡讲取景构图，未写framing"},
+  {"i":6,"class":"wrong_card","why":"卡讲分镜机位景深，无头顶留白"},
+  {"i":7,"class":"hidden","why":"有走位相关卡，但非直接佐证"},
+  {"i":8,"class":"wrong_card","why":"卡讲构图/布景，非表演情绪"}
+]

@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"keep","why":"闭集节拍类型，表演卡蕴含反应"},
+  {"i":2,"verdict":"keep","why":"轴线卡涉及两人配对，闭集词"},
+  {"i":3,"verdict":"keep","why":"轴线卡涉及两人配对，闭集词"},
+  {"i":4,"verdict":"keep","why":"轴线规则围绕两人，闭集词"},
+  {"i":5,"verdict":"keep","why":"轴线规则围绕两人，闭集词"},
+  {"i":6,"verdict":"keep","why":"方向轴线相关，闭集配对词"},
+  {"i":7,"verdict":"keep","why":"运镜轴线交互，闭集配对词"},
+  {"i":8,"verdict":"keep","why":"有运镜轴线卡，闭集配对词"},
+  {"i":9,"verdict":"keep","why":"闭集侧别，轴线卡讲侧别"},
+  {"i":10,"verdict":"keep","why":"视线与布景轴线，闭集配对"},
+  {"i":11,"verdict":"keep","why":"正反打两人视线，闭集配对"},
+  {"i":12,"verdict":"keep","why":"方向调度相关，闭集配对词"}
+]

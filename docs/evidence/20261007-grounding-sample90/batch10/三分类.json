@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "讲布景悬念，非景别"},
+  {"i": 2, "class": "wrong_card", "why": "讲台阶光柱布景，非景别"},
+  {"i": 3, "class": "wrong_card", "why": "讲升降台倾斜地板，非景别"},
+  {"i": 4, "class": "wrong_card", "why": "讲荷兰角机位高度，非景别"},
+  {"i": 5, "class": "wrong_card", "why": "讲舞台布局群体调度，非机位"},
+  {"i": 6, "class": "hidden", "why": "舞台左右对称布局，隐含平衡"},
+  {"i": 7, "class": "wrong_card", "why": "讲整体舞台调度，非景别"},
+  {"i": 8, "class": "wrong_card", "why": "讲路径构图舞台延伸，非机位"}
+]

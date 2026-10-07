@@ -1,0 +1,6 @@
+attestation 记账口径校验：pass
+  判据版本 : attest/v1｜边数 : 638
+  三桶     : attested 331 / unattested 1262 / not-checkable 345（上界 345）
+  可检分母 : 1593 -> share 0.2078
+  全量分母 : 1938 -> share 0.1708
+  措辞     : `unattested` ＝ 未被来源佐证（下界），**不是**『编造』

@@ -1,0 +1,294 @@
+{
+  "created_at": "2026-10-07T16:54:35",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "f6530c6",
+    "head_subject": "docs(P14-319): 出处缺口的 90 槽位分层抽检——样本(闭环三 kind 30 + 三 pack 各 20，互不重叠可复现)＋机械预读(topic_mismatch 88/90)＋12 批三分类作业已起",
+    "recent": [
+      "f6530c6 docs(P14-319): 出处缺口的 90 槽位分层抽检——样本(闭环三 kind 30 + 三 pack 各 20，互不重叠可复现)＋机械预读(topic_mismatch 88/90)＋12 批三分类作业已起",
+      "013d516 docs(P14-318): 出处缺口的裁定——转入修复但只做局部手术(先修闭环那几条边、不按体量排 pack)；机械判据：9 条边/15 槽位里 topic_mismatch 14；并写清删边=索引换代(23 份运行 pin 全失配)",
+      "7a73ef7 docs(P14-317): 把更新后的全扫产物(23 次运行，含两次真跑)一并入库——上一条提交只带了 README 与台账",
+      "6e1bf52 feat(P14-317): 第二次真跑(两栏都落地)——movement 真的在比了(空 294->0，matched 268)、生效边 1->30；另修工具里 for...else 误用导致的 no_match 假计数",
+      "fd499c9 feat(P14-316): declared.camera_move 落字段——movement 一族从 没得比 变成 能比(空 294/300 -> 0，matched 267)"
+    ],
+    "uncommitted": [
+      "M AGENTS.md",
+      " M CONTEXT.md",
+      " M block_director/cinema/anchor.py",
+      " M block_director/cinema/station.py",
+      " M block_director/contracts/audit.py",
+      " M block_director/contracts/config.py",
+      " M block_director/contracts/messages.py",
+      " M block_director/contracts/plan.py",
+      " M block_director/contracts/sdl.py",
+      " M block_director/delivery/manifest.py",
+      " M block_director/knowledge/client.py",
+      " M block_director/knowledge/hypergraph.py",
+      " M block_director/knowledge/retriever.py",
+      " M block_director/layer2_sdl/sdl_builder.py",
+      " M block_director/layer2_sdl/sdl_migrate.py",
+      " M block_director/layer3_engine/scene_executor.py",
+      " M block_director/layer3_engine/shot_auditor.py",
+      " M block_director/layer3_engine/shot_builder.py",
+      " M block_director/layer5_orchestrator/driver.py",
+      " M block_director/layer5_orchestrator/editor.py",
+      " M block_director/layer5_orchestrator/headless_runner.py",
+      " M block_director/layer5_orchestrator/modal_operator.py",
+      " M block_director/layer5_orchestrator/planner.py",
+      " M block_director/layer5_orchestrator/scene_contract.py",
+      " M block_director/layer7_ui/panel_shots.py",
+      " M block_director/motion/model.py",
+      " M docs/evidence/20261007-grounding-sample90/README.md",
+      " M docs/evidence/20261007-grounding-sample90/batch1/bundle.manifest.json",
+      " M docs/evidence/20261007-grounding-sample90/batch1/bundle.md",
+      " M docs/evidence/20261007-grounding-sample90/sample90.json",
+      " M docs/evidence/20261007-grounding-sample90/sample_grounding90.py",
+      " M docs/knowledge/ACCEPTANCE_STATUS.md",
+      " M docs/knowledge/OPEN_PROBLEMS.md",
+      " M docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md",
+      " M fixtures/expected_sdl_long.json",
+      " M fixtures/expected_sdl_simple.json",
+      " M fixtures/expected_shots_long.json",
+      " M fixtures/tool_transcript_simple.jsonl",
+      " M knowledge/card_scope.json",
+      " M knowledge/hypergraph.edges.jsonl",
+      " M knowledge/hypergraph.manifest.json",
+      " M specs/config.default.yaml",
+      " M specs/openapi.yaml",
+      " M tests/plan_v4_instruments.sha256.json",
+      " M tests/test_glm_consult.py",
+      " M tests/test_hypergraph_determinism.py",
+      " M tests/test_llm_qwen.py",
+      " M tests/test_q5_plan_shaped_entries.py",
+      " M tools/blender_tests/test_phase3_audit.py",
+      " M tools/glm_consult.py",
+      " M tools/holdout_expect_movements.py",
+      " M tools/kb_fetch/build_hypergraph.py",
+      " M tools/kb_fetch/llm.py",
+      " M tools/knowledge/quality.py",
+      " M tools/probe_blender.py",
+      " M tools/run_headless.py",
+      " M tools/run_tests.ps1",
+      "?? block_director/cinema/lighting.py",
+      "?? block_director/cinema/props.py",
+      "?? block_director/cinema/staging.py",
+      "?? block_director/contracts/beats.py",
+      "?? block_director/contracts/vlm_review.py",
+      "?? block_director/knowledge/rulepack.py",
+      "?? block_director/layer5_orchestrator/beat_compiler.py",
+      "?? docs/evidence/.last_p1t3_run",
+      "?? docs/evidence/.last_run_id",
+      "?? docs/evidence/20261007-045808-baseline/",
+      "?? docs/evidence/20261007-050254-baseline/",
+      "?? docs/evidence/20261007-050633-g1/",
+      "?? docs/evidence/20261007-0510-baseline/",
+      "?? docs/evidence/20261007-051832-p1t3/",
+      "?? docs/evidence/20261007-054322-v15-lane/",
+      "?? docs/evidence/20261007-054900-p5t1/",
+      "?? docs/evidence/20261007-060813-v15-mainline/",
+      "?? docs/evidence/20261007-0610-p5t3t4/",
+      "?? docs/evidence/20261007-064903/",
+      "?? docs/evidence/20261007-065558/",
+      "?? docs/evidence/20261007-065813/",
+      "?? docs/evidence/20261007-071404/",
+      "?? docs/evidence/20261007-074427/",
+      "?? docs/evidence/20261007-083902/",
+      "?? docs/evidence/20261007-g3/",
+      "?? docs/evidence/20261007-g4-forbid-guard/",
+      "?? docs/evidence/20261007-g7-final/",
+      "?? docs/evidence/20261007-grounding-probe/",
+      "?? docs/evidence/20261007-grounding-sample90/_superseded/",
+      "?? \"docs/evidence/20261007-grounding-sample90/batch1/\\344\\270\\211\\345\\210\\206\\347\\261\\273.json\"",
+      "?? \"docs/evidence/20261007-grounding-sample90/batch1/\\344\\270\\211\\345\\210\\206\\347\\261\\273.usage.json\"",
+      "?? docs/evidence/20261007-grounding-sample90/batch10/",
+      "?? docs/evidence/20261007-grounding-sample90/batch11/",
+      "?? docs/evidence/20261007-grounding-sample90/batch12/",
+      "?? docs/evidence/20261007-grounding-sample90/batch2/",
+      "?? docs/evidence/20261007-grounding-sample90/batch3/",
+      "?? docs/evidence/20261007-grounding-sample90/batch4/",
+      "?? docs/evidence/20261007-grounding-sample90/batch5/",
+      "?? docs/evidence/20261007-grounding-sample90/batch6/",
+      "?? docs/evidence/20261007-grounding-sample90/batch7/",
+      "?? docs/evidence/20261007-grounding-sample90/batch8/",
+      "?? docs/evidence/20261007-grounding-sample90/batch9/",
+      "?? docs/evidence/20261007-grounding-sample90/make_grounding_batches.py",
+      "?? docs/evidence/20261007-grounding-sample90/questions/",
+      "?? \"docs/evidence/20261007-grounding-sample90/\\344\\270\\211\\345\\210\\206\\347\\261\\273\\346\\261\\207\\346\\200\\273.json\"",
+      "?? docs/evidence/20261007-p2t5-config/",
+      "?? docs/evidence/20261007-p6t1-vlm-review/",
+      "?? docs/evidence/20261007-p6t2-diversity/",
+      "?? docs/evidence/20261007-p7t1-final/",
+      "?? docs/evidence/20261007-v15-card-tests/",
+      "?? docs/evidence/20261007-v15-closeout/",
+      "?? docs/evidence/20261007-v15-contracts/",
+      "?? docs/evidence/20261007-v15-dispatch-hook/",
+      "?? docs/evidence/20261007-v15-final/",
+      "?? docs/evidence/20261007-wrong-card-correction/",
+      "?? docs/evidence/_v15_dispatch/",
+      "?? docs/evidence/_v15_stage8/",
+      "?? docs/knowledge/JUDGE_ALIGNMENT_v1.md",
+      "?? docs/knowledge/OPEN_ITEMS_20261007.md",
+      "?? docs/knowledge/REGEN_LOG_20261007_rotation.md",
+      "?? docs/knowledge/REGEN_LOG_TEMPLATE.md",
+      "?? docs/research_src/",
+      "?? tests/test_attestation_ledger.py",
+      "?? tests/test_beat_compiler.py",
+      "?? tests/test_beats.py",
+      "?? tests/test_best_of_n.py",
+      "?? tests/test_composition_consumption.py",
+      "?? tests/test_config_vlm_review.py",
+      "?? tests/test_dispatch_graph.py",
+      "?? tests/test_draft_v15_schema.py",
+      "?? tests/test_forbid_guard_backfill.py",
+      "?? tests/test_justification_audit.py",
+      "?? tests/test_lighting_matrix.py",
+      "?? tests/test_plan_v15_fields.py",
+      "?? tests/test_prop_interaction.py",
+      "?? tests/test_rebind.py",
+      "?? tests/test_retrieval_seed_wiring.py",
+      "?? tests/test_rulepack.py",
+      "?? tests/test_sdl_15.py",
+      "?? tests/test_sdl_v15.py",
+      "?? tests/test_staging_anchors.py",
+      "?? tests/test_vlm_review.py",
+      "?? tools/blender_tests/test_anchor_staging.py",
+      "?? tools/blender_tests/test_prop_interaction.py",
+      "?? tools/blender_tests/test_vlm_review.py",
+      "?? tools/diversity_score.py",
+      "?? tools/hooks/",
+      "?? tools/kb_fetch/rebind.py",
+      "?? tools/knowledge/attestation_ledger.py",
+      "?? tools/knowledge/grounding_classify.py",
+      "?? \"\\346\\211\\247\\350\\241\\214\\346\\226\\207\\346\\241\\243v1.5/\""
+    ]
+  },
+  "mode": "role",
+  "question": {
+    "path": "E:\\白模预演codex\\work\\_q_orphan_fix.md",
+    "sha256": "13154fed7858e0b4811cdbbd4126c4e471ec6a27745bd8c09fa43aaff7bdbe11",
+    "chars": 4566
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "tools/kb_fetch/rebind.py",
+      "spec": "tools/kb_fetch/rebind.py",
+      "range": [
+        1,
+        86
+      ],
+      "file_sha256": "f6cb223cb3185569fec7036d79f483350a2424bacfda2e11a5e472df2336317f",
+      "chunk_sha256": "a462c5f142398feffdaf1e99b3b4901e048bae4b38c60a5387de8adbb8780909",
+      "lines": 86,
+      "chars": 3610
+    },
+    {
+      "name": "tools/kb_fetch/build_hypergraph.py",
+      "spec": "tools/kb_fetch/build_hypergraph.py:1612-1690",
+      "range": [
+        1612,
+        1690
+      ],
+      "file_sha256": "dd82382570b96d79a5c6a930c43d228f306837b42d995183b7d19b544ae3d5cb",
+      "chunk_sha256": "30846c853f5bd21883b757fd39673355bb14e4d841bb3002e9e77f498a609fa2",
+      "lines": 79,
+      "chars": 4488
+    },
+    {
+      "name": "tools/kb_fetch/build_hypergraph.py",
+      "spec": "tools/kb_fetch/build_hypergraph.py:245-320",
+      "range": [
+        245,
+        320
+      ],
+      "file_sha256": "dd82382570b96d79a5c6a930c43d228f306837b42d995183b7d19b544ae3d5cb",
+      "chunk_sha256": "32822a18a338252100d947146cee5e7d4f07193ae06951fbaddd1e70c25ef205",
+      "lines": 76,
+      "chars": 4023
+    },
+    {
+      "name": "tools/kb_fetch/card_scope_audit.py",
+      "spec": "tools/kb_fetch/card_scope_audit.py:210-243",
+      "range": [
+        210,
+        243
+      ],
+      "file_sha256": "9a97cfb383aafb9c7424421be34e9fe310599a78340a0e06b075c6f0ef0aab3b",
+      "chunk_sha256": "e4966b16f1f963351f94504b872018541ab61df9c78f2acf535e8207674ea0a9",
+      "lines": 34,
+      "chars": 1770
+    },
+    {
+      "name": "tools/knowledge/attestation.py",
+      "spec": "tools/knowledge/attestation.py:78-90",
+      "range": [
+        78,
+        90
+      ],
+      "file_sha256": "1c034e91484739a147d59c51a92f61107a7c339793153e97e4b6a39d8924e52d",
+      "chunk_sha256": "36763e41391b2fa6282037bf8679e50eb7168a1877742c42a5df106bdbcff670",
+      "lines": 13,
+      "chars": 615
+    },
+    {
+      "name": "tools/extract_run_evidence.py",
+      "spec": "tools/extract_run_evidence.py:362-407",
+      "range": [
+        362,
+        407
+      ],
+      "file_sha256": "777f16c04c31ff3285a6f561d60fbb406b7a1ae4891d8b1c37f529280da22730",
+      "chunk_sha256": "5e448f59448aea61f4ada24f9597fd818f02b6812dc639c42721eb9a731bdc5f",
+      "lines": 46,
+      "chars": 2479
+    },
+    {
+      "name": "docs/knowledge/REGEN_LOG_20261007_rotation.md",
+      "spec": "docs/knowledge/REGEN_LOG_20261007_rotation.md",
+      "range": [
+        1,
+        69
+      ],
+      "file_sha256": "ed81595d5cf5ad5d371a48ab1a7b44c75010048f3fbaea39559689028084dfe9",
+      "chunk_sha256": "7f210ebcd26fe9434341ea3ad672e87f393bd2908ec98d2a35e1fd55d42a44a2",
+      "lines": 69,
+      "chars": 3582
+    }
+  ],
+  "contexts": [
+    {
+      "path": "E:\\白模预演codex\\work\\_ctx_orphan_fix.json",
+      "sha256": "01d287f4fae8d5791e797e399db729d9f943335b51de9e718412aafc43503200",
+      "chars": 2527
+    }
+  ],
+  "status": {
+    "sent_chars": 2068,
+    "sent_sha256": "6d07b7a251de2db94eb82f1acfc2773d8caa7b270ddf622de6cdc829e95f1d6d",
+    "full_chars": 10397,
+    "full_sha256": "201488d629f134d45cc3993948970ce9bb66f53fa02a8ca9e495d3d9540e6182",
+    "truncated": true
+  },
+  "bundles": {
+    "领域讲解": {
+      "system": {
+        "chars": 1032,
+        "sha256": "cd854264794d23eacbfdd56fcbcddd185bde8ff07dd9b030aae23edeae3d5d39"
+      },
+      "user": {
+        "chars": 30287,
+        "sha256": "d766ec63afe753bc4c0dbf7880eae57103d5b81f6c0ad4335edb8fc7a44ab961"
+      }
+    },
+    "实现顾问": {
+      "system": {
+        "chars": 1015,
+        "sha256": "e2d196dd979912603ed1dcf47ae216901c05be9c12662dee6a622097aa72216e"
+      },
+      "user": {
+        "chars": 30287,
+        "sha256": "d766ec63afe753bc4c0dbf7880eae57103d5b81f6c0ad4335edb8fc7a44ab961"
+      }
+    }
+  }
+}

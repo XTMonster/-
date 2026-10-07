@@ -1,0 +1,45 @@
+{
+  "role": "测试与验收",
+  "requested_model": "glm-5.3",
+  "attempts": [
+    {
+      "model": "glm-5.3",
+      "requested_model": "glm-5.3",
+      "level": "high",
+      "max_tokens": 8192,
+      "elapsed_s": 281.9,
+      "usage": {
+        "completion_tokens": 8192,
+        "completion_tokens_details": {
+          "reasoning_tokens": 8169
+        },
+        "prompt_tokens": 2251,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 10443
+      },
+      "finish_reason": "length",
+      "stepped_down_to": "low"
+    },
+    {
+      "model": "glm-5.3",
+      "requested_model": "glm-5.3",
+      "level": "low",
+      "max_tokens": 8192,
+      "elapsed_s": 108.2,
+      "usage": {
+        "completion_tokens": 8192,
+        "completion_tokens_details": {
+          "reasoning_tokens": 8178
+        },
+        "prompt_tokens": 2251,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 10443
+      },
+      "finish_reason": "length"
+    }
+  ]
+}

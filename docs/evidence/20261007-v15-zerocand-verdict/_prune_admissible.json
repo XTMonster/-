@@ -1,0 +1,773 @@
+{
+ "baseline_green": true,
+ "restored_to_v2": true,
+ "admissible": [
+  {
+   "edge_id": "hg:645b2427dfa0",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "vfx",
+   "node_id": "vfx:impact_frame",
+   "value": "impact_frame",
+   "surfaces": [
+    "impact_frame",
+    "冲击帧",
+    "定格冲击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "cine_move_dolly_zoom",
+    "gen_cine_0441"
+   ],
+   "source_topics": {
+    "cine_move_dolly_zoom": "",
+    "gen_cine_0441": "shot_language"
+   },
+   "source_texts": {
+    "cine_move_dolly_zoom": "推拉变焦（眩晕镜头） 相机前推的同时焦距变短（或反之），主体大小不变而透视剧烈变化。它表达的是一种**心理断裂**：世界在塌陷，人还站在原处。整场戏最多用一次——滥用会让它变成杂技。禁忌：整场戏最多用一次；滥用会把它变成杂技。 推拉变焦 眩晕 dolly zoom vertigo dolly_zoom 运镜 眩晕/失衡",
+    "gen_cine_0441": "移轴风格化慎用 由于风格化极强，移轴是电影摄影中最不常用的技术之一；只在需要梦幻、失真等特殊效果时使用。 低频使用"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "卡讲推拉变焦与移轴，非冲击帧"
+  },
+  {
+   "edge_id": "hg:0114b407d5c0",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "vfx",
+   "node_id": "vfx:impact_frame",
+   "value": "impact_frame",
+   "surfaces": [
+    "impact_frame",
+    "冲击帧",
+    "定格冲击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_anime_0345",
+    "gen_axis_0278",
+    "gen_cine_0441",
+    "gen_block_0217",
+    "gen_block_0334",
+    "gen_cine_0015"
+   ],
+   "source_topics": {
+    "gen_anime_0345": "anime",
+    "gen_axis_0278": "axis_theory",
+    "gen_cine_0441": "shot_language",
+    "gen_block_0217": "blocking",
+    "gen_block_0334": "blocking",
+    "gen_cine_0015": "color"
+   },
+   "source_texts": {
+    "gen_anime_0345": "高速摄影实现慢放 用机械转速远高于常规的摄影机拍摄，即可获得慢动作素材；放映时按正常速度播放，画面便呈现为慢动作。 慢动作 摄影机 拍摄技术 慢动作",
+    "gen_axis_0278": "实拍惊险替代特效 拍高空惊险场面时，优先让演员在真实高处实拍（如高楼边缘梦游），而非用假景或特效伪造，以取得更真实的惊悚效果。 高空 真实惊险 实景拍摄 惊悚",
+    "gen_cine_0441": "移轴风格化慎用 由于风格化极强，移轴是电影摄影中最不常用的技术之一；只在需要梦幻、失真等特殊效果时使用。 低频使用",
+    "gen_block_0217": "面光随演员移动 当舞台整体压暗、脚光不足时，用助手在演员左右两侧手持蜡烛（tsura akari/面光）随演员动作同步移动，以照亮面部与服装；这种随动面光比固定强电光更柔和悦目。 烛光 随动照明 照明 舞台调度",
+    "gen_block_0334": "入场动作的完整编排 设计角色入场时，可编排一连串连续动作：一手持弓、一手持琴进入、落座、调音、开始演奏，用完整动作链展示角色技能。 动作链 演奏 调度 表演",
+    "gen_cine_0015": "调色片须上银幕判断 判断调色效果必须在放映银幕上观察，不能只看手中的胶片：有些调色片手持看有色，投到银幕上却接近黑白。 放映 色彩 校验"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "各卡均与冲击帧主题无关"
+  },
+  {
+   "edge_id": "hg:4261162c56b9",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "vfx",
+   "node_id": "vfx:impact_frame",
+   "value": "impact_frame",
+   "surfaces": [
+    "impact_frame",
+    "冲击帧",
+    "定格冲击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_edit_0288",
+    "gen_cine_0441",
+    "cine_move_zoom_in"
+   ],
+   "source_topics": {
+    "gen_edit_0288": "shot_language",
+    "gen_cine_0441": "shot_language",
+    "cine_move_zoom_in": ""
+   },
+   "source_texts": {
+    "gen_edit_0288": "轴向切与变焦的区别 轴向切效果近似变焦镜头，但变焦是渐变，轴向切是突变、突兀且具冲击力；需要突兀感时用轴向切而非平滑推拉。 突变 突兀",
+    "gen_cine_0441": "移轴风格化慎用 由于风格化极强，移轴是电影摄影中最不常用的技术之一；只在需要梦幻、失真等特殊效果时使用。 低频使用",
+    "cine_move_zoom_in": "变焦推近 机位不动、焦距变长。与推镜的区别是**透视不变**：背景只被放大、不被重新组织，观众会感到「凝视」甚至「盯住」。禁忌：变焦太快像电子放大，除非刻意要那种业余质感。 变焦 zoom 拉近 zoom_in 运镜 聚焦/警觉"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "卡讲轴向切/变焦，非冲击帧"
+  },
+  {
+   "edge_id": "hg:123fad68e6a3",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "vfx",
+   "node_id": "vfx:impact_frame",
+   "value": "impact_frame",
+   "surfaces": [
+    "impact_frame",
+    "冲击帧",
+    "定格冲击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_edit_0160",
+    "gen_cine_0441",
+    "gen_anime_0289",
+    "gen_anime_0296",
+    "gen_anime_0322"
+   ],
+   "source_topics": {
+    "gen_edit_0160": "editing",
+    "gen_cine_0441": "shot_language",
+    "gen_anime_0289": "anime",
+    "gen_anime_0296": "anime",
+    "gen_anime_0322": "anime"
+   },
+   "source_texts": {
+    "gen_edit_0160": "特技须极度节制 在表现违反自然法则的奇幻题材时，特技使用量应压到情境允许的最低限度，且必须极其谨慎地使用，不可依赖特技撑起场面。 奇幻 谨慎 分寸",
+    "gen_cine_0441": "移轴风格化慎用 由于风格化极强，移轴是电影摄影中最不常用的技术之一；只在需要梦幻、失真等特殊效果时使用。 低频使用",
+    "gen_anime_0289": "固定单一画幅尺寸 动画拍摄时尽量全片只用一个画幅尺寸，相机一次定位后不再改动；若为兼容大小画幅而反复调整相机，每次换画幅都要重新对位，徒增误差与工时。 相机定位 一致性 机位",
+    "gen_anime_0296": "固定循环的单调与打破 固定顺序反复使用同一套循环会产生单调的飘动，可通过偶尔打乱各元素拍摄顺序，或加一张额外的大拍打褶皱图来增加变化。 打乱顺序 额外张 循环动画 变化",
+    "gen_anime_0322": "分层作画：背景与角色分离 把固定场景画在赛璐珞片上，角色的连续动作画在数十张纸上，两者分层叠合拍摄，以便角色在静止背景前运动。 赛璐珞 赛璐珞"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "特技节制与动画工序，非冲击帧"
+  },
+  {
+   "edge_id": "hg:5773c4efe944",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "sfx",
+   "node_id": "sfx:尖锐哨音",
+   "value": "尖锐哨音",
+   "surfaces": [
+    "尖锐哨音",
+    "哨音",
+    "耳鸣"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_anime_0391",
+    "gen_prod_0016",
+    "gen_prod_0017",
+    "gen_prod_0027",
+    "gen_anime_0289",
+    "gen_anime_0296",
+    "gen_anime_0322"
+   ],
+   "source_topics": {
+    "gen_anime_0391": "anime",
+    "gen_prod_0016": "lighting",
+    "gen_prod_0017": "lighting",
+    "gen_prod_0027": "lighting",
+    "gen_anime_0289": "anime",
+    "gen_anime_0296": "anime",
+    "gen_anime_0322": "anime"
+   },
+   "source_texts": {
+    "gen_anime_0391": "快速运动元素用空白赛璐珞叠加 表现闪电、快速烟雾等瞬时元素时，在整幅画上覆盖一张空白赛璐珞，逐段绘制该元素并逐段拍摄，画完一段擦掉再画下一段，从而在同一张片上累积出运动过程。 逐段拍摄 闪电 逐格拍摄 特效",
+    "gen_prod_0016": "飞絮环境全封闭灯罩 在易燃料飞絮环境中使用弧光灯时，须把电极完全封在密闭灯罩内，从而免装火花罩。 密闭灯罩 电极 防火 灯具安全",
+    "gen_prod_0017": "易燃处加防火花罩 在易燃物附近使用开放式弧光灯时，必须加装火花消除器。 火花消除器 开放弧光 安全",
+    "gen_prod_0027": "火花罩封住灯罩上口 弧光灯须装火花罩，把灯罩上口封到碳棒火花无法逸出的程度，防止火花落到布景或演员身上。 火花罩封住灯罩上口 防火 灯具安全",
+    "gen_anime_0289": "固定单一画幅尺寸 动画拍摄时尽量全片只用一个画幅尺寸，相机一次定位后不再改动；若为兼容大小画幅而反复调整相机，每次换画幅都要重新对位，徒增误差与工时。 相机定位 一致性 机位",
+    "gen_anime_0296": "固定循环的单调与打破 固定顺序反复使用同一套循环会产生单调的飘动，可通过偶尔打乱各元素拍摄顺序，或加一张额外的大拍打褶皱图来增加变化。 打乱顺序 额外张 循环动画 变化",
+    "gen_anime_0322": "分层作画：背景与角色分离 把固定场景画在赛璐珞片上，角色的连续动作画在数十张纸上，两者分层叠合拍摄，以便角色在静止背景前运动。 赛璐珞 赛璐珞"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "无哨音/耳鸣主题，来源不符"
+  },
+  {
+   "edge_id": "hg:11776263027d",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "vfx",
+   "node_id": "vfx:impact_frame",
+   "value": "impact_frame",
+   "surfaces": [
+    "impact_frame",
+    "冲击帧",
+    "定格冲击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_prod_0166",
+    "gen_block_0217",
+    "gen_block_0334",
+    "gen_cine_0015"
+   ],
+   "source_topics": {
+    "gen_prod_0166": "production",
+    "gen_block_0217": "blocking",
+    "gen_block_0334": "blocking",
+    "gen_cine_0015": "color"
+   },
+   "source_texts": {
+    "gen_prod_0166": "用实拍测试灯光 引入电灯照明时，先用动作激烈、反差大的实拍素材（如拳赛）做试验，确认曝光与照度满意后再用于常规剧情拍摄。 电灯 曝光 试验",
+    "gen_block_0217": "面光随演员移动 当舞台整体压暗、脚光不足时，用助手在演员左右两侧手持蜡烛（tsura akari/面光）随演员动作同步移动，以照亮面部与服装；这种随动面光比固定强电光更柔和悦目。 烛光 随动照明 照明 舞台调度",
+    "gen_block_0334": "入场动作的完整编排 设计角色入场时，可编排一连串连续动作：一手持弓、一手持琴进入、落座、调音、开始演奏，用完整动作链展示角色技能。 动作链 演奏 调度 表演",
+    "gen_cine_0015": "调色片须上银幕判断 判断调色效果必须在放映银幕上观察，不能只看手中的胶片：有些调色片手持看有色，投到银幕上却接近黑白。 放映 色彩 校验"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "灯光/调度/调色，非冲击帧"
+  },
+  {
+   "edge_id": "hg:11776263027d",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "sfx",
+   "node_id": "sfx:金属撞击",
+   "value": "金属撞击",
+   "surfaces": [
+    "金属撞击",
+    "撞击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_prod_0166",
+    "gen_block_0217",
+    "gen_block_0334",
+    "gen_cine_0015"
+   ],
+   "source_topics": {
+    "gen_prod_0166": "production",
+    "gen_block_0217": "blocking",
+    "gen_block_0334": "blocking",
+    "gen_cine_0015": "color"
+   },
+   "source_texts": {
+    "gen_prod_0166": "用实拍测试灯光 引入电灯照明时，先用动作激烈、反差大的实拍素材（如拳赛）做试验，确认曝光与照度满意后再用于常规剧情拍摄。 电灯 曝光 试验",
+    "gen_block_0217": "面光随演员移动 当舞台整体压暗、脚光不足时，用助手在演员左右两侧手持蜡烛（tsura akari/面光）随演员动作同步移动，以照亮面部与服装；这种随动面光比固定强电光更柔和悦目。 烛光 随动照明 照明 舞台调度",
+    "gen_block_0334": "入场动作的完整编排 设计角色入场时，可编排一连串连续动作：一手持弓、一手持琴进入、落座、调音、开始演奏，用完整动作链展示角色技能。 动作链 演奏 调度 表演",
+    "gen_cine_0015": "调色片须上银幕判断 判断调色效果必须在放映银幕上观察，不能只看手中的胶片：有些调色片手持看有色，投到银幕上却接近黑白。 放映 色彩 校验"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "无金属撞击声主题，来源不符"
+  },
+  {
+   "edge_id": "hg:2e4ec5e20e33",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "vfx",
+   "node_id": "vfx:impact_frame",
+   "value": "impact_frame",
+   "surfaces": [
+    "impact_frame",
+    "冲击帧",
+    "定格冲击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_edit_0199",
+    "cine_move_whip_pan_right"
+   ],
+   "source_topics": {
+    "gen_edit_0199": "editing",
+    "cine_move_whip_pan_right": ""
+   },
+   "source_texts": {
+    "gen_edit_0199": "替身坠落镜头的破绽 拍摄人物被推下高台、坠落致死的镜头时，若用填充假人替代演员，观众会立刻识破；应避免让假人出现在可辨认的轮廓或近景中，改用遮挡、剪影、快速摇移或只拍坠落起点与落点来隐藏替身。 假人 遮挡 剪影 特技 穿帮规避",
+    "cine_move_whip_pan_right": "右甩镜 与左甩镜像。甩镜的两次落点必须都值得看，否则观众只记得「晃了一下」。禁忌：甩镜之间不要插静止镜头，节奏一断就没有冲击力。 甩镜 whip pan 快速摇 whip_pan_right 运镜 冲击/突变"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "假人与甩镜，非冲击帧特效"
+  },
+  {
+   "edge_id": "hg:2e4ec5e20e33",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "sfx",
+   "node_id": "sfx:金属撞击",
+   "value": "金属撞击",
+   "surfaces": [
+    "金属撞击",
+    "撞击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_edit_0199",
+    "cine_move_whip_pan_right"
+   ],
+   "source_topics": {
+    "gen_edit_0199": "editing",
+    "cine_move_whip_pan_right": ""
+   },
+   "source_texts": {
+    "gen_edit_0199": "替身坠落镜头的破绽 拍摄人物被推下高台、坠落致死的镜头时，若用填充假人替代演员，观众会立刻识破；应避免让假人出现在可辨认的轮廓或近景中，改用遮挡、剪影、快速摇移或只拍坠落起点与落点来隐藏替身。 假人 遮挡 剪影 特技 穿帮规避",
+    "cine_move_whip_pan_right": "右甩镜 与左甩镜像。甩镜的两次落点必须都值得看，否则观众只记得「晃了一下」。禁忌：甩镜之间不要插静止镜头，节奏一断就没有冲击力。 甩镜 whip pan 快速摇 whip_pan_right 运镜 冲击/突变"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "无金属撞击声主题，来源不符"
+  },
+  {
+   "edge_id": "hg:411f2155e820",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "vfx",
+   "node_id": "vfx:impact_frame",
+   "value": "impact_frame",
+   "surfaces": [
+    "impact_frame",
+    "冲击帧",
+    "定格冲击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_edit_0223",
+    "gen_axis_0262",
+    "gen_anime_0289",
+    "gen_anime_0296",
+    "gen_anime_0322"
+   ],
+   "source_topics": {
+    "gen_edit_0223": "editing",
+    "gen_axis_0262": "axis_theory",
+    "gen_anime_0289": "anime",
+    "gen_anime_0296": "anime",
+    "gen_anime_0322": "anime"
+   },
+   "source_texts": {
+    "gen_edit_0223": "特技镜头非艺术 特技/魔术类镜头（如让魔鬼劫走火车）属于杂耍式身体技巧，缺乏内在发展与创作痛苦，不应作为艺术表现手段；判断标准是：该效果是否只靠机关完成而无人物或情境的内在发展。 魔术 杂耍 风格判断",
+    "gen_axis_0262": "近景拳击用轻触 拍拳头击中下巴的近景时，演员只轻拍对手，靠镜头与剪辑制造猛烈冲击感，不真打。 假打 特写 表演 安全",
+    "gen_anime_0289": "固定单一画幅尺寸 动画拍摄时尽量全片只用一个画幅尺寸，相机一次定位后不再改动；若为兼容大小画幅而反复调整相机，每次换画幅都要重新对位，徒增误差与工时。 相机定位 一致性 机位",
+    "gen_anime_0296": "固定循环的单调与打破 固定顺序反复使用同一套循环会产生单调的飘动，可通过偶尔打乱各元素拍摄顺序，或加一张额外的大拍打褶皱图来增加变化。 打乱顺序 额外张 循环动画 变化",
+    "gen_anime_0322": "分层作画：背景与角色分离 把固定场景画在赛璐珞片上，角色的连续动作画在数十张纸上，两者分层叠合拍摄，以便角色在静止背景前运动。 赛璐珞 赛璐珞"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "假打与动画工序，非冲击帧"
+  },
+  {
+   "edge_id": "hg:411f2155e820",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "sfx",
+   "node_id": "sfx:金属撞击",
+   "value": "金属撞击",
+   "surfaces": [
+    "金属撞击",
+    "撞击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_edit_0223",
+    "gen_axis_0262",
+    "gen_anime_0289",
+    "gen_anime_0296",
+    "gen_anime_0322"
+   ],
+   "source_topics": {
+    "gen_edit_0223": "editing",
+    "gen_axis_0262": "axis_theory",
+    "gen_anime_0289": "anime",
+    "gen_anime_0296": "anime",
+    "gen_anime_0322": "anime"
+   },
+   "source_texts": {
+    "gen_edit_0223": "特技镜头非艺术 特技/魔术类镜头（如让魔鬼劫走火车）属于杂耍式身体技巧，缺乏内在发展与创作痛苦，不应作为艺术表现手段；判断标准是：该效果是否只靠机关完成而无人物或情境的内在发展。 魔术 杂耍 风格判断",
+    "gen_axis_0262": "近景拳击用轻触 拍拳头击中下巴的近景时，演员只轻拍对手，靠镜头与剪辑制造猛烈冲击感，不真打。 假打 特写 表演 安全",
+    "gen_anime_0289": "固定单一画幅尺寸 动画拍摄时尽量全片只用一个画幅尺寸，相机一次定位后不再改动；若为兼容大小画幅而反复调整相机，每次换画幅都要重新对位，徒增误差与工时。 相机定位 一致性 机位",
+    "gen_anime_0296": "固定循环的单调与打破 固定顺序反复使用同一套循环会产生单调的飘动，可通过偶尔打乱各元素拍摄顺序，或加一张额外的大拍打褶皱图来增加变化。 打乱顺序 额外张 循环动画 变化",
+    "gen_anime_0322": "分层作画：背景与角色分离 把固定场景画在赛璐珞片上，角色的连续动作画在数十张纸上，两者分层叠合拍摄，以便角色在静止背景前运动。 赛璐珞 赛璐珞"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "无金属撞击声主题，来源不符"
+  },
+  {
+   "edge_id": "hg:be65a65aa8e1",
+   "type": "IMPACT_PACK",
+   "role": "allow",
+   "kind": "sfx",
+   "node_id": "sfx:金属撞击",
+   "value": "金属撞击",
+   "surfaces": [
+    "金属撞击",
+    "撞击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_prod_0046",
+    "gen_prod_0049",
+    "gen_prod_0051",
+    "gen_anime_0289",
+    "gen_anime_0296",
+    "gen_anime_0322"
+   ],
+   "source_topics": {
+    "gen_prod_0046": "lighting",
+    "gen_prod_0049": "lighting",
+    "gen_prod_0051": "lighting",
+    "gen_anime_0289": "anime",
+    "gen_anime_0296": "anime",
+    "gen_anime_0322": "anime"
+   },
+   "source_texts": {
+    "gen_prod_0046": "易燃环境加金属网罩 灯具附近有易燃料时，须在玻璃罩外加网孔不超过1.25英寸的金属网和合格火花罩，防止碳或熔铜火花逸出。 网孔 火花罩 防火 灯具安全",
+    "gen_prod_0049": "自动煤气应急灯的点火机构 用煤气做应急照明时，可在每个煤气喷口装电磁铁：通电时既开气又打火，也可反向关气；系统需配大容量电池与火花线圈，并设开、关两个按钮。 煤气灯 电磁铁 火花线圈 自动化",
+    "gen_prod_0051": "串联电阻防短路 电极接触或间距极小时，须在电路中串联电阻（交流弧用电抗器）限制电流，否则起弧瞬间会短路。 电抗器 限流 电路 安全",
+    "gen_anime_0289": "固定单一画幅尺寸 动画拍摄时尽量全片只用一个画幅尺寸，相机一次定位后不再改动；若为兼容大小画幅而反复调整相机，每次换画幅都要重新对位，徒增误差与工时。 相机定位 一致性 机位",
+    "gen_anime_0296": "固定循环的单调与打破 固定顺序反复使用同一套循环会产生单调的飘动，可通过偶尔打乱各元素拍摄顺序，或加一张额外的大拍打褶皱图来增加变化。 打乱顺序 额外张 循环动画 变化",
+    "gen_anime_0322": "分层作画：背景与角色分离 把固定场景画在赛璐珞片上，角色的连续动作画在数十张纸上，两者分层叠合拍摄，以便角色在静止背景前运动。 赛璐珞 赛璐珞"
+   },
+   "member_count": 3,
+   "batch": "nl3",
+   "verdict": "wrong_card",
+   "why": "灯具安全与动画，非撞击声"
+  },
+  {
+   "edge_id": "hg:bb02ce998001",
+   "type": "LIGHT_PACK",
+   "role": "forbid",
+   "kind": "lighting",
+   "node_id": "lighting:高调",
+   "value": "高调",
+   "surfaces": [
+    "高调",
+    "高照度",
+    "亮调"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "cine_light_contrast"
+   ],
+   "source_topics": {
+    "cine_light_contrast": ""
+   },
+   "source_texts": {
+    "cine_light_contrast": "明暗对比与藏信息 让画面的一部分留在暗处，是「不必展示全部」的表达。白模里最有效的做法是保留大面积受光面 + 一块明确的阴影，而不是把整体调暗——整体变暗只会让人看不清形体。 明暗 对比 阴影 低调"
+   },
+   "member_count": 3,
+   "batch": "nl4",
+   "verdict": "wrong_value",
+   "why": "卡讲低调藏暗，非高调"
+  },
+  {
+   "edge_id": "hg:0dbec9289553",
+   "type": "LIGHT_PACK",
+   "role": "allow",
+   "kind": "lighting",
+   "node_id": "lighting:高调",
+   "value": "高调",
+   "surfaces": [
+    "高调",
+    "高照度",
+    "亮调"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_prod_0005",
+    "gen_prod_0006",
+    "cine_light_direction"
+   ],
+   "source_topics": {
+    "gen_prod_0005": "lighting",
+    "gen_prod_0006": "lighting",
+    "cine_light_direction": ""
+   },
+   "source_texts": {
+    "gen_prod_0005": "串联弧光灯隔离易燃物 串联弧光灯必须与易燃材料仔细隔离，避免长时间高温引燃布景。 串联弧光灯隔离易燃物 防火 现场安全",
+    "gen_prod_0006": "交流弧双弧坑易致双光斑 交流弧有两个弧坑，若想同时利用两坑的光，电极必须对得极准；稍有偏差就会出现双光斑，且银幕中心照度不足。多数操作者最终会放弃双坑取光，改用图7A式设定。 银幕中心 弧光 照度均匀",
+    "cine_light_direction": "光位与情绪 白模没有材质，光位几乎就是全部的情绪：正面光平、无秘密；侧光（45°）立体、有戏剧性；逆光把主体变成剪影、强调轮廓；顶光制造眼窝阴影，天然带压迫。选光位等于选这场戏的态度。 光位 侧光 逆光 顶光 光线"
+   },
+   "member_count": 3,
+   "batch": "nl4",
+   "verdict": "wrong_card",
+   "why": "卡谈弧光安全与光位，非高调"
+  },
+  {
+   "edge_id": "hg:d8dc74becd6c",
+   "type": "MUSIC_PACK",
+   "role": "qualifier",
+   "kind": "pacing",
+   "node_id": "pacing:medium",
+   "value": "medium",
+   "surfaces": [
+    "medium",
+    "常规节奏"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_prod_0161",
+    "gen_axis_0239",
+    "gen_axis_0287",
+    "gen_block_0367"
+   ],
+   "source_topics": {
+    "gen_prod_0161": "production",
+    "gen_axis_0239": "axis_theory",
+    "gen_axis_0287": "axis_theory",
+    "gen_block_0367": "shot_language"
+   },
+   "source_texts": {
+    "gen_prod_0161": "旋转镜头加滤色片 尝试彩色活动影像时，可用带滤色片的旋转镜头方案；但该做法在当时并未成功，仅作历史参考。 彩色 色彩 实验",
+    "gen_axis_0239": "预兆性静默的用法 当需要制造不祥预感时，采用与“非在场”对应的静默：抽掉一切安抚性声音，让静默成为不祥的空洞，而非单纯的安静。 非在场 空洞 声音设计 悬念",
+    "gen_axis_0287": "无线麦消除环境声 用无线麦克风近距离拾音、剔除环境底噪，只保留人声与细微声响；车内戏不录城市与车辆声，酒店戏保留台词间的静默，以声音的封闭感强化空间的幽闭与孤立。 静默 封闭感 声音设计 空间感 幽闭",
+    "gen_block_0367": "静音检验表演可读性 检验一场戏的调度是否清晰：先静音看一遍，再开声音看一遍；若静音时无法从肢体语言读懂大部分内容，说明表演与调度需要加强。 肢体语言 检验方法"
+   },
+   "member_count": 3,
+   "batch": "nl4",
+   "verdict": "wrong_card",
+   "why": "卡谈静默静音，非常规节奏"
+  },
+  {
+   "edge_id": "hg:00d50ec06fe9",
+   "type": "SOUND_PACK",
+   "role": "allow",
+   "kind": "sfx",
+   "node_id": "sfx:金属撞击",
+   "value": "金属撞击",
+   "surfaces": [
+    "金属撞击",
+    "撞击"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_block_0261"
+   ],
+   "source_topics": {
+    "gen_block_0261": "blocking"
+   },
+   "source_texts": {
+    "gen_block_0261": "马蹄声的远近切换 模拟马匹由远及近时，先在舞台地板上敲木块，当马被设定为靠近场景时弃用木板，改在石板或大理石板上敲击以改变音色与距离感。 木块 石板 音效 距离感"
+   },
+   "member_count": 3,
+   "batch": "nl5",
+   "verdict": "wrong_value",
+   "why": "木石敲击模拟马蹄，非金属撞击。"
+  },
+  {
+   "edge_id": "hg:00d50ec06fe9",
+   "type": "SOUND_PACK",
+   "role": "allow",
+   "kind": "pacing",
+   "node_id": "pacing:medium",
+   "value": "medium",
+   "surfaces": [
+    "medium",
+    "常规节奏"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_block_0261"
+   ],
+   "source_topics": {
+    "gen_block_0261": "blocking"
+   },
+   "source_texts": {
+    "gen_block_0261": "马蹄声的远近切换 模拟马匹由远及近时，先在舞台地板上敲木块，当马被设定为靠近场景时弃用木板，改在石板或大理石板上敲击以改变音色与距离感。 木块 石板 音效 距离感"
+   },
+   "member_count": 3,
+   "batch": "nl5",
+   "verdict": "wrong_card",
+   "why": "卡谈音效距离，与常规节奏无关。"
+  },
+  {
+   "edge_id": "hg:298be1369d02",
+   "type": "SOUND_PACK",
+   "role": "allow",
+   "kind": "pacing",
+   "node_id": "pacing:medium",
+   "value": "medium",
+   "surfaces": [
+    "medium",
+    "常规节奏"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_block_0154",
+    "gen_anime_0384",
+    "gen_block_0159",
+    "gen_block_0313"
+   ],
+   "source_topics": {
+    "gen_block_0154": "blocking",
+    "gen_anime_0384": "anime",
+    "gen_block_0159": "blocking",
+    "gen_block_0313": "blocking"
+   },
+   "source_texts": {
+    "gen_block_0154": "风效鼓轮做法 做风声用木条鼓轮：木条间距约三英寸，鼓轮架在两立柱上、中心装大摇柄便于旋转；鼓轮上方固定粗杆，垂下一大块摩洛哥绸（moiré silk）盖过鼓轮，转动时木条摩擦绸面即发出风声。 绸面摩擦 音效 舞台机械",
+    "gen_anime_0384": "雨用多层赛璐珞 表现下雨：在多层赛璐珞片上画雨线，拍摄时按设计顺序依次叠用即可。 叠层 分层 天气",
+    "gen_block_0159": "写实特效的运用 写实效果可纳入管理范围：如用真雨淋湿演员、用当天下午栽种的真树被吹倒，配合演员负重砍杀等动作，制造暴风雨等写实场面。 真雨 真树 暴风雨",
+    "gen_block_0313": "真水雨景慎用 若舞台上要出现可见的雨，可用真水，但只在极少数镜头需要且仅持续几秒时才用；需要如此复杂效果的戏通常不适合业余剧团排演。 时长控制 实拍效果 成本取舍"
+   },
+   "member_count": 3,
+   "batch": "nl5",
+   "verdict": "wrong_card",
+   "why": "卡谈风雨特效，与常规节奏无关。"
+  },
+  {
+   "edge_id": "hg:7bfc4aca1887",
+   "type": "SOUND_PACK",
+   "role": "allow",
+   "kind": "sfx",
+   "node_id": "sfx:尖锐哨音",
+   "value": "尖锐哨音",
+   "surfaces": [
+    "尖锐哨音",
+    "哨音",
+    "耳鸣"
+   ],
+   "class": "natural_language",
+   "sources": [
+    "gen_edit_0191",
+    "gen_prod_0047",
+    "gen_block_0302",
+    "gen_story_0132"
+   ],
+   "source_topics": {
+    "gen_edit_0191": "editing",
+    "gen_prod_0047": "lighting",
+    "gen_block_0302": "blocking",
+    "gen_story_0132": "storyboard"
+   },
+   "source_texts": {
+    "gen_edit_0191": "声画同步的巧合 把窗外猫头鹰的叫声与室内敲击声剪成同一节拍，用声音的巧合把角色推向最终崩溃点。 节拍 崩溃点 声音 剪辑 节奏",
+    "gen_prod_0047": "煤气线路接地报警 煤气灯线路与煤气管共走易发生接地，应加装电铃与电池作接地指示：一旦接地造成持续电流，火花线圈吸动衔铁使铃持续鸣响，便于在演出前发现故障。 电铃 火花线圈 故障指示 安全",
+    "gen_block_0302": "音效须提前于触发点 舞台指示要求某音效（如'画外马嘶'）时，应在演员台词到达该点之前就起效，不要等到台词念到才播放，否则观众会觉得音效是硬塞进来的。 提前量 舞台指示 节奏 调度",
+    "gen_story_0132": "短片分场数量级 短片（short photoplay）通常由25到60个场景组成，因此单场可用时长极短；写分镜时按场数反推每场时长，不要按舞台剧单场时长来分配。 时长分配 段落结构 节奏"
+   },
+   "member_count": 3,
+   "batch": "nl5",
+   "verdict": "wrong_card",
+   "why": "卡谈电铃与音效时机，非哨音。"
+  },
+  {
+   "edge_id": "hg:bd8c758d53cc",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "node_id": "headroom_policy:cinematic",
+   "value": "cinematic",
+   "surfaces": [
+    "cinematic"
+   ],
+   "class": "schema_token",
+   "sources": [
+    "cine_move_crane_arc_down",
+    "cine_move_crane_arc_up",
+    "gen_anime_0271",
+    "gen_anime_0352",
+    "gen_anime_0360"
+   ],
+   "source_topics": {
+    "cine_move_crane_arc_down": "",
+    "cine_move_crane_arc_up": "",
+    "gen_anime_0271": "anime",
+    "gen_anime_0352": "anime",
+    "gen_anime_0360": "anime"
+   },
+   "source_texts": {
+    "cine_move_crane_arc_down": "下降弧 与上升弧镜像。下降弧把观众「放进」场景，适合开场揭示空间。禁忌：下降弧的终点必须落在主体上，否则像摄影机掉下去了。 下降弧 摇臂 crane arc crane_arc_down 运镜 揭示/压迫",
+    "cine_move_crane_arc_up": "上升弧 相机沿弧线上升：一边抬高一边改变水平角度。它比纯升镜更有「告别「的意味——既拉开距离，又回头看了一眼。禁忌：弧线上升时不要再叠变焦，两件事一起做，观众一件都读不出来。 上升弧 摇臂 crane arc crane_arc_up 运镜 升华/告别",
+    "gen_anime_0271": "全景免对位脚印 做全景（panorama）移动效果时，不必处理脚印对位问题；脚印对位只在其他形式的银幕运动表现中才重要。 脚印对位 取舍 取舍",
+    "gen_anime_0352": "舞者动作的连贯性 画舞者时，四肢并非只在关节处弯折，手臂、下肢与躯干会出现看似不自然的扭转；这实为全身骨骼关节的协调运动，动画师须把握其含义。 关节 协调 扭转 人体动态 协调运动",
+    "gen_anime_0360": "跳跃的压缩与弹开 画跳跃时，起跳前让四肢弯曲收拢贴近躯干，全身紧凑如压紧的弹簧；起跳瞬间四肢猛然向外张开，形成压缩到释放的对比。 预备姿势 预备动作 蓄力"
+   },
+   "member_count": 4,
+   "batch": "schema1",
+   "verdict": "wrong_card",
+   "why": "卡谈运镜动画，非头顶政策"
+  },
+  {
+   "edge_id": "hg:f6390d081652",
+   "type": "SHOT_PATTERN",
+   "role": "qualifier",
+   "kind": "headroom_policy",
+   "node_id": "headroom_policy:cinematic",
+   "value": "cinematic",
+   "surfaces": [
+    "cinematic"
+   ],
+   "class": "schema_token",
+   "sources": [
+    "cine_move_crane_arc_down",
+    "cine_move_crane_arc_up",
+    "gen_anime_0271",
+    "gen_anime_0352",
+    "gen_anime_0360"
+   ],
+   "source_topics": {
+    "cine_move_crane_arc_down": "",
+    "cine_move_crane_arc_up": "",
+    "gen_anime_0271": "anime",
+    "gen_anime_0352": "anime",
+    "gen_anime_0360": "anime"
+   },
+   "source_texts": {
+    "cine_move_crane_arc_down": "下降弧 与上升弧镜像。下降弧把观众「放进」场景，适合开场揭示空间。禁忌：下降弧的终点必须落在主体上，否则像摄影机掉下去了。 下降弧 摇臂 crane arc crane_arc_down 运镜 揭示/压迫",
+    "cine_move_crane_arc_up": "上升弧 相机沿弧线上升：一边抬高一边改变水平角度。它比纯升镜更有「告别「的意味——既拉开距离，又回头看了一眼。禁忌：弧线上升时不要再叠变焦，两件事一起做，观众一件都读不出来。 上升弧 摇臂 crane arc crane_arc_up 运镜 升华/告别",
+    "gen_anime_0271": "全景免对位脚印 做全景（panorama）移动效果时，不必处理脚印对位问题；脚印对位只在其他形式的银幕运动表现中才重要。 脚印对位 取舍 取舍",
+    "gen_anime_0352": "舞者动作的连贯性 画舞者时，四肢并非只在关节处弯折，手臂、下肢与躯干会出现看似不自然的扭转；这实为全身骨骼关节的协调运动，动画师须把握其含义。 关节 协调 扭转 人体动态 协调运动",
+    "gen_anime_0360": "跳跃的压缩与弹开 画跳跃时，起跳前让四肢弯曲收拢贴近躯干，全身紧凑如压紧的弹簧；起跳瞬间四肢猛然向外张开，形成压缩到释放的对比。 预备姿势 预备动作 蓄力"
+   },
+   "member_count": 4,
+   "batch": "schema1",
+   "verdict": "wrong_card",
+   "why": "卡谈运镜动画，非头顶政策"
+  },
+  {
+   "edge_id": "hg:fe0aca0d69d9",
+   "type": "ACTION_BEAT",
+   "role": "qualifier",
+   "kind": "beat_type",
+   "node_id": "beat_type:reaction",
+   "value": "reaction",
+   "surfaces": [
+    "reaction"
+   ],
+   "class": "schema_token",
+   "sources": [
+    "block_movement",
+    "block_proxemic_shift",
+    "gen_comp_0017",
+    "gen_comp_0082",
+    "gen_comp_0147"
+   ],
+   "source_topics": {
+    "block_movement": "",
+    "block_proxemic_shift": "",
+    "gen_comp_0017": "composition",
+    "gen_comp_0082": "composition",
+    "gen_comp_0147": "color"
+   },
+   "source_texts": {
+    "block_movement": "运动调度要有动机 角色移动必须有理由：走向对方、去拿东西、退开躲避。无动机的走位会让参考视频看起来像在随机漂移。移动要给目标位置与起止帧，并且同一角色的动作不得时间重叠。 调度 走位 动机 移动",
+    "block_proxemic_shift": "距离变化即关系变化 角色之间距离的**变化**比绝对值更有表现力：靠近是亲密或威胁，退开是防御或疏离。给每一段关系标一个起始距离与结束距离，中间的变化就是这场戏的曲线。 距离 靠近 退开 关系",
+    "gen_comp_0017": "凸线前进凹线后退 凸形线条通常与向前运动相关联，凹形线条与后退相关联；用轮廓线方向暗示人物或群体的运动方向。 凸线前进凹线后退 构图 运动暗示 线条",
+    "gen_comp_0082": "用后退线替代消失线 描述向纵深延伸的线时，优先用 retreating lines / going-away lines（fuyante）而非 vanishing line，因为后者暗示线本身消失；消失点同理宜称 point de fuite。术语沿用旧称时也应尽量少用。 消失点 术语 透视术语 纵深",
+    "gen_comp_0147": "前景物体轮廓要切割 要突出的物体，其轮廓应从周围阴影中锐利、强烈地切出；其余块面则按密度对比的减弱程度依次后退。 后退 空间层次"
+   },
+   "member_count": 3,
+   "batch": "schema2",
+   "verdict": "wrong_card",
+   "why": "卡讲走位/后退，非反应节拍"
+  }
+ ],
+ "rejected": []
+}

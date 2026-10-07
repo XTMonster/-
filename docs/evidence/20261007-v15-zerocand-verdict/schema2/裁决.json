@@ -1,0 +1,14 @@
+[
+  {"i": 1, "verdict": "keep", "why": "闭集词元；卡涉镜头调度语境"},
+  {"i": 2, "verdict": "keep", "why": "轴线卡涉两人关系，属闭集"},
+  {"i": 3, "verdict": "keep", "why": "卡讲对白场景，取值可蕴含"},
+  {"i": 4, "verdict": "keep", "why": "中性镜头主题明确，属闭集"},
+  {"i": 5, "verdict": "keep", "why": "卡讲反应动作，取值可蕴含"},
+  {"i": 6, "verdict": "keep", "why": "卡讲电影感镜头，属闭集"},
+  {"i": 7, "verdict": "keep", "why": "轴线语境成立，属闭集词元"},
+  {"i": 8, "verdict": "keep", "why": "中性镜头主题明确，属闭集"},
+  {"i": 9, "verdict": "wrong_card", "why": "卡讲走位/后退，非反应节拍"},
+  {"i": 10, "verdict": "keep", "why": "闭集词元；卡述电影化技法"},
+  {"i": 11, "verdict": "keep", "why": "轴线卡支持任意两人设定"},
+  {"i": 12, "verdict": "keep", "why": "越轴卡含中性镜头概念"}
+]

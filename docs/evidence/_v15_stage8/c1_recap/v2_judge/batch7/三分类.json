@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "正文明确提到低机位仰视关系"},
+  {"i": 2, "class": "wrong_card", "why": "卡是群众反应设计，非讲冷漠"},
+  {"i": 3, "class": "hidden", "why": "正文含中景人物，蕴含MS"},
+  {"i": 4, "class": "hidden", "why": "正文有右移平移track_right"},
+  {"i": 5, "class": "hidden", "why": "正文含中景人物，蕴含MS"},
+  {"i": 6, "class": "hidden", "why": "推镜即dolly_in，正文多次提及"},
+  {"i": 7, "class": "hidden", "why": "正文含中近景，即MCU"},
+  {"i": 8, "class": "wrong_card", "why": "卡未讲手持摄影，仅车厢晃动"}
+]

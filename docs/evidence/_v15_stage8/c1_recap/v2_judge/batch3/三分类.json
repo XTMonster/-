@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲运镜景深，非头顶留白策略"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲推轨横移，与头顶留白无关"},
+  {"i": 3, "class": "hidden", "why": "有过肩镜头卡，内容正确未独立标注"},
+  {"i": 4, "class": "hidden", "why": "卡讲低机位仰视，主题一致"},
+  {"i": 5, "class": "wrong_card", "why": "卡讲低机位布景，与引导留白无关"},
+  {"i": 6, "class": "hidden", "why": "平视卡内容正确，其余无关可忽略"},
+  {"i": 7, "class": "hidden", "why": "包含平视卡，主题相符"},
+  {"i": 8, "class": "hidden", "why": "卡讲画框构图，含义即取景"}
+]

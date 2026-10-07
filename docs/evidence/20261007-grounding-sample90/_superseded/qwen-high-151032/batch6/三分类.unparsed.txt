@@ -1,0 +1,12 @@
+```json
+[
+  {"i": 1, "class": "hidden", "why": "卡讲高角度荷兰角情绪引导未写混乱但蕴含"},
+  {"i": 2, "class": "hidden", "why": "卡讲低角度屈服，蕴含压抑"},
+  {"i": 3, "class": "wrong_card", "why": "卡主题是宗教祈祷，非坐下"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲宗教表演，无关平视"},
+  {"i": 5, "class": "hidden", "why": "卡讲祈祷虔诚神圣，蕴含庄严"},
+  {"i": 6, "class": "hidden", "why": "卡讲内心受冲击旁白，蕴含反应"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲旁白内心，与平视无关"},
+  {"i": 8, "class": "hidden", "why": "卡讲内心受冲击，未直接写压抑"}
+]
+```

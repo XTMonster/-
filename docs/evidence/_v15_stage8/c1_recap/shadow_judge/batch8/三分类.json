@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "卡明确写右移，取值蕴含"},
+  {"i": 2, "class": "hidden", "why": "多处提及中景，取值蕴含"},
+  {"i": 3, "class": "hidden", "why": "卡明确写左移，取值蕴含"},
+  {"i": 4, "class": "hidden", "why": "多处提及中景，取值蕴含"},
+  {"i": 5, "class": "hidden", "why": "卡讲固定机位，取值蕴含"},
+  {"i": 6, "class": "hidden", "why": "卡提及中近景，取值蕴含"},
+  {"i": 7, "class": "hidden", "why": "卡提及景别与中景，取值蕴含"},
+  {"i": 8, "class": "wrong_card", "why": "卡未涉及头部空间规则"}
+]

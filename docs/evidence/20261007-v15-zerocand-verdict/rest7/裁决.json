@@ -1,0 +1,14 @@
+[
+  {"i": 1, "verdict": "keep", "why": "闭集词元，影视镜头主题相关"},
+  {"i": 2, "verdict": "keep", "why": "闭集词元，取景角度主题相关"},
+  {"i": 3, "verdict": "keep", "why": "闭集词元，镜头调度主题相关"},
+  {"i": 4, "verdict": "keep", "why": "闭集词元，取景运镜主题相关"},
+  {"i": 5, "verdict": "keep", "why": "闭集词元，影视拍摄主题相关"},
+  {"i": 6, "verdict": "keep", "why": "闭集词元，画板镜头主题相关"},
+  {"i": 7, "verdict": "keep", "why": "闭集词元，跟拍稳定主题相关"},
+  {"i": 8, "verdict": "keep", "why": "闭集词元，俯仰构图主题相关"},
+  {"i": 9, "verdict": "keep", "why": "闭集词元，横摇纵深主题相关"},
+  {"i": 10, "verdict": "keep", "why": "闭集词元，横移动画主题相关"},
+  {"i": 11, "verdict": "keep", "why": "闭集词元，运镜景别主题相关"},
+  {"i": 12, "verdict": "keep", "why": "闭集词元，特写画幅主题相关"}
+]

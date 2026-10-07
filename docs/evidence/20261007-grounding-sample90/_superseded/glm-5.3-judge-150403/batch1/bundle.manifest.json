@@ -1,0 +1,67 @@
+{
+  "created_at": "2026-10-07T05:17:01",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "f6530c6",
+    "head_subject": "docs(P14-319): 出处缺口的 90 槽位分层抽检——样本(闭环三 kind 30 + 三 pack 各 20，互不重叠可复现)＋机械预读(topic_mismatch 88/90)＋12 批三分类作业已起",
+    "recent": [
+      "f6530c6 docs(P14-319): 出处缺口的 90 槽位分层抽检——样本(闭环三 kind 30 + 三 pack 各 20，互不重叠可复现)＋机械预读(topic_mismatch 88/90)＋12 批三分类作业已起",
+      "013d516 docs(P14-318): 出处缺口的裁定——转入修复但只做局部手术(先修闭环那几条边、不按体量排 pack)；机械判据：9 条边/15 槽位里 topic_mismatch 14；并写清删边=索引换代(23 份运行 pin 全失配)",
+      "7a73ef7 docs(P14-317): 把更新后的全扫产物(23 次运行，含两次真跑)一并入库——上一条提交只带了 README 与台账",
+      "6e1bf52 feat(P14-317): 第二次真跑(两栏都落地)——movement 真的在比了(空 294->0，matched 268)、生效边 1->30；另修工具里 for...else 误用导致的 no_match 假计数",
+      "fd499c9 feat(P14-316): declared.camera_move 落字段——movement 一族从 没得比 变成 能比(空 294/300 -> 0，matched 267)"
+    ],
+    "uncommitted": [
+      "M AGENTS.md",
+      " M block_director/motion/model.py",
+      " M docs/evidence/20261007-grounding-sample90/README.md",
+      " M docs/evidence/20261007-grounding-sample90/batch1/bundle.manifest.json",
+      " M docs/evidence/20261007-grounding-sample90/batch1/bundle.md",
+      " M docs/evidence/20261007-grounding-sample90/sample90.json",
+      " M docs/evidence/20261007-grounding-sample90/sample_grounding90.py",
+      " M docs/knowledge/OPEN_PROBLEMS.md",
+      " M docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md",
+      " M tests/test_glm_consult.py",
+      " M tools/glm_consult.py",
+      "?? docs/evidence/.last_run_id",
+      "?? docs/evidence/20261007-045808-baseline/",
+      "?? docs/evidence/20261007-050254-baseline/",
+      "?? docs/evidence/20261007-050633-g1/",
+      "?? docs/evidence/20261007-0510-baseline/",
+      "?? docs/evidence/20261007-grounding-probe/",
+      "?? docs/evidence/20261007-grounding-sample90/_superseded/",
+      "?? docs/evidence/20261007-grounding-sample90/batch12/",
+      "?? docs/evidence/20261007-grounding-sample90/make_grounding_batches.py",
+      "?? docs/evidence/20261007-grounding-sample90/questions/",
+      "?? docs/evidence/20261007-wrong-card-correction/",
+      "?? docs/knowledge/OPEN_ITEMS_20261007.md",
+      "?? docs/research_src/",
+      "?? tools/knowledge/grounding_classify.py",
+      "?? \"\\346\\211\\247\\350\\241\\214\\346\\226\\207\\346\\241\\243v1.5/\""
+    ]
+  },
+  "mode": "plain",
+  "question": {
+    "path": "E:\\白模预演codex\\work\\_q_grounding_batch1.md",
+    "sha256": "c6f6d05439e5a89d8b02838e717deabf4c35a47aa5e88ea97783eb9aa4a93753",
+    "chars": 10730
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "三分类": {
+      "user": {
+        "chars": 10741,
+        "sha256": "9c63fb5b430b7780585a194ca1fa0047a1bf695c3b7391dd0a67d5575e50075c"
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲布景/轴线/俯拍，非景别"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲布景透视角度，非极远景"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲动画运动，与景别无关"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲景深层次，非中景景别"},
+  {"i": 5, "class": "hidden", "why": "垂直俯拍高角度即高机位"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲人体平衡，非构图平衡"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲布景透视，非极远景"},
+  {"i": 8, "class": "hidden", "why": "垂直俯拍高角度即高机位"}
+]

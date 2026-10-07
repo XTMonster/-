@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲升降台倾斜地板，与构图平衡无关"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲角色交替动作，非摄影角度"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲用行动动词，非平视角度"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲POV主观镜头，非头顶空间"},
+  {"i": 5, "class": "hidden", "why": "垂直视点高度影响取景构图，未写明framing"},
+  {"i": 6, "class": "wrong_card", "why": "卡群讲镜头调度，均未涉及headroom"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲表演速度节奏，非走位"},
+  {"i": 8, "class": "wrong_card", "why": "卡讲快慢节奏，非压抑情绪"}
+]

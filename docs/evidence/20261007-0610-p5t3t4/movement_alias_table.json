@@ -1,0 +1,463 @@
+{
+  "knowledge_index_values": [
+    "crane_arc_down",
+    "crane_arc_up",
+    "crane_down",
+    "crane_up",
+    "dolly_in",
+    "dolly_out",
+    "dolly_zoom",
+    "follow_subject",
+    "handheld",
+    "lead_subject",
+    "orbit_ccw",
+    "orbit_cw",
+    "pan_left",
+    "pan_right",
+    "push_through",
+    "steadicam",
+    "tilt_down",
+    "tilt_up",
+    "track_left",
+    "track_right",
+    "whip_pan_left",
+    "whip_pan_right",
+    "zoom_in",
+    "zoom_out",
+    "固定"
+  ],
+  "engine_enum_values": [
+    "dolly_in",
+    "dolly_out",
+    "track_left",
+    "track_right",
+    "crane_up",
+    "crane_down",
+    "push_through",
+    "dolly_zoom",
+    "pan_left",
+    "pan_right",
+    "tilt_up",
+    "tilt_down",
+    "whip_pan_left",
+    "whip_pan_right",
+    "orbit_cw",
+    "orbit_ccw",
+    "crane_arc_up",
+    "crane_arc_down",
+    "zoom_in",
+    "zoom_out",
+    "handheld",
+    "steadicam",
+    "follow_subject",
+    "lead_subject"
+  ],
+  "heldout_vocab_values": [
+    "crane_arc_down",
+    "crane_arc_up",
+    "crane_down",
+    "crane_up",
+    "dolly_in",
+    "dolly_out",
+    "dolly_zoom",
+    "follow_subject",
+    "handheld",
+    "lead_subject",
+    "orbit_ccw",
+    "orbit_cw",
+    "pan_left",
+    "pan_right",
+    "push_through",
+    "steadicam",
+    "tilt_down",
+    "tilt_up",
+    "track_left",
+    "track_right",
+    "whip_pan_left",
+    "whip_pan_right",
+    "zoom_in",
+    "zoom_out",
+    "固定"
+  ],
+  "engine_not_in_heldout": [],
+  "heldout_not_in_engine": [
+    "固定"
+  ],
+  "knowledge_not_in_engine": [
+    "固定"
+  ],
+  "rows": [
+    {
+      "value": "crane_arc_down",
+      "in_knowledge_index": true,
+      "knowledge_name": "弧线降",
+      "knowledge_aliases": [
+        "弧线降"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "crane_arc_up",
+      "in_knowledge_index": true,
+      "knowledge_name": "弧线升",
+      "knowledge_aliases": [
+        "弧线升"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "crane_down",
+      "in_knowledge_index": true,
+      "knowledge_name": "降",
+      "knowledge_aliases": [
+        "降"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "crane_up",
+      "in_knowledge_index": true,
+      "knowledge_name": "升",
+      "knowledge_aliases": [
+        "升"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "dolly_in",
+      "in_knowledge_index": true,
+      "knowledge_name": "推镜",
+      "knowledge_aliases": [
+        "推镜",
+        "推近"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "dolly_out",
+      "in_knowledge_index": true,
+      "knowledge_name": "拉镜",
+      "knowledge_aliases": [
+        "拉镜",
+        "拉远"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "dolly_zoom",
+      "in_knowledge_index": true,
+      "knowledge_name": "移焦眩晕",
+      "knowledge_aliases": [
+        "移焦眩晕",
+        "希区柯克变焦",
+        "变焦推拉"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "follow_subject",
+      "in_knowledge_index": true,
+      "knowledge_name": "跟拍",
+      "knowledge_aliases": [
+        "跟拍",
+        "跟随"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "handheld",
+      "in_knowledge_index": true,
+      "knowledge_name": "手持",
+      "knowledge_aliases": [
+        "手持"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "lead_subject",
+      "in_knowledge_index": true,
+      "knowledge_name": "前置引导",
+      "knowledge_aliases": [
+        "前置引导"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "orbit_ccw",
+      "in_knowledge_index": true,
+      "knowledge_name": "逆时针环绕",
+      "knowledge_aliases": [
+        "逆时针环绕"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "orbit_cw",
+      "in_knowledge_index": true,
+      "knowledge_name": "顺时针环绕",
+      "knowledge_aliases": [
+        "顺时针环绕"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "pan_left",
+      "in_knowledge_index": true,
+      "knowledge_name": "左摇",
+      "knowledge_aliases": [
+        "左摇"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "pan_right",
+      "in_knowledge_index": true,
+      "knowledge_name": "右摇",
+      "knowledge_aliases": [
+        "右摇"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "push_through",
+      "in_knowledge_index": true,
+      "knowledge_name": "穿越推进",
+      "knowledge_aliases": [
+        "穿越推进"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "steadicam",
+      "in_knowledge_index": true,
+      "knowledge_name": "斯坦尼康",
+      "knowledge_aliases": [
+        "斯坦尼康"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "tilt_down",
+      "in_knowledge_index": true,
+      "knowledge_name": "下摇",
+      "knowledge_aliases": [
+        "下摇"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "tilt_up",
+      "in_knowledge_index": true,
+      "knowledge_name": "上摇",
+      "knowledge_aliases": [
+        "上摇"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "track_left",
+      "in_knowledge_index": true,
+      "knowledge_name": "左移",
+      "knowledge_aliases": [
+        "左移"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "track_right",
+      "in_knowledge_index": true,
+      "knowledge_name": "右移",
+      "knowledge_aliases": [
+        "右移"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "whip_pan_left",
+      "in_knowledge_index": true,
+      "knowledge_name": "左甩镜",
+      "knowledge_aliases": [
+        "左甩镜"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "whip_pan_right",
+      "in_knowledge_index": true,
+      "knowledge_name": "右甩镜",
+      "knowledge_aliases": [
+        "右甩镜"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "zoom_in",
+      "in_knowledge_index": true,
+      "knowledge_name": "变焦推近",
+      "knowledge_aliases": [
+        "变焦推近"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "zoom_out",
+      "in_knowledge_index": true,
+      "knowledge_name": "变焦拉远",
+      "knowledge_aliases": [
+        "变焦拉远"
+      ],
+      "in_engine_enum": true,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "",
+      "closure_alias": "",
+      "class": "已等价"
+    },
+    {
+      "value": "固定",
+      "in_knowledge_index": true,
+      "knowledge_name": "固定机位",
+      "knowledge_aliases": [
+        "固定机位",
+        "static",
+        "静止机位"
+      ],
+      "in_engine_enum": false,
+      "in_heldout_vocab": true,
+      "hypergraph_alias": "固定",
+      "closure_alias": "static",
+      "class": "无对应"
+    }
+  ],
+  "counts_by_class": {
+    "已等价": 24,
+    "无对应": 1
+  },
+  "chinese_only_knowledge_values": [
+    "固定"
+  ],
+  "hypergraph_VALUE_ALIASES": {
+    "甩镜": "whip_pan",
+    "甩镜头": "whip_pan",
+    "whip_pan": "whip_pan",
+    "固定机位": "固定",
+    "固定": "固定",
+    "static": "固定",
+    "中景": "MS",
+    "中近景": "MCU",
+    "特写": "CU",
+    "大特写": "ECU",
+    "近景": "MCU",
+    "全景": "LS",
+    "远景": "ELS",
+    "荒诞": "荒诞",
+    "滑稽": "荒诞",
+    "absurd": "荒诞",
+    "跺脚": "跺脚",
+    "stomp": "跺脚",
+    "石化": "petrify",
+    "petrify": "petrify"
+  },
+  "closure_VALUE_ALIASES": {
+    "固定": "static",
+    "固定机位": "static"
+  },
+  "closure_VALUE_ALIASES_VERSION": 1,
+  "sizes": {
+    "knowledge_index": 25,
+    "engine_enum": 24,
+    "heldout_vocab": 25,
+    "union": 25
+  }
+}

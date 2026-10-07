@@ -4,6 +4,13 @@
 `PERFORMANCE_PACK` 20 ＋ `SHOT_PATTERN` 20 ＋ `STAGING_PACK` 20 ＋ **闭环三 kind 30**。
 **确定可复现**：每层按 `(edge_id, kind, value)` 排序后取前 N（不是随机，写明即可复算）。
 
+**证据必须与判据同源**（2026-10-07 修正）：判据 `attestation.audit()` 是把这条边**全部来源卡**
+的 `card_blob` **拼接**后回查取值 surface；所以分类者要看的也只能是这**同一段字**。此前只放
+`sources[0]` 一张卡、还截到 200 字 ⇒ 39/90（43%）是**多来源**的行（最多 35 张）只看到
+中位数 **19%**、最少 **3%** 的判据文本 ⇒ 会把"主题其实讲对了、只是没写这个词"误判成
+`wrong_card`，直接偏到本任务要决的门限上。改法：逐来源卡留下**各自的** `card_blob`（空白归一），
+并记拼接后的总字数；组成问题时按预算展示**全部**来源卡，而不是只第一张。
+
 产出：`work/_grounding_sample90.json`（逐条证据）＋ `work/_grounding_sample90.md`（给人/模型看）。
 """
 
@@ -34,9 +41,12 @@ def card_topics(card: dict) -> str:
     return str(card.get("topic") or "").strip()
 
 
-def card_excerpt(card: dict) -> str:
-    """给人/模型看的节选：**与判据同一份文本**（`card_blob`）。"""
-    return " ".join(att.card_blob(card).split())[:420]
+def card_text(card: dict) -> str:
+    """逐卡正文：**与判据同一份文本**（`attestation.card_blob`），只做空白归一便于阅读。
+
+    **不是节选**（不截断）：截断留给组题那一层，那里才知道给多少张卡、每张多少字。
+    """
+    return " ".join(att.card_blob(card).split())
 
 
 def main() -> int:
@@ -59,6 +69,8 @@ def main() -> int:
             value = str(member[2])
             sources = [str(item) for item in (edge.get("sources") or [])]
             bare = value.split(":", 1)[-1]
+            judge_blob = "".join(" " + att.card_blob(cards[s])
+                                 for s in sources if s in cards)
             unattested.append({
                 "edge_id": str(edge.get("edge_id")), "type": str(edge.get("type")),
                 "role": str(member[0]), "kind": str(member[1]), "value": value,
@@ -66,8 +78,10 @@ def main() -> int:
                 "card_topics": sorted({card_topics(cards[s]) for s in sources
                                        if s in cards}),
                 "surface_in_card": bool(bare) and bare in blob,
-                "card_excerpt": card_excerpt(cards[sources[0]])
-                if sources and sources[0] in cards else "",
+                #: **判据看到的那段字**：全部来源卡各自的 `card_blob`（不只第一张），
+                #: 组成问题时逐卡展示；`judge_blob_chars` 是判据拼接后的真实总字数。
+                "card_texts": [[s, card_text(cards[s])] for s in sources if s in cards],
+                "judge_blob_chars": len(judge_blob),
             })
 
     #: 分层**互不重叠**：闭环三 kind 单独成层（它的行优先归它），其余按类型归 pack／rest。
@@ -123,7 +137,11 @@ def main() -> int:
         md.append("- 成员：`%s`（角色 %s）" % (row["value"], row["role"]))
         md.append("- 来源卡：%s（topic：%s）" % (", ".join(row["sources"]) or "（无）",
                                                  ", ".join(row["card_topics"]) or "（空）"))
-        md.append("- 卡正文节选：%s" % (row["card_excerpt"] or "（取不到正文）"))
+        md.append("- 判据正文（%d 字，%d 张卡）：%s"
+                  % (row["judge_blob_chars"], len(row["card_texts"]),
+                     " ／ ".join("%s: %s" % (card_id, text)
+                                 for card_id, text in row["card_texts"])
+                     or "（取不到正文）"))
         md.append("")
     (ROOT / "work/_grounding_sample90.md").write_text("\n".join(md), encoding="utf-8",
                                                       newline="\n")

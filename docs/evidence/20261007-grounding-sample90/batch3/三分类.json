@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "dolly镜头定义，非头顶空间"},
+  {"i": 2, "class": "wrong_card", "why": "多卡讲运动镜头，非headroom"},
+  {"i": 3, "class": "hidden", "why": "卡以正反打讲倾听，暗含过肩"},
+  {"i": 4, "class": "wrong_card", "why": "布景卡未涉机位，非低机位"},
+  {"i": 5, "class": "wrong_card", "why": "布景卡非lead_room构图"},
+  {"i": 6, "class": "wrong_card", "why": "调度表演卡，无平视机位"},
+  {"i": 7, "class": "wrong_card", "why": "构图景深卡，未涉平视"},
+  {"i": 8, "class": "hidden", "why": "多卡讲构图画框，未直接写framing"}
+]

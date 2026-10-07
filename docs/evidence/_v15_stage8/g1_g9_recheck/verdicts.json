@@ -1,0 +1,161 @@
+{
+  "card": "P8-T8",
+  "source": "执行文档v1.5/TECH_SOLUTIONS.md §六 + docs/knowledge/OPEN_ITEMS_20261007.md §六",
+  "run_id": "_v15_stage8/g1_g9_recheck",
+  "head": "f6530c6e44702028c6e42a9e1d11436c0b19d1c2",
+  "discipline": {
+    "code_changed": false,
+    "index_changed": false,
+    "fixtures_changed": false,
+    "criteria_changed": false
+  },
+  "verdicts": [
+    {
+      "id": "G1",
+      "item": "抽取提示里的历史措辞（13 类措辞 / 规则 4b 的 EMOTION_PACK 宿主）是否随 extract/v18 收口",
+      "verdict": "open",
+      "verdict_zh": "未收口（已实测为『改动＝覆盖率交换』，留档停手）",
+      "evidence": [
+        "tools/kb_fetch/build_hypergraph.py:182 PROMPT_VERSION = extract/v18",
+        "tools/kb_fetch/build_hypergraph.py:402 『1. type 只能取下面 13 类之一』",
+        "tools/kb_fetch/build_hypergraph.py:436 『1b. 只有这 13 个 type 字符串』",
+        "tools/kb_fetch/build_hypergraph.py:479 『把下面 13 类逐条问一遍』",
+        "tools/kb_fetch/build_hypergraph.py:459-462 规则 4b 仍写『挂在 EMOTION_PACK 上』",
+        "tools/kb_fetch/build_hypergraph.py:125-143 三个变体实测：2099/2130 → 1786 → 1688 → 1734，覆盖率全红"
+      ],
+      "proposal": "不改提示文本；把『改提示 ＋ 整库重抽 ＋ 重标整份 oracle』当一个独立工作项（涉换代与 oracle 判分输入）。现有兜底＝归并期精确度门 unsupported_prohibition_hosts。",
+      "requires_adjudication": true
+    },
+    {
+      "id": "G2",
+      "item": "schema 仍没有『运镜政策』的**专用**宿主（gen_cine_0247 的禁半）",
+      "verdict": "open",
+      "verdict_zh": "未收口——卡本身已进索引（1 条边），但禁半仍无处安放（有槽位、没有专用边型）；且那条边的 movement=固定 与卡义相反",
+      "evidence": [
+        "knowledge/hypergraph.edges.jsonl:267 唯一一条引用 gen_cine_0247 的边 hg:f6fd8f040745 = INTENT_PACK[intent=留白, shot_size=LS, movement:固定]，无 forbid 成员",
+        "block_director/knowledge/hypergraph.py EDGE_TYPES 仍是 16 类，无运镜政策型；QUALIFIER_KINDS 无 movement_policy",
+        "knowledge/card_scope.json:1100 gen_cine_0247 仍在 catalogue（不在 excluded，孤儿卡问题已归零）",
+        "AGENTS.md:910 仍记『schema 没有能诚实承载运镜政策的边型』",
+        "tools/kb_fetch/build_hypergraph.py:1243-1263 记着这条边的另一半（被禁的手持被写成 allow）"
+      ],
+      "proposal": "新增边型的提案：要么给 SHOT_PATTERN 加可选 (forbid,movement) 语义宿主，要么新增 MOVEMENT_POLICY 型；两者都要跟着一次整库重抽（门④ 每类 ≥30 对 ≥10 卡）⇒ 与 G1/G4 同批。作用域说明：「无宿主」只在『没有专用边型/kind』这一层成立——forbid 自 v1.8 起可挂在本类型已有的槽位上，所以现行那条边能承载 movement，只是卡里那条禁令从没被写进去（实测 0 个 forbid 成员）。",
+      "requires_adjudication": true
+    },
+    {
+      "id": "G3",
+      "item": "用户手工项的 ollama 残片",
+      "verdict": "open",
+      "verdict_zh": "未处置（用户手工项；工具策略不覆盖工作区外删除）",
+      "evidence": [
+        "%USERPROFILE%/.ollama/models/blobs/sha256-0373edb0…9c0 仍在 = 18.25 GiB（仍被 qwen3-vl:30b 的 tag 引用，删它等于卸载该模型）",
+        "该 blobs 目录合计 = 18.25 GiB（原先那枚 17.69 GiB 的 -partial 续传残件已不在）",
+        "work/ollama_leftover_*.bin = 3 份 / 合计 49.39 GiB（在工作区内、/work/ 已 gitignore）",
+        "docs/knowledge/ACCEPTANCE_STATUS.md:1475-1478 记的是旧读数（36 GB：17.69 + 18.25，另 work/ ≈53 GB）"
+      ],
+      "proposal": "① 工作区外那枚由用户手工删（命令在 ACCEPTANCE_STATUS.md §9.6，删它＝卸载 qwen3-vl:30b，用户已授权）；② work/ 下三份 bin 在工作区内、可删，但属破坏性操作，由用户确认后再动。",
+      "requires_adjudication": true
+    },
+    {
+      "id": "G4",
+      "item": "抽取提示漂移（§22.2，被记成覆盖率交换）",
+      "verdict": "open",
+      "verdict_zh": "未收口（与 G1 同源；必须与整库重抽＋重标同批）",
+      "evidence": [
+        "knowledge/hypergraph.manifest.json prompt_version = extract/v18（发货代未变）",
+        "tools/kb_fetch/build_hypergraph.py:137-143 『真正的根因修复必须改提示 ＋ 整库重抽 ＋ 重标整份 oracle 同批落地』",
+        "docs/knowledge/ACCEPTANCE_STATUS.md:1543 『没做且不该假装做过：提示漂移本身仍未修』",
+        "docs/knowledge/ACCEPTANCE_STATUS.md:1850-1851 『未做：§22.2 的抽取提示漂移』"
+      ],
+      "proposal": "与 G1 合并为一个工作项（同一次换代）。不单独开卡。",
+      "requires_adjudication": true
+    },
+    {
+      "id": "G5",
+      "item": "抽取结果缓存（『命中就不重抽』）——原表述为『按 chunk 的原子边缓存』",
+      "verdict": "closed",
+      "verdict_zh": "已收口（§29.4：原子边缓存；本卡第一版判『未收口』是仪器错，已改正并留痕）",
+      "evidence": [
+        "tools/kb_fetch/atom_cache.py（12,169 B，2026-10-02 20:34）在；tests/test_hypergraph_atom_cache.py（17,186 B）守门『键只随输入动』",
+        "tools/kb_fetch/build_hypergraph.py:45/:51 import atom_cache；:73 ATOM_CACHE = work/hypergraph.atom_cache.jsonl；:1778 AtomCache(..., enabled=cache_enabled)；:2084 --no-atom-cache",
+        "knowledge/hypergraph.manifest.json atom_cache = {path: work/hypergraph.atom_cache.jsonl, enabled: true}；chunks[] 708 条，每条含 {chunk_id, sha256, status, edges}",
+        "work/hypergraph.atom_cache.jsonl = 8,597,755 B（2026-10-03 01:48）",
+        "docs/knowledge/ACCEPTANCE_STATUS.md:2168-2180 §29.4：run4 2f86f6ca… 与 run5 2f86f6ca… 逐字节一致"
+      ],
+      "residual": [
+        "缓存落 work/（已 gitignore）⇒ 不入库、不进指纹；干净检出上的全量重建仍会真调模型",
+        "粒度＝抽取单元（渲染后的整段提示 ＋ 模型 ＋ 温度 ＋ 解码 ＋ 卡文），不是 §28.1 设想的 hypergraph.chunk*.jsonl；命名不同、判据相同",
+        "docs/knowledge/ACCEPTANCE_STATUS.md:1940-1942 仍是旧表述，建议加编者注指向 :2168"
+      ],
+      "proposal": "只做文档指路（ACCEPTANCE_STATUS :1940 加编者注指向 :2168）；机制本身不必再改。",
+      "requires_adjudication": false
+    },
+    {
+      "id": "G6",
+      "item": "rule_of_thirds / lead_room 的口径裁决；『求解器遵守 §10.4 vs 评分模型接受居中主体』",
+      "verdict": "open",
+      "verdict_zh": "未收口（口径**未成文**）——机制已落地（§68/§69 横移＋竖直抬升、v1.5 P3-T4 声明式消费），阈值一字未动",
+      "evidence": [
+        "block_director/cinema/composition.py:17-26 PASS_SCORE=70.0、WEIGHTS{lead_room:0.20, rule_of_thirds:0.15} 均未动",
+        "docs/adr/*.md 无一份提到 rule_of_thirds / lead_room ⇒ 没有裁决文书",
+        "docs/knowledge/ACCEPTANCE_STATUS.md:4091 『61.1 负结果：让求解器遵守 §10.4 不能直接开』",
+        "docs/knowledge/ACCEPTANCE_STATUS.md:4409 『决定：接上——它是 §10.4 评分模型想要的东西』（经测量的横移）",
+        "v1.5 P3-T4（docs/evidence/20261007-g3/）：构图声明消费，空声明＝零行为差"
+      ],
+      "proposal": "把两条口径写成一份裁决包（A：求解器遵守 §10.4；B：评分模型接受居中主体；C：现状＝声明式消费＋空声明零差）。不许靠调 PASS_SCORE 解决。",
+      "requires_adjudication": true
+    },
+    {
+      "id": "G7",
+      "item": "drift_is_bridged 的参照系（自上次已交代状态以来）",
+      "verdict": "closed",
+      "verdict_zh": "已收口（换成『赦免额对得上欠账额』，带单测）",
+      "evidence": [
+        "block_director/cinema/axis.py:321-338 drift_is_bridged(angle, visible, neutral)：阈值内免费，超出部分要由看得见的旋转累计偿付；中性机位直接算交代",
+        "tests/test_axis_crossing_events.py:158-173 钉住：53°/6° 不赦免、100°/100° 赦免、中性机位赦免",
+        "block_director/layer3_engine/rule_checker.py:360 生产侧调用点；:333 注释已按新口径改写"
+      ],
+      "proposal": null,
+      "requires_adjudication": false
+    },
+    {
+      "id": "G8",
+      "item": "Q5 的基准串口径（计划期 retrieval_call.query 与 ShotContract 分母不一致）",
+      "verdict": "open",
+      "verdict_zh": "未拍板——但链上已按硬规则 2 选定 audit 通道（emitted 为 join 键）",
+      "evidence": [
+        "tools/knowledge/quality.py:354 emitted（join 键）＝ audit_log.jsonl 的 retrieval_call.data.query",
+        "tools/knowledge/quality.py:226-231、:400-407 重推串降级为 drift 诊断",
+        "tools/knowledge/run_evidence.py:119 逐条读 retrieval_call 事件",
+        "AGENTS.md:912-920 记着仍未拍板与那次 6/6 镜串不同的实测"
+      ],
+      "proposal": "口径本身（入口形状：条目该不该点名被量的字段 / 计划要不要在检索前带上焦段与运镜）交用户；不动 oracle、不动判据、不重标。",
+      "requires_adjudication": true
+    },
+    {
+      "id": "G9",
+      "item": "词表（别名表）仍不在缓存键里",
+      "verdict": "closed",
+      "verdict_zh": "已收口（§21 P14-12：缓存指纹补第八格 vocabulary_fingerprint）",
+      "evidence": [
+        "tools/kb_fetch/build_hypergraph.py:250-252 CACHE_KEY_FIELDS 含 vocabulary_fingerprint（8 格）",
+        "tools/kb_fetch/build_hypergraph.py:323-346 vocabulary_fingerprint 从代码现算（改别名表当场换指纹）",
+        "knowledge/hypergraph.manifest.json cache_key 8 键齐，vocabulary_fingerprint=f72697ec…",
+        "docs/knowledge/ACCEPTANCE_STATUS.md:1269 『二十一、…缓存指纹补上第八格——词表/别名表（§20.8 第 4 条关掉）』"
+      ],
+      "proposal": null,
+      "requires_adjudication": false
+    },
+    {
+      "id": "E2",
+      "item": "悬空引用（OPEN_PROBLEMS (19) / ⑲）",
+      "verdict": "closed",
+      "verdict_zh": "已收口（P1-T1 随 v1.5 落地）",
+      "evidence": [
+        "AGENTS.md 全文已无 OPEN_PROBLEMS 引用（rg 命中 0）",
+        "docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md:1331 已改指 OPEN_ITEMS_20261007.md B1"
+      ],
+      "proposal": null,
+      "requires_adjudication": false
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "含平视直接佐证，取值正确"},
+  {"i": 2, "class": "hidden", "why": "平视卡直接佐证，非错误"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲景深运镜，无关头部空间"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲景深横移，无关头部空间"},
+  {"i": 5, "class": "hidden", "why": "有平视原文可证，取值正确"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲特写景深焦距，无关头部空间"},
+  {"i": 7, "class": "hidden", "why": "含平视卡，取值正确"},
+  {"i": 8, "class": "hidden", "why": "平视卡直接佐证，非错误"}
+]

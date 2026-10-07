@@ -1,0 +1,633 @@
+{
+  "blocked_edges": 9,
+  "slots": 15,
+  "old_ruler_verdicts": {
+    "topic_mismatch": 14,
+    "topic_matches": 1
+  },
+  "new_ruler_verdicts": {
+    "topic_mismatch": 6,
+    "topic_or_domain_matches_kind": 2,
+    "topic_unknown": 6,
+    "in_card_text": 1
+  },
+  "slots_without_mechanical_candidate": 7,
+  "rows": [
+    {
+      "edge_id": "hg:3f26bdf8d230",
+      "type": "SHOT_PATTERN",
+      "role": "qualifier",
+      "kind": "headroom_policy",
+      "value": "cinematic",
+      "sources": [
+        "cine_height"
+      ],
+      "injection_hits": 6,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_mismatch",
+      "candidate_cards": [],
+      "sources_include_handwritten": [
+        "cine_height"
+      ]
+    },
+    {
+      "edge_id": "hg:400a2bfcda8e",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "composition_rule",
+      "value": "lead_room",
+      "sources": [
+        "gen_comp_0204",
+        "gen_comp_0205",
+        "gen_comp_0274",
+        "gen_comp_0278",
+        "gen_comp_0060",
+        "gen_comp_0065",
+        "gen_comp_0085",
+        "gen_comp_0112",
+        "gen_comp_0159",
+        "gen_comp_0215",
+        "gen_axis_0200",
+        "gen_axis_0246",
+        "gen_axis_0253",
+        "block_crowd_flow",
+        "gen_block_0013",
+        "gen_block_0147",
+        "gen_block_0238",
+        "gen_block_0372",
+        "gen_comp_0162",
+        "gen_comp_0163",
+        "gen_comp_0082",
+        "gen_anime_0292",
+        "gen_block_0268"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_mismatch",
+      "candidate_cards": [],
+      "sources_include_handwritten": [
+        "block_crowd_flow"
+      ]
+    },
+    {
+      "edge_id": "hg:400a2bfcda8e",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "camera_angle",
+      "value": "平视",
+      "sources": [
+        "gen_comp_0204",
+        "gen_comp_0205",
+        "gen_comp_0274",
+        "gen_comp_0278",
+        "gen_comp_0060",
+        "gen_comp_0065",
+        "gen_comp_0085",
+        "gen_comp_0112",
+        "gen_comp_0159",
+        "gen_comp_0215",
+        "gen_axis_0200",
+        "gen_axis_0246",
+        "gen_axis_0253",
+        "block_crowd_flow",
+        "gen_block_0013",
+        "gen_block_0147",
+        "gen_block_0238",
+        "gen_block_0372",
+        "gen_comp_0162",
+        "gen_comp_0163",
+        "gen_comp_0082",
+        "gen_anime_0292",
+        "gen_block_0268"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_mismatch",
+      "candidate_cards": [
+        "cine_eye_level",
+        "gen_cine_0205",
+        "gen_cine_0360",
+        "gen_cine_0379",
+        "gen_cine_0387",
+        "gen_cine_0405",
+        "gen_cine_0420",
+        "gen_comp_0225",
+        "gen_comp_0236",
+        "gen_comp_0243"
+      ],
+      "sources_include_handwritten": [
+        "block_crowd_flow"
+      ]
+    },
+    {
+      "edge_id": "hg:5b8b86de2d87",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "composition_rule",
+      "value": "lead_room",
+      "sources": [
+        "comp_diagonal",
+        "comp_eye_trace",
+        "gen_comp_0009",
+        "gen_comp_0010",
+        "gen_comp_0087",
+        "gen_comp_0089",
+        "gen_comp_0128",
+        "gen_comp_0130",
+        "gen_cine_0213",
+        "gen_cine_0286",
+        "gen_comp_0017",
+        "gen_comp_0058",
+        "gen_comp_0069",
+        "gen_comp_0103",
+        "gen_comp_0113",
+        "gen_comp_0124",
+        "gen_comp_0160",
+        "gen_comp_0200",
+        "gen_comp_0222",
+        "gen_comp_0233",
+        "gen_comp_0250",
+        "gen_edit_0021",
+        "gen_edit_0066",
+        "gen_edit_0269",
+        "gen_comp_0052",
+        "gen_comp_0120",
+        "gen_comp_0238",
+        "gen_comp_0292",
+        "gen_block_0052"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_or_domain_matches_kind",
+      "candidate_cards": [],
+      "sources_include_handwritten": [
+        "comp_diagonal",
+        "comp_eye_trace"
+      ]
+    },
+    {
+      "edge_id": "hg:5b8b86de2d87",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "camera_angle",
+      "value": "平视",
+      "sources": [
+        "comp_diagonal",
+        "comp_eye_trace",
+        "gen_comp_0009",
+        "gen_comp_0010",
+        "gen_comp_0087",
+        "gen_comp_0089",
+        "gen_comp_0128",
+        "gen_comp_0130",
+        "gen_cine_0213",
+        "gen_cine_0286",
+        "gen_comp_0017",
+        "gen_comp_0058",
+        "gen_comp_0069",
+        "gen_comp_0103",
+        "gen_comp_0113",
+        "gen_comp_0124",
+        "gen_comp_0160",
+        "gen_comp_0200",
+        "gen_comp_0222",
+        "gen_comp_0233",
+        "gen_comp_0250",
+        "gen_edit_0021",
+        "gen_edit_0066",
+        "gen_edit_0269",
+        "gen_comp_0052",
+        "gen_comp_0120",
+        "gen_comp_0238",
+        "gen_comp_0292",
+        "gen_block_0052"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_matches",
+      "verdict_new": "topic_or_domain_matches_kind",
+      "candidate_cards": [
+        "cine_eye_level",
+        "gen_cine_0205",
+        "gen_cine_0360",
+        "gen_cine_0379",
+        "gen_cine_0387",
+        "gen_cine_0405",
+        "gen_cine_0420",
+        "gen_comp_0225",
+        "gen_comp_0236",
+        "gen_comp_0243"
+      ],
+      "sources_include_handwritten": [
+        "comp_diagonal",
+        "comp_eye_trace"
+      ]
+    },
+    {
+      "edge_id": "hg:6d201c4c47a3",
+      "type": "SHOT_PATTERN",
+      "role": "qualifier",
+      "kind": "headroom_policy",
+      "value": "cinematic",
+      "sources": [
+        "gen_cine_0254"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_mismatch",
+      "candidate_cards": [],
+      "sources_include_handwritten": []
+    },
+    {
+      "edge_id": "hg:904424ad8c64",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "composition_rule",
+      "value": "lead_room",
+      "sources": [
+        "gen_block_0299",
+        "gen_block_0155"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_unknown",
+      "candidate_cards": [],
+      "sources_include_handwritten": []
+    },
+    {
+      "edge_id": "hg:904424ad8c64",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "camera_angle",
+      "value": "高机位",
+      "sources": [
+        "gen_block_0299",
+        "gen_block_0155"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_unknown",
+      "candidate_cards": [
+        "cine_height",
+        "cine_high_angle",
+        "comp_clutter",
+        "gen_cine_0456",
+        "gen_cine_0460",
+        "gen_cine_0476",
+        "gen_edit_0271"
+      ],
+      "sources_include_handwritten": []
+    },
+    {
+      "edge_id": "hg:d090d7ce0096",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "composition_rule",
+      "value": "headroom",
+      "sources": [
+        "comp_headroom",
+        "gen_anime_0424",
+        "gen_perf_0568",
+        "gen_perf_0569"
+      ],
+      "injection_hits": 4,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "in_card_text",
+      "candidate_cards": [
+        "comp_headroom"
+      ],
+      "sources_include_handwritten": [
+        "comp_headroom"
+      ]
+    },
+    {
+      "edge_id": "hg:d090d7ce0096",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "camera_angle",
+      "value": "平视",
+      "sources": [
+        "comp_headroom",
+        "gen_anime_0424",
+        "gen_perf_0568",
+        "gen_perf_0569"
+      ],
+      "injection_hits": 4,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_mismatch",
+      "candidate_cards": [
+        "cine_eye_level",
+        "gen_cine_0205",
+        "gen_cine_0360",
+        "gen_cine_0379",
+        "gen_cine_0387",
+        "gen_cine_0405",
+        "gen_cine_0420",
+        "gen_comp_0225",
+        "gen_comp_0236",
+        "gen_comp_0243"
+      ],
+      "sources_include_handwritten": [
+        "comp_headroom"
+      ]
+    },
+    {
+      "edge_id": "hg:d28d18bfdde4",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "composition_rule",
+      "value": "lead_room",
+      "sources": [
+        "gen_comp_0027",
+        "gen_comp_0108"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_unknown",
+      "candidate_cards": [],
+      "sources_include_handwritten": []
+    },
+    {
+      "edge_id": "hg:d28d18bfdde4",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "camera_angle",
+      "value": "低机位",
+      "sources": [
+        "gen_comp_0027",
+        "gen_comp_0108"
+      ],
+      "injection_hits": 1,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_unknown",
+      "candidate_cards": [
+        "cine_height",
+        "cine_low_angle",
+        "gen_cine_0292",
+        "gen_cine_0456"
+      ],
+      "sources_include_handwritten": []
+    },
+    {
+      "edge_id": "hg:e2ea1c270f9b",
+      "type": "SHOT_PATTERN",
+      "role": "qualifier",
+      "kind": "headroom_policy",
+      "value": "cinematic",
+      "sources": [
+        "gen_story_0289",
+        "gen_story_0292"
+      ],
+      "injection_hits": 12,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_mismatch",
+      "candidate_cards": [],
+      "sources_include_handwritten": []
+    },
+    {
+      "edge_id": "hg:e3ee2d0b5f4c",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "composition_rule",
+      "value": "balance",
+      "sources": [
+        "gen_block_0283"
+      ],
+      "injection_hits": 6,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_unknown",
+      "candidate_cards": [
+        "comp_balance"
+      ],
+      "sources_include_handwritten": []
+    },
+    {
+      "edge_id": "hg:e3ee2d0b5f4c",
+      "type": "STAGING_PACK",
+      "role": "qualifier",
+      "kind": "camera_angle",
+      "value": "低机位",
+      "sources": [
+        "gen_block_0283"
+      ],
+      "injection_hits": 6,
+      "verdict_old": "topic_mismatch",
+      "verdict_new": "topic_unknown",
+      "candidate_cards": [
+        "cine_height",
+        "cine_low_angle",
+        "gen_cine_0292",
+        "gen_cine_0456"
+      ],
+      "sources_include_handwritten": []
+    }
+  ],
+  "pins_impact": {
+    "runs_pinning_index": 22,
+    "current_index_fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+    "runs": [
+      {
+        "run": "docs/evidence/20261003_chunked_long",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_chunked_long10",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_chunked_long3",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_chunked_long6",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_chunked_long9",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_intent",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_real",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_real_ds",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_real_glm",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261003_real_long",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long11",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long12",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long14",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long15",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long16",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long17",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long18",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long19",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261004_chunked_long20",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261006-long21",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261007-real-axis",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index",
+          "third_party"
+        ]
+      },
+      {
+        "run": "docs/evidence/20261007-real-closure",
+        "fingerprint": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+        "pins": [
+          "cases",
+          "holdout",
+          "index",
+          "third_party"
+        ]
+      }
+    ],
+    "all_same_fingerprint": true
+  },
+  "schema_fingerprint": "1a90c089bb8f4f7fbd61a145a2088d6c2628ecbbd4dba47f63396fbf34fadaf3",
+  "note": "两把尺子的差别**只在读卡口径**；机械判据给的是信号，不是判决。`candidate_cards` 是『正文里真的写了这个取值』的全库候选，空列表＝当前无机械证据，不等于『这张卡是错的』。"
+}

@@ -1,0 +1,227 @@
+{
+ "card_counts": {
+  "total": 2353,
+  "generated": 2221,
+  "curated": 132,
+  "generated_with_topic": 1049,
+  "curated_with_topic": 0,
+  "generated_with_topic_share": 0.4723
+ },
+ "topic_vocab": {
+  "anime": 141,
+  "camera_angle": 59,
+  "character_design": 5,
+  "color": 99,
+  "editing": 182,
+  "lighting": 104,
+  "performance": 6,
+  "shot_language": 222,
+  "storyboard": 229,
+  "technique": 2
+ },
+ "topic_vocab_intersect_allowed_kinds": [
+  "camera_angle",
+  "lighting"
+ ],
+ "allowed_kinds_total": 30,
+ "resolution": {
+  "chunks": 576,
+  "chunks_with_more_than_one_topic": 0,
+  "chunk_examples": [],
+  "sources_with_more_than_one_topic": 0,
+  "source_examples": []
+ },
+ "sample_decomposition": {
+  "rows": 90,
+  "matched": 2,
+  "mismatch_with_topic": 55,
+  "no_topic_at_all": 33,
+  "matched_edges": [
+   {
+    "edge_id": "hg:05c36cb730e7",
+    "kind": "camera_angle",
+    "n_sources": 32
+   },
+   {
+    "edge_id": "hg:1953fa522d0c",
+    "kind": "camera_angle",
+    "n_sources": 35
+   }
+  ],
+  "absent_kinds": [
+   [
+    "camera_angle",
+    9
+   ],
+   [
+    "emotion",
+    5
+   ],
+   [
+    "shot_size",
+    5
+   ],
+   [
+    "composition_rule",
+    4
+   ],
+   [
+    "action",
+    4
+   ],
+   [
+    "headroom_policy",
+    3
+   ],
+   [
+    "movement",
+    3
+   ]
+  ]
+ },
+ "per_kind": {
+  "action": {
+   "rows": 7,
+   "kind_in_topic_vocab": false,
+   "rows_with_any_topic": 3,
+   "rows_matched": 0
+  },
+  "camera_angle": {
+   "rows": 23,
+   "kind_in_topic_vocab": true,
+   "rows_with_any_topic": 14,
+   "rows_matched": 2
+  },
+  "composition_rule": {
+   "rows": 11,
+   "kind_in_topic_vocab": false,
+   "rows_with_any_topic": 7,
+   "rows_matched": 0
+  },
+  "emotion": {
+   "rows": 10,
+   "kind_in_topic_vocab": false,
+   "rows_with_any_topic": 5,
+   "rows_matched": 0
+  },
+  "headroom_policy": {
+   "rows": 13,
+   "kind_in_topic_vocab": false,
+   "rows_with_any_topic": 10,
+   "rows_matched": 0
+  },
+  "movement": {
+   "rows": 9,
+   "kind_in_topic_vocab": false,
+   "rows_with_any_topic": 6,
+   "rows_matched": 0
+  },
+  "shot_size": {
+   "rows": 17,
+   "kind_in_topic_vocab": false,
+   "rows_with_any_topic": 12,
+   "rows_matched": 0
+  }
+ },
+ "card_level_agreement": {
+  "topic_equals_domain": 552,
+  "topic_in_card_tags": 0,
+  "topic_token_in_card_blob": 1,
+  "topic_token_checked": 1049
+ },
+ "sources_yaml_theme_lines": {
+  "n": 80,
+  "distinct": [
+   "anime",
+   "anime_production",
+   "camera_angle",
+   "character_animation",
+   "character_design",
+   "color",
+   "editing",
+   "lighting",
+   "performance",
+   "pipeline",
+   "shot_language",
+   "storyboard",
+   "technique"
+  ],
+  "in_topic_vocab": [
+   "anime",
+   "camera_angle",
+   "character_design",
+   "color",
+   "editing",
+   "lighting",
+   "performance",
+   "shot_language",
+   "storyboard",
+   "technique"
+  ],
+  "not_in_topic_vocab": [
+   "anime_production",
+   "character_animation",
+   "pipeline"
+  ]
+ },
+ "spot_audit": {
+  "audited_cards": 82,
+  "sample_cards_with_topic": 82,
+  "covers_exactly_the_with_topic_sample": true,
+  "by_verdict": {
+   "faithful": 54,
+   "partial": 7,
+   "mislabeled": 21
+  },
+  "by_topic": {
+   "anime": {
+    "faithful": 11
+   },
+   "camera_angle": {
+    "mislabeled": 5
+   },
+   "character_design": {
+    "faithful": 1
+   },
+   "color": {
+    "mislabeled": 4,
+    "faithful": 1,
+    "partial": 1
+   },
+   "editing": {
+    "partial": 1,
+    "mislabeled": 10,
+    "faithful": 1
+   },
+   "lighting": {
+    "faithful": 1,
+    "partial": 1
+   },
+   "performance": {
+    "faithful": 1
+   },
+   "shot_language": {
+    "partial": 3,
+    "faithful": 30,
+    "mislabeled": 1
+   },
+   "storyboard": {
+    "faithful": 8,
+    "partial": 1,
+    "mislabeled": 1
+   }
+  },
+  "corpus_cards_per_audited_topic": {
+   "anime": 141,
+   "camera_angle": 59,
+   "character_design": 5,
+   "color": 99,
+   "editing": 182,
+   "lighting": 104,
+   "performance": 6,
+   "shot_language": 222,
+   "storyboard": 229
+  },
+  "reviewer": "本文件是 **DeepSeek 主线 agent 的人工判读**（proxy-only），不是裁定通道判词；GLM 交叉对拍因本机 `GLM_API_KEY` 缺失**未跑**，如实标注。"
+ }
+}

@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "来源卡讲表演速度，与平视角度无关"},
+  {"i": 2, "class": "wrong_card", "why": "来源卡均讲表演制作，未涉及平视"},
+  {"i": 3, "class": "wrong_card", "why": "来源卡讲手持跳切，与headroom无关"},
+  {"i": 4, "class": "wrong_card", "why": "来源卡讲剪纸动画，与headroom无关"},
+  {"i": 5, "class": "wrong_card", "why": "来源卡多讲道具化妆，未涉及平视"},
+  {"i": 6, "class": "wrong_card", "why": "来源卡讲特写景深，与headroom无关"},
+  {"i": 7, "class": "wrong_card", "why": "来源卡讲肢体动作，与平视角度无关"},
+  {"i": 8, "class": "wrong_card", "why": "来源卡讲构图布景，与平视角度无关"}
+]

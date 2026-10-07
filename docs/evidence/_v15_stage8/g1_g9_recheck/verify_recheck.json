@@ -1,0 +1,93 @@
+{
+  "G1": {
+    "title": "抽取提示历史措辞（13 类 / 4b EMOTION_PACK 宿主）",
+    "ok": [
+      "PROMPT_VERSION = \"extract/v18\"",
+      "开场/规则 1 仍写 13 类",
+      "规则 1b 仍写 13 个 type",
+      "规则 6b 仍写把 13 类逐条问",
+      "规则 4b 仍写挂到 EMOTION_PACK",
+      "已记『被实测否决』留档"
+    ],
+    "mismatch": []
+  },
+  "G2": {
+    "title": "运镜政策无宿主 / gen_cine_0247 禁半",
+    "ok": [
+      "引用 gen_cine_0247 的边 = 1 条（卡已进索引）",
+      "这 1 条边**没有** forbid 成员 ⇒ 卡里『避免长时间静止固定』的禁半仍未进索引",
+      "card_scope.excluded 不含 gen_cine_0247（不再是孤儿卡）",
+      "EDGE_TYPES/QUALIFIER_KINDS 里仍没有『运镜政策』宿主"
+    ],
+    "mismatch": []
+  },
+  "G3": {
+    "title": "ollama 残片（工作区外 blob + 工作区内 bin）",
+    "ok": [
+      "work/ollama_leftover_*.bin = 3 份 / 合计 49.39 GiB",
+      "C:\\Users\\小皮\\.ollama\\models\\blobs\\sha256-0373edb066522ad4e8d022fe9ee6dcf02a853cf9477ebee6bfebc3e55e6929c0 仍在（18.25 GiB，仍被 qwen3-vl:30b 引用）"
+    ],
+    "mismatch": []
+  },
+  "G4": {
+    "title": "抽取提示漂移须与整库重抽同批",
+    "ok": [
+      "发货索引 prompt_version = extract/v18（漂移未随重抽落地）",
+      "build_hypergraph.py 里仍写着『必须同批落地』的结论"
+    ],
+    "mismatch": []
+  },
+  "G5": {
+    "title": "按 chunk 的原子边缓存",
+    "ok": [
+      "仍只有**按卡**的原子边复用（work/hypergraph.atoms.jsonl）",
+      "没有按 chunk 的缓存产物（work/hypergraph.chunk*.jsonl 不存在）"
+    ],
+    "mismatch": []
+  },
+  "G6": {
+    "title": "构图口径（rule_of_thirds / lead_room）",
+    "ok": [
+      "PASS_SCORE 仍是 70.0（没有被拿去将就口径）",
+      "WEIGHTS[lead_room] 仍是 0.2",
+      "WEIGHTS[rule_of_thirds] 仍是 0.15",
+      "docs/adr 里仍**没有**这两条口径的裁决（口径仍未收口）"
+    ],
+    "mismatch": []
+  },
+  "G7": {
+    "title": "drift_is_bridged 的参照系",
+    "ok": [
+      "drift_is_bridged：53° 漂移只交代了 6° ⇒ 不赦免",
+      "drift_is_bridged：100° 可见慢漂移 ⇒ 赦免",
+      "drift_is_bridged：阈值内免费",
+      "drift_is_bridged：中性机位直接算交代"
+    ],
+    "mismatch": []
+  },
+  "G8": {
+    "title": "Q5 基准串口径",
+    "ok": [
+      "quality.py 的 join 键 = audit_log 的 retrieval_call.data.query（emitted）",
+      "重推串仍降级为 drift 诊断",
+      "AGENTS.md 仍记『Q5 的基准串口径仍未拍板』（口径未收口）"
+    ],
+    "mismatch": []
+  },
+  "G9": {
+    "title": "别名表进缓存键",
+    "ok": [
+      "CACHE_KEY_FIELDS = 8 格，含 vocabulary_fingerprint（§21 已收口）",
+      "发货 manifest 的 cache_key 也是 8 格（vocabulary_fingerprint=f72697ec…）"
+    ],
+    "mismatch": []
+  },
+  "E2": {
+    "title": "悬空引用（P1-T1 验收项）",
+    "ok": [
+      "AGENTS.md 里已无 OPEN_PROBLEMS 引用（悬空引用已改指）",
+      "台账的悬空引用已改指 OPEN_ITEMS_20261007.md B1"
+    ],
+    "mismatch": []
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"keep","why":"有卡谈手势与摆臂，可蕴含"},
+  {"i":2,"verdict":"keep","why":"讲动作姿态与四肢摆动，可蕴含"},
+  {"i":3,"verdict":"keep","why":"明讲手势动作循环，可蕴含"},
+  {"i":4,"verdict":"keep","why":"多卡讲轴线与视线，相关"},
+  {"i":5,"verdict":"keep","why":"卡提两人连线与主轴线"},
+  {"i":6,"verdict":"keep","why":"明讲角色连线与轴线"},
+  {"i":7,"verdict":"keep","why":"有卡讲运镜与轴线交互"},
+  {"i":8,"verdict":"keep","why":"视线调度与轴线相关"},
+  {"i":9,"verdict":"keep","why":"有角色轴与站位轴线"},
+  {"i":10,"verdict":"keep","why":"讲念白穿透力与声音表演"},
+  {"i":11,"verdict":"keep","why":"呼告属呼唤，可蕴含喊叫"},
+  {"i":12,"verdict":"keep","why":"medium为闭集节奏值"}
+]

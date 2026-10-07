@@ -1,0 +1,133 @@
+{
+  "summary": "根因判定正确：门⑥ 红是因为重绑把 11 张原本零边的卡（6 张手写策展卡＋5 张生成卡）提升为有边卡，edge_backed 2262→2273、excluded 91→80、edge_backed_without_entry 0→11，而 held-out 是冻结仪器、没有覆盖这 11 张卡。正解是 A：把重绑候选池收窄为「重绑前已有边的卡」，不动判据、不动 held-out、不 repin；选 A 后必须用 C1 同口径复测（corrupt 67/90→37/90 的重跑）验收，若 corrupt_share 显著回升则说明这些零边卡是关键来源，需显式决策。7 条异代用例应按仓库既有先例「证据跟着最近一次真跑走」，把用例指向新一代真跑（若还没有则重跑一份），断言一字不动。主要风险是：收窄可能制造新的零候选槽位、『重绑前有边』定义在未来 HEAD gap>0 时可能失效、重跑新运行可能带 contract warning——三条都给出了可证伪判据。",
+  "role": "领域讲解",
+  "teaching": "第一原理：门⑥ 测的是「覆盖完整性」——一张卡只要在索引里有边（sources 中出现），它就是可断言的；可断言卡必须被 held-out 冻结夹具覆盖，否则它的断言没有被标注验证。重绑的职责是修复「担保关系」：当某条边的来源卡正文没写成员取值时，追加真正写了该取值的卡作为来源。它不该改变「哪些卡是断言主体」这一集合。但当前 `candidate_cards` 在全语料（含 132 张手写卡）里搜 surface，`card_map`/`blobs` 不区分零边卡，于是 11 张原本没有任何边的卡被拉进 sources，`edge_counts` 从 0 变正，`audit()` 把它们从 excluded 移到 edge_backed，而 held-out 没有它们，gap 从 0 变 11。在本项目里，held-out 的 sha256 被 generations/第三方层/门①-⑩/Q1-Q7 钉死，所以不能走 B（补条目）；R-5 钉死判据，所以不能走 C（改口径）。正解是让重绑不触碰零边卡：候选池定义为「重绑输入边中所有 sources[] 里出现的卡 id 集合」，即 `pre_rebind_edge_backed`。这是一个可复现、重绑前就能观察到的集合，且在 HEAD 状态下恰好等于 held-out covered 集合（因为 HEAD gap=0），所以不会产生新缺口。做法上，在 `_apply_rebind` 中先从这个集合里构造白名单，再传给 `candidate_cards` 过滤。之后门⑥ 应回到 0；但验收不能只看门⑥，必须重跑 C1 同口径三分类，因为重绑的验收指标本来就是 C1，不是 attestation。",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "title": "根因判定正确：重绑扩大的不是知识，而是『有边的卡』集合",
+      "claim": "门⑥ 红确实由重绑引起，且机制是：重绑把 11 张原本零边的卡追加进了一些边的 sources，使它们从『不可断言』变成『可断言』，而 held-out 冻结未覆盖它们。不是判据变了，也不是夹具变了。",
+      "explanation": "`candidate_cards` 在 `blobs`（全库卡正文）中无差别搜索 surface，`rebind_edges` 对每个 unattested 成员调用它；`_apply_rebind` 的 `card_map`/`blobs` 包含 `cards_generated/*.jsonl` 与 `HANDWRITTEN_CARDS` 全部卡。这使候选池可以是任何卡，包括重绑前零边的卡。`audit()` 的 `excluded` 按 `edge_counts == 0` 划分，`edge_backed` 按 `> 0` 划分，因此新增的 11 张卡被移入 edge_backed；而 `used` 来自 held-out `covered`，不含它们，于是 `edge_backed_without_entry` 从 0 变 11。",
+      "where": "tools/kb_fetch/rebind.py:35-47（candidate_cards 无白名单）、rebind.py:70（candidates = candidate_cards(surfaces(key), blobs)）、tools/kb_fetch/build_hypergraph.py:1622-1634（card_map/blobs 含全库）、tools/kb_fetch/card_scope_audit.py:221-225（excluded/edge_backed/gap 定义）",
+      "why_it_matters": "如果根因被误解为『判据或夹具问题』，就可能错误地走 B 或 C，违反 R-5 或破坏冻结仪器。只有精确认识到是候选池范围问题，才能用 A 收窄修复。",
+      "suggested_check": "重跑对拍脚本 `work/_audit_rebind_diff.py`，确认『added sources NOT in pre-rebind edge-backed set: 11』，并逐一检查这 11 张卡是否在 held-out covered 中缺失。",
+      "step_by_step": [
+        "运行 `work/_audit_rebind_diff.py` 复现 11 张新增来源卡清单。",
+        "对每张卡查 `fixtures/knowledge_holdout.jsonl`，确认 `from_card` 不含该 id。",
+        "调用 `audit()` 的 HEAD 与现行两组 `edge_counts`，核对 excluded/edge_backed/gap 数字。"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "title": "正解是 A：收窄候选池，且候选池定义为『重绑前已有边的卡』",
+      "claim": "在 R-5、不删测试不放宽断言、held-out 冻结的三重约束下，只有 A 可行。候选池应定义为重绑输入边中所有 `sources[]` 里出现的卡 id 集合（`pre_rebind_edge_backed`），并将该集合作为 `candidate_cards` 的白名单。",
+      "explanation": "B（补 held-out 条目）会改变冻结夹具的 sha256，连锁影响 generations/第三方层/门①-⑩/Q1-Q7，成本高且违背冻结；C（改判据）直接违反 R-5。A 只改重绑的候选范围，把职责限定为『修复已有担保关系』，不扩大可断言面。`pre_rebind_edge_backed` 是重绑前一刻的可复现可观测量，且 HEAD 状态下与 held-out covered 等价（因为 HEAD 的 `edge_backed_without_entry` 为 0），因此不会产生新的 gap。它不是静默降级：收窄只影响那些 surface 只出现在零边卡中的槽位，这类槽位本来就不该在 held-out 冻结下被悄悄覆盖；影响必须由 C1 复测显式暴露。",
+      "where": "tools/kb_fetch/rebind.py:35-47（candidate_cards 无白名单）、tools/kb_fetch/build_hypergraph.py:1622-1634（全库 blobs）、tools/kb_fetch/card_scope_audit.py:221-225（gap 定义）",
+      "why_it_matters": "不这样做门⑥ 必红；做错定义（例如用 held-out covered 做白名单）会让重绑规则依赖冻结仪器，削弱可复现性。",
+      "suggested_check": "实现后在 `_apply_rebind` 中打印 `pre_rebind_edge_backed` 大小（应等于 2262），并确认重绑后『added sources NOT in pre-rebind edge-backed set』为 0。",
+      "step_by_step": [
+        "在 `_apply_rebind` 中先计算 `pre_rebind_edge_backed = {str(cid) for edge in edges for cid in (edge.get(\"sources\") or [])}`。",
+        "将该集合传入 `rebind_edges`/`candidate_cards`，使 `candidate_cards` 只返回 `card_id in pre_rebind_edge_backed` 的卡。",
+        "重跑 `build_hypergraph.py --replace-cards` 生成新索引。",
+        "重跑门⑥ 审计，确认 `edge_backed_without_entry_count == 0` 且 `excluded_count` 回到 91。"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "F3",
+      "severity": "major",
+      "title": "收窄后必须用 C1 同口径复测验收，不能只信门⑥",
+      "claim": "收窄候选池可能让部分槽位从『可重绑』掉回『零候选』，corrupt_share 可能回升。因此验收必须重跑 90 槽位三分类（判官 qwen3.8-max-0902，reasoning_effort=max，判据不变），如果 corrupt 从 37/90 显著回升，说明被排除的零边卡确实携带修复所需 surface。",
+      "explanation": "REGEN_LOG §4 明确要求『C1 复测（同口径）』作为换代验收；重绑的 docstring 也说效果以 C1 为准，不以 attestation 为准。A 收窄后，`members_without_candidate` 可能上升，C1 样本中若包含这些槽位，corrupt_share 会回升。这是一个可证伪的检查：重跑同一样本、同一判官、同一判据，对比 corrupt 数。",
+      "where": "docs/knowledge/REGEN_LOG_20261007_rotation.md:55（C1 复测（同口径））、tools/kb_fetch/rebind.py:71-73（no_candidate += 1）、work/_ctx_orphan_fix.json（c1_same_yardstick）",
+      "why_it_matters": "若只以门⑥ 绿为完成，可能为了过门而牺牲修复效果，重绑就变成了『洗绿』工具。",
+      "suggested_check": "收窄前后分别记录 `members_without_candidate` 与 C1 corrupt_share；若 after_A 的 corrupt 数 ≥ 50/90（或显著高于 37），则说明 A 削弱了修复。",
+      "step_by_step": [
+        "用同一 90 槽位样本、同一判官 qwen3.8-max-0902、同一 reasoning_effort=max 重跑三分类。",
+        "记录 corrupt_share，与 67/90、37/90 对比。",
+        "对照重绑日志，找出新增的 no_candidate 成员及其 surface。",
+        "若这些成员出现在 C1 样本中，逐条检查是否因收窄而无候选，据此决定是否补标或接受。"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "F4",
+      "severity": "major",
+      "title": "7 条异代用例：按『证据跟着最近一次真跑走』先例换指向，不 repin",
+      "claim": "正确落法是把这 7 条用例的输入从旧运行（20261003_real_glm/ds/long 等）切换到当前代索引下的真跑证据；若当前代还没有真跑，按 REGEN_LOG §5 重跑一份并入库。所有断言一字不动，旧运行的 pin 保持异代，绝不 repin。",
+      "explanation": "REGEN_LOG §5 要求换代后 pin 一律如实标异代，不许 repin 洗白；仓库既有先例（test_q5_audit_channel 2026-10-06 注释）说明测试应当『证据跟着最近一次真跑走』，即换数据源而不是重跑旧运行。这与 R-8 不冲突：R-8 针对的是旧运行 pin 的登记状态，测试换指向属于选择新一代证据，不改变旧证据的 pin。`extract_run_evidence.py::check` 的索引指纹断言（第 396-398 行）必须原样保留，否则就放宽了同代性要求。",
+      "where": "tools/extract_run_evidence.py:394-398（索引指纹不符判据）、docs/knowledge/REGEN_LOG_20261007_rotation.md:57-63（§5 不许 repin）、用户转述的 test_q5_audit_channel.py 注释（2026-10-06）",
+      "why_it_matters": "若选择重跑 4 份旧运行，成本高且可能仍命中 contract warning；若 repin 则违反 R-8。正确处理既满足换代登记，也让测试继续验证『当前证据同代』。",
+      "suggested_check": "运行 `resolve_generation` 查看新一代真跑的 pin 能否被解析到已登记代；修改后运行相关 pytest，确认 7 条用例转绿且测试源码未改动断言。",
+      "step_by_step": [
+        "检查 `docs/evidence/` 下是否存在索引指纹为 00ea933ed11c… 的真跑证据。",
+        "若不存在，按 REGEN_LOG §5 重跑一份真实运行（pin 新指纹），写入 `run_manifest.json`。",
+        "将 7 条用例中指向旧运行的目录参数替换为新运行证据目录。",
+        "运行 pytest，确认 7 条用例通过，且 `extract_run_evidence.py::check` 的断言（索引指纹/holdout sha256/generation）一个未改。"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "F5",
+      "severity": "major",
+      "title": "风险：收窄候选池可能制造新的零候选槽位",
+      "claim": "收窄后，某些槽位的 surface 只出现在被排除的零边卡中，会导致 `members_without_candidate` 上升，C1 corrupt_share 可能回升。",
+      "explanation": "`candidate_cards` 按 `blobs` 顺序取前 3；如果白名单过滤掉了唯一携带该 surface 的卡，则 `no_candidate += 1`。这不是静默降级，但必须被显式检测：若 C1 样本覆盖这些槽位，corrupt 会回升。若未覆盖，corrupt 表面不变，但实际修复面缩小了。",
+      "where": "tools/kb_fetch/rebind.py:70-73（no_candidate 统计）、tools/kb_fetch/rebind.py:42-46（候选遍历）",
+      "why_it_matters": "可能使重绑的修复效果部分回退，且不易察觉。",
+      "suggested_check": "比较收窄前后 `members_without_candidate` 统计；对新增的 no_candidate 成员逐一检查其 surface 是否只出现在那 11 张卡中。如果新增 no_candidate 为 0，则说明 A 无此风险。",
+      "step_by_step": [
+        "记录 A 实现后的 `members_without_candidate` 数值。",
+        "与 HEAD 重绑统计对比，列出新增的 no_candidate 成员。",
+        "对每个成员，检查其 surface 是否只在被排除的零边卡正文中出现。",
+        "与 C1 样本交叉比对，判断是否影响 corrupt_share。"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "title": "风险：『重绑前有边』定义在未来 HEAD gap>0 时可能不再等价于 held-out 覆盖",
+      "claim": "当前 HEAD 的 `pre_rebind_edge_backed` 与 held-out covered 等价（因为 gap=0），但这不是结构保证；若未来某次提交在重绑前已存在 `edge_backed_without_entry > 0`，该白名单仍会引入无 held-out 条目的卡作为来源，门⑥ 再次红。",
+      "explanation": "`pre_rebind_edge_backed` 是一个历史可观测量，它的安全前提是『重绑前所有有边卡都已被 held-out 覆盖』。这个前提在当前 HEAD 成立，但未来可能被打破。为避免长期脆弱，可以在 `_apply_rebind` 中增加断言：若重绑前 gap>0 则报错，或改用 held-out covered 集合作为白名单。",
+      "where": "tools/kb_fetch/card_scope_audit.py:221-225（gap 定义）",
+      "why_it_matters": "影响长期可维护性；如果未来有人只做了局部修复，可能再次触发门⑥ 红而困惑。",
+      "suggested_check": "在 `_apply_rebind` 中可选地计算重绑前的 `edge_backed_without_entry`；如果大于 0，验证是否由 pre_rebind 白名单引起。若引起，则用 held-out covered 作为白名单或先补标。",
+      "step_by_step": [
+        "在重绑前调用 `audit()` 计算 gap。",
+        "若 gap>0，打印警告并检查是否因白名单定义导致。",
+        "若确认，切换白名单定义并记录决策。"
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "F7",
+      "severity": "major",
+      "title": "风险：把用例指向新一代真跑，但重跑结果可能带 contract warning",
+      "claim": "如果重跑的新运行在 `check(with_warnings=True)` 中出现 warnings（如 retrieval_calls），`test_the_second_landed_run_is_fresh_and_has_no_contract_warning` 仍会红。",
+      "explanation": "该测试名要求『no contract warning』；重跑本身不一定满足。`check()` 的 warnings 机制（第 366-368 行）会报告 retrieval_calls 等契约对拍。因此换指向之前，必须确认新运行没有 warnings，否则测试失败不是索引代问题，而是运行质量问题。",
+      "where": "tools/extract_run_evidence.py:366-368（with_warnings 机制）、失败列表中的 test_the_second_landed_run_is_fresh_and_has_no_contract_warning",
+      "why_it_matters": "可能导致 7 条用例无法全部转绿，即使索引代已正确。",
+      "suggested_check": "重跑后调用 `check(with_warnings=True)`，查看 warnings 内容；若非空，定位 retrieval_calls 等超标原因，并确认这是否会影响该测试。",
+      "step_by_step": [
+        "重跑一份新的真实运行。",
+        "运行 `check(with_warnings=True)` 检查 warnings。",
+        "若 warnings 非空，核对 retrieval 调用次数是否超出契约。",
+        "若无法消除 warning，需在测试中如实保留失败，而不是放宽断言。"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "not_checked": [
+    "未提供 tests/test_extract_run_evidence.py、tests/test_evidence_digest_is_checkout_independent.py、tests/test_q5_audit_channel.py 的完整源码，无法验证测试如何解析『最近一次真跑』以及 2026-10-06 注释原文；处置基于用户转述与失败断言。",
+    "未提供 resolve_generation 与 fixtures/knowledge_holdout.generations.json 的源码，无法确认 generation 解析的精确规则。",
+    "未提供 work/_verify_rebind_reproduces.py 的源码，复现结论直接采信 bundle 给出的字符串。",
+    "未提供 held-out 夹具本身及其 sha256，无法核实 11 张卡确实不在 covered 中（只能从审计输出推断）。",
+    "未提供 C1 90 槽位样本内容与三分类明细，无法独立验证 corrupt 67/90 → 37/90。",
+    "未提供 AGENTS.md 中 R-5、R-8 的原文，规则描述来自用户 hard_constraints。",
+    "未提供 work/_audit_rebind_diff.py 的源码，相关数字直接采信。"
+  ]
+}

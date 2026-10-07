@@ -1,0 +1,276 @@
+{
+  "corpus": {
+    "cards_total": 2353,
+    "generated": 2221,
+    "handwritten": 132,
+    "generated_topic_empty": 1172,
+    "generated_topic_empty_share": 0.5277,
+    "topic_values": {
+      "": 1172,
+      "storyboard": 229,
+      "shot_language": 222,
+      "editing": 182,
+      "anime": 141,
+      "lighting": 104,
+      "color": 99,
+      "camera_angle": 59,
+      "performance": 6,
+      "character_design": 5,
+      "technique": 2
+    },
+    "domain_values": {
+      "cinematography": 406,
+      "blocking": 337,
+      "composition": 292,
+      "performance": 292,
+      "storyboard": 241,
+      "editing": 218,
+      "production": 212,
+      "axis_theory": 201,
+      "anime": 154
+    },
+    "handwritten_have_topic_field": 0,
+    "topic_equals_domain_when_nonempty": 0.5262,
+    "topic_domain_cross_tab": [
+      {
+        "domain": "storyboard",
+        "topic": "storyboard",
+        "n": 229
+      },
+      {
+        "domain": "editing",
+        "topic": "editing",
+        "n": 182
+      },
+      {
+        "domain": "cinematography",
+        "topic": "shot_language",
+        "n": 142
+      },
+      {
+        "domain": "anime",
+        "topic": "anime",
+        "n": 141
+      },
+      {
+        "domain": "composition",
+        "topic": "color",
+        "n": 79
+      },
+      {
+        "domain": "production",
+        "topic": "lighting",
+        "n": 67
+      },
+      {
+        "domain": "cinematography",
+        "topic": "camera_angle",
+        "n": 59
+      },
+      {
+        "domain": "cinematography",
+        "topic": "lighting",
+        "n": 37
+      },
+      {
+        "domain": "editing",
+        "topic": "shot_language",
+        "n": 36
+      },
+      {
+        "domain": "blocking",
+        "topic": "shot_language",
+        "n": 21
+      },
+      {
+        "domain": "cinematography",
+        "topic": "color",
+        "n": 20
+      },
+      {
+        "domain": "storyboard",
+        "topic": "shot_language",
+        "n": 12
+      },
+      {
+        "domain": "composition",
+        "topic": "shot_language",
+        "n": 11
+      },
+      {
+        "domain": "anime",
+        "topic": "performance",
+        "n": 6
+      },
+      {
+        "domain": "anime",
+        "topic": "character_design",
+        "n": 5
+      },
+      {
+        "domain": "anime",
+        "topic": "technique",
+        "n": 2
+      }
+    ],
+    "empty_topic_by_domain": {
+      "blocking": 294,
+      "performance": 276,
+      "axis_theory": 184,
+      "composition": 175,
+      "production": 145,
+      "cinematography": 98
+    }
+  },
+  "kinds": {
+    "kinds": {
+      "shot_size": 243,
+      "intensity": 228,
+      "action": 194,
+      "emotion": 182,
+      "camera_angle": 175,
+      "movement": 159,
+      "beat_type": 97,
+      "lens": 83,
+      "headroom_policy": 83,
+      "composition_rule": 77,
+      "pacing": 73,
+      "intent": 63,
+      "lighting": 49,
+      "axis_topic": 25,
+      "transition": 25,
+      "scene_type": 25,
+      "sfx": 24,
+      "delivery": 21,
+      "genre": 20,
+      "pair": 19,
+      "axis_side": 19,
+      "prop": 19,
+      "vfx": 17,
+      "avg_shot_len": 9,
+      "music": 9
+    },
+    "kind_count": 25
+  },
+  "sample": {
+    "rows": 90,
+    "recorded_pre_read": {
+      "surface_in_card": 0,
+      "topic_mismatch": 88,
+      "topic_ok_or_unknown": 2
+    },
+    "modes": {
+      "topic_naive": {
+        "counts": {
+          "topic_mismatch": 88,
+          "topic_ok": 2
+        },
+        "by_stratum": {
+          "closed_loop_kind": {
+            "topic_mismatch": 28,
+            "topic_ok": 2
+          },
+          "pack:PERFORMANCE_PACK": {
+            "topic_mismatch": 20
+          },
+          "pack:SHOT_PATTERN": {
+            "topic_mismatch": 20
+          },
+          "pack:STAGING_PACK": {
+            "topic_mismatch": 20
+          }
+        },
+        "mismatch_by_kind": {
+          "camera_angle": 21,
+          "shot_size": 17,
+          "headroom_policy": 13,
+          "composition_rule": 11,
+          "emotion": 10,
+          "movement": 9,
+          "action": 7
+        },
+        "sources_seen": 369,
+        "rows_with_multiple_sources": 39
+      },
+      "topic_corrected": {
+        "counts": {
+          "topic_unknown": 23,
+          "topic_mismatch": 65,
+          "topic_ok": 2
+        },
+        "by_stratum": {
+          "closed_loop_kind": {
+            "topic_unknown": 6,
+            "topic_mismatch": 22,
+            "topic_ok": 2
+          },
+          "pack:PERFORMANCE_PACK": {
+            "topic_unknown": 6,
+            "topic_mismatch": 14
+          },
+          "pack:SHOT_PATTERN": {
+            "topic_mismatch": 17,
+            "topic_unknown": 3
+          },
+          "pack:STAGING_PACK": {
+            "topic_mismatch": 12,
+            "topic_unknown": 8
+          }
+        },
+        "mismatch_by_kind": {
+          "camera_angle": 15,
+          "shot_size": 13,
+          "headroom_policy": 11,
+          "emotion": 8,
+          "composition_rule": 7,
+          "movement": 7,
+          "action": 4
+        },
+        "sources_seen": 369,
+        "rows_with_multiple_sources": 39
+      },
+      "domain_only": {
+        "counts": {
+          "topic_mismatch": 90
+        },
+        "by_stratum": {
+          "closed_loop_kind": {
+            "topic_mismatch": 30
+          },
+          "pack:PERFORMANCE_PACK": {
+            "topic_mismatch": 20
+          },
+          "pack:SHOT_PATTERN": {
+            "topic_mismatch": 20
+          },
+          "pack:STAGING_PACK": {
+            "topic_mismatch": 20
+          }
+        },
+        "mismatch_by_kind": {
+          "camera_angle": 23,
+          "shot_size": 17,
+          "headroom_policy": 13,
+          "composition_rule": 11,
+          "emotion": 10,
+          "movement": 9,
+          "action": 7
+        },
+        "sources_seen": 369,
+        "rows_with_multiple_sources": 39
+      }
+    }
+  },
+  "vocabulary_overlap": {
+    "topic_values_that_are_also_kinds": [
+      "camera_angle",
+      "lighting"
+    ],
+    "domain_values_that_are_also_kinds": [],
+    "kind_count": 25,
+    "topic_value_count": 10,
+    "domain_value_count": 9
+  },
+  "generated_at": "2026-10-07",
+  "criterion_version": "topic-diagnosis/v1"
+}

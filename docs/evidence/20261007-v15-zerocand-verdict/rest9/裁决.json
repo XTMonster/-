@@ -1,0 +1,14 @@
+[
+  {"i": 1, "verdict": "keep", "why": "闭集词元；有电影感相关卡"},
+  {"i": 2, "verdict": "keep", "why": "闭集词元；特写运镜属电影化"},
+  {"i": 3, "verdict": "keep", "why": "闭集词元；无相反证据"},
+  {"i": 4, "verdict": "keep", "why": "闭集词元；无相反证据"},
+  {"i": 5, "verdict": "keep", "why": "闭集词元；变焦景深属电影化"},
+  {"i": 6, "verdict": "keep", "why": "闭集词元；特写柔焦属电影化"},
+  {"i": 7, "verdict": "keep", "why": "闭集词元；特写强调属电影化"},
+  {"i": 8, "verdict": "keep", "why": "闭集词元；过肩特写属电影化"},
+  {"i": 9, "verdict": "keep", "why": "闭集词元；景深层次属电影化"},
+  {"i": 10, "verdict": "keep", "why": "闭集词元；特写焦距属电影化"},
+  {"i": 11, "verdict": "keep", "why": "闭集词元；景别特写属电影化"},
+  {"i": 12, "verdict": "keep", "why": "闭集词元；近景心理属电影化"}
+]

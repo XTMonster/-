@@ -1,0 +1,13 @@
+[BlockDirector] WARNING block_director.settings: 配置问题 [warning] character.label_font_path: 未指定中文字体，将自动探测系统 CJK 字体（§9.4） (CFG_201)
+[BlockDirector] INFO block_director.settings: 已加载配置：transport=sidecar rag=hypergraph backend=workbench
+[BlockDirector] INFO block_director.overlay: 视口叠加已启用
+[BlockDirector] INFO block_director: BlockDirector 1.3.0 已加载（注册模块: block_director.layer7_ui.panel_main, block_director.layer7_ui.panel_shots, block_director.layer7_ui.panel_debug, block_director.layer7_ui.panel_cast, block_director.layer7_ui.draw_overlay, block_director.layer7_ui.operator_path_draw, block_director.layer5_orchestrator.modal_operator）
+[BlockDirector] INFO block_director.tool-bindings: 已注册场景查询工具：get_scene_state, check_visibility, check_composition, check_axis, estimate_shot_duration
+[BlockDirector] INFO block_director.tool-bindings: 已注册动作工具：place_character, move_character, character_action, look_at, face_character, interact_with, setup_camera, move_camera, reframe
+[BlockDirector] INFO block_director.tool-bindings: 已注册知识工具：search_knowledge
+[BlockDirector] INFO block_director.headless: Light RAG：{'backend': 'hypergraph', 'engine': 'builtin.BM25Okapi', 'cards': 2353, 'top_k': 5, 'token_limit': 800, 'plan_token_limit': 2000, 'retrieval_calls': 0, 'degraded': False, 'degraded_reason': '', 'hypergraph_fingerprint': 'e5213e1b64781c24103eecae15a4921b5766f75c4709672fa48997de692cdf89', 'cases': 0, 'lanes': 2, 'cases_backend': 'hybrid', 'cases_requested_backend': 'lightrag', 'cases_degraded': True, 'cases_degraded_reason': 'lightrag_adapter_unavailable', 'lightrag_index_fingerprint': '', 'cases_index_fingerprint': '48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86', 'warnings': []}
+[BlockDirector] INFO block_director.headless: headless 运行开始（模式=sidecar，run_id=e9563d992873）
+[BlockDirector] ERROR block_director.audit: llm_error: TransportError: [E_LLM_001] sidecar 返回 502
+[BlockDirector] ERROR block_director.audit: llm_error: TransportError: [E_LLM_001] sidecar 返回 502
+[BlockDirector] ERROR block_director.audit: run_failed: 分镜计划生成失败（已达最大尝试次数）
+[BlockDirector] INFO block_director.headless: headless 运行结束：ERROR（镜头 0 个）

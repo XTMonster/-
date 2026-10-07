@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "卡中推轨/推镜即dolly in，未写原词"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲特写机位/景深，未涉头顶留白"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲固定画幅/循环，非镜头固定"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲对焦与动画制作，无关headroom"},
+  {"i": 5, "class": "wrong_card", "why": "卡讲固定画幅等，非镜头运动固定"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲极特写与动画工艺，无头部留白"},
+  {"i": 7, "class": "wrong_card", "why": "卡无景别定义，仅零星远景词不构成LS"},
+  {"i": 8, "class": "hidden", "why": "背景幕画远景/航拍对应大远景，未写ELS"}
+]

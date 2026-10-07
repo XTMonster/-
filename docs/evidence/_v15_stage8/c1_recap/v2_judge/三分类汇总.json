@@ -1,0 +1,21 @@
+{
+  "_what": "C1 同口径复测：`rebind/v2`（真正落库那一份）在**同一 90 条样本、同一判官、同一模板**下的三分类",
+  "judge": "qwen3.8-max-0902",
+  "reasoning_effort": "max",
+  "sample": "work/_grounding_sample90.json（90 槽位：闭环三 kind 30 + 三 pack 各 20）",
+  "question_batches": "work/_q_grounding_v2_batch1..12.md（组题脚本 work/_v2_rejudge_prep.py）",
+  "sources_basis": "knowledge/hypergraph.edges.jsonl（rebind/v2，manifest 指纹 e5213e1b…）",
+  "rows_with_changed_sources_vs_shadow": 20,
+  "counts": {"hidden": 47, "wrong_card": 43, "wrong_value": 0},
+  "corrupt_share": 0.4778,
+  "corrupt_share_denominator": 90,
+  "_comparison": {
+    "real_before_rebind": {"corrupt_share": 0.7444, "counted": 67,
+                           "dir": "docs/evidence/20261007-grounding-sample90"},
+    "shadow_rebind_v1": {"corrupt_share": 0.4111, "counted": 37,
+                         "dir": "docs/evidence/_v15_stage8/c1_recap/shadow_judge"},
+    "landed_rebind_v2": {"corrupt_share": 0.4778, "counted": 43, "dir": "docs/evidence/_v15_stage8/c1_recap/v2_judge"}
+  },
+  "_reading": "收窄候选池（v2）相对全池（v1 影子）多 6 行判 corrupt（37 → 43），16 行标签翻转且**有来回**（11 行 hidden→wrong_card、5 行 wrong_card→hidden）——判官本身不是逐字可复现的，这 6 行落在它的翻转噪声里，**不单独构成"收窄削弱了修复"的证据**。可判定的是主结论：0.7444 → 0.4778，主题级错配的修复**保住了 →七成**。",
+  "_why_v2_not_v1": "v1 的候选池是**全库**，它把 11 张本来零边的卡追加进 sources ⇒ 门⑥ 的 edge_backed_without_entry 由 0 变 11（overall: fail）；card_scope_audit 的模块文档早写明「补边是有害的」。v2 只许投给**重绑前就有边**的卡，保住了门⑥，代价是 11 个槽位（全是 composition_rule:lead_room，唯一候选只有手写卡 comp_lead_room）掉回零候选（199 → 210）。"
+}

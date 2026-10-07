@@ -1,0 +1,40 @@
+{
+  "model": "qwen3.8-max-0902",
+  "requested_model": "qwen3.8-max-0902",
+  "level": "high",
+  "max_tokens": 32768,
+  "elapsed_s": 8.4,
+  "usage": {
+    "prompt_tokens": 1524,
+    "completion_tokens": 434,
+    "total_tokens": 1958,
+    "completion_tokens_details": {
+      "reasoning_tokens": 215
+    },
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "finish_reason": "stop",
+  "attempts": [
+    {
+      "model": "qwen3.8-max-0902",
+      "requested_model": "qwen3.8-max-0902",
+      "level": "high",
+      "max_tokens": 32768,
+      "elapsed_s": 8.4,
+      "usage": {
+        "prompt_tokens": 1524,
+        "completion_tokens": 434,
+        "total_tokens": 1958,
+        "completion_tokens_details": {
+          "reasoning_tokens": 215
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}

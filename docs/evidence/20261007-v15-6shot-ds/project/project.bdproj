@@ -1,0 +1,959 @@
+{
+  "name": "第十四街区码头市场 - 午后",
+  "version": "1.5",
+  "fps": 24,
+  "characters": [
+    {
+      "id": "米迦尔",
+      "name": "米迦尔",
+      "color": "#FF6B6B",
+      "initial_location": [
+        0.0,
+        1.1,
+        0.0
+      ],
+      "initial_facing": [
+        0.0,
+        -1.0,
+        0.0
+      ]
+    },
+    {
+      "id": "伊恩",
+      "name": "伊恩",
+      "color": "#6BC5FF",
+      "initial_location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "id": "偷盗者",
+      "name": "偷盗者",
+      "color": "#FFD166",
+      "initial_location": [
+        0.0,
+        4.3,
+        0.0
+      ],
+      "initial_facing": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene_001",
+      "number": 1,
+      "heading": "第十四街区码头市场 - 午后",
+      "environment": {
+        "ground_size": [
+          120.0,
+          120.0
+        ],
+        "walls": [],
+        "props": [],
+        "lighting": "clay_studio",
+        "room": null,
+        "crowd": [
+          {
+            "count": 30,
+            "mode": "walk",
+            "seed": 0,
+            "spread": 6.0,
+            "label": "背景有大量路人（约30人）在市场行走、交易"
+          }
+        ],
+        "anchors": [
+          {
+            "name": "帆布篷摊位",
+            "depth": "mid",
+            "relation": "散布于市场中段，彼此错落，形成纵深通道",
+            "position": []
+          },
+          {
+            "name": "草影与草垛",
+            "depth": "fg",
+            "relation": "位于画面近景边缘，随风轻摆",
+            "position": []
+          },
+          {
+            "name": "码头海面",
+            "depth": "bg",
+            "relation": "位于市场后方远处，与摊位线平行",
+            "position": []
+          },
+          {
+            "name": "钱袋",
+            "depth": "fg",
+            "relation": "置于米迦尔身侧近景处",
+            "position": []
+          },
+          {
+            "name": "银币",
+            "depth": "fg",
+            "relation": "在偷盗者掌心，随其奔跑移动",
+            "position": []
+          }
+        ],
+        "light": {
+          "time_of_day": "day",
+          "mood": "soft",
+          "key_direction": "side"
+        }
+      },
+      "shots": [
+        {
+          "id": "shot_001",
+          "intent": "建立市场环境，用微风打破午后宁静，铺垫即将发生的冲突",
+          "shot_type": "MCU",
+          "duration_frames": 120,
+          "start_frame": 1,
+          "end_frame": 120,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_001",
+            "position": [
+              0.0,
+              2.895,
+              1.231
+            ],
+            "target": [
+              0.0,
+              0.0,
+              1.381
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [],
+          "characters": [],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "午后码头市场的中景，帆布篷与草影在微风中轻摆，暖侧光斜切过摊位，远处海面泛光，画面宁静而略带不安。"
+        },
+        {
+          "id": "shot_002",
+          "intent": "建立米迦尔的角色性格，引出战斗",
+          "shot_type": "CU",
+          "duration_frames": 144,
+          "start_frame": 121,
+          "end_frame": 264,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_002",
+            "position": [
+              -0.861,
+              -1.359,
+              1.278
+            ],
+            "target": [
+              0.295,
+              0.997,
+              1.278
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in"
+              }
+            ],
+            "request": {
+              "side": "over_shoulder",
+              "lens": 50
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "characters": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "actions": [
+            {
+              "character_id": "米迦尔",
+              "action_type": "turn_head",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "angle_deg": 20
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "look_at",
+              "start_frame": 25,
+              "end_frame": 48,
+              "params": {
+                "yaw_deg": 18,
+                "pitch_deg": -3
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "nod",
+              "start_frame": 60,
+              "end_frame": 84,
+              "params": {
+                "cycles": 2
+              }
+            },
+            {
+              "character_id": "米迦尔",
+              "action_type": "body_tilt",
+              "start_frame": 100,
+              "end_frame": 126,
+              "params": {
+                "angle_deg": 6,
+                "axis": "y",
+                "toward": "screen_right"
+              }
+            },
+            {
+              "character_id": "伊恩",
+              "action_type": "turn_head",
+              "start_frame": 132,
+              "end_frame": 144,
+              "params": {
+                "angle_deg": 12
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "伊恩，这里就交给我吧！",
+              "start_frame": 30,
+              "end_frame": 102
+            }
+          ],
+          "gaze": [
+            {
+              "from": "米迦尔",
+              "to": "伊恩"
+            },
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "beats": [
+            {
+              "t": 0.0,
+              "subject": "米迦尔",
+              "verb": "turn_head",
+              "target": "伊恩",
+              "face_to": "screen_right",
+              "pace": "normal"
+            },
+            {
+              "t": 0.15,
+              "subject": "米迦尔",
+              "verb": "look_at",
+              "target": "伊恩",
+              "face_to": "screen_right",
+              "pace": "normal"
+            },
+            {
+              "t": 0.45,
+              "subject": "米迦尔",
+              "verb": "nod",
+              "target": "伊恩",
+              "face_to": "screen_right",
+              "pace": "brisk"
+            },
+            {
+              "t": 0.75,
+              "subject": "米迦尔",
+              "verb": "body_tilt",
+              "target": "码头海面",
+              "face_to": "screen_right",
+              "pace": "slow"
+            },
+            {
+              "t": 0.9,
+              "subject": "伊恩",
+              "verb": "turn_head",
+              "target": "米迦尔",
+              "face_to": "screen_left",
+              "pace": "slow"
+            }
+          ],
+          "composition": {
+            "rule": "lead_room",
+            "subject_position": "left_third"
+          },
+          "rule_justifications": [
+            {
+              "rule": "INTENT_PACK: intent:揭示 shot_size:CU movement:dolly_in",
+              "action": "follow",
+              "reason": "本镜意图为建立米迦尔性格并引出战斗，用 CU 近景加 dolly_in 推近，把注意力锁在角色的自信神态上，与'揭示'型意图一致。"
+            },
+            {
+              "rule": "SHOT_PATTERN: shot_size:MS lens:50mm movement:zoom_in headroom_policy:cinematic 禁={shot_size:CU}",
+              "action": "break",
+              "reason": "该模式禁止 CU，但本镜叙事核心是米迦尔说出台词瞬间的面部自信与眼神，中景无法承载这一情绪强度；计划本身已定 CU，故按更具体的意图包执行，保留 cinematic 头部留白策略作为补偿。",
+              "precedent": "case_rules-of-shot-composition-in-film_044"
+            },
+            {
+              "rule": "SHOT_PATTERN: shot_size:MS lens:35mm movement:固定 headroom_policy:cinematic 禁={movement:dolly_in}",
+              "action": "break",
+              "reason": "该模式要求固定机位并禁 dolly_in，但本镜需要随台词推进逐步收紧景别、把观众带入角色的决心，静止机位会削弱由静到动的战斗前奏。",
+              "precedent": "case_what-is-an-eyeline-match_025"
+            }
+          ],
+          "prompt": "午后码头市场的近景。米迦尔位于画面左侧，面向画面右方，暖侧光从右后方擦过他的侧脸，草垛与帆布篷摊位在他身后虚化成一片暖黄。伊恩以过肩背影留在画面右侧边缘，只见肩线与后脑，不越过二人连线。镜头从米迦尔一侧切入，缓慢推近，米迦尔的视线越过伊恩的肩头投向画外，语气自信，说完后微微扬起下巴，眼神里带着跃跃欲试的兴奋。远处码头海面泛着细碎的反光，风吹草影轻晃，为静态的对话注入呼吸感。"
+        },
+        {
+          "id": "shot_003",
+          "intent": "表现两人的搭档关系",
+          "shot_type": "MCU",
+          "duration_frames": 96,
+          "start_frame": 265,
+          "end_frame": 360,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_003",
+            "position": [
+              -1.447,
+              2.507,
+              1.231
+            ],
+            "target": [
+              0.301,
+              0.174,
+              1.381
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "伊恩"
+          ],
+          "characters": [
+            "伊恩"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "伊恩",
+              "speaker_raw": "伊恩",
+              "speaker_status": "resolved",
+              "text": "好的，那你多小心一些。",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [
+            {
+              "from": "伊恩",
+              "to": "米迦尔"
+            }
+          ],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "伊恩中近景，画面右侧，面向左方，神情平静地叮嘱，固定机位，背景为码头市场纵深。"
+        },
+        {
+          "id": "shot_004",
+          "intent": "铺垫米迦尔即将施法，暗示魔法即将出现",
+          "shot_type": "CU",
+          "duration_frames": 144,
+          "start_frame": 361,
+          "end_frame": 504,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_004",
+            "position": [
+              -2.215,
+              -2.736,
+              1.278
+            ],
+            "target": [
+              0.271,
+              0.944,
+              1.428
+            ],
+            "lens": 85.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "米迦尔"
+          ],
+          "characters": [
+            "米迦尔"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "放心吧。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "米迦尔",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "resolved",
+              "text": "看我怎么惩罚他，让他砰的一声，嘻嘻。",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "米迦尔近景，手部在画面下方做出准备施法的动作，嘴角带笑，固定机位，暖侧光勾出手部轮廓。"
+        },
+        {
+          "id": "shot_005",
+          "intent": "展示米迦尔的魔法第一次生效，制造悬念",
+          "shot_type": "MS",
+          "duration_frames": 120,
+          "start_frame": 505,
+          "end_frame": 624,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_005",
+            "position": [
+              -2.62,
+              6.92,
+              0.95
+            ],
+            "target": [
+              0.393,
+              4.693,
+              1.1
+            ],
+            "lens": 40.0,
+            "sensor_width": 36.0,
+            "movement": "follow_subject",
+            "movements": [
+              {
+                "type": "follow_subject"
+              }
+            ],
+            "request": {
+              "side": "front_right",
+              "lens": 40
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "偷盗者"
+          ],
+          "characters": [
+            "偷盗者"
+          ],
+          "actions": [
+            {
+              "action_type": "run_to",
+              "character_id": "偷盗者",
+              "end_frame": 40,
+              "params": {
+                "bob": 0.05,
+                "speed": "run"
+              },
+              "start_frame": 1,
+              "target_position": [
+                0.0,
+                2.6,
+                0.0
+              ]
+            },
+            {
+              "action_type": "turn_head",
+              "character_id": "偷盗者",
+              "end_frame": 60,
+              "params": {
+                "angle_deg": 35
+              },
+              "start_frame": 44
+            },
+            {
+              "action_type": "look_at",
+              "character_id": "偷盗者",
+              "end_frame": 84,
+              "params": {
+                "pitch_deg": -5,
+                "yaw_deg": 30
+              },
+              "start_frame": 64
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "偷盗者",
+              "text": "怎么回事，不应该只是普通的银币么？",
+              "start_frame": 20,
+              "end_frame": 100
+            }
+          ],
+          "gaze": [
+            {
+              "from": "偷盗者",
+              "to": "钱袋"
+            }
+          ],
+          "vfx": [
+            {
+              "id": "magic_spark",
+              "type": "spark",
+              "position": [
+                5.4,
+                -6.5,
+                5.0
+              ],
+              "size": [
+                0.12,
+                0.12,
+                0.12
+              ],
+              "start_frame": 60,
+              "end_frame": 84
+            },
+            {
+              "id": "magic_glow",
+              "type": "glow",
+              "position": [
+                5.4,
+                -6.5,
+                5.0
+              ],
+              "size": [
+                0.4,
+                0.4,
+                0.4
+              ],
+              "start_frame": 56,
+              "end_frame": 96
+            }
+          ],
+          "beats": [
+            {
+              "t": 0,
+              "subject": "偷盗者",
+              "verb": "run_to",
+              "target": "帆布篷摊位",
+              "face_to": "screen_left",
+              "pace": "brisk"
+            },
+            {
+              "t": 0.35,
+              "subject": "偷盗者",
+              "verb": "turn_head",
+              "target": "钱袋",
+              "face_to": "away",
+              "react": "察觉身后异响，回头张望"
+            },
+            {
+              "t": 0.55,
+              "subject": "偷盗者",
+              "verb": "look_at",
+              "target": "钱袋",
+              "face_to": "screen_right",
+              "react": "低头看向手中钱袋，困惑"
+            },
+            {
+              "t": 0.8,
+              "subject": "偷盗者",
+              "verb": "run_to",
+              "target": "草影与草垛",
+              "face_to": "screen_left",
+              "pace": "brisk"
+            }
+          ],
+          "composition": {
+            "rule": "lead_room",
+            "subject_position": "right_third"
+          },
+          "rule_justifications": [
+            {
+              "rule": "intent:推进 shot_size=MS movement=follow_subject",
+              "action": "follow"
+            },
+            {
+              "rule": "intent:揭示 shot_size=MS movement=follow_subject",
+              "action": "follow"
+            },
+            {
+              "rule": "intent:揭示 shot_size=MS movement=dolly_in",
+              "action": "follow"
+            }
+          ],
+          "prompt": "偷盗者中景，主体置于右三分线，向画面左侧奔跑，视线方向留白在画面左侧，机位抬高避开前景遮挡，主体全身清晰无遮挡"
+        },
+        {
+          "id": "shot_006",
+          "intent": "制造喜剧反转",
+          "shot_type": "MS",
+          "duration_frames": 168,
+          "start_frame": 625,
+          "end_frame": 792,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_006",
+            "position": [
+              -1.481,
+              -0.429,
+              0.95
+            ],
+            "target": [
+              2.191,
+              -1.178,
+              1.1
+            ],
+            "lens": 40.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {
+              "side": "front_left",
+              "lens": 40
+            }
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "偷盗者"
+          ],
+          "characters": [
+            "偷盗者"
+          ],
+          "actions": [
+            {
+              "character_id": "偷盗者",
+              "action_type": "stand",
+              "start_frame": 1,
+              "end_frame": 24,
+              "params": {
+                "drop": 0,
+                "leg_fold_deg": 0,
+                "lean_deg": 0
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "偷盗者",
+              "speaker_raw": "偷盗者",
+              "speaker_status": "resolved",
+              "text": "怎么回事，不应该只是普通的银币么？",
+              "start_frame": 1,
+              "end_frame": 72
+            },
+            {
+              "character_id": "偷盗者",
+              "speaker_raw": "偷盗者",
+              "speaker_status": "resolved",
+              "text": "哈哈，一定是命运眷顾，我发财了！",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [
+            {
+              "from": "偷盗者",
+              "to": "偷盗者"
+            }
+          ],
+          "vfx": [],
+          "beats": [],
+          "composition": {
+            "rule": "thirds",
+            "subject_position": "right_third"
+          },
+          "rule_justifications": [],
+          "prompt": "中景，偷盗者站在画面右侧三分之一处，身体朝向画面左侧（与上一镜同侧），低头看着手中的银币，神情由疑惑转为贪婪；机位在轴线另一侧，略高于视线，头顶留白收紧，缓慢推近。"
+        }
+      ]
+    }
+  ],
+  "continuity": {
+    "axis_note": [
+      "全场保持同一银幕方向：米迦尔位于画面左区、面向右；伊恩位于画面右区、面向左，两人对视轴线固定，机位不得越过二人连线（180°轴线）。",
+      "相邻镜头机位角度变化均大于 30° 或景别变化至少一档，避免跳切。",
+      "偷盗者出现在与米迦尔、伊恩不同景别的独立空间，奔跑方向统一为画面左侧，保持方向连续性。",
+      "米迦尔与偷盗者始终不同框，二者空间关系为推断，不建立明确轴线。",
+      "环境为午后暖侧光，全场沿用同一光位方向，不随镜头改变。",
+      "各镜时长按剧本声明为硬约束，已含 12 帧收尾余量。"
+    ],
+    "character_pose": {
+      "米迦尔": {
+        "position": [
+          0.0,
+          1.1,
+          0.0
+        ],
+        "facing": [
+          0.0,
+          -1.0,
+          0.0
+        ]
+      },
+      "伊恩": {
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          0.0,
+          1.0,
+          0.0
+        ]
+      },
+      "偷盗者": {
+        "position": [
+          0.0,
+          4.3,
+          0.0
+        ],
+        "facing": [
+          0.0,
+          1.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "warnings": [
+    "unresolved_anchor: 帆布篷摊位: relation='散布于市场中段，彼此错落，形成纵深通道' 解析不出坐标",
+    "unresolved_anchor: 草影与草垛: relation='位于画面近景边缘，随风轻摆' 解析不出坐标",
+    "unresolved_anchor: 码头海面: relation='位于市场后方远处，与摊位线平行' 解析不出坐标",
+    "unresolved_anchor: 钱袋: relation='置于米迦尔身侧近景处' 解析不出坐标",
+    "unresolved_anchor: 银币: relation='在偷盗者掌心，随其奔跑移动' 解析不出坐标",
+    "key_direction=side 无对应预设变体，已忽略（沿用 indoor_soft）",
+    "按构图声明（rule=lead_room、subject_position=left_third）把对准点横向偏移 +0.167 幅宽",
+    "shot_002：米迦尔 的同层动作时间重叠，已把 22–33 后移到 25–36（§9.7 串行）",
+    "shot_002：米迦尔 的同层动作时间重叠，已把 108–122 后移到 123–137（§9.7 串行）",
+    "shot_002: body 层动作时间重叠：body_tilt(220-246) 与 body_tilt(243-257)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "按 §10.4 的视线留白把对准点横向偏移 -0.167 幅宽（主体落到背向视线的那条三分线上）",
+    "按 §10.4 的视线留白把对准点横向偏移 +0.167 幅宽（主体落到背向视线的那条三分线上）",
+    "side=(0.7071067811865475, 0.7071067811865475) 落在已确立轴线的另一侧，已关于轴线镜像为 (-0.7071067811865476, 0.7071067811865476) 以保持银幕方向连续",
+    "按构图声明（rule=lead_room、subject_position=right_third）把对准点横向偏移 -0.167 幅宽",
+    "shot_005：偷盗者 的同层动作时间重叠，已把 1–95 后移到 96–190（§9.7 串行）",
+    "shot_005：偷盗者 的同层动作已排满整镜，第 121 帧起的动作落不进镜头，原样保留由规则报出",
+    "shot_005：偷盗者 的同层动作已排满整镜，第 121 帧起的动作落不进镜头，原样保留由规则报出",
+    "shot_005: head 层动作时间重叠：look_at(505-599) 与 turn_head(546-557)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_005: base 层动作时间重叠：run_to(600-624) 与 run_to(600-624)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_005: legs 层动作时间重叠：run_to(600-624) 与 run_to(600-624)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "shot_005: body 层动作时间重叠：run_to(600-624) 与 run_to(600-624)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管",
+    "按构图声明（rule=thirds、subject_position=right_third）把对准点横向偏移 -0.167 幅宽",
+    "群众代理 30 个（Workbench 下为不透明实色）"
+  ],
+  "brief": {
+    "speakers": [
+      {
+        "speaker": "米迦尔",
+        "listener": "伊恩",
+        "dialogue_ref": "镜号2"
+      },
+      {
+        "speaker": "伊恩",
+        "listener": "米迦尔",
+        "dialogue_ref": "镜号3"
+      },
+      {
+        "speaker": "米迦尔",
+        "listener": "",
+        "dialogue_ref": "镜号4"
+      },
+      {
+        "speaker": "米迦尔",
+        "listener": "",
+        "dialogue_ref": "镜号4"
+      },
+      {
+        "speaker": "偷盗者",
+        "listener": "",
+        "dialogue_ref": "镜号6"
+      },
+      {
+        "speaker": "偷盗者",
+        "listener": "",
+        "dialogue_ref": "镜号6"
+      }
+    ],
+    "gaze": [
+      {
+        "from": "米迦尔",
+        "to": "伊恩",
+        "scope": [
+          "镜号2"
+        ]
+      },
+      {
+        "from": "伊恩",
+        "to": "米迦尔",
+        "scope": [
+          "镜号3"
+        ]
+      },
+      {
+        "from": "偷盗者",
+        "to": "偷盗者",
+        "scope": [
+          "镜号6"
+        ]
+      }
+    ],
+    "beats": [
+      {
+        "id": "beat1",
+        "summary": "午后码头市场静场，微风拂过草影与帆布篷，只有叫卖声与海浪声",
+        "participants": [],
+        "emotion": "宁静祥和",
+        "function": "建立场景，铺垫冲突"
+      },
+      {
+        "id": "beat2",
+        "summary": "米迦尔自信请战，把这里交给自己",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "emotion": "自信满满",
+        "function": "建立米迦尔的角色性格，引出战斗"
+      },
+      {
+        "id": "beat3",
+        "summary": "伊恩平静应下并叮嘱小心",
+        "participants": [
+          "伊恩",
+          "米迦尔"
+        ],
+        "emotion": "信任与平静",
+        "function": "表现两人的搭档关系"
+      },
+      {
+        "id": "beat4",
+        "summary": "米迦尔轻松应下，预告要让对方砰的一声",
+        "participants": [
+          "米迦尔"
+        ],
+        "emotion": "调皮轻松",
+        "function": "铺垫施法，暗示魔法即将出现"
+      },
+      {
+        "id": "beat5",
+        "summary": "偷盗者奔跑中掌心的银币燃起黑红火焰，逐渐变成金黄色",
+        "participants": [
+          "偷盗者"
+        ],
+        "emotion": "诡异突变",
+        "function": "展示魔法第一次生效，制造悬念"
+      },
+      {
+        "id": "beat6",
+        "summary": "偷盗者盯着金子由惊疑转为狂喜大笑",
+        "participants": [
+          "偷盗者"
+        ],
+        "emotion": "狂喜荒诞",
+        "function": "制造喜剧反转，收束"
+      }
+    ],
+    "space": [
+      {
+        "character": "米迦尔",
+        "relative_to": "伊恩",
+        "relation": "facing",
+        "distance_class": "personal"
+      },
+      {
+        "character": "伊恩",
+        "relative_to": "米迦尔",
+        "relation": "facing",
+        "distance_class": "personal"
+      },
+      {
+        "character": "偷盗者",
+        "relative_to": "米迦尔",
+        "relation": "apart",
+        "distance_class": "public"
+      }
+    ],
+    "arc": {
+      "emotion_start": "宁静祥和",
+      "emotion_end": "狂喜荒诞",
+      "turning_point": "银币在火焰中由银白变为金黄，偷盗者由惊疑转为狂喜"
+    },
+    "props": [
+      {
+        "id": "钱袋",
+        "kind": "容器",
+        "owner": "偷盗者",
+        "state_changes": [
+          "被偷盗者左手紧紧攥着"
+        ]
+      },
+      {
+        "id": "银币",
+        "kind": "货币",
+        "owner": "偷盗者",
+        "state_changes": [
+          "银白色",
+          "燃起黑红色火焰",
+          "变为金黄色（金子）"
+        ]
+      }
+    ],
+    "notes": [
+      "镜号4米迦尔两句台词（“放心吧”“看我怎么惩罚他…”）未指明对谁说，listener 留空待确认",
+      "镜号6偷盗者两句台词均为自言自语式独白，无明确听话人，listener 留空",
+      "“他”（米迦尔台词中的“惩罚他”）无明确先行词，未指定为偷盗者，需人工确认",
+      "米迦尔与偷盗者之间无同框镜头，二者的空间关系（距离/朝向）为推断，需确认",
+      "镜号5偷盗者奔跑方向为画面左侧，其与米迦尔/伊恩的相对方位无依据",
+      "米迦尔施法的手部特写（镜号4）与银币变金（镜号5）的因果关联由剧本暗示，未明写",
+      "镜号1声明“无角色”但背景有约30名路人，路人未列入角色表"
+    ],
+    "source": "llm"
+  },
+  "with_labels": true,
+  "saved_at": "2026-10-07T17:10:30+08:00"
+}

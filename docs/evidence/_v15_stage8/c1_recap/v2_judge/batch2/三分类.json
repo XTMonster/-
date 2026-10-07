@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "来源卡多讲构图/机位，无遮挡规则"},
+  {"i": 2, "class": "hidden", "why": "有俯视/高角度机位，未写高机位"},
+  {"i": 3, "class": "wrong_card", "why": "无headroom相关内容"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲特写/灯光/色彩，非headroom"},
+  {"i": 5, "class": "hidden", "why": "有垂直俯拍/高角度内容"},
+  {"i": 6, "class": "hidden", "why": "有构图/取景内容，未写framing"},
+  {"i": 7, "class": "hidden", "why": "有垂直俯拍/高角度内容"},
+  {"i": 8, "class": "hidden", "why": "有平视机位与平视镜头内容"}
+]

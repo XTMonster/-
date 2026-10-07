@@ -1,0 +1,114 @@
+[
+  {
+    "entry_id": "hq_1809",
+    "verdict": "amended",
+    "reason": "卡文无运镜意图，expect_movements 填「固定」无依据，应为空",
+    "fix": "将 expect_movements 改为空数组 []",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1819",
+    "verdict": "amended",
+    "reason": "q/must/top1 可达且无冲突，但卡片只讲调焦，未涉及运镜，expect_movements 无依据",
+    "fix": "将 expect_movements 置为空数组",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1869",
+    "verdict": "amended",
+    "reason": "expect_movements 与卡面不符：卡写仰摇 tilt_up，非 crane_arc_up",
+    "fix": "expect_movements 改为 [\"tilt_up\"]",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1881",
+    "verdict": "amended",
+    "reason": "卡片教的是上升弧 crane_arc_up，q/must 却写 crane_arc_down，与 expect_movements 自相矛盾",
+    "fix": "将 q 的运镜及 must/top1 的 movement 统一改为 crane_arc_up",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1882",
+    "verdict": "amended",
+    "reason": "卡为下降弧，q/must 误写 crane_arc_up，与 expect_movements 自相矛盾",
+    "fix": "将 q、must、top1 中 crane_arc_up 全部改为 crane_arc_down，其余保留",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1887",
+    "verdict": "amended",
+    "reason": "卡未写运镜期望，expect_movements 填「固定」无卡内依据",
+    "fix": "expect_movements 置空（[]）",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1923",
+    "verdict": "amended",
+    "reason": "卡只讲移焦未写运镜意图，dolly_in 作运动期望无依据",
+    "fix": "expect_movements 置为空数组",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1925",
+    "verdict": "amended",
+    "reason": "运镜与卡片环绕主题及 expect_movements 相矛盾",
+    "fix": "q 的运镜与 must 的 movement 由 follow_subject 改为 orbit_ccw，与卡片及 expect_movements 对齐",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1947",
+    "verdict": "amended",
+    "reason": "q/must/top1 用 orbit_ccw，与本卡 orbit_cw 及 expect_movements 矛盾",
+    "fix": "将 q、must、top1 中的 orbit_ccw 全部改为 orbit_cw",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1948",
+    "verdict": "amended",
+    "reason": "运镜写成 orbit_cw，与卡意「跟拍」矛盾",
+    "fix": "q 的运镜与 must/top1 的 movement 统一改为 follow_subject，与卡意及 expect_movements 对齐",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1949",
+    "verdict": "amended",
+    "reason": "q/must 运镜=orbit_cw 但 expect_movements=orbit_ccw，自相矛盾不可判定",
+    "fix": "将 expect_movements 改为 [\"orbit_cw\"] 与 q/must 一致（或把 q/must/top1 的运镜统一改为 orbit_ccw）",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_1974",
+    "verdict": "amended",
+    "reason": "卡片讲横摇(pan)，track_left与卡意及expect_movements=pan_left矛盾",
+    "fix": "q/must/top1 中的 movement 由 track_left 改为 pan_left",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_2018",
+    "verdict": "amended",
+    "reason": "卡未写运镜期望，仅讲放大镜头外移，zoom_in 无依据",
+    "fix": "expect_movements 改为 []",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_2730",
+    "verdict": "amended",
+    "reason": "q 的『对白=transition』在 must 中无对白槽位，同类同值不可达",
+    "fix": "删去 q 中『对白=transition』；must 保留 scene_type=transition 作为 schema 必填槽即可",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_2731",
+    "verdict": "amended",
+    "reason": "对白=transition 在 must 无同类同值对应，卡中也无对白内容",
+    "fix": "删去 q 中的对白=transition，其余保留",
+    "reviewed_by": "third-party"
+  },
+  {
+    "entry_id": "hq_2750",
+    "verdict": "amended",
+    "reason": "「对白=transition」在 must 无同类对应，scene_type 属 schema 补全项不应入 q",
+    "fix": "q 删去「对白=transition」，改为：转场=whip；节奏=short；禁运镜=固定",
+    "reviewed_by": "third-party"
+  }
+]

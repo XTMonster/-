@@ -1,0 +1,87 @@
+{
+  "run": "docs/evidence/20261006-long21",
+  "mapped_kinds": [
+    "action",
+    "axis_side",
+    "intent",
+    "lens",
+    "movement",
+    "shot_size",
+    "transition",
+    "vfx"
+  ],
+  "not_a_condition": [
+    "axis_topic",
+    "pair"
+  ],
+  "undecidable_edges": 8,
+  "unmapped_member_slots": 13,
+  "unmapped_kinds": {
+    "headroom_policy": 22,
+    "composition_rule": 13,
+    "camera_angle": 13
+  },
+  "edges": [
+    {
+      "edge_id": "hg:3f26bdf8d230",
+      "unmapped_kinds": [
+        "headroom_policy"
+      ],
+      "type": "SHOT_PATTERN"
+    },
+    {
+      "edge_id": "hg:400a2bfcda8e",
+      "unmapped_kinds": [
+        "camera_angle",
+        "composition_rule"
+      ],
+      "type": "STAGING_PACK"
+    },
+    {
+      "edge_id": "hg:5b8b86de2d87",
+      "unmapped_kinds": [
+        "camera_angle",
+        "composition_rule"
+      ],
+      "type": "STAGING_PACK"
+    },
+    {
+      "edge_id": "hg:6d201c4c47a3",
+      "unmapped_kinds": [
+        "headroom_policy"
+      ],
+      "type": "SHOT_PATTERN"
+    },
+    {
+      "edge_id": "hg:d090d7ce0096",
+      "unmapped_kinds": [
+        "camera_angle",
+        "composition_rule"
+      ],
+      "type": "STAGING_PACK"
+    },
+    {
+      "edge_id": "hg:d28d18bfdde4",
+      "unmapped_kinds": [
+        "camera_angle",
+        "composition_rule"
+      ],
+      "type": "STAGING_PACK"
+    },
+    {
+      "edge_id": "hg:e2ea1c270f9b",
+      "unmapped_kinds": [
+        "headroom_policy"
+      ],
+      "type": "SHOT_PATTERN"
+    },
+    {
+      "edge_id": "hg:e3ee2d0b5f4c",
+      "unmapped_kinds": [
+        "camera_angle",
+        "composition_rule"
+      ],
+      "type": "STAGING_PACK"
+    }
+  ]
+}

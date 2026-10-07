@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲舞台调度防混乱，非表演情绪"},
+  {"i": 2, "class": "hidden", "why": "正文确含压抑处理，主题相关"},
+  {"i": 3, "class": "hidden", "why": "正文有坐下落座调度，属表演动作"},
+  {"i": 4, "class": "hidden", "why": "正文直接讲平视机位，内容正确"},
+  {"i": 5, "class": "hidden", "why": "正文提及庄严僧侣，内容一致"},
+  {"i": 6, "class": "hidden", "why": "卡含人物反应，属表演内容"},
+  {"i": 7, "class": "hidden", "why": "正文有平视说明，内容正确"},
+  {"i": 8, "class": "hidden", "why": "构图布景述压抑，内容相关"}
+]

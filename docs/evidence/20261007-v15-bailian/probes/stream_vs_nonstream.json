@@ -1,0 +1,11 @@
+{
+ "question_chars": 10020,
+ "stream": {
+  "ok": true,
+  "elapsed_s": 605.1,
+  "first_chunk_s": 1.0,
+  "chunks": 6469,
+  "chars": 686,
+  "looks_like_json_array": true
+ }
+}

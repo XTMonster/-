@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲升降台斜面调度，与构图平衡无关"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲表演调度，未涉及平视角度"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲动作动词代替情绪词，与平视无关"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲POV主观镜头，未提头部空间"},
+  {"i": 5, "class": "hidden", "why": "垂直视点高度属构图取景，未写出framing"},
+  {"i": 6, "class": "wrong_card", "why": "多卡均讲机位/分镜，无头部空间内容"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲表演节奏，不是走位"},
+  {"i": 8, "class": "wrong_card", "why": "卡讲快慢表演节奏，未提压抑情绪"}
+]

@@ -1,0 +1,14 @@
+[
+  {"i": 1, "verdict": "keep", "why": "闭集风格词，卡片谈影视构图"},
+  {"i": 2, "verdict": "keep", "why": "闭集风格词，卡片谈镜头纵深"},
+  {"i": 3, "verdict": "keep", "why": "闭集风格词，卡片谈拍摄方法"},
+  {"i": 4, "verdict": "keep", "why": "闭集策略词，卡片谈镜头特写"},
+  {"i": 5, "verdict": "keep", "why": "闭集风格词，卡片谈史诗镜头"},
+  {"i": 6, "verdict": "keep", "why": "闭集风格词，卡片谈广角动画"},
+  {"i": 7, "verdict": "keep", "why": "闭集风格词，卡片谈广角透视"},
+  {"i": 8, "verdict": "keep", "why": "闭集风格词，卡片谈景深空间"},
+  {"i": 9, "verdict": "keep", "why": "闭集风格词，卡片谈镜头动画"},
+  {"i": 10, "verdict": "keep", "why": "闭集风格词，卡片谈推镜调度"},
+  {"i": 11, "verdict": "keep", "why": "闭集风格词，卡片谈推轨纵深"},
+  {"i": 12, "verdict": "keep", "why": "闭集风格词，卡片谈长镜拉远"}
+]

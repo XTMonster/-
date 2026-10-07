@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "卡已写平视，只是未匹配到值"},
+  {"i": 2, "class": "hidden", "why": "多卡直接写平视，应视为佐证"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲景深移焦，与board无关"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲景深运镜，非headroom"},
+  {"i": 5, "class": "hidden", "why": "卡已含平视，非挂错或错值"},
+  {"i": 6, "class": "wrong_card", "why": "卡集中特写景深，与headroom无关"},
+  {"i": 7, "class": "hidden", "why": "有平视卡，系统未检出但良性"},
+  {"i": 8, "class": "hidden", "why": "多卡出现平视，判已蕴含"}
+]

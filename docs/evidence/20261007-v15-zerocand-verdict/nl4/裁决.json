@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"keep","why":"闭集特效词，动画帧主题相关"},
+  {"i":2,"verdict":"keep","why":"闭集特效词，变身特效相关"},
+  {"i":3,"verdict":"keep","why":"闪回回忆卡蕴含回望"},
+  {"i":4,"verdict":"wrong_value","why":"卡讲低调藏暗，非高调"},
+  {"i":5,"verdict":"keep","why":"有均匀明亮与亮部，主题相关"},
+  {"i":6,"verdict":"wrong_card","why":"卡谈弧光安全与光位，非高调"},
+  {"i":7,"verdict":"keep","why":"多卡谈高亮无阴影，合高调"},
+  {"i":8,"verdict":"keep","why":"补光降反差，可蕴含高调"},
+  {"i":9,"verdict":"keep","why":"有白光柔光明亮，可蕴含高调"},
+  {"i":10,"verdict":"keep","why":"闭集节奏档，且卡谈节奏"},
+  {"i":11,"verdict":"keep","why":"多卡谈音乐节奏，主题相关"},
+  {"i":12,"verdict":"wrong_card","why":"卡谈静默静音，非常规节奏"}
+]

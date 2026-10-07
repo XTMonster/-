@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲移动车镜头，而非电影感或头顶留白"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲推轨与动画运动，与取值无关"},
+  {"i": 3, "class": "hidden", "why": "正反打蕴含过肩角度，只是没写词"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲布景，与低机位无关"},
+  {"i": 5, "class": "wrong_card", "why": "卡讲布景视线引导，非lead_room"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲表演走位，无平视角度"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲构图调度景别，未涉及平视"},
+  {"i": 8, "class": "hidden", "why": "多卡在讲构图取景，蕴含framing"}
+]

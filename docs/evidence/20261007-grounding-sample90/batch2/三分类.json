@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "前景静物产生遮挡与纵深"},
+  {"i": 2, "class": "hidden", "why": "俯视镜头即高机位含义相合"},
+  {"i": 3, "class": "wrong_card", "why": "过肩对话与头顶留白无关"},
+  {"i": 4, "class": "wrong_card", "why": "车厢特写与头顶留白无关"},
+  {"i": 5, "class": "wrong_card", "why": "无高机位或俯视内容"},
+  {"i": 6, "class": "hidden", "why": "三维构图谈取景构图"},
+  {"i": 7, "class": "wrong_card", "why": "赛璐珞分层与高机位无关"},
+  {"i": 8, "class": "wrong_card", "why": "中近景选角与平视无关"}
+]

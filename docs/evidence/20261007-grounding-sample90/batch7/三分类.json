@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲地位博弈，与低机位无关"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲地位博弈，与冷漠无关"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲手持跳切，与中景无关"},
+  {"i": 4, "class": "hidden", "why": "正文有横移但未明方向"},
+  {"i": 5, "class": "wrong_card", "why": "卡讲剪纸动画，与景别无关"},
+  {"i": 6, "class": "hidden", "why": "缩短机位距离隐含推进"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲过肩对话，与近景无关"},
+  {"i": 8, "class": "wrong_card", "why": "卡讲车厢晃动，与手持无关"}
+]

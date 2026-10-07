@@ -1,0 +1,10 @@
+[
+  {"i":1,"class":"wrong_card","why":"卡讲蜿蜒路径与空间锚点，非引导留白"},
+  {"i":2,"class":"wrong_card","why":"卡讲山水路径构图，未涉及大远景景别"},
+  {"i":3,"class":"hidden","why":"卡讲仰角取景，即低机位未写出"},
+  {"i":4,"class":"wrong_card","why":"卡讲权力对比与高低差，非平衡"},
+  {"i":5,"class":"wrong_card","why":"卡讲仰角与高低差，未涉及中景"},
+  {"i":6,"class":"hidden","why":"过肩镜头前景肩部遮挡，蕴含遮挡"},
+  {"i":7,"class":"wrong_card","why":"卡讲过肩镜头，未说明中近景"},
+  {"i":8,"class":"wrong_card","why":"卡讲特写/线稿/密度，未涉及平视"}
+]

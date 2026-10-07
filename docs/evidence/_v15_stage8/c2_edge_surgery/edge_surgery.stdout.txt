@@ -1,0 +1,18 @@
+{
+ "blocked_edges": 9,
+ "slots": 15,
+ "old_ruler_verdicts": {
+  "topic_mismatch": 14,
+  "topic_matches": 1
+ },
+ "new_ruler_verdicts": {
+  "topic_mismatch": 6,
+  "topic_or_domain_matches_kind": 2,
+  "topic_unknown": 6,
+  "in_card_text": 1
+ },
+ "slots_without_mechanical_candidate": 7,
+ "schema_fingerprint": "1a90c089bb8f4f7fbd61a145a2088d6c2628ecbbd4dba47f63396fbf34fadaf3",
+ "note": "两把尺子的差别**只在读卡口径**；机械判据给的是信号，不是判决。`candidate_cards` 是『正文里真的写了这个取值』的全库候选，空列表＝当前无机械证据，不等于『这张卡是错的』。"
+}
+pins_impact.runs_pinning_index = 22

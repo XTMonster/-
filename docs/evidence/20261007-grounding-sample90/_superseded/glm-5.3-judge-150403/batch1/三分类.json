@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "表演节奏卡，与机位角度无关"},
+  {"i": 2, "class": "wrong_card", "why": "全是表演卡，无一涉机位角度"},
+  {"i": 3, "class": "wrong_card", "why": "手持跳切谈节奏剪辑，非留空"},
+  {"i": 4, "class": "wrong_card", "why": "剪纸动画技法，与构图留空无关"},
+  {"i": 5, "class": "wrong_card", "why": "道具化妆杂卡，不涉机位角度"},
+  {"i": 6, "class": "hidden", "why": "特写景别卡正讲电影化取景"},
+  {"i": 7, "class": "wrong_card", "why": "肢体表演节奏卡，与平视无关"},
+  {"i": 8, "class": "wrong_card", "why": "调度构图卡，不涉机位角度"}
+]

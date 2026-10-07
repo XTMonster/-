@@ -1,0 +1,1215 @@
+{
+ "generated_at": "2026-10-07T15:34:39",
+ "sample": {
+  "path": "docs\\evidence\\20261007-grounding-sample90\\sample90.json",
+  "sha256": "63aee4973f0c26f0d27611f25caa5a7190ee5b6e29aebde316a69c9c3547b3a2",
+  "universe": 1262,
+  "sampled": 90,
+  "by_stratum": {
+   "closed_loop_kind": 30,
+   "pack:PERFORMANCE_PACK": 20,
+   "pack:SHOT_PATTERN": 20,
+   "pack:STAGING_PACK": 20
+  },
+  "mechanical_pre_read": {
+   "surface_in_card": 0,
+   "topic_mismatch": 88,
+   "topic_ok_or_unknown": 2
+  }
+ },
+ "batches": {
+  "count": 12,
+  "results": [
+   {
+    "batch": 1,
+    "sha256": "30f89fc0e4e47d38cb0c3e1b731fbdb6c8c503167808099cccd5079bb3e2fe95",
+    "chars": 483
+   },
+   {
+    "batch": 2,
+    "sha256": "c7d70aa7e2cd971faf8ec138f84d14d6ba4c086f27379a80cf5bfe41450e6700",
+    "chars": 442
+   },
+   {
+    "batch": 3,
+    "sha256": "b80721c349cc614b520f26cb6109fbd2fcaffa5f8eb1cc3f536890ec473a2a45",
+    "chars": 474
+   },
+   {
+    "batch": 4,
+    "sha256": "19510025bc37906756d20afad6591853d47d0faaff3d5644ee0b278ad611c675",
+    "chars": 492
+   },
+   {
+    "batch": 5,
+    "sha256": "8bc6d90d09fe16fed5af50a55d428674726efb3c9bf64b0c02902a1685d06bb2",
+    "chars": 449
+   },
+   {
+    "batch": 6,
+    "sha256": "f7fb84e61e4591e541a8919fc44ba6043706eea2547cecc2ded0046a4f3ab8cb",
+    "chars": 438
+   },
+   {
+    "batch": 7,
+    "sha256": "73d9d395af279879f6394248067ec63a702ff832596a1b4e4c3eed075d8b5d53",
+    "chars": 455
+   },
+   {
+    "batch": 8,
+    "sha256": "b11beb42aa94029c3ed07ce47ace3f2f59541617e15d8855c0ca875faedc6374",
+    "chars": 494
+   },
+   {
+    "batch": 9,
+    "sha256": "20cc6672b9d15323441cf3c3874381dd787281bf411694e8109124727e973f57",
+    "chars": 424
+   },
+   {
+    "batch": 10,
+    "sha256": "1ae0a6a81bea79fca8de04c0027af9087ac8b0450762fb28eec18160db595138",
+    "chars": 460
+   },
+   {
+    "batch": 11,
+    "sha256": "60a866a02d45d77ac49fb8b633d84d196bf9047c21894402ce68bc8fe433dc0f",
+    "chars": 442
+   },
+   {
+    "batch": 12,
+    "sha256": "89839a0703d5301ab4e4891e1d79e2736b3c441fc667dd2790ec06de2dbaed59",
+    "chars": 122
+   }
+  ]
+ },
+ "total": 90,
+ "counts": {
+  "hidden": 23,
+  "wrong_card": 66,
+  "wrong_value": 1
+ },
+ "corrupt": 67,
+ "corrupt_share": 0.7444444444444445,
+ "verdict": {
+  "branch": "corrupt-dominated",
+  "reading": "后两类 ≥33% ⇒「暂缓重抽」被证伪，应启动换代"
+ },
+ "by_kind": {
+  "action": {
+   "hidden": 3,
+   "wrong_card": 3,
+   "wrong_value": 1,
+   "_total": 7,
+   "_corrupt": 4,
+   "_corrupt_share": 0.5714285714285714
+  },
+  "camera_angle": {
+   "hidden": 3,
+   "wrong_card": 20,
+   "wrong_value": 0,
+   "_total": 23,
+   "_corrupt": 20,
+   "_corrupt_share": 0.8695652173913043
+  },
+  "composition_rule": {
+   "hidden": 6,
+   "wrong_card": 5,
+   "wrong_value": 0,
+   "_total": 11,
+   "_corrupt": 5,
+   "_corrupt_share": 0.45454545454545453
+  },
+  "emotion": {
+   "hidden": 4,
+   "wrong_card": 6,
+   "wrong_value": 0,
+   "_total": 10,
+   "_corrupt": 6,
+   "_corrupt_share": 0.6
+  },
+  "headroom_policy": {
+   "hidden": 0,
+   "wrong_card": 13,
+   "wrong_value": 0,
+   "_total": 13,
+   "_corrupt": 13,
+   "_corrupt_share": 1.0
+  },
+  "movement": {
+   "hidden": 6,
+   "wrong_card": 3,
+   "wrong_value": 0,
+   "_total": 9,
+   "_corrupt": 3,
+   "_corrupt_share": 0.3333333333333333
+  },
+  "shot_size": {
+   "hidden": 1,
+   "wrong_card": 16,
+   "wrong_value": 0,
+   "_total": 17,
+   "_corrupt": 16,
+   "_corrupt_share": 0.9411764705882353
+  }
+ },
+ "by_stratum": {
+  "closed_loop_kind": {
+   "hidden": 6,
+   "wrong_card": 24,
+   "wrong_value": 0,
+   "_total": 30,
+   "_corrupt": 24,
+   "_corrupt_share": 0.8
+  },
+  "pack:PERFORMANCE_PACK": {
+   "hidden": 7,
+   "wrong_card": 12,
+   "wrong_value": 1,
+   "_total": 20,
+   "_corrupt": 13,
+   "_corrupt_share": 0.65
+  },
+  "pack:SHOT_PATTERN": {
+   "hidden": 6,
+   "wrong_card": 14,
+   "wrong_value": 0,
+   "_total": 20,
+   "_corrupt": 14,
+   "_corrupt_share": 0.7
+  },
+  "pack:STAGING_PACK": {
+   "hidden": 4,
+   "wrong_card": 16,
+   "wrong_value": 0,
+   "_total": 20,
+   "_corrupt": 16,
+   "_corrupt_share": 0.8
+  }
+ },
+ "by_type": {
+  "PERFORMANCE_PACK": {
+   "hidden": 8,
+   "wrong_card": 18,
+   "wrong_value": 1,
+   "_total": 27,
+   "_corrupt": 19,
+   "_corrupt_share": 0.7037037037037037
+  },
+  "PROP_PACK": {
+   "hidden": 1,
+   "wrong_card": 2,
+   "wrong_value": 0,
+   "_total": 3,
+   "_corrupt": 2,
+   "_corrupt_share": 0.6666666666666666
+  },
+  "SHOT_PATTERN": {
+   "hidden": 6,
+   "wrong_card": 23,
+   "wrong_value": 0,
+   "_total": 29,
+   "_corrupt": 23,
+   "_corrupt_share": 0.7931034482758621
+  },
+  "STAGING_PACK": {
+   "hidden": 8,
+   "wrong_card": 23,
+   "wrong_value": 0,
+   "_total": 31,
+   "_corrupt": 23,
+   "_corrupt_share": 0.7419354838709677
+  }
+ },
+ "rows": [
+  {
+   "batch": 1,
+   "i": 1,
+   "edge_id": "hg:02f85ddd6d24",
+   "value": "camera_angle:平视",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲表演节奏，与平视无关。"
+  },
+  {
+   "batch": 1,
+   "i": 2,
+   "edge_id": "hg:03fd3a9f91eb",
+   "value": "camera_angle:平视",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡多讲表演角色，无机位角度。"
+  },
+  {
+   "batch": 1,
+   "i": 3,
+   "edge_id": "hg:03fd45465d41",
+   "value": "headroom_policy:board",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲手持跳切，与头部留白无关。"
+  },
+  {
+   "batch": 1,
+   "i": 4,
+   "edge_id": "hg:04baa311f000",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲剪纸动画，与头部留白无关。"
+  },
+  {
+   "batch": 1,
+   "i": 5,
+   "edge_id": "hg:05c36cb730e7",
+   "value": "camera_angle:平视",
+   "type": "PROP_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡多讲道具化妆，无平视机位。"
+  },
+  {
+   "batch": 1,
+   "i": 6,
+   "edge_id": "hg:069c51b68414",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡多讲特写景深，无头部留白。"
+  },
+  {
+   "batch": 1,
+   "i": 7,
+   "edge_id": "hg:0957b1746e03",
+   "value": "camera_angle:平视",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲肢体表演，与平视无关。"
+  },
+  {
+   "batch": 1,
+   "i": 8,
+   "edge_id": "hg:09bd54e4dba1",
+   "value": "camera_angle:平视",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲视觉引导调度，无平视机位。"
+  },
+  {
+   "batch": 2,
+   "i": 1,
+   "edge_id": "hg:09bd54e4dba1",
+   "value": "composition_rule:occlusion",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "closed_loop_kind",
+   "class": "hidden",
+   "why": "前景静物产生遮挡与纵深"
+  },
+  {
+   "batch": 2,
+   "i": 2,
+   "edge_id": "hg:0b172db53a68",
+   "value": "camera_angle:高机位",
+   "type": "PROP_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "hidden",
+   "why": "俯视镜头即高机位含义相合"
+  },
+  {
+   "batch": 2,
+   "i": 3,
+   "edge_id": "hg:0c3fc09441cd",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "过肩对话与头顶留白无关"
+  },
+  {
+   "batch": 2,
+   "i": 4,
+   "edge_id": "hg:0d90d3bce736",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "车厢特写与头顶留白无关"
+  },
+  {
+   "batch": 2,
+   "i": 5,
+   "edge_id": "hg:0f0045af7504",
+   "value": "camera_angle:高机位",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "无高机位或俯视内容"
+  },
+  {
+   "batch": 2,
+   "i": 6,
+   "edge_id": "hg:0f0045af7504",
+   "value": "composition_rule:framing",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "closed_loop_kind",
+   "class": "hidden",
+   "why": "三维构图谈取景构图"
+  },
+  {
+   "batch": 2,
+   "i": 7,
+   "edge_id": "hg:0fb718650667",
+   "value": "camera_angle:高机位",
+   "type": "PROP_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "赛璐珞分层与高机位无关"
+  },
+  {
+   "batch": 2,
+   "i": 8,
+   "edge_id": "hg:111b34cb5494",
+   "value": "camera_angle:平视",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "中近景选角与平视无关"
+  },
+  {
+   "batch": 3,
+   "i": 1,
+   "edge_id": "hg:1154bc974e9d",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "dolly镜头定义，非头顶空间"
+  },
+  {
+   "batch": 3,
+   "i": 2,
+   "edge_id": "hg:127b4ab7c2a5",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "多卡讲运动镜头，非headroom"
+  },
+  {
+   "batch": 3,
+   "i": 3,
+   "edge_id": "hg:14114090e1d0",
+   "value": "camera_angle:过肩",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "hidden",
+   "why": "卡以正反打讲倾听，暗含过肩"
+  },
+  {
+   "batch": 3,
+   "i": 4,
+   "edge_id": "hg:1657ecdea8cf",
+   "value": "camera_angle:低机位",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "布景卡未涉机位，非低机位"
+  },
+  {
+   "batch": 3,
+   "i": 5,
+   "edge_id": "hg:1657ecdea8cf",
+   "value": "composition_rule:lead_room",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "布景卡非lead_room构图"
+  },
+  {
+   "batch": 3,
+   "i": 6,
+   "edge_id": "hg:18f3cef05a69",
+   "value": "camera_angle:平视",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "调度表演卡，无平视机位"
+  },
+  {
+   "batch": 3,
+   "i": 7,
+   "edge_id": "hg:1953fa522d0c",
+   "value": "camera_angle:平视",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "构图景深卡，未涉平视"
+  },
+  {
+   "batch": 3,
+   "i": 8,
+   "edge_id": "hg:1953fa522d0c",
+   "value": "composition_rule:framing",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "closed_loop_kind",
+   "class": "hidden",
+   "why": "多卡讲构图画框，未直接写framing"
+  },
+  {
+   "batch": 4,
+   "i": 1,
+   "edge_id": "hg:1d0f7c66af29",
+   "value": "composition_rule:balance",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲升降台倾斜地板，与构图平衡无关"
+  },
+  {
+   "batch": 4,
+   "i": 2,
+   "edge_id": "hg:20e166f5189a",
+   "value": "camera_angle:平视",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲角色交替动作，非摄影角度"
+  },
+  {
+   "batch": 4,
+   "i": 3,
+   "edge_id": "hg:21d9ec74ac92",
+   "value": "camera_angle:平视",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲用行动动词，非平视角度"
+  },
+  {
+   "batch": 4,
+   "i": 4,
+   "edge_id": "hg:23350e69d1ef",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡讲POV主观镜头，非头顶空间"
+  },
+  {
+   "batch": 4,
+   "i": 5,
+   "edge_id": "hg:24471433ccc5",
+   "value": "composition_rule:framing",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "closed_loop_kind",
+   "class": "hidden",
+   "why": "垂直视点高度影响取景构图，未写明framing"
+  },
+  {
+   "batch": 4,
+   "i": 6,
+   "edge_id": "hg:256e60805830",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "closed_loop_kind",
+   "class": "wrong_card",
+   "why": "卡群讲镜头调度，均未涉及headroom"
+  },
+  {
+   "batch": 4,
+   "i": 7,
+   "edge_id": "hg:02f85ddd6d24",
+   "value": "action:走位",
+   "type": "PERFORMANCE_PACK",
+   "kind": "action",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡讲表演速度节奏，非走位"
+  },
+  {
+   "batch": 4,
+   "i": 8,
+   "edge_id": "hg:02f85ddd6d24",
+   "value": "emotion:压抑",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡讲快慢节奏，非压抑情绪"
+  },
+  {
+   "batch": 5,
+   "i": 1,
+   "edge_id": "hg:0957b1746e03",
+   "value": "action:低头",
+   "type": "PERFORMANCE_PACK",
+   "kind": "action",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "hidden",
+   "why": "缩回壳中蕴含低头动作"
+  },
+  {
+   "batch": 5,
+   "i": 2,
+   "edge_id": "hg:14114090e1d0",
+   "value": "emotion:平静",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡讲倾听表演，与平静无关"
+  },
+  {
+   "batch": 5,
+   "i": 3,
+   "edge_id": "hg:18f3cef05a69",
+   "value": "emotion:平静",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "八张卡均与平静无关"
+  },
+  {
+   "batch": 5,
+   "i": 4,
+   "edge_id": "hg:20e166f5189a",
+   "value": "action:挥手",
+   "type": "PERFORMANCE_PACK",
+   "kind": "action",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡讲交替静止，非挥手"
+  },
+  {
+   "batch": 5,
+   "i": 5,
+   "edge_id": "hg:20e166f5189a",
+   "value": "emotion:平静",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡讲交替静止，非平静"
+  },
+  {
+   "batch": 5,
+   "i": 6,
+   "edge_id": "hg:21d9ec74ac92",
+   "value": "action:拿起",
+   "type": "PERFORMANCE_PACK",
+   "kind": "action",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "hidden",
+   "why": "拿起属于行动动词，未写明"
+  },
+  {
+   "batch": 5,
+   "i": 7,
+   "edge_id": "hg:21d9ec74ac92",
+   "value": "emotion:愤怒",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡反对用情绪词，非讲愤怒"
+  },
+  {
+   "batch": 5,
+   "i": 8,
+   "edge_id": "hg:23353fbf7090",
+   "value": "action:出场",
+   "type": "PERFORMANCE_PACK",
+   "kind": "action",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡讲镜头角度，与出场无关"
+  },
+  {
+   "batch": 6,
+   "i": 1,
+   "edge_id": "hg:23353fbf7090",
+   "value": "emotion:混乱",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "hidden",
+   "why": "迷失等情绪后果可蕴含混乱"
+  },
+  {
+   "batch": 6,
+   "i": 2,
+   "edge_id": "hg:2ce22a9464cd",
+   "value": "emotion:压抑",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "hidden",
+   "why": "屈服服从感可蕴含压抑"
+  },
+  {
+   "batch": 6,
+   "i": 3,
+   "edge_id": "hg:2dc3c281f9bc",
+   "value": "action:坐下",
+   "type": "PERFORMANCE_PACK",
+   "kind": "action",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_value",
+   "why": "正文是跪下合掌，非坐下"
+  },
+  {
+   "batch": 6,
+   "i": 4,
+   "edge_id": "hg:2dc3c281f9bc",
+   "value": "camera_angle:平视",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡片未涉及机位角度"
+  },
+  {
+   "batch": 6,
+   "i": 5,
+   "edge_id": "hg:2dc3c281f9bc",
+   "value": "emotion:庄严",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "hidden",
+   "why": "宗教虔诚神圣蕴含庄严"
+  },
+  {
+   "batch": 6,
+   "i": 6,
+   "edge_id": "hg:2fc178248ddf",
+   "value": "action:反应",
+   "type": "PERFORMANCE_PACK",
+   "kind": "action",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "hidden",
+   "why": "内心受冲击可对应反应"
+  },
+  {
+   "batch": 6,
+   "i": 7,
+   "edge_id": "hg:2fc178248ddf",
+   "value": "camera_angle:平视",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "旁白技巧与平视机位无关"
+  },
+  {
+   "batch": 6,
+   "i": 8,
+   "edge_id": "hg:2fc178248ddf",
+   "value": "emotion:压抑",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "hidden",
+   "why": "未出口的内心受冲击可蕴含压抑"
+  },
+  {
+   "batch": 7,
+   "i": 1,
+   "edge_id": "hg:30ad79d5c0ac",
+   "value": "camera_angle:低机位",
+   "type": "PERFORMANCE_PACK",
+   "kind": "camera_angle",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡讲地位博弈，与低机位无关"
+  },
+  {
+   "batch": 7,
+   "i": 2,
+   "edge_id": "hg:30ad79d5c0ac",
+   "value": "emotion:冷漠",
+   "type": "PERFORMANCE_PACK",
+   "kind": "emotion",
+   "stratum": "pack:PERFORMANCE_PACK",
+   "class": "wrong_card",
+   "why": "卡讲地位博弈，与冷漠无关"
+  },
+  {
+   "batch": 7,
+   "i": 3,
+   "edge_id": "hg:03fd45465d41",
+   "value": "shot_size:MS",
+   "type": "SHOT_PATTERN",
+   "kind": "shot_size",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲手持跳切，与中景无关"
+  },
+  {
+   "batch": 7,
+   "i": 4,
+   "edge_id": "hg:04baa311f000",
+   "value": "movement:track_right",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "hidden",
+   "why": "正文有横移但未明方向"
+  },
+  {
+   "batch": 7,
+   "i": 5,
+   "edge_id": "hg:04baa311f000",
+   "value": "shot_size:MS",
+   "type": "SHOT_PATTERN",
+   "kind": "shot_size",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲剪纸动画，与景别无关"
+  },
+  {
+   "batch": 7,
+   "i": 6,
+   "edge_id": "hg:0c3fc09441cd",
+   "value": "movement:dolly_in",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "hidden",
+   "why": "缩短机位距离隐含推进"
+  },
+  {
+   "batch": 7,
+   "i": 7,
+   "edge_id": "hg:0c3fc09441cd",
+   "value": "shot_size:MCU",
+   "type": "SHOT_PATTERN",
+   "kind": "shot_size",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲过肩对话，与近景无关"
+  },
+  {
+   "batch": 7,
+   "i": 8,
+   "edge_id": "hg:0d90d3bce736",
+   "value": "movement:handheld",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲车厢晃动，与手持无关"
+  },
+  {
+   "batch": 8,
+   "i": 1,
+   "edge_id": "hg:1154bc974e9d",
+   "value": "movement:track_right",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "hidden",
+   "why": "移动车镜头定义，含左右移动，未明写track_right"
+  },
+  {
+   "batch": 8,
+   "i": 2,
+   "edge_id": "hg:1154bc974e9d",
+   "value": "shot_size:MS",
+   "type": "SHOT_PATTERN",
+   "kind": "shot_size",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲移动车，无景别MS信息"
+  },
+  {
+   "batch": 8,
+   "i": 3,
+   "edge_id": "hg:127b4ab7c2a5",
+   "value": "movement:track_left",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "hidden",
+   "why": "卡讲横移/推轨，track_left为横移方向"
+  },
+  {
+   "batch": 8,
+   "i": 4,
+   "edge_id": "hg:127b4ab7c2a5",
+   "value": "shot_size:MS",
+   "type": "SHOT_PATTERN",
+   "kind": "shot_size",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲运动镜头，无景别MS信息"
+  },
+  {
+   "batch": 8,
+   "i": 5,
+   "edge_id": "hg:23350e69d1ef",
+   "value": "movement:固定",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲POV，非固定机位"
+  },
+  {
+   "batch": 8,
+   "i": 6,
+   "edge_id": "hg:23350e69d1ef",
+   "value": "shot_size:MCU",
+   "type": "SHOT_PATTERN",
+   "kind": "shot_size",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲POV，无MCU景别信息"
+  },
+  {
+   "batch": 8,
+   "i": 7,
+   "edge_id": "hg:256e60805830",
+   "value": "shot_size:MS",
+   "type": "SHOT_PATTERN",
+   "kind": "shot_size",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡未涉及中景MS，仅泛提景别"
+  },
+  {
+   "batch": 8,
+   "i": 8,
+   "edge_id": "hg:25817abdfca0",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲取景/移焦，无头顶空间政策"
+  },
+  {
+   "batch": 9,
+   "i": 1,
+   "edge_id": "hg:25817abdfca0",
+   "value": "movement:dolly_in",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "hidden",
+   "why": "推轨向主体靠近即dolly_in"
+  },
+  {
+   "batch": 9,
+   "i": 2,
+   "edge_id": "hg:2aa3e9f26881",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡文无任何头顶空间内容"
+  },
+  {
+   "batch": 9,
+   "i": 3,
+   "edge_id": "hg:2aa3e9f26881",
+   "value": "movement:固定",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "hidden",
+   "why": "卡述静态机位未写固定"
+  },
+  {
+   "batch": 9,
+   "i": 4,
+   "edge_id": "hg:2f4130d554ae",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲估焦对焦，非headroom"
+  },
+  {
+   "batch": 9,
+   "i": 5,
+   "edge_id": "hg:2f4130d554ae",
+   "value": "movement:固定",
+   "type": "SHOT_PATTERN",
+   "kind": "movement",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲估焦抓拍，非机位固定"
+  },
+  {
+   "batch": 9,
+   "i": 6,
+   "edge_id": "hg:333d39d0d5e3",
+   "value": "headroom_policy:cinematic",
+   "type": "SHOT_PATTERN",
+   "kind": "headroom_policy",
+   "stratum": "pack:SHOT_PATTERN",
+   "class": "wrong_card",
+   "why": "卡讲极特写取景，非headroom"
+  },
+  {
+   "batch": 9,
+   "i": 7,
+   "edge_id": "hg:09bd54e4dba1",
+   "value": "shot_size:LS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "卡讲构图调度，非景别LS"
+  },
+  {
+   "batch": 9,
+   "i": 8,
+   "edge_id": "hg:0b8be9a9aac6",
+   "value": "shot_size:ELS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "hidden",
+   "why": "俯视交代空间即大远景功能"
+  },
+  {
+   "batch": 10,
+   "i": 1,
+   "edge_id": "hg:0f0045af7504",
+   "value": "shot_size:LS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "讲布景悬念，非景别"
+  },
+  {
+   "batch": 10,
+   "i": 2,
+   "edge_id": "hg:1657ecdea8cf",
+   "value": "shot_size:ELS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "讲台阶光柱布景，非景别"
+  },
+  {
+   "batch": 10,
+   "i": 3,
+   "edge_id": "hg:1d0f7c66af29",
+   "value": "shot_size:LS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "讲升降台倾斜地板，非景别"
+  },
+  {
+   "batch": 10,
+   "i": 4,
+   "edge_id": "hg:24471433ccc5",
+   "value": "shot_size:MS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "讲荷兰角机位高度，非景别"
+  },
+  {
+   "batch": 10,
+   "i": 5,
+   "edge_id": "hg:2720c49b1bf5",
+   "value": "camera_angle:高机位",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "讲舞台布局群体调度，非机位"
+  },
+  {
+   "batch": 10,
+   "i": 6,
+   "edge_id": "hg:2720c49b1bf5",
+   "value": "composition_rule:balance",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "pack:STAGING_PACK",
+   "class": "hidden",
+   "why": "舞台左右对称布局，隐含平衡"
+  },
+  {
+   "batch": 10,
+   "i": 7,
+   "edge_id": "hg:2720c49b1bf5",
+   "value": "shot_size:ELS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "讲整体舞台调度，非景别"
+  },
+  {
+   "batch": 10,
+   "i": 8,
+   "edge_id": "hg:27da82f59f17",
+   "value": "camera_angle:高机位",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "讲路径构图舞台延伸，非机位"
+  },
+  {
+   "batch": 11,
+   "i": 1,
+   "edge_id": "hg:27da82f59f17",
+   "value": "composition_rule:lead_room",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "卡讲蜿蜒路径与空间锚点，非引导留白"
+  },
+  {
+   "batch": 11,
+   "i": 2,
+   "edge_id": "hg:27da82f59f17",
+   "value": "shot_size:ELS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "卡讲山水路径构图，未涉及大远景景别"
+  },
+  {
+   "batch": 11,
+   "i": 3,
+   "edge_id": "hg:29215d24c2c6",
+   "value": "camera_angle:低机位",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "pack:STAGING_PACK",
+   "class": "hidden",
+   "why": "卡讲仰角取景，即低机位未写出"
+  },
+  {
+   "batch": 11,
+   "i": 4,
+   "edge_id": "hg:29215d24c2c6",
+   "value": "composition_rule:balance",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "卡讲权力对比与高低差，非平衡"
+  },
+  {
+   "batch": 11,
+   "i": 5,
+   "edge_id": "hg:29215d24c2c6",
+   "value": "shot_size:MS",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "卡讲仰角与高低差，未涉及中景"
+  },
+  {
+   "batch": 11,
+   "i": 6,
+   "edge_id": "hg:299c9a2e2e88",
+   "value": "composition_rule:occlusion",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "pack:STAGING_PACK",
+   "class": "hidden",
+   "why": "过肩镜头前景肩部遮挡，蕴含遮挡"
+  },
+  {
+   "batch": 11,
+   "i": 7,
+   "edge_id": "hg:299c9a2e2e88",
+   "value": "shot_size:MCU",
+   "type": "STAGING_PACK",
+   "kind": "shot_size",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "卡讲过肩镜头，未说明中近景"
+  },
+  {
+   "batch": 11,
+   "i": 8,
+   "edge_id": "hg:2ac99a9d9cf5",
+   "value": "camera_angle:平视",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "卡讲特写/线稿/密度，未涉及平视"
+  },
+  {
+   "batch": 12,
+   "i": 1,
+   "edge_id": "hg:2ac99a9d9cf5",
+   "value": "composition_rule:framing",
+   "type": "STAGING_PACK",
+   "kind": "composition_rule",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "来源卡多为特写线稿，无关framing"
+  },
+  {
+   "batch": 12,
+   "i": 2,
+   "edge_id": "hg:31e448445a0a",
+   "value": "camera_angle:平视",
+   "type": "STAGING_PACK",
+   "kind": "camera_angle",
+   "stratum": "pack:STAGING_PACK",
+   "class": "wrong_card",
+   "why": "来源卡讲构图机位，未提平视"
+  }
+ ]
+}

@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "卡直接讲lead room，仅拼写差异"},
+  {"i": 2, "class": "wrong_card", "why": "来源卡未讲大远景ELS，主题不符"},
+  {"i": 3, "class": "hidden", "why": "卡明确提到低机位，内容对应"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲运动平衡或机位，非构图平衡"},
+  {"i": 5, "class": "wrong_card", "why": "来源卡无中景MS，多为动作/机位"},
+  {"i": 6, "class": "hidden", "why": "卡讲遮挡/过肩，未写occlusion"},
+  {"i": 7, "class": "hidden", "why": "卡提到中近景即MCU，未写缩写"},
+  {"i": 8, "class": "hidden", "why": "来源卡直接讲平视，内容正确"}
+]

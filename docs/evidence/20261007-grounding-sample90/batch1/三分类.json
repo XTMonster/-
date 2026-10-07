@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲表演节奏，与平视无关。"},
+  {"i": 2, "class": "wrong_card", "why": "卡多讲表演角色，无机位角度。"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲手持跳切，与头部留白无关。"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲剪纸动画，与头部留白无关。"},
+  {"i": 5, "class": "wrong_card", "why": "卡多讲道具化妆，无平视机位。"},
+  {"i": 6, "class": "wrong_card", "why": "卡多讲特写景深，无头部留白。"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲肢体表演，与平视无关。"},
+  {"i": 8, "class": "wrong_card", "why": "卡讲视觉引导调度，无平视机位。"}
+]

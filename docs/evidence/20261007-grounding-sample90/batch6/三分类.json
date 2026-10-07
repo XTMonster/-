@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "迷失等情绪后果可蕴含混乱"},
+  {"i": 2, "class": "hidden", "why": "屈服服从感可蕴含压抑"},
+  {"i": 3, "class": "wrong_value", "why": "正文是跪下合掌，非坐下"},
+  {"i": 4, "class": "wrong_card", "why": "卡片未涉及机位角度"},
+  {"i": 5, "class": "hidden", "why": "宗教虔诚神圣蕴含庄严"},
+  {"i": 6, "class": "hidden", "why": "内心受冲击可对应反应"},
+  {"i": 7, "class": "wrong_card", "why": "旁白技巧与平视机位无关"},
+  {"i": 8, "class": "hidden", "why": "未出口的内心受冲击可蕴含压抑"}
+]

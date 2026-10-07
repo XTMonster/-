@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "findings": [],
+  "readings": {
+    "criterion_version": "attest/v1",
+    "edges": 638,
+    "slots": {
+      "attested": 331,
+      "unattested": 1262,
+      "not-checkable": 345
+    },
+    "checkable_denominator": 1593,
+    "total_denominator": 1938,
+    "attested_share_of_checkable": 0.2078,
+    "attested_share_of_total": 0.1708,
+    "not_checkable_ceiling": 345,
+    "wording": "`unattested` ＝ 未被来源佐证（下界），**不是**『编造』"
+  }
+}

@@ -1,0 +1,10 @@
+[
+  {"i":1,"class":"hidden","why":"推轨向主体靠近即dolly_in"},
+  {"i":2,"class":"wrong_card","why":"卡文无任何头顶空间内容"},
+  {"i":3,"class":"hidden","why":"卡述静态机位未写固定"},
+  {"i":4,"class":"wrong_card","why":"卡讲估焦对焦，非headroom"},
+  {"i":5,"class":"wrong_card","why":"卡讲估焦抓拍，非机位固定"},
+  {"i":6,"class":"wrong_card","why":"卡讲极特写取景，非headroom"},
+  {"i":7,"class":"wrong_card","why":"卡讲构图调度，非景别LS"},
+  {"i":8,"class":"hidden","why":"俯视交代空间即大远景功能"}
+]

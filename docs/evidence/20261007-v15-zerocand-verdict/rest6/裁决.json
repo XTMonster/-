@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"keep","why":"闭集词元，卡为镜头运动"},
+  {"i":2,"verdict":"keep","why":"闭集词元，卡为影视运镜"},
+  {"i":3,"verdict":"keep","why":"闭集词元，卡述推轨横移"},
+  {"i":4,"verdict":"keep","why":"闭集词元，卡述移动车镜头"},
+  {"i":5,"verdict":"keep","why":"闭集词元，卡涉动画与景别"},
+  {"i":6,"verdict":"keep","why":"闭集词元，卡涉视点与机位"},
+  {"i":7,"verdict":"keep","why":"闭集词元，卡述推镜与机位"},
+  {"i":8,"verdict":"keep","why":"闭集词元，卡涉分镜与机位"},
+  {"i":9,"verdict":"keep","why":"闭集词元，卡述多机位拍摄"},
+  {"i":10,"verdict":"keep","why":"闭集词元，卡涉纵深与取景"},
+  {"i":11,"verdict":"keep","why":"闭集词元，卡涉背景与透视"},
+  {"i":12,"verdict":"keep","why":"闭集词元，卡述景别与机位"}
+]

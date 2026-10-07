@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"wrong_card","why":"卡讲推拉变焦与移轴，非冲击帧"},
+  {"i":2,"verdict":"wrong_card","why":"各卡均与冲击帧主题无关"},
+  {"i":3,"verdict":"wrong_card","why":"卡讲轴向切/变焦，非冲击帧"},
+  {"i":4,"verdict":"wrong_card","why":"特技节制与动画工序，非冲击帧"},
+  {"i":5,"verdict":"wrong_card","why":"无哨音/耳鸣主题，来源不符"},
+  {"i":6,"verdict":"wrong_card","why":"灯光/调度/调色，非冲击帧"},
+  {"i":7,"verdict":"wrong_card","why":"无金属撞击声主题，来源不符"},
+  {"i":8,"verdict":"wrong_card","why":"假人与甩镜，非冲击帧特效"},
+  {"i":9,"verdict":"wrong_card","why":"无金属撞击声主题，来源不符"},
+  {"i":10,"verdict":"wrong_card","why":"假打与动画工序，非冲击帧"},
+  {"i":11,"verdict":"wrong_card","why":"无金属撞击声主题，来源不符"},
+  {"i":12,"verdict":"wrong_card","why":"灯具安全与动画，非撞击声"}
+]

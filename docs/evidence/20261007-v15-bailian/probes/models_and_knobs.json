@@ -1,0 +1,60 @@
+{
+ "base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+ "models": {
+  "qwen3.8-max-0902": {
+   "ok": true,
+   "elapsed_s": 9.3,
+   "model": "qwen3.8-max-0902",
+   "content_chars": 17,
+   "prompt_tokens": 94,
+   "completion_tokens": 367,
+   "reasoning_tokens": 354,
+   "finish_reason": "stop"
+  },
+  "qwen3.8-max": {
+   "ok": false,
+   "elapsed_s": 0.2,
+   "http": 403,
+   "error": "{\"error\":{\"message\":\"Access denied by API-Key restrictions.\",\"type\":\"access_denied\",\"param\":null,\"code\":\"access_denied\"},\"id\":\"chatcmpl-a611fe93-bb83-9c98-b896-e5a986cb1c9c\",\"request_id\":\"a611fe93-bb83-9c98-b896-e5a986cb1c9c\"}"
+  }
+ },
+ "knobs": {
+  "bare": {
+   "ok": true,
+   "elapsed_s": 12.6,
+   "model": "qwen3.8-max-0902",
+   "content_chars": 18,
+   "prompt_tokens": 94,
+   "completion_tokens": 511,
+   "reasoning_tokens": 497,
+   "finish_reason": "stop"
+  },
+  "reasoning_effort_max": {
+   "ok": true,
+   "elapsed_s": 13.6,
+   "model": "qwen3.8-max-0902",
+   "content_chars": 19,
+   "prompt_tokens": 94,
+   "completion_tokens": 480,
+   "reasoning_tokens": 466,
+   "finish_reason": "stop"
+  },
+  "enable_thinking_budget": {
+   "ok": true,
+   "elapsed_s": 10.6,
+   "model": "qwen3.8-max-0902",
+   "content_chars": 21,
+   "prompt_tokens": 94,
+   "completion_tokens": 449,
+   "reasoning_tokens": 434,
+   "finish_reason": "stop"
+  },
+  "effort_plus_budget": {
+   "ok": false,
+   "elapsed_s": 0.5,
+   "http": 400,
+   "error": "{\"error\":{\"message\":\"'reasoning_effort' and 'thinking_budget' cannot be set simultaneously\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":\"invalid_parameter_error\"},\"id\":\"chatcmpl-e409102b-2792-929d-aef9-891373b16a8c\",\"request_id\":\"e409102b-2792-929d-aef9-891373b16a8c\"}"
+  }
+ },
+ "chosen": "qwen3.8-max-0902"
+}

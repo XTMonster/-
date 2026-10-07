@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"keep","why":"摄影构图主题，值为闭集词元"},
+  {"i":2,"verdict":"keep","why":"含镜头调度主题，闭集风格词"},
+  {"i":3,"verdict":"keep","why":"运镜分镜主题，闭集词元"},
+  {"i":4,"verdict":"keep","why":"构图主题，board疑为闭集值，保留"},
+  {"i":5,"verdict":"keep","why":"机位手持主题，闭集词元"},
+  {"i":6,"verdict":"keep","why":"拍摄调度主题，闭集词元"},
+  {"i":7,"verdict":"keep","why":"运镜空间主题，闭集词元"},
+  {"i":8,"verdict":"keep","why":"同前运镜空间，闭集词元"},
+  {"i":9,"verdict":"keep","why":"镜头运动主题，闭集词元"},
+  {"i":10,"verdict":"keep","why":"全景纵深主题，闭集词元"},
+  {"i":11,"verdict":"keep","why":"动作运镜主题，闭集词元"},
+  {"i":12,"verdict":"keep","why":"摇镜空间主题，闭集词元"}
+]

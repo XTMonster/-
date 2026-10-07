@@ -1,0 +1,1064 @@
+{
+ "blocked_edges": 9,
+ "slots": 15,
+ "verdicts_full_index": {
+  "topic_mismatch": 6,
+  "topic_or_domain_matches_kind": 2,
+  "topic_unknown": 6,
+  "in_card_text": 1
+ },
+ "index_size": {
+  "generated": 2221,
+  "handwritten": 132,
+  "nodes": 180
+ },
+ "edges_whose_sources_include_a_handwritten_card": [
+  "hg:3f26bdf8d230",
+  "hg:400a2bfcda8e",
+  "hg:5b8b86de2d87",
+  "hg:d090d7ce0096"
+ ],
+ "slots_detail": [
+  {
+   "edge_id": "hg:3f26bdf8d230",
+   "kind": "headroom_policy",
+   "value": "cinematic",
+   "verdict": "topic_mismatch",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "cine_height",
+     "found": true,
+     "topic_or_domain": "cinematography",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:400a2bfcda8e",
+   "kind": "composition_rule",
+   "value": "lead_room",
+   "verdict": "topic_mismatch",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_comp_0204",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0205",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0274",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0278",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0060",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0065",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0085",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0112",
+     "found": true,
+     "topic_or_domain": "color",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0159",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0215",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_axis_0200",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_axis_0246",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_axis_0253",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "block_crowd_flow",
+     "found": true,
+     "topic_or_domain": "blocking",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0013",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0147",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0238",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0372",
+     "found": true,
+     "topic_or_domain": "shot_language",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0162",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0163",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0082",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_anime_0292",
+     "found": true,
+     "topic_or_domain": "anime",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0268",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:400a2bfcda8e",
+   "kind": "camera_angle",
+   "value": "平视",
+   "verdict": "topic_mismatch",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_comp_0204",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0205",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0274",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0278",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0060",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0065",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0085",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0112",
+     "found": true,
+     "topic_or_domain": "color",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0159",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0215",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_axis_0200",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_axis_0246",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_axis_0253",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "block_crowd_flow",
+     "found": true,
+     "topic_or_domain": "blocking",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0013",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0147",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0238",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0372",
+     "found": true,
+     "topic_or_domain": "shot_language",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0162",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0163",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0082",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_anime_0292",
+     "found": true,
+     "topic_or_domain": "anime",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0268",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:5b8b86de2d87",
+   "kind": "composition_rule",
+   "value": "lead_room",
+   "verdict": "topic_or_domain_matches_kind",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "comp_diagonal",
+     "found": true,
+     "topic_or_domain": "composition",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "comp_eye_trace",
+     "found": true,
+     "topic_or_domain": "composition",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0009",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0010",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0087",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0089",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0128",
+     "found": true,
+     "topic_or_domain": "color",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0130",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_cine_0213",
+     "found": true,
+     "topic_or_domain": "camera_angle",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_cine_0286",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0017",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0058",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0069",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0103",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0113",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0124",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0160",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0200",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0222",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0233",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0250",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_edit_0021",
+     "found": true,
+     "topic_or_domain": "editing",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_edit_0066",
+     "found": true,
+     "topic_or_domain": "editing",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_edit_0269",
+     "found": true,
+     "topic_or_domain": "shot_language",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0052",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0120",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0238",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0292",
+     "found": true,
+     "topic_or_domain": "shot_language",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0052",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:5b8b86de2d87",
+   "kind": "camera_angle",
+   "value": "平视",
+   "verdict": "topic_or_domain_matches_kind",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "comp_diagonal",
+     "found": true,
+     "topic_or_domain": "composition",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "comp_eye_trace",
+     "found": true,
+     "topic_or_domain": "composition",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0009",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0010",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0087",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0089",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0128",
+     "found": true,
+     "topic_or_domain": "color",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0130",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_cine_0213",
+     "found": true,
+     "topic_or_domain": "camera_angle",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_cine_0286",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0017",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0058",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0069",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0103",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0113",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0124",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0160",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0200",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0222",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0233",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0250",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_edit_0021",
+     "found": true,
+     "topic_or_domain": "editing",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_edit_0066",
+     "found": true,
+     "topic_or_domain": "editing",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_edit_0269",
+     "found": true,
+     "topic_or_domain": "shot_language",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0052",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0120",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0238",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0292",
+     "found": true,
+     "topic_or_domain": "shot_language",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0052",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:6d201c4c47a3",
+   "kind": "headroom_policy",
+   "value": "cinematic",
+   "verdict": "topic_mismatch",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_cine_0254",
+     "found": true,
+     "topic_or_domain": "camera_angle",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:904424ad8c64",
+   "kind": "composition_rule",
+   "value": "lead_room",
+   "verdict": "topic_unknown",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_block_0299",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0155",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:904424ad8c64",
+   "kind": "camera_angle",
+   "value": "高机位",
+   "verdict": "topic_unknown",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_block_0299",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_block_0155",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:d090d7ce0096",
+   "kind": "composition_rule",
+   "value": "headroom",
+   "verdict": "in_card_text",
+   "surface_hit": [
+    "headroom",
+    "头顶留白"
+   ],
+   "sources": [
+    {
+     "source": "comp_headroom",
+     "found": true,
+     "topic_or_domain": "composition",
+     "name_hits": [
+      "headroom",
+      "头顶留白"
+     ],
+     "side_text_hits": [
+      "头顶留白"
+     ]
+    },
+    {
+     "source": "gen_anime_0424",
+     "found": true,
+     "topic_or_domain": "character_design",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_perf_0568",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_perf_0569",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:d090d7ce0096",
+   "kind": "camera_angle",
+   "value": "平视",
+   "verdict": "topic_mismatch",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "comp_headroom",
+     "found": true,
+     "topic_or_domain": "composition",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_anime_0424",
+     "found": true,
+     "topic_or_domain": "character_design",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_perf_0568",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_perf_0569",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:d28d18bfdde4",
+   "kind": "composition_rule",
+   "value": "lead_room",
+   "verdict": "topic_unknown",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_comp_0027",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0108",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:d28d18bfdde4",
+   "kind": "camera_angle",
+   "value": "低机位",
+   "verdict": "topic_unknown",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_comp_0027",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_comp_0108",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:e2ea1c270f9b",
+   "kind": "headroom_policy",
+   "value": "cinematic",
+   "verdict": "topic_mismatch",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_story_0289",
+     "found": true,
+     "topic_or_domain": "storyboard",
+     "name_hits": [],
+     "side_text_hits": []
+    },
+    {
+     "source": "gen_story_0292",
+     "found": true,
+     "topic_or_domain": "shot_language",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:e3ee2d0b5f4c",
+   "kind": "composition_rule",
+   "value": "balance",
+   "verdict": "topic_unknown",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_block_0283",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  },
+  {
+   "edge_id": "hg:e3ee2d0b5f4c",
+   "kind": "camera_angle",
+   "value": "低机位",
+   "verdict": "topic_unknown",
+   "surface_hit": [],
+   "sources": [
+    {
+     "source": "gen_block_0283",
+     "found": true,
+     "topic_or_domain": "",
+     "name_hits": [],
+     "side_text_hits": []
+    }
+   ],
+   "missing_sources": []
+  }
+ ],
+ "note": "修正版：手写卡（Python 模块）与生成卡（jsonl）一起进索引；`topic` 对手写卡用 `domain` 代替。这是机械信号，不是判决。"
+}

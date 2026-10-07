@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡主题为空间标记/透视，非lead_room"},
+  {"i": 2, "class": "wrong_card", "why": "远景指背景深度，非极远景景别"},
+  {"i": 3, "class": "hidden", "why": "低机位表述已出现，内容吻合"},
+  {"i": 4, "class": "wrong_card", "why": "平衡指身体配重，非构图平衡"},
+  {"i": 5, "class": "wrong_card", "why": "卡组无中景内容，全为角度景深运动"},
+  {"i": 6, "class": "hidden", "why": "过肩与气泡避让均在讲遮挡，未写occlusion"},
+  {"i": 7, "class": "hidden", "why": "多机位卡提到中近景，即MCU概念"},
+  {"i": 8, "class": "hidden", "why": "已有平视机位卡直接表述，应属佐证"}
+]

@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲地位博弈，无低机位"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲地位博弈，无冷漠"},
+  {"i": 3, "class": "wrong_card", "why": "卡讲手持跳切，无MS"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲剪纸动画，无右移"},
+  {"i": 5, "class": "wrong_card", "why": "卡讲剪纸动画，无MS"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲过肩对话，无推近"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲过肩对话，无MCU"},
+  {"i": 8, "class": "wrong_card", "why": "卡讲车厢特写，非手持"}
+]

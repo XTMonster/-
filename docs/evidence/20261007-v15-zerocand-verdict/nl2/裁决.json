@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"keep","why":"medium属闭集枚举，且涉节奏"},
+  {"i":2,"verdict":"keep","why":"medium属闭集枚举，非正文串"},
+  {"i":3,"verdict":"keep","why":"台词节奏均匀，可蕴含常规"},
+  {"i":4,"verdict":"keep","why":"多卡涉节奏，medium闭集"},
+  {"i":5,"verdict":"keep","why":"medium属闭集枚举，非正文串"},
+  {"i":6,"verdict":"keep","why":"medium属闭集枚举，非正文串"},
+  {"i":7,"verdict":"keep","why":"medium属闭集枚举，非正文串"},
+  {"i":8,"verdict":"keep","why":"低声侧语蕴含耳语"},
+  {"i":9,"verdict":"keep","why":"medium属闭集枚举，非正文串"},
+  {"i":10,"verdict":"keep","why":"情绪对比涉节奏，闭集值"},
+  {"i":11,"verdict":"keep","why":"剪辑节奏主题，medium闭集"},
+  {"i":12,"verdict":"keep","why":"大量节奏主题，medium闭集"}
+]

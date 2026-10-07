@@ -1,0 +1,22 @@
+{
+  "_what": "根因的原始证据：百炼在**思考模式**下拒收 tool_choice=required",
+  "request": {
+    "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    "body_shape": "plugin 的真实计划请求（messages 见 plan_request_body.json）＋ tools=[emit_plan] ＋ tool_choice='required' ＋ reasoning_effort='max'",
+    "elapsed_s": 0.7
+  },
+  "response": {
+    "http": 400,
+    "body": {
+      "error": {
+        "message": "<400> InternalError.Algo.InvalidParameter: The tool_choice parameter does not support being set to required or object in thinking mode",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_parameter_error"
+      },
+      "id": "chatcmpl-6d0ba877-d1a0-9d1c-8098-af3206a536ff",
+      "request_id": "6d0ba877-d1a0-9d1c-8098-af3206a536ff"
+    }
+  },
+  "_why_this_matters": "sidecar 把上游任何非 2xx 都翻成 502（tools/sidecar_server.py:444-445），所以插件那侧只看到 'sidecar 返回 502'、耗时 0.7 s——看上去像网络抖动，其实是这一格。修法：sidecar 新增 --tool-choice-mode（默认 passthrough；auto 才把 required/对象改写成 auto）。"
+}

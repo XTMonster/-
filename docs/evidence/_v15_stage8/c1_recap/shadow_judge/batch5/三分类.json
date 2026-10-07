@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲入场退场，仅例子提到低头"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲倾听、静默等，主题非平静"},
+  {"i": 3, "class": "wrong_card", "why": "卡多讲调度、静默，主题非平静"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲动画静止与机位，无挥手"},
+  {"i": 5, "class": "wrong_card", "why": "卡全无关，无平静内容"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲动作动词与模仿，无拿起"},
+  {"i": 7, "class": "wrong_card", "why": "卡讲移焦蓄势，主题非愤怒"},
+  {"i": 8, "class": "hidden", "why": "主题正确，用入场代替出场"}
+]

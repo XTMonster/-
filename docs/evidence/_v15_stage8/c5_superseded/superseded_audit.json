@@ -1,0 +1,207 @@
+{
+  "current_generation": "gen2",
+  "runs_with_holdout_pin": 22,
+  "by_verdict": {
+    "不失据（pin == 现行代）": 21,
+    "待定（异代；裁定明说不能定案）": 1
+  },
+  "runs": [
+    {
+      "run": "20261003_chunked_long",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261003_chunked_long10",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261003_chunked_long3",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261003_chunked_long6",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261003_chunked_long9",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261003_intent",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261003_real",
+      "holdout_sha256_16": "78708edfc03f5510",
+      "resolved_generations": [
+        "gen0-20261003"
+      ],
+      "verdict": "待定（异代；裁定明说不能定案）"
+    },
+    {
+      "run": "20261003_real_ds",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261003_real_glm",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261003_real_long",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long11",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long12",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long14",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long15",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long16",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long17",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long18",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long19",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261004_chunked_long20",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261006-long21",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261007-real-axis",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    },
+    {
+      "run": "20261007-real-closure",
+      "holdout_sha256_16": "e3e6bac24d9efcfe",
+      "resolved_generations": [
+        "gen1",
+        "gen2"
+      ],
+      "verdict": "不失据（pin == 现行代）"
+    }
+  ]
+}

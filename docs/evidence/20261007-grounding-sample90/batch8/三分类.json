@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "移动车镜头定义，含左右移动，未明写track_right"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲移动车，无景别MS信息"},
+  {"i": 3, "class": "hidden", "why": "卡讲横移/推轨，track_left为横移方向"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲运动镜头，无景别MS信息"},
+  {"i": 5, "class": "wrong_card", "why": "卡讲POV，非固定机位"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲POV，无MCU景别信息"},
+  {"i": 7, "class": "wrong_card", "why": "卡未涉及中景MS，仅泛提景别"},
+  {"i": 8, "class": "wrong_card", "why": "卡讲取景/移焦，无头顶空间政策"}
+]

@@ -1,0 +1,14 @@
+[
+  {"i":1,"verdict":"keep","why":"闭集轴侧词，卡涉视线方向"},
+  {"i":2,"verdict":"keep","why":"闭集节拍词，多卡讲反应"},
+  {"i":3,"verdict":"wrong_card","why":"卡谈运镜动画，非头顶政策"},
+  {"i":4,"verdict":"keep","why":"闭集配对词，卡涉两落点"},
+  {"i":5,"verdict":"keep","why":"闭集场景词，卡涉对白台词"},
+  {"i":6,"verdict":"keep","why":"卡讲中性镜头，闭集词"},
+  {"i":7,"verdict":"keep","why":"闭集节拍词，卡含反应义"},
+  {"i":8,"verdict":"wrong_card","why":"卡谈运镜动画，非头顶政策"},
+  {"i":9,"verdict":"keep","why":"闭集配对词，卡涉两镜两侧"},
+  {"i":10,"verdict":"keep","why":"闭集场景词，卡含呼应回应"},
+  {"i":11,"verdict":"keep","why":"卡讲中性镜头，闭集词"},
+  {"i":12,"verdict":"keep","why":"闭集节拍词，多卡讲反应"}
+]

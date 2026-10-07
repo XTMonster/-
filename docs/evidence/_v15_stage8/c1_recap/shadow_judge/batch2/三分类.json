@@ -1,0 +1,10 @@
+[
+  {"i":1,"class":"hidden","why":"前景静物遮挡蕴含纵深但未写词"},
+  {"i":2,"class":"hidden","why":"有卡讲俯视/高角度，未写高机位"},
+  {"i":3,"class":"wrong_card","why":"无卡谈论头部留白/取景"},
+  {"i":4,"class":"wrong_card","why":"各卡均与headroom无关"},
+  {"i":5,"class":"hidden","why":"动画俯拍与高视角佐证高机位"},
+  {"i":6,"class":"wrong_card","why":"无卡讲取景构图规则"},
+  {"i":7,"class":"hidden","why":"俯拍及高角度佐证高机位"},
+  {"i":8,"class":"hidden","why":"正文含有平视佐证，非错漏"}
+]

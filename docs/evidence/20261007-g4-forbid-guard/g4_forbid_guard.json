@@ -1,0 +1,2324 @@
+{
+  "top_k": 3,
+  "token_limit": 400,
+  "runs": [
+    {
+      "run": "20261003_chunked_long9",
+      "queries": 25,
+      "with_backfill": 17,
+      "forbid_members_seen": 53,
+      "top1_preserved": 25,
+      "top1_is_backfilled": 0,
+      "details": [
+        {
+          "query": "景别=LS；运镜=static；景别=MS；景别=MCU；运镜=dolly_in；剧本《script_long_61》：",
+          "recorded_top1": "hg:6d201c4c47a3",
+          "current_top1": "hg:6d201c4c47a3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:6d201c4c47a3",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8459361e3100",
+            "hg:8a9867132566",
+            "hg:afc6ae05ea5f",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:6d201c4c47a3",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:6a74a366dc96",
+          "current_top1": "hg:6a74a366dc96",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:6a74a366dc96",
+            "hg:fa491b55632b",
+            "hg:f6fd8f040745",
+            "hg:f64564221b55",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:6a74a366dc96",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=揭示；运镜=固定",
+          "recorded_top1": "hg:356ba471c7ae",
+          "current_top1": "hg:356ba471c7ae",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:356ba471c7ae",
+            "hg:fa491b55632b",
+            "hg:e7342b4cbad3",
+            "hg:f7fc2b68889a",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:356ba471c7ae",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=推进；运镜=固定",
+          "recorded_top1": "hg:ad2735be0914",
+          "current_top1": "hg:ad2735be0914",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:ad2735be0914",
+            "hg:fae7ce68743c",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:ad2735be0914",
+            "hg:fae7ce68743c",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3",
+            "hg:43257e72a7eb"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=推进；运镜=固定",
+          "recorded_top1": "hg:afc6ae05ea5f",
+          "current_top1": "hg:afc6ae05ea5f",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:81edacc017be",
+            "hg:ad2735be0914",
+            "hg:0b026d20ebde",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=揭示；运镜=dolly_in",
+          "recorded_top1": "hg:f1292d65fee2",
+          "current_top1": "hg:f1292d65fee2",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:f1292d65fee2",
+            "hg:afc6ae05ea5f",
+            "hg:c573c323062e",
+            "hg:28065d8994d8",
+            "hg:6d201c4c47a3"
+          ],
+          "current_ids": [
+            "hg:f1292d65fee2",
+            "hg:afc6ae05ea5f",
+            "hg:6d201c4c47a3",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=留白；运镜=固定",
+          "recorded_top1": "hg:d090d7ce0096",
+          "current_top1": "hg:d090d7ce0096",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:d090d7ce0096",
+            "hg:e7342b4cbad3",
+            "hg:4ebde95fc2e9",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:d090d7ce0096",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=转折；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:572877ea5486",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:572877ea5486",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=转折；运镜=固定",
+          "recorded_top1": "hg:572877ea5486",
+          "current_top1": "hg:572877ea5486",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:572877ea5486",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:572877ea5486",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:82c2e5879bf5",
+          "current_top1": "hg:82c2e5879bf5",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:82c2e5879bf5",
+            "hg:e7342b4cbad3",
+            "hg:d27689796bdd",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:82c2e5879bf5",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MLS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:8a89eb945363",
+            "hg:3f26bdf8d230",
+            "hg:e3ee2d0b5f4c",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:8a89eb945363",
+            "hg:6982a3446c7f",
+            "hg:5bf0bd9e5d9c"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=留白；运镜=固定",
+          "recorded_top1": "hg:0b026d20ebde",
+          "current_top1": "hg:0b026d20ebde",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:0b026d20ebde",
+            "hg:b5a8c3686ba7",
+            "hg:4ebde95fc2e9",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:0b026d20ebde",
+            "hg:b5a8c3686ba7",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=对抗；运镜=固定",
+          "recorded_top1": "hg:fad0c2442498",
+          "current_top1": "hg:fad0c2442498",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fad0c2442498",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fad0c2442498",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=对抗；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:82c2e5879bf5",
+            "hg:d27689796bdd",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:6982a3446c7f",
+            "hg:e2ea1c270f9b"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:82c2e5879bf5",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:82c2e5879bf5",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=回望；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:d27689796bdd",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=留白；运镜=固定",
+          "recorded_top1": "hg:4ebde95fc2e9",
+          "current_top1": "hg:4ebde95fc2e9",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:5b8b86de2d87",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:5b8b86de2d87",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=释放；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=留白；运镜=固定",
+          "recorded_top1": "hg:f6fd8f040745",
+          "current_top1": "hg:f6fd8f040745",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:d28d18bfdde4",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:81edacc017be",
+            "hg:0b026d20ebde",
+            "hg:6982a3446c7f",
+            "hg:bde531d8cf67"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=收束；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:8a9867132566",
+            "hg:e2ea1c270f9b",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MLS；意图=回望；运镜=固定",
+          "recorded_top1": "hg:d27689796bdd",
+          "current_top1": "hg:d27689796bdd",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:d27689796bdd",
+            "hg:3f26bdf8d230",
+            "hg:e3ee2d0b5f4c",
+            "hg:9a79c6486530",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:d27689796bdd",
+            "hg:3f26bdf8d230",
+            "hg:6982a3446c7f",
+            "hg:5bf0bd9e5d9c"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=留白；运镜=固定；对白=dialogue",
+          "recorded_top1": "hg:f6fd8f040745",
+          "current_top1": "hg:f6fd8f040745",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:d28d18bfdde4",
+            "hg:904424ad8c64",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:6982a3446c7f"
+          ]
+        }
+      ]
+    },
+    {
+      "run": "20261004_chunked_long11",
+      "queries": 23,
+      "with_backfill": 14,
+      "forbid_members_seen": 49,
+      "top1_preserved": 23,
+      "top1_is_backfilled": 0,
+      "details": [
+        {
+          "query": "景别=LS；运镜=static；景别=MS；景别=MCU；运镜=dolly_in；剧本《script_long_61》：",
+          "recorded_top1": "hg:6d201c4c47a3",
+          "current_top1": "hg:6d201c4c47a3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:6d201c4c47a3",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8459361e3100",
+            "hg:8a9867132566",
+            "hg:afc6ae05ea5f",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:6d201c4c47a3",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:6a74a366dc96",
+          "current_top1": "hg:6a74a366dc96",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:6a74a366dc96",
+            "hg:fa491b55632b",
+            "hg:f6fd8f040745",
+            "hg:f64564221b55",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:6a74a366dc96",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=揭示；运镜=固定",
+          "recorded_top1": "hg:356ba471c7ae",
+          "current_top1": "hg:356ba471c7ae",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:356ba471c7ae",
+            "hg:fa491b55632b",
+            "hg:e7342b4cbad3",
+            "hg:f7fc2b68889a",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:356ba471c7ae",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=推进；运镜=固定",
+          "recorded_top1": "hg:ad2735be0914",
+          "current_top1": "hg:ad2735be0914",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:ad2735be0914",
+            "hg:fae7ce68743c",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:ad2735be0914",
+            "hg:fae7ce68743c",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3",
+            "hg:43257e72a7eb"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=推进；运镜=固定",
+          "recorded_top1": "hg:afc6ae05ea5f",
+          "current_top1": "hg:afc6ae05ea5f",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:81edacc017be",
+            "hg:ad2735be0914",
+            "hg:0b026d20ebde",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=揭示；运镜=dolly_in",
+          "recorded_top1": "hg:f1292d65fee2",
+          "current_top1": "hg:f1292d65fee2",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:f1292d65fee2",
+            "hg:afc6ae05ea5f",
+            "hg:c573c323062e",
+            "hg:28065d8994d8",
+            "hg:6d201c4c47a3"
+          ],
+          "current_ids": [
+            "hg:f1292d65fee2",
+            "hg:afc6ae05ea5f",
+            "hg:6d201c4c47a3",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=对抗；运镜=固定",
+          "recorded_top1": "hg:fad0c2442498",
+          "current_top1": "hg:fad0c2442498",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fad0c2442498",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fad0c2442498",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=留白；运镜=固定",
+          "recorded_top1": "hg:d090d7ce0096",
+          "current_top1": "hg:d090d7ce0096",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:d090d7ce0096",
+            "hg:e7342b4cbad3",
+            "hg:4ebde95fc2e9",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:d090d7ce0096",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=转折；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:572877ea5486",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:572877ea5486",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=转折；运镜=固定",
+          "recorded_top1": "hg:572877ea5486",
+          "current_top1": "hg:572877ea5486",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:572877ea5486",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:572877ea5486",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:82c2e5879bf5",
+          "current_top1": "hg:82c2e5879bf5",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:82c2e5879bf5",
+            "hg:e7342b4cbad3",
+            "hg:d27689796bdd",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:82c2e5879bf5",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MLS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:8a89eb945363",
+            "hg:3f26bdf8d230",
+            "hg:e3ee2d0b5f4c",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:8a89eb945363",
+            "hg:6982a3446c7f",
+            "hg:5bf0bd9e5d9c"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:bde531d8cf67",
+          "current_top1": "hg:bde531d8cf67",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:bde531d8cf67",
+            "hg:fa491b55632b",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f64564221b55"
+          ],
+          "current_ids": [
+            "hg:bde531d8cf67",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=对抗；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:82c2e5879bf5",
+            "hg:d27689796bdd",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:6982a3446c7f",
+            "hg:e2ea1c270f9b"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=压迫；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:e2ea1c270f9b",
+            "hg:c65a187f1e26",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:6982a3446c7f",
+            "hg:e2ea1c270f9b"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=回望；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:d27689796bdd",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=留白；运镜=固定",
+          "recorded_top1": "hg:4ebde95fc2e9",
+          "current_top1": "hg:4ebde95fc2e9",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:5b8b86de2d87",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:5b8b86de2d87",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=收束；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:8a9867132566",
+            "hg:e2ea1c270f9b",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a89eb945363",
+          "current_top1": "hg:8a89eb945363",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:8a89eb945363",
+            "hg:8a9867132566",
+            "hg:a5dde21ccde7",
+            "hg:f6fd8f040745",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a89eb945363",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:81edacc017be",
+            "hg:0b026d20ebde",
+            "hg:6982a3446c7f",
+            "hg:bde531d8cf67"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MLS；意图=回望；运镜=固定",
+          "recorded_top1": "hg:d27689796bdd",
+          "current_top1": "hg:d27689796bdd",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:d27689796bdd",
+            "hg:3f26bdf8d230",
+            "hg:e3ee2d0b5f4c",
+            "hg:9a79c6486530",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:d27689796bdd",
+            "hg:3f26bdf8d230",
+            "hg:6982a3446c7f",
+            "hg:5bf0bd9e5d9c"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=留白；运镜=固定；对白=dialogue",
+          "recorded_top1": "hg:f6fd8f040745",
+          "current_top1": "hg:f6fd8f040745",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:d28d18bfdde4",
+            "hg:904424ad8c64",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:6982a3446c7f"
+          ]
+        }
+      ]
+    },
+    {
+      "run": "20261004_chunked_long12",
+      "queries": 28,
+      "with_backfill": 18,
+      "forbid_members_seen": 58,
+      "top1_preserved": 28,
+      "top1_is_backfilled": 0,
+      "details": [
+        {
+          "query": "景别=LS；运镜=static；景别=MS；景别=MCU；运镜=dolly_in；剧本《script_long_61》：",
+          "recorded_top1": "hg:6d201c4c47a3",
+          "current_top1": "hg:6d201c4c47a3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:6d201c4c47a3",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8459361e3100",
+            "hg:8a9867132566",
+            "hg:afc6ae05ea5f",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:6d201c4c47a3",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=揭示；运镜=固定",
+          "recorded_top1": "hg:356ba471c7ae",
+          "current_top1": "hg:356ba471c7ae",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:356ba471c7ae",
+            "hg:e7342b4cbad3",
+            "hg:f7fc2b68889a",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:356ba471c7ae",
+            "hg:e7342b4cbad3",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=推进；运镜=固定",
+          "recorded_top1": "hg:ad2735be0914",
+          "current_top1": "hg:ad2735be0914",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:ad2735be0914",
+            "hg:fae7ce68743c",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:ad2735be0914",
+            "hg:fae7ce68743c",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3",
+            "hg:43257e72a7eb"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=推进；运镜=固定",
+          "recorded_top1": "hg:afc6ae05ea5f",
+          "current_top1": "hg:afc6ae05ea5f",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:81edacc017be",
+            "hg:ad2735be0914",
+            "hg:0b026d20ebde",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=推进；运镜=dolly_in",
+          "recorded_top1": "hg:afc6ae05ea5f",
+          "current_top1": "hg:afc6ae05ea5f",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:8459361e3100",
+            "hg:c573c323062e",
+            "hg:f1292d65fee2",
+            "hg:6d201c4c47a3"
+          ],
+          "current_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:8459361e3100",
+            "hg:6d201c4c47a3",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=对抗；运镜=固定",
+          "recorded_top1": "hg:fad0c2442498",
+          "current_top1": "hg:fad0c2442498",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fad0c2442498",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fad0c2442498",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=留白；运镜=固定",
+          "recorded_top1": "hg:d090d7ce0096",
+          "current_top1": "hg:d090d7ce0096",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:d090d7ce0096",
+            "hg:e7342b4cbad3",
+            "hg:4ebde95fc2e9",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:d090d7ce0096",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=转折；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:572877ea5486",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:572877ea5486",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=转折；运镜=固定",
+          "recorded_top1": "hg:572877ea5486",
+          "current_top1": "hg:572877ea5486",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:572877ea5486",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:572877ea5486",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=推进；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:ad2735be0914",
+            "hg:e2ea1c270f9b",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MLS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:8a89eb945363",
+            "hg:3f26bdf8d230",
+            "hg:e3ee2d0b5f4c",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:8a89eb945363",
+            "hg:6982a3446c7f",
+            "hg:5bf0bd9e5d9c"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=留白；运镜=固定",
+          "recorded_top1": "hg:0b026d20ebde",
+          "current_top1": "hg:0b026d20ebde",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:0b026d20ebde",
+            "hg:b5a8c3686ba7",
+            "hg:4ebde95fc2e9",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:0b026d20ebde",
+            "hg:b5a8c3686ba7",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=对抗；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:82c2e5879bf5",
+            "hg:d27689796bdd",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:6982a3446c7f",
+            "hg:e2ea1c270f9b"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:6a74a366dc96",
+          "current_top1": "hg:6a74a366dc96",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:6a74a366dc96",
+            "hg:fa491b55632b",
+            "hg:f6fd8f040745",
+            "hg:f64564221b55",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:6a74a366dc96",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:82c2e5879bf5",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:82c2e5879bf5",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=压迫；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:e2ea1c270f9b",
+            "hg:c65a187f1e26",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:6982a3446c7f",
+            "hg:e2ea1c270f9b"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:82c2e5879bf5",
+          "current_top1": "hg:82c2e5879bf5",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:82c2e5879bf5",
+            "hg:e7342b4cbad3",
+            "hg:d27689796bdd",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:82c2e5879bf5",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=留白；运镜=固定",
+          "recorded_top1": "hg:4ebde95fc2e9",
+          "current_top1": "hg:4ebde95fc2e9",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:5b8b86de2d87",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:5b8b86de2d87",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=释放；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=留白；运镜=固定",
+          "recorded_top1": "hg:f6fd8f040745",
+          "current_top1": "hg:f6fd8f040745",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:d28d18bfdde4",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=回望；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=回望；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:d27689796bdd",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:81edacc017be",
+            "hg:0b026d20ebde",
+            "hg:6982a3446c7f",
+            "hg:bde531d8cf67"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MLS；意图=回望；运镜=固定",
+          "recorded_top1": "hg:d27689796bdd",
+          "current_top1": "hg:d27689796bdd",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:d27689796bdd",
+            "hg:3f26bdf8d230",
+            "hg:e3ee2d0b5f4c",
+            "hg:9a79c6486530",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:d27689796bdd",
+            "hg:3f26bdf8d230",
+            "hg:6982a3446c7f",
+            "hg:5bf0bd9e5d9c"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=留白；运镜=固定；对白=dialogue",
+          "recorded_top1": "hg:f6fd8f040745",
+          "current_top1": "hg:f6fd8f040745",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:d28d18bfdde4",
+            "hg:904424ad8c64",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:6982a3446c7f"
+          ]
+        }
+      ]
+    },
+    {
+      "run": "20261006-long21",
+      "queries": 27,
+      "with_backfill": 17,
+      "forbid_members_seen": 57,
+      "top1_preserved": 27,
+      "top1_is_backfilled": 0,
+      "details": [
+        {
+          "query": "景别=LS；运镜=static；景别=MS；景别=MCU；运镜=dolly_in；剧本《script_long_61》：",
+          "recorded_top1": "hg:6d201c4c47a3",
+          "current_top1": "hg:6d201c4c47a3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:6d201c4c47a3",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8459361e3100",
+            "hg:8a9867132566",
+            "hg:afc6ae05ea5f",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:6d201c4c47a3",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:6a74a366dc96",
+          "current_top1": "hg:6a74a366dc96",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:6a74a366dc96",
+            "hg:fa491b55632b",
+            "hg:f6fd8f040745",
+            "hg:f64564221b55",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:6a74a366dc96",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=揭示；运镜=固定",
+          "recorded_top1": "hg:356ba471c7ae",
+          "current_top1": "hg:356ba471c7ae",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:356ba471c7ae",
+            "hg:fa491b55632b",
+            "hg:e7342b4cbad3",
+            "hg:f7fc2b68889a",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:356ba471c7ae",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=推进；运镜=固定",
+          "recorded_top1": "hg:ad2735be0914",
+          "current_top1": "hg:ad2735be0914",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:ad2735be0914",
+            "hg:fae7ce68743c",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:ad2735be0914",
+            "hg:fae7ce68743c",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3",
+            "hg:43257e72a7eb"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=推进；运镜=固定",
+          "recorded_top1": "hg:afc6ae05ea5f",
+          "current_top1": "hg:afc6ae05ea5f",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:81edacc017be",
+            "hg:ad2735be0914",
+            "hg:0b026d20ebde",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=推进；运镜=dolly_in",
+          "recorded_top1": "hg:afc6ae05ea5f",
+          "current_top1": "hg:afc6ae05ea5f",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:8459361e3100",
+            "hg:c573c323062e",
+            "hg:f1292d65fee2",
+            "hg:6d201c4c47a3"
+          ],
+          "current_ids": [
+            "hg:afc6ae05ea5f",
+            "hg:8459361e3100",
+            "hg:6d201c4c47a3",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=留白；运镜=固定",
+          "recorded_top1": "hg:d090d7ce0096",
+          "current_top1": "hg:d090d7ce0096",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:d090d7ce0096",
+            "hg:e7342b4cbad3",
+            "hg:4ebde95fc2e9",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:d090d7ce0096",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=转折；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:572877ea5486",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:572877ea5486",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=转折；运镜=固定",
+          "recorded_top1": "hg:572877ea5486",
+          "current_top1": "hg:572877ea5486",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:572877ea5486",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:572877ea5486",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:82c2e5879bf5",
+          "current_top1": "hg:82c2e5879bf5",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:82c2e5879bf5",
+            "hg:e7342b4cbad3",
+            "hg:d27689796bdd",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:82c2e5879bf5",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MLS；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:8a89eb945363",
+            "hg:3f26bdf8d230",
+            "hg:e3ee2d0b5f4c",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:8a89eb945363",
+            "hg:6982a3446c7f",
+            "hg:5bf0bd9e5d9c"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=铺垫；运镜=固定",
+          "recorded_top1": "hg:bde531d8cf67",
+          "current_top1": "hg:bde531d8cf67",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:bde531d8cf67",
+            "hg:fa491b55632b",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f64564221b55"
+          ],
+          "current_ids": [
+            "hg:bde531d8cf67",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=对抗；运镜=固定",
+          "recorded_top1": "hg:fad0c2442498",
+          "current_top1": "hg:fad0c2442498",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fad0c2442498",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fad0c2442498",
+            "hg:fa491b55632b",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=对抗；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:82c2e5879bf5",
+            "hg:d27689796bdd",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:6982a3446c7f",
+            "hg:e2ea1c270f9b"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=停顿；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:82c2e5879bf5",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:82c2e5879bf5",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=压迫；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:e2ea1c270f9b",
+            "hg:c65a187f1e26",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:6982a3446c7f",
+            "hg:e2ea1c270f9b"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=留白；运镜=固定",
+          "recorded_top1": "hg:4ebde95fc2e9",
+          "current_top1": "hg:4ebde95fc2e9",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:5b8b86de2d87",
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:5b8b86de2d87",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=留白；运镜=固定",
+          "recorded_top1": "hg:f6fd8f040745",
+          "current_top1": "hg:f6fd8f040745",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:d28d18bfdde4",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:f6fd8f040745",
+            "hg:400a2bfcda8e",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MS；意图=回望；运镜=固定",
+          "recorded_top1": "hg:fa491b55632b",
+          "current_top1": "hg:fa491b55632b",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 1,
+          "recorded_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:8a9867132566",
+            "hg:4ebde95fc2e9",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:fa491b55632b",
+            "hg:356ba471c7ae",
+            "hg:6982a3446c7f",
+            "hg:6d201c4c47a3"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=回望；运镜=固定",
+          "recorded_top1": "hg:81edacc017be",
+          "current_top1": "hg:81edacc017be",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:81edacc017be",
+            "hg:d27689796bdd",
+            "hg:0b026d20ebde",
+            "hg:bde531d8cf67",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:81edacc017be",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=MCU；意图=收束；运镜=固定",
+          "recorded_top1": "hg:8a9867132566",
+          "current_top1": "hg:8a9867132566",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 3,
+          "forbid_backfilled": 2,
+          "recorded_ids": [
+            "hg:8a9867132566",
+            "hg:81edacc017be",
+            "hg:0b026d20ebde",
+            "hg:6982a3446c7f",
+            "hg:bde531d8cf67"
+          ],
+          "current_ids": [
+            "hg:8a9867132566",
+            "hg:81edacc017be",
+            "hg:6982a3446c7f",
+            "hg:f5bbb29d26ef",
+            "hg:9120d4d96f4e"
+          ]
+        },
+        {
+          "query": "景别=CU；意图=收束；运镜=固定",
+          "recorded_top1": "hg:e7342b4cbad3",
+          "current_top1": "hg:e7342b4cbad3",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 2,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:e7342b4cbad3",
+            "hg:8a9867132566",
+            "hg:e2ea1c270f9b",
+            "hg:d27689796bdd",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:e7342b4cbad3",
+            "hg:e2ea1c270f9b",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=MLS；意图=留白；运镜=固定",
+          "recorded_top1": "hg:4ebde95fc2e9",
+          "current_top1": "hg:4ebde95fc2e9",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:f6fd8f040745",
+            "hg:0b026d20ebde",
+            "hg:92427ad5a448",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:4ebde95fc2e9",
+            "hg:f6fd8f040745",
+            "hg:6982a3446c7f"
+          ]
+        },
+        {
+          "query": "景别=LS；意图=收束；运镜=固定；对白=dialogue",
+          "recorded_top1": "hg:8a89eb945363",
+          "current_top1": "hg:8a89eb945363",
+          "top1_preserved": true,
+          "top1_is_backfilled": false,
+          "forbid_members_seen": 1,
+          "forbid_backfilled": 0,
+          "recorded_ids": [
+            "hg:8a89eb945363",
+            "hg:8a9867132566",
+            "hg:a5dde21ccde7",
+            "hg:f6fd8f040745",
+            "hg:6982a3446c7f"
+          ],
+          "current_ids": [
+            "hg:8a89eb945363",
+            "hg:8a9867132566",
+            "hg:6982a3446c7f"
+          ]
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "queries": 103,
+    "with_backfill": 66,
+    "forbid_members_seen": 217,
+    "backfilled_edges": 91,
+    "top1_preserved": 103,
+    "top1_is_backfilled": 0
+  },
+  "gate_g4": {
+    "forbid_members_seen_gt_0": true,
+    "ranking_preserved": true
+  }
+}

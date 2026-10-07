@@ -1,0 +1,26 @@
+{
+  "role": "三分类",
+  "requested_model": "glm-5.3",
+  "attempts": [
+    {
+      "level": "max",
+      "error": "HTTP 401: {\"error\":{\"code\":\"401\",\"message\":\"令牌已过期或验证不正确\"}}",
+      "elapsed_s": 0.2,
+      "finish_reason": "http_401",
+      "stepped_down_to": "high"
+    },
+    {
+      "level": "high",
+      "error": "HTTP 401: {\"error\":{\"code\":\"401\",\"message\":\"令牌已过期或验证不正确\"}}",
+      "elapsed_s": 0.2,
+      "finish_reason": "http_401",
+      "stepped_down_to": "low"
+    },
+    {
+      "level": "low",
+      "error": "HTTP 401: {\"error\":{\"code\":\"401\",\"message\":\"令牌已过期或验证不正确\"}}",
+      "elapsed_s": 0.2,
+      "finish_reason": "http_401"
+    }
+  ]
+}

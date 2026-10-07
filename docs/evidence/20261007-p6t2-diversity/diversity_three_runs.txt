@@ -1,0 +1,35 @@
+{
+  "runs": 3,
+  "shot_counts": [
+    64,
+    64,
+    64
+  ],
+  "shot_type_edit_distance": {
+    "pairs": 3,
+    "sum": 2.0,
+    "mean": 0.6666666666666666,
+    "normalised": 0.010416666666666666
+  },
+  "movement_chi_square": {
+    "statistic": 6.662764,
+    "dof": 14,
+    "kinds": 8,
+    "runs": 3
+  },
+  "axis_flip": {
+    "comparable_shots": 64,
+    "flipped_shots": 0,
+    "rate": 0.0
+  },
+  "measurable": {
+    "shot_type": true,
+    "movement": true,
+    "axis": false
+  },
+  "inputs": [
+    "docs\\evidence\\20261003_chunked_long9\\export\\shots.json",
+    "docs\\evidence\\20261004_chunked_long11\\export\\shots.json",
+    "docs\\evidence\\20261004_chunked_long12\\export\\shots.json"
+  ]
+}

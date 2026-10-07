@@ -1,0 +1,157 @@
+{
+  "verdict": "修正后采纳",
+  "groups": [
+    {
+      "id": 1,
+      "files": [
+        "tools/kb_fetch/rebind.py",
+        "tools/kb_fetch/build_hypergraph.py",
+        "tools/kb_fetch/card_scope_audit.py",
+        "knowledge/",
+        "docs/knowledge/REGEN_LOG_20261007_rotation.md",
+        "tests/test_rebind.py"
+      ],
+      "message": "feat(knowledge): 索引换代 rebind/v2（c796a5a8→e5213e1b）＋保范围候选池与裁决留痕"
+    },
+    {
+      "id": 2,
+      "files": [
+        "block_director/contracts/beats.py",
+        "block_director/contracts/plan.py",
+        "block_director/contracts/sdl.py",
+        "block_director/contracts/config.py",
+        "block_director/contracts/vlm_review.py",
+        "block_director/layer2_sdl/sdl_builder.py",
+        "block_director/layer2_sdl/sdl_migrate.py",
+        "tools/gen_specs.py",
+        "tools/gen_golden.py",
+        "specs/",
+        "fixtures/",
+        "tests/test_beats.py",
+        "tests/test_plan_v15_fields.py",
+        "tests/test_sdl*15*.py",
+        "tests/test_config_vlm_review.py",
+        "tests/test_budget_gate.py"
+      ],
+      "message": "feat(v1.5-契约): 拍点/锚点/灯光/构图/破例辩护契约 ＋ Plan.environment ＋ SDL1.5 ＋ 配置三键与 token 预算两格"
+    },
+    {
+      "id": 3,
+      "files": [
+        "block_director/layer5_orchestrator/beat_compiler.py",
+        "block_director/layer5_orchestrator/planner.py",
+        "block_director/layer5_orchestrator/editor.py",
+        "block_director/layer5_orchestrator/driver.py",
+        "block_director/layer5_orchestrator/headless_runner.py",
+        "block_director/layer5_orchestrator/modal_operator.py",
+        "block_director/cinema/",
+        "block_director/layer3_engine/scene_executor.py",
+        "block_director/layer3_engine/shot_builder.py",
+        "block_director/layer7_ui/panel_shots.py",
+        "tools/run_headless.py",
+        "tests/test_beat_compiler.py",
+        "tests/test_staging_anchors.py",
+        "tests/test_lighting_matrix.py",
+        "tests/test_prop_interaction.py",
+        "tests/test_composition_consumption.py",
+        "tools/blender_tests/test_anchor_staging.py",
+        "tools/blender_tests/test_prop_interaction.py",
+        "tools/blender_tests/test_phase3_audit.py"
+      ],
+      "message": "feat(v1.5-引擎): 拍点编译、锚点摆位、灯光矩阵、道具交互、构图消费 ＋构建失败留 traceback"
+    },
+    {
+      "id": 4,
+      "files": [
+        "block_director/knowledge/",
+        "block_director/layer5_orchestrator/scene_contract.py",
+        "block_director/layer3_engine/shot_auditor.py",
+        "block_director/delivery/manifest.py",
+        "block_director/contracts/audit.py",
+        "block_director/contracts/messages.py",
+        "block_director/motion/model.py",
+        "tests/test_rulepack.py",
+        "tests/test_forbid_guard_backfill.py",
+        "tests/test_retrieval_seed_wiring.py",
+        "tests/test_justification_audit.py",
+        "tests/test_action_param_values_are_checked.py",
+        "tests/plan_v4_instruments.sha256.json"
+      ],
+      "message": "feat(v1.5-规则): 规则包、forbid 反查、种子接线、破例辩护、VLM外回路 ＋动作参数校验"
+    },
+    {
+      "id": 5,
+      "files": [
+        "tools/diversity_score.py",
+        "tests/test_best_of_n.py",
+        "tests/test_vlm_review.py",
+        "tools/blender_tests/test_vlm_review.py"
+      ],
+      "message": "feat(v1.5-评估): 多样性度量（纯函数）＋ Best-of-N 骨架（默认 1 = 现状）"
+    },
+    {
+      "id": 6,
+      "files": [
+        "tools/hooks/",
+        "tests/test_dispatch_graph.py",
+        "tools/glm_consult.py",
+        "tests/test_glm_consult.py",
+        "tools/knowledge/grounding_classify.py",
+        "tools/knowledge/quality.py",
+        "tools/holdout_expect_movements.py",
+        "tests/test_q5_plan_shaped_entries.py",
+        "tools/run_tests.ps1",
+        "tools/sidecar_server.py",
+        "tests/test_sidecar_retrieve.py",
+        "tests/test_extract_run_evidence.py",
+        "tests/test_evidence_digest_is_checkout_independent.py",
+        "tests/test_chain_evidence_is_measured.py",
+        "tests/test_q5_audit_channel.py"
+      ],
+      "message": "feat(tools): 派发 hook、sidecar/百炼通道、glm_consult 修复、证据抽取与链证据测试"
+    },
+    {
+      "id": 7,
+      "files": [
+        "AGENTS.md",
+        "CONTEXT.md",
+        "docs/knowledge/OPEN_PROBLEMS.md",
+        "docs/knowledge/PLAN_HYPERGRAPH_v4_PROGRESS.md",
+        "docs/knowledge/REGEN_LOG_TEMPLATE.md",
+        "docs/knowledge/JUDGE_ALIGNMENT_v1.md",
+        "docs/knowledge/OPEN_ITEMS_20261007.md",
+        "docs/knowledge/ACCEPTANCE_STATUS.md"
+      ],
+      "message": "docs(v1.5): 文档一致性修复、验收状态、评委口径与上下文"
+    },
+    {
+      "id": 8,
+      "files": [
+        "docs/evidence/"
+      ],
+      "message": "docs(evidence): v1.5 各阶段门、在跑产物、换代与真跑证据统一入库"
+    },
+    {
+      "id": 9,
+      "files": [
+        "执行文档v1.5/",
+        "docs/research_src/"
+      ],
+      "message": "docs(input): v1.5 执行包与调研输入入库（用户放置材料，非本轮产物）"
+    }
+  ],
+  "verification": {
+    "per_group": "提交前当前树 2808 passed/35 步为基线。每组只暂存本组；暂存后 `git diff --cached --check`。组1–6：在该提交点（git worktree 或 git stash --keep-index）跑 `python -m pytest -q`；组2 追加 `python tools/gen_specs.py --check`、`python tools/gen_golden.py --check`；组1 追加 `python tools/kb_fetch/build_hypergraph.py --rematch` 并核对指纹仍为 e5213e1b。组7、9 免 pytest；组8 在完整链后提交，只做路径与清单核对。",
+    "full_chain": "组1–6 提交完后跑一次 `powershell -File tools/run_tests.ps1`；RK-13/E1 红为已结案预期，其余 35/35。全链产物落入组8后再提交证据；若全链红非 RK-13，停止并回到对应组修正。"
+  },
+  "index_regen_group": "独立为组1并先提交。索引是全局数据真源，先落可让后续代码组基于最终代索引验证；22 份 pin 失代是已记录预期，独立提交便于审计与回滚，避免与代码改动混淆。",
+  "why": "修正采纳：原清单主题可用；清单后新增的换代、sidecar、证据与状态文档必须并题；证据目录单列避免多组重叠；换代独立先提，保证后续提交基于最终索引并可单独回滚。",
+  "risks": [
+    "中间提交可能因跨组依赖不绿",
+    "证据目录过大导致历史膨胀",
+    "22 份旧 pin 失代被误读",
+    "166 条未列全可能漏组",
+    "输入材料入库混淆产物边界",
+    "隔离验证可能漏未跟踪证据"
+  ]
+}

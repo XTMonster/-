@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "卡讲身体平衡，非构图平衡"},
+  {"i": 2, "class": "hidden", "why": "正文有平视，未显式标注"},
+  {"i": 3, "class": "hidden", "why": "正文有平视，未显式标注"},
+  {"i": 4, "class": "wrong_card", "why": "无头顶留白内容"},
+  {"i": 5, "class": "hidden", "why": "讲景深与取景，蕴含framing"},
+  {"i": 6, "class": "wrong_card", "why": "无头顶留白政策内容"},
+  {"i": 7, "class": "hidden", "why": "卡中有走位描述"},
+  {"i": 8, "class": "hidden", "why": "卡中有压抑情绪描述"}
+]

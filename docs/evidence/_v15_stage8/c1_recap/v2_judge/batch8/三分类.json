@@ -1,0 +1,10 @@
+[
+{"i":1,"class":"hidden","why":"卡讲右移，未写track_right"},
+{"i":2,"class":"wrong_card","why":"卡讲运镜/景深，无景别佐证"},
+{"i":3,"class":"wrong_card","why":"卡讲右移，非左移主题"},
+{"i":4,"class":"wrong_card","why":"卡讲运镜/景深，无MS佐证"},
+{"i":5,"class":"wrong_card","why":"卡讲动画画幅固定，非镜头运动"},
+{"i":6,"class":"hidden","why":"卡含中近景，未写MCU"},
+{"i":7,"class":"wrong_card","why":"中景指空间层次，非景别"},
+{"i":8,"class":"wrong_card","why":"卡讲运镜/取景，无headroom"}
+]

@@ -1,0 +1,550 @@
+{
+    "generated_at":  "2026-10-07T08:50:25",
+    "max_parallel":  6,
+    "done":  34,
+    "total":  36,
+    "inflight":  [
+
+                 ],
+    "dispatch_now":  [
+
+                     ],
+    "cards":  [
+                  {
+                      "id":  "P0-T1",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  2,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_dispatch/"
+                                ]
+                  },
+                  {
+                      "id":  "P0-T2",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  2,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_dispatch/"
+                                ]
+                  },
+                  {
+                      "id":  "P1-T1",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  3,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/knowledge/open_problems.md",
+                                    "agents.md",
+                                    "docs/knowledge/plan_hypergraph_v4_progress.md"
+                                ]
+                  },
+                  {
+                      "id":  "P1-T2",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/knowledge/plan_hypergraph_v4_progress.md"
+                                ]
+                  },
+                  {
+                      "id":  "P1-T3",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  2,
+                      "deps_depth":  1,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "agents.md"
+                                ]
+                  },
+                  {
+                      "id":  "P2-T1",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/contracts/beats.py",
+                                    "block_director/motion/model.py",
+                                    "tests/test_beats.py"
+                                ]
+                  },
+                  {
+                      "id":  "P2-T2",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/contracts/plan.py",
+                                    "fixtures/tool_transcript_simple.jsonl"
+                                ]
+                  },
+                  {
+                      "id":  "P2-T3",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/contracts/sdl.py",
+                                    "block_director/layer2_sdl/sdl_builder.py",
+                                    "block_director/layer2_sdl/sdl_migrate.py",
+                                    "fixtures/expected_sdl_simple.json",
+                                    "fixtures/expected_sdl_long.json"
+                                ]
+                  },
+                  {
+                      "id":  "P2-T4",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  2,
+                      "deps_depth":  1,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/layer5_orchestrator/planner.py",
+                                    "block_director/layer5_orchestrator/editor.py",
+                                    "block_director/layer5_orchestrator/driver.py"
+                                ]
+                  },
+                  {
+                      "id":  "P2-T5",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/contracts/config.py",
+                                    "specs/config.default.yaml"
+                                ]
+                  },
+                  {
+                      "id":  "P3-T1",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  1,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/layer5_orchestrator/beat_compiler.py",
+                                    "tests/test_beat_compiler.py"
+                                ]
+                  },
+                  {
+                      "id":  "P3-T2",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  1,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/cinema/anchors_solve.py",
+                                    "block_director/layer3_engine/scene_executor.py",
+                                    "block_director/layer3_engine/shot_builder.py"
+                                ]
+                  },
+                  {
+                      "id":  "P3-T3",
+                      "state":  "done",
+                      "mode":  "serial",
+                      "coupling":  1,
+                      "deps_depth":  2,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/cinema/lighting.py",
+                                    "block_director/layer3_engine/scene_executor.py",
+                                    "block_director/layer3_engine/shot_builder.py"
+                                ]
+                  },
+                  {
+                      "id":  "P3-T4",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  1,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/cinema/framing.py"
+                                ]
+                  },
+                  {
+                      "id":  "P4-T1",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  2,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/knowledge/rulepack.py",
+                                    "block_director/knowledge/client.py",
+                                    "block_director/knowledge/retriever.py",
+                                    "tests/test_rulepack.py"
+                                ]
+                  },
+                  {
+                      "id":  "P4-T2",
+                      "state":  "done",
+                      "mode":  "serial",
+                      "coupling":  1,
+                      "deps_depth":  1,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/knowledge/rulepack.py"
+                                ]
+                  },
+                  {
+                      "id":  "P4-T3",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+                                     "block_director/knowledge/hypergraph.py"
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/knowledge/hypergraph.py",
+                                    "block_director/knowledge/retriever.py",
+                                    "block_director/knowledge/client.py",
+                                    "tests/plan_v4_instruments.sha256.json"
+                                ]
+                  },
+                  {
+                      "id":  "P4-T4",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  3,
+                      "deps_depth":  2,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/layer5_orchestrator/editor.py",
+                                    "block_director/layer3_engine/rule_checker.py",
+                                    "block_director/layer3_engine/shot_auditor.py",
+                                    "block_director/layer8_delivery/export_director.py"
+                                ]
+                  },
+                  {
+                      "id":  "P4-T5",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  1,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/layer5_orchestrator/scene_contract.py"
+                                ]
+                  },
+                  {
+                      "id":  "P5-T1",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/knowledge/regen_log_template.md"
+                                ]
+                  },
+                  {
+                      "id":  "P5-T2",
+                      "state":  "pending",
+                      "mode":  "user",
+                      "coupling":  0,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "mode:user",
+                      "files":  [
+                                    "knowledge/hypergraph.edges.jsonl"
+                                ]
+                  },
+                  {
+                      "id":  "P5-T3",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+
+                                ]
+                  },
+                  {
+                      "id":  "P5-T4",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  0,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/knowledge/judge_alignment_v1.md"
+                                ]
+                  },
+                  {
+                      "id":  "P6-T1",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  3,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "block_director/layer3_engine/shot_auditor.py"
+                                ]
+                  },
+                  {
+                      "id":  "P6-T2",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  3,
+                      "deps_depth":  2,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "tools/diversity_score.py",
+                                    "block_director/contracts/config.py",
+                                    "block_director/layer5_orchestrator/editor.py"
+                                ]
+                  },
+                  {
+                      "id":  "P7-T1",
+                      "state":  "done",
+                      "mode":  "gate",
+                      "coupling":  11,
+                      "deps_depth":  3,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/"
+                                ]
+                  },
+                  {
+                      "id":  "P7-T2",
+                      "state":  "pending",
+                      "mode":  "user",
+                      "coupling":  2,
+                      "deps_depth":  4,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "mode:user",
+                      "files":  [
+                                    "agents.md",
+                                    "context.md",
+                                    "docs/knowledge/acceptance_status.md"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T1",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "tools/knowledge/attestation_ledger.py",
+                                    "tests/test_attestation_ledger.py",
+                                    "docs/evidence/_v15_stage8/c4_ledger/"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T2",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_stage8/c3_topic/"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T3",
+                      "state":  "done",
+                      "mode":  "serial",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_stage8/c6_layer_fix/"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T4",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_stage8/c2_edge_surgery/"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T5",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_stage8/c5_superseded/"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T6",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_stage8/a4_depth12/"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T7",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_stage8/b3_coverage/"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T8",
+                      "state":  "done",
+                      "mode":  "auto",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_stage8/g1_g9_recheck/"
+                                ]
+                  },
+                  {
+                      "id":  "P8-T9",
+                      "state":  "done",
+                      "mode":  "user",
+                      "coupling":  1,
+                      "deps_depth":  0,
+                      "frozen":  [
+
+                                 ],
+                      "reason":  "",
+                      "files":  [
+                                    "docs/evidence/_v15_stage8/c1_recap/"
+                                ]
+                  }
+              ]
+}

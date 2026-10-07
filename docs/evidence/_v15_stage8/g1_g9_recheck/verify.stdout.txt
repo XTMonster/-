@@ -1,0 +1,47 @@
+[OK] G1 抽取提示历史措辞（13 类 / 4b EMOTION_PACK 宿主）
+    ok   PROMPT_VERSION = "extract/v18"
+    ok   开场/规则 1 仍写 13 类
+    ok   规则 1b 仍写 13 个 type
+    ok   规则 6b 仍写把 13 类逐条问
+    ok   规则 4b 仍写挂到 EMOTION_PACK
+    ok   已记『被实测否决』留档
+[OK] G2 运镜政策无宿主 / gen_cine_0247 禁半
+    ok   引用 gen_cine_0247 的边 = 1 条（卡已进索引）
+    ok   这 1 条边**没有** forbid 成员 ⇒ 卡里『避免长时间静止固定』的禁半仍未进索引
+    ok   card_scope.excluded 不含 gen_cine_0247（不再是孤儿卡）
+    ok   没有**专门的**『运镜政策』边型/kind（现行宿主只是 INTENT_PACK 的 `movement` 槽位——「无宿主」这句只在『无专用边型』这一层成立）
+[OK] G3 ollama 残片（工作区外 blob + 工作区内 bin）
+    ok   work/ollama_leftover_*.bin = 3 份 / 合计 49.39 GiB
+    ok   C:\Users\小皮\.ollama\models\blobs\sha256-0373edb066522ad4e8d022fe9ee6dcf02a853cf9477ebee6bfebc3e55e6929c0 仍在（18.25 GiB，仍被 qwen3-vl:30b 引用）
+[OK] G4 抽取提示漂移须与整库重抽同批
+    ok   发货索引 prompt_version = extract/v18（漂移未随重抽落地）
+    ok   build_hypergraph.py 里仍写着『必须同批落地』的结论
+[OK] G5 按 chunk 的原子边缓存
+    ok   tools/kb_fetch/atom_cache.py 在（第 1 段抽取结果的缓存／断点续跑）
+    ok   build_hypergraph 真的接上了它（`import atom_cache` ＋ `--no-atom-cache` 可关）
+    ok   发货 manifest 记 atom_cache.enabled=true、path=work/hypergraph.atom_cache.jsonl（落在 work/ ⇒ 不入库、不进指纹）
+    ok   chunks[] 带 per-chunk 账（708 条，每条含 sha256/status/edges）
+    ok   守门用例在（tests/test_hypergraph_atom_cache.py：键只随输入动）
+    ok   缓存文件名是 work/hypergraph.atom_cache.jsonl——**粒度＝抽取单元**（渲染后的整段提示 ＋ 模型 ＋ 温度 ＋ 解码 ＋ 卡文），不是 §28.1 设想的 `hypergraph.chunk*.jsonl`；命名不同，判据（命中就不重抽）相同
+[OK] G6 构图口径（rule_of_thirds / lead_room）
+    ok   PASS_SCORE 仍是 70.0（没有被拿去将就口径）
+    ok   WEIGHTS[lead_room] 仍是 0.2
+    ok   WEIGHTS[rule_of_thirds] 仍是 0.15
+    ok   docs/adr 里仍**没有**这两条口径的成文裁决（机制已落地：§68/§69 的横移 ＋ 竖直抬升，阈值一字未动；口径未成文）
+[OK] G7 drift_is_bridged 的参照系
+    ok   drift_is_bridged：53° 漂移只交代了 6° ⇒ 不赦免
+    ok   drift_is_bridged：100° 可见慢漂移 ⇒ 赦免
+    ok   drift_is_bridged：阈值内免费
+    ok   drift_is_bridged：中性机位直接算交代
+[OK] G8 Q5 基准串口径
+    ok   quality.py 的 join 键 = audit_log 的 retrieval_call.data.query（emitted）
+    ok   重推串仍降级为 drift 诊断
+    ok   AGENTS.md 仍记『Q5 的基准串口径仍未拍板』（口径未收口）
+[OK] G9 别名表进缓存键
+    ok   CACHE_KEY_FIELDS = 8 格，含 vocabulary_fingerprint（§21 已收口）
+    ok   发货 manifest 的 cache_key 也是 8 格（vocabulary_fingerprint=f72697ec…）
+[OK] E2 悬空引用（P1-T1 验收项）
+    ok   AGENTS.md 里已无 OPEN_PROBLEMS 引用（悬空引用已改指）
+    ok   台账的悬空引用已改指 OPEN_ITEMS_20261007.md B1
+
+10 条全部与 P8-T8 的记录一致。

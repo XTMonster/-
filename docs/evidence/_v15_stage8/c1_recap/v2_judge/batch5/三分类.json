@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "卡讲低头屈服姿态，未单列低头"},
+  {"i": 2, "class": "wrong_card", "why": "卡多讲倾听/过肩/静默，与平静无关"},
+  {"i": 3, "class": "wrong_card", "why": "来源卡主题杂，未涉及平静"},
+  {"i": 4, "class": "hidden", "why": "卡讲手势动作配合，未写挥手"},
+  {"i": 5, "class": "wrong_card", "why": "卡与平静无关，主题不对"},
+  {"i": 6, "class": "wrong_card", "why": "卡讲模仿动作，非拿起本身"},
+  {"i": 7, "class": "hidden", "why": "卡讲愤怒节奏外化，未提炼值"},
+  {"i": 8, "class": "hidden", "why": "卡讲入场时机，未写出场动作"}
+]

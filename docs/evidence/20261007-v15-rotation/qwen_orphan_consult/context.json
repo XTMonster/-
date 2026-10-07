@@ -1,0 +1,42 @@
+{
+  "gate_six_criterion_source": "tools/kb_fetch/card_scope_audit.py:32-39 (CRITERION / scope/v3)",
+  "gate_six_numbers": {
+    "HEAD": {"catalogue": 2353, "edge_backed": 2262, "excluded": 91,
+             "edge_backed_without_entry_count": 0},
+    "LIVE": {"catalogue": 2353, "edge_backed": 2273, "excluded": 80,
+             "edge_backed_without_entry_count": 11}
+  },
+  "orphan_cards": ["cine_move_index", "cine_move_pan_left", "cine_move_pan_right",
+                   "cine_move_tilt_down", "cine_move_track_left", "comp_lead_room",
+                   "gen_block_0005", "gen_block_0086", "gen_block_0297",
+                   "gen_cine_0377", "gen_cine_0378"],
+  "orphan_added_source_refs": 93,
+  "total_added_source_refs": 2937,
+  "index_fingerprint_before": "c796a5a87018631db54da88406a4bd352741ed346fa1e9b06293c85ef46fed67",
+  "index_fingerprint_after": "00ea933ed11c1fa24a553feef18217e31eaff5f2c5a881dba5aa50867c7ec97c",
+  "cache_key_fields": ["corpus_sha256", "model", "prompt_version", "schema_version",
+                       "node_types", "edge_types", "vocab", "generations",
+                       "rebind_version"],
+  "rebind_version": "rebind/v1",
+  "per_member_candidates": 3,
+  "c1_same_yardstick": {"judge": "qwen3.8-max-0902", "reasoning_effort": "max",
+                        "sample_slots": 90, "corrupt_before": 67,
+                        "corrupt_after_shadow": 37,
+                        "evidence": "docs/evidence/_v15_stage8/c1_recap/shadow_judge/"},
+  "failing_tests": [
+    "tests/test_extract_run_evidence.py::test_the_landed_real_run_evidence_is_fresh",
+    "tests/test_extract_run_evidence.py::test_the_second_landed_run_is_fresh_and_has_no_contract_warning",
+    "tests/test_extract_run_evidence.py::test_the_long_real_run_is_fresh_and_stayed_within_the_ceiling",
+    "tests/test_evidence_digest_is_checkout_independent.py::test_a_landed_run_still_checks_out_after_an_lf_checkout[20261003_real_glm]",
+    "tests/test_evidence_digest_is_checkout_independent.py::test_a_landed_run_still_checks_out_after_an_lf_checkout[20261003_real_ds]",
+    "tests/test_evidence_digest_is_checkout_independent.py::test_a_landed_run_still_checks_out_after_an_lf_checkout[20261003_real_long]",
+    "tests/test_q5_audit_channel.py::test_the_committed_real_run_drift_is_reproducible"
+  ],
+  "hard_constraints": [
+    "R-5: 判据/阈值/门限一个字不许动",
+    "不许删除测试、跳过测试、放宽断言",
+    "R-8: 索引换代必须显式登记 + 最小重跑集",
+    "换代后已入库运行的 pin 一律如实标「异代」，不许 repin 洗白",
+    "holdout 是冻结仪器（门①-⑩ / Q1-Q7 / 第三方层 / generations 都钉着它的 sha256）"
+  ]
+}

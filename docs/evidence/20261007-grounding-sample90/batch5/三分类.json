@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "缩回壳中蕴含低头动作"},
+  {"i": 2, "class": "wrong_card", "why": "卡讲倾听表演，与平静无关"},
+  {"i": 3, "class": "wrong_card", "why": "八张卡均与平静无关"},
+  {"i": 4, "class": "wrong_card", "why": "卡讲交替静止，非挥手"},
+  {"i": 5, "class": "wrong_card", "why": "卡讲交替静止，非平静"},
+  {"i": 6, "class": "hidden", "why": "拿起属于行动动词，未写明"},
+  {"i": 7, "class": "wrong_card", "why": "卡反对用情绪词，非讲愤怒"},
+  {"i": 8, "class": "wrong_card", "why": "卡讲镜头角度，与出场无关"}
+]

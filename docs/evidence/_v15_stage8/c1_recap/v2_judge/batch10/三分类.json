@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "wrong_card", "why": "来源卡均未涉及景别"},
+  {"i": 2, "class": "wrong_card", "why": "仅远景/透视，非ELS景别"},
+  {"i": 3, "class": "wrong_card", "why": "来源卡讲走跳与台面，非景别"},
+  {"i": 4, "class": "wrong_card", "why": "中景指空间层次，非MS"},
+  {"i": 5, "class": "hidden", "why": "俯拍/高角度已含高机位"},
+  {"i": 6, "class": "wrong_card", "why": "只有身体平衡，非构图平衡"},
+  {"i": 7, "class": "wrong_card", "why": "来源卡未涉及ELS景别"},
+  {"i": 8, "class": "hidden", "why": "俯拍/高角度已含高机位"}
+]

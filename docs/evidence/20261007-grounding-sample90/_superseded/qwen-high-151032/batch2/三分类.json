@@ -1,0 +1,10 @@
+[
+  {"i": 1, "class": "hidden", "why": "前景遮挡构图未写明遮挡"},
+  {"i": 2, "class": "hidden", "why": "俯视镜头即高机位但未写明"},
+  {"i": 3, "class": "wrong_card", "why": "过肩正反打非头部留白策略"},
+  {"i": 4, "class": "wrong_card", "why": "车厢特写与头部留白无关"},
+  {"i": 5, "class": "wrong_card", "why": "来源卡均未涉及高机位"},
+  {"i": 6, "class": "wrong_value", "why": "三维构图非framing规则"},
+  {"i": 7, "class": "wrong_card", "why": "赛璐珞分层与机位角度无关"},
+  {"i": 8, "class": "wrong_card", "why": "中近景景别非平视角度"}
+]
