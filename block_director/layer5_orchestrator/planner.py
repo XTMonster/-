@@ -9,6 +9,11 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from ..contracts.enums import SHOT_TYPES, Purpose, ToolChoice
+from ..contracts.beats import (
+    KEY_DIRECTION_VALUES,
+    LIGHT_MOOD_VALUES,
+    TIME_OF_DAY_VALUES,
+)
 from ..contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -91,6 +96,43 @@ def plan_parameters(max_shots: int = 0) -> Dict[str, Any]:
         "scene_heading": {"type": "string"},
         "continuity_notes": {"type": "array", "items": {"type": "string"}},
         "shots": shots,
+        #: v1.5 §3.8（P2-T4 / FR-2/FR-3）：**场级环境**在这里声明一次，
+        #: 全场共用。阶段 B1 **不得改写**它（单镜细节不写进 environment）。
+        #: `anchors` 只写语义（name/depth/relation），坐标由摆位求解器回填；
+        #: `light` 只写三个语义字段，灯具参数（energy/color/size）永不开放。
+        "environment": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "anchors": {
+                    "type": "array",
+                    "maxItems": 12,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["name"],
+                        "properties": {
+                            "name": {"type": "string"},
+                            "depth": {"type": "string",
+                                      "enum": ["fg", "mid", "bg"]},
+                            "relation": {"type": "string"},
+                        },
+                    },
+                },
+                "light": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "time_of_day": {"type": "string",
+                                        "enum": list(TIME_OF_DAY_VALUES)},
+                        "mood": {"type": "string",
+                                 "enum": list(LIGHT_MOOD_VALUES)},
+                        "key_direction": {"type": "string",
+                                          "enum": list(KEY_DIRECTION_VALUES)},
+                    },
+                },
+            },
+        },
     },
 }
 
@@ -138,6 +180,10 @@ PLAN_SYSTEM_PROMPT = """\
 - prompt 写一句"画面描述"，供后续生成参考视频的提示词使用
 - 遵守 180° 轴线规则与 30° 规则：相邻镜头要么机位角度变化 > 30°，要么景别至少变化一档
 - 时长必须容纳该镜内的全部对白（中文约 3 字/秒），并留出收尾余量
+- **场级环境在这里声明一次**（全场共用）：`environment.anchors[]` 只写语义
+  （`name` / `depth`∈fg/mid/bg / `relation` 这类自然语言方位），坐标由求解器算；
+  `environment.light` 只写 `time_of_day` / `mood` / `key_direction` 三个语义字段，
+  **不要写灯具参数**（energy/color/size）。单镜细节不要写进 environment。
 - 保持银幕方向与角色位置的连续性
 - shot_id 使用 shot_001、shot_002 这样的形式，order 从 1 递增
 - 单镜时长不超过 3600 帧（150 秒）

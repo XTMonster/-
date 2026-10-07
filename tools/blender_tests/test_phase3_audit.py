@@ -508,6 +508,91 @@ def t_lead_room_shifts_single_subject_shots_only():
             "lead_room_notes": notes[:2]}
 
 
+def _composition_declaration_plan():
+    """四镜同几何：只有 `composition` 声明不同（其余字段逐字相同）。"""
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    common = {"shot_type": "MCU", "duration_frames": 48,
+              "characters": ["char_001"], "camera": {"side": "left", "lens": 50}}
+    shots = []
+    for index, composition in enumerate([
+            {},                                   # 0 不声明（= 求解器默认）
+            {"rule": "center"},                   # 1 显式居中
+            {"subject_position": "left_third"},   # 2 主体落左三分线
+            {"subject_position": "right_third"},  # 3 主体落右三分线
+    ], start=1):
+        payload = {"shot_id": f"shot_{index:03d}", "order": index,
+                   "intent": f"构图声明 {index}"}
+        payload.update(common)
+        payload["composition"] = composition
+        shots.append(ShotPlan.from_dict(payload))
+    return Plan(shots=shots, scene_heading="INT. 码头 - 日")
+
+
+def t_declared_composition_overrides_the_default_aim():
+    """v1.5 §4.6（卡 P3-T4）：`shot.composition` 真的接到了求解器上。
+
+    同一几何下四镜只换声明 ⇒ 对准点必须按声明落到不同位置：
+    居中 ⇒ 对准点回到主体；左/右三分 ⇒ 朝相反两侧偏 1/6 幅宽且与前两者里的
+    **缺省那一镜**同幅（缺省就是 `lead_room`，它的取值就是 ±1/6 幅宽之一）。
+    """
+    from block_director.contracts.cast import SceneSpec
+    from block_director.layer3_engine.scene_context import get_context
+    from block_director.layer3_engine.shot_builder import build_scene
+
+    fresh_scene()
+    plan = _composition_declaration_plan()
+    spec = SceneSpec.from_plan(plan)
+    summary = build_scene(plan, spec, clear_scene=True)
+    context = get_context()
+    scene = bpy.context.scene
+
+    targets = {}
+    for shot in plan.shots:
+        scene.frame_set(int(context.schedule[shot.shot_id][0]))
+        bpy.context.view_layer.update()
+        target = next(item.camera_target for item in summary.results
+                      if item.shot_id == shot.shot_id)
+        root = context.character("char_001").root.matrix_world.translation
+        targets[shot.shot_id] = ((float(target[0]), float(target[1])),
+                                 (float(root.x), float(root.y)))
+
+    def delta(shot_id):
+        (tx, ty), (sx, sy) = targets[shot_id]
+        return (tx - sx, ty - sy)
+
+    def magnitude(shot_id):
+        dx, dy = delta(shot_id)
+        return (dx * dx + dy * dy) ** 0.5
+
+    default_d = delta("shot_001")
+    center_d = delta("shot_002")
+    left_d = delta("shot_003")
+    right_d = delta("shot_004")
+
+    opposite = (left_d[0] * right_d[0] + left_d[1] * right_d[1]) < 0.0
+    #: 缺省那一镜的位移必须**逐分量**等于左三分或右三分之一（幅值同为 1/6）。
+    matches_a_declared_side = any(
+        abs(default_d[0] - candidate[0]) < 1e-6
+        and abs(default_d[1] - candidate[1]) < 1e-6
+        for candidate in (left_d, right_d))
+    ok = (magnitude("shot_001") > 0.15
+          and magnitude("shot_002") < 0.05
+          and magnitude("shot_003") > 0.15
+          and magnitude("shot_004") > 0.15
+          and opposite and matches_a_declared_side)
+    return {"ok": bool(ok),
+            "default_offset_m": round(magnitude("shot_001"), 3),
+            "center_offset_m": round(magnitude("shot_002"), 3),
+            "left_third_offset_m": round(magnitude("shot_003"), 3),
+            "right_third_offset_m": round(magnitude("shot_004"), 3),
+            "left_and_right_opposite": opposite,
+            "default_matches_a_declared_side": matches_a_declared_side,
+            "default_delta": [round(value, 4) for value in default_d],
+            "left_delta": [round(value, 4) for value in left_d],
+            "right_delta": [round(value, 4) for value in right_d]}
+
+
 def _sequential_axis_plan():
     """三镜：第一镜确立轴线，第二镜里乙绕到另一侧并且**两人同框**（观众看得见）。"""
     from block_director.contracts.plan import Plan, ShotPlan
@@ -601,6 +686,8 @@ def main() -> int:
           t_r003_is_scoped_to_the_shot_being_audited)
     check("lead_room_shifts_single_subject_shots_only",
           t_lead_room_shifts_single_subject_shots_only)
+    check("declared_composition_overrides_the_default_aim",
+          t_declared_composition_overrides_the_default_aim)
     check("the_builder_state_machine_is_camera_truthful",
           t_the_builder_state_machine_is_camera_truthful)
 

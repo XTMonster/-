@@ -15,6 +15,18 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
 from ..contracts.enums import MOVEMENT_TYPES, VFX_TYPES, Purpose, ToolChoice
+from ..contracts.beats import (
+    BEAT_VERBS,
+    COMPOSITION_RULES,
+    FACE_TO_VALUES,
+    MAX_BEATS,
+    PACE_VALUES,
+    RULE_ACTIONS,
+    SUBJECT_POSITIONS,
+    validate_beats,
+    validate_composition_spec,
+    validate_justifications,
+)
 from ..contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -158,6 +170,55 @@ EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
                 },
             },
         },
+        #: v1.5 §3.8（P2-T4 / FR-1）：**执行拍点表**（一镜内的动作时刻表）。
+        #: 扁平优先、枚举优先：`verb` 从 `motion/model.py::ACTION_TYPES` 渲染
+        #: （单一真源，红线 R-7）；帧号**不在这里**——由 `beat_compiler` 从 `t`
+        #: 换算（连续数值不是 LLM 的输出）。`beats` 与 `actions` 可并存，
+        #: 合并规则见 §4.2（同镜重复以 beats 为准）。
+        "beats": {
+            "type": "array",
+            "maxItems": MAX_BEATS,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["t", "subject", "verb"],
+                "properties": {
+                    "t": {"type": "number", "minimum": 0, "maximum": 1},
+                    "subject": {"type": "string"},
+                    "verb": {"type": "string", "enum": list(BEAT_VERBS)},
+                    "target": {"type": "string"},
+                    "face_to": {"type": "string", "enum": list(FACE_TO_VALUES)},
+                    "pace": {"type": "string", "enum": list(PACE_VALUES)},
+                    "react": {"type": "string"},
+                },
+            },
+        },
+        #: v1.5 §3.8（P2-T4 / FR-10）：构图声明（两个闭集字段）。
+        "composition": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "rule": {"type": "string", "enum": list(COMPOSITION_RULES)},
+                "subject_position": {"type": "string",
+                                     "enum": list(SUBJECT_POSITIONS)},
+            },
+        },
+        #: v1.5 §3.8（P2-T4 / FR-8）：破例辩护（引用/有意违反哪条规则、为什么）。
+        "rule_justifications": {
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["rule", "action"],
+                "properties": {
+                    "rule": {"type": "string"},
+                    "action": {"type": "string", "enum": list(RULE_ACTIONS)},
+                    "reason": {"type": "string"},
+                    "precedent": {"type": "string"},
+                },
+            },
+        },
         "prompt": {"type": "string"},
     },
 }
@@ -176,8 +237,22 @@ EDITOR_SYSTEM_PROMPT = """\
 
 可用角色：{characters}
 可用道具：{props}
+可用场级锚点（`beats[].target` 只能引用这里的名字或角色 id）：{anchors}
 
 约束：
+- 用 `beats[]` 给这一镜的**执行拍点表**：`t` 是归一化时机（0–1，同一角色的拍点
+  按 `t` 单调不减；**不要写帧号**，帧号由引擎按 `t` 换算），`verb` 从闭集里
+  **逐字**拷贝，`target` 写锚点名或角色 id，`face_to` 写屏幕方位或角色 id；
+- `composition`（构图声明）只在确实有构图意图时写，`rule` 与 `subject_position`
+  都是闭集；
+- `rule_justifications` 写**规则引用与破例辩护**：`rule` 填下面"参考资料"里
+  **真的出现过**的那条规则/边的 id（照抄，不要自己造名字），`action=follow`
+  表示遵守、`action=break` 表示有意违反；**`action=break` 时 `reason` 必填**
+  （写清叙事理由，"为了好看"这类空话不算），`precedent` 建议填先例（影片/案例
+  id，参考资料里给了就照抄）。只引用你真的参考过的规则，别把没看到的规则写进来
+  充数——审核器会拿它与这一镜的实际违规**逐条对拍**（没说就破 = 最坏的一栏）；
+- **不要改写场级 environment（锚点与灯光归阶段 A 管）**：要引用锚点就在
+  `beats[].target` 里写它的**名字**；
 - 相机用**相对描述**（side / lens），不要给坐标——距离与高度由引擎按景别推导。
   `side` **只能从下面这 {side_count} 个取值里逐个拷贝**（写中文句子会被判非法，
   这一镜就只剩计划里的内容）：{sides}
@@ -265,6 +340,11 @@ class ShotDraft:
     #: v1.3 §3.6：特效代理（火焰/发光/火花/烟雾）
     vfx: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""
+    #: v1.5 §3.7（P2-T4）：执行拍点表 / 构图声明 / 破例辩护。缺省空 ⇒ 旧草案
+    #: （没有这三个键）逐字节同行为。
+    beats: List[Dict[str, Any]] = field(default_factory=list)
+    composition: Dict[str, Any] = field(default_factory=dict)
+    rule_justifications: List[Dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ShotDraft":
@@ -279,7 +359,14 @@ class ShotDraft:
                   if isinstance(item, dict)],
             vfx=[dict(item) for item in (data.get("vfx") or [])
                  if isinstance(item, dict)],
-            prompt=str(data.get("prompt", "") or ""))
+            prompt=str(data.get("prompt", "") or ""),
+            beats=[dict(item) for item in (data.get("beats") or [])
+                   if isinstance(item, dict)],
+            composition=dict(data.get("composition") or {}),
+            rule_justifications=[dict(item)
+                                 for item in (data.get("rule_justifications")
+                                              or [])
+                                 if isinstance(item, dict)])
 
     def to_dict(self) -> Dict[str, Any]:
         return {"shot_id": self.shot_id, "shot_type": self.shot_type,
@@ -289,7 +376,11 @@ class ShotDraft:
                 "camera": dict(self.camera),
                 "gaze": [dict(item) for item in self.gaze],
                 "vfx": [dict(item) for item in self.vfx],
-                "prompt": self.prompt}
+                "prompt": self.prompt,
+                "beats": [dict(item) for item in self.beats],
+                "composition": dict(self.composition),
+                "rule_justifications": [dict(item)
+                                        for item in self.rule_justifications]}
 
 
 def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
@@ -307,7 +398,11 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
         # §2.3b 的检索路由：**优先**用契约串（超图那一条通道只认 `键=值`），
         # 契约串为空时才退回"景别 ＋ 意图 ＋ 动作"的自由文本（卡片/案例两栏
         # 本来就是 BM25，自由文本照样能命中）。
-        query = shot_constraint_query(shot)
+        #: v1.5 §5.7：场级灯光语义是**计划级**输入（`Plan.environment.light`），
+        #: 逐镜查询要把环境带进去才能产出 `光线=` 那一档种子。
+        query = shot_constraint_query(
+            shot, environment=(getattr(plan, "environment", None)
+                               if plan is not None else None))
         #: §2.3b 的两通道路由：约束串走 L1/L2，**散文走 L3**。
         #: 类比查询取这一镜自己的散文（提示词优先，退回意图）——案例层要找的是
         #: "相似的场面/处理"，不是"键=值"。旧实现把约束串一并送去查案例层，
@@ -326,12 +421,23 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                                                  analogy=analogy)
     memory = render_shot_memory(shot_memory(plan))
     continuity_text = continuity or memory or "（第一镜，无历史）"
+    #: v1.5 §3.2（P2-T4）：场级锚点的**名字**必须让 B1 看见——`beats[].target`
+    #: 只能引用锚点名或角色 id；模型看不到名单就只能编坐标或丢掉 target。
+    #: 锚点表只读（阶段 A 的产物），B1 不许改写它。
+    anchors_text = ""
+    if plan is not None:
+        environment = getattr(plan, "environment", None) or {}
+        names = [str((item or {}).get("name") or "")
+                 for item in (environment.get("anchors") or [])
+                 if isinstance(item, dict)]
+        anchors_text = "、".join(name for name in names if name)
     system_text = (EDITOR_SYSTEM_PROMPT
                    .replace("{shot_plan}", _shot_plan_text(shot, shot_order))
                    .replace("{scene_state}", scene_state or "（尚未采集）")
                    .replace("{continuity}", continuity_text)
                    .replace("{characters}", "、".join(characters) or "（未指定）")
                    .replace("{props}", "、".join(props) or "（无）")
+                   .replace("{anchors}", anchors_text or "（本场未声明锚点）")
                    .replace("{sides}", "、".join(f"`{item}`"
                                                  for item in CAMERA_SIDES))
                    .replace("{side_count}", str(len(CAMERA_SIDES)))
@@ -387,8 +493,16 @@ def find_draft_call(reply: ChatReply):
     return None
 
 
-def extract_draft(reply: ChatReply, shot_id: str) -> ShotDraft:
-    """解析草案；失败抛 ``ValueError``（由驱动器决定跳过还是重试）。"""
+def extract_draft(reply: ChatReply, shot_id: str, *,
+                  characters: Sequence[str] = (),
+                  anchors: Optional[Sequence[str]] = None) -> ShotDraft:
+    """解析草案；失败抛 ``ValueError``（由驱动器决定跳过还是重试）。
+
+    ``characters`` / ``anchors`` 是**可选**的上下文（这一镜的在场角色与本场
+    锚点名）：给了就顺带校拍点的 ``subject``/``target`` 引用；不给就**跳过成员
+    检查**（与 ``contracts/beats.validate_beats`` 的"未知 vs 空"语义一致），
+    所以旧调用点一行不改、行为不变。
+    """
     call = find_draft_call(reply)
     if call is None:
         names = [c.function.name for c in reply.tool_calls or []] or ["（无工具调用）"]
@@ -418,7 +532,66 @@ def extract_draft(reply: ChatReply, shot_id: str) -> ShotDraft:
                        else problem)
     if bad:
         raise ValueError("；".join(bad))
+    #: v1.5 §3.1（P2-T4）：拍点/构图/辩护的闭集与不变量在**解析期**核。
+    #: 失败 → 驱动器记 `draft_invalid`、这一镜沿用计划内容（既有纪律），
+    #: 而不是把整轮打成 ERROR。
+    beat_problems = validate_beats(draft.beats, characters, anchors)
+    beat_problems += validate_composition_spec(draft.composition)
+    beat_problems += validate_justifications(draft.rule_justifications)
+    if beat_problems:
+        raise ValueError("；".join(beat_problems))
     return draft
+
+
+#: 一个"不合规项"扣多少分。**设计表，调表不动结构**（TDD §4.5 的同一种
+#: 纪律）：它是 rerank 的相对权重，不是判据——rerank 只排序、**不过滤**。
+DRAFT_PROBLEM_PENALTY = 10
+
+
+def score_draft(draft: "ShotDraft", *, characters=(),
+                anchors=()) -> int:
+    """给一份单镜草案打**规则分**（Best-of-N 的 rerank 用，纯函数）。
+
+    分 = 具体度 − 惩罚：
+
+    * 具体度 = 拍点数 + 动作数 + 破例辩护条数（同等合规时"说得更细"的候选优先）；
+    * 惩罚 = 闭集/不变量校验的问题数 × :data:`DRAFT_PROBLEM_PENALTY`
+      （拍点 t 越界、未知动词、break 缺 reason……都算）——就是 `extract_draft`
+      会拒收同一份草案的那些问题。
+
+    **它只用于排序**：低分候选照样进 ``shots.json.alternates[]``，一个都不丢
+    （PRD FR-12：rerank 不是过滤）。
+    """
+    problems = len(validate_beats(getattr(draft, "beats", None) or [],
+                                  characters, anchors))
+    problems += len(validate_composition_spec(
+        getattr(draft, "composition", None) or {}))
+    problems += len(validate_justifications(
+        getattr(draft, "rule_justifications", None) or []))
+    detail = (len(getattr(draft, "beats", None) or [])
+              + len(getattr(draft, "actions", None) or [])
+              + len(getattr(draft, "rule_justifications", None) or []))
+    return detail - DRAFT_PROBLEM_PENALTY * problems
+
+
+def rank_drafts(candidates: Sequence["ShotDraft"], *, characters=(),
+                anchors=()) -> tuple:
+    """``(best, alternates)``：按规则分排序，**不过滤**。
+
+    排序是**稳定**的（同分先到先得，`max` 取第一个），因此同一批候选两次调用
+    结果相同。空输入返回 ``(None, [])``。``alternates`` 是除 `best` 外的全部
+    候选，按分从高到低——低分不是被丢掉，是降级成备选。
+    """
+    items = list(candidates or [])
+    if not items:
+        return None, []
+    scored = [(score_draft(item, characters=characters, anchors=anchors), index,
+               item) for index, item in enumerate(items)]
+    #: 分数降序；同分按原始顺序（index 升序）⇒ 稳定。
+    ordered = sorted(scored, key=lambda entry: (-entry[0], entry[1]))
+    best = ordered[0][2]
+    alternates = [entry[2] for entry in ordered[1:]]
+    return best, alternates
 
 
 def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
@@ -456,6 +629,17 @@ def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
             shot["gaze"] = [dict(item) for item in draft.gaze]
         if draft.vfx:
             shot["vfx"] = [dict(item) for item in draft.vfx]
+        #: v1.5 §3.7/§4.2（P2-T4）：拍点表与构图声明是**这一镜的语义层**，
+        #: 直接落到 ShotPlan 的新字段上。`beats` 与直写 `actions` 并存时
+        #: **都保留**——合并（重复判定与优先规则）在 P3-T1 的 beat_compiler 做，
+        #: 契约层不做有损的提前合并。破例辩护同理整份采用。
+        if draft.beats:
+            shot["beats"] = [dict(item) for item in draft.beats]
+        if draft.composition:
+            shot["composition"] = dict(draft.composition)
+        if draft.rule_justifications:
+            shot["rule_justifications"] = [dict(item)
+                                           for item in draft.rule_justifications]
         break
     return Plan.from_dict(payload)
 

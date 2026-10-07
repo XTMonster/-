@@ -50,6 +50,17 @@ LABEL_MARGIN = 0.30
 #: 脖子间隙的验收容差（RK-14 的输入侧：``neck_gap = 0 ± 0.005``）
 NECK_GAP_TOLERANCE = 0.005
 
+#: v1.5 §4.4：**手部代理**的局部偏移（相对躯干轴心 BodyPivot 的 ``(x, y, z)``）。
+#: 道具交互（``place_prop``/``pick_up``/``hand_to``）需要一个跟随目标，而 Q 版
+#: 白模角色没有手臂网格。这里不去加几何（会动到冻结几何与角色部件计数），
+#: 只给一个**空对象**的落点：躯干半径之外一点点、胸口高度。
+#:   * 前向 ``0.25`` 略大于躯干半径（``BODY_RADIUS = 0.25``），即"手在身前"；
+#:   * 侧向 ``0.22`` = 躯干半径 − 一点，读起来像"身侧的手"；
+#:   * 高度取 ``chest_z``（由冻结比例派生，不另写数字）。
+#: 这三个量是**设计选择**、不是冻结几何：改它们不动头顶/头球/眼睛任何一条。
+HAND_PROXY_FORWARD = 0.25
+HAND_PROXY_SIDE = 0.22
+
 
 @dataclass(frozen=True)
 class CharacterProfile:
@@ -177,6 +188,17 @@ class CharacterProfile:
 
 #: 默认 profile（唯一实例；``profile_for()`` 从配置派生时另建）。
 DEFAULT_PROFILE = CharacterProfile()
+
+
+def hand_offset(profile: CharacterProfile = DEFAULT_PROFILE,
+                side: float = 1.0) -> Tuple[float, float, float]:
+    """手部代理在**躯干轴心局部坐标**里的落点 ``(x, y, z)``。
+
+    ``side = -1`` 是角色的左手侧、``+1`` 是右手侧。坐标是**躯干轴心局部**的，
+    所以它跟着角色的朝向与上身旋转走（BodyPivot 是身体旋转的父级）。
+    """
+    return (float(side) * HAND_PROXY_SIDE, HAND_PROXY_FORWARD,
+            profile.chest_z - profile.hip_z)
 
 
 def profile_from(config=None) -> CharacterProfile:

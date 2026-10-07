@@ -185,6 +185,16 @@ class BLOCKDIRECTOR_OT_show_audit_result(Operator):
         text.clear()
         text.write(f"{shot_id} 审核：{'通过' if result.passed else '未通过'}"
                    f"（共 {len(history)} 次，分数 {result.score}）\n")
+        #: v1.5 §5.5（P6-T1）：外部评审外回路。**只展示、不作裁决**——缺省关时
+        #: 这一段不出现；开着而评委不可用时写"跳过"（跳过 ≠ 通过）。
+        review = getattr(result, "vlm_review", None)
+        if review:
+            if str(review.get("status")) == "ok":
+                text.write(f"VLM 评审：{review.get('score')}/5"
+                           f"（{review.get('reason') or '无理由'}，"
+                           f"尝试 {review.get('attempts', 0)} 次）\n")
+            else:
+                text.write(f"VLM 评审：跳过（{review.get('reason') or '未知原因'}）\n")
         for item in result.errors + result.warnings:
             text.write(f"[{item.rule}] {item.code} {item.message}\n"
                        f"    建议：{item.suggestion}\n")

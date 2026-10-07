@@ -140,7 +140,8 @@ def main() -> int:
         max_wall_s=args.wall,
         builder=builder,
         registry=registry,
-        auditor=(BpyShotAuditor(audit_level=config.audit.level)
+        auditor=(BpyShotAuditor(audit_level=config.audit.level,
+                                vlm_review=config.vlm_review)
                  if builder is not None else None),
         human_gate=AutoGate(),      # headless 无界面：逐条记为 skipped 以便审计
         scene_state_provider=lambda: format_scene_state(

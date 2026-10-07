@@ -11,7 +11,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import bpy
@@ -24,6 +24,7 @@ from ..cinema.axis import (Axis, axis_state, camera_side_of, current_line,
 from ..cinema.station import (
     HEAD_ROOM_AIM_M,
     SubjectFrame,
+    aim_offset_for_composition,
     aim_offset_for_lead_room,
     camera_direction,
     subject_frame,
@@ -52,7 +53,12 @@ from .collection_router import (
     ensure_collections,
     purge_orphan_data,
 )
-from .scene_executor import build_crowd, build_environment, create_vfx
+from .scene_executor import (
+    apply_prop_interactions,
+    build_crowd,
+    build_environment,
+    create_vfx,
+)
 from .scene_context import SceneContext, get_context, set_context
 
 log = get_logger("shot-builder")
@@ -332,9 +338,18 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
     #: 但那时的机位锚点还是"剧本起始站位"——主体本来就在画框边缘，再横移就出画
     #: （`docs/evidence/20261004-leadroom-finding/`）。锚点（§六十三）与走位接力
     #: （§六十四）落地后重测：见 `docs/evidence/20261004-leadroom-retest/`。
-    aim_offset = 0.0
+    #: v1.5 §4.6（卡 P3-T4）：求解器的默认偏移（单主体 = §10.4 视线留白；
+    #: 双人 = 0）现在只是**缺省值**——计划的 ``shot.composition`` 声明可以覆盖它
+    #: （`center`/`symmetry` 显式居中、`left_third`/`right_third` 指定主体落点）。
+    #: 空声明时 :func:`aim_offset_for_composition` 原样返回这个缺省值 ⇒
+    #: **与接线前逐字节一致**（G3 的空声明对照就是这条）。
+    default_aim_offset = 0.0
     if not frame.has_axis:
-        aim_offset = aim_offset_for_lead_room(direction, frame.facing)
+        default_aim_offset = aim_offset_for_lead_room(direction, frame.facing)
+    declared_composition = dict(getattr(shot, "composition", None) or {})
+    aim_offset = aim_offset_for_composition(
+        declared_composition, direction, frame.facing,
+        default=default_aim_offset)
     #: 竖直方向：单主体镜头把对准点抬高 `HEAD_ROOM_AIM_M`（见那个常量的实测依据）。
     aim_offset_y = HEAD_ROOM_AIM_M if not frame.has_axis else 0.0
     bundle, solution = place_camera_for_shot(
@@ -343,7 +358,13 @@ def place_shot_camera(shot: ShotPlan, cast: Dict[str, CastMember],
         lens=resolved.get("lens"), room=(spec.room if spec else None),
         direction=direction, aim_offset_x=aim_offset,
         aim_offset_y=aim_offset_y, reuse=reuse)
-    if aim_offset:
+    if declared_composition:
+        rule = str(declared_composition.get("rule") or "") or "—"
+        position = str(declared_composition.get("subject_position") or "") or "—"
+        axis_notes.append(
+            f"按构图声明（rule={rule}、subject_position={position}）把对准点"
+            f"横向偏移 {aim_offset:+.3f} 幅宽")
+    elif aim_offset:
         axis_notes.append(
             f"按 §10.4 的视线留白把对准点横向偏移 {aim_offset:+.3f} 幅宽"
             f"（主体落到背向视线的那条三分线上）")
@@ -530,8 +551,18 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     ensure_collections(scene)
     purge_orphan_data()
 
-    build_environment(ground_size=spec.ground_size, walls=spec.walls,
-                      props=spec.props, lighting=spec.lighting)
+    # v1.5 §3.2/§4.3：场级环境声明（anchors）在计划里，只在这里消费一次；
+    # 锚点坐标由 `solve_anchor_positions` 求，解析不出的如实进审计。
+    environment = build_environment(
+        ground_size=spec.ground_size, walls=spec.walls, props=spec.props,
+        lighting=spec.lighting,
+        anchors=list((getattr(plan, "environment", None) or {}).get("anchors")
+                     or []),
+        cast=list(spec.cast),
+        light=dict((getattr(plan, "environment", None) or {}).get("light")
+                   or {}))
+    summary.warnings.extend(environment.unresolved_anchors)
+    summary.warnings.extend(environment.light_notes)
 
     cast_map: Dict[str, CastMember] = {}
     characters: Dict[str, Any] = {}
@@ -586,13 +617,36 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     place_before_shot = travelled_positions(
         plan, {character_id: member.initial_location
                for character_id, member in cast_map.items()})
+    #: v1.5 §4.1/§4.2（P3-T1 的生产消费者）：**拍点表 → actions**。
+    #: 为什么接在这里而不是更早：编译 `beats[].target` 需要**已解算的锚点坐标**，
+    #: 而锚点是在上面的 `build_environment` 里解的；`walk_to` 的缺省起点又要
+    #: "这一镜开始时人在哪"（`place_before_shot`）。所以编译必须在**构建期**、
+    #: 拿到这两样之后做一次，结果直接喂给既有的 `action_requests`——
+    #: 下游 builder/auditor/R003 **零改动**。
+    #: 用函数内 import：`beat_compiler` 是纯的（只依赖 contracts/motion/cinema），
+    #: 但它住在 `layer5_orchestrator` 下，函数内 import 可保证不引入任何包级环。
+    from ..layer5_orchestrator.beat_compiler import (  # noqa: PLC0415
+        compile_beats, merge_with_actions)
+    anchor_positions = {str(getattr(obj, "name", "")).removeprefix("BD_Anchor_"):
+                        tuple(float(v) for v in obj.location)
+                        for obj in environment.anchors}
     for shot in plan.shots:
         start, end = ranges[shot.shot_id]
         context.schedule[shot.shot_id] = (start, end)
         planned_warnings: List[str] = []
+        live_from = place_before_shot.get(shot.shot_id)
+        actions_source = shot
+        #: 只有真的写了拍点才编译——**空 beats 路径逐字节零行为差**。
+        if getattr(shot, "beats", None):
+            compiled, beat_problems = compile_beats(
+                shot, anchor_positions, cast_map,
+                current_positions=live_from)
+            planned_warnings.extend(beat_problems)
+            actions_source = replace(
+                shot, actions=merge_with_actions(compiled, shot.actions))
         requests = action_requests(
-            shot, start, cast_map, planned_warnings,
-            live_from=place_before_shot.get(shot.shot_id),
+            actions_source, start, cast_map, planned_warnings,
+            live_from=live_from,
             extent_m=float(getattr(app_config.scene, "extent_m", 0.0) or 0.0))
         planned_warnings.extend(
             thirty for thirty in conflict_warnings(requests, shot.shot_id))
@@ -720,6 +774,11 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
 
         shot_warnings = list(solution.warnings) + list(info["warnings"])
         requests = info["requests"]
+
+        # v1.5 §4.4：道具交互动词 → 道具对象的跟随关键帧（没被点名的道具不打）。
+        # 放在动作烘焙之后：手部代理是 BodyPivot 的子级，烘焙也不会覆盖约束。
+        shot_warnings.extend(apply_prop_interactions(
+            shot, start, characters, environment.props))
 
         # §3.6 特效代理：只在声明的时间窗内可见（关键帧控制 hide_render），
         # 否则火焰会一路烧到别的镜头里去。

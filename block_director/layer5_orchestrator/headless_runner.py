@@ -53,6 +53,10 @@ def run_headless(
     config = config or get_config()
     transport, mode = make_transport(config, offline=offline)
     _apply_declarations(transport, parsed_script, config)
+    #: v1.5 §5.5（P6-T1）：审核器可能先于传输建好（`tools/run_headless.py`
+    #: 在调本函数前就构造了 auditor），外部评审需要同一条传输，这里补挂。
+    if auditor is not None and hasattr(auditor, "bind_transport"):
+        auditor.bind_transport(transport)
 
     if audit is None:
         root = Path(project_dir) if project_dir else default_project_root()
@@ -161,7 +165,9 @@ def _make_knowledge(config, transport=None, audit=None):
         plan_token_limit=int(getattr(rag, "plan_prefetch_tokens", 2000) or 2000),
         client=client,
         cases_backend=str(getattr(rag, "cases_backend", "lightrag") or "lightrag"),
-        cases_top_k=int(getattr(rag, "cases_top_k", 3) or 3))
+        cases_top_k=int(getattr(rag, "cases_top_k", 3) or 3),
+        #: v1.5 §5.2（FR-6）：每桶的规则条数上限（``rag.rule_top_k``，缺省 5）。
+        rule_top_k=int(getattr(rag, "rule_top_k", 5) or 5))
     log.info("Light RAG：%s", retriever.describe())
     return retriever
 

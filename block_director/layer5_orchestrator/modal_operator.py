@@ -181,7 +181,11 @@ def build_run_context(context, *, builder=_DEFAULT_BUILDER, auditor=None,
             max_shots=int(run_config.orchestration.max_shots)),
         builder=builder,
         auditor=auditor or BpyShotAuditor(
-            audit_level=run_config.audit.level),
+            audit_level=run_config.audit.level,
+            #: v1.5 §5.5（P6-T1）：外部评审外回路（缺省关）。评审复用同一条
+            #: 传输——它必须和这一跑的主模型走同一份连接/凭证。
+            vlm_review=run_config.vlm_review,
+            vlm_transport=transport),
         knowledge=_make_knowledge(run_config, transport, audit),
     )
     return RunContext(driver=driver, config=run_config, mode=mode,

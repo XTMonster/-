@@ -13,6 +13,7 @@ import copy
 import queue
 import threading
 import time
+import traceback
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
@@ -53,7 +54,8 @@ from .budget import Budget, BudgetLimits
 from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
 from .context_budget import budget_report, trim_messages
-from .editor import build_editor_payload, extract_draft, merge_draft
+from .editor import (build_editor_payload, extract_draft, merge_draft,
+                     rank_drafts)
 from .editor import EDITOR_TOOL_NAME, EMIT_SHOT_DRAFT_PARAMETERS
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
 from .loop_detector import LoopDetector
@@ -211,6 +213,9 @@ class PrevisDriver:
         #: 同样必须被尊重，否则 ``_apply_scene_budget`` 会把它顶掉。
         self._caller_budget_cap = (int(budget.limits.max_llm_calls)
                                    if budget is not None else 0)
+        #: token 上限的**静态下限**：`_apply_scene_budget` 只会把它抬上去、绝不压下来，
+        #: 所以先在这里留一份原始值（重复调用同一条公式 ⇒ 结果不变，幂等）。
+        self._static_token_floor = int(self.budget.limits.max_tokens)
         self.degraded_reason = ""
         self.human_gate = human_gate
         self.knowledge = knowledge
@@ -244,6 +249,12 @@ class PrevisDriver:
         self._editing_index = 0
         self.draft_history: List[Dict[str, Any]] = []
         self.drafts_failed: List[Dict[str, Any]] = []
+        #: v1.5 §7（P6-T2）Best-of-N：当前镜已收到的候选草案，以及低分候选
+        #: （进 shots.json 的 ``alternates[]``，**不过滤**）。默认
+        #: ``draft_candidates=1`` 时这两个容器永远是空的 ⇒ 零行为差。
+        self._draft_candidates: List[Any] = []
+        self._draft_alternates: Dict[str, List[Dict[str, Any]]] = {}
+        self._editor_payload_cache: Optional[ChatPayload] = None
         #: 剧本落实审核的结果（v1.3 R015/R016）；没有分镜表声明时为 None
         self._compliance: Optional[Dict[str, Any]] = None
         self._finished_shots: List[str] = []
@@ -383,6 +394,12 @@ class PrevisDriver:
                              else ""),
             "drafts": len(self.draft_history),
             "drafts_failed": len(self.drafts_failed),
+            #: v1.5 §7（P6-T2）：Best-of-N 里被降级成备选的候选（低分候选进
+            #: shots.json 的 alternates[]，**不丢**）。默认 draft_candidates=1
+            #: 时恒为空表。
+            "draft_alternates": {shot_id: [dict(item) for item in items]
+                                 for shot_id, items in
+                                 self._draft_alternates.items()},
             "compliance": self._compliance,
             #: v1.4 P15（§3.3）：交付清单要的两张表，由驱动器产出。
             "timing_overrides": list(self.timing_overrides),
@@ -1094,6 +1111,9 @@ class PrevisDriver:
         if shot is None:
             self._editing_index += 1
             return
+        #: 新的一镜：候选累加器清零（P6-T2）。同镜的第 2…N 个候选走
+        #: `_finish_editor_turn` 里的续发路径，不经过这里，因此不会误清。
+        self._draft_candidates = []
         characters = list(shot.characters)
         props: List[str] = []
         payload = build_editor_payload(
@@ -1105,6 +1125,9 @@ class PrevisDriver:
             characters=characters, props=props, retriever=self.knowledge,
             temperature=(float(self.config.llm.temperature_plan)
                          if self.config is not None else 0.7))
+        #: 缓存这一份 payload：同镜的第 2…N 个候选**直接复用它**，不再发起一次
+        #: 检索——否则候选数会把 `retrieval_calls` 一起放大（§2.4 的预算账）。
+        self._editor_payload_cache = payload
         # E2 溯源：`build_editor_payload` 刚刚（且只）发起了这一镜的检索，
         # 所以此刻读 `provenance()` 拿到的一定是这一镜的命中集。
         self._record_shot_knowledge(shot_id)
@@ -1152,10 +1175,34 @@ class PrevisDriver:
             return "\n".join(lines)
         return self.script or ""
 
+    def _draft_context(self, shot_id: str):
+        """这一镜的 ``(characters, anchors)``，供 ``extract_draft`` 校拍点引用。
+
+        v1.5 §3.1（P2-T4）：拍点的 ``subject``/``target`` 必须在**本镜角色**
+        或**本场锚点**里解析得到。``anchors`` 从 ``plan.environment.anchors[].name``
+        取（阶段 A 的产物）——**给空表就是"本场没有锚点"**，此时 target 只能
+        落到角色上（与 ``validate_beats`` 的"未知 vs 空"语义一致，不猜）。
+        """
+        characters: list = []
+        anchors: list = []
+        if self.plan is not None:
+            for shot in self.plan.shots:
+                if shot.shot_id == shot_id:
+                    characters = [str(c) for c in (shot.characters or [])]
+                    break
+            environment = getattr(self.plan, "environment", None) or {}
+            anchors = [str((item or {}).get("name") or "")
+                       for item in (environment.get("anchors") or [])
+                       if isinstance(item, dict)]
+            anchors = [name for name in anchors if name]
+        return characters, anchors
+
     def _finish_editor_turn(self, reply: ChatReply) -> None:
         shot_id = self._editing_queue[self._editing_index]
+        characters, anchors = self._draft_context(shot_id)
         try:
-            draft = extract_draft(reply, shot_id)
+            draft = extract_draft(reply, shot_id, characters=characters,
+                                  anchors=anchors)
         except ValueError as exc:
             # 单镜草案失败不拖垮整场：记进 history 与警告，这一镜沿用计划内容，
             # 后面还有 B3/B4 兜住真正的执行问题。
@@ -1163,17 +1210,57 @@ class PrevisDriver:
             self.audit.log("draft_invalid", f"{shot_id}: {exc}", level="warning",
                            shot=shot_id)
             self._emit("draft_invalid", f"{shot_id} 草案无效", shot=shot_id)
-        else:
-            self.plan = merge_draft(self.plan, draft)
-            self.draft_history.append(draft.to_dict())
+            self._draft_candidates = []
+            self._editor_payload_cache = None
+            self._editing_index += 1
+            self._transition(DriverState.EDITING)
+            return
+
+        self._draft_candidates.append(draft)
+        wanted = self._draft_candidate_count()
+        if len(self._draft_candidates) < wanted \
+                and self.budget.allow_llm_call("editor") \
+                and self._editor_payload_cache is not None:
+            # Best-of-N（P6-T2）：对**同一镜**再要一个候选。复用缓存 payload ⇒
+            # 不重复发起检索；候选数不放大 `retrieval_calls`。
+            self._start_llm_call(
+                "editor", self._editor_payload_cache,
+                note=f"单镜结构化生成 {shot_id}（候选 "
+                     f"{len(self._draft_candidates) + 1}/{wanted}）")
+            return
+
+        best, alternates = rank_drafts(self._draft_candidates,
+                                       characters=characters, anchors=anchors)
+        if best is not None:
+            self.plan = merge_draft(self.plan, best)
+            self.draft_history.append(best.to_dict())
+            if alternates:
+                self._draft_alternates[shot_id] = [item.to_dict()
+                                                   for item in alternates]
             self.audit.log("draft_received",
-                           f"{shot_id}: {len(draft.actions)} 个动作 / "
-                           f"{len(draft.dialogues)} 句对白",
-                           shot=shot_id, actions=len(draft.actions),
-                           dialogues=len(draft.dialogues))
+                           f"{shot_id}: {len(best.actions)} 个动作 / "
+                           f"{len(best.dialogues)} 句对白",
+                           shot=shot_id, actions=len(best.actions),
+                           dialogues=len(best.dialogues),
+                           #: 只在真的开了 Best-of-N 时才写候选数——默认 1 时
+                           #: 事件形状与升级前逐字节相同（NFR-4）。
+                           **({"candidates": len(self._draft_candidates)}
+                              if wanted > 1 else {}))
             self._emit("draft_received", f"{shot_id} 草案已合并", shot=shot_id)
+        self._draft_candidates = []
+        self._editor_payload_cache = None
         self._editing_index += 1
         self._transition(DriverState.EDITING)
+
+    def _draft_candidate_count(self) -> int:
+        """每镜要几个候选（``orchestration.draft_candidates``，默认 1 = 现状）。"""
+        if self.config is None:
+            return 1
+        value = getattr(self.config.orchestration, "draft_candidates", 1)
+        try:
+            return max(1, int(value))
+        except (TypeError, ValueError):
+            return 1
 
     def _step_building(self) -> None:
         """把分镜计划交给场景构建器（bpy 实现在 layer3_engine/shot_builder.py）。"""
@@ -1185,11 +1272,30 @@ class PrevisDriver:
         try:
             summary = self.builder.build(plan, self.brief) or {}
         except Exception as exc:  # noqa: BLE001 - 构建失败要如实上报并降级
+            #: 2026-10-07 实测：审计里只有一行 `TypeError: ...`，**traceback 被丢掉了**，
+            #: 于是一次真实的构建崩溃只能靠"重跑一遍 20 分钟"才定位得到（长剧本那一跑
+            #: 的 `could not convert string to float: 's'` 就是这么丢的）。日志里留全文，
+            #: 审计里仍只留一行摘要——审计是**结论**，日志是**证据**。
+            log.error("场景构建失败：\n%s", traceback.format_exc())
             self.audit.log("build_failed", f"{type(exc).__name__}: {exc}",
                            level="error")
             self._fail(f"场景构建失败：{type(exc).__name__}: {exc}")
             return
         self.build_summary = dict(summary)
+        #: v1.5 §7（P6-T2）：Best-of-N 的备选草案写进**这一镜的 build result**
+        #: （manifest 已按 shot_id 读这份 results）。默认无备选 ⇒ 一个键都不加，
+        #: 交付清单与升级前逐字节相同。
+        if self._draft_alternates:
+            results = self.build_summary.get("results")
+            if isinstance(results, list):
+                for item in results:
+                    if not isinstance(item, dict):
+                        continue
+                    alternates = self._draft_alternates.get(
+                        str(item.get("shot_id")))
+                    if alternates:
+                        item["alternates"] = [dict(entry)
+                                              for entry in alternates]
         duration = self.clock() - started
         self.audit.log("scene_built", "场景已构建",
                        duration_s=round(duration, 3),
@@ -1297,6 +1403,25 @@ class PrevisDriver:
         #: `AuditResult` 里现成，落盘不额外花钱；`rule_ids` 只列 ERROR 级。
         findings = [item.to_dict() for item in
                     (list(result.errors) + list(result.warnings))[:12]]
+        #: v1.5 §5.4（P4-T4）：**破例辩护对拍**（声明 vs 实测）。只在真有内容时
+        #: 写进事件（与 `restored`/`degraded` 同一纪律）——没声明、没违规的镜不在
+        #: 事件里多一个空键，历史事件形状因此一个字节都没变。
+        reconciliation = getattr(result, "justification_audit", None) or {}
+        reconciliation_extra = {}
+        if any(reconciliation.get(key) for key in
+               ("declared_breaks", "declared_follows", "detected_violations")):
+            reconciliation_extra["justification_audit"] = dict(reconciliation)
+            #: 交付清单也要这一栏（§6 第 8 步：shots.json 收破例对拍结果）。写进
+            #: 这一镜的 build result——manifest 本就按 shot_id 读这份 results，
+            #: 不必再新开一条从驱动器到导出层的管道。
+            self._record_justification_audit(shot_id, reconciliation)
+        #: v1.5 §5.5（P6-T1）：**外部评审外回路**。缺省关 ⇒ 这里恒为空、
+        #: 事件与交付物一个字节都不变；打开后也只多一个键，**不改判定**。
+        review = getattr(result, "vlm_review", None) or {}
+        review_extra = {}
+        if review:
+            review_extra["vlm_review"] = dict(review)
+            self._record_vlm_review(shot_id, review)
         self.audit.log("shot_audit", f"{shot_id}: {result.format_for_llm().splitlines()[0]}",
                        level="info" if result.passed else "warning",
                        shot=shot_id, passed=result.passed,
@@ -1306,12 +1431,44 @@ class PrevisDriver:
                        findings=findings,
                        composition_score=result.score,
                        composition_threshold=threshold,
+                       **reconciliation_extra,
+                       **review_extra,
                        **({"restored": True} if restored else {}),
                        **({"degraded": True} if degraded else {}))
         self._emit("shot_audit",
                    f"{shot_id} {'通过' if result.passed else '未通过'}",
                    shot=shot_id, passed=result.passed)
         return result
+
+    def _record_vlm_review(self, shot_id: str, review: Dict[str, Any]) -> None:
+        """把这一镜的外部评审判词写进 ``build_summary["results"]``（交付层读它）。
+
+        与 ``_record_justification_audit`` 同一条纪律：找不到对应 result 就跳过
+        ——交付层在缺失时不写这个键（"没评过"与"评了 0 分"必须分得开）。
+        """
+        results = self.build_summary.get("results")
+        if not isinstance(results, list):
+            return
+        for item in results:
+            if isinstance(item, dict) and str(item.get("shot_id")) == str(shot_id):
+                item["vlm_review"] = dict(review)
+                return
+
+    def _record_justification_audit(self, shot_id: str,
+                                    reconciliation: Dict[str, Any]) -> None:
+        """把这一镜的破例对拍写进 ``build_summary["results"]``（交付层读它）。
+
+        找不到对应 result 就跳过（例如审核发生在没有构建结果的路径上）——这
+        **不是**降级：交付层在缺失时会写成四个空集（"查过、两边都空"），
+        而不是编一个结论。
+        """
+        results = self.build_summary.get("results")
+        if not isinstance(results, list):
+            return
+        for item in results:
+            if isinstance(item, dict) and str(item.get("shot_id")) == str(shot_id):
+                item["justification_audit"] = dict(reconciliation)
+                return
 
     def _step_checking(self) -> None:
         """§7.1 B3：逐镜头校验；不通过就进入定向修复。"""
@@ -1781,13 +1938,40 @@ class PrevisDriver:
         #: 工具预算跟着场景走（见 `tool_call_budget` 的抬头）：固定 200 在 64 镜那跑
         #: 第 362 s 就耗光，之后 57 次修复回合全被拒、后四分之一一次也没修。
         tool_calls_effective = tool_call_budget(effective,
-                                                self.limits.max_tool_calls)
+                                               self.limits.max_tool_calls)
         self.limits.max_tool_calls = tool_calls_effective
+        #: **token 上限跟着场景走**（2026-10-07，用户"你看着来"授权；见
+        #: `BudgetConfig.tokens_per_call_allowance` 的注释）：调用额度与 token 上限
+        #: 必须互相自洽——写死 2 M 会让"没用完的调用额度"结构上不可达（v15 管线下
+        #: 64 镜真跑两次都在 59% 调用额度处吃满 2 M）。这里取
+        #: ``max(静态下限, min(静态帽, 本场调用额度 × 每次调用额度))``：
+        #: 小场景**一个字节都不变**（仍是 2 M 下限），长场景才抬起来。
+        tokens_effective = self._scene_token_budget(effective)
+        self.budget.limits.max_tokens = tokens_effective
         self.audit.log(
             "budget_scoped", describe_budget_formula(formula, shots),
             shots=shots, formula_value=value, ceiling=ceiling,
             ceiling_effective=ceiling_effective, hard_cap=hard,
-            effective=effective, tool_calls_effective=tool_calls_effective)
+            effective=effective, tool_calls_effective=tool_calls_effective,
+            max_tokens_effective=tokens_effective)
+
+    def _scene_token_budget(self, effective_calls: int) -> int:
+        """本场 token 上限（纯函数式；见 `_apply_scene_budget` 的注释）。
+
+        三个量取法固定：**静态下限**（`BudgetLimits.max_tokens`）＋ **每次调用额度**
+        ＋ **静态帽**。任何一格为 0 都按"不限"处理（与账本其余上限同一约定）。
+        """
+        floor = int(getattr(self, "_static_token_floor",
+                            self.budget.limits.max_tokens))  # 静态下限（0 = 不限）
+        budget_config = getattr(self.config, "budget", None)
+        per_call = int(getattr(budget_config, "tokens_per_call_allowance", 0) or 0)
+        ceiling = int(getattr(budget_config, "max_tokens_ceiling", 0) or 0)
+        if per_call <= 0 or effective_calls <= 0:
+            return floor                                    # 不设公式 ⇒ 保持原样
+        value = per_call * int(effective_calls)
+        if ceiling > 0:
+            value = min(value, ceiling)
+        return max(floor, value)
 
     def _start_plan_call(self) -> None:
         request_id = new_request_id()
@@ -1854,13 +2038,23 @@ class PrevisDriver:
         if not self._plan_shots:
             self._plan_head = {"scene_heading": chunk_plan.scene_heading,
                                "continuity_notes": list(
-                                   chunk_plan.continuity_notes or [])}
+                                   chunk_plan.continuity_notes or []),
+                               #: v1.5 §3.2（P2-T4）：场级环境是**全场共用**的
+                               #: 声明，必须跟着分块计划一起带下去；不带就等于
+                               #: 在分块路径上把它悄悄丢掉（长剧本一律走分块）。
+                               "environment": dict(
+                                   getattr(chunk_plan, "environment", {}) or {})}
         else:
             merged = list(self._plan_head.get("continuity_notes") or [])
             for note in (chunk_plan.continuity_notes or []):
                 if note not in merged:
                     merged.append(note)
             self._plan_head["continuity_notes"] = merged
+            #: 环境只在缺省时被后来者补齐——阶段 A 每段都会重新声明一次，
+            #: 第一个给出非空 environment 的那段说了算（同一场戏只有一份）。
+            if not self._plan_head.get("environment") and getattr(
+                    chunk_plan, "environment", None):
+                self._plan_head["environment"] = dict(chunk_plan.environment)
         self._plan_shots.extend(chunk_plan.shots)
         #: 这一段收下了，上一次的拒绝原因就过期了——别带进下一段的提示里。
         self._plan_problem = ""
@@ -1999,8 +2193,10 @@ class PrevisDriver:
                 else:
                     shot_id = str(args.get("shot_id") or self._current_shot_id)
                     try:
+                        characters, anchors = self._draft_context(shot_id)
                         draft = extract_draft(
-                            ChatReply(tool_calls=[call]), shot_id)
+                            ChatReply(tool_calls=[call]), shot_id,
+                            characters=characters, anchors=anchors)
                     except ValueError as exc:
                         errors.append(str(exc))
                     else:

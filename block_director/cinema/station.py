@@ -23,6 +23,16 @@ from typing import Optional, Sequence, Tuple
 
 from .framing import side_vector
 
+#: 注意：**不在这里模块级 import** ``contracts.beats``。原因是循环导入——
+#: ``contracts/beats.py`` 按红线 R-7 从 ``motion/model.py`` 导入动词表，而
+#: ``motion/model.py`` 模块级 import ``cinema.anchor``，这会把 ``cinema`` 包
+#: 的 ``__init__`` 拖进来、进而 import 本模块；若本模块又在模块级 import
+#: ``contracts.beats``，就形成 ``motion.model → cinema.anchor → cinema.__init__
+#: → station → contracts.beats → motion.model`` 的环（实测：pytest 收集期
+#: ImportError，``ACTION_TYPES`` 从半初始化的 model 里取不到）。
+#: 在 :func:`aim_offset_for_composition` 内做**惰性 import** 即可打断环，
+#: 与 ``rule_checker`` 里 ``evaluate_camera_composition`` 的写法同源。
+
 EPS = 1e-9
 
 #: 以"一组人"为被摄对象的景别：锚点取组重心，才能真的把多人框进来。
@@ -285,6 +295,84 @@ def aim_offset_for_lead_room(direction: Sequence[float],
     if abs(facing_screen) < 1e-6:
         return 0.0
     return LEAD_ROOM_OFFSET if facing_screen > 0 else -LEAD_ROOM_OFFSET
+
+
+def aim_offset_for_composition(composition,
+                               direction: Sequence[float],
+                               facing: Sequence[float], *,
+                               default: float = 0.0) -> float:
+    """把**镜头级构图声明**翻成对准点的横向偏移（单位：幅宽，正 = 朝画面右侧偏）。
+
+    v1.5 §4.6 的落地（卡 P3-T4）：在此之前，``aim_offset_x`` 只有一条固定规则
+    ——单主体镜头一律按 §10.4 的 `lead_room` 横移（:func:`aim_offset_for_lead_room`）。
+    计划侧新写的 ``shot.composition``（``CompositionSpec``）一直没有消费者。
+    本函数是**纯函数**（不碰 bpy），把声明收敛成"看哪"的偏移量，机位与焦距不动。
+
+    取值表（TDD §4.6，逐条对齐）：
+
+    * ``subject_position=left_third`` ⇒ ``+LEAD_ROOM_OFFSET``：对准点右移 ⇒ 主体
+      落到画面**左**三分线（§六十八已验证的"横移六分之一幅宽"机制，不另起炉灶）；
+    * ``subject_position=right_third`` ⇒ 取反；
+    * ``subject_position=center`` ⇒ ``0.0``（主体居中）；
+    * ``rule=lead_room`` ⇒ 朝角色面朝方向推（复用 :func:`aim_offset_for_lead_room`）；
+    * ``rule=center`` / ``rule=symmetry`` ⇒ ``0.0``（**显式覆盖**三分法默认）；
+    * ``rule=diagonal`` / ``frame_within_frame`` ⇒ **求解器不支持时不硬解**，
+      只记录（返回 ``default``，几何与空声明一致）；
+    * ``subject_position`` 与 ``rule`` 同时给了横向冲突时，**以更具体的
+      ``subject_position`` 为准**（它直接说"主体站哪"，``rule`` 是构图法）。
+
+    ``default`` 是"没有声明时求解器本来会用的偏移"（单主体 = lead_room 偏移、
+    双人 = 0）。声明为空时**原样返回它**——这条保证"空声明 = 现状逐字节一致"。
+    """
+    #: 惰性 import（见文件顶部循环导入说明）：运行期调用时所有模块都已加载，
+    #: 取契约闭集不会有半初始化问题。
+    from ..contracts.beats import (
+        COMPOSITION_RULES,
+        SUBJECT_POSITIONS,
+        CompositionSpec,
+    )
+
+    if isinstance(composition, CompositionSpec):
+        spec = composition
+    elif isinstance(composition, dict):
+        spec = CompositionSpec.from_dict(composition)
+    elif composition is None:
+        spec = CompositionSpec()
+    else:  # 未知形状一律当作"没声明"，不猜字段
+        spec = CompositionSpec()
+
+    if spec.is_empty:
+        return float(default)
+
+    #: 与 ``contracts/beats.py`` 的闭集对拍：这里**处理**的取值集合必须落在
+    #: 契约闭集里（写错一个字就成了"永远不生效的死声明"，而它不会报错）。
+    #: 与 ``camera_motion`` 对 ``MOVEMENT_TYPES`` 的守卫同一种写法。
+    handled_positions = {"left_third", "right_third", "center"}
+    handled_rules = {"center", "symmetry", "lead_room", "thirds",
+                     "diagonal", "frame_within_frame"}
+    if not handled_positions <= set(SUBJECT_POSITIONS) \
+            or not handled_rules <= set(COMPOSITION_RULES):
+        raise RuntimeError(
+            "station.aim_offset_for_composition 的取值表与 contracts/beats.py "
+            "的构图闭集不一致（声明漂移）")
+
+    position = str(spec.subject_position or "").strip()
+    if position == "left_third":
+        return LEAD_ROOM_OFFSET
+    if position == "right_third":
+        return -LEAD_ROOM_OFFSET
+    if position == "center":
+        return 0.0
+
+    rule = str(spec.rule or "").strip()
+    if rule in ("center", "symmetry"):
+        return 0.0
+    if rule == "lead_room":
+        return aim_offset_for_lead_room(direction, facing)
+    #: ``thirds`` 与求解器的默认行为同义；``diagonal``/``frame_within_frame``
+    #: 本版只记录（TDD §4.6 原话："求解器不支持时降级为记录，不硬解"）。
+    #: 两者都返回 ``default``，几何不变。
+    return float(default)
 
 
 def camera_direction(frame: SubjectFrame, side: str = "front", *,
