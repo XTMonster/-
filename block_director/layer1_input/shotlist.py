@@ -34,10 +34,21 @@ from .model import (
 )
 from .timing import DURATION_SUFFIX_RE, extract_declared_seconds, frames_from_seconds
 
-#: 节点标题：允许 markdown 的 ``#`` 前缀
+#: 时长的单位：``秒`` 与 ``s/sec/secs/seconds`` 是同一样东西的两种写法。
+#: 用户的真实剧本（`码头市场_电影级分镜_v10.docx` 家族）通篇写 ``5s``、
+#: ``（12s）``，v1.4 的解析器只认 ``秒``，于是**声明时长被整批丢掉**
+#: （实测 13 个镜号全报"没有「预估时长」声明"）——这等于把导演写死的
+#: 时长硬约束换成了模型的猜测，是**降级**，不是"容错"。
+_DURATION_UNIT = r"(?:秒|seconds?|secs?|s)"
+
+#: 节点标题：允许 markdown 的 ``#`` 前缀，也允许 ``**节点1：…**（12s）``
+#: 这种"加粗 ＋ 括号里写总时长"的排版写法。
 NODE_HEADER_RE = re.compile(
-    r"^\s*#*\s*节点\s*(?P<num>\d+)\s*[：:]\s*(?P<rest>.*)$")
-NODE_TOTAL_RE = re.compile(r"总时长\s*[：:]\s*(?P<sec>\d+(?:\.\d+)?)\s*秒")
+    r"^\s*(?:[#]+\s*)*[*]*\s*节点\s*(?P<num>\d+)\s*[：:]\s*(?P<rest>.*)$")
+#: 节点总时长：``总时长：12秒`` / ``总时长：12s`` / ``（12s）`` 三种写法等价。
+NODE_TOTAL_RE = re.compile(
+    r"(?:总时长\s*[：:]\s*|[（(]\s*)"
+    r"(?P<sec>\d+(?:\.\d+)?)\s*" + _DURATION_UNIT)
 
 #: 镜号行
 SHOT_HEADER_RE = re.compile(r"^\s*镜号\s*[：:]\s*(?P<num>\d+)\s*$")
@@ -77,8 +88,21 @@ INLINE_DIALOGUE_RE = re.compile(_DIALOGUE_BODY + _DURATION_TAIL)
 TIMECODE_RE = re.compile(
     r"(?P<start>\d+(?:\.\d+)?)\s*[-–~]\s*(?P<end>\d+(?:\.\d+)?)\s*秒")
 
-#: ``预估时长：5秒`` 的值
-SECONDS_RE = re.compile(r"(?P<sec>\d+(?:\.\d+)?)\s*秒")
+#: **不带说话人**的台词行：``台词："伊恩，这里就交给我吧！"（2.75s，自信语速4字/秒）``。
+#: 这是 ``码头市场_电影级分镜_v10.docx`` 家族的写法——说话人不在这一行，而在**同一分镜的
+#: 「角色」字段**里。v1.4 会把行首那两个字当成一个叫"台词"的角色（实测：整份剧本的
+#: 说话人集合 = {台词}，「角色：米迦尔」于是被 `_split_characters` 全部过滤掉，
+#: 13 个镜号一个角色都没有——那是**降级**，不是"认不出就少认几个"）。
+QUOTED_LINE_RE = re.compile(
+    r"^\s*台词\s*[：:]\s*(?P<quote>[\"“](?P<text>.+?)[\"”])\s*(?P<tail>.*)$")
+
+#: 「角色」字段里明显**不是角色**的写法（背景群众、路人编号…）。只用来整条剔掉，
+#: 不用来猜名字。
+_ROLE_BACKGROUND_MARKERS = ("路人", "背景", "人群", "群众", "商贩", "旁观",
+                            "无角色", "无人", "众人", "若干")
+
+#: ``预估时长：5秒`` / ``预估时长：5s`` 的值
+SECONDS_RE = re.compile(r"(?P<sec>\d+(?:\.\d+)?)\s*" + _DURATION_UNIT)
 
 #: 小结行：只作交叉校验，不产生新的声明
 SUMMARY_RE = re.compile(
@@ -146,6 +170,65 @@ def _map_camera_move(value: str) -> str:
     return ""
 
 
+def _split_role_tokens(value: str) -> List[str]:
+    """按**顶层**分隔符切「角色」字段：括注里的逗号不算分隔符。
+
+    v1.5 实测踩到的形状：``角色：米迦尔（尾巴在身后保持轻摆状态，尾尖毛簇微翘）``
+    ——用 ``re.split(r"[、,，;；/\\s]+")`` 会把括注里的那个逗号当成角色分隔符，
+    切出两个都不像名字的碎片，于是这一镜的声明角色**整条丢掉**（同为真实剧本，
+    这不是"少认一个"，是"多认出一个"的反面）。
+    """
+    tokens: List[str] = []
+    current: List[str] = []
+    depth = 0
+    for char in str(value or ""):
+        if char in "（(":
+            depth += 1
+            current.append(char)
+            continue
+        if char in "）)":
+            depth = max(0, depth - 1)
+            current.append(char)
+            continue
+        if depth == 0 and char in "、,，;；/\t ":
+            if current:
+                tokens.append("".join(current))
+                current = []
+            continue
+        current.append(char)
+    if current:
+        tokens.append("".join(current))
+    return tokens
+
+
+def _plausible_role_names(value: str) -> List[str]:
+    """把「角色」字段拆成**候选角色名**：去掉括注、去掉背景群众、去掉编号。
+
+    只做"剔掉明显不是人的写法"，不替剧本猜人：`无角色出场；背景中路人1（渔贩…）`
+    得到空表，`米迦尔；背景中路人1（渔贩…）` 得到 `["米迦尔"]`，
+    `莉莉安娜、伊恩` 得到两个。
+    """
+    text = re.sub(r"[（(][^）)]*[）)]", " ", str(value or ""))
+    names: List[str] = []
+    for token in re.split(r"[、,，;；/\s]+", text):
+        name = token.strip()
+        if not name or len(name) > 8:
+            continue
+        if any(marker in name for marker in _ROLE_BACKGROUND_MARKERS):
+            continue
+        if any(ch.isdigit() for ch in name):
+            continue
+        if name not in names:
+            names.append(name)
+    return names
+
+
+def _speaker_from_roles(value: str) -> str:
+    """``台词：`` 行没写说话人时，取「角色」字段的第一位候选。"""
+    names = _plausible_role_names(value)
+    return names[0] if names else ""
+
+
 def _split_characters(value: str, known: List[str]) -> List[str]:
     """从"角色："字段里挑出**已知的说话人**。
 
@@ -160,7 +243,7 @@ def _split_characters(value: str, known: List[str]) -> List[str]:
     if not value:
         return []
     found: List[str] = []
-    for token in re.split(r"[、,，;；/\s]+", value):
+    for token in _split_role_tokens(value):
         name = split_alias(token)[0]
         if not name or len(name) > 8:
             continue
@@ -187,7 +270,7 @@ def split_alias(token: str) -> Tuple[str, str]:
 def _aliases_in(value: str, known: List[str]) -> Dict[str, List[str]]:
     """从"角色："字段里收集 ``{正式名: [别名, ...]}``（只认已知说话人）。"""
     mapping: Dict[str, List[str]] = {}
-    for token in re.split(r"[、,，;；/\s]+", str(value or "")):
+    for token in _split_role_tokens(str(value or "")):
         name, alias = split_alias(token)
         if not name or name not in known or not alias:
             continue
@@ -226,8 +309,10 @@ def parse_shot_list(text: str, *, title: str = "",
         node_match = NODE_HEADER_RE.match(stripped)
         if node_match:
             rest = str(node_match.group("rest") or "").strip()
-            # 去掉"（总时长：5秒，字数：198）"这类后缀，只留节点标题
+            # 去掉"（总时长：5秒，字数：198）"／"（12s）"这类后缀，只留节点标题；
+            # ``**节点1：风起·定场与出场**（12s）`` 的收尾 ``**`` 也一并去掉。
             title_text = re.split(r"[（(]", rest)[0].strip() or rest
+            title_text = title_text.strip("*").strip()
             node = ParsedNodeDeclaration(
                 node_number=int(node_match.group("num")),
                 title=title_text)
@@ -252,6 +337,51 @@ def parse_shot_list(text: str, *, title: str = "",
                 shot_number=int(shot_match.group("num")),
                 node_number=node.node_number, node_title=node.title)
             node.shots.append(shot)
+            continue
+
+        # ``台词："…"（2.75s）``：说话人写在**同镜的「角色」字段**里
+        # （v10 电影级分镜的写法）。这一支必须排在 DIALOGUE_RE **前面**：
+        # 后者会把行首那两个字当成一个叫"台词"的说话人。归属规则只有一条
+        # ——按剧本自己写的角色走；候选多于一个时取第一位，并把这件事
+        # **显式记成一条告警**，不静默。
+        quoted_match = QUOTED_LINE_RE.match(stripped)
+        if quoted_match is not None:
+            if shot is not None:
+                value = str(quoted_match.group("text") or "").strip()
+                roles = _plausible_role_names(shot.fields.get("角色", ""))
+                name = roles[0] if roles else ""
+                _, declared = extract_declared_seconds(
+                    str(quoted_match.group("tail") or "").strip())
+                if not name:
+                    problems.append(
+                        f"镜号 {shot.shot_number} 的台词行没写说话人，"
+                        f"而「角色」字段（{shot.fields.get('角色', '')}）里"
+                        f"认不出执话人：已按无说话人处理，请核对剧本")
+                elif value:
+                    if len(roles) > 1:
+                        problems.append(
+                            f"镜号 {shot.shot_number} 的台词行没写说话人，"
+                            f"按「角色」字段第一位归属到「{name}」"
+                            f"（同镜候选：{'、'.join(roles)}）")
+                    source_index += 1
+                    dialogue = ParsedDialogue(
+                        character=name, text=value, parenthetical="",
+                        source_index=source_index, emotion="normal",
+                        declared_seconds=declared)
+                    dialogue_lines.append((len(script.scenes), name))
+                    if scene is None:
+                        scene = ParsedScene(scene_number=1,
+                                            heading="（未标注节点）")
+                        script.scenes.append(scene)
+                    scene.dialogues.append(dialogue)
+                    shot.dialogues.append(dialogue)
+                    if name not in known_speakers:
+                        # 说话人这一遍才认出来，「角色」字段此前是按"已知说话人"
+                        # 过滤的——补上之后要**重算这一镜的角色表**，否则
+                        # 「角色：米迦尔」会因为"米迦尔还没说过话"被整条丢掉。
+                        known_speakers.append(name)
+                        shot.characters = _split_characters(
+                            shot.fields.get("角色", ""), known_speakers)
             continue
 
         dialogue_match = DIALOGUE_RE.match(stripped)
@@ -417,12 +547,30 @@ def render_declared_shots(script, *, fps: int = 24,
 
 
 def _collect_speakers(lines: List[str]) -> List[str]:
-    """先扫一遍，收集所有台词说话人——"角色："字段只认这些人。"""
+    """先扫一遍，收集所有台词说话人——"角色："字段只认这些人。
+
+    v1.5：``台词："…"`` 这种**不带说话人**的写法同样要收——它的说话人由
+    同一分镜的「角色」字段给出，所以这里要带着"当前镜的「角色」"一起走。
+    """
     names: List[str] = []
+    role_field = ""
     for line in lines:
+        stripped = line.strip()
+        field_match = FIELD_RE.match(stripped)
+        if field_match is not None and field_match.group("key") == "角色":
+            role_field = field_match.group("value").strip()
+        elif SHOT_HEADER_RE.match(stripped) or NODE_HEADER_RE.match(stripped):
+            # 换镜/换节点：上一镜的「角色」不再适用
+            role_field = ""
+        quoted = QUOTED_LINE_RE.match(stripped)
+        if quoted is not None:
+            name = _speaker_from_roles(role_field)
+            if name and name not in names:
+                names.append(name)
+            continue
         # v1.4 D-1：行内台词（``画面内容：米迦尔："…"``）同样是说话人来源，
         # 否则"角色：米迦尔"会因为米迦尔"没说过话"而被整条丢掉。
-        for match in INLINE_DIALOGUE_RE.finditer(line.strip()):
+        for match in INLINE_DIALOGUE_RE.finditer(stripped):
             name = str(match.group("speaker") or "").strip()
             if name and name not in names:
                 names.append(name)
