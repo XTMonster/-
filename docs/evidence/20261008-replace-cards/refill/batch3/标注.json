@@ -1,0 +1,79 @@
+[
+  {
+    "from_card": "gen_cine_0007",
+    "q": "光线=高调；强度=mid",
+    "must": [
+      "LIGHT_PACK:lighting=高调,intensity=mid"
+    ],
+    "top1": [
+      "LIGHT_PACK:lighting=高调,intensity=mid"
+    ],
+    "why": "避免受光不足，高调中强近似。"
+  },
+  {
+    "from_card": "gen_cine_0010",
+    "q": "道具=陈设；景别=MS；机位=平视",
+    "must": [
+      "PROP_PACK:prop=陈设,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "PROP_PACK:prop=陈设,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "翻拍复制品，陈设取景仅近似。"
+  },
+  {
+    "from_card": "gen_cine_0013",
+    "q": "光线=正面光；强度=mid",
+    "must": [
+      "LIGHT_PACK:lighting=正面光,intensity=mid"
+    ],
+    "top1": [
+      "LIGHT_PACK:lighting=正面光,intensity=mid"
+    ],
+    "why": "适应任意光线，正面中强近似。"
+  },
+  {
+    "from_card": "gen_cine_0018",
+    "q": "构图=framing；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=framing,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=framing,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "查表定距离，取景构图仅近似。"
+  },
+  {
+    "from_card": "gen_cine_0019",
+    "q": "光线=冷光；强度=low",
+    "must": [
+      "LIGHT_PACK:lighting=冷光,intensity=low"
+    ],
+    "top1": [
+      "LIGHT_PACK:lighting=冷光,intensity=low"
+    ],
+    "why": "染浴渗色偏冷低强，仅近似。"
+  },
+  {
+    "from_card": "gen_comp_0264",
+    "q": "构图=balance；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "两线定位有平衡构图意味，近似。"
+  },
+  {
+    "from_card": "gen_prod_0161",
+    "q": "节奏=short；镜长=<1s",
+    "must": [
+      "EDIT_RHYTHM:pacing=short,avg_shot_len=<1s"
+    ],
+    "top1": [
+      "EDIT_RHYTHM:pacing=short,avg_shot_len=<1s"
+    ],
+    "why": "旋转镜头暗示短促节奏，近似。"
+  }
+]

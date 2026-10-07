@@ -1,0 +1,90 @@
+[
+  {
+    "from_card": "comp_golden_ratio",
+    "q": "构图=rule_of_thirds；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=rule_of_thirds,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=rule_of_thirds,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "正文提到三等分构图与偏移主体"
+  },
+  {
+    "from_card": "comp_horizon",
+    "q": "构图=rule_of_thirds；景别=LS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=rule_of_thirds,shot_size=LS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=rule_of_thirds,shot_size=LS,camera_angle=平视"
+    ],
+    "why": "正文说地平线放在三分之一位置"
+  },
+  {
+    "from_card": "comp_lead_room",
+    "q": "构图=lead_room；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=lead_room,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=lead_room,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "正文讲视线留白；景别机位取索引近似"
+  },
+  {
+    "from_card": "comp_lines",
+    "q": "构图=lead_room；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=lead_room,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=lead_room,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "正文讲引导视线，索引仅留白近似"
+  },
+  {
+    "from_card": "comp_negative_space",
+    "q": "构图=lead_room；景别=LS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=lead_room,shot_size=LS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=lead_room,shot_size=LS,camera_angle=平视"
+    ],
+    "why": "正文讲大面积留白，索引仅留白近似"
+  },
+  {
+    "from_card": "comp_occlusion",
+    "q": "构图=occlusion；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=occlusion,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=occlusion,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "正文称遮挡是致命构图问题"
+  },
+  {
+    "from_card": "comp_widescreen_grouping",
+    "q": "构图=balance；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "正文讲多人排布，索引平衡近似"
+  },
+  {
+    "from_card": "gen_anime_0282",
+    "q": "动作=走位；强度=mid",
+    "must": [
+      "ACTION_BEAT:action=走位,beat_type=coverage,intensity=mid"
+    ],
+    "top1": [
+      "ACTION_BEAT:action=走位,beat_type=coverage,intensity=mid"
+    ],
+    "why": "正文说初学者先练画走路"
+  }
+]

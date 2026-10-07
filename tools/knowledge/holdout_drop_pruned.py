@@ -82,7 +82,8 @@ def pruned_pairs(verdict: dict, edges: Sequence[dict]
 
 
 def classify_specs(entry: dict, pairs: Dict[Tuple[str, str, str], dict],
-                   graph_new, graph_old) -> Tuple[List[dict], List[dict], List[dict]]:
+                   graph_new, graph_old, *, require_verdict: bool = False
+                   ) -> Tuple[List[dict], List[dict], List[dict]]:
     """→ (可摘的 spec, 原样保留的 spec, 解析不到但**不归因于剪枝**的 spec)。"""
     droppable: List[dict] = []
     keep: List[dict] = []
@@ -113,7 +114,7 @@ def classify_specs(entry: dict, pairs: Dict[Tuple[str, str, str], dict],
                 pair = (etype, kind, value)
                 if pair in pairs and (kind, value) not in hits:
                     hits.append((kind, value))
-            if not hits:
+            if not hits and require_verdict:
                 unexplained.append({**item, "why": "解析不到，但没有对应的裁决行"})
                 keep.append(item)
                 continue
@@ -122,12 +123,15 @@ def classify_specs(entry: dict, pairs: Dict[Tuple[str, str, str], dict],
                               "members": [f"{kind}={value}" for kind, value in hits],
                               "verdicts": [{"edge_id": r.get("edge_id"),
                                             "verdict": r.get("verdict"),
-                                            "why": r.get("why")} for r in rows]})
+                                            "why": r.get("why")} for r in rows],
+                              "cause": ("裁决剪枝" if rows else
+                                        "索引换代（重抽取后没这条形状）")})
     return droppable, keep, unexplained
 
 
 def run(holdout: pathlib.Path, verdict_path: pathlib.Path, edges_path: pathlib.Path,
-        nodes_path: pathlib.Path = DEFAULT_NODES, *, write: bool = True) -> dict:
+        nodes_path: pathlib.Path = DEFAULT_NODES, *, write: bool = True,
+        require_verdict: bool = False) -> dict:
     entries = read_jsonl(holdout)
     pairs = pruned_pairs(json.loads(verdict_path.read_text(encoding="utf-8")),
                          read_jsonl(edges_path))
@@ -136,10 +140,12 @@ def run(holdout: pathlib.Path, verdict_path: pathlib.Path, edges_path: pathlib.P
     kept_entries: List[dict] = []
     report = {"holdout": str(holdout), "verdict": str(verdict_path),
               "edges_before": str(edges_path),
+              "require_verdict": require_verdict,
               "pruned_pairs": len(pairs), "before": len(entries),
               "edited_entries": [], "dropped_entries": [], "unexplained": []}
     for entry in entries:
-        droppable, keep, unexplained = classify_specs(entry, pairs, graph_new, graph_old)
+        droppable, keep, unexplained = classify_specs(
+            entry, pairs, graph_new, graph_old, require_verdict=require_verdict)
         if unexplained:
             report["unexplained"].append({"id": str(entry.get("id")),
                                           "rows": unexplained})
@@ -178,12 +184,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--edges", required=True,
                         help="**剪枝前**的边表（`git show HEAD:knowledge/hypergraph.edges.jsonl`）")
     parser.add_argument("--nodes", default=str(DEFAULT_NODES))
+    parser.add_argument("--require-verdict", action="store_true",
+                        help="只摘「能归因到裁决行」的 spec（默认关：索引换代造成的失效也摘，"
+                             "并如实记 cause）")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--json", default="")
     args = parser.parse_args(list(argv) if argv is not None else None)
     report = run(pathlib.Path(args.holdout), pathlib.Path(args.verdict),
                  pathlib.Path(args.edges), pathlib.Path(args.nodes),
-                 write=not args.dry_run)
+                 write=not args.dry_run,
+                 require_verdict=args.require_verdict)
     if args.json:
         pathlib.Path(args.json).write_text(
             json.dumps(report, ensure_ascii=False, indent=2) + "\n",

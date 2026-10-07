@@ -1,0 +1,2557 @@
+{
+  "holdout": "fixtures\\knowledge_holdout.jsonl",
+  "verdict": "docs\\evidence\\20261007-v15-zerocand-verdict\\verdict.json",
+  "edges_before": "work\\_pre_replace_20261008\\hypergraph.edges.jsonl",
+  "require_verdict": false,
+  "pruned_pairs": 10,
+  "before": 2847,
+  "edited_entries": [
+    {
+      "id": "hq_0931",
+      "from_card": "gen_edit_0160",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "IMPACT_PACK:vfx=glow,sfx=静默,movement=orbit_cw",
+          "type": "IMPACT_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1137",
+      "from_card": "gen_axis_0147",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1138",
+      "from_card": "gen_block_0317",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1139",
+      "from_card": "gen_cine_0352",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1149",
+      "from_card": "gen_axis_0299",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1150",
+      "from_card": "gen_block_0006",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1151",
+      "from_card": "gen_block_0015",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1152",
+      "from_card": "gen_block_0252",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1153",
+      "from_card": "gen_block_0268",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1154",
+      "from_card": "gen_cine_0017",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1155",
+      "from_card": "gen_cine_0027",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1156",
+      "from_card": "gen_cine_0067",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1157",
+      "from_card": "gen_cine_0191",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1158",
+      "from_card": "gen_cine_0202",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1159",
+      "from_card": "gen_cine_0239",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1160",
+      "from_card": "gen_cine_0278",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1161",
+      "from_card": "gen_cine_0282",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1162",
+      "from_card": "gen_cine_0309",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1163",
+      "from_card": "gen_cine_0332",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1164",
+      "from_card": "gen_prod_0013",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1165",
+      "from_card": "gen_prod_0014",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1166",
+      "from_card": "gen_prod_0015",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1167",
+      "from_card": "gen_prod_0032",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1168",
+      "from_card": "gen_prod_0058",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1169",
+      "from_card": "gen_prod_0063",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1170",
+      "from_card": "gen_prod_0065",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1172",
+      "from_card": "cine_color_temperature",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1173",
+      "from_card": "gen_cine_0086",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1174",
+      "from_card": "gen_cine_0319",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1175",
+      "from_card": "gen_edit_0154",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1189",
+      "from_card": "cine_color_temperature",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1190",
+      "from_card": "gen_cine_0215",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1191",
+      "from_card": "gen_cine_0220",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1192",
+      "from_card": "gen_cine_0308",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1193",
+      "from_card": "gen_cine_0318",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1194",
+      "from_card": "gen_perf_0561",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1195",
+      "from_card": "gen_prod_0190",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1217",
+      "from_card": "gen_block_0080",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1218",
+      "from_card": "gen_cine_0003",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1219",
+      "from_card": "gen_cine_0073",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1220",
+      "from_card": "gen_cine_0098",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1221",
+      "from_card": "gen_cine_0201",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1222",
+      "from_card": "gen_prod_0028",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1223",
+      "from_card": "gen_prod_0034",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1224",
+      "from_card": "gen_prod_0035",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1225",
+      "from_card": "gen_prod_0036",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1226",
+      "from_card": "gen_prod_0037",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1227",
+      "from_card": "gen_prod_0040",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1228",
+      "from_card": "gen_prod_0043",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1229",
+      "from_card": "gen_prod_0044",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1230",
+      "from_card": "gen_prod_0045",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1231",
+      "from_card": "gen_prod_0059",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1232",
+      "from_card": "gen_prod_0066",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1233",
+      "from_card": "gen_prod_0244",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1234",
+      "from_card": "gen_prod_0258",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1241",
+      "from_card": "cine_light_direction",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1242",
+      "from_card": "gen_anime_0328",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1243",
+      "from_card": "gen_block_0082",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1244",
+      "from_card": "gen_perf_0487",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1245",
+      "from_card": "gen_prod_0070",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1250",
+      "from_card": "gen_block_0354",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1251",
+      "from_card": "gen_block_0356",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1252",
+      "from_card": "gen_cine_0320",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1253",
+      "from_card": "gen_prod_0219",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1317",
+      "from_card": "gen_block_0306",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=medium,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:d8dc74becd6c",
+              "verdict": "wrong_card",
+              "why": "卡谈静默静音，非常规节奏"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_1320",
+      "from_card": "gen_edit_0282",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1321",
+      "from_card": "gen_edit_0286",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1327",
+      "from_card": "gen_anime_0421",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1328",
+      "from_card": "gen_axis_0206",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1329",
+      "from_card": "gen_axis_0306",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1330",
+      "from_card": "gen_block_0074",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1331",
+      "from_card": "gen_block_0233",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1332",
+      "from_card": "gen_cine_0230",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1333",
+      "from_card": "gen_cine_0310",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1334",
+      "from_card": "gen_edit_0216",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1335",
+      "from_card": "gen_perf_0480",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1336",
+      "from_card": "gen_prod_0153",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_1337",
+      "from_card": "gen_story_0207",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ]
+    },
+    {
+      "id": "hq_2037",
+      "from_card": "gen_cine_0329",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "SOUND_PACK:sfx=金属撞击,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=金属撞击",
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:00d50ec06fe9",
+              "verdict": "wrong_value",
+              "why": "木石敲击模拟马蹄，非金属撞击。"
+            },
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_2041",
+      "from_card": "gen_prod_0155",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "SOUND_PACK:sfx=金属撞击,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=金属撞击",
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:00d50ec06fe9",
+              "verdict": "wrong_value",
+              "why": "木石敲击模拟马蹄，非金属撞击。"
+            },
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_2042",
+      "from_card": "gen_story_0023",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_2046",
+      "from_card": "gen_block_0074",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    },
+    {
+      "id": "hq_2047",
+      "from_card": "gen_edit_0281",
+      "dropped_specs": [
+        {
+          "field": "never",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ]
+    }
+  ],
+  "dropped_entries": [
+    {
+      "id": "hq_0900",
+      "from_card": "cine_move_crane_arc_up",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "EMOTION_PACK:emotion=悲伤,intensity=mid,forbid_movement=zoom_in",
+          "type": "EMOTION_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        },
+        {
+          "field": "top1",
+          "spec": "EMOTION_PACK:emotion=悲伤,intensity=mid,forbid_movement=zoom_in",
+          "type": "EMOTION_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_0920",
+      "from_card": "gen_prod_0161",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "IMPACT_PACK:vfx=glow,sfx=静默,movement=orbit_cw",
+          "type": "IMPACT_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        },
+        {
+          "field": "top1",
+          "spec": "IMPACT_PACK:vfx=glow,sfx=静默,movement=orbit_cw",
+          "type": "IMPACT_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_0925",
+      "from_card": "cine_move_dolly_zoom",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "IMPACT_PACK:vfx=impact_frame,sfx=低频轰鸣,movement=dolly_zoom",
+          "type": "IMPACT_PACK",
+          "members": [
+            "vfx=impact_frame"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:411f2155e820",
+              "verdict": "wrong_card",
+              "why": "假打与动画工序，非冲击帧"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "IMPACT_PACK:vfx=impact_frame,sfx=低频轰鸣,movement=dolly_zoom",
+          "type": "IMPACT_PACK",
+          "members": [
+            "vfx=impact_frame"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:411f2155e820",
+              "verdict": "wrong_card",
+              "why": "假打与动画工序，非冲击帧"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_0930",
+      "from_card": "gen_edit_0288",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "IMPACT_PACK:vfx=impact_frame,sfx=低频轰鸣,movement=zoom_in",
+          "type": "IMPACT_PACK",
+          "members": [
+            "vfx=impact_frame"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:411f2155e820",
+              "verdict": "wrong_card",
+              "why": "假打与动画工序，非冲击帧"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "IMPACT_PACK:vfx=impact_frame,sfx=低频轰鸣,movement=zoom_in",
+          "type": "IMPACT_PACK",
+          "members": [
+            "vfx=impact_frame"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:411f2155e820",
+              "verdict": "wrong_card",
+              "why": "假打与动画工序，非冲击帧"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_0940",
+      "from_card": "gen_anime_0391",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "IMPACT_PACK:vfx=spark,sfx=尖锐哨音,movement=固定",
+          "type": "IMPACT_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:5773c4efe944",
+              "verdict": "wrong_card",
+              "why": "无哨音/耳鸣主题，来源不符"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "IMPACT_PACK:vfx=spark,sfx=尖锐哨音,movement=固定",
+          "type": "IMPACT_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:5773c4efe944",
+              "verdict": "wrong_card",
+              "why": "无哨音/耳鸣主题，来源不符"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1016",
+      "from_card": "cine_move_zoom_in",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "INTENT_PACK:intent=揭示,shot_size=MS,movement=zoom_in",
+          "type": "INTENT_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        },
+        {
+          "field": "top1",
+          "spec": "INTENT_PACK:intent=揭示,shot_size=MS,movement=zoom_in",
+          "type": "INTENT_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1136",
+      "from_card": "cine_light_contrast",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "LIGHT_PACK:lighting=低调,intensity=low,forbid_lighting=高调",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "LIGHT_PACK:lighting=低调,intensity=low,forbid_lighting=高调",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1285",
+      "from_card": "gen_prod_0005",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1286",
+      "from_card": "gen_prod_0006",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "LIGHT_PACK:lighting=高调,intensity=high,forbid_lighting=正面光",
+          "type": "LIGHT_PACK",
+          "members": [
+            "lighting=高调"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:0dbec9289553",
+              "verdict": "wrong_card",
+              "why": "卡谈弧光安全与光位，非高调"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1323",
+      "from_card": "gen_axis_0287",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        },
+        {
+          "field": "top1",
+          "spec": "MUSIC_PACK:music=静默,pacing=long,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1324",
+      "from_card": "gen_prod_0161",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "MUSIC_PACK:music=静默,pacing=medium,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:d8dc74becd6c",
+              "verdict": "wrong_card",
+              "why": "卡谈静默静音，非常规节奏"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "MUSIC_PACK:music=静默,pacing=medium,intensity=low",
+          "type": "MUSIC_PACK",
+          "members": [
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:d8dc74becd6c",
+              "verdict": "wrong_card",
+              "why": "卡谈静默静音，非常规节奏"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1880",
+      "from_card": "cine_move_crane_arc_down",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SHOT_PATTERN:shot_size=LS,lens=24mm,headroom_policy=cinematic,movement=crane_arc_down",
+          "type": "SHOT_PATTERN",
+          "members": [
+            "headroom_policy=cinematic"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:f6390d081652",
+              "verdict": "wrong_card",
+              "why": "卡谈运镜动画，非头顶政策"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SHOT_PATTERN:shot_size=LS,lens=24mm,headroom_policy=cinematic,movement=crane_arc_down",
+          "type": "SHOT_PATTERN",
+          "members": [
+            "headroom_policy=cinematic"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:f6390d081652",
+              "verdict": "wrong_card",
+              "why": "卡谈运镜动画，非头顶政策"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1881",
+      "from_card": "cine_move_crane_arc_up",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SHOT_PATTERN:shot_size=LS,lens=24mm,headroom_policy=cinematic,movement=crane_arc_down",
+          "type": "SHOT_PATTERN",
+          "members": [
+            "headroom_policy=cinematic"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:f6390d081652",
+              "verdict": "wrong_card",
+              "why": "卡谈运镜动画，非头顶政策"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SHOT_PATTERN:shot_size=LS,lens=24mm,headroom_policy=cinematic,movement=crane_arc_down",
+          "type": "SHOT_PATTERN",
+          "members": [
+            "headroom_policy=cinematic"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:f6390d081652",
+              "verdict": "wrong_card",
+              "why": "卡谈运镜动画，非头顶政策"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1882",
+      "from_card": "cine_move_crane_arc_down",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SHOT_PATTERN:shot_size=LS,lens=24mm,headroom_policy=cinematic,movement=crane_arc_up",
+          "type": "SHOT_PATTERN",
+          "members": [
+            "headroom_policy=cinematic"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:f6390d081652",
+              "verdict": "wrong_card",
+              "why": "卡谈运镜动画，非头顶政策"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SHOT_PATTERN:shot_size=LS,lens=24mm,headroom_policy=cinematic,movement=crane_arc_up",
+          "type": "SHOT_PATTERN",
+          "members": [
+            "headroom_policy=cinematic"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:f6390d081652",
+              "verdict": "wrong_card",
+              "why": "卡谈运镜动画，非头顶政策"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_1883",
+      "from_card": "cine_move_crane_arc_up",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SHOT_PATTERN:shot_size=LS,lens=24mm,headroom_policy=cinematic,movement=crane_arc_up",
+          "type": "SHOT_PATTERN",
+          "members": [
+            "headroom_policy=cinematic"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:f6390d081652",
+              "verdict": "wrong_card",
+              "why": "卡谈运镜动画，非头顶政策"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SHOT_PATTERN:shot_size=LS,lens=24mm,headroom_policy=cinematic,movement=crane_arc_up",
+          "type": "SHOT_PATTERN",
+          "members": [
+            "headroom_policy=cinematic"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:f6390d081652",
+              "verdict": "wrong_card",
+              "why": "卡谈运镜动画，非头顶政策"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_2038",
+      "from_card": "gen_block_0302",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "never",
+          "spec": "SOUND_PACK:sfx=金属撞击,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=金属撞击",
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:00d50ec06fe9",
+              "verdict": "wrong_value",
+              "why": "木石敲击模拟马蹄，非金属撞击。"
+            },
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_2039",
+      "from_card": "gen_edit_0191",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "never",
+          "spec": "SOUND_PACK:sfx=金属撞击,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=金属撞击",
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:00d50ec06fe9",
+              "verdict": "wrong_value",
+              "why": "木石敲击模拟马蹄，非金属撞击。"
+            },
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_2040",
+      "from_card": "gen_prod_0047",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SOUND_PACK:sfx=尖锐哨音,pacing=short,intensity=high",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=尖锐哨音"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:7bfc4aca1887",
+              "verdict": "wrong_card",
+              "why": "卡谈电铃与音效时机，非哨音。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "never",
+          "spec": "SOUND_PACK:sfx=金属撞击,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=金属撞击",
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:00d50ec06fe9",
+              "verdict": "wrong_value",
+              "why": "木石敲击模拟马蹄，非金属撞击。"
+            },
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_2044",
+      "from_card": "gen_block_0261",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SOUND_PACK:sfx=金属撞击,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=金属撞击",
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:00d50ec06fe9",
+              "verdict": "wrong_value",
+              "why": "木石敲击模拟马蹄，非金属撞击。"
+            },
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SOUND_PACK:sfx=金属撞击,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "sfx=金属撞击",
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:00d50ec06fe9",
+              "verdict": "wrong_value",
+              "why": "木石敲击模拟马蹄，非金属撞击。"
+            },
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_2045",
+      "from_card": "gen_block_0154",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "SOUND_PACK:sfx=雨声,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        },
+        {
+          "field": "top1",
+          "spec": "SOUND_PACK:sfx=雨声,pacing=medium,intensity=mid",
+          "type": "SOUND_PACK",
+          "members": [
+            "pacing=medium"
+          ],
+          "verdicts": [
+            {
+              "edge_id": "hg:298be1369d02",
+              "verdict": "wrong_card",
+              "why": "卡谈风雨特效，与常规节奏无关。"
+            }
+          ],
+          "cause": "裁决剪枝"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    },
+    {
+      "id": "hq_2750",
+      "from_card": "cine_move_whip_pan_right",
+      "dropped_specs": [
+        {
+          "field": "must",
+          "spec": "TRANSITION_PACK:transition=whip,pacing=short,scene_type=transition,forbid_movement=固定",
+          "type": "TRANSITION_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        },
+        {
+          "field": "top1",
+          "spec": "TRANSITION_PACK:transition=whip,pacing=short,scene_type=transition,forbid_movement=固定",
+          "type": "TRANSITION_PACK",
+          "members": [],
+          "verdicts": [],
+          "cause": "索引换代（重抽取后没这条形状）"
+        }
+      ],
+      "reason": "must/top1 被摘空"
+    }
+  ],
+  "unexplained": [],
+  "kept": 2826
+}

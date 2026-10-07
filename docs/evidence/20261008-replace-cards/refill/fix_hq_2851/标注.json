@@ -1,0 +1,13 @@
+[
+  {
+    "from_card": "cine_move_dolly_zoom",
+    "q": "情绪=混乱；强度=high",
+    "must": [
+      "EMOTION_PACK:emotion=混乱,intensity=high,forbid_movement=zoom_in"
+    ],
+    "top1": [
+      "EMOTION_PACK:emotion=混乱,intensity=high,forbid_movement=zoom_in"
+    ],
+    "why": "“心理断裂”与塌陷感指向高混乱情绪。"
+  }
+]

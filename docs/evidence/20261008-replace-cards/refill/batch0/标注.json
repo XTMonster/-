@@ -1,0 +1,90 @@
+[
+  {
+    "from_card": "cine_light_contrast",
+    "q": "光线=低调；强度=mid",
+    "must": [
+      "LIGHT_PACK:lighting=低调,intensity=mid"
+    ],
+    "top1": [
+      "LIGHT_PACK:lighting=低调,intensity=mid"
+    ],
+    "why": "保留受光面与阴影，低调"
+  },
+  {
+    "from_card": "cine_move_crane_arc_down",
+    "q": "意图=揭示；景别=ELS；运镜=crane_arc_down",
+    "must": [
+      "INTENT_PACK:intent=揭示,shot_size=ELS,movement=crane_arc_down"
+    ],
+    "top1": [
+      "INTENT_PACK:intent=揭示,shot_size=ELS,movement=crane_arc_down"
+    ],
+    "why": "下降弧适合开场揭示空间"
+  },
+  {
+    "from_card": "cine_move_crane_arc_up",
+    "q": "意图=收束；景别=LS；运镜=crane_arc_up",
+    "must": [
+      "INTENT_PACK:intent=收束,shot_size=LS,movement=crane_arc_up"
+    ],
+    "top1": [
+      "INTENT_PACK:intent=收束,shot_size=LS,movement=crane_arc_up"
+    ],
+    "why": "弧线上升有告别收束意味"
+  },
+  {
+    "from_card": "cine_move_dolly_zoom",
+    "q": "情绪=混乱；强度=high；运镜=zoom_in",
+    "must": [
+      "EMOTION_PACK:emotion=混乱,intensity=high,movement=zoom_in"
+    ],
+    "top1": [
+      "EMOTION_PACK:emotion=混乱,intensity=high,movement=zoom_in"
+    ],
+    "why": "心理断裂，取最近变焦条"
+  },
+  {
+    "from_card": "cine_move_whip_pan_right",
+    "q": "特效=impact_frame；音效=低频轰鸣；运镜=whip_pan_right",
+    "must": [
+      "IMPACT_PACK:vfx=impact_frame,sfx=低频轰鸣,movement=whip_pan_right"
+    ],
+    "top1": [
+      "IMPACT_PACK:vfx=impact_frame,sfx=低频轰鸣,movement=whip_pan_right"
+    ],
+    "why": "甩镜要有冲击力，取最近条"
+  },
+  {
+    "from_card": "cine_move_zoom_in",
+    "q": "意图=压迫；景别=CU；运镜=zoom_in",
+    "must": [
+      "INTENT_PACK:intent=压迫,shot_size=CU,movement=zoom_in"
+    ],
+    "top1": [
+      "INTENT_PACK:intent=压迫,shot_size=CU,movement=zoom_in"
+    ],
+    "why": "凝视甚至盯住，形成压迫"
+  },
+  {
+    "from_card": "comp_balance",
+    "q": "构图=balance；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=balance,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "重心不能偏塌，其余就近"
+  },
+  {
+    "from_card": "comp_framing",
+    "q": "构图=framing；景别=CU；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=framing,shot_size=CU,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=framing,shot_size=CU,camera_angle=平视"
+    ],
+    "why": "特写不能拍半身，占比匹配"
+  }
+]

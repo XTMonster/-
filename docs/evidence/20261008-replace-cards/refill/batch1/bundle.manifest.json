@@ -1,0 +1,48 @@
+{
+  "created_at": "2026-10-07T22:51:49",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "10066a6",
+    "head_subject": "docs(evidence): 执行尝试+回滚之后的完整链读数（35/35 步，唯一红 RK-13）",
+    "recent": [
+      "10066a6 docs(evidence): 执行尝试+回滚之后的完整链读数（35/35 步，唯一红 RK-13）",
+      "0d8b123 docs(v1.5): 22 条裁决的**执行尝试**与实测结论——两条路都撞门，回滚到已验证状态",
+      "6093c5d chore(v1.5): 派发板快照——done 36/36、在飞 0、可派发 0（执行文档 v1.5 全部卡完成）",
+      "5d64d31 chore(v1.5): 收尾对账——P5-T2/P7-T2 标记完成、G3/G4 在最终 HEAD 复审、dispatch_graph 的 P3-T2 路径按事实更正",
+      "a4ab1ce docs(evidence): 分组提交裁定的执行记录与两处口径偏差（P7-T2）"
+    ],
+    "uncommitted": [
+      "M fixtures/knowledge_holdout.cards.covered.json",
+      " M fixtures/knowledge_holdout.jsonl",
+      " M knowledge/card_scope.json",
+      " M knowledge/hypergraph.edges.jsonl",
+      " M knowledge/hypergraph.manifest.json",
+      " M tools/knowledge/holdout_drop_pruned.py",
+      "?? docs/evidence/20261008-replace-cards/"
+    ]
+  },
+  "mode": "plain",
+  "question": {
+    "path": "E:\\白模预演codex\\work\\_q_refill_1.md",
+    "sha256": "3b01922071fe6be7ca7c1afe41d1f9d20cc41eed336b95657e915bfb49170009",
+    "chars": 3453
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "标注": {
+      "user": {
+        "chars": 3464,
+        "sha256": "914b0fbba32a8a952cd4a5f460204a8fa65ebf68b3131b8159ae5c1ef3a035e3"
+      }
+    }
+  }
+}

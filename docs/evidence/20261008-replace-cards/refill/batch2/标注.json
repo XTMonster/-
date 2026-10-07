@@ -1,0 +1,90 @@
+[
+  {
+    "from_card": "gen_anime_0391",
+    "q": "特效=smoke；音效=低频轰鸣；运镜=follow_subject",
+    "must": [
+      "IMPACT_PACK:vfx=smoke,sfx=低频轰鸣,movement=follow_subject"
+    ],
+    "top1": [
+      "IMPACT_PACK:vfx=smoke,sfx=低频轰鸣,movement=follow_subject"
+    ],
+    "why": "“闪电、快速烟雾”近似烟雾特效、轰鸣与跟随。"
+  },
+  {
+    "from_card": "gen_axis_0119",
+    "q": "构图=framing；景别=MS；机位=平视",
+    "must": [
+      "STAGING_PACK:composition_rule=framing,shot_size=MS,camera_angle=平视"
+    ],
+    "top1": [
+      "STAGING_PACK:composition_rule=framing,shot_size=MS,camera_angle=平视"
+    ],
+    "why": "“转化为具体可拍画面”近似构图取景。"
+  },
+  {
+    "from_card": "gen_axis_0228",
+    "q": "节奏=medium；镜长=3-8s",
+    "must": [
+      "EDIT_RHYTHM:pacing=medium,avg_shot_len=3-8s"
+    ],
+    "top1": [
+      "EDIT_RHYTHM:pacing=medium,avg_shot_len=3-8s"
+    ],
+    "why": "“保证多线风格与质量统一”近似统一节奏。"
+  },
+  {
+    "from_card": "gen_axis_0281",
+    "q": "特效=glow；音效=静默；运镜=固定",
+    "must": [
+      "IMPACT_PACK:vfx=glow,sfx=静默,movement=固定"
+    ],
+    "top1": [
+      "IMPACT_PACK:vfx=glow,sfx=静默,movement=固定"
+    ],
+    "why": "“生成新的感知方式”近似静默光效感知。"
+  },
+  {
+    "from_card": "gen_block_0086",
+    "q": "光线=高调；强度=mid",
+    "must": [
+      "LIGHT_PACK:lighting=高调,intensity=mid"
+    ],
+    "top1": [
+      "LIGHT_PACK:lighting=高调,intensity=mid"
+    ],
+    "why": "“接近自然日光，反射光照明”支持高调中强。"
+  },
+  {
+    "from_card": "gen_cine_0001",
+    "q": "景别=MS；镜头=50mm；运镜=固定",
+    "must": [
+      "SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=cinematic,movement=固定"
+    ],
+    "top1": [
+      "SHOT_PATTERN:shot_size=MS,lens=50mm,headroom_policy=cinematic,movement=固定"
+    ],
+    "why": "“通用工作视角”近似标准中景固定。"
+  },
+  {
+    "from_card": "gen_cine_0002",
+    "q": "节奏=medium；镜长=3-8s",
+    "must": [
+      "EDIT_RHYTHM:pacing=medium,avg_shot_len=3-8s"
+    ],
+    "top1": [
+      "EDIT_RHYTHM:pacing=medium,avg_shot_len=3-8s"
+    ],
+    "why": "“适合日常拍摄”近似常规中等节奏镜长。"
+  },
+  {
+    "from_card": "gen_cine_0004",
+    "q": "转场=cut；节奏=short；桥段=insert",
+    "must": [
+      "TRANSITION_PACK:transition=cut,pacing=short,scene_type=insert"
+    ],
+    "top1": [
+      "TRANSITION_PACK:transition=cut,pacing=short,scene_type=insert"
+    ],
+    "why": "“擦去表面水分”属局部插入短切。"
+  }
+]
