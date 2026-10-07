@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from .enums import SHOT_TYPES, ShotType
 
@@ -33,6 +33,22 @@ def validate_shot_id(value: object, *, where: str = "shot_id") -> str:
             f"{where} 只能由字母/数字/下划线/短横线/点组成（1–64 字符），"
             f"且不得包含 '..'（当前 {text!r}）；它会被用作导出文件名")
     return text
+
+
+def unknown_cast_ids(plan: "Plan", roster: Sequence[str]) -> List[str]:
+    """返回计划里出现、但不在角色表中的 id（v1.6 A2 / D-11）。
+
+    ``roster`` 同时包含角色名与已分配的内部 id（如 ``char_001``）。
+    纯函数；不抛出异常。
+    """
+    allowed = set(str(item) for item in (roster or ()) if item is not None)
+    bad: set = set()
+    for shot in (plan.shots or ()):
+        for character_id in (shot.characters or ()):
+            cid = str(character_id)
+            if cid not in allowed:
+                bad.add(cid)
+    return sorted(bad)
 
 
 @dataclass

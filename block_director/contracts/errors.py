@@ -68,6 +68,8 @@ USER_MESSAGES: Dict[ErrorCode, str] = {
                            "把该值设为 0（不限）或提高到不小于声明镜数后重跑。"),
     ErrorCode.MOTION_001: ("动作姿态参数里有未登记的键（已拒绝执行，不会静默取默认值）。"
                            "请改用登记别名，如 angle_deg/angle/degrees 与 axis/toward。"),
+    ErrorCode.CAST_001: ("计划/草案含角色表外 id：{ids}。合法角色表：{roster}。"
+                         "请改用角色名或已分配的内部 id。"),
 }
 
 

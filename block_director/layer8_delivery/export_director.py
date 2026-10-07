@@ -16,8 +16,9 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import bpy
 
-from ..contracts.enums import resolution_for
-from ..contracts.plan import Plan
+from ..contracts.enums import ErrorCode, resolution_for
+from ..contracts.errors import user_message
+from ..contracts.plan import Plan, unknown_cast_ids
 from ..delivery.depth import depth_range_note
 from ..delivery.manifest import build_manifest
 from ..delivery.prompts import DEFAULT_STYLE, render_prompt_sheet
@@ -137,6 +138,19 @@ def _readme(manifest: Dict[str, Any], report: DeliveryReport) -> str:
     return "\n".join(lines)
 
 
+def _cast_id_errors(plan: Plan,
+                    roster: Optional[Sequence[str]]) -> Optional[str]:
+    """v1.6 A2：交付前自检角色表成员资格。"""
+    if roster is None:
+        return None
+    bad = unknown_cast_ids(plan, roster)
+    if not bad:
+        return None
+    return user_message(ErrorCode.CAST_001,
+                        ids=", ".join(bad),
+                        roster=", ".join(sorted(str(x) for x in roster)))
+
+
 @main_thread_only("export_project")
 def export_project(plan: Plan, *,
                    build_summary: Optional[Dict[str, Any]] = None,
@@ -153,7 +167,8 @@ def export_project(plan: Plan, *,
                    action_conflicts: Optional[Sequence[Dict[str, Any]]] = None,
                    audit_pass_rate: Optional[Dict[str, Any]] = None,
                    knowledge_provenance: Optional[Dict[str, Any]] = None,
-                   knowledge: Optional[Dict[str, Any]] = None
+                   knowledge: Optional[Dict[str, Any]] = None,
+                   roster: Optional[Sequence[str]] = None
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -174,6 +189,13 @@ def export_project(plan: Plan, *,
         report.audit_leaks = list(leaks)
         report.reason = ("导出中止：以下对象会出现在参考视频中："
                          + "、".join(leaks))
+        log.error(report.reason)
+        return report
+
+    cast_error = _cast_id_errors(plan, roster)
+    if cast_error:
+        report.aborted = True
+        report.reason = cast_error
         log.error(report.reason)
         return report
 

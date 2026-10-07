@@ -29,9 +29,10 @@ from ..contracts.messages import (
     tool_message,
     validate_conversation,
 )
-from ..contracts.plan import Plan
+from ..contracts.plan import Plan, unknown_cast_ids
 from ..contracts.brief import SOURCE_DETERMINISTIC, SceneBrief
 from ..contracts.enums import ErrorCode
+from ..contracts.errors import user_message
 from ..contracts.tools import MUTATING_TOOLS, READ_ONLY_TOOLS
 from ..layer6_audit.audit_logger import AuditLogger
 from ..utils.logger import get_logger
@@ -539,6 +540,27 @@ class PrevisDriver:
                     if character_id not in names:
                         names.append(str(character_id))
         return names
+
+    def _cast_roster(self, include_from: Optional[Plan] = None) -> List[str]:
+        """v1.6 A2：角色表 = 剧本角色名 + 已分配内部 id（char_NNN）。
+
+        离线/夹具把剧本名映射为 ``char_001``..``char_NNN``；真实模型运行
+        应按角色名写计划。为兼容夹具，``include_from`` 里的 ``char_NNN``
+        也加入角色表，但占位符（``char_a``/``char_b`` 等）仍会被拒。
+        """
+        names = self._character_names()
+        allocated: List[str] = []
+        for plan in (self.plan, include_from):
+            if plan is None:
+                continue
+            for shot in plan.shots:
+                for cid in (shot.characters or ()):
+                    if (isinstance(cid, str)
+                            and cid.startswith("char_")
+                            and cid[5:].isdigit()
+                            and cid not in allocated):
+                        allocated.append(cid)
+        return list(dict.fromkeys(names + allocated))
 
     def _step_understanding(self) -> None:
         """阶段 S：先把"谁对谁说、谁看谁"读出来，再让阶段 A 规划镜头。"""
@@ -2022,6 +2044,14 @@ class PrevisDriver:
         镜号由 `_pin_declared_dialogue` 按位置钉死。
         """
         chunks = self._plan_chunk_list()
+        roster = self._cast_roster(include_from=chunk_plan)
+        if roster:
+            bad = unknown_cast_ids(chunk_plan, roster)
+            if bad:
+                raise ValueError(
+                    user_message(ErrorCode.CAST_001,
+                                 ids=", ".join(bad),
+                                 roster=", ".join(roster)))
         if len(chunks) <= 1:
             self.plan = chunk_plan
             self._plan_shots = list(chunk_plan.shots)

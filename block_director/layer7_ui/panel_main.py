@@ -79,7 +79,11 @@ class BLOCKDIRECTOR_OT_export_delivery(Operator):
                                     if driver is not None
                                     and hasattr(driver, "knowledge_provenance")
                                     else None),
-                                project=plan.scene_heading or "BlockDirector")
+                                project=plan.scene_heading or "BlockDirector",
+                                roster=(driver._cast_roster()
+                                        if driver is not None
+                                        and hasattr(driver, "_cast_roster")
+                                        else None))
         if not report.ok:
             self.report({'ERROR'}, report.reason or "导出未完成")
             return {'CANCELLED'}
