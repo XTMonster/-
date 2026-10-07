@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from .enums import MessageRole, Purpose, ToolChoice
 
@@ -70,7 +70,11 @@ class Message:
     """一条会话消息。字段与 OpenAI Chat Completions 对齐。"""
 
     role: MessageRole
-    content: Optional[str] = None
+    #: v1.5 §5.5（P6-T1）：vision 请求体要求 ``content`` 是**分片数组**
+    #: （``[{"type": "text", ...}, {"type": "image_url", ...}]``）。类型标注与
+    #: ``specs/openapi.yaml`` 的 ``Message.content`` 因此放宽为
+    #: ``string | array | null``；纯文本路径一个字节都没变（仍是 str）。
+    content: Optional[Union[str, List[Dict[str, Any]]]] = None
     tool_calls: Optional[List[ToolCall]] = None
     tool_call_id: Optional[str] = None
     name: Optional[str] = None

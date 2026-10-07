@@ -62,7 +62,7 @@ def build_manifest(plan: Plan, *,
         start = int(result.get("start_frame", cursor))
         end = int(result.get("end_frame", start + shot.duration_frames - 1))
         cursor = end + 1
-        shots.append({
+        payload = {
             "shot_id": shot.shot_id,
             "order": shot.order or order,
             "intent": shot.intent,
@@ -104,7 +104,33 @@ def build_manifest(plan: Plan, *,
             "movements": _movements_payload(
                 shot, declared,
                 (knowledge_provenance or {}).get(shot.shot_id)),
-        })
+            # ---- v1.5（P4-T4，TDD §6 第 8 步）的逐镜字段 ----
+            #: 执行拍点表 / 构图声明 / 破例辩护：计划里的**契约字段**，逐字段可对拍
+            #: （P15 纪律）。它们是**引擎内部键**，因此 `prompts.md` 里绝不出现
+            #: （delivery/prompts.py 只渲染画面相关的可读字段）。
+            "beats": [dict(item) for item in
+                      (getattr(shot, "beats", None) or [])],
+            "composition": dict(getattr(shot, "composition", None) or {}),
+            "rule_justifications": [dict(item) for item in
+                                    (getattr(shot, "rule_justifications", None)
+                                     or [])],
+            #: 破例辩护对拍（声明 vs 实测）：**只记录、不设门**。审核没跑到这一镜
+            #: 时写四个空集，而不是省略这个键——"查过、两边都空"与"根本没查"
+            #: 在读账时必须分得开。
+            "justification_audit": _justification_audit(result),
+            #: v1.5 §7（P6-T2）Best-of-N：这一镜被规则评分 rerank 降为备选的
+            #: 候选草案（**不过滤、不丢**）。默认 draft_candidates=1 时是空表。
+            "alternates": [dict(item) for item in
+                           (result.get("alternates") or [])],
+        }
+        #: v1.5 §5.5（P6-T1）的 VLM 外部评审判词。与 `justification_audit`
+        #: 相反，这里**没有"查过但两边都空"的状态**——没评过（缺省关）就是
+        #: 整个键不出现，`shots.json` 与升级前逐字节一致；评过（含"评委不可用
+        #: ⇒ 跳过"）就如实落 `status`，跳过 ≠ 通过。
+        review = result.get("vlm_review")
+        if isinstance(review, dict) and review:
+            payload["vlm_review"] = dict(review)
+        shots.append(payload)
 
     return {
         "project": project,
@@ -145,6 +171,25 @@ def _declarations(parsed) -> Dict[int, Any]:
         return {}
     return {index: item for index, item in
             enumerate(getattr(parsed, "declared_shots", []) or [])}
+
+
+#: 破例对拍的固定列（TDD §5.4 的命名；顺序即交付清单里的字段顺序）。
+JUSTIFICATION_AUDIT_KEYS = (
+    "declared_breaks", "declared_follows", "detected_violations",
+    "undeclared_violations", "declared_but_clean",
+)
+
+
+def _justification_audit(result) -> Dict[str, List[str]]:
+    """这一镜的破例对拍：``build_summary["results"]`` 里有就抄，没有就是空集。
+
+    **不猜**：没有审核结果时不是"补一个通过的结论"，而是如实地写"两边都空"。
+    """
+    payload = result.get("justification_audit") if isinstance(result, dict) else None
+    if not isinstance(payload, dict):
+        payload = {}
+    return {key: [str(item) for item in (payload.get(key) or [])]
+            for key in JUSTIFICATION_AUDIT_KEYS}
 
 
 def _declared_payload(declaration, shot) -> Dict[str, Any]:

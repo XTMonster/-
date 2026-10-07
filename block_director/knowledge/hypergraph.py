@@ -960,6 +960,16 @@ class RetrievalTrace:
     #: 因为"查询点名了这条边禁止的取值"而被顶进注入的边（§4.1 的 Q7）。
     #: 每条记 `{added, removed, kind, value}`——"这次注入了什么禁忌"永远可查。
     forbid_promoted: List[Dict[str, str]] = field(default_factory=list)
+    #: v1.5 §5.6（FX-3/FR-9）：**禁忌补挂**新增进来的边 id。
+    #: 判据比 `forbid_promoted` 宽：只要这条边**有 `forbid` 成员**、且它的某个
+    #: 正向成员命中了本轮查询种子，就以"守门"名义补挂进注入（不受条数预算截断）。
+    #: 为什么需要它（OPEN_ITEMS B7）：第二次真跑 `edge_active = 30`，而这 30 条
+    #: **一条 `forbid` 成员都没有** ⇒ `forbid_members_seen = 0` ⇒"执行闭环"
+    #: 没有守门能力。`forbid_promoted` 只覆盖"查询**点名**了被禁取值"那一种，
+    #: 补挂把"这条边本来就有禁忌、且它说的正是本轮要拍的维度"这一种也接上。
+    forbid_backfilled: List[str] = field(default_factory=list)
+    #: v1.5 §5.6：本次**注入**的边里 `forbid` 成员的**总数**（B7 的读数）。
+    forbid_members_seen: int = 0
     #: v3/S1a：qualifier 闭集的**惰性键**（见 :func:`qualifier_table`）。值是本次
     #: **注入**的边里真的出现过的取值；S1a 阶段恒为空（值的生产者是 S2）。
     qualifiers: Dict[str, Optional[List[str]]] = field(default_factory=dict)
@@ -976,6 +986,8 @@ class RetrievalTrace:
             "dropped_edge_ids": list(self.dropped_edge_ids),
             "quality_fail": self.quality_fail,
             "forbid_promoted": [dict(item) for item in self.forbid_promoted],
+            "forbid_backfilled": list(self.forbid_backfilled),
+            "forbid_members_seen": int(self.forbid_members_seen),
             "qualifiers": qualifier_table(self.qualifiers),
         }
 
@@ -1322,6 +1334,66 @@ class Hypergraph:
                 + SCORE_WEIGHTS["forbid_hit"] * forbid_hit)
 
     # ------------------------------------------------------------------ 四步
+    #: v1.5 §5.6：**禁忌补挂**的条数上限。它是一个**装配预算**（与
+    #: `HUB_EDGES_PER_NODE` 同量级），不是验收判据——补挂进来的边仍要与
+    #: 其它边一起受 token 上限的原子注入约束（装不下就整条记 dropped）。
+    FORBID_BACKFILL_MAX = HUB_EDGES_PER_NODE
+
+    def _member_matches_query(self, member: "Member",
+                              query: Dict[str, List[str]]) -> bool:
+        """这条成员是否命中了本轮查询的正向取值（**别名也认**）。
+
+        为什么不能只比 `node_value(...) == q`：索引里同一个取值的写法不止一种
+        （`movement:固定机位` 的 `value` 是 `固定机位`、别名是 `固定`，而查询串
+        经 `VALUE_ALIASES` 折成 `固定`）。只做全等会让"本该守门"的边全部漏掉。
+        """
+        values = query.get(member.kind) or []
+        if not values:
+            return False
+        node = self.nodes.get(member.node_id)
+        value = node_value(node, member.node_id)
+        for candidate in values:
+            if candidate == value:
+                return True
+            if node is None:
+                continue
+            if candidate == node.name:
+                return True
+            if candidate in tuple(node.aliases or ()):
+                return True
+        return False
+
+    def _forbid_guard_edges(self, scored: Sequence[Tuple[float, HyperEdge]],
+                            selected: Sequence[HyperEdge],
+                            query: Dict[str, List[str]]) -> List[HyperEdge]:
+        """TDD §5.6 的 forbid 反查补挂（**纯检索期，不动索引、不动判据**）。
+
+        规则（逐字对齐卡 P4-T3）：一条边以"禁忌补挂"的名义加入，当且仅当
+
+        * 它有 role=`forbid` 的成员 m_f，**且**
+        * 它的某个 allow/qualifier 成员 (kind, value) ∈ 本轮种子（别名也算）。
+
+        返回按分数降序、去重、**已排除已选中的**边；条数上限
+        :data:`FORBID_BACKFILL_MAX`。
+        """
+        already = {edge.edge_id for edge in selected}
+        picked: List[HyperEdge] = []
+        seen: set = set()
+        for _score, edge in scored:                    # 已是"分数降序、id 次序"
+            if edge.edge_id in already or edge.edge_id in seen:
+                continue
+            if not edge.forbids:
+                continue
+            hit = any(self._member_matches_query(member, query)
+                      for member in edge.members if member.role != "forbid")
+            if not hit:
+                continue
+            seen.add(edge.edge_id)
+            picked.append(edge)
+            if len(picked) >= self.FORBID_BACKFILL_MAX:
+                break
+        return picked
+
     def retrieve(self, query_text: str, top_k: int = 5,
                  token_limit: int = MAX_RENDER_TOKENS
                  ) -> Tuple[List[HyperEdge], str, RetrievalTrace]:
@@ -1369,7 +1441,26 @@ class Hypergraph:
             selected = promoted["selected"]
             if promoted["events"]:
                 trace.forbid_promoted = promoted["events"]
+            #: v1.5 §5.6 / FR-9 / FX-3：**禁忌补挂**（守门激活）。补挂进来的边
+            #: 渲染时**排在最前**——模型先看到"这条不能做"，再看到"该怎么做"。
+            backfilled = self._forbid_guard_edges(scored, selected, query)
+            if backfilled:
+                head = {edge.edge_id for edge in backfilled}
+                #: **只"加入注入"，不得改写名次**（2026-10-07 实测回归）：
+                #: 第一版把补挂边**插到最前**，于是 `Q1`（= 每个 held-out 查询的
+                #: **top-1** 是否就是期望边）从 0.9975 掉到 0.1208——40 条抽样里
+                #: **30 条**的 top-1 被补挂边顶掉。TDD §5.6 的原话是"渲染排最前"
+                #: （**注入文本**的顺序），不是"改写检索名次"。所以这里把补挂边
+                #: **追加在后面**（它们仍在"注入集合"里、`forbid_members_seen`
+                #: 照旧统计），而"排最前"由渲染层
+                #: （`rulepack.render_rule_pack` 的 `exempt_edge_ids`）负责。
+                selected = [edge for edge in selected
+                            if edge.edge_id not in head] + list(backfilled)
+                trace.forbid_backfilled = [edge.edge_id for edge in backfilled]
         trace.selected = [e.edge_id for e in selected]
+        #: B7 的读数：本次注入的边里到底带了多少 `forbid` 成员。
+        #: 它在真实运行里长期为 0（"违规 0 = 无物可违"），本版把它变成可观测量。
+        trace.forbid_members_seen = sum(len(edge.forbids) for edge in selected)
         #: v3/S1a：把**注入**的那几条边用到的 qualifier 取值摊到 trace 上。
         #: 闭集里的其它名字仍然在表里（值 None）——见 `qualifier_table()`。
         for edge in selected:

@@ -27,6 +27,10 @@ from .generated import ID_PREFIX as GENERATED_ID_PREFIX
 #: 索引的**代际指纹**：运行结果里的 ``knowledge`` 块带上它，Q5 的运行侧证据
 #: 才能自证"我量的是这一代索引"（`tools/knowledge/quality.py` 会对拍）。
 from .hypergraph import manifest_fingerprint as hypergraph_fingerprint
+#: v1.5 §5.1–5.3：注入块的渲染与装配**只有一处**（`rulepack`）——
+#: 强度标、条数预算、冲突并陈、自由度声明都在那里；这里只负责"取边 → 分栏 → 记账"。
+from .hypergraph import parse_query as _parse_query
+from .rulepack import DEFAULT_RULE_TOP_K, freedom_block, render_rule_pack
 #: v1.4 §2.3d T5：token 估算的**单一真源**在 `tokens.py`——案例通道（`cases.py`）
 #: 用的是同一个函数对象，两条通道不可能各算一套。这里的再导出保持既有 API。
 from .tokens import (
@@ -129,6 +133,9 @@ class KnowledgeRetriever:
     cases_backend: str = "lightrag"
     #: v1.4 §3.2：``rag.cases_top_k`` —— 注入到「仅参考」栏的案例条数。
     cases_top_k: int = 3
+    #: v1.5 §5.2（FR-6）：``rag.rule_top_k`` —— **每个桶**最多注入几条规则。
+    #: 与 token 上限**取紧者**（token 那一档仍由 ``token_limit`` 表达）。
+    rule_top_k: int = DEFAULT_RULE_TOP_K
     #: v1.4 §2.4：检索调用与 ``llm_calls`` **分列**记账。
     retrieval_calls: int = 0
     warnings: List[str] = field(default_factory=list)
@@ -161,6 +168,9 @@ class KnowledgeRetriever:
     #: 供 ``knowledge_trace.json`` 记录。
     requested_backend: RagBackend = field(default=RagBackend.BM25,
                                           init=False, repr=False)
+    #: v1.5 §5.3：本镜的**自由度声明**（由 :meth:`edge_columns` 算好、
+    #: 由 :meth:`_hypergraph_block` 追加到整包的**末尾**——"包末"才是它的位置）。
+    last_freedom: str = field(default="", init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.cards = list(self.cards)
@@ -613,8 +623,6 @@ class KnowledgeRetriever:
         与硬约束同栏呈现——同一栏会让模型把"某人经验"当成"必须遵守"。
         返回 ``(硬栏目文本, 软栏目文本)``（**不含**栏目标题）。
         """
-        from .hypergraph import render_edges
-
         self._record_budget(scope, budgets)
         budget = int((budgets["remaining"] if budgets
                       else token_limit) or self.token_limit)
@@ -641,7 +649,12 @@ class KnowledgeRetriever:
         hard_keys = {edge.norm_key for edge in hard}
         suppressed_soft = [edge for edge in soft if edge.norm_key in hard_keys]
         soft = [edge for edge in soft if edge.norm_key not in hard_keys]
-        hard_text, dropped_hard, fail_hard = render_edges(hard, nodes, budget)
+        #: v1.5 §5.2：禁忌补挂进来的边**不受条数预算截断**（FR-9）；
+        #: 它们由 `hypergraph.retrieve` 记在 trace 里（纯检索期，不动索引）。
+        exempt = tuple(self.last_trace.get("forbid_backfilled") or ())
+        hard_text, dropped_hard, stats_hard = render_rule_pack(
+            hard, nodes, budget=int(self.rule_top_k or DEFAULT_RULE_TOP_K),
+            token_limit=budget, exempt_edge_ids=exempt)
         # 栏目标题也算注入体积——不把它计进预算，"≤800 token"会悄悄超发。
         hard_column = f"【{hard_title}】\n{hard_text}" if hard_text else ""
         if budgets is not None and hard_column:
@@ -650,7 +663,9 @@ class KnowledgeRetriever:
             else:
                 self._take(budgets, hard_column, ())
         remaining = max(0, budget - estimate_tokens(hard_column))
-        soft_raw, dropped_soft, fail_soft = render_edges(soft, nodes, remaining)
+        soft_raw, dropped_soft, stats_soft = render_rule_pack(
+            soft, nodes, budget=int(self.rule_top_k or DEFAULT_RULE_TOP_K),
+            token_limit=remaining, exempt_edge_ids=exempt)
         soft_column = ""
         if soft_raw:
             candidate = f"【{soft_title}】\n{soft_raw}"
@@ -658,13 +673,32 @@ class KnowledgeRetriever:
                            else self._take(budgets, candidate, (hard_column,)))
         section = self.last_trace.setdefault(f"{scope}_scope", {})
         section["dropped_edge_ids"] = list(dropped_hard) + list(dropped_soft)
-        section["quality_fail"] = bool(fail_hard or fail_soft)
+        section["quality_fail"] = bool(stats_hard.quality_fail
+                                       or stats_soft.quality_fail)
+        #: v1.5 §5.1–5.3 的读数：强度分布、条数预算、冲突并陈。
+        section["rule_top_k"] = int(self.rule_top_k or DEFAULT_RULE_TOP_K)
+        section["conflict_pairs"] = int(stats_hard.conflict_pairs
+                                        + stats_soft.conflict_pairs)
+        section["conflict_edge_ids"] = sorted(
+            set(stats_hard.conflict_edge_ids) | set(stats_soft.conflict_edge_ids))
+        section["count_dropped_edge_ids"] = list(stats_hard.count_dropped) + \
+            list(stats_soft.count_dropped)
         section.setdefault("columns", {})
         section["columns"].update({"hard_edges": len(hard),
                                    "soft_edges": len(soft),
                                    "suppressed_soft_edges": len(suppressed_soft),
                                    "hard_tokens": estimate_tokens(hard_column),
-                                   "soft_tokens": estimate_tokens(soft_column)})
+                                   "soft_tokens": estimate_tokens(soft_column),
+                                   "hard_softness": stats_hard.soft,
+                                   "soft_softness": stats_soft.soft})
+        #: §5.3 自由度声明：**已约束维度** = 被 hard 边覆盖的 kind；
+        #: **留白维度** = 本轮查询点名的 kind 里没被覆盖的那些。
+        constrained = sorted({member.kind for edge in hard
+                              for member in edge.members
+                              if member.role != "forbid"})
+        blank = [kind for kind in _parse_query(query)
+                 if kind not in set(constrained)]
+        self.last_freedom = freedom_block(constrained, blank)
         # E2 溯源：只留**真的注入了**的边（被预算整条丢掉的不算"检索命中"）。
         dropped = set(dropped_hard) | set(dropped_soft)
         self.last_edges_query = str(query)
@@ -841,6 +875,12 @@ class KnowledgeRetriever:
                 cards = self._take(budgets, "【卡片正文补充】\n" + cards, columns)
                 if cards:
                     columns.append(cards)
+        #: v1.5 §5.3：**包末**的自由度声明（两行：已约束／留白）。
+        #: 它必须走 `_take`——三栏共享同一个 token 上限这条纪律不因它而例外。
+        if self.last_freedom and budgets["remaining"] > 0:
+            taken = self._take(budgets, self.last_freedom, columns)
+            if taken:
+                columns.append(taken)
         return "\n\n".join(columns)
 
 
@@ -856,7 +896,8 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
                       client: Optional[Any] = None,
                       cases_index: Optional[Any] = None,
                       cases_backend: str = "lightrag",
-                      cases_top_k: int = 3) -> KnowledgeRetriever:
+                      cases_top_k: int = 3,
+                      rule_top_k: int = DEFAULT_RULE_TOP_K) -> KnowledgeRetriever:
     """进程级默认检索器（语料是静态的，默认参数下构建一次即可）。
 
     带了非默认参数时**不缓存**：否则第二次用不同配置调用会拿到上一份配置的
@@ -867,7 +908,8 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
             and token_limit == TOKEN_LIMIT_TOOL
             and plan_token_limit == TOKEN_LIMIT_PLAN and hypergraph is None
             and client is None and cases_index is None
-            and cases_backend == "lightrag" and cases_top_k == 3):
+            and cases_backend == "lightrag" and cases_top_k == 3
+            and int(rule_top_k) == DEFAULT_RULE_TOP_K):
         if _DEFAULT is None:
             _DEFAULT = KnowledgeRetriever(cards=cards_in_domain_order())
         return _DEFAULT
@@ -876,7 +918,8 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
         capabilities=capabilities, top_k=top_k, token_limit=token_limit,
         plan_token_limit=plan_token_limit, hypergraph=hypergraph,
         client=client, cases_index=cases_index,
-        cases_backend=str(cases_backend), cases_top_k=int(cases_top_k))
+        cases_backend=str(cases_backend), cases_top_k=int(cases_top_k),
+        rule_top_k=int(rule_top_k))
 
 
 def reset_default_retriever() -> None:

@@ -56,17 +56,37 @@ CHANNEL_OWNER: Dict[str, str] = {
 LAYER_OF: Dict[str, str] = {
     "walk_to": LAYER_BASE,
     "run_to": LAYER_BASE,
+    #: v1.5（执行文档 v1.5 / TDD §3.1）：**语义级入场/出场**。它们不是新的
+    #: 运动学，"从画外进画"与"走出画面"落到同一条 base 通道上（root.location
+    #: ＋ root.rotation_z）。生产者 = 拍点表的 `enter_from`/`exit_frame`，
+    #: 起点/终点由 `beat_compiler` 折算成画外锚点坐标后**仍然走 walk_to**；
+    #: 这里登记它们，是为了"任何出现在 ACTION_TYPES 里的动作，引擎都演得出来"
+    #: ——否则模型在 `actions[]` 里直写一个语义动词，构建期就是
+    #: `未知动作类型`（整轮 ERROR，本项目已付过两次代价的形状）。
+    "enter_from": LAYER_BASE,
+    "exit_frame": LAYER_BASE,
     "turn_body": LAYER_BASE,
     "jump": LAYER_BASE,
     "body_tilt": LAYER_BODY,
     "fall_down": LAYER_BODY,
     "sit": LAYER_BODY,
     "stand": LAYER_BODY,
+    #: v1.5：**道具交互**（TDD §4.4）。道具对象自己的关键帧由构建器负责
+    #: （`scene_executor` 的 `create_prop` 侧），角色这一侧只需要一次定向的
+    #: 上身动作（body 层）——没有第四种手臂通道，所以不定新层。
+    "place_prop": LAYER_BODY,
+    "pick_up": LAYER_BODY,
+    "hand_to": LAYER_BODY,
     "turn_head": LAYER_HEAD,
     "look_at": LAYER_HEAD,
     "nod": LAYER_HEAD,
     "shake_head": LAYER_HEAD,
 }
+
+#: v1.5（TDD §3.1）：**语义级**动词的两组。它们的定义登记在本模块（红线 R-7 的
+#: 单一真源），`contracts/beats.py` 从 `ACTION_TYPES` 导入整个词表，不另抄一份。
+ENTRANCE_ACTIONS: Tuple[str, ...] = ("enter_from", "exit_frame")
+PROP_ACTIONS: Tuple[str, ...] = ("place_prop", "pick_up", "hand_to")
 
 #: 全部合法动作类型（单一真源：工具 schema 与校验都从这里取）
 ACTION_TYPES: Tuple[str, ...] = tuple(LAYER_OF)
@@ -83,6 +103,15 @@ ACTION_TYPES: Tuple[str, ...] = tuple(LAYER_OF)
 ACTION_PARAMS: Dict[str, Tuple[str, ...]] = {
     "walk_to": ("speed", "from", "from_", "target_position", "to", "bob"),
     "run_to": ("speed", "from", "from_", "target_position", "to", "bob"),
+    #: v1.5 语义级入场/出场：与 walk_to 同一套位置参数（起点/终点），
+    #: 起点缺省 = 角色当前位置，终点缺省 = 起点（**不动**，不替 LLM 猜目的地）。
+    "enter_from": ("speed", "from", "from_", "target_position", "to", "bob"),
+    "exit_frame": ("speed", "from", "from_", "target_position", "to", "bob"),
+    #: v1.5 道具交互：`prop` 是**自由字符串**（道具名/锚点名），不是数值；
+    #: `angle_deg` 控制角色那一次前倾的幅度（缺省 8°）。
+    "place_prop": ("prop", "angle_deg", "toward"),
+    "pick_up": ("prop", "angle_deg", "toward"),
+    "hand_to": ("prop", "angle_deg", "toward"),
     "turn_body": ("angle_deg", "angle", "degrees"),
     "turn_head": ("angle_deg", "angle", "degrees"),
     "look_at": ("yaw_deg", "pitch_deg"),
@@ -109,9 +138,16 @@ def unknown_action_params(kind: str, params) -> List[str]:
     return sorted(set(params or {}) - set(allowed))
 
 
-#: 取值是坐标（数字数组）或自由字符串的键：数值检查对它们不适用。
-_NON_NUMERIC_KEYS = frozenset(
-    {"speed", "axis", "toward", "from", "from_", "target_position", "to"})
+#: 取值是**坐标**的键：必须是 2–3 个数字的序列（`[x, y]` 或 `[x, y, z]`）。
+#: 2026-10-07 实测（长剧本那一跑，`docs/evidence/20261007-v15-long/`）：模型把
+#: `enter_from` 的 `from` 写成了自由字符串 `"screen_left"`，而当时这几个键在
+#: `_NON_NUMERIC_KEYS` 里 ⇒ 解析期判**合法**，一路走到构建期的
+#: `motion/model.py::_walk_root` → `float(source[0])` → `float("s")` ⇒ **整轮 64 镜
+#: 一起 ERROR**（与 `axis='forward'` 那次是同一个形状：能修的口子留在了解析期之后）。
+#: 坐标不是自由文本，所以它必须在解析期就查"是不是坐标"。
+_COORDINATE_KEYS = frozenset({"from", "from_", "target_position", "to"})
+#: 取值是自由字符串的键：数值与坐标检查对它们都不适用（`prop` 是道具名/锚点名）。
+_FREE_STRING_KEYS = frozenset({"prop"})
 #: 取值是**闭集**的键（在函数里拼，因为这些表定义在本模块后半段）。
 _CLOSED_VALUE_KEYS = frozenset({"speed", "axis"})
 
@@ -153,6 +189,8 @@ def action_param_problems(kind: str, params) -> List[str]:
         except MotionParamError as exc:
             problems.append(str(exc))
         return problems
+    for key in sorted(_COORDINATE_KEYS & set(params)):
+        problems.extend(coordinate_problems(kind, key, params[key]))
     #: 闭集取值表：`speed` 的取值域直接读构建期用的那张表（单一真源）。
     domains = action_param_domains()
     for key, value in params.items():
@@ -162,13 +200,31 @@ def action_param_problems(kind: str, params) -> List[str]:
                 problems.append(
                     f"{kind} 的 {key} 只能是 {'/'.join(domain)}（当前 {value!r}）")
             continue
-        if key in _NON_NUMERIC_KEYS:
+        if key in _COORDINATE_KEYS or key in _FREE_STRING_KEYS:
             continue
         try:
             float(value)
         except (TypeError, ValueError):
             problems.append(f"{kind} 的 {key} 必须是数字（当前 {value!r}）")
     return problems
+
+
+def coordinate_problems(kind: str, key: str, value) -> List[str]:
+    """坐标键的取值检查：``[x, y]`` / ``[x, y, z]``，每个分量都得是数字。纯函数。
+
+    与构建期**同源**（`motion/model.py::_walk_root` 直接 `float(p[0])/float(p[1])`），
+    所以这里判合法的东西构建期一定吃得住。
+    """
+    if isinstance(value, str) or not isinstance(value, (list, tuple)):
+        return [f"{kind} 的 {key} 必须是坐标（2–3 个数字的数组，当前 {value!r}）"]
+    if not 2 <= len(value) <= 3:
+        return [f"{kind} 的 {key} 必须是坐标（2–3 个数字，当前 {list(value)!r}）"]
+    for index, item in enumerate(value):
+        try:
+            float(item)
+        except (TypeError, ValueError):
+            return [f"{kind} 的 {key} 第 {index + 1} 个分量不是数字（当前 {item!r}）"]
+    return []
 
 # §9.7 冲突仲裁表：语义矛盾的动作组合一律拒绝，而不是算出怪动作
 FORBIDDEN_PAIRS = frozenset({
@@ -177,6 +233,12 @@ FORBIDDEN_PAIRS = frozenset({
     frozenset({"walk_to", "jump"}),
     frozenset({"run_to", "jump"}),
     frozenset({"fall_down", "jump"}),
+    #: v1.5：入场/出场是**移动**（同一条 base 通道），与"摔/跳"重叠在语义上
+    #: 同样荒谬——"一边倒地一边从门外走进来"改时间点也还是荒谬。
+    frozenset({"enter_from", "fall_down"}),
+    frozenset({"exit_frame", "fall_down"}),
+    frozenset({"enter_from", "jump"}),
+    frozenset({"exit_frame", "jump"}),
 })
 
 HEAD_LIMIT_Z = 90 * DEG      # §9.3：头部水平 ±90°
@@ -556,6 +618,33 @@ def expand(request: ActionRequest) -> List[MotionSpec]:
         if kind == "run_to":
             add(LAYER_BODY, (CH_BODY_ROT_X,),
                 _body_tilt(start, end, 10.0 * DEG, "x"))
+
+    elif kind in ENTRANCE_ACTIONS:
+        #: v1.5（TDD §3.1/§4.1）：语义级入场/出场 = 一条 base 通道上的走位。
+        #: **终点缺省 = 起点**（即"不动"），而不是原点——不替 LLM 猜目的地
+        #: （`shot_builder.action_requests` 对 walk_to 用的是同一纪律：
+        #: 缺 target_position 就告警并跳过）。真正的起点/终点由 `beat_compiler`
+        #: 按画外锚点折算，那条路走 walk_to（编译目标是 `walk_to`）。
+        speed = str(params.get("speed", "walk"))
+        rate = _SPEED_RATE.get(speed, 1.0)
+        amplitude = _SPEED_AMPLITUDE.get(speed, 25.0)
+        source = _pick(params, "from", "from_", default=(0.0, 0.0, 0.0))
+        target = _pick(params, "target_position", "to", default=source)
+        bob = float(params.get("bob", 0.03))
+        add(LAYER_BASE, (CH_ROOT_LOC, CH_ROOT_ROT_Z),
+            _walk_root(start, end, source, target, rate, bob, 0.0))
+        add(LAYER_LEGS, (CH_LEG_L, CH_LEG_R),
+            _leg_swing(start, end, rate, amplitude))
+
+    elif kind in PROP_ACTIONS:
+        #: v1.5（TDD §4.4）：道具交互的**角色那一侧**——一次定向的上身动作。
+        #: 道具对象的关键帧由构建器写（`scene_executor`），不在纯层里。
+        #: `prop` 只作语义标注（缺省空串 = 没有具名道具，不报错）。
+        angle = float(params.get("angle_deg", 8.0)) * DEG
+        toward = params.get("toward")
+        axis = _axis_from_toward(toward) if toward is not None else "x"
+        add(LAYER_BODY, (CH_BODY_ROT_X if axis == "x" else CH_BODY_ROT_Y,),
+            _body_tilt(start, end, angle, axis))
 
     elif kind == "turn_body":
         angle = float(params.get("angle_deg", 90.0)) * DEG

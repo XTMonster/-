@@ -52,6 +52,15 @@ class AuditResult:
     suggestions: List[str] = field(default_factory=list)
     score: Optional[float] = None
     target: str = ""
+    #: v1.5 §5.4（P4-T4）：**破例辩护对拍**（声明 vs 实测）。
+    #: 可选、缺省 ``None`` ⇒ 老路径（不跑对拍 / 旧审计结果）行为与形状逐字节
+    #: 不变；对拍结果**只记录、不参与任何门**（设门属 OPEN_ITEMS D11，须裁决）。
+    justification_audit: Optional[Dict[str, Any]] = None
+    #: v1.5 §5.5（P6-T1）：**VLM 评审外回路**的逐镜记录。
+    #: 可选、缺省 ``None`` ⇒ ``vlm_review.enabled=false``（缺省）时调用方拿到的
+    #: ``to_dict()`` 与升级前逐字节一致。评审判词**只进 shots.json 与面板**，
+    #: 不参与 ``passed`` / ``score`` / ``errors``，也不接任何既有门。
+    vlm_review: Optional[Dict[str, Any]] = None
 
     @property
     def total(self) -> int:
@@ -70,13 +79,21 @@ class AuditResult:
                    target=target)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        payload = {
             "passed": self.passed, "level": self.level, "target": self.target,
             "score": self.score,
             "errors": [e.to_dict() for e in self.errors],
             "warnings": [w.to_dict() for w in self.warnings],
             "suggestions": list(self.suggestions),
         }
+        #: 只在真的有对拍结果时才加这个键——没跑对拍的调用方（可离线/其它
+        #: 审核器）拿到的 ``to_dict()`` 与升级前逐字节一致（NFR-4 向后兼容）。
+        if self.justification_audit is not None:
+            payload["justification_audit"] = dict(self.justification_audit)
+        #: 同纪律：没跑外部评审就不多这个键（默认关 ⇒ 零形状差）。
+        if self.vlm_review is not None:
+            payload["vlm_review"] = dict(self.vlm_review)
+        return payload
 
     def format_for_llm(self) -> str:
         """渲染成修复提示词里可直接使用的结构化文本（§18.3）。"""

@@ -22,7 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from ..knowledge.hypergraph import QUERY_KEYS
+from ..knowledge.hypergraph import QUERY_KEYS, VALUE_DOMAINS
 
 STATUS_RESOLVED = "resolved"
 STATUS_UNRESOLVED = "unresolved"
@@ -82,7 +82,58 @@ def _canonical(key: str, value: str) -> str:
     return text
 
 
-def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
+def _closed_set_value(key: str, value: Any) -> str:
+    """折到查询词表的规范写法，**并核对消费者闭集**；不该写的返回空串。
+
+    v1.5 §5.7（卡 P4-T5）的纪律：新种子（构图 / 光线）只写**落在闭集里**的取值。
+    计划侧词表与知识侧词表不是同一份——实测（2026-10-07）计划侧
+    ``contracts/beats.COMPOSITION_RULES`` 的六个取值里，只有 ``lead_room``
+    出现在知识侧 ``VALUE_DOMAINS["composition_rule"]`` 里（另一侧是
+    balance/framing/headroom/occlusion/rule_of_thirds）。照抄会造出**死值**：
+    命不中任何节点、白占 ``q`` 的一位，还把 ``seed_miss`` 伪装成"知识库里没有"
+    （§2.3b 的教训、`tests/test_scene_contract_query_vocab.py` 的整份成因）。
+
+    * 声明了闭集（``VALUE_DOMAINS[kind]`` 不是 ``None``）⇒ 折名后必须落进去；
+    * **没有**声明闭集（``None``，是 schema 的显式状态"故意不设枚举"）⇒ 无从
+      核对，返回空串 ⇒ **不写这个种子**。要让它可写，先得有一张别名/映射表，
+      而"编别名表"是新判据（清单 B4 的同一形状），不由执行侧自行决定。
+
+    只用于**新增**的两把键；既有键（景别/运镜/…）的历史口径一个字不动。
+    """
+    text = _canonical(key, str(value or "").strip())
+    if not text:
+        return ""
+    kind = QUERY_KEYS.get(key)
+    domain = VALUE_DOMAINS.get(kind) if kind else None
+    if not domain:
+        return ""
+    return text if text in set(domain) else ""
+
+
+def _light_candidates(environment: Any) -> List[str]:
+    """场级灯光语义 → ``光线=`` 的候选取值（v1.5 §5.7）。
+
+    形状是 ``{"light": {time_of_day, mood, key_direction}}``（``Plan.environment``，
+    TDD §3.2）。三个语义字段各出一个候选，另加一个 ``time_of_day/mood`` 的**组合**
+    候选（TDD §5.7 的原话是"time_of_day/mood 组合取值"）。
+
+    本函数**只负责取候选**：写不写由 :func:`_closed_set_value` 按闭集决定。
+    """
+    if not isinstance(environment, dict):
+        return []
+    light = environment.get("light")
+    if not isinstance(light, dict):
+        return []
+    fields = {name: str(light.get(name) or "").strip()
+              for name in ("time_of_day", "mood", "key_direction")}
+    out = [value for value in fields.values() if value]
+    if fields["time_of_day"] and fields["mood"]:
+        out.append(f"{fields['time_of_day']}/{fields['mood']}")
+    return out
+
+
+def shot_constraint_query(shot, *, per_kind: int = 3,
+                          environment: Any = None) -> str:
     """把**一镜的计划字段**变成 §2.3b 的查询串：``键=值；键=值``。
 
     为什么需要它：超图的入口 ``hypergraph.parse_query`` **只认契约串**
@@ -138,6 +189,17 @@ def shot_constraint_query(shot, *, per_kind: int = 3) -> str:
                  for item in (getattr(shot, "vfx", None) or [])])
     if getattr(shot, "dialogues", None):
         pairs.append(("对白", _canonical("对白", "有")))
+    #: v1.5 §5.7（卡 P4-T5）：构图声明的检索种子。`composition_rule` 是**有闭集**
+    #: 的 kind，所以只在取值真的落进那一侧词表时才写（今天只有 `lead_room` 重合；
+    #: `thirds`/`center`/… 是计划侧自有词表，写出去就是死值 —— 记在证据里，等
+    #: 一张别名表裁决，不在这里猜）。
+    add("构图", [_closed_set_value(
+        "构图", (getattr(shot, "composition", None) or {}).get("rule"))])
+    #: v1.5 §5.7：场级灯光语义的检索种子。`VALUE_DOMAINS["lighting"]` 是 `None`
+    #: （"故意不设枚举"），所以核不出闭集 ⇒ 今天一个候选都不会被写出去；通路
+    #: 已经接好，一旦闭集/别名表落地就自动生效。见证据目录的"光线词表缺口"一节。
+    add("光线", [_closed_set_value("光线", value)
+                 for value in _light_candidates(environment)])
     return "；".join(f"{key}={value}" for key, value in pairs)
 
 
@@ -198,6 +260,7 @@ class _ContractView:
         self.actions = [{"action_type": item} for item in contract.actions]
         self.vfx = [{"type": item} for item in contract.vfx_kinds]
         self.dialogues = list(contract.dialogues)
+        self.composition = dict(getattr(contract, "composition", None) or {})
 
 
 @dataclass
@@ -223,6 +286,11 @@ class ShotContract:
     movements: List[str] = field(default_factory=list)
     actions: List[str] = field(default_factory=list)
     vfx_kinds: List[str] = field(default_factory=list)
+    #: v1.5 §3.5/§5.7：这一镜的构图声明（``ShotPlan.composition`` 的抄件）。
+    #: 它有消费者了（`shot_constraint_query` 的 `构图=` 种子），所以必须两条
+    #: 生产者都带着它——否则 `ShotContract.constraint_query()` 与
+    #: `shot_constraint_query(ShotPlan)` 会漂（那正是 §40 钉住的纪律）。
+    composition: Dict[str, Any] = field(default_factory=dict)
     characters: List[str] = field(default_factory=list)
     #: ``{character_id: target_character_id}``——这一镜里谁该朝向谁。
     facing_target: Dict[str, str] = field(default_factory=dict)
@@ -262,6 +330,7 @@ class ShotContract:
             "declared_camera_move": self.declared_camera_move,
             "movements": list(self.movements), "actions": list(self.actions),
             "vfx_kinds": list(self.vfx_kinds),
+            "composition": dict(self.composition),
             "facing_target": dict(self.facing_target),
             "dialogues": [dict(item) for item in self.dialogues],
             "vfx": [dict(item) for item in self.vfx],
@@ -365,6 +434,8 @@ class SceneContract:
                                 vfx_kinds=[_first_value(entry, "type", "kind")
                                            for entry in
                                            (getattr(shot, "vfx", None) or [])],
+                                composition=dict(
+                                    getattr(shot, "composition", None) or {}),
                                 characters=characters,
                                 vfx=[dict(v) for v in
                                      (getattr(shot, "vfx", None) or [])])

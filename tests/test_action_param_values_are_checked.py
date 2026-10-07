@@ -19,6 +19,8 @@ from __future__ import annotations
 import pathlib
 import sys
 
+import pytest
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -46,6 +48,48 @@ def test_non_numeric_values_are_rejected_at_parse_time():
     #: 坐标（数组）与自由字符串不受数值检查影响。
     assert M.action_param_problems("walk_to", {"target_position": [0, 0, 1]}) == []
     assert M.action_param_problems("walk_to", {"to": [1, 0, 0]}) == []
+
+
+def test_coordinate_keys_are_rejected_when_they_are_not_coordinates():
+    """2026-10-07 实测（长剧本那一跑）：`enter_from.from = 'screen_left'` 一路走到构建期，
+
+        ValueError: could not convert string to float: 's'
+
+    整轮 64 镜一起 ERROR（`docs/evidence/20261007-v15-long/` 的 `blender.log` 里有
+    完整 traceback：`motion/model.py::_walk_root` → `float(source[0])`）。坐标**不是**
+    自由文本，所以这条必须在解析期挡下来——判据与构建期同源（`[x, y]` / `[x, y, z]`）。
+    """
+    assert M.coordinate_problems("enter_from", "from", "screen_left")
+    assert M.action_param_problems(
+        "enter_from", {"from": "screen_left", "to": [1.0, 0.0, 0.0]})
+    #: 长度不对 / 分量不是数字，同样在解析期挡。
+    assert M.action_param_problems("walk_to", {"target_position": [1]})
+    assert M.action_param_problems("walk_to", {"to": ["s", 0, 0]})
+    assert M.action_param_problems("walk_to", {"from": 3})
+    #: 合法形状一个都不许误伤（二维与三维都收）。
+    assert M.action_param_problems("walk_to", {"from": [0, 0], "to": [1, 0]}) == []
+    assert M.action_param_problems("walk_to", {"from": [0, 0, 0]}) == []
+    assert M.action_param_problems("walk_to", {"from_": [0.5, -1.5, 2.0]}) == []
+    #: 自由字符串的键（`prop`）照旧不查坐标。
+    assert M.action_param_problems("hand_to", {"prop": "钱袋"}) == []
+
+
+def test_the_draft_extractor_rejects_a_string_coordinate():
+    """`extract_draft` 必须在解析期挡住它——构建期整轮 ERROR 的代价见上一条。"""
+    from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall
+
+    args = {"shot_id": "shot_041", "shot_type": "MS",
+            "actions": [{"character_id": "char_001", "action_type": "enter_from",
+                         "start_frame": 1, "end_frame": 24,
+                         "params": {"from": "screen_left",
+                                    "to": [6.4, -6.6, 4.5]}}],
+            "dialogues": [], "camera": {}, "gaze": [], "vfx": [], "prompt": ""}
+    call = ToolCall(id="c1", function=FunctionCall(name=E.EDITOR_TOOL_NAME,
+                                                   arguments=_json(args)))
+    reply = ChatReply(content=None, tool_calls=[call])
+    with pytest.raises(ValueError) as excinfo:
+        E.extract_draft(reply, "shot_041")
+    assert "from" in str(excinfo.value)
 
 
 def test_the_draft_extractor_reports_values_not_just_keys():

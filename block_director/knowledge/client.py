@@ -21,7 +21,8 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tupl
 from ..contracts.errors import TransportError
 from ..contracts.knowledge import HyperEdge as HyperEdgeDTO
 from ..contracts.operations import RetrieveResponse
-from .hypergraph import HyperEdge as InternalEdge, Member, Node, render_edges
+from .hypergraph import HyperEdge as InternalEdge, Member, Node
+from .rulepack import DEFAULT_RULE_TOP_K, render_rule_pack
 
 #: 审计回调的载荷形状（由 audit logger 落进 run 的 JSONL）。
 AuditFn = Callable[[Dict[str, Any]], None]
@@ -60,7 +61,9 @@ def to_internal_edges(edges: Iterable[HyperEdgeDTO]) -> List[InternalEdge]:
 
 def render_edge_block(edges: Sequence[HyperEdgeDTO], *, limit: int,
                       nodes: Optional[Dict[str, Node]] = None,
-                      title: str = "硬约束（禁/许）"
+                      title: str = "硬约束（禁/许）",
+                      budget: int = DEFAULT_RULE_TOP_K,
+                      exempt_edge_ids: Sequence[str] = ()
                       ) -> Tuple[str, List[str], bool]:
     """把响应里的超边渲染成注入块（§2.3 的**原子注入**）。
 
@@ -68,12 +71,19 @@ def render_edge_block(edges: Sequence[HyperEdgeDTO], *, limit: int,
     否则 ``forbid`` 成员会被切掉，模型照样做禁忌动作。``nodes`` 缺省时用
     ``node_id``（本身就是 ``kind:值``，可读）。返回
     ``(文本, dropped_edge_ids, quality_fail)``；文本为空表示一条都没装下。
+
+    v1.5 §5.1/§5.2（FR-5/FR-6）：渲染与装配改调 :func:`rulepack.render_rule_pack`
+    ——每行带**强度标**（``[必须（除非声明破例）]`` / ``[通常]``）、同桶条数受
+    ``budget``（= ``rag.rule_top_k``）约束、冲突对并陈且不受条数预算截断、
+    ``exempt_edge_ids``（禁忌补挂）同样不受截断。**返回值与签名保持兼容**，
+    所以旧的读取方一行不改。
     """
-    text, dropped, quality_fail = render_edges(
-        to_internal_edges(edges), dict(nodes or {}), int(limit))
+    text, dropped, stats = render_rule_pack(
+        to_internal_edges(edges), dict(nodes or {}), budget=int(budget),
+        token_limit=int(limit), exempt_edge_ids=exempt_edge_ids)
     if not text:
-        return "", dropped, quality_fail
-    return f"【{title}】\n{text}", dropped, quality_fail
+        return "", dropped, stats.quality_fail
+    return f"【{title}】\n{text}", dropped, stats.quality_fail
 
 
 @dataclass
@@ -137,6 +147,13 @@ class KnowledgeClient:
             "case_ids": [str(case.case_id) for case in (response.cases or [])],
             "edge_ids": [str(edge.edge_id) for edge in (response.edges or [])],
             "forbid_members": sum(len(edge.forbid) for edge in response.edges),
+            #: v1.5 §5.6（FX-3/FR-9）：守门能力的两个紧邻读数。
+            #: `forbid_members` 是**响应里**禁忌成员的总数；这两个来自检索侧
+            #: trace —— `forbid_members_seen` 是"本轮真的**注入**了多少个禁忌成员"
+            #: （B7 的读数，长期为 0 的那一个），`forbid_backfilled` 是"其中有多少
+            #: 条边是靠禁忌补挂才进来的"。新增键是 optional，旧 trace 读取方不受影响。
+            "forbid_members_seen": int(trace.get("forbid_members_seen", 0) or 0),
+            "forbid_backfilled": list(trace.get("forbid_backfilled") or []),
             "lanes": int(trace.get("lanes", 1) or 1),
             "backend": str(trace.get("backend", "")),
             "cases_degraded": bool(trace.get("cases_degraded", False)),
