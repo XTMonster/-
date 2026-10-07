@@ -1,0 +1,51 @@
+{
+  "created_at": "2026-10-07T21:50:16",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "6093c5d",
+    "head_subject": "chore(v1.5): 派发板快照——done 36/36、在飞 0、可派发 0（执行文档 v1.5 全部卡完成）",
+    "recent": [
+      "6093c5d chore(v1.5): 派发板快照——done 36/36、在飞 0、可派发 0（执行文档 v1.5 全部卡完成）",
+      "5d64d31 chore(v1.5): 收尾对账——P5-T2/P7-T2 标记完成、G3/G4 在最终 HEAD 复审、dispatch_graph 的 P3-T2 路径按事实更正",
+      "a4ab1ce docs(evidence): 分组提交裁定的执行记录与两处口径偏差（P7-T2）",
+      "270fa5b chore(tests): 补漏 v1.5 各组的测试文件（裁定清单未逐条列全的新用例）",
+      "2b01655 docs(input): v1.5 执行包与调研输入入库（用户放置材料，非本轮产物）"
+    ],
+    "uncommitted": [
+      "M docs/evidence/20261007-v15-zerocand-verdict/verdict.json",
+      " M docs/evidence/_v15_dispatch/last_board.json",
+      " M fixtures/knowledge_holdout.cards.covered.json",
+      " M fixtures/knowledge_holdout.jsonl",
+      " M knowledge/card_scope.json",
+      " M knowledge/hypergraph.edges.jsonl",
+      " M knowledge/hypergraph.manifest.json",
+      " M tools/kb_fetch/rebind.py",
+      "?? docs/evidence/20261007-v15-oracle-gen3/",
+      "?? tools/knowledge/holdout_drop_pruned.py"
+    ]
+  },
+  "mode": "plain",
+  "question": {
+    "path": "E:\\白模预演codex\\work\\_q_refill3.md",
+    "sha256": "0845171e76517d02d17f8dd80ddb97b3d049ea7beedd1e94661284f93644d5fb",
+    "chars": 2607
+  },
+  "source_seen": false,
+  "sources": [],
+  "contexts": [],
+  "status": {
+    "sent_chars": 0,
+    "sent_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full_chars": 0,
+    "full_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truncated": false
+  },
+  "bundles": {
+    "标注": {
+      "user": {
+        "chars": 2618,
+        "sha256": "6caab44ba469bbda09597bd7e5b7d2211651b8009d75fb1d83d5685e1cdb3956"
+      }
+    }
+  }
+}

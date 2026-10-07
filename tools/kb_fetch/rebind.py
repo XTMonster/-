@@ -114,7 +114,17 @@ def load_prune_verdicts(root=None) -> List[dict]:
 
 def prune_members(edges: Sequence[dict], verdicts: Sequence[dict]
                   ) -> Tuple[List[dict], Dict[str, Any]]:
-    """按裁决摘掉成员；边被摘空就整条删。**确定性**，没判决的一律不动。"""
+    """按裁决摘掉成员；**摘完 schema 不再成立的边整条删**。**确定性**，没判决的一律不动。
+
+    为什么第二步是"整条删"而不是"留着残缺的边"（2026-10-07 实测）：被摘的成员里有
+    **必填**槽位（`ACTION_BEAT` 的 `beat_type`、`IMPACT_PACK` 的 `vfx`…共 17 条边）。
+    剪完它们之后那些边**在 schema 上已经不成立**——`check_holdout.parse_spec` 连一条
+    合法 spec 都写不出来（`REQUIRED_SLOTS` 缺项直接报错）；`illegal_members()` 只挡
+    "角色不合法"，不挡"必填缺失"。留着它们等于往索引里塞 17 条谁都表达不了的边。
+    所以规则是两段：**先摘被判错的成员，再把因此残缺的边整条去掉**——两条都记账。
+    """
+    from block_director.knowledge import hypergraph as _hg
+
     #: 只认**要摘**的判决（`wrong_card` / `wrong_value`）：`keep` 与没判决的一律不动
     #: ——即使调用方把整份裁决记录（含 keep）递进来也一样。
     wanted: Dict[Tuple[str, str, str], str] = {
@@ -122,7 +132,7 @@ def prune_members(edges: Sequence[dict], verdicts: Sequence[dict]
         for row in verdicts
         if str(row.get("verdict") or "") in ("wrong_card", "wrong_value")}
     out: List[dict] = []
-    removed_members = removed_edges = touched = 0
+    removed_members = removed_edges = touched = incomplete = 0
     for edge in edges:
         edge_id = str(edge.get("edge_id"))
         members = list(edge.get("members") or [])
@@ -140,12 +150,24 @@ def prune_members(edges: Sequence[dict], verdicts: Sequence[dict]
         if not kept:
             removed_edges += 1
             continue
+        #: 摘掉**必填**成员 ⇒ 这条边不再满足 schema 的必填表。**保留它**、如实记账：
+        #: 2026-10-07 实测，整条删会连带删掉 17 条边，而那 6 个取值
+        #: （`crane_arc_down/up`、`dolly_zoom`、`whip_pan_right`、`尖锐哨音`、`金属撞击`）
+        #: 就**在索引里没有载体了** ⇒ 门③（词表盲点）与门④（对数）当场红，
+        #: 补标注也补不回来（取值无载体 ⇒ 查询命中不了任何边）。保留边是把"这条耦合的
+        #: 某个必填槽位缺来源"如实留在索引里，而不是连带抹掉**没被判错**的那几个成员。
+        required = {tuple(pair) for pair in
+                    _hg.REQUIRED_MEMBERS.get(str(edge.get("type")), ())}
+        have = {(str(m[0]), str(m[1])) for m in kept}
+        if required - have:
+            incomplete += 1
         record = dict(edge)
         record["members"] = kept
         out.append(record)
     return out, {"prune_version": PRUNE_VERSION, "verdicts": len(verdicts),
                  "edges": len(out), "edges_touched": touched,
-                 "members_removed": removed_members, "edges_removed": removed_edges}
+                 "members_removed": removed_members, "edges_removed": removed_edges,
+                 "edges_schema_incomplete": incomplete}
 
 #: 每个成员最多追加几张候选卡。
 PER_MEMBER_CANDIDATES = 3

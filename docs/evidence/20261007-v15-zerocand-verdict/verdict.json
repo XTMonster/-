@@ -2,7 +2,7 @@
  "_what": "零候选槽位的出处裁决（用户 2026-10-07：用 qwen3.8-max-0902 代替人工裁决）",
  "reviewed_by": "third-party",
  "apply": false,
- "apply_blocked_by": "门⑩：22 条判决逐条试过，任一条单独执行都会让 held-out 的 spec 解析不到（每个成员都是某条 spec 期望的边形状的一部分）；要执行必须换 oracle 一代。证据 work/_prune_greedy.json、work/_prune_admissible.json、work/_gates_v3/holdout_gates.json",
+ "apply_blocked_by": "门③/门⑥：两条执行路都量过（2026-10-07，docs/evidence/20261007-v15-oracle-gen3/）——① **删掉被摘成员所在的那 17 条边**（schema 残缺的边不留在索引里）：`crane_arc_down`/`crane_arc_up`/`dolly_zoom`/`whip_pan_right`/`尖锐哨音`/`金属撞击` 这 6 个取值**在索引里再没有载体** ⇒ 门③（词表盲点）当场红，补标注也补不回来（取值无载体 ⇒ 查询命中不了任何边）；② **保留那 17 条边、只摘成员**：那 17 张卡的边**全都**因此不满足 schema 必填表 ⇒ 写不出任何一条能解析的 spec ⇒ 门⑥（每张可断言卡至少一条条目）红。⇒ 这 22 条判决的正确执行形状**不是「摘成员」**，而是**让这些成员有真来源**：要么重抽取（`--replace-cards` 一轮，但那是「重新掷骰子」，见 rebind.py 的模块文档），要么连同词表一起换代（会把真实取值从词表里删掉）。两条都要用户明示。",
  "source": {
   "model": "qwen3.8-max-0902",
   "channel": "阿里云百炼（DashScope OpenAI 兼容口）",

@@ -1,0 +1,23 @@
+[
+  {
+    "from_card": "cine_light_contrast",
+    "q": "光线=低调；强度=low",
+    "must": ["LIGHT_PACK:lighting=低调,intensity=low"],
+    "top1": ["LIGHT_PACK:lighting=低调,intensity=low"],
+    "why": "部分留暗处，关键词低调。"
+  },
+  {
+    "from_card": "gen_anime_0391",
+    "q": "特效=smoke；音效=低频轰鸣；运镜=follow_subject",
+    "must": ["IMPACT_PACK:vfx=smoke,sfx=低频轰鸣,movement=follow_subject"],
+    "top1": ["IMPACT_PACK:vfx=smoke,sfx=低频轰鸣,movement=follow_subject"],
+    "why": "正文提快速烟雾，其余取最接近。"
+  },
+  {
+    "from_card": "gen_axis_0262",
+    "q": "意图=压迫；景别=MCU；运镜=dolly_in",
+    "must": ["INTENT_PACK:intent=压迫,shot_size=MCU,movement=dolly_in"],
+    "top1": ["INTENT_PACK:intent=压迫,shot_size=MCU,movement=dolly_in"],
+    "why": "近景与冲击感；其余取最近。"
+  }
+]

@@ -181,6 +181,74 @@ def _post_json(url: str, payload: Dict, headers: Dict[str, str], timeout: float)
         raise LLMError(f"HTTP {exc.code}: {detail}") from exc
 
 
+def stream_requested() -> bool:
+    """`LLM_STREAM=1`（或 `GLM_STREAM=1`）时走流式——**opt-in，默认关**。
+
+    为什么要有（2026-10-07 实测，阿里云百炼 ＋ `qwen3.8-max-0902`）：同一份 10 k 字符的
+    标注题包**非流式 26 分钟不返回**（进程 CPU 0.1 s、挂在 read 上），流式 **1.0 s 回第一个
+    chunk、605 s 拿完整正文**；中继那一路同形（`docs/evidence/20261006-linkai-streaming/`）。
+    机制是"响应头要立刻回来，否则中途被掐"。默认不发 `stream` ⇒ 历史请求体逐字不变。
+    """
+    for name in ("LLM_STREAM", "GLM_STREAM"):
+        value = os.environ.get(name, "").strip().lower()
+        if value and value not in ("0", "false"):
+            return True
+    return False
+
+
+def read_sse_chat(response, started: float) -> Dict:
+    """把 SSE 流收成与非流式**同形**的 reply 字典（`choices[0].message.content` ＋ usage）。"""
+    parts: List[str] = []
+    usage: Dict = {}
+    finish = ""
+    chunks = 0
+    first_chunk_s = None
+    for raw in response:
+        line = raw.decode("utf-8", "replace").strip()
+        if not line.startswith("data:"):
+            continue
+        payload = line[5:].strip()
+        if payload == "[DONE]":
+            break
+        try:
+            item = json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+        if first_chunk_s is None:
+            first_chunk_s = round(time.time() - started, 1)
+        chunks += 1
+        if item.get("usage"):
+            usage = dict(item["usage"])
+        choice = (item.get("choices") or [{}])[0]
+        delta = choice.get("delta") or {}
+        parts.append(str(delta.get("content") or ""))
+        if choice.get("finish_reason"):
+            finish = str(choice["finish_reason"])
+    return {"choices": [{"message": {"content": "".join(parts)},
+                         "finish_reason": finish or "stop"}],
+            "usage": usage,
+            "_stream": {"chunks": chunks, "first_chunk_s": first_chunk_s}}
+
+
+def post_chat(base: str, payload: Dict, headers: Dict[str, str], timeout: float) -> Dict:
+    """统一入口：`stream_requested()` 时改发 `stream:true` 并按 SSE 收（见上）。"""
+    body_payload = dict(payload)
+    if stream_requested():
+        body_payload["stream"] = True
+    body = json.dumps(body_payload).encode("utf-8")
+    request = urllib.request.Request(f"{base}/chat/completions", data=body,
+                                     headers=headers, method="POST")
+    started = time.time()
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
+            if body_payload.get("stream"):
+                return read_sse_chat(response, started)
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:  # pragma: no cover - 网络分支
+        detail = exc.read().decode("utf-8", "replace")[:400]
+        raise LLMError(f"HTTP {exc.code}: {detail}") from exc
+
+
 class ScriptedClient:
     """离线替身：`responses` 是 {chunk_id: {"cards": [...]}}。"""
 
@@ -323,11 +391,18 @@ class GLMClient:
         last: Optional[Exception] = None
         for attempt in range(retries):
             try:
-                reply = _post_json(f"{GLM_BASE}/chat/completions", payload,
-                                   {"Content-Type": "application/json",
-                                    #: 思考拉满时单次调用会超过 5 分钟（实测 6 卡一批就
-                                    #: 打穿了 300 秒的读超时）——给到 30 分钟。
-                                    "Authorization": f"Bearer {self.api_key}"}, GLM_TIMEOUT)
+                headers = {"Content-Type": "application/json",
+                           #: 思考拉满时单次调用会超过 5 分钟（实测 6 卡一批就
+                           #: 打穿了 300 秒的读超时）——给到 30 分钟。
+                           "Authorization": f"Bearer {self.api_key}"}
+                #: **流式是 opt-in**（`LLM_STREAM=1`／`GLM_STREAM=1`，见 `stream_requested`）：
+                #: 不设时**逐字走原来那条 `_post_json`**——测试与历史运行钉的都是它
+                #: （`monkeypatch.setattr(llm, "_post_json", …)`），换掉调用点等于把
+                #: 那些守门变成空转。
+                reply = (post_chat(GLM_BASE, payload, headers, GLM_TIMEOUT)
+                         if stream_requested() else
+                         _post_json(f"{GLM_BASE}/chat/completions", payload, headers,
+                                    GLM_TIMEOUT))
                 choices = reply.get("choices") or []
                 if not choices:
                     raise LLMError("上游没有返回 choices")
