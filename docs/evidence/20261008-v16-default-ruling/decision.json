@@ -1,0 +1,23 @@
+{
+  "reviewed_by": "third-party",
+  "source": {
+    "model": "glm-5.3",
+    "channel": "glm_consult",
+    "prompt_sha256": "5acf4029d6de5733f71c5584307c811abc42de491c5b4fd8c139791978930970",
+    "authorized_by": "model-routing.md: independent third-party adjudication; v1.6 PRD D-06 specifies rule_top_k=8"
+  },
+  "decision": "sync_two_stale_default_expectations_to_exactly_8",
+  "quality_threshold_change": false,
+  "preserved": [
+    "CFG_020 integer-only inclusive range 3..8",
+    "all existing valid and invalid parameterized cases",
+    "top_k=15",
+    "cases_top_k",
+    "exact equality assertions",
+    "historical failure evidence"
+  ],
+  "required_addition": "explicit legacy rule_top_k=5 round trip must remain 5",
+  "raw_verdict": "规格一致性.json",
+  "usage": "规格一致性.usage.json",
+  "execution_review": "Accepted F1/F3 and the explicit-5 compatibility test in F2. Did not adopt F2's unverified claim that every old test would survive a forced-default mutation: an existing round-trip test already covers explicit value 7."
+}

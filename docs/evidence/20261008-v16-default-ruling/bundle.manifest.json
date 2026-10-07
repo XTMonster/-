@@ -1,0 +1,119 @@
+{
+  "created_at": "2026-10-08T05:21:20",
+  "repo": {
+    "repo": "E:\\白模预演codex",
+    "head": "f95cd2d",
+    "head_subject": "fix(hooks): follow the selected session model without fixed execution routing",
+    "recent": [
+      "f95cd2d fix(hooks): follow the selected session model without fixed execution routing",
+      "2a63f95 A4: expose llm.timeout_s in config, panel and driver limits (D-01)",
+      "6ee09e0 A3: R015 shot-type rewrite → ERROR without justification; reject off-shot character actions with vfx guidance (D-15/D-17)",
+      "3aad554 A2: hard cast-id check (v1.6 D-11)",
+      "d159111 A1: cylinder torso (v1.6 FR-E)"
+    ],
+    "uncommitted": [
+      "M block_director/delivery/manifest.py",
+      " M block_director/layer5_orchestrator/driver.py",
+      " M block_director/layer5_orchestrator/modal_operator.py",
+      " M block_director/layer7_ui/panel_main.py",
+      " M block_director/layer8_delivery/export_director.py",
+      " M fixtures/expected_shots_long.json",
+      " M tools/blender_tests/test_phase6_delivery.py",
+      " M tools/run_export.py",
+      " M tools/run_headless.py",
+      "?? block_director/delivery/readme.py",
+      "?? docs/evidence/20261008-v16-a5/",
+      "?? docs/evidence/20261008-v16-intake/",
+      "?? tests/test_needs_review.py"
+    ]
+  },
+  "mode": "role",
+  "question": {
+    "path": "docs/evidence/20261008-v16-intake/default-test-ruling-question.md",
+    "sha256": "b0c534224b8df6697874c71e82183707803ec4095d8b3d1beb839da49eff93c0",
+    "chars": 554
+  },
+  "source_seen": true,
+  "sources": [
+    {
+      "name": "block_director/contracts/config.py",
+      "spec": "block_director/contracts/config.py:96-104",
+      "range": [
+        96,
+        104
+      ],
+      "file_sha256": "e64800e7cbcd0570fc9cc685d41fabf9383fc4fa04f18b35d7caeb2ceff0d008",
+      "chunk_sha256": "fcb236b40a7b9ff36210c7f02bf6c573a674cb90e83598657962eee232956f39",
+      "lines": 9,
+      "chars": 464
+    },
+    {
+      "name": "block_director/contracts/config.py",
+      "spec": "block_director/contracts/config.py:440-445",
+      "range": [
+        440,
+        445
+      ],
+      "file_sha256": "e64800e7cbcd0570fc9cc685d41fabf9383fc4fa04f18b35d7caeb2ceff0d008",
+      "chunk_sha256": "a99988104becb63930b2a94ae8819cf8d794b36bc4fd0cdd7b74be2b7a340c6e",
+      "lines": 6,
+      "chars": 325
+    },
+    {
+      "name": "tests/test_config_vlm_review.py",
+      "spec": "tests/test_config_vlm_review.py:35-54",
+      "range": [
+        35,
+        54
+      ],
+      "file_sha256": "14e979073b1fdd221c2a2150f1f4816212114478c3d98ca94b9b8bb9d0183a88",
+      "chunk_sha256": "f1eab684c258d3fd634dfee170940da87c0e3c3216d1dd97e5c2bc59e6451fe6",
+      "lines": 20,
+      "chars": 859
+    },
+    {
+      "name": "tests/test_config_vlm_review.py",
+      "spec": "tests/test_config_vlm_review.py:102-110",
+      "range": [
+        102,
+        110
+      ],
+      "file_sha256": "14e979073b1fdd221c2a2150f1f4816212114478c3d98ca94b9b8bb9d0183a88",
+      "chunk_sha256": "1e36ea132e52873b6acaa13d60a0bccbc60f4e3aff81f0564d29a09d184587cc",
+      "lines": 9,
+      "chars": 441
+    },
+    {
+      "name": "v1.6/PRD_v1.6.md",
+      "spec": "v1.6/PRD_v1.6.md:114-116",
+      "range": [
+        114,
+        116
+      ],
+      "file_sha256": "8b6829130ce3709e0323eeacf5aa2128ce1d95cd09353df8875809ad5b2771e3",
+      "chunk_sha256": "d63685703e575fb21352efb828dddb241c8b21e7e8a85ac4aaa96df5bc324fe8",
+      "lines": 3,
+      "chars": 413
+    }
+  ],
+  "contexts": [],
+  "status": {
+    "sent_chars": 268,
+    "sent_sha256": "0112a952dc3a59762947670e0c5124554a9f4d3c75e646aadc0d58d593119def",
+    "full_chars": 4652,
+    "full_sha256": "7151381cdc6898f6d3fad8ecbe09e362944d362cbc1e687f5be4504e46c2f066",
+    "truncated": true
+  },
+  "bundles": {
+    "规格一致性": {
+      "system": {
+        "chars": 1032,
+        "sha256": "3c3279e0f38e8ef60af8366c247d99e97a2cc8862f9cabba87cac05f81980603"
+      },
+      "user": {
+        "chars": 3670,
+        "sha256": "5acf4029d6de5733f71c5584307c811abc42de491c5b4fd8c139791978930970"
+      }
+    }
+  }
+}

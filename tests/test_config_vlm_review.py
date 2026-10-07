@@ -2,7 +2,8 @@
 
 判据（执行文档 v1.5 TDD §7 表格，逐字照抄）：
 
-* ``rag.rule_top_k``      缺省 ``5``；int，**3–8**，越界报 CFG_0xx；
+* ``rag.rule_top_k``      v1.6 D-06 缺省 ``8``（原 v1.5 为 ``5``）；
+  int，**3–8**，越界报 CFG_0xx；显式旧值 5 仍须保持；
 * ``vlm_review.enabled``  缺省 ``false``；bool；
 * ``vlm_review.max_shots`` 缺省 ``0``（不限）；int **≥ 0**。
 
@@ -33,9 +34,9 @@ SPEC = ROOT / "specs" / "config.default.yaml"
 
 
 # ------------------------------------------------------------------ rule_top_k
-def test_rule_top_k_default_is_five_and_legal():
+def test_rule_top_k_default_is_eight_and_legal():
     cfg = AppConfig()
-    assert cfg.rag.rule_top_k == 5
+    assert cfg.rag.rule_top_k == 8
     assert cfg.errors() == []
 
 
@@ -105,9 +106,18 @@ def test_a_config_without_the_new_keys_falls_back_to_defaults():
     data["rag"].pop("rule_top_k")
     data.pop("vlm_review")
     restored = AppConfig.from_dict(data)
-    assert restored.rag.rule_top_k == 5
+    assert restored.rag.rule_top_k == 8
     assert restored.vlm_review.enabled is False
     assert restored.vlm_review.max_shots == 0
+
+
+def test_explicit_legacy_rule_top_k_five_is_preserved_in_round_trip():
+    data = AppConfig().to_dict()
+    data["rag"]["rule_top_k"] = 5
+    restored = AppConfig.from_dict(data)
+    assert restored.rag.rule_top_k == 5
+    assert restored.to_dict()["rag"]["rule_top_k"] == 5
+    assert restored.errors() == []
 
 
 # ------------------------------------------------------------- specs 同步（R-4）
