@@ -51,8 +51,9 @@ def parse_args(argv):
                         help="运行成功后直接导出交付包（§15 的一条命令验收）")
     parser.add_argument("--export-dir", default="",
                         help="交付包目录；留空则用 <out>/export")
-    parser.add_argument("--llm-timeout", type=float, default=120.0,
-                        help="单次 LLM 调用超时（秒）。本地大模型常需放大到 600+")
+    parser.add_argument("--llm-timeout", type=float, default=None,
+                        help="单次 LLM 调用超时（秒）；省略时读取配置 llm.timeout_s。"
+                             "慢思考通道建议至少 600")
     parser.add_argument("--max-llm-calls", type=int, default=0,
                         help="本次运行的 LLM 调用硬上限（§12.6）。本地模型"
                              "返工多，常需放大；0 表示不限")
@@ -147,8 +148,9 @@ def main() -> int:
         scene_state_provider=lambda: format_scene_state(
             collect_scene_state(detailed=False)),
         parsed_script=parsed,
-        limits=DriverLimits(llm_timeout_s=args.llm_timeout,
-                            max_llm_calls=args.max_llm_calls),
+        limits=DriverLimits.from_config(
+            config, llm_timeout_s=args.llm_timeout,
+            max_llm_calls=args.max_llm_calls),
     )
 
     if args.save and summary.get("success") and summary.get("plan"):

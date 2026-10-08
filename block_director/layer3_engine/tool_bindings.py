@@ -243,11 +243,13 @@ def _tool_place_character(character_id: str,
 def _tool_character_action(character_id: str, action_type: str,
                            start_frame: int, end_frame: int,
                            params: Optional[Dict[str, Any]] = None):
-    character, problem = _require_character(character_id)
-    if character is None:
-        return problem
+    # Validate shot membership first: an environment subject has no Character
+    # object, but still needs the shot-specific roster and vfx guidance.
     shot, problem = _require_character_in_shot(character_id)
     if shot is None:
+        return problem
+    character, problem = _require_character(character_id)
+    if character is None:
         return problem
     if action_type not in ACTION_TYPES:
         return _fail(f"未知动作类型 {action_type}。可用: "

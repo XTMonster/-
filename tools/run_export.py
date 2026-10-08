@@ -33,8 +33,9 @@ def parse_args(argv):
     parser.add_argument("--wall", type=float, default=300.0)
     # v1.4 §3.1/P9.4：与 tools/run_headless.py:62-65 对齐，否则 §4.4 步骤 2
     # 会直接 unrecognized arguments。
-    parser.add_argument("--llm-timeout", type=float, default=120.0,
-                        help="单次 LLM 调用超时（秒）。本地大模型常需放大到 600+")
+    parser.add_argument("--llm-timeout", type=float, default=None,
+                        help="单次 LLM 调用超时（秒）；省略时读取配置 llm.timeout_s。"
+                             "慢思考通道建议至少 600")
     parser.add_argument("--max-llm-calls", type=int, default=0,
                         help="本次运行的 LLM 调用硬上限；0 表示不限")
     parser.add_argument("--save", default="",
@@ -103,8 +104,8 @@ def main() -> int:
                            scene_state_provider=lambda: format_scene_state(
                                collect_scene_state(detailed=False)),
                            parsed_script=parsed,
-                           limits=DriverLimits(
-                               llm_timeout_s=args.llm_timeout,
+                           limits=DriverLimits.from_config(
+                               runtime_config, llm_timeout_s=args.llm_timeout,
                                max_llm_calls=args.max_llm_calls))
     if not summary.get("success") or not summary.get("built"):
         print("BLOCKDIRECTOR_EXPORT " + json.dumps(

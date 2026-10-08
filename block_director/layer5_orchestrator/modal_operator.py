@@ -176,7 +176,7 @@ def build_run_context(context, *, builder=_DEFAULT_BUILDER, auditor=None,
         script=resolve_script(context),
         parsed_script=parsed_script,
         config=run_config,
-        limits=limits or DriverLimits(),
+        limits=limits,
         registry=default_registry(
             max_shots=int(run_config.orchestration.max_shots)),
         builder=builder,

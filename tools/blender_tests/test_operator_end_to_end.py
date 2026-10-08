@@ -216,6 +216,42 @@ def t_operator_path_builds_and_exports():
             "shots": len(driver.plan.shots) if driver.plan else 0}
 
 
+def t_panel_timeout_reaches_transport_without_mutating_saved_config():
+    """A4: use the real GUI assembly and observe the transport's actual timeout."""
+    from block_director.contracts.config import AppConfig
+    from block_director.layer5_orchestrator.driver import DriverLimits
+
+    class TimeoutTransport(OfflineTransport):
+        def __init__(self):
+            super().__init__()
+            self.timeouts = []
+
+        def chat(self, payload, timeout=120.0):
+            self.timeouts.append(timeout)
+            return super().chat(payload, timeout=timeout)
+
+    measured = []
+    for override, expected in ((None, 750.0),
+                               (DriverLimits(llm_timeout_s=120.0), 120.0)):
+        scene = fresh_scene()
+        scene.bd_llm_timeout_s = 750.0
+        config = AppConfig()
+        original = config.to_dict()
+        transport = TimeoutTransport()
+        run = modal_operator.build_run_context(
+            _Context(scene), config=config, limits=override, transport=transport)
+        assert run.ok, run.problems
+        assert run.config is not config
+        assert _run(run, None) is DriverState.DONE, run.driver.error
+        assert transport.timeouts, "No actual LLM boundary call was exercised"
+        assert all(value == expected for value in transport.timeouts), transport.timeouts
+        assert run.config.llm.timeout_s == 750.0
+        assert config.to_dict() == original
+        measured.append({"expected": expected, "actual": transport.timeouts})
+        clear_active()
+    return {"ok": True, "runs": measured, "saved_config_unchanged": True}
+
+
 def main() -> int:
     capture_main_thread()
     check("operator_refuses_without_a_builder", t_missing_builder_is_refused)
@@ -223,6 +259,8 @@ def main() -> int:
           t_scene_clear_is_opt_in_and_snapshotted)
     check("rk9_operator_path_builds_and_exports",
           t_operator_path_builds_and_exports)
+    check("panel_timeout_reaches_transport",
+          t_panel_timeout_reaches_transport_without_mutating_saved_config)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

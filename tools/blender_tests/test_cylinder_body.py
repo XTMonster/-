@@ -8,6 +8,7 @@ that the footprint, anchor points and total height stay unchanged.
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 import traceback
@@ -143,14 +144,73 @@ def t_cylinder_vertex_count() -> dict:
         round(character_factory.BODY_HEIGHT, 6),
     ]
     expected_vertices = 64  # primitive_cylinder_add(vertices=32) => 2 rings x 32
-    ok = (bounds["size"] == expected_size and bounds["vertices"] == expected_vertices)
+    profile = cylinder_profile(bpy.data.objects["BD_Char_Shape_Body"])
+    ok = (bounds["size"] == expected_size and bounds["vertices"] == expected_vertices
+          and profile["ok"])
     return {
         "ok": ok,
         "size": bounds["size"],
         "expected_size": expected_size,
         "vertices": bounds["vertices"],
         "expected_vertices": expected_vertices,
+        "profile": profile,
     }
+
+
+def cylinder_profile(body) -> dict:
+    """Independent mesh observation: 32 equally spaced vertices on each cap ring."""
+    radius = character_factory.BODY_RADIUS
+    half_height = character_factory.BODY_HEIGHT / 2
+    rings = {-1: [], 1: []}
+    radial_error = 0.0
+    height_error = 0.0
+    for vertex in body.data.vertices:
+        x, y, z = vertex.co
+        radial_error = max(radial_error, abs(math.hypot(x, y) - radius))
+        height_error = max(height_error, abs(abs(z) - half_height))
+        rings[-1 if z < 0 else 1].append(math.atan2(y, x) % math.tau)
+    angle_error = 0.0
+    for angles in rings.values():
+        angles.sort()
+        if not angles:
+            # Finite sentinel (any value > 1e-6 fails the check). math.inf is
+            # banned in probes: json.dumps would emit non-finite JSON that
+            # run_tests.ps1 cannot parse (tools/check_assertions.py rule 2).
+            angle_error = 999.0
+            continue
+        wrapped = angles[1:] + [angles[0] + math.tau]
+        angle_error = max(angle_error, max(
+            abs((right - left) - math.tau / 32)
+            for left, right in zip(angles, wrapped)))
+    counts = [len(rings[-1]), len(rings[1])]
+    return {
+        "ok": (counts == [32, 32] and radial_error <= 1e-6
+               and height_error <= 1e-6 and angle_error <= 1e-6),
+        "ring_counts": counts, "radial_error": radial_error,
+        "height_error": height_error, "angle_error": angle_error,
+    }
+
+
+def t_cylinder_profile_detects_damage_hidden_by_vertex_count_and_aabb():
+    fresh_scene()
+    create_character("char_damaged", "Damaged", "#C8C8D0")
+    body = bpy.data.objects["BD_Char_Damaged_Body"]
+    before = _torso_bounds("Damaged")
+    assert cylinder_profile(body)["ok"]
+    # Move a non-extreme vertex inward: the AABB and number of vertices stay
+    # identical, but it is no longer the specified cylinder.
+    vertex = next(v for v in body.data.vertices
+                  if 0.01 < v.co.x < 0.24 and 0.01 < v.co.y < 0.24)
+    vertex.co.x *= 0.5
+    vertex.co.y *= 0.5
+    body.data.update()
+    bpy.context.view_layer.update()
+    after = _torso_bounds("Damaged")
+    profile = cylinder_profile(body)
+    assert after == before, (before, after)
+    assert profile["ok"] is False, profile
+    return {"ok": True, "same_bounds_and_count": True,
+            "detected_radial_error": profile["radial_error"]}
 
 
 def main() -> int:
@@ -162,6 +222,8 @@ def main() -> int:
     check("anchor_points_unchanged", t_anchor_points_unchanged)
     check("total_height_unchanged", t_total_height_unchanged)
     check("cylinder_vertex_count", t_cylinder_vertex_count)
+    check("cylinder_profile_detects_hidden_damage",
+          t_cylinder_profile_detects_damage_hidden_by_vertex_count_and_aabb)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

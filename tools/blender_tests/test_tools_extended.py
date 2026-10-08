@@ -267,6 +267,38 @@ def t_reframe_reuses_the_camera():
             "lens": [before_lens, float(after.data.lens)]}
 
 
+def t_character_action_reports_the_current_roster_and_vfx_for_nonparticipants():
+    """A3 checks the LLM-facing registry, not just SceneContext's message helper."""
+    _plan, registry = built(with_actions=False)
+    context = get_context()
+    context.current_shot_id = "shot_002"  # only char_002 participates here
+    start = context.schedule["shot_002"][0]
+    before = {cid: frames_with_keys(character)
+              for cid, character in context.characters.items()}
+    rejected = {}
+    for subject in ("environment_flag", "char_001"):
+        result = registry.execute("character_action", {
+            "character_id": subject, "action_type": "nod",
+            "start_frame": start, "end_frame": start + 12,
+        })
+        assert result.ok is False, result.content
+        assert subject in result.content, result.content
+        assert "{char_002}" in result.content, result.content
+        assert "vfx 字段" in result.content, result.content
+        assert "create_vfx" in result.content, result.content
+        rejected[subject] = result.content
+    assert {cid: frames_with_keys(character)
+            for cid, character in context.characters.items()} == before
+    accepted = registry.execute("character_action", {
+        "character_id": "char_002", "action_type": "nod",
+        "start_frame": start, "end_frame": start + 12,
+    })
+    assert accepted.ok, accepted.content
+    assert frames_with_keys(context.characters["char_002"]) > before["char_002"]
+    assert frames_with_keys(context.characters["char_001"]) == before["char_001"]
+    return {"ok": True, "rejected": rejected, "accepted": accepted.content}
+
+
 def main() -> int:
     capture_main_thread()
     check("extended_tools_are_registered", t_extended_tools_are_registered)
@@ -282,6 +314,8 @@ def main() -> int:
     check("move_camera_animates_only_its_shot",
           t_move_camera_animates_only_its_shot)
     check("reframe_reuses_the_camera", t_reframe_reuses_the_camera)
+    check("character_action_reports_roster_and_vfx",
+          t_character_action_reports_the_current_roster_and_vfx_for_nonparticipants)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
