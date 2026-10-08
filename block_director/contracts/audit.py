@@ -13,6 +13,22 @@ from typing import Any, Dict, Iterable, List, Optional
 from .enums import Severity
 
 
+#: v1.6 A6（D-08）：`scene_built` 事件的 `reason` 闭集。
+#: initial = 首次构建；repair_rebuild = 修复重提草案改了计划后就地重建；
+#: rollback_rebuild = 修复引入新违规被回滚后就地重建。
+SCENE_BUILT_REASONS = ("initial", "repair_rebuild", "rollback_rebuild")
+
+#: `scene_built` 事件自己拥有的字段；构建摘要里的同名键不得覆盖它们。
+SCENE_BUILT_RESERVED_KEYS = frozenset({"reason", "duration_s"})
+
+
+def scene_built_reason(*, rebuild_in_place: bool, just_rolled_back: bool) -> str:
+    """由驱动器已有的两个状态位推出 `scene_built.reason`（纯函数，回滚优先）。"""
+    if not rebuild_in_place:
+        return "initial"
+    return "rollback_rebuild" if just_rolled_back else "repair_rebuild"
+
+
 @dataclass
 class AuditError:
     rule: str

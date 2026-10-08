@@ -18,7 +18,8 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
 from ..contracts.enums import Purpose, ToolChoice
-from ..contracts.audit import AuditResult
+from ..contracts.audit import (SCENE_BUILT_RESERVED_KEYS, AuditResult,
+                               scene_built_reason)
 from ..contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -92,6 +93,21 @@ class DriverLimits:
     #: `orchestration.repair_max_turns`——真跑里 104 个修复回合有 72 个
     #: 死在"查资料 + 看场景就用光唯一一轮"。
     repair_turns: int = 3
+
+    @classmethod
+    def from_config(cls, config=None, *, llm_timeout_s=None,
+                    **overrides) -> "DriverLimits":
+        """Resolve an omitted timeout from config; preserve explicit overrides.
+
+        ``None`` means the caller did not choose a timeout. The legacy
+        no-config constructor still uses 120s; a supplied runtime configuration
+        owns the default for GUI and command-line runs.
+        """
+        if llm_timeout_s is None and config is not None:
+            llm_timeout_s = getattr(config.llm, "timeout_s", cls.llm_timeout_s)
+        if llm_timeout_s is not None:
+            overrides["llm_timeout_s"] = float(llm_timeout_s)
+        return cls(**overrides)
 
 
 def tool_call_budget(effective_llm_calls: int, floor: int) -> int:
@@ -202,11 +218,7 @@ class PrevisDriver:
         self.script = script
         self.parsed_script = parsed_script
         self.config = config
-        self.limits = limits or DriverLimits()
-        # v1.6 A4：未显式传 limits 时，LLM 超时从配置读取；显式传参仍覆盖。
-        if limits is None and config is not None:
-            self.limits.llm_timeout_s = float(
-                getattr(config.llm, "timeout_s", 120.0))
+        self.limits = limits if limits is not None else DriverLimits.from_config(config)
         self.registry = registry or default_registry()
         self.builder = builder
         self.auditor = auditor
@@ -1326,13 +1338,22 @@ class PrevisDriver:
                         item["alternates"] = [dict(entry)
                                               for entry in alternates]
         duration = self.clock() - started
+        #: v1.6 A6（D-08）：第二条 scene_built 不是日志重复，而是修复回路的就地重建
+        #: （重提草案 ⇒ `_needs_rebuild`；修复回滚 ⇒ `_just_rolled_back`，两者都置
+        #: `_rebuild_in_place` 回到 BUILDING）。行为不改，只补可观测性；取值只读
+        #: 驱动器已有状态，不新增状态。回滚优先于"修复改了计划"。
+        reason = scene_built_reason(rebuild_in_place=self._rebuild_in_place,
+                                    just_rolled_back=self._just_rolled_back)
+        #: 构建摘要里若恰好也有 `reason`/`duration_s` 键，不得覆盖事件自己的字段
+        #: （也不能让关键字参数重名直接抛 TypeError）。
+        scalars = {k: v for k, v in self.build_summary.items()
+                   if isinstance(v, (int, float, str))
+                   and k not in SCENE_BUILT_RESERVED_KEYS}
         self.audit.log("scene_built", "场景已构建",
+                       reason=reason,
                        duration_s=round(duration, 3),
-                       **{k: v for k, v in self.build_summary.items()
-                          if isinstance(v, (int, float, str))})
-        self._emit("scene_built", "场景已构建",
-                   **{k: v for k, v in self.build_summary.items()
-                      if isinstance(v, (int, float, str))})
+                       **scalars)
+        self._emit("scene_built", "场景已构建", reason=reason, **scalars)
         self._transition(self._after_build_state())
 
     def _after_build_state(self) -> DriverState:
