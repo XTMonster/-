@@ -16,17 +16,23 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import bpy
 
+from ..contracts.elements import ElementRegistry, build_registry
 from ..contracts.enums import ErrorCode, resolution_for
 from ..contracts.errors import user_message
 from ..contracts.plan import Plan, unknown_cast_ids
 from ..delivery.depth import depth_range_note
 from ..delivery.manifest import build_manifest
-from ..delivery.prompts import DEFAULT_STYLE, render_prompt_sheet
+from ..delivery.prompts import (
+    DEFAULT_STYLE,
+    render_prompt_sheet,
+    unknown_prompt_names,
+)
 from ..delivery.readme import render_readme
 from ..layer3_engine.collection_router import (
     audit_renderable_objects,
     labels_collection,
 )
+from ..layer3_engine.scene_context import get_context
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .camera_trajectory import camera_trajectory
@@ -113,6 +119,22 @@ def _cast_id_errors(plan: Plan,
                         roster=", ".join(sorted(str(x) for x in roster)))
 
 
+def _element_registry(plan: Plan) -> ElementRegistry:
+    """v1.6 E1：交付装配构建**唯一一份**元素登记表（SC-06：prompts / mask /
+    reference 共用同一份）。数据源只有 SceneContext 与计划，不从图像反推：
+    角色取 ``spec.cast``（缺省时构建器按同一 DEFAULT_COLORS 分配回落），
+    道具取 ``spec.props``，环境件取 ``plan.environment.anchors``。
+    """
+    context = get_context()
+    spec = getattr(context, "spec", None)
+    cast = [member.to_dict() for member in (spec.cast if spec else [])]
+    props = [dict(item) for item in (spec.props if spec else [])]
+    environment = [dict(item) for item in
+                   ((plan.environment or {}).get("anchors") or [])]
+    return build_registry(plan, cast=cast, props=props,
+                          environment=environment)
+
+
 @main_thread_only("export_project")
 def export_project(plan: Plan, *,
                    build_summary: Optional[Dict[str, Any]] = None,
@@ -162,9 +184,25 @@ def export_project(plan: Plan, *,
         log.error(report.reason)
         return report
 
+    #: v1.6 E1（FR-A2/FR-A4）：先生成唯一一份登记表，prompts / mask /
+    #: reference 共用（SC-06）。表外名字在**渲染之前**判 error 中止——
+    #: 与画面前审计、角色表校验同一条"不产出脏交付包"的纪律；也放在
+    #: ``apply_delivery_settings`` 之前，中止路径不留下已改的场景设置。
+    width, height = resolution_for(config.preset)
+    registry = _element_registry(plan)
+    prompt_text = render_prompt_sheet(plan, style=style,
+                                      resolution=(width, height),
+                                      project=project, registry=registry)
+    unknown = unknown_prompt_names(prompt_text, registry)
+    if unknown:
+        report.aborted = True
+        report.reason = ("导出中止：prompts.md 引用了元素登记表之外的名字："
+                         + "、".join(unknown))
+        log.error(report.reason)
+        return report
+
     report.warnings.extend(apply_delivery_settings(scene, config))
 
-    width, height = resolution_for(config.preset)
     ranges = _shot_ranges(plan, build_summary)
     original_range = (scene.frame_start, scene.frame_end)
 
@@ -258,17 +296,21 @@ def export_project(plan: Plan, *,
                               audit_pass_rate=audit_pass_rate,
                               knowledge_provenance=knowledge_provenance,
                               knowledge=knowledge,
-                              review_requests=review_requests)
+                              review_requests=review_requests,
+                              registry=registry)
     manifest_path = export_dir / "shots.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
                              encoding="utf-8")
     report.files.append(str(manifest_path))
 
+    #: v1.6 E1（FR-A2）：元素登记表单独落盘，与 shots.json / prompts.md 同源。
+    elements_path = export_dir / "elements.json"
+    elements_path.write_text(json.dumps(registry.to_dict(), ensure_ascii=False,
+                                        indent=2), encoding="utf-8")
+    report.files.append(str(elements_path))
+
     prompt_path = export_dir / "prompts.md"
-    prompt_path.write_text(render_prompt_sheet(plan, style=style,
-                                               resolution=(width, height),
-                                               project=project),
-                           encoding="utf-8")
+    prompt_path.write_text(prompt_text, encoding="utf-8")
     report.files.append(str(prompt_path))
 
     if config.export_camera_traj:

@@ -6,8 +6,9 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence
 
+from ..contracts.elements import ElementRegistry, shot_element_ids
 from ..contracts.plan import Plan
 from ..cinema.camera_motion import describe as describe_movement
 
@@ -19,6 +20,14 @@ SHOT_TYPE_LABELS: Dict[str, str] = {
 DEFAULT_STYLE = "写实电影质感，35mm，柔和自然光"
 
 STATIC_LABEL = "固定机位"
+
+#: 元素类型的中文标签（元素表头用，与登记表的 kind 闭集一一对应）。
+ELEMENT_KIND_LABELS: Dict[str, str] = {
+    "character": "角色", "prop": "道具", "environment": "环境",
+}
+
+#: 结构化引用行的前缀（FR-A4 对拍只读这两类稳定 token 行）。
+NAME_LINE_PREFIXES: tuple = ("**出场角色**：", "**元素**：")
 
 
 def movement_label(movement: str) -> str:
@@ -64,10 +73,54 @@ def compose_prompt(intent: str, shot_type: str, style: str,
     return "，".join(part for part in parts if part)
 
 
+def render_element_table(registry: ElementRegistry) -> str:
+    """FR-A4 的头部"元素表"：与 ``elements.json`` 同一套稳定 id / 名字 / 颜色 / 形状。"""
+    if not registry.elements:
+        return ""
+    lines = [
+        "## 元素表", "",
+        "| 元素 | 类型 | 名称 | 颜色 | 形状 | 首次出现 |",
+        "|---|---|---|---|---|---|",
+    ]
+    for element in sorted(registry.elements, key=lambda item: item.id):
+        kind = ELEMENT_KIND_LABELS.get(element.kind, element.kind)
+        lines.append(f"| `{element.id}` | {kind} | {element.label} "
+                     f"| {element.color_hex} | {element.shape or '—'} "
+                     f"| {element.first_shot or '—'} |")
+    return "\n".join(lines)
+
+
+def unknown_prompt_names(text: str, registry: ElementRegistry) -> List[str]:
+    """返回 prompts.md 里引用、但不在登记表中的名字（FR-A4 对拍）。
+
+    只读**结构化引用行**（``出场角色`` / ``元素``）——它们才是稳定 token；
+    自由文本的 Prompt 句子不做 NLP 推断。登记名 = 元素 id ∪ 显示名，命中即
+    合法；表外名字去重、按字典序返回（报错顺序稳定）。空表 = 全部命中。
+    """
+    registered = {element.id for element in registry.elements}
+    registered.update(element.label for element in registry.elements
+                      if element.label)
+    names = set()
+    for line in (text or "").splitlines():
+        for prefix in NAME_LINE_PREFIXES:
+            if not line.startswith(prefix):
+                continue
+            names.update(name.strip()
+                         for name in line[len(prefix):].split("、")
+                         if name.strip())
+    return sorted(name for name in names if name not in registered)
+
+
 def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
                         fps: int = 24, resolution: Sequence[int] = (1280, 720),
-                        project: str = "BlockDirector") -> str:
-    """生成 prompts.md 全文。"""
+                        project: str = "BlockDirector",
+                        registry: Optional[ElementRegistry] = None) -> str:
+    """生成 prompts.md 全文。
+
+    传 ``registry``（v1.6 E1 / FR-A4）：头部渲染"元素表"，逐镜补一行
+    "元素"（该镜的道具 + 环境件，按登记表显示名引用）。不传时与旧输出
+    **逐字节一致**（旧调用方不受影响）。
+    """
     width, height = (list(resolution) + [1280, 720])[:2]
     lines: List[str] = [f"# {project} — 分镜 Prompt 表", ""]
     if plan.scene_heading:
@@ -79,7 +132,10 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
         "下面的 Prompt 作为提示词，投给视频生成模型。",
         "",
     ]
+    if registry is not None and registry.elements:
+        lines += [render_element_table(registry), ""]
 
+    element_by_id = registry.by_id() if registry is not None else {}
     cursor = 1
     for shot in plan.shots:
         end = cursor + shot.duration_frames - 1
@@ -105,6 +161,11 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
         lines.append("")
         if shot.characters:
             lines.append(f"**出场角色**：{'、'.join(shot.characters)}")
+        if registry is not None:
+            in_frame = shot_element_ids(shot, registry)
+            if in_frame:
+                lines.append("**元素**：" + "、".join(
+                    element_by_id[item].label for item in in_frame))
         if shot.dialogue_ids:
             lines.append(f"**对白**：{'、'.join(shot.dialogue_ids)}")
         if shot.actions:

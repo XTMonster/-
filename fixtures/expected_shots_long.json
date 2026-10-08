@@ -52,6 +52,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -112,6 +113,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -171,6 +173,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -230,6 +233,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -289,6 +293,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -349,6 +354,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -408,6 +414,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -467,6 +474,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -527,6 +535,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -586,6 +595,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -645,6 +655,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -704,6 +715,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -764,6 +776,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -823,6 +836,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -882,6 +896,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -941,6 +956,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1000,6 +1016,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1060,6 +1077,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1119,6 +1137,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1178,6 +1197,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1238,6 +1258,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1297,6 +1318,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1356,6 +1378,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1416,6 +1439,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1475,6 +1499,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1535,6 +1560,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1594,6 +1620,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1653,6 +1680,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1713,6 +1741,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1772,6 +1801,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1831,6 +1861,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1891,6 +1922,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -1950,6 +1982,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2010,6 +2043,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2069,6 +2103,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2128,6 +2163,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2188,6 +2224,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2247,6 +2284,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2306,6 +2344,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2366,6 +2405,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2425,6 +2465,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2485,6 +2526,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2544,6 +2586,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2603,6 +2646,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2663,6 +2707,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2722,6 +2767,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2781,6 +2827,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2841,6 +2888,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2900,6 +2948,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -2960,6 +3009,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3019,6 +3069,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3078,6 +3129,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3138,6 +3190,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3197,6 +3250,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3256,6 +3310,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3315,6 +3370,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3374,6 +3430,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3434,6 +3491,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3493,6 +3551,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3552,6 +3611,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3612,6 +3672,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3671,6 +3732,7 @@
       "characters": [
         "char_001"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3730,6 +3792,7 @@
       "characters": [
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",
@@ -3790,6 +3853,7 @@
         "char_001",
         "char_002"
       ],
+      "elements_in_frame": [],
       "dialogue_ids": [],
       "action_types": [],
       "axis_note": "",

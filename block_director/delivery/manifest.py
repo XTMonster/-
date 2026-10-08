@@ -6,6 +6,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from ..contracts.elements import ElementRegistry, shot_element_ids
 from ..contracts.plan import Plan
 
 FPS = 24
@@ -32,6 +33,7 @@ def build_manifest(plan: Plan, *,
                    knowledge_provenance: Optional[Dict[str, Any]] = None,
                    knowledge: Optional[Dict[str, Any]] = None,
                    review_requests: Optional[Sequence[Dict[str, Any]]] = None,
+                   registry: Optional[ElementRegistry] = None,
                   ) -> Dict[str, Any]:
     """把分镜计划与构建结果拼成交付用清单。
 
@@ -96,6 +98,11 @@ def build_manifest(plan: Plan, *,
                 "status": str(result.get("axis_status", "")),
             },
             "characters": list(shot.characters),
+            #: v1.6 E1（FR-A2）：这一镜里的**道具 + 环境件**（角色仍走
+            #: ``characters``）。成员资格来自该镜计划内的引用（动作
+            #: ``params.prop`` 与拍点 ``target``），不做图像推断；元素身份
+            #: 的唯一真源是登记表——``registry=None``（旧调用方）时为空表。
+            "elements_in_frame": _elements_in_frame(shot, registry),
             "dialogue_ids": list(shot.dialogue_ids),
             "action_types": [str(a.get("action_type")) for a in shot.actions],
             "axis_note": shot.axis_note,
@@ -177,6 +184,13 @@ def _declarations(parsed) -> Dict[int, Any]:
         return {}
     return {index: item for index, item in
             enumerate(getattr(parsed, "declared_shots", []) or [])}
+
+
+def _elements_in_frame(shot, registry: Optional[ElementRegistry]) -> List[str]:
+    """§5 的 ``elements_in_frame``：道具 + 环境件，成员与顺序由登记表决定。"""
+    if registry is None:
+        return []
+    return list(shot_element_ids(shot, registry))
 
 
 #: 破例对拍的固定列（TDD §5.4 的命名；顺序即交付清单里的字段顺序）。
