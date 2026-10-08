@@ -31,6 +31,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 import traceback
@@ -299,12 +300,49 @@ def t_the_silhouette_really_differs() -> dict:
             "floor": int(total * 0.002), "ceiling": int(total * 0.30)}
 
 
-def t_the_shipped_torso_is_the_rounded_box() -> dict:
-    """**生产默认**必须真的换成了圆角方体（不是"加了个开关但还是圆柱"）。
+def _cylinder_profile(body) -> dict:
+    """独立量躯干网格：与 `test_cylinder_body.py::cylinder_profile` 同法。
 
-    判据（都不依赖硬编码顶点数）：生产建出来的躯干与**显式圆角方体**的
-    （顶点数、AABB）**逐位相同**，且与**显式圆柱**的顶点数**不同**——后者正是"换了形状"
-    这件事本身。外接盒三项必须仍等于 `(2r, 2r, h)`（⇒ bbox／构图常量不动）。
+    半径按 `hypot(x, y)` 逐顶点对 `BODY_RADIUS`、高度按 `|z|` 对
+    `BODY_HEIGHT / 2`（±1e-6），再验证上下两环各 32 个顶点且**等角距**
+    （相邻夹角 = τ/32）——顶点数撞对（64）但没有逐顶点形状校验的网格过不了这里。
+    缺环用有限哨兵 999.0 上报（`math.inf` 在探针里被 `check_assertions.py` 禁止）。
+    """
+    radius = character_factory.BODY_RADIUS
+    half_height = character_factory.BODY_HEIGHT / 2.0
+    rings = {-1: [], 1: []}
+    radial_error = 0.0
+    height_error = 0.0
+    for vertex in body.data.vertices:
+        x, y, z = vertex.co
+        radial_error = max(radial_error, abs(math.hypot(x, y) - radius))
+        height_error = max(height_error, abs(abs(z) - half_height))
+        rings[-1 if z < 0 else 1].append(math.atan2(y, x) % math.tau)
+    angle_error = 0.0
+    for angles in rings.values():
+        angles.sort()
+        if not angles:
+            angle_error = 999.0
+            continue
+        wrapped = angles[1:] + [angles[0] + math.tau]
+        angle_error = max(angle_error, max(
+            abs((right - left) - math.tau / 32.0)
+            for left, right in zip(angles, wrapped)))
+    counts = [len(rings[-1]), len(rings[1])]
+    return {
+        "ok": (counts == [32, 32] and radial_error <= 1e-6
+               and height_error <= 1e-6 and angle_error <= 1e-6),
+        "ring_counts": counts, "radial_error": radial_error,
+        "height_error": height_error, "angle_error": angle_error,
+    }
+
+
+def t_the_shipped_torso_is_the_v16_cylinder() -> dict:
+    """**生产默认**必须真的换成了 v1.6 的 32 边圆柱（不是"加了个开关但还是圆角方体"）。
+
+    判据（都不依赖硬编码顶点数）：生产建出来的躯干与**显式 32 边圆柱**的
+    （顶点数、AABB）**逐位相同**，且与**显式圆角方体**的顶点数**不同**——后者正是
+    v1.6 换形状这件事本身。外接盒三项必须仍等于 `(2r, 2r, h)`（⇒ bbox／构图常量不动）。
     """
     fresh_scene()
     create_character("char_ship", "Ship", "#C8C8D0")
@@ -320,11 +358,28 @@ def t_the_shipped_torso_is_the_rounded_box() -> dict:
     expected = [round(character_factory.BODY_RADIUS * 2, 4),
                 round(character_factory.BODY_RADIUS * 2, 4),
                 round(character_factory.BODY_HEIGHT, 4)]
-    ok = (shipped["vertices"] == rounded["vertices"]
-          and shipped["size"] == rounded["size"] == expected
-          and shipped["vertices"] != cylinder["vertices"])
+    ok = (shipped["vertices"] == cylinder["vertices"]
+          and shipped["vertices"] != rounded["vertices"]
+          and shipped["size"] == rounded["size"] == cylinder["size"] == expected)
     return {"ok": ok, "shipped": shipped, "rounded_ref": rounded,
             "cylinder_ref": cylinder, "expected": expected}
+
+
+def t_the_shipped_torso_geometry_is_the_v16_cylinder() -> dict:
+    """**生产默认**躯干的独立几何校验：真的两环 × 32 个顶点、半径与高度都等于工厂常量。
+
+    只看**生产建出来的**网格（不走显式圆柱），量逐顶点半径 / 上下两环 / 高度——
+    这样即使顶点数撞上 64、AABB 也一致，只要不是指定的圆柱就会红
+    （`test_cylinder_body.py` 的"隐藏损伤"用例正是这个反例）。
+    """
+    fresh_scene()
+    create_character("char_ship", "Ship", "#C8C8D0")
+    body = bpy.data.objects.get("BD_Char_Ship_Body")
+    if body is None:
+        raise AssertionError("找不到躯体对象 BD_Char_Ship_Body")
+    profile = _cylinder_profile(body)
+    return {"ok": profile["ok"], "profile": profile,
+            "bounds": _body_bounds("Ship")}
 
 
 def main() -> int:
@@ -337,7 +392,10 @@ def main() -> int:
     check("d1b_torso_footprint_unchanged", t_the_torso_footprint_does_not_change)
     check("d1b_anchor_contract_unchanged", t_the_anchor_contract_survives_the_swap)
     check("d1b_silhouette_differs", t_the_silhouette_really_differs)
-    check("d1b_shipped_torso_is_the_rounded_box", t_the_shipped_torso_is_the_rounded_box)
+    check("d1b_shipped_torso_is_the_v16_cylinder",
+          t_the_shipped_torso_is_the_v16_cylinder)
+    check("d1b_shipped_torso_geometry_is_the_v16_cylinder",
+          t_the_shipped_torso_geometry_is_the_v16_cylinder)
 
     if save_dir:
         for label in (f"{name}_{shot_type}_{side}"
