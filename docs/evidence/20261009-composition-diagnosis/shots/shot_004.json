@@ -1,0 +1,313 @@
+{
+  "shot_id": "shot_004",
+  "shot_type": "CU",
+  "recorded_score": 30.4,
+  "recorded_findings": [
+    {
+      "code": "E_AXIS_001",
+      "rule": "R001",
+      "severity": "error",
+      "target": "shot_004",
+      "message": "机位在**当前**两人连线的另一侧（连线 (-0.75, 0.0)→(3.950000047683716, 0.0)，该待在第 -1 侧、实际在第 +1 侧）：这是机位自己摆错，把相机移回该侧即可",
+      "suggestion": "把相机移到当前连线的另一侧，或插入中性机位过渡"
+    },
+    {
+      "code": "E_CAM_001",
+      "rule": "COMPOSITION",
+      "severity": "error",
+      "target": "shot_004",
+      "message": "构图评分 30.4（首/中/尾最小值）低于阈值 70",
+      "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别；主体没有明确朝向，视线空间不做要求"
+    }
+  ],
+  "audit_count": 1,
+  "threshold": 70.0,
+  "replayed_score": 30.4,
+  "evidence": {
+    "subject_xy": [
+      3.95,
+      0.0
+    ],
+    "subject_z": 0.0,
+    "camera_xyz": [
+      3.0291,
+      4.3323,
+      1.2779
+    ],
+    "lens": 85.0,
+    "target_xyz": [
+      3.95,
+      0.0,
+      1.4279
+    ],
+    "components": {
+      "headroom": 0.0,
+      "lead_room": 0.75,
+      "rule_of_thirds": 0.0,
+      "balance": 1.0,
+      "occlusion": 0.0,
+      "framing": 0.035
+    },
+    "component_items": {
+      "headroom": {
+        "score": 0.0,
+        "weight": 0.15,
+        "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+      },
+      "lead_room": {
+        "score": 0.75,
+        "weight": 0.2,
+        "suggestion": "主体没有明确朝向，视线空间不做要求"
+      },
+      "rule_of_thirds": {
+        "score": 0.0,
+        "weight": 0.15,
+        "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+      },
+      "balance": {
+        "score": 1.0,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "occlusion": {
+        "score": 0.0,
+        "weight": 0.25,
+        "suggestion": "主体被前景遮挡：米迦尔；建议移开机位或调整遮挡物"
+      },
+      "framing": {
+        "score": 0.035,
+        "weight": 0.1,
+        "suggestion": "主体部分出画；建议收紧景别或重新构图"
+      }
+    },
+    "boxes": [
+      {
+        "frame": "first",
+        "boxes": [
+          {
+            "name": "米迦尔",
+            "world_min": [
+              3.7018,
+              -1.4389,
+              -0.0091
+            ],
+            "world_max": [
+              4.6091,
+              0.1198,
+              0.8033
+            ],
+            "screen": {
+              "left": 0.143,
+              "right": 0.722,
+              "top": 0.023,
+              "bottom": -0.1648,
+              "center_x": 0.4325,
+              "center_y": -0.0709,
+              "facing": 0.0,
+              "inside_ratio": 0.1227,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      },
+      {
+        "frame": "worst",
+        "boxes": [
+          {
+            "name": "米迦尔",
+            "world_min": [
+              3.7018,
+              -1.4389,
+              -0.0091
+            ],
+            "world_max": [
+              4.6091,
+              0.1198,
+              0.8033
+            ],
+            "screen": {
+              "left": 0.143,
+              "right": 0.722,
+              "top": 0.023,
+              "bottom": -0.1648,
+              "center_x": 0.4325,
+              "center_y": -0.0709,
+              "facing": 0.0,
+              "inside_ratio": 0.1227,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      }
+    ],
+    "per_frame_scores": [
+      {
+        "frame": 313,
+        "score": 30.4,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 0.0,
+            "weight": 0.15,
+            "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.0,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：米迦尔；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.035,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "头顶留白过多、主体偏下；建议抬高机位或收紧景别",
+          "主体没有明确朝向，视线空间不做要求",
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体被前景遮挡：米迦尔；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 372,
+        "score": 30.4,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 0.0,
+            "weight": 0.15,
+            "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.0,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：米迦尔；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.035,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "头顶留白过多、主体偏下；建议抬高机位或收紧景别",
+          "主体没有明确朝向，视线空间不做要求",
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体被前景遮挡：米迦尔；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 432,
+        "score": 30.4,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 0.0,
+            "weight": 0.15,
+            "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.0,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：米迦尔；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.035,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "头顶留白过多、主体偏下；建议抬高机位或收紧景别",
+          "主体没有明确朝向，视线空间不做要求",
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体被前景遮挡：米迦尔；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      }
+    ],
+    "solver_position": [
+      3.0291,
+      4.3323,
+      1.2779
+    ],
+    "solver_distance": 4.4291,
+    "solver_clamped": false,
+    "solver_warnings": [],
+    "actual_distance": 4.6098,
+    "required_distance": 4.4291,
+    "frame_width": 1.9524,
+    "extent_m": 12.0,
+    "declared_target_out_of_extent": false,
+    "declared_movements": []
+  },
+  "target_gap_m": 0.0,
+  "attribution": {
+    "shot_id": "shot_004",
+    "class": "solver_no_solution",
+    "fix_card": "卡 D-12（CU/ECU 像素可测约束反解 + readback_shot_size()，不满足时自动调距离档；B4 的 reframe 菜单）——不动 PASS_SCORE",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": 30.4,
+      "threshold": 70.0,
+      "components": {
+        "headroom": 0.0,
+        "lead_room": 0.75,
+        "rule_of_thirds": 0.0,
+        "balance": 1.0,
+        "occlusion": 0.0,
+        "framing": 0.035
+      }
+    }
+  }
+}

@@ -1,0 +1,310 @@
+{
+  "shot_id": "shot_003",
+  "shot_type": "MS",
+  "recorded_score": 60.3,
+  "recorded_findings": [
+    {
+      "code": "E_CAM_001",
+      "rule": "COMPOSITION",
+      "severity": "error",
+      "target": "shot_003",
+      "message": "构图评分 60.3（首/中/尾最小值）低于阈值 70",
+      "suggestion": "主体没有明确朝向，视线空间不做要求；主体偏离三分线交点；可微调构图让主体落到交点附近"
+    },
+    {
+      "code": "E_AXIS_001",
+      "rule": "R001",
+      "severity": "warning",
+      "target": "shot_003",
+      "message": "机位落在轴线上（中性镜头）：画面没有明确的左右信息，可以作为跨轴桥梁，但连续使用会失去空间感。",
+      "suggestion": "需要明确左右关系时把机位移离轴线；中性机位适合作为跨轴过渡，不宜连续使用"
+    }
+  ],
+  "audit_count": 4,
+  "threshold": 70.0,
+  "replayed_score": 60.3,
+  "evidence": {
+    "subject_xy": [
+      -0.75,
+      0.0
+    ],
+    "subject_z": 0.0,
+    "camera_xyz": [
+      3.8818,
+      0.0,
+      0.9497
+    ],
+    "lens": 50.0,
+    "target_xyz": [
+      -0.75,
+      0.0,
+      1.0997
+    ],
+    "components": {
+      "headroom": 1.0,
+      "lead_room": 0.75,
+      "rule_of_thirds": 0.438,
+      "balance": 1.0,
+      "occlusion": 0.0,
+      "framing": 0.875
+    },
+    "component_items": {
+      "headroom": {
+        "score": 1.0,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "lead_room": {
+        "score": 0.75,
+        "weight": 0.2,
+        "suggestion": "主体没有明确朝向，视线空间不做要求"
+      },
+      "rule_of_thirds": {
+        "score": 0.438,
+        "weight": 0.15,
+        "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+      },
+      "balance": {
+        "score": 1.0,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "occlusion": {
+        "score": 0.0,
+        "weight": 0.25,
+        "suggestion": "主体被前景遮挡：伊恩；建议移开机位或调整遮挡物"
+      },
+      "framing": {
+        "score": 0.875,
+        "weight": 0.1,
+        "suggestion": "主体部分出画；建议收紧景别或重新构图"
+      }
+    },
+    "boxes": [
+      {
+        "frame": "first",
+        "boxes": [
+          {
+            "name": "伊恩",
+            "world_min": [
+              -1.0645,
+              -0.3145,
+              0.0
+            ],
+            "world_max": [
+              -0.4355,
+              0.3145,
+              1.7
+            ],
+            "screen": {
+              "left": 0.3981,
+              "right": 0.6019,
+              "top": 0.8472,
+              "bottom": -0.1208,
+              "center_x": 0.5,
+              "center_y": 0.3632,
+              "facing": 0.0,
+              "inside_ratio": 0.8753,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      },
+      {
+        "frame": "worst",
+        "boxes": [
+          {
+            "name": "伊恩",
+            "world_min": [
+              -1.0645,
+              -0.3145,
+              0.0
+            ],
+            "world_max": [
+              -0.4355,
+              0.3145,
+              1.7
+            ],
+            "screen": {
+              "left": 0.3981,
+              "right": 0.6019,
+              "top": 0.8472,
+              "bottom": -0.1208,
+              "center_x": 0.5,
+              "center_y": 0.3632,
+              "facing": 0.0,
+              "inside_ratio": 0.8753,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      }
+    ],
+    "per_frame_scores": [
+      {
+        "frame": 217,
+        "score": 60.3,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.438,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：伊恩；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.875,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体没有明确朝向，视线空间不做要求",
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体被前景遮挡：伊恩；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 264,
+        "score": 60.3,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.438,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：伊恩；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.875,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体没有明确朝向，视线空间不做要求",
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体被前景遮挡：伊恩；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 312,
+        "score": 60.3,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.438,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：伊恩；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.875,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体没有明确朝向，视线空间不做要求",
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体被前景遮挡：伊恩；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      }
+    ],
+    "solver_position": [
+      3.8818,
+      0.0,
+      0.9497
+    ],
+    "solver_distance": 4.6318,
+    "solver_clamped": false,
+    "solver_warnings": [],
+    "actual_distance": 4.7281,
+    "required_distance": 4.6318,
+    "frame_width": 3.4042,
+    "extent_m": 12.0,
+    "declared_target_out_of_extent": false,
+    "declared_movements": []
+  },
+  "target_gap_m": 0.0,
+  "attribution": {
+    "shot_id": "shot_003",
+    "class": "solver_no_solution",
+    "fix_card": "卡 D-12（CU/ECU 像素可测约束反解 + readback_shot_size()，不满足时自动调距离档；B4 的 reframe 菜单）——不动 PASS_SCORE",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": 60.3,
+      "threshold": 70.0,
+      "components": {
+        "headroom": 1.0,
+        "lead_room": 0.75,
+        "rule_of_thirds": 0.438,
+        "balance": 1.0,
+        "occlusion": 0.0,
+        "framing": 0.875
+      }
+    }
+  }
+}

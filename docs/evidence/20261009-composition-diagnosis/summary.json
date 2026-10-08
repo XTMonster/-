@@ -1,0 +1,29 @@
+{
+  "run_dir": "E:\\白模预演codex\\docs\\evidence\\20261008-v10-nodes1-4-run",
+  "plan_source": "emit_plan",
+  "tool_root": "C:\\Users\\小皮\\AppData\\Local\\Temp\\bd4892dc9-pristine\\src",
+  "code_dir": null,
+  "extent_m": 12.0,
+  "failing_shots": 3,
+  "attributed": 3,
+  "unattributed": [],
+  "replay_mismatch": [],
+  "distribution": {
+    "camera_misplaced": [
+      "shot_002"
+    ],
+    "solver_no_solution": [
+      "shot_003",
+      "shot_004"
+    ],
+    "script_scale_exceeds_extent": []
+  },
+  "fix_cards": {
+    "camera_misplaced": "卡 B4（FR-C5：审核/修复回路接入 + reframe 菜单，含机位/锚点回读；D-12/D-13 的同尺回读）——把机位按该镜首帧实际站位重摆，不动 PASS_SCORE",
+    "solver_no_solution": "卡 D-12（CU/ECU 像素可测约束反解 + readback_shot_size()，不满足时自动调距离档；B4 的 reframe 菜单）——不动 PASS_SCORE",
+    "script_scale_exceeds_extent": "场景范围（config.scene.extent_m 与卡 D-10/FR-A1 的环境边界）——走位目标越界属剧本尺度问题；是否扩大 extent 由用户裁决，不动 PASS_SCORE"
+  },
+  "missing": [
+    "缺少 project.bdproj（找过：项目根与 runs/ 下均无）：无法与落盘工程对拍；诊断改由 audit_log + llm_trace 零 LLM 重建，不影响归因。"
+  ]
+}
