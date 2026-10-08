@@ -9,6 +9,7 @@ from block_director.layer5_orchestrator.context_budget import (
 )
 from block_director.layer5_orchestrator.retry_ladder import (
     DEGRADE,
+    LADDER_STAGES,
     RETRY_SAME,
     RETRY_SLIM,
     STAGE_OF,
@@ -74,6 +75,16 @@ def test_is_timeout_recognises_transport_wording():
 
 def test_stage_names_cover_every_decision():
     assert set(STAGE_OF) == {RETRY_SAME, RETRY_SLIM, DEGRADE}
+
+
+def test_ladder_stages_pin_the_audit_event_closed_set():
+    """TDD §3.6 的 ``stage`` 闭集必须与 ``STAGE_OF`` 的像**逐字一致**。
+
+    审计事件对拍（``missing_event_fields`` 只查键、不查取值）靠的是这条
+    不变量：驱动写出的 stage 只能来自这两个表共同的那三个词，不能悄悄
+    多出一个没人登记过的词。
+    """
+    assert sorted(LADDER_STAGES) == sorted(STAGE_OF.values())
 
 
 KNOWLEDGE = ("镜头声明：shot_004 CU 米迦尔\n"

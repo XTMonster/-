@@ -14,7 +14,7 @@ import queue
 import threading
 import time
 import traceback
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Dict, List, Optional
 
 from ..contracts.enums import Purpose, ToolChoice
@@ -55,11 +55,21 @@ from .repair import REPAIR_FOLLOWUP_NUDGE, build_repair_payload
 from .budget import Budget, BudgetLimits
 from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
-from .context_budget import budget_report, trim_messages
+from .context_budget import budget_report, slim_messages, trim_messages
 from .editor import (build_editor_payload, extract_draft, merge_draft,
                      rank_drafts)
 from .editor import EDITOR_TOOL_NAME, EMIT_SHOT_DRAFT_PARAMETERS
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
+from .retry_ladder import (
+    DEGRADE,
+    RETRY_SAME,
+    RETRY_SLIM,
+    STAGE_OF,
+    CallOutcome,
+    RetryPolicy,
+    is_timeout,
+    next_step,
+)
 from .loop_detector import LoopDetector
 from .human_gate import GateDecision, GateRequest, HumanGate
 from .review import ReviewVerdict, build_review_payload, parse_review
@@ -310,6 +320,15 @@ class PrevisDriver:
         self._call_started = 0.0
         self._pending_request_id = ""
         self._pending_payload: Any = None      # §11.3：trace 要落完整 prompt
+        #: v1.6 F1（D-02）：超时重试阶梯。一个 scope = 一次"这个调用"
+        #: （repair/react 每镜一个、plan 每次请求一个）；历史只在同一 scope 内
+        #: 累计，换 scope 即清零（TDD §4.5）。纯决策，不发网络请求。
+        self._ladder_scope = ""
+        self._ladder_history: List[CallOutcome] = []
+        #: 当前在途的那次调用是不是瘦身包（下一次失败记账用）。
+        self._ladder_inflight_slim = False
+        #: plan 的下一次请求是否用瘦身包（阶梯决定，跨 plan 请求传递）。
+        self._plan_next_slim = False
         self._plan_problem = ""
         self._call_purpose = "plan"
         self._shot_queue: List[str] = []
@@ -684,10 +703,19 @@ class PrevisDriver:
             self.audit.log_llm(purpose, None, duration,
                                self._pending_request_id, error=str(payload),
                                payload=self._pending_payload)
-            self._recover_from_llm_error(self._call_purpose, str(payload))
+            self._handle_llm_error(str(payload), duration)
             return
 
         reply: ChatReply = payload
+        #: v1.6 F1：一次调用**成功**就结束它的重试阶梯——历史只描述"这一个调用"
+        #: 的失败。不清零的话，同一镜先失败一次、成功、下一次修复又失败一次，
+        #: 就会被当成"第二次失败"直接降级（违背"同一提示最多 2 次"）。
+        self._ladder_history = []
+        self._ladder_inflight_slim = False
+        if self._call_purpose == "plan":
+            #: 收到回复 ⇒ 这次 plan 请求不再处于超时阶梯里：下一段/下次请求
+            #: 恢复完整提示（瘦身只属于"上一个请求超时"的那一步）。
+            self._plan_next_slim = False
         self.budget.record_llm(reply.usage)
         self.audit.log_llm(purpose, reply, duration, self._pending_request_id,
                            payload=self._pending_payload)
@@ -933,6 +961,107 @@ class PrevisDriver:
             self.audit.log("plan_gaze_pinned",
                            f"已按剧本理解补齐 {pinned} 个镜头的注视关系",
                            shots=len(self.plan.shots) if self.plan else 0)
+
+    # -------------------------------------------------- v1.6 F1 超时重试阶梯
+    @staticmethod
+    def _retry_policy() -> RetryPolicy:
+        """阶梯策略（卡 F1 钉死）：同一份提示最多 2 次、超时改发瘦身包。"""
+        return RetryPolicy(max_attempts=2, slim_on_timeout=True, degrade_after=True)
+
+    def _retry_scope_for(self, purpose: str) -> Optional[str]:
+        """这一阶段的阶梯 scope；不在阶梯内的阶段返回 ``None``。"""
+        if purpose == "plan":
+            return "plan"
+        if purpose in ("repair", "react"):
+            shot_id = self._react_shot if purpose == "react" else self._current_shot_id
+            return f"{purpose}:{shot_id or ''}"
+        return None
+
+    def _reset_retry_ladder(self, scope: str, *, slim: bool = False) -> None:
+        """开始一个新的阶梯 scope（换镜 / 新的 plan 请求时调用）。"""
+        self._ladder_scope = scope
+        self._ladder_history = []
+        self._ladder_inflight_slim = bool(slim)
+
+    def _log_retry_step(self, decision: str, problem: str, elapsed_s: float,
+                        shot_id: str) -> None:
+        """每走一步阶梯都记一条 ``retry_ladder`` 事件（TDD §3.6 三键齐备）。"""
+        self.audit.log(
+            "retry_ladder",
+            f"{self._call_purpose} 传输错误（{problem[:160]}）→ {decision}",
+            level="warning",
+            stage=STAGE_OF.get(decision, decision),
+            shot_id=shot_id,
+            elapsed_s=round(float(elapsed_s), 3),
+        )
+
+    def _handle_llm_error(self, problem: str, elapsed_s: float) -> None:
+        """一次传输错误的阶梯化落点（v1.6 F1，TDD §4.5）。
+
+        只在 repair / react / plan 三处接阶梯：同一 scope 内先问纯状态机
+        ``next_step``，再按决定走：
+
+        * ``retry_same``：同一份载荷再发一次（新 request_id）；
+        * ``retry_slim``：消息过 ``slim_messages`` 后再发（只去 RAG 三栏）；
+        * ``degrade``：落回既有按阶段的恢复路径，且 repair 不会再赌第三次。
+
+        其余阶段（understand / editor / review）原样走 ``_recover_from_llm_error``。
+        """
+        purpose = self._call_purpose
+        scope = self._retry_scope_for(purpose)
+        if scope is None:
+            self._recover_from_llm_error(purpose, problem)
+            return
+        if self._ladder_scope != scope:
+            self._reset_retry_ladder(scope)
+        outcome = CallOutcome(ok=False, timed_out=is_timeout(problem),
+                              slim=self._ladder_inflight_slim)
+        self._ladder_history.append(outcome)
+        decision = next_step(self._ladder_history, self._retry_policy())
+        shot_id = (self._react_shot if purpose == "react" else
+                   self._current_shot_id if purpose == "repair" else "")
+        self._log_retry_step(decision, problem, elapsed_s, shot_id)
+        if decision in (RETRY_SAME, RETRY_SLIM):
+            self._retry_or_charge(purpose, decision)
+            return
+        # DEGRADE：同一份提示的命已用完，落回既有按阶段的恢复。
+        if purpose == "repair":
+            #: 既有恢复路径只回 CHECKING，复审不过还会发起**第三次**修复调用——
+            #: 卡 F1 禁止。把这一镜的修复额度直接钉到上限，让 CHECKING 走
+            #: "shot_degraded → 前进（或 B5）"的老路，不赌第三次。
+            self._repair_attempts = max(self._repair_attempts,
+                                        self.limits.max_repairs_per_shot)
+            self.audit.log(
+                "repair_failed",
+                f"{shot_id} 修复调用连续失败（重试阶梯降级）：{problem}",
+                level="warning", shot=shot_id)
+            self._transition(DriverState.CHECKING)
+            return
+        self._recover_from_llm_error(purpose, problem)
+
+    def _retry_or_charge(self, purpose: str, decision: str) -> None:
+        """把 ``retry_same`` / ``retry_slim`` 变成一次真正的再调用。
+
+        plan 的"重试"走既有 ``plan_attempts`` 预算（卡 F1 的 reconcile）：记一次
+        计划失败、由 ``_step_planning`` 决定是否再发起——**绝不**给计划加出
+        预算之外的调用，也因此超时后的 plan 永远不再收到"原样的完整提示"。
+        repair / react 直接重发同一份载荷（新 request_id；``retry_slim`` 只把
+        消息过 ``slim_messages``，该镜声明、审计发现与工具结果一律保留）。
+        """
+        slim = (decision == RETRY_SLIM
+                or (decision == RETRY_SAME and self._ladder_inflight_slim))
+        if purpose == "plan":
+            self._plan_failures += 1
+            self._plan_next_slim = bool(slim)
+            self._transition(DriverState.PLANNING)
+            return
+        payload = self._pending_payload
+        retry = replace(payload, request_id=new_request_id())
+        if slim:
+            retry.messages, _removed = slim_messages(payload.messages)
+        self._ladder_inflight_slim = bool(slim)
+        self._start_llm_call(purpose, retry,
+                             note=f"重试 {purpose}（阶梯：{decision}）")
 
     def _recover_from_llm_error(self, purpose: str, problem: str) -> None:
         """一次 LLM 调用失败之后的落点——**按阶段区分**。
@@ -2040,6 +2169,12 @@ class PrevisDriver:
             self.audit.log("plan_payload_failed", str(exc), level="error")
             self._fail(str(exc))
             return
+        #: v1.6 F1：上一次 plan 请求超时 ⇒ 这次用瘦身包（只去 RAG 三栏）。
+        #: 收到回复后 `_step_calling_llm` 会把它复位，分块/重试都不带脏状态。
+        if self._plan_next_slim:
+            payload.messages, _removed = slim_messages(payload.messages)
+        #: 阶梯历史按 plan 请求切 scope（TDD §4.5 "per plan request"）。
+        self._reset_retry_ladder("plan", slim=bool(self._plan_next_slim))
         self._start_llm_call("plan", payload,
                              note=(f"请求分镜计划（第 {self._plan_attempts} 次尝试）"
                                    + (f"；第 {chunk['index'] + 1}/{len(chunks)} 段"
