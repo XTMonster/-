@@ -1628,7 +1628,8 @@ class PrevisDriver:
         characters, anchors = self._draft_context(shot_id)
         try:
             draft = extract_draft(reply, shot_id, characters=characters,
-                                  anchors=anchors)
+                                  anchors=anchors,
+                                  roster=self._cast_roster())
         except ValueError as exc:
             # 单镜草案失败不拖垮整场：记进 history 与警告，这一镜沿用计划内容，
             # 后面还有 B3/B4 兜住真正的执行问题。
@@ -2880,7 +2881,8 @@ class PrevisDriver:
                         characters, anchors = self._draft_context(shot_id)
                         draft = extract_draft(
                             ChatReply(tool_calls=[call]), shot_id,
-                            characters=characters, anchors=anchors)
+                            characters=characters, anchors=anchors,
+                            roster=self._cast_roster())
                     except ValueError as exc:
                         errors.append(str(exc))
                     else:

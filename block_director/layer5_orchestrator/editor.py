@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
-from ..contracts.enums import MOVEMENT_TYPES, VFX_TYPES, Purpose, ToolChoice
+from ..contracts.enums import MOVEMENT_TYPES, VFX_TYPES, ErrorCode, Purpose, ToolChoice
 from ..contracts.beats import (
     BEAT_VERBS,
     COMPOSITION_RULES,
@@ -34,7 +34,8 @@ from ..contracts.messages import (
     MessageRole,
     new_request_id,
 )
-from ..contracts.plan import Plan, ShotPlan
+from ..contracts.plan import Plan, ShotPlan, unknown_cast_members
+from ..contracts.errors import user_message
 from ..contracts.rhythm import CURVE_VALUES
 from ..contracts.tools import SHOT_DRAFT_TOOL
 from ..cinema.framing import CAMERA_SIDES
@@ -506,13 +507,21 @@ def find_draft_call(reply: ChatReply):
 
 def extract_draft(reply: ChatReply, shot_id: str, *,
                   characters: Sequence[str] = (),
-                  anchors: Optional[Sequence[str]] = None) -> ShotDraft:
+                  anchors: Optional[Sequence[str]] = None,
+                  roster: Optional[Sequence[str]] = None) -> ShotDraft:
     """解析草案；失败抛 ``ValueError``（由驱动器决定跳过还是重试）。
 
     ``characters`` / ``anchors`` 是**可选**的上下文（这一镜的在场角色与本场
     锚点名）：给了就顺带校拍点的 ``subject``/``target`` 引用；不给就**跳过成员
     检查**（与 ``contracts/beats.validate_beats`` 的"未知 vs 空"语义一致），
     所以旧调用点一行不改、行为不变。
+
+    ``roster`` 是**全场角色表**（角色名 ＋ 已分配的 ``char_NNN``）：给了就核
+    ``draft.characters ⊆ roster``——草案可以按剧情给这一镜换人在场，但不许
+    写角色表外的名字。v1.6 G2 真跑（GLM，run a89fa37ebdca）里 B1 幻觉出
+    剧本中不存在的角色名，一路活到导出闸才被 A2 拦停；解析期拦下才是
+    "这一镜沿用计划内容"的既有纪律。不给（或给空表）= 没有角色表可查，
+    跳过（与计划入口 `_accept_plan_chunk` 的 `if roster:` 同一语义）。
     """
     call = find_draft_call(reply)
     if call is None:
@@ -529,6 +538,13 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
     if draft.shot_id != shot_id:
         raise ValueError(f"草案的 shot_id（{draft.shot_id}）与请求的镜头"
                          f"（{shot_id}）不一致")
+    if roster:
+        bad_cast = unknown_cast_members(draft.characters or [], roster)
+        if bad_cast:
+            raise ValueError(
+                user_message(ErrorCode.CAST_001,
+                             ids=", ".join(bad_cast),
+                             roster=", ".join(str(r) for r in roster)))
     #: **逐动作**核参数键（schema 只能挡"任何动作都不认识的键"，挡不住
     #: "这个动作不认识的键"）。在这里失败 → 驱动器记 `draft_invalid` 并重试，
     #: 而不是让它在构建期炸成 `E_MOTION_001` 把整轮打成 ERROR。

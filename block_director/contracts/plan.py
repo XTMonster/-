@@ -35,20 +35,28 @@ def validate_shot_id(value: object, *, where: str = "shot_id") -> str:
     return text
 
 
+def unknown_cast_members(ids: Sequence[str], roster: Sequence[str]) -> List[str]:
+    """返回不在角色表中的 id（成员级；v1.6 A2 的草案入口也用它）。
+
+    ``roster`` 同时包含角色名与已分配的内部 id（如 ``char_001``）。
+    纯函数；不抛出异常。``roster`` 为空时**什么都拒绝**——调用方应像
+    ``_accept_plan_chunk`` 那样先判 ``if roster:``（空表 = 没有角色表可查，
+    语义是"未知"，不是"全不合法"）。
+    """
+    allowed = set(str(item) for item in (roster or ()) if item is not None)
+    return sorted({str(cid) for cid in (ids or ()) if str(cid) not in allowed})
+
+
 def unknown_cast_ids(plan: "Plan", roster: Sequence[str]) -> List[str]:
     """返回计划里出现、但不在角色表中的 id（v1.6 A2 / D-11）。
 
-    ``roster`` 同时包含角色名与已分配的内部 id（如 ``char_001``）。
-    纯函数；不抛出异常。
+    判据与 :func:`unknown_cast_members` 同源——计划入口与草案入口核的是
+    同一件事，不许各抄一份。
     """
-    allowed = set(str(item) for item in (roster or ()) if item is not None)
-    bad: set = set()
+    ids: List[str] = []
     for shot in (plan.shots or ()):
-        for character_id in (shot.characters or ()):
-            cid = str(character_id)
-            if cid not in allowed:
-                bad.add(cid)
-    return sorted(bad)
+        ids.extend(shot.characters or ())
+    return unknown_cast_members(ids, roster)
 
 
 @dataclass
