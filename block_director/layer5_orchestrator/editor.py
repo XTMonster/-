@@ -47,6 +47,7 @@ from ..motion.model import (
     action_param_domains,
 )
 from .dialogue_budget import shot_dialogue_budget
+from .occupancy import layer_occupancy, render_occupancy_table
 from .react import render_shot_memory, shot_memory
 from .scene_contract import shot_constraint_query
 
@@ -266,6 +267,9 @@ EDITOR_SYSTEM_PROMPT = """\
 {movement_units}
 - 角色移动必须给出目标位置与起止帧，且同一角色的动作不可时间重叠；
 {dialogue_budget}
+- 本镜各动作层已被占用的帧区间（v1.6 D-16）。新动作**避开同一层**的这些区间，
+  否则构建期会被串行后移、打乱"蓄-发-收"的节奏：
+{occupancy_table}
 - **动作参数只能用它自己那一行的键**（下表就是唯一真源，由引擎的参数表生成）：
   写别的键、或用同义词（`toward`／`degrees`／`base_z` 之类），**整条草案会被退回**，
   这一镜就只剩计划里的内容了。实测代价（2026-10-03 的 64 镜真跑）：**62/64 条草案
@@ -449,6 +453,9 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                    .replace("{movement_units}", render_movement_units())
                    .replace("{dialogue_budget}",
                             shot_dialogue_budget(shot).render())
+                   .replace("{occupancy_table}",
+                            render_occupancy_table(layer_occupancy(shot))
+                            or "（本镜尚未排任何动作）")
                    .replace("{knowledge}", knowledge or "（本次未启用知识库）")
                    .replace("{scene_text}", scene_text or "（无）"))
     return ChatPayload(
