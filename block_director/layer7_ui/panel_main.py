@@ -68,6 +68,8 @@ class BLOCKDIRECTOR_OT_export_delivery(Operator):
         report = export_project(plan, build_summary=build_summary,
                                 out_dir=Path(bpy.path.abspath(out_dir)),
                                 config=config.delivery,
+                                brief=(driver.brief
+                                       if driver is not None else None),
                                 llm_calls=int(getattr(driver, "_llm_calls", 0) or 0)
                                 if driver is not None else 0,
                                 retrieval_calls=int(getattr(

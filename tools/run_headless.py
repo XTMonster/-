@@ -35,10 +35,14 @@ def _crowd_from_script(parsed, crowd_config):
 def _export_report(plan_obj, summary, config, out_dir, crowd, parsed):
     """§15 的一条命令导出（完整包或按镜头过滤后的子集共用同一段）。"""
     from block_director.layer8_delivery import export_project
+    from block_director.layer5_orchestrator.headless_runner import (
+        brief_from_summary,
+    )
 
     return export_project(
         plan_obj, build_summary=summary.get("build"), out_dir=out_dir,
         config=config.delivery,
+        brief=brief_from_summary(summary),
         compliance=summary.get("compliance"),
         llm_calls=int(summary.get("llm_calls") or 0),
         #: §3.3 的契约字段：`shots.json.retrieval_calls` 必须是**这一次运行**

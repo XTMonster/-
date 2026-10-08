@@ -155,6 +155,7 @@ def export_project(plan: Plan, *,
                    knowledge: Optional[Dict[str, Any]] = None,
                    roster: Optional[Sequence[str]] = None,
                    review_requests: Optional[Sequence[Dict[str, Any]]] = None,
+                   brief=None,
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -287,6 +288,15 @@ def export_project(plan: Plan, *,
         except ConcatUnavailable as exc:
             report.warnings.append(f"全片拼接跳过（{exc}）")
 
+    #: v1.6 D3（FR-B2）：shots.json 的每镜 ``rhythm.tension`` 只来自 brief 的
+    #: 节奏弧。brief 两种形状都收：契约对象取 ``rhythm_arc`` 属性，普通字典
+    #: （SDL/replay 通路）取 ``rhythm_arc`` 键；没有 brief 就不传、不猜。
+    rhythm_arc = None
+    if isinstance(brief, dict):
+        rhythm_arc = brief.get("rhythm_arc")
+    elif brief is not None:
+        rhythm_arc = getattr(brief, "rhythm_arc", None)
+
     manifest = build_manifest(plan, build_summary=build_summary,
                               resolution=(width, height), style=style,
                               project=project, llm_calls=llm_calls,
@@ -298,7 +308,8 @@ def export_project(plan: Plan, *,
                               knowledge_provenance=knowledge_provenance,
                               knowledge=knowledge,
                               review_requests=review_requests,
-                              registry=registry)
+                              registry=registry,
+                              rhythm_arc=rhythm_arc)
     manifest_path = export_dir / "shots.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
                              encoding="utf-8")

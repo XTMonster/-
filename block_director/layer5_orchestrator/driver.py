@@ -64,6 +64,7 @@ from .editor import (build_editor_payload, extract_draft, merge_draft,
                      rank_drafts)
 from .editor import EDITOR_TOOL_NAME, EMIT_SHOT_DRAFT_PARAMETERS
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
+from .rhythm_reading import rhythm_readings
 from .retry_ladder import (
     DEGRADE,
     RETRY_SAME,
@@ -2352,6 +2353,14 @@ class PrevisDriver:
         self._transition(DriverState.DONE)
         # replay（§14.4）要能只靠这份日志重建场景，因此整份计划必须落盘：
         # 只记 shots 会丢掉 scene_heading 与 continuity_notes。
+        #: v1.6 D3（FR-B2 / TDD §3.6）：计划确认后落一条节奏读数（info，不是门）。
+        #: 采样通道（frustum/guard 的 ShotSummary）由 B4 接线；当前没有采样
+        #: 数据就如实传 None —— jump_cut_risks=0（诚实零：不是"检查过且无
+        #: 风险"的结论，而是"没有数据就不造数"），其余三字段不受影响。
+        readings = rhythm_readings(
+            [shot.duration_seconds for shot in plan.shots],
+            shot_summaries=None)
+        self.audit.log("rhythm_reading", "节奏读数（info，不设门）", **readings)
         self.audit.log("plan_received",
                        f"分镜计划完成：{len(plan.shots)} 个镜头",
                        plan=plan.to_dict(),

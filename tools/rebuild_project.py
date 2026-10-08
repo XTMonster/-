@@ -100,6 +100,7 @@ def main() -> int:
 
         report = export_project(plan, build_summary=summary,
                                 out_dir=project_dir, config=get_config().delivery,
+                                brief=getattr(loaded.sdl, "brief", None),
                                 project=loaded.sdl.name)
         payload["export"] = report.to_dict()
 

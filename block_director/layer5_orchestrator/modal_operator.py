@@ -211,6 +211,7 @@ def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
                      frames=driver.plan.total_frames)
     report = export_project(driver.plan, build_summary=driver.build_summary,
                             out_dir=out_dir, config=run.config.delivery,
+                            brief=driver.brief,
                             compliance=driver.snapshot().get("compliance"),
                             llm_calls=int(driver.snapshot().get("llm_calls") or 0),
                             retrieval_calls=int(getattr(driver.knowledge,

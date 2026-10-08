@@ -66,6 +66,7 @@ def main() -> int:
         delivery = export_project(report.plan, build_summary=report.summary,
                                   out_dir=project_dir,
                                   config=get_config().delivery,
+                                  brief=report.brief,
                                   project=report.plan.scene_heading or "BlockDirector")
         payload["export"] = delivery.to_dict()
 

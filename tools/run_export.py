@@ -52,7 +52,9 @@ def main() -> int:
     from block_director.contracts.config import AppConfig
     from block_director.contracts.enums import Appearance, DeliveryPreset
     from block_director.layer3_engine.shot_builder import BpySceneBuilder
-    from block_director.layer5_orchestrator.headless_runner import run_headless
+    from block_director.layer5_orchestrator.headless_runner import (
+        brief_from_summary, run_headless,
+    )
     from block_director.layer8_delivery import export_project
     from block_director.settings import get_config
     from block_director.utils.paths import default_project_root
@@ -138,6 +140,7 @@ def main() -> int:
 
     report = export_project(plan, build_summary=summary.get("build"),
                             out_dir=out_dir, config=config.delivery,
+                            brief=brief_from_summary(summary),
                             llm_calls=int(summary.get("llm_calls") or 0),
                             retrieval_calls=int(summary.get("retrieval_calls") or 0),
                             knowledge_provenance=summary.get(

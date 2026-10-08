@@ -22,6 +22,7 @@ from ..contracts.messages import (
     new_request_id,
 )
 from ..contracts.plan import Plan
+from ..contracts.rhythm import PACING_PROFILES
 from ..contracts.tools import PLAN_TOOL
 from ..motion.model import ACTION_TYPES
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES, render_timing_table
@@ -46,6 +47,9 @@ INTENT_VALUES: tuple = tuple(VALUE_DOMAINS["intent"])
 PLAN_CHUNK_SHOTS = 24
 
 PLAN_TOOL_NAME = PLAN_TOOL
+
+#: 缺省镜长档案（config.rhythm.pacing_profile 没给/没有 config 时）。
+DEFAULT_PACING_PROFILE = "standard"
 
 # emit_plan 的参数 schema：与 §7.2 的分镜计划结构一致。
 _SHOT_ITEM_SCHEMA: Dict[str, Any] = {
@@ -193,6 +197,8 @@ PLAN_SYSTEM_PROMPT = """\
 
 {brief}
 
+{pacing}
+
 {space}
 
 需要更多细节时，调用 search_knowledge 工具按需检索（§6.5）。
@@ -204,6 +210,29 @@ PLAN_SYSTEM_PROMPT = """\
 """
 
 NO_KNOWLEDGE = "（本次未启用知识库）"
+
+
+def pacing_block(profile: str = DEFAULT_PACING_PROFILE) -> str:
+    """计划提示里的**节奏档案**段（FR-B2）：ASL 参考带，只作参考、不作硬门。
+
+    闭集三档的名字与 ASL 带全部来自 ``contracts/rhythm.py::PACING_PROFILES``
+    （单一真源，不抄第二份）；未知档位**当场报错**，不静默回落——配置校验
+    CFG_218 已在上游拦一道，这里只是纯函数的兜底。
+    """
+    name = str(profile or DEFAULT_PACING_PROFILE)
+    if name not in PACING_PROFILES:
+        raise ValueError(
+            f"未知节奏档案 {name!r}；合法值：{'、'.join(PACING_PROFILES)}")
+    lo, hi = PACING_PROFILES[name]["asl_band_s"]
+    bands = "；".join(
+        f"{n} {data['asl_band_s'][0]:g}–{data['asl_band_s'][1]:g} 秒"
+        for n, data in PACING_PROFILES.items())
+    return (
+        "节奏档案（**仅作统计参考，不是硬门**）：\n"
+        f"- 本片档位：{name}，平均镜长（ASL）参考带 {lo:g}–{hi:g} 秒\n"
+        f"- 闭集三档：{bands}\n"
+        "- 时长预算只以参考带为参照，允许按剧情需要有意识地偏离；"
+        "节奏是创作选择，没有统一正确答案。")
 
 
 def space_block(extent_m: float) -> str:
@@ -325,6 +354,12 @@ def build_plan_payload(script: str, config=None,
     system_text = (PLAN_SYSTEM_PROMPT.replace("{script}", body)
                    .replace("{knowledge}", knowledge)
                    .replace("{brief}", _brief_block(brief, brief_limit)))
+    pacing = DEFAULT_PACING_PROFILE
+    if config is not None:
+        pacing = str(getattr(getattr(config, "rhythm", None),
+                             "pacing_profile", DEFAULT_PACING_PROFILE)
+                     or DEFAULT_PACING_PROFILE)
+    system_text = system_text.replace("{pacing}", pacing_block(pacing))
     extent = float(getattr(getattr(config, "scene", None), "extent_m", 12.0) or 12.0)
     system_text = system_text.replace("{space}", space_block(extent))
     max_shots = 0

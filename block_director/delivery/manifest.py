@@ -6,8 +6,10 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from ..contracts.beats import PACE_VALUES
 from ..contracts.elements import ElementRegistry, shot_element_ids
 from ..contracts.plan import Plan
+from ..contracts.rhythm import CURVE_VALUES
 
 FPS = 24
 
@@ -34,6 +36,7 @@ def build_manifest(plan: Plan, *,
                    knowledge: Optional[Dict[str, Any]] = None,
                    review_requests: Optional[Sequence[Dict[str, Any]]] = None,
                    registry: Optional[ElementRegistry] = None,
+                   rhythm_arc: Optional[Sequence[Dict[str, Any]]] = None,
                   ) -> Dict[str, Any]:
     """把分镜计划与构建结果拼成交付用清单。
 
@@ -59,6 +62,7 @@ def build_manifest(plan: Plan, *,
     declarations = _declarations(parsed)
     review_counts = Counter(str(item.get("shot_id") or "")
                             for item in (review_requests or []))
+    tensions = _rhythm_tensions(rhythm_arc)
 
     shots: List[Dict[str, Any]] = []
     cursor = 1
@@ -111,6 +115,11 @@ def build_manifest(plan: Plan, *,
             "review_request_count": review_counts[shot.shot_id],
             "degraded": bool(result.get("warnings")),
             "warnings": list(result.get("warnings", [])),
+            # ---- v1.6 D3（FR-B2 / FR-B5）的逐镜字段 ----
+            #: 节奏三元组：tension 只来自节奏弧（brief.rhythm_arc）；pace/curve
+            #: 只来自这一镜拍点表的**一致声明**。数据缺席就缺席、绝不补默认值
+            #: （猜一个默认值会把"没写"伪装成"写了"）。每镜都有这个键（可为空）。
+            "rhythm": _shot_rhythm_payload(shot, tensions.get(shot.shot_id)),
             # ---- v1.4 P15（§3.3）的逐镜字段 ----
             "declared": _declared_payload(declared, shot),
             "labels": _labels_payload(shot, label_offsets),
@@ -184,6 +193,48 @@ def _declarations(parsed) -> Dict[int, Any]:
         return {}
     return {index: item for index, item in
             enumerate(getattr(parsed, "declared_shots", []) or [])}
+
+
+#: ``rhythm{}`` 里 pace/curve 的闭集真源（与 B1 校验同一份词表，不抄第二份）。
+_RHYTHM_BEAT_DOMAINS = {
+    "pace": frozenset(PACE_VALUES),
+    "curve": frozenset(CURVE_VALUES),
+}
+
+
+def _rhythm_tensions(rhythm_arc) -> Dict[str, int]:
+    """``shot_id -> tension``：只收合法整数（bool 不算）；其余缺席、不猜。"""
+    tensions: Dict[str, int] = {}
+    for item in (rhythm_arc or []):
+        if not isinstance(item, dict):
+            continue
+        shot_id = str(item.get("shot_id") or "").strip()
+        tension = item.get("tension")
+        if shot_id and isinstance(tension, int) and not isinstance(tension, bool):
+            tensions.setdefault(shot_id, tension)
+    return tensions
+
+
+def _shot_rhythm_payload(shot, tension: Optional[int]) -> Dict[str, Any]:
+    """``shots.json`` 的 ``rhythm{}``。
+
+    * ``tension``：节奏弧（brief.rhythm_arc）里这一镜的那一拍；没有就缺席；
+    * ``pace`` / ``curve``：拍点表（``shot.beats[]``）里**每一拍**都声明了同一个
+      闭集词才落盘；拍点表为空、任一拍没写、或同镜拍点互相打架 ⇒ 该键缺席。
+
+    "缺席就缺席"是硬纪律：不补 ShotRhythm 的缺省值（默认值不等于模型写的数据）。
+    """
+    payload: Dict[str, Any] = {}
+    if tension is not None:
+        payload["tension"] = int(tension)
+    beats = [item for item in (getattr(shot, "beats", None) or [])
+             if isinstance(item, dict)]
+    for key, closed in _RHYTHM_BEAT_DOMAINS.items():
+        declared = [str(item.get(key) or "").strip() for item in beats
+                    if str(item.get(key) or "").strip() in closed]
+        if beats and len(declared) == len(beats) and len(set(declared)) == 1:
+            payload[key] = declared[0]
+    return payload
 
 
 def _elements_in_frame(shot, registry: Optional[ElementRegistry]) -> List[str]:

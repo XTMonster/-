@@ -108,6 +108,23 @@ def test_state_transitions_are_audited(tmp_path):
     assert audit.trace_path.exists()
 
 
+def test_rhythm_reading_event_emitted_exactly_once():
+    """v1.6 D3（TDD §3.6）：计划确认后恰发一条节奏读数，四个契约键齐全。"""
+    audit = AuditLogger()
+    driver = _driver(OfflineTransport(), audit=audit)
+    driver.run_to_completion()
+    events = [event for event in audit.recent()
+              if event.kind == "rhythm_reading"]
+    assert len(events) == 1
+    assert set(events[0].data) == {
+        "asl_s", "duration_cv", "monotony", "jump_cut_risks"}
+    # 离线通路没有 frustum/guard 采样数据 ⇒ 诚实零：不把"没检查"伪装成读数。
+    assert events[0].data["jump_cut_risks"] == 0
+    assert isinstance(events[0].data["asl_s"], float)
+    assert isinstance(events[0].data["duration_cv"], float)
+    assert isinstance(events[0].data["monotony"], bool)
+
+
 def test_llm_failure_retries_then_errors():
     limits = DriverLimits(plan_attempts=2)
     transport = ScriptedTransport([RuntimeError("network down")])
