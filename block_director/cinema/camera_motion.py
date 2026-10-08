@@ -279,6 +279,23 @@ def movement_spec(raw, *, shot_start: int, shot_end: int,
             "seed": seed_value, "subject": subject}
 
 
+def movement_curve(raw) -> str:
+    """一条运镜声明的速度曲线词（v1.6 D2，FR-B4）。
+
+    单独成函数，是为了不改 :func:`movement_spec` 的返回形状（既有测试按整字典钉住）。
+    闭集与缺省都来自 ``contracts/rhythm.py``（延迟导入：rhythm → beats → motion
+    会绕回 cinema，顶层导入有环）。非法词与未知运镜同等对待——抛 ``ValueError``，
+    由调用方记"运镜声明无效"并跳过，绝不静默换成 smooth。
+    """
+    from ..contracts.rhythm import DEFAULT_CURVE, curve_problems
+    item = dict(raw) if isinstance(raw, dict) else {}
+    curve = item.get("curve")
+    problems = curve_problems(curve)
+    if problems:
+        raise ValueError(problems[0])
+    return str(curve or DEFAULT_CURVE)
+
+
 def movement_samples(position: Sequence[float], target: Sequence[float],
                      movement: str, amount: float,
                      start_frame: int, end_frame: int,

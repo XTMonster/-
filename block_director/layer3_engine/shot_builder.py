@@ -18,7 +18,7 @@ import bpy
 
 from ..contracts.plan import Plan, ShotPlan
 from ..contracts.cast import CastMember, SceneSpec
-from ..cinema.camera_motion import SUBJECT_TRACKING, movement_spec
+from ..cinema.camera_motion import SUBJECT_TRACKING, movement_curve, movement_spec
 from ..cinema.axis import (Axis, axis_state, camera_side_of, current_line,
                            axis_status, pair_spans)
 from ..cinema.station import (
@@ -434,6 +434,7 @@ def apply_declared_movements(shot: ShotPlan, characters: Dict[str, Any],
         try:
             move = movement_spec(raw, shot_start=start, shot_end=end,
                                  default_subject=default_subject)
+            curve = movement_curve(raw)
         except ValueError as exc:
             warnings.append(f"{shot.shot_id}: 运镜声明无效（{exc}），已跳过")
             continue
@@ -446,7 +447,8 @@ def apply_declared_movements(shot: ShotPlan, characters: Dict[str, Any],
             report = apply_camera_movement(
                 camera, target, str(move["type"]), float(move["amount"]),
                 int(move["start_frame"]), int(move["end_frame"]),
-                subject=subject, seed=int(move["seed"]))
+                subject=subject, seed=int(move["seed"]),
+                curve=curve)
         except ValueError as exc:
             warnings.append(f"{shot.shot_id}: {exc}")
             continue
