@@ -3,7 +3,8 @@
 为什么不把灯光参数暴露给 LLM（TDD §3.4 的原话）：白模参考视频的观感由**形体质感**
 决定，而 energy/color/size 这些数值是"一写错整片就废"的连续量、且不可语义校验。
 所以契约面只留三个**语义**字段（``time_of_day`` / ``mood`` / ``key_direction``），
-它们的组合落进一张**设计表**，由引擎翻译成既有的五个光照预设。
+它们的组合落进一张**设计表**，由引擎翻译成五个基础光照预设 + 每基础预设三个
+方向变体（v1.6 卡 G1 / D-18 起；此前变体表是空表，见下方注释）。
 
 矩阵（TDD §4.5，行=时间，列=情绪组）::
 
@@ -35,6 +36,12 @@ DEFAULT_LIGHTING_PRESET = "clay_studio"
 #: （矩阵只能映射到这张表里的名字；预设表的键集也只能等于这张表）。
 LIGHTING_PRESET_NAMES: Tuple[str, ...] = (
     "clay_studio", "indoor_soft", "outdoor_sun", "night", "studio3p",
+    #: 方向变体（`<基础预设>_<key_direction>`；共 5 × 3 = 15 个）。
+    "clay_studio_front", "clay_studio_side", "clay_studio_back",
+    "indoor_soft_front", "indoor_soft_side", "indoor_soft_back",
+    "outdoor_sun_front", "outdoor_sun_side", "outdoor_sun_back",
+    "night_front", "night_side", "night_back",
+    "studio3p_front", "studio3p_side", "studio3p_back",
 )
 
 #: 情绪 → 矩阵列。``gloomy``/``tense`` 共用一列（§4.5 的 "gloomy/tense"）。
@@ -63,14 +70,48 @@ LIGHT_MATRIX: Dict[Tuple[str, str], str] = {
     ("dawn", "soft"): "indoor_soft",
 }
 
+#: ``key_direction`` 三个合法值的**主光方位角**（度；世界 XY 平面，
+#: 0° = +X、90° = +Y、270° = -Y）。这是"side = 垂直于相机轴"这条判据的
+#: **唯一真源**：Blender 侧探针按它读引擎侧每盏主光（``LIGHTING_PRESETS``
+#: 列表第一盏）的方位角，超出容差即红。
+#:
+#: 参考系：机位放在被摄主体 +Y 侧朝 -Y 看（``cinema/framing.py`` 的
+#: ``side_vector(facing, "front")``，默认 facing=(0,1,0)），所以：
+#:   * ``front`` = 相机侧（+Y，顺光，反差最小）；
+#:   * ``side`` = 垂直于相机轴（+X，90° 侧光，形体可读——D-18 的落点）；
+#:   * ``back`` = 被摄主体背后（-Y，逆光/轮廓光）。
+KEY_DIRECTION_AZIMUTH_DEG: Dict[str, float] = {
+    "front": 90.0,
+    "side": 0.0,
+    "back": 270.0,
+}
+
 #: ``key_direction`` 的**变体表**：``(基础预设, 方向) → 变体预设名``。
 #:
-#: 现在是**空表**——TDD §4.5 说"``key_direction`` 仅在有对应预设变体时生效，
-#: 否则忽略并记 trace"，而"哪些方向该有什么变体"是设计而非实现：造五个新预设
-#: （各自的 energy/color/size）会**发明**一张没人裁决过的灯位表。空表 + 说明
-#: 是诚实的现状：声明方向不会静默改变画面，但会在 trace 里留下"我忽略了它"。
-#: 将来补变体只改这张表，不改函数。
-LIGHT_DIRECTION_VARIANTS: Dict[Tuple[str, str], str] = {}
+#: v1.5 时这里是**空表**（当时的注释说"哪些方向该有什么变体是设计而非实现"，
+#: 声明方向会在 trace 里记"我忽略了它"）——E-video P2-3 实测 13 帧全平灰、
+#: ``key_direction=side 无对应预设变体，已忽略``，v1.6 卡 G1 / D-18 拍板补全：
+#: 五个基础预设 × 三个合法方向各造一个变体，**每个合法值都必须命中预设**
+#: （不许再对合法值记"已忽略"）。引擎侧灯位在
+#: ``layer3_engine/scene_executor.py::LIGHTING_PRESETS``，方位角语义见
+#: :data:`KEY_DIRECTION_AZIMUTH_DEG`。补变体只改这张表，不改函数。
+LIGHT_DIRECTION_VARIANTS: Dict[Tuple[str, str], str] = {
+    ("clay_studio", "front"): "clay_studio_front",
+    ("clay_studio", "side"): "clay_studio_side",
+    ("clay_studio", "back"): "clay_studio_back",
+    ("indoor_soft", "front"): "indoor_soft_front",
+    ("indoor_soft", "side"): "indoor_soft_side",
+    ("indoor_soft", "back"): "indoor_soft_back",
+    ("outdoor_sun", "front"): "outdoor_sun_front",
+    ("outdoor_sun", "side"): "outdoor_sun_side",
+    ("outdoor_sun", "back"): "outdoor_sun_back",
+    ("night", "front"): "night_front",
+    ("night", "side"): "night_side",
+    ("night", "back"): "night_back",
+    ("studio3p", "front"): "studio3p_front",
+    ("studio3p", "side"): "studio3p_side",
+    ("studio3p", "back"): "studio3p_back",
+}
 
 
 def _text(value: Any) -> str:
@@ -152,6 +193,6 @@ def resolve_lighting_preset(spec: Any, *,
 
 __all__ = [
     "DEFAULT_LIGHTING_PRESET", "LIGHT_MATRIX", "LIGHT_DIRECTION_VARIANTS",
-    "LIGHTING_PRESET_NAMES",
+    "KEY_DIRECTION_AZIMUTH_DEG", "LIGHTING_PRESET_NAMES",
     "resolve_lighting", "resolve_lighting_preset",
 ]

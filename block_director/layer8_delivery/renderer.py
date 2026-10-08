@@ -69,6 +69,24 @@ def apply_delivery_settings(scene, config) -> List[str]:
             shading.light = "STUDIO"
         shading.background_type = "VIEWPORT"
         shading.background_color = (0.10, 0.11, 0.14)
+        #: 卡 G1 / D-18：白模可读性——接触阴影 + 腔体（AO 式）暗角，让脚"踩"到
+        #: 地面。Workbench 的 AO 等价物就是 ``show_cavity``；SCREEN = 屏幕空间
+        #: （按深度算的接触暗角，最接近 SSAO）。实测（Blender 5.2 LTS）：
+        #: 接触环/远处地面亮度比 0.99 → 0.87。
+        shading.show_shadows = True
+        shading.show_cavity = True
+        shading.cavity_type = "SCREEN"
+
+    if backend is RenderBackend.EEVEE:
+        eevee = getattr(scene, "eevee", None)
+        if eevee is not None:
+            #: Blender 5.2 的 EEVEE 已经**没有** ``use_gtao`` / 每灯
+            #: ``use_contact_shadow``（实测 RNA 移除）：AO 并入 fast GI 路径，
+            #: 接触阴影由 ``use_shadows`` + 灯光自带 ``use_shadow`` 提供。两者
+            #: 在 5.2 默认已开，这里显式钉住，防未来版本改默认。属性名已用
+            #: Blender 5.2.0 LTS 实跑验证（不是猜的）。
+            eevee.use_shadows = True
+            eevee.use_fast_gi = True
 
     # depth 与 full_concat 的实际产出在 export_director 里编排（它们都依赖
     # 分段渲染的结果）。配置层面的前提条件在这里校验：

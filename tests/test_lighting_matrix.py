@@ -82,10 +82,15 @@ def test_a_half_declared_light_falls_back_and_records_why():
 
 
 def test_key_direction_without_a_variant_is_ignored_and_recorded():
-    """现状是空变体表：声明方向不改变预设，但必须留下"我忽略了它"。"""
-    assert LIGHT_DIRECTION_VARIANTS == {}
+    """没有变体的方向仍沿用基础预设并**留说明**（回退契约不因 G1 而消失）。
+
+    v1.6 卡 G1 把 ``LIGHT_DIRECTION_VARIANTS`` 从空表补成 5×3 张变体，所以
+    这里用**显式空覆盖表**钉住函数本身的回退行为（旧断言钉的是"模块默认是
+    空表"，那条现状已被 D-18 拍板改掉）。
+    """
     preset, notes = resolve_lighting({"time_of_day": "day", "mood": "bright",
-                                      "key_direction": "back"})
+                                      "key_direction": "back"},
+                                     variants={})
     assert preset == "outdoor_sun"
     assert len(notes) == 1 and "无对应预设变体" in notes[0]
 
@@ -107,8 +112,11 @@ def test_an_invalid_key_direction_is_recorded():
 
 
 def test_the_five_original_presets_are_untouched():
-    """既有五键是引擎的底座，矩阵只做映射——一个键都不许改名或删除。"""
+    """既有五键是引擎的底座，矩阵只做映射——一个键都不许改名或删除。
+
+    G1 在底座之上**新增** 15 个方向变体键，不删不改基础五键。
+    """
     for key in ("clay_studio", "indoor_soft", "outdoor_sun", "night",
                 "studio3p"):
         assert key in LIGHTING_PRESET_NAMES
-    assert len(set(LIGHTING_PRESET_NAMES)) == 5
+    assert len(set(LIGHTING_PRESET_NAMES)) == 5 + len(LIGHT_DIRECTION_VARIANTS)

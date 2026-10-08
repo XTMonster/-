@@ -142,6 +142,8 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_scene_contract.py';      Marker = 'BD_TEST_RESULT'; Label = 'scene-contract' },
     @{ Script = 'tools\blender_tests\test_label_toggles.py';       Marker = 'BD_TEST_RESULT'; Label = 'label-toggles' },
     @{ Script = 'tools\blender_tests\test_label_layout.py';        Marker = 'BD_TEST_RESULT'; Label = 'label-layout' },
+    @{ Script = 'tools\blender_tests\test_label_fullframe.py';     Marker = 'BD_TEST_RESULT'; Label = 'label-fullframe' },
+    @{ Script = 'tools\blender_tests\test_lighting_presets.py';    Marker = 'BD_TEST_RESULT'; Label = 'lighting-presets' },
     @{ Script = 'tools\blender_tests\test_composition_gate.py';    Marker = 'BD_TEST_RESULT'; Label = 'composition-gate' },
     @{ Script = 'tools\blender_tests\test_phase1_scene.py';      Marker = 'BD_TEST_RESULT'; Label = 'phase1' },
     @{ Script = 'tools\blender_tests\test_phase2_motion.py';     Marker = 'BD_TEST_RESULT'; Label = 'phase2' },
