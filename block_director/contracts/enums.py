@@ -247,6 +247,8 @@ class ErrorCode(StrEnum):
     MOTION_001 = "E_MOTION_001"
     #: v1.6 A2：计划 characters 含角色表外 id（占位符）
     CAST_001 = "E_CAST_001"
+    #: v1.6 D1（FR-B1）：rhythm_arc 理解失败，确定性回退生成
+    BRIEF_002 = "E_BRIEF_002"
 
 
 # --------------------------------------------------------------------------- #

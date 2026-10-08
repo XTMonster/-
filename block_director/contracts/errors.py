@@ -70,6 +70,8 @@ USER_MESSAGES: Dict[ErrorCode, str] = {
                            "请改用登记别名，如 angle_deg/angle/degrees 与 axis/toward。"),
     ErrorCode.CAST_001: ("计划/草案含角色表外 id：{ids}。合法角色表：{roster}。"
                          "请改用角色名或已分配的内部 id。"),
+    ErrorCode.BRIEF_002: ("节奏弧（rhythm_arc）理解失败，已回退到确定性生成：{reason}。"
+                          "所有镜 tension=3，不考虑剧本的台词密度或声明时长变化。"),
 }
 
 

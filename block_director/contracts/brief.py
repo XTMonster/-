@@ -103,6 +103,9 @@ class SceneBrief:
     arc: Dict[str, Any] = field(default_factory=dict)
     props: List[Dict[str, Any]] = field(default_factory=list)
     notes: List[str] = field(default_factory=list)
+    #: v1.6 D1（FR-B1）：剧本节奏弧，每镜一拍 ``{shot_id, tension(1–5), note}``。
+    #: 空列表合法；理解两次失败时由 ``deterministic_rhythm()`` 回退生成（E_BRIEF_002）。
+    rhythm_arc: List[Dict[str, Any]] = field(default_factory=list)
     #: ``llm`` 或 ``deterministic``；决定审计里怎么描述这份理解的来源。
     source: str = SOURCE_LLM
 
@@ -203,6 +206,8 @@ class SceneBrief:
                                 f"不在 {list(SPACE_RELATIONS)} 内")
         for index, item in enumerate(self.props, start=1):
             require(item, ("id",), f"props[{index}]")
+        from .rhythm import rhythm_arc_problems
+        problems.extend(rhythm_arc_problems(self.rhythm_arc))
         if self.source not in (SOURCE_LLM, SOURCE_DETERMINISTIC):
             problems.append(f"source 取值 {self.source!r} 非法")
         return problems
@@ -229,6 +234,7 @@ class SceneBrief:
             arc=dict(arc) if isinstance(arc, dict) else {},
             props=_clean_dicts(payload.get("props")),
             notes=_clean_list(payload.get("notes")),
+            rhythm_arc=_clean_dicts(payload.get("rhythm_arc")),
             source=(_clean_text(payload.get("source"))
                     or SOURCE_LLM),
         )
