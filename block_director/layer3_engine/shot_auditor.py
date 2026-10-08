@@ -7,6 +7,14 @@ v1.5 §5.5（卡 P6-T1）叠加一层**可选的 VLM 评审外回路**：`vlm_re
 三帧交给外部评委打 1–5 分，结果**只挂在** ``AuditResult.vlm_review`` 上，
 不参与通过与否。纯逻辑在 :mod:`..contracts.vlm_review`（无 bpy），
 这里只做"取帧 + 调用 + 还原现场"。
+
+v1.6 B4（FR-C5 / D-13）：`audit()` 在规则判定之后用
+:mod:`.frustum_sampler.sample_shot` 对整镜采样，把聚合后的
+``GuardWarning[]``（含数值证据）挂到 ``AuditResult.guard_warnings``——
+**与构图分并置，不只给一个分数**（E-video P1-1：模型拿到分数修不动）。
+error 级告警额外落一条 ``AuditError`` finding 让这一镜失败；warning/info
+只挂不判（裁决在修复回路，卡 B4 的 reframe 菜单）。采样失败按
+``E_GUARD_001`` 事件记录（``guard_sampling_error``），绝不静默吞掉。
 """
 
 from __future__ import annotations
@@ -14,9 +22,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ..contracts.audit import AuditResult
+from ..cinema.frustum_metrics import DeclaredShot, guard_config_from, shot_warnings
+from ..contracts.audit import AuditError, AuditResult
 from ..contracts.beats import reconcile_justifications
-from ..contracts.enums import AuditLevel
+from ..contracts.enums import AuditLevel, Severity
+from ..contracts.guard import Severity as GuardSeverity
 from ..contracts.vlm_review import (
     REVIEW_SCHEMA_VERSION,
     frame_data_uri,
@@ -24,12 +34,21 @@ from ..contracts.vlm_review import (
     review_shot,
     summarise_reviews,
 )
+from ..settings import get_config
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
+from .frustum_sampler import SamplingError, sample_shot
 from .rule_checker import check_shot
 from .scene_context import get_context
 
 log = get_logger("shot-auditor")
+
+#: v1.6 B4：声明了"改变景别"的运镜——镜内占比变化是设计，不算 size_drift。
+SIZE_CHANGING_MOVEMENTS = frozenset({
+    "dolly_in", "dolly_out", "push_through", "dolly_zoom",
+    "zoom_in", "zoom_out", "crane_up", "crane_down",
+    "crane_arc_up", "crane_arc_down",
+})
 
 
 class BpyShotAuditor:
@@ -80,6 +99,8 @@ class BpyShotAuditor:
         result = check_shot(shot_id,
                             composition_threshold=self.composition_threshold,
                             strict=strict)
+        #: v1.6 B4：视锥采样告警与构图分**并置**；error 级告警让这一镜失败。
+        self._attach_guard_warnings(shot_id, result)
         #: v1.5 §5.4（P4-T4）：把这一镜**声明**的破例辩护与**实测**的违规对拍。
         #: 只记录、不设门——设门属 OPEN_ITEMS D11，须用户裁决（红线 R-5）。
         result.justification_audit = self._reconcile(shot_id, result)
@@ -89,6 +110,72 @@ class BpyShotAuditor:
         if review is not None:
             result.vlm_review = review
         return result
+
+    # ------------------------------------------------------------ 视锥告警（B4）
+    @staticmethod
+    def _declared_shot(shot_id: str, plan_shot, context) -> DeclaredShot:
+        """把计划里的声明折成 ``DeclaredShot``（意图比对的输入）。"""
+        shot_type = ""
+        if plan_shot is not None:
+            declared_type = getattr(plan_shot, "shot_type", None)
+            shot_type = (getattr(declared_type, "value", None)
+                         or str(declared_type or ""))
+        if not shot_type and context is not None:
+            shot_type = str(context.shot_types.get(shot_id, ""))
+        camera = dict(getattr(plan_shot, "camera", None) or {})
+        movements = [dict(item) for item in camera.get("movements", [])
+                     if isinstance(item, dict)]
+        size_change = any(str(item.get("type") or "")
+                          in SIZE_CHANGING_MOVEMENTS for item in movements)
+        return DeclaredShot(
+            shot_id=str(shot_id), shot_type=shot_type,
+            subject="",                      # 全部声明主体一起测
+            intent=str(getattr(plan_shot, "intent", "") or ""),
+            size_change_declared=size_change)
+
+    @staticmethod
+    def _guard_finding(warning) -> AuditError:
+        """error 级告警 → 一条可进修复提示的 finding（数值证据在消息里）。"""
+        evidence = " ".join(
+            f"{key}={value:g}" for key, value in warning.evidence.items()
+            if isinstance(value, (int, float)) and not isinstance(value, bool))
+        return AuditError(
+            rule=str(warning.type),
+            code="",
+            message=(f"视锥告警 {warning.type}（{warning.subject}，帧 "
+                     f"{warning.frame_range[0]}-{warning.frame_range[1]}）："
+                     f"{evidence}").strip(),
+            severity=Severity.ERROR,
+            target=str(warning.subject),
+            suggestion=str(warning.suggestion_hint or ""))
+
+    def _attach_guard_warnings(self, shot_id: str, result: AuditResult) -> None:
+        """采样 → 聚合 → 挂 ``guard_warnings``；error 级落 finding 让镜头失败。"""
+        result.guard_warnings = []
+        result.guard_frames_sampled = 0
+        config = get_config()
+        if not bool(getattr(config.guard, "enabled", False)):
+            return                      # 用户关闭 guard：采样与告警都不跑（非降级）
+        context = get_context()
+        plan_shot = context.shot(shot_id) if context is not None else None
+        declared = self._declared_shot(shot_id, plan_shot, context)
+        try:
+            samples = sample_shot(shot_id)
+        except SamplingError as exc:
+            #: E_GUARD_001 是事件：记录后规则判定照常，不把采样故障伪装成通过。
+            result.guard_sampling_error = {"code": exc.code, "message": str(exc)}
+            log.warning("镜头 %s 视锥采样失败：%s", shot_id, exc)
+            return
+        if not samples:
+            return                      # 空镜：合法，无主体可采样
+        result.guard_frames_sampled = len({sample.frame for sample in samples})
+        warnings = shot_warnings(samples, declared, guard_config_from(config))
+        result.guard_warnings = list(warnings)
+        for warning in warnings:
+            if warning.severity is not GuardSeverity.ERROR:
+                continue
+            result.errors.append(self._guard_finding(warning))
+            result.passed = False
 
     # ------------------------------------------------------------- VLM 外回路
     def _run_vlm_review(self, shot_id: str) -> Optional[Dict[str, Any]]:

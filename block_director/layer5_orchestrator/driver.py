@@ -55,7 +55,8 @@ from .control_tools import (
     REQUEST_SELF_REVIEW,
     register_control_tools,
 )
-from .repair import REPAIR_FOLLOWUP_NUDGE, build_repair_payload
+from .repair import (REPAIR_FOLLOWUP_NUDGE, build_repair_payload,
+                     parse_guard_accepts)
 from .budget import Budget, BudgetLimits
 from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
@@ -976,6 +977,9 @@ class PrevisDriver:
             problem = self._dispatch_tool_calls(reply, self.repair_messages)
             if problem:
                 self.audit.log("repair_invalid", problem, level="warning")
+            #: v1.6 B4：accept 绝不静默——修复回复正文里的
+            #: `ACCEPT <warning_type> <reason>` 逐条落成 guard_verdict 事件。
+            self._record_guard_accepts(reply)
             mutated = bool(self._repair_tools_ok) or self._needs_rebuild
             #: 这一轮**没动手**（只读查询）而额度还有：把**工具观测真的回灌**，
             #: 再来一轮。老行为是"一次回复就收尾"，而真跑（2026-10-04，long17）
@@ -1806,6 +1810,29 @@ class PrevisDriver:
         self._transition(DriverState.BUILDING)
         return True
 
+    def _record_guard_accepts(self, reply: ChatReply) -> None:
+        """B4：把修复回复里的 accept 声明落成 ``guard_verdict`` 事件（不静默）。
+
+        正文没有 ``ACCEPT`` 行就什么都不记；有声明但格式错误记
+        ``repair_invalid``（格式错了要看得见，不能把一次 accept 悄悄丢掉）。
+        """
+        content = str(getattr(reply, "content", "") or "")
+        if not content or "ACCEPT" not in content.upper():
+            return
+        try:
+            verdicts = parse_guard_accepts(
+                content, shot_id=self._current_shot_id or "")
+        except ValueError as exc:
+            self.audit.log("repair_invalid",
+                           f"guard accept 声明格式错误：{exc}", level="warning")
+            return
+        for verdict in verdicts:
+            self.audit.log(
+                "guard_verdict",
+                f"{verdict['shot_id']} 声明刻意 {verdict['warning_type']}"
+                f"：{verdict['reason'] or '（无理由）'}",
+                level="info", **verdict)
+
     def _audit_shot(self, shot_id: str, *, degraded: bool = False,
                     restored: bool = False
                     ) -> Optional[AuditResult]:
@@ -1873,6 +1900,25 @@ class PrevisDriver:
         self._emit("shot_audit",
                    f"{shot_id} {'通过' if result.passed else '未通过'}",
                    shot=shot_id, passed=result.passed)
+        #: v1.6 B4（FR-C5）：视锥采样跑过就留一条 ``guard_warning`` 事件
+        #: （契约三键 shot_id/warnings/frames_sampled，见 V16_EVENT_FIELDS）；
+        #: guard 关闭或空镜（没采样、无告警、无采样错误）就不发，
+        #: 历史事件形状一个字节都不变。
+        guard_warnings = list(getattr(result, "guard_warnings", None) or [])
+        frames_sampled = int(getattr(result, "guard_frames_sampled", 0) or 0)
+        sampling_error = getattr(result, "guard_sampling_error", None)
+        if guard_warnings or frames_sampled or sampling_error:
+            self.audit.log(
+                "guard_warning",
+                f"{shot_id} 视锥采样 {frames_sampled} 帧，"
+                f"告警 {len(guard_warnings)} 条",
+                level="warning" if guard_warnings else "info",
+                shot_id=shot_id,
+                warnings=[item.to_dict() if hasattr(item, "to_dict")
+                          else dict(item) for item in guard_warnings],
+                frames_sampled=frames_sampled,
+                **({"sampling_error": dict(sampling_error)}
+                   if sampling_error else {}))
         return result
 
     def _record_vlm_review(self, shot_id: str, review: Dict[str, Any]) -> None:

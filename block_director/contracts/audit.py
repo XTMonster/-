@@ -130,6 +130,14 @@ class AuditResult:
     #: ``to_dict()`` 与升级前逐字节一致。评审判词**只进 shots.json 与面板**，
     #: 不参与 ``passed`` / ``score`` / ``errors``，也不接任何既有门。
     vlm_review: Optional[Dict[str, Any]] = None
+    #: v1.6 B4（FR-C5）：视锥采样的结构化告警（``guard.GuardWarning`` 对象，
+    #: 与构图分并置，不只给分数）。缺省空 ⇒ ``to_dict()`` 与升级前逐字节一致
+    #: （``guard.enabled=false`` 缺省时审核器恒给空表）。
+    guard_warnings: List[Any] = field(default_factory=list)
+    #: 本次审核实际采到的帧数（0 = 没采样：guard 关闭或空镜）。
+    guard_frames_sampled: int = 0
+    #: 采样失败（E_GUARD_001）的 ``{"code", "message"}``；``None`` = 没失败。
+    guard_sampling_error: Optional[Dict[str, Any]] = None
 
     @property
     def total(self) -> int:
@@ -162,6 +170,15 @@ class AuditResult:
         #: 同纪律：没跑外部评审就不多这个键（默认关 ⇒ 零形状差）。
         if self.vlm_review is not None:
             payload["vlm_review"] = dict(self.vlm_review)
+        #: v1.6 B4：同一条零形状差纪律——没跑视锥采样就不多这三个键。
+        if self.guard_warnings:
+            payload["guard_warnings"] = [
+                item.to_dict() if hasattr(item, "to_dict") else dict(item)
+                for item in self.guard_warnings]
+        if self.guard_frames_sampled:
+            payload["guard_frames_sampled"] = int(self.guard_frames_sampled)
+        if self.guard_sampling_error is not None:
+            payload["guard_sampling_error"] = dict(self.guard_sampling_error)
         return payload
 
     def format_for_llm(self) -> str:

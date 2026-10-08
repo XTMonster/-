@@ -46,6 +46,7 @@ from block_director.contracts.config import AppConfig  # noqa: E402
 from block_director.contracts.plan import Plan, ShotPlan  # noqa: E402
 from block_director.layer3_engine.character_system.character_factory import (  # noqa: E402
     Character,
+    create_character,
 )
 from block_director.layer3_engine.frustum_sampler import (  # noqa: E402
     GUARD_001_CODE,
@@ -114,11 +115,21 @@ def _build():
     char_001 = _cube("subj_char_001", (0.0, 0.0, 0.5), 1.0)
     char_behind = _cube("subj_char_behind", (0.0, -10.0, 0.5), 1.0)
     char_nomesh = Character(id="char_nomesh", name="char_nomesh")
+    #: 真实角色（v1.6 B3 修复探针）：create_character 建的是躯干圆柱
+    #: （r=BODY_RADIUS）+ 头球（r=head_r）+ 眼球——**不是立方体**。旧采样器
+    #: 在含眼球的 AABB 朝机面上取点，9 条射线全部落在空处 ⇒ 可见比例恒 0。
+    char_real = create_character("char_real", "char_real", "#FF6B6B",
+                                 location=(4.0, 0.0, 0.0))
 
     cameras = {}
     for shot_id in ("shot_001", "shot_002", "shot_003", "shot_behind",
-                    "shot_nomesh"):
-        cameras[shot_id] = _camera(f"cam_{shot_id}", (0.0, -8.0, 0.5))
+                    "shot_nomesh", "shot_real"):
+        if shot_id == "shot_real":
+            #: 与原点处的测试立方体隔开，避免射线先打到立方体。
+            cameras[shot_id] = _camera(f"cam_{shot_id}", (4.0, -8.0, 0.5),
+                                       look_at=(4.0, 0.0, 0.5))
+        else:
+            cameras[shot_id] = _camera(f"cam_{shot_id}", (0.0, -8.0, 0.5))
 
     shot_rows = [
         ("shot_001", 1, 97, ["char_001"]),
@@ -127,6 +138,7 @@ def _build():
         ("shot_behind", 4, 5, ["char_behind"]),
         ("shot_bad", 5, 9, ["char_001"]),
         ("shot_nomesh", 6, 9, ["char_nomesh"]),
+        ("shot_real", 7, 1, ["char_real"]),
     ]
     shots = [
         ShotPlan.from_dict({
@@ -143,6 +155,7 @@ def _build():
             "char_behind": Character(id="char_behind", name="char_behind",
                                      root=char_behind, meshes=[char_behind]),
             "char_nomesh": char_nomesh,
+            "char_real": char_real,
         },
         cameras=cameras,
         shot_types={shot_id: "MS" for shot_id, _o, _d, _c in shot_rows},
@@ -357,6 +370,43 @@ def t_frame_set_updates_evaluated_pose():
         bpy.context.view_layer.update()
 
 
+def t_real_character_unobstructed_ratio():
+    """真实角色（create_character，非立方体）无遮挡 ⇒ 可见比例 == 1.0。"""
+    samples = sample_shot("shot_real", step=1)
+    if len(samples) != 1:
+        return {"ok": False, "reason": f"期望 1 帧 1 主体，实得 {len(samples)}"}
+    sample = samples[0]
+    return {"ok": sample.visible_ratio == 1.0 and not sample.behind_camera,
+            "visible_ratio": sample.visible_ratio,
+            "behind_camera": sample.behind_camera}
+
+
+def t_real_character_half_occluded_ratio():
+    """挡板盖住躯干（下半身）⇒ 0 < 可见比例 < 1（头球采样点仍可见）。"""
+    occluder = _cube("half_occluder", (4.0, -1.5, 0.45), 0.9)
+    occluder.scale = (2.0, 2.0, 1.0)      # 世界：x±0.9 / y[-2.6,-0.4] / z[0,0.9]
+    bpy.context.view_layer.update()
+    try:
+        samples = sample_shot("shot_real", step=1)
+        ratio = samples[0].visible_ratio
+        return {"ok": 0.0 < ratio < 1.0, "visible_ratio": round(ratio, 6)}
+    finally:
+        bpy.data.objects.remove(occluder, do_unlink=True)
+
+
+def t_real_character_fully_occluded_ratio():
+    """挡板盖住整个角色 ⇒ 可见比例 == 0.0。"""
+    occluder = _cube("full_occluder", (4.0, -1.5, 0.95), 1.9)
+    occluder.scale = (2.0, 2.0, 1.0)      # 世界：x±1.9 / y[-3.4,0.4] / z[0,1.9]
+    bpy.context.view_layer.update()
+    try:
+        samples = sample_shot("shot_real", step=1)
+        ratio = samples[0].visible_ratio
+        return {"ok": ratio == 0.0, "visible_ratio": ratio}
+    finally:
+        bpy.data.objects.remove(occluder, do_unlink=True)
+
+
 def _jsonable(value):
     """把 NaN/Inf 转成字符串字面量，保证 BD_TEST_RESULT 是严格 JSON。"""
     if isinstance(value, dict):
@@ -383,6 +433,9 @@ def main() -> int:
     check("hundred_frames_under_budget", t_hundred_frames_under_budget)
     check("frame_set_updates_evaluated_pose", t_frame_set_updates_evaluated_pose)
     check("keyframe_neighborhood_densifies", t_keyframe_neighborhood_densifies)
+    check("real_character_unobstructed_ratio", t_real_character_unobstructed_ratio)
+    check("real_character_half_occluded_ratio", t_real_character_half_occluded_ratio)
+    check("real_character_fully_occluded_ratio", t_real_character_fully_occluded_ratio)
 
     passed = [name for name, value in RESULTS.items() if value.get("ok")]
     failed = [name for name, value in RESULTS.items() if not value.get("ok")]

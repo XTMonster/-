@@ -13,10 +13,13 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from types import SimpleNamespace
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from ..contracts.enums import SHOT_TYPES, ShotType
 from .anchor import DEFAULT_PROFILE
+from .composition import HEADROOM_IDEAL
+from .frustum_metrics import frame_metrics
 
 SENSOR_WIDTH = 36.0
 ASPECT_16_9 = 16.0 / 9.0
@@ -186,6 +189,147 @@ def required_distance(frame_height: float, lens: float,
     return frame_height / (2.0 * math.tan(vertical_fov(lens, sensor_width, aspect) / 2.0))
 
 
+# --------------------------------------------------------------------------- #
+# v1.6 B4（D-12）：CU/ECU 从像素可测约束反解 + 同尺回读
+# --------------------------------------------------------------------------- #
+#: D-12 的像素可测约束：头部占画高 ∈ ``config.guard.size_bands.head``（经
+#: ``guard_config_from`` 取，不在本模块另写表）；头顶留白 ∈
+#: ``(HEADROOM_IDEAL 下界, HEADROOM_DESIGN 设计值)``——两端都取自既有常量
+#: （composition 的验收下界 3% 与 §2.2 的设计留白 10%），不新造数字。
+HEADROOM_BAND: Tuple[float, float] = (HEADROOM_IDEAL[0], HEADROOM_DESIGN)
+
+#: 由"头部占画高"反解距离的近景系（D-12 钉死 CU/ECU；MCU 仍走 v1.3 的
+#: 画面高度表——知识语料、R009 与既有两个夹具都按那张表校准过）。
+HEAD_SERIES: Tuple[str, ...] = ("ECU", "CU")
+
+
+def _guard_bands(bands):
+    """返回 ``(head, body)`` 两张景别区间表（TDD §4.1 的"同一把尺"）。
+
+    ``bands`` 为 ``None`` 时走 ``guard_config_from(config.guard)``（B2 落在
+    config 的那张表，唯一真源）；显式传入时接受 ``GuardConfig``（有
+    ``head_bands``/``body_bands``）或 ``{"head": {...}, "body": {...}}``。
+    表缺失/为空时抛 ``ValueError``——宁可失败，也不悄悄换一张代码里的常数表。
+    """
+    if bands is None:
+        from ..settings import get_config
+        from .frustum_metrics import guard_config_from
+
+        config = guard_config_from(get_config())
+        head, body = config.head_bands, config.body_bands
+    else:
+        head = getattr(bands, "head_bands", None)
+        body = getattr(bands, "body_bands", None)
+        if head is None and isinstance(bands, dict):
+            head = bands.get("head")
+            body = bands.get("body")
+        head, body = dict(head or {}), dict(body or {})
+    if not head or not body:
+        raise ValueError("guard.size_bands 缺少 head/body 景别区间表，"
+                         "无法反解/回读景别")
+    return head, body
+
+
+def head_band_target(shot_type: str,
+                     head_bands: Dict[str, Tuple[float, float]]) -> float:
+    """CU/ECU 的头部占画高目标 = 该景别区间的中点（恒在区间内，抗浮点边界）。"""
+    band = head_bands.get(str(shot_type).upper())
+    if not band or len(band) != 2:
+        raise ValueError(
+            f"config.guard.size_bands.head 没有景别 {shot_type} 的区间")
+    lo, hi = float(band[0]), float(band[1])
+    if not 0.0 < lo < hi <= 1.0:
+        raise ValueError(f"景别 {shot_type} 的头部占比区间非法：[{lo}, {hi}]")
+    return (lo + hi) / 2.0
+
+
+def head_series_frame(shot_type: str,
+                      head_bands: Dict[str, Tuple[float, float]],
+                      profile=_PROFILE) -> ShotFrame:
+    """CU/ECU 的取景参数由 D-12 的像素可测约束反解。
+
+    * 画面高度 ``h = 头球直径 ÷ 目标占比（区间中点）`` ⇒ 头部占画高恒落在
+      ``config.guard.size_bands.head`` 的区间内；
+    * 头顶留白取设计值 ``HEADROOM_DESIGN``，对准高度按 §2.2 的板式规则
+      ``target = head_top - (0.5 - headroom)·h`` 反推——推导出来的，不是手抄；
+    * 自定义表把中点推到 0.9 以上时，留白退到 ``1 - 目标占比``（头部整颗入画），
+      仍不低于 ``HEADROOM_BAND`` 下界，否则抛 ``ValueError``。
+    """
+    key = str(shot_type).upper()
+    target_ratio = head_band_target(key, head_bands)
+    height = profile.head_d / target_ratio
+    headroom = min(HEADROOM_DESIGN, 1.0 - target_ratio)
+    if headroom < HEADROOM_BAND[0]:
+        raise ValueError(
+            f"景别 {key} 的头部占比目标 {target_ratio:.3f} 太高，"
+            f"装不下 {HEADROOM_BAND[0]:.2f} 的最小头顶留白")
+    target = profile.head_top_z - (0.5 - headroom) * height
+    return ShotFrame(height, target, target, 85.0,
+                     f"{key}: 头部占画高 ≈{target_ratio:.2f}，"
+                     f"头顶留白 {headroom:.2f}")
+
+
+def _nearest_band(ratio: float,
+                  bands: Dict[str, Tuple[float, float]]) -> str:
+    """就近归类：先看"落在区间内"（距离 0），再比离区间哪端近、再比离中点。"""
+    best_type, best_score = "", None
+    for name, (lo, hi) in bands.items():
+        lo, hi = float(lo), float(hi)
+        containment = (0.0 if lo <= ratio <= hi
+                       else min(abs(ratio - lo), abs(ratio - hi)))
+        score = (containment, abs(ratio - (lo + hi) / 2.0))
+        if best_score is None or score < best_score:
+            best_type, best_score = name, score
+    return best_type
+
+
+def readback_shot_size(camera_data, subject_box, *, bands=None
+                       ) -> Tuple[str, bool]:
+    """同尺回读：``(shot_type, in_band)``。
+
+    与 :mod:`frustum_metrics` 用**同一把尺**（``frame_metrics`` 的头部占画高 +
+    头顶留白）：近景系（MCU/CU/ECU）按头部占画高归类，再按 D-12 的头顶留白
+    3–10% 判 ``in_band``；中远景系按全身占画高归类。``camera_data``
+    （lens/sensor_width/aspect）留给距离档校正与证据记录，分类本身只消费
+    **已投影**的 ``subject_box``——投影一律由 bpy 侧 ``world_to_camera_view``
+    完成，这里不另写投影矩阵。
+    """
+    head_bands, body_bands = _guard_bands(bands)
+    metrics = frame_metrics(subject_box)
+    head_ratio = float(metrics["head_height_ratio"])
+    headroom = float(metrics["headroom"])
+    body_ratio = float(metrics["body_height_ratio"])
+    mcu_lo = float(head_bands.get("MCU", (0.45, 0.60))[0])
+    if head_ratio >= mcu_lo:
+        shot_type = _nearest_band(head_ratio, head_bands)
+        if not shot_type:
+            return "", False
+        lo, hi = head_bands[shot_type]
+        in_band = (lo <= head_ratio <= hi
+                   and HEADROOM_BAND[0] <= headroom <= HEADROOM_BAND[1])
+        return shot_type, bool(in_band)
+    shot_type = _nearest_band(body_ratio, body_bands)
+    if not shot_type:
+        return "", False
+    lo, hi = body_bands[shot_type]
+    return shot_type, bool(lo <= body_ratio <= hi)
+
+
+def readback_adjusted_distance(camera_data, subject_box, shot_type: str,
+                               distance: float, *, bands=None) -> float:
+    """回读不一致时的**距离档校正**（D-12：不满足就调距离，不降级景别）。
+
+    固定焦段下头部占画高 ∝ 1/画面高度 ∝ 1/距离，所以一步校正就是
+    ``距离 × 实测占比 ÷ 目标占比``；目标占比 = 该景别区间中点。
+    """
+    head_bands, _body = _guard_bands(bands)
+    target_ratio = head_band_target(shot_type, head_bands)
+    measured = float(frame_metrics(subject_box)["head_height_ratio"])
+    if measured <= 0.0:
+        return float(distance)
+    return float(distance) * measured / target_ratio
+
+
 #: 机位相对主体的**合法方位**（9 个 token，闭集）。
 #:
 #: 为什么它必须是闭集（2026-10-03 的 64 镜真跑实测）：B1 草案 schema 里
@@ -261,7 +405,9 @@ def solve_framing(subject_pos: Sequence[float],
                   direction: Optional[Sequence[float]] = None,
                   aspect: float = ASPECT_16_9,
                   aim_offset_x: float = 0.0,
-                  aim_offset_y: float = 0.0) -> FramingResult:
+                  aim_offset_y: float = 0.0,
+                  bands=None,
+                  subject_box=None) -> FramingResult:
     """解算机位与对准点。
 
     ``room`` 形如 ``(min_x, max_x, min_y, max_y)``；给出时机位会被夹在房间内。
@@ -280,13 +426,26 @@ def solve_framing(subject_pos: Sequence[float],
     在画面里更靠下）。`SHOT_FRAME` 的 `target_z` 是 §2.2 D2 的冻结常量，不动它；
     这里只做一层可测的取景偏移——实测依据见
     `docs/evidence/20261004-aim-retest/`（对准点抬高后构图分与构图门的对照）。
+
+    ``bands`` 是 D-12 的景别区间表（``config.guard.size_bands`` 经
+    ``guard_config_from``；缺省 = 运行时配置）。CU/ECU 的画面高度不再查
+    ``SHOT_FRAME``，而是从"头部占画高 = 区间中点 + 头顶留白 = 设计值"反解
+    （:func:`head_series_frame`）。
+
+    ``subject_box`` 是**已投影**的主体盒（NDC）。给了且景别是 CU/ECU 时，
+    求解后同尺回读（:func:`readback_shot_size`）；回读不在区间就**调距离档**
+    （:func:`readback_adjusted_distance`），景别不变、不降级。
     """
     warnings: List[str] = []
     key = str(shot_type).upper()
     if key not in SHOT_FRAME:
         warnings.append(f"未知景别 {shot_type}，按 MS 处理")
         key = "MS"
-    frame = SHOT_FRAME[key]
+    if key in HEAD_SERIES:
+        head_bands, _body = _guard_bands(bands)
+        frame = head_series_frame(key, head_bands)
+    else:
+        frame = SHOT_FRAME[key]
     effective_lens = float(lens if lens else frame.lens)
 
     base_x, base_y = float(subject_pos[0]), float(subject_pos[1])
@@ -303,6 +462,22 @@ def solve_framing(subject_pos: Sequence[float],
 
     distance = required_distance(frame.frame_height, effective_lens,
                                  sensor_width, aspect)
+    frame_height = frame.frame_height
+    if subject_box is not None and key in HEAD_SERIES:
+        camera_data = SimpleNamespace(lens=effective_lens,
+                                      sensor_width=sensor_width, aspect=aspect)
+        detected, in_band = readback_shot_size(camera_data, subject_box,
+                                               bands=bands)
+        if not in_band or str(detected) != key:
+            adjusted = readback_adjusted_distance(
+                camera_data, subject_box, key, distance, bands=bands)
+            if adjusted > 0.0 and abs(adjusted - distance) > 1e-9:
+                warnings.append(
+                    f"回读景别 {detected or '未知'} 不在 {key} 区间，距离档由 "
+                    f"{distance:.3f} m 调到 {adjusted:.3f} m（不降级景别）")
+                distance = adjusted
+                frame_height = 2.0 * distance * math.tan(
+                    vertical_fov(effective_lens, sensor_width, aspect) / 2.0)
     if direction is not None:
         dx, dy = float(direction[0]), float(direction[1])
         norm = math.hypot(dx, dy)
@@ -336,7 +511,7 @@ def solve_framing(subject_pos: Sequence[float],
     return FramingResult(shot_type=key, lens=effective_lens, distance=distance,
                          position=position, target=target,
                          camera_height=frame.camera_z,
-                         frame_height=frame.frame_height,
+                         frame_height=frame_height,
                          warnings=warnings, clamped=clamped)
 
 

@@ -21,22 +21,29 @@
 * 8 个包围盒角点任一 ``z < 0`` → ``behind_camera=True``（投影失效，单列；
   此时不再做射线采样，``visible_ratio=0.0``——纯层只按 ``behind_camera`` 判，
   不消费该值）；
-* 可见比例：包围盒**朝相机那一面**的 3×3（N=9）表面采样点，逐点
-  ``scene.ray_cast(dg, cam_pos, dir)``；命中对象归属主体（父链到 root，
-  复用 composition_guide 的 ``_belongs_to``）且
+* 可见比例：N=9 个采样点逐点 ``scene.ray_cast(dg, cam_pos, dir)``；命中对象
+  归属主体（父链到 root，复用 composition_guide 的 ``_belongs_to``）且
   ``|命中距离 - 目标距离| <= 0.05 m`` 计可见；可见比例 = 可见点数 / 9；
+* 采样点优先落在角色的**真实可见表面**（躯干圆柱 3×2 + 头球 3，见
+  :func:`_real_surface_points`）——v1.6 B3 修复：含眼球的 AABB 朝机面在
+  空处（默认几何下 ``y = ±0.3145``，躯干前表面只有 ``y = ±0.25``，差
+  0.0645 m > 0.05 容差），9 条射线全部落空、真实角色恒量成 invisible；
+  没有 body/head 部件的通用主体（如测试立方体）回退到 AABB 朝机面的 3×3
+  网格（旧路径，立方体的 AABB 面就是它的真实表面）；
 * ``extra_frames``：相机/主体动画关键帧 ±1（事件帧加密），与显式传入的
   ``extra_frames`` 取并集、夹回镜头区间；默认步长 = ``config.guard.sample_step``
   （``settings.get_config()``，与 UI/面板同一个真源）；
 * 采样帧集 = ``range(start, end+1, step)`` ∪ {末帧} ∪ 关键帧邻域 ∪ 显式
   extra_frames（末帧必采样——出画/离场事件需要时间轴终点）。
 
-已知边界（调研报告 §2，如实记录，不改判据）：N=9 包围盒表面点不是主体像素的
-均匀采样，圆柱/细长主体的角点会落在空处——"可见比例 0 才标 high"是纯层对这一
-口径的配套设计；本模块不换采样点布局、不把近似当精确像素裁切率。
+已知边界（调研报告 §2，如实记录，不改判据）：N=9 表面点仍不是主体像素的均匀
+采样，顶视机位（朝机方向与躯干轴平行）等极端摆放下射线首交点可能先落在顶面/
+边棱，"可见比例 0 才标 high"是纯层对这一口径的配套设计；本模块不把近似当精确
+像素裁切率。
 """
 from __future__ import annotations
 
+import math
 from typing import Iterable, List, Optional, Tuple
 
 import bpy
@@ -73,6 +80,12 @@ RAY_TOLERANCE_M = 0.05
 
 #: 屏幕朝向的数值零点（沿用 composition_guide._screen_facing 的口径）。
 FACING_EPS = 1e-6
+
+#: 真实表面采样的方位展开角（弧度）：3 列 = 朝机方向 ± SURFACE_SPREAD。
+SURFACE_SPREAD = 0.35
+
+#: 躯干两行在轴向的偏移（相对躯干半高）。
+TORSO_ROW_RATIO = 0.25
 
 
 class SamplingError(RuntimeError):
@@ -191,6 +204,104 @@ def _face_grid_points(low: Vector, high: Vector,
     return points
 
 
+def _box_spans(bound_box) -> Optional[Tuple[float, float, float]]:
+    """bound_box 三轴跨度 ``(dx, dy, dz)``；空盒返回 ``None``。"""
+    if not bound_box:
+        return None
+    lo = [float("inf")] * 3
+    hi = [float("-inf")] * 3
+    for corner in bound_box:
+        for index in range(3):
+            lo[index] = min(lo[index], corner[index])
+            hi[index] = max(hi[index], corner[index])
+    return tuple(hi[index] - lo[index] for index in range(3))
+
+
+def _real_surface_points(subject, depsgraph,
+                         camera_pos: Vector) -> Optional[List[Vector]]:
+    """角色真实可见表面的 N=9 采样点（世界坐标）：躯干圆柱 3×2 + 头球 3。
+
+    v1.6 B3 修复：包围盒 AABB 的"朝机面"被眼球顶到空处（默认几何下
+    ``y = ±0.3145``，躯干前表面只有 ``y = ±0.25``——差 0.0645 m > 0.05 容差，
+    9 条射线全部落空、真实角色恒量成 invisible）。这里改在**真实表面**取点：
+
+    * 躯干圆柱：半径/半高从 body 网格实测（默认几何即 ``BODY_RADIUS`` /
+      ``BODY_HEIGHT``），轴向前后两行 × 绕轴 ±:data:`SURFACE_SPREAD` 三列；
+    * 头球：半径从 head 网格实测（默认几何即 ``head_r``），沿"朝机方向"
+      及其绕 ``朝机方向 × 躯干轴`` 切向 ±:data:`SURFACE_SPREAD` 三列。
+
+    这些点都在朝机半球面上：对凸体（圆柱/球）而言，从机位打到点的射线
+    **首交点就是该点**，距离差落在 0.05 m 容差内（网格细分误差远小于容差）。
+    没有 body/head 部件的通用主体返回 ``None``，调用方回退到 AABB 面网格。
+    """
+    parts = getattr(subject, "parts", None)
+    if not parts:
+        return None
+    body = parts.get("body")
+    head = parts.get("head")
+    if body is None or head is None:
+        return None
+    body_eval = body.evaluated_get(depsgraph)
+    head_eval = head.evaluated_get(depsgraph)
+    body_matrix = body_eval.matrix_world
+    head_matrix = head_eval.matrix_world
+    body_spans = _box_spans(getattr(body_eval, "bound_box", ()))
+    head_spans = _box_spans(getattr(head_eval, "bound_box", ()))
+    if body_spans is None or head_spans is None:
+        return None
+    body_scale = body_matrix.to_scale()
+    head_scale = head_matrix.to_scale()
+    #: 局部 bound_box（对象自身坐标系，与绕 Z 的朝向无关）给出网格尺寸；
+    #: 半径/高度再乘世界缩放。Blender 5.x 的 ``Mesh`` 已没有 ``dimensions``。
+    body_radius = (max(body_spans[0], body_spans[1]) * 0.5
+                   * max(body_scale.x, body_scale.y))
+    body_height = abs(float(body_spans[2] * body_scale.z))
+    head_radius = (max(head_spans) * 0.5 * max(head_scale[:]))
+    if body_radius <= 1e-9 or body_height <= 1e-9 or head_radius <= 1e-9:
+        return None
+
+    body_center = body_matrix.translation.copy()
+    head_center = head_matrix.translation.copy()
+    axis = (body_matrix.to_3x3() @ Vector((0.0, 0.0, 1.0))).normalized()
+
+    #: 躯干三列：朝机方向绕躯干轴 ±SURFACE_SPREAD（切向偏移量 = tan(角)）。
+    to_body = camera_pos - body_center
+    forward = to_body - axis * to_body.dot(axis)
+    if forward.length < 1e-9:
+        forward = axis.orthogonal()        # 机位在轴线上（顶视等）：任取水平向
+    forward = forward.normalized()
+    tangent = axis.cross(forward)
+    spread = math.tan(SURFACE_SPREAD)
+    columns = [
+        (forward - tangent * spread).normalized(),
+        forward,
+        (forward + tangent * spread).normalized(),
+    ]
+
+    points: List[Vector] = []
+    half_height = body_height * 0.5
+    for row in (-TORSO_ROW_RATIO * half_height,
+                TORSO_ROW_RATIO * half_height):
+        for direction in columns:
+            points.append(body_center + axis * row + direction * body_radius)
+
+    #: 头球三列：朝机方向（3D，含俯仰）绕"朝机 × 躯干轴"切向 ±SURFACE_SPREAD。
+    to_head = camera_pos - head_center
+    if to_head.length < 1e-9:
+        to_head = -axis
+    view = to_head.normalized()
+    tilt = view.cross(axis)
+    if tilt.length < 1e-6:                 # 朝机方向与躯干轴平行：换参考向量
+        tilt = view.cross(Vector((0.0, 1.0, 0.0)))
+    if tilt.length < 1e-6:
+        tilt = view.cross(Vector((1.0, 0.0, 0.0)))
+    tilt = tilt.normalized()
+    for sign in (-1.0, 0.0, 1.0):
+        direction = (view + tilt * (sign * spread)).normalized()
+        points.append(head_center + direction * head_radius)
+    return points
+
+
 def _visible_fraction(scene, depsgraph, camera_pos: Vector,
                       subject, points: List[Vector]) -> float:
     """N=9 个包围盒表面点的可见占比（0–1）。"""
@@ -247,7 +358,9 @@ def _sample_subject(subject, scene, depsgraph, camera_eval, camera_pos,
                     behind = True
     visible = 0.0
     if not behind:
-        points = _face_grid_points(low, high, camera_pos)
+        points = _real_surface_points(subject, depsgraph, camera_pos)
+        if points is None:
+            points = _face_grid_points(low, high, camera_pos)
         visible = _visible_fraction(scene, depsgraph, camera_pos,
                                     subject, points)
     box = SubjectBox(

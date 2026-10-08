@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from ..contracts.audit import AuditResult
 from ..contracts.enums import Purpose, ToolChoice
@@ -38,6 +38,172 @@ REPAIR_FOLLOWUP_NUDGE = """\
 不要再只是查询。如果确实已经无需修改，请明确说明是哪一条审计已经不再成立。
 """
 
+# --------------------------------------------------------------------------- #
+# v1.6 B4（FR-C5 / D-13）：告警数值证据注入修复提示 + 固定动作菜单 + 裁决留痕
+# --------------------------------------------------------------------------- #
+#: 固定动作菜单（卡 B4 钉死）：每条告警必须且只能选一个。
+GUARD_ACTION_MENU: Tuple[str, ...] = (
+    "move_camera", "reframe", "move_character", "accept")
+
+#: accept 声明的行格式（修复回复正文逐条写）。解析与记录都走
+#: :func:`parse_guard_accepts` / :func:`guard_verdict`——accept 绝不静默。
+GUARD_ACCEPT_PREFIX = "ACCEPT"
+
+#: 告警类型 → 一行里的"现象"文案（与 ``contracts/guard.py::WARNING_TYPES`` 同义）。
+GUARD_PHENOMENON: Dict[str, str] = {
+    "subject_out_of_frame": "主体完全出画",
+    "subject_behind_camera": "主体在相机后方",
+    "subject_not_visible": "主体在画内但完全不可见",
+    "edge_clip": "主体被画框裁切",
+    "occlusion": "主体被前景遮挡",
+    "framing_too_tight": "取景过紧",
+    "framing_too_loose": "取景过松",
+    "headroom_off": "头顶留白出区间",
+    "lead_room_short": "朝向侧留白不足",
+    "thirds_deviation": "主体偏离三分线",
+    "size_drift": "镜内景别漂移",
+    "sudden_jump": "主体占比突变",
+    "unplanned_exit": "计划外离场",
+    "jump_cut_risk": "相邻镜跳切风险",
+    "axis_screen_order": "银幕左右序翻转",
+    "pace_monotony": "全片镜长相同",
+}
+
+#: 告警类型 → 动作菜单里**建议的那一个**（四选一，括号里是可测的操作）。
+GUARD_FIX_ACTION: Dict[str, str] = {
+    "subject_out_of_frame": "move_character（把主体挪回画面）",
+    "subject_behind_camera": "move_camera（调整机位朝向）",
+    "subject_not_visible": "move_camera（挪开前景或换机位）",
+    "edge_clip": "reframe（拉远或调整构图）",
+    "occlusion": "move_camera（换机位避开遮挡）",
+    "framing_too_tight": "reframe（拉远距离或降焦段）",
+    "framing_too_loose": "reframe（推近距离或升焦段）",
+    "headroom_off": "move_camera（调整机位高度或俯仰）",
+    "lead_room_short": "move_camera（横移对准点）",
+    "thirds_deviation": "accept（声明刻意构图）",
+    "size_drift": "move_camera（锁定机位与焦段）",
+    "sudden_jump": "move_camera（检查机位/焦段关键帧）",
+    "unplanned_exit": "move_character（调整走位时机）",
+    "jump_cut_risk": "reframe（换角度或换景别）",
+    "axis_screen_order": "move_camera（回到正确的轴侧）",
+    "pace_monotony": "accept（声明刻意节奏）",
+}
+
+#: evidence 里"阈值/上限"类键（渲染成 ``实测 vs 阈值``，不是另一个实测值）。
+_GUARD_THRESHOLD_KEYS = frozenset({
+    "edge_clip_max", "lead_room_min", "occlusion_warn", "jump_ratio",
+    "size_drift", "jump_cut_size_diff", "jump_cut_angle_deg", "sustain_frames",
+    "threshold",
+})
+
+
+def _guard_numbers(warning) -> str:
+    """一条告警的「实测 vs 区间/阈值」数值文本（只收可 JSON 的数值）。"""
+    measured: List[str] = []
+    thresholds: List[str] = []
+    band = ""
+    for key, value in (warning.evidence or {}).items():
+        if key == "expected_range":
+            if isinstance(value, (list, tuple)) and len(value) == 2:
+                band = f"区间 [{value[0]:g}, {value[1]:g}]"
+            continue
+        if key in _GUARD_THRESHOLD_KEYS:
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                thresholds.append(f"{key}={value:g}")
+            continue
+        if (key in ("frames", "merged", "shot_type", "previous_shot")
+                or not isinstance(value, (int, float))
+                or isinstance(value, bool)):
+            continue
+        measured.append(f"{key}={value:g}")
+    numbers = "、".join(measured) or "（无实测数值）"
+    if band:
+        return f"{numbers} vs {band}"
+    if thresholds:
+        return f"{numbers} vs {'、'.join(thresholds)}"
+    return numbers
+
+
+def guard_warning_line(warning) -> str:
+    """每条告警一行：「现象 + 实测 vs 区间 + 一个可选动作」（卡 B4 钉死）。"""
+    kind = str(getattr(warning, "type", "") or "")
+    subject = str(getattr(warning, "subject", "") or "scene")
+    start, end = (getattr(warning, "frame_range", None) or (0, 0))[:2]
+    severity = str(getattr(getattr(warning, "severity", None), "value", "")
+                   or getattr(warning, "severity", ""))
+    phenomenon = GUARD_PHENOMENON.get(kind, kind)
+    action = GUARD_FIX_ACTION.get(kind, "accept（声明刻意）")
+    return (f"- [{kind}] ({severity}) {subject} @帧{start}-{end} "
+            f"{phenomenon}：{_guard_numbers(warning)}。可选动作：{action}")
+
+
+def guard_action_menu() -> str:
+    """固定四选一菜单 + accept 的留痕契约。"""
+    return ("可选动作菜单（每条告警必须且只能选一个）："
+            "move_camera / reframe（改焦段或距离）/ move_character / "
+            "accept（声明刻意——必须在回复正文里逐条写 "
+            f"`{GUARD_ACCEPT_PREFIX} <warning_type> <reason>`，引擎会把每一条"
+            "落成 guard_verdict 审计事件，绝不静默）")
+
+
+def render_guard_warnings(warnings) -> str:
+    """修复提示里的告警段；error/warning 才打扰，info 默认不注入。"""
+    items = [item for item in (warnings or [])
+             if str(getattr(getattr(item, "severity", None), "value", "")
+                    or getattr(item, "severity", "")) in ("error", "warning")]
+    if not items:
+        return ""
+    lines = [f"视锥校验报出 {len(items)} 条告警（带数值证据，请逐条裁决并动手）："]
+    lines.extend(guard_warning_line(item) for item in items)
+    lines.append(guard_action_menu())
+    return "\n".join(lines)
+
+
+def guard_verdict(shot_id: str, warning_type: str, *, accepted: bool,
+                  reason: str = "", fix_action: str = "") -> Dict[str, Any]:
+    """B4：LLM 对单条告警的裁决记录（``guard_verdict`` 事件契约）。
+
+    五个字段与 ``contracts/audit.py::V16_EVENT_FIELDS["guard_verdict"]``
+    逐键一致。accept 必须留痕——本函数就是那一条痕；记录由驱动器写进审计。
+    """
+    if not str(warning_type).strip():
+        raise ValueError("guard_verdict.warning_type 不能为空")
+    return {
+        "shot_id": str(shot_id),
+        "warning_type": str(warning_type),
+        "accepted": bool(accepted),
+        "reason": str(reason or ""),
+        "fix_action": str(fix_action or ""),
+    }
+
+
+def parse_guard_accepts(text: str, *, shot_id: str = "") -> List[Dict[str, Any]]:
+    """解析修复回复正文里的 ``ACCEPT <warning_type> <reason>`` 声明。
+
+    每行一条，产出 :func:`guard_verdict`（accepted=True, fix_action="accept"）。
+    没有声明返回空列表；形如 ``ACCEPT`` 却缺 warning_type 的行抛
+    ``ValueError``——格式错了就报错，不把一次 accept 静默丢掉。
+    """
+    accepts: List[Dict[str, Any]] = []
+    for raw_line in (text or "").splitlines():
+        line = raw_line.strip()
+        if not line.upper().startswith(GUARD_ACCEPT_PREFIX):
+            continue
+        tail = line[len(GUARD_ACCEPT_PREFIX):]
+        if tail and not tail[0].isspace():
+            continue                  # "ACCEPTED ..." 不是 accept 声明
+        rest = tail.strip()
+        if not rest:
+            raise ValueError(
+                f"{GUARD_ACCEPT_PREFIX} 声明缺 warning_type：{raw_line!r}")
+        parts = rest.split(None, 1)
+        warning_type = parts[0].strip()
+        reason = parts[1].strip() if len(parts) > 1 else ""
+        accepts.append(guard_verdict(shot_id or "", warning_type,
+                                     accepted=True, reason=reason,
+                                     fix_action="accept"))
+    return accepts
+
 
 def timeline_only(audit: AuditResult) -> bool:
     """这条审计的 error 是否**全部**属于时间轴类。
@@ -65,6 +231,7 @@ REPAIR_SYSTEM_PROMPT = """\
 
 {audit}
 
+{guard}
 当前场景：
 {scene_state}
 
@@ -122,6 +289,7 @@ def build_repair_payload(audit: AuditResult, registry, *,
         budget = shot_dialogue_budget(shot)
         if budget.lines:
             budget_text = budget.render() + "\n"
+    guard_text = render_guard_warnings(getattr(audit, "guard_warnings", None))
     focus = ""
     if shot_id:
         focus = (f"**本次要修的镜头：`{shot_id}`**。"
@@ -143,6 +311,7 @@ def build_repair_payload(audit: AuditResult, registry, *,
     system_text = REPAIR_SYSTEM_PROMPT.format(
         focus=focus,
         audit=audit.format_for_llm(),
+        guard=guard_text,
         scene_state=scene_state or "（尚未采集）",
         dialogue_budget=budget_text,
         action_params=render_action_params(),
