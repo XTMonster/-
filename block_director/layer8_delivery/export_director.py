@@ -38,6 +38,7 @@ from ..utils.threading_guard import main_thread_only
 from .camera_trajectory import camera_trajectory
 from .concat import ConcatUnavailable, concat_shot_clips, full_output_path
 from .depth_pass import DepthUnavailable, render_depth_sequence
+from .reference_cards import render_reference_cards
 from .renderer import apply_delivery_settings, render_first_frame, render_shot_video
 
 log = get_logger("delivery")
@@ -308,6 +309,11 @@ def export_project(plan: Plan, *,
     elements_path.write_text(json.dumps(registry.to_dict(), ensure_ascii=False,
                                         indent=2), encoding="utf-8")
     report.files.append(str(elements_path))
+
+    #: v1.6 E3（FR-A5）：角色定妆卡（可选，默认开）。渲染后函数原样恢复场景。
+    if config.reference_cards:
+        report.files.extend(
+            render_reference_cards(scene, registry, str(export_dir)))
 
     prompt_path = export_dir / "prompts.md"
     prompt_path.write_text(prompt_text, encoding="utf-8")
