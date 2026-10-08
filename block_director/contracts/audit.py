@@ -21,12 +21,40 @@ SCENE_BUILT_REASONS = ("initial", "repair_rebuild", "rollback_rebuild")
 #: `scene_built` 事件自己拥有的字段；构建摘要里的同名键不得覆盖它们。
 SCENE_BUILT_RESERVED_KEYS = frozenset({"reason", "duration_s"})
 
+#: v1.6 A7（D-19）：标签烘焙后全帧自检事件名称。
+LABEL_OVERLAP_REPORT = "label_overlap_report"
+
 
 def scene_built_reason(*, rebuild_in_place: bool, just_rolled_back: bool) -> str:
     """由驱动器已有的两个状态位推出 `scene_built.reason`（纯函数，回滚优先）。"""
     if not rebuild_in_place:
         return "initial"
     return "rollback_rebuild" if just_rolled_back else "repair_rebuild"
+
+
+#: v1.6 新审计事件契约（TDD §3.6 / §7；红线 R-7：先登记再用）。
+#: 事件名 → 必有字段。生产者写事件时必须带齐这些键；测试按此对拍。
+V16_EVENT_FIELDS = {
+    #: B2/B4：审核采样后的结构化告警（GuardWarning.to_dict() 全量）
+    "guard_warning": ("shot_id", "warnings", "frames_sampled"),
+    #: B4：LLM 对单条告警的裁决；accept 必须留痕，不得静默
+    "guard_verdict": ("shot_id", "warning_type", "accepted", "reason", "fix_action"),
+    #: F1：重试阶梯每一步
+    "retry_ladder": ("stage", "shot_id", "elapsed_s"),
+    #: D3：计划确认后的节奏读数（info 级，不是门）
+    "rhythm_reading": ("asl_s", "duration_cv", "monotony", "jump_cut_risks"),
+    #: A7：标签烘焙后的全帧自检
+    "label_overlap_report": ("max_overlap_ratio", "overlap_frames",
+                             "frames_checked", "limit"),
+}
+
+
+def missing_event_fields(kind: str, data: Dict[str, Any]) -> List[str]:
+    """登记过的事件缺了哪些必有字段（未登记的事件名返回 ``["<unregistered>"]``）。"""
+    required = V16_EVENT_FIELDS.get(kind)
+    if required is None:
+        return ["<unregistered>"]
+    return [name for name in required if name not in (data or {})]
 
 
 @dataclass

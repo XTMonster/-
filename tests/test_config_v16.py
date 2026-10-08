@@ -111,3 +111,56 @@ def test_both_cli_entrypoints_use_the_configuration_aware_limits_constructor():
         assert factories[0].args, f"{name}: runtime config must be passed"
         keywords = {kw.arg: ast.unparse(kw.value) for kw in factories[0].keywords}
         assert keywords["llm_timeout_s"] == "args.llm_timeout"
+
+
+# ---------------------------------------------------------------- v1.6 B2 / A7
+def _codes(cfg):
+    return {issue.code for issue in cfg.validate()}
+
+
+def test_guard_and_labels_defaults_are_valid():
+    cfg = AppConfig()
+    assert cfg.guard.enabled is True and cfg.guard.preset == "standard"
+    assert cfg.guard.sustain_frames == 12 and cfg.guard.edge_clip_max == 0.10
+    assert cfg.guard.size_bands["head"]["CU"] == [0.55, 0.75]
+    assert cfg.labels.adaptive_sampling is True
+    assert cfg.labels.fullframe_verify is True
+    assert not {"CFG_215", "CFG_216", "CFG_217"} & _codes(cfg)
+
+
+def test_guard_invalid_preset_threshold_and_band_are_rejected():
+    cfg = AppConfig()
+    cfg.guard.preset = "extreme"
+    assert "CFG_215" in _codes(cfg)
+    cfg = AppConfig()
+    cfg.guard.edge_clip_max = 1.5
+    assert "CFG_216" in _codes(cfg)
+    cfg = AppConfig()
+    cfg.guard.sustain_frames = 0
+    assert "CFG_216" in _codes(cfg)
+    cfg = AppConfig()
+    cfg.guard.size_bands["head"]["CU"] = [0.8, 0.6]
+    assert "CFG_217" in _codes(cfg)
+
+
+def test_guard_and_labels_round_trip_through_dict():
+    cfg = AppConfig()
+    cfg.guard.preset = "loose"
+    cfg.labels.fullframe_verify = False
+    restored = AppConfig.from_dict(cfg.to_dict())
+    assert restored.guard.preset == "loose"
+    assert restored.labels.fullframe_verify is False
+    assert restored.guard.size_bands == cfg.guard.size_bands
+
+
+def test_generated_default_yaml_contains_the_new_sections():
+    from pathlib import Path
+    from block_director.contracts.config import dump_default_yaml
+
+    text = dump_default_yaml()
+    for key in ("guard:", "labels:", "adaptive_sampling", "fullframe_verify",
+                "sustain_frames", "size_bands"):
+        assert key in text, key
+    shipped = (Path(__file__).resolve().parents[1] / "specs"
+               / "config.default.yaml").read_text(encoding="utf-8")
+    assert shipped == text, "运行 python tools/gen_specs.py"

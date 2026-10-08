@@ -81,6 +81,8 @@ character:
   label_max_ratio: 0.06
   label_color: '#FFFFFF'
   label_stroke_color: '#000000'
+  label_adaptive_sampling: true
+  label_fullframe_verify: true
 animation:
   fps: 24
   walk_speed: 0.05
@@ -120,3 +122,42 @@ framing:
 vlm_review:
   enabled: false
   max_shots: 0
+guard:
+  enabled: true
+  preset: standard
+  edge_clip_max: 0.1
+  lead_room_min: 0.05
+  sustain_frames: 12
+  size_drift: 0.15
+  jump_ratio: 0.25
+  jump_cut_angle_deg: 30.0
+  jump_cut_size_diff: 0.1
+  occlusion_warn: 0.2
+  sample_step: 4
+  size_bands:
+    head:
+      MCU:
+      - 0.45
+      - 0.6
+      CU:
+      - 0.55
+      - 0.75
+      ECU:
+      - 0.75
+      - 1.0
+    body:
+      MS:
+      - 0.55
+      - 0.7
+      MLS:
+      - 0.7
+      - 0.88
+      LS:
+      - 0.35
+      - 0.6
+      ELS:
+      - 0.15
+      - 0.35
+labels:
+  adaptive_sampling: true
+  fullframe_verify: true

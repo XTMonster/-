@@ -275,6 +275,11 @@ class CharacterConfig:
     label_max_ratio: float = 0.06
     label_color: str = "#FFFFFF"          # 白字
     label_stroke_color: str = "#000000"   # 黑描边
+    #: v1.6 A7（D-19）：步长自适应。标签间相对屏幕速度超阈或插值期检出重叠时，
+    #: 该区段加密直至每帧；关闭则恢复固定步长行为。
+    label_adaptive_sampling: bool = True
+    #: v1.6 A7（D-19）：烘焙后全帧自检，重叠帧写 label_overlap_report 事件。
+    label_fullframe_verify: bool = True
 
 
 @dataclass
@@ -338,6 +343,78 @@ class FramingConfig:
 
 
 @dataclass
+class GuardConfig:
+    """视锥构图校验阈值（v1.6 B2，FR-C）。与 ``cinema/frustum_metrics.GuardConfig`` 逐键同名。"""
+
+    #: 总开关；关掉时采样器与告警都不跑（不是降级，是用户选择）
+    enabled: bool = True
+    #: 风格档：strict / standard / loose（GUARD_PRESETS）；下面的数值 = standard
+    preset: str = "standard"
+    #: 边缘裁切率超过此值告警（包围盒虚胖时标 confidence=low）
+    edge_clip_max: float = 0.10
+    #: 朝向侧留白低于此值告警
+    lead_room_min: float = 0.05
+    #: 持续违规至少多少帧才触发告警（瞬时越界容忍）
+    sustain_frames: int = 12
+    #: 镜内景别漂移上限（占比变化 > 此值告警）
+    size_drift: float = 0.15
+    #: 两帧内占比跳变上限
+    jump_ratio: float = 0.25
+    #: 跳切风险：视角差低于此值（度）时检查景别差
+    jump_cut_angle_deg: float = 30.0
+    #: 跳切风险：景别占比差低于此值时告警
+    jump_cut_size_diff: float = 0.10
+    #: 主体被遮挡超过此值且未声明前景遮挡 → warning
+    occlusion_warn: float = 0.20
+    #: bpy 采样步长（帧数）
+    sample_step: int = 4
+    #: 景别区间表（TDD §4.1）：head＝头部占画高（近景系），body＝全身占画高（中远景系）
+    size_bands: Dict[str, Dict[str, List[float]]] = field(
+        default_factory=lambda: {
+            "head": {"MCU": [0.45, 0.60], "CU": [0.55, 0.75],
+                     "ECU": [0.75, 1.0]},
+            "body": {"MS": [0.55, 0.70], "MLS": [0.70, 0.88],
+                     "LS": [0.35, 0.60], "ELS": [0.15, 0.35]},
+        })
+
+
+#: 三档阈值组（TDD §6）：standard = GuardConfig 默认值；strict 收紧、loose 放宽。
+#: 只覆盖"比率/帧数"类阈值，景别区间表三档共用。
+GUARD_PRESETS: Dict[str, Dict[str, float]] = {
+    "strict": {"edge_clip_max": 0.05, "lead_room_min": 0.08,
+               "sustain_frames": 6, "size_drift": 0.10, "jump_ratio": 0.15,
+               "occlusion_warn": 0.10},
+    "standard": {},
+    "loose": {"edge_clip_max": 0.20, "lead_room_min": 0.03,
+              "sustain_frames": 24, "size_drift": 0.25, "jump_ratio": 0.35,
+              "occlusion_warn": 0.35},
+}
+
+
+def resolve_guard_thresholds(guard: "GuardConfig") -> Dict[str, Any]:
+    """按 ``preset`` 把档位表叠到显式阈值上（standard ＝ 原样）。"""
+    values = {key: getattr(guard, key) for key in (
+        "edge_clip_max", "lead_room_min", "sustain_frames", "size_drift",
+        "jump_ratio", "jump_cut_angle_deg", "jump_cut_size_diff",
+        "occlusion_warn", "sample_step")}
+    values.update(GUARD_PRESETS.get(str(guard.preset), {}))
+    values["size_bands"] = {kind: {name: (float(b[0]), float(b[1]))
+                                   for name, b in bands.items()}
+                            for kind, bands in guard.size_bands.items()}
+    return values
+
+
+@dataclass
+class LabelsConfig:
+    """角色标签全帧防互挡（v1.6 A7，D-19）。"""
+
+    #: 是否开启自适应采样加密（插值帧检出重叠时局部加密到每帧）
+    adaptive_sampling: bool = True
+    #: 是否在烘焙后做全帧自检并写 label_overlap_report 事件
+    fullframe_verify: bool = True
+
+
+@dataclass
 class AppConfig:
     config_version: str = CONFIG_VERSION
     llm: LLMConfig = field(default_factory=LLMConfig)
@@ -356,6 +433,8 @@ class AppConfig:
     ui: UIConfig = field(default_factory=UIConfig)
     framing: FramingConfig = field(default_factory=FramingConfig)
     vlm_review: VlmReviewConfig = field(default_factory=VlmReviewConfig)
+    guard: GuardConfig = field(default_factory=GuardConfig)
+    labels: LabelsConfig = field(default_factory=LabelsConfig)
 
     # ----------------------------------------------------------------- 校验
     def validate(self) -> List[Issue]:
@@ -398,6 +477,30 @@ class AppConfig:
         if self.llm.timeout_s <= 0:
             err("CFG_023", "llm.timeout_s",
                 f"LLM 超时时间必须为正数（当前 {self.llm.timeout_s}）")
+        #: v1.6 B2：视锥构图校验段。TDD 草拟的 CFG_021–023 已被占用，顺延到 215–217。
+        if self.guard.preset not in GUARD_PRESETS:
+            err("CFG_215", "guard.preset",
+                f"未知档位 {self.guard.preset!r}；合法值 {sorted(GUARD_PRESETS)}")
+        for name in ("edge_clip_max", "lead_room_min", "size_drift",
+                     "jump_ratio", "jump_cut_size_diff", "occlusion_warn"):
+            value = float(getattr(self.guard, name))
+            if not 0.0 < value < 1.0:
+                err("CFG_216", f"guard.{name}",
+                    f"比率阈值必须在 (0, 1) 内（当前 {value}）")
+        if not 0.0 < float(self.guard.jump_cut_angle_deg) < 180.0:
+            err("CFG_216", "guard.jump_cut_angle_deg",
+                f"角度阈值必须在 (0, 180) 内（当前 {self.guard.jump_cut_angle_deg}）")
+        for name in ("sustain_frames", "sample_step"):
+            if int(getattr(self.guard, name)) < 1:
+                err("CFG_216", f"guard.{name}",
+                    f"帧数阈值必须 ≥1（当前 {getattr(self.guard, name)}）")
+        for kind, bands in (self.guard.size_bands or {}).items():
+            for shot_type, band in (bands or {}).items():
+                ok = (isinstance(band, (list, tuple)) and len(band) == 2
+                      and 0.0 <= float(band[0]) < float(band[1]) <= 1.0)
+                if not ok:
+                    err("CFG_217", f"guard.size_bands.{kind}.{shot_type}",
+                        f"景别区间必须是 [lo, hi] 且 0≤lo<hi≤1（当前 {band}）")
         if self.rag.top_k <= 0:
             err("CFG_007", "rag.top_k", "检索条数必须为正整数")
         if self.orchestration.max_repair_attempts < 0:
