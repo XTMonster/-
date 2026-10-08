@@ -37,11 +37,22 @@ SPEAKER_KEYS = ("dialogue_ref", "speaker", "listener")
 GAZE_KEYS = ("from", "to", "scope")
 BEAT_KEYS = ("id", "summary", "participants", "emotion", "function")
 SPACE_KEYS = ("character", "relative_to", "relation", "distance_class")
+ENVIRONMENT_KEYS = ("label", "direction", "distance", "size", "mood")
 PROP_KEYS = ("id", "kind", "owner", "state_changes")
 ARC_KEYS = ("emotion_start", "emotion_end", "turning_point")
 
 #: 与 SceneBrief.space[].relation 对应的取值；未知值只记告警。
 SPACE_RELATIONS = ("facing", "side_by_side", "behind", "ahead", "apart")
+
+#: v1.6 C1（FR-A1）：环境件相对**场景中心**的方位闭集。环境件（拱廊、摊位、
+#: 海面……）一律写进 ``SceneBrief.environment[]``；``space[]`` 仍只描述角色间
+#: 关系，语义不许混（TDD §3.4）。
+SPACE_DIRECTIONS = ("front", "back", "left", "right", "above", "ground")
+#: 距离档（相对场景中心）：near≤4m / mid≤10m / far>10m。
+SPACE_DISTANCES = ("near", "mid", "far")
+#: 体量档：s / m / l。
+SPACE_SIZES = ("s", "m", "l")
+
 #: ``gaze[].scope`` 的通配写法：覆盖整场戏
 GAZE_SCOPE_ALL = "all"
 
@@ -100,6 +111,12 @@ class SceneBrief:
     gaze: List[Dict[str, Any]] = field(default_factory=list)
     beats: List[Dict[str, Any]] = field(default_factory=list)
     space: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.6 C1（FR-A1）：环境元素闭集
+    #: ``{label, direction, distance, size, mood}``，与 ``space[]`` 并列。
+    #: direction/distance/size 是闭集词（SPACE_DIRECTIONS / SPACE_DISTANCES /
+    #: SPACE_SIZES），氛围（颜色/材质/气氛）只能进自由文本 ``mood``。
+    #: 解析不出就是问题、绝不猜（见 ``validate()``）。
+    environment: List[Dict[str, Any]] = field(default_factory=list)
     arc: Dict[str, Any] = field(default_factory=dict)
     props: List[Dict[str, Any]] = field(default_factory=list)
     notes: List[str] = field(default_factory=list)
@@ -113,7 +130,7 @@ class SceneBrief:
     @property
     def is_empty(self) -> bool:
         return not (self.speakers or self.gaze or self.beats or self.space
-                    or self.arc or self.props or self.notes)
+                    or self.environment or self.arc or self.props or self.notes)
 
     def listener_of(self, speaker: str, shot_id: str = "",
                     index: int = 0, dialogue_ref: str = "") -> str:
@@ -204,6 +221,19 @@ class SceneBrief:
             if relation and relation not in SPACE_RELATIONS:
                 problems.append(f"space[{index}].relation 取值 {relation!r} "
                                 f"不在 {list(SPACE_RELATIONS)} 内")
+        for index, item in enumerate(self.environment, start=1):
+            where = f"environment[{index}]"
+            if not require(item, ENVIRONMENT_KEYS[:4], where):
+                continue
+            #: 闭集字段逐项核对：取值在集合外只记问题，**绝不猜/绝不改写**
+            #: （FR-A1「解析不出就是 finding」的契约侧；自由文本只允许在 mood）。
+            for key, closed in (("direction", SPACE_DIRECTIONS),
+                                ("distance", SPACE_DISTANCES),
+                                ("size", SPACE_SIZES)):
+                value = _clean_text(item.get(key))
+                if value not in closed:
+                    problems.append(f"{where}.{key} 取值 {value!r} "
+                                    f"不在闭集 {list(closed)} 内")
         for index, item in enumerate(self.props, start=1):
             require(item, ("id",), f"props[{index}]")
         from .rhythm import rhythm_arc_problems
@@ -231,6 +261,7 @@ class SceneBrief:
             gaze=_clean_dicts(payload.get("gaze")),
             beats=_clean_dicts(payload.get("beats")),
             space=_clean_dicts(payload.get("space")),
+            environment=_clean_dicts(payload.get("environment")),
             arc=dict(arc) if isinstance(arc, dict) else {},
             props=_clean_dicts(payload.get("props")),
             notes=_clean_list(payload.get("notes")),

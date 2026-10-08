@@ -24,9 +24,13 @@ from typing import Any, Dict, List, Optional
 from ..contracts.brief import (
     ARC_KEYS,
     BEAT_KEYS,
+    ENVIRONMENT_KEYS,
     GAZE_KEYS,
     PROP_KEYS,
+    SPACE_DIRECTIONS,
+    SPACE_DISTANCES,
     SPACE_KEYS,
+    SPACE_SIZES,
     SPEAKER_KEYS,
     SOURCE_DETERMINISTIC,
     SOURCE_LLM,
@@ -38,6 +42,10 @@ from ..contracts.messages import ChatPayload, ChatReply, Message, MessageRole, n
 BRIEF_TOOL_NAME = "emit_scene_brief"
 
 BRIEF_MAX_TOKENS_DEFAULT = 1200
+
+#: 确定性降级绝不推断环境方位：environment 留空并写明（FR-A1「不猜」纪律，
+#: 与"不猜代词"同一条）。
+ENVIRONMENT_EMPTY_NOTE = "environment 留空：环境方位无法从脚本确定性推断，绝不编造"
 
 #: 注入块的**首行字面量**（单一真源）。
 #:
@@ -82,6 +90,25 @@ EMIT_BRIEF_TOOL_PARAMETERS: Dict[str, Any] = {
             SPACE_KEYS, ("character",),
             {"relation": "facing（相对而立）/ side_by_side / behind / ahead / apart",
              "distance_class": "intimate / personal / social / public"})},
+        "environment": {"type": "array", "maxItems": 40, "items": {
+            "type": "object", "additionalProperties": False,
+            "required": list(ENVIRONMENT_KEYS[:4]),
+            "properties": {
+                "label": {"type": "string",
+                          "description": "环境件名字（如「拱廊拱顶」「糖果摊位」）"},
+                "direction": {"type": "string", "enum": list(SPACE_DIRECTIONS),
+                              "description": ("相对场景中心的方位闭集：front / back / "
+                                             "left / right / above / ground")},
+                "distance": {"type": "string", "enum": list(SPACE_DISTANCES),
+                             "description": ("相对场景中心的距离档：near≤4m / "
+                                             "mid≤10m / far>10m")},
+                "size": {"type": "string", "enum": list(SPACE_SIZES),
+                         "description": "体量档：s / m / l"},
+                "mood": {"type": "string",
+                         "description": ("氛围自由文本（颜色/材质/气氛，如「蓝绿色"
+                                         "铸钢雕花铁艺」）；只能写这里，绝不混进闭集字段")},
+            },
+        }},
         "arc": _object(ARC_KEYS, (), None),
         "props": {"type": "array", "maxItems": 40, "items": _object(
             PROP_KEYS, ("id",), None)},
@@ -98,6 +125,9 @@ BRIEF_SYSTEM_PROMPT = """\
 - gaze：谁在看谁，scope 说明这份注视从哪一镜起有效（整场就写 all）；
 - beats：把戏拆成若干节拍，给出情绪与作用（建立/铺垫/转折/收束）；
 - space：角色之间的相对位置关系（相对而立 / 并肩 / 前后）；
+- environment：场景里的环境元素，方位只写闭集；
+  正例：{"label":"拱廊拱顶","direction":"above","distance":"near","size":"l","mood":"蓝绿色铸钢雕花铁艺"}；
+  反例：{"label":"远处海面","direction":"画面后方"}（direction 不是闭集词，禁止——写不出方位就整个不要这条）。
 - arc：这场戏的情绪起点、终点与转折点；
 - props：有状态变化的道具（银币 → 金子）与其归属；
 - notes：你不确定、需要人工确认的地方。
@@ -106,6 +136,8 @@ BRIEF_SYSTEM_PROMPT = """\
 - **没有依据就留空或写进 notes**，绝不编造角色、关系或道具；
 - 不要猜代词指的是谁——"他/她/那家伙"没有明确先行词时写进 notes；
 - listener / from / to 只能填角色表里出现的名字；
+- environment 的 direction/distance/size 只能写闭集词（front/back/left/right/above/ground；
+  near/mid/far；s/m/l），颜色/材质/气氛只写 mood；没有依据就写空数组，绝不编方位；
 - notes 用中文短句，一条一件事。
 
 角色表：{characters}
@@ -205,6 +237,7 @@ def deterministic_brief(parsed=None, characters: Optional[List[str]] = None
     brief = SceneBrief(source=SOURCE_DETERMINISTIC)
     if parsed is None:
         brief.notes.append("没有可用的解析结果，SceneBrief 为空")
+        brief.notes.append(ENVIRONMENT_EMPTY_NOTE)
         return brief
 
     shots = list(getattr(parsed, "declared_shots", []) or [])
@@ -237,6 +270,7 @@ def deterministic_brief(parsed=None, characters: Optional[List[str]] = None
         brief.notes.append(
             "未使用 LLM：SceneBrief 由分镜表声明确定性抽取（两人镜才推断注视，"
             "三人以上不猜）")
+        brief.notes.append(ENVIRONMENT_EMPTY_NOTE)
         return brief
 
     for scene in getattr(parsed, "scenes", None) or []:
@@ -263,6 +297,7 @@ def deterministic_brief(parsed=None, characters: Optional[List[str]] = None
             "未使用 LLM：SceneBrief 由对白邻接确定性抽取（不解释代词）")
     if roster and not brief.speakers and not brief.gaze:
         brief.notes.append("剧本里没有可判定的说话人或注视关系")
+    brief.notes.append(ENVIRONMENT_EMPTY_NOTE)
     return brief
 
 
@@ -305,6 +340,14 @@ def render_brief_block(brief: Optional[SceneBrief], *,
             text += f" 相对 {relative}"
         if relation:
             text += f"（{relation}）"
+        lines.append(text)
+    for item in brief.environment[:12]:
+        mood = str(item.get("mood") or "").strip()
+        text = (f"- 环境：{item.get('label')} "
+                f"（{item.get('direction')} / {item.get('distance')} / "
+                f"{item.get('size')}）")
+        if mood:
+            text += f"：{mood}"
         lines.append(text)
     for item in brief.props[:12]:
         kind = str(item.get("kind") or "").strip()

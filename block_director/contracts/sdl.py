@@ -18,7 +18,11 @@ from .cast import CastMember
 #: 改动范围）。1.5 只**增字段**：``SDLEnvironment.anchors`` / ``light``、
 #: ``SDLShot.beats`` / ``composition`` / ``rule_justifications``——无删除、
 #: 无改名，所以 1.4 工程加载后行为逐字节不变（见 sdl_migrate.KNOWN_VERSIONS）。
-SDL_VERSION = "1.5"
+#:
+#: v1.6（C1，FR-A1；连同 D1 的 rhythm_arc）：``project.brief`` 里新增
+#: ``environment[]`` 与 ``rhythm_arc[]``。同样**只增字段**、无删除无改名——
+#: 1.5 工程迁移后这两个字段取空表，旧字段逐字节不变。
+SDL_VERSION = "1.6"
 
 
 @dataclass

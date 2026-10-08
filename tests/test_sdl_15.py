@@ -2,9 +2,9 @@
 
 四条必须钉住：
 
-1. ``SDL_VERSION == "1.5"``，且 ``KNOWN_VERSIONS`` **只增不改**——必须仍然
-   认识 1.0…1.5 全部版本（旧写法把 ``SDL_VERSION`` 当成"上一个版本"，升到
-   1.5 会把 "1.4" 悄悄挤出去，于是刚落盘的 1.4 工程反成"未知版本"）；
+1. ``KNOWN_VERSIONS`` **只增不改**——必须仍然认识 1.0…1.6 全部版本（旧写法
+   把 ``SDL_VERSION`` 当成"上一个版本"，升版本会把上一个版本悄悄挤出去，
+   于是刚落盘的旧工程反成"未知版本"）；
 2. 1.4 工程 dict → ``migrate_sdl`` → 新字段缺省、旧字段**逐字节不变**；
 3. 1.5 落盘/读回：``build_sdl`` → ``to_dict`` → ``from_dict`` → ``sdl_to_plan``
    保住 beats / composition / rule_justifications / environment；
@@ -67,18 +67,18 @@ def _sdl_14_payload() -> dict:
     }
 
 
-def test_sdl_version_is_15():
-    assert SDL_VERSION == "1.5"
+def test_sdl_version_is_16():
+    assert SDL_VERSION == "1.6"
 
 
 def test_known_versions_is_append_only():
-    assert KNOWN_VERSIONS == ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5")
+    assert KNOWN_VERSIONS == ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6")
 
 
 def test_migrate_14_to_15_only_fills_defaults():
     original = _sdl_14_payload()
     migrated, notes = migrate_sdl(copy.deepcopy(original))
-    assert migrated["version"] == "1.5"
+    assert migrated["version"] == SDL_VERSION
     scene = migrated["scenes"][0]
     # 新字段：缺省填充
     assert scene["environment"]["anchors"] == []
@@ -136,6 +136,6 @@ def test_sdl_15_dict_is_json_serialisable_and_reloadable():
                  duration_frames=48, order=1)])
     sdl = build_sdl(plan)
     payload = json.loads(json.dumps(sdl.to_dict(), ensure_ascii=False))
-    assert payload["version"] == "1.5"
+    assert payload["version"] == SDL_VERSION
     reloaded = sdl_to_plan(type(sdl).from_dict(payload))
     assert reloaded.shots[0].shot_id == "shot_001"

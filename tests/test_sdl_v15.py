@@ -43,6 +43,9 @@ BUILD = {"results": [
 #: v1.5 新增的**可选**键；"旧字段逐字节不变"的比对要先把它们摘掉。
 NEW_SHOT_KEYS = ("beats", "composition", "rule_justifications")
 NEW_ENVIRONMENT_KEYS = ("anchors", "light")
+#: v1.6（C1/D1）新增的 brief 可选键——迁移会给旧 brief 补缺省值，
+#: 逐字节比对时同样要摘掉。
+NEW_BRIEF_KEYS = ("environment", "rhythm_arc")
 
 
 def _as_v14_file(payload: dict) -> dict:
@@ -68,14 +71,18 @@ def _strip_new(payload: dict) -> dict:
         for shot in scene.get("shots") or []:
             for key in NEW_SHOT_KEYS:
                 shot.pop(key, None)
+    brief = data.get("brief")
+    if isinstance(brief, dict):
+        for key in NEW_BRIEF_KEYS:
+            brief.pop(key, None)
     return data
 
 
 # --------------------------------------------------------------------------- #
 # 版本与兼容声明
 # --------------------------------------------------------------------------- #
-def test_sdl_version_is_1_5():
-    assert SDL_VERSION == "1.5"
+def test_sdl_version_is_1_6():
+    assert SDL_VERSION == "1.6"
 
 
 def test_known_versions_keep_every_shipped_version():
@@ -84,7 +91,7 @@ def test_known_versions_keep_every_shipped_version():
     旧写法 ``("1.0", ..., SDL_VERSION)`` 把当前版本当成"上一个版本"，升到
     1.5 时 "1.4" 会消失——那时刚刚落盘的 1.4 工程反倒被记成"未知版本"。
     """
-    for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5"):
+    for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"):
         assert version in KNOWN_VERSIONS
     assert KNOWN_VERSIONS[-1] == SDL_VERSION
 
@@ -103,7 +110,7 @@ def test_v14_migration_defaults_the_new_fields():
     fixture = _as_v14_file(build_sdl(demo_plan(), build_summary=BUILD)
                            .to_dict())
     payload, _notes = migrate_sdl(fixture)
-    assert payload["version"] == "1.5"
+    assert payload["version"] == SDL_VERSION
     environment = payload["scenes"][0]["environment"]
     assert environment["anchors"] == []
     assert environment["light"] == {}
@@ -117,7 +124,7 @@ def test_v14_migration_leaves_every_old_field_byte_identical():
     fixture = _as_v14_file(build_sdl(demo_plan(), build_summary=BUILD)
                            .to_dict())
     expected = copy.deepcopy(fixture)
-    expected["version"] = "1.5"
+    expected["version"] = SDL_VERSION
     # ``migrate_sdl`` 只做浅拷贝：它就地写进传进来的嵌套 dict（既有行为）。
     # 要比对"旧字段没被改"，输入必须是独立的一份。
     payload, _notes = migrate_sdl(copy.deepcopy(fixture))
@@ -220,7 +227,7 @@ def test_an_empty_declaration_keeps_the_sdl_shape_unchanged():
     """空声明 = 现状：新键存在但为空，validate / to_dict 形状不变。"""
     sdl = build_sdl(demo_plan(), build_summary=BUILD)
     data = sdl.to_dict()
-    assert data["version"] == "1.5"
+    assert data["version"] == SDL_VERSION
     assert data["scenes"][0]["environment"]["anchors"] == []
     assert data["scenes"][0]["environment"]["light"] == {}
     assert all(shot["beats"] == [] and shot["composition"] == {}
@@ -253,7 +260,7 @@ def test_project_io_saves_and_loads_a_1_5_project(tmp_path):
     loaded = project_io.load_project(tmp_path)
     assert loaded.ok
     assert loaded.notes == []                # 已是最新版本：无迁移说明
-    assert loaded.sdl.version == "1.5"
+    assert loaded.sdl.version == SDL_VERSION
     assert loaded.sdl.scenes[0].environment.anchors[0].name == "door"
     assert loaded.sdl.shots[0].beats[0]["verb"] == "look_at"
 
@@ -268,6 +275,6 @@ def test_project_io_migrates_a_1_4_project(tmp_path):
                     encoding="utf-8")
     loaded = project_io.load_project(tmp_path)
     assert loaded.ok
-    assert loaded.sdl.version == "1.5"
+    assert loaded.sdl.version == SDL_VERSION
     assert any("1.4" in note for note in loaded.notes)
     assert loaded.sdl.scenes[0].environment.anchors == []
