@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional
 
-from .enums import Severity
+from .enums import ErrorCode, Severity
 
 
 #: v1.6 A6（D-08）：`scene_built` 事件的 `reason` 闭集。
@@ -23,6 +23,23 @@ SCENE_BUILT_RESERVED_KEYS = frozenset({"reason", "duration_s"})
 
 #: v1.6 A7（D-19）：标签烘焙后全帧自检事件名称。
 LABEL_OVERLAP_REPORT = "label_overlap_report"
+
+#: v1.6 C2（FR-A1 / D-10）：环境件闭集解析失败的 finding 码。
+#: 生产侧（``layer3_engine/scene_executor.py``）把它写进
+#: ``Environment.unresolved_anchors``——与 ``unresolved_anchor`` 同一条审计
+#: 通路（经 ``BuildSummary.warnings`` 进 build_summary），只是**不再静默**：
+#: 驱动器按 ``E_ENV_001`` 前缀识别并带回计划重问。取值单一真源是
+#: ``ErrorCode.ENV_001``，这里只做审计契约层的登记与形状。
+ENV_FINDING_CODE = str(ErrorCode.ENV_001)
+
+
+def env_finding(label: str, reason: str) -> str:
+    """渲染一条环境件 finding：``E_ENV_001: <label>: <reason>``。
+
+    生产侧与（未来的）消费侧共用这一个形状，避免两边各自拼前缀漂移。
+    """
+    return (f"{ENV_FINDING_CODE}: {str(label or '').strip()}: "
+            f"{str(reason or '').strip()}")
 
 
 def scene_built_reason(*, rebuild_in_place: bool, just_rolled_back: bool) -> str:

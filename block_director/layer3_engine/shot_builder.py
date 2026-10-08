@@ -562,7 +562,12 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                      or []),
         cast=list(spec.cast),
         light=dict((getattr(plan, "environment", None) or {}).get("light")
-                   or {}))
+                   or {}),
+        #: v1.6 C2（FR-A1）：阶段 S 理解出的闭集环境件真正进管线；
+        #: 闭集外取值由 build_environment 报 E_ENV_001，不在这里过滤。
+        environment_items=[dict(item) for item in
+                           (getattr(brief, "environment", None) or [])
+                           if isinstance(item, dict)])
     summary.warnings.extend(environment.unresolved_anchors)
     summary.warnings.extend(environment.light_notes)
 

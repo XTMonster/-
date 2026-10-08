@@ -72,6 +72,9 @@ USER_MESSAGES: Dict[ErrorCode, str] = {
                          "请改用角色名或已分配的内部 id。"),
     ErrorCode.BRIEF_002: ("节奏弧（rhythm_arc）理解失败，已回退到确定性生成：{reason}。"
                           "所有镜 tension=3，不考虑剧本的台词密度或声明时长变化。"),
+    ErrorCode.ENV_001: ("环境件『{label}』的方位解析失败：{reason}。"
+                        "请把 direction 改为 front/back/left/right/above/ground、"
+                        "distance 改为 near/mid/far、size 改为 s/m/l 后重试。"),
 }
 
 

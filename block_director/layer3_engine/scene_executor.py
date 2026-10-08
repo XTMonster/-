@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import bpy
 from bpy.types import Object
@@ -22,7 +22,11 @@ from ..cinema.props import (
     merge_windows,
     prop_interaction_windows,
 )
+from ..cinema.schedule import out_of_bounds
 from ..cinema.staging import solve_anchor_positions
+from ..contracts.audit import env_finding
+from ..contracts.brief import SPACE_DIRECTIONS, SPACE_DISTANCES, SPACE_SIZES
+from ..contracts.elements import ENVIRONMENT_COLOR
 from ..utils.geometry import hex_to_rgb
 from .collection_router import mark_as_guide, route_to_content
 from .transaction import Transaction
@@ -53,6 +57,124 @@ def resolve_prop_color(value, default=DEFAULT_PROP_COLOR
             return default
     return default
 
+
+# --------------------------------------------------------------------------- #
+# v1.6 C2（FR-A1 / D-10）：环境方位闭集映射表 ＋ 最小骨架常量
+#
+# 闭集词本身**不在这里抄第二份**——从 ``contracts/brief.py`` 导入（C1 的单一
+# 真源）。这里只放引擎侧的确定性映射：
+#   ``(direction, distance) -> 相对场景中心的偏移``（世界系、米、Z 向上；
+#   near≤4m / mid≤10m / far>10m，按欧氏距离）；
+#   ``size -> 尺寸档``（s / m / l）。
+# 方向约定与灯光矩阵一致：front=+Y（相机侧）、back=-Y、left=-X、right=+X、
+# above=+Z、ground=贴地铺开。解析不出 ⇒ E_ENV_001 finding（绝不猜坐标）。
+# --------------------------------------------------------------------------- #
+
+#: 环境件颜色的单一真源是 ``contracts/elements.py::ENVIRONMENT_COLOR``（灰阶
+#: #808080，与 E2 遮罩同源）；这里只做一次十六进制 → 0..1 的只读换算。
+ENVIRONMENT_COLOR_RGB = hex_to_rgb(ENVIRONMENT_COLOR)
+
+#: ``(direction, distance) → (x, y, z)``：相对场景中心的物体**中心**偏移。
+ENVIRONMENT_OFFSETS: Dict[Tuple[str, str], Tuple[float, float, float]] = {
+    ("front", "near"): (0.0, 3.0, 1.2),
+    ("front", "mid"): (0.0, 7.0, 1.2),
+    ("front", "far"): (0.0, 14.0, 1.2),
+    ("back", "near"): (0.0, -3.0, 1.2),
+    ("back", "mid"): (0.0, -7.0, 1.2),
+    ("back", "far"): (0.0, -14.0, 1.2),
+    ("left", "near"): (-3.0, 0.0, 1.2),
+    ("left", "mid"): (-7.0, 0.0, 1.2),
+    ("left", "far"): (-14.0, 0.0, 1.2),
+    ("right", "near"): (3.0, 0.0, 1.2),
+    ("right", "mid"): (7.0, 0.0, 1.2),
+    ("right", "far"): (14.0, 0.0, 1.2),
+    ("above", "near"): (0.0, 0.0, 3.0),
+    ("above", "mid"): (0.0, 0.0, 7.0),
+    ("above", "far"): (0.0, 0.0, 14.0),
+    ("ground", "near"): (1.5, 1.5, 0.5),
+    ("ground", "mid"): (5.0, -5.0, 0.5),
+    ("ground", "far"): (10.0, 10.0, 0.5),
+}
+
+#: ``size → (dx, dy, dz)``：白模代理盒的边长（米）。
+ENVIRONMENT_SIZE_DIMS: Dict[str, Tuple[float, float, float]] = {
+    "s": (1.0, 1.0, 1.0),
+    "m": (2.5, 2.5, 2.5),
+    "l": (6.0, 6.0, 4.0),
+}
+
+#: 最小骨架的四周遮挡体（墙/立面代理）：``(方位, 中心位置, 尺寸)``。
+#: 半径 12 m 的四面立面围住动作区——构图解算的机位距离（≤ ~10 m）都在环内，
+#: 立面不会插进"相机 → 主体"的射线；它们**不进** ``Environment.walls``
+#: （那是计划/用户声明的墙，且 R002 的障碍表只认 ``BD_Wall_`` / ``BD_Prop_``）。
+ENVIRONMENT_OCCLUDERS: Tuple[
+    Tuple[str, Tuple[float, float, float], Tuple[float, float, float]], ...
+] = (
+    ("N", (0.0, 12.0, 2.0), (26.0, 0.5, 4.0)),
+    ("S", (0.0, -12.0, 2.0), (26.0, 0.5, 4.0)),
+    ("E", (12.0, 0.0, 2.0), (0.5, 26.0, 4.0)),
+    ("W", (-12.0, 0.0, 2.0), (0.5, 26.0, 4.0)),
+)
+
+#: 天空底色（确定性 world 颜色）。Workbench 交付背景仍由
+#: ``layer8_delivery/renderer.py`` 的 ``shading.background_color`` 管；这里给
+#: EEVEE/视口的 world 一份固定底色，两者互不覆盖。
+ENVIRONMENT_SKY_COLOR: Tuple[float, float, float] = (0.55, 0.62, 0.72)
+
+#: 骨架遮挡体的深灰立面。刻意**显著暗于角色调色板**（角色最暗 luma ≈ 0.54）：
+#: 立面是"背景参照物"，亮过角色会吃掉角色与背景的亮度差。实测
+#: test_phase1_scene 的"角色让画面变亮"是冻结判据（HEAD 基线 delta=0.042、
+#: 阈值 0.02）：0.66 灰把 delta 压到 -0.001、0.34 灰压到 0.009；只有贴近
+#: 交付背景（0.10/0.11/0.14）的深立面能保住该判据，同时也与成片背景同调。
+ENVIRONMENT_OCCLUDER_COLOR: Tuple[float, float, float] = (0.12, 0.12, 0.16)
+
+
+def environment_offset(direction: Any, distance: Any
+                       ) -> Optional[Tuple[float, float, float]]:
+    """闭集内返回表里的偏移；闭集外返回 ``None``（不猜）。"""
+    return ENVIRONMENT_OFFSETS.get(
+        (str(direction or "").strip(), str(distance or "").strip()))
+
+
+def environment_dimensions(size: Any) -> Optional[Tuple[float, float, float]]:
+    """闭集内返回表里的尺寸；闭集外返回 ``None``（不猜）。"""
+    return ENVIRONMENT_SIZE_DIMS.get(str(size or "").strip())
+
+
+def environment_item_placement(
+        item: Any, where: str = ""
+) -> Tuple[Optional[Tuple[float, float, float]],
+           Optional[Tuple[float, float, float]],
+           List[str]]:
+    """把一条 ``brief.environment[]`` 条目解析成 ``(偏移, 尺寸, 问题)``。
+
+    * 三个闭集字段（direction / distance / size）任一在集合外 ⇒ 逐字段记问题，
+      偏移与尺寸都返回 ``None``——**绝不猜、绝不改写**（FR-A1「解析不出就是
+      finding」的引擎侧）。
+    * ``where`` 只用于问题文案（如 ``environment[3].direction``），不改结果。
+    * 纯函数：不 import bpy、不读配置；同一输入永远同一输出。
+    """
+    if not isinstance(item, Mapping):
+        return None, None, ["条目不是对象，无法解析"]
+    problems: List[str] = []
+    direction = str(item.get("direction") or "").strip()
+    distance = str(item.get("distance") or "").strip()
+    size = str(item.get("size") or "").strip()
+    for key, value, closed in (("direction", direction, SPACE_DIRECTIONS),
+                               ("distance", distance, SPACE_DISTANCES),
+                               ("size", size, SPACE_SIZES)):
+        if value not in closed:
+            problems.append(
+                f"{where}.{key} 取值 {value!r} 不在闭集 {tuple(closed)} 内"
+                if where else
+                f"{key} 取值 {value!r} 不在闭集 {tuple(closed)} 内")
+    if problems:
+        return None, None, problems
+    offset = ENVIRONMENT_OFFSETS[(direction, distance)]
+    dims = ENVIRONMENT_SIZE_DIMS[size]
+    return offset, dims, problems
+
+
 LIGHTING_PRESETS: Dict[str, List[Dict[str, Any]]] = {
     # 白模默认：一盏主光 + 一盏补光，中性白，形体质感清晰
     "clay_studio": [
@@ -74,6 +196,82 @@ LIGHTING_PRESETS: Dict[str, List[Dict[str, Any]]] = {
         {"type": "AREA", "energy": 60.0, "location": (3, -2, 2), "size": 3.0},
         {"type": "AREA", "energy": 150.0, "location": (0, 4, 3), "size": 3.0},
     ],
+    # ------------------------------------------------------------------ #
+    # 方向变体（v1.6 卡 G1 / D-18）：每张列表的**第一盏灯是主光（key）**，
+    # 探针按这条约定读方位角。方位角语义见
+    # ``cinema/lighting.py::KEY_DIRECTION_AZIMUTH_DEG``：
+    #   front = 相机侧 +Y（90°；机位在 +Y 看 -Y）
+    #   side  = 垂直于相机轴 +X（0°；侧光让形体可读）
+    #   back  = 被摄主体背后 -Y（270°；逆光/轮廓光）
+    # SUN 的 ``(elevation, 0, azimuth)`` 是 Blender XYZ 欧拉角。只有主光动，
+    # 补光/轮廓光原样——变体只改变主光方向，不发明新的能量/色温。
+    # ------------------------------------------------------------------ #
+    "clay_studio_front": [
+        {"type": "SUN", "energy": 3.0, "rotation": (0.9, 0.0, 3.14159265),
+         "color": (1, 1, 1)},
+        {"type": "SUN", "energy": 1.2, "rotation": (1.0, 0.0, 3.6),
+         "color": (0.9, 0.93, 1.0)},
+    ],
+    "clay_studio_side": [
+        {"type": "SUN", "energy": 3.0, "rotation": (0.9, 0.0, 1.57079633),
+         "color": (1, 1, 1)},
+        {"type": "SUN", "energy": 1.2, "rotation": (1.0, 0.0, 3.6),
+         "color": (0.9, 0.93, 1.0)},
+    ],
+    "clay_studio_back": [
+        {"type": "SUN", "energy": 3.0, "rotation": (0.9, 0.0, 0.0),
+         "color": (1, 1, 1)},
+        {"type": "SUN", "energy": 1.2, "rotation": (1.0, 0.0, 3.6),
+         "color": (0.9, 0.93, 1.0)},
+    ],
+    "indoor_soft_front": [
+        {"type": "AREA", "energy": 120.0, "location": (0, 3, 3), "size": 4.0},
+        {"type": "SUN", "energy": 0.8, "rotation": (0.8, 0.0, 0.3)},
+    ],
+    "indoor_soft_side": [
+        #: 竖起的柔光面在 +X，朝 -X 打向被摄主体。
+        {"type": "AREA", "energy": 120.0, "location": (3, 0, 3), "size": 4.0,
+         "rotation": (0.0, 1.57079633, 0.0)},
+        {"type": "SUN", "energy": 0.8, "rotation": (0.8, 0.0, 0.3)},
+    ],
+    "indoor_soft_back": [
+        {"type": "AREA", "energy": 120.0, "location": (0, -3, 3), "size": 4.0},
+        {"type": "SUN", "energy": 0.8, "rotation": (0.8, 0.0, 0.3)},
+    ],
+    "outdoor_sun_front": [
+        {"type": "SUN", "energy": 5.0, "rotation": (0.7, 0.0, 3.14159265)},
+    ],
+    "outdoor_sun_side": [
+        {"type": "SUN", "energy": 5.0, "rotation": (0.7, 0.0, 1.57079633)},
+    ],
+    "outdoor_sun_back": [
+        {"type": "SUN", "energy": 5.0, "rotation": (0.7, 0.0, 0.0)},
+    ],
+    "night_front": [
+        {"type": "POINT", "energy": 60.0, "location": (0, 2, 2.5)},
+    ],
+    "night_side": [
+        {"type": "POINT", "energy": 60.0, "location": (2, 0, 2.5)},
+    ],
+    "night_back": [
+        {"type": "POINT", "energy": 60.0, "location": (0, -2, 2.5)},
+    ],
+    "studio3p_front": [
+        {"type": "AREA", "energy": 200.0, "location": (0, 3, 3), "size": 3.0},
+        {"type": "AREA", "energy": 60.0, "location": (3, -2, 2), "size": 3.0},
+        {"type": "AREA", "energy": 150.0, "location": (0, 4, 3), "size": 3.0},
+    ],
+    "studio3p_side": [
+        {"type": "AREA", "energy": 200.0, "location": (3, 0, 3), "size": 3.0,
+         "rotation": (0.0, 1.57079633, 0.0)},
+        {"type": "AREA", "energy": 60.0, "location": (3, -2, 2), "size": 3.0},
+        {"type": "AREA", "energy": 150.0, "location": (0, 4, 3), "size": 3.0},
+    ],
+    "studio3p_back": [
+        {"type": "AREA", "energy": 200.0, "location": (0, -3, 3), "size": 3.0},
+        {"type": "AREA", "energy": 60.0, "location": (3, -2, 2), "size": 3.0},
+        {"type": "AREA", "energy": 150.0, "location": (0, 4, 3), "size": 3.0},
+    ],
 }
 
 
@@ -89,12 +287,23 @@ class Environment:
     anchors: List[Object] = field(default_factory=list)
     lighting: str = DEFAULT_LIGHTING
     #: v1.5 §4.3：解析不出坐标的锚点名（由调用方写进审计；求解器不猜坐标）。
+    #: v1.6 C2：这里同时是**环境件 finding 的审计通路**——闭集解析失败写
+    #: ``E_ENV_001: <label>: <reason>``、far 落点越界写 ``environment_extent:``，
+    #: 由 shot_builder 并入 ``BuildSummary.warnings``（与 unresolved_anchor
+    #: 逐字节同一条路，只是不再静默）。
     unresolved_anchors: List[str] = field(default_factory=list)
     #: v1.5 §4.5：灯光语义 → 预设的说明（回落原因 / 被忽略的 key_direction）。
     light_notes: List[str] = field(default_factory=list)
+    #: v1.6 C2：最小骨架的四周遮挡体（``BD_ENV_Occluder_N/S/E/W``）。
+    occluders: List[Object] = field(default_factory=list)
+    #: v1.6 C2：``brief.environment[]`` 落成的环境件（``BD_ENV_<id>``）。
+    pieces: List[Object] = field(default_factory=list)
+    #: v1.6 C2：天空底色 world（``BD_ENV_Sky``；World 不是 Object，故单列）。
+    sky: Optional[Any] = None
 
     def all_objects(self) -> List[Object]:
-        return [o for o in [self.ground, *self.walls, *self.props, *self.lights,
+        return [o for o in [self.ground, *self.occluders, *self.pieces,
+                            *self.walls, *self.props, *self.lights,
                             *self.anchors] if o]
 
 
@@ -116,10 +325,12 @@ def create_ground(size: Tuple[float, float] = (20.0, 20.0),
                   color: Sequence[float] = (0.78, 0.78, 0.76)) -> Object:
     bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0, 0, 0))
     ground = bpy.context.object
-    ground.name = "BD_Ground"
+    ground.name = "BD_ENV_Ground"
     # primitive_plane_add(size=1.0) 造的就是 1×1 单位面片，缩放到 size 即得目标
     # 边长。除以 2 会让地面只有请求尺寸的一半（Phase 6 渲染时暴露）。
     ground.scale = (float(size[0]), float(size[1]), 1.0)
+    ground["bd_element_type"] = "environment"
+    ground["bd_skeleton_role"] = "ground"
     ground.data.materials.append(_ensure_material("BD_Mat_Ground", color))
     return route_to_content(ground)
 
@@ -136,6 +347,60 @@ def create_wall(index: int, position: Sequence[float],
     wall.rotation_euler = tuple(rotation)
     wall.data.materials.append(_ensure_material("BD_Mat_Wall", color))
     return route_to_content(wall)
+
+
+@main_thread_only("create_environment_occluder")
+def create_environment_occluder(side: str, position: Sequence[float],
+                                size: Sequence[float]) -> Object:
+    """最小骨架的一面立面代理（``BD_ENV_Occluder_<side>``，白模材质、无贴图）。"""
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=tuple(position))
+    occluder = bpy.context.object
+    occluder.name = f"BD_ENV_Occluder_{side}"
+    occluder.scale = (float(size[0]), float(size[1]), float(size[2]))
+    occluder["bd_element_type"] = "environment"
+    occluder["bd_skeleton_role"] = "occluder"
+    occluder.data.materials.append(_ensure_material(
+        "BD_Mat_Env_Occluder", ENVIRONMENT_OCCLUDER_COLOR))
+    return route_to_content(occluder)
+
+
+@main_thread_only("create_environment_piece")
+def create_environment_piece(element_id: str, position: Sequence[float],
+                             size: Sequence[float],
+                             name: Optional[str] = None) -> Object:
+    """一条 brief.environment 条目落成的白模代理盒（``BD_ENV_<id>``）。
+
+    统一灰阶（``ENVIRONMENT_COLOR`` = #808080，与元素登记表/遮罩同源）、
+    无贴图。``bd_sdl_id`` 与 ``contracts/elements.py`` 派生的元素 id 一致，
+    供 E2 遮罩 / 元素登记表按 id 找到这个对象；``name`` 给更可读的对象名
+    （缺省 ``BD_ENV_<element_id>``）。
+    """
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=tuple(position))
+    piece = bpy.context.object
+    piece.name = str(name or f"BD_ENV_{element_id}")
+    piece.scale = (float(size[0]), float(size[1]), float(size[2]))
+    piece["bd_element_type"] = "environment"
+    piece["bd_sdl_id"] = str(element_id)
+    piece.data.materials.append(_ensure_material(
+        f"BD_Mat_Env_{element_id}", ENVIRONMENT_COLOR_RGB))
+    return route_to_content(piece)
+
+
+@main_thread_only("create_environment_sky")
+def create_environment_sky(color: Sequence[float] = ENVIRONMENT_SKY_COLOR) -> Any:
+    """给场景 world 一份确定性天空底色（缺省建 ``BD_ENV_Sky``）。
+
+    已有 world 时**只设颜色、不换名、不新建**（不破坏调用方/用户建的 world）。
+    Workbench 的交付背景由 renderer 的 ``shading.background_color`` 管，这里的
+    world 颜色供 EEVEE 与视口 WORLD 背景用。
+    """
+    scene = bpy.context.scene
+    world = scene.world
+    if world is None:
+        world = bpy.data.worlds.new("BD_ENV_Sky")
+        scene.world = world
+    world.color = (float(color[0]), float(color[1]), float(color[2]))
+    return world
 
 
 @main_thread_only("create_prop")
@@ -545,11 +810,31 @@ def build_environment(*, ground_size: Tuple[float, float] = (20.0, 20.0),
                       lighting: str = DEFAULT_LIGHTING,
                       anchors: Optional[List[Dict[str, Any]]] = None,
                       cast: Optional[Sequence[Any]] = None,
-                      light: Optional[Dict[str, Any]] = None) -> Environment:
-    """搭建场景环境。整批写入包在一个事务里，失败自动回滚。"""
+                      light: Optional[Dict[str, Any]] = None,
+                      environment_items: Optional[Sequence[Dict[str, Any]]] = None,
+                      extent_m: Optional[float] = None) -> Environment:
+    """搭建场景环境（v1.6 C2：**任何场景必建最小骨架**）。
+
+    * 骨架：地面 + 四周遮挡体 + 天空底色（``BD_ENV_*``，进 Content、
+      ``hide_render=False``、白模材质无贴图），每次构建都建；
+    * ``environment_items`` 是 ``SceneBrief.environment[]``（C1 的闭集条目），
+      按 ``(direction, distance, size)`` 映射表**确定性**落坐标；闭集外取值
+      报 ``E_ENV_001`` finding 进 ``unresolved_anchors``（与 unresolved_anchor
+      同一审计通路），**不静默跳过、也不猜坐标**；
+    * far 落点超出 ``config.scene.extent_m``（``extent_m`` 未显式给时读配置）
+      时如实放告警、**不夹取**。
+
+    整批写入包在一个事务里，失败自动回滚。
+    """
     environment = Environment(lighting=lighting)
     with Transaction(f"environment:{lighting}"):
+        # ---- v1.6 C2：最小骨架（确定性，每次都有） --------------------- #
         environment.ground = create_ground(ground_size)
+        for side, position, size in ENVIRONMENT_OCCLUDERS:
+            environment.occluders.append(
+                create_environment_occluder(side, position, size))
+        environment.sky = create_environment_sky()
+        # ---- 计划/用户声明的墙与道具（语义不变） ----------------------- #
         for index, wall in enumerate(walls or [], start=1):
             environment.walls.append(create_wall(
                 index,
@@ -566,6 +851,15 @@ def build_environment(*, ground_size: Tuple[float, float] = (20.0, 20.0),
                 prop.get("rotation", (0.0, 0.0, 0.0)),
                 prop.get("shape", "box"),
             ))
+        # ---- v1.6 C2：brief.environment[] 按闭集映射表落位 ------------- #
+        if environment_items:
+            if extent_m is None:
+                #: 只在这一条路径读配置（无环境件时不触发磁盘配置读取）。
+                from ..settings import get_config
+                extent_m = float(
+                    getattr(get_config().scene, "extent_m", 0.0) or 0.0)
+            _build_environment_items(environment, environment_items,
+                                     extent_m=float(extent_m))
         # v1.5 §4.3：先解算锚点坐标，再落成 empty。求解是纯函数；解析不出的
         # 锚点记进 ``unresolved_anchors``（调用方写审计），**不猜坐标**。
         if anchors:
@@ -601,3 +895,48 @@ def build_environment(*, ground_size: Tuple[float, float] = (20.0, 20.0),
     log.info("环境搭建完成：预设=%s，物体 %d 个", lighting,
              len(environment.all_objects()))
     return environment
+
+
+def _build_environment_items(environment: Environment,
+                             items: Sequence[Dict[str, Any]],
+                             *, extent_m: float = 0.0) -> None:
+    """把 brief.environment[] 条目建进场景（在主线程事务内调用）。
+
+    * 元素 id 与 ``contracts/elements.py::_environment()`` **同一派生规则**
+      （逐 direction 计数 ``env_<direction>_<n>``；给显式 id 用之）——对象名
+      ``BD_ENV_<direction>_<n>``、``bd_sdl_id`` 与登记表键一致；
+    * 闭集外取值：逐条写 ``E_ENV_001`` finding、不建对象（绝不静默、绝不猜）；
+    * far 落点超出 ``extent_m``：照表落位 ＋ ``environment_extent`` 告警（不夹取）。
+    """
+    direction_counts: Dict[str, int] = {}
+    for index, item in enumerate(items or [], start=1):
+        where = f"environment[{index}]"
+        label = (str(item.get("label") or "").strip()
+                 if isinstance(item, Mapping) else "") or where
+        offset, dims, problems = environment_item_placement(item, where=where)
+        if problems:
+            for reason in problems:
+                line = env_finding(label, reason)
+                environment.unresolved_anchors.append(line)
+                log.warning("环境件未解析：%s", line)
+            continue
+        direction = str(item.get("direction") or "").strip()
+        element_id = str(item.get("id") or "").strip()
+        if not element_id:
+            direction_counts[direction] = direction_counts.get(direction, 0) + 1
+            element_id = f"env_{direction}_{direction_counts[direction]}"
+        #: 对象名 ``BD_ENV_<direction>_<n>``（登记表键 ``env_<direction>_<n>``
+        #: 去掉 env_ 前缀）；``bd_sdl_id`` 仍存登记表键，逐字段对拍不断链。
+        piece_name = (element_id.removeprefix("env_")
+                      if element_id.startswith("env_") else element_id)
+        piece = create_environment_piece(element_id, offset, dims,
+                                         name=f"BD_ENV_{piece_name}")
+        piece["bd_label"] = str(item.get("label") or "").strip()
+        environment.pieces.append(piece)
+        if extent_m > 0.0 and out_of_bounds(offset, extent_m):
+            note = (f"environment_extent: {label}: "
+                    f"distance={item.get('distance')} 的落点 "
+                    f"({offset[0]:g}, {offset[1]:g}, {offset[2]:g}) 超出场景范围 "
+                    f"±{extent_m:g} m（config.scene.extent_m），已如实放置、未夹取")
+            environment.unresolved_anchors.append(note)
+            log.warning("环境件越界：%s", note)
