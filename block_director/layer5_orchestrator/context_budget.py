@@ -13,6 +13,8 @@ token 估算复用 Light RAG 的确定性估算器（CJK 1 字≈1 token、拉�
 
 from __future__ import annotations
 
+import re
+from dataclasses import replace
 from typing import Dict, List, Sequence, Tuple
 
 from ..contracts.messages import Message, MessageRole
@@ -60,3 +62,45 @@ def budget_report(messages: Sequence[Message], max_tokens: int) -> Dict[str, int
     return {"used_tokens": used, "max_tokens": int(max_tokens),
             "remaining_tokens": max(0, int(max_tokens) - used),
             "messages": len(list(messages))}
+
+
+#: v1.6 F1（D-02）：知识注入的三栏标题（与 ``knowledge/retriever.py`` 的
+#: ``edge_columns`` / 案例栏同一组词）。瘦身包只认这几个标题，别的【…】不动。
+KNOWLEDGE_COLUMN_TITLES = ("硬约束（禁/许）", "经验建议（软）", "参考案例（仅参考）",
+                           "参考案例")
+SLIM_PLACEHOLDER = "（重试瘦身：本次省略知识栏，以该镜声明与审计发现为准）"
+_COLUMN_RE = re.compile(
+    r"【(?:" + "|".join(re.escape(t) for t in KNOWLEDGE_COLUMN_TITLES) + r")】"
+    r".*?(?=\n【|\n#|\n\n\S|\Z)", re.S)
+
+
+def strip_knowledge_columns(text: str) -> Tuple[str, int]:
+    """去掉文本里的知识三栏，返回 ``(新文本, 去掉的栏数)``；没有栏 ⇒ 原样返回。"""
+    removed = 0
+
+    def _drop(_match) -> str:
+        nonlocal removed
+        removed += 1
+        return SLIM_PLACEHOLDER if removed == 1 else ""
+
+    slimmed = _COLUMN_RE.sub(_drop, str(text or ""))
+    return slimmed, removed
+
+
+def slim_messages(messages: Sequence[Message]) -> Tuple[List[Message], int]:
+    """重试阶梯的**瘦身包**：只去 RAG 三栏，其它一律原样（TDD §4.5）。
+
+    该镜声明、审计发现、工具调用与工具结果都不动——瘦身的目的只是缩短输入，
+    不能拿掉模型修这一镜真正需要的证据。返回 ``(新消息, 去掉的栏数)``。
+    """
+    out: List[Message] = []
+    total = 0
+    for message in messages:
+        content = getattr(message, "content", None)
+        if isinstance(content, str) and "【" in content:
+            slimmed, removed = strip_knowledge_columns(content)
+            if removed:
+                total += removed
+                message = replace(message, content=slimmed)
+        out.append(message)
+    return out, total
