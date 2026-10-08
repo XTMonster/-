@@ -26,7 +26,13 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from ..contracts.beats import BEAT_VERBS, MAX_BEATS, ShotBeat
+from ..contracts.beats import BEAT_VERBS, MAX_BEATS, PACE_VALUES, ShotBeat
+from ..contracts.rhythm import (
+    CURVE_TO_INTERPOLATION,
+    CURVE_VALUES,
+    DEFAULT_CURVE,
+    curve_problems,
+)
 from ..motion.model import (
     ENTRANCE_ACTIONS,
     LAYER_HEAD,
@@ -55,6 +61,44 @@ WALK_MIN_FRAMES = 12
 #: ``motion/model.py::_SPEED_RATE``）。映射是**设计表**，不是判据。
 PACE_TO_SPEED: Dict[str, str] = {"slow": "walk", "normal": "walk",
                                  "brisk": "run"}
+
+#: v1.6 D2（FR-B3，TDD §4.4 逐字）：``pace`` → 帧长倍率。
+#: 作用于 :data:`BEAT_DURATION_TABLE` 与走位估帧（:func:`_walk_frames` 的输出）。
+PACE_FRAME_MULTIPLIER: Dict[str, float] = {"slow": 1.35, "normal": 1.0,
+                                           "brisk": 0.7}
+
+#: v1.6 D2（FR-B3，TDD §4.4 逐字）：曲线词 → ``(fcurve 插值模式, 位移时间轮廓)``。
+#: 插值模式与 ``contracts/rhythm.py::CURVE_TO_INTERPOLATION`` 同源（测试逐词对拍）；
+#: 位移轮廓只在走位折段时消费（smooth/linear = None ⇒ 单段、与旧输出零行为差）。
+CURVE_PROFILE: Dict[str, tuple] = {
+    "linear":   ("LINEAR", None),
+    "smooth":   ("BEZIER",  None),
+    "ease_in":  ("BEZIER",  "slow_start"),   # 前 20% 帧位移 ≤10%
+    "ease_out": ("BEZIER",  "slow_end"),     # 末 20% 帧位移 ≤10%
+    "sharp":    ("LINEAR",  "burst"),        # 前 15% 帧完成 ≥85%
+}
+
+#: 位移时间轮廓的**折段切点**（归一化帧占比，含首尾）。
+#: 断言口径（TDD §4.4）：ease_in p(0.2)=0.04 ≤0.1；ease_out p(0.8)=0.96
+#: （末 20% 只走 4%）；sharp p(0.15)=1−0.85¹²≈0.858 ≥0.85。
+_DISPLACEMENT_BOUNDARIES: Dict[str, tuple] = {
+    "slow_start": (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
+    "slow_end":   (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
+    "burst":      (0.0, 0.15, 0.3, 0.5, 0.75, 1.0),
+}
+
+#: 护栏放在导入期：词表一旦漂移，编译层当场拒绝加载，而不是等测试来发现。
+if set(PACE_FRAME_MULTIPLIER) != set(PACE_VALUES):          # pragma: no cover
+    raise RuntimeError(
+        "PACE_FRAME_MULTIPLIER 与 contracts/beats.py 的 PACE_VALUES 不一致："
+        f"{sorted(set(PACE_FRAME_MULTIPLIER) ^ set(PACE_VALUES))}")
+if set(CURVE_PROFILE) != set(CURVE_VALUES):                 # pragma: no cover
+    raise RuntimeError(
+        "CURVE_PROFILE 与 contracts/rhythm.py 的 CURVE_VALUES 不一致："
+        f"{sorted(set(CURVE_PROFILE) ^ set(CURVE_VALUES))}")
+if any(CURVE_PROFILE[curve][0] != CURVE_TO_INTERPOLATION[curve]
+       for curve in CURVE_VALUES):                          # pragma: no cover
+    raise RuntimeError("CURVE_PROFILE 的插值模式与 CURVE_TO_INTERPOLATION 漂移")
 
 #: ``face_to`` 里那几个**屏幕方向**的取值：它们没有世界坐标，折算成
 #: ``look_at`` 的固定偏角（正 = 向画面右侧偏）。
@@ -155,14 +199,84 @@ def _walk_frames(distance: float) -> int:
     return max(frames, WALK_MIN_FRAMES)
 
 
+def _pace_multiplier(pace: Any) -> float:
+    """``pace`` → 帧长倍率（缺省/未知按 normal=1.0，与既有 PACE_TO_SPEED 同纪律）。"""
+    return float(PACE_FRAME_MULTIPLIER.get(str(pace or "normal"), 1.0))
+
+
 def _duration_for(verb: str, start: int, end: int, span: int,
-                  distance: float = 0.0) -> int:
-    """动词在本镜里占几帧（走位按距离，其余查表），最后夹进镜内。"""
+                  distance: float = 0.0, pace: Any = "") -> int:
+    """动词在本镜里占几帧（走位按距离，其余查表），乘 ``pace`` 倍率后夹进镜内。"""
+    multiplier = _pace_multiplier(pace)
     if verb in ("walk_to", "run_to", "enter_from", "exit_frame"):
-        frames = _walk_frames(distance)
+        frames = int(round(_walk_frames(distance) * multiplier))
     else:
-        frames = int(BEAT_DURATION_TABLE.get(verb, 12))
+        frames = int(round(float(BEAT_DURATION_TABLE.get(verb, 12))
+                           * multiplier))
     return max(min(int(frames), max(span - start + 1, 1)), 1)
+
+
+def _curve_progress(curve: str, fraction: float) -> float:
+    """曲线词 → 归一化位移轮廓 ``p(t)``（确定性；同输入同数值）。
+
+    smooth/linear 不折段（轮廓 = None）：smooth 的缓动由 BEZIER 手柄承担，
+    linear 匀速——引擎逐帧线性插值正是这两种语义。
+    """
+    t = min(max(float(fraction), 0.0), 1.0)
+    if curve == "ease_in":
+        return t * t
+    if curve == "ease_out":
+        return 1.0 - (1.0 - t) * (1.0 - t)
+    if curve == "sharp":
+        return 1.0 - (1.0 - t) ** 12
+    return t
+
+
+def _interpolate_position(source: Sequence[float], target: Sequence[float],
+                          amount: float) -> Tuple[float, float, float]:
+    return tuple(float(source[i])
+                 + (float(target[i]) - float(source[i])) * amount
+                 for i in range(3))
+
+
+def _walk_segments(start: int, end: int, source: Sequence[float],
+                   target: Sequence[float],
+                   curve: str
+                   ) -> List[Tuple[int, int, Tuple[float, float, float],
+                                  Tuple[float, float, float]]]:
+    """把一次走位的**根位移**按曲线轮廓切成连续段（确定性：同输入同帧表）。
+
+    段端点落在轮廓曲线上（``p(t)``），段内由引擎逐帧线性插值（现成行为）——
+    连续段拼起来就是分段线性的位移轮廓，无需改 ``motion/model.py`` 一个数字。
+    smooth/linear 的轮廓是 None ⇒ 单段、与旧输出逐字段相同。
+    """
+    profile = CURVE_PROFILE.get(curve, (None, None))[1]
+    source = tuple(float(v) for v in source)
+    target = tuple(float(v) for v in target)
+    if profile is None:
+        return [(int(start), int(end), source, target)]
+
+    span = max(int(end) - int(start), 1)
+    points: List[Tuple[int, Tuple[float, float, float]]] = []
+    for fraction in _DISPLACEMENT_BOUNDARIES.get(profile, (0.0, 1.0)):
+        frame = int(start) + int(round(span * fraction))
+        position = _interpolate_position(source, target,
+                                         _curve_progress(curve, fraction))
+        if points and points[-1][0] == frame:
+            continue
+        points.append((frame, position))
+    if len(points) < 2:
+        return [(int(start), int(end), source, target)]
+
+    segments: List[Tuple[int, int, Tuple[float, float, float],
+                         Tuple[float, float, float]]] = []
+    previous_end = int(start) - 1
+    for (frame_a, pos_a), (frame_b, pos_b) in zip(points, points[1:]):
+        seg_start = max(int(frame_a), previous_end + 1)
+        seg_end = max(seg_start, int(frame_b))
+        segments.append((seg_start, seg_end, pos_a, pos_b))
+        previous_end = seg_end
+    return segments
 
 
 def compile_beats(shot, anchors: Any = None, cast: Any = None,
@@ -198,6 +312,13 @@ def compile_beats(shot, anchors: Any = None, cast: Any = None,
         if not subject:
             problems.append(f"{where}：缺少 subject，已跳过")
             continue
+        #: v1.6 D2：curve 是闭集词——非法值如实记问题后按缺省 smooth 编译
+        #: （缺省不是猜测，是"未声明"的既有语义；问题清单让调用方看见坏词）。
+        curve = str(beat.curve or "") or DEFAULT_CURVE
+        curve_findings = curve_problems(curve, f"{where}.curve")
+        problems.extend(curve_findings)
+        if curve_findings:
+            curve = DEFAULT_CURVE
         start = max(1, int(round(float(beat.t) * duration)))
         distance = 0.0
         params: Dict[str, Any] = {}
@@ -224,7 +345,8 @@ def compile_beats(shot, anchors: Any = None, cast: Any = None,
             elif beat.react:
                 params["prop"] = str(beat.react)
 
-        frames = _duration_for(beat.verb, start, start, duration, distance)
+        frames = _duration_for(beat.verb, start, start, duration, distance,
+                               beat.pace)
         end = min(start + frames - 1, duration)
         #: `face_to` 折算：角色 id → 用两人的真实位置算头部偏角（几何来自
         #: `motion/model.py::head_track_angles`，单一真源）；屏幕方向 → 固定偏角。
@@ -252,17 +374,24 @@ def compile_beats(shot, anchors: Any = None, cast: Any = None,
                             "params": dict(look)})
         action_type = "walk_to" if beat.verb in ENTRANCE_ACTIONS else beat.verb
         if beat.verb in ("walk_to", "run_to") or beat.verb in ENTRANCE_ACTIONS:
-            entry: Dict[str, Any] = {
-                "character_id": subject, "action_type": action_type,
-                "start_frame": start, "end_frame": end,
-                "params": params,
-            }
+            #: v1.6 D2（FR-B3）：根位移按轮廓折成**连续段**，每段都是既有
+            #: 形状的 walk 动作（同输入同帧表）；smooth/linear 单段 = 旧输出。
+            for seg_start, seg_end, seg_from, seg_to in _walk_segments(
+                    start, end, source, destination, curve):
+                segment_params = dict(params)
+                segment_params["from"] = list(seg_from)
+                segment_params["target_position"] = list(seg_to)
+                actions.append({
+                    "character_id": subject, "action_type": action_type,
+                    "start_frame": seg_start, "end_frame": seg_end,
+                    "params": segment_params,
+                })
         else:
             entry = {"character_id": subject, "action_type": action_type,
                      "start_frame": start, "end_frame": end}
             if params:
                 entry["params"] = params
-        actions.append(entry)
+            actions.append(entry)
 
     #: **同 subject 串行**（§9.7）：同层动作不得时间重叠；这里按帧排序后
     #: 把被压住的窗口往后推，留痕说明（不丢拍点）。
@@ -474,6 +603,7 @@ def _coerce_beats(beats: Iterable[Any]) -> List[ShotBeat]:
 
 __all__ = [
     "BEAT_DURATION_TABLE", "WALK_METRES_PER_FRAME", "WALK_MIN_FRAMES",
-    "PACE_TO_SPEED", "FACE_TO_SCREEN_YAW",
+    "PACE_TO_SPEED", "PACE_FRAME_MULTIPLIER", "CURVE_PROFILE",
+    "FACE_TO_SCREEN_YAW",
     "compile_beats", "merge_with_actions", "compiled_verb_set",
 ]

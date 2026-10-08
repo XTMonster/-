@@ -159,8 +159,54 @@ def test_generated_default_yaml_contains_the_new_sections():
 
     text = dump_default_yaml()
     for key in ("guard:", "labels:", "adaptive_sampling", "fullframe_verify",
-                "sustain_frames", "size_bands"):
+                "sustain_frames", "size_bands", "rhythm:", "pacing_profile",
+                "pace_frame_multiplier"):
         assert key in text, key
     shipped = (Path(__file__).resolve().parents[1] / "specs"
                / "config.default.yaml").read_text(encoding="utf-8")
     assert shipped == text, "运行 python tools/gen_specs.py"
+
+
+# ---------------------------------------------------------------- v1.6 D2
+def test_rhythm_defaults_are_valid():
+    cfg = AppConfig()
+    assert cfg.rhythm.enabled is True
+    assert cfg.rhythm.pacing_profile == "standard"
+    assert cfg.rhythm.pace_frame_multiplier == {
+        "slow": 1.35, "normal": 1.0, "brisk": 0.7}
+    assert not {"CFG_218", "CFG_219"} & _codes(cfg)
+
+
+def test_rhythm_invalid_profile_and_multiplier_are_rejected():
+    cfg = AppConfig()
+    cfg.rhythm.pacing_profile = "extreme"
+    assert "CFG_218" in _codes(cfg)
+
+    cfg = AppConfig()
+    cfg.rhythm.pace_frame_multiplier = {"slow": 1.35, "normal": 0.0,
+                                        "brisk": 0.7}
+    assert "CFG_219" in _codes(cfg)
+
+    cfg = AppConfig()
+    cfg.rhythm.pace_frame_multiplier = {"slow": -1.0}
+    assert "CFG_219" in _codes(cfg)
+
+
+def test_rhythm_multiplier_table_matches_the_compiler():
+    """config 与编译层的倍率表同值——两份声明用测试钉住，不让它们悄悄漂移。"""
+    from block_director.layer5_orchestrator.beat_compiler import (
+        PACE_FRAME_MULTIPLIER,
+    )
+    assert AppConfig().rhythm.pace_frame_multiplier == PACE_FRAME_MULTIPLIER
+
+
+def test_rhythm_round_trip_through_dict():
+    cfg = AppConfig()
+    cfg.rhythm.enabled = False
+    cfg.rhythm.pacing_profile = "urgent"
+    cfg.rhythm.pace_frame_multiplier = {"slow": 1.5, "normal": 1.0,
+                                        "brisk": 0.6}
+    restored = AppConfig.from_dict(cfg.to_dict())
+    assert restored.rhythm.enabled is False
+    assert restored.rhythm.pacing_profile == "urgent"
+    assert restored.rhythm.pace_frame_multiplier == cfg.rhythm.pace_frame_multiplier

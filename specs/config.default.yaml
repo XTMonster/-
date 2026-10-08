@@ -158,6 +158,13 @@ guard:
       ELS:
       - 0.15
       - 0.35
+rhythm:
+  enabled: true
+  pacing_profile: standard
+  pace_frame_multiplier:
+    slow: 1.35
+    normal: 1.0
+    brisk: 0.7
 labels:
   adaptive_sampling: true
   fullframe_verify: true

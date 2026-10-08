@@ -24,6 +24,11 @@ from ...cinema.camera_motion import (
     movement_samples,
     sample_frames,
 )
+from ...contracts.rhythm import (
+    CURVE_TO_INTERPOLATION,
+    DEFAULT_CURVE,
+    curve_problems,
+)
 from ...utils.logger import get_logger
 from ...utils.threading_guard import main_thread_only
 
@@ -43,12 +48,23 @@ def apply_camera_movement(camera, target, movement: str, amount: float,
                           start_frame: int, end_frame: int,
                           samples: int = 3, *, subject=None,
                           subject_path: Optional[List[Sequence[float]]] = None,
-                          seed: int = 0) -> Dict[str, object]:
+                          seed: int = 0,
+                          curve: str = DEFAULT_CURVE) -> Dict[str, object]:
     """给相机加一段运镜，返回插入的关键帧数与首末位置。
 
     ``subject`` 给了就会**自己采样**它的逐帧位置（调用方不必先算好）；
     ``subject_path`` 则留给"路径已经算好"的场合（测试与重放）。
+
+    ``curve`` 是 v1.6 D2（FR-B4）的速度曲线词（闭集 = ``contracts/rhythm.py``
+    的 ``CURVE_VALUES``，缺省 smooth = 既有的一律 BEZIER 行为）。非法词直接
+    ``ValueError``，不静默吞掉。
     """
+    curve_name = str(curve or "").strip() or DEFAULT_CURVE
+    curve_errors = curve_problems(curve_name, "curve")
+    if curve_errors:
+        raise ValueError("；".join(curve_errors))
+    interpolation = CURVE_TO_INTERPOLATION[curve_name]
+
     position = tuple(camera.matrix_world.translation)
     look_at = tuple(_current_look_at(camera, target))
     lens = float(camera.data.lens)
@@ -84,9 +100,9 @@ def apply_camera_movement(camera, target, movement: str, amount: float,
         if obj is None or obj.animation_data is None:
             continue
         action = obj.animation_data.action
-        for curve in _fcurves(action):
-            for point in curve.keyframe_points:
-                point.interpolation = 'BEZIER'
+        for fcurve in _fcurves(action):
+            for point in fcurve.keyframe_points:
+                point.interpolation = interpolation
     bpy.context.view_layer.update()
     log.info("运镜 %s：%d 个采样点 / %d 个关键帧", movement, len(plan), inserted)
     return {"movement": movement, "samples": len(plan), "keyframes": inserted,

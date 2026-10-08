@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 from ..motion.model import ACTION_TYPES, ENTRANCE_ACTIONS, PROP_ACTIONS
@@ -54,6 +54,16 @@ SUBJECT_POSITIONS: tuple = ("left_third", "right_third", "center")
 RULE_ACTIONS: tuple = ("follow", "break")
 
 
+def _default_curve() -> str:
+    """``ShotBeat.curve`` 的缺省词（单一真源 = ``contracts/rhythm.py::DEFAULT_CURVE``）。
+
+    ``rhythm.py`` 顶部 ``from .beats import PACE_VALUES``，所以本模块只能在
+    **函数体内**反向 import 它（模块级 import 会成环：beats → rhythm → beats）。
+    """
+    from .rhythm import DEFAULT_CURVE
+    return DEFAULT_CURVE
+
+
 def _as_float(value: Any, default: float = 0.0) -> float:
     try:
         return float(value)
@@ -75,12 +85,15 @@ class ShotBeat:
     target: str = ""                     # 锚点名或 character_id；可空
     face_to: str = ""                    # 角色 id / screen_left / screen_right / camera / away
     pace: str = ""                       # slow / normal / brisk；空 = normal
+    #: v1.6 D2（FR-B3）：速度曲线词（闭集真源 = ``contracts/rhythm.py::CURVE_VALUES``，
+    #: 缺省 smooth）。LLM 只写词，插值/位移轮廓由编译层确定性折出。
+    curve: str = field(default_factory=_default_curve)
     react: str = ""                      # 情绪反应标签（自由短文本，仅注释用）
 
     def to_dict(self) -> Dict[str, Any]:
         return {"t": float(self.t), "subject": self.subject, "verb": self.verb,
                 "target": self.target, "face_to": self.face_to,
-                "pace": self.pace, "react": self.react}
+                "pace": self.pace, "curve": self.curve, "react": self.react}
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ShotBeat":
@@ -91,6 +104,7 @@ class ShotBeat:
                    target=_text(payload.get("target")),
                    face_to=_text(payload.get("face_to")),
                    pace=_text(payload.get("pace")),
+                   curve=_text(payload.get("curve")) or _default_curve(),
                    react=_text(payload.get("react")))
 
 
@@ -188,6 +202,7 @@ def validate_beats(beats: Sequence[Any], characters: Sequence[str] = (),
     不变量：``t ∈ [0,1]``；同一 subject 的拍点按 ``t`` 单调不减；``subject``
     非空且（表已知时）在 cast 里；``target`` 非空时（表已知时）能在锚点表或 cast
     里解析；``face_to``/``pace`` 非空时落在各自闭集内（``face_to`` 另允许角色 id）；
+    ``curve`` 落在 ``contracts/rhythm.py::CURVE_VALUES`` 闭集内（空 = 缺省 smooth）；
     拍点数 ≤ MAX_BEATS。
     """
     problems: List[str] = []
@@ -200,6 +215,7 @@ def validate_beats(beats: Sequence[Any], characters: Sequence[str] = (),
     if anchors is not None:
         known_anchors = {str(item) for item in anchors if str(item)}
 
+    from .rhythm import curve_problems
     last_t: Dict[str, float] = {}
     for index, beat in enumerate(items, start=1):
         where = f"第 {index} 个拍点"
@@ -225,6 +241,7 @@ def validate_beats(beats: Sequence[Any], characters: Sequence[str] = (),
         if beat.pace and beat.pace not in PACE_VALUES:
             problems.append(
                 f"{where}的 pace={beat.pace!r} 不在闭集内（{'、'.join(PACE_VALUES)}）")
+        problems += curve_problems(beat.curve, f"{where}.curve")
         if beat.subject:
             previous = last_t.get(beat.subject)
             if previous is not None and float(beat.t) < previous - 1e-9:

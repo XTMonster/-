@@ -405,6 +405,21 @@ def resolve_guard_thresholds(guard: "GuardConfig") -> Dict[str, Any]:
 
 
 @dataclass
+class RhythmConfig:
+    """节奏编译（v1.6 D2，FR-B3；TDD §6 的 ``rhythm:`` 段）。"""
+
+    #: 总开关。关掉 = 回到 v1.5 的节奏路径（用户选择，不是静默降级）。
+    enabled: bool = True
+    #: 镜长档案名（闭集 = ``contracts/rhythm.py::PACING_PROFILES``）。
+    pacing_profile: str = "standard"
+    #: ``pace`` → 帧长倍率表（与 ``beat_compiler.PACE_FRAME_MULTIPLIER`` 同值，
+    #: ``tests/test_config_v16.py`` 逐键对拍防漂移）。
+    pace_frame_multiplier: Dict[str, float] = field(default_factory=lambda: {
+        "slow": 1.35, "normal": 1.0, "brisk": 0.7,
+    })
+
+
+@dataclass
 class LabelsConfig:
     """角色标签全帧防互挡（v1.6 A7，D-19）。"""
 
@@ -434,6 +449,7 @@ class AppConfig:
     framing: FramingConfig = field(default_factory=FramingConfig)
     vlm_review: VlmReviewConfig = field(default_factory=VlmReviewConfig)
     guard: GuardConfig = field(default_factory=GuardConfig)
+    rhythm: RhythmConfig = field(default_factory=RhythmConfig)
     labels: LabelsConfig = field(default_factory=LabelsConfig)
 
     # ----------------------------------------------------------------- 校验
@@ -501,6 +517,29 @@ class AppConfig:
                 if not ok:
                     err("CFG_217", f"guard.size_bands.{kind}.{shot_type}",
                         f"景别区间必须是 [lo, hi] 且 0≤lo<hi≤1（当前 {band}）")
+        # --- v1.6 D2（FR-B3）：节奏编译段。CFG_020–023 与 210–217 已被占用，
+        # 顺延到 218 / 219。---
+        #: 延迟导入：beats → motion.model → cinema → contracts.enums 这条链会与
+        #: ``contracts/__init__ → config`` 成环（模块顶层 import 会当场炸），
+        #: 校验只发生在运行期，函数体内导入即可。
+        from .beats import PACE_VALUES
+        from .rhythm import PACING_PROFILES
+        if str(self.rhythm.pacing_profile) not in PACING_PROFILES:
+            err("CFG_218", "rhythm.pacing_profile",
+                f"未知节奏档案 {self.rhythm.pacing_profile!r}；"
+                f"合法值 {sorted(PACING_PROFILES)}")
+        multipliers = self.rhythm.pace_frame_multiplier
+        if not isinstance(multipliers, dict) or set(multipliers) != set(PACE_VALUES):
+            err("CFG_219", "rhythm.pace_frame_multiplier",
+                f"节奏帧长倍率表必须恰好包含 {'/'.join(PACE_VALUES)} 三档"
+                f"（当前 {multipliers!r}）")
+        else:
+            for pace, value in multipliers.items():
+                if (isinstance(value, bool)
+                        or not isinstance(value, (int, float))
+                        or float(value) <= 0.0):
+                    err("CFG_219", f"rhythm.pace_frame_multiplier.{pace}",
+                        f"帧长倍率必须为正数（当前 {value!r}）")
         if self.rag.top_k <= 0:
             err("CFG_007", "rag.top_k", "检索条数必须为正整数")
         if self.orchestration.max_repair_attempts < 0:

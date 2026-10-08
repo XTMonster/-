@@ -35,6 +35,7 @@ from ..contracts.messages import (
     new_request_id,
 )
 from ..contracts.plan import Plan, ShotPlan
+from ..contracts.rhythm import CURVE_VALUES
 from ..contracts.tools import SHOT_DRAFT_TOOL
 from ..cinema.framing import CAMERA_SIDES
 from ..cinema.camera_motion import movement_unit_table
@@ -189,6 +190,9 @@ EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
                     "target": {"type": "string"},
                     "face_to": {"type": "string", "enum": list(FACE_TO_VALUES)},
                     "pace": {"type": "string", "enum": list(PACE_VALUES)},
+                    #: v1.6 D2（FR-B3）：速度曲线词。闭集真源 =
+                    #: ``contracts/rhythm.py::CURVE_VALUES``（**导入**，不抄第二份）。
+                    "curve": {"type": "string", "enum": list(CURVE_VALUES)},
                     "react": {"type": "string"},
                 },
             },

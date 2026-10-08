@@ -75,7 +75,7 @@ def test_shotbeat_is_not_scenebrief_beats():
     narrative_keys = {"id", "summary", "participants", "emotion", "function"}
     beat_keys = {item.name for item in fields(ShotBeat)}
     assert beat_keys == {"t", "subject", "verb", "target", "face_to", "pace",
-                         "react"}
+                         "curve", "react"}
     assert not (beat_keys & narrative_keys), (
         "ShotBeat 的字段与叙事节拍的字段重叠了：两个概念开始糊在一起")
     # 反向哨兵：SceneBrief 仍然有它自己的 beats（不是本模块的）。
