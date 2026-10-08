@@ -160,12 +160,28 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
 
     entries = collect_label_entries(list(context.characters.values()))
     if entries:
-        label_config = get_config().character
-        bake_labels(scene, entries, context.schedule, context.cameras,
-                    target_pixels=float(label_config.label_pixels),
-                    min_pixels=float(label_config.label_min_pixels),
-                    max_ratio=float(label_config.label_max_ratio),
-                    resolution=get_config().delivery.resolution)
+        app_config = get_config()
+        label_config = app_config.character
+        label_report = bake_labels(
+            scene, entries, context.schedule, context.cameras,
+            target_pixels=float(label_config.label_pixels),
+            min_pixels=float(label_config.label_min_pixels),
+            max_ratio=float(label_config.label_max_ratio),
+            resolution=app_config.delivery.resolution,
+            adaptive_sampling=bool(app_config.labels.adaptive_sampling),
+            fullframe_verify=bool(app_config.labels.fullframe_verify))
+        # v1.6 A7（D-19）：全帧自检的余量进重生成告警，不静默。
+        overlap_report = label_report.get("label_overlap_report") or {}
+        overlap_frames = list(overlap_report.get("overlap_frames") or [])
+        if overlap_frames:
+            shown = ", ".join(str(frame) for frame in overlap_frames[:5])
+            if len(overlap_frames) > 5:
+                shown += " …"
+            warnings.append(
+                f"标签全帧自检：{len(overlap_frames)} 帧交叠仍超 "
+                f"{float(overlap_report.get('limit') or 0.05):g}"
+                f"（最高 {float(overlap_report.get('max_overlap_ratio') or 0):.1%}，"
+                f"帧 {shown}）")
 
     log.info("重生成单镜 %s：%d-%d，%d 个关键帧", shot_id, start, end, keyframes)
     return {"ok": True, "shot_id": shot_id, "start_frame": start,

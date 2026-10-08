@@ -16,6 +16,12 @@
 
 采样步长默认 4 帧：相机在 v1.3 里基本是静态的，4 帧步长 + 贝塞尔插值
 足够平滑，而每帧每标签写三条曲线会平白多出几万个关键帧。
+
+v1.6 A7（D-19）把「互斥」从采样帧扩到**成片每一帧**：① 步长自适应——锚点
+相对屏幕速度超阈、或插值帧检出重叠时，该区段加密至每帧；② 松弛从纯纵向
+升二维（纵向预算耗尽时横向错开，推开顺序按标签 id 确定性排序）；③ 烘焙后
+做**全帧自检**：超限帧重烘、复检，余量如实写进 ``label_overlap_report``，
+绝不隐藏。
 """
 
 from __future__ import annotations
@@ -27,6 +33,7 @@ import bpy
 from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
+from ..contracts.audit import LABEL_OVERLAP_REPORT
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .character_system.character_label import (
@@ -48,6 +55,12 @@ AVOID_GAP_PX = 2.0
 OVERLAP_LIMIT = 0.05
 #: 避让迭代次数上限（逐个让位是收敛的；给个上界防止不收敛）。
 SEPARATE_ITERATIONS = 16
+#: v1.6 A7（D-19）：相对屏幕速度（NDC/帧）超过此値时，区段加密至每帧。
+ADAPTIVE_SPEED_THRESHOLD = 0.03
+#: v1.6 A7（D-19）：全帧自检里「超限帧重烘 → 复检」的轮数上限；打满仍超限
+#: 的帧如实写进报告，绝不隐藏。
+FULLFRAME_REBAKE_ROUNDS = 3
+
 #: 触发避让的帧允许的最大位移（占画面高的比例，RK-2 的判据）。
 #: **只此一处定义**——两处定义会静默分叉（v1.4 §3.5 的"禁止死字段"同理）。
 MAX_OFFSET_RATIO = 0.25
@@ -87,7 +100,8 @@ def _unit_pixel_height(scene, camera, position: Vector, up: Vector,
 
 
 def _sample_frames(schedule: Dict[str, Tuple[int, int]],
-                   step: int) -> List[int]:
+                   step: int,
+                   extra_frames: Optional[List[int]] = None) -> List[int]:
     frames: List[int] = []
     for start, end in schedule.values():
         cursor = int(start)
@@ -95,6 +109,8 @@ def _sample_frames(schedule: Dict[str, Tuple[int, int]],
             frames.append(cursor)
             cursor += max(int(step), 1)
         frames.append(int(end))
+    if extra_frames:
+        frames.extend(extra_frames)
     return sorted(set(frames))
 
 
@@ -166,11 +182,16 @@ def separate_labels(scene, camera, prepared: List[Dict[str, Any]],
 
     就地修改 ``prepared`` 的 ``position`` / ``offset_reason`` /
     ``applied_offset_px``，返回被移动过的条目。位移上限是
-    ``MAX_OFFSET_RATIO × 画面高``（RK-2 的判据）。
+    ``MAX_OFFSET_RATIO × 画面高``（RK-2 的判据）。v1.6 A7（D-19）起纵向
+    预算耗尽时横向错开（二维松弛）。
     """
     moved: List[Dict[str, Any]] = []
     if len(prepared) < 2:
         return moved
+    # v1.6 A7（D-19）：推开顺序按标签 id 确定性排序——上移谁、横推谁都与
+    # ``prepared`` 的入列顺序无关（入列顺序由调用方决定，不能成为松弛结果）。
+    prepared = sorted(prepared,
+                      key=lambda item: str(item.get("character_id") or ""))
     limit_px = MAX_OFFSET_RATIO * float(res_y)
     for _ in range(max(int(iterations), 1)):
         boxes = []
@@ -193,6 +214,30 @@ def separate_labels(scene, camera, prepared: List[Dict[str, Any]],
                     prepared[upper].get("applied_offset_px") or 0.0)
                 shift_px = max(min(max(overlap_h, 1.0), room), 0.0)
                 if shift_px <= 0.0:
+                    # Vertical budget exhausted — try horizontal push (v1.6 A7 D-19 2D松弛).
+                    # 横推标签 id 靠后的那个（prepared 已按 id 排序，确定性）。
+                    overlap_w = (min(boxes[i][2], boxes[j][2])
+                                 - max(boxes[i][0], boxes[j][0]))
+                    if overlap_w <= 0.0:
+                        continue
+                    mover = j
+                    room_h = limit_px - float(
+                        prepared[mover].get("applied_offset_px") or 0.0)
+                    shift_h = max(min(max(overlap_w, 1.0), room_h), 0.0)
+                    if shift_h <= 0.0:
+                        continue
+                    _aspect = float(res_x) / max(float(res_y), 1.0)
+                    world_h = (shift_h / float(res_x)
+                               * float(prepared[mover]["frame_height"]) * _aspect)
+                    prepared[mover]["position"] = (
+                        prepared[mover]["position"]
+                        + prepared[mover]["right"] * world_h)
+                    prepared[mover]["applied_offset_px"] = float(
+                        prepared[mover].get("applied_offset_px") or 0.0) + shift_h
+                    if prepared[mover]["offset_reason"] == REASON_NONE:
+                        prepared[mover]["offset_reason"] = REASON_OVERLAP
+                    if prepared[mover] not in moved:
+                        moved.append(prepared[mover])
                     continue
                 world = (shift_px / float(res_y)
                          * float(prepared[upper]["frame_height"]))
@@ -233,6 +278,144 @@ def collect_label_entries(characters: Sequence[Any]) -> List[Dict[str, Any]]:
     return entries
 
 
+def _screen_box_from_obj(scene, camera, obj, res_x: float, res_y: float):
+    """全帧自检用：从对象当前 matrix_world 的 bound_box 求屏幕像素 AABB。
+
+    烘焙后调用 scene.frame_set + view_layer.update 即可让 matrix_world 反映
+    关键帧插值结果，无需重新计算 prepared 数据。
+    """
+    matrix = obj.matrix_world
+    xs: List[float] = []
+    ys: List[float] = []
+    for corner in obj.bound_box:
+        pt = world_to_camera_view(scene, camera, matrix @ Vector(corner))
+        xs.append(pt.x * res_x)
+        ys.append(pt.y * res_y)
+    if not xs:
+        return (0.0, 0.0, 0.0, 0.0)
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+def _empty_overlap_report() -> Dict[str, Any]:
+    """``label_overlap_report`` 的空态（字段与 ``V16_EVENT_FIELDS`` 对拍）。"""
+    return {"max_overlap_ratio": 0.0, "overlap_frames": [],
+            "frames_checked": 0, "limit": float(OVERLAP_LIMIT)}
+
+
+def _schedule_frames(schedule: Dict[str, Tuple[int, int]]) -> List[int]:
+    """计划里所有会被渲染的帧（含两端）。"""
+    frames: List[int] = []
+    for start, end in schedule.values():
+        frames.extend(range(int(start), int(end) + 1))
+    return sorted(set(frames))
+
+
+def _scan_overlap(scene, cameras, schedule, entries, res_x: float,
+                  res_y: float, frames: Sequence[int]
+                  ) -> Tuple[List[int], float]:
+    """扫 ``frames`` 每一帧的标签两两交叠；返回 ``(超限帧清单, 最大交叠率)``。
+
+    量法与 ``tools/blender_tests/test_label_layout.py`` 的 ``_overlap`` /
+    ``_screen_box`` 一致（RK-2 的 5% 判据原样），只是把覆盖范围从采样帧
+    扩到任意帧集。
+    """
+    over: List[int] = []
+    worst = 0.0
+    fills = [entry.get("fill") for entry in entries]
+    if len(fills) < 2:
+        return over, worst
+    for frame in frames:
+        shot_id = _shot_at(schedule, frame)
+        camera = cameras.get(shot_id) if shot_id else None
+        if camera is None:
+            continue
+        scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        boxes: List[Tuple[float, float, float, float]] = []
+        for fill in fills:
+            if fill is None:
+                continue
+            boxes.append(_screen_box_from_obj(scene, camera, fill,
+                                              res_x, res_y))
+        flagged = False
+        for i in range(len(boxes)):
+            for j in range(i + 1, len(boxes)):
+                ratio = _overlap_ratio(boxes[i], boxes[j])
+                if ratio > worst:
+                    worst = ratio
+                if ratio > OVERLAP_LIMIT and not flagged:
+                    over.append(frame)
+                    flagged = True
+    return over, worst
+
+
+def _densified_frames(baked: Sequence[int], over: Sequence[int]) -> List[int]:
+    """超限**插值帧**所在区段加密到每帧（v1.6 A7 D-19 步长自适应）。
+
+    已经烘过的超限帧不是插值问题（是松弛容量问题），这里不处理——它们归
+    全帧自检的重烘/如实报告管。
+    """
+    baked_set = set(int(frame) for frame in baked)
+    added: List[int] = []
+    for frame in sorted(set(int(frame) for frame in over)):
+        if frame in baked_set:
+            continue
+        left = None
+        right = None
+        for key in sorted(baked_set):
+            if key < frame:
+                left = key
+            elif key > frame:
+                right = key
+                break
+        if left is None or right is None or right - left <= 1:
+            continue
+        added.extend(range(left + 1, right))
+    return sorted(set(added))
+
+
+def _anchor_ndc(scene, camera, entry) -> Optional[Tuple[float, float]]:
+    """标签锚点当前帧的屏幕 NDC 坐标；锚点缺失返回 ``None``。"""
+    anchor = entry.get("anchor")
+    if anchor is None:
+        return None
+    projected = world_to_camera_view(
+        scene, camera, anchor.matrix_world.translation.copy())
+    return float(projected.x), float(projected.y)
+
+
+def _speed_dense_frames(scene, cameras, schedule, base_frames, entries
+                        ) -> List[int]:
+    """锚点相对屏幕速度超阈的区段加密到每帧（v1.6 A7 D-19 触发条件①）。"""
+    extra: List[int] = []
+    for shot_id, (start, end) in schedule.items():
+        camera = cameras.get(shot_id)
+        if camera is None:
+            continue
+        shot_base = [frame for frame in base_frames
+                     if int(start) <= frame <= int(end)]
+        for fa, fb in zip(shot_base, shot_base[1:]):
+            if fb - fa <= 1:
+                continue
+            scene.frame_set(fa)
+            bpy.context.view_layer.update()
+            positions_a = [_anchor_ndc(scene, camera, entry)
+                           for entry in entries]
+            scene.frame_set(fb)
+            bpy.context.view_layer.update()
+            positions_b = [_anchor_ndc(scene, camera, entry)
+                           for entry in entries]
+            for pa, pb in zip(positions_a, positions_b):
+                if pa is None or pb is None:
+                    continue
+                speed = math.hypot(pb[0] - pa[0], pb[1] - pa[1]) \
+                    / float(max(fb - fa, 1))
+                if speed > ADAPTIVE_SPEED_THRESHOLD:
+                    extra.extend(range(fa + 1, fb))
+                    break
+    return extra
+
+
 @main_thread_only("bake_labels")
 def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                 schedule: Dict[str, Tuple[int, int]],
@@ -241,33 +424,54 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                 target_pixels: float = DEFAULT_TARGET_PIXELS,
                 min_pixels: float = DEFAULT_MIN_PIXELS,
                 max_ratio: float = DEFAULT_MAX_RATIO,
-                resolution: Sequence[int] = (1280, 720)) -> Dict[str, Any]:
-    """给渲染标签烘焙逐帧变换；返回一份可写进交付报告的摘要。"""
+                resolution: Sequence[int] = (1280, 720),
+                adaptive_sampling: bool = True,
+                fullframe_verify: bool = True) -> Dict[str, Any]:
+    """给渲染标签烘焙逐帧变换；返回一份可写进交付报告的摘要。
+
+    v1.6 A7（D-19）：``adaptive_sampling`` 在锚点相对屏幕速度大、或插值帧
+    检出重叠时把区段加密到每帧；``fullframe_verify`` 烘焙后扫**每一帧**，
+    超限帧重烘并复检，余量如实写进 ``label_overlap_report``，绝不隐藏。
+    """
     if not entries or not schedule or not cameras:
-        return {"labels": 0, "frames": 0, "unreadable": []}
+        return {"labels": 0, "frames": 0, "unreadable": [],
+                LABEL_OVERLAP_REPORT: _empty_overlap_report()}
 
     res_y = float(max(int(resolution[1]), 1))
     res_x = float(max(int(resolution[0]), 1))
     aspect = res_x / res_y
-    frames = _sample_frames(schedule, sample_step)
-    unreadable: List[Dict[str, Any]] = []
+    # v1.6 A7（D-19）：标签 id 排序是二维松弛的确定性来源——推开顺序与调用方
+    # 传入的入列顺序脱钩（按 id 排序处理）。
+    ordered_entries = sorted(
+        entries, key=lambda entry: str(entry.get("character_id") or ""))
+    base_frames = _sample_frames(schedule, sample_step)
+
+    # v1.6 A7（D-19）触发条件①：锚点相对屏幕速度超阈 ⇒ 区段加密至每帧。
+    extra: List[int] = []
+    if adaptive_sampling and len(ordered_entries) >= 2:
+        extra = _speed_dense_frames(scene, cameras, schedule,
+                                    base_frames, ordered_entries)
+    frames = _sample_frames(schedule, sample_step, extra_frames=extra)
+    unreadable: Dict[Tuple[str, int], Dict[str, Any]] = {}
     written = 0
 
     # v1.4 BW-2：**按帧**先算出所有标签的落点，再统一做标签间避让，最后
     # 才写关键帧。旧实现是"逐标签算完就写"，标签之间互相压住时无人可让。
     worst_offset: Dict[str, Dict[str, Any]] = {}
-    for frame in frames:
+
+    def _bake_frame(frame: int) -> None:
+        nonlocal written
         shot_id = _shot_at(schedule, frame)
         camera = cameras.get(shot_id) if shot_id else None
         if camera is None:
-            continue
+            return
         scene.frame_set(frame)
         bpy.context.view_layer.update()
         rotation = camera.matrix_world.to_euler()
         right, up = _camera_axes(camera)
         prepared: List[Dict[str, Any]] = []
 
-        for entry in entries:
+        for entry in ordered_entries:
             fill = entry.get("fill")
             stroke = entry.get("stroke")
             anchor = entry.get("anchor")
@@ -295,13 +499,17 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
             wanted_pixels = min(max(target_pixels, min_pixels), max_pixels)
             if px_at_unit <= 1e-6:
                 scale = 1.0
-                unreadable.append({"character_id": character_id,
-                                   "frame": frame, "reason": "投影退化"})
+                unreadable.setdefault(
+                    (character_id, frame),
+                    {"character_id": character_id, "frame": frame,
+                     "reason": "投影退化"})
             else:
                 scale = wanted_pixels / px_at_unit
             if scale * px_at_unit < min_pixels - 1e-6:
-                unreadable.append({"character_id": character_id,
-                                   "frame": frame, "reason": "低于可读下限"})
+                unreadable.setdefault(
+                    (character_id, frame),
+                    {"character_id": character_id, "frame": frame,
+                     "reason": "低于可读下限"})
 
             reason = REASON_NONE
             offset = Vector((0.0, 0.0, 0.0))
@@ -401,11 +609,54 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                         float(item["position"].z), 4),
                 }
 
+    for frame in frames:
+        _bake_frame(frame)
+
+    overlap_report = _empty_overlap_report()
+    rendered = _schedule_frames(schedule)
+    scanned = False
+    over: List[int] = []
+    worst = 0.0
+
+    # v1.6 A7（D-19）触发条件②：插值帧检出重叠 ⇒ 该区段加密直至每帧。
+    if adaptive_sampling and len(ordered_entries) >= 2:
+        over, worst = _scan_overlap(scene, cameras, schedule,
+                                    ordered_entries, res_x, res_y, rendered)
+        scanned = True
+        added = _densified_frames(frames, over)
+        for frame in added:
+            _bake_frame(frame)
+
+    # v1.6 A7（D-19）：烘焙后全帧自检——超限帧重烘 → 复检；余量如实进报告。
+    if fullframe_verify:
+        overlap_report["frames_checked"] = len(rendered)
+        if not scanned:
+            over, worst = _scan_overlap(scene, cameras, schedule,
+                                        ordered_entries, res_x, res_y,
+                                        rendered)
+        rounds = 0
+        while over and rounds < FULLFRAME_REBAKE_ROUNDS:
+            for frame in sorted(set(over)):
+                _bake_frame(frame)
+            rounds += 1
+            over, worst = _scan_overlap(scene, cameras, schedule,
+                                        ordered_entries, res_x, res_y,
+                                        rendered)
+        overlap_report["overlap_frames"] = sorted(set(over))
+        overlap_report["max_overlap_ratio"] = round(float(worst), 6)
+        if overlap_report["overlap_frames"]:
+            log.warning(
+                "标签全帧自检：%d/%d 帧交叠仍超 %.1f%%（最高 %.1f%%）",
+                len(overlap_report["overlap_frames"]),
+                overlap_report["frames_checked"],
+                float(OVERLAP_LIMIT) * 100.0, float(worst) * 100.0)
+
     log.info("标签烘焙完成：%d 个标签 / %d 帧采样", len(entries), written)
     return {"labels": len(entries), "frames": written,
             "sample_step": int(sample_step), "resolution": [int(res_x),
                                                             int(res_y)],
-            "unreadable": unreadable, "offsets": worst_offset}
+            "unreadable": list(unreadable.values()), "offsets": worst_offset,
+            LABEL_OVERLAP_REPORT: overlap_report}
 
 
 def _camera_axes(camera) -> Tuple[Vector, Vector]:

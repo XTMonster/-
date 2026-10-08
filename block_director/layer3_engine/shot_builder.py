@@ -857,12 +857,26 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             target_pixels=float(label_config.label_pixels),
             min_pixels=float(label_config.label_min_pixels),
             max_ratio=float(label_config.label_max_ratio),
-            resolution=app_config.delivery.resolution)
+            resolution=app_config.delivery.resolution,
+            adaptive_sampling=bool(app_config.labels.adaptive_sampling),
+            fullframe_verify=bool(app_config.labels.fullframe_verify))
         summary.label_report = label_report
         for item in label_report.get("unreadable", [])[:5]:
             summary.warnings.append(
                 f"{item['character_id']} 在第 {item['frame']} 帧的标签低于"
                 f"可读下限（{label_config.label_min_pixels:g}px）")
+        # v1.6 A7（D-19）：全帧自检的余量进构建摘要告警，不静默。
+        overlap_report = label_report.get("label_overlap_report") or {}
+        overlap_frames = list(overlap_report.get("overlap_frames") or [])
+        if overlap_frames:
+            shown = ", ".join(str(frame) for frame in overlap_frames[:5])
+            if len(overlap_frames) > 5:
+                shown += " …"
+            summary.warnings.append(
+                f"标签全帧自检：{len(overlap_frames)} 帧交叠仍超 "
+                f"{float(overlap_report.get('limit') or 0.05):g}"
+                f"（最高 {float(overlap_report.get('max_overlap_ratio') or 0):.1%}，"
+                f"帧 {shown}）")
 
     scene.frame_set(1)
     set_context(context)
