@@ -1,0 +1,318 @@
+{
+  "shot_id": "shot_006",
+  "shot_type": "MS",
+  "recorded_score": 62.1,
+  "recorded_findings": [
+    {
+      "code": "E_SDL_001",
+      "rule": "R003",
+      "severity": "error",
+      "target": "偷盗者",
+      "message": "角色 偷盗者 的动作时间重叠：shot_006#1 look_at 与 shot_006#2 body_tilt",
+      "suggestion": "同一个角色的动作必须串行，请错开起止帧"
+    },
+    {
+      "code": "E_SDL_001",
+      "rule": "R011",
+      "severity": "error",
+      "target": "shot_006",
+      "message": "对白排到第 253 帧，加上 12 帧收尾余量超出镜头时长 216 帧",
+      "suggestion": "加长该镜头，或把对白前移/删减"
+    },
+    {
+      "code": "E_CAM_001",
+      "rule": "COMPOSITION",
+      "severity": "error",
+      "target": "shot_006",
+      "message": "构图评分 62.1（首/中/尾最小值）低于阈值 70",
+      "suggestion": "主体没有明确朝向，视线空间不做要求；主体偏离三分线交点；可微调构图让主体落到交点附近"
+    },
+    {
+      "code": "",
+      "rule": "subject_not_visible",
+      "severity": "error",
+      "target": "偷盗者",
+      "message": "视锥告警 subject_not_visible（偷盗者，帧 505-720）：visible_ratio=0 frames=216",
+      "suggestion": "主体在画框内但被完全挡住：挪开前景或换机位"
+    },
+    {
+      "code": "E_AXIS_001",
+      "rule": "R001",
+      "severity": "warning",
+      "target": "shot_006",
+      "message": "机位落在轴线上（中性镜头）：画面没有明确的左右信息，可以作为跨轴桥梁，但连续使用会失去空间感。",
+      "suggestion": "需要明确左右关系时把机位移离轴线；中性机位适合作为跨轴过渡，不宜连续使用"
+    },
+    {
+      "code": "E_AXIS_001",
+      "rule": "R001",
+      "severity": "warning",
+      "target": "shot_006",
+      "message": "shot_005 与 shot_006 都是中性机位（落在轴线上），连续使用会让观众失去左右关系的连续性",
+      "suggestion": "至少给其中一镜一个明确的轴线侧别"
+    }
+  ],
+  "audit_count": 5,
+  "threshold": 70.0,
+  "replayed_score": 90.4,
+  "evidence": {
+    "subject_xy": [
+      0.75,
+      0.0
+    ],
+    "subject_z": 0.0,
+    "camera_xyz": [
+      -0.8221,
+      1.5721,
+      0.9497
+    ],
+    "lens": 24.0,
+    "target_xyz": [
+      1.143,
+      0.393,
+      1.0997
+    ],
+    "components": {
+      "headroom": 1.0,
+      "lead_room": 0.75,
+      "rule_of_thirds": 0.83,
+      "balance": 1.0,
+      "occlusion": 1.0,
+      "framing": 0.796
+    },
+    "component_items": {
+      "headroom": {
+        "score": 1.0,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "lead_room": {
+        "score": 0.75,
+        "weight": 0.2,
+        "suggestion": "主体没有明确朝向，视线空间不做要求"
+      },
+      "rule_of_thirds": {
+        "score": 0.83,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "balance": {
+        "score": 1.0,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "occlusion": {
+        "score": 1.0,
+        "weight": 0.25,
+        "suggestion": ""
+      },
+      "framing": {
+        "score": 0.796,
+        "weight": 0.1,
+        "suggestion": "主体部分出画；建议收紧景别或重新构图"
+      }
+    },
+    "boxes": [
+      {
+        "frame": "first",
+        "boxes": [
+          {
+            "name": "偷盗者",
+            "world_min": [
+              0.4355,
+              -0.3145,
+              0.0
+            ],
+            "world_max": [
+              1.0645,
+              0.3145,
+              1.7
+            ],
+            "screen": {
+              "left": 0.5311,
+              "right": 0.8263,
+              "top": 0.9257,
+              "bottom": -0.2485,
+              "center_x": 0.6787,
+              "center_y": 0.3386,
+              "facing": 0.0,
+              "inside_ratio": 0.7884,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      },
+      {
+        "frame": "worst",
+        "boxes": [
+          {
+            "name": "偷盗者",
+            "world_min": [
+              0.5085,
+              -0.4296,
+              0.0
+            ],
+            "world_max": [
+              1.5214,
+              0.4296,
+              1.7643
+            ],
+            "screen": {
+              "left": 0.4404,
+              "right": 0.8268,
+              "top": 0.9665,
+              "bottom": -0.2471,
+              "center_x": 0.6336,
+              "center_y": 0.3597,
+              "facing": 0.0,
+              "inside_ratio": 0.7964,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      }
+    ],
+    "per_frame_scores": [
+      {
+        "frame": 505,
+        "score": 92.1,
+        "passed": true,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.951,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.788,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体没有明确朝向，视线空间不做要求",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 612,
+        "score": 90.4,
+        "passed": true,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.83,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.796,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体没有明确朝向，视线空间不做要求",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 720,
+        "score": 90.7,
+        "passed": true,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.848,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.8,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体没有明确朝向，视线空间不做要求",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      }
+    ],
+    "solver_position": [
+      -0.8221,
+      1.5721,
+      0.9497
+    ],
+    "solver_distance": 2.2232,
+    "solver_clamped": false,
+    "solver_warnings": [],
+    "actual_distance": 2.4176,
+    "required_distance": 2.2232,
+    "frame_width": 3.6264,
+    "extent_m": 12.0,
+    "declared_target_out_of_extent": false,
+    "declared_movements": []
+  },
+  "target_gap_m": 0.5558
+}

@@ -1,0 +1,292 @@
+{
+  "shot_id": "shot_010",
+  "shot_type": "MCU",
+  "recorded_score": 45.3,
+  "recorded_findings": [
+    {
+      "code": "E_CAM_001",
+      "rule": "COMPOSITION",
+      "severity": "error",
+      "target": "shot_010",
+      "message": "构图评分 45.3（首/中/尾最小值）低于阈值 70",
+      "suggestion": "主体没有明确朝向，视线空间不做要求；主体偏离三分线交点；可微调构图让主体落到交点附近"
+    },
+    {
+      "code": "E_AXIS_001",
+      "rule": "R001",
+      "severity": "warning",
+      "target": "shot_010",
+      "message": "机位落在轴线上（中性镜头）：画面没有明确的左右信息，可以作为跨轴桥梁，但连续使用会失去空间感。",
+      "suggestion": "需要明确左右关系时把机位移离轴线；中性机位适合作为跨轴过渡，不宜连续使用"
+    }
+  ],
+  "audit_count": 4,
+  "threshold": 70.0,
+  "replayed_score": 65.9,
+  "evidence": {
+    "subject_xy": [
+      -2.45,
+      0.0
+    ],
+    "subject_z": 0.0,
+    "camera_xyz": [
+      1.0298,
+      -3.4798,
+      1.231
+    ],
+    "lens": 85.0,
+    "target_xyz": [
+      -2.6956,
+      -0.2456,
+      1.381
+    ],
+    "components": {
+      "headroom": 0.868,
+      "lead_room": 1.0,
+      "rule_of_thirds": 0.103,
+      "balance": 0.118,
+      "occlusion": 1.0,
+      "framing": 0.456
+    },
+    "component_items": {
+      "headroom": {
+        "score": 0.868,
+        "weight": 0.15,
+        "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+      },
+      "lead_room": {
+        "score": 1.0,
+        "weight": 0.2,
+        "suggestion": ""
+      },
+      "rule_of_thirds": {
+        "score": 0.103,
+        "weight": 0.15,
+        "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+      },
+      "balance": {
+        "score": 0.118,
+        "weight": 0.15,
+        "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
+      },
+      "occlusion": {
+        "score": 1.0,
+        "weight": 0.25,
+        "suggestion": ""
+      },
+      "framing": {
+        "score": 0.456,
+        "weight": 0.1,
+        "suggestion": "主体部分出画；建议收紧景别或重新构图"
+      }
+    },
+    "boxes": [
+      {
+        "frame": "first",
+        "boxes": [
+          {
+            "name": "米迦尔",
+            "world_min": [
+              -2.8796,
+              -0.4296,
+              0.0
+            ],
+            "world_max": [
+              -2.0204,
+              0.4296,
+              1.7
+            ],
+            "screen": {
+              "left": 0.3757,
+              "right": 0.9641,
+              "top": 0.8288,
+              "bottom": -0.2024,
+              "center_x": 0.6699,
+              "center_y": 0.3132,
+              "facing": 1.0,
+              "inside_ratio": 0.8037,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      },
+      {
+        "frame": "worst",
+        "boxes": [
+          {
+            "name": "米迦尔",
+            "world_min": [
+              -2.8352,
+              -0.3852,
+              0.0
+            ],
+            "world_max": [
+              -2.0648,
+              0.3852,
+              1.7
+            ],
+            "screen": {
+              "left": -0.2377,
+              "right": 0.3083,
+              "top": 0.8338,
+              "bottom": -0.1988,
+              "center_x": 0.0353,
+              "center_y": 0.3175,
+              "facing": 1.0,
+              "inside_ratio": 0.4559,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      }
+    ],
+    "per_frame_scores": [
+      {
+        "frame": 1105,
+        "score": 74.8,
+        "passed": true,
+        "items": {
+          "headroom": {
+            "score": 0.854,
+            "weight": 0.15,
+            "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+          },
+          "lead_room": {
+            "score": 0.0,
+            "weight": 0.2,
+            "suggestion": "视线方向留白不足；建议把主体放到画面偏对侧"
+          },
+          "rule_of_thirds": {
+            "score": 0.933,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.804,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "头顶留白过多、主体偏下；建议抬高机位或收紧景别",
+          "视线方向留白不足；建议把主体放到画面偏对侧",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 1176,
+        "score": 91.1,
+        "passed": true,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.704,
+            "weight": 0.2,
+            "suggestion": ""
+          },
+          "rule_of_thirds": {
+            "score": 0.932,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.808,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 1248,
+        "score": 65.9,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 0.868,
+            "weight": 0.15,
+            "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+          },
+          "lead_room": {
+            "score": 1.0,
+            "weight": 0.2,
+            "suggestion": ""
+          },
+          "rule_of_thirds": {
+            "score": 0.103,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 0.118,
+            "weight": 0.15,
+            "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.456,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "头顶留白过多、主体偏下；建议抬高机位或收紧景别",
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "画面重心偏塌；建议左右重新平衡人物位置",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      }
+    ],
+    "solver_position": [
+      1.0298,
+      -3.4798,
+      1.231
+    ],
+    "solver_distance": 4.9212,
+    "solver_clamped": false,
+    "solver_warnings": [],
+    "actual_distance": 5.0729,
+    "required_distance": 4.9212,
+    "frame_width": 2.1485,
+    "extent_m": 12.0,
+    "declared_target_out_of_extent": false,
+    "declared_movements": [
+      {
+        "type": "pan_right"
+      }
+    ]
+  },
+  "target_gap_m": 0.3474
+}

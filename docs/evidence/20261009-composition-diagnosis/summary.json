@@ -1,20 +1,28 @@
 {
-  "run_dir": "E:\\白模预演codex\\docs\\evidence\\20261008-v10-nodes1-4-run",
-  "plan_source": "emit_plan",
-  "tool_root": "C:\\Users\\小皮\\AppData\\Local\\Temp\\bd4892dc9-pristine\\src",
+  "run_dir": "E:\\白模预演codex\\work\\_g2_glm3",
+  "plan_source": "plan_received",
+  "tool_root": "E:\\白模预演codex",
   "code_dir": null,
   "extent_m": 12.0,
-  "failing_shots": 3,
-  "attributed": 3,
+  "failing_shots": 11,
+  "attributed": 1,
   "unattributed": [],
-  "replay_mismatch": [],
+  "replay_mismatch": [
+    "shot_002",
+    "shot_003",
+    "shot_004",
+    "shot_005",
+    "shot_006",
+    "shot_007",
+    "shot_008",
+    "shot_009",
+    "shot_010",
+    "shot_013"
+  ],
   "distribution": {
-    "camera_misplaced": [
-      "shot_002"
-    ],
+    "camera_misplaced": [],
     "solver_no_solution": [
-      "shot_003",
-      "shot_004"
+      "shot_011"
     ],
     "script_scale_exceeds_extent": []
   },

@@ -1,0 +1,316 @@
+{
+  "shot_id": "shot_011",
+  "shot_type": "MS",
+  "recorded_score": 56.0,
+  "recorded_findings": [
+    {
+      "code": "E_CAM_001",
+      "rule": "COMPOSITION",
+      "severity": "error",
+      "target": "shot_011",
+      "message": "构图评分 56.0（首/中/尾最小值）低于阈值 70",
+      "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近；画面重心偏塌；建议左右重新平衡人物位置"
+    },
+    {
+      "code": "",
+      "rule": "subject_not_visible",
+      "severity": "error",
+      "target": "莉莉安娜",
+      "message": "视锥告警 subject_not_visible（莉莉安娜，帧 1249-1392）：visible_ratio=0 frames=144",
+      "suggestion": "主体在画框内但被完全挡住：挪开前景或换机位"
+    },
+    {
+      "code": "E_AXIS_001",
+      "rule": "R001",
+      "severity": "warning",
+      "target": "shot_011",
+      "message": "机位落在轴线上（中性镜头）：画面没有明确的左右信息，可以作为跨轴桥梁，但连续使用会失去空间感。",
+      "suggestion": "需要明确左右关系时把机位移离轴线；中性机位适合作为跨轴过渡，不宜连续使用"
+    }
+  ],
+  "audit_count": 4,
+  "threshold": 70.0,
+  "replayed_score": 56.0,
+  "evidence": {
+    "subject_xy": [
+      2.25,
+      0.0
+    ],
+    "subject_z": 0.0,
+    "camera_xyz": [
+      -0.3438,
+      0.0,
+      0.9497
+    ],
+    "lens": 28.0,
+    "target_xyz": [
+      2.25,
+      -0.5558,
+      1.0997
+    ],
+    "components": {
+      "headroom": 1.0,
+      "lead_room": 1.0,
+      "rule_of_thirds": 0.465,
+      "balance": 0.518,
+      "occlusion": 0.0,
+      "framing": 0.627
+    },
+    "component_items": {
+      "headroom": {
+        "score": 1.0,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "lead_room": {
+        "score": 1.0,
+        "weight": 0.2,
+        "suggestion": ""
+      },
+      "rule_of_thirds": {
+        "score": 0.465,
+        "weight": 0.15,
+        "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+      },
+      "balance": {
+        "score": 0.518,
+        "weight": 0.15,
+        "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
+      },
+      "occlusion": {
+        "score": 0.0,
+        "weight": 0.25,
+        "suggestion": "主体被前景遮挡：莉莉安娜；建议移开机位或调整遮挡物"
+      },
+      "framing": {
+        "score": 0.627,
+        "weight": 0.1,
+        "suggestion": "主体部分出画；建议收紧景别或重新构图"
+      }
+    },
+    "boxes": [
+      {
+        "frame": "first",
+        "boxes": [
+          {
+            "name": "莉莉安娜",
+            "world_min": [
+              1.9355,
+              -0.3145,
+              0.0
+            ],
+            "world_max": [
+              2.5645,
+              0.3145,
+              1.7
+            ],
+            "screen": {
+              "left": 0.2101,
+              "right": 0.4433,
+              "top": 0.8938,
+              "bottom": -0.1949,
+              "center_x": 0.3267,
+              "center_y": 0.3495,
+              "facing": 0.0,
+              "inside_ratio": 0.821,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      },
+      {
+        "frame": "worst",
+        "boxes": [
+          {
+            "name": "莉莉安娜",
+            "world_min": [
+              1.8648,
+              -0.2165,
+              0.0
+            ],
+            "world_max": [
+              2.6352,
+              1.0221,
+              1.7081
+            ],
+            "screen": {
+              "left": -0.1019,
+              "right": 0.413,
+              "top": 0.9509,
+              "bottom": -0.2657,
+              "center_x": 0.1555,
+              "center_y": 0.3426,
+              "facing": 1.0,
+              "inside_ratio": 0.6269,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      }
+    ],
+    "per_frame_scores": [
+      {
+        "frame": 1249,
+        "score": 67.2,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.935,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "balance": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：莉莉安娜；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.821,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体没有明确朝向，视线空间不做要求",
+          "主体被前景遮挡：莉莉安娜；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 1320,
+        "score": 61.9,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 1.0,
+            "weight": 0.2,
+            "suggestion": ""
+          },
+          "rule_of_thirds": {
+            "score": 0.578,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 0.714,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：莉莉安娜；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.756,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体被前景遮挡：莉莉安娜；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 1392,
+        "score": 56.0,
+        "passed": false,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 1.0,
+            "weight": 0.2,
+            "suggestion": ""
+          },
+          "rule_of_thirds": {
+            "score": 0.465,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 0.518,
+            "weight": 0.15,
+            "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
+          },
+          "occlusion": {
+            "score": 0.0,
+            "weight": 0.25,
+            "suggestion": "主体被前景遮挡：莉莉安娜；建议移开机位或调整遮挡物"
+          },
+          "framing": {
+            "score": 0.627,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "画面重心偏塌；建议左右重新平衡人物位置",
+          "主体被前景遮挡：莉莉安娜；建议移开机位或调整遮挡物",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      }
+    ],
+    "solver_position": [
+      -0.3438,
+      0.0,
+      0.9497
+    ],
+    "solver_distance": 2.5938,
+    "solver_clamped": false,
+    "solver_warnings": [],
+    "actual_distance": 2.7622,
+    "required_distance": 2.5938,
+    "frame_width": 3.5514,
+    "extent_m": 12.0,
+    "declared_target_out_of_extent": false,
+    "declared_movements": []
+  },
+  "target_gap_m": 0.5558,
+  "attribution": {
+    "shot_id": "shot_011",
+    "class": "solver_no_solution",
+    "fix_card": "卡 D-12（CU/ECU 像素可测约束反解 + readback_shot_size()，不满足时自动调距离档；B4 的 reframe 菜单）——不动 PASS_SCORE",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": 56.0,
+      "threshold": 70.0,
+      "components": {
+        "headroom": 1.0,
+        "lead_room": 1.0,
+        "rule_of_thirds": 0.465,
+        "balance": 0.518,
+        "occlusion": 0.0,
+        "framing": 0.627
+      }
+    }
+  }
+}

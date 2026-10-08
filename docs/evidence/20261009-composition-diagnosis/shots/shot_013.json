@@ -1,0 +1,328 @@
+{
+  "shot_id": "shot_013",
+  "shot_type": "MS",
+  "recorded_score": 80.1,
+  "recorded_findings": [
+    {
+      "code": "E_CAM_001",
+      "rule": "R012",
+      "severity": "warning",
+      "target": "shot_013",
+      "message": "两人同框但屏幕朝向同号（+0.13 / +0.99），没有形成正反打",
+      "suggestion": "让两人相对而立（face_character），或改用单人镜"
+    }
+  ],
+  "audit_count": 1,
+  "threshold": 70.0,
+  "replayed_score": 80.1,
+  "evidence": {
+    "subject_xy": [
+      1.7,
+      0.0
+    ],
+    "subject_z": 0.0,
+    "camera_xyz": [
+      1.7,
+      -3.2422,
+      0.9497
+    ],
+    "lens": 35.0,
+    "target_xyz": [
+      2.2558,
+      0.0,
+      0.9497
+    ],
+    "components": {
+      "headroom": 1.0,
+      "lead_room": 0.75,
+      "rule_of_thirds": 0.223,
+      "balance": 0.864,
+      "occlusion": 1.0,
+      "framing": 0.876
+    },
+    "component_items": {
+      "headroom": {
+        "score": 1.0,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "lead_room": {
+        "score": 0.75,
+        "weight": 0.2,
+        "suggestion": "主体没有明确朝向，视线空间不做要求"
+      },
+      "rule_of_thirds": {
+        "score": 0.223,
+        "weight": 0.15,
+        "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+      },
+      "balance": {
+        "score": 0.864,
+        "weight": 0.15,
+        "suggestion": ""
+      },
+      "occlusion": {
+        "score": 1.0,
+        "weight": 0.25,
+        "suggestion": ""
+      },
+      "framing": {
+        "score": 0.876,
+        "weight": 0.1,
+        "suggestion": "主体部分出画；建议收紧景别或重新构图"
+      }
+    },
+    "boxes": [
+      {
+        "frame": "first",
+        "boxes": [
+          {
+            "name": "莉莉安娜",
+            "world_min": [
+              1.8648,
+              -0.2165,
+              0.0
+            ],
+            "world_max": [
+              2.6352,
+              1.0221,
+              1.7081
+            ],
+            "screen": {
+              "left": 0.3718,
+              "right": 0.6271,
+              "top": 0.9355,
+              "bottom": -0.0386,
+              "center_x": 0.4994,
+              "center_y": 0.4485,
+              "facing": 0.0,
+              "inside_ratio": 0.9604,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          },
+          {
+            "name": "伊恩",
+            "world_min": [
+              0.8355,
+              -0.3145,
+              0.0
+            ],
+            "world_max": [
+              1.4645,
+              0.3145,
+              1.7
+            ],
+            "screen": {
+              "left": 0.0221,
+              "right": 0.2663,
+              "top": 0.9734,
+              "bottom": -0.0917,
+              "center_x": 0.1442,
+              "center_y": 0.4408,
+              "facing": 1.0,
+              "inside_ratio": 0.9139,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      },
+      {
+        "frame": "worst",
+        "boxes": [
+          {
+            "name": "莉莉安娜",
+            "world_min": [
+              1.8113,
+              -0.1434,
+              0.0
+            ],
+            "world_max": [
+              2.6887,
+              1.3797,
+              1.4666
+            ],
+            "screen": {
+              "left": 0.3573,
+              "right": 0.6361,
+              "top": 0.7907,
+              "bottom": -0.0275,
+              "center_x": 0.4967,
+              "center_y": 0.3816,
+              "facing": 0.0,
+              "inside_ratio": 0.9664,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          },
+          {
+            "name": "伊恩",
+            "world_min": [
+              0.8287,
+              -0.4296,
+              0.0
+            ],
+            "world_max": [
+              1.7671,
+              0.4296,
+              1.7464
+            ],
+            "screen": {
+              "left": 0.0059,
+              "right": 0.3571,
+              "top": 1.0246,
+              "bottom": -0.1176,
+              "center_x": 0.1815,
+              "center_y": 0.4535,
+              "facing": 0.0,
+              "inside_ratio": 0.8755,
+              "clipped_top": false,
+              "clipped_sides": false
+            }
+          }
+        ]
+      }
+    ],
+    "per_frame_scores": [
+      {
+        "frame": 1585,
+        "score": 83.5,
+        "passed": true,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 1.0,
+            "weight": 0.2,
+            "suggestion": ""
+          },
+          "rule_of_thirds": {
+            "score": 0.152,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 0.806,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.914,
+            "weight": 0.1,
+            "suggestion": ""
+          }
+        },
+        "suggestions": [
+          "主体偏离三分线交点；可微调构图让主体落到交点附近"
+        ]
+      },
+      {
+        "frame": 1620,
+        "score": 82.4,
+        "passed": true,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 1.0,
+            "weight": 0.2,
+            "suggestion": ""
+          },
+          "rule_of_thirds": {
+            "score": 0.14,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 0.821,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.802,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      },
+      {
+        "frame": 1656,
+        "score": 80.1,
+        "passed": true,
+        "items": {
+          "headroom": {
+            "score": 1.0,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "lead_room": {
+            "score": 0.75,
+            "weight": 0.2,
+            "suggestion": "主体没有明确朝向，视线空间不做要求"
+          },
+          "rule_of_thirds": {
+            "score": 0.223,
+            "weight": 0.15,
+            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+          },
+          "balance": {
+            "score": 0.864,
+            "weight": 0.15,
+            "suggestion": ""
+          },
+          "occlusion": {
+            "score": 1.0,
+            "weight": 0.25,
+            "suggestion": ""
+          },
+          "framing": {
+            "score": 0.876,
+            "weight": 0.1,
+            "suggestion": "主体部分出画；建议收紧景别或重新构图"
+          }
+        },
+        "suggestions": [
+          "主体没有明确朝向，视线空间不做要求",
+          "主体偏离三分线交点；可微调构图让主体落到交点附近",
+          "主体部分出画；建议收紧景别或重新构图"
+        ]
+      }
+    ],
+    "solver_position": [
+      1.7,
+      -3.2422,
+      0.9497
+    ],
+    "solver_distance": 3.2422,
+    "solver_clamped": false,
+    "solver_warnings": [],
+    "actual_distance": 3.3784,
+    "required_distance": 3.2422,
+    "frame_width": 3.475,
+    "extent_m": 12.0,
+    "declared_target_out_of_extent": false,
+    "declared_movements": []
+  },
+  "target_gap_m": 0.5558
+}

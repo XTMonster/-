@@ -1,58 +1,82 @@
 {
   "shot_id": "shot_002",
-  "shot_type": "CU",
-  "recorded_score": 46.4,
+  "shot_type": "MS",
+  "recorded_score": 49.9,
   "recorded_findings": [
-    {
-      "code": "E_AXIS_001",
-      "rule": "R001",
-      "severity": "error",
-      "target": "shot_002",
-      "message": "机位在**当前**两人连线的另一侧（连线 (-0.75, 0.0)→(3.950000047683716, 0.0)，该待在第 -1 侧、实际在第 +1 侧）：这是机位自己摆错，把相机移回该侧即可",
-      "suggestion": "把相机移到当前连线的另一侧，或插入中性机位过渡"
-    },
     {
       "code": "E_CAM_001",
       "rule": "COMPOSITION",
       "severity": "error",
       "target": "shot_002",
-      "message": "构图评分 46.4（首/中/尾最小值）低于阈值 70",
-      "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别；主体偏离三分线交点；可微调构图让主体落到交点附近"
+      "message": "构图评分 49.9（首/中/尾最小值）低于阈值 70",
+      "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别；主体没有明确朝向，视线空间不做要求"
+    },
+    {
+      "code": "",
+      "rule": "subject_not_visible",
+      "severity": "error",
+      "target": "米迦尔",
+      "message": "视锥告警 subject_not_visible（米迦尔，帧 121-216）：visible_ratio=0 frames=96",
+      "suggestion": "主体在画框内但被完全挡住：挪开前景或换机位"
+    },
+    {
+      "code": "E_AXIS_001",
+      "rule": "R001",
+      "severity": "warning",
+      "target": "shot_002",
+      "message": "机位落在轴线上（中性镜头）：画面没有明确的左右信息，可以作为跨轴桥梁，但连续使用会失去空间感。",
+      "suggestion": "需要明确左右关系时把机位移离轴线；中性机位适合作为跨轴过渡，不宜连续使用"
+    },
+    {
+      "code": "E_CAM_001",
+      "rule": "R005",
+      "severity": "warning",
+      "target": "米迦尔",
+      "message": "角色 米迦尔 不在画面内（屏幕 0.50, -0.08）",
+      "suggestion": "调整机位，或让角色回到画面内"
+    },
+    {
+      "code": "E_CAM_001",
+      "rule": "R004",
+      "severity": "warning",
+      "target": "shot_002",
+      "message": "镜头对准点落在相机视锥之外",
+      "suggestion": "重新对准被摄主体"
     }
   ],
-  "audit_count": 4,
+  "audit_count": 5,
   "threshold": 70.0,
-  "replayed_score": 46.9,
+  "replayed_score": 72.9,
   "evidence": {
     "subject_xy": [
-      3.95,
+      -2.45,
       0.0
     ],
     "subject_z": 0.0,
     "camera_xyz": [
-      6.6215,
-      2.7486,
-      1.3201
+      -0.6159,
+      1.8341,
+      0.9497
     ],
-    "lens": 85.0,
+    "lens": 28.0,
     "target_xyz": [
-      3.7289,
-      0.2211,
-      1.4279
+      -2.057,
+      -0.393,
+      1.0997
     ],
     "components": {
-      "headroom": 0.0,
+      "headroom": 1.0,
       "lead_room": 1.0,
-      "rule_of_thirds": 0.0,
-      "balance": 0.0,
+      "rule_of_thirds": 0.194,
+      "balance": 0.667,
       "occlusion": 1.0,
-      "framing": 0.189
+      "framing": 0.0
     },
     "component_items": {
       "headroom": {
-        "score": 0.0,
+        "score": 1.0,
         "weight": 0.15,
-        "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+        "suggestion": ""
       },
       "lead_room": {
         "score": 1.0,
@@ -60,12 +84,12 @@
         "suggestion": ""
       },
       "rule_of_thirds": {
-        "score": 0.0,
+        "score": 0.194,
         "weight": 0.15,
         "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
       },
       "balance": {
-        "score": 0.0,
+        "score": 0.667,
         "weight": 0.15,
         "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
       },
@@ -75,7 +99,7 @@
         "suggestion": ""
       },
       "framing": {
-        "score": 0.189,
+        "score": 0.0,
         "weight": 0.1,
         "suggestion": "主体部分出画；建议收紧景别或重新构图"
       }
@@ -87,24 +111,24 @@
           {
             "name": "米迦尔",
             "world_min": [
-              3.6355,
+              -2.7645,
               -0.3145,
               0.0
             ],
             "world_max": [
-              4.2645,
+              -2.1355,
               0.3145,
               1.7
             ],
             "screen": {
-              "left": 0.0271,
-              "right": 0.5812,
-              "top": 0.8533,
-              "bottom": -0.3301,
-              "center_x": 0.3041,
-              "center_y": 0.2616,
+              "left": 0.5317,
+              "right": 0.8189,
+              "top": 0.9073,
+              "bottom": -0.2134,
+              "center_x": 0.6753,
+              "center_y": 0.347,
               "facing": -1.0,
-              "inside_ratio": 0.7211,
+              "inside_ratio": 0.8096,
               "clipped_top": false,
               "clipped_sides": false
             }
@@ -117,24 +141,24 @@
           {
             "name": "米迦尔",
             "world_min": [
-              3.687,
-              -1.4389,
+              -2.7645,
+              -0.3145,
               0.0
             ],
             "world_max": [
-              4.6186,
-              0.1388,
-              1.1808
+              -2.1355,
+              0.3145,
+              1.7
             ],
             "screen": {
-              "left": -0.5266,
-              "right": 0.4789,
-              "top": 0.2584,
-              "bottom": -0.3608,
-              "center_x": -0.0238,
-              "center_y": -0.0512,
-              "facing": 1.0,
-              "inside_ratio": 0.1988,
+              "left": 0.5506,
+              "right": 1.049,
+              "top": 1.2645,
+              "bottom": -0.896,
+              "center_x": 0.7998,
+              "center_y": 0.1843,
+              "facing": -1.0,
+              "inside_ratio": 0.4174,
               "clipped_top": false,
               "clipped_sides": false
             }
@@ -145,21 +169,21 @@
     "per_frame_scores": [
       {
         "frame": 121,
-        "score": 71.7,
+        "score": 92.9,
         "passed": true,
         "items": {
           "headroom": {
-            "score": 0.924,
+            "score": 1.0,
             "weight": 0.15,
-            "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+            "suggestion": ""
           },
           "lead_room": {
-            "score": 0.0,
+            "score": 0.787,
             "weight": 0.2,
-            "suggestion": "视线方向留白不足；建议把主体放到画面偏对侧"
+            "suggestion": ""
           },
           "rule_of_thirds": {
-            "score": 0.712,
+            "score": 0.936,
             "weight": 0.15,
             "suggestion": ""
           },
@@ -174,39 +198,37 @@
             "suggestion": ""
           },
           "framing": {
-            "score": 0.721,
+            "score": 0.81,
             "weight": 0.1,
             "suggestion": "主体部分出画；建议收紧景别或重新构图"
           }
         },
         "suggestions": [
-          "头顶留白过多、主体偏下；建议抬高机位或收紧景别",
-          "视线方向留白不足；建议把主体放到画面偏对侧",
           "主体部分出画；建议收紧景别或重新构图"
         ]
       },
       {
         "frame": 168,
-        "score": 71.6,
+        "score": 87.1,
         "passed": true,
         "items": {
           "headroom": {
-            "score": 0.943,
+            "score": 1.0,
             "weight": 0.15,
-            "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+            "suggestion": ""
           },
           "lead_room": {
-            "score": 0.181,
+            "score": 0.918,
             "weight": 0.2,
-            "suggestion": "视线方向留白不足；建议把主体放到画面偏对侧"
+            "suggestion": ""
           },
           "rule_of_thirds": {
-            "score": 0.44,
+            "score": 0.731,
             "weight": 0.15,
-            "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+            "suggestion": ""
           },
           "balance": {
-            "score": 1.0,
+            "score": 0.929,
             "weight": 0.15,
             "suggestion": ""
           },
@@ -216,27 +238,24 @@
             "suggestion": ""
           },
           "framing": {
-            "score": 0.726,
+            "score": 0.387,
             "weight": 0.1,
             "suggestion": "主体部分出画；建议收紧景别或重新构图"
           }
         },
         "suggestions": [
-          "头顶留白过多、主体偏下；建议抬高机位或收紧景别",
-          "视线方向留白不足；建议把主体放到画面偏对侧",
-          "主体偏离三分线交点；可微调构图让主体落到交点附近",
           "主体部分出画；建议收紧景别或重新构图"
         ]
       },
       {
         "frame": 216,
-        "score": 46.9,
-        "passed": false,
+        "score": 72.9,
+        "passed": true,
         "items": {
           "headroom": {
-            "score": 0.0,
+            "score": 1.0,
             "weight": 0.15,
-            "suggestion": "头顶留白过多、主体偏下；建议抬高机位或收紧景别"
+            "suggestion": ""
           },
           "lead_room": {
             "score": 1.0,
@@ -244,12 +263,12 @@
             "suggestion": ""
           },
           "rule_of_thirds": {
-            "score": 0.0,
+            "score": 0.194,
             "weight": 0.15,
             "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
           },
           "balance": {
-            "score": 0.0,
+            "score": 0.667,
             "weight": 0.15,
             "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
           },
@@ -259,13 +278,12 @@
             "suggestion": ""
           },
           "framing": {
-            "score": 0.189,
+            "score": 0.0,
             "weight": 0.1,
             "suggestion": "主体部分出画；建议收紧景别或重新构图"
           }
         },
         "suggestions": [
-          "头顶留白过多、主体偏下；建议抬高机位或收紧景别",
           "主体偏离三分线交点；可微调构图让主体落到交点附近",
           "画面重心偏塌；建议左右重新平衡人物位置",
           "主体部分出画；建议收紧景别或重新构图"
@@ -273,57 +291,23 @@
       }
     ],
     "solver_position": [
-      7.0819,
-      3.1319,
-      1.2779
+      -0.6159,
+      1.8341,
+      0.9497
     ],
-    "solver_distance": 4.4291,
+    "solver_distance": 2.5938,
     "solver_clamped": false,
     "solver_warnings": [],
-    "actual_distance": 4.0436,
-    "required_distance": 4.4291,
-    "frame_width": 1.7126,
+    "actual_distance": 1.9164,
+    "required_distance": 2.5938,
+    "frame_width": 2.4639,
     "extent_m": 12.0,
     "declared_target_out_of_extent": false,
     "declared_movements": [
       {
-        "type": "dolly_in",
-        "amount": 0.6,
-        "start_frame": 1,
-        "end_frame": 84,
-        "subject": "米迦尔"
-      },
-      {
-        "type": "handheld",
-        "amount": 0.03,
-        "start_frame": 1,
-        "end_frame": 96,
-        "seed": 7
+        "type": "dolly_in"
       }
     ]
   },
-  "target_gap_m": 0.3126,
-  "attribution": {
-    "shot_id": "shot_002",
-    "class": "camera_misplaced",
-    "fix_card": "卡 B4（FR-C5：审核/修复回路接入 + reframe 菜单，含机位/锚点回读；D-12/D-13 的同尺回读）——把机位按该镜首帧实际站位重摆，不动 PASS_SCORE",
-    "evidence": {
-      "reasons": [
-        {
-          "camera_vs_solver_m": 0.6006,
-          "camera_xyz": [
-            6.6215,
-            2.7486,
-            1.3201
-          ],
-          "solver_position": [
-            7.0819,
-            3.1319,
-            1.2779
-          ],
-          "tolerance_m": 0.5
-        }
-      ]
-    }
-  }
+  "target_gap_m": 0.5558
 }
