@@ -172,7 +172,8 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_prop_interaction.py';  Marker = 'BD_TEST_RESULT'; Label = 'prop-interaction' },
     @{ Script = 'tools\blender_tests\test_vlm_review.py';        Marker = 'BD_TEST_RESULT'; Label = 'vlm-review' },
     @{ Script = 'tools\blender_tests\test_checkpoint_resume.py'; Marker = 'BD_TEST_RESULT'; Label = 'checkpoint-resume' },
-    @{ Script = 'tools\blender_tests\test_reference_cards.py';   Marker = 'BD_TEST_RESULT'; Label = 'reference-cards' }
+    @{ Script = 'tools\blender_tests\test_reference_cards.py';   Marker = 'BD_TEST_RESULT'; Label = 'reference-cards' },
+    @{ Script = 'tools\blender_tests\test_mask_pass.py';         Marker = 'BD_TEST_RESULT'; Label = 'mask-pass' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.

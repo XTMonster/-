@@ -318,6 +318,8 @@ class DeliveryConfig:
     export_camera_traj: bool = False
     #: v1.6 E3（FR-A5）：每角色一张固定机位定妆卡（可选，默认开）。
     reference_cards: bool = True
+    #: v1.6 E2（FR-A3）：逐元素遮罩（可选，默认开；需 eevee）。
+    mask_pass: bool = True
     per_shot_clips: bool = True
     #: v1.4 §2.4 D4：连续成片**默认产出**并保留分段（原默认 false）。
     full_concat: bool = True

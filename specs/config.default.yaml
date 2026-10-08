@@ -110,6 +110,7 @@ delivery:
   export_depth: false
   export_camera_traj: false
   reference_cards: true
+  mask_pass: true
   per_shot_clips: true
   full_concat: true
   external_ffmpeg_path: ''

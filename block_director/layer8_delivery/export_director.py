@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import bpy
 
+from ..cinema.schedule import shot_ranges
 from ..contracts.elements import ElementRegistry, build_registry
 from ..contracts.enums import ErrorCode, resolution_for
 from ..contracts.errors import user_message
@@ -38,6 +39,7 @@ from ..utils.threading_guard import main_thread_only
 from .camera_trajectory import camera_trajectory
 from .concat import ConcatUnavailable, concat_shot_clips, full_output_path
 from .depth_pass import DepthUnavailable, render_depth_sequence
+from .mask_pass import MaskUnavailable, render_mask_pass
 from .reference_cards import render_reference_cards
 from .renderer import apply_delivery_settings, render_first_frame, render_shot_video
 
@@ -56,6 +58,7 @@ class DeliveryReport:
     duration_s: float = 0.0
     audit_leaks: List[str] = field(default_factory=list)
     depth_shots: List[Dict[str, Any]] = field(default_factory=list)
+    mask_shots: List[Dict[str, Any]] = field(default_factory=list)
     full_video: str = ""
     total_frames_concat: int = 0
     #: 声明要产出却没落盘的文件（视频 / 首帧）。v1.2 没有这个字段，
@@ -78,6 +81,7 @@ class DeliveryReport:
             "duration_s": round(self.duration_s, 2),
             "audit_leaks": list(self.audit_leaks),
             "depth_shots": list(self.depth_shots),
+            "mask_shots": list(self.mask_shots),
             "full_video": self.full_video,
             "total_frames_concat": self.total_frames_concat,
             "missing_clips": list(self.missing_clips),
@@ -262,6 +266,23 @@ def export_project(plan: Plan, *,
                 labels.hide_render = False
         log.info("已导出镜头 %s（%d-%d）", shot_id,
                  shot["start_frame"], shot["end_frame"])
+
+    #: v1.6 E2（FR-A3）：逐元素遮罩（可选，默认开）。非 EEVEE 后端出不了遮罩
+    #: 就跳过并写进报告告警（与 depth 的 DepthUnavailable 同一模式），绝不
+    #: 静默；成功时逐镜记进 ``mask_shots``。帧表与分镜 mp4 同一份 schedule。
+    if config.mask_pass:
+        try:
+            mask_results = render_mask_pass(
+                scene, registry, shot_ranges(plan), str(export_dir))
+            report.mask_shots.extend(
+                {"shot_id": str(item["shot_id"]),
+                 "dir": str(Path(item["dir"]).relative_to(export_dir)),
+                 "frames": int(item["frames"]),
+                 "start_frame": int(item["start_frame"]),
+                 "end_frame": int(item["end_frame"])}
+                for item in mask_results)
+        except MaskUnavailable as exc:
+            report.warnings.append(f"mask 导出跳过（{exc}）")
 
     if config.full_concat and config.per_shot_clips:
         clips = [str(export_dir / f"blockout_{shot['shot_id']}.mp4")

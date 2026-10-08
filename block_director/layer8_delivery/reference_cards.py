@@ -392,11 +392,14 @@ def _render_one_card(scene, character, element, name: str,
         scene.render.resolution_percentage = previous["resolution_percentage"]
         scene.render.filepath = previous["filepath"]
         settings = scene.render.image_settings
+        #: 先还 media_type 再还 file_format（与 depth/mask pass 同一纪律）：
+        #: 全片拼接（full_concat）把设置留在 VIDEO/FFMPEG，卡片期间是
+        #: IMAGE/PNG——反着还原会拿 "FFMPEG" 去撞 IMAGE 的枚举而抛 TypeError。
+        if previous["media_type"] is not None:
+            settings.media_type = previous["media_type"]
         settings.file_format = previous["file_format"]
         settings.color_mode = previous["color_mode"]
         settings.color_depth = previous["color_depth"]
-        if previous["media_type"] is not None:
-            settings.media_type = previous["media_type"]
         scene.frame_set(previous["frame_current"])
         if camera_obj is not None:
             bpy.data.objects.remove(camera_obj, do_unlink=True)
