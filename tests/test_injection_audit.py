@@ -286,3 +286,150 @@ def test_the_chain_runs_the_injection_audit_and_requires_the_artifact():
                for line in lines), "链上必须检查产物真的写出来了"
     assert any("token_caps.status" in line for line in lines), (
         "链上必须真的判 token 那一半，而不是只打印一行")
+
+
+# ---------------------------------------------------------------------------
+# v1.6 D-05（卡 F3）："条件模式取反"进【经验建议（软）】栏，渲染为「若…则…」。
+#
+# E-run ⑤（docs/evidence/20261008-v10-nodes1-4-run/README.md §5）：SHOT_PATTERN
+# 边（"当 MS＋50mm＋变焦时，别用 CU"）被渲染层写成无条件「禁 CU」，13 镜全部
+# 拿到这条硬约束，其中 4 镜的"违反"正是剧本写死的 CU/dolly_in。修法只允许在
+# 渲染层分栏，判据**只读边自己的结构化字段**（type / members / qualifiers），
+# 不许读文本启发式；超图 schema（hypergraph.py，hg/v2）一个字不动。
+# ---------------------------------------------------------------------------
+
+from block_director.contracts.enums import RagBackend  # noqa: E402
+from block_director.knowledge.retriever import KnowledgeRetriever  # noqa: E402
+
+
+def _conditional_graph():
+    """一条**条件模式取反**：MS＋50mm＋变焦 ⇒ 别用 CU（E-run ⑤ 的真形状）。"""
+    from block_director.knowledge.hypergraph import HyperEdge, Hypergraph, Node
+
+    nodes = [
+        Node(node_id="shot_size:MS", type="shot_size", name="MS", aliases=("MS",)),
+        Node(node_id="lens:50mm", type="lens", name="50mm", aliases=("50mm",)),
+        Node(node_id="headroom_policy:cinematic", type="headroom_policy",
+             name="cinematic"),
+        Node(node_id="movement:zoom_in", type="movement", name="zoom_in",
+             aliases=("zoom_in",)),
+        Node(node_id="shot_size:CU", type="shot_size", name="CU", aliases=("CU",)),
+    ]
+    edge = HyperEdge.from_dict({
+        "type": "SHOT_PATTERN",
+        "members": [
+            ["allow", "shot_size", "shot_size:MS"],
+            ["allow", "lens", "lens:50mm"],
+            ["qualifier", "headroom_policy", "headroom_policy:cinematic"],
+            ["allow", "movement", "movement:zoom_in"],
+            ["forbid", "shot_size", "shot_size:CU"],
+        ],
+        "source_kind": "theory", "hardness": "hard",
+    })
+    return Hypergraph(nodes, [edge]), edge
+
+
+def _conditional_retriever(graph, token_limit: int = 800):
+    return KnowledgeRetriever(cards=[], backend=RagBackend.HYPERGRAPH,
+                              capabilities=("hypergraph",), hypergraph=graph,
+                              token_limit=token_limit)
+
+
+def test_a_conditional_pattern_negation_lands_in_the_soft_column_as_if_then():
+    """SHOT_PATTERN 的条件取反不许再以无条件「禁 CU」形态进硬约束栏。"""
+    graph, _edge = _conditional_graph()
+    retriever = _conditional_retriever(graph)
+    hard, soft = retriever.edge_columns("景别=MS；运镜=zoom_in", scope="shot")
+    assert "禁={" not in hard
+    assert "CU" not in hard          # 被禁的取值不得以无条件禁令形态出现
+    assert "【经验建议（软）】" in soft
+    assert "若<" in soft and ">则不要用<" in soft and "CU" in soft
+    columns = retriever.last_trace["shot_scope"]["columns"]
+    assert columns["hard_edges"] == 0
+    assert columns["soft_edges"] == 1
+    assert columns["conditional_edges"] == 1
+
+
+def test_an_unconditional_forbid_edge_stays_in_the_hard_column():
+    """EMOTION_PACK 的 forbid（无条件/上下文 qualifier 限定）仍是硬约束。"""
+    from block_director.knowledge.hypergraph import HyperEdge, Hypergraph, Node
+
+    nodes = [
+        Node(node_id="emotion:荒诞", type="emotion", name="荒诞",
+             aliases=("荒诞",)),
+        Node(node_id="intensity:high", type="intensity", name="high", value="high"),
+        Node(node_id="movement:固定机位", type="movement", name="固定机位",
+             aliases=("固定机位", "固定")),
+    ]
+    edge = HyperEdge.from_dict({
+        "type": "EMOTION_PACK",
+        "members": [["allow", "emotion", "emotion:荒诞"],
+                    ["qualifier", "intensity", "intensity:high"],
+                    ["forbid", "movement", "movement:固定机位"]],
+        #: D-05 的判据不读 hardness：soft 但带 forbid 的边也照旧是硬约束
+        #: （tests/test_knowledge_cases_wiring.py 的同名纪律）。
+        "source_kind": "lesson", "hardness": "soft",
+    })
+    graph = Hypergraph(nodes, [edge])
+    retriever = _conditional_retriever(graph)
+    hard, soft = retriever.edge_columns("情绪=荒诞；运镜=固定机位", scope="shot")
+    assert "禁={" in hard and "固定机位" in hard
+    assert "若<" not in soft and "固定机位" not in soft
+    columns = retriever.last_trace["shot_scope"]["columns"]
+    assert columns["hard_edges"] == 1
+    assert columns["soft_edges"] == 0
+    assert columns["conditional_edges"] == 0
+
+
+def test_a_forbid_scoped_by_a_condition_qualifier_is_rendered_conditionally():
+    """`applies_to_shot_size` 这类条件/上下文 qualifier 把 forbid 限定成条件。"""
+    from block_director.knowledge.hypergraph import HyperEdge, Hypergraph, Node
+
+    nodes = [
+        Node(node_id="emotion:荒诞", type="emotion", name="荒诞",
+             aliases=("荒诞",)),
+        Node(node_id="intensity:high", type="intensity", name="high", value="high"),
+        Node(node_id="shot_size:CU", type="shot_size", name="CU", aliases=("CU",)),
+        Node(node_id="movement:固定机位", type="movement", name="固定机位",
+             aliases=("固定机位", "固定")),
+    ]
+    edge = HyperEdge.from_dict({
+        "type": "EMOTION_PACK",
+        "members": [["allow", "emotion", "emotion:荒诞"],
+                    ["qualifier", "intensity", "intensity:high"],
+                    ["qualifier", "applies_to_shot_size", "shot_size:CU"],
+                    ["forbid", "movement", "movement:固定机位"]],
+        "source_kind": "experience", "hardness": "hard",
+    })
+    graph = Hypergraph(nodes, [edge])
+    retriever = _conditional_retriever(graph)
+    hard, soft = retriever.edge_columns("情绪=荒诞；运镜=固定机位", scope="shot")
+    assert "禁={" not in hard
+    assert "若<" in soft and ">则不要用<" in soft and "固定机位" in soft
+    columns = retriever.last_trace["shot_scope"]["columns"]
+    assert columns["conditional_edges"] == 1
+
+
+def test_the_shared_token_cap_still_governs_conditional_lines_atomically():
+    """条件行与其余两栏共用同一个 token 上限；装不下整条丢，绝不截断。"""
+    graph, edge = _conditional_graph()
+    tight = _conditional_retriever(graph, token_limit=1)
+    block = tight.block_for_shot("景别=MS；运镜=zoom_in", limit=1)
+    assert "若<" not in block and "则不要用<" not in block
+    assert estimate_tokens(block) <= 1
+    assert edge.edge_id in tight.last_trace["shot_scope"]["dropped_edge_ids"]
+
+    roomy = _conditional_retriever(graph, token_limit=800)
+    full = roomy.block_for_shot("景别=MS；运镜=zoom_in", limit=800)
+    assert "若<" in full and "则不要用<" in full and "CU" in full
+    assert estimate_tokens(full) <= 800
+
+
+def test_conditional_column_rendering_is_deterministic():
+    """同一查询两次渲染必须逐字相同（含 trace 的分栏计数）。"""
+    graph, _edge = _conditional_graph()
+    retriever = _conditional_retriever(graph)
+    first = retriever.edge_columns("景别=MS；运镜=zoom_in", scope="shot")
+    second = retriever.edge_columns("景别=MS；运镜=zoom_in", scope="shot")
+    assert first == second
+    assert retriever.last_trace["shot_scope"]["columns"]["conditional_edges"] == 1

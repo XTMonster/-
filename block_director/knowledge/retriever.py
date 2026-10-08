@@ -30,6 +30,9 @@ from .hypergraph import manifest_fingerprint as hypergraph_fingerprint
 #: v1.5 §5.1–5.3：注入块的渲染与装配**只有一处**（`rulepack`）——
 #: 强度标、条数预算、冲突并陈、自由度声明都在那里；这里只负责"取边 → 分栏 → 记账"。
 from .hypergraph import parse_query as _parse_query
+#: v1.6 D-05（卡 F3）：条件模式取分的结构化判据与「若…则…」渲染所需的两个
+#: schema 事实——`SHOT_PATTERN`（条件模式类型）与 `node_value`（qualifier 取值）。
+from .hypergraph import SHOT_PATTERN, node_value
 from .rulepack import DEFAULT_RULE_TOP_K, freedom_block, render_rule_pack
 #: v1.4 §2.3d T5：token 估算的**单一真源**在 `tokens.py`——案例通道（`cases.py`）
 #: 用的是同一个函数对象，两条通道不可能各算一套。这里的再导出保持既有 API。
@@ -85,6 +88,98 @@ def _trace_to_dict(trace) -> Dict[str, Any]:
     if hasattr(trace, "to_dict"):
         return dict(trace.to_dict())
     return dict(trace) if isinstance(trace, dict) else {}
+
+
+#: v1.6 D-05（卡 F3，E-run ⑤）：带 ``forbid`` 的超边要再分一次——
+#: **无条件禁令**留在【硬约束（禁/许）】；**条件模式取反**进【经验建议（软）】，
+#: 渲染成「若<条件>则不要用<内容>」（PRD 的「若…则…」句式）。判据**只读边自己的
+#: 结构化字段**（``type`` / ``members`` / ``qualifiers``），绝不读文本启发式。
+CONDITIONAL_PATTERN_TYPES = (SHOT_PATTERN,)
+#: 哪些 qualifier 是"条件/上下文"限定：`applies_to_*` 是 schema 自己的适用范围
+#: 限定（校验门⑦ containment 用的就是它们），`scene_type` 是场景上下文。其余
+#: qualifier（`intensity`／`avg_shot_len`／`pair`／`axis_side`／…）描述的是边自己
+#: 的主体或程度，不算"把 forbid 限定起来的条件"——它们带 forbid 时仍是无条件禁令
+#: （AXIS_RULE 的越轴禁则必须留在硬栏）。
+CONDITION_QUALIFIER_KINDS = ("applies_to_genre", "applies_to_shot_size",
+                             "scene_type")
+
+
+def is_conditional_pattern_negation(edge: Any) -> bool:
+    """这条带 ``forbid`` 的边是不是"条件模式的取反"（D-05 的结构化判据）。
+
+    两种形状都算，**只读结构化字段**：
+
+    1. 边类型是条件模式类型（``SHOT_PATTERN``：正向成员描述一个镜头模式，
+       ``forbid`` 取反的是该模式的另一取值，例如
+       ``shot_size=MS lens=50mm movement=zoom_in 禁 shot_size=CU``）；
+    2. ``forbid`` 被条件/上下文 qualifier 限定（``applies_to_genre`` /
+       ``applies_to_shot_size`` / ``scene_type``）。
+
+    没有 ``forbid`` 成员的边不是禁令，恒返回 ``False``；``hardness`` 不参与
+    判据（soft 但带 forbid 的边照旧是硬约束，见 §2.3b 纪律 2 的既有实现）。
+    """
+    if not getattr(edge, "forbids", ()):
+        return False
+    if getattr(edge, "type", "") in CONDITIONAL_PATTERN_TYPES:
+        return True
+    return any(str(getattr(member, "kind", "")) in CONDITION_QUALIFIER_KINDS
+               for member in getattr(edge, "qualifiers", ()))
+
+
+def render_conditional_edge(edge: Any,
+                            nodes: Optional[Dict[str, Any]] = None) -> str:
+    """D-05：把一条条件取反边渲染成「若<条件>则不要用<内容>」一行。
+
+    条件 = 正向成员（``allow`` ＋ ``qualifier``，按边的成员顺序——确定性）；
+    内容 = ``forbid`` 取值（排序去重后以顿号相连）。不贴强度标：这行已经落在
+    【经验建议（软）】栏里，再贴「[必须（除非声明破例）]」会自相矛盾。
+    """
+    node_map = dict(nodes or {})
+
+    def name(node_id: str) -> str:
+        node = node_map.get(node_id)
+        return str(node.name) if node is not None and node.name else str(node_id)
+
+    condition: List[str] = []
+    for member in edge.allows:
+        condition.append(f"{member.kind}={name(member.node_id)}")
+    for member in edge.qualifiers:
+        condition.append(
+            f"{member.kind}={node_value(node_map.get(member.node_id), member.node_id)}")
+    forbids = sorted({name(member.node_id) for member in edge.forbids})
+    return "若<" + " ".join(condition) + ">则不要用<" + "、".join(forbids) + ">"
+
+
+def _render_conditional_pack(edges: Sequence[Any],
+                             nodes: Dict[str, Any],
+                             *,
+                             token_limit: int
+                             ) -> tuple:
+    """把条件边渲染成软栏里的「若…则…」行（原子注入：装不下整条丢）。
+
+    与 :func:`rulepack.render_rule_pack` 同一条纪律：**绝不截断**——截断会把
+    ``forbid`` 切掉，模型就照样做禁忌动作。共享 token 上限由调用方
+    （:meth:`KnowledgeRetriever.edge_columns`）在栏一级用 ``_take`` 收口，这里
+    只按传入的 ``token_limit`` 做整条丢弃；顺序 = 检索顺序（确定性）。
+    返回 ``(文本, dropped_edge_ids, quality_fail)``。
+    """
+    lines: List[str] = []
+    used = 0
+    dropped: List[str] = []
+    quality_fail = False
+    for edge in edges:
+        line = render_conditional_edge(edge, nodes)
+        cost = estimate_tokens(line)
+        if cost > token_limit:
+            dropped.append(edge.edge_id)
+            quality_fail = True
+            continue
+        if used + cost > token_limit:
+            dropped.append(edge.edge_id)
+            continue
+        lines.append(line)
+        used += cost
+    return "\n".join(lines), dropped, quality_fail
 
 
 @dataclass
@@ -621,6 +716,11 @@ class KnowledgeRetriever:
 
         软边（``hardness == "soft"``，例如 ``source_kind = experience``）**不得**
         与硬约束同栏呈现——同一栏会让模型把"某人经验"当成"必须遵守"。
+        v1.6 D-05 起，带 ``forbid`` 的边再按 :func:`is_conditional_pattern_negation`
+        分一次：**无条件禁令**留在硬约束栏；**条件模式取反**（``SHOT_PATTERN`` 类，
+        或 forbid 被 ``applies_to_*``／``scene_type`` 这类条件/上下文 qualifier
+        限定）进软栏并以「若<条件>则不要用<内容>」渲染。三栏仍共用同一个
+        token 上限，条件行与普通行一样原子注入（装不下整条丢，绝不截断）。
         返回 ``(硬栏目文本, 软栏目文本)``（**不含**栏目标题）。
         """
         self._record_budget(scope, budgets)
@@ -630,10 +730,15 @@ class KnowledgeRetriever:
                                       scope=scope, shot_id=shot_id,
                                       analogy_query=analogy_query)
         nodes = getattr(self.hypergraph, "nodes", None) or {}
-        # 分栏判据：**带 `forbid` 成员的边永远进硬约束栏**。`hardness == "soft"`
-        # 只是"它是软先验"，但一条**禁忌**不是建议——把它放进「仅参考」那一栏，
-        # 模型就有理由照样做（Q7 的拦截率就是这么丢的）。索引里实测存在
-        # 1 条 `hardness=soft` 且带 `forbid` 的边，所以这不是假想情况。
+        # 分栏判据（两层）：
+        # ① `hardness == "soft"` 且不带 `forbid` 的边是软先验，进「经验建议」；
+        #    但一条**禁忌**不是建议——soft 却带 forbid 的边仍算硬约束（索引里
+        #    实测存在这种边），否则模型就有理由照样做（Q7 的拦截率就是这么丢的）。
+        # ② v1.6 D-05：带 forbid 的边里**再**分一次——"条件模式取反"
+        #    （SHOT_PATTERN 类，或 forbid 被条件/上下文 qualifier 限定）不是
+        #    无条件禁令，进【经验建议（软）】并以「若<条件>则不要用<内容>」渲染；
+        #    其余 forbid 仍是硬约束栏里的无条件禁令。判据见
+        #    :func:`is_conditional_pattern_negation`（只读结构化字段）。
         def _is_soft(edge) -> bool:
             if str(getattr(edge, "hardness", "hard")) != "soft":
                 return False
@@ -642,6 +747,16 @@ class KnowledgeRetriever:
 
         hard = [edge for edge in edges if not _is_soft(edge)]
         soft = [edge for edge in edges if _is_soft(edge)]
+        # D-05：把"条件模式取反"从硬约束里挪到软栏。
+        conditional = [edge for edge in hard
+                       if is_conditional_pattern_negation(edge)]
+        hard = [edge for edge in hard if edge not in conditional]
+        # 硬度孪生（同一 norm_key 的 hard/soft 两条都带 forbid）只留第一条——
+        # 检索顺序是确定性顺序，所以结果确定。
+        seen_conditional = set()
+        conditional = [edge for edge in conditional
+                       if not (edge.norm_key in seen_conditional
+                               or seen_conditional.add(edge.norm_key))]
         # §2.3b 的关键纪律 2：**同一组成员**若同时以 hard 与 soft 出现（抽取器
         # 跨批把同一条理论边标成了两种硬度，索引里实测有 168 组），硬的那条已经
         # 说了同样的话。再把软的那条放进「经验建议」栏，等于同一句话既"必须遵守"
@@ -663,18 +778,25 @@ class KnowledgeRetriever:
             else:
                 self._take(budgets, hard_column, ())
         remaining = max(0, budget - estimate_tokens(hard_column))
+        conditional_text, dropped_conditional, cond_quality_fail = (
+            _render_conditional_pack(conditional, nodes, token_limit=remaining))
+        regular_limit = max(0, remaining - estimate_tokens(conditional_text))
         soft_raw, dropped_soft, stats_soft = render_rule_pack(
             soft, nodes, budget=int(self.rule_top_k or DEFAULT_RULE_TOP_K),
-            token_limit=remaining, exempt_edge_ids=exempt)
+            token_limit=regular_limit, exempt_edge_ids=exempt)
+        soft_raw = "\n".join(text for text in (conditional_text, soft_raw)
+                             if text)
         soft_column = ""
         if soft_raw:
             candidate = f"【{soft_title}】\n{soft_raw}"
             soft_column = (candidate if budgets is None
                            else self._take(budgets, candidate, (hard_column,)))
         section = self.last_trace.setdefault(f"{scope}_scope", {})
-        section["dropped_edge_ids"] = list(dropped_hard) + list(dropped_soft)
+        section["dropped_edge_ids"] = (list(dropped_hard) + list(dropped_soft)
+                                       + list(dropped_conditional))
         section["quality_fail"] = bool(stats_hard.quality_fail
-                                       or stats_soft.quality_fail)
+                                       or stats_soft.quality_fail
+                                       or cond_quality_fail)
         #: v1.5 §5.1–5.3 的读数：强度分布、条数预算、冲突并陈。
         section["rule_top_k"] = int(self.rule_top_k or DEFAULT_RULE_TOP_K)
         section["conflict_pairs"] = int(stats_hard.conflict_pairs
@@ -685,7 +807,12 @@ class KnowledgeRetriever:
             list(stats_soft.count_dropped)
         section.setdefault("columns", {})
         section["columns"].update({"hard_edges": len(hard),
-                                   "soft_edges": len(soft),
+                                   "soft_edges": len(soft) + len(conditional),
+                                   #: D-05 的新增读数（additive，旧读取方不受影响）：
+                                   #: 软栏里有多少条是"条件模式取反"。
+                                   "conditional_edges": len(conditional),
+                                   "conditional_tokens": estimate_tokens(
+                                       conditional_text),
                                    "suppressed_soft_edges": len(suppressed_soft),
                                    "hard_tokens": estimate_tokens(hard_column),
                                    "soft_tokens": estimate_tokens(soft_column),
@@ -700,7 +827,8 @@ class KnowledgeRetriever:
                  if kind not in set(constrained)]
         self.last_freedom = freedom_block(constrained, blank)
         # E2 溯源：只留**真的注入了**的边（被预算整条丢掉的不算"检索命中"）。
-        dropped = set(dropped_hard) | set(dropped_soft)
+        dropped = (set(dropped_hard) | set(dropped_soft)
+                   | set(dropped_conditional))
         self.last_edges_query = str(query)
         self.last_edges = [edge for edge in edges
                            if getattr(edge, "edge_id", "") not in dropped]
