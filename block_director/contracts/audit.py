@@ -63,6 +63,14 @@ V16_EVENT_FIELDS = {
     #: A7：标签烘焙后的全帧自检
     "label_overlap_report": ("max_overlap_ratio", "overlap_frames",
                              "frames_checked", "limit"),
+    #: F2（D-09）：断点续跑。必填字段是事件的最小形状；其余字段（如 status、
+    #: pending_drafts、delivered_shots）由发出方按需附带。
+    "resume_checkpoint": ("stage", "shot_id", "path"),
+    "resume_checkpoint_failed": ("path", "stage"),
+    "wall_clock_exhausted": ("llm_calls", "terminal_shots",
+                             "resume_state_path"),
+    "run_resumed": ("version", "terminal_shots", "first_shot"),
+    "shot_resumed_skipped": ("shot_id", "status"),
 }
 
 

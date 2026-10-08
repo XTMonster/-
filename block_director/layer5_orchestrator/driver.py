@@ -10,16 +10,20 @@
 from __future__ import annotations
 
 import copy
+import json
+import os
 import queue
 import threading
 import time
 import traceback
 from dataclasses import dataclass, field, replace
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from ..contracts.enums import Purpose, ToolChoice
-from ..contracts.audit import (SCENE_BUILT_RESERVED_KEYS, AuditResult,
-                               scene_built_reason)
+from ..contracts.audit import (SCENE_BUILT_RESERVED_KEYS, AuditError,
+                               AuditResult, scene_built_reason)
 from ..contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -83,6 +87,210 @@ from .understand import (
 )
 
 log = get_logger("driver")
+
+
+# --------------------------------------------------------------------------- #
+# v1.6 F2（D-09）：断点续跑的状态模型（纯层，不得 import bpy）
+# --------------------------------------------------------------------------- #
+
+RESUME_STATE_VERSION = 1
+RESUME_STATE_FILENAME = "resume_state.json"
+
+#: 终态镜的闭集。``finished`` = 模型 `finish_shot` 声明完成但审核未过；
+#: ``unverified`` = 审核器没给出结论（异常路径）就前进的镜头。四种都表示
+#: "这一镜的 LLM 流程已结束"，resume 时全部零调用跳过。
+RESUME_TERMINAL_STATUSES = ("passed", "degraded", "finished", "unverified")
+
+
+class ResumeStateError(RuntimeError):
+    """resume_state 不可用。消息里给出可执行的下一步，绝不静默猜。"""
+
+
+@dataclass
+class ResumeState:
+    """断点续跑的版本化运行状态（``resume_state.json`` 的单一真源）。
+
+    格式（v1）：顶层 ``schema_version`` 固定为 :data:`RESUME_STATE_VERSION`；
+    ``plan`` / ``brief`` 是中断那一刻的完整快照（草案已合并进计划）；
+    ``drafts`` 记每镜成功合并的 B1 草案（用于算"还有哪些镜没起草"）；
+    ``terminal_shots`` 记每镜终态（passed/degraded/finished/unverified），
+    resume 时对它们**零 LLM 调用**跳过；``delivered_shots`` 记墙钟收尾时
+    已经导出的镜头，resume 后的导出不许重渲它们。
+    """
+
+    version: int = RESUME_STATE_VERSION
+    run_id: str = ""
+    saved_at: str = ""
+    plan: Optional[Dict[str, Any]] = None
+    brief: Optional[Dict[str, Any]] = None
+    script: str = ""
+    drafts: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    terminal_shots: Dict[str, str] = field(default_factory=dict)
+    last_audit: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    delivered_shots: List[str] = field(default_factory=list)
+    llm_calls: int = 0
+    tool_calls: int = 0
+    reason: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "schema_version": int(self.version),
+            "run_id": str(self.run_id),
+            "saved_at": self.saved_at or _now_iso(),
+            "plan": copy.deepcopy(self.plan),
+            "brief": copy.deepcopy(self.brief),
+            "script": str(self.script),
+            "drafts": {str(k): dict(v) for k, v in self.drafts.items()},
+            "terminal_shots": {str(k): str(v)
+                               for k, v in self.terminal_shots.items()},
+            "last_audit": {str(k): dict(v) for k, v in self.last_audit.items()},
+            "delivered_shots": [str(item) for item in self.delivered_shots],
+            "llm_calls": int(self.llm_calls),
+            "tool_calls": int(self.tool_calls),
+            "reason": str(self.reason),
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Any) -> "ResumeState":
+        """严格反序列化：版本错配 / 缺字段 / 类型错误一律报错，**绝不猜**。"""
+        if not isinstance(payload, dict):
+            raise ResumeStateError(
+                f"resume_state 顶层必须是 JSON 对象，实际是 "
+                f"{type(payload).__name__}")
+        version = payload.get("schema_version")
+        if not isinstance(version, int) or isinstance(version, bool):
+            raise ResumeStateError(
+                f"resume_state 缺少合法的 schema_version（整数），实际是 "
+                f"{version!r}")
+        if version != RESUME_STATE_VERSION:
+            raise ResumeStateError(
+                f"resume_state 版本不匹配：文件是 {version}，当前支持 "
+                f"{RESUME_STATE_VERSION}。请用生成它的版本继续运行，或重新"
+                f"跑一次生成——本工具不会对未知版本猜测迁移。")
+        required = ("run_id", "plan", "brief", "script", "drafts",
+                    "terminal_shots", "last_audit", "delivered_shots",
+                    "llm_calls", "tool_calls", "reason")
+        missing = [name for name in required if name not in payload]
+        if missing:
+            raise ResumeStateError(
+                f"resume_state 缺少字段：{', '.join(missing)}。文件可能被"
+                f"截断或不是本工具写出的版本。")
+        if payload.get("plan") is not None and not isinstance(
+                payload.get("plan"), dict):
+            raise ResumeStateError("resume_state.plan 必须是对象或 null")
+        if payload.get("brief") is not None and not isinstance(
+                payload.get("brief"), dict):
+            raise ResumeStateError("resume_state.brief 必须是对象或 null")
+        state = cls(
+            version=version,
+            run_id=str(payload.get("run_id") or ""),
+            saved_at=str(payload.get("saved_at") or ""),
+            plan=dict(payload["plan"]) if payload["plan"] is not None else None,
+            brief=(dict(payload["brief"])
+                   if payload["brief"] is not None else None),
+            script=str(payload.get("script") or ""),
+        )
+        for name in ("drafts", "terminal_shots", "last_audit"):
+            value = payload.get(name)
+            if not isinstance(value, dict):
+                raise ResumeStateError(f"resume_state.{name} 必须是对象")
+            setattr(state, name, {str(k): (dict(v) if name != "terminal_shots"
+                                           else str(v))
+                                  for k, v in value.items()})
+        unknown_statuses = sorted({status for status in
+                                   state.terminal_shots.values()
+                                   if status not in RESUME_TERMINAL_STATUSES})
+        if unknown_statuses:
+            raise ResumeStateError(
+                f"resume_state.terminal_shots 有未知终态："
+                f"{', '.join(unknown_statuses)}（合法闭集："
+                f"{', '.join(RESUME_TERMINAL_STATUSES)}）")
+        delivered = payload.get("delivered_shots")
+        if not isinstance(delivered, list):
+            raise ResumeStateError("resume_state.delivered_shots 必须是数组")
+        state.delivered_shots = [str(item) for item in delivered]
+        for name in ("llm_calls", "tool_calls"):
+            value = payload.get(name)
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise ResumeStateError(f"resume_state.{name} 必须是整数")
+            setattr(state, name, int(value))
+        state.reason = str(payload.get("reason") or "")
+        return state
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).astimezone().isoformat(
+        timespec="seconds")
+
+
+def save_resume_state(path, state: "ResumeState") -> Path:
+    """原子写 ``resume_state.json``（临时文件 + ``os.replace``）。"""
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(f".{target.name}.{_now_iso().replace(':', '')}"
+                                 f".tmp")
+    payload = state.to_dict()
+    try:
+        temporary.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8")
+        os.replace(str(temporary), str(target))
+    finally:
+        try:
+            temporary.unlink(missing_ok=True)
+        except (AttributeError, OSError):
+            if temporary.exists():
+                temporary.unlink()
+    return target
+
+
+def load_resume_state(path) -> "ResumeState":
+    """读并校验 ``resume_state.json``；任何不可用都抛 :class:`ResumeStateError`。"""
+    target = Path(path)
+    if not target.exists():
+        raise ResumeStateError(
+            f"找不到断点文件：{target}。请确认第一次运行是在墙钟撞线收尾"
+            f"（它会写出 resume_state.json），或检查 --resume 目录是否正确。")
+    try:
+        raw = target.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ResumeStateError(f"断点文件无法读取：{exc}") from exc
+    try:
+        payload = json.loads(raw)
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise ResumeStateError(
+            f"断点文件不是合法 JSON：{exc}。文件可能被截断；本工具不会对"
+            f"残缺内容做任何猜测。") from exc
+    return ResumeState.from_dict(payload)
+
+
+def plan_for_shots(plan: "Plan", shot_ids) -> "Plan":
+    """保留镜头顺序，过滤出指定镜头（交付层按"已完成镜"导出用）。"""
+    keep = {str(shot_id) for shot_id in shot_ids}
+    return Plan(
+        shots=[shot for shot in plan.shots if str(shot.shot_id) in keep],
+        continuity_notes=list(plan.continuity_notes),
+        scene_heading=plan.scene_heading,
+        environment=dict(plan.environment),
+    )
+
+
+def _audit_result_from_dict(shot_id: str,
+                            payload: Dict[str, Any]) -> AuditResult:
+    """把 resume_state 里存的审核结论还原成 AuditResult（contracts 无 from_dict）。"""
+    return AuditResult(
+        passed=bool(payload.get("passed", False)),
+        level=str(payload.get("level") or "rule"),
+        errors=[AuditError.from_dict(item)
+                for item in (payload.get("errors") or [])
+                if isinstance(item, dict)],
+        warnings=[AuditError.from_dict(item)
+                  for item in (payload.get("warnings") or [])
+                  if isinstance(item, dict)],
+        suggestions=[str(item) for item in (payload.get("suggestions") or [])],
+        score=payload.get("score"),
+        target=str(payload.get("target") or shot_id),
+    )
 
 
 @dataclass
@@ -222,6 +430,12 @@ class PrevisDriver:
         observers: Optional[List[Callable[[DriverEvent], None]]] = None,
         clock: Callable[[], float] = time.monotonic,
         thread_factory: Callable[..., Any] = _default_thread_factory,
+        #: v1.6 F2（D-09）：断点续跑。``resume_state_path`` 是 checkpoint 的
+        #: 落盘位置（缺省从审计目录推导：``<项目>/resume_state.json``）；
+        #: ``resume_state`` 是调用方已加载的断点（``load_resume_state``）。
+        #: 两者都是可选：不传就退回 v1.5 的"撞线即整跑作废"行为，零差异。
+        resume_state_path: Optional[Any] = None,
+        resume_state: Optional["ResumeState"] = None,
     ) -> None:
         self.transport = transport
         self.audit = audit
@@ -364,6 +578,28 @@ class PrevisDriver:
         self._just_rolled_back: bool = False
         self.rollback_events: List[Dict[str, Any]] = []
 
+        # --------------------------------------------------- v1.6 F2 断点续跑
+        self._resume_state = resume_state
+        if resume_state_path is not None:
+            self._resume_state_path: Optional[Path] = Path(resume_state_path)
+        elif self.audit.directory is not None:
+            self._resume_state_path = (
+                Path(self.audit.directory).parent / RESUME_STATE_FILENAME)
+        else:
+            self._resume_state_path = None
+        #: 每镜终态（passed/degraded/finished/unverified）；checkpoint 与
+        #: resume 的跳过判据都从它出。
+        self._shot_terminal: Dict[str, str] = {}
+        #: **resume 那一刻**就是终态的镜号（冻结集合）。跳过判据只看它——
+        #: 运行中途新标终态的镜头已经出队，不该再被"跳过"逻辑误伤
+        #: （实测：ReAct 精修前先标 degraded 会让同一镜在精修后被跳过）。
+        self._resume_terminal: set = set()
+        self._resume_last_audit: Dict[str, Dict[str, Any]] = {}
+        self._resume_drafts: Dict[str, Dict[str, Any]] = {}
+        self._resume_delivered: set = set()
+        self._wall_clock_exhausted: bool = False
+        self._apply_resume_state()
+
     # ------------------------------------------------------------ 对外接口
     def add_observer(self, observer: Callable[[DriverEvent], None]) -> None:
         self._observers.append(observer)
@@ -445,6 +681,13 @@ class PrevisDriver:
             "audit_pass_rate": self._audit_pass_rate(),
             #: E2（§2.3b）：逐镜知识溯源，交付层写 ``movements[].source`` 用。
             "knowledge_provenance": self.knowledge_provenance(),
+            #: v1.6 F2（D-09）：断点续跑的对外读数——终态镜、墙钟撞线标志与
+            #: checkpoint 落盘位置。没有配置 resume 路径时后两者为空/False。
+            "terminal_shots": {str(k): str(v)
+                               for k, v in self._shot_terminal.items()},
+            "wall_clock_exhausted": self._wall_clock_exhausted,
+            "resume_state_path": (str(self._resume_state_path)
+                                  if self._resume_state_path else None),
             "error": self.error,
         }
 
@@ -512,6 +755,12 @@ class PrevisDriver:
                 self._fail("超出最大步数（疑似死循环）")
                 return False
         exhausted = self.budget.exhausted_reason()
+        wall_reason = self._wall_clock_reason()
+        if wall_reason and self.state not in TERMINAL_STATES:
+            # v1.6 F2（D-09）：墙钟撞线**不是** run_failed——已完成的镜头
+            # 必须保下来（checkpoint + 交付收尾），而不是把整跑作废。
+            self._wrap_up_wall_clock(wall_reason)
+            return True
         if exhausted and self.state in (DriverState.UNDERSTANDING,
                                         DriverState.PLANNING):
             # 还没产出计划就触顶：降级收尾（构建与审核不花预算，不该被砍）
@@ -539,7 +788,9 @@ class PrevisDriver:
         started = self.clock()
         while self.step():
             if max_wall_s is not None and self.clock() - started > max_wall_s:
-                self._fail(f"超出墙上时间上限 {max_wall_s}s")
+                # v1.6 F2（D-09）：撞线收尾（写 resume_state + CANCELLED），
+                # 而不是把已经通过的镜头一起作废。
+                self._wrap_up_wall_clock(f"超出墙上时间上限 {max_wall_s}s")
                 break
             if self._paused:
                 time.sleep(poll_interval or 0.05)
@@ -1406,7 +1657,7 @@ class PrevisDriver:
             self.draft_history.append(best.to_dict())
             if alternates:
                 self._draft_alternates[shot_id] = [item.to_dict()
-                                                   for item in alternates]
+                                                    for item in alternates]
             self.audit.log("draft_received",
                            f"{shot_id}: {len(best.actions)} 个动作 / "
                            f"{len(best.dialogues)} 句对白",
@@ -1414,9 +1665,13 @@ class PrevisDriver:
                            dialogues=len(best.dialogues),
                            #: 只在真的开了 Best-of-N 时才写候选数——默认 1 时
                            #: 事件形状与升级前逐字节相同（NFR-4）。
-                           **({"candidates": len(self._draft_candidates)}
-                              if wanted > 1 else {}))
+                                   **({"candidates": len(self._draft_candidates)}
+                                       if wanted > 1 else {}))
             self._emit("draft_received", f"{shot_id} 草案已合并", shot=shot_id)
+            # v1.6 F2（D-09）：B1 每镜起草成功即落 checkpoint——即使接下来
+            # 进程被杀，这一镜的草案也不会丢。
+            self._resume_drafts[shot_id] = best.to_dict()
+            self._checkpoint_resume(stage="draft", shot_id=shot_id)
         self._draft_candidates = []
         self._editor_payload_cache = None
         self._editing_index += 1
@@ -1656,10 +1911,26 @@ class PrevisDriver:
             return
         shot_id = self._shot_queue[0]
         self._current_shot_id = shot_id
+        resumed_status = ""
+        if str(shot_id) in self._resume_terminal:
+            resumed_status = self._shot_terminal.get(str(shot_id), "")
+        if resumed_status:
+            # v1.6 F2（D-09）：终态镜（passed/degraded/…）从断点恢复时**零
+            # LLM 调用**跳过。它的旧审核结论已在 resume 时种回 audit_results，
+            # 这里不再重新审——重审会把它重新推进修复回路，白烧模型调用。
+            self.audit.log(
+                "shot_resumed_skipped",
+                f"{shot_id} 终态（{resumed_status}）从断点恢复，跳过",
+                shot_id=shot_id, status=resumed_status)
+            self._emit("shot_resumed_skipped", f"{shot_id} 从断点跳过",
+                       shot_id=shot_id, status=resumed_status)
+            self._advance_shot()
+            return
         restored = self._just_rolled_back
         self._just_rolled_back = False
         result = self._audit_shot(shot_id, restored=restored)
         if result is None:
+            self._mark_terminal(shot_id, "unverified")
             self._advance_shot()
             return
         if self._rollback_repair_if_worse(shot_id, result):
@@ -1677,6 +1948,8 @@ class PrevisDriver:
                     shot=shot_id, errors=len(result.errors))
                 self._emit("shot_finished_with_errors",
                            f"{shot_id} 带问题完成", shot=shot_id)
+            self._mark_terminal(shot_id, "passed" if result.passed
+                                else "finished")
             self._advance_shot()
             return
         if result.passed:
@@ -1684,6 +1957,7 @@ class PrevisDriver:
                 self._pending_review = shot_id
                 self._transition(DriverState.REVIEWING)
                 return
+            self._mark_terminal(shot_id, "passed")
             self._advance_shot()
             return
         if self._repair_attempts >= self.limits.max_repairs_per_shot:
@@ -1694,6 +1968,10 @@ class PrevisDriver:
             axis_violation = any(item.rule == "R001" for item in result.errors)
             if axis_violation and self._gate_enabled(
                     "human_gate_on_axis_violation"):
+                # v1.6 F2：gate 放行走 `_apply_gate → _advance_shot`，不进
+                # 这里的分支——先落终态，否则这镜从断点里消失（实测：smoke
+                # 跑的 shot_002 走 gate 收尾后不在 terminal_shots 里）。
+                self._mark_terminal(shot_id, "degraded")
                 self._request_gate(
                     GateRequest(kind="axis_violation",
                                 title=f"{shot_id} 越轴且自动修复未成功",
@@ -1704,6 +1982,7 @@ class PrevisDriver:
             if self._should_start_react(shot_id, result):
                 self._start_react(shot_id, result)
                 return
+            self._mark_terminal(shot_id, "degraded")
             self._advance_shot()
             return
         self._pending_audit = result
@@ -1900,6 +2179,7 @@ class PrevisDriver:
             # 结论不合规不阻断流程：规则层已经放行，这里只是少了一层复核
             self.audit.log("self_review_invalid", str(exc), level="warning",
                            shot=shot_id)
+            self._mark_terminal(shot_id, "passed")
             self._advance_shot()
             return
 
@@ -1917,6 +2197,7 @@ class PrevisDriver:
             return
         self.audit.log("self_review", f"{shot_id} 复核通过", shot=shot_id)
         self._emit("self_review", f"{shot_id} 复核通过", shot=shot_id)
+        self._mark_terminal(shot_id, "passed")
         self._advance_shot()
 
     def _step_repairing(self) -> None:
@@ -2086,6 +2367,155 @@ class PrevisDriver:
                        degraded=self.degraded_reason or None,
                        budget=self.budget.summary)
         self._emit("run_finished", f"完成，共 {len(plan.shots)} 个镜头")
+
+    # ---------------------------------------------------- v1.6 F2 断点续跑
+    def _wall_clock_reason(self) -> Optional[str]:
+        """预算账本里的墙钟是否已撞线（与 ``Budget.exhausted_reason`` 同一口径）。"""
+        limits = self.budget.limits
+        if limits.max_wall_seconds and self.budget.elapsed >= \
+                limits.max_wall_seconds:
+            return f"运行时间已达上限（{limits.max_wall_seconds:.0f}s）"
+        return None
+
+    def _mark_terminal(self, shot_id: str, status: str) -> None:
+        """记下这一镜的终态并落 checkpoint（每镜审核/修复终态 = 断点）。"""
+        shot_id = str(shot_id)
+        self._shot_terminal[shot_id] = status
+        for result in reversed(self.audit_results):
+            if str(getattr(result, "target", "") or "") == shot_id:
+                self._resume_last_audit[shot_id] = result.to_dict()
+                break
+        self._checkpoint_resume(stage="terminal", shot_id=shot_id,
+                                status=status)
+
+    def _checkpoint_resume(self, *, stage: str = "", shot_id: str = "",
+                           status: str = "", reason: str = "") -> None:
+        """把当前运行状态落成 ``resume_state.json``（版本化、原子写）。
+
+        每个 B1 草案与每个终态镜之后都拍一张：即便进程被**硬杀**（不是走
+        收尾路径），磁盘上也留着最近一张可续的断点。
+        """
+        path = self._resume_state_path
+        if path is None:
+            return
+        state = ResumeState(
+            run_id=self.audit.run_id,
+            plan=(copy.deepcopy(self.plan.to_dict())
+                  if self.plan is not None else None),
+            brief=(copy.deepcopy(self.brief.to_dict())
+                   if self.brief is not None else None),
+            script=self.script or "",
+            drafts={str(k): dict(v) for k, v in self._resume_drafts.items()},
+            terminal_shots={str(k): str(v)
+                            for k, v in self._shot_terminal.items()},
+            last_audit={str(k): dict(v)
+                        for k, v in self._resume_last_audit.items()},
+            delivered_shots=sorted(self._resume_delivered),
+            llm_calls=self._llm_calls,
+            tool_calls=self._tool_calls,
+            reason=reason,
+        )
+        try:
+            save_resume_state(path, state)
+        except (OSError, ResumeStateError) as exc:
+            # 落盘失败**不得**静默吞掉：审计里留一条 error，运行照常继续
+            # （断点写不出是交付风险，不是本次运行已坏）。
+            log.error("resume 检查点写入失败 %s：%s", path, exc)
+            self.audit.log(
+                "resume_checkpoint_failed",
+                f"断点写入失败：{type(exc).__name__}: {exc}",
+                level="error", path=str(path), stage=stage, shot_id=shot_id)
+            return
+        if stage:
+            self.audit.log("resume_checkpoint",
+                           f"断点已落盘（{stage}）",
+                           stage=stage, shot_id=shot_id, status=status,
+                           path=str(path))
+
+    def _wrap_up_wall_clock(self, reason: str) -> None:
+        """v1.6 F2（D-09）：墙钟撞线收尾——保已完成镜，不整跑作废。
+
+        与 ``_fail`` 的区别：场景保留、终态镜的 checkpoint 落盘、状态记为
+        CANCELLED（不是成功）。已完成镜的**交付物**由调用方（headless CLI
+        的收尾分支）按 ``snapshot()["terminal_shots"]`` 过滤导出；驱动器自己
+        是纯层，只负责把状态钉在磁盘上。
+        """
+        if self._wall_clock_exhausted:
+            return                          # 幂等：重复撞线不再写一遍
+        self._wall_clock_exhausted = True
+        self._flush_pending_repairs()
+        self.audit.log(
+            "wall_clock_exhausted", reason, level="warning",
+            llm_calls=self._llm_calls,
+            terminal_shots=sorted(self._shot_terminal),
+            resume_state_path=(str(self._resume_state_path)
+                               if self._resume_state_path else ""))
+        self._emit("wall_clock_exhausted", reason)
+        self._checkpoint_resume(stage="wall", reason=reason)
+        self._transition(DriverState.CANCELLED)
+
+    def _apply_resume_state(self) -> None:
+        """resume 入口：加载断点，跳过终态镜，从第一个非终态镜继续。"""
+        state = self._resume_state
+        if state is None:
+            return
+        if state.plan is not None:
+            try:
+                self.plan = Plan.from_dict(copy.deepcopy(state.plan))
+            except Exception as exc:  # noqa: BLE001 - 坏计划必须报错，不猜
+                raise ResumeStateError(
+                    f"resume_state.plan 无法解析：{exc}") from exc
+            self._apply_scene_budget(len(self.plan.shots))
+        if state.brief is not None:
+            try:
+                self.brief = SceneBrief.from_dict(copy.deepcopy(state.brief))
+            except Exception as exc:  # noqa: BLE001 - 坏 brief 必须报错，不猜
+                raise ResumeStateError(
+                    f"resume_state.brief 无法解析：{exc}") from exc
+        if state.script:
+            self.script = state.script
+        self._shot_terminal = {str(k): str(v)
+                               for k, v in state.terminal_shots.items()}
+        self._resume_terminal = set(self._shot_terminal)
+        self._resume_last_audit = {str(k): dict(v)
+                                   for k, v in state.last_audit.items()}
+        self._resume_drafts = {str(k): dict(v)
+                               for k, v in state.drafts.items()}
+        self._resume_delivered = {str(item)
+                                  for item in state.delivered_shots}
+        #: 终态镜的旧审核结论种回账本：通过率统计与"哪几镜审过"保持完整，
+        #: 而不是在 resume 之后假装它们没发生过。
+        for shot_id, payload in self._resume_last_audit.items():
+            self.audit_results.append(_audit_result_from_dict(shot_id, payload))
+        plan_shots = [str(shot.shot_id)
+                      for shot in (self.plan.shots if self.plan else [])]
+        terminal = set(self._shot_terminal)
+        pending_drafts = [shot_id for shot_id in plan_shots
+                          if shot_id not in self._resume_drafts
+                          and shot_id not in terminal]
+        first_non_terminal = next(
+            (shot_id for shot_id in plan_shots if shot_id not in terminal),
+            "")
+        self._finished_shots = [shot_id for shot_id in plan_shots
+                                if shot_id in terminal]
+        self._editing_queue = list(pending_drafts)
+        self._editing_index = 0
+        self.audit.log(
+            "run_resumed",
+            f"从断点继续：终态镜 {sorted(terminal)}，待起草 "
+            f"{len(pending_drafts)} 镜，下一镜 {first_non_terminal or '（无）'}",
+            version=state.version, terminal_shots=sorted(terminal),
+            pending_drafts=list(pending_drafts),
+            first_shot=first_non_terminal,
+            delivered_shots=sorted(self._resume_delivered))
+        self._emit("run_resumed", "从断点继续",
+                   terminal_shots=sorted(terminal),
+                   first_shot=first_non_terminal)
+        if self.plan is None:
+            return                      # 没有可续计划：从 IDLE 正常开始
+        target = (DriverState.EDITING if pending_drafts
+                  else DriverState.BUILDING)
+        self._transition(target)
 
     # ------------------------------------------------------------ 内部
     def _apply_scene_budget(self, shots: int) -> None:
@@ -2261,7 +2691,13 @@ class PrevisDriver:
                         note: str = "") -> None:
         """发起一次 LLM 调用。网络在后台线程，主线程只负责发起与轮询。"""
         if not self.budget.allow_llm_call(purpose):
-            self._degrade_to_finish(self.budget.exhausted_reason() or "预算耗尽")
+            reason = self.budget.exhausted_reason() or "预算耗尽"
+            if self._wall_clock_reason():
+                # v1.6 F2（D-09）：墙钟撞线走"保已完成镜"的收尾，不走
+                # "补审剩余镜头"的预算降级路径。
+                self._wrap_up_wall_clock(reason)
+            else:
+                self._degrade_to_finish(reason)
             return
         self._call_purpose = purpose
         self._pending_request_id = payload.request_id
