@@ -14,7 +14,7 @@ R002 空间碰撞、R003 动作时间轴、R008 地面、R009 景别距离、R01
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Tuple
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
@@ -22,13 +22,17 @@ from mathutils import Vector
 
 from ..cinema.axis import (
     AXIS_DRIFT_DEG,
+    ScreenOrderState,
+    ScreenSample,
     axis_state,
+    axis_violation,
     crossing_events,
     current_line,
     drift_is_bridged,
     flipped_screen_directions,
     shared_characters,
     thirty_degree_violation,
+    update_order,
 )
 from ..cinema.framing import SHOT_FRAME, required_distance
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
@@ -122,12 +126,33 @@ def _pair_screen_order(context, camera, characters) -> List[Tuple[str, float]]:
     return out
 
 
-def _order_of(order: Sequence[Tuple[str, float]]) -> Tuple[str, ...]:
-    return tuple(name for name, _x in sorted(order, key=lambda item: item[1]))
+def _shot_screen_state(context, camera, shot, characters) -> ScreenOrderState:
+    """本镜首帧的银幕左右序状态（B5）：画面 X ＋ 头部朝向投影 → 状态机。
+
+    ``characters`` 只取前两位（对话配对，与旧口径一致）；朝向读不到的角色
+    记中性 0——顺序判定本身不需要朝向，朝向只用于桥接判定与证据展示。
+    """
+    pairs = _pair_screen_order(context, camera, characters[:2])
+    facing = screen_facing_for(shot, context=context, camera=camera)
+    samples = [
+        ScreenSample(character_id=str(character_id),
+                     screen_x=float(screen_x),
+                     facing_x=float(facing.get(str(character_id), 0.0)))
+        for character_id, screen_x in pairs
+    ]
+    return update_order(ScreenOrderState(), samples)
 
 
 def _screen_polarity_flip(context, camera, shot, characters) -> str:
-    """相邻两人镜：这一对的**屏幕左右顺序**有没有在没人看见时翻转。"""
+    """相邻两人镜：这一对的**屏幕左右顺序**有没有在没人看见时翻转。
+
+    v1.6 B5（FR-C6 / D-14）：判定输入换成 ``cinema/axis`` 的银幕左右序状态机。
+    每一镜首帧把"画面 X ＋ 头部朝向投影"折成 ``ScreenOrderState``，前后两镜交给
+    ``axis_violation(prev, cur, bridge_ok)`` 比较。``bridge_ok`` 只认中间镜头的
+    合法桥接——看得见的换位（两人同框时走过去，老口径保留）、骑轴机位（§6.2）、
+    以及 B5 新增的中性镜（**双方** facing_sign 全 0：正/背对相机）。计划的
+    ``axis_note`` 文本自述不参与判定（降级为展示文本）。
+    """
     if context is None or context.plan is None or context.axis is None:
         return ""
     if len(characters) < 2:
@@ -155,38 +180,49 @@ def _screen_polarity_flip(context, camera, shot, characters) -> str:
     previous_start, _end = shot_frame_span(previous.shot_id, context)
     scene.frame_set(int(previous_start))
     bpy.context.view_layer.update()
-    before = _pair_screen_order(context, previous_camera, previous_characters)
+    previous_state = _shot_screen_state(context, previous_camera,
+                                        previous, previous_characters)
     scene.frame_set(int(restore))
     bpy.context.view_layer.update()
-    after = _pair_screen_order(context, camera, characters)
-    if len(before) != 2 or len(after) != 2:
-        return ""
-    if {name for name, _x in before} != {name for name, _x in after}:
-        return ""
-    if _order_of(before) == _order_of(after):
-        return ""
-    #: 翻转了——看中间有没有**合法桥接**：看得见的换位，或中性机位（§6.2）。
+    current_state = _shot_screen_state(context, camera, shot, characters)
+    pair = set(previous_state.left_to_right)
+    #: 翻转判定交给纯状态机；桥接只看**中间**的镜头。
     events = _crossing_map(context)
     live = current_line(context.axis, _character_xy_by_label(context))
+    bridge_ok = False
     for position in range(previous_index + 1, index + 1):
         bridge = context.plan.shots[position]
         bridge_id = str(bridge.shot_id)
         event = events.get(bridge_id)
         if event is not None and event.visible:
-            return ""
+            bridge_ok = True
+            break
         bridge_camera = context.camera_for(bridge_id)
         if bridge_camera is None:
             continue
+        bridge_characters = [context.character(cid) for cid in bridge.characters]
         bridge_start, _bridge_end = shot_frame_span(bridge_id, context)
         scene.frame_set(int(bridge_start))
         bpy.context.view_layer.update()
-        neutral = _camera_is_neutral(live, bridge_camera)
+        bridge_state = _shot_screen_state(context, bridge_camera,
+                                          bridge, bridge_characters)
+        neutral_camera = _camera_is_neutral(live, bridge_camera)
         scene.frame_set(int(restore))
         bpy.context.view_layer.update()
-        if neutral:
-            return ""
+        if neutral_camera:
+            bridge_ok = True
+            break
+        #: B5 新增：中性镜（双方朝向符号全 0）也是合法桥接。
+        if pair and pair <= set(bridge_state.facing_sign) \
+                and all(bridge_state.facing_sign[cid] == 0 for cid in pair):
+            bridge_ok = True
+            break
+    warning = axis_violation(previous_state, current_state, bridge_ok)
+    if warning is None:
+        return ""
     return (f"银幕左右关系在 {previous.shot_id} → {shot.shot_id} 的剪辑点上翻转"
-            f"（{'、'.join(_order_of(before))} → {'、'.join(_order_of(after))}），"
+            f"（{'、'.join(previous_state.left_to_right)} → "
+            f"{'、'.join(current_state.left_to_right)}），"
             f"而中间没有任何镜头把这次换位拍出来")
 
 

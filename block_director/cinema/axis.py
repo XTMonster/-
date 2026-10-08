@@ -7,10 +7,11 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
-from typing import Any, Dict, Optional, Sequence, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 from ..contracts.enums import SHOT_TYPES
+from ..contracts.guard import Confidence, GuardWarning, Severity
 
 EPS = 1e-9
 
@@ -461,20 +462,48 @@ def axis_status(axis: Axis, camera: Sequence[float]) -> str:
     return AXIS_CORRECT if side == axis.established_side else AXIS_CROSSED
 
 
-def axis_violation(axis: Axis, camera: Sequence[float]) -> Optional[str]:
-    """**越轴**时返回中文建议；合规与中性机位都返回 ``None``（R001）。
+def _axis_crossing_note(axis: Axis, camera: Sequence[float]) -> Optional[str]:
+    """旧判据的**越轴**说明：合规与中性机位都返回 ``None``（v1.3 口径）。
 
     v1.3 修正：v1.2 把"机位落在轴线上"也判为违规。但中性镜头在
     §6.2 的 ``axis_neutral`` 卡片里是**合法**的跨轴桥梁，而且两人相对而立
     （"互相看向对方"）时，任何单人正反打的机位都必然落在轴线上——按旧判据
     这类镜头永远无法通过审核。现在中性不再是违规，改为由
-    :func:`axis_neutral_note` 给出的提示（R001 降级为 warning）；
-    真正跨到另一侧仍然报错。
+    :func:`axis_neutral_note` 给出的提示；真正跨到另一侧仍然报错。
+
+    v1.6 B5 起它是 :func:`axis_violation` 的**兼容底层**：机位几何这条判据
+    仍由 ``cinema_engine/axis_controller.py``（视口检查）继续消费，R001 规则
+    侧的新判据走银幕左右序状态机。
     """
     if axis_status(axis, camera) == AXIS_CROSSED:
         return ("相机位置违反 180° 轴线规则，可能导致角色左右方向混乱。"
                 "建议将相机移到轴线另一侧，或插入中性镜头过渡。")
     return None
+
+
+def axis_violation(prev, cur, bridge_ok: bool = False
+                   ) -> Optional[Union[str, GuardWarning]]:
+    """R001 的越轴判定（v1.6 B5 起是**双入口**）。
+
+    新入口（FR-C6 / D-14，TDD §4.3）：
+        ``prev`` / ``cur`` 是 :class:`ScreenOrderState`，``bridge_ok`` 说明中间
+        有没有合法桥接（中性镜或骑轴镜）。左右序翻转且无桥接 ⇒ 返回
+        ``GuardWarning(type="axis_screen_order", severity=ERROR)``；
+        否则 ``None``。见 :func:`screen_order_violation`。
+
+    旧入口（兼容，v1.3 口径）：
+        ``prev`` 是 :class:`Axis`、``cur`` 是机位坐标，返回中文说明或 ``None``。
+        保留是因为 ``cinema_engine/axis_controller.py`` 与 ``tests/test_axis.py``
+        仍按这个形状调用，它们不在卡 B5 的改动文件清单里。
+    """
+    if isinstance(prev, Axis):
+        return _axis_crossing_note(prev, cur)
+    if not isinstance(prev, ScreenOrderState) \
+            or not isinstance(cur, ScreenOrderState):
+        raise TypeError(
+            "axis_violation 期望 (Axis, camera) 或 "
+            "(ScreenOrderState, ScreenOrderState, bridge_ok)")
+    return screen_order_violation(prev, cur, bool(bridge_ok))
 
 
 def axis_neutral_note(axis: Axis, camera: Sequence[float]) -> Optional[str]:
@@ -483,6 +512,123 @@ def axis_neutral_note(axis: Axis, camera: Sequence[float]) -> Optional[str]:
         return None
     return ("机位落在轴线上（中性镜头）：画面没有明确的左右信息，"
             "可以作为跨轴桥梁，但连续使用会失去空间感。")
+
+
+# --------------------------------------------------------------------------- #
+# R001（v1.6 B5 / FR-C6 / D-14）：银幕左右序状态机
+# --------------------------------------------------------------------------- #
+#: 朝向投影到画面 X 轴的符号判定中性死区：|投影| < 0.1 记 0（正/背对相机）。
+FACING_SIGN_EPS = 0.1
+
+
+@dataclass(frozen=True)
+class ScreenSample:
+    """单个角色在一帧里的画面观测量（纯数据；bpy 侧投影好后喂进来）。
+
+    * ``screen_x``：包围盒中心投影到归一化视口的 X（0=画面左，1=画面右）；
+    * ``facing_x``：头部朝向向量在画面 X 轴（相机右轴）上的投影点积——
+      符号即"脸朝左还是朝右"，``|facing_x| < 0.1`` 视为中性。
+    """
+
+    character_id: str
+    screen_x: float
+    facing_x: float
+
+
+@dataclass(frozen=True)
+class ScreenOrderState:
+    """一镜的银幕左右序状态：画面左→右的角色序 + 每人的朝向符号（-1/0/+1）。"""
+
+    left_to_right: Tuple[str, ...] = ()
+    facing_sign: Dict[str, int] = field(default_factory=dict)
+
+
+def facing_sign_of(facing_x: float) -> int:
+    """朝向投影 → 符号：``|值| < 0.1`` ⇒ 0（中性），否则 ±1。"""
+    value = float(facing_x)
+    if abs(value) < FACING_SIGN_EPS:
+        return 0
+    return 1 if value > 0.0 else -1
+
+
+def update_order(state: ScreenOrderState, samples: Sequence[ScreenSample]
+                 ) -> ScreenOrderState:
+    """把这一帧的样本折进状态机，返回新状态（确定性、无副作用）。
+
+    * 样本角色按 ``screen_x`` 升序排成 ``left_to_right``；X 相同先按上一状态的
+      顺序、再按 ``character_id`` 决序——同一输入永远同一输出；
+    * ``facing_sign`` = :func:`facing_sign_of`；同一角色多条样本**最后一条为准**；
+    * 上一状态里没被样本覆盖的角色：保留原朝向符号，接在样本角色之后、按原
+      顺序（它们这一帧没有新读数，位置不可断言）；
+    * ``samples`` 为空 ⇒ 原状态原样返回（状态机不凭空推进）。
+    """
+    if not samples:
+        return state
+    by_id: Dict[str, ScreenSample] = {}
+    for sample in samples:
+        if not isinstance(sample, ScreenSample):
+            raise TypeError(
+                "update_order 的样本必须是 ScreenSample，"
+                f"收到 {type(sample).__name__}")
+        if sample.character_id:
+            by_id[sample.character_id] = sample
+    previous_index = {cid: i for i, cid in enumerate(state.left_to_right)}
+    ordered = sorted(
+        by_id.values(),
+        key=lambda item: (float(item.screen_x),
+                          previous_index.get(item.character_id,
+                                             len(previous_index)),
+                          item.character_id))
+    observed = [sample.character_id for sample in ordered]
+    carried = [cid for cid in state.left_to_right if cid not in by_id]
+    signs = dict(state.facing_sign)
+    for sample in by_id.values():
+        signs[sample.character_id] = facing_sign_of(sample.facing_x)
+    return ScreenOrderState(
+        left_to_right=tuple(observed) + tuple(carried),
+        facing_sign={cid: signs.get(cid, 0) for cid in observed + carried})
+
+
+def screen_order_violation(prev: ScreenOrderState, cur: ScreenOrderState,
+                           bridge_ok: bool = False) -> Optional[GuardWarning]:
+    """比较前后两镜的银幕左右序：换侧有没有合法桥接（FR-C6 / D-14）。
+
+    * 只在**同一对角色都出现**时比较（共同角色 ≥2，取它们两镜里的相对序）；
+    * 相对序不变 ⇒ ``None``（正反打就是这种：序不变、朝向符号互翻）；
+    * 序翻转且 ``bridge_ok`` ⇒ 合法换侧 ⇒ ``None``；
+    * 序翻转且无桥接 ⇒ ``GuardWarning(type="axis_screen_order",
+      severity=ERROR, confidence=HIGH)``，证据带前后两镜的完整左右序与朝向符号。
+
+    ``bridge_ok`` 由调用方算好传入：中间隔了中性镜（双方 facing_sign 全 0）
+    或骑轴镜 ⇒ True。
+    """
+    common = [cid for cid in prev.left_to_right if cid in cur.left_to_right]
+    if len(common) < 2:
+        return None
+    before = tuple(cid for cid in prev.left_to_right if cid in common)
+    after = tuple(cid for cid in cur.left_to_right if cid in common)
+    if before == after:
+        return None
+    if bridge_ok:
+        return None
+    return GuardWarning(
+        shot_id="",
+        frame_range=(0, 0),
+        type="axis_screen_order",
+        subject="scene",
+        evidence={
+            "previous_order": list(prev.left_to_right),
+            "current_order": list(cur.left_to_right),
+            "previous_facing": dict(prev.facing_sign),
+            "current_facing": dict(cur.facing_sign),
+        },
+        severity=Severity.ERROR,
+        confidence=Confidence.HIGH,
+        declared_intent="",
+        suggestion_hint=(
+            "把这次左右互换拍成看得见的换位（两人同框时走过去），"
+            "或在中间插一个中性镜头 / 骑轴机位再换边"),
+    )
 
 
 # --------------------------------------------------------------------------- #
