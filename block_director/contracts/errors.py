@@ -75,6 +75,8 @@ USER_MESSAGES: Dict[ErrorCode, str] = {
     ErrorCode.ENV_001: ("环境件『{label}』的方位解析失败：{reason}。"
                         "请把 direction 改为 front/back/left/right/above/ground、"
                         "distance 改为 near/mid/far、size 改为 s/m/l 后重试。"),
+    ErrorCode.GUARD_001: ("视锥采样失败（depsgraph/投影/射线异常）。"
+                          "请检查该镜的相机、主体网格与动画求值；采样异常不会静默吞掉。"),
 }
 
 
