@@ -254,7 +254,8 @@ EDITOR_SYSTEM_PROMPT = """\
   `slow/normal/brisk`（`sharp` 是**速度曲线**词，归 `curve` 字段，不能写进
   `pace`）；动作参数的键**只写该动作那一行有的键**（例如 `turn_head` 只有
   `angle_deg/angle/degrees`，没有 `yaw_deg/pitch_deg`），写表外同义词整条
-  草案会被退回；
+  草案会被退回；`walk_to`/`run_to` 的 `speed` 闭集只有 **walk/run**
+  （`slow/normal/brisk` 是拍点 `pace` 的节奏词，写进 `speed` 会被退回）；
 - **走位跨线必须看得见**：任何角色若要从两人连线的一侧走到另一侧，必须把
   这次换位安排成双人同框的镜头；只在单人镜里绕到另一侧会被判越轴（R001）。
 - `composition`（构图声明）只在确实有构图意图时写，`rule` 与 `subject_position`
