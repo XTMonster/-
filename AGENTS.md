@@ -24,6 +24,20 @@ previs and exports it as a reference video for AI video generation.
 
 ## Status
 
+### v1.6 / G2 终验收现状（2026-10-09，证据 `docs/evidence/20261009-v16-acceptance/`）
+
+v1.6 计划（`v1.6/改进计划_v1.6_deepseek.md`）的卡 A–G 已实现；G2 终验收用
+`fixtures/shotlist_market_v10_nodes1_4.txt`（13 镜）跑 DeepSeek V4 Pro 官方
+通道（EEVEE）。16 条判据现状：**PASS 10**（角色表 / 环境锚点 / 待复核落产物 /
+R015=0 / 环境节拍 / 交付包 / 节奏 / 圆柱 AABB / 超时重试阶梯 / 标签全帧交叠）、
+**FAIL 4**（构图门 audit_pass_rate 2/12、E_AXIS_001 与走位跨线、invalid 工具调用、
+逐帧穿模未核）、部分 2（探针 43/43 全 OK、pytest 3206 passed/1 skipped，
+唯一红是已结案的 RK-13/E1）。代码侧修复已全部落地：轴判据与摆位线同源、
+空镜豁免、`move_camera` 平移不得跨轴、标签双向分摊＋只烘本镜出场角色、
+交付带 `audit_pass_rate` 与 `label_overlap_report` 汇总、修复/精修提示列角色表。
+剩余红项由"双人镜锚点语义（已按用户 2026-10-09 裁决改为 MCU 组中心锚点，
+待真跑复证）＋模型词汇/调度方差"决定；判据与阈值一字未动。
+
 Phases 0-4 and 6 are done:
 
 - **Phase 0** plugin skeleton, state machine, audit logging

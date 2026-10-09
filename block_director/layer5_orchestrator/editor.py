@@ -46,6 +46,7 @@ from ..motion.model import (
     ALL_ACTION_PARAM_KEYS,
     action_param_problems,
     action_param_domains,
+    normalize_action_params,
 )
 from .dialogue_budget import shot_dialogue_budget
 from .occupancy import layer_occupancy, render_occupancy_table
@@ -560,9 +561,13 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
     bad = []
     for item in draft.actions:
         kind = str((item or {}).get("action_type") or "")
+        #: v1.6 G2（用户裁决）：无歧义等价键在**存进草案之前**归一，构建期
+        #: 拿到的永远是规范键（`yaw_deg`→`angle_deg` 等）；其余照旧拒绝。
+        item["params"] = normalize_action_params(
+            kind, dict((item or {}).get("params") or {}))
         #: v1.5：**键与取值一起查**。只查键会漏掉 `body_tilt.axis='forward'`
         #: 这类闭集错误——它一路活到构建期，把整轮打成 ERROR（实测 2026-10-03）。
-        for problem in action_param_problems(kind, (item or {}).get("params")):
+        for problem in action_param_problems(kind, item["params"]):
             allowed = list(ACTION_PARAMS.get(kind, ()))
             bad.append(f"{problem}；允许的键是 {allowed}" if "不认识的参数" in problem
                        else problem)

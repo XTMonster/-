@@ -12,7 +12,11 @@ from typing import Any, Dict, List, Optional
 import bpy
 from mathutils import Vector
 
-from ..motion.model import ACTION_TYPES, head_track_angles
+from ..motion.model import (
+    ACTION_TYPES,
+    head_track_angles,
+    normalize_action_params,
+)
 from ..cinema.axis import Axis
 from ..cinema.camera_motion import (
     MOVEMENT_TYPES,
@@ -263,8 +267,9 @@ def _tool_character_action(character_id: str, action_type: str,
     if int(end_frame) <= int(start_frame):
         return _fail("end_frame 必须大于 start_frame")
 
+    params = normalize_action_params(action_type, dict(params or {}))
     blender = MotionBlender(character)
-    blender.add(action_type, int(start_frame), int(end_frame), **(params or {}))
+    blender.add(action_type, int(start_frame), int(end_frame), **params)
     conflicts = blender.validate()
     if conflicts:
         return _fail("动作冲突：" + "；".join(conflicts))

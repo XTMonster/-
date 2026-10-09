@@ -137,11 +137,17 @@ def test_tight_shot_anchors_on_the_focus_subject():
     assert frame.anchor == pytest.approx((0.75, 0.0, 0.0))
 
 
-def test_focus_follows_the_first_speaker():
+def test_two_person_mcu_anchors_on_the_pair_center():
+    """2026-10-09 用户裁决：双人 MCU 锚点改取两人质心（v1.6 G2 #3/#4）。
+
+    两人沿视线前后站时，对准说话人会让近者把远者挡掉、framing 实测/预期≈1.75；
+    组中心锚点让两人同深、左右对称。单人 MCU 与 CU/ECU 仍对准说话人。
+    """
     frame = subject_frame(FACING_EACH_OTHER, shot_type="MCU",
                           speaker_id="char_001")
+    assert frame.group
     assert frame.focus_id == "char_001"
-    assert frame.anchor == pytest.approx((-0.9, 0.0, 0.0))
+    assert frame.anchor == pytest.approx((0.0, 0.0, 0.0))
     assert frame.facing == pytest.approx((1.0, 0.0, 0.0))
 
 

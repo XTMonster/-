@@ -130,6 +130,35 @@ ALL_ACTION_PARAM_KEYS: Tuple[str, ...] = tuple(
     sorted({key for keys in ACTION_PARAMS.values() for key in keys}))
 
 
+#: v1.6 G2（用户裁决 2026-10-09）：**无歧义**的动作参数等价键。真跑里模型反复
+#: 写这几个近义键，schema 每拒一次就白烧一次调用（v5/v6/v7 react_invalid 的
+#: 主力）。归一范围钉死为"语义唯一"的别名：turn_head 只有一个 yaw 角，
+#: body_tilt 的 lean_deg 就是它的倾角，look_at 的 angle_deg 就是水平 yaw；
+#: 有歧义的近义词（turn_body.axis、look_at.toward、pace='sharp'、
+#: walk_to.speed='slow'）**不归一、照旧拒绝**。
+ACTION_PARAM_ALIASES: Dict[str, Dict[str, str]] = {
+    "turn_head": {"yaw_deg": "angle_deg"},
+    "body_tilt": {"lean_deg": "angle_deg"},
+    "look_at": {"angle_deg": "yaw_deg"},
+}
+
+
+def normalize_action_params(kind: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    """把无歧义的等价键归一到规范键（返回新 dict，不改调用方）。
+
+    规范键与别名同时出现时**规范键优先**（别名丢弃）；其余键原样保留，
+    由 :func:`unknown_action_params` / 执行层照旧拒绝。
+    """
+    aliases = ACTION_PARAM_ALIASES.get(str(kind or "").strip(), {})
+    out = dict(params or {})
+    for alias, canonical in aliases.items():
+        if alias in out and canonical not in out:
+            out[canonical] = out.pop(alias)
+        elif alias in out:
+            out.pop(alias)
+    return out
+
+
 def unknown_action_params(kind: str, params) -> List[str]:
     """这个动作类型**不认识**的 `params` 键（空列表 = 合法）。纯函数，可单测。"""
     allowed = ACTION_PARAMS.get(str(kind or "").strip())
@@ -184,7 +213,7 @@ def action_param_problems(kind: str, params) -> List[str]:
     `speed` 直接读 `_SPEED_RATE`。
     """
     kind = str(kind or "").strip()
-    params = dict(params or {})
+    params = normalize_action_params(kind, dict(params or {}))
     problems: List[str] = []
     unknown = unknown_action_params(kind, params)
     if unknown:
