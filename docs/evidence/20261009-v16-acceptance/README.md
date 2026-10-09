@@ -66,6 +66,41 @@
   （GLM-5.3-Flash、`--reasoning-effort low`、`--tool-choice-mode auto`、EEVEE、
   `--llm-max-tokens 24576`），代码 = `5ac40c8`。
 
+## 2026-10-09 续跑：DeepSeek V4 Pro 通道 + 三处代码修复后的 v4 验收
+
+* 通道：官方 DeepSeek `deepseek-v4-pro`（思考型，`--tool-choice-mode auto`、
+  `--reasoning-effort max`、`--llm-max-tokens 24576`），插件路径，EEVEE。
+* 代码：`5ac40c8` → `3ed5a1a`（轴摆位线同源 + 空镜豁免 + 校验/执行域对齐 +
+  交付接线）→ `741f286`（修复提示：遮挡先挪主体、主体保持相机前方）。
+* 真跑：第一轮 `4bee011cde08`（71 次调用后主动停止：460 次轴错 + 455 次回滚风暴，
+  定位为轴参照系不一致）；第二轮 `a966a3b255f2` 完整跑完并导出。
+
+### v4 终验收（run `a966a3b255f2`，13 镜 / 4 角色，`export_finished: ok`）
+
+| # | 判据 | 读数 | 判定 |
+|---|---|---|---|
+| 1 | 全片角色 ⊆ 角色表 4 人 | `scene_built: characters=4`；导出闸放行 | PASS |
+| 2 | `unresolved_anchor==0`；shot_001 ≥3 环境元素 | 无 unresolved 事件；`elements_in_frame=[env_01,env_02,env_03]` | PASS（首帧人审待用户）|
+| 3 | CU 头部占比 55–75% 且构图 ≥70 | 终审 shot_005=20.0、shot_006=64.7、shot_013=57.6 … | FAIL |
+| 4 | `audit_pass_rate ≥10/12`；degraded ≤1 | `audit_pass_rate=1/12`；21 次 degraded（11 镜）| FAIL |
+| 5 | `E_AXIS_001 ≤2`；镜 13 不 crossed | error 17 / warning 27（多为"无人看见的走位跨线"）| FAIL |
+| 6 | 同层重叠 ≤1/镜；镜 8/10 无穿模 | `action_conflicts=[]`；穿模逐帧视觉未核验 | 部分/未验证 |
+| 7 | `needs_review` + README 汇总 | 10 镜 `needs_review=True`，README「待人工复核」同列 | PASS |
+| 8 | 三类 invalid 合计 = 0 | `draft_invalid` 7 + `repair_invalid` + `react_invalid` = 35 | FAIL |
+| 9 | R015=0 或每处带 declared_breaks | `script_compliance` R015 error ×1（镜2 CU→MS，无破例）| FAIL |
+| 10 | 环境节拍不再当角色动作 | 无 D-17 类 finding | PASS |
+| 11 | `elements.json`/`masks/`/`reference/`；prompts 无表外名 | 13 镜 masks、4 定妆卡、elements；prompts 表外名闸放行 | PASS |
+| 12 | `rhythm_reading` 事件；README 与 shots.json 对拍 | ASL 5.31 / CV 0.3574 三处一致 | PASS |
+| 13 | 圆柱躯干 AABB max_delta=0.0 | body-ab 探针 5/5 | PASS |
+| 14 | 超时重试走阶梯、无原样第三次 | 本轮无超时（机制由 `test_driver_retry_ladder.py` 钉住）| 未行使（如实）|
+| 15 | pytest 全绿；run_tests.ps1 全绿 | pytest **3206 passed / 1 skipped**；探针 **43/43 OK**；唯一红仍是已结案的 **RK-13（E1）** | 部分（RK-13 判据未动）|
+| 16 | 标签全帧交叠 ≤5% + 交付含汇总 | 331/1656 帧 >5%，最高 **96.8%**；README 已有「标签全帧自检」段 | FAIL |
+
+结论：**v4 仍判红**。代码侧缺陷（轴参照系、交付接线、校验域）本轮已修复并提交；
+剩余红项集中在"构图门在这份剧本上收敛不了"（站位与视线共线、无人看见的走位跨线）、
+模型侧工具 schema 漂移（35 次 invalid）与标签在拥挤帧的容量不足——都不是降级
+阈值能掩盖的问题，下一刀需要按 W4A 的钉死归因逐镜修机位/站位/标签容量。
+
 ## 07:0x 续跑复核（本会话）——结论：**G2 判红，不允许宣布完成**
 
 上一会话在 06:51 停在 v3 的归因分析中途（`work/_g2_glm3/_analysis*.txt`、
