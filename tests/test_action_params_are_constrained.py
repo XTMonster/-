@@ -42,6 +42,29 @@ def test_the_key_table_covers_every_action_type():
         assert MM.ACTION_PARAMS[kind], kind
 
 
+def test_draft_target_position_accepts_the_execution_domain():
+    """``target_position`` 的 schema 与执行层同域：2D/3D 都合法，1 项/4 项拒绝。
+
+    v4 真跑里模型写 2 项数组被 schema 判无效（minItems=3），而纯运动层明明收
+    2–3 项——"执行接受、解析拒绝"的假 invalid 又一种。对齐到 2–3，不越界。
+    """
+    schema = ED.EMIT_SHOT_DRAFT_PARAMETERS
+    action = {"character_id": "char_001", "action_type": "walk_to",
+              "start_frame": 1, "end_frame": 24,
+              "target_position": [1.0, 0.0]}
+    draft = {"shot_id": "shot_006", "actions": [action]}
+    assert TS.validate_args(schema, draft) == []
+    action["target_position"] = [1.0, 0.0, 0.0]
+    assert TS.validate_args(schema, draft) == []
+    action["target_position"] = [1.0]
+    assert TS.validate_args(schema, draft)
+    action["target_position"] = [1.0, 0.0, 0.0, 0.0]
+    assert TS.validate_args(schema, draft)
+    # 纯运动层同域：2D 合法（测试不两边不一致地各自通过）。
+    assert MM.action_param_problems(
+        "walk_to", {"target_position": [1.0, 0.0]}) == []
+
+
 def test_the_reported_defect_is_now_rejected_by_the_schema():
     """**复现原始故障**：`body_tilt` + `{"amount": 15}` 必须在解析期被挡。"""
     schema = ED.EMIT_SHOT_DRAFT_PARAMETERS

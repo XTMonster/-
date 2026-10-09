@@ -151,6 +151,12 @@ _FREE_STRING_KEYS = frozenset({"prop"})
 #: 取值是**闭集**的键（在函数里拼，因为这些表定义在本模块后半段）。
 _CLOSED_VALUE_KEYS = frozenset({"speed", "axis"})
 
+#: ``toward`` 的方向词闭集（单一真源）：``_axis_from_toward`` 判域、
+#: ``action_param_domains`` 报给提示词，两处不各抄一份。方向量
+#: ``[x, y]``/``[x, y, z]`` 也是合法取值（主分量定轴），不在词表里。
+TOWARD_WORDS = ("x", "y", "left", "right", "side", "leftward",
+                "rightward", "front", "back", "forward")
+
 
 def action_param_domains() -> Dict[str, Tuple[str, ...]]:
     """闭集取值的键 → 允许的取值。
@@ -159,7 +165,8 @@ def action_param_domains() -> Dict[str, Tuple[str, ...]]:
     逐镜提示词用它告诉模型能写什么（否则模型写 `axis='forward'` 这种合理同义词，
     到构建期才炸——实测把 64 镜的一整轮打成 ERROR）。
     """
-    return {"speed": tuple(sorted(_SPEED_RATE)), "axis": ("x", "y")}
+    return {"speed": tuple(sorted(_SPEED_RATE)), "axis": ("x", "y"),
+            "toward": TOWARD_WORDS}
 
 
 def action_param_problems(kind: str, params) -> List[str]:
@@ -194,6 +201,12 @@ def action_param_problems(kind: str, params) -> List[str]:
     #: 闭集取值表：`speed` 的取值域直接读构建期用的那张表（单一真源）。
     domains = action_param_domains()
     for key, value in params.items():
+        #: prop 类动作的 ``toward`` 走构建期同一条 ``_axis_from_toward`` 判域
+        #: （方向量或方向词闭集），不放进下面的"必须是数字"分支——否则会造出
+        #: "执行接受、解析拒绝"的假 invalid（v3 真跑 GLM 写 toward='left' 这类
+        #: 合法方向词被误拒）。
+        if key == "toward" and kind in PROP_ACTIONS:
+            continue
         domain = domains.get(key) if key in _CLOSED_VALUE_KEYS else None
         if domain is not None:
             if str(value).strip().lower() not in domain:
@@ -206,6 +219,15 @@ def action_param_problems(kind: str, params) -> List[str]:
             float(value)
         except (TypeError, ValueError):
             problems.append(f"{kind} 的 {key} 必须是数字（当前 {value!r}）")
+    if kind in PROP_ACTIONS and params.get("toward") is not None:
+        try:
+            _axis_from_toward(params["toward"])
+        except MotionParamError as exc:
+            problems.append(str(exc))
+        except (TypeError, ValueError):
+            problems.append(
+                f"{kind} 的 toward 必须是方向量或方向词"
+                f"（当前 {params['toward']!r}）")
     return problems
 
 
@@ -506,10 +528,9 @@ def _axis_from_toward(toward) -> str:
         dy = abs(float(toward[1]))
         return "x" if dx >= dy else "y"
     name = str(toward or "").strip().lower()
-    if name in ("y", "left", "right", "side", "leftward", "rightward"):
-        return "y"
-    if name in ("x", "front", "back", "forward"):
-        return "x"
+    if name in TOWARD_WORDS:
+        return "y" if name in ("y", "left", "right", "side",
+                               "leftward", "rightward") else "x"
     raise MotionParamError(f"无法理解的 toward 取值：{toward!r}")
 
 

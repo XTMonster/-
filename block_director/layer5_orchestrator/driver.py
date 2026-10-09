@@ -91,6 +91,29 @@ from .understand import (
 log = get_logger("driver")
 
 
+def label_overlap_event_fields(build_summary: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """从构建摘要里取 ``label_overlap_report`` 审计事件的字段（v1.6 A7 / G2）。
+
+    A7 只把重叠帧写成了 ``summary.warnings`` 字符串，审计日志里从没出现过
+    ``label_overlap_report`` 事件（契约登记在
+    ``contracts/audit.py::V16_EVENT_FIELDS``）。这里是该事件的唯一生产者：
+    ``fullframe_verify=true`` 时每次构建后由 :meth:`PrevisDriver._step_building`
+    写一条；字段与 ``label_baking._empty_overlap_report()`` 同形。烘焙确实
+    发生过（``label_report`` 非空）才产出，没有任何标签时返回 ``None``（静默）。
+    """
+    label_report = dict((build_summary or {}).get("label_report") or {})
+    if not label_report:
+        return None
+    overlap = dict(label_report.get("label_overlap_report") or {})
+    return {
+        "max_overlap_ratio": float(overlap.get("max_overlap_ratio", 0.0)),
+        "overlap_frames": [int(frame)
+                           for frame in overlap.get("overlap_frames") or []],
+        "frames_checked": int(overlap.get("frames_checked", 0)),
+        "limit": float(overlap.get("limit", 0.05)),
+    }
+
+
 # --------------------------------------------------------------------------- #
 # v1.6 F2（D-09）：断点续跑的状态模型（纯层，不得 import bpy）
 # --------------------------------------------------------------------------- #
@@ -1744,6 +1767,16 @@ class PrevisDriver:
                        duration_s=round(duration, 3),
                        **scalars)
         self._emit("scene_built", "场景已构建", reason=reason, **scalars)
+        #: v1.6 A7 / G2：全帧自检的余量此前只进 summary.warnings 字符串，
+        #: 审计日志与交付 README 都拿不到结构化读数。这里把构建摘要转成
+        #: ``label_overlap_report`` 事件（字段与 V16_EVENT_FIELDS 对拍）。
+        if self.config is not None and bool(
+                getattr(getattr(self.config, "labels", None),
+                        "fullframe_verify", True)):
+            overlap_fields = label_overlap_event_fields(self.build_summary)
+            if overlap_fields is not None:
+                self.audit.log("label_overlap_report", "标签全帧自检完成",
+                               **overlap_fields)
         self._transition(self._after_build_state())
 
     def _after_build_state(self) -> DriverState:

@@ -70,7 +70,8 @@ def rhythm_section_lines(manifest: Dict[str, Any],
 
 def render_readme(manifest: Dict[str, Any], *, out_dir: Path,
                   warnings: Sequence[str] = (),
-                  rhythm_reading: Optional[Dict[str, Any]] = None) -> str:
+                  rhythm_reading: Optional[Dict[str, Any]] = None,
+                  label_overlap_report: Optional[Dict[str, Any]] = None) -> str:
     """按真实 manifest 与已生成文件渲染交付说明，不读引擎状态。"""
     folder = Path(out_dir)
     width, height = manifest["resolution"]
@@ -104,6 +105,25 @@ def render_readme(manifest: Dict[str, Any], *, out_dir: Path,
     #: v1.6 D3（FR-B5）：节奏段。读数与 shots.json 的 rhythm 字段同源，
     #: 保证 README 与交付清单字段对拍一致。
     lines.extend(rhythm_section_lines(manifest, rhythm_reading))
+    #: v1.6 A7（D-19）：标签全帧自检汇总（TDD §7「事件（交付 README 汇总）」）。
+    #: 只有确实还有重叠帧才写这段；空态/缺字段一律静默，不把空态当数据渲染。
+    overlap = dict(label_overlap_report or {})
+    overlap_frames = [int(frame) for frame in overlap.get("overlap_frames") or []]
+    if overlap_frames:
+        limit = float(overlap.get("limit") or 0.05)
+        max_ratio = float(overlap.get("max_overlap_ratio") or 0.0)
+        shown = ", ".join(str(frame) for frame in overlap_frames[:8])
+        if len(overlap_frames) > 8:
+            shown += " …"
+        lines.extend([
+            "## 标签全帧自检",
+            "",
+            f"- 仍有 {len(overlap_frames)} 帧标签两两交叠超过 "
+            f"{limit * 100:g}%（覆盖全帧，采样帧与插值帧同判）",
+            f"- 最大交叠率：{max_ratio:.1%}",
+            f"- 重叠帧：{shown}",
+            "",
+        ])
     if any(path.name.startswith("depth_shot_") and path.is_dir()
            for path in folder.iterdir()):
         lines.extend(["## 深度序列", "", depth_range_note(), ""])

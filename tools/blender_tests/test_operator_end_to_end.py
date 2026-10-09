@@ -198,12 +198,18 @@ def t_operator_path_builds_and_exports():
     manifest = None
     if out_dir and (out_dir / "shots.json").is_file():
         manifest = json.loads((out_dir / "shots.json").read_text(encoding="utf-8"))
+    #: v1.6 G2：面板路径导出必须把 driver 算好的构图门通过率带进 shots.json
+    #: （此前这里漏传，交付清单只能落到 manifest 的空态 fallback）。
+    manifest_apr = (manifest or {}).get("audit_pass_rate") or {}
+    snapshot_apr = driver.snapshot().get("audit_pass_rate") or {}
     sources = {item["source"] for shot in (manifest or {}).get("shots", [])
                for item in shot.get("movements", [])}
     vocab = {"declared", "planned", "theory", "experience", "lesson", "case"}
     ok = (ok and knowledge is not None
           and bool(knowledge.describe().get("backend"))
           and sources <= vocab
+          and manifest_apr == snapshot_apr
+          and int(manifest_apr.get("sampled_frames", 0)) >= 1
           and "retrieval_calls" in (manifest or {}))
     return {"ok": ok, "state": state.value, "kinds": kinds,
             "characters": len(characters), "cameras": len(cameras),

@@ -22,6 +22,7 @@ from mathutils import Vector
 
 from ..cinema.axis import (
     AXIS_DRIFT_DEG,
+    Axis,
     ScreenOrderState,
     ScreenSample,
     axis_state,
@@ -344,17 +345,35 @@ def _axis_state_divergence(context, shot_id: str) -> str:
 
 
 def _camera_on_wrong_side(context, camera, shot_id: str) -> str:
-    """机位是不是跑到**当前连线**的另一侧去了（相对这一镜该待的侧别）。"""
+    """机位是不是跑到**摆位时那条线**的另一侧去了（相对这一镜该待的侧别）。
+
+    G2 v4 实测：这条判据此前拿**走位后的当前连线**量相机、却拿**摆位时**的表
+    当期望——角色走位把线转过去之后，没挪过的机位被误判"机位自己摆错"（一整跑
+    460 次 error，修复回路因此振荡 455 次回滚）。修正：参照线优先取构建器记录
+    的摆位线（``shot_builder._axis_for_placement`` 写入
+    ``context._axis_lines_used``），两者同源；走位跨线不在这里判，由
+    ``crossing_events`` / ``_axis_rebuild`` 那条"看得见与否"的机制负责。
+    没有记录线（手工场景/旧工程）时退回当前连线，行为不变。
+    """
     base = getattr(context, "axis", None)
     if base is None:
         return ""
     live = current_line(base, _character_xy_by_label(context))
     expected = int(_axis_sides(context).get(str(shot_id), live.established_side))
     position = camera.matrix_world.translation
-    side = live.side_of((float(position.x), float(position.y)))
+    xy = (float(position.x), float(position.y))
+    recorded = dict(getattr(context, "_axis_lines_used", None) or {}).get(
+        str(shot_id))
+    if recorded and len(recorded) == 2:
+        line = Axis(start=tuple(recorded[0]), end=tuple(recorded[1]),
+                    established_side=live.established_side,
+                    left_label=live.left_label, right_label=live.right_label)
+    else:
+        line = live
+    side = line.side_of(xy)
     if side == 0 or side == expected:
         return ""
-    return (f"机位在**当前**两人连线的另一侧（连线 {live.start}→{live.end}，"
+    return (f"机位在两人连线的另一侧（连线 {line.start}→{line.end}，"
             f"该待在第 {expected:+d} 侧、实际在第 {side:+d} 侧）："
             "这是机位自己摆错，把相机移回该侧即可")
 
@@ -681,7 +700,12 @@ def check_shot(shot_id: str, *, context=None,
         #: 这条盯的是求解器兜底、修复工具挪机位、用户手改机位这类**与被检实现无关**
         #: 的越轴——`tests/test_phase4_repair` 的 `setup_camera_fixes_the_violation`
         #: 就是它（相机摆错了，`setup_camera` 得能修好）。
-        wrong_side = _camera_on_wrong_side(context, camera, shot_id)
+        #: 空镜（无角色）画面里根本没有"两人左右关系"可看，"机位相对当前连线的
+        #: 侧别"这条判据对它不成立（G2 v3 实测：shot_001 定场空镜被判 3 次
+        #: E_AXIS_001 error，观众却什么都看不到）。v1.6 的"单人镜必须待在已确立
+        #: 轴侧"语义不变——只豁免 characters 为空的镜头。
+        wrong_side = (_camera_on_wrong_side(context, camera, shot_id)
+                      if characters else "")
         if wrong_side:
             findings.append(_error(
                 "R001", "E_AXIS_001", wrong_side, target=shot_id,

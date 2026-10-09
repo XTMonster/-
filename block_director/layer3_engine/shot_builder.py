@@ -218,6 +218,13 @@ def _axis_for_placement(context, plan, cast_map, characters, shot, live_side=Non
     used = dict(getattr(context, "_axis_sides_used", None) or {})
     used[str(shot.shot_id)] = side
     context._axis_sides_used = used
+    #: 同时记下摆位用的**那条线**（G2 v4 实测：只记侧别不记线，审核期拿
+    #: 走位后的当前连线量相机，走位一转线，"机位在错侧"对整组镜头误报 460 次
+    #: 并把修复回路推进"挪机位→出画/机后→回滚"的振荡）。"机位自己摆错"这条
+    #: 判据的参照系必须与摆位同源，走位跨线交给 crossing/unbridged 机制。
+    lines = dict(getattr(context, "_axis_lines_used", None) or {})
+    lines[str(shot.shot_id)] = (tuple(live.start), tuple(live.end))
+    context._axis_lines_used = lines
     return Axis(start=live.start, end=live.end, established_side=side,
                 left_label=live.left_label, right_label=live.right_label)
 

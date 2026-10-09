@@ -76,7 +76,7 @@ EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
                                     "enum": list(ACTION_TYPES)},
                     "start_frame": {"type": "integer", "minimum": 1},
                     "end_frame": {"type": "integer", "minimum": 1},
-                    "target_position": {"type": "array", "minItems": 3,
+                    "target_position": {"type": "array", "minItems": 2,
                                         "maxItems": 3,
                                         "items": {"type": "number"}},
                     #: `params` **不是自由形状**：键表从 `motion/model.py` 渲染

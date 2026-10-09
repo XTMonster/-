@@ -106,9 +106,11 @@ def _shot_ranges(plan: Plan,
     return ranges
 
 
-def _readme(manifest: Dict[str, Any], report: DeliveryReport) -> str:
+def _readme(manifest: Dict[str, Any], report: DeliveryReport,
+            label_overlap_report: Optional[Dict[str, Any]] = None) -> str:
     return render_readme(manifest, out_dir=Path(report.out_dir),
-                         warnings=report.warnings)
+                         warnings=report.warnings,
+                         label_overlap_report=label_overlap_report)
 
 
 def _cast_id_errors(plan: Plan,
@@ -375,8 +377,17 @@ def export_project(plan: Plan, *,
     scene.frame_start, scene.frame_end = original_range
     report.duration_s = time.perf_counter() - started
 
+    #: v1.6 A7（D-19）：把构建期烘焙的全帧自检余量带进交付 README——
+    #: 标签互不遮挡的验收判据（RK-2 的 5% 阈值）从采样帧扩到全帧之后，
+    #: 交付包必须能读到结构化余量，而不是只有一条 summary.warnings 字符串。
+    label_report = dict((build_summary or {}).get("label_report") or {})
+    label_overlap_report = dict(label_report.get("label_overlap_report") or {})
+
     readme_path = export_dir / "README.md"
-    readme_path.write_text(_readme(manifest, report), encoding="utf-8")
+    readme_path.write_text(
+        _readme(manifest, report,
+                label_overlap_report=label_overlap_report),
+        encoding="utf-8")
     report.files.append(str(readme_path))
 
     log.info("交付完成：%d 个文件，用时 %.1fs", len(report.files), report.duration_s)

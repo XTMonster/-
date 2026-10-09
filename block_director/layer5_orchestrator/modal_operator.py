@@ -213,6 +213,7 @@ def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
                             out_dir=out_dir, config=run.config.delivery,
                             brief=driver.brief,
                             compliance=driver.snapshot().get("compliance"),
+                            audit_pass_rate=driver.snapshot().get("audit_pass_rate"),
                             llm_calls=int(driver.snapshot().get("llm_calls") or 0),
                             retrieval_calls=int(getattr(driver.knowledge,
                                                         "retrieval_calls", 0) or 0),

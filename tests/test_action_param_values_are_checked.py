@@ -74,6 +74,26 @@ def test_coordinate_keys_are_rejected_when_they_are_not_coordinates():
     assert M.action_param_problems("hand_to", {"prop": "钱袋"}) == []
 
 
+def test_prop_toward_is_validated_with_the_execution_domain():
+    """prop 类 ``toward`` 的判据必须与构建期同源（`_axis_from_toward`）。
+
+    v3 真跑里 GLM 写的方向词（toward='left'）在**执行层合法**，却在此前的
+    "必须是数字"分支被误拒 ⇒ 产生假 draft_invalid。修法不是放宽，而是让解析
+    期与执行期用同一个函数判域：合法的放行，仍然非法的照旧拒。
+    """
+    assert M.action_param_problems(
+        "hand_to", {"prop": "钱袋", "toward": "left"}) == []
+    assert M.action_param_problems(
+        "place_prop", {"prop": "箱子", "toward": [1.0, 0.0, 0.0]}) == []
+    assert M.action_param_problems(
+        "pick_up", {"prop": "钱袋", "toward": "side"}) == []
+    # 执行层无法理解的值仍然拒绝（`camera` 不是方向词闭集成员）。
+    assert M.action_param_problems(
+        "hand_to", {"prop": "钱袋", "toward": "camera"})
+    assert M.action_param_problems(
+        "hand_to", {"prop": "钱袋", "toward": 3})
+
+
 def test_the_draft_extractor_rejects_a_string_coordinate():
     """`extract_draft` 必须在解析期挡住它——构建期整轮 ERROR 的代价见上一条。"""
     from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall

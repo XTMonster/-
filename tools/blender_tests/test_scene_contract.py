@@ -226,12 +226,140 @@ def t_over_the_shoulder_occludes_the_background():
             "minimum": OTS_MIN_OCCLUSION}
 
 
+def t_r001_empty_shot_has_no_axis_finding():
+    """v1.6 G2：空镜画面没有"两人左右关系"，不能因机位侧别判 E_AXIS_001。
+
+    v3 真跑实测：定场空镜 shot_001（characters=[]）被判 3 次 E_AXIS_001
+    error（"机位在两人连线的另一侧"），而观众在那个镜头里什么都看不到。
+    单人镜的轴侧语义不变（v1.6 test_axis_side_single_shot.py），只豁免空镜。
+    正向对照用**双人镜**：同样的"机位在错侧"必须仍判 E_AXIS_001，证明这条
+    豁免不是把 R001 整个关掉。
+    """
+    from block_director.contracts.plan import Plan, ShotPlan
+    from block_director.layer3_engine import rule_checker
+
+    fresh_scene()
+    plan = Plan(shots=[
+        ShotPlan.from_dict({"shot_id": "shot_001", "order": 1,
+                            "intent": "定场", "shot_type": "LS",
+                            "duration_frames": 48, "characters": []}),
+        ShotPlan.from_dict({"shot_id": "shot_002", "order": 2,
+                            "intent": "甲反打", "shot_type": "CU",
+                            "duration_frames": 48,
+                            "characters": ["char_001"]}),
+        ShotPlan.from_dict({"shot_id": "shot_003", "order": 3,
+                            "intent": "建立关系", "shot_type": "MS",
+                            "duration_frames": 48,
+                            "characters": ["char_001", "char_002"]}),
+    ])
+    build_scene(plan, SceneSpec.from_plan(plan), clear_scene=True)
+    context = get_context()
+    axis = getattr(context, "axis", None)
+    if axis is None:
+        return {"ok": False, "error": "没有建立整场轴线"}
+    established = int(axis.established_side)
+    empty_camera = context.camera_for("shot_001")
+    pair_camera = context.camera_for("shot_003")
+    if empty_camera is None or pair_camera is None:
+        return {"ok": False, "error": "空镜/双人镜缺少相机"}
+    # 构建期烤了机位关键帧：清掉动画再手动摆位，避免 frame_set 把位置覆盖回去。
+    for camera in (empty_camera, pair_camera):
+        if camera.animation_data is not None:
+            camera.animation_data_clear()
+    # 空镜：把机位挪到轴线的**反侧**，仍不得报轴错。
+    empty_loc = empty_camera.matrix_world.translation
+    empty_camera.location = (
+        empty_loc.x, empty_loc.y - 4.0 * established, empty_loc.z)
+    bpy.context.view_layer.update()
+    empty = rule_checker.check_shot("shot_001", context=context)
+    empty_axis = [item.code for item in empty.errors
+                  if item.code == "E_AXIS_001"]
+    return {"ok": empty_axis == [],
+            "empty_axis_findings": empty_axis,
+            "established_side": established}
+
+
+def t_wrong_side_check_still_fires_for_non_empty_shots():
+    """正向对照：豁免空镜 ≠ 关掉 R001——`_camera_on_wrong_side` 本身必须仍会报。"""
+    from types import SimpleNamespace
+
+    from block_director.layer3_engine.cinema_engine import (
+        create_camera,
+        establish_axis_from_speakers,
+    )
+    from block_director.layer3_engine.character_system import create_character
+    from block_director.layer3_engine.rule_checker import (
+        _camera_on_wrong_side,
+    )
+
+    fresh_scene()
+    left = create_character("char_001", "小明", "#FF6B6B",
+                            location=(-0.5, 0.0, 0.0))
+    right = create_character("char_002", "小红", "#6BC5FF",
+                             location=(0.5, 0.0, 0.0))
+    reference = create_camera("ref", (0.0, 5.0, 1.2),
+                              look_at=(0.0, 0.0, 1.0))
+    axis = establish_axis_from_speakers([left, right], reference.camera)
+    assert axis is not None
+    probe = create_camera("probe", (0.0, -5.0, 1.2),
+                          look_at=(0.0, 0.0, 1.0), make_scene_camera=False)
+    # 只有 axis 的假 context：`_axis_sides` 缺 spec/plan 回落空表，
+    # expected 取 axis.established_side。
+    fake = SimpleNamespace(axis=axis)
+    message = _camera_on_wrong_side(fake, probe.camera, "shot_00X")
+    return {"ok": bool(message) and "连线的另一侧" in message,
+            "message": message}
+
+
+def t_wrong_side_check_uses_the_recorded_placement_line():
+    """G2 v4：机位侧别按**摆位时记录的那条线**判，走位转线不再误报。
+
+    现场（v4 真跑 4bee011cde08）：`_camera_on_wrong_side` 拿走位后的当前连线
+    量相机，配着摆位期的期望侧表，整跑 460 次"机位在错侧"、455 次修复回滚。
+    修正后：参照线 = 构建器记录的摆位线；同一台相机相对摆位线在期望侧就放行，
+    相对摆位线真的在反侧才报。
+    """
+    from types import SimpleNamespace
+
+    from block_director.cinema.axis import Axis
+    from block_director.layer3_engine.cinema_engine import create_camera
+    from block_director.layer3_engine.rule_checker import (
+        _camera_on_wrong_side,
+    )
+
+    fresh_scene()
+    # 当前连线沿 +Y（走位后的几何），摆位线沿 +X（构建器当时用的几何）。
+    axis = Axis(start=(0.0, -0.5), end=(0.0, 0.5),
+                established_side=1, left_label="char_001",
+                right_label="char_002")
+    fake = SimpleNamespace(
+        axis=axis,
+        _axis_lines_used={"shot_00X": ((-0.5, 0.0), (0.5, 0.0))})
+    # (5,1)：相对摆位线在 +1（期望侧）；相对当前线在 -1。旧代码会误报。
+    correct = create_camera("correct", (5.0, 1.0, 1.2),
+                            look_at=(0.0, 0.0, 1.0), make_scene_camera=False)
+    # (1,-5)：相对摆位线在 -1（反侧）——真的摆错了，必须仍报。
+    wrong = create_camera("wrong", (1.0, -5.0, 1.2),
+                          look_at=(0.0, 0.0, 1.0), make_scene_camera=False)
+    ok_message = _camera_on_wrong_side(fake, correct.camera, "shot_00X")
+    bad_message = _camera_on_wrong_side(fake, wrong.camera, "shot_00X")
+    return {"ok": ok_message == "" and bool(bad_message)
+            and "连线的另一侧" in bad_message,
+            "correct_message": ok_message, "wrong_message": bad_message}
+
+
 def main() -> int:
     capture_main_thread()
     check("rk3_two_characters_face_each_other",
           t_two_characters_face_each_other)
     check("rk3_over_the_shoulder_occludes_the_background",
           t_over_the_shoulder_occludes_the_background)
+    check("r001_empty_shot_has_no_axis_finding",
+          t_r001_empty_shot_has_no_axis_finding)
+    check("wrong_side_check_still_fires_for_non_empty_shots",
+          t_wrong_side_check_still_fires_for_non_empty_shots)
+    check("wrong_side_check_uses_the_recorded_placement_line",
+          t_wrong_side_check_uses_the_recorded_placement_line)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
