@@ -153,6 +153,16 @@
 * 剩余差距：构图 10/12 不达标（主因仍是双人镜前后站位）、轴错 5 条
   （无人看见的走位跨线）、react_invalid 18（动作词汇漂移）。
 
+## v7 真跑（run `4ed8eb72cf16`，`c6f727f`，DeepSeek V4 Pro，EEVEE）
+
+* `audit_pass_rate 2/12`（shot_009、shot_012）、label 0/1656、R015=0 保持；
+  repair_invalid 2；react_invalid 18（本轮漂移以 `walk_to.speed='slow'`、
+  `camera.:movements` 这类 pace/字段混淆为主，`03ac81c` 已补 speed≠pace 说明）。
+* 轴错 error 26（v6 为 5）：**逐跑方差来自计划本身**——每轮 DeepSeek 产出的
+  走位编排不同，无人看见的跨线数随之波动；规则抓的都是真实违规。
+* 结论：机械侧修复已收敛（label/交付/重试/轴护栏/R015/role 表全部绿），
+  剩余 #3/#4/#5/#8 由"双人镜锚点语义（规格裁决）＋模型词汇/调度方差"决定。
+
 ## 07:0x 续跑复核（本会话）——结论：**G2 判红，不允许宣布完成**
 
 上一会话在 06:51 停在 v3 的归因分析中途（`work/_g2_glm3/_analysis*.txt`、
