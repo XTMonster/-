@@ -189,6 +189,17 @@
 * 趋势：锚点裁决后 apr 0→2→**3/12** 逐轮上升；#5/#8 仍由模型调度/词汇方差
   主导，规则抓到的都是真实违规。
 
+## v10 真跑（run `43a32863b2d6`，`6e845c6`，DeepSeek V4 Pro，EEVEE）
+
+* 新前置闸：`unseen_axis_crossing`（`driver.py`，纯 `crossing_events`，≥90° 翻转
+  ＋单人镜）在 B1 与修复两处草案合入前拒绝；新测试 4 条。
+* 读数：`audit_pass_rate 3/12`（shot_002/003/006）、label 0/1656、R015=0；
+  **轴错 error 44 → 15**（unbridged 4 ＋ wrong_side 11）；invalid 25
+  （draft 2 / repair 6 / react 17）。
+* 趋势（轴错 error）：v6=5、v7=26、v9=44、v10=15——跨线前置闸拦掉了 ≥90° 的
+  隐蔽翻转让最坏情况收敛；30–90° 漂移与修复重摆机位的 wrong_side 仍在
+  模型方差范围内。
+
 ## 07:0x 续跑复核（本会话）——结论：**G2 判红，不允许宣布完成**
 
 上一会话在 06:51 停在 v3 的归因分析中途（`work/_g2_glm3/_analysis*.txt`、
