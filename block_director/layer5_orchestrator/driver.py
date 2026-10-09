@@ -2312,6 +2312,7 @@ class PrevisDriver:
             audit, self.registry,
             scene_state=self._scene_state_text(),
             shot=self._shot_by_id(self._current_shot_id),
+            roster=self._cast_roster(),
             #: 把**本次要修的镜头**写进提示词：场景摘要里的"当前镜头"是
             #: `SceneContext.current_shot_id`（构建时落在第一镜），实测 long10
             #: 里模型照抄它，把 `emit_shot_draft` 的 shot_id 写成 shot_001。

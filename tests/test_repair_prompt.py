@@ -160,3 +160,20 @@ def test_occlusion_suggests_moving_character_first():
         assert hint.startswith("move_character"), (kind, hint)
     behind = R.GUARD_FIX_ACTION["subject_behind_camera"]
     assert "reframe" in behind and "不要穿过主体" in behind
+
+
+def test_repair_prompt_lists_the_roster_and_forbids_hallucinations():
+    """v5 真跑：repair_invalid 以幻觉角色名（char_a/char_b/优一郎/艾拉）为主。
+    修复提示必须显式列出合法角色表，并写明名单之外都是幻觉。"""
+    audit = AuditResult(passed=False, target="shot_002", errors=[
+        AuditError(rule="COMPOSITION", code="E_CAM_001",
+                   message="构图评分 55 低于阈值 70",
+                   severity=Severity.ERROR, target="shot_002",
+                   suggestion="重新构图")])
+    payload = R.build_repair_payload(
+        audit, default_registry(), scene_state="x",
+        roster=["米迦尔", "伊恩", "char_001"])
+    text = payload.messages[0].content
+    assert "可用角色" in text
+    assert "米迦尔" in text and "伊恩" in text and "char_001" in text
+    assert "幻觉" in text

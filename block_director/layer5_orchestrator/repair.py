@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from ..contracts.audit import AuditResult
 from ..contracts.enums import Purpose, ToolChoice
@@ -236,6 +236,9 @@ REPAIR_SYSTEM_PROMPT = """\
 {audit}
 
 {guard}
+可用角色（**只能逐字**使用这些名字；名单之外的名字一律是幻觉，不许写进
+`shot.characters` / `actions` / `dialogues`）：{roster}
+
 当前场景：
 {scene_state}
 
@@ -274,7 +277,9 @@ def build_repair_payload(audit: AuditResult, registry, *,
                          scene_state: str = "", temperature: float = 0.2,
                          shot=None,
                          shot_id: str = "",
-                         request_id: Optional[str] = None) -> ChatPayload:
+                         request_id: Optional[str] = None,
+                         roster: Optional[Sequence[str]] = None
+                         ) -> ChatPayload:
     """构造一次修复请求。``registry`` 提供可调用的工具 schema。
 
     ``shot`` 给了就附上这一镜的**对白帧预算**（§4.4）。没有它时，修复
@@ -320,6 +325,8 @@ def build_repair_payload(audit: AuditResult, registry, *,
         focus=focus,
         audit=audit.format_for_llm(),
         guard=guard_text,
+        roster="、".join(str(item) for item in roster)
+        if roster else "（未提供）",
         scene_state=scene_state or "（尚未采集）",
         dialogue_budget=budget_text,
         action_params=render_action_params(),

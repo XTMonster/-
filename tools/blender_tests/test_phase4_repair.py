@@ -416,6 +416,42 @@ def t_rule_r011_dialogue_overflow():
             "errors": [f.to_dict() for f in overflow.errors if f.rule == "R011"]}
 
 
+def t_move_camera_refuses_crossing_the_axis():
+    """v1.6 G2：修复工具不许用平移运镜把机位带到摆位线反侧（规则已判 error）。
+
+    正对照：不跨线的 dolly_in 照常放行；负对照：大额 dolly_in 会穿过两人连线，
+    工具必须在写入前拒绝且不留下任何关键帧。
+    """
+    from block_director.layer3_engine.tool_bindings import (
+        register_all_scene_tools,
+    )
+    from block_director.layer5_orchestrator.tool_registry import ToolRegistry
+
+    fresh_scene()
+    build_scene(_camera_movement_plan())
+    context = get_context()
+    context.current_shot_id = "shot_003"
+    registry = ToolRegistry()
+    register_all_scene_tools(registry)
+
+    allowed = registry.execute(
+        "move_camera",
+        {"movement_type": "dolly_in", "start_frame": 1,
+         "end_frame": 48, "amount": 0.4})
+    baseline = _camera_snapshot(context, "shot_003")
+    refused = registry.execute(
+        "move_camera",
+        {"movement_type": "dolly_in", "start_frame": 1,
+         "end_frame": 48, "amount": 6.0})
+    after = _camera_snapshot(context, "shot_003")
+    return {"ok": (allowed.ok and not refused.ok
+                   and "轴线" in str(refused.content)
+                   and baseline == after),
+            "allowed": allowed.content,
+            "refused": refused.content,
+            "baseline": baseline, "after": after}
+
+
 def main() -> int:
     capture_main_thread()
     check("auditor_reports_axis_violation", t_auditor_reports_axis_violation)
@@ -430,6 +466,8 @@ def main() -> int:
     check("rule_r002_collision", t_rule_r002_collision)
     check("rule_r003_action_overlap", t_rule_r003_action_overlap)
     check("rule_r011_dialogue_overflow", t_rule_r011_dialogue_overflow)
+    check("move_camera_refuses_crossing_the_axis",
+          t_move_camera_refuses_crossing_the_axis)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]

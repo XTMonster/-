@@ -13,7 +13,13 @@ import bpy
 from mathutils import Vector
 
 from ..motion.model import ACTION_TYPES, head_track_angles
-from ..cinema.camera_motion import MOVEMENT_TYPES, TRANSLATIONS, describe
+from ..cinema.axis import Axis
+from ..cinema.camera_motion import (
+    MOVEMENT_TYPES,
+    TRANSLATIONS,
+    describe,
+    movement_samples,
+)
 from ..cinema.framing import CAMERA_SIDES, solve_framing
 from ..cinema.station import camera_direction, subject_frame
 from ..contracts.enums import SHOT_TYPES, ShotType
@@ -504,6 +510,22 @@ def _shot_target_object(shot_id: str):
     return bpy.data.objects.get(f"BD_CamTarget_{shot_id}")
 
 
+def _placement_axis(context, shot_id: str) -> Optional[Axis]:
+    """修复工具用的摆位轴（与 ``rule_checker._camera_on_wrong_side`` 同参照系）。
+
+    摆位时记录的那条线（``_axis_lines_used``）＋逐镜侧别（``_axis_sides_used``）；
+    没有记录（手工场景/旧工程）返回 ``None``，不强行护栏。
+    """
+    lines = dict(getattr(context, "_axis_lines_used", None) or {})
+    sides = dict(getattr(context, "_axis_sides_used", None) or {})
+    recorded = lines.get(str(shot_id))
+    side = sides.get(str(shot_id))
+    if not recorded or len(recorded) != 2 or side is None:
+        return None
+    return Axis(start=tuple(recorded[0]), end=tuple(recorded[1]),
+                established_side=int(side))
+
+
 @main_thread_only("tool_move_camera")
 def _tool_move_camera(movement_type: str, start_frame: int, end_frame: int,
                       camera_id: str = "", amount: float = 0.0):
@@ -518,6 +540,48 @@ def _tool_move_camera(movement_type: str, start_frame: int, end_frame: int,
         return _fail(f"找不到镜头 {shot_id} 的相机。可用镜头: {known}")
 
     default_amount = 1.0 if movement_type in TRANSLATIONS else 15.0
+    #: v1.6 G2：平移类运镜在写入前先采样路径——若会跨到摆位线的另一侧，就是
+    #: 规则已判 error 的"机位在错侧"，工具不该帮模型制造它（v5 真跑 12 条
+    #: wrong_side 正是修复回合给平移运镜跨线而来）。参照系与审核同源。
+    if str(movement_type) in TRANSLATIONS:
+        shot = context.shot(shot_id)
+        if shot is not None:
+            placement = _placement_axis(context, shot_id)
+            if placement is not None:
+                scene = bpy.context.scene
+                original_frame = int(scene.frame_current)
+                start = int((context.schedule.get(shot_id) or (0, 0))[0] or 0)
+                if start:
+                    scene.frame_set(start)
+                    bpy.context.view_layer.update()
+                try:
+                    camera_pos = camera.matrix_world.translation
+                    target_obj = _shot_target_object(shot_id)
+                    target_pos = (target_obj.matrix_world.translation
+                                  if target_obj is not None else camera_pos)
+                    side_now = placement.side_of(
+                        (float(camera_pos.x), float(camera_pos.y)))
+                    if side_now != 0:
+                        samples = movement_samples(
+                            tuple(camera_pos), tuple(target_pos),
+                            str(movement_type),
+                            float(amount) if amount else default_amount,
+                            int(start_frame), int(end_frame),
+                            lens=float(getattr(camera.data, "lens", 50.0)
+                                       or 50.0))
+                        for sample in samples:
+                            position = sample.get("position")
+                            if position is not None and placement.side_of(
+                                    (float(position[0]),
+                                     float(position[1]))) == -side_now:
+                                return _fail(
+                                    f"运镜 {movement_type} 会在第 {sample.get('frame')} 帧"
+                                    f"把机位带到两人连线的另一侧（180° 轴线）。"
+                                    f"请改用不跨线的运镜/焦段，或先安排可见的换位。")
+                finally:
+                    if int(bpy.context.scene.frame_current) != original_frame:
+                        scene.frame_set(original_frame)
+                        bpy.context.view_layer.update()
     try:
         report = apply_camera_movement(
             camera, _shot_target_object(shot_id), str(movement_type),
