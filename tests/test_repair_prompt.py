@@ -150,3 +150,13 @@ def test_a_malformed_accept_is_reported_not_silently_dropped():
 def test_guard_verdict_refuses_an_empty_warning_type():
     with pytest.raises(ValueError):
         R.guard_verdict("shot_002", "   ", accepted=True, fix_action="accept")
+
+
+def test_occlusion_suggests_moving_character_first():
+    """v4 真跑：遮挡告警若建议先动机位，模型会把相机挪到主体背后并触发回滚
+    风暴（455 次）。建议顺序改为先挪主体/遮挡者，机位是最后手段。"""
+    for kind in ("occlusion", "subject_not_visible"):
+        hint = R.GUARD_FIX_ACTION[kind]
+        assert hint.startswith("move_character"), (kind, hint)
+    behind = R.GUARD_FIX_ACTION["subject_behind_camera"]
+    assert "reframe" in behind and "不要穿过主体" in behind

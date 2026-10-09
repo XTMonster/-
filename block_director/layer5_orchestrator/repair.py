@@ -72,10 +72,13 @@ GUARD_PHENOMENON: Dict[str, str] = {
 #: 告警类型 → 动作菜单里**建议的那一个**（四选一，括号里是可测的操作）。
 GUARD_FIX_ACTION: Dict[str, str] = {
     "subject_out_of_frame": "move_character（把主体挪回画面）",
-    "subject_behind_camera": "move_camera（调整机位朝向）",
-    "subject_not_visible": "move_camera（挪开前景或换机位）",
+    "subject_behind_camera": "reframe（后退或降焦段，保持主体在相机前方；"
+                              "不要穿过主体或轴线）",
+    "subject_not_visible": "move_character（先挪开前景遮挡者或挪动主体），"
+                           "其次 move_camera（换机位）",
     "edge_clip": "reframe（拉远或调整构图）",
-    "occlusion": "move_camera（换机位避开遮挡）",
+    "occlusion": "move_character（先挪开前景遮挡者或挪动主体），"
+                 "其次 move_camera（换机位避开遮挡）",
     "framing_too_tight": "reframe（拉远距离或降焦段）",
     "framing_too_loose": "reframe（推近距离或升焦段）",
     "headroom_off": "move_camera（调整机位高度或俯仰）",
@@ -85,7 +88,8 @@ GUARD_FIX_ACTION: Dict[str, str] = {
     "sudden_jump": "move_camera（检查机位/焦段关键帧）",
     "unplanned_exit": "move_character（调整走位时机）",
     "jump_cut_risk": "reframe（换角度或换景别）",
-    "axis_screen_order": "move_camera（回到正确的轴侧）",
+    "axis_screen_order": "move_camera（回到正确的轴侧，保持主体在前；"
+                         "优先 reframe）",
     "pace_monotony": "accept（声明刻意节奏）",
 }
 
@@ -255,6 +259,10 @@ R003 一直红到收尾。
     64 镜真跑）：383 次 `R003` 与 126 次修复调用、101 次降级，绝大多数就是这么烧掉的。
   · **空间/构图类**（`R002` 穿模、`R005` 出画、`R001` 轴线、构图分低）：
     用场景工具挪机位、挪人、调焦距、加道具，然后用复核工具确认。
+  · **机位调整红线**（构图修复专用；违反会触发回滚重建，白烧这一回合）：
+    主体永远保持在**相机前方**；动/重建机位时不要穿过主体、不要越过
+    180° 轴线；主体被前景遮挡时优先 `move_character` 挪开遮挡者或挪动主体，
+    再考虑 `reframe`（改距离/焦段），最后才 `move_camera`。
 - 必须**调用工具**实际修改，不要只在回复里描述计划；
 - 只改与问题相关的部分，不要顺手重做整个镜头；
 - 修改后用 check_composition / check_axis 复核一次；
