@@ -114,6 +114,55 @@ def label_overlap_event_fields(build_summary: Dict[str, Any]) -> Optional[Dict[s
     }
 
 
+def unseen_axis_crossing(plan: Plan, brief, shot_id: str) -> Optional[str]:
+    """合并草案后是否存在"无人看见的配对连线大翻转"（R001 的保守前置闸）。
+
+    v1.6 G2：逐轮真跑里 E_AXIS_001 的主因是走位在**单人镜**里绕到两人连线的
+    另一侧——审核只能判错、模型修不动。这里用既有的纯函数
+    :func:`cinema.axis.crossing_events`（计划期近似：连线转角 ≥90° 才算翻个儿，
+    ``visible`` 取该镜是否两人同框）在**合并前**拦截最恶劣的那一类；30–90° 的
+    漂移仍由审核/修复回路管，不在这里扩大误杀面。判据与阈值一个都没动。
+
+    位置来源 ``SceneSpec.from_plan``（纯层，不 import bpy）；brief 缺失或
+    构不出两人配对时返回 ``None``（不拦）。
+    """
+    from ..cinema.axis import Axis, crossing_events
+    from ..contracts.cast import SceneSpec
+
+    try:
+        spec = SceneSpec.from_plan(plan, brief=brief)
+    except Exception:                       # noqa: BLE001 - 闸失败不阻断草案
+        return None
+    pair: Optional[List[str]] = None
+    for shot in (plan.shots or []):
+        characters = [str(cid) for cid in (shot.characters or [])]
+        if len(characters) >= 2:
+            pair = characters[:2]
+            break
+    if not pair:
+        return None
+    initial: Dict[str, Tuple[float, float, float]] = {}
+    for member in (spec.cast or []):
+        location = tuple(member.initial_location)
+        initial[str(member.id)] = location
+        name = str(getattr(member, "name", "") or "")
+        if name:
+            initial[name] = location
+    left, right = pair
+    if left not in initial or right not in initial:
+        return None
+    axis = Axis(start=tuple(initial[left][:2]),
+                end=tuple(initial[right][:2]),
+                established_side=1, left_label=left, right_label=right)
+    for event_shot_id, event in crossing_events(
+            axis, plan, initial).items():
+        if event.flip and not event.visible:
+            return (f"草案让角色在 {event_shot_id} 绕到两人连线的另一侧"
+                    f"（连线转角 ≥90°），而那一镜只有单人，观众看不见这次"
+                    f"换位（R001）。请把换位放进双人同框的镜头，或不要跨线。")
+    return None
+
+
 # --------------------------------------------------------------------------- #
 # v1.6 F2（D-09）：断点续跑的状态模型（纯层，不得 import bpy）
 # --------------------------------------------------------------------------- #
@@ -1682,25 +1731,38 @@ class PrevisDriver:
         best, alternates = rank_drafts(self._draft_candidates,
                                        characters=characters, anchors=anchors)
         if best is not None:
-            self.plan = merge_draft(self.plan, best)
-            self.draft_history.append(best.to_dict())
-            if alternates:
-                self._draft_alternates[shot_id] = [item.to_dict()
-                                                    for item in alternates]
-            self.audit.log("draft_received",
-                           f"{shot_id}: {len(best.actions)} 个动作 / "
-                           f"{len(best.dialogues)} 句对白",
-                           shot=shot_id, actions=len(best.actions),
-                           dialogues=len(best.dialogues),
-                           #: 只在真的开了 Best-of-N 时才写候选数——默认 1 时
-                           #: 事件形状与升级前逐字节相同（NFR-4）。
-                                   **({"candidates": len(self._draft_candidates)}
-                                       if wanted > 1 else {}))
-            self._emit("draft_received", f"{shot_id} 草案已合并", shot=shot_id)
-            # v1.6 F2（D-09）：B1 每镜起草成功即落 checkpoint——即使接下来
-            # 进程被杀，这一镜的草案也不会丢。
-            self._resume_drafts[shot_id] = best.to_dict()
-            self._checkpoint_resume(stage="draft", shot_id=shot_id)
+            merged = merge_draft(self.plan, best)
+            crossing = unseen_axis_crossing(merged, self.brief, shot_id)
+            if crossing:
+                #: v1.6 G2：不可见的走位跨线挡在计划外，而不是等到审核判错。
+                self.drafts_failed.append(
+                    {"shot_id": shot_id, "error": crossing})
+                self.audit.log("draft_invalid", f"{shot_id}: {crossing}",
+                               level="warning", shot=shot_id)
+                self._emit("draft_invalid", f"{shot_id} 草案无效",
+                           shot=shot_id)
+            else:
+                self.plan = merged
+                self.draft_history.append(best.to_dict())
+                if alternates:
+                    self._draft_alternates[shot_id] = [item.to_dict()
+                                                       for item in alternates]
+                self.audit.log(
+                    "draft_received",
+                    f"{shot_id}: {len(best.actions)} 个动作 / "
+                    f"{len(best.dialogues)} 句对白",
+                    shot=shot_id, actions=len(best.actions),
+                    dialogues=len(best.dialogues),
+                    #: 只在真的开了 Best-of-N 时才写候选数——默认 1 时
+                    #: 事件形状与升级前逐字节相同（NFR-4）。
+                    **({"candidates": len(self._draft_candidates)}
+                       if wanted > 1 else {}))
+                self._emit("draft_received", f"{shot_id} 草案已合并",
+                           shot=shot_id)
+                # v1.6 F2（D-09）：B1 每镜起草成功即落 checkpoint——即使
+                # 进程被杀，这一镜的草案也不会丢。
+                self._resume_drafts[shot_id] = best.to_dict()
+                self._checkpoint_resume(stage="draft", shot_id=shot_id)
         self._draft_candidates = []
         self._editor_payload_cache = None
         self._editing_index += 1
@@ -2921,14 +2983,20 @@ class PrevisDriver:
                     except ValueError as exc:
                         errors.append(str(exc))
                     else:
-                        self.plan = merge_draft(self.plan, draft)
-                        self.draft_history.append(draft.to_dict())
-                        self._needs_rebuild = True
-                        self.audit.log(
-                            "draft_received",
-                            f"{shot_id}: 重提草案（{len(draft.actions)} 动作 / "
-                            f"{len(draft.dialogues)} 对白）",
-                            shot=shot_id, stage=self._call_purpose)
+                        merged = merge_draft(self.plan, draft)
+                        crossing = unseen_axis_crossing(
+                            merged, self.brief, shot_id)
+                        if crossing:
+                            errors.append(crossing)
+                        else:
+                            self.plan = merged
+                            self.draft_history.append(draft.to_dict())
+                            self._needs_rebuild = True
+                            self.audit.log(
+                                "draft_received",
+                                f"{shot_id}: 重提草案（{len(draft.actions)} 动作 / "
+                                f"{len(draft.dialogues)} 对白）",
+                                shot=shot_id, stage=self._call_purpose)
 
         loop = self.loop_detector.detect()
         if loop is not None:
