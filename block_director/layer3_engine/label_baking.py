@@ -210,9 +210,20 @@ def separate_labels(scene, camera, prepared: List[Dict[str, Any]],
                 upper, lower = (i, j) if boxes[i][3] >= boxes[j][3] else (j, i)
                 overlap_h = (min(boxes[upper][3], boxes[lower][3])
                              - max(boxes[upper][1], boxes[lower][1]))
-                room = limit_px - float(
+                room_upper = limit_px - float(
                     prepared[upper].get("applied_offset_px") or 0.0)
-                shift_px = max(min(max(overlap_h, 1.0), room), 0.0)
+                room_lower = limit_px - float(
+                    prepared[lower].get("applied_offset_px") or 0.0)
+                need_px = max(overlap_h, 1.0)
+                #: 双向分摊（v1.6 G2）：原实现只把 upper 往上推，lower 不动——
+                #: 拥挤帧里 upper 的预算先耗尽，两个几乎重合的标签怎么都分不开
+                #: （v4 真跑最高 96.8% 交叠）。改成两标签各让一半，每个标签的
+                #: 位移预算仍 ≤ MAX_OFFSET_RATIO×画高（RK-2 判据不变）。
+                shift_upper = min(need_px / 2.0, room_upper)
+                shift_lower = min(need_px - shift_upper, room_lower)
+                shift_upper += min(need_px - shift_upper - shift_lower,
+                                   room_upper - shift_upper)
+                shift_px = shift_upper + shift_lower
                 if shift_px <= 0.0:
                     # Vertical budget exhausted — try horizontal push (v1.6 A7 D-19 2D松弛).
                     # 横推标签 id 靠后的那个（prepared 已按 id 排序，确定性）。
@@ -220,35 +231,52 @@ def separate_labels(scene, camera, prepared: List[Dict[str, Any]],
                                  - max(boxes[i][0], boxes[j][0]))
                     if overlap_w <= 0.0:
                         continue
-                    mover = j
-                    room_h = limit_px - float(
-                        prepared[mover].get("applied_offset_px") or 0.0)
-                    shift_h = max(min(max(overlap_w, 1.0), room_h), 0.0)
-                    if shift_h <= 0.0:
+                    room_i = limit_px - float(
+                        prepared[i].get("applied_offset_px") or 0.0)
+                    room_j = limit_px - float(
+                        prepared[j].get("applied_offset_px") or 0.0)
+                    need_w = max(overlap_w, 1.0)
+                    shift_j = min(need_w / 2.0, room_j)
+                    shift_i = min(need_w - shift_j, room_i)
+                    shift_j += min(need_w - shift_j - shift_i,
+                                   room_j - shift_j)
+                    shift_w = shift_i + shift_j
+                    if shift_w <= 0.0:
                         continue
                     _aspect = float(res_x) / max(float(res_y), 1.0)
-                    world_h = (shift_h / float(res_x)
-                               * float(prepared[mover]["frame_height"]) * _aspect)
+                    for mover, amount in ((j, shift_j), (i, -shift_i)):
+                        if amount <= 0.0:
+                            continue
+                        world_h = (abs(amount) / float(res_x)
+                                   * float(prepared[mover]["frame_height"])
+                                   * _aspect)
+                        sign = 1.0 if amount > 0 else -1.0
+                        prepared[mover]["position"] = (
+                            prepared[mover]["position"]
+                            + prepared[mover]["right"] * (world_h * sign))
+                        prepared[mover]["applied_offset_px"] = float(
+                            prepared[mover].get("applied_offset_px") or 0.0) \
+                            + abs(amount)
+                        if prepared[mover]["offset_reason"] == REASON_NONE:
+                            prepared[mover]["offset_reason"] = REASON_OVERLAP
+                        if prepared[mover] not in moved:
+                            moved.append(prepared[mover])
+                    continue
+                for mover, amount, axis in ((upper, shift_upper, 1.0),
+                                            (lower, shift_lower, -1.0)):
+                    if amount <= 0.0:
+                        continue
+                    world = (amount / float(res_y)
+                             * float(prepared[mover]["frame_height"]))
                     prepared[mover]["position"] = (
                         prepared[mover]["position"]
-                        + prepared[mover]["right"] * world_h)
+                        + prepared[mover]["up"] * (world * axis))
                     prepared[mover]["applied_offset_px"] = float(
-                        prepared[mover].get("applied_offset_px") or 0.0) + shift_h
+                        prepared[mover].get("applied_offset_px") or 0.0) + amount
                     if prepared[mover]["offset_reason"] == REASON_NONE:
                         prepared[mover]["offset_reason"] = REASON_OVERLAP
                     if prepared[mover] not in moved:
                         moved.append(prepared[mover])
-                    continue
-                world = (shift_px / float(res_y)
-                         * float(prepared[upper]["frame_height"]))
-                prepared[upper]["position"] = (prepared[upper]["position"]
-                                               + prepared[upper]["up"] * world)
-                prepared[upper]["applied_offset_px"] = float(
-                    prepared[upper].get("applied_offset_px") or 0.0) + shift_px
-                if prepared[upper]["offset_reason"] == REASON_NONE:
-                    prepared[upper]["offset_reason"] = REASON_OVERLAP
-                if prepared[upper] not in moved:
-                    moved.append(prepared[upper])
         if worst <= OVERLAP_LIMIT:
             break
     return moved

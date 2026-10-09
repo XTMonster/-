@@ -92,14 +92,32 @@
 | 11 | `elements.json`/`masks/`/`reference/`；prompts 无表外名 | 13 镜 masks、4 定妆卡、elements；prompts 表外名闸放行 | PASS |
 | 12 | `rhythm_reading` 事件；README 与 shots.json 对拍 | ASL 5.31 / CV 0.3574 三处一致 | PASS |
 | 13 | 圆柱躯干 AABB max_delta=0.0 | body-ab 探针 5/5 | PASS |
-| 14 | 超时重试走阶梯、无原样第三次 | 本轮无超时（机制由 `test_driver_retry_ladder.py` 钉住）| 未行使（如实）|
+| 14 | 超时重试走阶梯、无原样第三次 | 真跑实证：shot_011 sidecar 500 → `same_retry` → 500 → `degrade`（只两次）；shot_012 超时 300 s → `slim_retry`；无"原样第三次" | PASS |
 | 15 | pytest 全绿；run_tests.ps1 全绿 | pytest **3206 passed / 1 skipped**；探针 **43/43 OK**；唯一红仍是已结案的 **RK-13（E1）** | 部分（RK-13 判据未动）|
-| 16 | 标签全帧交叠 ≤5% + 交付含汇总 | 331/1656 帧 >5%，最高 **96.8%**；README 已有「标签全帧自检」段 | FAIL |
+| 16 | 标签全帧交叠 ≤5% + 交付含汇总 | 基线 331/1656 帧、最高 96.8%；**双向分摊修复后 69/1656 帧、最高 88.4%**（残余 69 帧全部在 shot_009，根因＝框外角色标签被夹到同一画框边缘 + out_of_frame 吃光 0.25H 预算，留给重叠分离的余量为零）；README 已有「标签全帧自检」段 | FAIL（有修复与归因，未达线）|
 
 结论：**v4 仍判红**。代码侧缺陷（轴参照系、交付接线、校验域）本轮已修复并提交；
 剩余红项集中在"构图门在这份剧本上收敛不了"（站位与视线共线、无人看见的走位跨线）、
 模型侧工具 schema 漂移（35 次 invalid）与标签在拥挤帧的容量不足——都不是降级
 阈值能掩盖的问题，下一刀需要按 W4A 的钉死归因逐镜修机位/站位/标签容量。
+
+## W4A 钉死归因（`docs/evidence/20261009-v16-w4-pinned/`）
+
+对 run `a966a3b255f2` 的最终计划（`plan_received` 逐字）零 LLM 重建并逐镜归因，
+12 个构图失败镜分两类（归因闭集与阈值未动）：
+
+* **camera_misplaced ×5**（shot_002/005/006/009/012）：终版机位与"按首帧实际站位
+  重解"偏差 1.5–4.6 m——修复回路挪机位后没挪回来（其中 shot_002 还带
+  `dolly_in` 运镜，首帧≠静态解）；
+* **solver_no_solution ×7**（shot_003/004/007/008/010/011/013）：机位就是求解器
+  的解，构图分项仍低——双人镜的 primary 盒取最近主体（`max(boxes, key=height)`），
+  两人沿视线前后站时 framing 实测/预期≈1.75、headroom=0、balance≈0.34
+  （shot_013 实测：伊恩 x∈[1.72,3.21] 与莉莉安娜 x∈[2.61,3.39] 前后重叠）。
+
+修卡去向：`camera_misplaced` → 修复回路机位纪律（上一轮 `741f286` 已补提示，
+待真跑验证）；`solver_no_solution` → 双人镜"并排站位/组中心锚点"的取景改动——
+其中 MS/MCU 双人锚点在 `tests/test_station.py` 被钉死为"对准说话人"
+（`test_focus_follows_the_first_speaker`），改为组中心属规格裁决，**本轮未动**。
 
 ## 07:0x 续跑复核（本会话）——结论：**G2 判红，不允许宣布完成**
 

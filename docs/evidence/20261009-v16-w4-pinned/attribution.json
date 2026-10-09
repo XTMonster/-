@@ -1,0 +1,403 @@
+[
+  {
+    "shot_id": "shot_002",
+    "score": null,
+    "class": "camera_misplaced",
+    "evidence": {
+      "reasons": [
+        {
+          "distance_deviation_ratio": 0.2612,
+          "actual_distance_m": 1.9164,
+          "required_distance_m": 2.5938,
+          "tolerance": 0.25
+        }
+      ]
+    }
+  },
+  {
+    "shot_id": "shot_003",
+    "score": null,
+    "class": "solver_no_solution",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": null,
+      "threshold": 70.0,
+      "components": {
+        "headroom": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "lead_room": {
+          "score": 0.75,
+          "weight": 0.2,
+          "suggestion": "主体没有明确朝向，视线空间不做要求"
+        },
+        "rule_of_thirds": {
+          "score": 0.951,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "balance": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "occlusion": {
+          "score": 1.0,
+          "weight": 0.25,
+          "suggestion": ""
+        },
+        "framing": {
+          "score": 0.788,
+          "weight": 0.1,
+          "suggestion": "主体部分出画；建议收紧景别或重新构图"
+        }
+      }
+    }
+  },
+  {
+    "shot_id": "shot_004",
+    "score": null,
+    "class": "solver_no_solution",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": null,
+      "threshold": 70.0,
+      "components": {
+        "headroom": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "lead_room": {
+          "score": 0.0,
+          "weight": 0.2,
+          "suggestion": "视线方向留白不足；建议把主体放到画面偏对侧"
+        },
+        "rule_of_thirds": {
+          "score": 0.809,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "balance": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "occlusion": {
+          "score": 1.0,
+          "weight": 0.25,
+          "suggestion": ""
+        },
+        "framing": {
+          "score": 0.856,
+          "weight": 0.1,
+          "suggestion": "主体部分出画；建议收紧景别或重新构图"
+        }
+      }
+    }
+  },
+  {
+    "shot_id": "shot_005",
+    "score": null,
+    "class": "camera_misplaced",
+    "evidence": {
+      "reasons": [
+        {
+          "camera_vs_solver_m": 2.4214,
+          "camera_xyz": [
+            -3.0862,
+            5.5906,
+            0.9497
+          ],
+          "solver_position": [
+            -5.1077,
+            4.2577,
+            0.9497
+          ],
+          "tolerance_m": 0.5
+        }
+      ]
+    }
+  },
+  {
+    "shot_id": "shot_006",
+    "score": null,
+    "class": "camera_misplaced",
+    "evidence": {
+      "reasons": [
+        {
+          "camera_vs_solver_m": 4.5852,
+          "camera_xyz": [
+            -0.7926,
+            2.2926,
+            0.9497
+          ],
+          "solver_position": [
+            -0.7926,
+            -2.2926,
+            0.9497
+          ],
+          "tolerance_m": 0.5
+        }
+      ]
+    }
+  },
+  {
+    "shot_id": "shot_007",
+    "score": null,
+    "class": "solver_no_solution",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": null,
+      "threshold": 70.0,
+      "components": {
+        "headroom": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "lead_room": {
+          "score": 0.75,
+          "weight": 0.2,
+          "suggestion": "主体没有明确朝向，视线空间不做要求"
+        },
+        "rule_of_thirds": {
+          "score": 0.076,
+          "weight": 0.15,
+          "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+        },
+        "balance": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "occlusion": {
+          "score": 1.0,
+          "weight": 0.25,
+          "suggestion": ""
+        },
+        "framing": {
+          "score": 0.508,
+          "weight": 0.1,
+          "suggestion": "主体部分出画；建议收紧景别或重新构图"
+        }
+      }
+    }
+  },
+  {
+    "shot_id": "shot_008",
+    "score": null,
+    "class": "solver_no_solution",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": null,
+      "threshold": 70.0,
+      "components": {
+        "headroom": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "lead_room": {
+          "score": 1.0,
+          "weight": 0.2,
+          "suggestion": ""
+        },
+        "rule_of_thirds": {
+          "score": 0.37,
+          "weight": 0.15,
+          "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+        },
+        "balance": {
+          "score": 0.38,
+          "weight": 0.15,
+          "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
+        },
+        "occlusion": {
+          "score": 1.0,
+          "weight": 0.25,
+          "suggestion": ""
+        },
+        "framing": {
+          "score": 0.519,
+          "weight": 0.1,
+          "suggestion": "主体部分出画；建议收紧景别或重新构图"
+        }
+      }
+    }
+  },
+  {
+    "shot_id": "shot_009",
+    "score": null,
+    "class": "camera_misplaced",
+    "evidence": {
+      "reasons": [
+        {
+          "camera_vs_solver_m": 1.4985,
+          "camera_xyz": [
+            4.407,
+            1.4474,
+            1.231
+          ],
+          "solver_position": [
+            4.7948,
+            0.0,
+            1.231
+          ],
+          "tolerance_m": 0.5
+        }
+      ]
+    }
+  },
+  {
+    "shot_id": "shot_010",
+    "score": null,
+    "class": "solver_no_solution",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": null,
+      "threshold": 70.0,
+      "components": {
+        "headroom": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "lead_room": {
+          "score": 1.0,
+          "weight": 0.2,
+          "suggestion": ""
+        },
+        "rule_of_thirds": {
+          "score": 0.0,
+          "weight": 0.15,
+          "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+        },
+        "balance": {
+          "score": 0.0,
+          "weight": 0.15,
+          "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
+        },
+        "occlusion": {
+          "score": 1.0,
+          "weight": 0.25,
+          "suggestion": ""
+        },
+        "framing": {
+          "score": 0.0,
+          "weight": 0.1,
+          "suggestion": "主体部分出画；建议收紧景别或重新构图"
+        }
+      }
+    }
+  },
+  {
+    "shot_id": "shot_011",
+    "score": null,
+    "class": "solver_no_solution",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": null,
+      "threshold": 70.0,
+      "components": {
+        "headroom": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "lead_room": {
+          "score": 0.0,
+          "weight": 0.2,
+          "suggestion": "视线方向留白不足；建议把主体放到画面偏对侧"
+        },
+        "rule_of_thirds": {
+          "score": 0.923,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "balance": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "occlusion": {
+          "score": 1.0,
+          "weight": 0.25,
+          "suggestion": ""
+        },
+        "framing": {
+          "score": 0.833,
+          "weight": 0.1,
+          "suggestion": "主体部分出画；建议收紧景别或重新构图"
+        }
+      }
+    }
+  },
+  {
+    "shot_id": "shot_012",
+    "score": null,
+    "class": "camera_misplaced",
+    "evidence": {
+      "reasons": [
+        {
+          "camera_vs_solver_m": 2.4478,
+          "camera_xyz": [
+            1.6243,
+            2.0642,
+            0.9497
+          ],
+          "solver_position": [
+            4.0221,
+            1.5721,
+            0.9497
+          ],
+          "tolerance_m": 0.5
+        }
+      ]
+    }
+  },
+  {
+    "shot_id": "shot_013",
+    "score": null,
+    "class": "solver_no_solution",
+    "evidence": {
+      "camera_matches_solver": true,
+      "replayed_score": null,
+      "threshold": 70.0,
+      "components": {
+        "headroom": {
+          "score": 1.0,
+          "weight": 0.15,
+          "suggestion": ""
+        },
+        "lead_room": {
+          "score": 1.0,
+          "weight": 0.2,
+          "suggestion": ""
+        },
+        "rule_of_thirds": {
+          "score": 0.0,
+          "weight": 0.15,
+          "suggestion": "主体偏离三分线交点；可微调构图让主体落到交点附近"
+        },
+        "balance": {
+          "score": 0.338,
+          "weight": 0.15,
+          "suggestion": "画面重心偏塌；建议左右重新平衡人物位置"
+        },
+        "occlusion": {
+          "score": 0.3,
+          "weight": 0.25,
+          "suggestion": "主体被前景遮挡：莉莉安娜；建议移开机位或调整遮挡物"
+        },
+        "framing": {
+          "score": 0.384,
+          "weight": 0.1,
+          "suggestion": "主体在画面中的大小与景别不符（实际/预期=1.75）"
+        }
+      }
+    }
+  }
+]
