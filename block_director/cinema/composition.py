@@ -214,7 +214,12 @@ def evaluate_composition(boxes: Iterable[SubjectBox],
     if not subjects:
         return CompositionReport(score=0.0, suggestions=["画面里没有被摄主体"])
 
-    primary = max(subjects, key=lambda b: b.height)
+    #: v1.6 G2（延续"双人镜对准谁"的授权语义）：完全出画的主体不该当构图
+    #: 主锚——v10 真跑 4 镜因计划里多声明了一个站在画面外的角色，RK-10 硬闸
+    #: 把**画内主体**的合格镜头一起压到 20。主锚取"可见"的最高盒，全可见时
+    #: 仍是最高盒（与旧行为一致）；出画者继续参与 balance/occlusion 的计分。
+    primary = max(subjects,
+                  key=lambda b: (b.inside_ratio() > 0.05, b.height))
     items = {
         "headroom": _headroom(primary, headroom_applies),
         "lead_room": _lead_room(primary),

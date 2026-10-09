@@ -51,6 +51,15 @@ def test_subject_entirely_out_of_frame_cannot_score_well():
     assert report.score <= 20.0, report.to_dict()
 
 
+def test_off_frame_secondary_does_not_nuke_a_visible_subject():
+    """双主体里一个完全出画时，画内主体仍当主锚（v1.6 G2，v10 归因）。"""
+    visible = good_box()
+    off = good_box(name="乙", left=1.40, right=1.60, top=1.50, bottom=0.90)
+    report = evaluate_composition([visible, off])
+    assert off.inside_ratio() <= 0.05
+    assert report.score > 20.0, report.to_dict()
+
+
 def test_too_much_headroom_is_penalised():
     report = evaluate_composition([good_box(top=0.60)])
     assert report.items["headroom"].score < 1.0

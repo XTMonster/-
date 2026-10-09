@@ -757,6 +757,10 @@ def _blender_measure_main(argv: Sequence[str]) -> int:
         required_distance,
         solve_framing,
     )
+    from block_director.cinema.station import (  # noqa: PLC0415
+        camera_direction,
+        subject_frame,
+    )
     from block_director.contracts.brief import SceneBrief  # noqa: PLC0415
     from block_director.contracts.cast import SceneSpec  # noqa: PLC0415
     from block_director.contracts.plan import Plan  # noqa: PLC0415
@@ -769,7 +773,10 @@ def _blender_measure_main(argv: Sequence[str]) -> int:
         get_context,
     )
     from block_director.layer3_engine.shot_builder import (  # noqa: PLC0415
+        axis_for_shot,
         build_scene,
+        live_subject_entries,
+        speaker_of,
     )
     from block_director.settings import get_config  # noqa: PLC0415
     from block_director.utils.geometry import (  # noqa: PLC0415
@@ -874,11 +881,26 @@ def _blender_measure_main(argv: Sequence[str]) -> int:
         shot_camera = dict((shot.camera or {}) if shot.camera else {})
         side = str(shot_camera.get("side") or "front")
         shot_lens = shot_camera.get("lens")
+        #: 与构建器**同一套**方向解算重解机位（station 方向 + 逐镜轴侧镜像 +
+        #: frame.anchor）：裸 ``solve_framing`` 不知道轴镜像，会把被镜像过的
+        #: 对话机位误归为 camera_misplaced（v10 归因的测量伪差——8 镜
+        #: "机位漂移 1.2–9.3 m" 里相当一部分是它）。
+        entries = live_subject_entries(shot, context.characters)
+        station_frame = subject_frame(entries, shot_type=shot_type,
+                                      speaker_id=speaker_of(shot))
+        station_axis = axis_for_shot(context, shot)
+        direction = camera_direction(
+            station_frame, side,
+            axis_dir=(station_axis.direction
+                      if station_axis is not None else None),
+            axis_side=(int(getattr(station_axis, "established_side", 0))
+                       if station_axis is not None else 0))
         solution = solve_framing(
-            (float(centroid.x), float(centroid.y), 0.0),
-            facing=tuple(float(v) for v in facing),
+            tuple(float(v) for v in station_frame.anchor),
+            facing=tuple(float(v) for v in station_frame.facing),
             shot_type=shot_type, side=side, lens=shot_lens,
-            room=tuple(spec.room) if spec.room else None)
+            room=tuple(spec.room) if spec.room else None,
+            direction=direction)
         frame = SHOT_FRAME.get(shot_type.upper())
         required = (required_distance(frame.frame_height, lens)
                     if frame is not None and lens else None)
@@ -909,6 +931,9 @@ def _blender_measure_main(argv: Sequence[str]) -> int:
             "solver_distance": round(solution.distance, 4),
             "solver_clamped": solution.clamped,
             "solver_warnings": list(solution.warnings),
+            "axis_side_used": (int(getattr(station_axis,
+                                          "established_side", 0))
+                               if station_axis is not None else None),
             "actual_distance": round(actual, 4),
             "required_distance": round(required, 4) if required is not None
             else None,
