@@ -30,11 +30,16 @@ REACT_SYSTEM_PROMPT = """\
 当前场景：
 {scene_state}
 
+可用角色（**只能逐字**使用这些名字；名单之外的名字一律是幻觉，不许写进
+`shot.characters` / `actions` / `dialogues`）：{roster}
+
 要求：
 - 只能通过调用工具**实际改变场景**，不要只在回复里描述计划；
 - 每次改完用 check_composition / check_axis 复核一次，再决定下一步；
 - 最多 {max_steps} 步；觉得已经足够好就停止调用工具；
 - 不要重做整场戏，只调这个镜头。
+- **机位调整红线**：主体保持在相机前方；不要穿过主体、不要越过 180° 轴线；
+  遮挡优先挪主体/遮挡者，其次 reframe，最后才 move_camera。
 """
 
 
@@ -65,12 +70,15 @@ def should_react(shot: Optional[ShotPlan], result: Optional[AuditResult], *,
 def build_react_payload(shot: ShotPlan, audit: AuditResult, *,
                         scene_state: str = "", registry=None,
                         max_steps: int = 6, temperature: float = 0.3,
-                        request_id: Optional[str] = None) -> ChatPayload:
+                        request_id: Optional[str] = None,
+                        roster=None) -> ChatPayload:
     """构造一次 ReAct 请求：工具全开、由模型自己决定何时停。"""
     system_text = REACT_SYSTEM_PROMPT.format(
         audit=audit.format_for_llm() if audit is not None else "（未知）",
         scene_state=scene_state or "（尚未采集）",
-        max_steps=int(max_steps))
+        max_steps=int(max_steps),
+        roster="、".join(str(item) for item in roster)
+        if roster else "（未提供）")
     # 精修阶段同样不给 emit_plan：它只该改这一镜，不该重写整份计划
     tools = (registry.schemas_except("emit_plan")
              if registry is not None else [])

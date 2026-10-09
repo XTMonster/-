@@ -255,6 +255,8 @@ EDITOR_SYSTEM_PROMPT = """\
   `pace`）；动作参数的键**只写该动作那一行有的键**（例如 `turn_head` 只有
   `angle_deg/angle/degrees`，没有 `yaw_deg/pitch_deg`），写表外同义词整条
   草案会被退回；
+- **走位跨线必须看得见**：任何角色若要从两人连线的一侧走到另一侧，必须把
+  这次换位安排成双人同框的镜头；只在单人镜里绕到另一侧会被判越轴（R001）。
 - `composition`（构图声明）只在确实有构图意图时写，`rule` 与 `subject_position`
   都是闭集；
 - `rule_justifications` 写**规则引用与破例辩护**：`rule` 填下面"参考资料"里

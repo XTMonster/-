@@ -2157,7 +2157,8 @@ class PrevisDriver:
             shot_memory(self.plan, done=self._finished_shots))
         payload = build_react_payload(
             shot, result, scene_state=self._scene_state_text(),
-            registry=self.registry, max_steps=self._react_max_steps())
+            registry=self.registry, max_steps=self._react_max_steps(),
+            roster=self._cast_roster())
         if memory:
             payload.messages[0].content += "\n\n" + memory
         self._react_messages = list(payload.messages)
