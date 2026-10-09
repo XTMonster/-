@@ -210,6 +210,20 @@
 * 累计趋势（轴错 error）：44(v9) → 15(v10) → **5(v11)**；构图 apr 在 2–3/12
   波动，剩余失败镜以修复回路的机位漂移（camera_misplaced 1.2–9.3 m）为主。
 
+## v12 真跑（run `5977f7062f2b`，`b248487`，DeepSeek V4 Pro，EEVEE）
+
+* 新修法：① `composition.evaluate_composition` 的 primary 取**可见**的最高盒
+  （计划里多声明一个画面外角色时不再把画内主体的合格镜头压到 20）；
+  ② `diagnose_composition` 的重解与构建器同源（station 方向 + 逐镜轴侧镜像），
+  修正了 v10 归因里 8 镜 camera_misplaced 的测量伪差（修正后真归因 =
+  **8 solver_no_solution ＋ 2 camera_misplaced**，其中 4 镜是"画面外第二角色
+  触发 RK-10 硬闸"）。
+* 读数（这一轮计划本身差，方差上限样本）：`audit_pass_rate 1/12`、
+  **轴错 error 59**、invalid 37（react 20 / repair 13 / draft 4）、label 0/1656、
+  R015=0。
+* 轴错 error 全样本：**5(v6) / 26(v7) / 44(v9) / 15(v10) / 5(v11) / 59(v12)**——
+  跨线闸已把机械侧修完，剩余波动完全来自每轮模型产出的走位编排不同。
+
 ## 07:0x 续跑复核（本会话）——结论：**G2 判红，不允许宣布完成**
 
 上一会话在 06:51 停在 v3 的归因分析中途（`work/_g2_glm3/_analysis*.txt`、
