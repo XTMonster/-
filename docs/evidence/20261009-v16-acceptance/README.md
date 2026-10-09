@@ -142,6 +142,17 @@
   修复把机位挪到摆位线反侧）；#8 invalid 39（repair_invalid 15 以幻觉角色名
   `char_a/char_b/艾拉/优一郎` 为主——A2 闸每次正确拒绝并重问）。
 
+## v6 真跑（run `3ebd919f2ea0`，`f74063a`，DeepSeek V4 Pro，EEVEE）
+
+* `move_camera` 平移类运镜轴侧护栏生效：**轴错 error 42 → 5**（v5 vs v6；
+  warning 45 主要是中性机位提示）。
+* 修复提示列角色表生效：**repair_invalid 15 → 2**；draft_invalid 3、react_invalid 18
+  （react 提示此前没有角色表/红线，`c6f727f` 已补）。
+* `audit_pass_rate 0/12 → 2/12`（shot_004=84.9、shot_005=78.1 构图过门，
+  但终审仍带 E_AXIS_001 warning）；label 0/1656、R015=0 保持。
+* 剩余差距：构图 10/12 不达标（主因仍是双人镜前后站位）、轴错 5 条
+  （无人看见的走位跨线）、react_invalid 18（动作词汇漂移）。
+
 ## 07:0x 续跑复核（本会话）——结论：**G2 判红，不允许宣布完成**
 
 上一会话在 06:51 停在 v3 的归因分析中途（`work/_g2_glm3/_analysis*.txt`、
