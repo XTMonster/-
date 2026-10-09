@@ -339,7 +339,8 @@ def _schedule_frames(schedule: Dict[str, Tuple[int, int]]) -> List[int]:
 
 
 def _scan_overlap(scene, cameras, schedule, entries, res_x: float,
-                  res_y: float, frames: Sequence[int]
+                  res_y: float, frames: Sequence[int],
+                  subjects: Optional[Dict[str, Sequence[str]]] = None
                   ) -> Tuple[List[int], float]:
     """扫 ``frames`` 每一帧的标签两两交叠；返回 ``(超限帧清单, 最大交叠率)``。
 
@@ -349,18 +350,24 @@ def _scan_overlap(scene, cameras, schedule, entries, res_x: float,
     """
     over: List[int] = []
     worst = 0.0
-    fills = [entry.get("fill") for entry in entries]
-    if len(fills) < 2:
-        return over, worst
     for frame in frames:
         shot_id = _shot_at(schedule, frame)
         camera = cameras.get(shot_id) if shot_id else None
         if camera is None:
             continue
+        wanted = (set(str(item) for item in (subjects or {}).get(
+            str(shot_id), ()))
+            if subjects is not None else None)
+        frame_fills = [
+            entry.get("fill") for entry in entries
+            if wanted is None
+            or str(entry.get("character_id") or "") in wanted]
+        if len(frame_fills) < 2:
+            continue
         scene.frame_set(frame)
         bpy.context.view_layer.update()
         boxes: List[Tuple[float, float, float, float]] = []
-        for fill in fills:
+        for fill in frame_fills:
             if fill is None:
                 continue
             boxes.append(_screen_box_from_obj(scene, camera, fill,
@@ -454,7 +461,9 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
                 max_ratio: float = DEFAULT_MAX_RATIO,
                 resolution: Sequence[int] = (1280, 720),
                 adaptive_sampling: bool = True,
-                fullframe_verify: bool = True) -> Dict[str, Any]:
+                fullframe_verify: bool = True,
+                subjects: Optional[Dict[str, Sequence[str]]] = None
+                ) -> Dict[str, Any]:
     """给渲染标签烘焙逐帧变换；返回一份可写进交付报告的摘要。
 
     v1.6 A7（D-19）：``adaptive_sampling`` 在锚点相对屏幕速度大、或插值帧
@@ -499,7 +508,14 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
         right, up = _camera_axes(camera)
         prepared: List[Dict[str, Any]] = []
 
-        for entry in ordered_entries:
+        active_entries = ordered_entries
+        if subjects is not None and shot_id is not None:
+            wanted = set(str(item) for item in subjects.get(
+                str(shot_id), ()) or ())
+            active_entries = [
+                entry for entry in ordered_entries
+                if str(entry.get("character_id") or "") in wanted]
+        for entry in active_entries:
             fill = entry.get("fill")
             stroke = entry.get("stroke")
             anchor = entry.get("anchor")
@@ -649,7 +665,8 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
     # v1.6 A7（D-19）触发条件②：插值帧检出重叠 ⇒ 该区段加密直至每帧。
     if adaptive_sampling and len(ordered_entries) >= 2:
         over, worst = _scan_overlap(scene, cameras, schedule,
-                                    ordered_entries, res_x, res_y, rendered)
+                                    ordered_entries, res_x, res_y, rendered,
+                                    subjects=subjects)
         scanned = True
         added = _densified_frames(frames, over)
         for frame in added:
@@ -661,7 +678,7 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
         if not scanned:
             over, worst = _scan_overlap(scene, cameras, schedule,
                                         ordered_entries, res_x, res_y,
-                                        rendered)
+                                        rendered, subjects=subjects)
         rounds = 0
         while over and rounds < FULLFRAME_REBAKE_ROUNDS:
             for frame in sorted(set(over)):
@@ -669,7 +686,7 @@ def bake_labels(scene, entries: Sequence[Dict[str, Any]],
             rounds += 1
             over, worst = _scan_overlap(scene, cameras, schedule,
                                         ordered_entries, res_x, res_y,
-                                        rendered)
+                                        rendered, subjects=subjects)
         overlap_report["overlap_frames"] = sorted(set(over))
         overlap_report["max_overlap_ratio"] = round(float(worst), 6)
         if overlap_report["overlap_frames"]:

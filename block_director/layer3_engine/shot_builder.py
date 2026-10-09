@@ -873,7 +873,9 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
             max_ratio=float(label_config.label_max_ratio),
             resolution=app_config.delivery.resolution,
             adaptive_sampling=bool(app_config.labels.adaptive_sampling),
-            fullframe_verify=bool(app_config.labels.fullframe_verify))
+            fullframe_verify=bool(app_config.labels.fullframe_verify),
+            subjects={str(item.shot_id): list(item.characters or ())
+                      for item in plan.shots})
         summary.label_report = label_report
         for item in label_report.get("unreadable", [])[:5]:
             summary.warnings.append(

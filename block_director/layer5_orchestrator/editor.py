@@ -249,6 +249,12 @@ EDITOR_SYSTEM_PROMPT = """\
 - 用 `beats[]` 给这一镜的**执行拍点表**：`t` 是归一化时机（0–1，同一角色的拍点
   按 `t` 单调不减；**不要写帧号**，帧号由引擎按 `t` 换算），`verb` 从闭集里
   **逐字**拷贝，`target` 写锚点名或角色 id，`face_to` 写屏幕方位或角色 id；
+- `beats[].target` 只能写"可用角色/可用场级锚点"里的名字；`screen_right` 这类
+  屏幕方位词属于 `face_to`，不是 `target`；`pace` 的闭集只有
+  `slow/normal/brisk`（`sharp` 是**速度曲线**词，归 `curve` 字段，不能写进
+  `pace`）；动作参数的键**只写该动作那一行有的键**（例如 `turn_head` 只有
+  `angle_deg/angle/degrees`，没有 `yaw_deg/pitch_deg`），写表外同义词整条
+  草案会被退回；
 - `composition`（构图声明）只在确实有构图意图时写，`rule` 与 `subject_position`
   都是闭集；
 - `rule_justifications` 写**规则引用与破例辩护**：`rule` 填下面"参考资料"里

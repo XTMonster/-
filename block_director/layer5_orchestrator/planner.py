@@ -313,6 +313,14 @@ def build_plan_payload(script: str, config=None,
                 f"{DIALOGUE_TAIL_FRAMES} 帧收尾余量（规则 R011）；"
                 f"对白细节留给下一阶段，计划里只标 dialogue_ids。"
                 f"标注为「剧本声明」的时长是**硬约束**，不得自行改短。")
+        if parsed is not None and getattr(parsed, "declared_shots", None):
+            #: v1.6 G2：声明时长是硬约束，声明**景别（拍摄距离）**同样是——
+            #: v4 真跑 R015 error ×1（镜2 声明 CU 被排成 MS）。确有理由破例时
+            #: 必须带 rule_justifications[action=break] 的叙事理由，否则整条判红。
+            body = (f"{body}\n\n镜号声明的**拍摄距离/景别**是硬约束（R015）："
+                    f"每个 shot_type 必须与分镜表该镜的声明一致；确有叙事理由"
+                    f"要改景别时，必须附 rule_justifications[action=break] 写清"
+                    f"理由，否则不要改。")
         max_shots = 0
         if config is not None:
             max_shots = int(getattr(getattr(config, "orchestration", None),
