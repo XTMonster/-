@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import os
 import queue
 import threading
@@ -126,7 +127,13 @@ def unseen_axis_crossing(plan: Plan, brief, shot_id: str) -> Optional[str]:
     位置来源 ``SceneSpec.from_plan``（纯层，不 import bpy）；brief 缺失或
     构不出两人配对时返回 ``None``（不拦）。
     """
-    from ..cinema.axis import Axis, crossing_events
+    from ..cinema.axis import (
+        AXIS_DRIFT_DEG,
+        Axis,
+        crossing_events,
+        drift_is_bridged,
+        pair_spans,
+    )
     from ..contracts.cast import SceneSpec
 
     try:
@@ -160,6 +167,65 @@ def unseen_axis_crossing(plan: Plan, brief, shot_id: str) -> Optional[str]:
             return (f"草案让角色在 {event_shot_id} 绕到两人连线的另一侧"
                     f"（连线转角 ≥90°），而那一镜只有单人，观众看不见这次"
                     f"换位（R001）。请把换位放进双人同框的镜头，或不要跨线。")
+    #: 30–90° 带（与审核 `_axis_rebuild` 同口径：相对**首镜线**的累计漂移，
+    #: 可见旋转累计偿债——`drift_is_bridged`）。审核还在用首镜线做锚，闸用
+    #: 同一参照系，才不会"闸放行、审核判错"。
+    spans = pair_spans(axis, plan, initial)
+    visible_since = 0.0
+    for shot in (plan.shots or []):
+        span = spans.get(str(shot.shot_id))
+        if span is None:
+            continue
+        a_start, b_start, a_end, b_end = span
+        both = len([cid for cid in (shot.characters or [])
+                    if str(cid) in (left, right)]) >= 2
+        start_dir = None
+        rotation = 0.0
+
+        def _unit_pair(point_a, point_b):
+            dx = float(point_b[0]) - float(point_a[0])
+            dy = float(point_b[1]) - float(point_a[1])
+            norm = math.hypot(dx, dy)
+            return (dx / norm, dy / norm) if norm > 1e-9 else None
+
+        def _angle_to_anchor(point_a, point_b) -> Optional[float]:
+            dx = float(point_b[0]) - float(point_a[0])
+            dy = float(point_b[1]) - float(point_a[1])
+            norm = math.hypot(dx, dy)
+            if norm < 1e-9:
+                return None
+            direction = (dx / norm, dy / norm)
+            cosine = max(-1.0, min(1.0,
+                                   axis.direction[0] * direction[0]
+                                   + axis.direction[1] * direction[1]))
+            return math.degrees(math.acos(cosine))
+
+        start_angle = _angle_to_anchor(a_start, b_start)
+        if start_angle is not None:
+            start_dir = _unit_pair(a_start, b_start)
+            if start_angle >= float(AXIS_DRIFT_DEG) and not drift_is_bridged(
+                    start_angle, visible_since, False):
+                return (f"草案让 {shot.shot_id} 的两人连线相对首镜线漂移 "
+                        f"{start_angle:.0f}°（≥{AXIS_DRIFT_DEG}°），且没有任何"
+                        f"双人同框/中性镜头交代这次重建（R001）。"
+                        f"请把换位拍出来，或不要跨线。")
+        # 本镜两人同框时的可见旋转计入"偿债额"（drift_is_bridged 的口径）。
+        if both and start_dir is not None:
+            end_dir = _unit_pair(a_end, b_end)
+            if end_dir is not None:
+                rot_cos = max(-1.0, min(1.0,
+                                        start_dir[0] * end_dir[0]
+                                        + start_dir[1] * end_dir[1]))
+                rotation = math.degrees(math.acos(rot_cos))
+        end_angle = _angle_to_anchor(a_end, b_end)
+        if end_angle is not None and end_angle >= float(AXIS_DRIFT_DEG) \
+                and not drift_is_bridged(end_angle,
+                                         visible_since + rotation, False):
+            return (f"草案让 {shot.shot_id} 的两人连线相对首镜线漂移 "
+                    f"{end_angle:.0f}°（≥{AXIS_DRIFT_DEG}°），且没有任何"
+                    f"双人同框/中性镜头交代这次重建（R001）。"
+                    f"请把换位拍出来，或不要跨线。")
+        visible_since += rotation
     return None
 
 

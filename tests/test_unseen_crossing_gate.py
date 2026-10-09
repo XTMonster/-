@@ -22,8 +22,8 @@ def _plan(*shots):
     return Plan(shots=list(shots), scene_heading="INT. 码头 - 日")
 
 
-FLIP = (-4.0, 2.0, 0.0)   # 乙绕到甲的另一侧：连线掉头
-AWAY = (0.9, -4.0, 0.0)   # 乙只是走开：连线方向基本不变
+FLIP = (-4.0, 2.0, 0.0)   # 乙绕到甲的另一侧：连线掉头（≈147°）
+AWAY = (1.5, -1.0, 0.0)   # 乙只是走开一点：连线只转 ≈22.6°（< 30° 阈值）
 
 
 def test_a_hidden_flip_is_rejected_with_guidance():
@@ -39,10 +39,18 @@ def test_a_visible_flip_passes():
     assert unseen_axis_crossing(plan, None, "shot_002") is None
 
 
-def test_a_walk_away_under_ninety_degrees_passes():
+def test_a_small_walk_away_under_thirty_degrees_passes():
     plan = _plan(_shot(1, ("甲", "乙")),
                  _shot(2, ("甲",), AWAY))
     assert unseen_axis_crossing(plan, None, "shot_002") is None
+
+
+def test_a_thirty_plus_degree_hidden_walk_is_rejected():
+    """30–90° 带与审核同口径：≥30° 且没被同框/中性交代 ⇒ 拒绝。"""
+    plan = _plan(_shot(1, ("甲", "乙")),
+                 _shot(2, ("甲",), (0.9, -4.0, 0.0)))   # ≈65.8°
+    problem = unseen_axis_crossing(plan, None, "shot_002")
+    assert problem and "漂移" in problem
 
 
 def test_no_pair_means_no_gate():
