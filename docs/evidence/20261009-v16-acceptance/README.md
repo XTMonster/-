@@ -163,6 +163,32 @@
 * 结论：机械侧修复已收敛（label/交付/重试/轴护栏/R015/role 表全部绿），
   剩余 #3/#4/#5/#8 由"双人镜锚点语义（规格裁决）＋模型词汇/调度方差"决定。
 
+## 用户裁决落地（2026-10-09 后半，提交 `a71f287`）
+
+1. **双人镜锚点**：`cinema/station.py::GROUP_SHOT_TYPES` 增 `MCU`——双人 MCU
+   锚点取两人质心（单人 MCU 质心=自身，行为不变）；`tests/test_station.py`
+   的 `test_focus_follows_the_first_speaker` 按授权改为
+   `test_two_person_mcu_anchors_on_the_pair_center`（CU 仍对准说话人，既有
+   tight-shot 断言保留）。
+2. **无歧义别名归一**：`motion/model.py::ACTION_PARAM_ALIASES` 只收
+   `turn_head.yaw_deg→angle_deg`、`body_tilt.lean_deg→angle_deg`、
+   `look_at.angle_deg→yaw_deg`；校验/草案存储/工具执行三处同源归一，其余
+   近义词照旧拒绝。新测试 `tests/test_action_param_aliases.py` 7 条。
+3. **AGENTS.md**：Status 区新增「v1.6 / G2 终验收现状」块。
+
+验证：`python -m pytest` = **3213 passed / 1 skipped / 0 failed**；
+`tools/run_tests.ps1` 探针 **43/43 OK**（唯一红仍是已结案的 RK-13/E1）。
+
+## v8/v9 真跑（`a71f287` 之后，DeepSeek V4 Pro，EEVEE）
+
+* v8（run `4293a78a42b2`）：模型中途调用 `abort`（"无工具可用"）→ CANCELLED，
+  且该跑计划带 10 条自由文本 `unresolved_anchor`（item 2 也随计划波动）。
+* v9（run `1c0ae62505e4`）：DONE。`audit_pass_rate 3/12`（shot_003=92.5、
+  shot_006=91.6、shot_009=90.6）；label 0/1656、R015=0；轴错 error 44
+  （逐跑 5→26→44，主因仍是无人看见的走位跨线）；invalid 32。
+* 趋势：锚点裁决后 apr 0→2→**3/12** 逐轮上升；#5/#8 仍由模型调度/词汇方差
+  主导，规则抓到的都是真实违规。
+
 ## 07:0x 续跑复核（本会话）——结论：**G2 判红，不允许宣布完成**
 
 上一会话在 06:51 停在 v3 的归因分析中途（`work/_g2_glm3/_analysis*.txt`、
