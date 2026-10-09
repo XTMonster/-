@@ -131,6 +131,17 @@
   被既有测试钉死，改法需规格裁决）、#5（无人看见的走位跨线 17 条 + 修复挪错侧）、
   #8（模型侧 35 次 invalid，闸均正确拒绝）、#9（R015 ×1，提示已加硬约束待真跑复证）。
 
+## v5 真跑（run `1dcd97979191`，`4f99850`，DeepSeek V4 Pro，EEVEE）
+
+* **item 9 转 PASS**：`script_compliance` R015 = 0（计划提示把声明景别列为硬约束后）。
+* **item 16 在全新真跑复证 PASS**：`label_overlap_report` = 0/1656 帧、最高 0.0%，
+  交付 README 带「标签全帧自检」段；`masks/` 13 镜、`reference/` 4 卡齐全。
+* `draft_invalid` 7 → **2**（起草提示 anti-drift 生效）。
+* 仍红：#3/#4 `audit_pass_rate=0/12`（15 次 degraded / 11 镜）；
+  #5 轴错 error 42（**unbridged 30**＝无人看见的走位跨线、**wrong_side 12**＝
+  修复把机位挪到摆位线反侧）；#8 invalid 39（repair_invalid 15 以幻觉角色名
+  `char_a/char_b/艾拉/优一郎` 为主——A2 闸每次正确拒绝并重问）。
+
 ## 07:0x 续跑复核（本会话）——结论：**G2 判红，不允许宣布完成**
 
 上一会话在 06:51 停在 v3 的归因分析中途（`work/_g2_glm3/_analysis*.txt`、
