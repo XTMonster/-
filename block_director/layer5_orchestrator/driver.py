@@ -510,13 +510,14 @@ class DriverLimits:
     max_repairs_per_shot: int = 2      # §7.1 B4：每镜定向修复次数上限
     #: 一次定向修复允许几轮 LLM（``1`` = 老行为）。见
     #: `orchestration.repair_max_turns`——真跑里 104 个修复回合有 72 个
-    #: 死在"查资料 + 看场景就用光唯一一轮"。
-    repair_turns: int = 3
+    #: 死在"查资料 + 看场景就用光唯一一轮"。默认与配置键一致（10，
+    #: 2026-10-11 由 3 提到 10，用户裁决）；``from_config`` 会用配置键覆盖。
+    repair_turns: int = 10
 
     @classmethod
     def from_config(cls, config=None, *, llm_timeout_s=None,
                     **overrides) -> "DriverLimits":
-        """Resolve an omitted timeout from config; preserve explicit overrides.
+        """Resolve an omitted timeout / repair-turn cap from config; keep overrides.
 
         ``None`` means the caller did not choose a timeout. The legacy
         no-config constructor still uses 120s; a supplied runtime configuration
@@ -526,6 +527,14 @@ class DriverLimits:
             llm_timeout_s = getattr(config.llm, "timeout_s", cls.llm_timeout_s)
         if llm_timeout_s is not None:
             overrides["llm_timeout_s"] = float(llm_timeout_s)
+        #: 2026-10-11 修复接线：`orchestration.repair_max_turns` 此前没有任何
+        #: 生产消费者（GUI/headless 都拿 dataclass 默认值，用户改配置不生效）。
+        #: 调用方显式传入的 ``repair_turns`` 优先于配置键。
+        if config is not None and "repair_turns" not in overrides:
+            repair_turns = getattr(getattr(config, "orchestration", None),
+                                   "repair_max_turns", None)
+            if repair_turns is not None:
+                overrides["repair_turns"] = int(repair_turns)
         return cls(**overrides)
 
 

@@ -38,6 +38,27 @@ def test_defaults_match_document():
     assert cfg.delivery.resolution == (1280, 720)
     assert cfg.dialogue.speech_rate["angry"] > 1.0 > cfg.dialogue.speech_rate["sad"]
     assert cfg.orchestration.max_repair_attempts == 2
+    # 2026-10-11 用户裁决：一次定向修复的轮数上限由 3 提到 10。
+    assert cfg.orchestration.repair_max_turns == 10
+
+
+def test_repair_max_turns_reaches_driver_limits():
+    """配置键 `orchestration.repair_max_turns` 真的进 DriverLimits（2026-10-11 接线）。
+
+    此前 `DriverLimits.from_config` 只解析 `llm_timeout_s`，这个键没有任何
+    生产消费者——GUI/headless 两条通路都拿 dataclass 默认值，用户改配置
+    不生效。接线后：配置键生效，且调用方显式传入的 ``repair_turns`` 仍然
+    优先于配置键（两条老测试通路各传各的，行为不变）。
+    """
+    from block_director.layer5_orchestrator.driver import DriverLimits
+
+    assert DriverLimits().repair_turns == 10
+    assert DriverLimits.from_config(None).repair_turns == 10
+
+    cfg = AppConfig()
+    cfg.orchestration.repair_max_turns = 7
+    assert DriverLimits.from_config(cfg).repair_turns == 7
+    assert DriverLimits.from_config(cfg, repair_turns=2).repair_turns == 2
 
 
 def test_default_config_has_no_errors():

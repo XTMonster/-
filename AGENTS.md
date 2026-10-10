@@ -512,7 +512,7 @@ long15 六十三次逐镜检索里的 **6 个查询**（18 条），用仓库自
 **97 个**一个改动类工具都没调，其中 **72 个**恰好是 `search_knowledge` ＋ `get_scene_state`
 ——`driver.repair_messages` 是一张**只写不读**的草稿单（`_dispatch_tool_calls` 往里写观测、
 没有任何一处把它当 payload 发出去），于是"查资料 + 看场景"用光唯一一轮、模型连自己刚查到
-的东西都看不见。改成**有界多轮**（新配置键 `orchestration.repair_max_turns`，默认 3；`1`
+的东西都看不见。改成**有界多轮**（新配置键 `orchestration.repair_max_turns`，默认 10，2026-10-11 由 3 提到 10 并补上 config→limits 接线——此前 GUI/headless 都只拿 `DriverLimits` 的 dataclass 默认值；`1`
 即老行为）＋**观测真的回灌**；续轮判据是"看了却没动"（整轮全失败不续轮，这条正好让协议
 夹具的 7 次调用**保持不变**）；同一镜的第二次尝试接着上一轮谈。守门 6 条
 （`tests/test_repair_round_gets_a_second_turn.py`），并且让 `test_driver_guards` 的
