@@ -1,0 +1,17 @@
+# 数字来源：R-痛点 §2 P7（每条注 src；无来源的数字不许进表）
+seedance_2.5:
+  label: "Seedance 2.5"
+  max_segment_s: 30          # src: R-痛点 P7
+  max_video_refs: 10         # src: R-痛点 P7
+  max_ref_total_s: 30        # src: R-痛点 P7
+  ref_recommend_s: [5, 10]   # src: R-痛点 P7
+  aspect_range: [0.4, 2.5]   # src: R-痛点 P7
+kling:
+  label: "Kling"
+  segment_choices_s: [5, 10] # src: R-痛点 P7
+  extend_total_cap_s: 180    # src: R-痛点 P7
+  degrade_after_s: 30        # src: R-痛点 P7（质量退化注记）
+hailuo_h3:
+  label: "Hailuo H3"
+  segment_range_s: [4, 15]   # src: R-痛点 P7
+  max_ref_files: {image: 9, video: 3, audio: 3}  # src: R-痛点 P7
