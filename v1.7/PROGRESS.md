@@ -7,11 +7,11 @@
 | 卡 | 执行者 | 状态 | commit | 复核人 | 证据目录 |
 |---|---|---|---|---|---|
 | A1 | Opus 5.5（主线代执行） | 完成 | c26a8a7 | 主线自审 | docs/evidence/20261010-v17-A1/ |
-| A2 | Opus 5.5（主线代执行） | 进行中 | - | - | - |
-| A3 | DeepSeek | 未开工 | - | - | - |
-| A4 | DeepSeek | 未开工 | - | - | - |
-| A5 | DeepSeek | 未开工 | - | - | - |
-| A6 | Opus | 进行中 | - | - | - |
+| A2 | Opus 5.5（主线代执行） | 完成 | bbbca2f | 主线自审 | docs/evidence/20261010-v17-A2/ |
+| A3 | Opus 5.5（主线代执行） | 完成 | 4ab7506 | 主线自审 | docs/evidence/20261010-v17-A3/ |
+| A4 | Opus 5.5（主线代执行） | 完成 | 441d6f2 | 主线自审 | docs/evidence/20261010-v17-A4/ |
+| A5 | Opus 5.5（主线代执行） | 完成 | 6a8ac2d | 主线自审 | docs/evidence/20261010-v17-A5/ |
+| A6 | Opus | 完成 | 6e6dc6b | 主线自审 | docs/evidence/20261010-v17-A6/ |
 | B1 | DeepSeek | 未开工 | - | - | - |
 | B2* | DeepSeek | 未开工 | - | - | - |
 | B3 | DeepSeek | 未开工 | - | - | - |
@@ -55,6 +55,9 @@
 | 日期 | 符号 | 旧行号 | 新行号 | 记录人 |
 |---|---|---|---|---|
 | 2026-10-10 | 执行者 | DeepSeek（计划分工） | Opus 5.5（主线） | 主线 |
+| 2026-10-10 | A6 范围 | 卡片"只许改"清单缺 `sdl_builder.py` 与 `SDLShot.responsibility` 字段（golden/往返测试要求 SDL 持久化） | 按卡片语义唯一解补入 | 主线 |
+| 2026-10-10 | A6 golden | 卡片④口径"只许 responsibility:null" | 实测另有 `version 1.6→1.7` 一行（升版命令的直接结果） | 主线 |
+| 2026-10-10 | SDL pin | `test_sdl_15/v15/v16` pin "1.6" | 升 "1.7"（升版必然，非弱化断言） | 主线 |
 
 > 2026-10-10：本会话被 PreToolUse 守卫识别为子代理，`spawn_agent` 被拦
 > （"dispatch authority belongs to the root thread only"）。按守卫指示由主线
