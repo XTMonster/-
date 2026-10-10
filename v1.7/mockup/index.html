@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>BlockDirector v1.7 界面线框 mockup</title>
+<style>
+  :root{
+    --c-cyan:#2EC4E6; --c-purple:#3B1D5A; --c-yellow:#F6C90E;
+    --c-white:#F2F2F0; --c-orange:#E8791A; --c-bg:#14101f; --c-panel:#221a33;
+  }
+  *{box-sizing:border-box; font-family:"Courier New",monospace;}
+  body{margin:0;background:var(--c-bg);color:var(--c-white);}
+  header{display:flex;align-items:center;gap:24px;padding:10px 20px;background:var(--c-purple);
+         border-bottom:4px solid var(--c-cyan);}
+  header h1{font-size:18px;margin:0;color:var(--c-yellow);letter-spacing:2px;}
+  nav button{background:none;border:2px solid var(--c-cyan);color:var(--c-white);
+             padding:6px 18px;margin-right:8px;cursor:pointer;font-size:14px;}
+  nav button.active{background:var(--c-cyan);color:var(--c-purple);font-weight:bold;}
+  main{padding:20px;display:flex;gap:20px;}
+  .page{display:none;width:100%;}
+  .page.active{display:flex;gap:20px;}
+  .panel{background:var(--c-panel);border:3px solid var(--c-cyan);padding:16px;
+         box-shadow:4px 4px 0 var(--c-purple);}
+  .chat-flow{flex:2;height:420px;overflow:auto;}
+  .bubble{max-width:70%;padding:8px 12px;margin:8px;border:2px solid var(--c-cyan);}
+  .bubble.me{margin-left:auto;background:var(--c-purple);}
+  .bubble.ai{background:#1a2740;}
+  .side{flex:1;}
+  .kv{display:flex;justify-content:space-between;border-bottom:1px dashed #555;padding:4px 0;}
+  .inputbar{display:flex;gap:8px;margin-top:10px;}
+  .inputbar input{flex:1;background:#000;color:var(--c-yellow);border:2px solid var(--c-cyan);padding:8px;}
+  .btn{background:var(--c-yellow);border:none;color:var(--c-purple);padding:8px 16px;
+       font-weight:bold;cursor:pointer;box-shadow:3px 3px 0 var(--c-orange);}
+  details{margin:6px 0;border:2px solid var(--c-cyan);padding:8px;}
+  summary{cursor:pointer;color:var(--c-cyan);font-weight:bold;}
+  input[type=text],select{background:#000;color:var(--c-white);border:2px solid var(--c-cyan);padding:6px;margin:4px;}
+  /* ---- 像素小助手 ---- */
+  #assistant{position:fixed;right:24px;bottom:24px;width:192px;height:192px;cursor:grab;}
+  #assistant canvas{width:192px;height:192px;image-rendering:pixelated;}
+  #statetag{position:absolute;top:-24px;left:0;background:var(--c-yellow);color:var(--c-purple);
+            font-size:12px;padding:2px 8px;border:2px solid var(--c-purple);}
+  .hint{color:#888;font-size:12px;margin-top:8px;}
+  .warntext{color:var(--c-orange);font-size:12px;}
+  .cols3{display:flex;gap:12px;}
+  .cols3 .panel{flex:1;min-height:200px;font-size:12px;}
+  canvas#topview{background:#0a0812;border:3px solid var(--c-cyan);width:100%;}
+</style>
+</head>
+<body>
+<header>
+  <h1>BlockDirector <span style="color:var(--c-cyan)">v1.7 线框</span></h1>
+  <nav>
+    <button class="active" data-p="chat">聊天</button>
+    <button data-p="traj">轨迹</button>
+    <button data-p="kb">知识库·规则</button>
+    <button data-p="cfg">设置</button>
+  </nav>
+  <span style="margin-left:auto;color:var(--c-orange)">⚠ 本页为静态线框 mockup，按钮无真实后端</span>
+</header>
+
+<main>
+  <!-- 聊天页 -->
+  <section class="page active" id="p-chat">
+    <div class="panel chat-flow">
+      <div class="panel" style="border-color:var(--c-yellow);margin-bottom:8px;">
+        📜 剧本优化：贴入草稿 → 建议清单 + 改写稿 diff，<b>采纳需二次确认</b>
+        <button class="btn" style="float:right">打开剧本优化</button>
+      </div>
+      <div class="bubble ai">我是米迦尔！剧本贴给我，或者问我「状态」。</div>
+      <div class="bubble me">状态</div>
+      <div class="bubble ai">当前 REPAIRING · shot_023/064 · LLM 87 次 · 512k tok（来自事件缓冲，无模型调用）</div>
+      <div class="inputbar"><input placeholder="问点什么…（写操作 v1.7 不开放）"><button class="btn">发送</button></div>
+    </div>
+    <div class="panel side">
+      <b>状态卡（运行中）</b>
+      <div class="kv"><span>状态</span><span style="color:var(--c-orange)">REPAIRING</span></div>
+      <div class="kv"><span>镜头</span><span>shot_023 / 064</span></div>
+      <div class="kv"><span>LLM</span><span>87 次 · 512k tok</span></div>
+      <div class="kv"><span>费用</span><span>$0.83 / $5.00</span></div>
+      <br><button class="btn">查看审计</button> <button class="btn" style="background:var(--c-orange)">取消运行</button>
+    </div>
+  </section>
+
+  <!-- 轨迹页 -->
+  <section class="page" id="p-traj">
+    <div class="panel" style="flex:1">
+      <b>镜头列表</b>
+      <div class="kv"><span>shot_001 全景 · 固定机位</span><span>✔</span></div>
+      <div class="kv"><span>shot_002 中景 · 从左前方横移到正前方</span><span>✔</span></div>
+      <div class="kv" style="color:var(--c-yellow)"><span>shot_003 过肩 · 推进</span><span>修复中</span></div>
+      <div class="hint">"运镜文字"列数据源 = camera_narration（运镜文字化器，R-痛点 P3 对策）</div>
+    </div>
+    <div class="panel" style="flex:3">
+      <b>2D 俯视（房间 12m 边界 / 角色路径 / 相机弧）</b>
+      <canvas id="topview" width="640" height="380"></canvas>
+      <div class="hint">折线=走位路径（按角色色）· 点=每 12 帧刻度 · 弧=机位 · hover 显示坐标 ±0.01m</div>
+    </div>
+  </section>
+
+  <!-- 知识库·规则页 -->
+  <section class="page" id="p-kb" style="flex-direction:column">
+    <div class="panel">
+      <b>知识库</b>　卡 <span style="color:var(--c-cyan)">2353</span> · 边
+      <span style="color:var(--c-cyan)">638</span> · 案例 <span style="color:var(--c-cyan)">实读</span>
+      （三数全部实读 knowledge/*.jsonl 行数，不照抄文档历史值）
+      <div class="inputbar"><input placeholder="试检索：看到的就是模型吃到的（走 /v1/retrieve 三通道）">
+      <button class="btn">检索</button></div>
+      <div class="cols3">
+        <div class="panel">cards[]<br>· AXIS-001 轴线…</div>
+        <div class="panel">edges[]<br>· AXIS_RULE …</div>
+        <div class="panel">cases[]<br>· 参考案例 …</div>
+      </div>
+    </div>
+    <div class="panel">
+      <b>规则开关</b> <span class="warntext">只能关闭，阈值不可改；关闭会在 shot_audit 留 skipped:true</span>
+      <div class="kv"><span>R001 轴线（error）</span><select><option>开</option><option>关</option></select></div>
+      <div class="kv"><span>R003 动作时间轴（error）</span><select><option>开</option><option>关</option></select></div>
+      <div class="kv"><span>R009 景别距离（warning）</span><select><option>开</option><option>关</option></select></div>
+      <div class="kv"><span>R019 银幕方向连续性（warning）</span><select><option>开</option><option>关</option></select></div>
+    </div>
+  </section>
+
+  <!-- 设置页 -->
+  <section class="page" id="p-cfg" style="flex-direction:column;max-width:760px">
+    <details class="panel" open><summary>模型</summary>
+      provider <select><option>deepseek</option><option>openai</option><option>local</option></select>
+      model <input type="text" value="deepseek-chat"><br>
+      base_url <input type="text" placeholder="https://api.deepseek.com">
+      key <input type="password" placeholder="sk-…****"> <button class="btn">测试连接</button>
+      <div class="hint">key 存 %APPDATA%/BlockDirector/secrets.json（0600），不进 YAML/.blend/trace/git</div>
+    </details>
+    <details class="panel" open><summary>思考强度</summary>
+      <label><input type="radio" name="tk" checked> 关闭</label>
+      <label><input type="radio" name="tk"> 低</label>
+      <label><input type="radio" name="tk"> 中</label>
+      <label><input type="radio" name="tk"> 高</label>
+      <span class="warntext">※ 高=慢思考，llm.timeout_s 建议 ≥600；百炼思考模式将自动降级 tool_choice（留痕）</span>
+    </details>
+    <details class="panel" open><summary>上下文</summary>
+      <input type="range" min="8192" max="131072" step="1024" value="32000" style="width:60%">
+      <span style="color:var(--c-cyan)">32000 tok</span>
+      <div class="hint">超出即裁剪：保 system ＋ 最新轮（context_budget.py）</div>
+    </details>
+    <details class="panel"><summary>知识库</summary>
+      启用 <input type="checkbox" checked>　top_k <input type="text" size="3" value="15">
+      规则包 <input type="text" size="2" value="8">　案例 <input type="text" size="2" value="3">
+      每镜上限 <input type="text" size="6" value="50000">
+    </details>
+    <details class="panel"><summary>目标模型</summary>
+      <select><option>seedance_2.5</option><option>kling</option><option>hailuo_h3</option></select>
+      <span class="hint">单段≤30s · 宽高比[0.4,2.5] · 视频参考≤10段/总≤30s（规格来自 specs/target_models.yaml，随模型迭代更新）</span>
+    </details>
+    <details class="panel"><summary>预算</summary>
+      费用上限 $<input type="text" size="4" value="5.0">　墙钟 <input type="text" size="3" value="120">min
+      　调用硬顶 <input type="text" size="3" value="200">
+    </details>
+    <br><button class="btn">保存设置</button>
+  </section>
+</main>
+
+<!-- 像素小助手（占位帧：canvas 程序绘制，模拟 sleep/think 切换） -->
+<div id="assistant"><div id="statetag">IDLE → sleep</div><canvas id="mikael" width="48" height="48"></canvas></div>
+
+<script>
+// 页签切换
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById('p-'+b.dataset.p).classList.add('active');
+});
+
+// --- 占位像素小助手：48×48 程序绘制（正式资产走 frames.json 精灵表） ---
+const C={cyan:'#2EC4E6',purple:'#3B1D5A',yellow:'#F6C90E',white:'#F2F2F0',orange:'#E8791A'};
+const ctx=document.getElementById('mikael').getContext('2d');
+let t=0;
+function px(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x,y,w,h);}
+function draw(){
+  ctx.clearRect(0,0,48,48);
+  const breathe=Math.floor(t/6)%2;                 // 呼吸起伏
+  const sleeping=Math.floor(t/48)%2===0;          // 演示：两段循环切状态
+  // 身体（青）
+  px(14,20+breathe,20,22,C.cyan);
+  // 肚皮（白）
+  px(19,26+breathe,10,14,C.white);
+  // 头（白）
+  px(12,6+breathe,24,16,C.white);
+  // 耳（紫尖）
+  px(10,2+breathe,6,8,C.purple); px(32,2+breathe,6,8,C.purple);
+  px(12,4+breathe,3,4,C.cyan);  px(33,4+breathe,3,4,C.cyan);
+  // 眼睛
+  if(sleeping){ px(16,14+breathe,5,1,C.purple); px(27,14+breathe,5,1,C.purple); }
+  else{ px(16,12+breathe,5,5,C.orange); px(27,12+breathe,5,5,C.orange);
+        px(17,13+breathe,2,2,'#fff');  px(28,13+breathe,2,2,'#fff'); }
+  // 尾巴（青+紫纹+黄尖）
+  px(32,34,10,5,C.cyan); px(38,32,6,5,C.purple); px(42,30,4,4,C.yellow);
+  // Zzz / 思考泡
+  ctx.fillStyle=C.yellow; ctx.font='8px monospace';
+  ctx.fillText(sleeping?'z Z':'. o O', 34-(t%8>3?2:0), 10-breathe*2);
+  document.getElementById('statetag').textContent = sleeping?'IDLE → sleep':'PLANNING → think';
+  t++; requestAnimationFrame(()=>setTimeout(draw,1000/12));
+}
+draw();
+
+// --- 轨迹俯视示意 ---
+const tv=document.getElementById('topview').getContext('2d');
+tv.strokeStyle=C.cyan; tv.lineWidth=2; tv.strokeRect(40,30,560,320);     // 房间
+tv.strokeStyle=C.yellow; tv.beginPath(); tv.moveTo(80,300);              // 角色路径
+tv.lineTo(200,220); tv.lineTo(320,240); tv.lineTo(460,120); tv.stroke();
+tv.fillStyle=C.white;
+for(let i=0;i<=12;i++){ tv.fillRect(80+i*32, 300-i*15, 3, 3); }          // 帧刻度
+tv.strokeStyle=C.orange; tv.beginPath(); tv.arc(320,190,150,0.2,1.6); tv.stroke(); // 相机弧
+tv.fillStyle=C.cyan; tv.font='12px monospace';
+tv.fillText('■ 伊恩路径',60,25); tv.fillText('⌒ 相机弧',430,60);
+</script>
+</body>
+</html>

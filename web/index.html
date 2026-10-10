@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlockDirector</title>
+<!-- v1.7 卡 C1：零构建、零 CDN。静态资源走 /static/*（免鉴权，TDD §7）；
+     所有 /v1/ui/* 数据请求由 app.js 的 api() 统一带 Bearer 头。 -->
+<link rel="stylesheet" href="/static/pixel.css">
+</head>
+<body>
+<header class="bd-header">
+  <h1>BlockDirector</h1>
+  <nav role="tablist" aria-label="主页签">
+    <button role="tab" data-page="chat" aria-selected="true">聊天</button>
+    <button role="tab" data-page="traj" aria-selected="false">轨迹</button>
+    <button role="tab" data-page="kb" aria-selected="false">知识库·规则</button>
+    <button role="tab" data-page="cfg" aria-selected="false">设置</button>
+  </nav>
+</header>
+
+<div id="offline" class="bd-banner bd-banner--warn" role="alert" hidden>
+  sidecar 不可达：已离线，页面保留最后一次数据，恢复后自动重连。
+</div>
+
+<section id="token-gate" class="bd-gate" hidden aria-labelledby="token-gate-title">
+  <div class="bd-panel">
+    <h2 id="token-gate-title">需要访问令牌</h2>
+    <p>请在 Blender 的 BlockDirector 面板点「复制 sidecar token」，粘贴到下面。</p>
+    <form id="token-form">
+      <label for="token-input">sidecar token</label>
+      <input id="token-input" type="password" autocomplete="off" required>
+      <button class="bd-btn" type="submit">进入</button>
+    </form>
+  </div>
+</section>
+
+<main id="pages">
+  <section class="bd-page" id="page-chat" role="tabpanel" data-page="chat"></section>
+  <section class="bd-page" id="page-traj" role="tabpanel" data-page="traj" hidden></section>
+  <section class="bd-page" id="page-kb" role="tabpanel" data-page="kb" hidden></section>
+  <section class="bd-page" id="page-cfg" role="tabpanel" data-page="cfg" hidden></section>
+  <section class="bd-page" id="page-polish" role="tabpanel" data-page="polish" hidden></section>
+</main>
+
+<div id="assistant" aria-live="polite"></div>
+
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+{
+  "base_size": 48,
+  "fps": 12,
+  "palette": {
+    "cyan": "#2EC4E6",
+    "purple": "#3B1D5A",
+    "yellow": "#F6C90E",
+    "white": "#F2F2F0",
+    "orange": "#E8791A"
+  },
+  "clips": {
+    "sleep": {
+      "file": "sleep.png",
+      "frames": 6,
+      "loop": true
+    },
+    "read": {
+      "file": "read.png",
+      "frames": 6,
+      "loop": true
+    },
+    "think": {
+      "file": "think.png",
+      "frames": 8,
+      "loop": true
+    },
+    "think_wait": {
+      "file": "think_wait.png",
+      "frames": 8,
+      "loop": true
+    },
+    "build": {
+      "file": "build.png",
+      "frames": 6,
+      "loop": true
+    },
+    "inspect": {
+      "file": "inspect.png",
+      "frames": 6,
+      "loop": true
+    },
+    "fix": {
+      "file": "fix.png",
+      "frames": 6,
+      "loop": true
+    },
+    "ask": {
+      "file": "ask.png",
+      "frames": 4,
+      "loop": true
+    },
+    "pack": {
+      "file": "pack.png",
+      "frames": 6,
+      "loop": true
+    },
+    "celebrate": {
+      "file": "celebrate.png",
+      "frames": 8,
+      "loop": true
+    },
+    "dizzy": {
+      "file": "dizzy.png",
+      "frames": 6,
+      "loop": true
+    },
+    "sit": {
+      "file": "sit.png",
+      "frames": 4,
+      "loop": true
+    }
+  }
+}
