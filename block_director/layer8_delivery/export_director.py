@@ -39,6 +39,7 @@ from ..utils.threading_guard import main_thread_only
 from .camera_trajectory import camera_trajectory
 from .concat import ConcatUnavailable, concat_shot_clips, full_output_path
 from .depth_pass import DepthUnavailable, render_depth_sequence
+from .export_sandbox import export_sandbox
 from .mask_pass import MaskUnavailable, render_mask_pass
 from .reference_cards import render_reference_cards
 from .renderer import apply_delivery_settings, render_first_frame, render_shot_video
@@ -209,145 +210,149 @@ def export_project(plan: Plan, *,
         log.error(report.reason)
         return report
 
-    report.warnings.extend(apply_delivery_settings(scene, config))
+    #: v1.7 I1：主体渲染段整体进导出沙箱——render.* 的 9 项＋scene.camera
+    #: 进入时备份、退出（含异常路径）逐项还原；只加包裹，渲染参数不改。
+    with export_sandbox(scene, camera=scene.camera,
+                        fps=config.animation.fps):
+        report.warnings.extend(apply_delivery_settings(scene, config))
 
-    ranges = _shot_ranges(plan, build_summary)
-    original_range = (scene.frame_start, scene.frame_end)
+        ranges = _shot_ranges(plan, build_summary)
+        original_range = (scene.frame_start, scene.frame_end)
 
-    for shot in ranges:
-        shot_id = shot["shot_id"]
-        video_base = str(export_dir / f"blockout_{shot_id}.mp4")
-        shot_frames = int(shot["end_frame"]) - int(shot["start_frame"]) + 1
-        if config.per_shot_clips:
-            # 参考视频**带**角色标签（v1.3 诉求 4）
-            path, frames = render_shot_video(
-                scene, shot["start_frame"], shot["end_frame"], video_base,
-                codec=str(config.video_codec), crf=str(config.crf))
-            if os.path.exists(path):
-                report.files.append(path)
-            else:
-                report.warnings.append(f"{shot_id}: 视频未生成（{path}）")
-                report.missing_clips.append(path)
-            report.total_frames += frames
+        for shot in ranges:
+            shot_id = shot["shot_id"]
+            video_base = str(export_dir / f"blockout_{shot_id}.mp4")
+            shot_frames = int(shot["end_frame"]) - int(shot["start_frame"]) + 1
+            if config.per_shot_clips:
+                # 参考视频**带**角色标签（v1.3 诉求 4）
+                path, frames = render_shot_video(
+                    scene, shot["start_frame"], shot["end_frame"], video_base,
+                    codec=str(config.video_codec), crf=str(config.crf))
+                if os.path.exists(path):
+                    report.files.append(path)
+                else:
+                    report.warnings.append(f"{shot_id}: 视频未生成（{path}）")
+                    report.missing_clips.append(path)
+                report.total_frames += frames
 
-        # 首帧 PNG 与 depth 序列**不带**标签：它们是喂给下游视频模型的输入图，
-        # 把标签烫进去会被模型当成画面内容学走。
-        labels = labels_collection()
-        if labels is not None:
-            labels.hide_render = True
-        try:
-            frame_path = str(frames_dir / f"{shot_id}.png")
-            if render_first_frame(scene, shot["start_frame"], frame_path):
-                report.files.append(frame_path)
-            else:
-                report.warnings.append(f"{shot_id}: 首帧未生成")
-                report.missing_clips.append(frame_path)
-
-            report.shots.append({"shot_id": shot_id,
-                                 "start_frame": shot["start_frame"],
-                                 "end_frame": shot["end_frame"],
-                                 "video": f"blockout_{shot_id}.mp4"
-                                          if config.per_shot_clips else None})
-            if config.export_depth:
-                try:
-                    depth = render_depth_sequence(scene, shot["start_frame"],
-                                                  shot["end_frame"],
-                                                  str(export_dir), shot_id)
-                    report.files.extend(depth["files"][:1])   # 清单里留一个代表
-                    report.shots[-1]["depth"] = depth_range_note()
-                    report.shots[-1]["depth_frames"] = depth["frames"]
-                    report.depth_shots.append(
-                        {"shot_id": shot_id,
-                         "dir": str(Path(depth["dir"]).relative_to(export_dir)),
-                         "frames": depth["frames"],
-                         "range_m": depth["range_m"]})
-                except DepthUnavailable as exc:
-                    report.warnings.append(f"{shot_id}: depth 导出跳过（{exc}）")
-        finally:
+            # 首帧 PNG 与 depth 序列**不带**标签：它们是喂给下游视频模型的输入图，
+            # 把标签烫进去会被模型当成画面内容学走。
+            labels = labels_collection()
             if labels is not None:
-                labels.hide_render = False
-        log.info("已导出镜头 %s（%d-%d）", shot_id,
-                 shot["start_frame"], shot["end_frame"])
+                labels.hide_render = True
+            try:
+                frame_path = str(frames_dir / f"{shot_id}.png")
+                if render_first_frame(scene, shot["start_frame"], frame_path):
+                    report.files.append(frame_path)
+                else:
+                    report.warnings.append(f"{shot_id}: 首帧未生成")
+                    report.missing_clips.append(frame_path)
 
-    #: v1.6 E2（FR-A3）：逐元素遮罩（可选，默认开）。非 EEVEE 后端出不了遮罩
-    #: 就跳过并写进报告告警（与 depth 的 DepthUnavailable 同一模式），绝不
-    #: 静默；成功时逐镜记进 ``mask_shots``。帧表与分镜 mp4 同一份 schedule。
-    if config.mask_pass:
-        try:
-            mask_results = render_mask_pass(
-                scene, registry, shot_ranges(plan), str(export_dir))
-            report.mask_shots.extend(
-                {"shot_id": str(item["shot_id"]),
-                 "dir": str(Path(item["dir"]).relative_to(export_dir)),
-                 "frames": int(item["frames"]),
-                 "start_frame": int(item["start_frame"]),
-                 "end_frame": int(item["end_frame"])}
-                for item in mask_results)
-        except MaskUnavailable as exc:
-            report.warnings.append(f"mask 导出跳过（{exc}）")
+                report.shots.append({"shot_id": shot_id,
+                                     "start_frame": shot["start_frame"],
+                                     "end_frame": shot["end_frame"],
+                                     "video": f"blockout_{shot_id}.mp4"
+                                              if config.per_shot_clips else None})
+                if config.export_depth:
+                    try:
+                        depth = render_depth_sequence(scene, shot["start_frame"],
+                                                      shot["end_frame"],
+                                                      str(export_dir), shot_id)
+                        report.files.extend(depth["files"][:1])   # 清单里留一个代表
+                        report.shots[-1]["depth"] = depth_range_note()
+                        report.shots[-1]["depth_frames"] = depth["frames"]
+                        report.depth_shots.append(
+                            {"shot_id": shot_id,
+                             "dir": str(Path(depth["dir"]).relative_to(export_dir)),
+                             "frames": depth["frames"],
+                             "range_m": depth["range_m"]})
+                    except DepthUnavailable as exc:
+                        report.warnings.append(f"{shot_id}: depth 导出跳过（{exc}）")
+            finally:
+                if labels is not None:
+                    labels.hide_render = False
+            log.info("已导出镜头 %s（%d-%d）", shot_id,
+                     shot["start_frame"], shot["end_frame"])
 
-    if config.full_concat and config.per_shot_clips:
-        clips = [str(export_dir / f"blockout_{shot['shot_id']}.mp4")
-                 for shot in ranges]
-        clip_frames = [int(shot["end_frame"]) - int(shot["start_frame"]) + 1
-                       for shot in ranges]
-        try:
-            concat = concat_shot_clips(
-                scene, clips, full_output_path(export_dir),
-                clip_frames=clip_frames,
-                preset=str(config.preset), fps=24,
-                codec=str(config.video_codec), crf=str(config.crf))
-            if concat["ok"]:
-                report.files.append(concat["path"])
-                report.full_video = concat["path"]
-                report.total_frames_concat = concat["frames"]
-            else:
-                report.warnings.append(f"全片拼接未产出文件（{concat['path']}）")
-                report.missing_clips.append(concat["path"])
-            if concat["skipped"]:
-                report.warnings.append(
-                    "以下分镜视频不存在，未参与拼接："
-                    + "、".join(concat["skipped"]))
-        except ConcatUnavailable as exc:
-            report.warnings.append(f"全片拼接跳过（{exc}）")
+        #: v1.6 E2（FR-A3）：逐元素遮罩（可选，默认开）。非 EEVEE 后端出不了遮罩
+        #: 就跳过并写进报告告警（与 depth 的 DepthUnavailable 同一模式），绝不
+        #: 静默；成功时逐镜记进 ``mask_shots``。帧表与分镜 mp4 同一份 schedule。
+        if config.mask_pass:
+            try:
+                mask_results = render_mask_pass(
+                    scene, registry, shot_ranges(plan), str(export_dir))
+                report.mask_shots.extend(
+                    {"shot_id": str(item["shot_id"]),
+                     "dir": str(Path(item["dir"]).relative_to(export_dir)),
+                     "frames": int(item["frames"]),
+                     "start_frame": int(item["start_frame"]),
+                     "end_frame": int(item["end_frame"])}
+                    for item in mask_results)
+            except MaskUnavailable as exc:
+                report.warnings.append(f"mask 导出跳过（{exc}）")
 
-    #: v1.6 D3（FR-B2）：shots.json 的每镜 ``rhythm.tension`` 只来自 brief 的
-    #: 节奏弧。brief 两种形状都收：契约对象取 ``rhythm_arc`` 属性，普通字典
-    #: （SDL/replay 通路）取 ``rhythm_arc`` 键；没有 brief 就不传、不猜。
-    rhythm_arc = None
-    if isinstance(brief, dict):
-        rhythm_arc = brief.get("rhythm_arc")
-    elif brief is not None:
-        rhythm_arc = getattr(brief, "rhythm_arc", None)
+        if config.full_concat and config.per_shot_clips:
+            clips = [str(export_dir / f"blockout_{shot['shot_id']}.mp4")
+                     for shot in ranges]
+            clip_frames = [int(shot["end_frame"]) - int(shot["start_frame"]) + 1
+                           for shot in ranges]
+            try:
+                concat = concat_shot_clips(
+                    scene, clips, full_output_path(export_dir),
+                    clip_frames=clip_frames,
+                    preset=str(config.preset), fps=24,
+                    codec=str(config.video_codec), crf=str(config.crf))
+                if concat["ok"]:
+                    report.files.append(concat["path"])
+                    report.full_video = concat["path"]
+                    report.total_frames_concat = concat["frames"]
+                else:
+                    report.warnings.append(f"全片拼接未产出文件（{concat['path']}）")
+                    report.missing_clips.append(concat["path"])
+                if concat["skipped"]:
+                    report.warnings.append(
+                        "以下分镜视频不存在，未参与拼接："
+                        + "、".join(concat["skipped"]))
+            except ConcatUnavailable as exc:
+                report.warnings.append(f"全片拼接跳过（{exc}）")
 
-    manifest = build_manifest(plan, build_summary=build_summary,
-                              resolution=(width, height), style=style,
-                              project=project, llm_calls=llm_calls,
-                              retrieval_calls=retrieval_calls, crowd=crowd,
-                              parsed=parsed,
-                              timing_overrides=timing_overrides,
-                              action_conflicts=action_conflicts,
-                              audit_pass_rate=audit_pass_rate,
-                              knowledge_provenance=knowledge_provenance,
-                              knowledge=knowledge,
-                              review_requests=review_requests,
-                              registry=registry,
-                              rhythm_arc=rhythm_arc)
-    manifest_path = export_dir / "shots.json"
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
-                             encoding="utf-8")
-    report.files.append(str(manifest_path))
+        #: v1.6 D3（FR-B2）：shots.json 的每镜 ``rhythm.tension`` 只来自 brief 的
+        #: 节奏弧。brief 两种形状都收：契约对象取 ``rhythm_arc`` 属性，普通字典
+        #: （SDL/replay 通路）取 ``rhythm_arc`` 键；没有 brief 就不传、不猜。
+        rhythm_arc = None
+        if isinstance(brief, dict):
+            rhythm_arc = brief.get("rhythm_arc")
+        elif brief is not None:
+            rhythm_arc = getattr(brief, "rhythm_arc", None)
 
-    #: v1.6 E1（FR-A2）：元素登记表单独落盘，与 shots.json / prompts.md 同源。
-    elements_path = export_dir / "elements.json"
-    elements_path.write_text(json.dumps(registry.to_dict(), ensure_ascii=False,
-                                        indent=2), encoding="utf-8")
-    report.files.append(str(elements_path))
+        manifest = build_manifest(plan, build_summary=build_summary,
+                                  resolution=(width, height), style=style,
+                                  project=project, llm_calls=llm_calls,
+                                  retrieval_calls=retrieval_calls, crowd=crowd,
+                                  parsed=parsed,
+                                  timing_overrides=timing_overrides,
+                                  action_conflicts=action_conflicts,
+                                  audit_pass_rate=audit_pass_rate,
+                                  knowledge_provenance=knowledge_provenance,
+                                  knowledge=knowledge,
+                                  review_requests=review_requests,
+                                  registry=registry,
+                                  rhythm_arc=rhythm_arc)
+        manifest_path = export_dir / "shots.json"
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
+                                 encoding="utf-8")
+        report.files.append(str(manifest_path))
 
-    #: v1.6 E3（FR-A5）：角色定妆卡（可选，默认开）。渲染后函数原样恢复场景。
-    if config.reference_cards:
-        report.files.extend(
-            render_reference_cards(scene, registry, str(export_dir)))
+        #: v1.6 E1（FR-A2）：元素登记表单独落盘，与 shots.json / prompts.md 同源。
+        elements_path = export_dir / "elements.json"
+        elements_path.write_text(json.dumps(registry.to_dict(), ensure_ascii=False,
+                                            indent=2), encoding="utf-8")
+        report.files.append(str(elements_path))
+
+        #: v1.6 E3（FR-A5）：角色定妆卡（可选，默认开）。渲染后函数原样恢复场景。
+        if config.reference_cards:
+            report.files.extend(
+                render_reference_cards(scene, registry, str(export_dir)))
 
     prompt_path = export_dir / "prompts.md"
     prompt_path.write_text(prompt_text, encoding="utf-8")

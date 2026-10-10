@@ -54,12 +54,20 @@ RK-6 与 RK-8 一起从"已量"掉成"未量"）。所以这里静态禁止探�
 from __future__ import annotations
 
 import ast
+import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TARGETS = (ROOT / "tests", ROOT / "tools" / "blender_tests")
+
+#: v1.7 I1：沙箱外的 ``scene.render.*`` 直写 = 漏网（导出沙箱是唯一合法写点）。
+#: 只扫这两个目录（renderer/export_director 在 layer8_delivery，是沙箱内写点）。
+SANDBOX_GUARD_DIRS = (ROOT / "block_director" / "layer5_orchestrator",
+                      ROOT / "block_director" / "contracts")
+SANDBOX_GUARD_PATTERN = re.compile(
+    r"scene\.render\.[a-z_]+(?:\.[a-z_]+)?\s*=[^=]")
 
 
 def _is_literal(node: ast.AST) -> bool:
@@ -229,6 +237,16 @@ def _iter_files(targets) -> List[Path]:
     return files
 
 
+def find_scene_render_direct_writes(
+        text: str, filename: str = "<string>") -> List[Tuple[int, str]]:
+    """返回 ``[(行号, 片段), ...]``：沙箱外的 ``scene.render.*`` 直写（I1 守门）。"""
+    found: List[Tuple[int, str]] = []
+    for index, line in enumerate(text.splitlines(), start=1):
+        for match in SANDBOX_GUARD_PATTERN.finditer(line):
+            found.append((index, match.group(0)))
+    return found
+
+
 def main(argv=None) -> int:
     args = list(argv if argv is not None else sys.argv[1:])
     targets = [Path(item) for item in args] or list(DEFAULT_TARGETS)
@@ -257,6 +275,19 @@ def main(argv=None) -> int:
                         f"变成非法 JSON（用 null 上报）：{snippet}")
             except SyntaxError as exc:      # pragma: no cover - 上一轮已解析过
                 problems.append(f"{path}: 无法分析（{exc}）")
+    #: v1.7 I1：导出沙箱守门**恒定扫描**（与调用方传入什么无关）——
+    #: layer5_orchestrator/ 与 contracts/ 里出现 `scene.render.* =` 直写即失败。
+    for directory in SANDBOX_GUARD_DIRS:
+        for path in sorted(directory.rglob("*.py")):
+            try:
+                text = path.read_text(encoding="utf-8")
+            except OSError as exc:
+                problems.append(f"{path}: 无法分析（{exc}）")
+                continue
+            for line, snippet in find_scene_render_direct_writes(
+                    text, str(path)):
+                problems.append(
+                    f"{path}:{line}: 沙箱外的 scene.render 直写（I1）：{snippet}")
     if problems:
         print("[FAIL] 发现空断言／空测试：")
         for item in problems:
