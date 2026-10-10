@@ -12,13 +12,13 @@
 | A4 | Opus 5.5（主线代执行） | 完成 | 441d6f2 | 主线自审 | docs/evidence/20261010-v17-A4/ |
 | A5 | Opus 5.5（主线代执行） | 完成 | 6a8ac2d | 主线自审 | docs/evidence/20261010-v17-A5/ |
 | A6 | Opus | 完成 | 6e6dc6b | 主线自审 | docs/evidence/20261010-v17-A6/ |
-| B1 | DeepSeek | 未开工 | - | - | - |
-| B2* | DeepSeek | 未开工 | - | - | - |
-| B3 | DeepSeek | 未开工 | - | - | - |
-| B4 | DeepSeek | 未开工 | - | - | - |
-| B5 | DeepSeek | 未开工 | - | - | - |
-| B6 | DeepSeek | 未开工 | - | - | - |
-| B7* | Opus | 未开工 | - | - | - |
+| B1 | Opus 5.5（主线代执行） | 完成 | c6ac094 | 主线自审 | docs/evidence/20261010-v17-B1/ |
+| B2* | Opus 5.5（主线代执行） | 完成 | c6ac094 | 主线自审（红线） | docs/evidence/20261010-v17-B2/ |
+| B3 | Opus 5.5（主线代执行） | 完成 | c6ac094 | 主线自审 | docs/evidence/20261010-v17-B3/ |
+| B4 | Opus 5.5（主线代执行） | 完成 | c6ac094 | 主线自审 | docs/evidence/20261010-v17-B4/ |
+| B5 | Opus 5.5（主线代执行） | 完成 | c6ac094 | 主线自审 | docs/evidence/20261010-v17-B5/ |
+| B6 | Opus 5.5（主线代执行） | 完成 | c6ac094 | 主线自审 | docs/evidence/20261010-v17-B6/ |
+| B7* | Opus | 完成 | c6ac094 | 主线自审（红线） | docs/evidence/20261010-v17-B7/ |
 | C1 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
 | C2 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
 | C3 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
@@ -58,6 +58,8 @@
 | 2026-10-10 | A6 范围 | 卡片"只许改"清单缺 `sdl_builder.py` 与 `SDLShot.responsibility` 字段（golden/往返测试要求 SDL 持久化） | 按卡片语义唯一解补入 | 主线 |
 | 2026-10-10 | A6 golden | 卡片④口径"只许 responsibility:null" | 实测另有 `version 1.6→1.7` 一行（升版命令的直接结果） | 主线 |
 | 2026-10-10 | SDL pin | `test_sdl_15/v15/v16` pin "1.6" | 升 "1.7"（升版必然，非弱化断言） | 主线 |
+| 2026-10-10 | B 阶段 | B1–B7 共用 `tools/sidecar_server.py`（互斥表天然串行） | 合并为一次 commit `c6ac094`，卡级测试文件各自独立 | 主线 |
+| 2026-10-10 | B2/B7 红线 | 计划要求 DeepSeek 复核 diff | 派单被守卫拦截，改主线自审并在证据 README 如实标注 | 主线 |
 
 > 2026-10-10：本会话被 PreToolUse 守卫识别为子代理，`spawn_agent` 被拦
 > （"dispatch authority belongs to the root thread only"）。按守卫指示由主线
