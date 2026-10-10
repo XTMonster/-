@@ -33,7 +33,7 @@ from .enums import (
 from .serde import from_plain as _from_plain
 from .serde import to_plain as _to_plain
 
-CONFIG_VERSION = "1.3.0"
+CONFIG_VERSION = "1.4.0"
 CONFIG_ENV_VAR = "BLOCKDIRECTOR_CONFIG"
 
 #: ``#RRGGBB`` / ``#RGB``（契约层不 import utils，保持依赖单向）
@@ -80,6 +80,10 @@ class LLMConfig:
     temperature_repair: float = 0.2
     trace_prompts: bool = True        # §11.3：trace 记录完整 prompt/response
     trace_max_chars: int = 8000       # 单条记录的字段上限（§14.1 的"可配置上限"）
+    #: v1.7 A2（TDD §4.1）：思考强度，∈ {off, low, medium, high}。
+    #: 非法值只产生 CFG_170 warning（validate 不改值）；未知值的**消费侧**
+    #: 回落（按 off 处理）归 sidecar 的 ``_apply_thinking``（卡 B5）。
+    thinking_level: str = "off"
 
 
 @dataclass
@@ -148,6 +152,9 @@ class AuditConfig:
     level: AuditLevel = AuditLevel.STANDARD
     human_gate_on_plan: bool = True
     human_gate_on_axis_violation: bool = True
+    #: v1.7 A2（TDD §4.1）：禁用规则号清单，元素须形如 "R009"。
+    #: 非法元素只产生 CFG_171 warning（不 error、不改值）；消费是卡 F1 的活。
+    rules_disabled: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -324,6 +331,10 @@ class DeliveryConfig:
     #: v1.4 §2.4 D4：连续成片**默认产出**并保留分段（原默认 false）。
     full_concat: bool = True
     external_ffmpeg_path: str = ""       # 可选；仅拼接/转码
+    #: v1.7 A5（TDD §12.1）：参考视频的目标生成模型。值须 ∈
+    #: ``specs/target_models.yaml`` 键集；未知值 CFG_172 warning（**不回落
+    #: 改值**，消费侧 I4 对未知值按 seedance_2.5 处理）。
+    target_model: str = "seedance_2.5"
 
     @property
     def resolution(self) -> Tuple[int, int]:
@@ -336,6 +347,21 @@ class UIConfig:
     show_composition: bool = True
     show_safe_area: bool = True
     show_labels: bool = True
+    #: v1.7 A2（TDD §4.1）：小助手/Web 桥总开关。False 时 ui_bridge 不发事件、
+    #: 不注册视口精灵（消费是卡 D1/D3 的活）。
+    enabled: bool = True
+    #: v1.7 A2：视口精灵开关（扁平键，钉死）。
+    viewport_sprite: bool = True
+    #: v1.7 A2：run 开始时是否自动开浏览器（默认不开）。
+    web_auto_open: bool = False
+
+
+@dataclass
+class ScriptPolishConfig:
+    """v1.7 Stage P（TDD §9）：剧本优化。默认关 = 全链路零行为差。"""
+
+    enabled: bool = False
+    max_suggestions: int = 20
 
 
 @dataclass
@@ -450,6 +476,7 @@ class AppConfig:
     dialogue: DialogueConfig = field(default_factory=DialogueConfig)
     delivery: DeliveryConfig = field(default_factory=DeliveryConfig)
     ui: UIConfig = field(default_factory=UIConfig)
+    script_polish: ScriptPolishConfig = field(default_factory=ScriptPolishConfig)
     framing: FramingConfig = field(default_factory=FramingConfig)
     vlm_review: VlmReviewConfig = field(default_factory=VlmReviewConfig)
     guard: GuardConfig = field(default_factory=GuardConfig)
@@ -497,6 +524,31 @@ class AppConfig:
         if self.llm.timeout_s <= 0:
             err("CFG_023", "llm.timeout_s",
                 f"LLM 超时时间必须为正数（当前 {self.llm.timeout_s}）")
+        #: v1.7 A2（TDD §4.1）：新键校验——只告警、不改值（现有 CFG_218 同款
+        #: 纪律）。未知 thinking_level 的消费侧回落归 B5 的 ``_apply_thinking``。
+        if str(self.llm.thinking_level) not in ("off", "low", "medium", "high"):
+            err("CFG_170", "llm.thinking_level",
+                f"未知思考强度 {self.llm.thinking_level!r}；合法值 off/low/medium/high",
+                severity=Severity.WARNING)
+        for item in self.audit.rules_disabled:
+            if not re.fullmatch(r"R\d{3}", str(item)):
+                err("CFG_171", "audit.rules_disabled",
+                    f"非法规则号 {item!r}；须形如 R009", severity=Severity.WARNING)
+        #: v1.7 A5：目标模型规格表可读性 + 取值合法性。load_table 抛
+        #: TargetModelError（如文件缺失）时只报"规格表不可读"，不因配置文件
+        #: 本身炸 validate；值未知时同样只 warning、不回落改值。
+        try:
+            from .target_models import TargetModelError, load_table
+            target_keys = set(load_table())
+        except TargetModelError:
+            target_keys = None
+            err("CFG_172", "delivery.target_model",
+                "目标模型规格表不可读（specs/target_models.yaml）",
+                severity=Severity.WARNING)
+        if target_keys is not None and self.delivery.target_model not in target_keys:
+            err("CFG_172", "delivery.target_model",
+                f"未知目标模型 {self.delivery.target_model!r}；合法值 "
+                f"{sorted(target_keys)}", severity=Severity.WARNING)
         #: v1.6 B2：视锥构图校验段。TDD 草拟的 CFG_021–023 已被占用，顺延到 215–217。
         if self.guard.preset not in GUARD_PRESETS:
             err("CFG_215", "guard.preset",
