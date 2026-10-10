@@ -71,6 +71,10 @@ V16_EVENT_FIELDS = {
                              "resume_state_path"),
     "run_resumed": ("version", "terminal_shots", "first_shot"),
     "shot_resumed_skipped": ("shot_id", "status"),
+    #: G2 #8（用户 2026-10-11 裁决）：计划多轮就地调整后仍不完整，用剧本
+    #: 声明确定性补齐缺镜继续跑（不整轮作废）。filled_shots=补齐的镜数，
+    #: attempts=已用的调整次数，problem=最后一次拒绝原因。
+    "plan_adjusted": ("filled_shots", "attempts", "problem"),
 }
 
 
@@ -113,6 +117,22 @@ class AuditError:
 
 
 @dataclass
+class SkippedFinding:
+    """v1.7 F1（TDD §4.4）：被 ``rules_disabled`` 关闭的规则**哨兵**。
+
+    不是真 Finding（不进 errors/warnings）；定义在 contracts（它是 DTO），
+    ``rule_checker.py`` import 它——反过来会让 contracts 依赖 layer3，撞依赖
+    红线（守则 18）。
+    """
+
+    rule: str
+    skipped: bool = True
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"rule": self.rule, "skipped": self.skipped}
+
+
+@dataclass
 class AuditResult:
     passed: bool = True
     level: str = "rule"                     # rule / llm / human
@@ -138,6 +158,9 @@ class AuditResult:
     guard_frames_sampled: int = 0
     #: 采样失败（E_GUARD_001）的 ``{"code", "message"}``；``None`` = 没失败。
     guard_sampling_error: Optional[Dict[str, Any]] = None
+    #: v1.7 F1：被 ``rules_disabled`` 关闭的规则哨兵。缺省空 ⇒ ``to_dict()``
+    #: 与升级前逐字节一致（零形状差纪律）。
+    skipped: List[Any] = field(default_factory=list)
 
     @property
     def total(self) -> int:
@@ -148,12 +171,14 @@ class AuditResult:
                       level: str = "rule", score: Optional[float] = None,
                       target: str = "") -> "AuditResult":
         items = list(findings)
-        errors = [i for i in items if i.is_error]
-        warnings = [i for i in items if not i.is_error]
-        suggestions = [i.suggestion for i in items if i.suggestion]
+        skipped = [i for i in items if isinstance(i, SkippedFinding)]
+        real = [i for i in items if not isinstance(i, SkippedFinding)]
+        errors = [i for i in real if i.is_error]
+        warnings = [i for i in real if not i.is_error]
+        suggestions = [i.suggestion for i in real if i.suggestion]
         return cls(passed=not errors, level=level, errors=errors,
                    warnings=warnings, suggestions=suggestions, score=score,
-                   target=target)
+                   target=target, skipped=skipped)
 
     def to_dict(self) -> Dict[str, Any]:
         payload = {
@@ -179,6 +204,11 @@ class AuditResult:
             payload["guard_frames_sampled"] = int(self.guard_frames_sampled)
         if self.guard_sampling_error is not None:
             payload["guard_sampling_error"] = dict(self.guard_sampling_error)
+        #: 同一条零形状差纪律：只有真的关了规则才多这个键。
+        if self.skipped:
+            payload["skipped"] = [
+                item.to_dict() if hasattr(item, "to_dict") else dict(item)
+                for item in self.skipped]
         return payload
 
     def format_for_llm(self) -> str:

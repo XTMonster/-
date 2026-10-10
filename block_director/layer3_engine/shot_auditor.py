@@ -38,7 +38,7 @@ from ..settings import get_config
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .frustum_sampler import SamplingError, sample_shot
-from .rule_checker import check_shot
+from .rule_checker import check_shot, configure_rules_disabled
 from .scene_context import get_context
 
 log = get_logger("shot-auditor")
@@ -96,6 +96,11 @@ class BpyShotAuditor:
     @main_thread_only("BpyShotAuditor.audit")
     def audit(self, shot_id: str) -> AuditResult:
         strict = str(self.audit_level or "") == str(AuditLevel.STRICT)
+        #: v1.7 F1：每次审核前把配置的禁用规则注入 rule_checker（模块级集合，
+        #: 不 import settings 单例——依赖方向由这里单向同步）。
+        config = get_config()
+        configure_rules_disabled(
+            getattr(getattr(config, "audit", None), "rules_disabled", []) or [])
         result = check_shot(shot_id,
                             composition_threshold=self.composition_threshold,
                             strict=strict)

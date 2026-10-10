@@ -14,7 +14,7 @@ R002 空间碰撞、R003 动作时间轴、R008 地面、R009 景别距离、R01
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, FrozenSet, List, Tuple
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
@@ -37,7 +37,7 @@ from ..cinema.axis import (
 )
 from ..cinema.framing import SHOT_FRAME, required_distance
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
-from ..contracts.audit import AuditError, AuditResult
+from ..contracts.audit import AuditError, AuditResult, SkippedFinding
 from ..contracts.enums import Severity
 from ..utils.aabb import AABB, union
 from ..utils.logger import get_logger
@@ -52,9 +52,21 @@ FRAME_MARGIN = 0.05
 COLLISION_MARGIN = 0.2
 OBSTACLE_PREFIXES = ("BD_Wall_", "BD_Prop_")
 
+#: v1.7 F1：被关闭的规则号（模块级注入——不 import 插件侧 settings 单例，
+#: layer3 反向依赖包根会成环且不可测）。审核入口在每次 check 前同步。
+_RULES_DISABLED: FrozenSet[str] = frozenset()
+
+
+def configure_rules_disabled(rules: Any) -> None:
+    """同步本次审核的禁用规则集合（空集合 = 全规则生效，零行为差）。"""
+    global _RULES_DISABLED
+    _RULES_DISABLED = frozenset(str(item) for item in (rules or ()))
+
 
 def _finding(severity: Severity, rule: str, code: str, message: str,
              target: str = "", suggestion: str = "") -> AuditError:
+    if rule in _RULES_DISABLED:
+        return SkippedFinding(rule=rule)
     return AuditError(rule=rule, code=code, severity=severity, target=target,
                       message=message, suggestion=suggestion)
 
