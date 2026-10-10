@@ -144,6 +144,7 @@ def build_sdl(plan: Plan, *,
             rule_justifications=[dict(item)
                                  for item in (planned.rule_justifications or [])],
             prompt=planned.prompt,
+            responsibility=getattr(planned, "responsibility", None),
         ))
 
     scene = SDLScene(id=scene_id, number=1, heading=plan.scene_heading,
@@ -187,6 +188,8 @@ def sdl_to_plan(sdl: SDLProject) -> Plan:
                                         for item in (shot.rule_justifications
                                                      or [])],
                 "prompt": shot.prompt,
+                "responsibility": to_plain(
+                    getattr(shot, "responsibility", None)),
             }))
     heading = sdl.scenes[0].heading if sdl.scenes else ""
     # v1.5 §3.2：场级环境（anchors/light）必须跟着项目文件回来，否则

@@ -81,8 +81,8 @@ def _strip_new(payload: dict) -> dict:
 # --------------------------------------------------------------------------- #
 # 版本与兼容声明
 # --------------------------------------------------------------------------- #
-def test_sdl_version_is_1_6():
-    assert SDL_VERSION == "1.6"
+def test_sdl_version_is_1_7():
+    assert SDL_VERSION == "1.7"
 
 
 def test_known_versions_keep_every_shipped_version():
@@ -91,7 +91,7 @@ def test_known_versions_keep_every_shipped_version():
     旧写法 ``("1.0", ..., SDL_VERSION)`` 把当前版本当成"上一个版本"，升到
     1.5 时 "1.4" 会消失——那时刚刚落盘的 1.4 工程反倒被记成"未知版本"。
     """
-    for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"):
+    for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7"):
         assert version in KNOWN_VERSIONS
     assert KNOWN_VERSIONS[-1] == SDL_VERSION
 

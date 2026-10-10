@@ -73,6 +73,21 @@ _SHOT_ITEM_SCHEMA: Dict[str, Any] = {
         "axis_note": {"type": "string"},
         "continuity_in": {"type": "string"},
         "prompt": {"type": "string"},
+        #: v1.7 A6（TDD §14.1）：分工声明。可选键，**不进** ``required``；
+        #: 执行语义是 J3 的活，本卡只落数据（prompt 文案也在 J3，这里不加字）。
+        "responsibility": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "white_model": {"type": "array",
+                                "items": {"type": "string"}},
+                "prompt": {"type": "array",
+                           "items": {"type": "string"}},
+                "ref_image": {"type": "array",
+                              "items": {"type": "string"}},
+                "skip_white_model": {"type": "boolean"},
+            },
+        },
     },
 }
 
@@ -179,6 +194,9 @@ PLAN_SYSTEM_PROMPT = """\
 - 这是**拍摄清单**：每个镜头给出镜号、顺序、意图、景别、时长预算与出场角色
 - `intent_type` 必须从给定闭集里**逐字**选一个（意图决定镜头语言；超图里
   "意图×景别×运镜"那一族边就靠它命中，选错等于检索回来的是别人的知识）
+- **闭集字段只写下列值之一**（逐字、不加任何前缀、不拼字段名、不写描述句；
+  描述性的灯光写法放到镜头的 `prompt` 自由文本里，不要塞进闭集字段）：
+{closed_sets}
 - **不要在计划里写动作与对白细节**——那是下一阶段（单镜结构化生成）逐镜完成的，
   这里写进去只会让计划过长且互相打架；对白归属用 dialogue_ids 标注即可
 - prompt 写一句"画面描述"，供后续生成参考视频的提示词使用
@@ -258,6 +276,30 @@ def space_block(extent_m: float) -> str:
         "坐标 (8, −6)，不是【再走 8 米】；\n"
         "- 若确实要换场，请在新的场次里重新交代站位，不要在单场里把人送出范围。"
     )
+
+
+def render_plan_closed_sets() -> str:
+    """阶段 A 提示里的闭集字段取值表（与 schema 用的**同一份常量**生成，不手抄）。
+
+    为什么必须（2026-10-10 真跑 r3，run_id 39af4e810b95）：两次 ``plan_invalid``
+    都是闭集违规——``environment.light`` 三个字段被写成中文句子、``intent_type``
+    被写成带字段名前缀的值（DeepSeek beta 的 ``strict`` 是尽力而为、不是约束解码，
+    schema 挡不住的地方要靠提示把取值**逐字列出来**，并说死"只写一个值、不加
+    前缀、不写描述句"）。
+
+    ``environment.light`` 在计划 schema 里**没有**灯光专用的自由文本字段
+    （plan/SDL/beats 三处契约都只有三个闭集语义字段），因此描述性灯光写法指向
+    镜头既有的 ``prompt`` 自由文本字段，本轮**不新增**任何 schema 字段。
+    """
+    return "\n".join([
+        "- `intent_type`：" + "、".join(f"`{value}`" for value in INTENT_VALUES),
+        "- `environment.light.time_of_day`：" + "、".join(
+            f"`{value}`" for value in TIME_OF_DAY_VALUES),
+        "- `environment.light.mood`：" + "、".join(
+            f"`{value}`" for value in LIGHT_MOOD_VALUES),
+        "- `environment.light.key_direction`：" + "、".join(
+            f"`{value}`" for value in KEY_DIRECTION_VALUES),
+    ])
 
 
 def _brief_block(brief, token_limit: int) -> str:
@@ -364,7 +406,8 @@ def build_plan_payload(script: str, config=None,
         knowledge = retriever.block_for_plan(query) or NO_KNOWLEDGE
     system_text = (PLAN_SYSTEM_PROMPT.replace("{script}", body)
                    .replace("{knowledge}", knowledge)
-                   .replace("{brief}", _brief_block(brief, brief_limit)))
+                   .replace("{brief}", _brief_block(brief, brief_limit))
+                   .replace("{closed_sets}", render_plan_closed_sets()))
     pacing = DEFAULT_PACING_PROFILE
     if config is not None:
         pacing = str(getattr(getattr(config, "rhythm", None),

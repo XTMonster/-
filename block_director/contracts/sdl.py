@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from .cast import CastMember
+from .plan import Responsibility
 
 #: v1.5：**SDL 文件格式版本升到 1.5**（软件包/协议版本仍是 1.3.0，不在本次
 #: 改动范围）。1.5 只**增字段**：``SDLEnvironment.anchors`` / ``light``、
@@ -22,7 +23,10 @@ from .cast import CastMember
 #: v1.6（C1，FR-A1；连同 D1 的 rhythm_arc）：``project.brief`` 里新增
 #: ``environment[]`` 与 ``rhythm_arc[]``。同样**只增字段**、无删除无改名——
 #: 1.5 工程迁移后这两个字段取空表，旧字段逐字节不变。
-SDL_VERSION = "1.6"
+#:
+#: v1.7（A6，R-痛点 M5）：``SDLShot.responsibility``（分工声明）——只增字段、
+#: 无删除无改名；旧文件迁移后每镜补 ``null``（未声明）。
+SDL_VERSION = "1.7"
 
 
 @dataclass
@@ -86,6 +90,9 @@ class SDLShot:
     #: v1.5 §3.6：破例辩护（``{rule, action, reason, precedent}``）。
     rule_justifications: List[Dict[str, Any]] = field(default_factory=list)
     prompt: str = ""
+    #: v1.7 §14.1（R-痛点 M5）：分工声明。None = 未声明（≠ 全空）；
+    #: ``skip_white_model`` 的执行语义在卡 J3（本卡只落数据）。
+    responsibility: Optional[Responsibility] = None
 
 
 @dataclass

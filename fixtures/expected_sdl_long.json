@@ -1,6 +1,6 @@
 {
   "name": "# 节点1：市场静场（总时长：24秒）",
-  "version": "1.6",
+  "version": "1.7",
   "fps": 24,
   "characters": [
     {
@@ -94,7 +94,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_002",
@@ -139,7 +140,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_003",
@@ -182,7 +184,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_004",
@@ -225,7 +228,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_005",
@@ -268,7 +272,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_006",
@@ -313,7 +318,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_007",
@@ -356,7 +362,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_008",
@@ -399,7 +406,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_009",
@@ -444,7 +452,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_010",
@@ -487,7 +496,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_011",
@@ -530,7 +540,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_012",
@@ -573,7 +584,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_013",
@@ -618,7 +630,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_014",
@@ -661,7 +674,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_015",
@@ -704,7 +718,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_016",
@@ -747,7 +762,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_017",
@@ -790,7 +806,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_018",
@@ -835,7 +852,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_019",
@@ -878,7 +896,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_020",
@@ -921,7 +940,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_021",
@@ -966,7 +986,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_022",
@@ -1009,7 +1030,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_023",
@@ -1052,7 +1074,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_024",
@@ -1097,7 +1120,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_025",
@@ -1140,7 +1164,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_026",
@@ -1185,7 +1210,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_027",
@@ -1228,7 +1254,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_028",
@@ -1271,7 +1298,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_029",
@@ -1316,7 +1344,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_030",
@@ -1359,7 +1388,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_031",
@@ -1402,7 +1432,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_032",
@@ -1447,7 +1478,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_033",
@@ -1490,7 +1522,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_034",
@@ -1535,7 +1568,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_035",
@@ -1578,7 +1612,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_036",
@@ -1621,7 +1656,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_037",
@@ -1666,7 +1702,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_038",
@@ -1709,7 +1746,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_039",
@@ -1752,7 +1790,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_040",
@@ -1797,7 +1836,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_041",
@@ -1840,7 +1880,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_042",
@@ -1885,7 +1926,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_043",
@@ -1928,7 +1970,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_044",
@@ -1971,7 +2014,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_045",
@@ -2016,7 +2060,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_046",
@@ -2059,7 +2104,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_047",
@@ -2102,7 +2148,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_048",
@@ -2147,7 +2194,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_049",
@@ -2190,7 +2238,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_050",
@@ -2235,7 +2284,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_051",
@@ -2278,7 +2328,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_052",
@@ -2321,7 +2372,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_053",
@@ -2366,7 +2418,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_054",
@@ -2409,7 +2462,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_055",
@@ -2452,7 +2506,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_056",
@@ -2495,7 +2550,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_057",
@@ -2538,7 +2594,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_058",
@@ -2583,7 +2640,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_059",
@@ -2626,7 +2684,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_060",
@@ -2669,7 +2728,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_061",
@@ -2714,7 +2774,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_062",
@@ -2757,7 +2818,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_063",
@@ -2800,7 +2862,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         },
         {
           "id": "shot_064",
@@ -2845,7 +2908,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": ""
+          "prompt": "",
+          "responsibility": null
         }
       ]
     }

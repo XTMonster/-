@@ -19,7 +19,9 @@ from ..contracts.sdl import SDL_VERSION
 #: 升到 1.5 时会把 "1.4" 悄悄挤出去，于是刚刚落盘的 1.4 工程反而成了"未知
 #: 版本"。这里把 "1.4" 显式钉死，再追加当前版本。
 #: v1.6：同样把 "1.5" 逐条钉死（只增不改），再追加当前版本。
-KNOWN_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", SDL_VERSION)
+#: v1.7：把 "1.6" 逐条钉死（只增不改），再追加当前版本。
+KNOWN_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6",
+                  SDL_VERSION)
 
 #: 写入器从 1.2 起就会把完整的 ``characters`` 名册写进文件。比这更老的文件
 #: 才需要"补名册"这种结构修复；1.2 及以后引用了不存在的角色，那是**真错误**，
@@ -141,6 +143,14 @@ def _migrate_shot(shot: Dict[str, Any], notes: List[str]) -> None:
     shot.setdefault("beats", [])
     shot.setdefault("composition", {})
     shot.setdefault("rule_justifications", [])
+    # v1.7 §14.1：分工声明缺省 = 未声明（null）。已存在的坏类型（str 等）
+    # 只报 finding、不崩，并一律按未声明处理。
+    responsibility = shot.get("responsibility")
+    if responsibility is not None and not isinstance(responsibility, dict):
+        notes.append(f"镜头 {shot.get('id')}：responsibility 类型非法，"
+                     f"按未声明处理")
+        responsibility = None
+    shot["responsibility"] = responsibility
 
 
 def migrate_sdl(data: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
@@ -181,6 +191,8 @@ def migrate_sdl(data: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
 
     if _version_key(version) < _version_key(ROSTER_COMPLETE_FROM):
         _heal_cast(payload, notes)
+    #: 迁移说明只记一条（不逐镜刷屏）；坏数据 finding 已由 _migrate_shot 记。
+    notes.append("补齐 responsibility：未声明镜记 null（v1.7）")
     payload["version"] = SDL_VERSION
     notes.append(f"已从 {version} 迁移到 {SDL_VERSION}")
     return payload, notes

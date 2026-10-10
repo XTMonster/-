@@ -60,12 +60,12 @@ def _strip_new(payload: dict) -> dict:
 # --------------------------------------------------------------------------- #
 # 版本与兼容声明
 # --------------------------------------------------------------------------- #
-def test_sdl_version_is_1_6():
-    assert SDL_VERSION == "1.6"
+def test_sdl_version_is_1_7():
+    assert SDL_VERSION == "1.7"
 
 
 def test_known_versions_are_append_only():
-    for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"):
+    for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7"):
         assert version in KNOWN_VERSIONS
     assert KNOWN_VERSIONS[-1] == SDL_VERSION
 

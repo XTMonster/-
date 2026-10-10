@@ -60,6 +60,38 @@ def unknown_cast_ids(plan: "Plan", roster: Sequence[str]) -> List[str]:
 
 
 @dataclass
+class Responsibility:
+    """v1.7 §14.1（R-痛点 M5，P14 职责分区）：一镜的分工声明。
+
+    ``None = 未声明``（≠ 全空），未声明镜全链零行为差。
+    ``skip_white_model`` 的**执行语义**在卡 J3（本卡只落数据）。
+    """
+
+    white_model: List[str] = field(default_factory=list)  # 白模管：位置/机位/节奏…
+    prompt: List[str] = field(default_factory=list)       # 移交提示词：动作细节/表情…
+    ref_image: List[str] = field(default_factory=list)    # 移交参考图：外观/风格…
+    skip_white_model: bool = False                        # 本镜跳过白模（P16）
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "white_model": list(self.white_model),
+            "prompt": list(self.prompt),
+            "ref_image": list(self.ref_image),
+            "skip_white_model": bool(self.skip_white_model),
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Responsibility":
+        return cls(
+            white_model=[str(item) for item in
+                         (data.get("white_model") or [])],
+            prompt=[str(item) for item in (data.get("prompt") or [])],
+            ref_image=[str(item) for item in (data.get("ref_image") or [])],
+            skip_white_model=bool(data.get("skip_white_model") or False),
+        )
+
+
+@dataclass
 class ShotPlan:
     """一个镜头的计划。时长以帧为单位（唯一时长真源，§5.1）。"""
 
@@ -128,6 +160,9 @@ class ShotPlan:
     #: ``contracts/beats.py::RuleJustification``（``{rule, action, reason,
     #: precedent}``）。审计对拍见 §5.4。
     rule_justifications: List[Dict[str, Any]] = field(default_factory=list)
+    #: v1.7 §14.1（R-痛点 M5）：分工声明。None = 未声明（≠ 全空），
+    #: 未声明镜全链零行为差。数据类真源 = :class:`Responsibility`。
+    responsibility: Optional[Responsibility] = None
 
     @property
     def duration_seconds(self) -> float:
@@ -159,6 +194,11 @@ class ShotPlan:
             "composition": dict(self.composition),
             "rule_justifications": [dict(item)
                                     for item in self.rule_justifications],
+            #: 恒出键（v1.7.6 实测钉死）：serde 无条件序列化全部字段，
+            #: 未声明时是 null、声明了是对象；from_plain 对缺失键落默认值，
+            #: 旧 SDL/plan 文件零 error。
+            "responsibility": (None if self.responsibility is None
+                               else self.responsibility.to_dict()),
         }
 
     @classmethod
@@ -197,6 +237,9 @@ class ShotPlan:
             rule_justifications=[dict(item)
                                  for item in (data.get("rule_justifications") or [])
                                  if isinstance(item, dict)],
+            responsibility=(Responsibility.from_dict(data["responsibility"])
+                            if isinstance(data.get("responsibility"), dict)
+                            else None),
         )
 
 

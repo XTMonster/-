@@ -1,6 +1,6 @@
 {
   "name": "INT. 公寓客厅 - 夜",
-  "version": "1.6",
+  "version": "1.7",
   "fps": 24,
   "characters": [
     {
@@ -108,7 +108,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": "雨夜的客厅，中远景，两人隔着茶几，窗外雨丝，冷调，固定机位"
+          "prompt": "雨夜的客厅，中远景，两人隔着茶几，窗外雨丝，冷调，固定机位",
+          "responsibility": null
         },
         {
           "id": "shot_002",
@@ -160,7 +161,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": "中近景，林可低声说话，手机贴着耳朵，浅景深"
+          "prompt": "中近景，林可低声说话，手机贴着耳朵，浅景深",
+          "responsibility": null
         },
         {
           "id": "shot_003",
@@ -218,7 +220,8 @@
           "beats": [],
           "composition": {},
           "rule_justifications": [],
-          "prompt": "特写，周野停顿后开口，背景虚化，情绪克制"
+          "prompt": "特写，周野停顿后开口，背景虚化，情绪克制",
+          "responsibility": null
         }
       ]
     }
