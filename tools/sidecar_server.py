@@ -24,11 +24,15 @@ import os
 import re
 import sys
 import threading
+import itertools
+import time
 import urllib.error
 import urllib.request
+from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
+from urllib.parse import parse_qs, unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -40,6 +44,13 @@ if str(TOOLS_DIR) not in sys.path:
     sys.path.append(str(TOOLS_DIR))
 
 from block_director.contracts.enums import Capability  # noqa: E402
+from block_director.contracts.assistant import CLIP_BY_STATE  # noqa: E402
+from block_director.contracts.config import (  # noqa: E402
+    AppConfig,
+    dump_yaml,
+    parse_yaml,
+)
+from block_director.contracts.enums import Severity  # noqa: E402
 from block_director.contracts.errors import (  # noqa: E402
     ErrorCode,
     TransportError,
@@ -55,7 +66,18 @@ from block_director.contracts.messages import (  # noqa: E402
     ToolCall,
 )
 from block_director.contracts.operations import RetrieveResponse  # noqa: E402
+from block_director.contracts.rule_catalog import RULES  # noqa: E402
+from block_director.contracts.target_models import (  # noqa: E402
+    TargetModelError,
+    load_table,
+)
+from block_director.contracts.ui_events import UIEvent  # noqa: E402
 from block_director.knowledge import default_retriever  # noqa: E402
+from block_director.utils.secret_store import (  # noqa: E402
+    effective_key,
+    mask_key,
+    save_secret,
+)
 #: L3 案例层的**单一真源**在包里（§3.1 的落点 `block_director/knowledge/cases.py`）；
 #: sidecar 只做装配与 wire 转换，不再维护一份自己的 CaseLane（两份实现必然漂）。
 from block_director.knowledge.cases import (  # noqa: E402
@@ -114,6 +136,21 @@ class SidecarConfig:
         self.temperature = args.temperature
         self.seed = args.seed
         self.token = args.token
+        #: v1.7 B2：`--config` 的显式路径（None → AppConfig.load 的默认路径，
+        #: 不猜）。B2 读写、B5 读 thinking_level、B6 每次请求重读。
+        self.config_path = getattr(args, "config", None)
+        #: v1.7 B5：思考强度的消费侧回落点（未知值按 off 处理——CFG_170 只
+        #: 告警不改值，这里负责把"未知"变成"零改动透传"）。
+        self.thinking_level = "off"
+        try:
+            loaded = AppConfig.load(self.config_path)
+            self.thinking_level = str(loaded.llm.thinking_level or "off").lower()
+        except Exception:  # noqa: BLE001 - 配置不可读时按 off 透传，不阻塞服务
+            self.thinking_level = "off"
+        #: B5 ①：`--upstream-kind` 是否**显式**给出（auto 被 detect_kind 消解，
+        #: 显式位必须在解析时保存，否则 URL 关键词判定没有"显式优先"依据）。
+        self.upstream_kind_explicit = bool(
+            getattr(args, "upstream_kind_explicit", False))
         #: 上游 API 密钥**只从环境变量读**（`--upstream-api-key-env` 给变量名）：
         #: 云端 OpenAI 兼容端点（智谱 GLM 等）必须带 `Authorization: Bearer <key>`，
         #: 而本地 Ollama 不需要。密钥绝不写进仓库，也不进日志。
@@ -126,6 +163,11 @@ class SidecarConfig:
                     "环境变量 %s 为空：云端上游需要它来带 Authorization 头" % key_env)
         self.timeout = args.timeout
         self.knowledge_dir = Path(args.knowledge_dir)
+        #: v1.7 B3：Web 静态根目录（免鉴权路径的唯一读源）。
+        self.web_root = Path(getattr(args, "web_root", ROOT / "web"))
+        #: v1.7 B6：runs 目录（`/v1/ui/shots` 只服务这棵树内的导出；
+        #: `--out` 指到树外的运行这里读不到——如实说明，不扩范围）。
+        self.runs_dir = Path(getattr(args, "runs_dir", ROOT / "runs"))
         self.cases_backend = args.cases_backend
         #: L3 的相关性过滤（`off` / `llm`）；`make_case_filter` 按它装配。
         self.cases_filter = str(getattr(args, "cases_filter", "off"))
@@ -143,6 +185,82 @@ def detect_kind(upstream: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# v1.7 B5：思考强度映射（TDD §4.2 的 4×4 表）
+# --------------------------------------------------------------------------- #
+#: DeepSeek reasoner 的思考预算下限：低/中/高三档（"小 max_tokens 下限提示"）。
+REASONER_MAX_TOKENS_FLOORS = {"low": 8192, "medium": 16384, "high": 32768}
+#: 百炼（DashScope 兼容口）的 thinking budget：低/中/高三档。
+BAILIAN_THINK_BUDGETS = {"low": 8192, "medium": 16384, "high": 32768}
+
+
+def thinking_provider(config: "SidecarConfig") -> str:
+    """B5 ①：provider 判定（钉死顺序）。
+
+    ``--upstream-kind`` 显式值 > upstream URL 关键词（dashscope→bailian、
+    deepseek→deepseek、loopback:11434→ollama）> openai 默认。
+    """
+    if config.upstream_kind_explicit:
+        return str(getattr(config, "kind", "openai") or "openai")
+    upstream = str(getattr(config, "upstream", "") or "")
+    if "dashscope" in upstream:
+        return "bailian"
+    if "deepseek" in upstream:
+        return "deepseek"
+    if ":11434" in upstream or "/api" in upstream:
+        return "ollama"
+    return "openai"
+
+
+def _brief_payload(payload: Any, limit: int = 80) -> str:
+    """事件 payload 的**有界摘要**（捷径回复绝不回放完整 prompt/key）。"""
+    text = json.dumps(payload, ensure_ascii=False) if payload else "{}"
+    if len(text) > limit:
+        return text[:limit] + "…"
+    return text
+
+
+def _apply_thinking(body: Dict[str, Any], level: str,
+                    provider: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """B5 ②：按 TDD §4.2 的 16 格重写请求体；返回 ``(body, trace)``。
+
+    - ``off``（含缺省/未知 level）→ **零改动透传**：CLI 现状原样生效；
+    - ``level != off`` → **config 覆盖 CLI**，本函数重写相关键；
+    - 未知 provider → 透传（禁区）；
+    - 百炼思考档带 ``tool_choice=required``/对象 → 自动降 ``auto`` 并在 trace
+      记 ``tool_choice_downgraded``（B5 ③）。
+    """
+    trace: Dict[str, Any] = {}
+    normalized = str(level or "off").lower()
+    if normalized not in ("low", "medium", "high"):
+        return body, trace
+    if provider == "openai":
+        body["reasoning_effort"] = normalized
+    elif provider == "deepseek":
+        body["model"] = "deepseek-reasoner"
+        floor = REASONER_MAX_TOKENS_FLOORS[normalized]
+        body["max_tokens"] = max(int(body.get("max_tokens") or 0), floor)
+        if normalized == "high":
+            print(json.dumps(
+                {"thinking_hint": "deepseek-reasoner high 档："
+                                  "上游超时建议 ≥600 s"},
+                ensure_ascii=False), file=sys.stderr, flush=True)
+    elif provider == "bailian":
+        body["enable_thinking"] = True
+        body["thinking_budget"] = BAILIAN_THINK_BUDGETS[normalized]
+        choice = body.get("tool_choice")
+        if choice == "required" or isinstance(choice, dict):
+            body["tool_choice"] = "auto"
+            trace["tool_choice_downgraded"] = True
+    elif provider == "ollama":
+        body["think"] = True
+        if normalized == "high":
+            print(json.dumps(
+                {"thinking_hint": "ollama think=high 档：num_ctx 建议 ≥ 32768"},
+                ensure_ascii=False), file=sys.stderr, flush=True)
+    return body, trace
+
+
+# --------------------------------------------------------------------------- #
 # 知识索引（v1.4 §2.3 / §2.3b）
 #
 # 超图与案例**都只在 sidecar 里装配**：插件侧零新依赖的承诺靠这一段兑现。
@@ -156,6 +274,15 @@ def read_jsonl(path: Path) -> List[Dict[str, Any]]:
         if line:
             rows.append(json.loads(line))
     return rows
+
+
+def count_lines(path: Path) -> int:
+    """逐行计数，不读内容进内存；文件/目录缺 → 0。"""
+    try:
+        with open(path, encoding="utf-8") as handle:
+            return sum(1 for _ in handle)
+    except OSError:
+        return 0
 
 
 def load_hypergraph_index(knowledge_dir: Path) -> Optional[Hypergraph]:
@@ -372,9 +499,10 @@ def call_upstream(config: "SidecarConfig", payload: Dict[str, Any]
     """把插件侧的请求转发给上游模型。"""
 
     if config.kind == "ollama":
+        body = _ollama_body(config, payload)
+        body, _trace = _apply_thinking(body, config.thinking_level, "ollama")
         status, text = _post_json(f"{config.upstream}/api/chat",
-                                  _ollama_body(config, payload),
-                                  config.timeout)
+                                  body, config.timeout)
         if not 200 <= status < 300:
             #: 错误上报：状态与红化后的正文摘录直接写 stderr（绝不带密钥），
             #: 502 响应的字段即使后续链路再丢，这里也有一份可观测的现场。
@@ -390,7 +518,15 @@ def call_upstream(config: "SidecarConfig", payload: Dict[str, Any]
     if getattr(config, "strict_tools", False):
         # DeepSeek strict（Beta）要求 base_url 带 /beta 段；其余拼接规则不变。
         url = f"{strict_upstream_base(config.upstream)}/chat/completions"
-    status, text = _post_json(url, _openai_body(config, payload), config.timeout,
+    body = _openai_body(config, payload)
+    #: v1.7 B5：组 body 后、发请求前**一处**挂接；trace 非空时写 stderr
+    #: 观测通道（sidecar 的 trace 通道，不进入上游请求体）。
+    body, trace = _apply_thinking(body, config.thinking_level,
+                                  thinking_provider(config))
+    if trace:
+        print(json.dumps({"thinking_trace": trace}, ensure_ascii=False),
+              file=sys.stderr, flush=True)
+    status, text = _post_json(url, body, config.timeout,
                               _upstream_headers(config))
     if not 200 <= status < 300:
         print(json.dumps(
@@ -655,6 +791,51 @@ def make_handler(config: "SidecarConfig"):
     provenance = load_provenance(config.knowledge_dir)
     cancelled: set = set()
     lock = threading.Lock()
+    #: v1.7 B1：UI 事件环形缓冲（plugin → web 观察流）。重启清空是设计内；
+    #: seq 是**服务端唯一真源**（客户端 seq 被忽略），ts 由服务端打戳。
+    ui_events: "deque[Dict[str, Any]]" = deque(maxlen=2000)
+    ui_seq = itertools.count(1)
+    events_lock = threading.Lock()
+    #: v1.7 B7：当前 run_id（由事件缓冲里 ``payload.run_id`` 更新）；
+    #: 空 → 聊天落 ``runs/_idle/chat.jsonl``。
+    current_run_id = ""
+
+    #: B7：插件用法摘要（system 注入的固定部分，不含 key/完整 prompt）。
+    PLUGIN_USAGE = (
+        "你是 BlockDirector 白模预演插件的 Web 助手。插件把剧本变成白模预演"
+        "视频。你只读：回答用法/状态/知识问题，不执行任何场景修改。")
+
+    def _lane(text: Any, limit: int = 500) -> str:
+        text = str(text or "")
+        if len(text) > limit:
+            return text[:limit] + "…（截断）"
+        return text
+
+    def _render_injection(retrieve: RetrieveResponse
+                          ) -> Tuple[str, List[Dict[str, str]]]:
+        sources: List[Dict[str, str]] = []
+        card_texts = [f"[{card.id}] {card.title}: {card.content}"
+                      for card in retrieve.cards]
+        edge_texts = [f"[{edge.edge_id}] {edge.type}"
+                      for edge in retrieve.edges]
+        case_texts = [f"[{case.case_id}] {case.title}: {case.excerpt}"
+                      for case in retrieve.cases]
+        sources.extend({"type": "card", "id": card.id}
+                       for card in retrieve.cards)
+        sources.extend({"type": "edge", "id": edge.edge_id}
+                       for edge in retrieve.edges)
+        sources.extend({"type": "case", "id": case.case_id}
+                       for case in retrieve.cases)
+        lanes = []
+        if card_texts:
+            lanes.append("知识卡（硬约束）：" + _lane("；".join(card_texts)))
+        if edge_texts:
+            lanes.append("超边：" + _lane("；".join(edge_texts)))
+        if case_texts:
+            lanes.append("参考案例（软）：" + _lane("；".join(case_texts)))
+        system = PLUGIN_USAGE + "\n\n【检索结果】\n" + (
+            "\n".join(lanes) if lanes else "（本次无检索命中）")
+        return system, sources
 
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
@@ -680,14 +861,177 @@ def make_handler(config: "SidecarConfig"):
             length = int(self.headers.get("Content-Length", 0))
             return json.loads(self.rfile.read(length) or b"{}")
 
+        def _raw_body(self) -> Tuple[str, str]:
+            """按原始文本读 body（PUT config 要按 Content-Type 双收）。"""
+            length = int(self.headers.get("Content-Length", 0))
+            content_type = str(self.headers.get("Content-Type", ""))
+            return self.rfile.read(length).decode("utf-8", "replace"), content_type
+
         # -- 路由 ---------------------------------------------------------- #
         def do_GET(self):
-            if self.path != "/health":
-                self._json(404, {"error": "not found"})
+            parsed = urlparse(self.path)
+            #: v1.7 B3：静态文件**免鉴权**（浏览器原生加载带不了
+            #: Authorization 头）；敏感数据一律不走静态路径（TDD §7）。
+            if self._serve_static(parsed.path):
                 return
-            self._json(200, {"status": "ok", "version": CONTRACT_VERSION,
-                             "capabilities": [str(item)
-                                              for item in config.capabilities]})
+            if parsed.path == "/health":
+                self._json(200, {"status": "ok", "version": CONTRACT_VERSION,
+                                 "capabilities": [str(item)
+                                                  for item in config.capabilities]})
+                return
+            #: v1.7 B1：GET 侧显式过鉴权（do_GET 现状不查；无 token 时全放行，
+            #: 见 `_authorised`）。
+            if parsed.path == "/v1/ui/events":
+                if not self._authorised():
+                    self._json(401, {"error": "unauthorized"})
+                    return
+                since = 0
+                raw_since = parse_qs(parsed.query).get("since", [""])[0]
+                try:
+                    since = int(raw_since or 0)
+                except ValueError:
+                    since = 0
+                with events_lock:
+                    events = [dict(item) for item in ui_events
+                              if int(item.get("seq") or 0) > since]
+                    latest_seq = (int(ui_events[-1].get("seq") or 0)
+                                  if ui_events else 0)
+                self._json(200, {"events": events, "latest_seq": latest_seq})
+                return
+            if parsed.path == "/v1/ui/config":
+                if not self._authorised():
+                    self._json(401, {"error": "unauthorized"})
+                    return
+                #: v1.7 B2：响应只带**掩码后**的生效 key；生效解析顺序见
+                #: secret_store.effective_key（env > secrets.json > 配置）。
+                cfg = AppConfig.load(config.config_path)
+                cfg.llm.api_key = mask_key(
+                    effective_key(str(cfg.llm.provider), cfg))
+                self._json(200, cfg.to_dict())
+                return
+            if parsed.path == "/v1/ui/knowledge/stats":
+                if not self._authorised():
+                    self._json(401, {"error": "unauthorized"})
+                    return
+                #: v1.7 B4：计数口径钉死——cards 数 `cards_generated/*.jsonl`
+                #: 行数、edges 数 `hypergraph.edges.jsonl` 行数、cases 只数
+                #: `cases/part-*.jsonl`（clue/protect/search_zh 是索引不是案例）。
+                cards = sum(count_lines(path) for path in
+                            (config.knowledge_dir / "cards_generated")
+                            .glob("*.jsonl"))
+                edges = count_lines(config.knowledge_dir
+                                    / "hypergraph.edges.jsonl")
+                cases = sum(count_lines(path) for path in
+                            (config.knowledge_dir / "cases")
+                            .glob("part-*.jsonl"))
+                self._json(200, {
+                    "cards": cards,
+                    "edges": edges,
+                    "cases": cases,
+                    "cards_note": ("132 张自撰卡编译在 "
+                                   "block_director/knowledge/cards_*.py 代码里，"
+                                   "不在此文件计数内"),
+                })
+                return
+            if parsed.path == "/v1/ui/state_map":
+                if not self._authorised():
+                    self._json(401, {"error": "unauthorized"})
+                    return
+                self._json(200, dict(CLIP_BY_STATE))
+                return
+            if parsed.path == "/v1/ui/rules":
+                if not self._authorised():
+                    self._json(401, {"error": "unauthorized"})
+                    return
+                #: B6：配置每次请求**重读**（可能被 Web 改），不缓存。
+                disabled = list(AppConfig.load(config.config_path)
+                                .audit.rules_disabled)
+                self._json(200, {"rules": list(RULES),
+                                 "disabled": disabled})
+                return
+            if parsed.path == "/v1/ui/target_models":
+                if not self._authorised():
+                    self._json(401, {"error": "unauthorized"})
+                    return
+                try:
+                    table = load_table()
+                except TargetModelError as exc:
+                    self._json(500, {"error": str(exc)})
+                    return
+                current = AppConfig.load(config.config_path) \
+                    .delivery.target_model
+                self._json(200, {
+                    "models": {name: {"label": spec.label,
+                                      "raw": dict(spec.raw)}
+                               for name, spec in table.items()},
+                    "current": current,
+                })
+                return
+            if parsed.path == "/v1/ui/shots":
+                if not self._authorised():
+                    self._json(401, {"error": "unauthorized"})
+                    return
+                run = parse_qs(parsed.query).get("run", [""])[0]
+                if not re.fullmatch(r"[A-Za-z0-9._-]+", run) or ".." in run:
+                    self._json(400, {"error": "invalid run id"})
+                    return
+                path = config.runs_dir / run / "export" / "shots.json"
+                try:
+                    payload = json.loads(
+                        path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError, ValueError):
+                    self._json(404, {"error": "not found"})
+                    return
+                self._json(200, payload)
+                return
+            self._json(404, {"error": "not found"})
+
+        #: B3 的 content-type 白名单：白名单外一律 404，不追符号链接。
+        STATIC_TYPES = {
+            ".html": "text/html; charset=utf-8",
+            ".js": "text/javascript; charset=utf-8",
+            ".css": "text/css; charset=utf-8",
+            ".png": "image/png",
+            ".json": "application/json; charset=utf-8",
+            ".txt": "text/plain; charset=utf-8",
+        }
+
+        def _serve_static(self, raw_path: str) -> bool:
+            """静态分支；命中则已写出响应并返回 True（不再走 JSON 路由）。"""
+            if raw_path == "/":
+                relative = "index.html"
+            elif raw_path.startswith("/static/"):
+                relative = unquote(raw_path[len("/static/"):])
+            else:
+                return False
+            root = config.web_root.resolve()
+            candidate = (root / relative).resolve()
+            root_text = os.path.normcase(str(root))
+            candidate_text = os.path.normcase(str(candidate))
+            if (candidate_text != root_text
+                    and not candidate_text.startswith(root_text + os.sep)):
+                #: 目录穿越（`..`、绝对路径、符号链接逃逸）都这一条兜住。
+                self._json(400, {"error": "forbidden path"})
+                return True
+            suffix = candidate.suffix.lower()
+            content_type = self.STATIC_TYPES.get(suffix)
+            if content_type is None:
+                self._json(404, {"error": "not found"})
+                return True
+            try:
+                if suffix == ".png":
+                    raw = candidate.read_bytes()
+                else:
+                    raw = candidate.read_text(encoding="utf-8").encode("utf-8")
+            except OSError:
+                self._json(404, {"error": "not found"})
+                return True
+            self.send_response(200)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+            return True
 
         def do_POST(self):
             if not self._authorised():
@@ -711,6 +1055,57 @@ def make_handler(config: "SidecarConfig"):
             except Exception as exc:                     # noqa: BLE001
                 self._json(500, {"error": f"{type(exc).__name__}: {exc}"})
 
+        def do_PUT(self):
+            if not self._authorised():
+                self._json(401, {"error": "unauthorized"})
+                return
+            try:
+                self._route_put()
+            except Exception as exc:                     # noqa: BLE001
+                self._json(500, {"error": f"{type(exc).__name__}: {exc}"})
+
+        @staticmethod
+        def _issue_dict(issue: Any) -> Dict[str, Any]:
+            return {"code": issue.code, "field": issue.field,
+                    "severity": str(issue.severity), "message": issue.message}
+
+        def _route_put(self) -> None:
+            if self.path == "/v1/ui/config":
+                text, content_type = self._raw_body()
+                try:
+                    if "application/json" in content_type:
+                        data: Dict[str, Any] = json.loads(text or "{}")
+                    else:
+                        data = parse_yaml(text or "{}")
+                except (json.JSONDecodeError, TypeError, ValueError) as exc:
+                    self._json(400, {"error": f"invalid body: {exc}"})
+                    return
+                cfg = AppConfig.from_dict(data)
+                issues = cfg.validate()
+                if any(issue.severity is Severity.ERROR for issue in issues):
+                    #: 有 error 级 Issue → 拒写，磁盘文件不动。
+                    self._json(400, {"issues": [self._issue_dict(issue)
+                                                for issue in issues]})
+                    return
+                #: 两通道分离：config 通道**永不带 key 值**，写盘前强制清空。
+                cfg.llm.api_key = ""
+                cfg.save(config.config_path)
+                self._json(200, {"issues": [self._issue_dict(issue)
+                                            for issue in issues]})
+                return
+            if self.path == "/v1/ui/secret":
+                body = self._body()
+                provider = str(body.get("provider") or "").strip()
+                api_key = str(body.get("api_key") or "")
+                if not api_key:
+                    self._json(400, {"error": "empty api_key"})
+                    return
+                save_secret(provider, api_key)
+                #: 不回 key（R-UI-1）；response 里只允许出现 saved 标志。
+                self._json(200, {"saved": True})
+                return
+            self._json(404, {"error": "not found"})
+
         def _route(self, body: Dict[str, Any]) -> None:
             if self.path == "/v1/chat":
                 self._json(200, call_upstream(config, body).to_dict())
@@ -727,7 +1122,115 @@ def make_handler(config: "SidecarConfig"):
                     cancelled.add(str(body.get("request_id", "")))
                 self._json(200, {"cancelled": True})
                 return
+            #: v1.7 B1：事件推送。客户端 seq 一律忽略，seq/ts 服务端赋值。
+            if self.path == "/v1/ui/events":
+                try:
+                    event = UIEvent.from_dict(body)
+                except (KeyError, TypeError, ValueError) as exc:
+                    self._json(400, {"error": f"invalid ui event: {exc}"})
+                    return
+                payload = event.to_dict()
+                with events_lock:
+                    seq = next(ui_seq)
+                    payload["seq"] = seq
+                    payload["ts"] = time.time()
+                    ui_events.append(payload)
+                    run_id = str((event.payload or {}).get("run_id") or "")
+                    if run_id:
+                        nonlocal current_run_id
+                        current_run_id = run_id
+                self._json(200, {"accepted": True, "seq": seq})
+                return
+            if self.path == "/v1/ui/chat":
+                self._chat(body)
+                return
             self._json(404, {"error": "not found"})
+
+        def _chat_history(self) -> List[Dict[str, str]]:
+            """读末 10 轮（钉死条数，防上下文膨胀），一轮扩成 user+assistant。"""
+            nonlocal current_run_id
+            run_id = current_run_id or "_idle"
+            path = config.runs_dir / run_id / "chat.jsonl"
+            try:
+                lines = path.read_text(encoding="utf-8").splitlines()
+            except OSError:
+                return []
+            history: List[Dict[str, str]] = []
+            for line in lines[-10:]:
+                try:
+                    item = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(item, dict):
+                    history.append({"role": "user",
+                                    "content": str(item.get("user") or "")})
+                    history.append({"role": "assistant",
+                                    "content": str(item.get("assistant") or "")})
+            return history
+
+        def _persist_round(self, message: str, reply: str) -> None:
+            nonlocal current_run_id
+            run_id = current_run_id or "_idle"
+            path = config.runs_dir / run_id / "chat.jsonl"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            record = json.dumps({"user": message, "assistant": reply},
+                                ensure_ascii=False)
+            with open(path, "a", encoding="utf-8") as handle:
+                handle.write(record + "\n")
+
+        def _shortcut_reply(self) -> str:
+            with events_lock:
+                events = list(ui_events)
+            if not events:
+                return "还没有运行事件"
+            latest = {}
+            for kind in ("state_change", "shot_progress", "audit"):
+                for event in reversed(events):
+                    if event.get("kind") == kind:
+                        latest[kind] = event
+                        break
+            parts = []
+            state = latest.get("state_change")
+            if state:
+                parts.append(f"当前状态：{state.get('state') or '未知'}")
+            progress = latest.get("shot_progress")
+            if progress:
+                payload = progress.get("payload") or {}
+                parts.append(f"镜头进度：{progress.get('shot_id') or '未知'}，"
+                             f"{_brief_payload(payload)}")
+            audit = latest.get("audit")
+            if audit:
+                payload = audit.get("payload") or {}
+                parts.append(f"审核：{_brief_payload(payload)}")
+            return "；".join(parts) if parts else "还没有运行事件"
+
+        def _chat(self, body: Dict[str, Any]) -> None:
+            message = str(body.get("message") or "")
+            #: 写操作白名单为空：任何"改/重新生成/删"语义一律固定文案，
+            #: 不调模型（B7 ④）。
+            if re.search(r"帮我改|重新生成|改一下|删掉", message):
+                reply = ("v1.7 的聊天是只读的：请在 Blender 面板或 Web 页面"
+                         "上操作")
+                self._persist_round(message, reply)
+                self._json(200, {"reply": reply, "source": "write_guard",
+                                 "sources": []})
+                return
+            #: 状态问答捷径：**包含**匹配（不锚定），命中即不调模型（B7 ①）。
+            if re.search(r"状态|进度|跑到哪", message):
+                reply = self._shortcut_reply()
+                self._persist_round(message, reply)
+                self._json(200, {"reply": reply, "source": "shortcut",
+                                 "sources": []})
+                return
+            retrieve = _retrieve_payload({"query": message})
+            system, sources = _render_injection(retrieve)
+            messages = [{"role": "system", "content": system}]
+            messages.extend(self._chat_history())
+            messages.append({"role": "user", "content": message})
+            reply_obj = call_upstream(config, {"messages": messages})
+            reply = str(getattr(reply_obj, "content", None) or "")
+            self._persist_round(message, reply)
+            self._json(200, {"reply": reply, "sources": sources})
 
     def _card_payload(card: Card) -> Dict[str, Any]:
         return card.to_dict()
@@ -835,6 +1338,10 @@ def parse_args(argv):
                         help="解码随机种子，默认 0（v1.4 §2.3d T6）")
     parser.add_argument("--knowledge-dir", default=str(DEFAULT_KNOWLEDGE_DIR),
                         help="知识索引目录（hypergraph.*.jsonl / cases.jsonl）")
+    parser.add_argument("--web-root", default=str(ROOT / "web"),
+                        help="Web 静态文件根目录（GET / 与 /static/*，免鉴权）")
+    parser.add_argument("--runs-dir", default=str(ROOT / "runs"),
+                        help="运行产物目录（GET /v1/ui/shots 只服务这棵树内）")
     parser.add_argument("--cases-backend", choices=CASE_LANES, default="lightrag",
                         help="L3 案例通道（§2.3b）；lightrag 不可用时降级 hybrid")
     parser.add_argument("--cases-filter", choices=("off", "llm"), default="off",
@@ -845,6 +1352,9 @@ def parse_args(argv):
                              "见 ACCEPTANCE_STATUS.md §三十二）。过滤器只做减法，"
                              "失败时退回未过滤结果并在 trace 里记账。")
     parser.add_argument("--token", default="")
+    parser.add_argument("--config", default=None,
+                        help="配置 YAML/JSON 路径；缺省走 AppConfig.load(None) "
+                             "的默认路径（不猜）。PUT /v1/ui/config 也写回这里")
     parser.add_argument("--upstream-api-key-env", default="",
                         help="上游 API 密钥所在的**环境变量名**（不传密钥本身）。"
                              "云端 OpenAI 兼容端点（智谱 GLM 等）必须给；"
@@ -853,6 +1363,7 @@ def parse_args(argv):
     parser.add_argument("--once", action="store_true",
                         help="处理一个请求后退出（测试用）")
     args = parser.parse_args(argv)
+    args.upstream_kind_explicit = args.upstream_kind != "auto"
     if args.upstream_kind == "auto":
         args.upstream_kind = detect_kind(args.upstream)
     if args.host not in (LOOPBACK, "localhost"):
