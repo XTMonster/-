@@ -143,7 +143,7 @@ def test_react_round_fixes_the_shot_and_finishes():
     assert "shot_002" in auditor.audited
 
 
-def test_react_payload_is_auto_tool_choice_and_carries_the_registry():
+def test_react_payload_is_required_tool_choice_and_carries_the_registry():
     transport = ScriptedTransport([PLAN_REPLY,
                                    ("setup_camera", {"shot_id": "shot_001"}),
                                    ("setup_camera", {"shot_id": "shot_001"}),
@@ -154,7 +154,7 @@ def test_react_payload_is_auto_tool_choice_and_carries_the_registry():
                       if str(item.purpose) == "react"]
     assert react_payloads, "应当发起过 ReAct 请求"
     first = react_payloads[0]
-    assert str(first.tool_choice) == "auto"
+    assert str(first.tool_choice) == "required"
     assert any(tool["function"]["name"] == PLAN_TOOL_NAME
                or tool["function"]["name"] == "setup_camera"
                for tool in first.tools)
@@ -207,6 +207,9 @@ def test_react_runs_at_most_once_per_shot():
 # --------------------------------------------------------------------------- #
 def test_react_conversation_is_trimmed_to_the_window():
     from block_director.layer5_orchestrator.driver import default_registry
+    from block_director.layer5_orchestrator.context_budget import count_tokens
+    from block_director.layer5_orchestrator.react import build_react_payload
+    from block_director.contracts.plan import ShotPlan
 
     transport = ScriptedTransport([
         PLAN_REPLY,
@@ -220,12 +223,22 @@ def test_react_conversation_is_trimmed_to_the_window():
     registry.add(name="setup_camera", description="x",
                  parameters={"type": "object", "additionalProperties": True},
                  handler=lambda **kw: "机位已调整：" + "说" * 200)
+    #: G8-PA：react 系统提示现在带闭集取值表与动作参数表（与草案/修复同一份），
+    #: system 消息本身就接近千 token，而 ``trim_messages`` **永远保留 system**——
+    #: 窗口比 system 还小时"≤窗口"是数学上不可满足的场景，不是失败。窗口仍取
+    #: "比完整对话小得多"的值：裁剪必须真的发生，断言口径（每条载荷 ≤ 窗口）不变。
+    react_system = build_react_payload(
+        ShotPlan.from_dict({"shot_id": "shot_001", "order": 1, "intent": "x",
+                            "shot_type": "MS", "duration_frames": 24}),
+        AuditResult(passed=False, errors=[AuditError(rule="COMPOSITION",
+                                                     message="构图分低")]),
+        registry=registry).messages[0]
+    window = count_tokens([react_system]) + 400
     driver = make_driver(transport, StubAuditor(fail_times=9),
-                         react_max_steps=4, window=600, registry=registry)
+                         react_max_steps=4, window=window, registry=registry)
     driver.run_to_completion()
     kinds = [event.kind for event in driver.audit.recent(400)]
-    from block_director.layer5_orchestrator.context_budget import count_tokens
     react_payloads = [item for item in transport.payloads
                       if str(item.purpose) == "react"]
     assert "context_trimmed" in kinds, "窗口很小，应当发生裁剪"
-    assert all(count_tokens(item.messages) <= 600 for item in react_payloads)
+    assert all(count_tokens(item.messages) <= window for item in react_payloads)

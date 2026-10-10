@@ -6,6 +6,7 @@ import json
 
 from block_director.contracts.enums import Purpose
 from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall
+from block_director.layer5_orchestrator.control_tools import FINISH_SHOT
 from block_director.layer5_orchestrator.driver import DriverLimits, PrevisDriver
 from block_director.layer5_orchestrator.planner import PLAN_TOOL_NAME
 from block_director.layer5_orchestrator.repair import build_repair_payload
@@ -125,6 +126,8 @@ def test_repair_and_react_payloads_do_not_offer_emit_plan():
     registry.add(name=PLAN_TOOL_NAME, description="plan",
                  parameters={"type": "object"}, handler=lambda **kw: "ok")
     registry.add(name="setup_camera", description="fix",
+                 parameters={"type": "object"}, handler=lambda **kw: "ok")
+    registry.add(name=FINISH_SHOT, description="完成当前镜头",
                  parameters={"type": "object"}, handler=lambda **kw: "ok")
     audit = AuditResult(passed=False, target="shot_001")
     shot = ShotPlan.from_dict({"shot_id": "shot_001", "intent": "x",

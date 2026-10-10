@@ -24,8 +24,9 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
+from ..cinema.anchor import DEFAULT_PROFILE
 from ..contracts.beats import BEAT_VERBS, MAX_BEATS, PACE_VALUES, ShotBeat
 from ..contracts.rhythm import (
     CURVE_TO_INTERPOLATION,
@@ -39,6 +40,13 @@ from ..motion.model import (
     LAYER_OF,
     PROP_ACTIONS,
     head_track_angles,
+)
+from ..motion.targets import (
+    TargetError,
+    facing_degrees,
+    resolve_target,
+    target_kind,
+    yaw_pitch_to,
 )
 
 #: 动词 → 缺省帧长（**设计表：调表不动结构**）。
@@ -339,11 +347,20 @@ def compile_beats(shot, anchors: Any = None, cast: Any = None,
             params["speed"] = PACE_TO_SPEED.get(str(beat.pace or "normal"),
                                                 "walk")
         elif beat.verb in PROP_ACTIONS:
-            prop = str(beat.target or "")
-            if prop:
-                params["prop"] = prop
-            elif beat.react:
-                params["prop"] = str(beat.react)
+            if isinstance(beat.target, str):
+                prop = str(beat.target or "")
+                if prop:
+                    params["prop"] = prop
+                elif beat.react:
+                    params["prop"] = str(beat.react)
+            else:
+                #: G8-C：结构化目标是 look_at.target / hand_to.toward 的事，
+                #: 不是 prop 动词的 target（道具名）。如实记问题、不猜道具。
+                problems.append(
+                    f"{where}：{beat.verb} 的 target={beat.target!r} 不是道具名"
+                    f"（结构化目标请写给 look_at.target / hand_to.toward）")
+                if beat.react:
+                    params["prop"] = str(beat.react)
 
         frames = _duration_for(beat.verb, start, start, duration, distance,
                                beat.pace)
@@ -414,30 +431,51 @@ def _coerce(shot) -> List[ShotBeat]:
 def _resolve_walk(beat: ShotBeat, anchors, cast_pos, subject):
     """走位的 ``(终点, 起点, 说明)``。解析不出就 ``(None, None, 原因)``。"""
     verb = beat.verb
-    target = str(beat.target or "")
     destination: Optional[Tuple[float, float, float]] = None
-    if target:
-        if target in anchors:
-            destination = anchors[target]
-        elif target in cast_pos:
-            destination = cast_pos[target]
+    anchor_name: Optional[str] = None
+    if isinstance(beat.target, dict):
+        #: G8-C：结构化目标——角色 id 用其场景位置，point 原样当终点。
+        kind = target_kind(beat.target)
+        if kind == "character":
+            character_id = str(beat.target["character"]).strip()
+            destination = cast_pos.get(character_id)
+            if destination is None:
+                return (None, None,
+                        f"target={beat.target!r} 的角色 {character_id} "
+                        f"位置未知，不猜坐标，已跳过这个拍点")
+        elif kind == "point":
+            destination = tuple(float(v) for v in beat.target["point"])
         else:
             return (None, None,
-                    f"target={target!r} 既不在锚点表也不在角色表里，"
-                    f"不猜坐标，已跳过这个拍点")
+                    f"target={beat.target!r} 不是合法目标"
+                    f"（角色 id / {{'character': id}} / "
+                    f"{{'point': [x, y, z]}}），不猜坐标，已跳过这个拍点")
     else:
-        #: 没有目标 = 不想动。用当前位置当终点（**不猜目的地**）。
-        destination = cast_pos.get(subject)
-        if destination is None:
-            return (None, None, "既没有 target、角色位置也未知，已跳过这个拍点")
+        target = str(beat.target or "")
+        if target:
+            if target in anchors:
+                destination = anchors[target]
+                anchor_name = target
+            elif target in cast_pos:
+                destination = cast_pos[target]
+            else:
+                return (None, None,
+                        f"target={target!r} 既不在锚点表也不在角色表里，"
+                        f"不猜坐标，已跳过这个拍点")
+        else:
+            #: 没有目标 = 不想动。用当前位置当终点（**不猜目的地**）。
+            destination = cast_pos.get(subject)
+            if destination is None:
+                return (None, None,
+                        "既没有 target、角色位置也未知，已跳过这个拍点")
 
     source: Optional[Tuple[float, float, float]] = None
     if verb == "enter_from":
         #: 入场：起点在画外锚点（有具名锚点就用它）；没有就用当前位置——
         #: 那是"原地不动"，不会把人瞬移到编出来的坐标上。
-        source = destination if target and target in anchors else None
+        source = destination if anchor_name is not None else None
         if source is not None:
-            source = anchors[target]
+            source = anchors[anchor_name]
     elif verb == "exit_frame":
         #: 出场：终点在画外锚点（target）；起点 = 角色当前位置（起点接力）。
         source = cast_pos.get(subject)
@@ -470,6 +508,73 @@ def _look_at_params(beat: ShotBeat, subject: str, cast_pos, facings,
     if note:
         problems.append(f"{where}：{note}")
     return {"yaw_deg": float(yaw), "pitch_deg": float(pitch)}
+
+
+def resolve_action_targets(action_type: str, character_id: str,
+                           params: Dict[str, Any],
+                           positions: Mapping[str, Sequence[float]],
+                           facing: Sequence[float],
+                           eye_height: Optional[float] = None
+                           ) -> Tuple[Dict[str, Any], List[str]]:
+    """把动作参数里的结构化目标折算成引擎参数（G8-C 的编译层转换，纯函数）。
+
+    * ``look_at.target`` → ``yaw_deg`` / ``pitch_deg``（目标位置用**本镜首帧**
+      的场景位置表；角色目标注视其**眼高**，point 原样；几何来自
+      ``motion/targets.yaw_pitch_to``）。折算后 ``target`` 键被移除。
+    * ``hand_to``/``place_prop``/``pick_up`` 的 ``toward`` 结构化目标 →
+      主体到目标的方向量（既有 ``_axis_from_toward`` 的主分量定轴语义不变）。
+    * ``look_at`` 同时写 ``target`` 与 ``yaw_deg``/``pitch_deg`` 记问题
+      （无隐式优先级，与解析期判域同一条）。
+
+    返回 ``(新 params, problems)``；有 problems 时调用方应**跳过该动作**
+    （确定性错误，绝不静默取默认值）。
+    """
+    problems: List[str] = []
+    out = dict(params or {})
+    height = DEFAULT_PROFILE.eye_z if eye_height is None else float(eye_height)
+    subject = positions.get(str(character_id)) if positions else None
+
+    if action_type == "look_at" and out.get("target") is not None:
+        if "yaw_deg" in out or "pitch_deg" in out:
+            problems.append(
+                "look_at 不能同时写 target 与 yaw_deg/pitch_deg"
+                "（无隐式优先级）；未折算")
+            return out, problems
+        if subject is None:
+            problems.append(
+                f"look_at 的角色 {character_id!r} 位置未知，"
+                f"无法折算 target={out['target']!r}")
+            return out, problems
+        try:
+            position = resolve_target(out["target"], positions)
+            if target_kind(out["target"]) == "character":
+                #: 角色目标注视其眼高（眼睛高度从冻结 profile 派生）。
+                gaze = (position[0], position[1], position[2] + height)
+            else:
+                gaze = position
+            yaw, pitch = yaw_pitch_to(subject, facing_degrees(facing), gaze,
+                                      eye_height=height)
+        except TargetError as exc:
+            problems.append(f"look_at 的 target 无法解析：{exc}")
+            return out, problems
+        out.pop("target", None)
+        out["yaw_deg"] = float(yaw)
+        out["pitch_deg"] = float(pitch)
+
+    elif action_type in PROP_ACTIONS and isinstance(out.get("toward"), dict):
+        if subject is None:
+            problems.append(
+                f"{action_type} 的角色 {character_id!r} 位置未知，"
+                f"无法折算 toward={out['toward']!r}")
+            return out, problems
+        try:
+            position = resolve_target(out["toward"], positions)
+        except TargetError as exc:
+            problems.append(f"{action_type} 的 toward 无法解析：{exc}")
+            return out, problems
+        out["toward"] = [float(position[index]) - float(subject[index])
+                         for index in range(3)]
+    return out, problems
 
 
 def _serialise_same_subject(actions: List[Dict[str, Any]], duration: int,
@@ -606,4 +711,5 @@ __all__ = [
     "PACE_TO_SPEED", "PACE_FRAME_MULTIPLIER", "CURVE_PROFILE",
     "FACE_TO_SCREEN_YAW",
     "compile_beats", "merge_with_actions", "compiled_verb_set",
+    "resolve_action_targets",
 ]

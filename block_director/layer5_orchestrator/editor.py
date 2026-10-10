@@ -14,14 +14,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
-from ..contracts.enums import MOVEMENT_TYPES, VFX_TYPES, ErrorCode, Purpose, ToolChoice
+from ..contracts.enums import ErrorCode, Purpose, ToolChoice
 from ..contracts.beats import (
-    BEAT_VERBS,
     COMPOSITION_RULES,
     FACE_TO_VALUES,
-    MAX_BEATS,
     PACE_VALUES,
-    RULE_ACTIONS,
     SUBJECT_POSITIONS,
     validate_beats,
     validate_composition_spec,
@@ -43,7 +40,6 @@ from ..cinema.camera_motion import movement_unit_table
 from ..motion.model import (
     ACTION_PARAMS,
     ACTION_TYPES,
-    ALL_ACTION_PARAM_KEYS,
     action_param_problems,
     action_param_domains,
     normalize_action_params,
@@ -52,183 +48,15 @@ from .dialogue_budget import shot_dialogue_budget
 from .occupancy import layer_occupancy, render_occupancy_table
 from .react import render_shot_memory, shot_memory
 from .scene_contract import shot_constraint_query
+from .shot_schema import BASE_DRAFT_PARAMETERS, emit_shot_draft_schema
 
 EDITOR_TOOL_NAME = SHOT_DRAFT_TOOL
 
-#: 单镜草案的严格 schema：只允许这一镜该关心的事情。
-EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = {
-    "type": "object",
-    "additionalProperties": False,
-    "required": ["shot_id"],
-    "properties": {
-        "shot_id": {"type": "string"},
-        "shot_type": {"type": "string"},
-        "characters": {"type": "array", "items": {"type": "string"}},
-        "actions": {
-            "type": "array",
-            "maxItems": 12,
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["character_id", "action_type"],
-                "properties": {
-                    "character_id": {"type": "string"},
-                    "action_type": {"type": "string",
-                                    "enum": list(ACTION_TYPES)},
-                    "start_frame": {"type": "integer", "minimum": 1},
-                    "end_frame": {"type": "integer", "minimum": 1},
-                    "target_position": {"type": "array", "minItems": 2,
-                                        "maxItems": 3,
-                                        "items": {"type": "number"}},
-                    #: `params` **不是自由形状**：键表从 `motion/model.py` 渲染
-                    #: （单一真源）。实测代价——模型写 `body_tilt` + `{"amount": 15}`
-                    #: 时 schema 放行、构建期才报 `E_MOTION_001`，整轮真实运行直接
-                    #: 变 ERROR。现在"任何动作都不认识的键"在**解析期**就被
-                    #: `tool_schema.validate_args` 挡住，工具错误回给模型重试。
-                    "params": {"type": "object", "additionalProperties": False,
-                               "properties": {key: {} for key
-                                              in ALL_ACTION_PARAM_KEYS}},
-                },
-            },
-        },
-        "dialogues": {
-            "type": "array",
-            "maxItems": 12,
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["character_id", "text", "start_frame", "end_frame"],
-                "properties": {
-                    "character_id": {"type": "string"},
-                    "text": {"type": "string"},
-                    "start_frame": {"type": "integer", "minimum": 1},
-                    "end_frame": {"type": "integer", "minimum": 1},
-                },
-            },
-        },
-        "camera": {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {
-                #: v1.5：`side` 是**闭集**（单一真源 = `cinema/framing.py::CAMERA_SIDES`）。
-                #: 此前这里只写 `type: string`，模型于是写了一整句中文
-                #: （"轴线同侧，米迦尔侧前方…"），而求解器对未知取值**静默折成 `front`**
-                #: ——64 镜真跑的构图分中位从 82.7 掉到 58.4、64/64 判失败。
-                "side": {"type": "string", "enum": list(CAMERA_SIDES)},
-                "lens": {"type": "number", "minimum": 8, "maximum": 300},
-                #: v1.3 P7：声明式运镜——写了就在构建时自动生成相机关键帧，
-                #: 不再依赖模型另外调一次 move_camera。
-                "movements": {
-                    "type": "array",
-                    "maxItems": 4,
-                    "items": {
-                        "type": "object",
-                        "additionalProperties": False,
-                        "required": ["type", "amount"],
-                        "properties": {
-                            "type": {"type": "string",
-                                     "enum": list(MOVEMENT_TYPES)},
-                            "amount": {"type": "number", "minimum": 0,
-                                       "maximum": 180},
-                            "start_frame": {"type": "integer", "minimum": 1},
-                            "end_frame": {"type": "integer", "minimum": 1},
-                            "seed": {"type": "integer", "minimum": 0},
-                            "subject": {"type": "string"},
-                        },
-                    },
-                },
-            },
-        },
-        #: v1.3：谁看谁（R013 的落实侧）。
-        "gaze": {
-            "type": "array",
-            "maxItems": 8,
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["from", "to"],
-                "properties": {
-                    "from": {"type": "string"},
-                    "to": {"type": "string"},
-                },
-            },
-        },
-        #: v1.3 §3.6：特效代理（火焰 / 发光 / 火花 / 烟雾）。
-        #: 白模里它们是**不透明几何**；Workbench 没有半透明，如实标注在交付 README。
-        "vfx": {
-            "type": "array",
-            "maxItems": 4,
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["id", "type"],
-                "properties": {
-                    "id": {"type": "string"},
-                    "type": {"type": "string", "enum": list(VFX_TYPES)},
-                    "position": {"type": "array", "minItems": 3,
-                                 "maxItems": 3, "items": {"type": "number"}},
-                    "size": {"type": "array", "minItems": 3, "maxItems": 3,
-                             "items": {"type": "number"}},
-                    "start_frame": {"type": "integer", "minimum": 1},
-                    "end_frame": {"type": "integer", "minimum": 1},
-                },
-            },
-        },
-        #: v1.5 §3.8（P2-T4 / FR-1）：**执行拍点表**（一镜内的动作时刻表）。
-        #: 扁平优先、枚举优先：`verb` 从 `motion/model.py::ACTION_TYPES` 渲染
-        #: （单一真源，红线 R-7）；帧号**不在这里**——由 `beat_compiler` 从 `t`
-        #: 换算（连续数值不是 LLM 的输出）。`beats` 与 `actions` 可并存，
-        #: 合并规则见 §4.2（同镜重复以 beats 为准）。
-        "beats": {
-            "type": "array",
-            "maxItems": MAX_BEATS,
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["t", "subject", "verb"],
-                "properties": {
-                    "t": {"type": "number", "minimum": 0, "maximum": 1},
-                    "subject": {"type": "string"},
-                    "verb": {"type": "string", "enum": list(BEAT_VERBS)},
-                    "target": {"type": "string"},
-                    "face_to": {"type": "string", "enum": list(FACE_TO_VALUES)},
-                    "pace": {"type": "string", "enum": list(PACE_VALUES)},
-                    #: v1.6 D2（FR-B3）：速度曲线词。闭集真源 =
-                    #: ``contracts/rhythm.py::CURVE_VALUES``（**导入**，不抄第二份）。
-                    "curve": {"type": "string", "enum": list(CURVE_VALUES)},
-                    "react": {"type": "string"},
-                },
-            },
-        },
-        #: v1.5 §3.8（P2-T4 / FR-10）：构图声明（两个闭集字段）。
-        "composition": {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {
-                "rule": {"type": "string", "enum": list(COMPOSITION_RULES)},
-                "subject_position": {"type": "string",
-                                     "enum": list(SUBJECT_POSITIONS)},
-            },
-        },
-        #: v1.5 §3.8（P2-T4 / FR-8）：破例辩护（引用/有意违反哪条规则、为什么）。
-        "rule_justifications": {
-            "type": "array",
-            "maxItems": 6,
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["rule", "action"],
-                "properties": {
-                    "rule": {"type": "string"},
-                    "action": {"type": "string", "enum": list(RULE_ACTIONS)},
-                    "reason": {"type": "string"},
-                    "precedent": {"type": "string"},
-                },
-            },
-        },
-        "prompt": {"type": "string"},
-    },
-}
+#: 单镜草案的严格 schema。**模板与逐镜版本现在都住在 ``shot_schema.py``**
+#: （单一真源）：动作分支从 ``motion/model.py::ACTION_PARAMS`` 逐动作渲染，
+#: 逐镜角色枚举从（本镜在场角色 / 全剧组 / 锚点）注入，不在此处再手抄第二份。
+#: 旧名字保留：驱动器 ``default_registry`` 与既有单测仍按此导入。
+EMIT_SHOT_DRAFT_PARAMETERS: Dict[str, Any] = BASE_DRAFT_PARAMETERS
 
 EDITOR_SYSTEM_PROMPT = """\
 你是白模预演的执行导演。根据分镜计划里的这一个镜头，输出它的完整场景描述。
@@ -251,16 +79,18 @@ EDITOR_SYSTEM_PROMPT = """\
   按 `t` 单调不减；**不要写帧号**，帧号由引擎按 `t` 换算），`verb` 从闭集里
   **逐字**拷贝，`target` 写锚点名或角色 id，`face_to` 写屏幕方位或角色 id；
 - `beats[].target` 只能写"可用角色/可用场级锚点"里的名字；`screen_right` 这类
-  屏幕方位词属于 `face_to`，不是 `target`；`pace` 的闭集只有
-  `slow/normal/brisk`（`sharp` 是**速度曲线**词，归 `curve` 字段，不能写进
-  `pace`）；动作参数的键**只写该动作那一行有的键**（例如 `turn_head` 只有
+  屏幕方位词属于 `face_to`，不是 `target`；`pace` 的取值见下方闭集表
+  （`sharp` 是**速度曲线**词，归 `curve` 字段，不能写进 `pace`）；
+  动作参数的键**只写该动作那一行有的键**（例如 `turn_head` 只有
   `angle_deg/angle/degrees`，没有 `yaw_deg/pitch_deg`），写表外同义词整条
   草案会被退回；`walk_to`/`run_to` 的 `speed` 闭集只有 **walk/run**
-  （`slow/normal/brisk` 是拍点 `pace` 的节奏词，写进 `speed` 会被退回）；
+  （拍点 `pace` 的节奏词写进 `speed` 会被退回）；
 - **走位跨线必须看得见**：任何角色若要从两人连线的一侧走到另一侧，必须把
   这次换位安排成双人同框的镜头；只在单人镜里绕到另一侧会被判越轴（R001）。
 - `composition`（构图声明）只在确实有构图意图时写，`rule` 与 `subject_position`
   都是闭集；
+- **闭集字段只写下列值之一**（逐字、不加前缀、不写描述句）：
+{closed_sets}
 - `rule_justifications` 写**规则引用与破例辩护**：`rule` 填下面"参考资料"里
   **真的出现过**的那条规则/边的 id（照抄，不要自己造名字），`action=follow`
   表示遵守、`action=break` 表示有意违反；**`action=break` 时 `reason` 必填**
@@ -344,6 +174,29 @@ def render_movement_units() -> str:
     return "\n".join(lines)
 
 
+def render_closed_sets() -> str:
+    """拍点/构图闭集字段的取值表（与逐镜 schema 用的**同一份常量**生成，不手抄）。
+
+    r2 真跑：``emit_shot_draft`` 的闭集字段被写成 schema 外的值
+    （``composition.rule``/``subject_position``、``beats[].pace``/``face_to``/
+    ``curve`` 全部越界）。``strict`` 挡不住这些，把取值逐字列出并说死
+    "每个字段只写一个值、不加前缀、不写描述句"才拦得住。修复/精修提示与这里
+    共用同一张表（同一个函数生成）。
+    """
+    return "\n".join([
+        "  · `composition.rule`：" + "、".join(
+            f"`{value}`" for value in COMPOSITION_RULES),
+        "  · `composition.subject_position`：" + "、".join(
+            f"`{value}`" for value in SUBJECT_POSITIONS),
+        "  · `beats[].pace`：" + "、".join(
+            f"`{value}`" for value in PACE_VALUES),
+        "  · `beats[].face_to`：" + "、".join(
+            f"`{value}`" for value in FACE_TO_VALUES) + "（角色 id 也合法）",
+        "  · `beats[].curve`：" + "、".join(
+            f"`{value}`" for value in CURVE_VALUES),
+    ])
+
+
 @dataclass
 class ShotDraft:
     """一镜的结构化草案。"""
@@ -367,11 +220,22 @@ class ShotDraft:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ShotDraft":
+        #: 动作条目必须是对象。旧实现 `dict(item)` 对非对象抛的是原生
+        #: TypeError/ValueError——TypeError 会逃逸驱动器只捕 ValueError 的
+        #: 分支，把整轮打死。这里改成确定性的 ValueError（驱动器记
+        #: `draft_invalid`、这一镜沿用计划内容），且绝不静默丢弃。
+        actions: List[Dict[str, Any]] = []
+        for index, item in enumerate(data.get("actions") or []):
+            if not isinstance(item, dict):
+                raise ValueError(
+                    f"actions[{index}] 类型应为对象"
+                    f"（实际 {type(item).__name__}）")
+            actions.append(dict(item))
         return cls(
             shot_id=str(data.get("shot_id", "")),
             shot_type=str(data.get("shot_type", "") or ""),
             characters=[str(item) for item in data.get("characters", []) or []],
-            actions=[dict(item) for item in data.get("actions", []) or []],
+            actions=actions,
             dialogues=[dict(item) for item in data.get("dialogues", []) or []],
             camera=dict(data.get("camera", {}) or {}),
             gaze=[dict(item) for item in (data.get("gaze") or [])
@@ -405,6 +269,7 @@ class ShotDraft:
 def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                          shot_order: int = 1, scene_state: str = "",
                          continuity: str = "", characters: Sequence[str] = (),
+                         full_cast: Sequence[str] = (),
                          props: Sequence[str] = (), scene_text: str = "",
                          retriever=None, temperature: float = 0.7,
                          max_tokens: Optional[int] = None,
@@ -443,13 +308,14 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
     #: v1.5 §3.2（P2-T4）：场级锚点的**名字**必须让 B1 看见——`beats[].target`
     #: 只能引用锚点名或角色 id；模型看不到名单就只能编坐标或丢掉 target。
     #: 锚点表只读（阶段 A 的产物），B1 不许改写它。
-    anchors_text = ""
+    anchor_names: List[str] = []
     if plan is not None:
         environment = getattr(plan, "environment", None) or {}
         names = [str((item or {}).get("name") or "")
                  for item in (environment.get("anchors") or [])
                  if isinstance(item, dict)]
-        anchors_text = "、".join(name for name in names if name)
+        anchor_names = [name for name in names if name]
+    anchors_text = "、".join(anchor_names)
     system_text = (EDITOR_SYSTEM_PROMPT
                    .replace("{shot_plan}", _shot_plan_text(shot, shot_order))
                    .replace("{scene_state}", scene_state or "（尚未采集）")
@@ -460,6 +326,7 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
                    .replace("{sides}", "、".join(f"`{item}`"
                                                  for item in CAMERA_SIDES))
                    .replace("{side_count}", str(len(CAMERA_SIDES)))
+                   .replace("{closed_sets}", render_closed_sets())
                    .replace("{action_params}", render_action_params())
                    .replace("{movement_units}", render_movement_units())
                    .replace("{dialogue_budget}",
@@ -479,7 +346,8 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
         tools=[{"type": "function",
                 "function": {"name": EDITOR_TOOL_NAME,
                              "description": "提交这一个镜头的完整场景描述",
-                             "parameters": EMIT_SHOT_DRAFT_PARAMETERS}}],
+                             "parameters": emit_shot_draft_schema(
+                                 characters, full_cast, anchor_names)}}],
         tool_choice=ToolChoice.REQUIRED,
         temperature=temperature,
         max_tokens=max_tokens,
@@ -518,7 +386,8 @@ def find_draft_call(reply: ChatReply):
 def extract_draft(reply: ChatReply, shot_id: str, *,
                   characters: Sequence[str] = (),
                   anchors: Optional[Sequence[str]] = None,
-                  roster: Optional[Sequence[str]] = None) -> ShotDraft:
+                  roster: Optional[Sequence[str]] = None,
+                  full_cast: Optional[Sequence[str]] = None) -> ShotDraft:
     """解析草案；失败抛 ``ValueError``（由驱动器决定跳过还是重试）。
 
     ``characters`` / ``anchors`` 是**可选**的上下文（这一镜的在场角色与本场
@@ -561,6 +430,16 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
     bad = []
     for item in draft.actions:
         kind = str((item or {}).get("action_type") or "")
+        #: **动作类型闭集**在解析期就查（r4 真跑 run f9fedb5c133c 的
+        #: `finger_snap` 实证）：DeepSeek 的 strict 是尽力而为、不是约束解码，
+        #: schema 的 enum 挡不住越界值；B1 又不过 `validate_args`，于是未知
+        #: 动作一路漏进计划，构建期 `check_conflicts` 抛"未知动作类型"把
+        #: 13 镜整轮打成 ERROR。在这里失败 → 驱动器记 `draft_invalid`、
+        #: 这一镜沿用计划内容（与 beats 的 `verb` 闭集同一条纪律）。
+        if kind not in ACTION_TYPES:
+            bad.append(f"action_type={kind!r} 不在动作类型闭集内"
+                       f"（合法取值：{'、'.join(ACTION_TYPES)}）")
+            continue
         #: v1.6 G2（用户裁决）：无歧义等价键在**存进草案之前**归一，构建期
         #: 拿到的永远是规范键（`yaw_deg`→`angle_deg` 等）；其余照旧拒绝。
         item["params"] = normalize_action_params(
@@ -576,7 +455,10 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
     #: v1.5 §3.1（P2-T4）：拍点/构图/辩护的闭集与不变量在**解析期**核。
     #: 失败 → 驱动器记 `draft_invalid`、这一镜沿用计划内容（既有纪律），
     #: 而不是把整轮打成 ERROR。
-    beat_problems = validate_beats(draft.beats, characters, anchors)
+    #: G8-B：``full_cast`` 让**场外角色**成为合法拍点目标（G8-C 的口径），
+    #: 而 ``subject`` 仍只允许本镜在场角色（validate_beats 内部区分两栏）。
+    beat_problems = validate_beats(draft.beats, characters, anchors,
+                                   full_cast=full_cast)
     beat_problems += validate_composition_spec(draft.composition)
     beat_problems += validate_justifications(draft.rule_justifications)
     if beat_problems:
@@ -590,7 +472,7 @@ DRAFT_PROBLEM_PENALTY = 10
 
 
 def score_draft(draft: "ShotDraft", *, characters=(),
-                anchors=()) -> int:
+                anchors=(), full_cast=None) -> int:
     """给一份单镜草案打**规则分**（Best-of-N 的 rerank 用，纯函数）。
 
     分 = 具体度 − 惩罚：
@@ -604,7 +486,7 @@ def score_draft(draft: "ShotDraft", *, characters=(),
     （PRD FR-12：rerank 不是过滤）。
     """
     problems = len(validate_beats(getattr(draft, "beats", None) or [],
-                                  characters, anchors))
+                                  characters, anchors, full_cast=full_cast))
     problems += len(validate_composition_spec(
         getattr(draft, "composition", None) or {}))
     problems += len(validate_justifications(
@@ -616,7 +498,7 @@ def score_draft(draft: "ShotDraft", *, characters=(),
 
 
 def rank_drafts(candidates: Sequence["ShotDraft"], *, characters=(),
-                anchors=()) -> tuple:
+                anchors=(), full_cast=None) -> tuple:
     """``(best, alternates)``：按规则分排序，**不过滤**。
 
     排序是**稳定**的（同分先到先得，`max` 取第一个），因此同一批候选两次调用
@@ -626,8 +508,9 @@ def rank_drafts(candidates: Sequence["ShotDraft"], *, characters=(),
     items = list(candidates or [])
     if not items:
         return None, []
-    scored = [(score_draft(item, characters=characters, anchors=anchors), index,
-               item) for index, item in enumerate(items)]
+    scored = [(score_draft(item, characters=characters, anchors=anchors,
+                           full_cast=full_cast), index, item)
+              for index, item in enumerate(items)]
     #: 分数降序；同分按原始顺序（index 升序）⇒ 稳定。
     ordered = sorted(scored, key=lambda entry: (-entry[0], entry[1]))
     best = ordered[0][2]

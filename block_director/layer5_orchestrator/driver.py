@@ -14,6 +14,7 @@ import json
 import math
 import os
 import queue
+import re
 import threading
 import time
 import traceback
@@ -67,6 +68,7 @@ from .editor import (build_editor_payload, extract_draft, merge_draft,
 from .editor import EDITOR_TOOL_NAME, EMIT_SHOT_DRAFT_PARAMETERS
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
 from .rhythm_reading import rhythm_readings
+from .shot_schema import shot_tool_overrides
 from .retry_ladder import (
     DEGRADE,
     RETRY_SAME,
@@ -79,6 +81,7 @@ from .retry_ladder import (
 )
 from .loop_detector import LoopDetector
 from .human_gate import GateDecision, GateRequest, HumanGate
+from .invalid_category import classify_invalid
 from .review import ReviewVerdict, build_review_payload, parse_review
 from .states import TERMINAL_STATES, DriverState
 from .tool_registry import ToolRegistry
@@ -113,6 +116,57 @@ def label_overlap_event_fields(build_summary: Dict[str, Any]) -> Optional[Dict[s
         "frames_checked": int(overlap.get("frames_checked", 0)),
         "limit": float(overlap.get("limit", 0.05)),
     }
+
+
+def upstream_error_fields(exc: BaseException) -> Dict[str, Any]:
+    """从 ``TransportError.body``（sidecar 的 502 JSON）里取上游状态与正文摘录。
+
+    G8-H：sidecar 在 502 里带 ``upstream_http_status`` / ``upstream_body_excerpt``
+    （见 ``tools/sidecar_server.py``），这里把它们提出来供 ``llm_error`` 审计
+    事件落盘。只读异常的既有字段：解析失败 / 字段缺失时返回空 dict——绝不影响
+    既有错误文案与重试阶梯。
+
+    ``TransportError.body`` 是插件侧截断过的（前 2000 字符）：sidecar 保证
+    502 正文落在窗口内，但**旧版 sidecar / 其他服务**可能发更长的正文，把
+    摘录截断在字符串中间、整段 JSON 解析失败。这时退回正则直取这两个键
+    （状态键总在 2000 字符窗口内；摘录取到哪算哪），宁要部分现场也不要
+    把上游 5xx 又变回"sidecar 返回 502"一句空话。
+    """
+    body = str(getattr(exc, "body", "") or "")
+    data: Optional[Dict[str, Any]] = None
+    try:
+        data = json.loads(body)
+    except (json.JSONDecodeError, TypeError):
+        data = None
+    if not isinstance(data, dict):
+        error_match = re.search(r'"error"\s*:\s*"((?:[^"\\]|\\.)*)"', body)
+        status_match = re.search(
+            r'"upstream_http_status"\s*:\s*(-?\d+|null)', body)
+        excerpt_match = re.search(
+            r'"upstream_body_excerpt"\s*:\s*"((?:[^"\\]|\\.)*)"?', body)
+        if (error_match is None and status_match is None
+                and excerpt_match is None):
+            return {}
+        data = {}
+        if error_match is not None:
+            data["error"] = error_match.group(1)
+        if status_match is not None:
+            raw_status = status_match.group(1)
+            data["upstream_http_status"] = (
+                None if raw_status == "null" else int(raw_status))
+        if excerpt_match is not None:
+            data["upstream_body_excerpt"] = excerpt_match.group(1)
+    out: Dict[str, Any] = {}
+    inner_error = data.get("error")
+    if isinstance(inner_error, str) and inner_error:
+        out["sidecar_error"] = inner_error[:2000]
+    status = data.get("upstream_http_status")
+    if status is not None:
+        out["upstream_http_status"] = status
+    excerpt = data.get("upstream_body_excerpt")
+    if excerpt is not None:
+        out["upstream_body_excerpt"] = str(excerpt)[:2000]
+    return out
 
 
 def unseen_axis_crossing(plan: Plan, brief, shot_id: str) -> Optional[str]:
@@ -276,7 +330,12 @@ class ResumeState:
         return {
             "schema_version": int(self.version),
             "run_id": str(self.run_id),
-            "saved_at": self.saved_at or _now_iso(),
+            #: ``saved_at`` 是"保存那一刻"的时间戳，由
+            #: :func:`save_resume_state` 打一次、原样透传——不在每次
+            #: ``to_dict()`` 时现打。现打会让同一份状态的两次序列化跨秒
+            #: 时产生不同的字节（实测 `test_resume_state_round_trip` 的
+            #: 秒界竞态），round-trip 断言随之偶发红。
+            "saved_at": str(self.saved_at),
             "plan": copy.deepcopy(self.plan),
             "brief": copy.deepcopy(self.brief),
             "script": str(self.script),
@@ -367,6 +426,8 @@ def save_resume_state(path, state: "ResumeState") -> Path:
     """原子写 ``resume_state.json``（临时文件 + ``os.replace``）。"""
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
+    #: 保存时间 = 落盘这一刻，只打一次（``to_dict`` 不再现打，见其注释）。
+    state.saved_at = _now_iso()
     temporary = target.with_name(f".{target.name}.{_now_iso().replace(':', '')}"
                                  f".tmp")
     payload = state.to_dict()
@@ -1006,12 +1067,25 @@ class PrevisDriver:
         self._brief_attempts += 1
         self._start_brief_call()
 
+    def _llm_max_tokens(self) -> Optional[int]:
+        """本场每次 LLM 请求的 ``max_tokens``（``llm.max_tokens``；0/未设 = 不发送）。
+
+        与阶段 S 的既有取法同一表达式：``0`` 或未设一律按"不限"处理，返回
+        ``None`` 交给 :class:`~..contracts.messages.ChatPayload` 自行省略该字段
+        （wire 上不出现 ``max_tokens``）。逐镜的 editor / react / repair / review
+        请求必须与 brief / plan 用**同一个**取值，否则验收配置里的 65536 到不了
+        单镜请求（实测 run 62e83217414c：13 份编辑器草案全部 502）。
+        """
+        if self.config is None:
+            return None
+        return int(getattr(self.config.llm, "max_tokens", 0) or 0) or None
+
     def _start_brief_call(self) -> None:
         temperature = 0.2
         max_tokens: Optional[int] = None
         if self.config is not None:
             temperature = float(self.config.llm.temperature_repair)
-            max_tokens = int(getattr(self.config.llm, "max_tokens", 0) or 0) or None
+            max_tokens = self._llm_max_tokens()
         payload = build_brief_payload(
             self.script, parsed=self.parsed_script,
             characters=self._character_names(), temperature=temperature,
@@ -1074,7 +1148,9 @@ class PrevisDriver:
 
     def _step_calling_llm(self) -> None:
         try:
-            kind, payload = self._reply_q.get_nowait()
+            item = self._reply_q.get_nowait()
+            kind, payload = item[0], item[1]
+            error_extra = item[2] if len(item) > 2 else {}
         except queue.Empty:
             return                                  # 仍在等待，下一 tick 再看
         duration = self.clock() - self._call_started
@@ -1090,7 +1166,8 @@ class PrevisDriver:
         if kind == "err":
             self.budget.record_llm(None)
             self.audit.log("llm_error", str(payload), level="error",
-                           request_id=self._pending_request_id)
+                           request_id=self._pending_request_id,
+                           **error_extra)
             self.audit.log_llm(purpose, None, duration,
                                self._pending_request_id, error=str(payload),
                                payload=self._pending_payload)
@@ -1114,7 +1191,11 @@ class PrevisDriver:
         if repairing:
             problem = self._dispatch_tool_calls(reply, self.repair_messages)
             if problem:
-                self.audit.log("repair_invalid", problem, level="warning")
+                #: G2 #8：修复分支行为不变（无工具调用照记 repair_invalid），
+                #: 只补 reason/category 两个数据键。
+                self.audit.log("repair_invalid", problem, level="warning",
+                               reason=problem,
+                               category=classify_invalid(problem))
             #: v1.6 B4：accept 绝不静默——修复回复正文里的
             #: `ACCEPT <warning_type> <reason>` 逐条落成 guard_verdict 事件。
             self._record_guard_accepts(reply)
@@ -1154,11 +1235,27 @@ class PrevisDriver:
             self._react_steps += 1
             called = bool(reply.tool_calls)
             problem = self._dispatch_tool_calls(reply, self._react_messages)
-            if problem:
-                self.audit.log("react_invalid", problem, level="warning")
             if not called:
+                #: tool_choice=required 仍可能被实现忽略：无工具调用的回复
+                #: 照记 react_invalid（带 reason/category）并结束本轮。
+                self.audit.log("react_invalid", problem, level="warning",
+                               reason=problem,
+                               category=classify_invalid(problem))
                 self._finish_react("模型停止调用工具")
                 return
+            finish_called = any(call.function.name == FINISH_SHOT
+                                for call in reply.tool_calls)
+            if finish_called and self._pending_finish:
+                #: G2 #8：finish_shot 真的执行成功（`_pending_finish` 只在这时
+                #: 被置位）⇒ 模型正式声明本镜精修完成，正常收尾，不记
+                #: react_invalid。它既有的语义（CHECKING 阶段跳过修复循环）与
+                #: 精修收尾同向，无需改语义（见 `_step_checking` 的消费处）。
+                self._finish_react("模型调用 finish_shot")
+                return
+            if problem:
+                self.audit.log("react_invalid", problem, level="warning",
+                               reason=problem,
+                               category=classify_invalid(problem))
             if self._react_steps >= self._react_max_steps():
                 self._finish_react("达到步数上限")
                 return
@@ -1388,7 +1485,6 @@ class PrevisDriver:
             shot_id=shot_id,
             elapsed_s=round(float(elapsed_s), 3),
         )
-
     def _handle_llm_error(self, problem: str, elapsed_s: float) -> None:
         """一次传输错误的阶梯化落点（v1.6 F1，TDD §4.5）。
 
@@ -1512,8 +1608,10 @@ class PrevisDriver:
         if self._editing_queue and self._editing_index < len(self._editing_queue):
             shot_id = self._editing_queue[self._editing_index]
             self.drafts_failed.append({"shot_id": shot_id, "error": problem})
-            self.audit.log("draft_invalid", f"{shot_id}: {problem}",
-                           level="warning", shot=shot_id)
+            message = f"{shot_id}: {problem}"
+            self.audit.log("draft_invalid", message,
+                           level="warning", shot=shot_id,
+                           reason=message, category=classify_invalid(message))
             self._emit("draft_invalid", f"{shot_id} 草案失败", shot=shot_id)
             self._editing_index += 1
         self._transition(DriverState.EDITING)
@@ -1686,9 +1784,11 @@ class PrevisDriver:
             scene_text=self._shot_script_text(),
             continuity=render_shot_memory(
                 shot_memory(self.plan, done=self._finished_shots)),
-            characters=characters, props=props, retriever=self.knowledge,
+            characters=characters, full_cast=self._cast_roster(),
+            props=props, retriever=self.knowledge,
             temperature=(float(self.config.llm.temperature_plan)
-                         if self.config is not None else 0.7))
+                         if self.config is not None else 0.7),
+            max_tokens=self._llm_max_tokens())
         #: 缓存这一份 payload：同镜的第 2…N 个候选**直接复用它**，不再发起一次
         #: 检索——否则候选数会把 `retrieval_calls` 一起放大（§2.4 的预算账）。
         self._editor_payload_cache = payload
@@ -1761,19 +1861,37 @@ class PrevisDriver:
             anchors = [name for name in anchors if name]
         return characters, anchors
 
+    def _apply_shot_schemas(self, shot_id: str) -> None:
+        """G2 判据 #8：把**这一镜**的逐镜工具 schema 装进注册表（幂等替换）。
+
+        ``emit_shot_draft`` 换成完整逐镜 schema，角色工具（character_id /
+        target）注入本镜在场角色与全剧组的枚举。载荷构造
+        （``schemas_except`` / ``openai_schemas``）与 ``registry.execute`` 读
+        同一个 ``spec.parameters``，所以模型看到的 schema 与校验用的 schema
+        是**同一个对象**——换镜时再调一次即可，不会残留上一镜的枚举。
+        """
+        characters, anchors = self._draft_context(shot_id)
+        overrides = shot_tool_overrides(self.registry, characters,
+                                        self._cast_roster(), anchors)
+        for name, parameters in overrides.items():
+            self.registry.override_parameters(name, parameters)
+
     def _finish_editor_turn(self, reply: ChatReply) -> None:
         shot_id = self._editing_queue[self._editing_index]
         characters, anchors = self._draft_context(shot_id)
         try:
             draft = extract_draft(reply, shot_id, characters=characters,
                                   anchors=anchors,
-                                  roster=self._cast_roster())
+                                  roster=self._cast_roster(),
+                                  full_cast=self._cast_roster())
         except ValueError as exc:
             # 单镜草案失败不拖垮整场：记进 history 与警告，这一镜沿用计划内容，
             # 后面还有 B3/B4 兜住真正的执行问题。
             self.drafts_failed.append({"shot_id": shot_id, "error": str(exc)})
-            self.audit.log("draft_invalid", f"{shot_id}: {exc}", level="warning",
-                           shot=shot_id)
+            message = f"{shot_id}: {exc}"
+            self.audit.log("draft_invalid", message, level="warning",
+                           shot=shot_id, reason=message,
+                           category=classify_invalid(message))
             self._emit("draft_invalid", f"{shot_id} 草案无效", shot=shot_id)
             self._draft_candidates = []
             self._editor_payload_cache = None
@@ -1795,7 +1913,8 @@ class PrevisDriver:
             return
 
         best, alternates = rank_drafts(self._draft_candidates,
-                                       characters=characters, anchors=anchors)
+                                       characters=characters, anchors=anchors,
+                                       full_cast=self._cast_roster())
         if best is not None:
             merged = merge_draft(self.plan, best)
             crossing = unseen_axis_crossing(merged, self.brief, shot_id)
@@ -1803,8 +1922,11 @@ class PrevisDriver:
                 #: v1.6 G2：不可见的走位跨线挡在计划外，而不是等到审核判错。
                 self.drafts_failed.append(
                     {"shot_id": shot_id, "error": crossing})
-                self.audit.log("draft_invalid", f"{shot_id}: {crossing}",
-                               level="warning", shot=shot_id)
+                message = f"{shot_id}: {crossing}"
+                self.audit.log("draft_invalid", message,
+                               level="warning", shot=shot_id,
+                               reason=message,
+                               category=classify_invalid(message))
                 self._emit("draft_invalid", f"{shot_id} 草案无效",
                            shot=shot_id)
             else:
@@ -1985,8 +2107,9 @@ class PrevisDriver:
             verdicts = parse_guard_accepts(
                 content, shot_id=self._current_shot_id or "")
         except ValueError as exc:
-            self.audit.log("repair_invalid",
-                           f"guard accept 声明格式错误：{exc}", level="warning")
+            message = f"guard accept 声明格式错误：{exc}"
+            self.audit.log("repair_invalid", message, level="warning",
+                           reason=message, category=classify_invalid(message))
             return
         for verdict in verdicts:
             self.audit.log(
@@ -2276,6 +2399,11 @@ class PrevisDriver:
 
     def _start_react(self, shot_id: str, result: AuditResult) -> None:
         """进入 B5：开一段有上限的工具对话，让模型自己边看边调。"""
+        #: G2 #8：ReAct 的收尾工具 finish_shot 必须在工具表里。默认注册表自带，
+        #: 但调用方可以塞自定义注册表（测试/嵌入用法）：进入 B5 前补齐三个
+        #: 控制工具（幂等），于是 build_react_payload 的"缺 finish_shot 就报错"
+        #: 守卫只拦**直接误用**，驱动器自己永不发出缺收尾工具的载荷。
+        register_control_tools(self.registry)
         self._react_done.add(shot_id)          # 每个镜头只给一次 B5
         self._react_shot = shot_id
         self._react_steps = 0
@@ -2283,10 +2411,14 @@ class PrevisDriver:
                      if item.shot_id == shot_id), None)
         memory = render_shot_memory(
             shot_memory(self.plan, done=self._finished_shots))
+        #: G2 判据 #8：先装**这一镜**的逐镜 schema——载荷构造与后续每一轮
+        #: ``registry.execute`` 校验同一份枚举（finish_shot 守卫与提示词不变）。
+        self._apply_shot_schemas(shot_id)
         payload = build_react_payload(
             shot, result, scene_state=self._scene_state_text(),
             registry=self.registry, max_steps=self._react_max_steps(),
-            roster=self._cast_roster())
+            roster=self._cast_roster(),
+            max_tokens=self._llm_max_tokens())
         if memory:
             payload.messages[0].content += "\n\n" + memory
         self._react_messages = list(payload.messages)
@@ -2314,8 +2446,13 @@ class PrevisDriver:
             self._react_messages = kept
         payload = ChatPayload(messages=list(self._react_messages),
                               tools=self.registry.openai_schemas(),
-                              tool_choice=ToolChoice.AUTO,
+                              #: G2 #8：实际发出去的每一轮 ReAct 请求都要求
+                              #: 工具调用（build_react_payload 的载荷只贡献
+                              #: messages，真正的请求在这里构造）；收尾由
+                              #: finish_shot 声明，无工具调用才是例外路径。
+                              tool_choice=ToolChoice.REQUIRED,
                               temperature=0.3, purpose=Purpose.REACT,
+                              max_tokens=self._llm_max_tokens(),
                               request_id=new_request_id())
         self._start_llm_call("react", payload,
                              note=f"精修 {self._react_shot}"
@@ -2377,7 +2514,8 @@ class PrevisDriver:
             intent=shot.intent, shot_type=str(shot.shot_type),
             duration_frames=shot.duration_frames,
             audit=self.audit_results[-1] if self.audit_results else None,
-            scene_state=self._scene_state_text(), temperature=temperature)
+            scene_state=self._scene_state_text(), temperature=temperature,
+            max_tokens=self._llm_max_tokens())
         self._start_llm_call("review", payload, note=f"自我审核 {shot_id}")
 
     def _finish_review(self, reply: ChatReply) -> None:
@@ -2437,6 +2575,9 @@ class PrevisDriver:
         temperature = 0.2
         if self.config is not None:
             temperature = float(self.config.llm.temperature_repair)
+        #: G2 判据 #8：先装**这一镜**的逐镜 schema（emit_shot_draft ＋ 角色
+        #: 工具），载荷与 registry.execute 才会校验同一份枚举。
+        self._apply_shot_schemas(str(self._current_shot_id))
         payload = build_repair_payload(
             audit, self.registry,
             scene_state=self._scene_state_text(),
@@ -2446,7 +2587,8 @@ class PrevisDriver:
             #: `SceneContext.current_shot_id`（构建时落在第一镜），实测 long10
             #: 里模型照抄它，把 `emit_shot_draft` 的 shot_id 写成 shot_001。
             shot_id=str(self._current_shot_id),
-            temperature=temperature)
+            temperature=temperature,
+            max_tokens=self._llm_max_tokens())
         #: 工具集与对话都要留住：延续轮必须用**同一套**工具（含收窄），
         #: 并且把这一轮的工具观测带回模型。
         self._repair_tools = list(payload.tools)
@@ -2529,6 +2671,7 @@ class PrevisDriver:
                               tool_choice=ToolChoice.REQUIRED,
                               temperature=temperature,
                               purpose=Purpose.REPAIR,
+                              max_tokens=self._llm_max_tokens(),
                               request_id=new_request_id())
         self._start_llm_call("repair", payload,
                              note=f"继续修复 {self._current_shot_id}"
@@ -2934,7 +3077,9 @@ class PrevisDriver:
                 reply = self.transport.chat(payload, self.limits.llm_timeout_s)
                 self._reply_q.put(("ok", reply))
             except Exception as exc:  # noqa: BLE001
-                self._reply_q.put(("err", f"{type(exc).__name__}: {exc}"))
+                self._reply_q.put(
+                    ("err", f"{type(exc).__name__}: {exc}",
+                     upstream_error_fields(exc)))
 
         self.thread_factory(target=worker, name="bd-llm").start()
 
@@ -2956,6 +3101,13 @@ class PrevisDriver:
                 args = call.function.parsed_arguments()
             except ValueError as exc:
                 errors.append(str(exc))
+                #: 协议闭环：assistant 消息已带着这条 tool_call 进了对话，
+                #: 就必须给它补一条 role="tool" 的回应——否则下一轮请求里
+                #: 出现"有调用、无回应"的畸形对话（DeepSeek 官方端点对此
+                #: 容忍度差），而且模型永远收不到"参数 JSON 是坏的"这条
+                #: 反馈，同一错误会原样重犯。
+                conversation.append(tool_message(
+                    call, f"参数不是合法 JSON: {exc}。请重新调用本工具。"))
                 continue
 
             result = self.registry.execute(call.function.name, args)
@@ -3045,7 +3197,8 @@ class PrevisDriver:
                         draft = extract_draft(
                             ChatReply(tool_calls=[call]), shot_id,
                             characters=characters, anchors=anchors,
-                            roster=self._cast_roster())
+                            roster=self._cast_roster(),
+                            full_cast=self._cast_roster())
                     except ValueError as exc:
                         errors.append(str(exc))
                     else:

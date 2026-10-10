@@ -20,6 +20,7 @@ from ..contracts.audit import AuditResult
 from ..contracts.enums import Purpose, ToolChoice
 from ..contracts.messages import ChatPayload, Message, MessageRole, new_request_id
 from ..contracts.plan import Plan, ShotPlan
+from .control_tools import FINISH_SHOT
 
 REACT_SYSTEM_PROMPT = """\
 你是白模预演的执行导演，正在**精修**一个反复修不好的镜头。
@@ -33,10 +34,17 @@ REACT_SYSTEM_PROMPT = """\
 可用角色（**只能逐字**使用这些名字；名单之外的名字一律是幻觉，不许写进
 `shot.characters` / `actions` / `dialogues`）：{roster}
 
+**拍点与构图的闭集字段**（重提这一镜草案时，每个字段只写下列值之一，逐字、
+不加前缀、不写描述句）：
+{closed_sets}
+
+**动作参数只能用它自己那一行的键**（与草案提示同一张表，由引擎的参数表生成）：
+{action_params}
+
 要求：
 - 只能通过调用工具**实际改变场景**，不要只在回复里描述计划；
 - 每次改完用 check_composition / check_axis 复核一次，再决定下一步；
-- 最多 {max_steps} 步；觉得已经足够好就停止调用工具；
+- 最多 {max_steps} 步；认为已经足够好时调用 finish_shot 收尾；不调用任何工具的回复会被判为无效；
 - 不要重做整场戏，只调这个镜头。
 - **机位调整红线**：主体保持在相机前方；不要穿过主体、不要越过 180° 轴线；
   遮挡优先挪主体/遮挡者，其次 reframe，最后才 move_camera。
@@ -70,18 +78,33 @@ def should_react(shot: Optional[ShotPlan], result: Optional[AuditResult], *,
 def build_react_payload(shot: ShotPlan, audit: AuditResult, *,
                         scene_state: str = "", registry=None,
                         max_steps: int = 6, temperature: float = 0.3,
+                        max_tokens: Optional[int] = None,
                         request_id: Optional[str] = None,
                         roster=None) -> ChatPayload:
-    """构造一次 ReAct 请求：工具全开、由模型自己决定何时停。"""
+    """构造一次 ReAct 请求：工具调用为必选，收尾必须用 finish_shot。"""
+    #: 闭集表与动作参数表必须和编辑器用的是**同一份**（延迟导入避开
+    #: editor → react 的模块级环）：ReAct 工具集里也有 `emit_shot_draft`，
+    #: 重提草案时表不在手上就会写出越界值/表外键名，整条被退回。
+    from .editor import render_action_params, render_closed_sets
+
     system_text = REACT_SYSTEM_PROMPT.format(
         audit=audit.format_for_llm() if audit is not None else "（未知）",
         scene_state=scene_state or "（尚未采集）",
         max_steps=int(max_steps),
         roster="、".join(str(item) for item in roster)
-        if roster else "（未提供）")
+        if roster else "（未提供）",
+        closed_sets=render_closed_sets(),
+        action_params=render_action_params())
     # 精修阶段同样不给 emit_plan：它只该改这一镜，不该重写整份计划
     tools = (registry.schemas_except("emit_plan")
              if registry is not None else [])
+    if registry is not None:
+        offered = {schema["function"]["name"] for schema in tools}
+        if FINISH_SHOT not in offered:
+            #: G2 #8：ReAct 的收尾方式就是 finish_shot，缺了它模型没法正常结束。
+            #: 宁可当场报错，也不发一个"只能靠超步数/无工具调用"结束的载荷。
+            raise ValueError(
+                f"ReAct 工具表缺少 {FINISH_SHOT}：它是精修唯一合法的收尾工具")
     return ChatPayload(
         messages=[
             Message(role=MessageRole.SYSTEM, content=system_text),
@@ -90,8 +113,9 @@ def build_react_payload(shot: ShotPlan, audit: AuditResult, *,
                             f"（意图：{shot.intent or '未说明'}）。"),
         ],
         tools=tools,
-        tool_choice=ToolChoice.AUTO,      # 允许它停下来，这是 ReAct 与 B4 的区别
+        tool_choice=ToolChoice.REQUIRED,  # 必须工具调用，收尾由 finish_shot 声明
         temperature=temperature,
+        max_tokens=max_tokens,
         purpose=Purpose.REACT,
         request_id=request_id or new_request_id(),
     )

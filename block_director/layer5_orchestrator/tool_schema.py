@@ -5,7 +5,7 @@ Python**（3.13，无 site-packages）里运行。工具参数校验只用到 JS
 的一小部分，自己实现即可，零依赖、可单测。
 
 支持：type（含联合类型）、required、properties、additionalProperties=false、
-items、enum、minimum、maximum、minItems、maxItems。
+items、enum、const、anyOf、minimum、maximum、minItems、maxItems。
 """
 
 from __future__ import annotations
@@ -37,8 +37,24 @@ def _matches_type(expected: str, value: Any) -> bool:
     return isinstance(value, py_type)
 
 
+def _const_equal(const: Any, value: Any) -> bool:
+    """JSON Schema ``const`` 相等判定：bool 与 int/number 永不相等。
+
+    Python 里 ``True == 1``，但本模块的类型纪律（与 :func:`_matches_type`
+    一致）把 boolean 与 integer/number 视为不同 JSON 类型，``const: 1`` 不得
+    接受 ``true``。
+    """
+    if isinstance(const, bool) != isinstance(value, bool):
+        return False
+    return const == value
+
+
 def _validate(schema: Dict[str, Any], value: Any, path: str,
               problems: List[str]) -> None:
+    if "const" in schema and not _const_equal(schema["const"], value):
+        problems.append(f"{path} 取值必须是 {schema['const']!r}，实际 {value!r}")
+        return
+
     expected = schema.get("type")
     if expected is not None:
         options: Sequence[str] = expected if isinstance(expected, list) else [expected]
@@ -49,6 +65,11 @@ def _validate(schema: Dict[str, Any], value: Any, path: str,
     enum = schema.get("enum")
     if enum is not None and value not in enum:
         problems.append(f"{path} 取值必须是 {enum} 之一，实际 {value!r}")
+
+    any_of: Sequence[Dict[str, Any]] = schema.get("anyOf", ())
+    if any_of:
+        if not _validate_any_of(any_of, value, path, problems):
+            return
 
     if isinstance(value, bool):
         return
@@ -83,6 +104,70 @@ def _validate(schema: Dict[str, Any], value: Any, path: str,
         if isinstance(items, dict):
             for index, item in enumerate(value):
                 _validate(items, item, f"{path}[{index}]", problems)
+
+
+def _branch_problems(branch: Dict[str, Any], value: Any,
+                     path: str) -> List[str]:
+    """独立跑一个 ``anyOf`` 分支；返回该分支的问题列表。"""
+    problems: List[str] = []
+    _validate(branch, value, path, problems)
+    return problems
+
+
+def _validate_any_of(branches: Sequence[Dict[str, Any]], value: Any,
+                     path: str, problems: List[str]) -> bool:
+    """``anyOf``：任一分支零问题即通过；全部失败按最优分支报告。
+
+    报告顺序（G2 判据 #8）：
+
+    1. 判别式：所有 object 分支都含同一个 ``const`` 键 ``k``，且 ``value``
+       是携带 ``k`` 的 dict → 选 ``value[k]`` 命中的分支，只报它的错误，
+       路径后缀 ``（k=value[k]）``；
+    2. 判别式值未命中任何分支 → ``{path}.{k} 取值必须是 [全部 const] 之一``；
+    3. 无判别式 → 选错误最少的那个分支，前缀 ``{path} 不匹配任何允许形状：``。
+
+    返回 True 表示至少一个分支通过；返回 False 时已把最优分支的错误写入
+    ``problems``，调用方应直接结束（不再叠加同层其它关键字）。
+    """
+    results = [_branch_problems(branch, value, path) for branch in branches]
+    for branch_problems in results:
+        if not branch_problems:
+            return True  # 任一分支零问题即整体通过
+
+    object_branches = [branch for branch in branches
+                       if branch.get("type") == "object"]
+    # 所有 object 分支共有的 const 键；没有 object 分支则无判别式。
+    const_keys = None
+    for branch in object_branches:
+        keys = {key for key, sub in branch.get("properties", {}).items()
+                if isinstance(sub, dict) and "const" in sub}
+        const_keys = keys if const_keys is None else const_keys & keys
+        if not const_keys:
+            break
+    const_keys = const_keys or set()
+
+    if const_keys and isinstance(value, dict):
+        key = sorted(const_keys)[0]
+        actual = value.get(key)
+        if key in value:
+            for branch, branch_problems in zip(branches, results):
+                props = branch.get("properties", {})
+                key_schema = props.get(key, {}) if isinstance(props, dict) else {}
+                const = key_schema.get("const")
+                if "const" in key_schema and _const_equal(const, actual):
+                    suffix = f"（{key}={actual}）"
+                    for problem in branch_problems:
+                        problems.append(problem.replace(path, f"{path}{suffix}", 1))
+                    return False
+            consts = [branch["properties"][key]["const"] for branch in object_branches]
+            problems.append(
+                f"{path}.{key} 取值必须是 {consts!r} 之一，实际 {actual!r}")
+            return False
+
+    best = min(results, key=len)
+    problems.append(f"{path} 不匹配任何允许形状")
+    problems.extend(best)
+    return False
 
 
 def validate_args(schema: Dict[str, Any], args: Any) -> List[str]:

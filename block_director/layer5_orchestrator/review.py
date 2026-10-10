@@ -94,6 +94,7 @@ class ReviewVerdict:
 def build_review_payload(*, intent: str, shot_type: str, duration_frames: int,
                          audit: Optional[AuditResult] = None,
                          scene_state: str = "", temperature: float = 0.2,
+                         max_tokens: Optional[int] = None,
                          request_id: Optional[str] = None) -> ChatPayload:
     system_text = REVIEW_SYSTEM_PROMPT.format(
         intent=intent or "（未说明）", shot_type=shot_type,
@@ -110,6 +111,7 @@ def build_review_payload(*, intent: str, shot_type: str, duration_frames: int,
                              "parameters": REVIEW_TOOL_PARAMETERS}}],
         tool_choice=ToolChoice.REQUIRED,
         temperature=temperature,
+        max_tokens=max_tokens,
         purpose=Purpose.REVIEW,
         request_id=request_id or new_request_id(),
     )

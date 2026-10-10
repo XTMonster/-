@@ -11,6 +11,7 @@ from block_director.layer5_orchestrator.context_budget import (
     count_tokens,
     trim_messages,
 )
+from block_director.layer5_orchestrator.control_tools import FINISH_SHOT
 from block_director.layer5_orchestrator.react import (
     build_react_payload,
     render_shot_memory,
@@ -77,10 +78,12 @@ def test_react_payload_lets_the_model_stop():
     registry = ToolRegistry()
     registry.add(name="check_composition", description="x",
                  parameters={"type": "object"}, handler=lambda **kw: "ok")
+    registry.add(name=FINISH_SHOT, description="完成当前镜头",
+                 parameters={"type": "object"}, handler=lambda **kw: "ok")
     payload = build_react_payload(shot(), failed(50.0), scene_state="场景",
                                   registry=registry, max_steps=4)
     assert payload.purpose is Purpose.REACT
-    assert payload.tool_choice is ToolChoice.AUTO      # 与 B4 的 required 相对
+    assert payload.tool_choice is ToolChoice.REQUIRED  # 与 B4 相同：必须工具调用
     assert payload.tools and payload.tools[0]["function"]["name"] == "check_composition"
     system = payload.messages[0].content
     assert "最多 4 步" in system and "shot_001" in payload.messages[1].content
@@ -88,7 +91,7 @@ def test_react_payload_lets_the_model_stop():
 
 def test_react_payload_without_a_registry_has_no_tools():
     payload = build_react_payload(shot(), failed(50.0))
-    assert payload.tools == [] and payload.tool_choice is ToolChoice.AUTO
+    assert payload.tools == [] and payload.tool_choice is ToolChoice.REQUIRED
 
 
 # --------------------------------------------------------------------------- #

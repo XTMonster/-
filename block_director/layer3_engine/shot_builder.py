@@ -482,6 +482,17 @@ def action_requests(shot: ShotPlan, shot_start: int,
     给了实时起点之后，每一次行走都是"从他现在的位置走到计划写的位置"。
     """
     requests: List[ActionRequest] = []
+    #: G8-C：结构化目标（look_at.target / 道具 toward）折算用的是**本镜首帧**
+    #: 各角色的场景位置：剧本站位被 `live_from`（走位接力）覆盖。
+    positions: Dict[str, Tuple[float, float, float]] = {}
+    for character_id, member in cast.items():
+        location = list(getattr(member, "initial_location", None) or [])
+        while len(location) < 3:
+            location.append(0.0)
+        positions[str(character_id)] = (float(location[0]), float(location[1]),
+                                        float(location[2]))
+    positions.update({str(key): tuple(value)
+                      for key, value in (live_from or {}).items()})
     for index, raw in enumerate(shot.actions or [], start=1):
         if not isinstance(raw, dict):
             warnings.append(f"{shot.shot_id}: 第 {index} 个动作不是对象，已跳过")
@@ -502,6 +513,21 @@ def action_requests(shot: ShotPlan, shot_start: int,
             int(raw.get("end_frame") or shot.duration_frames))
 
         params = dict(raw.get("params") or {})
+        #: G8-C：把结构化目标折算成引擎参数（look_at → yaw/pitch，
+        #: 道具 toward → 方向量）。解析不出 = 确定性错误：如实告警并跳过，
+        #: 绝不静默取默认角。函数内 import：`beat_compiler` 是纯的，且
+        #: `build_scene` 用的是同一条函数内 import 纪律。
+        from ..layer5_orchestrator.beat_compiler import resolve_action_targets
+
+        params, target_problems = resolve_action_targets(
+            action_type, character_id, params, positions,
+            tuple(getattr(cast[character_id], "initial_facing", None)
+                  or (0.0, 1.0, 0.0)))
+        if target_problems:
+            warnings.append(
+                f"{shot.shot_id}: {target_problems[0]}"
+                f"（角色 {character_id}），已跳过（不替 LLM 猜目标）")
+            continue
         if action_type in ("walk_to", "run_to"):
             #: **契约一致性**（2026-10-04 真跑实测）：草案 schema
             #: （`editor.EMIT_SHOT_DRAFT_PARAMETERS`）把 `target_position` 声明成

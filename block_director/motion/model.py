@@ -19,6 +19,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ..cinema.anchor import DEFAULT_PROFILE as _PROFILE
 from ..contracts.enums import ErrorCode
+from .targets import looks_like_coordinate_string, target_kind
 
 FPS = 24
 BLEND_FRAMES = 6
@@ -114,7 +115,10 @@ ACTION_PARAMS: Dict[str, Tuple[str, ...]] = {
     "hand_to": ("prop", "angle_deg", "toward"),
     "turn_body": ("angle_deg", "angle", "degrees"),
     "turn_head": ("angle_deg", "angle", "degrees"),
-    "look_at": ("yaw_deg", "pitch_deg"),
+    #: G8-C（用户裁决 2026-10-09）：`target` 是结构化目标（角色 id 字符串 /
+    #: {"character": id} / {"point": [x, y, z]}），由编译层按角色位置折算成
+    #: yaw_deg/pitch_deg。`to`/`toward`/`target_position` 仍不认识、照旧拒绝。
+    "look_at": ("yaw_deg", "pitch_deg", "target"),
     "body_tilt": ("angle_deg", "angle", "degrees", "axis", "toward"),
     "fall_down": ("direction_deg", "drop"),
     "sit": ("drop", "leg_fold_deg", "lean_deg"),
@@ -177,6 +181,8 @@ def unknown_action_params(kind: str, params) -> List[str]:
 _COORDINATE_KEYS = frozenset({"from", "from_", "target_position", "to"})
 #: 取值是自由字符串的键：数值与坐标检查对它们都不适用（`prop` 是道具名/锚点名）。
 _FREE_STRING_KEYS = frozenset({"prop"})
+#: 取值是**结构化目标**的键：数值检查不适用，走 `look_at` 的专用判域（G8-C）。
+_TARGET_KEYS = frozenset({"target"})
 #: 取值是**闭集**的键（在函数里拼，因为这些表定义在本模块后半段）。
 _CLOSED_VALUE_KEYS = frozenset({"speed", "axis"})
 
@@ -225,6 +231,8 @@ def action_param_problems(kind: str, params) -> List[str]:
         except MotionParamError as exc:
             problems.append(str(exc))
         return problems
+    if kind == "look_at":
+        problems.extend(_look_at_target_problems(params))
     for key in sorted(_COORDINATE_KEYS & set(params)):
         problems.extend(coordinate_problems(kind, key, params[key]))
     #: 闭集取值表：`speed` 的取值域直接读构建期用的那张表（单一真源）。
@@ -235,6 +243,8 @@ def action_param_problems(kind: str, params) -> List[str]:
         #: "执行接受、解析拒绝"的假 invalid（v3 真跑 GLM 写 toward='left' 这类
         #: 合法方向词被误拒）。
         if key == "toward" and kind in PROP_ACTIONS:
+            continue
+        if key in _TARGET_KEYS:
             continue
         domain = domains.get(key) if key in _CLOSED_VALUE_KEYS else None
         if domain is not None:
@@ -249,15 +259,56 @@ def action_param_problems(kind: str, params) -> List[str]:
         except (TypeError, ValueError):
             problems.append(f"{kind} 的 {key} 必须是数字（当前 {value!r}）")
     if kind in PROP_ACTIONS and params.get("toward") is not None:
-        try:
-            _axis_from_toward(params["toward"])
-        except MotionParamError as exc:
-            problems.append(str(exc))
-        except (TypeError, ValueError):
-            problems.append(
-                f"{kind} 的 toward 必须是方向量或方向词"
-                f"（当前 {params['toward']!r}）")
+        problems.extend(_prop_toward_problems(kind, params["toward"]))
     return problems
+
+
+def _look_at_target_problems(params: Dict[str, Any]) -> List[str]:
+    """``look_at.target`` 的取值判域（G8-C）：形状 + "不得与角度同时写"。"""
+    problems: List[str] = []
+    target = params.get("target")
+    if target is None:
+        return problems
+    kind = target_kind(target)
+    if kind is None:
+        problems.append(
+            f"look_at 的 target 必须是角色 id 字符串、{{'character': id}} 或 "
+            f"{{'point': [x, y, z]}}（当前 {target!r}）")
+    elif isinstance(target, str) and looks_like_coordinate_string(target):
+        problems.append(
+            f"look_at 的 target 是坐标字符串 {target!r}，"
+            f"请写成 {{\"point\": [x, y, z]}}")
+    if "yaw_deg" in params or "pitch_deg" in params:
+        problems.append(
+            "look_at 不能同时写 target 与 yaw_deg/pitch_deg（无隐式优先级）："
+            "target 由编译层按角色位置折算成角度")
+    return problems
+
+
+def _prop_toward_problems(kind: str, toward) -> List[str]:
+    """PROP_ACTIONS 的 ``toward`` 取值判域。
+
+    G8-C 扩域：既有方向量 / 方向词**照旧**，另收结构化目标
+    ``{"character": id}`` / ``{"point": [x, y, z]}``（编译层折算成方向量）。
+    裸字符串只收方向词闭集——``camera``、角色名这类仍照旧拒绝（角色名请写
+    ``{"character": id}``，否则与方向词表永远有歧义）。
+    """
+    if isinstance(toward, dict):
+        if target_kind(toward) is None:
+            return [f"{kind} 的 toward 结构不合法（{toward!r}）："
+                    f"合法是 {{'character': id}} 或 {{'point': [x, y, z]}}"]
+        return []                       # 编译层按角色位置折算成方向量
+    if isinstance(toward, str) and looks_like_coordinate_string(toward):
+        return [f"{kind} 的 toward 是坐标字符串 {toward!r}，"
+                f"请写成 {{\"point\": [x, y, z]}}"]
+    try:
+        _axis_from_toward(toward)
+    except MotionParamError as exc:
+        return [str(exc)]
+    except (TypeError, ValueError):
+        return [f"{kind} 的 toward 必须是方向量或方向词"
+                f"（当前 {toward!r}）"]
+    return []
 
 
 def coordinate_problems(kind: str, key: str, value) -> List[str]:
@@ -592,7 +643,8 @@ def body_tilt_params(params: Dict[str, Any]) -> Tuple[float, str]:
 
 
 def head_track_angles(origin: Sequence[float], facing: Sequence[float],
-                      target: Sequence[float]
+                      target: Sequence[float],
+                      eye_height: Optional[float] = None
                       ) -> Tuple[float, float, str]:
     """目标相对**身体朝向**的头部偏角，返回 ``(yaw_deg, pitch_deg, 说明)``。
 
@@ -630,8 +682,9 @@ def head_track_angles(origin: Sequence[float], facing: Sequence[float],
     yaw = _clamp(delta, -HEAD_LIMIT_Z, HEAD_LIMIT_Z)
 
     pitch = 0.0
+    eye_z = EYE_Z_DEFAULT if eye_height is None else float(eye_height)
     if horizontal > 1e-9:
-        pitch = math.atan2(tz - (oz + EYE_Z_DEFAULT), horizontal)
+        pitch = math.atan2(tz - (oz + eye_z), horizontal)
     if abs(pitch) > HEAD_LIMIT_X:
         pitch = _clamp(pitch, -HEAD_LIMIT_X, HEAD_LIMIT_X)
     return math.degrees(yaw), math.degrees(pitch), note
@@ -706,6 +759,16 @@ def expand(request: ActionRequest) -> List[MotionSpec]:
         add(LAYER_HEAD, (CH_HEAD_ROT_Z,), _head_track(start, end, yaw, 0.0))
 
     elif kind == "look_at":
+        #: G8-C：结构化 target 必须在编译层折算成 yaw_deg/pitch_deg。这里
+        #: 只挡"漏折算"（target 还在、角度却一个都没有）——旧实现会静默取
+        #: 默认 30°，把模型写的目标整个丢掉。工具层（`tool_look_at`）传的是
+        #: 已折算好的 yaw/pitch（target 仅作痕迹），不受这条影响。
+        if params.get("target") is not None \
+                and params.get("yaw_deg") is None \
+                and params.get("pitch_deg") is None:
+            raise MotionParamError(
+                f"look_at 的 target={params['target']!r} 未在编译层折算成 "
+                f"yaw_deg/pitch_deg；结构化目标不允许静默取默认角")
         yaw = _clamp(float(params.get("yaw_deg", 30.0)) * DEG,
                      -HEAD_LIMIT_Z, HEAD_LIMIT_Z)
         pitch = _clamp(float(params.get("pitch_deg", 0.0)) * DEG,

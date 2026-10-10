@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 from ..motion.model import ACTION_TYPES, ENTRANCE_ACTIONS, PROP_ACTIONS
+from ..motion.targets import looks_like_coordinate_string, target_kind
 
 #: 每镜拍点的**上限**（与 TDD §3.1 的不变量、emit_shot_draft 的 maxItems 同源）。
 #: schema 里写 8，校验器也用同一个常量——两处各写一个"8"就会漂。
@@ -75,6 +76,17 @@ def _text(value: Any) -> str:
     return str(value if value is not None else "").strip()
 
 
+def _target_value(value: Any) -> Any:
+    """``ShotBeat.target`` 的反序列化（G8-C）。
+
+    结构化目标（``{"character": id}`` / ``{"point": [x, y, z]}``）原样保留，
+    其余照旧压成字符串——历史响应与既有调用方逐字节不变。
+    """
+    if isinstance(value, dict):
+        return dict(value)
+    return _text(value)
+
+
 @dataclass
 class ShotBeat:
     """一镜内部的**一个执行拍点**（不是 ``SceneBrief.beats`` 的叙事节拍）。"""
@@ -82,7 +94,8 @@ class ShotBeat:
     t: float = 0.0                       # 归一化时机，0.0–1.0，镜内单调不减
     subject: str = ""                    # character_id；必须在 cast 里
     verb: str = ""                       # 枚举，见 BEAT_VERBS
-    target: str = ""                     # 锚点名或 character_id；可空
+    #: 锚点名 / character_id / {"character": id} / {"point": [x, y, z]}（G8-C）。
+    target: Any = ""
     face_to: str = ""                    # 角色 id / screen_left / screen_right / camera / away
     pace: str = ""                       # slow / normal / brisk；空 = normal
     #: v1.6 D2（FR-B3）：速度曲线词（闭集真源 = ``contracts/rhythm.py::CURVE_VALUES``，
@@ -101,7 +114,7 @@ class ShotBeat:
         return cls(t=_as_float(payload.get("t")),
                    subject=_text(payload.get("subject")),
                    verb=_text(payload.get("verb")),
-                   target=_text(payload.get("target")),
+                   target=_target_value(payload.get("target")),
                    face_to=_text(payload.get("face_to")),
                    pace=_text(payload.get("pace")),
                    curve=_text(payload.get("curve")) or _default_curve(),
@@ -189,7 +202,8 @@ def _coerce_beats(beats: Iterable[Any]) -> List[ShotBeat]:
 
 
 def validate_beats(beats: Sequence[Any], characters: Sequence[str] = (),
-                   anchors: Optional[Sequence[str]] = None) -> List[str]:
+                   anchors: Optional[Sequence[str]] = None,
+                   full_cast: Optional[Sequence[str]] = None) -> List[str]:
     """TDD §3.1 的全部不变量；返回问题清单（空 = 合法）。
 
     参数语义（这一层刻意区分"未知"与"空"）：
@@ -198,6 +212,12 @@ def validate_beats(beats: Sequence[Any], characters: Sequence[str] = (),
       （否则离线替身与单测会拿到一堆假问题）；
     * ``anchors`` 为 ``None`` ⇒ 锚点表未知 ⇒ 跳过 target 的锚点那一半；
       给一个（哪怕空的）序列 ⇒ 按真实表校验。
+    * ``full_cast`` 为 ``None``（G8-C 之前的调用）⇒ target 的成员检查**逐字节
+      不变**；给了全剧组表 ⇒ target 可以是任何全剧组角色（含场外角色）或
+      结构化目标 ``{"character": id}`` / ``{"point": [x, y, z]}``，而
+      ``subject`` 仍必须在本镜 ``characters`` 里。屏幕相对词照旧拒绝；
+      坐标字符串（``'[2,0,0]'`` / ``'1.15,0'``）拒绝并提示改用
+      ``{"point": [x, y, z]}``。
 
     不变量：``t ∈ [0,1]``；同一 subject 的拍点按 ``t`` 单调不减；``subject``
     非空且（表已知时）在 cast 里；``target`` 非空时（表已知时）能在锚点表或 cast
@@ -214,6 +234,9 @@ def validate_beats(beats: Sequence[Any], characters: Sequence[str] = (),
     known_anchors: Optional[set] = None
     if anchors is not None:
         known_anchors = {str(item) for item in anchors if str(item)}
+    known_full_cast: Optional[set] = None
+    if full_cast is not None:
+        known_full_cast = {str(item) for item in full_cast if str(item)}
 
     from .rhythm import curve_problems
     last_t: Dict[str, float] = {}
@@ -229,10 +252,19 @@ def validate_beats(beats: Sequence[Any], characters: Sequence[str] = (),
             problems.append(
                 f"{where}的 verb={beat.verb!r} 不在动词闭集内"
                 f"（合法取值：{'、'.join(BEAT_VERBS)}）")
-        if beat.target and known_cast and beat.target not in known_cast \
-                and known_anchors is not None and beat.target not in known_anchors:
-            problems.append(
-                f"{where}的 target={beat.target!r} 既不在角色表也不在锚点表里")
+        if known_full_cast is not None:
+            problems.extend(_target_problems(beat.target, known_full_cast,
+                                             known_anchors, where))
+        else:
+            #: G8-C：未传 full_cast 时这段**逐字节不动**（`_text` 对字符串是
+            #: 恒等，只是让结构化 dict 目标退回旧的字符串化行为，不会 TypeError）。
+            target_text = _text(beat.target)
+            if target_text and known_cast and target_text not in known_cast \
+                    and known_anchors is not None \
+                    and target_text not in known_anchors:
+                problems.append(
+                    f"{where}的 target={target_text!r} "
+                    f"既不在角色表也不在锚点表里")
         if beat.face_to and beat.face_to not in FACE_TO_VALUES \
                 and not (known_cast and beat.face_to in known_cast):
             problems.append(
@@ -251,6 +283,39 @@ def validate_beats(beats: Sequence[Any], characters: Sequence[str] = (),
             last_t[beat.subject] = max(previous if previous is not None else 0.0,
                                       float(beat.t))
     return problems
+
+
+def _target_problems(target: Any, full_cast: set, anchors: Optional[set],
+                     where: str) -> List[str]:
+    """传了 ``full_cast`` 时的 target 判域（G8-C）。"""
+    if target is None or target == "":
+        return []
+    if isinstance(target, dict):
+        kind = target_kind(target)
+        if kind == "character":
+            character_id = str(target["character"]).strip()
+            if character_id not in full_cast:
+                return [f"{where}的 target={target!r} 的角色不在全剧组里"
+                        f"（合法：全剧组内的角色 id）"]
+            return []
+        if kind == "point":
+            return []
+        return [f"{where}的 target={target!r} 不是合法目标："
+                f"{{'character': id}} 或 {{\"point\": [x, y, z]}}"]
+    text = str(target or "").strip()
+    if not text:
+        return []
+    if looks_like_coordinate_string(text):
+        return [f"{where}的 target={text!r} 看起来像坐标，"
+                f"请写成 {{\"point\": [x, y, z]}}"]
+    if text in full_cast:
+        return []
+    if anchors is not None and text in anchors:
+        return []
+    if anchors is None:
+        return [f"{where}的 target={text!r} 不在全剧组角色里"
+                f"（锚点表未提供）"]
+    return [f"{where}的 target={text!r} 既不在全剧组角色里也不在锚点表里"]
 
 
 def validate_light_spec(spec: Any) -> List[str]:

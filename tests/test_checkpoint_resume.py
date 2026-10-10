@@ -191,6 +191,27 @@ def test_resume_state_round_trip(tmp_path):
     assert loaded.delivered_shots == ["shot_001"]
 
 
+def test_to_dict_does_not_restamp_saved_at(tmp_path, monkeypatch):
+    """``to_dict()`` 必须原样透传 ``saved_at``，不随时钟现打。
+
+    现打会让同一份状态的两次序列化跨秒时字节不同（构造性竞态）：
+    ``test_resume_state_round_trip`` 在慢机器/高负载下偶发
+    ``AssertionError: saved_at ... != ...``。
+    """
+    from block_director.layer5_orchestrator import driver as driver_module
+
+    ticks = iter(["2026-10-10T20:00:00+08:00",
+                  "2026-10-10T20:00:59+08:00"])
+    monkeypatch.setattr(driver_module, "_now_iso", lambda: next(ticks))
+    state = ResumeState(run_id="abc123")
+    assert state.to_dict()["saved_at"] == ""
+    assert state.to_dict() == state.to_dict()
+    # 保存时打一次戳：此后状态与其序列化都与时钟推进无关。
+    save_resume_state(tmp_path / RESUME_STATE_FILENAME, state)
+    assert state.saved_at == "2026-10-10T20:00:00+08:00"
+    assert state.to_dict() == state.to_dict()
+
+
 def test_version_mismatch_is_reported_not_guessed(tmp_path):
     path = tmp_path / RESUME_STATE_FILENAME
     path.write_text(json.dumps({"schema_version": 2, "run_id": "x"}),

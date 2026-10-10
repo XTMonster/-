@@ -33,6 +33,11 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+#: strict 转换的单一真源（tools/strict_schema.py，纯函数、不碰 bpy）；本文件
+#: 与 tools/probe_strict_tools.py 都 import 它，不各自抄一份 nullable 规则。
+TOOLS_DIR = Path(__file__).resolve().parent
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.append(str(TOOLS_DIR))
 
 from block_director.contracts.enums import Capability  # noqa: E402
 from block_director.contracts.errors import (  # noqa: E402
@@ -64,12 +69,25 @@ from block_director.knowledge.hypergraph import (  # noqa: E402
     Node,
     RetrievalTrace,
 )
+from strict_schema import (  # noqa: E402
+    SCHEMA_KEYWORD_UNIVERSE,
+    strip_nulls,
+    to_strict,
+)
 
 CONTRACT_VERSION = "1.3.0"
 LOOPBACK = "127.0.0.1"
 DEFAULT_KNOWLEDGE_DIR = ROOT / "knowledge"
 #: CLI 的 choices 引用包里的取值表，避免 sidecar 与 `cases.py` 各写一份。
 CASE_LANES = CASE_BACKENDS
+
+
+class StrictStartupRefused(Exception):
+    """``--strict-tools`` 的启动前置不满足：sidecar 拒绝启动（退出码 2）。
+
+    探针没通过就绝不静默退回非严格模式——G2 判据 #8 的整点是"先证明提供方
+    真的能按 schema 约束解码，再启用"，退回等于把阈值又交回模型抽样方差。
+    """
 
 
 class SidecarConfig:
@@ -88,6 +106,10 @@ class SidecarConfig:
         #: `drop`（整格不发）。之所以要它：**思考模式**的上游拒收 `required`。
         self.tool_choice_mode = str(getattr(args, "tool_choice_mode", "passthrough")
                                     or "passthrough")
+        #: strict 工具调用（G2 判据 #8，卡 G8-E）：探针通过后 opt-in。
+        #: 默认关——关着的时候转发体逐字节与之前一致。
+        self.strict_tools = bool(getattr(args, "strict_tools", False))
+        self.strict_probe = str(getattr(args, "strict_probe", "") or "").strip()
         self.max_tokens = args.max_tokens
         self.temperature = args.temperature
         self.seed = args.seed
@@ -265,6 +287,86 @@ def _upstream_headers(config: "SidecarConfig") -> Dict[str, str]:
     return {"Authorization": f"Bearer {key}"} if key else {}
 
 
+#: Authorization 头行（含换行）的正则：上游正文理论不带我们的密钥，但网关/
+#: 代理可能把请求头回显进错误正文；§2.5 的纪律是"密钥绝不进日志"，所以
+#: 502 的正文摘录在序列化前必须抹掉这一类痕迹。
+_AUTHORIZATION_HEADER_RE = re.compile(
+    r"authorization\s*:\s*[^\r\n]*", re.IGNORECASE)
+
+
+def sanitize_upstream_body(text: str, config: "SidecarConfig") -> str:
+    """从上游错误正文里抹掉密钥与 Authorization 头痕迹，其余字符原样保留。
+
+    只做确定性红化（``[REDACTED]``）：抹掉配置里的密钥字面量、以及任何
+    ``Authorization: ...`` 头行。不做任何改写/截断之外的改动——截断由调用方
+    按 2000 字符上限执行。
+    """
+    out = str(text or "")
+    key = str(getattr(config, "upstream_api_key", "") or "")
+    if key:
+        out = out.replace(key, "[REDACTED]")
+    return _AUTHORIZATION_HEADER_RE.sub("[REDACTED]", out)
+
+
+def upstream_error_payload(exc: "TransportError",
+                           config: "SidecarConfig") -> Dict[str, Any]:
+    """502 的载荷：带上游状态与正文摘录，且**整个序列化后 ≤2000 字符**。
+
+    插件的 ``SidecarTransport._call`` 只保留 sidecar 响应正文的前 2000 字符
+    （``body=text[:2000]``）：载荷超过 2000 字符时，插件拿到的是**被截断的
+    JSON**，连 ``upstream_http_status`` 都解析不出来（G8-H 真跑实证——上游
+    5xx 的大正文让 502 总长越过插件窗口，``json.loads`` 失败、字段全丢）。
+    所以摘录随序列化大小回缩，保证 502 正文在插件窗口内永远是完整 JSON。
+    """
+    base = {"error": str(exc), "code": str(exc.code),
+            "upstream_http_status": exc.http_status}
+    excerpt = sanitize_upstream_body(str(exc.body or ""), config)
+    limit = 2000
+    while True:
+        payload = {**base, "upstream_body_excerpt": excerpt[:limit]}
+        if len(json.dumps(payload, ensure_ascii=False)) <= 2000:
+            return payload
+        limit = max(0, limit - 64)
+
+
+def log_reply_parse_failure(text: str, exc: "TransportError",
+                            status: Optional[int] = None) -> None:
+    """上游 200、但回复解析/截断判定失败：把关键事实写 stderr（key-free）。
+
+    ``parse_chat_response`` 在 ``finish_reason=length`` 时抛
+    ``TransportError``（正文只留**头部** 2000 字符，``finish_reason`` 与
+    ``usage`` 都在尾部）——这一条日志补上头部截断丢掉的事实：终止原因、
+    思考链长度、工具调用数与每个 arguments 的截断位置、completion_tokens。
+    """
+    try:
+        data = json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        data = None
+    record: Dict[str, Any] = {"upstream_reply": "parse_failed",
+                              "http_status": status,
+                              "error": str(exc)}
+    if isinstance(data, dict):
+        choices = data.get("choices") or []
+        choice = choices[0] if choices and isinstance(choices[0], dict) else {}
+        message = choice.get("message") if isinstance(
+            choice.get("message"), dict) else {}
+        calls = message.get("tool_calls") or []
+        record["finish_reason"] = choice.get("finish_reason")
+        record["content_chars"] = len(str(message.get("content") or ""))
+        record["reasoning_chars"] = len(
+            str(message.get("reasoning_content") or ""))
+        record["tool_calls"] = [{
+            "name": str((call.get("function") or {}).get("name") or ""),
+            "arguments_chars": len(
+                str((call.get("function") or {}).get("arguments") or "")),
+        } for call in calls if isinstance(call, dict)]
+        usage = data.get("usage")
+        if isinstance(usage, dict):
+            record["completion_tokens"] = usage.get("completion_tokens")
+    print(json.dumps(record, ensure_ascii=False),
+          file=sys.stderr, flush=True)
+
+
 def call_upstream(config: "SidecarConfig", payload: Dict[str, Any]
                   ) -> ChatReply:
     """把插件侧的请求转发给上游模型。"""
@@ -274,17 +376,41 @@ def call_upstream(config: "SidecarConfig", payload: Dict[str, Any]
                                   _ollama_body(config, payload),
                                   config.timeout)
         if not 200 <= status < 300:
+            #: 错误上报：状态与红化后的正文摘录直接写 stderr（绝不带密钥），
+            #: 502 响应的字段即使后续链路再丢，这里也有一份可观测的现场。
+            print(json.dumps(
+                {"upstream_error": status,
+                 "body_excerpt": sanitize_upstream_body(text, config)[:500]},
+                ensure_ascii=False), file=sys.stderr, flush=True)
             raise TransportError(_code_for(status),
                                  f"上游返回 {status}", http_status=status,
                                  body=text[:2000])
         return _ollama_reply(json.loads(text))
-    status, text = _post_json(f"{config.upstream}/chat/completions",
-                              _openai_body(config, payload), config.timeout,
+    url = f"{config.upstream}/chat/completions"
+    if getattr(config, "strict_tools", False):
+        # DeepSeek strict（Beta）要求 base_url 带 /beta 段；其余拼接规则不变。
+        url = f"{strict_upstream_base(config.upstream)}/chat/completions"
+    status, text = _post_json(url, _openai_body(config, payload), config.timeout,
                               _upstream_headers(config))
     if not 200 <= status < 300:
+        print(json.dumps(
+            {"upstream_error": status,
+             "body_excerpt": sanitize_upstream_body(text, config)[:500]},
+            ensure_ascii=False), file=sys.stderr, flush=True)
         raise TransportError(_code_for(status), f"上游返回 {status}",
                              http_status=status, body=text[:2000])
-    return _openai_reply(json.loads(text))
+    try:
+        reply = _openai_reply(json.loads(text))
+    except TransportError as exc:
+        log_reply_parse_failure(text, exc, status)
+        #: ``parse_chat_response`` 抛的 TransportError 不带 http_status（上游
+        #: 明明是 200，只是回复被截断）；重抛时补上真实状态，让 502 的
+        #: ``upstream_http_status`` 是 200 而不是 null（G8-H 真跑实证）。
+        raise TransportError(exc.code, str(exc), http_status=status,
+                             body=exc.body) from exc
+    if getattr(config, "strict_tools", False):
+        reply = _strip_reply_nulls(reply, payload)
+    return reply
 
 
 def _openai_body(config: "SidecarConfig", payload: Dict[str, Any]
@@ -297,7 +423,8 @@ def _openai_body(config: "SidecarConfig", payload: Dict[str, Any]
     if seed is not None:
         body["seed"] = int(seed)
     if payload.get("tools"):
-        body["tools"] = payload["tools"]
+        body["tools"] = _strict_tools(payload["tools"]) \
+            if getattr(config, "strict_tools", False) else payload["tools"]
     if payload.get("tool_choice"):
         #: **供应商差异（2026-10-07 实测）**：阿里云百炼（DashScope 兼容口）在
         #: **思考模式**下拒收 `tool_choice=required`／对象：
@@ -338,6 +465,111 @@ def _openai_body(config: "SidecarConfig", payload: Dict[str, Any]
 
 def _code_for(status: int) -> ErrorCode:
     return ErrorCode.LLM_001 if 500 <= status <= 599 else ErrorCode.LLM_002
+
+
+# --------------------------------------------------------------------------- #
+# strict 工具调用（G2 判据 #8，卡 G8-E）
+#
+# 提供方（DeepSeek）的 strict 模式要求：base_url 带 /beta 段、每个 function
+# 带 ``strict: true``、每个 object 全量必填 + additionalProperties=false。
+# 原 schema 的"可选字段"因此被 ``to_strict`` 改成可空，收包时再用
+# ``strip_nulls`` 按原 schema 剥掉，插件侧拿到的形状与关掉 strict 时一致。
+# 启用前置由 :func:`check_strict_startup` 把关：探针 verdict 不是 pass、模型
+# 对不上、或 supported_keywords 缺本仓 schema 用到的关键字，一律退出码 2。
+# --------------------------------------------------------------------------- #
+def strict_upstream_base(upstream: str) -> str:
+    """strict（Beta）要求的 base URL：沿用配置给的 base，补上 /beta 段。"""
+    base = str(upstream).rstrip("/")
+    if base.endswith("/beta"):
+        return base
+    return base + "/beta"
+
+
+def _strict_tools(tools: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """把转发给上游的工具改写成 strict 形状；不改动入参（返回新列表）。"""
+    converted: List[Dict[str, Any]] = []
+    for tool in tools:
+        item = dict(tool)
+        function = tool.get("function")
+        if isinstance(function, dict):
+            new_function = dict(function)
+            parameters = function.get("parameters")
+            if isinstance(parameters, dict):
+                new_function["parameters"] = to_strict(parameters)
+            new_function["strict"] = True
+            item["function"] = new_function
+        converted.append(item)
+    return converted
+
+
+def _strip_reply_nulls(reply: ChatReply, payload: Dict[str, Any]
+                       ) -> ChatReply:
+    """把 strict 输出的可选字段 null 剥掉，恢复原 schema 的形状再回给插件。"""
+    schemas: Dict[str, Dict[str, Any]] = {}
+    for tool in payload.get("tools") or []:
+        function = tool.get("function") or {}
+        name = function.get("name")
+        parameters = function.get("parameters")
+        if name and isinstance(parameters, dict):
+            schemas[str(name)] = parameters
+    calls: List[ToolCall] = []
+    for call in reply.tool_calls:
+        schema = schemas.get(call.function.name)
+        arguments = call.function.arguments
+        if schema is not None:
+            try:
+                args = json.loads(arguments or "{}")
+            except (json.JSONDecodeError, TypeError):
+                args = None  # 坏 JSON 原样透传（探针的 malformed_rate 量它）
+            if isinstance(args, dict):
+                strip_nulls(args, schema)
+                arguments = json.dumps(args, ensure_ascii=False)
+        calls.append(ToolCall(
+            id=call.id, type=call.type,
+            function=FunctionCall(name=call.function.name, arguments=arguments)))
+    return ChatReply(content=reply.content, tool_calls=calls,
+                     reasoning=reply.reasoning, usage=reply.usage,
+                     request_id=reply.request_id, model=reply.model,
+                     finish_reason=reply.finish_reason)
+
+
+def check_strict_startup(args, config) -> None:
+    """``--strict-tools`` 的启动门；任何一条不满足就抛 StrictStartupRefused。"""
+    if not getattr(args, "strict_tools", False):
+        return
+    if config.kind != "openai":
+        raise StrictStartupRefused(
+            f"strict tools 需要 OpenAI 兼容上游（DeepSeek Beta 端点），"
+            f"当前 kind={config.kind}")
+    probe_path = str(getattr(args, "strict_probe", "") or "").strip()
+    if not probe_path:
+        raise StrictStartupRefused(
+            "--strict-tools 需要 --strict-probe <path>：先跑 "
+            "tools/probe_strict_tools.py 拿到实测探针")
+    path = Path(probe_path)
+    if not path.is_file():
+        raise StrictStartupRefused(f"strict 探针文件不存在：{path}")
+    try:
+        probe = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise StrictStartupRefused(
+            f"strict 探针读不了：{path}（{type(exc).__name__}: {exc}）") from exc
+    verdict = str(probe.get("verdict") or "")
+    if verdict != "pass":
+        detail = str(probe.get("error") or probe.get("stopped_reason") or "").strip()
+        raise StrictStartupRefused(
+            f"探针 verdict={verdict!r} 不是 pass"
+            + (f"：{detail}" if detail else ""))
+    probe_model = str(probe.get("model") or "")
+    if probe_model != config.model:
+        raise StrictStartupRefused(
+            f"探针模型 {probe_model!r} ≠ 配置模型 {config.model!r}")
+    supported = set(probe.get("supported_keywords") or [])
+    missing = sorted(set(SCHEMA_KEYWORD_UNIVERSE) - supported)
+    if missing:
+        raise StrictStartupRefused(
+            f"探针 supported_keywords 缺本仓工具 schema 需要的 {missing}；"
+            f"提供方不支持/未实测这些关键字，strict 模式下拒绝转发")
 
 
 # --------------------------------------------------------------------------- #
@@ -469,7 +701,13 @@ def make_handler(config: "SidecarConfig"):
             try:
                 self._route(body)
             except TransportError as exc:
-                self._json(502, {"error": str(exc), "code": str(exc.code)})
+                #: G8-H：上游的 HTTP 状态与正文摘录必须**穿过 sidecar** 到达插件
+                #: 审计（此前两跳都只留 ``str(exc)``，`TransportError.__str__`
+                #: 丢弃 body，于是 502 背后的上游 4xx/5xx 不可观测）。摘录在
+                #: 序列化前红化密钥与 Authorization 头，并由
+                #: ``upstream_error_payload`` 保证整个 502 正文 ≤2000 字符
+                #: （插件侧只留前 2000 字符，超了会被截成坏 JSON、字段全丢）。
+                self._json(502, upstream_error_payload(exc, config))
             except Exception as exc:                     # noqa: BLE001
                 self._json(500, {"error": f"{type(exc).__name__}: {exc}"})
 
@@ -581,6 +819,15 @@ def parse_args(argv):
                         help="`tool_choice` 的供应商翻译：passthrough（默认，逐字节透传）/"
                              "auto（把 required 与对象改写成 auto——百炼等上游在**思考模式**"
                              "下拒收 required，见 _openai_body 的注释）/ drop（整格不发）")
+    parser.add_argument("--strict-tools", action="store_true",
+                        help="strict 工具调用（G2 判据 #8，DeepSeek Beta）：转发体给每个 "
+                             "function 加 strict:true、parameters 转 to_strict、走 /beta "
+                             "端点、回包 strip_nulls。启动要求 --strict-probe 的探针 "
+                             "verdict=pass、模型一致、supported_keywords 覆盖本仓 schema "
+                             "用到的关键字，否则退出码 2（绝不静默退回非严格模式）")
+    parser.add_argument("--strict-probe", default="",
+                        help="tools/probe_strict_tools.py 产出的实测探针 JSON 路径"
+                             "（--strict-tools 时必填）")
     parser.add_argument("--max-tokens", type=int, default=8192)
     parser.add_argument("--temperature", type=float, default=0.0,
                         help="抽取/规划要求确定性，默认 0（v1.4 §2.3d T6）")
@@ -616,12 +863,18 @@ def parse_args(argv):
 def main(argv) -> int:
     args = parse_args(argv)
     config = SidecarConfig(args)
+    try:
+        check_strict_startup(args, config)
+    except StrictStartupRefused as exc:
+        print(f"sidecar startup refused: {exc}", file=sys.stderr)
+        raise SystemExit(2)
     server = ThreadingHTTPServer((args.host, args.port), make_handler(config))
     print(json.dumps({"sidecar": "listening", "host": args.host,
                       "port": server.server_address[1],
                       "upstream": config.upstream, "kind": config.kind,
                       "model": config.model, "num_ctx": config.num_ctx,
                       "think": config.think,
+                      "strict_tools": config.strict_tools,
                       "temperature": config.temperature,
                       "seed": config.seed,
                       "knowledge_dir": str(config.knowledge_dir),

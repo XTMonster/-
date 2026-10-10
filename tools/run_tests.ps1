@@ -170,6 +170,7 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_crowd_vfx.py';         Marker = 'BD_TEST_RESULT'; Label = 'crowd-vfx' },
     @{ Script = 'tools\blender_tests\test_anchor_staging.py';    Marker = 'BD_TEST_RESULT'; Label = 'anchor-staging' },
     @{ Script = 'tools\blender_tests\test_prop_interaction.py';  Marker = 'BD_TEST_RESULT'; Label = 'prop-interaction' },
+    @{ Script = 'tools\blender_tests\test_action_targets.py'; Marker = 'BD_TEST_RESULT'; Label = 'action-targets' },
     @{ Script = 'tools\blender_tests\test_vlm_review.py';        Marker = 'BD_TEST_RESULT'; Label = 'vlm-review' },
     @{ Script = 'tools\blender_tests\test_checkpoint_resume.py'; Marker = 'BD_TEST_RESULT'; Label = 'checkpoint-resume' },
     @{ Script = 'tools\blender_tests\test_reference_cards.py';   Marker = 'BD_TEST_RESULT'; Label = 'reference-cards' },

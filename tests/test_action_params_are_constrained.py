@@ -92,8 +92,9 @@ def test_a_key_that_another_action_uses_is_caught_exactly():
     assert MM.unknown_action_params("body_tilt", {"cycles": 2}) == ["cycles"]
     assert MM.unknown_action_params("nod", {"cycles": 2}) == []
     assert MM.unknown_action_params("walk_to", {"target_position": [0, 0, 1]}) == []
-    # 未知动作类型不在表里：返回空（不在这里判"动作类型是否合法"，
-    # 那是 schema 的 enum 干的活）。
+    # 未知动作类型不在表里：unknown_action_params 的契约仍是返回空——但
+    # "动作类型本身是否合法"现在由 extract_draft 显式拒绝（r4 真跑
+    # finger_snap 实证：上游 strict 是尽力而为，schema 的 enum 挡不住）。
     assert MM.unknown_action_params("no_such_action", {"whatever": 1}) == []
 
 
@@ -128,3 +129,64 @@ def test_extract_draft_refuses_a_bad_param_key_before_the_build():
                          "params": {"angle_deg": 15}}]}
     draft = ED.extract_draft(_reply(good), "shot_006")
     assert draft.actions[0]["params"] == {"angle_deg": 15}
+
+
+def test_extract_draft_refuses_an_unknown_action_type_before_the_build():
+    """r4 真跑（run f9fedb5c133c）：模型输出 schema 外的
+    ``action_type: finger_snap``，B1 解析层没有 kind 闭集守卫，放行进计划，
+    构建期抛"未知动作类型"把 13 镜整轮打成 ERROR。必须在这里拦住。
+    """
+    import json
+
+    from block_director.contracts.transport import ChatReply, FunctionCall, ToolCall
+
+    def _reply(args):
+        return ChatReply(tool_calls=[ToolCall(
+            id="c1", function=FunctionCall(
+                name="emit_shot_draft",
+                arguments=json.dumps(args, ensure_ascii=False)))])
+
+    bad = {"shot_id": "shot_001",
+           "actions": [{"character_id": "char_001",
+                        "action_type": "finger_snap",
+                        "start_frame": 0, "end_frame": 30,
+                        "params": {}}]}
+    with pytest.raises(ValueError) as excinfo:
+        ED.extract_draft(_reply(bad), "shot_001")
+    assert "不在动作类型闭集内" in str(excinfo.value)
+    assert "finger_snap" in str(excinfo.value)
+
+    # 正对照：合法动作类型照常解析（别把路堵死）。
+    good = {"shot_id": "shot_001",
+            "actions": [{"character_id": "char_001",
+                         "action_type": "walk_to",
+                         "start_frame": 0, "end_frame": 30,
+                         "params": {"speed": "walk"}}]}
+    draft = ED.extract_draft(_reply(good), "shot_001")
+    assert draft.actions[0]["action_type"] == "walk_to"
+
+
+def test_extract_draft_refuses_a_non_object_action_item():
+    """非对象动作条目在解析期抛确定性 ``ValueError``（驱动器记
+    `draft_invalid`），而不是以 TypeError 逃逸 `except ValueError` 打死整轮。
+    """
+    import json
+
+    from block_director.contracts.transport import ChatReply, FunctionCall, ToolCall
+
+    def _reply(args):
+        return ChatReply(tool_calls=[ToolCall(
+            id="c1", function=FunctionCall(
+                name="emit_shot_draft",
+                arguments=json.dumps(args, ensure_ascii=False)))])
+
+    for bad_item in ("finger_snap", 5):
+        bad = {"shot_id": "shot_001",
+               "actions": [{"character_id": "char_001",
+                            "action_type": "walk_to",
+                            "start_frame": 0, "end_frame": 30,
+                            "params": {}},
+                           bad_item]}
+        with pytest.raises(ValueError) as excinfo:
+            ED.extract_draft(_reply(bad), "shot_001")
+        assert "类型应为对象" in str(excinfo.value)

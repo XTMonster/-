@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Dict, List, Optional
 
 from .tool_schema import validate_args
@@ -99,6 +99,23 @@ class ToolRegistry:
         wanted = {str(name) for name in names}
         return [self._tools[name].openai_schema() for name in self.names()
                 if name in wanted]
+
+    def override_parameters(self, name: str,
+                            parameters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """用逐镜 schema **原地替换**某一工具的 ``parameters``，返回旧参数。
+
+        G2 判据 #8 的"同一个对象"纪律：``schemas_except`` /
+        ``openai_schemas`` 与 :meth:`execute` 都读 ``spec.parameters``，所以
+        覆盖之后"模型看到的 schema"与"校验用的 schema"就是同一个 dict——
+        不会出现"载荷放行、执行校验拒绝"或反过来。未注册的工具不动
+        （它本来就不会被摆给模型，不存在"越权注册"问题）。
+        """
+        spec = self._tools.get(name)
+        if spec is None:
+            return None
+        previous = spec.parameters
+        self._tools[name] = replace(spec, parameters=parameters)
+        return previous
 
     def __contains__(self, name: object) -> bool:
         return name in self._tools
