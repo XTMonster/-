@@ -7,7 +7,8 @@
   2. 生成新契约处方（只给方向：component / severity / current / target /
      allowed_tools / direction / expected_effect，不含 tool / tool_args）；
   3. 用 validate_prescription 证明处方方向合法、allowed_tools 在工具闭集内；
-  4. 打印 AI 实际会看到的那段"尺子读数"（不含工具名，防答案泄漏）。
+  4. 用 prescription.py 的正式 render_ruler_report 打印 AI 实际会看到的那段
+     "尺子读数"（不含工具名/参数/"建议执行"，防答案泄漏）。
 """
 from __future__ import annotations
 
@@ -27,25 +28,9 @@ from block_director.cinema.composition import SubjectBox, evaluate_composition
 from block_director.cinema.prescription import (
     build_prescriptions,
     detect_pollution,
+    render_ruler_report,
     validate_prescription,
 )
-
-
-#: demo 自带的最小读数渲染（03c 评测台才是正式渲染归属）。
-#: 只输出数值 / 严重度 / 方向 / 预期影响，不输出 allowed_tools 与工具名，
-#: 保证渲染结果能通过 detect_pollution（尺子不泄漏修复答案）。
-def render_ruler_report(report, prescriptions) -> str:
-    lines = ["镜头构图读数："]
-    for p in prescriptions:
-        lines.append(
-            f"- {p.component}[{p.severity.value}] 当前 {p.current:.2f} "
-            f"目标 {p.target.to_dict()}")
-        lines.append(f"  修复方向：{p.direction}")
-        if p.expected_effect:
-            lines.append(f"  预期影响：{'、'.join(p.expected_effect)}")
-    if not prescriptions:
-        lines.append("- 无失败分量（全部达标）")
-    return "\n".join(lines)
 
 
 def main() -> int:

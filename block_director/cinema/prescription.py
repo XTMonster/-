@@ -10,9 +10,9 @@ expected_effect，目的是把“尺子给方向”和“模型动手”彻底�
 “测量结果 -> 结构化观察/处方”，不替 LLM 做最终裁决。
 
 与旧 demo 的关系（03a 收敛）：
-* 删除 DEMO_ACTION_TOOL_SCHEMAS / prescriptions_pass_demo_schemas /
-  render_ruler_report——尺子读数渲染归评测台（Ticket 03c），工具 schema
-  归 layer3_engine/tool_bindings 真源；
+* 删除 DEMO_ACTION_TOOL_SCHEMAS / prescriptions_pass_demo_schemas；正式读数
+  渲染 render_ruler_report 落在本模块（Ticket 03c），demo 与评测台共用，
+  工具 schema 归 layer3_engine/tool_bindings 真源；
 * 删除可执行 Prescription（tool/tool_args 字段）——那正是污染源。
 """
 from __future__ import annotations
@@ -163,3 +163,26 @@ def detect_pollution(prompt: str) -> Optional[str]:
         if token.lower() in lowered:
             return f"尺子提示泄漏修复答案：命中 {token!r}"
     return None
+
+
+def render_ruler_report(report: object,
+                        prescriptions: List[Prescription]) -> str:
+    """把构图报告与方向处方渲染成 LLM 可读的尺子读数（03c 正式实现）。
+
+    只渲染 component / severity / current / target / direction /
+    expected_effect；**绝不渲染 allowed_tools**（工具名即污染源），也不写
+    参数名/参数值或“建议执行”。输出必须能通过 detect_pollution。
+    ``report`` 保留在签名里作为构图报告的来源占位（供后续评测台扩展），
+    当前渲染内容只依赖处方本身，保证确定性与可复现性。
+    """
+    lines = ["镜头构图读数："]
+    for p in prescriptions:
+        lines.append(
+            f"- {p.component}[{p.severity.value}] 当前 {float(p.current):.2f} "
+            f"目标 {p.target.to_dict()}")
+        lines.append(f"  修复方向：{p.direction}")
+        if p.expected_effect:
+            lines.append(f"  预期影响：{'、'.join(p.expected_effect)}")
+    if not prescriptions:
+        lines.append("- 无失败分量（全部达标）")
+    return "\n".join(lines)

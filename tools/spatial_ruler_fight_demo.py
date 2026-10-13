@@ -29,6 +29,7 @@ from block_director.cinema.dynamic_measure import (
 from block_director.cinema.prescription import (
     build_prescriptions,
     detect_pollution,
+    render_ruler_report,
     validate_prescription,
 )
 
@@ -86,15 +87,13 @@ def main() -> int:
     print("\n== 最紧帧（第5-6帧：重叠+头部被挡）构图处方 ==")
     for p in prescriptions:
         ok, why = validate_prescription(p)
-        print(f"- {p.component}[{p.severity.value}] 当前 {p.current:.2f} "
-              f"目标 {p.target.to_dict()}")
-        print(f"  修复方向：{p.direction}")
-        print(f"  预期影响：{'、'.join(p.expected_effect)}")
-        print(f"  方向校验：{'通过' if ok else why}")
-    text = "\n".join(f"{p.component}[{p.severity.value}] "
-                     f"{p.direction}" for p in prescriptions)
+        print(f"- {p.component}[{p.severity.value}] "
+              f"方向校验：{'通过' if ok else why}")
+    print("\n== AI 实际看到的尺子读数 ==")
+    text = render_ruler_report(tight, prescriptions)
+    print(text)
     leak = detect_pollution(text)
-    print(f"防污染检查：{'干净' if leak is None else f'泄漏 {leak}'}")
+    print(f"\n防污染检查：{'干净' if leak is None else f'泄漏 {leak}'}")
     return 0
 
 
