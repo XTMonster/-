@@ -101,6 +101,9 @@ def build_manifest(plan: Plan, *,
                 "side_sign": int(result.get("axis_side_sign", 0)),
                 "status": str(result.get("axis_status", "")),
             },
+            #: v1.7 I3：本镜相机 9 帧等距采样路径（渲染循环写入 build_summary.result.paths）。
+            #: 无采样（老构建/离线回放）时为空 dict——不补默认值、不猜。
+            "paths": dict(result.get("paths") or {}),
             "characters": list(shot.characters),
             #: v1.6 E1（FR-A2）：这一镜里的**道具 + 环境件**（角色仍走
             #: ``characters``）。成员资格来自该镜计划内的引用（动作
