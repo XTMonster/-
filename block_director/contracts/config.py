@@ -36,6 +36,12 @@ from .serde import to_plain as _to_plain
 CONFIG_VERSION = "1.4.0"
 CONFIG_ENV_VAR = "BLOCKDIRECTOR_CONFIG"
 
+#: 空间尺六层（主 SPEC §5.1）。字面量，避免与 cinema.metric_registry 顶层
+#: 循环依赖；tests/test_ruler_registry_sync.py 逐键对拍 LAYER_WEIGHTS_DEFAULT。
+_RULER_LAYERS: Tuple[str, ...] = (
+    "geometry", "attention", "action", "continuity", "cinema", "robustness",
+)
+
 #: ``#RRGGBB`` / ``#RGB``（契约层不 import utils，保持依赖单向）
 _HEX_COLOR_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
 
@@ -462,6 +468,24 @@ class LabelsConfig:
 
 
 @dataclass
+class RulerConfig:
+    """空间尺多维评测台（v1.7 I3，主 SPEC §5.1）。
+
+    ``enabled=False`` 时评测台全链路零行为差（用户选择，不是降级）；
+    ``layer_weights`` 是总览分的六层默认权重，与
+    ``cinema/metric_registry.LAYER_WEIGHTS_DEFAULT`` 逐键对拍（双源防漂移）。
+    运行时真源是 ``specs/config.default.yaml``；每次运行在证据指纹里记录
+    权重表与权重哈希（tools/evidence_fingerprint.py）。
+    """
+
+    enabled: bool = False
+    layer_weights: Dict[str, float] = field(default_factory=lambda: {
+        "geometry": 0.25, "attention": 0.20, "action": 0.20,
+        "continuity": 0.15, "cinema": 0.10, "robustness": 0.10,
+    })
+
+
+@dataclass
 class AppConfig:
     config_version: str = CONFIG_VERSION
     llm: LLMConfig = field(default_factory=LLMConfig)
@@ -484,6 +508,7 @@ class AppConfig:
     guard: GuardConfig = field(default_factory=GuardConfig)
     rhythm: RhythmConfig = field(default_factory=RhythmConfig)
     labels: LabelsConfig = field(default_factory=LabelsConfig)
+    ruler: RulerConfig = field(default_factory=RulerConfig)
 
     # ----------------------------------------------------------------- 校验
     def validate(self) -> List[Issue]:
@@ -598,6 +623,25 @@ class AppConfig:
                         or float(value) <= 0.0):
                     err("CFG_219", f"rhythm.pace_frame_multiplier.{pace}",
                         f"帧长倍率必须为正数（当前 {value!r}）")
+        # --- v1.7 I3（空间尺多维评测台）：六层权重表。CFG_220/CFG_221 经
+        # rg 确认未被占用。只校验不改正——非法权重表必须在启动前被拦下。---
+        ruler_weights = self.ruler.layer_weights
+        if not isinstance(ruler_weights, dict) \
+                or set(ruler_weights) != set(_RULER_LAYERS):
+            err("CFG_220", "ruler.layer_weights",
+                f"权重键必须恰好等于六层 {'/'.join(_RULER_LAYERS)}"
+                f"（当前 {ruler_weights!r}）")
+        else:
+            for name, value in ruler_weights.items():
+                if (isinstance(value, bool)
+                        or not isinstance(value, (int, float))
+                        or float(value) <= 0.0):
+                    err("CFG_221", f"ruler.layer_weights.{name}",
+                        f"权重必须为正数（当前 {value!r}）")
+            if abs(float(sum(ruler_weights.values())) - 1.0) > 1e-9:
+                err("CFG_221", "ruler.layer_weights",
+                    "六层权重和必须等于 1"
+                    f"（当前 {float(sum(ruler_weights.values()))}）")
         if self.rag.top_k <= 0:
             err("CFG_007", "rag.top_k", "检索条数必须为正整数")
         if self.orchestration.max_repair_attempts < 0:

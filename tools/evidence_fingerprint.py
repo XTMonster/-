@@ -29,6 +29,7 @@ def _sha256(path: Path) -> str:
 def fingerprint() -> dict:
     from block_director.contracts.config import (CONFIG_VERSION,
                                                  dump_default_yaml)
+    from block_director.cinema.metric_registry import LAYER_WEIGHTS_DEFAULT
 
     spec = ROOT / "specs" / "config.default.yaml"
     return {
@@ -42,6 +43,13 @@ def fingerprint() -> dict:
             ROOT / "fixtures" / "expected_sdl_simple.json"),
         "golden_transcript_sha256": _sha256(
             ROOT / "fixtures" / "tool_transcript_simple.jsonl"),
+        #: 空间尺总览分权重表与其指纹（v1.7 I3）：证据目录必须自解释，
+        #: 同一份配置换权重后产生的读数能被指纹区分开。运行时真源是
+        #: specs/config.default.yaml；这里记录注册表的规格快照。
+        "ruler_weights": LAYER_WEIGHTS_DEFAULT,
+        "ruler_weights_sha256": hashlib.sha256(
+            json.dumps(LAYER_WEIGHTS_DEFAULT, sort_keys=True,
+                       ensure_ascii=False).encode("utf-8")).hexdigest(),
     }
 
 
