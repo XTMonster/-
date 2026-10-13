@@ -85,20 +85,22 @@ def test_dynamic_probe_read_only():
     assert before == after
 
 
-def test_fight_prescriptions_executable():
-    """打斗帧的处方（tool + tool_args）必须通过 demo schema 校验。"""
+def test_fight_prescriptions_directional_and_unpolluted():
+    """打斗帧处方按新契约：方向合法、allowed_tools 在闭集内、读数不泄漏。"""
     from block_director.cinema.prescription import (
-        DEMO_ACTION_TOOL_SCHEMAS,
-        Prescription,
+        detect_pollution,
+        validate_prescription,
     )
-    from block_director.layer5_orchestrator.tool_schema import validate_args
 
     bad: list[str] = []
+    texts: list[str] = []
     for p in _fight_prescriptions():
-        schema = DEMO_ACTION_TOOL_SCHEMAS.get(p.tool)
-        if schema is None or validate_args(schema, p.tool_args):
+        ok, _why = validate_prescription(p)
+        if not ok:
             bad.append(p.component)
+        texts.append(f"{p.component} {p.direction}")
     assert not bad, bad
+    assert detect_pollution("\n".join(texts)) is None
 
 
 # --------------------------------------------------------------------------- #

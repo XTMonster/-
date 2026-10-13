@@ -4,6 +4,8 @@
 
 演示空间尺在打斗/高强度动作下的效果：轨迹、速度档、方向反转、出画/回冲、
 分层遮挡、银幕左右序翻转，以及最紧帧的构图处方。
+处方的可执行性按新契约（Ticket 03a）校验：只给方向与 allowed_tools，
+不给具体工具名与参数，防止把修复答案泄漏给模型。
 """
 
 from __future__ import annotations
@@ -26,8 +28,8 @@ from block_director.cinema.dynamic_measure import (
 )
 from block_director.cinema.prescription import (
     build_prescriptions,
-    prescriptions_pass_demo_schemas,
-    render_ruler_report,
+    detect_pollution,
+    validate_prescription,
 )
 
 
@@ -82,9 +84,17 @@ def main() -> int:
         occluded={"hero": True, "villain": False})
     prescriptions = build_prescriptions(tight)
     print("\n== 最紧帧（第5-6帧：重叠+头部被挡）构图处方 ==")
-    print(render_ruler_report(tight, prescriptions))
-    bad = prescriptions_pass_demo_schemas(prescriptions)
-    print(f"处方 schema 校验：{'全部通过' if not bad else f'未通过: {bad}'}")
+    for p in prescriptions:
+        ok, why = validate_prescription(p)
+        print(f"- {p.component}[{p.severity.value}] 当前 {p.current:.2f} "
+              f"目标 {p.target.to_dict()}")
+        print(f"  修复方向：{p.direction}")
+        print(f"  预期影响：{'、'.join(p.expected_effect)}")
+        print(f"  方向校验：{'通过' if ok else why}")
+    text = "\n".join(f"{p.component}[{p.severity.value}] "
+                     f"{p.direction}" for p in prescriptions)
+    leak = detect_pollution(text)
+    print(f"防污染检查：{'干净' if leak is None else f'泄漏 {leak}'}")
     return 0
 
 

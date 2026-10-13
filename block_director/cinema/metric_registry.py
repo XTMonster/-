@@ -2,7 +2,8 @@
 
 单一真源：32 条新增指标的完整规格，逐条转录《空间尺指标规范 v1.0》
 （docs/SPEC_空间尺_指标规范_v1.0.md §4.1–§4.6）；现有六项指标
-（composition.py 真源）不在此重复定义，只保留真源指针。
+（composition.py 真源）不在此重复定义，只保留真源指针；Ticket 03a
+再挂 6 条 composition 真源指针指标（32 -> 38，见 §4.7）。
 
 术语约定（用户 2026-10-13 裁决）：只使用「内容关键帧 / 动作关键帧」，
 不接受混用「关键帧」指代两者。
@@ -77,7 +78,7 @@ class MetricSpec:
 
 
 # --------------------------------------------------------------------------- #
-# 32 条新增指标（逐条转录《指标规范 v1.0》§4.1–§4.6）
+# 32 条新增指标（§4.1–§4.6）+ 6 条 composition 真源指针（§4.7，Ticket 03a）
 # --------------------------------------------------------------------------- #
 METRIC_REGISTRY: Tuple[MetricSpec, ...] = (
     # ------------------------- 4.1 几何基础层（5 项） ------------------------
@@ -636,6 +637,111 @@ METRIC_REGISTRY: Tuple[MetricSpec, ...] = (
             "good": "修复只改变目标镜头/主体，非目标镜头破坏数量 = 0",
             "bad": "全局移动相机/角色、共享锚点被改，破坏相邻镜头且未记录（H6）",
             "ambiguous": "相邻镜头受影响但已记录且有叙事合理性，需人工复核",
+        },
+    ),
+    # ------------- 4.7 composition 真源指针（6 项，Ticket 03a） -------------
+    # 不重复定义算法：inputs/measurement 指向 composition.py 的现有分量读数，
+    # 只作注册表真源指针，不参与总览分权重（LAYER_WEIGHTS_DEFAULT 不含它们）。
+    MetricSpec(
+        name="headroom",
+        layer="geometry",
+        granularity="Frame",
+        inputs="composition.py 的 headroom 分量读数（SubjectBox 投影 + 头顶留白）",
+        measurement="直接取 composition.py headroom 分量归一化分数（0..1）",
+        target="≥ 0.7（PASS_SCORE 达标口径，沿用 composition 真源阈值）",
+        severity="分数 <0.3 fatal；<0.5 error；<0.7 warning",
+        failure_cause="头顶留白不足/过多，主体垂直位置偏离构图意图",
+        repair_direction="按方向调整机位/景别，让头顶留白回到目标区间（不替模型选参数）",
+        evidence_grade="production",
+        sample_requirements={
+            "good": "composition.py headroom 分量 ≥ 0.7，头顶留白在理想区间",
+            "bad": "composition.py headroom 分量 < 0.7，头顶留白明显不足/过多",
+            "ambiguous": "分数恰在 0.7 边界且景别声明为近景，需人工复核",
+        },
+    ),
+    MetricSpec(
+        name="lead_room",
+        layer="geometry",
+        granularity="Frame",
+        inputs="composition.py 的 lead_room 分量读数（主体包围盒与视线方向前方空间）",
+        measurement="直接取 composition.py lead_room 分量归一化分数（0..1）",
+        target="≥ 0.7（PASS_SCORE 达标口径，沿用 composition 真源阈值）",
+        severity="分数 <0.3 fatal；<0.5 error；<0.7 warning",
+        failure_cause="视线方向前方留白不足，主体偏向画边",
+        repair_direction="把主体放到画面偏对侧，让视线方向留出前方空间（不替模型选参数）",
+        evidence_grade="production",
+        sample_requirements={
+            "good": "composition.py lead_room 分量 ≥ 0.7，视线前方留白充足",
+            "bad": "composition.py lead_room 分量 < 0.7，主体前方空间不足",
+            "ambiguous": "分数恰在 0.7 边界且主体贴边但属有意构图，需人工复核",
+        },
+    ),
+    MetricSpec(
+        name="rule_of_thirds",
+        layer="geometry",
+        granularity="Frame",
+        inputs="composition.py 的 rule_of_thirds 分量读数（主体中心到三分线交点的 NDC 偏差）",
+        measurement="直接取 composition.py rule_of_thirds 分量归一化分数（0..1）",
+        target="≥ 0.7（PASS_SCORE 达标口径，沿用 composition 真源阈值）",
+        severity="分数 <0.3 fatal；<0.5 error；<0.7 warning",
+        failure_cause="主体中心偏离三分线交点，构图重心不稳",
+        repair_direction="微调构图让主体中心落到三分线交点附近（不替模型选参数）",
+        evidence_grade="production",
+        sample_requirements={
+            "good": "composition.py rule_of_thirds 分量 ≥ 0.7，主体位于三分线交点附近",
+            "bad": "composition.py rule_of_thirds 分量 < 0.7，主体中心明显偏离",
+            "ambiguous": "分数恰在 0.7 边界且主体居中属有意构图，需人工复核",
+        },
+    ),
+    MetricSpec(
+        name="balance",
+        layer="geometry",
+        granularity="Frame",
+        inputs="composition.py 的 balance 分量读数（多主体投影重心的左右分布）",
+        measurement="直接取 composition.py balance 分量归一化分数（0..1）",
+        target="≥ 0.7（PASS_SCORE 达标口径，沿用 composition 真源阈值）",
+        severity="分数 <0.3 fatal；<0.5 error；<0.7 warning",
+        failure_cause="多主体挤向一侧，画面重心偏离中央稳定区",
+        repair_direction="左右重新平衡人物位置，让画面重心回到中央稳定区（不替模型选参数）",
+        evidence_grade="production",
+        sample_requirements={
+            "good": "composition.py balance 分量 ≥ 0.7，多主体重心居中稳定",
+            "bad": "composition.py balance 分量 < 0.7，主体挤向一侧",
+            "ambiguous": "分数恰在 0.7 边界且单侧挤压属有意构图，需人工复核",
+        },
+    ),
+    MetricSpec(
+        name="occlusion",
+        layer="geometry",
+        granularity="Frame",
+        inputs="composition.py 的 occlusion 分量读数（主体射线可见比例与遮挡归因）",
+        measurement="直接取 composition.py occlusion 分量归一化分数（0..1）",
+        target="≥ 0.7（PASS_SCORE 达标口径，沿用 composition 真源阈值）",
+        severity="分数 <0.3 fatal；<0.5 error；<0.7 warning",
+        failure_cause="主体关键部位被前景/他人遮挡，射线可见比例不足",
+        repair_direction="移开机位或调整遮挡物，让被挡主体关键部位恢复可见（不替模型选参数）",
+        evidence_grade="production",
+        sample_requirements={
+            "good": "composition.py occlusion 分量 ≥ 0.7，关键部位可见比例达标",
+            "bad": "composition.py occlusion 分量 < 0.7，关键部位被遮挡",
+            "ambiguous": "分数恰在 0.7 边界且遮挡属于有意层次，需人工复核",
+        },
+    ),
+    MetricSpec(
+        name="framing",
+        layer="geometry",
+        granularity="Frame",
+        inputs="composition.py 的 framing 分量读数（主体投影是否完整在画内）",
+        measurement="直接取 composition.py framing 分量归一化分数（0..1）",
+        target="≥ 0.7（PASS_SCORE 达标口径，沿用 composition 真源阈值）",
+        severity="分数 <0.3 fatal；<0.5 error；<0.7 warning",
+        failure_cause="主体被画面边缘截断或未按声明景别完整入画",
+        repair_direction="收紧景别或重新构图，让主体完整回到画内并符合景别预期（不替模型选参数）",
+        evidence_grade="production",
+        sample_requirements={
+            "good": "composition.py framing 分量 ≥ 0.7，主体完整入画且景别符合预期",
+            "bad": "composition.py framing 分量 < 0.7，主体被边缘截断或景别不符",
+            "ambiguous": "分数恰在 0.7 边界且截断属有意构图，需人工复核",
         },
     ),
 )

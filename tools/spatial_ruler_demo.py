@@ -4,9 +4,10 @@
 
 演示"AI 怎么通过算法读懂空间"：
   1. 用一个"头顶留白过多"的包围盒构造构图报告（纯几何，无 Blender）；
-  2. 生成可执行处方（tool + tool_args）；
-  3. 用 validate_args 证明这些处方参数确实能被工具 schema 接受；
-  4. 打印 AI 实际会看到的那段"尺子读数"。
+  2. 生成新契约处方（只给方向：component / severity / current / target /
+     allowed_tools / direction / expected_effect，不含 tool / tool_args）；
+  3. 用 validate_prescription 证明处方方向合法、allowed_tools 在工具闭集内；
+  4. 打印 AI 实际会看到的那段"尺子读数"（不含工具名，防答案泄漏）。
 """
 from __future__ import annotations
 
@@ -25,46 +26,26 @@ if str(ROOT) not in sys.path:
 from block_director.cinema.composition import SubjectBox, evaluate_composition
 from block_director.cinema.prescription import (
     build_prescriptions,
-    render_ruler_report,
+    detect_pollution,
+    validate_prescription,
 )
-from block_director.layer5_orchestrator.tool_schema import validate_args
 
 
-ACTION_TOOL_SCHEMAS = {
-    "move_camera": {
-        "type": "object", "additionalProperties": False,
-        "required": ["movement_type", "start_frame", "end_frame"],
-        "properties": {
-            "camera_id": {"type": "string"},
-            "movement_type": {"type": "string", "enum": ["dolly_in", "dolly_out",
-                                                         "truck_left", "truck_right",
-                                                         "pan"]},
-            "amount": {"type": "number", "minimum": 0, "maximum": 180},
-            "start_frame": {"type": "integer", "minimum": 1},
-            "end_frame": {"type": "integer", "minimum": 1},
-        },
-    },
-    "move_character": {
-        "type": "object", "additionalProperties": False,
-        "required": ["character_id", "target_position", "start_frame", "end_frame"],
-        "properties": {
-            "character_id": {"type": "string"},
-            "target_position": {"type": "array", "minItems": 3, "maxItems": 3,
-                                "items": {"type": "number"}},
-            "speed": {"type": "string", "enum": ["walk", "run"]},
-            "start_frame": {"type": "integer", "minimum": 1},
-            "end_frame": {"type": "integer", "minimum": 1},
-        },
-    },
-    "reframe": {
-        "type": "object", "additionalProperties": False,
-        "properties": {
-            "shot_id": {"type": "string"},
-            "shot_type": {"type": "string", "enum": ["MS"]},
-            "lens": {"type": "number", "minimum": 8, "maximum": 300},
-        },
-    },
-}
+#: demo 自带的最小读数渲染（03c 评测台才是正式渲染归属）。
+#: 只输出数值 / 严重度 / 方向 / 预期影响，不输出 allowed_tools 与工具名，
+#: 保证渲染结果能通过 detect_pollution（尺子不泄漏修复答案）。
+def render_ruler_report(report, prescriptions) -> str:
+    lines = ["镜头构图读数："]
+    for p in prescriptions:
+        lines.append(
+            f"- {p.component}[{p.severity.value}] 当前 {p.current:.2f} "
+            f"目标 {p.target.to_dict()}")
+        lines.append(f"  修复方向：{p.direction}")
+        if p.expected_effect:
+            lines.append(f"  预期影响：{'、'.join(p.expected_effect)}")
+    if not prescriptions:
+        lines.append("- 无失败分量（全部达标）")
+    return "\n".join(lines)
 
 
 def main() -> int:
@@ -74,16 +55,19 @@ def main() -> int:
     report = evaluate_composition([box])
     prescriptions = build_prescriptions(report)
 
-    # 2. 证明每个处方的 tool_args 都能被现有工具 schema 接受
-    print("== 处方参数 schema 校验 ==")
+    # 2. 证明每个处方方向合法、allowed_tools 都在工具闭集内
+    print("== 处方方向校验 ==")
     for p in prescriptions:
-        schema = ACTION_TOOL_SCHEMAS.get(p.tool)
-        problems = validate_args(schema, p.tool_args) if schema else ["未知工具"]
-        print(f"{p.component}: {p.tool}({p.tool_args}) -> "
-              f"{'通过' if not problems else problems}")
+        ok, why = validate_prescription(p)
+        print(f"{p.component}: direction={p.direction!r} "
+              f"allowed_tools={p.allowed_tools} -> "
+              f"{'通过' if ok else why}")
 
     print("\n== AI 实际看到的尺子读数 ==")
-    print(render_ruler_report(report, prescriptions))
+    text = render_ruler_report(report, prescriptions)
+    print(text)
+    leak = detect_pollution(text)
+    print(f"\n防污染检查：{'干净' if leak is None else f'泄漏 {leak}'}")
     return 0
 
 
