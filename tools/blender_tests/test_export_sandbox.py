@@ -3,8 +3,11 @@
 断言：
 
 * ``export_sandbox`` 进入时把 ``scene.camera`` 设为传入相机、``render.fps``
-  设为传入帧率，模拟导出期间的写点；退出后 SANDBOX_KEYS **十项**（render 的
-  9 项属性路径＋``("camera",)``）逐项还原为进入前的值；
+  设为传入帧率，模拟导出期间的写点；退出后 SANDBOX_KEYS **十一项**（render
+  的 10 项属性路径＋``("camera",)``）逐项还原为进入前的值。``media_type``
+  在清单里排在 ``file_format`` 之前——Blender 5.x 必须先还 media_type 才能
+  还 file_format（视频 pass 会把设置留在 VIDEO/FFMPEG，图片枚举在 VIDEO 下
+  不可写）。
 * 沙箱内抛异常时 ``finally`` 同样逐项还原，且**异常不吞**
   （原异常继续向外抛，测试捕获后仍能读到还原结果）；
 * 对缺 ffmpeg 等属性的替身对象（SimpleNamespace）不抛异常——缺失项记名
@@ -106,10 +109,13 @@ def t_restores_nine_items():
         with export_sandbox(scene, camera=cam_obj, fps=30):
             inside["camera"] = scene.camera
             inside["fps"] = scene.render.fps
-            #: 沙箱内故意污染全部 9 项＋camera，验证退出时还原
+            #: 沙箱内故意污染全部 10 项 render 路径＋camera，验证退出时还原。
+            #: 污染按真实 pass 的合法写序：图片项（色深/模式）先于切 VIDEO，
+            #: media_type 与 file_format 再按视频 pass 写序（先 VIDEO 后
+            #: FFMPEG）——Blender 5.x 下 VIDEO 只接受 8/10 色深与 FFMPEG
+            #: 枚举，颠倒写序本身就会抛 enum TypeError；退出后必须逐项还原，
+            #: 且还原顺序颠倒（先 file_format 后 media_type）同样会抛错。
             _write_path(scene, ("render", "filepath"), "//mutated.mp4")
-            _write_path(scene, ("render", "image_settings", "file_format"),
-                        "PNG")
             #: Blender 5.x：ffmpeg.format 是容器枚举（非编码名）
             _write_path(scene, ("render", "ffmpeg", "format"), "QUICKTIME")
             _write_path(scene, ("render", "ffmpeg", "codec"), "H264")
@@ -121,6 +127,10 @@ def t_restores_nine_items():
                         "16")
             _write_path(scene, ("render", "image_settings", "color_mode"),
                         "RGBA")
+            _write_path(scene, ("render", "image_settings", "media_type"),
+                        "VIDEO")
+            _write_path(scene, ("render", "image_settings", "file_format"),
+                        "FFMPEG")
             scene.camera = cam_obj
 
         after = _snapshot(scene)

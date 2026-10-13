@@ -51,6 +51,13 @@ def concat_shot_clips(scene, clips: Sequence[str], output_base: str, *,
         "frame_start": scene.frame_start,
         "frame_end": scene.frame_end,
         "fps": scene.render.fps,
+        #: Blender 5.x 的 image_settings 按 media_type 拆成 IMAGE / VIDEO
+        #: 两套枚举：configure_video_output 会先切 media_type="VIDEO" 再写
+        #: file_format="FFMPEG"。还原顺序必须先 media_type 再 file_format，
+        #: 与 export_sandbox 的 SANDBOX_KEYS 同一纪律（反着还原会在
+        #: media_type=VIDEO 下写图片枚举而抛 TypeError）。
+        "media_type": getattr(scene.render.image_settings, "media_type", "IMAGE"),
+        "file_format": getattr(scene.render.image_settings, "file_format", "PNG"),
     }
     width, height = resolution_for(preset)
     editor = scene.sequence_editor or scene.sequence_editor_create()
@@ -84,6 +91,8 @@ def concat_shot_clips(scene, clips: Sequence[str], output_base: str, *,
         scene.frame_start = previous["frame_start"]
         scene.frame_end = previous["frame_end"]
         scene.render.fps = previous["fps"]
+        scene.render.image_settings.media_type = previous["media_type"]
+        scene.render.image_settings.file_format = previous["file_format"]
 
     produced = output_base
     if not os.path.exists(produced):
