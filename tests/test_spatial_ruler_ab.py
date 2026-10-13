@@ -21,6 +21,7 @@ from tools.spatial_ruler_ab.fixtures import (
     build_battery,
     composition_scenes,
     fight_scene,
+    render_prescription_block,
 )
 from tools.spatial_ruler_ab.method import (
     METHOD_PROMPT,
@@ -149,9 +150,10 @@ def test_ruler_method_arm_parses_measurements():
 
 
 def test_poisoned_prescription_must_be_rejected():
-    """含内部键（camera_z）的处方 → 地面真值是"拒绝"，评分器必须判拒绝。"""
+    """含内部键（camera_z）的处方 → 地面真值是"拒绝"，渲染文本必须能触发污染守卫。"""
     scene = next(s for s in composition_scenes() if not s["gt"]["passed"])
     from tools.spatial_ruler_ab.poison import poisoned_prescriptions
+    from block_director.cinema.prescription import detect_pollution
     bad = poisoned_prescriptions(scene)
     assert bad, "坏处方样本必须存在"
     verdict = score_task({
@@ -159,7 +161,18 @@ def test_poisoned_prescription_must_be_rejected():
         "ground_truth": {"accept": False},
     }, {"accept": False})
     assert verdict["correct"] is True
-    assert any("camera_z" in str(p.tool_args) for p in bad)
+    assert any("camera_z" in render_prescription_block(p) for p in bad)
+    assert any(detect_pollution(render_prescription_block(p)) for p in bad)
+
+
+def test_demo_schemas_and_fix_ground_truth_stay_within_action_tools():
+    """03b 迁移不变量：demo schema 与 fix 地面真值必须是正式工具名单子集。"""
+    from block_director.contracts.tools import ACTION_TOOLS
+    from tools.spatial_ruler_ab.arms import DEMO_ACTION_TOOL_SCHEMAS
+    assert set(DEMO_ACTION_TOOL_SCHEMAS) <= set(ACTION_TOOLS)
+    for t in build_battery():
+        if t.kind == "fix":
+            assert set(t.ground_truth["allowed_tools"]) <= set(ACTION_TOOLS)
 
 
 # --------------------------------------------------------------------------- #
@@ -181,7 +194,7 @@ def test_scoring_direction_fix_prescription_verdict():
     assert score_task(
         {"kind": "direction", "ground_truth": {"acceptable": ["抬高机位", "推近"]}},
         {"direction": "推近"})["correct"]
-    fix_gt = {"tool": "move_camera"}
+    fix_gt = {"allowed_tools": ["move_camera"], "tool": "move_camera"}
     from block_director.layer5_orchestrator.tool_schema import validate_args
     from tools.spatial_ruler_ab.arms import DEMO_ACTION_TOOL_SCHEMAS
     good = {"tool": "move_camera",

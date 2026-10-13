@@ -64,8 +64,12 @@ def score_task(meta: Mapping[str, Any], answer: Any) -> Dict[str, Any]:
         schema = schemas.get(answer["tool"])
         args_ok = (schema is not None
                    and not validate_args(schema, answer.get("tool_args") or {}))
-        ok = answer["tool"] == gt["tool"] and args_ok
-        return _base(meta, kind, ok, expected_tool=gt["tool"],
+        # 03b：处方只给方向（allowed_tools），模型选出的工具必须落在
+        # 处方白名单内且参数按 demo schema 可执行；不再对拍具体参数值。
+        allowed = gt.get("allowed_tools") or [gt["tool"]]
+        ok = answer["tool"] in allowed and args_ok
+        return _base(meta, kind, ok, expected_tool=gt.get("tool"),
+                     allowed_tools=allowed,
                      got_tool=answer["tool"], args_executable=args_ok)
 
     if kind == "prescription_verdict":

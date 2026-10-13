@@ -159,6 +159,17 @@ def _prescription_for(scene: Dict[str, Any], component: str):
     return None
 
 
+def _fix_ground_truth(p) -> Dict[str, Any]:
+    """fix 任务地面真值：工具 = 处方允许白名单的首选（确定性）。
+
+    03a 收敛后处方只给方向与 allowed_tools，不再携带可执行 tool/tool_args；
+    这里从白名单推导 ground truth，评分器按 demo schema 校验"工具在白名单内
+    且参数可执行"，参数本身不参与对拍（参数样本只供 mock 判官构造答案）。
+    """
+    tool = p.allowed_tools[0] if p.allowed_tools else ""
+    return {"allowed_tools": list(p.allowed_tools), "tool": tool}
+
+
 def build_battery() -> List[ABTask]:
     tasks: List[ABTask] = []
 
@@ -238,7 +249,7 @@ def build_battery() -> List[ABTask]:
             ))
             tasks.append(ABTask(
                 id=f"{sid}/fix_{comp}", kind="fix", scene_id=sid, question=qfix,
-                ground_truth={"tool": p.tool, "tool_args": p.tool_args},
+                ground_truth=_fix_ground_truth(p),
                 baseline_prompt=scene["brief"] + "\n" + "当前建议：" +
                                 _suggestions_text(scene) + "\n" + qfix,
                 ruler_prompt=scene["brief"] + "\n" + _measurement_block(scene) + "\n" + qfix,
@@ -255,13 +266,13 @@ def build_battery() -> List[ABTask]:
                 question=qpv, ground_truth={"accept": True},
                 baseline_prompt=scene["brief"] + "\n" + "当前建议：" +
                                 _suggestions_text(scene) + "\n" +
-                                _prescription_block(p) + "\n" + qpv,
+                                render_prescription_block(p) + "\n" + qpv,
                 ruler_prompt=scene["brief"] + "\n" + _measurement_block(scene) + "\n" +
-                             _prescription_block(p) + "\n" + qpv,
+                             render_prescription_block(p) + "\n" + qpv,
                 method_prompt=scene["brief"] + "\n" + method + "\n" +
-                              _prescription_block(p) + "\n" + qpv,
+                              render_prescription_block(p) + "\n" + qpv,
                 ruler_method_prompt=scene["brief"] + "\n" + method_measure + "\n" +
-                                    _prescription_block(p) + "\n" + qpv,
+                                    render_prescription_block(p) + "\n" + qpv,
                 payload={"component": comp, "poisoned": False},
             ))
             tasks.append(ABTask(
@@ -269,13 +280,13 @@ def build_battery() -> List[ABTask]:
                 scene_id=sid, question=qpv, ground_truth={"accept": False},
                 baseline_prompt=scene["brief"] + "\n" + "当前建议：" +
                                 _suggestions_text(scene) + "\n" +
-                                _prescription_block(_poison(p)) + "\n" + qpv,
+                                render_prescription_block(_poison(p)) + "\n" + qpv,
                 ruler_prompt=scene["brief"] + "\n" + _measurement_block(scene) + "\n" +
-                             _prescription_block(_poison(p)) + "\n" + qpv,
+                             render_prescription_block(_poison(p)) + "\n" + qpv,
                 method_prompt=scene["brief"] + "\n" + method + "\n" +
-                              _prescription_block(_poison(p)) + "\n" + qpv,
+                              render_prescription_block(_poison(p)) + "\n" + qpv,
                 ruler_method_prompt=scene["brief"] + "\n" + method_measure + "\n" +
-                                    _prescription_block(_poison(p)) + "\n" + qpv,
+                                    render_prescription_block(_poison(p)) + "\n" + qpv,
                 payload={"component": comp, "poisoned": True},
             ))
 
@@ -347,14 +358,26 @@ def _suggestions_text(scene: Dict[str, Any]) -> str:
     return "；".join(s) if s else "无"
 
 
-def _prescription_block(p) -> str:
-    import json
-    return f"建议动作：{p.tool}({json.dumps(p.tool_args, ensure_ascii=False)})"
+def render_prescription_block(p) -> str:
+    """把处方渲染成对拍块：只含分量/严重度/当前/目标/方向/预期影响。
+
+    接受 Prescription 或其 ``to_dict()`` 产物；allowed_tools 是污染源，一律
+    不渲染（工具名/参数/"建议执行"都在 detect_pollution 的拒绝词表里）。
+    若载荷携带未注册内部键（下毒样本），component 本身就是 camera_z，
+    detect_pollution 据此判中。
+    """
+    d = p.to_dict() if hasattr(p, "to_dict") else dict(p)
+    return (f"处方：分量 {d['component']}（严重度 {d['severity']}）\n"
+            f"  当前 {float(d['current']):.2f}，目标 {d['target']}\n"
+            f"  修复方向：{d['direction']}\n"
+            f"  预期影响：{'、'.join(d['expected_effect'])}")
 
 
 def _poison(p):
-    """把合法处方注入求解器内部键 camera_z，构造"必须拒绝"样本。"""
+    """把合法处方的分量换成未注册内部键 camera_z，构造"必须拒绝"样本。
+
+    03a 收敛后处方不再携带 tool/tool_args，"给参数下毒"迁移为
+    "component 用 camera_z"——与 validate_prescription 的拒绝分支同一语义。
+    """
     from dataclasses import replace
-    poisoned_args = dict(p.tool_args)
-    poisoned_args["camera_z"] = 1.0
-    return replace(p, tool_args=poisoned_args)
+    return replace(p, component="camera_z")

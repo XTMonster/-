@@ -11,6 +11,8 @@ import re
 import urllib.request
 from typing import Any, Dict, Optional
 
+from .schemas import demo_args_for
+
 
 _MEASURE_RE = re.compile(
     r"-\s*(?P<key>headroom|lead_room|thirds|balance|framing)[^:]*:"
@@ -103,7 +105,9 @@ class MockJudge:
                 return {"direction": "平移"}
             return {"direction": "收紧景别"}  # 基线：固定猜测
         if kind == "fix":
-            return {"tool": gt["tool"], "tool_args": dict(gt["tool_args"])}
+            # 03b：处方白名单首选的工具 + demo schema 可执行的最小参数样本
+            #（参数不参与对拍，只保证评分器的 args_executable 判真）。
+            return {"tool": gt["tool"], "tool_args": demo_args_for(gt["tool"])}
         if kind == "prescription_verdict":
             return {"accept": bool(gt["accept"]), "reason": "mock-plumbing"}
         if kind == "dynamic_facts":
