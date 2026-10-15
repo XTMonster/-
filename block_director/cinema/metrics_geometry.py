@@ -217,7 +217,8 @@ def _depth_separation(shot: ShotSample) -> Tuple[Tuple[Measurement, ...],
         shorter = min(front.box.height, back.box.height)
         taller = max(front.box.height, back.box.height)
         scale_sep = 1.0 - shorter / max(taller, 1e-9)
-        composite = 0.6 * (1.0 - overlap) + 0.4 * (1.0 - scale_sep)
+        # 注册表口径：前后景深度差明显 -> 组合分高；尺度分离越大第二项越高。
+        composite = 0.6 * (1.0 - overlap) + 0.4 * scale_sep
         if best_score is None or composite < best_score:
             best_score = composite
         evidence.append(frame.frame)
@@ -411,10 +412,15 @@ def _horizon_stability(shot: ShotSample,
     )
     findings: list[Finding] = []
     if raw > 5.0:
+        message = (
+            f"画面严重倾斜（滚转 {raw:.1f}°）且缺少已声明的倾斜意图"
+            if hint else
+            f"画面严重倾斜（滚转 {raw:.1f}°）且无意图声明"
+        )
         findings.append(Finding(
             component="horizon_stability",
             severity=Severity.FATAL,
-            message=f"画面严重倾斜（滚转 {raw:.1f}°）且无意图声明",
+            message=message,
             evidence_frames=evidence,
         ))
     elif raw > HORIZON_TARGET_DEG and not hint:
@@ -594,7 +600,7 @@ _front_good = _projected(
 _back_boundary = _projected(
     "back", _subject_box("back", 0.15, 0.45, 0.95, 0.05))
 _front_boundary = _projected(
-    "hero", _subject_box("hero", 0.40, 0.65, 0.32, 0.05))
+    "hero", _subject_box("hero", 0.39, 0.69, 0.68, 0.05))
 _stacked_back = _projected(
     "back", _subject_box("back", 0.30, 0.60, 0.92, 0.02))
 _stacked_front = _projected(
