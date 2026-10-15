@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional, Sequence
 
@@ -36,6 +37,17 @@ SUBJECT_HEIGHT_FOR_HEADROOM = _PROFILE.total_height
 
 # 三分线交点
 THIRDS = (1.0 / 3.0, 2.0 / 3.0)
+
+
+def thirds_deviation(cx: float, cy: float) -> float:
+    """主体中心到最近三分线交点的欧氏距离（NDC 比例，0–1，可越界）。
+
+    九宫格数字版（用户 2026-10-11）：多模态评委拿它判断"贴不贴三分交点"。
+    ``composition._thirds`` 的评分与 ``frustum_metrics.frame_metrics`` 的
+    ``thirds_deviation`` 指标都以它为单一真源口径（评分另做非线性映射）。
+    """
+    return min(math.hypot(float(cx) - tx, float(cy) - ty)
+               for tx in THIRDS for ty in THIRDS)
 
 
 @dataclass

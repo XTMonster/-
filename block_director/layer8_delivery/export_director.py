@@ -16,11 +16,12 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import bpy
 
+from ..cinema.camera_narration import narrate
 from ..cinema.schedule import shot_ranges
 from ..contracts.elements import ElementRegistry, build_registry
 from ..contracts.enums import ErrorCode, resolution_for
 from ..contracts.errors import user_message
-from ..contracts.plan import Plan, unknown_cast_ids
+from ..contracts.plan import FPS, Plan, unknown_cast_ids
 from ..delivery.depth import depth_range_note
 from ..delivery.manifest import build_manifest
 from ..delivery.prompts import (
@@ -33,6 +34,8 @@ from ..layer3_engine.collection_router import (
     audit_renderable_objects,
     labels_collection,
 )
+from ..layer3_engine.character_system.character_factory import get_facing
+from ..layer3_engine.rule_checker import continuity_snapshot
 from ..layer3_engine.scene_context import get_context
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
@@ -41,6 +44,7 @@ from .concat import ConcatUnavailable, concat_shot_clips, full_output_path
 from .depth_pass import DepthUnavailable, render_depth_sequence
 from .export_sandbox import export_sandbox
 from .mask_pass import MaskUnavailable, render_mask_pass
+from .package import build_reference_pack
 from .reference_cards import render_reference_cards
 from .renderer import apply_delivery_settings, render_first_frame, render_shot_video
 
@@ -210,14 +214,17 @@ def export_project(plan: Plan, *,
         log.error(report.reason)
         return report
 
-    #: v1.7 I1：主体渲染段整体进导出沙箱——render.* 的 9 项＋scene.camera
+    #: v1.7 I1：主体渲染段整体进导出沙箱——render.* 的 10 项＋scene.camera
     #: 进入时备份、退出（含异常路径）逐项还原；只加包裹，渲染参数不改。
+    #: fps 用契约层的 FPS 常量（DeliveryConfig 没有 animation 字段，不能读
+    #: config.animation.fps；contracts/ 无 bpy 依赖，导入安全）。
     with export_sandbox(scene, camera=scene.camera,
-                        fps=config.animation.fps):
+                        fps=FPS):
         report.warnings.extend(apply_delivery_settings(scene, config))
 
         ranges = _shot_ranges(plan, build_summary)
         original_range = (scene.frame_start, scene.frame_end)
+        context = get_context()
 
         for shot in ranges:
             shot_id = shot["shot_id"]
@@ -271,6 +278,44 @@ def export_project(plan: Plan, *,
             finally:
                 if labels is not None:
                     labels.hide_render = False
+
+            #: v1.7 I3：本镜角色 9 帧等距采样 → ``build_summary`` 的
+            #: ``result["paths"]``（manifest ``paths`` 键的数据源）。渲染循环里
+            #: 做，让路径与渲染用同一份 schedule 同帧读；无上下文（离线回放/
+            #: 旧路径）时留空 dict，不猜。结束后还原帧号。
+            start_frame = int(shot["start_frame"])
+            end_frame = int(shot["end_frame"])
+            frames = [start_frame + round(index * (end_frame - start_frame) / 8)
+                      for index in range(9)]
+            build_summary = dict(build_summary or {})
+            results = build_summary.setdefault("results", [])
+            result = next((item for item in results
+                           if item.get("shot_id") == shot_id), None)
+            if result is None:
+                result = {"shot_id": shot_id}
+                results.append(result)
+            result["paths"] = {}
+            if context is not None:
+                sample_frame = int(scene.frame_current)
+                try:
+                    for character in context.subjects_for(shot_id):
+                        root = getattr(character, "root", None)
+                        if root is None:
+                            result["paths"][str(character.id)] = []
+                            continue
+                        points = []
+                        for frame in frames:
+                            scene.frame_set(frame)
+                            bpy.context.view_layer.update()
+                            translation = root.matrix_world.translation
+                            points.append([round(float(translation.x), 2),
+                                           round(float(translation.y), 2),
+                                           round(float(translation.z), 2)])
+                        result["paths"][str(character.id)] = points
+                finally:
+                    if scene.frame_current != sample_frame:
+                        scene.frame_set(sample_frame)
+                        bpy.context.view_layer.update()
             log.info("已导出镜头 %s（%d-%d）", shot_id,
                      shot["start_frame"], shot["end_frame"])
 
@@ -338,6 +383,58 @@ def export_project(plan: Plan, *,
                                   review_requests=review_requests,
                                   registry=registry,
                                   rhythm_arc=rhythm_arc)
+
+        #: v1.7 I3（接线 2/3）：写盘前逐镜产 ``camera_narration``——相机对象在
+        #: 本镜帧段内等距 9 采样喂 ``narrate``，主体锚点 = paths 首角色首点 XY。
+        #: 相机**显式**取 ``context.cameras``（不复读 scene.camera，cut marker
+        #: 才会派生错机位）；缺 paths / 缺相机则**留缺不写键**（诚实留缺，不猜）。
+        #: 采样前后还原帧号（与 check_shot 同一纪律）。
+        if context is not None:
+            result_by_id = {r.get("shot_id"): r for r in
+                            (build_summary or {}).get("results", [])}
+            for shot_payload in (manifest.get("shots") or []):
+                shot_id = str(shot_payload.get("shot_id") or "")
+                result = result_by_id.get(shot_id) or {}
+                paths = result.get("paths") or {}
+                if not paths:
+                    continue
+                camera = context.cameras.get(shot_id)
+                if camera is None:
+                    continue
+                start = int(shot_payload.get("start_frame") or 1)
+                end = int(shot_payload.get("end_frame") or start)
+                frames = [start + round(i * (end - start) / 8) for i in range(9)]
+                sample_frame = int(scene.frame_current)
+                try:
+                    camera_samples = []
+                    for frame in frames:
+                        scene.frame_set(frame)
+                        bpy.context.view_layer.update()
+                        t = camera.matrix_world.translation
+                        camera_samples.append({
+                            "position": [round(float(t.x), 2),
+                                         round(float(t.y), 2),
+                                         round(float(t.z), 2)],
+                            "lens": float(camera.data.lens),
+                        })
+                    first_char_id = next(iter(paths))
+                    first_point = paths[first_char_id][0]
+                    anchor = [float(first_point[0]), float(first_point[1])]
+                    first_char = context.character(first_char_id)
+                    try:
+                        facing = (get_facing(first_char)
+                                  if first_char is not None
+                                  else (0.0, 1.0, 0.0))
+                    except Exception:
+                        facing = (0.0, 1.0, 0.0)
+                    narration = narrate(camera_samples, anchor, facing)
+                    result["camera_narration"] = narration
+                    shot_payload["camera_narration"] = narration
+                finally:
+                    if scene.frame_current != sample_frame:
+                        scene.frame_set(sample_frame)
+                        bpy.context.view_layer.update()
+
         manifest_path = export_dir / "shots.json"
         manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
                                  encoding="utf-8")
@@ -380,6 +477,19 @@ def export_project(plan: Plan, *,
                 f"剧本落实审核发现 {len(errors)} 项偏差，详见 script_compliance.json")
 
     scene.frame_start, scene.frame_end = original_range
+
+    #: v1.7 I3（接线 3/3）：整场连续性快照 + reference_pack 五件套。失败即交付
+    #: 失败，如实上抛（不 try/except 吞）；``continuity_snapshot`` 缺上下文/缺口
+    #: 镜返回空结构，package 收空结构照样写盘——不猜。五件套路径进 report.files。
+    continuity: Dict[str, Any] = {}
+    for shot in plan.shots:
+        continuity[shot.shot_id] = continuity_snapshot(
+            shot.shot_id, context=context)
+    pack = build_reference_pack(export_dir, plan, config, manifest,
+                                continuity=continuity)
+    report.files.extend(pack.files)
+    report.warnings.extend(pack.warnings)
+
     report.duration_s = time.perf_counter() - started
 
     #: v1.6 A7（D-19）：把构建期烘焙的全帧自检余量带进交付 README——

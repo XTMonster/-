@@ -615,6 +615,64 @@ def screen_facing_for(shot, *, context=None, camera=None):
     return result
 
 
+@main_thread_only("continuity_snapshot")
+def continuity_snapshot(shot_id: str, context=None) -> Dict[str, Any]:
+    """整场连续性快照（v1.7 卡 I3，reference_pack 的 continuity.json 数据源）。
+
+    返回 ``{"shot_id", "left", "right", "facing", "note"}``：屏幕左右分组按
+    ``_pair_screen_order`` 的归一化屏幕 X（``x < 0.5`` → left，否则 right），
+    facing 与 ``screen_facing_for`` 同源。缺镜头/缺相机不 raise，返回空结构
+    （诚实留缺，不猜）。判定落在本镜**首帧**，结束后还原帧号——审核不该
+    改变场景状态（与 ``check_shot`` 同一纪律）。
+    """
+    from .scene_context import get_context
+
+    context = context or get_context()
+    snapshot: Dict[str, Any] = {
+        "shot_id": shot_id,
+        "left": [],
+        "right": [],
+        "facing": {},
+        "note": "",
+    }
+    if context is None:
+        return snapshot
+    characters = context.subjects_for(shot_id)
+    camera = context.camera_for(shot_id)
+    shot = context.shot(shot_id)
+    if not characters or camera is None or shot is None:
+        return snapshot
+
+    scene = bpy.context.scene
+    original_frame = int(scene.frame_current)
+    frame_start, _frame_end = shot_frame_span(shot_id, context)
+    if frame_start != original_frame:
+        scene.frame_set(frame_start)
+    bpy.context.view_layer.update()
+    try:
+        pairs = _pair_screen_order(context, camera, characters[:2])
+        left: List[str] = []
+        right: List[str] = []
+        for character_id, screen_x in pairs:
+            if float(screen_x) < 0.5:
+                left.append(str(character_id))
+            else:
+                right.append(str(character_id))
+        facing = screen_facing_for(shot, context=context, camera=camera)
+        return {
+            "shot_id": shot_id,
+            "left": left,
+            "right": right,
+            "facing": {str(key): float(value)
+                       for key, value in (facing or {}).items()},
+            "note": "",
+        }
+    finally:
+        if scene.frame_current != original_frame:
+            scene.frame_set(original_frame)
+            bpy.context.view_layer.update()
+
+
 @main_thread_only("check_shot")
 def check_shot(shot_id: str, *, context=None,
                composition_threshold: float = 70.0,

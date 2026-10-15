@@ -86,12 +86,31 @@ def t_export_produces_all_deliverables():
         export_dir / "prompts.md",
         export_dir / "README.md",
     ]
+    #: v1.7 I3：reference_pack 五件套（默认 seedance_2.5）＋ continuity.json 可解析。
+    pack_dir = export_dir / "reference_pack"
+    pack_expected = [
+        pack_dir / "README.md",
+        pack_dir / "prompt_seedance_2.5.txt",
+        pack_dir / "shot_cards.md",
+        pack_dir / "continuity.json",
+        pack_dir / "responsibility.md",
+    ]
     missing = [str(p) for p in expected if not p.exists()]
     empty = [str(p) for p in expected if p.exists() and p.stat().st_size == 0]
-    return {"ok": report.ok and not missing and not empty,
+    missing.extend(str(p) for p in pack_expected if not p.exists())
+    empty.extend(str(p) for p in pack_expected
+                 if p.exists() and p.stat().st_size == 0)
+    continuity_shots: list = []
+    continuity_path = pack_dir / "continuity.json"
+    if continuity_path.exists():
+        continuity_shots = sorted(json.loads(
+            continuity_path.read_text(encoding="utf-8")))
+    continuity_ok = continuity_shots == ["shot_001", "shot_002"]
+    return {"ok": report.ok and not missing and not empty and continuity_ok,
             "missing": missing, "empty": empty,
             "files": len(report.files), "total_frames": report.total_frames,
-            "duration_s": report.duration_s}
+            "duration_s": report.duration_s,
+            "continuity_shots": continuity_shots}
 
 
 # --------------------------------------------------------------------------- #
@@ -324,16 +343,32 @@ def t_manifest_matches_build():
                           .read_text(encoding="utf-8"))
     built = {r["shot_id"]: r for r in summary["results"]}
     ok = manifest["resolution"] == [1280, 720] and manifest["fps"] == 24
+    path_counts = {}
+    narrations = {}
     for shot in manifest["shots"]:
         result = built[shot["shot_id"]]
         ok = ok and shot["start_frame"] == result["start_frame"]
         ok = ok and shot["end_frame"] == result["end_frame"]
         ok = ok and shot["camera"]["name"] == result["camera"]
         ok = ok and shot["camera"]["lens"] == result["lens"]
+        #: v1.7 I3：camera_narration 必须与 build_summary 对齐（写盘前接线
+        #: 同一份 result 写两边），paths 键集一致。
+        ok = ok and shot["camera_narration"] == result.get("camera_narration")
+        ok = ok and set((shot.get("paths") or {}).keys()) \
+            == set((result.get("paths") or {}).keys())
+        #: v1.7 I3：paths 每角色 9 点、camera_narration 非空（写盘前接线）。
+        paths = shot.get("paths") or {}
+        path_counts[shot["shot_id"]] = [len(points)
+                                        for points in paths.values()]
+        narration = str(shot.get("camera_narration") or "").strip()
+        narrations[shot["shot_id"]] = narration
+        ok = ok and bool(paths) and all(count == 9 for count in path_counts[shot["shot_id"]])
+        ok = ok and bool(narration)
     return {"ok": ok and manifest["total_frames"] == 216,
             "resolution": manifest["resolution"], "fps": manifest["fps"],
             "total_frames": manifest["total_frames"],
-            "shots": [s["shot_id"] for s in manifest["shots"]]}
+            "shots": [s["shot_id"] for s in manifest["shots"]],
+            "path_counts": path_counts, "narrations": narrations}
 
 
 # --------------------------------------------------------------------------- #

@@ -179,3 +179,12 @@ rhythm:
 labels:
   adaptive_sampling: true
   fullframe_verify: true
+ruler:
+  enabled: false
+  layer_weights:
+    geometry: 0.25
+    attention: 0.2
+    action: 0.2
+    continuity: 0.15
+    cinema: 0.1
+    robustness: 0.1

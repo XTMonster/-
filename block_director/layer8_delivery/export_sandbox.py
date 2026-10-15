@@ -3,6 +3,13 @@
 备份 → 锁定 → 还原：导出全程对 ``scene.render`` 的写点在沙箱内发生，退出
 （含异常路径）时逐项还原；**异常不吞**（原异常继续抛）。
 
+Blender 5.x 的 ``image_settings`` 按 ``media_type`` 拆成 IMAGE / VIDEO 两套
+枚举：视频 pass 会先切 ``media_type="VIDEO"`` 再写 ``file_format="FFMPEG"``，
+图片 pass 会先切 ``media_type="IMAGE"`` 再写 ``file_format="PNG"``。因此
+``media_type`` 必须进备份清单，且还原顺序必须先还 ``media_type`` 再还
+``file_format``——反着还原会在 ``media_type=VIDEO`` 下写 PNG/IMAGE 枚举而抛
+``TypeError``（与 depth/mask/reference pass 同一纪律）。
+
 相机语义（v1.7.6 收窄钉死）：``renderer.py`` 与 ``export_director.py`` 均无
 ``scene.camera`` 赋值（逐镜切换靠时间线 cut markers，不靠换相机对象），所以
 沙箱只做两件事——把 ``scene.camera`` 列为第 10 项备份并在退出时还原，进入时
@@ -15,9 +22,12 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import Any, Iterator, List, Tuple
 
-#: 备份清单（≥9 项，对照 R-痛点 P11）。元素 = 属性路径（从 scene 起）。
+#: 备份清单（≥9 项，对照 R-痛点 P11；实装 10 项 render 路径＋camera）。
+#: 元素 = 属性路径（从 scene 起）。**顺序即还原顺序**：``media_type`` 必须
+#: 在 ``file_format`` 之前，否则 Blender 5.x 会在 VIDEO 下写图片枚举而抛错。
 SANDBOX_KEYS: List[Tuple[str, ...]] = [
     ("render", "filepath"),
+    ("render", "image_settings", "media_type"),
     ("render", "image_settings", "file_format"),
     ("render", "ffmpeg", "format"),
     ("render", "ffmpeg", "codec"),

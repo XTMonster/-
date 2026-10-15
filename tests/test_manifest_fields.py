@@ -40,8 +40,9 @@ def test_top_level_schema_is_present():
                               retrieval_calls=2, crowd=[{"count": 30}])
     for key in ("declared", "labels", "movements", "crowd",
                 "timing_overrides", "action_conflicts", "dialogue_pins",
-                "audit_pass_rate", "llm_calls", "retrieval_calls", "axis"):
-        if key in ("declared", "labels", "movements", "axis"):
+                "audit_pass_rate", "llm_calls", "retrieval_calls", "axis",
+                "paths"):
+        if key in ("declared", "labels", "movements", "axis", "paths"):
             assert key in manifest["shots"][0], key
         else:
             assert key in manifest, key
