@@ -48,6 +48,12 @@ def fresh_scene():
     scene.render.engine = "BLENDER_WORKBENCH"
     scene.render.resolution_x = 320
     scene.render.resolution_y = 180
+    #: 交付前的固定写点：全片拼接（concat）的 configure_video_output 会切
+    #: media_type=VIDEO + file_format=FFMPEG，退出时必须逐项还原成图片写点
+    #: （先 media_type 再 file_format），否则后续图片 pass 会抛 enum
+    #: TypeError——与 export_sandbox 的 SANDBOX_KEYS 同一纪律。
+    scene.render.image_settings.media_type = "IMAGE"
+    scene.render.image_settings.file_format = "PNG"
     ensure_collections(scene)
     return scene
 
@@ -157,16 +163,25 @@ def t_full_concat_produces_one_video():
     full = Path(report.full_video) if report.full_video else None
     head = full.read_bytes()[:16] if full and full.exists() else b""
     clips = sorted((Path(tmp_dir) / "export").glob("blockout_shot_*.mp4"))
+    #: concat 退出后的还原断言：media_type/file_format 必须回到进入前的
+    #: IMAGE/PNG（顺序纪律：先 media_type 再 file_format），交付不污染
+    #: 后续图片 pass 的渲染设置。
+    settings = bpy.context.scene.render.image_settings
+    restored = (settings.media_type == "IMAGE"
+                and settings.file_format == "PNG")
     return {"ok": (report.ok and full is not None and full.exists()
                    and head[4:8] == b"ftyp"
                    and report.total_frames_concat == SHOT_FRAMES * 2
                    and len(clips) == 2
-                   and full.name == "blockout_full.mp4"),
+                   and full.name == "blockout_full.mp4"
+                   and restored),
             "full_video": report.full_video,
             "size": full.stat().st_size if full and full.exists() else 0,
             "frames": report.total_frames_concat,
             "clips": [path.name for path in clips],
-            "ftyp": head[4:8].decode("ascii", "replace")}
+            "ftyp": head[4:8].decode("ascii", "replace"),
+            "restored": {"media_type": settings.media_type,
+                         "file_format": settings.file_format}}
 
 
 # --------------------------------------------------------------------------- #
