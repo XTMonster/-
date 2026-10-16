@@ -32,7 +32,7 @@
 | E2* | Opus | 未开工 | - | - | - |
 | E3 | Opus | 未开工 | - | - | - |
 | F1* | Opus | 完成 | 3a29501 | 主线自审（红线） | - |
-| G1 | DeepSeek | 未开工 | - | - | - |
+| G1 | DeepSeek | 完成（待提交） | - | - | - |
 | G2 | Opus | 未开工 | - | - | - |
 | I1* | Opus | 完成 | 774fe13 | 主线自审（红线） | - |
 | I2 | DeepSeek | 完成 | badb359 | - | - |
@@ -45,6 +45,16 @@
 | H1 | DeepSeek | 未开工 | - | - | - |
 | H2 | DeepSeek | 未开工 | - | - | - |
 | H3 | Opus | 未开工 | - | - | - |
+
+## 空间尺多维评测线 08–12（独立票单，见 .scratch/spatial-ruler-multidim/）
+
+| 票 | 状态 | 证据 | 说明 |
+|---|---|---|---|
+| 08 连续性 6 指标 | 完成（已提交） | `tests/test_metrics_continuity.py` 53 passed；04–07/ruler 回归 97 passed（2026-10-17 主线复跑）；commit `ab167e4` | 主线直写（两次子代理零产出后接管）；`_corner_turn` 由并行 agent 改为显式垂直运动（0.52→0.72），ambiguous 夹角恰 90° |
+| 09 摄影意图 5 指标 | 完成（已提交） | `tests/test_metrics_cinema.py` 45 passed；04–08/ruler 回归全绿（2026-10-17 主线复跑）；commit `ccc139a` | `impl_09_final` 两次交付分析/设计，零代码文件 → 契约 §10 第三次由主线直写；提交后确认 |
+| 10 鲁棒性 5 指标 | 主线接管中 | `metrics_robustness.py` + `test_metrics_robustness.py` 均不存在 | `impl_10_final` 同上，零产出 → 主线直写（TDD 红→绿） |
+| 11 四臂评测台 | 阻塞 | - | 依赖 08/09/10 全绿 |
+| 12 规格验收全量巡检 | 阻塞 | - | 依赖 11 |
 
 ## 阻塞登记
 
@@ -74,6 +84,9 @@
 | 2026-10-14 | I3 冻结树重跑（第 7 次，round6c） | `docs/evidence/20261014-054530/`：step2 `3742 passed / 2 skipped`、45/45 探针 OK、真跑 headless 64 镜、RK-13/E1 仍红（已结案残留） | `tree.json` `stable=false`（`digest_before=25365a33…`/`after=41370aff…`）；运行窗口内 HEAD 全程 `267dbc5` 无新 commit；根因=并发 lane 的未跟踪 `tests/test_metrics_attention.py` 在运行中途消失（当前不在盘、无任何提交收录过它），其余 45 条 new 全为 `docs/evidence/**`（守卫设计排除）；数值不可归因单树，非 I3 缺陷 | 主线 |
 | 2026-10-14 | I3 冻结树重跑（第 8 次，主树） | 06:26 确认 10 分钟安静窗（digest 恒 `e5c436cad2e3`）后立即启动 round7；step1 spec/golden 一致通过 | step2 收集即失败（1 error）：并发 sr05 lane 的 TDD 先行测试 `tests/test_metrics_attention.py` 已在盘（未跟踪，mtime 06:06，整个安静窗内稳定存在）但生产模块 `block_director/cinema/metrics_attention.py` 尚未落地，pytest 收集 ImportError；该状态非瞬态，本轮必然失败，非 I3 缺陷 | 主线 |
 | 2026-10-14 | I3 冻结树全链（隔离 HEAD worktree 实验） | 主树持续被并发 lane 占据，本 lane 改用与并发 lane 同款隔离模式：`git worktree add --detach E:/bd_i3_frozen_gate 267dbc5` 后跑全链，主树文件零触碰；step1 spec/golden 一致通过 | step2 pytest `4 failed / 3700 passed / 3 skipped`，全部为提交态自洽缺口、非 I3（I3 五件套测试含于 3700 passed 内）：① AGENTS.md 状态行指向的 `docs/evidence/20261010-234143/` 在 HEAD 不存在（主树 `??` 未跟踪、从未提交）② 同块 gate 断言缺 `holdout_gates.json` ③ v10 夹具 hash pin 在全新 checkout 下不匹配（`core.autocrlf=true`：主树盘上 LF 字节=pin `8c62f20a…`，worktree checkout 得 CRLF 字节 `d367afc4…`）④ `tests/test_third_party_layer.py` 依赖 gitignored `/work/holdout_third_party.json`（主树有、HEAD 无）。结论：HEAD 单独 checkout 无法全绿，冻结树 gate 今日不可得；活树 3741/3742 passed 仍是当前唯一全绿证据，不替代已结案 RK-13/E1 红 | 主线 |
+| 2026-10-16 | 空间尺线合入 | `codex/spatial-ruler-multidim` Ticket 01-07（21 提交 / 56 文件）合入 main：`78e6e4a`（no-ff merge）。范围：FrameSample/ShotSample 采样契约、32 条指标注册表、几何 5 / 视线注意力 5 / 动作因果 4 / 动作姿态道具 2 指标、处方收敛与 AB 评测台、I3 reference_pack 相关。合入前固化 `8889ae8`：depth_separation 组合分方向修正（尺度分离越大层次分越高，原式方向相反）＋horizon 提示语分支＋模糊样例坐标重校准，三态语义不变 | 验证：空间尺 11 文件集在干净 HEAD 全绿（含 `test_partial_error_finding_gate`）；合入提交干净 worktree `78e6e4a` 全量 `4 failed`（`test_agents_status_is_current`×2 指向未提交证据、v10 CRLF pin、`test_third_party_layer` 缺 gitignored 文件——均为已知全新 checkout 缺口，非合入引入）；主工作区活树全量另有 **22 个失败**（`_checkpoint_full_pytest_20261016.log`，全部集中在知识/超图域：extract_segmented 7 / knowledge_holdout 4 / holdout_vocab 1 / coverage_matrix 1 / prompt_mapping 2 / plan_v4_instruments_frozen 1 / hypergraph_determinism 1 / qualifier_lazy_keys 1 / gap_report 2 / cli_console_encoding 1 / forbid_injection 1）由相邻动态超图 lane 的 Track B 半合入（`hypergraph.py`→`hg/v2+story`＋2 个测试锚）未同步下游 prompts/holdout/vocab fixpoint/覆盖矩阵/冻结哈希/索引证书引起，非本次合入范围；**Track B 合入/回退裁决挂起**，两案均须用户裁决，见 `HANDOFF_20261016_trackb_review.md` | 主线 |
+| 2026-10-16 | Track B 复核（主线） | 实测复核交接：定向 `python -m pytest`（11 个失败文件）＝ 22 FAILED，与检查点逐条一致；`hypergraph_rag_v2/tests` 另有 1 failed（`test_trackb_acceptance.py::test_production_artifacts_match_frozen_sha256_certificate`——磁盘 manifest 仍 `hg/v2` 而 `hg.SCHEMA_VERSION` 已 `hg/v2+story`，证书未重建）；06:00 后 tracked 文件零改动，检查点 22 红仍为当前有效基线 | 新增未跟踪 `tests/test_metrics_continuity.py`（06:30，Ticket 08 连续性层 TDD 先行，生产模块 `cinema/metrics_continuity.py` 未落地）令当前全量收集失败（ModuleNotFoundError）——并发 lane 瞬态，非 Track B；方案 B 另注意：回退后影子层 `test_production_validate_edge_accepts_new_edge_types` 会转红（它本就是合入验收标记，见文件 docstring） | 主线 |
+| 2026-10-16 | Track B 半合入撤销（复核会话观测） | `block_director/knowledge/hypergraph.py` 与两个测试锚已与 HEAD 一致（`SCHEMA_VERSION = "hg/v2"`）；撤销无 commit、无用户裁决记录、非本会话执行 | 定向复跑原 11 个失败文件＝ **142 passed**（`_probe_trackb_revert_20261016.log`），22 红全部消除；影子层 2 红（`test_schema_ext.py::test_production_schema_constants_and_index_files_untouched`、`test_trackb_acceptance.py::test_production_validate_edge_accepts_new_edge_types`）＝ Track B 未合入状态的验收标记，非新缺陷；主套件收集被并发 lane 未完成文件阻塞：`test_metrics_cinema.py`（Ticket 09 TDD 先行，生产模块缺）＋`test_metrics_continuity.py`（生产模块已落地但缺 `SAMPLES` 导出）——均未跟踪、不可删不可跳 | 主线 |
 
 > 2026-10-10：本会话被 PreToolUse 守卫识别为子代理，`spawn_agent` 被拦
 > （"dispatch authority belongs to the root thread only"）。按守卫指示由主线
