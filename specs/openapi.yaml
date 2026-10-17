@@ -404,6 +404,138 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /v1/ui/script/polish:
+    post:
+      operationId: ui_script_polish
+      summary: Web 通道剧本优化（Stage P）
+      description: >-
+        {script} → {suggestions[], rewritten}。与 driver 的 run 内通道共用同一
+        schema/模板/解析函数（contracts/script_polish.py 单一真源）。脚本为空
+        → 400；上游失败或回复解析失败 → 502。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolishRequest"
+      responses:
+        "200":
+          description: 优化建议与改写稿
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolishResponse"
+        "400":
+          description: 脚本为空
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: 上游失败或回复解析失败
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/script/polish/accept:
+    post:
+      operationId: ui_script_polish_accept
+      summary: 采纳剧本优化改写稿
+      description: >-
+        {run_id} → 写回该 run 的 polish.json（accepted=true）。run 不存在 →
+        404；写盘失败 → 500。采纳可能对下一次 run 生效（driver 不轮询中途
+        accept），响应 note 如实说明。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolishAcceptRequest"
+      responses:
+        "200":
+          description: 已采纳
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolishAcceptResponse"
+        "400":
+          description: 缺 run_id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: run 不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: polish.json 写回失败
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /:
+    get:
+      operationId: ui_static_index
+      summary: Web 前端首页
+      description: 静态文件，免鉴权。web/ 白名单；`..` → 400。
+      responses:
+        "200":
+          description: index.html
+          content:
+            text/html:
+              schema:
+                type: string
+        "400":
+          description: 非法路径
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /static/{path}:
+    get:
+      operationId: ui_static_asset
+      summary: Web 静态资源
+      description: >-
+        静态文件，免鉴权。web/ 白名单；`..` → 400。content-type：
+        .html/.js/.css/.png/.json/.txt。
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 资源内容
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+        "400":
+          description: 非法路径
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -900,3 +1032,32 @@ components:
             properties:
               type: { type: string }
               id: { type: string }
+
+    PolishRequest:
+      type: object
+      required: [script]
+      properties:
+        script: { type: string }
+
+    PolishResponse:
+      type: object
+      required: [suggestions, rewritten]
+      properties:
+        suggestions:
+          type: array
+          items: { type: string }
+        rewritten: { type: string }
+
+    PolishAcceptRequest:
+      type: object
+      required: [run_id]
+      properties:
+        run_id: { type: string }
+
+    PolishAcceptResponse:
+      type: object
+      required: [accepted, note, run_id]
+      properties:
+        accepted: { type: boolean }
+        note: { type: string }
+        run_id: { type: string }

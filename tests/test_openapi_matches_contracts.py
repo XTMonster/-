@@ -75,6 +75,10 @@ EXPECTED_PATHS = {
     "/v1/ui/target_models",
     "/v1/ui/shots",
     "/v1/ui/chat",
+    "/v1/ui/script/polish",
+    "/v1/ui/script/polish/accept",
+    "/",
+    "/static/{path}",
 }
 
 
