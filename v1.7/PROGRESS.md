@@ -56,6 +56,18 @@
 | 11 四臂评测台 | 完成（已提交） | `tests/test_spatial_ruler_ab_ext.py` 18 passed；mock 四臂实测 117 任务 × 4 臂；commit `c690fe0` | 四类新任务接入四臂 + CLI 接线（子代理 `impl_11_harness` 实现、主线审核修复） |
 | 12 规格验收全量巡检 | 完成（证据已落） | 全仓 `python -m pytest` 4026 passed / 2 skipped；一键链 `docs/evidence/20261017-103308/` `tree.json stable=True`（45/45 探针全 OK、门①–⑩ 全 pass）；唯一红 RK-13 为已结案残留 | issue `12-spec-acceptance.md` 已 resolved；验收清单全过，剩余风险如实列出（真实模型 A/B 未跑、attention 无专属 AB 任务、RK-13/E1 残留） |
 
+## 空间尺观测扩展线 01–07（独立票单，见 `.scratch/spatial-ruler-json/`）
+
+| 票 | 状态 | 证据 | 说明 |
+|---|---|---|---|
+| 01 观测契约 | 完成（已提交） | `contracts/spatial_ruler.py`＋`contracts/spatial_ruler/` 资产（schema/contract.v2/examples/integration 入库 `8fefc70`） | DTO/校验/处方 allow-list/来源四态；纯层无 bpy |
+| 02 行内镜头声明 | 完成（已提交） | `5da59db` | 行内镜头声明规范化 |
+| 03 计划级空间尺 | 完成（已提交） | `5da59db`（接缝），`8da4d8b`（`apply_plan_prescriptions` 演进） | SR001 角色恢复 / SR002 节奏与逐镜漂移 / 硬发现阻断 |
+| 04 测量序列化 | 完成（已提交 `8da4d8b`） | `cinema/ruler_measure.py`＋`layer3_engine/ruler_probe.py`＋测试；**Blender 5.2 探针实跑 4/4 passed**（每镜 33/23 条、角差 78.98°、56 条过 bundle 校验） | 相机/构图/包围盒/可见性/角差，来源四态；`AuditResult.ruler_measurements` 不参与 passed/score |
+| 05 处方应用接缝 | 完成（已提交 `8da4d8b`） | `spatial_ruler.apply_plan_prescriptions`＋`driver._apply_plan_ruler`（有/无构建器共用）＋`test_spatial_ruler_block_build`/`duration_drift` | retime/restore_cast 自动落地；残留 ERROR 级逐镜硬发现阻断构建 |
+| 06 交付证据 | 完成（已提交 `8da4d8b`） | `ruler_observation.py`/`export_director`/`manifest`/`readme`/`replay`/headless 落盘＋`ruler_delivery_args`/`ruler_evidence_from_summary` 兜底接线 | `spatial_ruler_observation.json` 落运行目录；重放无 LLM 抽回证据 |
+| 07 dock-market 验收 | 待真跑（裁决 4 移交隔壁窗口；帧差活性裁决 5 挂起） | `.scratch/spatial-ruler-json/examples/dock-market-observation.v2.json` 已入库 | real judge A/B 凭据/额度在隔壁窗口，本线不碰 |
+
 ## 阻塞登记
 
 （空）

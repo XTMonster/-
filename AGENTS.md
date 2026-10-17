@@ -354,8 +354,9 @@ C1–C6 提交落地，polish 双通道经 H3 冒烟对拍）；空间尺 08–1
 （08 连续性 / 09 摄影意图 / 10 鲁棒性 / 11 四臂评测台 已提交，12 规格验收
 已 resolved）；全量 pytest **4101 passed / 2 skipped**（H3 收尾实读，
 2 skipped 为既有条件守卫）；v1.7 H1 已把探针清单扩到 **43 支**
-（＋`test_assistant_panel`/`test_assistant_sprite`），链规模 **47/47**
-（43 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，与
+（＋`test_assistant_panel`/`test_assistant_sprite`），空间尺 04–06
+再补 **1 支（`test_ruler_probe`）＝ 44 支**，链规模 **48/48**
+（44 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，与
 `test_agents_status_is_current.py` 同源对拍）；门①–⑩ 全 pass、
 `holdout_gates.overall == "pass"`、唯一红 `not passing: E1`＝已结案 **RK-13**
 （判据未动）的读数见 `docs/evidence/20261017-103308/`；v1.7 H3 收尾证据
@@ -368,8 +369,10 @@ C1–C6 提交落地，polish 双通道经 H3 冒烟对拍）；空间尺 08–1
 守卫；再补 `950875a`：run_tests 树守卫排除根目录累积审计产物
 （`audit_log.jsonl`/`llm_trace.jsonl`——headless 步骤每次追加写入，此前把
 每次全链都误判为"树移动"，与并发 lane 无关）；**可归因冻结树全链
-`docs/evidence/20261017-182739/`：`tree.json stable=True`、43 支探针 47/47
-全 OK（含 assistant-panel/sprite）、pytest 4101 passed / 2 skipped、
+`docs/evidence/20261017-182739/`：`tree.json stable=True`；该快照在
+`test_ruler_probe.py` 探针登记**之前**捕获（当时 43 支 / 47 步链），
+登记后的链规模按本状态行 44 支 / **48 步链**（探针全 OK 含
+assistant-panel/sprite/ruler-probe）、pytest 4101 passed / 2 skipped、
 `holdout_gates.overall == "pass"`、唯一红 RK-13/E1 为已结案残留（判据未动）**。
 冻结链于 `950875a` 捕获，其后 `5e1cf38`/`8dd596b` 为纯台账文本提交
 （PROGRESS/AGENTS 状态行），代码树与链读数不变。
