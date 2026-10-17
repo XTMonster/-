@@ -384,12 +384,9 @@ v1.7/空间尺基座（合入 commit 见 `v1.7/PROGRESS.md`）；新增
 `tools/blender_tests/test_per_shot_previz.py` 探针 ⇒ 探针清单 **45 支**、
 链规模 **49/49**（45 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，
 与 `test_agents_status_is_current.py` 同源对拍）；集成验证树全量 pytest
-**4397 passed / 1 failed / 3 skipped**（4401 tests；1 failed 为
-`third_party_layer --check` 的 worktree 环境差异：fixture 的 `layer` 字段嵌
-main 树绝对路径 `E:\白模预演codex\...`，main 树实测绿，合入主干后复原；
-3 skip 均为既有条件守卫：build_ledger 索引刷新、
-holdout_inputs 依赖 `/work/`、secret_store Windows 权限位；`third_party_layer`
-已含上述说明）；gen_specs --check
+**4401 passed / 0 failed / 2 skipped**（4402 tests，main 树 2026-10-18 实读、
+`-o addopts=""`，exit 0；2 skip 均为既有条件守卫：build_ledger 索引刷新、
+secret_store Windows 权限位）；gen_specs --check
 OK；门①–⑩ 全 pass、`holdout_gates.overall == "pass"`（仍指
 `docs/evidence/20261017-103308/`）、唯一红 RK-13/E1 为已结案残留（判据未动）；
 vlm 侧 2026-10-12 台账降为历史，源码存档 `E:\bd_vlm_v2`。
