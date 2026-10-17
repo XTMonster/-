@@ -184,7 +184,8 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_export_sandbox.py';    Marker = 'BD_TEST_RESULT'; Label = 'export-sandbox' },
     @{ Script = 'tools\blender_tests\test_assistant_panel.py';   Marker = 'BD_TEST_RESULT'; Label = 'assistant-panel' },
     @{ Script = 'tools\blender_tests\test_assistant_sprite.py';  Marker = 'BD_TEST_RESULT'; Label = 'assistant-sprite' },
-    @{ Script = 'tools\blender_tests\test_ruler_probe.py';       Marker = 'BD_TEST_RESULT'; Label = 'ruler-probe' }
+    @{ Script = 'tools\blender_tests\test_ruler_probe.py';       Marker = 'BD_TEST_RESULT'; Label = 'ruler-probe' },
+    @{ Script = 'tools\blender_tests\test_per_shot_previz.py';   Marker = 'BD_TEST_RESULT'; Label = 'per-shot-previz' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.
@@ -267,6 +268,13 @@ Write-Host ('  ' + $smokeLine.Line) -ForegroundColor Green
 # baking, the export or the budget ceiling).  The long run takes ~159 s offline
 # (64 shots, DONE) which is worth it: it is the only place the ceiling formula and
 # the cross-shot machinery meet real execution.
+# D1 per-shot path (2026-10-12): the driver phase now runs PREPARE_SCENE -> PER_SHOT
+# with per-shot rebuild_shot + synchronizer read-back.  Measured driver wall times:
+# 125.5 s (run c44026e4c751, DONE) and a load-peak run that exceeded the previous
+# 180 s default (run 7f626a3f3560, CANCELLED at shot_063 by wall_clock_exhausted).
+# The product budget is max_wall_minutes = 120 (v1.4 P9.4), so this offline chain
+# step passes --wall 600: a bounded 10-minute guard that still catches runaway
+# loops without misclassifying a healthy per-shot run as CANCELLED.
 Write-Host ("[4/{0}] Run the add-on headless (plan -> scene -> delivery, one command)" -f $total) -ForegroundColor Cyan
 $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
 # `--preset fhd16x9` is part of section 4.4 step 1's command and the doc says it is
@@ -275,7 +283,7 @@ $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
 # docs/evidence/offline_run1/export/shots.json is 1920x1080, i.e. the recorded run
 # used fhd16x9 - while this chain step was running at the default.  At fhd16x9 the
 # long baseline takes 293 s instead of 159 s and still finishes DONE with 64 shots.
-$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--preset', 'fhd16x9', '--out', $out, '--save', (Join-Path $out 'project'), '--export')
+$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--preset', 'fhd16x9', '--out', $out, '--save', (Join-Path $out 'project'), '--export', '--wall', '600')
 $marker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_RESULT' 'headless'
 if ($marker -notmatch '"success": true') { Fail ('  FAILED: ' + $marker) }
 if ($marker -notmatch '"built": true') { Fail '  FAILED: the run did not build a scene' }

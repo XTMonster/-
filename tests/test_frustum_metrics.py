@@ -31,8 +31,11 @@ def box(left, right, bottom, top, facing=0.0):
                       facing=facing)
 
 
-def seq(b, frames, subject="a", shot="shot_001", visible=1.0, behind=False):
-    return [FrameSample(f, subject, b, visible, behind, shot) for f in frames]
+def seq(b, frames, subject="a", shot="shot_001", visible=1.0, behind=False,
+        occlusion_by_class=None):
+    return [FrameSample(f, subject, b, visible, behind, shot,
+                        occlusion_by_class=occlusion_by_class or {})
+            for f in frames]
 
 
 def kinds(warnings):
@@ -151,10 +154,87 @@ def test_size_drift_respects_declared_push_in():
 
 def test_occlusion_warns_unless_foreground_is_declared():
     samples = seq(box(0.4, 0.6, 0.1, 0.9), range(1, 49, 4), visible=0.5)
-    assert "occlusion" in kinds(compare_with_intent(
-        samples, DeclaredShot("shot_001", "MLS", "a"), CFG))
+    found = [w for w in compare_with_intent(
+        samples, DeclaredShot("shot_001", "MLS", "a"), CFG)
+        if w.type == "occlusion"]
+    assert found
+    assert found[0].evidence["visible_ratio"] == pytest.approx(0.5)
     assert "occlusion" not in kinds(compare_with_intent(
         samples, DeclaredShot("shot_001", "MLS", "a", front_occlusion_declared=True), CFG))
+
+
+def test_occlusion_warning_carries_occluder_class_attribution():
+    """occlusion 告警的 evidence 要带上帧段内各类别遮挡归因（均值）。
+
+    ``occlusion_by_class`` 是面的语义类别：``"道具:stall_01"`` 在前 2/3 帧
+    挡掉 4/9（0.444…）、后 1/3 帧挡 6/9（0.666…）⇒ 段内均值 0.5185…。
+    """
+    samples = (
+        seq(box(0.4, 0.6, 0.1, 0.9), [1, 5, 9, 13, 17, 21], visible=0.5,
+            occlusion_by_class={"道具:stall_01": 4 / 9})
+        + seq(box(0.4, 0.6, 0.1, 0.9), [25, 29, 33], visible=0.5,
+              occlusion_by_class={"道具:stall_01": 6 / 9})
+    )
+    found = [w for w in compare_with_intent(
+        samples, DeclaredShot("shot_001", "MLS", "a"), CFG)
+        if w.type == "occlusion"]
+    assert len(found) == 1
+    by_class = found[0].evidence["occlusion_by_class"]
+    assert set(by_class) == {"道具:stall_01"}
+    assert by_class["道具:stall_01"] == pytest.approx(
+        (4 / 9 * 6 + 6 / 9 * 3) / 9, abs=1e-6)
+    # 两段不同比值的帧共享同一告警（sustain 包络），证据是段内归一均值
+    assert found[0].frame_range == (1, 33)
+
+
+def test_merge_occlusion_evidence_merges_part_attribution_into_warning():
+    """面级 per-part 归因接进 occlusion 告警的 evidence（`occlusion_by_part`）。
+
+    这是 vlm 分支 af448dd 之后的缺口：面级 `mesh_visibility_report.parts[*]
+    .occlusion_by_class` 只进了 VLM 评委提示，没有进结构化
+    ``GuardWarning.evidence``。修复提示/审计拿不到"头被角色挡住、躯干被
+    环境挡住"这类面级归因，只能重算。本测试钉住纯层 helper 的行为。
+    """
+    from block_director.contracts.guard import merge_occlusion_evidence
+
+    warning = GuardWarning(
+        shot_id="shot_001", frame_range=(1, 33), type="occlusion",
+        subject="char_001",
+        evidence={"visible_ratio": 0.5, "occlusion_warn": 0.2,
+                  "occlusion_by_class": {"道具:stall_01": 0.3}},
+        severity=Severity.WARNING, confidence=Confidence.HIGH)
+    merge_occlusion_evidence(
+        warning,
+        {"头": {"occlusion_by_class": {"角色:char_002": 0.4}},
+         "躯干": {"occlusion_by_class": {"环境": 0.2}},
+         "腿": {"occlusion_by_class": {}}})
+    merged = warning.evidence["occlusion_by_part"]
+    assert merged["头"] == {"角色:char_002": 0.4}
+    assert merged["躯干"] == {"环境": 0.2}
+    # 空归因部位不写进合并结果（不给提示/审计注入噪声）
+    assert "腿" not in merged
+    # 原 evidence 不被污染
+    assert warning.evidence["visible_ratio"] == pytest.approx(0.5)
+    assert warning.evidence["occlusion_by_class"] == {"道具:stall_01": 0.3}
+
+
+def test_merge_occlusion_evidence_ignores_empty_and_preserves_shape():
+    from block_director.contracts.guard import merge_occlusion_evidence
+
+    warning = GuardWarning(
+        shot_id="shot_001", frame_range=(1, 33), type="occlusion",
+        subject="char_001",
+        evidence={"visible_ratio": 0.5, "occlusion_warn": 0.2},
+        severity=Severity.WARNING, confidence=Confidence.HIGH)
+    # 空归因 / 缺 parts：不写键、不抛错
+    merge_occlusion_evidence(warning, {})
+    assert "occlusion_by_part" not in warning.evidence
+    merge_occlusion_evidence(warning, {"头": {}})
+    assert "occlusion_by_part" not in warning.evidence
+    # 键存在但证据无该键（subject 不匹配也安全）
+    warning.evidence["occlusion_by_class"] = {"角色:char_002": 0.5}
+    merge_occlusion_evidence(warning, {"头": {"occlusion_by_class": {}}})
+    assert warning.evidence["occlusion_by_class"] == {"角色:char_002": 0.5}
 
 
 def test_exit_matches_declaration_within_tolerance():

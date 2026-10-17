@@ -14,6 +14,7 @@ from ..contracts.enums import Capability, Purpose
 from ..contracts.health import HealthStatus
 from ..contracts.knowledge import Card
 from ..contracts.messages import ChatPayload, ChatReply, FunctionCall, ToolCall
+from ..contracts.tools import FINISH_SHOT
 from .planner import PLAN_TOOL_NAME
 from .editor import EDITOR_TOOL_NAME
 from .review import REVIEW_TOOL_NAME
@@ -236,6 +237,23 @@ class OfflineTransport:
                             function=FunctionCall(
                                 name=EDITOR_TOOL_NAME,
                                 arguments=json.dumps(draft, ensure_ascii=False)))
+            return ChatReply(content=None, tool_calls=[call],
+                             request_id=payload.request_id, model="offline",
+                             finish_reason="tool_calls")
+
+        if payload.purpose is Purpose.REACT:
+            # 阶段 B5：离线替身没有场景可改，任何"精修工具"都是空转。这里给
+            # **有界收敛**的确定性回答：声明当前镜头完成。驱动对 finish_shot
+            # 走"带错误完成"分支——审核未通过也会落盘结论并推进下一镜，不是
+            # 伪装通过，也不触碰判据。若是继续给只读工具或 emit_plan，驱动会
+            # 记非法调用后重入，最后一镜把全局 LLM 预算耗光以 CANCELLED 收场
+            # （D1 实测 61 镜 0 交付、552 次调用）。
+            call = ToolCall(id=f"react_{self.chat_calls}",
+                            function=FunctionCall(
+                                name=FINISH_SHOT,
+                                arguments=json.dumps(
+                                    {"summary": "离线自检：ReAct 精修结束"},
+                                    ensure_ascii=False)))
             return ChatReply(content=None, tool_calls=[call],
                              request_id=payload.request_id, model="offline",
                              finish_reason="tool_calls")

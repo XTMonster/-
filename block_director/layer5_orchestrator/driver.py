@@ -57,6 +57,8 @@ from .control_tools import (
     REQUEST_SELF_REVIEW,
     register_control_tools,
 )
+from .adversarial_review import review_shot
+from .shot_versioning import ShotVersion, ShotVersionHistory
 from .repair import (REPAIR_FOLLOWUP_NUDGE, build_repair_payload,
                      parse_guard_accepts)
 from .budget import Budget, BudgetLimits
@@ -82,6 +84,12 @@ from .retry_ladder import (
     next_step,
 )
 from .loop_detector import LoopDetector
+from .decision_tree import Verdict, build_tree
+from .tool_projection import (
+    TOOL_TREE_MAP,
+    ToolProjection,
+    project_tool_call,
+)
 from .human_gate import GateDecision, GateRequest, HumanGate
 from .invalid_category import classify_invalid
 from .review import ReviewVerdict, build_review_payload, parse_review
@@ -327,6 +335,9 @@ class ResumeState:
     llm_calls: int = 0
     tool_calls: int = 0
     reason: str = ""
+    #: D1：逐镜版本历史（`{shot_id: history.to_dict()}`）。断点续跑后
+    #: `restore_shot_version` 仍能按版本号取回任意一版计划。
+    version_histories: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -349,6 +360,8 @@ class ResumeState:
             "llm_calls": int(self.llm_calls),
             "tool_calls": int(self.tool_calls),
             "reason": str(self.reason),
+            "version_histories": {
+                str(k): dict(v) for k, v in self.version_histories.items()},
         }
 
     @classmethod
@@ -416,6 +429,18 @@ class ResumeState:
                 raise ResumeStateError(f"resume_state.{name} 必须是整数")
             setattr(state, name, int(value))
         state.reason = str(payload.get("reason") or "")
+        if "version_histories" in payload:
+            raw = payload["version_histories"]
+            if not isinstance(raw, dict):
+                raise ResumeStateError(
+                    "resume_state.version_histories 必须是对象")
+            histories = {}
+            for key, value in raw.items():
+                if not isinstance(value, dict):
+                    raise ResumeStateError(
+                        f"resume_state.version_histories.{key} 必须是对象")
+                histories[str(key)] = dict(value)
+            state.version_histories = histories
         return state
 
 
@@ -428,8 +453,12 @@ def save_resume_state(path, state: "ResumeState") -> Path:
     """原子写 ``resume_state.json``（临时文件 + ``os.replace``）。"""
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    #: 保存时间 = 落盘这一刻，只打一次（``to_dict`` 不再现打，见其注释）。
-    state.saved_at = _now_iso()
+    #: 保存即打戳：把 ``saved_at`` 回写到对象本体，保证 save → load →
+    #: ``to_dict`` 的 round-trip 逐字节一致。只填一次，跨秒边界也不漂移
+    #: （此前 `to_dict()` 对空 ``saved_at`` 现取时间，保存 :48 与断言 :49
+    #: 会撞出假红——test_resume_state_round_trip 实测）。
+    if not state.saved_at:
+        state.saved_at = _now_iso()
     temporary = target.with_name(f".{target.name}.{_now_iso().replace(':', '')}"
                                  f".tmp")
     payload = state.to_dict()
@@ -538,7 +567,11 @@ class DriverLimits:
     plan_attempts: int = 3
     brief_attempts: int = 2      # §3.2：两次不理解就降级为确定性抽取
     max_tool_calls: int = 200
-    max_repairs_per_shot: int = 2      # §7.1 B4：每镜定向修复次数上限
+    #: 兼容/诊断字段（§7.1 B4 历史语义）。按 2026-10-12 用户裁决，修复次数
+    #: **不再作为镜头终止条件**：画面未达标就继续修，直到预算/墙钟/人工叫停。
+    #: 本字段只保留给旧配置与统计读数，driver 不再因 `_repair_attempts >=
+    #: max_repairs_per_shot` 而自动推进或降级（见 `_audit_and_route`）。
+    max_repairs_per_shot: int = 2
     #: 一次定向修复允许几轮 LLM（``1`` = 老行为）。见
     #: `orchestration.repair_max_turns`——真跑里 104 个修复回合有 72 个
     #: 死在"查资料 + 看场景就用光唯一一轮"。默认与配置键一致（10，
@@ -721,6 +754,15 @@ class PrevisDriver:
         self._react_shot: str = ""
         self._react_messages: List[Message] = []
         self._react_done: set = set()
+        #: 方案 B（§3.6.3）：逐镜预演的迭代计数（同一镜每预演一轮 +1，
+        #: 换镜时随 _decision_trees 一起清理）。
+        self._per_shot_iterations: Dict[str, int] = {}
+        #: D1：每镜对抗审查的版本号（同镜每审一次 +1；跨轮次只增不减，
+        #: 保证任何一版审查都有唯一可回溯的 version）。
+        self._adversarial_versions: Dict[str, int] = {}
+        #: 每镜决策树缓存（§7.3）：draft/react/repair 三轮共用同一棵树；
+        #: 换镜（_advance_shot）与 B5 结束（_finish_react）时清空。
+        self._decision_trees: Dict[str, Any] = {}
         self.react_history: List[Dict[str, Any]] = []
         #: 阶段 S 的产物（§3.2）。没有它就等于退回 v1.2 的"直接规划"。
         self.brief: Optional[SceneBrief] = None
@@ -758,6 +800,13 @@ class PrevisDriver:
         self.state = DriverState.IDLE
         self.plan: Optional[Plan] = None
         self.build_summary: Dict[str, Any] = {}
+        #: VLM 评审判词是按镜逐轮写入 ``build_summary["results"]`` 的，但修复
+        #: 回路会重建场景并整体替换 summary。这里保留一份按镜快照，重建后
+        #: 挂回对应 result；找不到 result 时保持 helper 原有的"不猜"纪律。
+        self._vlm_reviews: Dict[str, Dict[str, Any]] = {}
+        #: D1：对抗审查快照按镜保留（重建摘要条目后挂回；找不到 result 时
+        #: 按 `_record_*` 家族"不猜"纪律跳过）。
+        self._adversarial_reviews: Dict[str, Dict[str, Any]] = {}
         self.audit_results: List[AuditResult] = []
         self.error: str = ""
         self.messages: List[Message] = []
@@ -848,6 +897,9 @@ class PrevisDriver:
         self._resume_drafts: Dict[str, Dict[str, Any]] = {}
         self._resume_delivered: set = set()
         self._wall_clock_exhausted: bool = False
+        #: D1：逐镜版本历史（append-only，`{shot_id: ShotVersionHistory}`）。
+        #: 换镜时**保留**（可回溯），resume 时从断点恢复。
+        self._shot_versions: Dict[str, ShotVersionHistory] = {}
         self._apply_resume_state()
 
     # ------------------------------------------------------------ 对外接口
@@ -862,6 +914,13 @@ class PrevisDriver:
                 self.transport.cancel(self._pending_request_id)
             except Exception as exc:  # noqa: BLE001 - 取消失败不阻断
                 log.debug("取消请求失败: %s", exc)
+
+    def restore_shot_version(self, shot_id: str, version: int) -> Any:
+        """只读回溯这一镜的历史版本计划（深拷贝，不改当前计划/历史）。"""
+        history = self._shot_versions.get(str(shot_id))
+        if history is None:
+            raise KeyError(f"no version history for shot {shot_id}")
+        return history.restore(version)
 
     # ------------------------------------------------------------ 暂停（§13.1）
     @property
@@ -1065,6 +1124,11 @@ class PrevisDriver:
                                         DriverState.PLANNING):
             # 还没产出计划就触顶：降级收尾（构建与审核不花预算，不该被砍）
             self._degrade_to_finish(exhausted)
+            return True
+        if exhausted and self._shot_queue and self.state not in TERMINAL_STATES:
+            # 当前镜未通过时，预算触顶只能暂停并保存断点；不把未完成镜头
+            # 伪装成 degraded terminal，也不推进到下一镜。
+            self._wrap_up_wall_clock(exhausted)
             return True
         if self._cancel.is_set() and self.state is not DriverState.CANCELLED:
             self._transition(DriverState.CANCELLED)
@@ -1485,7 +1549,7 @@ class PrevisDriver:
                 self._rebuild_in_place = True
                 self._transition(DriverState.BUILDING)
                 return
-            self._transition(DriverState.CHECKING)   # 复核一次，看改没改对
+            self._transition(self._resume_per_shot_or_checking())
             return
 
         if self._call_purpose == "react":
@@ -1514,7 +1578,7 @@ class PrevisDriver:
                                reason=problem,
                                category=classify_invalid(problem))
             if self._react_steps >= self._react_max_steps():
-                self._finish_react("达到步数上限")
+                self._finish_react("本轮 ReAct 步数用尽，返回审核")
                 return
             self._start_react_turn()
             return
@@ -1762,16 +1826,15 @@ class PrevisDriver:
             return
         # DEGRADE：同一份提示的命已用完，落回既有按阶段的恢复。
         if purpose == "repair":
-            #: 既有恢复路径只回 CHECKING，复审不过还会发起**第三次**修复调用——
-            #: 卡 F1 禁止。把这一镜的修复额度直接钉到上限，让 CHECKING 走
-            #: "shot_degraded → 前进（或 B5）"的老路，不赌第三次。
-            self._repair_attempts = max(self._repair_attempts,
-                                        self.limits.max_repairs_per_shot)
             self.audit.log(
                 "repair_failed",
-                f"{shot_id} 修复调用连续失败（重试阶梯降级）：{problem}",
+                f"{shot_id} 修复调用连续失败（保留当前镜并暂停）：{problem}",
                 level="warning", shot=shot_id)
-            self._transition(DriverState.CHECKING)
+            # 网络重试阶梯耗尽不是镜头质量达标，不能降级前进；保存断点后
+            # 结束本次运行，resume 会从同一镜继续。
+            self._checkpoint_resume(stage="repair_failed",
+                                    reason=str(problem))
+            self._transition(DriverState.CANCELLED)
             return
         self._recover_from_llm_error(purpose, problem)
 
@@ -1842,7 +1905,7 @@ class PrevisDriver:
                            f"修复调用失败（第 {self._repair_attempts} 次）："
                            f"{problem}", level="warning",
                            shot=self._current_shot_id)
-            self._transition(DriverState.CHECKING)
+            self._transition(self._resume_per_shot_or_checking())
             return
         # react：结束本镜的 ReAct 回合，回到复核
         self._finish_react(f"传输错误：{problem}")
@@ -1878,7 +1941,7 @@ class PrevisDriver:
         self.audit.log("self_review_invalid",
                        f"{shot_id}: 复核未完成（{problem}）",
                        level="warning", shot=shot_id)
-        self._transition(DriverState.CHECKING)
+        self._transition(self._resume_per_shot_or_checking())
 
     def _log_script_compliance(self, plan) -> None:
         """收尾时核对"导演写下的东西有没有做出来"（v1.3 R015/R016）。
@@ -1993,6 +2056,43 @@ class PrevisDriver:
         self._apply_gate(decision)
 
     # -------------------------------------------------- 阶段 B1（§7.1 逐镜草案）
+    def _supports_prepare_scene(self) -> bool:
+        """方案 B（§3.6.3）：builder 是否支持“先准备场景、再逐镜预演”。
+
+        ``prepare_scene`` 与 ``rebuild_shot`` 必须同时存在才走逐镜路径；
+        任一缺失（例如测试注入的假 builder 只实现 ``build``）都退回旧的
+        整场 ``BUILDING → CHECKING``（兼容回退，不是降级）。
+        """
+        return (self.builder is not None
+                and hasattr(self.builder, "prepare_scene")
+                and hasattr(self.builder, "rebuild_shot"))
+
+    def _resume_per_shot_or_checking(self) -> DriverState:
+        """修复/ReAct/复核完成后的复核落点（方案 B 出口统一 helper）。
+
+        逐镜路径回 ``PER_SHOT``（同一镜继续预演/审核），旧路径回
+        ``CHECKING``。调用方把结果交给 ``_transition``，不改任何行为。
+        """
+        return (DriverState.PER_SHOT if self._supports_prepare_scene()
+                else DriverState.CHECKING)
+
+    def _tree_for_shot(self, shot_id: str) -> Any:
+        """当前镜的决策树（懒建 + 缓存，§3.6.6）。
+
+        draft/react/repair 三轮共用同一棵；plan 合并后调用方负责
+        ``pop``（树失效条件 S-1）。与 :meth:`_dispatch_tool_calls` 的
+        缓存模式同源，不在这里另起一套。
+        """
+        tree = self._decision_trees.get(shot_id)
+        if tree is not None:
+            return tree
+        shot = self._shot_by_id(shot_id)
+        if shot is None or self.plan is None:
+            return None
+        tree = build_tree(shot, self.plan)
+        self._decision_trees[shot_id] = tree
+        return tree
+
     def _step_editing(self) -> None:
         """逐镜请求结构化草案；全部完成后再落场景。"""
         if self.plan is None or not self.plan.shots:
@@ -2004,7 +2104,9 @@ class PrevisDriver:
         if self._editing_index >= len(self._editing_queue):
             self._editing_queue = []
             self._pin_brief_gaze()
-            self._transition(DriverState.BUILDING)
+            self._transition(DriverState.PREPARE_SCENE
+                             if self._supports_prepare_scene()
+                             else DriverState.BUILDING)
             return
         shot_id = self._editing_queue[self._editing_index]
         if not self.budget.allow_llm_call("editor"):
@@ -2013,7 +2115,9 @@ class PrevisDriver:
                            level="warning")
             self._editing_queue = []
             self._pin_brief_gaze()
-            self._transition(DriverState.BUILDING)
+            self._transition(DriverState.PREPARE_SCENE
+                             if self._supports_prepare_scene()
+                             else DriverState.BUILDING)
             return
         self._start_editor_call(shot_id)
 
@@ -2028,6 +2132,11 @@ class PrevisDriver:
         self._draft_candidates = []
         characters = list(shot.characters)
         props: List[str] = []
+        temperature = 0.7
+        max_tokens: Optional[int] = None
+        if self.config is not None:
+            temperature = float(self.config.llm.temperature_plan)
+            max_tokens = int(getattr(self.config.llm, "max_tokens", 0) or 0) or None
         payload = build_editor_payload(
             shot, self.plan, shot_order=self._editing_index + 1,
             scene_state=self._scene_state_text(),
@@ -2036,9 +2145,7 @@ class PrevisDriver:
                 shot_memory(self.plan, done=self._finished_shots)),
             characters=characters, full_cast=self._cast_roster(),
             props=props, retriever=self.knowledge,
-            temperature=(float(self.config.llm.temperature_plan)
-                         if self.config is not None else 0.7),
-            max_tokens=self._llm_max_tokens())
+            temperature=temperature, max_tokens=max_tokens)
         #: 缓存这一份 payload：同镜的第 2…N 个候选**直接复用它**，不再发起一次
         #: 检索——否则候选数会把 `retrieval_calls` 一起放大（§2.4 的预算账）。
         self._editor_payload_cache = payload
@@ -2129,11 +2236,13 @@ class PrevisDriver:
     def _finish_editor_turn(self, reply: ChatReply) -> None:
         shot_id = self._editing_queue[self._editing_index]
         characters, anchors = self._draft_context(shot_id)
+        tree = self._tree_for_shot(shot_id)
         try:
             draft = extract_draft(reply, shot_id, characters=characters,
                                   anchors=anchors,
                                   roster=self._cast_roster(),
-                                  full_cast=self._cast_roster())
+                                  full_cast=self._cast_roster(),
+                                  tree=tree)
         except ValueError as exc:
             # 单镜草案失败不拖垮整场：记进 history 与警告，这一镜沿用计划内容，
             # 后面还有 B3/B4 兜住真正的执行问题。
@@ -2166,7 +2275,20 @@ class PrevisDriver:
                                        characters=characters, anchors=anchors,
                                        full_cast=self._cast_roster())
         if best is not None:
+            records = list(getattr(best, "projection_records", None) or [])
+            if records:
+                event = {"shot_id": shot_id, "stage": "draft",
+                         "records": list(records)}
+                self.audit.log(
+                    "draft_projected",
+                    f"{shot_id} 草案 {len(records)} 处投影到合法空间",
+                    **event)
+                self._emit("draft_projected", f"{shot_id} 草案已投影",
+                           **event)
             merged = merge_draft(self.plan, best)
+            #: 计划合并 = 树失效条件 S-1：下一轮（react/repair）必须重建，
+            #: 旧树继续投影就是拿过期语义换新镜。
+            self._decision_trees.pop(str(shot_id), None)
             crossing = unseen_axis_crossing(merged, self.brief, shot_id)
             if crossing:
                 #: v1.6 G2：不可见的走位跨线挡在计划外，而不是等到审核判错。
@@ -2354,6 +2476,159 @@ class PrevisDriver:
                                **overlap_fields)
         self._transition(self._after_build_state())
 
+    # -------------------------------------------------- 方案 B（§3.6.3）逐镜预演
+    def _step_prepare_scene(self) -> None:
+        """方案 B：只建场景与元素，不摆相机、不烘焙动作（§3.6.3）。"""
+        if self.builder is None or self.plan is None:
+            self._transition(DriverState.FINISHING)
+            return
+        started = self.clock()
+        try:
+            summary = self.builder.prepare_scene(self.plan, self.brief) or {}
+        except Exception as exc:  # noqa: BLE001 - 构建失败要如实上报
+            log.error("场景准备失败：\n%s", traceback.format_exc())
+            self.audit.log("build_failed", f"{type(exc).__name__}: {exc}",
+                           level="error")
+            self._fail(f"场景准备失败：{type(exc).__name__}: {exc}")
+            return
+        self.build_summary = dict(summary)
+        #: 逐镜结果由 _step_per_shot 逐镜补进（§3.6.4 F/G/U/V/W）。
+        if not isinstance(self.build_summary.get("results"), list):
+            self.build_summary["results"] = []
+        #: 真实墙钟时间（不是 `time.monotonic` 的开机秒——那会让审计里的
+        #: prepared_at 落在 1970 年）。与 `_step_building` 的 `duration_s`
+        #: 口径一致：`started` 仍用 monotonic 算耗时，时间戳用 datetime.now。
+        prepared_at = datetime.now(timezone.utc).isoformat()
+        event = {
+            "characters": int(summary.get("characters", 0) or 0),
+            "cameras": int(summary.get("cameras", 0) or 0),
+            "props": int(summary.get("props", 0) or 0),
+            "crowd": int(summary.get("crowd", 0) or 0),
+            "prepared_at": prepared_at,
+        }
+        self.audit.log("scene_prepared", "场景与元素已就位", **event)
+        self._emit("scene_prepared", "场景与元素已就位", **event)
+        #: 逐镜路径也必须发 `scene_built`：交付链与既有探针（rk9）按它判断
+        #: "场景已构建"（判据一字不动）。prepare_scene 是方案 B 的"场景就位"
+        #: 语义，reason 取 `scene_built_reason` 的静态分支（非重建/非回滚）。
+        duration = self.clock() - started
+        reason = scene_built_reason(rebuild_in_place=False,
+                                    just_rolled_back=False)
+        scalars = {k: v for k, v in self.build_summary.items()
+                   if isinstance(v, (int, float, str))
+                   and k not in SCENE_BUILT_RESERVED_KEYS}
+        self.audit.log("scene_built", "场景已构建（逐镜预演路径）",
+                       reason=reason, duration_s=round(duration, 3),
+                       **scalars)
+        self._emit("scene_built", "场景已构建（逐镜预演路径）",
+                   reason=reason, **scalars)
+        #: 逐镜路径下队列**不能从 auditor.shot_ids() 取**：方案 B 的场景此时
+        #: 还没摆相机，而 `BpyShotAuditor.shot_ids()` 按
+        #: ``shot_id in context.cameras`` 过滤——相机未建 ⇒ 返回空 ⇒ 队列空
+        #: ⇒ 整场被 FINISHING 跳过（headless 实测 `built=false`）。镜序的唯一
+        #: 真源是 ``plan.shots``（§3.6.3 不变量：顺序推进，不改计划顺序）。
+        shots = [str(s.shot_id) for s in self.plan.shots]
+        if shots:
+            self._shot_queue = shots
+            self._current_shot_id = shots[0]
+            self._repair_attempts = 0
+            self._transition(DriverState.PER_SHOT)
+            return
+        self._transition(DriverState.FINISHING)
+
+    def _step_per_shot(self) -> None:
+        """方案 B（§3.6.3）：逐镜重构 → 审核 → 通过才前进。
+
+        每镜进入本状态时先增量重建当前镜（``builder.rebuild_shot``），
+        再走既有审核/修复路由（``_route_audit_result``）；修复/ReAct/
+        复核完成后经 ``_resume_per_shot_or_checking`` 回到本状态，继续
+        审当前镜——迭代是增量调整，不是整场重来。
+        """
+        if self.builder is None or not self._shot_queue:
+            self._transition(DriverState.FINISHING)
+            return
+        shot_id = self._shot_queue[0]
+        self._current_shot_id = shot_id
+        resumed_status = self._shot_terminal.get(str(shot_id), "")
+        if str(shot_id) in self._resume_terminal and resumed_status:
+            self.audit.log(
+                "shot_resumed_skipped",
+                f"{shot_id} 终态（{resumed_status}）从断点恢复，跳过",
+                shot_id=shot_id, status=resumed_status)
+            self._emit("shot_resumed_skipped", f"{shot_id} 从断点跳过",
+                       shot_id=shot_id, status=resumed_status)
+            self._advance_shot()
+            return
+        round_no = int(self._per_shot_iterations.get(str(shot_id), 0)) + 1
+        self._per_shot_iterations[str(shot_id)] = round_no
+        try:
+            regen = self.builder.rebuild_shot(shot_id, plan=self.plan) or {}
+        except Exception as exc:  # noqa: BLE001 - 逐镜重建失败要如实上报
+            log.error("单镜重建失败：\n%s", traceback.format_exc())
+            self.audit.log("build_failed", f"{type(exc).__name__}: {exc}",
+                           level="error", shot=shot_id)
+            self._fail(f"{shot_id} 单镜重建失败：{type(exc).__name__}: {exc}")
+            return
+        warnings = [str(item) for item in (regen.get("warnings") or [])]
+        protected = [str(item) for item in (regen.get("protected") or [])]
+        iteration_event = {
+            "shot_id": shot_id,
+            "round": round_no,
+            "action": "build",
+            "result": dict(regen),
+            "warnings": warnings,
+            "protected": protected,
+        }
+        self.audit.log("shot_iteration", f"{shot_id} 第 {round_no} 轮预演已构建",
+                       **iteration_event)
+        self._emit("shot_iteration", f"{shot_id} 第 {round_no} 轮预演",
+                   **iteration_event)
+        #: 逐镜 result 写进 build_summary["results"]（交付层按 shot_id 读）。
+        #: 同镜第二轮起**整体替换**该镜条目——只补缺键会让修复后的新值
+        #: （camera_position/lens/warnings）永远留在旧版本（实测隐患）。
+        #: 保留非 rebuild 产物的键：justification_audit（破例对拍）、
+        #: vlm_review（外部评审）、alternates（Best-of-N 备选）、
+        #: adversarial_review（D1 对抗审查）由各自的生产者后续写入，
+        #: 这里不能丢掉。
+        results = self.build_summary.setdefault("results", [])
+        preserved_keys = ("justification_audit", "vlm_review", "alternates",
+                          "adversarial_review")
+        preserved = {}
+        for item in results:
+            if isinstance(item, dict) and str(item.get("shot_id")) == shot_id:
+                for key in preserved_keys:
+                    if key in item:
+                        preserved[key] = item[key]
+                item.clear()
+                item.update(regen)
+                item.update(preserved)
+                break
+        else:
+            results.append(dict(regen))
+        #: 汇总计数随逐镜结果累计（prepare_scene 的摘要 cameras=0/motions=0/
+        #: keyframes=0；交付层与 UI 按这些键读总账）。每镜重建都产生相机；
+        #: motions/keyframes 只有成功烘焙的才累计。
+        self.build_summary["cameras"] = int(
+            (self.build_summary.get("cameras") or 0)
+            + (1 if regen.get("camera") else 0))
+        self.build_summary["motions"] = int(
+            (self.build_summary.get("motions") or 0)
+            + (regen.get("motions") or 0))
+        self.build_summary["keyframes"] = int(
+            (self.build_summary.get("keyframes") or 0)
+            + (regen.get("keyframes") or 0))
+        #: 与 CHECKING 完全同一套审核/修复/回滚路由（判据与阈值一字不动）。
+        #: 无 auditor（测试/嵌入用法）不审计、不修复：与 `_audit_and_route`
+        #: 的 None-result 分支同构，逐镜仍摆相机后前进、终态记 unverified，
+        #: 保住旧 BUILDING 路径"无 auditor 也产出带相机的场景"的语义——
+        #: phase6 探针 `review_requests_survive_real_driver_build_and_export`
+        #: 就是用不带 auditor 的驱动跑完后直接导出的。
+        if self.auditor is not None:
+            self._audit_and_route(shot_id)
+            return
+        self._mark_terminal(shot_id, "unverified")
+        self._advance_shot()
+
     def _after_build_state(self) -> DriverState:
         """建完场景后：有审核器就先逐镜校验（§7.1 B3），否则直接收尾。"""
         if self._rebuild_in_place:
@@ -2401,8 +2676,9 @@ class PrevisDriver:
         if not introduced:
             return False
         self.plan = copy.deepcopy(baseline["plan"])
-        #: 回滚即认输：这一镜不再修（否则下一次修复又会踩同一个坑，白烧回合）。
-        self._repair_attempts = int(self.limits.max_repairs_per_shot)
+        #: 回滚只恢复到最后一个已知较好版本；不把计数钉到旧上限。
+        #: 当前镜仍可继续修复，直到通过或外部资源边界暂停。
+        self._repair_attempts = 0
         event = {"shot_id": shot_id, "before": sorted(baseline["rules"]),
                  "after": sorted(after), "introduced": introduced}
         self.rollback_events.append(event)
@@ -2414,6 +2690,30 @@ class PrevisDriver:
         self._emit("repair_rolled_back",
                    f"{shot_id} 修复回滚（引入 {introduced}）", shot=shot_id)
         self._just_rolled_back = True
+        #: 方案 B（§3.6.5）：逐镜路径下回滚**不整场重建**——恢复该镜基线计划
+        #: 快照、增量重做当前镜；环境/角色/其他镜不动，bd_user_animated 保护
+        #: 不因回滚失效。旧 BUILDING 整场分支只留给无 prepare_scene 的假
+        #: builder（兼容回退，不是降级）。
+        if self._supports_prepare_scene():
+            try:
+                self.builder.rebuild_shot(shot_id, plan=self.plan)
+            except Exception as exc:  # noqa: BLE001 - 回滚重建失败如实上报
+                log.error("回滚单镜重建失败：\n%s", traceback.format_exc())
+                self.audit.log("build_failed",
+                               f"{type(exc).__name__}: {exc}", level="error",
+                               shot=shot_id)
+                self._fail(f"{shot_id} 回滚单镜重建失败："
+                           f"{type(exc).__name__}: {exc}")
+                return True
+            self.audit.log("shot_iteration",
+                           f"{shot_id} 回滚后增量重做当前镜",
+                           shot_id=shot_id,
+                           round=int(self._per_shot_iterations.get(
+                               str(shot_id), 0)) + 1,
+                           action="rollback", result={},
+                           warnings=[], protected=[])
+            self._transition(self._resume_per_shot_or_checking())
+            return True
         self._needs_rebuild = True
         self._rebuild_in_place = True
         self._transition(DriverState.BUILDING)
@@ -2572,6 +2872,138 @@ class PrevisDriver:
                 item["ruler_measurements"] = [dict(m) for m in measurements]
                 return
 
+    @staticmethod
+    def _adversarial_digest_inputs(digest: Any
+                                   ) -> "Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], float]":
+        """从 ``scene_digest`` 折出对抗审查要的量（软尺读数；缺省不猜）。
+
+        真实形状（``cinema/spatial_digest.py`` 与测试夹具同一构型）：
+        ``{"framing": {"subjects": {<名字>: [{frame, in_action_safe,
+        in_title_safe, thirds, visible_ratio, ...}]}}, "spatial": ...}``。
+        - ``safe_area``：每主体 ``<名字>_in_action_safe`` /
+          ``<名字>_in_title_safe`` 布尔（缺失跳过）；
+        - ``thirds``：每主体 ``<名字>_thirds`` 非空字符串（缺失跳过）；
+        - ``visible_ratio``：各主体首条记录的最小值，无可用数据时 1.0。
+        """
+        framing: Dict[str, Any] = {}
+        safe_area: Dict[str, Any] = {}
+        thirds: Dict[str, Any] = {}
+        visible_ratio = 1.0
+        if not isinstance(digest, dict):
+            return framing, safe_area, thirds, visible_ratio
+        subjects = (digest.get("framing") or {}).get("subjects") or {}
+        if not isinstance(subjects, dict):
+            return framing, safe_area, thirds, visible_ratio
+        ratios: List[float] = []
+        first_seen = False
+        for subject, records in subjects.items():
+            if not isinstance(records, list) or not records:
+                continue
+            first = records[0]
+            if not isinstance(first, dict):
+                continue
+            name = str(subject)
+            if not first_seen:
+                framing.update(first)
+                first_seen = True
+            if "in_action_safe" in first:
+                safe_area[f"{name}_in_action_safe"] = bool(
+                    first["in_action_safe"])
+            if "in_title_safe" in first:
+                safe_area[f"{name}_in_title_safe"] = bool(
+                    first["in_title_safe"])
+            thirds_value = first.get("thirds")
+            if isinstance(thirds_value, str) and thirds_value.strip():
+                thirds[f"{name}_thirds"] = thirds_value.strip()
+            try:
+                ratio = float(first.get("visible_ratio"))
+            except (TypeError, ValueError):
+                ratio = math.nan
+            if math.isfinite(ratio):
+                ratios.append(ratio)
+        if ratios:
+            visible_ratio = min(ratios)
+        return framing, safe_area, thirds, visible_ratio
+
+    def _run_adversarial_review(self, shot_id: str,
+                                result: AuditResult) -> Dict[str, Any]:
+        """对这一镜的这一版做确定性对抗审查（梯度下降的"信号"）。
+
+        只读：安全区/九宫格偏差只记成软参考（不改 passed/score/errors）；
+        硬 finding → revise；越轴 → escalate（由既有人工 gate 决断）。
+        返回不可变 ``AdversarialReview.to_dict()`` 快照。
+        """
+        version = int(self._adversarial_versions.get(str(shot_id), 0)) + 1
+        self._adversarial_versions[str(shot_id)] = version
+        digest = getattr(result, "scene_digest", None)
+        framing, safe_area, thirds, visible_ratio = \
+            self._adversarial_digest_inputs(digest)
+        shot = self._shot_by_id(shot_id)
+        intent = (str(getattr(shot, "intent", "") or "")
+                  if shot is not None else "")
+        review = review_shot(
+            shot_id=str(shot_id),
+            version=version,
+            intent=intent,
+            audit_passed=bool(result.passed),
+            audit_findings=[*result.errors, *result.warnings],
+            framing=framing,
+            safe_area=safe_area,
+            thirds=thirds,
+            visible_ratio=visible_ratio)
+        return review.to_dict()
+
+    def _record_adversarial_review(self, shot_id: str,
+                                   review: Dict[str, Any]) -> None:
+        """把这一镜的对抗审查快照写进 ``build_summary["results"]``（交付层读它）。
+
+        与 ``_record_vlm_review`` 同一条纪律：找不到对应 result 就跳过——
+        交付层在缺失时不写这个键（"没审过"与"审了 pass"必须分得开）。
+        """
+        self._adversarial_reviews[str(shot_id)] = dict(review)
+        results = self.build_summary.get("results")
+        if not isinstance(results, list):
+            return
+        for item in results:
+            if isinstance(item, dict) and str(item.get("shot_id")) == str(shot_id):
+                item["adversarial_review"] = dict(review)
+                return
+
+    def _record_shot_version(self, shot_id: str, *, reason: str,
+                             result: AuditResult,
+                             review: Dict[str, Any]) -> None:
+        """每镜每次审核都留一版 ``ShotVersion``（initial/repair/rollback）。
+
+        版本历史是 append-only 的：``ShotVersionHistory.append`` 强制版本号
+        从 0 连续、shot_id 一致，旧版本永不改写；``restore_shot_version``
+        按版本号返回深拷贝计划，供"可调整可回溯"使用。plan 为空时没有
+        可留的快照，直接跳过（不是降级：没有计划就没有版本）。
+        """
+        if self.plan is None:
+            return
+        shot_id = str(shot_id)
+        history = self._shot_versions.get(shot_id)
+        if history is None:
+            history = ShotVersionHistory(shot_id)
+            self._shot_versions[shot_id] = history
+        build_summary = {}
+        results = self.build_summary.get("results")
+        if isinstance(results, list):
+            for item in results:
+                if (isinstance(item, dict)
+                        and str(item.get("shot_id")) == shot_id):
+                    build_summary = dict(item)
+                    break
+        history.append(ShotVersion(
+            shot_id=shot_id,
+            version=len(history),
+            plan=copy.deepcopy(self.plan.to_dict()),
+            build_summary=build_summary,
+            audit_summary=result.to_dict(),
+            adversarial_summary=dict(review),
+            created_at=_now_iso(),
+            reason=reason,
+        ))
     def _record_justification_audit(self, shot_id: str,
                                     reconciliation: Dict[str, Any]) -> None:
         """把这一镜的破例对拍写进 ``build_summary["results"]``（交付层读它）。
@@ -2595,6 +3027,14 @@ class PrevisDriver:
             return
         shot_id = self._shot_queue[0]
         self._current_shot_id = shot_id
+        self._audit_and_route(shot_id)
+
+    def _audit_and_route(self, shot_id: str) -> None:
+        """审核当前镜并按结果路由（CHECKING 与 PER_SHOT 共用，§3.6.3）。
+
+        判据与阈值一字不动：passed → 前进/自审；失败 → 修复/ReAct/gate；
+        回滚/修复基线/降级语义与旧 CHECKING 完全一致。
+        """
         resumed_status = ""
         if str(shot_id) in self._resume_terminal:
             resumed_status = self._shot_terminal.get(str(shot_id), "")
@@ -2617,6 +3057,32 @@ class PrevisDriver:
             self._mark_terminal(shot_id, "unverified")
             self._advance_shot()
             return
+        #: D1 对抗审查：**每次审核都出一版**（pass 也出），软尺偏差只记录、
+        #: 不改判；越轴 escalate 由下方既有 gate 决断。事件与交付记录先于
+        #: 路由，保证"这一版为什么这样走"永远有据可查。
+        review = self._run_adversarial_review(shot_id, result)
+        result.adversarial_review = review
+        self.audit.log(
+            "adversarial_review",
+            f"{shot_id} 对抗审查 v{review['version']}: "
+            f"{review['disposition']}",
+            level="info" if review["disposition"] == "pass" else "warning",
+            shot_id=str(shot_id),
+            version=int(review["version"]),
+            disposition=str(review["disposition"]),
+            issues=list(review["issues"]),
+            rationale=str(review["rationale"]))
+        self._record_adversarial_review(shot_id, review)
+        #: D1 逐镜版本历史：**每次审核都留一版**（initial/repair/rollback），
+        #: 与对抗审查快照同一节奏落账，供 `restore_shot_version` 回溯。
+        #: 用函数开头捕获的局部 `restored`（`_just_rolled_back` 已重置）。
+        self._record_shot_version(
+            shot_id,
+            reason=("rollback" if restored
+                    else ("repair" if self._repair_attempts > 0
+                          else "initial")),
+            result=result,
+            review=review)
         if self._rollback_repair_if_worse(shot_id, result):
             return
         self._record_repair_verification(shot_id, result)
@@ -2644,47 +3110,57 @@ class PrevisDriver:
             self._mark_terminal(shot_id, "passed")
             self._advance_shot()
             return
-        if self._repair_attempts >= self.limits.max_repairs_per_shot:
-            self.audit.log("shot_degraded",
-                           f"{shot_id} 达到修复上限（{self._repair_attempts}），"
-                           f"按降级处理并继续", level="warning", shot=shot_id)
-            self._emit("shot_degraded", f"{shot_id} 降级", shot=shot_id)
-            axis_violation = any(item.rule == "R001" for item in result.errors)
-            if axis_violation and self._gate_enabled(
-                    "human_gate_on_axis_violation"):
-                # v1.6 F2：gate 放行走 `_apply_gate → _advance_shot`，不进
-                # 这里的分支——先落终态，否则这镜从断点里消失（实测：smoke
-                # 跑的 shot_002 走 gate 收尾后不在 terminal_shots 里）。
-                self._mark_terminal(shot_id, "degraded")
-                self._request_gate(
-                    GateRequest(kind="axis_violation",
-                                title=f"{shot_id} 越轴且自动修复未成功",
-                                detail=result.format_for_llm(),
-                                payload={"shot_id": shot_id}),
-                    resume=DriverState.CHECKING)
-                return
-            if self._should_start_react(shot_id, result):
-                self._start_react(shot_id, result)
-                return
-            self._mark_terminal(shot_id, "degraded")
-            self._advance_shot()
+        # 未通过的镜头绝不能因为固定修复次数而伪装成完成并前进。
+        # B4 定向修复优先；已有至少一次修复仍未通过时，进入 ReAct 观察/调整回合。
+        # ``max_repairs_per_shot`` 不再是终止条件；真正的停止边界是预算、墙钟、
+        # 取消或人工决定，它们都会落 resume checkpoint。
+        if self._repair_attempts > 0 and self._should_start_react(shot_id, result):
+            self._start_react(shot_id, result)
+            return
+        # 180-degree violations are explicitly human-gated when configured.
+        # The gate is an escalation policy, not a fixed repair-count cutoff.
+        if self._repair_attempts > 0 and self._gate_enabled(
+                "human_gate_on_axis_violation") and any(
+                    item.rule == "R001" for item in result.errors):
+            self._request_gate(
+                GateRequest(kind="axis_violation",
+                            title=f"{shot_id} 越轴，等待人工裁决",
+                            detail=result.format_for_llm(),
+                            payload={"shot_id": shot_id}),
+                resume=DriverState.CHECKING)
             return
         self._pending_audit = result
         self._transition(DriverState.REPAIRING)
 
     def _advance_shot(self) -> None:
+        done = ""
         if self._shot_queue:
             done = self._shot_queue.pop(0)
             #: 这一镜结束了：它的修复基线（含一份计划快照）不再需要，
             #: 留着只会让 64 镜的跑里堆 64 份计划副本。
             self._repair_baseline.pop(str(done), None)
+            self._decision_trees.pop(str(done), None)
+            #: 版本历史（_shot_versions）**保留**：可回溯是本插件的核心能力，
+            #: 换镜不清理，只随 resume checkpoint 增长/恢复。
             self._finished_shots.append(done)
         self._repair_attempts = 0
         self._repair_turns = 0
         self.repair_messages = []
+        next_shot_id = ""
         if self._shot_queue:
             self._current_shot_id = self._shot_queue[0]
-        self._transition(DriverState.CHECKING)
+            next_shot_id = self._current_shot_id
+        if done:
+            event = {
+                "shot_id": str(done),
+                "next_shot_id": next_shot_id,
+                "decision_trees_evicted": True,
+            }
+            self.audit.log("shot_advanced",
+                           f"{done} 通过，移入下一镜（{next_shot_id or '无'}）",
+                           **event)
+            self._emit("shot_advanced", f"{done} 已前进", **event)
+        self._transition(self._resume_per_shot_or_checking())
 
     # -------------------------------------------------- v1.4 §3.3 修复留痕
     def _mark_repair_applied(self, *, applied: bool) -> None:
@@ -2738,14 +3214,11 @@ class PrevisDriver:
     # -------------------------------------------------- Level 2 自我审核（§11.1）
     # -------------------------------------------------- 阶段 B5（§7.1 受限 ReAct）
     def _should_start_react(self, shot_id: str, result: AuditResult) -> bool:
-        if shot_id in self._react_done:
-            return False
         shot = next((item for item in (self.plan.shots if self.plan else [])
                      if item.shot_id == shot_id), None)
-        max_steps = 6
-        if self.config is not None:
-            max_steps = int(getattr(self.config.orchestration,
-                                    "react_max_steps", 6))
+        max_steps = (int(getattr(self.config.orchestration,
+                                 "react_max_steps", 6))
+                     if self.config is not None else 6)
         return should_react(shot, result, repairs_exhausted=True,
                             max_steps=max_steps)
 
@@ -2756,7 +3229,7 @@ class PrevisDriver:
         #: 控制工具（幂等），于是 build_react_payload 的"缺 finish_shot 就报错"
         #: 守卫只拦**直接误用**，驱动器自己永不发出缺收尾工具的载荷。
         register_control_tools(self.registry)
-        self._react_done.add(shot_id)          # 每个镜头只给一次 B5
+        self._react_done.add(shot_id)          # 仅诊断"曾进入"，不再限制重入
         self._react_shot = shot_id
         self._react_steps = 0
         shot = next((item for item in (self.plan.shots if self.plan else [])
@@ -2774,15 +3247,19 @@ class PrevisDriver:
         if memory:
             payload.messages[0].content += "\n\n" + memory
         self._react_messages = list(payload.messages)
-        self.audit.log("react_started", f"{shot_id} 进入受限 ReAct",
+        self.audit.log("react_started", f"{shot_id} 进入镜头精修回合",
                        shot=shot_id, max_steps=self._react_max_steps())
-        self._emit("react_started", f"{shot_id} 精修", shot=shot_id)
+        self._emit("react_started", f"{shot_id} 精修", shot=shot_id,
+                   max_steps=self._react_max_steps())
         self._start_react_turn()
 
     def _react_max_steps(self) -> int:
+        # 单段 ReAct 有界，结束后必须重新审核；未通过就可再次进入，不构成
+        # 每镜总修复次数上限。全局调用/墙钟预算与取消负责安全停止。
         if self.config is None:
             return 6
-        return int(getattr(self.config.orchestration, "react_max_steps", 6))
+        return max(1, int(getattr(self.config.orchestration,
+                                  "react_max_steps", 6)))
 
     def _start_react_turn(self) -> None:
         """把当前 ReAct 对话裁到上下文上限内，再发起下一轮。"""
@@ -2820,7 +3297,10 @@ class PrevisDriver:
         self._emit("react_finished", f"{self._react_shot} 精修结束",
                    shot=self._react_shot, steps=self._react_steps)
         self._react_messages = []
-        self._transition(DriverState.CHECKING)   # 复核一次，看改没改好
+        self._decision_trees.clear()
+        # React 结束只代表模型停止本轮工具对话，不代表镜头通过。
+        # 返回审核；若仍不通过，_audit_and_route 会继续当前镜修复循环。
+        self._transition(DriverState.CHECKING)
 
     # -------------------------------------------------- Level 2 自我审核（§11.1）
     def _should_self_review(self, shot_id: str) -> bool:
@@ -2921,7 +3401,7 @@ class PrevisDriver:
         """§7.1 B4：把结构化违规项回灌给模型，让它调用工具修正。"""
         audit = self._pending_audit
         if audit is None:
-            self._transition(DriverState.CHECKING)
+            self._transition(self._resume_per_shot_or_checking())
             return
         self._pending_audit = None
         # v1.4 §3.3：记下这条留痕的"规则 + 修前分"，等复核后再补 after_score。
@@ -2958,6 +3438,14 @@ class PrevisDriver:
             shot_id=str(self._current_shot_id),
             temperature=temperature,
             max_tokens=self._llm_max_tokens())
+        #: 对抗审查的解释/建议回流修复提示（梯度下降的"信号"）。
+        #: 审查只作为建议来源，不新增任何硬门；payload 结构保持不变。
+        review = getattr(audit, "adversarial_review", None)
+        if isinstance(review, dict) and review:
+            review_text = _adversarial_review_text(review)
+            if review_text:
+                system = payload.messages[0]
+                system.content = str(system.content) + "\n\n" + review_text
         #: 工具集与对话都要留住：延续轮必须用**同一套**工具（含收窄），
         #: 并且把这一轮的工具观测带回模型。
         self._repair_tools = list(payload.tools)
@@ -3001,8 +3489,12 @@ class PrevisDriver:
         同一次失败重放——`test_sidecar_mode_runs_the_whole_chain` 的夹具正是
         这种形态：那里的 7 次调用不许因为这条改动变成 9 次。
         """
+        # 没有拿到任何可用观测时，继续重放同一失败没有信息增益；返回审核，
+        # 由 repair/react 策略选择下一种动作。这里没有固定总轮次上限。
         if not self._repair_queries_ok:
             return False
+        # 同一对话的观测回灌仍需防止无进展空转；这不是镜头修复总次数上限。
+        # 新一轮 repair attempt 会重新装载审计与场景状态，镜头仍不前进。
         if self._repair_turns + 1 >= self._repair_turn_limit():
             return False
         if self._tool_calls >= self.limits.max_tool_calls:
@@ -3145,6 +3637,8 @@ class PrevisDriver:
             llm_calls=self._llm_calls,
             tool_calls=self._tool_calls,
             reason=reason,
+            version_histories={
+                str(k): v.to_dict() for k, v in self._shot_versions.items()},
         )
         try:
             save_resume_state(path, state)
@@ -3214,6 +3708,14 @@ class PrevisDriver:
                                for k, v in state.drafts.items()}
         self._resume_delivered = {str(item)
                                   for item in state.delivered_shots}
+        if state.version_histories:
+            try:
+                self._shot_versions = {
+                    str(k): ShotVersionHistory.from_dict(dict(v))
+                    for k, v in state.version_histories.items()}
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ResumeStateError(
+                    f"resume_state.version_histories 无法解析：{exc}") from exc
         #: 终态镜的旧审核结论种回账本：通过率统计与"哪几镜审过"保持完整，
         #: 而不是在 resume 之后假装它们没发生过。
         for shot_id, payload in self._resume_last_audit.items():
@@ -3244,8 +3746,13 @@ class PrevisDriver:
                    first_shot=first_non_terminal)
         if self.plan is None:
             return                      # 没有可续计划：从 IDLE 正常开始
+        #: 方案 B：没有待起草的镜头时，直接走逐镜预演路径（prepare → per-shot），
+        #: 而不是退回首版整场 BUILDING——否则 resume 与首跑在 `_supports_prepare_scene`
+        #: 的 builder 下行为不一致（首跑逐镜、续跑整场）。
         target = (DriverState.EDITING if pending_drafts
-                  else DriverState.BUILDING)
+                  else (DriverState.PREPARE_SCENE
+                        if self._supports_prepare_scene()
+                        else DriverState.BUILDING))
         self._transition(target)
 
     # ------------------------------------------------------------ 内部
@@ -3427,6 +3934,9 @@ class PrevisDriver:
                 # v1.6 F2（D-09）：墙钟撞线走"保已完成镜"的收尾，不走
                 # "补审剩余镜头"的预算降级路径。
                 self._wrap_up_wall_clock(reason)
+            elif self._shot_queue:
+                # 未通过当前镜时，任何资源边界都只允许暂停并续跑，不能降级前进。
+                self._wrap_up_wall_clock(reason)
             else:
                 self._degrade_to_finish(reason)
             return
@@ -3485,6 +3995,67 @@ class PrevisDriver:
                 #: target 优先、camera.side='neutral'→''）；有歧义的照旧被
                 #: validate_args 拒绝。
                 args = normalize_draft_watchdog(args)
+            #: v1.6 决策树投影（设计 §7.3）：react/repair 阶段的改场景工具
+            #: 先过该镜决策树——PROJECTED ⇒ 改写参数后执行，REJECTED ⇒ 不执行
+            #: 并回灌错误。剧本硬约束（P0）优先级最高，所以即使投影层报错
+            #: 也不自动放行（这里只对白名单内工具调用投影层）。
+            projection: Optional[ToolProjection] = None
+            if (call.function.name in TOOL_TREE_MAP
+                    and self.plan is not None
+                    and self._current_shot_id):
+                shot_id = str(self._current_shot_id)
+                shot = self._shot_by_id(shot_id)
+                if shot is not None:
+                    tree = self._decision_trees.get(shot_id)
+                    if tree is None:
+                        tree = build_tree(shot, self.plan)
+                        self._decision_trees[shot_id] = tree
+                    stage = ("repair" if self._call_purpose == "repair"
+                             else "react" if self._call_purpose == "react"
+                             else "react")
+                    try:
+                        projection = project_tool_call(
+                            tree, call.function.name, args, stage=stage)
+                    except ValueError as exc:
+                        #: 真源漂移等构建/投影异常不得静默放行：记审计并
+                        #: 当作本轮错误回灌，避免越界参数绕过硬约束。
+                        errors.append(f"{call.function.name}: {exc}")
+                        self.audit.log(
+                            "projection_error", str(exc), level="error",
+                            shot=shot_id, stage=stage,
+                            tool=call.function.name)
+                        continue
+            if projection is not None:
+                event_name = ("repair_projected" if stage == "repair"
+                              else "react_projected")
+                event_data = {
+                    "shot_id": str(self._current_shot_id),
+                    "stage": stage,
+                    "tool": call.function.name,
+                    "records": [r.to_dict() for r in projection.records],
+                }
+                if stage == "repair":
+                    event_data["repair_invalid"] = True
+                if projection.verdict == Verdict.REJECTED:
+                    #: 不执行：把投影拒绝原因回灌给模型，保持会话配对。
+                    reason = "；".join(
+                        r.reason for r in projection.records) or "越界参数被拒绝"
+                    self.audit.log(event_name,
+                                   f"{call.function.name} 被拒绝：{reason}",
+                                   **event_data)
+                    self._emit(event_name, f"{call.function.name} 被拒绝",
+                               **event_data)
+                    errors.append(f"{call.function.name}: {reason}")
+                    conversation.append(tool_message(
+                        call, f"{call.function.name} 被决策树拒绝：{reason}"))
+                    continue
+                if projection.verdict == Verdict.PROJECTED:
+                    args = projection.args
+                    self.audit.log(event_name,
+                                   f"{call.function.name} 参数已投影到合法空间",
+                                   **event_data)
+                    self._emit(event_name, f"{call.function.name} 已投影",
+                               **event_data)
             result = self.registry.execute(call.function.name, args)
             self._tool_calls += 1
             self.audit.count_tool_call()
@@ -3673,3 +4244,26 @@ class PrevisDriver:
                 observer(event)
             except Exception as exc:  # noqa: BLE001 - 观察者出错不影响主流程
                 log.error("观察者回调失败: %s", exc)
+
+
+def _adversarial_review_text(review: Dict[str, Any]) -> str:
+    """把对抗审查快照渲染成修复提示的一段（含证据与建议）。
+
+    只作"信号"回流：disposition 原样透传（含 ``revise``/``escalate``），
+    每条 issue 带证据与建议。软尺（safe_area/thirds）偏差在这里同样只
+    作为参考列出，不改变任何门限。
+    """
+    issues = review.get("issues") or []
+    lines = [f"【对抗性审查｜镜 {review.get('shot_id', '')} "
+             f"v{review.get('version', '')}】"
+             f"disposition={review.get('disposition', '')}"]
+    for issue in issues:
+        if isinstance(issue, dict):
+            lines.append(
+                f"- [{issue.get('severity', '')}] {issue.get('type', '')}："
+                f"{issue.get('evidence', '')}｜建议："
+                f"{issue.get('suggestion', '')}")
+    rationale = review.get("rationale", "")
+    if rationale:
+        lines.append(f"审查结论：{rationale}")
+    return "\n".join(lines)

@@ -228,11 +228,87 @@ def t_ndc_and_unobstructed_ratio():
 def t_occluder_reduces_visible_ratio():
     occluder = _cube("occluder", (0.0, -1.5, 0.5), 1.0)
     occluder.scale = (1.2, 1.2, 0.6)
+    occluder["bd_element_type"] = "prop"
+    occluder["bd_sdl_id"] = "stall_01"
     bpy.context.view_layer.update()
     try:
         samples = sample_shot("shot_002", step=1)
         ratio = samples[0].visible_ratio
-        return {"ok": 0.0 < ratio < 1.0, "visible_ratio": round(ratio, 6)}
+        by_class = samples[0].occlusion_by_class
+        attributed = round(sum(by_class.values()), 6)
+        ok = (0.0 < ratio < 1.0
+              and by_class.get("道具:stall_01", 0.0) > 0.0
+              and abs(attributed - (1.0 - ratio)) <= 1e-5)
+        return {"ok": ok, "visible_ratio": round(ratio, 6),
+                "occlusion_by_class": by_class}
+    finally:
+        bpy.data.objects.remove(occluder, do_unlink=True)
+
+
+def t_occluder_class_character_attribution():
+    """另一角色的网格挡在主体前 ⇒ 归因到 ``角色:<id>``（非匿名"未知"）。"""
+    blocker = _cube("char_occluder_mesh", (0.0, -1.5, 0.5), 1.2)
+    blocker.scale = (1.2, 1.2, 0.6)
+    blocker["bd_element_type"] = "character_part"
+    blocker_character = Character(
+        id="char_occluder", name="char_occluder",
+        root=blocker, meshes=[blocker])
+    _CTX.characters["char_occluder"] = blocker_character
+    bpy.context.view_layer.update()
+    try:
+        samples = sample_shot("shot_002", step=1)
+        ratio = samples[0].visible_ratio
+        by_class = samples[0].occlusion_by_class
+        ok = (0.0 < ratio < 1.0
+              and by_class.get("角色:char_occluder", 0.0) > 0.0
+              and set(by_class) == {"角色:char_occluder"})
+        return {"ok": ok, "visible_ratio": round(ratio, 6),
+                "occlusion_by_class": by_class}
+    finally:
+        _CTX.characters.pop("char_occluder", None)
+        bpy.data.objects.remove(blocker, do_unlink=True)
+
+
+def t_occlusion_attribution_reaches_guard_warning():
+    """遮挡归因要走完端到端：采样器 → 纯层告警 evidence。
+
+    ``shot_003`` 是 397 帧长镜（sustain 包络成立），在相机与主体之间放一个
+    带 ``bd_sdl_id`` 的道具。``shot_warnings`` 应产出 occlusion 告警，且
+    ``evidence["occlusion_by_class"]`` 带 ``"道具:stall_99"``；计划声明刻意
+    前景遮挡后同一采样不再告警。
+    """
+    occluder = _cube("long_occluder", (0.0, -1.5, 0.5), 1.0)
+    occluder.scale = (1.2, 1.2, 0.6)
+    occluder["bd_element_type"] = "prop"
+    occluder["bd_sdl_id"] = "stall_99"
+    bpy.context.view_layer.update()
+    try:
+        samples = sample_shot("shot_003", step=4)
+        cfg = guard_config_from(AppConfig())
+        plain = shot_warnings(
+            samples,
+            DeclaredShot(shot_id="shot_003", shot_type="MS",
+                         subject="char_001"), cfg)
+        occ = [item for item in plain if item.type == "occlusion"]
+        declared = shot_warnings(
+            samples,
+            DeclaredShot(shot_id="shot_003", shot_type="MS",
+                         subject="char_001",
+                         front_occlusion_declared=True), cfg)
+        declared_occ = [item for item in declared
+                        if item.type == "occlusion"]
+        sample_by_class = next(
+            item.occlusion_by_class for item in samples
+            if item.occlusion_by_class)
+        ok = (occ
+              and occ[0].evidence.get("occlusion_by_class", {}).get(
+                  "道具:stall_99", 0.0) > 0.0
+              and not declared_occ
+              and sample_by_class.get("道具:stall_99", 0.0) > 0.0)
+        return {"ok": ok,
+                "evidence": (occ[0].evidence if occ else {}),
+                "declared_occlusion_warnings": len(declared_occ),
+                "sample_occlusion_by_class": sample_by_class}
     finally:
         bpy.data.objects.remove(occluder, do_unlink=True)
 
@@ -425,6 +501,10 @@ def main() -> int:
     check("sample_frames_step_and_extras", t_sample_frames_step_and_extras)
     check("ndc_and_unobstructed_ratio", t_ndc_and_unobstructed_ratio)
     check("occluder_reduces_visible_ratio", t_occluder_reduces_visible_ratio)
+    check("occluder_class_character_attribution",
+          t_occluder_class_character_attribution)
+    check("occlusion_attribution_reaches_guard_warning",
+          t_occlusion_attribution_reaches_guard_warning)
     check("behind_camera_detected", t_behind_camera_detected)
     check("sampling_error_and_frame_restore", t_sampling_error_and_frame_restore)
     check("render_settings_untouched", t_render_settings_untouched)

@@ -219,6 +219,64 @@ def test_replay_builds_the_scene_before_tool_calls(tmp_path):
     assert report.built and report.summary["shots"] == 1
 
 
+def test_replay_uses_prepare_and_rebuild_for_per_shot_runs(tmp_path):
+    """D1 逐镜路径（scene_prepared 事件）重放必须逐镜重建，与原始运行一致。
+
+    回归：`tools/blender_tests/test_replay.py::replay_rebuilds_the_same_timeline`
+    红在"原跑走 prepare→逐镜 rebuild_shot、重放仍用整场 build_scene"，两路
+    机位差 4 位小数。重放必须镜像驱动同一条调用序列，判据一个字不动。
+    """
+    two_shot = {
+        "scene_heading": "INT. 咖啡馆 - 日",
+        "continuity_notes": ["首镜确立轴线"],
+        "shots": [
+            {"shot_id": "shot_001", "order": 1, "intent": "建立",
+             "shot_type": "MLS", "duration_frames": 48,
+             "characters": ["char_001"]},
+            {"shot_id": "shot_002", "order": 2, "intent": "推进",
+             "shot_type": "MCU", "duration_frames": 72,
+             "characters": ["char_002"]},
+        ],
+    }
+    write_log(tmp_path, [
+        {"kind": "plan_received",
+         "data": {"plan": two_shot, "shots": two_shot["shots"],
+                  "total_frames": 120}},
+        {"kind": "scene_prepared",
+         "data": {"characters": 2, "cameras": 0}},
+    ])
+    registry, _seen = recording_registry()
+
+    class PerShotBuilder:
+        """镜像 BpySceneBuilder 的 prepare_scene/rebuild_shot 形状。"""
+
+        def __init__(self):
+            self.calls = []
+
+        def prepare_scene(self, plan, brief=None, spec=None):
+            self.calls.append(("prepare", plan.scene_heading))
+            return {"shots": len(plan.shots), "characters": 2,
+                    "cameras": 0, "motions": 0, "keyframes": 0,
+                    "results": []}
+
+        def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+            self.calls.append(("rebuild", shot_id))
+            return {"shot_id": shot_id, "camera": f"BD_Cam_{shot_id}",
+                    "motions": 0, "keyframes": 1, "warnings": [],
+                    "protected": []}
+
+    builder = PerShotBuilder()
+    report = replay(tmp_path, registry, builder=builder)
+    assert report.built
+    assert builder.calls == [("prepare", "INT. 咖啡馆 - 日"),
+                             ("rebuild", "shot_001"),
+                             ("rebuild", "shot_002")]
+    results = report.summary.get("results") or []
+    assert [item["shot_id"] for item in results] == ["shot_001", "shot_002"]
+    assert report.summary.get("cameras") == 2
+    assert report.summary.get("keyframes") == 2
+
+
 def test_replay_without_a_plan_event_is_refused(tmp_path):
     write_log(tmp_path, [tool_record("place_character")])
     registry, _seen = recording_registry()

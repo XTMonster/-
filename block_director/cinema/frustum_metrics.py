@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from ..contracts.guard import (
     BODY_HEIGHT_BANDS,
@@ -18,7 +18,7 @@ from ..contracts.guard import (
     Severity,
 )
 from .anchor import DEFAULT_PROFILE as _PROFILE
-from .composition import HEADROOM_IDEAL, SubjectBox, thirds_deviation
+from .composition import HEADROOM_IDEAL, THIRDS, SubjectBox
 
 #: 头球直径占全身高的比例——由冻结几何推导（ADR-0007），不另抄常量。
 HEAD_FRACTION = _PROFILE.head_d / _PROFILE.total_height
@@ -33,6 +33,13 @@ class FrameSample:
     visible_ratio: float = 1.0
     behind_camera: bool = False
     shot_id: str = ""
+    #: 本帧被外来遮挡物挡掉的采样点类别归因：``{"角色:char_002": 0.33}`` 等
+    #: （占本帧 9 个采样点的比例；纯层回退：缺字段按空 dict 处理）。
+    occlusion_by_class: Dict[str, float] = field(default_factory=dict)
+    #: 本帧角色×角色碰撞对（卡 V11 由 ``frustum_sampler.sample_shot`` 填）：
+    #: ``[{"pair": [a, b], "gap": float}, ...]``；同一帧会复制到每个主体的样本上，
+    #: 消费方按 ``(frame, pair)`` 去重。
+    collisions: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -70,6 +77,9 @@ class GuardConfig:
     jump_cut_size_diff: float = 0.10
     occlusion_warn: float = 0.20
     sample_step: int = 4
+    #: 动作/字幕安全区比例（卡 V11；默认与 ``overlay.geometry`` 的常量相等）。
+    safe_area_action: float = 0.93
+    safe_area_title: float = 0.90
     head_bands: Dict[str, Tuple[float, float]] = field(
         default_factory=lambda: dict(HEAD_HEIGHT_BANDS))
     body_bands: Dict[str, Tuple[float, float]] = field(
@@ -95,6 +105,16 @@ def head_box(box: SubjectBox) -> Tuple[float, float]:
     return box.top - head_h, box.top
 
 
+def safe_area_bounds(value: float) -> Tuple[float, float]:
+    """安全区比例 → 画面内缩后的 ``(下界, 上界)``。
+
+    与 ``overlay.geometry.screen_rect`` 同源口径：``m = (1 - value) / 2``，
+    安全区为 ``[m, 1-m]²``。``value=0.93`` ⇒ ``(0.035, 0.965)``。
+    """
+    margin = (1.0 - float(value)) / 2.0
+    return margin, 1.0 - margin
+
+
 def frame_metrics(box: SubjectBox, visible: float = 1.0) -> Dict[str, float]:
     """单帧度量（全部 NDC 比例，可 JSON）。
 
@@ -115,7 +135,8 @@ def frame_metrics(box: SubjectBox, visible: float = 1.0) -> Dict[str, float]:
     else:
         lead_room = -1.0
     cx, cy = box.center_x, box.center_y
-    thirds = thirds_deviation(cx, cy)
+    thirds = min(((cx - tx) ** 2 + (cy - ty) ** 2) ** 0.5
+                 for tx in THIRDS for ty in THIRDS)
     return {
         "body_height_ratio": max(box.height, 0.0),
         "head_height_ratio": head_projected,
@@ -232,6 +253,39 @@ def detect_events(samples: Sequence[FrameSample],
                         Severity.WARNING, Confidence.HIGH,
                         hint="相邻采样帧主体占比突变：检查机位/焦段关键帧"))
             previous = sample
+
+    #: 卡 V11：角色×角色碰撞箱穿透（warning，不进门；R002 的角色 vs 墙/道具
+    #: error 判据一字不动）。同一帧的碰撞对复制在每个主体样本上，这里按
+    #: ``(frame, pair)`` 去重后按配对聚合。
+    pair_frames: Dict[str, set] = {}
+    pair_gap: Dict[str, float] = {}
+    pair_shot: Dict[str, str] = {}
+    for sample in samples:
+        for item in sample.collisions or []:
+            pair = item.get("pair")
+            if not (isinstance(pair, (list, tuple)) and len(pair) == 2):
+                continue
+            gap = item.get("gap")
+            if (isinstance(gap, bool) or not isinstance(gap, (int, float))
+                    or float(gap) >= 0.0):
+                continue
+            key = "|".join(sorted(str(part) for part in pair))
+            pair_frames.setdefault(key, set()).add(int(sample.frame))
+            pair_gap[key] = min(pair_gap.get(key, float("inf")), float(gap))
+            pair_shot[key] = str(sample.shot_id) or pair_shot.get(key, "")
+    for key in sorted(pair_frames):
+        frames = sorted(pair_frames[key])
+        for run in _runs(frames, [True] * len(frames)):
+            if not _sustained(run, cfg):
+                continue
+            warnings.append(_warning(
+                pair_shot[key], run, "element_collision", key,
+                {"pair": key.split("|"),
+                 "penetration_depth": round(-pair_gap[key], 4),
+                 "frames": run[1] - run[0] + 1,
+                 "sustain_frames": int(cfg.sustain_frames)},
+                Severity.WARNING, Confidence.HIGH,
+                hint="两角色碰撞箱穿透：挪开走位或缩小碰撞体"))
     return warnings
 
 
@@ -325,12 +379,24 @@ def compare_with_intent(samples: Sequence[FrameSample], declared: DeclaredShot,
                      for m, ok in zip(metrics, in_frame)]
             for run in _runs(frames, flags):
                 if _sustained(run, cfg):
+                    in_run = [s for s in seq
+                              if run[0] <= s.frame <= run[1]
+                              and not s.behind_camera
+                              and s.occlusion_by_class]
+                    merged: Dict[str, float] = {}
+                    for s in in_run:
+                        for cls, fraction in s.occlusion_by_class.items():
+                            merged[cls] = merged.get(cls, 0.0) + float(fraction)
+                    if merged and in_run:
+                        merged = {cls: round(total / len(in_run), 6)
+                                  for cls, total in merged.items()}
                     warnings.append(_warning(
                         shot_id, run, "occlusion", subject,
                         {"visible_ratio": round(min(
                             m["visible_ratio"] for m, f in zip(metrics, frames)
                             if run[0] <= f <= run[1]), 4),
-                         "occlusion_warn": cfg.occlusion_warn},
+                         "occlusion_warn": cfg.occlusion_warn,
+                         "occlusion_by_class": merged},
                         Severity.WARNING, Confidence.HIGH, intent,
                         "主体被挡：若是刻意前景遮挡请在计划里声明"))
 
@@ -362,6 +428,65 @@ def compare_with_intent(samples: Sequence[FrameSample], declared: DeclaredShot,
                  "diff_frames": diff, "tolerance_frames": cfg.sustain_frames},
                 Severity.WARNING, Confidence.HIGH, intent,
                 "出画时间与剧本声明不符：调整走位时机或声明离场"))
+
+        #: 卡 V11：头部盒越出动作安全区（warning，不进门；声明离场后不判）。
+        action_low, action_high = safe_area_bounds(cfg.safe_area_action)
+        exit_at = int(declared.declared_exit_frame or 0)
+        breach_flags: List[bool] = []
+        breach_edges: List[List[str]] = []
+        breach_exceed: List[List[float]] = []
+        for s, ok in zip(seq, in_frame):
+            judged = exit_at <= 0 or s.frame <= exit_at
+            if not (ok and judged):
+                breach_flags.append(False)
+                breach_edges.append([])
+                breach_exceed.append([])
+                continue
+            head_bottom, head_top = head_box(s.box)
+            edges: List[str] = []
+            exceeds: List[float] = []
+            if s.box.left < action_low:
+                edges.append("left")
+                exceeds.append(action_low - s.box.left)
+            if s.box.right > action_high:
+                edges.append("right")
+                exceeds.append(s.box.right - action_high)
+            if head_bottom < action_low:
+                edges.append("bottom")
+                exceeds.append(action_low - head_bottom)
+            if head_top > action_high:
+                edges.append("top")
+                exceeds.append(head_top - action_high)
+            breach_flags.append(bool(edges))
+            breach_edges.append(edges)
+            breach_exceed.append(exceeds)
+        for run in _runs(frames, breach_flags):
+            if not _sustained(run, cfg):
+                continue
+            best_exceed = -1.0
+            best_edges: List[str] = []
+            best_head_h = 1e-9
+            for index, frame in enumerate(frames):
+                if not (run[0] <= frame <= run[1] and breach_exceed[index]):
+                    continue
+                exceed = max(breach_exceed[index])
+                if exceed > best_exceed + 1e-12 or (
+                        abs(exceed - best_exceed) <= 1e-12
+                        and len(breach_edges[index]) > len(best_edges)):
+                    best_exceed = exceed
+                    best_edges = sorted(breach_edges[index])
+                    head_bottom, head_top = head_box(seq[index].box)
+                    best_head_h = max(head_top - head_bottom, 1e-9)
+            warnings.append(_warning(
+                shot_id, run, "safe_area_breach", subject,
+                {"edges": best_edges,
+                 "exceed_max": round(best_exceed, 4),
+                 "exceed_ratio": round(best_exceed / best_head_h, 4),
+                 "safe_area_action": round(float(cfg.safe_area_action), 4),
+                 "frames": run[1] - run[0] + 1},
+                Severity.WARNING, Confidence.HIGH, intent,
+                "头部越过动作安全区：调整取景（拉远或压低机位）"
+                "或在计划里声明刻意裁切"))
     return warnings
 
 

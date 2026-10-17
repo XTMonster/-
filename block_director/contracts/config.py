@@ -420,6 +420,10 @@ class GuardConfig:
     occlusion_warn: float = 0.20
     #: bpy 采样步长（帧数）
     sample_step: int = 4
+    #: 动作安全区比例（头部盒越界据此告警；默认与 overlay.ACTION_SAFE 同值）
+    safe_area_action: float = 0.93
+    #: 字幕安全区比例（默认与 overlay.TITLE_SAFE 同值）
+    safe_area_title: float = 0.90
     #: 景别区间表（TDD §4.1）：head＝头部占画高（近景系），body＝全身占画高（中远景系）
     size_bands: Dict[str, Dict[str, List[float]]] = field(
         default_factory=lambda: {
@@ -448,7 +452,8 @@ def resolve_guard_thresholds(guard: "GuardConfig") -> Dict[str, Any]:
     values = {key: getattr(guard, key) for key in (
         "edge_clip_max", "lead_room_min", "sustain_frames", "size_drift",
         "jump_ratio", "jump_cut_angle_deg", "jump_cut_size_diff",
-        "occlusion_warn", "sample_step")}
+        "occlusion_warn", "sample_step",
+        "safe_area_action", "safe_area_title")}
     values.update(GUARD_PRESETS.get(str(guard.preset), {}))
     values["size_bands"] = {kind: {name: (float(b[0]), float(b[1]))
                                    for name, b in bands.items()}
@@ -609,6 +614,11 @@ class AppConfig:
             if int(getattr(self.guard, name)) < 1:
                 err("CFG_216", f"guard.{name}",
                     f"帧数阈值必须 ≥1（当前 {getattr(self.guard, name)}）")
+        for name in ("safe_area_action", "safe_area_title"):
+            value = float(getattr(self.guard, name))
+            if not 0.0 < value <= 1.0:
+                err("CFG_216", f"guard.{name}",
+                    f"安全区比例必须在 (0, 1] 内（当前 {value}）")
         #: v1.7 J2（CFG_174/CFG_175）：R023 加速度阈值必须为正数（m/s²，
         #: 单位不许写成归一化值）；R021 复合运动上限必须 ≥1（默认 2）。
         if not (isinstance(self.guard.cam_accel_max, (int, float))

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import json
 
-from block_director.contracts.enums import MessageRole
+from block_director.contracts.config import AppConfig
+from block_director.contracts.enums import MessageRole, Purpose
 from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall, validate_conversation
 from block_director.layer5_orchestrator.driver import DriverLimits, PrevisDriver
 from block_director.layer5_orchestrator.offline import OfflineTransport, demo_plan_dict
@@ -60,6 +61,36 @@ class ScriptedTransport:
         self.cancelled.append(request_id)
 
 
+class RecordingTransport(OfflineTransport):
+    """在离线回放之外，把阶段 B1 的 editor 请求原样留下来供断言。"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.editor_payloads = []
+
+    def chat(self, payload, timeout=120.0):
+        if payload.purpose is Purpose.EDITOR:
+            self.editor_payloads.append(payload)
+        return super().chat(payload, timeout)
+
+
+class RecordingBuilder:
+    """满足 ``SceneBuilder`` 协议的假构建器（同 test_driver_builder 桩）。"""
+
+    def __init__(self, summary=None, error=None):
+        self.built: list = []
+        self._summary = summary or {"shots": 2, "characters": 2, "cameras": 2,
+                                    "motions": 1, "keyframes": 120,
+                                    "total_frames": 216}
+        self._error = error
+
+    def build(self, plan, brief=None):
+        self.built.append(plan)
+        if self._error:
+            raise self._error
+        return dict(self._summary)
+
+
 def _driver(transport, audit=None, **kwargs):
     return PrevisDriver(transport=transport,
                         audit=audit or AuditLogger(),
@@ -76,6 +107,17 @@ def test_happy_path_reaches_done():
     assert len(driver.plan.shots) == 2
     assert driver.snapshot()["total_frames"] == 216
     assert not driver.error
+
+
+def test_editor_payload_carries_llm_max_tokens():
+    """G8-MT：``config.llm.max_tokens`` 必须逐镜透传到阶段 B1 请求。"""
+    cfg = AppConfig()
+    cfg.llm.max_tokens = 65536
+    transport = RecordingTransport()
+    driver = _driver(transport, builder=RecordingBuilder(), config=cfg)
+    assert driver.run_to_completion() is DriverState.DONE
+    assert transport.editor_payloads
+    assert all(p.max_tokens == 65536 for p in transport.editor_payloads)
 
 
 def test_conversation_stays_valid():

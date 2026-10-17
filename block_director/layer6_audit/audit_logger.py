@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Deque, Dict, List, Optional, Tuple
 
+from ..contracts.audit import redact_image_parts
 from ..utils.logger import get_logger
 
 log = get_logger("audit")
@@ -29,11 +30,17 @@ TRUNCATION_MARK = "…[truncated]"
 
 
 def render_messages(payload: Any) -> List[Dict[str, str]]:
-    """把请求侧的消息列表压成可落盘的 ``[{role, content}]``。"""
+    """把请求侧的消息列表压成可落盘的 ``[{role, content}]``。
+
+    列表形 content 先经 :func:`contracts.audit.redact_image_parts` 把 ``data:``
+    图像分片换成占位信息（base64 不落盘），再 ``json.dumps``——发生在
+    ``trace_max_chars`` 截断之前；深拷贝保证传给模型的真实 payload 不被改动。
+    """
     if payload is None:
         return []
     rendered: List[Dict[str, str]] = []
-    for message in getattr(payload, "messages", []) or []:
+    for message in redact_image_parts(
+            getattr(payload, "messages", []) or []):
         role = str(getattr(message, "role", "") or "")
         content = getattr(message, "content", None)
         item: Dict[str, str] = {"role": role,

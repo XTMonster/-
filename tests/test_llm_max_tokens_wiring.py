@@ -99,7 +99,14 @@ class CapturingTransport:
         self._editor_drafts = ["shot_001", "shot_001", "shot_002", "shot_002"]
         self._repair_replies = ["get_scene_state", "setup_camera"]
         self._repair_index = 0
-        self._react_replies = [("setup_camera", {}), None]
+        #: D1 逐镜路径：失败镜可再次进入 ReAct（test_driver_react 的
+        #: ``test_react_can_reenter_when_the_shot_still_fails`` 钉住该语义）。
+        #: 本场景里 shot_001 两次进入精修，每次一轮工具 + 一轮收尾 = 4 次
+        #: REACT 请求；shot_002 直接通过不进入。
+        self._react_replies = [
+            ("setup_camera", {}), None,
+            ("setup_camera", {}), None,
+        ]
         self._react_index = 0
 
     def _call(self, name, args):
@@ -210,9 +217,9 @@ def test_configured_max_tokens_reaches_every_per_shot_request():
     repair = [p for p in transport.payloads if p.purpose is Purpose.REPAIR]
     review = [p for p in transport.payloads if p.purpose is Purpose.REVIEW]
     assert len(editor) == 4, "2 镜 × 2 候选 = 4 次编辑器请求（含候选重发）"
-    assert len(react) == 2, "首轮 + 延续轮 = 2 次 ReAct 请求"
+    assert len(react) == 4, "shot_001 两次进入精修（每次首轮 + 延续轮）"
     assert len(repair) == 2, "首轮 + 延续轮 = 2 次修复请求"
-    assert len(review) == 1, "shot_002 通过后应走一次 Level 2 自我审核"
+    assert len(review) == 2, "shot_001（二次精修通过）与 shot_002 各走一次 Level 2 自我审核"
     # 候选重发走的是 `_editor_payload_cache`：同一对象，max_tokens 必然一致。
     assert editor[0] is editor[1], "候选重发必须复用缓存的编辑器载荷"
     assert editor[2] is editor[3], "第二镜的候选重发同样复用缓存载荷"

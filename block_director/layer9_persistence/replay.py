@@ -235,10 +235,61 @@ def replay(directory: Union[str, Path], registry, *, builder=None,
             from ..contracts.cast import SceneSpec
 
             spec = SceneSpec.from_plan(plan, brief=brief)
-        summary = builder(plan, spec, brief)
-        if hasattr(summary, "to_dict"):
-            summary = summary.to_dict()
-        report.summary = dict(summary or {})
+        #: D1 逐镜路径（§3.6.3）：原跑走 ``scene_prepared`` → 每镜
+        #: ``rebuild_shot``，重放必须镜像同一条调用序列——只认日志事件不够，
+        #: builder 还必须真的支持 prepare_scene/rebuild_shot（与驱动
+        #: ``_supports_prepare_scene`` 同一探测）。否则退回整场单次构建。
+        per_shot = (hasattr(builder, "prepare_scene")
+                    and hasattr(builder, "rebuild_shot")
+                    and any(isinstance(record, dict)
+                            and record.get("kind") == "scene_prepared"
+                            for record in records))
+        if per_shot:
+            summary = builder.prepare_scene(plan, brief)
+            if hasattr(summary, "to_dict"):
+                summary = summary.to_dict()
+            summary = dict(summary or {})
+            results = list(summary.get("results") or [])
+            for shot in plan.shots:
+                regen = builder.rebuild_shot(str(shot.shot_id), plan=plan)
+                if hasattr(regen, "to_dict"):
+                    regen = regen.to_dict()
+                regen = dict(regen or {})
+                #: 与 driver._step_per_shot 同口径：同镜条目整体替换。
+                index = next(
+                    (i for i, item in enumerate(results)
+                     if isinstance(item, dict)
+                     and str(item.get("shot_id")) == str(shot.shot_id)),
+                    None)
+                if index is None:
+                    results.append(regen)
+                else:
+                    results[index] = regen
+                summary["cameras"] = int(
+                    (summary.get("cameras") or 0)
+                    + (1 if regen.get("camera") else 0))
+                summary["motions"] = int(
+                    (summary.get("motions") or 0)
+                    + (regen.get("motions") or 0))
+                summary["keyframes"] = int(
+                    (summary.get("keyframes") or 0)
+                    + (regen.get("keyframes") or 0))
+            summary["results"] = results
+        elif callable(builder):
+            summary = builder(plan, spec, brief)
+            if hasattr(summary, "to_dict"):
+                summary = summary.to_dict()
+            summary = dict(summary or {})
+        elif hasattr(builder, "build"):
+            summary = builder.build(plan, brief=brief)
+            if hasattr(summary, "to_dict"):
+                summary = summary.to_dict()
+            summary = dict(summary or {})
+        else:
+            raise ReplayError(
+                "builder 既不可调用，也没有 prepare_scene/rebuild_shot 或 "
+                "build，无法重建场景")
+        report.summary = summary
         report.built = True
 
     #: 空间尺观测证据（Ticket 06）：从审计日志抽回的处方/测量回挂到 summary，

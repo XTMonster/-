@@ -149,6 +149,8 @@ guard:
   jump_cut_size_diff: 0.1
   occlusion_warn: 0.2
   sample_step: 4
+  safe_area_action: 0.93
+  safe_area_title: 0.9
   size_bands:
     head:
       MCU:

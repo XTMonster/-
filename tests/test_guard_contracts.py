@@ -37,8 +37,10 @@ def _sample(**overrides):
 
 def test_schema_version_and_closed_set_match_tdd():
     assert GUARD_SCHEMA_VERSION == "guard/v1"
-    assert len(WARNING_TYPES) == 16
-    assert len(set(WARNING_TYPES)) == 16
+    #: 卡 V11 新增 safe_area_breach / element_collision 两个 warning 类型：
+    #: 闭集从 16 扩到 18（唯一性断言原样保留，不是放宽）。
+    assert len(WARNING_TYPES) == 18
+    assert len(set(WARNING_TYPES)) == 18
     for required in ("framing_too_tight", "jump_cut_risk", "axis_screen_order",
                      "subject_behind_camera", "pace_monotony"):
         assert required in WARNING_TYPES

@@ -199,7 +199,9 @@ def render_closed_sets() -> str:
     ])
 
 
-def normalize_draft_watchdog(args: Dict[str, Any]) -> Dict[str, Any]:
+def normalize_draft_watchdog(
+        args: Dict[str, Any],
+        defer_look_at_dedup: bool = False) -> Dict[str, Any]:
     """G2 判据 #8（用户 2026-10-11 裁决）：**只做无歧义归一**的看门狗。
 
     只有"翻译一下不可能出错"的模型输出才归一，其余近义/越界值一律照旧
@@ -210,6 +212,12 @@ def normalize_draft_watchdog(args: Dict[str, Any]) -> Dict[str, Any]:
       角度（``target`` 由编译层按角色位置折算；"无隐式优先级"改为 target
       优先，这是用户点名的无歧义归一条目）；
     * ``camera.side == "neutral"`` → ``""``（中性机位 = 求解器默认）。
+
+    ``defer_look_at_dedup=True`` 时跳过 ``look_at`` 的 target/角度去重
+    （其余归一照常）：D1 阶段 3 决策树投影在同一条链上会做**同一个**去重
+    （``action.look_at.dual_write``，target 优先）并留 PROJECTED 审计——
+    看门狗先手把角度丢掉，树就观测不到双写、审计缺位。跳过不等于放行：
+    树投影仍按同一条语义去重；其余调用点（无树、直接调用）默认逐字节不变。
 
     不认的近义/越界值（``side='0'``、``pace='sharp'`` 等）一个都不动。
     返回新 dict、不修改入参；非 dict 原样返回。
@@ -225,7 +233,8 @@ def normalize_draft_watchdog(args: Dict[str, Any]) -> Dict[str, Any]:
                 item[key] = 1
         if item.get("action_type") == "look_at":
             params = item.get("params")
-            if isinstance(params, dict) and params.get("target") is not None:
+            if (not defer_look_at_dedup and isinstance(params, dict)
+                    and params.get("target") is not None):
                 #: target 优先 = 丢弃**全部**角度键：规范键 + 归一后会落进
                 #: ``yaw_deg`` 的等价键（``look_at.angle_deg``）。等价键表从
                 #: ``ACTION_PARAM_ALIASES`` 单一真源推导，不手抄——r6 真跑
@@ -265,6 +274,12 @@ class ShotDraft:
     beats: List[Dict[str, Any]] = field(default_factory=list)
     composition: Dict[str, Any] = field(default_factory=dict)
     rule_justifications: List[Dict[str, Any]] = field(default_factory=list)
+    #: D1 阶段 3（决策树投影）：tree 给定且发生了 PROJECTED/REJECTED 时的
+    #: 投影审计记录（``ProjectionRecord.to_dict()`` 全量）。**不进 ``to_dict``**：
+    #: 交付层/shots.json 不该出现投影内部记录；它只供驱动器写 ``draft_projected``
+    #: 审计事件用。
+    projection_records: List[Dict[str, Any]] = field(
+        default_factory=list, repr=False, compare=False)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ShotDraft":
@@ -435,7 +450,8 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
                   characters: Sequence[str] = (),
                   anchors: Optional[Sequence[str]] = None,
                   roster: Optional[Sequence[str]] = None,
-                  full_cast: Optional[Sequence[str]] = None) -> ShotDraft:
+                  full_cast: Optional[Sequence[str]] = None,
+                  tree: Optional[Any] = None) -> ShotDraft:
     """解析草案；失败抛 ``ValueError``（由驱动器决定跳过还是重试）。
 
     ``characters`` / ``anchors`` 是**可选**的上下文（这一镜的在场角色与本场
@@ -449,6 +465,11 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
     剧本中不存在的角色名，一路活到导出闸才被 A2 拦停；解析期拦下才是
     "这一镜沿用计划内容"的既有纪律。不给（或给空表）= 没有角色表可查，
     跳过（与计划入口 `_accept_plan_chunk` 的 `if roster:` 同一语义）。
+
+    ``tree`` 是 D1 阶段 3 的**可选**每镜决策树（``decision_tree.build_tree``
+    的产物）：给了就把草案整体过一遍 ``project()``——越界取值投影到合法
+    闭集/数值域，剧本硬约束 REJECTED 保持原样（problems 照旧拦）。不给
+    （None）＝ 旧行为逐字节不变，所有既有调用点一行不改。
     """
     call = find_draft_call(reply)
     if call is None:
@@ -459,7 +480,7 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
         args = call.function.parsed_arguments()
     except ValueError as exc:
         raise ValueError(f"{EDITOR_TOOL_NAME} 参数不是合法 JSON: {exc}") from exc
-    args = normalize_draft_watchdog(args)
+    args = normalize_draft_watchdog(args, defer_look_at_dedup=tree is not None)
     draft = ShotDraft.from_dict(args)
     if not draft.shot_id:
         draft.shot_id = shot_id
@@ -473,9 +494,12 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
                 user_message(ErrorCode.CAST_001,
                              ids=", ".join(bad_cast),
                              roster=", ".join(str(r) for r in roster)))
-    #: **逐动作**核参数键（schema 只能挡"任何动作都不认识的键"，挡不住
-    #: "这个动作不认识的键"）。在这里失败 → 驱动器记 `draft_invalid` 并重试，
-    #: 而不是让它在构建期炸成 `E_MOTION_001` 把整轮打成 ERROR。
+    #: **逐动作**先把无歧义等价键归一（v1.6 G2 用户裁决），再（有树时）把
+    #: 草案整体投影，最后才核参数键与取值。顺序不能反过来：`look_at` 双写
+    #: target＋角度、`camera.side='side'` 这类语义越界如果先被 problems 拦下，
+    #: 投影就没有机会修正——树投影正是要在这里把可救的救回来（P3 互斥归一
+    #: / P1 词形投影），不可救的（P2 REJECTED）仍由 problems 原路径拒绝，
+    #: 判据一字不动。
     bad = []
     for item in draft.actions:
         kind = str((item or {}).get("action_type") or "")
@@ -493,6 +517,20 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
         #: 拿到的永远是规范键（`yaw_deg`→`angle_deg` 等）；其余照旧拒绝。
         item["params"] = normalize_action_params(
             kind, dict((item or {}).get("params") or {}))
+    if tree is not None:
+        from .decision_tree import Verdict, project
+        projected, records = project(tree, draft.to_dict(), stage="draft")
+        draft = ShotDraft.from_dict(projected)
+        draft.projection_records = [record.to_dict() for record in records]
+        #: P0/剧本硬约束与 P2 语义越界（动作类型不在闭集等）：树无法投影，
+        #: REJECTED 原样退回。这里必须把拒绝原因带出来，不能静默放行——
+        #: 否则加了树反而把 r6 那条 draft_invalid 变成"合法草案"，判据漂移。
+        rejected = [record.reason for record in records
+                    if record.verdict == Verdict.REJECTED]
+        if rejected:
+            raise ValueError("；".join(rejected))
+    for item in draft.actions:
+        kind = str((item or {}).get("action_type") or "")
         #: v1.5：**键与取值一起查**。只查键会漏掉 `body_tilt.axis='forward'`
         #: 这类闭集错误——它一路活到构建期，把整轮打成 ERROR（实测 2026-10-03）。
         for problem in action_param_problems(kind, item["params"]):

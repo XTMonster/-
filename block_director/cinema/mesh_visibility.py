@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 from .anchor import DEFAULT_PROFILE, CharacterProfile
 from .composition import thirds_deviation
@@ -37,6 +37,19 @@ PART_TORSO = "躯干"
 PART_HEAD = "头"
 PART_UNKNOWN = "未知"
 PART_LABELS: Tuple[str, ...] = (PART_LEGS, PART_TORSO, PART_HEAD, PART_UNKNOWN)
+
+#: 遮挡者语义类别（面级归属的闭集）。bpy 侧把 ray_cast 命中对象折成这五类；
+#: 角色/道具可带 id 后缀（``"角色:char_002"``），按完整字符串聚合。
+OCCLUDER_CHARACTER = "角色"
+OCCLUDER_CROWD = "群众"
+OCCLUDER_PROP = "道具"
+OCCLUDER_VFX = "特效"
+OCCLUDER_ENVIRONMENT = "环境"
+OCCLUDER_UNKNOWN = "未知遮挡物"
+OCCLUDER_CLASSES: Tuple[str, ...] = (
+    OCCLUDER_CHARACTER, OCCLUDER_CROWD, OCCLUDER_PROP, OCCLUDER_VFX,
+    OCCLUDER_ENVIRONMENT, OCCLUDER_UNKNOWN,
+)
 
 _EPS = 1e-9
 
@@ -240,13 +253,23 @@ def _face_part(face_indices: Sequence[int],
 def mesh_visibility_report(*, position, forward, up, vfov_deg, aspect,
                            near, far, vertices: Sequence[Sequence[float]],
                            faces: Sequence[Sequence[int]],
-                           profile: CharacterProfile = DEFAULT_PROFILE
+                           profile: CharacterProfile = DEFAULT_PROFILE,
+                           visible_at: Optional[Callable[[Point], bool]] = None,
+                           occluder_at: Optional[
+                               Callable[[Point], Optional[str]]] = None,
                            ) -> Dict:
     """网格 × 相机的可见性汇总（供多模态评委的结构化读数）。
 
     返回：顶点可见计数与比例、面可见面积比、按部位（腿/躯干/头/未知）聚合的
     顶点可见数与面积比、每部位的可见顶点 NDC 包围盒。面引用越界顶点时该面
     按 0 面积跳过（不抛错，如实少算）。
+    顶点可见数与面积比、每部位的可见顶点 NDC 包围盒。``visible_at`` 是**面级
+    遮挡 oracle**（纯层不自带射线：由 bpy 侧 ``scene.ray_cast`` 注入）——给了
+    就按“面重心的首交是否属于主体”标出被前景挡住的面积。``occluder_at`` 是
+    更强的同源 oracle：返回 ``None`` = 可见/被主体自己挡住，返回类别字符串 =
+    被该类别的面挡住（``"角色"``/``"群众"``/``"道具"``/``"特效"``/``"环境"``
+    /``"未知遮挡物"``，可带 id 后缀）。两者都给时 ``occluder_at`` 优先。
+    面引用越界顶点时该面按 0 面积跳过（不抛错，如实少算）。
     """
     basis = camera_basis(position=position, forward=forward, up=up,
                          vfov_deg=vfov_deg, aspect=aspect, near=near, far=far)
@@ -264,8 +287,11 @@ def mesh_visibility_report(*, position, forward, up, vfov_deg, aspect,
 
     per_part: Dict[str, Dict] = {
         label: {"vertices_total": 0, "vertices_visible": 0,
-                "face_area": 0.0, "visible_area": 0.0, "ndc_bbox": None}
+                "face_area": 0.0, "visible_area": 0.0,
+                "occluded_area": 0.0,
+                "occlusion_by_class": {}, "ndc_bbox": None}
         for label in PART_LABELS}
+    all_classes: Dict[str, float] = {}
     for index, (part, point) in enumerate(zip(parts, points)):
         entry = per_part[part]
         entry["vertices_total"] += 1
@@ -286,6 +312,24 @@ def mesh_visibility_report(*, position, forward, up, vfov_deg, aspect,
             frustum, [points[i] for i in face])
         per_part[part]["face_area"] += area
         per_part[part]["visible_area"] += area * fraction
+        if (visible_at is not None or occluder_at is not None) \
+                and fraction > 0.0:
+            centroid = tuple(sum(points[i][axis] for i in face)
+                             / len(face) for axis in range(3))
+            occluder: Optional[str] = None
+            if occluder_at is not None:
+                label = occluder_at(centroid)
+                if label is not None:
+                    occluder = str(label)
+            elif visible_at is not None and not visible_at(centroid):
+                occluder = OCCLUDER_UNKNOWN
+            if occluder:
+                blocked = area * fraction
+                per_part[part]["occluded_area"] += blocked
+                per_part[part]["occlusion_by_class"][occluder] = (
+                    per_part[part]["occlusion_by_class"].get(occluder, 0.0)
+                    + blocked)
+                all_classes[occluder] = all_classes.get(occluder, 0.0) + blocked
 
     out_parts: Dict[str, Dict] = {}
     for label, entry in per_part.items():
@@ -297,9 +341,18 @@ def mesh_visibility_report(*, position, forward, up, vfov_deg, aspect,
             "visible_area_fraction": round(
                 entry["visible_area"] / entry["face_area"], 6)
             if entry["face_area"] > 0.0 else 0.0,
+            "occluded_area_fraction": round(
+                entry["occluded_area"] / entry["face_area"], 6)
+            if entry["face_area"] > 0.0 else 0.0,
+            "occlusion_by_class": {
+                cls: round(area / entry["face_area"], 6)
+                for cls, area in entry["occlusion_by_class"].items()}
+            if entry["face_area"] > 0.0 else {},
             "ndc_bbox": entry["ndc_bbox"],
         }
     visible_area = sum(entry["visible_area"] for entry in per_part.values())
+    occluded_area = sum(entry["occluded_area"]
+                        for entry in per_part.values())
     return {
         "vertices_total": len(points),
         "vertices_visible": sum(inside),
@@ -313,15 +366,29 @@ def mesh_visibility_report(*, position, forward, up, vfov_deg, aspect,
             >= 1.0 - 1e-6),
         "visible_area_fraction": round(
             visible_area / total_area, 6) if total_area > 0.0 else 0.0,
+        "occluded_area_fraction": round(
+            occluded_area / total_area, 6) if total_area > 0.0 else 0.0,
+        "occlusion_by_class": {
+            cls: round(area / total_area, 6)
+            for cls, area in sorted(
+                all_classes.items(), key=lambda pair: (-pair[1], pair[0]))}
+        if total_area > 0.0 else {},
         "parts": out_parts,
     }
 
 
-def render_report(report: Dict, subject: str = "角色") -> str:
+def render_report(report: Dict, subject: str = "角色",
+                  *, occlusion_declared: Optional[bool] = None) -> str:
     """把汇总折成一段中文读数，供多模态评委的提示注入。"""
-    lines = [f"{subject} 几何可见性：可见顶点 {report['vertices_visible']}/"
+    semantic = ""
+    if occlusion_declared is not None:
+        semantic = ("已声明前景遮挡" if occlusion_declared
+                    else "未声明前景遮挡")
+    lines = [f"{subject} 几何可见性（{semantic}）："
+             f"可见顶点 {report['vertices_visible']}/"
              f"{report['vertices_total']}，可见面积比 "
-             f"{report['visible_area_fraction']:.4f}。"]
+             f"{report['visible_area_fraction']:.4f}，"
+             f"被遮挡面积比 {report.get('occluded_area_fraction', 0.0):.4f}。"]
     for label in PART_LABELS:
         entry = report["parts"].get(label)
         if not entry:
@@ -337,8 +404,15 @@ def render_report(report: Dict, subject: str = "角色") -> str:
             thirds_text = f"，中心九宫格偏差 {thirds_deviation(cx, cy):.3f}"
         lines.append(f"{label}：顶点 {entry['vertices_visible']}/"
                      f"{entry['vertices_total']}，可见面积比 "
-                     f"{entry['visible_area_fraction']:.4f}，{box_text}"
+                     f"{entry['visible_area_fraction']:.4f}，被遮挡面积比 "
+                     f"{entry.get('occluded_area_fraction', 0.0):.4f}，"
+                     f"{box_text}"
                      f"{thirds_text}。")
+    by_class = report.get("occlusion_by_class") or {}
+    if by_class:
+        classes = "、".join(
+            f"{cls} {fraction:.4f}" for cls, fraction in by_class.items())
+        lines.append(f"遮挡来源（占主体总面积比）：{classes}。")
     return "\n".join(lines)
 
 
@@ -347,4 +421,7 @@ __all__ = [
     "vertex_in_frustum", "vertices_in_frustum", "project_ndc",
     "clip_polygon", "polygon_area", "face_visibility", "part_of_point",
     "mesh_visibility_report", "render_report", "PART_LABELS",
+    "OCCLUDER_CLASSES", "OCCLUDER_CHARACTER", "OCCLUDER_CROWD",
+    "OCCLUDER_PROP", "OCCLUDER_VFX", "OCCLUDER_ENVIRONMENT",
+    "OCCLUDER_UNKNOWN",
 ]

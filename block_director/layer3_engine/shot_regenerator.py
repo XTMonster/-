@@ -25,8 +25,12 @@ from ..utils.threading_guard import main_thread_only
 from .character_system import MotionBlender
 from .scene_context import SceneContext, get_context
 from .scene_sync import SceneSynchronizer, is_user_animated
-from .shot_builder import (action_requests, conflict_warnings,
-                           live_subject_entries, place_shot_camera)
+from .shot_builder import (ShotBuildResult, action_requests, conflict_warnings,
+                           _axis_for_placement, _initial_cast_positions,
+                           axis_for_shot, live_subject_entries,
+                           place_shot_camera)
+from .cinema_engine import establish_axis_from_speakers
+from ..cinema.axis import axis_status, camera_side_of, pair_spans
 
 log = get_logger("shot-regen")
 
@@ -88,6 +92,11 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
     cast_map: Dict[str, CastMember] = {member.id: member for member in spec.cast}
     ranges = shot_ranges(plan)
     start, end = ranges[shot_id]
+    #: 方案 B：与主构建同一条登记——``context.schedule`` 是 auditor 视锥
+    #: 采样 / 标签烘焙 / 交付层的帧区间真源。逐镜 rebuild 不写它，guard
+    #: 采样就会报 E_GUARD_001「场景里没有镜头 X 的帧区间」（headless
+    #: 64 镜实测，shot_064）。
+    context.schedule[shot_id] = (start, end)
     scene = bpy.context.scene
     warnings: List[str] = []
 
@@ -110,6 +119,9 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
     # v1.2 这里写死 side="front" 并丢掉 lens，重生成后朝向与焦距都会回退。
     bundle, solution, _frame = place_shot_camera(
         shot, cast_map, spec,
+        #: 方案 B（§3.6.4 #5）：与主构建同一条轴线入口——逐镜重建不重新猜
+        #: 轴侧，否则会把机位摆到观众没看见过的一侧（R001 越轴）。
+        axis=axis_for_shot(context, shot),
         #: 与主构建同一条口径：按**此刻**人在哪、朝哪摆机位（v1.6）。
         entries=live_subject_entries(shot, context.characters))
     marker = scene.timeline_markers.new(f"BD_Cut_{shot_id}", frame=start)
@@ -153,6 +165,63 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
         scene.camera = bundle.camera
     bpy.context.view_layer.update()
 
+    #: 方案 B（§3.6.5）：逐镜预演必须复刻主构建的**顺序轴状态机**，否则
+    #: prepare+rebuild 路径的 shot_002 会拿不到 axis（机位被摆到
+    #: "观众没看见过"的一侧，R001 越轴）。主构建的第二趟在循环里推进
+    #: live_side/spans；这里把同一状态持久化在 context 上（SceneContext 的
+    #: ``axis_live_side``/``axis_spans``），规则真源不复制：
+    #: `_axis_for_placement` / `establish_axis_from_speakers` /
+    #: `pair_spans` / `camera_side_of` 全是主构建同一批函数。
+    live_side = getattr(context, "axis_live_side", None)
+    spans = dict(getattr(context, "axis_spans", None) or {})
+    placed_axis = axis_for_shot(context, shot)
+    advanced = set(getattr(context, "axis_advanced_shots", None) or ())
+    first_axis_pass = str(shot.shot_id) not in advanced
+    if context.axis is None and len(shot.characters) >= 2:
+        speakers = [context.characters[cid] for cid in shot.characters[:2]
+                    if cid in context.characters]
+        if len(speakers) == 2:
+            context.axis = establish_axis_from_speakers(speakers,
+                                                       bundle.camera)
+            if live_side is None:
+                live_side = int(context.axis.established_side)
+    axis_pair: List[str] = []
+    axis_side_sign = 0
+    axis_status_value = ""
+    if context.axis is not None:
+        axis_pair = [str(context.axis.left_label),
+                     str(context.axis.right_label)]
+        camera_xy = (round(bundle.camera.matrix_world.translation.x, 4),
+                     round(bundle.camera.matrix_world.translation.y, 4))
+        axis_status_value = str(axis_status(context.axis, camera_xy))
+        if not spans:
+            spans = pair_spans(context.axis, plan,
+                               _initial_cast_positions(context))
+        span = spans.get(str(shot.shot_id))
+        if span is not None:
+            camera_position = bundle.camera.matrix_world.translation
+            before_side = camera_side_of(span[0], span[1], camera_position)
+            after_side = camera_side_of(span[2], span[3], camera_position)
+            axis_side_sign = int(before_side)
+            both_in_frame = len(
+                [cid for cid in (shot.characters or [])
+                 if str(cid) in (context.axis.left_label,
+                                 context.axis.right_label)]) >= 2
+            if (first_axis_pass and both_in_frame and before_side != 0
+                    and after_side != 0 and before_side != after_side):
+                current_side = (int(placed_axis.established_side)
+                                if placed_axis is not None
+                                else int(context.axis.established_side))
+                live_side = -current_side
+                warnings.append(
+                    f"{shot.shot_id}: 连线扫过机位 ⇒ 观众看得见这次换位，"
+                    f"从下一镜起改到第 {live_side:+d} 侧")
+    if first_axis_pass:
+        advanced.add(str(shot.shot_id))
+        context.axis_advanced_shots = advanced
+    context.axis_live_side = live_side
+    context.axis_spans = spans
+
     # v1.3 诉求 4：标签的公告板与屏幕字号是按镜头烘焙的，换了机位必须重烘，
     # 否则这一镜的标签会沿用旧机位的朝向与大小。
     from ..settings import get_config
@@ -184,9 +253,24 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
                 f"帧 {shown}）")
 
     log.info("重生成单镜 %s：%d-%d，%d 个关键帧", shot_id, start, end, keyframes)
-    return {"ok": True, "shot_id": shot_id, "start_frame": start,
-            "end_frame": end, "camera": bundle.camera.name,
-            "camera_position": [round(v, 4) for v in bundle.camera.location],
-            "lens": round(float(bundle.lens), 3),
-            "motions": len(requests), "keyframes": keyframes,
-            "protected": protected, "warnings": warnings}
+    #: 逐镜路径的 results 必须与整场构建（``ShotBuildResult.to_dict``）
+    #: **同构**——单一真源，不抄第二份精度/字段表。D1 曾在此手写 dict：
+    #: 机位 4 位、lens 3 位、缺 ``shot_type/camera_target/characters/
+    #: axis_*``，replay 探针按 4 位指纹对比整场与逐镜 results 即红
+    #: （2026-10-12 全链实测 -4.6607 vs -4.661）。这里直接复用 dataclass
+    #: 序列化；``ok/keyframes/protected`` 是驱动与 UI 消费的额外键，保留。
+    target = tuple(bundle.target.location) if bundle.target is not None \
+        else (0.0, 0.0, 0.0)
+    payload = ShotBuildResult(
+        shot_id=shot_id, shot_type=str(shot.shot_type),
+        start_frame=start, end_frame=end, camera=bundle.camera.name,
+        camera_position=tuple(bundle.camera.location),
+        camera_target=target, lens=float(bundle.lens),
+        characters=list(shot.characters), motions=len(requests),
+        warnings=warnings, axis_pair=axis_pair,
+        axis_side_sign=axis_side_sign, axis_status=axis_status_value
+    ).to_dict()
+    payload["ok"] = True
+    payload["keyframes"] = keyframes
+    payload["protected"] = protected
+    return payload

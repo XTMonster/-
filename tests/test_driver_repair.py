@@ -218,7 +218,7 @@ def test_repair_uses_the_repair_temperature():
     assert temperatures[Purpose.REPAIR] == 0.05
 
 
-def test_repeated_failure_degrades_instead_of_erroring():
+def test_repeated_failure_stays_in_the_same_shot_until_audit_passes():
     transport = RepairingTransport()
     failing = AuditResult.from_findings([axis_finding()], target="shot_001")
     auditor = FakeAuditor([failing] * 6)
@@ -226,9 +226,30 @@ def test_repeated_failure_degrades_instead_of_erroring():
                      limits=DriverLimits(max_repairs_per_shot=2))
     assert driver.run_to_completion() is DriverState.DONE
     repairs = [p for p in transport.payloads if p.purpose is Purpose.REPAIR]
-    assert len(repairs) == 2                  # 上限就是 2 次
+    assert len(repairs) == 6                  # 旧上限不再终止当前镜
     kinds = [e.kind for e in driver.audit.recent()]
-    assert "shot_degraded" in kinds
+    assert "shot_degraded" not in kinds
+    assert "shot_advanced" in kinds
+
+
+def test_unpassed_shot_is_not_terminal_after_more_than_legacy_repair_limit():
+    """超过旧 max_repairs_per_shot 后，失败镜仍不可终态化或推进。"""
+    transport = RepairingTransport()
+    failing = AuditResult.from_findings([axis_finding()], target="shot_001")
+    auditor = FakeAuditor([failing] * 5)
+    driver = _driver(transport, auditor,
+                     limits=DriverLimits(max_repairs_per_shot=2))
+
+    state = driver.run_to_completion()
+
+    assert state is DriverState.DONE
+    assert driver.snapshot()["terminal_shots"].get("shot_001") == "passed"
+    assert len([p for p in transport.payloads
+                if p.purpose is Purpose.REPAIR]) == 5
+    assert [event.kind for event in driver.audit.recent()].count(
+        "shot_advanced") == 1
+    assert "shot_degraded" not in [event.kind
+                                   for event in driver.audit.recent()]
 
 
 def test_repair_tool_calls_are_executed():

@@ -9,10 +9,12 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from ..cinema.spatial_digest import render_spatial_digest
 from ..contracts.audit import AuditResult
 from ..contracts.enums import Purpose, ToolChoice
 from ..contracts.messages import ChatPayload, Message, MessageRole, new_request_id
 from ..contracts.tools import CONTROL_TOOL_NAMES, SHOT_DRAFT_TOOL
+from ..contracts.vlm_review import VLM_REVIEW_SCHEMA_V2
 from .dialogue_budget import shot_dialogue_budget
 
 #: **时间轴类**规则：它们读的是计划里的动作表 / 台词表，能改这两张表的只有
@@ -277,6 +279,146 @@ R003 一直红到收尾。
 """
 
 
+def _vlm_correction_text(audit: AuditResult, shot_id: str) -> str:
+    """vlm-feedback 卡 V6：把 VLM v2 判词与几何告警合成纠正候选（提示侧）。
+
+    注入条件**全部**成立才返回非空文本：``vlm_review`` 是 dict、
+    ``status=="ok"``、``schema=="vlm-review/v2"``、``disposition.status``
+    不是 ``escalate_human``（无 disposition 键视为可注入）、合成出的候选
+    非空。任一条件不成立 ⇒ 返回空串（不注入、不改模板）。
+
+    注入文本 = ``render_candidates(candidates, shot_id_for_text, max_chars=300)``；
+    ``shot_id_for_text`` 依次取参数 ``shot_id``、记录里的 ``shot_id``、
+    ``audit.target``，三者都空 ⇒ 不注入。VLM 只作提示，永不进门。
+    """
+    record = getattr(audit, "vlm_review", None)
+    if not isinstance(record, dict):
+        return ""
+    if record.get("status") != "ok":
+        return ""
+    if record.get("schema") != VLM_REVIEW_SCHEMA_V2:
+        return ""
+    disposition = record.get("disposition")
+    if isinstance(disposition, dict) and \
+            disposition.get("status") == "escalate_human":
+        return ""
+    issues = record.get("issues")
+    if not isinstance(issues, list):
+        return ""                     # 形状残缺 ⇒ 条件不成立，逐字节不变
+    #: 延迟导入：correction_candidates 顶层 ``from .repair import
+    #: guard_warning_line``，模块级反向导入会成环。
+    from .correction_candidates import (build_correction_candidates,
+                                        render_candidates)
+    candidates = build_correction_candidates(
+        getattr(audit, "guard_warnings", None), issues)
+    if not candidates:
+        return ""
+    shot_id_for_text = str(shot_id or "")
+    if not shot_id_for_text:
+        shot_id_for_text = str(record.get("shot_id") or "")
+    if not shot_id_for_text:
+        shot_id_for_text = str(getattr(audit, "target", "") or "")
+    if not shot_id_for_text:
+        return ""
+    return render_candidates(candidates, shot_id_for_text, max_chars=300)
+
+
+def _framing_summary_lines(digest: Dict[str, Any]) -> List[str]:
+    """画面摘要行（卡 V12）：每个主体取 ``framing`` 里**首帧**数据一行。
+
+    形状 ``{subject}｜中心({x},{y})在{thirds_cell}｜占画高{h}｜
+    {动作安全区内/越出动作安全区}``；数值沿用 ``framing_digest`` 已折好的
+    3 位小数，不再四舍五入。坏形状的条目（非列表/非 dict）跳过，不崩。
+    """
+    subjects = (digest.get("framing") or {}).get("subjects") or {}
+    if not isinstance(subjects, dict):
+        return []
+    lines: List[str] = []
+    for subject in sorted(subjects, key=str):
+        records = subjects[subject]
+        if not isinstance(records, list) or not records:
+            continue
+        first = records[0]
+        if not isinstance(first, dict):
+            continue
+        center = first.get("center")
+        if not isinstance(center, (list, tuple)) or len(center) != 2:
+            continue
+        in_safe = "动作安全区内" if bool(first.get("in_action_safe")) \
+            else "越出动作安全区"
+        lines.append(
+            f"{subject}｜中心({center[0]},{center[1]})在"
+            f"{first.get('thirds', '')}｜占画高"
+            f"{first.get('screen_height_ratio', '')}｜{in_safe}")
+    return lines
+
+
+def build_vlm_guard_summary(warning_text: str,
+                            scene_digest: Optional[Dict[str, Any]],
+                            *, max_chars: int = 1800) -> str:
+    """拼 VLM 评审的 ``guard_summary``（卡 V12）：告警行 → 画面行 → 空间行。
+
+    - ``scene_digest`` 为空 ⇒ 原样返回 ``warning_text``（与卡 V3 改动前
+      逐字节一致，评审提示零形状差）；
+    - 非空 ⇒ 按上述顺序追加，总长 ≤ ``max_chars``：**整行追加**，放不下的
+      那一行起整行舍弃（绝不截半行）；空间段用
+      :func:`render_spatial_digest`（上限 1200 字，同一条渲染文本）。
+    """
+    if not isinstance(scene_digest, dict) or not scene_digest:
+        return str(warning_text or "")
+    if max_chars <= 0:
+        return ""
+    lines: List[str] = []
+
+    def fits(line: str) -> bool:
+        current = len("\n".join(lines)) if lines else 0
+        cost = len(line) + (1 if lines else 0)
+        return current + cost <= max_chars
+
+    for line in str(warning_text or "").splitlines():
+        if not fits(line):
+            break
+        lines.append(line)
+    for line in _framing_summary_lines(scene_digest):
+        if not fits(line):
+            break
+        lines.append(line)
+    spatial = scene_digest.get("spatial")
+    if isinstance(spatial, dict):
+        rendered = render_spatial_digest(spatial, max_chars=1200)
+        for line in rendered.splitlines():
+            if not fits(line):
+                break
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def scene_digest_repair_text(audit: AuditResult, shot_id: str, *,
+                             max_chars: int = 1200) -> str:
+    """修复提示里的几何测量事实段（卡 V12）。
+
+    ``audit.scene_digest`` 非空 ⇒
+    ``【几何测量事实｜镜 {shot_id}】`` + :func:`render_spatial_digest`（上限
+    ``max_chars``，与评审提示同一份渲染文本）；shot_id 参数为空时回退
+    ``audit.target``。摘要缺失/空间段渲染为空 ⇒ 返回空串（不追加）。
+    """
+    digest = getattr(audit, "scene_digest", None)
+    if not isinstance(digest, dict) or not digest:
+        return ""
+    shot = str(shot_id or "")
+    if not shot:
+        shot = str(getattr(audit, "target", "") or "")
+    if not shot:
+        return ""
+    spatial = digest.get("spatial")
+    if not isinstance(spatial, dict):
+        return ""
+    rendered = render_spatial_digest(spatial, max_chars=max_chars)
+    if not rendered:
+        return ""
+    return f"【几何测量事实｜镜 {shot}】\n{rendered}"
+
+
 def build_repair_payload(audit: AuditResult, registry, *,
                          scene_state: str = "", temperature: float = 0.2,
                          shot=None,
@@ -338,6 +480,14 @@ def build_repair_payload(audit: AuditResult, registry, *,
         action_params=render_action_params(),
         movement_units=render_movement_units(),
         closed_sets=render_closed_sets())
+    #: vlm-feedback 卡 V6/V12：纠偏建议与几何测量事实只作提示追加；任一
+    #: 注入条件不成立时与改动前逐字节相同（d1 合入保留）。
+    correction_text = _vlm_correction_text(audit, shot_id)
+    if correction_text:
+        system_text += "\n\n" + correction_text
+    digest_text = scene_digest_repair_text(audit, shot_id)
+    if digest_text:
+        system_text += "\n\n" + digest_text
     tools = (registry.schemas_only(SHOT_DRAFT_TOOL, *CONTROL_TOOL_NAMES)
              if narrow else registry.schemas_except("emit_plan"))
     return ChatPayload(

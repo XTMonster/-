@@ -36,6 +36,7 @@ from ..cinema.axis import (
     update_order,
 )
 from ..cinema.framing import SHOT_FRAME, required_distance
+from ..cinema.spatial_digest import COLLISION_MARGIN
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
 from ..contracts.audit import AuditError, AuditResult, SkippedFinding
 from ..contracts.enums import Severity
@@ -49,7 +50,6 @@ log = get_logger("rules")
 GROUND_EPS = 0.02
 DISTANCE_TOLERANCE = 0.25
 FRAME_MARGIN = 0.05
-COLLISION_MARGIN = 0.2
 OBSTACLE_PREFIXES = ("BD_Wall_", "BD_Prop_")
 
 #: v1.7 F1：被关闭的规则号（模块级注入——不 import 插件侧 settings 单例，

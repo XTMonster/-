@@ -38,8 +38,9 @@ def main() -> int:
     import block_director
     block_director.register()
 
-    from block_director.contracts.cast import SceneSpec
-    from block_director.layer3_engine.shot_builder import build_scene
+    #: D1 逐镜路径：原跑走 prepare_scene → 每镜 rebuild_shot，重放必须
+    #: 镜像同一条构建序列（replay() 按 scene_prepared 事件自动选逐镜分支）。
+    from block_director.layer3_engine.shot_builder import BpySceneBuilder
     from block_director.layer3_engine.tool_bindings import register_all_scene_tools
     from block_director.layer5_orchestrator.driver import default_registry
     from block_director.layer9_persistence import ReplayError, replay
@@ -48,12 +49,9 @@ def main() -> int:
     register_all_scene_tools(registry)
     project_dir = Path(args.project)
 
-    def build(plan, spec, brief=None):
-        return build_scene(plan, spec or SceneSpec.from_plan(plan, brief=brief),
-                           clear_scene=True).to_dict()
-
     try:
-        report = replay(project_dir, registry, builder=build)
+        report = replay(project_dir, registry,
+                        builder=BpySceneBuilder(clear_scene=True))
     except ReplayError as exc:
         _emit({"ok": False, "reason": f"{type(exc).__name__}: {exc}"})
         return 1

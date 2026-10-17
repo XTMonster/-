@@ -397,6 +397,9 @@ assistant-panel/sprite/ruler-probe）、pytest 4101 passed / 2 skipped、
 wrong_value 2），但**执行它要换 oracle 一代**（22 条逐条试过都会让门⑩ 判红），
 所以记录里 `apply: false`（见 `docs/knowledge/ACCEPTANCE_STATUS.md` §五）。
 环境：C 盘可用约 **26.8 GB**（README 的 2.7 GB 已过期）。
+**2026-10-18 D1 合入注记**：D1 决策树投影已由提交 `a32366b`（codex/vlm-feedback）
+cherry-pick 合入 main（合入 commit 见 `v1.7/PROGRESS.md`）；vlm 侧 2026-10-12
+台账降为历史，证据 `docs/evidence/20261012-220336/` 与 `E:\bd_vlm_v2` 存档。
 
 **2026-10-05 06:3x 的账（历史，只作存档）：门①–⑩ 全 pass；Q0–Q4、Q6a/Q6b/Q7、
 Q4_pre、E3、E3_cases 全 pass；**Q5 pass**（**最近一次真跑 long21**：计划采纳率

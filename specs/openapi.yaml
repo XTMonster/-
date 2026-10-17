@@ -1061,3 +1061,49 @@ components:
         accepted: { type: boolean }
         note: { type: string }
         run_id: { type: string }
+    #: D1 决策树投影 / 方案B 逐镜预演 / 数值层 的审计事件（wire 形状）。
+    #: kind 枚举与 block_director/contracts/audit.py::V16_EVENT_FIELDS 的键
+    #: 一致；事件字段集在 contracts/audit.py 单一真源，wire 协议只声明载荷
+    #: 容器，不逐字段复制（防第二份真源漂移）。
+    V16EventRecord:
+      type: object
+      required: [kind, data]
+      properties:
+        kind:
+          type: string
+          enum:
+            - guard_warning
+            - guard_verdict
+            - retry_ladder
+            - rhythm_reading
+            - label_overlap_report
+            - resume_checkpoint
+            - resume_checkpoint_failed
+            - wall_clock_exhausted
+            - run_resumed
+            - shot_resumed_skipped
+            - vlm_capability
+            - vlm_review_round
+            - react_projected
+            - repair_projected
+            - draft_projected
+            - projection_error
+            - plan_adjusted
+            - scene_prepared
+            - shot_iteration
+            - shot_advanced
+            - opt_candidate
+            - opt_result
+            - opt_rejected
+            - shot_version_saved
+            - shot_version_restored
+            - shot_version_restore_failed
+            - adversarial_review
+          description: 审计事件名，与 contracts/audit.py::V16_EVENT_FIELDS 的键一致
+        message:
+          type: [string, "null"]
+          description: 人类可读说明（审计日志 message 字段）
+        data:
+          type: object
+          additionalProperties: true
+          description: 事件载荷；生产端必须携带 V16_EVENT_FIELDS[kind] 列出的全部键

@@ -35,6 +35,7 @@ from block_director.contracts.operations import (
     RetrieveResponse,
 )
 from block_director.contracts.ui_events import UIEvent
+from block_director.contracts.audit import V16_EVENT_FIELDS
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "specs" / "openapi.yaml"
@@ -99,6 +100,20 @@ def test_spec_declares_all_endpoints(spec):
 
 def test_spec_uses_openapi_31(spec):
     assert spec["openapi"].startswith("3.1")
+
+
+def test_v16_event_kinds_are_declared_in_openapi(spec):
+    """D1：V16_EVENT_FIELDS 每个事件名都要在 openapi kind 枚举里。
+
+    登记顺序纪律：先 V16_EVENT_FIELDS → 再 specs/openapi.yaml → 再测试。
+    该测试钉住"事件名不漂移"；事件字段集仍是 contracts/audit.py 单一真源，
+    openapi 不逐字段复制（防第二份真源）。
+    """
+    event_schema = spec["components"]["schemas"].get("V16EventRecord")
+    assert event_schema is not None, "openapi 缺少 V16EventRecord schema"
+    kinds = set(event_schema["properties"]["kind"]["enum"])
+    missing = set(V16_EVENT_FIELDS) - kinds
+    assert not missing, f"openapi kind 枚举缺事件: {sorted(missing)}"
     assert spec["info"]["version"] == "1.3.0"
 
 

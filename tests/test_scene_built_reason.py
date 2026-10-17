@@ -88,9 +88,10 @@ def test_rollback_rebuild_records_reason_rollback_rebuild(tmp_path):
     records = [json.loads(line) for line in
                audit.audit_path.read_text(encoding="utf-8").splitlines()]
     built = [r for r in records if r["kind"] == "scene_built"]
-    assert len(built) == 2, "回滚重建 → 两条 scene_built"
+    assert len(built) >= 2, "回滚重建 → 至少两条 scene_built"
     assert built[0]["data"]["reason"] == "initial"
-    assert built[1]["data"]["reason"] == "rollback_rebuild"
+    assert any(item["data"]["reason"] == "rollback_rebuild"
+               for item in built[1:])
     kinds = [r["kind"] for r in records]
     assert "repair_rolled_back" in kinds
 

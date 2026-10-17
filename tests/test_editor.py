@@ -18,6 +18,7 @@ from block_director.layer5_orchestrator.editor import (
     find_draft_call,
     merge_draft,
 )
+from block_director.layer5_orchestrator.decision_tree import build_tree
 from block_director.layer5_orchestrator.tool_schema import validate_args
 
 
@@ -33,6 +34,18 @@ def plan() -> Plan:
              "shot_type": "MCU", "duration_frames": 96,
              "characters": ["char_001"]},
         ]})
+
+
+def _tree_for(shot_id: str = "shot_001") -> object:
+    shot = next(item for item in plan().shots if item.shot_id == shot_id)
+    return build_tree(shot, plan())
+
+
+def _reply(payload: dict) -> ChatReply:
+    return ChatReply(tool_calls=[ToolCall(
+        id="draft_1",
+        function=FunctionCall(name=EDITOR_TOOL_NAME,
+                              arguments=json.dumps(payload, ensure_ascii=False)))])
 
 
 def draft(**overrides) -> dict:
@@ -64,6 +77,51 @@ def test_editor_payload_carries_everything_the_prompt_needs():
                      "char_001", "chair", "林可坐下。", "相对描述"):
         assert fragment in system, fragment
     assert "不要给坐标" in system
+
+
+def test_extract_draft_projects_camera_side_when_tree_given():
+    """阶段 3：camera.side='side' 经决策树投影成合法侧别并留审计。"""
+    payload = draft()
+    payload["camera"] = {"side": "side", "lens": 35}
+    result = extract_draft(_reply(payload), "shot_001",
+                           tree=_tree_for("shot_001"))
+    assert result.camera["side"] in ("left", "right", "front",
+                                     "front_left", "front_right")
+    assert result.projection_records
+    assert all(item["shot_id"] == "shot_001" for item in result.projection_records)
+    assert any(item["node_key"] == "camera.side"
+               and item["verdict"] == "projected"
+               for item in result.projection_records)
+
+
+def test_extract_draft_normalizes_look_at_dual_write_when_tree_given():
+    """阶段 3：look_at 双写 target+yaw_deg 经树互斥归一，角度键被丢弃。"""
+    payload = draft()
+    payload["actions"] = [{"character_id": "char_001",
+                           "action_type": "look_at",
+                           "start_frame": 1, "end_frame": 40,
+                           "params": {"target": "char_002",
+                                      "yaw_deg": 10, "pitch_deg": 0}}]
+    result = extract_draft(_reply(payload), "shot_001",
+                           tree=_tree_for("shot_001"))
+    action = result.actions[0]
+    assert action["params"].get("target") == "char_002"
+    assert "yaw_deg" not in action["params"]
+    assert "pitch_deg" not in action["params"]
+    assert any(item["node_key"] == "action.look_at.dual_write"
+               and item["verdict"] == "projected"
+               for item in result.projection_records)
+
+
+def test_extract_draft_rejects_action_type_outside_closed_set():
+    """阶段 3：finger_snap 不在动作闭集 → 树 REJECTED，解析仍按原路径拒绝。"""
+    payload = draft()
+    payload["actions"] = [{"character_id": "char_001",
+                           "action_type": "finger_snap",
+                           "start_frame": 1, "end_frame": 40}]
+    with pytest.raises(ValueError):
+        extract_draft(_reply(payload), "shot_001",
+                      tree=_tree_for("shot_001"))
 
 
 def test_editor_payload_uses_the_retriever_when_given():

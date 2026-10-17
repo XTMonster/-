@@ -367,6 +367,27 @@ def validate_justifications(items: Sequence[Any]) -> List[str]:
     return problems
 
 
+def front_occlusion_declared_from_justifications(
+        items: Sequence[Any]) -> bool:
+    """这一镜是否**声明了刻意前景遮挡**（guard ``occlusion`` 告警的语义通道）。
+
+    guard 的提示是"主体被挡：若是刻意前景遮挡请在计划里声明"——声明通道就是
+    ``rule_justifications`` 里一条 ``rule="occlusion"`` 的条目（``rule`` 与
+    告警类型同词，见 ``contracts/guard.py::WARNING_TYPES``）；``action`` 是
+    ``follow``/``break`` 都算声明（"遵守遮挡规则"与"刻意破例"都是本镜的设计
+    意图，判警告与否只看"有没有声明"，不看措辞）。纯函数，不 import bpy。
+
+    历史缺口（vlm 分支 af448dd 之前）：``DeclaredShot.front_occlusion_declared``
+    从未从计划接线，恒为 False——提示词让模型声明、代码却没有读取端。
+    """
+    for item in items or []:
+        data = (item.to_dict() if isinstance(item, RuleJustification)
+                else dict(item or {}))
+        if _text(data.get("rule")) == "occlusion":
+            return True
+    return False
+
+
 def reconcile_justifications(justifications: Sequence[Any],
                              detected_rules: Sequence[str]) -> Dict[str, Any]:
     """把**声明**的破例辩护与**实测**的违规对拍（TDD §5.4 / 卡 P4-T4）。
@@ -432,4 +453,5 @@ __all__ = [
     "ENTRANCE_ACTIONS", "PROP_ACTIONS",
     "validate_beats", "validate_light_spec", "validate_composition_spec",
     "validate_justifications", "reconcile_justifications",
+    "front_occlusion_declared_from_justifications",
 ]

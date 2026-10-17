@@ -29,6 +29,15 @@ class SceneContext:
     spec: Optional[SceneSpec] = None      # §13.1 的角色管理要写回这里
     current_shot_id: str = ""
     axis: Optional[Axis] = None
+    #: 方案 B（§3.6.5）：逐镜预演时跨镜累积的轴状态机。``build_scene`` 的
+    #: 第二趟用局部变量，逐镜 ``rebuild_shot`` 必须把同一状态持久化在这里，
+    #: 否则修 shot_N 会把 shot_N+1 的轴侧推乱。
+    axis_live_side: Optional[int] = None
+    axis_spans: Dict[str, Any] = field(default_factory=dict)
+    #: 方案 B：扫线翻转（live_side 更新）只在该镜**第一次**预演时发生；
+    #: 同一镜的修复/回滚重建沿用已记录的侧别，不再重复翻转（迭代是增量
+    #: 调整，不是重跑全片状态机）。
+    axis_advanced_shots: set = field(default_factory=set)
     notes: List[str] = field(default_factory=list)
 
     def character(self, character_id: str):

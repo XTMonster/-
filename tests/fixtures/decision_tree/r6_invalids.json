@@ -1,0 +1,121 @@
+{
+  "run_id": "12dadce87acc",
+  "source": "C:\\Users\\小皮\\Documents\\BlockDirector Projects\\runs\\audit_log.jsonl",
+  "counts": {
+    "tree": 12,
+    "draft": 2,
+    "react": 5,
+    "repair": 5,
+    "no_tool": 9,
+    "self_review": 1
+  },
+  "tree_entries": [
+    {
+      "kind": "draft_invalid",
+      "semantic": "action_type out of closed set",
+      "message": "shot_005: action_type='finger_snap' 不在动作类型闭集内（合法取值：walk_to、run_to、enter_from、exit_frame、turn_body、jump、body_tilt、fall_down、sit、stand、place_prop、pick_up、hand_to、turn_head、look_at、nod、shake_head）",
+      "shot_id": "shot_005"
+    },
+    {
+      "kind": "draft_invalid",
+      "semantic": "look_at dual write target+angles",
+      "message": "shot_012: look_at 不能同时写 target 与 yaw_deg/pitch_deg（无隐式优先级）：target 由编译层按角色位置折算成角度",
+      "shot_id": "shot_012"
+    },
+    {
+      "kind": "react_invalid",
+      "semantic": "enter_from forbidden target_position",
+      "message": "emit_shot_draft: <tool_observation>参数校验失败: args.actions[0]（action_type=enter_from） 不允许出现字段 target_position。请修正后重试。</tool_observation>"
+    },
+    {
+      "kind": "react_invalid",
+      "semantic": "camera.side free text",
+      "message": "emit_shot_draft: <tool_observation>参数校验失败: args.camera.side 取值必须是 ['front', 'back', 'left', 'right', 'front_left', 'front_right', 'back_left', 'back_right', 'over_shoulder'] 之一，实际 'front-right, same 180° side as shot_004'。请修正后重试。</tool_observation>"
+    },
+    {
+      "kind": "react_invalid",
+      "semantic": "camera.side free text",
+      "message": "emit_shot_draft: <tool_observation>参数校验失败: args.camera.side 取值必须是 ['front', 'back', 'left', 'right', 'front_left', 'front_right', 'back_left', 'back_right', 'over_shoulder'] 之一，实际 '伊恩同侧（延续 shot_008 轴侧，不越轴）'。请修正后重试。</tool_observation>"
+    },
+    {
+      "kind": "react_invalid",
+      "semantic": "look_at dual write target+angles",
+      "message": "look_at 不能同时写 target 与 yaw_deg/pitch_deg（无隐式优先级）：target 由编译层按角色位置折算成角度"
+    },
+    {
+      "kind": "react_invalid",
+      "semantic": "look_at dual write target+angles",
+      "message": "look_at 不能同时写 target 与 yaw_deg/pitch_deg（无隐式优先级）：target 由编译层按角色位置折算成角度"
+    },
+    {
+      "kind": "repair_invalid",
+      "semantic": "camera.side='side'",
+      "message": "emit_shot_draft: <tool_observation>参数校验失败: args.camera.side 取值必须是 ['front', 'back', 'left', 'right', 'front_left', 'front_right', 'back_left', 'back_right', 'over_shoulder'] 之一，实际 'side'。请修正后重试。</tool_observation>"
+    },
+    {
+      "kind": "repair_invalid",
+      "semantic": "look_at dual write target+angles",
+      "message": "look_at 不能同时写 target 与 yaw_deg/pitch_deg（无隐式优先级）：target 由编译层按角色位置折算成角度"
+    },
+    {
+      "kind": "repair_invalid",
+      "semantic": "look_at dual write target+angles",
+      "message": "look_at 不能同时写 target 与 yaw_deg/pitch_deg（无隐式优先级）：target 由编译层按角色位置折算成角度"
+    },
+    {
+      "kind": "repair_invalid",
+      "semantic": "look_at dual write target+angles",
+      "message": "look_at 不能同时写 target 与 yaw_deg/pitch_deg（无隐式优先级）：target 由编译层按角色位置折算成角度"
+    },
+    {
+      "kind": "repair_invalid",
+      "semantic": "look_at dual write target+angles",
+      "message": "look_at 不能同时写 target 与 yaw_deg/pitch_deg（无隐式优先级）：target 由编译层按角色位置折算成角度"
+    }
+  ],
+  "no_tool_entries": [
+    {
+      "kind": "react_invalid",
+      "message": "回复中没有工具调用"
+    },
+    {
+      "kind": "react_invalid",
+      "message": "回复中没有工具调用"
+    },
+    {
+      "kind": "react_invalid",
+      "message": "回复中没有工具调用"
+    },
+    {
+      "kind": "react_invalid",
+      "message": "回复中没有工具调用"
+    },
+    {
+      "kind": "react_invalid",
+      "message": "回复中没有工具调用"
+    },
+    {
+      "kind": "react_invalid",
+      "message": "回复中没有工具调用"
+    },
+    {
+      "kind": "react_invalid",
+      "message": "回复中没有工具调用"
+    },
+    {
+      "kind": "repair_invalid",
+      "message": "回复中没有工具调用"
+    },
+    {
+      "kind": "repair_invalid",
+      "message": "回复中没有工具调用"
+    }
+  ],
+  "self_review_entries": [
+    {
+      "kind": "self_review_invalid",
+      "message": "submit_review 参数不是合法 JSON: 参数不是合法 JSON: Expecting ',' delimiter: line 1 column 236 (char 235)",
+      "shot_id": "shot_007"
+    }
+  ]
+}

@@ -16,6 +16,8 @@ class DriverState(StrEnum):
     EXECUTING_TOOL = "EXECUTING_TOOL"  # 执行 LLM 请求的工具调用
     BUILDING = "BUILDING"            # 把分镜计划落成场景（§7.1 阶段 B2）
     EDITING = "EDITING"              # 阶段 B1：逐镜结构化生成（§7.1）
+    PREPARE_SCENE = "PREPARE_SCENE"  # 方案 B：只建场景与元素（§3.6.3）
+    PER_SHOT = "PER_SHOT"            # 方案 B：逐镜预演循环（§3.6.3）
     AWAIT_HUMAN = "AWAIT_HUMAN"      # 等待人工审批（§11.1 Level 3，非阻塞）
     REVIEWING = "REVIEWING"          # Level 2 自我审核（§11.1，独立回合）
     CHECKING = "CHECKING"            # 规则/构图校验（Phase 5）

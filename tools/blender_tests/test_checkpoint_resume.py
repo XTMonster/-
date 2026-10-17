@@ -251,14 +251,24 @@ def t_kill_after_shot_003_then_resume():
         human_gate=AutoGate(), limits=DriverLimits(),
         resume_state=saved, resume_state_path=resume_path)
 
-    # resume：先重建场景，再在 CHECKING 审到 shot_004 之前把它拆坏——
-    # 这样"resume 后 LLM 只花在 shot_004+"不是空集断言。
+    # resume：D1 方案 B 下逐镜路径是 PREPARE_SCENE → PER_SHOT（该镜
+    # rebuild 与审核在同一 step 内完成），不再经过 CHECKING——旧的
+    # "state is CHECKING 时拆坏"钩子永远不触发。把"拆坏 shot_004"的
+    # 时机挂到与旧语义等价的接缝：audit 即将审 shot_004 的前一刻（包一层
+    # auditor.audit，只触发一次）。断言一字未动：resume 后 LLM 只花在
+    # shot_004+，且定向修复仍会命中。
     tampered = False
-    while driver_b.step():
-        if driver_b.build_summary and not tampered \
-                and driver_b.state is DriverState.CHECKING:
+    original_audit = driver_b.auditor.audit
+
+    def tampering_audit(shot_id):
+        nonlocal tampered
+        if str(shot_id) == "shot_004" and not tampered:
             _break_axis("shot_004")
             tampered = True
+        return original_audit(shot_id)
+
+    driver_b.auditor.audit = tampering_audit
+    while driver_b.step():
         if driver_b.state in (DriverState.DONE, DriverState.ERROR,
                               DriverState.CANCELLED):
             break

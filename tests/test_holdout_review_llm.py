@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import datetime
 import pathlib
 import sys
 
@@ -161,8 +162,26 @@ def _run(tmp_path, entries, *, resume: bool, counter, monkeypatch):
     return out
 
 
+def _freeze_clock(monkeypatch) -> None:
+    """把 `ran_at`/`generated_at` 钉到固定时刻，让跨次运行的字节对拍确定。
+
+    这两条时间戳是运行元数据，真实墙钟会让"同一批条目、同一批判决"的两趟
+    运行在秒边界上字节不等——判据量的是并发/续跑不改变判决与顺序，
+    不是运行发生在哪一秒。冻结时钟只移除环境噪声，断言本身一字未动。
+    """
+
+    class _Frozen(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            base = datetime.datetime(2026, 10, 12, 12, 0, 0)
+            return base if tz is None else base.replace(tzinfo=tz)
+
+    monkeypatch.setattr(panel.datetime, "datetime", _Frozen)
+
+
 def test_a_second_run_with_resume_re_judges_nothing(tmp_path, monkeypatch):
     """`--resume` 之后**一次模型调用都不该发生**，产物必须与第一趟一致。"""
+    _freeze_clock(monkeypatch)
     entries = _write(tmp_path, [_entry("hq_0001", "axis_180", forbid=True),
                                _entry("hq_0002", "axis_180", forbid=True)])
     counter = {"n": 0}
@@ -207,6 +226,7 @@ def test_concurrency_does_not_change_the_result(tmp_path, monkeypatch):
     `--out` 的逐行顺序就会随网络抖动变化，链上的对拍与 `--resume` 都会漂。
     判据：同一批条目、同一批桩判决，串行与 6 并发的 `--out` **逐字节相同**。
     """
+    _freeze_clock(monkeypatch)
     rows = [_entry(f"hq_{index:04d}", "axis_180", forbid=True)
             for index in range(1, 13)]
     entries = _write(tmp_path, rows)

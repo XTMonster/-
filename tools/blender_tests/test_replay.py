@@ -20,12 +20,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bpy  # noqa: E402
 
 from _fixtures import two_shot_plan  # noqa: E402
-from block_director.contracts.cast import SceneSpec  # noqa: E402
 from block_director.knowledge import default_retriever  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.layer3_engine.shot_builder import (  # noqa: E402
     BpySceneBuilder,
-    build_scene,
 )
 from block_director.layer3_engine.scene_context import get_context  # noqa: E402
 from block_director.layer3_engine.tool_bindings import register_all_scene_tools  # noqa: E402
@@ -93,11 +91,13 @@ def run_once(tmp_dir):
 def _rebuild_with_replay(tmp_dir, registry):
     fresh_scene()
 
-    def build(plan, spec, brief=None):
-        return build_scene(plan, spec or SceneSpec.from_plan(plan, brief=brief),
-                           clear_scene=True).to_dict()
+    #: D1 逐镜路径：原跑（run_once）走 prepare_scene → 每镜 rebuild_shot，
+    #: 重放必须镜像同一条构建序列，否则机位差在 4 位小数（回归
+    #: replay_rebuilds_the_same_timeline）。BpySceneBuilder 同时具备
+    #: prepare_scene/rebuild_shot，replay() 按 scene_prepared 事件自动走逐镜。
+    from block_director.layer3_engine.shot_builder import BpySceneBuilder
 
-    return replay(tmp_dir, registry, builder=build)
+    return replay(tmp_dir, registry, builder=BpySceneBuilder(clear_scene=True))
 
 
 def _fingerprint(summary):

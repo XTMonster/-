@@ -146,3 +146,113 @@ def test_render_report_carries_the_thirds_deviation_for_the_judge():
     assert "米迦尔" in text
     assert "中心九宫格偏差" in text
     assert "头：顶点 3/4" in text
+
+
+def test_occlusion_oracle_marks_blocked_faces_and_render_reports_it():
+    profile = DEFAULT_PROFILE
+    vertices, faces = [], []
+    _box(vertices, faces, (-0.2, 0.2), (-0.2, 0.2),
+         profile.torso_top_z + 0.01, profile.head_top_z - 0.05)  # 头
+    camera = {
+        "position": (0.0, 3.0, 1.4),
+        "forward": MV._normalize((0.0, -2.1, -0.3)),
+        "up": (0.0, 0.0, 1.0),
+        "vfov_deg": 60.0,
+        "aspect": 16.0 / 9.0,
+        "near": 0.5,
+        "far": 20.0,
+    }
+    # oracle：让“头”这一组里**完整在锥内**的那一面被前景挡住
+    blocked = {tuple(face) for face in faces
+               if sum(vertices[i][2] for i in face) / len(face) > 0.15}
+
+    def visible_at(point):
+        centroid_key = (round(point[0], 6), round(point[1], 6),
+                        round(point[2], 6))
+        return all(
+            tuple(round(sum(vertices[i][axis] for i in face) / len(face), 6)
+                  for axis in range(3)) != centroid_key
+            for face in blocked)
+
+    report = MV.mesh_visibility_report(vertices=vertices, faces=faces,
+                                       profile=profile,
+                                       visible_at=visible_at, **camera)
+    assert report["occluded_area_fraction"] > 0.0
+    head = report["parts"]["头"]
+    assert head["occluded_area_fraction"] > 0.0
+    text = MV.render_report(report, subject="米迦尔",
+                            occlusion_declared=False)
+    assert "被遮挡面积比" in text
+    assert "未声明前景遮挡" in text
+
+
+def test_occluder_at_attributes_blocked_area_by_class():
+    profile = DEFAULT_PROFILE
+    vertices, faces = [], []
+    _box(vertices, faces, (-0.2, 0.2), (-0.2, 0.2),
+         profile.torso_top_z + 0.01, profile.head_top_z - 0.05)  # 头
+    camera = {
+        "position": (0.0, 3.0, 1.4),
+        "forward": MV._normalize((0.0, -2.1, -0.3)),
+        "up": (0.0, 0.0, 1.0),
+        "vfov_deg": 60.0,
+        "aspect": 16.0 / 9.0,
+        "near": 0.5,
+        "far": 20.0,
+    }
+    # 面重心 z>0.15 的算"环境"挡住；其余可见。两个类别各有若干面。
+    def occluder_at(point):
+        if point[2] > 0.15:
+            return "环境"
+        return None
+
+    report = MV.mesh_visibility_report(
+        vertices=vertices, faces=faces, profile=profile,
+        occluder_at=occluder_at, **camera)
+    classes = report["occlusion_by_class"]
+    assert set(classes) == {"环境"}
+    assert classes["环境"] == pytest.approx(
+        report["occluded_area_fraction"], abs=1e-6)
+    head = report["parts"]["头"]
+    assert head["occlusion_by_class"]["环境"] == pytest.approx(
+        head["occluded_area_fraction"], abs=1e-6)
+    text = MV.render_report(report, subject="米迦尔",
+                            occlusion_declared=False)
+    assert "遮挡来源（占主体总面积比）：环境" in text
+    assert "未声明前景遮挡" in text
+
+
+def test_occluder_at_precedes_visible_at_and_none_is_visible():
+    profile = DEFAULT_PROFILE
+    vertices, faces = [], []
+    _box(vertices, faces, (-0.2, 0.2), (-0.2, 0.2),
+         profile.torso_top_z + 0.01, profile.head_top_z - 0.05)
+    camera = {
+        "position": (0.0, 3.0, 1.4),
+        "forward": MV._normalize((0.0, -2.1, -0.3)),
+        "up": (0.0, 0.0, 1.0),
+        "vfov_deg": 60.0,
+        "aspect": 16.0 / 9.0,
+        "near": 0.5,
+        "far": 20.0,
+    }
+    # visible_at 说全挡；occluder_at 说全可见 ⇒ occluder_at 优先。
+    report = MV.mesh_visibility_report(
+        vertices=vertices, faces=faces, profile=profile,
+        visible_at=lambda point: False,
+        occluder_at=lambda point: None, **camera)
+    assert report["occluded_area_fraction"] == 0.0
+    assert report["occlusion_by_class"] == {}
+
+
+def test_occluder_classes_are_a_closed_vocabulary():
+    assert MV.OCCLUDER_CLASSES == (
+        "角色", "群众", "道具", "特效", "环境", "未知遮挡物")
+    report = {
+        "vertices_visible": 1, "vertices_total": 1,
+        "visible_area_fraction": 1.0,
+        "occluded_area_fraction": 0.0, "occlusion_by_class": {},
+        "parts": {},
+    }
+    assert "遮挡来源" not in MV.render_report(
+        report, subject="米迦尔", occlusion_declared=True)

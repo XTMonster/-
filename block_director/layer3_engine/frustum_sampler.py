@@ -11,6 +11,12 @@
 * 采样失败一律抛 :class:`SamplingError`（携带 ``E_GUARD_001``），
   **绝不静默吞掉**。
 
+可见比例之外还累计**外来遮挡物的类别归因**：每条射线首交的"非基建、非本
+主体"对象沿父链折成语义类别（角色/群众/道具/特效/环境/未知遮挡物，可带 id），
+按帧写进 ``FrameSample.occlusion_by_class``（占 N=9 采样点的比例）。纯层
+``compare_with_intent`` 的 occlusion 告警把同一镜头帧段的归因合并进
+``GuardWarning.evidence``，让"主体被挡"不再是匿名读数。
+
 实现要点（TDD §4.2 / 卡 B3 钉死）：
 
 * 投影**只用** ``bpy_extras.object_utils.world_to_camera_view``
@@ -44,7 +50,7 @@
 from __future__ import annotations
 
 import math
-from typing import Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
@@ -52,6 +58,12 @@ from mathutils import Vector
 
 from ..cinema.composition import SubjectBox
 from ..cinema.frustum_metrics import FrameSample
+from ..cinema.spatial_digest import (
+    SpatialCamera,
+    SpatialElement,
+    SpatialFrame,
+    aabb_gap,
+)
 from ..contracts.enums import ErrorCode
 from ..settings import get_config
 from ..utils.blender_compat import action_fcurves
@@ -62,8 +74,10 @@ from .cinema_engine.composition_guide import (
     _belongs_to,
     _in_guides,
     _world_bounds,
+    occluder_class,
 )
-from .rule_checker import screen_facing_for
+from .character_system.character_factory import get_facing
+from .rule_checker import OBSTACLE_PREFIXES, screen_facing_for
 from .scene_context import get_context
 
 log = get_logger("frustum-sampler")
@@ -129,6 +143,48 @@ def _sample_frames(start: int, end: int, step: int,
     frames.update(int(frame) for frame in keyframes
                   if start <= int(frame) <= end)
     return sorted(frames)
+
+
+def _require_perspective(shot_id: str, camera) -> None:
+    """卡 V11：相机类型不是 ``PERSP`` 就直接抛 :class:`SamplingError`。"""
+    camera_type = str(getattr(getattr(camera, "data", None), "type", "")
+                      or "")
+    if camera_type != "PERSP":
+        raise SamplingError(
+            f"镜头 {shot_id} 相机 {getattr(camera, 'name', '?')} 类型为 "
+            f"{camera_type or '（无）'}，不是 PERSP，无法做透视投影")
+
+
+def _pair_collisions(bounds_map: Dict[str, Tuple[Vector, Vector]]
+                     ) -> List[Dict[str, Any]]:
+    """本帧角色×角色 AABB 间隙（``{pair, gap}``，浮点 3 位）。"""
+    pairs: List[Dict[str, Any]] = []
+    ids = sorted(bounds_map)
+    for first in range(len(ids)):
+        for second in range(first + 1, len(ids)):
+            low_a, high_a = bounds_map[ids[first]]
+            low_b, high_b = bounds_map[ids[second]]
+            gap = aabb_gap(tuple(low_a), tuple(high_a),
+                           tuple(low_b), tuple(high_b))
+            pairs.append({"pair": [ids[first], ids[second]],
+                          "gap": round(float(gap), 3)})
+    return pairs
+
+
+def _object_world_bounds(evaluated) -> Optional[Tuple[Vector, Vector]]:
+    """单个求值后对象的 bound_box → 世界 AABB；空盒返回 ``None``。"""
+    bound_box = getattr(evaluated, "bound_box", None)
+    if not bound_box:
+        return None
+    low = [float("inf")] * 3
+    high = [float("-inf")] * 3
+    matrix = evaluated.matrix_world
+    for corner in bound_box:
+        point = matrix @ Vector(corner)
+        for index in range(3):
+            low[index] = min(low[index], point[index])
+            high[index] = max(high[index], point[index])
+    return Vector(low), Vector(high)
 
 
 def _shot_objects(shot_id: str, context) -> List[object]:
@@ -303,9 +359,17 @@ def _real_surface_points(subject, depsgraph,
 
 
 def _visible_fraction(scene, depsgraph, camera_pos: Vector,
-                      subject, points: List[Vector]) -> float:
-    """N=9 个包围盒表面点的可见占比（0–1）。"""
+                      subject, points: List[Vector],
+                      characters: Optional[Dict[str, Any]] = None) -> Tuple:
+    """N=9 个包围盒表面点的可见占比（0–1）＋ 外来遮挡类别归因。
+
+    ``occlusion_by_class`` 的键是语义类别闭集（``"角色"``/``"群众"``/``"道具"``
+    /``"特效"``/``"环境"``/``"未知遮挡物"``，角色/道具可带 id 后缀），值是
+    该类挡住本帧 9 个采样点的比例。射线命中本主体（自遮挡）或基建/辅助物
+    不计入任何类别。
+    """
     visible = 0
+    occlusion_by_class: Dict[str, int] = {}
     for point in points:
         direction = point - camera_pos
         distance = direction.length
@@ -331,14 +395,25 @@ def _visible_fraction(scene, depsgraph, camera_pos: Vector,
                 if travelled >= distance + RAY_TOLERANCE_M:
                     break
                 continue
-            break                          # 外来遮挡物：该采样点不可见
-    return float(visible) / float(VISIBLE_SAMPLE_POINTS)
+            # 外来遮挡物：该采样点不可见，按语义类别归因（基建已跳过）。
+            blocker_class = occluder_class(obj, characters or {})
+            if blocker_class is not None:
+                occlusion_by_class[blocker_class] = (
+                    occlusion_by_class.get(blocker_class, 0) + 1)
+            break
+    fraction = float(visible) / float(VISIBLE_SAMPLE_POINTS)
+    by_class = {cls: round(count / VISIBLE_SAMPLE_POINTS, 6)
+                for cls, count in occlusion_by_class.items()}
+    return fraction, by_class
 
 
 def _sample_subject(subject, scene, depsgraph, camera_eval, camera_pos,
-                    shot_id: str, frame: int, facing: float) -> FrameSample:
+                    shot_id: str, frame: int, facing: float,
+                    bounds=None, collisions=(),
+                    characters: Optional[Dict[str, Any]] = None) -> FrameSample:
     """单个主体在当前帧的投影结果（NDC 全身盒 + 可见比例 + 机后标记）。"""
-    bounds = _world_bounds(subject, depsgraph)
+    if bounds is None:
+        bounds = _world_bounds(subject, depsgraph)
     if bounds is None:
         raise SamplingError(
             f"主体 {_subject_id(subject)} 在镜头 {shot_id} 第 {frame} 帧没有"
@@ -357,19 +432,21 @@ def _sample_subject(subject, scene, depsgraph, camera_eval, camera_pos,
                 if float(projected.z) < 0.0:
                     behind = True
     visible = 0.0
+    occlusion_by_class: Dict[str, float] = {}
     if not behind:
         points = _real_surface_points(subject, depsgraph, camera_pos)
         if points is None:
             points = _face_grid_points(low, high, camera_pos)
-        visible = _visible_fraction(scene, depsgraph, camera_pos,
-                                    subject, points)
+        visible, occlusion_by_class = _visible_fraction(
+            scene, depsgraph, camera_pos, subject, points, characters)
     box = SubjectBox(
         name=str(getattr(subject, "name", "") or _subject_id(subject)),
         left=min(xs), right=max(xs), top=max(ys), bottom=min(ys),
         facing=facing)
     return FrameSample(frame=frame, subject=_subject_id(subject), box=box,
                        visible_ratio=visible, behind_camera=behind,
-                       shot_id=shot_id)
+                       shot_id=shot_id, collisions=list(collisions),
+                       occlusion_by_class=occlusion_by_class)
 
 
 @main_thread_only("frustum_sampler.sample_shot")
@@ -394,6 +471,7 @@ def sample_shot(shot_id, step=None, extra_frames=()) -> List[FrameSample]:
     camera = context.camera_for(shot_id)
     if camera is None:
         raise SamplingError(f"镜头 {shot_id} 没有相机，无法投影")
+    _require_perspective(shot_id, camera)
     subjects = context.subjects_for(shot_id)
     if not subjects:
         return []                          # 空镜：合法，无主体可采样
@@ -415,6 +493,17 @@ def sample_shot(shot_id, step=None, extra_frames=()) -> List[FrameSample]:
             #: 朝向复用 rule_checker.screen_facing_for 的"头朝向投影到屏幕 X"
             #: 口径（get_facing 的头朝向向量，不另造第二份投影逻辑）。
             facing_map = screen_facing_for(shot, context=context, camera=camera)
+            #: 卡 V11：本帧全主体的世界包围盒先算一次，再算角色×角色碰撞对，
+            #: 与投影结果一起写进 FrameSample（喂纯层 element_collision）。
+            bounds_map: Dict[str, Tuple[Vector, Vector]] = {}
+            for subject in subjects:
+                bounds = _world_bounds(subject, depsgraph)
+                if bounds is None:
+                    raise SamplingError(
+                        f"主体 {_subject_id(subject)} 在镜头 {shot_id} 第 "
+                        f"{current_frame} 帧没有可投影的网格（bound_box 为空）")
+                bounds_map[_subject_id(subject)] = bounds
+            collisions = _pair_collisions(bounds_map)
             for subject in subjects:
                 subject_id = _subject_id(subject)
                 dot = float(facing_map.get(subject_id, 0.0))
@@ -422,7 +511,9 @@ def sample_shot(shot_id, step=None, extra_frames=()) -> List[FrameSample]:
                           else (1.0 if dot > 0.0 else -1.0))
                 samples.append(_sample_subject(
                     subject, scene, depsgraph, camera_eval, camera_pos,
-                    shot_id, current_frame, facing))
+                    shot_id, current_frame, facing,
+                    bounds=bounds_map[subject_id], collisions=collisions,
+                    characters=context.characters))
     except SamplingError:
         raise
     except Exception as exc:  # noqa: BLE001 - 归一为采样错误码，原异常入链
@@ -434,3 +525,99 @@ def sample_shot(shot_id, step=None, extra_frames=()) -> List[FrameSample]:
     log.debug("镜头 %s 采样完成：%d 帧 × %d 主体 → %d 条 FrameSample",
               shot_id, len(frames), len(subjects), len(samples))
     return samples
+
+
+@main_thread_only("frustum_sampler.sample_spatial")
+def sample_spatial(shot_id, frames) -> List[SpatialFrame]:
+    """对指定帧采样**空间数据**（卡 V11）：相机模型 + 本镜角色 + 场景里的
+    ``BD_Prop_*``/``BD_Wall_*``。
+
+    只读场景、采样后还原当前帧、失败抛 :class:`SamplingError`；正交相机直接
+    报错。群众（``context.crowd``）与 ``hide_render`` 的道具/墙不采样；
+    角色没有可投影网格时抛错（与 :func:`sample_shot` 同口径）。
+    """
+    context = get_context()
+    if context is None:
+        raise SamplingError("没有活动场景上下文（SceneContext），无法采样")
+    shot_id = str(shot_id)
+    start, end = _shot_span(shot_id, context)
+    camera = context.camera_for(shot_id)
+    if camera is None:
+        raise SamplingError(f"镜头 {shot_id} 没有相机，无法采样")
+    _require_perspective(shot_id, camera)
+    selected: List[int] = []
+    for raw in frames:
+        try:
+            frame = int(raw)
+        except (TypeError, ValueError) as exc:
+            raise SamplingError(f"非法采样帧 {raw!r}") from exc
+        if start <= frame <= end:
+            selected.append(frame)
+    selected = sorted(set(selected))
+    if not selected:
+        return []
+
+    scene = bpy.context.scene
+    previous_frame = int(scene.frame_current)
+    out: List[SpatialFrame] = []
+    current_frame = previous_frame
+    try:
+        for frame in selected:
+            current_frame = int(frame)
+            scene.frame_set(current_frame)
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+            camera_eval = camera.evaluated_get(depsgraph)
+            matrix = camera_eval.matrix_world
+            forward = (matrix.to_3x3() @ Vector((0.0, 0.0, -1.0))).normalized()
+            up = (matrix.to_3x3() @ Vector((0.0, 1.0, 0.0))).normalized()
+            camera_data = camera.data
+            spatial_camera = SpatialCamera(
+                position=tuple(matrix.translation),
+                forward=tuple(forward), up=tuple(up),
+                lens_mm=float(camera_data.lens),
+                sensor_width=float(camera_data.sensor_width),
+                sensor_height=float(camera_data.sensor_height),
+                sensor_fit=str(camera_data.sensor_fit),
+                render_width=int(scene.render.resolution_x),
+                render_height=int(scene.render.resolution_y))
+
+            elements: List[SpatialElement] = []
+            for subject in context.subjects_for(shot_id):
+                bounds = _world_bounds(subject, depsgraph)
+                if bounds is None:
+                    raise SamplingError(
+                        f"主体 {_subject_id(subject)} 在镜头 {shot_id} 第 "
+                        f"{current_frame} 帧没有可投影的网格（bound_box 为空）")
+                low, high = bounds
+                elements.append(SpatialElement(
+                    id=_subject_id(subject), kind="character",
+                    aabb_min=tuple(low), aabb_max=tuple(high),
+                    center=tuple((low + high) * 0.5),
+                    facing=tuple(get_facing(subject))))
+            for obj in bpy.data.objects:
+                if obj.type != "MESH" or obj.hide_render:
+                    continue
+                if not obj.name.startswith(OBSTACLE_PREFIXES):
+                    continue
+                kind = "prop" if obj.name.startswith("BD_Prop_") else "wall"
+                evaluated = obj.evaluated_get(depsgraph)
+                bounds = _object_world_bounds(evaluated)
+                if bounds is None:
+                    continue
+                low, high = bounds
+                elements.append(SpatialElement(
+                    id=obj.name, kind=kind,
+                    aabb_min=tuple(low), aabb_max=tuple(high),
+                    center=tuple((low + high) * 0.5)))
+            out.append(SpatialFrame(frame=current_frame, shot_id=shot_id,
+                                    camera=spatial_camera,
+                                    elements=elements))
+    except SamplingError:
+        raise
+    except Exception as exc:  # noqa: BLE001 - 归一为采样错误码，原异常入链
+        raise SamplingError(
+            f"镜头 {shot_id} 第 {current_frame} 帧空间采样失败：{exc}") from exc
+    finally:
+        scene.frame_set(previous_frame)
+        bpy.context.view_layer.update()
+    return out

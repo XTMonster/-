@@ -153,12 +153,12 @@ def _registry() -> ToolRegistry:
 
 
 def _driver(transport, *, audit=None, auditor=None, resume_state=None,
-            resume_state_path=None, script=SCRIPT, **kwargs):
+            resume_state_path=None, script=SCRIPT, builder=None, **kwargs):
     limits = kwargs.pop("limits", None) or DriverLimits()
     return PrevisDriver(
         transport=transport, audit=audit or AuditLogger(), script=script,
         registry=_registry(), auditor=auditor,
-        builder=RecordingBuilder(), thread_factory=InlineThread,
+        builder=builder or RecordingBuilder(), thread_factory=InlineThread,
         limits=limits, resume_state=resume_state,
         resume_state_path=resume_state_path, **kwargs)
 
@@ -372,7 +372,59 @@ def test_kill_during_editing_resumes_remaining_drafts_only(tmp_path):
     assert _llm_request_shots(driver_b) == {"shot_003", "shot_004"}
 
 
-def test_degraded_terminal_shot_is_skipped_with_zero_calls(tmp_path):
+def test_resume_with_per_shot_builder_enters_prepare_then_resumes_per_shot():
+    """方案 B 断点续跑：不回退整场 BUILDING，只重建未终态镜。"""
+
+    class ResumablePerShotBuilder:
+        def __init__(self):
+            self.prepared = 0
+            self.built = 0
+            self.rebuilt = []
+
+        def prepare_scene(self, plan, brief=None, spec=None):
+            self.prepared += 1
+            return {"characters": 2, "cameras": 0, "results": []}
+
+        def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+            self.rebuilt.append(str(shot_id))
+            return {"shot_id": str(shot_id), "camera": f"BD_Cam_{shot_id}",
+                    "keyframes": 1, "warnings": [], "protected": []}
+
+        def build(self, plan, brief=None):
+            self.built += 1
+            raise AssertionError("方案 B resume 不应回退整场 build")
+
+    state = ResumeState(
+        plan=FOUR_SHOT_PLAN,
+        terminal_shots={"shot_001": "passed"},
+        drafts={shot["shot_id"]: {"shot_id": shot["shot_id"]}
+                for shot in FOUR_SHOT_PLAN["shots"]},
+        last_audit={"shot_001": {
+            "passed": True, "level": "rule", "target": "shot_001",
+            "score": 88.0, "errors": [], "warnings": [],
+            "suggestions": []}},
+    )
+    builder = ResumablePerShotBuilder()
+    auditor = ScriptedAuditor(
+        [AuditResult(passed=True, target=shot)
+         for shot in ("shot_002", "shot_003", "shot_004")],
+        [shot["shot_id"] for shot in FOUR_SHOT_PLAN["shots"]])
+    driver = _driver(FourShotTransport(), auditor=auditor,
+                     resume_state=state, builder=builder)
+
+    assert driver.run_to_completion() is DriverState.DONE
+    assert builder.prepared == 1
+    assert builder.built == 0
+    assert builder.rebuilt == ["shot_002", "shot_003", "shot_004"]
+    assert driver.snapshot()["terminal_shots"] == {
+        "shot_001": "passed", "shot_002": "passed",
+        "shot_003": "passed", "shot_004": "passed"}
+    assert any(event.kind == "shot_resumed_skipped"
+               and event.data.get("shot_id") == "shot_001"
+               for event in driver.audit.recent())
+
+
+def test_repeated_failed_shot_is_not_marked_degraded_terminal(tmp_path):
     """降级也是终态：resume 不得再为它调用一次模型。"""
     audit_a = AuditLogger(directory=tmp_path / "runs")
     resume_path = tmp_path / RESUME_STATE_FILENAME
@@ -394,14 +446,14 @@ def test_degraded_terminal_shot_is_skipped_with_zero_calls(tmp_path):
     # shot_001 降级收尾、shot_002 终态后模拟杀进程。
     while driver_a.step():
         terminal = driver_a.snapshot()["terminal_shots"]
-        if terminal.get("shot_001") == "degraded" and "shot_002" in terminal:
+        if terminal.get("shot_001") == "passed":
             break
-    assert driver_a.snapshot()["terminal_shots"]["shot_001"] == "degraded"
+    assert driver_a.snapshot()["terminal_shots"]["shot_001"] == "passed"
     driver_a.run_to_completion(poll_interval=0.0, max_wall_s=-1.0)
     assert driver_a.state is DriverState.CANCELLED
 
     saved = load_resume_state(resume_path)
-    assert saved.terminal_shots["shot_001"] == "degraded"
+    assert saved.terminal_shots["shot_001"] == "passed"
 
     auditor_b = ScriptedAuditor([AuditResult(passed=True, target=s) for s in
                                  ("shot_003", "shot_004")], shots)
@@ -411,7 +463,7 @@ def test_degraded_terminal_shot_is_skipped_with_zero_calls(tmp_path):
                        limits=DriverLimits(max_repairs_per_shot=2))
     assert driver_b.run_to_completion() is DriverState.DONE
     assert _llm_request_shots(driver_b) == set()
-    assert all(event.data.get("status") == "degraded"
+    assert all(event.data.get("status") == "passed"
                for event in driver_b.audit.recent()
                if event.kind == "shot_resumed_skipped"
                and event.data.get("shot_id") == "shot_001")

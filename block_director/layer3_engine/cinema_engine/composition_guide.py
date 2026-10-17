@@ -43,6 +43,59 @@ def _belongs_to(obj: Object, character) -> bool:
     return False
 
 
+#: 射线命中对象 → 面级遮挡类别（``None`` = 非渲染基建，不当遮挡）。
+#: 采样器（``frustum_sampler``）与审核器（``shot_auditor``）的**唯一分类源**；
+#: 谁要归类都从 ``occluder_class`` 取，禁止抄第二份闭集。
+INFRASTRUCTURE_TYPES = frozenset(
+    {"camera", "axis", "label", "label_render"})
+CHARACTER_TYPES = frozenset(
+    {"character_part", "character_root", "leg_pivot"})
+
+
+def occluder_class(blocker, characters=None,
+                   *, character_types=CHARACTER_TYPES,
+                   infrastructure_types=INFRASTRUCTURE_TYPES,
+                   belongs_to=None) -> Optional[str]:
+    """``bd_element_type`` 沿父链归类命中对象；返回 None 表示非渲染基建。
+
+    归类是渲染语义（crowd/prop/vfx/environment 与角色 id 都要送进证据），
+    放在 bpy 侧模块（composition_guide）里；纯层只消费闭集字符串。
+    ``characters`` 缺省为空 dict——没有角色表时，``character_part`` 命中
+    对象归成不带 id 的 ``"角色"``（不猜归属）。
+    """
+    from ...cinema.mesh_visibility import (
+        OCCLUDER_CHARACTER,
+        OCCLUDER_CROWD,
+        OCCLUDER_ENVIRONMENT,
+        OCCLUDER_PROP,
+        OCCLUDER_UNKNOWN,
+        OCCLUDER_VFX,
+    )
+
+    node = blocker
+    while node is not None:
+        kind = str(node.get("bd_element_type", "") or "")
+        if kind in character_types:
+            for character_id, character in (characters or {}).items():
+                if (belongs_to or _belongs_to)(node, character):
+                    return f"{OCCLUDER_CHARACTER}:{character_id}"
+            return OCCLUDER_CHARACTER
+        if kind == "crowd":
+            return OCCLUDER_CROWD
+        if kind == "prop":
+            prop_id = str(node.get("bd_sdl_id", "") or "")
+            return (f"{OCCLUDER_PROP}:{prop_id}" if prop_id
+                    else OCCLUDER_PROP)
+        if kind == "vfx":
+            return OCCLUDER_VFX
+        if kind == "environment":
+            return OCCLUDER_ENVIRONMENT
+        if kind in infrastructure_types:
+            return None
+        node = node.parent
+    return OCCLUDER_UNKNOWN
+
+
 def _world_bounds(character, depsgraph) -> Optional[Tuple[Vector, Vector]]:
     low = [float("inf")] * 3
     high = [float("-inf")] * 3

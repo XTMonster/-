@@ -309,6 +309,7 @@ def _prop_toward_problems(kind: str, toward) -> List[str]:
         return [f"{kind} 的 toward 必须是方向量或方向词"
                 f"（当前 {toward!r}）"]
     return []
+    return problems
 
 
 def coordinate_problems(kind: str, key: str, value) -> List[str]:

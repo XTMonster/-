@@ -16,6 +16,9 @@ CLIP_BY_STATE: Dict[str, str] = {
     "CALLING_LLM": "think_wait",
     "EXECUTING_TOOL": "build",
     "BUILDING": "build",
+    #: D1 逐镜预演：准备静态场景与逐镜构建同为"干活"动画。
+    "PREPARE_SCENE": "build",
+    "PER_SHOT": "build",
     "EDITING": "think",
     "AWAIT_HUMAN": "ask",
     "REVIEWING": "inspect",

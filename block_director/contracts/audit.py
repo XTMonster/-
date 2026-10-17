@@ -7,6 +7,10 @@
 
 from __future__ import annotations
 
+import base64
+import binascii
+import copy
+import hashlib
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -75,6 +79,42 @@ V16_EVENT_FIELDS = {
     #: 声明确定性补齐缺镜继续跑（不整轮作废）。filled_shots=补齐的镜数，
     #: attempts=已用的调整次数，problem=最后一次拒绝原因。
     "plan_adjusted": ("filled_shots", "attempts", "problem"),
+    #: vlm-feedback：VLM 评委能力探测（模型是否支持图像输入）。
+    "vlm_capability": ("model", "supports_image", "evidence"),
+    #: vlm-feedback：每镜每轮结构化判词快照（raw/parsed 同时留证）。
+    "vlm_review_round": ("shot_id", "round", "schema", "raw", "parsed"),
+    #: 决策树投影：react/repair 阶段的越界工具参数进该镜决策树投影后的留痕。
+    #: ``record`` 字段与 ``decision_tree.ProjectionRecord.to_dict()`` 同构。
+    "react_projected": ("shot_id", "stage", "tool", "records"),
+    "repair_projected": ("shot_id", "stage", "tool", "records", "repair_invalid"),
+    #: 决策树投影：B1 草案阶段的越界字段进该镜决策树投影后的留痕。
+    #: ``records[]`` 是 ``ProjectionRecord`` 全量（一次草案多处越界 = 多条，
+    #: 不再"每镜每轮最多一条"）。
+    "draft_projected": ("shot_id", "stage", "records"),
+    #: 决策树投影：构建期异常（真源漂移等）不得静默放行，记审计并回灌本轮。
+    "projection_error": ("shot_id", "stage", "tool"),
+    #: 方案 B：场景/元素就位（环境、角色、道具、群众）一次，不烘焙动作/机位。
+    "scene_prepared": ("characters", "cameras", "props", "crowd", "prepared_at"),
+    #: 方案 B：每镜每轮剧情预演（build/audit/repair/opt）的迭代留痕。
+    "shot_iteration": ("shot_id", "round", "action", "result",
+                       "warnings", "protected"),
+    #: 方案 B：当前镜通过后移入下一镜（decision_trees 同机 evict）。
+    "shot_advanced": ("shot_id", "next_shot_id", "decision_trees_evicted"),
+    #: 数值层：每次候选评测（value=-inf 表示硬违规，reason 记录哪条规则）。
+    "opt_candidate": ("shot_id", "round", "stage", "x", "clamped",
+                      "value", "reason"),
+    #: 数值层：每镜每轮优化结果（method_choice/method_reason 是 agent 原始
+    #: 声明，method 是实际执行的方法；method_inapplicable 时 method 为空；
+    #: refit_by ∈ {agent,user,none}，绝不伪称 human）。
+    "opt_result": ("shot_id", "round", "stage", "x0", "value0", "best_x",
+                   "best_value", "step_scale", "calls", "method_choice",
+                   "method_reason", "method", "improved", "refit_by"),
+    #: 数值层：优化器试图改离散键/剧本硬值被拒。
+    "opt_rejected": ("shot_id", "key", "attempt", "reason"),
+    "shot_version_saved": ("shot_id", "version", "reason", "path"),
+    "shot_version_restored": ("shot_id", "version", "reason"),
+    "shot_version_restore_failed": ("shot_id", "version", "reason"),
+    "adversarial_review": ("shot_id", "version", "disposition", "issues", "rationale"),
 }
 
 
@@ -84,6 +124,51 @@ def missing_event_fields(kind: str, data: Dict[str, Any]) -> List[str]:
     if required is None:
         return ["<unregistered>"]
     return [name for name in required if name not in (data or {})]
+
+
+def _redact_data_uri(url: str) -> Dict[str, Any]:
+    """把一条 ``data:<mime>;base64,<payload>`` 折成占位信息（丢弃原载荷）。"""
+    if ";base64," not in url:
+        raise ValueError(f"data URL 缺少 ;base64, 分隔符：{url[:64]!r}")
+    head, payload = url.split(";base64,", 1)
+    mime = head[len("data:"):] if head.startswith("data:") else ""
+    try:
+        decoded = base64.b64decode(payload, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError(f"data URL 的 base64 解码失败：{url[:64]!r}") from exc
+    return {"redacted": True, "mime": mime, "bytes": len(decoded),
+            "sha256": hashlib.sha256(decoded).hexdigest()}
+
+
+def redact_image_parts(messages: Any) -> List[Any]:
+    """深拷贝消息列表，把 ``data:`` 图像分片替换为占位信息（vlm-feedback）。
+
+    - 只替换 ``type=="image_url"`` 且 ``image_url`` 为 dict 且 ``url`` 为 str
+      且以 ``data:`` 开头的分片；http(s) url、文本分片、非 dict 分片、
+      ``image_url`` 为字符串的分片、字符串形 content、tool_calls 一律原样。
+    - 占位形状 ``{"redacted": True, "mime", "bytes", "sha256"}`` 丢弃原
+      ``url``（base64 不落盘），但保留 ``type`` 与 ``image_url`` 包装层。
+    - 缺 ``;base64,`` 分隔或 base64 解码失败 ⇒ :class:`ValueError`（不吞）。
+    """
+    redacted: List[Any] = []
+    for message in (messages or []):
+        copied = copy.deepcopy(message)
+        if isinstance(copied, dict):
+            content = copied.get("content")
+        else:
+            content = getattr(copied, "content", None)
+        if isinstance(content, list):
+            for part in content:
+                if not isinstance(part, dict):
+                    continue
+                image_url = part.get("image_url")
+                if (part.get("type") == "image_url"
+                        and isinstance(image_url, dict)):
+                    url = image_url.get("url")
+                    if isinstance(url, str) and url.startswith("data:"):
+                        part["image_url"] = _redact_data_uri(url)
+        redacted.append(copied)
+    return redacted
 
 
 @dataclass
@@ -170,6 +255,17 @@ class AuditResult:
     #: 键（零形状差纪律）；非空时供交付层写 ``ruler_measurements`` 证据，
     #: **不参与 passed/score**。
     ruler_measurements: Optional[List[Dict[str, Any]]] = None
+    #: vlm-feedback 卡 V12：画面/空间测量摘要（``{"framing": …, "spatial": …}``，
+    #: 由 ``cinema/spatial_digest.py::scene_digest`` 产出）。只进 VLM 评审提示
+    #: 与修复提示，**不进任何门**（不影响 passed/score/errors/warnings）。
+    #: 缺省 ``None`` ⇒ guard 关闭、空镜或采样失败时 ``to_dict()`` 与改动前
+    #: 逐字节一致（零形状差）。
+    scene_digest: Optional[Dict[str, Any]] = None
+    #: 2026-10-12 D1: 逐镜对抗审查快照 (adversarial_review.to_dict())。
+    #: 可选、缺省 ``None`` 使 ``to_dict()`` 与改动前逐字节一致（零形状差）。
+    #: 审查只作证据与建议，不改 passed/score/errors；越轴 escalate 由既有
+    #: 人工 gate 处理，不在这里放行。
+    adversarial_review: Optional[Dict[str, Any]] = None
 
     @property
     def total(self) -> int:
@@ -225,6 +321,12 @@ class AuditResult:
         if self.ruler_measurements:
             payload["ruler_measurements"] = [
                 dict(item) for item in self.ruler_measurements]
+        #: vlm-feedback 卡 V12：同一条零形状差纪律——没生成摘要就不多这个键。
+        if self.scene_digest is not None:
+            payload["scene_digest"] = dict(self.scene_digest)
+        #: D1 对抗审查：同一条零形状差纪律——没审查就不多这个键。
+        if self.adversarial_review is not None:
+            payload["adversarial_review"] = dict(self.adversarial_review)
         return payload
 
     def format_for_llm(self) -> str:

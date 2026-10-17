@@ -27,7 +27,7 @@ class Confidence(str, Enum):
     LOW = "low"
 
 
-#: 告警类型闭集（16 项）。新类型必须先加进这里再用。
+#: 告警类型闭集（18 项）。新类型必须先加进这里再用。
 WARNING_TYPES: Tuple[str, ...] = (
     "subject_out_of_frame",   # 完全出画（非剧本设计）→ error, high
     "subject_behind_camera",  # z<0 → error, high
@@ -45,6 +45,8 @@ WARNING_TYPES: Tuple[str, ...] = (
     "jump_cut_risk",          # 相邻镜占比差<10% 且视角差<30° → warning（由 LLM 裁决）
     "axis_screen_order",      # 银幕左右序翻转（无中性镜桥接）→ error
     "pace_monotony",          # 全片镜长相同 → info
+    "safe_area_breach",       # 头部盒越出动作安全区 → warning（卡 V11）
+    "element_collision",      # 角色×角色碰撞箱穿透 → warning（卡 V11）
 )
 
 _WARNING_TYPE_SET: frozenset = frozenset(WARNING_TYPES)
@@ -55,6 +57,34 @@ def warning_type_problems(t: str) -> str:
     if t not in _WARNING_TYPE_SET:
         return f"未知告警类型 {t!r}；合法值：{', '.join(WARNING_TYPES)}"
     return ""
+
+
+def merge_occlusion_evidence(warning: "GuardWarning",
+                             parts: Dict[str, Dict[str, Any]]) -> None:
+    """把面级 per-part 遮挡归因接进 occlusion 告警的 ``evidence``。
+
+    输入是 ``mesh_visibility_report`` 的 ``parts``（纯层、无 bpy）：每个部位
+    （头/躯干/腿/未知）的 ``occlusion_by_class`` 是**占该部位面积比**的类别
+    归因。本函数把这些归因原样合并成 ``evidence["occlusion_by_part"]``——
+    **只喂结构化证据，不设任何门**（判定/阈值在 ``frustum_metrics`` 与规则层，
+    这里一字不动）。空归因（无 parts、部位无遮挡、全部为空 dict）不写键，
+    避免给提示/审计注入噪声。
+    """
+    if not isinstance(parts, dict) or not parts:
+        return
+    merged: Dict[str, Dict[str, float]] = {}
+    for part, entry in parts.items():
+        if not isinstance(entry, dict):
+            continue
+        by_class = entry.get("occlusion_by_class")
+        if not isinstance(by_class, dict) or not by_class:
+            continue
+        merged[str(part)] = {
+            str(cls): float(fraction)
+            for cls, fraction in by_class.items()}
+    if not merged:
+        return
+    warning.evidence["occlusion_by_part"] = merged
 
 
 # --------------------------------------------------------------------------- #

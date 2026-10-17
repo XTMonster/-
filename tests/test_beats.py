@@ -33,6 +33,7 @@ from block_director.contracts.beats import (  # noqa: E402
     LightSpec,
     RuleJustification,
     ShotBeat,
+    front_occlusion_declared_from_justifications,
     validate_beats,
     validate_composition_spec,
     validate_justifications,
@@ -222,6 +223,24 @@ def test_justification_requires_a_reason_when_breaking():
     assert any("action" in item for item in validate_justifications(
         [RuleJustification(rule="R001", action="ignore")]))
     assert RULE_ACTIONS == ("follow", "break")
+
+
+def test_front_occlusion_declaration_round_trip():
+    """guard ``occlusion`` 的声明通道：``rule="occlusion"`` 即"刻意前景遮挡"。
+
+    follow 与 break 都算声明（判警告与否只看"有没有声明"）；其它规则名与空表
+    不算。纯 dict 与 ``RuleJustification`` 同口径。
+    """
+    assert not front_occlusion_declared_from_justifications([])
+    assert not front_occlusion_declared_from_justifications(
+        [{"rule": "R001", "action": "follow"}])
+    assert front_occlusion_declared_from_justifications(
+        [RuleJustification(rule="occlusion", action="follow")])
+    assert front_occlusion_declared_from_justifications(
+        [RuleJustification(rule="occlusion", action="break",
+                           reason="前景摊位遮挡是这一镜的设计")])
+    assert front_occlusion_declared_from_justifications(
+        [{"rule": "R001"}, {"rule": "occlusion", "action": "follow"}])
 
 
 # --------------------------------------------------------------------------- #

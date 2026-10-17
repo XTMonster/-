@@ -241,6 +241,19 @@ def _initial_cast_positions(context) -> Dict[str, Tuple[float, float, float]]:
     return initial
 
 
+def _skip_character(cid: str, plan) -> bool:
+    """角色级 skip（v1.7 J3）：仅当某角色**全部出场镜**都
+    ``responsibility.skip_white_model=true`` → 构建循环跳过（不建主体）。
+
+    白模角色是场景级共享对象，不能"该镜不建主体"（会拆掉其它镜的主体）：
+    混合镜角色主体仍在。未声明镜（``responsibility is None``）零行为差。
+    """
+    shots_with = [s for s in plan.shots if cid in (s.characters or [])]
+    return bool(shots_with) and all(
+        s.responsibility is not None and s.responsibility.skip_white_model
+        for s in shots_with)
+
+
 def axis_for_shot(context, shot) -> Optional[Axis]:
     """**这一镜此刻**该用的轴线：线取两人此刻连线，侧取顺序状态机记下的侧别。
 
@@ -482,17 +495,6 @@ def action_requests(shot: ShotPlan, shot_start: int,
     给了实时起点之后，每一次行走都是"从他现在的位置走到计划写的位置"。
     """
     requests: List[ActionRequest] = []
-    #: G8-C：结构化目标（look_at.target / 道具 toward）折算用的是**本镜首帧**
-    #: 各角色的场景位置：剧本站位被 `live_from`（走位接力）覆盖。
-    positions: Dict[str, Tuple[float, float, float]] = {}
-    for character_id, member in cast.items():
-        location = list(getattr(member, "initial_location", None) or [])
-        while len(location) < 3:
-            location.append(0.0)
-        positions[str(character_id)] = (float(location[0]), float(location[1]),
-                                        float(location[2]))
-    positions.update({str(key): tuple(value)
-                      for key, value in (live_from or {}).items()})
     for index, raw in enumerate(shot.actions or [], start=1):
         if not isinstance(raw, dict):
             warnings.append(f"{shot.shot_id}: 第 {index} 个动作不是对象，已跳过")
@@ -513,21 +515,6 @@ def action_requests(shot: ShotPlan, shot_start: int,
             int(raw.get("end_frame") or shot.duration_frames))
 
         params = dict(raw.get("params") or {})
-        #: G8-C：把结构化目标折算成引擎参数（look_at → yaw/pitch，
-        #: 道具 toward → 方向量）。解析不出 = 确定性错误：如实告警并跳过，
-        #: 绝不静默取默认角。函数内 import：`beat_compiler` 是纯的，且
-        #: `build_scene` 用的是同一条函数内 import 纪律。
-        from ..layer5_orchestrator.beat_compiler import resolve_action_targets
-
-        params, target_problems = resolve_action_targets(
-            action_type, character_id, params, positions,
-            tuple(getattr(cast[character_id], "initial_facing", None)
-                  or (0.0, 1.0, 0.0)))
-        if target_problems:
-            warnings.append(
-                f"{shot.shot_id}: {target_problems[0]}"
-                f"（角色 {character_id}），已跳过（不替 LLM 猜目标）")
-            continue
         if action_type in ("walk_to", "run_to"):
             #: **契约一致性**（2026-10-04 真跑实测）：草案 schema
             #: （`editor.EMIT_SHOT_DRAFT_PARAMETERS`）把 `target_position` 声明成
@@ -560,32 +547,19 @@ def action_requests(shot: ShotPlan, shot_start: int,
     return requests
 
 
-def _skip_character(cid: str, plan) -> bool:
-    """角色级 skip（v1.7 J3）：仅当某角色**全部出场镜**都
-    ``responsibility.skip_white_model=true`` → 构建循环跳过（不建主体）。
+def _prepare_static_scene(plan: Plan, spec: Optional[SceneSpec],
+                          brief, crowd,
+                          *, clear_scene: bool = False):
+    """方案 B（§3.6.3）：建场景与元素，返回后续两趟所需的全部局部状态。
 
-    白模角色是场景级共享对象，不能"该镜不建主体"（会拆掉其它镜的主体）：
-    混合镜角色主体仍在。未声明镜（``responsibility is None``）零行为差。
+    ``build_scene`` 与 ``prepare_scene`` 共用这一段：清对象/集合 → 环境/
+    锚点/灯光 → 角色/标签 → ``SceneContext``。**不含**动作烘焙、机位、
+    镜头标记、运镜、标签烘焙——那些是动态预演阶段的事。
+
+    返回 ``(summary, context, characters, cast_map, label_entries,
+    environment)``；``build_scene`` 拿它继续排片/烘焙/摆机位，
+    ``prepare_scene`` 拿它落基线后结束。
     """
-    shots_with = [s for s in plan.shots if cid in (s.characters or [])]
-    return bool(shots_with) and all(
-        s.responsibility is not None and s.responsibility.skip_white_model
-        for s in shots_with)
-
-
-@main_thread_only("build_scene")
-def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
-                clear_scene: bool = False, brief=None,
-                crowd=None) -> BuildSummary:
-    """按计划重建整个白模场景。
-
-    ``clear_scene=True`` 时连非本插件对象（Blender 启动场景自带的 Cube 等）
-    一起清掉——批处理入口必须开这个，否则默认方块会挡在角色前面。
-
-    ``brief`` 是阶段 S 的剧本理解（§3.2）：只用来决定站位（``space``）。
-    给了显式 ``spec`` 时它不参与——用户改过的设定永远优先。
-    """
-    spec = spec or SceneSpec.from_plan(plan, brief=brief, crowd=crowd)
     scene = bpy.context.scene
     summary = BuildSummary()
     # 帧范围先定下来：群众的走位关键帧、标签的采样表都要用它。
@@ -660,6 +634,54 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     context.shot_types = {shot.shot_id: str(shot.shot_type)
                           for shot in plan.shots}
     context.current_shot_id = plan.shots[0].shot_id if plan.shots else ""
+    return (summary, context, characters, cast_map, label_entries,
+            environment)
+
+
+@main_thread_only("prepare_scene")
+def prepare_scene(plan: Plan, spec: Optional[SceneSpec] = None,
+                  clear_scene: bool = False, brief=None,
+                  crowd=None) -> BuildSummary:
+    """方案 B：只建场景与元素，不摆相机、不烘焙动作（§3.6.3）。
+
+    ``clear_scene`` / ``brief`` / ``crowd`` 语义与 ``build_scene`` 相同；
+    返回摘要里的 ``cameras=0``，逐镜相机由 ``rebuild_shot`` 落地。
+    """
+    spec = spec or SceneSpec.from_plan(plan, brief=brief, crowd=crowd)
+    summary, context, _characters, _cast_map, _label_entries, _env = (
+        _prepare_static_scene(plan, spec, brief, crowd, clear_scene=clear_scene))
+    scene = bpy.context.scene
+    scene.frame_set(1)
+    set_context(context)
+    from .scene_sync import note_build
+    note_build()
+    summary.shots = len(plan.shots)
+    summary.total_frames = scene.frame_end
+    log.info("场景元素就位：%d 镜 / %d 角色 / %d 环境件（未摆机位）",
+             summary.shots, summary.characters, len(_env.props))
+    return summary
+
+
+@main_thread_only("build_scene")
+def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
+                clear_scene: bool = False, brief=None,
+                crowd=None) -> BuildSummary:
+    """按计划重建整个白模场景。
+
+    ``clear_scene=True`` 时连非本插件对象（Blender 启动场景自带的 Cube 等）
+    一起清掉——批处理入口必须开这个，否则默认方块会挡在角色前面。
+
+    ``brief`` 是阶段 S 的剧本理解（§3.2）：只用来决定站位（``space``）。
+    给了显式 ``spec`` 时它不参与——用户改过的设定永远优先。
+    """
+    spec = spec or SceneSpec.from_plan(plan, brief=brief, crowd=crowd)
+    (summary, context, characters, cast_map, label_entries, environment) = (
+        _prepare_static_scene(plan, spec, brief, crowd,
+                              clear_scene=clear_scene))
+    scene = bpy.context.scene
+    from ..settings import get_config
+    app_config = get_config()
+    label_config = app_config.character
 
     ranges = shot_ranges(plan)
     motion_requests: Dict[str, List[ActionRequest]] = {}
@@ -998,3 +1020,22 @@ class BpySceneBuilder:
     def build(self, plan: Plan, brief=None) -> Dict[str, Any]:
         return build_scene(plan, self.spec, clear_scene=self.clear_scene,
                            brief=brief, crowd=self.crowd).to_dict()
+
+    def prepare_scene(self, plan: Plan, brief=None, spec=None) -> Dict[str, Any]:
+        """方案 B：只建场景与元素（§3.6.3），不摆相机/不烘焙动作。"""
+        return prepare_scene(plan, spec or self.spec,
+                             clear_scene=self.clear_scene,
+                             brief=brief, crowd=self.crowd).to_dict()
+
+    def rebuild_shot(self, shot_id: str, *, plan: Optional[Plan] = None,
+                     brief=None) -> Dict[str, Any]:
+        """方案 B：只重建/预演当前镜（增量，不推倒环境/角色/其他镜）。"""
+        from .scene_sync import get_synchronizer
+        from .shot_regenerator import regenerate_shot
+
+        #: 与 UI 的"重生成此镜"同一条口径：先 ``sync_from_blender`` 回读
+        #: 工具/用户改动（挪过的角色、改过的相机），再按计划重建当前镜——
+        #: 否则修复回路里模型刚调好的机位/走位会被计划旧坐标覆盖
+        #: （§8.3 的 DoD："手动修改被保留"）。
+        return regenerate_shot(shot_id, plan=plan, spec=self.spec,
+                               sync=get_synchronizer())

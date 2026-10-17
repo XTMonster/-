@@ -172,7 +172,7 @@ def _ladder_events(driver):
             if event.kind == "retry_ladder"]
 
 
-def test_repair_timeout_slims_then_degrades_with_exactly_two_calls():
+def test_repair_timeout_slims_then_pauses_without_advancing_the_shot(tmp_path):
     transport = LadderTransport(repair_script=[
         TimeoutError("The read operation timed out"),
         TimeoutError("The read operation timed out"),
@@ -181,11 +181,12 @@ def test_repair_timeout_slims_then_degrades_with_exactly_two_calls():
     driver = _driver(transport, [failing, failing],
                      limits=DriverLimits(llm_timeout_s=77.5),
                      scene_state_provider=lambda: SCENE_STATE_WITH_KNOWLEDGE)
+    driver._resume_state_path = tmp_path / "resume_state.json"
 
-    assert driver.run_to_completion() is DriverState.DONE
+    assert driver.run_to_completion() is DriverState.CANCELLED
 
     repairs = [p for p in transport.payloads if p.purpose is Purpose.REPAIR]
-    assert len(repairs) == 2, "超时 → 瘦身重试 → 降级，这一镜绝不该有第三次调用"
+    assert len(repairs) == 2, "同一调用的重试阶梯仍有两次，但不能因失败自动前进"
     first, second = repairs
     assert "硬约束（禁/许）" in first.messages[0].content
     assert "R001" in first.messages[0].content            # 审计发现原样在
@@ -202,8 +203,10 @@ def test_repair_timeout_slims_then_degrades_with_exactly_two_calls():
                for event in events)
     # 红线：阶梯可以重发，但**超时值本身一个字节都不许改**。
     assert transport.timeouts and set(transport.timeouts) == {77.5}
-    assert [event.kind for event in driver.audit.recent()] and "shot_degraded" in [
-        event.kind for event in driver.audit.recent()]
+    kinds = [event.kind for event in driver.audit.recent()]
+    assert "shot_degraded" not in kinds
+    assert "resume_checkpoint" in kinds
+    assert "shot_advanced" not in kinds
 
 
 def test_repair_non_timeout_error_retries_same_payload_then_recovers():
@@ -256,7 +259,7 @@ def test_a_success_between_failures_starts_a_fresh_ladder():
     assert len(repairs) == 4
 
 
-def test_react_timeout_slims_then_degrades_ending_the_turn():
+def test_react_timeout_slims_then_ends_round_without_shot_degrade():
     transport = LadderTransport(repair_script=[None], react_script=[
         TimeoutError("The read operation timed out"),
         TimeoutError("The read operation timed out"),
@@ -267,15 +270,16 @@ def test_react_timeout_slims_then_degrades_ending_the_turn():
     assert driver.run_to_completion() is DriverState.DONE
 
     reacts = [p for p in transport.payloads if p.purpose is Purpose.REACT]
-    assert len(reacts) == 2, "react 超时 → 瘦身重试 → 降级，不得第三次"
+    assert len(reacts) >= 2, "react 超时后结束当前回合，但不以降级终止镜头"
     assert reacts[1].request_id != reacts[0].request_id
     assert driver.react_history[-1]["reason"].startswith("传输错误")
 
     events = _ladder_events(driver)
-    assert [event.data["stage"] for event in events] == ["slim_retry", "degrade"]
+    assert events[0].data["stage"] == "slim_retry"
     assert all(event.data["shot_id"] == "shot_001" for event in events)
     assert all(missing_event_fields("retry_ladder", event.data) == []
                for event in events)
+    assert "shot_degraded" not in [e.kind for e in driver.audit.recent()]
 
 
 def test_plan_timeout_never_resends_the_identical_full_prompt():

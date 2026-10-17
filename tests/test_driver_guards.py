@@ -97,7 +97,7 @@ def test_the_driver_raises_the_tool_budget_once_the_plan_is_known():
             == driver.limits.max_tool_calls)
 
 
-def test_budget_blocks_repair_but_keeps_the_built_scene():
+def test_budget_blocks_repair_but_keeps_the_built_scene(tmp_path):
     """理解 + 计划用掉仅有的两次调用后，修复被拦下——但场景已经建好了。"""
     transport = RepairingTransport()
     auditor = FakeAuditor([AuditResult(passed=False, target="shot_001",
@@ -106,13 +106,14 @@ def test_budget_blocks_repair_but_keeps_the_built_scene():
     budget = Budget(BudgetLimits(max_llm_calls=2, max_tokens=0,
                                  max_cost_usd=0, max_wall_seconds=0))
     driver = _driver(transport, auditor=auditor, budget=budget)
+    driver._resume_state_path = tmp_path / "resume_state.json"
 
-    assert driver.run_to_completion() is DriverState.DONE
-    assert _purposes(transport) == [Purpose.UNDERSTAND, Purpose.PLAN]
-    assert driver.degraded_reason and "调用次数" in driver.degraded_reason
+    assert driver.run_to_completion() is DriverState.CANCELLED
+    assert _purposes(transport)[:2] == [Purpose.UNDERSTAND, Purpose.PLAN]
+    assert "shot_advanced" not in [e.kind for e in driver.audit.recent()]
     assert driver.snapshot()["built"] is True          # 场景没被丢掉
     kinds = [e.kind for e in driver.audit.recent()]
-    assert "budget_exhausted" in kinds
+    assert "wall_clock_exhausted" in kinds
 
 
 def test_budget_exhausted_before_planning_degrades_immediately():
@@ -126,7 +127,7 @@ def test_budget_exhausted_before_planning_degrades_immediately():
     assert transport.chat_calls == 0     # 一次都没打出去
 
 
-def test_budget_exhaustion_still_audits_every_remaining_shot():
+def test_budget_exhaustion_still_pauses_current_shot(tmp_path):
     """预算触顶**不许**把没审过的镜头丢掉（2026-10-04 实测，long18 六十四镜真跑）。
 
     现场：多轮修复把 token 用量顶到硬编码的 `BudgetLimits.max_tokens`（2 000 000），
@@ -146,23 +147,18 @@ def test_budget_exhaustion_still_audits_every_remaining_shot():
     budget = Budget(BudgetLimits(max_llm_calls=2, max_tokens=0,
                                  max_cost_usd=0, max_wall_seconds=0))
     driver = _driver(transport, auditor=auditor, budget=budget)
+    driver._resume_state_path = tmp_path / "resume_state.json"
 
-    assert driver.run_to_completion() is DriverState.DONE
-    assert driver.degraded_reason and "调用次数" in driver.degraded_reason
+    assert driver.run_to_completion() is DriverState.CANCELLED
+    assert driver.degraded_reason == ""
 
     audits = [entry for entry in driver.audit.recent()
               if getattr(entry, "kind", "") == "shot_audit"]
     audited = [str(entry.data.get("shot")) for entry in audits]
-    assert sorted(audited) == sorted(shots), (
-        f"预算触顶后仍有镜头没被审过：审了 {audited}")
-    #: 卡在修复上的那一镜走的是**正常**路径，它的补审事件不该带标记；
-    #: 其余两镜是补审出来的，必须带，否则读账的人分不清来源。
-    first = next(e for e in audits if e.data.get("shot") == "shot_001")
-    assert "degraded" not in first.data
-    later = [e for e in audits if e.data.get("shot") != "shot_001"]
-    assert later and all(e.data.get("degraded") is True for e in later)
+    assert not audited
+    assert not [e for e in audits if e.data.get("degraded") is True]
     kinds = [entry.kind for entry in driver.audit.recent()]
-    assert "audit_after_budget" in kinds
+    assert "resume_checkpoint" in kinds
     assert not [entry for entry in driver.audit.recent()
                 if getattr(entry, "kind", "") == "repair_applied"], (
         "补审只审不修：不许因此写出 repair_applied")
