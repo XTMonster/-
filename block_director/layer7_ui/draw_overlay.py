@@ -268,17 +268,33 @@ def _draw():                                  # pragma: no cover - 需 GUI
     cache_key = _path_cache_key(frame)
     if cache_key not in _PATH_CACHE:
         _PATH_CACHE.clear()
+        from ..layer3_engine.scene_context import get_context  # noqa: PLC0415
         _PATH_CACHE[cache_key] = _colored_paths_for(get_context())
     ticks = [tick for polyline in _PATH_CACHE[cache_key]
              for tick in path_ticks(polyline.points,
                                     total_frames=max(frame, 1),
                                     interval_frames=12)]
+    #: v1.7 G2：当前帧高亮圆点（画在当前帧对应的刻度上，颜色单独一组）。
+    highlight = None
+    for polyline in _PATH_CACHE[cache_key]:
+        for tick in path_ticks(polyline.points,
+                               total_frames=max(frame, 1),
+                               interval_frames=12):
+            if abs(float(tick[0]) - float(frame)) < 1e-6:
+                highlight = tick
+                break
+        if highlight is not None:
+            break
     area = getattr(context, "area", None)
     width, height = (area.width, area.height) if area else (1, 1)
     grouped = _collect_world_points(region, region_data, geometry)
     for tick in ticks:
         grouped.setdefault(PATH_COLOR, []).append(
             tuple(location_3d_to_region_2d(region, region_data, tick)))
+    if highlight is not None:
+        point = tuple(location_3d_to_region_2d(region, region_data, highlight))
+        if point is not None:
+            grouped.setdefault(VIOLATION_COLOR, []).append(point)
     for color, points in _collect_screen_points(geometry, width, height).items():
         grouped.setdefault(color, []).extend(points)
 
