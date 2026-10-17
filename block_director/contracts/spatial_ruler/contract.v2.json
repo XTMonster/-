@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blockdirector://spatial-ruler/contract/v2",
+  "title": "Spatial Ruler Observation Contract (v2)",
+  "description": "契约本体：字段定义 + 阈值 registry + 插件适配映射。实际观测实例见 examples/，插件映射见 integration/。v1 仅供历史追溯。",
+  "schema_version": "spatial-ruler-observation/v2",
+  "observation_id": "contract-definition",
+  "run_context": {
+    "source_run": "contract-only",
+    "model": null,
+    "status": "completed"
+  },
+  "plugin_adapter": {
+    "consumer": "BlockDirector.audit",
+    "phase": ["pre_build", "post_build"],
+    "blocking_policy": {
+      "error": "blocks",
+      "warning": "persists"
+    },
+    "integration_status": "partial_plan_level_only"
+  },
+  "observation_request": {
+    "targets": [
+      {
+        "shot_id": "<shot_id>",
+        "subject_ids": ["<subject_id>"],
+        "metrics": [
+          "screen_position", "frame_occupancy", "visibility_ratio",
+          "occlusion_ratio", "axis_side", "camera_angle_deg",
+          "duration_delta", "composition_score"
+        ],
+        "sampling": {
+          "frames": ["first", "middle", "last"],
+          "step": 4
+        }
+      }
+    ],
+    "coordinate_system": "normalized_screen_0_1",
+    "fps": 24
+  },
+  "registry": {
+    "rules": {
+      "R001": {
+        "summary": "轴线一致性：画面左右序翻转/轴线重建/机位错侧/表分歧/中性机位连续",
+        "axis_drift_deg": 30.0,
+        "crossing_min_deg": 0.5
+      },
+      "R002": {
+        "summary": "角色与墙体/道具 AABB 穿模",
+        "collision_margin_m": 0.2
+      },
+      "R003": { "summary": "同一角色动作时间重叠" },
+      "R004": { "summary": "相机对准点落在视锥之外" },
+      "R005": {
+        "summary": "角色不在画面内",
+        "frame_margin_ndc": 0.05
+      },
+      "R006": { "summary": "镜头时长非法（≤0 帧）" },
+      "R007": { "summary": "镜头引用不存在角色/无可用相机" },
+      "R008": {
+        "summary": "角色位于地面以下或悬空",
+        "ground_eps_m": 0.02
+      },
+      "R009": {
+        "summary": "机位距离与景别期望偏差超容差",
+        "distance_tolerance": 0.25
+      },
+      "R010": {
+        "summary": "相邻镜同景别同角度缺乏变化（跳切）",
+        "min_angle_deg": 30.0,
+        "shot_size_exemption": "景别差 ≥1 档豁免"
+      },
+      "R011": { "summary": "对白排布超出镜头时长（含收尾余量）" },
+      "R012": {
+        "summary": "两人同框朝向同号未成正反打/眼高差超限",
+        "eye_height_delta_m": 0.15
+      },
+      "R013": { "summary": "视线（gaze）与 SceneBrief 声明不符（strict 升 ERROR）" },
+      "R014": { "summary": "运镜声明合法性（strict 升 ERROR）" },
+      "R015": { "summary": "镜数/时长/景别分布合规（COUNT/DURATION 恒 ERROR）" },
+      "R016": { "summary": "台词归属合规（恒 ERROR / 新编台词 strict 升降）" },
+      "R017": { "summary": "空镜合规（恒 WARNING）" },
+      "R019": {
+        "summary": "银幕方向跨镜翻转且无中性机位过渡",
+        "screen_direction_eps": 0.001
+      },
+      "R020": {
+        "summary": "同一角色跨镜包围盒世界高度漂移超限",
+        "scale_drift": 0.05
+      },
+      "R021": {
+        "summary": "单镜相机轨迹航向突变数 + 声明运镜条目数 ≥ 复合运动上限",
+        "compound_motion_max": 2,
+        "move_heading_turn_deg": 30.0
+      },
+      "R022": {
+        "summary": "相机右向量（视线 × 天顶）投影符号跨帧翻转",
+        "roll_degenerate_deg": 5.0
+      },
+      "R023": {
+        "summary": "相机采样加速度峰值超限",
+        "cam_accel_max_m_s2": 8.0
+      },
+      "R024": {
+        "summary": "分工矛盾：声明 skip 但仍建白模主体 / 动画通道超出白名单",
+        "skip_white_model": "角色级全 skip 不建主体；镜头级 skip 只写元数据跳过渲染"
+      },
+      "R025": {
+        "summary": "镜头 prompt 文本与实测运镜矛盾（LLM 裁决，默认关）",
+        "prompt_conflict_check": false,
+        "measured_camera_fields": ["narration", "start", "end"]
+      },
+      "COMPOSITION": {
+        "summary": "六项加权构图评分门（首/中/尾取最小值）",
+        "pass_score": 70.0,
+        "sample_mode": "min_of_first_middle_last"
+      },
+      "SR001": {
+        "summary": "空间尺：声明白模角色必须进入可执行 characters",
+        "recovery_source": "responsibility.white_model ∩ SceneBrief known names"
+      },
+      "SR002": {
+        "summary": "空间尺：全场时长与节奏",
+        "total_duration_tolerance_s": 0.2,
+        "long_shot_floor_s": 5.0,
+        "monotony_delta_s": 0.5
+      }
+    },
+    "guard": {
+      "edge_clip_max": 0.10,
+      "lead_room_min": 0.05,
+      "sustain_frames": 12,
+      "size_drift": 0.15,
+      "jump_ratio": 0.25,
+      "jump_cut_angle_deg": 30.0,
+      "jump_cut_size_diff": 0.10,
+      "occlusion_warn": 0.20,
+      "sample_step": 4
+    },
+    "composition": {
+      "pass_score": 70.0,
+      "weights": {
+        "headroom": 0.15,
+        "lead_room": 0.20,
+        "rule_of_thirds": 0.15,
+        "balance": 0.15,
+        "occlusion": 0.25,
+        "framing": 0.10
+      },
+      "ray_cast": {
+        "sample_points": 9,
+        "hit_tolerance_m": 0.05,
+        "sampling_layout": "torso 3x2 + head 3"
+      },
+      "headroom_ideal": [0.03, 0.12],
+      "headroom_band": [0.03, 0.10],
+      "thirds": [0.333333, 0.666667]
+    }
+  },
+  "shot_specs": [],
+  "camera_specs": [],
+  "measurements": [],
+  "verdicts": [],
+  "prescriptions": []
+}

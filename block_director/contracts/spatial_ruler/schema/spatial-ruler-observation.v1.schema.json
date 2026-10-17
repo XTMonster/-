@@ -1,0 +1,338 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blockdirector://spatial-ruler/observation/v2",
+  "title": "Spatial Ruler Observation Contract v2",
+  "description": "空间尺观测扩展契约：观测请求 -> 配置阈值 -> 观测 -> 判定 -> 处方 -> 插件适配。来源四态强制；verdict 必须带 expected/actual/threshold；prescription 必须带前后置测量引用。",
+  "type": "object",
+  "required": [
+    "schema_version", "observation_id", "run_context", "plugin_adapter",
+    "observation_request", "registry", "shot_specs", "camera_specs",
+    "measurements", "verdicts", "prescriptions"
+  ],
+  "properties": {
+    "schema_version": { "const": "spatial-ruler-observation/v2" },
+    "observation_id": { "type": "string", "minLength": 1 },
+    "$schema": { "type": "string", "description": "允许 JSON Schema 自描述头；观测实例可省略" },
+    "$id": { "type": "string", "description": "允许 JSON Schema 自描述头；观测实例可省略" },
+    "title": { "type": "string", "description": "允许 JSON Schema 自描述头；观测实例可省略" },
+    "description": { "type": "string", "description": "允许 JSON Schema 自描述头；观测实例可省略" },
+    "run_context": {
+      "type": "object",
+      "required": ["source_run", "status"],
+      "properties": {
+        "source_run": { "type": "string" },
+        "model": { "type": ["string", "null"] },
+        "status": { "enum": ["completed", "completed_with_repairs", "blocked", "failed"] },
+        "summary": { "type": "object" }
+      }
+    },
+    "plugin_adapter": {
+      "type": "object",
+      "required": ["consumer", "phase", "blocking_policy", "integration_status"],
+      "properties": {
+        "consumer": { "const": "BlockDirector.audit" },
+        "phase": {
+          "type": "array",
+          "items": { "enum": ["pre_build", "post_build", "post_export"] },
+          "minItems": 1
+        },
+        "blocking_policy": {
+          "type": "object",
+          "required": ["error", "warning"],
+          "properties": {
+            "error": { "const": "blocks" },
+            "warning": { "const": "persists" }
+          }
+        },
+        "integration_status": {
+          "enum": ["planned", "partial_plan_level_only", "full_pre_build", "full_post_build", "full"]
+        }
+      }
+    },
+    "observation_request": {
+      "type": "object",
+      "required": ["targets", "coordinate_system", "fps"],
+      "properties": {
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/observation_target" }
+        },
+        "coordinate_system": { "const": "normalized_screen_0_1" },
+        "fps": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "registry": { "$ref": "#/$defs/registry" },
+    "shot_specs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/shot_spec" }
+    },
+    "camera_specs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/camera_spec" }
+    },
+    "measurements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/measurement" }
+    },
+    "verdicts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/verdict" }
+    },
+    "prescriptions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/prescription" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "provenance": {
+      "enum": ["script_declaration", "plan_intent", "algorithmic_measurement", "blender_geometry"]
+    },
+    "observation_target": {
+      "type": "object",
+      "required": ["shot_id", "subject_ids", "metrics", "sampling"],
+      "properties": {
+        "shot_id": { "type": "string" },
+        "subject_ids": { "type": "array", "items": { "type": "string" } },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/metric_name" }
+        },
+        "sampling": {
+          "type": "object",
+          "required": ["frames", "step"],
+          "properties": {
+            "frames": {
+              "type": "array",
+              "items": { "enum": ["first", "middle", "last"] }
+            },
+            "step": { "type": "integer", "minimum": 1 }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "metric_name": {
+      "enum": [
+        "duration", "total_duration", "shot_count", "duration_delta", "order",
+        "camera_angle_deg", "axis_side", "screen_position", "screen_order",
+        "frame_occupancy", "inside_ratio", "visibility_ratio", "occlusion_ratio",
+        "headroom", "lead_room", "thirds_deviation", "edge_clip",
+        "body_height_ratio", "head_height_ratio", "composition_score",
+        "composition_headroom", "composition_lead_room", "composition_thirds",
+        "composition_balance", "composition_occlusion", "composition_framing",
+        "distance_from_subject", "lens", "clamped", "camera_height",
+        "shot_size_readback", "scale_drift", "camera_accel", "motion_complexity",
+        "heading_turn_count", "camera_right_vector_flip", "roll_flip",
+        "cast_presence", "camera_presence", "aabb_collision", "penetration_margin",
+        "action_overlap", "target_in_frustum", "ground_z", "aabb_min_z",
+        "shot_size_delta", "dialogue_end_frame", "tail_frames", "facing_sign",
+        "screen_facing_sign", "eye_height_delta", "gaze_match",
+        "movement_declared", "movement_motivation", "shot_type_distribution",
+        "empty_shot_purpose", "dialogue_verbatim", "neutral_camera"
+      ]
+    },
+    "registry": {
+      "type": "object",
+      "required": ["rules", "guard", "composition"],
+      "properties": {
+        "rules": {
+          "type": "object",
+          "description": "R001-R023 + COMPOSITION 的阈值注册表；与 rule_catalog.py 对拍（测试强制）。",
+          "additionalProperties": { "type": "object" }
+        },
+        "guard": {
+          "type": "object",
+          "required": [
+            "edge_clip_max", "lead_room_min", "sustain_frames", "size_drift",
+            "jump_ratio", "jump_cut_angle_deg", "jump_cut_size_diff",
+            "occlusion_warn", "sample_step"
+          ],
+          "properties": {
+            "edge_clip_max": { "type": "number" },
+            "lead_room_min": { "type": "number" },
+            "sustain_frames": { "type": "integer" },
+            "size_drift": { "type": "number" },
+            "jump_ratio": { "type": "number" },
+            "jump_cut_angle_deg": { "type": "number" },
+            "jump_cut_size_diff": { "type": "number" },
+            "occlusion_warn": { "type": "number" },
+            "sample_step": { "type": "integer" }
+          }
+        },
+        "composition": {
+          "type": "object",
+          "required": ["pass_score", "weights", "ray_cast"],
+          "properties": {
+            "pass_score": { "type": "number" },
+            "weights": {
+              "type": "object",
+              "required": ["headroom", "lead_room", "rule_of_thirds", "balance", "occlusion", "framing"],
+              "properties": {
+                "headroom": { "type": "number" },
+                "lead_room": { "type": "number" },
+                "rule_of_thirds": { "type": "number" },
+                "balance": { "type": "number" },
+                "occlusion": { "type": "number" },
+                "framing": { "type": "number" }
+              }
+            },
+            "ray_cast": {
+              "type": "object",
+              "required": ["sample_points", "hit_tolerance_m"],
+              "properties": {
+                "sample_points": { "const": 9 },
+                "hit_tolerance_m": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shot_spec": {
+      "type": "object",
+      "required": ["shot_id", "order", "declared", "planned"],
+      "properties": {
+        "shot_id": { "type": "string" },
+        "order": { "type": "integer", "minimum": 1 },
+        "declared": {
+          "type": "object",
+          "required": ["seconds", "frames"],
+          "properties": {
+            "seconds": { "type": ["number", "null"] },
+            "frames": { "type": ["integer", "null"] },
+            "shot_type": { "type": ["string", "null"] },
+            "characters": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "planned": {
+          "type": "object",
+          "required": ["seconds", "frames", "shot_type", "characters"],
+          "properties": {
+            "seconds": { "type": "number" },
+            "frames": { "type": "integer" },
+            "shot_type": { "type": "string" },
+            "characters": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "camera_spec": {
+      "type": "object",
+      "required": [
+        "shot_id", "shot_type", "lens", "frame_height", "distance",
+        "side", "position", "target", "camera_height", "aim_offset_x",
+        "aim_offset_y", "sensor_width", "aspect", "clamped", "source"
+      ],
+      "properties": {
+        "shot_id": { "type": "string" },
+        "shot_type": { "type": "string" },
+        "lens": { "type": ["number", "null"], "description": "焦距 mm；未实测为 null" },
+        "frame_height": { "type": ["number", "null"], "description": "画面纵向覆盖高度（Blender 单位）；未实测为 null" },
+        "distance": { "type": ["number", "null"], "description": "机位到对准点距离（m）；未实测为 null" },
+        "side": {
+          "type": ["string", "null"],
+          "enum": ["front", "back", "left", "right", "front_left", "front_right", "back_left", "back_right", "over_shoulder", null]
+        },
+        "direction": { "type": ["array", "null"], "items": { "type": "number" } },
+        "position": {
+          "type": ["array", "null"], "items": { "type": "number" }, "minItems": 3, "maxItems": 3,
+          "description": "机位世界坐标；未落盘为 null（诚实标注缺测）"
+        },
+        "target": {
+          "type": ["array", "null"], "items": { "type": "number" }, "minItems": 3, "maxItems": 3,
+          "description": "对准点世界坐标；未落盘为 null（诚实标注缺测）"
+        },
+        "camera_height": { "type": ["number", "null"] },
+        "aim_offset_x": { "type": ["number", "null"], "description": "对准点横向偏移，单位幅宽" },
+        "aim_offset_y": { "type": ["number", "null"], "description": "对准点竖直偏移，单位米" },
+        "sensor_width": { "type": "number" },
+        "aspect": { "type": "number" },
+        "clamped": { "type": "boolean" },
+        "source": { "$ref": "#/$defs/provenance" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "measurement": {
+      "type": "object",
+      "required": ["measurement_id", "shot_id", "metric", "value", "unit", "source", "provenance"],
+      "properties": {
+        "measurement_id": { "type": "string" },
+        "shot_id": { "type": "string" },
+        "transition_id": { "type": ["string", "null"] },
+        "subject_id": { "type": ["string", "null"] },
+        "frame": { "type": ["string", "integer", "null"], "description": "采样帧：'first'/'middle'/'last' 或帧号" },
+        "metric": { "$ref": "#/$defs/metric_name" },
+        "value": { "type": ["number", "boolean", "string", "object", "array", "null"] },
+        "expected": { "type": ["number", "boolean", "string", "object", "array", "null"], "description": "标量或区间 [lo, hi]；区间用于景别占比期望" },
+        "unit": { "type": "string", "description": "seconds/frames/degrees/meters/ndc/score_0_100/ratio/none 等" },
+        "source": { "$ref": "#/$defs/provenance" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "verdict": {
+      "type": "object",
+      "required": [
+        "verdict_id", "shot_id", "rule_code", "status", "severity",
+        "expected", "actual", "threshold", "unit", "evidence", "provenance"
+      ],
+      "properties": {
+        "verdict_id": { "type": "string" },
+        "shot_id": { "type": "string" },
+        "transition_id": { "type": ["string", "null"] },
+        "rule_code": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["pass", "warning", "repair", "blocked"] },
+        "severity": { "enum": ["info", "warning", "error"] },
+        "expected": { "type": ["number", "boolean", "string", "object", "array", "null"] },
+        "actual": { "type": ["number", "boolean", "string", "object", "array", "null"] },
+        "threshold": { "type": ["number", "boolean", "string", "object", "array", "null"] },
+        "unit": { "type": "string" },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "measurement_id 或审计事件定位，链路测试强制引用存在"
+        },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "message": { "type": "string" },
+        "suggestion": { "type": "string" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "prescription": {
+      "type": "object",
+      "required": [
+        "prescription_id", "shot_id", "operation", "parameters",
+        "precondition_measurement_ids", "postcondition_measurement_ids",
+        "postcondition", "applied"
+      ],
+      "properties": {
+        "prescription_id": { "type": "string" },
+        "shot_id": { "type": "string" },
+        "operation": {
+          "enum": ["retime_shot", "restore_cast", "reframe", "move_character", "change_camera_side", "review_transition"]
+        },
+        "parameters": { "type": "object" },
+        "precondition_measurement_ids": {
+          "type": "array", "items": { "type": "string" }
+        },
+        "postcondition_measurement_ids": {
+          "type": "array", "items": { "type": "string" }
+        },
+        "postcondition": { "type": "string" },
+        "applied": { "type": "boolean" },
+        "applied_at": { "type": ["string", "null"] },
+        "waived": { "type": "boolean" },
+        "waive_reason": { "type": "string" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

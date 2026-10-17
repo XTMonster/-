@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blockdirector://spatial-ruler/contract/v1",
+  "title": "BlockDirector Spatial Ruler Records",
+  "type": "object",
+  "required": ["schema_version", "run_id", "shot_specs", "measurements", "verdicts", "prescriptions"],
+  "properties": {
+    "schema_version": {"const": "spatial-ruler/v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "shot_specs": {"type": "array", "items": {"$ref": "#/$defs/shot_spec"}},
+    "measurements": {"type": "array", "items": {"$ref": "#/$defs/measurement"}},
+    "verdicts": {"type": "array", "items": {"$ref": "#/$defs/verdict"}},
+    "prescriptions": {"type": "array", "items": {"$ref": "#/$defs/prescription"}}
+  },
+  "$defs": {
+    "shot_spec": {
+      "type": "object",
+      "required": ["shot_id", "order", "declared", "planned", "provenance"],
+      "properties": {
+        "shot_id": {"type": "string"},
+        "order": {"type": "integer", "minimum": 1},
+        "declared": {"type": "object", "required": ["seconds", "frames"], "properties": {"seconds": {"type": ["number", "null"]}, "frames": {"type": ["integer", "null"]}, "shot_type": {"type": ["string", "null"]}, "characters": {"type": "array", "items": {"type": "string"}}}},
+        "planned": {"type": "object", "required": ["seconds", "frames", "shot_type", "characters"], "properties": {"seconds": {"type": "number"}, "frames": {"type": "integer"}, "shot_type": {"type": "string"}, "characters": {"type": "array", "items": {"type": "string"}}}},
+        "provenance": {"enum": ["script_declaration", "plan_intent", "algorithmic_measurement", "blender_geometry"]}
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "required": ["measurement_id", "shot_id", "metric", "value", "unit", "source"],
+      "properties": {
+        "measurement_id": {"type": "string"},
+        "shot_id": {"type": "string"},
+        "metric": {"type": "string"},
+        "value": {},
+        "expected": {},
+        "unit": {"type": "string"},
+        "source": {"enum": ["script_declaration", "plan_intent", "algorithmic_measurement", "blender_geometry"]}
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "required": ["verdict_id", "shot_id", "rule_code", "status", "severity", "evidence"],
+      "properties": {
+        "verdict_id": {"type": "string"},
+        "shot_id": {"type": "string"},
+        "rule_code": {"type": "string"},
+        "status": {"enum": ["pass", "warning", "repair", "blocked"]},
+        "severity": {"enum": ["info", "warning", "error"]},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "message": {"type": "string"}
+      }
+    },
+    "prescription": {
+      "type": "object",
+      "required": ["prescription_id", "shot_id", "operation", "parameters", "postcondition"],
+      "properties": {
+        "prescription_id": {"type": "string"},
+        "shot_id": {"type": "string"},
+        "operation": {"enum": ["retime_shot", "restore_cast", "reframe", "move_character", "change_camera_side", "review_transition"]},
+        "parameters": {"type": "object"},
+        "postcondition": {"type": "string"},
+        "applied": {"type": "boolean"}
+      }
+    }
+  }
+}

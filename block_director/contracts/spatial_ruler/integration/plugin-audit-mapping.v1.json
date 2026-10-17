@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blockdirector://spatial-ruler/integration/plugin-audit-mapping/v1",
+  "title": "Plugin Audit Mapping (v1) — 准备层",
+  "description": "把 BlockDirector 现有 AuditError（rule/code）映射到空间尺观测契约的规则段、测量类型、接入阶段与阻塞策略。integration_status=planned/partial：本文件定义映射，不等同于插件已完整消费 JSON。",
+  "schema_version": "plugin-audit-mapping/v1",
+  "integration_status": "partial_plan_level_only",
+  "consumer": "BlockDirector.audit",
+  "mappings": [
+    {
+      "audit_rule": "SR001",
+      "audit_code": "E_SCRIPT",
+      "observation_rule": "SR001",
+      "metrics": ["cast_presence"],
+      "phase": ["pre_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "restore_cast 处方：从 responsibility.white_model ∩ SceneBrief 恢复，未知元素不猜"
+    },
+    {
+      "audit_rule": "SR002",
+      "audit_code": "E_RHYTHM",
+      "observation_rule": "SR002",
+      "metrics": ["total_duration", "duration", "shot_count"],
+      "phase": ["pre_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "retime_shot 处方：按声明总时长重分配，不得让台词自行拉长"
+    },
+    {
+      "audit_rule": "R001",
+      "audit_code": "E_AXIS_001",
+      "observation_rule": "R001",
+      "metrics": ["axis_side", "screen_order", "camera_angle_deg", "neutral_camera"],
+      "phase": ["post_build"],
+      "blocking": "error_blocks_warning_persists",
+      "adapter_action": "change_camera_side 或插入中性机位；看得见的换位豁免"
+    },
+    {
+      "audit_rule": "R002",
+      "audit_code": "E_SPACE_001",
+      "observation_rule": "R002",
+      "metrics": ["aabb_collision", "penetration_margin"],
+      "phase": ["post_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "move_character 移开或缩道具"
+    },
+    {
+      "audit_rule": "R003",
+      "audit_code": "E_SDL_001",
+      "observation_rule": "R003",
+      "metrics": ["action_overlap"],
+      "phase": ["post_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "动作错开（串行化）"
+    },
+    {
+      "audit_rule": "R004",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "R004",
+      "metrics": ["screen_position", "target_in_frustum"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "reframe 对准被摄主体"
+    },
+    {
+      "audit_rule": "R005",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "R005",
+      "metrics": ["screen_position", "frame_occupancy", "inside_ratio"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "reframe 或让角色回画"
+    },
+    {
+      "audit_rule": "R006",
+      "audit_code": "E_SDL_001",
+      "observation_rule": "R006",
+      "metrics": ["duration"],
+      "phase": ["pre_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "retime_shot 修正帧数"
+    },
+    {
+      "audit_rule": "R007",
+      "audit_code": "E_SDL_001",
+      "observation_rule": "R007",
+      "metrics": ["cast_presence", "camera_presence"],
+      "phase": ["pre_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "restore_cast 或补相机"
+    },
+    {
+      "audit_rule": "R008",
+      "audit_code": "E_SPACE_001",
+      "observation_rule": "R008",
+      "metrics": ["ground_z", "aabb_min_z"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "move_character 抬回地面/落回绝对地面"
+    },
+    {
+      "audit_rule": "R009",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "R009",
+      "metrics": ["distance_from_subject", "lens", "frame_height"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "reframe（setup_camera）按景别重新取景"
+    },
+    {
+      "audit_rule": "R010",
+      "audit_code": "E_AXIS_001",
+      "observation_rule": "R010",
+      "metrics": ["camera_angle_deg", "shot_size_delta"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "change_camera_side 改变机位角度或景别一档"
+    },
+    {
+      "audit_rule": "R011",
+      "audit_code": "E_SDL_001",
+      "observation_rule": "R011",
+      "metrics": ["dialogue_end_frame", "duration", "tail_frames"],
+      "phase": ["pre_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "retime_shot 加长镜头或前移对白"
+    },
+    {
+      "audit_rule": "R012",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "R012",
+      "metrics": ["facing_sign", "eye_height_delta"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "相对而立 face_character 或改单人镜"
+    },
+    {
+      "audit_rule": "R013",
+      "audit_code": "E_SCRIPT",
+      "observation_rule": "R013",
+      "metrics": ["gaze_match"],
+      "phase": ["pre_build"],
+      "blocking": "strict_error_warning_persists",
+      "adapter_action": "计划层修正 gaze 字段"
+    },
+    {
+      "audit_rule": "R014",
+      "audit_code": "E_SCRIPT",
+      "observation_rule": "R014",
+      "metrics": ["movement_declared", "movement_motivation"],
+      "phase": ["pre_build"],
+      "blocking": "strict_error_warning_persists",
+      "adapter_action": "计划层补运镜动机或删声明"
+    },
+    {
+      "audit_rule": "R015",
+      "audit_code": "E_SCRIPT",
+      "observation_rule": "R015",
+      "metrics": ["shot_count", "order", "duration", "shot_type_distribution"],
+      "phase": ["pre_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "计划层按声明重排/补齐"
+    },
+    {
+      "audit_rule": "R016",
+      "audit_code": "E_SCRIPT",
+      "observation_rule": "R016",
+      "metrics": ["dialogue_verbatim"],
+      "phase": ["pre_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "台词逐字还原，禁新编"
+    },
+    {
+      "audit_rule": "R017",
+      "audit_code": "E_SCRIPT",
+      "observation_rule": "R017",
+      "metrics": ["empty_shot_purpose"],
+      "phase": ["pre_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "空镜声明用途（建立/留白/转场）"
+    },
+    {
+      "audit_rule": "R019",
+      "audit_code": "E_AXIS_001",
+      "observation_rule": "R019",
+      "metrics": ["screen_facing_sign", "neutral_camera"],
+      "phase": ["post_build"],
+      "blocking": "strict_error_warning_persists",
+      "adapter_action": "保持同侧或插中性机位"
+    },
+    {
+      "audit_rule": "R020",
+      "audit_code": "E_SPACE_001",
+      "observation_rule": "R020",
+      "metrics": ["scale_drift"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "对齐角色世界高度"
+    },
+    {
+      "audit_rule": "R021",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "R021",
+      "metrics": ["motion_complexity", "heading_turn_count"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "建议拆镜"
+    },
+    {
+      "audit_rule": "R022",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "R022",
+      "metrics": ["camera_right_vector_flip"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "检查 up 翻转关键帧"
+    },
+    {
+      "audit_rule": "R023",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "R023",
+      "metrics": ["camera_accel"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "降低运镜加速度峰值"
+    },
+    {
+      "audit_rule": "R024",
+      "audit_code": "E_ANIM_001",
+      "observation_rule": "R024",
+      "metrics": ["skip_white_model_declared", "white_model_built", "animation_channel_whitelist"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "按 skip 层级操作化：角色级全 skip 不建主体；镜头级只写元数据跳过渲染；白名单外动画通道移除或声明"
+    },
+    {
+      "audit_rule": "R025",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "R025",
+      "metrics": ["prompt_conflict", "measured_camera_narration", "measured_start_bearing", "measured_end_bearing"],
+      "phase": ["post_build"],
+      "blocking": "warning_persists",
+      "adapter_action": "LLM 裁决层在 submit_review.prompt_conflict 报文本矛盾；校验层只产 measured_camera 数据不做语义判断；默认关"
+    },
+    {
+      "audit_rule": "COMPOSITION",
+      "audit_code": "E_CAM_001",
+      "observation_rule": "COMPOSITION",
+      "metrics": [
+        "composition_score", "composition_headroom", "composition_lead_room",
+        "composition_thirds", "composition_balance", "composition_occlusion",
+        "composition_framing", "visibility_ratio", "occlusion_ratio",
+        "screen_position", "frame_occupancy"
+      ],
+      "phase": ["post_build"],
+      "blocking": "error_blocks",
+      "adapter_action": "reframe / move_character / change_camera_side 六项定向修复"
+    },
+    {
+      "audit_rule": "GUARD",
+      "audit_code": "E_GUARD_001",
+      "observation_rule": "GUARD",
+      "metrics": [
+        "visibility_ratio", "edge_clip", "lead_room", "headroom",
+        "body_height_ratio", "head_height_ratio", "thirds_deviation",
+        "camera_angle_deg", "size_drift", "jump_ratio"
+      ],
+      "phase": ["post_build"],
+      "blocking": "warning_persists_error_blocks_hard_events",
+      "adapter_action": "按 guard 告警类型（subject_behind_camera / subject_out_of_frame / subject_not_visible / occlusion / jump_cut_risk ...）定向修复"
+    }
+  ],
+  "unmapped_notes": [
+    "当前插件接入只有计划级（SR001/SR002 经 spatial_ruler.py 在 driver 内消费）；",
+    "几何级 JSON 序列化（camera_specs / measurements / verdicts）尚未由 shot_auditor 自动写入本目录——mapping 定义先行，生产接入按 ticket 04/05/06 实施；",
+    "GUARD 告警类型闭集见 frustum_metrics.py：subject_behind_camera / subject_out_of_frame / subject_not_visible / sudden_jump / framing_too_tight / framing_too_loose / headroom_off / lead_room_short / edge_clip / occlusion / size_drift / unplanned_exit / jump_cut_risk / pace_monotony / thirds_deviation"
+  ]
+}
