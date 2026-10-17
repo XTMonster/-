@@ -377,11 +377,22 @@ def t_rule_r002_collision():
 # 9. R003 动作时间重叠
 # --------------------------------------------------------------------------- #
 def t_rule_r003_action_overlap():
-    _summary, context, _registry, auditor = _built_with_tools()
+    #: 用无动作基线（two_shot_plan(with_actions=False)）：带 sit 的默认夹具
+    #: 在构图门升到 PASS_SCORE=80 后基线分 78.8 不过（sit drop=0.2 把主体
+    #: 压矮，MCU framing 偏差超限），探针的 ``clean.passed`` 前提会被
+    #: 构图门打掉而不是 R003。这里显式用站姿基线，重叠由下面两个动作构造。
+    fresh_scene()
+    build_scene(two_shot_plan(with_actions=False), clear_scene=True)
+    context = get_context()
+    auditor = BpyShotAuditor()
     clean = auditor.audit("shot_002")
     shot = context.shot("shot_002")
     shot.actions.append({"character_id": "char_002", "action_type": "nod",
                          "start_frame": 10, "end_frame": 40,
+                         "params": {"cycles": 2}})
+    shot.actions.append({"character_id": "char_002",
+                         "action_type": "shake_head",
+                         "start_frame": 20, "end_frame": 50,
                          "params": {"cycles": 2}})
     overlapped = auditor.audit("shot_002")
     rules = {f.rule for f in overlapped.errors}
