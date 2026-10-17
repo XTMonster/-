@@ -69,6 +69,14 @@ def run_headless(
                           scene_state_provider=scene_state_provider,
                           human_gate=human_gate,
                           knowledge=_make_knowledge(config, transport, audit))
+    # v1.7 D1：运行入口一行注册 UI 事件桥（ui.enabled=false 则 no-op）。
+    if getattr(config.ui, "enabled", True):
+        from .ui_bridge import UIBridge, make_observer
+
+        bridge = UIBridge(url=config.llm.sidecar_url,
+                          token=config.llm.sidecar_token,
+                          enabled=True, timeout=0.5)
+        driver.add_observer(make_observer(bridge))
 
     log.info("headless 运行开始（模式=%s，run_id=%s）", mode, audit.run_id)
     state = driver.run_to_completion(poll_interval=poll_interval,

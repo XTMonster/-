@@ -188,6 +188,14 @@ def build_run_context(context, *, builder=_DEFAULT_BUILDER, auditor=None,
             vlm_transport=transport),
         knowledge=_make_knowledge(run_config, transport, audit),
     )
+    # v1.7 D1：GUI 运行入口一行注册 UI 事件桥（ui.enabled=false 则 no-op）。
+    if getattr(run_config.ui, "enabled", True):
+        from .ui_bridge import UIBridge, make_observer
+
+        bridge = UIBridge(url=run_config.llm.sidecar_url,
+                          token=run_config.llm.sidecar_token,
+                          enabled=True, timeout=0.5)
+        driver.add_observer(make_observer(bridge))
     return RunContext(driver=driver, config=run_config, mode=mode,
                       builder=builder, checkpoints=checkpoints)
 
