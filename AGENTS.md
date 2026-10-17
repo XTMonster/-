@@ -377,7 +377,7 @@ assistant-panel/sprite/ruler-probe）、pytest 4101 passed / 2 skipped、
 冻结链于 `950875a` 捕获，其后 `5e1cf38`/`8dd596b` 为纯台账文本提交
 （PROGRESS/AGENTS 状态行），代码树与链读数不变。
 
-**2026-10-18 空间尺转正批（HEAD 推进到 `b3784c7`）**：空间尺观测扩展线 01–06
+**2026-10-18 空间尺转正批（HEAD 推进到 `f54d417`）**：空间尺观测扩展线 01–06
 （契约资产 `8fefc70`、行内镜头/计划级 `5da59db`、测量/处方/交付 `8da4d8b`、
 replay 证据 `a549f7f`，台账登记 `901bb40`）与转正批 `b3784c7`（12 文件
 +335/−19：`RulerConfig.enabled` 默认 `False→True`（运行时仍可显式关闭，非降级）；
@@ -385,10 +385,23 @@ replay 证据 `a549f7f`，台账登记 `901bb40`）与转正批 `b3784c7`（12 �
 支持 `applied_prescriptions` 合并（integration 动态 `full`/`full_pre_build`）；
 `driver._auto_reframe_from_ruler` 相机几何闭环（guard 告警→确定性 reframe 处方，
 同镜最多一次防振荡，成功回写审计事件、失败保留原 LLM 修复回路）；
-`_ruler_enabled()` 统一总开关，`enabled=False` 全链路零行为差）均已入库；
-新增 `tests/test_ruler_internal_camera_repair.py`（5 用例）；**全量 pytest
-4186 passed / 2 skipped**（2026-10-18 实读，`-o addopts=""`，exit 0）、
-gen_specs --check OK、定向 ruler/driver 回归 118 passed；链规模仍
+`_ruler_enabled()` 统一总开关，`enabled=False` 全链路零行为差）均已入库。
+第二批转正增量（`f54d417`，31 文件 +2590/−251）：`audit_json` 统一审核入口被
+driver 消费（外部回放/交付只消费这一份稳定结构）；逐镜六层评测
+（`RulerReview`，新模块 `cinema/ruler_review.py` + `ruler_bridge.py`）随
+`shot_audit` 落盘、`FINISHING` 补序列级 continuity 复核（`attach_sequence_review`
+＋ `ruler_probe.collect_shot_samples` 全场一次采样）；`collect_shot_review` 让
+测量与六层评测同一次采样产出；已应用处方按 `prescription_id` **补丁语义**合并
+（缺省字段沿用默认版，驱动侧不重复维护整套字段）；headless 落盘优先内存折好的
+观测（与交付逐字节一致），兜底重放同补丁语义；构图门 `PASS_SCORE` **70→80
+且严格高于（等于不算过）**，全仓库同源同步（composition/prescription/
+rule_checker/shot_auditor/react/知识卡/契约/样例），契约示例
+dock-market 的 verdict 语义与新门槛自洽；`enabled=False` 全链路零行为差不变。
+新增 `tests/test_ruler_internal_camera_repair.py`（7 用例）、
+`test_ruler_bridge.py`/`test_ruler_review.py`/`test_ruler_review_integration.py`/
+`test_spatial_ruler_audit_json.py`；**全量 pytest
+4219 passed / 2 skipped**（2026-10-18 实读，`-o addopts=""`，212.24s，exit 0）、
+gen_specs --check OK、定向 ruler/driver 回归 149 passed；链规模仍
 **44 支探针 / 48 步链**（转正批未新增探针）、门①–⑩ 全 pass、
 `holdout_gates.overall == "pass"`（仍指 `docs/evidence/20261017-103308/`）、
 唯一红 RK-13/E1 为已结案残留（判据未动）；空间尺 real judge A/B 与
