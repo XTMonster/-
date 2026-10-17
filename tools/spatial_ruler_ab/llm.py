@@ -7,6 +7,7 @@ judge=real:<model>（evidence_grade=ab_result）。报告必须标注判官种�
 from __future__ import annotations
 
 import json
+import os
 import re
 import urllib.request
 from typing import Any, Dict, Optional
@@ -175,7 +176,9 @@ def _strip_fences(content: str) -> str:
 class RealJudge:
     """OpenAI 兼容判官：urllib 直连，零第三方依赖。
 
-    环境变量：SR_EVAL_API_BASE / SR_EVAL_API_KEY / SR_EVAL_MODEL。
+    环境变量：SR_EVAL_API_BASE / SR_EVAL_API_KEY / SR_EVAL_MODEL；
+    wire 默认 chat/completions，SR_EVAL_WIRE=responses 时走 /responses
+    （goaichat 中转只提供 /responses 时使用）。
     输出必须是纯 JSON；解析失败重试并最终记为 parse_error（判定为错）。
     """
 
@@ -188,6 +191,7 @@ class RealJudge:
         self.api_key = api_key
         self.model = model
         self.timeout = timeout
+        self.wire = os.environ.get("SR_EVAL_WIRE", "chat").lower()
 
     def _parse_json(self, content: str) -> Dict[str, Any]:
         text = _strip_fences(content)
@@ -200,6 +204,35 @@ class RealJudge:
             return json.loads(match.group(0))
 
     def _call(self, prompt: str, use_format: bool) -> Dict[str, Any]:
+        if self.wire == "responses":
+            body: Dict[str, Any] = {
+                "model": self.model,
+                "instructions": "你是空间构图评审。只输出 JSON，不输出任何解释。",
+                "input": prompt,
+            }
+            if use_format:
+                body["response_format"] = {"type": "json_object"}
+            req = urllib.request.Request(
+                f"{self.api_base}/responses",
+                data=json.dumps(body).encode("utf-8"),
+                headers={"Content-Type": "application/json",
+                         "Authorization": f"Bearer {self.api_key}"},
+                method="POST")
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            out = data.get("output_text")
+            if out is None:
+                parts = []
+                for item in data.get("output", []) or []:
+                    if item.get("type") == "message":
+                        for c in item.get("content", []) or []:
+                            if c.get("type") in ("output_text", "text"):
+                                parts.append(c.get("text", ""))
+                out = "".join(parts)
+            if not out:
+                raise ValueError(
+                    f"/responses 无文本输出: {str(data)[:300]!r}")
+            return json.loads(out)
         body: Dict[str, Any] = {
             "model": self.model,
             "messages": [

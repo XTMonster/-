@@ -518,6 +518,27 @@ def call_upstream(config: "SidecarConfig", payload: Dict[str, Any]
                                  f"上游返回 {status}", http_status=status,
                                  body=text[:2000])
         return _ollama_reply(json.loads(text))
+    if config.kind == "responses":
+        #: goaichat 中转（当前模型 kimi-k3 的通道）只提供 ``/responses``，
+        #: 不提供 ``/chat/completions``（实测上游 401）。供应商差异归 sidecar
+        #: 承担，插件侧线协议不变：这里只做 msg/tool 形状转换。
+        url = f"{config.upstream}/responses"
+        body = _responses_body(config, payload)
+        status, text = _post_json(url, body, config.timeout,
+                                  _upstream_headers(config))
+        if not 200 <= status < 300:
+            print(json.dumps(
+                {"upstream_error": status,
+                 "body_excerpt": sanitize_upstream_body(text, config)[:500]},
+                ensure_ascii=False), file=sys.stderr, flush=True)
+            raise TransportError(_code_for(status), f"上游返回 {status}",
+                                 http_status=status, body=text[:2000])
+        try:
+            return _responses_reply(json.loads(text))
+        except TransportError as exc:
+            log_reply_parse_failure(text, exc, status)
+            raise TransportError(exc.code, str(exc), http_status=status,
+                                 body=exc.body) from exc
     url = f"{config.upstream}/chat/completions"
     if getattr(config, "strict_tools", False):
         # DeepSeek strict（Beta）要求 base_url 带 /beta 段；其余拼接规则不变。
@@ -601,6 +622,166 @@ def _openai_body(config: "SidecarConfig", payload: Dict[str, Any]
     if effort:
         body["reasoning_effort"] = effort
     return body
+
+
+def _responses_body(config: "SidecarConfig", payload: Dict[str, Any]
+                    ) -> Dict[str, Any]:
+    """把插件侧的 ChatPayload 转成 OpenAI Responses API 请求体。
+
+    关键形状差异（Responses vs Chat Completions）：
+    - ``messages`` 换 ``input``（历史里的 assistant ``tool_calls`` 变平铺的
+      ``function_call`` item、``role=tool`` 消息变 ``function_call_output``）；
+    - ``max_tokens`` 换 ``max_output_tokens``；
+    - 工具声明从 ``{type:function, function:{...}}`` 拍平成
+      ``{type:function, name, description, parameters}``。
+    """
+    body: Dict[str, Any] = {
+        "model": config.model,
+        "input": _responses_input(payload.get("messages", [])),
+        "temperature": payload.get("temperature", config.temperature),
+    }
+    seed = payload.get("seed", config.seed)
+    if seed is not None:
+        body["seed"] = int(seed)
+    if payload.get("tools"):
+        body["tools"] = [_responses_tool(tool) for tool in payload["tools"]]
+    if payload.get("tool_choice"):
+        mode = str(getattr(config, "tool_choice_mode", "passthrough")
+                   or "passthrough")
+        choice = payload["tool_choice"]
+        if mode == "auto" and (choice == "required" or isinstance(choice, dict)):
+            body["tool_choice"] = "auto"
+        elif mode == "drop":
+            pass
+        else:
+            body["tool_choice"] = choice
+    limit = payload.get("max_tokens") or config.max_tokens
+    if limit:
+        body["max_output_tokens"] = int(limit)
+    effort = str(getattr(config, "reasoning_effort", "") or "").strip()
+    if effort:
+        body["reasoning_effort"] = effort
+    return body
+
+
+def _responses_input(messages: Sequence[Dict[str, Any]]
+                     ) -> List[Dict[str, Any]]:
+    """Chat 消息数组 → Responses ``input`` item 列表。"""
+    items: List[Dict[str, Any]] = []
+    for message in messages or []:
+        role = str(message.get("role") or "")
+        content = message.get("content")
+        if role == "tool":
+            items.append({
+                "type": "function_call_output",
+                "call_id": str(message.get("tool_call_id") or ""),
+                "output": content if isinstance(content, str)
+                          else json.dumps(content or "", ensure_ascii=False),
+            })
+            continue
+        if content is not None:
+            items.append({"role": role,
+                          "content": _responses_content(content)})
+        for call in message.get("tool_calls") or []:
+            function = call.get("function") or {}
+            items.append({
+                "type": "function_call",
+                "call_id": str(call.get("id") or f"call_{len(items)}"),
+                "name": str(function.get("name") or ""),
+                "arguments": str(function.get("arguments") or "{}"),
+            })
+    return items
+
+
+def _responses_content(content: Any) -> Any:
+    """消息 content 的形状转换（vision 分片在 Responses 里的类型名不同）。"""
+    if isinstance(content, str):
+        return content
+    blocks: List[Dict[str, Any]] = []
+    for block in content or []:
+        if not isinstance(block, dict):
+            continue
+        kind = block.get("type")
+        if kind == "text":
+            blocks.append({"type": "input_text",
+                           "text": str(block.get("text") or "")})
+        elif kind == "image_url":
+            url = block.get("image_url") or {}
+            if isinstance(url, dict):
+                url = url.get("url", "")
+            blocks.append({"type": "input_image",
+                           "image_url": str(url)})
+        else:
+            blocks.append(dict(block))
+    return blocks
+
+
+def _responses_tool(tool: Any) -> Dict[str, Any]:
+    """Chat Completions 工具声明 → Responses 的扁平声明。"""
+    if not isinstance(tool, dict):
+        return {"type": "function"}
+    function = tool.get("function")
+    if isinstance(function, dict):
+        return {
+            "type": "function",
+            "name": str(function.get("name") or ""),
+            "description": str(function.get("description") or ""),
+            "parameters": function.get("parameters")
+                          or {"type": "object", "properties": {}},
+        }
+    return dict(tool)
+
+
+def _responses_reply(data: Dict[str, Any]) -> ChatReply:
+    """Responses 响应 → 我们的 ChatReply（输出 item 拆文本/工具/推理）。"""
+    from block_director.contracts.messages import FunctionCall, ToolCall, Usage
+
+    content_parts: List[str] = []
+    reasoning_parts: List[str] = []
+    calls: List[ToolCall] = []
+    for item in data.get("output") or []:
+        if not isinstance(item, dict):
+            continue
+        kind = item.get("type")
+        if kind == "message":
+            for block in item.get("content") or []:
+                if not isinstance(block, dict):
+                    continue
+                bkind = block.get("type")
+                text = str(block.get("text") or "")
+                if bkind in ("output_text", "text", "refusal"):
+                    content_parts.append(text)
+                elif bkind in ("reasoning", "thinking"):
+                    reasoning_parts.append(text)
+        elif kind == "function_call":
+            calls.append(ToolCall(
+                id=str(item.get("call_id") or f"call_{len(calls)}"),
+                function=FunctionCall(
+                    name=str(item.get("name") or ""),
+                    arguments=str(item.get("arguments") or "{}"))))
+    text = data.get("output_text")
+    if text and not content_parts:
+        content_parts.append(str(text))
+    usage = None
+    raw_usage = data.get("usage")
+    if isinstance(raw_usage, dict):
+        prompt = int(raw_usage.get("input_tokens")
+                     or raw_usage.get("prompt_tokens") or 0)
+        completion = int(raw_usage.get("output_tokens")
+                         or raw_usage.get("completion_tokens") or 0)
+        total = int(raw_usage.get("total_tokens") or 0) or (prompt + completion)
+        usage = Usage(prompt_tokens=prompt, completion_tokens=completion,
+                      total_tokens=total)
+    status = str(data.get("status") or "")
+    if status in ("incomplete", "failed"):
+        finish_reason = "length"
+    else:
+        finish_reason = "tool_calls" if calls else "stop"
+    return ChatReply(content="".join(content_parts) or None,
+                     tool_calls=calls,
+                     reasoning="".join(reasoning_parts) or None,
+                     usage=usage, model=data.get("model"),
+                     finish_reason=finish_reason)
 
 
 def _code_for(status: int) -> ErrorCode:
@@ -1395,6 +1576,7 @@ def parse_args(argv):
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--upstream", default="http://127.0.0.1:11434")
     parser.add_argument("--upstream-kind",
+                        choices=("auto", "ollama", "openai", "responses"),
                         default="auto",
                         help="上游协议：ollama / openai（chat/completions）/ "
                              "responses（OpenAI Responses，goaichat 中转用）/"
