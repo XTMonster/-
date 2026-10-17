@@ -34,6 +34,49 @@ from .run_settings import (
 log = get_logger("ui")
 
 
+class BLOCKDIRECTOR_OT_open_web_ui(Operator):
+    """打开 Web 工作台（v1.7 D2）。"""
+
+    bl_idname = "blockdirector.open_web_ui"
+    bl_label = "打开 Web 工作台"
+    bl_description = "在浏览器打开 sidecar Web 工作台（带当前 token）"
+
+    def execute(self, context):  # noqa: D102 - bpy 接口
+        import webbrowser
+
+        from ..settings import get_config as _get_config
+
+        cfg = _get_config()
+        url = str(getattr(cfg.llm, "sidecar_url", ""))
+        token = str(getattr(cfg.llm, "sidecar_token", ""))
+        if not token:
+            self.report({'WARNING'}, "sidecar_token 未配置")
+            return {'CANCELLED'}
+        webbrowser.open(f"{url.rstrip('/')}/?token={token}")
+        self.report({'INFO'}, "已打开 Web 工作台")
+        return {'FINISHED'}
+
+
+class BLOCKDIRECTOR_OT_copy_sidecar_token(Operator):
+    """复制 sidecar token 到剪贴板（v1.7 D2）。"""
+
+    bl_idname = "blockdirector.copy_sidecar_token"
+    bl_label = "复制 sidecar token"
+    bl_description = "把 sidecar token 复制到系统剪贴板（不写入 .blend）"
+
+    def execute(self, context):  # noqa: D102 - bpy 接口
+        from ..settings import get_config as _get_config
+
+        cfg = _get_config()
+        token = str(getattr(cfg.llm, "sidecar_token", ""))
+        if not token:
+            self.report({'WARNING'}, "sidecar_token 未配置")
+            return {'CANCELLED'}
+        context.window_manager.clipboard = token
+        self.report({'INFO'}, "sidecar token 已复制")
+        return {'FINISHED'}
+
+
 def _enum_items(values):
     return [(value, value, "") for value in values]
 
@@ -180,7 +223,10 @@ class BLOCKDIRECTOR_PT_main(Panel):
                 log_box.label(text=f"{event.kind}: {event.message}"[:60], icon=icon)
 
 
-CLASSES = (BLOCKDIRECTOR_OT_export_delivery, BLOCKDIRECTOR_PT_main)
+CLASSES = (BLOCKDIRECTOR_OT_export_delivery,
+           BLOCKDIRECTOR_OT_open_web_ui,
+           BLOCKDIRECTOR_OT_copy_sidecar_token,
+           BLOCKDIRECTOR_PT_main)
 
 
 def _sync_overlay(scene) -> None:

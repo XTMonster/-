@@ -21,6 +21,8 @@ MODULES: Tuple[str, ...] = (
     "block_director.layer7_ui.panel_cast",
     "block_director.layer7_ui.draw_overlay",
     "block_director.layer7_ui.operator_path_draw",
+    "block_director.layer7_ui.panel_assistant",
+    "block_director.layer7_ui.assistant_sprite",
     "block_director.layer5_orchestrator.modal_operator",
 )
 
