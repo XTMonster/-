@@ -52,4 +52,10 @@ RULES: List[Dict[str, Any]] = [
      "summary": "银幕方向跨镜翻转且无中性机位过渡（strict 升降：rule_checker.py:834 三元形态）"},
     {"id": "R020", "severity": "warning",
      "summary": "同一角色跨镜包围盒世界高度漂移超限（首出场镜基线比对，E_SPACE_001）"},
+    {"id": "R021", "severity": "warning",
+     "summary": "单镜相机轨迹航向突变数 + 声明运镜条目数 ≥ 复合运动上限，建议拆镜（E_CAM_001）"},
+    {"id": "R022", "severity": "warning",
+     "summary": "相机右向量（视线 × 天顶）投影符号跨帧翻转，疑似 up 翻转（E_CAM_001）"},
+    {"id": "R023", "severity": "warning",
+     "summary": "相机采样加速度峰值超 cam_accel_max（单位 m/s²，E_CAM_001）"},
 ]

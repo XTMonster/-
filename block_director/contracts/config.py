@@ -400,6 +400,12 @@ class GuardConfig:
     #: 与 size_drift（镜内景别漂移）只差一词，语义不同——size_drift 盯一镜
     #: 内主体占画高比例，scale_drift 盯同一角色跨镜的绝对世界高度。
     scale_drift: float = 0.05
+    #: v1.7 J2（R023）：相机采样加速度上限，**单位 m/s²**（默认 8.0，待实测校准）。
+    #: 与 size_drift/scale_drift 不同源：这条盯运镜的物理急冲，不是景别/高度比例。
+    cam_accel_max: float = 8.0
+    #: v1.7 J2（R021）：单镜复合运动上限。突变数 + 声明运镜条目数 ≥ 此值时
+    #: 建议拆镜（R-痛点 P4：一段运镜里塞了太多方向突变，观众会晕）。
+    compound_motion_max: int = 2
     #: 两帧内占比跳变上限
     jump_ratio: float = 0.25
     #: 跳切风险：视角差低于此值（度）时检查景别差
@@ -599,6 +605,20 @@ class AppConfig:
             if int(getattr(self.guard, name)) < 1:
                 err("CFG_216", f"guard.{name}",
                     f"帧数阈值必须 ≥1（当前 {getattr(self.guard, name)}）")
+        #: v1.7 J2（CFG_174/CFG_175）：R023 加速度阈值必须为正数（m/s²，
+        #: 单位不许写成归一化值）；R021 复合运动上限必须 ≥1（默认 2）。
+        if not (isinstance(self.guard.cam_accel_max, (int, float))
+                and not isinstance(self.guard.cam_accel_max, bool)
+                and float(self.guard.cam_accel_max) > 0.0):
+            err("CFG_174", "guard.cam_accel_max",
+                "加速度阈值必须为正数（单位 m/s²，当前 "
+                f"{self.guard.cam_accel_max!r}）")
+        if (isinstance(self.guard.compound_motion_max, bool)
+                or not isinstance(self.guard.compound_motion_max, int)
+                or int(self.guard.compound_motion_max) < 1):
+            err("CFG_175", "guard.compound_motion_max",
+                "复合运动上限必须为 ≥1 的整数（当前 "
+                f"{self.guard.compound_motion_max!r}）")
         for kind, bands in (self.guard.size_bands or {}).items():
             for shot_type, band in (bands or {}).items():
                 ok = (isinstance(band, (list, tuple)) and len(band) == 2

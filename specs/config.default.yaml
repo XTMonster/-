@@ -141,6 +141,8 @@ guard:
   sustain_frames: 12
   size_drift: 0.15
   scale_drift: 0.05
+  cam_accel_max: 8.0
+  compound_motion_max: 2
   jump_ratio: 0.25
   jump_cut_angle_deg: 30.0
   jump_cut_size_diff: 0.1

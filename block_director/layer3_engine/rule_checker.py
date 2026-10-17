@@ -58,6 +58,16 @@ _RULES_DISABLED: FrozenSet[str] = frozenset()
 #: v1.7 J1（R020）：跨镜包围盒世界高度漂移阈值（模块级注入，照 F1 模式——
 #: 不 import 插件侧 settings 单例）。默认与 ``GuardConfig.scale_drift`` 一致。
 _SCALE_DRIFT: float = 0.05
+#: v1.7 J2（R021–R023）：相机运动阈值的模块级注入（照 J1 模式，由审核入口
+#: 在 check 前同步）。默认与 ``GuardConfig`` 一致。
+_CAM_ACCEL_MAX: float = 8.0        # R023，单位 m/s²（待实测校准）
+_COMPOUND_MOTION_MAX: int = 2      # R021 单镜复合运动上限
+_ANIMATION_FPS: int = 24           # R023 单位换算用（config.animation.fps）
+
+#: R021 航向突变角阈值（度），对齐 R010 的 30° 词汇。
+MOVE_HEADING_TURN_DEG: float = 30.0
+#: R022 退化帧判据：视线与天顶（ẑ）夹角小于此角度时右向量叉积无定义，跳过。
+ROLL_DEGENERATE_DEG: float = 5.0
 
 
 def configure_rules_disabled(rules: Any) -> None:
@@ -74,6 +84,32 @@ def configure_scale_drift(value: Any) -> None:
     except (TypeError, ValueError):
         parsed = 0.05
     _SCALE_DRIFT = parsed if 0.0 < parsed < 1.0 else 0.05
+
+
+def configure_camera_limits(accel_max: Any = None, *,
+                            compound_max: Any = None,
+                            fps: Any = None) -> None:
+    """同步 R021–R023 的相机运动阈值与单位换算帧率（J2，审核入口注入）。
+
+    照 ``configure_scale_drift`` 的模式：非法值回落默认，绝不 raise——
+    config 层的 CFG_174/CFG_175 负责启动前拦下非法配置。
+    """
+    global _CAM_ACCEL_MAX, _COMPOUND_MOTION_MAX, _ANIMATION_FPS
+    try:
+        parsed_accel = float(accel_max)
+    except (TypeError, ValueError):
+        parsed_accel = 8.0
+    _CAM_ACCEL_MAX = parsed_accel if parsed_accel > 0.0 else 8.0
+    try:
+        parsed_compound = int(compound_max)
+    except (TypeError, ValueError):
+        parsed_compound = 2
+    _COMPOUND_MOTION_MAX = parsed_compound if parsed_compound >= 1 else 2
+    try:
+        parsed_fps = int(fps)
+    except (TypeError, ValueError):
+        parsed_fps = 24
+    _ANIMATION_FPS = parsed_fps if parsed_fps >= 1 else 24
 
 
 def _finding(severity: Severity, rule: str, code: str, message: str,
@@ -574,6 +610,204 @@ def _check_scale_drift(shot_id: str, context=None,
         scene.frame_set(original_frame)
         bpy.context.view_layer.update()
     return findings
+
+
+def _camera_motion_samples(shot_id: str, context=None) -> List[Dict[str, Any]]:
+    """把本镜声明的运镜展开成采样序列（J2，与 I2 同源：``movement_samples`` 产物）。
+
+    无声明运镜/无相机/声明非法时返回空列表（零采样零误报）。起点从场景
+    相机的当前机位与朝向推导（look_at 取前方 ``LOOK_AT_DISTANCE``），
+    每条声明逐条展开后按帧排序合并。纯计算在 ``cinema/camera_motion``，
+    这里只做参数组装——不写关键帧、不留副作用。
+    """
+    shot = context.shot(shot_id) if context else None
+    camera = context.camera_for(shot_id) if context else None
+    if shot is None or camera is None:
+        return []
+    movements = (shot.camera or {}).get("movements") or []
+    if not movements:
+        return []
+    from ..cinema.camera_motion import LOOK_AT_DISTANCE, movement_samples
+
+    position = tuple(float(v) for v in camera.matrix_world.translation)
+    rotation = camera.matrix_world.to_quaternion()
+    forward = rotation @ Vector((0.0, 0.0, -1.0))
+    look_at = tuple(position[i] + float(forward[i]) * LOOK_AT_DISTANCE
+                    for i in range(3))
+    samples: List[Dict[str, Any]] = []
+    for raw in movements:
+        if not isinstance(raw, dict):
+            continue
+        movement = str(raw.get("type") or raw.get("movement") or "").strip()
+        amount = float(raw.get("amount") or 0.0)
+        start = int(raw.get("start_frame") or 1)
+        end = int(raw.get("end_frame") or 0)
+        if not movement or end <= start:
+            continue
+        try:
+            plan = movement_samples(
+                position, look_at, movement, amount, start, end, samples=3,
+                seed=int(raw.get("seed") or 0))
+        except ValueError:
+            continue            # 声明非法：与 I2 同款跳过，不静默改值
+        samples.extend(plan)
+    samples.sort(key=lambda item: int(item["frame"]))
+    return samples
+
+
+def _heading_turn_count(samples: Sequence[Dict[str, Any]]) -> int:
+    """R021：相邻采样段航向角差（卷绕 ±180°）> ``MOVE_HEADING_TURN_DEG`` 的突变次数。"""
+    positions = [sample.get("position") for sample in samples
+                 if sample.get("position") is not None]
+    headings: List[float] = []
+    for index in range(len(positions) - 1):
+        dx = float(positions[index + 1][0]) - float(positions[index][0])
+        dy = float(positions[index + 1][1]) - float(positions[index][1])
+        if abs(dx) + abs(dy) <= 1e-9:
+            continue
+        headings.append(math.atan2(dy, dx))
+    turns = 0
+    for previous, current in zip(headings, headings[1:]):
+        delta = current - previous
+        while delta > math.pi:
+            delta -= 2.0 * math.pi
+        while delta < -math.pi:
+            delta += 2.0 * math.pi
+        if abs(delta) > math.radians(MOVE_HEADING_TURN_DEG):
+            turns += 1
+    return turns
+
+
+def _roll_flip_frames(samples: Sequence[Dict[str, Any]],
+                      subject_pos: Optional[Sequence[float]] = None
+                      ) -> List[int]:
+    """R022：右向量（视线 × 天顶）在主体相对方位上的投影符号翻转帧号。
+
+    采样没有 up 分量，用右向量等价判定：``r = normalize(look_at − position)
+    × ẑ``；视线与 ẑ 夹角 < ``ROLL_DEGENERATE_DEG`` 的帧跳过（退化帧，叉积
+    无定义）。无主体方位时按右向量自身的 y 符号（等价于主体在相机正前方）。
+    """
+    signs: List[float] = []
+    flips: List[int] = []
+    for sample in samples:
+        p, look = sample.get("position"), sample.get("look_at")
+        if p is None or look is None:
+            continue
+        fwd = (float(look[0]) - float(p[0]),
+               float(look[1]) - float(p[1]),
+               float(look[2]) - float(p[2]))
+        length = math.sqrt(sum(c * c for c in fwd))
+        if length <= 1e-9:
+            continue
+        fwd = (fwd[0] / length, fwd[1] / length, fwd[2] / length)
+        if fwd[2] > math.cos(math.radians(ROLL_DEGENERATE_DEG)):
+            continue                        # 视线几乎沿天顶：退化帧跳过
+        right = (fwd[1], -fwd[0])           # fwd × ẑ（x 分量，y 分量）
+        if subject_pos is not None:
+            dx = float(subject_pos[0]) - float(p[0])
+            dy = float(subject_pos[1]) - float(p[1])
+            dlen = math.sqrt(dx * dx + dy * dy)
+            if dlen <= 1e-9:
+                continue
+            sign = 1.0 if (right[0] * dx + right[1] * dy) >= 0.0 else -1.0
+        else:
+            sign = 1.0 if right[1] >= 0.0 else -1.0
+        if signs and signs[-1] != sign:
+            flips.append(int(sample["frame"]))
+        signs.append(sign)
+    return flips
+
+
+def _peak_acceleration(samples: Sequence[Dict[str, Any]], fps: int
+                       ) -> Tuple[float, Optional[int]]:
+    """R023：位置二阶差分 × fps² 的峰值（**单位 m/s²**，禁止归一化值）。
+
+    返回 ``(峰值, 帧号)``；无二阶差分（采样 <3）或无运动时 ``(0.0, None)``。
+    """
+    positions = [sample.get("position") for sample in samples
+                 if sample.get("position") is not None]
+    peak = 0.0
+    peak_frame: Optional[int] = None
+    factor = float(fps) * float(fps)
+    for index in range(1, len(positions) - 1):
+        p_prev, p_here, p_next = positions[index - 1], positions[index], positions[index + 1]
+        ax = (float(p_next[0]) - 2.0 * float(p_here[0]) + float(p_prev[0])) * factor
+        ay = (float(p_next[1]) - 2.0 * float(p_here[1]) + float(p_prev[1])) * factor
+        az = (float(p_next[2]) - 2.0 * float(p_here[2]) + float(p_prev[2])) * factor
+        magnitude = math.sqrt(ax * ax + ay * ay + az * az)
+        if magnitude > peak:
+            peak = magnitude
+            peak_frame = int(samples[index]["frame"])
+    return (peak, peak_frame) if peak > 0.0 else (0.0, None)
+
+
+def _shot_subject_position(shot_id: str, context=None) -> Optional[Tuple[float, ...]]:
+    """本镜主体中心（角色根点均值），供 R022 的投影符号判定；无角色返回 None。"""
+    if context is None:
+        return None
+    roots = []
+    for character in context.subjects_for(shot_id) or []:
+        root = getattr(character, "root", None)
+        if root is not None:
+            roots.append(root.matrix_world.translation)
+    if not roots:
+        return None
+    center = sum(roots, Vector()) / len(roots)
+    return tuple(float(v) for v in center)
+
+
+def _check_motion_complexity(shot_id: str, context=None) -> List[AuditError]:
+    """R021（warning）：突变数 + 声明运镜条目数 ≥ 复合运动上限 → 建议拆镜。"""
+    samples = _camera_motion_samples(shot_id, context)
+    if not samples:
+        return []
+    shot = context.shot(shot_id) if context else None
+    declared = len((shot.camera or {}).get("movements") or []) \
+        if shot is not None else 0
+    turns = _heading_turn_count(samples)
+    if turns + declared < _COMPOUND_MOTION_MAX:
+        return []
+    return [_warning(
+        "R021", "E_CAM_001",
+        f"{shot_id} 相机轨迹有 {turns} 次 >{MOVE_HEADING_TURN_DEG:.0f}° 航向突变，"
+        f"加上 {declared} 条声明运镜（复合 {turns + declared} ≥ "
+        f"{_COMPOUND_MOTION_MAX}），建议拆镜",
+        target=shot_id,
+        suggestion="把大转弯/多次变向拆成独立镜头，每镜一个明确方向")]
+
+
+def _check_roll_flip(shot_id: str, context=None) -> List[AuditError]:
+    """R022（warning）：右向量投影符号翻转（疑似 up 翻转）。"""
+    samples = _camera_motion_samples(shot_id, context)
+    if not samples:
+        return []
+    flips = _roll_flip_frames(samples, _shot_subject_position(shot_id, context))
+    if not flips:
+        return []
+    detail = (f"共 {len(flips)} 处" if len(flips) > 1
+              else f"翻转帧 {flips[0]}")
+    return [_warning(
+        "R022", "E_CAM_001",
+        f"{shot_id} 相机右向量（视线×天顶）投影符号在 {detail} 翻转，"
+        "疑似 up 翻转",
+        target=shot_id,
+        suggestion="检查相机是否滚转越过天顶；跟拍建议改用斯坦尼康级平稳路径")]
+
+
+def _check_camera_accel(shot_id: str, context=None) -> List[AuditError]:
+    """R023（warning）：相机采样加速度峰值超限（单位 m/s²）。"""
+    samples = _camera_motion_samples(shot_id, context)
+    if not samples:
+        return []
+    peak, frame = _peak_acceleration(samples, _ANIMATION_FPS)
+    if frame is None or peak <= _CAM_ACCEL_MAX:
+        return []
+    return [_warning(
+        "R023", "E_CAM_001",
+        f"{shot_id} 相机采样加速度峰值 {peak:.2f} m/s² 超过 "
+        f"{_CAM_ACCEL_MAX:.2f} m/s²（第 {frame} 帧）",
+        target=shot_id,
+        suggestion="把急推/急移放缓，或拆成两段运镜（阈值待实测校准）")]
 
 
 def _height_at(shot_id: str, character, context) -> Optional[float]:
@@ -1100,6 +1334,13 @@ def check_shot(shot_id: str, *, context=None,
     # 与首出场镜的包围盒世界高度比对；本镜就是首出场镜时跳过。每角色每镜
     # 至多 1 条；阈值由审核入口经 configure_scale_drift 注入（与 F1 同款）。
     findings.extend(_check_scale_drift(shot_id, context))
+
+    # R021–R023 相机运动复杂度/翻转/加速度（v1.7 J2，warning 级） -----------
+    # 三条共用 movement_samples 产物（与 I2 同源）；无声明运镜的镜头零采样
+    # 零误报。阈值由审核入口经 configure_camera_limits 注入（照 J1 模式）。
+    findings.extend(_check_motion_complexity(shot_id, context))
+    findings.extend(_check_roll_flip(shot_id, context))
+    findings.extend(_check_camera_accel(shot_id, context))
 
     # 构图质量门（§7.1 B3 把构图列为通过条件） -----------------------------
     composition = None

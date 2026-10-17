@@ -30,6 +30,9 @@ EXPECTED = {
     "R017": ("warning", ""),
     "R019": ("warning", "strict"),
     "R020": ("warning", ""),
+    "R021": ("warning", ""),
+    "R022": ("warning", ""),
+    "R023": ("warning", ""),
 }
 
 
@@ -58,7 +61,7 @@ def _static_ids() -> set:
 def test_catalog_matches_static_scan():
     catalog_ids = {entry["id"] for entry in RULES}
     assert _static_ids() == catalog_ids
-    assert len(RULES) == 19
+    assert len(RULES) == 22
 
 
 def test_severity_matches_usage():
