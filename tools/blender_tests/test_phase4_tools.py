@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bpy  # noqa: E402
 
 from _fixtures import two_shot_plan  # noqa: E402
+from block_director.cinema.composition import PASS_SCORE  # noqa: E402
 from block_director.layer3_engine.cinema_engine import create_camera  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.layer3_engine.scene_context import get_context  # noqa: E402
@@ -256,7 +257,7 @@ def t_composition_judges_the_shots_own_subjects():
     result = registry.execute("check_composition", {})
     match = re.search(r"构图评分 ([0-9.]+)", result.content)
     score = float(match.group(1)) if match else None
-    return {"ok": result.ok and score is not None and score >= 70.0,
+    return {"ok": result.ok and score is not None and score > PASS_SCORE,
             "score": score, "content": result.content}
 
 

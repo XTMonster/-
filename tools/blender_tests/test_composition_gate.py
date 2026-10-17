@@ -4,7 +4,8 @@
 
 ① 分子只读 ``shot_audit.composition_score ≥ composition_threshold``——
    **不得**用 ``passed``（那是"整镜无阻断错误"，把轴线/穿模/台词都算进来了）；
-② 阈值必须等于**独立读到的**默认 70.0，且把镜头做坏之后
+② 阈值必须等于**独立读到的**默认 ``PASS_SCORE``（v1.7 空间尺转正后为 80.0，
+   2026-10-18 用户裁决，严格高于才算过），且把镜头做坏之后
    ``composition_score`` 必须**下降 ≥20 分**——否则把阈值写成 ``-1e9``
    就能恒绿。
 
@@ -32,6 +33,7 @@ import bpy  # noqa: E402
 from block_director.contracts.cast import SceneSpec  # noqa: E402
 from block_director.contracts.config import AppConfig  # noqa: E402
 from block_director.contracts.plan import Plan  # noqa: E402
+from block_director.cinema.composition import PASS_SCORE  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.layer3_engine.shot_auditor import BpyShotAuditor  # noqa: E402
 from block_director.layer3_engine.shot_builder import build_scene  # noqa: E402
@@ -104,7 +106,7 @@ def _rate(audited) -> tuple:
             continue
         denominator += 1
         if score is not None and threshold is not None \
-                and float(score) >= float(threshold):
+                and float(score) > float(threshold):
             numerator += 1
     return numerator, denominator
 
@@ -114,8 +116,8 @@ def t_gate_passes_and_threshold_has_one_source():
     audited = _audit(plan, scene)
     numerator, denominator = _rate(audited)
     score, threshold, _ = audited["shot_001"]
-    # 阈值只有一个来源：审核器自己（默认 70.0）。这里独立读一次对拍。
-    expected_threshold = 70.0  # config/auditor 的默认阀值（AppConfig 不存这个值）
+    # 阈值只有一个来源：审核器自己（默认 PASS_SCORE）。这里独立读一次对拍。
+    expected_threshold = PASS_SCORE  # config/auditor 的默认阀值（AppConfig 不存这个值）
     return {"ok": (denominator >= 1 and numerator / denominator >= PASS_LINE
                    and threshold == expected_threshold),
             "numerator": numerator, "denominator": denominator,
@@ -134,7 +136,7 @@ def t_breaking_the_framing_drops_the_rate():
     passing = [shot_id for shot_id, (score, threshold, shot_type)
                in before.items()
                if shot_type.upper() not in EXCLUDED and score is not None
-               and score >= threshold]
+               and score > threshold]
     broken = passing[:wanted]
     if len(broken) < wanted:
         return {"ok": False, "reason": "通过的镜头不够，做不坏这么多",

@@ -686,7 +686,7 @@ def render_markdown(run_dir: Path, plan_source: str, draft_events: List[Dict],
         lines.append("")
         for row in rows:
             note = row.get("root_note") or root_note(
-                row.get("evidence") or {}, float(row.get("threshold") or 70.0))
+                row.get("evidence") or {}, float(row.get("threshold") or PASS_SCORE))
             lines.append(f"- **{row['shot_id']}**（{row['shot_type']}）：{note}")
         lines.append("")
     if replay_mismatch:
