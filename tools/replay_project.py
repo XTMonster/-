@@ -61,12 +61,26 @@ def main() -> int:
     payload = report.to_dict()
     if args.export and report.ok and report.plan is not None:
         from block_director.layer8_delivery import export_project
+        from block_director.layer5_orchestrator.ruler_observation import (
+            build_observation_from_log,
+        )
+        from block_director.layer9_persistence import read_audit_log
         from block_director.settings import get_config
 
+        #: 空间尺观测（Ticket 06）：重放自动复用同一路径——只读 audit_log + 
+        #: build_summary 折出观测（无 LLM 调用），随重导出落 ruler_observation.json。
+        ruler_observation = build_observation_from_log(
+            read_audit_log(project_dir), report.plan, brief=report.brief,
+            build_summary=report.summary, fps=24,
+            run_context={"source_run": report.brief_source or "replay",
+                         "status": "replayed",
+                         "shots": len(report.plan.shots)},
+            observation_id=f"obs-replay-{Path(project_dir).name}")
         delivery = export_project(report.plan, build_summary=report.summary,
                                   out_dir=project_dir,
                                   config=get_config().delivery,
                                   brief=report.brief,
+                                  ruler_observation=ruler_observation,
                                   project=report.plan.scene_heading or "BlockDirector")
         payload["export"] = delivery.to_dict()
 

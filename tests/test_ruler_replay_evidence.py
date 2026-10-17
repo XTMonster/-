@@ -214,6 +214,60 @@ def test_ruler_evidence_from_summary_empty() -> None:
     assert args["ruler_shot_measurements"] is None
 
 
+def test_replay_then_build_observation_cli_glue(tmp_path) -> None:
+    """``tools/replay_project --export`` 的折档接缝（Ticket 06，无 bpy）：
+
+    重放报告（含构建摘要）→ ``build_observation_from_log`` → 有效 v2 bundle，
+    与 CLI 里 ``read_audit_log + report.summary/brief`` 的调用形态逐字对齐。
+    旧日志（无空间尺事件）同样能产出一份过结构校验的空 bundle。
+    """
+    from block_director.layer5_orchestrator.ruler_observation import (
+        build_observation_from_log,
+        validate_observation,
+    )
+    from block_director.layer9_persistence import read_audit_log
+    from block_director.layer9_persistence.replay import replay
+
+    geometry = {
+        "measurement_id": "m_shot_001_camera_lens",
+        "shot_id": "shot_001", "transition_id": None, "subject_id": None,
+        "frame": None, "metric": "camera_lens", "value": 50.0,
+        "expected": None, "unit": "mm", "source": "blender_geometry",
+        "provenance": "blender_geometry",
+    }
+
+    def _build(plan, spec, brief=None):
+        return {"results": [{"shot_id": "shot_001",
+                             "ruler_measurements": [geometry]}]}
+
+    _write_log(tmp_path, _records())
+    report = replay(tmp_path, _registry(), builder=_build)
+    assert report.ok
+    assert report.summary["ruler_shot_measurements"]["shot_001"][0][
+        "metric"] == "camera_lens"
+
+    doc = build_observation_from_log(
+        read_audit_log(tmp_path), report.plan, brief=report.brief,
+        build_summary=report.summary, fps=24,
+        run_context={"source_run": report.brief_source or "replay",
+                     "status": "replayed",
+                     "shots": len(report.plan.shots)},
+        observation_id=f"obs-replay-{tmp_path.name}")
+    ids = {m["measurement_id"] for m in doc["measurements"]}
+    assert "m_shot_001_camera_lens" in ids
+    assert validate_observation(doc) == []
+
+    # 旧日志（无任何空间尺事件）也走同一条接缝：空 bundle 仍过结构校验。
+    _write_log(tmp_path / "old", [
+        {"kind": "plan_received", "data": {"plan": _plan().to_dict()}},
+    ])
+    old = build_observation_from_log(
+        read_audit_log(tmp_path / "old"), _plan(), build_summary=None,
+        fps=24, run_context={"status": "replayed"},
+        observation_id="obs-replay-old")
+    assert validate_observation(old) == []
+
+
 def test_ruler_export_args_prefers_full_document() -> None:
     """headless 导出兜底：有完整 v2 文档就原样带出，不再折摘要。"""
     from tools.run_headless import _ruler_export_args
