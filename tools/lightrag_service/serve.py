@@ -52,6 +52,19 @@ def make_handler(index: Any, *, expected_fingerprint: str = "") -> type:
             self.end_headers()
             self.wfile.write(body)
 
+        def _drain_body(self) -> None:
+            """读掉并丢弃请求体。
+
+            一切不消费 body 的早期返回（503 拒绝、404 未知路径）必须先吸干
+            body 再回包：本服务是 HTTP/1.1 长连接，残留的请求体字节会毒化
+            下一条请求的解析（全量负载下实测 ``ConnectionAbortedError`` /
+            请求行错乱，Windows WinError 10053）。只丢不解析——拒绝的数据
+            绝不进索引。
+            """
+            length = int(self.headers.get("Content-Length", 0))
+            if length > 0:
+                self.rfile.read(length)
+
         def _guarded(self) -> bool:
             reason = _mismatch_reason(index, expected_fingerprint)
             if reason:
@@ -72,14 +85,18 @@ def make_handler(index: Any, *, expected_fingerprint: str = "") -> type:
 
         def do_POST(self):  # noqa: N802
             if self.path.rstrip("/") != "/query":
+                self._drain_body()
                 self._send({"status": "refused",
                             "reason": "unknown_path:%s" % self.path}, 404)
                 return
+            # 先读 body 再守卫：503 拒绝路径必须先消费完请求体，否则残留
+            # 字节会在 HTTP/1.1 长连接上毒化下一条请求（_drain_body 注释）。
+            length = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(length)
             if not self._guarded():
                 return
-            length = int(self.headers.get("Content-Length") or 0)
             try:
-                payload = json.loads((self.rfile.read(length) or b"{}").decode("utf-8"))
+                payload = json.loads((raw or b"{}").decode("utf-8"))
             except ValueError as exc:
                 self._send({"status": "refused", "reason": "bad_request:%s" % exc}, 400)
                 return

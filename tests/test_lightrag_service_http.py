@@ -103,6 +103,41 @@ def test_a_mismatched_expected_fingerprint_makes_the_service_refuse():
         server.shutdown()
 
 
+def test_refused_post_drains_body_so_keepalive_stays_clean():
+    """503 前必须吸干 POST 请求体（HTTP/1.1 长连接）。
+
+    2026-10-17 全量负载实测：指纹不匹配的 503 分支先回包、不读 body，
+    残留字节会毒化同连接下一条请求（Windows 上 urllib 直接报
+    ``ConnectionAbortedError`` / WinError 10053）。与 sidecar 的
+    ``_drain_body`` 是同一族问题；拒绝的数据只丢弃、不解析。
+    """
+    import http.client
+
+    server, _base = _start(_StubIndex(fingerprint="fp-1"),
+                           expected_fingerprint="fp-OTHER")
+    try:
+        port = server.server_address[1]
+        body = json.dumps({"query": "x", "top_k": 1}).encode("utf-8")
+        conn = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+        try:
+            conn.request("POST", "/query", body=body,
+                         headers={"Content-Type": "application/json"})
+            resp = conn.getresponse()
+            assert resp.status == 503
+            payload = json.loads(resp.read().decode("utf-8"))
+            assert payload["reason"].startswith("index_fingerprint_mismatch")
+            # 同一条 keep-alive 连接上继续请求：残留 body 必须已被丢弃
+            conn.request("GET", "/health")
+            resp2 = conn.getresponse()
+            assert resp2.status == 503
+            payload2 = json.loads(resp2.read().decode("utf-8"))
+            assert payload2["reason"].startswith("index_fingerprint_mismatch")
+        finally:
+            conn.close()
+    finally:
+        server.shutdown()
+
+
 def test_the_server_binds_loopback_only():
     server, _base = _start(_StubIndex())
     try:
