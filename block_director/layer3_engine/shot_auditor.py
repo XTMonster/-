@@ -119,6 +119,15 @@ class BpyShotAuditor:
         result = check_shot(shot_id,
                             composition_threshold=self.composition_threshold,
                             strict=strict)
+        #: v1.7 空间尺（Ticket 04+）：在规则判定之后采集本镜的观测测量
+        #: （相机/构图/包围盒/角差，契约层 measurement 形状）。只读、幂等，
+        #: 失败按空表处理（如实缺），不参与 passed/score。
+        try:
+            from .ruler_probe import collect_shot_measurements
+            measurements = collect_shot_measurements(shot_id)
+            result.ruler_measurements = measurements or None
+        except Exception:  # noqa: BLE001 - 测量缺失不伪造，也不阻断审核
+            result.ruler_measurements = None
         #: v1.6 B4：视锥采样告警与构图分**并置**；error 级告警让这一镜失败。
         self._attach_guard_warnings(shot_id, result)
         #: v1.5 §5.4（P4-T4）：把这一镜**声明**的破例辩护与**实测**的违规对拍。

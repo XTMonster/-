@@ -37,6 +37,7 @@ def build_manifest(plan: Plan, *,
                    review_requests: Optional[Sequence[Dict[str, Any]]] = None,
                    registry: Optional[ElementRegistry] = None,
                    rhythm_arc: Optional[Sequence[Dict[str, Any]]] = None,
+                   ruler_observation: Optional[Dict[str, Any]] = None,
                   ) -> Dict[str, Any]:
     """把分镜计划与构建结果拼成交付用清单。
 
@@ -163,7 +164,7 @@ def build_manifest(plan: Plan, *,
             payload["skip_white_model"] = True
         shots.append(payload)
 
-    return {
+    manifest = {
         "project": project,
         "fps": fps,
         "resolution": list(resolution),
@@ -194,6 +195,11 @@ def build_manifest(plan: Plan, *,
         "knowledge": dict(knowledge or {}),
         "shots": shots,
     }
+    #: 空间尺观测交付引用（Ticket 06）：有 ruler_observation 数据才出这个键，
+    #: 缺省 None ⇒ 旧调用方拿到的 manifest 与升级前逐字节一致（零形状差）。
+    if ruler_observation is not None:
+        manifest["ruler_observation"] = dict(ruler_observation)
+    return manifest
 
 
 def _declarations(parsed) -> Dict[int, Any]:

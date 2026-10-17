@@ -108,6 +108,16 @@ class BLOCKDIRECTOR_OT_export_delivery(Operator):
             return {'CANCELLED'}
 
         out_dir = context.scene.bd_project_dir or bpy.app.tempdir
+        #: 空间尺观测（Ticket 06）：优先带完整 v2 文档；不可用时由驱动器
+        #: 内存折出计划级处方/测量参数（与 modal_operator 同一真源）。
+        ruler_observation = (driver.snapshot().get("ruler_observation")
+                             if driver is not None
+                             and hasattr(driver, "snapshot") else None)
+        ruler_args = {"ruler_observation": ruler_observation}
+        if ruler_observation is None and driver is not None:
+            from ..layer5_orchestrator.driver import ruler_delivery_args
+
+            ruler_args = ruler_delivery_args(driver)
         report = export_project(plan, build_summary=build_summary,
                                 out_dir=Path(bpy.path.abspath(out_dir)),
                                 config=config.delivery,
@@ -129,6 +139,7 @@ class BLOCKDIRECTOR_OT_export_delivery(Operator):
                                         if driver is not None
                                         and hasattr(driver, "_cast_roster")
                                         else None),
+                                **ruler_args,
                                 review_requests=(driver.review_requests
                                                  if driver is not None
                                                  else None))

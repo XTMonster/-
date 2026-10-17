@@ -116,10 +116,36 @@ def _shot_ranges(plan: Plan,
 
 
 def _readme(manifest: Dict[str, Any], report: DeliveryReport,
-            label_overlap_report: Optional[Dict[str, Any]] = None) -> str:
+            label_overlap_report: Optional[Dict[str, Any]] = None,
+            ruler_observation: bool = False) -> str:
     return render_readme(manifest, out_dir=Path(report.out_dir),
                          warnings=report.warnings,
-                         label_overlap_report=label_overlap_report)
+                         label_overlap_report=label_overlap_report,
+                         ruler_observation=ruler_observation)
+
+
+def _ruler_manifest_summary(ruler_evidence, ruler_shot_measurements):
+    """``shots.json`` 顶层的 ruler_observation 摘要；无数据返回 None（零形状差）。"""
+    if not ruler_evidence and not ruler_shot_measurements:
+        return None
+    measurements = list((ruler_evidence or {}).get("measurements") or [])
+    for items in (ruler_shot_measurements or {}).values():
+        measurements.extend(items or [])
+    return {
+        "file": "ruler_observation.json",
+        "schema_version": "spatial-ruler-observation/v2",
+        "measurement_count": len(measurements),
+        "prescription_count": len(
+            (ruler_evidence or {}).get("prescriptions") or []),
+    }
+
+
+def _compliance_verdicts(compliance):
+    """compliance findings → 契约 verdict（纯层映射，缺省空表）。"""
+    if not compliance:
+        return []
+    from ..delivery.ruler_evidence import map_compliance_verdicts
+    return map_compliance_verdicts(compliance)
 
 
 def _cast_id_errors(plan: Plan,
@@ -171,6 +197,9 @@ def export_project(plan: Plan, *,
                    roster: Optional[Sequence[str]] = None,
                    review_requests: Optional[Sequence[Dict[str, Any]]] = None,
                    brief=None,
+                   ruler_evidence: Optional[Dict[str, Any]] = None,
+                   ruler_shot_measurements: Optional[Dict[str, Any]] = None,
+                   ruler_observation: Optional[Dict[str, Any]] = None,
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -200,6 +229,35 @@ def export_project(plan: Plan, *,
         report.reason = cast_error
         log.error(report.reason)
         return report
+
+    #: 空间尺观测完整文档（Ticket 04-06）：``build_observation`` 的产物直接
+    #: 写盘并进 README/清单；缺省 None ⇒ 现有交付逐字节不变。未过结构校验
+    #: 即中止导出——不产脏交付包（坏数据不静默）。
+    obs_written = False
+    ruler_manifest_summary: Optional[Dict[str, Any]] = None
+    if ruler_observation is not None:
+        from ..layer5_orchestrator.ruler_observation import validate_observation
+
+        problems = validate_observation(ruler_observation)
+        if problems:
+            report.aborted = True
+            report.reason = ("导出中止：ruler_observation 未通过结构校验："
+                             + "；".join(problems[:5]))
+            log.error(report.reason)
+            return report
+        obs_written = True
+        ruler_manifest_summary = {
+            "file": "ruler_observation.json",
+            "schema_version": str(
+                ruler_observation.get("schema_version") or ""),
+            "measurement_count": len(
+                ruler_observation.get("measurements") or []),
+            "prescription_count": len(
+                ruler_observation.get("prescriptions") or []),
+        }
+    elif ruler_evidence or ruler_shot_measurements:
+        ruler_manifest_summary = _ruler_manifest_summary(
+            ruler_evidence, ruler_shot_measurements)
 
     #: v1.6 E1（FR-A2/FR-A4）：先生成唯一一份登记表，prompts / mask /
     #: reference 共用（SC-06）。表外名字在**渲染之前**判 error 中止——
@@ -402,7 +460,40 @@ def export_project(plan: Plan, *,
                                   knowledge=knowledge,
                                   review_requests=review_requests,
                                   registry=registry,
-                                  rhythm_arc=rhythm_arc)
+                                  rhythm_arc=rhythm_arc,
+                                  ruler_observation=ruler_manifest_summary)
+
+        #: 空间尺观测 JSON（Ticket 06）：优先写完整观测文档
+        #: （``ruler_observation``，build_observation 产物）；否则由计划级
+        #: 处方＋逐镜几何测量组装成契约 bundle（delivery/ruler_evidence.py）。
+        #: 两种路径任选其一；校验发现非空时如实记 warning，不静默、不改判据。
+        ruler_bundle, ruler_findings = None, []
+        if obs_written:
+            ruler_bundle = ruler_observation
+        elif ruler_evidence or ruler_shot_measurements:
+            ruler_evidence = ruler_evidence or {}
+            from ..delivery.ruler_evidence import assemble_bundle
+            shot_measurements = ruler_shot_measurements or {}
+            flat_measurements = list(ruler_evidence.get("measurements") or [])
+            for shot_id in sorted(shot_measurements):
+                flat_measurements.extend(shot_measurements[shot_id] or [])
+            ruler_bundle, ruler_findings = assemble_bundle(
+                observation_id=f"obs_{generated_now()}",
+                run_context={
+                    "source_run": "",
+                    "model": str(getattr(config, "model", "") or ""),
+                    "status": "ok",
+                },
+                plan=plan,
+                build_summary=build_summary,
+                measurements=flat_measurements,
+                verdicts=_compliance_verdicts(compliance),
+                prescriptions=list(ruler_evidence.get("prescriptions") or []),
+            )
+            if ruler_findings:
+                report.warnings.append(
+                    "ruler_observation.json 校验发现："
+                    + "; ".join(f.get("message", "") for f in ruler_findings))
 
         #: v1.7 I3（接线 2/3）：写盘前逐镜产 ``camera_narration``——相机对象在
         #: 本镜帧段内等距 9 采样喂 ``narrate``，主体锚点 = paths 首角色首点 XY。
@@ -496,6 +587,14 @@ def export_project(plan: Plan, *,
             report.warnings.append(
                 f"剧本落实审核发现 {len(errors)} 项偏差，详见 script_compliance.json")
 
+    if ruler_bundle is not None:
+        ruler_path = export_dir / "ruler_observation.json"
+        ruler_path.write_text(
+            json.dumps(ruler_bundle, ensure_ascii=False, indent=2,
+                       allow_nan=False),
+            encoding="utf-8")
+        report.files.append(str(ruler_path))
+
     scene.frame_start, scene.frame_end = original_range
 
     #: v1.7 I3（接线 3/3）：整场连续性快照 + reference_pack 五件套。失败即交付
@@ -518,11 +617,11 @@ def export_project(plan: Plan, *,
     label_report = dict((build_summary or {}).get("label_report") or {})
     label_overlap_report = dict(label_report.get("label_overlap_report") or {})
 
+    readme_text = _readme(manifest, report,
+                          label_overlap_report=label_overlap_report,
+                          ruler_observation=obs_written)
     readme_path = export_dir / "README.md"
-    readme_path.write_text(
-        _readme(manifest, report,
-                label_overlap_report=label_overlap_report),
-        encoding="utf-8")
+    readme_path.write_text(readme_text, encoding="utf-8")
     report.files.append(str(readme_path))
 
     log.info("交付完成：%d 个文件，用时 %.1fs", len(report.files), report.duration_s)

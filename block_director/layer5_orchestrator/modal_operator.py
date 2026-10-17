@@ -217,6 +217,14 @@ def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
     driver.audit.log("export_started", f"开始导出交付包：{out_dir}",
                      out_dir=str(out_dir), shots=len(driver.plan.shots),
                      frames=driver.plan.total_frames)
+    #: 空间尺观测（Ticket 06）：优先带完整 v2 文档（快照折档）；不可用时
+    #: 由驱动器内存折出计划级处方/测量参数（同一份真源，落在交付层组装）。
+    ruler_observation = driver.snapshot().get("ruler_observation")
+    ruler_args = {"ruler_observation": ruler_observation}
+    if ruler_observation is None:
+        from .driver import ruler_delivery_args
+
+        ruler_args = ruler_delivery_args(driver)
     report = export_project(driver.plan, build_summary=driver.build_summary,
                             out_dir=out_dir, config=run.config.delivery,
                             brief=driver.brief,
@@ -229,6 +237,7 @@ def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
                             crowd=crowd,
                             project=driver.plan.scene_heading or "BlockDirector",
                             roster=driver._cast_roster(),
+                            **ruler_args,
                             review_requests=driver.review_requests)
     payload = report.to_dict()
     driver.audit.log("export_finished",

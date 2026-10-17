@@ -183,7 +183,8 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_mask_pass.py';         Marker = 'BD_TEST_RESULT'; Label = 'mask-pass' },
     @{ Script = 'tools\blender_tests\test_export_sandbox.py';    Marker = 'BD_TEST_RESULT'; Label = 'export-sandbox' },
     @{ Script = 'tools\blender_tests\test_assistant_panel.py';   Marker = 'BD_TEST_RESULT'; Label = 'assistant-panel' },
-    @{ Script = 'tools\blender_tests\test_assistant_sprite.py';  Marker = 'BD_TEST_RESULT'; Label = 'assistant-sprite' }
+    @{ Script = 'tools\blender_tests\test_assistant_sprite.py';  Marker = 'BD_TEST_RESULT'; Label = 'assistant-sprite' },
+    @{ Script = 'tools\blender_tests\test_ruler_probe.py';       Marker = 'BD_TEST_RESULT'; Label = 'ruler-probe' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.

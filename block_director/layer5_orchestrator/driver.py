@@ -36,7 +36,7 @@ from ..contracts.messages import (
     tool_message,
     validate_conversation,
 )
-from ..contracts.plan import Plan, ShotPlan, unknown_cast_ids
+from ..contracts.plan import FPS, Plan, ShotPlan, unknown_cast_ids
 from ..contracts.brief import SOURCE_DETERMINISTIC, SceneBrief
 from ..contracts.enums import ErrorCode
 from ..contracts.errors import user_message
@@ -493,7 +493,36 @@ def _audit_result_from_dict(shot_id: str,
         suggestions=[str(item) for item in (payload.get("suggestions") or [])],
         score=payload.get("score"),
         target=str(payload.get("target") or shot_id),
+        #: v1.7 空间尺（Ticket 04/06）：断点续跑也要保住逐镜几何测量，
+        #: 否则 resume 后的交付包会缺这一镜的 ruler_measurements 证据。
+        ruler_measurements=(
+            [dict(item) for item in payload.get("ruler_measurements") or []
+             if isinstance(item, dict)]
+            or None),
     )
+
+
+def ruler_delivery_args(driver) -> Dict[str, Any]:
+    """从驱动器状态折出 ``export_project`` 的空间尺参数（Ticket 06，纯层）。
+
+    * ``ruler_evidence`` ← ``driver._ruler_plan_evidence``（计划级处方/测量）；
+    * ``ruler_shot_measurements`` ← ``driver.build_summary["results"][].ruler_measurements``
+      （逐镜几何测量，``_record_ruler_measurements`` 写入）。
+
+    没有空间尺数据时两者均为 ``None``（零形状差）。
+    """
+    evidence = getattr(driver, "_ruler_plan_evidence", None) or None
+    build_summary = getattr(driver, "build_summary", None) or {}
+    shot_measurements: Dict[str, Any] = {}
+    for item in build_summary.get("results") or []:
+        if not isinstance(item, dict) or not item.get("shot_id"):
+            continue
+        values = item.get("ruler_measurements")
+        if isinstance(values, list) and values:
+            shot_measurements[str(item["shot_id"])] = [
+                dict(m) for m in values if isinstance(m, dict)]
+    return {"ruler_evidence": evidence,
+            "ruler_shot_measurements": shot_measurements or None}
 
 
 @dataclass
@@ -714,6 +743,11 @@ class PrevisDriver:
         self._editor_payload_cache: Optional[ChatPayload] = None
         #: 剧本落实审核的结果（v1.3 R015/R016）；没有分镜表声明时为 None
         self._compliance: Optional[Dict[str, Any]] = None
+        #: 空间尺计划级处方证据（Ticket 05/06）：``{"prescriptions", "measurements"}``，
+        #: 供交付层写 ruler 观测 JSON；未跑计划级空间尺时为 None。
+        self._ruler_plan_evidence: Optional[Dict[str, Any]] = None
+        #: 空间尺计划级审核发现（SR001/SR002，AuditError 对象），折观测用。
+        self._ruler_findings: List[AuditError] = []
         self._finished_shots: List[str] = []
         self._needs_rebuild = False
         self._rebuild_in_place = False
@@ -883,6 +917,9 @@ class PrevisDriver:
                       else None),
             "brief_source": (self.brief.source if self.brief is not None
                              else ""),
+            #: 空间尺观测（Ticket 04-06）：finishing 后由内存审计折出的 v2
+            #: 文档；未审过镜时为 None（快照零形状差）。
+            "ruler_observation": self._ruler_observation_payload(),
             #: E2（§9 步骤③）：阶段 P 的产物进 snapshot，供收尾落 project.bdproj。
             "polish": (self.polish_result.to_dict()
                        if self.polish_result is not None else None),
@@ -895,6 +932,9 @@ class PrevisDriver:
                                  for shot_id, items in
                                  self._draft_alternates.items()},
             "compliance": self._compliance,
+            #: 空间尺计划级证据（Ticket 05/06）：已应用处方与计划级测量，
+            #: 供 headless 落盘与交付 bundle 折档；未跑计划级空间尺时为 None。
+            "spatial_ruler_plan_evidence": self._ruler_plan_evidence,
             #: v1.4 P15（§3.3）：交付清单要的两张表，由驱动器产出。
             "timing_overrides": list(self.timing_overrides),
             "audit_pass_rate": self._audit_pass_rate(),
@@ -909,6 +949,47 @@ class PrevisDriver:
                                   if self._resume_state_path else None),
             "error": self.error,
         }
+
+    def _ruler_observation_payload(self) -> Optional[Dict[str, Any]]:
+        """把内存审计折成空间尺观测 v2 文档（Ticket 04-06，纯层、无 bpy）。
+
+        数据源全部复用运行产物，不重算、不猜：``audit_results`` → 构图分与
+        guard 数值证据；``build_summary.results`` → 相机实测；``_ruler_findings``
+        → SR001/SR002 计划级发现。没有计划或没审过镜时返回 ``None``
+        （快照零形状差：不发明观测）。
+        """
+        if self.plan is None or not self.audit_results:
+            return None
+        from .ruler_observation import build_observation
+
+        shot_audits: Dict[str, Dict[str, Any]] = {}
+        for result in self.audit_results:
+            #: ``AuditResult`` 的契约字段是 ``target``（``shot_id`` 只存在于
+            #: 审计事件与 probe 入口）；此前读不存在的 ``shot_id`` 使全文档
+            #: 路径静默丢掉所有逐镜 composition/guard/ruler measurements。
+            shot_id = (getattr(result, "target", None)
+                       or getattr(result, "shot_id", None))
+            if shot_id:
+                shot_audits[str(shot_id)] = result.to_dict()
+        build_results: Dict[str, Dict[str, Any]] = {}
+        for item in (self.build_summary or {}).get("results") or []:
+            if isinstance(item, dict) and item.get("shot_id"):
+                build_results[str(item["shot_id"])] = dict(item)
+        run_context = {
+            "source_run": self.audit.run_id,
+            "status": self.state.value,
+            "model": str(getattr(self.config, "model", "") or ""),
+            "shots": len(self.plan.shots),
+            "characters": len({name for shot in self.plan.shots
+                               for name in (shot.characters or [])}),
+        }
+        return build_observation(
+            plan=self.plan, parsed=self.parsed_script, brief=self.brief,
+            shot_audits=shot_audits, build_results=build_results,
+            fps=FPS, run_context=run_context,
+            observation_id=f"obs-{self.audit.run_id}",
+            plan_findings=self._ruler_findings,
+        )
 
     def knowledge_provenance(self) -> Dict[str, Dict[str, List[List[str]]]]:
         """逐镜的知识溯源：``{shot_id: {source_kind: [[kind, value], ...]}}``。
@@ -1303,6 +1384,13 @@ class PrevisDriver:
         target = (DriverState.EDITING if self.builder is not None
                   else DriverState.FINISHING)
         if target is DriverState.FINISHING:
+            #: v1.7 空间尺（Ticket 03/05）：没有构建器就不会走 B1/BUILDING，
+            #: 计划级空间尺在这里落地——与 ``_step_building`` 共用同一接缝
+            #: （处方应用、审计留痕、硬发现阻断），否则纯离线链路的快照
+            #: ``spatial_ruler_plan_evidence`` 恒为 None，观测 JSON 缺计划级
+            #: 处方与测量。两条路径互斥，不会重复执行。
+            if not self._apply_plan_ruler():
+                return
             # 没有构建器就不会走 B1，注视关系在这里一次补齐。
             self._pin_brief_gaze()
         if self._gate_enabled("human_gate_on_plan"):
@@ -2128,34 +2216,90 @@ class PrevisDriver:
         except (TypeError, ValueError):
             return 1
 
-    def _step_building(self) -> None:
-        """把分镜计划交给场景构建器（bpy 实现在 layer3_engine/shot_builder.py）。"""
+    def _apply_plan_ruler(self) -> bool:
+        """空间尺计划级接缝（Ticket 03/05，有/无构建器共用单一真源）。
+
+        在 bpy 构建前落实角色与节奏约束：审核＋应用处方（retime_shot /
+        restore_cast），处方记录与计划级测量一并留痕（审计事件 + compliance
+        + 交付证据）。仍残留的逐镜 ERROR 级硬发现阻断后续（``_fail``）。
+
+        返回 False 表示已阻断（调用方应停止推进）；True 表示可继续。
+        """
         plan = self.plan or Plan()
-        # 空间尺计划级接缝：在 bpy 构建前落实角色与节奏约束，避免把
-        # ``responsibility.white_model`` 中的角色遗失，也避免声明总时长被模型拉长。
-        from .spatial_ruler import audit_and_prepare_plan
-        declared_total = getattr(self.parsed_script, "declared_total_seconds", None)
-        plan, ruler_findings = audit_and_prepare_plan(
-            plan, brief=self.brief, declared_total_seconds=declared_total)
-        if ruler_findings:
+        declared_total = getattr(self.parsed_script, "declared_total_seconds",
+                                 None)
+        declared_by_shot: dict = {}
+        declared_shots = list(
+            getattr(self.parsed_script, "declared_shots", []) or [])
+        for plan_shot, declared in zip(plan.shots, declared_shots):
+            seconds = getattr(declared, "declared_seconds", None)
+            if seconds is not None:
+                declared_by_shot[str(plan_shot.shot_id)] = float(seconds)
+        from .spatial_ruler import apply_plan_prescriptions
+
+        plan, ruler_findings, ruler_prescriptions, ruler_measurements = (
+            apply_plan_prescriptions(
+                plan, brief=self.brief,
+                declared_total_seconds=declared_total,
+                declared_seconds_by_shot=declared_by_shot))
+        self._ruler_plan_evidence = {
+            "prescriptions": list(ruler_prescriptions),
+            "measurements": list(ruler_measurements),
+        }
+        self._ruler_findings = list(ruler_findings)
+        if ruler_findings or ruler_prescriptions:
             self.audit.log(
                 "spatial_ruler_plan_audit",
-                f"空间尺计划审核：{len(ruler_findings)} 项发现",
+                f"空间尺计划审核：{len(ruler_findings)} 项发现 / "
+                f"{len(ruler_prescriptions)} 条处方",
                 level="warning" if not any(
                     item.severity == "error" for item in ruler_findings)
                 else "error",
-                findings=[item.to_dict() for item in ruler_findings])
+                findings=[item.to_dict() for item in ruler_findings],
+                prescriptions=list(ruler_prescriptions),
+                measurements=list(ruler_measurements))
             self._compliance = dict(self._compliance or {})
             existing = list(self._compliance.get("findings") or [])
             existing.extend(item.to_dict() for item in ruler_findings)
             self._compliance["findings"] = existing
+            self._compliance["ruler_prescriptions"] = list(ruler_prescriptions)
+            self._compliance["ruler_measurements"] = list(ruler_measurements)
+        #: Ticket 03（空间尺硬发现阻断）：处方已尽量自动应用（retime_shot /
+        #: restore_cast），仍残留的 ERROR 级发现 = 未修复的硬发现（SR001 无落点、
+        #: SR002 逐镜漂移装不下对白）。**不得静默放行**——阻断构建，直到修复
+        #: 或按既有审核 policy 显式豁免。
+        #: 阻断范围只收**有修复路径但没落地**的逐镜硬发现（target 是 shot_id）；
+        #: 全场时长漂移（target="plan"）缺逐镜声明、policy 明确只报不自动重排
+        #: （擅自重排会改坏对话语义）——即按既有 policy 显式豁免，保持 ERROR
+        #: 进 compliance 可见，但不阻断。
+        hard_findings = [
+            item for item in ruler_findings
+            if item.severity == "error" and item.target != "plan"
+        ]
+        if hard_findings:
+            self.audit.log(
+                "ruler_blocked",
+                f"空间尺硬发现阻断构建：{len(hard_findings)} 项未修复",
+                level="error",
+                findings=[item.to_dict() for item in hard_findings],
+                prescriptions=list(ruler_prescriptions),
+                measurements=list(ruler_measurements))
+            self._fail(f"空间尺硬发现阻断构建：{hard_findings[0].message}")
+            return False
         self.plan = plan
+        return True
+
+    def _step_building(self) -> None:
+        """把分镜计划交给场景构建器（bpy 实现在 layer3_engine/shot_builder.py）。"""
+        #: 空间尺计划级接缝与阻断纪律与无构建器路径共用（单一真源）。
+        if not self._apply_plan_ruler():
+            return
         if self.builder is None:
             self._transition(DriverState.FINISHING)
             return
         started = self.clock()
         try:
-            summary = self.builder.build(plan, self.brief) or {}
+            summary = self.builder.build(self.plan, self.brief) or {}
         except Exception as exc:  # noqa: BLE001 - 构建失败要如实上报并降级
             #: 2026-10-07 实测：审计里只有一行 `TypeError: ...`，**traceback 被丢掉了**，
             #: 于是一次真实的构建崩溃只能靠"重跑一遍 20 分钟"才定位得到（长剧本那一跑
@@ -2322,6 +2466,14 @@ class PrevisDriver:
             self._emit("audit_failed", f"{shot_id} 审核异常", shot=shot_id)
             return None
         self.audit_results.append(result)
+        #: v1.7 空间尺（Ticket 04/06）：把这一镜的几何测量写进
+        #: ``build_summary["results"]``（交付层据此产逐镜测量证据）并随
+        #: ``shot_audit`` 事件留痕（重放侧据此无 LLM 重读）。只读、不参与
+        #: passed/score；找不到对应 result（审核早于构建）就跳过，诚实留缺。
+        ruler_measurements = list(
+            getattr(result, "ruler_measurements", None) or [])
+        if ruler_measurements:
+            self._record_ruler_measurements(shot_id, ruler_measurements)
         # v1.4 §3.3（R45）：shot_audit 增写构图分与阈值——两者是同一次审核里
         # 已经算好的量（``AuditResult.score`` 与审核器的门限），阈值只有一个来源。
         threshold = getattr(self.auditor, "composition_threshold", None)
@@ -2361,6 +2513,9 @@ class PrevisDriver:
                        composition_threshold=threshold,
                        **reconciliation_extra,
                        **review_extra,
+                        **(dict(ruler_measurements=[
+                                dict(m) for m in ruler_measurements])
+                            if ruler_measurements else {}),
                        **({"restored": True} if restored else {}),
                        **({"degraded": True} if degraded else {}))
         self._emit("shot_audit",
@@ -2399,6 +2554,22 @@ class PrevisDriver:
         for item in results:
             if isinstance(item, dict) and str(item.get("shot_id")) == str(shot_id):
                 item["vlm_review"] = dict(review)
+                return
+
+    def _record_ruler_measurements(
+            self, shot_id: str,
+            measurements: List[Dict[str, Any]]) -> None:
+        """把这一镜的空间尺测量写进 ``build_summary["results"]``（交付层读它）。
+
+        与 ``_record_vlm_review`` 同一条纪律：找不到对应 result 就跳过——
+        交付层在缺失时不写这个键（"没测过"与"测了 0 条"必须分得开）。
+        """
+        results = self.build_summary.get("results")
+        if not isinstance(results, list):
+            return
+        for item in results:
+            if isinstance(item, dict) and str(item.get("shot_id")) == str(shot_id):
+                item["ruler_measurements"] = [dict(m) for m in measurements]
                 return
 
     def _record_justification_audit(self, shot_id: str,

@@ -165,6 +165,11 @@ class AuditResult:
     #: 缺省 ``None`` ⇒ 开关关/无采样时 ``to_dict()`` 不出这个键（零形状差）；
     #: 非空时供 review payload 组装与 R025 裁决用，**不参与 passed/score**。
     measured_camera: Optional[Dict[str, Any]] = None
+    #: 空间尺（Ticket 04+）：本镜的观测测量（契约层 measurement 形状的普通
+    #: dict 列表）。缺省 ``None`` ⇒ 尚未接入/未采集时 ``to_dict()`` 不出这个
+    #: 键（零形状差纪律）；非空时供交付层写 ``ruler_measurements`` 证据，
+    #: **不参与 passed/score**。
+    ruler_measurements: Optional[List[Dict[str, Any]]] = None
 
     @property
     def total(self) -> int:
@@ -216,6 +221,10 @@ class AuditResult:
         #: 同一条零形状差纪律：只有真的采到实测运镜才多这个键。
         if self.measured_camera is not None:
             payload["measured_camera"] = dict(self.measured_camera)
+        #: 同一条零形状差纪律：只有真的采到空间尺测量才多这个键。
+        if self.ruler_measurements:
+            payload["ruler_measurements"] = [
+                dict(item) for item in self.ruler_measurements]
         return payload
 
     def format_for_llm(self) -> str:

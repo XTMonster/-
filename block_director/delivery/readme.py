@@ -71,7 +71,8 @@ def rhythm_section_lines(manifest: Dict[str, Any],
 def render_readme(manifest: Dict[str, Any], *, out_dir: Path,
                   warnings: Sequence[str] = (),
                   rhythm_reading: Optional[Dict[str, Any]] = None,
-                  label_overlap_report: Optional[Dict[str, Any]] = None) -> str:
+                  label_overlap_report: Optional[Dict[str, Any]] = None,
+                  ruler_observation: bool = False) -> str:
     """按真实 manifest 与已生成文件渲染交付说明，不读引擎状态。"""
     folder = Path(out_dir)
     width, height = manifest["resolution"]
@@ -140,6 +141,15 @@ def render_readme(manifest: Dict[str, Any], *, out_dir: Path,
             detail = f"登记 {count} 次" if count is not None else "登记次数未记录"
             lines.append(f"- {shot['shot_id']}：{detail}")
         lines.append("")
+    #: 空间尺观测（Ticket 06）：只有交付层真的写了 ruler_observation.json
+    #: 才渲染这一段——缺省 False ⇒ README 与升级前逐字节一致（零形状差）。
+    if ruler_observation:
+        lines.extend([
+            "## 空间尺观测", "",
+            "- `ruler_observation.json`：逐镜/全场测量、判词与处方，"
+            "供审查与重放对拍。",
+            "",
+        ])
     if warnings:
         lines.extend(["## 告警", ""])
         lines.extend(f"- {warning}" for warning in warnings)

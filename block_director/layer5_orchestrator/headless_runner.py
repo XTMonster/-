@@ -23,6 +23,38 @@ from .transport_factory import make_transport
 log = get_logger("headless")
 
 
+def ruler_evidence_from_summary(summary: Optional[dict]) -> dict:
+    """从运行摘要折出 ``export_project`` 的空间尺参数（Ticket 06，纯层）。
+
+    数据源与驱动器内存同源：
+    * ``summary["compliance"]["ruler_prescriptions"]`` /
+      ``ruler_measurements``（计划级处方与测量，``_step_building`` 已写入）；
+    * ``summary["build"]["results"][].ruler_measurements``（逐镜几何测量，
+      ``_record_ruler_measurements`` 已写入 build_summary）。
+
+    缺省返回 ``None``（零形状差）：没有空间尺数据时交付层一个额外键都不写。
+    """
+    if not summary:
+        return {"ruler_evidence": None, "ruler_shot_measurements": None}
+    compliance = summary.get("compliance") or {}
+    prescriptions = list(compliance.get("ruler_prescriptions") or [])
+    measurements = list(compliance.get("ruler_measurements") or [])
+    evidence = None
+    if prescriptions or measurements:
+        evidence = {"prescriptions": prescriptions,
+                    "measurements": measurements}
+    shot_measurements: Dict[str, Any] = {}
+    for item in ((summary.get("build") or {}).get("results") or []):
+        if not isinstance(item, dict) or not item.get("shot_id"):
+            continue
+        values = item.get("ruler_measurements")
+        if isinstance(values, list) and values:
+            shot_measurements[str(item["shot_id"])] = [
+                dict(m) for m in values if isinstance(m, dict)]
+    return {"ruler_evidence": evidence,
+            "ruler_shot_measurements": shot_measurements or None}
+
+
 def trace_options(config) -> Dict[str, Any]:
     """§11.3 的 trace 内容与上限（配置里的 ``llm.trace_*``）。"""
     llm = getattr(config, "llm", None)
@@ -102,6 +134,20 @@ def run_headless(
     summary["knowledge_trace"] = _write_knowledge_trace(
         driver.knowledge,
         Path(project_dir) if project_dir else default_project_root())
+    #: 空间尺观测 JSON（Ticket 05/06 接线）：计划级处方/测量 + 逐镜审核折成
+    #: 契约 v2 观测文档，落进运行目录。没有空间尺证据且没有计划时诚实返回
+    #: None（不写零形状文件）。
+    ruler_obs_path = _write_spatial_ruler_observation(
+        summary, Path(project_dir) if project_dir else default_project_root())
+    summary["spatial_ruler_observation"] = ruler_obs_path
+    if ruler_obs_path:
+        #: 交付导出直写同款观测文档（ruler_observation 参数），避免导出时
+        #: 二次折档/二次校验——内容与运行目录的 spatial_ruler_observation.json
+        #: 逐字节一致。
+        import json
+
+        with open(ruler_obs_path, encoding="utf-8") as fh:
+            summary["ruler_observation"] = json.load(fh)
     log.info("headless 运行结束：%s（镜头 %s 个）", state.value, summary["shots"])
     return summary
 
@@ -120,6 +166,77 @@ def _write_knowledge_trace(knowledge, directory: Path) -> Optional[str]:
         timezone.utc).astimezone().isoformat(timespec="seconds")
     target.write_text(json.dumps(payload, ensure_ascii=False, indent=2),
                       encoding="utf-8")
+    return str(target)
+
+
+def _write_spatial_ruler_observation(summary: Dict[str, Any],
+                                     directory: Path) -> Optional[str]:
+    """把本次运行的空间尺观测折成 ``<run>/spatial_ruler_observation.json``。
+
+    数据源（全部来自运行摘要与审计日志，无 bpy、无二次 LLM 调用）：
+    * ``spatial_ruler_plan_evidence``——driver 计划级的**已应用**处方与测量；
+    * ``audit_log.jsonl`` 的 ``shot_audit`` / ``guard_warning`` /
+      ``spatial_ruler_plan_audit`` 事件（逐镜构图分、guard 告警与 SR001/SR002）；
+    * ``build``（相机实测）与 ``brief``。
+
+    处方用已应用版本（不重算）；计划级测量按 ``measurement_id`` 去重并入，
+    不覆盖几何侧测量。没有计划级证据且没有计划时返回 None。
+    """
+    plan_evidence = summary.get("spatial_ruler_plan_evidence") or {}
+    plan_payload = summary.get("plan")
+    if not plan_payload and not plan_evidence:
+        return None
+    import json
+
+    from ..contracts.plan import Plan
+    from .ruler_observation import (
+        build_observation_from_log,
+        validate_observation,
+    )
+
+    plan = Plan.from_dict(plan_payload) if plan_payload else Plan()
+    records: list = []
+    audit_path = summary.get("audit_log")
+    if audit_path and Path(audit_path).exists():
+        for line in Path(audit_path).read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    run_id = str(summary.get("run_id") or "run")
+    doc = build_observation_from_log(
+        records, plan,
+        brief=brief_from_summary(summary),
+        build_summary=summary.get("build") or None,
+        fps=24,
+        run_context={
+            "source_run": run_id,
+            "mode": str(summary.get("mode") or ""),
+            "status": "completed" if summary.get("success") else "failed",
+            "shots": int(summary.get("shots") or 0),
+        },
+        observation_id=f"obs_{run_id}",
+    )
+    applied = plan_evidence.get("prescriptions")
+    if applied:
+        doc["prescriptions"] = [dict(item) for item in applied]
+    existing = {m.get("measurement_id") for m in doc["measurements"]}
+    for item in plan_evidence.get("measurements") or []:
+        mid = item.get("measurement_id")
+        if mid not in existing:
+            doc["measurements"].append(dict(item))
+            existing.add(mid)
+    findings = validate_observation(doc)
+    if findings:
+        log.warning("spatial_ruler_observation 校验发现 %d 条：%s",
+                    len(findings), "; ".join(findings))
+    target = ensure_dir(Path(directory)) / "spatial_ruler_observation.json"
+    target.write_text(
+        json.dumps(doc, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
+        encoding="utf-8")
     return str(target)
 
 

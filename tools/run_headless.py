@@ -62,7 +62,22 @@ def _export_report(plan_obj, summary, config, out_dir, crowd, parsed):
         #: "这份运行是哪一代索引"必须能从证据文件本身读出来）。
         knowledge=summary.get("knowledge"),
         review_requests=summary.get("self_review_requests"),
+        #: 空间尺观测（Ticket 06）：优先带 driver.snapshot() 折出的 v2 文档；
+        #: 不可用时由运行摘要折出计划级处方/测量参数（交付层组装）。
+        **(_ruler_export_args(summary)),
         project=plan_obj.scene_heading or "BlockDirector")
+
+
+def _ruler_export_args(summary):
+    """从运行摘要折出 ``export_project`` 的空间尺参数（Ticket 06 兜底）。"""
+    from block_director.layer5_orchestrator.headless_runner import (
+        ruler_evidence_from_summary,
+    )
+
+    ruler_observation = summary.get("ruler_observation")
+    if ruler_observation is not None:
+        return {"ruler_observation": ruler_observation}
+    return ruler_evidence_from_summary(summary)
 
 
 def _resume_state_path(candidate) -> Path:

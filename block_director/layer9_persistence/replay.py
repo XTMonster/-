@@ -177,6 +177,43 @@ def iter_tool_calls(records: Iterable[Dict[str, Any]]) -> List[ReplayStep]:
     return steps
 
 
+def extract_ruler_evidence(records: Sequence[Dict[str, Any]]
+                           ) -> tuple[Dict[str, Any], Dict[str, List[Dict[str, Any]]]]:
+    """从审计日志抽取空间尺观测证据（Ticket 06，重放侧）。
+
+    数据源（只读，不调用 LLM／bpy）：
+    * ``spatial_ruler_plan_audit`` 事件 → 计划级处方与测量（取**最后一条**，
+      与 ``plan_findings_from_log`` 同一口径）；
+    * ``shot_audit`` 事件 → 逐镜几何测量（``ruler_measurements``，取每条
+      最后一次出现的非空表）。
+
+    返回 ``(plan_evidence, shot_measurements)``；没有对应事件时各为空表——
+    重放诚实标缺，不猜、不伪造。旧日志（无空间尺事件）shape 与
+    有事件但内容为空一致。
+    """
+    plan_evidence: Dict[str, Any] = {"prescriptions": [], "measurements": []}
+    shot_measurements: Dict[str, List[Dict[str, Any]]] = {}
+    for record in records:
+        data = dict(record.get("data") or {})
+        if record.get("kind") == "spatial_ruler_plan_audit":
+            prescriptions = [
+                dict(item) for item in data.get("prescriptions") or []
+                if isinstance(item, dict)]
+            measurements = [
+                dict(item) for item in data.get("measurements") or []
+                if isinstance(item, dict)]
+            plan_evidence = {
+                "prescriptions": prescriptions, "measurements": measurements}
+        elif record.get("kind") == "shot_audit":
+            shot_id = str(data.get("shot") or "")
+            items = data.get("ruler_measurements")
+            if shot_id and isinstance(items, list):
+                clean = [dict(item) for item in items if isinstance(item, dict)]
+                if clean:
+                    shot_measurements[shot_id] = clean
+    return plan_evidence, shot_measurements
+
+
 def replay(directory: Union[str, Path], registry, *, builder=None,
            spec=None, build: bool = True) -> ReplayReport:
     """按审计日志重放：先按计划建场景，再顺序重放工具调用（不调用 LLM）。"""
@@ -203,6 +240,16 @@ def replay(directory: Union[str, Path], registry, *, builder=None,
             summary = summary.to_dict()
         report.summary = dict(summary or {})
         report.built = True
+
+    #: 空间尺观测证据（Ticket 06）：从审计日志抽回的处方/测量回挂到 summary，
+    #: 交付层据此重产 ``ruler_observation.json``——无 LLM。只在有证据时出键，
+    #: 旧日志零形状差。
+    plan_ruler, shot_ruler = extract_ruler_evidence(records)
+    if plan_ruler["prescriptions"] or plan_ruler["measurements"]:
+        report.summary["ruler_prescriptions"] = plan_ruler["prescriptions"]
+        report.summary["ruler_measurements"] = plan_ruler["measurements"]
+    if shot_ruler:
+        report.summary["ruler_shot_measurements"] = shot_ruler
 
     known = set(registry.names())
     for step in report.steps:
