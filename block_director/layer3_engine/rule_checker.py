@@ -4,8 +4,9 @@
 
 已实现：R001 轴线、R004 视锥、R005 在画、R006 帧范围、R007 引用、
 R002 空间碰撞、R003 动作时间轴、R008 地面、R009 景别距离、R010 30° 规则，
-以及构图质量门（§7.1 B3 明确把"构图"列为通过条件，因此低于阈值按 ERROR
-处理，而不是只给警告）。
+    以及构图质量门（§7.1 B3 明确把"构图"列为通过条件，因此未高于阈值
+    （<=，等于也不算过）按 ERROR 处理，而不是只给警告；用户 2026-10-18
+    裁决：构图分必须严格高于 80）。
 
 **待补（依赖 Layer 1）**：R011 对白容纳——它需要对白计时（§4.4），而计划里
 目前只带 dialogue_ids、不带对白的时间轴。
@@ -37,6 +38,7 @@ from ..cinema.axis import (
 )
 from ..cinema.framing import SHOT_FRAME, required_distance
 from ..cinema.spatial_digest import COLLISION_MARGIN
+from ..cinema.composition import PASS_SCORE
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
 from ..contracts.audit import AuditError, AuditResult, SkippedFinding
 from ..contracts.enums import Severity
@@ -1136,7 +1138,7 @@ def continuity_snapshot(shot_id: str, context=None) -> Dict[str, Any]:
 
 @main_thread_only("check_shot")
 def check_shot(shot_id: str, *, context=None,
-               composition_threshold: float = 70.0,
+               composition_threshold: float = PASS_SCORE,
                strict: bool = False) -> AuditResult:
     """对单个镜头跑全部已实现的 Level 1 规则。"""
     from .cinema_engine import (
@@ -1507,11 +1509,13 @@ def check_shot(shot_id: str, *, context=None,
             if worst is None or report.score < worst.score:
                 worst = report
         composition = worst
-        if composition is not None and composition.score < composition_threshold:
+        #: 用户 2026-10-18 裁决：构图分必须**严格高于**阈值，
+        #: score == composition_threshold 仍判失败（截至阈值）。
+        if composition is not None and composition.score <= composition_threshold:
             detail = "；".join(composition.suggestions[:2]) or "请调整构图"
             findings.append(_error(
                 "COMPOSITION", "E_CAM_001",
-                f"构图评分 {composition.score:.1f}（首/中/尾最小值）低于阈值 "
+                f"构图评分 {composition.score:.1f}（首/中/尾最小值）未高于阈值 "
                 f"{composition_threshold:.0f}",
                 target=shot_id, suggestion=detail))
 

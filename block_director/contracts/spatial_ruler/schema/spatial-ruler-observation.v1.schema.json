@@ -79,6 +79,11 @@
       "type": "array",
       "items": { "$ref": "#/$defs/verdict" }
     },
+    "ruler_reviews": {
+      "type": "object",
+      "description": "逐镜空间尺六层评测（RulerReview.to_dict 形状；逐镜审核时 continuity 如实标未核验，序列级复核补全场链）",
+      "additionalProperties": { "$ref": "#/$defs/ruler_review" }
+    },
     "prescriptions": {
       "type": "array",
       "items": { "$ref": "#/$defs/prescription" }
@@ -331,6 +336,39 @@
         "waived": { "type": "boolean" },
         "waive_reason": { "type": "string" },
         "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "ruler_review": {
+      "type": "object",
+      "required": [
+        "shot_id", "layer_scores", "overview", "hard_gates",
+        "findings", "measurements", "prescriptions"
+      ],
+      "properties": {
+        "shot_id": { "type": "string" },
+        "layer_scores": {
+          "type": "object",
+          "required": ["geometry", "attention", "action", "continuity", "cinema", "robustness"],
+          "additionalProperties": { "type": "number" }
+        },
+        "overview": { "type": "number" },
+        "hard_gates": {
+          "type": "array",
+          "items": { "enum": ["H1", "H2", "H3", "H4", "H5", "H6"] }
+        },
+        "findings": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "measurements": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "prescriptions": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
       },
       "additionalProperties": false
     }

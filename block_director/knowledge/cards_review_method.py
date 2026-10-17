@@ -84,13 +84,14 @@ CARDS: Tuple[Card, ...] = (
     ),
     _card(
         "rev_method_decision", _D, "判定矩阵：过/不过 + 失败分量",
-        "构图过门的判定给到可复算的规则：总分 ≥ 70 且由六分项按固定权重加权"
+        "构图过门的判定给到可复算的规则：总分 **> 80**（严格高于，等于 80 不算过）"
+        "且由六分项按固定权重加权"
         "（headroom 0.15 / lead_room 0.20 / rule_of_thirds 0.15 / balance 0.15"
-        "/ occlusion 0.25 / framing 0.10）。“挂了哪个分量”只看该分项分数 < 0.7，"
+        "/ occlusion 0.25 / framing 0.10）。“挂了哪个分量”只看该分项分数 < 0.8，"
         "不看总分。每项先读读数（当前值 vs 目标区间），再判过/不过，最后汇成"
         "JSON：{\"passed\": bool, \"failed\": [分量名]}。",
         ["判定", "过门", "分量", "阈值", "矩阵"],
-        parameters={"pass_score": 70.0, "item_threshold": 0.7},
+        parameters={"pass_score": 80.0, "item_threshold": 0.8},
         related=("comp_headroom", "comp_balance", "rev_method_order"),
     ),
     _card(

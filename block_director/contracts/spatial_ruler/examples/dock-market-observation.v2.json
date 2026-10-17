@@ -16,14 +16,20 @@
       "total_frames": 384,
       "audits": 13,
       "repairs": 6,
-      "audit_pass_rate": {"numerator": 2, "denominator": 3},
+      "audit_pass_rate": {
+        "numerator": 2,
+        "denominator": 3
+      },
       "cases_degraded": true,
       "note": "cases_degraded 是运行背景项，非空间观测判定"
     }
   },
   "plugin_adapter": {
     "consumer": "BlockDirector.audit",
-    "phase": ["pre_build", "post_build"],
+    "phase": [
+      "pre_build",
+      "post_build"
+    ],
     "blocking_policy": {
       "error": "blocks",
       "warning": "persists"
@@ -35,33 +41,87 @@
     "targets": [
       {
         "shot_id": "shot_001",
-        "subject_ids": ["米迦尔", "伊恩", "偷盗者"],
-        "metrics": [
-          "composition_score", "composition_thirds", "body_height_ratio",
-          "visibility_ratio", "occlusion_ratio", "thirds_deviation"
+        "subject_ids": [
+          "米迦尔",
+          "伊恩",
+          "偷盗者"
         ],
-        "sampling": {"frames": ["first", "middle", "last"], "step": 4}
+        "metrics": [
+          "composition_score",
+          "composition_thirds",
+          "body_height_ratio",
+          "visibility_ratio",
+          "occlusion_ratio",
+          "thirds_deviation"
+        ],
+        "sampling": {
+          "frames": [
+            "first",
+            "middle",
+            "last"
+          ],
+          "step": 4
+        }
       },
       {
         "shot_id": "shot_002",
-        "subject_ids": ["米迦尔"],
-        "metrics": [
-          "composition_score", "edge_clip", "body_height_ratio",
-          "visibility_ratio", "occlusion_ratio", "axis_side", "camera_angle_deg"
+        "subject_ids": [
+          "米迦尔"
         ],
-        "sampling": {"frames": ["first", "middle", "last"], "step": 4}
+        "metrics": [
+          "composition_score",
+          "edge_clip",
+          "body_height_ratio",
+          "visibility_ratio",
+          "occlusion_ratio",
+          "axis_side",
+          "camera_angle_deg"
+        ],
+        "sampling": {
+          "frames": [
+            "first",
+            "middle",
+            "last"
+          ],
+          "step": 4
+        }
       },
       {
         "shot_id": "shot_003",
-        "subject_ids": ["伊恩"],
-        "metrics": ["composition_score", "camera_angle_deg"],
-        "sampling": {"frames": ["first", "middle", "last"], "step": 4}
+        "subject_ids": [
+          "伊恩"
+        ],
+        "metrics": [
+          "composition_score",
+          "camera_angle_deg"
+        ],
+        "sampling": {
+          "frames": [
+            "first",
+            "middle",
+            "last"
+          ],
+          "step": 4
+        }
       },
       {
         "shot_id": "shot_004",
-        "subject_ids": ["米迦尔"],
-        "metrics": ["composition_score", "visibility_ratio", "camera_angle_deg"],
-        "sampling": {"frames": ["first", "middle", "last"], "step": 4}
+        "subject_ids": [
+          "米迦尔"
+        ],
+        "metrics": [
+          "composition_score",
+          "visibility_ratio",
+          "camera_angle_deg"
+        ],
+        "sampling": {
+          "frames": [
+            "first",
+            "middle",
+            "last"
+          ],
+          "step": 4
+        }
       }
     ],
     "coordinate_system": "normalized_screen_0_1",
@@ -69,41 +129,86 @@
   },
   "registry": {
     "rules": {
-      "R001": {"summary": "轴线一致性", "axis_drift_deg": 30.0, "crossing_min_deg": 0.5},
-      "R002": {"summary": "角色与墙体/道具 AABB 穿模", "collision_margin_m": 0.2},
-      "R005": {"summary": "角色不在画面内", "frame_margin_ndc": 0.05},
-      "R008": {"summary": "角色位于地面以下或悬空", "ground_eps_m": 0.02},
-      "R009": {"summary": "机位距离与景别期望偏差", "distance_tolerance": 0.25},
-      "R010": {"summary": "相邻镜同景别同角度缺乏变化", "min_angle_deg": 30.0},
-      "R012": {"summary": "两人同框朝向同号/眼高差超限", "eye_height_delta_m": 0.15},
-      "R020": {"summary": "跨镜包围盒世界高度漂移", "scale_drift": 0.05},
-      "R021": {"summary": "复合运动上限", "compound_motion_max": 2, "move_heading_turn_deg": 30.0},
-      "R022": {"summary": "相机右向量翻转", "roll_degenerate_deg": 5.0},
-      "R023": {"summary": "相机采样加速度峰值", "cam_accel_max_m_s2": 8.0},
-      "COMPOSITION": {"summary": "六项加权构图评分门（首/中/尾取最小值）", "pass_score": 70.0},
-      "SR001": {"summary": "声明白模角色必须进入可执行 characters"},
-      "SR002": {"summary": "全场时长与节奏", "total_duration_tolerance_s": 0.2, "long_shot_floor_s": 5.0, "monotony_delta_s": 0.5}
+      "R001": {
+        "summary": "轴线一致性",
+        "axis_drift_deg": 30.0,
+        "crossing_min_deg": 0.5
+      },
+      "R002": {
+        "summary": "角色与墙体/道具 AABB 穿模",
+        "collision_margin_m": 0.2
+      },
+      "R005": {
+        "summary": "角色不在画面内",
+        "frame_margin_ndc": 0.05
+      },
+      "R008": {
+        "summary": "角色位于地面以下或悬空",
+        "ground_eps_m": 0.02
+      },
+      "R009": {
+        "summary": "机位距离与景别期望偏差",
+        "distance_tolerance": 0.25
+      },
+      "R010": {
+        "summary": "相邻镜同景别同角度缺乏变化",
+        "min_angle_deg": 30.0
+      },
+      "R012": {
+        "summary": "两人同框朝向同号/眼高差超限",
+        "eye_height_delta_m": 0.15
+      },
+      "R020": {
+        "summary": "跨镜包围盒世界高度漂移",
+        "scale_drift": 0.05
+      },
+      "R021": {
+        "summary": "复合运动上限",
+        "compound_motion_max": 2,
+        "move_heading_turn_deg": 30.0
+      },
+      "R022": {
+        "summary": "相机右向量翻转",
+        "roll_degenerate_deg": 5.0
+      },
+      "R023": {
+        "summary": "相机采样加速度峰值",
+        "cam_accel_max_m_s2": 8.0
+      },
+      "COMPOSITION": {
+        "summary": "六项加权构图评分门（首/中/尾取最小值）",
+        "pass_score": 80.0
+      },
+      "SR001": {
+        "summary": "声明白模角色必须进入可执行 characters"
+      },
+      "SR002": {
+        "summary": "全场时长与节奏",
+        "total_duration_tolerance_s": 0.2,
+        "long_shot_floor_s": 5.0,
+        "monotony_delta_s": 0.5
+      }
     },
     "guard": {
-      "edge_clip_max": 0.10,
+      "edge_clip_max": 0.1,
       "lead_room_min": 0.05,
       "sustain_frames": 12,
       "size_drift": 0.15,
       "jump_ratio": 0.25,
       "jump_cut_angle_deg": 30.0,
-      "jump_cut_size_diff": 0.10,
-      "occlusion_warn": 0.20,
+      "jump_cut_size_diff": 0.1,
+      "occlusion_warn": 0.2,
       "sample_step": 4
     },
     "composition": {
-      "pass_score": 70.0,
+      "pass_score": 80.0,
       "weights": {
         "headroom": 0.15,
-        "lead_room": 0.20,
+        "lead_room": 0.2,
         "rule_of_thirds": 0.15,
         "balance": 0.15,
         "occlusion": 0.25,
-        "framing": 0.10
+        "framing": 0.1
       },
       "ray_cast": {
         "sample_points": 9,
@@ -116,26 +221,76 @@
     {
       "shot_id": "shot_001",
       "order": 1,
-      "declared": {"seconds": 5.0, "frames": 120, "shot_type": "ELS", "characters": []},
-      "planned": {"seconds": 5.0, "frames": 120, "shot_type": "ELS", "characters": ["米迦尔", "伊恩", "偷盗者"]}
+      "declared": {
+        "seconds": 5.0,
+        "frames": 120,
+        "shot_type": "ELS",
+        "characters": []
+      },
+      "planned": {
+        "seconds": 5.0,
+        "frames": 120,
+        "shot_type": "ELS",
+        "characters": [
+          "米迦尔",
+          "伊恩",
+          "偷盗者"
+        ]
+      }
     },
     {
       "shot_id": "shot_002",
       "order": 2,
-      "declared": {"seconds": 4.0, "frames": 96, "shot_type": "MS", "characters": []},
-      "planned": {"seconds": 4.0, "frames": 96, "shot_type": "MS", "characters": ["米迦尔"]}
+      "declared": {
+        "seconds": 4.0,
+        "frames": 96,
+        "shot_type": "MS",
+        "characters": []
+      },
+      "planned": {
+        "seconds": 4.0,
+        "frames": 96,
+        "shot_type": "MS",
+        "characters": [
+          "米迦尔"
+        ]
+      }
     },
     {
       "shot_id": "shot_003",
       "order": 3,
-      "declared": {"seconds": 3.5, "frames": 84, "shot_type": "MCU", "characters": []},
-      "planned": {"seconds": 3.5, "frames": 84, "shot_type": "MCU", "characters": ["伊恩"]}
+      "declared": {
+        "seconds": 3.5,
+        "frames": 84,
+        "shot_type": "MCU",
+        "characters": []
+      },
+      "planned": {
+        "seconds": 3.5,
+        "frames": 84,
+        "shot_type": "MCU",
+        "characters": [
+          "伊恩"
+        ]
+      }
     },
     {
       "shot_id": "shot_004",
       "order": 4,
-      "declared": {"seconds": 3.5, "frames": 84, "shot_type": "MCU", "characters": []},
-      "planned": {"seconds": 3.5, "frames": 84, "shot_type": "MCU", "characters": ["米迦尔"]}
+      "declared": {
+        "seconds": 3.5,
+        "frames": 84,
+        "shot_type": "MCU",
+        "characters": []
+      },
+      "planned": {
+        "seconds": 3.5,
+        "frames": 84,
+        "shot_type": "MCU",
+        "characters": [
+          "米迦尔"
+        ]
+      }
     }
   ],
   "camera_specs": [
@@ -217,114 +372,443 @@
     }
   ],
   "measurements": [
-    {"measurement_id": "m_total_duration", "shot_id": "scene", "transition_id": null, "subject_id": null, "frame": null, "metric": "total_duration", "value": 16.0, "expected": 16.0, "unit": "seconds", "source": "script_declaration", "provenance": "script_declaration"},
-    {"measurement_id": "m_shot_001_duration", "shot_id": "shot_001", "transition_id": null, "subject_id": null, "frame": null, "metric": "duration", "value": 5.0, "expected": 5.0, "unit": "seconds", "source": "script_declaration", "provenance": "script_declaration"},
-    {"measurement_id": "m_shot_002_duration", "shot_id": "shot_002", "transition_id": null, "subject_id": null, "frame": null, "metric": "duration", "value": 4.0, "expected": 4.0, "unit": "seconds", "source": "script_declaration", "provenance": "script_declaration"},
-    {"measurement_id": "m_shot_003_duration", "shot_id": "shot_003", "transition_id": null, "subject_id": null, "frame": null, "metric": "duration", "value": 3.5, "expected": 3.5, "unit": "seconds", "source": "script_declaration", "provenance": "script_declaration"},
-    {"measurement_id": "m_shot_004_duration", "shot_id": "shot_004", "transition_id": null, "subject_id": null, "frame": null, "metric": "duration", "value": 3.5, "expected": 3.5, "unit": "seconds", "source": "script_declaration", "provenance": "script_declaration"},
-    {"measurement_id": "m_shot_001_composition", "shot_id": "shot_001", "transition_id": null, "subject_id": null, "frame": "last", "metric": "composition_score", "value": 64.7, "expected": 70.0, "unit": "score_0_100", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_001_thirds_michael", "shot_id": "shot_001", "transition_id": null, "subject_id": "米迦尔", "frame": "last", "metric": "thirds_deviation", "value": 0.2168, "expected": 0.1667, "unit": "ndc", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_001_body_thief", "shot_id": "shot_001", "transition_id": null, "subject_id": "偷盗者", "frame": "last", "metric": "body_height_ratio", "value": 0.3608, "expected": [0.15, 0.35], "unit": "ratio", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_001_vis_ian", "shot_id": "shot_001", "transition_id": null, "subject_id": "伊恩", "frame": "last", "metric": "visibility_ratio", "value": 0.3333, "expected": 1.0, "unit": "ratio_of_9", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_002_composition", "shot_id": "shot_002", "transition_id": null, "subject_id": null, "frame": "last", "metric": "composition_score", "value": 51.4, "expected": 70.0, "unit": "score_0_100", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_002_edge", "shot_id": "shot_002", "transition_id": null, "subject_id": "米迦尔", "frame": "last", "metric": "edge_clip", "value": 0.1975, "expected": 0.1, "unit": "ratio", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_002_body", "shot_id": "shot_002", "transition_id": null, "subject_id": "米迦尔", "frame": "last", "metric": "body_height_ratio", "value": 1.1933, "expected": [0.55, 0.7], "unit": "ratio", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_002_vis", "shot_id": "shot_002", "transition_id": null, "subject_id": "米迦尔", "frame": "last", "metric": "visibility_ratio", "value": 0.0, "expected": 1.0, "unit": "ratio_of_9", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_002_axis_drift", "shot_id": "shot_002", "transition_id": null, "subject_id": null, "frame": null, "metric": "axis_side", "value": 59.0, "expected": 30.0, "unit": "degrees", "source": "blender_geometry", "provenance": "blender_geometry", "note": "修复尝试期间曾触发 R001（59°≥30°），随后回滚，最终审计无 R001"},
-    {"measurement_id": "m_shot_003_composition", "shot_id": "shot_003", "transition_id": null, "subject_id": null, "frame": "last", "metric": "composition_score", "value": 73.6, "expected": 70.0, "unit": "score_0_100", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_004_composition", "shot_id": "shot_004", "transition_id": null, "subject_id": null, "frame": "last", "metric": "composition_score", "value": 79.2, "expected": 70.0, "unit": "score_0_100", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_shot_004_vis", "shot_id": "shot_004", "transition_id": null, "subject_id": "米迦尔", "frame": "first", "metric": "visibility_ratio", "value": 0.0, "expected": 1.0, "unit": "ratio_of_9", "source": "blender_geometry", "provenance": "blender_geometry", "note": "修复前帧 301–313 subject_not_visible；setup_camera 后 79.2 通过"},
-    {"measurement_id": "m_transition_003", "shot_id": "shot_003", "transition_id": "t_002_003", "subject_id": null, "frame": null, "metric": "camera_angle_deg", "value": 15.5, "expected": 30.0, "unit": "degrees", "source": "blender_geometry", "provenance": "blender_geometry"},
-    {"measurement_id": "m_transition_004", "shot_id": "shot_004", "transition_id": "t_003_004", "subject_id": null, "frame": null, "metric": "camera_angle_deg", "value": 24.8, "expected": 30.0, "unit": "degrees", "source": "blender_geometry", "provenance": "blender_geometry"}
+    {
+      "measurement_id": "m_total_duration",
+      "shot_id": "scene",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": null,
+      "metric": "total_duration",
+      "value": 16.0,
+      "expected": 16.0,
+      "unit": "seconds",
+      "source": "script_declaration",
+      "provenance": "script_declaration"
+    },
+    {
+      "measurement_id": "m_shot_001_duration",
+      "shot_id": "shot_001",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": null,
+      "metric": "duration",
+      "value": 5.0,
+      "expected": 5.0,
+      "unit": "seconds",
+      "source": "script_declaration",
+      "provenance": "script_declaration"
+    },
+    {
+      "measurement_id": "m_shot_002_duration",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": null,
+      "metric": "duration",
+      "value": 4.0,
+      "expected": 4.0,
+      "unit": "seconds",
+      "source": "script_declaration",
+      "provenance": "script_declaration"
+    },
+    {
+      "measurement_id": "m_shot_003_duration",
+      "shot_id": "shot_003",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": null,
+      "metric": "duration",
+      "value": 3.5,
+      "expected": 3.5,
+      "unit": "seconds",
+      "source": "script_declaration",
+      "provenance": "script_declaration"
+    },
+    {
+      "measurement_id": "m_shot_004_duration",
+      "shot_id": "shot_004",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": null,
+      "metric": "duration",
+      "value": 3.5,
+      "expected": 3.5,
+      "unit": "seconds",
+      "source": "script_declaration",
+      "provenance": "script_declaration"
+    },
+    {
+      "measurement_id": "m_shot_001_composition",
+      "shot_id": "shot_001",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": "last",
+      "metric": "composition_score",
+      "value": 64.7,
+      "expected": 80.0,
+      "unit": "score_0_100",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_001_thirds_michael",
+      "shot_id": "shot_001",
+      "transition_id": null,
+      "subject_id": "米迦尔",
+      "frame": "last",
+      "metric": "thirds_deviation",
+      "value": 0.2168,
+      "expected": 0.1667,
+      "unit": "ndc",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_001_body_thief",
+      "shot_id": "shot_001",
+      "transition_id": null,
+      "subject_id": "偷盗者",
+      "frame": "last",
+      "metric": "body_height_ratio",
+      "value": 0.3608,
+      "expected": [
+        0.15,
+        0.35
+      ],
+      "unit": "ratio",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_001_vis_ian",
+      "shot_id": "shot_001",
+      "transition_id": null,
+      "subject_id": "伊恩",
+      "frame": "last",
+      "metric": "visibility_ratio",
+      "value": 0.3333,
+      "expected": 1.0,
+      "unit": "ratio_of_9",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_002_composition",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": "last",
+      "metric": "composition_score",
+      "value": 51.4,
+      "expected": 80.0,
+      "unit": "score_0_100",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_002_edge",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "subject_id": "米迦尔",
+      "frame": "last",
+      "metric": "edge_clip",
+      "value": 0.1975,
+      "expected": 0.1,
+      "unit": "ratio",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_002_body",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "subject_id": "米迦尔",
+      "frame": "last",
+      "metric": "body_height_ratio",
+      "value": 1.1933,
+      "expected": [
+        0.55,
+        0.7
+      ],
+      "unit": "ratio",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_002_vis",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "subject_id": "米迦尔",
+      "frame": "last",
+      "metric": "visibility_ratio",
+      "value": 0.0,
+      "expected": 1.0,
+      "unit": "ratio_of_9",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_002_axis_drift",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": null,
+      "metric": "axis_side",
+      "value": 59.0,
+      "expected": 30.0,
+      "unit": "degrees",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry",
+      "note": "修复尝试期间曾触发 R001（59°≥30°），随后回滚，最终审计无 R001"
+    },
+    {
+      "measurement_id": "m_shot_003_composition",
+      "shot_id": "shot_003",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": "last",
+      "metric": "composition_score",
+      "value": 73.6,
+      "expected": 80.0,
+      "unit": "score_0_100",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_004_composition",
+      "shot_id": "shot_004",
+      "transition_id": null,
+      "subject_id": null,
+      "frame": "last",
+      "metric": "composition_score",
+      "value": 79.2,
+      "expected": 80.0,
+      "unit": "score_0_100",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_shot_004_vis",
+      "shot_id": "shot_004",
+      "transition_id": null,
+      "subject_id": "米迦尔",
+      "frame": "first",
+      "metric": "visibility_ratio",
+      "value": 0.0,
+      "expected": 1.0,
+      "unit": "ratio_of_9",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry",
+      "note": "修复前帧 301–313 subject_not_visible；setup_camera 后 79.2，主体恢复可见但未达 80 门槛"
+    },
+    {
+      "measurement_id": "m_transition_003",
+      "shot_id": "shot_003",
+      "transition_id": "t_002_003",
+      "subject_id": null,
+      "frame": null,
+      "metric": "camera_angle_deg",
+      "value": 15.5,
+      "expected": 30.0,
+      "unit": "degrees",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    },
+    {
+      "measurement_id": "m_transition_004",
+      "shot_id": "shot_004",
+      "transition_id": "t_003_004",
+      "subject_id": null,
+      "frame": null,
+      "metric": "camera_angle_deg",
+      "value": 24.8,
+      "expected": 30.0,
+      "unit": "degrees",
+      "source": "blender_geometry",
+      "provenance": "blender_geometry"
+    }
   ],
   "verdicts": [
     {
-      "verdict_id": "v_cast_recovered", "shot_id": "scene", "transition_id": null,
-      "rule_code": "SR001", "status": "warning", "severity": "warning",
-      "expected": "characters 非空", "actual": "3 角色从 responsibility.white_model 恢复",
-      "threshold": null, "unit": "none",
-      "evidence": ["m_shot_001_duration", "m_shot_002_duration"],
+      "verdict_id": "v_cast_recovered",
+      "shot_id": "scene",
+      "transition_id": null,
+      "rule_code": "SR001",
+      "status": "warning",
+      "severity": "warning",
+      "expected": "characters 非空",
+      "actual": "3 角色从 responsibility.white_model 恢复",
+      "threshold": null,
+      "unit": "none",
+      "evidence": [
+        "m_shot_001_duration",
+        "m_shot_002_duration"
+      ],
       "provenance": "plan_intent",
       "message": "角色已从 responsibility.white_model 恢复到 executable characters；后续计划必须直接填写 characters。",
       "suggestion": "计划生成直接填 characters 字段"
     },
     {
-      "verdict_id": "v_duration_exact", "shot_id": "scene", "transition_id": null,
-      "rule_code": "SR002", "status": "pass", "severity": "info",
-      "expected": 16.0, "actual": 16.0, "threshold": 0.2, "unit": "seconds",
-      "evidence": ["m_total_duration"],
+      "verdict_id": "v_duration_exact",
+      "shot_id": "scene",
+      "transition_id": null,
+      "rule_code": "SR002",
+      "status": "pass",
+      "severity": "info",
+      "expected": 16.0,
+      "actual": 16.0,
+      "threshold": 0.2,
+      "unit": "seconds",
+      "evidence": [
+        "m_total_duration"
+      ],
       "provenance": "script_declaration",
       "message": "四镜总时长 16.0 秒，与声明一致。",
       "suggestion": ""
     },
     {
-      "verdict_id": "v_shot_001_composition", "shot_id": "shot_001", "transition_id": null,
-      "rule_code": "COMPOSITION", "status": "repair", "severity": "error",
-      "expected": 70.0, "actual": 64.7, "threshold": 70.0, "unit": "score_0_100",
-      "evidence": ["m_shot_001_composition"],
+      "verdict_id": "v_shot_001_composition",
+      "shot_id": "shot_001",
+      "transition_id": null,
+      "rule_code": "COMPOSITION",
+      "status": "repair",
+      "severity": "error",
+      "expected": 80.0,
+      "actual": 64.7,
+      "threshold": 80.0,
+      "unit": "score_0_100",
+      "evidence": [
+        "m_shot_001_composition"
+      ],
       "provenance": "blender_geometry",
-      "message": "构图评分 64.7（首/中/尾最小值）低于阈值 70。",
+      "message": "构图评分 64.7（首/中/尾最小值）未高于阈值 80。",
       "suggestion": "主体偏离三分线交点，可微调构图"
     },
     {
-      "verdict_id": "v_shot_002_composition", "shot_id": "shot_002", "transition_id": null,
-      "rule_code": "COMPOSITION", "status": "repair", "severity": "error",
-      "expected": 70.0, "actual": 51.4, "threshold": 70.0, "unit": "score_0_100",
-      "evidence": ["m_shot_002_composition", "m_shot_002_edge", "m_shot_002_body"],
+      "verdict_id": "v_shot_002_composition",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "rule_code": "COMPOSITION",
+      "status": "repair",
+      "severity": "error",
+      "expected": 80.0,
+      "actual": 51.4,
+      "threshold": 80.0,
+      "unit": "score_0_100",
+      "evidence": [
+        "m_shot_002_composition",
+        "m_shot_002_edge",
+        "m_shot_002_body"
+      ],
       "provenance": "blender_geometry",
       "message": "构图评分 51.4：边缘裁切 0.1975（>0.10）、主体占比 1.1933 远超 MS 区间 0.55–0.7、末段完全遮挡。",
       "suggestion": "拉远机位并消除前景遮挡"
     },
     {
-      "verdict_id": "v_shot_002_occlusion", "shot_id": "shot_002", "transition_id": null,
-      "rule_code": "subject_not_visible", "status": "repair", "severity": "error",
-      "expected": 1.0, "actual": 0.0, "threshold": 0.0, "unit": "ratio_of_9",
-      "evidence": ["m_shot_002_vis"],
+      "verdict_id": "v_shot_002_occlusion",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "rule_code": "subject_not_visible",
+      "status": "repair",
+      "severity": "error",
+      "expected": 1.0,
+      "actual": 0.0,
+      "threshold": 0.0,
+      "unit": "ratio_of_9",
+      "evidence": [
+        "m_shot_002_vis"
+      ],
       "provenance": "blender_geometry",
       "message": "米迦尔在末段帧 195–216 被完全遮挡（visible_ratio=0）。",
       "suggestion": "挪开前景或换机位"
     },
     {
-      "verdict_id": "v_shot_002_axis_recovered", "shot_id": "shot_002", "transition_id": null,
-      "rule_code": "R001", "status": "pass", "severity": "info",
-      "expected": 30.0, "actual": 59.0, "threshold": 30.0, "unit": "degrees",
-      "evidence": ["m_shot_002_axis_drift"],
+      "verdict_id": "v_shot_002_axis_recovered",
+      "shot_id": "shot_002",
+      "transition_id": null,
+      "rule_code": "R001",
+      "status": "pass",
+      "severity": "info",
+      "expected": 30.0,
+      "actual": 59.0,
+      "threshold": 30.0,
+      "unit": "degrees",
+      "evidence": [
+        "m_shot_002_axis_drift"
+      ],
       "provenance": "blender_geometry",
       "message": "修复尝试期间曾触发 R001（轴线重建 59°≥30°），因引入新违规回滚，最终审计无 R001。",
       "suggestion": ""
     },
     {
-      "verdict_id": "v_shot_003_composition", "shot_id": "shot_003", "transition_id": null,
-      "rule_code": "COMPOSITION", "status": "pass", "severity": "info",
-      "expected": 70.0, "actual": 73.6, "threshold": 70.0, "unit": "score_0_100",
-      "evidence": ["m_shot_003_composition"],
+      "verdict_id": "v_shot_003_composition",
+      "shot_id": "shot_003",
+      "transition_id": null,
+      "rule_code": "COMPOSITION",
+      "status": "repair",
+      "severity": "error",
+      "expected": 80.0,
+      "actual": 73.6,
+      "threshold": 80.0,
+      "unit": "score_0_100",
+      "evidence": [
+        "m_shot_003_composition"
+      ],
       "provenance": "blender_geometry",
-      "message": "构图评分 73.6，通过。",
+      "message": "构图评分 73.6（首/中/尾最小值）未高于阈值 80。",
       "suggestion": ""
     },
     {
-      "verdict_id": "v_shot_003_transition", "shot_id": "shot_003", "transition_id": "t_002_003",
-      "rule_code": "R010", "status": "warning", "severity": "warning",
-      "expected": 30.0, "actual": 15.5, "threshold": 30.0, "unit": "degrees",
-      "evidence": ["m_transition_003"],
+      "verdict_id": "v_shot_003_transition",
+      "shot_id": "shot_003",
+      "transition_id": "t_002_003",
+      "rule_code": "R010",
+      "status": "warning",
+      "severity": "warning",
+      "expected": 30.0,
+      "actual": 15.5,
+      "threshold": 30.0,
+      "unit": "degrees",
+      "evidence": [
+        "m_transition_003"
+      ],
       "provenance": "blender_geometry",
       "message": "相邻镜头机位角差仅 15.5°（<30°）且景别未变化（MCU→MCU），存在跳切风险。",
       "suggestion": "改变机位角度，或至少变化一档景别"
     },
     {
-      "verdict_id": "v_shot_004_composition", "shot_id": "shot_004", "transition_id": null,
-      "rule_code": "COMPOSITION", "status": "pass", "severity": "info",
-      "expected": 70.0, "actual": 79.2, "threshold": 70.0, "unit": "score_0_100",
-      "evidence": ["m_shot_004_composition", "m_shot_004_vis"],
+      "verdict_id": "v_shot_004_composition",
+      "shot_id": "shot_004",
+      "transition_id": null,
+      "rule_code": "COMPOSITION",
+      "status": "repair",
+      "severity": "error",
+      "expected": 80.0,
+      "actual": 79.2,
+      "threshold": 80.0,
+      "unit": "score_0_100",
+      "evidence": [
+        "m_shot_004_composition",
+        "m_shot_004_vis"
+      ],
       "provenance": "blender_geometry",
-      "message": "修复后构图评分 79.2，主体可见。",
+      "message": "修复后构图评分 79.2，主体可见，但未高于阈值 80。",
       "suggestion": ""
     },
     {
-      "verdict_id": "v_shot_004_transition", "shot_id": "shot_004", "transition_id": "t_003_004",
-      "rule_code": "R010", "status": "warning", "severity": "warning",
-      "expected": 30.0, "actual": 24.8, "threshold": 30.0, "unit": "degrees",
-      "evidence": ["m_transition_004"],
+      "verdict_id": "v_shot_004_transition",
+      "shot_id": "shot_004",
+      "transition_id": "t_003_004",
+      "rule_code": "R010",
+      "status": "warning",
+      "severity": "warning",
+      "expected": 30.0,
+      "actual": 24.8,
+      "threshold": 30.0,
+      "unit": "degrees",
+      "evidence": [
+        "m_transition_004"
+      ],
       "provenance": "blender_geometry",
       "message": "相邻镜头机位角差仅 24.8°（<30°）且景别未变化（MCU→MCU），存在跳切风险。",
       "suggestion": "改变机位角度，或至少变化一档景别"
@@ -335,9 +819,21 @@
       "prescription_id": "p_restore_cast",
       "shot_id": "scene",
       "operation": "restore_cast",
-      "parameters": {"source": "responsibility.white_model", "characters": ["米迦尔", "伊恩", "偷盗者"]},
+      "parameters": {
+        "source": "responsibility.white_model",
+        "characters": [
+          "米迦尔",
+          "伊恩",
+          "偷盗者"
+        ]
+      },
       "precondition_measurement_ids": [],
-      "postcondition_measurement_ids": ["m_shot_001_duration", "m_shot_002_duration", "m_shot_003_duration", "m_shot_004_duration"],
+      "postcondition_measurement_ids": [
+        "m_shot_001_duration",
+        "m_shot_002_duration",
+        "m_shot_003_duration",
+        "m_shot_004_duration"
+      ],
       "postcondition": "每个需要白模的镜头 characters 非空且只含已确认角色",
       "applied": true,
       "applied_at": "1792211xxx",
@@ -348,10 +844,19 @@
       "prescription_id": "p_reframe_002",
       "shot_id": "shot_002",
       "operation": "reframe",
-      "parameters": {"reason": "subject_not_visible + edge_clip + framing_too_tight", "target": "米迦尔"},
-      "precondition_measurement_ids": ["m_shot_002_composition", "m_shot_002_edge", "m_shot_002_body"],
-      "postcondition_measurement_ids": ["m_shot_002_composition"],
-      "postcondition": "全镜 visible_ratio > 0 且 composition_score >= 70",
+      "parameters": {
+        "reason": "subject_not_visible + edge_clip + framing_too_tight",
+        "target": "米迦尔"
+      },
+      "precondition_measurement_ids": [
+        "m_shot_002_composition",
+        "m_shot_002_edge",
+        "m_shot_002_body"
+      ],
+      "postcondition_measurement_ids": [
+        "m_shot_002_composition"
+      ],
+      "postcondition": "全镜 visible_ratio > 0 且 composition_score > 80",
       "applied": true,
       "applied_at": "1792212867.625",
       "waived": false,
@@ -362,10 +867,19 @@
       "prescription_id": "p_shot_004_reframe",
       "shot_id": "shot_004",
       "operation": "reframe",
-      "parameters": {"shot_type": "MS", "side": "front_right", "lens": 35},
-      "precondition_measurement_ids": ["m_shot_004_composition", "m_shot_004_vis"],
-      "postcondition_measurement_ids": ["m_shot_004_composition"],
-      "postcondition": "composition_score >= 70 且 visibility_ratio > 0",
+      "parameters": {
+        "shot_type": "MS",
+        "side": "front_right",
+        "lens": 35
+      },
+      "precondition_measurement_ids": [
+        "m_shot_004_composition",
+        "m_shot_004_vis"
+      ],
+      "postcondition_measurement_ids": [
+        "m_shot_004_composition"
+      ],
+      "postcondition": "composition_score > 80 且 visibility_ratio > 0",
       "applied": true,
       "applied_at": "1792213237.672",
       "waived": false,
@@ -376,9 +890,19 @@
       "prescription_id": "p_transition_003",
       "shot_id": "shot_003",
       "operation": "review_transition",
-      "parameters": {"from": "shot_002", "to": "shot_003", "angle_degrees": 15.5, "required_degrees": 30.0, "alternative": "change_shot_size"},
-      "precondition_measurement_ids": ["m_transition_003"],
-      "postcondition_measurement_ids": ["m_transition_003"],
+      "parameters": {
+        "from": "shot_002",
+        "to": "shot_003",
+        "angle_degrees": 15.5,
+        "required_degrees": 30.0,
+        "alternative": "change_shot_size"
+      },
+      "precondition_measurement_ids": [
+        "m_transition_003"
+      ],
+      "postcondition_measurement_ids": [
+        "m_transition_003"
+      ],
       "postcondition": "角度 >= 30° 或景别至少变化一档",
       "applied": false,
       "applied_at": null,
@@ -390,9 +914,19 @@
       "prescription_id": "p_transition_004",
       "shot_id": "shot_004",
       "operation": "review_transition",
-      "parameters": {"from": "shot_003", "to": "shot_004", "angle_degrees": 24.8, "required_degrees": 30.0, "alternative": "change_shot_size"},
-      "precondition_measurement_ids": ["m_transition_004"],
-      "postcondition_measurement_ids": ["m_transition_004"],
+      "parameters": {
+        "from": "shot_003",
+        "to": "shot_004",
+        "angle_degrees": 24.8,
+        "required_degrees": 30.0,
+        "alternative": "change_shot_size"
+      },
+      "precondition_measurement_ids": [
+        "m_transition_004"
+      ],
+      "postcondition_measurement_ids": [
+        "m_transition_004"
+      ],
       "postcondition": "角度 >= 30° 或景别至少变化一档",
       "applied": false,
       "applied_at": null,

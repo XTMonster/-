@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from ..cinema.ruler_measure import measurements_for_shot
 from ..utils.threading_guard import main_thread_only
@@ -34,29 +34,24 @@ def _angle_between(previous: Any, current: Any, center: Any) -> float:
     return math.degrees(math.acos(cosine))
 
 
-@main_thread_only("ruler_probe.collect_shot_measurements")
-def collect_shot_measurements(shot_id: str,
-                              context: Any = None) -> List[Dict[str, Any]]:
-    """采集一镜的观测测量（契约 measurement 形状列表）。
+def _shot_probe_facts(shot_id: str, context: Any) -> Optional[Dict[str, Any]]:
+    """一次采样 + 相机/角色/构图事实；镜头无相机返回 None（不猜、不伪造）。
 
-    `context` 缺省取当前活动的 ``SceneContext``；镜头无相机时返回空表
-    （不猜、不伪造）。
+    供 ``collect_shot_measurements``（测量）与 ``collect_shot_review``
+    （六层评测）共用，保证**同一镜只采样一次**——两条消费者拿到的是
+    同一批画面事实，读数不会因采样抖动而分叉。
     """
     from .cinema_engine import evaluate_camera_composition
     from .frustum_sampler import SamplingError, sample_shot
     from .rule_checker import audit_frames
-    from .scene_context import get_context
     from ..settings import get_config
     import bpy
     from mathutils import Vector
 
-    context = context or get_context()
-    if context is None:
-        return []
     shot_id = str(shot_id)
     camera = context.camera_for(shot_id)
     if camera is None or getattr(camera, "data", None) is None:
-        return []
+        return None
     shot = context.shot(shot_id)
     fps = int(getattr(getattr(get_config(), "animation", None), "fps", 24)
               or 24)
@@ -130,15 +125,132 @@ def collect_shot_measurements(shot_id: str,
                 camera_pos, center)
             transition_prev = previous_id
 
+    return {
+        "shot_id": shot_id,
+        "declared_seconds": declared_seconds,
+        "planned_frames": planned_frames or None,
+        "fps": fps,
+        "camera": camera_info,
+        "composition_score": composition_score,
+        "composition_items": composition_items,
+        "frame_samples": frame_samples,
+        "transition_angle_deg": transition_angle,
+        "transition_prev_id": transition_prev,
+        "context": context,
+        "shot": shot,
+    }
+
+
+@main_thread_only("ruler_probe.collect_shot_measurements")
+def collect_shot_measurements(shot_id: str,
+                              context: Any = None) -> List[Dict[str, Any]]:
+    """采集一镜的观测测量（契约 measurement 形状列表）。
+
+    `context` 缺省取当前活动的 ``SceneContext``；镜头无相机时返回空表
+    （不猜、不伪造）。
+    """
+    from .scene_context import get_context
+
+    context = context or get_context()
+    if context is None:
+        return []
+    facts = _shot_probe_facts(shot_id, context)
+    if facts is None:
+        return []
     return measurements_for_shot(
-        shot_id=shot_id,
-        declared_seconds=declared_seconds,
-        planned_frames=planned_frames or None,
-        fps=fps,
-        camera=camera_info,
-        composition_score=composition_score,
-        composition_items=composition_items,
-        frame_samples=frame_samples,
-        transition_angle_deg=transition_angle,
-        transition_prev_id=transition_prev,
+        shot_id=facts["shot_id"],
+        declared_seconds=facts["declared_seconds"],
+        planned_frames=facts["planned_frames"],
+        fps=facts["fps"],
+        camera=facts["camera"],
+        composition_score=facts["composition_score"],
+        composition_items=facts["composition_items"],
+        frame_samples=facts["frame_samples"],
+        transition_angle_deg=facts["transition_angle_deg"],
+        transition_prev_id=facts["transition_prev_id"],
     )
+
+
+@main_thread_only("ruler_probe.collect_shot_review")
+def collect_shot_review(shot_id: str,
+                        context: Any = None
+                        ) -> Tuple[List[Dict[str, Any]],
+                                   Optional[Dict[str, Any]]]:
+    """一次采样同时产出 (measurements, ruler_review_dict)。
+
+    转正接缝：测量与六层评测共用同一批画面事实，避免二次昂贵采样。
+    ``ruler_review`` 是 ``RulerReview.to_dict()`` 形状（逐镜五层，
+    continuity 如实标未核验）；镜头无相机/无计划/无采样时返回
+    ``(measurements, None)``（诚实标缺，不伪造读数）。
+    """
+    from .scene_context import get_context
+
+    context = context or get_context()
+    if context is None:
+        return [], None
+    facts = _shot_probe_facts(shot_id, context)
+    if facts is None:
+        return [], None
+    measurements = measurements_for_shot(
+        shot_id=facts["shot_id"],
+        declared_seconds=facts["declared_seconds"],
+        planned_frames=facts["planned_frames"],
+        fps=facts["fps"],
+        camera=facts["camera"],
+        composition_score=facts["composition_score"],
+        composition_items=facts["composition_items"],
+        frame_samples=facts["frame_samples"],
+        transition_angle_deg=facts["transition_angle_deg"],
+        transition_prev_id=facts["transition_prev_id"],
+    )
+    plan = getattr(facts["context"], "plan", None)
+    shot = facts["shot"]
+    review: Optional[Dict[str, Any]] = None
+    if plan is not None and shot is not None:
+        from ..cinema.ruler_review import run_shot_review
+        try:
+            review = run_shot_review(
+                plan, shot_id, facts["frame_samples"], fps=facts["fps"],
+                lens=float(facts["camera"].get("lens") or 0.0) or None,
+            ).to_dict()
+        except Exception:               # noqa: BLE001 - 评测失败如实缺，不阻断审核
+            review = None
+    return measurements, review
+
+
+@main_thread_only("ruler_probe.collect_shot_samples")
+def collect_shot_samples(plan: Any) -> Dict[str, List[Any]]:
+    """全场逐镜采样一次（序列级 continuity 复核用，FINISHING 阶段调用）。
+
+    只读、幂等；任一镜采样失败都如实缺（不编造连续性读数）。返回
+    ``{shot_id: [frustum_sampler.FrameSample, ...]}``。
+    """
+    from .frustum_sampler import SamplingError, sample_shot
+    from .rule_checker import audit_frames
+    from .scene_context import get_context
+
+    context = get_context()
+    if context is None:
+        return {}
+    out: Dict[str, List[Any]] = {}
+    for shot in getattr(plan, "shots", []) or []:
+        shot_id = str(getattr(shot, "shot_id", "") or "")
+        if not shot_id:
+            continue
+        if context.camera_for(shot_id) is None:
+            continue
+        try:
+            samples = sample_shot(
+                shot_id, step=4,
+                extra_frames=tuple(audit_frames(shot_id, context)))
+        except SamplingError:
+            continue                      # 采样失败如实缺，不写 0 值冒充
+        if samples:
+            out[shot_id] = list(samples)
+    return out
+
+
+__all__ = [
+    "collect_shot_measurements", "collect_shot_review", "collect_shot_samples",
+    "_shot_probe_facts",
+]

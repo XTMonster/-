@@ -23,9 +23,9 @@ def render_method_block(scene: Optional[Dict[str, Any]] = None) -> str:
         render_method_checklist(),
         "",
         "判定规则：先排除致命项（出画/整体遮挡），再谈微调项（三分/重心）。"
-        "每个失败分量先读当前值与目标区间再判过/不过（构图过门判定：总分 ≥ 70 "
-        "且逐项对照目标区间），最后汇成 verdict；没有读数值时只做定性判断，"
-        "不编数字。",
+        "每个失败分量先读当前值与目标区间再判过/不过（构图过门判定：总分 "
+        "必须严格高于 80，等于 80 不算过，且逐项对照目标区间），最后汇成 "
+        "verdict；没有读数值时只做定性判断，不编数字。",
     ]
     is_dynamic = isinstance(scene, dict) and scene.get("id") == "fight_01"
     if not is_dynamic:

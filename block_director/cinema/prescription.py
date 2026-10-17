@@ -24,7 +24,7 @@ from .composition import CompositionItem, CompositionReport
 from .evaluation_protocol import Prescription, Severity, TargetInterval
 
 
-PASS_SCORE = 70.0
+PASS_SCORE = 80.0
 
 #: 未注册的内部临时键：处方只能在“几何/构图事实分量”层面给方向，
 #: 不允许把 camera_z / delta_* / walk_* 这类实现细节直接端给模型。
@@ -71,6 +71,9 @@ def _target_for(component: str, item: CompositionItem) -> TargetInterval:
 
     Demo 只演示“当前值 -> 达标目标”；真实 magnitude 由 probe（Ticket 04+）
     按 composition.py 的真源口径给出，这里不引入新阈值。
+
+    用户 2026-10-18 裁决：构图分必须严格高于 80（PASS_SCORE 与
+    composition.PASS_SCORE 同源），恰好等于 80.0 仍判为未达标。
     """
     return TargetInterval(min_value=PASS_SCORE / 100.0)
 
@@ -78,8 +81,8 @@ def _target_for(component: str, item: CompositionItem) -> TargetInterval:
 def _severity_for(component: str, item: CompositionItem) -> Severity:
     """分量分数越低严重度越高：<0.3 fatal，<0.5 error，否则 warning。
 
-    与主 spec §5.3 的分级方向一致，且不改变现有 demo 阈值
-    （0.7 以下才产处方）。
+    与主 spec §5.3 的分级方向一致；阈值跟随 composition 真源
+    （0.8 以下才产处方，用户 2026-10-18 裁决）。
     """
     if item.score < 0.3:
         return Severity.FATAL
@@ -92,7 +95,7 @@ def build_prescriptions(report: CompositionReport) -> List[Prescription]:
     """把失败构图分量变成新契约 Prescription（不含 tool/tool_args）。"""
     out: List[Prescription] = []
     for name, item in report.items.items():
-        if item.score >= PASS_SCORE / 100.0:
+        if item.score > PASS_SCORE / 100.0:
             continue
         direction, effects, allowed = _COMPONENT_DIRECTIONS.get(
             name, ("", (), ()))

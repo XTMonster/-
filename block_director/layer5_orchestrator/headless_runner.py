@@ -173,20 +173,26 @@ def _write_spatial_ruler_observation(summary: Dict[str, Any],
                                      directory: Path) -> Optional[str]:
     """把本次运行的空间尺观测折成 ``<run>/spatial_ruler_observation.json``。
 
-    数据源（全部来自运行摘要与审计日志，无 bpy、无二次 LLM 调用）：
-    * ``spatial_ruler_plan_evidence``——driver 计划级的**已应用**处方与测量；
-    * ``audit_log.jsonl`` 的 ``shot_audit`` / ``guard_warning`` /
-      ``spatial_ruler_plan_audit`` 事件（逐镜构图分、guard 告警与 SR001/SR002）；
-    * ``build``（相机实测）与 ``brief``。
-
-    处方用已应用版本（不重算）；计划级测量按 ``measurement_id`` 去重并入，
-    不覆盖几何侧测量。没有计划级证据且没有计划时返回 None。
+    优先采用 driver 内存折好的 ``ruler_observation``（转正：计划级处方 +
+    几何级测量 + 已执行相机处方全部在驱动状态机里合并，交付与运行目录
+    逐字节一致）；没有内存观测时退回日志重放兜底，并把
+    ``spatial_ruler_plan_evidence`` 里的已应用处方以合并语义并入。
+    没有计划级证据且没有计划时返回 None。
     """
+    import json
+
+    memory_doc = summary.get("ruler_observation")
+    if isinstance(memory_doc, dict):
+        target = ensure_dir(Path(directory)) / "spatial_ruler_observation.json"
+        target.write_text(
+            json.dumps(memory_doc, ensure_ascii=False, indent=2,
+                       allow_nan=False) + "\n",
+            encoding="utf-8")
+        return str(target)
     plan_evidence = summary.get("spatial_ruler_plan_evidence") or {}
     plan_payload = summary.get("plan")
     if not plan_payload and not plan_evidence:
         return None
-    import json
 
     from ..contracts.plan import Plan
     from .ruler_observation import (
@@ -219,10 +225,26 @@ def _write_spatial_ruler_observation(summary: Dict[str, Any],
             "shots": int(summary.get("shots") or 0),
         },
         observation_id=f"obs_{run_id}",
+        applied_prescriptions=list(plan_evidence.get(
+            "applied_prescriptions") or []),
     )
     applied = plan_evidence.get("prescriptions")
     if applied:
-        doc["prescriptions"] = [dict(item) for item in applied]
+        #: 兜底路径：计划级处方以 driver 实际应用版本为准，按
+        #: prescription_id 覆盖默认生成版本（不重算、不并表）。
+        by_id = {str(item.get("prescription_id")): dict(item)
+                 for item in doc["prescriptions"]}
+        for item in applied:
+            if not isinstance(item, dict) or not item.get("prescription_id"):
+                continue
+            key = str(item["prescription_id"])
+            base = by_id.get(key)
+            merged = dict(item)
+            if base:
+                for field, value in base.items():
+                    merged.setdefault(field, value)
+            by_id[key] = merged
+        doc["prescriptions"] = list(by_id.values())
     existing = {m.get("measurement_id") for m in doc["measurements"]}
     for item in plan_evidence.get("measurements") or []:
         mid = item.get("measurement_id")

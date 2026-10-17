@@ -50,6 +50,25 @@ class FakeAuditor:
         return AuditResult(passed=True, target=shot_id)
 
 
+class JsonAuditingAuditor(FakeAuditor):
+    """带 audit_json 的审核器：统一 JSON 入口被 driver 消费并留痕。"""
+
+    def __init__(self, results, shots=("shot_001",)):
+        super().__init__(results, shots=shots)
+        self.json_calls = []
+
+    def audit_json(self, shot_id):
+        self.json_calls.append(shot_id)
+        return {
+            "schema_version": "spatial-ruler-audit/v1",
+            "shot_id": str(shot_id), "source": "BlockDirector.audit",
+            "verdict": "pass", "metrics": [], "findings": [],
+            "guard": {"warnings": [], "frames_sampled": 0,
+                      "sampling_error": None},
+            "repair": {"candidates": [], "status": "pending"},
+        }
+
+
 class RepairingTransport:
     """按阶段回放：计划 → 单镜草案（B1）→ 修复工具调用。"""
 
@@ -287,3 +306,24 @@ def test_multiple_shots_are_audited_in_order():
     assert driver.run_to_completion() is DriverState.DONE
     assert auditor.calls == ["shot_001", "shot_002"]
     assert driver.snapshot()["shots_remaining"] == 0
+
+
+def test_driver_consumes_audit_json_unified_entry():
+    """空间尺审计 JSON 必须被驱动消费：事件留痕 + build_summary 挂载。"""
+    transport = RepairingTransport()
+    auditor = JsonAuditingAuditor(
+        [AuditResult(passed=True, target="shot_001")])
+    class WithResults(TrivialBuilder):
+        def build(self, plan, brief=None):
+            base = super().build(plan, brief)
+            base["results"] = [{"shot_id": "shot_001", "lens": 50.0}]
+            return base
+    driver = _driver(transport, auditor, builder=WithResults())
+    assert driver.run_to_completion() is DriverState.DONE
+    assert auditor.json_calls == ["shot_001"]
+    kinds = {e.kind for e in driver.audit.recent()}
+    assert "audit_json" in kinds
+    results = driver.build_summary.get("results") or []
+    hit = next((r for r in results if r.get("shot_id") == "shot_001"), None)
+    assert hit is not None and hit.get("audit_json", {}).get("schema_version") \
+        == "spatial-ruler-audit/v1"

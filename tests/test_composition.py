@@ -30,7 +30,21 @@ def test_weights_match_document():
 def test_good_framing_scores_high():
     report = evaluate_composition([good_box()])
     assert report.passed, report.to_dict()
-    assert report.score >= PASS_SCORE
+    #: 用户 2026-10-18 裁决：必须严格高于 80，等于不算过。
+    assert report.score > PASS_SCORE
+
+
+def test_exactly_pass_score_does_not_pass():
+    """用户 2026-10-18 裁决：分数恰好等于 80 不算通过。"""
+    report = evaluate_composition([good_box()])
+    # 直接构造边界分数，验证 passed 是严格大于。
+    from block_director.cinema.composition import CompositionReport
+    boundary = CompositionReport(score=PASS_SCORE)
+    assert not boundary.passed
+    below = CompositionReport(score=PASS_SCORE - 0.01)
+    assert not below.passed
+    above = CompositionReport(score=PASS_SCORE + 0.01)
+    assert above.passed
 
 
 def test_no_subject_scores_zero():

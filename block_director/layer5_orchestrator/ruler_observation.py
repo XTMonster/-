@@ -320,7 +320,7 @@ def build_prescriptions(*, plan: Plan, parsed=None, brief=None,
                     "precondition_measurement_ids": [f"m_{shot_id}_{metric}"],
                     "postcondition_measurement_ids": [
                         f"m_{shot_id}_composition_score"],
-                    "postcondition": "全镜 visible_ratio > 0 且 composition_score >= 70",
+                    "postcondition": "全镜 visible_ratio > 0 且 composition_score > 80",
                     "applied": False, "applied_at": None,
                     "waived": False, "waive_reason": "",
                     "note": "相机类处方不自动执行：进入修复提示由模型走工具",
@@ -412,7 +412,7 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
     declared = _declared_map(parsed)
     audits = dict(shot_audits or {})
     build = dict(build_results or {})
-    pass_score = float(registry.get("composition", {}).get("pass_score", 70.0))
+    pass_score = float(registry.get("composition", {}).get("pass_score", 80.0))
     fps = int(fps or 24)
 
     shot_specs: List[Dict[str, Any]] = []
@@ -537,9 +537,30 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
     for index, shot in enumerate(plan.shots):
         record = audits.get(shot.shot_id) or {}
         score = record.get("score")
+        #: 转正：原审核器的规则 findings（R001–R025 等）折进 verdicts——规则
+        #: 层的 errors/warnings 是既有审核的真源，观测文档**只折不改**：
+        #: error → status=repair/severity=error；warning → warning。缺失时
+        #: 不给 verdict（诚实标缺，不猜规则通过）。
+        for finding in (list(record.get("errors") or [])
+                        + list(record.get("warnings") or [])):
+            if not isinstance(finding, dict) or not finding.get("rule"):
+                continue
+            severity = str(finding.get("severity") or "error").lower()
+            is_error = severity == "error"
+            verdicts.append(_verdict(
+                shot.shot_id, str(finding["rule"]),
+                "repair" if is_error else "warning",
+                "error" if is_error else "warning",
+                expected=None, actual=None, threshold=None, unit="none",
+                evidence=[], provenance="algorithmic_measurement",
+                message=str(finding.get("message") or ""),
+                suggestion=str(finding.get("suggestion") or ""),
+                counter=len(verdicts)))
         if score is not None:
             mid = f"m_{shot.shot_id}_composition_score"
-            passed = float(score) >= pass_score
+            #: 用户 2026-10-18 裁决：构图分必须严格高于 80，
+            #: score == pass_score 不算通过。
+            passed = float(score) > pass_score
             verdicts.append(_verdict(
                 shot.shot_id, "COMPOSITION",
                 "pass" if passed else "repair",
@@ -592,6 +613,19 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
                         else "m_scene_total_duration"]
             verdicts.append(_finding_verdict(
                 finding, evidence=evidence))
+
+    #: 空间尺转正：逐镜六层评测（``RulerReview.to_dict()`` 形状，挂在
+    #: ``AuditResult.ruler_review`` / ``shot_audit`` 事件的 ``ruler_review``）。
+    #: 与 verdicts 并置：六层分/硬门/读数/失败项/处方是审核主层的独立输出，
+    #: 不折进 measurement 段（那里只放契约 measurement 形状的几何测量）。
+    #: 没有跑出评测的镜头不在 dict 里（"没审过"与"审了 0 分"分得开）。
+    ruler_reviews: Dict[str, Any] = {}
+    for shot in plan.shots:
+        record = audits.get(shot.shot_id) or {}
+        review = record.get("ruler_review")
+        if isinstance(review, dict) and review.get("shot_id"):
+            ruler_reviews[str(shot.shot_id)] = dict(review)
+
     if prescriptions is None:
         prescriptions = build_prescriptions(
             plan=plan, parsed=parsed, brief=brief, plan_findings=plan_findings,
@@ -601,6 +635,10 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
         #: 覆盖默认生成的未应用版本——同一镜同一操作只允许一个生命周期状态，
         #: 避免"已应用"与"未应用"自相矛盾；未被覆盖的默认处方（如
         #: review_transition）原样保留。
+        #: 合并是**补丁语义**：已应用版本里缺省的字段（operation /
+        #: measurement ids / postcondition 等）沿用默认版本，只有显式给出的
+        #: 字段覆盖——驱动侧只需记 prescription_id + applied 状态 + 执行参数，
+        #: 不必重复维护整套字段，避免两处漂移。
         by_id: Dict[str, Dict[str, Any]] = {}
         for item in prescriptions:
             if isinstance(item, dict) and item.get("prescription_id"):
@@ -608,7 +646,13 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
         for item in applied_prescriptions:
             if not isinstance(item, dict) or not item.get("prescription_id"):
                 continue
-            by_id[str(item["prescription_id"])] = dict(item)
+            key = str(item["prescription_id"])
+            base = by_id.get(key)
+            merged = dict(item)
+            if base:
+                for field, value in base.items():
+                    merged.setdefault(field, value)
+            by_id[key] = merged
         prescriptions = list(by_id.values())
 
     return {
@@ -648,6 +692,7 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
         "camera_specs": camera_specs,
         "measurements": measurements,
         "verdicts": verdicts,
+        "ruler_reviews": ruler_reviews,
         "prescriptions": list(prescriptions),
     }
 
@@ -684,8 +729,16 @@ def shot_audits_from_log(records: Sequence[Dict[str, Any]],
         })
         entry["passed"] = bool(data.get("passed", True))
         entry["score"] = data.get("composition_score")
-        entry["errors"] = list(data.get("findings") or [])
-        entry["warnings"] = []
+        review = data.get("ruler_review")
+        if isinstance(review, dict):
+            entry["ruler_review"] = dict(review)
+        findings = list(data.get("findings") or [])
+        entry["errors"] = [
+            item for item in findings
+            if str(item.get("severity") or "error") in ("error", "ERROR")]
+        entry["warnings"] = [
+            item for item in findings
+            if str(item.get("severity") or "error") not in ("error", "ERROR")]
         ruler_items = [
             dict(item) for item in data.get("ruler_measurements") or []
             if isinstance(item, dict)]
@@ -724,6 +777,7 @@ def build_observation_from_log(records: Sequence[Dict[str, Any]], plan: Plan,
                                *, parsed=None, brief=None,
                                build_summary: Optional[Dict[str, Any]] = None,
                                fps: int = 24,
+                               applied_prescriptions: Optional[Sequence[Dict[str, Any]]] = None,
                                run_context: Optional[Dict[str, Any]] = None,
                                observation_id: str = "obs-blockdirector-replay"
                                ) -> Dict[str, Any]:
@@ -744,7 +798,8 @@ def build_observation_from_log(records: Sequence[Dict[str, Any]], plan: Plan,
     return build_observation(
         plan=plan, parsed=parsed, brief=brief, shot_audits=shot_audits,
         build_results=build_results, fps=fps, run_context=run_context,
-        observation_id=observation_id, plan_findings=plan_findings)
+        observation_id=observation_id, plan_findings=plan_findings,
+        applied_prescriptions=applied_prescriptions)
 
 
 def validate_observation(doc: Dict[str, Any]) -> List[str]:
@@ -774,6 +829,15 @@ def validate_observation(doc: Dict[str, Any]) -> List[str]:
             if str(ref).startswith("m_") and ref not in measurement_ids:
                 findings.append(
                     f"{verdict.get('verdict_id')} 证据引用不存在：{ref}")
+    for shot_id, review in (doc.get("ruler_reviews") or {}).items():
+        layer_scores = review.get("layer_scores") or {}
+        if not isinstance(layer_scores, dict) or set(layer_scores) != {
+                "geometry", "attention", "action", "continuity",
+                "cinema", "robustness"}:
+            findings.append(
+                f"{shot_id} ruler_review 层键必须恰好为六层")
+        if not isinstance(review.get("hard_gates") or [], list):
+            findings.append(f"{shot_id} ruler_review.hard_gates 必须为数组")
     for prescription in doc.get("prescriptions", []):
         operation = prescription.get("operation")
         if operation not in PRESCRIPTION_OPERATIONS:
@@ -786,3 +850,44 @@ def validate_observation(doc: Dict[str, Any]) -> List[str]:
                 findings.append(
                     f"{prescription.get('prescription_id')} 引用不存在：{ref}")
     return findings
+
+
+def attach_sequence_review(doc: Dict[str, Any], *, plan: Plan,
+                           fps: int = 24) -> Dict[str, Any]:
+    """在收尾阶段补一处序列级 continuity 复核（转正接缝，纯层无 bpy）。
+
+    输入 ``doc`` 是已折好的观测文档（含逐镜 ``ruler_reviews``）；本函数
+    向 ``scene`` 键追加一条 ``RulerReview``：逐镜五层沿用逐镜读数（只折不改），
+    continuity 用**真实**的全场镜头链打分（补上逐镜审核时如实标缺的那一层）。
+
+    实时路径由驱动器在 FINISHING 用 ``ruler_probe`` 全场采样一次后调用；
+    重放路径（无 bpy）拿到 ``None`` 时原样返回（诚实标缺，不重算、不伪造）。
+    """
+    from ..cinema.ruler_review import run_ruler_review
+
+    if doc.get("ruler_reviews") is None:
+        doc["ruler_reviews"] = {}
+    per_shot = doc.get("ruler_reviews") or {}
+    per_shot = {str(k): dict(v) for k, v in per_shot.items()}
+    continuity: Optional[Dict[str, Any]] = None
+    if plan is not None and plan.shots:
+        samples = _sequence_samples(plan)
+        if samples is not None:
+            try:
+                continuity = run_ruler_review(
+                    plan, samples, fps=fps).to_dict()
+            except Exception:            # noqa: BLE001 - 序列复核失败如实缺
+                continuity = None
+    if continuity is not None:
+        per_shot["scene"] = continuity
+    doc["ruler_reviews"] = per_shot
+    return doc
+
+
+def _sequence_samples(plan: Plan):
+    """全场逐镜采样一次（实时路径经 ``ruler_probe``，需 bpy）；否则 None。"""
+    try:
+        from .ruler_probe import collect_shot_samples
+        return collect_shot_samples(plan)
+    except Exception:                    # noqa: BLE001 - 无 bpy/失败 -> 缺
+        return None

@@ -266,6 +266,12 @@ class AuditResult:
     #: 审查只作证据与建议，不改 passed/score/errors；越轴 escalate 由既有
     #: 人工 gate 处理，不在这里放行。
     adversarial_review: Optional[Dict[str, Any]] = None
+    #: 空间尺转正：本镜的六层评测汇总（``RulerReview.to_dict()`` 形状的普通
+    #: dict；逐镜审核时 continuity 层如实标"未核验"，序列级复核时补全场链）。
+    #: 缺省 ``None`` ⇒ 未接入/未采集时 ``to_dict()`` 不出这个键（零形状差）；
+    #: 其 ``hard_gates`` 是 CHECKING 阶段的**新增阻断条件**（旧 passed 之后
+    #: 再查），但**不参与 passed/score**（与 guard_warnings 同纪律）。
+    ruler_review: Optional[Dict[str, Any]] = None
 
     @property
     def total(self) -> int:
@@ -327,6 +333,9 @@ class AuditResult:
         #: D1 对抗审查：同一条零形状差纪律——没审查就不多这个键。
         if self.adversarial_review is not None:
             payload["adversarial_review"] = dict(self.adversarial_review)
+        #: 同一条零形状差纪律：只有真的跑出空间尺六层评测才多这个键。
+        if self.ruler_review is not None:
+            payload["ruler_review"] = dict(self.ruler_review)
         return payload
 
     def format_for_llm(self) -> str:
