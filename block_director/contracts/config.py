@@ -396,6 +396,10 @@ class GuardConfig:
     sustain_frames: int = 12
     #: 镜内景别漂移上限（占比变化 > 此值告警）
     size_drift: float = 0.15
+    #: v1.7 J1（R020）：跨镜同角色包围盒**世界高度**漂移阈值（相对差）。
+    #: 与 size_drift（镜内景别漂移）只差一词，语义不同——size_drift 盯一镜
+    #: 内主体占画高比例，scale_drift 盯同一角色跨镜的绝对世界高度。
+    scale_drift: float = 0.05
     #: 两帧内占比跳变上限
     jump_ratio: float = 0.25
     #: 跳切风险：视角差低于此值（度）时检查景别差
@@ -581,10 +585,12 @@ class AppConfig:
             err("CFG_215", "guard.preset",
                 f"未知档位 {self.guard.preset!r}；合法值 {sorted(GUARD_PRESETS)}")
         for name in ("edge_clip_max", "lead_room_min", "size_drift",
-                     "jump_ratio", "jump_cut_size_diff", "occlusion_warn"):
+                     "scale_drift", "jump_ratio", "jump_cut_size_diff",
+                     "occlusion_warn"):
             value = float(getattr(self.guard, name))
             if not 0.0 < value < 1.0:
-                err("CFG_216", f"guard.{name}",
+                code = "CFG_216" if name != "scale_drift" else "CFG_173"
+                err(code, f"guard.{name}",
                     f"比率阈值必须在 (0, 1) 内（当前 {value}）")
         if not 0.0 < float(self.guard.jump_cut_angle_deg) < 180.0:
             err("CFG_216", "guard.jump_cut_angle_deg",

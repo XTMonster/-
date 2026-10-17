@@ -50,4 +50,6 @@ RULES: List[Dict[str, Any]] = [
      "summary": "空镜合规（恒 WARNING：:139）"},
     {"id": "R019", "severity": "warning",
      "summary": "银幕方向跨镜翻转且无中性机位过渡（strict 升降：rule_checker.py:834 三元形态）"},
+    {"id": "R020", "severity": "warning",
+     "summary": "同一角色跨镜包围盒世界高度漂移超限（首出场镜基线比对，E_SPACE_001）"},
 ]

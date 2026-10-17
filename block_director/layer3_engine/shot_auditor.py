@@ -38,7 +38,8 @@ from ..settings import get_config
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .frustum_sampler import SamplingError, sample_shot
-from .rule_checker import check_shot, configure_rules_disabled
+from .rule_checker import (check_shot, configure_rules_disabled,
+                           configure_scale_drift)
 from .scene_context import get_context
 
 log = get_logger("shot-auditor")
@@ -101,6 +102,9 @@ class BpyShotAuditor:
         config = get_config()
         configure_rules_disabled(
             getattr(getattr(config, "audit", None), "rules_disabled", []) or [])
+        #: v1.7 J1（R020）：同步跨镜比例漂移阈值（模块级注入，与 F1 同款——
+        #: 不 import 插件侧 settings 单例，由审核入口单向同步）。
+        configure_scale_drift(float(getattr(config.guard, "scale_drift", 0.05)))
         result = check_shot(shot_id,
                             composition_threshold=self.composition_threshold,
                             strict=strict)

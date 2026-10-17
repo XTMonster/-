@@ -140,6 +140,7 @@ guard:
   lead_room_min: 0.05
   sustain_frames: 12
   size_drift: 0.15
+  scale_drift: 0.05
   jump_ratio: 0.25
   jump_cut_angle_deg: 30.0
   jump_cut_size_diff: 0.1

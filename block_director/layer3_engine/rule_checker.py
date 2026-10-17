@@ -55,12 +55,25 @@ OBSTACLE_PREFIXES = ("BD_Wall_", "BD_Prop_")
 #: v1.7 F1：被关闭的规则号（模块级注入——不 import 插件侧 settings 单例，
 #: layer3 反向依赖包根会成环且不可测）。审核入口在每次 check 前同步。
 _RULES_DISABLED: FrozenSet[str] = frozenset()
+#: v1.7 J1（R020）：跨镜包围盒世界高度漂移阈值（模块级注入，照 F1 模式——
+#: 不 import 插件侧 settings 单例）。默认与 ``GuardConfig.scale_drift`` 一致。
+_SCALE_DRIFT: float = 0.05
 
 
 def configure_rules_disabled(rules: Any) -> None:
     """同步本次审核的禁用规则集合（空集合 = 全规则生效，零行为差）。"""
     global _RULES_DISABLED
     _RULES_DISABLED = frozenset(str(item) for item in (rules or ()))
+
+
+def configure_scale_drift(value: Any) -> None:
+    """同步 R020 的漂移阈值（审核入口在 check 前调用，与 F1 同一注入模式）。"""
+    global _SCALE_DRIFT
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        parsed = 0.05
+    _SCALE_DRIFT = parsed if 0.0 < parsed < 1.0 else 0.05
 
 
 def _finding(severity: Severity, rule: str, code: str, message: str,
@@ -509,6 +522,75 @@ def _character_aabb(character):
     boxes = [_world_aabb(obj) for obj in getattr(character, "meshes", [])
              if obj.type == "MESH"]
     return union(boxes) if boxes else None
+
+
+def _first_appearance_shot(character_id: str, context) -> Optional[str]:
+    """该角色在计划里**顺序第一镜**（首出场镜）的 shot_id；查不到返回 None。"""
+    plan = getattr(context, "plan", None)
+    if plan is None:
+        return None
+    for shot in (plan.shots or []):
+        declared = [str(item) for item in (getattr(shot, "characters", None) or [])]
+        if character_id in declared:
+            return str(shot.shot_id)
+    return None
+
+
+def _check_scale_drift(shot_id: str, context=None,
+                       scale_drift: Optional[float] = None) -> List[AuditError]:
+    """R020：同一角色跨镜包围盒世界高度漂移告警（J1，warning 级）。
+
+    与**首出场镜**（plan.shots 顺序第一镜）的包围盒世界高度比对；本镜就是
+    首出场镜时跳过。每角色每镜至多 1 条，经 ``_finding`` 产出自动吃 F1 开关。
+    帧切换复用 ``shot_frame_span``＋还原模式，审核不留副作用。
+    """
+    threshold = float(scale_drift) if scale_drift is not None else _SCALE_DRIFT
+    if context is None or context.plan is None:
+        return []
+    scene = bpy.context.scene
+    original_frame = int(scene.frame_current)
+    findings: List[AuditError] = []
+    for character in context.subjects_for(shot_id) or []:
+        character_id = str(getattr(character, "id", ""))
+        if not character_id:
+            continue
+        first_shot = _first_appearance_shot(character_id, context)
+        if not first_shot or first_shot == shot_id:
+            continue                        # 首出场镜没有基线可比对
+        h0 = _height_at(first_shot, character, context)
+        h = _height_at(shot_id, character, context)
+        if h0 is None or h is None or h0 <= 1e-9:
+            continue
+        drift = abs(h - h0) / h0
+        if drift > threshold:
+            findings.append(_warning(
+                "R020", "E_SPACE_001",
+                f"{character_id} 跨镜包围盒世界高度漂移：首镜 {first_shot} 高 "
+                f"{h0:.2f}m → 本镜 {shot_id} 高 {h:.2f}m（相对差 "
+                f"{drift:.1%} > {threshold:.0%}）",
+                target=character_id,
+                suggestion="保持同一角色的世界高度跨镜一致（几何 1.70 冻结）"))
+    if scene.frame_current != original_frame:
+        scene.frame_set(original_frame)
+        bpy.context.view_layer.update()
+    return findings
+
+
+def _height_at(shot_id: str, character, context) -> Optional[float]:
+    """角色在指定镜头首帧的包围盒世界高度；失败返回 None 且还原帧。"""
+    scene = bpy.context.scene
+    original = int(scene.frame_current)
+    start, _end = shot_frame_span(shot_id, context)
+    try:
+        if start != original:
+            scene.frame_set(start)
+            bpy.context.view_layer.update()
+        box = _character_aabb(character)
+        return float(box.maximum[2] - box.minimum[2]) if box is not None else None
+    finally:
+        if scene.frame_current != original:
+            scene.frame_set(original)
+            bpy.context.view_layer.update()
 
 
 def _obstacles() -> Dict[str, AABB]:
@@ -1013,6 +1095,11 @@ def check_shot(shot_id: str, *, context=None,
                         f"连续使用会让观众失去左右关系的连续性",
                         target=shot_id,
                         suggestion="至少给其中一镜一个明确的轴线侧别"))
+
+    # R020 跨镜比例一致性（v1.7 J1，warning 级） ----------------------------
+    # 与首出场镜的包围盒世界高度比对；本镜就是首出场镜时跳过。每角色每镜
+    # 至多 1 条；阈值由审核入口经 configure_scale_drift 注入（与 F1 同款）。
+    findings.extend(_check_scale_drift(shot_id, context))
 
     # 构图质量门（§7.1 B3 把构图列为通过条件） -----------------------------
     composition = None
