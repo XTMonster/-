@@ -8,6 +8,9 @@ from ..contracts.enums import StrEnum
 class DriverState(StrEnum):
     IDLE = "IDLE"
     UNDERSTANDING = "UNDERSTANDING"  # 阶段 S：剧本理解（v1.3 §3.2）
+    #: v1.7 §9（卡 E1）：剧本优化。默认关，仅 script_polish.enabled 且
+    #: 有 builder 时才进入（见 driver._polish_gate）。
+    POLISHING = "POLISHING"
     PLANNING = "PLANNING"            # 阶段 A：剧本 → 分镜计划
     CALLING_LLM = "CALLING_LLM"      # 等待后台线程的 LLM 结果
     EXECUTING_TOOL = "EXECUTING_TOOL"  # 执行 LLM 请求的工具调用

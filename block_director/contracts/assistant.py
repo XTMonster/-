@@ -25,7 +25,8 @@ CLIP_BY_STATE: Dict[str, str] = {
     "DONE": "celebrate",
     "ERROR": "dizzy",
     "CANCELLED": "sit",
-    # 卡 E1 追加："POLISHING": "read",
+    #: v1.7 §9（卡 E1）：剧本优化态 → 小助手"阅读"动画。
+    "POLISHING": "read",
 }
 
 
