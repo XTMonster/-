@@ -20,12 +20,14 @@ import bpy
 from bpy_extras.view3d_utils import location_3d_to_region_2d
 from mathutils import Vector
 
-from ..layer3_engine.scene_context import get_context
 from ..overlay.geometry import (
     FLASH_PERIOD,
+    ColoredPolyline,
     OverlayGeometry,
     build_overlay,
+    colored_paths,
     flash_alpha,
+    path_ticks,
 )
 from ..settings import get_config
 from ..utils.logger import get_logger
@@ -43,6 +45,8 @@ VIOLATION_COLOR: RGBA = (1.0, 0.20, 0.20, 0.90)
 
 _handle: Optional[object] = None
 _flash_started = time.monotonic()
+#: v1.7 G2：轨迹刻度/着色的缓存（帧变才重算；路径版本 = 曲线对象名列表）。
+_PATH_CACHE: Dict[str, List[ColoredPolyline]] = {}
 
 FLASH_TICK = 0.1          # 重绘节拍（秒）
 
@@ -66,8 +70,46 @@ def _path_points() -> List[List[Tuple[float, float, float]]]:
     return paths
 
 
+def _path_roles() -> Dict[str, List[List[Tuple[float, float, float]]]]:
+    """按角色分组走位线：曲线名 ``BD_Path_<role>_<idx>`` → 该角色点列。
+
+    角色 id 可含下划线（``char_001``），曲线名末尾的 ``_<idx>`` 是序号，
+    因此用 **倒序 split** 一次去掉序号段，剩下的前半整段就是角色 id。
+    """
+    grouped: Dict[str, List[List[Tuple[float, float, float]]]] = {}
+    for obj in bpy.data.objects:
+        if obj.type != 'CURVE' or not obj.name.startswith("BD_Path_"):
+            continue
+        stem = obj.name[len("BD_Path_"):]
+        role, _, _idx = stem.rpartition("_")
+        if not role or not _idx.isdigit():
+            continue
+        points = [tuple(obj.matrix_world @ point.co)
+                  for spline in obj.data.splines
+                  for point in spline.points]
+        if len(points) >= 2:
+            grouped.setdefault(role, []).append(points)
+    return grouped
+
+
+def _path_version() -> str:
+    """路径版本：曲线对象名 + 点数（缓存键的一部分，对象增删/编辑即失效）。"""
+    items = sorted(
+        (obj.name, sum(len(s.points) for s in obj.data.splines))
+        for obj in bpy.data.objects
+        if obj.type == 'CURVE' and obj.name.startswith("BD_Path_"))
+    return repr(items)
+
+
+def _path_cache_key(frame: int) -> str:
+    """轨迹刻度缓存键（帧 ＋ 路径版本；G2 帧变才重算）。"""
+    return f"{int(frame)}|{_path_version()}"
+
+
 def _frustums() -> List[Tuple[Sequence[float], Sequence[float], float, float]]:
     """当前各镜相机的视锥参数 ``(位置, 目标, 焦距, 传感器宽)``。"""
+    from ..layer3_engine.scene_context import get_context
+
     scene_context = get_context()
     if scene_context is None:
         return []
@@ -83,6 +125,8 @@ def _frustums() -> List[Tuple[Sequence[float], Sequence[float], float, float]]:
 
 def collect_geometry(context=None) -> OverlayGeometry:
     """按配置与当前场景组装叠加几何（不碰 GPU，可单独调用与断言）。"""
+    from ..layer3_engine.scene_context import get_context
+
     ui = get_config().ui
     scene_context = get_context()
     scene = getattr(context, "scene", None)
@@ -100,6 +144,7 @@ def collect_geometry(context=None) -> OverlayGeometry:
             axis = [(line.start[0], line.start[1], 0.02),
                     (line.end[0], line.end[1], 0.02)]
 
+    colored = _colored_paths_for(scene_context)
     return build_overlay(
         show_thirds=flag("bd_show_composition",
                          getattr(ui, "show_composition", True)),
@@ -107,7 +152,32 @@ def collect_geometry(context=None) -> OverlayGeometry:
                             getattr(ui, "show_safe_area", True)),
         axis=axis,
         paths=_path_points(),
+        colored_paths_input=colored,
         frustums=_frustums())
+
+
+def _colored_paths_for(scene_context) -> List[ColoredPolyline]:
+    """按角色分组后喂 G1 ``colored_paths``；角色色从 cast 读，未知回落调色板。
+
+    ``colored_paths`` 的契约是**每角色一条路径**（``Dict[str, List[WorldPoint]]``），
+    而场景里一个角色可能有多条曲线（``BD_Path_<role>_001/_002``）——这里把
+    每角色展开成多条单路径再逐条喂，保证类型契约不破。
+    """
+    roles = _path_roles()
+    if not roles:
+        return []
+    colors: Dict[str, str] = {}
+    if scene_context is not None:
+        spec = getattr(scene_context, "spec", None)
+        for member in (getattr(spec, "cast", []) if spec is not None else []):
+            colors[str(member.id)] = str(member.color)
+    single_paths: Dict[str, List[Tuple[float, float, float]]] = {}
+    result: List[ColoredPolyline] = []
+    for role_id, role_paths in roles.items():
+        for path in role_paths:
+            single_paths[role_id] = path
+            result.extend(colored_paths(single_paths, colors))
+    return result
 
 
 def _collect_world_points(region, region_data,
@@ -193,9 +263,22 @@ def _draw():                                  # pragma: no cover - 需 GUI
     geometry = collect_geometry(context)
     if geometry.is_empty():
         return
+    # v1.7 G2：轨迹刻度/高亮用缓存（帧变才重算；回调内只查命中才画）。
+    frame = int(getattr(bpy.context.scene, "frame_current", 0))
+    cache_key = _path_cache_key(frame)
+    if cache_key not in _PATH_CACHE:
+        _PATH_CACHE.clear()
+        _PATH_CACHE[cache_key] = _colored_paths_for(get_context())
+    ticks = [tick for polyline in _PATH_CACHE[cache_key]
+             for tick in path_ticks(polyline.points,
+                                    total_frames=max(frame, 1),
+                                    interval_frames=12)]
     area = getattr(context, "area", None)
     width, height = (area.width, area.height) if area else (1, 1)
     grouped = _collect_world_points(region, region_data, geometry)
+    for tick in ticks:
+        grouped.setdefault(PATH_COLOR, []).append(
+            tuple(location_3d_to_region_2d(region, region_data, tick)))
     for color, points in _collect_screen_points(geometry, width, height).items():
         grouped.setdefault(color, []).extend(points)
 

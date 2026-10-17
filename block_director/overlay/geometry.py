@@ -56,6 +56,9 @@ class OverlayGeometry:
     safe_areas: List[List[ScreenPoint]] = field(default_factory=list)
     axis_lines: List[Segment3D] = field(default_factory=list)
     paths: List[List[WorldPoint]] = field(default_factory=list)
+    #: v1.7 G2：按角色着色的轨迹（G1 ``colored_paths`` 的产物）。绘制层
+    #: 用它画走位线颜色；与 ``paths`` 并存（既有消费不变）。
+    colored_paths: List[ColoredPolyline] = field(default_factory=list)
     frustums: List[List[WorldPoint]] = field(default_factory=list)
     violations: List[List[ScreenPoint]] = field(default_factory=list)
 
@@ -234,6 +237,7 @@ def colored_paths(paths: Dict[str, List[WorldPoint]],
 def build_overlay(*, show_thirds: bool = True, show_safe_area: bool = True,
                   axis: Sequence[Sequence[float]] | None = None,
                   paths: Iterable[Sequence[Sequence[float]]] = (),
+                  colored_paths_input: Sequence[ColoredPolyline] = (),
                   frustums: Iterable[Sequence[object]] = (),
                   violations: Iterable[Sequence[Sequence[float]]] = ()
                   ) -> OverlayGeometry:
@@ -253,6 +257,11 @@ def build_overlay(*, show_thirds: bool = True, show_safe_area: bool = True,
         points = [tuple(float(v) for v in point) for point in path]
         if len(points) >= 2:
             geometry.paths.append(points)
+    geometry.colored_paths = [
+        ColoredPolyline(color=str(item.color),
+                        points=[tuple(float(v) for v in point)
+                                for point in item.points])
+        for item in colored_paths_input if len(item.points) >= 2]
     for item in frustums:
         values = list(item)
         if len(values) < 3:
