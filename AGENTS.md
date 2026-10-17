@@ -349,7 +349,7 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
 **2026-10-17 的账（最新，以这行为准）**：v1.7 全部代码卡完成并提交
-（D1/D2/D3、E1/E2/E3、G2、J1–J4、H1/H2，HEAD `157c5c3`；E3 Web 页随
+（D1/D2/D3、E1/E2/E3、G2、J1–J4、H1/H2，HEAD `950875a`；E3 Web 页随
 C1–C6 提交落地，polish 双通道经 H3 冒烟对拍）；空间尺 08–12 全部完成
 （08 连续性 / 09 摄影意图 / 10 鲁棒性 / 11 四臂评测台 已提交，12 规格验收
 已 resolved）；全量 pytest **4101 passed / 2 skipped**（H3 收尾实读，
@@ -365,8 +365,12 @@ C1–C6 提交落地，polish 双通道经 H3 冒烟对拍）；空间尺 08–1
 `test_assistant_panel`/`test_assistant_sprite` 的 `BD_TEST_RESULT` 输出补上
 `passed/failed/checks` 聚合键（run_tests 探针解析依赖该形状，缺键会被
 `@($null).Count` 误判失败），并新增 `tests/test_probe_result_shape.py` 静态
-守卫，43 支探针 47/47 全链实测 OK（`docs/evidence/20261017-171619/` 探针段；
-树守卫因并发 lane 移动 tracked 文件判 INCOMPLETE，RK-13 残留照旧）。
+守卫；再补 `950875a`：run_tests 树守卫排除根目录累积审计产物
+（`audit_log.jsonl`/`llm_trace.jsonl`——headless 步骤每次追加写入，此前把
+每次全链都误判为"树移动"，与并发 lane 无关）；**可归因冻结树全链
+`docs/evidence/20261017-182739/`：`tree.json stable=True`、43 支探针 47/47
+全 OK（含 assistant-panel/sprite）、pytest 4101 passed / 2 skipped、
+`holdout_gates.overall == "pass"`、唯一红 RK-13/E1 为已结案残留（判据未动）**。
 
 （下为 2026-10-07 的历史账，仅存档；旧 44/44 是事后编辑，原始是 43/43/39 支，
 已由本次 `docs/evidence/20261010-234143/` 重跑取代。）
