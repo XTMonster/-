@@ -1,0 +1,873 @@
+{
+  "name": "剧本《shotlist_market_v10_nodes1_4》：4 场，9 句",
+  "version": "1.7",
+  "fps": 24,
+  "characters": [
+    {
+      "id": "char_001",
+      "name": "char_001",
+      "color": "#FF6B6B",
+      "initial_location": [
+        -2.25,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "id": "char_002",
+      "name": "char_002",
+      "color": "#6BC5FF",
+      "initial_location": [
+        -0.75,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "id": "char_003",
+      "name": "char_003",
+      "color": "#FFD166",
+      "initial_location": [
+        0.75,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        -1.0,
+        0.0
+      ]
+    },
+    {
+      "id": "char_004",
+      "name": "char_004",
+      "color": "#9B8CFF",
+      "initial_location": [
+        2.25,
+        0.0,
+        0.0
+      ],
+      "initial_facing": [
+        -1.0,
+        0.0
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene_001",
+      "number": 1,
+      "heading": "剧本《shotlist_market_v10_nodes1_4》：4 场，9 句",
+      "environment": {
+        "ground_size": [
+          120.0,
+          120.0
+        ],
+        "walls": [],
+        "props": [],
+        "lighting": "clay_studio",
+        "room": null,
+        "crowd": [
+          {
+            "count": 6,
+            "mode": "walk",
+            "seed": 0,
+            "spread": 6.0,
+            "label": "背景中路人1-路人3（渔贩，正在收摊，弯腰整理鱼筐）、路人4-路人5（买家，挑拣"
+          }
+        ],
+        "anchors": [],
+        "light": {}
+      },
+      "shots": [
+        {
+          "id": "shot_001",
+          "intent": "镜号1：推进叙事",
+          "shot_type": "MLS",
+          "duration_frames": 120,
+          "start_frame": 1,
+          "end_frame": 120,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_001",
+            "position": [
+              0.0,
+              4.661,
+              0.621
+            ],
+            "target": [
+              0.0,
+              0.0,
+              0.771
+            ],
+            "lens": 35.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [],
+          "characters": [],
+          "actions": [
+            {
+              "character_id": "char_001",
+              "action_type": "nod",
+              "start_frame": 1,
+              "end_frame": 96,
+              "params": {
+                "cycles": 2
+              }
+            }
+          ],
+          "dialogues": [],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_002",
+          "intent": "镜号2：角色出场，展示米迦尔自信状态，建立人物。",
+          "shot_type": "MCU",
+          "duration_frames": 96,
+          "start_frame": 121,
+          "end_frame": 216,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_002",
+            "position": [
+              0.645,
+              0.0,
+              1.231
+            ],
+            "target": [
+              -2.25,
+              0.0,
+              1.381
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in"
+              }
+            ],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_001"
+          ],
+          "characters": [
+            "char_001"
+          ],
+          "actions": [
+            {
+              "character_id": "char_002",
+              "action_type": "sit",
+              "start_frame": 1,
+              "end_frame": 60,
+              "params": {
+                "drop": 0.2
+              }
+            }
+          ],
+          "dialogues": [
+            {
+              "character_id": "",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "unresolved",
+              "text": "伊恩，这里就交给我吧！",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_003",
+          "intent": "镜号3：建立伊恩角色状态，与米迦尔形成性格对比（米迦尔外放自信 vs 伊恩内敛克制）。",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 217,
+          "end_frame": 312,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_003",
+            "position": [
+              3.882,
+              0.0,
+              0.95
+            ],
+            "target": [
+              -0.75,
+              0.0,
+              1.1
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_002"
+          ],
+          "characters": [
+            "char_002"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "",
+              "speaker_raw": "伊恩",
+              "speaker_status": "unresolved",
+              "text": "好的，那你多小心一些。",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_004",
+          "intent": "镜号4：展示魔法能力铺垫，传递自信情绪。",
+          "shot_type": "CU",
+          "duration_frames": 120,
+          "start_frame": 313,
+          "end_frame": 432,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_004",
+            "position": [
+              1.812,
+              0.0,
+              1.313
+            ],
+            "target": [
+              -2.25,
+              0.0,
+              1.463
+            ],
+            "lens": 85.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_001"
+          ],
+          "characters": [
+            "char_001"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "unresolved",
+              "text": "放心吧。",
+              "start_frame": 0,
+              "end_frame": 0
+            },
+            {
+              "character_id": "",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "unresolved",
+              "text": "看我怎么惩罚他，让他砰的一声，嘻嘻。",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_005",
+          "intent": "镜号5：施法动作，推动剧情（银币变形）。",
+          "shot_type": "CU",
+          "duration_frames": 72,
+          "start_frame": 433,
+          "end_frame": 504,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_005",
+            "position": [
+              1.812,
+              0.0,
+              1.313
+            ],
+            "target": [
+              -2.25,
+              0.0,
+              1.463
+            ],
+            "lens": 85.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in"
+              }
+            ],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_001"
+          ],
+          "characters": [
+            "char_001"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_006",
+          "intent": "镜号6：展示魔法效果（银币变金），传递偷盗者贪婪性格。",
+          "shot_type": "MS",
+          "duration_frames": 216,
+          "start_frame": 505,
+          "end_frame": 720,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_006",
+            "position": [
+              -3.882,
+              0.0,
+              0.95
+            ],
+            "target": [
+              0.75,
+              0.0,
+              1.1
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_003"
+          ],
+          "characters": [
+            "char_003"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "",
+              "speaker_raw": "偷盗者",
+              "speaker_status": "unresolved",
+              "text": "怎么回事，不应该只是普通的银币么？哈哈，一定是命运眷顾，我发财了！",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_007",
+          "intent": "镜号7：喜剧反转，魔法出错。",
+          "shot_type": "CU",
+          "duration_frames": 96,
+          "start_frame": 721,
+          "end_frame": 816,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_007",
+            "position": [
+              1.812,
+              0.0,
+              1.313
+            ],
+            "target": [
+              -2.25,
+              0.0,
+              1.463
+            ],
+            "lens": 85.0,
+            "sensor_width": 36.0,
+            "movement": "dolly_in",
+            "movements": [
+              {
+                "type": "dolly_in"
+              }
+            ],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_001"
+          ],
+          "characters": [
+            "char_001"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_008",
+          "intent": "镜号8：情绪从震惊转为愤怒，喜剧升级。",
+          "shot_type": "MCU",
+          "duration_frames": 192,
+          "start_frame": 817,
+          "end_frame": 1008,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_008",
+            "position": [
+              0.645,
+              0.0,
+              1.231
+            ],
+            "target": [
+              -2.25,
+              0.0,
+              1.381
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "follow_subject",
+            "movements": [
+              {
+                "type": "follow_subject"
+              }
+            ],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_001"
+          ],
+          "characters": [
+            "char_001"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "unresolved",
+              "text": "什么乱七八糟的，不应该是让钱出错然后爆炸么？怎么反而更贵了？",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_009",
+          "intent": "镜号9：反应镜头，喜剧缓冲。",
+          "shot_type": "MS",
+          "duration_frames": 96,
+          "start_frame": 1009,
+          "end_frame": 1104,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_009",
+            "position": [
+              3.882,
+              0.0,
+              0.95
+            ],
+            "target": [
+              -0.75,
+              0.0,
+              1.1
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_002"
+          ],
+          "characters": [
+            "char_002"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_010",
+          "intent": "镜号10：情绪收束，双人互动模式展现。",
+          "shot_type": "MCU",
+          "duration_frames": 144,
+          "start_frame": 1105,
+          "end_frame": 1248,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_010",
+            "position": [
+              0.645,
+              0.0,
+              1.231
+            ],
+            "target": [
+              -2.25,
+              0.0,
+              1.381
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "pan_right",
+            "movements": [
+              {
+                "type": "pan_right"
+              }
+            ],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_001"
+          ],
+          "characters": [
+            "char_001"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "",
+              "speaker_raw": "米迦尔",
+              "speaker_status": "unresolved",
+              "text": "不许笑！这是我第一次用于战斗嘛，出错很正常！",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_011",
+          "intent": "镜号11：引入莉莉安娜角色，展示受害者状态。",
+          "shot_type": "MS",
+          "duration_frames": 144,
+          "start_frame": 1249,
+          "end_frame": 1392,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_011",
+            "position": [
+              -2.382,
+              0.0,
+              0.95
+            ],
+            "target": [
+              2.25,
+              0.0,
+              1.1
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_004"
+          ],
+          "characters": [
+            "char_004"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "",
+              "speaker_raw": "莉莉安娜",
+              "speaker_status": "unresolved",
+              "text": "怎么回事？我可带了不少赤羽币，怎么没了？",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_012",
+          "intent": "镜号12：连接剧情线，传递伊恩的绅士风度与理性分析性格。",
+          "shot_type": "MS",
+          "duration_frames": 192,
+          "start_frame": 1393,
+          "end_frame": 1584,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_012",
+            "position": [
+              3.882,
+              0.0,
+              0.95
+            ],
+            "target": [
+              -0.75,
+              0.0,
+              1.1
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "follow_subject",
+            "movements": [
+              {
+                "type": "follow_subject"
+              }
+            ],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_002"
+          ],
+          "characters": [
+            "char_002"
+          ],
+          "actions": [],
+          "dialogues": [
+            {
+              "character_id": "",
+              "speaker_raw": "伊恩",
+              "speaker_status": "unresolved",
+              "text": "这位小姐，别担心，米迦尔已经在帮您抢回来了，甚至某种意义上已经升值了。",
+              "start_frame": 0,
+              "end_frame": 0
+            }
+          ],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        },
+        {
+          "id": "shot_013",
+          "intent": "镜号13：反应镜头，传递莉莉安娜对伊恩安慰的反应，情绪缓冲。",
+          "shot_type": "MS",
+          "duration_frames": 72,
+          "start_frame": 1585,
+          "end_frame": 1656,
+          "transition_in": "cut",
+          "transition_out": "cut",
+          "camera": {
+            "id": "BD_Cam_shot_013",
+            "position": [
+              0.75,
+              4.632,
+              0.95
+            ],
+            "target": [
+              0.75,
+              0.0,
+              0.95
+            ],
+            "lens": 50.0,
+            "sensor_width": 36.0,
+            "movement": "static",
+            "movements": [],
+            "request": {}
+          },
+          "axis_line": null,
+          "active_speakers": [
+            "char_004",
+            "char_002"
+          ],
+          "characters": [
+            "char_004",
+            "char_002"
+          ],
+          "actions": [],
+          "dialogues": [],
+          "gaze": [],
+          "vfx": [],
+          "beats": [],
+          "composition": {},
+          "rule_justifications": [],
+          "prompt": "",
+          "responsibility": null
+        }
+      ]
+    }
+  ],
+  "continuity": {
+    "axis_note": [
+      "离线自检模式生成，仅供链路验证"
+    ],
+    "character_pose": {
+      "char_001": {
+        "position": [
+          -2.25,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          1.0,
+          0.0
+        ]
+      },
+      "char_002": {
+        "position": [
+          -0.75,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          1.0,
+          0.0
+        ]
+      },
+      "char_003": {
+        "position": [
+          0.75,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          -1.0,
+          0.0
+        ]
+      },
+      "char_004": {
+        "position": [
+          2.25,
+          0.0,
+          0.0
+        ],
+        "facing": [
+          -1.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "warnings": [
+    "群众代理 6 个（Workbench 下为不透明实色）"
+  ],
+  "brief": {
+    "speakers": [],
+    "gaze": [],
+    "beats": [
+      {
+        "id": "beat_001",
+        "summary": "建立场景与人物关系",
+        "participants": [],
+        "emotion": "平静",
+        "function": "建立"
+      },
+      {
+        "id": "beat_002",
+        "summary": "推进对话，给出反应",
+        "participants": [],
+        "emotion": "推进",
+        "function": "推进"
+      }
+    ],
+    "space": [],
+    "environment": [],
+    "arc": {},
+    "props": [],
+    "notes": [
+      "离线自检：SceneBrief 为确定性夹具，不含注视关系"
+    ],
+    "rhythm_arc": [],
+    "source": "llm"
+  },
+  "polish": {},
+  "with_labels": true,
+  "saved_at": "2026-10-17T15:47:51+08:00"
+}

@@ -1,0 +1,420 @@
+{
+  "ok": true,
+  "label": "market13",
+  "project": "E:\\白模预演codex\\_h3_market13_out\\project",
+  "shots_built": 13,
+  "shots_audited": 13,
+  "target_rules": [
+    "R020",
+    "R021",
+    "R022",
+    "R023",
+    "R024",
+    "R025"
+  ],
+  "totals": {
+    "R020": {
+      "warning": 0,
+      "error": 0
+    },
+    "R021": {
+      "warning": 0,
+      "error": 0
+    },
+    "R022": {
+      "warning": 0,
+      "error": 0
+    },
+    "R023": {
+      "warning": 0,
+      "error": 0
+    },
+    "R024": {
+      "warning": 0,
+      "error": 0
+    },
+    "R025": {
+      "warning": 0,
+      "error": 0
+    }
+  },
+  "per_shot": {
+    "shot_001": {
+      "passed": true,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_002": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_003": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_004": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_005": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_006": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_007": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_008": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_009": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_010": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_011": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_012": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    },
+    "shot_013": {
+      "passed": false,
+      "rules": {
+        "R020": {
+          "warning": 0,
+          "error": 0
+        },
+        "R021": {
+          "warning": 0,
+          "error": 0
+        },
+        "R022": {
+          "warning": 0,
+          "error": 0
+        },
+        "R023": {
+          "warning": 0,
+          "error": 0
+        },
+        "R024": {
+          "warning": 0,
+          "error": 0
+        },
+        "R025": {
+          "warning": 0,
+          "error": 0
+        }
+      }
+    }
+  }
+}

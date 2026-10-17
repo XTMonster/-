@@ -1,0 +1,769 @@
+{
+  "shot_001": {
+    "shot_id": "shot_001",
+    "left": [],
+    "right": [
+      "char_001"
+    ],
+    "facing": {
+      "char_001": -5.960464477539063e-08
+    },
+    "note": ""
+  },
+  "shot_002": {
+    "shot_id": "shot_002",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_003": {
+    "shot_id": "shot_003",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211171150208
+    },
+    "note": ""
+  },
+  "shot_004": {
+    "shot_id": "shot_004",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_005": {
+    "shot_id": "shot_005",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_006": {
+    "shot_id": "shot_006",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_007": {
+    "shot_id": "shot_007",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_008": {
+    "shot_id": "shot_008",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211171150208
+    },
+    "note": ""
+  },
+  "shot_009": {
+    "shot_id": "shot_009",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_010": {
+    "shot_id": "shot_010",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_011": {
+    "shot_id": "shot_011",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_012": {
+    "shot_id": "shot_012",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_013": {
+    "shot_id": "shot_013",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_014": {
+    "shot_id": "shot_014",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_015": {
+    "shot_id": "shot_015",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211171150208
+    },
+    "note": ""
+  },
+  "shot_016": {
+    "shot_id": "shot_016",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.6391381025314331
+    },
+    "note": ""
+  },
+  "shot_017": {
+    "shot_id": "shot_017",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.6391380429267883
+    },
+    "note": ""
+  },
+  "shot_018": {
+    "shot_id": "shot_018",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_019": {
+    "shot_id": "shot_019",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_020": {
+    "shot_id": "shot_020",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_021": {
+    "shot_id": "shot_021",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_022": {
+    "shot_id": "shot_022",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_023": {
+    "shot_id": "shot_023",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_024": {
+    "shot_id": "shot_024",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_025": {
+    "shot_id": "shot_025",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.6391380429267883
+    },
+    "note": ""
+  },
+  "shot_026": {
+    "shot_id": "shot_026",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_027": {
+    "shot_id": "shot_027",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_028": {
+    "shot_id": "shot_028",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_029": {
+    "shot_id": "shot_029",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_030": {
+    "shot_id": "shot_030",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_031": {
+    "shot_id": "shot_031",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_032": {
+    "shot_id": "shot_032",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_033": {
+    "shot_id": "shot_033",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.6391380429267883
+    },
+    "note": ""
+  },
+  "shot_034": {
+    "shot_id": "shot_034",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_035": {
+    "shot_id": "shot_035",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_036": {
+    "shot_id": "shot_036",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_037": {
+    "shot_id": "shot_037",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_038": {
+    "shot_id": "shot_038",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_039": {
+    "shot_id": "shot_039",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_040": {
+    "shot_id": "shot_040",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_041": {
+    "shot_id": "shot_041",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.6391380429267883
+    },
+    "note": ""
+  },
+  "shot_042": {
+    "shot_id": "shot_042",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_043": {
+    "shot_id": "shot_043",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_044": {
+    "shot_id": "shot_044",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_045": {
+    "shot_id": "shot_045",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_046": {
+    "shot_id": "shot_046",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_047": {
+    "shot_id": "shot_047",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_048": {
+    "shot_id": "shot_048",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_049": {
+    "shot_id": "shot_049",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.6391380429267883
+    },
+    "note": ""
+  },
+  "shot_050": {
+    "shot_id": "shot_050",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_051": {
+    "shot_id": "shot_051",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_052": {
+    "shot_id": "shot_052",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_053": {
+    "shot_id": "shot_053",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_054": {
+    "shot_id": "shot_054",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211171150208
+    },
+    "note": ""
+  },
+  "shot_055": {
+    "shot_id": "shot_055",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_056": {
+    "shot_id": "shot_056",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.6391381025314331
+    },
+    "note": ""
+  },
+  "shot_057": {
+    "shot_id": "shot_057",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.6391380429267883
+    },
+    "note": ""
+  },
+  "shot_058": {
+    "shot_id": "shot_058",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_059": {
+    "shot_id": "shot_059",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_060": {
+    "shot_id": "shot_060",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5996211767196655
+    },
+    "note": ""
+  },
+  "shot_061": {
+    "shot_id": "shot_061",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  },
+  "shot_062": {
+    "shot_id": "shot_062",
+    "left": [
+      "char_001"
+    ],
+    "right": [],
+    "facing": {
+      "char_001": 0.5597383975982666
+    },
+    "note": ""
+  },
+  "shot_063": {
+    "shot_id": "shot_063",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": -0.6391381025314331
+    },
+    "note": ""
+  },
+  "shot_064": {
+    "shot_id": "shot_064",
+    "left": [
+      "char_001"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_001": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  }
+}

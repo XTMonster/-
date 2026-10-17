@@ -348,15 +348,20 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-17 的账（最新，以这行为准）**：空间尺 08–12 全部完成（08 连续性 /
-09 摄影意图 / 10 鲁棒性 / 11 四臂评测台 已提交，12 规格验收已 resolved）；
-pytest **4026 passed / 2 skipped**；v1.7 H1 已把探针清单扩到 **43 支**
+**2026-10-17 的账（最新，以这行为准）**：v1.7 全部代码卡完成并提交
+（D1/D2/D3、E1/E2/E3、G2、J1–J4、H1/H2，HEAD `d3025db`；E3 Web 页随
+C1–C6 提交落地，polish 双通道经 H3 冒烟对拍）；空间尺 08–12 全部完成
+（08 连续性 / 09 摄影意图 / 10 鲁棒性 / 11 四臂评测台 已提交，12 规格验收
+已 resolved）；全量 pytest **4099 passed / 2 skipped**（H3 收尾实读，
+2 skipped 为既有条件守卫）；v1.7 H1 已把探针清单扩到 **43 支**
 （＋`test_assistant_panel`/`test_assistant_sprite`），链规模 **47/47**
 （43 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，与
 `test_agents_status_is_current.py` 同源对拍）；门①–⑩ 全 pass、
 `holdout_gates.overall == "pass"`、唯一红 `not passing: E1`＝已结案 **RK-13**
-（判据未动）的读数见 `docs/evidence/20261017-103308/`；全链 47/47 重跑证据
-于 v1.7 H3 收尾落盘。
+（判据未动）的读数见 `docs/evidence/20261017-103308/`；v1.7 H3 收尾证据
+（offline 全链 64 镜、sidecar＋Web 冒烟 PASS、3 镜样例 reference_pack
+五件套、J 基线汇总、pytest 尾行、PROGRESS 归档）落
+`docs/evidence/20261017-v17-h3/`。
 
 （下为 2026-10-07 的历史账，仅存档；旧 44/44 是事后编辑，原始是 43/43/39 支，
 已由本次 `docs/evidence/20261010-234143/` 重跑取代。）

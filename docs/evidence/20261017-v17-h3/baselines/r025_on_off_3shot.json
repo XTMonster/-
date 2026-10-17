@@ -1,0 +1,42 @@
+{
+  "on": [
+    {
+      "shot_id": "shot_001",
+      "has_measured_camera": false,
+      "measured_camera": null,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_002",
+      "has_measured_camera": false,
+      "measured_camera": null,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_003",
+      "has_measured_camera": false,
+      "measured_camera": null,
+      "warnings": []
+    }
+  ],
+  "off": [
+    {
+      "shot_id": "shot_001",
+      "has_measured_camera": false,
+      "measured_camera": null,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_002",
+      "has_measured_camera": false,
+      "measured_camera": null,
+      "warnings": []
+    },
+    {
+      "shot_id": "shot_003",
+      "has_measured_camera": false,
+      "measured_camera": null,
+      "warnings": []
+    }
+  ]
+}

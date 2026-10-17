@@ -1,0 +1,144 @@
+{
+  "shot_001": {
+    "shot_id": "shot_001",
+    "left": [],
+    "right": [],
+    "facing": {},
+    "note": ""
+  },
+  "shot_002": {
+    "shot_id": "shot_002",
+    "left": [],
+    "right": [
+      "char_001"
+    ],
+    "facing": {
+      "char_001": 2.9802322387695312e-08
+    },
+    "note": ""
+  },
+  "shot_003": {
+    "shot_id": "shot_003",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": 0.0
+    },
+    "note": ""
+  },
+  "shot_004": {
+    "shot_id": "shot_004",
+    "left": [],
+    "right": [
+      "char_001"
+    ],
+    "facing": {
+      "char_001": 2.9802322387695312e-08
+    },
+    "note": ""
+  },
+  "shot_005": {
+    "shot_id": "shot_005",
+    "left": [],
+    "right": [
+      "char_001"
+    ],
+    "facing": {
+      "char_001": 2.9802322387695312e-08
+    },
+    "note": ""
+  },
+  "shot_006": {
+    "shot_id": "shot_006",
+    "left": [],
+    "right": [
+      "char_003"
+    ],
+    "facing": {
+      "char_003": 0.0
+    },
+    "note": ""
+  },
+  "shot_007": {
+    "shot_id": "shot_007",
+    "left": [],
+    "right": [
+      "char_001"
+    ],
+    "facing": {
+      "char_001": 2.9802322387695312e-08
+    },
+    "note": ""
+  },
+  "shot_008": {
+    "shot_id": "shot_008",
+    "left": [],
+    "right": [
+      "char_001"
+    ],
+    "facing": {
+      "char_001": 2.9802322387695312e-08
+    },
+    "note": ""
+  },
+  "shot_009": {
+    "shot_id": "shot_009",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": 0.0
+    },
+    "note": ""
+  },
+  "shot_010": {
+    "shot_id": "shot_010",
+    "left": [],
+    "right": [
+      "char_001"
+    ],
+    "facing": {
+      "char_001": 2.9802322387695312e-08
+    },
+    "note": ""
+  },
+  "shot_011": {
+    "shot_id": "shot_011",
+    "left": [],
+    "right": [
+      "char_004"
+    ],
+    "facing": {
+      "char_004": 0.0
+    },
+    "note": ""
+  },
+  "shot_012": {
+    "shot_id": "shot_012",
+    "left": [],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_002": 0.0
+    },
+    "note": ""
+  },
+  "shot_013": {
+    "shot_id": "shot_013",
+    "left": [
+      "char_004"
+    ],
+    "right": [
+      "char_002"
+    ],
+    "facing": {
+      "char_004": 1.0,
+      "char_002": -1.0
+    },
+    "note": ""
+  }
+}

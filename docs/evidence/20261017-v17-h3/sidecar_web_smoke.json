@@ -1,0 +1,95 @@
+{
+  "started_at": "2026-10-17T16:08:09+0800",
+  "base": "http://127.0.0.1:55728",
+  "checks": {
+    "server_start": {
+      "ok": true
+    },
+    "index": {
+      "ok": true,
+      "status": 200,
+      "has_title": true
+    },
+    "/static/app.js": {
+      "ok": true,
+      "status": 200
+    },
+    "/static/polish.js": {
+      "ok": true,
+      "status": 200
+    },
+    "/static/pixel.css": {
+      "ok": true,
+      "status": 200
+    },
+    "auth_required": {
+      "ok": true,
+      "status": 401
+    },
+    "/v1/ui/rules": {
+      "ok": true,
+      "status": 200,
+      "shape": [
+        "disabled",
+        "rules"
+      ]
+    },
+    "/v1/ui/events?since=0": {
+      "ok": true,
+      "status": 200,
+      "shape": [
+        "events",
+        "latest_seq"
+      ]
+    },
+    "/v1/ui/config": {
+      "ok": true,
+      "status": 200,
+      "shape": [
+        "animation",
+        "audit",
+        "brief",
+        "budget",
+        "character",
+        "config_version",
+        "crowd",
+        "delivery"
+      ]
+    },
+    "/v1/ui/state_map": {
+      "ok": true,
+      "status": 200,
+      "shape": [
+        "AWAIT_HUMAN",
+        "BUILDING",
+        "CALLING_LLM",
+        "CANCELLED",
+        "CHECKING",
+        "DONE",
+        "EDITING",
+        "ERROR"
+      ]
+    },
+    "/v1/ui/knowledge/stats": {
+      "ok": true,
+      "status": 200,
+      "shape": [
+        "cards",
+        "cards_note",
+        "cases",
+        "edges"
+      ]
+    },
+    "polish_no_upstream": {
+      "ok": true,
+      "status": 502,
+      "has_error_field": true
+    },
+    "polish_accept_bad_run": {
+      "ok": true,
+      "status": 400,
+      "error": "run_id 不能为空"
+    }
+  },
+  "overall": "PASS"
+}

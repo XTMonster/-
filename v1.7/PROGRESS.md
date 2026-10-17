@@ -19,32 +19,32 @@
 | B5 | Opus 5.5（主线代执行） | 完成 | c6ac094 | 主线自审 | docs/evidence/20261010-v17-B5/ |
 | B6 | Opus 5.5（主线代执行） | 完成 | c6ac094 | 主线自审 | docs/evidence/20261010-v17-B6/ |
 | B7* | Opus | 完成 | c6ac094 | 主线自审（红线） | docs/evidence/20261010-v17-B7/ |
-| C1 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
-| C2 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
-| C3 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
-| C4 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
-| C5 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
-| C6 | Opus | 前端已写·待 B 层后端联调 | - | - | - |
-| D1 | Opus | 未开工 | - | - | - |
-| D2 | Opus | 未开工 | - | - | - |
-| D3 | Opus | 未开工 | - | - | - |
-| E1 | Opus | 未开工 | - | - | - |
-| E2* | Opus | 未开工 | - | - | - |
-| E3 | Opus | 未开工 | - | - | - |
+| C1 | Opus | 完成 | 01d25c2 | 主线自审 | tests/test_web_frontend.py（随提交 01d25c2，全量 pytest 4099 passed） |
+| C2 | Opus | 完成 | 01d25c2 | 主线自审 | tests/test_sidecar_ui_config.py（全量绿） |
+| C3 | Opus | 完成 | 01d25c2 | 主线自审 | tools/check_assistant_assets.py + tests（全量绿） |
+| C4 | Opus | 完成 | 01d25c2 | 主线自审 | tests/test_web_frontend.py（全量绿） |
+| C5 | Opus | 完成 | 01d25c2 | 主线自审 | tests/test_sidecar_ui_readonly.py + test_knowledge_stats（全量绿） |
+| C6 | Opus | 完成 | 01d25c2 | 主线自审 | web/trajectory.js（全量绿） |
+| D1 | Opus（主线代执行） | 完成 | 0772af2 | 主线自审 | tests/test_ui_bridge.py（4 passed） |
+| D2 | Opus（主线代执行） | 完成 | ccf156b | 主线自审 | MODULES 对拍探针 PASS（H1 后 43 支） |
+| D3 | Opus（主线代执行） | 完成 | 4f03d5b | 主线自审 | 纯层 6 测试＋Blender 注册探针 PASS |
+| E1 | Opus（主线代执行） | 完成 | ecde796 | 主线自审 | 契约测试全绿（15 态） |
+| E2* | Opus（主线代执行） | 完成 | 930d198 | 主线自审（红线） | Stage P：POLISHING + sidecar 两端点 + offline 应答；14 测试全绿 |
+| E3 | Opus | 完成 | 01d25c2（随 C1–C6） | 主线自审＋H3 冒烟 | polish.js 在 C1–C6 提交已落地；H3 侧车+Web 冒烟 PASS（see 20261017-v17-h3） |
 | F1* | Opus | 完成 | 3a29501 | 主线自审（红线） | - |
-| G1 | DeepSeek | 完成（待提交） | - | - | - |
-| G2 | Opus | 未开工 | - | - | - |
+| G1 | DeepSeek | 完成 | 814d712 | 主线自审 | path_ticks/colored_paths 纯函数 |
+| G2 | Opus（主线代执行） | 完成 | f262d99＋fb90824 | 主线自审 | draw_overlay 消费轨迹几何＋_draw NameError 修复 |
 | I1* | Opus | 完成 | 774fe13 | 主线自审（红线） | - |
 | I2 | DeepSeek | 完成 | badb359 | - | - |
 | I3 | Opus | 完成 | eb7d87d | 主线自审 | docs/evidence/20261014-012921/（探针 PASS，链守卫 INCOMPLETE 见漂移笔记）；docs/evidence/20261014-031515/（45/45 探针 OK，树守卫三判 INCOMPLETE 见漂移笔记）；docs/evidence/20261014-033803/（45/45 探针 OK，树守卫第五判 INCOMPLETE——根因为本 lane 链运行期间自改 PROGRESS.md，非并发 lane，见漂移笔记）；docs/evidence/20261014-045625/（45/45 探针 OK，树守卫第六判 INCOMPLETE——根因为并发 lane 提交 cd42ac7，见漂移笔记）；主线提交前双轴自审已完成（2026-10-14，局部 pytest 48 passed） |
 | I4 | DeepSeek | 完成 | 8a311e9 | - | - |
-| J1 | DeepSeek | 未开工 | - | - | - |
-| J2 | DeepSeek | 未开工 | - | - | - |
-| J3 | Opus | 未开工 | - | - | - |
-| J4 | Opus | 未开工 | - | - | - |
-| H1 | DeepSeek | 未开工 | - | - | - |
-| H2 | DeepSeek | 未开工 | - | - | - |
-| H3 | Opus | 未开工 | - | - | - |
+| J1 | DeepSeek（主线代执行） | 完成 | d57161d | 主线自审 | R020 跨镜比例一致性，CFG_173，测试全绿 |
+| J2 | DeepSeek（主线代执行） | 完成 | 63c006d | 主线自审 | R021/R022/R023 相机 warning，CFG_174/175，测试全绿 |
+| J3 | Opus（主线代执行） | 完成 | b4a9e14 | 主线自审 | 分工声明消费＋R024 两分支，7 测试全绿 |
+| J4 | Opus（主线代执行） | 完成 | d3025db | 主线自审 | R025 默认关（LLM 裁决层），5 测试＋关联回归全绿 |
+| H1 | DeepSeek（主线代执行） | 完成 | e26f9a5 | 主线自审 | 探针 43 支，链 47/47，test_agents_status_is_current 对拍绿 |
+| H2 | DeepSeek（主线代执行） | 完成 | 9ab119f | 主线自审 | openapi 补 polish 两端点＋静态服务，对拍端点集同步 |
+| H3 | Opus（主线代执行） | 完成 | 证据落盘（待提交） | 主线自审 | docs/evidence/20261017-v17-h3/（offline 64 镜、sidecar+Web 冒烟、3 镜样例 reference_pack、J 基线汇总、pytest 4099/2、README＋PROGRESS 归档） |
 
 ## 空间尺多维评测线 08–12（独立票单，见 .scratch/spatial-ruler-multidim/）
 

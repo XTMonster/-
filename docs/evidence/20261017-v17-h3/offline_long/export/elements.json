@@ -1,0 +1,20 @@
+{
+  "elements": [
+    {
+      "id": "char_001",
+      "kind": "character",
+      "label": "char_001",
+      "color_hex": "#FF6B6B",
+      "shape": "capsule_q",
+      "first_shot": "shot_001"
+    },
+    {
+      "id": "char_002",
+      "kind": "character",
+      "label": "char_002",
+      "color_hex": "#6BC5FF",
+      "shape": "capsule_q",
+      "first_shot": "shot_002"
+    }
+  ]
+}
