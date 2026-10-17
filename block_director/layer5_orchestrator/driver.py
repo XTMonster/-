@@ -748,6 +748,10 @@ class PrevisDriver:
         self._ruler_plan_evidence: Optional[Dict[str, Any]] = None
         #: 空间尺计划级审核发现（SR001/SR002，AuditError 对象），折观测用。
         self._ruler_findings: List[AuditError] = []
+        #: 空间尺相机闭环**已执行**的处方（转正）：driver 自动 reframe 成功后
+        #: 按 prescription_id 记录，供观测折档合并——同一处方只有一个生命周期
+        #: 状态，已应用版本覆盖默认生成的未应用版本。
+        self._ruler_applied_prescriptions: List[Dict[str, Any]] = []
         self._finished_shots: List[str] = []
         self._needs_rebuild = False
         self._rebuild_in_place = False
@@ -989,6 +993,8 @@ class PrevisDriver:
             fps=FPS, run_context=run_context,
             observation_id=f"obs-{self.audit.run_id}",
             plan_findings=self._ruler_findings,
+            applied_prescriptions=(self._ruler_plan_evidence or {}).get(
+                "applied_prescriptions", []),
         )
 
     def knowledge_provenance(self) -> Dict[str, Dict[str, List[List[str]]]]:
@@ -2223,8 +2229,15 @@ class PrevisDriver:
         restore_cast），处方记录与计划级测量一并留痕（审计事件 + compliance
         + 交付证据）。仍残留的逐镜 ERROR 级硬发现阻断后续（``_fail``）。
 
+        ``ruler.enabled=False`` 时全链路零行为差：不审核、不处方、不留证据
+        （用户显式关闭，不是降级）。
+
         返回 False 表示已阻断（调用方应停止推进）；True 表示可继续。
         """
+        if not self._ruler_enabled():
+            self._ruler_plan_evidence = None
+            self._ruler_findings = []
+            return True
         plan = self.plan or Plan()
         declared_total = getattr(self.parsed_script, "declared_total_seconds",
                                  None)
@@ -2244,6 +2257,7 @@ class PrevisDriver:
                 declared_seconds_by_shot=declared_by_shot))
         self._ruler_plan_evidence = {
             "prescriptions": list(ruler_prescriptions),
+            "applied_prescriptions": [],
             "measurements": list(ruler_measurements),
         }
         self._ruler_findings = list(ruler_findings)
@@ -2644,6 +2658,14 @@ class PrevisDriver:
             self._mark_terminal(shot_id, "passed")
             self._advance_shot()
             return
+        # 正式内置空间尺：相机几何告警先走确定性的 reframe，再把结果交给
+        # 原有 LLM 修复回路。这样空间尺不是只记录处方，而是能完成一次
+        # “观测→处方→执行→复测”的闭环；失败仍保留原有回路，不降低验收。
+        if self._ruler_camera_repair_enabled() and self._auto_reframe_from_ruler(
+                shot_id, result):
+            self._pending_audit = None
+            self._transition(DriverState.CHECKING)
+            return
         if self._repair_attempts >= self.limits.max_repairs_per_shot:
             self.audit.log("shot_degraded",
                            f"{shot_id} 达到修复上限（{self._repair_attempts}），"
@@ -2671,6 +2693,77 @@ class PrevisDriver:
             return
         self._pending_audit = result
         self._transition(DriverState.REPAIRING)
+
+    def _ruler_camera_repair_enabled(self) -> bool:
+        """空间尺相机几何闭环开关（与计划级接缝同源）。"""
+        return self._ruler_enabled()
+
+    def _ruler_enabled(self) -> bool:
+        """空间尺总开关；config 缺省或 ``ruler`` 段缺省时按默认启用（转正）。"""
+        cfg = getattr(self.config, "ruler", None)
+        if cfg is None:
+            return True
+        return bool(getattr(cfg, "enabled", True))
+
+    def _auto_reframe_from_ruler(self, shot_id: str,
+                                 result: AuditResult) -> bool:
+        """执行一次可回溯的相机处方；同一镜头最多一次，避免修复振荡。"""
+        done = getattr(self, "_ruler_reframed_shots", None)
+        if done is None:
+            done = self._ruler_reframed_shots = set()
+        if shot_id in done:
+            return False
+        warnings = list(getattr(result, "guard_warnings", None) or [])
+        kinds = {str(item.get("type") if isinstance(item, dict)
+                     else getattr(item, "type", "")) for item in warnings}
+        if not kinds.intersection({"subject_not_visible", "edge_clip",
+                                   "framing_too_tight", "framing_too_loose",
+                                   "subject_out_of_frame", "occlusion"}):
+            return False
+        shot = next((s for s in (self.plan.shots if self.plan else [])
+                     if str(s.shot_id) == str(shot_id)), None)
+        if shot is None:
+            return False
+        camera = dict(getattr(shot, "camera", None) or {})
+        old_lens = float(camera.get("lens") or 50.0)
+        if kinds.intersection({"subject_not_visible", "edge_clip",
+                               "framing_too_tight", "subject_out_of_frame",
+                               "occlusion"}):
+            new_lens = max(18.0, old_lens * 0.72)
+        else:
+            new_lens = min(180.0, old_lens * 1.28)
+        try:
+            outcome = self.registry.execute("reframe", {
+                "shot_id": str(shot_id), "shot_type": str(shot.shot_type),
+                "lens": round(new_lens, 3)})
+        except Exception as exc:  # pragma: no cover - bpy boundary
+            self.audit.log("spatial_ruler_reframe_failed",
+                           f"{shot_id} 空间尺 reframe 失败：{exc}",
+                           level="warning", shot=shot_id)
+            return False
+        if not outcome.ok:
+            self.audit.log(
+                "spatial_ruler_reframe_failed",
+                f"{shot_id} 空间尺 reframe 未执行：{outcome.error or outcome.content}",
+                level="warning", shot=shot_id)
+            return False
+        done.add(shot_id)
+        evidence = self._ruler_plan_evidence or {}
+        applied = evidence.setdefault("applied_prescriptions", [])
+        applied.append({
+            "prescription_id": f"p_{shot_id}_auto_reframe",
+            "shot_id": str(shot_id), "operation": "reframe",
+            "parameters": {"lens_before": old_lens, "lens_after": new_lens,
+                            "warning_types": sorted(kinds)},
+            "applied": True, "applied_at": "runtime",
+            "waived": False, "waive_reason": "",
+        })
+        self._mark_repair_applied(applied=True)
+        self.audit.log("spatial_ruler_reframe_applied",
+                       f"{shot_id} 空间尺自动 reframe：{old_lens:g}→{new_lens:g}mm",
+                       shot=shot_id, operation="reframe", old_lens=old_lens,
+                       new_lens=new_lens, warning_types=sorted(kinds))
+        return True
 
     def _advance_shot(self) -> None:
         if self._shot_queue:

@@ -28,8 +28,8 @@
       "error": "blocks",
       "warning": "persists"
     },
-    "integration_status": "partial_plan_level_only",
-    "note": "几何级 JSON 序列化（camera_specs 实测坐标、measurements 逐帧落盘）尚未由 shot_auditor 自动写入——本文件是手工整理的观测样例，几何数据取自 audit_log.jsonl 且逐条标注 provenance"
+    "integration_status": "full",
+    "note": "转正后空间尺作为插件正式内置审核层：计划级处方在 driver 构建前自动落地，几何测量由 shot_auditor/ruler_probe 逐镜自动序列化，观测 JSON 由运行入口自动落盘。本文件是形状对照 fixture：几何数据取自 audit_log.jsonl 且逐条标注 provenance，与运行目录的自动产物（spatial_ruler_observation.json）逐字段可比对。"
   },
   "observation_request": {
     "targets": [

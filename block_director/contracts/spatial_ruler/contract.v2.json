@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "blockdirector://spatial-ruler/contract/v2",
   "title": "Spatial Ruler Observation Contract (v2)",
-  "description": "契约本体：字段定义 + 阈值 registry + 插件适配映射。实际观测实例见 examples/，插件映射见 integration/。v1 仅供历史追溯。",
+  "description": "契约本体：字段定义 + 阈值 registry + 插件适配映射。实际观测实例见 examples/，插件映射见 integration/。v1 仅供历史追溯。integration_status=full：空间尺已作为 BlockDirector 正式内置审核层（计划级处方 + 几何级测量 + 观测 JSON 落盘 + 交付证据闭环）。",
   "schema_version": "spatial-ruler-observation/v2",
   "observation_id": "contract-definition",
   "run_context": {
@@ -17,7 +17,7 @@
       "error": "blocks",
       "warning": "persists"
     },
-    "integration_status": "partial_plan_level_only"
+    "integration_status": "full"
   },
   "observation_request": {
     "targets": [

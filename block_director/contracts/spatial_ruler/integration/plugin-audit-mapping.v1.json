@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "blockdirector://spatial-ruler/integration/plugin-audit-mapping/v1",
-  "title": "Plugin Audit Mapping (v1) — 准备层",
-  "description": "把 BlockDirector 现有 AuditError（rule/code）映射到空间尺观测契约的规则段、测量类型、接入阶段与阻塞策略。integration_status=planned/partial：本文件定义映射，不等同于插件已完整消费 JSON。",
+  "title": "Plugin Audit Mapping (v1) — 正式内置",
+  "description": "把 BlockDirector 现有 AuditError（rule/code）映射到空间尺观测契约的规则段、测量类型、接入阶段与阻塞策略。integration_status=full：空间尺已作为插件正式内置审核层，本映射定义审计规则与观测契约之间的对齐关系，供插件审核适配器消费。",
   "schema_version": "plugin-audit-mapping/v1",
-  "integration_status": "partial_plan_level_only",
+  "integration_status": "full",
   "consumer": "BlockDirector.audit",
   "mappings": [
     {

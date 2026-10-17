@@ -44,7 +44,7 @@ def _measurements(scores: dict[str, float]) -> tuple[Measurement, ...]:
 
 def test_config_default_weights_match_registry():
     """配置默认权重必须与注册表单源逐键对拍。"""
-    assert AppConfig().ruler.enabled is False
+    assert AppConfig().ruler.enabled is True
     assert AppConfig().ruler.layer_weights == LAYER_WEIGHTS_DEFAULT
     assert tuple(AppConfig().ruler.layer_weights) == tuple(LAYERS)
 
