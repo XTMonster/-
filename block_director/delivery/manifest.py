@@ -155,6 +155,12 @@ def build_manifest(plan: Plan, *,
         review = result.get("vlm_review")
         if isinstance(review, dict) and review:
             payload["vlm_review"] = dict(review)
+        #: v1.7 J3：分工声明只在本镜**真的声明 skip** 时才写这个键。未声明镜
+        #: （responsibility is None 或 skip=false）不出键 ⇒ 老运行/无分工计划的
+        #: shots.json 与升级前逐字节一致（零形状差纪律）。
+        responsibility = getattr(shot, "responsibility", None)
+        if bool(getattr(responsibility, "skip_white_model", False)):
+            payload["skip_white_model"] = True
         shots.append(payload)
 
     return {

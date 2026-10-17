@@ -612,6 +612,85 @@ def _check_scale_drift(shot_id: str, context=None,
     return findings
 
 
+#: v1.7 J3（R024）：白名单外的 root 动画通道仅作告警，不改行为。
+#: 与 `body_tilt` 允许键表同源约束（见 character_system 的 BW-1 键表），
+#: 这里独立列出避免 import 任何 bpy 侧的纯函数。
+_ANIMATION_WHITELIST = {
+    "location", "rotation_euler",
+    "location.x", "location.y", "location.z",
+    "rotation_euler.x", "rotation_euler.y", "rotation_euler.z",
+    "body_tilt", "body_tilt.x", "body_tilt.y", "body_tilt.z",
+}
+
+
+def _check_responsibility(shot_id: str, context=None) -> List[AuditError]:
+    """R024：分工矛盾（v1.7 J3，warning 级，E_ANIM_001）。
+
+    分支一（声明 skip 但场景有主体）：某角色**全部出场镜**都
+    ``responsibility.skip_white_model=true``，但场景里仍存在其白模主体
+    （``context.characters`` 含该 id）→ 恰好 1 条；
+    分支二（白名单外动画通道）：root 的 ``animation_data.action.fcurves``
+    ``data_path`` 全集超出白名单（含形态键/pose 骨骼通道）→ 恰好 1 条。
+    每镜每角色至多 1 条。
+    """
+    findings: List[AuditError] = []
+    if context is None or context.plan is None:
+        return findings
+    shot = context.shot(shot_id)
+    if shot is None:
+        return findings
+    responsibility = getattr(shot, "responsibility", None)
+    if responsibility is None:
+        return findings                       # 未声明镜零行为差
+
+    # 分支一：本镜声明 skip 且该角色全部出场镜都 skip → 若场景仍有主体则矛盾。
+    skip_ids: List[str] = []
+    if bool(getattr(responsibility, "skip_white_model", False)):
+        for character_id in (shot.characters or []):
+            shots_with = [
+                s for s in context.plan.shots
+                if character_id in (s.characters or [])]
+            all_skip = bool(shots_with) and all(
+                getattr(s.responsibility, "skip_white_model", False)
+                for s in shots_with)
+            if all_skip:
+                skip_ids.append(str(character_id))
+    for character_id in skip_ids:
+        if context.characters and character_id in context.characters:
+            findings.append(_warning(
+                "R024", "E_ANIM_001",
+                f"{character_id} 声明 skip_white_model（全部出场镜跳过白模），"
+                f"但场景仍存在其白模主体对象",
+                target=character_id,
+                suggestion="删除该角色的主体，或撤销其 skip_white_model 声明"))
+
+    # 分支二：白名单外动画通道（root 的 fcurves data_path 全集）。
+    for character_id in (shot.characters or []):
+        character = (context.character(character_id)
+                     if context.character else None)
+        root = getattr(character, "root", None)
+        if root is None:
+            continue
+        action = getattr(getattr(root, "animation_data", None), "action", None)
+        if action is None:
+            continue
+        paths = set()
+        for fcurve in getattr(action, "fcurves", []) or []:
+            data_path = str(getattr(fcurve, "data_path", "") or "").strip()
+            if data_path:
+                paths.add(data_path)
+        forbidden = sorted(paths - _ANIMATION_WHITELIST)
+        if forbidden:
+            findings.append(_warning(
+                "R024", "E_ANIM_001",
+                f"{character_id} 的动画通道超出白名单：{forbidden[:3]}"
+                f"{'…' if len(forbidden) > 3 else ''}",
+                target=character_id,
+                suggestion="白模只允许 root 的 location/rotation_euler 与 "
+                           "契约允许的 body_tilt 键表"))
+    return findings
+
+
 def _camera_motion_samples(shot_id: str, context=None) -> List[Dict[str, Any]]:
     """把本镜声明的运镜展开成采样序列（J2，与 I2 同源：``movement_samples`` 产物）。
 
@@ -1341,6 +1420,9 @@ def check_shot(shot_id: str, *, context=None,
     findings.extend(_check_motion_complexity(shot_id, context))
     findings.extend(_check_roll_flip(shot_id, context))
     findings.extend(_check_camera_accel(shot_id, context))
+
+    # R024 分工矛盾（v1.7 J3，warning 级；声明 skip 仍建主体 / 白名单外通道）
+    findings.extend(_check_responsibility(shot_id, context))
 
     # 构图质量门（§7.1 B3 把构图列为通过条件） -----------------------------
     composition = None

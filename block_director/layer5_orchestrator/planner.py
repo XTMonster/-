@@ -212,6 +212,9 @@ PLAN_SYSTEM_PROMPT = """\
 - 保持银幕方向与角色位置的连续性
 - shot_id 使用 shot_001、shot_002 这样的形式，order 从 1 递增
 - 单镜时长不超过 3600 帧（150 秒）
+- 分工声明（responsibility）：尽量声明每个镜头的分工——谁负责白模主体
+  （white_model）、谁负责提示词（prompt）、谁负责参考图（ref_image）；
+  完全不需要白模主体的镜头可声明 skip_white_model=true；不确定就整镜不声明
 
 参考资料（来自 Light RAG 的摄影/轴线/构图/调度知识，§6.5 阶段 A 预取）：
 {knowledge}

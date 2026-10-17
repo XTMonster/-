@@ -560,6 +560,19 @@ def action_requests(shot: ShotPlan, shot_start: int,
     return requests
 
 
+def _skip_character(cid: str, plan) -> bool:
+    """角色级 skip（v1.7 J3）：仅当某角色**全部出场镜**都
+    ``responsibility.skip_white_model=true`` → 构建循环跳过（不建主体）。
+
+    白模角色是场景级共享对象，不能"该镜不建主体"（会拆掉其它镜的主体）：
+    混合镜角色主体仍在。未声明镜（``responsibility is None``）零行为差。
+    """
+    shots_with = [s for s in plan.shots if cid in (s.characters or [])]
+    return bool(shots_with) and all(
+        s.responsibility is not None and s.responsibility.skip_white_model
+        for s in shots_with)
+
+
 @main_thread_only("build_scene")
 def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
                 clear_scene: bool = False, brief=None,
@@ -616,6 +629,9 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     render_labels = bool(getattr(label_config, "label_render", False))
     label_entries: List[Dict[str, Any]] = []
     for member in spec.cast:
+        if _skip_character(str(member.id), plan):
+            cast_map[member.id] = member
+            continue                       # 全出场镜 skip：不建主体、不进 characters
         character = create_character(member.id, member.name, member.color,
                                      location=member.initial_location,
                                      facing=member.initial_facing)

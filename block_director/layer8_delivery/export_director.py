@@ -106,7 +106,11 @@ def _shot_ranges(plan: Plan,
         end = int(result.get("end_frame", start + shot.duration_frames - 1))
         ranges.append({"shot_id": shot.shot_id, "start_frame": start,
                        "end_frame": end,
-                       "camera": result.get("camera", f"BD_Cam_{shot.shot_id}")})
+                       "camera": result.get("camera", f"BD_Cam_{shot.shot_id}"),
+                       #: v1.7 J3：镜头级 skip 的数据源。``responsibility`` 是
+                       #: 契约对象（可 None），渲染循环据此跳过该镜渲染但保留
+                       #: shots.json 元数据；未声明镜恒 None ⇒ 零行为差。
+                       "responsibility": getattr(shot, "responsibility", None)})
         cursor = end + 1
     return ranges
 
@@ -228,6 +232,22 @@ def export_project(plan: Plan, *,
 
         for shot in ranges:
             shot_id = shot["shot_id"]
+            #: v1.7 J3（镜头级 skip）：skip_white_model 的镜头**照常入 shots.json**
+            #: （只写元数据、标 ``skip_white_model: true``），但跳过 mp4/首帧/
+            #: depth/路径采样——没有白模视频，也就不进成片与拼接。相机已由构建
+            #: 层建好，连续性/审计不受影响（skip 只在交付层生效）。
+            responsibility = shot.get("responsibility")
+            skip_shot = bool(getattr(responsibility, "skip_white_model", False))
+            if skip_shot:
+                report.shots.append({
+                    "shot_id": shot_id,
+                    "start_frame": int(shot["start_frame"]),
+                    "end_frame": int(shot["end_frame"]),
+                    "video": None,
+                    "skip_white_model": True,
+                })
+                log.info("镜头 %s 声明 skip_white_model，跳过渲染", shot_id)
+                continue
             video_base = str(export_dir / f"blockout_{shot_id}.mp4")
             shot_frames = int(shot["end_frame"]) - int(shot["start_frame"]) + 1
             if config.per_shot_clips:

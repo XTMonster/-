@@ -58,4 +58,6 @@ RULES: List[Dict[str, Any]] = [
      "summary": "相机右向量（视线 × 天顶）投影符号跨帧翻转，疑似 up 翻转（E_CAM_001）"},
     {"id": "R023", "severity": "warning",
      "summary": "相机采样加速度峰值超 cam_accel_max（单位 m/s²，E_CAM_001）"},
+    {"id": "R024", "severity": "warning",
+     "summary": "分工矛盾：声明 skip 但仍建白模主体 / 动画通道超出白名单（E_ANIM_001）"},
 ]
