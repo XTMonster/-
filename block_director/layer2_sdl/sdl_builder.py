@@ -101,7 +101,7 @@ def build_sdl(plan: Plan, *,
               project_name: str = "BlockDirector",
               fps: int = 24,
               scene_id: str = "scene_001",
-              brief=None, crowd=None) -> SDLProject:
+              brief=None, crowd=None, polish=None) -> SDLProject:
     """把分镜计划与构建结果组装成一份 SDL。"""
     spec = spec or SceneSpec.from_plan(plan, brief=brief, crowd=crowd)
     results = {item.get("shot_id"): item
@@ -160,6 +160,7 @@ def build_sdl(plan: Plan, *,
                       continuity=continuity,
                       warnings=list((build_summary or {}).get("warnings", [])),
                       brief=(brief.to_dict() if brief is not None else {}),
+                      polish=(polish.to_dict() if polish is not None else {}),
                       with_labels=bool(getattr(spec, "with_labels", True)))
 
 

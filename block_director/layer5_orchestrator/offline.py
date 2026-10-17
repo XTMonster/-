@@ -207,6 +207,26 @@ class OfflineTransport:
                              request_id=payload.request_id, model="offline",
                              finish_reason="tool_calls")
 
+        if payload.purpose is Purpose.POLISH:
+            # 阶段 P：给一份确定性改写稿（不改语义、只做格式微调）。
+            # 与 UNDERSTAND 同款——离线链路照常走到 polish_result → PLANNING。
+            script = ""
+            for message in payload.messages:
+                if message.content and "原剧本：" in message.content:
+                    script = message.content.split("原剧本：", 1)[1]
+                    script = script.split("剧本理解摘要", 1)[0].strip()
+                    break
+            call = ToolCall(id=f"polish_{self.chat_calls}",
+                            function=FunctionCall(
+                                name="emit_polish",
+                                arguments=json.dumps(
+                                    {"suggestions": ["离线自检：对齐动作与机位"],
+                                     "rewritten": script},
+                                    ensure_ascii=False)))
+            return ChatReply(content=None, tool_calls=[call],
+                             request_id=payload.request_id, model="offline",
+                             finish_reason="tool_calls")
+
         if payload.purpose is Purpose.EDITOR:
             # 阶段 B1：把这一镜已有的细节（demo 计划里带着）作为确定性草案回给
             # 驱动器。顺序与计划一致，因此离线链路完全可复现。

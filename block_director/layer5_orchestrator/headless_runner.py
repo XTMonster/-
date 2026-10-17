@@ -232,12 +232,26 @@ def save_run_project(
     from ..layer9_persistence import findings_report, save_project
 
     plan = Plan.from_dict(summary["plan"])
+    polish_payload = summary.get("polish")
+    polish = None
+    if isinstance(polish_payload, dict):
+        from ..contracts.script_polish import PolishResult
+
+        try:
+            polish = PolishResult(
+                suggestions=[str(item)
+                             for item in polish_payload.get("suggestions", [])],
+                rewritten=str(polish_payload.get("rewritten", "")),
+                accepted=bool(polish_payload.get("accepted", False)))
+        except (KeyError, TypeError, ValueError):
+            polish = None            # 坏 polish 不阻塞落盘（照 brief 的宽松口径）
     sdl = build_sdl(
         plan,
         build_summary=summary.get("build"),
         spec=spec,
         project_name=(project_name or plan.scene_heading or "BlockDirector"),
         brief=brief_from_summary(summary),
+        polish=polish,
         # 群众不在计划里（它是场景级设定），落盘时要单独带上，
         # 否则"存了再打开"会丢掉那 30 个路人。
         crowd=crowd,

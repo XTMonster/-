@@ -21,6 +21,14 @@ class PolishResult:
     rewritten: str = ""
     accepted: bool = False
 
+    def to_dict(self) -> Dict[str, Any]:
+        """线协议/落盘用的可序列化形式（E2，与 SceneBrief.to_dict 对称）。"""
+        return {
+            "suggestions": [str(item) for item in self.suggestions],
+            "rewritten": str(self.rewritten),
+            "accepted": bool(self.accepted),
+        }
+
 
 #: strict JSON schema：只允许 suggestions/rewritten 两键（E2 双通道共用的
 #: 解析真源；多键一律拒绝，防止模型把 prompt 等内容塞进结果）。

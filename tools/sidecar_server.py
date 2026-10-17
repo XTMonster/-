@@ -67,6 +67,10 @@ from block_director.contracts.messages import (  # noqa: E402
 )
 from block_director.contracts.operations import RetrieveResponse  # noqa: E402
 from block_director.contracts.rule_catalog import RULES  # noqa: E402
+from block_director.layer5_orchestrator.script_polish import (  # noqa: E402
+    build_polish_payload,
+    extract_polish,
+)
 from block_director.contracts.target_models import (  # noqa: E402
     TargetModelError,
     load_table,
@@ -1158,7 +1162,79 @@ def make_handler(config: "SidecarConfig"):
             if self.path == "/v1/ui/chat":
                 self._chat(body)
                 return
+            if self.path == "/v1/ui/script/polish":
+                self._polish_script(body)
+                return
+            if self.path == "/v1/ui/script/polish/accept":
+                self._polish_accept(body)
+                return
             self._json(404, {"error": "not found"})
+
+        def _polish_script(self, body: Dict[str, Any]) -> None:
+            """Web 通道：`POST /v1/ui/script/polish {script}` → `{suggestions[], rewritten}`。
+
+            与 driver 的 run 内通道共用同一模板/同一 schema 解析函数（E2 双通道
+            同构）。brief 摘要缺省给空串——Web 没有 SceneBrief 时只优化文本。
+            """
+            script = str(body.get("script") or "")
+            if not script.strip():
+                self._json(400, {"error": "script 不能为空"})
+                return
+            payload = build_polish_payload(script, "", temperature=0.2)
+            try:
+                reply = call_upstream(config, payload.to_dict())
+            except Exception as exc:  # noqa: BLE001 - 与 /v1/chat 一致的容错
+                self._json(502, {"error": f"polish 上游失败：{exc}"})
+                return
+            try:
+                result = extract_polish(reply)
+            except ValueError as exc:
+                self._json(502, {"error": f"polish 回复解析失败：{exc}"})
+                return
+            self._json(200, {"suggestions": [str(item)
+                                             for item in result.suggestions],
+                             "rewritten": str(result.rewritten)})
+
+        def _polish_accept(self, body: Dict[str, Any]) -> None:
+            """`POST /v1/ui/script/polish/accept {run_id}` → 写 polish.json accepted=true。
+
+            run 内采纳回读：driver 在 FINISHING 前能否读到这份文件取决于运行
+            目录定位；若架构读不回中途 accept，则对"下一次 run"生效——这里
+            如实写进 note，不夸大即时性（E2 步骤② 的实读定论）。
+            """
+            run_id = str(body.get("run_id") or "").strip()
+            if not run_id:
+                self._json(400, {"error": "run_id 不能为空"})
+                return
+            run_dir = config.runs_dir / run_id
+            if not run_dir.is_dir():
+                self._json(404, {"error": f"run {run_id} 不存在于 runs 目录"})
+                return
+            path = run_dir / "polish.json"
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                existing: Dict[str, Any] = {}
+                if path.exists():
+                    try:
+                        existing = json.loads(path.read_text(encoding="utf-8"))
+                    except (json.JSONDecodeError, OSError):
+                        existing = {}
+                if not isinstance(existing, dict):
+                    existing = {}
+                existing["accepted"] = True
+                existing["accepted_at"] = time.time()
+                path.write_text(json.dumps(existing, ensure_ascii=False),
+                                encoding="utf-8")
+            except OSError as exc:
+                self._json(500, {"error": f"polish.json 写回失败：{exc}"})
+                return
+            note = ("已写入 polish.json（accepted=true）。" if path.exists()
+                    else "写回失败")
+            if existing.get("run_inline_readback", False) is False:
+                note += ("若当前 run 仍在进行，采纳会在" 
+                         "下一次 run 生效（driver 不轮询中途 accept）。")
+            self._json(200, {"accepted": True, "note": note,
+                             "run_id": run_id})
 
         def _chat_history(self) -> List[Dict[str, str]]:
             """读末 10 轮（钉死条数，防上下文膨胀），一轮扩成 user+assistant。"""
@@ -1318,8 +1394,11 @@ def parse_args(argv):
                         help="监听地址；§2.5 要求只监听回环")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--upstream", default="http://127.0.0.1:11434")
-    parser.add_argument("--upstream-kind", choices=("auto", "ollama", "openai"),
-                        default="auto")
+    parser.add_argument("--upstream-kind",
+                        default="auto",
+                        help="上游协议：ollama / openai（chat/completions）/ "
+                             "responses（OpenAI Responses，goaichat 中转用）/"
+                             "auto（按 URL 猜测）")
     parser.add_argument("--model", default="qwen3-vl:30b")
     parser.add_argument("--num-ctx", type=int, default=32768,
                         help="Ollama 的上下文窗口；默认 4096 会装不下思维链")

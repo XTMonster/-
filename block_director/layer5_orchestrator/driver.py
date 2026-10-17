@@ -67,6 +67,8 @@ from .editor import (build_editor_payload, extract_draft, merge_draft,
                      normalize_draft_watchdog, rank_drafts)
 from .editor import EDITOR_TOOL_NAME, EMIT_SHOT_DRAFT_PARAMETERS
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
+from .script_polish import build_polish_payload, extract_polish
+from ..contracts.script_polish import PolishResult
 from .rhythm_reading import rhythm_readings
 from .shot_schema import shot_tool_overrides
 from .retry_ladder import (
@@ -696,6 +698,10 @@ class PrevisDriver:
         self._brief_attempts = 0
         self._brief_problem = ""
         self._brief_messages: List[Message] = []
+        #: 阶段 P 的产物（v1.7 E2，默认关）。改写稿只进这里、**绝不进**
+        #: ``self._script``：未采纳（``accepted=False``）时 PLANNING 输入恒原稿。
+        self.polish_result: Optional[PolishResult] = None
+        self._polish_messages: List[Message] = []
         self._editing_queue: List[str] = []
         self._editing_index = 0
         self.draft_history: List[Dict[str, Any]] = []
@@ -877,6 +883,9 @@ class PrevisDriver:
                       else None),
             "brief_source": (self.brief.source if self.brief is not None
                              else ""),
+            #: E2（§9 步骤③）：阶段 P 的产物进 snapshot，供收尾落 project.bdproj。
+            "polish": (self.polish_result.to_dict()
+                       if self.polish_result is not None else None),
             "drafts": len(self.draft_history),
             "drafts_failed": len(self.drafts_failed),
             #: v1.5 §7（P6-T2）：Best-of-N 里被降级成备选的候选（低分候选进
@@ -1014,10 +1023,11 @@ class PrevisDriver:
                        transport=type(self.transport).__name__,
                        registry=self.registry.names())
         self._emit("run_started", "开始")
-        # §3.2：IDLE → UNDERSTANDING → PLANNING。理解阶段可以被配置关掉，
-        # 关掉就退回 v1.2 的 IDLE → PLANNING。
+        # §3.2：IDLE → UNDERSTANDING → (POLISHING) → PLANNING。理解阶段可以
+        # 被配置关掉，关掉就退回 v1.2 的 IDLE → (POLISHING) → PLANNING；
+        # E2 的剧本优化（默认关）插在理解之后、规划之前，由 _polish_gate 判定。
         self._transition(DriverState.UNDERSTANDING if self._stage_s_enabled()
-                         else DriverState.PLANNING)
+                         else self._polish_gate())
 
     # -------------------------------------------------- 阶段 S（§3.2 剧本理解）
     def _stage_s_enabled(self) -> bool:
@@ -1064,7 +1074,7 @@ class PrevisDriver:
     def _step_understanding(self) -> None:
         """阶段 S：先把"谁对谁说、谁看谁"读出来，再让阶段 A 规划镜头。"""
         if not self._stage_s_enabled() or self.brief is not None:
-            self._transition(DriverState.PLANNING)
+            self._transition(self._polish_gate())
             return
         if self._brief_attempts >= self.limits.brief_attempts:
             self._fall_back_to_brief(self._brief_problem or "已达最大尝试次数")
@@ -1130,7 +1140,7 @@ class PrevisDriver:
         self._emit("brief_received", "剧本理解完成", source=brief.source)
         for problem in problems[:5]:
             self.audit.log("brief_problem", problem, level="warning")
-        self._transition(DriverState.PLANNING)
+        self._transition(self._polish_gate())
 
     def _fall_back_to_brief(self, reason: str) -> None:
         """理解失败/预算不足：降级为确定性抽取，**永不致命**（§3.2）。"""
@@ -1140,6 +1150,82 @@ class PrevisDriver:
         self._emit("brief_degraded", "剧本理解降级", reason=reason)
         self._accept_brief(deterministic_brief(self.parsed_script,
                                                self._character_names()))
+
+    # -------------------------------------------------- 阶段 P（§9 剧本优化）
+    def _polish_enabled(self) -> bool:
+        """Stage P 总开关（默认关 = 全链路零行为差）。"""
+        if self.config is None:
+            return False
+        return bool(getattr(getattr(self.config, "script_polish", None),
+                            "enabled", False))
+
+    def _polish_gate(self) -> DriverState:
+        """理解之后的迁移目标：polish 开且场景可建 → POLISHING，否则 PLANNING。"""
+        if self._polish_enabled() and self.builder is not None:
+            return DriverState.POLISHING
+        return DriverState.PLANNING
+
+    def _step_polishing(self) -> None:
+        """阶段 P：让模型给原剧本提建议并出改写稿（E2，默认关）。
+
+        照 ``_step_understanding`` 的模式：一次 strict-schema 调用；失败一次
+        **不重试**，回落原剧本并记 ``E_POLISH_001``（技术方案 §7 成本纪律）；
+        ``accepted=false`` 时 PLANNING 输入恒原剧本——改写稿只进
+        ``self.polish_result``，绝不进 ``self.script``。
+        """
+        if not self._polish_enabled() or self.polish_result is not None:
+            self._transition(DriverState.PLANNING)
+            return
+        if not self.budget.allow_llm_call("polish"):
+            self._fall_back_polish(self.budget.exhausted_reason()
+                                   or "预算不足以做剧本优化")
+            return
+        self._start_polish_call()
+
+    def _start_polish_call(self) -> None:
+        temperature = 0.2
+        max_tokens: Optional[int] = None
+        if self.config is not None:
+            temperature = float(self.config.llm.temperature_repair)
+            max_tokens = self._llm_max_tokens()
+        brief_text = ""
+        if self.brief is not None:
+            brief_text = json.dumps(self.brief.to_dict(),
+                                    ensure_ascii=False, sort_keys=True)
+        payload = build_polish_payload(
+            self.script or "", brief_text,
+            temperature=temperature, max_tokens=max_tokens)
+        # 阶段 P 的会话**不进** self.messages（与理解同款：那是阶段 A 的会话）。
+        self._polish_messages = list(payload.messages)
+        self._start_llm_call("polish", payload, note="请求剧本优化")
+
+    def _finish_polish(self, reply: ChatReply) -> None:
+        try:
+            result = extract_polish(reply)
+        except ValueError as exc:
+            self._fall_back_polish(f"polish 解析失败：{exc}")
+            return
+        self.polish_result = result
+        self.audit.log(
+            "polish_result",
+            f"剧本优化完成：{len(result.suggestions)} 条建议 / "
+            f"改写稿 {len(result.rewritten)} 字（accepted="
+            f"{result.accepted}）",
+            level="info",
+            suggestions=[str(item) for item in result.suggestions[:5]],
+            accepted=bool(result.accepted))
+        self._emit("polish_result", "剧本优化完成",
+                   suggestions=len(result.suggestions),
+                   rewritten_chars=len(result.rewritten))
+        self._transition(DriverState.PLANNING)
+
+    def _fall_back_polish(self, reason: str) -> None:
+        """优化失败/预算不足：回落原剧本，**一次失败即止，不重试**。"""
+        self.audit.log("polish_degraded",
+                       f"剧本优化回落原剧本：{reason}",
+                       level="warning", error=ErrorCode.POLISH_001.value)
+        self._emit("polish_degraded", "剧本优化回落原剧本", reason=reason)
+        self._transition(DriverState.PLANNING)
 
     def _step_planning(self) -> None:
         if not self.budget.allow_llm_call("plan"):
@@ -1351,6 +1437,10 @@ class PrevisDriver:
 
         if self._call_purpose == "understand":
             self._finish_brief(reply)
+            return
+
+        if self._call_purpose == "polish":
+            self._finish_polish(reply)
             return
 
         if self._call_purpose == "review":
@@ -1647,6 +1737,10 @@ class PrevisDriver:
         if purpose == "understand":
             # 理解失败**不重试到死**：一次失败就退回确定性抽取并继续规划。
             self._fall_back_to_brief(problem)
+            return
+        if purpose == "polish":
+            # 优化失败**不重试**（E2 成本纪律）：一次失败即回落原剧本。
+            self._fall_back_polish(problem)
             return
         if purpose == "editor":
             self._skip_editor_turn(problem)

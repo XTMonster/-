@@ -30,6 +30,7 @@ class Purpose(StrEnum):
     """LLM 调用用途（§3.4 / §7.1 / §12.6 预算按用途分别核算）。"""
 
     UNDERSTAND = "understand"  # 阶段 S：剧本理解（SceneBrief，v1.3 §3.2）
+    POLISH = "polish"          # 阶段 P：剧本优化（v1.7 §9 / 卡 E2）
     PLAN = "plan"        # 阶段 A：分镜计划
     EDITOR = "editor"    # 阶段 B1：单镜结构化生成
     REPAIR = "repair"    # 阶段 B4：定向修复
@@ -253,6 +254,8 @@ class ErrorCode(StrEnum):
     ENV_001 = "E_ENV_001"
     #: v1.6 B3（FR-C1）：视锥采样失败（depsgraph/投影/射线异常）
     GUARD_001 = "E_GUARD_001"
+    #: v1.7 E2（Stage P）：剧本优化失败，回落原剧本（不重试）
+    POLISH_001 = "E_POLISH_001"
 
 
 # --------------------------------------------------------------------------- #
