@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -38,6 +39,7 @@ from ..contracts.tools import SHOT_DRAFT_TOOL
 from ..cinema.framing import CAMERA_SIDES
 from ..cinema.camera_motion import movement_unit_table
 from ..motion.model import (
+    ACTION_PARAM_ALIASES,
     ACTION_PARAMS,
     ACTION_TYPES,
     action_param_problems,
@@ -195,6 +197,52 @@ def render_closed_sets() -> str:
         "  · `beats[].curve`：" + "、".join(
             f"`{value}`" for value in CURVE_VALUES),
     ])
+
+
+def normalize_draft_watchdog(args: Dict[str, Any]) -> Dict[str, Any]:
+    """G2 判据 #8（用户 2026-10-11 裁决）：**只做无歧义归一**的看门狗。
+
+    只有"翻译一下不可能出错"的模型输出才归一，其余近义/越界值一律照旧
+    拒绝（绝不放宽校验）：
+
+    * ``actions[].start_frame/end_frame == 0`` → ``1``（引擎帧号 1 起）；
+    * ``look_at.params`` 同时写 ``target`` 与 ``yaw_deg/pitch_deg`` → 丢弃
+      角度（``target`` 由编译层按角色位置折算；"无隐式优先级"改为 target
+      优先，这是用户点名的无歧义归一条目）；
+    * ``camera.side == "neutral"`` → ``""``（中性机位 = 求解器默认）。
+
+    不认的近义/越界值（``side='0'``、``pace='sharp'`` 等）一个都不动。
+    返回新 dict、不修改入参；非 dict 原样返回。
+    """
+    if not isinstance(args, dict):
+        return args
+    out = copy.deepcopy(args)
+    for item in out.get("actions") or []:
+        if not isinstance(item, dict):
+            continue
+        for key in ("start_frame", "end_frame"):
+            if item.get(key) == 0:
+                item[key] = 1
+        if item.get("action_type") == "look_at":
+            params = item.get("params")
+            if isinstance(params, dict) and params.get("target") is not None:
+                #: target 优先 = 丢弃**全部**角度键：规范键 + 归一后会落进
+                #: ``yaw_deg`` 的等价键（``look_at.angle_deg``）。等价键表从
+                #: ``ACTION_PARAM_ALIASES`` 单一真源推导，不手抄——r6 真跑
+                #: （run 12dadce87acc）里模型写 ``angle_deg``，看门狗只弹
+                #: ``yaw_deg``，随后 ``normalize_action_params`` 把
+                #: ``angle_deg`` 翻回 ``yaw_deg``，两者同框再次被判域拒绝。
+                angle_keys = {"yaw_deg", "pitch_deg"}
+                for alias, canonical in ACTION_PARAM_ALIASES.get(
+                        "look_at", {}).items():
+                    if canonical in angle_keys:
+                        angle_keys.add(alias)
+                for key in angle_keys:
+                    params.pop(key, None)
+    camera = out.get("camera")
+    if isinstance(camera, dict) and camera.get("side") == "neutral":
+        camera["side"] = ""
+    return out
 
 
 @dataclass
@@ -411,6 +459,7 @@ def extract_draft(reply: ChatReply, shot_id: str, *,
         args = call.function.parsed_arguments()
     except ValueError as exc:
         raise ValueError(f"{EDITOR_TOOL_NAME} 参数不是合法 JSON: {exc}") from exc
+    args = normalize_draft_watchdog(args)
     draft = ShotDraft.from_dict(args)
     if not draft.shot_id:
         draft.shot_id = shot_id

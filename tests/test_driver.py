@@ -125,14 +125,20 @@ def test_rhythm_reading_event_emitted_exactly_once():
     assert isinstance(events[0].data["monotony"], bool)
 
 
-def test_llm_failure_retries_then_errors():
+def test_llm_failure_exhausts_attempts_then_falls_back():
+    """G2 #8（用户裁决）：计划调整到上限后不再整轮 ERROR，改按剧本声明
+    确定性补齐缺镜继续跑，并留 plan_adjusted 警告。"""
     limits = DriverLimits(plan_attempts=2)
     transport = ScriptedTransport([RuntimeError("network down")])
     driver = _driver(transport, limits=limits)
     state = driver.run_to_completion()
-    assert state is DriverState.ERROR
-    assert "分镜计划生成失败" in driver.error
+    assert state is DriverState.DONE
+    assert not driver.error
     assert transport.calls == 2          # 用尽两次尝试
+    adjusted = [event for event in driver.audit.recent(60)
+                if event.kind == "plan_adjusted"]
+    assert adjusted
+    assert adjusted[0].data["filled_shots"] == 2
 
 
 def test_transient_failure_recovers_on_retry():
@@ -143,19 +149,23 @@ def test_transient_failure_recovers_on_retry():
     assert transport.calls == 2
 
 
-def test_invalid_plan_args_are_rejected_by_tool_schema():
+def test_invalid_plan_args_fall_back_after_schema_rejection():
     bad = demo_plan_dict(SCRIPT)
     bad["shots"][0]["shot_type"] = "XXXL"        # 非九种景别
     driver = _driver(ScriptedTransport([bad]), limits=DriverLimits(plan_attempts=1))
-    assert driver.run_to_completion() is DriverState.ERROR
-    assert "参数校验失败" in driver.error
+    assert driver.run_to_completion() is DriverState.DONE
+    adjusted = [event for event in driver.audit.recent(60)
+                if event.kind == "plan_adjusted"]
+    assert adjusted and "参数校验失败" in adjusted[0].data["problem"]
 
 
-def test_missing_plan_tool_call_is_reported():
+def test_missing_plan_tool_call_falls_back_after_adjustment():
     driver = _driver(ScriptedTransport([ChatReply(content="我想好了")]),
                      limits=DriverLimits(plan_attempts=1))
-    assert driver.run_to_completion() is DriverState.ERROR
-    assert "没有工具调用" in driver.error
+    assert driver.run_to_completion() is DriverState.DONE
+    adjusted = [event for event in driver.audit.recent(60)
+                if event.kind == "plan_adjusted"]
+    assert adjusted and "没有工具调用" in adjusted[0].data["problem"]
 
 
 def test_cancel_is_collaborative():
@@ -196,9 +206,11 @@ def test_broken_observer_does_not_break_run():
     assert driver.run_to_completion() is DriverState.DONE
 
 
-def test_unknown_tool_does_not_raise():
+def test_unknown_tool_falls_back_after_adjustment():
     reply = ChatReply(tool_calls=[ToolCall(
         id="c1", function=FunctionCall(name="does_not_exist", arguments="{}"))])
     driver = _driver(ScriptedTransport([reply]), limits=DriverLimits(plan_attempts=1))
-    assert driver.run_to_completion() is DriverState.ERROR
-    assert "工具不存在" in driver.error
+    assert driver.run_to_completion() is DriverState.DONE
+    adjusted = [event for event in driver.audit.recent(60)
+                if event.kind == "plan_adjusted"]
+    assert adjusted and "工具不存在" in adjusted[0].data["problem"]

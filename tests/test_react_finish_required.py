@@ -116,3 +116,61 @@ def test_no_tool_reply_logs_react_invalid_with_no_tool_category():
     assert event.data["reason"] == event.message
     assert event.data["category"] == "no_tool"
     assert driver.react_history[-1]["reason"] == "模型停止调用工具"
+
+
+def test_react_emit_shot_draft_is_watchdog_normalised_before_validation():
+    """G2 #8（用户裁决）：ReAct 重提草案时，无歧义看门狗在 schema 校验
+    之前把 ``start_frame=0`` 归一到 1——既不记 react_invalid，也不把
+    ``start_frame=0`` 留进计划。"""
+    draft = {"shot_id": "shot_001",
+             "actions": [{"character_id": "char_001",
+                          "action_type": "walk_to",
+                          "start_frame": 0, "end_frame": 30,
+                          "params": {"target_position": [0, 0, 1]}}]}
+    transport = ScriptedTransport([
+        PLAN_REPLY,
+        ("setup_camera", {"shot_id": "shot_001"}),   # B4 修复
+        ("emit_shot_draft", draft),                   # B5 第 1 步（0→1）
+        (FINISH_SHOT, {"summary": "完成"}),           # B5 收尾
+    ])
+    driver = make_driver(transport, StubAuditor(fail_times=3))
+    state = driver.run_to_completion()
+
+    events = driver.audit.recent(300)
+    assert state is DriverState.DONE
+    assert not [event for event in events
+                if "start_frame" in str(event.message)]
+    merged = next(shot for shot in driver.plan.shots
+                  if shot.shot_id == "shot_001")
+    assert merged.actions[0]["start_frame"] == 1
+
+
+def test_react_look_at_target_drops_alias_angle_before_validation():
+    """G2 #8（r6 真跑 run 12dadce87acc 回归）：模型写
+    ``look_at.params.angle_deg``（等价键），target 优先规则要连同等价键
+    一起丢——否则 ``normalize_action_params`` 把它翻回 ``yaw_deg``，草案在
+    解析期被判 ``look_at 不能同时写 target 与 yaw_deg/pitch_deg`` 并记
+    react_invalid。"""
+    draft = {"shot_id": "shot_001",
+             "actions": [{"character_id": "char_001",
+                          "action_type": "look_at",
+                          "start_frame": 1, "end_frame": 30,
+                          "params": {"target": {"character": "char_002"},
+                                     "angle_deg": -20}}]}
+    transport = ScriptedTransport([
+        PLAN_REPLY,
+        ("setup_camera", {"shot_id": "shot_001"}),   # B4 修复
+        ("emit_shot_draft", draft),                   # B5 第 1 步
+        (FINISH_SHOT, {"summary": "完成"}),           # B5 收尾
+    ])
+    driver = make_driver(transport, StubAuditor(fail_times=3))
+    state = driver.run_to_completion()
+
+    events = driver.audit.recent(300)
+    assert state is DriverState.DONE
+    assert not [event for event in events
+                if "look_at" in str(event.message)]
+    merged = next(shot for shot in driver.plan.shots
+                  if shot.shot_id == "shot_001")
+    params = merged.actions[0]["params"]
+    assert params == {"target": {"character": "char_002"}}

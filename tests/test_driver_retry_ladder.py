@@ -285,8 +285,8 @@ def test_plan_timeout_never_resends_the_identical_full_prompt():
         knowledge=KnowledgeStub(KNOWLEDGE_COLUMNS),
         limits=DriverLimits(plan_attempts=4), thread_factory=InlineThread)
 
-    assert driver.run_to_completion() is DriverState.ERROR
-    assert "分镜计划生成失败" in driver.error
+    assert driver.run_to_completion() is DriverState.DONE
+    assert not driver.error
 
     plans = [p for p in transport.payloads if p.purpose is Purpose.PLAN]
     assert len(plans) == 4, "阶梯重试计入 plan_attempts 预算，四次后按预算收尾"
@@ -294,6 +294,8 @@ def test_plan_timeout_never_resends_the_identical_full_prompt():
     slim = [p for p in plans if "硬约束（禁/许）" not in p.messages[0].content]
     assert len(full) == 1, "完整提示只能在第一次出现，绝无'原样第三次'"
     assert len(slim) == 3
+    assert any(event.kind == "plan_adjusted"
+               for event in driver.audit.recent(80))
     assert all(SLIM_PLACEHOLDER in p.messages[0].content for p in slim)
     # 瘦身只去 RAG 三栏：计划要求与剧本原文都在。
     assert all("请基于上述剧本" in p.messages[1].content for p in slim)

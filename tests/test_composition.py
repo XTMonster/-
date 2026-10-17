@@ -9,6 +9,7 @@ from block_director.cinema.composition import (
     WEIGHTS,
     SubjectBox,
     evaluate_composition,
+    thirds_deviation,
 )
 
 
@@ -193,3 +194,12 @@ def test_report_serialises():
     data = evaluate_composition([good_box()]).to_dict()
     assert set(data) == {"score", "passed", "items", "suggestions"}
     assert set(data["items"]) == set(WEIGHTS)
+
+
+def test_thirds_deviation_is_the_euclidean_distance_to_the_nearest_point():
+    assert thirds_deviation(1.0 / 3.0, 1.0 / 3.0) == pytest.approx(0.0)
+    assert thirds_deviation(0.5, 0.5) == pytest.approx((2 ** 0.5) / 6.0)
+    assert thirds_deviation(0.0, 0.0) == pytest.approx((2 ** 0.5) / 3.0)
+    for tx in (1.0 / 3.0, 2.0 / 3.0):
+        for ty in (1.0 / 3.0, 2.0 / 3.0):
+            assert thirds_deviation(tx, ty) == pytest.approx(0.0)

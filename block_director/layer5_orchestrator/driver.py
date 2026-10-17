@@ -36,7 +36,7 @@ from ..contracts.messages import (
     tool_message,
     validate_conversation,
 )
-from ..contracts.plan import Plan, unknown_cast_ids
+from ..contracts.plan import Plan, ShotPlan, unknown_cast_ids
 from ..contracts.brief import SOURCE_DETERMINISTIC, SceneBrief
 from ..contracts.enums import ErrorCode
 from ..contracts.errors import user_message
@@ -64,7 +64,7 @@ from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
 from .context_budget import budget_report, slim_messages, trim_messages
 from .editor import (build_editor_payload, extract_draft, merge_draft,
-                     rank_drafts)
+                     normalize_draft_watchdog, rank_drafts)
 from .editor import EDITOR_TOOL_NAME, EMIT_SHOT_DRAFT_PARAMETERS
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
 from .rhythm_reading import rhythm_readings
@@ -504,7 +504,7 @@ class DriverLimits:
     #: 真正的门禁 = ``max(ceiling, formula)``，再与这里的硬顶取小。
     max_llm_calls: int = 0
     llm_timeout_s: float = 120.0
-    plan_attempts: int = 2
+    plan_attempts: int = 3
     brief_attempts: int = 2      # §3.2：两次不理解就降级为确定性抽取
     max_tool_calls: int = 200
     max_repairs_per_shot: int = 2      # §7.1 B4：每镜定向修复次数上限
@@ -1149,11 +1149,85 @@ class PrevisDriver:
         #: 计的是**失败次数**（见 `_route_llm_error` 的同名注释）：分块的每一段
         #: 都是一次正常调用，不该吃掉重试额度。
         if self._plan_failures >= self.limits.plan_attempts:
+            filled = self._complete_plan_with_deterministic_fill()
+            if filled is not None:
+                detail = f"：{self._plan_problem}" if self._plan_problem else ""
+                message = (f"分镜计划经 {self._plan_failures} 次就地调整后仍不"
+                           f"完整，已按剧本声明确定性补齐 {filled} 个缺镜"
+                           f"（最后问题{detail}）")
+                self.audit.log("plan_adjusted", message, level="warning",
+                               filled_shots=int(filled),
+                               attempts=int(self._plan_failures),
+                               problem=str(self._plan_problem or ""))
+                self._emit("plan_adjusted", message,
+                           filled_shots=int(filled),
+                           attempts=int(self._plan_failures),
+                           problem=str(self._plan_problem or ""))
+                self._plan_accepted_continue()
+                return
             detail = f"：{self._plan_problem}" if self._plan_problem else ""
             self._fail(f"分镜计划生成失败（已达最大尝试次数）{detail}")
             return
         self._plan_attempts += 1
         self._start_plan_call()
+
+    def _complete_plan_with_deterministic_fill(self) -> Optional[int]:
+        """计划调整到上限后，用剧本声明兜底补齐缺镜；返回补齐的镜数。
+
+        用户 2026-10-11 裁决："不要指望一次性生成成功，边做边改边调整"——
+        已通过的模型分块**原样保留**，只补缺失的 shot_id（确定性计划器
+        ``offline.demo_plan_dict``，与离线链路同一份真源，不猜导演意图），
+        并照常 `plan_adjusted` 留警告（不是静默降级）。没有可用的确定性
+        镜头（声明为空且默认两镜也凑不出）时返回 None，由调用方按原纪律
+        报 ERROR。
+        """
+        from .offline import demo_plan_dict
+
+        declarations = list(
+            getattr(self.parsed_script, "declared_shots", []) or [])
+        fallback = demo_plan_dict(self.script, declarations)
+        fallback_shots = {str(shot.get("shot_id") or ""): shot
+                          for shot in (fallback.get("shots") or [])}
+        ordered_ids = [str(shot.get("shot_id") or "")
+                       for shot in (fallback.get("shots") or [])]
+        accepted: Dict[str, Dict[str, Any]] = {}
+        for shot in self._plan_shots:
+            data = shot.to_dict() if hasattr(shot, "to_dict") else dict(shot)
+            accepted[str(data.get("shot_id") or "")] = data
+        if not ordered_ids:
+            return None
+        shots = [accepted[shot_id] if shot_id in accepted
+                 else fallback_shots[shot_id] for shot_id in ordered_ids]
+        filled = sum(1 for shot_id in ordered_ids if shot_id not in accepted)
+        head = dict(getattr(self, "_plan_head", None) or {})
+        payload = {
+            "scene_heading": str(fallback.get("scene_heading") or ""),
+            "continuity_notes": list(fallback.get("continuity_notes") or []),
+            "shots": shots,
+            "environment": dict(head.get("environment") or {}),
+        }
+        self.plan = Plan.from_dict(payload)
+        self._plan_shots = [ShotPlan.from_dict(shot) for shot in shots]
+        self._apply_scene_budget(len(self.plan.shots))
+        return filled
+
+    def _plan_accepted_continue(self) -> None:
+        """计划落定后的共同收尾（正常通过与兜底补齐共用，单一真源）。"""
+        self._pin_declared_dialogue()
+        target = (DriverState.EDITING if self.builder is not None
+                  else DriverState.FINISHING)
+        if target is DriverState.FINISHING:
+            # 没有构建器就不会走 B1，注视关系在这里一次补齐。
+            self._pin_brief_gaze()
+        if self._gate_enabled("human_gate_on_plan"):
+            self._request_gate(
+                GateRequest(kind="plan", title="确认分镜计划",
+                            detail=self._plan_gate_detail(),
+                            payload={"shots": len(self.plan.shots)
+                                     if self.plan else 0}),
+                resume=target)
+            return
+        self._transition(target)
 
     def _step_calling_llm(self) -> None:
         try:
@@ -1305,22 +1379,7 @@ class PrevisDriver:
             self._transition(DriverState.PLANNING)
             return
         # 计划通过后先进阶段 B1（逐镜结构化生成），再落成场景（§7.1）。
-        # 没有构建器时也不需要逐镜草案——那是给执行引擎吃的。
-        self._pin_declared_dialogue()
-        target = (DriverState.EDITING if self.builder is not None
-                  else DriverState.FINISHING)
-        if target is DriverState.FINISHING:
-            # 没有构建器就不会走 B1，注视关系在这里一次补齐。
-            self._pin_brief_gaze()
-        if self._gate_enabled("human_gate_on_plan"):
-            self._request_gate(
-                GateRequest(kind="plan", title="确认分镜计划",
-                            detail=self._plan_gate_detail(),
-                            payload={"shots": len(self.plan.shots)
-                                     if self.plan else 0}),
-                resume=target)
-            return
-        self._transition(target)
+        self._plan_accepted_continue()
 
     def _pin_declared_dialogue(self) -> None:
         """把分镜表声明的台词**钉到计划上**（v1.3 R016 的落实侧）。
@@ -3119,6 +3178,12 @@ class PrevisDriver:
                     call, f"参数不是合法 JSON: {exc}。请重新调用本工具。"))
                 continue
 
+            if call.function.name == EDITOR_TOOL_NAME:
+                #: G2 #8（用户裁决）：无歧义看门狗在 schema 校验**之前**跑，
+                #: 只归一"翻译不可能出错"的值（start_frame 0→1、look_at
+                #: target 优先、camera.side='neutral'→''）；有歧义的照旧被
+                #: validate_args 拒绝。
+                args = normalize_draft_watchdog(args)
             result = self.registry.execute(call.function.name, args)
             self._tool_calls += 1
             self.audit.count_tool_call()

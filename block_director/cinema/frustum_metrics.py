@@ -18,7 +18,7 @@ from ..contracts.guard import (
     Severity,
 )
 from .anchor import DEFAULT_PROFILE as _PROFILE
-from .composition import HEADROOM_IDEAL, THIRDS, SubjectBox
+from .composition import HEADROOM_IDEAL, SubjectBox, thirds_deviation
 
 #: 头球直径占全身高的比例——由冻结几何推导（ADR-0007），不另抄常量。
 HEAD_FRACTION = _PROFILE.head_d / _PROFILE.total_height
@@ -115,8 +115,7 @@ def frame_metrics(box: SubjectBox, visible: float = 1.0) -> Dict[str, float]:
     else:
         lead_room = -1.0
     cx, cy = box.center_x, box.center_y
-    thirds = min(((cx - tx) ** 2 + (cy - ty) ** 2) ** 0.5
-                 for tx in THIRDS for ty in THIRDS)
+    thirds = thirds_deviation(cx, cy)
     return {
         "body_height_ratio": max(box.height, 0.0),
         "head_height_ratio": head_projected,
