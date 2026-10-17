@@ -2677,7 +2677,15 @@ class PrevisDriver:
             duration_frames=shot.duration_frames,
             audit=self.audit_results[-1] if self.audit_results else None,
             scene_state=self._scene_state_text(), temperature=temperature,
-            max_tokens=self._llm_max_tokens())
+            max_tokens=self._llm_max_tokens(),
+            prompt_conflict_check=bool(
+                getattr(getattr(self.config, "guard", None),
+                        "prompt_conflict_check", False)),
+            measured_camera=(
+                (self.audit_results[-1].measured_camera
+                 if self.audit_results and self.audit_results[-1] is not None
+                 and getattr(self.audit_results[-1], "measured_camera", None)
+                 else None)))
         self._start_llm_call("review", payload, note=f"自我审核 {shot_id}")
 
     def _finish_review(self, reply: ChatReply) -> None:
@@ -2695,7 +2703,16 @@ class PrevisDriver:
 
         self.review_history.append({"shot_id": shot_id,
                                     "verdict": verdict.verdict,
-                                    "notes": verdict.notes})
+                                    "notes": verdict.notes,
+                                    **({"prompt_conflict": verdict.prompt_conflict}
+                                       if verdict.prompt_conflict else {})})
+        if verdict.prompt_conflict:
+            #: v1.7 J4（R025）：LLM 裁决层报的文本矛盾只记录＋warning，
+            #: 不参与 passed/score（校验层不做语义判断，红线 R-V 不升格）。
+            self.audit.log(
+                "R025", f"{shot_id} 镜头 prompt 文本与实测运镜矛盾："
+                        f"{verdict.prompt_conflict}",
+                level="warning", shot=shot_id)
         if verdict.needs_fix:
             self.audit.log("self_review",
                            f"{shot_id} 复核认为未表达意图：{verdict.notes}",

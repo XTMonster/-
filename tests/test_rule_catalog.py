@@ -34,6 +34,9 @@ EXPECTED = {
     "R022": ("warning", ""),
     "R023": ("warning", ""),
     "R024": ("warning", "白名单"),
+    #: v1.7 J4：R025 的裁决点在 LLM 层（review 的 ``prompt_conflict``），
+    #: 消费侧落点是 driver 的 ``audit.log("R025", ...)``，不进 rule_checker。
+    "R025": ("warning", "默认关"),
 }
 
 
@@ -47,8 +50,18 @@ def _compliance_source() -> str:
         encoding="utf-8")
 
 
+def _driver_source() -> str:
+    return (ROOT / "block_director/layer5_orchestrator/driver.py").read_text(
+        encoding="utf-8")
+
+
 def _static_ids() -> set:
-    """双正则双文件并集（卡 A4 ② 的钉死口径）。"""
+    """正则扫描并集（卡 A4 ② 的钉死口径）：rule_checker＋compliance＋driver。
+
+    v1.7 J4：R025 的语义裁决在 LLM 层、消费侧是 driver 的 ``audit.log``
+    （校验层不做语义判断），因此扫描源补 driver 的 ``audit.log("R0xx"``
+    调用点，使目录与真实使用点对拍不丢。
+    """
     checker = _rule_checker_source()
     ids = set(re.findall(r'_(?:error|warning)\(\s*\n?\s*"(R\d{3})"', checker))
     ids |= set(re.findall(
@@ -56,13 +69,15 @@ def _static_ids() -> set:
         checker))
     compliance = _compliance_source()
     ids |= set(re.findall(r'RULE_\w+\s*=\s*"(R\d{3})"', compliance))
+    driver = _driver_source()
+    ids |= set(re.findall(r'audit\.log\(\s*"(R\d{3})"', driver))
     return ids
 
 
 def test_catalog_matches_static_scan():
     catalog_ids = {entry["id"] for entry in RULES}
     assert _static_ids() == catalog_ids
-    assert len(RULES) == 23
+    assert len(RULES) == 24
 
 
 def test_severity_matches_usage():

@@ -39,6 +39,7 @@ from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .frustum_sampler import SamplingError, sample_shot
 from .rule_checker import (check_shot, configure_camera_limits,
+                           configure_prompt_conflict_check,
                            configure_rules_disabled, configure_scale_drift)
 from .scene_context import get_context
 
@@ -111,6 +112,10 @@ class BpyShotAuditor:
             getattr(config.guard, "cam_accel_max", 8.0),
             compound_max=getattr(config.guard, "compound_motion_max", 2),
             fps=getattr(getattr(config, "animation", None), "fps", 24))
+        #: v1.7 J4（R025）：同步实测运镜开关注入（照 J1/J2 同款——由审核
+        #: 入口单向同步；默认关 ⇒ ``measured_camera`` 不出键，零形状差）。
+        configure_prompt_conflict_check(
+            getattr(config.guard, "prompt_conflict_check", False))
         result = check_shot(shot_id,
                             composition_threshold=self.composition_threshold,
                             strict=strict)

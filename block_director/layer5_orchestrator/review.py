@@ -73,6 +73,9 @@ class ReviewVerdict:
     notes: str = ""
     issues: List[str] = field(default_factory=list)
     suggestion: str = ""
+    #: v1.7 J4（R025）：LLM 裁决层报的"镜头 prompt 文本与实测运镜矛盾"说明。
+    #: 空串 = 无矛盾/未开启。只进审计与 shots.json，不参与 passed/score。
+    prompt_conflict: str = ""
 
     @property
     def needs_fix(self) -> bool:
@@ -95,12 +98,35 @@ def build_review_payload(*, intent: str, shot_type: str, duration_frames: int,
                          audit: Optional[AuditResult] = None,
                          scene_state: str = "", temperature: float = 0.2,
                          max_tokens: Optional[int] = None,
-                         request_id: Optional[str] = None) -> ChatPayload:
+                         request_id: Optional[str] = None,
+                         prompt_conflict_check: bool = False,
+                         measured_camera: Optional[Dict[str, Any]] = None
+                         ) -> ChatPayload:
     system_text = REVIEW_SYSTEM_PROMPT.format(
         intent=intent or "（未说明）", shot_type=shot_type,
         duration_frames=duration_frames,
         audit=audit.format_for_llm() if audit else "（无）",
         scene_state=scene_state or "（尚未采集）")
+    #: v1.7 J4（R025）：默认关。开且拿到实测数据时，在 system 追加一段运镜
+    #: 描述并要求 LLM 在 ``prompt_conflict`` 字段报告文本矛盾，schema 的
+    #: ``properties`` 追加可选键；关/缺数据时 system_text 与 schema 都与
+    #: 升级前逐字节一致（零形状差纪律）。
+    parameters = REVIEW_TOOL_PARAMETERS
+    if prompt_conflict_check and measured_camera:
+        narration = str(measured_camera.get("narration") or "")
+        if narration:
+            system_text += (
+                "\n\n实测运镜：" + narration +
+                "。若镜头 prompt 文本与之矛盾（例如文字说从左到右、实测却"
+                "是从右到左），在 verdict 的 prompt_conflict 字段报告；"
+                "一致则留空。")
+        parameters = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": list(REVIEW_TOOL_PARAMETERS.get("required", [])),
+            "properties": dict(REVIEW_TOOL_PARAMETERS["properties"]),
+        }
+        parameters["properties"]["prompt_conflict"] = {"type": "string"}
     return ChatPayload(
         messages=[Message(role=MessageRole.SYSTEM, content=system_text),
                   Message(role=MessageRole.USER,
@@ -108,7 +134,7 @@ def build_review_payload(*, intent: str, shot_type: str, duration_frames: int,
         tools=[{"type": "function",
                 "function": {"name": REVIEW_TOOL_NAME,
                              "description": "提交自我审核结论",
-                             "parameters": REVIEW_TOOL_PARAMETERS}}],
+                             "parameters": parameters}}],
         tool_choice=ToolChoice.REQUIRED,
         temperature=temperature,
         max_tokens=max_tokens,
@@ -130,7 +156,8 @@ def parse_review(reply: ChatReply) -> ReviewVerdict:
             verdict=str(args.get("verdict", "ok")),
             notes=str(args.get("notes", "")),
             issues=[str(item) for item in (args.get("issues") or [])],
-            suggestion=str(args.get("suggestion", "")))
+            suggestion=str(args.get("suggestion", "")),
+            prompt_conflict=str(args.get("prompt_conflict", "")))
     names = [c.function.name for c in reply.tool_calls or []] or ["（无工具调用）"]
     raise ValueError(f"回复中没有 {REVIEW_TOOL_NAME} 调用，实际调用: "
                      f"{', '.join(names)}")

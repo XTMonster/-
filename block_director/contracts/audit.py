@@ -161,6 +161,10 @@ class AuditResult:
     #: v1.7 F1：被 ``rules_disabled`` 关闭的规则哨兵。缺省空 ⇒ ``to_dict()``
     #: 与升级前逐字节一致（零形状差纪律）。
     skipped: List[Any] = field(default_factory=list)
+    #: v1.7 J4（R025）：校验层产的实测运镜数据（``{narration, start, end}``）。
+    #: 缺省 ``None`` ⇒ 开关关/无采样时 ``to_dict()`` 不出这个键（零形状差）；
+    #: 非空时供 review payload 组装与 R025 裁决用，**不参与 passed/score**。
+    measured_camera: Optional[Dict[str, Any]] = None
 
     @property
     def total(self) -> int:
@@ -209,6 +213,9 @@ class AuditResult:
             payload["skipped"] = [
                 item.to_dict() if hasattr(item, "to_dict") else dict(item)
                 for item in self.skipped]
+        #: 同一条零形状差纪律：只有真的采到实测运镜才多这个键。
+        if self.measured_camera is not None:
+            payload["measured_camera"] = dict(self.measured_camera)
         return payload
 
     def format_for_llm(self) -> str:

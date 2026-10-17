@@ -406,6 +406,10 @@ class GuardConfig:
     #: v1.7 J2（R021）：单镜复合运动上限。突变数 + 声明运镜条目数 ≥ 此值时
     #: 建议拆镜（R-痛点 P4：一段运镜里塞了太多方向突变，观众会晕）。
     compound_motion_max: int = 2
+    #: v1.7 J4（R025）：提示词-白模矛盾检测总开关（**默认关**，CFG_176）。
+    #: 开时 review payload 追加实测运镜段与 ``prompt_conflict`` 可选键，由 LLM
+    #: 裁决层报文本矛盾；关时 payload 逐字节不变（零行为差纪律）。
+    prompt_conflict_check: bool = False
     #: 两帧内占比跳变上限
     jump_ratio: float = 0.25
     #: 跳切风险：视角差低于此值（度）时检查景别差

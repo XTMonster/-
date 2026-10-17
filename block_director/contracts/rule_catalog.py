@@ -60,4 +60,6 @@ RULES: List[Dict[str, Any]] = [
      "summary": "相机采样加速度峰值超 cam_accel_max（单位 m/s²，E_CAM_001）"},
     {"id": "R024", "severity": "warning",
      "summary": "分工矛盾：声明 skip 但仍建白模主体 / 动画通道超出白名单（E_ANIM_001）"},
+    {"id": "R025", "severity": "warning",
+     "summary": "镜头 prompt 文本与实测运镜矛盾（LLM 裁决，prompt_conflict 非空，E_CAM_001；默认关）"},
 ]

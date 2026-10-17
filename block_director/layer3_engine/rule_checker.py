@@ -63,6 +63,10 @@ _SCALE_DRIFT: float = 0.05
 _CAM_ACCEL_MAX: float = 8.0        # R023，单位 m/s²（待实测校准）
 _COMPOUND_MOTION_MAX: int = 2      # R021 单镜复合运动上限
 _ANIMATION_FPS: int = 24           # R023 单位换算用（config.animation.fps）
+#: v1.7 J4（R025）：实测运镜数据总开关（模块级注入，照 F1/J1/J2 模式）。
+#: 默认关——关时 ``_measured_camera`` 不产数据、``AuditResult`` 不出
+#: ``measured_camera`` 键（零形状差纪律）。
+_PROMPT_CONFLICT_CHECK: bool = False
 
 #: R021 航向突变角阈值（度），对齐 R010 的 30° 词汇。
 MOVE_HEADING_TURN_DEG: float = 30.0
@@ -110,6 +114,19 @@ def configure_camera_limits(accel_max: Any = None, *,
     except (TypeError, ValueError):
         parsed_fps = 24
     _ANIMATION_FPS = parsed_fps if parsed_fps >= 1 else 24
+
+
+def configure_prompt_conflict_check(enabled: Any = None) -> None:
+    """同步 R025 的实测运镜开关注入（J4，审核入口在 check 前调用）。
+
+    照 ``configure_scale_drift`` 的模式：非法值回落默认（关），绝不 raise。
+    """
+    global _PROMPT_CONFLICT_CHECK
+    try:
+        parsed = bool(enabled)
+    except Exception:
+        parsed = False
+    _PROMPT_CONFLICT_CHECK = parsed
 
 
 def _finding(severity: Severity, rule: str, code: str, message: str,
@@ -732,6 +749,55 @@ def _camera_motion_samples(shot_id: str, context=None) -> List[Dict[str, Any]]:
         samples.extend(plan)
     samples.sort(key=lambda item: int(item["frame"]))
     return samples
+
+
+def _measured_camera(shot_id: str, context=None,
+                     *, facing: Optional[Sequence[float]] = None
+                     ) -> Optional[Dict[str, Any]]:
+    """v1.7 J4（R025）：把本镜实测运镜文字化（I2 的 narrate）＋起终方位。
+
+    数据源与 R021-R023 同源（``_camera_motion_samples``）。无采样/无主体/
+    开关关（``_PROMPT_CONFLICT_CHECK`` 默认 False）/``narrate`` 不可用
+    （缺模块或例外）时返回 None ⇒ 调用方不出键（零形状差）。
+    只产数据、不做语义判断——文本矛盾判断归 review 层的 LLM 裁决。
+    """
+    if not _PROMPT_CONFLICT_CHECK:
+        return None
+    samples = _camera_motion_samples(shot_id, context)
+    if not samples:
+        return None
+    context = context or get_context()
+    subjects = context.subjects_for(shot_id) if context else []
+    if not subjects:
+        return None
+    anchor = (0.0, 0.0, 0.0)
+    root = getattr(subjects[0], "root", None)
+    if root is not None:
+        anchor = tuple(float(v) for v in root.matrix_world.translation)
+        try:
+            if facing is None:
+                from .character_system.character_factory import get_facing
+                facing = tuple(float(v) for v in get_facing(subjects[0]))
+        except Exception:
+            facing = (0.0, 1.0, 0.0)
+    if facing is None:
+        facing = (0.0, 1.0, 0.0)
+    try:
+        from ..cinema.camera_narration import _bearing, narrate
+        narration = narrate(samples, anchor, facing)
+        start_token = _bearing(anchor, facing, samples[0]["position"])
+        end_token = _bearing(anchor, facing, samples[-1]["position"])
+    except Exception:
+        return None
+    if not narration or narration == "固定机位" and len(samples) < 2:
+        return None
+    if not start_token or not end_token:
+        return None
+    return {
+        "narration": str(narration),
+        "start": str(start_token),
+        "end": str(end_token),
+    }
 
 
 def _heading_turn_count(samples: Sequence[Dict[str, Any]]) -> int:
@@ -1449,6 +1515,11 @@ def check_shot(shot_id: str, *, context=None,
                 f"{composition_threshold:.0f}",
                 target=shot_id, suggestion=detail))
 
-    return finish(AuditResult.from_findings(
+    #: v1.7 J4（R025）：校验层只产实测数据（measured_camera），语义矛盾判断
+    #: 归 review 层（``guard.prompt_conflict_check`` 默认关 ⇒ 这里不出键）。
+    measured = _measured_camera(shot_id, context)
+    result = AuditResult.from_findings(
         findings, target=shot_id,
-        score=composition.score if composition else None))
+        score=composition.score if composition else None)
+    result.measured_camera = measured
+    return finish(result)
