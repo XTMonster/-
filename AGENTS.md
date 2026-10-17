@@ -391,6 +391,20 @@ OK；门①–⑩ 全 pass、`holdout_gates.overall == "pass"`（仍指
 `docs/evidence/20261017-103308/`）、唯一红 RK-13/E1 为已结案残留（判据未动）；
 vlm 侧 2026-10-12 台账降为历史，源码存档 `E:\bd_vlm_v2`。
 
+**2026-10-18 冻结树全链（HEAD `4a618e2`，最新以这行为准）**：D1 合入后
+构图门升 80 的探针连带缺口已修（`c22b35a`：composition-gate/phase4-tools
+探针与 diagnose 兜底同源到 `PASS_SCORE=80` 且严格高于；`0262e55`：
+phase4-repair R003 探针改用无动作基线＋双动作重叠构造）；另修复 D1 合入
+`48108a1` 丢掉的 G8-C 编译层接线（`4a618e2`：`action_requests` 恢复
+`resolve_action_targets`——`look_at.target`/`hand_to.toward` 结构化目标
+重新折算成 yaw/pitch/方向量，解析不出如实告警跳过，不再抛 `E_MOTION_001`；
+action-targets 探针 4/4 绿、`tests/test_action_targets.py` 28/28 绿）。**可归因
+冻结树全链 `docs/evidence/20261018-063552/`：`tree.json stable=True`
+（before=after=`939ad090…`）、49/49 探针全 OK、pytest **4400 passed /
+2 skipped**、headless 64 镜 DONE（147 llm calls / ceiling 552）、门①–⑩
+全 pass、`holdout_gates.overall == "pass"`、唯一红 RK-13/E1 为已结案残留
+（`rks.json`：RK-13 measured / pass=false，E1<0.70，判据未动）**。
+
 **2026-10-18 空间尺转正批（HEAD 推进到 `f54d417`）**：空间尺观测扩展线 01–06
 （契约资产 `8fefc70`、行内镜头/计划级 `5da59db`、测量/处方/交付 `8da4d8b`、
 replay 证据 `a549f7f`，台账登记 `901bb40`）与转正批 `b3784c7`（12 文件
