@@ -391,16 +391,18 @@ OK；门①–⑩ 全 pass、`holdout_gates.overall == "pass"`（仍指
 `docs/evidence/20261017-103308/`）、唯一红 RK-13/E1 为已结案残留（判据未动）；
 vlm 侧 2026-10-12 台账降为历史，源码存档 `E:\bd_vlm_v2`。
 
-**2026-10-18 冻结树全链（HEAD `4a618e2`，最新以这行为准）**：D1 合入后
+**2026-10-18 冻结树全链（HEAD `9763d7c`，最新以这行为准）**：D1 合入后
 构图门升 80 的探针连带缺口已修（`c22b35a`：composition-gate/phase4-tools
 探针与 diagnose 兜底同源到 `PASS_SCORE=80` 且严格高于；`0262e55`：
 phase4-repair R003 探针改用无动作基线＋双动作重叠构造）；另修复 D1 合入
 `48108a1` 丢掉的 G8-C 编译层接线（`4a618e2`：`action_requests` 恢复
 `resolve_action_targets`——`look_at.target`/`hand_to.toward` 结构化目标
 重新折算成 yaw/pitch/方向量，解析不出如实告警跳过，不再抛 `E_MOTION_001`；
-action-targets 探针 4/4 绿、`tests/test_action_targets.py` 28/28 绿）。**可归因
-冻结树全链 `docs/evidence/20261018-063552/`：`tree.json stable=True`
-（before=after=`939ad090…`）、49/49 探针全 OK、pytest **4400 passed /
+action-targets 探针 4/4 绿、`tests/test_action_targets.py` 28/28 绿）；
+六视角评审 4 条建议测试全部落地（空镜逐镜／双人 MCU 锚点／PER_SHOT 续跑／
+回退 BUILDING，`9763d7c` 补 per-shot 探针空镜用例，纯层 41 passed ＋探针 6/6）。
+**可归因冻结树全链 `docs/evidence/20261018-071132/`：`tree.json stable=True`
+（before=after=`320174c4…`）、49/49 探针全 OK、pytest **4400 passed /
 2 skipped**、headless 64 镜 DONE（147 llm calls / ceiling 552）、门①–⑩
 全 pass、`holdout_gates.overall == "pass"`、唯一红 RK-13/E1 为已结案残留
 （`rks.json`：RK-13 measured / pass=false，E1<0.70，判据未动）**。
