@@ -350,10 +350,13 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 **2026-10-17 的账（最新，以这行为准）**：空间尺 08–12 全部完成（08 连续性 /
 09 摄影意图 / 10 鲁棒性 / 11 四臂评测台 已提交，12 规格验收已 resolved）；
-pytest **4026 passed / 2 skipped**，一键链读数见
-`docs/evidence/20261017-103308/`：**45/45 步全部跑到**（探针 41 支全 OK、
-`tree.json stable=True`、门①–⑩ 全 pass、`holdout_gates.overall == "pass"`、
-唯一红 `not passing: E1`＝已结案的 **RK-13**，判据未动）。
+pytest **4026 passed / 2 skipped**；v1.7 H1 已把探针清单扩到 **43 支**
+（＋`test_assistant_panel`/`test_assistant_sprite`），链规模 **47/47**
+（43 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，与
+`test_agents_status_is_current.py` 同源对拍）；门①–⑩ 全 pass、
+`holdout_gates.overall == "pass"`、唯一红 `not passing: E1`＝已结案 **RK-13**
+（判据未动）的读数见 `docs/evidence/20261017-103308/`；全链 47/47 重跑证据
+于 v1.7 H3 收尾落盘。
 
 （下为 2026-10-07 的历史账，仅存档；旧 44/44 是事后编辑，原始是 43/43/39 支，
 已由本次 `docs/evidence/20261010-234143/` 重跑取代。）
