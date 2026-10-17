@@ -87,3 +87,42 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\hooks\dispatch-board.s
 `dispatch_graph.json` 与 `EXECUTION_PLAN.md` 的附录 A/B 同源；**改计划必须同步
 改图**。`tests/test_dispatch_graph.py` 守住图的结构（ID 唯一、依赖存在、无环、
 `max_parallel` 合理、阶段门存在）。
+
+# Matt Pocock Skills 默认契约（mattpocock-skills.md）
+
+`mattpocock-skills.md` 是**项目默认技能集契约**（用户 2026-10-12 裁决）：本仓库
+默认使用 mattpocock/skills（克隆于 `.scratch/mattpocock_skills_probe_20261012/`，
+已 `scripts/link-skills.sh` 链入 `~/.agents/skills`），命中任务场景即**自动触发**
+对应技能，无需用户点名。
+
+## 安装（同步全局 hooks）
+
+把 `mattpocock-skills.md` 复制到 `%USERPROFILE%\.codex\hooks\`，并由全局
+`inject-context.ps1` 在 SessionStart / UserPromptSubmit 每轮读取并注入：
+
+```text
+$skillsContract = Get-ContractText 'mattpocock-skills.md'
+if ($skillsContract) { $parts += $skillsContract }
+```
+
+不需要改 `%USERPROFILE%\.codex\hooks.json`（沿用既有 `inject-context.ps1` 事件），
+所以 `trusted_hash` 不受影响。
+
+## 验证
+
+全局 hooks 目录的 `selftest.ps1` 含两条新断言（session-start / prompt-submit
+均注入 skills 契约）。仓库内 `tools/hooks/selftest.ps1` 是同一份被跟踪的快照，
+必须在 `%USERPROFILE%\.codex\hooks\`（与 `hooks.json` 同层）运行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.codex\hooks\selftest.ps1"
+```
+
+## 技能更新
+
+```powershell
+git -C .scratch/mattpocock_skills_probe_20261012 pull
+```
+
+然后重跑 `scripts/link-skills.sh`（在技能克隆目录里），保持 `~/.agents/skills`
+与上游同步。

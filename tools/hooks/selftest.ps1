@@ -93,6 +93,7 @@ $contractFirstLine = First-Line (Join-Path $root 'workflow-contract.md')
 $subagentMarker = First-Line (Join-Path $root 'subagent-protocol.md')
 $sessionMarker = First-Line (Join-Path $root 'session-start.md')
 $routingMarker = First-Line (Join-Path $root 'model-routing.md')
+$skillsMarker = First-Line (Join-Path $root 'mattpocock-skills.md')
 
 Write-Host 'Inject hook (SessionStart / UserPromptSubmit / SubagentStart)'
 
@@ -109,6 +110,8 @@ if ($sessionOk) {
     Assert-True 'session-start injects contract' ($ctx -and $ctx.Contains($contractFirstLine)) 'missing contract text'
     Assert-True 'session-start injects checklist' ($ctx -and $ctx.Contains($sessionMarker)) 'missing session checklist'
     Assert-True 'session-start injects model routing' ($ctx -and $ctx.Contains($routingMarker)) 'missing model routing contract'
+    Assert-True 'session-start injects the mattpocock skills contract' `
+        ($ctx -and $ctx.Contains($skillsMarker)) 'missing mattpocock skills contract'
 }
 
 $r = Invoke-HookCommand $commands.UserPromptSubmit '{"hook_event_name":"UserPromptSubmit","prompt":"hi","session_id":"s1"}'
@@ -122,6 +125,8 @@ if ($promptOk) {
     Assert-True 'prompt-submit injects contract' ($ctx -and $ctx.Contains($contractFirstLine)) 'missing contract text'
     Assert-True 'prompt-submit omits checklist' ($ctx -and (-not $ctx.Contains($sessionMarker))) 'unexpected checklist'
     Assert-True 'prompt-submit injects model routing' ($ctx -and $ctx.Contains($routingMarker)) 'missing model routing contract'
+    Assert-True 'prompt-submit injects the mattpocock skills contract' `
+        ($ctx -and $ctx.Contains($skillsMarker)) 'missing mattpocock skills contract'
     #: No trigger words in "hi" -> the auto-consultation block must stay out.
     #: (`panel_consult.py` itself is in the always-injected routing contract, so the
     #: marker has to be the trigger-only output dir `--out work/_panel_*`.)
@@ -151,12 +156,11 @@ try { $triggerJson = $r.Stdout | ConvertFrom-Json; $triggerOk = $true } catch { 
 Assert-True 'trigger: hard prompt stdout is json' $triggerOk $r.Stdout
 if ($triggerOk) {
     $ctx = $triggerJson.hookSpecificOutput.additionalContext
-    Assert-True 'trigger: hard prompt pulls the panel' `
-        ($ctx -and $ctx.Contains('python tools/panel_consult.py')) 'missing panel command'
-    Assert-True 'trigger: hard prompt picks the hard bucket' `
-        ($ctx -and $ctx.Contains('_panel_hard')) 'wrong output dir'
-    Assert-True 'trigger: hard prompt offers the file from the prompt' `
-        ($ctx -and $ctx.Contains('--source tools/kb_fetch/build_cases.py')) 'source not extracted'
+    #: GLM consultation removed (user ruling 2026-10-10): a hard prompt must NOT
+    #: inject the panel block any more.
+    Assert-True 'trigger: hard prompt no longer pulls the GLM panel' `
+        ($ctx -and (-not $ctx.Contains('--out work/_panel_')) -and
+         (-not $ctx.Contains('tools/glm_consult.py --roles'))) 'consultation block still injected'
     Assert-True 'trigger: hard prompt keeps the routing contract' `
         ($ctx -and $ctx.Contains($routingMarker)) 'missing routing contract'
 }
@@ -168,7 +172,8 @@ $reviewOk = $false
 try { $reviewJson = $r.Stdout | ConvertFrom-Json; $reviewOk = $true } catch { }
 if ($reviewOk) {
     $ctx = $reviewJson.hookSpecificOutput.additionalContext
-    Assert-True 'trigger: review bucket' ($ctx -and $ctx.Contains('_panel_review')) $ctx
+    Assert-True 'trigger: review prompt no longer pulls the GLM panel' `
+        ($ctx -and (-not $ctx.Contains('--out work/_panel_'))) 'consultation block still injected'
 }
 
 $ideaEvent = '{"hook_event_name":"UserPromptSubmit","prompt":"' + $tradeWord +
@@ -178,7 +183,8 @@ $ideaOk = $false
 try { $ideaJson = $r.Stdout | ConvertFrom-Json; $ideaOk = $true } catch { }
 if ($ideaOk) {
     $ctx = $ideaJson.hookSpecificOutput.additionalContext
-    Assert-True 'trigger: idea bucket' ($ctx -and $ctx.Contains('_panel_idea')) $ctx
+    Assert-True 'trigger: idea prompt no longer pulls the GLM panel' `
+        ($ctx -and (-not $ctx.Contains('--out work/_panel_'))) 'consultation block still injected'
 }
 
 Write-Host 'GitHub reuse check trigger (UserPromptSubmit)'
@@ -209,8 +215,8 @@ if ($designOk) {
     $ctx = $designJson.hookSpecificOutput.additionalContext
     Assert-True 'reuse: design prompt pulls the GitHub checklist' `
         ($ctx -and $ctx.Contains($reuseMarker)) 'missing github-reuse block'
-    Assert-True 'reuse: design prompt also pulls the panel' `
-        ($ctx -and $ctx.Contains('--out work/_panel_idea')) 'design prompt did not trigger the idea bucket'
+    Assert-True 'reuse: design prompt no longer pulls the GLM panel' `
+        ($ctx -and (-not $ctx.Contains('--out work/_panel_'))) 'consultation block still injected'
     Assert-True 'reuse: checklist keeps the licence gate' `
         ($ctx -and $ctx.Contains($licenceGate)) 'licence gate missing'
     Assert-True 'reuse: checklist offers the remix option' `
@@ -270,8 +276,8 @@ if ($semanticOk) {
     $ctx = $semanticJson.hookSpecificOutput.additionalContext
     Assert-True 'semantic: verdict alone pulls the GitHub checklist' `
         ($ctx -and $ctx.Contains($reuseMarker)) 'design verdict did not inject the checklist'
-    Assert-True 'semantic: verdict alone pulls the panel' `
-        ($ctx -and $ctx.Contains('--out work/_panel_idea')) 'idea verdict did not inject the panel'
+    Assert-True 'semantic: idea verdict no longer pulls the GLM panel' `
+        ($ctx -and (-not $ctx.Contains('--out work/_panel_'))) 'consultation block still injected'
     Assert-True 'semantic: the block shows where the verdict came from' `
         ($ctx -and $ctx.Contains('semantic:design')) 'missing the per-kind provenance note'
 }
@@ -330,8 +336,8 @@ if ($planOk) {
         ($ctx -and $ctx.Contains($planMarker)) 'plan contract missing'
     Assert-True 'plan: a plan is also a design act (reuse check fires)' `
         ($ctx -and $ctx.Contains($reuseMarker)) 'reuse check missing for a plan request'
-    Assert-True 'plan: a plan also pulls the panel' `
-        ($ctx -and $ctx.Contains('--out work/_panel_idea')) 'panel missing for a plan request'
+    Assert-True 'plan: a plan no longer pulls the GLM panel' `
+        ($ctx -and (-not $ctx.Contains('--out work/_panel_'))) 'consultation block still injected'
     Assert-True 'plan: contract demands the user requirement' `
         ($ctx -and $ctx.Contains($userNeed)) 'user-requirement section missing'
     Assert-True 'plan: contract demands the execution order' `
@@ -356,6 +362,136 @@ if ($noPlanOk) {
     Assert-True 'plan: a plain prompt stays free of the plan contract' `
         ($ctx -and (-not $ctx.Contains($planMarker))) 'plan contract leaked into a plain prompt'
 }
+
+Write-Host 'Dispatch ladder (UserPromptSubmit)'
+
+#: Two root rejections of the same card -> the root implements the third
+#: attempt itself. CODEX_DISPATCH_STATE points the hook at a temp state file,
+#: so the user's real .dispatch-ladder.json counters are never touched.
+$dispatchStatePath = Join-Path $env:TEMP ('codex-hook-dispatch-' + [guid]::NewGuid().ToString('N') + '.json')
+$env:CODEX_DISPATCH_STATE = $dispatchStatePath
+$dispatchMarker = 'dispatch-ladder: root takes over'
+$twiceWord = From-CodePoints @(0x5df2, 0x88ab, 0x4e3b, 0x7ebf, 0x5426, 0x51b3)   # "already rejected by the root"
+
+$dReject1 = '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-a rejected (evidence: rendered frame f0123.png)","session_id":"s1","model":"model-under-test-42"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $dReject1
+Assert-True 'dispatch: first rejection exits 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode + " err=" + $r.Stderr)
+$d1Ok = $false
+try { $d1Json = $r.Stdout | ConvertFrom-Json; $d1Ok = $true } catch { }
+Assert-True 'dispatch: first rejection stdout is json' $d1Ok $r.Stdout
+if ($d1Ok) {
+    $ctx = $d1Json.hookSpecificOutput.additionalContext
+    Assert-True 'dispatch: first rejection stays a status line (no take-over block)' `
+        ($ctx -and (-not $ctx.Contains($dispatchMarker))) 'take-over block appeared after one rejection'
+    Assert-True 'dispatch: first rejection reports count 1' `
+        ($ctx -and $ctx.Contains('card-a rejections=1')) $ctx
+    Assert-True 'dispatch: first rejection says the next attempt is DeepSeek' `
+        ($ctx -and $ctx.Contains('next attempt: DeepSeek')) $ctx
+}
+
+$dReject2 = '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-a rejected (second try still wrong)","session_id":"s1","model":"model-under-test-42"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $dReject2
+Assert-True 'dispatch: second rejection exits 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode + " err=" + $r.Stderr)
+$d2Ok = $false
+try { $d2Json = $r.Stdout | ConvertFrom-Json; $d2Ok = $true } catch { }
+Assert-True 'dispatch: second rejection stdout is json' $d2Ok $r.Stdout
+if ($d2Ok) {
+    $ctx = $d2Json.hookSpecificOutput.additionalContext
+    Assert-True 'dispatch: second rejection injects the take-over block' `
+        ($ctx -and $ctx.Contains($dispatchMarker)) 'take-over block missing at two rejections'
+    Assert-True 'dispatch: take-over block names the card' `
+        ($ctx -and $ctx.Contains('card-a')) $ctx
+    Assert-True 'dispatch: take-over block shows count 2' `
+        ($ctx -and $ctx.Contains($twiceWord + ' 2 ')) $ctx
+    Assert-True 'dispatch: take-over block shows the session model' `
+        ($ctx -and $ctx.Contains('model-under-test-42')) $ctx
+}
+
+$dAccept = '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-a accepted (verified)","session_id":"s1","model":"model-under-test-42"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $dAccept
+Assert-True 'dispatch: accepted exits 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode + " err=" + $r.Stderr)
+$acceptOk = $false
+try { $acceptJson = $r.Stdout | ConvertFrom-Json; $acceptOk = $true } catch { }
+Assert-True 'dispatch: accepted stdout is json' $acceptOk $r.Stdout
+$stateAfterAccept = $null
+try { $stateAfterAccept = Get-Content -Raw -Encoding UTF8 $dispatchStatePath | ConvertFrom-Json } catch { }
+Assert-True 'dispatch: accepted resets the card to 0' `
+    ($stateAfterAccept -and (-not ($stateAfterAccept.PSObject.Properties.Name -contains 'card-a'))) `
+    (Get-Content -LiteralPath $dispatchStatePath -Raw -ErrorAction SilentlyContinue)
+if ($acceptOk) {
+    $ctx = $acceptJson.hookSpecificOutput.additionalContext
+    Assert-True 'dispatch: accepted injection reports 0' `
+        ($ctx -and $ctx.Contains('card-a rejections=0')) $ctx
+}
+
+#: `done` is the second reset word: seed one rejection, then reset it.
+$dDoneSeed = '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-d rejected","session_id":"s1","model":"model-under-test-42"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $dDoneSeed | Out-Null
+$r = Invoke-HookCommand $commands.UserPromptSubmit '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-d done","session_id":"s1","model":"model-under-test-42"}'
+Assert-True 'dispatch: done exits 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode + " err=" + $r.Stderr)
+$stateAfterDone = $null
+try { $stateAfterDone = Get-Content -Raw -Encoding UTF8 $dispatchStatePath | ConvertFrom-Json } catch { }
+Assert-True 'dispatch: done resets the card to 0' `
+    ($stateAfterDone -and (-not ($stateAfterDone.PSObject.Properties.Name -contains 'card-d'))) `
+    (Get-Content -LiteralPath $dispatchStatePath -Raw -ErrorAction SilentlyContinue)
+
+#: A bare key only reports; it must not create or advance a counter.
+$dBare = '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-b","session_id":"s1","model":"model-under-test-42"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $dBare
+$bareOk = $false
+try { $bareJson = $r.Stdout | ConvertFrom-Json; $bareOk = $true } catch { }
+if ($bareOk) {
+    $ctx = $bareJson.hookSpecificOutput.additionalContext
+    Assert-True 'dispatch: bare key reports count 0' `
+        ($ctx -and $ctx.Contains('card-b rejections=0')) $ctx
+}
+$stateAfterBare = $null
+try { $stateAfterBare = Get-Content -Raw -Encoding UTF8 $dispatchStatePath | ConvertFrom-Json } catch { }
+Assert-True 'dispatch: bare key does not create a counter' `
+    ($stateAfterBare -and (-not ($stateAfterBare.PSObject.Properties.Name -contains 'card-b'))) `
+    (Get-Content -LiteralPath $dispatchStatePath -Raw -ErrorAction SilentlyContinue)
+
+#: Without a model field the take-over block must show the ASCII placeholder.
+$dFallback1 = '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-c rejected","session_id":"s1"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $dFallback1 | Out-Null
+$r = Invoke-HookCommand $commands.UserPromptSubmit '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-c rejected","session_id":"s1"}'
+$fallbackOk = $false
+try { $fallbackJson = $r.Stdout | ConvertFrom-Json; $fallbackOk = $true } catch { }
+Assert-True 'dispatch: model-less take-over stdout is json' $fallbackOk $r.Stdout
+if ($fallbackOk) {
+    $ctx = $fallbackJson.hookSpecificOutput.additionalContext
+    Assert-True 'dispatch: missing model field falls back to the placeholder' `
+        ($ctx -and $ctx.Contains('????????????')) $ctx
+}
+
+#: A corrupt state file must reset itself, disclose the reset and never crash.
+[System.IO.File]::WriteAllText($dispatchStatePath, 'not-json{{{', $utf8NoBom)
+$dCorrupt = '{"hook_event_name":"UserPromptSubmit","prompt":"dispatch-key: card-e","session_id":"s1","model":"model-under-test-42"}'
+$r = Invoke-HookCommand $commands.UserPromptSubmit $dCorrupt
+Assert-True 'dispatch: corrupt state exits 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode + " err=" + $r.Stderr)
+$corruptOk = $false
+try { $corruptJson = $r.Stdout | ConvertFrom-Json; $corruptOk = $true } catch { }
+Assert-True 'dispatch: corrupt state stdout is json' $corruptOk $r.Stdout
+if ($corruptOk) {
+    $ctx = $corruptJson.hookSpecificOutput.additionalContext
+    Assert-True 'dispatch: corrupt state reset is disclosed' `
+        ($ctx -and $ctx.Contains('state file was corrupt')) $ctx
+    Assert-True 'dispatch: corrupt state report still names the card' `
+        ($ctx -and $ctx.Contains('card-e')) $ctx
+}
+$corruptRepaired = $false
+try {
+    $stateAfterCorrupt = Get-Content -Raw -Encoding UTF8 $dispatchStatePath | ConvertFrom-Json
+    $corruptRepaired = ($stateAfterCorrupt -is [System.Management.Automation.PSCustomObject])
+} catch { }
+Assert-True 'dispatch: corrupt state file was reset to valid JSON' `
+    $corruptRepaired (Get-Content -LiteralPath $dispatchStatePath -Raw -ErrorAction SilentlyContinue)
+
+Remove-Item Env:CODEX_DISPATCH_STATE -ErrorAction SilentlyContinue
+$dispatchCleanupOk = $true
+try { Remove-Item -LiteralPath $dispatchStatePath -Force -ErrorAction Stop } catch { $dispatchCleanupOk = $false }
+Assert-True 'dispatch: temp state cleaned up' `
+    ($dispatchCleanupOk -and -not (Test-Path -LiteralPath $dispatchStatePath)) 'temp state file still present'
 
 $r = Invoke-HookCommand $commands.SubagentStart '{"hook_event_name":"SubagentStart","agent_id":"a1","agent_type":"reviewer"}'
 Assert-True 'subagent-start exit 0' ($r.ExitCode -eq 0) ("exit=" + $r.ExitCode + " err=" + $r.Stderr)
@@ -472,7 +608,7 @@ Assert-Allowed 'sub-agent may call collaborationinterrupt_agent' `
 Assert-Allowed 'sub-agent may call collaborationlist_agents' `
     (New-AgentToolEvent 'collaborationlist_agents' 'agent-1' 'default')
 Assert-Blocked 'sub-agent may not call spawn_agent (agent_type only)' `
-    (New-AgentToolEvent 'spawn_agent' '' 'default')
+    (New-AgentToolEvent 'spawn_agent' '' 'worker')
 Assert-Allowed 'sub-agent may still run Bash' `
     (New-AgentToolEvent 'Bash' 'agent-1' 'default')
 Assert-Allowed 'sub-agent may still apply_patch' `
@@ -481,6 +617,92 @@ Assert-Allowed 'root thread may call spawn_agent' `
     (New-AgentToolEvent 'spawn_agent' '' '')
 Assert-Allowed 'root thread may call followup_task' `
     (New-AgentToolEvent 'followup_task' '' '')
+
+Write-Host 'Transcript provider fallback (Get-TranscriptProvider)'
+
+#: Dot-source the routing module directly: it is functions-only, so it never
+#: reads config, starts a process or touches the network. These cases pin the
+#: fail-closed transcript read, including a file another process still holds
+#: open for writing (Codex keeps the live session transcript open like that).
+. (Join-Path $root 'selected-model.ps1')
+
+$transcriptDir = Join-Path $env:TEMP ('codex-hook-transcript-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $transcriptDir -ErrorAction Stop | Out-Null
+
+function New-TranscriptFile([string]$name, [string]$firstLine) {
+    $path = Join-Path $transcriptDir $name
+    [System.IO.File]::WriteAllText($path, $firstLine + "`n", $utf8NoBom)
+    return $path
+}
+
+$happyPath = New-TranscriptFile 'happy.jsonl' `
+    '{"type":"session_meta","payload":{"id":"s-happy","model_provider":"linkai-claude"}}'
+$happyProvider = Get-TranscriptProvider -HookEvent @{
+    transcript_path = $happyPath; session_id = 's-happy' }
+Assert-True 'transcript: happy path reads the provider' `
+    ($happyProvider -eq 'linkai-claude') ('got=' + $happyProvider)
+
+$heldPath = New-TranscriptFile 'held.jsonl' `
+    '{"type":"session_meta","payload":{"id":"s-held","model_provider":"linkai-claude"}}'
+$holdStream = [System.IO.File]::Open(
+    $heldPath,
+    [System.IO.FileMode]::Open,
+    [System.IO.FileAccess]::ReadWrite,
+    [System.IO.FileShare]::ReadWrite)
+try {
+    $heldProvider = Get-TranscriptProvider -HookEvent @{
+        transcript_path = $heldPath; session_id = 's-held' }
+} finally {
+    if ($holdStream) { $holdStream.Dispose() }
+}
+Assert-True 'transcript: reads while another handle holds it open for writing' `
+    ($heldProvider -eq 'linkai-claude') ('got=' + $heldProvider)
+
+$mismatchPath = New-TranscriptFile 'mismatch.jsonl' `
+    '{"type":"session_meta","payload":{"id":"s-other","model_provider":"linkai-claude"}}'
+$mismatchProvider = Get-TranscriptProvider -HookEvent @{
+    transcript_path = $mismatchPath; session_id = 's-this' }
+Assert-True 'transcript: session id mismatch fails closed' `
+    ($mismatchProvider -eq '') ('got=' + $mismatchProvider)
+
+$nonMetaPath = New-TranscriptFile 'nonmeta.jsonl' `
+    '{"type":"event_msg","payload":{"x":1}}'
+$nonMetaProvider = Get-TranscriptProvider -HookEvent @{
+    transcript_path = $nonMetaPath; session_id = 's-this' }
+Assert-True 'transcript: non-session_meta first line fails closed' `
+    ($nonMetaProvider -eq '') ('got=' + $nonMetaProvider)
+
+$missingPath = Join-Path $transcriptDir 'missing.jsonl'
+$missingProvider = Get-TranscriptProvider -HookEvent @{
+    transcript_path = $missingPath; session_id = 's-this' }
+Assert-True 'transcript: missing file fails closed' `
+    ($missingProvider -eq '') ('got=' + $missingProvider)
+
+$cleanupOk = $true
+try {
+    Remove-Item -LiteralPath $transcriptDir -Recurse -Force -ErrorAction Stop
+} catch {
+    $cleanupOk = $false
+}
+Assert-True 'transcript: temp files cleaned up' `
+    ($cleanupOk -and -not (Test-Path -LiteralPath $transcriptDir)) 'temp dir still present'
+
+Write-Host 'ASCII audit (every .ps1 must be pure ASCII for PowerShell 5.1)'
+
+$asciiOk = $true
+$asciiDetail = ''
+foreach ($asciiFile in (Get-ChildItem -LiteralPath $root -Filter '*.ps1' -File)) {
+    $asciiBytes = [System.IO.File]::ReadAllBytes($asciiFile.FullName)
+    for ($i = 0; $i -lt $asciiBytes.Length; $i++) {
+        if ($asciiBytes[$i] -gt 127) {
+            $asciiOk = $false
+            $asciiDetail = ($asciiFile.Name + ' has byte ' + $asciiBytes[$i] + ' at offset ' + $i)
+            break
+        }
+    }
+    if (-not $asciiOk) { break }
+}
+Assert-True 'ascii: all .ps1 files are ASCII-only (no byte > 127)' $asciiOk $asciiDetail
 
 Write-Host ''
 Write-Host ("checks: " + $total + "  failures: " + $failures)

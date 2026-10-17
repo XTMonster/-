@@ -56,18 +56,40 @@ $isPatch = $toolName -match '(?i)patch|edit|write|delete'
 # the dispatch-board state markers of cards nobody was working, and wandered off
 # into other task cards.  Dispatch authority belongs to the root thread only.
 #
-# How the caller is identified: the PreToolUse payload carries `agent_id` and
-# `agent_type` for sub-agent turns and carries NEITHER for the root thread
-# (verified against real payloads: 4 sub-agent events had agent_id, 2 root
-# events did not).  Anything that looks like a sub-agent is blocked from the
-# agent-spawning tools; the root thread is unaffected.
+# How the caller is identified (re-verified against guard.log 2026-10-12):
+# root-thread PreToolUse events carry NO `agent_id` and NO `agent_type`
+# (guard.log entries for session 01a12cf1... have session_id/transcript_path
+# only); every observed SUB-AGENT event carries BOTH `agent_id` and
+# `agent_type=default` (guard.log 00:05:32, 05:50:27, 05:51:45, 05:59:25 --
+# the 00:05:32 collaborationspawn_agent attempt was correctly DENYed by the
+# old agent_id rule).  Treating agent_type="default" as root (as the
+# 2026-10-12 00:08 edit did) would let every real sub-agent spawn grandchildren,
+# so the discriminator is agent_id presence again.  Explicit role types and
+# per-agent transcript paths remain as extra safety nets below.
 $agentId = ''
 $agentType = ''
 if ($evt) {
     if ($evt.agent_id) { $agentId = [string]$evt.agent_id }
     if ($evt.agent_type) { $agentType = [string]$evt.agent_type }
 }
-$isSubAgent = [bool]($agentId -or $agentType)
+#: Root threads carry no agent_id; every sub-agent observed so far does.
+#: Presence of agent_id is the primary discriminator (conservative: an
+#: agent_id with a root-ish agent_type is still a sub-agent until real
+#: root-thread events with agent_id are observed in the log).
+$isSubAgent = [bool]$agentId
+#: Explicit spawnable role types block too, even if agent_id were ever absent.
+$spawnedRolePattern = '(?i)^(worker|explorer|deepseek|researcher|reviewer|editor|auditor|tester|docs?|security|performance|spec|contract|implementor?|exec|agent|\w+-agent)$'
+if ($agentType -and $agentType -match $spawnedRolePattern) {
+    $isSubAgent = $true
+}
+#: Additional safety: per-agent transcript paths (sub-agent rollouts live in
+#: their own rollout dirs) also mark a caller as a sub-agent.
+if ($evt -and $evt.transcript_path) {
+    $tp = [string]$evt.transcript_path
+    if ($tp -match '(?i)(\\agents?\\|agent[-_][0-9a-f]{8}|subagent|/agents?/)') {
+        $isSubAgent = $true
+    }
+}
 #: NOTE ON THE NAME: the app hands this hook the tool name with the namespace
 #: glued on and the separator dropped - a real payload was literally
 #: `tool_name=collaborationspawn_agent` (likewise `collaborationlist_agents`,

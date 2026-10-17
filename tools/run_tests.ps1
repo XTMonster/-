@@ -174,7 +174,8 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_vlm_review.py';        Marker = 'BD_TEST_RESULT'; Label = 'vlm-review' },
     @{ Script = 'tools\blender_tests\test_checkpoint_resume.py'; Marker = 'BD_TEST_RESULT'; Label = 'checkpoint-resume' },
     @{ Script = 'tools\blender_tests\test_reference_cards.py';   Marker = 'BD_TEST_RESULT'; Label = 'reference-cards' },
-    @{ Script = 'tools\blender_tests\test_mask_pass.py';         Marker = 'BD_TEST_RESULT'; Label = 'mask-pass' }
+    @{ Script = 'tools\blender_tests\test_mask_pass.py';         Marker = 'BD_TEST_RESULT'; Label = 'mask-pass' },
+    @{ Script = 'tools\blender_tests\test_export_sandbox.py';    Marker = 'BD_TEST_RESULT'; Label = 'export-sandbox' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.
