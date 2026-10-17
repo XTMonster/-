@@ -35,3 +35,20 @@ def two_shot_plan(with_actions: bool = True) -> Plan:
                     if with_actions else []),
     })
     return Plan(shots=[first, second], scene_heading="INT. 咖啡馆 - 日")
+
+
+def three_shot_plan_with_empty(with_actions: bool = True) -> Plan:
+    """两镜计划再加一镜**空镜**（无角色，只建环境/留白）。
+
+    D1 交接 §3b：逐镜预演路径的空镜（无角色）走"建相机无动作 → audit
+    空镜豁免"，per-shot 探针此前未覆盖；此夹具供探针验证空镜在
+    ``prepare_scene + rebuild_shot`` 下不崩、结果形状与整场一致。
+    """
+    base = two_shot_plan(with_actions=with_actions)
+    empty = ShotPlan.from_dict({
+        "shot_id": "shot_003", "order": 3, "intent": "建立环境，交代空场",
+        "shot_type": "LS", "duration_frames": 72,
+        "characters": [],
+    })
+    return Plan(shots=[*base.shots, empty],
+                scene_heading=base.scene_heading)

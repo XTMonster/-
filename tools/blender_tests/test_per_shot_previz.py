@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import bpy  # noqa: E402
 
-from _fixtures import two_shot_plan  # noqa: E402
+from _fixtures import three_shot_plan_with_empty, two_shot_plan  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.layer3_engine.shot_builder import (  # noqa: E402
     BpySceneBuilder,
@@ -252,6 +252,49 @@ def t_two_shot_anchor_semantics_match_full_build():
                                 "char_002": round(d_b, 6)}}
 
 
+def t_empty_shot_rebuild_is_ok_and_shape_matches():
+    """空镜（无角色）在逐镜路径：建相机、无动作、结果形状与整场同构。
+
+    D1 交接 §3b 的未覆盖项：空镜走"建相机无动作 → audit 空镜豁免"，
+    per-shot 探针此前没有空镜用例。这里验证 ``rebuild_shot`` 对
+    ``characters=[]`` 的镜头：
+
+    * ``ok=True`` 且 ``motions=0``、``characters=[]``；
+    * 相机与剪切标记照常落地（``BD_Cam_shot_003`` / ``BD_Cut_shot_003``）；
+    * 结果键与整场 ``ShotBuildResult.to_dict`` 同构（交付序列化同一渠）；
+    * 重建空镜不碰已有镜头（shot_001 相机矩阵逐字节不变）。
+    """
+    plan = three_shot_plan_with_empty()
+
+    fresh_scene()
+    full = build_scene(plan)
+    canonical = {item.shot_id: item.to_dict() for item in full.results}
+
+    fresh_scene()
+    builder = BpySceneBuilder()
+    builder.prepare_scene(plan)
+    builder.rebuild_shot("shot_001")
+    before = _matrix(bpy.data.objects["BD_Cam_shot_001"])
+    regen = builder.rebuild_shot("shot_003")
+
+    cameras = _cameras()
+    cam_003 = next((o for o in cameras if o.name == "BD_Cam_shot_003"), None)
+    markers = [m.name for m in bpy.context.scene.timeline_markers]
+    after = _matrix(bpy.data.objects["BD_Cam_shot_001"])
+
+    canonical_003 = canonical["shot_003"]
+    missing = [key for key in canonical_003 if key not in regen]
+    ok = (regen["ok"] and regen["motions"] == 0
+          and regen["characters"] == []
+          and cam_003 is not None
+          and "BD_Cut_shot_003" in markers
+          and not missing
+          and before == after)
+    return {"ok": ok, "regen": regen, "canonical_missing": missing,
+            "cameras": len(cameras), "markers": sorted(markers),
+            "shot1_matrix_unchanged": (before == after)}
+
+
 def main() -> int:
     capture_main_thread()
     check("prepare_scene_is_static_only", t_prepare_scene_is_static_only)
@@ -263,6 +306,8 @@ def main() -> int:
           t_rebuild_result_shape_matches_whole_build_serialization)
     check("two_shot_anchor_semantics_match_full_build",
           t_two_shot_anchor_semantics_match_full_build)
+    check("empty_shot_rebuild_is_ok_and_shape_matches",
+          t_empty_shot_rebuild_is_ok_and_shape_matches)
 
     passed = [k for k, v in RESULTS.items() if v.get("ok")]
     failed = [k for k, v in RESULTS.items() if not v.get("ok")]
