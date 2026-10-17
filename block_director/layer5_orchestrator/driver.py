@@ -2131,6 +2131,25 @@ class PrevisDriver:
     def _step_building(self) -> None:
         """把分镜计划交给场景构建器（bpy 实现在 layer3_engine/shot_builder.py）。"""
         plan = self.plan or Plan()
+        # 空间尺计划级接缝：在 bpy 构建前落实角色与节奏约束，避免把
+        # ``responsibility.white_model`` 中的角色遗失，也避免声明总时长被模型拉长。
+        from .spatial_ruler import audit_and_prepare_plan
+        declared_total = getattr(self.parsed_script, "declared_total_seconds", None)
+        plan, ruler_findings = audit_and_prepare_plan(
+            plan, brief=self.brief, declared_total_seconds=declared_total)
+        if ruler_findings:
+            self.audit.log(
+                "spatial_ruler_plan_audit",
+                f"空间尺计划审核：{len(ruler_findings)} 项发现",
+                level="warning" if not any(
+                    item.severity == "error" for item in ruler_findings)
+                else "error",
+                findings=[item.to_dict() for item in ruler_findings])
+            self._compliance = dict(self._compliance or {})
+            existing = list(self._compliance.get("findings") or [])
+            existing.extend(item.to_dict() for item in ruler_findings)
+            self._compliance["findings"] = existing
+        self.plan = plan
         if self.builder is None:
             self._transition(DriverState.FINISHING)
             return

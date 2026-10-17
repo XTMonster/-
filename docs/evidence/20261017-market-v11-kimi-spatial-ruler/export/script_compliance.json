@@ -1,0 +1,68 @@
+{
+  "ok": true,
+  "declared_shot_count": 4,
+  "plan_shot_count": 4,
+  "declared_total_seconds": 16.0,
+  "plan_total_seconds": 16.0,
+  "fps": 24,
+  "brief_source": "llm",
+  "rows": [
+    {
+      "declared_shot_number": 1,
+      "declared_seconds": 5.0,
+      "declared_frames": 120,
+      "declared_target": null,
+      "declared_shot_type": "ELS",
+      "declared_characters": [],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_001",
+      "plan_frames": 120,
+      "plan_shot_type": "ELS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 2,
+      "declared_seconds": 4.0,
+      "declared_frames": 96,
+      "declared_target": null,
+      "declared_shot_type": "MS",
+      "declared_characters": [],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_002",
+      "plan_frames": 96,
+      "plan_shot_type": "MS",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 3,
+      "declared_seconds": 3.5,
+      "declared_frames": 84,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_003",
+      "plan_frames": 84,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    },
+    {
+      "declared_shot_number": 4,
+      "declared_seconds": 3.5,
+      "declared_frames": 84,
+      "declared_target": null,
+      "declared_shot_type": "MCU",
+      "declared_characters": [],
+      "declared_dialogues": [],
+      "plan_shot_id": "shot_004",
+      "plan_frames": 84,
+      "plan_shot_type": "MCU",
+      "plan_dialogues": [],
+      "frames_delta": 0
+    }
+  ],
+  "findings": []
+}

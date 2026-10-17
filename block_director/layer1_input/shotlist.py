@@ -52,6 +52,12 @@ NODE_TOTAL_RE = re.compile(
 
 #: 镜号行
 SHOT_HEADER_RE = re.compile(r"^\s*镜号\s*[：:]\s*(?P<num>\d+)\s*$")
+# 用户常用的镜头稿写法：``镜头 1（约5s）：``。先规范化为声明侧分镜表，
+# 这样时长/角色/景别约束不会在进入 LLM 前丢失。
+INLINE_SHOT_HEADER_RE = re.compile(
+    r"^\s*镜头\s*(?P<num>\d+)\s*(?:[（(]\s*约?\s*"
+    r"(?P<duration>\d+(?:\.\d+)?)\s*(?:秒|s|sec|seconds?)\s*[）)])?"
+    r"\s*[：:]\s*$", re.IGNORECASE)
 
 #: 分镜表字段。刻意枚举而不是"任意 ``xx：yy``"——否则台词行会被误吃成字段。
 FIELD_KEYS = ("镜号", "机号", "拍摄手法", "技巧", "地点", "时间", "角色",
@@ -147,11 +153,54 @@ def looks_like_shot_list(text: str) -> bool:
     if not text:
         return False
     numbers = sum(1 for line in text.splitlines()
-                  if SHOT_HEADER_RE.match(line))
+                  if SHOT_HEADER_RE.match(line)
+                  or INLINE_SHOT_HEADER_RE.match(line))
     if numbers >= 2:
         return True
     has_node = any(NODE_HEADER_RE.match(line) for line in text.splitlines())
+    if not has_node:
+        has_node = any(re.match(r"^\s*节点\s*\d+\s*(?:[（(].*)?$", line)
+                              for line in text.splitlines())
     return bool(numbers >= 1 and has_node)
+
+
+def normalize_inline_shot_script(text: str) -> str:
+    """把用户的节点/镜头稿写法规范化为 ``parse_shot_list`` 的输入。
+
+    这是声明侧的无损适配：原文仍作为纯文本交给 LLM，规范化副本只用于
+    取得镜号、时长和可核对字段。未知字段保留在原文行中，不做猜测。
+    """
+    lines = []
+    saw_node = False
+    for raw in (text or "").splitlines():
+        line = raw.strip()
+        node = re.match(r"^节点\s*(\d+)\s*(?:[（(]\s*约?\s*"
+                        r"(\d+(?:\.\d+)?)\s*(?:秒|s|sec|seconds?)\s*[）)])?\s*$",
+                        line, re.IGNORECASE)
+        if node:
+            duration = node.group(2)
+            suffix = f"（{duration}s）" if duration else ""
+            lines.append(f"节点{node.group(1)}：用户节点{suffix}")
+            saw_node = True
+            continue
+        shot = INLINE_SHOT_HEADER_RE.match(line)
+        if shot:
+            lines.append(f"镜号：{shot.group('num')}")
+            if shot.group('duration'):
+                lines.append(f"预估时长：{shot.group('duration')}s")
+            continue
+        mapping = {
+            "景别视角": "拍摄距离", "镜头运动": "拍摄手法",
+            "构图": "构图技巧", "主体动作": "画面内容", "音频": "音效",
+        }
+        field = re.match(r"^-\s*([^：:]+)\s*[：:](.*)$", line)
+        if field and field.group(1).strip() in mapping:
+            lines.append(f"{mapping[field.group(1).strip()]}：{field.group(2).strip()}")
+            continue
+        lines.append(raw)
+    if saw_node and any(SHOT_HEADER_RE.match(x) for x in lines):
+        return "\n".join(lines)
+    return text or ""
 
 
 def _map_shot_type(value: str) -> str:

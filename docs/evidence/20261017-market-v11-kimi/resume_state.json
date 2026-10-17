@@ -1,0 +1,430 @@
+{
+  "schema_version": 1,
+  "run_id": "ca3fd5adda9d",
+  "saved_at": "2026-10-17T12:13:31+08:00",
+  "plan": {
+    "scene_heading": "第十四街区码头市场 · 白天",
+    "continuity_notes": [],
+    "shots": [
+      {
+        "shot_id": "shot_001",
+        "order": 1,
+        "intent": "开场大远景建立码头市场纵深与三方空间关系：米迦尔居左、伊恩居中左、偷盗者居右深处举币端详，为整场戏铺垫环境与站位。",
+        "shot_type": "ELS",
+        "duration_frames": 120,
+        "characters": [],
+        "dialogue_ids": [],
+        "actions": [],
+        "dialogues": [],
+        "prompt": "低机位平视大远景，市场主通道作为纵深引导线自画面深处向近处展开，左侧生蚝摊、右侧银币摊分列，右侧深处偷盗者右手举银币对光端详，米迦尔微微偏头望向其方向，人物占画面比例小，背景海面明亮反光，缓慢推近至主通道中景。",
+        "camera": {},
+        "axis_note": "",
+        "continuity_in": "开场钩子",
+        "gaze": [
+          {
+            "from": "米迦尔",
+            "to": "偷盗者"
+          }
+        ],
+        "vfx": [],
+        "declared_duration_frames": 0,
+        "declared_shot_number": 0,
+        "declared_camera_move": "",
+        "intent_type": "铺垫",
+        "dialogue_pins": [],
+        "beats": [],
+        "composition": {},
+        "rule_justifications": [],
+        "responsibility": {
+          "white_model": [
+            "米迦尔",
+            "伊恩",
+            "偷盗者",
+            "生蚝摊",
+            "银币摊",
+            "市场主通道",
+            "海面"
+          ],
+          "prompt": [],
+          "ref_image": [],
+          "skip_white_model": false
+        }
+      },
+      {
+        "shot_id": "shot_002",
+        "order": 2,
+        "intent": "米迦尔自信表态把这件事交给自己，委托正式移交，推进剧情。",
+        "shot_type": "MS",
+        "duration_frames": 96,
+        "characters": [],
+        "dialogue_ids": [
+          "d_mikael_1"
+        ],
+        "actions": [],
+        "dialogues": [],
+        "prompt": "固定机位中景平视，米迦尔位于画面左三分线、自信偏头向右说话后嘴角上扬，伊恩位于画面中左，右侧留出市场通道与远处偷盗者的视线留白。",
+        "camera": {},
+        "axis_note": "机位仍在米迦尔—伊恩连线南侧（市场入口一侧），米迦尔面朝画右、伊恩在其右侧，银幕方向与镜1一致。",
+        "continuity_in": "",
+        "gaze": [
+          {
+            "from": "米迦尔",
+            "to": "伊恩"
+          }
+        ],
+        "vfx": [],
+        "declared_duration_frames": 0,
+        "declared_shot_number": 0,
+        "declared_camera_move": "",
+        "intent_type": "推进",
+        "dialogue_pins": [],
+        "beats": [],
+        "composition": {},
+        "rule_justifications": [],
+        "responsibility": {
+          "white_model": [
+            "米迦尔",
+            "伊恩"
+          ],
+          "prompt": [],
+          "ref_image": [],
+          "skip_white_model": false
+        }
+      },
+      {
+        "shot_id": "shot_003",
+        "order": 3,
+        "intent": "伊恩平静应允并叮嘱小心，以沉稳情绪为米迦尔随后的转折话头做铺垫。",
+        "shot_type": "OTS",
+        "duration_frames": 84,
+        "characters": [],
+        "dialogue_ids": [
+          "d_ian_1"
+        ],
+        "actions": [],
+        "dialogues": [],
+        "prompt": "固定机位中近景过肩正反打，前景米迦尔虚化肩部居左，伊恩位于画面右侧三分线、面朝左微微点头回话、神情平静，背景摊位虚化。",
+        "camera": {},
+        "axis_note": "过米迦尔肩部从连线南侧拍伊恩，伊恩面朝画左回望米迦尔，与镜2视线匹配；机位角度较镜2变化大于30°、景别降为中近景。",
+        "continuity_in": "",
+        "gaze": [
+          {
+            "from": "伊恩",
+            "to": "米迦尔"
+          }
+        ],
+        "vfx": [],
+        "declared_duration_frames": 0,
+        "declared_shot_number": 0,
+        "declared_camera_move": "",
+        "intent_type": "铺垫",
+        "dialogue_pins": [],
+        "beats": [],
+        "composition": {},
+        "rule_justifications": [],
+        "responsibility": {
+          "white_model": [
+            "米迦尔（前景虚化肩部）",
+            "伊恩"
+          ],
+          "prompt": [],
+          "ref_image": [],
+          "skip_white_model": false
+        }
+      },
+      {
+        "shot_id": "shot_004",
+        "order": 4,
+        "intent": "米迦尔先低声安抚、随即带笑提高声调放话威胁偷盗者，把平静的日常委托推向喜剧式威胁的转折点。",
+        "shot_type": "CU",
+        "duration_frames": 168,
+        "characters": [],
+        "dialogue_ids": [
+          "d_mikael_2a",
+          "d_mikael_2b"
+        ],
+        "actions": [],
+        "dialogues": [],
+        "prompt": "正面平视近景缓慢推近至面部，米迦尔面部位于画面左三分线，右侧留出空间与阳光，浅景深、背后摊位虚化，右手自身侧抬起在胸前作出即将打响指的蓄势动作但未打出。",
+        "camera": {},
+        "axis_note": "正面机位仍在米迦尔前方（连线南侧），视线偏画右望向伊恩侧，右侧留白与视线一致；景别由中近景升至近景，满足30°规则。",
+        "continuity_in": "",
+        "gaze": [],
+        "vfx": [],
+        "declared_duration_frames": 0,
+        "declared_shot_number": 0,
+        "declared_camera_move": "",
+        "intent_type": "转折",
+        "dialogue_pins": [],
+        "beats": [],
+        "composition": {},
+        "rule_justifications": [],
+        "responsibility": {
+          "white_model": [
+            "米迦尔"
+          ],
+          "prompt": [],
+          "ref_image": [],
+          "skip_white_model": false
+        }
+      }
+    ],
+    "environment": {}
+  },
+  "brief": {
+    "speakers": [
+      {
+        "speaker": "米迦尔",
+        "listener": "伊恩",
+        "dialogue_ref": "镜号2"
+      },
+      {
+        "speaker": "伊恩",
+        "listener": "米迦尔",
+        "dialogue_ref": "镜号3"
+      },
+      {
+        "speaker": "米迦尔",
+        "listener": "伊恩",
+        "dialogue_ref": "镜号4（放心吧）"
+      },
+      {
+        "speaker": "米迦尔",
+        "listener": "伊恩",
+        "dialogue_ref": "镜号4（看我怎么惩罚他）"
+      }
+    ],
+    "gaze": [
+      {
+        "from": "米迦尔",
+        "to": "偷盗者",
+        "scope": [
+          "镜号1"
+        ]
+      },
+      {
+        "from": "米迦尔",
+        "to": "伊恩",
+        "scope": [
+          "镜号2"
+        ]
+      },
+      {
+        "from": "伊恩",
+        "to": "米迦尔",
+        "scope": [
+          "镜号3"
+        ]
+      }
+    ],
+    "beats": [
+      {
+        "id": "b1",
+        "summary": "大远景展示码头市场纵深：米迦尔、伊恩与偷盗者各就各位，偷盗者对光端详银币。",
+        "emotion": "轻松",
+        "function": "建立",
+        "participants": [
+          "米迦尔",
+          "伊恩",
+          "偷盗者"
+        ]
+      },
+      {
+        "id": "b2",
+        "summary": "米迦尔偏头向伊恩自信表态：这里就交给我吧。",
+        "emotion": "自信",
+        "function": "铺垫",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ]
+      },
+      {
+        "id": "b3",
+        "summary": "伊恩平静点头应允，叮嘱米迦尔多小心。",
+        "emotion": "平静",
+        "function": "铺垫",
+        "participants": [
+          "伊恩",
+          "米迦尔"
+        ]
+      },
+      {
+        "id": "b4",
+        "summary": "米迦尔先低声说放心，随即带笑提高声调放话要惩罚偷盗者，并作出打响指蓄势。",
+        "emotion": "带笑",
+        "function": "转折（兼收束）",
+        "participants": [
+          "米迦尔",
+          "伊恩"
+        ]
+      }
+    ],
+    "space": [
+      {
+        "character": "米迦尔",
+        "relative_to": "伊恩",
+        "relation": "side_by_side",
+        "distance_class": "personal"
+      },
+      {
+        "character": "伊恩",
+        "relative_to": "米迦尔",
+        "relation": "side_by_side",
+        "distance_class": "personal"
+      },
+      {
+        "character": "偷盗者",
+        "relative_to": "伊恩",
+        "relation": "ahead",
+        "distance_class": "public"
+      }
+    ],
+    "environment": [
+      {
+        "label": "生蚝摊",
+        "direction": "left",
+        "distance": "near",
+        "size": "m"
+      },
+      {
+        "label": "银币摊",
+        "direction": "right",
+        "distance": "far",
+        "size": "m"
+      },
+      {
+        "label": "市场主通道",
+        "direction": "back",
+        "distance": "mid",
+        "size": "l",
+        "mood": "纵深引导线，向画面深处展开"
+      },
+      {
+        "label": "海面",
+        "direction": "back",
+        "distance": "far",
+        "size": "l",
+        "mood": "明亮反光、高通透"
+      },
+      {
+        "label": "天空",
+        "direction": "above",
+        "distance": "far",
+        "size": "l",
+        "mood": "高饱和通透、晴天日光"
+      },
+      {
+        "label": "背景人群",
+        "direction": "back",
+        "distance": "far",
+        "size": "m",
+        "mood": "虚化流动人影，无清晰面孔"
+      }
+    ],
+    "arc": {
+      "emotion_start": "平静",
+      "emotion_end": "带笑得意",
+      "turning_point": "镜号4：米迦尔从低声安抚转为带笑放话『让他砰的一声』，把平静的日常委托推向对偷盗者的喜剧式威胁。"
+    },
+    "props": [
+      {
+        "id": "银币",
+        "kind": "硬币",
+        "owner": "偷盗者",
+        "state_changes": [
+          "被偷盗者右手举起对光端详"
+        ]
+      }
+    ],
+    "notes": [
+      "镜号4台词『他』未在台词里给出先行词，推测指偷盗者，需确认。",
+      "镜号4为米迦尔正面近景，未标注其是否看向伊恩，listener 暂按对话延续填伊恩。",
+      "米迦尔兽人种族由用户设定，本场未具体化。",
+      "围栏方位剧本未标注，未写入 environment。",
+      "对白时长表称『本剧本没有对白』，与分镜台词冲突，以分镜为准。",
+      "银币原归属未明说（摊上或已持有），state_changes 中『举起端详』有依据，其余为推断。",
+      "镜号1米迦尔『微微偏头看向右侧偷盗者方向』，是看向偷盗者本人还是方向，需确认，gaze 暂按偷盗者填。"
+    ],
+    "rhythm_arc": [],
+    "source": "llm"
+  },
+  "script": "节点1（约16s）\n\n【画风协议】\n日式动画电影质感的高质量 2D 手绘动画，整体保持二次元平面手绘观感，靠光影与明暗塑造立体感，不做成 3D 建模渲染。\n人物采用现代日式萌系动画造型：圆润柔和的面部线条、干净利落的赛璐璐分层上色、清透的大眼睛与柔和腮红，轮廓线明确、线条流畅稳定。\n背景采用新海诚式写实唯美画风：高饱和、高通透的天空与光影，色彩明艳晶莹；云层、空气透视、逆光光晕与丁达尔体积光细腻致密，远景清晰不模糊，物体边缘带干净高光，水面、玻璃、金属等微小反光清晰。\n上色工艺为赛璐璐平涂叠加细腻渐变，辅以少量绘本插画式柔和笔触与纸本质感，在电影级精致之外带一点温润手绘温度，绘本质感只作点缀、不盖过线稿。\n光影为电影级布光：明确光源方向，柔和的明暗交界与软阴影，亮部通透、暗部保留细节不糊成死黑，高光位置准确；整体色彩清新明快、冷暖对比分明，有明显空间纵深感与体积感。\n画质高分辨率、细节丰富、线条干净锐利、色彩稳定，全片画风统一。\n整体氛围：黑暗奇幻与轻松喜剧交织。\n排除方向：不要 3D 建模渲染感，不要 CGI 塑料质感，不要真人写实质感，不要照片风，不要厚涂油画感盖过线稿，不要模糊虚化与噪点，不要多风格打架导致的画风突变，不要文字标注，不要字幕，不要水印，不要 Logo。\n\n【角色锚】\n米迦尔：兽人，具体种族由用户设定；只有四根手指，手部为带肉垫的兽爪，非人类五指，全程保持手部结构一致。\n伊恩：年轻男性，衣着朴素（暂定外观），全程保持外观一致。\n偷盗者：身形瘦削的成年男性，穿旧外套（暂定外观），全程保持外观一致。\n\n【场景锚】第十四街区码头市场，白天晴天，日光从画面深处的海面方向打来，海面与地面有清晰反光；市场内摊位、生蚝摊、围栏错落，纵深分明。\n\n【全局指令】\n- 人物统一说中文。\n- 只生成明确描述的人物、道具与情节，不自行添加或发挥未提及的内容；画面中不出现未声明的角色。\n- 同框人物相互独立，发型、五官、服装各自保留，不出现面部融合、肢体穿插；禁止外形完全一致的同款分身，同一角色在画面中只出现一次。\n- 台词严格按原文，不增加、不删减、不改写；角色的心里话用该角色音色以画外音方式说出。\n- 不添加背景音乐，只保留人声、动作音效与环境音。\n- 角色动作生动自然，贴合当下情绪与状态，动作连贯；避免穿模、肢体错位、手指数量错误。\n- 不生成字幕、文字标注、水印、Logo。\n- 全片角色形象、画风、色彩、光线保持一致。\n\n【开场钩子】第十四街区码头市场，白天，市场主通道向画面深处展开：米迦尔站在画面左侧生蚝摊旁、面朝右，伊恩站在画面中左、面朝右，偷盗者站在画面右侧银币摊前、面朝左，右手举起一枚银币端详；背景人群虚化成模糊人影，无清晰面孔、无个体动作。开场镜头为大远景，低机位平视，市场从画面深处向近处展开。\n\n镜头 1（约5s）：\n- 景别视角：大远景，低机位平视。\n- 构图：纵深引导线构图，市场主通道沿画面中轴向深处延伸，画面左侧生蚝摊、画面右侧银币摊分列两侧，偷盗者位于画面右侧深处的银币摊前，人物占画面比例小，画面深处是明亮的海面反光。\n- 镜头运动：缓慢推近，落幅为市场主通道中景。\n- 主体动作：米迦尔与伊恩站立不动，米迦尔微微偏头看向右侧偷盗者方向；偷盗者右手举起银币对光端详；除米迦尔微微偏头与偷盗者举币外，摊位、围栏保持静止，背景人群虚化流动。\n- 音频：<市场环境人声与海风>，无台词。\n\n镜头 2（约4s）：\n- 景别视角：中景，平视。\n- 构图：三分法，米迦尔位于画面左侧三分线，伊恩位于画面中左，右侧留出市场通道与远处的偷盗者，视线方向留白。\n- 镜头运动：固定机位。\n- 主体动作：米迦尔自信地偏头对伊恩说话，说完嘴角上扬；除说话与表情外全身静止，背景保持静止。\n- 音频：米迦尔（说）：{伊恩，这里就交给我吧！}\n\n镜头 3（约3.5s）：\n- 景别视角：中近景，过米迦尔肩的正反打，平视。\n- 构图：前景米迦尔虚化肩部居左，伊恩位于画面右侧三分线、面朝左，背景为虚化摊位。\n- 镜头运动：固定机位。\n- 主体动作：伊恩微微点头，向米迦尔回话，神情平静；说完站定不动。\n- 音频：伊恩（说）：{好的，那你多小心一些。}\n\n镜头 4（约3.5s）：\n- 景别视角：近景，正面平视米迦尔。\n- 构图：米迦尔面部位于画面左三分线，右侧留出空间与阳光，浅景深，背后摊位虚化。\n- 镜头运动：缓慢推近至面部近景。\n- 主体动作：米迦尔先低声补一句，随即提高声调带笑说第二句，右手从身侧抬起、在胸前作出即将打响指的蓄势动作但没有打出；说完停住不动。\n- 音频：米迦尔（说）：{放心吧。}，米迦尔（说）：{看我怎么惩罚他，让他砰的一声，嘻嘻。}\n",
+  "drafts": {},
+  "terminal_shots": {
+    "shot_001": "passed",
+    "shot_002": "passed",
+    "shot_003": "passed",
+    "shot_004": "passed"
+  },
+  "last_audit": {
+    "shot_001": {
+      "passed": true,
+      "level": "rule",
+      "target": "shot_001",
+      "score": null,
+      "errors": [],
+      "warnings": [],
+      "suggestions": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      }
+    },
+    "shot_002": {
+      "passed": true,
+      "level": "rule",
+      "target": "shot_002",
+      "score": null,
+      "errors": [],
+      "warnings": [],
+      "suggestions": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      }
+    },
+    "shot_003": {
+      "passed": true,
+      "level": "rule",
+      "target": "shot_003",
+      "score": null,
+      "errors": [],
+      "warnings": [],
+      "suggestions": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      }
+    },
+    "shot_004": {
+      "passed": true,
+      "level": "rule",
+      "target": "shot_004",
+      "score": null,
+      "errors": [],
+      "warnings": [],
+      "suggestions": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      }
+    }
+  },
+  "delivered_shots": [],
+  "llm_calls": 6,
+  "tool_calls": 1,
+  "reason": ""
+}

@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "declared_shot_count": 0,
+  "plan_shot_count": 4,
+  "declared_total_seconds": null,
+  "plan_total_seconds": 19.5,
+  "fps": 24,
+  "brief_source": "llm",
+  "rows": [],
+  "findings": [
+    {
+      "code": "E_SCRIPT_001",
+      "rule": "R017",
+      "severity": "warning",
+      "target": "shot_004",
+      "message": "shot_004 是无角色空镜，但意图里没说清它要建立什么（建立 / 交代 / 留白 / 转场）",
+      "suggestion": "补一句空镜的作用，或让某个角色入画"
+    }
+  ]
+}

@@ -1,0 +1,868 @@
+{
+  "project": "码头市场 · 日景（高饱和日光，1场）",
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "style": "写实电影质感，35mm，柔和自然光",
+  "generated_at": "2026-10-17T13:02:36+08:00",
+  "scene_heading": "码头市场 · 日景（高饱和日光，1场）",
+  "total_frames": 384,
+  "llm_calls": 29,
+  "retrieval_calls": 5,
+  "crowd": {
+    "entries": [
+      {
+        "count": 6,
+        "mode": "walk",
+        "seed": 0,
+        "spread": 6.0,
+        "label": "除米迦尔微微偏头与偷盗者举币外，摊位、围栏保持静止，背景人群虚化流动"
+      }
+    ],
+    "total": 6
+  },
+  "timing_overrides": [],
+  "action_conflicts": [
+    {
+      "layer": "head",
+      "character_id": "米迦尔",
+      "pair": [
+        "nod",
+        "nod"
+      ],
+      "overlap_frames": 2,
+      "applied_shift": 8,
+      "frame": 202,
+      "shot_id": "shot_002"
+    },
+    {
+      "layer": "head",
+      "character_id": "米迦尔",
+      "pair": [
+        "nod",
+        "look_at"
+      ],
+      "overlap_frames": 8,
+      "applied_shift": 14,
+      "frame": 216,
+      "shot_id": "shot_002"
+    }
+  ],
+  "dialogue_pins": [],
+  "audit_pass_rate": {
+    "numerator": 2,
+    "denominator": 3,
+    "rules": [
+      "shot_003",
+      "shot_004"
+    ],
+    "sampled_frames": 13,
+    "exempt_shots": []
+  },
+  "knowledge": {
+    "backend": "hypergraph",
+    "engine": "builtin.BM25Okapi",
+    "cards": 2353,
+    "top_k": 15,
+    "token_limit": 50000,
+    "plan_token_limit": 60000,
+    "retrieval_calls": 5,
+    "degraded": false,
+    "degraded_reason": "",
+    "hypergraph_fingerprint": "e5213e1b64781c24103eecae15a4921b5766f75c4709672fa48997de692cdf89",
+    "cases": 3,
+    "lanes": 2,
+    "cases_backend": "hybrid",
+    "cases_requested_backend": "lightrag",
+    "cases_degraded": true,
+    "cases_degraded_reason": "lightrag_adapter_unavailable",
+    "lightrag_index_fingerprint": "",
+    "cases_index_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+    "warnings": []
+  },
+  "shots": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "intent": "揭示",
+      "intent_type": "揭示",
+      "shot_type": "ELS",
+      "start_frame": 1,
+      "end_frame": 120,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_001.mp4",
+      "first_frame": "first_frames/shot_001.png",
+      "camera": {
+        "name": "BD_Cam_shot_001",
+        "position": [
+          1.467,
+          10.099,
+          0.911
+        ],
+        "lens": 24.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": 1,
+        "status": "correct"
+      },
+      "paths": {
+        "米迦尔": [
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ]
+        ],
+        "伊恩": [
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ]
+        ],
+        "偷盗者": [
+          [
+            2.4,
+            3.2,
+            0.0
+          ],
+          [
+            2.4,
+            3.2,
+            0.0
+          ],
+          [
+            2.4,
+            3.2,
+            0.0
+          ],
+          [
+            2.4,
+            3.2,
+            0.0
+          ],
+          [
+            2.4,
+            3.2,
+            0.0
+          ],
+          [
+            2.4,
+            3.2,
+            0.0
+          ],
+          [
+            2.4,
+            3.2,
+            0.0
+          ],
+          [
+            2.4,
+            3.2,
+            0.0
+          ],
+          [
+            2.4,
+            3.2,
+            0.0
+          ]
+        ]
+      },
+      "characters": [
+        "米迦尔",
+        "伊恩",
+        "偷盗者"
+      ],
+      "elements_in_frame": [],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "建立主轴线：米迦尔/伊恩（并肩、左侧）与偷盗者（银币摊、右侧远景）之间的连线；机位置于轴线南侧（市场入口一侧），确立全程银幕方向。",
+      "continuity_in": "场景建立镜头，交代三人站位与市场全貌。",
+      "needs_review": false,
+      "review_request_count": 0,
+      "degraded": false,
+      "warnings": [],
+      "rhythm": {},
+      "declared": {
+        "shot_number": 1,
+        "camera_number": null,
+        "technique": "缓慢推近，落幅为市场主通道中景。",
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": "<市场环境人声与海风>，无台词。",
+        "declared_duration_s": 5.0,
+        "camera_move": "dolly_in"
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 2.2546,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame+occluded"
+        },
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.9003,
+          "offset_px": [
+            0.0,
+            58.96
+          ],
+          "offset_reason": "out_of_frame"
+        },
+        "偷盗者": {
+          "text": "偷盗者",
+          "anchor_z": 2.0,
+          "offset_px": [
+            0.0,
+            0.0
+          ],
+          "offset_reason": "none"
+        }
+      },
+      "movements": [
+        {
+          "kind": "dolly_in",
+          "start_frame": 1,
+          "end_frame": 120,
+          "source": "declared"
+        }
+      ],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": [],
+      "camera_narration": "从前（远）移动到前（远）"
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "intent": "铺垫",
+      "intent_type": "铺垫",
+      "shot_type": "MS",
+      "start_frame": 121,
+      "end_frame": 216,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_002.mp4",
+      "first_frame": "first_frames/shot_002.png",
+      "camera": {
+        "name": "BD_Cam_shot_002",
+        "position": [
+          -1.193,
+          2.293,
+          0.95
+        ],
+        "lens": 35.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": 1,
+        "status": "correct"
+      },
+      "paths": {
+        "米迦尔": [
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "characters": [
+        "米迦尔"
+      ],
+      "elements_in_frame": [
+        "env_03"
+      ],
+      "dialogue_ids": [
+        "dialogue_michael_1"
+      ],
+      "action_types": [
+        "nod"
+      ],
+      "axis_note": "机位保持在轴线南侧；米迦尔位于画面左侧、视线向右（朝向伊恩），与镜1银幕方向一致。",
+      "continuity_in": "承接镜1中米迦尔位置，景别由ELS收至MS（变化一档以上，满足30°规则）。",
+      "needs_review": false,
+      "review_request_count": 0,
+      "degraded": true,
+      "warnings": [
+        "按构图声明（rule=thirds、subject_position=left_third）把对准点横向偏移 +0.167 幅宽",
+        "shot_002：米迦尔 的同层动作已排满整镜，第 97 帧起的动作落不进镜头，原样保留由规则报出",
+        "shot_002: head 层动作时间重叠：nod(192-204) 与 nod(202-216)，同层动作必须串行；动作结束后仍有 6 帧的交叉淡化窗口用于平滑接管"
+      ],
+      "rhythm": {
+        "pace": "slow",
+        "curve": "smooth"
+      },
+      "declared": {
+        "shot_number": 2,
+        "camera_number": null,
+        "technique": "固定机位。",
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": "米迦尔（说）：{伊恩，这里就交给我吧！}",
+        "declared_duration_s": 4.0,
+        "camera_move": "static"
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 2.2546,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame+occluded"
+        }
+      },
+      "movements": [],
+      "beats": [
+        {
+          "t": 0.0,
+          "subject": "米迦尔",
+          "verb": "look_at",
+          "target": "市场主通道",
+          "face_to": "screen_right",
+          "pace": "slow",
+          "curve": "smooth"
+        },
+        {
+          "t": 0.85,
+          "subject": "米迦尔",
+          "verb": "nod",
+          "face_to": "screen_right",
+          "pace": "slow",
+          "curve": "smooth"
+        }
+      ],
+      "composition": {
+        "rule": "thirds",
+        "subject_position": "left_third"
+      },
+      "rule_justifications": [
+        {
+          "rule": "AXIS_RULE",
+          "action": "follow",
+          "reason": "机位保持在轴线南侧，米迦尔居画面左侧、视线向右朝向伊恩，与镜1银幕方向一致；全镜无越轴移动。"
+        },
+        {
+          "rule": "INTENT_PACK",
+          "action": "follow",
+          "reason": "intent=铺垫 + shot_size=MS，在「固定 / lead_subject」冲突中裁给 movement=固定：铺垫场次保持次要分量，固定画面作为后续推镜的参照系（cine_static_contrast），运动留给转折。"
+        },
+        {
+          "rule": "axis_30",
+          "action": "follow",
+          "reason": "景别由镜1 ELS 收至本镜 MS（变化一档以上），满足 30° 规则的景别跳档条件，无需额外转机位角度。"
+        },
+        {
+          "rule": "cine_static_contrast",
+          "action": "follow",
+          "reason": "铺垫用固定镜头：整场静止成为参照系，之后第一次推镜会被读成「事情开始了」。"
+        },
+        {
+          "rule": "comp_framing",
+          "action": "follow",
+          "reason": "MS 取景收至腰部，主体占比与景别匹配；三分法构图、主体置于左三分位并向右留出视线引导空间。"
+        },
+        {
+          "rule": "block_crowd_density",
+          "action": "follow",
+          "reason": "MS 中背景人群按 mid_shot 密度（约 8 个虚化人影）布置，不挤压主体表演空间。"
+        }
+      ],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": [],
+      "camera_narration": "固定机位"
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "intent": "揭示",
+      "intent_type": "揭示",
+      "shot_type": "MCU",
+      "start_frame": 217,
+      "end_frame": 300,
+      "duration_frames": 84,
+      "duration_seconds": 3.5,
+      "video_file": "blockout_shot_003.mp4",
+      "first_frame": "first_frames/shot_003.png",
+      "camera": {
+        "name": "BD_Cam_shot_003",
+        "position": [
+          0.153,
+          2.047,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": 1,
+        "status": "correct"
+      },
+      "paths": {
+        "伊恩": [
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ],
+          [
+            2.2,
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "characters": [
+        "伊恩"
+      ],
+      "elements_in_frame": [],
+      "dialogue_ids": [
+        "dialogue_ian_1"
+      ],
+      "action_types": [],
+      "axis_note": "机位仍在轴线南侧并略向伊恩一侧偏移；景别MS→MCU变化一档，满足30°规则。",
+      "continuity_in": "伊恩视线向左，与镜2米迦尔视线向右构成对视，银幕方向连续。",
+      "needs_review": false,
+      "review_request_count": 0,
+      "degraded": true,
+      "warnings": [
+        "按构图声明（rule=center、subject_position=center）把对准点横向偏移 +0.000 幅宽",
+        "shot_003：伊恩 的同层动作已排满整镜，第 85 帧起的动作落不进镜头，原样保留由规则报出"
+      ],
+      "rhythm": {},
+      "declared": {
+        "shot_number": 3,
+        "camera_number": null,
+        "technique": "固定机位。",
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": "伊恩（说）：{好的，那你多小心一些。}",
+        "declared_duration_s": 3.5,
+        "camera_move": "static"
+      },
+      "labels": {
+        "伊恩": {
+          "text": "伊恩",
+          "anchor_z": 1.9003,
+          "offset_px": [
+            0.0,
+            58.96
+          ],
+          "offset_reason": "out_of_frame"
+        }
+      },
+      "movements": [],
+      "beats": [
+        {
+          "t": 0.15,
+          "subject": "伊恩",
+          "verb": "look_at",
+          "face_to": "screen_left",
+          "pace": "slow",
+          "curve": "smooth"
+        },
+        {
+          "t": 0.55,
+          "subject": "伊恩",
+          "verb": "nod",
+          "face_to": "screen_left",
+          "pace": "normal",
+          "curve": "smooth",
+          "react": "轻轻颔首，隔着市场认出米迦尔"
+        },
+        {
+          "t": 0.85,
+          "subject": "伊恩",
+          "verb": "body_tilt",
+          "face_to": "screen_left",
+          "pace": "slow",
+          "curve": "ease_in"
+        }
+      ],
+      "composition": {
+        "rule": "center",
+        "subject_position": "center"
+      },
+      "rule_justifications": [
+        {
+          "rule": "STAGING_PACK",
+          "action": "follow",
+          "reason": "单人MCU揭示以center构图落实balance：主体居中、左右留白均衡，机位平视，未使用framing"
+        },
+        {
+          "rule": "STAGING_PACK",
+          "action": "break",
+          "reason": "过肩构图需前景第二角色肩部入画，本镜角色清单只有伊恩单人，无法构成occlusion/过肩，故取balance/平视方案"
+        },
+        {
+          "rule": "AXIS_RULE",
+          "action": "follow",
+          "reason": "机位保持在轴线南侧并略向伊恩一侧偏移，未跨轴；伊恩视线向左与镜2米迦尔视线向右构成连续对视"
+        },
+        {
+          "rule": "INTENT_PACK",
+          "action": "follow",
+          "reason": "揭示意图以固定机位完成——揭示靠切至伊恩的剪辑本身达成，机位固定维持轴线南侧稳定，为后续运动镜头预留静止参照（cine_static_contrast），本镜不执行dolly_in"
+        },
+        {
+          "rule": "SHOT_PATTERN",
+          "action": "follow",
+          "reason": "MCU景别、50mm镜头、电影感头部空间（cinematic headroom）"
+        },
+        {
+          "rule": "axis_30",
+          "action": "follow",
+          "reason": "自镜2的MS收一档至MCU，景别变化满足30°规则的替代条件，机位略向伊恩一侧偏移亦拉开角度"
+        }
+      ],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": [],
+      "camera_narration": "固定机位"
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "intent": "推进",
+      "intent_type": "推进",
+      "shot_type": "MCU",
+      "start_frame": 301,
+      "end_frame": 384,
+      "duration_frames": 84,
+      "duration_seconds": 3.5,
+      "video_file": "blockout_shot_004.mp4",
+      "first_frame": "first_frames/shot_004.png",
+      "camera": {
+        "name": "BD_Cam_shot_004",
+        "position": [
+          1.1,
+          2.895,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "axis": {
+        "pair": [
+          "米迦尔",
+          "伊恩"
+        ],
+        "side_sign": 1,
+        "status": "correct"
+      },
+      "paths": {
+        "米迦尔": [
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "characters": [
+        "米迦尔"
+      ],
+      "elements_in_frame": [],
+      "dialogue_ids": [
+        "dialogue_michael_2",
+        "dialogue_michael_3"
+      ],
+      "action_types": [],
+      "axis_note": "镜3与镜4同为MCU，机位角度相对镜3改变超过30°（转为更近正面的近景机位），保持轴线南侧不越轴。",
+      "continuity_in": "回到米迦尔近景，与镜2同一角色、同一银幕方向；dolly_in呼应镜1的推近，形成首尾呼应。",
+      "needs_review": false,
+      "review_request_count": 0,
+      "degraded": false,
+      "warnings": [],
+      "rhythm": {},
+      "declared": {
+        "shot_number": 4,
+        "camera_number": null,
+        "technique": "缓慢推近至面部近景。",
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": "米迦尔（说）：{放心吧。}，米迦尔（说）：{看我怎么惩罚他，让他砰的一声，嘻嘻。}",
+        "declared_duration_s": 3.5,
+        "camera_move": "dolly_in"
+      },
+      "labels": {
+        "米迦尔": {
+          "text": "米迦尔",
+          "anchor_z": 2.2546,
+          "offset_px": [
+            0.0,
+            180.0
+          ],
+          "offset_reason": "out_of_frame+occluded"
+        }
+      },
+      "movements": [
+        {
+          "kind": "dolly_in",
+          "start_frame": 1,
+          "end_frame": 84,
+          "source": "declared"
+        }
+      ],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [
+          "COMPOSITION",
+          "subject_not_visible",
+          "R010"
+        ],
+        "undeclared_violations": [
+          "COMPOSITION",
+          "subject_not_visible",
+          "R010"
+        ],
+        "declared_but_clean": []
+      },
+      "alternates": [],
+      "camera_narration": "从左移动到左"
+    }
+  ]
+}

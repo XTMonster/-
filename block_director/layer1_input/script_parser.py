@@ -8,7 +8,8 @@ from typing import Optional, Union
 from .fdx import parse_fdx
 from .fountain import CHINESE_SCENE_RE, SCENE_HEADING_RE, parse_fountain
 from .model import ParsedScript
-from .shotlist import looks_like_shot_list, parse_shot_list
+from .shotlist import (looks_like_shot_list, normalize_inline_shot_script,
+                        parse_shot_list)
 
 
 class ScriptParseError(RuntimeError):
@@ -59,6 +60,9 @@ def parse_text(text: str, *, title: str = "") -> ParsedScript:
     识别失败或解析异常时一律降级回旧路径，绝不因此拒绝一份剧本。
     """
     fallback_note = ""
+    normalized = normalize_inline_shot_script(text)
+    if normalized != (text or ""):
+        text = normalized
     if looks_like_shot_list(text):
         try:
             script, _shot_list = parse_shot_list(text, title=title)

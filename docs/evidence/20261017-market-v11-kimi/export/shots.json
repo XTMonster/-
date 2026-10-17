@@ -1,0 +1,322 @@
+{
+  "project": "第十四街区码头市场 · 白天",
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "style": "写实电影质感，35mm，柔和自然光",
+  "generated_at": "2026-10-17T12:13:49+08:00",
+  "scene_heading": "第十四街区码头市场 · 白天",
+  "total_frames": 468,
+  "llm_calls": 6,
+  "retrieval_calls": 5,
+  "crowd": {
+    "entries": [
+      {
+        "count": 6,
+        "mode": "walk",
+        "seed": 0,
+        "spread": 6.0,
+        "label": "除米迦尔微微偏头与偷盗者举币外，摊位、围栏保持静止，背景人群虚化流动"
+      }
+    ],
+    "total": 6
+  },
+  "timing_overrides": [],
+  "action_conflicts": [],
+  "dialogue_pins": [],
+  "audit_pass_rate": {
+    "numerator": 0,
+    "denominator": 0,
+    "rules": [],
+    "sampled_frames": 4,
+    "exempt_shots": []
+  },
+  "knowledge": {
+    "backend": "hypergraph",
+    "engine": "builtin.BM25Okapi",
+    "cards": 2353,
+    "top_k": 15,
+    "token_limit": 50000,
+    "plan_token_limit": 60000,
+    "retrieval_calls": 5,
+    "degraded": false,
+    "degraded_reason": "",
+    "hypergraph_fingerprint": "e5213e1b64781c24103eecae15a4921b5766f75c4709672fa48997de692cdf89",
+    "cases": 3,
+    "lanes": 2,
+    "cases_backend": "hybrid",
+    "cases_requested_backend": "lightrag",
+    "cases_degraded": true,
+    "cases_degraded_reason": "lightrag_adapter_unavailable",
+    "lightrag_index_fingerprint": "",
+    "cases_index_fingerprint": "48df4a53c2c95637dd4150499320b1a87fab201645ec4bacec605eb3a8f44a86",
+    "warnings": []
+  },
+  "shots": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "intent": "开场大远景建立码头市场纵深与三方空间关系：米迦尔居左、伊恩居中左、偷盗者居右深处举币端详，为整场戏铺垫环境与站位。",
+      "intent_type": "铺垫",
+      "shot_type": "ELS",
+      "start_frame": 1,
+      "end_frame": 120,
+      "duration_frames": 120,
+      "duration_seconds": 5.0,
+      "video_file": "blockout_shot_001.mp4",
+      "first_frame": "first_frames/shot_001.png",
+      "camera": {
+        "name": "BD_Cam_shot_001",
+        "position": [
+          0.0,
+          9.032,
+          0.911
+        ],
+        "lens": 24.0
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
+      "paths": {},
+      "characters": [],
+      "elements_in_frame": [],
+      "dialogue_ids": [],
+      "action_types": [],
+      "axis_note": "",
+      "continuity_in": "开场钩子",
+      "needs_review": false,
+      "review_request_count": 0,
+      "degraded": false,
+      "warnings": [],
+      "rhythm": {},
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null,
+        "camera_move": null
+      },
+      "labels": {},
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "intent": "米迦尔自信表态把这件事交给自己，委托正式移交，推进剧情。",
+      "intent_type": "推进",
+      "shot_type": "MS",
+      "start_frame": 121,
+      "end_frame": 216,
+      "duration_frames": 96,
+      "duration_seconds": 4.0,
+      "video_file": "blockout_shot_002.mp4",
+      "first_frame": "first_frames/shot_002.png",
+      "camera": {
+        "name": "BD_Cam_shot_002",
+        "position": [
+          0.0,
+          4.632,
+          0.95
+        ],
+        "lens": 50.0
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
+      "paths": {},
+      "characters": [],
+      "elements_in_frame": [],
+      "dialogue_ids": [
+        "d_mikael_1"
+      ],
+      "action_types": [],
+      "axis_note": "机位仍在米迦尔—伊恩连线南侧（市场入口一侧），米迦尔面朝画右、伊恩在其右侧，银幕方向与镜1一致。",
+      "continuity_in": "",
+      "needs_review": false,
+      "review_request_count": 0,
+      "degraded": false,
+      "warnings": [],
+      "rhythm": {},
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null,
+        "camera_move": null
+      },
+      "labels": {},
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "intent": "伊恩平静应允并叮嘱小心，以沉稳情绪为米迦尔随后的转折话头做铺垫。",
+      "intent_type": "铺垫",
+      "shot_type": "OTS",
+      "start_frame": 217,
+      "end_frame": 300,
+      "duration_frames": 84,
+      "duration_seconds": 3.5,
+      "video_file": "blockout_shot_003.mp4",
+      "first_frame": "first_frames/shot_003.png",
+      "camera": {
+        "name": "BD_Cam_shot_003",
+        "position": [
+          0.0,
+          2.895,
+          1.231
+        ],
+        "lens": 50.0
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
+      "paths": {},
+      "characters": [],
+      "elements_in_frame": [],
+      "dialogue_ids": [
+        "d_ian_1"
+      ],
+      "action_types": [],
+      "axis_note": "过米迦尔肩部从连线南侧拍伊恩，伊恩面朝画左回望米迦尔，与镜2视线匹配；机位角度较镜2变化大于30°、景别降为中近景。",
+      "continuity_in": "",
+      "needs_review": false,
+      "review_request_count": 0,
+      "degraded": false,
+      "warnings": [],
+      "rhythm": {},
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null,
+        "camera_move": null
+      },
+      "labels": {},
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "intent": "米迦尔先低声安抚、随即带笑提高声调放话威胁偷盗者，把平静的日常委托推向喜剧式威胁的转折点。",
+      "intent_type": "转折",
+      "shot_type": "CU",
+      "start_frame": 301,
+      "end_frame": 468,
+      "duration_frames": 168,
+      "duration_seconds": 7.0,
+      "video_file": "blockout_shot_004.mp4",
+      "first_frame": "first_frames/shot_004.png",
+      "camera": {
+        "name": "BD_Cam_shot_004",
+        "position": [
+          0.0,
+          4.062,
+          1.313
+        ],
+        "lens": 85.0
+      },
+      "axis": {
+        "pair": [],
+        "side_sign": 0,
+        "status": ""
+      },
+      "paths": {},
+      "characters": [],
+      "elements_in_frame": [],
+      "dialogue_ids": [
+        "d_mikael_2a",
+        "d_mikael_2b"
+      ],
+      "action_types": [],
+      "axis_note": "正面机位仍在米迦尔前方（连线南侧），视线偏画右望向伊恩侧，右侧留白与视线一致；景别由中近景升至近景，满足30°规则。",
+      "continuity_in": "",
+      "needs_review": false,
+      "review_request_count": 0,
+      "degraded": false,
+      "warnings": [],
+      "rhythm": {},
+      "declared": {
+        "shot_number": null,
+        "camera_number": null,
+        "technique": null,
+        "transition": null,
+        "location": null,
+        "time": null,
+        "lighting": null,
+        "sfx": null,
+        "declared_duration_s": null,
+        "camera_move": null
+      },
+      "labels": {},
+      "movements": [],
+      "beats": [],
+      "composition": {},
+      "rule_justifications": [],
+      "justification_audit": {
+        "declared_breaks": [],
+        "declared_follows": [],
+        "detected_violations": [],
+        "undeclared_violations": [],
+        "declared_but_clean": []
+      },
+      "alternates": []
+    }
+  ]
+}

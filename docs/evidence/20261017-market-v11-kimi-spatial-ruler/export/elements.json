@@ -1,0 +1,68 @@
+{
+  "elements": [
+    {
+      "id": "env_01",
+      "kind": "environment",
+      "label": "生蚝摊",
+      "color_hex": "#808080",
+      "shape": "",
+      "first_shot": ""
+    },
+    {
+      "id": "env_02",
+      "kind": "environment",
+      "label": "银币摊",
+      "color_hex": "#808080",
+      "shape": "",
+      "first_shot": ""
+    },
+    {
+      "id": "env_03",
+      "kind": "environment",
+      "label": "市场主通道",
+      "color_hex": "#808080",
+      "shape": "",
+      "first_shot": "shot_002"
+    },
+    {
+      "id": "env_04",
+      "kind": "environment",
+      "label": "海面",
+      "color_hex": "#808080",
+      "shape": "",
+      "first_shot": ""
+    },
+    {
+      "id": "env_05",
+      "kind": "environment",
+      "label": "背景人群",
+      "color_hex": "#808080",
+      "shape": "",
+      "first_shot": ""
+    },
+    {
+      "id": "伊恩",
+      "kind": "character",
+      "label": "伊恩",
+      "color_hex": "#6BC5FF",
+      "shape": "capsule_q",
+      "first_shot": "shot_001"
+    },
+    {
+      "id": "偷盗者",
+      "kind": "character",
+      "label": "偷盗者",
+      "color_hex": "#FFD166",
+      "shape": "capsule_q",
+      "first_shot": "shot_001"
+    },
+    {
+      "id": "米迦尔",
+      "kind": "character",
+      "label": "米迦尔",
+      "color_hex": "#FF6B6B",
+      "shape": "capsule_q",
+      "first_shot": "shot_001"
+    }
+  ]
+}
