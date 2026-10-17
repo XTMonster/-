@@ -490,14 +490,15 @@ class LabelsConfig:
 class RulerConfig:
     """空间尺多维评测台（v1.7 I3，主 SPEC §5.1）。
 
-    ``enabled=False`` 时评测台全链路零行为差（用户选择，不是降级）；
+    ``enabled=False`` 时评测台全链路零行为差（用户可显式关闭，不是降级）；
     ``layer_weights`` 是总览分的六层默认权重，与
     ``cinema/metric_registry.LAYER_WEIGHTS_DEFAULT`` 逐键对拍（双源防漂移）。
     运行时真源是 ``specs/config.default.yaml``；每次运行在证据指纹里记录
     权重表与权重哈希（tools/evidence_fingerprint.py）。
     """
 
-    enabled: bool = False
+    # 空间尺是插件的正式审核层：默认启用，运行时仍可显式关闭。
+    enabled: bool = True
     layer_weights: Dict[str, float] = field(default_factory=lambda: {
         "geometry": 0.25, "attention": 0.20, "action": 0.20,
         "continuity": 0.15, "cinema": 0.10, "robustness": 0.10,

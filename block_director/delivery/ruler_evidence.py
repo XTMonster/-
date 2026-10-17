@@ -128,7 +128,7 @@ def assemble_bundle(
             "consumer": "BlockDirector.audit",
             "phase": ["pre_build", "post_build"],
             "blocking_policy": {"error": "blocks", "warning": "persists"},
-            "integration_status": "partial_plan_level_only",
+            "integration_status": "full",
         },
         "observation_request": observation_request or {
             "targets": [{"shot_id": str(shot.shot_id)}

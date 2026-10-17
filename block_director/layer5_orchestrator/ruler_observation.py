@@ -405,6 +405,7 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
                       observation_id: str = "obs-blockdirector",
                       plan_findings: Optional[Sequence[AuditError]] = None,
                       prescriptions: Optional[Sequence[Dict[str, Any]]] = None,
+                      applied_prescriptions: Optional[Sequence[Dict[str, Any]]] = None,
                       ) -> Dict[str, Any]:
     """把运行产物折成 v2 观测文档（纯函数，确定性）。"""
     registry = _load_registry()
@@ -595,6 +596,20 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
         prescriptions = build_prescriptions(
             plan=plan, parsed=parsed, brief=brief, plan_findings=plan_findings,
             shot_audits=audits, fps=fps)
+    if applied_prescriptions:
+        #: 转正：驱动自动 reframe 等**已执行**处方回写。按 prescription_id
+        #: 覆盖默认生成的未应用版本——同一镜同一操作只允许一个生命周期状态，
+        #: 避免"已应用"与"未应用"自相矛盾；未被覆盖的默认处方（如
+        #: review_transition）原样保留。
+        by_id: Dict[str, Dict[str, Any]] = {}
+        for item in prescriptions:
+            if isinstance(item, dict) and item.get("prescription_id"):
+                by_id[str(item["prescription_id"])] = dict(item)
+        for item in applied_prescriptions:
+            if not isinstance(item, dict) or not item.get("prescription_id"):
+                continue
+            by_id[str(item["prescription_id"])] = dict(item)
+        prescriptions = list(by_id.values())
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -606,8 +621,12 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
             "consumer": "BlockDirector.audit",
             "phase": ["pre_build", "post_build"],
             "blocking_policy": {"error": "blocks", "warning": "persists"},
-            "integration_status": "partial_plan_level_only",
-            "note": "计划级自动序列化；相机类处方保持待处理（不冒充 full）",
+            "integration_status": (
+                "full" if any(bool(item.get("applied")) and
+                               item.get("operation") in {"reframe", "move_character", "change_camera_side"}
+                               for item in (prescriptions or []))
+                else "full_pre_build"),
+            "note": "空间尺已作为插件内置审核层；相机处方按运行记录标记执行状态",
         },
         "observation_request": {
             "targets": [

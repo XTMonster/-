@@ -183,6 +183,22 @@ def _build(plan: Plan | None = None) -> Dict[str, Any]:
         plan_findings=_findings())
 
 
+def _camera_applied() -> List[Dict[str, Any]]:
+    """一条已实际执行的相机处方（转正：驱动自动 reframe 后回写）。"""
+    return [{
+        "prescription_id": "p_shot_002_subject_not_visible",
+        "shot_id": "shot_002",
+        "operation": "reframe",
+        "parameters": {"reason": "subject_not_visible", "target": "米迦尔",
+                       "old_lens": 35.0, "new_lens": 25.2},
+        "precondition_measurement_ids": ["m_shot_002_visibility_ratio"],
+        "postcondition_measurement_ids": ["m_shot_002_composition_score"],
+        "postcondition": "全镜 visible_ratio > 0 且 composition_score >= 70",
+        "applied": True, "applied_at": "2026-10-18T00:00:00+08:00",
+        "waived": False, "waive_reason": "",
+    }]
+
+
 # --------------------------------------------------------------------------- #
 # schema 与结构
 # --------------------------------------------------------------------------- #
@@ -194,7 +210,7 @@ def test_observation_validates_against_committed_schema():
 def test_top_level_families_present():
     doc = _build()
     assert doc["schema_version"] == "spatial-ruler-observation/v2"
-    assert doc["plugin_adapter"]["integration_status"] == "partial_plan_level_only"
+    assert doc["plugin_adapter"]["integration_status"] == "full_pre_build"
     assert doc["observation_request"]["fps"] == FPS
     assert len(doc["shot_specs"]) == 4
     assert len(doc["camera_specs"]) == 4
@@ -295,6 +311,38 @@ def test_prescriptions_allow_list_and_lifecycle():
         for ref in (p["precondition_measurement_ids"]
                     + p["postcondition_measurement_ids"]):
             assert ref, f"{p['prescription_id']} 前后置引用不能为空串"
+
+
+def test_applied_camera_prescription_merged_and_marks_full():
+    """已执行相机处方合并进观测：applied=True，integration_status 升 full。"""
+    doc = _build()
+    #: 默认生成阶段：同镜同操作 reframe 是未应用版本，integration 非 full。
+    by_id = {p["prescription_id"]: p for p in doc["prescriptions"]}
+    assert by_id["p_shot_002_subject_not_visible"]["applied"] is False
+    #: 注入已应用版本（驱动自动 reframe 后回写），观察合并结果。
+    doc2 = build_observation(
+        plan=_plan(), parsed=_parsed(), brief=_Brief(),
+        shot_audits=_audits(), build_results=_build_results(), fps=FPS,
+        run_context={"source_run": "fixture", "status": "completed",
+                     "summary": {"shots": 4}},
+        plan_findings=_findings(),
+        applied_prescriptions=_camera_applied())
+    by_id = {p["prescription_id"]: p for p in doc2["prescriptions"]}
+    merged = by_id["p_shot_002_subject_not_visible"]
+    assert merged["applied"] is True
+    assert merged["operation"] == "reframe"
+    assert doc2["plugin_adapter"]["integration_status"] == "full"
+    #: 同镜同类型的默认处方（未应用）不得与已应用版本并存，避免自相矛盾。
+    applied = [p for p in doc2["prescriptions"]
+               if p["prescription_id"] == "p_shot_002_subject_not_visible"]
+    assert len(applied) == 1, applied
+    assert applied[0]["applied"] is True
+    assert {p["prescription_id"] for p in doc2["prescriptions"]
+            if p["shot_id"] == "shot_002" and p["operation"] == "reframe"} >= {
+        "p_shot_002_edge_clip", "p_shot_002_framing_too_tight"}
+    #: 未被执行的处方（如 review_transition）必须保留。
+    assert any(p["operation"] == "review_transition"
+               for p in doc2["prescriptions"])
 
 
 # --------------------------------------------------------------------------- #

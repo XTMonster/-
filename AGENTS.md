@@ -348,7 +348,7 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-17 的账（最新，以这行为准）**：v1.7 全部代码卡完成并提交
+**2026-10-17 的账**：v1.7 全部代码卡完成并提交
 （D1/D2/D3、E1/E2/E3、G2、J1–J4、H1/H2，HEAD `8dd596b`；E3 Web 页随
 C1–C6 提交落地，polish 双通道经 H3 冒烟对拍）；空间尺 08–12 全部完成
 （08 连续性 / 09 摄影意图 / 10 鲁棒性 / 11 四臂评测台 已提交，12 规格验收
@@ -376,6 +376,38 @@ assistant-panel/sprite/ruler-probe）、pytest 4101 passed / 2 skipped、
 `holdout_gates.overall == "pass"`、唯一红 RK-13/E1 为已结案残留（判据未动）**。
 冻结链于 `950875a` 捕获，其后 `5e1cf38`/`8dd596b` 为纯台账文本提交
 （PROGRESS/AGENTS 状态行），代码树与链读数不变。
+
+**2026-10-18 D1 合入后（最新，以这行为准）**：D1 决策树投影（逐镜决策树 / 工具
+投影 / 连续优化 / 对抗评审 / 镜版本化 / 逐镜预演路径）已由提交 `a32366b`
+（codex/vlm-feedback）cherry-pick 并入 main，冲突适配保留 main 的
+v1.7/空间尺基座（合入 commit 见 `v1.7/PROGRESS.md`）；新增
+`tools/blender_tests/test_per_shot_previz.py` 探针 ⇒ 探针清单 **45 支**、
+链规模 **49/49**（45 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，
+与 `test_agents_status_is_current.py` 同源对拍）；集成验证树全量 pytest
+**4362 passed / 2 failed / 3 skipped**（3 skip 均为既有条件守卫：build_ledger 索引刷新、
+holdout_inputs 依赖 `/work/`、secret_store Windows 权限位；`third_party_layer`
+的 `--check` 因 fixture 的 `layer` 字段嵌 main 树绝对路径 `E:\白模预演codex\...`
+在独立 worktree 下不匹配，main 树实测绿，合入主干后复原）；gen_specs --check
+OK；门①–⑩ 全 pass、`holdout_gates.overall == "pass"`（仍指
+`docs/evidence/20261017-103308/`）、唯一红 RK-13/E1 为已结案残留（判据未动）；
+vlm 侧 2026-10-12 台账降为历史，源码存档 `E:\bd_vlm_v2`。
+
+**2026-10-18 空间尺转正批（HEAD 推进到 `b3784c7`）**：空间尺观测扩展线 01–06
+（契约资产 `8fefc70`、行内镜头/计划级 `5da59db`、测量/处方/交付 `8da4d8b`、
+replay 证据 `a549f7f`，台账登记 `901bb40`）与转正批 `b3784c7`（12 文件
++335/−19：`RulerConfig.enabled` 默认 `False→True`（运行时仍可显式关闭，非降级）；
+契约/样例/映射 `integration_status`→`full`；`ruler_observation.build_observation`
+支持 `applied_prescriptions` 合并（integration 动态 `full`/`full_pre_build`）；
+`driver._auto_reframe_from_ruler` 相机几何闭环（guard 告警→确定性 reframe 处方，
+同镜最多一次防振荡，成功回写审计事件、失败保留原 LLM 修复回路）；
+`_ruler_enabled()` 统一总开关，`enabled=False` 全链路零行为差）均已入库；
+新增 `tests/test_ruler_internal_camera_repair.py`（5 用例）；**全量 pytest
+4186 passed / 2 skipped**（2026-10-18 实读，`-o addopts=""`，exit 0）、
+gen_specs --check OK、定向 ruler/driver 回归 118 passed；链规模仍
+**44 支探针 / 48 步链**（转正批未新增探针）、门①–⑩ 全 pass、
+`holdout_gates.overall == "pass"`（仍指 `docs/evidence/20261017-103308/`）、
+唯一红 RK-13/E1 为已结案残留（判据未动）；空间尺 real judge A/B 与
+帧差活性裁决（07/裁决 4/5）在隔壁窗口，本线不碰。
 
 （下为 2026-10-07 的历史账，仅存档；旧 44/44 是事后编辑，原始是 43/43/39 支，
 已由本次 `docs/evidence/20261010-234143/` 重跑取代。）

@@ -120,10 +120,10 @@ def test_mapping_covers_rule_catalog(mapping: dict) -> None:
     assert not missing, f"mapping 缺规则：{sorted(missing)}"
 
 
-def test_mapping_is_not_overclaiming_integration(mapping: dict, example: dict) -> None:
-    """准备层语义：映射与样例都不得冒充 full 接入。"""
-    assert mapping["integration_status"] == "partial_plan_level_only"
-    assert example["plugin_adapter"]["integration_status"] == "partial_plan_level_only"
+def test_mapping_reports_full_integration(mapping: dict, example: dict) -> None:
+    """转正语义：映射与样例如实标注 full 接入（不再是准备层）。"""
+    assert mapping["integration_status"] == "full"
+    assert example["plugin_adapter"]["integration_status"] == "full"
     assert example["plugin_adapter"]["consumer"] == "BlockDirector.audit"
 
 

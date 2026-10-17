@@ -67,6 +67,7 @@
 | 05 处方应用接缝 | 完成（已提交 `8da4d8b`） | `spatial_ruler.apply_plan_prescriptions`＋`driver._apply_plan_ruler`（有/无构建器共用）＋`test_spatial_ruler_block_build`/`duration_drift` | retime/restore_cast 自动落地；残留 ERROR 级逐镜硬发现阻断构建 |
 | 06 交付证据 | 完成（已提交 `8da4d8b`） | `ruler_observation.py`/`export_director`/`manifest`/`readme`/`replay`/headless 落盘＋`ruler_delivery_args`/`ruler_evidence_from_summary` 兜底接线 | `spatial_ruler_observation.json` 落运行目录；重放无 LLM 抽回证据 |
 | 07 dock-market 验收 | 待真跑（裁决 4 移交隔壁窗口；帧差活性裁决 5 挂起） | `.scratch/spatial-ruler-json/examples/dock-market-observation.v2.json` 已入库 | real judge A/B 凭据/额度在隔壁窗口，本线不碰 |
+| 08 空间尺转正（默认启用 + full 接入 + 相机闭环） | 完成（已提交 `b3784c7`，12 文件 +335/−19） | `RulerConfig.enabled` 默认 `False→True`（运行时仍可显式关闭，非降级）；契约/样例/映射 `integration_status` → `full`；`ruler_observation.build_observation` 支持 `applied_prescriptions` 合并（同 prescription_id 覆盖默认未应用版本，integration 动态 `full`/`full_pre_build`）；`driver._auto_reframe_from_ruler` 把 guard 相机几何告警折成确定性 reframe 处方执行一次（同镜最多一次防振荡），执行回写审计事件、失败保留原 LLM 修复回路；`_ruler_enabled()` 统一总开关（`enabled=False` 全链路零行为差）；新增 `tests/test_ruler_internal_camera_repair.py`（5 用例） | 定向回归 118 passed（ruler 15 文件集＋driver）；全量 pytest exit 0；gen_specs --check OK | 真实模型 A/B 判官（隔壁窗口）与 RK-13/E1 残留不随本批变化 |
 
 ## 阻塞登记
 

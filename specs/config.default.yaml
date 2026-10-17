@@ -186,7 +186,7 @@ labels:
   adaptive_sampling: true
   fullframe_verify: true
 ruler:
-  enabled: false
+  enabled: true
   layer_weights:
     geometry: 0.25
     attention: 0.2
