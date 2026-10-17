@@ -56,9 +56,13 @@ def main():
     check("panel_assistant_in_modules", t_panel_assistant_registered_in_modules)
     check("register_all_includes_panel", t_register_all_registers_panel)
     check("operator_classes_exist", t_operator_classes_exist)
-    print("BD_TEST_RESULT " + json.dumps(RESULTS, ensure_ascii=False))
     failed = [name for name, result in RESULTS.items()
               if not result.get("ok")]
+    passed = [name for name, result in RESULTS.items()
+              if result.get("ok")]
+    print("BD_TEST_RESULT " + json.dumps(
+        {"passed": passed, "failed": failed, "checks": RESULTS},
+        ensure_ascii=False, allow_nan=False))
     print("BD_TEST_DONE " + ("PASS" if not failed else f"FAIL:{','.join(failed)}"))
     sys.exit(0 if not failed else 1)
 

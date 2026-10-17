@@ -59,9 +59,13 @@ def main():
     check("frames_table_loads_real_assets", t_frames_table_loads_real_assets)
     check("sprite_module_in_registration_roster",
           t_sprite_module_in_registration_roster)
-    print("BD_TEST_RESULT " + json.dumps(RESULTS, ensure_ascii=False))
     failed = [name for name, result in RESULTS.items()
               if not result.get("ok")]
+    passed = [name for name, result in RESULTS.items()
+              if result.get("ok")]
+    print("BD_TEST_RESULT " + json.dumps(
+        {"passed": passed, "failed": failed, "checks": RESULTS},
+        ensure_ascii=False, allow_nan=False))
     print("BD_TEST_DONE " + ("PASS" if not failed else f"FAIL:{','.join(failed)}"))
     sys.exit(0 if not failed else 1)
 
