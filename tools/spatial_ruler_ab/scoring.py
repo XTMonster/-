@@ -92,4 +92,45 @@ def score_task(meta: Mapping[str, Any], answer: Any) -> Dict[str, Any]:
                           ("exits", "reentries", "direction_changes",
                            "hero_bands")})
 
+    if kind == "action_roles":
+        if not isinstance(answer, dict):
+            return _base(meta, kind, False, reason="答案不是 JSON 对象")
+        missing = [k for k in ("attacker", "victim", "result_frame")
+                   if k not in answer]
+        if missing:
+            return _base(meta, kind, False,
+                         reason=f"答案缺键 {missing}", got=answer)
+        ok = (answer["attacker"] == gt["attacker"]
+              and answer["victim"] == gt["victim"]
+              and int(answer["result_frame"]) == int(gt["result_frame"]))
+        return _base(meta, kind, ok, expected=gt,
+                     got={k: answer.get(k) for k in
+                          ("attacker", "victim", "result_frame")})
+
+    if kind == "continuity_verdict":
+        if not isinstance(answer, dict) or "continuous" not in answer:
+            return _base(meta, kind, False, reason="答案缺 continuous")
+        ok = bool(answer["continuous"]) is bool(gt["continuous"])
+        detail = {"expected": bool(gt["continuous"]),
+                  "got": answer.get("continuous")}
+        conf = answer.get("confidence")
+        if conf is not None:
+            detail["confidence"] = conf
+        return _base(meta, kind, ok, **detail)
+
+    if kind == "priority_order":
+        if not isinstance(answer, dict) or "priority" not in answer:
+            return _base(meta, kind, False, reason="答案缺 priority")
+        got = answer["priority"]
+        ok = (isinstance(got, list)
+              and [str(x) for x in got] == [str(x) for x in gt["priority"]])
+        return _base(meta, kind, ok, expected=gt["priority"], got=got)
+
+    if kind == "robustness_verdict":
+        if not isinstance(answer, dict) or "still_pass" not in answer:
+            return _base(meta, kind, False, reason="答案缺 still_pass")
+        ok = bool(answer["still_pass"]) is bool(gt["still_pass"])
+        return _base(meta, kind, ok, expected=bool(gt["still_pass"]),
+                     got=answer.get("still_pass"))
+
     return _base(meta, kind, False, reason=f"未知任务族 {kind!r}")

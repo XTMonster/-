@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from tools.spatial_ruler_ab.fixtures import build_battery  # noqa: E402
+from tools.spatial_ruler_ab.tasks_new import build_full_battery  # noqa: E402
 from tools.spatial_ruler_ab.llm import MockJudge, RealJudge  # noqa: E402
 from tools.spatial_ruler_ab.report import (  # noqa: E402
     default_timestamp,
@@ -56,7 +56,7 @@ def main() -> int:
         print("⚠️  mock 判官：只证明管线通（plumbing），不是效果证据。")
         print("    真实结论请用 --judge real（ab_result）。")
 
-    battery = build_battery()
+    battery = build_full_battery()
     ts = args.timestamp or default_timestamp()
     report = run_experiment(judge, battery, timestamp=ts)
     out_dir = Path(args.out) if args.out else \

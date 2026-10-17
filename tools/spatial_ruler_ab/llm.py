@@ -117,6 +117,50 @@ class MockJudge:
                 "direction_changes": int(gt["direction_changes"]),
                 "hero_bands": list(gt["hero_bands"]),
             }
+        if kind == "action_roles":
+            if uses_measurements:
+                return {
+                    "attacker": gt["attacker"],
+                    "victim": gt["victim"],
+                    "result_frame": int(gt["result_frame"]),
+                }
+            if uses_method:
+                # 方法论读者：攻击者=出手主体、受击者=反应主体（与样例几何一致），
+                # 但结果帧按方法推不出 -> 保守取首帧（通常错误，plumbing 差异源）。
+                return {
+                    "attacker": gt["attacker"],
+                    "victim": gt["victim"],
+                    "result_frame": 1,
+                }
+            # 基线：固定错误猜测（交换攻受），plumbing 专用。
+            return {
+                "attacker": {"hero": "enemy", "enemy": "hero"}[gt["attacker"]],
+                "victim": {"hero": "enemy", "enemy": "hero"}[gt["victim"]],
+                "result_frame": 1,
+            }
+        if kind == "continuity_verdict":
+            if uses_measurements:
+                out = {"continuous": bool(gt["continuous"])}
+                if "confidence" in gt:
+                    out["confidence"] = float(gt["confidence"])
+                return out
+            if uses_method:
+                # 方法论读者：无数值时默认承接成立，两可置低置信。
+                return {"continuous": True, "confidence": 0.5}
+            return {"continuous": False}  # 基线固定猜测
+        if kind == "priority_order":
+            if uses_measurements:
+                return {"priority": list(gt["priority"])}
+            if uses_method:
+                # 方法论读者：误把"同档字典序"当成全局字典序（部分正确）。
+                return {"priority": sorted(gt["priority"])}
+            return {"priority": list(reversed(gt["priority"]))}  # 基线固定猜测
+        if kind == "robustness_verdict":
+            if uses_measurements:
+                return {"still_pass": bool(gt["still_pass"])}
+            if uses_method:
+                return {"still_pass": True}  # 方法论默认：无读数时假设稳定
+            return {"still_pass": False}  # 基线固定猜测
         return {}
 
 
