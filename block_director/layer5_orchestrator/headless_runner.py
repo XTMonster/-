@@ -156,7 +156,23 @@ def _make_knowledge(config, transport=None, audit=None):
     client = None
     if transport is not None and hasattr(transport, "retrieve_response"):
         client = KnowledgeClient(transport, audit=_audit_hook(audit))
+    # v2 平行层接缝（默认零行为）：未设置
+    # ``BLOCKDIRECTOR_DYNAMIC_KNOWLEDGE_DIR`` 时 dynamic_kwargs 为空，
+    # 下面的静态路径逐字节不变；一旦设置，目录/快照不合法就显式抛错，
+    # 绝不静默退回静态索引。有 sidecar client 时不注入进程内 store——
+    # 检索本来就走 ``/v1/retrieve``，需把 sidecar 的 knowledge_dir 指向
+    # 动态根（见 hypergraph_rag_v2/docs/replacement_report.md 路径 2）。
+    dynamic_kwargs: Dict[str, Any] = {}
+    try:
+        from hypergraph_rag_v2.dynamic_hypergraph import dynamic_kwargs_from_env
+        dynamic_kwargs = dynamic_kwargs_from_env()
+    except ImportError:
+        import os
+        if os.environ.get("BLOCKDIRECTOR_DYNAMIC_KNOWLEDGE_DIR"):
+            raise
     if rag is None:
+        if client is None:
+            return default_retriever(**dynamic_kwargs)
         return default_retriever()
     backend = RagBackend.DIGEST if not rag.enabled else RagBackend(str(rag.backend))
     retriever = default_retriever(
@@ -167,7 +183,8 @@ def _make_knowledge(config, transport=None, audit=None):
         cases_backend=str(getattr(rag, "cases_backend", "lightrag") or "lightrag"),
         cases_top_k=int(getattr(rag, "cases_top_k", 3) or 3),
         #: v1.5 §5.2（FR-6）：每桶的规则条数上限（``rag.rule_top_k``，缺省 5）。
-        rule_top_k=int(getattr(rag, "rule_top_k", 5) or 5))
+        rule_top_k=int(getattr(rag, "rule_top_k", 5) or 5),
+        **(dynamic_kwargs if client is None else {}))
     log.info("Light RAG：%s", retriever.describe())
     return retriever
 

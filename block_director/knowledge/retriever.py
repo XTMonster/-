@@ -320,6 +320,12 @@ class KnowledgeRetriever:
 
     def describe(self) -> Dict[str, Any]:
         """给调试面板与 /health 的自述信息。"""
+        #: 动态超图层优先：注入动态 store 时，指纹必须报**实际加载的索引**
+        #: （`tools/knowledge/quality.py::run_evidence_is_stale` 会与运行时读到的
+        #: 指纹对拍，不能拿仓库静态 manifest 糊弄）；未注入时回退原静态路径，
+        #: 行为与 v1.4 起完全一致。
+        dynamic_fingerprint = str(
+            getattr(self.hypergraph, "fingerprint", None) or "")
         return {"backend": str(self.backend), "engine": self.engine_name,
                 "cards": len(self.cards), "top_k": self.top_k,
                 "token_limit": self.token_limit,
@@ -327,8 +333,9 @@ class KnowledgeRetriever:
                 "retrieval_calls": int(self.retrieval_calls),
                 "degraded": bool(self.degraded),
                 "degraded_reason": self.degraded_reason,
-                "hypergraph_fingerprint": hypergraph_fingerprint(
-                    repo_knowledge_dir()),
+                "hypergraph_fingerprint": (
+                    dynamic_fingerprint
+                    or hypergraph_fingerprint(repo_knowledge_dir())),
                 **self.cases_info(),
                 "warnings": list(self.warnings)}
 
