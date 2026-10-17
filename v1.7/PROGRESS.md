@@ -44,7 +44,7 @@
 | J4 | Opus（主线代执行） | 完成 | d3025db | 主线自审 | R025 默认关（LLM 裁决层），5 测试＋关联回归全绿 |
 | H1 | DeepSeek（主线代执行） | 完成 | e26f9a5 | 主线自审 | 探针 43 支，链 47/47，test_agents_status_is_current 对拍绿 |
 | H2 | DeepSeek（主线代执行） | 完成 | 9ab119f | 主线自审 | openapi 补 polish 两端点＋静态服务，对拍端点集同步 |
-| H3 | Opus（主线代执行） | 完成 | 证据落盘（待提交） | 主线自审 | docs/evidence/20261017-v17-h3/（offline 64 镜、sidecar+Web 冒烟、3 镜样例 reference_pack、J 基线汇总、pytest 4099/2、README＋PROGRESS 归档） |
+| H3 | Opus（主线代执行） | 完成 | 5812163 | 主线自审 | docs/evidence/20261017-v17-h3/（offline 64 镜、sidecar+Web 冒烟、3 镜样例 reference_pack、J 基线汇总、pytest 4099/2、README＋PROGRESS 归档）；2026-10-17 晚收尾：探针输出契约 `157c5c3`＋守卫、run_tests 树守卫排除累积产物 `950875a`、**可归因冻结树全链 `docs/evidence/20261017-182739/`（tree stable=True、43 探针 47/47 全 OK、pytest 4101/2、门①–⑩ pass、唯一红 RK-13/E1 已结案残留）**，见漂移笔记 |
 
 ## 空间尺多维评测线 08–12（独立票单，见 .scratch/spatial-ruler-multidim/）
 
