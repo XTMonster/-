@@ -987,15 +987,19 @@ class PrevisDriver:
             "characters": len({name for shot in self.plan.shots
                                for name in (shot.characters or [])}),
         }
-        return build_observation(
+        doc = build_observation(
             plan=self.plan, parsed=self.parsed_script, brief=self.brief,
             shot_audits=shot_audits, build_results=build_results,
             fps=FPS, run_context=run_context,
             observation_id=f"obs-{self.audit.run_id}",
             plan_findings=self._ruler_findings,
-            applied_prescriptions=(self._ruler_plan_evidence or {}).get(
-                "applied_prescriptions", []),
+            applied_prescriptions=self._ruler_applied_prescriptions,
         )
+        #: 转正：收尾时用一次全场采样补序列级 continuity 复核（逐镜审核时
+        #: continuity 如实标未核验）。重放/无 bpy 路径缺采样则原样返回——
+        #: 观测文档不重算、不伪造。
+        from .ruler_observation import attach_sequence_review
+        return attach_sequence_review(doc, plan=self.plan, fps=FPS)
 
     def knowledge_provenance(self) -> Dict[str, Dict[str, List[List[str]]]]:
         """逐镜的知识溯源：``{shot_id: {source_kind: [[kind, value], ...]}}``。
@@ -1014,7 +1018,8 @@ class PrevisDriver:
 
         * 分母 = **非空镜**且景别 ∉ {ELS, LS}——空镜与超大远景根本没有构图
           可言，把它们算进去等于稀释样本；
-        * 分子 = ``composition_score ≥ composition_threshold`` 的镜头数；
+        * 分子 = ``composition_score > composition_threshold`` 的镜头数
+          （用户 2026-10-18 裁决：构图分必须严格高于阈值，等于不算过）；
         * ``exempt_shots`` 恒为空列表：v1.4 不允许无理由豁免（§4.1b 硬规则 1）。
         """
         from ..contracts.enums import ShotType
@@ -1034,7 +1039,7 @@ class PrevisDriver:
             denominator += 1
             score = scores.get(str(shot.shot_id))
             if score is not None and threshold is not None \
-                    and float(score) >= float(threshold):
+                    and float(score) > float(threshold):
                 numerator += 1
                 rules.append(str(shot.shot_id))
         return {"numerator": numerator, "denominator": denominator,
@@ -2480,6 +2485,31 @@ class PrevisDriver:
             self._emit("audit_failed", f"{shot_id} 审核异常", shot=shot_id)
             return None
         self.audit_results.append(result)
+        #: 空间尺转正：审计 JSON 统一入口。审核后把稳定 JSON 记入审计日志
+        #: （``audit_json`` 事件），外部回放/交付层只消费这一份结构，不再
+        #: 直接摸 Blender 对象。``audit_json`` 方法是 BpyShotAuditor 的加法；
+        #: 缺省不存在的审核器（FakeAuditor）走原路径，零形状差。
+        audit_json = getattr(self.auditor, "audit_json", None)
+        if callable(audit_json):
+            try:
+                payload = audit_json(shot_id)
+                self.audit.log(
+                    "audit_json",
+                    f"{shot_id} 空间尺审计 JSON 已落盘",
+                    level="info", shot=shot_id,
+                    audit_json=payload)
+                results = self.build_summary.get("results")
+                if isinstance(results, list):
+                    for item in results:
+                        if (isinstance(item, dict)
+                                and str(item.get("shot_id")) == str(shot_id)):
+                            item["audit_json"] = payload
+                            break
+            except Exception as exc:  # noqa: BLE001 - 审计 JSON 失败不伪造
+                self.audit.log(
+                    "audit_json_failed",
+                    f"{shot_id} 空间尺审计 JSON 失败：{exc}",
+                    level="warning", shot=shot_id)
         #: v1.7 空间尺（Ticket 04/06）：把这一镜的几何测量写进
         #: ``build_summary["results"]``（交付层据此产逐镜测量证据）并随
         #: ``shot_audit`` 事件留痕（重放侧据此无 LLM 重读）。只读、不参与
@@ -2488,6 +2518,13 @@ class PrevisDriver:
             getattr(result, "ruler_measurements", None) or [])
         if ruler_measurements:
             self._record_ruler_measurements(shot_id, ruler_measurements)
+        #: 空间尺转正：逐镜六层评测（含 hard_gates）与测量同一次采样产出，
+        #: 一并写进 ``build_summary["results"]``（交付层据此产逐镜审核证据）
+        #: 并随 ``shot_audit`` 事件留痕（重放侧据此无 LLM 重读）。与测量
+        #: 同纪律：不参与 passed/score，找不到对应 result 就跳过。
+        ruler_review = getattr(result, "ruler_review", None)
+        if ruler_review is not None:
+            self._record_ruler_review(shot_id, ruler_review)
         # v1.4 §3.3（R45）：shot_audit 增写构图分与阈值——两者是同一次审核里
         # 已经算好的量（``AuditResult.score`` 与审核器的门限），阈值只有一个来源。
         threshold = getattr(self.auditor, "composition_threshold", None)
@@ -2530,6 +2567,8 @@ class PrevisDriver:
                         **(dict(ruler_measurements=[
                                 dict(m) for m in ruler_measurements])
                             if ruler_measurements else {}),
+                       **({"ruler_review": dict(ruler_review)}
+                          if ruler_review is not None else {}),
                        **({"restored": True} if restored else {}),
                        **({"degraded": True} if degraded else {}))
         self._emit("shot_audit",
@@ -2584,6 +2623,21 @@ class PrevisDriver:
         for item in results:
             if isinstance(item, dict) and str(item.get("shot_id")) == str(shot_id):
                 item["ruler_measurements"] = [dict(m) for m in measurements]
+                return
+
+    def _record_ruler_review(self, shot_id: str,
+                             review: Dict[str, Any]) -> None:
+        """把这一镜的空间尺六层评测写进 ``build_summary["results"]``。
+
+        与 ``_record_ruler_measurements`` 同一条纪律：找不到对应 result 就
+        跳过——交付层在缺失时不写这个键（"没审过"与"审了 0 分"必须分得开）。
+        """
+        results = self.build_summary.get("results")
+        if not isinstance(results, list):
+            return
+        for item in results:
+            if isinstance(item, dict) and str(item.get("shot_id")) == str(shot_id):
+                item["ruler_review"] = dict(review)
                 return
 
     def _record_justification_audit(self, shot_id: str,
@@ -2651,6 +2705,29 @@ class PrevisDriver:
             self._advance_shot()
             return
         if result.passed:
+            # 空间尺转正：旧审核通过后，再查六层评测的 H1–H6 硬门。命中即
+            # 进入确定性 reframe / 定向修复回路（同一镜最多自动 reframe 一次
+            # 防振荡）；硬门**不改 passed/score**，只做新增阻断，保证既有
+            # 4101 条验收口径不变。
+            review = getattr(result, "ruler_review", None) or {}
+            gates = set(review.get("hard_gates") or [])
+            if gates:
+                self.audit.log(
+                    "ruler_gate_blocked",
+                    f"{shot_id} 空间尺硬门命中：{sorted(gates)}，进入修复回路",
+                    level="warning", shot_id=shot_id,
+                    hard_gates=sorted(gates))
+                self._emit("ruler_gate_blocked",
+                           f"{shot_id} 空间尺硬门 {sorted(gates)}",
+                           shot_id=shot_id, hard_gates=sorted(gates))
+                if self._ruler_camera_repair_enabled() and \
+                        self._auto_reframe_from_ruler(shot_id, result):
+                    self._pending_audit = None
+                    self._transition(DriverState.CHECKING)
+                    return
+                self._pending_audit = result
+                self._transition(DriverState.REPAIRING)
+                return
             if self._should_self_review(shot_id):
                 self._pending_review = shot_id
                 self._transition(DriverState.REVIEWING)
@@ -2748,16 +2825,22 @@ class PrevisDriver:
                 level="warning", shot=shot_id)
             return False
         done.add(shot_id)
-        evidence = self._ruler_plan_evidence or {}
-        applied = evidence.setdefault("applied_prescriptions", [])
-        applied.append({
-            "prescription_id": f"p_{shot_id}_auto_reframe",
-            "shot_id": str(shot_id), "operation": "reframe",
-            "parameters": {"lens_before": old_lens, "lens_after": new_lens,
-                            "warning_types": sorted(kinds)},
-            "applied": True, "applied_at": "runtime",
-            "waived": False, "waive_reason": "",
-        })
+        #: 转正：把已执行处方按 prescription_id（与观测默认处方同构：
+        #: ``p_{shot_id}_{kind}``）记录，供观测折档合并。合并是补丁语义，
+        #: 驱动侧不给 precondition/postcondition/operation 等字段时，
+        #: 观测层沿用默认处方版本，只有 applied/参数被覆盖。
+        for kind in sorted(kinds):
+            applied = {
+                "prescription_id": f"p_{shot_id}_{kind}",
+                "shot_id": str(shot_id),
+                "parameters": {"reason": kind, "lens_before": old_lens,
+                               "lens_after": new_lens},
+                "applied": True, "applied_at": "runtime",
+            }
+            existing = [p for p in self._ruler_applied_prescriptions
+                        if p.get("prescription_id")
+                        != applied["prescription_id"]]
+            self._ruler_applied_prescriptions = existing + [applied]
         self._mark_repair_applied(applied=True)
         self.audit.log("spatial_ruler_reframe_applied",
                        f"{shot_id} 空间尺自动 reframe：{old_lens:g}→{new_lens:g}mm",

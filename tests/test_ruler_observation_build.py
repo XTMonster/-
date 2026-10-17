@@ -148,6 +148,38 @@ def _audits() -> Dict[str, Dict[str, Any]]:
     }
 
 
+def _audits_with_rules() -> Dict[str, Dict[str, Any]]:
+    """带原审核器规则 findings（errors/warnings）的审核字典。"""
+    audits = _audits()
+    audits["shot_001"] = {
+        "passed": False, "score": 64.7, "errors": [], "warnings": [],
+        "guard_warnings": [],
+    }
+    audits["shot_002"] = {
+        "passed": False, "score": 51.4,
+        "errors": [{
+            "rule": "R002", "code": "E_SPACE_001",
+            "message": "角色与道具 AABB 穿模",
+            "severity": "error", "target": "米迦尔",
+            "suggestion": "move_character 移开",
+            "frame": 0,
+        }],
+        "warnings": [{
+            "rule": "R010", "code": "E_AXIS_001",
+            "message": "相邻镜同景别同角度缺乏变化",
+            "severity": "warning", "target": "shot_002",
+            "suggestion": "改变机位角度或景别一档",
+            "frame": 0,
+        }],
+        "guard_warnings": [
+            _guard_warning(
+                "shot_002", "subject_not_visible", "米迦尔",
+                {"visible_ratio": 0.0, "frames": 22}, severity="error"),
+        ],
+    }
+    return audits
+
+
 def _build_results() -> Dict[str, Dict[str, Any]]:
     """只给 shot_004 实测坐标：其余镜 source=plan_intent（诚实标 null）。"""
     return {
@@ -193,7 +225,7 @@ def _camera_applied() -> List[Dict[str, Any]]:
                        "old_lens": 35.0, "new_lens": 25.2},
         "precondition_measurement_ids": ["m_shot_002_visibility_ratio"],
         "postcondition_measurement_ids": ["m_shot_002_composition_score"],
-        "postcondition": "全镜 visible_ratio > 0 且 composition_score >= 70",
+        "postcondition": "全镜 visible_ratio > 0 且 composition_score > 80",
         "applied": True, "applied_at": "2026-10-18T00:00:00+08:00",
         "waived": False, "waive_reason": "",
     }]
@@ -214,9 +246,56 @@ def test_top_level_families_present():
     assert doc["observation_request"]["fps"] == FPS
     assert len(doc["shot_specs"]) == 4
     assert len(doc["camera_specs"]) == 4
-    assert doc["measurements"]
-    assert doc["verdicts"]
-    assert doc["prescriptions"]
+
+
+def test_rule_findings_fold_into_verdicts():
+    """原审核器的规则 errors/warnings 必须折进观测 verdicts。"""
+    doc = build_observation(
+        plan=_plan(), parsed=_parsed(), brief=_Brief(),
+        shot_audits=_audits_with_rules(), build_results=_build_results(),
+        fps=FPS, run_context={"source_run": "fixture", "status": "completed",
+                              "summary": {"shots": 4}},
+        plan_findings=_findings())
+    rules = {item["rule_code"] for item in doc["verdicts"]}
+    #: R002（穿模 error）与 R010（跳切 warning）来自原审核器规则层。
+    assert "R002" in rules, rules
+    assert "R010" in rules, rules
+    r002 = [v for v in doc["verdicts"] if v["rule_code"] == "R002"]
+    assert r002 and r002[0]["status"] == "repair"
+    assert r002[0]["severity"] == "error"
+    r010 = [v for v in doc["verdicts"] if v["rule_code"] == "R010"]
+    assert r010 and r010[0]["status"] == "warning"
+    #: 带规则 findings 的观测文档必须同时通过 schema 与纯层校验。
+    jsonschema.validate(doc, _schema())
+    assert validate_observation(doc) == []
+
+
+def test_rule_findings_from_log_preserve_warnings():
+    """重放折档必须保留原审核器的 warnings，不得恒置空。"""
+    from block_director.layer5_orchestrator.ruler_observation import (
+        shot_audits_from_log)
+    records = [{
+        "kind": "shot_audit",
+        "data": {
+            "shot": "shot_002", "passed": False,
+            "composition_score": 51.4,
+            "findings": [
+                {"rule": "R002", "code": "E_SPACE_001",
+                 "message": "角色与道具 AABB 穿模", "severity": "error",
+                 "target": "米迦尔", "suggestion": "move_character 移开",
+                 "frame": 0},
+                {"rule": "R010", "code": "E_AXIS_001",
+                 "message": "相邻镜同景别同角度缺乏变化", "severity": "warning",
+                 "target": "shot_002",
+                 "suggestion": "改变机位角度或景别一档", "frame": 0},
+            ],
+        },
+    }]
+    audits = shot_audits_from_log(records)
+    entry = audits["shot_002"]
+    assert entry["errors"], entry
+    assert entry["warnings"], entry
+    assert {w["rule"] for w in entry["warnings"]} == {"R010"}
 
 
 # --------------------------------------------------------------------------- #
@@ -284,6 +363,40 @@ def test_verdicts_carry_numeric_pairs_and_closed_status():
     assert any(v["shot_id"] == "shot_002" for v in repair)
     transition = [v for v in doc["verdicts"] if v["rule_code"] == "R010"]
     assert transition and all(v["threshold"] == 30.0 for v in transition)
+
+
+def test_composition_verdict_strictly_above_pass_score():
+    """用户 2026-10-18 裁决：构图分必须严格高于 80，等于 80.0 不算过。"""
+    from block_director.layer5_orchestrator.ruler_observation import (
+        build_observation)
+    from block_director.contracts.plan import Plan, ShotPlan
+
+    def one_shot(score: float) -> Dict[str, Any]:
+        plan = Plan(scene_heading="边界")
+        plan.shots = [
+            ShotPlan("shot_001", "边界", "MCU", 24, order=1,
+                     camera={"lens": 50}, characters=["甲"],
+                     responsibility=Responsibility(white_model=["甲"]))]
+        return build_observation(
+            plan=plan, parsed=_parsed(), brief=_Brief(),
+            shot_audits={"shot_001": {
+                "passed": False, "score": score,
+                "errors": [], "warnings": [], "guard_warnings": []}},
+            build_results={"shot_001": {"lens": 50.0}},
+            fps=FPS,
+            run_context={"source_run": "fixture", "status": "completed",
+                         "summary": {"shots": 1}},
+            plan_findings=[])
+
+    for score in (79.99, 80.0):
+        doc = one_shot(score)
+        comp = [v for v in doc["verdicts"] if v["rule_code"] == "COMPOSITION"]
+        assert comp and comp[0]["status"] == "repair", f"{score} 不应通过"
+        assert comp[0]["severity"] == "error"
+    doc = one_shot(80.01)
+    comp = [v for v in doc["verdicts"] if v["rule_code"] == "COMPOSITION"]
+    assert comp and comp[0]["status"] == "pass", "80.01 应通过"
+    assert comp[0]["severity"] == "info"
 
 
 def test_verdict_evidence_references_existing_measurements_or_events():
@@ -373,3 +486,4 @@ def test_validate_observation_rejects_dangling_evidence():
     doc["verdicts"][0]["evidence"].append("m_does_not_exist")
     findings = validate_observation(doc)
     assert any("证据" in item or "evidence" in item for item in findings)
+

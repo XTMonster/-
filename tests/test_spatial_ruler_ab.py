@@ -75,7 +75,9 @@ def test_ground_truth_matches_pure_geometry():
             scene.get("expected_height"),
             scene.get("headroom_applies", True))
         assert report.passed == scene["gt"]["passed"]
-        failed = {k for k, v in report.items.items() if v.score < 0.7}
+        #: 与 tools/spatial_ruler_ab/fixtures.py 的 failed 口径同源：
+        #: 用户 2026-10-18 裁决，分量达标线严格高于 0.8（等于不算过）。
+        failed = {k for k, v in report.items.items() if v.score <= 0.8}
         assert failed == set(scene["gt"]["failed"])
 
 

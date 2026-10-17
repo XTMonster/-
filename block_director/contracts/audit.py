@@ -170,6 +170,12 @@ class AuditResult:
     #: 键（零形状差纪律）；非空时供交付层写 ``ruler_measurements`` 证据，
     #: **不参与 passed/score**。
     ruler_measurements: Optional[List[Dict[str, Any]]] = None
+    #: 空间尺转正：本镜的六层评测汇总（``RulerReview.to_dict()`` 形状的普通
+    #: dict；逐镜审核时 continuity 层如实标"未核验"，序列级复核时补全场链）。
+    #: 缺省 ``None`` ⇒ 未接入/未采集时 ``to_dict()`` 不出这个键（零形状差）；
+    #: 其 ``hard_gates`` 是 CHECKING 阶段的**新增阻断条件**（旧 passed 之后
+    #: 再查），但**不参与 passed/score**（与 guard_warnings 同纪律）。
+    ruler_review: Optional[Dict[str, Any]] = None
 
     @property
     def total(self) -> int:
@@ -225,6 +231,9 @@ class AuditResult:
         if self.ruler_measurements:
             payload["ruler_measurements"] = [
                 dict(item) for item in self.ruler_measurements]
+        #: 同一条零形状差纪律：只有真的跑出空间尺六层评测才多这个键。
+        if self.ruler_review is not None:
+            payload["ruler_review"] = dict(self.ruler_review)
         return payload
 
     def format_for_llm(self) -> str:

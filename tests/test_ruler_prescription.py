@@ -38,7 +38,10 @@ from block_director.cinema.prescription import (
 
 
 def _box(**overrides) -> SubjectBox:
-    values = dict(name="小明", left=0.24, right=0.42, top=1.0 - 0.07,
+    #: 用户 2026-10-18 裁决：构图分严格高于 80 才算通过。默认夹具必须是
+    #: 六分项全部 > 0.8 的真·好构图——主体放左三分线附近（cx≈0.30）、
+    #: 面朝右留出充足视线空间，头顶留白落在理想区间。
+    values = dict(name="小明", left=0.21, right=0.39, top=1.0 - 0.07,
                   bottom=0.35, facing=1.0)
     values.update(overrides)
     return SubjectBox(**values)

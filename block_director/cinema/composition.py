@@ -24,7 +24,8 @@ WEIGHTS: Dict[str, float] = {
     "framing": 0.10,
 }
 
-PASS_SCORE = 70.0
+# 空间尺正式门槛：构图分必须严格高于 80 才算通过。
+PASS_SCORE = 80.0
 
 # 头部留白的理想区间（占画面高度的比例）
 HEADROOM_IDEAL = (0.03, 0.12)
@@ -103,7 +104,9 @@ class CompositionReport:
 
     @property
     def passed(self) -> bool:
-        return self.score >= PASS_SCORE
+        #: 用户 2026-10-18 裁决：构图分必须**严格高于** 80 才算通过，
+        #: 恰好等于 80.0 不算过（score == PASS_SCORE 仍为 False）。
+        return self.score > PASS_SCORE
 
     def to_dict(self) -> dict:
         return {
@@ -153,7 +156,7 @@ def _lead_room(box: SubjectBox) -> CompositionItem:
                                "主体朝画面外，视线方向没有留白；建议反转机位或平移构图")
     ratio = ahead / max(ahead + behind, 1e-9)
     score = _clamp01((ratio - 0.4) / 0.35)
-    suggestion = "" if score >= 0.7 else "视线方向留白不足；建议把主体放到画面偏对侧"
+    suggestion = "" if score >= 0.8 else "视线方向留白不足；建议把主体放到画面偏对侧"
     return CompositionItem("lead_room", score, WEIGHTS["lead_room"], suggestion)
 
 
@@ -161,7 +164,7 @@ def _thirds(box: SubjectBox) -> CompositionItem:
     best = min(abs(box.center_x - tx) + abs(box.center_y - ty)
                for tx in THIRDS for ty in THIRDS)
     score = _clamp01(1.0 - best / 0.35)
-    suggestion = "" if score >= 0.7 else "主体偏离三分线交点；可微调构图让主体落到交点附近"
+    suggestion = "" if score >= 0.8 else "主体偏离三分线交点；可微调构图让主体落到交点附近"
     return CompositionItem("rule_of_thirds", score, WEIGHTS["rule_of_thirds"],
                            suggestion)
 
@@ -178,7 +181,7 @@ def _balance(boxes: Sequence[SubjectBox]) -> CompositionItem:
     offset = abs(mean_x - 0.5)
     dead_zone = 0.20 if len(boxes) == 1 else 0.12
     score = _clamp01(1.0 - max(0.0, offset - dead_zone) / 0.30)
-    suggestion = "" if score >= 0.7 else "画面重心偏塌；建议左右重新平衡人物位置"
+    suggestion = "" if score >= 0.8 else "画面重心偏塌；建议左右重新平衡人物位置"
     return CompositionItem("balance", score, WEIGHTS["balance"], suggestion)
 
 

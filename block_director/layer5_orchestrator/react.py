@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Sequence
 
 from ..contracts.audit import AuditResult
+from ..cinema.composition import PASS_SCORE
 from ..contracts.enums import Purpose, ToolChoice
 from ..contracts.messages import ChatPayload, Message, MessageRole, new_request_id
 from ..contracts.plan import Plan, ShotPlan
@@ -53,7 +54,7 @@ REACT_SYSTEM_PROMPT = """\
 
 def should_react(shot: Optional[ShotPlan], result: Optional[AuditResult], *,
                  repairs_exhausted: bool = True,
-                 composition_threshold: float = 70.0,
+                 composition_threshold: float = PASS_SCORE,
                  max_steps: int = 6,
                  user_requested: bool = False) -> bool:
     """是否进入 B5（§7.1 的三个触发条件）。"""
@@ -67,8 +68,10 @@ def should_react(shot: Optional[ShotPlan], result: Optional[AuditResult], *,
         return True
     if result is None:
         return False
+    #: 用户 2026-10-18 裁决：构图分必须严格高于阈值，
+    #: score == composition_threshold 也触发修复（等于不算过）。
     if getattr(result, "score", None) is not None \
-            and float(result.score) < float(composition_threshold):
+            and float(result.score) <= float(composition_threshold):
         return True
     # 构图门失败但没给分数（例如只报了 E_CAM_001）时也值得一试
     return any(str(getattr(error, "rule", "")) == "COMPOSITION"
@@ -149,3 +152,4 @@ def render_shot_memory(rows: Sequence[Dict[str, Any]]) -> str:
                      f"{row['duration_frames']} 帧｜{row['intent']}｜"
                      f"{'、'.join(row['characters'])}")
     return "\n".join(lines)
+

@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from ..cinema.frustum_metrics import DeclaredShot, guard_config_from, shot_warnings
+from ..cinema.composition import PASS_SCORE
 from ..contracts.audit import AuditError, AuditResult
 from ..contracts.beats import reconcile_justifications
 from ..contracts.enums import AuditLevel, Severity
@@ -56,7 +57,7 @@ SIZE_CHANGING_MOVEMENTS = frozenset({
 class BpyShotAuditor:
     """按当前场景上下文逐镜头审核。"""
 
-    def __init__(self, composition_threshold: float = 70.0,
+    def __init__(self, composition_threshold: float = PASS_SCORE,
                  audit_level=None, vlm_review=None,
                  vlm_transport=None,
                  vlm_frame_dir: Optional[Path] = None,
@@ -85,6 +86,47 @@ class BpyShotAuditor:
 
     def vlm_summary(self) -> Dict[str, Any]:
         return summarise_reviews(self.vlm_reviews)
+
+    def audit_json(self, shot_id: str) -> Dict[str, Any]:
+        """空间尺统一审核入口：返回稳定 JSON，不让调用方依赖 Blender 对象。
+
+        ``audit`` 仍是内部实现；插件、面板和外部回放统一消费这个结构，
+        这样原审核器的规则、视锥告警、几何测量和 VLM 留痕都进入同一份
+        空间尺数据，而不是各自维护一套结果格式。
+        """
+        result = self.audit(shot_id)
+        payload = result.to_dict()
+        payload.update({
+            "schema_version": "spatial-ruler-audit/v1",
+            "shot_id": str(shot_id),
+            "source": "BlockDirector.audit",
+            "verdict": "pass" if result.passed else "fail",
+            "metrics": list(result.ruler_measurements or []),
+            "findings": [item.to_dict() for item in
+                          [*result.errors, *result.warnings]],
+            "guard": {
+                "warnings": [item.to_dict() if hasattr(item, "to_dict")
+                             else dict(item)
+                             for item in result.guard_warnings],
+                "frames_sampled": int(result.guard_frames_sampled),
+                "sampling_error": result.guard_sampling_error,
+            },
+            "ruler_review": (dict(result.ruler_review)
+                             if result.ruler_review is not None else None),
+            "repair": {"candidates": [
+                {"operation": "reframe", "reasons": [
+                    str(item.get("type") if isinstance(item, dict)
+                        else getattr(item, "type", ""))
+                    for item in result.guard_warnings
+                    if str(item.get("type") if isinstance(item, dict)
+                           else getattr(item, "type", "")) in {
+                               "subject_not_visible", "edge_clip",
+                               "framing_too_tight", "framing_too_loose",
+                               "occlusion", "subject_out_of_frame"}],
+                 "status": "pending"},
+            ]},
+        })
+        return payload
 
     def shot_ids(self) -> List[str]:
         context = get_context()
@@ -119,15 +161,20 @@ class BpyShotAuditor:
         result = check_shot(shot_id,
                             composition_threshold=self.composition_threshold,
                             strict=strict)
-        #: v1.7 空间尺（Ticket 04+）：在规则判定之后采集本镜的观测测量
-        #: （相机/构图/包围盒/角差，契约层 measurement 形状）。只读、幂等，
-        #: 失败按空表处理（如实缺），不参与 passed/score。
+        #: v1.7 空间尺转正：在规则判定之后**一次采样**同时采集本镜的观测
+        #: 测量（相机/构图/包围盒/角差，契约层 measurement 形状）与六层
+        #: 评测（``RulerReview``，逐镜五层 + continuity 如实标未核验）。
+        #: 只读、幂等，失败按空表处理（如实缺）；两者都不参与 passed/score，
+        #: 但 ``ruler_review.hard_gates`` 由驱动器在 CHECKING 阶段作新增
+        #: 阻断条件（旧 passed 之后再查）。
         try:
-            from .ruler_probe import collect_shot_measurements
-            measurements = collect_shot_measurements(shot_id)
+            from .ruler_probe import collect_shot_review
+            measurements, review = collect_shot_review(shot_id)
             result.ruler_measurements = measurements or None
+            result.ruler_review = review
         except Exception:  # noqa: BLE001 - 测量缺失不伪造，也不阻断审核
             result.ruler_measurements = None
+            result.ruler_review = None
         #: v1.6 B4：视锥采样告警与构图分**并置**；error 级告警让这一镜失败。
         self._attach_guard_warnings(shot_id, result)
         #: v1.5 §5.4（P4-T4）：把这一镜**声明**的破例辩护与**实测**的违规对拍。

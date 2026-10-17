@@ -48,7 +48,8 @@ def _scene(boxes: List[SubjectBox], brief: str, scene_id: str,
     report = evaluate_composition(boxes, occluded, expected_height,
                                   headroom_applies)
     primary = _primary(boxes)
-    failed = sorted(k for k, v in report.items.items() if v.score < 0.7)
+    #: 用户 2026-10-18 裁决：分量达标线与构图总门同源（严格高于 0.8）。
+    failed = sorted(k for k, v in report.items.items() if v.score <= 0.8)
     lead_ratio = None
     if abs(primary.facing) > 1e-6:
         ahead = (1.0 - primary.center_x) if primary.facing > 0 else primary.center_x
@@ -69,11 +70,11 @@ def _scene(boxes: List[SubjectBox], brief: str, scene_id: str,
             "headroom_range": list(HEADROOM_IDEAL),
             "thirds_current": round(thirds_deviation(primary.center_x,
                                                      primary.center_y), 3),
-            "thirds_target": round(0.35 * (1.0 - 0.7), 3),  # 0.105
+            "thirds_target": round(0.35 * (1.0 - 0.8), 3),  # 0.070
             "balance_current": round(abs(mean_x - 0.5), 3),
             "balance_dead_zone": 0.20 if len(boxes) == 1 else 0.12,
             "lead_current": round(lead_ratio, 3) if lead_ratio is not None else None,
-            "lead_target": round(0.4 + 0.35 * 0.7, 3),  # 0.645
+            "lead_target": round(0.4 + 0.35 * 0.8, 3),  # 0.680
             "framing_current": round(primary.inside_ratio(), 3),
             "framing_target": 0.90,
             "occlusion": "无遮挡" if not [b for b in boxes
@@ -343,7 +344,7 @@ def _measurement_block(scene: Dict[str, Any]) -> str:
     lines.append(f"- balance 重心偏移: {f['balance_current']:.3f}（目标 ≤ {dz:.3f}）")
     lines.append(f"- occlusion: {f['occlusion']}（目标：无）")
     lines.append(f"- framing 入画比例: {f['framing_current']:.3f}（目标 ≥ {f['framing_target']:.3f}）")
-    lines.append(f"- 总分: {f['score']:.1f} / 100（过门线 70）")
+    lines.append(f"- 总分: {f['score']:.1f} / 100（过门线 80，须严格高于）")
     return "\n".join(lines)
 
 

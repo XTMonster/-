@@ -53,8 +53,10 @@ def test_headless_snapshot_carries_ruler_plan_evidence(tmp_path):
     assert summary["success"] is True
     evidence = summary.get("spatial_ruler_plan_evidence")
     assert isinstance(evidence, dict), evidence
-    assert set(evidence) == {"prescriptions", "measurements"}
+    assert set(evidence) == {"prescriptions", "applied_prescriptions",
+                             "measurements"}
     assert isinstance(evidence["prescriptions"], list)
+    assert isinstance(evidence["applied_prescriptions"], list)
     assert isinstance(evidence["measurements"], list)
 
 

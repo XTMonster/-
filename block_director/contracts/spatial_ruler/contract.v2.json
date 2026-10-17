@@ -111,8 +111,8 @@
         "measured_camera_fields": ["narration", "start", "end"]
       },
       "COMPOSITION": {
-        "summary": "六项加权构图评分门（首/中/尾取最小值）",
-        "pass_score": 70.0,
+        "summary": "六项加权构图评分门（首/中/尾取最小值；必须严格高于 pass_score，等于不算过）",
+        "pass_score": 80.0,
         "sample_mode": "min_of_first_middle_last"
       },
       "SR001": {
@@ -138,7 +138,7 @@
       "sample_step": 4
     },
     "composition": {
-      "pass_score": 70.0,
+      "pass_score": 80.0,
       "weights": {
         "headroom": 0.15,
         "lead_room": 0.20,
@@ -161,5 +161,7 @@
   "camera_specs": [],
   "measurements": [],
   "verdicts": [],
+  "ruler_reviews": {},
   "prescriptions": []
 }
+
