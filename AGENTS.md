@@ -3,6 +3,25 @@
 Project: **BlockDirector**, a Blender add-on that turns a script into a white-model
 previs and exports it as a reference video for AI video generation.
 
+## 默认技能与执行计划流程（用户 2026-10-13 指令，与 hooks 同源）
+
+1. **默认使用 mattpocock skills**（仓库克隆：`.scratch/mattpocock_skills_probe_20261012/`，
+   已通过 `scripts/link-skills.sh` 链入 `~/.agents/skills`）。任务命中某技能的应用场景时，
+   无需用户点名也要按该技能执行；执行前先完整读该技能的 `SKILL.md`，再按其中引用加载
+   所需参考文件，不要只凭技能名猜测内容。
+2. **当用户要求规划执行计划时**，全程使用 mattpocock skills（由 hooks
+   `inject-context.ps1` 按语义判断触发，注入 `plan-mattpocock.md` 契约）：
+   - 先生成 **spec**（`$to-spec`）；
+   - 再把 spec 拆成 `to-tickets` 的 **tracer-bullet tickets**——拆成一批能在单个
+     上下文窗口内完成的 tickets；
+   - 标明阻塞关系，形成 **task graph**；
+   - 确保至少有一个未被阻塞、可立即领取的 **frontier ticket**，使计划进入
+     implement 可执行状态；
+   - **先不要开始写代码**（实现要等用户领取某个 frontier ticket 之后才做）。
+3. 该流程与执行计划写作契约（PRD ＋ TDD ＋ 技术方案）**并存**；`plan` 判定命中时
+   `$to-spec`／`$to-tickets`／`$implement`／`$implement-spec` 视为已获用户授权自动触发，
+   其余 user-invoked 技能（`$ask-matt`、`$wayfinder`、`$handoff`、`$retro` 等）仍须用户点名。
+
 ## Where things are
 
 - `BlockDirector_执行文档_v1.2.md` — the authoritative execution spec (v1.2). Read it before changing architecture.
@@ -329,12 +348,12 @@ K1–K5 全绿（2113 张 = 1981 生成 ＋ 132 手写策展；最小域 `anime`
 
 ### P14 现状（2026-10-02 13:40 起 —— **下面那块数字自此作废**）
 
-**2026-10-10 的账（最新，以这行为准）**：v1.6 G2 判据 #8 收尾；G8-A/B/C/DF/E/H/
-MT/PA 与主线修复（G8-FS 动作类型守卫、`_handle_llm_error` 去重、saved_at 打戳）
-已落地工作区（pytest **3459 passed / 1 skipped**）。链读数见
-`docs/evidence/20261010-234143/`：**44/44 步全部跑到**（探针 40 支全 OK、
-门①–⑩ 全 pass、`holdout_gates.overall == "pass"`、**Q1 0.9975**（线 0.70）、
-attestation 诊断 **0.8682**、`not passing: E1`＝已结案的 **RK-13**，判据未动）。
+**2026-10-17 的账（最新，以这行为准）**：空间尺 08–12 全部完成（08 连续性 /
+09 摄影意图 / 10 鲁棒性 / 11 四臂评测台 已提交，12 规格验收已 resolved）；
+pytest **4026 passed / 2 skipped**，一键链读数见
+`docs/evidence/20261017-103308/`：**45/45 步全部跑到**（探针 41 支全 OK、
+`tree.json stable=True`、门①–⑩ 全 pass、`holdout_gates.overall == "pass"`、
+唯一红 `not passing: E1`＝已结案的 **RK-13**，判据未动）。
 
 （下为 2026-10-07 的历史账，仅存档；旧 44/44 是事后编辑，原始是 43/43/39 支，
 已由本次 `docs/evidence/20261010-234143/` 重跑取代。）

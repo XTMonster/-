@@ -52,9 +52,9 @@
 |---|---|---|---|
 | 08 连续性 6 指标 | 完成（已提交） | `tests/test_metrics_continuity.py` 53 passed；04–07/ruler 回归 97 passed（2026-10-17 主线复跑）；commit `ab167e4` | 主线直写（两次子代理零产出后接管）；`_corner_turn` 由并行 agent 改为显式垂直运动（0.52→0.72），ambiguous 夹角恰 90° |
 | 09 摄影意图 5 指标 | 完成（已提交） | `tests/test_metrics_cinema.py` 45 passed；04–08/ruler 回归全绿（2026-10-17 主线复跑）；commit `ccc139a` | `impl_09_final` 两次交付分析/设计，零代码文件 → 契约 §10 第三次由主线直写；提交后确认 |
-| 10 鲁棒性 5 指标 | 完成 | `tests/test_metrics_robustness.py` 50 passed；ruler/04–09 回归全绿（2026-10-17 主线复跑 71 项全绿） | 主线直写（TDD 红→绿）；`PERTURB_SEED=20261017`、H6=repair_locality 联动 |
-| 11 四臂评测台 | 阻塞 | - | 依赖 08/09/10 全绿 |
-| 12 规格验收全量巡检 | 阻塞 | - | 依赖 11 |
+| 10 鲁棒性 5 指标 | 完成（已提交） | `tests/test_metrics_robustness.py` 50 passed；ruler/04–09 回归全绿（2026-10-17 主线复跑 71 项全绿）；commit `81c22a2` | 主线直写（TDD 红→绿）；`PERTURB_SEED=20261017`、H6=repair_locality 联动 |
+| 11 四臂评测台 | 完成（已提交） | `tests/test_spatial_ruler_ab_ext.py` 18 passed；mock 四臂实测 117 任务 × 4 臂；commit `c690fe0` | 四类新任务接入四臂 + CLI 接线（子代理 `impl_11_harness` 实现、主线审核修复） |
+| 12 规格验收全量巡检 | 完成（证据已落） | 全仓 `python -m pytest` 4026 passed / 2 skipped；一键链 `docs/evidence/20261017-103308/` `tree.json stable=True`（45/45 探针全 OK、门①–⑩ 全 pass）；唯一红 RK-13 为已结案残留 | issue `12-spec-acceptance.md` 已 resolved；验收清单全过，剩余风险如实列出（真实模型 A/B 未跑、attention 无专属 AB 任务、RK-13/E1 残留） |
 
 ## 阻塞登记
 
