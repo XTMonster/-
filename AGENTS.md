@@ -384,7 +384,7 @@ v1.7/空间尺基座（合入 commit 见 `v1.7/PROGRESS.md`）；新增
 `tools/blender_tests/test_per_shot_previz.py` 探针 ⇒ 探针清单 **45 支**、
 链规模 **49/49**（45 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，
 与 `test_agents_status_is_current.py` 同源对拍）；集成验证树全量 pytest
-**4401 passed / 0 failed / 2 skipped**（4402 tests，main 树 2026-10-18 实读、
+**4400 passed / 0 failed / 2 skipped**（4402 tests，main 树 2026-10-18 实读、
 `-o addopts=""`，exit 0；2 skip 均为既有条件守卫：build_ledger 索引刷新、
 secret_store Windows 权限位）；gen_specs --check
 OK；门①–⑩ 全 pass、`holdout_gates.overall == "pass"`（仍指
