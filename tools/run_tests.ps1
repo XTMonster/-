@@ -62,10 +62,16 @@ function Get-TreeDigest {
     $parts += ((& git rev-parse HEAD 2>$null) -join "`n")
     #: Generated evidence is an OUTPUT, not an input: the chain writes into
     #: docs/evidence/<run-id>/ itself, and a concurrent lane writing its own run
-    #: dir must not make this run look "moved". So only the input side is digested
-    #: (HEAD + tracked diff + dirty paths outside docs/evidence/).
+    #: dir must not make this run look "moved". The same class includes the
+    #: root-level cumulative audit artifacts (audit_log.jsonl / llm_trace.jsonl)
+    #: that headless runs append to on every execution -- they are outputs too,
+    #: and digesting them would make EVERY frozen-tree chain look "moved"
+    #: (measured 2026-10-17: two runs in a row INCOMPLETE, both caused solely by
+    #: those two files growing mid-chain). So only the input side is digested
+    #: (HEAD + tracked diff + dirty paths outside docs/evidence/ and the
+    #: root-level audit artifacts).
     $dirty = @((& git status --porcelain 2>$null) | Where-Object {
-        $_ -notmatch 'docs/evidence/' })
+        $_ -notmatch 'docs/evidence/' -and $_ -notmatch '^\?\? (audit_log\.jsonl|llm_trace\.jsonl)$' })
     $parts += ($dirty -join "`n")
     $parts += ((& git diff 2>$null) -join "`n")
     $text = ($parts -join "`n")
@@ -785,7 +791,7 @@ $treePayload = [ordered]@{
     digest_after     = $treeAfter
     stable           = ($treeBefore -eq $treeAfter)
     dirty_before     = @((& git status --porcelain 2>$null) | Where-Object {
-        $_ -notmatch 'docs/evidence/' })
+        $_ -notmatch 'docs/evidence/' -and $_ -notmatch '^\?\? (audit_log\.jsonl|llm_trace\.jsonl)$' })
     captured_at      = (Get-Date).ToString('o')
 }
 $treePayload | ConvertTo-Json -Depth 4 | Out-File -Encoding utf8 (Join-Path $evidenceDir 'tree.json')
