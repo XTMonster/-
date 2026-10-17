@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Iterable, List, Sequence, Tuple
+from typing import Dict, Iterable, List, Sequence, Tuple
+
+from ..contracts.cast import DEFAULT_COLORS
 
 ScreenPoint = Tuple[float, float]
 WorldPoint = Tuple[float, float, float]
@@ -60,6 +62,14 @@ class OverlayGeometry:
     def is_empty(self) -> bool:
         return not any((self.thirds, self.safe_areas, self.axis_lines,
                         self.paths, self.frustums, self.violations))
+
+
+@dataclass
+class ColoredPolyline:
+    """带颜色的轨迹折线（G1）：颜色来自角色 color 字段或回落调色板。"""
+
+    color: str
+    points: List[WorldPoint]
 
 
 def thirds_grid() -> List[Segment2D]:
@@ -150,6 +160,75 @@ def frustum_lines(position: Sequence[float], target: Sequence[float],
     for index in range(4):                      # 远端四边形
         lines.extend([corners[index], corners[(index + 1) % 4]])
     return lines
+
+
+def path_ticks(points: List[WorldPoint], total_frames: int,
+               interval_frames: int = 12) -> List[WorldPoint]:
+    """沿折线按帧间隔取刻度点（匀速参数化）。
+
+    匀速参数化的假设：弧长比例当作时间比例（G1，v1.7 TDD §10）。
+    空路径/单点没有可走的轨迹，原样返回。
+    """
+    if len(points) < 2:
+        return points
+    total = int(total_frames)
+    step = int(interval_frames)
+    if total < 0:
+        raise ValueError(f"total_frames 不能为负：{total_frames}")
+    if step <= 0:
+        raise ValueError(f"interval_frames 必须为正：{interval_frames}")
+    if total == 0:
+        return [points[0]]
+    cumulative = [0.0]
+    for index in range(1, len(points)):
+        start, end = points[index - 1], points[index]
+        segment = math.sqrt(sum((end[i] - start[i]) ** 2 for i in range(3)))
+        cumulative.append(cumulative[-1] + segment)
+    total_length = cumulative[-1]
+
+    def point_at(arc: float) -> WorldPoint:
+        """弧长 ``arc`` 处的折线插值点（弧长比例当时间比例）。"""
+        if arc <= 0.0:
+            return points[0]
+        if arc >= total_length:
+            return points[-1]
+        for index in range(1, len(points)):
+            if arc <= cumulative[index]:
+                seg_len = cumulative[index] - cumulative[index - 1]
+                if seg_len <= 1e-12:
+                    return points[index - 1]
+                ratio = (arc - cumulative[index - 1]) / seg_len
+                return tuple(
+                    points[index - 1][i]
+                    + (points[index][i] - points[index - 1][i]) * ratio
+                    for i in range(3))
+        return points[-1]
+
+    ticks: List[WorldPoint] = []
+    for frame in range(0, total + 1, step):
+        ratio = total_length * frame / float(total)
+        ticks.append(point_at(ratio))
+    if total % step != 0:
+        ticks.append(points[-1])
+    return ticks
+
+
+def colored_paths(paths: Dict[str, List[WorldPoint]],
+                  colors: Dict[str, str]) -> List[ColoredPolyline]:
+    """按角色 ``color`` 分组着色；未知角色回落内置调色板循环。
+
+    调色板复用 ``contracts.cast.DEFAULT_COLORS``（6 色，与角色默认配色同源，
+    不另抄一份）；未知角色按首次出现顺序取色，保证同一角色始终同色。
+    """
+    result: List[ColoredPolyline] = []
+    unknown_index = 0
+    for role_id, role_path in paths.items():
+        color = colors.get(role_id)
+        if color is None:
+            color = DEFAULT_COLORS[unknown_index % len(DEFAULT_COLORS)]
+            unknown_index += 1
+        result.append(ColoredPolyline(color=color, points=list(role_path)))
+    return result
 
 
 def build_overlay(*, show_thirds: bool = True, show_safe_area: bool = True,
