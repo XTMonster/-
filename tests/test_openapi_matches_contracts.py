@@ -34,6 +34,7 @@ from block_director.contracts.operations import (
     RetrieveRequest,
     RetrieveResponse,
 )
+from block_director.contracts.ui_events import UIEvent
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "specs" / "openapi.yaml"
@@ -56,9 +57,25 @@ SCHEMA_TO_MODEL = {
     "RetrieveResponse": RetrieveResponse,
     "CancelRequest": CancelRequest,
     "CancelResponse": CancelResponse,
+    "UIEvent": UIEvent,
 }
 
-EXPECTED_PATHS = {"/health", "/v1/chat", "/v1/embed", "/v1/retrieve", "/v1/cancel"}
+EXPECTED_PATHS = {
+    "/health",
+    "/v1/chat",
+    "/v1/embed",
+    "/v1/retrieve",
+    "/v1/cancel",
+    "/v1/ui/events",
+    "/v1/ui/config",
+    "/v1/ui/secret",
+    "/v1/ui/knowledge/stats",
+    "/v1/ui/state_map",
+    "/v1/ui/rules",
+    "/v1/ui/target_models",
+    "/v1/ui/shots",
+    "/v1/ui/chat",
+}
 
 
 @pytest.fixture(scope="module")
@@ -153,6 +170,9 @@ def _sample_payloads() -> Dict[str, Dict[str, Any]]:
             cases=[Case(case_id="case_001")]).to_dict(),
         "CancelRequest": CancelRequest(request_id="r1").to_dict(),
         "CancelResponse": CancelResponse(cancelled=True).to_dict(),
+        "UIEvent": UIEvent(seq=1, ts=123.0, kind="state_change",
+                           state="BUILDING", shot_id="shot_001",
+                           payload={"done": 1}).to_dict(),
     }
 
 
@@ -169,3 +189,11 @@ def test_invalid_payload_is_rejected(spec):
     bad = ChatPayload(messages=[]).to_dict()
     bad["tool_choice"] = "sometimes"
     assert list(_validator(spec, "ChatRequest").iter_errors(bad))
+
+
+def test_ui_event_post_request_optional_fields(spec):
+    """POST /v1/ui/events 的请求体：state/shot_id/payload 可选，kind 必填。"""
+    valid = {"seq": 1, "ts": 0.0, "kind": "state_change"}
+    assert not list(_validator(spec, "UIEventPostRequest").iter_errors(valid))
+    bad = {"seq": 1, "ts": 0.0}
+    assert list(_validator(spec, "UIEventPostRequest").iter_errors(bad))

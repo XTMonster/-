@@ -113,6 +113,297 @@ paths:
               schema:
                 $ref: "#/components/schemas/CancelResponse"
 
+  # ---------------------------------------------------------------- UI（v1.7）
+  /v1/ui/events:
+    get:
+      operationId: ui_events_list
+      summary: 增量拉取运行状态事件（观察流）
+      description: >-
+        Web 端用 since=seq 增量拉。响应只含 seq > since 的事件。
+      parameters:
+        - name: since
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: 只返回 seq 大于该值的事件
+      responses:
+        "200":
+          description: 事件列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UIEventListResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: ui_events_push
+      summary: 推送一条运行状态事件
+      description: >-
+        客户端 seq/ts 一律忽略，seq/ts 由服务端赋值覆盖；kind 宽松读
+        （state_change | shot_progress | llm_call | audit | chat | error）。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UIEventPostRequest"
+      responses:
+        "200":
+          description: 已受理
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UIEventPostResponse"
+        "400":
+          description: 事件结构非法
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/config:
+    get:
+      operationId: ui_config_get
+      summary: 读取生效配置
+      description: AppConfig.to_dict() 完整树；llm.api_key 已掩码。
+      responses:
+        "200":
+          description: 配置树
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: ui_config_put
+      summary: 写入配置
+      description: >-
+        请求体为 JSON 或 YAML；api_key 恒清空不落盘。error 级 issue → 400 拒写，
+        磁盘文件不动；否则 200 且 issues 只含 warning。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfigPutRequest"
+          application/yaml:
+            schema:
+              $ref: "#/components/schemas/ConfigPutRequest"
+      responses:
+        "200":
+          description: 已写入（issues 可为空）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigPutResponse"
+        "400":
+          description: error 级 issue 拒写或请求体非法
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ConfigPutResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/secret:
+    put:
+      operationId: ui_secret_put
+      summary: 保存 provider 密钥
+      description: 不回 key（R-UI-1）；响应里只允许出现 saved 标志。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SecretPutRequest"
+      responses:
+        "200":
+          description: 已保存
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SecretPutResponse"
+        "400":
+          description: 空 api_key 等非法请求
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/knowledge/stats:
+    get:
+      operationId: ui_knowledge_stats
+      summary: 知识库计数（cards / edges / cases）
+      responses:
+        "200":
+          description: 计数
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeStatsResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/state_map:
+    get:
+      operationId: ui_state_map
+      summary: 状态 → 助手形象映射
+      description: dict(CLIP_BY_STATE)（contracts/assistant.py 单一真源）。
+      responses:
+        "200":
+          description: 状态映射
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateMapResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/rules:
+    get:
+      operationId: ui_rules
+      summary: 规则元信息目录
+      description: rules 来自 rule_catalog.py（id/severity/summary）；disabled 每次请求重读。
+      responses:
+        "200":
+          description: 规则目录
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RulesResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/target_models:
+    get:
+      operationId: ui_target_models
+      summary: 目标模型规格表
+      responses:
+        "200":
+          description: 模型表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TargetModelsResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: 规格表不可读/形态非法
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/shots:
+    get:
+      operationId: ui_shots
+      summary: 读取某次运行的 shots.json
+      parameters:
+        - name: run
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^[A-Za-z0-9._-]+$"
+          description: 运行 id；非法 → 400，缺失 → 404
+      responses:
+        "200":
+          description: shots.json 完整载荷
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShotsResponse"
+        "400":
+          description: 非法 run id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: 运行不存在或 shots.json 缺失
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/ui/chat:
+    post:
+      operationId: ui_chat
+      summary: 只读小助手问答
+      description: >-
+        捷径/写保护分支响应带 source 键；走 LLM 检索分支只有 reply/sources。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatUIRequest"
+      responses:
+        "200":
+          description: 回复
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatUIResponse"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -428,3 +719,184 @@ components:
           description: 能力协商依据（§2.5）
         detail:
           type: string
+
+    # ---------------------------------------------------------------- UI（v1.7）
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+
+    UIEvent:
+      type: object
+      required: [seq, ts, kind, state, shot_id, payload]
+      properties:
+        seq: { type: integer, minimum: 0 }
+        ts: { type: number }
+        kind:
+          type: string
+          description: state_change | shot_progress | llm_call | audit | chat | error（宽松读）
+        state:
+          type: string
+          description: DriverState.value，kind=state_change 时必填
+        shot_id:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+
+    UIEventPostRequest:
+      type: object
+      required: [seq, ts, kind]
+      description: 请求体；seq/ts 由服务端覆盖，state/shot_id/payload 可选
+      properties:
+        seq: { type: integer, minimum: 0 }
+        ts: { type: number }
+        kind: { type: string }
+        state: { type: string }
+        shot_id: { type: string }
+        payload:
+          type: object
+          additionalProperties: true
+
+    UIEventPostResponse:
+      type: object
+      required: [accepted, seq]
+      properties:
+        accepted: { type: boolean }
+        seq: { type: integer, minimum: 0 }
+
+    UIEventListResponse:
+      type: object
+      required: [events, latest_seq]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/UIEvent"
+        latest_seq: { type: integer, minimum: 0 }
+
+    Issue:
+      type: object
+      required: [code, field, severity, message]
+      properties:
+        code: { type: string }
+        field: { type: string }
+        severity:
+          type: string
+          enum: [error, warning]
+        message: { type: string }
+
+    ConfigPutRequest:
+      type: object
+      additionalProperties: true
+      description: AppConfig.from_dict() 接受的配置子集（JSON 或 YAML）
+
+    ConfigResponse:
+      type: object
+      additionalProperties: true
+      description: AppConfig.to_dict() 完整树；llm.api_key 已掩码
+
+    ConfigPutResponse:
+      type: object
+      required: [issues]
+      properties:
+        issues:
+          type: array
+          items:
+            $ref: "#/components/schemas/Issue"
+      description: 200（写入成功，issues 可为空）与 400（error 级拒写）共用
+
+    SecretPutRequest:
+      type: object
+      required: [provider, api_key]
+      properties:
+        provider: { type: string }
+        api_key: { type: string }
+
+    SecretPutResponse:
+      type: object
+      required: [saved]
+      properties:
+        saved: { type: boolean }
+
+    KnowledgeStatsResponse:
+      type: object
+      required: [cards, edges, cases, cards_note]
+      properties:
+        cards: { type: integer, minimum: 0 }
+        edges: { type: integer, minimum: 0 }
+        cases: { type: integer, minimum: 0 }
+        cards_note: { type: string }
+
+    StateMapResponse:
+      type: object
+      additionalProperties:
+        type: string
+      description: dict(CLIP_BY_STATE)——DriverState → 助手形象
+
+    RuleInfo:
+      type: object
+      required: [id, severity, summary]
+      properties:
+        id: { type: string }
+        severity:
+          type: string
+          enum: [error, warning]
+        summary: { type: string }
+
+    RulesResponse:
+      type: object
+      required: [rules, disabled]
+      properties:
+        rules:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuleInfo"
+        disabled:
+          type: array
+          items: { type: string }
+
+    TargetModelsResponse:
+      type: object
+      required: [models, current]
+      properties:
+        models:
+          type: object
+          additionalProperties:
+            type: object
+            required: [label, raw]
+            properties:
+              label: { type: string }
+              raw:
+                type: object
+                additionalProperties: true
+        current: { type: string }
+
+    ShotsResponse:
+      type: object
+      additionalProperties: true
+      description: runs/<run>/export/shots.json 的完整载荷
+
+    ChatUIRequest:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+
+    ChatUIResponse:
+      type: object
+      required: [reply, sources]
+      properties:
+        reply: { type: string }
+        source:
+          type: string
+          description: 捷径/写保护分支才带；LLM 检索分支没有该键
+        sources:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+            properties:
+              type: { type: string }
+              id: { type: string }

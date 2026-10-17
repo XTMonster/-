@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import http.client
 import json
 import sys
 import threading
@@ -132,3 +133,33 @@ def test_ring_buffer_evicts(monkeypatch):
     status, payload = _request(base, "GET", "/v1/ui/events?since=0")
     assert [item["seq"] for item in payload["events"]] == [3, 4, 5]
     assert payload["latest_seq"] == 5
+
+
+def test_unauthorized_post_drains_body_for_keepalive(monkeypatch):
+    """未授权 POST 必须吸干请求体：HTTP/1.1 长连接复用不被残留字节毒化。
+
+    回归对象：全量负载下偶发的 ``ConnectionAbortedError``——未授权分支只回包
+    不读 body，残留的 JSON 字节会被下一条请求当成请求行解析，时序竞争时直接
+    中止连接。修复后同一条连接上先发未授权 POST、再发授权 GET，必须仍然 200。
+    """
+    httpd = _start(monkeypatch, token="t")
+    host, port = "127.0.0.1", int(httpd.server_address[1])
+    connection = http.client.HTTPConnection(host, port, timeout=10)
+    try:
+        body = json.dumps(_event(seq=1), ensure_ascii=False).encode("utf-8")
+        connection.request(
+            "POST", "/v1/ui/events", body=body,
+            headers={"Content-Type": "application/json"})
+        response = connection.getresponse()
+        assert response.status == 401
+        assert "unauthorized" in response.read().decode("utf-8", "replace")
+        # 复用同一条连接：若上一步没吸干 body，这里要么 400/错乱、要么中止。
+        connection.request(
+            "GET", "/v1/ui/events",
+            headers={"Authorization": "Bearer t"})
+        response = connection.getresponse()
+        assert response.status == 200
+        payload = json.loads(response.read().decode("utf-8", "replace"))
+        assert "events" in payload
+    finally:
+        connection.close()

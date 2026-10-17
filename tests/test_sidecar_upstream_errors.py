@@ -357,11 +357,14 @@ def test_llm_error_audit_event_records_upstream_fields():
     driver = PrevisDriver(transport=transport, audit=AuditLogger(),
                           script=SCRIPT, thread_factory=InlineThread)
     state = driver.run_to_completion()
-    assert state is DriverState.ERROR
+    # G2 #8（用户裁决）：计划调整到上限后按剧本声明兜底，不整轮 ERROR。
+    assert state is DriverState.DONE
+    assert any(event.kind == "plan_adjusted"
+               for event in driver.audit.recent())
 
     errors = [event for event in driver.audit.recent()
               if event.kind == "llm_error"]
-    assert len(errors) == 2, "plan 失败两次，每次都该有一条 llm_error"
+    assert errors, "plan 每次失败都该有一条 llm_error"
     for event in errors:
         assert event.data["upstream_http_status"] == 422
         assert "strict plan rejected" in event.data["upstream_body_excerpt"]

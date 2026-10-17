@@ -861,6 +861,18 @@ def make_handler(config: "SidecarConfig"):
             length = int(self.headers.get("Content-Length", 0))
             return json.loads(self.rfile.read(length) or b"{}")
 
+        def _drain_body(self) -> None:
+            """读掉并丢弃请求体。
+
+            未授权分支（以及一切不消费 body 的早期返回）必须先吸干 body 再回包：
+            本服务是 HTTP/1.1 长连接，残留的请求体字节会毒化下一条请求的解析
+            （全量负载下实测出现过 ``ConnectionAbortedError``/请求行错乱）。只丢
+            不解析——拒绝的数据绝不进路由。
+            """
+            length = int(self.headers.get("Content-Length", 0))
+            if length > 0:
+                self.rfile.read(length)
+
         def _raw_body(self) -> Tuple[str, str]:
             """按原始文本读 body（PUT config 要按 Content-Type 双收）。"""
             length = int(self.headers.get("Content-Length", 0))
@@ -1035,6 +1047,7 @@ def make_handler(config: "SidecarConfig"):
 
         def do_POST(self):
             if not self._authorised():
+                self._drain_body()
                 self._json(401, {"error": "unauthorized"})
                 return
             try:
@@ -1057,6 +1070,7 @@ def make_handler(config: "SidecarConfig"):
 
         def do_PUT(self):
             if not self._authorised():
+                self._drain_body()
                 self._json(401, {"error": "unauthorized"})
                 return
             try:
