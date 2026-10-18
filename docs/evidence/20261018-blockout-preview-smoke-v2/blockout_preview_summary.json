@@ -1,0 +1,36 @@
+{
+  "settings": {
+    "resolution": [
+      1280,
+      720
+    ],
+    "aspect": 1.7778,
+    "eevee_samples": 8
+  },
+  "checks": {
+    "resolution": [
+      1280,
+      720
+    ],
+    "resolution_percentage": 100,
+    "render_frame_count": 9,
+    "png_count": 9,
+    "report_schema": "blockout-report/v1",
+    "report_verdict": "fail",
+    "report_checks": 9,
+    "report_findings": 1,
+    "visual_states": 9,
+    "shot002_checks": 1,
+    "shot003_empty_wall": 1,
+    "manifest_fingerprint": "506c417e6a749614545c02077106a57bf960e896e8db5e5be4f547886df9fed5",
+    "summary": {
+      "resolution": [
+        1280,
+        720
+      ],
+      "aspect": 1.7778,
+      "eevee_samples": 8
+    },
+    "mismatches": []
+  }
+}

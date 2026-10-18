@@ -1,0 +1,138 @@
+{
+  "schema_version": "blockout-report/v1",
+  "manifest_fingerprint": "506c417e6a749614545c02077106a57bf960e896e8db5e5be4f547886df9fed5",
+  "verdict": "fail",
+  "checks": [
+    {
+      "check_id": "composition",
+      "shot_id": "shot_001",
+      "actual": 84.3,
+      "threshold": 80.0,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "occlusion",
+      "shot_id": "shot_001",
+      "actual": 1.0,
+      "threshold": 0.5,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "on_screen",
+      "shot_id": "shot_001",
+      "actual": 1.0,
+      "threshold": 0.05,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "design_vs_observed",
+      "shot_id": "shot_001",
+      "actual": 0.0,
+      "threshold": 0.3,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "empty_shot",
+      "shot_id": "shot_002",
+      "actual": 0,
+      "threshold": 0,
+      "verdict": "pass",
+      "note": "空镜：无被摄主体，豁免构图/遮挡/出入画判据"
+    },
+    {
+      "check_id": "composition",
+      "shot_id": "shot_003",
+      "actual": null,
+      "threshold": 80.0,
+      "verdict": "unresolved"
+    },
+    {
+      "check_id": "occlusion",
+      "shot_id": "shot_003",
+      "actual": 1.0,
+      "threshold": 0.5,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "on_screen",
+      "shot_id": "shot_003",
+      "actual": 0.0,
+      "threshold": 0.05,
+      "verdict": "fail"
+    },
+    {
+      "check_id": "design_vs_observed",
+      "shot_id": "shot_003",
+      "actual": 0.0,
+      "threshold": 0.3,
+      "verdict": "pass"
+    }
+  ],
+  "findings": [
+    {
+      "check_id": "E_BLOCKOUT_EMPTY_WALL",
+      "shot_id": "shot_003",
+      "severity": "error",
+      "message": "主体在画面内占比近零，疑似相机对准空墙"
+    }
+  ],
+  "visual_states": [
+    {
+      "shot_id": "shot_001",
+      "frame": 1,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_001_f0001.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_001",
+      "frame": 12,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_001_f0012.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_001",
+      "frame": 24,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_001_f0024.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_002",
+      "frame": 25,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_002_f0025.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_002",
+      "frame": 30,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_002_f0030.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_002",
+      "frame": 36,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_002_f0036.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_003",
+      "frame": 37,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_003_f0037.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_003",
+      "frame": 42,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_003_f0042.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_003",
+      "frame": 48,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-preview-smoke-v2\\preview\\shot_003_f0048.png",
+      "reviewed": false
+    }
+  ],
+  "notes": [
+    "16:9 低采样预览；数值自检 + 渲染帧供执行 AI 视觉检查"
+  ]
+}
