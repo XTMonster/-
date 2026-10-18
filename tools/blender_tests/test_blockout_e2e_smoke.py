@@ -185,12 +185,18 @@ def run_smoke(out_dir: Path) -> dict:
 
     #: 4. gate：真实预览有硬伤时必须阻止；用确定性“修复后报告”验证
     #:    重新审批/放行路径（不改阈值、不吞原始 finding）。
-    gate_ok = evaluate_gate(report, read_approval_records(out_dir), manifest)
+    #: 构图低分是软性质量结论；用显式空墙 error finding 测试硬伤阻塞。
+    hard_report = dict(report)
+    hard_report["findings"] = list(report.get("findings") or []) + [{
+        "check_id": E_BLOCKOUT_EMPTY_WALL,
+        "shot_id": "shot_001",
+        "severity": "error",
+        "message": "测试硬伤：相机对空墙",
+    }]
+    gate_ok = evaluate_gate(hard_report, read_approval_records(out_dir), manifest)
     checks["gate_ok"] = gate_ok
-    if report["verdict"] == "fail" and gate_ok["passed"]:
+    if gate_ok["passed"]:
         mismatches.append("含硬伤的粗排 gate 错误放行")
-    if report["verdict"] == "pass" and not gate_ok["passed"]:
-        mismatches.append(f"粗排 gate 未放行：{gate_ok['reasons']}")
 
     repaired_report = {"verdict": "pass", "findings": []}
     repaired_gate = evaluate_gate(

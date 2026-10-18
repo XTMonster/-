@@ -1,0 +1,53 @@
+{
+  "checks": [
+    {
+      "actual": 0,
+      "dimension": "spatial_continuity",
+      "note": "角色体块跨镜引用一致（manifest 单一真源）",
+      "threshold": 0,
+      "verdict": "pass"
+    },
+    {
+      "actual": 0,
+      "dimension": "enter_exit",
+      "note": "出入画声明与出场一致",
+      "threshold": 0,
+      "verdict": "pass"
+    },
+    {
+      "actual": 0,
+      "dimension": "camera_direction",
+      "note": "相邻镜机位未跨轴线",
+      "threshold": 0,
+      "verdict": "pass"
+    },
+    {
+      "actual": 1,
+      "dimension": "lighting_direction",
+      "note": "场景级共享灯光（clay_studio 单一光源集合），全序列一致",
+      "threshold": 1,
+      "verdict": "pass"
+    },
+    {
+      "actual": 0,
+      "dimension": "transition",
+      "note": "转场帧衔接一致",
+      "threshold": 0,
+      "verdict": "pass"
+    }
+  ],
+  "dimensions": [
+    "spatial_continuity",
+    "enter_exit",
+    "camera_direction",
+    "lighting_direction",
+    "transition"
+  ],
+  "findings": [],
+  "manifest_fingerprint": "218d8e6ad9b86f717d8387aee139e06b041dcf6ebc2a15a8d2ab9c50354d8f21",
+  "notes": [
+    "bpy 序列回放：首/中/末帧时间线评估无崩溃"
+  ],
+  "schema_version": "blockout-sequence-review/v1",
+  "verdict": "pass"
+}

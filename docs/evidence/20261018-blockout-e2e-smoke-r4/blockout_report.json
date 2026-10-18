@@ -1,0 +1,210 @@
+{
+  "schema_version": "blockout-report/v1",
+  "manifest_fingerprint": "218d8e6ad9b86f717d8387aee139e06b041dcf6ebc2a15a8d2ab9c50354d8f21",
+  "verdict": "fail",
+  "checks": [
+    {
+      "check_id": "composition",
+      "shot_id": "shot_001",
+      "actual": 50.43,
+      "threshold": 80.0,
+      "verdict": "fail"
+    },
+    {
+      "check_id": "occlusion",
+      "shot_id": "shot_001",
+      "actual": 0.7222,
+      "threshold": 0.5,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "on_screen",
+      "shot_id": "shot_001",
+      "actual": 0.8889,
+      "threshold": 0.05,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "design_vs_observed",
+      "shot_id": "shot_001",
+      "actual": 0.0,
+      "threshold": 0.3,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "composition",
+      "shot_id": "shot_002",
+      "actual": 74.8,
+      "threshold": 80.0,
+      "verdict": "fail"
+    },
+    {
+      "check_id": "occlusion",
+      "shot_id": "shot_002",
+      "actual": 1.0,
+      "threshold": 0.5,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "on_screen",
+      "shot_id": "shot_002",
+      "actual": 0.4825,
+      "threshold": 0.05,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "design_vs_observed",
+      "shot_id": "shot_002",
+      "actual": 0.0,
+      "threshold": 0.3,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "composition",
+      "shot_id": "shot_003",
+      "actual": 67.7,
+      "threshold": 80.0,
+      "verdict": "fail"
+    },
+    {
+      "check_id": "occlusion",
+      "shot_id": "shot_003",
+      "actual": 0.7222,
+      "threshold": 0.5,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "on_screen",
+      "shot_id": "shot_003",
+      "actual": 0.7393,
+      "threshold": 0.05,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "design_vs_observed",
+      "shot_id": "shot_003",
+      "actual": 0.0,
+      "threshold": 0.3,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "composition",
+      "shot_id": "shot_004",
+      "actual": 69.6,
+      "threshold": 80.0,
+      "verdict": "fail"
+    },
+    {
+      "check_id": "occlusion",
+      "shot_id": "shot_004",
+      "actual": 0.8056,
+      "threshold": 0.5,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "on_screen",
+      "shot_id": "shot_004",
+      "actual": 1.0,
+      "threshold": 0.05,
+      "verdict": "pass"
+    },
+    {
+      "check_id": "design_vs_observed",
+      "shot_id": "shot_004",
+      "actual": 0.0,
+      "threshold": 0.3,
+      "verdict": "pass"
+    }
+  ],
+  "findings": [
+    {
+      "check_id": "off_screen",
+      "shot_id": "shot_003",
+      "severity": "warning",
+      "message": "主体完全出画（出入画 check）"
+    },
+    {
+      "check_id": "off_screen",
+      "shot_id": "shot_004",
+      "severity": "warning",
+      "message": "主体完全出画（出入画 check）"
+    }
+  ],
+  "visual_states": [
+    {
+      "shot_id": "shot_001",
+      "frame": 1,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_001_f0001.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_001",
+      "frame": 60,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_001_f0060.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_001",
+      "frame": 120,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_001_f0120.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_002",
+      "frame": 121,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_002_f0121.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_002",
+      "frame": 168,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_002_f0168.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_002",
+      "frame": 216,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_002_f0216.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_003",
+      "frame": 217,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_003_f0217.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_003",
+      "frame": 264,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_003_f0264.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_003",
+      "frame": 312,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_003_f0312.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_004",
+      "frame": 313,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_004_f0313.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_004",
+      "frame": 348,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_004_f0348.png",
+      "reviewed": false
+    },
+    {
+      "shot_id": "shot_004",
+      "frame": 384,
+      "png": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\preview\\shot_004_f0384.png",
+      "reviewed": false
+    }
+  ],
+  "notes": [
+    "16:9 低采样预览；数值自检 + 渲染帧供执行 AI 视觉检查"
+  ]
+}

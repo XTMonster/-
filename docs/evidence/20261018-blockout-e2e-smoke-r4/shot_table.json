@@ -1,0 +1,99 @@
+[
+  {
+    "camera_id": "cam_shot_001",
+    "character_ids": [
+      "米迦尔",
+      "伊恩",
+      "贵妇",
+      "偷盗者"
+    ],
+    "downstream_map": {
+      "geometry": "shot_001_geometry",
+      "materials": "shot_001_materials",
+      "reference_video": "shot_001.mp4",
+      "video_generation": "shot_001_video_prompt"
+    },
+    "end_frame": 120,
+    "enter_exit": {
+      "enter": [
+        "enter_from"
+      ],
+      "exit": []
+    },
+    "order": 1,
+    "prop_ids": [],
+    "shot_id": "shot_001",
+    "start_frame": 1,
+    "transition_overlap_frames": 0
+  },
+  {
+    "camera_id": "cam_shot_002",
+    "character_ids": [
+      "贵妇"
+    ],
+    "downstream_map": {
+      "geometry": "shot_002_geometry",
+      "materials": "shot_002_materials",
+      "reference_video": "shot_002.mp4",
+      "video_generation": "shot_002_video_prompt"
+    },
+    "end_frame": 216,
+    "enter_exit": {
+      "enter": [],
+      "exit": []
+    },
+    "order": 2,
+    "prop_ids": [],
+    "shot_id": "shot_002",
+    "start_frame": 121,
+    "transition_overlap_frames": 0
+  },
+  {
+    "camera_id": "cam_shot_003",
+    "character_ids": [
+      "贵妇",
+      "伊恩"
+    ],
+    "downstream_map": {
+      "geometry": "shot_003_geometry",
+      "materials": "shot_003_materials",
+      "reference_video": "shot_003.mp4",
+      "video_generation": "shot_003_video_prompt"
+    },
+    "end_frame": 312,
+    "enter_exit": {
+      "enter": [],
+      "exit": []
+    },
+    "order": 3,
+    "prop_ids": [],
+    "shot_id": "shot_003",
+    "start_frame": 217,
+    "transition_overlap_frames": 0
+  },
+  {
+    "camera_id": "cam_shot_004",
+    "character_ids": [
+      "米迦尔",
+      "伊恩",
+      "贵妇",
+      "偷盗者"
+    ],
+    "downstream_map": {
+      "geometry": "shot_004_geometry",
+      "materials": "shot_004_materials",
+      "reference_video": "shot_004.mp4",
+      "video_generation": "shot_004_video_prompt"
+    },
+    "end_frame": 384,
+    "enter_exit": {
+      "enter": [],
+      "exit": []
+    },
+    "order": 4,
+    "prop_ids": [],
+    "shot_id": "shot_004",
+    "start_frame": 313,
+    "transition_overlap_frames": 0
+  }
+]

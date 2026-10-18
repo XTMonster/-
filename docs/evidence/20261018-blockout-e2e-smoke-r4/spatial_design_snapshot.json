@@ -1,0 +1,199 @@
+{
+  "schema_version": "spatial-design-snapshot/v1",
+  "scene_id": "dock_market_lady",
+  "characters": [
+    {
+      "name": "米迦尔",
+      "position": {
+        "x": -2.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": null,
+      "facing": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "motion": null,
+      "gaze": null,
+      "motion_by_shot": [],
+      "gaze_by_shot": [],
+      "provenance": "plan_intent",
+      "unit": {
+        "position": "m",
+        "rotation": "rad",
+        "angle": "deg",
+        "speed": "m/s"
+      }
+    },
+    {
+      "name": "伊恩",
+      "position": {
+        "x": -0.5,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": null,
+      "facing": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "motion": null,
+      "gaze": null,
+      "motion_by_shot": [],
+      "gaze_by_shot": [],
+      "provenance": "plan_intent",
+      "unit": {
+        "position": "m",
+        "rotation": "rad",
+        "angle": "deg",
+        "speed": "m/s"
+      }
+    },
+    {
+      "name": "贵妇",
+      "position": {
+        "x": 1.0,
+        "y": -2.0,
+        "z": 0.0
+      },
+      "rotation": null,
+      "facing": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "motion": null,
+      "gaze": null,
+      "motion_by_shot": [],
+      "gaze_by_shot": [],
+      "provenance": "plan_intent",
+      "unit": {
+        "position": "m",
+        "rotation": "rad",
+        "angle": "deg",
+        "speed": "m/s"
+      }
+    },
+    {
+      "name": "偷盗者",
+      "position": {
+        "x": 2.5,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": null,
+      "facing": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "motion": null,
+      "gaze": null,
+      "motion_by_shot": [],
+      "gaze_by_shot": [],
+      "provenance": "plan_intent",
+      "unit": {
+        "position": "m",
+        "rotation": "rad",
+        "angle": "deg",
+        "speed": "m/s"
+      }
+    }
+  ],
+  "props": [],
+  "anchors": [],
+  "camera_intents": [
+    {
+      "shot_id": "shot_001",
+      "position": [
+        -2.0,
+        4.660706683695189,
+        0.6213793103448275
+      ],
+      "target": [
+        -2.0,
+        0.0,
+        0.6213793103448275
+      ],
+      "lens": 35.0,
+      "fov_deg": 54.4322,
+      "provenance": "algorithmic_measurement",
+      "resolved": true,
+      "unit": {
+        "position": "m",
+        "lens": "mm",
+        "fov": "deg"
+      }
+    },
+    {
+      "shot_id": "shot_002",
+      "position": [
+        1.0,
+        0.38936372269705544,
+        1.3129230769230769
+      ],
+      "target": [
+        1.0,
+        -2.0,
+        1.3129230769230769
+      ],
+      "lens": 50.0,
+      "fov_deg": 39.5978,
+      "provenance": "algorithmic_measurement",
+      "resolved": true,
+      "unit": {
+        "position": "m",
+        "lens": "mm",
+        "fov": "deg"
+      }
+    },
+    {
+      "shot_id": "shot_003",
+      "position": [
+        1.0,
+        1.2422307364836098,
+        0.949655172413793
+      ],
+      "target": [
+        1.0,
+        -2.0,
+        0.949655172413793
+      ],
+      "lens": 35.0,
+      "fov_deg": 54.4322,
+      "provenance": "algorithmic_measurement",
+      "resolved": true,
+      "unit": {
+        "position": "m",
+        "lens": "mm",
+        "fov": "deg"
+      }
+    },
+    {
+      "shot_id": "shot_004",
+      "position": [
+        -2.0,
+        4.660706683695189,
+        0.6213793103448275
+      ],
+      "target": [
+        -2.0,
+        0.0,
+        0.6213793103448275
+      ],
+      "lens": 35.0,
+      "fov_deg": 54.4322,
+      "provenance": "algorithmic_measurement",
+      "resolved": true,
+      "unit": {
+        "position": "m",
+        "lens": "mm",
+        "fov": "deg"
+      }
+    }
+  ],
+  "notes": []
+}

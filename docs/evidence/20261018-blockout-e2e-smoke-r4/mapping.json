@@ -1,0 +1,30 @@
+{
+  "manifest_fingerprint": "218d8e6ad9b86f717d8387aee139e06b041dcf6ebc2a15a8d2ab9c50354d8f21",
+  "schema_version": "blockout-mapping/v1",
+  "shots": {
+    "shot_001": {
+      "geometry": "shot_001_geometry",
+      "materials": "shot_001_materials",
+      "reference_video": "shot_001.mp4",
+      "video_generation": "shot_001_video_prompt"
+    },
+    "shot_002": {
+      "geometry": "shot_002_geometry",
+      "materials": "shot_002_materials",
+      "reference_video": "shot_002.mp4",
+      "video_generation": "shot_002_video_prompt"
+    },
+    "shot_003": {
+      "geometry": "shot_003_geometry",
+      "materials": "shot_003_materials",
+      "reference_video": "shot_003.mp4",
+      "video_generation": "shot_003_video_prompt"
+    },
+    "shot_004": {
+      "geometry": "shot_004_geometry",
+      "materials": "shot_004_materials",
+      "reference_video": "shot_004.mp4",
+      "video_generation": "shot_004_video_prompt"
+    }
+  }
+}

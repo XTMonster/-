@@ -1,0 +1,45 @@
+{
+  "checkpoints": [
+    {
+      "bytes": 621471,
+      "file": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\checkpoints\\scene_01_blockout.blend",
+      "id": "scene_01_blockout.blend",
+      "scope": "global",
+      "shot_id": null
+    },
+    {
+      "bytes": 621471,
+      "file": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\checkpoints\\scene_s01_blockout.blend",
+      "id": "scene_s01_blockout.blend",
+      "scope": "shot",
+      "shot_id": "shot_001"
+    },
+    {
+      "bytes": 621471,
+      "file": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\checkpoints\\scene_s02_blockout.blend",
+      "id": "scene_s02_blockout.blend",
+      "scope": "shot",
+      "shot_id": "shot_002"
+    },
+    {
+      "bytes": 621471,
+      "file": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\checkpoints\\scene_s03_blockout.blend",
+      "id": "scene_s03_blockout.blend",
+      "scope": "shot",
+      "shot_id": "shot_003"
+    },
+    {
+      "bytes": 621471,
+      "file": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-e2e-smoke-r4\\checkpoints\\scene_s04_blockout.blend",
+      "id": "scene_s04_blockout.blend",
+      "scope": "shot",
+      "shot_id": "shot_004"
+    }
+  ],
+  "count": 5,
+  "frame_range": [
+    1,
+    384
+  ],
+  "schema_version": "blockout-approval/v1"
+}

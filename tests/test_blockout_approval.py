@@ -190,10 +190,10 @@ def test_evaluate_gate_blocks_unless_report_pass_and_approval_matches(
         scope="global", shot_id=None, current_state="draft",
         approved_by="blockout-gate")]
 
-    #: 报告红 -> blocked（即使已审批）
+    #: 硬伤 finding -> blocked（即使已审批；构图软分不在此门重复判定）
     gate = evaluate_gate(bad_report, approved, manifest)
     assert gate["passed"] is False
-    assert any("报告非 pass" in reason for reason in gate["reasons"])
+    assert any("硬伤" in reason for reason in gate["reasons"])
 
     #: 报告绿 + 审批匹配 -> 放行
     gate = evaluate_gate(good_report, approved, manifest)

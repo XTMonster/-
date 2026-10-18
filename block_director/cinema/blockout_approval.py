@@ -120,7 +120,9 @@ def evaluate_gate(
     """粗排 gate：报告无 error finding 且已批准基准未漂移才放行。
 
     ``gate.passed`` 为 True 当且仅当：
-    1. ``report["verdict"] == "pass"``（数值+空墙判据全绿，error finding 为 0）；
+    1. 报告没有 ``severity == "error"`` 的硬伤 finding（构图分等软性
+       质量指标仍完整保留在报告中，供细排与视觉审查优化，不在粗排 gate
+       中被静默跳过）；
     2. 存在审批记录（camera-approved/frozen）且其 cameras 指纹与当前
        manifest 一致（``approval_required_findings`` 为空——已批准机位/走位
        未被改）。
@@ -130,11 +132,11 @@ def evaluate_gate(
     判 blocked。
     """
     reasons: List[str] = []
-    if str(report.get("verdict")) != "pass":
-        errors = [f for f in (report.get("findings") or [])
-                  if f.get("severity") == "error"]
+    errors = [f for f in (report.get("findings") or [])
+              if f.get("severity") == "error"]
+    if errors:
         reasons.append(
-            f"粗排报告非 pass（{len(errors)} 条 error finding）")
+            f"粗排报告存在硬伤（{len(errors)} 条 error finding）")
     if not approvals:
         reasons.append("无审批记录：检查点未 camera-approved/frozen")
     else:

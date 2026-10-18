@@ -1,0 +1,322 @@
+{
+  "schema_version": "blockout-manifest/v1",
+  "scene_id": "dock_market_lady",
+  "primitives": [
+    {
+      "id": "char_米迦尔",
+      "kind": "character",
+      "shape": "box",
+      "position": {
+        "x": -2.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 1.7
+      },
+      "color": "#8f8f8f",
+      "z_anchor": "foot",
+      "asset_ref": null,
+      "provenance": "plan_intent",
+      "source": {
+        "type": "character",
+        "id": "米迦尔"
+      }
+    },
+    {
+      "id": "char_伊恩",
+      "kind": "character",
+      "shape": "box",
+      "position": {
+        "x": -0.5,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 1.7
+      },
+      "color": "#8f8f8f",
+      "z_anchor": "foot",
+      "asset_ref": null,
+      "provenance": "plan_intent",
+      "source": {
+        "type": "character",
+        "id": "伊恩"
+      }
+    },
+    {
+      "id": "char_贵妇",
+      "kind": "character",
+      "shape": "box",
+      "position": {
+        "x": 1.0,
+        "y": -2.0,
+        "z": 0.0
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 1.7
+      },
+      "color": "#8f8f8f",
+      "z_anchor": "foot",
+      "asset_ref": null,
+      "provenance": "plan_intent",
+      "source": {
+        "type": "character",
+        "id": "贵妇"
+      }
+    },
+    {
+      "id": "char_偷盗者",
+      "kind": "character",
+      "shape": "box",
+      "position": {
+        "x": 2.5,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 1.7
+      },
+      "color": "#8f8f8f",
+      "z_anchor": "foot",
+      "asset_ref": null,
+      "provenance": "plan_intent",
+      "source": {
+        "type": "character",
+        "id": "偷盗者"
+      }
+    }
+  ],
+  "cameras": [
+    {
+      "shot_id": "shot_001",
+      "camera_id": "cam_shot_001",
+      "position": [
+        -2.0,
+        4.6607,
+        0.6214
+      ],
+      "target": [
+        -2.0,
+        0.0,
+        0.6214
+      ],
+      "lens_mm": 35.0,
+      "fov_deg": 54.4322,
+      "movements": [
+        {
+          "type": "track_right",
+          "amount": 0.5,
+          "start_frame": 1,
+          "end_frame": 120
+        }
+      ],
+      "start_frame": 1,
+      "end_frame": 120,
+      "provenance": "algorithmic_measurement",
+      "resolved": true
+    },
+    {
+      "shot_id": "shot_002",
+      "camera_id": "cam_shot_002",
+      "position": [
+        1.0,
+        0.3894,
+        1.3129
+      ],
+      "target": [
+        1.0,
+        -2.0,
+        1.3129
+      ],
+      "lens_mm": 50.0,
+      "fov_deg": 39.5978,
+      "movements": [],
+      "start_frame": 121,
+      "end_frame": 216,
+      "provenance": "algorithmic_measurement",
+      "resolved": true
+    },
+    {
+      "shot_id": "shot_003",
+      "camera_id": "cam_shot_003",
+      "position": [
+        1.0,
+        1.2422,
+        0.9497
+      ],
+      "target": [
+        1.0,
+        -2.0,
+        0.9497
+      ],
+      "lens_mm": 35.0,
+      "fov_deg": 54.4322,
+      "movements": [],
+      "start_frame": 217,
+      "end_frame": 312,
+      "provenance": "algorithmic_measurement",
+      "resolved": true
+    },
+    {
+      "shot_id": "shot_004",
+      "camera_id": "cam_shot_004",
+      "position": [
+        -2.0,
+        4.6607,
+        0.6214
+      ],
+      "target": [
+        -2.0,
+        0.0,
+        0.6214
+      ],
+      "lens_mm": 35.0,
+      "fov_deg": 54.4322,
+      "movements": [],
+      "start_frame": 313,
+      "end_frame": 384,
+      "provenance": "algorithmic_measurement",
+      "resolved": true
+    }
+  ],
+  "shot_table": [
+    {
+      "shot_id": "shot_001",
+      "order": 1,
+      "start_frame": 1,
+      "end_frame": 120,
+      "camera_id": "cam_shot_001",
+      "character_ids": [
+        "米迦尔",
+        "伊恩",
+        "贵妇",
+        "偷盗者"
+      ],
+      "prop_ids": [],
+      "transition_overlap_frames": 0,
+      "enter_exit": {
+        "enter": [
+          "enter_from"
+        ],
+        "exit": []
+      },
+      "downstream_map": {
+        "reference_video": "shot_001.mp4",
+        "geometry": "shot_001_geometry",
+        "materials": "shot_001_materials",
+        "video_generation": "shot_001_video_prompt"
+      }
+    },
+    {
+      "shot_id": "shot_002",
+      "order": 2,
+      "start_frame": 121,
+      "end_frame": 216,
+      "camera_id": "cam_shot_002",
+      "character_ids": [
+        "贵妇"
+      ],
+      "prop_ids": [],
+      "transition_overlap_frames": 0,
+      "enter_exit": {
+        "enter": [],
+        "exit": []
+      },
+      "downstream_map": {
+        "reference_video": "shot_002.mp4",
+        "geometry": "shot_002_geometry",
+        "materials": "shot_002_materials",
+        "video_generation": "shot_002_video_prompt"
+      }
+    },
+    {
+      "shot_id": "shot_003",
+      "order": 3,
+      "start_frame": 217,
+      "end_frame": 312,
+      "camera_id": "cam_shot_003",
+      "character_ids": [
+        "贵妇",
+        "伊恩"
+      ],
+      "prop_ids": [],
+      "transition_overlap_frames": 0,
+      "enter_exit": {
+        "enter": [],
+        "exit": []
+      },
+      "downstream_map": {
+        "reference_video": "shot_003.mp4",
+        "geometry": "shot_003_geometry",
+        "materials": "shot_003_materials",
+        "video_generation": "shot_003_video_prompt"
+      }
+    },
+    {
+      "shot_id": "shot_004",
+      "order": 4,
+      "start_frame": 313,
+      "end_frame": 384,
+      "camera_id": "cam_shot_004",
+      "character_ids": [
+        "米迦尔",
+        "伊恩",
+        "贵妇",
+        "偷盗者"
+      ],
+      "prop_ids": [],
+      "transition_overlap_frames": 0,
+      "enter_exit": {
+        "enter": [],
+        "exit": []
+      },
+      "downstream_map": {
+        "reference_video": "shot_004.mp4",
+        "geometry": "shot_004_geometry",
+        "materials": "shot_004_materials",
+        "video_generation": "shot_004_video_prompt"
+      }
+    }
+  ],
+  "asset_registry": [],
+  "scene_prop_ids": [],
+  "checkpoints": [
+    {
+      "id": "scene_01_blockout.blend",
+      "scope": "global",
+      "shot_id": null
+    },
+    {
+      "id": "scene_s01_blockout.blend",
+      "scope": "shot",
+      "shot_id": "shot_001"
+    },
+    {
+      "id": "scene_s02_blockout.blend",
+      "scope": "shot",
+      "shot_id": "shot_002"
+    },
+    {
+      "id": "scene_s03_blockout.blend",
+      "scope": "shot",
+      "shot_id": "shot_003"
+    },
+    {
+      "id": "scene_s04_blockout.blend",
+      "scope": "shot",
+      "shot_id": "shot_004"
+    }
+  ],
+  "notes": [
+    "转场重叠默认 0（硬切），细排阶段按实际转场填充"
+  ]
+}
