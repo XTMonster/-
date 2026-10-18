@@ -77,14 +77,16 @@ def can_transition(current: str, target: str) -> bool:
 
 
 def coarse_gate(report: Mapping[str, Any]) -> Dict[str, Any]:
-    """粗排 gate：BlockoutReport 无 error finding 且 verdict 为 pass。"""
+    """粗排 gate：BlockoutReport 无 error finding（硬伤）。
+
+    构图/遮挡/出画等软指标按项目裁决保留为细排提示（T07），不阻塞粗排；
+    verdict 是全 checks 口径，不作为粗排 gate 依据。
+    """
     reasons: List[str] = []
     errors = [f for f in (report.get("findings") or [])
               if isinstance(f, Mapping) and f.get("severity") == "error"]
     if errors:
         reasons.append(f"粗排存在 {len(errors)} 条 error finding，未修正不进入细排")
-    if report.get("verdict") != "pass":
-        reasons.append("粗排报告 verdict 非 pass")
     return {"passed": not reasons, "reasons": reasons}
 
 

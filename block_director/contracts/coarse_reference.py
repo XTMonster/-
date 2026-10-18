@@ -24,6 +24,13 @@ _REQUIRED_LIST_KEYS = (
 )
 
 
+def _has_coord(value: Any) -> bool:
+    """坐标可接受 dict {x,y,z} 或 list/tuple [x,y,z]（与管线同源）。"""
+    if isinstance(value, Mapping):
+        return all(k in value for k in ("x", "y", "z"))
+    return isinstance(value, (list, tuple)) and len(value) >= 3
+
+
 def load_coarse_reference(text: str) -> Dict[str, Any]:
     """从 JSON 文本读入粗编排参考文档（确定性 dict）。"""
     return json.loads(text)
@@ -62,7 +69,7 @@ def validate_coarse_reference(doc: Any) -> List[str]:
                 findings.append(f"camera_intents[{i}] 缺 shot_id")
             else:
                 for key in ("position", "target"):
-                    if not isinstance(cam.get(key), Mapping):
+                    if not _has_coord(cam.get(key)):
                         findings.append(f"camera_intents[{i}] 缺 {key}")
     return findings
 

@@ -34,6 +34,12 @@ COMPOSITION_PASS_SCORE = 80.0
 
 
 def _vec3(value: Any) -> Dict[str, float] | None:
+    if isinstance(value, (list, tuple)) and len(value) >= 3:
+        try:
+            return {"x": float(value[0]), "y": float(value[1]),
+                    "z": float(value[2])}
+        except (TypeError, ValueError):
+            return None
     if isinstance(value, Mapping):
         try:
             return {"x": float(value.get("x", 0.0)),
@@ -42,6 +48,12 @@ def _vec3(value: Any) -> Dict[str, float] | None:
         except (TypeError, ValueError):
             return None
     return None
+
+
+def _to_list(value: Mapping[str, float]) -> List[float]:
+    """写回参考 JSON 用列表形状（与 spatial_design/blockout 同源）。"""
+    return [round(float(value["x"]), 4), round(float(value["y"]), 4),
+            round(float(value["z"]), 4)]
 
 
 def _distance(a: Mapping[str, float], b: Mapping[str, float]) -> float:
@@ -99,6 +111,7 @@ def build_coarse_prescriptions(
     *,
     report: Mapping[str, Any],
     reference: Mapping[str, Any],
+    only_hard: bool = False,
 ) -> List[Dict[str, Any]]:
     """从 BlockoutReport + 粗编排参考 JSON 生成结构化粗排处方。
 
@@ -112,6 +125,9 @@ def build_coarse_prescriptions(
        （``component=distance, direction=in``；同一镜已有拉远处方则不重复）；
     4. ``occlusion`` check fail（可见比低于 0.5）-> 相机抬高
        （``component=position.y, direction=up``，量级 ∝ (1 - actual)）。
+
+    ``only_hard=True`` 时只产出 error finding（E_BLOCKOUT_EMPTY_WALL）处方：
+    粗排修正循环只修硬伤；构图/遮挡/出画软处方留给细排阶段（T06）。
     """
     prescriptions: List[Dict[str, Any]] = []
     findings_by_shot = _findings_by_shot(report)
@@ -149,6 +165,8 @@ def build_coarse_prescriptions(
             })
 
     for shot_id, checks in checks_by_shot.items():
+        if only_hard:
+            break  #: 软指标处方不在粗排修正循环中使用
         camera = _camera_of(reference, shot_id)
         if camera is None:
             continue
@@ -248,18 +266,24 @@ def build_coarse_prescriptions(
 
 
 def _apply_target(camera: Dict[str, Any], target_value: Any) -> None:
-    camera["target"] = dict(target_value)
+    if not isinstance(target_value, Mapping):
+        raise ValueError("target 处方缺 target_value 坐标")
+    camera["target"] = _to_list(target_value)
 
 
 def _apply_distance(camera: Dict[str, Any], target_value: Any) -> None:
     position = (target_value or {}).get("position")
     if not isinstance(position, Mapping):
         raise ValueError("distance 处方缺 target_value.position")
-    camera["position"] = dict(position)
+    camera["position"] = _to_list(position)
 
 
 def _apply_position_y(camera: Dict[str, Any], target_value: Any) -> None:
-    camera["position"]["y"] = round(float(target_value), 4)
+    if not isinstance(camera.get("position"), (list, tuple)):
+        raise ValueError("position 必须为列表 [x,y,z] 才能改 y")
+    position = list(camera["position"])
+    position[1] = round(float(target_value), 4)
+    camera["position"] = position
 
 
 _APPLIERS = {
@@ -313,13 +337,13 @@ def apply_coarse_prescriptions(
             continue
         try:
             record["before"] = {
-                "position": dict(camera.get("position") or {}),
-                "target": dict(camera.get("target") or {}),
+                "position": copy.deepcopy(camera.get("position")),
+                "target": copy.deepcopy(camera.get("target")),
             }
             applier(camera, p.get("target_value"))
             record["after"] = {
-                "position": dict(camera.get("position") or {}),
-                "target": dict(camera.get("target") or {}),
+                "position": copy.deepcopy(camera.get("position")),
+                "target": copy.deepcopy(camera.get("target")),
             }
             record["applied"] = True
         except (TypeError, ValueError) as exc:
