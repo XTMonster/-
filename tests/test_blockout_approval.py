@@ -166,3 +166,43 @@ def test_gate_empty_records_or_missing_file_no_block(tmp_path):
     assert read_approval_records(tmp_path) == []
     gate = gate_findings([], _manifest())
     assert gate["blocked"] is False and gate["findings"] == []
+
+
+def test_evaluate_gate_blocks_unless_report_pass_and_approval_matches(
+        tmp_path):
+    from block_director.cinema.blockout_approval import (
+        append_approval,
+        evaluate_gate,
+    )
+
+    manifest = _manifest()
+    good_report = {"verdict": "pass", "findings": []}
+    bad_report = {"verdict": "fail",
+                  "findings": [{"severity": "error", "check_id": "x"}]}
+
+    #: 无审批 -> blocked
+    gate = evaluate_gate(good_report, [], manifest)
+    assert gate["passed"] is False
+    assert any("无审批记录" in reason for reason in gate["reasons"])
+
+    approved = [append_approval(
+        [], manifest, tmp_path, checkpoint_id="scene_01_blockout.blend",
+        scope="global", shot_id=None, current_state="draft",
+        approved_by="blockout-gate")]
+
+    #: 报告红 -> blocked（即使已审批）
+    gate = evaluate_gate(bad_report, approved, manifest)
+    assert gate["passed"] is False
+    assert any("报告非 pass" in reason for reason in gate["reasons"])
+
+    #: 报告绿 + 审批匹配 -> 放行
+    gate = evaluate_gate(good_report, approved, manifest)
+    assert gate["passed"] is True and gate["reasons"] == []
+
+    #: 报告绿但机位被改 -> blocked（基准漂移）
+    tampered = json.loads(json.dumps(manifest))
+    tampered["cameras"][0]["position"] = [9.0, 9.0, 9.0]
+    gate = evaluate_gate(good_report, approved, tampered)
+    assert gate["passed"] is False
+    assert any("已批准机位/走位被修改" in reason
+               for reason in gate["reasons"])

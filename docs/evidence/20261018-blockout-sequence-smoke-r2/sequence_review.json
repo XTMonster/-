@@ -1,0 +1,61 @@
+{
+  "checks": [
+    {
+      "actual": 0,
+      "dimension": "spatial_continuity",
+      "note": "角色体块跨镜引用一致（manifest 单一真源）",
+      "threshold": 0,
+      "verdict": "pass"
+    },
+    {
+      "actual": 0,
+      "dimension": "enter_exit",
+      "note": "出入画声明与出场一致",
+      "threshold": 0,
+      "verdict": "pass"
+    },
+    {
+      "actual": 1,
+      "dimension": "camera_direction",
+      "note": "检测到越轴",
+      "threshold": 0,
+      "verdict": "fail"
+    },
+    {
+      "actual": 1,
+      "dimension": "lighting_direction",
+      "note": "场景级共享灯光（clay_studio 单一光源集合），全序列一致",
+      "threshold": 1,
+      "verdict": "pass"
+    },
+    {
+      "actual": 0,
+      "dimension": "transition",
+      "note": "转场帧衔接一致",
+      "threshold": 0,
+      "verdict": "pass"
+    }
+  ],
+  "dimensions": [
+    "spatial_continuity",
+    "enter_exit",
+    "camera_direction",
+    "lighting_direction",
+    "transition"
+  ],
+  "findings": [
+    {
+      "check_id": "E_BLOCKOUT_AXIS_FLIP",
+      "frame": 25,
+      "message": "相机跨轴线：米迦尔↔伊恩 侧别由 1 变 -1，无中性镜桥接",
+      "severity": "error",
+      "shot_id": "shot_002"
+    }
+  ],
+  "manifest_fingerprint": "81022062f0c3c615e8e72eb4183721df6a25a8388e293ede5e1398dc7355f35d",
+  "notes": [
+    "bpy 序列回放：首/中/末帧时间线评估无崩溃"
+  ],
+  "schema_version": "blockout-sequence-review/v1",
+  "verdict": "fail"
+}

@@ -1,0 +1,23 @@
+{
+  "full_video": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-sequence-smoke-r2\\blockout_full.mp4",
+  "manifest_fingerprint": "81022062f0c3c615e8e72eb4183721df6a25a8388e293ede5e1398dc7355f35d",
+  "reference_videos": {
+    "shot_001": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-sequence-smoke-r2\\shot_videos\\blockout_shot_001.mp4",
+    "shot_002": "E:\\白模预演codex\\docs\\evidence\\20261018-blockout-sequence-smoke-r2\\shot_videos\\blockout_shot_002.mp4"
+  },
+  "schema_version": "blockout-mapping/v1",
+  "shots": {
+    "shot_001": {
+      "geometry": "shot_001_geometry",
+      "materials": "shot_001_materials",
+      "reference_video": "shot_001.mp4",
+      "video_generation": "shot_001_video_prompt"
+    },
+    "shot_002": {
+      "geometry": "shot_002_geometry",
+      "materials": "shot_002_materials",
+      "reference_video": "shot_002.mp4",
+      "video_generation": "shot_002_video_prompt"
+    }
+  }
+}

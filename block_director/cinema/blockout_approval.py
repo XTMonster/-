@@ -112,6 +112,40 @@ def append_approval(
     return record
 
 
+def evaluate_gate(
+    report: Mapping[str, Any],
+    approvals: Sequence[Mapping[str, Any]],
+    manifest: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """粗排 gate：报告无 error finding 且已批准基准未漂移才放行。
+
+    ``gate.passed`` 为 True 当且仅当：
+    1. ``report["verdict"] == "pass"``（数值+空墙判据全绿，error finding 为 0）；
+    2. 存在审批记录（camera-approved/frozen）且其 cameras 指纹与当前
+       manifest 一致（``approval_required_findings`` 为空——已批准机位/走位
+       未被改）。
+
+    返回 ``{passed, reasons}``：``reasons`` 列出每个未满足条件的可执行解释，
+    供执行 AI 修复回路消费。不猜、不降级：缺审批、报告红、基准漂移都
+    判 blocked。
+    """
+    reasons: List[str] = []
+    if str(report.get("verdict")) != "pass":
+        errors = [f for f in (report.get("findings") or [])
+                  if f.get("severity") == "error"]
+        reasons.append(
+            f"粗排报告非 pass（{len(errors)} 条 error finding）")
+    if not approvals:
+        reasons.append("无审批记录：检查点未 camera-approved/frozen")
+    else:
+        latest = approvals[-1]
+        drift = approval_required_findings(latest, manifest)
+        if drift:
+            reasons.append(
+                "已批准机位/走位被修改，必须重新走 camera-approved 审批流程")
+    return {"passed": not reasons, "reasons": reasons}
+
+
 __all__ = [
     "APPROVAL_DIRNAME",
     "APPROVAL_FILENAME",
@@ -122,4 +156,5 @@ __all__ = [
     "write_shot_table",
     "gate_findings",
     "append_approval",
+    "evaluate_gate",
 ]
