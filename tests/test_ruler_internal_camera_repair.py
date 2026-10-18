@@ -53,7 +53,8 @@ class _Err:
 
 
 def _result(shot_id: str, kinds: list[str]) -> AuditResult:
-    warnings = [{"type": kind, "subject": "米迦尔", "frame_range": [1, 24],
+    warnings = [{"type": kind, "shot_id": shot_id, "subject": "米迦尔",
+                 "frame_range": [1, 24],
                  "evidence": {"visible_ratio": 0.0}, "severity": "error"}
                 for kind in kinds]
     return AuditResult(passed=False, errors=[_Err()],
@@ -177,6 +178,36 @@ def test_reframe_applied_prescription_reaches_observation(tmp_path) -> None:
     assert applied["parameters"]["lens_before"] == 35.0
     assert applied["parameters"]["lens_after"] < 35.0
     assert doc["plugin_adapter"]["integration_status"] == "full"
+
+
+def test_reframe_applied_prescription_passes_observation_validation(
+        tmp_path) -> None:
+    """导出回归：自动 reframe 的已应用处方必须通过观测结构校验——
+    operation 属于闭集，前后置测量引用在测量段真实存在（不再出现
+    ``未知 operation：None`` / ``引用不存在：m_shot_001_visibility_ratio``
+    之类导出中止错误）。"""
+    from block_director.layer5_orchestrator.ruler_observation import (
+        validate_observation,
+    )
+
+    registry = _StubRegistry(ToolResult(True, "镜头 shot_001 取景已调整"))
+    audit = AuditLogger(directory=tmp_path)
+    driver = _driver(registry)
+    driver.audit = audit
+    result = _result("shot_001", ["edge_clip", "headroom_off"])
+    driver.audit_results = [result]
+    assert driver._auto_reframe_from_ruler("shot_001", result) is True
+    doc = driver._ruler_observation_payload()
+    assert doc is not None
+    findings = validate_observation(doc)
+    assert findings == [], findings
+    by_id = {p["prescription_id"]: p for p in doc["prescriptions"]}
+    for kind in ("edge_clip", "headroom_off"):
+        applied = by_id[f"p_shot_001_{kind}"]
+        assert applied["operation"] == "reframe"
+        assert applied["applied"] is True
+        assert applied["waived"] is False
+        assert applied["postcondition"]
 
 
 def test_headless_fallback_merges_applied_plan_prescriptions(tmp_path) -> None:

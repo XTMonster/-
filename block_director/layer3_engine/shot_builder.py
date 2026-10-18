@@ -506,6 +506,14 @@ def action_requests(shot: ShotPlan, shot_start: int,
                                         float(location[2]))
     positions.update({str(key): tuple(value)
                       for key, value in (live_from or {}).items()})
+    #: 计划动作里的 target 常用剧本角色名（如“伊恩”），而 cast 的
+    #: 主键可能是 char_###。两者都指向同一空间位置，给目标解析保留
+    #: name 别名，避免单镜重建路径因 id/name 不一致拒绝 look_at。
+    for member in cast.values():
+        member_id = str(getattr(member, "id", "") or "")
+        member_name = str(getattr(member, "name", "") or "")
+        if member_name and member_id in positions:
+            positions.setdefault(member_name, positions[member_id])
     for index, raw in enumerate(shot.actions or [], start=1):
         if not isinstance(raw, dict):
             warnings.append(f"{shot.shot_id}: 第 {index} 个动作不是对象，已跳过")

@@ -1023,17 +1023,14 @@ class PrevisDriver:
         """
         if self.plan is None or not self.audit_results:
             return None
-        from .ruler_observation import build_observation
+        from .ruler_observation import build_observation, merge_audit_history
 
-        shot_audits: Dict[str, Dict[str, Any]] = {}
-        for result in self.audit_results:
-            #: ``AuditResult`` 的契约字段是 ``target``（``shot_id`` 只存在于
-            #: 审计事件与 probe 入口）；此前读不存在的 ``shot_id`` 使全文档
-            #: 路径静默丢掉所有逐镜 composition/guard/ruler measurements。
-            shot_id = (getattr(result, "target", None)
-                       or getattr(result, "shot_id", None))
-            if shot_id:
-                shot_audits[str(shot_id)] = result.to_dict()
+        #: 跨轮合并：verdict 取最后一轮，guard 告警与几何测量取全轮并集。
+        #: 此前逐镜覆盖只留最后一轮，而 ``_ruler_applied_prescriptions``
+        #: 跨轮累积——早轮已执行处方引用的测量在末轮不存在，结构校验把
+        #: 导出中止（2026-10-18 实测 files=0）。
+        shot_audits = merge_audit_history([
+            result.to_dict() for result in self.audit_results])
         build_results: Dict[str, Dict[str, Any]] = {}
         for item in (self.build_summary or {}).get("results") or []:
             if isinstance(item, dict) and item.get("shot_id"):
@@ -3291,13 +3288,23 @@ class PrevisDriver:
         #: ``p_{shot_id}_{kind}``）记录，供观测折档合并。合并是补丁语义，
         #: 驱动侧不给 precondition/postcondition/operation 等字段时，
         #: 观测层沿用默认处方版本，只有 applied/参数被覆盖。
+        from .ruler_observation import guard_kind_metric
+
         for kind in sorted(kinds):
+            metric = guard_kind_metric(kind)
             applied = {
                 "prescription_id": f"p_{shot_id}_{kind}",
                 "shot_id": str(shot_id),
+                "operation": "reframe",
                 "parameters": {"reason": kind, "lens_before": old_lens,
                                "lens_after": new_lens},
+                "precondition_measurement_ids": [
+                    f"m_{shot_id}_{metric}"],
+                "postcondition_measurement_ids": [
+                    f"m_{shot_id}_composition_score"],
+                "postcondition": "全镜 visible_ratio > 0 且 composition_score > 80",
                 "applied": True, "applied_at": "runtime",
+                "waived": False, "waive_reason": "",
             }
             existing = [p for p in self._ruler_applied_prescriptions
                         if p.get("prescription_id")

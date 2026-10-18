@@ -69,6 +69,12 @@ _GUARD_TO_METRIC: Dict[str, Tuple[str, str, str, str]] = {
 }
 
 
+def guard_kind_metric(kind: str) -> str:
+    """guard 告警类型对应的测量 metric（处方引用与折档同源，单一真源）。"""
+    return _GUARD_TO_METRIC.get(
+        kind, ("visibility_ratio", "", "", "ratio"))[0]
+
+
 def _load_registry() -> Dict[str, Any]:
     """读取契约注册表（对照载体，代码常量仍为执行真源）。"""
     if not CONTRACT_PATH.exists():
@@ -697,6 +703,57 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
     }
 
 
+def merge_audit_history(records: Sequence[Dict[str, Any]],
+                        ) -> Dict[str, Dict[str, Any]]:
+    """把同一镜多轮 ``AuditResult.to_dict()`` 按镜合并成观测用审核字典。
+
+    观测文档的最终裁决（passed / score / errors / warnings 等）取**最后**
+    一轮；``guard_warnings`` 与 ``ruler_measurements`` 取**全轮并集**（去
+    重）——driver 的 ``_ruler_applied_prescriptions`` 跨轮累积，早轮处方
+    引用的测量必须在文档里存在，否则结构校验会把导出中止（2026-10-18
+    实测：``p_shot_001_thirds_deviation`` 引用 ``m_shot_001_thirds_deviation``
+    悬空，导出 files=0）。``shot_audits_from_log`` 的重放路径走同一语义。
+    """
+    merged: Dict[str, Dict[str, Any]] = {}
+    warning_keys: Dict[str, set] = {}
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        shot_id = str(record.get("target") or record.get("shot_id") or "")
+        if not shot_id:
+            continue
+        entry = merged.setdefault(shot_id, {})
+        #: verdict 语义字段：后到者覆盖（最终裁决以最后一次审核为准）。
+        for field, value in record.items():
+            if field in ("guard_warnings", "ruler_measurements"):
+                continue
+            entry[field] = value
+        #: guard 告警全轮并集，按 (type, subject, frame_range) 去重。
+        seen = warning_keys.setdefault(shot_id, set())
+        warnings = entry.setdefault("guard_warnings", [])
+        for warning in record.get("guard_warnings") or []:
+            key = (str(warning.get("type") or ""),
+                   str(warning.get("subject") or ""),
+                   str(warning.get("frame_range") or ""))
+            if key in seen:
+                continue
+            seen.add(key)
+            warnings.append(dict(warning)
+                            if isinstance(warning, dict) else warning)
+        #: 几何测量全轮并集，按 measurement_id 去重（同 id 只留首见）。
+        measurements = entry.setdefault("ruler_measurements", [])
+        ids = {m.get("measurement_id") for m in measurements}
+        for item in record.get("ruler_measurements") or []:
+            if not isinstance(item, dict) or not item.get("measurement_id"):
+                continue
+            mid = str(item["measurement_id"])
+            if mid in ids:
+                continue
+            ids.add(mid)
+            measurements.append(dict(item))
+    return merged
+
+
 def write_observation(doc: Dict[str, Any], export_dir) -> Path:
     """把观测文档写进交付目录；返回写入路径。"""
     path = Path(export_dir) / "ruler_observation.json"
@@ -743,7 +800,18 @@ def shot_audits_from_log(records: Sequence[Dict[str, Any]],
             dict(item) for item in data.get("ruler_measurements") or []
             if isinstance(item, dict)]
         if ruler_items:
-            entry["ruler_measurements"] = ruler_items
+            #: 全轮并集（去重）：同一镜多次审核时早轮的几何测量不能被末轮
+            #: 覆盖——已执行处方引用早轮测量的场景见 ``merge_audit_history``。
+            measurements = entry.setdefault("ruler_measurements", [])
+            ids = {m.get("measurement_id") for m in measurements}
+            for item in ruler_items:
+                if not isinstance(item, dict) or not item.get("measurement_id"):
+                    continue
+                mid = str(item["measurement_id"])
+                if mid in ids:
+                    continue
+                ids.add(mid)
+                measurements.append(dict(item))
     for record in records:
         if record.get("kind") != "guard_warning":
             continue
