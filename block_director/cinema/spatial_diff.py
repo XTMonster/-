@@ -211,4 +211,33 @@ def build_diff_report(design: Mapping[str, Any],
     }
 
 
-__all__ = ["build_diff_report", "REGISTRY", "DIFF_SNAPSHOT_SCHEMA"]
+def render_diff_block(report: Mapping[str, Any], *,
+                      max_chars: int = 800) -> str:
+    """把偏差报告渲染成「设计 vs 实测」提示块（修复提示注入用）。
+
+    整行追加、放不下整行舍弃（与 digest 渲染同机制）；无 items -> 空串。
+    """
+    if max_chars <= 0 or not isinstance(report, Mapping):
+        return ""
+    items = report.get("items") or []
+    if not items:
+        return ""
+    lines: List[str] = ["【设计 vs 实测】偏差（expected|actual|threshold|verdict）"]
+
+    def fits(line: str) -> bool:
+        current = len("\n".join(lines)) if lines else 0
+        return current + len(line) + (1 if lines else 0) <= max_chars
+
+    for item in items:
+        actual = (f"{item.get('actual'):.3f}"
+                  if isinstance(item.get("actual"), (int, float)) else "-")
+        line = (f"- {item.get('metric')} {item.get('subject')}: "
+                f"actual={actual} threshold={item.get('threshold')} "
+                f"verdict={item.get('verdict')} {item.get('unit', '')}")
+        if fits(line):
+            lines.append(line)
+    return "\n".join(lines)
+
+
+__all__ = ["build_diff_report", "render_diff_block",
+           "REGISTRY", "DIFF_SNAPSHOT_SCHEMA"]

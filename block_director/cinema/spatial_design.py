@@ -387,5 +387,67 @@ def build_design_snapshot(*, brief: Any, plan: Any,
     }
 
 
-__all__ = ["build_design_snapshot", "DESIGN_SNAPSHOT_SCHEMA",
-           "DIRECTION_VECTORS", "DISTANCE_METERS"]
+def render_design_summary(design: Mapping[str, Any], *,
+                          max_chars: int = 1200) -> str:
+    """把设计快照渲染成提示文本（计划提示注入用）。
+
+    优先级：未解析留痕 > 角色 > 锚点 > 机位；整行追加，放不下的那行起
+    整行舍弃（绝不截半行），与 :func:`render_spatial_digest` 同机制。
+    回退：设计快照为空 -> 空串。
+    """
+    if max_chars <= 0 or not isinstance(design, Mapping) or not design:
+        return ""
+    lines: List[str] = [f"【空间设计快照｜{design.get('scene_id', '')}】"]
+
+    def fits(line: str) -> bool:
+        current = len("\n".join(lines)) if lines else 0
+        return current + len(line) + (1 if lines else 0) <= max_chars
+
+    unresolved_notes = [str(note) for note in (design.get("notes") or [])
+                        if "未" in str(note) or "不猜" in str(note)
+                        or "解析" in str(note)]
+    for note in unresolved_notes:
+        if fits(f"- {note}"):
+            lines.append(f"- {note}")
+    for char in design.get("characters") or []:
+        name = str(char.get("name") or "?")
+        position = char.get("position")
+        if isinstance(position, Mapping) and position.get("x") is not None:
+            pos_text = (f"pos=({position.get('x')},{position.get('y')},"
+                        f"{position.get('z')})")
+        else:
+            pos_text = "pos=未解析（不猜）"
+        facing = char.get("facing")
+        facing_text = (f"facing={tuple(facing)}" if facing else "")
+        gaze = char.get("gaze") or {}
+        gaze_text = (f"gaze->{gaze.get('target_id')}" if gaze.get("target_id")
+                     else "")
+        line = f"- {name} {pos_text} {facing_text} {gaze_text}".rstrip()
+        if fits(line):
+            lines.append(line)
+    for anchor in design.get("anchors") or []:
+        position = anchor.get("position")
+        if position is None:
+            line = (f"- 锚点 {anchor.get('label')} 未解析"
+                    f"（{anchor.get('unresolved_reason', '')}）")
+        else:
+            line = (f"- 锚点 {anchor.get('label')} "
+                    f"pos={tuple(position)}（{anchor.get('provenance')}）")
+        if fits(line):
+            lines.append(line)
+    for intent in design.get("camera_intents") or []:
+        if intent.get("position") is None:
+            line = (f"- 机位 {intent.get('shot_id')} 未解析"
+                    f"（{intent.get('unresolved_reason', '')}）")
+        else:
+            line = (f"- 机位 {intent.get('shot_id')} "
+                    f"pos={tuple(intent['position'])} "
+                    f"target={tuple(intent.get('target') or [])} "
+                    f"lens={intent.get('lens')}mm（{intent.get('provenance')}）")
+        if fits(line):
+            lines.append(line)
+    return "\n".join(lines)
+
+
+__all__ = ["build_design_snapshot", "render_design_summary",
+           "DESIGN_SNAPSHOT_SCHEMA", "DIRECTION_VECTORS", "DISTANCE_METERS"]

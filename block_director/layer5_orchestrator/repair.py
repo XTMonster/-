@@ -425,7 +425,8 @@ def build_repair_payload(audit: AuditResult, registry, *,
                          shot_id: str = "",
                          max_tokens: Optional[int] = None,
                          request_id: Optional[str] = None,
-                         roster: Optional[Sequence[str]] = None
+                         roster: Optional[Sequence[str]] = None,
+                         diff_block: str = ""
                          ) -> ChatPayload:
     """构造一次修复请求。``registry`` 提供可调用的工具 schema。
 
@@ -488,6 +489,10 @@ def build_repair_payload(audit: AuditResult, registry, *,
     digest_text = scene_digest_repair_text(audit, shot_id)
     if digest_text:
         system_text += "\n\n" + digest_text
+    #: 空间理解/设计快照：设计 vs 实测偏差块（Ticket 05）。空 -> 零形状差，
+    #: 与改动前的提示逐字节一致；非空以整块追加（长度上限由渲染函数保证）。
+    if diff_block:
+        system_text += "\n\n" + diff_block
     tools = (registry.schemas_only(SHOT_DRAFT_TOOL, *CONTROL_TOOL_NAMES)
              if narrow else registry.schemas_except("emit_plan"))
     return ChatPayload(
