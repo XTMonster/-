@@ -1,4 +1,4 @@
-"""粗排处方生成器（Ticket 01，纯层，不 import bpy）。
+"""粗排处方生成器与应用器（Ticket 01/02，纯层，不 import bpy）。
 
 输入 BlockoutReport（findings + 每镜 composition/occlusion/on_screen 数值）与
 粗编排参考 JSON，输出**结构化粗排处方**列表。处方格式：
@@ -6,16 +6,26 @@
 ``{prescription_id, scope, shot_id, entity, component, axis, direction,
 magnitude, current_value, target_value, derived_from, applied}``
 
-原则：
+原则（处方生成）：
 
 * 只消费空间尺/BlockoutReport 的结构化输出，不在粗排修正层凭空猜坐标；
 * 每条处方都可追溯到一条 check/finding（``derived_from``）；
 * 量级由 actual/threshold 差与实体当前值推导，确定性可复算。
+
+原则（处方应用）：
+
+* 修改只发生在粗编排参考 JSON，不写 Blender 场景；
+* 每条应用记录含 before/after 与指纹；两次应用逐位一致；
+* 未知实体/未知轴返回显式未应用记录，不吞错。
 """
 
 from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping
+
+from block_director.contracts.coarse_reference import (
+    coarse_reference_content_fingerprint,
+)
 
 E_BLOCKOUT_EMPTY_WALL = "E_BLOCKOUT_EMPTY_WALL"
 
@@ -237,5 +247,97 @@ def build_coarse_prescriptions(
     return prescriptions
 
 
-__all__ = ["build_coarse_prescriptions", "E_BLOCKOUT_EMPTY_WALL",
-           "COMPOSITION_PASS_SCORE"]
+def _apply_target(camera: Dict[str, Any], target_value: Any) -> None:
+    camera["target"] = dict(target_value)
+
+
+def _apply_distance(camera: Dict[str, Any], target_value: Any) -> None:
+    position = (target_value or {}).get("position")
+    if not isinstance(position, Mapping):
+        raise ValueError("distance 处方缺 target_value.position")
+    camera["position"] = dict(position)
+
+
+def _apply_position_y(camera: Dict[str, Any], target_value: Any) -> None:
+    camera["position"]["y"] = round(float(target_value), 4)
+
+
+_APPLIERS = {
+    "target": _apply_target,
+    "distance": _apply_distance,
+    "position.y": _apply_position_y,
+}
+
+
+def apply_coarse_prescriptions(
+    reference: Mapping[str, Any],
+    prescriptions: List[Dict[str, Any]],
+    *,
+    revision_id: str = "",
+    round_no: int = 1,
+) -> tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    """把处方应用到粗编排参考 JSON，落 revision 留痕。
+
+    返回 ``(new_reference, applied_records)``。``new_reference`` 是深拷贝后
+    修改的结果（不污染输入）；``revisions[]`` 追加一条修订记录
+    （before/after 指纹 + 逐条处方结果）。未知实体/未知轴记录
+    ``applied=False`` 与原因，不抛错、不吞错、不修改。
+    """
+    import copy
+
+    new_ref = copy.deepcopy(reference)
+    by_shot = {str(c.get("shot_id") or ""): c
+               for c in new_ref.get("camera_intents") or []}
+    records: List[Dict[str, Any]] = []
+    for p in prescriptions:
+        shot_id = str(p.get("shot_id") or "")
+        component = str(p.get("component") or "")
+        camera = by_shot.get(shot_id)
+        record: Dict[str, Any] = {
+            "prescription_id": p.get("prescription_id"),
+            "shot_id": shot_id,
+            "component": component,
+            "applied": False,
+            "before": None,
+            "after": None,
+            "reason": "",
+        }
+        if camera is None:
+            record["reason"] = f"未知 shot_id：{shot_id}"
+            records.append(record)
+            continue
+        applier = _APPLIERS.get(component)
+        if applier is None:
+            record["reason"] = f"未知 component：{component}"
+            records.append(record)
+            continue
+        try:
+            record["before"] = {
+                "position": dict(camera.get("position") or {}),
+                "target": dict(camera.get("target") or {}),
+            }
+            applier(camera, p.get("target_value"))
+            record["after"] = {
+                "position": dict(camera.get("position") or {}),
+                "target": dict(camera.get("target") or {}),
+            }
+            record["applied"] = True
+        except (TypeError, ValueError) as exc:
+            record["reason"] = f"应用失败：{exc}"
+        records.append(record)
+
+    if records:
+        new_ref.setdefault("revisions", []).append({
+            "revision_id": str(revision_id or "deterministic-replay"),
+            "round": int(round_no),
+            "fingerprint_before": coarse_reference_content_fingerprint(
+                reference),
+            "fingerprint_after": coarse_reference_content_fingerprint(
+                new_ref),
+            "prescriptions": records,
+        })
+    return new_ref, records
+
+
+__all__ = ["build_coarse_prescriptions", "apply_coarse_prescriptions",
+           "E_BLOCKOUT_EMPTY_WALL", "COMPOSITION_PASS_SCORE"]

@@ -72,10 +72,24 @@ def coarse_reference_fingerprint(doc: Mapping[str, Any]) -> str:
     return canonical_fingerprint(doc)
 
 
+def coarse_reference_content_fingerprint(doc: Mapping[str, Any]) -> str:
+    """**世界坐标内容**指纹：忽略 ``revisions[]`` 元数据段。
+
+    revisions 会随修订轮数不断增长，把它算进指纹会让 fingerprint_after
+    自我循环；基线/留痕对拍应使用内容指纹。
+    """
+    import copy
+
+    content = copy.deepcopy(dict(doc))
+    content.pop("revisions", None)
+    return canonical_fingerprint(content)
+
+
 __all__ = [
     "COARSE_REFERENCE_SCHEMA_VERSION",
     "load_coarse_reference",
     "dump_coarse_reference",
     "validate_coarse_reference",
     "coarse_reference_fingerprint",
+    "coarse_reference_content_fingerprint",
 ]
