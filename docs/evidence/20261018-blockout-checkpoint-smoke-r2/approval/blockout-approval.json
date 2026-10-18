@@ -1,0 +1,24 @@
+[
+  {
+    "approved_at": "deterministic-replay",
+    "approved_by": "blockout-gate",
+    "cameras_fingerprint": "38d3180fce5d2aca915ee837a5df44abb4a1fc76c72354937dbc232db1e13274",
+    "checkpoint_id": "scene_01_blockout.blend",
+    "manifest_fingerprint": "4631df7a9f3901104195bba73d77e3004a6ec3f3f63b10135886276388b2edcd",
+    "schema_version": "blockout-approval/v1",
+    "scope": "global",
+    "shot_id": null,
+    "state": "camera-approved"
+  },
+  {
+    "approved_at": "deterministic-replay",
+    "approved_by": "blockout-gate",
+    "cameras_fingerprint": "38d3180fce5d2aca915ee837a5df44abb4a1fc76c72354937dbc232db1e13274",
+    "checkpoint_id": "scene_01_blockout.blend",
+    "manifest_fingerprint": "4631df7a9f3901104195bba73d77e3004a6ec3f3f63b10135886276388b2edcd",
+    "schema_version": "blockout-approval/v1",
+    "scope": "global",
+    "shot_id": null,
+    "state": "frozen"
+  }
+]

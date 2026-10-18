@@ -381,8 +381,8 @@ assistant-panel/sprite/ruler-probe）、pytest 4101 passed / 2 skipped、
 投影 / 连续优化 / 对抗评审 / 镜版本化 / 逐镜预演路径）已由提交 `a32366b`
 （codex/vlm-feedback）cherry-pick 并入 main，冲突适配保留 main 的
 v1.7/空间尺基座（合入 commit 见 `v1.7/PROGRESS.md`）；新增
-`tools/blender_tests/test_per_shot_previz.py` 探针 ⇒ 探针清单 **48 支**、
-链规模 **52/52**（48 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，
+`tools/blender_tests/test_per_shot_previz.py` 探针 ⇒ 探针清单 **49 支**、
+链规模 **53/53**（49 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，
 与 `test_agents_status_is_current.py` 同源对拍）；集成验证树全量 pytest
 **4400 passed / 0 failed / 2 skipped**（4402 tests，main 树 2026-10-18 实读、
 `-o addopts=""`，exit 0；2 skip 均为既有条件守卫：build_ledger 索引刷新、
@@ -395,7 +395,7 @@ vlm 侧 2026-10-12 台账降为历史，源码存档 `E:\bd_vlm_v2`；另，
 Tickets 01–07 全部落地（空间 DTO 扩展 / 前向设计转换 / 后向观测装配 / 设计 vs
 实测对照 / 计划与修复提示注入 / 三份 schema＋审计事件＋零 LLM 重放 / Blender
 端到端冒烟 `tools/blender_tests/test_spatial_understanding_smoke.py` ⇒ 探针清单
-**48 支**、链规模 **52/52**，与 `test_agents_status_is_current.py` 同源对拍）；
+**49 支**、链规模 **53/53**，与 `test_agents_status_is_current.py` 同源对拍）；
 运行链接线（Ticket 08）已接：计划定稿即生成设计快照（`SceneSpec.from_plan`
 站位，纯层确定性）、收尾全场采样出观测快照与设计 vs 实测 diff、三个审计事件
 带 schema 版本＋指纹＋完整 payload（`layer9_persistence.replay` 零 LLM 复原）、
@@ -408,18 +408,29 @@ Tickets 01–07 全部落地（空间 DTO 扩展 / 前向设计转换 / 后向�
 `test_blockout_manifest.py`/`test_blockout_contracts.py`）；并行 blockout 分支
 （Tickets 01–03）已叠在本分支上（`be6d954`/`60c55af`/`1d2c9cd`），其
 `test_blockout_scene_smoke.py` 已登记进 `run_tests.ps1`（第 47 支探针 ⇒ 链规模
-**52/52**，2026-10-18 重排并与 `test_agents_status_is_current.py` 同源对拍）；
+**53/53**，2026-10-18 重排并与 `test_agents_status_is_current.py` 同源对拍）；
 `blockout-scene-smoke` Blender 冒烟绿（体块/相机/运镜/切点全对，证据
 `docs/evidence/20261018-blockout-scene-smoke/`）。
 
 Blockout Ticket 04 已落地并登记探针：低采样 16:9 预览渲染＋数值/视觉自检
 （`block_director/layer8_delivery/blockout_preview.py` ＋ 纯层
 `cinema/blockout_report.py`，8 项单测绿），`test_blockout_preview_smoke.py`
-登记进 `run_tests.ps1` ⇒ 探针清单 **48 支**、链规模 **52/52**（与
+登记进 `run_tests.ps1` ⇒ 探针清单 **49 支**、链规模 **53/53**（与
 `test_agents_status_is_current.py` 同源对拍）；preview-smoke Blender 冒烟绿
 （9 张 PNG 非空非全黑、16:9 1280x720、构图 84.3、相机对空墙
 E_BLOCKOUT_EMPTY_WALL finding、空镜豁免、设计 vs 实测偏差全 pass，证据
 `docs/evidence/20261018-blockout-preview-smoke-v2/`）。
+
+Blockout Ticket 05 已落地并登记探针：检查点落盘（bpy）＋审批记录/审批门
+（纯层 `cinema/blockout_approval.py`，5 项单测绿）：全局
+`scene_01_blockout.blend` ＋ 逐分镜 `scene_sNN_blockout.blend` 可回滚，
+审批记录 draft→camera-approved→frozen 带 manifest/cameras 指纹（非法迁移抛错），
+frozen 后改机位/走位产出 `E_BLOCKOUT_APPROVAL_REQUIRED` finding 且 gate 阻塞，
+分镜表 JSON 与 manifest.shot_table 逐位一致；`test_blockout_checkpoint_smoke.py`
+登记进 `run_tests.ps1` ⇒ 探针清单 **49 支**、链规模 **53/53**（与
+`test_agents_status_is_current.py` 同源对拍）；checkpoint-smoke Blender 冒烟绿
+（3 个 .blend 非空、审批状态序列 camera-approved→frozen、改机位后 gate
+blocked＋finding，证据 `docs/evidence/20261018-blockout-checkpoint-smoke-r2/`）。
 
 **2026-10-18 冻结树全链（HEAD `9763d7c`，历史快照）**：D1 合入后
 构图门升 80 的探针连带缺口已修（`c22b35a`：composition-gate/phase4-tools

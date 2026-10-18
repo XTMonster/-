@@ -1,0 +1,45 @@
+[
+  {
+    "camera_id": "cam_shot_001",
+    "character_ids": [
+      "米迦尔",
+      "伊恩"
+    ],
+    "downstream_map": {
+      "geometry": "shot_001_geometry",
+      "materials": "shot_001_materials",
+      "reference_video": "shot_001.mp4",
+      "video_generation": "shot_001_video_prompt"
+    },
+    "end_frame": 24,
+    "enter_exit": {
+      "enter": [],
+      "exit": []
+    },
+    "order": 1,
+    "prop_ids": [],
+    "shot_id": "shot_001",
+    "start_frame": 1,
+    "transition_overlap_frames": 0
+  },
+  {
+    "camera_id": "cam_shot_002",
+    "character_ids": [],
+    "downstream_map": {
+      "geometry": "shot_002_geometry",
+      "materials": "shot_002_materials",
+      "reference_video": "shot_002.mp4",
+      "video_generation": "shot_002_video_prompt"
+    },
+    "end_frame": 36,
+    "enter_exit": {
+      "enter": [],
+      "exit": []
+    },
+    "order": 2,
+    "prop_ids": [],
+    "shot_id": "shot_002",
+    "start_frame": 25,
+    "transition_overlap_frames": 0
+  }
+]
