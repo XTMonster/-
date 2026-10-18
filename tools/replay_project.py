@@ -62,6 +62,9 @@ def main() -> int:
         from block_director.layer5_orchestrator.ruler_observation import (
             build_observation_from_log,
         )
+        from block_director.layer5_orchestrator.headless_runner import (
+            spatial_export_args,
+        )
         from block_director.layer9_persistence import read_audit_log
         from block_director.settings import get_config
 
@@ -79,6 +82,7 @@ def main() -> int:
                                   config=get_config().delivery,
                                   brief=report.brief,
                                   ruler_observation=ruler_observation,
+                                  **spatial_export_args(report.summary),
                                   project=report.plan.scene_heading or "BlockDirector")
         payload["export"] = delivery.to_dict()
 

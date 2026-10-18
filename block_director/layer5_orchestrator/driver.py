@@ -554,6 +554,20 @@ def ruler_delivery_args(driver) -> Dict[str, Any]:
             "ruler_shot_measurements": shot_measurements or None}
 
 
+def spatial_delivery_args(driver) -> Dict[str, Any]:
+    """从驱动器状态折出 ``export_project`` 的空间快照参数（Ticket 08，纯层）。
+
+    三份快照（设计/观测/diff）直接透传；驱动未生成（离线无 bpy、旧路径）
+    时全部为 ``None``——交付层零形状差，一个额外键都不写。
+    """
+    return {
+        "spatial_design": getattr(driver, "_spatial_design", None) or None,
+        "spatial_observation": getattr(driver, "_spatial_observation", None)
+        or None,
+        "spatial_diff": getattr(driver, "_spatial_diff", None) or None,
+    }
+
+
 @dataclass
 class DriverLimits:
     """运行护栏（§12.6）。"""
@@ -794,6 +808,12 @@ class PrevisDriver:
         #: 按 prescription_id 记录，供观测折档合并——同一处方只有一个生命周期
         #: 状态，已应用版本覆盖默认生成的未应用版本。
         self._ruler_applied_prescriptions: List[Dict[str, Any]] = []
+        #: 空间理解快照（Ticket 08）：设计/观测/diff 三份产物的驱动内存位。
+        #: 计划定稿后落设计，收尾采样后落观测与 diff；未生成恒为 None
+        #: （快照、UI、交付与重放一律零形状差）。
+        self._spatial_design: Optional[Dict[str, Any]] = None
+        self._spatial_observation: Optional[Dict[str, Any]] = None
+        self._spatial_diff: Optional[Dict[str, Any]] = None
         self._finished_shots: List[str] = []
         self._needs_rebuild = False
         self._rebuild_in_place = False
@@ -998,6 +1018,11 @@ class PrevisDriver:
             #: 空间尺计划级证据（Ticket 05/06）：已应用处方与计划级测量，
             #: 供 headless 落盘与交付 bundle 折档；未跑计划级空间尺时为 None。
             "spatial_ruler_plan_evidence": self._ruler_plan_evidence,
+            #: 空间理解快照（Ticket 08）：设计/观测/diff 三份产物，供 UI、
+            #: headless 摘要与交付折档；未生成时为 None（零形状差）。
+            "spatial_design": self._spatial_design,
+            "spatial_observation": self._spatial_observation,
+            "spatial_diff": self._spatial_diff,
             #: v1.4 P15（§3.3）：交付清单要的两张表，由驱动器产出。
             "timing_overrides": list(self.timing_overrides),
             "audit_pass_rate": self._audit_pass_rate(),
@@ -1056,6 +1081,117 @@ class PrevisDriver:
         #: 观测文档不重算、不伪造。
         from .ruler_observation import attach_sequence_review
         return attach_sequence_review(doc, plan=self.plan, fps=FPS)
+
+    def _spatial_design_payload(self) -> Optional[Dict[str, Any]]:
+        """计划定稿后的前向设计快照（Ticket 02/08，纯层、确定性、无 bpy）。
+
+        角色站位源：``SceneSpec.from_plan``（默认站位 + ``brief.space`` 声明），
+        与构建器共用同一份计划意图——设计值**不读**实测场景（实测由观测快照
+        负责），保证"设计 vs 实测"是有意义的两侧对照。没有计划时返回 None。
+        """
+        if self.plan is None:
+            return None
+        from ..contracts.cast import SceneSpec
+        from ..cinema.spatial_design import build_design_snapshot
+
+        spec = SceneSpec.from_plan(self.plan, brief=self.brief)
+        cast_positions = {
+            str(member.name): list(member.initial_location)
+            for member in spec.cast}
+        return build_design_snapshot(
+            brief=self.brief, plan=self.plan,
+            cast_positions=cast_positions,
+            scene_id=self.plan.scene_heading or "scene")
+
+    def _build_spatial_design(self) -> None:
+        """在计划定稿处生成设计快照并留审计事件（Ticket 08 接线）。
+
+        幂等：每次调用都按当前最终计划重建（处方/修复后计划变了就重转），
+        审计事件带 schema 版本 + 指纹 + 完整 payload（重放零 LLM 复原用）。
+        失败只记 warning 并置 None——快照是证据不是门，不阻断运行。
+        """
+        try:
+            design = self._spatial_design_payload()
+        except Exception as exc:  # noqa: BLE001 - 快照失败不影响主链
+            self.audit.log("spatial_design_snapshot",
+                           f"空间设计快照生成失败：{type(exc).__name__}: {exc}",
+                           level="warning")
+            self._spatial_design = None
+            return
+        self._spatial_design = design
+        if design is None:
+            return
+        from ..contracts.spatial_snapshot import snapshot_audit_event
+
+        event = snapshot_audit_event("spatial_design_snapshot", design)
+        event["created_at"] = datetime.now(timezone.utc).isoformat()
+        self.audit.log(
+            event["kind"],
+            f"空间设计快照已生成（{design.get('schema_version')}）",
+            **{key: value for key, value in event.items() if key != "kind"},
+            payload=design)
+
+    def _build_spatial_observation_and_diff(self) -> None:
+        """收尾采样 -> 观测快照 -> 设计 vs 实测 diff（Ticket 03/04/08 接线）。
+
+        在 FINISHING 一次性采样：整场与逐镜两条构建路径的最终场景一致，设计
+        快照已在计划定稿处生成。无 bpy／无场景上下文／无设计快照时如实留空
+        （纯 pytest、离线零形状差）；单镜采样或装配失败只记 warning，不阻断。
+        """
+        if self._spatial_observation is not None or self._spatial_diff is not None:
+            return
+        if self.plan is None or self._spatial_design is None:
+            return
+        try:
+            from ..layer3_engine.frustum_sampler import sample_spatial
+            from ..layer3_engine.scene_context import get_context
+        except ImportError:
+            return                                     # 无 bpy：观测如实留空
+        from ..cinema.spatial_observation import build_observation_snapshot
+        from ..cinema.spatial_diff import build_diff_report
+        from ..contracts.spatial_snapshot import snapshot_audit_event
+
+        context = get_context()
+        if context is None or not getattr(context, "characters", None):
+            return
+        frames: List[Any] = []
+        for shot in self.plan.shots:
+            span = context.schedule.get(str(shot.shot_id))
+            if not span:
+                continue
+            start, end = int(span[0]), int(span[1])
+            picked = sorted({start, (start + end) // 2, end})
+            try:
+                frames.extend(sample_spatial(str(shot.shot_id), picked))
+            except Exception as exc:  # noqa: BLE001 - 单镜失败不拖垮收尾
+                self.audit.log(
+                    "spatial_observation_snapshot",
+                    f"镜头 {shot.shot_id} 空间采样失败："
+                    f"{type(exc).__name__}: {exc}",
+                    level="warning")
+        if not frames:
+            return
+        try:
+            observation = build_observation_snapshot(frames)
+            diff = build_diff_report(self._spatial_design, observation)
+        except Exception as exc:  # noqa: BLE001 - 装配失败不阻断收尾
+            self.audit.log(
+                "spatial_diff_report",
+                f"空间观测/diff 装配失败：{type(exc).__name__}: {exc}",
+                level="warning")
+            return
+        self._spatial_observation = observation
+        self._spatial_diff = diff
+        for kind, snapshot in (
+                ("spatial_observation_snapshot", observation),
+                ("spatial_diff_report", diff)):
+            event = snapshot_audit_event(kind, snapshot)
+            event["created_at"] = datetime.now(timezone.utc).isoformat()
+            self.audit.log(
+                event["kind"],
+                f"空间快照已生成（{snapshot.get('schema_version')}）",
+                **{key: value for key, value in event.items() if key != "kind"},
+                payload=snapshot)
 
     def knowledge_provenance(self) -> Dict[str, Dict[str, List[List[str]]]]:
         """逐镜的知识溯源：``{shot_id: {source_kind: [[kind, value], ...]}}``。
@@ -2361,6 +2497,9 @@ class PrevisDriver:
         if not self._ruler_enabled():
             self._ruler_plan_evidence = None
             self._ruler_findings = []
+            #: 空间理解快照（Ticket 08）：计划定稿即生成设计快照，与空间尺
+            #: 开关无关（快照是产品证据，不是空间尺的处方产物）。
+            self._build_spatial_design()
             return True
         plan = self.plan or Plan()
         declared_total = getattr(self.parsed_script, "declared_total_seconds",
@@ -2425,6 +2564,9 @@ class PrevisDriver:
             self._fail(f"空间尺硬发现阻断构建：{hard_findings[0].message}")
             return False
         self.plan = plan
+        #: 空间理解快照（Ticket 08）：处方应用后的**最终计划**才是设计快照
+        #: 的真源——在这之前转会在处方落地前定格，diff 就会拿旧计划对账。
+        self._build_spatial_design()
         return True
 
     def _step_building(self) -> None:
@@ -2498,6 +2640,9 @@ class PrevisDriver:
         if self.builder is None or self.plan is None:
             self._transition(DriverState.FINISHING)
             return
+        #: 空间理解快照（Ticket 08 接线）：逐镜预演路径不经过 `_step_building`
+        #: 的整场构建，设计快照在场景准备前先落（计划已是 B1 定稿）。
+        self._build_spatial_design()
         started = self.clock()
         try:
             summary = self.builder.prepare_scene(self.plan, self.brief) or {}
@@ -3612,6 +3757,13 @@ class PrevisDriver:
         #: G2 判据 #8：先装**这一镜**的逐镜 schema（emit_shot_draft ＋ 角色
         #: 工具），载荷与 registry.execute 才会校验同一份枚举。
         self._apply_shot_schemas(str(self._current_shot_id))
+        #: 空间理解快照（Ticket 08）：设计 vs 实测偏差块注入修复提示。
+        #: 没有 diff（未采样/离线）时零形状差——build_repair_payload 只在
+        #: 非空块时追加，与改动前的提示逐字节一致。
+        diff_block = ""
+        if self._spatial_diff is not None:
+            from ..cinema.spatial_diff import render_diff_block
+            diff_block = render_diff_block(self._spatial_diff, max_chars=800)
         payload = build_repair_payload(
             audit, self.registry,
             scene_state=self._scene_state_text(),
@@ -3622,7 +3774,8 @@ class PrevisDriver:
             #: 里模型照抄它，把 `emit_shot_draft` 的 shot_id 写成 shot_001。
             shot_id=str(self._current_shot_id),
             temperature=temperature,
-            max_tokens=self._llm_max_tokens())
+            max_tokens=self._llm_max_tokens(),
+            diff_block=diff_block)
         #: 对抗审查的解释/建议回流修复提示（梯度下降的"信号"）。
         #: 审查只作为建议来源，不新增任何硬门；payload 结构保持不变。
         review = getattr(audit, "adversarial_review", None)
@@ -3739,6 +3892,10 @@ class PrevisDriver:
 
     def _step_finishing(self) -> None:
         plan = self.plan or Plan()
+        #: 空间理解快照（Ticket 08 接线）：收尾一次性采样 -> 观测 -> diff。
+        #: 整场与逐镜两条构建路径在这里汇合，最终场景一致；无 bpy/无场景
+        #: 时如实留空（零形状差），失败只记 warning。
+        self._build_spatial_observation_and_diff()
         # 会话结构自检（§3.4）：失败只告警，不阻断收尾
         problems = validate_conversation(self.messages)
         if problems:
@@ -4015,7 +4172,10 @@ class PrevisDriver:
                 parsed=self.parsed_script, retriever=self.knowledge,
                 brief=self.brief, chunk=chunk, plan_chunks_total=len(chunks),
                 #: 上一次被拒的原因回灌给这一次——否则模型把同一个错误再犯一遍。
-                retry_note=self._plan_problem)
+                retry_note=self._plan_problem,
+                #: 空间理解快照（Ticket 08）：已有设计快照（如续跑/重规划）时
+                #: 注入设计摘要；首跑计划未定，恒为 None ⇒ 提示零形状差。
+                design=self._spatial_design)
         except ValueError as exc:
             # v1.4 BW-3/E_SCRIPT_002：声明镜数超过 max_shots 时明确失败，
             # 而不是退回"其余 N 个镜号略"的静默截断。

@@ -215,7 +215,45 @@ def snapshot_audit_event(kind: str, snapshot: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def validate_spatial_snapshot(snapshot: Any,
+                              schema: Dict[str, Any]) -> List[str]:
+    """轻量结构校验（Ticket 08，生产侧零 jsonschema 依赖）。
+
+    校验器只做**结构守卫**：``schema_version`` 常量 + 必需键 + 已声明类型的
+    顶层属性（array/object/string/integer/boolean）。完整的 jsonschema 校验
+    由测试链与冒烟探针负责（``tests/test_spatial_snapshot_schema.py`` 已钉
+    合法/非法实例）；本函数是交付写盘前的最后一层网，坏数据不静默、不造假。
+    通过返回空表；发现任何问题返回一条条可读的 findings。
+    """
+    findings: List[str] = []
+    if not isinstance(snapshot, Mapping):
+        return ["快照必须是 Mapping"]
+    props = schema.get("properties") or {}
+    const = (props.get("schema_version") or {}).get("const")
+    if const is not None and snapshot.get("schema_version") != const:
+        findings.append(f"schema_version 必须为 {const!r}")
+    for key in schema.get("required") or []:
+        if key not in snapshot:
+            findings.append(f"缺必需键 {key}")
+    for key, prop in props.items():
+        if key not in snapshot:
+            continue
+        declared = prop.get("type")
+        value = snapshot[key]
+        if declared == "array" and not isinstance(value, list):
+            findings.append(f"{key} 必须是数组")
+        elif declared == "object" and not isinstance(value, Mapping):
+            findings.append(f"{key} 必须是对象")
+        elif declared == "string" and not isinstance(value, str):
+            findings.append(f"{key} 必须是字符串")
+        elif declared == "integer" and not isinstance(value, int):
+            findings.append(f"{key} 必须是整数")
+        elif declared == "boolean" and not isinstance(value, bool):
+            findings.append(f"{key} 必须是布尔")
+    return findings
+
+
 __all__ = ["DESIGN_SCHEMA", "OBSERVATION_SCHEMA", "DIFF_SCHEMA",
            "DESIGN_SNAPSHOT_SCHEMA", "OBSERVATION_SNAPSHOT_SCHEMA",
            "DIFF_THRESHOLDS", "DesignSnapshot", "ObservationSnapshot",
-           "snapshot_audit_event"]
+           "snapshot_audit_event", "validate_spatial_snapshot"]

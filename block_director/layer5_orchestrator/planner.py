@@ -305,6 +305,19 @@ def render_plan_closed_sets() -> str:
     ])
 
 
+def _design_block(design: Any) -> str:
+    """把前向空间设计快照渲染成一段提示文字（Ticket 08，纯层无 bpy）。
+
+    没有 design（``None``／空 dict／渲染为空串）时返回空串——调用方只在该
+    结果为非空时才追加，保证"无 design 零形状差"。长度上限 1200 字符，
+    由 ``render_design_summary`` 的整行舍弃语义保证（绝不截半行）。
+    """
+    if not design:
+        return ""
+    from ..cinema.spatial_design import render_design_summary
+    return render_design_summary(design, max_chars=1200)
+
+
 def _brief_block(brief, token_limit: int) -> str:
     """阶段 S 的理解渲染成一段提示文字；没有 brief 时留空串。"""
     if brief is None:
@@ -319,7 +332,8 @@ def build_plan_payload(script: str, config=None,
                        max_tokens: Optional[int] = None,
                        brief=None, chunk: Optional[Dict[str, Any]] = None,
                        plan_chunks_total: int = 0,
-                       retry_note: str = "") -> ChatPayload:
+                       retry_note: str = "",
+                       design=None) -> ChatPayload:
     """构造阶段 A 的请求。
 
     给了 ``parsed``（Layer 1 的解析结果）时，提示里放**结构化摘要 + 对白时长表**
@@ -419,6 +433,11 @@ def build_plan_payload(script: str, config=None,
     system_text = system_text.replace("{pacing}", pacing_block(pacing))
     extent = float(getattr(getattr(config, "scene", None), "extent_m", 12.0) or 12.0)
     system_text = system_text.replace("{space}", space_block(extent))
+    #: 空间理解快照（Ticket 02/08）：计划提示可注入设计快照摘要。有
+    #: ``design`` 才注入（渲染上限 1200 字符、整行追加），没有时零形状差。
+    design_block = _design_block(design)
+    if design_block:
+        system_text += "\n\n" + design_block
     max_shots = 0
     if config is not None:
         max_shots = int(getattr(getattr(config, "orchestration", None),

@@ -55,6 +55,20 @@ def ruler_evidence_from_summary(summary: Optional[dict]) -> dict:
             "ruler_shot_measurements": shot_measurements or None}
 
 
+def spatial_export_args(summary: Optional[dict]) -> dict:
+    """从运行摘要折出 ``export_project`` 的空间快照参数（Ticket 08，纯层）。
+
+    三份快照（设计/观测/diff）由 ``driver.snapshot()`` 带进运行摘要；缺省
+    均为 ``None``——交付层零形状差，一个额外键都不写。
+    """
+    summary = summary or {}
+    return {
+        "spatial_design": summary.get("spatial_design") or None,
+        "spatial_observation": summary.get("spatial_observation") or None,
+        "spatial_diff": summary.get("spatial_diff") or None,
+    }
+
+
 def trace_options(config) -> Dict[str, Any]:
     """§11.3 的 trace 内容与上限（配置里的 ``llm.trace_*``）。"""
     llm = getattr(config, "llm", None)

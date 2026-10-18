@@ -146,6 +146,7 @@ def main() -> int:
                             knowledge_provenance=summary.get(
                                 "knowledge_provenance"),
                             review_requests=summary.get("self_review_requests"),
+                            **(_spatial_export_args(summary)),
                             project="BlockDirector")
     payload = report.to_dict()
     payload["summary"] = {"state": summary.get("state"),
@@ -153,6 +154,15 @@ def main() -> int:
                           "total_frames": summary.get("total_frames")}
     print("BLOCKDIRECTOR_EXPORT " + json.dumps(payload, ensure_ascii=False))
     return 0 if report.ok else 1
+
+
+def _spatial_export_args(summary):
+    """从运行摘要折出 ``export_project`` 的空间快照参数（Ticket 08 兜底）。"""
+    from block_director.layer5_orchestrator.headless_runner import (
+        spatial_export_args as collect,
+    )
+
+    return collect(summary)
 
 if __name__ == "__main__":
     sys.exit(main())

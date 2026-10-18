@@ -65,7 +65,19 @@ def _export_report(plan_obj, summary, config, out_dir, crowd, parsed):
         #: 空间尺观测（Ticket 06）：优先带 driver.snapshot() 折出的 v2 文档；
         #: 不可用时由运行摘要折出计划级处方/测量参数（交付层组装）。
         **(_ruler_export_args(summary)),
+        #: 空间理解快照（Ticket 08）：设计/观测/diff 三份产物随摘要直传，
+        #: 缺省 None（零形状差）。
+        **(spatial_export_args(summary)),
         project=plan_obj.scene_heading or "BlockDirector")
+
+
+def spatial_export_args(summary):
+    """从运行摘要折出 ``export_project`` 的空间快照参数（Ticket 08 兜底）。"""
+    from block_director.layer5_orchestrator.headless_runner import (
+        spatial_export_args as collect,
+    )
+
+    return collect(summary)
 
 
 def _ruler_export_args(summary):

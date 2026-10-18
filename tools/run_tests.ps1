@@ -185,7 +185,8 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_assistant_panel.py';   Marker = 'BD_TEST_RESULT'; Label = 'assistant-panel' },
     @{ Script = 'tools\blender_tests\test_assistant_sprite.py';  Marker = 'BD_TEST_RESULT'; Label = 'assistant-sprite' },
     @{ Script = 'tools\blender_tests\test_ruler_probe.py';       Marker = 'BD_TEST_RESULT'; Label = 'ruler-probe' },
-    @{ Script = 'tools\blender_tests\test_per_shot_previz.py';   Marker = 'BD_TEST_RESULT'; Label = 'per-shot-previz' }
+    @{ Script = 'tools\blender_tests\test_per_shot_previz.py';   Marker = 'BD_TEST_RESULT'; Label = 'per-shot-previz' },
+    @{ Script = 'tools\blender_tests\test_spatial_understanding_smoke.py'; Marker = 'BD_TEST_RESULT'; Label = 'spatial-understanding-smoke' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.

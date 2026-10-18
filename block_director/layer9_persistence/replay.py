@@ -214,6 +214,36 @@ def extract_ruler_evidence(records: Sequence[Dict[str, Any]]
     return plan_evidence, shot_measurements
 
 
+def extract_spatial_snapshots(records: Sequence[Dict[str, Any]]
+                              ) -> Dict[str, Optional[Dict[str, Any]]]:
+    """从审计日志抽取三份空间快照（Ticket 08，重放侧，零 LLM）。
+
+    数据源是运行期 ``snapshot_audit_event`` 落盘的审计事件：
+    ``spatial_design_snapshot`` / ``spatial_observation_snapshot`` /
+    ``spatial_diff_report``，快照本体在 ``data.payload``。同一 kind 多事件
+    取**最后一条**（与 ``plan_received`` / ``extract_ruler_evidence`` 同口径，
+    重放的是最终态）。缺事件返回 ``None``——旧日志零形状差，不猜、不伪造。
+    """
+    kinds = ("spatial_design_snapshot", "spatial_observation_snapshot",
+             "spatial_diff_report")
+    snapshots: Dict[str, Optional[Dict[str, Any]]] = {
+        "design": None, "observation": None, "diff": None}
+    for record in records:
+        kind = record.get("kind")
+        if kind not in kinds:
+            continue
+        payload = (record.get("data") or {}).get("payload")
+        if not isinstance(payload, dict):
+            continue
+        if kind == "spatial_design_snapshot":
+            snapshots["design"] = payload
+        elif kind == "spatial_observation_snapshot":
+            snapshots["observation"] = payload
+        elif kind == "spatial_diff_report":
+            snapshots["diff"] = payload
+    return snapshots
+
+
 def replay(directory: Union[str, Path], registry, *, builder=None,
            spec=None, build: bool = True) -> ReplayReport:
     """按审计日志重放：先按计划建场景，再顺序重放工具调用（不调用 LLM）。"""
@@ -301,6 +331,14 @@ def replay(directory: Union[str, Path], registry, *, builder=None,
         report.summary["ruler_measurements"] = plan_ruler["measurements"]
     if shot_ruler:
         report.summary["ruler_shot_measurements"] = shot_ruler
+    #: 空间理解快照（Ticket 08）：三份快照可从审计事件零 LLM 复原，回挂到
+    #: summary，交付层据此随重导出落盘。缺事件（旧日志）零形状差。
+    spatial_snapshots = extract_spatial_snapshots(records)
+    for key, value in (("spatial_design", "design"),
+                       ("spatial_observation", "observation"),
+                       ("spatial_diff", "diff")):
+        if value is not None:
+            report.summary[key] = spatial_snapshots[value]
 
     known = set(registry.names())
     for step in report.steps:

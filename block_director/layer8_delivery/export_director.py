@@ -200,6 +200,9 @@ def export_project(plan: Plan, *,
                    ruler_evidence: Optional[Dict[str, Any]] = None,
                    ruler_shot_measurements: Optional[Dict[str, Any]] = None,
                    ruler_observation: Optional[Dict[str, Any]] = None,
+                   spatial_design: Optional[Dict[str, Any]] = None,
+                   spatial_observation: Optional[Dict[str, Any]] = None,
+                   spatial_diff: Optional[Dict[str, Any]] = None,
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -258,6 +261,40 @@ def export_project(plan: Plan, *,
     elif ruler_evidence or ruler_shot_measurements:
         ruler_manifest_summary = _ruler_manifest_summary(
             ruler_evidence, ruler_shot_measurements)
+
+    #: 空间理解快照（Ticket 08）：设计/观测/diff 三份产物与 ruler 同一纪律
+    #: ——未过结构校验即中止导出，不产脏交付包。缺省全部 None ⇒ 现有交付
+    #: 逐字节不变（零形状差）。
+    spatial_artifacts = (
+        (spatial_design, "spatial_design_snapshot.json", "DESIGN_SCHEMA"),
+        (spatial_observation, "spatial_observation_snapshot.json",
+         "OBSERVATION_SCHEMA"),
+        (spatial_diff, "spatial_diff_report.json", "DIFF_SCHEMA"),
+    )
+    spatial_written: List[Tuple[str, Dict[str, Any]]] = []
+    if any(item[0] is not None for item in spatial_artifacts):
+        from ..contracts.spatial_snapshot import (
+            DESIGN_SCHEMA,
+            DIFF_SCHEMA,
+            OBSERVATION_SCHEMA,
+            validate_spatial_snapshot,
+        )
+
+        schema_by_name = {"DESIGN_SCHEMA": DESIGN_SCHEMA,
+                          "OBSERVATION_SCHEMA": OBSERVATION_SCHEMA,
+                          "DIFF_SCHEMA": DIFF_SCHEMA}
+        for snapshot, filename, schema_name in spatial_artifacts:
+            if snapshot is None:
+                continue
+            problems = validate_spatial_snapshot(
+                snapshot, schema_by_name[schema_name])
+            if problems:
+                report.aborted = True
+                report.reason = (f"导出中止：{filename} 未通过结构校验："
+                                 + "；".join(problems[:5]))
+                log.error(report.reason)
+                return report
+            spatial_written.append((filename, snapshot))
 
     #: v1.6 E1（FR-A2/FR-A4）：先生成唯一一份登记表，prompts / mask /
     #: reference 共用（SC-06）。表外名字在**渲染之前**判 error 中止——
@@ -594,6 +631,16 @@ def export_project(plan: Plan, *,
                        allow_nan=False),
             encoding="utf-8")
         report.files.append(str(ruler_path))
+
+    #: 空间理解快照（Ticket 08）：设计/观测/diff 三份 JSON 随交付包落盘。
+    #: 校验已在函数首部完成（未过即中止）；这里只写盘，失败如实上抛。
+    for filename, snapshot in spatial_written:
+        spatial_path = export_dir / filename
+        spatial_path.write_text(
+            json.dumps(snapshot, ensure_ascii=False, indent=2,
+                       allow_nan=False),
+            encoding="utf-8")
+        report.files.append(str(spatial_path))
 
     scene.frame_start, scene.frame_end = original_range
 

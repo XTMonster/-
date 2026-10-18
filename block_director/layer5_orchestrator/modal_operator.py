@@ -225,6 +225,11 @@ def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
         from .driver import ruler_delivery_args
 
         ruler_args = ruler_delivery_args(driver)
+    #: 空间理解快照（Ticket 08）：设计/观测/diff 三份产物随交付折档；
+    #: 驱动未生成时为 None（零形状差）。
+    from .driver import spatial_delivery_args
+
+    spatial_args = spatial_delivery_args(driver)
     report = export_project(driver.plan, build_summary=driver.build_summary,
                             out_dir=out_dir, config=run.config.delivery,
                             brief=driver.brief,
@@ -238,6 +243,7 @@ def export_finished_run(run: RunContext) -> Optional[Dict[str, Any]]:
                             project=driver.plan.scene_heading or "BlockDirector",
                             roster=driver._cast_roster(),
                             **ruler_args,
+                            **spatial_args,
                             review_requests=driver.review_requests)
     payload = report.to_dict()
     driver.audit.log("export_finished",
