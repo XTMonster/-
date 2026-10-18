@@ -190,7 +190,8 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_blockout_scene_smoke.py';       Marker = 'BD_TEST_RESULT'; Label = 'blockout-scene-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_preview_smoke.py';     Marker = 'BD_TEST_RESULT'; Label = 'blockout-preview-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_checkpoint_smoke.py';  Marker = 'BD_TEST_RESULT'; Label = 'blockout-checkpoint-smoke' },
-    @{ Script = 'tools\blender_tests\test_blockout_sequence_smoke.py';    Marker = 'BD_TEST_RESULT'; Label = 'blockout-sequence-smoke' }
+    @{ Script = 'tools\blender_tests\test_blockout_sequence_smoke.py';    Marker = 'BD_TEST_RESULT'; Label = 'blockout-sequence-smoke' },
+    @{ Script = 'tools\blender_tests\test_blockout_e2e_smoke.py';         Marker = 'BD_TEST_RESULT'; Label = 'blockout-e2e-smoke' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.
