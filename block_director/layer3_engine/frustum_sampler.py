@@ -78,6 +78,7 @@ from .cinema_engine.composition_guide import (
 )
 from .character_system.character_factory import get_facing
 from .rule_checker import OBSTACLE_PREFIXES, screen_facing_for
+from ..utils.geometry import rotation_payload
 from .scene_context import get_context
 
 log = get_logger("frustum-sampler")
@@ -185,6 +186,31 @@ def _object_world_bounds(evaluated) -> Optional[Tuple[Vector, Vector]]:
             low[index] = min(low[index], point[index])
             high[index] = max(high[index], point[index])
     return Vector(low), Vector(high)
+
+
+def _rotation_of(evaluated) -> Optional[Dict[str, Any]]:
+    """从求值对象的世界矩阵回读旋转负载（四元数 + 欧拉，纯数值构造）。
+
+    采样侧调用（bpy 侧）；负载形状由 :func:`rotation_payload` 纯层保证。
+    拿不到矩阵 -> None（可空字段）；矩阵读数异常不在此吞掉，由外层
+    ``except`` 归一为 :class:`SamplingError`（与整镜采样同口径）。
+    """
+    matrix = getattr(evaluated, "matrix_world", None)
+    if matrix is None:
+        return None
+    return rotation_payload(matrix.to_quaternion(), matrix.to_euler())
+
+
+def _character_rotation_eval(subject, depsgraph):
+    """角色求值对象：优先 body part（与 get_facing 的几何同源）。"""
+    parts = getattr(subject, "parts", None)
+    if isinstance(parts, dict):
+        body = parts.get("body")
+        if body is not None:
+            return body.evaluated_get(depsgraph)
+    if hasattr(subject, "evaluated_get"):
+        return subject.evaluated_get(depsgraph)
+    return None
 
 
 def _shot_objects(shot_id: str, context) -> List[object]:
@@ -579,7 +605,8 @@ def sample_spatial(shot_id, frames) -> List[SpatialFrame]:
                 sensor_height=float(camera_data.sensor_height),
                 sensor_fit=str(camera_data.sensor_fit),
                 render_width=int(scene.render.resolution_x),
-                render_height=int(scene.render.resolution_y))
+                render_height=int(scene.render.resolution_y),
+                rotation=_rotation_of(camera_eval))
 
             elements: List[SpatialElement] = []
             for subject in context.subjects_for(shot_id):
@@ -589,11 +616,16 @@ def sample_spatial(shot_id, frames) -> List[SpatialFrame]:
                         f"主体 {_subject_id(subject)} 在镜头 {shot_id} 第 "
                         f"{current_frame} 帧没有可投影的网格（bound_box 为空）")
                 low, high = bounds
+                subject_eval = _character_rotation_eval(subject, depsgraph)
+                facing_vec = tuple(get_facing(subject))
                 elements.append(SpatialElement(
                     id=_subject_id(subject), kind="character",
                     aabb_min=tuple(low), aabb_max=tuple(high),
                     center=tuple((low + high) * 0.5),
-                    facing=tuple(get_facing(subject))))
+                    facing=facing_vec,
+                    rotation=_rotation_of(subject_eval),
+                    gaze={"target_id": None,
+                          "direction": list(facing_vec)}))
             for obj in bpy.data.objects:
                 if obj.type != "MESH" or obj.hide_render:
                     continue
@@ -608,7 +640,8 @@ def sample_spatial(shot_id, frames) -> List[SpatialFrame]:
                 elements.append(SpatialElement(
                     id=obj.name, kind=kind,
                     aabb_min=tuple(low), aabb_max=tuple(high),
-                    center=tuple((low + high) * 0.5)))
+                    center=tuple((low + high) * 0.5),
+                    rotation=_rotation_of(evaluated)))
             out.append(SpatialFrame(frame=current_frame, shot_id=shot_id,
                                     camera=spatial_camera,
                                     elements=elements))

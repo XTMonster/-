@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import math
-from typing import Sequence, Tuple
+from typing import Any, Dict, Sequence, Tuple
 
 
 def hex_to_rgb(color: str) -> Tuple[float, float, float]:
@@ -56,3 +56,20 @@ def rotation_z_to_facing(theta: float) -> Tuple[float, float, float]:
     写的是 ``(sin θ, cos θ)``，恰好是旧 ``atan2(x, y)`` 的逆）。
     """
     return (round(-math.sin(theta), 6), round(math.cos(theta), 6), 0.0)
+
+
+def rotation_payload(quaternion: Sequence[float],
+                     euler: Sequence[float],
+                     order: str = "XYZ") -> Dict[str, Any]:
+    """构造观测/设计快照用的旋转负载（纯层，可测）。
+
+    输入通常是 Blender 的 ``matrix_world.to_quaternion()`` /
+    ``matrix_world.to_euler()`` 数值；这里只做归一化（float 化 + 4 位取整，
+    与观测契约的数值口径一致），不 import bpy。四元数按 Blender 约定
+    ``(w, x, y, z)``，欧拉按 ``(x, y, z)`` 弧度 + 顺序字符串。
+    """
+    return {
+        "quaternion": [round(float(value), 4) for value in quaternion],
+        "euler": [round(float(value), 4) for value in euler],
+        "order": str(order or "XYZ"),
+    }
