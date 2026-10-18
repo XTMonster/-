@@ -402,9 +402,15 @@ Tickets 01–07 全部落地（空间 DTO 扩展 / 前向设计转换 / 后向�
 修复提示注入 diff 块（无 diff 零形状差）、计划提示注入设计摘要（无 design 零
 形状差）、交付包落 `spatial_design_snapshot.json`/
 `spatial_observation_snapshot.json`/`spatial_diff_report.json`（结构校验，坏数据
-即中止）；全量 pytest 读数见本块末尾随本分支实读登记。
+即中止）；全量 pytest **4496 passed / 2 skipped / 0 failed**（2026-10-18 本分支
+实读，214.26s，exit 0；含 Ticket 08 新增的 `test_spatial_runtime_wiring.py` 与
+`test_ruler_observation_audit_history.py`）；并行 blockout 分支（Tickets 01–03）
+已叠在本分支上（`be6d954`/`60c55af`/`1d2c9cd`），其 `test_blockout_scene_smoke.py`
+在磁盘（第 47 支探针）但尚未登记进 `run_tests.ps1`——链规模在 blockout 登记探针
+前仍按 **46 支 / 50 步**计，登记后须随 `test_agents_status_is_current.py` 同源对拍
+重排。
 
-**2026-10-18 冻结树全链（HEAD `9763d7c`，最新以这行为准）**：D1 合入后
+**2026-10-18 冻结树全链（HEAD `9763d7c`，历史快照）**：D1 合入后
 构图门升 80 的探针连带缺口已修（`c22b35a`：composition-gate/phase4-tools
 探针与 diagnose 兜底同源到 `PASS_SCORE=80` 且严格高于；`0262e55`：
 phase4-repair R003 探针改用无动作基线＋双动作重叠构造）；另修复 D1 合入
@@ -415,12 +421,12 @@ action-targets 探针 4/4 绿、`tests/test_action_targets.py` 28/28 绿）；
 六视角评审 4 条建议测试全部落地（空镜逐镜／双人 MCU 锚点／PER_SHOT 续跑／
 回退 BUILDING，`9763d7c` 补 per-shot 探针空镜用例，纯层 41 passed ＋探针 6/6）。
 **可归因冻结树全链 `docs/evidence/20261018-071132/`：`tree.json stable=True`
-（before=after=`320174c4…`）、49/49 探针全 OK、pytest **4400 passed /
+（before=after=`320174c4…`）、探针全 OK（当时清单 49 支/49 步）、pytest **4400 passed /
 2 skipped**、headless 64 镜 DONE（147 llm calls / ceiling 552）、门①–⑩
 全 pass、`holdout_gates.overall == "pass"`、唯一红 RK-13/E1 为已结案残留
 （`rks.json`：RK-13 measured / pass=false，E1<0.70，判据未动）**。
 
-**2026-10-18 空间尺转正批（HEAD 推进到 `f54d417`）**：空间尺观测扩展线 01–06
+**2026-10-18 空间尺转正批（HEAD 推进到 `f54d417`，历史快照）**：空间尺观测扩展线 01–06
 （契约资产 `8fefc70`、行内镜头/计划级 `5da59db`、测量/处方/交付 `8da4d8b`、
 replay 证据 `a549f7f`，台账登记 `901bb40`）与转正批 `b3784c7`（12 文件
 +335/−19：`RulerConfig.enabled` 默认 `False→True`（运行时仍可显式关闭，非降级）；
@@ -445,7 +451,8 @@ dock-market 的 verdict 语义与新门槛自洽；`enabled=False` 全链路零�
 `test_spatial_ruler_audit_json.py`；**全量 pytest
 4219 passed / 2 skipped**（2026-10-18 实读，`-o addopts=""`，212.24s，exit 0）、
 gen_specs --check OK、定向 ruler/driver 回归 149 passed；链规模仍
-**44 支探针 / 48 步链**（转正批未新增探针）、门①–⑩ 全 pass、
+**44 支探针 / 48 步链**（转正批未新增探针；本分支自其后的 D1/per-shot/spatial 扩展
+已将链重排为 **46 支 / 50 步**）、门①–⑩ 全 pass、
 `holdout_gates.overall == "pass"`（仍指 `docs/evidence/20261017-103308/`）、
 唯一红 RK-13/E1 为已结案残留（判据未动）；空间尺 real judge A/B 与
 帧差活性裁决（07/裁决 4/5）在隔壁窗口，本线不碰。
