@@ -98,6 +98,8 @@ class SpatialCamera:
     sensor_fit: str
     render_width: int
     render_height: int
+    #: 完整旋转（空间理解/设计快照：四元数 + 欧拉 + 顺序）。None = 未采样。
+    rotation: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -110,10 +112,13 @@ class SpatialCamera:
             "sensor_fit": self.sensor_fit,
             "render_width": self.render_width,
             "render_height": self.render_height,
+            "rotation": (dict(self.rotation)
+                         if isinstance(self.rotation, dict) else None),
         }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "SpatialCamera":
+        rotation = data.get("rotation")
         return cls(
             position=tuple(data["position"]),
             forward=tuple(data["forward"]),
@@ -124,18 +129,31 @@ class SpatialCamera:
             sensor_fit=str(data["sensor_fit"]),
             render_width=int(data["render_width"]),
             render_height=int(data["render_height"]),
+            rotation=(dict(rotation) if rotation is not None else None),
         )
 
 
 @dataclass
 class SpatialElement:
-    """一帧里的一个元素（角色/道具/墙）。``facing`` 只有角色有。"""
+    """一帧里的一个元素（角色/道具/墙）。``facing`` 只有角色有。
+
+    ``rotation`` / ``motion`` / ``gaze`` 是空间理解/设计快照新增的**可空**字段
+    （旧字段全保留、None 时序列化输出键值为 None，与 ``facing`` 同口径）：
+
+    * ``rotation``：``{"quaternion": [w,x,y,z], "euler": [x,y,z],
+      "order": "XYZ"}``；
+    * ``motion``：设计/观测两侧形状由快照契约定义，这里只做透传 dict；
+    * ``gaze``：只有角色有，``{"target_id": str|None, "direction": [x,y,z]}``。
+    """
     id: str
     kind: str                          # character / prop / wall
     aabb_min: Vec
     aabb_max: Vec
     center: Vec
     facing: Optional[Vec] = None
+    rotation: Optional[Dict[str, Any]] = None
+    motion: Optional[Dict[str, Any]] = None
+    gaze: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -145,11 +163,20 @@ class SpatialElement:
             "aabb_max": list(self.aabb_max),
             "center": list(self.center),
             "facing": list(self.facing) if self.facing is not None else None,
+            "rotation": (dict(self.rotation)
+                         if isinstance(self.rotation, dict) else None),
+            "motion": (dict(self.motion)
+                       if isinstance(self.motion, dict) else None),
+            "gaze": (dict(self.gaze)
+                     if isinstance(self.gaze, dict) else None),
         }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "SpatialElement":
         facing = data.get("facing")
+        rotation = data.get("rotation")
+        motion = data.get("motion")
+        gaze = data.get("gaze")
         return cls(
             id=str(data["id"]),
             kind=str(data["kind"]),
@@ -157,6 +184,9 @@ class SpatialElement:
             aabb_max=tuple(data["aabb_max"]),
             center=tuple(data["center"]),
             facing=tuple(facing) if facing is not None else None,
+            rotation=(dict(rotation) if rotation is not None else None),
+            motion=(dict(motion) if motion is not None else None),
+            gaze=(dict(gaze) if gaze is not None else None),
         )
 
 
