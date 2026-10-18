@@ -23,10 +23,12 @@ from dataclasses import asdict, is_dataclass
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from ..contracts.plan import Plan
+from ..contracts.blockout import MANIFEST_VERSION
 from .schedule import shot_ranges
 
 #: 快照版本（契约演进时逐代升）。
-BLOCKOUT_MANIFEST_SCHEMA = "blockout-manifest/v1"
+#: 版本常量单一真源在 ``contracts/blockout.py``（Schema const 同源）。
+BLOCKOUT_MANIFEST_SCHEMA = MANIFEST_VERSION
 
 #: 体块占位颜色（中性灰，与白模参考视频同口径）。
 BLOCKOUT_COLOR = "#8f8f8f"

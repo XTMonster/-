@@ -11,10 +11,22 @@ import base64
 import binascii
 import copy
 import hashlib
+import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional
 
 from .enums import ErrorCode, Severity
+
+
+def canonical_fingerprint(data: Any) -> str:
+    """可复现的规范指纹（单一真源：快照/粗排等审计事件共用）。
+
+    算法：``sort_keys`` 规范序列化（``ensure_ascii=False``、``default=str``）
+    后取 SHA-256——同一产物两次指纹一致，跨进程稳定，供零 LLM 重放对拍。
+    """
+    payload = json.dumps(data, sort_keys=True, ensure_ascii=False,
+                         default=str).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 #: v1.6 A6（D-08）：`scene_built` 事件的 `reason` 闭集。

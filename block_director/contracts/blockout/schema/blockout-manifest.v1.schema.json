@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blockdirector://blockout/manifest/v1",
+  "title": "Blockout Manifest v1",
+  "description": "粗排清单：体块/相机/分镜表/资产登记/检查点声明。坐标系可追溯，未解析不落体块。",
+  "type": "object",
+  "required": [
+    "schema_version", "scene_id", "primitives", "cameras", "shot_table",
+    "asset_registry", "scene_prop_ids", "checkpoints", "notes"
+  ],
+  "properties": {
+    "schema_version": { "const": "blockout-manifest/v1" },
+    "scene_id": { "type": "string" },
+    "primitives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "shape", "position", "size", "color",
+                     "z_anchor", "provenance"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "type": "string" },
+          "shape": { "type": "string" },
+          "position": {
+            "type": "object",
+            "required": ["x", "y", "z"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            }
+          },
+          "size": {
+            "type": "object",
+            "required": ["x", "y", "z"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            }
+          },
+          "color": { "type": "string" },
+          "z_anchor": { "enum": ["foot", "center"] },
+          "asset_ref": { "type": ["string", "null"] },
+          "provenance": { "type": "string" },
+          "source": { "type": "object" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "cameras": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["shot_id", "camera_id", "start_frame", "end_frame",
+                     "resolved"],
+        "properties": {
+          "shot_id": { "type": "string" },
+          "camera_id": { "type": "string" },
+          "position": {
+            "type": ["array", "null"],
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "target": {
+            "type": ["array", "null"],
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "lens_mm": { "type": ["number", "null"] },
+          "fov_deg": { "type": ["number", "null"] },
+          "movements": { "type": "array" },
+          "start_frame": { "type": "integer" },
+          "end_frame": { "type": "integer" },
+          "provenance": { "type": "string" },
+          "resolved": { "type": "boolean" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "shot_table": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "shot_id", "order", "start_frame", "end_frame",
+          "camera_id", "character_ids", "prop_ids",
+          "transition_overlap_frames", "enter_exit", "downstream_map"
+        ],
+        "properties": {
+          "shot_id": { "type": "string" },
+          "order": { "type": "integer" },
+          "start_frame": { "type": "integer" },
+          "end_frame": { "type": "integer" },
+          "camera_id": { "type": "string" },
+          "character_ids": { "type": "array", "items": { "type": "string" } },
+          "prop_ids": { "type": "array", "items": { "type": "string" } },
+          "transition_overlap_frames": { "type": "integer", "minimum": 0 },
+          "enter_exit": {
+            "type": "object",
+            "required": ["enter", "exit"],
+            "properties": {
+              "enter": { "type": "array", "items": { "type": "string" } },
+              "exit": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "downstream_map": { "type": "object" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "asset_registry": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset_id", "kind", "shape", "dims",
+                     "source_checkpoint"],
+        "properties": {
+          "asset_id": { "type": "string" },
+          "kind": { "type": "string" },
+          "shape": { "type": "string" },
+          "dims": {
+            "type": "object",
+            "required": ["x", "y", "z"]
+          },
+          "source_checkpoint": { "type": "string" },
+          "provenance": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "scene_prop_ids": { "type": "array", "items": { "type": "string" } },
+    "checkpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "scope"],
+        "properties": {
+          "id": { "type": "string" },
+          "scope": { "enum": ["global", "shot"] },
+          "shot_id": { "type": ["string", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

@@ -8,9 +8,10 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 from typing import Any, Dict, Mapping, Tuple
+
+from .audit import canonical_fingerprint
 
 DESIGN_SCHEMA: Dict[str, Any] = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -202,15 +203,13 @@ def snapshot_audit_event(kind: str, snapshot: Dict[str, Any]) -> Dict[str, Any]:
 
     ``kind`` 闭集：``spatial_design_snapshot`` / ``spatial_observation_snapshot``
     / ``spatial_diff_report``。指纹用可复现的规范序列化（sort_keys），同一
-    快照两次事件指纹一致，可重放对拍。
+    快照两次事件指纹一致，可重放对拍（算法单一真源：
+    ``contracts.audit.canonical_fingerprint``）。
     """
-    payload = json.dumps(snapshot, sort_keys=True, ensure_ascii=False,
-                         default=str).encode("utf-8")
-    fingerprint = hashlib.sha256(payload).hexdigest()
     return {
         "kind": str(kind),
         "schema_version": str(snapshot.get("schema_version") or ""),
-        "fingerprint_sha256": fingerprint,
+        "fingerprint_sha256": canonical_fingerprint(snapshot),
         "created_at": "deterministic-replay",   # 真实运行由调用方盖时间戳
     }
 

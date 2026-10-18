@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blockdirector://blockout/shot-table/v1",
+  "title": "Blockout Shot Table v1",
+  "description": "分镜清单行：shot_id/起止帧/相机/角色/道具/转场重叠/出入画/下游映射。",
+  "type": "object",
+  "required": [
+    "shot_id", "order", "start_frame", "end_frame",
+    "camera_id", "character_ids", "prop_ids", "transition_overlap_frames",
+    "enter_exit", "downstream_map"
+  ],
+  "properties": {
+    "schema_version": { "const": "blockout-shot-table/v1" },
+    "shot_id": { "type": "string" },
+    "order": { "type": "integer" },
+    "start_frame": { "type": "integer" },
+    "end_frame": { "type": "integer" },
+    "camera_id": { "type": "string" },
+    "character_ids": { "type": "array", "items": { "type": "string" } },
+    "prop_ids": { "type": "array", "items": { "type": "string" } },
+    "transition_overlap_frames": { "type": "integer", "minimum": 0 },
+    "enter_exit": {
+      "type": "object",
+      "required": ["enter", "exit"],
+      "properties": {
+        "enter": { "type": "array", "items": { "type": "string" } },
+        "exit": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "downstream_map": { "type": "object" }
+  },
+  "additionalProperties": true
+}

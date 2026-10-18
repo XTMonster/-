@@ -158,6 +158,44 @@ def extract_brief(records: Sequence[Dict[str, Any]]):
     return brief
 
 
+def extract_blockout_manifest(
+        records: Sequence[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """取最后一个 ``blockout_manifest_generated`` 事件里的完整清单。
+
+    Blockout 的原始数据源是空间设计快照与计划；重放时清单**不重新推导**
+    （避免与运行时依赖相同的转换器出现口径漂移），直接从审计事件 payload
+    复原——事件指纹在写入时已钉死，同一运行两次重放逐位一致。
+    """
+    manifest: Optional[Dict[str, Any]] = None
+    for record in records:
+        if record.get("kind") != "blockout_manifest_generated":
+            continue
+        data = record.get("data") or {}
+        payload = data.get("payload")
+        if isinstance(payload, dict) and payload:
+            manifest = payload
+    return manifest
+
+
+def extract_blockout_approvals(
+        records: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """按顺序取所有 ``blockout_approval_recorded`` 事件的审批记录。
+
+    记录从事件 payload 复原（含 schema_version / 状态 / 指纹 / 审批人）。
+    保持事件顺序，供后续全局回放一致性审查按时间线消费。
+    """
+    approvals: List[Dict[str, Any]] = []
+    for record in records:
+        if record.get("kind") != "blockout_approval_recorded":
+            continue
+        data = record.get("data") or {}
+        payload = data.get("payload") if isinstance(data.get("payload"), dict) \
+            else data
+        if isinstance(payload, dict) and payload:
+            approvals.append(dict(payload))
+    return approvals
+
+
 def iter_tool_calls(records: Iterable[Dict[str, Any]]) -> List[ReplayStep]:
     """把日志里的工具调用按记录顺序抽成重放步骤。"""
     steps: List[ReplayStep] = []
@@ -242,6 +280,37 @@ def extract_spatial_snapshots(records: Sequence[Dict[str, Any]]
         elif kind == "spatial_diff_report":
             snapshots["diff"] = payload
     return snapshots
+
+
+def extract_blockout_artifacts(records: Sequence[Dict[str, Any]]
+                               ) -> Dict[str, Optional[Dict[str, Any]]]:
+    """从审计日志抽取三份粗排产物（Ticket 02，重放侧，零 LLM）。
+
+    数据源是运行期 ``blockout_audit_event`` 落盘的审计事件：manifest /
+    report / approval，产物本体在 ``data.payload``。同一 kind 多事件取
+    **最后一条**（与 ``extract_spatial_snapshots`` 同口径——重放的是最终态）。
+    缺事件返回 ``None``——旧日志零形状差，不猜、不伪造。
+    """
+    #: 事件 kind 与 ``contracts/blockout.blockout_audit_event`` 的闭集同源：
+    #: manifest_generated / report_generated / approval_recorded。
+    kinds = ("blockout_manifest_generated", "blockout_report_generated",
+             "blockout_approval_recorded")
+    artifacts: Dict[str, Optional[Dict[str, Any]]] = {
+        "manifest": None, "report": None, "approval": None}
+    for record in records:
+        kind = record.get("kind")
+        if kind not in kinds:
+            continue
+        payload = (record.get("data") or {}).get("payload")
+        if not isinstance(payload, dict):
+            continue
+        if kind == "blockout_manifest_generated":
+            artifacts["manifest"] = payload
+        elif kind == "blockout_report_generated":
+            artifacts["report"] = payload
+        elif kind == "blockout_approval_recorded":
+            artifacts["approval"] = payload
+    return artifacts
 
 
 def replay(directory: Union[str, Path], registry, *, builder=None,
@@ -339,6 +408,14 @@ def replay(directory: Union[str, Path], registry, *, builder=None,
                        ("spatial_diff", "diff")):
         if value is not None:
             report.summary[key] = spatial_snapshots[value]
+    #: 粗排产物（Ticket 02）：manifest/report/approval 可从审计事件零 LLM
+    #: 复原，回挂到 summary，交付层据此随重导出落盘。缺事件零形状差。
+    blockout_artifacts = extract_blockout_artifacts(records)
+    for key, value in (("blockout_manifest", "manifest"),
+                       ("blockout_report", "report"),
+                       ("blockout_approval", "approval")):
+        if value is not None:
+            report.summary[key] = blockout_artifacts[value]
 
     known = set(registry.names())
     for step in report.steps:

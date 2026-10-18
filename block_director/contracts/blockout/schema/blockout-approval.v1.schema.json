@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blockdirector://blockout/approval/v1",
+  "title": "Blockout Approval v1",
+  "description": "审批记录：draft -> camera-approved -> frozen，含机位指纹；基准被改须重新审批。",
+  "type": "object",
+  "required": [
+    "schema_version", "checkpoint_id", "scope", "state",
+    "manifest_fingerprint", "cameras_fingerprint", "approved_at",
+    "approved_by"
+  ],
+  "properties": {
+    "schema_version": { "const": "blockout-approval/v1" },
+    "checkpoint_id": { "type": "string" },
+    "scope": { "enum": ["global", "shot"] },
+    "shot_id": { "type": ["string", "null"] },
+    "state": { "enum": ["draft", "camera-approved", "frozen"] },
+    "manifest_fingerprint": { "type": "string" },
+    "cameras_fingerprint": { "type": "string" },
+    "approved_at": { "type": "string" },
+    "approved_by": { "type": "string" }
+  },
+  "additionalProperties": true
+}
