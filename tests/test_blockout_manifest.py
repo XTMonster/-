@@ -75,7 +75,7 @@ def _plan() -> Plan:
             actions=[{"type": "enter_from", "start_frame": 1, "end_frame": 4,
                       "params": {"from": [-3.0, 0.0, 0.0]}}],
             camera={"side": "front", "lens": 35,
-                    "movements": [{"type": "push_in", "amount": 0.4,
+                    "movements": [{"type": "dolly_in", "amount": 0.4,
                                    "start_frame": 1, "end_frame": 24}]},
         ),
         ShotPlan(
@@ -135,7 +135,7 @@ def test_cameras_come_first_with_movements_and_frames():
     assert cam["provenance"] == "algorithmic_measurement"
     #: 相机运动轨迹来自计划意图（不脑补）
     assert cam["movements"] == [
-        {"type": "push_in", "amount": 0.4,
+        {"type": "dolly_in", "amount": 0.4,
          "start_frame": 1, "end_frame": 24}]
     #: 帧范围来自计划帧调度（shot_001 占 1..24，shot_002 接 25..36）
     assert cam["start_frame"] == 1 and cam["end_frame"] == 24
