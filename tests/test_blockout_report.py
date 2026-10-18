@@ -34,6 +34,8 @@ def _clean_shot() -> dict:
         "shot_id": "shot_001",
         "composition_score": 92.0,
         "visible_ratio": 1.0,
+        "foreground_occlusion_ratio": 0.0,
+        "max_subject_area_ratio": 0.4,
         "on_screen_ratio": 0.4,
         "off_screen": False,
         "design_diff": {"max_deviation_m": 0.05},
@@ -76,6 +78,19 @@ def test_occlusion_low_produces_empty_wall_finding_and_fail():
     assert empty and empty[0]["severity"] == "error"
     occlusion = [c for c in report["checks"] if c["check_id"] == "occlusion"]
     assert occlusion and occlusion[0]["verdict"] == "fail"
+
+
+def test_foreground_occlusion_is_hard_error_even_with_high_composition():
+    shot = _clean_shot()
+    shot["foreground_occlusion_ratio"] = 0.75
+    report = _report([shot])
+    check = [c for c in report["checks"]
+             if c["check_id"] == "foreground_occlusion"]
+    finding = [f for f in report["findings"]
+               if f["check_id"] == "E_FOREGROUND_OCCLUSION"]
+    assert check and check[0]["verdict"] == "fail"
+    assert finding and finding[0]["severity"] == "error"
+    assert report["verdict"] == "fail"
 
 
 def test_low_on_screen_ratio_produces_empty_wall_finding():

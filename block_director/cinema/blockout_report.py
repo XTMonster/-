@@ -26,6 +26,11 @@ E_BLOCKOUT_EMPTY_WALL = "E_BLOCKOUT_EMPTY_WALL"
 #: 自检阈值（与 composition.PASS_SCORE / spatial_diff 同源；数值单一真源）。
 COMPOSITION_PASS = 80.0
 VISIBLE_RATIO_MIN = 0.5        # 主体可见比例低于该值 -> 遮挡硬伤
+#: 前景非主体体块遮挡比例硬门。单个角色有超过 50% 的采样点被另一体块
+#: 挡住时，构图分数即使高于 80 也不能放行；这是“灰色大体块盖住角色”
+#: 的专门防线。严格大于 0.5 才失败，恰好 0.5 仍保留可审查状态。
+FOREGROUND_OCCLUSION_MAX = 0.5
+SUBJECT_AREA_MAX = 0.55
 ON_SCREEN_MIN = 0.05           # 主体在画面内面积占比低于该值 -> 空墙嫌疑
 OFF_SCREEN_LABEL = "off_screen"  # 主体完全出画 -> 出入画 finding 类别
 
@@ -42,6 +47,7 @@ def build_blockout_report(*, manifest: Mapping[str, Any],
 
     ``per_shot`` 每项形状（由 bpy 冒烟侧填充，纯层只消费不生成）：
     ``{shot_id, composition_score, visible_ratio, on_screen_ratio,
+    foreground_occlusion_ratio, max_subject_area_ratio,
     blocked, off_screen, design_diff, frames: [{frame, png}]}``。
     任何缺值 -> 对应 check verdict=unresolved（不猜）。
     """
@@ -118,6 +124,52 @@ def build_blockout_report(*, manifest: Mapping[str, Any],
                     "check_id": E_BLOCKOUT_EMPTY_WALL, "shot_id": shot_id,
                     "severity": "error",
                     "message": "主体在画面内占比近零，疑似相机对准空墙",
+                })
+
+        foreground = shot.get("foreground_occlusion_ratio")
+        if foreground is None:
+            checks.append({"check_id": "foreground_occlusion",
+                           "shot_id": shot_id, "actual": None,
+                           "threshold": FOREGROUND_OCCLUSION_MAX,
+                           "verdict": "unresolved"})
+        else:
+            foreground_value = float(foreground)
+            foreground_verdict = (
+                "pass" if foreground_value <= FOREGROUND_OCCLUSION_MAX
+                else "fail")
+            checks.append({"check_id": "foreground_occlusion",
+                           "shot_id": shot_id,
+                           "actual": round(foreground_value, 4),
+                           "threshold": FOREGROUND_OCCLUSION_MAX,
+                           "verdict": foreground_verdict})
+            if foreground_verdict == "fail":
+                findings.append({
+                    "check_id": "E_FOREGROUND_OCCLUSION",
+                    "shot_id": shot_id,
+                    "severity": "error",
+                    "message": ("非主体前景体块遮挡主体采样点超过 50%，"
+                                "构图不可读；必须调整体块/机位后再审核"),
+                })
+
+        area = shot.get("max_subject_area_ratio")
+        if area is None:
+            checks.append({"check_id": "subject_area", "shot_id": shot_id,
+                           "actual": None, "threshold": SUBJECT_AREA_MAX,
+                           "verdict": "unresolved"})
+        else:
+            area_value = float(area)
+            area_verdict = ("pass" if area_value <= SUBJECT_AREA_MAX
+                            else "fail")
+            checks.append({"check_id": "subject_area", "shot_id": shot_id,
+                           "actual": round(area_value, 4),
+                           "threshold": SUBJECT_AREA_MAX,
+                           "verdict": area_verdict})
+            if area_verdict == "fail":
+                findings.append({
+                    "check_id": "E_SUBJECT_AREA_OVERFLOW",
+                    "shot_id": shot_id, "severity": "error",
+                    "message": ("主体投影面积超过画面 55%，白模关系不可读；"
+                                "应拉远机位或退回多人构图求解"),
                 })
 
         if shot.get("off_screen"):

@@ -125,6 +125,8 @@ def build_coarse_prescriptions(
        （``component=distance, direction=in``；同一镜已有拉远处方则不重复）；
     4. ``occlusion`` check fail（可见比低于 0.5）-> 相机抬高
        （``component=position.y, direction=up``，量级 ∝ (1 - actual)）。
+    5. ``E_FOREGROUND_OCCLUSION`` error -> 相机沿视线拉远 15%，让前景体块
+       与主体重新建立可读间隔；该处方属于硬伤，粗排循环必须执行。
 
     ``only_hard=True`` 时只产出 error finding（E_BLOCKOUT_EMPTY_WALL）处方：
     粗排修正循环只修硬伤；构图/遮挡/出画软处方留给细排阶段（T06）。
@@ -138,7 +140,36 @@ def build_coarse_prescriptions(
         if camera is None:
             continue  #: 未知镜不产凭空处方
         for finding in findings:
-            if finding.get("check_id") != E_BLOCKOUT_EMPTY_WALL:
+            check_id = str(finding.get("check_id") or "")
+            if check_id in {"E_FOREGROUND_OCCLUSION",
+                            "E_SUBJECT_AREA_OVERFLOW"}:
+                position = _vec3(camera.get("position"))
+                target = _vec3(camera.get("target"))
+                if position is None or target is None:
+                    continue
+                distance = max(_distance(position, target), 1e-6)
+                direction_vec = {k: (target[k] - position[k]) / distance
+                                 for k in ("x", "y", "z")}
+                pull = 0.15 * distance
+                new_position = {k: position[k] - direction_vec[k] * pull
+                                for k in ("x", "y", "z")}
+                prescriptions.append({
+                    "prescription_id": f"p_coarse_{shot_id}_foreground_occlusion",
+                    "scope": "camera", "shot_id": shot_id,
+                    "entity": str(camera.get("camera_id") or f"cam_{shot_id}"),
+                    "component": "distance", "axis": "distance",
+                    "direction": "out", "magnitude": round(pull, 4),
+                    "current_value": {"position": position, "target": target},
+                    "target_value": {"position": new_position, "target": target},
+                    "derived_from": {
+                        "check_id": check_id,
+                        "severity": str(finding.get("severity") or ""),
+                        "message": str(finding.get("message") or ""),
+                    },
+                    "applied": False,
+                })
+                continue
+            if check_id != E_BLOCKOUT_EMPTY_WALL:
                 continue
             target = _subject_centroid(reference, shot_id)
             if target is None:

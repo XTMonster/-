@@ -104,6 +104,40 @@ def _visible_fraction(scene, camera_pos: Vector, block,
     return float(visible) / float(VISIBLE_POINTS)
 
 
+def _foreground_occlusion_fraction(scene, camera_pos: Vector, block,
+                                   subject_block_names, depsgraph) -> float:
+    """返回被**非主体**体块挡住的采样点比例。
+
+    ``_visible_fraction`` 只回答“射线最后是否命中主体自己”，无法区分
+    “主体被场景体块挡住”和“采样点/角点数值不稳定”。这里保留同一组 9
+    个采样点与同一条 ray_cast 口径，但把首命中对象显式分类：命中其它
+    ``BD_Blockout_*`` 物体即计入前景遮挡；命中主体自身或无命中不计入。
+    该值进入 ``blockout_report`` 后是硬 gate，避免大型前景体块覆盖角色
+    却仍因主体包围盒分数高而放行。
+    """
+    bounds = block.bound_box
+    if not bounds:
+        return 0.0
+    names = {str(name) for name in subject_block_names
+             if str(name) != str(block.name)}
+    points = [block.matrix_world @ Vector(corner) for corner in bounds]
+    points.append(block.matrix_world.translation)
+    blocked = 0
+    sampled = 0
+    for point in points[:VISIBLE_POINTS]:
+        direction = point - camera_pos
+        distance = direction.length
+        if distance < 1e-6:
+            continue
+        sampled += 1
+        hit, _location, _normal, _index, obj, _ = scene.ray_cast(
+            depsgraph, camera_pos, direction / distance,
+            distance=distance + 0.001)
+        if hit and obj is not None and obj.name in names:
+            blocked += 1
+    return float(blocked) / float(sampled or 1)
+
+
 def _max_deviation(manifest: Mapping[str, Any],
                    camera_objects: Mapping[str, bpy.types.Object],
                    shot_id: str) -> float:
@@ -184,9 +218,14 @@ def render_blockout_preview(manifest: Mapping[str, Any],
         comp_scores: List[float] = []
         visible_ratios: List[float] = []
         on_screen_ratios: List[float] = []
+        subject_area_ratios: List[float] = []
         off_screen = False
         blocks_found = 0
         boxes_total = 0
+        #: “主体自身可见”不能发现前景环境体块挡住了主体：旧逻辑只对每个
+        #: 角色分别做 ray_cast，且只把命中自身计为可见，未记录“命中的是谁”。
+        #: 这里逐主体记录非主体遮挡射线比例，交给纯层报告变成硬伤。
+        foreground_occluded_ratios: List[float] = []
 
         for frame in frames:
             scene.frame_set(frame)
@@ -215,9 +254,15 @@ def render_blockout_preview(manifest: Mapping[str, Any],
                 visible = _visible_fraction(scene, camera_pos, block, depsgraph)
                 occluded[block.name] = visible <= 0.5
                 visible_ratios.append(visible)
+                foreground_occluded_ratios.append(
+                    _foreground_occlusion_fraction(
+                        scene, camera_pos, block, subject_blocks.values(),
+                        depsgraph))
                 if box is not None:
                     boxes.append(box)
                     boxes_total += 1
+                    subject_area_ratios.append(max(0.0, min(1.0,
+                        float(box.width) * float(box.height))))
                     #: 出入画只在"主体几乎完全出画或不透明遮挡到近零"时置位；
                     #: 贴边/部分出画由构图分项处理，不当作整镜出入画硬伤。
                     if box.inside_ratio() <= ON_SCREEN_MIN or visible <= 0.0:
@@ -248,8 +293,14 @@ def render_blockout_preview(manifest: Mapping[str, Any],
             "visible_ratio": (round(sum(visible_ratios)
                                     / len(visible_ratios), 4)
                               if visible_ratios else None),
+            "foreground_occlusion_ratio": (
+                round(sum(foreground_occluded_ratios)
+                      / len(foreground_occluded_ratios), 4)
+                if foreground_occluded_ratios else None),
             "on_screen_ratio": (round(max(on_screen_ratios), 4)
                                 if on_screen_ratios else None),
+            "max_subject_area_ratio": (round(max(subject_area_ratios), 4)
+                                       if subject_area_ratios else None),
             "off_screen": bool(off_screen),
             "design_diff": {"max_deviation_m":
                             _max_deviation(manifest, camera_objects, shot_id)},

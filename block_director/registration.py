@@ -16,6 +16,7 @@ log = get_logger("registration")
 # 顺序即注册顺序；注销时逆序执行。
 MODULES: Tuple[str, ...] = (
     "block_director.layer7_ui.panel_main",
+    "block_director.layer7_ui.pipeline_operator",
     "block_director.layer7_ui.panel_shots",
     "block_director.layer7_ui.panel_debug",
     "block_director.layer7_ui.panel_cast",
