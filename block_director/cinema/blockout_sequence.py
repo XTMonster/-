@@ -107,7 +107,13 @@ def _enter_exit_check(
     rows: Sequence[Mapping[str, Any]],
     character_positions: Mapping[str, Tuple[float, float]],
 ) -> List[Dict[str, Any]]:
-    """出入画：enter/exit 声明的角色必须在本镜或相邻镜出场且有体块。"""
+    """出入画：enter/exit 声明与出场一致。
+
+    ``enter_exit`` 数组语义（Ticket 01）= 动作类型（``enter_from`` /
+    ``exit_frame`` 等），不是角色名。动作级检查：有人入画 -> 本镜必须有人
+    出场；有人出画 -> 无后继（无法归因到具体角色时不猜）。数据里若某项
+    恰好等于角色名（兼容旧语义），再做角色级出场/体块核对。
+    """
     findings: List[Dict[str, Any]] = []
     ordered = sorted(rows, key=lambda row: int(row.get("order") or 0))
     by_id = {str(row.get("shot_id") or ""): row for row in rows}
@@ -117,14 +123,27 @@ def _enter_exit_check(
         enter = [str(item) for item in (enter_exit.get("enter") or [])]
         exit_ = [str(item) for item in (enter_exit.get("exit") or [])]
         on_screen = [str(name) for name in (row.get("character_ids") or [])]
-        for name in enter:
+        for item in enter:
+            if item.startswith("enter"):
+                #: 动作级：有人入画 -> 本镜必须有人出场（否则入画孤悬）
+                if not on_screen:
+                    findings.append({
+                        "check_id": E_BLOCKOUT_ENTER_EXIT_MISMATCH,
+                        "shot_id": shot_id,
+                        "frame": int(row.get("start_frame") or 0),
+                        "severity": "warning",
+                        "message": f"入画动作 {item} 但本镜无角色出场",
+                    })
+                continue
+            #: 兼容旧语义：数组项等于角色名 -> 角色级核对
+            name = item
             if name not in on_screen:
                 findings.append({
                     "check_id": E_BLOCKOUT_ENTER_EXIT_MISMATCH,
                     "shot_id": shot_id,
                     "frame": int(row.get("start_frame") or 0),
                     "severity": "warning",
-                    "message": f"入画声明 {name} 不在本镜出场列表",
+                    "message": f"入画声明 {item} 不在本镜出场列表",
                 })
             if name not in character_positions:
                 findings.append({
@@ -132,9 +151,12 @@ def _enter_exit_check(
                     "shot_id": shot_id,
                     "frame": int(row.get("start_frame") or 0),
                     "severity": "error",
-                    "message": f"入画角色 {name} 无体块（不猜坐标）",
+                    "message": f"入画角色 {item} 无体块（不猜坐标）",
                 })
-        for name in exit_:
+        for item in exit_:
+            if item.startswith("exit"):
+                continue
+            name = item
             #: 出画后角色不应继续出现在后续镜（除非重新入画）
             later = [
                 str(other.get("shot_id") or "")
@@ -150,6 +172,7 @@ def _enter_exit_check(
                     "message": (
                         f"出画声明 {name} 后仍在后续镜出场：{later}"),
                 })
+        #: 本镜出场角色必须有体块（角色级，不猜）
         for name in on_screen:
             if name not in character_positions:
                 findings.append({
@@ -167,14 +190,16 @@ def _camera_direction_check(
     cameras: Sequence[Mapping[str, Any]],
     character_positions: Mapping[str, Tuple[float, float]],
 ) -> List[Dict[str, Any]]:
-    """相机方向：相邻镜之间 180° 轴线侧别不得静默翻转。
+    """相机方向：同一对轴角色的相邻同框镜之间 180° 侧别不得静默翻转。
 
-    只对双人（或多于两人的前两人）镜判定轴线；单人/空镜不适用（neutral）。
-    翻转未由中性镜桥接时 -> E_BLOCKOUT_AXIS_FLIP（可归因到分镜）。
+    多人/单人镜（正反打桥接）是合法镜头语言：单人镜不比较、配对不同不
+    比较（避免正反打或换轴被误判为越轴）。只有**同一对轴角色**连续两次
+    同框且侧别翻转时才报 E_BLOCKOUT_AXIS_FLIP（可归因到分镜与帧）。
     """
     findings: List[Dict[str, Any]] = []
     by_shot = {str(c.get("shot_id") or ""): c for c in cameras}
     ordered = sorted(rows, key=lambda row: int(row.get("order") or 0))
+    previous_pair: Optional[Tuple[str, str]] = None
     previous_side: Optional[int] = None
     for row in ordered:
         shot_id = str(row.get("shot_id") or "")
@@ -186,14 +211,14 @@ def _camera_direction_check(
         pairs = [(name, character_positions[name]) for name in characters
                  if name in character_positions][:2]
         if len(pairs) < 2:
-            previous_side = None
             continue
         (a_label, a_pos), (b_label, b_pos) = pairs
+        pair_names = (a_label, b_label)
         side = _camera_side(camera, a_pos, b_pos)
         if side == SIDE_UNKNOWN:
-            previous_side = None
             continue
-        if previous_side is not None and side != previous_side:
+        if (previous_side is not None and previous_pair == pair_names
+                and side != previous_side):
             findings.append({
                 "check_id": E_BLOCKOUT_AXIS_FLIP,
                 "shot_id": shot_id,
@@ -203,6 +228,7 @@ def _camera_direction_check(
                     f"相机跨轴线：{a_label}↔{b_label} 侧别由 "
                     f"{previous_side} 变 {side}，无中性镜桥接"),
             })
+        previous_pair = pair_names
         previous_side = side
     return findings
 
