@@ -381,8 +381,8 @@ assistant-panel/sprite/ruler-probe）、pytest 4101 passed / 2 skipped、
 投影 / 连续优化 / 对抗评审 / 镜版本化 / 逐镜预演路径）已由提交 `a32366b`
 （codex/vlm-feedback）cherry-pick 并入 main，冲突适配保留 main 的
 v1.7/空间尺基座（合入 commit 见 `v1.7/PROGRESS.md`）；新增
-`tools/blender_tests/test_per_shot_previz.py` 探针 ⇒ 探针清单 **46 支**、
-链规模 **50/50**（46 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，
+`tools/blender_tests/test_per_shot_previz.py` 探针 ⇒ 探针清单 **47 支**、
+链规模 **51/51**（47 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，
 与 `test_agents_status_is_current.py` 同源对拍）；集成验证树全量 pytest
 **4400 passed / 0 failed / 2 skipped**（4402 tests，main 树 2026-10-18 实读、
 `-o addopts=""`，exit 0；2 skip 均为既有条件守卫：build_ledger 索引刷新、
@@ -395,20 +395,22 @@ vlm 侧 2026-10-12 台账降为历史，源码存档 `E:\bd_vlm_v2`；另，
 Tickets 01–07 全部落地（空间 DTO 扩展 / 前向设计转换 / 后向观测装配 / 设计 vs
 实测对照 / 计划与修复提示注入 / 三份 schema＋审计事件＋零 LLM 重放 / Blender
 端到端冒烟 `tools/blender_tests/test_spatial_understanding_smoke.py` ⇒ 探针清单
-**46 支**、链规模 **50/50**，与 `test_agents_status_is_current.py` 同源对拍）；
+**47 支**、链规模 **51/51**，与 `test_agents_status_is_current.py` 同源对拍）；
 运行链接线（Ticket 08）已接：计划定稿即生成设计快照（`SceneSpec.from_plan`
 站位，纯层确定性）、收尾全场采样出观测快照与设计 vs 实测 diff、三个审计事件
 带 schema 版本＋指纹＋完整 payload（`layer9_persistence.replay` 零 LLM 复原）、
 修复提示注入 diff 块（无 diff 零形状差）、计划提示注入设计摘要（无 design 零
 形状差）、交付包落 `spatial_design_snapshot.json`/
 `spatial_observation_snapshot.json`/`spatial_diff_report.json`（结构校验，坏数据
-即中止）；全量 pytest **4496 passed / 2 skipped / 0 failed**（2026-10-18 本分支
-实读，214.26s，exit 0；含 Ticket 08 新增的 `test_spatial_runtime_wiring.py` 与
-`test_ruler_observation_audit_history.py`）；并行 blockout 分支（Tickets 01–03）
-已叠在本分支上（`be6d954`/`60c55af`/`1d2c9cd`），其 `test_blockout_scene_smoke.py`
-在磁盘（第 47 支探针）但尚未登记进 `run_tests.ps1`——链规模在 blockout 登记探针
-前仍按 **46 支 / 50 步**计，登记后须随 `test_agents_status_is_current.py` 同源对拍
-重排。
+即中止）；全量 pytest **4503 passed / 2 skipped / 0 failed**（2026-10-18 本分支
+实读，232.53s，exit 0；含 Ticket 08 新增的 `test_spatial_runtime_wiring.py`、
+`test_ruler_observation_audit_history.py` 与 blockout Tickets 01–03 的
+`test_blockout_manifest.py`/`test_blockout_contracts.py`）；并行 blockout 分支
+（Tickets 01–03）已叠在本分支上（`be6d954`/`60c55af`/`1d2c9cd`），其
+`test_blockout_scene_smoke.py` 已登记进 `run_tests.ps1`（第 47 支探针 ⇒ 链规模
+**51/51**，2026-10-18 重排并与 `test_agents_status_is_current.py` 同源对拍）；
+`blockout-scene-smoke` Blender 冒烟绿（体块/相机/运镜/切点全对，证据
+`docs/evidence/20261018-blockout-scene-smoke/`）。
 
 **2026-10-18 冻结树全链（HEAD `9763d7c`，历史快照）**：D1 合入后
 构图门升 80 的探针连带缺口已修（`c22b35a`：composition-gate/phase4-tools
