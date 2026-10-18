@@ -14,20 +14,16 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
+from ..contracts.spatial_snapshot import DIFF_THRESHOLDS
+
 #: 快照版本（契约演进时逐代升）。
 DIFF_SNAPSHOT_SCHEMA = "spatial-diff/v1"
 
 #: 偏差阈值 registry（唯一真源，代码不硬编码）。
 #: 数值口径：位置米、夹角度、速度 m/s。均为"越大越差"型（<= threshold
-#: 为 pass）。调整只许在这改，消费方全部从这里读。
-REGISTRY: Dict[str, float] = {
-    "camera_position_m": 0.3,      # 机位落位偏差容忍（30 cm）
-    "character_position_m": 0.3,   # 角色站位偏差容忍（30 cm）
-    "heading_angle_deg": 30.0,     # 朝向夹角容忍（与 R001 轴线 30° 同口径）
-    "gaze_angle_deg": 30.0,        # 视线夹角容忍
-    "motion_displacement_m": 0.5,  # 运动路径首末位移偏差容忍
-    "speed_delta_m_s": 0.5,        # 运动速度偏差容忍
-}
+#: 为 pass）。数值本身定义在 ``contracts/spatial_snapshot.py::DIFF_THRESHOLDS``
+#: （设计快照 registry 块与 diff 判定同源）；这里只派生一份只读副本。
+REGISTRY: Dict[str, float] = dict(DIFF_THRESHOLDS)
 
 
 def _vec3(value: Any) -> Sequence[float]:

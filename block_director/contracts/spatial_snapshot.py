@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Mapping, Tuple
 
 DESIGN_SCHEMA: Dict[str, Any] = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -135,6 +135,68 @@ DIFF_SCHEMA: Dict[str, Any] = {
 }
 
 
+# --------------------------------------------------------------------------- #
+# 并行实现契约（layer5_orchestrator.design_snapshot / observation_snapshot）
+# --------------------------------------------------------------------------- #
+#: 设计快照版本（并行层 DTO 用，与 ``DESIGN_SCHEMA`` 的 const 独立演进）。
+DESIGN_SNAPSHOT_SCHEMA = "spatial-understanding-design/v1"
+
+#: 观测快照版本（并行层 DTO 用）。
+OBSERVATION_SNAPSHOT_SCHEMA = "spatial-understanding-observation/v1"
+
+#: 设计/观测偏差阈值（唯一真源；``cinema.spatial_diff.REGISTRY`` 从这里派生，
+#: 保证 diff 判定与设计快照 registry 块同源、阈值不散两处）。
+DIFF_THRESHOLDS: Dict[str, float] = {
+    "camera_position_m": 0.3,      # 机位落位偏差容忍（30 cm）
+    "character_position_m": 0.3,   # 角色站位偏差容忍（30 cm）
+    "heading_angle_deg": 30.0,     # 朝向夹角容忍（与 R001 轴线 30° 同口径）
+    "gaze_angle_deg": 30.0,        # 视线夹角容忍
+    "motion_displacement_m": 0.5,  # 运动路径首末位移偏差容忍
+    "speed_delta_m_s": 0.5,        # 运动速度偏差容忍
+}
+
+
+class _SnapshotDTO:
+    """版本化快照的薄 DTO：from_dict/to_dict 深度复制，serde 往返逐位一致。
+
+    不引入 jsonschema 运行时依赖（零依赖红线）；顶层缺键/非 Mapping 直接
+    报错（不吞异常），形状校验由测试与交付验证链负责。``to_dict`` 走 JSON
+    往返，同时证明产物可序列化并归一化内嵌类型（tuple→list 等）。
+    """
+
+    _required: Tuple[str, ...] = ()
+
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self._data = data
+
+    @classmethod
+    def from_dict(cls, data: Any) -> "_SnapshotDTO":
+        if not isinstance(data, Mapping):
+            raise TypeError(
+                f"{cls.__name__}.from_dict 需要 Mapping，"
+                f"得到 {type(data).__name__}")
+        missing = [key for key in cls._required if key not in data]
+        if missing:
+            raise ValueError(f"{cls.__name__} 缺必需键: {missing}")
+        return cls(dict(data))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return json.loads(json.dumps(self._data, ensure_ascii=False))
+
+
+class DesignSnapshot(_SnapshotDTO):
+    """设计快照 DTO（并行层 builder 的返回类型）。"""
+
+    _required = ("schema_version", "characters", "props", "anchors",
+                 "camera_intents", "registry", "notes")
+
+
+class ObservationSnapshot(_SnapshotDTO):
+    """观测快照 DTO（并行层 builder 的返回类型）。"""
+
+    _required = ("schema_version", "shots", "notes")
+
+
 def snapshot_audit_event(kind: str, snapshot: Dict[str, Any]) -> Dict[str, Any]:
     """构造一条快照审计事件（kind / 版本 / 指纹 / 时间）。
 
@@ -154,4 +216,6 @@ def snapshot_audit_event(kind: str, snapshot: Dict[str, Any]) -> Dict[str, Any]:
 
 
 __all__ = ["DESIGN_SCHEMA", "OBSERVATION_SCHEMA", "DIFF_SCHEMA",
+           "DESIGN_SNAPSHOT_SCHEMA", "OBSERVATION_SNAPSHOT_SCHEMA",
+           "DIFF_THRESHOLDS", "DesignSnapshot", "ObservationSnapshot",
            "snapshot_audit_event"]
