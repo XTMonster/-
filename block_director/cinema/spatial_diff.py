@@ -154,8 +154,11 @@ def build_diff_report(design: Mapping[str, Any],
             pos_design = _vec3(char.get("position"))
             element = None if obs_shot is None else _first_element(
                 obs_shot, name)
+            #: 位置比较用同一锚点：设计 position 是根部站位（z≈0），观测侧
+            #: 取 aabb_min（脚底），而不是包围盒中心——否则 z 轴锚点差异
+            #: （中心高于脚底 ~0.85m）会污染偏差（实测见 smoke：0.85 vs 0.0）。
             pos_actual = (None if element is None else _euclidean(
-                pos_design, _vec3(element.get("center"))))
+                pos_design, _vec3(element.get("aabb_min"))))
             items.append(_item("character_position", name,
                                list(pos_design) or None, pos_actual,
                                REGISTRY["character_position_m"], "m"))

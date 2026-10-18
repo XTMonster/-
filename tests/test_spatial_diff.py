@@ -66,6 +66,7 @@ def _design():
 
 
 def _observed(hero_center=(0.0, 0.0, 0.0)):
+    hx, hy, hz = hero_center
     return {
         "schema_version": "spatial-observation/v1",
         "shots": [
@@ -81,8 +82,8 @@ def _observed(hero_center=(0.0, 0.0, 0.0)):
                             {
                                 "id": "米迦尔", "kind": "character",
                                 "center": list(hero_center),
-                                "aabb_min": [-0.5, -0.5, 0.0],
-                                "aabb_max": [0.5, 0.5, 1.7],
+                                "aabb_min": [hx - 0.5, hy - 0.5, 0.0],
+                                "aabb_max": [hx + 0.5, hy + 0.5, 1.7],
                                 "facing": [0.0, 1.0, 0.0],
                                 "rotation": None, "motion": None,
                                 "gaze": {"target_id": None,
@@ -125,7 +126,9 @@ def test_camera_and_character_position_diff_numeric():
     assert cam["verdict"] in ("pass", "fail")
     assert cam["unit"] == "m"
     char = items["character_position"]
-    assert abs(char["actual"] - 0.25) < 1e-9
+    # 设计脚底 (0,0,0) vs 实测脚底 aabb_min=(0.25-0.5, -0.5, 0)
+    # -> sqrt(0.25^2 + 0.5^2) = 0.559（AB 盒半宽 0.5）
+    assert abs(char["actual"] - 0.559016994) < 1e-6
     assert char["subject"] == "米迦尔"
 
 
@@ -158,3 +161,17 @@ def test_report_deterministic_and_json_serializable():
     second = json.dumps(build_diff_report(_design(), _observed()),
                         sort_keys=True, ensure_ascii=False)
     assert first == second
+
+
+def test_character_position_uses_foot_anchor_not_center():
+    """位置比较用脚底（aabb_min）而非包围盒中心：z 锚点差异不污染偏差。"""
+    observed = _observed()
+    observed["shots"][0]["samples"][0]["elements"][0]["aabb_min"] = \
+        [0.25, 0.0, 0.0]   # 脚底 XY 偏离 0.25
+    observed["shots"][0]["samples"][0]["elements"][0]["aabb_max"] = \
+        [0.75, 0.5, 1.7]   # 中心在 (0.5, 0.25, 0.85)，与脚底不同
+    report = build_diff_report(_design(), observed)
+    items = {item["metric"]: item for item in report["items"]}
+    char = items["character_position"]
+    # 设计脚底 (0,0,0) vs 实测脚底 (0.25,0,0) -> 0.25（中心会被污染到 0.5）
+    assert abs(char["actual"] - 0.25) < 1e-9
