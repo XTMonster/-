@@ -1,7 +1,7 @@
 """拍点 → actions 的编译（执行文档 v1.5 §4.1/§4.2；卡 P3-T1）。
 
-五条必须钉住：t→帧换算、同层串行、对白窗口、**起点接力**（§六十四）、
-以及"锚点解析不出来就记 problem 且**不猜坐标**"。
+五条必须钉住：t→帧换算、同角色同层串行且跨层并行、对白窗口、
+**起点接力**（§六十四）、以及"锚点解析不出来就记 problem 且**不猜坐标**"。
 """
 
 from __future__ import annotations
@@ -185,16 +185,40 @@ def test_an_empty_target_is_not_invented():
 
 
 # --------------------------------------------------------------------------- #
-# 同层串行
+# 同角色按层仲裁
 # --------------------------------------------------------------------------- #
 def test_overlapping_actions_for_one_subject_are_pushed_apart_and_recorded():
     shot = _shot([_beat(0.0, "char_001", "nod"),
                   _beat(0.01, "char_001", "shake_head")], duration=96)
     actions, problems = compile_beats(shot)
-    starts = sorted(int(item["start_frame"]) for item in actions)
-    ends = sorted(int(item["end_frame"]) for item in actions)
-    assert starts[1] > ends[0], "同 subject 的动作必须串行"
+    nod = next(item for item in actions if item["action_type"] == "nod")
+    shake = next(item for item in actions
+                 if item["action_type"] == "shake_head")
+    assert shake["start_frame"] > nod["end_frame"], (
+        "同角色同 head 层的动作必须串行")
     assert any("串行" in item for item in problems)
+
+
+def test_actions_on_different_layers_of_one_subject_may_overlap():
+    shot = _shot([_beat(0.1, "char_001", "sit"),
+                  _beat(0.1, "char_001", "nod")], duration=96)
+    actions, problems = compile_beats(shot)
+    sit = next(item for item in actions if item["action_type"] == "sit")
+    nod = next(item for item in actions if item["action_type"] == "nod")
+    assert sit["start_frame"] == nod["start_frame"]
+    assert not any("同层动作时间重叠" in item for item in problems)
+
+
+def test_root_motion_and_head_performance_can_overlap():
+    shot = _shot([_beat(0.2, "char_001", "walk_to", target="door"),
+                  _beat(0.2, "char_001", "nod")], duration=96)
+    actions, problems = compile_beats(
+        shot, {"door": [2.0, 0.0, 0.0]},
+        {"char_001": [0.0, 0.0, 0.0]})
+    walk = next(item for item in actions if item["action_type"] == "walk_to")
+    nod = next(item for item in actions if item["action_type"] == "nod")
+    assert walk["start_frame"] == nod["start_frame"]
+    assert not any("同层动作时间重叠" in item for item in problems)
 
 
 # --------------------------------------------------------------------------- #

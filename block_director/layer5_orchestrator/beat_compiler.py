@@ -36,6 +36,7 @@ from ..contracts.rhythm import (
 )
 from ..motion.model import (
     ENTRANCE_ACTIONS,
+    LAYER_BASE,
     LAYER_HEAD,
     LAYER_OF,
     PROP_ACTIONS,
@@ -410,8 +411,9 @@ def compile_beats(shot, anchors: Any = None, cast: Any = None,
                 entry["params"] = params
             actions.append(entry)
 
-    #: **同 subject 串行**（§9.7）：同层动作不得时间重叠；这里按帧排序后
-    #: 把被压住的窗口往后推，留痕说明（不丢拍点）。
+    #: **同 subject 同层串行**（§9.7）：不同层要同时播放才能形成
+    #: ``sit + nod`` / ``walk_to + nod`` 这类表演。这里按 (subject, layer)
+    #: 分桶，把同层被压住的窗口往后推并留痕（不丢拍点）。
     actions = _serialise_same_subject(actions, duration, problems, shot_id)
     problems.extend(_dialogue_window_findings(shot, actions))
     return actions, problems
@@ -580,13 +582,15 @@ def resolve_action_targets(action_type: str, character_id: str,
 def _serialise_same_subject(actions: List[Dict[str, Any]], duration: int,
                             problems: List[str], shot_id: str
                             ) -> List[Dict[str, Any]]:
-    """同 subject 的动作按起始帧串行：重叠就把后者整体后移（不丢拍点）。"""
-    by_subject: Dict[str, List[Dict[str, Any]]] = {}
+    """同 subject 的同层动作按起始帧串行，跨层动作保持并行。"""
+    by_subject_layer: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
     for action in actions:
-        by_subject.setdefault(str(action.get("character_id") or ""),
-                              []).append(action)
+        subject = str(action.get("character_id") or "")
+        layer = LAYER_OF.get(
+            str(action.get("action_type") or ""), LAYER_BASE)
+        by_subject_layer.setdefault((subject, layer), []).append(action)
     out: List[Dict[str, Any]] = list(actions)
-    for subject, entries in by_subject.items():
+    for (subject, layer), entries in by_subject_layer.items():
         ordered = sorted(entries, key=lambda item: (int(item.get("start_frame", 1)),
                                                     int(item.get("end_frame", 1))))
         cursor = 0
@@ -599,12 +603,12 @@ def _serialise_same_subject(actions: List[Dict[str, Any]], duration: int,
                 new_end = end + shift
                 if new_start > duration:
                     problems.append(
-                        f"{shot_id}：{subject} 的同层动作已排满整镜，"
+                        f"{shot_id}：{subject} 的 {layer} 层动作已排满整镜，"
                         f"第 {new_start} 帧起的动作落不进镜头，原样保留由规则报出")
                     new_start, new_end = start, end
                 else:
                     problems.append(
-                        f"{shot_id}：{subject} 的同层动作时间重叠，"
+                        f"{shot_id}：{subject} 的 {layer} 层动作时间重叠，"
                         f"已把 {start}–{end} 后移到 {new_start}–{new_end}（§9.7 串行）")
                     action["start_frame"] = new_start
                     action["end_frame"] = min(new_end, duration)
