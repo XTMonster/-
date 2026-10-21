@@ -19,10 +19,12 @@ import pathlib
 
 from block_director.contracts.audit import AuditResult
 from block_director.contracts.backtrack import coarse_plan_backtrack
+from block_director.contracts.enums import Purpose
 from block_director.contracts.messages import ChatReply, FunctionCall, ToolCall
 from block_director.contracts.plan import Plan
 from block_director.layer5_orchestrator.driver import (
     DriverLimits, PrevisDriver)
+from block_director.layer5_orchestrator.offline import demo_draft_dict
 from block_director.layer5_orchestrator.states import DriverState
 from block_director.layer6_audit.audit_logger import AuditLogger
 
@@ -72,11 +74,22 @@ class _BadThenGoodTransport:
     def __init__(self):
         self.chat_calls = 0
         self.plan_calls = 0
+        self._editor_index = 0
         self.payloads = []
 
     def chat(self, payload, timeout=120.0):
         if is_understand(payload):
             return understand_reply(payload.request_id)
+        if payload.purpose is Purpose.EDITOR:
+            draft = demo_draft_dict(self._editor_index)
+            self._editor_index += 1
+            call = ToolCall(
+                id=f"draft_{self._editor_index}",
+                function=FunctionCall(
+                    name="emit_shot_draft",
+                    arguments=json.dumps(draft, ensure_ascii=False)))
+            return ChatReply(
+                tool_calls=[call], request_id=payload.request_id)
         self.chat_calls += 1
         self.payloads.append(payload)
         self.plan_calls += 1
@@ -174,11 +187,15 @@ def test_coarse_blocked_backtracks_and_adopts_passing_plan():
         #: 重规划提示必须带回粗排反馈（含 finding 明细，模型能看见为什么被拦）
         assert len(transport.payloads) >= 2, (
             f"应至少两次 plan 调用，实际 {len(transport.payloads)}")
-        assert getattr(transport.payloads[1], "purpose", None).value == "plan", (
-            "第二份 payload 应为第二次规划调用")
+        plan_payloads = [
+            payload for payload in transport.payloads
+            if payload.purpose is Purpose.PLAN
+        ]
+        assert len(plan_payloads) >= 2, (
+            f"应至少两次 plan 调用，实际 {len(plan_payloads)}")
         second_text = " ".join(
             str(getattr(message, "content", "") or "")
-            for message in (getattr(transport.payloads[1], "messages", None) or []))
+            for message in plan_payloads[1].messages)
         assert "gold_coin" in second_text, (
             f"重规划提示应带回粗排反馈，实际 {second_text!r}")
         assert "E_BLOCKOUT_FRAMING_TARGET_UNRESOLVED" in second_text, (
@@ -265,6 +282,16 @@ def test_coarse_exhaustion_restores_best_plan_and_physical_callback():
         def chat(self, payload, timeout=120.0):
             if is_understand(payload):
                 return understand_reply(payload.request_id)
+            if payload.purpose is Purpose.EDITOR:
+                draft = demo_draft_dict(self._editor_index)
+                self._editor_index += 1
+                call = ToolCall(
+                    id=f"draft_{self._editor_index}",
+                    function=FunctionCall(
+                        name="emit_shot_draft",
+                        arguments=json.dumps(draft, ensure_ascii=False)))
+                return ChatReply(
+                    tool_calls=[call], request_id=payload.request_id)
             self.chat_calls += 1
             self.payloads.append(payload)
             plan, _errors = self._sequence[self.plan_calls]

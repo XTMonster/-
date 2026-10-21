@@ -391,6 +391,10 @@ class ResumeState:
     #: Exact coarse gate decision associated with that evidence.  Resume must
     #: not silently replace a passing frozen baseline with a fresh low score.
     coarse_decision: Optional[Dict[str, Any]] = None
+    #: True while the merged plan has not completed its coarse + configured
+    #: human plan gates.  A checkpoint after the last B1 draft is written
+    #: before those gates run, so "all drafts present" is not approval.
+    plan_details_pending: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -423,6 +427,7 @@ class ResumeState:
                 str(k): int(v) for k, v in self.react_round_counts.items()},
             "evidence_store": copy.deepcopy(self.evidence_store),
             "coarse_decision": copy.deepcopy(self.coarse_decision),
+            "plan_details_pending": bool(self.plan_details_pending),
         }
 
     @classmethod
@@ -560,6 +565,19 @@ class ResumeState:
                 raise ResumeStateError(
                     "resume_state.coarse_decision 必须是对象或 null")
             state.coarse_decision = copy.deepcopy(raw)
+        if "plan_details_pending" in payload:
+            pending = payload["plan_details_pending"]
+            if not isinstance(pending, bool):
+                raise ResumeStateError(
+                    "resume_state.plan_details_pending 必须是布尔值")
+            state.plan_details_pending = pending
+        else:
+            #: Legacy v1 files did not record this bit.  A restored plan with
+            #: no versioned coarse decision cannot prove that its plan-level
+            #: gates ran; treating it as pending is the only non-degrading
+            #: interpretation and may at worst ask the gate once more.
+            state.plan_details_pending = bool(
+                state.plan is not None and state.coarse_decision is None)
         return state
 
 
@@ -981,6 +999,11 @@ class PrevisDriver:
         self._polish_messages: List[Message] = []
         self._editing_queue: List[str] = []
         self._editing_index = 0
+        #: A fresh planning result has not yet completed B1.  The final plan
+        #: gate (coarse + human) waits until every B1 draft has been merged, so
+        #: coarse blocking evaluates the authored performance rather than the
+        #: shot-list placeholder.
+        self._plan_gate_pending = False
         self.draft_history: List[Dict[str, Any]] = []
         self.drafts_failed: List[Dict[str, Any]] = []
         #: v1.5 §7（P6-T2）Best-of-N：当前镜已收到的候选草案，以及低分候选
@@ -1891,16 +1914,26 @@ class PrevisDriver:
                 return
             # 没有构建器就不会走 B1，注视关系在这里一次补齐。
             self._pin_brief_gaze()
-        #: R2-F1：headless 在 plan 落定、进入逐镜细排前跑粗排 gate。
-        #: **必须先于 human gate**——headless 的 AutoGate() 会立刻 SKIPPED
-        #: 并直接 resume 到目标态，若把它放在 human gate 之后，粗排 gate
-        #: 在真实执行链里永远不触发（实测 2026-10-19：审计无任何 coarse 事件，
-        #: 只有 gate_requested/gate_decided(skipped) → EDITING）。
-        #: blocked 时**不静默放行**：转失败并留审计（粗排诊断产物已由
-        #: 调用方落盘），与 UI 全管线的 `coarse_is_ready` 同一判定。
-        if not self._run_coarse_gate(target):
+            self._finish_plan_details(
+                target, request_human_gate=True)
             return
-        if self._gate_enabled("human_gate_on_plan"):
+        #: B1 supplies the actions, beats and performance timing consumed by
+        #: coarse blocking.  Gating here (before EDITING) evaluated an empty
+        #: shot-list placeholder in every real node123 run.
+        self._plan_gate_pending = True
+        self._transition(target)
+
+    def _finish_plan_details(
+        self, target: DriverState, *, request_human_gate: bool,
+        coarse_already_passed: bool = False,
+    ) -> None:
+        """Run the plan-level gates only after every B1 draft is available."""
+        if not coarse_already_passed and not self._run_coarse_gate(target):
+            return
+        ask_human = bool(
+            request_human_gate and self._gate_enabled("human_gate_on_plan"))
+        self._plan_gate_pending = False
+        if ask_human:
             self._request_gate(
                 GateRequest(kind="plan", title="确认分镜计划",
                             detail=self._plan_gate_detail(),
@@ -2109,6 +2142,7 @@ class PrevisDriver:
             #: per-plan attempt budget so the requested backtrack can actually
             #: produce a new plan; the global LLM/wall budgets still bound it.
             self._plan_failures = 0
+            self._reset_draft_state_for_replan()
             self._restart_plan_accumulator()
             self._transition(DriverState.PLANNING)
             return False
@@ -3035,7 +3069,10 @@ class PrevisDriver:
     def _step_editing(self) -> None:
         """逐镜请求结构化草案；全部完成后再落场景。"""
         if self.plan is None or not self.plan.shots:
-            self._transition(DriverState.BUILDING)
+            self._pin_brief_gaze()
+            self._finish_plan_details(
+                DriverState.BUILDING,
+                request_human_gate=self._plan_gate_pending)
             return
         if not self._editing_queue:
             self._editing_queue = [shot.shot_id for shot in self.plan.shots]
@@ -3043,9 +3080,11 @@ class PrevisDriver:
         if self._editing_index >= len(self._editing_queue):
             self._editing_queue = []
             self._pin_brief_gaze()
-            self._transition(DriverState.PREPARE_SCENE
-                             if self._supports_prepare_scene()
-                             else DriverState.BUILDING)
+            self._finish_plan_details(
+                DriverState.PREPARE_SCENE
+                if self._supports_prepare_scene()
+                else DriverState.BUILDING,
+                request_human_gate=self._plan_gate_pending)
             return
         shot_id = self._editing_queue[self._editing_index]
         if not self.budget.allow_llm_call("editor"):
@@ -3054,9 +3093,11 @@ class PrevisDriver:
                            level="warning")
             self._editing_queue = []
             self._pin_brief_gaze()
-            self._transition(DriverState.PREPARE_SCENE
-                             if self._supports_prepare_scene()
-                             else DriverState.BUILDING)
+            self._finish_plan_details(
+                DriverState.PREPARE_SCENE
+                if self._supports_prepare_scene()
+                else DriverState.BUILDING,
+                request_human_gate=self._plan_gate_pending)
             return
         self._start_editor_call(shot_id)
 
@@ -5307,6 +5348,7 @@ class PrevisDriver:
                 self.evidence_store.to_dict()
                 if self.evidence_store is not None else None),
             coarse_decision=copy.deepcopy(self._coarse_decision),
+            plan_details_pending=bool(self._plan_gate_pending),
         )
         try:
             save_resume_state(path, state)
@@ -5378,6 +5420,7 @@ class PrevisDriver:
                                    for k, v in state.last_audit.items()}
         self._resume_drafts = {str(k): dict(v)
                                for k, v in state.drafts.items()}
+        self._plan_gate_pending = bool(state.plan_details_pending)
         self._resume_delivered = {str(item)
                                   for item in state.delivered_shots}
         #: R2-D3：把持久化的回溯最高分与无新高轮数种回内存，避免新进程
@@ -5434,16 +5477,24 @@ class PrevisDriver:
                   else (DriverState.PREPARE_SCENE
                         if self._supports_prepare_scene()
                         else DriverState.BUILDING))
+        #: A checkpoint taken during B1 is intentionally not coarse-ready:
+        #: finish the remaining drafts first, then gate their merged result.
+        if pending_drafts:
+            self._plan_gate_pending = True
+            self._transition(target)
+            return
         #: R2-F1：断点续跑同样必须在进细排前过粗排 gate——resume 直接恢复
         #: plan 并跳进 EDITING/PREPARE_SCENE，若这里不查，旧断点（首跑时
         #: human gate 短路了粗排）会整体绕过粗排验证（实测同 2026-10-19）。
         if self._restore_cached_coarse_decision():
             if self.state not in TERMINAL_STATES:
-                self._transition(target)
+                self._finish_plan_details(
+                    target,
+                    request_human_gate=self._plan_gate_pending,
+                    coarse_already_passed=True)
             return
-        if not self._run_coarse_gate(target):
-            return
-        self._transition(target)
+        self._finish_plan_details(
+            target, request_human_gate=self._plan_gate_pending)
 
     # ------------------------------------------------------------ 内部
     def _apply_scene_budget(self, shots: int) -> None:
@@ -5578,6 +5629,21 @@ class PrevisDriver:
         self._plan_head = {}
         self._plan_problem = ""
         self._plan_next_slim = False
+
+    def _reset_draft_state_for_replan(self) -> None:
+        """Discard B1 state bound to a plan rejected by coarse blocking.
+
+        Shot ids commonly repeat across regenerated plans.  Keeping the old
+        draft ledger would make resume skip B1 for the new plan while applying
+        actions authored for the rejected blocking.
+        """
+        self._editing_queue = []
+        self._editing_index = 0
+        self._resume_drafts = {}
+        self._draft_candidates = []
+        self._draft_alternates = {}
+        self._editor_payload_cache = None
+        self._decision_trees = {}
 
     def _plan_needs_more_chunks(self) -> bool:
         """还有一段没收到？（不分块时恒 False ⇒ 与分块前的行为逐字一致。）"""
