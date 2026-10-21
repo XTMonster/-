@@ -200,6 +200,7 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_spatial_understanding_smoke.py'; Marker = 'BD_TEST_RESULT'; Label = 'spatial-understanding-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_startup_cleanup_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-startup-cleanup' },
     @{ Script = 'tools\blender_tests\test_blockout_scene_smoke.py';       Marker = 'BD_TEST_RESULT'; Label = 'blockout-scene-smoke' },
+    @{ Script = 'tools\blender_tests\test_blockout_rebuild_identity_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-rebuild-identity' },
     @{ Script = 'tools\blender_tests\test_blockout_character_performance_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-character-performance' },
     @{ Script = 'tools\blender_tests\test_blockout_hierarchy_consumers_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-hierarchy-consumers' },
     @{ Script = 'tools\blender_tests\test_blockout_preview_smoke.py';     Marker = 'BD_TEST_RESULT'; Label = 'blockout-preview-smoke' },

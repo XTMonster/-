@@ -385,8 +385,8 @@ assistant-panel/sprite/ruler-probe）、pytest 4101 passed / 2 skipped、
 时按前缀／包含关系解析，多候选或零候选保持 unresolved；预览 framing target、
 处方与构图 primary 共用同一解析器。另修复空墙回归：镜头窗口裁剪只接收确实位于
 相机前方的投影，主体完全在相机背后时不得被镜像回画面。
-`tools/run_tests.ps1` 已注册全部 **80 支** Blender 探针，链规模
-**84/84**（80 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，与
+`tools/run_tests.ps1` 已注册全部 **89 支** Blender 探针，链规模
+**93/93**（89 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，与
 `test_agents_status_is_current.py` 同源对拍；on-disk/registered 对拍为
 完全一致、unregistered=0、missing=0）。R2-10 正式证据：
 `docs/evidence/20261021-final12-coarse-r2-10/`。final12 粗排 approved、
