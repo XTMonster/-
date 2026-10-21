@@ -30,6 +30,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from block_director.contracts.config import AppConfig  # noqa: E402
 from tools.knowledge import quality  # noqa: E402
 
 
@@ -198,6 +199,28 @@ def test_the_headless_step_runs_the_long_baseline():
     assert any("script_long_61" in line for line in calls), (
         "headless 那条活行必须带 --script fixtures\\script_long_61.md："
         "否则 P13 的长基线在链上没有被执行")
+
+
+def test_the_long_baseline_uses_the_product_wall_budget():
+    """长基线不得用比产品预算更短的墙钟把健康运行误判成超时。
+
+    2026-10-22 实测：64 镜、4584 帧的长基线在粗排质量闭环完成后才开始逐镜
+    终结；旧的 ``--wall 600`` 在第 30 镜前触发 ``wall_clock_exhausted``。
+    产品配置的 ``budget.max_wall_minutes`` 是 120 分钟，链必须使用同一个
+    墙钟额度；这不是放宽完成条件，因为 ``state == DONE``、镜数、导出和预算
+    上限的断言全部保留。
+    """
+    calls = [line for _number, line in live_lines(chain_text())
+             if "run_headless.py" in line and "script_long_61" in line]
+    assert calls, "链上没有长基线 headless 活行"
+    match = re.search(
+        r"--wall(?:['\"]?\s*,\s*['\"]?|\s+)([0-9]+(?:\.[0-9]+)?)",
+        calls[0])
+    assert match, "--wall 后面看不出秒数：%s" % calls[0]
+    expected = round(AppConfig().budget.max_wall_minutes * 60)
+    assert float(match.group(1)) == expected, (
+        "长基线 --wall=%s 与产品预算 %s 秒不一致；健康运行会在链上提前超时"
+        % (match.group(1), expected))
 
 
 def test_the_long_baseline_step_asserts_shots_and_the_budget_ceiling():

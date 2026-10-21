@@ -161,6 +161,7 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_phase4_tools.py';      Marker = 'BD_TEST_RESULT'; Label = 'phase4-tools' },
     @{ Script = 'tools\blender_tests\test_phase4_repair.py';     Marker = 'BD_TEST_RESULT'; Label = 'phase4-repair' },
     @{ Script = 'tools\blender_tests\test_phase5_checkpoint.py'; Marker = 'BD_TEST_RESULT'; Label = 'phase5-checkpoint' },
+    @{ Script = 'tools\blender_tests\test_checkpoint_animation_roundtrip_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'checkpoint-animation-roundtrip' },
     @{ Script = 'tools\blender_tests\test_phase6_delivery.py';   Marker = 'BD_TEST_RESULT'; Label = 'phase6' },
     @{ Script = 'tools\blender_tests\test_layer2_project.py';    Marker = 'BD_TEST_RESULT'; Label = 'layer2-project' },
     @{ Script = 'tools\blender_tests\test_replay.py';            Marker = 'BD_TEST_RESULT'; Label = 'replay' },
@@ -199,6 +200,8 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_spatial_understanding_smoke.py'; Marker = 'BD_TEST_RESULT'; Label = 'spatial-understanding-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_startup_cleanup_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-startup-cleanup' },
     @{ Script = 'tools\blender_tests\test_blockout_scene_smoke.py';       Marker = 'BD_TEST_RESULT'; Label = 'blockout-scene-smoke' },
+    @{ Script = 'tools\blender_tests\test_blockout_character_performance_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-character-performance' },
+    @{ Script = 'tools\blender_tests\test_blockout_hierarchy_consumers_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-hierarchy-consumers' },
     @{ Script = 'tools\blender_tests\test_blockout_preview_smoke.py';     Marker = 'BD_TEST_RESULT'; Label = 'blockout-preview-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_checkpoint_smoke.py';  Marker = 'BD_TEST_RESULT'; Label = 'blockout-checkpoint-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_sequence_smoke.py';    Marker = 'BD_TEST_RESULT'; Label = 'blockout-sequence-smoke' },
@@ -210,6 +213,7 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_detail_session_prop_scope_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-prop-scope' },
     @{ Script = 'tools\blender_tests\test_detail_session_camera_motion_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-camera-motion' },
     @{ Script = 'tools\blender_tests\test_detail_session_protection_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-protection' },
+    @{ Script = 'tools\blender_tests\test_detail_session_performance_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-performance' },
     @{ Script = 'tools\blender_tests\test_market_coin_coarse_gate_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'market-coin-coarse-final12' },
     @{ Script = 'tools\blender_tests\test_market_coin_coarse_gate_pass_final16.py'; Marker = 'BD_TEST_RESULT'; Label = 'market-coin-coarse-final16' },
     @{ Script = 'tools\blender_tests\test_final16b_detail_render.py';      Marker = 'BD_TEST_RESULT'; Label = 'final16b-detail-render' },
@@ -220,7 +224,11 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_evidence_restore_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'evidence-restore' },
     @{ Script = 'tools\blender_tests\test_coarse_best_rollback_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'coarse-best-rollback' },
     @{ Script = 'tools\blender_tests\test_coarse_camera_bridge_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'coarse-camera-bridge' },
-    @{ Script = 'tools\blender_tests\test_detail_session_best_rollback_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-best-rollback' }
+    @{ Script = 'tools\blender_tests\test_coarse_local_staging_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'coarse-local-staging' },
+    @{ Script = 'tools\blender_tests\test_detail_preview_subset_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-preview-subset' },
+    @{ Script = 'tools\blender_tests\test_ruler_reframe_pose_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'ruler-reframe-pose' },
+    @{ Script = 'tools\blender_tests\test_detail_session_best_rollback_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-best-rollback' },
+    @{ Script = 'tools\blender_tests\test_blockout_preview_full_state_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-preview-full-state' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.
@@ -308,8 +316,10 @@ Write-Host ('  ' + $smokeLine.Line) -ForegroundColor Green
 # 125.5 s (run c44026e4c751, DONE) and a load-peak run that exceeded the previous
 # 180 s default (run 7f626a3f3560, CANCELLED at shot_063 by wall_clock_exhausted).
 # The product budget is max_wall_minutes = 120 (v1.4 P9.4), so this offline chain
-# step passes --wall 600: a bounded 10-minute guard that still catches runaway
-# loops without misclassifying a healthy per-shot run as CANCELLED.
+# step must use that same 7200 s budget.  Measured 2026-10-22: the old 600 s
+# guard cancelled a 64-shot / 4584-frame run at shot_030 AFTER the coarse loop
+# had closed successfully.  The DONE, shot-count, export and call-budget
+# assertions below remain unchanged; only the premature wall guard is removed.
 Write-Host ("[4/{0}] Run the add-on headless (plan -> scene -> delivery, one command)" -f $total) -ForegroundColor Cyan
 $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
 # `--preset fhd16x9` is part of section 4.4 step 1's command and the doc says it is
@@ -318,7 +328,7 @@ $out = Join-Path $env:TEMP ("bd_run_" + (Get-Date -Format 'HHmmss'))
 # docs/evidence/offline_run1/export/shots.json is 1920x1080, i.e. the recorded run
 # used fhd16x9 - while this chain step was running at the default.  At fhd16x9 the
 # long baseline takes 293 s instead of 159 s and still finishes DONE with 64 shots.
-$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--preset', 'fhd16x9', '--out', $out, '--save', (Join-Path $out 'project'), '--export', '--wall', '600')
+$headlessOut = Invoke-BlenderScript $blender (Join-Path $root 'tools\run_headless.py') @('--offline', '--script', 'fixtures\script_long_61.md', '--build', '--preset', 'fhd16x9', '--out', $out, '--save', (Join-Path $out 'project'), '--export', '--wall', '7200')
 $marker = Assert-Marker $headlessOut 'BLOCKDIRECTOR_RESULT' 'headless'
 if ($marker -notmatch '"success": true') { Fail ('  FAILED: ' + $marker) }
 if ($marker -notmatch '"built": true') { Fail '  FAILED: the run did not build a scene' }
